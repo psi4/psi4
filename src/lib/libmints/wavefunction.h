@@ -81,6 +81,9 @@ protected:
     SharedMatrix Ca_;
     SharedMatrix Cb_;
 
+    SharedMatrix Da_;
+    SharedMatrix Db_;
+
     SharedMatrix Fa_;
     SharedMatrix Fb_;
 
@@ -155,9 +158,9 @@ public:
     SharedVector epsilon_b() const { return epsilon_b_; }
 
     /// Returns the alpha OPDM for the wavefunction
-    virtual SharedMatrix Da() const;
+    SharedMatrix Da() const { return Da_; }
     /// Returns the beta OPDM for the wavefunction
-    virtual SharedMatrix Db() const;
+    SharedMatrix Db() const { return Db_; }
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);

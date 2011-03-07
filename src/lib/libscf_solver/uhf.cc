@@ -104,105 +104,6 @@ void UHF::form_G()
     }
 }
 
-double UHF::compute_energy()
-{
-    bool converged = false, diis_iter = false;
-    int iter = 0;
-
-    form_Shalf();
-    form_H();
-
-    if (load_or_compute_initial_C()){
-        fprintf(outfile, "  Read in previous MOs from file32.\n\n");
-    }else{
-        Fa_->copy(H_);
-        Fb_->copy(H_);
-        form_C();
-    }
-
-    // Do the initial work to give the iterations a starting point
-    find_occupation();
-
-    form_D();
-
-
-    if (scf_type_ == "PK")
-        form_PK();
-
-    if (print_>3) {
-        H_->print(outfile);
-        S_->print(outfile);
-        Shalf_->print(outfile);
-    }
-
-    if (print_>2) {
-        Ca_->print(outfile);
-        Cb_->print(outfile);
-        Da_->print(outfile);
-        Db_->print(outfile);
-    }
-    if (print_)
-        fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
-    do {
-        iter++;
-        iterations_needed_ = iter;
-
-        save_density_and_energy();
-
-        form_G();
-        form_F();
-
-        if (diis_enabled_)
-            save_fock();
-
-        E_ = compute_E();
-
-        if (diis_enabled_ == true && iter >= min_diis_vectors_) {
-            diis();
-            diis_iter = true;
-        } else {
-            diis_iter = false;
-        }
-
-        if(print_)
-            fprintf(outfile, "  @UHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iter, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
-        fflush(outfile);
-
-        form_C();
-        //find_occupation(Fa_, Fb_);
-        form_D();
-        if (print_>4) {
-            Fa_->print(outfile);
-            Fb_->print(outfile);
-            Ga_->print(outfile);
-            Gb_->print(outfile);
-            Ca_->print(outfile);
-            Cb_->print(outfile);
-            Da_->print(outfile);
-            Db_->print(outfile);
-        }
-
-        converged = test_convergency();
-    } while (!converged && iter < maxiter_);
-
-    // Return the final RHF energy
-    if (converged) {
-        fprintf(outfile, "\n  Energy converged.\n");
-        fprintf(outfile, "\n  @UHF Final Energy: %20.14f\n", E_);
-        save_information();
-    } else {
-        fprintf(outfile, "\n  Failed to converge.\n");
-        E_ = 0.0;
-    }
-
-    // Compute the final dipole.
-//    if(print_ > 2) compute_multipole();
-
-    finalize();
-
-    return E_;
-}
-
 #if 0
 void UHF::compute_multipole()
 {
@@ -333,35 +234,6 @@ void UHF::compute_multipole()
     }
 }
 #endif
-
-bool UHF::load_or_compute_initial_C()
-{
-    bool ret = false;
-    string alpha(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
-    string beta(chkpt_->build_keyword(const_cast<char*>("Beta MO coefficients")));
-    if (options_["GUESS"].has_changed() && options_.get_str("GUESS") != "READ" &&
-        chkpt_->exist(const_cast<char*>(alpha.c_str())) &&
-        chkpt_->exist(const_cast<char*>(beta.c_str()))) {
-        // Read alpha MOs from checkpoint and set C_ to them
-        double **vectors = chkpt_->rd_alpha_scf();
-        Ca_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
-
-        // Read beta MOs from checkpoint and set C_ to them
-        vectors = chkpt_->rd_beta_scf();
-        Cb_->set(const_cast<const double**>(vectors));
-        free_block(vectors);
-
-        // Read SCF energy from checkpoint file.
-        E_ = chkpt_->rd_escf();
-
-        ret = true;
-    } else {
-        ret = false;
-    }
-
-    return ret;
-}
 
 void UHF::save_information()
 {
@@ -999,9 +871,9 @@ void UHF::save_fock()
     diis_manager_->add_entry(4, &FaDaSmSDaFa, &FbDbSmSDbFb, Fa_.get(), Fb_.get());
 }
 
-void UHF::diis()
+bool UHF::diis()
 {
-    diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
+    return diis_manager_->extrapolate(2, Fa_.get(), Fb_.get());
 }
 
 }}

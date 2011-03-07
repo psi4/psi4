@@ -12,7 +12,7 @@ namespace psi { namespace scf {
 
 class UHF : public HF {
 protected:
-    SharedMatrix Da_, Db_, Dt_, Dtold_;
+    SharedMatrix Dt_, Dtold_;
     SharedMatrix Ga_, Gb_, Ka_, Kb_;
 
     double *p_jk_;
@@ -29,10 +29,9 @@ protected:
     void form_G_from_PK();
     void form_PK();
     virtual void form_F();
-    virtual bool load_or_compute_initial_C();
 
     void save_fock();
-    void diis();
+    bool diis();
 
     bool test_convergency();
     void save_information();
@@ -49,8 +48,6 @@ public:
     UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     UHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~UHF();
-
-    double compute_energy();
 
     virtual bool restricted() const { return false; }
 };
