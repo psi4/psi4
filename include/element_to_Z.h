@@ -106,7 +106,6 @@ class Element_to_Z {
     element_to_Z["KRYPTON"]= 36.0;
     element_to_Z["RB"]      = 37.0;
     element_to_Z["RUBIDIUM"]= 37.0;
-/*
     element_to_Z["SR"]      =
     element_to_Z["STRONTIUM"]= 38.00;
     element_to_Z["Y"]      =
@@ -243,7 +242,6 @@ class Element_to_Z {
     element_to_Z["UNP"] = 105.00;
     element_to_Z["UNH"]  = 106.00;
     element_to_Z["UNS"]  = 107.00;
-*/
   }
 
 };
