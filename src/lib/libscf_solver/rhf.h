@@ -60,6 +60,7 @@ protected:
 
     void form_PK();
     void form_F();
+    void form_G();
 
     void save_fock();
     bool diis();
@@ -72,6 +73,8 @@ protected:
 
     // Finalize memory/files
     virtual void finalize();
+
+    void save_density_and_energy();
 
 public:
     RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);

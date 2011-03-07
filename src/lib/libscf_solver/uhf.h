@@ -25,6 +25,7 @@ protected:
     double compute_initial_E();
     double compute_E();
 
+    void form_G();
     void form_G_from_PK();
     void form_PK();
     virtual void form_F();
@@ -38,6 +39,9 @@ protected:
     void compute_spin_contamination();
 
     void common_init();
+
+    void save_density_and_energy();
+
     // Finalize memory/files
     virtual void finalize();
 

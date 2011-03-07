@@ -73,13 +73,13 @@ void ROHF::finalize()
         delete[](pk_);
     if (k_)
         delete[](k_);
-   
+
     Fc_.reset();
     Fo_.reset();
     Dc_old_.reset();
     Do_old_.reset();
     Gc_.reset();
-    Go_.reset(); 
+    Go_.reset();
 
     HF::finalize();
 }
@@ -101,9 +101,27 @@ void ROHF::form_initial_C()
     Ca_->copy(temp);
     Cb_->copy(temp);
 
-#ifdef _DEBUG
-    //Ca_->print(outfile, "initial C");
-#endif
+    if (print_ > 3)
+        Ca_->print(outfile, "initial C");
+}
+
+void ROHF::save_density_and_energy()
+{
+    Dc_old_->copy(Dc_); // save previous density
+    Do_old_->copy(Do_); // save previous density
+    Eold_ = E_; // save previous energy
+}
+
+void ROHF::form_G()
+{
+    if (scf_type_ == "PK")
+        form_G_from_PK();
+    //else if (scf_type_ == "DIRECT")
+    //    form_G_from_direct_integrals();
+    //else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
+    //    form_G_from_RI();
+    //else if (scf_type_ == "OUT_OF_CORE")
+    //    form_G();
 }
 
 double ROHF::compute_energy()
@@ -136,21 +154,9 @@ double ROHF::compute_energy()
     do {
         iter++;
 
-        Dc_old_->copy(Dc_); // save previous density
-        Do_old_->copy(Do_); // save previous density
-        Eold_ = E_; // save previous energy
+        save_density_and_energy();
 
-        if (scf_type_ == "PK")
-            form_G_from_PK();
-        else{
-            form_G();
-        }
-        //else if (scf_type_ == "DIRECT")
-        //    form_G_from_direct_integrals();
-        //else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-        //    form_G_from_RI();
-        //else if (scf_type_ == "OUT_OF_CORE")
-        //    form_G();
+        form_G();
 
         form_F(); // Forms: Fc_, Fo_, Feff_
 
@@ -191,7 +197,7 @@ double ROHF::compute_energy()
         fprintf(outfile, "\n  Failed to converge.\n");
         E_ = 0.0;
     }
-    
+
     finalize();
 
     return E_;

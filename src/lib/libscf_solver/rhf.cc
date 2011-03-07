@@ -149,6 +149,26 @@ SharedMatrix RHF::Da() const
     return D_;
 }
 
+void RHF::save_density_and_energy()
+{
+    Dold_->copy(D_);  // Save previous density
+    Eold_ = E_;       // Save previous energy
+}
+
+void RHF::form_G()
+{
+    if (scf_type_ == "PK"){
+        form_G_from_PK();
+    //}else if (scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON"){
+        //form_G_from_RI();
+    }else {
+        J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
+        process_tei<J_K_Functor>(jk_builder);
+        G_->scale(2.0);
+        G_->subtract(K_);
+    }
+}
+
 double RHF::compute_energy()
 {
     //fprintf(outfile,"  Print = %d\n",print_);
@@ -197,8 +217,7 @@ double RHF::compute_energy()
     do {
         iteration_++;
 
-        Dold_->copy(D_);  // Save previous density
-        Eold_ = E_;       // Save previous energy
+        save_density_and_energy();
 
         // Call any preiteration callbacks
         call_preiteration_callbacks();
@@ -207,16 +226,7 @@ double RHF::compute_energy()
         //D_->print(outfile);
 
         timer_on("Form G");
-        if (scf_type_ == "PK"){
-            form_G_from_PK();
-        //}else if (scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON"){
-            //form_G_from_RI();
-        }else { 
-            J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-            process_tei<J_K_Functor>(jk_builder);
-            G_->scale(2.0);
-            G_->subtract(K_);
-        }
+        form_G();
         timer_off("Form G");
 
         if (print_>3) {
@@ -228,9 +238,9 @@ double RHF::compute_energy()
         if (options_.get_str("GUESS") == "SAD") {
             for (int h = 0 ; h < D_->nirrep(); h++) {
                 nalphapi_[h] = sad_nocc_[h];
-            } 
+            }
         }
-        
+
         form_F();
         if (print_>3) {
             Fa_->print(outfile);

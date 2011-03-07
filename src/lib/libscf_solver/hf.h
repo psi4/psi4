@@ -27,7 +27,7 @@ namespace psi {
     namespace scf {
 
 class PseudospectralHF;
-class DFHF; 
+class DFHF;
 
 class HF : public Wavefunction {
 protected:
@@ -99,7 +99,7 @@ protected:
 
     /// Pseudospectral stuff
     shared_ptr<PseudospectralHF> pseudospectral_;
-    /// DF stuff 
+    /// DF stuff
     shared_ptr<DFHF> df_;
 
     /// DIIS manager intiialized?
@@ -182,6 +182,9 @@ protected:
     /// Compute energy for the iteration.
     virtual double compute_E() = 0;
 
+    /// Save the current density and energy.
+    virtual void save_density_and_energy() = 0;
+
     /** Read in C from checkpoint. Default implementation works for RHF and ROHF. UHF needs to read in additional C.
      *  If unable to load C from checkpoint, will call form_C to compute the value.
      *  If unable to load call compute_initial_E(), else loads SCF energy from checkpoint.
@@ -197,6 +200,9 @@ protected:
 
     /** Computes the initial MO coefficients (default is to call form_C) */
     virtual void form_initial_C() { form_C(); }
+
+    /** Forms the G matrix */
+    virtual void form_G() {}
 
     /** Computes the initial energy. */
     virtual double compute_initial_E() { return 0.0; }
