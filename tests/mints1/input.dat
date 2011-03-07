@@ -181,7 +181,7 @@ compare_strings("c2", H2O2.schoenflies_symbol(), "H2O2 point group");  #TEST
 
 # Ci Symmetry
 molecule C4H4Cl2F2 {
-bohr
+units    bohr
  C     0.432781050498     1.898774028282     0.810337938486
  C    -1.658744642774     0.805191018766    -0.984829058337
  C     1.658744642774    -0.805191018766     0.984829058337
