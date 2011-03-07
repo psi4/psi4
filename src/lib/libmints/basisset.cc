@@ -331,7 +331,7 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
             }
         }
         catch (BasisSetFileNotFound& e) {
-            fprintf(outfile, "  Unable to load %s from the default Psi4 basis set library.", filename.c_str());
+        throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
         }
     }
 
