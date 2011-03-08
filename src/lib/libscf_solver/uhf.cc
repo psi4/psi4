@@ -57,25 +57,12 @@ void UHF::common_init()
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = SharedVector(factory_->create_vector());
 
-//    p_jk_ = NULL;
-//    p_k_  = NULL;
-
-//    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
-
     fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-
-//    if (scf_type_ == "PK")
-//        allocate_PK();
 }
 
 void UHF::finalize()
 {
-//    if (p_jk_)
-//        delete[](p_jk_);
-//    if (p_k_)
-//        delete[](p_k_);
-
     reference_energy_ = E_;
     Dt_.reset();
     Dtold_.reset();
@@ -93,148 +80,13 @@ void UHF::save_density_and_energy()
 
 void UHF::form_G()
 {
-//    if (scf_type_ == "PK"){
-//        form_G_from_PK();
-//    } else {
-        // This will build J (stored in G) and K
-        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-        process_tei<J_Ka_Kb_Functor>(jk_builder);
-        Gb_->copy(Ga_);
-        Ga_->subtract(Ka_);
-        Gb_->subtract(Kb_);
-//    }
+    // This will build J (stored in G) and K
+    J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+    process_tei<J_Ka_Kb_Functor>(jk_builder);
+    Gb_->copy(Ga_);
+    Ga_->subtract(Ka_);
+    Gb_->subtract(Kb_);
 }
-
-#if 0
-void UHF::compute_multipole()
-{
-    // Begin dipole
-    double dex, dey, dez, dx, dy, dz;
-    // Convert blocked density to a full block
-    SimpleMatrix D(Dt_->to_simple_matrix());
-
-    dex = D.vector_dot(Dipole_[0]);
-    dey = D.vector_dot(Dipole_[1]);
-    dez = D.vector_dot(Dipole_[2]);
-
-    dx = dex + nuclear_dipole_contribution_[0];
-    dy = dey + nuclear_dipole_contribution_[1];
-    dz = dez + nuclear_dipole_contribution_[2];
-
-    double d;
-    d = sqrt(dx * dx + dy * dy + dz * dz);
-    // End dipole
-
-    // Begin quadrupole
-    double qexx, qexy, qexz, qeyy, qeyz, qezz;
-    double mexx, mexy, mexz, meyy, meyz, mezz;
-    double texx, texy, texz, teyy, teyz, tezz;
-
-    mexx = D.vector_dot(Quadrupole_[0]) * 2.0;
-    mexy = D.vector_dot(Quadrupole_[1]) * 2.0;
-    mexz = D.vector_dot(Quadrupole_[2]) * 2.0;
-    meyy = D.vector_dot(Quadrupole_[3]) * 2.0;
-    meyz = D.vector_dot(Quadrupole_[4]) * 2.0;
-    mezz = D.vector_dot(Quadrupole_[5]) * 2.0;
-
-    texx = mexx + nuclear_quadrupole_contribution_[0];
-    texy = mexy + nuclear_quadrupole_contribution_[1];
-    texz = mexz + nuclear_quadrupole_contribution_[2];
-    teyy = meyy + nuclear_quadrupole_contribution_[3];
-    teyz = meyz + nuclear_quadrupole_contribution_[4];
-    tezz = mezz + nuclear_quadrupole_contribution_[5];
-
-    qexx = texx - (teyy+tezz)/2.0;
-    qeyy = teyy - (texx+tezz)/2.0;
-    qezz = tezz - (texx+teyy)/2.0;
-    qexy = 1.5 * texy;
-    qexz = 1.5 * texz;
-    qeyz = 1.5 * teyz;
-
-    SimpleVector evals(3);
-    SimpleMatrix evecs(3, 3), temp(3, 3);
-
-    temp.set(0, 0, qexx);
-    temp.set(1, 1, qeyy);
-    temp.set(2, 2, qezz);
-    temp.set(0, 1, qexy);
-    temp.set(0, 2, qexz);
-    temp.set(1, 2, qeyz);
-    temp.set(1, 0, qexy);
-    temp.set(2, 0, qexz);
-    temp.set(2, 1, qeyz);
-    temp.diagonalize(&evecs, &evals);
-    // End Quadrupole
-
-    fprintf(outfile, "\n  Electric dipole (a.u.):\n");
-    fprintf(outfile, "\t%15s\t%15s\t%15s", "X", "Y", "Z");
-    fprintf(outfile, "\n    Nuclear part:\n");
-    fprintf(outfile, "\t%15.10f\t%15.10f\t%15.10f\n", nuclear_dipole_contribution_[0], nuclear_dipole_contribution_[1], nuclear_dipole_contribution_[2]);
-
-    fprintf(outfile, "\n    Electronic part:\n");
-    fprintf(outfile, "\t%15.10f\t%15.10f\t%15.10f\n", dex, dey, dez);
-
-    fprintf(outfile, "\n    Dipole moments:\n");
-    fprintf(outfile, "\t%15.10f\t%15.10f\t%15.10f\n", dx, dy, dz);
-
-    fprintf(outfile, "\n    Total dipole: %15.10f a.u.  %15.10f Debye\n", d, d*_dipmom_au2debye);
-    fprintf(outfile, "    Conversion: 1.0 a.u. = %15.10f Debye\n", _dipmom_au2debye);
-
-    // fprintf(outfile, "\n    Orbital contributions (a.u.)\n");
-    // fprintf(outfile, "\t%6s %3s%15s  %15s  %15s\n", "Irrep", "MO", "X", "Y", "Z");
-    // for (int h=0; h<Dipole_[0].nirreps(); ++h) {
-    //   for (int i=0; i<doccpi_[h]; ++i) {
-    //     fprintf(outfile, "\t%6d %3d%15.10f  %15.10f  %15.10f\n", h+1, i+1,
-    //         Dipole_[0].get(h, i, i) * -2.0, Dipole_[1].get(h, i, i) * -2.0, Dipole_[2].get(h, i, i) * -2.0);
-    //   }
-    // }
-    // fprintf(outfile, "\n  Electric quadrupole (a.u.):");
-    // fprintf(outfile, "\n    Nuclear part:\n");
-    // fprintf(outfile, "\txx=%15.10f\txy=%15.10f\txz=%15.10f\n", nuclear_quadrupole_contribution_[0], nuclear_quadrupole_contribution_[1], nuclear_quadrupole_contribution_[2]);
-    // fprintf(outfile, "\tyy=%15.10f\tyz=%15.10f\tzz=%15.10f\n", nuclear_quadrupole_contribution_[3], nuclear_quadrupole_contribution_[4], nuclear_quadrupole_contribution_[5]);
-    // fprintf(outfile, "\n    Electronic part (cross terms do not match oeprop):\n");
-    // fprintf(outfile, "\txx=%15.10f\txy=%15.10f\txz=%15.10f\n", qexx, qexy, qexz);
-    // fprintf(outfile, "\tyy=%15.10f\tyz=%15.10f\tzz=%15.10f\n", qeyy, qeyz, qezz);
-    // fprintf(outfile, "\n    Principal values (a.u.) and axis:\n");
-    // fprintf(outfile, "\tQ1=%15.10f\tV1=(%15.10f %15.10f %15.10f)\n", evals.get(0), evecs.get(0, 0), evecs.get(1, 0), evecs.get(2, 0));
-    // fprintf(outfile, "\tQ2=%15.10f\tV2=(%15.10f %15.10f %15.10f)\n", evals.get(1), evecs.get(0, 1), evecs.get(1, 1), evecs.get(2, 1));
-    // fprintf(outfile, "\tQ3=%15.10f\tV3=(%15.10f %15.10f %15.10f)\n", evals.get(2), evecs.get(0, 2), evecs.get(1, 2), evecs.get(2, 2));
-
-    // Compute orbital extents
-    fprintf(outfile, "\n  Alpha Orbital extents (a.u.):\n");
-    fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
-    SimpleMatrix Ca(Ca_->to_simple_matrix());
-    for (int i=0; i<Ca.nrow(); ++i) {
-        double sumx=0.0, sumy=0.0, sumz=0.0;
-        for (int k=0; k<Ca.ncol(); ++k) {
-            for (int l=0; l<Ca.ncol(); ++l) {
-                double tmp = Ca.get(k, i) * Ca.get(l, i);
-                sumx += Quadrupole_[0]->get(k, l) * tmp;
-                sumy += Quadrupole_[3]->get(k, l) * tmp;
-                sumz += Quadrupole_[5]->get(k, l) * tmp;
-            }
-        }
-        fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
-    }
-
-    // Compute orbital extents
-    fprintf(outfile, "\n  Beta Orbital extents (a.u.):\n");
-    fprintf(outfile, "\t%3s%15s  %15s  %15s  %15s\n", "MO", "<x^2>", "<y^2>", "<z^2>", "<r^2>");
-    SimpleMatrix Cb(Cb_->to_simple_matrix());
-    for (int i=0; i<Cb.nrow(); ++i) {
-        double sumx=0.0, sumy=0.0, sumz=0.0;
-        for (int k=0; k<Cb.ncol(); ++k) {
-            for (int l=0; l<Cb.ncol(); ++l) {
-                double tmp = Cb.get(k, i) * Cb.get(l, i);
-                sumx += Quadrupole_[0]->get(k, l) * tmp;
-                sumy += Quadrupole_[3]->get(k, l) * tmp;
-                sumz += Quadrupole_[5]->get(k, l) * tmp;
-            }
-        }
-        fprintf(outfile, "\t%3d%15.10f  %15.10f  %15.10f  %15.10f\n", i+1, fabs(sumx), fabs(sumy), fabs(sumz), fabs(sumx + sumy + sumz));
-    }
-}
-#endif
 
 void UHF::save_information()
 {
@@ -370,8 +222,8 @@ void UHF::save_information()
 //    vectors = Cb_->to_block_matrix();
 //    chkpt_->wt_beta_scf(vectors);
 //    free_block(vectors);
-
 }
+
 void UHF::compute_spin_contamination()
 {
     shared_ptr<Matrix> S = shared_ptr<Matrix>(factory_->create_matrix("S (Overlap)"));
@@ -415,6 +267,7 @@ void UHF::compute_spin_contamination()
       fprintf(outfile, "  @S^2 Observed:              %7.4E\n", S2 + dS);
 
 }
+
 bool UHF::test_convergency()
 {
     double ediff = E_ - Eold_;
@@ -431,41 +284,6 @@ bool UHF::test_convergency()
         return false;
 }
 
-#if 0
-void UHF::allocate_PK() {
-    // Figure out how many pair combinations yield A1 symmetry (done in above loop)
-    //   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
-    // Allocate memory for the PK matrix (using a vector)
-    if (pk_size_ < (memory_ / sizeof(double) / 2)) {
-        p_jk_ = new double[pk_size_];
-        p_k_ = new double[pk_size_];
-
-        if (p_jk_ == NULL || p_k_ == NULL) {
-            fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
-            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            scf_type_ == "OUT_OF_CORE";
-        } else {
-            // PK and K are zeroed out just before filling, not here
-            if(print_ > 2){
-                fprintf(outfile,
-                "  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
-                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-                fprintf(outfile,
-                "  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
-                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-            }
-        }
-    } else {
-        fprintf(outfile,
-                        "  Insufficient memory for in-core PK implementation.\n");
-        fprintf(outfile,
-                        "  Would need %lu elements of double memory. (%5f MiB)\n",
-                        (unsigned long)pk_size_*2, pk_size_ * 8.0 / 1048576.0 * 2.0);
-        fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-        scf_type_ == "OUT_OF_CORE";
-    }
-}
-#endif
 void UHF::form_initialF()
 {
     Fa_->copy(H_);
@@ -475,32 +293,30 @@ void UHF::form_initialF()
     // Fa_->transform(Shalf_);
     // Fb_->transform(Shalf_);
 
-#ifdef _DEBUG
     if (debug_) {
         fprintf(outfile, "Initial Fock alpha matrix:\n");
         Fa_->print(outfile);
         fprintf(outfile, "Initial Fock beta matrix:\n");
         Fb_->print(outfile);
     }
-#endif
 }
 
-void UHF::form_F() {
+void UHF::form_F()
+{
     Fa_->copy(H_);
     Fa_->add(Ga_);
 
     Fb_->copy(H_);
     Fb_->add(Gb_);
 
-        H_->print();
-        Fa_->print(outfile);
-        Fb_->print(outfile);
-#ifdef _DEBUG
+    H_->print();
+    Fa_->print(outfile);
+    Fb_->print(outfile);
+
     if (debug_) {
         Fa_->print(outfile);
         Fb_->print(outfile);
     }
-#endif
 }
 
 void UHF::form_C()
@@ -510,22 +326,17 @@ void UHF::form_C()
     Fa_->transform(Shalf_);
     Fa_->diagonalize(eigvec, epsilon_a_);
 
-    // fprintf(outfile, "Fa eigenvectors/values:\n");
-    // eigvec->eivprint(eigval);
     Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
     Fb_->transform(Shalf_);
     Fb_->diagonalize(eigvec, epsilon_b_);
-    // fprintf(outfile, "Fb eigenvectors/values:\n");
-    // eigvec->eivprint(eigval);
+
     Cb_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
 
-#ifdef _DEBUG
     if (debug_) {
         Ca_->print(outfile);
         Cb_->print(outfile);
     }
-#endif
 }
 
 void UHF::form_D()
@@ -535,7 +346,6 @@ void UHF::form_D()
     int nirreps = Da_->nirrep();
     double val;
     for (h=0; h<nirreps; ++h) {
-    // fprintf(outfile, "irrep %d: nalpha = %d nbeta = %d\n", h, nalphapi_[h], nbetapi_[h]);
         for (i=0; i<opi[h]; ++i) {
             for (j=0; j<opi[h]; ++j) {
                 val = 0.0;
@@ -556,12 +366,10 @@ void UHF::form_D()
     Dt_->copy(Da_);
     Dt_->add(Db_);
 
-#ifdef _DEBUG
     if (debug_) {
         Da_->print(outfile);
         Db_->print(outfile);
     }
-#endif
 }
 
 // TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
@@ -581,249 +389,6 @@ double UHF::compute_E()
     return Etotal;
 }
 
-#if 0
-void UHF::form_PK()
-{
-    // struct iwlbuf ERIIN;
-    int ilsti, nbuf;
-    int i, j, k, l;
-    int ii, jj, kk, ll;
-    int is, js, ks, ls;
-    int fi;
-    size_t bra, ket, braket=0;
-    int idx;
-    int counter = 0;
-    double value;
-
-    // PK is zeroed out here, not during allocation
-    // to prevent issues with multiple SCF calls
-    memset(p_jk_, 0, pk_size_*sizeof(double));
-    memset(p_k_, 0, pk_size_*sizeof(double));
-
-    if(print_ > 2){
-        fprintf(outfile, "  Forming PJ and PK matrices.\n");
-        fflush(outfile);
-    }
-
-    IWL ERIIN(psio_.get(), PSIF_SO_TEI, 0.0, 1, 1);
-
-    do {
-        ilsti = ERIIN.last_buffer();
-        nbuf  = ERIIN.buffer_count();
-
-        fi = 0;
-        for (idx=0; idx<nbuf; ++idx) {
-            if (ERIIN.labels()[fi] >= 0) {
-                i = ERIIN.labels()[fi];
-            }
-            else {
-                i = -ERIIN.labels()[fi];
-            }
-            i = ERIIN.labels()[fi] >= 0 ? ERIIN.labels()[fi] : -ERIIN.labels()[fi];
-            j = ERIIN.labels()[fi+1];
-            k = ERIIN.labels()[fi+2];
-            l = ERIIN.labels()[fi+3];
-            value = ERIIN.values()[idx];
-            fi += 4;
-
-            // Get the symmetries
-            is = so2symblk_[i];
-            js = so2symblk_[j];
-            ks = so2symblk_[k];
-            ls = so2symblk_[l];
-
-            // Get the offset of the SO index in its symblock
-            ii = so2index_[i];
-            jj = so2index_[j];
-            kk = so2index_[k];
-            ll = so2index_[l];
-
-            // J
-            if ((is == js) && (ks == ls)) {
-                bra = INDEX2(ii, jj) + pk_symoffset_[is];
-                ket = INDEX2(kk, ll) + pk_symoffset_[ks];
-                // pk_symoffset_ corrects for the symmetry offset in the _pk vector
-                braket = INDEX2(bra, ket);
-                p_jk_[braket] += value;
-                // K/2 (2nd sort)
-                if ((ii != jj) && (kk != ll)) {
-                    if ((is == ls) && (js == ks)) {
-                        bra = INDEX2(ii, ll) + pk_symoffset_[is];
-                        ket = INDEX2(jj, kk) + pk_symoffset_[js];
-                        braket = INDEX2(bra, ket);
-                        if ((ii == ll) || (jj == kk)) {
-                            p_jk_[braket] -= 0.5 * value;
-                            p_k_[braket]  -= 0.5 * value;
-                        }
-                        else {
-                            p_jk_[braket] -= 0.25 * value;
-                            p_k_[braket]  -= 0.25 * value;
-                        }
-                    }
-                }
-            }
-
-            // K/2 (1st sort)
-            if ((is == ks) && (js == ls)) {
-                bra = INDEX2(ii, kk) + pk_symoffset_[is];
-                ket = INDEX2(jj, ll) + pk_symoffset_[js];
-                braket = INDEX2(bra, ket);
-                if ((ii == kk) || (jj == ll)) {
-                    p_jk_[braket] -= 0.5 * value;
-                    p_k_[braket]  -= 0.5 * value;
-                }
-                else {
-                    p_jk_[braket] -= 0.25 * value;
-                    p_k_[braket]  -= 0.25 * value;
-                }
-            }
-            counter++;
-        }
-        if (!ilsti)
-            ERIIN.fetch();
-    } while (!ilsti);
-
-    // Going out of scope will close the buffer
-    // iwl_buf_close(&ERIIN, 1);
-
-    // After stage two is complete, the elements of P must be halved for the case IJ=KL.
-    for (size_t ij=0; ij < pk_pairs_; ++ij) {
-        p_jk_[INDEX2(ij,ij)] *= 0.5;
-        p_k_[INDEX2(ij,ij)] *= 0.5;
-    }
-
-    if(print_ > 2) fprintf(outfile, "  Processed %d two-electron integrals.\n", counter);
-    #ifdef _DEBUG
-    if (debug_) {
-        fprintf(outfile, "p_jk_:\n");
-        print_array(p_jk_, pk_pairs_, outfile);
-        fprintf(outfile, "p_k_:\n");
-        print_array(p_k_, pk_pairs_, outfile);
-    }
-    #endif
-}
-
-void UHF::form_G_from_PK()
-{
-    int nirreps = factory_->nirrep();
-    int *opi = factory_->rowspi();
-    size_t ij;
-    double *Da_vector = new double[pk_pairs_];
-    double *Db_vector = new double[pk_pairs_];
-    double *Ga_vector = new double[pk_pairs_];
-    double *Gb_vector = new double[pk_pairs_];
-
-    Ga_->zero();
-    Gb_->zero();
-
-    memset(Da_vector, 0, sizeof(double) * pk_pairs_);
-    memset(Db_vector, 0, sizeof(double) * pk_pairs_);
-    memset(Ga_vector, 0, sizeof(double) * pk_pairs_);
-    memset(Gb_vector, 0, sizeof(double) * pk_pairs_);
-
-    ij=0;
-    for (int h=0; h<nirreps; ++h) {
-        for (int p=0; p<opi[h]; ++p) {
-            for (int q=0; q<=p; ++q) {
-                if (p != q) {
-                    Da_vector[ij] = 2.0 * Da_->get(h, p, q);
-                    Db_vector[ij] = 2.0 * Db_->get(h, p, q);
-                } else {
-                    Da_vector[ij] = Da_->get(h, p, q);
-                    Db_vector[ij] = Db_->get(h, p, q);
-                }
-                ij++;
-            }
-        }
-    }
-
-#ifdef _DEBUG
-    if (debug_) {
-            fprintf(outfile, "PK: ij = %lu\n", (unsigned long)ij);
-            fflush(outfile);
-            fprintf(outfile, "PK: Da matrix:\n");
-            Da_->print(outfile);
-            fprintf(outfile, "PK: Da vector (appears to be OK):\n");
-            for (ij=0; ij<pk_pairs_; ++ij)
-                    fprintf(outfile, "PK: Da vector [%lu] = %20.14f\n", (unsigned long)ij, Da_vector[ij]);
-            fprintf(outfile, "PK: Db matrix:\n");
-            Db_->print(outfile);
-            fprintf(outfile, "PK: Db vector (appears to be OK):\n");
-            for (ij=0; ij<pk_pairs_; ++ij)
-                    fprintf(outfile, "PK: Db vector [%lu] = %20.14f\n", (unsigned long)ij, Db_vector[ij]);
-    }
-#endif
-
-    /*
-     * This code goes through the densities (Da_ and Db_), J, and K to form
-     * two G matrices. One G matrix is for Fa_ and the other for Fb_.
-     * See derivation notebook for equations.
-     */
-    double Ga_pq, Da_pq, Fa_pq, Va_pq;
-    double Gb_pq, Db_pq, Fb_pq, Vb_pq;
-    double* Da_rs;
-    double* Ga_rs;
-    double* Db_rs;
-    double* Gb_rs;
-    int pq, rs;
-    double* JK_block = p_jk_;
-    double* K_block = p_k_;
-    int ts_pairs = pk_pairs_;
-    for (pq = 0; pq < ts_pairs; ++pq) {
-        Ga_pq = 0.0;
-        Da_pq = Da_vector[pq];
-        Da_rs = &Da_vector[0];
-        Ga_rs = &Ga_vector[0];
-        Gb_pq = 0.0;
-        Db_pq = Db_vector[pq];
-        Db_rs = &Db_vector[0];
-        Gb_rs = &Gb_vector[0];
-        for (rs = 0; rs <= pq; ++rs) {
-            // D_{rs}^{c} * PK_{pqrs}         Also found in RHF
-            // Doing F_mn_a about to add the K term
-            Ga_pq  += (*JK_block + *K_block) * (*Da_rs) + (*JK_block - *K_block) * (*Db_rs);
-            *Ga_rs += (*JK_block + *K_block) * Da_pq    + (*JK_block - *K_block) * Db_pq;
-
-            Gb_pq  += (*JK_block + *K_block) * (*Db_rs) + (*JK_block - *K_block) * (*Da_rs);
-            *Gb_rs += (*JK_block + *K_block) * Db_pq    + (*JK_block - *K_block) * Da_pq;
-            ++Da_rs;
-            ++Ga_rs;
-            ++Db_rs;
-            ++Gb_rs;
-            ++JK_block;
-            ++K_block;
-        }
-        Ga_vector[pq] += Ga_pq;
-        Gb_vector[pq] += Gb_pq;
-    }
-
-    // Convert G to a matrix
-    ij = 0;
-    for (int h = 0; h < nirreps; ++h) {
-        for (int p = 0; p < opi[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                Ga_->set(h, p, q, Ga_vector[ij]);
-                Ga_->set(h, q, p, Ga_vector[ij]);
-                Gb_->set(h, p, q, Gb_vector[ij]);
-                Gb_->set(h, q, p, Gb_vector[ij]);
-                ij++;
-            }
-        }
-    }
-
-#ifdef _DEBUG
-    if (debug_) {
-            Ga_->print(outfile);
-            Gb_->print(outfile);
-    }
-#endif
-
-    delete[](Da_vector);
-    delete[](Db_vector);
-    delete[](Ga_vector);
-    delete[](Gb_vector);
-}
-#endif
 void UHF::save_fock()
 {
     initialized_diis_manager_ = false;
@@ -837,9 +402,6 @@ void UHF::save_fock()
                                        DIISEntry::Matrix, Fb_.get());
         initialized_diis_manager_ = true;
     }
-
-    // Save the current Fock matrix
-//    diis_F_[current_diis_fock_]->copy(F_);
 
     // Determine error matrix for this Fock
     SharedMatrix FaDaS(factory_->create_matrix()), DaS(factory_->create_matrix());
