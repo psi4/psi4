@@ -116,15 +116,13 @@ void MOLECULE::project_f_and_H(void) {
   opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
   free_matrix(B);
 
-  // leave 1's on diagonal for EFP coordinates
-  int I, i, j;
 #if defined (OPTKING_PACKAGE_QCHEM)
-  for (I=0; I<efp_fragments.size(); ++I) {
-    j = g_efp_fragment_intco_offset(I);
-    for (i=0; i<efp_fragments[i]->g_nintco(); ++i)
-      G[j+i][j+i] = 1.0;
-  }
+  // Put 1's on diagonal for EFP coordinates
+  for (int I=0; I<efp_fragments.size(); ++I)
+    for (int i=0; i<efp_fragments[i]->g_nintco(); ++i)
+      G[g_efp_fragment_intco_offset(I) + i][g_efp_fragment_intco_offset(I) + i] = 1.0;
 #endif
+
   // compute P = G G^-1
   double **G_inv = symm_matrix_inv(G, Nintco, 1);
   double **P = init_matrix(Nintco, Nintco);
@@ -151,8 +149,8 @@ void MOLECULE::project_f_and_H(void) {
   opt_matrix_mult(T3, 0,  T, 0, T2, 0, Nintco, Nintco, Nintco, 0);
   opt_matrix_mult( C, 0, T2, 0, T3, 0, Nintco, Nintco, Nintco, 0);
   opt_matrix_mult( P, 0, T3, 0, T2, 0, Nintco, Nintco, Nintco, 0);
-  for (i=0; i<Nintco; ++i)
-    for (j=0; j<Nintco; ++j)
+  for (int i=0; i<Nintco; ++i)
+    for (int j=0; j<Nintco; ++j)
       P[i][j] -= T2[i][j];
   free_matrix(T);
   free_matrix(T2);
@@ -430,7 +428,7 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
     }
   }
 
-  if (is_interfragment) {  // inntco_index not yet found
+  if (is_interfragment) {  // intco_index not yet found
     for (f=0; f<interfragments.size(); ++f) {
       for (int i=0; i<interfragments[f]->g_nintco(); ++i) {
         if (cnt_intcos++ == intco_index) {
@@ -556,16 +554,16 @@ double ** MOLECULE::compute_constraints(void) {
 }
 
 #if defined (OPTKING_PACKAGE_QCHEM)
-// add dummy efp fragments - this will only work (maybe:) for QChem
+// Add dummy EFP fragment which contains no atoms.  Read in the energy
+// and the forces from QChem.  This will only work (maybe:) for QChem
 void MOLECULE::add_efp_fragments(void) {
 
   // get number of EFP fragments
   int num_efp_frags = ::EFP::GetInstance()->NFragments();
+  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
 
   // get energy
   energy = ::EFP::GetInstance()->GetEnergy();
-
-  fprintf(outfile,"\tAdding %d EFP fragments.\n", num_efp_frags);
 
   EFP_FRAG *one_frag;
 
@@ -581,12 +579,15 @@ void MOLECULE::add_efp_fragments(void) {
     one_frag->set_forces(g);
     free_array(g);
 
-    // values must be set after opt_data is read
+    // See note below on EFP values.
 
     efp_fragments.push_back(one_frag);
   }
 }
 
+// The values of the EFP coordinates will be taken to be the total change
+// since the beginning of the optimization.  These values are determined
+// from the data in opt_data after that data is read.
 void MOLECULE::update_efp_values(void) {
   for (int i=0; i<efp_fragments.size(); ++i) {
     double *vals = init_array(6);

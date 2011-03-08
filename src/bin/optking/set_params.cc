@@ -29,10 +29,6 @@ void set_params(void) {
 // Which RFO root to follow; 0 indicates minimum; {integer}
   Opt_params.rfo_root = 0;
 
-// For RFO step, eigenvectors of augmented Hessian are divided by the last
-// element unless it is smaller than this value {double}
-  Opt_params.rfo_normalization_min = 1.0e-8;
-
 // When determining connectivity, a bond is assigned if interatomic distance
 // is less than (this number) * sum of covalent radii {double}
   Opt_params.scale_connectivity = 1.3;
@@ -44,7 +40,7 @@ void set_params(void) {
 
 // whether to use fixed linear combinations of atoms as reference points for
 //interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES}
-  Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES ;
+  Opt_params.interfragment_mode = OPT_PARAMS::FIXED ;
 
 // Whether to only generate the internal coordinates and then stop {true, false}
   Opt_params.generate_intcos_only;
@@ -130,6 +126,10 @@ void set_params(void) {
   i = rem_read(REM_GEOM_OPT2_FRAGMENT_MODE);
   if (i == 0)      Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
   else if (i == 1) Opt_params.fragment_mode = OPT_PARAMS::MULTI;
+
+  i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_MODE);
+  if (i == 0)      Opt_params.interfragment_mode = OPT_PARAMS::FIXED;
+  else if (i == 1) Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
 // only generate intcos
   Opt_params.generate_intcos_only = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
@@ -222,7 +222,7 @@ void set_params(void) {
 
 // torsional angles will not be computed if the contained bond angles are within
 // this fraction of pi from 0 or from pi
-  Opt_params.tors_angle_lim = 0.01;   
+  Opt_params.tors_angle_lim = 0.005;
 
 // only used for determining which atoms in a fragment are acceptable for use
 // as reference atoms.  We avoid collinear sets.

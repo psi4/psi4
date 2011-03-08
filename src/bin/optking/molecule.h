@@ -17,7 +17,8 @@ class MOLECULE {
   vector<FRAG *> fragments;           // fragments with intrafragment coordinates
   vector<INTERFRAG *> interfragments; // interfragment coordinates
 #if defined(OPTKING_PACKAGE_QCHEM)
-  vector<EFP_FRAG *> efp_fragments;   // EFP fixed-body 'dummy' (for now) fragment
+  vector<EFP_FRAG *> efp_fragments;   // EFP fixed-body fragment - does not actually
+                                      // store atoms (for now at least)
 #endif
   double energy;
 
@@ -26,7 +27,6 @@ class MOLECULE {
   MOLECULE(int num_atoms); // allocate molecule with one fragment of this size
 
   ~MOLECULE() {
-    //printf("Destructing molecule\n");
     for (int i=0; i<fragments.size(); ++i)
       delete fragments[i];
     fragments.clear();
@@ -47,18 +47,19 @@ class MOLECULE {
   void add_interfragment(void);
 
   int g_nfragment(void) const { return fragments.size(); };
+
 #if defined(OPTKING_PACKAGE_QCHEM)
   int g_nefp_fragment(void) const { return efp_fragments.size(); };
 #endif
 
-  int g_natom(void) const {
+  int g_natom(void) const { // excludes atoms in efp fragments
     int n = 0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_natom();
     return n;
   }
 
-  int g_nintco(void) const { // excludes intcos for which there is no B-matrix (EFP fragments)
+  int g_nintco(void) const {
     int n=0;
     for (int f=0; f<fragments.size(); ++f)
       n += fragments[f]->g_nintco();
@@ -102,23 +103,26 @@ class MOLECULE {
     return n;
   }
 
-  // given fragment tells which internal coordinate is first one for that fragment
+  // given fragment index, returns the absolute index
+  // for the first internal coordinate on that fragment
   int g_intco_offset(int index) const {
     int n = 0;
-    for (int f=1; f<=index; ++f)
-      n += fragments[f-1]->g_nintco();
+    for (int f=0; f<index; ++f)
+      n += fragments[f]->g_nintco();
     return n;
   }
 
-  // given interfragment index tells which internal coordinate is first one for that set
+  // given interfragment index, returns the absolute index for the first 
+  // internal coordinate of that interfragment set
   int g_interfragment_intco_offset(int index) const {
     int n = g_nintco_intrafragment();
-    for (int f=1; f<=index; ++f)
-      n += interfragments[f-1]->g_nintco();
+    for (int f=0; f<index; ++f)
+      n += interfragments[f]->g_nintco();
     return n;
   }
 
-  // given efp_fragment index tells which internal coordinate is first one for that set
+  // given efp_fragment index, returns the absolute index for the first
+  // internal coordinate of that efp set
 #if defined (OPTKING_PACKAGE_QCHEM)
   int g_efp_fragment_intco_offset(int index) const {
     int n = g_nintco_intrafragment() + g_nintco_interfragment();

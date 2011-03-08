@@ -1,3 +1,6 @@
+** These very incomplete developer notes will be superseded by notes on the QChem wiki website
+** -RAK, Feb. 2011 
+
 *********************
 Package specific info 
 *********************

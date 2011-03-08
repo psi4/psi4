@@ -49,5 +49,31 @@ namespace opt {
   EXTERN OPT_DATA *p_Opt_data;
 }
 
+namespace opt {
+
+class INTCO_EXCEPT {
+  private:
+   char * message;
+   bool try_other_intcos;
+   
+  public:
+    INTCO_EXCEPT(char * s) {
+      message = s;
+    }
+
+    INTCO_EXCEPT(char * m, bool t) {
+      message = m;
+      try_other_intcos = t;
+    }
+
+    ~INTCO_EXCEPT() {};
+
+    bool try_again() { return try_other_intcos; }
+    char *g_message(void) { return message; }
+
+};
+
+}
+
 #endif
 

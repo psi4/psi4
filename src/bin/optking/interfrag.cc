@@ -167,10 +167,10 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
 
   if (Opt_params.interfragment_distance_inverse) {
     one_stre->make_inverse_stre(); 
-//printf("Using interfragment 1/R distance coordinate\n");
+    fprintf(outfile,"Using interfragment 1/R distance coordinate.\n");
   }
   if (one_stre->is_hbond())
-//printf("Detected H-bonding interfragment coordinate\n");
+    fprintf(outfile,"Detected H-bonding interfragment coordinate.\n");
 
   if (one_stre  != NULL) inter_frag->intcos.push_back(one_stre);
   if (one_bend  != NULL) inter_frag->intcos.push_back(one_bend);

@@ -40,6 +40,8 @@ namespace opt {
   void print_end(void);   // print footer
   void set_params(void);      // set optimization parameters
   void init_ioff(void);
+  static bool already_tried_other_intcos = false;
+  static bool override_fragment_mode = false; // to override MULTI setting by exception algorithm
 
 #if defined(OPTKING_PACKAGE_PSI)
 OptReturnType optking(psi::Options & options) {
@@ -60,6 +62,8 @@ OptReturnType optking(void) {
   try {
 
   set_params(); // set optimization parameters
+  if (override_fragment_mode && Opt_params.fragment_mode == OPT_PARAMS::MULTI)
+    Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
 
   // try to open old internal coordinates
   std::ifstream if_intco(FILENAME_INTCO_DAT, ios_base::in);
@@ -89,8 +93,6 @@ OptReturnType optking(void) {
 
     // read number of atoms ; make one fragment of that size ;
     mol1 = new MOLECULE( read_natoms() );
-
-fprintf(outfile,"read_natoms() %d\n", read_natoms()); fflush(outfile);
 
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
@@ -167,7 +169,8 @@ fprintf(outfile,"read_natoms() %d\n", read_natoms()); fflush(outfile);
     if (Opt_params.read_cartesian_H)
       worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
 
-    if (!worked) fprintf(outfile,"\tUnable to read and transform Hessian.\n");
+    if (worked) fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
+    else fprintf(outfile,"\tUnable to read and transform Hessian.\n");
 
     if ( (!Opt_params.read_cartesian_H) || (!worked) )
       mol1->H_guess(); // empirical model guess Hessian
@@ -237,10 +240,36 @@ fprintf(outfile,"read_natoms() %d\n", read_natoms()); fflush(outfile);
   print_end();
 
   } // end big try
-  catch (const char * str) {
-    fprintf(stderr, "%s\n", str);
-    fprintf(outfile, "%s\n", str);
-    return OptReturnFailure;
+  catch (INTCO_EXCEPT exc) {
+
+    if (exc.try_again() && !already_tried_other_intcos) {
+
+      fprintf(outfile,"\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
+      fprintf(outfile,"\tWill attempt to restart optimization with redefined internal coordinates.\n");
+
+      std::remove(FILENAME_INTCO_DAT); // rm intco definitions
+      opt_io_remove(); // rm optimization data
+
+#if defined(OPTKING_PACKAGE_QCHEM)
+      rem_write(0, REM_GEOM_OPT_CYCLE); // reset iteration counter
+#endif
+      // if multi mode has failed, for now try single mode.
+      if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
+        override_fragment_mode = true;
+
+      already_tried_other_intcos = true;
+      close_output_dat();
+      return OptReturnSuccess;
+    }
+    else {
+      fprintf(stderr, "%s\n", exc.g_message());
+      fprintf(outfile, "%s\n", exc.g_message());
+#if defined (OPTKING_PACKAGE_QCHEM)
+      QCrash(exc.g_message());
+#elif defined (OPTKING_PACKAGE_PSI)
+      abort();
+#endif
+    }
   }
 
   close_output_dat();
