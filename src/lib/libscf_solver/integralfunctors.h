@@ -94,7 +94,7 @@ public:
                 int rsym, int rrel, int ssym, int srel, double value) {
         /* (pq|rs) */
         if(rsym == ssym){
-            J_->add(rsym, rrel, srel, D_->get(psym, prel, qrel) * value);
+            J_->add(rsym, rrel, srel, 2.0 * D_->get(psym, prel, qrel) * value);
         }
         if(qabs >= rabs){
             if(qsym == rsym){
@@ -112,7 +112,7 @@ public:
 
             /* (qp|rs) */
             if(rsym == ssym){
-                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
+                J_->add(rsym, rrel, srel, 2.0 * D_->get(qsym, qrel, prel) * value);
             }
 
             if(pabs >= rabs){
@@ -130,7 +130,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, 2.0 * D_->get(rsym, rrel, srel) * value);
             }
 
             if(sabs >= pabs){
@@ -141,7 +141,7 @@ public:
 
             /* (sr|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
+                J_->add(psym, prel, qrel, 2.0 * D_->get(ssym, srel, rrel) * value);
             }
 
             if(rabs >= pabs){
@@ -172,7 +172,7 @@ public:
             }
             /* (qp|rs) */
             if(rsym == ssym){
-                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
+                J_->add(rsym, rrel, srel, 2.0 * D_->get(qsym, qrel, prel) * value);
             }
             if(pabs >= rabs){
                 if(psym == rsym){
@@ -189,7 +189,7 @@ public:
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
             if(rsym == ssym){
-                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
+                J_->add(rsym, rrel, srel, 2.0 * D_->get(qsym, qrel, prel) * value);
             }
 
             if(pabs >= rabs){
@@ -200,7 +200,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, 2.0 * D_->get(rsym, rrel, srel) * value);
             }
 
             if(sabs >= pabs){
@@ -225,7 +225,7 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, 2.0 * D_->get(rsym, rrel, srel) * value);
             }
 
             if(sabs >= pabs){
@@ -236,7 +236,7 @@ public:
 
             /* (sr|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
+                J_->add(psym, prel, qrel, 2.0 * D_->get(ssym, srel, rrel) * value);
             }
 
             if(rabs >= pabs){
@@ -247,7 +247,7 @@ public:
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, 2.0 * D_->get(rsym, rrel, srel) * value);
             }
 
             if(sabs >= pabs){
@@ -319,7 +319,7 @@ public:
                     int rsym, int rrel, int ssym, int srel, double value) {
         /* (pq|rs) */
         if(rsym == ssym){
-            J_->add(rsym, rrel, srel, Da_->get(psym, prel, qrel) * value);
+            J_->add(rsym, rrel, srel, (Da_->get(psym, prel, qrel) + Db_->get(psym, prel, qrel)) * value);
         }
 
         if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){

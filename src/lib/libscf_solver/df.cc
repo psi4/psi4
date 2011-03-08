@@ -602,12 +602,8 @@ void DFHF::compute_J_core()
 
     shared_ptr<Matrix> Dt(new Matrix("D Total",nbf,nbf)); 
     double** Dtp = Dt->pointer(); 
-    if (restricted_) {
-        Dt->copy(Da_);
-    } else {
-        Dt->copy(Da_);
-        Dt->add(Db_);
-    }  
+    Dt->copy(Da_);
+    Dt->add(Db_);
     double* Dtri = new double[ntri];
     double* Jtri = new double[ntri];
     int* schwarz_funs = schwarz_->get_schwarz_funs();
@@ -694,17 +690,13 @@ void DFHF::form_JK_DF()
 
     // Build D triangular matrix
     double** Dap = Da_->pointer(); 
-    double** Dbp;
-    if (!restricted_)
-        Dbp = Db_->pointer();
+    double** Dbp = restricted_ ? Da_->pointer() : Db_->pointer();
     int* schwarz_funs = schwarz_->get_schwarz_funs();
     for (int munu = 0; munu < ntri; munu++) {
         int mu = schwarz_funs[2*munu];
         int nu = schwarz_funs[2*munu + 1];
         double perm = (mu == nu ? 1.0 : 2.0);
-        Dtri_[munu] = perm * Dap[mu][nu];
-        if (!restricted_)
-            Dtri_[munu] += perm * Dbp[mu][nu];
+        Dtri_[munu] = perm * (Dap[mu][nu] + Dbp[mu][nu]);
     }     
 
     // JK K allocation

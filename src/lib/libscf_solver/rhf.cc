@@ -121,6 +121,7 @@ void RHF::common_init()
 
     fflush(outfile);
     // Allocate memory for PK matrix
+#if CUSTOM_PK_CODE
     if (scf_type_ == "PK") {
         pk_size_ = 0;
         pk_pairs_ = 0;
@@ -141,6 +142,7 @@ void RHF::common_init()
 #endif
         G_vector_ = block_matrix(nthread, pk_pairs_);
     }
+#endif
 }
 void RHF::finalize()
 {
@@ -169,14 +171,15 @@ void RHF::save_density_and_energy()
 
 void RHF::form_G()
 {
+#if CUSTOM_PK_CODE
     if (scf_type_ == "PK"){
         form_G_from_PK();
-    }else {
-        J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-        process_tei<J_K_Functor>(jk_builder);
-        G_->scale(2.0);
-        G_->subtract(K_);
+        return;
     }
+#endif
+    J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
+    process_tei<J_K_Functor>(jk_builder);
+    G_->subtract(K_);
 }
 
 
@@ -543,30 +546,6 @@ bool RHF::test_convergency()
         return false;
 }
 
-void RHF::allocate_PK()
-{
-    // The size of the pk matrix is determined in HF::form_indexing
-    // Allocate memory for the PK matrix (using a vector)
-    if (pk_size_ < (memory_ / sizeof(double))) {
-        pk_ = new double[pk_size_];
-
-        if (pk_ == NULL) {
-            fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
-            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-            scf_type_ = "OUT_OF_CORE";
-        } else {
-             // Zero out PK
-            memset(pk_, 0, pk_size_*sizeof(double));
-             fprintf(outfile, "  Allocated %lu elements (%lu pairs) for PK. (%5.2f MiB)\n\n", (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
-        }
-    }
-    else {
-        fprintf(outfile, "  Insufficient memory for in-core PK implementation.\n");
-        fprintf(outfile, "  Would need %lu elements of double memory. (%5f MiB)\n", (unsigned long)pk_size_, pk_size_ * sizeof(double) / 1048576.0);
-        fprintf(outfile, "  Switching to out-of-core algorithm.\n");
-        scf_type_ = "OUT_OF_CORE";
-    }
-}
 
 void RHF::form_F()
 {
@@ -710,6 +689,32 @@ double RHF::compute_E()
     HplusF.add(Fa_);
     double Etotal = nuclearrep_ + D_->vector_dot(HplusF);
     return Etotal;
+}
+
+#if CUSTOM_PK_CODE
+void RHF::allocate_PK()
+{
+    // The size of the pk matrix is determined in HF::form_indexing
+    // Allocate memory for the PK matrix (using a vector)
+    if (pk_size_ < (memory_ / sizeof(double))) {
+        pk_ = new double[pk_size_];
+
+        if (pk_ == NULL) {
+            fprintf(outfile, "  Insufficient free system memory for in-core PK implementation.\n");
+            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+            scf_type_ = "OUT_OF_CORE";
+        } else {
+             // Zero out PK
+            memset(pk_, 0, pk_size_*sizeof(double));
+             fprintf(outfile, "  Allocated %lu elements (%lu pairs) for PK. (%5.2f MiB)\n\n", (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+        }
+    }
+    else {
+        fprintf(outfile, "  Insufficient memory for in-core PK implementation.\n");
+        fprintf(outfile, "  Would need %lu elements of double memory. (%5f MiB)\n", (unsigned long)pk_size_, pk_size_ * sizeof(double) / 1048576.0);
+        fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+        scf_type_ = "OUT_OF_CORE";
+    }
 }
 
 void RHF::form_PK()
@@ -900,6 +905,7 @@ void RHF::form_G_from_PK()
 
     delete[](D_vector);
 }
+#endif
 
 void RHF::form_G_from_direct_integrals_parallel()
 {
