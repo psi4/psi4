@@ -1459,9 +1459,9 @@ void RHF::save_sapt_info()
 
     psio_->close(fileno,1);
 
-    free(sapt_evals);
-    free(sapt_V_ints);
-    free(sapt_S_ints);
+    delete[] sapt_evals;
+    delete[] sapt_V_ints;
+    delete[] sapt_S_ints;
     free_block(sapt_C);
 
     free(body_type);
