@@ -36,7 +36,13 @@ public:
     void finalize();
 private:
     void setup_arrays(bool build_k);
-
+    void process_J_Ka_Kb_block(double *J_block, double *K_block, size_t start, size_t end,
+                               double *&Da_vector, double *&Db_vector, double *&J_vector,
+                               double *&Ka_vector, double *&Kb_vector);
+    void process_J_K_block(double *J_block, double *K_block, size_t start, size_t end,
+                           double *&Da_vector, double *&J_vector, double *&Ka_vector);
+    void process_J_block(double *J_block, size_t start, size_t end, double *&Da_vector,
+                         double *&Db_vector, double *&J_vector);
     /// Whether the PK matrices have been initialized
     bool pk_initialized_;
     /// Whether the K matrices are equivalent or not

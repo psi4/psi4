@@ -13,6 +13,8 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
+#define CUSTOM_PK_CODE 0
+
 using namespace psi;
 
 namespace psi {
@@ -40,7 +42,6 @@ protected:
 
     // Form G routines
     double **G_vector_;                                // Used in form_G_from_PK to handle threading.
-    void form_G_from_PK();                             // In core PK
     void form_G_from_direct_integrals_parallel();      // Computes all ERIs in parallel each iteration
 
     //Some stuff for Ed Hohenstein's SAPT code
@@ -57,13 +58,17 @@ protected:
     //Save Dual Basis
     void save_dual_basis_projection();
 
+#if CUSTOM_PK_CODE
+    void allocate_PK();
     void form_PK();
+    void form_G_from_PK();
+#endif
+
     void form_F();
     virtual void form_G();
 
     void save_fock();
     bool diis();
-    void allocate_PK();
 
     bool test_convergency();
     void save_information();

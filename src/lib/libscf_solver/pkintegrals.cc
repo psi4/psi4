@@ -93,49 +93,11 @@ PKIntegrals::setup(shared_ptr<Matrix> J, shared_ptr<Matrix> Ka, shared_ptr<Matri
     setup_arrays(true);
 }
 
-/**
- * Computes the J matrix, using the P_J matrix.  Assumes that the appropriate setup() method
- * has already been called, to set up the matrices needed.
- */
 void
-PKIntegrals::compute_J()
+PKIntegrals::process_J_Ka_Kb_block(double *J_block, double *K_block, size_t start, size_t end,
+                                   double *&Da_vector,  double *&Db_vector,
+                                   double *&J_vector, double *&Ka_vector, double *&Kb_vector)
 {
-
-}
-
-/**
- * Computes the J and K matrices, using the P_J and P_K matrices.  Assumes that the appropriate
- * setup() method has already been called, to set up the matrices needed.
- */
-void
-PKIntegrals::compute_J_and_K()
-{
-    double *J_vector  = new double[pk_pairs_];
-    double *Ka_vector = new double[pk_pairs_];
-    double *Kb_vector = new double[pk_pairs_];
-    double *Da_vector = new double[pk_pairs_];
-    double *Db_vector = new double[pk_pairs_];
-    // The off-diagonal terms need to be doubled here
-    size_t pqval = 0;
-    for (int h = 0; h < nirreps_; ++h) {
-        for (int p = 0; p < sopi_[h]; ++p) {
-            for (int q = 0; q <= p; ++q) {
-                if (p != q) {
-                    Da_vector[pqval] = 2.0 * Da_->get(h, p, q);
-                    Db_vector[pqval] = 2.0 * Db_->get(h, p, q);
-                }else{
-                    Da_vector[pqval] =  Da_->get(h, p, q);
-                    Db_vector[pqval] =  Db_->get(h, p, q);
-                }
-                ++pqval;
-            }
-        }
-    }
-
-    ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
-    ::memset(Ka_vector, 0, pk_pairs_ * sizeof(double));
-    ::memset(Kb_vector, 0, pk_pairs_ * sizeof(double));
-
     double* Da_rs;
     double* Db_rs;
     double* J_rs;
@@ -146,9 +108,7 @@ PKIntegrals::compute_J_and_K()
     double J_pq;
     double Ka_pq;
     double Kb_pq;
-    double* J_block = p_j_;
-    double* K_block = p_k_;
-    for (size_t pq = 0; pq < pk_pairs_; ++pq) {
+    for (size_t pq = start; pq < end; ++pq) {
         Da_pq = Da_vector[pq];
         Da_rs = Da_vector;
         Db_pq = Db_vector[pq];
@@ -178,14 +138,172 @@ PKIntegrals::compute_J_and_K()
         Ka_vector[pq] += Ka_pq;
         Kb_vector[pq] += Kb_pq;
     }
+}
+
+void
+PKIntegrals::process_J_K_block(double *J_block, double *K_block, size_t start, size_t end,
+                               double *&Da_vector, double *&J_vector,  double *&Ka_vector)
+{
+    double* Da_rs;
+    double* J_rs;
+    double* Ka_rs;
+    double Da_pq;
+    double J_pq;
+    double Ka_pq;
+    for (size_t pq = start; pq < end; ++pq) {
+        Da_pq = Da_vector[pq];
+        Da_rs = Da_vector;
+        J_pq = 0.0;
+        J_rs = J_vector;
+        Ka_pq = 0.0;
+        Ka_rs = Ka_vector;
+        for (size_t rs = 0; rs <= pq; ++rs) {
+            J_pq   += *J_block * (*Da_rs);
+            *J_rs  += *J_block * Da_pq;
+            Ka_pq  += *K_block * (*Da_rs);
+            *Ka_rs += *K_block * Da_pq;
+            ++Da_rs;
+            ++J_rs;
+            ++Ka_rs;
+            ++J_block;
+            ++K_block;
+        }
+        J_vector[pq]  += J_pq;
+        Ka_vector[pq] += Ka_pq;
+    }
+}
+
+void
+PKIntegrals::process_J_block(double *J_block, size_t start, size_t end, double *&Da_vector,
+                             double *&Db_vector, double *&J_vector)
+{
+    double* Da_rs;
+    double* Db_rs;
+    double* J_rs;
+    double Da_pq;
+    double Db_pq;
+    double J_pq;
+    for (size_t pq = start; pq < end; ++pq) {
+        Da_pq = Da_vector[pq];
+        Da_rs = Da_vector;
+        Db_pq = Db_vector[pq];
+        Db_rs = Db_vector;
+        J_pq = 0.0;
+        J_rs = J_vector;
+        for (size_t rs = 0; rs <= pq; ++rs) {
+            J_pq   += *J_block * (*Da_rs + *Db_rs);
+            *J_rs  += *J_block * (Da_pq + Db_pq);
+            ++Da_rs;
+            ++Db_rs;
+            ++J_rs;
+            ++J_block;
+        }
+        J_vector[pq]  += J_pq;
+    }
+}
+
+
+/**
+ * Computes the J matrix, using the P_J matrix.  Assumes that the appropriate setup() method
+ * has already been called, to set up the matrices needed.
+ */
+void
+PKIntegrals::compute_J()
+{
+    double *J_vector;
+    double *Da_vector;
+    double *Db_vector;
+    Da_vector = new double[pk_pairs_];
+    Db_vector = new double[pk_pairs_];
+    J_vector  = new double[pk_pairs_];
+    ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
+
+    // The off-diagonal terms need to be doubled here
+    size_t pqval = 0;
+    for (int h = 0; h < nirreps_; ++h) {
+        for (int p = 0; p < sopi_[h]; ++p) {
+            for (int q = 0; q <= p; ++q) {
+                if (p != q) {
+                    Da_vector[pqval] = 2.0 * Da_->get(h, p, q);
+                    Db_vector[pqval] = 2.0 * Db_->get(h, p, q);
+                }else{
+                    Da_vector[pqval] =  Da_->get(h, p, q);
+                    Db_vector[pqval] =  Db_->get(h, p, q);
+                }
+                ++pqval;
+            }
+        }
+    }
+
+    process_J_block(p_j_, 0, pk_pairs_, Da_vector, Db_vector, J_vector);
 
     pqval = 0;
     for (int h = 0; h < nirreps_; ++h) {
         for (int p = 0; p < sopi_[h]; ++p) {
             for (int q = 0; q <= p; ++q) {
                 J_->set(h, p, q, J_vector[pqval]);
+                ++pqval;
+            }
+        }
+    }
+
+    delete [] J_vector;
+}
+
+
+/**
+ * Computes the J and K matrices, using the P_J and P_K matrices.  Assumes that the appropriate
+ * setup() method has already been called, to set up the matrices needed.
+ */
+void
+PKIntegrals::compute_J_and_K()
+{
+    double *J_vector;
+    double *Ka_vector;
+    double *Kb_vector;
+    double *Da_vector;
+    double *Db_vector;
+    Da_vector = new double[pk_pairs_];
+    Db_vector = new double[pk_pairs_];
+    J_vector = new double[pk_pairs_];
+    ::memset(J_vector,  0, pk_pairs_ * sizeof(double));
+    Ka_vector = new double[pk_pairs_];
+    ::memset(Ka_vector, 0, pk_pairs_ * sizeof(double));
+    if(!restricted_){
+        Kb_vector = new double[pk_pairs_];
+        ::memset(Kb_vector, 0, pk_pairs_ * sizeof(double));
+    }
+
+    // The off-diagonal terms need to be doubled here
+    size_t pqval = 0;
+    for (int h = 0; h < nirreps_; ++h) {
+        for (int p = 0; p < sopi_[h]; ++p) {
+            for (int q = 0; q <= p; ++q) {
+                if (p != q) {
+                    Da_vector[pqval] = 2.0 * Da_->get(h, p, q);
+                    Db_vector[pqval] = 2.0 * Db_->get(h, p, q);
+                }else{
+                    Da_vector[pqval] =  Da_->get(h, p, q);
+                    Db_vector[pqval] =  Db_->get(h, p, q);
+                }
+                ++pqval;
+            }
+        }
+    }
+
+    if(restricted_)
+        process_J_K_block(p_j_, p_k_, 0, pk_pairs_, Da_vector, J_vector, Ka_vector);
+    else
+        process_J_Ka_Kb_block(p_j_, p_k_, 0, pk_pairs_, Da_vector, Db_vector, J_vector, Ka_vector, Kb_vector);
+
+    double prefactor = restricted_ ? 2.0 : 1.0;
+    pqval = 0;
+    for (int h = 0; h < nirreps_; ++h) {
+        for (int p = 0; p < sopi_[h]; ++p) {
+            for (int q = 0; q <= p; ++q) {
+                J_->set(h, p, q, prefactor * J_vector[pqval]);
                 Ka_->set(h, p, q, Ka_vector[pqval]);
-                Kb_->set(h, p, q, Kb_vector[pqval]);
+                if(!restricted_) Kb_->set(h, p, q, Kb_vector[pqval]);
                 ++pqval;
             }
         }
@@ -193,7 +311,8 @@ PKIntegrals::compute_J_and_K()
 
     delete [] J_vector;
     delete [] Ka_vector;
-    delete [] Kb_vector;
+    if(!restricted_)
+        delete [] Kb_vector;
 }
 
 /**
@@ -302,7 +421,7 @@ void PKIntegrals::setup_arrays(bool build_k)
                 braket = INDEX2(bra + pk_symoffset[is], ket + pk_symoffset[ks]);
                 p_j_[braket] += value;
 
-                // K/2 (2nd sort)
+                // K (2nd sort)
                 if (build_k && (ii != jj) && (kk != ll)) {
                     if ((is == ls) && (js == ks)) {
                         bra = INDEX2(ii, ll);
@@ -317,7 +436,7 @@ void PKIntegrals::setup_arrays(bool build_k)
                 }
             }
 
-            // K/2 (1st sort)
+            // K (1st sort)
             if (build_k && (is == ks) && (js == ls)) {
                 bra = INDEX2(ii, kk);
                 ket = INDEX2(jj, ll);
