@@ -92,16 +92,16 @@ void UHF::save_density_and_energy()
 
 void UHF::form_G()
 {
-    if (scf_type_ == "PK"){
-        form_G_from_PK();
-    } else {
+//    if (scf_type_ == "PK"){
+//        form_G_from_PK();
+//    } else {
         // This will build J (stored in G) and K
         J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
         process_tei<J_Ka_Kb_Functor>(jk_builder);
         Gb_->copy(Ga_);
         Ga_->subtract(Ka_);
         Gb_->subtract(Kb_);
-    }
+//    }
 }
 
 #if 0

@@ -107,99 +107,9 @@ void ROHF::form_initial_C()
 
 void ROHF::save_density_and_energy()
 {
-<<<<<<< HEAD
     Dc_old_->copy(Dc_); // save previous density
     Do_old_->copy(Do_); // save previous density
     Eold_ = E_; // save previous energy
-=======
-    bool converged = false, diis_iter=false;
-    int iter = 0;
-
-    // Do the initial work to give the iterations a starting point.
-    form_H();
-
-//    if (scf_type_ == "PK")
-//        form_PK();
-//    else
-        form_G();
-    //else if (scf_type_ == "DF")
-    //    form_B();
-
-    //if (scf_type_ == "PK")
-    //    form_PK();
-
-    form_Shalf();
-    // Check to see if there are MOs already in the checkpoint file.
-    // If so, read them in instead of forming them.
-    if (load_or_compute_initial_C())
-        fprintf(outfile, "  SCF Guess: Read in previous MOs from file32.\n\n");
-    else 
-        fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
-
-    fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
-    do {
-        iter++;
-
-        Dc_old_->copy(Dc_); // save previous density
-        Do_old_->copy(Do_); // save previous density
-        Eold_ = E_; // save previous energy
-
-//        if (scf_type_ == "PK")
-//            form_G_from_PK();
-//        else{
-            form_G();
-//        }
-        //else if (scf_type_ == "DIRECT")
-        //    form_G_from_direct_integrals();
-        //else if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-        //    form_G_from_RI();
-        //else if (scf_type_ == "OUT_OF_CORE")
-        //    form_G();
-
-        form_F(); // Forms: Fc_, Fo_, Feff_
-
-        if (diis_enabled_)
-            save_fock(); // Save the effective Fock for diis
-
-        // Compute total energy
-        E_ = compute_E();
-
-        if (diis_enabled_ == true && iter >= min_diis_vectors_ && iter % 6 == 0) {
-            diis();
-            diis_iter = true;
-        } else {
-            diis_iter = false;
-        }
-        fprintf(outfile,
-                "  @ROHF iteration %3d energy: %20.14f    %20.14f %s\n",
-                iter, E_, E_ - Eold_, diis_iter == false ? " " : "DIIS");
-        fflush(outfile);
-
-        form_C(); 	// Uses Feff_ to form C_.
-        //	find_occupation(_F);
-        form_D();
-
-        converged = test_convergency();
-    } while (!converged && iter < maxiter_);
-    //if (scf_type_ == "DF" || scf_type_ == "CD" || scf_type_ == "1C_CD")
-    //{
-    //    free_B();
-    //}
-
-    // Return the final ROHF energy
-    if (converged) {
-        fprintf(outfile, "\n  Energy converged.\n");
-        fprintf(outfile, "\n  @ROHF Final Energy: %20.14f", E_);
-        save_information();
-    } else {
-        fprintf(outfile, "\n  Failed to converge.\n");
-        E_ = 0.0;
-    }
-    
-    finalize();
-
-    return E_;
->>>>>>> PKIntegrals class is here, and it works for ROHF and UHF.  It will also work for RHF, with very minor tweaks, which are on the way..
 }
 
 void ROHF::save_information()
@@ -671,10 +581,10 @@ void ROHF::form_PK() {
 #endif
 void ROHF::form_G()
 {
-    if (scf_type_ == "PK") {
-        form_G_from_PK();
-        return;
-    }
+//    if (scf_type_ == "PK") {
+//        form_G_from_PK();
+//        return;
+//    }
 
     /*
      * If we define
