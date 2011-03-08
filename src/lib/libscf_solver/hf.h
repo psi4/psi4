@@ -27,7 +27,8 @@ namespace psi {
     namespace scf {
 
 class PseudospectralHF;
-class DFHF;
+class PKIntegrals;
+class DFHF; 
 
 class HF : public Wavefunction {
 protected:
@@ -74,11 +75,6 @@ protected:
     int *so2symblk_;
     int *so2index_;
 
-    /// Pairs needed for PK supermatrix
-    size_t pk_pairs_;
-    size_t pk_size_;
-    int *pk_symoffset_;
-
     /// SCF algorithm type
     std::string scf_type_;
 
@@ -101,6 +97,8 @@ protected:
     shared_ptr<PseudospectralHF> pseudospectral_;
     /// DF stuff
     shared_ptr<DFHF> df_;
+    /// PK Matrix approach
+    shared_ptr<PKIntegrals> pk_integrals_;
 
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
@@ -157,9 +155,6 @@ protected:
     /// Determine how many core and virtual orbitals to freeze
     int *compute_fcpi(int nfzc, SharedVector &eigvalues);
     int *compute_fvpi(int nfvc, SharedVector &eigvalues);
-
-    /// Forms the _so2* mapping arrays and determines _pk_pairs
-    void form_indexing();
 
     /// Prints some opening information
     void print_header();

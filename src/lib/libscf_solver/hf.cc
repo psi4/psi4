@@ -24,6 +24,7 @@
 #include <psifiles.h>
 #include "integralfunctors.h"
 #include "pseudospectral.h"
+#include "pkintegrals.h"
 #include "df.h"
 
 #include <libmints/mints.h>
@@ -40,7 +41,7 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
-      print_(3)
+      print_(1)
 {
     common_init();
 }
@@ -87,7 +88,7 @@ void HF::common_init()
         nmo_ += nmopi_[h]; //For now (form_Shalf may change this, and will record things in the chkpt)
     }
 
-    // Formt the SO lookup information
+    // Form the SO lookup information
     so2symblk_ = new int[nso_];
     so2index_  = new int[nso_];
     size_t so_count = 0;
@@ -261,6 +262,8 @@ void HF::common_init()
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
         shared_ptr<MintsHelper> mints (new MintsHelper());
         mints->integrals();
+        if(scf_type_ == "PK") pk_integrals_ = shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
+                                                                                     nsopi_, so2index_, so2symblk_));
     }else if (scf_type_ == "PSEUDOSPECTRAL"){
         if(nirrep_ > 1)
             throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
@@ -275,17 +278,13 @@ void HF::common_init()
         shared_ptr<TwoBodyAOInt> aoeri = shared_ptr<TwoBodyAOInt>(integral->eri());
         eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
-
-    if (scf_type_ == "PK") form_indexing();
 }
 
 void HF::finalize()
 {
     delete[] so2symblk_;
     delete[] so2index_;
-    if (scf_type_ == "PK") {
-        delete[] pk_symoffset_;
-    }
+    if (scf_type_ == "PK") pk_integrals_.reset();
 
     S_.reset();
     Shalf_.reset();
@@ -385,30 +384,7 @@ void HF::print_header()
     fflush(outfile);
 }
 
-void HF::form_indexing()
-{
-    int h, pk_size;
-    int nirreps = factory_->nirrep();
-    int *opi = factory_->rowspi();
 
-    pk_size = 0; pk_pairs_ = 0;
-    for (h=0; h<nirreps; ++h) {
-        // Add up possible pair combinations that yield A1 symmetry
-        pk_pairs_ += ioff[opi[h]];
-    }
-
-    // Compute the number of pairs in PK
-    pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
-
-    // Compute PK symmetry mapping
-    pk_symoffset_ = new int[nirreps];
-
-    // Compute an offset in the PK matrix telling where a given symmetry block starts.
-    pk_symoffset_[0] = 0;
-    for (h=1; h<nirreps; ++h) {
-        pk_symoffset_[h] = pk_symoffset_[h-1] + ioff[opi[h-1]];
-    }
-}
 
 void HF::form_H()
 {

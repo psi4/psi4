@@ -5,6 +5,7 @@
 #include "libiwl/iwl.hpp"
 #include "libmints/mints.h"
 #include "pseudospectral.h"
+#include "pkintegrals.h"
 #include "df.h"
 
 // We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
@@ -12,7 +13,6 @@
 /*
  * All functors MUST implement the following, or the code won't compile.
  * bool k_required() const - just a boolean stating whether this functor requires K
- *
  * void initialize() this will always be called at the beginning and should do things
  *                   like clear memory, if needed.  It can just do nothing.
  * void finalize()   this will always be called at the end and should do things like
@@ -25,6 +25,7 @@
  *                   with their symmetries, to generate the J and K matrices.
  * void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
  * void operator()(shared_ptr<DSHF> dfHF) which will set up a DFHF object
+ * void operator()(shared_ptr<PKIntegrals> pk_integrals) which is used in the PK algorithms.
  */
 
 
@@ -72,6 +73,10 @@ public:
         pshf->set_restricted(true);
         pshf->set_Da(D_);
         pshf->set_Ka(K_);
+    }
+
+    void operator()(shared_ptr<PKIntegrals> pk_integrals) {
+        pk_integrals->setup(J_, K_, D_, D_);
     }
 
     void operator()(shared_ptr<DFHF> dfhf) {
@@ -261,10 +266,14 @@ public:
 */
 class J_Functor
 {
-    /// The density matrix
-    const shared_ptr<Matrix> D_;
+    /// The alpha density matrix
+    const shared_ptr<Matrix> Da_;
+    /// The beta density matrix
+    const shared_ptr<Matrix> Db_;
     /// The Coulomb matrix
     shared_ptr<Matrix> &J_;
+    /// Whether this is restricted or not
+    bool restricted_;
 
 public:
     bool k_required() const {return false;}
@@ -277,19 +286,32 @@ public:
     }
 
 
-    J_Functor(shared_ptr<Matrix> J, const shared_ptr<Matrix> D)
-        : J_(J), D_(D)
-    { }
+    J_Functor(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da)
+        : J_(J), Da_(Da), Db_(Da)
+    {
+        restricted_ = true;
+    }
+
+    J_Functor(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
+        : J_(J), Da_(Da), Db_(Db)
+    {
+        restricted_ = false;
+    }
 
     void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
         // Pseudospectral is exchange only, this does nothing
     }
 
     void operator()(shared_ptr<DFHF> dfhf) {
-        dfhf->set_restricted(true);
+        dfhf->set_restricted(restricted_);
         dfhf->set_jk(false);
         dfhf->set_J(J_);
-        dfhf->set_Da(D_);
+        dfhf->set_Da(Da_);
+        dfhf->set_Db(Db_);
+    }
+
+    void operator()(shared_ptr<PKIntegrals> pk_integrals) {
+        pk_integrals->setup(J_, Da_, Db_);
     }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
@@ -297,7 +319,7 @@ public:
                     int rsym, int rrel, int ssym, int srel, double value) {
         /* (pq|rs) */
         if(rsym == ssym){
-            J_->add(rsym, rrel, srel, D_->get(psym, prel, qrel) * value);
+            J_->add(rsym, rrel, srel, Da_->get(psym, prel, qrel) * value);
         }
 
         if(pabs!=qabs && rabs!=sabs && (pabs!=rabs || qabs!=sabs)){
@@ -305,19 +327,19 @@ public:
 
             /* (qp|rs) */
             if(rsym == ssym){
-                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
+                J_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
 
             /* (qp|sr) */
 
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
 
             /* (sr|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
+                J_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
             }
 
             /* (rs|qp) */
@@ -328,7 +350,7 @@ public:
 
             /* (qp|rs) */
             if(rsym == ssym){
-                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
+                J_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
 
             /* (qp|sr) */
@@ -336,12 +358,12 @@ public:
         }else if(pabs!=qabs && rabs==sabs){
             /* (qp|rs) */
             if(rsym == ssym){
-                J_->add(rsym, rrel, srel, D_->get(qsym, qrel, prel) * value);
+                J_->add(rsym, rrel, srel, (Da_->get(qsym, qrel, prel) + Db_->get(qsym, qrel, prel)) * value);
             }
 
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             } 
             /* (rs|qp) */
 
@@ -350,17 +372,17 @@ public:
 
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
 
             /* (sr|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(ssym, srel, rrel) * value);
+                J_->add(psym, prel, qrel, (Da_->get(ssym, srel, rrel) + Db_->get(ssym, srel, rrel)) * value);
             }
         }else if(pabs==qabs && rabs==sabs && (pabs!=rabs || qabs!=sabs)){
             /* (rs|pq) */
             if(psym == qsym){
-                J_->add(psym, prel, qrel, D_->get(rsym, rrel, srel) * value);
+                J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
             }
         }
     }
@@ -437,6 +459,10 @@ public:
         dfhf->set_Nb(Nb_);
         dfhf->set_Ka(Ka_);
         dfhf->set_Kb(Kb_);
+    }
+
+    void operator()(shared_ptr<PKIntegrals> pk_integrals) {
+        pk_integrals->setup(J_, Ka_, Kb_, Da_, Db_);
     }
 
 
@@ -676,6 +702,14 @@ void HF::process_tei(JKFunctor & functor)
             df_->form_JK_DF();
         else 
             df_->form_J_DF();
+    }else if(scf_type_ == "PK"){
+        functor.initialize();
+        functor(pk_integrals_);
+        if(functor.k_required())
+            pk_integrals_->compute_J_and_K();
+        else
+            pk_integrals_->compute_J();
+        functor.finalize();
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in HF::process_tei");
     }

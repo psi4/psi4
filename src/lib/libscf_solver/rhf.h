@@ -49,6 +49,11 @@ protected:
     // That point
     void save_sapt_info();
 
+    // PK specific stuff
+    size_t pk_size_;
+    size_t pk_pairs_;
+    int *pk_symoffset_;
+
     //Save Dual Basis
     void save_dual_basis_projection();
 

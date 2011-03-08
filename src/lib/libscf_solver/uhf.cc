@@ -56,24 +56,24 @@ void UHF::common_init()
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = SharedVector(factory_->create_vector());
 
-    p_jk_ = NULL;
-    p_k_  = NULL;
+//    p_jk_ = NULL;
+//    p_k_  = NULL;
 
 //    if(print_ > 1) fprintf(outfile, "  DIIS not implemented for UHF, yet.\n\n");
 
     fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
 
-    if (scf_type_ == "PK")
-        allocate_PK();
+//    if (scf_type_ == "PK")
+//        allocate_PK();
 }
 
 void UHF::finalize()
 {
-    if (p_jk_)
-        delete[](p_jk_);
-    if (p_k_)
-        delete[](p_k_);
+//    if (p_jk_)
+//        delete[](p_jk_);
+//    if (p_k_)
+//        delete[](p_k_);
 
     reference_energy_ = E_;
     Dt_.reset();
@@ -430,6 +430,7 @@ bool UHF::test_convergency()
         return false;
 }
 
+#if 0
 void UHF::allocate_PK() {
     // Figure out how many pair combinations yield A1 symmetry (done in above loop)
     //   num_pair_combinations_of_A1 = ioff[_opi[0]] + ioff[_opi[1]] + ioff[_opi[2]] + ...
@@ -463,7 +464,7 @@ void UHF::allocate_PK() {
         scf_type_ == "OUT_OF_CORE";
     }
 }
-
+#endif
 void UHF::form_initialF()
 {
     Fa_->copy(H_);
@@ -576,6 +577,7 @@ double UHF::compute_E()
     return Etotal;
 }
 
+#if 0
 void UHF::form_PK()
 {
     // struct iwlbuf ERIIN;
@@ -817,7 +819,7 @@ void UHF::form_G_from_PK()
     delete[](Ga_vector);
     delete[](Gb_vector);
 }
-
+#endif
 void UHF::save_fock()
 {
     initialized_diis_manager_ = false;
