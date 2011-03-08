@@ -17,7 +17,31 @@ class PSIO;
 namespace scf {
 
 class DFHF {
-    
+
+    private:
+
+        // JK J buffers
+        // Triangular D matrix
+        double* Dtri_;
+        // Triangular J matrix
+        double* Jtri_;
+        // d vector 
+        double* dQ_;   
+
+        // JK K buffers
+        // Exchange tensor
+        double** Ep_;
+        // QS tensor chunk
+        double*** QS_;
+        // Ctemp matrix
+        double*** Ctemp_; 
+        // Indexing
+        int** m_ij_indices_;
+        // More indexing
+        int** n_indices_;   
+        // Even more indexing
+        int* index_sizes_;
+
     protected:
         // Is this disk or core?
         bool is_disk_;
@@ -65,6 +89,8 @@ class DFHF {
         // memory in doubles
         unsigned long int memory_;
 
+        // Is the object disk initialized?
+        bool is_initialized_disk_;
         // Buffer A for AIO
         shared_ptr<Matrix> QmnA_;
         // Buffer B for AIO
@@ -74,12 +100,6 @@ class DFHF {
         // Current iteration disk order
         bool aio_forward_; 
     
-        // Helper methods
-        void form_J_DF_RHF();
-        void form_J_DF_UHF();
-        void form_JK_DF_RHF();
-        void form_JK_DF_UHF();
-
         // Initialize methods
         void initialize();
         void initialize_JK_disk();
@@ -88,7 +108,7 @@ class DFHF {
         void initialize_J_core();
 
         // Block methods
-        void compute_JK_block(shared_ptr<Matrix> Qmn, int nrows);
+        void compute_JK_block(double** Qmn, int nrows, int max_rows);
         void compute_J_core();
 
     public:
@@ -111,9 +131,10 @@ class DFHF {
         void set_Cb(shared_ptr<Matrix> Cb) {Cb_ = Cb;}
         void set_Na(const int* Na) {nalpha_ = Na;}
         void set_Nb(const int* Nb) {nbeta_ = Nb;}
+        // form J only
+        void form_J_DF();
         // form J and K
-        void form_J_DF() { restricted_ ? form_J_DF_RHF() : form_J_DF_UHF(); }
-        void form_JK_DF() { restricted_ ? form_JK_DF_RHF() : form_JK_DF_UHF(); }
+        void form_JK_DF();
 
 };
 

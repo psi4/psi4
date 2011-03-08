@@ -26,7 +26,6 @@ void export_functional()
         def("get_exact_exchange", &SuperFunctional::getExactExchange).
         def("get_pt2", &SuperFunctional::getPT2).
         def("get_omega", &SuperFunctional::getOmega).
-        def("get_dash_d_weight", &SuperFunctional::getDashDWeight).
         def("get_dash_d", &SuperFunctional::getDashD).
         def("get_npoints", &SuperFunctional::getNPoints).
         def("get_deriv", &SuperFunctional::getDeriv).

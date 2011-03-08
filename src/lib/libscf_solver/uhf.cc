@@ -382,7 +382,7 @@ void UHF::compute_spin_contamination()
 
     for (int h =0; h < S->nirrep(); h++) {
         int nbf = S->colspi()[h];
-        int nmo = nmopi_[h];
+        int nmo = Ca_->colspi()[h];
         int na = nalphapi_[h];
         int nb = nbetapi_[h];
         if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)

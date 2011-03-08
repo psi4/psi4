@@ -42,13 +42,13 @@ std::string Functional::testFunctional(shared_ptr<Properties> props)
     std::stringstream s;
     
     int npoints = props->getTrueSize();
-    const double* rho_a = props->getRhoA();
-    const double* rho_b = props->getRhoB();
-    const double* gamma_aa = props->getGammaAA();
-    const double* gamma_ab = props->getGammaAB();
-    const double* gamma_bb = props->getGammaBB();
-    const double* tau_a = props->getTauA();
-    const double* tau_b = props->getTauB();
+    double* rho_a = props->getRhoA();
+    double* rho_b = props->getRhoB();
+    double* gamma_aa = props->getGammaAA();
+    double* gamma_ab = props->getGammaAB();
+    double* gamma_bb = props->getGammaBB();
+    double* tau_a = props->getTauA();
+    double* tau_b = props->getTauB();
 
     double* functional = getFunctional();
 
@@ -115,7 +115,7 @@ std::string Functional::testFunctional(shared_ptr<Properties> props)
             " gamma_bb= " << gamma_bb[Q] << " tau_a= " << tau_a[Q] << " tau_b= " << tau_b[Q] << endl;             
 
         s.setf(ios::scientific);
-        s.precision(12);
+        s.precision(11);
 
         s << endl;
 
@@ -235,7 +235,7 @@ std::string Functional::testFunctional(shared_ptr<Properties> props)
             " gamma_bb= " << gamma_bb[Q] << " tau_a= " << tau_a[Q] << " tau_b= " << tau_b[Q] << endl;             
 
         s.setf(ios::scientific);
-        s.precision(12);
+        s.precision(11);
 
         s << endl;
 
@@ -385,7 +385,7 @@ void Functional::allocate()
             v_rho_a_tau_b_ = init_array(npoints_);
             v_rho_b_tau_a_ = init_array(npoints_);
             v_rho_b_tau_b_ = init_array(npoints_);
-            v_tau_a_tau_b_ = init_array(npoints_);
+            v_tau_a_tau_a_ = init_array(npoints_);
             v_tau_a_tau_b_ = init_array(npoints_);
             v_tau_b_tau_b_ = init_array(npoints_);
             if (is_gga_) {
@@ -449,7 +449,7 @@ void Functional::release()
             free(v_rho_a_tau_b_);
             free(v_rho_b_tau_a_);
             free(v_rho_b_tau_b_);
-            free(v_tau_a_tau_b_);
+            free(v_tau_a_tau_a_);
             free(v_tau_a_tau_b_);
             free(v_tau_b_tau_b_);
             if (is_gga_) {
