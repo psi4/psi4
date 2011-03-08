@@ -1,7 +1,7 @@
 #ifndef INTEGRALFUNCTORS_H
 #define INTEGRALFUNCTORS_H
 
-#include  "hf.h"
+#include "hf.h"
 #include "libiwl/iwl.hpp"
 #include "libmints/mints.h"
 #include "pseudospectral.h"

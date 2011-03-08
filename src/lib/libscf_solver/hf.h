@@ -17,9 +17,6 @@
 #include <libdiis/diismanager.h>
 #include <psi4-dec.h>
 
-//#ifndef MEMORY_SAFETY_FACTOR
-#define MEMORY_SAFETY_FACTOR 0.20
-
 using namespace psi;
 
 namespace psi {

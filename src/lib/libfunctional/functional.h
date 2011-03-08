@@ -22,6 +22,21 @@ class Properties;
 
 namespace functional {
 
+/// heaviside(x) = 1.0 if x >  0 
+//                 0.0 if x <= 0
+// for matlab peicewise functions                
+inline double heaviside(double x) 
+{
+    return (x > 0.0 ? 1.0 : 0.0);
+}
+/// dirac(...) = 0.0 for all x
+/// this is due to MATLAB's ccode
+inline double dirac(double x, ...)
+{
+    return 0.0;
+}
+double Ei(double x);
+
 class Functional {
     public:
 

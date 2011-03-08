@@ -20,8 +20,7 @@
 #include <libscf_solver/rhf.h>
 #include <libscf_solver/rohf.h>
 #include <libscf_solver/uhf.h>
-#include <libscf_solver/rks.h>
-#include <libscf_solver/uks.h>
+#include <libscf_solver/ks.h>
 
 using namespace std;
 

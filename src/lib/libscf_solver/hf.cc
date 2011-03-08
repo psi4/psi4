@@ -833,15 +833,14 @@ bool HF::load_or_compute_initial_C()
 
 double HF::compute_energy()
 {
-    //fprintf(outfile,"  Print = %d\n",print_);
-    //print_ = options_.get_int("PRINT");
+    std::string reference = options_.get_str("REFERENCE");
+
     bool converged = false, diis_iter = false;
     if (options_.get_str("GUESS") == "SAD")
         iteration_ = -1;
     else
         iteration_ = 0;
 
-    // Do the initial work to get the iterations started.
     form_H(); //Core Hamiltonian
     form_Shalf(); //Shalf Matrix
 
@@ -858,7 +857,7 @@ double HF::compute_energy()
     // Compute an initial energy using H and D
     E_ = compute_initial_E();
     if (print_)
-        fprintf(outfile, "\n  Initial HF energy: %20.14f\n\n", E_);
+        fprintf(outfile, "\n  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
     fflush(outfile);
 
     if (scf_type_ == "PK")
@@ -916,7 +915,7 @@ double HF::compute_energy()
 //            fprintf(outfile,"  After DIIS:\n");
 //            Fa_->print(outfile);
 //        }
-        fprintf(outfile, "   @HF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fprintf(outfile, "   @%s iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
         form_C();
@@ -936,7 +935,7 @@ double HF::compute_energy()
 
     if (converged) {
         fprintf(outfile, "\n  Energy converged.\n");
-        fprintf(outfile, "\n  @HF Final Energy: %20.14f", E_);
+        fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);
         if (perturb_h_) {
             fprintf(outfile, " with %f perturbation", lambda_);
         }

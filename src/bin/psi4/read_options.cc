@@ -123,23 +123,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The DFT grid specification, such as SG1 -*/
     options.add_str("DFT_GRID_NAME","","SG1");
     /*- The number of radial points in the DFT grid -*/
-    options.add_int("N_RADIAL",99);
+    options.add_int("DFT_RADIAL_POINTS",99);
     /*- The number of spherical points in the DFT grid -*/
-    options.add_int("N_SPHERICAL",590);
+    options.add_int("DFT_SPHERICAL_POINTS",590);
     /*- The number of grid points per evaluation block -*/
-    options.add_int("N_BLOCK",5000);
+    options.add_int("DFT_BLOCK_SIZE",5000);
     /*- The spherical quadrature type for DFT, usually Lebedev -*/
-    options.add_str("SPHERICAL_TYPE","LEBEDEV","LEBEDEV");
+    options.add_str("DFT_SPHERICAL_TYPE","LEBEDEV","LEBEDEV EM");
     /*- The radial quadrature type for DFT, Treutler is best -*/
-    options.add_str("RADIAL_TYPE","TREUTLER","TREUTLER BECKE EULER-MACLAURIN");
+    options.add_str("DFT_RADIAL_TYPE","TREUTLER","TREUTLER BECKE EM MURA MULTI_EXP");
+    /*- The fuzzy Voronoi type for DFT, STRATMANN is best -*/
+    options.add_str("DFT_VORONOI_TYPE","STRATMANN","STRATMANN BECKE");
     /*- The nuclear partition type for DFT, Treutler is best  -*/
-    options.add_str("NUCLEAR_TYPE","TREUTLER","NAIVE BECKE TREUTLER");
-    /*- The exchange functional name or alias  -*/
-    options.add_str("X_FUNCTIONAL","");
-    /*- The correlation functional name  -*/
-    options.add_str("C_FUNCTIONAL","");
-    /*- Print Functional Test Data?  -*/
-    options.add_bool("TEST_FUNCTIONAL",false);
+    options.add_str("DFT_NUCLEAR_TYPE","TREUTLER","NAIVE BECKE TREUTLER");
+    /*- The stratmann elliptical-confocal alpha cutoff in [0 1] -*/
+    options.add_double("DFT_STRATMANN_ALPHA",0.64);
+    /*- The box width for box-type point grouping -*/
+    options.add_double("DFT_BOX_DELTA",4.0); 
+    /*- The box overage for box-type point grouping -*/
+    options.add_double("DFT_BOX_OVERAGE",4.0); 
+    /*- The near-field alpha within each cell for Voronoi-type point grouping -*/
+    options.add_double("DFT_VORONOI_A1",1.5); 
+    /*- The far-field alpha within each cell for Voronoi-type point grouping -*/
+    options.add_double("DFT_VORONOI_A2",3.0); 
+    /*- The point grouping scheme for the DFT grid -*/
+    options.add_str("DFT_GROUPING_TYPE","BOXES","BOXES VORONOI"); 
+    /*- The Voronoi coordiante scheme for the DFT grid -*/
+    options.add_str("DFT_COORDINATE_TYPE","ELLIPTICAL","ELLIPTICAL PROJECTION"); 
+    /*- The pruning scheme for the DFT grid -*/
+    options.add_str("DFT_PRUNING_TYPE","NONE","NONE AUTOMATIC"); 
+    /*- The DFT combined functional name (for now) -*/
+    options.add_str("DFT_FUNCTIONAL", "");
+    /*- The DFT basis cutoff -*/
+    options.add_double("DFT_BASIS_EPSILON", 0.0);
 
     /*- Save a grid or not?  -*/
     options.add_bool("SAVE_CARTESIAN_GRID",false);
@@ -158,12 +174,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number MO indices  -*/
     options.add_int("N_CARTESIAN_MOS",0);
 
-
-    /*- Save a grid or not?  -*/
-    options.add_bool("SAVE_NUMERICAL_GRID",false);
-    /*- Grid filename  -*/
-    options.add_str("NUMERICAL_GRID_FILENAME","ngrid.out");
-
     /*- Are going to do SAPT? If so, what part?  -*/
     options.add_str("SAPT","FALSE","FALSE 2-DIMER 2-MONOMER_A 2-MONOMER_B 3-TRIMER 3-DIMER_AB 3-DIMER_BC 3-DIMER_AC 3-MONOMER_A 3-MONOMER_B 3-MONOMER_C");
 
@@ -175,8 +185,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_BASIS_SCF", "");
     /*- The name of the poisson basis to be used in RI computations -*/
     options.add_str("POISSON_BASIS_SCF", "");
-//    options.read_ipv1();
-
 
     /*- Atomic Charge cutoff (for primary domain) -*/
     options.add_double("CHARGE_CUTOFF",0.05);
@@ -268,8 +276,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("D_CONVERGE", 8);
     /*- Minimum absolute TEI value for seive -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Minimum absolute D matrix value for DF-SCF exchange -*/
-    //options.add_double("DENSITY_CUTOFF", 0.0);
     /*- Minimum absolute S matrix value for DF-SCF exchange -*/
     options.add_double("OVERLAP_CUTOFF", 0.0);
     /*- Minimum absolute three-index value for DF-SCF seive -*/

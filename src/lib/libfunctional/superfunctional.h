@@ -51,7 +51,7 @@ class SuperFunctional {
         bool isHybrid() { return  exact_exchange_ > 0.0; }  
         bool isDoubleHybrid() { return pt2_ > 0.0; }  
         bool isRangeCorrected() { return omega_ > 0.0; }  
-        bool isDashD() { return dashD_weight_ > 0.0; }  
+        bool isDashD() { return isDashD_; }  
 
         void setParameter(const std::string & functional, const std::string & param, double val);
         
@@ -66,9 +66,8 @@ class SuperFunctional {
         double getOmega() { return omega_; } 
         void setOmega(double omega) {omega_ = omega; }
 
-        double getDashDWeight() { return dashD_weight_; }
         boost::shared_ptr<Dispersion> getDashD() { return dashD_; }
-        void setDashD(shared_ptr<Dispersion> disp, double weight);    
+        void setDashD(shared_ptr<Dispersion> disp);    
 
         void setNPoints(int npoints) { reallocate(npoints,deriv_); }
         void setDeriv(int deriv) { reallocate(npoints_,deriv); }
@@ -138,7 +137,7 @@ class SuperFunctional {
         double exact_exchange_;
         double pt2_;
         double omega_;
-        double dashD_weight_;
+        bool isDashD_;
         boost::shared_ptr<Dispersion> dashD_;
 
         double* functional_;

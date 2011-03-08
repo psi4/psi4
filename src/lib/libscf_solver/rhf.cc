@@ -171,8 +171,6 @@ void RHF::form_G()
 {
     if (scf_type_ == "PK"){
         form_G_from_PK();
-    //}else if (scf_type_ == "CD"||scf_type_ =="1C_CD" || scf_type_ == "POISSON"){
-        //form_G_from_RI();
     }else {
         J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
         process_tei<J_K_Functor>(jk_builder);
