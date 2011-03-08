@@ -50,6 +50,7 @@ void UHF::common_init()
     Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
     Ga_     = SharedMatrix(factory_->create_matrix("G alpha"));
     Gb_     = SharedMatrix(factory_->create_matrix("G beta"));
+    J_      = SharedMatrix(factory_->create_matrix("J total"));
     Ka_     = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_     = SharedMatrix(factory_->create_matrix("K beta"));
 
@@ -491,6 +492,9 @@ void UHF::form_F() {
     Fb_->copy(H_);
     Fb_->add(Gb_);
 
+        H_->print();
+        Fa_->print(outfile);
+        Fb_->print(outfile);
 #ifdef _DEBUG
     if (debug_) {
         Fa_->print(outfile);

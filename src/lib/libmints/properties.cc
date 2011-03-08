@@ -42,6 +42,171 @@ Properties::~Properties()
     // Free temporary tensor
     free_block(temp_tens_);
 }
+void Properties::computeUKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> Da, shared_ptr<Matrix> Db, shared_ptr<Matrix> Ca, shared_ptr<Matrix> Cb, int* na, int* nb)
+{
+    // All C1 for now (irrep information flow is a problem)
+
+    // Compute significant basis points for this block
+    timer_on("Points");
+    computePoints(grid);
+    timer_off("Points");
+
+    // Get sizes
+    int npoints = grid->getTruePoints();
+    int nbf = basis_->nbf();
+    int nsigf = nsig_functions_;
+
+    // Build the reduced Da_/Db_ (always needed)
+    for (int m = 0; m < nsigf; m++)
+        for (int n = 0; n <= m; n++) {
+            Da_[m][n] = Da->get(0,rel2abs_functions_[m], rel2abs_functions_[n]);
+            Da_[n][m] = Da_[m][n];
+        }
+    for (int m = 0; m < nsigf; m++)
+        for (int n = 0; n <= m; n++) {
+            Db_[m][n] = Db->get(0,rel2abs_functions_[m], rel2abs_functions_[n]);
+            Db_[n][m] = Db_[m][n];
+        }
+
+    if (do_density_) {
+        // rho_a_
+        // rho_a^Q = phi_m^Q * Da_mn * phi_n^Q
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Da_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) { 
+            rho_a_[Q] = C_DDOT(nsigf, &temp_tens_[Q][0], 1, &points_[Q][0], 1);
+            //printf(" Q = %d, rho = %14.10E\n", Q, rho_a_[Q]);
+        }
+
+        // rho_b^Q = phi_m^Q * Db_mn * phi_n^Q
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Db_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) { 
+            rho_b_[Q] = C_DDOT(nsigf, &temp_tens_[Q][0], 1, &points_[Q][0], 1);
+            //printf(" Q = %d, rho = %14.10E\n", Q, rho_b_[Q]);
+        }
+    }
+    if (do_density_gradient_) {
+
+        // rho_a_x_
+        // rho_a_x^Q = Da_mn * (phi_m^Q * phi_x_n^Q + phi_m_x^Q * phi_n^Q) 
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Da_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) 
+            rho_a_x_[Q] = 2.0*C_DDOT(nsigf, &temp_tens_[Q][0], 1, &gradientsX_[Q][0], 1);
+
+        // rho_a_y_
+        // rho_a_y^Q = Da_mn * (phi_m^Q * phi_y_n^Q + phi_m_y^Q * phi_n^Q) 
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Da_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) 
+            rho_a_y_[Q] = 2.0*C_DDOT(nsigf, &temp_tens_[Q][0], 1, &gradientsY_[Q][0], 1);
+
+        // rho_a_z_
+        // rho_a_z^Q = Da_mn * (phi_m^Q * phi_z_n^Q + phi_m_z^Q * phi_n^Q) 
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Da_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) 
+            rho_a_z_[Q] = 2.0*C_DDOT(nsigf, &temp_tens_[Q][0], 1, &gradientsZ_[Q][0], 1);
+
+        // gamma_aa_^Q = | \nabla rho_a | ^ 2
+        for (int Q = 0; Q < npoints; Q++)
+            gamma_aa_[Q] = rho_a_x_[Q]*rho_a_x_[Q] + \
+                           rho_a_y_[Q]*rho_a_y_[Q] + \
+                           rho_a_z_[Q]*rho_a_z_[Q];
+                            
+        // rho_b_x_
+        // rho_b_x^Q = Db_mn * (phi_m^Q * phi_x_n^Q + phi_m_x^Q * phi_n^Q) 
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Db_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) 
+            rho_b_x_[Q] = 2.0*C_DDOT(nsigf, &temp_tens_[Q][0], 1, &gradientsX_[Q][0], 1);
+
+        // rho_b_y_
+        // rho_b_y^Q = Db_mn * (phi_m^Q * phi_y_n^Q + phi_m_y^Q * phi_n^Q) 
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Db_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) 
+            rho_b_y_[Q] = 2.0*C_DDOT(nsigf, &temp_tens_[Q][0], 1, &gradientsY_[Q][0], 1);
+
+        // rho_b_z_
+        // rho_b_z^Q = Db_mn * (phi_m^Q * phi_z_n^Q + phi_m_z^Q * phi_n^Q) 
+        C_DGEMM('N', 'N', npoints, nsigf, nsigf, 1.0, &points_[0][0], nbf, &Db_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++) 
+            rho_b_z_[Q] = 2.0*C_DDOT(nsigf, &temp_tens_[Q][0], 1, &gradientsZ_[Q][0], 1);
+
+        // gamma_bb_^Q = | \nabla rho_a | ^ 2
+        for (int Q = 0; Q < npoints; Q++)
+            gamma_bb_[Q] = rho_b_x_[Q]*rho_b_x_[Q] + \
+                           rho_b_y_[Q]*rho_b_y_[Q] + \
+                           rho_b_z_[Q]*rho_b_z_[Q];
+        
+        // gamma_ab_^Q = rho_a * rho_b                    
+        for (int Q = 0; Q < npoints; Q++)
+            gamma_ab_[Q] = rho_a_x_[Q]*rho_b_x_[Q] + \
+                           rho_a_y_[Q]*rho_b_y_[Q] + \
+                           rho_a_z_[Q]*rho_b_z_[Q];
+                            
+    }
+    if (do_ke_density_) {
+        // Now we need to fill C 
+        for (int m = 0; m < nsigf; m++)
+            for (int i = 0; i < na[0]; i++)
+                Ca_[m][i] = Ca->get(0,rel2abs_functions_[m],i);
+        for (int m = 0; m < nsigf; m++)
+            for (int i = 0; i < nb[0]; i++)
+                Cb_[m][i] = Cb->get(0,rel2abs_functions_[m],i);
+
+        // tau_a_
+        // tau_a^Q = \sum_i(occ) | C_mi \del \phi_m | ^ 2
+        C_DGEMM('N', 'N', npoints, na[0], nsigf, 1.0, &gradientsX_[0][0], nbf, &Ca_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++)
+            tau_a_[Q] = C_DDOT(na[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
+        
+        C_DGEMM('N', 'N', npoints, na[0], nsigf, 1.0, &gradientsY_[0][0], nbf, &Ca_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++)
+            tau_a_[Q] += C_DDOT(na[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
+        
+        C_DGEMM('N', 'N', npoints, na[0], nsigf, 1.0, &gradientsZ_[0][0], nbf, &Ca_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++)
+            tau_a_[Q] += C_DDOT(na[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
+
+        // tau_b_
+        // tau_b^Q = \sum_i(occ) | C_mi \del \phi_m | ^ 2
+        C_DGEMM('N', 'N', npoints, nb[0], nsigf, 1.0, &gradientsX_[0][0], nbf, &Cb_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++)
+            tau_b_[Q] = C_DDOT(nb[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
+        
+        C_DGEMM('N', 'N', npoints, nb[0], nsigf, 1.0, &gradientsY_[0][0], nbf, &Cb_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++)
+            tau_b_[Q] += C_DDOT(nb[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
+        
+        C_DGEMM('N', 'N', npoints, nb[0], nsigf, 1.0, &gradientsZ_[0][0], nbf, &Cb_[0][0], nbf, \
+            0.0, &temp_tens_[0][0], nbf);
+
+        for (int Q = 0; Q < npoints; Q++)
+            tau_b_[Q] += C_DDOT(nb[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
+    }
+}
 void Properties::computeRKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> D, shared_ptr<Matrix> C, int* docc)
 {
     // All C1 for now (irrep information flow is a problem)

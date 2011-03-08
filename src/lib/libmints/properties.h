@@ -59,6 +59,7 @@ class Properties : public BasisPoints
         virtual ~Properties();
 
         void computeRKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> D, shared_ptr<Matrix> C = shared_ptr<Matrix>(), int* docc = NULL );
+        void computeUKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> Da, shared_ptr<Matrix> Db, shared_ptr<Matrix> Ca = shared_ptr<Matrix>(), shared_ptr<Matrix> Cb = shared_ptr<Matrix>(), int* Na = NULL, int* Nb = NULL );
 
         double* getRhoA() const { return rho_a_; }	
         double* getRhoB() const { return rho_b_; }	

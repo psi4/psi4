@@ -36,7 +36,7 @@ protected:
     void form_C();
     void form_D();
     double compute_initial_E();
-    double compute_E();
+    virtual double compute_E();
 
     // Form G routines
     double **G_vector_;                                // Used in form_G_from_PK to handle threading.
@@ -59,7 +59,7 @@ protected:
 
     void form_PK();
     void form_F();
-    void form_G();
+    virtual void form_G();
 
     void save_fock();
     bool diis();
