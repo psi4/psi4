@@ -13,16 +13,16 @@ namespace psi { namespace scf {
 class UHF : public HF {
 protected:
     SharedMatrix Dt_, Dtold_;
-    SharedMatrix Ga_, Gb_, Ka_, Kb_;
+    SharedMatrix Ga_, Gb_, J_, Ka_, Kb_;
 
 //    void allocate_PK();
     void form_initialF();
     void form_C();
     void form_D();
     double compute_initial_E();
-    double compute_E();
+    virtual double compute_E();
 
-    void form_G();
+    virtual void form_G();
 //    void form_G_from_PK();
 //    void form_PK();
     virtual void form_F();
