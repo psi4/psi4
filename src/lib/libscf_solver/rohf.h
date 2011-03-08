@@ -27,8 +27,8 @@ protected:
     SharedMatrix Go_;
 
     int use_out_of_core_;
-    double *pk_;
-    double *k_;             // Used in formation of _Fo
+//    double *pk_;
+//    double *k_;             // Used in formation of _Fo
 
     void form_initialF();
     void form_initial_C();
@@ -38,14 +38,14 @@ protected:
     double compute_E();
 
     void form_G();
-    void form_G_from_PK();
-    void form_PK();
+//    void form_G_from_PK();
+//    void form_PK();
     void form_F();
 
 //    void find_occupation(SharedMatrix);
     void save_fock();
     bool diis();
-    void allocate_PK();
+//    void allocate_PK();
 
     bool test_convergency();
 

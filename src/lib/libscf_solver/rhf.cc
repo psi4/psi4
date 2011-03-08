@@ -122,6 +122,16 @@ void RHF::common_init()
     fflush(outfile);
     // Allocate memory for PK matrix
     if (scf_type_ == "PK") {
+        pk_size_ = 0;
+        pk_pairs_ = 0;
+        pk_symoffset_ = new int[nirrep_];
+        for (int h=0; h<nirrep_; ++h) {
+            pk_symoffset_[h] = pk_pairs_;
+            // Add up possible pair combinations that yield A1 symmetry
+            pk_pairs_ += nsopi_[h]*(nsopi_[h] + 1)/2;
+        }
+        // Compute the number of pairs in PK
+        pk_size_ = INDEX2(pk_pairs_-1, pk_pairs_-1) + 1;
         allocate_PK();
 
         // Allocate memory for threading the PK

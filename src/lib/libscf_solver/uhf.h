@@ -15,10 +15,7 @@ protected:
     SharedMatrix Dt_, Dtold_;
     SharedMatrix Ga_, Gb_, Ka_, Kb_;
 
-    double *p_jk_;
-    double *p_k_;
-
-    void allocate_PK();
+//    void allocate_PK();
     void form_initialF();
     void form_C();
     void form_D();
@@ -26,8 +23,8 @@ protected:
     double compute_E();
 
     void form_G();
-    void form_G_from_PK();
-    void form_PK();
+//    void form_G_from_PK();
+//    void form_PK();
     virtual void form_F();
 
     void save_fock();
