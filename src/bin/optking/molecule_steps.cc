@@ -80,7 +80,7 @@ void MOLECULE::nr_step(void) {
   // do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tDisplacments for frozen fragment %d skipped.\n", f+1);
+      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
@@ -232,7 +232,7 @@ void MOLECULE::rfo_step(void) {
   // do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
-      fprintf(outfile,"\tDisplacments for frozen fragment %d skipped.\n", f+1);
+      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
       continue;
     }
     fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));

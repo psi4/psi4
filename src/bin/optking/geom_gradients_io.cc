@@ -65,13 +65,12 @@ int read_natoms(void) {
 
   // read number of atoms from QChem
   natom = rem_read(REM_NATOMS);
-  fprintf(outfile, "Total number of atoms %d\n", natom);
 
-  // now substract out EFP fragment atoms
+  // now substract out EFP fragment atoms ?
   if (Opt_params.efp_fragments) {
     int n = ::EFP::GetInstance()->GetNumEFPatoms();
     natom -= n;
-    fprintf(outfile, "Number of atoms besides EFP fragments %d\n", natom);
+    fprintf(outfile, "\nNumber of atoms besides EFP fragments %d\n", natom);
   }
 
 #endif
@@ -170,17 +169,15 @@ void MOLECULE::read_geom_grad(void) {
     fprintf(outfile,"read_geom_grad() QNATOMS=%d\n", QNATOMS); 
     //QCrash("Number of atoms read inconsistent with REM variable.");
   }
-
-fprintf(outfile, "QX read with get_carts()\n");
-print_array(outfile, QX, 3*QNATOMS);
+  //fprintf(outfile, "QX read with get_carts()\n");
+  //print_array(outfile, QX, 3*QNATOMS);
 
   double* QGrad = init_array(3*QNATOMS);
   ::FileMan_Open_Read(FILE_NUCLEAR_GRADIENT);
   ::FileMan(FM_READ, FILE_NUCLEAR_GRADIENT, FM_DP, 3*QNATOMS, 0, FM_BEG, QGrad);
   ::FileMan_Close(FILE_NUCLEAR_GRADIENT);
-
-fprintf(outfile, "QGrad read with get_carts()\n");
-print_array(outfile, QGrad, 3*QNATOMS);
+  //fprintf(outfile, "QGrad read with get_carts()\n");
+  //print_array(outfile, QGrad, 3*QNATOMS);
 
 
   int cnt=0;
@@ -226,24 +223,14 @@ void MOLECULE::write_geom(void) {
   free_matrix(geom_2D);
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
+
+  // rotation matrix is already updated by displace()
   double *geom = g_geom_array();
-
-  // NoReor controls re-determination of the standard nuclear orientation
-  // Previously in QChem, redetermination was done for z-mat optimization but was buggy.
-
   if (!Opt_params.efp_fragments_only) {
     int NoReor = rem_read(REM_NO_REORIENT);  // save state
     rem_write(1, REM_NO_REORIENT); // write cartesians ; do NOT reorient
     ::set_carts(geom, true);
     rem_write(NoReor, REM_NO_REORIENT); // replace to original state
-  } else { // just reset fragment parameters
-
-    double *vals;
-    for (int i=0; i<efp_fragments.size(); ++i) {
-      vals = efp_fragments[i]->get_values_pointer();
-      FileMan(FM_WRITE,FILE_EFP_INPUT_DATA,FM_DP,6,i*6,FM_BEG,vals);
-    }
-
   }
 
 #endif

@@ -237,7 +237,7 @@ void MOLECULE::add_interfragment(void) {
       if (ndA == 1 && nA > 1) {
         fprintf(outfile, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
         sprintf(error_msg, "Fragment A has >1 atoms but no non-collinear atom found bonded to %d", A1+1);
-        throw(error_msg);
+        INTCO_EXCEPT(error_msg, true);
       }
   
       // B2 is bonded to B1, but A1-B1-B2 must not be collinear
@@ -255,7 +255,7 @@ void MOLECULE::add_interfragment(void) {
       if (ndB == 1 && nB > 1) {
         fprintf(outfile, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
         sprintf(error_msg, "Fragment B has >1 atoms but no non-collinear atom found bonded to %d", B1+1);
-        throw(error_msg);
+        INTCO_EXCEPT(error_msg,true);
       }
   
       if (ndA == 2) { // we were able to locate a suitable A2

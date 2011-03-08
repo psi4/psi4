@@ -358,6 +358,7 @@ int FRAG::add_tors_by_connectivity(void) {
                             L = l;
 
                             TORS *one_tors = new TORS(I,J,K,L);
+                            if ( !v3d_tors(geom[I], geom[J], geom[K], geom[L], phi) ) continue;
                             if (!present(one_tors)) {
                               intcos.push_back(one_tors);
                               ++nadded;

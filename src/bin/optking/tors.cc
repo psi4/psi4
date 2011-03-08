@@ -15,6 +15,9 @@
 #include "opt_params.h"
 #include <cmath>
 
+#define EXTERN
+#include "globals.h"
+
 namespace opt {
 
 extern OPT_PARAMS Opt_params;
@@ -28,7 +31,7 @@ TORS::TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in) : SIMPLE(tors
   //  A_in, B_in, C_in, D_in, freeze_in);
 
   if ( A_in==B_in || A_in==C_in || A_in==D_in || B_in==C_in || B_in==D_in || C_in==D_in)
-    throw("TORS::TORS() Atoms defining tors are not unique.");
+    throw(INTCO_EXCEPT((char *)"TORS::TORS() Atoms defining tors are not unique.",true));
 
   if (A_in < D_in) {
     s_atom[0] = A_in;
@@ -61,7 +64,7 @@ double TORS::value(GeomType geom) const {
   double tau;
 
   if (! v3d_tors(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], geom[s_atom[3]], tau) )
-    throw("TORS::compute_val: bond angles will not permit torsion computation");
+    throw(INTCO_EXCEPT((char *)"TORS::compute_val: bond angles will not permit torsion computation",true));
 
   // Extend domain of torsion angles by checking past
   // extend domain of torsions so delta(vals) can be calculated

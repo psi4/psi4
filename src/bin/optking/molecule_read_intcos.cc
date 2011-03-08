@@ -133,7 +133,8 @@ int cnt =0;
       if (!line_present) // no more lines
         return true;
     }
-    else if (vline[0] == "I") { // read interfragment definition
+    else if (vline[0] == "I" || vline[0] == "I*") { // read interfragment definition
+      bool frozen_I = has_asterisk(vline[0]);
       if (vline.size() != 3) {
         error << "Format of interfragment line is \"I integer(1st_frag) integer(2nd_frag)\" in line " << line_num << ".\n";
         throw(error.str());
@@ -165,6 +166,9 @@ int cnt =0;
           error << "Indicate with six 1/0's which coordinates are active, error in line " << line_num << ".\n";
           throw(error.str());
         }
+      }
+      if (frozen_I) { // freeze fragment; override other
+        for (int i=0; i<6; ++i) D_frozen[i] = true;
       }
 
       A1.clear(); A2.clear(); A3.clear();

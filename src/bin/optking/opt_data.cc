@@ -89,7 +89,7 @@ bool OPT_DATA::conv_check(void) const {
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
 
   fprintf(outfile, "\t----------------------------------------------------------\n");
-  printf("\tMAX Force %10.1e : Energy Change %10.1e : MAX Displacment %10.1e\n", max_force, DE, max_disp);
+  printf("\tMAX Force %10.1e : Energy Change %10.1e : MAX Displacement %10.1e\n", max_force, DE, max_disp);
 
   if ((max_force < Opt_params.conv_max_force) &&
        ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
@@ -393,7 +393,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   bool data_file_present = opt_io_is_present(); // determine if old data file is present
 
   if (!data_file_present) {
-    fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n");
+    fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n\n");
     iteration = 0;
     consecutive_back_steps = 0;
   }
@@ -456,7 +456,7 @@ void OPT_DATA::write(void) {
 // Report on performance of last step
 // Eventually might have this function return false to reject a step
 bool OPT_DATA::previous_step_report(void) const {
-    fprintf(outfile,"\n\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
+    fprintf(outfile,"\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
   if (steps.size() > 1) {
     fprintf(outfile,"\tEnergy change for the previous step:\n");
     fprintf(outfile,"\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
