@@ -286,20 +286,28 @@ void HF::finalize()
     delete[] so2index_;
     if (scf_type_ == "PK") pk_integrals_.reset();
 
-    S_.reset();
-    Shalf_.reset();
-    Sphalf_.reset();
-    X_.reset();
-    H_.reset();
-
     if (Communicator::world->me() == 0) {
         // Clean up after DIIS
         if(initialized_diis_manager_)
             diis_manager_->delete_diis_file();
         diis_manager_.reset();
         initialized_diis_manager_ = false;
-
     }
+
+    // Figure out how many frozen virtual and frozen core per irrep
+    compute_fcpi();
+    compute_fvpi();
+    reference_energy_ = E_;
+
+    if(Communicator::world->me() == 0)
+        dump_to_checkpoint();
+
+    S_.reset();
+    Shalf_.reset();
+    Sphalf_.reset();
+    X_.reset();
+    H_.reset();
+
     // Close the chkpt
     if(psio_->open_check(PSIF_CHKPT))
         psio_->close(PSIF_CHKPT, 1);
@@ -615,40 +623,36 @@ void HF::form_Shalf()
     }
 }
 
-int *HF::compute_fcpi(int nfzc, SharedVector &eigvalues)
+void HF::compute_fcpi()
 {
-    int *frzcpi = new int[eigvalues->nirrep()];
+    int nfzc = molecule_->nfrozen_core();
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirrep(); ++h) {
-        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues->get(h, i), h));
-        frzcpi[h] = 0;
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+        frzcpi_[h] = 0;
     }
     sort(pairs.begin(),pairs.end());
 
     for (int i=0; i<nfzc; ++i)
-        frzcpi[pairs[i].second]++;
-
-    return frzcpi;
+        frzcpi_[pairs[i].second]++;
 }
 
-int *HF::compute_fvpi(int nfzv, SharedVector &eigvalues)
+void HF::compute_fvpi()
 {
-    int *frzvpi = new int[eigvalues->nirrep()];
+    int nfzv = options_.get_int("FREEZE_VIRT");
     // Print out orbital energies.
     std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<eigvalues->nirrep(); ++h) {
-        for (int i=0; i<eigvalues->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(eigvalues->get(h, i), h));
-        frzvpi[h] = 0;
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+        frzvpi_[h] = 0;
     }
     sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
 
     for (int i=0; i<nfzv; ++i)
-        frzvpi[pairs[i].second]++;
-
-    return frzvpi;
+        frzvpi_[pairs[i].second]++;
 }
 
 
@@ -831,6 +835,72 @@ bool HF::load_or_compute_initial_C()
     return ret;
 }
 
+
+void HF::dump_to_checkpoint()
+{
+    if(!psio_->open_check(PSIF_CHKPT))
+        psio_->open(PSIF_CHKPT, PSIO_OPEN_OLD);
+    chkpt_->wt_nirreps(nirrep_);
+    char **labels = molecule_->irrep_labels();
+    chkpt_->wt_irr_labs(labels);
+    for(int h = 0; h < nirrep_; ++h)
+        delete [] labels[h];
+    delete [] labels;
+    chkpt_->wt_nmo(nmo_);
+    chkpt_->wt_nso(nso_);
+    chkpt_->wt_nao(basisset_->nao());
+    chkpt_->wt_ref(0);
+    chkpt_->wt_etot(E_);
+    chkpt_->wt_escf(E_);
+    chkpt_->wt_eref(E_);
+    chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
+    chkpt_->wt_orbspi(nmopi_);
+    chkpt_->wt_clsdpi(doccpi_);
+    chkpt_->wt_openpi(soccpi_);
+    chkpt_->wt_phase_check(0);
+    chkpt_->wt_sopi(nsopi_);
+    // Figure out frozen core orbitals
+    int nfzc = molecule_->nfrozen_core();
+    int nfzv = options_.get_int("FREEZE_VIRT");
+    chkpt_->wt_nfzc(nfzc);
+    chkpt_->wt_nfzv(nfzv);
+    // These were computed by HF::finalize()
+    chkpt_->wt_frzcpi(frzcpi_);
+    chkpt_->wt_frzvpi(frzvpi_);
+
+    int m = 0;
+    for(int h = 0; h < nirrep_; ++h)
+        if(soccpi_[h]) ++m;
+    chkpt_->wt_iopen(m*(m+1)/2);
+
+    if(options_.get_str("REFERENCE") == "UHF"){
+        double* values = epsilon_a_->to_block_vector();
+        chkpt_->wt_alpha_evals(values);
+        free(values);
+        values = epsilon_b_->to_block_vector();
+        chkpt_->wt_beta_evals(values);
+        free(values);
+        double** vectors = Ca_->to_block_matrix();
+        chkpt_->wt_alpha_scf(vectors);
+        free_block(vectors);
+        vectors = Cb_->to_block_matrix();
+        chkpt_->wt_beta_scf(vectors);
+        free_block(vectors);
+    }else{
+        // All other reference type yield restricted orbitals
+        double* values = epsilon_a_->to_block_vector();
+        chkpt_->wt_evals(values);
+        free(values);
+        double** vectors = Ca_->to_block_matrix();
+        chkpt_->wt_scf(vectors);
+        free_block(vectors);
+        double *ftmp = Fa_->to_lower_triangle();
+        chkpt_->wt_fock(ftmp);
+        delete[] ftmp;
+    }
+    psio_->close(PSIF_CHKPT, 1);
+}
+
 double HF::compute_energy()
 {
     std::string reference = options_.get_str("REFERENCE");
@@ -859,9 +929,6 @@ double HF::compute_energy()
     if (print_)
         fprintf(outfile, "\n  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
     fflush(outfile);
-
-    if (scf_type_ == "PK")
-        form_PK();
 
     fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
     fflush(outfile);
@@ -934,6 +1001,10 @@ double HF::compute_energy()
     } while (!converged && iteration_ < maxiter_ );
 
     if (converged) {
+        // Need to recompute the Fock matrices, as they are modified during the SCF interation
+        // and might need to be dumped to checkpoint later
+        form_F();
+
         fprintf(outfile, "\n  Energy converged.\n");
         fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);
         if (perturb_h_) {

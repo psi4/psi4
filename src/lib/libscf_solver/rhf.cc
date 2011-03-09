@@ -30,6 +30,7 @@
 #include <libmints/basisset_parser.h>
 #include "integralfunctors.h"
 
+#include "rhf.h"
 #include "pairs.h"
 #include "pseudospectral.h"
 #include "df.h"
@@ -108,10 +109,6 @@ void RHF::common_init()
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
 
-    // PK super matrix for fast G
-    pk_ = NULL;
-    G_vector_ = NULL;
-
     if(Communicator::world->me() == 0) {
         //What are we using?
         fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
@@ -121,7 +118,11 @@ void RHF::common_init()
 
     fflush(outfile);
     // Allocate memory for PK matrix
+
 #if CUSTOM_PK_CODE
+    // PK super matrix for fast G
+    pk_ = NULL;
+    G_vector_ = NULL;
     if (scf_type_ == "PK") {
         pk_size_ = 0;
         pk_pairs_ = 0;
@@ -146,10 +147,12 @@ void RHF::common_init()
 }
 void RHF::finalize()
 {
+#if CUSTOM_PK_CODE
     if (pk_)
         delete[] pk_;
     if (G_vector_)
         free_block(G_vector_);
+#endif
 
     Dold_.reset();
     G_.reset();
@@ -353,15 +356,6 @@ void RHF::save_information()
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
 
-    // Stupid hack...
-    if (!psio_->open_check(32))
-        psio_->open(32, PSIO_OPEN_OLD);
-
-    // TODO: Delete this as soon as possible!!!
-    // Can't believe I'm adding this...
-    chkpt_->wt_nirreps(factory_->nirrep());
-    chkpt_->wt_irr_labs(temp2);
-
     fprintf(outfile, "\n  Final occupation vector = (");
     for (int h=0; h<factory_->nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
@@ -416,77 +410,6 @@ void RHF::save_information()
     for (int i=0; i<epsilon_a_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
-
-    int *vec = new int[epsilon_a_->nirrep()];
-    for (int i=0; i<epsilon_a_->nirrep(); ++i)
-        vec[i] = 0;
-
-    reference_energy_ = E_;
-
-    if(Communicator::world->me() == 0) {
-        chkpt_->wt_nmo(nmo_);
-        chkpt_->wt_nso(basisset_->nbf());
-        chkpt_->wt_nao(basisset_->nbf());
-        chkpt_->wt_ref(0);
-        chkpt_->wt_etot(E_);
-        chkpt_->wt_escf(E_);
-        chkpt_->wt_eref(E_);
-        chkpt_->wt_enuc(molecule_->nuclear_repulsion_energy());
-        chkpt_->wt_orbspi(epsilon_a_->dimpi());
-        chkpt_->wt_clsdpi(doccpi_);
-        chkpt_->wt_openpi(vec);
-        chkpt_->wt_phase_check(0);
-        chkpt_->wt_sopi(nsopi_);
-    }
-
-    // Figure out frozen core orbitals
-    //int nfzc = compute_nfzc();
-    //int nfzv = compute_nfzv();
-    int nfzc = molecule_->nfrozen_core();
-    int nfzv = options_.get_int("FREEZE_VIRT");
-    if(Communicator::world->me() == 0) {
-        chkpt_->wt_nfzc(nfzc);
-        chkpt_->wt_nfzv(nfzv);
-    }
-    int* frzcpi = compute_fcpi(nfzc, epsilon_a_);
-    int* frzvpi = compute_fvpi(nfzv, epsilon_a_);
-
-    for (int k = 0; k < nirrep_; k++) {
-        frzcpi_[k] = frzcpi[k];
-        frzvpi_[k] = frzvpi[k];
-    }
-
-    if(Communicator::world->me() == 0) {
-        chkpt_->wt_frzcpi(frzcpi);
-        chkpt_->wt_frzvpi(frzvpi);
-    }
-    delete[](frzcpi);
-    delete[](frzvpi);
-
-    // Save the Fock matrix
-    // Need to recompute the Fock matrix as Fa_ is modified during the SCF interation
-    form_F();
-    double *ftmp = Fa_->to_lower_triangle();
-    if(Communicator::world->me() == 0)
-        chkpt_->wt_fock(ftmp);
-    delete[](ftmp);
-
-    // This code currently only handles RHF
-    if(Communicator::world->me() == 0)
-        chkpt_->wt_iopen(0);
-
-    // Write eigenvectors and eigenvalue to checkpoint
-
-    double* values = epsilon_a_->to_block_vector();
-    if(Communicator::world->me() == 0)
-        chkpt_->wt_evals(values);
-    free(values);
-
-    double** vectors = Ca_->to_block_matrix();
-    if(Communicator::world->me() == 0)
-        chkpt_->wt_scf(vectors);
-    free_block(vectors);
-
 }
 
 void RHF::save_fock()

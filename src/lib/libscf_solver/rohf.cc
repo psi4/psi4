@@ -107,17 +107,6 @@ void ROHF::save_information()
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
 
-    // Stupid hack...
-    if (!psio_->open_check(32))
-        psio_->open(32, PSIO_OPEN_OLD);
-
-    // TODO: Delete this as soon as possible!!!
-    // Can't believe I'm adding this...
-    chkpt_->wt_nirreps(factory_->nirrep());
-    chkpt_->wt_irr_labs(temp2);
-
-    int nso = basisset_->nbf();
-
     fprintf(outfile, "\n  Final DOCC vector = (");
     for (int h=0; h<factory_->nirrep(); ++h) {
         fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
@@ -167,7 +156,7 @@ void ROHF::save_information()
     }
     fprintf(outfile, "\n");
     fprintf(outfile, "\n    Unoccupied orbitals\n      ");
-    for (int i=ndocc+nsocc+1; i<=nso; ++i) {
+    for (int i=ndocc+nsocc+1; i<=nso_; ++i) {
         fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
                 temp2[pairs[i-1].second]);
         if ((i-ndocc-nsocc) % 4 == 0)
@@ -178,47 +167,6 @@ void ROHF::save_information()
     for (int i=0; i<epsilon_a_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
-
-    chkpt_->wt_nso(nso);
-    chkpt_->wt_nmo(nso);
-    chkpt_->wt_nao(nso);
-    chkpt_->wt_ref(2); // ROHF
-    chkpt_->wt_etot(E_);
-    chkpt_->wt_escf(E_);
-    chkpt_->wt_eref(E_);
-    chkpt_->wt_clsdpi(doccpi_);
-    chkpt_->wt_orbspi(epsilon_a_->dimpi());
-    chkpt_->wt_openpi(soccpi_);
-    chkpt_->wt_phase_check(0);
-
-    Feff_->save(psio_, 32);
-
-    // Figure out frozen core orbitals
-    int nfzc = molecule_->nfrozen_core();
-    int nfzv = options_.get_int("FREEZE_VIRT");
-    int *frzcpi = compute_fcpi(nfzc, epsilon_a_);
-    int *frzvpi = compute_fvpi(nfzv, epsilon_a_);
-    chkpt_->wt_frzcpi(frzcpi);
-    chkpt_->wt_frzvpi(frzvpi);
-    delete[](frzcpi);
-    delete[](frzvpi);
-
-    int nopenirreps = 0;
-    for (int i=0; i<epsilon_a_->nirrep(); ++i)
-        if (soccpi_[i])
-            nopenirreps++;
-
-    // This code currently only handles ROHF
-    chkpt_->wt_iopen(nopenirreps * (nopenirreps + 1));
-
-    // Write eigenvectors and eigenvalue to checkpoint
-    double *values = epsilon_a_->to_block_vector();
-    chkpt_->wt_evals(values);
-    free(values);
-    double **vectors = Ca_->to_block_matrix();
-    chkpt_->wt_scf(vectors);
-    free_block(vectors);
-
 }
 
 void ROHF::save_fock()

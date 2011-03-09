@@ -33,7 +33,6 @@ protected:
     SharedMatrix J_;
     SharedMatrix K_;
 
-    double *pk_;
 
     void form_C();
     void form_D();
@@ -50,15 +49,16 @@ protected:
     // That point
     void save_sapt_info();
 
-    // PK specific stuff
-    size_t pk_size_;
-    size_t pk_pairs_;
-    int *pk_symoffset_;
 
     //Save Dual Basis
     void save_dual_basis_projection();
 
+// PK specific stuff
 #if CUSTOM_PK_CODE
+    double *pk_;
+    size_t pk_size_;
+    size_t pk_pairs_;
+    int *pk_symoffset_;
     void allocate_PK();
     void form_PK();
     void form_G_from_PK();
