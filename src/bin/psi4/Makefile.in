@@ -20,7 +20,7 @@ PSILIBS = \
 -lPSI_mints -lPSI_trans -lPSI_dpd -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_qt \
 -lPSI_ciomr -lPSI_options -lPSI_moinfo -lPSI_util \
 -lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel -lboost_python -lboost_regex -lboost_thread \
--lboost_filesystem
+-lboost_filesystem -lboost_system
 
 
 # The psilibs need a little extra handling for plugins on linux

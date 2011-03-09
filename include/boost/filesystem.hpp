@@ -24,6 +24,14 @@
 #   define BOOST_FILESYSTEM_VERSION 3
 # endif
 
+//  As an example program, we don't want to use any deprecated features
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #if BOOST_FILESYSTEM_VERSION == 2
 #  include <boost/filesystem/v2/config.hpp>
 #  include <boost/filesystem/v2/path.hpp>

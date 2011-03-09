@@ -6,24 +6,7 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libboost_regex.a
 
-TRUECXXSRC = \
-c_regex_traits.cc \
-cpp_regex_traits.cc \
-cregex.cc \
-fileiter.cc \
-icu.cc \
-instances.cc \
-posix_api.cc \
-regex.cc \
-regex_debug.cc \
-regex_raw_buffer.cc \
-regex_traits_defaults.cc \
-static_mutex.cc \
-usinstances.cc \
-w32_regex_traits.cc \
-wc_regex_traits.cc \
-wide_posix_api.cc \
-winstances.cc
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 

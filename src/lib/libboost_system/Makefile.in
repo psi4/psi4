@@ -4,7 +4,7 @@ VPATH = @srcdir@
 
 include ../MakeVars
 
-PSITARGET = $(top_objdir)/lib/libboost_filesystem.a
+PSITARGET = $(top_objdir)/lib/libboost_system.a
 
 TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 
@@ -13,8 +13,8 @@ LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 include ../MakeRules
 
 install_inc:: $(DEPENDINCLUDE)
-	$(MKDIRS) $(DESTDIR)$(incdir)/libboost_filesystem
-	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libboost_filesystem
+	$(MKDIRS) $(DESTDIR)$(incdir)/libboost_thread
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libboost_thread
 
 ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
