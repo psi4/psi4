@@ -6,10 +6,7 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libboost_thread.a
 
-TRUECXXSRC = \
-once.cc \
-thread.cc \
-tss_null.cc
+TRUECXXSRC = $(notdir $(wildcard $(srcdir)/*.cc))
 
 LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
 
