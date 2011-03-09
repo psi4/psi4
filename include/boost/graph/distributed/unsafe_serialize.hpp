@@ -21,6 +21,9 @@
 #include <boost/serialization/is_bitwise_serializable.hpp>
 #include <boost/mpl/bool.hpp>
 #include <boost/mpl/if.hpp>
+#include <boost/cstdint.hpp>
+#include <boost/static_assert.hpp>
+#include <boost/type_traits.hpp>
 #include <utility>
 
 BOOST_IS_BITWISE_SERIALIZABLE(void*)
@@ -31,8 +34,15 @@ namespace boost { namespace mpi {
 namespace boost {
   typedef mpl::if_c<(sizeof(int) == sizeof(void*)), 
                     int, 
-                    mpl::if_c<(sizeof(long) == sizeof(void*)), long, void>::type
+                    mpl::if_c<(sizeof(long) == sizeof(void*)),
+                              long,
+                              mpl::if_c<(sizeof(void*) <= sizeof(boost::intmax_t)),
+                                        boost::intmax_t,
+                                        void>::type
+                              >::type
                     >::type ptr_serialize_type;
+
+  BOOST_STATIC_ASSERT ((!boost::is_void<ptr_serialize_type>::value));
     
   template<typename T> inline T& unsafe_serialize(T& x) { return x; }
 

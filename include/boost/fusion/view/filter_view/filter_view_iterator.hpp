@@ -54,10 +54,14 @@ namespace boost { namespace fusion
         typedef last_iter last_type;
         typedef Pred pred_type;
 
-        filter_iterator(First const& first)
-            : first(filter::call(first_converter::call(first))) {}
+        filter_iterator(First const& in_first)
+            : first(filter::call(first_converter::call(in_first))) {}
 
         first_type first;
+
+    private:
+        // silence MSVC warning C4512: assignment operator could not be generated
+        filter_iterator& operator= (filter_iterator const&);
     };
 }}
 

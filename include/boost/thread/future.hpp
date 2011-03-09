@@ -9,6 +9,8 @@
 #include <stdexcept>
 #include <boost/thread/detail/move.hpp>
 #include <boost/thread/thread_time.hpp>
+#include <boost/thread/mutex.hpp>
+#include <boost/thread/condition_variable.hpp>
 #include <boost/exception_ptr.hpp>
 #include <boost/shared_ptr.hpp>
 #include <boost/scoped_ptr.hpp>
@@ -140,6 +142,8 @@ namespace boost
                 {
                     lock.lock();
                 }
+            private:
+                relocker& operator=(relocker const&);
             };
 
             void do_callback(boost::unique_lock<boost::mutex>& lock)
@@ -388,15 +392,18 @@ namespace boost
 
         class future_waiter
         {
+            struct registered_waiter;
+            typedef std::vector<registered_waiter>::size_type count_type;
+            
             struct registered_waiter
             {
                 boost::shared_ptr<detail::future_object_base> future;
                 detail::future_object_base::waiter_list::iterator wait_iterator;
-                unsigned index;
+                count_type index;
 
                 registered_waiter(boost::shared_ptr<detail::future_object_base> const& future_,
                                   detail::future_object_base::waiter_list::iterator wait_iterator_,
-                                  unsigned index_):
+                                  count_type index_):
                     future(future_),wait_iterator(wait_iterator_),index(index_)
                 {}
 
@@ -404,7 +411,6 @@ namespace boost
             
             struct all_futures_lock
             {
-                typedef std::vector<registered_waiter>::size_type count_type;
                 count_type count;
                 boost::scoped_array<boost::unique_lock<boost::mutex> > locks;
                 
@@ -424,7 +430,7 @@ namespace boost
                 
                 void unlock()
                 {
-                    for(unsigned i=0;i<count;++i)
+                    for(count_type i=0;i<count;++i)
                     {
                         locks[i].unlock();
                     }
@@ -433,7 +439,7 @@ namespace boost
             
             boost::condition_variable_any cv;
             std::vector<registered_waiter> futures;
-            unsigned future_count;
+            count_type future_count;
             
         public:
             future_waiter():
@@ -450,12 +456,12 @@ namespace boost
                 ++future_count;
             }
 
-            unsigned wait()
+            count_type wait()
             {
                 all_futures_lock lk(futures);
                 for(;;)
                 {
-                    for(unsigned i=0;i<futures.size();++i)
+                    for(count_type i=0;i<futures.size();++i)
                     {
                         if(futures[i].future->done)
                         {
@@ -468,7 +474,7 @@ namespace boost
             
             ~future_waiter()
             {
-                for(unsigned i=0;i<futures.size();++i)
+                for(count_type i=0;i<futures.size();++i)
                 {
                     futures[i].future->remove_external_waiter(futures[i].wait_iterator);
                 }
@@ -548,6 +554,9 @@ namespace boost
     template<typename Iterator>
     typename boost::disable_if<is_future_type<Iterator>,Iterator>::type wait_for_any(Iterator begin,Iterator end)
     {
+        if(begin==end)
+            return end;
+        
         detail::future_waiter waiter;
         for(Iterator current=begin;current!=end;++current)
         {
@@ -903,10 +912,10 @@ namespace boost
 
         void lazy_init()
         {
-            if(!future)
+            if(!atomic_load(&future))
             {
-                future_obtained=false;
-                future.reset(new detail::future_object<R>);
+                future_ptr blank;
+                atomic_compare_exchange(&future,&blank,future_ptr(new detail::future_object<R>));
             }
         }
         
@@ -936,12 +945,14 @@ namespace boost
             future_obtained(rhs.future_obtained)
         {
             future.swap(rhs.future);
+            rhs.future_obtained=false;
         }
         promise & operator=(promise&& rhs)
         {
             future.swap(rhs.future);
             future_obtained=rhs.future_obtained;
             rhs.future.reset();
+            rhs.future_obtained=false;
             return *this;
         }
 #else
@@ -949,12 +960,14 @@ namespace boost
             future(rhs->future),future_obtained(rhs->future_obtained)
         {
             rhs->future.reset();
+            rhs->future_obtained=false;
         }
         promise & operator=(boost::detail::thread_move_t<promise> rhs)
         {
             future=rhs->future;
             future_obtained=rhs->future_obtained;
             rhs->future.reset();
+            rhs->future_obtained=false;
             return *this;
         }
 
@@ -1038,10 +1051,10 @@ namespace boost
 
         void lazy_init()
         {
-            if(!future)
+            if(!atomic_load(&future))
             {
-                future_obtained=false;
-                future.reset(new detail::future_object<void>);
+                future_ptr blank;
+                atomic_compare_exchange(&future,&blank,future_ptr(new detail::future_object<void>));
             }
         }
     public:
@@ -1070,12 +1083,14 @@ namespace boost
             future_obtained(rhs.future_obtained)
         {
             future.swap(rhs.future);
+            rhs.future_obtained=false;
         }
         promise & operator=(promise&& rhs)
         {
             future.swap(rhs.future);
             future_obtained=rhs.future_obtained;
             rhs.future.reset();
+            rhs.future_obtained=false;
             return *this;
         }
 #else
@@ -1083,12 +1098,14 @@ namespace boost
             future(rhs->future),future_obtained(rhs->future_obtained)
         {
             rhs->future.reset();
+            rhs->future_obtained=false;
         }
         promise & operator=(boost::detail::thread_move_t<promise> rhs)
         {
             future=rhs->future;
             future_obtained=rhs->future_obtained;
             rhs->future.reset();
+            rhs->future_obtained=false;
             return *this;
         }
 

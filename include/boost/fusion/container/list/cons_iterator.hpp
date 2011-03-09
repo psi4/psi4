@@ -35,8 +35,8 @@ namespace boost { namespace fusion
             typename add_const<Cons>::type> 
         identity;
 
-        explicit cons_iterator(cons_type& cons)
-            : cons(cons) {}
+        explicit cons_iterator(cons_type& in_cons)
+            : cons(in_cons) {}
 
         cons_type& cons;
 

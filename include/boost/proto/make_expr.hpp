@@ -33,12 +33,9 @@
     #include <boost/mpl/assert.hpp>
     #include <boost/mpl/eval_if.hpp>
     #include <boost/utility/enable_if.hpp>
-    #include <boost/type_traits/is_same.hpp>
     #include <boost/type_traits/add_const.hpp>
     #include <boost/type_traits/add_reference.hpp>
     #include <boost/type_traits/remove_cv.hpp>
-    #include <boost/type_traits/remove_const.hpp>
-    #include <boost/type_traits/remove_reference.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/traits.hpp>
     #include <boost/proto/domain.hpp>
@@ -55,37 +52,24 @@
     # pragma warning(disable: 4180) // qualifier applied to function type has no meaning; ignored
     #endif
 
-    namespace boost
-    {
-        /// INTERNAL ONLY
-        ///
-        namespace fusion
-        {
-            /// INTERNAL ONLY
-            ///
-            template<typename Function>
-            class unfused_generic;
-        }
-    }
-
     namespace boost { namespace proto
     {
     /// INTERNAL ONLY
     ///
     #define BOOST_PROTO_AS_CHILD_TYPE(Z, N, DATA)                                                   \
-        typename boost::proto::detail::protoify_<                                                   \
+        typename boost::proto::detail::protoify<                                                    \
             BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(3, 0, DATA), N)                                        \
           , BOOST_PP_TUPLE_ELEM(3, 2, DATA)                                                         \
-        >::type                                                                                     \
+        >::result_type                                                                              \
         /**/
 
     /// INTERNAL ONLY
     ///
     #define BOOST_PROTO_AS_CHILD(Z, N, DATA)                                                        \
-        boost::proto::detail::protoify_<                                                            \
+        boost::proto::detail::protoify<                                                             \
             BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(3, 0, DATA), N)                                        \
           , BOOST_PP_TUPLE_ELEM(3, 2, DATA)                                                         \
-        >::call(BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(3, 1, DATA), N))                                   \
+        >()(BOOST_PP_CAT(BOOST_PP_TUPLE_ELEM(3, 1, DATA), N))                                       \
         /**/
 
     /// INTERNAL ONLY
@@ -138,60 +122,42 @@
     /// INTERNAL ONLY
     ///
     #define BOOST_PROTO_FUSION_AS_CHILD_AT_TYPE(Z, N, DATA)                                         \
-        typename detail::protoify_<                                                                 \
+        typename detail::protoify<                                                                  \
             BOOST_PROTO_FUSION_AT_TYPE(Z, N, DATA)                                                  \
           , Domain                                                                                  \
-        >::type                                                                                     \
+        >::result_type                                                                              \
         /**/
 
     /// INTERNAL ONLY
     ///
     #define BOOST_PROTO_FUSION_AS_CHILD_AT(Z, N, DATA)                                              \
-        detail::protoify_<                                                                          \
+        detail::protoify<                                                                           \
             BOOST_PROTO_FUSION_AT_TYPE(Z, N, DATA)                                                  \
           , Domain                                                                                  \
-        >::call(BOOST_PROTO_FUSION_AT(Z, N, DATA))                                                  \
+        >()(BOOST_PROTO_FUSION_AT(Z, N, DATA))                                                      \
         /**/
 
         namespace detail
         {
             template<typename T, typename Domain>
-            struct protoify_
-            {
-                typedef
-                    typename boost::unwrap_reference<T>::type
-                unref_type;
-
-                typedef
-                    typename mpl::eval_if_c<
-                        boost::is_reference_wrapper<T>::value
-                      , proto::result_of::as_child<unref_type, Domain>
-                      , proto::result_of::as_expr<unref_type, Domain>
-                    >::type
-                type;
-
-                static type call(T &t)
-                {
-                    return typename mpl::if_c<
-                        is_reference_wrapper<T>::value
-                      , functional::as_child<Domain>
-                      , functional::as_expr<Domain>
-                    >::type()(static_cast<unref_type &>(t));
-                }
-            };
+            struct protoify
+              : Domain::template as_expr<T>
+            {};
 
             template<typename T, typename Domain>
-            struct protoify_<T &, Domain>
-            {
-                typedef
-                    typename proto::result_of::as_child<T, Domain>::type
-                type;
+            struct protoify<T &, Domain>
+              : Domain::template as_child<T>
+            {};
 
-                static type call(T &t)
-                {
-                    return functional::as_child<Domain>()(t);
-                }
-            };
+            template<typename T, typename Domain>
+            struct protoify<boost::reference_wrapper<T>, Domain>
+              : Domain::template as_child<T>
+            {};
+
+            template<typename T, typename Domain>
+            struct protoify<boost::reference_wrapper<T> const, Domain>
+              : Domain::template as_child<T>
+            {};
 
             template<typename Tag, typename Domain, typename Sequence, std::size_t Size>
             struct unpack_expr_
@@ -209,15 +175,15 @@
                 terminal_type;
 
                 typedef
-                    typename proto::detail::protoify_<
+                    typename proto::detail::protoify<
                         terminal_type
                       , Domain
-                    >::type
+                    >::result_type
                 type;
 
                 static type const call(Sequence const &sequence)
                 {
-                    return proto::detail::protoify_<terminal_type, Domain>::call(fusion::at_c<0>(sequence));
+                    return proto::detail::protoify<terminal_type, Domain>()(fusion::at_c<0>(sequence));
                 }
             };
 
@@ -243,11 +209,11 @@
             struct make_expr_<tag::terminal, Domain, A
                 BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, void BOOST_PP_INTERCEPT)>
             {
-                typedef typename proto::detail::protoify_<A, Domain>::type result_type;
+                typedef typename proto::detail::protoify<A, Domain>::result_type result_type;
 
                 result_type operator()(typename add_reference<A>::type a) const
                 {
-                    return proto::detail::protoify_<A, Domain>::call(a);
+                    return proto::detail::protoify<A, Domain>()(a);
                 }
             };
 
@@ -256,73 +222,6 @@
                 BOOST_PP_ENUM_TRAILING_PARAMS(BOOST_PROTO_MAX_ARITY, void BOOST_PP_INTERCEPT)>
               : make_expr_<tag::terminal, default_domain, A>
             {};
-
-            template<typename Base, typename Expr>
-            Expr implicit_expr_wrap(Base const &e, mpl::false_, Expr *)
-            {
-                return Expr(e);
-            }
-
-            template<typename Base, typename Expr>
-            Expr implicit_expr_wrap(Base const &e, mpl::true_, Expr *)
-            {
-                Expr that = {e};
-                return that;
-            }
-
-            template<typename A0, typename Void = void>
-            struct implicit_expr_1
-            {
-                A0 &a0;
-
-                template<typename Args>
-                operator proto::expr<tag::terminal, Args, 0>() const
-                {
-                    proto::expr<tag::terminal, Args, 0> that = {this->a0};
-                    return that;
-                }
-
-                template<typename Expr>
-                operator Expr() const
-                {
-                    typename Expr::proto_base_expr that = *this;
-                    return detail::implicit_expr_wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
-                }
-            };
-
-            template<typename A0>
-            struct implicit_expr_1<A0, typename A0::proto_is_expr_>
-            {
-                A0 &a0;
-
-            #if BOOST_WORKAROUND(BOOST_INTEL_CXX_VERSION, BOOST_TESTED_AT(1010))
-                typedef typename remove_cv<A0>::type uncv_a0_type;
-
-                operator uncv_a0_type &() const
-                {
-                    return const_cast<uncv_a0_type &>(this->a0);
-                }
-            #else
-                operator A0 &() const
-                {
-                    return this->a0;
-                }
-            #endif
-
-                template<typename Tag, typename Args>
-                operator proto::expr<Tag, Args, 1>() const
-                {
-                    proto::expr<Tag, Args, 1> that = {this->a0};
-                    return that;
-                }
-
-                template<typename Expr>
-                operator Expr() const
-                {
-                    typename Expr::proto_base_expr that = *this;
-                    return detail::implicit_expr_wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
-                }
-            };
 
         #define BOOST_PP_ITERATION_PARAMS_1                                                         \
             (4, (1, BOOST_PROTO_MAX_ARITY, <boost/proto/make_expr.hpp>, 1))                         \
@@ -342,7 +241,7 @@
             ///
             /// In this specialization, the domain is deduced from the
             /// domains of the child types. (If
-            /// <tt>is_domain\<A0\>::::value</tt> is \c true, then another
+            /// <tt>is_domain\<A0\>::value</tt> is \c true, then another
             /// specialization is selected.)
             template<
                 typename Tag
@@ -352,12 +251,12 @@
             >
             struct make_expr
             {
-                /// Same as <tt>result_of::make_expr\<Tag, D, A0, ... AN\>::::type</tt>
+                /// Same as <tt>result_of::make_expr\<Tag, D, A0, ... AN\>::type</tt>
                 /// where \c D is the deduced domain, which is calculated as follows:
                 ///
                 /// For each \c x in <tt>[0,N)</tt> (proceeding in order beginning with
-                /// <tt>x=0</tt>), if <tt>domain_of\<Ax\>::::type</tt> is not
-                /// \c default_domain, then \c D is <tt>domain_of\<Ax\>::::type</tt>.
+                /// <tt>x=0</tt>), if <tt>domain_of\<Ax\>::type</tt> is not
+                /// \c default_domain, then \c D is <tt>domain_of\<Ax\>::type</tt>.
                 /// Otherwise, \c D is \c default_domain.
                 typedef
                     typename detail::make_expr_<
@@ -387,26 +286,26 @@
             {
                 /// If \c Tag is <tt>tag::terminal</tt>, then \c type is a
                 /// typedef for <tt>boost::result_of\<Domain(expr\<tag::terminal,
-                /// term\<A0\> \>)\>::::type</tt>.
+                /// term\<A0\> \>)\>::type</tt>.
                 ///
                 /// Otherwise, \c type is a typedef for <tt>boost::result_of\<Domain(expr\<Tag,
-                /// listN\< as_child\<A0\>::::type, ... as_child\<AN\>::::type\>)
-                /// \>::::type</tt>, where \c N is the number of non-void template
-                /// arguments, and <tt>as_child\<A\>::::type</tt> is evaluated as
+                /// listN\< as_child\<A0\>::type, ... as_child\<AN\>::type\>)
+                /// \>::type</tt>, where \c N is the number of non-void template
+                /// arguments, and <tt>as_child\<A\>::type</tt> is evaluated as
                 /// follows:
                 ///
-                /// \li If <tt>is_expr\<A\>::::value</tt> is \c true, then the
+                /// \li If <tt>is_expr\<A\>::value</tt> is \c true, then the
                 /// child type is \c A.
                 /// \li If \c A is <tt>B &</tt> or <tt>cv boost::reference_wrapper\<B\></tt>,
-                /// and <tt>is_expr\<B\>::::value</tt> is \c true, then the
+                /// and <tt>is_expr\<B\>::value</tt> is \c true, then the
                 /// child type is <tt>B &</tt>.
-                /// \li If <tt>is_expr\<A\>::::value</tt> is \c false, then the
+                /// \li If <tt>is_expr\<A\>::value</tt> is \c false, then the
                 /// child type is <tt>boost::result_of\<Domain(expr\<tag::terminal, term\<A\> \>
-                /// )\>::::type</tt>.
+                /// )\>::type</tt>.
                 /// \li If \c A is <tt>B &</tt> or <tt>cv boost::reference_wrapper\<B\></tt>,
-                /// and <tt>is_expr\<B\>::::value</tt> is \c false, then the
+                /// and <tt>is_expr\<B\>::value</tt> is \c false, then the
                 /// child type is <tt>boost::result_of\<Domain(expr\<tag::terminal, term\<B &\> \>
-                /// )\>::::type</tt>.
+                /// )\>::type</tt>.
                 typedef
                     typename detail::make_expr_<
                         Tag
@@ -427,7 +326,7 @@
             ///
             /// In this specialization, the domain is deduced from the
             /// domains of the child types. (If
-            /// <tt>is_domain\<Sequence>::::value</tt> is \c true, then another
+            /// <tt>is_domain\<Sequence>::value</tt> is \c true, then another
             /// specialization is selected.)
             template<
                 typename Tag
@@ -440,8 +339,8 @@
                 /// Let \c S be the type of a Fusion Random Access Sequence
                 /// equivalent to \c Sequence. Then \c type is the
                 /// same as <tt>result_of::make_expr\<Tag,
-                /// fusion::result_of::value_at_c\<S, 0\>::::type, ...
-                /// fusion::result_of::value_at_c\<S, N-1\>::::type\>::::type</tt>,
+                /// fusion::result_of::value_at_c\<S, 0\>::type, ...
+                /// fusion::result_of::value_at_c\<S, N-1\>::type\>::type</tt>,
                 /// where \c N is the size of \c S.
                 typedef
                     typename detail::unpack_expr_<
@@ -464,8 +363,8 @@
                 /// Let \c S be the type of a Fusion Random Access Sequence
                 /// equivalent to \c Sequence. Then \c type is the
                 /// same as <tt>result_of::make_expr\<Tag, Domain,
-                /// fusion::result_of::value_at_c\<S, 0\>::::type, ...
-                /// fusion::result_of::value_at_c\<S, N-1\>::::type\>::::type</tt>,
+                /// fusion::result_of::value_at_c\<S, 0\>::type, ...
+                /// fusion::result_of::value_at_c\<S, N-1\>::type\>::type</tt>,
                 /// where \c N is the size of \c S.
                 typedef
                     typename detail::unpack_expr_<
@@ -568,8 +467,7 @@
                 BOOST_PROTO_CALLABLE()
 
                 template<typename Sig>
-                struct result
-                {};
+                struct result;
 
                 template<typename This, typename Sequence>
                 struct result<This(Sequence)>
@@ -601,50 +499,6 @@
                 }
             };
 
-            /// INTERNAL ONLY
-            ///
-            template<typename Tag, typename Domain>
-            struct unfused_expr_fun
-            {
-                BOOST_PROTO_CALLABLE()
-
-                template<typename Sig>
-                struct result;
-
-                template<typename This, typename Sequence>
-                struct result<This(Sequence)>
-                {
-                    typedef
-                        typename result_of::unpack_expr<
-                            Tag
-                          , Domain
-                          , typename remove_reference<Sequence>::type
-                        >::type
-                    type;
-                };
-
-                template<typename Sequence>
-                typename proto::result_of::unpack_expr<Tag, Domain, Sequence const>::type const
-                operator ()(Sequence const &sequence) const
-                {
-                    return proto::detail::unpack_expr_<
-                        Tag
-                      , Domain
-                      , Sequence const
-                      , fusion::result_of::size<Sequence>::type::value
-                    >::call(sequence);
-                }
-            };
-
-            /// INTERNAL ONLY
-            ///
-            template<typename Tag, typename Domain>
-            struct unfused_expr
-              : fusion::unfused_generic<unfused_expr_fun<Tag, Domain> >
-            {
-                BOOST_PROTO_CALLABLE()
-            };
-
         } // namespace functional
 
         /// \brief Construct an expression of the requested tag type
@@ -664,7 +518,7 @@
         /// <tt>as_expr\<Domain\>(x)</tt>.
         ///
         /// Let <tt>make_\<Tag\>(b0,...bN)</tt> be defined as
-        /// <tt>expr\<Tag, listN\<C0,...CN\> \>::::make(c0,...cN)</tt>
+        /// <tt>expr\<Tag, listN\<C0,...CN\> \>::make(c0,...cN)</tt>
         /// where \c Bx is the type of \c bx.
         ///
         /// \return <tt>Domain()(make_\<Tag\>(wrap_(a0),...wrap_(aN)))</tt>.
@@ -724,14 +578,14 @@
         /// Let \c s be a Fusion Random Access Sequence equivalent to \c sequence.
         /// Let <tt>wrap_\<N\>(s)</tt>, where \c s has type \c S, be defined
         /// such that:
-        /// \li If <tt>fusion::result_of::value_at_c\<S,N\>::::type</tt> is a reference,
+        /// \li If <tt>fusion::result_of::value_at_c\<S,N\>::type</tt> is a reference,
         /// <tt>wrap_\<N\>(s)</tt> is equivalent to
         /// <tt>as_child\<Domain\>(fusion::at_c\<N\>(s))</tt>.
         /// \li Otherwise, <tt>wrap_\<N\>(s)</tt> is equivalent to
         /// <tt>as_expr\<Domain\>(fusion::at_c\<N\>(s))</tt>.
         ///
         /// Let <tt>make_\<Tag\>(b0,...bN)</tt> be defined as
-        /// <tt>expr\<Tag, listN\<B0,...BN\> \>::::make(b0,...bN)</tt>
+        /// <tt>expr\<Tag, listN\<B0,...BN\> \>::make(b0,...bN)</tt>
         /// where \c Bx is the type of \c bx.
         ///
         /// \param sequence a Fusion Forward Sequence.
@@ -766,24 +620,6 @@
             >::call(sequence2);
         }
 
-        /// \brief Return a proxy object that holds its arguments by reference
-        /// and is implicitly convertible to an expression.
-        template<typename A0>
-        detail::implicit_expr_1<A0> const
-        implicit_expr(A0 &a0)
-        {
-            detail::implicit_expr_1<A0> that = {a0};
-            return that;
-        }
-
-        // Additional overloads generated by the preprocessor...
-
-    #define BOOST_PP_ITERATION_PARAMS_1                                                             \
-        (4, (2, BOOST_PROTO_MAX_ARITY, <boost/proto/make_expr.hpp>, 4))                             \
-        /**/
-
-    #include BOOST_PP_ITERATE()
-
         /// INTERNAL ONLY
         ///
         template<typename Tag, typename Domain>
@@ -795,13 +631,6 @@
         ///
         template<typename Tag, typename Domain>
         struct is_callable<functional::unpack_expr<Tag, Domain> >
-          : mpl::true_
-        {};
-
-        /// INTERNAL ONLY
-        ///
-        template<typename Tag, typename Domain>
-        struct is_callable<functional::unfused_expr<Tag, Domain> >
           : mpl::true_
         {};
 
@@ -827,55 +656,26 @@
     #define N BOOST_PP_ITERATION()
     #define M BOOST_PP_SUB(BOOST_PROTO_MAX_ARITY, N)
 
-    #if N > 1
-        template<BOOST_PP_ENUM_PARAMS(N, typename A)>
-        struct BOOST_PP_CAT(implicit_expr_, N)
-        {
-            #define M0(Z, N, DATA) BOOST_PP_CAT(A, N) &BOOST_PP_CAT(a, N);
-            BOOST_PP_REPEAT(N, M0, ~)
-            #undef M0
-
-            template<typename Tag, typename Args>
-            operator proto::expr<Tag, Args, N>() const
-            {
-                #define M0(Z, N, DATA)                                                              \
-                    implicit_expr_1<BOOST_PP_CAT(A, N)> BOOST_PP_CAT(b, N)                          \
-                        = {this->BOOST_PP_CAT(a, N)};                                               \
-                    typename Args::BOOST_PP_CAT(child, N) BOOST_PP_CAT(c, N) = BOOST_PP_CAT(b, N);  \
-                    /**/
-                BOOST_PP_REPEAT(N, M0, ~)
-                #undef M0
-                proto::expr<Tag, Args, N> that = {BOOST_PP_ENUM_PARAMS(N, c)};
-                return that;
-            }
-
-            template<typename Expr>
-            operator Expr() const
-            {
-                typename Expr::proto_base_expr that = *this;
-                return detail::implicit_expr_wrap(that, is_aggregate<Expr>(), static_cast<Expr *>(0));
-            }
-        };
-    #endif
-
         template<typename Tag, typename Domain BOOST_PP_ENUM_TRAILING_PARAMS(N, typename A)>
         struct make_expr_<Tag, Domain BOOST_PP_ENUM_TRAILING_PARAMS(N, A)
             BOOST_PP_ENUM_TRAILING_PARAMS(M, void BOOST_PP_INTERCEPT), void>
         {
-            typedef proto::expr<
-                Tag
-              , BOOST_PP_CAT(list, N)<BOOST_PP_ENUM(N, BOOST_PROTO_AS_CHILD_TYPE, (A, ~, Domain)) >
-              , N
-            > expr_type;
+            typedef
+                BOOST_PP_CAT(list, N)<
+                    BOOST_PP_ENUM(N, BOOST_PROTO_AS_CHILD_TYPE, (A, ~, Domain))
+                >
+            proto_args;
 
-            typedef typename Domain::template result<Domain(expr_type)>::type result_type;
+            typedef typename base_expr<Domain, Tag, proto_args>::type expr_type;
+            typedef typename Domain::proto_generator proto_generator;
+            typedef typename proto_generator::template result<proto_generator(expr_type)>::type result_type;
 
             result_type operator()(BOOST_PP_ENUM_BINARY_PARAMS(N, typename add_reference<A, >::type a)) const
             {
                 expr_type const that = {
                     BOOST_PP_ENUM(N, BOOST_PROTO_AS_CHILD, (A, a, Domain))
                 };
-                return Domain()(that);
+                return proto_generator()(that);
             }
         };
 
@@ -894,15 +694,15 @@
         {
             BOOST_PROTO_FUSION_ITERATORS_TYPE(N)
 
-            typedef proto::expr<
-                Tag
-              , BOOST_PP_CAT(list, N)<
+            typedef
+                BOOST_PP_CAT(list, N)<
                     BOOST_PP_ENUM(N, BOOST_PROTO_FUSION_AS_CHILD_AT_TYPE, ~)
                 >
-              , N
-            > expr_type;
+            proto_args;
 
-            typedef typename Domain::template result<Domain(expr_type)>::type type;
+            typedef typename base_expr<Domain, Tag, proto_args>::type expr_type;
+            typedef typename Domain::proto_generator proto_generator;
+            typedef typename proto_generator::template result<proto_generator(expr_type)>::type type;
 
             static type const call(Sequence const &sequence)
             {
@@ -910,7 +710,7 @@
                 expr_type const that = {
                     BOOST_PP_ENUM(N, BOOST_PROTO_FUSION_AS_CHILD_AT, ~)
                 };
-                return Domain()(that);
+                return proto_generator()(that);
             }
         };
 
@@ -1014,23 +814,6 @@
               , Domain
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, const C)
             >()(BOOST_PP_ENUM_PARAMS(N, c));
-        }
-
-    #undef N
-
-#elif BOOST_PP_ITERATION_FLAGS() == 4
-
-    #define N BOOST_PP_ITERATION()
-
-        /// \overload
-        ///
-        template<BOOST_PP_ENUM_PARAMS(N, typename A)>
-        detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)> const
-        implicit_expr(BOOST_PP_ENUM_BINARY_PARAMS(N, A, &a))
-        {
-            detail::BOOST_PP_CAT(implicit_expr_, N)<BOOST_PP_ENUM_PARAMS(N, A)> that
-                = {BOOST_PP_ENUM_PARAMS(N, a)};
-            return that;
         }
 
     #undef N

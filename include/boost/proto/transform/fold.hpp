@@ -10,6 +10,7 @@
     #ifndef BOOST_PROTO_TRANSFORM_FOLD_HPP_EAN_11_04_2007
     #define BOOST_PROTO_TRANSFORM_FOLD_HPP_EAN_11_04_2007
 
+    #include <boost/version.hpp>
     #include <boost/preprocessor/cat.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
     #include <boost/preprocessor/arithmetic/inc.hpp>
@@ -18,6 +19,7 @@
     #include <boost/fusion/include/fold.hpp>
     #include <boost/proto/proto_fwd.hpp>
     #include <boost/proto/fusion.hpp>
+    #include <boost/proto/functional/fusion/reverse.hpp>
     #include <boost/proto/traits.hpp>
     #include <boost/proto/transform/call.hpp>
     #include <boost/proto/transform/impl.hpp>
@@ -36,6 +38,8 @@
                 template<typename Sig>
                 struct result;
 
+                #if BOOST_VERSION >= 104200
+
                 template<typename This, typename State, typename Expr>
                 struct result<This(State, Expr)>
                 {
@@ -50,6 +54,25 @@
                 {
                     return typename when<_, Transform>::template impl<Expr &, State const &, Data>()(e, s, this->d_);
                 }
+
+                #else
+
+                template<typename This, typename Expr, typename State>
+                struct result<This(Expr, State)>
+                {
+                    typedef
+                        typename when<_, Transform>::template impl<Expr, State, Data>::result_type
+                    type;
+                };
+
+                template<typename Expr, typename State>
+                typename when<_, Transform>::template impl<Expr &, State const &, Data>::result_type
+                operator ()(Expr &e, State const &s) const
+                {
+                    return typename when<_, Transform>::template impl<Expr &, State const &, Data>()(e, s, this->d_);
+                }
+
+                #endif
 
             private:
                 Data d_;

@@ -806,7 +806,13 @@ void basic_regex_creator<charT, traits>::fixup_recursions(re_syntax_base* state)
             re_syntax_base* p = base;
             std::ptrdiff_t idx = static_cast<re_jump*>(state)->alt.i;
             if(idx > 10000)
-               idx = m_pdata->get_id(idx);
+            {
+               //
+               // There may be more than one capture group with this hash, just do what Perl
+               // does and recurse to the leftmost:
+               //
+               idx = m_pdata->get_id(static_cast<int>(idx));
+            }
             while(p)
             {
                if((p->type == syntax_element_startmark) && (static_cast<re_brace*>(p)->index == idx))
@@ -1018,7 +1024,7 @@ int basic_regex_creator<charT, traits>::calculate_backstep(re_syntax_base* state
                state = rep->alt.p;
                continue;
             }
-            else if(state->type == syntax_element_long_set_rep)
+            else if((state->type == syntax_element_long_set_rep)) 
             {
                BOOST_ASSERT(rep->next.p->type == syntax_element_long_set);
                if(static_cast<re_set_long<mask_type>*>(rep->next.p)->singleton == 0)
@@ -1039,6 +1045,14 @@ int basic_regex_creator<charT, traits>::calculate_backstep(re_syntax_base* state
       case syntax_element_jump:
          state = static_cast<re_jump*>(state)->alt.p;
          continue;
+      case syntax_element_alt:
+         {
+            int r1 = calculate_backstep(state->next.p);
+            int r2 = calculate_backstep(static_cast<re_alt*>(state)->alt.p);
+            if((r1 < 0) || (r1 != r2))
+               return -1;
+            return result + r1;
+         }
       default:
          break;
       }
@@ -1311,7 +1325,7 @@ void basic_regex_creator<charT, traits>::create_startmap(re_syntax_base* state, 
             re_syntax_base* p = m_pdata->m_first_state;
             while(p)
             {
-               if(p->type == syntax_element_recurse)
+               if((p->type == syntax_element_recurse))
                {
                   re_brace* p2 = static_cast<re_brace*>(static_cast<re_jump*>(p)->alt.p);
                   if((p2->type == syntax_element_startmark) && (p2->index == static_cast<re_brace*>(state)->index))

@@ -29,10 +29,16 @@ namespace boost { namespace xpressive { namespace detail
     template<typename BidiIter>
     struct predicate_context
     {
-        explicit predicate_context(int sub, sub_match_impl<BidiIter> const *sub_matches)
+        explicit predicate_context(int sub, sub_match_impl<BidiIter> const *sub_matches, action_args_type *action_args)
           : sub_(sub)
           , sub_matches_(sub_matches)
+          , action_args_(action_args)
         {}
+
+        action_args_type const &args() const
+        {
+            return *this->action_args_;
+        }
 
         // eval_terminal
         template<typename Expr, typename Arg>
@@ -70,6 +76,26 @@ namespace boost { namespace xpressive { namespace detail
             }
         };
 
+        template<typename Expr, typename Type, typename Int>
+        struct eval_terminal<Expr, action_arg<Type, Int> >
+        {
+            typedef typename action_arg<Type, Int>::reference result_type;
+            result_type operator()(Expr &expr, predicate_context const &ctx) const
+            {
+                action_args_type::const_iterator where_ = ctx.args().find(&typeid(proto::value(expr)));
+                if(where_ == ctx.args().end())
+                {
+                    BOOST_THROW_EXCEPTION(
+                        regex_error(
+                            regex_constants::error_badarg
+                          , "An argument to an action was unspecified"
+                        )
+                    );
+                }
+                return proto::value(expr).cast(where_->second);
+            }
+        };
+
         // eval
         template<typename Expr, typename Tag = typename Expr::proto_tag>
         struct eval
@@ -90,6 +116,7 @@ namespace boost { namespace xpressive { namespace detail
 
         int sub_;
         sub_match_impl<BidiIter> const *sub_matches_;
+        action_args_type *action_args_;
     };
 
     ///////////////////////////////////////////////////////////////////////////////
@@ -137,7 +164,7 @@ namespace boost { namespace xpressive { namespace detail
         template<typename BidiIter, typename Next>
         bool match_(match_state<BidiIter> &state, Next const &next, mpl::false_) const
         {
-            predicate_context<BidiIter> ctx(this->sub_, state.sub_matches_);
+            predicate_context<BidiIter> ctx(this->sub_, state.sub_matches_, state.action_args_);
             return proto::eval(proto::child_c<1>(this->predicate_), ctx) && next.match(state);
         }
     };

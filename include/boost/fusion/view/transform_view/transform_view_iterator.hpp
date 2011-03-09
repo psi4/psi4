@@ -34,8 +34,8 @@ namespace boost { namespace fusion
         typedef typename traits::category_of<first_type>::type category;
         typedef F transform_type;
 
-        transform_view_iterator(First const& first, F const& f)
-            : first(converter::call(first)), f(f) {}
+        transform_view_iterator(First const& in_first, F const& in_f)
+            : first(converter::call(in_first)), f(in_f) {}
 
         first_type first;
         transform_type f;
@@ -60,8 +60,8 @@ namespace boost { namespace fusion
         typedef typename traits::category_of<first1_type>::type category;
         typedef F transform_type;
 
-        transform_view_iterator2(First1 const& first1, First2 const& first2, F const& f)
-            : first1(converter1::call(first1)), first2(converter2::call(first2)), f(f) {}
+        transform_view_iterator2(First1 const& in_first1, First2 const& in_first2, F const& in_f)
+            : first1(converter1::call(in_first1)), first2(converter2::call(in_first2)), f(in_f) {}
 
         first1_type first1;
         first2_type first2;

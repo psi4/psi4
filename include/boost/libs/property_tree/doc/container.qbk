@@ -1,0 +1,26 @@
+[/
+ / Copyright (c) 2008 Marcin Kalicinski (kalita <at> poczta dot onet dot pl)
+ / Copyright (c) 2009 Sebastian Redl (sebastian dot redl <at> getdesigned dot at)
+ /
+ / Distributed under the Boost Software License, Version 1.0. (See accompanying
+ / file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
+ /]
+[section:container Property Tree as a Container]
+[/ __ptree_*__ macros expected from property_tree.qbk]
+Every property tree node models the ReversibleSequence concept, providing
+access to its immediate children. This means that iterating over a __ptree__
+(which is the same as its root node - every __ptree__ node is also the
+subtree it starts) iterates only a single level of the hierarchy. There is no
+way to iterate over the entire tree.
+
+It is very important to remember that the property sequence is *not* ordered by
+the key. It preserves the order of insertion. It closely resembles a std::list.
+Fast access to children by name is provided via a separate lookup structure. Do not
+attempt to use algorithms that expect an ordered sequence (like binary_search)
+on a node's children.
+
+There may be multiple children with the same key value in a node. However, these
+children are not necessarily sequential. The iterator returned by __ptree_find__
+may refer to any of these, and there are no guarantees about the relative
+position of the other equally named children.
+[endsect] [/container]

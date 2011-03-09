@@ -73,7 +73,7 @@ namespace boost {
     Q.push(s);
     while (! Q.empty()) {
       Vertex u = Q.top(); Q.pop();            vis.examine_vertex(u, g);
-      for (tie(ei, ei_end) = out_edges(u, g); ei != ei_end; ++ei) {
+      for (boost::tie(ei, ei_end) = out_edges(u, g); ei != ei_end; ++ei) {
         Vertex v = target(*ei, g);            vis.examine_edge(*ei, g);
         ColorValue v_color = get(color, v);
         if (v_color == Color::white()) {      vis.tree_edge(*ei, g);
@@ -100,7 +100,7 @@ namespace boost {
     typedef typename property_traits<ColorMap>::value_type ColorValue;
     typedef color_traits<ColorValue> Color;
     typename boost::graph_traits<VertexListGraph>::vertex_iterator i, i_end;
-    for (tie(i, i_end) = vertices(g); i != i_end; ++i) {
+    for (boost::tie(i, i_end) = vertices(g); i != i_end; ++i) {
       vis.initialize_vertex(*i, g);
       put(color, *i, Color::white());
     }

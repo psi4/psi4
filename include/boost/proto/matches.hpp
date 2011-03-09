@@ -67,7 +67,7 @@
 
         namespace detail
         {
-            template<typename Expr, typename Grammar>
+            template<typename Expr, typename BasicExpr, typename Grammar>
             struct matches_;
 
             template<bool B, typename Pred>
@@ -119,6 +119,11 @@
             {};
 
             template<typename T, std::size_t M>
+            struct lambda_matches<T[M], _ BOOST_MPL_AUX_LAMBDA_ARITY_PARAM(-1)>
+              : mpl::true_
+            {};
+
+            template<typename T, std::size_t M>
             struct lambda_matches<T[M], T[M] BOOST_MPL_AUX_LAMBDA_ARITY_PARAM(-1)>
               : mpl::true_
             {};
@@ -133,21 +138,29 @@
             struct vararg_matches_impl;
 
             // vararg_matches
-            template<typename Args1, typename Args2, typename Back, bool Can, bool Zero, typename Void = void>
+            template<typename Expr, typename Args1, typename Args2, typename Back, bool Can, bool Zero, typename Void = void>
             struct vararg_matches
               : mpl::false_
             {};
 
-            template<typename Args1, typename Args2, typename Back>
-            struct vararg_matches<Args1, Args2, Back, true, true, typename Back::proto_is_vararg_>
-              : matches_<proto::expr<ignore, Args1, Args1::arity>, proto::expr<ignore, Args2, Args1::arity> >
+            template<typename Expr, typename Args1, typename Args2, typename Back>
+            struct vararg_matches<Expr, Args1, Args2, Back, true, true, typename Back::proto_is_vararg_>
+              : matches_<
+                    Expr
+                  , proto::basic_expr<ignore, Args1, Args1::arity>
+                  , proto::basic_expr<ignore, Args2, Args1::arity>
+                >
             {};
 
-            template<typename Args1, typename Args2, typename Back>
-            struct vararg_matches<Args1, Args2, Back, true, false, typename Back::proto_is_vararg_>
+            template<typename Expr, typename Args1, typename Args2, typename Back>
+            struct vararg_matches<Expr, Args1, Args2, Back, true, false, typename Back::proto_is_vararg_>
               : and_2<
-                    matches_<proto::expr<ignore, Args1, Args2::arity>, proto::expr<ignore, Args2, Args2::arity> >::value
-                  , vararg_matches_impl<Args1, typename Back::proto_base_expr, Args2::arity + 1, Args1::arity>
+                    matches_<
+                        Expr
+                      , proto::basic_expr<ignore, Args1, Args2::arity>
+                      , proto::basic_expr<ignore, Args2, Args2::arity>
+                    >::value
+                  , vararg_matches_impl<Args1, typename Back::proto_grammar, Args2::arity + 1, Args1::arity>
                 >
             {};
 
@@ -286,61 +299,71 @@
             {};
 
             // matches_
-            template<typename Expr, typename Grammar>
+            template<typename Expr, typename BasicExpr, typename Grammar>
             struct matches_
               : mpl::false_
             {};
 
-            template<typename Expr>
-            struct matches_< Expr, proto::_ >
+            template<typename Expr, typename BasicExpr>
+            struct matches_< Expr, BasicExpr, proto::_ >
               : mpl::true_
             {};
 
-            template<typename Tag, typename Args1, long N1, typename Args2, long N2>
-            struct matches_< proto::expr<Tag, Args1, N1>, proto::expr<Tag, Args2, N2> >
-              : vararg_matches< Args1, Args2, typename Args2::back_, (N1+2 > N2), (N2 > N1) >
+            template<typename Expr, typename Tag, typename Args1, long N1, typename Args2, long N2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, N1>, proto::basic_expr<Tag, Args2, N2> >
+              : vararg_matches< Expr, Args1, Args2, typename Args2::back_, (N1+2 > N2), (N2 > N1) >
             {};
 
-            template<typename Tag, typename Args1, long N1, typename Args2, long N2>
-            struct matches_< proto::expr<Tag, Args1, N1>, proto::expr<proto::_, Args2, N2> >
-              : vararg_matches< Args1, Args2, typename Args2::back_, (N1+2 > N2), (N2 > N1) >
+            template<typename Expr, typename Tag, typename Args1, long N1, typename Args2, long N2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, N1>, proto::basic_expr<proto::_, Args2, N2> >
+              : vararg_matches< Expr, Args1, Args2, typename Args2::back_, (N1+2 > N2), (N2 > N1) >
             {};
 
-            template<typename Tag, typename Args1, typename Args2>
-            struct matches_< proto::expr<Tag, Args1, 0>, proto::expr<Tag, Args2, 0> >
+            template<typename Expr, typename Tag, typename Args1, typename Args2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, 0>, proto::basic_expr<Tag, Args2, 0> >
               : terminal_matches<typename Args1::child0, typename Args2::child0>
             {};
 
-            template<typename Tag, typename Args1, typename Args2, long N2>
-            struct matches_< proto::expr<Tag, Args1, 0>, proto::expr<proto::_, Args2, N2> >
+            template<typename Expr, typename Tag, typename Args1, typename Args2, long N2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, 0>, proto::basic_expr<proto::_, Args2, N2> >
               : mpl::false_
             {};
 
-            template<typename Tag, typename Args1, typename Args2>
-            struct matches_< proto::expr<Tag, Args1, 0>, proto::expr<proto::_, Args2, 0> >
+            template<typename Expr, typename Tag, typename Args1, typename Args2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, 0>, proto::basic_expr<proto::_, Args2, 0> >
               : terminal_matches<typename Args1::child0, typename Args2::child0>
             {};
 
-            template<typename Tag, typename Args1, typename Args2>
-            struct matches_< proto::expr<Tag, Args1, 1>, proto::expr<Tag, Args2, 1> >
-              : matches_<typename detail::expr_traits<typename Args1::child0>::value_type::proto_base_expr, typename Args2::child0::proto_base_expr>
+            template<typename Expr, typename Tag, typename Args1, typename Args2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, 1>, proto::basic_expr<Tag, Args2, 1> >
+              : matches_<
+                    typename detail::expr_traits<typename Args1::child0>::value_type::proto_derived_expr
+                  , typename detail::expr_traits<typename Args1::child0>::value_type::proto_grammar
+                  , typename Args2::child0::proto_grammar
+                >
             {};
 
-            template<typename Tag, typename Args1, typename Args2>
-            struct matches_< proto::expr<Tag, Args1, 1>, proto::expr<proto::_, Args2, 1> >
-              : matches_<typename detail::expr_traits<typename Args1::child0>::value_type::proto_base_expr, typename Args2::child0::proto_base_expr>
+            template<typename Expr, typename Tag, typename Args1, typename Args2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, 1>, proto::basic_expr<proto::_, Args2, 1> >
+              : matches_<
+                    typename detail::expr_traits<typename Args1::child0>::value_type::proto_derived_expr
+                  , typename detail::expr_traits<typename Args1::child0>::value_type::proto_grammar
+                  , typename Args2::child0::proto_grammar
+                >
             {};
 
         #define BOOST_PROTO_MATCHES_N_FUN(Z, N, DATA)                                               \
             matches_<                                                                               \
-                typename detail::expr_traits<typename Args1::BOOST_PP_CAT(child, N)>::value_type::proto_base_expr\
-              , typename Args2::BOOST_PP_CAT(child, N)::proto_base_expr                             \
+                typename detail::expr_traits<typename Args1::BOOST_PP_CAT(child, N)>::value_type::proto_derived_expr \
+              , typename detail::expr_traits<typename Args1::BOOST_PP_CAT(child, N)>::value_type::proto_grammar \
+              , typename Args2::BOOST_PP_CAT(child, N)::proto_grammar                               \
             >
 
         #define BOOST_PROTO_DEFINE_MATCHES(Z, N, DATA)                                              \
             matches_<                                                                               \
-                typename Expr::proto_base_expr                                                      \
-              , typename BOOST_PP_CAT(G, N)::proto_base_expr                                        \
+                Expr                                                                                \
+              , BasicExpr                                                                           \
+              , typename BOOST_PP_CAT(G, N)::proto_grammar                                          \
             >
 
         #define BOOST_PROTO_DEFINE_LAMBDA_MATCHES(Z, N, DATA)                                       \
@@ -364,218 +387,221 @@
         #undef BOOST_PROTO_DEFINE_LAMBDA_MATCHES
 
             // handle proto::if_
-            template<typename Expr, typename If, typename Then, typename Else>
-            struct matches_<Expr, proto::if_<If, Then, Else> >
+            template<typename Expr, typename Tag, typename Args, long Arity, typename If, typename Then, typename Else>
+            struct matches_<Expr, proto::basic_expr<Tag, Args, Arity>, proto::if_<If, Then, Else> >
               : mpl::eval_if_c<
                     remove_reference<
                         typename when<_, If>::template impl<Expr, int, int>::result_type
                     >::type::value
-                  , matches_<Expr, typename Then::proto_base_expr>
-                  , matches_<Expr, typename Else::proto_base_expr>
+                  , matches_<Expr, proto::basic_expr<Tag, Args, Arity>, typename Then::proto_grammar>
+                  , matches_<Expr, proto::basic_expr<Tag, Args, Arity>, typename Else::proto_grammar>
                 >::type
-            {};
-
-            template<typename Expr, typename If>
-            struct matches_<Expr, proto::if_<If> >
-              : detail::uncvref<typename when<_, If>::template impl<Expr, int, int>::result_type>::type
-            {};
+            {
+                typedef
+                    typename mpl::if_c<
+                        remove_reference<
+                            typename when<_, If>::template impl<Expr, int, int>::result_type
+                        >::type::value
+                      , Then
+                      , Else
+                    >::type
+                which;
+            };
 
             // handle degenerate cases of proto::or_
-            template<typename Expr>
-            struct matches_<Expr, or_<> >
+            template<typename Expr, typename BasicExpr>
+            struct matches_<Expr, BasicExpr, or_<> >
               : mpl::false_
             {
                 typedef not_<_> which;
             };
 
-            template<typename Expr, typename G0>
-            struct matches_<Expr, or_<G0> >
-              : matches_<Expr, typename G0::proto_base_expr>
+            template<typename Expr, typename BasicExpr, typename G0>
+            struct matches_<Expr, BasicExpr, or_<G0> >
+              : matches_<Expr, BasicExpr, typename G0::proto_grammar>
             {
                 typedef G0 which;
             };
 
             // handle degenerate cases of proto::and_
-            template<typename Expr>
-            struct matches_<Expr, and_<> >
+            template<typename Expr, typename BasicExpr>
+            struct matches_<Expr, BasicExpr, and_<> >
               : mpl::true_
             {};
 
-            template<typename Expr, typename G0>
-            struct matches_<Expr, and_<G0> >
-              : matches_<Expr, typename G0::proto_base_expr>
+            template<typename Expr, typename BasicExpr, typename G0>
+            struct matches_<Expr, BasicExpr, and_<G0> >
+              : matches_<Expr, BasicExpr, typename G0::proto_grammar>
             {};
 
             // handle proto::not_
-            template<typename Expr, typename Grammar>
-            struct matches_<Expr, not_<Grammar> >
-              : mpl::not_<matches_<Expr, typename Grammar::proto_base_expr> >
+            template<typename Expr, typename BasicExpr, typename Grammar>
+            struct matches_<Expr, BasicExpr, not_<Grammar> >
+              : mpl::not_<matches_<Expr, BasicExpr, typename Grammar::proto_grammar> >
             {};
 
             // handle proto::switch_
-            template<typename Expr, typename Cases>
-            struct matches_<Expr, switch_<Cases> >
+            template<typename Expr, typename Tag, typename Args, long Arity, typename Cases>
+            struct matches_<Expr, proto::basic_expr<Tag, Args, Arity>, switch_<Cases> >
               : matches_<
                     Expr
-                  , typename Cases::template case_<typename Expr::proto_tag>::proto_base_expr
+                  , proto::basic_expr<Tag, Args, Arity>
+                  , typename Cases::template case_<Tag>::proto_grammar
                 >
-            {};
-        }
-
-        namespace result_of
-        {
-            /// \brief A Boolean metafunction that evaluates whether a given
-            /// expression type matches a grammar.
-            ///
-            /// <tt>matches\<Expr,Grammar\></tt> inherits (indirectly) from
-            /// \c mpl::true_ if <tt>Expr::proto_base_expr</tt> matches
-            /// <tt>Grammar::proto_base_expr</tt>, and from \c mpl::false_
-            /// otherwise.
-            ///
-            /// Non-terminal expressions are matched against a grammar
-            /// according to the following rules:
-            ///
-            /// \li The wildcard pattern, \c _, matches any expression.
-            /// \li An expression <tt>expr\<AT, listN\<A0,A1,...An\> \></tt>
-            ///     matches a grammar <tt>expr\<BT, listN\<B0,B1,...Bn\> \></tt>
-            ///     if \c BT is \c _ or \c AT, and if \c Ax matches \c Bx for
-            ///     each \c x in <tt>[0,n)</tt>.
-            /// \li An expression <tt>expr\<AT, listN\<A0,...An,U0,...Um\> \></tt>
-            ///     matches a grammar <tt>expr\<BT, listM\<B0,...Bn,vararg\<V\> \> \></tt>
-            ///     if \c BT is \c _ or \c AT, and if \c Ax matches \c Bx
-            ///     for each \c x in <tt>[0,n)</tt> and if \c Ux matches \c V
-            ///     for each \c x in <tt>[0,m)</tt>.
-            /// \li An expression \c E matches <tt>or_\<B0,B1,...Bn\></tt> if \c E
-            ///     matches some \c Bx for \c x in <tt>[0,n)</tt>.
-            /// \li An expression \c E matches <tt>and_\<B0,B1,...Bn\></tt> if \c E
-            ///     matches all \c Bx for \c x in <tt>[0,n)</tt>.
-            /// \li An expression \c E matches <tt>if_\<T,U,V\></tt> if
-            ///     <tt>boost::result_of\<when\<_,T\>(E,int,int)\>::::type::value</tt>
-            ///     is \c true and \c E matches \c U; or, if
-            ///     <tt>boost::result_of\<when\<_,T\>(E,int,int)\>::::type::value</tt>
-            ///     is \c false and \c E matches \c V. (Note: \c U defaults to \c _
-            ///     and \c V defaults to \c not_\<_\>.)
-            /// \li An expression \c E matches <tt>not_\<T\></tt> if \c E does
-            ///     not match \c T.
-            /// \li An expression \c E matches <tt>switch_\<C\></tt> if
-            ///     \c E matches <tt>C::case_\<E::proto_tag\></tt>.
-            ///
-            /// A terminal expression <tt>expr\<AT,term\<A\> \></tt> matches
-            /// a grammar <tt>expr\<BT,term\<B\> \></tt> if \c BT is \c AT or
-            /// \c proto::_ and if one of the following is true:
-            ///
-            /// \li \c B is the wildcard pattern, \c _
-            /// \li \c A is \c B
-            /// \li \c A is <tt>B &</tt>
-            /// \li \c A is <tt>B const &</tt>
-            /// \li \c B is <tt>exact\<A\></tt>
-            /// \li \c B is <tt>convertible_to\<X\></tt> and
-            ///     <tt>is_convertible\<A,X\>::::value</tt> is \c true.
-            /// \li \c A is <tt>X[M]</tt> or <tt>X(&)[M]</tt> and
-            ///     \c B is <tt>X[proto::N]</tt>.
-            /// \li \c A is <tt>X(&)[M]</tt> and \c B is <tt>X(&)[proto::N]</tt>.
-            /// \li \c A is <tt>X[M]</tt> or <tt>X(&)[M]</tt> and
-            ///     \c B is <tt>X*</tt>.
-            /// \li \c B lambda-matches \c A (see below).
-            ///
-            /// A type \c B lambda-matches \c A if one of the following is true:
-            ///
-            /// \li \c B is \c A
-            /// \li \c B is the wildcard pattern, \c _
-            /// \li \c B is <tt>T\<B0,B1,...Bn\></tt> and \c A is
-            ///     <tt>T\<A0,A1,...An\></tt> and for each \c x in
-            ///     <tt>[0,n)</tt>, \c Ax and \c Bx are types
-            ///     such that \c Ax lambda-matches \c Bx
-            template<typename Expr, typename Grammar>
-            struct matches
-              : detail::matches_<
-                    typename Expr::proto_base_expr
-                  , typename Grammar::proto_base_expr
-                >
-            {};
-
-            /// INTERNAL ONLY
-            ///
-            template<typename Expr, typename Grammar>
-            struct matches<Expr &, Grammar>
-              : detail::matches_<
-                    typename Expr::proto_base_expr
-                  , typename Grammar::proto_base_expr
-                >
-            {};
-        }
-
-        namespace wildcardns_
-        {
-
-            /// \brief A wildcard grammar element that matches any expression,
-            /// and a transform that returns the current expression unchanged.
-            ///
-            /// The wildcard type, \c _, is a grammar element such that
-            /// <tt>matches\<E,_\>::::value</tt> is \c true for any expression
-            /// type \c E.
-            ///
-            /// The wildcard can also be used as a stand-in for a template
-            /// argument when matching terminals. For instance, the following
-            /// is a grammar that will match any <tt>std::complex\<\></tt>
-            /// terminal:
-            ///
-            /// \code
-            /// BOOST_MPL_ASSERT((
-            ///     matches<
-            ///         terminal<std::complex<double> >::type
-            ///       , terminal<std::complex< _ > >
-            ///     >
-            /// ));
-            /// \endcode
-            ///
-            /// When used as a transform, \c _ returns the current expression
-            /// unchanged. For instance, in the following, \c _ is used with
-            /// the \c fold\<\> transform to fold the children of a node:
-            ///
-            /// \code
-            /// struct CountChildren
-            ///   : or_<
-            ///         // Terminals have no children
-            ///         when<terminal<_>, mpl::int_<0>()>
-            ///         // Use fold<> to count the children of non-terminals
-            ///       , otherwise<
-            ///             fold<
-            ///                 _ // <-- fold the current expression
-            ///               , mpl::int_<0>()
-            ///               , mpl::plus<_state, mpl::int_<1> >()
-            ///             >
-            ///         >
-            ///     >
-            /// {};
-            /// \endcode
-            struct _ : transform<_>
             {
-                typedef _ proto_base_expr;
-
-                template<typename Expr, typename State, typename Data>
-                struct impl : transform_impl<Expr, State, Data>
-                {
-                    typedef Expr result_type;
-
-                    /// \param expr An expression
-                    /// \return \c e
-                    #ifndef BOOST_NO_DECLTYPE
-                    result_type
-                    #else
-                    typename impl::expr_param 
-                    #endif
-                    operator()(
-                        typename impl::expr_param e
-                      , typename impl::state_param
-                      , typename impl::data_param
-                    ) const
-                    {
-                        return e;
-                    }
-                };
+                typedef typename Cases::template case_<Tag> which;
             };
         }
+
+        /// \brief A Boolean metafunction that evaluates whether a given
+        /// expression type matches a grammar.
+        ///
+        /// <tt>matches\<Expr,Grammar\></tt> inherits (indirectly) from
+        /// \c mpl::true_ if <tt>Expr::proto_grammar</tt> matches
+        /// <tt>Grammar::proto_grammar</tt>, and from \c mpl::false_
+        /// otherwise.
+        ///
+        /// Non-terminal expressions are matched against a grammar
+        /// according to the following rules:
+        ///
+        /// \li The wildcard pattern, \c _, matches any expression.
+        /// \li An expression <tt>expr\<AT, listN\<A0,A1,...An\> \></tt>
+        ///     matches a grammar <tt>expr\<BT, listN\<B0,B1,...Bn\> \></tt>
+        ///     if \c BT is \c _ or \c AT, and if \c Ax matches \c Bx for
+        ///     each \c x in <tt>[0,n)</tt>.
+        /// \li An expression <tt>expr\<AT, listN\<A0,...An,U0,...Um\> \></tt>
+        ///     matches a grammar <tt>expr\<BT, listM\<B0,...Bn,vararg\<V\> \> \></tt>
+        ///     if \c BT is \c _ or \c AT, and if \c Ax matches \c Bx
+        ///     for each \c x in <tt>[0,n)</tt> and if \c Ux matches \c V
+        ///     for each \c x in <tt>[0,m)</tt>.
+        /// \li An expression \c E matches <tt>or_\<B0,B1,...Bn\></tt> if \c E
+        ///     matches some \c Bx for \c x in <tt>[0,n)</tt>.
+        /// \li An expression \c E matches <tt>and_\<B0,B1,...Bn\></tt> if \c E
+        ///     matches all \c Bx for \c x in <tt>[0,n)</tt>.
+        /// \li An expression \c E matches <tt>if_\<T,U,V\></tt> if
+        ///     <tt>boost::result_of\<when\<_,T\>(E,int,int)\>::type::value</tt>
+        ///     is \c true and \c E matches \c U; or, if
+        ///     <tt>boost::result_of\<when\<_,T\>(E,int,int)\>::type::value</tt>
+        ///     is \c false and \c E matches \c V. (Note: \c U defaults to \c _
+        ///     and \c V defaults to \c not_\<_\>.)
+        /// \li An expression \c E matches <tt>not_\<T\></tt> if \c E does
+        ///     not match \c T.
+        /// \li An expression \c E matches <tt>switch_\<C\></tt> if
+        ///     \c E matches <tt>C::case_\<E::proto_tag\></tt>.
+        ///
+        /// A terminal expression <tt>expr\<AT,term\<A\> \></tt> matches
+        /// a grammar <tt>expr\<BT,term\<B\> \></tt> if \c BT is \c AT or
+        /// \c proto::_ and if one of the following is true:
+        ///
+        /// \li \c B is the wildcard pattern, \c _
+        /// \li \c A is \c B
+        /// \li \c A is <tt>B &</tt>
+        /// \li \c A is <tt>B const &</tt>
+        /// \li \c B is <tt>exact\<A\></tt>
+        /// \li \c B is <tt>convertible_to\<X\></tt> and
+        ///     <tt>is_convertible\<A,X\>::value</tt> is \c true.
+        /// \li \c A is <tt>X[M]</tt> or <tt>X(&)[M]</tt> and
+        ///     \c B is <tt>X[proto::N]</tt>.
+        /// \li \c A is <tt>X(&)[M]</tt> and \c B is <tt>X(&)[proto::N]</tt>.
+        /// \li \c A is <tt>X[M]</tt> or <tt>X(&)[M]</tt> and
+        ///     \c B is <tt>X*</tt>.
+        /// \li \c B lambda-matches \c A (see below).
+        ///
+        /// A type \c B lambda-matches \c A if one of the following is true:
+        ///
+        /// \li \c B is \c A
+        /// \li \c B is the wildcard pattern, \c _
+        /// \li \c B is <tt>T\<B0,B1,...Bn\></tt> and \c A is
+        ///     <tt>T\<A0,A1,...An\></tt> and for each \c x in
+        ///     <tt>[0,n)</tt>, \c Ax and \c Bx are types
+        ///     such that \c Ax lambda-matches \c Bx
+        template<typename Expr, typename Grammar>
+        struct matches
+          : detail::matches_<
+                typename Expr::proto_derived_expr
+              , typename Expr::proto_grammar
+              , typename Grammar::proto_grammar
+            >
+        {};
+
+        /// INTERNAL ONLY
+        ///
+        template<typename Expr, typename Grammar>
+        struct matches<Expr &, Grammar>
+          : detail::matches_<
+                typename Expr::proto_derived_expr
+              , typename Expr::proto_grammar
+              , typename Grammar::proto_grammar
+            >
+        {};
+
+        /// \brief A wildcard grammar element that matches any expression,
+        /// and a transform that returns the current expression unchanged.
+        ///
+        /// The wildcard type, \c _, is a grammar element such that
+        /// <tt>matches\<E,_\>::value</tt> is \c true for any expression
+        /// type \c E.
+        ///
+        /// The wildcard can also be used as a stand-in for a template
+        /// argument when matching terminals. For instance, the following
+        /// is a grammar that will match any <tt>std::complex\<\></tt>
+        /// terminal:
+        ///
+        /// \code
+        /// BOOST_MPL_ASSERT((
+        ///     matches<
+        ///         terminal<std::complex<double> >::type
+        ///       , terminal<std::complex< _ > >
+        ///     >
+        /// ));
+        /// \endcode
+        ///
+        /// When used as a transform, \c _ returns the current expression
+        /// unchanged. For instance, in the following, \c _ is used with
+        /// the \c fold\<\> transform to fold the children of a node:
+        ///
+        /// \code
+        /// struct CountChildren
+        ///   : or_<
+        ///         // Terminals have no children
+        ///         when<terminal<_>, mpl::int_<0>()>
+        ///         // Use fold<> to count the children of non-terminals
+        ///       , otherwise<
+        ///             fold<
+        ///                 _ // <-- fold the current expression
+        ///               , mpl::int_<0>()
+        ///               , mpl::plus<_state, mpl::int_<1> >()
+        ///             >
+        ///         >
+        ///     >
+        /// {};
+        /// \endcode
+        struct _ : transform<_>
+        {
+            typedef _ proto_grammar;
+
+            template<typename Expr, typename State, typename Data>
+            struct impl : transform_impl<Expr, State, Data>
+            {
+                typedef Expr result_type;
+
+                /// \param expr An expression
+                /// \return \c e
+                #ifdef BOOST_PROTO_STRICT_RESULT_OF
+                result_type
+                #else
+                typename impl::expr_param 
+                #endif
+                operator()(
+                    typename impl::expr_param e
+                  , typename impl::state_param
+                  , typename impl::data_param
+                ) const
+                {
+                    return e;
+                }
+            };
+        };
 
         namespace detail
         {
@@ -590,289 +616,292 @@
             {};
         }
 
-        namespace control
+        /// \brief Inverts the set of expressions matched by a grammar. When
+        /// used as a transform, \c not_\<\> returns the current expression
+        /// unchanged.
+        ///
+        /// If an expression type \c E does not match a grammar \c G, then
+        /// \c E \e does match <tt>not_\<G\></tt>. For example,
+        /// <tt>not_\<terminal\<_\> \></tt> will match any non-terminal.
+        template<typename Grammar>
+        struct not_ : transform<not_<Grammar> >
         {
-            /// \brief Inverts the set of expressions matched by a grammar. When
-            /// used as a transform, \c not_\<\> returns the current expression
-            /// unchanged.
-            ///
-            /// If an expression type \c E does not match a grammar \c G, then
-            /// \c E \e does match <tt>not_\<G\></tt>. For example,
-            /// <tt>not_\<terminal\<_\> \></tt> will match any non-terminal.
-            template<typename Grammar>
-            struct not_ : transform<not_<Grammar> >
-            {
-                typedef not_ proto_base_expr;
+            typedef not_ proto_grammar;
 
-                template<typename Expr, typename State, typename Data>
-                struct impl : transform_impl<Expr, State, Data>
+            template<typename Expr, typename State, typename Data>
+            struct impl : transform_impl<Expr, State, Data>
+            {
+                typedef Expr result_type;
+
+                /// \param e An expression
+                /// \pre <tt>matches\<Expr,not_\>::value</tt> is \c true.
+                /// \return \c e
+                #ifdef BOOST_PROTO_STRICT_RESULT_OF
+                result_type
+                #else
+                typename impl::expr_param 
+                #endif
+                operator()(
+                    typename impl::expr_param e
+                    , typename impl::state_param
+                    , typename impl::data_param
+                ) const
                 {
-                    typedef Expr result_type;
-
-                    /// \param e An expression
-                    /// \pre <tt>matches\<Expr,not_\>::::value</tt> is \c true.
-                    /// \return \c e
-                    #ifndef BOOST_NO_DECLTYPE
-                    result_type
-                    #else
-                    typename impl::expr_param 
-                    #endif
-                    operator()(
-                        typename impl::expr_param e
-                      , typename impl::state_param
-                      , typename impl::data_param
-                    ) const
-                    {
-                        return e;
-                    }
-                };
+                    return e;
+                }
             };
+        };
 
-            /// \brief Used to select one grammar or another based on the result
-            /// of a compile-time Boolean. When used as a transform, \c if_\<\>
-            /// selects between two transforms based on a compile-time Boolean.
-            ///
-            /// When <tt>if_\<If,Then,Else\></tt> is used as a grammar, \c If
-            /// must be a Proto transform and \c Then and \c Else must be grammars.
-            /// An expression type \c E matches <tt>if_\<If,Then,Else\></tt> if
-            /// <tt>boost::result_of\<when\<_,If\>(E,int,int)\>::::type::value</tt>
-            /// is \c true and \c E matches \c U; or, if
-            /// <tt>boost::result_of\<when\<_,If\>(E,int,int)\>::::type::value</tt>
-            /// is \c false and \c E matches \c V.
-            ///
-            /// The template parameter \c Then defaults to \c _
-            /// and \c Else defaults to \c not\<_\>, so an expression type \c E
-            /// will match <tt>if_\<If\></tt> if and only if
-            /// <tt>boost::result_of\<when\<_,If\>(E,int,int)\>::::type::value</tt>
-            /// is \c true.
-            ///
-            /// \code
-            /// // A grammar that only matches integral terminals,
-            /// // using is_integral<> from Boost.Type_traits.
-            /// struct IsIntegral
-            ///   : and_<
-            ///         terminal<_>
-            ///       , if_< is_integral<_value>() >
-            ///     >
-            /// {};
-            /// \endcode
-            ///
-            /// When <tt>if_\<If,Then,Else\></tt> is used as a transform, \c If,
-            /// \c Then and \c Else must be Proto transforms. When applying
-            /// the transform to an expression \c E, state \c S and data \c V,
-            /// if <tt>boost::result_of\<when\<_,If\>(E,S,V)\>::::type::value</tt>
-            /// is \c true then the \c Then transform is applied; otherwise
-            /// the \c Else transform is applied.
-            ///
-            /// \code
-            /// // Match a terminal. If the terminal is integral, return
-            /// // mpl::true_; otherwise, return mpl::false_.
-            /// struct IsIntegral2
-            ///   : when<
-            ///         terminal<_>
-            ///       , if_<
-            ///             is_integral<_value>()
-            ///           , mpl::true_()
-            ///           , mpl::false_()
-            ///         >
-            ///     >
-            /// {};
-            /// \endcode
-            template<
-                typename If
-              , typename Then   // = _
-              , typename Else   // = not_<_>
-            >
-            struct if_ : transform<if_<If, Then, Else> >
+        /// \brief Used to select one grammar or another based on the result
+        /// of a compile-time Boolean. When used as a transform, \c if_\<\>
+        /// selects between two transforms based on a compile-time Boolean.
+        ///
+        /// When <tt>if_\<If,Then,Else\></tt> is used as a grammar, \c If
+        /// must be a Proto transform and \c Then and \c Else must be grammars.
+        /// An expression type \c E matches <tt>if_\<If,Then,Else\></tt> if
+        /// <tt>boost::result_of\<when\<_,If\>(E,int,int)\>::type::value</tt>
+        /// is \c true and \c E matches \c U; or, if
+        /// <tt>boost::result_of\<when\<_,If\>(E,int,int)\>::type::value</tt>
+        /// is \c false and \c E matches \c V.
+        ///
+        /// The template parameter \c Then defaults to \c _
+        /// and \c Else defaults to \c not\<_\>, so an expression type \c E
+        /// will match <tt>if_\<If\></tt> if and only if
+        /// <tt>boost::result_of\<when\<_,If\>(E,int,int)\>::type::value</tt>
+        /// is \c true.
+        ///
+        /// \code
+        /// // A grammar that only matches integral terminals,
+        /// // using is_integral<> from Boost.Type_traits.
+        /// struct IsIntegral
+        ///   : and_<
+        ///         terminal<_>
+        ///       , if_< is_integral<_value>() >
+        ///     >
+        /// {};
+        /// \endcode
+        ///
+        /// When <tt>if_\<If,Then,Else\></tt> is used as a transform, \c If,
+        /// \c Then and \c Else must be Proto transforms. When applying
+        /// the transform to an expression \c E, state \c S and data \c V,
+        /// if <tt>boost::result_of\<when\<_,If\>(E,S,V)\>::type::value</tt>
+        /// is \c true then the \c Then transform is applied; otherwise
+        /// the \c Else transform is applied.
+        ///
+        /// \code
+        /// // Match a terminal. If the terminal is integral, return
+        /// // mpl::true_; otherwise, return mpl::false_.
+        /// struct IsIntegral2
+        ///   : when<
+        ///         terminal<_>
+        ///       , if_<
+        ///             is_integral<_value>()
+        ///           , mpl::true_()
+        ///           , mpl::false_()
+        ///         >
+        ///     >
+        /// {};
+        /// \endcode
+        template<
+            typename If
+          , typename Then   // = _
+          , typename Else   // = not_<_>
+        >
+        struct if_ : transform<if_<If, Then, Else> >
+        {
+            typedef if_ proto_grammar;
+
+            template<typename Expr, typename State, typename Data>
+            struct impl : transform_impl<Expr, State, Data>
             {
-                typedef if_ proto_base_expr;
+                typedef
+                    typename when<_, If>::template impl<Expr, State, Data>::result_type
+                condition;
 
-                template<typename Expr, typename State, typename Data>
-                struct impl : transform_impl<Expr, State, Data>
-                {
-                    typedef
-                        typename when<_, If>::template impl<Expr, State, Data>::result_type
-                    condition;
+                typedef
+                    typename mpl::if_c<
+                        remove_reference<condition>::type::value
+                      , when<_, Then>
+                      , when<_, Else>
+                    >::type
+                which;
 
-                    typedef
-                        typename mpl::if_c<
-                            remove_reference<condition>::type::value
-                          , when<_, Then>
-                          , when<_, Else>
-                        >::type
-                    which;
-
-                    typedef typename which::template impl<Expr, State, Data>::result_type result_type;
-
-                    /// \param e An expression
-                    /// \param s The current state
-                    /// \param d A data of arbitrary type
-                    /// \return <tt>which::impl<Expr, State, Data>()(e, s, d)</tt>
-                    result_type operator ()(
-                        typename impl::expr_param e
-                      , typename impl::state_param s
-                      , typename impl::data_param d
-                    ) const
-                    {
-                        return typename which::template impl<Expr, State, Data>()(e, s, d);
-                    }
-                };
-            };
-
-            /// \brief For matching one of a set of alternate grammars. Alternates
-            /// tried in order to avoid ambiguity. When used as a transform, \c or_\<\>
-            /// applies the transform associated with the first grammar that matches
-            /// the expression.
-            ///
-            /// An expression type \c E matches <tt>or_\<B0,B1,...Bn\></tt> if \c E
-            /// matches any \c Bx for \c x in <tt>[0,n)</tt>.
-            ///
-            /// When applying <tt>or_\<B0,B1,...Bn\></tt> as a transform with an
-            /// expression \c e of type \c E, state \c s and data \c d, it is
-            /// equivalent to <tt>Bx()(e, s, d)</tt>, where \c x is the lowest
-            /// number such that <tt>matches\<E,Bx\>::::value</tt> is \c true.
-            template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, typename G)>
-            struct or_ : transform<or_<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, G)> >
-            {
-                typedef or_ proto_base_expr;
+                typedef typename which::template impl<Expr, State, Data>::result_type result_type;
 
                 /// \param e An expression
                 /// \param s The current state
                 /// \param d A data of arbitrary type
-                /// \pre <tt>matches\<Expr,or_\>::::value</tt> is \c true.
-                /// \return <tt>which()(e, s, d)</tt>, where <tt>which</tt> is the
-                /// sub-grammar that matched <tt>Expr</tt>.
-
-                template<typename Expr, typename State, typename Data>
-                struct impl
-                  : detail::matches_<typename Expr::proto_base_expr, or_>
-                        ::which::template impl<Expr, State, Data>
-                {};
-
-                template<typename Expr, typename State, typename Data>
-                struct impl<Expr &, State, Data>
-                  : detail::matches_<typename Expr::proto_base_expr, or_>
-                        ::which::template impl<Expr &, State, Data>
-                {};
+                /// \return <tt>which::impl<Expr, State, Data>()(e, s, d)</tt>
+                result_type operator ()(
+                    typename impl::expr_param e
+                  , typename impl::state_param s
+                  , typename impl::data_param d
+                ) const
+                {
+                    return typename which::template impl<Expr, State, Data>()(e, s, d);
+                }
             };
+        };
 
-            /// \brief For matching all of a set of grammars. When used as a
-            /// transform, \c and_\<\> applies the transforms associated with
-            /// the each grammar in the set, and returns the result of the last.
-            ///
-            /// An expression type \c E matches <tt>and_\<B0,B1,...Bn\></tt> if \c E
-            /// matches all \c Bx for \c x in <tt>[0,n)</tt>.
-            ///
-            /// When applying <tt>and_\<B0,B1,...Bn\></tt> as a transform with an
-            /// expression \c e, state \c s and data \c d, it is
-            /// equivalent to <tt>(B0()(e, s, d),B1()(e, s, d),...Bn()(e, s, d))</tt>.
-            template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, typename G)>
-            struct and_ : transform<and_<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, G)> >
-            {
-                typedef and_ proto_base_expr;
+        /// \brief For matching one of a set of alternate grammars. Alternates
+        /// tried in order to avoid ambiguity. When used as a transform, \c or_\<\>
+        /// applies the transform associated with the first grammar that matches
+        /// the expression.
+        ///
+        /// An expression type \c E matches <tt>or_\<B0,B1,...Bn\></tt> if \c E
+        /// matches any \c Bx for \c x in <tt>[0,n)</tt>.
+        ///
+        /// When applying <tt>or_\<B0,B1,...Bn\></tt> as a transform with an
+        /// expression \c e of type \c E, state \c s and data \c d, it is
+        /// equivalent to <tt>Bx()(e, s, d)</tt>, where \c x is the lowest
+        /// number such that <tt>matches\<E,Bx\>::value</tt> is \c true.
+        template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, typename G)>
+        struct or_ : transform<or_<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, G)> >
+        {
+            typedef or_ proto_grammar;
 
-                template<typename Expr, typename State, typename Data>
-                struct impl
-                  : detail::_and_impl<and_, Expr, State, Data>
-                {};
-            };
+            /// \param e An expression
+            /// \param s The current state
+            /// \param d A data of arbitrary type
+            /// \pre <tt>matches\<Expr,or_\>::value</tt> is \c true.
+            /// \return <tt>which()(e, s, d)</tt>, where <tt>which</tt> is the
+            /// sub-grammar that matched <tt>Expr</tt>.
 
-            /// \brief For matching one of a set of alternate grammars, which
-            /// are looked up based on an expression's tag type. When used as a
-            /// transform, \c switch_\<\> applies the transform associated with
-            /// the grammar that matches the expression.
-            ///
-            /// \note \c switch_\<\> is functionally identical to \c or_\<\> but
-            /// is often more efficient. It does a fast, O(1) lookup based on an
-            /// expression's tag type to find a sub-grammar that may potentially
-            /// match the expression.
-            ///
-            /// An expression type \c E matches <tt>switch_\<C\></tt> if \c E
-            /// matches <tt>C::case_\<E::proto_tag\></tt>.
-            ///
-            /// When applying <tt>switch_\<C\></tt> as a transform with an
-            /// expression \c e of type \c E, state \c s and data \c d, it is
-            /// equivalent to <tt>C::case_\<E::proto_tag\>()(e, s, d)</tt>.
-            template<typename Cases>
-            struct switch_ : transform<switch_<Cases> >
-            {
-                typedef switch_ proto_base_expr;
-
-                /// \param e An expression
-                /// \param s The current state
-                /// \param d A data of arbitrary type
-                /// \pre <tt>matches\<Expr,switch_\>::::value</tt> is \c true.
-                /// \return <tt>which()(e, s, d)</tt>, where <tt>which</tt> is
-                /// <tt>Cases::case_<typename Expr::proto_tag></tt>
-
-                template<typename Expr, typename State, typename Data>
-                struct impl
-                  : Cases::template case_<typename Expr::proto_tag>::template impl<Expr, State, Data>
-                {};
-
-                template<typename Expr, typename State, typename Data>
-                struct impl<Expr &, State, Data>
-                  : Cases::template case_<typename Expr::proto_tag>::template impl<Expr &, State, Data>
-                {};
-            };
-
-            /// \brief For forcing exact matches of terminal types.
-            ///
-            /// By default, matching terminals ignores references and
-            /// cv-qualifiers. For instance, a terminal expression of
-            /// type <tt>terminal\<int const &\>::::type</tt> will match
-            /// the grammar <tt>terminal\<int\></tt>. If that is not
-            /// desired, you can force an exact match with
-            /// <tt>terminal\<exact\<int\> \></tt>. This will only
-            /// match integer terminals where the terminal is held by
-            /// value.
-            template<typename T>
-            struct exact
+            template<typename Expr, typename State, typename Data>
+            struct impl
+              : detail::matches_<
+                    typename Expr::proto_derived_expr
+                  , typename Expr::proto_grammar
+                  , or_
+                >::which::template impl<Expr, State, Data>
             {};
 
-            /// \brief For matching terminals that are convertible to
-            /// a type.
-            ///
-            /// Use \c convertible_to\<\> to match a terminal that is
-            /// convertible to some type. For example, the grammar
-            /// <tt>terminal\<convertible_to\<int\> \></tt> will match
-            /// any terminal whose argument is convertible to an integer.
-            ///
-            /// \note The trait \c is_convertible\<\> from Boost.Type_traits
-            /// is used to determinal convertibility.
-            template<typename T>
-            struct convertible_to
+            template<typename Expr, typename State, typename Data>
+            struct impl<Expr &, State, Data>
+              : detail::matches_<
+                    typename Expr::proto_derived_expr
+                  , typename Expr::proto_grammar
+                  , or_
+                >::which::template impl<Expr &, State, Data>
+            {};
+        };
+
+        /// \brief For matching all of a set of grammars. When used as a
+        /// transform, \c and_\<\> applies the transforms associated with
+        /// the each grammar in the set, and returns the result of the last.
+        ///
+        /// An expression type \c E matches <tt>and_\<B0,B1,...Bn\></tt> if \c E
+        /// matches all \c Bx for \c x in <tt>[0,n)</tt>.
+        ///
+        /// When applying <tt>and_\<B0,B1,...Bn\></tt> as a transform with an
+        /// expression \c e, state \c s and data \c d, it is
+        /// equivalent to <tt>(B0()(e, s, d),B1()(e, s, d),...Bn()(e, s, d))</tt>.
+        template<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, typename G)>
+        struct and_ : transform<and_<BOOST_PP_ENUM_PARAMS(BOOST_PROTO_MAX_LOGICAL_ARITY, G)> >
+        {
+            typedef and_ proto_grammar;
+
+            template<typename Expr, typename State, typename Data>
+            struct impl
+              : detail::_and_impl<and_, Expr, State, Data>
+            {};
+        };
+
+        /// \brief For matching one of a set of alternate grammars, which
+        /// are looked up based on an expression's tag type. When used as a
+        /// transform, \c switch_\<\> applies the transform associated with
+        /// the grammar that matches the expression.
+        ///
+        /// \note \c switch_\<\> is functionally identical to \c or_\<\> but
+        /// is often more efficient. It does a fast, O(1) lookup based on an
+        /// expression's tag type to find a sub-grammar that may potentially
+        /// match the expression.
+        ///
+        /// An expression type \c E matches <tt>switch_\<C\></tt> if \c E
+        /// matches <tt>C::case_\<E::proto_tag\></tt>.
+        ///
+        /// When applying <tt>switch_\<C\></tt> as a transform with an
+        /// expression \c e of type \c E, state \c s and data \c d, it is
+        /// equivalent to <tt>C::case_\<E::proto_tag\>()(e, s, d)</tt>.
+        template<typename Cases>
+        struct switch_ : transform<switch_<Cases> >
+        {
+            typedef switch_ proto_grammar;
+
+            /// \param e An expression
+            /// \param s The current state
+            /// \param d A data of arbitrary type
+            /// \pre <tt>matches\<Expr,switch_\>::value</tt> is \c true.
+            /// \return <tt>which()(e, s, d)</tt>, where <tt>which</tt> is
+            /// <tt>Cases::case_<typename Expr::proto_tag></tt>
+
+            template<typename Expr, typename State, typename Data>
+            struct impl
+              : Cases::template case_<typename Expr::proto_tag>::template impl<Expr, State, Data>
             {};
 
-            /// \brief For matching a Grammar to a variable number of
-            /// sub-expressions.
-            ///
-            /// An expression type <tt>expr\<AT, listN\<A0,...An,U0,...Um\> \></tt>
-            /// matches a grammar <tt>expr\<BT, listM\<B0,...Bn,vararg\<V\> \> \></tt>
-            /// if \c BT is \c _ or \c AT, and if \c Ax matches \c Bx
-            /// for each \c x in <tt>[0,n)</tt> and if \c Ux matches \c V
-            /// for each \c x in <tt>[0,m)</tt>.
-            ///
-            /// For example:
-            ///
-            /// \code
-            /// // Match any function call expression, irregardless
-            /// // of the number of function arguments:
-            /// struct Function
-            ///   : function< vararg<_> >
-            /// {};
-            /// \endcode
-            ///
-            /// When used as a transform, <tt>vararg\<G\></tt> applies
-            /// <tt>G</tt>'s transform.
-            template<typename Grammar>
-            struct vararg
-              : Grammar
-            {
-                /// INTERNAL ONLY
-                typedef void proto_is_vararg_;
-            };
-        }
+            template<typename Expr, typename State, typename Data>
+            struct impl<Expr &, State, Data>
+              : Cases::template case_<typename Expr::proto_tag>::template impl<Expr &, State, Data>
+            {};
+        };
+
+        /// \brief For forcing exact matches of terminal types.
+        ///
+        /// By default, matching terminals ignores references and
+        /// cv-qualifiers. For instance, a terminal expression of
+        /// type <tt>terminal\<int const &\>::type</tt> will match
+        /// the grammar <tt>terminal\<int\></tt>. If that is not
+        /// desired, you can force an exact match with
+        /// <tt>terminal\<exact\<int\> \></tt>. This will only
+        /// match integer terminals where the terminal is held by
+        /// value.
+        template<typename T>
+        struct exact
+        {};
+
+        /// \brief For matching terminals that are convertible to
+        /// a type.
+        ///
+        /// Use \c convertible_to\<\> to match a terminal that is
+        /// convertible to some type. For example, the grammar
+        /// <tt>terminal\<convertible_to\<int\> \></tt> will match
+        /// any terminal whose argument is convertible to an integer.
+        ///
+        /// \note The trait \c is_convertible\<\> from Boost.Type_traits
+        /// is used to determinal convertibility.
+        template<typename T>
+        struct convertible_to
+        {};
+
+        /// \brief For matching a Grammar to a variable number of
+        /// sub-expressions.
+        ///
+        /// An expression type <tt>expr\<AT, listN\<A0,...An,U0,...Um\> \></tt>
+        /// matches a grammar <tt>expr\<BT, listM\<B0,...Bn,vararg\<V\> \> \></tt>
+        /// if \c BT is \c _ or \c AT, and if \c Ax matches \c Bx
+        /// for each \c x in <tt>[0,n)</tt> and if \c Ux matches \c V
+        /// for each \c x in <tt>[0,m)</tt>.
+        ///
+        /// For example:
+        ///
+        /// \code
+        /// // Match any function call expression, irregardless
+        /// // of the number of function arguments:
+        /// struct Function
+        ///   : function< vararg<_> >
+        /// {};
+        /// \endcode
+        ///
+        /// When used as a transform, <tt>vararg\<G\></tt> applies
+        /// <tt>G</tt>'s transform.
+        template<typename Grammar>
+        struct vararg
+          : Grammar
+        {
+            /// INTERNAL ONLY
+            typedef void proto_is_vararg_;
+        };
 
         /// INTERNAL ONLY
         ///
@@ -906,6 +935,13 @@
         ///
         template<typename Grammar>
         struct is_callable<vararg<Grammar> >
+          : mpl::true_
+        {};
+
+        /// INTERNAL ONLY
+        ///
+        template<typename Cases>
+        struct is_callable<switch_<Cases> >
           : mpl::true_
         {};
 
@@ -954,6 +990,7 @@
                 BOOST_PP_CAT(Gimpl, N);                                                           \
                 /**/
                 BOOST_PP_REPEAT(N, M0, ~)
+                #undef M0
 
                 typedef typename BOOST_PP_CAT(Gimpl, BOOST_PP_DEC(N))::result_type result_type;
 
@@ -963,47 +1000,51 @@
                   , typename _and_impl::data_param d
                 ) const
                 {
-                    // expands to (G0()(e,s,d),G1()(e,s,d),...);
-                    return (BOOST_PP_ENUM_BINARY_PARAMS(N, Gimpl, ()(e,s,d) BOOST_PP_INTERCEPT));
+                    // Fix: jfalcou - 12/29/2010
+                    // Avoid the use of comma operator here so as not to find Proto's
+                    // by accident.
+                    // expands to G0()(e,s,d); G1()(e,s,d); ... G{N-1}()(e,s,d);
+                    #define M0(Z,N,DATA) BOOST_PP_CAT(Gimpl,N)()(e,s,d);
+                    BOOST_PP_REPEAT(BOOST_PP_DEC(N),M0,~)
+                    return BOOST_PP_CAT(Gimpl,BOOST_PP_DEC(N))()(e,s,d);
+                    #undef M0
                 }
-
-                #undef M0
             };
 
-            template<bool B, typename Expr, BOOST_PP_ENUM_PARAMS(N, typename G)>
+            template<bool B, typename Expr, typename BasicExpr, BOOST_PP_ENUM_PARAMS(N, typename G)>
             struct BOOST_PP_CAT(or_, N)
             #if 2 == N
-              : mpl::bool_<matches_<Expr, typename G1::proto_base_expr>::value>
+              : mpl::bool_<matches_<Expr, BasicExpr, typename G1::proto_grammar>::value>
             {
                 typedef G1 which;
             };
             #else
               : BOOST_PP_CAT(or_, BOOST_PP_DEC(N))<
-                    matches_<Expr, typename G1::proto_base_expr>::value
-                  , Expr, BOOST_PP_ENUM_SHIFTED_PARAMS(N, G)
+                    matches_<Expr, BasicExpr, typename G1::proto_grammar>::value
+                  , Expr, BasicExpr, BOOST_PP_ENUM_SHIFTED_PARAMS(N, G)
                 >
             {};
             #endif
 
-            template<typename Expr BOOST_PP_ENUM_TRAILING_PARAMS(N, typename G)>
-            struct BOOST_PP_CAT(or_, N)<true, Expr, BOOST_PP_ENUM_PARAMS(N, G)>
+            template<typename Expr, typename BasicExpr BOOST_PP_ENUM_TRAILING_PARAMS(N, typename G)>
+            struct BOOST_PP_CAT(or_, N)<true, Expr, BasicExpr, BOOST_PP_ENUM_PARAMS(N, G)>
               : mpl::true_
             {
                 typedef G0 which;
             };
 
             // handle proto::or_
-            template<typename Expr, BOOST_PP_ENUM_PARAMS(N, typename G)>
-            struct matches_<Expr, proto::or_<BOOST_PP_ENUM_PARAMS(N, G)> >
+            template<typename Expr, typename BasicExpr BOOST_PP_ENUM_TRAILING_PARAMS(N, typename G)>
+            struct matches_<Expr, BasicExpr, proto::or_<BOOST_PP_ENUM_PARAMS(N, G)> >
               : BOOST_PP_CAT(or_, N)<
-                    matches_<typename Expr::proto_base_expr, typename G0::proto_base_expr>::value,
-                    typename Expr::proto_base_expr, BOOST_PP_ENUM_PARAMS(N, G)
+                    matches_<Expr, BasicExpr, typename G0::proto_grammar>::value,
+                    Expr, BasicExpr BOOST_PP_ENUM_TRAILING_PARAMS(N, G)
                 >
             {};
 
             // handle proto::and_
-            template<typename Expr, BOOST_PP_ENUM_PARAMS(N, typename G)>
-            struct matches_<Expr, proto::and_<BOOST_PP_ENUM_PARAMS(N, G)> >
+            template<typename Expr, typename BasicExpr, BOOST_PP_ENUM_PARAMS(N, typename G)>
+            struct matches_<Expr, BasicExpr, proto::and_<BOOST_PP_ENUM_PARAMS(N, G)> >
               : detail::BOOST_PP_CAT(and_, N)<
                     BOOST_PROTO_DEFINE_MATCHES(~, 0, ~)::value,
                     BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_DEFINE_MATCHES, ~)
@@ -1020,14 +1061,22 @@
             template<typename Args, typename Back, long To>
             struct vararg_matches_impl<Args, Back, N, To>
               : and_2<
-                    matches_<typename detail::expr_traits<typename Args::BOOST_PP_CAT(child, BOOST_PP_DEC(N))>::value_type::proto_base_expr, Back>::value
+                    matches_<
+                        typename detail::expr_traits<typename Args::BOOST_PP_CAT(child, BOOST_PP_DEC(N))>::value_type::proto_derived_expr
+                      , typename detail::expr_traits<typename Args::BOOST_PP_CAT(child, BOOST_PP_DEC(N))>::value_type::proto_grammar
+                      , Back
+                    >::value
                   , vararg_matches_impl<Args, Back, N + 1, To>
                 >
             {};
 
             template<typename Args, typename Back>
             struct vararg_matches_impl<Args, Back, N, N>
-              : matches_<typename detail::expr_traits<typename Args::BOOST_PP_CAT(child, BOOST_PP_DEC(N))>::value_type::proto_base_expr, Back>
+              : matches_<
+                    typename detail::expr_traits<typename Args::BOOST_PP_CAT(child, BOOST_PP_DEC(N))>::value_type::proto_derived_expr
+                  , typename detail::expr_traits<typename Args::BOOST_PP_CAT(child, BOOST_PP_DEC(N))>::value_type::proto_grammar
+                  , Back
+                >
             {};
 
             template<
@@ -1035,23 +1084,27 @@
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, typename Expr)
                 BOOST_PP_ENUM_TRAILING_PARAMS(N, typename Grammar)
             >
-            struct lambda_matches<T<BOOST_PP_ENUM_PARAMS(N, Expr)>, T<BOOST_PP_ENUM_PARAMS(N, Grammar)> BOOST_MPL_AUX_LAMBDA_ARITY_PARAM(N) >
+            struct lambda_matches<
+                T<BOOST_PP_ENUM_PARAMS(N, Expr)>
+              , T<BOOST_PP_ENUM_PARAMS(N, Grammar)>
+                BOOST_MPL_AUX_LAMBDA_ARITY_PARAM(N)
+            >
               : BOOST_PP_CAT(and_, N)<
                     BOOST_PROTO_DEFINE_LAMBDA_MATCHES(~, 0, ~)::value,
                     BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_DEFINE_LAMBDA_MATCHES, ~)
                 >
             {};
 
-            template<typename Tag, typename Args1, typename Args2>
-            struct matches_< proto::expr<Tag, Args1, N>, proto::expr<Tag, Args2, N> >
+            template<typename Expr, typename Tag, typename Args1, typename Args2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, N>, proto::basic_expr<Tag, Args2, N> >
               : BOOST_PP_CAT(and_, N)<
                     BOOST_PROTO_MATCHES_N_FUN(~, 0, ~)::value,
                     BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_MATCHES_N_FUN, ~)
                 >
             {};
 
-            template<typename Tag, typename Args1, typename Args2>
-            struct matches_< proto::expr<Tag, Args1, N>, proto::expr<proto::_, Args2, N> >
+            template<typename Expr, typename Tag, typename Args1, typename Args2>
+            struct matches_< Expr, proto::basic_expr<Tag, Args1, N>, proto::basic_expr<proto::_, Args2, N> >
               : BOOST_PP_CAT(and_, N)<
                     BOOST_PROTO_MATCHES_N_FUN(~, 0, ~)::value,
                     BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_MATCHES_N_FUN, ~)
