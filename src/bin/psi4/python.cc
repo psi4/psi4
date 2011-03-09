@@ -1,16 +1,3 @@
-// Include Python's header file.
-// Use "python-config --includes" to determine this location.
-
-#define BOOST_FILESYSTEM_VERSION 3
-
-//  As an example program, we don't want to use any deprecated features
-#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
-#  define BOOST_FILESYSTEM_NO_DEPRECATED
-#endif
-#ifndef BOOST_SYSTEM_NO_DEPRECATED
-#  define BOOST_SYSTEM_NO_DEPRECATED
-#endif
-
 #include <cstdio>
 #include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>

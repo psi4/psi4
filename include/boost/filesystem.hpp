@@ -7,7 +7,7 @@
 
 //  Library home page: http://www.boost.org/libs/filesystem
 
-//--------------------------------------------------------------------------------------// 
+//--------------------------------------------------------------------------------------//
 
 #ifndef BOOST_FILESYSTEM_FILESYSTEM_HPP
 #define BOOST_FILESYSTEM_FILESYSTEM_HPP
@@ -24,6 +24,13 @@
 #   define BOOST_FILESYSTEM_VERSION 3
 # endif
 
+#ifndef BOOST_FILESYSTEM_NO_DEPRECATED
+#  define BOOST_FILESYSTEM_NO_DEPRECATED
+#endif
+#ifndef BOOST_SYSTEM_NO_DEPRECATED
+#  define BOOST_SYSTEM_NO_DEPRECATED
+#endif
+
 #if BOOST_FILESYSTEM_VERSION == 2
 #  include <boost/filesystem/v2/config.hpp>
 #  include <boost/filesystem/v2/path.hpp>
@@ -38,4 +45,4 @@
 
 # endif
 
-#endif  // BOOST_FILESYSTEM_FILESYSTEM_HPP 
+#endif  // BOOST_FILESYSTEM_FILESYSTEM_HPP
