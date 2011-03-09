@@ -11,6 +11,23 @@
 
 namespace boost { namespace python { namespace detail {
 
+namespace
+{
+    PyObject* init_module_in_scope(PyObject* m, void(*init_function)())
+    {
+        if (m != 0)
+        {
+            // Create the current module scope
+            object m_obj(((borrowed_reference_t*)m));
+            scope current_module(m_obj);
+
+            handle_exception(init_function);
+        }
+
+        return m;
+    }
+}
+
 BOOST_PYTHON_DECL void scope_setattr_doc(char const* name, object const& x, char const* doc)
 {
     // Use function::add_to_namespace to achieve overloading if
@@ -19,41 +36,30 @@ BOOST_PYTHON_DECL void scope_setattr_doc(char const* name, object const& x, char
     objects::add_to_namespace(current, name, x, doc);
 }
 
+#if PY_VERSION_HEX >= 0x03000000
+
+PyObject* init_module(PyModuleDef& moduledef, void(*init_function)())
+{
+    return init_module_in_scope(
+        PyModule_Create(&moduledef),
+        init_function);
+}
+
+#else
+
 namespace
 {
-  PyMethodDef initial_methods[] = { { 0, 0, 0, 0 } };
+    PyMethodDef initial_methods[] = { { 0, 0, 0, 0 } };
 }
 
 BOOST_PYTHON_DECL PyObject* init_module(char const* name, void(*init_function)())
 {
-#if PY_VERSION_HEX >= 0x03000000
-    static struct PyModuleDef moduledef = {
-        PyModuleDef_HEAD_INIT,
-        name,
-        0, /* m_doc */
-        -1, /* m_size */
-        initial_methods,
-        0,  /* m_reload */
-        0, /* m_traverse */
-        0, /* m_clear */
-        0,  /* m_free */
-    };
-    PyObject* m = PyModule_Create(&moduledef);
-#else
-    PyObject* m
-        = Py_InitModule(const_cast<char*>(name), initial_methods);
-#endif
-
-    if (m != 0)
-    {
-        // Create the current module scope
-        object m_obj(((borrowed_reference_t*)m));
-        scope current_module(m_obj);
-        
-        handle_exception(init_function);
-    }
-    return m;
+    return init_module_in_scope(
+        Py_InitModule(const_cast<char*>(name), initial_methods),
+        init_function);
 }
+
+#endif
 
 }}} // namespace boost::python::detail
 
