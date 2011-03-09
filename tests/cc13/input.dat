@@ -1,0 +1,31 @@
+refnuc   = 6.0682984689667
+refscf   = -38.9173786948
+refccsd  = -0.115368877467405
+reftotal = -39.032747572263979
+
+molecule ch2 {
+  0 3
+  c
+  h 1 1.1
+  h 1 1.1 2 109
+}
+
+set globals {
+  wfn ccsd
+  reference uhf
+  dertype first
+  basis 6-31G**
+
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+energy('ccsd')
+
+compare_values(refnuc,   ch2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")  #TEST
+compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")                #TEST
+compare_values(refccsd,  get_variable("CCSD energy"),    7, "CCSD contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"), 7, "Total energy")              #TEST
+
+clean()
