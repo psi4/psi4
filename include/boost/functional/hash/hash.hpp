@@ -16,8 +16,16 @@
 #include <string>
 #include <boost/limits.hpp>
 
+#if defined(BOOST_HASH_NO_IMPLICIT_CASTS)
+#include <boost/static_assert.hpp>
+#endif
+
 #if defined(BOOST_NO_TEMPLATE_PARTIAL_SPECIALIZATION)
 #include <boost/type_traits/is_pointer.hpp>
+#endif
+
+#if !defined(BOOST_NO_0X_HDR_TYPEINDEX)
+#include <typeindex>
 #endif
 
 #if BOOST_WORKAROUND(__GNUC__, < 3) \
@@ -29,6 +37,18 @@
 
 namespace boost
 {
+#if defined(BOOST_HASH_NO_IMPLICIT_CASTS)
+
+    // If you get a static assertion here, it's because hash_value
+    // isn't declared for your type.
+    template <typename T>
+    std::size_t hash_value(T const&) {
+        BOOST_STATIC_ASSERT((T*) 0 && false);
+        return 0;
+    }
+
+#endif
+
     std::size_t hash_value(bool);
     std::size_t hash_value(char);
     std::size_t hash_value(unsigned char);
@@ -70,6 +90,10 @@ namespace boost
     template <class Ch, class A>
     std::size_t hash_value(
         std::basic_string<Ch, std::BOOST_HASH_CHAR_TRAITS<Ch>, A> const&);
+
+#if !defined(BOOST_NO_0X_HDR_TYPEINDEX)
+    std::size_t hash_value(std::type_index);
+#endif
 
     // Implementation
 
@@ -193,9 +217,15 @@ namespace boost
     template <class T> std::size_t hash_value(T* v)
 #endif
     {
+#if defined(__VMS) && __INITIAL_POINTER_SIZE == 64
+    // for some reason ptrdiff_t on OpenVMS compiler with
+    // 64 bit is not 64 bit !!!
+        std::size_t x = static_cast<std::size_t>(
+           reinterpret_cast<long long int>(v));
+#else
         std::size_t x = static_cast<std::size_t>(
            reinterpret_cast<std::ptrdiff_t>(v));
-
+#endif
         return x + (x >> 3);
     }
 
@@ -309,6 +339,13 @@ namespace boost
         return boost::hash_detail::float_hash_value(v);
     }
 
+#if !defined(BOOST_NO_0X_HDR_TYPEINDEX)
+    inline std::size_t hash_value(std::type_index v)
+    {
+        return v.hash_code();
+    }
+#endif
+
     //
     // boost::hash
     //
@@ -411,6 +448,10 @@ namespace boost
 #if !defined(BOOST_NO_LONG_LONG)
     BOOST_HASH_SPECIALIZE(boost::long_long_type)
     BOOST_HASH_SPECIALIZE(boost::ulong_long_type)
+#endif
+
+#if !defined(BOOST_NO_0X_HDR_TYPEINDEX)
+    BOOST_HASH_SPECIALIZE(std::type_index)
 #endif
 
 #undef BOOST_HASH_SPECIALIZE

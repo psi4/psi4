@@ -122,9 +122,30 @@ BOOST_PYTHON_TO_INT(short)
 BOOST_PYTHON_TO_INT(int)
 BOOST_PYTHON_TO_INT(long)
 
-// using Python's macro instead of Boost's - we don't seem to get the
-// config right all the time.
-# ifdef HAVE_LONG_LONG 
+# if defined(_MSC_VER) && defined(_WIN64) && PY_VERSION_HEX < 0x03000000
+/* Under 64-bit Windows std::size_t is "unsigned long long". To avoid
+   getting a Python long for each std::size_t the value is checked before
+   the conversion. A std::size_t is converted to a simple Python int
+   if possible; a Python long appears only if the value is too small or
+   too large to fit into a simple int. */
+BOOST_PYTHON_TO_PYTHON_BY_VALUE(
+    signed BOOST_PYTHON_LONG_LONG,
+    (   x < static_cast<signed BOOST_PYTHON_LONG_LONG>(
+            (std::numeric_limits<long>::min)())
+     || x > static_cast<signed BOOST_PYTHON_LONG_LONG>(
+            (std::numeric_limits<long>::max)()))
+    ? ::PyLong_FromLongLong(x)
+    : ::PyInt_FromLong(static_cast<long>(x)), &PyInt_Type)
+BOOST_PYTHON_TO_PYTHON_BY_VALUE(
+    unsigned BOOST_PYTHON_LONG_LONG,
+    x > static_cast<unsigned BOOST_PYTHON_LONG_LONG>(
+      (std::numeric_limits<long>::max)())
+    ? ::PyLong_FromUnsignedLongLong(x)
+    : ::PyInt_FromLong(static_cast<long>(x)), &PyInt_Type)
+//
+# elif defined(HAVE_LONG_LONG) // using Python's macro instead of Boost's
+                               // - we don't seem to get the config right
+                               // all the time.
 BOOST_PYTHON_TO_PYTHON_BY_VALUE(signed BOOST_PYTHON_LONG_LONG, ::PyLong_FromLongLong(x), &PyLong_Type)
 BOOST_PYTHON_TO_PYTHON_BY_VALUE(unsigned BOOST_PYTHON_LONG_LONG, ::PyLong_FromUnsignedLongLong(x), &PyLong_Type)
 # endif

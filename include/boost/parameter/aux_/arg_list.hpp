@@ -11,7 +11,7 @@
 #include <boost/parameter/aux_/default.hpp>
 #include <boost/parameter/aux_/parameter_requirements.hpp>
 #include <boost/parameter/aux_/yesno.hpp>
-#include <boost/parameter/aux_/maybe.hpp>
+#include <boost/parameter/aux_/is_maybe.hpp>
 #include <boost/parameter/config.hpp>
 
 #include <boost/mpl/apply.hpp>
@@ -22,12 +22,11 @@
 
 #include <boost/type_traits/add_reference.hpp>
 #include <boost/type_traits/is_same.hpp>
-#include <boost/type_traits/is_base_and_derived.hpp>
 #include <boost/preprocessor/repetition/enum_params.hpp>
 #include <boost/preprocessor/repetition/enum_binary_params.hpp>
 #include <boost/preprocessor/facilities/intercept.hpp>
 
-namespace boost { namespace parameter { 
+namespace boost { namespace parameter {
 
 // Forward declaration for aux::arg_list, below.
 template<class T> struct keyword;
@@ -47,7 +46,7 @@ struct lambda_tag;
 // declarations to build member function overload sets that can
 // match against keywords.
 //
-  
+
 // MPL sequence support
 struct arg_list_tag;
 
@@ -84,14 +83,14 @@ struct empty_arg_list
     template <class KW>
     static no_tag has_key(KW*);
 #endif
-    
+
 #if BOOST_WORKAROUND(BOOST_MSVC, <= 1300) \
     || (BOOST_WORKAROUND(__GNUC__, < 3)) \
     || BOOST_WORKAROUND(__BORLANDC__, BOOST_TESTED_AT(0x564))
-    
+
     // The overload set technique doesn't work with these older
     // compilers, so they need some explicit handholding.
-      
+
     // A metafunction class that, given a keyword, returns the type
     // of the base sublist whose get() function can produce the
     // value for that key
@@ -159,11 +158,6 @@ no_tag operator*(empty_arg_list, KW*);
 // Forward declaration for arg_list::operator,
 template <class KW, class T>
 struct tagged_argument;
-
-template <class T>
-struct is_maybe
-  : is_base_and_derived<maybe_base, T>
-{};
 
 template <class T>
 struct get_reference
@@ -242,8 +236,8 @@ struct arg_list : Next
     // same keyword is used again
     static yes_tag has_key(key_type*);
     using Next::has_key;
-    
-#  define BOOST_PARAMETER_CALL_HAS_KEY(next, key) next::has_key((key*)0)  
+
+#  define BOOST_PARAMETER_CALL_HAS_KEY(next, key) next::has_key((key*)0)
 # endif
 
     BOOST_MPL_ASSERT_MSG(
@@ -258,7 +252,7 @@ struct arg_list : Next
     // specific arguments by name
     //
 
-    // Helpers that handle the case when TaggedArg is 
+    // Helpers that handle the case when TaggedArg is
     // empty<T>.
     template <class D>
     reference get_default(D const&, mpl::false_) const
@@ -338,7 +332,7 @@ struct arg_list : Next
     template <class Default>
     reference get(default_<key_type,Default> const& d) const
     {
-        return get_default(d, holds_maybe());        
+        return get_default(d, holds_maybe());
     }
 
     template <class Default>
@@ -346,7 +340,7 @@ struct arg_list : Next
     {
         return arg.value;
     }
-    
+
 #else
 
     reference operator[](keyword<key_type> const&) const
@@ -401,7 +395,7 @@ struct arg_list : Next
     // Comma operator to compose argument list without using parameters<>.
     // Useful for argument lists with undetermined length.
     template <class KW, class T2>
-    arg_list<tagged_argument<KW, T2>, self> 
+    arg_list<tagged_argument<KW, T2>, self>
     operator,(tagged_argument<KW,T2> x) const
     {
         return arg_list<tagged_argument<KW,T2>, self>(x, *this);
@@ -415,7 +409,7 @@ struct arg_list : Next
 
 #if BOOST_WORKAROUND(BOOST_MSVC, <= 1300)  // ETI workaround
 template <> struct arg_list<int,int> {};
-#endif 
+#endif
 
 // MPL sequence support
 template <class ArgumentPack>
@@ -425,7 +419,7 @@ struct arg_list_iterator
 
     // The incremented iterator
     typedef arg_list_iterator<typename ArgumentPack::tail_type> next;
-    
+
     // dereferencing yields the key type
     typedef typename ArgumentPack::key_type type;
 };

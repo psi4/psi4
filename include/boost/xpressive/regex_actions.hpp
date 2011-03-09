@@ -62,6 +62,21 @@
 #pragma warning(disable : 4610) // can never be instantiated - user defined constructor required
 #endif
 
+namespace boost
+{
+    namespace detail
+    {
+        // Bit of a hack to make lexical_cast work with wide sub_match
+        template<typename T>
+        struct stream_char;
+
+        template<typename BidiIter>
+        struct stream_char<xpressive::sub_match<BidiIter> >
+          : boost::iterator_value<BidiIter>
+        {};
+    }
+}
+
 namespace boost { namespace xpressive
 {
 
@@ -856,24 +871,24 @@ namespace boost { namespace xpressive
     {
         inline void ignore_unused_regex_actions()
         {
-            ignore_unused(xpressive::push);
-            ignore_unused(xpressive::push_back);
-            ignore_unused(xpressive::push_front);
-            ignore_unused(xpressive::pop);
-            ignore_unused(xpressive::pop_back);
-            ignore_unused(xpressive::pop_front);
-            ignore_unused(xpressive::top);
-            ignore_unused(xpressive::back);
-            ignore_unused(xpressive::front);
-            ignore_unused(xpressive::first);
-            ignore_unused(xpressive::second);
-            ignore_unused(xpressive::matched);
-            ignore_unused(xpressive::length);
-            ignore_unused(xpressive::str);
-            ignore_unused(xpressive::insert);
-            ignore_unused(xpressive::make_pair);
-            ignore_unused(xpressive::check);
-            ignore_unused(xpressive::let);
+            detail::ignore_unused(xpressive::push);
+            detail::ignore_unused(xpressive::push_back);
+            detail::ignore_unused(xpressive::push_front);
+            detail::ignore_unused(xpressive::pop);
+            detail::ignore_unused(xpressive::pop_back);
+            detail::ignore_unused(xpressive::pop_front);
+            detail::ignore_unused(xpressive::top);
+            detail::ignore_unused(xpressive::back);
+            detail::ignore_unused(xpressive::front);
+            detail::ignore_unused(xpressive::first);
+            detail::ignore_unused(xpressive::second);
+            detail::ignore_unused(xpressive::matched);
+            detail::ignore_unused(xpressive::length);
+            detail::ignore_unused(xpressive::str);
+            detail::ignore_unused(xpressive::insert);
+            detail::ignore_unused(xpressive::make_pair);
+            detail::ignore_unused(xpressive::check);
+            detail::ignore_unused(xpressive::let);
         }
     }
 

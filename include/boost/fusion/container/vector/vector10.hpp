@@ -52,7 +52,7 @@ namespace boost { namespace fusion
         vector0() {}
 
         template<typename Sequence>
-        vector0(Sequence const& seq)
+        vector0(Sequence const& /*seq*/)
         {}
     };
 

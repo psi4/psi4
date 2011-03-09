@@ -39,7 +39,7 @@ namespace boost {
 namespace serialization {
 
 /////////1/////////2/////////3/////////4/////////5/////////6/////////7/////////8
-// vector<T>
+// vector< T >
 
 // the default versions
 
@@ -127,7 +127,7 @@ inline void load(
     const unsigned int file_version
 ){
 #ifdef BOOST_SERIALIZATION_VECTOR_135_HPP
-    if (ar.get_library_version()==5)
+    if (ar.get_library_version()==boost::archive::library_version_type(5))
     {
       load(ar,t,file_version, boost::is_arithmetic<U>());
       return;

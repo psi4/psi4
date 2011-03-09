@@ -41,10 +41,14 @@ namespace boost { namespace fusion
                 bidirectional_traversal_tag
               , category>::value));
 
-        reverse_view_iterator(First const& first)
-            : first(converter::call(first)) {}
+        reverse_view_iterator(First const& in_first)
+            : first(converter::call(in_first)) {}
 
         first_type first;
+
+    private:
+        // silence MSVC warning C4512: assignment operator could not be generated
+        reverse_view_iterator& operator= (reverse_view_iterator const&);
     };
 }}
 

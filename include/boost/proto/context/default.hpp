@@ -152,14 +152,12 @@
             template<typename Expr, typename Context>
             struct is_member_function_eval
               : is_member_function_pointer<
-                    typename remove_const<
-                        typename remove_reference<
-                            typename proto::result_of::eval<
-                                typename remove_reference<
-                                    typename proto::result_of::child_c<Expr, 1>::type
-                                >::type
-                              , Context
+                    typename detail::uncvref<
+                        typename proto::result_of::eval<
+                            typename remove_reference<
+                                typename proto::result_of::child_c<Expr, 1>::type
                             >::type
+                          , Context
                         >::type
                     >::type
                 >
@@ -324,7 +322,7 @@
                 function_type;
 
                 typedef
-                    typename boost::result_of<function_type()>::type
+                    typename BOOST_PROTO_RESULT_OF<function_type()>::type
                 result_type;
 
                 result_type operator ()(Expr &expr, Context &context) const
@@ -425,7 +423,7 @@
             function_type;
 
             typedef
-                typename boost::result_of<
+                typename BOOST_PROTO_RESULT_OF<
                     function_type(BOOST_PP_ENUM_SHIFTED(N, BOOST_PROTO_DEFAULT_EVAL_TYPE, Expr))
                 >::type
             result_type;

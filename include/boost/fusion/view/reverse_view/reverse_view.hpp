@@ -49,13 +49,17 @@ namespace boost { namespace fusion
                 bidirectional_traversal_tag
               , typename traits::category_of<first_type>::type>::value));
 
-        reverse_view(Sequence& seq)
-            : seq(seq)
+        reverse_view(Sequence& in_seq)
+            : seq(in_seq)
         {}
 
         first_type first() const { return fusion::begin(seq); }
         last_type last() const { return fusion::end(seq); }
         typename mpl::if_<traits::is_view<Sequence>, Sequence, Sequence&>::type seq;
+
+    private:
+        // silence MSVC warning C4512: assignment operator could not be generated
+        reverse_view& operator= (reverse_view const&);
     };
 }}
 

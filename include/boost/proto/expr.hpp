@@ -69,17 +69,17 @@ namespace boost { namespace proto
             typedef Expr *type;
         };
 
-        template<typename T, typename Tag, typename Arg0>
-        proto::expr<Tag, proto::term<Arg0>, 0> make_terminal(T &t, proto::expr<Tag, proto::term<Arg0>, 0> *)
+        template<typename T, typename Expr, typename Arg0>
+        Expr make_terminal(T &t, Expr *, proto::term<Arg0> *)
         {
-            proto::expr<Tag, proto::term<Arg0>, 0> that = {t};
+            Expr that = {t};
             return that;
         }
 
-        template<typename T, typename Tag, typename Arg0, std::size_t N>
-        proto::expr<Tag, proto::term<Arg0[N]>, 0> make_terminal(T (&t)[N], proto::expr<Tag, proto::term<Arg0[N]>, 0> *)
+        template<typename T, typename Expr, typename Arg0, std::size_t N>
+        Expr make_terminal(T (&t)[N], Expr *, proto::term<Arg0[N]> *)
         {
-            expr<Tag, proto::term<Arg0[N]>, 0> that;
+            Expr that;
             for(std::size_t i = 0; i < N; ++i)
             {
                 that.child0[i] = t[i];
@@ -87,10 +87,10 @@ namespace boost { namespace proto
             return that;
         }
 
-        template<typename T, typename Tag, typename Arg0, std::size_t N>
-        proto::expr<Tag, proto::term<Arg0[N]>, 0> make_terminal(T const(&t)[N], proto::expr<Tag, proto::term<Arg0[N]>, 0> *)
+        template<typename T, typename Expr, typename Arg0, std::size_t N>
+        Expr make_terminal(T const(&t)[N], Expr *, proto::term<Arg0[N]> *)
         {
-            expr<Tag, proto::term<Arg0[N]>, 0> that;
+            Expr that;
             for(std::size_t i = 0; i < N; ++i)
             {
                 that.child0[i] = t[i];
@@ -121,17 +121,6 @@ namespace boost { namespace proto
         #define BOOST_PP_ITERATION_PARAMS_1 (3, (0, BOOST_PP_DEC(BOOST_PROTO_MAX_FUNCTION_CALL_ARITY), <boost/proto/detail/funop.hpp>))
         #include BOOST_PP_ITERATE()
     }
-
-    // TODO consider adding a basic_expr<> that doesn't have operator=,
-    // operator[] or operator() for use by BOOST_PROTO_BASIC_EXTENDS().
-    // Those member functions are unused in that case, and only slow
-    // down instantiations. basic_expr::proto_base_expr can still be
-    // expr<> because uses of proto_base_expr in proto::matches<> shouldn't
-    // cause the expr<> type to be instantiated. (<-- Check that assumtion!)
-    // OR, should expr<>::proto_base_expr be a typedef for basic_expr<>?
-    // It should, and proto_base() can return *this reinterpret_cast to
-    // a basic_expr because they should be layout compatible. Or not, because
-    // that would incur an extra template instantiation. :-(
 
     namespace exprns_
     {

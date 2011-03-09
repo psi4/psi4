@@ -240,7 +240,7 @@ namespace boost {
                 m_Match(Other.m_Match),
                 m_Next(Other.m_Next),
                 m_End(Other.m_End),
-                m_bEof(false)
+                m_bEof(Other.m_bEof)
             {}
 
             //! Constructor
@@ -259,7 +259,11 @@ namespace boost {
                 m_End(End),
                 m_bEof(false)
             {
-                increment();
+                // force the correct behavior for empty sequences and yield at least one token
+                if(Begin!=End)
+                {
+                    increment();
+                }
             }
             //! Constructor
             /*!
@@ -278,7 +282,11 @@ namespace boost {
                 m_Next=::boost::begin(lit_col);
                 m_End=::boost::end(lit_col);
 
-                increment();
+                // force the correct behavior for empty sequences and yield at least one token
+                if(m_Next!=m_End)
+                {
+                    increment();
+                }
             }
 
 

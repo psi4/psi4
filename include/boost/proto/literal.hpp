@@ -25,7 +25,7 @@ namespace boost { namespace proto
         ///
         /// A simple wrapper for a terminal, provided for
         /// ease of use. In all cases, <tt>literal\<X\> l(x);</tt>
-        /// is equivalent to <tt>terminal\<X\>::::type l = {x};</tt>.
+        /// is equivalent to <tt>terminal\<X\>::type l = {x};</tt>.
         ///
         /// The \c Domain template parameter defaults to
         /// \c proto::default_domain.
@@ -34,11 +34,12 @@ namespace boost { namespace proto
           , typename Domain // = default_domain
         >
         struct literal
-          : extends<expr<tag::terminal, term<T>, 0>, literal<T, Domain>, Domain>
+          : extends<basic_expr<tag::terminal, term<T>, 0>, literal<T, Domain>, Domain>
         {
         private:
-            typedef expr<tag::terminal, term<T>, 0> terminal_type;
+            typedef basic_expr<tag::terminal, term<T>, 0> terminal_type;
             typedef extends<terminal_type, literal<T, Domain>, Domain> base_type;
+            typedef literal<T, Domain> literal_t;
 
         public:
             typedef typename detail::term_traits<T>::value_type       value_type;
@@ -64,7 +65,7 @@ namespace boost { namespace proto
               : base_type(terminal_type::make(u.get()))
             {}
 
-            BOOST_PROTO_EXTENDS_USING_ASSIGN(literal)
+            BOOST_PROTO_EXTENDS_USING_ASSIGN(literal_t)
 
             reference get()
             {

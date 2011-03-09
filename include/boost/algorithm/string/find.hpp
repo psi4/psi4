@@ -257,7 +257,7 @@ namespace boost {
 
         //! Find tail algorithm
         /*!
-            Get the head of the input. Head is a suffix of the string of the 
+            Get the tail of the input. Tail is a suffix of the string of the 
             given size. If the input is shorter then required, whole input if considered 
             to be the tail.
 

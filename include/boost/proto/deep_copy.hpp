@@ -14,9 +14,9 @@
     #include <boost/preprocessor/repetition/enum.hpp>
     #include <boost/preprocessor/iteration/iterate.hpp>
     #include <boost/mpl/if.hpp>
-    #include <boost/type_traits/is_function.hpp>
     #include <boost/type_traits/remove_reference.hpp>
     #include <boost/proto/proto_fwd.hpp>
+    #include <boost/proto/args.hpp>
     #include <boost/proto/expr.hpp>
 
     namespace boost { namespace proto
@@ -29,25 +29,21 @@
             template<typename Expr>
             struct deep_copy_impl<Expr, 0>
             {
-                typedef BOOST_PROTO_UNCVREF(typename Expr::proto_child0) raw_terminal_type;
-
-                // can't store a function type in a terminal.
                 typedef
-                    typename mpl::if_c<
-                        is_function<raw_terminal_type>::value
-                      , typename Expr::proto_child0
-                      , raw_terminal_type
+                    typename base_expr<
+                        typename Expr::proto_domain
+                      , tag::terminal
+                      , term<typename term_traits<typename Expr::proto_child0>::value_type>
                     >::type
-                actual_terminal_type;
+                expr_type;
 
-                typedef typename terminal<actual_terminal_type>::type expr_type;
-                typedef typename Expr::proto_domain proto_domain;
-                typedef typename proto_domain::template result<proto_domain(expr_type)>::type result_type;
+                typedef typename Expr::proto_generator proto_generator;
+                typedef typename proto_generator::template result<proto_generator(expr_type)>::type result_type;
 
                 template<typename Expr2, typename S, typename D>
                 result_type operator()(Expr2 const &e, S const &, D const &) const
                 {
-                    return typename Expr::proto_domain()(expr_type::make(e.proto_base().child0));
+                    return proto_generator()(expr_type::make(e.proto_base().child0));
                 }
             };
         }
@@ -161,7 +157,7 @@
         #define BOOST_PROTO_DEFINE_DEEP_COPY_TYPE(Z, N, DATA)                                       \
             typename deep_copy_impl<                                                                \
                 typename remove_reference<                                                          \
-                  typename Expr::BOOST_PP_CAT(proto_child, N)                                       \
+                    typename Expr::BOOST_PP_CAT(proto_child, N)                                     \
                 >::type::proto_derived_expr                                                         \
             >::result_type                                                                          \
             /**/
@@ -189,17 +185,17 @@
             struct deep_copy_impl<Expr, N>
             {
                 typedef
-                    proto::expr<
-                        typename Expr::proto_tag
+                    typename base_expr<
+                        typename Expr::proto_domain
+                      , typename Expr::proto_tag
                       , BOOST_PP_CAT(list, N)<
                             BOOST_PP_ENUM(N, BOOST_PROTO_DEFINE_DEEP_COPY_TYPE, ~)
                         >
-                      , N
-                    >
+                    >::type
                 expr_type;
 
-                typedef typename Expr::proto_domain proto_domain;
-                typedef typename proto_domain::template result<proto_domain(expr_type)>::type result_type;
+                typedef typename Expr::proto_generator proto_generator;
+                typedef typename proto_generator::template result<proto_generator(expr_type)>::type result_type;
 
                 template<typename Expr2, typename S, typename D>
                 result_type operator()(Expr2 const &e, S const &, D const &) const
@@ -208,7 +204,7 @@
                         BOOST_PP_ENUM(N, BOOST_PROTO_DEFINE_DEEP_COPY_FUN, ~)
                     };
 
-                    return typename Expr::proto_domain()(that);
+                    return proto_generator()(that);
                 }
             };
 
