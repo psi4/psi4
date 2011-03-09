@@ -670,11 +670,26 @@ extern "C"
     {
         return python::incref(upcast<PyObject>(&PyCFunction_Type));
     }
+
+    static PyObject* function_get_module(PyObject* op, void*)
+    {
+        function* f = downcast<function>(op);
+        object const& ns = f->get_namespace();
+        if (!ns.is_none()) {
+            return python::incref(ns.ptr());
+        }
+        PyErr_SetString(
+            PyExc_AttributeError, const_cast<char*>(
+                "Boost.Python function __module__ unknown."));
+        return 0;
+    }
 }
 
 static PyGetSetDef function_getsetlist[] = {
     {const_cast<char*>("__name__"), (getter)function_get_name, 0, 0, 0 },
     {const_cast<char*>("func_name"), (getter)function_get_name, 0, 0, 0 },
+    {const_cast<char*>("__module__"), (getter)function_get_module, 0, 0, 0 },
+    {const_cast<char*>("func_module"), (getter)function_get_module, 0, 0, 0 },
     {const_cast<char*>("__class__"), (getter)function_get_class, 0, 0, 0 },    // see note above
     {const_cast<char*>("__doc__"), (getter)function_get_doc, (setter)function_set_doc, 0, 0},
     {const_cast<char*>("func_doc"), (getter)function_get_doc, (setter)function_set_doc, 0, 0},
