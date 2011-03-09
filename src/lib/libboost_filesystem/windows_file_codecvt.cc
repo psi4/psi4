@@ -25,12 +25,17 @@
 #endif
 
 #include <boost/filesystem/v3/config.hpp>
+#include <cwchar>  // for mbstate_t
 
 #ifdef BOOST_WINDOWS_API
 
 #include "windows_file_codecvt.hpp"
 
-#define WINVER 0x0500  // MinGW for GCC 4.4 requires this
+// Versions of MinGW prior to GCC 4.6 requires this
+#ifndef WINVER
+# define WINVER 0x0500
+#endif
+
 #include <windows.h>
 
   std::codecvt_base::result windows_file_codecvt::do_in(
