@@ -107,10 +107,6 @@ void UHF::save_information()
 
     compute_spin_contamination();
 
-//    // Needed for a couple of places.
-    SharedVector epsilon_a_(factory_->create_vector());
-    SharedVector epsilon_b_(factory_->create_vector());
-
     bool print_mos = options_.get_bool("PRINT_MOS");
     if (print_mos) {
         fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
@@ -130,7 +126,7 @@ void UHF::save_information()
     }
     sort(pairsa.begin(),pairsa.end());
     sort(pairsb.begin(),pairsb.end());
-    if(print_ > 1){
+    if(print_){
         fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
         for (int i=1; i<=nalpha_; ++i) {
             fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
@@ -250,10 +246,6 @@ void UHF::form_F()
 
     Fb_->copy(H_);
     Fb_->add(Gb_);
-
-    H_->print();
-    Fa_->print(outfile);
-    Fb_->print(outfile);
 
     if (debug_) {
         Fa_->print(outfile);
