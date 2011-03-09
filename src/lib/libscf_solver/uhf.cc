@@ -63,7 +63,6 @@ void UHF::common_init()
 
 void UHF::finalize()
 {
-    reference_energy_ = E_;
     Dt_.reset();
     Dtold_.reset();
     Ga_.reset();
@@ -93,10 +92,6 @@ void UHF::save_information()
     // Print the final docc vector
     char **temp2 = molecule_->irrep_labels();
 
-    // Must remember to write the number of irreps before writing anything else.
-//    chkpt_->wt_nirreps(factory_->nirrep());
-//    chkpt_->wt_nso(nso());
-
     if(print_ > 1){
         fprintf(outfile, "\n  Final doubly occupied vector = (");
         for (int h=0; h<factory_->nirrep(); ++h) {
@@ -113,115 +108,62 @@ void UHF::save_information()
     compute_spin_contamination();
 
 //    // Needed for a couple of places.
-//    SharedMatrix eigvectora(factory_->create_matrix());
-//    SharedMatrix eigvectorb(factory_->create_matrix());
-//    SharedVector eigvaluesa(factory_->create_vector());
-//    SharedVector eigvaluesb(factory_->create_vector());
-//    Fa_->diagonalize(eigvectora, eigvaluesa);
-//    Fb_->diagonalize(eigvectorb, eigvaluesb);
+    SharedVector epsilon_a_(factory_->create_vector());
+    SharedVector epsilon_b_(factory_->create_vector());
 
-//    epsilon_a_ = eigvaluesa;
-//    epsilon_b_ = eigvaluesb;
+    bool print_mos = options_.get_bool("PRINT_MOS");
+    if (print_mos) {
+        fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
+        Ca_->eivprint(epsilon_a_);
 
-//    bool print_mos = options_.get_bool("PRINT_MOS");
-//    if (print_mos) {
-//        fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
-//        Ca_->eivprint(eigvaluesa);
-
-//        fprintf(outfile, "\n  Beta Molecular orbitals:\n");
-//        Cb_->eivprint(eigvaluesb);
-//    }
-
-//    // Print out orbital energies.
-//    std::vector<std::pair<double, int> > pairsa, pairsb;
-//    for (int h=0; h<eigvaluesa->nirrep(); ++h) {
-//        for (int i=0; i<eigvaluesa->dimpi()[h]; ++i) {
-//            pairsa.push_back(make_pair(eigvaluesa->get(h, i), h));
-//            pairsb.push_back(make_pair(eigvaluesb->get(h, i), h));
-//        }
-//    }
-//    sort(pairsa.begin(),pairsa.end());
-//    sort(pairsb.begin(),pairsb.end());
-//    if(print_ > 1){
-//        fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
-//        for (int i=1; i<=nalpha_; ++i) {
-//            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-//            if (i % 4 == 0)
-//                fprintf(outfile, "\n      ");
-//        }
-//        fprintf(outfile, "\n");
-//        fprintf(outfile, "\n    Alpha unoccupied\n      ");
-//        for (int i=nalpha_+1; i<=nso(); ++i) {
-//            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-//            if ((i-nalpha_) % 4 == 0)
-//                fprintf(outfile, "\n      ");
-//        }
-//        fprintf(outfile, "\n");
-
-//        fprintf(outfile, "\n    Beta occupied\n      ");
-//        for (int i=1; i<=nbeta_; ++i) {
-//            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-//            if (i % 4 == 0)
-//                fprintf(outfile, "\n      ");
-//        }
-//        fprintf(outfile, "\n");
-//        fprintf(outfile, "\n    Beta unoccupied\n      ");
-//        for (int i=nalpha_+1; i<=nso(); ++i) {
-//            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-//            if ((i-nbeta_) % 4 == 0)
-//                fprintf(outfile, "\n      ");
-//        }
-//        fprintf(outfile, "\n");
-//    }
-//    for (int i=0; i<eigvaluesa->nirrep(); ++i)
-//        free(temp2[i]);
-//    free(temp2);
-
-//    int *vec = new int[eigvaluesa->nirrep()];
-//    for (int i=0; i<eigvaluesa->nirrep(); ++i)
-//        vec[i] = 0;
-
-//    chkpt_->wt_nmo(nso());
-//    chkpt_->wt_ref(1);        // UHF
-//    chkpt_->wt_etot(E_);
-//    chkpt_->wt_escf(E_);
-//    chkpt_->wt_eref(E_);
-//    chkpt_->wt_clsdpi(doccpi_);
-//    chkpt_->wt_orbspi(eigvaluesa->dimpi());
-//    chkpt_->wt_openpi(vec);
-//    chkpt_->wt_phase_check(0);
-
-    // Figure out frozen core orbitals
-    int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE")); /*chkpt_->rd_nfzc();*/
-    // TODO: Need to handle frozen virtuals
-    int nfzv = 0;
-    int *frzcpi = compute_fcpi(nfzc, epsilon_a_);
-    int *frzvpi = compute_fvpi(nfzv, epsilon_a_);
-    for (int k = 0; k < 8; k++) {
-        frzcpi_[k] = frzcpi[k];
-        frzvpi_[k] = frzvpi[k];
+        fprintf(outfile, "\n  Beta Molecular orbitals:\n");
+        Cb_->eivprint(epsilon_b_);
     }
-//    chkpt_->wt_frzcpi(frzcpi);
-//    chkpt_->wt_frzvpi(frzvpi);
-    delete[](frzcpi);
-    delete[](frzvpi);
 
-    // TODO: Figure out what chkpt_wt_iopen means for UHF
-//    chkpt_->wt_iopen(0);
+    // Print out orbital energies.
+    std::vector<std::pair<double, int> > pairsa, pairsb;
+    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i) {
+            pairsa.push_back(make_pair(epsilon_a_->get(h, i), h));
+            pairsb.push_back(make_pair(epsilon_b_->get(h, i), h));
+        }
+    }
+    sort(pairsa.begin(),pairsa.end());
+    sort(pairsb.begin(),pairsb.end());
+    if(print_ > 1){
+        fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
+        for (int i=1; i<=nalpha_; ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
+            if (i % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\n    Alpha unoccupied\n      ");
+        for (int i=nalpha_+1; i<=nso(); ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
+            if ((i-nalpha_) % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
 
-    // Write eigenvectors and eigenvalue to checkpoint
-//    double *values = eigvaluesa->to_block_vector();
-//    chkpt_->wt_alpha_evals(values);
-//    free(values);
-//    double **vectors = Ca_->to_block_matrix();
-//    chkpt_->wt_alpha_scf(vectors);
-//    free_block(vectors);
-//    values = eigvaluesb->to_block_vector();
-//    chkpt_->wt_beta_evals(values);
-//    free(values);
-//    vectors = Cb_->to_block_matrix();
-//    chkpt_->wt_beta_scf(vectors);
-//    free_block(vectors);
+        fprintf(outfile, "\n    Beta occupied\n      ");
+        for (int i=1; i<=nbeta_; ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
+            if (i % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
+        fprintf(outfile, "\n    Beta unoccupied\n      ");
+        for (int i=nalpha_+1; i<=nso(); ++i) {
+            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
+            if ((i-nbeta_) % 4 == 0)
+                fprintf(outfile, "\n      ");
+        }
+        fprintf(outfile, "\n");
+    }
+    for (int i=0; i<epsilon_a_->nirrep(); ++i)
+        free(temp2[i]);
+    free(temp2);
 }
 
 void UHF::compute_spin_contamination()

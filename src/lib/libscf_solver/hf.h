@@ -150,8 +150,8 @@ protected:
     void find_occupation();
 
     /// Determine how many core and virtual orbitals to freeze
-    int *compute_fcpi(int nfzc, SharedVector &eigvalues);
-    int *compute_fvpi(int nfvc, SharedVector &eigvalues);
+    void compute_fcpi();
+    void compute_fvpi();
 
     /// Prints some opening information
     void print_header();
@@ -222,6 +222,9 @@ protected:
 
     virtual void save_dual_basis_projection() {}
     virtual void save_sapt_info() {}
+
+    /** Saves all wavefunction information to the checkpoint file*/
+    void dump_to_checkpoint();
 
     void sort_cholesky(double*, int*, int);
     /** Form canonical three-index Cholesky tensor */
