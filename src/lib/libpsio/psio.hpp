@@ -13,110 +13,110 @@ using namespace boost;
 
 namespace psi {
 
-  extern FILE *outfile;
+extern FILE *outfile;
 
-  class PSIO;
-  class PSIOManager;
-  extern shared_ptr<PSIO> _default_psio_lib_;
-  extern shared_ptr<PSIOManager> _default_psio_manager_;
+class PSIO;
+class PSIOManager;
+extern shared_ptr<PSIO> _default_psio_lib_;
+extern shared_ptr<PSIOManager> _default_psio_manager_;
 
-  /**
+/**
     PSIOManager is a class designed to be used as a static object to track all
     PSIO operations in a given PSI4 computation
 
     This will allow PSICLEAN to be trivially executed.
-    Now supports a .psirc and interactive file placement 
+    Now supports a .psirc and interactive file placement
    */
-  class PSIOManager {
-        private:
-            /// Default path for unspec'd file numbers (defaults to /tmp/)
-            std::string default_path_;
-            /// Specific paths for arbitrary file numbers
-            std::map<int, std::string> specific_paths_;
-            /// Default retained files
-            std::set<int> specific_retains_;
+class PSIOManager {
+private:
+    /// Default path for unspec'd file numbers (defaults to /tmp/)
+    std::string default_path_;
+    /// Specific paths for arbitrary file numbers
+    std::map<int, std::string> specific_paths_;
+    /// Default retained files
+    std::set<int> specific_retains_;
 
-            /// Map of files, bool denotes open or closed
-            std::map<std::string, bool> files_;
-            /// Set of files to retain after psiclean
-            std::set<std::string> retained_files_;
-        public:
-            /// Default constructor (does nothing)
-            PSIOManager();
-            /// Default destructor (does nothing)
-            ~PSIOManager();
-          
-            /** 
+    /// Map of files, bool denotes open or closed
+    std::map<std::string, bool> files_;
+    /// Set of files to retain after psiclean
+    std::set<std::string> retained_files_;
+public:
+    /// Default constructor (does nothing)
+    PSIOManager();
+    /// Default destructor (does nothing)
+    ~PSIOManager();
+
+    /**
             * Mirror the current delete-able files to "psi.clean"
             **/
-            void mirror_to_disk();
-            /** 
+    void mirror_to_disk();
+    /**
             * Build from "psi.clean"
             **/
-            void build_from_disk();
+    void build_from_disk();
 
-            /**
+    /**
             * Set the default path for files to be stored
             * \param path full path to scratch
-            */ 
-            void set_default_path(const std::string& path) { default_path_ = path; }
-            /**
+            */
+    void set_default_path(const std::string& path) { default_path_ = path; }
+    /**
             * Set the path for specific file numbers
             * \param fileno PSI4 file number
             * \param path full path to file-specific scratch
-            */ 
-            void set_specific_path(int fileno, const std::string& path);
-            /**
+            */
+    void set_specific_path(int fileno, const std::string& path);
+    /**
             * Set the the specific file number to be retained
             * \param fileno PSI4 file number
             * \param retain keep or not? (Allows override)
-            */ 
-            void set_specific_retention(int fileno, bool retain);
-            /**
+            */
+    void set_specific_retention(int fileno, bool retain);
+    /**
             * Get the path for a specific file number
             * \param fileno PSI4 file number
             * \return the appropriate full path
-            */ 
-            std::string get_file_path(int fileno); 
+            */
+    std::string get_file_path(int fileno);
 
-            /**
+    /**
             * Record the opening of a file
             * \param full_path filename
             */
-            void open_file(const std::string & full_path, int fileno);
-            /**
+    void open_file(const std::string & full_path, int fileno);
+    /**
             * Record the opening of a file
             * \param fileno PSI4 file number
             * \param full_path filename
             * \param keep TRUE : the file is closed and retained by PSIO
                           FALSE: the file is closed and deleted by PSIO
             */
-            void close_file(const std::string & full_path, int fileno, bool keep);
-            /**
+    void close_file(const std::string & full_path, int fileno, bool keep);
+    /**
             * Move a file from one location to another, retaining status
             * Useful for changing namespaces
             * \param old_full_path old filename
             * \param new_full_path new filename
             */
-            void move_file(const std::string & old_full_path, const std::string & new_full_path);
-            /**
+    void move_file(const std::string & old_full_path, const std::string & new_full_path);
+    /**
             * Mark a file to be retained after a psiclean operation, ie for use in
             * a later computation
             * \param full_path filename
             * \param retain keep or not? (Allows override)
             */
-            void mark_file_for_retention(const std::string & full_path, bool retain);
-            /**
+    void mark_file_for_retention(const std::string & full_path, bool retain);
+    /**
             * Print the current status of PSI4 files
             * \param out, file to print fo
             */
-            void print(FILE* out = outfile);
-            /**
+    void print(FILE* out = outfile);
+    /**
             * Print the current status of PSI4 files
             * \param out, file to print fo
             */
-            void print_out() { print(outfile); }
-            /**
+    void print_out() { print(outfile); }
+    /**
             * Execute the psiclean protocol, deleting all recorded files
             * except for those currently marked for retention.
             *
@@ -126,17 +126,17 @@ namespace psi {
             *
             * This is useful for intermediate calls to psiclean
             */
-            void psiclean();
-            /**
+    void psiclean();
+    /**
             * Clean from disk-mirrored image after crash
             * NOT to be called during regular computation
             **/
-            void crashclean();
-            /// The one and (should be) only instance of PSIOManager for a PSI4 instance
-            static shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
-   };
+    void crashclean();
+    /// The one and (should be) only instance of PSIOManager for a PSI4 instance
+    static shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
+};
 
-  /**
+/**
    PSIO is an instance of libpsio library. Multiple instances of PSIO are supported.
 
    Each instance can be configured using filecfg_kwd().
@@ -147,16 +147,16 @@ namespace psi {
    etc.
 
    */
-  class PSIO {
-    public:
-      PSIO();
-      ~PSIO();
+class PSIO {
+public:
+    PSIO();
+    ~PSIO();
 
-      /// return 1 if activated
-      int state() {
+    /// return 1 if activated
+    int state() {
         return state_;
-      }
-      /**
+    }
+    /**
        set keyword kwd describing some aspect of configuration of PSIO file unit
        to value kwdval. kwdgrp specifies the keyword group (useful values are: "DEFAULT", "PSI", and the name of
        the current executable). If unit is set to -1, this keyword will set the default for all units (this keyword
@@ -168,21 +168,21 @@ namespace psi {
        to stripe this unit, cannot be greater than PSIO_MAXVOL), "volumeX", where X is a positive integer less than or equal to
        the value of "nvolume".
        */
-      void filecfg_kwd(const char* kwdgrp, const char* kwd, int unit,
-                       const char* kwdval);
-      /// returns the keyword value. If not defined, returns empty string.
-      const std::string& filecfg_kwd(const char* kwdgrp, const char* kwd,
-                                     int unit);
+    void filecfg_kwd(const char* kwdgrp, const char* kwd, int unit,
+                     const char* kwdval);
+    /// returns the keyword value. If not defined, returns empty string.
+    const std::string& filecfg_kwd(const char* kwdgrp, const char* kwd,
+                                   int unit);
 
-      /// open unit. status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file should be open
-      void open(unsigned int unit, int status);
-      /// close unit. if keep == 0, will remove the file, else keep it
-      void close(unsigned int unit, int keep);
-      /// sync up the object to the file on disk by closing and opening the file, if necessary
-      void rehash(unsigned int unit);
-      /// return 1 if unit is open
-      int open_check(unsigned int unit);
-      /** Reads data from within a TOC entry from a PSI file.
+    /// open unit. status can be PSIO_OPEN_OLD (if existing file is to be opened) or PSIO_OPEN_NEW if new file should be open
+    void open(unsigned int unit, int status);
+    /// close unit. if keep == 0, will remove the file, else keep it
+    void close(unsigned int unit, int keep);
+    /// sync up the object to the file on disk by closing and opening the file, if necessary
+    void rehash(unsigned int unit);
+    /// return 1 if unit is open
+    int open_check(unsigned int unit);
+    /** Reads data from within a TOC entry from a PSI file.
        **
        **  \param unit   = The PSI unit number used to identify the file to all
        **                  read and write functions.
@@ -193,9 +193,9 @@ namespace psi {
        **  \param end    = A pointer to the entry-relative page/offset for the next
        **                  byte after the end of the read request.
        */
-      void read(unsigned int unit, const char *key, char *buffer, ULI size,
-                psio_address start, psio_address *end);
-      /** Writes data to a TOC entry in a PSI file.
+    void read(unsigned int unit, const char *key, char *buffer, ULI size,
+              psio_address start, psio_address *end);
+    /** Writes data to a TOC entry in a PSI file.
        **
        **  \param unit    = The PSI unit number used to identify the file to all read
        **                   and write functions.
@@ -206,13 +206,13 @@ namespace psi {
        **  \param end     = A pointer to the entry-relative page/offset for the next
        **                   byte after the end of the write request.
        */
-      void write(unsigned int unit, const char *key, char *buffer, ULI size,
-                 psio_address start, psio_address *end);
+    void write(unsigned int unit, const char *key, char *buffer, ULI size,
+               psio_address start, psio_address *end);
 
-      void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
-      void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
 
-      /** Central function for all reads and writes on a PSIO unit.
+    /** Central function for all reads and writes on a PSIO unit.
        **
        ** \params unit    = The PSI unit number.
        ** \params buffer  = The buffer containing the bytes for the read/write event.
@@ -222,34 +222,34 @@ namespace psi {
        **
        ** \ingroup PSIO
        */
-      void rw(unsigned int unit, char *buffer, psio_address address, ULI size,
-              int wrt);
+    void rw(unsigned int unit, char *buffer, psio_address address, ULI size,
+            int wrt);
 
-      /// Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped.
-      void tocclean(unsigned int unit, const char *key);
-      /// Print the table of contents for the given unit
-      void tocprint(unsigned int unit);
-      /// Scans the TOC for a particular keyword and returns either a pointer to the entry or NULL to the caller.
-      psio_tocentry* tocscan(unsigned int unit, const char *key);
-      ///  Write the table of contents for file number 'unit'. NB: This function should NOT call psio_error because the latter calls it!
-      void tocwrite(unsigned int unit);
+    /// Delete all TOC entries after the given key. If a blank key is given, the entire TOC will be wiped.
+    void tocclean(unsigned int unit, const char *key);
+    /// Print the table of contents for the given unit
+    void tocprint(unsigned int unit);
+    /// Scans the TOC for a particular keyword and returns either a pointer to the entry or NULL to the caller.
+    psio_tocentry* tocscan(unsigned int unit, const char *key);
+    ///  Write the table of contents for file number 'unit'. NB: This function should NOT call psio_error because the latter calls it!
+    void tocwrite(unsigned int unit);
 
-      /// Upon catastrophic failure, the library will exit() with this code. The default is 1, but can be overridden.
-      static int _error_exit_code_;
+    /// Upon catastrophic failure, the library will exit() with this code. The default is 1, but can be overridden.
+    static int _error_exit_code_;
 
-      /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering)
-      static void set_default_namespace(const std::string &_ns) { default_namespace_ = _ns; }
+    /// Set the current namespace (for PREFIX.NAMESPACE.UNIT file numbering)
+    static void set_default_namespace(const std::string &_ns) { default_namespace_ = _ns; }
 
-      /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering)
-      static std::string get_default_namespace() { return default_namespace_; }
+    /// Get the default namespace (for PREFIX.NAMESPACE.UNIT file numbering)
+    static std::string get_default_namespace() { return default_namespace_; }
 
-      /// Change file FILENO from NS1 to NS2
-      static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
+    /// Change file FILENO from NS1 to NS2
+    static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
 
-      /// Return the global shared object
-      static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
+    /// Return the global shared object
+    static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
 
-      /** Read the length of the TOC for a given unit directly from the file.
+    /** Read the length of the TOC for a given unit directly from the file.
        **
        ** \param unit = PSI unit number from which to read the toclen.
        **
@@ -259,100 +259,103 @@ namespace psi {
        ** to open files with status PSIO_OPEN_OLD even if they don't exist,
        ** because sometimes you can't know this in advance.)
        */
-      ULI rd_toclen(unsigned int unit);
+    ULI rd_toclen(unsigned int unit);
 
-    private:
-      /// vector of units
-      psio_ud *psio_unit;
+private:
+    /// vector of units
+    psio_ud *psio_unit;
 
-      /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
-      static std::string default_namespace_;
+    /// Process ID
+    std::string pid_;
 
-      typedef std::map<std::string,std::string> KWDMap;
-      /// library configuration is described by a set of keywords
-      KWDMap files_keywords_;
+    /// Current default namespace (for PREFIX.NAMESPACE.UNIT numbering)
+    static std::string default_namespace_;
+
+    typedef std::map<std::string,std::string> KWDMap;
+    /// library configuration is described by a set of keywords
+    KWDMap files_keywords_;
 
 #ifdef PSIO_STATS
-      ULI *psio_readlen;
-      ULI *psio_writlen;
+    ULI *psio_readlen;
+    ULI *psio_writlen;
 #endif
 
-      /// Library state variable
-      int state_;
-      /// grab the filename of unit and strdup into name.
-      void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
-      /// return the number of volumes over which unit will be striped
-      unsigned int get_numvols(unsigned int unit);
-      /// grab the path to volume of unit and strdup into path.
-      void get_volpath(unsigned int unit, unsigned int volume, char **path);
-      /// return the last TOC entry
-      psio_tocentry* toclast(unsigned int unit);
-      /// Compute the length of the TOC for a given unit using the in-core TOC list.
-      unsigned int toclen(unsigned int unit);
-      /** Write the length of the TOC for a given unit directly to the file.
+    /// Library state variable
+    int state_;
+    /// grab the filename of unit and strdup into name.
+    void get_filename(unsigned int unit, char **name, bool remove_namespace = false);
+    /// return the number of volumes over which unit will be striped
+    unsigned int get_numvols(unsigned int unit);
+    /// grab the path to volume of unit and strdup into path.
+    void get_volpath(unsigned int unit, unsigned int volume, char **path);
+    /// return the last TOC entry
+    psio_tocentry* toclast(unsigned int unit);
+    /// Compute the length of the TOC for a given unit using the in-core TOC list.
+    unsigned int toclen(unsigned int unit);
+    /** Write the length of the TOC for a given unit directly to the file.
        **
        ** \param unit = PSI unit number to which to write the toclen.
        **
        ** \ingroup PSIO
        */
-      void wt_toclen(unsigned int unit, ULI toclen);
-      /// Read the table of contents for file number 'unit'.
-      void tocread(unsigned int unit);
+    void wt_toclen(unsigned int unit, ULI toclen);
+    /// Read the table of contents for file number 'unit'.
+    void tocread(unsigned int unit);
 
-      friend class AIO_Handler;
-  };
+    friend class AIO_Handler;
+};
 
-  class AIO_Handler {
-    private:
-        /// Unit number argument
-        unsigned int unit_;
-        /// Entry Key (80-char) argument
-        const char* key_;
-        /// Memory buffer argument
-        char* buffer_;
-        /// Size argument
-        ULI size_;
-        /// Start address argument
-        psio_address start_;
-        /// End address pointer argument
-        psio_address *end_;
-        /// PSIO object this AIO_Handler is built on
-        shared_ptr<PSIO> psio_;
-        /// Thread this AIO_Handler is currently running on
-        shared_ptr<boost::thread> thread_;
-    public:
-        /// AIO_Handlers are constructed around a synchronous PSIO object
-        AIO_Handler(shared_ptr<PSIO> psio);
-        /// Destructor
-        ~AIO_Handler();
-        /// Thread object this AIO_Handler is currently running on
-        shared_ptr<boost::thread> get_thread();
-        /// When called, synchronize will not return until all requested data has been read or written
-        void synchronize();
-        /// Asynchronous read, same as PSIO::read, but nonblocking
-        void read(unsigned int unit, const char *key, char *buffer, ULI size,
-                psio_address start, psio_address *end);
-        /// Asynchronous write, same as PSIO::write, but nonblocking
-        void write(unsigned int unit, const char *key, char *buffer, ULI size,
-                psio_address start, psio_address *end);
-        /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
-        void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
-        /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
-        void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+class AIO_Handler {
+private:
+    /// Unit number argument
+    unsigned int unit_;
+    /// Entry Key (80-char) argument
+    const char* key_;
+    /// Memory buffer argument
+    char* buffer_;
+    /// Size argument
+    ULI size_;
+    /// Start address argument
+    psio_address start_;
+    /// End address pointer argument
+    psio_address *end_;
+    /// PSIO object this AIO_Handler is built on
+    shared_ptr<PSIO> psio_;
+    /// Thread this AIO_Handler is currently running on
+    shared_ptr<boost::thread> thread_;
+public:
+    /// AIO_Handlers are constructed around a synchronous PSIO object
+    AIO_Handler(shared_ptr<PSIO> psio);
+    /// Destructor
+    ~AIO_Handler();
+    /// Thread object this AIO_Handler is currently running on
+    shared_ptr<boost::thread> get_thread();
+    /// When called, synchronize will not return until all requested data has been read or written
+    void synchronize();
+    /// Asynchronous read, same as PSIO::read, but nonblocking
+    void read(unsigned int unit, const char *key, char *buffer, ULI size,
+              psio_address start, psio_address *end);
+    /// Asynchronous write, same as PSIO::write, but nonblocking
+    void write(unsigned int unit, const char *key, char *buffer, ULI size,
+               psio_address start, psio_address *end);
+    /// Asynchronous read_entry, same as PSIO::read_entry, but nonblocking
+    void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
+    void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
 
-        /// Function bound to thread internally
-        void call_read();
-        /// Function bound to thread internally
-        void call_write();
-        /// Function bound to thread internally
-        void call_read_entry();
-        /// Function bound to thread internally
-        void call_write_entry();
-  };
+    /// Function bound to thread internally
+    void call_read();
+    /// Function bound to thread internally
+    void call_write();
+    /// Function bound to thread internally
+    void call_read_entry();
+    /// Function bound to thread internally
+    void call_write_entry();
+};
 
 //  int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
 //  int psiopp_ipv1_config(PSIO *psio_obj);
-  extern shared_ptr<PSIO> _default_psio_lib_;
+extern shared_ptr<PSIO> _default_psio_lib_;
 }
 
 #endif /* header guard */
