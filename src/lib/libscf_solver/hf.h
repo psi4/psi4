@@ -226,9 +226,6 @@ protected:
     /** Saves all wavefunction information to the checkpoint file*/
     void dump_to_checkpoint();
 
-    void sort_cholesky(double*, int*, int);
-    /** Form canonical three-index Cholesky tensor */
-    void form_CD();
     /** Computes the J and/or K matrices according to the scf_type keyword and the functor passed in*/
     template <class JKFunctor> void process_tei(JKFunctor & functor);
 

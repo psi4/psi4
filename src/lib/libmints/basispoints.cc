@@ -303,9 +303,7 @@ void BasisPoints::computePoints(SharedGridBlock grid)
     // dies on those anyways. Also, C1 for now as usual.
 
     // Find out what's to be done first
-    timer_on("Point Sieve");
     computeSignificantShells(grid);
-    timer_off("Point Sieve");
 
     double *xg = grid->getX();
     double *yg = grid->getY();
@@ -624,8 +622,6 @@ void BasisPoints::computeCutoffRadii2(double epsilon)
         int iter = 0;
         int l = shell->am();
         double Nang = shell->normalize(l,0,0);
-
-        printf("Basis Shell %d\n", P);
 
         do {
             iter = iter + 1;

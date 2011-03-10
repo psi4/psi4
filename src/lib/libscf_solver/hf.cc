@@ -64,10 +64,6 @@ void HF::common_init()
     integral_threshold_ = 1.0E-14;
 
     scf_type_ = options_.get_str("SCF_TYPE");
-//    if(scf_type_ == "OUT_OF_CORE"){
-//        integral_computer_ = shared_ptr<IntegralComputer>(
-//                new OutOfCoreComputer(psio_, so2symblk_, so2index_, 1.0E-14) );
-//    }
 
     S_.reset(factory_->create_matrix("S"));
     Shalf_.reset(factory_->create_matrix("S^-1/2"));
@@ -199,13 +195,6 @@ void HF::common_init()
         nbetapi_[0] = nbeta_;
     }
 
-
-//  if (ndocc != 0 && nbeta_ != ndocc && nalpha_ != (ndocc + nsocc)) {
-//      char *str = "Your DOCC, SOCC, charge, and multiplicity does not make sense.\n";
-//      fprintf(outfile, str);
-//      throw SanityCheckError(str, __FILE__, __LINE__);
-//  }
-
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
     perturb_ = nothing;
@@ -234,7 +223,6 @@ void HF::common_init()
     // How much stuff shall we echo to the user?
     if(options_["PRINT"].has_changed())
         print_ = options_.get_int("PRINT");
-    //fprintf(outfile,"  Print = %d\n",print_);
 
     // Handle common diis info
     diis_enabled_ = true;
@@ -982,7 +970,7 @@ double HF::compute_energy()
         E_ = 0.0;
         psio_->close(PSIF_CHKPT, 1);
     }
-
+    
     //often, we're close!
     if (options_.get_bool("DUAL_BASIS"))
         save_dual_basis_projection();

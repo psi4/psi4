@@ -147,6 +147,10 @@ boost::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
 {
     return sobasisset_;
 }
+boost::shared_ptr<MatrixFactory> Wavefunction::matrix_factory() const
+{
+    return factory_;
+}
 
 void Wavefunction::add_preiteration_callback(PyObject *pyobject)
 {

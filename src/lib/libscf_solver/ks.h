@@ -29,26 +29,26 @@ namespace scf{
 class KS {
 
 protected:
-    // Superfunctional object
+    /// Superfunctional object
     shared_ptr<SuperFunctional> functional_;
-    // Properties object
+    /// Properties object
     shared_ptr<Properties> properties_;
-    // Integrator object
+    /// Integrator object
     shared_ptr<Integrator> integrator_;
-    // Values (E_xc, <\rho>, <\rho x>, etc)
+    /// Values (E_xc, <\rho>, <\rho x>, etc)
     std::map<std::string, double> quad_values_;
-    // primary basis set (might get fancy later)
+    /// primary basis set (might get fancy later)
     shared_ptr<BasisSet> basisset_;
-    // Options object
+    /// Options object
     Options& options_; 
-    // Molecule object  
+    /// Molecule object  
     shared_ptr<Molecule> molecule_;
-    // PSIO object
+    /// PSIO object
     shared_ptr<PSIO> psio_;
 
-    // Compute E_xc and the V matrix
+    /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
-    // Build functional, grid, etc
+    /// Build functional, grid, etc
     void common_init();
 public:
     KS(Options & options, shared_ptr<PSIO> psio); 
@@ -58,9 +58,9 @@ public:
 class RKS : public RHF, public KS {
 
 protected:
-    // Alpha/Beta spin Kohn-Sham Potential (identical)
+    /// Alpha/Beta spin Kohn-Sham Potential (identical)
     shared_ptr<Matrix> V_;
-    // Compute E_xc and the V matrix
+    /// Compute E_xc and the V matrix
     virtual void form_V();
     virtual void form_G();
     virtual double compute_E();
@@ -75,11 +75,11 @@ public:
 class UKS : public UHF, public KS {
 
 protected:
-    // Alpha spin Kohn-Sham Potential
+    /// Alpha spin Kohn-Sham Potential
     shared_ptr<Matrix> Va_;
-    // Beta spin Kohn-Sham Potential
+    /// Beta spin Kohn-Sham Potential
     shared_ptr<Matrix> Vb_;
-    // Compute E_xc and the V matrices
+    /// Compute E_xc and the V matrices
     virtual void form_V();
     virtual void form_G();
     virtual double compute_E();

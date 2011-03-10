@@ -2,7 +2,7 @@ import PsiMod
 import psiopt
 from driver import *
 from wrappers import *
-
+from insight import *
 
 # Set options
 #
