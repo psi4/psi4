@@ -296,7 +296,6 @@ void UHF::form_D()
     }
 
     // Form total density
-    // TODO: Refactor Dt_ to D_ (found in HF)
     Dt_->copy(Da_);
     Dt_->add(Db_);
 
