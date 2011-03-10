@@ -108,7 +108,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     one_stre  = new STRE(2, 3);    // RAB
   }
   else {
-    throw("INTERFRAG::INTERFRAG Num. reference points on each fragment must be at least 1.");
+    throw(INTCO_EXCEPT("INTERFRAG::INTERFRAG Num. reference points on each fragment must be at least 1."));
   }
 
   //if (!use_principal_axes) {
@@ -209,7 +209,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
 
     if (i != ndA) {
       fprintf(outfile,"Number of unique principal axes for fragment has changed.\n");
-      throw("Number of principal axes for fragment has changed.");
+      throw(INTCO_EXCEPT("Number of principal axes for fragment has changed.",true));
     }
 
     double *A_com = A->com();
@@ -227,7 +227,7 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
 
     if (i != ndB) {
       fprintf(outfile,"Number of unique principal axes for fragment has changed.\n");
-      throw("Number of principal axes for fragment has changed.");
+      throw(INTCO_EXCEPT("Number of principal axes for fragment has changed.", true));
     }
 
     double *B_com = B->com();
@@ -264,7 +264,7 @@ void INTERFRAG::freeze(bool *D_freeze) {
 // is coordinate J frozen?  J runs over only active coordinates.
 bool INTERFRAG::is_frozen(int J) { 
   if (J < 0 || J > g_nintco())
-    throw("INTERFRAG::is_frozen() index J runs only over active coordinates");
+    throw(INTCO_EXCEPT("INTERFRAG::is_frozen() index J runs only over active coordinates"));
   return inter_frag->intcos[J]->is_frozen();
 }
 

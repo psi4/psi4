@@ -31,7 +31,7 @@ TORS::TORS(int A_in, int B_in, int C_in, int D_in, bool freeze_in) : SIMPLE(tors
   //  A_in, B_in, C_in, D_in, freeze_in);
 
   if ( A_in==B_in || A_in==C_in || A_in==D_in || B_in==C_in || B_in==D_in || C_in==D_in)
-    throw(INTCO_EXCEPT((char *)"TORS::TORS() Atoms defining tors are not unique.",true));
+    throw(INTCO_EXCEPT((char *)"TORS::TORS() Atoms defining tors are not unique."));
 
   if (A_in < D_in) {
     s_atom[0] = A_in;

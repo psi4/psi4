@@ -14,16 +14,16 @@ class INTERFRAG;
 using std::vector;
 
 /**
-  \ingroup Optking
-  \brief description about FRAG
+  \ingroup optking
+  \brief   A group of atoms, its geometry, and its internal coordinates.
   */
 class FRAG {
 
  protected: // private, except the efp derived class can access
   int natom;      //< number of atoms in fragment
   double *Z;      //< atomic numbers
-  double **geom;   //< cartesian coordinates
-  double **grad;   //< cartesian coordinates
+  double **geom;  //< cartesian coordinates
+  double **grad;  //< cartesian coordinates
   double *mass;   //< nuclear masses
   bool   **connectivity; //< connectivity matrix
   vector<SIMPLE *> intcos;
@@ -32,12 +32,13 @@ class FRAG {
  public:
   friend class INTERFRAG;
 
-  /** Constructor. brief description
+  /** Constructor to create fragment.
 
-    More details description
+    There is one constructor to insert the atoms, and a different constructor available
+    just to allocate the memory.
     \param natom_in number of atoms.
-    \param Z_in atomic charges
-    \param geom_in Cartesian coordinates (natom_in x 3)
+    \param Z_in     atomic charges
+    \param geom_in  Cartesian coordinates (natom_in x 3)
     */
   FRAG(int natom_in, double *Z_in, double **geom_in); // use if Z and geom are known
   FRAG(int natom_in);

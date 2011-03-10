@@ -135,7 +135,7 @@ void FRAG::update_connectivity_by_distances(void) {
   for (i=0; i<natom; ++i) {
     Zint[i] = (int) Z[i];
     if ( Zint[i] > LAST_COV_RADII_INDEX )
-      throw("Warning: cannot automatically bond atom with strange atomic number");
+      throw(INTCO_EXCEPT("Warning: cannot automatically bond atom with strange atomic number"));
   }
 
   for (i=0; i<natom; ++i)
@@ -550,7 +550,7 @@ void FRAG::check_zero_angles(double const * const dq) {
   for (i=0; i<intcos.size(); ++i) {
     if (intcos[i]->g_type() == bend_type) {
       if (intcos[i]->value(geom) + dq[cnt++] < 0.0) 
-          throw("Bond angle passing through zero. Try new bonds, angles, or considering higher symmetry");
+        throw(INTCO_EXCEPT("Bond angle passing through zero", true));
     }
   }
 }

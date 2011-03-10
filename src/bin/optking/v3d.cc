@@ -56,7 +56,7 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
 
   // form e unit vectors 
   if ( !v3d_eAB(A,B,eAB) || !v3d_eAB(B,C,eBC) || !v3d_eAB(C,D,eCD) )
-    throw ("v3d_tors: distances are not reasonably normalized for e vectors.");
+    throw(INTCO_EXCEPT("v3d_tors: distances are not reasonably normalized for e vectors.",true));
 
   //printf("v3d_eAB : %15.10lf %15.10lf %15.10lf \n", eAB[0], eAB[1], eAB[2]);
   //printf("v3d_eBC : %15.10lf %15.10lf %15.10lf \n", eBC[0], eBC[1], eBC[2]);
@@ -64,7 +64,7 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
 
   // compute bond angles
   if ( !v3d_angle(A, B, C, phi_123) || !v3d_angle(B, C, D, phi_234) )
-    throw ("v3d_tors: distances are not reasonably normalized for angles.");
+    throw(INTCO_EXCEPT("v3d_tors: distances are not reasonably normalized for angles.",true));
 
   //printf("v3d_tors : phi123 = %15.10lf\n", phi_123);
   //printf("v3d_tors : phi234 = %15.10lf\n", phi_234);

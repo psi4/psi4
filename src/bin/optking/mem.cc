@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include "mem.h"
+#include "opt_except.h"
 
 namespace opt {
 
@@ -73,7 +74,8 @@ double **init_matrix(long int m, long int n) {
   A = (double **) malloc(m * (long int)sizeof(double *));
   B = (double *) malloc(m*n * (long int)sizeof(double));
 
-  if ((A == NULL) || (B == NULL)) throw("init_matrix : allocation error.");
+  if ((A == NULL) || (B == NULL))
+    throw(INTCO_EXCEPT("init_matrix : allocation error."));
 
   zero_array(B, m*n);
 
@@ -113,7 +115,7 @@ int **init_int_matrix(long int m, long int n) {
   A = (int **) malloc(m * (long int)sizeof(int *));
   B = (int *) malloc(m*n * (long int)sizeof(int));
 
-  if ((A == NULL) || (B == NULL)) throw("init_matrix : allocation error.");
+  if ((A == NULL) || (B == NULL)) throw(INTCO_EXCEPT("init_matrix : allocation error."));
 
   zero_int_array(B, m*n);
 
@@ -139,7 +141,7 @@ bool **init_bool_matrix(long int m, long int n) {
   A = (bool **) malloc(m * (long int)sizeof(bool *));
   B = (bool *) malloc(m*n * (long int)sizeof(bool));
 
-  if ((A == NULL) || (B == NULL)) throw("init_bool_matrix : allocation error.");
+  if ((A == NULL) || (B == NULL)) throw(INTCO_EXCEPT("init_bool_matrix : allocation error."));
 
   zero_bool_array(B, m*n);
 
@@ -181,7 +183,8 @@ double **opt_init_matrix(long int m, long int n) {
   A = (double **) malloc(m * (long int)sizeof(double *));
   B = (double *) malloc(m*n * (long int)sizeof(double));
 
-  if ((A == NULL) || (B == NULL)) throw("init_matrix : allocation error.");
+  if ((A == NULL) || (B == NULL))
+    throw(opt::INTCO_EXCEPT("init_matrix : allocation error."));
 
   for (i=0; i<m*n; ++i)
     B[i] = 0.0;

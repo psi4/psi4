@@ -105,14 +105,14 @@ double ** symm_matrix_inv(double **A, int dim, bool redundant) {
   if (dim <= 0) return ( (double **) NULL);
 
   if (! opt_symm_matrix_eig(A_evects, dim, evals) )
-     throw("symm_matrix_inv : opt_symm_matrix_eig could not diagonalize.\n");
+    throw(INTCO_EXCEPT("symm_matrix_inv : opt_symm_matrix_eig could not diagonalize"));
   //for (i=0; i<dim; ++i) fprintf(outfile, "evals[%d] = %15.10lf\n", i, evals[i]);
 
   for (i=0;i<dim;++i)
     det *= evals[i];
 
   if (!redundant && fabs(det) < 1E-10)
-    throw("symm_matrix_inv : Non-generalized inverse of matrix failed.\n");
+    throw(INTCO_EXCEPT("symm_matrix_inv : Non-generalized inverse of matrix failed"));
 
   double ** A_inv = init_matrix(dim, dim);
 

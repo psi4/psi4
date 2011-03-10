@@ -61,7 +61,7 @@ int read_natoms(void) {
   catch (std::ios_base::failure & bf) {
     printf("Error reading number of atoms.\n");
     fprintf(outfile,"Error reading number of atoms.\n");
-    throw "Error reading number of atoms.";
+    throw(INTCO_EXCEPT("Error reading number of atoms."));
   }
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -124,7 +124,7 @@ void MOLECULE::read_geom_grad(void) {
     fin.getline(cline, 256);
 
     fin >> junk;
-    if (junk != nallatom) throw("wrong number of atoms in text file");
+    if (junk != nallatom) throw(INTCO_EXCEPT("wrong number of atoms in text file"));
     fin >> energy;
 
     for (int f=0; f<nfrag; ++f) {
@@ -158,7 +158,7 @@ void MOLECULE::read_geom_grad(void) {
   catch (std::ios_base::failure & bf) {
     printf("Error reading molecular geometry and gradient\n");
     fprintf(outfile,"Error reading molecular geometry and gradient\n");
-    throw "Error reading molecular geometry and gradient\n";
+    throw(INTCO_EXCEPT("Error reading molecular geometry and gradient"));
   }
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
@@ -262,7 +262,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
   catch (std::ios_base::failure & bf) {
     printf("Error reading cartesian Hessian matrix\n");
     fprintf(outfile,"Error reading cartesian Hessian matrix\n");
-    throw "Error reading cartesian Hessian matrix\n";
+    throw(INTCO_EXCEPT("Error reading cartesian Hessian matrix"));
   }
 
 #elif defined(OPTKING_PACKAGE_QCHEM)

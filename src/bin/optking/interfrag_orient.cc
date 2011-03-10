@@ -238,7 +238,7 @@ void zmat_point(double *A, double *B, double *C, double R_CD, double theta_BCD,
   sinABC = sqrt(1 - (cosABC * cosABC) );
   if ( (sinABC - 1.0e-14) < 0.0 ) {
     printf("Reference points cannot be colinear.");
-    throw "Reference points cannot be colinear.";
+    throw(INTCO_EXCEPT("Reference points cannot be colinear.", true));
   }
 
   v3d_cross_product(eAB,eBC,eY);
