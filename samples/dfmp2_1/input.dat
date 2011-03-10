@@ -16,7 +16,7 @@ molecule formic_dim {
    H   2.979488   0.258829   0.000000
    H   0.498833  -1.107195   0.000000
    symmetry c1
-   angstrom 
+   units angstrom 
    no_reorient
 }
 

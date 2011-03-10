@@ -1,0 +1,27 @@
+refnuc   = 6.0682984689667
+refscf   = -38.9173786948
+refccsd  = -0.115368877467405
+reftotal = -39.032747572263979
+
+molecule ch2 {
+  0 3
+  c
+  h 1 1.1
+  h 1 1.1 2 109
+}
+
+set globals {
+  wfn ccsd
+  reference uhf
+  dertype first
+  basis 6-31G**
+
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+energy('ccsd')
+
+
+clean()

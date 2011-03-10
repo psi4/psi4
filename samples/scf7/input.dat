@@ -1,4 +1,4 @@
-#! SCF STO-3G geometry optimzation, with Z-matrix input
+#! SCF cc-pVDZ geometry optimzation, with Z-matrix input
 
 # These values are from a tightly converged QChem run
 
@@ -8,14 +8,14 @@ molecule h2o {
      H 1 1.0
      H 1 1.0 2 104.5
 # QChem optimized geometry
-#O           0.000000    0.000000    0.138167
-#H          -0.758081    0.000000   -0.497635
-#H           0.758081    0.000000   -0.497635
+# O           0.000000    0.000000    0.100027
+# H          -0.748790    0.000000   -0.478565
+# H           0.748790    0.000000   -0.478565
 }
 
 set globals {
   diis false
-  basis sto-3g
+  basis cc-pvdz
   e_converge 10
   d_converge 10
 }

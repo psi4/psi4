@@ -12,7 +12,7 @@ set globals = {
     e_converge 10
 }
 
-thisenergy = energy('rhf')
+thisenergy = energy('scf')
 
 
 clean()

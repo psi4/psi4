@@ -2,6 +2,7 @@
 
 
 molecule allene {
+  symmetry c1
   H -2.0  0.0  1.0
   H -2.0  0.0 -1.0
   C -1.5  0.0  0.0
@@ -23,7 +24,7 @@ returnValue = 0
 thisenergy = 0.0
 
 while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
-    thisenergy = energy('rhf')
+    thisenergy = energy('scf')
     deriv()
     returnValue = optking()
     cycle = cycle + 1
