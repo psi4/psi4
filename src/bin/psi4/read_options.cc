@@ -29,7 +29,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("MULTP", 1);
   /*- Use pure angular momentum? -*/
   options.add_bool("PUREAM", true);
-  /*- Use pure angular momentum? -*/
+  /*- Print level -*/
   options.add_int("PRINT", 0);
 
   if (name == "SAPT"|| options.read_globals()) {
@@ -37,8 +37,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
     /*- The ubiquitous debug flag -*/
     options.add_bool("DEBUG",false);
-    /*- The ubiquitous print flag -*/
-    options.add_int("PRINT",1);
     /*- E converge value -*/
     options.add_int("E_CONVERGE",10);
     /*- D converge value -*/
@@ -66,9 +64,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
-      /*- The amount of information printed
-          to the output file -*/
-      options.add_int("PRINT", 1);
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
       /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
@@ -139,19 +134,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The stratmann elliptical-confocal alpha cutoff in [0 1] -*/
     options.add_double("DFT_STRATMANN_ALPHA",0.64);
     /*- The box width for box-type point grouping -*/
-    options.add_double("DFT_BOX_DELTA",4.0); 
+    options.add_double("DFT_BOX_DELTA",4.0);
     /*- The box overage for box-type point grouping -*/
-    options.add_double("DFT_BOX_OVERAGE",4.0); 
+    options.add_double("DFT_BOX_OVERAGE",4.0);
     /*- The near-field alpha within each cell for Voronoi-type point grouping -*/
-    options.add_double("DFT_VORONOI_A1",1.5); 
+    options.add_double("DFT_VORONOI_A1",1.5);
     /*- The far-field alpha within each cell for Voronoi-type point grouping -*/
-    options.add_double("DFT_VORONOI_A2",3.0); 
+    options.add_double("DFT_VORONOI_A2",3.0);
     /*- The point grouping scheme for the DFT grid -*/
-    options.add_str("DFT_GROUPING_TYPE","BOXES","BOXES VORONOI"); 
+    options.add_str("DFT_GROUPING_TYPE","BOXES","BOXES VORONOI");
     /*- The Voronoi coordiante scheme for the DFT grid -*/
-    options.add_str("DFT_COORDINATE_TYPE","ELLIPTICAL","ELLIPTICAL PROJECTION"); 
+    options.add_str("DFT_COORDINATE_TYPE","ELLIPTICAL","ELLIPTICAL PROJECTION");
     /*- The pruning scheme for the DFT grid -*/
-    options.add_str("DFT_PRUNING_TYPE","NONE","NONE AUTOMATIC"); 
+    options.add_str("DFT_PRUNING_TYPE","NONE","NONE AUTOMATIC");
     /*- The DFT combined functional name (for now) -*/
     options.add_str("DFT_FUNCTIONAL", "");
     /*- The DFT basis cutoff -*/
@@ -224,8 +219,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("DOCC", new ArrayType());
     /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("SOCC", new ArrayType());
-    /*- The amount of information to print to the output -*/
-    options.add_int("PRINT", 1);
 
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
@@ -306,7 +299,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENECE", "RHF");
     options.add_str("JOBTYPE", "SP");
     options.add_str("DERTYPE", "NONE");
-    options.add_int("PRINT", 0);
     options.add_int("CACHELEV", 2);
     options.add_str("CACHETYPE", "LRU", "LRU LOW");
     options.add_bool("SCS","false");
@@ -318,7 +310,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "");
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE", "NONE");
-    options.add_int("PRINT", 1);
     options.add_bool("PRINT_TEI", false);
     options.add_int("TOLERANCE", 14);
     options.add_int("CACHELEV", 2);
@@ -419,7 +410,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     options.add_str("EOM_REFERENCE","RHF");
-    options.add_int("PRINT", 0);
     options.add_bool("KEEP_TEIFILE", false);
     options.add_bool("KEEP_OEIFILE", false);
     options.add_int("TOLERANCE", 14);
@@ -455,7 +445,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN","SCF");
     options.add_int("CONVERGENCE",7);
     options.add_bool("RESTART",false);
-    options.add_int("PRINT",0);
     options.add_int("CACHELEV",2);
     options.add_bool("SEKINO",false);
     options.add_bool("DIIS",true);
@@ -490,7 +479,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
-    options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
     options.add_str("REFERENCE","RHF");
     options.add_bool("FOLLOW",false);
@@ -526,7 +514,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("WRTNOS", false);
     options.add_bool("ASYMM_OPDM", false);
     options.add_bool("SPIN_PROP", false);
-    options.add_int("PRINT", 1);
     options.add_bool("PRINT_NOS", false);
     options.add_int("CORREL_CORR", 0);
     options.add_double("ZVEC_FILE", 0);
@@ -548,7 +535,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCHBAR"|| options.read_globals()) {
     options.add_bool("TAMPLITUDE",false);
     options.add_int("CACHELEV",2);
-    options.add_int("PRINT",0);
     options.add_str("WFN", "SCF");
     options.add_str("DERTYPE", "ENERGY");
     options.add_bool("WABEI_LOWDISK", false);
@@ -556,7 +542,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
     options.add_str("WFN", "SCF");
-    options.add_int("PRINT",1);
     options.add_int("CACHELEV",2);
     options.add_str("REFERENCE","RHF");
     options.add_str("DERTYPE", "NONE");
@@ -588,7 +573,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
    options.add_str("WFN","CCSD");
    options.add_int("FZC_FILE", PSIF_OEI);
    options.add_bool("PRINT_MOS",false);
-   options.add_int("PRINT",1);
    options.add_bool("OEI_ERASE",false);
    options.add_bool("FZC",true);
    options.add_bool("DELETE_RESTR_DOCC",true);
@@ -607,7 +591,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
    options.add("DOCC_VIRT", new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
-    options.add_int("PRINT", 1);
     options.add_str("REFERENCE", "RHF");
     options.add("OMEGA", new ArrayType());
     options.add_str("PROPERTY","POLARIZABILITY");
@@ -661,7 +644,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     options.add_bool("ANALYZE", 0);
     options.add_str("DERTYPE", "NONE", "NONE FIRST RESPONSE");
-    options.add_int("PRINT", 0);
     options.add_int("MAXITER", 50);
     options.add_int("CONVERGENCE", 7);
     options.add_bool("RESTART",1);
@@ -706,7 +688,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
-    options.add_int("PRINT", 0);
     options.add_int("MAXITER", 500);
     options.add_int("CONVERGENCE", 7);
     options.add("STATES_PER_IRREP", new ArrayType());
@@ -729,7 +710,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("RI_LMP2", false);
     options.add_str("WFN", "LMP2");
     options.add_str("REFERENCE", "RHF", "RHF");
-    options.add_int("PRINT", 0);
     options.add_int("MAXITER", 50);
     options.add_int("ENERGY_CONV", 7);
     options.add_int("RMS_CONV", 5);
@@ -779,8 +759,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 1);
-    /*- Print level -*/
-    options.add_int("PRINT",1);
     /*- Debugging information? -*/
     options.add_bool("DEBUG",false);
     /*- Parallel algoritmh? -*/
@@ -843,8 +821,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAX_DIIS_VECS", 6);
     /*- The maximum number iterations allowed -*/
     options.add_int("MAXITER", 40);
-    /*- Print level -*/
-    options.add_int("PRINT",1);
     /*- Debugging information? -*/
     options.add_bool("DEBUG",false);
   }
