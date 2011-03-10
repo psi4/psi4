@@ -23,7 +23,7 @@ set global {
 psioh = PsiMod.IOManager.shared_object()
 psioh.set_specific_retention(32, False)
 
-thisenergy = energy('uhf')
+thisenergy = energy('scf')
 
 
 clean()

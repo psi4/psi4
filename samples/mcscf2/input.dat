@@ -8,8 +8,6 @@ molecule ozone {
 }
 
 set basis cc-pVDZ
-set docc [10, 1]
-set socc [ 0, 2]
 
 set mcscf {
     reference   twocon

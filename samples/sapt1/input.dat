@@ -16,7 +16,7 @@ molecule ethene_ethyne {
      C     0.000000     0.000000     1.693240
      H     0.000000     0.000000     0.627352
      H     0.000000     0.000000     3.963929
-     angstrom
+     units angstrom
      no_reorient
      symmetry c1
 }
@@ -30,6 +30,7 @@ set globals {
     sad_print     2
     d_converge    11
     puream        true
+    print         1
 }
 
 energy('sapt0')

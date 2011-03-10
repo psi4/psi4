@@ -73,3 +73,12 @@ scf5:         SCF STO-3G geometry optimzation, with Z-matrix input
 scf6:         SCF DZ allene geometry optimzation, with Cartesian input
 
 
+scf7:         SCF cc-pVDZ geometry optimzation, with Z-matrix input
+
+
+scf8:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
+
+
+scf9:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+
+
