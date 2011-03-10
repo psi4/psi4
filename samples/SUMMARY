@@ -49,6 +49,9 @@ mcscf3:       RHF 6-31G** energy of water, using the MCSCF module and Z-matrix i
 mints1:       Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.
 
 
+props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
+
+
 sad1:         Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.
 
 
