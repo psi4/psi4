@@ -919,6 +919,13 @@ double HF::compute_energy()
     // If so, read them in instead of forming them, unless the user disagrees.
     load_or_compute_initial_C();
 
+    // Maybe this goes here?
+    if (options_.get_str("GUESS") == "SAD") {
+        for (int h = 0 ; h < nirrep(); h++) {
+            nalphapi_[h] = sad_nocc_[h];
+        }
+    }
+
     // Guess the occupation, if needed.
     find_occupation();
 
@@ -927,10 +934,9 @@ double HF::compute_energy()
     // Compute an initial energy using H and D
     E_ = compute_initial_E();
     if (print_)
-        fprintf(outfile, "\n  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
-    fflush(outfile);
+        fprintf(outfile, "  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
 
-    fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
+    fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
     fflush(outfile);
 
     // SCF iterations
@@ -951,12 +957,6 @@ double HF::compute_energy()
 //            K_->print(outfile);
 //            G_->print(outfile);
 //        }
-
-        if (options_.get_str("GUESS") == "SAD") {
-            for (int h = 0 ; h < nirrep(); h++) {
-                nalphapi_[h] = sad_nocc_[h];
-            }
-        }
 
         form_F();
 //        if (print_>3) {
@@ -982,7 +982,7 @@ double HF::compute_energy()
 //            fprintf(outfile,"  After DIIS:\n");
 //            Fa_->print(outfile);
 //        }
-        fprintf(outfile, "   @%s iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fprintf(outfile, "   @%s iter %3d: %20.14f   % 10.5e   % 10.5e %s\n", reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
         form_C();

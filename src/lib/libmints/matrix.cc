@@ -823,6 +823,15 @@ void Matrix::transform(const shared_ptr<Matrix>& transformer)
     transform(transformer.get());
 }
 
+void Matrix::transform(const boost::shared_ptr<Matrix>& L,
+                       const boost::shared_ptr<Matrix>& F,
+                       const boost::shared_ptr<Matrix>& R)
+{
+    Matrix temp(nirrep_, F->rowspi_, R->colspi_, F->symmetry_ ^ R->symmetry_);
+    temp.gemm(false, false, 1.0, F, R, 0.0);
+    gemm(true, false, 1.0, L, temp, 0.0);
+}
+
 void Matrix::back_transform(const Matrix* const a, const Matrix* const transformer)
 {
     Matrix temp(a);
