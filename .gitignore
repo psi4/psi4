@@ -13,3 +13,5 @@ output.dat
 *.timer.dat
 objdir
 obj
+objdir_clang_debug
+objdir_gcc_debug
