@@ -43,7 +43,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     int natom = mol->natom();
     int norbs = bas->nbf();
 
-    if (sad_print_>1 && Communicator::world->me() == 0) {
+    if (sad_print_>1) {
         fprintf(outfile,"\n");
         bas->print(outfile);
         fprintf(outfile,"  Occupation: nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
@@ -82,7 +82,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     S_ints->compute(S_UHF);
     double** S = S_UHF->to_block_matrix();
 
-    if (sad_print_>6 && Communicator::world->me() == 0) {
+    if (sad_print_>6) {
         fprintf(outfile,"  S:\n");
         print_mat(S,norbs,norbs,outfile);
     }
@@ -95,8 +95,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     double* work = init_array(lwork);
     int stat = C_DSYEV('v','u',norbs,S[0],norbs,eigval, work,lwork);
     if (stat != 0) {
-        if (Communicator::world->me() == 0)
-            fprintf(outfile, "C_DSYEV failed\n");
+        fprintf(outfile, "C_DSYEV failed\n");
         exit(PSI_RETURN_FAILURE);
     }
     free(work);
@@ -125,7 +124,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     free_block(S);
     free_block(S_copy);
 
-    if (sad_print_>6 && Communicator::world->me() == 0) {
+    if (sad_print_>6) {
         fprintf(outfile,"  S^-1/2:\n");
         print_mat(Shalf,norbs,norbs,outfile);
     }
@@ -145,7 +144,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     delete T_ints;
     delete V_ints;
 
-    if (sad_print_>6 && Communicator::world->me() == 0) {
+    if (sad_print_>6) {
         fprintf(outfile,"  H:\n");
         print_mat(H,norbs,norbs,outfile);
     }
@@ -157,7 +156,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     //Compute intial D
     C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
     C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);
-    if (sad_print_>6 && Communicator::world->me() == 0) {
+    if (sad_print_>6) {
         fprintf(outfile,"  Ca:\n");
         print_mat(Ca,norbs,norbs,outfile);
 
@@ -191,7 +190,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
     int iteration = 0;
 
     bool converged = false;
-    if (sad_print_>1 && Communicator::world->me() == 0) {
+    if (sad_print_>1) {
         fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
         fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
         fflush(outfile);
@@ -282,7 +281,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
 
         double deltaE = fabs(E-E_old);
 
-        if (sad_print_>6 && Communicator::world->me() == 0) {
+        if (sad_print_>6) {
             fprintf(outfile,"  Fa:\n");
             print_mat(Fa,norbs,norbs,outfile);
 
@@ -310,20 +309,19 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
             fprintf(outfile,"  D:\n");
             print_mat(D,norbs,norbs,outfile);
         }
-        if (sad_print_>1 && Communicator::world->me() == 0)
+        if (sad_print_>1)
             fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E-E_old, Drms);
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
 
         if (iteration > maxiter) {
-            if(Communicator::world->me() == 0)
-                fprintf(outfile, "\n WARNING: Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
+            fprintf(outfile, "\n WARNING: Atomic UHF is not converging! Try casting from a smaller basis or call Rob at CCMST.\n");
             break;
         }
 
         //Check convergence
     } while (!converged);
-    if (converged && print_ > 1 && Communicator::world->me() == 0)
+    if (converged && print_ > 1)
         fprintf(outfile, "\n  @Atomic UHF Final Energy for atom %s: %20.14f", mol->symbol(0).c_str(),E);
 
     delete TEI;
@@ -766,8 +764,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
         double* work = init_array(lwork);
         int stat = C_DSYEV('v','u',nocc,T[0],nocc,eigval, work,lwork);
         if (stat != 0) {
-            if(Communicator::world->me() == 0)
-                fprintf(outfile, "C_DSYEV failed\n");
+            fprintf(outfile, "C_DSYEV failed\n");
             exit(PSI_RETURN_FAILURE);
         }
         free(work);

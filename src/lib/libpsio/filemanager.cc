@@ -98,35 +98,42 @@ void PSIOManager::print(FILE* out)
 }
 void PSIOManager::mirror_to_disk()
 {
-    FILE* fh = fopen("psi.clean","w");
-    if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle\n");
+ 
+    //if (Communicator::world->me() == 0) {
+      FILE* fh = fopen("psi.clean","w");
+      if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle\n");
     
-    for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
-        if (retained_files_.count((*it).first) == 0) {
-            fprintf(fh, "%s\n", (*it).first.c_str()); 
-        }
-    }
+      for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
+          if (retained_files_.count((*it).first) == 0) {
+              fprintf(fh, "%s\n", (*it).first.c_str()); 
+          }
+      }
     
-    fclose(fh);
+      fclose(fh);
+    //}
 }
 void PSIOManager::build_from_disk()
 {
-    FILE* fh = fopen("psi.clean","r");
-    if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle. Is there a psi.clean file there?\n");
+    //if (Communicator::world->me() == 0) {
+
+      FILE* fh = fopen("psi.clean","r");
+      if (fh == NULL) throw PSIEXCEPTION("PSIOManager cannot get a mirror file handle. Is there a psi.clean file there?\n");
     
-    files_.clear();
-    retained_files_.clear();   
+      files_.clear();
+      retained_files_.clear();   
 
-    char* in = new char[1000];
+      char* in = new char[1000];
    
-    while (fgets(in, 1000, fh) != NULL) {
-        std::string str(in);
-        str.resize(str.size()-1); // crush the newline
-        files_[str] = false; 
-    } 
-    delete[] in;
+      while (fgets(in, 1000, fh) != NULL) {
+          std::string str(in);
+          str.resize(str.size()-1); // crush the newline
+          files_[str] = false; 
+      } 
+      delete[] in;
 
-    fclose(fh);
+      fclose(fh);
+    //}
+
 }
 void PSIOManager::crashclean()
 {
@@ -147,14 +154,16 @@ void PSIOManager::psiclean()
     for (std::map<std::string, bool>::iterator it = files_.begin(); it != files_.end(); it++) {
         if (retained_files_.count((*it).first) == 0) {
             //Safe to delete
-            unlink((*it).first.c_str());
+            //if (Communicator::world->me() == 0)
+                unlink((*it).first.c_str());
         } else {
             temp[(*it).first] = (*it).second;
         }
     }
     files_.clear();
     files_ = temp;
-    unlink("psi.clean");
+    //if (Communicator::world->me() == 0)
+        unlink("psi.clean");
 }
 
 }

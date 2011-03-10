@@ -48,22 +48,10 @@ bool MatrixFactory::init_with_chkpt(shared_ptr<PSIO> psio)
 
 bool MatrixFactory::init_with_chkpt(shared_ptr<Chkpt> chkpt)
 {
-    if(Communicator::world->me() == 0) {
-        nirrep_ = chkpt->rd_nirreps();
-        rowspi_  = chkpt->rd_sopi();
-        colspi_  = chkpt->rd_sopi();
-        nso_     = chkpt->rd_nso();
-    }
-    if(Communicator::world->nproc() > 1) {
-        Communicator::world->raw_bcast(&nirrep_, sizeof(int), 0);
-        Communicator::world->raw_bcast(&nso_, sizeof(int), 0);
-        if(Communicator::world->me() != 0) {
-            rowspi_ = init_int_array(nirrep_);
-            colspi_ = init_int_array(nirrep_);
-        }
-        Communicator::world->raw_bcast(&(rowspi_[0]), nirrep_*sizeof(int), 0);
-        Communicator::world->raw_bcast(&(colspi_[0]), nirrep_*sizeof(int), 0);
-    }
+    nirrep_ = chkpt->rd_nirreps();
+    rowspi_  = chkpt->rd_sopi();
+    colspi_  = chkpt->rd_sopi();
+    nso_     = chkpt->rd_nso();
 
     return true;
 }

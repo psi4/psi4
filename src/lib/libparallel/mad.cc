@@ -8,8 +8,8 @@ using namespace boost;
 #if HAVE_MADNESS == 1
 
     MadCommunicator::MadCommunicator(boost::shared_ptr<madness::World> madness_world) :
-    Communicator() {
-        madworld_ = madness_world;
+    Communicator(), madworld_(madness_world) {
+        //madworld_ = madness_world;
         me_ = madworld_->rank();
         nproc_ = madworld_->nproc();
 

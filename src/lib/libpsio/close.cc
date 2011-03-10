@@ -14,6 +14,7 @@
 namespace psi {
 
 void PSIO::close(unsigned int unit, int keep) {
+    Communicator::world->sync();
   unsigned int i;
   psio_ud *this_unit;
   psio_tocentry *this_entry, *next_entry;
@@ -37,10 +38,13 @@ void PSIO::close(unsigned int unit, int keep) {
   
   /* Close each volume (remove if necessary) and free the path */
   for (i=0; i < this_unit->numvols; i++) {
-    
-    if (::close(this_unit->vol[i].stream) == -1)
-    psio_error(unit,PSIO_ERROR_CLOSE);
-
+    int errcod;
+    if (Communicator::world->me() == 0) {
+      errcod = ::close(this_unit->vol[i].stream);
+    }
+    Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
+    if (errcod == -1)
+      psio_error(unit,PSIO_ERROR_CLOSE);
     /* Delete the file completely if requested */
     if(!keep) unlink(this_unit->vol[i].path);
     PSIOManager::shared_object()->close_file(std::string(this_unit->vol[i].path), unit, (keep ? true : false));

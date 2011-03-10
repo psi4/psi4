@@ -29,10 +29,10 @@ returnValue = 0
 thisenergy = 0.0
 
 while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
-    thisenergy = energy('scf')
-    deriv()
-    returnValue = optking()
-    cycle = cycle + 1
+  thisenergy = energy('scf')
+  deriv()
+  returnValue = optking()
+  cycle = cycle + 1
 
 compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, thisenergy, 3, "Reference energy")                                #TEST

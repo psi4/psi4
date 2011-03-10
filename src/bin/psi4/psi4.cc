@@ -106,6 +106,7 @@ int main(int argc, char **argv, char **envp)
     Script::language->run(infile);
 
     // Shut things down:
+    Communicator::world->sync();
     psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
 

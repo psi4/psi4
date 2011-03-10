@@ -46,6 +46,8 @@ bool opt_io_is_present(void) {
   if (opt_data_stream.is_open()) {
     if (opt_data_stream.good())
       file_present = true;
+    Communicator::world->sync();
+    Communicator::world->sync();
     opt_data_stream.close();
   }
 #endif
@@ -63,6 +65,7 @@ void opt_io_remove(void) {
 #elif defined(OPTKING_PACKAGE_QCHEM)
   using opt_io::opt_data_stream;
 
+  Communicator::world->sync();
   if (opt_data_stream.is_open())       // if open, close it
     opt_data_stream.close();
   std::remove(QCHEM_OPTDATA_FILENAME); // remove file
@@ -92,6 +95,7 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
   if ( opt_data_stream.is_open() && (status == OPT_IO_OPEN_OLD))
     return;
 
+  Communicator::world->sync();
   if ( opt_data_stream.is_open() && (status == OPT_IO_OPEN_NEW) )
     opt_data_stream.close();
 
@@ -110,9 +114,11 @@ void opt_io_open(OPT_IO_FILE_STATUS status) {
 
 void opt_io_close(int keep) {
 
+    Communicator::world->sync();
 #if defined(OPTKING_PACKAGE_PSI)
   psio_close(PSI_OPTDATA_FILE_NUM, 1);
 #elif defined(OPTKING_PACKAGE_QCHEM)
+  Communicator::world->sync();
   opt_io::opt_data_stream.close();
 #endif
 
