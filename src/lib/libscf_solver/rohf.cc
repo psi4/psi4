@@ -41,21 +41,22 @@ ROHF::~ROHF() {
 
 void ROHF::common_init()
 {
-    Fc_      = SharedMatrix(factory_->create_matrix("F closed"));
-    Fo_      = SharedMatrix(factory_->create_matrix("F open"));
-    Fa_      = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
-    Fb_      = Fa_;
-    Feff_    = Fa_;
-    Ca_      = SharedMatrix(factory_->create_matrix("Moleular orbitals"));
+    Fa_      = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
+    Fb_      = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
+    Feff_    = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
+    Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
     Cb_      = Ca_;
-    Dc_      = SharedMatrix(factory_->create_matrix("D closed"));
-    Do_      = SharedMatrix(factory_->create_matrix("D open"));
-    Kc_      = SharedMatrix(factory_->create_matrix("K closed"));
-    Ko_      = SharedMatrix(factory_->create_matrix("K open"));
-    Dc_old_  = SharedMatrix(factory_->create_matrix("D closed old"));
-    Do_old_  = SharedMatrix(factory_->create_matrix("D open old"));
-    Gc_      = SharedMatrix(factory_->create_matrix("G closed"));
-    Go_      = SharedMatrix(factory_->create_matrix("G open"));
+    Da_      = SharedMatrix(factory_->create_matrix("Alpha density matrix"));
+    Db_      = SharedMatrix(factory_->create_matrix("Beta density matrix"));
+    Ka_      = SharedMatrix(factory_->create_matrix("K alpha"));
+    Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
+    Ga_      = SharedMatrix(factory_->create_matrix("G alpha"));
+    Gb_      = SharedMatrix(factory_->create_matrix("G beta"));
+    Dt_old_  = SharedMatrix(factory_->create_matrix("D alpha old"));
+    Dt_      = SharedMatrix(factory_->create_matrix("D beta old"));
+    moFa_    = SharedMatrix(factory_->create_matrix("MO Basis alpha Fock Matrix"));
+    moFb_    = SharedMatrix(factory_->create_matrix("MO Basis beta Fock Matrix"));
+
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
 
@@ -64,32 +65,31 @@ void ROHF::common_init()
 
 void ROHF::finalize()
 {
-    Fc_.reset();
-    Fo_.reset();
-    Dc_old_.reset();
-    Do_old_.reset();
-    Gc_.reset();
-    Go_.reset();
+    Feff_.reset();
+    Ka_.reset();
+    Kb_.reset();
+    Ga_.reset();
+    Gb_.reset();
+    Dt_old_.reset();
+    Dt_.reset();
+    moFa_.reset();
+    moFb_.reset();
 
     HF::finalize();
 }
 
 void ROHF::form_initial_C()
 {
-    Matrix temp;
-    Vector values;
-    factory_->create_matrix(temp);
-    factory_->create_vector(values);
+    SharedMatrix temp = shared_ptr<Matrix>(factory_->create_matrix());
 
     // In ROHF the creation of the C matrix depends on the previous iteration's C
     // matrix. Here we use H to generate the first C.
-    temp.copy(H_);
-    temp.transform(Shalf_);
-    temp.diagonalize(Ca_, values);
+    temp->copy(H_);
+    temp->transform(Shalf_);
+    temp->diagonalize(Ca_, epsilon_a_);
     find_occupation();
-    temp.gemm(false, false, 1.0, Shalf_, Ca_, 0.0);
+    temp->gemm(false, false, 1.0, Shalf_, Ca_, 0.0);
     Ca_->copy(temp);
-    Cb_->copy(temp);
 
     if (print_ > 3)
         Ca_->print(outfile, "initial C");
@@ -97,8 +97,7 @@ void ROHF::form_initial_C()
 
 void ROHF::save_density_and_energy()
 {
-    Dc_old_->copy(Dc_); // save previous density
-    Do_old_->copy(Do_); // save previous density
+    Dt_old_->copy(Dt_);
     Eold_ = E_; // save previous energy
 }
 
@@ -207,9 +206,16 @@ bool ROHF::diis()
 
 bool ROHF::test_convergency()
 {
+    // energy difference
     double ediff = E_ - Eold_;
 
-    if (fabs(ediff) < energy_threshold_)
+    // RMS of the density
+    Matrix D_rms;
+    D_rms.copy(Dt_);
+    D_rms.subtract(Dt_old_);
+    Drms_ = D_rms.rms();
+
+    if (fabs(ediff) < energy_threshold_ && Drms_ < density_threshold_)
         return true;
     else
         return false;
@@ -218,65 +224,62 @@ bool ROHF::test_convergency()
 void ROHF::form_initialF()
 {
     // Form the initial Fock matrix, closed and open variants
-    Fc_->copy(H_);
-    Fo_->copy(H_);
-    Fo_->scale(0.5);
-
-    // Transform the Focks
-    Fc_->transform(Shalf_);
-    Fo_->transform(Shalf_);
+    Fa_->copy(H_);
+    Fa_->transform(Shalf_);
+    Fb_->copy(Fa_);
 
 #ifdef _DEBUG
     if (debug_) {
-        fprintf(outfile, "Initial closed Fock matrix:\n");
-        Fc_->print(outfile);
-        fprintf(outfile, "Initial open Fock matrix:\n");
-        Fo_->print(outfile);
+        fprintf(outfile, "Initial alpha Fock matrix:\n");
+        Fa_->print(outfile);
+        fprintf(outfile, "Initial beta Fock matrix:\n");
+        Fb_->print(outfile);
     }
 #endif
 }
 
 void ROHF::form_F()
 {
-    SharedMatrix Fct(factory_->create_matrix("Fock closed transformed"));
-    SharedMatrix Fot(factory_->create_matrix("Fock open transformed"));
+    // Start by constructing the standard Fa and Fb matrices encountered in UHF
+    Fa_->copy(H_);
+    Fb_->copy(H_);
+    Fa_->add(Ga_);
+    Fb_->add(Gb_);
 
-    // Form Fc_ and Fo_. See derivation notebook for equations.
-    Fc_->copy(H_);
-    Fc_->add(Gc_);
-    Fo_->copy(H_);
-    Fo_->scale(0.5);
-    Fo_->add(Go_);
+    moFa_->transform(Fa_, Ca_);
+    moFb_->transform(Fb_, Ca_);
 
-    // Transform Fc_ and Fo_ to MO basis
-    Fct->transform(Fc_, Ca_);
-    Fot->transform(Fo_, Ca_);
-
-    // Form the effective Fock matrix, too
-    // The effective Fock matrix has the following structure
-    //  closed   | open     | virtual
-    //  Fc         2(Fc-Fo)   Fc
-    //  2(Fc-Fo)   Fc         2Fo
-    //  Fc         2Fo         Fc
-    int *opi = Fc_->rowspi();
-    Feff_->copy(Fct);
-    for (int h=0; h<Feff_->nirrep(); ++h) {
-        for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
+    /*
+     * Fo = open-shell fock matrix = 0.5 Fa
+     * Fc = closed-shell fock matrix = 0.5 (Fa + Fb)
+     *
+     * Therefore
+     *
+     * 2(Fc-Fo) = Fb
+     * 2Fo = Fa
+     *
+     * Form the effective Fock matrix, too
+     * The effective Fock matrix has the following structure
+     *          |  closed     open    virtual
+     *  ----------------------------------------
+     *  closed  |    Fc     2(Fc-Fo)    Fc
+     *  open    | 2(Fc-Fo)     Fc      2Fo
+     *  virtual |    Fc       2Fo       Fc
+     */
+    Feff_->copy(moFa_);
+    Feff_->add(moFb_);
+    Feff_->scale(0.5);
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = doccpi_[h]; i < doccpi_[h] + soccpi_[h]; ++i) {
             // Set the open/closed portion
-            for (int j=0; j<doccpi_[h]; ++j) {
-                double val = 2.0 * (Fct->get(h, i, j) - Fot->get(h, i, j));
+            for (int j = 0; j < doccpi_[h]; ++j) {
+                double val = moFb_->get(h, i, j);
                 Feff_->set(h, i, j, val);
                 Feff_->set(h, j, i, val);
             }
             // Set the open/virtual portion
-            for (int j=doccpi_[h]+soccpi_[h]; j<opi[h]; ++j) {
-                double val = 2.0 * Fot->get(h, i, j);
-                Feff_->set(h, i, j, val);
-                Feff_->set(h, j, i, val);
-            }
-            // Set the open/open portion
-            for (int j=doccpi_[h]; j<doccpi_[h]+soccpi_[h]; ++j) {
-                double val = Fot->get(h, i, j);
+            for (int j = doccpi_[h] + soccpi_[h]; j < nmopi_[h]; ++j) {
+                double val = moFa_->get(h, i, j);
                 Feff_->set(h, i, j, val);
                 Feff_->set(h, j, i, val);
             }
@@ -284,10 +287,10 @@ void ROHF::form_F()
     }
 
     if (debug_) {
-        Fc_->print(outfile);
-        Fo_->print(outfile);
-        Fct->print(outfile);
-        Fot->print(outfile);
+        Fa_->print();
+        Fb_->print();
+        moFa_->print();
+        moFb_->print();
         Feff_->print(outfile);
     }
 }
@@ -303,7 +306,6 @@ void ROHF::form_C()
 
     if (debug_) {
         fprintf(outfile, "In ROHF::form_C:\n");
-        Feff_->print();
         eigvec->eivprint(epsilon_a_);
     }
     temp->gemm(false, false, 1.0, Ca_, eigvec, 0.0);
@@ -316,106 +318,57 @@ void ROHF::form_C()
 
 void ROHF::form_D()
 {
-    int h, i, j, m;
-    int *opi = Dc_->rowspi();
-    int nirreps = Dc_->nirrep();
-    double val;
-    for (h=0; h<nirreps; ++h) {
-        for (i=0; i<opi[h]; ++i) {
-            for (j=0; j<opi[h]; ++j) {
-                val = 0.0;
-                for (m=0; m<doccpi_[h]; ++m)
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int i = 0; i < nsopi_[h]; ++i) {
+            for (int j = 0; j < nsopi_[h]; ++j) {
+                double val = 0.0;
+                for(int m = 0; m < doccpi_[h]; ++m)
                     val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
-                Dc_->set(h, i, j, val);
+                Db_->set(h, i, j, val);
 
-                val = 0.0;
-                for (m=doccpi_[h]; m<doccpi_[h]+soccpi_[h]; ++m)
+                for(int m = doccpi_[h]; m < doccpi_[h] + soccpi_[h]; ++m)
                     val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
-                Do_->set(h, i, j, val);
+                Da_->set(h, i, j, val);
             }
         }
     }
 
+    Dt_->copy(Da_);
+    Dt_->copy(Db_);
+
     if (debug_) {
         fprintf(outfile, "in ROHF::form_D:\n");
-        Dc_->print(outfile);
-        Do_->print(outfile);
+        Da_->print();
+        Db_->print();
     }
 }
 
 double ROHF::compute_initial_E()
 {
-    SharedMatrix Ho(factory_->create_matrix());
-    Ho->copy(H_);
-    Ho->scale(0.5);
-
-    H_->print();
-    Dc_->print();
-    Do_->print();
-
-    return nuclearrep_ + Dc_->vector_dot(H_) + Do_->vector_dot(Ho);
+    return compute_E();
 }
 
 double ROHF::compute_E() {
-    SharedMatrix HFc(factory_->create_matrix());
-    HFc->copy(H_);
-    HFc->add(Fc_);
-    SharedMatrix HFo(factory_->create_matrix());
-    HFo->copy(H_);
-    HFo->scale(0.5);
-    HFo->add(Fo_);
-    double Etotal = nuclearrep_ + Dc_->vector_dot(HFc) + Do_->vector_dot(HFo);
+    double DH  = Da_->vector_dot(H_);
+    DH += Db_->vector_dot(H_);
+    double DFa = Da_->vector_dot(Fa_);
+    double DFb = Db_->vector_dot(Fb_);
+    double Eelec = 0.5 * (DH + DFa + DFb);
+    double Etotal = nuclearrep_ + Eelec;
     return Etotal;
 }
 
 void ROHF::form_G()
 {
     /*
-     * If we define
-     *
-     * Jpq = [Dc_rs + 0.5 Do_rs](pq|rs), Kc_pq = Dc_rs(pr|qs), and Ko_pq = 0.5 Do_rs(pr|qs)
-     *
-     * then the contributions we want are
-     *
-     * Gc = 2J - Kc - Ko, and Go = J - 0.5Kc - Ko
-     *
-     * So, if we temporarily scale Do, we can make this look just like a UHF G build.  Nice.
-     *
-     * Addendum: To support DF/Direct algorithms wlog, the functor call builds (effectively)
-     *  Go_ = 2*J
-     *  Ka  = Kc + 2Ko
-     *  Kb  = Kc
-     * These are then unwound to make Andy's canonical products above
+     * This just builds the same Ga and Gb matrices used in UHF
      */
-    shared_ptr<Matrix> Da = shared_ptr<Matrix>(factory_->create_matrix("Da"));
-    shared_ptr<Matrix> Db = shared_ptr<Matrix>(factory_->create_matrix("Db"));
-    shared_ptr<Matrix> Ka = shared_ptr<Matrix>(factory_->create_matrix("Ka"));
-    shared_ptr<Matrix> Kb = shared_ptr<Matrix>(factory_->create_matrix("Kb"));
-    Da->copy(Do_);
-    Da->add(Dc_);
-    Db->copy(Dc_);
-
-    J_Ka_Kb_Functor jk_builder(Go_, Ka, Kb, Da, Db, Ca_, Cb_, nalphapi_, nbetapi_);
+    J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
     process_tei<J_Ka_Kb_Functor>(jk_builder);
 
-    Go_->scale(0.5);
-    Kc_->copy(Kb);
-    Ko_->copy(Ka);
-    Ko_->scale(-1.0);
-    Ko_->add(Kb);
-    Ko_->scale(-0.5);
-
-    //Go_->print();
-    //Ka->print();
-    //Kb->print();
-
-    Kc_->scale(0.5);
-    Go_->subtract(Kc_);
-    Gc_->copy(Go_);
-    Gc_->scale(2.0);
-    Gc_->subtract(Ko_);
-    Go_->subtract(Ko_);
-
+    Gb_->copy(Ga_);
+    Ga_->subtract(Ka_);
+    Gb_->subtract(Kb_);
 }
 
 }}

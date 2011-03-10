@@ -13,22 +13,17 @@ namespace psi { namespace scf {
 
 class ROHF : public HF {
 protected:
-    SharedMatrix S_;
     SharedMatrix Feff_;
-    SharedMatrix Fc_;
-    SharedMatrix Fo_;
-    SharedMatrix Kc_;
-    SharedMatrix Ko_;
-    SharedMatrix Dc_;
-    SharedMatrix Do_;
-    SharedMatrix Dc_old_;
-    SharedMatrix Do_old_;
-    SharedMatrix Gc_;
-    SharedMatrix Go_;
-
-    int use_out_of_core_;
-//    double *pk_;
-//    double *k_;             // Used in formation of _Fo
+    SharedMatrix Dt_old_;
+    SharedMatrix Dt_;
+    SharedMatrix Ga_;
+    SharedMatrix Gb_;
+    SharedMatrix Ka_;
+    SharedMatrix Kb_;
+    SharedMatrix Da_;
+    SharedMatrix Db_;
+    SharedMatrix moFa_;
+    SharedMatrix moFb_;
 
     void form_initialF();
     void form_initial_C();
@@ -38,14 +33,10 @@ protected:
     double compute_E();
 
     void form_G();
-//    void form_G_from_PK();
-//    void form_PK();
     void form_F();
 
-//    void find_occupation(SharedMatrix);
     void save_fock();
     bool diis();
-//    void allocate_PK();
 
     bool test_convergency();
 
