@@ -63,14 +63,13 @@ class MintsHelper {
 private:
     /// The Options reference for basis sets and things
     Options& options_;
-    boost::shared_ptr<PSIO> _psio;
-    boost::shared_ptr<BasisSetParser> _parser;
-    boost::shared_ptr<MatrixFactory> _factory;
-    boost::shared_ptr<Molecule> _molecule;
-    boost:: shared_ptr<IntegralFactory> _integral;
-    boost::shared_ptr<BasisSet> _basisset;
-    boost::shared_ptr<SOBasisSet> _sobasis;
-
+    boost::shared_ptr<PSIO> psio_;
+    boost::shared_ptr<BasisSetParser> parser_;
+    boost::shared_ptr<MatrixFactory> factory_;
+    boost::shared_ptr<Molecule> molecule_;
+    boost:: shared_ptr<IntegralFactory> integral_;
+    boost::shared_ptr<BasisSet> basisset_;
+    boost::shared_ptr<SOBasisSet> sobasis_;
 
 public:
 
@@ -102,7 +101,6 @@ public:
     boost::shared_ptr<Matrix> ao_eri();
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
-
 
     /// AO Overlap Integrals
     boost::shared_ptr<Matrix> so_overlap();
