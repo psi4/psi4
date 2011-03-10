@@ -1,6 +1,6 @@
-/*! \file bend.cc
-    \ingroup OPT10
-    \brief bend class
+/*! \file    bend.cc
+    \ingroup optking
+    \brief   Class for bending coordinate.
 */
 
 #include "bend.h"
@@ -27,7 +27,7 @@ BEND::BEND(int A_in, int B_in, int C_in, bool freeze_in) : SIMPLE(bend_type, 3, 
   linear_bend = false;
 
   if (A_in == B_in || B_in == C_in || A_in == C_in)
-    throw("BEND::BEND() Atoms defining bend are not unique.");
+    throw(INTCO_EXCEPT("BEND::BEND() Atoms defining bend are not unique."));
 
   s_atom[1] = B_in;
   if (A_in <= C_in) {
@@ -45,7 +45,7 @@ double BEND::value(GeomType geom) const {
   double phi=0.0, tval;
   if (!linear_bend) {
     if ( ! v3d_angle(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], phi) )
-      throw("BEND::compute_val: could not compute angle");
+      throw(INTCO_EXCEPT("BEND::compute_val: could not compute angle",true));
   }
   else { //linear bending complement
     double u[3], v[3], w[3], tvect[3];
@@ -72,10 +72,10 @@ double BEND::value(GeomType geom) const {
     double *origin = init_array(3);
     // linear complement is sum of 2 angles, u.w + w.v
     if (!v3d_angle(u, origin, w, phi))
-      throw("BEND::value: could not compute linear bend");
+      throw(INTCO_EXCEPT("BEND::value: could not compute linear bend",true));
 
     if (!v3d_angle(w, origin, v, tval))
-      throw("BEND::value: could not compute linear bend");
+      throw(INTCO_EXCEPT("BEND::value: could not compute linear bend",true));
     phi += tval;
   }
   return phi;

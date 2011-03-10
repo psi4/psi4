@@ -43,7 +43,7 @@ void set_params(void) {
   Opt_params.interfragment_mode = OPT_PARAMS::FIXED ;
 
 // Whether to only generate the internal coordinates and then stop {true, false}
-  Opt_params.generate_intcos_only;
+  Opt_params.generate_intcos_only = false;
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER}
   Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;

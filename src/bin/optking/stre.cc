@@ -4,10 +4,8 @@
 */
 
 #include "stre.h"
-
-//#include <string>
-//#include <iostream>
 #include <sstream>
+#include "opt_except.h"
 
 #include "v3d.h"
 #include "physconst.h"
@@ -21,7 +19,7 @@ using std::ostringstream;
 STRE::STRE(int A_in, int B_in, bool freeze_in) : SIMPLE(stre_type, 2, freeze_in) {
   //fprintf(stdout,"constructing STRE A_in:%d B_in:%d, frozen %d\n",
   //  A_in, B_in, freeze_in);
-  if (A_in == B_in) throw("STRE::STRE() atoms defining strech are not unique.");
+  if (A_in == B_in) throw(INTCO_EXCEPT("STRE::STRE() atoms defining strech are not unique."));
 
   if (A_in < B_in) {
     s_atom[0] = A_in;
@@ -62,7 +60,7 @@ double ** STRE::DqDx(GeomType geom) const {
   double **dqdx = init_matrix(2,3);
 
   if (! v3d_eAB(geom[s_atom[0]], geom[s_atom[1]], eAB) )
-    throw("STRE::g_s: could not normalize s vector.");
+    throw(INTCO_EXCEPT("STRE::DqDx: could not normalize s vector", true));
 
   if (inverse_stre)
     val = value(geom); // val = (1/R)
@@ -88,7 +86,7 @@ double ** STRE::Dq2Dx2(GeomType geom) const {
   double tval;
 
   if (! v3d_eAB(geom[s_atom[0]], geom[s_atom[1]], eAB) )
-    throw("STRE::g_s: could not normalize s vector.");
+    throw(INTCO_EXCEPT("STRE::Dq2Dx2: could not normalize s vector", true));
 
   if (!inverse_stre) {
     double length = value(geom);

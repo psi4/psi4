@@ -441,7 +441,7 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
   }
 
   if (fragment_index == -1)
-    throw("MOLECULE::compute_derivative_B() could not find intco_index");
+    throw(INTCO_EXCEPT("MOLECULE::compute_derivative_B() could not find intco_index"));
 
   double **dq2dx2_frag;
 

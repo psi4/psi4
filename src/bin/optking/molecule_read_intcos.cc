@@ -88,12 +88,10 @@ bool MOLECULE::read_intcos(std::ifstream & fintco) {
 
   bool line_present = false;
 
-  try {
-
   // read in line and tokenize
   line_present = myline(fintco, vline, line_num);
 
-int cnt =0;
+  int cnt =0;
 
   while (line_present) {
 
@@ -102,17 +100,17 @@ int cnt =0;
        
       if (vline.size() != 3) {
         error << "Format of fragment line is \"F integer(1st_atom) integer(last_atom)\", line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
       if ( !stoi(vline[1], &first_atom) || !stoi(vline[2], &last_atom)) {
         error << "Format of fragment line is \"F integer(1st_atom) integer(last_atom)\", line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
       --first_atom; // start at 0 internally
       --last_atom;
       if (first_atom > last_atom) {
         error << "Last atom must be greater than first atom, line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
 
       // create fragment
@@ -137,34 +135,34 @@ int cnt =0;
       bool frozen_I = has_asterisk(vline[0]);
       if (vline.size() != 3) {
         error << "Format of interfragment line is \"I integer(1st_frag) integer(2nd_frag)\" in line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
       if ( !stoi(vline[1], &first_frag) || !stoi(vline[2], &second_frag) ) {
         error << "Format of interfragment line is \"I integer(1st_frag) integer(2nd_frag)\" in line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
       --first_frag;
       --second_frag;
       if ( first_frag >= fragments.size() || second_frag >= fragments.size()) {
         error << "Fragments can only be referenced if already defined, error in line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
 
       // read mandatory line with 6 booleans
       line_present = myline(fintco, vline, line_num);
       if (!line_present) {
         error << "Missing line " << line_num+1 << " to indicate with six 1/0's which coordinates are active.\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
       if (vline.size() != 6 ) {
         error << "Indicate with _six_ 1/0's which coordinates are active, error in line " << line_num << ".\n";
-        throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
       }
       for (int i=0; i<6; ++i) {
         D_frozen[i] = has_asterisk(vline[i]);
         if (!stob(vline[i], &(D_on[i]))) {
           error << "Indicate with six 1/0's which coordinates are active, error in line " << line_num << ".\n";
-          throw(error.str());
+        throw(INTCO_EXCEPT(error.str().c_str()));
         }
       }
       if (frozen_I) { // freeze fragment; override other
@@ -184,14 +182,14 @@ int cnt =0;
 
           if (vline.size() < 2) {
             error << "Missing atoms list for reference atom, error in line" << line_num << ".\n";
-            throw(error.str());
+          throw(INTCO_EXCEPT(error.str().c_str()));
           }
 
           for (int i=1; i<vline.size(); ++i) {
             int a;
             if (!stoi(vline[i], &a)) {
               error << "Could not read atom list, error in line" << line_num << ".\n";
-              throw(error.str());
+            throw(INTCO_EXCEPT(error.str().c_str()));
             }
             a--;
 
@@ -253,9 +251,9 @@ int cnt =0;
       }
 
       if ((ref_A_needed[0] && A1.empty()) || (ref_A_needed[1] && A2.empty()) || (ref_A_needed[2] && A3.empty())
-       || (ref_B_needed[0] && B1.empty()) || (ref_B_needed[1] && B2.empty()) || (ref_B_needed[2] && B3.empty())) {
-            error << "Not all necessary reference atom supplied, error in line" << line_num << ".\n";
-            throw(error.str());
+        || (ref_B_needed[0] && B1.empty()) || (ref_B_needed[1] && B2.empty()) || (ref_B_needed[2] && B3.empty())) {
+          error << "Not all necessary reference atom supplied, error in line" << line_num << ".\n";
+          throw(INTCO_EXCEPT(error.str().c_str()));
       }
 
       ndA = ndB = 0;
@@ -303,20 +301,9 @@ int cnt =0;
     } // end of if vline[0] == 'I'
     else {
       error << "Unknown initial character on line " << line_num << ".\n";
-      throw(error.str());
+      throw(INTCO_EXCEPT(error.str().c_str()));
     }
   }
-  } catch (std::string s) {
-    fprintf(outfile,"Error: unable to read internal coordinate definitions.\n");
-    fprintf(outfile,"%s\n", s.c_str());
-    return false;
-  }
-
-/*
-  for (int i=0; i<fragments.size(); ++i)
-    delete fragments[i];
-  fragments.clear();
-*/
   
   return true;
 } // end MOLECULE::read_intcos
@@ -334,14 +321,10 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
   frozen = has_asterisk(s[0]); // removes asterisk
 
   if ((s[0] == "R") || (s[0] == "H")) {
-    if (s.size() != 3) {
-      error = "Format of stretch entry is \"R atom_1 atom_2\".\n";
-      throw(error);
-    }
-    if ( !stoi(s[1], &a) || !stoi(s[2], &b) ) {
-      error = "Format of stretch entry is \"R atom_1 atom_2\".\n";
-      throw(error);
-    }
+    if (s.size() != 3)
+      throw(INTCO_EXCEPT("Format of stretch entry is \"R atom_1 atom_2\""));
+    if ( !stoi(s[1], &a) || !stoi(s[2], &b) )
+      throw(INTCO_EXCEPT("Format of stretch entry is \"R atom_1 atom_2\""));
     --a; --b;
 
     STRE *one_stre = new STRE(a-offset, b-offset, frozen);
@@ -355,14 +338,10 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     return true;
   }
   else if ((s[0] == "B") || (s[0] == "L")) {
-    if (s.size() != 4) {
-      error = "Format of bend entry is \"B atom_1 atom_2 atom_3\".\n";
-      throw(error);
-    }
-    if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) ) {
-      error = "Format of bend entry is \"B atom_1 atom_2 atom_3\".\n";
-      throw(error);
-    }
+    if (s.size() != 4)
+      throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));
+    if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) )
+      throw(INTCO_EXCEPT("Format of bend entry is \"B atom_1 atom_2 atom_3\""));
     --a; --b; --c;
 
     BEND *one_bend = new BEND(a-offset, b-offset, c-offset, frozen);
@@ -376,14 +355,10 @@ bool FRAG::read_intco(vector<string> & s, int offset) {
     return true;
   }
   else if (s[0] == "D") {
-    if (s.size() != 5) {
-      error = "Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4\".\n";
-      throw(error);
-    }
-    if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) || !stoi(s[4], &d) ) {
-      error = "Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4\".\n";
-      throw(error);
-    }
+    if (s.size() != 5)
+      throw(INTCO_EXCEPT("Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4\""));
+    if ( !stoi(s[1], &a) || !stoi(s[2], &b) || !stoi(s[3], &c) || !stoi(s[4], &d) )
+      throw(INTCO_EXCEPT("Format of dihedral entry is \"D atom_1 atom_2 atom_3 atom_4\""));
     --a; --b; --c; --d;
   
     TORS *one_tors = new TORS(a-offset, b-offset, c-offset, d-offset, frozen);

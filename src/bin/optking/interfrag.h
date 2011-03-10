@@ -126,16 +126,7 @@ class INTERFRAG {
   int g_natom_A(void) const { return (A->g_natom()); }
   int g_natom_B(void) const { return (B->g_natom()); }
 
-  int g_intco_natom_A(int intco_index, int atom) {
-    if (intco_index < 0 || intco_index > 5)
-      throw("INTERFRAG::g_intco_atom_A() intco_index not between 0 and 5");
-    return (A->intcos[intco_index]->g_natom());
-  }
-
-  bool coordinate_on(int i) const {
-    if (i<0 || i>5) throw("INTERFRAG::coordinate_on argument must be 0-5");
-    return D_on[i];
-  }
+  bool coordinate_on(int i) const { return D_on[i]; }
 
   double ** H_guess(void); // guess Hessian
 
