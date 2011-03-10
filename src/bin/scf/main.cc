@@ -38,7 +38,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     string reference = options.get_str("REFERENCE");
     shared_ptr<Wavefunction> scf;
     double energy;
-    bool parallel = options.get_bool("PARALLEL");
+    //bool parallel = options.get_bool("PARALLEL");
 
     if (reference == "RHF") {
         scf = shared_ptr<Wavefunction>(new RHF(options, psio));
@@ -68,19 +68,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     if (post)
         scf->add_postiteration_callback(post);
 
-    if(parallel) {
-#if HAVE_MPI == 1
-        HFEnergy hf(options, psio, chkpt);
-        // Compute the Hartree-Fock energy in parallel
-        energy = hf.compute_parallel_energy();
-#else
-        throw InputException("Parallel SCF requires MPI or MADNESS. If you want to run in parallel, please install one or both." , "PARALLEL", __FILE__, __LINE__);
-#endif
-    }
-    else {
-        // Compute the SCF energy
-        energy = scf->compute_energy();
-    }
+    energy = scf->compute_energy();
 
     // Set some environment variables
     Process::environment.globals["SCF ENERGY"] = energy;

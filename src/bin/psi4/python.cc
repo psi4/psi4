@@ -662,6 +662,7 @@ void Python::run(FILE *input)
             PyRun_SimpleString(s);
 
             object objectScriptInit = exec( strStartScript, objectDict, objectDict );
+            Communicator::world->sync();
         }
         catch (error_already_set const& e)
         {

@@ -255,8 +255,7 @@ void HF::common_init()
 
     initialized_diis_manager_ = false;
 
-    if(Communicator::world->me() == 0)
-        print_header();
+    print_header();
 
     // We need some integrals on disk for these cases
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
@@ -286,21 +285,18 @@ void HF::finalize()
     delete[] so2index_;
     if (scf_type_ == "PK") pk_integrals_.reset();
 
-    if (Communicator::world->me() == 0) {
-        // Clean up after DIIS
-        if(initialized_diis_manager_)
-            diis_manager_->delete_diis_file();
-        diis_manager_.reset();
-        initialized_diis_manager_ = false;
-    }
+    // Clean up after DIIS
+    if(initialized_diis_manager_)
+        diis_manager_->delete_diis_file();
+    diis_manager_.reset();
+    initialized_diis_manager_ = false;
 
     // Figure out how many frozen virtual and frozen core per irrep
     compute_fcpi();
     compute_fvpi();
     reference_energy_ = E_;
 
-    if(Communicator::world->me() == 0)
-        dump_to_checkpoint();
+    dump_to_checkpoint();
 
     S_.reset();
     Shalf_.reset();
@@ -336,7 +332,7 @@ void HF::find_occupation()
             soccpi_[pairs[i].second]++;
     }
 
-    if(print_>5 && Communicator::world->me() == 0){
+    if(print_>5) {
         fprintf(outfile, "\tDOCC: [");
         for (int h=0; h<epsilon_a_->nirrep(); ++h){
             fprintf(outfile, "%3d ", doccpi_[h]);
@@ -367,23 +363,21 @@ void HF::print_header()
 
     molecule_->print();
 
-    if(Communicator::world->me() == 0) {
-        fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
+    fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
 
-        CharacterTable ct = molecule_->point_group()->char_table();
+    CharacterTable ct = molecule_->point_group()->char_table();
 
-        fprintf(outfile, "  Input DOCC vector = (");
-        for (int h=0; h<factory_->nirrep(); ++h) {
-            fprintf(outfile, "%2d %3s ", doccpi_[h], ct.gamma(h).symbol());
-        }
-        fprintf(outfile, ")\n");
-        fprintf(outfile, "  Input SOCC vector = (");
-        for (int h=0; h<factory_->nirrep(); ++h) {
-            fprintf(outfile, "%2d %3s ", soccpi_[h], ct.gamma(h).symbol());
-        }
-
-        fprintf(outfile, ")\n\n");
+    fprintf(outfile, "  Input DOCC vector = (");
+    for (int h=0; h<factory_->nirrep(); ++h) {
+        fprintf(outfile, "%2d %3s ", doccpi_[h], ct.gamma(h).symbol());
     }
+    fprintf(outfile, ")\n");
+    fprintf(outfile, "  Input SOCC vector = (");
+    for (int h=0; h<factory_->nirrep(); ++h) {
+        fprintf(outfile, "%2d %3s ", soccpi_[h], ct.gamma(h).symbol());
+    }
+
+    fprintf(outfile, ")\n\n");
 
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
 
@@ -419,16 +413,16 @@ void HF::form_H()
         soV->compute(potential);
     }
 
-    if (debug_ > 2 && Communicator::world->me() == 0)
+    if (debug_ > 2)
         kinetic->print(outfile);
 
-    if (debug_ > 2 && Communicator::world->me() == 0)
+    if (debug_ > 2)
         potential->print(outfile);
 
     H_->copy(kinetic);
     H_->add(potential);
 
-    if (debug_ > 2 && Communicator::world->me() == 0)
+    if (debug_ > 2)
         H_->print(outfile);
 
     free(integrals);
@@ -489,6 +483,7 @@ void HF::form_Shalf()
         IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso_], 0, 0, outfile);
         S_->set(integrals);
         free(integrals);
+
     }
     else {
         // Integral factory
@@ -526,7 +521,7 @@ void HF::form_Shalf()
             eigval.set(h, i, scale);
         }
     }
-    if (print_ && Communicator::world->me() == 0)
+    if (print_)
         fprintf(outfile,"\n  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2.set(eigval);
@@ -551,7 +546,7 @@ void HF::form_Shalf()
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
-    if (debug_ > 3 && Communicator::world->me() == 0) {
+    if (debug_ > 3) {
         Shalf_->print(outfile);
         Sphalf_->print(outfile);
     }
@@ -565,13 +560,13 @@ void HF::form_Shalf()
     //Unless the user wants canonical
     double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
-        if (print_ && Communicator::world->me() == 0)
+        if (print_)
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
         canonical_X_ = false;
 
         return;
     } else {
-        if (print_ && Communicator::world->me() == 0)
+        if (print_)
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
         canonical_X_ = true;
 
@@ -601,16 +596,15 @@ void HF::form_Shalf()
                     X_->set(h,m,i,eigvec.get(h,m,dimpi[h]-i-1));
             }
             //X_->print(outfile);
-            if (print_>2 && Communicator::world->me() == 0)
+            if (print_>2)
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
 
             delta_mos += start_index;
         }
 
-        if (print_ && Communicator::world->me() == 0) {
+        if (print_)
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
 
-        }
         epsilon_a_->init(eigvec.nirrep(), nmopi_);
         Ca_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
     }
@@ -683,20 +677,12 @@ bool HF::load_or_compute_initial_C()
 
             if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
 
-                if (Communicator::world->me() == 0)
-                    vectors = chkpt_->rd_scf();
-                else
-                    vectors = block_matrix(nso_,nmo_);
-                Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+                vectors = chkpt_->rd_scf();
                 Ca_->set(const_cast<const double**>(vectors));
                 free_block(vectors);
 
                 double *orbitale;
-                if (Communicator::world->me() == 0)
-                    orbitale = chkpt_->rd_evals();
-                else
-                    orbitale = init_array(nmo_);
-                Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+                orbitale = chkpt_->rd_evals();
                 epsilon_a_->set(orbitale);
                 delete[] orbitale;
 
@@ -707,40 +693,24 @@ bool HF::load_or_compute_initial_C()
             string prefix(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
             if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
 
-                if (Communicator::world->me() == 0)
-                    vectors = chkpt_->rd_alpha_scf();
-                else
-                    vectors = block_matrix(nso_, nmo_);
-                Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+                vectors = chkpt_->rd_alpha_scf();
                 Ca_->set(const_cast<const double**>(vectors));
                 free_block(vectors);
 
                 double *orbitale;
-                if (Communicator::world->me() == 0)
-                    orbitale = chkpt_->rd_alpha_evals();
-                else
-                    orbitale = init_array(nmo_);
-                Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+                orbitale = chkpt_->rd_alpha_evals();
                 epsilon_a_->set(orbitale);
                 delete[] orbitale;
             }
 
             prefix = chkpt_->build_keyword(const_cast<char*>("Beta MO coefficients"));
             if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-                if (Communicator::world->me() == 0)
-                    vectors = chkpt_->rd_beta_scf();
-                else
-                    vectors = block_matrix(nso_, nmo_);
-                Communicator::world->raw_bcast(&(vectors[0][0]), nso_*nmo_*sizeof(double), 0);
+                vectors = chkpt_->rd_beta_scf();
                 Ca_->set(const_cast<const double**>(vectors));
                 free_block(vectors);
 
                 double *orbitale;
-                if (Communicator::world->me() == 0)
-                    orbitale = chkpt_->rd_beta_evals();
-                else
-                    orbitale = init_array(nmo_);
-                Communicator::world->raw_bcast(&(orbitale[0]), nmo_*sizeof(double), 0);
+                orbitale = chkpt_->rd_beta_evals();
                 epsilon_b_->set(orbitale);
                 delete[] orbitale;
 
@@ -754,9 +724,7 @@ bool HF::load_or_compute_initial_C()
                fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
 
            // Read SCF energy from checkpoint file.
-           if(Communicator::world->me() == 0)
-               E_ = chkpt_->rd_escf();
-           Communicator::world->bcast(E_);
+           E_ = chkpt_->rd_escf();
 
            ret = true;
         }
@@ -966,16 +934,13 @@ double HF::compute_energy()
         E_ = compute_E();
 
         timer_on("DIIS");
-        if (Communicator::world->me() == 0) {
-            if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-                save_fock();
-            if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
-                diis_iter = diis();
-            } else {
-                diis_iter = false;
-            }
+        if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
+            save_fock();
+        if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
+            diis_iter = diis();
+        } else {
+            diis_iter = false;
         }
-//        Fa_->bcast(Communicator::world.get(), 0);
         timer_off("DIIS");
 
 //        if (print_>4 && diis_iter) {

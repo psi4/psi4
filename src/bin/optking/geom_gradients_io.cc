@@ -9,6 +9,8 @@
 
 #define EXTERN
 #include "globals.h"
+#include <libparallel/parallel.h>
+
 
 #include "io.h"
 
@@ -53,6 +55,7 @@ int read_natoms(void) {
     fin.getline(cline, 256);   // natom_i and energy row
     sline << cline;
     sline >> natom ;
+    psi::Communicator::world->sync();
     fin.close();
   }
   catch (std::ios_base::failure & bf) {
@@ -149,6 +152,7 @@ void MOLECULE::read_geom_grad(void) {
         fin >> grad[i][2];
       }
     }
+    psi::Communicator::world->sync();
     fin.close();
   } // end try reading geometries
   catch (std::ios_base::failure & bf) {
@@ -252,6 +256,7 @@ double ** OPT_DATA::read_cartesian_H(void) const {
       for (int j=0; j<Ncart; ++j)
         if_Hcart >> H_cart[i][j];
 
+    psi::Communicator::world->sync();
     if_Hcart.close();
   }
   catch (std::ios_base::failure & bf) {

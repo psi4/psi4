@@ -41,7 +41,6 @@ protected:
 
     // Form G routines
     double **G_vector_;                                // Used in form_G_from_PK to handle threading.
-    void form_G_from_direct_integrals_parallel();      // Computes all ERIs in parallel each iteration
 
     //Some stuff for Ed Hohenstein's SAPT code
     // TODO: This must be removed for a conforming SCF module
@@ -85,7 +84,6 @@ public:
     RHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~RHF();
 
-    double compute_energy_parallel();
 
     virtual SharedMatrix Da() const;
 

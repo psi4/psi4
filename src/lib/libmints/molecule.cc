@@ -777,23 +777,9 @@ void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
     multiplicity_          = Process::environment.options.get_int("MULTP");
     multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
 
-    if(Communicator::world->me() == 0) {
-        natoms = chkpt->rd_natom();
-        zvals = chkpt->rd_zvals();
-        geom = chkpt->rd_geom();
-    }
-
-    if(Communicator::world->nproc() > 1) {
-        Communicator::world->raw_bcast(&natoms, sizeof(int), 0);
-
-        if(Communicator::world->me() != 0) {
-            zvals = init_array(natoms);
-            geom = block_matrix(natoms, 3);
-        }
-
-        Communicator::world->raw_bcast(&(zvals[0]), natoms*sizeof(double), 0);
-        Communicator::world->raw_bcast(&(geom[0][0]), natoms*3*sizeof(double), 0);
-    }
+    natoms = chkpt->rd_natom();
+    zvals = chkpt->rd_zvals();
+    geom = chkpt->rd_geom();
 
     for (int i=0; i<natoms; ++i) {
         //fprintf(outfile,"  Atom %d, Z = %d, x = %14.10f,%14.10f,%14.10f, Label , Mass, \n",i,(int)zvals[i],geom[i][0],geom[i][1],geom[i][2]); fflush(outfile);
@@ -1322,10 +1308,8 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
     }
 
     // Need to save natom, zvals, geom
-    if(Communicator::world->me() == 0) {
-        chkpt->wt_natom(natom());
-        chkpt->wt_nallatom(nallatom());
-    }
+    chkpt->wt_natom(natom());
+    chkpt->wt_nallatom(nallatom());
 
     double *zvals = new double[natom()];
     double **geom = block_matrix(natom(), 3);
@@ -1342,13 +1326,11 @@ void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
         dummyflags[i] = fZ(i) > 0 ? 0 : 1;
     }
 
-    if(Communicator::world->me() == 0) {
-        chkpt->wt_zvals(zvals);
-        chkpt->wt_atom_dummy(dummyflags);
-        chkpt->wt_fgeom(fgeom);
+    chkpt->wt_zvals(zvals);
+    chkpt->wt_atom_dummy(dummyflags);
+    chkpt->wt_fgeom(fgeom);
 
-        chkpt->wt_enuc(nuclear_repulsion_energy());
-    }
+    chkpt->wt_enuc(nuclear_repulsion_energy());
 
     // Reset the prefix
     if (!prefix.empty()) {

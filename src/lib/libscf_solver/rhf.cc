@@ -31,7 +31,6 @@
 #include "integralfunctors.h"
 
 #include "rhf.h"
-#include "pairs.h"
 #include "pseudospectral.h"
 #include "df.h"
 
@@ -109,12 +108,10 @@ void RHF::common_init()
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
 
-    if(Communicator::world->me() == 0) {
-        //What are we using?
-        fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
-        // Print DIIS status
-        fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-    }
+    //What are we using?
+    fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
+    // Print DIIS status
+    fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
 
     fflush(outfile);
     // Allocate memory for PK matrix
@@ -183,147 +180,6 @@ void RHF::form_G()
     J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
     process_tei<J_K_Functor>(jk_builder);
     G_->subtract(K_);
-}
-
-
-double RHF::compute_energy_parallel()
-{
-#if HAVE_MPI == 1
-
-    //fprintf(outfile,"  Print = %d\n",print_);
-    //print_ = options_.get_int("PRINT");
-    bool converged = false, diis_iter = false;
-    if (options_.get_str("GUESS") == "SAD")
-        iteration_ = -1;
-    else
-        iteration_ = 0;
-
-    // Do the initial work to get the iterations started.
-    timer_on("Core Hamiltonian");
-    form_H(); //Core Hamiltonian
-    timer_off("Core Hamiltonian");
-    timer_on("Overlap Matrix");
-    form_Shalf(); //Shalf Matrix
-    timer_off("Overlap Matrix");
-    // Form initial MO guess by user specified method
-    // Check to see if there are MOs already in the checkpoint file.
-    // If so, read them in instead of forming them, unless the user disagrees.
-    timer_on("Initial Guess");
-    load_or_compute_initial_C();
-    timer_off("Initial Guess");
-
-    if (print_>3 && Communicator::world->me() == 0) {
-        S_->print(outfile);
-        Shalf_->print(outfile);
-        if (canonical_X_)
-            X_->print(outfile);
-        H_->print(outfile);
-    }
-    if (print_>2 && Communicator::world->me() == 0) {
-        fprintf(outfile,"  Initial Guesses:\n");
-        C_->print(outfile);
-        D_->print(outfile);
-    }
-
-    if (scf_type_ == "PK")
-        form_PK();
-
-    if(Communicator::world->me() == 0) {
-        fprintf(outfile, "                                  Total Energy            Delta E              Density RMS\n\n");
-        fflush(outfile);
-    }
-
-    // SCF iterations
-    do {
-        iteration_++;
-
-        Dold_->copy(D_);  // Save previous density
-        Eold_ = E_;       // Save previous energy
-
-        if (scf_type_ == "DIRECT")
-            form_G_from_direct_integrals_parallel();
-        else {
-            throw InputException("Parallel SCF is direct only. Please set SCF_TYPE=direct in input", "SCF_TYPE", __FILE__, __LINE__);
-            break;
-        }
-
-        form_F();
-
-        if (print_>3 && Communicator::world->me() == 0) {
-            Fa_->print(outfile);
-        }
-        if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
-            save_fock();
-
-        E_ = compute_E();
-
-        timer_on("DIIS");
-        if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
-            diis_iter = diis();
-        } else {
-            diis_iter = false;
-        }
-        timer_off("DIIS");
-
-        if (print_>4 && diis_iter && Communicator::world->me() == 0) {
-            fprintf(outfile,"  After DIIS:\n");
-            Fa_->print(outfile);
-        }
-        if(Communicator::world->me() == 0)
-            fprintf(outfile, "  @RHF iteration %3d energy: %20.14f    %20.14f %20.14f %s\n", iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
-        fflush(outfile);
-
-        timer_on("Diagonalize H");
-        form_C();
-
-        timer_off("Diagonalize H");
-        form_D();
-
-        if (print_>2 && Communicator::world->me() == 0) {
-            C_->print(outfile);
-            D_->print(outfile);
-        }
-
-        converged =  test_convergency();
-    } while (!converged && iteration_ < maxiter_ );
-
-
-    if (converged) {
-        if (Communicator::world->me() == 0) {
-        fprintf(outfile, "\n  Energy converged.\n");
-        fprintf(outfile, "\n  @RHF Final Energy: %20.14f", E_);
-        if (perturb_h_) {
-            fprintf(outfile, " with %f perturbation", lambda_);
-        }
-        fprintf(outfile, "\n");
-        save_information();
-        }
-    }
-
-
-    else {
-        if (Communicator::world->me() == 0)
-            fprintf(outfile, "\n  Failed to converged.\n");
-        E_ = 0.0;
-    }
-
-    //often, we're close!
-    if (options_.get_bool("DUAL_BASIS"))
-        save_dual_basis_projection();
-    if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
-        save_sapt_info();
-
-    // Compute the final dipole.
-    compute_multipole();
-
-    //fprintf(outfile,"\nComputation Completed\n");
-    fflush(outfile);
-
-    finalize();
-
-#endif
-
-    return E_;
 }
 
 void RHF::save_dual_basis_projection()
@@ -410,6 +266,7 @@ void RHF::save_information()
     for (int i=0; i<epsilon_a_->nirrep(); ++i)
         free(temp2[i]);
     free(temp2);
+
 }
 
 void RHF::save_fock()
@@ -751,6 +608,11 @@ void RHF::form_PK()
         print_array(pk_, pk_pairs_, outfile);
     }
 #endif
+
+    fflush(outfile);
+
+    ERIIN.close();
+
 }
 
 void RHF::form_G_from_PK()
@@ -829,325 +691,6 @@ void RHF::form_G_from_PK()
     delete[](D_vector);
 }
 #endif
-
-void RHF::form_G_from_direct_integrals_parallel()
-{
-
-    std::string communicator = Process::environment("COMMUNICATOR");
-
-    if(communicator == "MADNESS") {
-#if HAVE_MADNESS == 1
-        using namespace madness;
-
-        timer_on("G_direct_parallel");
-
-        G_->zero();
-
-        g_info->initialize(basisset_, D_, factory_->nso());
-
-        shared_ptr<mad_G> g_matrix(new mad_G(*Communicator::world->get_madworld()));
-
-        shared_ptr<ShellCombinationsIterator> shell_iter = g_info->create_shell_iter();
-
-    /*    int number_of_shell_pairs=0;
-        for (iter->first(); !iter->is_done(); iter->next()) {
-            number_of_shell_pairs++;
-        }
-
-        int** shell = init_int_matrix(8, number_of_shell_pairs);
-        int count=0;
-        for (iter->first(); !iter->is_done(); iter->next()) {
-            shell[0][count] = iter->p();
-            shell[1][count] = iter->q();
-            shell[2][count] = iter->r();
-            shell[3][count] = iter->s();
-
-            count++;
-        }
-    */
-
-        //sort_shell(shell, number_of_shell_pairs, 8);
-
-        int counter = 0;
-        for(shell_iter->first(); !shell_iter->is_done(); shell_iter->next()) {
-            Pair pqrs(counter);
-
-            if ( Communicator::world->me() == g_matrix->owner(pqrs) ) {
-                g_matrix->task(pqrs, &G_MAT::build_G, shell_iter->p(), shell_iter->q(), shell_iter->r(), shell_iter->s());
-            }
-            counter++;
-
-        }
-
-        Communicator::world->sync();
-
-        g_info->sum_G();
-
-        Communicator::world->sync();
-
-        fflush(outfile);
-        //free_int_matrix(shell);
-
-        g_info->set_G_(G_);
-
-        timer_off("G_direct_parallel");
-#else
-        throw InputException("You are trying to run in parallel with MADNESS, but MADNESS is not installed or not linked properly." , "PARALLEL", __FILE__, __LINE__);
-#endif
-    }
-    else if (communicator == "MPI") {
-#if HAVE_MPI == 1
-
-        timer_on("form_G_from_direct_integrals");
-        double temp1, temp2, temp3, temp4, temp5, temp6;
-        int itype;
-
-        // Zero out the G matrix
-        G_->zero();
-
-        // Need to back-transform the density from SO to AO basis
-        SimpleMatrix *D = D_->to_simple_matrix();
-
-        // Need a temporary G in the AO basis
-        SimpleMatrix G_local;
-        factory_->create_simple_matrix(G_local, "G (AO basis)");
-        G_local.zero();
-
-        // Initialize an integral object
-        // Begin factor ou
-
-        IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-        if (eri_.get() == NULL) {
-            eri_ = shared_ptr<TwoBodyAOInt>(integral.eri());
-        }
-        ShellCombinationsIterator iter = integral.shells_iterator();
-        const double *buffer = eri_->buffer();
-        // End factor out
-
-        fprintf(outfile, "      Computing integrals..."); fflush(outfile);
-        int P, Q, R, S;
-        int i, j, k, l;
-        int index;
-        double value;
-
-        int count_local=0;
-        int v=0;
-        for (iter.first(); !iter.is_done(); iter.next()) {
-            P = iter.p();
-            Q = iter.q();
-            R = iter.r();
-            S = iter.s();
-
-            if(Communicator::world->me() == v%Communicator::world->nproc()) {
-
-                // Compute quartet
-                timer_on("compute_shell");
-                eri_->compute_shell(P, Q, R, S);
-                timer_off("compute_shell");
-
-                // From the quartet get all the integrals
-                IntegralsIterator int_iter = iter.integrals_iterator();
-                for (int_iter.first(); !int_iter.is_done(); int_iter.next()) {
-                    i = int_iter.i();
-                    j = int_iter.j();
-                    k = int_iter.k();
-                    l = int_iter.l();
-                    index = int_iter.index();
-                    value = buffer[index];
-
-                    // We only care about those greater that 1.0e-14
-                    if (fabs(value) > 1.0e-14) {
-                        itype = integral_type(i, j, k, l);
-                        switch(itype) {
-                            case 1:
-                            temp1 = D->get(i, i) * value;
-
-                            G_local.add(i, i, temp1);
-                            break;
-
-                            case 2:
-                            temp1 = D->get(k, k) * 2.0 * value;
-                            temp2 = D->get(i, k) * value;
-                            temp3 = D->get(i, i) * 2.0 * value;
-
-                            G_local.add(i, i, temp1);
-                            G_local.add(k, k, temp3);
-                            G_local.add(i, k, -temp2);
-                            G_local.add(k, i, -temp2);
-                            break;
-
-                            case 3:
-                            temp1 = D->get(i, i) * value;
-                            temp2 = D->get(i, l) * value * 2.0;
-
-                            G_local.add(i, l, temp1);
-                            G_local.add(l, i, temp1);
-                            G_local.add(i, i, temp2);
-                            break;
-
-                            case 4:
-                            temp1 = D->get(j, j) * value;
-                            temp2 = D->get(i, j) * value * 2.0;
-
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-                            G_local.add(j, j, temp2);
-                            break;
-
-                            case 5:
-                            temp1 = D->get(i, j) * value * 3.0;
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-
-                            temp2 = D->get(i, i) * value;
-                            temp3 = D->get(j, j) * value;
-                            G_local.add(j, j, -temp2);
-                            G_local.add(i, i, -temp3);
-                            break;
-
-                            case 6:
-                            temp1 = D->get(k, l) * value * 4.0;
-                            temp2 = D->get(i, l) * value;
-                            temp3 = D->get(i, i) * value * 2.0;
-                            temp4 = D->get(i, k) * value;
-
-                            G_local.add(i, i, temp1);
-                            G_local.add(i, k, -temp2);
-                            G_local.add(k, i, -temp2);
-                            G_local.add(k, l, temp3);
-                            G_local.add(l, k, temp3);
-                            G_local.add(i, l, -temp4);
-                            G_local.add(l, i, -temp4);
-                            break;
-
-                            case 7:
-                            temp1 = D->get(i, j) * value * 4.0;
-                            temp2 = D->get(j, k) * value;
-                            temp3 = D->get(i, k) * value;
-                            temp4 = D->get(k, k) * value * 2.0;
-
-                            G_local.add(k, k,  temp1);
-                            G_local.add(i, k, -temp2);
-                            G_local.add(k, i, -temp2);
-                            G_local.add(j, k, -temp3);
-                            G_local.add(k, j, -temp3);
-                            G_local.add(i, j,  temp4);
-                            G_local.add(j, i,  temp4);
-                            break;
-
-                            case 8:
-                            temp1 = D->get(k, k) * value * 2.0;
-                            temp2 = D->get(i, j) * value * 4.0;
-                            temp3 = D->get(j, k) * value;
-                            temp4 = D->get(i, k) * value;
-
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-                            G_local.add(k, k, temp2);
-                            G_local.add(i, k, -temp3);
-                            G_local.add(k, i, -temp3);
-                            G_local.add(j, k, -temp4);
-                            G_local.add(k, j, -temp4);
-                            break;
-
-                            case 9:
-                            temp1 = D->get(i, l) * value * 3.0;
-                            temp2 = D->get(i, j) * value * 3.0;
-                            temp3 = D->get(j, l) * value * 2.0;
-                            temp4 = D->get(i, i) * value;
-
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-                            G_local.add(i, l, temp2);
-                            G_local.add(l, i, temp2);
-                            G_local.add(i, i, -temp3);
-                            G_local.add(j, l, -temp4);
-                            G_local.add(l, j, -temp4);
-                            break;
-
-                            case 10:
-                            temp1 = D->get(j, l) * value * 3.0;
-                            temp2 = D->get(i, j) * value * 3.0;
-                            temp3 = D->get(j, j) * value;
-                            temp4 = D->get(i, l) * value * 2.0;
-
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-                            G_local.add(j, l, temp2);
-                            G_local.add(l, j, temp2);
-                            G_local.add(i, l, -temp3);
-                            G_local.add(l, i, -temp3);
-                            G_local.add(j, j, -temp4);
-                            break;
-
-                            case 11:
-                            temp1 = D->get(k, j) * value * 3.0;
-                            temp2 = D->get(i, j) * value * 3.0;
-                            temp3 = D->get(j, j) * value;
-                            temp4 = D->get(i, k) * value * 2.0;
-
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-                            G_local.add(k, j, temp2);
-                            G_local.add(j, k, temp2);
-                            G_local.add(i, k, -temp3);
-                            G_local.add(k, i, -temp3);
-                            G_local.add(j, j, -temp4);
-                            break;
-
-                            case 12:
-                            case 13:
-                            case 14:
-                            temp1 = D->get(k, l) * value * 4.0;
-                            temp2 = D->get(i, j) * value * 4.0;
-                            temp3 = D->get(j, l) * value;
-                            temp4 = D->get(i, k) * value;
-                            temp5 = D->get(j, k) * value;
-                            temp6 = D->get(i, l) * value;
-
-                            G_local.add(i, j, temp1);
-                            G_local.add(j, i, temp1);
-                            G_local.add(k, l, temp2);
-                            G_local.add(l, k, temp2);
-                            G_local.add(i, k, -temp3);
-                            G_local.add(k, i, -temp3);
-                            G_local.add(j, l, -temp4);
-                            G_local.add(l, j, -temp4);
-                            G_local.add(i, l, -temp5);
-                            G_local.add(l, i, -temp5);
-                            G_local.add(j, k, -temp6);
-                            G_local.add(k, j, -temp6);
-                            break;
-                        };
-
-                        count_local++;
-                    }
-                }
-            }
-            v++;
-        }
-
-        SimpleMatrix G = G_local;
-        int count;
-
-        Communicator::world->sum(G_local.ptr(), factory_->nso()*factory_->nso(), G.ptr(), -1);
-        Communicator::world->sum(&count_local, 1, &count, 0);
-
-        fprintf(outfile, "done.  %d two-electron integrals.\n", count); fflush(outfile);
-
-        G_->set(&G);
-        delete D;
-        timer_off("form_G_from_direct_integrals");
-
-#else
-        throw InputException("You are trying to run in parallel with MPI, but MPI is not installed or not linked properly." , "PARALLEL", __FILE__, __LINE__);
-#endif
-    }
-    else {
-        throw InputException("If you want to run SCF in parallel please set COMMUNICATOR to MADNESS or MPI in environment." , "PARALLEL", __FILE__, __LINE__);
-    }
-
-}
 
 void RHF::save_sapt_info()
 {

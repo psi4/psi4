@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <libparallel/parallel.h>
 
 #include <libpsio/config.h>
 

@@ -8,6 +8,8 @@
 #include "molecule.h"
 #include "print.h"
 #include "io.h"
+#include <libparallel/parallel.h>
+
 
 // Define the return types for optking.
 #if defined(OPTKING_PACKAGE_PSI)
@@ -78,6 +80,7 @@ OptReturnType optking(void) {
     // read internal coordinate and fragment definitions
     // create, allocate, and add fragment objects
     mol1->read_intcos(if_intco);
+    psi::Communicator::world->sync();
     if_intco.close();
 
     mol1->update_connectivity_by_bonds();
@@ -118,6 +121,7 @@ OptReturnType optking(void) {
     // print out internal coordinates for future steps
     FILE *fp_intco = fopen(FILENAME_INTCO_DAT, "w");
     mol1->print_intco_dat(fp_intco);
+    psi::Communicator::world->sync();
     fclose(fp_intco);
 
     // only generate coordinates and print them out
