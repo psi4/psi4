@@ -47,14 +47,28 @@ class J_K_Functor
     shared_ptr<Matrix> &J_;
     /// The exchange matrix
     shared_ptr<Matrix> &K_;
+    /// The communicator
+    std::string comm;
+    /// The scf type
+    std::string scf_type;
 
 public:
     bool k_required() const {return true;}
-    void initialize(){
+    void initialize(std::string comm_, std::string scf_type_){
+        comm = comm_;
+        scf_type = scf_type_;
         J_->zero();
         K_->zero();
     }
     void finalize(){
+
+        if (comm != "LOCAL" & scf_type == "DIRECT") {
+            for (int i=0; i < J_->nirrep(); i++)
+                Communicator::world->sum(J_->get_pointer(i), J_->rowdim(i)*J_->coldim(i));
+            for (int i=0; i < K_->nirrep(); i++)
+                Communicator::world->sum(K_->get_pointer(i), K_->rowdim(i)*K_->coldim(i));
+        }
+
         J_->copy_lower_to_upper();
         K_->copy_lower_to_upper();
     }
@@ -274,14 +288,26 @@ class J_Functor
     shared_ptr<Matrix> &J_;
     /// Whether this is restricted or not
     bool restricted_;
+    /// The communicator
+    std::string comm;
+    /// The scf type
+    std::string scf_type;
 
 public:
     bool k_required() const {return false;}
 
-    void initialize(){
+    void initialize(std::string comm_, std::string scf_type_){
+        comm = comm_;
+        scf_type = scf_type_;
         J_->zero();
     }
     void finalize(){
+
+        if (comm != "LOCAL" & scf_type == "DIRECT") {
+            for (int i=0; i < J_->nirrep(); i++)
+                Communicator::world->sum(J_->get_pointer(i), J_->rowdim(i)*J_->coldim(i));
+        }
+
         J_->copy_lower_to_upper();
     }
 
@@ -413,16 +439,32 @@ class J_Ka_Kb_Functor
     shared_ptr<Matrix> &Ka_;
     /// The beta exchange matrix
     shared_ptr<Matrix> &Kb_;
+    /// The communicator
+    std::string comm;
+    /// The scf type
+    std::string scf_type;
 
 public:
     bool k_required() const {return true;}
 
-    void initialize(){
+    void initialize(std::string comm_, std::string scf_type_){
+        comm = comm_;
+        scf_type = scf_type_;
         J_->zero();
         Ka_->zero();
         Kb_->zero();
     }
     void finalize(){
+
+        if (comm != "LOCAL" & scf_type == "DIRECT") {
+            for (int i=0; i < J_->nirrep(); i++)
+                Communicator::world->sum(J_->get_pointer(i), J_->rowdim(i)*J_->coldim(i));
+            for (int i=0; i < Ka_->nirrep(); i++)
+                Communicator::world->sum(Ka_->get_pointer(i), Ka_->rowdim(i)*Ka_->coldim(i));
+            for (int i=0; i < Kb_->nirrep(); i++)
+                Communicator::world->sum(Kb_->get_pointer(i), Kb_->rowdim(i)*Kb_->coldim(i));
+        }
+
         J_->copy_lower_to_upper();
         Ka_->copy_lower_to_upper();
         Kb_->copy_lower_to_upper();
@@ -651,7 +693,8 @@ template <class JKFunctor>
 void HF::process_tei(JKFunctor & functor)
 {
     if(scf_type_ == "OUT_OF_CORE"){
-        functor.initialize();
+        std::string comm_ = Process::environment("COMMUNICATOR");
+        functor.initialize(comm_, scf_type_);
         IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, integral_threshold_, 1, 1);
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -681,29 +724,44 @@ void HF::process_tei(JKFunctor & functor)
         }while(!lastBuffer);
         iwl->set_keep_flag(1);
         functor.finalize();
+        Communicator::world->sync();
         delete iwl;
     }else if (scf_type_ == "DIRECT"){
         SOShellCombinationsIterator shellIter(sobasisset_, sobasisset_, sobasisset_, sobasisset_);
-        functor.initialize();
-        for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
-            eri_->compute_shell(shellIter, functor);
+        std::string comm_ = Process::environment("COMMUNICATOR");
+        functor.initialize(comm_, scf_type_);
+
+        if (comm_ == "LOCAL" | comm_ == "MPI" | comm_ == "GA") {
+            int v=0;
+            for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
+                if (Communicator::world->me() == v%Communicator::world->nproc())
+                    eri_->compute_shell(shellIter, functor);
+                v++;
+            }
+            timer_on("HF::Functor Barrier");
+            Communicator::world->sync();
+            timer_off("HF::Functor Barrier");
         }
+
         functor.finalize();
     }else if (scf_type_ == "PSEUDOSPECTRAL"){
-        functor.initialize();
+        std::string comm_ = Process::environment("COMMUNICATOR");
+        functor.initialize(comm_, scf_type_);
         functor(df_, pseudospectral_);
         df_->form_J_DF();
         if(functor.k_required())
             pseudospectral_->form_K_PS();
     }else if (scf_type_ == "DF"){
-        functor.initialize();
+        std::string comm_ = Process::environment("COMMUNICATOR");
+        functor.initialize(comm_, scf_type_);
         functor(df_);
         if(functor.k_required())
             df_->form_JK_DF();
         else 
             df_->form_J_DF();
     }else if(scf_type_ == "PK"){
-        functor.initialize();
+        std::string comm_ = Process::environment("COMMUNICATOR");
+        functor.initialize(comm_, scf_type_);
         functor(pk_integrals_);
         if(functor.k_required())
             pk_integrals_->compute_J_and_K();

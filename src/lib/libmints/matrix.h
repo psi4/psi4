@@ -332,6 +332,30 @@ public:
      */
     double** pointer(int h = 0) const { return matrix_[h]; }
     const double** const_pointer(int h=0) const { return const_cast<const double**>(matrix_[h]); }
+
+    /**
+     * Returns the double* pointer to the h-th irrep block matrix
+     * NOTE: This method is provided for convenience in advanced
+     * BLAS/LAPACK calls, and should be used with caution. In particular,
+     * operations performed with these pointers should be scoped to avoid
+     * erroneous alteration of the objects primitive data. Moreover,
+     * the memory location/size of the double* obtained with this method
+     * should NEVER be resized, moved, or freed.
+     *
+     * @param h Subblock
+     * @returns pointer to h-th subblock in block-matrix form
+     */
+    double* get_pointer(int h = 0) const {
+        if(rowspi_[h]*colspi_[h] > 0)
+           return &(matrix_[h][0][0]);
+        else
+           return 0;}
+    const double* get_const_pointer(int h=0) const {
+        if(rowspi_[h]*colspi_[h] > 0)
+           return const_cast<const double*>(&(matrix_[h][0][0]));
+        else
+           return 0;}
+
     /**
      * Returns a copy of the current matrix.
      *
