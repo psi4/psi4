@@ -13,26 +13,40 @@ class INTERFRAG;
 
 using std::vector;
 
+/**
+  \ingroup Optking
+  \brief description about FRAG
+  */
 class FRAG {
 
  protected: // private, except the efp derived class can access
-  int natom;      // number of atoms in fragment
-  double *Z;      // atomic numbers
-  double **geom;   // cartesian coordinates
-  double **grad;   // cartesian coordinates
-  double *mass;   // nuclear masses
-  bool   **connectivity; // connectivity matrix
+  int natom;      //< number of atoms in fragment
+  double *Z;      //< atomic numbers
+  double **geom;   //< cartesian coordinates
+  double **grad;   //< cartesian coordinates
+  double *mass;   //< nuclear masses
+  bool   **connectivity; //< connectivity matrix
   vector<SIMPLE *> intcos;
-  bool frozen; // whether to optimize
+  bool frozen; //< whether to optimize
 
  public:
   friend class INTERFRAG;
 
+  /** Constructor. brief description
+
+    More details description
+    \param natom_in number of atoms.
+    \param Z_in atomic charges
+    \param geom_in Cartesian coordinates (natom_in x 3)
+    */
   FRAG(int natom_in, double *Z_in, double **geom_in); // use if Z and geom are known
   FRAG(int natom_in);
 
   ~FRAG(); // free memory
 
+  /** Description
+    \returns number of atoms.
+    */
   int g_natom(void) const { return natom; };
 
   void set_default_masses(void);
@@ -137,7 +151,7 @@ class FRAG {
 
   void print_geom(FILE *fp_geom); // write cartesian geometry out for next step
 
-  double ** H_guess(void); 
+  double ** H_guess(void);
   bool **g_connectivity(void) const;
   const bool * const * g_connectivity_pointer(void) const;
 
