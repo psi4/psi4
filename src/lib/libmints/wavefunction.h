@@ -120,6 +120,8 @@ public:
     boost::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.
     boost::shared_ptr<SOBasisSet> sobasisset() const;
+    /// Returns the MatrixFactory object that pertains to this wavefunction
+    boost::shared_ptr<MatrixFactory> matrix_factory() const; 
 
     static void initialize_singletons();
 

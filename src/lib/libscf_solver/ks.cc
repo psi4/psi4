@@ -166,7 +166,6 @@ void RKS::form_V()
         functional_->computeRKSFunctional(properties_);
 
         // Roll the weights in
-        // Roll the weights in (TODO DSCAL)
         for (index = 0; index < ntrue; index++) {
             zk[index] *= w[index];
             v_rho_a[index] *= w[index];
@@ -460,7 +459,6 @@ void UKS::form_V()
         // Compute functional values and partials
         functional_->computeUKSFunctional(properties_);
 
-        // Roll the weights in (TODO DSCAL)
         for (index = 0; index < ntrue; index++) {
             zk[index] *= w[index];
             v_rho_a[index] *= w[index];
@@ -608,7 +606,7 @@ void UKS::form_V()
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp1a[0][0], nbf);
 
-            // Alpha
+            // Beta 
             // phi_x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_x[index][0], nsigf*sizeof(double));
@@ -659,6 +657,8 @@ void UKS::form_V()
     quad_values_["<rho_b*x>"] = dipoleCheckXB;
     quad_values_["<rho_b*y>"] = dipoleCheckYB;
     quad_values_["<rho_b*z>"] = dipoleCheckZB;
+    
+    fprintf(outfile," Functional energy: %14.10f\n", functional_E);
  
     if (print_ > 2) { 
         fprintf(outfile,"\n\n  @RKS Numerical Alpha Density: %14.10f\n",densityCheckA);

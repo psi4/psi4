@@ -15,7 +15,6 @@
 #include <psi4-dec.h>
 
 using namespace psi;
-//using namespace psi::functional;
 using namespace boost;
 using namespace boost::python;
 using namespace std;
@@ -28,6 +27,7 @@ void export_psio();
 void export_chkpt();
 void export_mints();
 void export_functional();
+void export_oeprop();
 
 // In export_plugins.cc
 void py_psi_plugin_close_all();
@@ -472,6 +472,9 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     // Plugins
     export_plugins();
+
+    // OEProp/GridProp
+    export_oeprop();
 
     // Options
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
