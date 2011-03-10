@@ -485,6 +485,7 @@ public:
     void scale_row(int h, int m, double a);
     /// Scale column n of irrep h by a
     void scale_column(int h, int n, double a);
+
     /** Special function to transform a SimpleMatrix (no symmetry) into
      *  a symmetry matrix.
      *
@@ -493,33 +494,66 @@ public:
      */
     void transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::shared_ptr<Matrix>& transformer);
 
+    /** Performs a the transformation L^ F R. Result goes to this.
+     *
+     * \param L left transformation matrix (will be transposed)
+     * \param F matrix to apply transformation to
+     * \param R right transformation matrix (will not be transposed)
+     */
+    void transform(const boost::shared_ptr<Matrix>& L,
+                   const boost::shared_ptr<Matrix>& F,
+                   const boost::shared_ptr<Matrix>& R);
+
+    /// @{
     /// Transform a by transformer save result to this
     void transform(const Matrix* const a, const Matrix* const transformer);
     void transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+    /// @}
+
+    /// @{
     /// Transform this by transformer
     void transform(const Matrix* const transformer);
     void transform(const boost::shared_ptr<Matrix>& transformer);
+    /// @}
+
+    /// @{
     /// Back transform a by transformer save result to this
     void back_transform(const Matrix* const a, const Matrix* const transformer);
     void back_transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+    /// @}
+
+    /// @{
     /// Back transform this by transformer
     void back_transform(const Matrix* const transformer);
     void back_transform(const boost::shared_ptr<Matrix>& transformer);
+    /// @}
 
     /// Returns the vector dot product of this by rhs
     double vector_dot(const Matrix* const rhs);
     double vector_dot(const boost::shared_ptr<Matrix>& rhs);
     double vector_dot(const Matrix& rhs);
 
-    /// General matrix multiply, saves result to this
+    /// @{
+    /** General matrix multiply, saves result to this
+     * \param transa Transpose the left matrix
+     * \param transb Transpose the right matrix
+     * \param alpha Prefactor for the matrix multiplication
+     * \param a Left matrix
+     * \param b Right matrix
+     * \param beta Prefactor for the resulting matrix
+     */
     void gemm(bool transa, bool transb, double alpha, const Matrix* const a, const Matrix* const b, double beta);
     void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& b, double beta);
     void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const Matrix& b, double beta);
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const boost::shared_ptr<Matrix>& b, double beta);
+    /// @}
+
+    /// @{
     /// Diagonalize this places eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz = 1);
     void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz = 1);
     void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, int nMatz = 1);
+    /// @}
 
     /*! Computes the Cholesky factorization of a real symmetric
      *  positive definite matrix A.
