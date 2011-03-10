@@ -1,4 +1,4 @@
-# RHF cc-pVQZ energy for the BH molecule, with Cartesian input.  
+#! RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 
 molecule h2o {
