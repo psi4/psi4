@@ -500,21 +500,22 @@ SimpleMatrix *Matrix::to_simple_matrix() const
 
 void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) const
 {
-    int num_frames = int(n/10);
-    int num_frames_rem = n%10; //adding one for changing 0->1 start
+    const int print_ncol = 5;
+    int num_frames = int(n/print_ncol);
+    int num_frames_rem = n%print_ncol; //adding one for changing 0->1 start
     int num_frame_counter = 0;
     //for each frame
     for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
         fprintf(out,"\n");
-        for(int j=10*num_frame_counter+1;j<10*num_frame_counter+11;j++){
-            if(j==10*num_frame_counter+1){ fprintf(out,"%18d",j); }
+        for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+1;j++){
+            if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
             else{ fprintf(out,"        %5d",j); }
         }
         fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
-            for(int j=10*num_frame_counter+1;j<10*num_frame_counter+12;j++){
-                if(j==10*num_frame_counter+1){ fprintf(out,"%5d",k);}
+            for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+2;j++){
+                if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k);}
                 else{ fprintf(out," %12.7f",a[k-1][j-2]); }
             }
             fprintf(out,"\n");
@@ -525,15 +526,15 @@ void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) co
     // NEED TO TAKE CARE OF THE REMAINDER
     if(num_frames_rem != 0){
         fprintf(out,"\n");
-        for(int j=10*num_frame_counter+1;j<=n;j++){
-            if(j==10*num_frame_counter+1){ fprintf(out,"%18d",j); }
+        for(int j=print_ncol*num_frame_counter+1;j<=n;j++){
+            if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
             else{ fprintf(out,"        %5d",j); }
         }
         fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
-            for(int j=10*num_frame_counter+1;j<n+2;j++){
-                if(j==10*num_frame_counter+1){ fprintf(out,"%5d",k); }
+            for(int j=print_ncol*num_frame_counter+1;j<n+2;j++){
+                if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k); }
                 else{ fprintf(out," %12.7f",a[k-1][j-2]); }
             }
             fprintf(out,"\n");
@@ -556,7 +557,10 @@ void Matrix::print(FILE *out, const char *extra) const
 
     for (h=0; h<nirrep_; ++h) {
         fprintf(out, "  Irrep: %d\n", h+1);
-        print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
+        if (rowspi_[h] == 0 || colspi_[h^symmetry_] == 0)
+            fprintf(out, "\n\t(empty)\n");
+        else
+            print_mat(matrix_[h], rowspi_[h], colspi_[h^symmetry_], out);
         fprintf(out, "\n");
     }
     fflush(out);
