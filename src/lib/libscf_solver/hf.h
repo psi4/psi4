@@ -153,6 +153,11 @@ protected:
     void compute_fcpi();
     void compute_fvpi();
 
+    /// Print the orbitals energies and symmetries
+    void print_orbitals(const char *header, int *&irrep_count,
+                        const std::vector<std::pair<double, int> >& evals,
+                        int start, int end);
+
     /// Prints some opening information
     void print_header();
 
