@@ -10,91 +10,125 @@
 #include <qchem.h>
 #endif
 
+#if defined(OPTKING_PACKAGE_PSI)
+#include <psi4-dec.h>
+#endif
+
 namespace opt {
 
 void print_params(void);
 
-void set_params(void) {
+#if defined(OPTKING_PACKAGE_PSI)
+void set_params(psi::Options & options)
+#else
+void set_params(void)
+#endif
+{
 
 #if defined(OPTKING_PACKAGE_PSI)
 // whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO}
-  Opt_params.step_type = OPT_PARAMS::RFO;
-
+//  Opt_params.step_type = OPT_PARAMS::RFO;
+    Opt_params.step_type = (OPT_PARAMS::STEP_TYPE)options.get_int("STEP_SIZE");
 // Maximum step size in bohr or radian along an internal coordinate {double}
-  Opt_params.intrafragment_step_limit = 0.4;
-
+//  Opt_params.intrafragment_step_limit = 0.4;
+    Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_H");
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
-  Opt_params.rfo_follow_root = false;
-
+//  Opt_params.rfo_follow_root = false;
+    Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
 // Which RFO root to follow; 0 indicates minimum; {integer}
-  Opt_params.rfo_root = 0;
+//  Opt_params.rfo_root = 0;
+    Opt_params.rfo_root = options.get_int("RFO_ROOT");
 
 // When determining connectivity, a bond is assigned if interatomic distance
 // is less than (this number) * sum of covalent radii {double}
-  Opt_params.scale_connectivity = 1.3;
+//  Opt_params.scale_connectivity = 1.3;
+    Opt_params.scale_connectivity = options.get_double("SCALE_CONNECTIVITY");
 
 // Whether to treat multiple molecule fragments as a single bonded molecule;
 // or via interfragment coordinates ; a primary difference is that in MULTI mode,
 // the interfragment coordinates are not redundant. {SINGLE, MULTI}
-  Opt_params.fragment_mode = OPT_PARAMS::MULTI;
+//  Opt_params.fragment_mode = OPT_PARAMS::MULTI;
+    Opt_params.fragment_mode = (OPT_PARAMS::FRAGMENT_MODE)options.get_int("FRAGMENT_MODE");
 
 // whether to use fixed linear combinations of atoms as reference points for
 //interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES}
-  Opt_params.interfragment_mode = OPT_PARAMS::FIXED ;
+//  Opt_params.interfragment_mode = OPT_PARAMS::FIXED ;
+    Opt_params.interfragment_mode = (OPT_PARAMS::INTERFRAGMENT_MODE)options.get_int("INTERFRAGMENT_MODE");
 
 // Whether to only generate the internal coordinates and then stop {true, false}
-  Opt_params.generate_intcos_only = false;
+//  Opt_params.generate_intcos_only;
+    Opt_params.generate_intcos_only = options.get_bool("GENERATE_INTCOS_ONLY");
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER}
-  Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
+//  Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
+    Opt_params.intrafragment_H = (OPT_PARAMS::INTRAFRAGMENT_HESSIAN)options.get_int("INTRAFRAGMENT_H");
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
-  Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
+//  Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
+    Opt_params.interfragment_H = (OPT_PARAMS::INTERFRAGMENT_HESSIAN)options.get_int("INTERFRAGMENT_H");
 
 // Whether to freeze all fragments rigid
-  Opt_params.freeze_intrafragment = false;
+//  Opt_params.freeze_intrafragment = false;
+    Opt_params.freeze_intrafragment = options.get_bool("FREEZE_INTRAFRAGMENT");
 
 // By default, optking prints and saves the last (previous) geometry at the end of an
 // optimization, i.e., the one at which a gradient was computed.  If this keyword is
 // set to true, then the structure obtained from the last projected step is printed out and saved instead.
-  Opt_params.write_final_step_geometry = false;
+//  Opt_params.write_final_step_geometry = false;
+    Opt_params.write_final_step_geometry = options.get_bool("WRITE_FINAL_STEP_GEOMETRY");
 
 // Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL}
-  Opt_params.H_update = OPT_PARAMS::BFGS;
+//  Opt_params.H_update = OPT_PARAMS::BFGS;
+    Opt_params.H_update = (OPT_PARAMS::H_UPDATE)options.get_int("H_UPDATE");
 
 //  How many previous steps' data to use in Hessian update; 0=use them all ; {integer}
-  Opt_params.H_update_use_last = 6;
+//  Opt_params.H_update_use_last = 6;
+    Opt_params.H_update_use_last = options.get_int("H_UPDATE_USE_LAST");
 
 // Whether to limit the magnitutde of changes caused by the Hessian update {true, false}
-  Opt_params.H_update_limit = true; 
+//  Opt_params.H_update_limit = true;
+    Opt_params.H_update_limit = options.get_bool("H_UPDATE_LIMIT");
 
 // If the above is true, changes to the Hessian from the update are limited to the larger of
 // (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au).
-  Opt_params.H_update_limit_scale = 0.50;
-  Opt_params.H_update_limit_max  = 1.0;
+//  Opt_params.H_update_limit_scale = 0.50;
+//  Opt_params.H_update_limit_max  = 1.0;
+    Opt_params.H_update_limit_scale = options.get_double("H_UPDATE_LIMIT_SCALE");
+    Opt_params.H_update_limit_max = options.get_double("H_UPDATE_LIMIT_MAX");
 
 // Whether to use 1/R(AB) for stretching coordinate between fragments (or just R(AB))
-  Opt_params.interfragment_distance_inverse = false;
+//  Opt_params.interfragment_distance_inverse = false;
+    Opt_params.interfragment_distance_inverse = options.get_bool("INTERFRAGMENT_DISTANCE_INVERSE");
 
 // For now, this is a general maximum distance for the definition of H-bonds
-  Opt_params.maximum_H_bond_distance = 4.3;
+//  Opt_params.maximum_H_bond_distance = 4.3;
+    Opt_params.maximum_H_bond_distance = options.get_double("MAXIMUM_H_BOND_DISTANCE");
 
 // QCHEM optimization criteria
-  Opt_params.conv_max_force = 3.0e-4;
-  Opt_params.conv_max_DE    = 1.0e-6;
-  Opt_params.conv_max_disp  = 1.2e-3;
+//  Opt_params.conv_max_force = 3.0e-4;
+//  Opt_params.conv_max_DE    = 1.0e-6;
+//  Opt_params.conv_max_disp  = 1.2e-3;
+    Opt_params.conv_max_force = options.get_double("CONV_MAX_FORCE");
+    Opt_params.conv_max_DE = options.get_double("CONV_MAX_DE");
+    Opt_params.conv_max_disp = options.get_double("CONV_MAX_DISP");
 
 // Whether to test B matrix and derivative B matrix numerically
-  Opt_params.test_B = false;
-  Opt_params.test_derivative_B = false;
+//  Opt_params.test_B = false;
+//  Opt_params.test_derivative_B = false;
+    Opt_params.test_B = options.get_bool("TEST_B");
+    Opt_params.test_derivative_B = options.get_bool("TEST_DERIVATIVE_B");
 
 // Print level {1=default; 2=medium; 3=lots}
-  Opt_params.print_lvl = 1;
+//  Opt_params.print_lvl = 1;
+    Opt_params.print_lvl = options.get_int("PRINT");
 
 // read cartesian Hessian
-  Opt_params.read_cartesian_H = 0;
+//  Opt_params.read_cartesian_H = 0;
+    Opt_params.read_cartesian_H = options.get_bool("READ_CARTESIAN_H");
 
 // only treating "dummy fragments"
+    // These are not found in psi4/read_options.cc
+    // Not sure if we need these.
   Opt_params.efp_fragments = false;
   Opt_params.efp_fragments_only = false;
 
@@ -227,7 +261,7 @@ void set_params(void) {
 // only used for determining which atoms in a fragment are acceptable for use
 // as reference atoms.  We avoid collinear sets.
 // angle is 0/pi if the bond angle is within this fraction of pi from 0/pi
-  Opt_params.interfrag_collinear_tol = 0.01;   
+  Opt_params.interfrag_collinear_tol = 0.01;
 
 // cos(torsional angle) must be this close to -1/+1 for angle to count as 0/pi
   Opt_params.tors_cos_tol = 1e-10;
@@ -334,7 +368,7 @@ void print_params(void) {
   fprintf(outfile, "H_update_limit         = %18s\n", "true");
   else if (Opt_params.H_update_limit == OPT_PARAMS::FISCHER_LIKE)
   fprintf(outfile, "H_update_limit         = %18s\n", "false");
-  
+
   fprintf(outfile, "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
   fprintf(outfile, "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
 
