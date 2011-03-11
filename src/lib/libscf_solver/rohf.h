@@ -51,6 +51,7 @@ public:
     ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
     ROHF(Options& options, shared_ptr<PSIO> psio);
     virtual ~ROHF();
+    virtual bool restricted() const { return false; }
 };
 
 }}
