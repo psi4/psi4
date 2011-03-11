@@ -230,6 +230,7 @@ class MOLECULE {
   }
 
   void write_geom(void);
+  void symmetrize_geom(void);
   void print_geom(void);
 
   double ** compute_B(void) const;

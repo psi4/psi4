@@ -179,11 +179,13 @@ OptReturnType optking(void) {
 
   if (p_Opt_data->g_iteration() == 1) { // 1st iteration -> put initial Hessian in p_Opt_data
     bool worked = true;
-    if (Opt_params.read_cartesian_H)
+    if (Opt_params.read_cartesian_H) {
       worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
-
-    if (worked) fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
-    else fprintf(outfile,"\tUnable to read and transform Hessian.\n");
+      if (worked)
+        fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
+      else 
+        fprintf(outfile,"\tUnable to read and transform Hessian.\n");
+    }
 
     if ( (!Opt_params.read_cartesian_H) || (!worked) )
       mol1->H_guess(); // empirical model guess Hessian

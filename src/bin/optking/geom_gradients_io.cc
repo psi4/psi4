@@ -17,6 +17,7 @@
 #if defined(OPTKING_PACKAGE_PSI)
 #include <psi4-dec.h>
 #include <libmints/molecule.h>
+#include <libmints/matrix.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
 #include <qchem.h> // typedefs INTEGER
@@ -218,12 +219,34 @@ void MOLECULE::read_geom_grad(void) {
   return;
 }
 
+void MOLECULE::symmetrize_geom(void) {
+
+#if defined(OPTKING_PACKAGE_PSI)
+
+  // put matrix into environment molecule and it will symmetrize it
+  double **geom_2D = g_geom_2D();
+  psi::Process::environment.molecule()->set_geometry(geom_2D);
+  psi::Process::environment.molecule()->update_geometry();
+  free_matrix(geom_2D);
+
+  psi::SimpleMatrix geom = psi::Process::environment.molecule()->geometry();
+  geom_2D = geom.pointer(); // don't free; it's shared
+  set_geom_array(geom_2D[0]);
+
+#elif defined(OPTKING_PACKAGE_QCHEM)
+
+  // not implemented yet
+
+#endif
+}
+
 void MOLECULE::write_geom(void) {
 
 #if defined(OPTKING_PACKAGE_PSI)
 
   double **geom_2D = g_geom_2D();
   psi::Process::environment.molecule()->set_geometry(geom_2D);
+  psi::Process::environment.molecule()->update_geometry();
   free_matrix(geom_2D);
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
