@@ -16,7 +16,7 @@ struct OPT_PARAMS {
   double conv_max_DE;
   double conv_max_disp;
 
-  double scale_connectivity;  
+  double scale_connectivity;
 
   enum FRAGMENT_MODE {SINGLE, MULTI} fragment_mode;
 
@@ -28,14 +28,14 @@ struct OPT_PARAMS {
   int rfo_root;         // which root to follow
   double rfo_normalization_min; // small threshold for rfo normalization
 
-  enum {NR, RFO} step_type; // Newton-Raphson (NR) or RFO step
+  enum STEP_TYPE {NR, RFO} step_type; // Newton-Raphson (NR) or RFO step
 
   // Hessian guess
 
   enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
-  enum {NONE, BFGS, MS, POWELL, BOFILL} H_update;
+  enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
   int H_update_use_last;
 
   bool freeze_intrafragment; // freeze all fragments
@@ -68,7 +68,7 @@ struct OPT_PARAMS {
 // ** Unlikely to need modified **
 
   // how close to pi should a torsion be to assume it may have passed through 180
-  double fix_tors_near_pi; 
+  double fix_tors_near_pi;
 
   // torsional angles will not be computed if the contained bond angles are within
   // this fraction of pi from 0 or from pi
@@ -92,7 +92,7 @@ struct OPT_PARAMS {
   // rms and max change in cartesian coordinates in backtransformation
   double bt_dx_conv;
 
-  // give up on backtransformation iterations if change rms from one iteration to the 
+  // give up on backtransformation iterations if change rms from one iteration to the
   // next is below this value
   double bt_dx_conv_rms_change;
 

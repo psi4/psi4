@@ -7,6 +7,9 @@
 #include <physconst.h>
 #include <psifiles.h>
 
+// This one is tricky
+#include "../optking/opt_params.h"
+
 namespace psi {
 
 /**
@@ -880,9 +883,64 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTIVE_DOCC", new ArrayType());
   }
   if(name == "OPTKING"|| options.read_globals()) {
-    /*- Maximum number of permitted steps in geometry optimization -*/
-    options.add_int("NOPT", 40);
-    options.add_bool("NO_LINE_SEARCH", true); // whether to prevent any line searches; true is not yet implemented in psi4
+      /*- Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO} -*/
+      options.add_int("STEP_TYPE", opt::OPT_PARAMS::RFO);
+      /*- Maximum step size in bohr or radian along an internal coordinate {double} -*/
+      options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
+      /*- Whether to 'follow' the initial RFO vector after the first step {true, false} -*/
+      options.add_bool("RFO_FOLLOW_ROOT", false);
+      /*- Which RFO root to follow; 0 indicates minimum; {integer} -*/
+      options.add_int("RFO_ROOT", 0);
+      /*- When determining connectivity, a bond is assigned if interatomic distance
+          is less than (this number) * sum of covalent radii {double} -*/
+      options.add_double("SCALE_CONNECTIVITY", 1.3);
+      /*- Whether to treat multiple molecule fragments as a single bonded molecule;
+          or via interfragment coordinates ; a primary difference is that in MULTI mode,
+          the interfragment coordinates are not redundant. {SINGLE, MULTI} -*/
+      options.add_int("FRAGMENT_MODE", opt::OPT_PARAMS::MULTI);
+      /*- whether to use fixed linear combinations of atoms as reference points for
+          interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES} -*/
+      options.add_int("INTERFRAGMENT_MODE", opt::OPT_PARAMS::FIXED);
+      /*- Whether to only generate the internal coordinates and then stop {true, false} -*/
+      options.add_bool("GENERATE_INTCOS_ONLY", false);
+      /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
+      options.add_int("INTRAFRAGMENT_H", opt::OPT_PARAMS::FISCHER);
+      /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
+      options.add_int("INTERFRAGMENT_H", opt::OPT_PARAMS::DEFAULT);
+      /*- Whether to freeze all fragments rigid -*/
+      options.add_bool("FREEZE_INTRAFRAGMENT", false);
+      /*- By default, optking prints and saves the last (previous) geometry at the end of an
+          optimization, i.e., the one at which a gradient was computed.  If this keyword is
+          set to true, then the structure obtained from the last projected step is printed out and saved instead. -*/
+      options.add_bool("WRITE_FINAL_STEP_GEOMETRY", false);
+      /*- Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} -*/
+      options.add_int("H_UPDATE", opt::OPT_PARAMS::BFGS);
+      /*-  How many previous steps' data to use in Hessian update; 0=use them all ; {integer} -*/
+      options.add_int("H_UPDATE_USE_LAST", 6);
+      /*- Whether to limit the magnitutde of changes caused by the Hessian update {true, false} -*/
+      options.add_bool("H_UPDATE_LIMIT", true);
+      /*- If the above is true, changes to the Hessian from the update are limited to the larger of
+          (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au). -*/
+      options.add_double("H_UPDATE_LIMIT_MAX", 1.00);
+      /*- If the above is true, changes to the Hessian from the update are limited to the larger of
+          (H_update_limit_scale)*(the previous value) and H_update_limit_max (in au). -*/
+      options.add_double("H_UPDATE_LIMIT_SCALE", 0.50);
+      /*- Whether to use 1/R(AB) for stretching coordinate between fragments (or just R(AB)) -*/
+      options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
+      /*- For now, this is a general maximum distance for the definition of H-bonds -*/
+      options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
+      /*- QCHEM optimization criteria: maximum force -*/
+      options.add_double("CONV_MAX_FORCE", 3.0e-4);
+      /*- QCHEM optimization criteria: maximum energy change -*/
+      options.add_double("CONV_MAX_DE", 1.0e-6);
+      /*- QCHEM optimization criteria: maximum displacement -*/
+      options.add_double("CONV_MAX_DISP", 1.2e-3);
+      /*- Whether to test B matrix -*/
+      options.add_bool("TEST_B", false);
+      /*- Whether to test derivative B matrix -*/
+      options.add_bool("TEST_DERIVATIVE_B", false);
+      /*- Read Cartesian Hessian -*/
+      options.add_bool("READ_CARTESIAN_H", false);
   }
 
   return true;

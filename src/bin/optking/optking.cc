@@ -40,10 +40,15 @@ namespace opt {
   void close_output_dat(void);// close above
   void print_title(void); // print header
   void print_end(void);   // print footer
-  void set_params(void);      // set optimization parameters
   void init_ioff(void);
   static bool already_tried_other_intcos = false;
   static bool override_fragment_mode = false; // to override MULTI setting by exception algorithm
+
+#if defined(OPTKING_PACKAGE_PSI)
+  void set_params(psi::Options & options);      // set optimization parameters
+#else
+  void set_params(void);
+#endif
 
 #if defined(OPTKING_PACKAGE_PSI)
 OptReturnType optking(psi::Options & options) {
@@ -63,7 +68,11 @@ OptReturnType optking(void) {
 
   try {
 
+#if defined(OPTKING_PACKAGE_PSI)
+  set_params(options);
+#else
   set_params(); // set optimization parameters
+#endif
   if (override_fragment_mode && Opt_params.fragment_mode == OPT_PARAMS::MULTI)
     Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
 
