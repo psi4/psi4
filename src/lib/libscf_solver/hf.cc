@@ -301,7 +301,6 @@ void HF::finalize()
 
 void HF::find_occupation()
 {
-    // TODO fix this later for beta
     std::vector<std::pair<double, int> > pairs;
     for (int h=0; h<epsilon_a_->nirrep(); ++h) {
         for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
@@ -637,6 +636,24 @@ void HF::compute_fvpi()
         frzvpi_[pairs[i].second]++;
 }
 
+void HF::print_orbitals(const char* header, int *&irrep_count,
+                        const std::vector< std::pair<double, int> >& evals,
+                        int start, int end)
+{
+    char **labels = molecule_->irrep_labels();
+    fprintf(outfile, "\t%-70s\n\n\t", header);
+    int count = 0;
+    for (int i = start; i < end; ++i) {
+        int irrep = evals[i].second;
+        fprintf(outfile, "%4d%-4s%10.6f  ", ++irrep_count[irrep], labels[irrep], evals[i].first);
+        if (count++ % 4 == 3 && count != end)
+            fprintf(outfile, "\n\t");
+    }
+    fprintf(outfile, "\n\n");
+    for(int h = 0; h < nirrep_; ++h)
+        delete [] labels[h];
+}
+
 
 bool HF::load_or_compute_initial_C()
 {
@@ -957,6 +974,54 @@ double HF::compute_energy()
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
         form_F();
+
+        // Print the orbitals
+        if(print_){
+            fprintf(outfile, "\n\n\tOrbital Energies (a.u.):\n\t----------------------\n\n");
+            std::vector<std::pair<double, int> > aPairs;
+            std::vector<std::pair<double, int> > bPairs;
+            for (int h = 0; h < nirrep_; ++h) {
+                for (int i=0; i < nmopi_[h]; ++i){
+                    aPairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+                    bPairs.push_back(make_pair(epsilon_b_->get(h, i), h));
+                }
+            }
+            sort(aPairs.begin(), aPairs.end());
+            sort(bPairs.begin(), bPairs.end());
+            int *irrep_count = new int[nirrep_];
+            ::memset(irrep_count, 0, nirrep_ * sizeof(int));
+            if(reference == "RHF"){
+                print_orbitals("Doubly Occupied:", irrep_count, aPairs, 0, nalpha_);
+                print_orbitals("Virtual:", irrep_count, aPairs, nalpha_, nmo_);
+            }else if(reference == "UHF"){
+                print_orbitals("Alpha Occupied:", irrep_count, aPairs, 0, nalpha_);
+                print_orbitals("Alpha Virtual:", irrep_count, aPairs, nalpha_, nmo_);
+                ::memset(irrep_count, 0, nirrep_ * sizeof(int));
+                print_orbitals("Beta Occupied:", irrep_count, bPairs, 0, nbeta_);
+                print_orbitals("Beta Virtual:", irrep_count, bPairs, nbeta_, nmo_);
+            }else if(reference == "ROHF"){
+                print_orbitals("Doubly Occupied:", irrep_count, aPairs, 0, nbeta_);
+                print_orbitals("Singly Occupied:", irrep_count, aPairs, nbeta_, nalpha_);
+                print_orbitals("Virtual:", irrep_count, aPairs, nalpha_, nmo_);
+            }else{
+                throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
+            }
+
+            char **labels = molecule_->irrep_labels();
+            fprintf(outfile, "\tFinal Occupation by Irrep:\n");
+            fprintf(outfile, "\t      ");
+            for(int h = 0; h < nirrep_; ++h) fprintf(outfile, " %4s ", labels[h]); fprintf(outfile, "\n");
+            fprintf(outfile, "\tDOCC [ ");
+            for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", doccpi_[h]);
+            fprintf(outfile, " %4d ]\n", doccpi_[nirrep_-1]);
+            if(reference != "RHF"){
+                fprintf(outfile, "\tSOCC [ ");
+                for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", soccpi_[h]);
+                fprintf(outfile, " %4d ]\n", soccpi_[nirrep_-1]);
+            }
+            for(int h = 0; h < nirrep_; ++h) delete[] labels[h]; delete[] labels;
+            delete [] irrep_count;
+        }
 
         fprintf(outfile, "\n  Energy converged.\n");
         fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);

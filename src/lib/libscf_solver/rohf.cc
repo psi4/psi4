@@ -103,69 +103,6 @@ void ROHF::save_density_and_energy()
 
 void ROHF::save_information()
 {
-    // Print the final docc vector
-    char **temp2 = molecule_->irrep_labels();
-
-    fprintf(outfile, "\n  Final DOCC vector = (");
-    for (int h=0; h<factory_->nirrep(); ++h) {
-        fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
-    }
-    fprintf(outfile, ")\n");
-
-    fprintf(outfile, "  Final SOCC vector = (");
-    for (int h=0; h<factory_->nirrep(); ++h) {
-        fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-    }
-    fprintf(outfile, ")\n");
-
-    int print_mos = options_.get_bool("PRINT_MOS");
-    if (print_mos) {
-        fprintf(outfile, "\n  Molecular orbitals:\n");
-        Ca_->eivprint(epsilon_a_);
-    }
-
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-    }
-    sort(pairs.begin(), pairs.end());
-    int ndocc = 0, nsocc = 0;
-    for (int i=0; i<epsilon_a_->nirrep(); ++i) {
-        ndocc += doccpi_[i];
-        nsocc += soccpi_[i];
-    }
-
-    fprintf(outfile,
-            "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
-    for (int i=1; i<=ndocc; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
-                temp2[pairs[i-1].second]);
-        if (i % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "\n    Singly occupied orbitals\n      ");
-    for (int i=ndocc+1; i<=ndocc+nsocc; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
-                temp2[pairs[i-1].second]);
-        if ((i-ndocc) % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "\n    Unoccupied orbitals\n      ");
-    for (int i=ndocc+nsocc+1; i<=nso_; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first,
-                temp2[pairs[i-1].second]);
-        if ((i-ndocc-nsocc) % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-
-    for (int i=0; i<epsilon_a_->nirrep(); ++i)
-        free(temp2[i]);
-    free(temp2);
 }
 
 void ROHF::save_fock()
@@ -176,27 +113,6 @@ void ROHF::save_fock()
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, Feff_.get());
         initialized_diis_manager_ = true;
     }
-
-    // Save the effective Fock, back transform to AO, and orthonormalize
-//    diis_F_[current_diis_fock_]->copy(Feff_);
-//    diis_F_[current_diis_fock_]->back_transform(C_);
-//    diis_F_[current_diis_fock_]->transform(Sphalf_);
-
-//    // Determine error matrix for this Fock
-//    diis_E_[current_diis_fock_]->copy(Feff_);
-//    diis_E_[current_diis_fock_]->zero_diagonal();
-//    diis_E_[current_diis_fock_]->back_transform(C_);
-//    diis_E_[current_diis_fock_]->transform(Sphalf_);
-
-//#ifdef _DEBUG
-//    if (debug_) {
-//        fprintf(outfile, "  New error matrix:\n");
-//        diis_E_[current_diis_fock_]->print(outfile);
-//    }
-//#endif
-//    current_diis_fock_++;
-//    if (current_diis_fock_ == min_diis_vectors_)
-//        current_diis_fock_ = 0;
 }
 
 bool ROHF::diis()

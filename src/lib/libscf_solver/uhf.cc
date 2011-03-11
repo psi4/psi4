@@ -89,77 +89,7 @@ void UHF::form_G()
 
 void UHF::save_information()
 {
-    // Print the final docc vector
-    char **temp2 = molecule_->irrep_labels();
-
-    if(print_ > 1){
-        fprintf(outfile, "\n  Final doubly occupied vector = (");
-        for (int h=0; h<factory_->nirrep(); ++h) {
-            fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
-        }
-        fprintf(outfile, ")\n");
-        fprintf(outfile, "  Final singly occupied vector = (");
-        for (int h=0; h<factory_->nirrep(); ++h) {
-            fprintf(outfile, "%2d %3s ", soccpi_[h], temp2[h]);
-        }
-        fprintf(outfile, ")\n");
-    }
-
     compute_spin_contamination();
-
-    bool print_mos = options_.get_bool("PRINT_MOS");
-    if (print_mos) {
-        fprintf(outfile, "\n  Alpha Molecular orbitals:\n");
-        Ca_->eivprint(epsilon_a_);
-
-        fprintf(outfile, "\n  Beta Molecular orbitals:\n");
-        Cb_->eivprint(epsilon_b_);
-    }
-
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairsa, pairsb;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i) {
-            pairsa.push_back(make_pair(epsilon_a_->get(h, i), h));
-            pairsb.push_back(make_pair(epsilon_b_->get(h, i), h));
-        }
-    }
-    sort(pairsa.begin(),pairsa.end());
-    sort(pairsb.begin(),pairsb.end());
-    if(print_){
-        fprintf(outfile, "\n  Orbital energies (a.u.):\n    Alpha occupied\n      ");
-        for (int i=1; i<=nalpha_; ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-            if (i % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-        fprintf(outfile, "\n    Alpha unoccupied\n      ");
-        for (int i=nalpha_+1; i<=nso(); ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsa[i-1].first, temp2[pairsa[i-1].second]);
-            if ((i-nalpha_) % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-
-        fprintf(outfile, "\n    Beta occupied\n      ");
-        for (int i=1; i<=nbeta_; ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-            if (i % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-        fprintf(outfile, "\n    Beta unoccupied\n      ");
-        for (int i=nalpha_+1; i<=nso(); ++i) {
-            fprintf(outfile, "%12.6f %3s  ", pairsb[i-1].first, temp2[pairsb[i-1].second]);
-            if ((i-nbeta_) % 4 == 0)
-                fprintf(outfile, "\n      ");
-        }
-        fprintf(outfile, "\n");
-    }
-    for (int i=0; i<epsilon_a_->nirrep(); ++i)
-        free(temp2[i]);
-    free(temp2);
 }
 
 void UHF::compute_spin_contamination()
@@ -200,9 +130,9 @@ void UHF::compute_spin_contamination()
     double nm = (nalpha_ - nbeta_) / 2.0;
     double S2 = nm * (nm + 1.0);
 
-    fprintf(outfile, "\n  @Spin Contamination Metric: %7.4E\n", dS);
-      fprintf(outfile, "  @S^2 Expected:              %7.4E\n", S2);
-      fprintf(outfile, "  @S^2 Observed:              %7.4E\n", S2 + dS);
+    fprintf(outfile, "\n  @Spin Contamination Metric: %8.5F\n", dS);
+      fprintf(outfile, "  @S^2 Expected:              %8.5F\n", S2);
+      fprintf(outfile, "  @S^2 Observed:              %8.5F\n", S2 + dS);
 
 }
 

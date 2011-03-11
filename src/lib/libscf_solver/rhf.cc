@@ -209,64 +209,6 @@ void RHF::save_dual_basis_projection()
 
 void RHF::save_information()
 {
-    // Print the final docc vector
-    char **temp2 = molecule_->irrep_labels();
-
-    fprintf(outfile, "\n  Final occupation vector = (");
-    for (int h=0; h<factory_->nirrep(); ++h) {
-        fprintf(outfile, "%2d %3s ", doccpi_[h], temp2[h]);
-    }
-    fprintf(outfile, ")\n");
-
-    //Canonical Orthogonalization has orbital eigenvalues
-    //Which differ from those of the USO Fock Matrix
-    //These are unchanged after the last iteration, so orbital_e_
-    //is now protected member of RHF
-
-    // Needed for a couple of places.
-    //SharedMatrix eigvector(factory_->create_matrix());
-    //SharedVector orbital_e_(factory_->create_vector());
-
-    //Fa_->diagonalize(eigvector, orbital_e_);
-
-    int print_mos = false;
-    print_mos = options_.get_bool("PRINT_MOS");
-    if (print_mos) {
-        fprintf(outfile, "\n  Molecular orbitals:\n");
-
-        Ca_->eivprint(epsilon_a_);
-    }
-
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<nmopi_[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-    }
-    sort(pairs.begin(),pairs.end());
-    int ndocc = 0;
-    for (int i=0; i<epsilon_a_->nirrep(); ++i)
-        ndocc += doccpi_[i];
-
-    fprintf(outfile, "\n  Orbital energies (a.u.):\n    Doubly occupied orbitals\n      ");
-    for (int i=1; i<=ndocc; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first, temp2[pairs[i-1].second]);
-        if (i % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "\n    Unoccupied orbitals\n      ");
-    for (int i=ndocc+1; i<=nmo_; ++i) {
-        fprintf(outfile, "%12.6f %3s  ", pairs[i-1].first, temp2[pairs[i-1].second]);
-        if ((i-ndocc) % 4 == 0)
-            fprintf(outfile, "\n      ");
-    }
-    fprintf(outfile, "\n");
-
-    for (int i=0; i<epsilon_a_->nirrep(); ++i)
-        free(temp2[i]);
-    free(temp2);
-
 }
 
 void RHF::save_fock()
