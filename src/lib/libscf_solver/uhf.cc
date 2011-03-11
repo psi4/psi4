@@ -38,6 +38,7 @@ UHF::~UHF()
 
 void UHF::common_init()
 {
+    
     Drms_ = 0.0;
 
     Fa_     = SharedMatrix(factory_->create_matrix("F alpha"));
