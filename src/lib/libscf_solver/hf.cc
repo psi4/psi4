@@ -646,7 +646,7 @@ void HF::print_orbitals(const char* header, int *&irrep_count,
     for (int i = start; i < end; ++i) {
         int irrep = evals[i].second;
         fprintf(outfile, "%4d%-4s%10.6f  ", ++irrep_count[irrep], labels[irrep], evals[i].first);
-        if (count++ % 4 == 3 && count != end)
+        if (count++ % 3 == 2 && count != end)
             fprintf(outfile, "\n\t");
     }
     fprintf(outfile, "\n\n");
@@ -977,7 +977,7 @@ double HF::compute_energy()
 
         // Print the orbitals
         if(print_){
-            fprintf(outfile, "\n\n\tOrbital Energies (a.u.):\n\t----------------------\n\n");
+            fprintf(outfile, "\n\n\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
             std::vector<std::pair<double, int> > aPairs;
             std::vector<std::pair<double, int> > bPairs;
             for (int h = 0; h < nirrep_; ++h) {
@@ -1035,7 +1035,7 @@ double HF::compute_energy()
         E_ = 0.0;
         psio_->close(PSIF_CHKPT, 1);
     }
-    
+
     //often, we're close!
     if (options_.get_bool("DUAL_BASIS"))
         save_dual_basis_projection();

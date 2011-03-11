@@ -201,6 +201,7 @@ shared_ptr<Matrix> MintsHelper::ao_overlap()
     shared_ptr<Matrix>       overlap_mat(factory_->create_matrix(PSIF_AO_S));
     overlap->compute(overlap_mat);
     overlap_mat->save(psio_, PSIF_OEI);
+    return overlap_mat;
 }
 
 shared_ptr<Matrix> MintsHelper::ao_kinetic()
@@ -209,6 +210,7 @@ shared_ptr<Matrix> MintsHelper::ao_kinetic()
     shared_ptr<Matrix>       kinetic_mat(factory_->create_matrix());
     T->compute(kinetic_mat);
     kinetic_mat->save(psio_, PSIF_OEI);
+    return kinetic_mat;
 }
 
 shared_ptr<Matrix> MintsHelper::ao_potential()
@@ -217,6 +219,7 @@ shared_ptr<Matrix> MintsHelper::ao_potential()
     shared_ptr<Matrix>       potential_mat(factory_->create_matrix());
     V->compute(potential_mat);
     potential_mat->save(psio_, PSIF_OEI);
+    return potential_mat;
 }
 
 shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double beta)
@@ -291,6 +294,7 @@ shared_ptr<Matrix> MintsHelper::so_overlap()
     shared_ptr<Matrix>       overlap_mat(factory_->create_matrix(PSIF_SO_S));
     S->compute(overlap_mat);
     overlap_mat->save(psio_, PSIF_OEI);
+    return overlap_mat;
 }
 
 shared_ptr<Matrix> MintsHelper::so_kinetic()
@@ -299,6 +303,7 @@ shared_ptr<Matrix> MintsHelper::so_kinetic()
     shared_ptr<Matrix>       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
     T->compute(kinetic_mat);
     kinetic_mat->save(psio_, PSIF_OEI);
+    return kinetic_mat;
 }
 
 shared_ptr<Matrix> MintsHelper::so_potential()
@@ -307,6 +312,7 @@ shared_ptr<Matrix> MintsHelper::so_potential()
     shared_ptr<Matrix>       potential_mat(factory_->create_matrix(PSIF_SO_V));
     V->compute(potential_mat);
     potential_mat->save(psio_, PSIF_OEI);
+    return potential_mat;
 }
 
 std::vector<shared_ptr<Matrix> > MintsHelper::so_dipole()
