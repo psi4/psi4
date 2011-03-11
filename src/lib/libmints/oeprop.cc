@@ -35,7 +35,7 @@ void Prop::common_init()
     tasks_.clear();
 
     basisset_ = wfn_->basisset();
-    bool restricted_ = wfn_->restricted();
+    restricted_ = wfn_->restricted();
     
     integral_ = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
 
@@ -365,6 +365,7 @@ void OEProp::compute_mulliken_charges()
     overlap->compute(S);
 
     //S->print();
+    //fprintf(outfile, "  Is restricted? %s", (restricted_ ? "YES": "NO"));
     //Da->print();
     //Db->print();   
 
