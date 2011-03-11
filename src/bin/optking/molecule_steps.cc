@@ -105,6 +105,8 @@ void MOLECULE::nr_step(void) {
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
 #endif
 
+  symmetrize_geom(); // now symmetrize the geometry for next step
+
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, nr_u, nr_dqnorm, nr_g, nr_h);
 
@@ -256,6 +258,8 @@ void MOLECULE::rfo_step(void) {
   for (int I=0; I<efp_fragments.size(); ++I)
     efp_fragments[I]->displace( I, &(dq[g_efp_fragment_intco_offset(I)]) );
 #endif
+
+  symmetrize_geom(); // now symmetrize the geometry for next step
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
