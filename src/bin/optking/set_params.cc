@@ -28,10 +28,10 @@ void set_params(void)
 #if defined(OPTKING_PACKAGE_PSI)
 // whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO}
 //  Opt_params.step_type = OPT_PARAMS::RFO;
-    Opt_params.step_type = (OPT_PARAMS::STEP_TYPE)options.get_int("STEP_SIZE");
+    Opt_params.step_type = (OPT_PARAMS::STEP_TYPE)options.get_int("STEP_TYPE");
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
-    Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_H");
+    Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
 //  Opt_params.rfo_follow_root = false;
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
