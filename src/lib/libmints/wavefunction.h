@@ -42,19 +42,35 @@ class SOBasisSet;
 class Wavefunction {
 protected:
 
+    /// Primary basis set for AO integrals
     boost::shared_ptr<BasisSet> basisset_;
+
+    /// Primary basis set for SO integrals
     boost::shared_ptr<SOBasisSet> sobasisset_;
+
+    /// Molecule that this wavefunction is run on
     boost::shared_ptr<Molecule> molecule_;
+
+    /// Options object
     Options & options_;
 
     // PSI file access variables
     boost::shared_ptr<PSIO> psio_;
     boost::shared_ptr<Chkpt> chkpt_;
 
+    /// Matrix factory for creating standard sized matrices
     boost::shared_ptr<MatrixFactory> factory_;
+
+    /// How much memory you have access to.
     long int memory_;
+
+    /// Debug flag
     unsigned int debug_;
+
+    /// Energy convergence threshold
     double energy_threshold_;
+
+    /// Density convergence threshold
     double density_threshold_;
 
     /// Number of doubly occupied per irrep
@@ -74,20 +90,29 @@ protected:
     /// The reference energy associated with this wavefunction
     double reference_energy_;
 
+    /// Total number of SOs
     int nso_;
+    /// Total number of MOs
     int nmo_;
+    /// Number of irreps
     int nirrep_;
 
+    /// Alpha MO coefficients
     SharedMatrix Ca_;
+    /// Beta MO coefficients
     SharedMatrix Cb_;
 
     SharedMatrix Da_;
     SharedMatrix Db_;
 
+    /// Alpha Fock matrix
     SharedMatrix Fa_;
+    /// Beta Fock matrix
     SharedMatrix Fb_;
 
+    /// Alpha orbital eneriges
     SharedVector epsilon_a_;
+    /// Beta orbital energies
     SharedVector epsilon_b_;
 
     // Callback routines to Python
@@ -99,7 +124,7 @@ private:
     void common_init();
 
 public:
-    /// Set the PSIO object. Note: Wavefunction assumes ownership of the object. DO NOT DELETE!
+    /// Set the PSIO object.
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
 
