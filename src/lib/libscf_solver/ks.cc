@@ -658,8 +658,6 @@ void UKS::form_V()
     quad_values_["<rho_b*y>"] = dipoleCheckYB;
     quad_values_["<rho_b*z>"] = dipoleCheckZB;
     
-    fprintf(outfile," Functional energy: %14.10f\n", functional_E);
- 
     if (print_ > 2) { 
         fprintf(outfile,"\n\n  @RKS Numerical Alpha Density: %14.10f\n",densityCheckA);
         fprintf(outfile,"  @RKS Numerical Beta Density: %14.10f\n",densityCheckB);
@@ -698,14 +696,19 @@ void UKS::form_G()
         Gb_->add(Vb_);
     }
 
-    J_->print(outfile);
-    Ka_->print(outfile);
-    Kb_->print(outfile);
-    Va_->print();
-    Vb_->print();
+    //J_->print(outfile);
+    //Ka_->print(outfile);
+    //Kb_->print(outfile);
+    //Va_->print();
+    //Vb_->print();
 }
 double UKS::compute_E()
 {
+    //Fa_->print(outfile);
+    //Fb_->print(outfile);
+    //Ca_->print(outfile);
+    //Cb_->print(outfile);
+
     // E_DFT = 2.0 D*H + 2.0 D*J - \alpha D*K + E_xc
     double one_electron_E = Da_->vector_dot(H_);
     one_electron_E += Db_->vector_dot(H_);
@@ -720,7 +723,7 @@ double UKS::compute_E()
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_E;
-    Etotal += coulomb_E;
+    Etotal += 0.5*coulomb_E;
     Etotal += exchange_E;
     Etotal += quad_values_["E_xc"]; 
     if (functional_->isDashD()) {
@@ -728,6 +731,13 @@ double UKS::compute_E()
         Etotal += dashD_E;
     }
 
+    if (print_ > 2) {
+        fprintf(outfile, "Nuclear Repulsion energy: %24.16f\n", nuclearrep_);
+        fprintf(outfile, "One-electron energy:      %24.16f\n", one_electron_E);
+        fprintf(outfile, "Coulomb energy:           %24.16f\n", 0.5*coulomb_E);
+        fprintf(outfile, "Exchange energy:          %24.16f\n", exchange_E);
+        fprintf(outfile, "Functional energy:        %24.16f\n", quad_values_["E_xc"]);
+    }
     return Etotal;
 }
 

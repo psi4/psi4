@@ -1634,6 +1634,7 @@ double** DFMP2::form_Aia_core_parallel()
     }
   }
 
+  //Final tensor (will be fitted later)
   double** Aia = block_matrix(naux_raw_,nact_docc_*(ULI)nact_virt_);
 
   //Buffer tensors
