@@ -7,9 +7,6 @@
 #include <physconst.h>
 #include <psifiles.h>
 
-// This one is tricky
-#include "../optking/opt_params.h"
-
 namespace psi {
 
 /**
@@ -884,7 +881,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO} -*/
-      options.add_int("STEP_TYPE", opt::OPT_PARAMS::RFO);
+      options.add_str("STEP_TYPE", "RFO", "RFO NR");
       /*- Maximum step size in bohr or radian along an internal coordinate {double} -*/
       options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
       /*- Whether to 'follow' the initial RFO vector after the first step {true, false} -*/
@@ -897,16 +894,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Whether to treat multiple molecule fragments as a single bonded molecule;
           or via interfragment coordinates ; a primary difference is that in MULTI mode,
           the interfragment coordinates are not redundant. {SINGLE, MULTI} -*/
-      options.add_int("FRAGMENT_MODE", opt::OPT_PARAMS::MULTI);
+      options.add_str("FRAGMENT_MODE", "SINGLE", "SINGLE MULTI");
       /*- whether to use fixed linear combinations of atoms as reference points for
           interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES} -*/
-      options.add_int("INTERFRAGMENT_MODE", opt::OPT_PARAMS::FIXED);
+      options.add_str("INTERFRAGMENT_MODE", "FIXED", "FIXED INTERFRAGMENT");
       /*- Whether to only generate the internal coordinates and then stop {true, false} -*/
       options.add_bool("GENERATE_INTCOS_ONLY", false);
       /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
-      options.add_int("INTRAFRAGMENT_H", opt::OPT_PARAMS::FISCHER);
+      options.add_str("INTRAFRAGMENT_H", "FISCHER", "FISCHER SCHLEGEL");
       /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
-      options.add_int("INTERFRAGMENT_H", opt::OPT_PARAMS::DEFAULT);
+      options.add_str("INTERFRAGMENT_H", "DEFAULT", "DEFAULT FISCHER_LIKE");
       /*- Whether to freeze all fragments rigid -*/
       options.add_bool("FREEZE_INTRAFRAGMENT", false);
       /*- By default, optking prints and saves the last (previous) geometry at the end of an
@@ -914,7 +911,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
           set to true, then the structure obtained from the last projected step is printed out and saved instead. -*/
       options.add_bool("WRITE_FINAL_STEP_GEOMETRY", false);
       /*- Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} -*/
-      options.add_int("H_UPDATE", opt::OPT_PARAMS::BFGS);
+      options.add_str("H_UPDATE", "BFGS", "NONE BFGS MS POWELL BOFILL");
       /*-  How many previous steps' data to use in Hessian update; 0=use them all ; {integer} -*/
       options.add_int("H_UPDATE_USE_LAST", 6);
       /*- Whether to limit the magnitutde of changes caused by the Hessian update {true, false} -*/
