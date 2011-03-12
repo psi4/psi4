@@ -1,5 +1,5 @@
 /*! \file
-  \ingroup CCRESPONSE
+  \ingroup ccresponse
   \brief Compute optical rotations using the CC linear response formalism.
 
   Optical rotation is determined from negative of the the mixed electric-
@@ -58,7 +58,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 void transpert(const char *pert);
 void sort_pert(const char *pert, double **pertints, int irrep);
@@ -569,4 +569,4 @@ void optrot(void)
   free(cartcomp);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

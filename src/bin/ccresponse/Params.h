@@ -1,9 +1,9 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 struct Params {
   int print;             /* Output level control */
@@ -28,4 +28,4 @@ struct Params {
   int linear;  /* Bartlett size-extensive (?) linear model */
 };
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

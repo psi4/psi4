@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <libdpd/dpd.h>
@@ -9,7 +9,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* lambda_residuals(): Computes the "lambda residual" contributions to
 ** the <0|L*(HBAR*X1*Y1)c|0> part of the response function.
@@ -93,4 +93,4 @@ void lambda_residuals(void)
   dpd_buf4_close(&Z);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

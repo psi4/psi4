@@ -1,10 +1,10 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <string>
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 struct Local {
   int natom;
@@ -32,4 +32,4 @@ struct Local {
   std::string pairdef;
 };
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

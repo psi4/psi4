@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup response
     \brief Enter brief description of file here 
 */
 #include <cstdio>

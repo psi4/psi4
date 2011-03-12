@@ -1,9 +1,9 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 /*
-**  CCRESPONSE: Program to compute CC linear response properties.
+**  ccresponse: Program to compute CC linear response properties.
 */
 
 #include <cstdio>
@@ -22,7 +22,7 @@
 #include "Local.h"
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* Max length of ioff array */
 #define IOFF_MAX 32641
@@ -51,7 +51,7 @@ void polar(void);
 void optrot(void);
 void roa(void);
 
-int CCRESPONSE(Options &options, int argc, char *argv[])
+int ccresponse(Options &options, int argc, char *argv[])
 {
   int **cachelist, *cachefiles;
 
@@ -62,7 +62,7 @@ int CCRESPONSE(Options &options, int argc, char *argv[])
   get_params();
 
   timer_init();
-  timer_on("CCRESPONSE");
+  timer_on("ccresponse");
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
 
@@ -106,7 +106,7 @@ int CCRESPONSE(Options &options, int argc, char *argv[])
 
   cleanup();
 
-  timer_off("CCRESPONSE");
+  timer_off("ccresponse");
   timer_done();
 
   exit_io();
@@ -133,7 +133,7 @@ void title(void)
 {
   fprintf(outfile, "\t\t\t**************************\n");
   fprintf(outfile, "\t\t\t*                        *\n");
-  fprintf(outfile, "\t\t\t*       CCRESPONSE       *\n");
+  fprintf(outfile, "\t\t\t*       ccresponse       *\n");
   fprintf(outfile, "\t\t\t*                        *\n");
   fprintf(outfile, "\t\t\t**************************\n");
 }
@@ -158,4 +158,4 @@ void init_ioff(void)
   for(i=1; i < IOFF_MAX; i++) ioff[i] = ioff[i-1] + i;
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse
