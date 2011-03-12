@@ -34,7 +34,7 @@ void analyze(void)
   min = 0;
   width = (max-min) / (num_div);
 
-  ffile(&efile, "tamps.dat", 1);
+  ffile(&efile, (char *) "tamps.dat", 1);
   amp_array = init_array(num_div);
 
   nvir = moinfo.virtpi[0];
@@ -94,7 +94,7 @@ void analyze(void)
   min = -5;
   width = (max-min) / (num_div);
 
-  ffile(&efile, "t1amps.dat", 1);
+  ffile(&efile, (char *) "t1amps.dat", 1);
   amp_array = init_array(num_div);
 
   dpd_file2_init(&T1, CC_OEI, 0, 0, 1, "tIA");
