@@ -18,3 +18,4 @@ objdir_gcc_debug
 debug
 debug_latest
 svn_source
+psi4.xcodeproj
