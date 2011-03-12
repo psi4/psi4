@@ -3,11 +3,6 @@
 
 #include <cstddef>
 #include <boost/shared_ptr.hpp>
-//namespace boost {
-//template<class T> class shared_ptr;
-//}
-
-using namespace boost;
 
 namespace psi{
 
@@ -24,13 +19,13 @@ namespace scf{
 class PKIntegrals
 {
 public:
-    PKIntegrals(size_t memory, shared_ptr<PSIO> psio, Options& opt,
+    PKIntegrals(size_t memory, boost::shared_ptr<PSIO> psio, Options& opt,
                 int nirreps, const int* sopi, const int *so2index, const int *so2symblk);
     ~PKIntegrals();
-    void setup(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db);
-    void setup(shared_ptr<Matrix> J, shared_ptr<Matrix> K, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db);
-    void setup(shared_ptr<Matrix> J, shared_ptr<Matrix> Ka, shared_ptr<Matrix> Kb,
-               const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db);
+    void setup(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db);
+    void setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db);
+    void setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<Matrix> Kb,
+               const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db);
     void compute_J();
     void compute_J_and_K();
     void finalize();
@@ -54,7 +49,7 @@ private:
     /// The amount of memory available, in words
     size_t memory_;
     /// The PSIO object to use for I/O
-    shared_ptr<PSIO> psio_;
+    boost::shared_ptr<PSIO> psio_;
     /// The options object
     Options &options_;
     /// The block of exchange-like integrals
@@ -62,15 +57,15 @@ private:
     /// The block of Coulomb-like integrals
     double *p_j_;
     /// The alpha density
-    shared_ptr<Matrix> Da_;
+    boost::shared_ptr<Matrix> Da_;
     /// The beta density
-    shared_ptr<Matrix> Db_;
+    boost::shared_ptr<Matrix> Db_;
     /// The J matrix
-    shared_ptr<Matrix> J_;
+    boost::shared_ptr<Matrix> J_;
     /// The alpha K matrix
-    shared_ptr<Matrix> Ka_;
+    boost::shared_ptr<Matrix> Ka_;
     /// The beta K matrix
-    shared_ptr<Matrix> Kb_;
+    boost::shared_ptr<Matrix> Kb_;
     /// The number of irreps
     int nirreps_;
     /// The number of SOs per irrep
