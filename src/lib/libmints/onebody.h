@@ -2,6 +2,7 @@
 #define _psi_src_lib_libmints_onebody_h_
 
 #include <vector>
+#include "vector3.h"
 #include <boost/shared_ptr.hpp>
 
 namespace psi {
@@ -23,6 +24,8 @@ protected:
     boost::shared_ptr<BasisSet> bs1_;
     boost::shared_ptr<BasisSet> bs2_;
     std::vector<SphericalTransform>& spherical_transforms_;
+
+    Vector3 origin_;
 
     double *buffer_;
     double *target_;
@@ -109,6 +112,12 @@ public:
 
     /// Returns a clone of this object. By default throws an exception.
     virtual OneBodyAOInt* clone();
+
+    /// Returns the origin (useful for properties)
+    Vector3 origin() const { return origin_; }
+
+    /// Set the origin (useful for properties)
+    void set_origin(const Vector3& _origin) { origin_ = _origin; }
 };
 
 }
