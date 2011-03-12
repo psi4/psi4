@@ -1,31 +1,31 @@
 \begin{tabular*}{\textwidth}[tb]{p{0.15\textwidth}p{0.75\textwidth}}
-{\bf cc1} &  RHF-CCSD 6-31G** all-electron optimization of the H2O molecule\\
-{\bf cc2} &  6-31G** H2O Test CCSD energy, with Z-Matrix input\\
-{\bf cc4} &  RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. After the computation, the checkpoint file is renamed, using the PSIO handler.\\
-{\bf cc5} &  RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion\\
-{\bf cc5a} &  RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion\\
-{\bf cc8} &  UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.\\
-{\bf cc8a} &  ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.\\
-{\bf dcft1} &  DCFT calculation for the He dimer, with the K06 functional. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.\\
-{\bf dcft2} &  DCFT calculation for the He dimer, with the K06 functional. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.\\
-{\bf dcft3} &  DCFT calculation for the He dimer, with the K06 functional. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.\\
-{\bf dfmp2_1} &  Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.\\
-{\bf dfmp2_2} &  Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.\\
+{\bf scf6} &  SCF DZ allene geometry optimzation, with Cartesian input\\
+{\bf dfmp2\_1} &  Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid dimer binding energy using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.\\
+{\bf dfmp2\_2} &  Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.\\
+{\bf mcscf1} &  ROHF 6-31G** energy of the $^3B\_1$ state of CH$\_2$, with Z-matrix input. The occupations are specified explicitly.\\
 {\bf matrix1} &  An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.\\
-{\bf mcscf1} &  ROHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.\\
-{\bf mcscf2} &  TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.\\
-{\bf mcscf3} &  RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.\\
-{\bf mints1} &  Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.\\
-{\bf props1} &  RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.\\
+{\bf scf5} &  SCF STO-3G geometry optimzation, with Z-matrix input\\
 {\bf sad1} &  Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.\\
-{\bf sapt1} &  SAPT0 aug-cc-pVDZ computation of the ethane-ethyne binding energy, using the aug-cc-pVDZ-JKFIT RI basis for SCF and aug-cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.\\
+{\bf cc8} &  UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.\\
 {\bf scf1} &  RHF cc-pVQZ energy for the BH molecule, with Cartesian input.\\
 {\bf scf2} &  RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis. This compuation runs in C1 symmetry, which is currently required for RI-SCF.\\
-{\bf scf3} &  UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix input. The occupations are specified explicitly.\\
-{\bf scf4} &  RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan.\\
-{\bf scf5} &  SCF STO-3G geometry optimzation, with Z-matrix input\\
-{\bf scf6} &  SCF DZ allene geometry optimzation, with Cartesian input\\
-{\bf scf7} &  SCF cc-pVDZ geometry optimzation, with Z-matrix input\\
+{\bf mints1} &  Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.\\
+{\bf cc2} &  6-31G** H2O Test CCSD energy, with Z-Matrix input\\
+{\bf dcft3} &  DCFT calculation for the He dimer, with the K06 functional. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the AO Basis, using integrals stored on disk.\\
+{\bf cc5a} &  RHF CCSD(T) STO-3G frozen-core energy of C4NH4 Anion\\
+{\bf cc8a} &  ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.\\
+{\bf cc1} &  RHF-CCSD 6-31G** all-electron optimization of the H2O molecule\\
+{\bf cc5} &  RHF CCSD(T) aug-cc-pvtz frozen-core energy of C4NH4 Anion\\
 {\bf scf8} &  SCF cc-pVTZ geometry optimzation, with Z-matrix input\\
+{\bf sapt1} &  SAPT0 aug-cc-pVDZ computation of the ethane-ethyne binding energy, using the aug-cc-pVDZ-JKFIT RI basis for SCF and aug-cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.\\
+{\bf scf4} &  RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan.\\
+{\bf scf7} &  SCF cc-pVDZ geometry optimzation, with Z-matrix input\\
+{\bf scf3} &  UHF 6-31G** energy of the $^3B\_1$ state of CH$\_2$, with Z-matrix input. The occupations are specified explicitly.\\
+{\bf dcft1} &  DCFT calculation for the He dimer, with the K06 functional. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.\\
+{\bf mcscf2} &  TCSCF cc-pVDZ  energy of asymmetrically displaced ozone, with Z-matrix input.\\
 {\bf scf9} &  Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.\\
+{\bf dcft2} &  DCFT calculation for the He dimer, with the K06 functional. This performs a two-step update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.\\
+{\bf props1} &  RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.\\
+{\bf mcscf3} &  RHF 6-31G** energy of water, using the MCSCF module and Z-matrix input.\\
+{\bf cc4} &  RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input. After the computation, the checkpoint file is renamed, using the PSIO handler.\\
 \end{tabular*}

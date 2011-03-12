@@ -34,6 +34,7 @@ while(<DRIVER>){
     # don't know if it's a multi-line comment, let's find out
     if(/\/\*-/ and $CurrentModule){
         $CommentString = determine_comment($_);
+        $CommentString =~ s/_/\\_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         $Data{$CurrentModule}{$Keyword}{"Type"}    = $Type;
         $Data{$CurrentModule}{$Keyword}{"Default"} = $Default;
@@ -211,7 +212,12 @@ foreach my $Dir(readdir TESTS){
 
     # Process the comment that we grabbed from the input.
     if($Description){
-        print TEXSUMMARY "{\\bf $Dir} & $Description\\\\\n";
+        # make directory name tex safe
+        my $Dir_tex = $Dir;
+        $Dir_tex =~ s/_/\\_/g;
+        my $Description_tex = $Description;
+        $Description_tex =~ s/_/\\_/g;
+        print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex\\\\\n";
         printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";

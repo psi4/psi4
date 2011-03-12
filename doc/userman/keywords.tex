@@ -118,7 +118,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MULTP & (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
+	 MULTP & (2$\times M\_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
@@ -208,13 +208,6 @@
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT & The amount of information printed to the output file \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
 
 \subsection{DFMP2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -225,12 +218,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FITTING\_CONDITIONING & DFMP2 Fitting conditioning  \\ 
-
-	  & {\bf Possible Values:} RAW, FINISHED \\ 
+	 DEBUG & Debugging information? \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -243,91 +234,12 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCALE\_OS & OS Scale  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 6\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_MAX\_COND & Max condition number in auxiliary basis \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 ROWS\_PER\_READ & -Maximum number of rows to read/write in each DF-MP2 operation \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DEBUG & Debugging information? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DFMP2\_MEM\_FACTOR & % of memory for DF-MP2 three-index buffers  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PARALLEL\_DFMP2 & Parallel algoritmh? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_BASIS\_MP2 & RI Basis, needed by Python \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DFMP2\_TYPE & DFMP2 Algorithm (usually for debugging)  \\ 
 
 	  & {\bf Possible Values:} DEFAULT, DISK, CORE, OLD \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} DEFAULT\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_FITTING\_TYPE & DFMP2 Fitting Type \\ 
-
-	  & {\bf Possible Values:} FINISHED, RAW, CHOLESKY \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_INTS\_NUM\_THREADS & Number of threads to compute integrals with. 0 is wild card \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCHWARZ\_CUTOFF & Schwarz cutoff \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 E\_CONVERGE & -Log10 of the energy convergence criterion \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -347,17 +259,91 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCALE\_SS & SS Scale  \\ 
+	 E\_CONVERGE & -Log10 of the energy convergence criterion \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PARALLEL\_DFMP2 & Parallel algoritmh? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCALE\_OS & OS Scale  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_BASIS\_MP2 & RI Basis, needed by Python \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_FITTING\_TYPE & DFMP2 Fitting Type \\ 
+
+	  & {\bf Possible Values:} FINISHED, RAW, CHOLESKY \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DFMP2\_MEM\_FACTOR & % of memory for DF-MP2 three-index buffers  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCHWARZ\_CUTOFF & Schwarz cutoff \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FITTING\_CONDITIONING & DFMP2 Fitting conditioning  \\ 
+
+	  & {\bf Possible Values:} RAW, FINISHED \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_INTS\_NUM\_THREADS & Number of threads to compute integrals with. 0 is wild card \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_MAX\_COND & Max condition number in auxiliary basis \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT & Print level \\ 
+	 ROWS\_PER\_READ & -Maximum number of rows to read/write in each DF-MP2 operation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCALE\_SS & SS Scale  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 
@@ -419,7 +405,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MULTP & (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
+	 MULTP & (2$\times M\_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
@@ -472,13 +458,6 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NAT\_ORBS\_T2 & Use Natural Orbitals for T2's \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 NFRZ\_B & Frozen Occupieds of Monomer B \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -490,6 +469,15 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAPT\_LEVEL & The level of theory for SAPT \\ 
+
+	  & {\bf Possible Values:} SAPT0, SAPT2, SAPT2+, SAPT2+3 \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} SAPT0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -514,26 +502,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NAT\_ORBS\_T2 & Use Natural Orbitals for T2's \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RI\_BASIS\_SAPT & SAPT DF Basis \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAPT\_LEVEL & The level of theory for SAPT \\ 
-
-	  & {\bf Possible Values:} SAPT0, SAPT2, SAPT2+, SAPT2+3 \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} SAPT0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT & The ubiquitous print flag \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -555,10 +534,178 @@
 
 \subsection{OPTKING}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NOPT & Maximum number of permitted steps in geometry optimization \\ 
+	 CONV\_MAX\_DE & QCHEM optimization criteria: maximum energy change \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 40\\
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CONV\_MAX\_DISP & QCHEM optimization criteria: maximum displacement \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CONV\_MAX\_FORCE & QCHEM optimization criteria: maximum force \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FRAGMENT\_MODE & Whether to treat multiple molecule fragments as a single bonded molecule; or via interfragment coordinates ; a primary difference is that in MULTI mode, the interfragment coordinates are not redundant. {SINGLE, MULTI} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} opt\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FREEZE\_INTRAFRAGMENT & Whether to freeze all fragments rigid \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 GENERATE\_INTCOS\_ONLY & Whether to only generate the internal coordinates and then stop {true, false} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE & Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} opt\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE\_LIMIT\_MAX & If the above is true, changes to the Hessian from the update are limited to the larger of (H\_update\_limit\_scale)*(the previous value) and H\_update\_limit\_max (in au). \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE\_USE\_LAST & How many previous steps' data to use in Hessian update; 0=use them all ; {integer} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 INTRAFRAGMENT\_STEP\_LIMIT & Maximum step size in bohr or radian along an internal coordinate {double} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RFO\_FOLLOW\_ROOT & Whether to 'follow' the initial RFO vector after the first step {true, false} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE\_LIMIT & Whether to limit the magnitutde of changes caused by the Hessian update {true, false} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCALE\_CONNECTIVITY & When determining connectivity, a bond is assigned if interatomic distance is less than (this number) * sum of covalent radii {double} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 INTERFRAGMENT\_H & Whether to use the default of FISCHER\_LIKE force constants for the initial guess {DEFAULT, FISCHER\_LIKE} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} opt\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 READ\_CARTESIAN\_H & Read Cartesian Hessian \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TEST\_B & Whether to test B matrix \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE\_LIMIT\_SCALE & If the above is true, changes to the Hessian from the update are limited to the larger of (H\_update\_limit\_scale)*(the previous value) and H\_update\_limit\_max (in au). \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TEST\_DERIVATIVE\_B & Whether to test derivative B matrix \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 INTERFRAGMENT\_DISTANCE\_INVERSE & Whether to use 1/R(AB) for stretching coordinate between fragments (or just R(AB)) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 STEP\_TYPE & Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} opt\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RFO\_ROOT & Which RFO root to follow; 0 indicates minimum; {integer} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 WRITE\_FINAL\_STEP\_GEOMETRY & By default, optking prints and saves the last (previous) geometry at the end of an optimization, i.e., the one at which a gradient was computed. If this keyword is set to true, then the structure obtained from the last projected step is printed out and saved instead. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 INTERFRAGMENT\_MODE & whether to use fixed linear combinations of atoms as reference points for interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL\_AXES} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} opt\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 INTRAFRAGMENT\_H & What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} opt\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MAXIMUM\_H\_BOND\_DISTANCE & For now, this is a general maximum distance for the definition of H-bonds \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 4\\
 	 & & \\
 \end{tabular*}
 
@@ -633,26 +780,12 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DFT\_BASIS\_EPSILON & The DFT basis cutoff \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DFT\_SPHERICAL\_TYPE & The spherical quadrature type for DFT, usually Lebedev \\ 
 
 	  & {\bf Possible Values:} LEBEDEV, EM \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} LEBEDEV\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 LAMBDA & How big is the perturbation? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -670,7 +803,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MULTP & (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
+	 MULTP & (2$\times M\_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
@@ -698,6 +831,20 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DFT\_BASIS\_EPSILON & The DFT basis cutoff \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 LAMBDA & How big is the perturbation? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CHOLESKY\_INTEGRALS\_ONLY & Cholesky Integral factory only? \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -709,6 +856,15 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DFT\_GRID\_NAME & The DFT grid specification, such as SG1 \\ 
+
+	  & {\bf Possible Values:} SG1 \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -728,15 +884,6 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DFT\_GRID\_NAME & The DFT grid specification, such as SG1 \\ 
-
-	  & {\bf Possible Values:} SG1 \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CARTESIAN\_MO\_INDICES & Grid MO indices  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -748,13 +895,6 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CARTESIAN\_RESOLUTION & Grid global resolution (npoints)  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 30\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -785,6 +925,13 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} DIPOLE\_X\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CARTESIAN\_RESOLUTION & Grid global resolution (npoints)  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 30\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -825,27 +972,6 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DUAL\_BASIS\_SCF & Dual basis set \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 POISSON\_BASIS\_SCF & The name of the poisson basis to be used in RI computations \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT\_MOS & Whether to print the molecular orbitals \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RI\_MAX\_COND & Max J basis condition number to be allowed \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -860,6 +986,13 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 POISSON\_BASIS\_SCF & The name of the poisson basis to be used in RI computations \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 ROWS\_PER\_READ & Maximum number of rows to read/write in each DF-SCF operation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -867,12 +1000,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_FITTING\_TYPE & SCF Fitting Type \\ 
-
-	  & {\bf Possible Values:} FINISHED, RAW, CHOLESKY \\ 
+	 DUAL\_BASIS\_SCF & Dual basis set \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRINT\_MOS & Whether to print the molecular orbitals \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -890,13 +1028,6 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 START\_DIIS\_ITER & The minimum iteration to start storing DIIS vectors \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CARTESIAN\_FILENAME & Grid filename  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -908,13 +1039,6 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DEBUG & The amount of debugging information to print \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -943,6 +1067,22 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_FITTING\_TYPE & SCF Fitting Type \\ 
+
+	  & {\bf Possible Values:} FINISHED, RAW, CHOLESKY \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 START\_DIIS\_ITER & The minimum iteration to start storing DIIS vectors \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 E\_CONVERGE & -Log10 of the energy convergence criterion \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -957,10 +1097,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT & The amount of information to print to the output \\ 
+	 SAD\_CHOL\_CUTOFF & SAD Guess Cholesky Cutoff (for eliminating redundancies) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	   & {\bf Type:} double &  {\bf Default:} 1E\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -971,24 +1111,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAD\_CHOL\_CUTOFF & SAD Guess Cholesky Cutoff (for eliminating redundancies) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1E\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RI\_BASIS\_SCF & The name of the auxiliary basis to be used in RI computations \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAD\_MAXITER & SAD Guess Maxiter \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 50\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1006,17 +1132,24 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_MAXITER & SAD Guess Maxiter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEBUG & The amount of debugging information to print \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DFT\_VORONOI\_A1 & The near-field alpha within each cell for Voronoi-type point grouping \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCHWARZ\_CUTOFF & Minimum absolute TEI value for seive \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1029,7 +1162,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 OVERLAP\_CUTOFF & Minimum absolute S matrix value for DF-SCF exchange \\ 
+	 SCHWARZ\_CUTOFF & Minimum absolute TEI value for seive \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 0\\
@@ -1045,19 +1178,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 GUESS & The guess type to be used in the computation \\ 
-
-	  & {\bf Possible Values:} CORE, GWH, SAD, READ, BASIS2, DUAL\_BASIS \\ 
+	 OVERLAP\_CUTOFF & Minimum absolute S matrix value for DF-SCF exchange \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} READ\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1068,17 +1192,26 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 GUESS & The guess type to be used in the computation \\ 
+
+	  & {\bf Possible Values:} CORE, GWH, SAD, READ, BASIS2, DUAL\_BASIS \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} READ\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 SAD\_E\_CONVERGE & SAD Guess Convergence in E \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1E\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAD\_PRINT & The amount of SAD information to print to the output \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1098,24 +1231,24 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 THREE\_INDEX\_CUTOFF & Minimum absolute three-index value for DF-SCF seive \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIN\_DIIS\_VECTORS & The minimum number of error vectors stored for DIIS extrapolation \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 PARALLEL & Whether to run in parallel or not \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_PRINT & The amount of SAD information to print to the output \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 THREE\_INDEX\_CUTOFF & Minimum absolute three-index value for DF-SCF seive \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1133,10 +1266,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_INTS\_NUM\_THREADS & Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank \\ 
+	 MIN\_DIIS\_VECTORS & The minimum number of error vectors stored for DIIS extrapolation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1156,10 +1289,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REFERENCE & The reference wavefunction used in the computation \\ 
+	 RI\_INTS\_NUM\_THREADS & Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} RHF\\
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1176,6 +1309,13 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REFERENCE & The reference wavefunction used in the computation \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} RHF\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1355,13 +1495,6 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} MP2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT & Print level \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
