@@ -1,5 +1,5 @@
 /*! \file bend.h
-    \ingroup OPT10
+    \ingroup OPTKING
     \brief BEND class declaration
 */
 

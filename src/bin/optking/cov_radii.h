@@ -1,6 +1,9 @@
+/*!
+   \file cov_radii.h : covalent radii
+   \ingroup optking
+*/
+
 /*
-* cov_radii.h
-*
 * This header file contains the covalent radii of the atoms in Angstroms from:
 * "Covalent radii revisited", Dalton Trans., 2008, 2832, by
 * B. Cordero, V. Gómez, A. E. Platero-Prats, M. Revés, J. Echeverría,

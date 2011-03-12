@@ -1,6 +1,5 @@
-/*! \file
-    \ingroup OPT10
-    \brief header for memory allocation
+/*! \file mem.h : header for memory allocation functions
+    \ingroup optking
 */
 
 #ifndef _opt_mem_h_

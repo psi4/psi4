@@ -1,5 +1,5 @@
 /*! \file    binary_io.cc
-    \ingroup OPTKING
+    \ingroup optking
     \brief   functions to read and write to optking's binary file
 */
 

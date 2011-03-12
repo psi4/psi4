@@ -1,6 +1,5 @@
-/*! \file    bend.cc
-    \ingroup optking
-    \brief   Class for bending coordinate.
+/*! \file    bend.cc : Class for bending coordinate.
+     \ingroup OPTKING
 */
 
 #include "bend.h"

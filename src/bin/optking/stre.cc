@@ -1,5 +1,5 @@
 /*! \file stre.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief stretch class definition
 */
 

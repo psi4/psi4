@@ -1,5 +1,5 @@
 /*! \file molecule_read_intcos.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief read internal coordinates from file
 
      MOLECULE::read_intcos(void) reads internal coordinates from text file

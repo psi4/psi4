@@ -1,5 +1,5 @@
 /*! \file atom_data.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief atom_data.cc : initialize static class members in atom_data.h
 */
 

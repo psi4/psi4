@@ -1,7 +1,6 @@
-/*! 
-  \file element_to_Z.h
-  \ingroup
-  \brief convert element name or symbol to atomic number
+/*!  \file element_to_Z.h
+    \ingroup optking
+     \brief convert element name or symbol to atomic number
 */
 
 #ifndef _element_to_Z_h_

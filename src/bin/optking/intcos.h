@@ -1,5 +1,5 @@
 /*! \file intcos.h
-    \ingroup OPT10
+    \ingroup optking
     \brief internal coordinate includes class declaration
 */
 

@@ -1,5 +1,5 @@
 /*! \file interfrag_orient.cc
-    \ingroup OPTKING
+    \ingroup optking
     \brief function moves the geometry of fragment B so that the interfragment coordinates
       have the given values
 

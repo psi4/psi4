@@ -1,5 +1,5 @@
 /*! \file simple.h
-    \ingroup opt
+    \ingroup optking
     \brief simple internal coordinate base class
 */
 

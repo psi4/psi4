@@ -1,6 +1,5 @@
-/*! \file
-    \ingroup OPT10
-    \brief   linear algebra functions
+/*! \file linear algebra.h : linear algebra functions
+    \ingroup optking
 */
 
 #ifndef _opt_linear_algebra_h_

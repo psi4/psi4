@@ -1,5 +1,5 @@
-/*! \file
-    \ingroup OPT10
+/*! \file    print.h
+    \ingroup optking
     \brief header for print functions
 */
 

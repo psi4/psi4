@@ -1,5 +1,5 @@
 /*! \file    H_guess.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief   generates empirical Hessian according to
       Schlegel, Theor. Chim. Acta, 66, 333 (1984) or
       Fischer and Almlof, J. Phys. Chem., 96, 9770 (1992).

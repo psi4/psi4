@@ -1,3 +1,7 @@
+/*!
+  \ingroup optking
+  \file molecule.h : header for MOLECULE class
+*/
 #ifndef _opt_molecule_h_
 #define _opt_molecule_h_
 

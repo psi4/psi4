@@ -1,5 +1,5 @@
 /*! \file tors.h
-    \ingroup OPT10
+    \ingroup optking
     \brief TORS class declaration
 */
 
