@@ -38,3 +38,5 @@
 #include <libmints/integrator.h>
 #include <libmints/multipolesymmetry.h>
 #include <libmints/oeprop.h>
+#include <libmints/nabla.h>
+
