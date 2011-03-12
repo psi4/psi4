@@ -12,8 +12,6 @@ class SimpleMatrix;
 class Vector3;
 class GridBlock;
 
-using namespace boost;
-
 class Properties : public BasisPoints
 {
     protected:
@@ -27,7 +25,7 @@ class Properties : public BasisPoints
         // temporary scratch tensor for DGEMM
         double** temp_tens_;
 
-        // Fundamental DFT variables 
+        // Fundamental DFT variables
         double* rho_a_;
         double* rho_b_;
         double* gamma_aa_;
@@ -43,45 +41,45 @@ class Properties : public BasisPoints
         double* rho_b_x_;
         double* rho_b_y_;
         double* rho_b_z_;
-       
-        // Indicator variables 
+
+        // Indicator variables
         bool do_density_;
         bool do_density_gradient_;
         bool do_ke_density_;
     public:
-        static shared_ptr<Properties> constructProperties(shared_ptr<BasisSet> b, int block_size)
+        static boost::shared_ptr<Properties> constructProperties(boost::shared_ptr<BasisSet> b, int block_size)
         {
-            return (shared_ptr<Properties>)new Properties(b,block_size);
+            return (boost::shared_ptr<Properties>)new Properties(b,block_size);
         }
-        static shared_ptr<Properties> get_testbed();
+        static boost::shared_ptr<Properties> get_testbed();
 
-        Properties(shared_ptr<BasisSet> b, int block_size);
+        Properties(boost::shared_ptr<BasisSet> b, int block_size);
         virtual ~Properties();
 
-        void computeRKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> D, shared_ptr<Matrix> C = shared_ptr<Matrix>(), int* docc = NULL );
-        void computeUKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> Da, shared_ptr<Matrix> Db, shared_ptr<Matrix> Ca = shared_ptr<Matrix>(), shared_ptr<Matrix> Cb = shared_ptr<Matrix>(), int* Na = NULL, int* Nb = NULL );
+        void computeRKSProperties(boost::shared_ptr<GridBlock> grid, boost::shared_ptr<Matrix> D, boost::shared_ptr<Matrix> C = boost::shared_ptr<Matrix>(), int* docc = NULL );
+        void computeUKSProperties(boost::shared_ptr<GridBlock> grid, boost::shared_ptr<Matrix> Da, boost::shared_ptr<Matrix> Db, boost::shared_ptr<Matrix> Ca = boost::shared_ptr<Matrix>(), boost::shared_ptr<Matrix> Cb = boost::shared_ptr<Matrix>(), int* Na = NULL, int* Nb = NULL );
 
-        double* getRhoA() const { return rho_a_; }	
-        double* getRhoB() const { return rho_b_; }	
+        double* getRhoA() const { return rho_a_; }
+        double* getRhoB() const { return rho_b_; }
         double* getGammaAA() const { return gamma_aa_; }
         double* getGammaAB() const { return gamma_ab_; }
         double* getGammaBB() const { return gamma_bb_; }
-        double* getTauA() const { return tau_a_; }	
-        double* getTauB() const { return tau_b_; }	
-        
-        double* getRhoAX() const { return rho_a_x_; }	
-        double* getRhoAY() const { return rho_a_y_; }	
-        double* getRhoAZ() const { return rho_a_z_; }	
-        double* getRhoBX() const { return rho_b_x_; }	
-        double* getRhoBY() const { return rho_b_y_; }	
-        double* getRhoBZ() const { return rho_b_z_; }	
+        double* getTauA() const { return tau_a_; }
+        double* getTauB() const { return tau_b_; }
+
+        double* getRhoAX() const { return rho_a_x_; }
+        double* getRhoAY() const { return rho_a_y_; }
+        double* getRhoAZ() const { return rho_a_z_; }
+        double* getRhoBX() const { return rho_b_x_; }
+        double* getRhoBY() const { return rho_b_y_; }
+        double* getRhoBZ() const { return rho_b_z_; }
 
         double** getScratch() const { return temp_tens_; }
 
         void setToComputeDensity(bool v);
-        void setToComputeDensityGradient(bool v);	
-        void setToComputeKEDensity(bool v);	
+        void setToComputeDensityGradient(bool v);
+        void setToComputeKEDensity(bool v);
 };
-typedef shared_ptr<Properties> SharedProperties;
+typedef boost::shared_ptr<Properties> SharedProperties;
 }
 #endif

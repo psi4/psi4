@@ -8,13 +8,7 @@
 *
 ***********************************************************/
 #include <psi4-dec.h>
-#include <stdlib.h>
 #include <string>
-#include <vector>
-
-using namespace psi;
-using namespace boost;
-using namespace std;
 
 namespace psi {
 
@@ -32,9 +26,9 @@ class Dispersion {
         Dispersion();
         ~Dispersion();
 
-        std::string getName() const { return name_; }        
-        std::string getDescription() const { return description_; }        
-        std::string getCitation() const { return citation_; }        
+        std::string getName() const { return name_; }
+        std::string getDescription() const { return description_; }
+        std::string getCitation() const { return citation_; }
         void setName(const std::string & name) { name_ = name; }
         void setDescription(const std::string & description) { description_ = description; }
         void setCitation(const std::string & citation) { citation_ = citation; }
@@ -65,10 +59,10 @@ class Dispersion {
         std::string printGradient(boost::shared_ptr<Molecule> m);
         std::string printHessian(boost::shared_ptr<Molecule> m);
 
-        virtual double computeEnergy(boost::shared_ptr<Molecule> m) { return 0.0; } 
-        virtual double* computeGradient(boost::shared_ptr<Molecule> m) { double *blank = 0; return blank; } 
-        virtual double** computeHessian(boost::shared_ptr<Molecule> m) { double **blank = 0; return blank; } 
-     
+        virtual double computeEnergy(boost::shared_ptr<Molecule> m) { return 0.0; }
+        virtual double* computeGradient(boost::shared_ptr<Molecule> m) { double *blank = 0; return blank; }
+        virtual double** computeHessian(boost::shared_ptr<Molecule> m) { double **blank = 0; return blank; }
+
     protected:
 
         std::string name_;
@@ -94,39 +88,39 @@ class Dispersion {
 
 class D1 : public Dispersion {
     public:
-        D1(double s6 = 1.0); 
-        ~D1(); 
-        double computeEnergy(boost::shared_ptr<Molecule> m); 
-        double* computeGradient(boost::shared_ptr<Molecule> m); 
-        double** computeHessian(boost::shared_ptr<Molecule> m); 
-         
+        D1(double s6 = 1.0);
+        ~D1();
+        double computeEnergy(boost::shared_ptr<Molecule> m);
+        double* computeGradient(boost::shared_ptr<Molecule> m);
+        double** computeHessian(boost::shared_ptr<Molecule> m);
+
     protected:
 };
 class D2 : public Dispersion {
     public:
-        D2(double s6 = 1.0); 
-        ~D2(); 
-        double computeEnergy(boost::shared_ptr<Molecule> m); 
-        double* computeGradient(boost::shared_ptr<Molecule> m); 
-        double** computeHessian(boost::shared_ptr<Molecule> m); 
-         
+        D2(double s6 = 1.0);
+        ~D2();
+        double computeEnergy(boost::shared_ptr<Molecule> m);
+        double* computeGradient(boost::shared_ptr<Molecule> m);
+        double** computeHessian(boost::shared_ptr<Molecule> m);
+
     protected:
-       
-         
+
+
 };
 class D3 : public Dispersion {
     public:
-        D3(double s6 = 1.0, double s8 = 1.0, double sr6 = 1.0, double sr8 = 1.0); 
-        ~D3(); 
-        double computeEnergy(boost::shared_ptr<Molecule> m); 
-        double* computeGradient(boost::shared_ptr<Molecule> m); 
-        double** computeHessian(boost::shared_ptr<Molecule> m); 
-         
+        D3(double s6 = 1.0, double s8 = 1.0, double sr6 = 1.0, double sr8 = 1.0);
+        ~D3();
+        double computeEnergy(boost::shared_ptr<Molecule> m);
+        double* computeGradient(boost::shared_ptr<Molecule> m);
+        double** computeHessian(boost::shared_ptr<Molecule> m);
+
     protected:
-       
-         
+
+
 };
 
 }}
 
-#endif 
+#endif

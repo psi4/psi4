@@ -8,13 +8,11 @@
 #include <string>
 #include <cstring>
 
-using namespace boost;
-
 namespace psi {
     class PSIO;
 
         class Chkpt;
-    extern shared_ptr<Chkpt> _default_chkpt_lib_;
+    extern boost::shared_ptr<Chkpt> _default_chkpt_lib_;
 
     /**
         Chkpt is an instance of the libchkpt library.
@@ -36,7 +34,7 @@ namespace psi {
         */
         Chkpt(PSIO *psioObject, int status, std::string prefix = "");
         Chkpt(PSIO& psioObject, int status, std::string prefix = "");
-        Chkpt(shared_ptr<PSIO> psioObject, int status, std::string prefix = "");
+        Chkpt(boost::shared_ptr<PSIO> psioObject, int status, std::string prefix = "");
 
         /*! Destructor. Call PSIO::close to close the checkpoint file.*/
         ~Chkpt();
@@ -332,7 +330,7 @@ namespace psi {
         double *rd_vib_freqs(void);
         void wt_vib_freqs(double *);
 
-        static shared_ptr<Chkpt> shared_object() { return _default_chkpt_lib_; }
+        static boost::shared_ptr<Chkpt> shared_object() { return _default_chkpt_lib_; }
 
         /// allocate a block matrix -- analogous to libciomr's block_matrix
         template <typename T> static T** matrix(int nrow, int ncol) {

@@ -10,8 +10,6 @@
 #include <boost/shared_array.hpp>
 #include <libpsio/psio.hpp>
 
-using namespace boost;
-
 namespace psi {
 
   enum PsiReturnType {Success, Failure, Balk, EndLoop};
