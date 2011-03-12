@@ -879,7 +879,6 @@ AC_CONFIG_FILES([include/Makefile
           src/util/psiclean/Makefile
 
           src/bin/psi4/Makefile
-          src/bin/input3/Makefile
           src/bin/cints/Makefile
           src/bin/cscf/Makefile
           src/bin/response/Makefile
