@@ -894,7 +894,6 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cphf/Makefile
           src/bin/ccsort/Makefile
           src/bin/mvo/Makefile
-          src/bin/extrema/Makefile
           src/bin/oeprop/Makefile
           src/bin/geom/Makefile
           src/bin/ccenergy/Makefile
