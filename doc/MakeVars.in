@@ -11,6 +11,7 @@ datarootdir = @datarootdir@
 datadir = @datadir@
 dvidir = $(docdir)/dvi
 psdir = $(docdir)/ps
+pdfdir = $(docdir)/pdf
 htmldir = $(docdir)/html
 top_srcdir = @top_srcdir@
 # this file is used by the subdirectories, so top_objdir is relative to those
@@ -33,20 +34,27 @@ TEXINPUTS = :$(srcdir):$(srcdir)/..:..:
 
 TARGET_DVI  = $(MAN).dvi
 TARGET_PS = $(MAN).ps
+TARGET_PDF = $(MAN).pdf
 TARGET_HTML = $(MAN).html
 
 ifndef LATEX2HTML
   TARGET_HTML =
 endif
 
+ifndef PS2PDF
+  TARGET_PDF =
+endif
+
 ifndef DVIPS
   TARGET_PS =
+  TARGET_PDF =
   TARGET_HTML =
 endif
 
 ifndef LATEX
   TARGET_DVI =
   TARGET_PS =
+  TARGET_PDF =
   TARGET_HTML =
 endif
 

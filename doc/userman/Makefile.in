@@ -15,6 +15,7 @@ tests_descriptions.tex python.tex
 
 DVI = $(TEX:%.tex=%.dvi)
 PS = $(DVI:%.dvi=%.ps)
+PDF = $(PS:%.ps=%.pdf)
 HTML = $(TEX:%.tex=%.html)
 
 include ../MakeRules
