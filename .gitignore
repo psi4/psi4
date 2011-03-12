@@ -15,3 +15,6 @@ objdir
 obj
 objdir_clang_debug
 objdir_gcc_debug
+debug
+debug_latest
+svn_source
