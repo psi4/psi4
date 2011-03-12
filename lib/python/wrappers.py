@@ -288,6 +288,7 @@ def basis_set_extrapolate(basis_name, **kwargs):
         b = (ehf[-1] - ehf[-2])/(math.exp(-c * x[-1]) - math.exp(-c * x[-2]))
         a = ehf[-1] - (b * math.exp(-c * x[-1]))
         print_energies(ehf, [a])
+        ahf = a
     else:
         for i in range(smallest, largest_correlated + 1):
             tmp_hf, tmp = get_energy(i)
@@ -320,7 +321,6 @@ def basis_set_extrapolate(basis_name, **kwargs):
         b = (e[-1] - e[-2])/(x[-1]**(-3) - x[-2]**(-3))
         a = e[-1] - (b * x[-1]**(-3))
 
-
         print_energies(ehf, [ahf, a], e)
         
 
@@ -331,7 +331,7 @@ def basis_set_extrapolate(basis_name, **kwargs):
     
     # Return the correlated extrapolation value if we have it
     if not is_hf:
-        return a + ahf
+        return (a + ahf)
     else:
         return ahf
 
