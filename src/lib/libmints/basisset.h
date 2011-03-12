@@ -133,6 +133,10 @@ public:
      *  @return true if using spherical harmonics
      */
     bool has_puream() const            { return puream_;      }
+    /** Compute the maximum number of basis functions contained in a shell.
+     *  @return The max number of basis functions in a shell.
+     */
+    int max_function_per_shell() const { return (puream_) ? 2*max_am_+1 : (max_am_+1)*(max_am_+2)/2; }
     /** Molecule this basis is for.
      *  @return Shared pointer to the molecule for this basis set.
      */
