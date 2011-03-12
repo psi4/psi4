@@ -63,13 +63,12 @@ class MintsHelper {
 private:
     /// The Options reference for basis sets and things
     Options& options_;
-    boost::shared_ptr<PSIO> psio_;
-    boost::shared_ptr<BasisSetParser> parser_;
-    boost::shared_ptr<MatrixFactory> factory_;
-    boost::shared_ptr<Molecule> molecule_;
-    boost:: shared_ptr<IntegralFactory> integral_;
-    boost::shared_ptr<BasisSet> basisset_;
-    boost::shared_ptr<SOBasisSet> sobasis_;
+    boost::shared_ptr<PSIO> _psio;
+    boost::shared_ptr<MatrixFactory> _factory;
+    boost::shared_ptr<Molecule> _molecule;
+    boost:: shared_ptr<IntegralFactory> _integral;
+    boost::shared_ptr<BasisSet> _basisset;
+    boost::shared_ptr<SOBasisSet> _sobasis;
 
 public:
 
