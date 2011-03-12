@@ -24,15 +24,16 @@
   #define OptReturnSuccess 0
 #endif
 
+#if defined(OPTKING_PACKAGE_PSI)
+namespace psi { void psiclean(void); }
+#endif
+
 #if defined(OPTKING_PACKAGE_QCHEM)
-//#include <stdlib.h>
-#include "qchem.h"
-
-namespace opt {
-  OptReturnType optking(void); // declare optking
-}
-OptReturnType opt2man_main(void) { opt::optking(); } // QCHEM wrapper/alias
-
+ #include "qchem.h"
+ namespace opt {
+   OptReturnType optking(void); // declare optking
+ }
+ OptReturnType opt2man_main(void) { opt::optking(); } // QCHEM wrapper/alias
 #endif
 
 namespace opt {
@@ -89,7 +90,9 @@ OptReturnType optking(void) {
     // read internal coordinate and fragment definitions
     // create, allocate, and add fragment objects
     mol1->read_intcos(if_intco);
+#if defined(OPTKING_PACKAGE_PSI)
     psi::Communicator::world->sync();
+#endif
     if_intco.close();
 
     mol1->update_connectivity_by_bonds();
@@ -134,8 +137,14 @@ OptReturnType optking(void) {
     fclose(fp_intco);
 
     // only generate coordinates and print them out
-    if (Opt_params.generate_intcos_only)
-      return OptReturnSuccess;
+    if (Opt_params.generate_intcos_only) {
+      fprintf(outfile,"\tGenerating intcos and halting.");
+      close_output_dat();
+#if defined(OPTKING_PACKAGE_PSI)
+      psi::psiclean();
+#endif
+      return OptReturnEndloop;
+    }
 
   }
 

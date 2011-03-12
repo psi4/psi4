@@ -25,10 +25,14 @@ void set_params(void)
 #endif
 {
 
+  std::string s;
+
 #if defined(OPTKING_PACKAGE_PSI)
-// whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO}
-//  Opt_params.step_type = OPT_PARAMS::RFO;
-    Opt_params.step_type = (OPT_PARAMS::STEP_TYPE)options.get_int("STEP_TYPE");
+
+// Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO}
+    s = options.get_str("STEP_TYPE");
+    if (s == "RFO")     Opt_params.step_type = OPT_PARAMS::RFO;
+    else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");
@@ -47,25 +51,29 @@ void set_params(void)
 // Whether to treat multiple molecule fragments as a single bonded molecule;
 // or via interfragment coordinates ; a primary difference is that in MULTI mode,
 // the interfragment coordinates are not redundant. {SINGLE, MULTI}
-//  Opt_params.fragment_mode = OPT_PARAMS::MULTI;
-    Opt_params.fragment_mode = (OPT_PARAMS::FRAGMENT_MODE)options.get_int("FRAGMENT_MODE");
+    s = options.get_str("FRAGMENT_MODE");
+    if (s == "SINGLE")     Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
+    else if (s == "MULTI") Opt_params.fragment_mode = OPT_PARAMS::MULTI;
 
 // whether to use fixed linear combinations of atoms as reference points for
 //interfragment coordinates or whether to use principal axes {FIXED, PRINCIPAL_AXES}
-//  Opt_params.interfragment_mode = OPT_PARAMS::FIXED ;
-    Opt_params.interfragment_mode = (OPT_PARAMS::INTERFRAGMENT_MODE)options.get_int("INTERFRAGMENT_MODE");
+    s = options.get_str("INTERFRAGMENT_MODE");
+    if (s == "FIXED")               Opt_params.interfragment_mode = OPT_PARAMS::FIXED;
+    else if (s == "PRINCIPAL_AXES") Opt_params.interfragment_mode = OPT_PARAMS::PRINCIPAL_AXES;
 
 // Whether to only generate the internal coordinates and then stop {true, false}
 //  Opt_params.generate_intcos_only;
     Opt_params.generate_intcos_only = options.get_bool("GENERATE_INTCOS_ONLY");
 
 // What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER}
-//  Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
-    Opt_params.intrafragment_H = (OPT_PARAMS::INTRAFRAGMENT_HESSIAN)options.get_int("INTRAFRAGMENT_H");
+    s = options.get_str("INTRAFRAGMENT_H");
+    if (s == "FISCHER")       Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
+    else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
-//  Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
-    Opt_params.interfragment_H = (OPT_PARAMS::INTERFRAGMENT_HESSIAN)options.get_int("INTERFRAGMENT_H");
+    s = options.get_str("INTERFRAGMENT_H");
+    if (s == "DEFAULT")           Opt_params.interfragment_H = OPT_PARAMS::DEFAULT;
+    else if (s == "FISCHER_LIKE") Opt_params.interfragment_H = OPT_PARAMS::FISCHER_LIKE;
 
 // Whether to freeze all fragments rigid
 //  Opt_params.freeze_intrafragment = false;
@@ -78,8 +86,12 @@ void set_params(void)
     Opt_params.write_final_step_geometry = options.get_bool("WRITE_FINAL_STEP_GEOMETRY");
 
 // Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL}
-//  Opt_params.H_update = OPT_PARAMS::BFGS;
-    Opt_params.H_update = (OPT_PARAMS::H_UPDATE)options.get_int("H_UPDATE");
+    s = options.get_str("H_UPDATE");
+    if (s == "NONE")        Opt_params.H_update = OPT_PARAMS::NONE;
+    else if (s == "BFGS")   Opt_params.H_update = OPT_PARAMS::BFGS;
+    else if (s == "MS")     Opt_params.H_update = OPT_PARAMS::MS;
+    else if (s == "POWELL") Opt_params.H_update = OPT_PARAMS::POWELL;
+    else if (s == "BOFILL") Opt_params.H_update = OPT_PARAMS::BOFILL;
 
 //  How many previous steps' data to use in Hessian update; 0=use them all ; {integer}
 //  Opt_params.H_update_use_last = 6;
