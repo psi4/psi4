@@ -815,3 +815,15 @@ BIN_ABSPATH            = /usr/local/bin/
 # the documentation for these projects as well.
 
 EXT_DOC_PATHS          =
+
+
+#---------------------------------------------------------------------------
+# configuration options for generating XCode compatible output
+#---------------------------------------------------------------------------
+
+# Generate something in the DOCSET format for XCode
+GENERATE_DOCSET        = YES
+
+DOCSET_FEEDNAME        = Psi4 Documentation
+
+DOCSET_BUNDLE_ID       = org.psicode.Psi4
