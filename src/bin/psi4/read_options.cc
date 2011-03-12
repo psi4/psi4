@@ -187,7 +187,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("R_EXT",3.0);
     /*- Iterations per full Pipek-Mizey Localization -*/
     options.add_int("STEPS_PER_LOCALIZE",1);
-
+    /*- Tells which way to run SCF -*/
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF PSEUDOSPECTRAL POISSON L_DF CD 1C_CD");
     /*- Whether to run in parallel or not -*/
     options.add_bool("PARALLEL", false);
@@ -295,304 +295,539 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "");
+    /*- -*/
     options.add_str("REFERENECE", "RHF");
+    /*- -*/
     options.add_str("JOBTYPE", "SP");
+    /*- -*/
     options.add_str("DERTYPE", "NONE");
+    /*- -*/
     options.add_int("CACHELEV", 2);
+    /*- -*/
     options.add_str("CACHETYPE", "LRU", "LRU LOW");
+    /*- -*/
     options.add_bool("SCS","false");
+    /*- -*/
     options.add_bool("SCS_N", "false");
+    /*- -*/
     options.add_double("SCALE_OS", 6.0/5.0);
+    /*- -*/
     options.add_double("SCALE_SS", 1.0/3.0);
   }
   if(name == "TRANSQT2"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "");
+    /*- -*/
     options.add_str("REFERENCE","RHF");
+    /*- -*/
     options.add_str("DERTYPE", "NONE");
+    /*- -*/
     options.add_bool("PRINT_TEI", false);
+    /*- -*/
     options.add_int("TOLERANCE", 14);
+    /*- -*/
     options.add_int("CACHELEV", 2);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- -*/
     options.add_bool("DELETE_TEI", true);
   }
   if(name == "TRANSQT"|| options.read_globals()) {
+    /*- -*/
     options.add_int("PRINT_LVL", 1);
+    /*- -*/
     options.add_str("REFERENCE","RHF");
+    /*- -*/
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
+    /*- -*/
     options.add_str("WFN", "CCSD");
+    /*- -*/
     options.add_str("DERTYPE", "NONE");
+    /*- -*/
     options.add_bool("PSIMRCC", false);
+    /*- -*/
     options.add_str("MP2R12A", "MP2R12AERI", "MP2R12AERI MP2R12AR12 MP2R12AR12T1");
+    /*- -*/
     options.add_int("TOLERANCE", 14);
+    /*- -*/
     options.add_int("OEI_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("OEI_A_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("OEI_B_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("FZC_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("FZC_A_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("FZC_B_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("SORTED_TEI_FILE", PSIF_MO_TEI);
+    /*- -*/
     options.add_int("TPDM_FILE", PSIF_MO_TPDM);
+    /*- -*/
     options.add_int("SO_S_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("SO_T_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("SO_V_FILE", PSIF_OEI);
+    /*- -*/
     options.add_int("SO_TEI_FILE", PSIF_SO_TEI); // ?
+    /*- -*/
     options.add_int("FIRST_TMP_FILE", 150);
+    /*- -*/
     options.add_int("OPDM_IN_FILE", PSIF_MO_OPDM);
+    /*- -*/
     options.add_int("OPDM_OUT_FILE", PSIF_AO_OPDM);
+    /*- -*/
     options.add_int("LAG_IN_FILE", PSIF_MO_LAG);
+    /*- -*/
     options.add_int("PRESORT_FILE", PSIF_SO_PRESORT);
+    /*- -*/
     options.add_bool("KEEP_PRESORT", false);
+    /*- -*/
     options.add_int("J_FILE", 91);
+    /*- -*/
     options.add_bool("KEEP_J", false); // keep half-transformed integrals
+    /*- -*/
     options.add_int("M_FILE", 0); // output integrals file; depends on direction
+    /*- -*/
     options.add_int("AA_M_FILE", PSIF_MO_AA_TEI);
+    /*- -*/
     options.add_int("BB_M_FILE", PSIF_MO_BB_TEI);
+    /*- -*/
     options.add_int("AB_M_FILE", PSIF_MO_AB_TEI);
+    /*- -*/
     options.add_int("MAX_BUCKETS", 499);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- -*/
     options.add_bool("DELETE_AO", true);
+    /*- -*/
     options.add_bool("DELETE_TPDM", true);
 
+    /*- -*/
     options.add_bool("PRINT_TE_INTEGRALS", false);
+    /*- -*/
     options.add_bool("PRINT_OE_INTEGRALS", false);
+    /*- -*/
     options.add_bool("PRINT_SORTED_OE_INTS", false);
+    /*- -*/
     options.add_bool("PRINT_SORTED_TE_INTS", false);
+    /*- -*/
     options.add_bool("PRINT_MOS", false);
 
+    /*- -*/
     options.add_bool("LAGRAN_DOUBLE", false);
+    /*- -*/
     options.add_bool("LAGRAN_HALVE", false);
+    /*- -*/
     options.add_bool("DO_ALL_TEI", false);
+    /*- -*/
     options.add_bool("TPDM_ADD_REF", false);
 //    options.add_bool("FREEZE_CORE", true);
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
 //#warning TransQT freeze_core keyword type was changed.
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
+    /*- -*/
     options.add_bool("DELETE_RESTR_DOCC", true);
+    /*- -*/
     options.add_bool("PRINT_REORDER", false);
+    /*- -*/
     options.add_bool("PITZER", false);
+    /*- -*/
     options.add_bool("REORDER", false);
+    /*- -*/
     options.add_bool("CHECK_C_ORTHONORM", false);
+    /*- -*/
     options.add_bool("QRHF", false);
+    /*- -*/
     options.add_bool("IVO", false);
+    /*- -*/
     options.add("MOORDER", new ArrayType());
+    /*- -*/
     options.add("DOCC", new ArrayType());
+    /*- -*/
     options.add("SOCC", new ArrayType());
 
   }
   if(name == "CUSP"|| options.read_globals()){
+    /*- -*/
     options.add("FROZEN_DOCC", new ArrayType());
+    /*- -*/
     options.add("FROZEN_UOCC", new ArrayType());
   }
   if(name == "CCSORT"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "");
+    /*- -*/
     options.add_str("REFERENCE", "RHF");
+    /*- -*/
     options.add_str("DERTYPE", "NONE");
+    /*- -*/
     options.add_str("PROPERTY", "POLARIZABILITY");
+    /*- -*/
     options.add_bool("LOCAL", false);
+    /*- -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
+    /*- -*/
     options.add_double("LOCAL_CORE_CUTOFF",0.05);
+    /*- -*/
     options.add_str("LOCAL_METHOD","WERNER");
+    /*- -*/
     options.add_str("LOCAL_WEAKP","NONE");
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
 //#warning CCSort freeze_core keyword type was changed.
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
+    /*- -*/
     options.add_str("LOCAL_PAIRDEF","BP");
+    /*- -*/
     options.add_bool("LOCAL_DOMAIN_POLAR", false);
+    /*- -*/
     options.add_bool("LOCAL_DOMAIN_MAG", false);
+    /*- -*/
     options.add_bool("LOCAL_DOMAIN_SEP", false);
+    /*- -*/
     options.add_bool("LOCAL_FILTER_SINGLES", false);
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
+    /*- -*/
     options.add_bool("KEEP_TEIFILE", false);
+    /*- -*/
     options.add_bool("KEEP_OEIFILE", false);
+    /*- -*/
     options.add_int("TOLERANCE", 14);
+    /*- -*/
     options.add_int("CACHELEV", 2);
+    /*- -*/
     options.add_bool("LOCAL", false);
+    /*- -*/
     options.add("OMEGA", new ArrayType());
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "");
+    /*- -*/
     options.add_int("NTHREADS",1);
+    /*- -*/
     options.add_str("REFERENCE","RHF");
+    /*- -*/
     options.add_str("DERTYPE","NONE");
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "SCF");
+    /*- -*/
     options.add_str("REFERENCE","RHF");
+    /*- -*/
     options.add_str("DERTYPE","NONE");
+    /*- -*/
     options.add_int("TOLERANCE",14);
+    /*- -*/
     options.add_int("CACHELEV",2);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
 //#warning CCDensity ao_basis keyword type was changed.
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- -*/
     options.add_bool("AEL",false);
+    /*- -*/
     options.add_str("GAUGE","LENGTH");
+    /*- -*/
     options.add_bool("RELAX_OPDM",false);
+    /*- -*/
     options.add_bool("CONNECT_XI",false);
+    /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
+    /*- -*/
     options.add_bool("PROP_ALL",false);
+    /*- -*/
     options.add_int("PROP_SYM", 0);
+    /*- -*/
     options.add_int("PROP_ROOT", 0);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN","SCF");
+    /*- -*/
     options.add_int("CONVERGENCE",7);
+    /*- -*/
     options.add_bool("RESTART",false);
+    /*- -*/
     options.add_int("CACHELEV",2);
+    /*- -*/
     options.add_bool("SEKINO",false);
+    /*- -*/
     options.add_bool("DIIS",true);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
 //#warning CCLambda ao_basis keyword type was changed.
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- -*/
     options.add_str("ABCD","NEW");
+    /*- -*/
     options.add_int("NUM_AMPS",10);
+    /*- -*/
     options.add_str("DERTYPE","NONE");
+    /*- -*/
     options.add_str("JOBTYPE","");
+    /*- -*/
     options.add_bool("LOCAL",false);
+    /*- -*/
     options.add_str("LOCAL_WEAKP","NONE");
+    /*- -*/
     options.add_double("LOCAL_CUTOFF",0.02);
+    /*- -*/
     options.add_str("LOCAL_METHOD","WERNER");
+    /*- -*/
     options.add_bool("LOCAL_FILTER_SINGLES",true);
+    /*- -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
 //#warning CCLambda freeze_core keyword type was changed.
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
+    /*- -*/
     options.add_str("LOCAL_PAIRDEF","");
+    /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
+    /*- -*/
     options.add_bool("PROP_ALL",false);
+    /*- -*/
     options.add_int("PROP_SYM",1);
+    /*- -*/
     options.add_int("PROP_ROOT",1);
+    /*- -*/
     options.add_int("MAXITER",50);
   }
   if(name == "CLAG"|| options.read_globals()) {
+    /*- -*/
     options.add_bool("WRITE_CAS_FILES",0);
+    /*- -*/
     options.add_str("DERTYPE","NONE");
+    /*- -*/
     options.add_str("WFN","NONE");
+    /*- -*/
     options.add_int("ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
+    /*- -*/
     options.add_int("CACHELEV",2);
+    /*- -*/
     options.add_str("REFERENCE","RHF");
+    /*- -*/
     options.add_bool("FOLLOW",false);
+    /*- -*/
     options.add_int("NUM_EVECS_PRINT",0);
+    /*- -*/
     options.add_int("ROTATION_METHOD",0);
+    /*- -*/
     options.add_double("SCALE",0.5);
   }
   if(name == "OEPROP"|| options.read_globals()) {
+    /*- -*/
     options.add_int("NUM_ROOTS",1);
+    /*- -*/
     options.add_int("ROOT",1);
+    /*- -*/
     options.add_int("GRID",0);
+    /*- -*/
     options.add_str("MO_TO_PLOT","");
+    /*- -*/
     options.add_int("GRID_ORIGIN",0);
+    /*- -*/
     options.add_int("GRID_UNIT_X",0);
+    /*- -*/
     options.add("GRID_XY0", new ArrayType());
+    /*- -*/
     options.add("GRID_XY1", new ArrayType());
+    /*- -*/
     options.add("GRID_XYZ0", new ArrayType());
+    /*- -*/
     options.add("GRID_XYZ1", new ArrayType());
+    /*- -*/
     options.add_int("NIX",0);
+    /*- -*/
     options.add_int("NIY",0);
+    /*- -*/
     options.add_int("NIZ",0);
+    /*- -*/
     options.add_str("GRID_FORMAT","");
+    /*- -*/
     options.add_double("GRID_ZMIN",0.0);
+    /*- -*/
     options.add_double("GRID_ZMAX",3.0);
+    /*- -*/
     options.add_int("EDGRAD_LOGSCALE",5);
+    /*- -*/
     options.add_str("WFN","");
+    /*- -*/
     options.add_bool("TRANSITION_DENSITY", false);
+    /*- -*/
     options.add_str("REFERENCE", "RHF");
+    /*- -*/
     options.add_bool("READ_OPDM", true);
+    /*- -*/
     options.add_int("OPDM_FILE", 0);
+    /*- -*/
     options.add_str("OPDM_BASIS", "MO", "AO MO");
+    /*- -*/
     options.add_str("OPDM_FORMAT", "SQUARE");
+    /*- -*/
     options.add_bool("WRTNOS", false);
+    /*- -*/
     options.add_bool("ASYMM_OPDM", false);
+    /*- -*/
     options.add_bool("SPIN_PROP", false);
+    /*- -*/
     options.add_bool("PRINT_NOS", false);
+    /*- -*/
     options.add_int("CORREL_CORR", 0);
+    /*- -*/
     options.add_double("ZVEC_FILE", 0);
+    /*- -*/
     options.add_int("DELETE_ZVEC", 0);
+    /*- -*/
     options.add_int("MPMAX", 1);
+    /*- -*/
     options.add("MP_REF_XYZ", new ArrayType());
+    /*- -*/
     options.add_int("MP_REF", 0);
+    /*- -*/
     options.add("LM_REF_XYZ", new ArrayType());
+    /*- -*/
     options.add_bool("NUC_ESP", true);
+    /*- -*/
     options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
+    /*- -*/
     options.add_bool("QED_DARWIN", false);
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
 //#warning OEProp freeze_core keyword type was changed.
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
+    /*- -*/
     options.add("DOCC", new ArrayType());
+    /*- -*/
     options.add("SOCC", new ArrayType());
   }
   if(name == "CCHBAR"|| options.read_globals()) {
+    /*- -*/
     options.add_bool("TAMPLITUDE",false);
+    /*- -*/
     options.add_int("CACHELEV",2);
+    /*- -*/
     options.add_str("WFN", "SCF");
+    /*- -*/
     options.add_str("DERTYPE", "ENERGY");
+    /*- -*/
     options.add_bool("WABEI_LOWDISK", false);
+    /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "SCF");
+    /*- -*/
     options.add_int("CACHELEV",2);
+    /*- -*/
     options.add_str("REFERENCE","RHF");
+    /*- -*/
     options.add_str("DERTYPE", "NONE");
+    /*- -*/
     options.add_str("GAUGE","LENGTH");
+    /*- -*/
     options.add_int("MAXITER",50);
+    /*- -*/
     options.add_int("CONVERGENCE",7);
+    /*- -*/
     options.add_bool("DIIS",1);
+    /*- -*/
     options.add_str("PROPERTY","POLARIZABILITY");
+    /*- -*/
     options.add_str("ABCD","NEW");
+    /*- -*/
     options.add_bool("RESTART",1);
+    /*- -*/
     options.add_bool("LOCAL",0);
+    /*- -*/
     options.add_double("LOCAL_CUTOFF",0.01);
+    /*- -*/
     options.add_str("LOCAL_METHOD","WERNER");
+    /*- -*/
     options.add_str("LOCAL_WEAKP","NONE");
+    /*- -*/
     options.add_bool("LOCAL_FILER_SINGLES", false);
+    /*- -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
 //#warning CCREsponse freeze_core keyword type was changed.
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
+    /*- -*/
     options.add_str("LOCAL_PAIRDEF","NONE");
+    /*- -*/
     options.add_bool("ANALYZE",0);
+    /*- -*/
     options.add_int("NUM_AMPS",5);
+    /*- -*/
     options.add_bool("SEKINO",0);
+    /*- -*/
     options.add_bool("LINEAR",0);
+    /*- -*/
     options.add("OMEGA",new ArrayType());
   }
   if(name == "MVO"|| options.read_globals()) {
+    /*- -*/
    options.add_str("WFN","CCSD");
+    /*- -*/
    options.add_int("FZC_FILE", PSIF_OEI);
+    /*- -*/
    options.add_bool("PRINT_MOS",false);
+    /*- -*/
    options.add_bool("OEI_ERASE",false);
+    /*- -*/
    options.add_bool("FZC",true);
+    /*- -*/
    options.add_bool("DELETE_RESTR_DOCC",true);
+    /*- -*/
    options.add_bool("MP2NOS",false);
+    /*- -*/
    options.add_bool("UNOS",false);
+    /*- -*/
    options.add_double("FZC_FOCK_COEFF",1.0);
+    /*- -*/
    options.add_double("FOCK_COEFF",0.0);
+    /*- -*/
    options.add_bool("IVO",false);
+    /*- -*/
    options.add_bool("CANONICAL",false);
+    /*- -*/
    options.add("FROZEN_DOCC", new ArrayType());
+    /*- -*/
    options.add("FROZEN_UOCC", new ArrayType());
+    /*- -*/
    options.add("RESTRICTED_DOCC", new ArrayType());
+    /*- -*/
    options.add("RESTRICTED_UOCC", new ArrayType());
+    /*- -*/
    options.add("DOCC", new ArrayType());
+    /*- -*/
    options.add("SOCC", new ArrayType());
+    /*- -*/
    options.add("DOCC_VIRT", new ArrayType());
   }
   if(name == "RESPONSE"|| options.read_globals()){
+    /*- -*/
     options.add_str("REFERENCE", "RHF");
+    /*- -*/
     options.add("OMEGA", new ArrayType());
+    /*- -*/
     options.add_str("PROPERTY","POLARIZABILITY");
   }
   if(name == "MCSCF"|| options.read_globals()) {
@@ -600,7 +835,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
     options.add_int("MULTP", 1);
+    /*- -*/
     options.add_int("CONVERGENCE",9);
+    /*- -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_bool("DEBUG", false);
@@ -608,22 +845,39 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("E_CONVERGE", 12);
     /*- -Log10 of the density convergence criterion -*/
     options.add_int("D_CONVERGE", 12);
+    /*- -*/
     options.add_int("MAXITER",100);
+    /*- -*/
     options.add_int("NDIIS",7);
+    /*- -*/
     options.add_int("ROOT",1);
+    /*- -*/
     options.add_int("START_FAVG",5);
+    /*- -*/
     options.add_int("TURN_ON_ACTV",0);
+    /*- -*/
     options.add_int("ROTATE_MO_ANGLE",0);
+    /*- -*/
     options.add_int("ROTATE_MO_IRREP",1);  // IRREP is one-based
+    /*- -*/
     options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
+    /*- -*/
     options.add_int("ROTATE_MO_Q",2);
+    /*- -*/
     options.add_bool("CI_DIIS",false);
+    /*- -*/
     options.add_bool("USE_DIIS",true);
+    /*- -*/
     options.add_bool("READ_MOS",true);
+    /*- -*/
     options.add_bool("USE_FAVG",false);
+    /*- -*/
     options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
+    /*- -*/
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
+    /*- -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
+    /*- -*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of doubly occupied orbitals, per irrep -*/
     options.add("DOCC", new ArrayType());
@@ -635,98 +889,172 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTV", new ArrayType());
 
 
+    /*- -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
+    /*- -*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
+    /*- -*/
     options.add_bool("NEWTRIPS", 1);
+    /*- -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+    /*- -*/
     options.add_str("REFERENCE", "RHF");
+    /*- -*/
     options.add_bool("ANALYZE", 0);
+    /*- -*/
     options.add_str("DERTYPE", "NONE", "NONE FIRST RESPONSE");
+    /*- -*/
     options.add_int("MAXITER", 50);
+    /*- -*/
     options.add_int("CONVERGENCE", 7);
+    /*- -*/
     options.add_bool("RESTART",1);
+    /*- -*/
     options.add_bool("FORCE_RESTART", 0);
-    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
 //#warning CCEnergy ao_basis keyword type was changed.
+    /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
+    /*- -*/
     options.add_int("CACHELEV", 2);
+    /*- -*/
     options.add_str("CACHETYPE", "LOW", "LOW LRU");
+    /*- -*/
     options.add_int("NTHREADS",1);
+    /*- -*/
     options.add_bool("DIIS", true);
+    /*- -*/
     options.add_bool("T2_COUPLED", false);
+    /*- -*/
     options.add_str("PROPERTY", "POLARIZABILITY", "POLARIZABILITY ROTATION MAGNETIZABILITY ROA ALL");
+    /*- -*/
     options.add_str("ABCD", "NEW", "NEW OLD");
+    /*- -*/
     options.add_bool("LOCAL", 0);
+    /*- -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
     options.add_double("LOCAL_MOS", 0);
+    /*- -*/
     options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
+    /*- -*/
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
 //#warning CCEnergy freeze_core keyword type was changed.
+    /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
+    /*- -*/
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
+    /*- -*/
     options.add_int("NUM_AMPS", 10);
+    /*- -*/
     options.add_int("BRUECKNER_CONV", 5);
+    /*- -*/
     options.add_bool("PRINT_MP2_AMPS", 0);
+    /*- -*/
     options.add_bool("PRINT_PAIR_ENERGIES", 0);
+    /*- -*/
     options.add_bool("SPINADAPT_ENERGIES", false);
+    /*- -*/
     options.add_bool("T3_WS_INCORE", 0);
+    /*- -*/
     options.add_bool("SCSN_MP2", 0);
+    /*- -*/
     options.add_bool("SCS_MP2", 0);
+    /*- -*/
     options.add_bool("SCS_CCSD", 0);
+    /*- -*/
     options.add_double("MP2_SCALE_OS",1.20);
+    /*- -*/
     options.add_double("MP2_SCALE_SS",1.0/3.0);
+    /*- -*/
     options.add_double("CC_SCALE_OS", 1.27);
+    /*- -*/
     options.add_double("CC_SCALE_SS",1.13);
   }
   if(name == "CIS"|| options.read_globals()) {
+    /*- -*/
     options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
+    /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+    /*- -*/
     options.add_double("LOCAL_AMP_PRINT_CUTOFF", 0.60);
+    /*- -*/
     options.add_int("MAXITER", 500);
+    /*- -*/
     options.add_int("CONVERGENCE", 7);
+    /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
+    /*- -*/
     options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON FULL");
+    /*- -*/
     options.add_bool("LOCAL", false);
+    /*- -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
     options.add_str("LOCAL_METHOD", "WERNER", "AOBASIS WERNER");
+    /*- -*/
     options.add_str("LOCAL_WEAKP", "MP2", "MP2 NEGLECT NONE");
+    /*- -*/
     options.add_int("LOCAL_GHOST", -1);
+    /*- -*/
     options.add("DOMAINS", new ArrayType());
+    /*- -*/
     options.add_bool("DOMAIN_PRINT", 0);
   }
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
     options.add_str("RI_BASIS_MP2", "NONE");
 //    options.read_ipv1();
+    /*- -*/
     if(options.get_str("RI_BASIS_MP2") != "NONE")
+    /*- -*/
       options.add_bool("RI_LMP2", true);
     else
+    /*- -*/
       options.add_bool("RI_LMP2", false);
+    /*- -*/
     options.add_str("WFN", "LMP2");
+    /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF");
+    /*- -*/
     options.add_int("MAXITER", 50);
+    /*- -*/
     options.add_int("ENERGY_CONV", 7);
+    /*- -*/
     options.add_int("RMS_CONV", 5);
+    /*- -*/
     options.add_int("FSKIP", 2);
+    /*- -*/
     options.add_bool("USE_DIIS", 1);
+    /*- -*/
     options.add_bool("NEGLECT_DP", 1);
+    /*- -*/
     options.add_double("DISTANT_PAIR", 8.0);
+    /*- -*/
     options.add_int("DIISSTART", 3);
+    /*- -*/
     options.add_int("NDIIS", 6);
+    /*- -*/
     options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
     options.add_int("MEMORY", 2000);
+    /*- -*/
     options.add_bool("SCS","false");
+    /*- -*/
     options.add_bool("SCS_N", "false");
+    /*- -*/
     options.add_double("SCALE_OS", 6.0/5.0);
+    /*- -*/
     options.add_double("SCALE_SS", 1.0/3.0);
+    /*- -*/
     options.add_int("SCREENING", 7);
+    /*- -*/
     options.add_bool("SCREEN_INTS", false);
+    /*- -*/
     options.add_int("SCHWARTZ_TOL", 12);
    }
   if(name=="DFMP2"|| options.read_globals()) {
@@ -825,60 +1153,113 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DEBUG",false);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
+    /*- -*/
     options.add_int("CORR_CHARGE",0);
+    /*- -*/
     options.add_bool("DEBUG",false);
+    /*- -*/
     options.add_int("DAMPING_FACTOR",0);
+    /*- -*/
     options.add_int("MAXDIIS",7);
+    /*- -*/
     options.add_int("NUM_THREADS",1);
+    /*- -*/
+    /*- -*/
     options.add_int("NEL",0);
+    /*- -*/
     options.add_int("ROOT",1);
+    /*- -*/
     options.add_int("CONVERGENCE",9);
+    /*- -*/
     options.add_int("MAXITER",100);
+    /*- -*/
     options.add_int("DENOMINATOR_SHIFT",0);
+    /*- -*/
     options.add_int("START_DIIS",2);
+    /*- -*/
     options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
+    /*- -*/
     options.add_int("TIKHONOW_MAX",5);
 
+    /*- -*/
     options.add_bool("DIIS_TRIPLES",false);
+    /*- -*/
     options.add_bool("LOCK_SINGLET",false);
+    /*- -*/
     options.add_bool("MP2_GUESS",true);
+    /*- -*/
     options.add_bool("FAVG_CCSD_T",false);
+    /*- -*/
     options.add_bool("HEFF4",true);
+    /*- -*/
     options.add_bool("OFFDIAGONAL_CCSD_T",true);
+    /*- -*/
     options.add_bool("DIAGONAL_CCSD_T",true);
+    /*- -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
+    /*- -*/
     options.add_bool("ONLY_CLOSED_SHELL",false);
+    /*- -*/
     options.add_bool("USE_DIIS",true);
+    /*- -*/
     options.add_bool("USE_SPIN_SYMMETRY",true);
+    /*- -*/
     options.add_bool("ZERO_INTERNAL_AMPS",true);
+    /*- -*/
     options.add_bool("COUPLING_TERMS",true);
+    /*- -*/
     options.add_bool("PRINT_HEFF",false);
+    /*- -*/
     options.add_bool("PERT_CBS",false);
+    /*- -*/
     options.add_bool("PERT_CBS_COUPLING",true);
+    /*- -*/
     options.add_bool("RESTRICTED_TRIPLES",false);
+    /*- -*/
     options.add_bool("TIKHONOW_TRIPLES",false);
 
+    /*- -*/
     options.add_str("WFN","MRCCSD","MRCCSD");
+    /*- -*/
     options.add_str("PT_ENERGY","SECOND_ORDER","SECOND_ORDER SCS_SECOND_ORDER PSEUDO_SECOND_ORDER SCS_PSEUDO_SECOND_ORDER");
+    /*- -*/
     options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
+    /*- -*/
     options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
+    /*- -*/
     options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
+    /*- -*/
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
+    /*- -*/
     options.add_str("COUPLING","CUBIC","NONE LINEAR QUADRATIC CUBIC");
+    /*- -*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
+    /*- -*/
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
+    /*- -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
+    /*- -*/
     options.add("CORR_FOCC", new ArrayType());
+    /*- -*/
     options.add("FROZEN_DOCC", new ArrayType());
+    /*- -*/
     options.add("CORR_DOCC", new ArrayType());
+    /*- -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
+    /*- -*/
     options.add("CORR_ACTV", new ArrayType());
+    /*- -*/
     options.add("ACTV", new ArrayType());
+    /*- -*/
     options.add("ACTIVE", new ArrayType());
+    /*- -*/
     options.add("CORR_FVIR", new ArrayType());
+    /*- -*/
     options.add("FROZEN_UOCC", new ArrayType());
+    /*- -*/
     options.add("ACTIVE_DOCC", new ArrayType());
   }
+    /*- -*/
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO} -*/
       options.add_str("STEP_TYPE", "RFO", "RFO NR");

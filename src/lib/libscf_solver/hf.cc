@@ -117,7 +117,6 @@ void HF::common_init()
         for (int i=0; i<nirreps; ++i) {
             doccpi_[i] = options_["DOCC"][i].to_integer();
             ndocc += 2*doccpi_[i];
-            nalphapi_[i] = doccpi_[i];
         }
     } else {
         for (int i=0; i<nirreps; ++i)
