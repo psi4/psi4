@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 void denom1(dpdfile2 *X1, double omega)
 {
@@ -127,4 +127,4 @@ void denom2(dpdbuf4 *X2, double omega)
   dpd_file2_close(&FMI);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

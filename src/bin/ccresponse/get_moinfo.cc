@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -15,13 +15,13 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* get_moinfo(): Routine to obtain basic orbital information from
 ** CHKPT and CC_INFO.
 **
 ** T. Daniel Crawford, October 1996
-** Modified for CCRESPONSE by TDC May, 2003 
+** Modified for ccresponse by TDC May, 2003 
 */
 
 void get_moinfo(void)
@@ -301,4 +301,4 @@ void cleanup(void)
   free(moinfo.l_irreps);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

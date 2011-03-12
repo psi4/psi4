@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -12,7 +12,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 double converged(const char *pert, int irrep, double omega)
 {
@@ -70,4 +70,4 @@ double converged(const char *pert, int irrep, double omega)
   return sqrt(rms);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

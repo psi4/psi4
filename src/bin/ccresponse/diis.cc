@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -17,7 +17,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /*
 ** DIIS: Direct inversion in the iterative subspace routine to
@@ -31,7 +31,7 @@ namespace psi { namespace CCRESPONSE {
 ** These improvements have been applied only to RHF cases so far.
 **
 ** -TDC  12/22/01
-** Modified for CCRESPONSE, TDC, 5/03
+** Modified for ccresponse, TDC, 5/03
 */
 
 void diis(int iter, const char *pert, int irrep, double omega)
@@ -263,4 +263,4 @@ void diis(int iter, const char *pert, int irrep, double omega)
   return;
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -15,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 void transpert(const char *pert);
 void sort_pert(const char *pert, double **pertints, int irrep);
@@ -137,4 +137,4 @@ void polar(void)
   free(cartcomp);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

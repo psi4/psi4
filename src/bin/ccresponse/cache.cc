@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -8,7 +8,7 @@
 #include <ccfiles.h>
 #include <psi4-dec.h>
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
@@ -719,4 +719,4 @@ void cachedone_rhf(int **cachelist)
   free_int_matrix(cachelist);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

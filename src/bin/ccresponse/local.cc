@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 
@@ -21,7 +21,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /*! 
 ** local_init(): Set up parameters of local excitation domains.
@@ -274,4 +274,4 @@ void local_filter_T2(dpdbuf4 *T2)
   free(local.weak_pairs);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

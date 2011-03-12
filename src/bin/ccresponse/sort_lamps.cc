@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <libdpd/dpd.h>
@@ -9,7 +9,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 void sort_lamps(void)
 {
@@ -22,4 +22,4 @@ void sort_lamps(void)
   dpd_buf4_close(&L);
 }  
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

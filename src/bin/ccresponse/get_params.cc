@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -16,7 +16,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 void get_params(Options &options)
 {
@@ -212,4 +212,4 @@ void get_params(Options &options)
 }
 
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

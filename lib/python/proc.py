@@ -144,6 +144,28 @@ def run_ccsd_t(name, **kwargs):
     PsiMod.ccenergy()
     PsiMod.cctriples()
 
+def run_ccsd_response(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    run_scf("scf", **kwargs);
+
+    PsiMod.transqt2()
+    PsiMod.ccsort()
+    PsiMod.ccenergy()
+    PsiMod.cchbar()
+    PsiMod.cclambda()
+    # Need oeprop integrals here -- code will fail at present
+    PsiMod.ccresponse()
+
 def run_dfmp2(name, **kwargs):
 
     run_scf('RHF',**kwargs)

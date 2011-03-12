@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* sort_pert(): Sorts the specified MO-basis one-electron property
 ** integrals into CC ordering for use in building the
@@ -87,4 +87,4 @@ void sort_pert(const char *pert, double **pertints, int irrep)
 
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

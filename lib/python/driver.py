@@ -16,7 +16,12 @@ procedures = {'energy' : {
         },
         'gradient' : {
         },
-        'hessian' : { }}
+        'hessian' : {
+        },
+        'response' : {
+          'scf' : run_scf,
+          'ccsd' : run_ccsd_response
+        }}
 
 def energy(name, **kwargs):
 
@@ -44,4 +49,9 @@ def hessian(name, **kwargs):
     except KeyError:
         raise SystemExit('Hessian Method %s Not Defined' %(name))
 
+def response(name, **kwargs):
+    try:
+        return procedures['response'][name](name, **kwargs)
+    except KeyError:
+        raise SystemExit('Response Method %s Not Defined' %(name))
 

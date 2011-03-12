@@ -1,9 +1,9 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 
-/*! \defgroup CCRESPONSE CCRESPONSE: Coupled-cluster response module */
+/*! \defgroup ccresponse ccresponse: Coupled-cluster response module */
 
 #include <cstdio>
 #include <cstring>
@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 double HXY(const char *pert_x, int irrep_x, double omega_x, 
 	   const char *pert_y, int irrep_y, double omega_y)
@@ -44,4 +44,4 @@ double HXY(const char *pert_x, int irrep_x, double omega_x,
   return polar;
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

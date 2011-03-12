@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -15,7 +15,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* transpert(): Transform various one-electron property integrals from
 ** the AO to the MO basis.  In some cases, we must also add
@@ -159,4 +159,4 @@ void transpert(const char *pert)
   free_block(X);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

@@ -1,7 +1,7 @@
 /*! 
   \file
-  \ingroup CCRESPONSE
-  \brief Write the amplitudes from CCRESPONSE
+  \ingroup ccresponse
+  \brief Write the amplitudes from ccresponse
 */
 #include <cstdio>
 #include <cstdlib>
@@ -14,7 +14,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 struct onestack {
     double value;
@@ -230,4 +230,4 @@ void twostack_insert(struct twostack *stack, double value, int i, int j, int a, 
 }
 
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

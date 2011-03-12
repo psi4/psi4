@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -13,7 +13,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* LHX1Y1(): Computes the <0|L*(HBAR*X1*Y1)c |0> contributions to the
 ** linear response function.  Note that most of the work is actually
@@ -160,4 +160,4 @@ void build_XY(const char *pert_x, int irrep_x, double omega_x,
 
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

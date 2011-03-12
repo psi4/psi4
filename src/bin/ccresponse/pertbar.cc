@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -11,7 +11,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 /* pertbar(): Constructs the components of the similarity-transformed
 ** one-electron property operator. 
@@ -178,4 +178,4 @@ void pertbar(const char *pert, int irrep, int anti)
   dpd_buf4_close(&fbar2);
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse

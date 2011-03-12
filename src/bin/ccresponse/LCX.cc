@@ -1,5 +1,5 @@
 /*! \file
-    \ingroup CCRESPONSE
+    \ingroup ccresponse
     \brief Enter brief description of file here 
 */
 #include <cstdio>
@@ -10,7 +10,7 @@
 #define EXTERN
 #include "globals.h"
 
-namespace psi { namespace CCRESPONSE {
+namespace psi { namespace ccresponse {
 
 double LCX(const char *pert_c, int irrep_c, 
 	   const char *pert_x, int irrep_x, double omega)
@@ -163,4 +163,4 @@ double LCX(const char *pert_c, int irrep_c,
   return polar;
 }
 
-}} // namespace psi::CCRESPONSE
+}} // namespace psi::ccresponse
