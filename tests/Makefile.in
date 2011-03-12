@@ -23,6 +23,8 @@ opt_subdirs = scf5 scf6 scf7 scf8
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf9 sad1
 
+python_test_subdirs = basis_extrap
+
 plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2
 subdirs = \
 $(mints_subdirs) \
@@ -31,6 +33,7 @@ $(scf_subdirs) \
 $(opt_subdirs) \
 $(df_subdirs) \
 $(cc_subdirs) \
+$(python_test_subdirs) \
 ${mcscf_subdirs} 
 #$(dcft_subdirs) \
 
@@ -118,6 +121,12 @@ dcft_tests:
 
 psimrcc_tests:
 	for dir in $(psimrcc_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+python_tests:
+	for dir in $(python_test_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done

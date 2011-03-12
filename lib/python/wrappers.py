@@ -267,6 +267,9 @@ def basis_set_extrapolate(basis_name, **kwargs):
 
     e = []
     ehf = []
+    
+    a = 0.0
+    ahf = 0.0
 
     if(is_hf):  # Then all we need to do is the HF extrapolation
         for i in range(smallest, largest + 1):
@@ -325,7 +328,13 @@ def basis_set_extrapolate(basis_name, **kwargs):
     # Restore global options that may be changed
     PsiMod.set_global_option("BASIS", backup_basis)
     PsiMod.set_global_option("WFN", backup_wfn)
-        
+    
+    # Return the correlated extrapolation value if we have it
+    if not is_hf:
+        return a + ahf
+    else:
+        return ahf
+
 ################################
 # End of basis_set_extrapolate #
 ################################
