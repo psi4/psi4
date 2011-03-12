@@ -4,16 +4,14 @@
 #include <cmath>
 #include <sstream>
 #include <utility>
-
 #include <psifiles.h>
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.hpp>
 #include <libciomr/libciomr.h>
 #include "mints.h"
-
 #include <libqt/qt.h>
-
 #include <psi4-dec.h>
+#include <physconst.h>
 
 using namespace boost;
 using namespace psi;
@@ -284,11 +282,36 @@ void OEProp::compute()
 }
 void OEProp::compute_dipole()
 {
-    throw FeatureNotImplemented("OEProp::compute_dipole", "Dipole expectation value not implemented", __FILE__, __LINE__);    
+    shared_ptr<Molecule> mol = basisset_->molecule();
+    MultipoleSymmetry dipsymm (1, mol, integral_, factory_);
+    std::vector<SharedMatrix> so_dipole = dipsymm.create_matrices("SO Dipole");
+    shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
+    sodOBI->compute(so_dipole);
+    Vector3 de;
+    SharedMatrix Da;
+    SharedMatrix Db;
 
-    fprintf(outfile, " DIPOLE ANALYSIS [a.u.]:\n\n");
+    if (restricted_) {
+        Da = Da_so_;
+        Db = Da;
+    } else {
+        Da = Da_so_;
+        Db = Db_so_;
+    }
 
-    // Awesome code goes here. 
+    de[0] = Da->vector_dot(so_dipole[0]) + Db->vector_dot(so_dipole[0]);
+    de[1] = Da->vector_dot(so_dipole[1]) + Db->vector_dot(so_dipole[1]);
+    de[2] = Da->vector_dot(so_dipole[2]) + Db->vector_dot(so_dipole[2]);
+
+    SharedVector ndip = mol->nuclear_dipole_contribution();
+    de[0] += ndip->get(0, 0);
+    de[1] += ndip->get(0, 1);
+    de[2] += ndip->get(0, 2);
+
+    fprintf(outfile," Total Dipoles: (a.u.)\n\n");
+    fprintf(outfile,"\tX: %lf   Y: %lf   Z: %lf\n", de[0], de[1], de[2]);
+    fprintf(outfile,"\tTotal:\t%lf a.u.\n", de.norm());
+    fprintf(outfile,"\t\t%lf Debye\n", de.norm()*_dipmom_au2debye);
 
     fflush(outfile);
 }
