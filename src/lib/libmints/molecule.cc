@@ -145,7 +145,7 @@ Molecule::Molecule():
     multiplicity_(1),
     molecular_charge_(0),
     units_(Angstrom),
-    input_units_to_au_(0.0),
+    input_units_to_au_(1.0/_bohr2angstroms),
     fix_orientation_(false),
     charge_specified_(false),
     multiplicity_specified_(false),
