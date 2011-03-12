@@ -1,5 +1,5 @@
 /*! \file    geom_gradients_io.cc
-    \ingroup OPTKING
+    \ingroup optking
     \brief   functions to read and write the geometry, the gradient and the Hessian
 */
 

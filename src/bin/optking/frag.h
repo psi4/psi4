@@ -1,3 +1,7 @@
+/*!
+   \ingroup optking
+   \file frag.h : header for fragment class
+*/
 #ifndef _opt_frag_h_
 #define _opt_frag_h_
 
@@ -13,8 +17,9 @@ class INTERFRAG;
 
 using std::vector;
 
-/**
+/*!
   \ingroup optking
+  \class   FRAG
   \brief   A group of atoms, its geometry, and its internal coordinates.
   */
 class FRAG {

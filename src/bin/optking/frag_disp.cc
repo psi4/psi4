@@ -1,5 +1,5 @@
 /*! \file    frag_disp.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief   displace fragment geometry only dq changes to values of coordinates
 */
 

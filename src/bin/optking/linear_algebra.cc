@@ -1,5 +1,5 @@
-/*! \file
-    \ingroup OPT10
+/*! \file    linear_algebra.cc
+    \ingroup optking
     \brief   linear algebra functions which call lapack and blas are in
              global namespace and preceded with opt
 */

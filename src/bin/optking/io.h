@@ -1,5 +1,5 @@
 /*! \file    binary_io.h
-    \ingroup OPT10
+    \ingroup optking
     \brief   header for binary reading and writing functions
 */
 

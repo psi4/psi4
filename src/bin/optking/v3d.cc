@@ -1,5 +1,5 @@
 /*! \file v3d.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief v3d functions
 */
 

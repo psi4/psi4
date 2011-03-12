@@ -1,5 +1,5 @@
-/*! \file
-    \ingroup OPT10
+/*! \file set_params.cc
+    \ingroup optking
     \brief set optimization parameters
 */
 

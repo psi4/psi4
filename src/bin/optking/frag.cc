@@ -1,6 +1,7 @@
-/*! \file frag.cc
-    \ingroup OPT10
-    \brief fragment (molecule) class
+/*!
+   \file frag.cc
+   \ingroup optking
+   \brief fragment (molecule) class
 */
 
 #include "frag.h"

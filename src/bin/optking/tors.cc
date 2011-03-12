@@ -1,5 +1,5 @@
 /*! \file tors.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief tors class
 */
 

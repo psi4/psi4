@@ -1,5 +1,5 @@
 /*! \file    opt_data.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief   OPT_DATA associated functions that do not do i/o
 */
 

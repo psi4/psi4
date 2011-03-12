@@ -1,5 +1,5 @@
-/*! \file
-    \ingroup OPT10
+/*! \file    print.cc
+    \ingroup optking
     \brief memory allocation
 */
 

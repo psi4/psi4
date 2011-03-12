@@ -1,5 +1,5 @@
 /*! \file opt-params.h
-    \ingroup OPT10
+    \ingroup optking
     \brief header for optimization parameters
       variable meanings are described in more detail in set_params.cc
 */

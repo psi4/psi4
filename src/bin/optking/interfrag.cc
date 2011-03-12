@@ -1,5 +1,5 @@
 /*! \file stre.h
-    \ingroup OPT10
+    \ingroup optking
     \brief STRE class declaration
 */
 

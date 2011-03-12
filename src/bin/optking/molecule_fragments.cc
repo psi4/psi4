@@ -1,5 +1,5 @@
 /*! \file molecule_fragments.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief functions to handle fragments
 */
 

@@ -1,7 +1,8 @@
-/*! \file optking.cc
-    \ingroup opt
-    \brief optimization */
-
+/*! 
+    \defgroup optking
+    \file optking.cc : main optimizer
+    \ingroup optking
+*/
 #include <cstdio>
 #include <fstream>
 #include "globals.h"

@@ -1,5 +1,5 @@
 /*! \file v3d.h
-    \ingroup OPT10
+    \ingroup optking
     \brief Functions for real-space vectors of length 3
 */
 

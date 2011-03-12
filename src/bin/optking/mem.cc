@@ -1,6 +1,5 @@
-/*! \file
-    \ingroup OPT10
-    \brief memory allocation
+/*! \file mem.cc : memory allocation
+    \ingroup optking
 */
 
 #include <cstdlib>

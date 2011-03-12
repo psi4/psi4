@@ -1,5 +1,5 @@
 /*! \file physconst.h
-    \ingroup OPT10
+    \ingroup optking
     \brief physical constants
 */
 

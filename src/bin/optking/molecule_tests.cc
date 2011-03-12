@@ -1,5 +1,5 @@
 /*! \file molecule.cc
-    \ingroup OPT10
+    \ingroup optking
     \brief molecule class (really, molecular system class)
 */
 

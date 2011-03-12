@@ -1,3 +1,8 @@
+/*!
+  \ingroup optking
+  \file opt_data.h : header for structure that holds optimization data
+*/
+
 #ifndef _opt_opt_data_h_
 #define _opt_opt_data_h_
 

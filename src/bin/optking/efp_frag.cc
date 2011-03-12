@@ -1,3 +1,6 @@
+/*!
+   \ingroup optking
+*/
 
 #include "efp_frag.h"
 
