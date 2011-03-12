@@ -92,8 +92,10 @@ void Vector::alloc()
 
     vector_ = (double**)malloc(sizeof(double*) * nirrep_);
     for (int h=0; h<nirrep_; ++h) {
-        if (dimpi_[h])
+        if (dimpi_[h]) {
             vector_[h] = new double[dimpi_[h]];
+            ::memset(vector_[h], 0, sizeof(double)*dimpi_[h]);
+        }
     }
 }
 
