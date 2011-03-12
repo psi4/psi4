@@ -81,6 +81,10 @@ protected:
     int frzcpi_[8];
     /// Number of frozen virtuals per irrep
     int frzvpi_[8];
+    /// Number of alpha electrons per irrep
+    int nalphapi_[8];
+    /// Number of beta electrons per irrep
+    int nbetapi_[8];
 
     /// Number of so per irrep
     int nsopi_[8];
@@ -158,6 +162,10 @@ public:
     int* nsopi() const { return (int*)nsopi_; }
     /// Returns the number of MOs per irrep array. You DO NOT own this array.
     int* nmopi() const { return (int*)nmopi_; }
+    /// Returns the number of alpha electrons per irrep array. You DO NOT own this array.
+    int* nalphapi() const { return (int*)nalphapi_; }
+    /// Returns the number of beta electrons per irrep array. You DO NOT own this array.
+    int* nbetapi() const { return (int*)nbetapi_; }
     /// Returns the frozen core orbitals per irrep array. You DO NOT own this array.
     int* frzcpi() const { return (int*)frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array. You DO NOT own this array.

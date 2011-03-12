@@ -84,6 +84,8 @@ void Wavefunction::common_init()
         nmopi_[k] = 0;
         doccpi_[k] = 0;
         soccpi_[k] = 0;
+        nalphapi_[k] = 0;
+        nbetapi_[k] = 0;
     }
 
     reference_energy_ = 0.0;

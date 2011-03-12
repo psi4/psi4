@@ -60,7 +60,7 @@ protected:
     /// Number of alpha and beta electrons
     int nalpha_, nbeta_;
     /// Number of alpha and beta electrons per irrep
-    int nalphapi_[8], nbetapi_[8];
+    //int nalphapi_[8], nbetapi_[8];
 
     //Initial SAD doubly occupied may be more than ndocc
     int sad_nocc_[8];
