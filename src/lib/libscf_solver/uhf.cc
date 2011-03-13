@@ -206,22 +206,19 @@ void UHF::form_C()
 
 void UHF::form_D()
 {
-    int h, i, j, m;
-    int *opi = Da_->rowspi();
-    int nirreps = Da_->nirrep();
     double val;
-    for (h=0; h<nirreps; ++h) {
-        for (i=0; i<opi[h]; ++i) {
-            for (j=0; j<opi[h]; ++j) {
+    for (int h = 0; h < nirrep_; ++h) {
+        for (int p = 0; p < nsopi_[h]; ++p) {
+            for (int q = 0; q < nsopi_[h]; ++q) {
                 val = 0.0;
-                for (m=0; m<nalphapi_[h]; ++m)
-                    val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
-                Da_->set(h, i, j, val);
+                for (int i = 0; i < nalphapi_[h]; ++i)
+                    val += Ca_->get(h, p, i) * Ca_->get(h, q, i);
+                Da_->set(h, p, q, val);
 
                 val = 0.0;
-                for (m=0; m<nbetapi_[h]; ++m)
-                    val += Cb_->get(h, i, m) * Cb_->get(h, j, m);
-                Db_->set(h, i, j, val);
+                for (int i = 0; i < nbetapi_[h]; ++i)
+                    val += Cb_->get(h, p, i) * Cb_->get(h, q, i);
+                Db_->set(h, p, q, val);
             }
         }
     }
