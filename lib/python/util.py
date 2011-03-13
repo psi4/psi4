@@ -22,6 +22,13 @@ def compare_values(expected, computed, digits, label):
 
     print "\t%s: matched." % (label)
 
+def compare_integers(expected, computed, label):
+    if (expected != computed):
+        print "\t%s: computed value (%d) does not match (%d)." % (label, expected, computed)
+        sys.exit(1)
+
+    print "\t%s: matched." % (label)
+
 def compare_strings(expected, computed, label):
     if(expected != computed):
         print "\t%s: computed value (%s) does not match (%s)." % (label, expected, computed)
