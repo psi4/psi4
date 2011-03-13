@@ -130,7 +130,7 @@ sub determine_keyword_type_and_default
          $Keyword = $1;
          $Default = $2;
          $Default = "No Default" unless $Default =~ /\w+/;
-     }elsif(/add_(\w+)\(\s*\"(\w+)\"\s*\,\s*(?:\")?(\w+)(?:\")?/){
+     }elsif(/add_(\w+)\(\s*\"(\w+)\"\s*\,\s*(?:\")?([-\w]+)(?:\")?/){
          # This is a keyword with a default
          $Type = $1;
          $Keyword = $2;
