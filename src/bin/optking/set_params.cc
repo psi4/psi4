@@ -37,11 +37,10 @@ void set_params(void)
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
-//  Opt_params.rfo_follow_root = false;
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
-// Which RFO root to follow; 0 indicates minimum; {integer}
+// Which RFO root to follow; internally 0 (externally 1) indicates minimum; {integer}
 //  Opt_params.rfo_root = 0;
-    Opt_params.rfo_root = options.get_int("RFO_ROOT");
+    Opt_params.rfo_root = options.get_int("RFO_ROOT") - 1;
 
 // When determining connectivity, a bond is assigned if interatomic distance
 // is less than (this number) * sum of covalent radii {double}
@@ -161,8 +160,8 @@ void set_params(void)
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
 
-// which root    (default 0)
-  Opt_params.rfo_root = rem_read(REM_GEOM_OPT2_RFO_ROOT);
+// which root    (default is 1 for minimum)
+  Opt_params.rfo_root = rem_read(REM_GEOM_OPT2_RFO_ROOT) - 1;
 
 // scale = i / 10   (default 13)
   i = rem_read(REM_GEOM_OPT2_SCALE_CONNECTIVITY);
