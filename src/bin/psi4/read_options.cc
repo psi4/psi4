@@ -1266,8 +1266,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
       /*- Whether to 'follow' the initial RFO vector after the first step {true, false} -*/
       options.add_bool("RFO_FOLLOW_ROOT", false);
-      /*- Which RFO root to follow; 0 indicates minimum; {integer} -*/
-      options.add_int("RFO_ROOT", 0);
+      /*- Which RFO root to follow; 1 indicates lowest (to a minimum); {integer} -*/
+      options.add_int("RFO_ROOT", 1);
       /*- When determining connectivity, a bond is assigned if interatomic distance
           is less than (this number) * sum of covalent radii {double} -*/
       options.add_double("SCALE_CONNECTIVITY", 1.3);
