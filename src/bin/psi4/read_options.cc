@@ -1259,7 +1259,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add("ACTIVE_DOCC", new ArrayType());
   }
-    /*- -*/
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO} -*/
       options.add_str("STEP_TYPE", "RFO", "RFO NR");
