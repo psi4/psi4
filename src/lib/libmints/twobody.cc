@@ -1,5 +1,6 @@
 #include <stdexcept>
 
+#include <compiler.h>
 #include <libqt/qt.h>
 
 #include "mints.h"
