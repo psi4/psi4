@@ -13,7 +13,7 @@ NablaInt::NablaInt(std::vector<SphericalTransform>& spherical_transforms,
                    shared_ptr<BasisSet> bs1,
                    shared_ptr<BasisSet> bs2,
                    int nderiv)
-    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
+    : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
@@ -94,7 +94,7 @@ void NablaInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_pt
             double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
 
             // Do recursion
-            overlap_recur_.compute(PA, PB, gamma, am1+1, am2+1);
+            overlap_recur_.compute(PA, PB, gamma, am1+2, am2+2);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
@@ -112,17 +112,17 @@ void NablaInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_pt
                             double x00 = x[l1][l2],
                                    y00 = y[m1][m2],
                                    z00 = z[n1][n2];
-                            double x0p1 = x[l1][l2+1],
-                                   y0p1 = y[m1][m2+1],
-                                   z0p1 = z[n1][n2+1];
+                            double x01 = x[l1][l2+1],
+                                   y01 = y[m1][m2+1],
+                                   z01 = z[n1][n2+1];
 
-                            double nx = -2.0*a2*x0p1;
+                            double nx = -2.0*a2*x01;
                             if (l2 >= 1)
                                 nx += l2*x[l1][l2-1];
-                            double ny = -2.0*a2*y0p1;
+                            double ny = -2.0*a2*y01;
                             if (m2 >= 1)
                                 ny += m2*y[m1][m2-1];
-                            double nz = -2.0*a2*z0p1;
+                            double nz = -2.0*a2*z01;
                             if (n2 >= 1)
                                 nz += n2*z[n1][n2-1];
 
@@ -131,9 +131,9 @@ void NablaInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_pt
                             double NAz = x00 * y00 * nz * over_pf;
 
                             // Electrons have a negative charge
-                            buffer_[ao12]       -= (NAx);
-                            buffer_[ao12+ydisp] -= (NAy);
-                            buffer_[ao12+zdisp] -= (NAz);
+                            buffer_[ao12]       += (NAx);
+                            buffer_[ao12+ydisp] += (NAy);
+                            buffer_[ao12+zdisp] += (NAz);
 
                             ao12++;
                         }
