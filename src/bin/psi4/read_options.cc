@@ -63,6 +63,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAPT_MEM_SAFETY",0.9);
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
+    /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
+    options.add_double("DENOMINATOR_DELTA", 1.0E-6);
   }
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");

@@ -547,5 +547,72 @@ public:
 
 };
 
+class SAPTDenominator {
+
+protected:
+    // Denominator (w in rows, ar in column) (monomer A)
+    shared_ptr<Matrix> denominatorA_;
+    // Denominator (w in rows, bs in column) (monomer B)
+    shared_ptr<Matrix> denominatorB_;
+    
+    // Pointer to active occupied orbital eigenvalues (monomer A)
+    shared_ptr<Vector> eps_occA_;
+    // Pointer to active virtual orbital eigenvalues (monomer A)
+    shared_ptr<Vector> eps_virA_;
+    // Pointer to active occupied orbital eigenvalues (monomer B)
+    shared_ptr<Vector> eps_occB_;
+    // Pointer to active virtual orbital eigenvalues (monomer B)
+    shared_ptr<Vector> eps_virB_;
+    // Number of vectors required to obtain given accuracy
+    int nvector_;
+    // Maximum error norm allowed in denominator
+    double delta_;
+    // Crap all over the output file?
+    bool debug_;
+
+    virtual void decompose() = 0;
+    void check_denom(shared_ptr<Vector>, shared_ptr<Vector>, 
+      shared_ptr<Matrix>);
+public:
+    SAPTDenominator(shared_ptr<Vector>, shared_ptr<Vector>, 
+      shared_ptr<Vector>, shared_ptr<Vector>, double, bool);
+    virtual ~SAPTDenominator();
+
+    double delta() const { return delta_; }
+    int nvector() const { return nvector_; }
+    virtual void debug();
+    shared_ptr<Matrix> denominatorA() const { return denominatorA_; }
+    shared_ptr<Matrix> denominatorB() const { return denominatorB_; }
+
+};
+
+class SAPTLaplaceDenominator : public SAPTDenominator {
+
+protected:
+    // Fully split denominator (w in rows, a in columns) (monomer A)
+    shared_ptr<Matrix> denominator_occA_;
+    // Fully split denominator (w in rows, r in columns) (monomer A)
+    shared_ptr<Matrix> denominator_virA_;
+    // Fully split denominator (w in rows, b in columns) (monomer B)
+    shared_ptr<Matrix> denominator_occB_;
+    // Fully split denominator (w in rows, s in columns) (monomer B)
+    shared_ptr<Matrix> denominator_virB_;
+
+    void decompose();
+    void check_split(shared_ptr<Vector>, shared_ptr<Vector>, 
+      shared_ptr<Matrix>, shared_ptr<Matrix>);
+public:
+    SAPTLaplaceDenominator(shared_ptr<Vector>, shared_ptr<Vector>, 
+      shared_ptr<Vector>, shared_ptr<Vector>, double, bool);
+    ~SAPTLaplaceDenominator();
+
+    void debug();
+    shared_ptr<Matrix> denominator_occA() const { return denominator_occA_; }
+    shared_ptr<Matrix> denominator_virA() const { return denominator_virA_; }
+    shared_ptr<Matrix> denominator_occB() const { return denominator_occB_; }
+    shared_ptr<Matrix> denominator_virB() const { return denominator_virB_; }
+
+};
+
 }
 #endif
