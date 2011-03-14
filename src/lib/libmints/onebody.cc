@@ -225,27 +225,54 @@ void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
     int i_offset=0;
     double *location;
 
-    for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+    if (likely(bs1_ == bs1_)) {
+        for (int i=0; i<ns1; ++i) {
+            int ni = bs1_->shell(i)->nfunction();
+            int j_offset=0;
+            for (int j=0; j<=i; ++j) {
+                int nj = bs2_->shell(j)->nfunction();
 
-            // Compute the shell (automatically transforms to pure am in needed)
-            compute_shell(i, j);
+                // Compute the shell (automatically transforms to pure am in needed)
+                compute_shell(i, j);
 
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int p=0; p<ni; ++p) {
-                for (int q=0; q<nj; ++q) {
-                    result->add(0.0, i_offset+p, j_offset+q, *location);
-                    location++;
+                // For each integral that we got put in its contribution
+                location = buffer_;
+                for (int p=0; p<ni; ++p) {
+                    for (int q=0; q<nj; ++q) {
+                        result->add(0, i_offset+p, j_offset+q, *location);
+                        result->add(0, j_offset+q, i_offset+p, *location);
+                        location++;
+                    }
                 }
-            }
 
-            j_offset += nj;
+                j_offset += nj;
+            }
+            i_offset += ni;
         }
-        i_offset += ni;
+    }
+    else {
+        for (int i=0; i<ns1; ++i) {
+            int ni = bs1_->shell(i)->nfunction();
+            int j_offset=0;
+            for (int j=0; j<ns2; ++j) {
+                int nj = bs2_->shell(j)->nfunction();
+
+                // Compute the shell (automatically transforms to pure am in needed)
+                compute_shell(i, j);
+
+                // For each integral that we got put in its contribution
+                location = buffer_;
+                for (int p=0; p<ni; ++p) {
+                    for (int q=0; q<nj; ++q) {
+                        result->add(0, i_offset+p, j_offset+q, *location);
+                        location++;
+                    }
+                }
+
+                j_offset += nj;
+            }
+            i_offset += ni;
+        }
     }
 }
 
