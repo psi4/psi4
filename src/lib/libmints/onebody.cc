@@ -1,7 +1,8 @@
 #include <stdexcept>
+#include <exception.h>
 
 #include "mints.h"
-#include <exception.h>
+#include <compiler.h>
 
 using namespace psi;
 

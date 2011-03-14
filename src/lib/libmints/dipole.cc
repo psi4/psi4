@@ -111,9 +111,9 @@ void DipoleInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_p
                             double x00 = x[l1][l2],   y00 = y[m1][m2],   z00 = z[n1][n2];
                             double x10 = x[l1+1][l2], y10 = y[m1+1][m2], z10 = z[n1+1][n2];
 
-                            double DAx = (x10 + x00*(A[0]-C[0])) * y00 * z00 * over_pf;
-                            double DAy = x00 * (y10 + y00*(A[1]-C[1])) * z00 * over_pf;
-                            double DAz = x00 * y00 * (z10 + z00*(A[2]-C[2])) * over_pf;
+                            double DAx = (x10 + x00*(A[0]-origin_[0])) * y00 * z00 * over_pf;
+                            double DAy = x00 * (y10 + y00*(A[1]-origin_[1])) * z00 * over_pf;
+                            double DAz = x00 * y00 * (z10 + z00*(A[2]-origin_[2])) * over_pf;
 
                             // Electrons have a negative charge
                             buffer_[ao12]       -= (DAx);
