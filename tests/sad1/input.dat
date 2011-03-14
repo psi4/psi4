@@ -1,4 +1,3 @@
-#! Test of the superposition of atomic densities (SAD) guess, using a highly distorted water
 #! geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only
 #! specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The
 #! test is first performed in C2v symmetry, and then in C1.
@@ -61,3 +60,4 @@ compare_values(Eref, E_c1, 9, "C1  SAD Iteration N Energy")                     
 compare_values(Eref, E,    9, "C2v SAD Iteration N Energy")                                    #TEST
 
 clean()
+
