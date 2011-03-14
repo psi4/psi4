@@ -40,6 +40,7 @@ double SAPT0::compute_energy()
   ind20r();
   exch_ind20A_B();
   exch_ind20B_A();
+  disp20();
 
   print_results();
 

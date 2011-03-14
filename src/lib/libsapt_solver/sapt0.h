@@ -49,6 +49,7 @@ private:
   void ind20rB_A();
 
 protected:
+  shared_ptr<SAPTLaplaceDenominator> denom_;
 
   int maxiter_;
   double e_conv_;
@@ -79,6 +80,7 @@ public:
   void ind20r();
   void exch_ind20A_B();
   void exch_ind20B_A();
+  void disp20();
 
 };
 
