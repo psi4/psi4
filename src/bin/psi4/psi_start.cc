@@ -67,6 +67,7 @@ int psi_start(int argc, char *argv[])
     { "verbose", 0, NULL, 'v' },
     { "version", 0, NULL, 'V' },
     { "check",   0, NULL, 'c' },
+    { "nthread", 0, NULL, 'n' },
     { "wipe",    0, NULL, 'w' },
     { "output",  1, NULL, 'o' },
     { "prefix",  1, NULL, 'p' },
@@ -83,6 +84,9 @@ int psi_start(int argc, char *argv[])
       case 'a': // -a or --append
       append = true;
       break;
+
+      case 'n': // -n or --nthread
+      Process::environment.set_n_threads(atoi(optarg));
 
       case 'h': // -h or --help
       print_usage();
