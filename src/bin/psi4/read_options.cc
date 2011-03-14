@@ -34,9 +34,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if (name == "SAPT"|| options.read_globals()) {
     /*- The level of theory for SAPT -*/
-    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3");
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0");
     /*- The ubiquitous debug flag -*/
     options.add_bool("DEBUG",false);
+    /*- The ubiquitous print flag -*/
+    options.add_int("PRINT",1);
     /*- E converge value -*/
     options.add_int("E_CONVERGE",10);
     /*- D converge value -*/
