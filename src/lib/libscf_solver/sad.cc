@@ -497,6 +497,8 @@ void HF::compute_SAD_guess()
 
     timer_off("Atomic UHF");
 
+    fflush(outfile);
+
     timer_on("AO2USO SAD");
     //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
     shared_ptr<Matrix> DAO = shared_ptr<Matrix>(new Matrix("D_SAD (AO)", nso_, nso_));
@@ -536,13 +538,13 @@ void HF::compute_SAD_guess()
         int nao = nso_;
 
         for (int h = 0; h < Da_->nirrep(); h++) {
-            double** DAOp = DAO->pointer(0);
-            double** D = Da_->pointer(h);
-            double** U = AO2USO->pointer(h);
-
             int nuso = dim[h];
 
             if (nuso == 0 || nao == 0) continue;
+
+            double** DAOp = DAO->pointer(0);
+            double** D = Da_->pointer(h);
+            double** U = AO2USO->pointer(h);
 
             double** Temp = block_matrix(nuso, nao);
 
@@ -568,6 +570,8 @@ void HF::compute_SAD_guess()
     Ca_->zero();
     for (int h = 0; h < Da_->nirrep(); h++) {
         int norbs = dim[h];
+        //fprintf(outfile,"  Irrep %2d: nsopi = %d\n", h, norbs);
+	//fflush(outfile);
         sad_nocc_[h] = 0;
 
         if (norbs == 0) continue;
@@ -639,32 +643,38 @@ void HF::compute_SAD_guess()
         if (sad_print_ > 5) {
             fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
             print_mat(D,norbs,sad_nocc_[h],outfile);
-        }
-
-        //Unpivot
-        double** C = block_matrix(norbs,sad_nocc_[h]);
-        for (int m = 0; m < norbs; m++) {
-            C_DCOPY(sad_nocc_[h],&D[m][0],1,&C[P[m]][0],1);
-        }
+            fflush(outfile);
+	}
 
         if (sad_print_>1)
             fprintf(outfile,"  Irrep %2d: %5d of %5d possible partial occupation vectors selected for C.\n",h, sad_nocc_[h],norbs);
+    	fflush(outfile);
+	
+	if (sad_nocc_[h] > 0) {
 
-        //Set C
-        for (int m = 0; m<norbs; m++)
-            for (int i = 0; i<sad_nocc_[h]; i++)
-                Ca_->set(h,m,i,C[m][i]);
-
-        if (sad_print_ > 5) {
-            fprintf(outfile,"\n  C Guess (Cholesky):\n");
-            print_mat(C,norbs,sad_nocc_[h],outfile);
-        }
-        //C_->print(outfile);
+            //Unpivot
+            double** C = block_matrix(norbs,sad_nocc_[h]);
+            for (int m = 0; m < norbs; m++) {
+                C_DCOPY(sad_nocc_[h],&D[m][0],1,&C[P[m]][0],1);
+            }
+    
+    
+            //Set C
+            for (int m = 0; m<norbs; m++)
+                for (int i = 0; i<sad_nocc_[h]; i++)
+                    Ca_->set(h,m,i,C[m][i]);
+    
+            if (sad_print_ > 5) {
+                fprintf(outfile,"\n  C Guess (Cholesky):\n");
+                print_mat(C,norbs,sad_nocc_[h],outfile);
+            }
+            //C_->print(outfile);
+            free_block(C);
+    
+	}
 
         free(P);
         free(Temp);
-        free_block(C);
-
     }
 
     int temp_nocc;
@@ -673,6 +683,8 @@ void HF::compute_SAD_guess()
         sad_nocc_[h] = nalphapi_[h];
         nalphapi_[h] = temp_nocc;
     }
+
+    fflush(outfile);
 
     E_ = 0.0; // This is the -1th iteration
     timer_off("SAD Cholesky");
