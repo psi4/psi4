@@ -524,8 +524,8 @@ void SAPTLaplaceDenominator::decompose()
 
     // Pick appropriate quadrature file and read contents
     std::string PSIDATADIR = Process::environment("PSIDATADIR");
-    std::string err_table_filename = PSIDATADIR + "quadratures/1_x/error.bin";
-    std::string R_filename = PSIDATADIR + "quadratures/1_x/R_avail.bin";
+    std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
+    std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
 
     ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);    
     ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);    
@@ -595,13 +595,15 @@ void SAPTLaplaceDenominator::decompose()
     st << "_" << mantissa; 
     st << "E" << exponent;  
  
-    std::string quadfile = PSIDATADIR + "quadratures/1_x/" + st.str().c_str();
+    std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
 
-    fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n"); 
-    fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
-    fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
-    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy); 
-    fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());    
+    if (debug_) {
+        fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n"); 
+        fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
+        fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
+        fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy); 
+        fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());    
+    }
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[nvector_];
