@@ -81,26 +81,24 @@ public:
     ~MintsHelper();
     /// Molecular integrals (just like cints used to do)
     void integrals();
-    /// One electron integrals (just like oeints used to do)
+    /// Standard one electron integrals (just like oeints used to do)
     void one_electron_integrals();
     /// Derivative integrals (not implemented)
     void integral_gradients();
     /// Hessian integrals (not implemented)
     void integral_hessians();
-    /// AO Overlap Integrals
-    boost::shared_ptr<Matrix> ao_overlap();
-    /// AO Kinetic Integrals
-    boost::shared_ptr<Matrix> ao_kinetic();
-    /// AO Potential Integrals
-    boost::shared_ptr<Matrix> ao_potential();
-    /// Vector AO Dipole Integrals
-//    std::vector<boost::shared_ptr<Matrix> > ao_dipole();
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_eri();
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
 
+    /// AO Overlap Integrals
+    boost::shared_ptr<Matrix> ao_overlap();
+    /// AO Kinetic Integrals
+    boost::shared_ptr<Matrix> ao_kinetic();
+    /// AO Potential Integrals
+    boost::shared_ptr<Matrix> ao_potential();
     /// AO Overlap Integrals
     boost::shared_ptr<Matrix> so_overlap();
     /// AO Kinetic Integrals
@@ -109,6 +107,14 @@ public:
     boost::shared_ptr<Matrix> so_potential();
     /// Vector SO Dipole Integrals
     std::vector<boost::shared_ptr<Matrix> > so_dipole();
+    /// Vector SO Nabla Integrals
+    std::vector<boost::shared_ptr<Matrix> > so_nabla();
+    /// Vector SO Angular Momentum Integrals
+    std::vector<boost::shared_ptr<Matrix> > so_angular_momentum();
+    /// Vector SO Quadrupole Integrals
+    std::vector<boost::shared_ptr<Matrix> > so_quadrupole();
+    /// Vector SO Traceless Quadrupole Integrals
+    std::vector<boost::shared_ptr<Matrix> > so_traceless_quadrupole();
 };
 
 }

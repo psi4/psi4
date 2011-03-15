@@ -327,5 +327,51 @@ std::vector<shared_ptr<Matrix> > MintsHelper::so_dipole()
 
     return dipole;
 }
+std::vector<shared_ptr<Matrix> > MintsHelper::so_quadrupole()
+{
+    // The matrix factory can create matrices of the correct dimensions...
+    MultipoleSymmetry msymm(2, molecule_, integral_, factory_);
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> quadrupole = msymm.create_matrices("SO Quadrupole");
+
+    shared_ptr<OneBodySOInt> ints(integral_->so_quadrupole());
+    ints->compute(quadrupole);
+
+    return quadrupole;
+}
+std::vector<shared_ptr<Matrix> > MintsHelper::so_traceless_quadrupole()
+{
+    // The matrix factory can create matrices of the correct dimensions...
+    MultipoleSymmetry msymm(2, molecule_, integral_, factory_);
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> quadrupole = msymm.create_matrices("SO Traceless Quadrupole");
+
+    shared_ptr<OneBodySOInt> ints(integral_->so_traceless_quadrupole());
+    ints->compute(quadrupole);
+
+    return quadrupole;
+}
+std::vector<shared_ptr<Matrix> > MintsHelper::so_nabla()
+{
+    // The matrix factory can create matrices of the correct dimensions...
+    MultipoleSymmetry msymm(1, molecule_, integral_, factory_);
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> nabla = msymm.create_matrices("SO Nabla");
+
+    // Jet, here's a stub
+
+    return nabla;
+}
+std::vector<shared_ptr<Matrix> > MintsHelper::so_angular_momentum()
+{
+    // The matrix factory can create matrices of the correct dimensions...
+    MultipoleSymmetry msymm(1, molecule_, integral_, factory_);
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> angmom = msymm.create_matrices("SO Angular Momentum");
+
+    // Jet, here's a stub
+
+    return angmom;
+}
 
 }
