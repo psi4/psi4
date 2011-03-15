@@ -16,11 +16,12 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <lib3index/3index.h>
-#include <psi4-dec.h>
 
 #define INDEX(i,j) ((i>=j) ? (ioff[i] + j) : (ioff[j] + i))
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi { namespace sapt {
 
@@ -30,18 +31,18 @@ private:
   void initialize();
 
 protected:
-  shared_ptr<BasisSet> ribasis_;
-  shared_ptr<BasisSet> zero_;
+  boost::shared_ptr<BasisSet> ribasis_;
+  boost::shared_ptr<BasisSet> zero_;
 
   int nso_;
   int nmo_;
   int ndf_;
-  int noccA_;  
-  int foccA_;  
-  int aoccA_;  
-  int noccB_;  
-  int foccB_;  
-  int aoccB_;  
+  int noccA_;
+  int foccA_;
+  int aoccA_;
+  int noccB_;
+  int foccB_;
+  int aoccB_;
   int nvirA_;
   int nvirB_;
   int NA_;
@@ -52,9 +53,9 @@ protected:
 
   long int mem_;
 
-  double enuc_; 
-  double eHF_; 
-  double schwarz_; 
+  double enuc_;
+  double eHF_;
+  double schwarz_;
 
   double *evalsA_;
   double *evalsB_;
@@ -62,9 +63,9 @@ protected:
   double *diagBB_;
 
   double **CA_;
-  double **CB_; 
+  double **CB_;
   double **CHFA_;
-  double **CHFB_; 
+  double **CHFB_;
   double **sAB_;
   double **vABB_;
   double **vBAA_;
@@ -74,7 +75,7 @@ protected:
   void zero_disk(int, const char *, int, int);
 
 public:
-  SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+  SAPT(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
   virtual ~SAPT();
 
   virtual double compute_energy()=0;

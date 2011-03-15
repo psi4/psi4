@@ -16,7 +16,7 @@
 
 namespace psi{
 
-typedef std::vector<shared_ptr< MOSpace> > SpaceVec;
+typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
 
   /**
      The IntegralTransform class transforms one- and two-electron integrals
@@ -90,7 +90,7 @@ class IntegralTransform{
          * @param initialize         Whether to initialize during construction or not.  Useful if some
          *                           options need to be tweaked before initialization.
          */
-        IntegralTransform(shared_ptr<Chkpt> chkpt,
+        IntegralTransform(boost::shared_ptr<Chkpt> chkpt,
                           SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
@@ -103,12 +103,12 @@ class IntegralTransform{
         void presort_so_tei();
         void generate_oei();
         void update_orbitals();
-        void transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2, const char *label);
-        void transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
-                           const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4);
-        void transform_tei_first_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2);
-        void transform_tei_second_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
-                                       const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4);
+        void transform_oei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2, const char *label);
+        void transform_tei(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
+                           const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
+        void transform_tei_first_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2);
+        void transform_tei_second_half(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2,
+                                       const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
         void backtransform_density();
         void backtransform_tpdm_restricted();
         void print_dpd_lookup();
@@ -117,7 +117,7 @@ class IntegralTransform{
         int DPD_ID(char *str);
         int DPD_ID(const char *str);
         int DPD_ID(const std::string &str);
-        int DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2, SpinType spin, bool pack);
+        int DPD_ID(const boost::shared_ptr<MOSpace> s1, const boost::shared_ptr<MOSpace> s2, SpinType spin, bool pack);
 
         /*===== The set/get accessor functions =====*/
 
@@ -152,9 +152,9 @@ class IntegralTransform{
         int get_dpd_id() const {return _myDPDNum;}
 
         /// Get the psio object being used by this object
-        shared_ptr<PSIO> get_psio() const {return _psio;}
+        boost::shared_ptr<PSIO> get_psio() const {return _psio;}
         /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
-        void set_psio(shared_ptr<PSIO> psio) {_psio = psio;}
+        void set_psio(boost::shared_ptr<PSIO> psio) {_psio = psio;}
 
     protected:
         void semicanonicalize();
@@ -175,9 +175,9 @@ class IntegralTransform{
                        int pq, int rs, int pq_sym, int rs_sym);
 
         // Pointer to the PSIO object to use for file I/O
-        shared_ptr<PSIO>  _psio;
+        boost::shared_ptr<PSIO>  _psio;
         // Pointer to the checkpoint object to use
-        shared_ptr<Chkpt> _chkpt;
+        boost::shared_ptr<Chkpt> _chkpt;
         // The type of transformation
         TransformationType _transformationType;
         // The unique MO spaces provided to this object's constructor

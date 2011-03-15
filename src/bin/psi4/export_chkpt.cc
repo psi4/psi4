@@ -2,6 +2,7 @@
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 
+using namespace boost;
 using namespace boost::python;
 using namespace psi;
 

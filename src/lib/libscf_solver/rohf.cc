@@ -21,6 +21,7 @@
 
 using namespace std;
 using namespace psi;
+using namespace boost;
 
 namespace psi { namespace scf {
 

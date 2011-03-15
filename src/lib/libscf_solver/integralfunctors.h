@@ -2,11 +2,15 @@
 #define INTEGRALFUNCTORS_H
 
 #include "hf.h"
-#include "libiwl/iwl.hpp"
-#include "libmints/mints.h"
+#include <libiwl/iwl.hpp>
+#include <libmints/mints.h>
 #include "pseudospectral.h"
 #include "pkintegrals.h"
 #include "df.h"
+
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 // We're assuming that for (PQ|RS) P>=Q, R>=S and PQ>=RS
 
@@ -38,15 +42,15 @@ namespace psi{ namespace scf{
 class J_K_Functor
 {
     /// The density matrix
-    const shared_ptr<Matrix> D_;
+    const boost::shared_ptr<Matrix> D_;
     /// The occupation matrix
-    const shared_ptr<Matrix> &C_;
-    /// The number of alpha (and beta) electrons 
+    const boost::shared_ptr<Matrix> &C_;
+    /// The number of alpha (and beta) electrons
     const int* N_;
     /// The Coulomb matrix
-    shared_ptr<Matrix> &J_;
+    boost::shared_ptr<Matrix> &J_;
     /// The exchange matrix
-    shared_ptr<Matrix> &K_;
+    boost::shared_ptr<Matrix> &K_;
     /// The communicator
     std::string comm;
     /// The scf type
@@ -74,12 +78,12 @@ public:
     }
 
 
-    J_K_Functor(shared_ptr<Matrix> J, shared_ptr<Matrix> K, const shared_ptr<Matrix> D,
-        const shared_ptr<Matrix> C, const int* N)
+    J_K_Functor(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K, const boost::shared_ptr<Matrix> D,
+        const boost::shared_ptr<Matrix> C, const int* N)
         : J_(J), K_(K), D_(D), C_(C), N_(N)
     { }
 
-    void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
+    void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
         dfhf->set_restricted(true);
         dfhf->set_jk(false);
         dfhf->set_J(J_);
@@ -89,11 +93,11 @@ public:
         pshf->set_Ka(K_);
     }
 
-    void operator()(shared_ptr<PKIntegrals> pk_integrals) {
+    void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
         pk_integrals->setup(J_, K_, D_, D_);
     }
 
-    void operator()(shared_ptr<DFHF> dfhf) {
+    void operator()(boost::shared_ptr<DFHF> dfhf) {
         dfhf->set_restricted(true);
         dfhf->set_jk(true);
         dfhf->set_J(J_);
@@ -281,11 +285,11 @@ public:
 class J_Functor
 {
     /// The alpha density matrix
-    const shared_ptr<Matrix> Da_;
+    const boost::shared_ptr<Matrix> Da_;
     /// The beta density matrix
-    const shared_ptr<Matrix> Db_;
+    const boost::shared_ptr<Matrix> Db_;
     /// The Coulomb matrix
-    shared_ptr<Matrix> &J_;
+    boost::shared_ptr<Matrix> &J_;
     /// Whether this is restricted or not
     bool restricted_;
     /// The communicator
@@ -312,23 +316,23 @@ public:
     }
 
 
-    J_Functor(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da)
+    J_Functor(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da)
         : J_(J), Da_(Da), Db_(Da)
     {
         restricted_ = true;
     }
 
-    J_Functor(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
+    J_Functor(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
         : J_(J), Da_(Da), Db_(Db)
     {
         restricted_ = false;
     }
 
-    void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
+    void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
         // Pseudospectral is exchange only, this does nothing
     }
 
-    void operator()(shared_ptr<DFHF> dfhf) {
+    void operator()(boost::shared_ptr<DFHF> dfhf) {
         dfhf->set_restricted(restricted_);
         dfhf->set_jk(false);
         dfhf->set_J(J_);
@@ -336,7 +340,7 @@ public:
         dfhf->set_Db(Db_);
     }
 
-    void operator()(shared_ptr<PKIntegrals> pk_integrals) {
+    void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
         pk_integrals->setup(J_, Da_, Db_);
     }
 
@@ -390,7 +394,7 @@ public:
             /* (rs|pq) */
             if(psym == qsym){
                 J_->add(psym, prel, qrel, (Da_->get(rsym, rrel, srel) + Db_->get(rsym, rrel, srel)) * value);
-            } 
+            }
             /* (rs|qp) */
 
         }else if(pabs==qabs && rabs!=sabs){
@@ -422,23 +426,23 @@ public:
 class J_Ka_Kb_Functor
 {
     /// The alpha density matrix
-    const shared_ptr<Matrix> Da_;
+    const boost::shared_ptr<Matrix> Da_;
     /// The beta density matrix
-    const shared_ptr<Matrix> Db_;
+    const boost::shared_ptr<Matrix> Db_;
     /// The alpha occupation matrix
-    const shared_ptr<Matrix> Ca_;
+    const boost::shared_ptr<Matrix> Ca_;
     /// The beta occupation matrix
-    const shared_ptr<Matrix> Cb_;
-    /// The number of alpha electrons 
+    const boost::shared_ptr<Matrix> Cb_;
+    /// The number of alpha electrons
     const int* Na_;
-    /// The number of beta electrons 
+    /// The number of beta electrons
     const int* Nb_;
     /// The alpha Coulomb matrix
-    shared_ptr<Matrix> &J_;
+    boost::shared_ptr<Matrix> &J_;
     /// The alpha exchange matrix
-    shared_ptr<Matrix> &Ka_;
+    boost::shared_ptr<Matrix> &Ka_;
     /// The beta exchange matrix
-    shared_ptr<Matrix> &Kb_;
+    boost::shared_ptr<Matrix> &Kb_;
     /// The communicator
     std::string comm;
     /// The scf type
@@ -471,12 +475,12 @@ public:
     }
 
 
-    J_Ka_Kb_Functor(shared_ptr<Matrix> J, shared_ptr<Matrix> Ka,
-               shared_ptr<Matrix> Kb, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db, const shared_ptr<Matrix> Ca, const shared_ptr<Matrix> Cb, const int* Na, const int* Nb)
+    J_Ka_Kb_Functor(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Ka,
+               boost::shared_ptr<Matrix> Kb, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db, const boost::shared_ptr<Matrix> Ca, const boost::shared_ptr<Matrix> Cb, const int* Na, const int* Nb)
         : J_(J), Ka_(Ka), Kb_(Kb), Da_(Da), Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na), Nb_(Nb)
     { }
 
-    void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> pshf) {
+    void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
         pshf->set_restricted(false);
         pshf->set_Da(Da_);
         pshf->set_Db(Db_);
@@ -489,7 +493,7 @@ public:
         dfhf->set_Db(Db_);
     }
 
-    void operator()(shared_ptr<DFHF> dfhf) {
+    void operator()(boost::shared_ptr<DFHF> dfhf) {
         dfhf->set_restricted(false);
         dfhf->set_jk(true);
         dfhf->set_J(J_);
@@ -503,7 +507,7 @@ public:
         dfhf->set_Kb(Kb_);
     }
 
-    void operator()(shared_ptr<PKIntegrals> pk_integrals) {
+    void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) {
         pk_integrals->setup(J_, Ka_, Kb_, Da_, Db_);
     }
 
@@ -757,7 +761,7 @@ void HF::process_tei(JKFunctor & functor)
         functor(df_);
         if(functor.k_required())
             df_->form_JK_DF();
-        else 
+        else
             df_->form_J_DF();
     }else if(scf_type_ == "PK"){
         std::string comm_ = Process::environment("COMMUNICATOR");

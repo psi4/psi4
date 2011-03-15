@@ -1,7 +1,10 @@
 #include "dcft.h"
-#include "libdpd/dpd.h"
-#include "libiwl/iwl.hpp"
+#include <libdpd/dpd.h>
+#include <libiwl/iwl.hpp>
+#include <libtrans/integraltransform.h>
 #include "defines.h"
+
+using namespace boost;
 
 namespace psi{ namespace dcft{
 
@@ -133,7 +136,7 @@ DCFTSolver::transform_integrals()
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[v,v]"), ID("[v,v]"), "MO Ints <vv|vv>");
         dpd_buf4_close(&I);
     }
-    
+
     /*
      * Antisymmetrize the <OV|OV> and <ov|ov> integrals
      */
@@ -189,7 +192,7 @@ DCFTSolver::transform_integrals()
     // N.B. These are not neccesarily the eigenvalues, rather they are the diagonal
     // elements of F0 in the current basis; F is diagonal, not F0.
     build_denominators();
-    
+
     _psio->close(PSIF_LIBTRANS_DPD, 1);
 }
 
@@ -202,7 +205,7 @@ DCFTSolver::build_denominators()
 {
     dpdbuf4 D;
     dpdfile2 F;
-    
+
     double *aF0 = new double[_nTriSo];
     double *bF0 = new double[_nTriSo];
 

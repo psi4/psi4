@@ -19,6 +19,7 @@
 
 using namespace std;
 using namespace psi;
+using namespace boost;
 
 namespace psi { namespace scf {
 
@@ -38,7 +39,7 @@ UHF::~UHF()
 
 void UHF::common_init()
 {
-    
+
     Drms_ = 0.0;
 
     Fa_     = SharedMatrix(factory_->create_matrix("F alpha"));

@@ -1,5 +1,7 @@
 #include "dcft.h"
 #include <libdpd/dpd.h>
+#include <libtrans/integraltransform.h>
+#include <libdiis/diismanager.h>
 #include "defines.h"
 
 namespace psi{ namespace dcft{
@@ -262,11 +264,11 @@ DCFTSolver::compute()
     fprintf(outfile, "\t*=================================================================================*\n");
     fprintf(outfile, "\n\t*DCFT SCF Energy            = %20.15f\n", _scfEnergy);
     fprintf(outfile, "\t*DCFT Total Energy          = %20.15f\n", _newTotalEnergy);
-    
+
     if(!_options.get_bool("RELAX_ORBITALS")){
         fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
     }
-    
+
     print_opdm();
 
 

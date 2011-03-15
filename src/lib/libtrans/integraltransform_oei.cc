@@ -6,6 +6,7 @@
 #include "libdpd/dpd.gbl"
 
 using namespace psi;
+using namespace boost;
 
 /**
  * Transforms the one-electron integrals.  This function is currently limited to

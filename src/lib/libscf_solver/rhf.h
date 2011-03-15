@@ -15,7 +15,9 @@
 
 #define CUSTOM_PK_CODE 0
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi {
 
@@ -80,8 +82,8 @@ protected:
     void save_density_and_energy();
 
 public:
-    RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    RHF(Options& options, shared_ptr<PSIO> psio);
+    RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    RHF(Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~RHF();
 
 

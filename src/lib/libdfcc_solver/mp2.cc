@@ -13,7 +13,7 @@
 #include <mkl.h>
 #endif
 
-using namespace std;
+using namespace boost;
 using namespace psi;
 
 namespace psi { namespace dfcc {
@@ -52,14 +52,14 @@ double MP2::compute_energy()
   } else if (mp2_algorithm_ == "PS3") {
     compute_PS3_MP2();
   }
-  
-  energies_["Opposite-Spin Energy"] = 0.5*energies_["MP2J Energy"]; 
-  energies_["Same-Spin Energy"] = 0.5*energies_["MP2J Energy"] +  energies_["MP2K Energy"]; 
+
+  energies_["Opposite-Spin Energy"] = 0.5*energies_["MP2J Energy"];
+  energies_["Same-Spin Energy"] = 0.5*energies_["MP2J Energy"] +  energies_["MP2K Energy"];
   energies_["Correlation Energy"] = energies_["MP2J Energy"] + energies_["MP2K Energy"];
   energies_["Total Energy"] = energies_["Reference Energy"] + energies_["Correlation Energy"];
 
-  energies_["SCS Opposite-Spin Energy"] = 0.5*oss_*energies_["MP2J Energy"]; 
-  energies_["SCS Same-Spin Energy"] = 0.5*sss_*energies_["MP2J Energy"] +  sss_*energies_["MP2K Energy"]; 
+  energies_["SCS Opposite-Spin Energy"] = 0.5*oss_*energies_["MP2J Energy"];
+  energies_["SCS Same-Spin Energy"] = 0.5*sss_*energies_["MP2J Energy"] +  sss_*energies_["MP2K Energy"];
   energies_["SCS Correlation Energy"] = energies_["SCS Opposite-Spin Energy"] + energies_["SCS Same-Spin Energy"];
   energies_["SCS Total Energy"] = energies_["Reference Energy"] + energies_["SCS Correlation Energy"];
 
@@ -72,7 +72,7 @@ void MP2::compute_DF_MP2()
     df->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
     int nocc = df->nocc();
     int nvir = df->nvir();
-    int naux = df->naux();   
+    int naux = df->naux();
 
     int nthread = 1;
     #ifdef _OPENMP
@@ -87,16 +87,16 @@ void MP2::compute_DF_MP2()
 
     double*** Iab = new double**[nthread];
     for (int thread = 0; thread < nthread; thread++)
-        Iab[thread] = block_matrix(nvir, nvir); 
+        Iab[thread] = block_matrix(nvir, nvir);
 
-    shared_ptr<TensorChunk> chunk1;    
-    shared_ptr<TensorChunk> chunk2;    
+    shared_ptr<TensorChunk> chunk1;
+    shared_ptr<TensorChunk> chunk2;
 
     unsigned long int scratch = nthread*nvir*(ULI)nvir;
     if (nocc*nvir*(ULI)naux < doubles_ - scratch) {
         // 1 block
         chunk1 = df->get_ov_iterator(doubles_ - scratch);
-        chunk2 = chunk1;  
+        chunk2 = chunk1;
     } else {
         // 2 blocks
         chunk1 = df->get_ov_iterator((doubles_ - scratch) / 2L);
@@ -118,7 +118,7 @@ void MP2::compute_DF_MP2()
         Qia1->print();
         int istart = chunk1->block_start() / nvir;
         int isize  = chunk1->block_size()  / nvir;
-    
+
         // First do B = B blocks (diagonal)
         // TODO unroll and thread
         for (int ilocal = 0; ilocal < isize; ilocal++) {
@@ -127,7 +127,7 @@ void MP2::compute_DF_MP2()
             for (int jlocal = 0; jlocal <= ilocal; jlocal++) {
                 int i = ilocal + istart;
                 int j = jlocal + istart;
-    
+
                 C_DGEMM('N','T', nvir, nvir, naux, 1.0, &Qia1p[ilocal*nvir][0], naux,
                     &Qia1p[jlocal*nvir][0], naux, 0.0, Iab[rank][0], nvir);
 
@@ -135,21 +135,21 @@ void MP2::compute_DF_MP2()
                     for (int b = 0; b < nvir; b++) {
                         double iajb = Iab[rank][a][b];
                         double ibja = Iab[rank][b][a];
-                        double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b] 
-                                             -evals_aoccp_[i] - evals_aoccp_[j]);                  
+                        double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b]
+                                             -evals_aoccp_[i] - evals_aoccp_[j]);
                         double perm_scale = ((i == j) ? 1.0 : 2.0);
-        
-                        E_MP2J += -2.0 * perm_scale*iajb*iajb*denom;  
-                        E_MP2K +=  1.0 * perm_scale*iajb*ibja*denom;  
+
+                        E_MP2J += -2.0 * perm_scale*iajb*iajb*denom;
+                        E_MP2K +=  1.0 * perm_scale*iajb*ibja*denom;
                     }
-                }               
+                }
             }
         }
- 
+
         // Now do B != C blocks (lower triangle)
         // TODO unroll and thread
         for (int block2 = 0; block2 < block1; block2++) {
-            chunk2->read_block(block2); 
+            chunk2->read_block(block2);
             int jstart = chunk2->block_start() / nvir;
             int jsize  = chunk2->block_size()  / nvir;
 
@@ -159,7 +159,7 @@ void MP2::compute_DF_MP2()
                 for (int jlocal = 0; jlocal < jsize; jlocal++) {
                     int i = ilocal + istart;
                     int j = jlocal + jstart;
-    
+
                     C_DGEMM('N','T', nvir, nvir, naux, 1.0, &Qia1p[ilocal*nvir][0], naux,
                         &Qia2p[jlocal*nvir][0], naux, 0.0, Iab[rank][0], nvir);
 
@@ -167,13 +167,13 @@ void MP2::compute_DF_MP2()
                         for (int b = 0; b < nvir; b++) {
                             double iajb = Iab[rank][a][b];
                             double ibja = Iab[rank][b][a];
-                            double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b] 
-                                                 -evals_aoccp_[i] - evals_aoccp_[j]);                  
-            
-                            E_MP2J += -4.0 * iajb*iajb*denom;  
-                            E_MP2K +=  2.0 * iajb*ibja*denom;  
+                            double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b]
+                                                 -evals_aoccp_[i] - evals_aoccp_[j]);
+
+                            E_MP2J += -4.0 * iajb*iajb*denom;
+                            E_MP2K +=  2.0 * iajb*ibja*denom;
                         }
-                    }               
+                    }
                 }
             }
         }
@@ -197,7 +197,7 @@ void MP2::compute_OS_MP2()
     df->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
     int nocc = df->nocc();
     int nvir = df->nvir();
-    int naux = df->naux();   
+    int naux = df->naux();
 
     shared_ptr<LaplaceDenominator> denom(new LaplaceDenominator(evals_aocc_, evals_avir_, denominator_delta_));
     shared_ptr<Matrix> Tau = denom->denominator();
@@ -208,7 +208,7 @@ void MP2::compute_OS_MP2()
     shared_ptr<Matrix> Z(new Matrix("Z_QQ'^w", naux, naux));
 
     shared_ptr<TensorChunk> chunk = df->get_ov_iterator((doubles_ - scratch)/2);
-    int max_rows = chunk->max_rows(); 
+    int max_rows = chunk->max_rows();
     int nblock = chunk->nblock();
     shared_ptr<Matrix> Qia = chunk->chunk();
     shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w", max_rows, naux));
@@ -216,7 +216,7 @@ void MP2::compute_OS_MP2()
     double** Qiap = Qia->pointer();
     double** Qiawp = Qiaw->pointer();
     double** Zp = Z->pointer();
-    double** Taup = Tau->pointer(); 
+    double** Taup = Tau->pointer();
 
     // ==> Energy Evaluation <== //
     double E_MP2J = 0.0;
@@ -225,24 +225,24 @@ void MP2::compute_OS_MP2()
         chunk->read_block(block);
         int start = chunk->block_start();
         int size = chunk->block_size();
-        
+
         for (int w = 0; w < nvector; w++) {
             memcpy(static_cast<void*>(Qiawp[0]), static_cast<void*>(Qiap[0]), size*(ULI)naux*sizeof(double));
-           
+
             for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Qiawp[ia], 1);  
+                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Qiawp[ia], 1);
 
             C_DGEMM('T','N', naux, naux, size, 1.0, Qiawp[0], naux, Qiawp[0], naux, 0.0, Zp[0], naux);
-            
-            E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Zp[0], 1, Zp[0], 1); 
+
+            E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Zp[0], 1, Zp[0], 1);
         }
-    }  
- 
+    }
+
     energies_["MP2J Energy"] = E_MP2J;
 }
 void MP2::compute_PS_MP2()
 {
-    throw FeatureNotImplemented("libdfcc_solver", "psi::dfcc::MP2::compute_PS_MP2", __FILE__, __LINE__); 
+    throw FeatureNotImplemented("libdfcc_solver", "psi::dfcc::MP2::compute_PS_MP2", __FILE__, __LINE__);
 }
 void MP2::compute_PS2_MP2()
 {
@@ -258,14 +258,14 @@ void MP2::compute_PS2_MP2()
     shared_ptr<Matrix> Tau_i = denom->denominator_occ();
     shared_ptr<Matrix> Tau_a = denom->denominator_vir();
     int nvector = denom->nvector();
-     
-    double** Taup = Tau->pointer(); 
-    double** Tau_ip = Tau_i->pointer(); 
-    double** Tau_ap = Tau_a->pointer(); 
+
+    double** Taup = Tau->pointer();
+    double** Tau_ip = Tau_i->pointer();
+    double** Tau_ap = Tau_a->pointer();
 
     ULI scratch = 2L * (naux*nocc + naux*nvir) + 2L * (naux*naux);
     shared_ptr<TensorChunk> chunk = ps->get_ov_iterator((doubles_ - scratch)/2);
-    int max_rows = chunk->max_rows(); 
+    int max_rows = chunk->max_rows();
     int nblock = chunk->nblock();
 
     shared_ptr<Matrix> Q = ps->form_Q(C_aocc_);
@@ -277,7 +277,7 @@ void MP2::compute_PS2_MP2()
     shared_ptr<Matrix> Xw(new Matrix("X_a^Pw (Scaled)", nvir, naux));
 
     // Copy of A_jb^P for Tau scaling
-    shared_ptr<Matrix> Aw(new Matrix("A_jb^Pw (Scaled)", max_rows, naux)); 
+    shared_ptr<Matrix> Aw(new Matrix("A_jb^Pw (Scaled)", max_rows, naux));
 
     double** Qp = Q->pointer();
     double** Qwp = Qw->pointer();
@@ -301,21 +301,21 @@ void MP2::compute_PS2_MP2()
         int start = chunk->block_start();
         int size = chunk->block_size();
         int istart = start / nvir;
-        int isize = size / nvir;       
- 
+        int isize = size / nvir;
+
         for (int w = 0; w < nvector; w++) {
 
             memcpy(static_cast<void*>(Awp[0]), static_cast<void*>(Ap[0]), size*(ULI)naux*sizeof(double));
             for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);  
+                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);
 
             memcpy(static_cast<void*>(Xwp[0]), static_cast<void*>(Xp[0]), nvir*(ULI)naux*sizeof(double));
             for (int a = 0; a < nvir; a++)
-                C_DSCAL(naux, sqrt(Tau_ap[w][a]), Xwp[a], 1);  
+                C_DSCAL(naux, sqrt(Tau_ap[w][a]), Xwp[a], 1);
 
             memcpy(static_cast<void*>(Qwp[0]), static_cast<void*>(Qp[0]), nocc*(ULI)naux*sizeof(double));
             for (int i = 0; i < nocc; i++)
-                C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);  
+                C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);
 
             C_DGEMM('T','N',naux,naux,nocc,1.0,Qwp[0],naux,Qwp[0],naux,0.0,Lp[0],naux);
             L->print();
@@ -325,14 +325,14 @@ void MP2::compute_PS2_MP2()
                 Z->print();
 
                 for (ULI QP = 0; QP < naux*(ULI)naux; QP++)
-                    Zp[0][QP] *= Zp[0][QP];    
+                    Zp[0][QP] *= Zp[0][QP];
                 Z->print();
-                
+
                 E_MP2K += C_DDOT(naux*(ULI)naux, Zp[0], 1, Lp[0], 1);
-            } 
+            }
         }
-    }  
- 
+    }
+
     energies_["MP2K Energy"] = E_MP2K;
 }
 void MP2::compute_PS3_MP2()
@@ -349,14 +349,14 @@ void MP2::compute_PS3_MP2()
     shared_ptr<Matrix> Tau_i = denom->denominator_occ();
     shared_ptr<Matrix> Tau_a = denom->denominator_vir();
     int nvector = denom->nvector();
-     
-    double** Taup = Tau->pointer(); 
-    double** Tau_ip = Tau_i->pointer(); 
-    double** Tau_ap = Tau_a->pointer(); 
+
+    double** Taup = Tau->pointer();
+    double** Tau_ip = Tau_i->pointer();
+    double** Tau_ap = Tau_a->pointer();
 
     ULI scratch = 2L * (naux*nocc + naux*nvir) + 3L * (naux*naux);
     shared_ptr<TensorChunk> chunk = ps->get_ov_iterator((doubles_ - scratch)/2);
-    int max_rows = chunk->max_rows(); 
+    int max_rows = chunk->max_rows();
     int nblock = chunk->nblock();
 
     shared_ptr<Matrix> Q = ps->form_Q(C_aocc_);
@@ -368,7 +368,7 @@ void MP2::compute_PS3_MP2()
     shared_ptr<Matrix> Xw(new Matrix("X_a^Pw (Scaled)", nvir, naux));
 
     // Copy of A_jb^P for Tau scaling
-    shared_ptr<Matrix> Aw(new Matrix("A_jb^Pw (Scaled)", max_rows, naux)); 
+    shared_ptr<Matrix> Aw(new Matrix("A_jb^Pw (Scaled)", max_rows, naux));
 
     double** Qp = Q->pointer();
     double** Qwp = Qw->pointer();
@@ -395,31 +395,31 @@ void MP2::compute_PS3_MP2()
         int start = chunk->block_start();
         int size = chunk->block_size();
         int istart = start / nvir;
-        int isize = size / nvir;       
- 
+        int isize = size / nvir;
+
         for (int w = 0; w < nvector; w++) {
 
             memcpy(static_cast<void*>(Awp[0]), static_cast<void*>(Ap[0]), size*(ULI)naux*sizeof(double));
             for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);  
+                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);
 
             memcpy(static_cast<void*>(Xwp[0]), static_cast<void*>(Xp[0]), nvir*(ULI)naux*sizeof(double));
             for (int a = 0; a < nvir; a++)
-                C_DSCAL(naux, sqrt(Tau_ap[w][a]), Xwp[a], 1);  
+                C_DSCAL(naux, sqrt(Tau_ap[w][a]), Xwp[a], 1);
 
             memcpy(static_cast<void*>(Qwp[0]), static_cast<void*>(Qp[0]), nocc*(ULI)naux*sizeof(double));
             for (int i = 0; i < nocc; i++)
-                C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);  
+                C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);
 
             // MP2J
             C_DGEMM('T','N',naux,naux,nocc,1.0,Qwp[0],naux,Qwp[0],naux,0.0,Lp[0],naux);
             C_DGEMM('T','N',naux,naux,nvir,1.0,Xwp[0],naux,Xwp[0],naux,0.0,Gp[0],naux);
-           
+
             for (ULI PQ = 0L; PQ < naux*(ULI)naux; PQ++)
                 Gp[0][PQ] *= Lp[0][PQ];
 
             C_DGEMM('T','N', naux, naux, size, 1.0, Awp[0], naux, Awp[0], naux, 0.0, Zp[0], naux);
-            
+
             E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Zp[0], 1, Gp[0], 1);
 
             // MP2K
@@ -427,13 +427,13 @@ void MP2::compute_PS3_MP2()
                 C_DGEMM('T','N',naux,naux,nvir,1.0,Xwp[0],naux,Awp[j*nvir],naux,0.0,Zp[0],naux);
 
                 for (ULI QP = 0; QP < naux*(ULI)naux; QP++)
-                    Zp[0][QP] *= Zp[0][QP];    
-                
+                    Zp[0][QP] *= Zp[0][QP];
+
                 E_MP2K += C_DDOT(naux*(ULI)naux, Zp[0], 1, Lp[0], 1);
-            } 
+            }
         }
-    }  
- 
+    }
+
     energies_["MP2J Energy"] = E_MP2J;
     energies_["MP2K Energy"] = E_MP2K;
 }
@@ -467,8 +467,8 @@ void MP2::print_energies()
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\t ==================> SCS-MP2 Energies <================== \n");
     fprintf(outfile, "\t----------------------------------------------------------\n");
-    fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_); 
-    fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);   
+    fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Same-Spin Scale",      sss_);
+    fprintf(outfile, "\t %-25s = %24.16f [-]\n", "SCS Opposite-Spin Scale",  oss_);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Same-Spin Energy",     energies_["SCS Same-Spin Energy"]);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Opposite-Spin Energy", energies_["SCS Opposite-Spin Energy"]);
     fprintf(outfile, "\t %-25s = %24.16f [H]\n", "SCS Correlation Energy",   energies_["SCS Correlation Energy"]);

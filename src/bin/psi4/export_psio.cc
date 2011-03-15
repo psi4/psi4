@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <libpsio/psio.hpp>
 
+using namespace boost;
 using namespace boost::python;
 using namespace psi;
 

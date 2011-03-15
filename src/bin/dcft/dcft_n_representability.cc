@@ -1,7 +1,8 @@
 #include "dcft.h"
 #include "defines.h"
-#include "libpsio/psio.hpp"
-#include "psifiles.h"
+#include <libpsio/psio.hpp>
+#include <psifiles.h>
+#include <libtrans/integraltransform.h>
 
 namespace psi{ namespace dcft{
 

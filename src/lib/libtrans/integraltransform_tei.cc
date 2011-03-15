@@ -13,6 +13,7 @@
 #define EXTERN
 #include <libdpd/dpd.gbl>
 
+using namespace boost;
 using namespace psi;
 
 /**

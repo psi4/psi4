@@ -4,9 +4,13 @@
 #include "sblock_vector.h"
 #include "sblock_matrix.h"
 #include <libmoinfo/libmoinfo.h>
-#include <libmints/mints.h>
+#include <libmints/wavefunction.h>
 
 #define STORE_TEI 0
+
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi{ namespace mcscf{
 
@@ -15,7 +19,7 @@ enum ReferenceType {rhf, rohf, uhf, tcscf};
 class SCF  : public Wavefunction
 {
 public:
-  explicit SCF(Options& options_, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt_);
+  explicit SCF(Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt_);
   ~SCF();
   double compute_energy();
 

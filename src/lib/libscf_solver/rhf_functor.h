@@ -1,12 +1,16 @@
 #ifndef __rhf_functor_h__
 #define __rhf_functor_h__
 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
 namespace psi {
 namespace scf {
 
 class SOERI {
-    const shared_ptr<Matrix> &D_;
-    shared_ptr<Matrix> &G_;
+    const boost::shared_ptr<Matrix> &D_;
+    boost::shared_ptr<Matrix> &G_;
 
     inline int integral_type(int i, int j, int k, int l)
     {
@@ -45,7 +49,7 @@ class SOERI {
     }
 
 public:
-    SOERI(const shared_ptr<Matrix>& D, shared_ptr<Matrix>& G)
+    SOERI(const boost::shared_ptr<Matrix>& D, boost::shared_ptr<Matrix>& G)
         : D_(D), G_(G), counter(0)
     { }
 

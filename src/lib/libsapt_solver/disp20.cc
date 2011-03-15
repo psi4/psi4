@@ -1,5 +1,7 @@
 #include "sapt0.h"
 
+using namespace boost;
+
 namespace psi { namespace sapt {
 
 void SAPT0::disp20()

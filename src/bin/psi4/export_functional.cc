@@ -1,6 +1,7 @@
 #include <boost/python.hpp>
 #include <libfunctional/superfunctional.h>
 
+using namespace boost;
 using namespace boost::python;
 using namespace psi::functional;
 

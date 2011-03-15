@@ -6,7 +6,7 @@
 #include <libpsio/psio.h>
 #include <libmints/mints.h>
 
-using namespace std;
+using namespace boost;
 using namespace psi;
 
 namespace psi { namespace dfcc {
@@ -30,7 +30,7 @@ double CCD::compute_energy()
   time_t start = time(NULL);
   time_t stop;
 
-  if (options_.get_bool("DIIS")) 
+  if (options_.get_bool("DIIS"))
     diis_ = shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,naocc_*naocc_*
       navir_*navir_,options_.get_int("MAX_DIIS_VECS"),psio_));
 
@@ -68,7 +68,7 @@ double CCD::compute_energy()
     iajb_ibja(tIAJB_);
 
     term_6(); // t_ab^ij <- - t_ac^ik [2(kc|ld)-(kd|lc)] t_bd^lj
-    term_7(); // t_ab^ij <- - t_ac^ki (jb|kc) 
+    term_7(); // t_ab^ij <- - t_ac^ki (jb|kc)
               // t_ab^ij <- t_ac^ki (kc|ld) t_bd^lj
 
     iajb_ibja(t2IAJB_);
@@ -100,7 +100,7 @@ double CCD::compute_energy()
       e_old-e_new,rms,stop-start);
     fflush(outfile);
 
-    if (options_.get_int("MIN_DIIS_VECS") <= iter && 
+    if (options_.get_int("MIN_DIIS_VECS") <= iter &&
         options_.get_bool("DIIS")) {
       diis_->get_new_vector(tIAJB_,xIAJB_);
       fprintf(outfile,"  DIIS\n");
@@ -191,7 +191,7 @@ void CCD::apply_denom()
         - evals_avirp_[b];
     }}
   }}
-} 
+}
 
 void CCD::symmetrize()
 {
@@ -368,7 +368,7 @@ void CCD::term_11()
       int cd = INDEX(a,b);
       int ijab = i*naocc_*navir_*navir_ + j*navir_*navir_ + a*navir_ + b;
       int jiab = j*naocc_*navir_*navir_ + i*navir_*navir_ + a*navir_ + b;
-      
+
       if (a != b) {
         tpIJAB[ij][cd] = 0.5*tIAJB_[ijab];
         tpIJAB[ij][cd] += 0.5*tIAJB_[jiab];
@@ -407,7 +407,7 @@ void CCD::term_11()
 
   for(int a_read=0; a_read<loopsize; a_read++) {
     if (a_read < loopsize-1)
-      aio->read(DFCC_INT_FILE,"VVVV+ Integrals",(char *) 
+      aio->read(DFCC_INT_FILE,"VVVV+ Integrals",(char *)
         &(vVVVVp[(a_read+1)%2][0][0]),blocksize*virtri*sizeof(double),
         next_VVVVp,&next_VVVVp);
 
@@ -443,7 +443,7 @@ void CCD::term_11()
 
   for(int a_read=0; a_read<loopsize; a_read++) {
     if (a_read < loopsize-1)
-      aio->read(DFCC_INT_FILE,"VVVV- Integrals",(char *) 
+      aio->read(DFCC_INT_FILE,"VVVV- Integrals",(char *)
         &(vVVVVm[(a_read+1)%2][0][0]),
         blocksize*svirtri*sizeof(double),next_VVVVm,&next_VVVVm);
 

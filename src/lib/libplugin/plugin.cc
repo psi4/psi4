@@ -6,6 +6,7 @@
 #include <libyeti/env.h>
 #include "plugin.h"
 
+using namespace boost;
 using namespace psi;
 
 extern "C" void init_plugin(const shared_ptr<Communicator>& comm, const Process::Environment& env,

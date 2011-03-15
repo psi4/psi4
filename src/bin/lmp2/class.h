@@ -7,13 +7,18 @@
 
 #include <string>
 
-#include <libchkpt/chkpt.hpp>
-#include <libmints/basisset.h>
-//#include <libpsio/psio.hpp>
-#include "psi4-dec.h"
+namespace boost {
+template<class T> class shared_ptr;
+}
 
+namespace psi{
 
-namespace psi{ namespace lmp2{
+class BasisSet;
+class Options;
+class PSIO;
+class Chkpt;
+
+namespace lmp2{
 
 class LMP2 {
 
@@ -47,8 +52,8 @@ class LMP2 {
 //    double *fR;
     double **Rt_full;		/* Full AO to PO matrix */
     double ***W;
-    shared_ptr<PSIO> psio;
-    shared_ptr<Chkpt> chkpt;
+    boost::shared_ptr<PSIO> psio;
+    boost::shared_ptr<Chkpt> chkpt;
     int ref;
     char *wfn;
     char *jobtype;
@@ -107,10 +112,10 @@ class LMP2 {
     ~LMP2();
 
     /* Constructor for the main process (myid == 0) */
-    LMP2(shared_ptr<PSIO> psio_o, shared_ptr<Chkpt> chkpt_o);
+    LMP2(boost::shared_ptr<PSIO> psio_o, boost::shared_ptr<Chkpt> chkpt_o);
 
     /* Constructor for all other processes */
-    LMP2(shared_ptr<PSIO> psio_o);
+    LMP2(boost::shared_ptr<PSIO> psio_o);
 
     // Creates a chkpt object and reads data from it
     void get_moinfo();
@@ -206,7 +211,7 @@ class LMP2 {
     double* get_evals();
     double** get_MOC();
     double** get_geom();
-   
+
     // These member function compute which proc owns each ij pair
     // and determines the absolute ij value of the local proc
     int *get_ij_local();
@@ -214,10 +219,10 @@ class LMP2 {
     int *get_mn_owner(int n);
     int get_mn_pairs(int n);
     int get_num_unique_shells();
-    int **get_MN_shell(shared_ptr<BasisSet> basisset);
+    int **get_MN_shell(boost::shared_ptr<BasisSet> basisset);
     int **get_ij_map();
     int *original_ij_map();
-    
+
     // These member functions get the pairdomain and pairdomain lengths
     int **compute_pairdomain(int **ij_map_);
     int *compute_pairdomlen(int **ij_map_);

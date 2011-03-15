@@ -7,6 +7,7 @@
 #include <sstream>
 #include "mospace.h"
 
+using namespace boost;
 using namespace psi;
 
 /**

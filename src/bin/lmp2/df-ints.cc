@@ -22,6 +22,8 @@
 
 #define TIME_DF_LMP2 1
 
+using namespace boost;
+
 namespace psi {
 
 namespace lmp2 {

@@ -7,7 +7,7 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 
-using namespace std;
+using namespace boost;
 using namespace psi;
 
 namespace psi { namespace dfcc {
@@ -109,7 +109,7 @@ double MP3::energy(double *tIAJB)
 }
 
 void MP3::apply_denom(double *tIAJB)
-{ 
+{
   for (int i=0,ia=0; i<naocc_; i++) {
   for (int a=0; a<navir_; a++,ia++) {
     for (int j=0,jb=0; j<naocc_; j++) {
@@ -338,9 +338,9 @@ PSMP3::PSMP3(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   psio_->open(DFCC_INT_FILE,PSIO_OPEN_NEW);
   df_integrals();
   mo_integrals();
-  dfints_ = shared_ptr<DFTensor>(new DFTensor(psio_, basisset_, ribasis_, 
+  dfints_ = shared_ptr<DFTensor>(new DFTensor(psio_, basisset_, ribasis_,
     true));
-  dfints_->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, 
+  dfints_->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_,
     false, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
 }
 
@@ -387,32 +387,32 @@ double PSMP3::compute_energy()
 
   term_1(); // t_ab^ij <- 2 t_ac^ik (jb|kc)
   term_2(); // t_ab^ij <- - t_ac^ik (jk|bc)
-  
+
   iajb_ibja(tIAJB_);
-  
+
   term_3(); // t_ab^ij <- - t_ac^ki (jb|kc)
-  
+
   iajb_ibja(t2IAJB_);
-  
+
   term_4(); // t_ab^ij <- - t_bc^ki (jk|ac)
-  
+
   iajb_ibja(tIAJB_);
   iajb_ibja(t2IAJB_);
-  
+
   iajb_ijab(tIAJB_);
   iajb_ijab(t2IAJB_);
-  
+
   term_5(); // t_ab^ij <- t_ab^kl (ik|jl)
   term_6(); // t_ab^ij <- t_cd^ij (ac|bd)
-  
+
   ijab_iajb(tIAJB_);
   ijab_iajb(t2IAJB_);
-  
+
   double emp3;
   symmetrize();
   apply_denom(t2IAJB_);
   emp3 = energy(t2IAJB_);
-  
+
   fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
   fprintf(outfile,"  MP3 Correlation Energy      %18.10lf\n",emp3);
   fprintf(outfile,"  Total DF-MP3 Energy         %18.10lf\n\n",Eref_+emp2+emp3);
@@ -450,7 +450,7 @@ void PSMP3::apply_denom(double *tIAJB)
 }
 
 void PSMP3::symmetrize()
-{ 
+{
   for (int ia=0; ia<naocc_*navir_; ia++) {
     for (int jb=0; jb<ia; jb++) {
       long int iajb = ia*naocc_*(long int) navir_ + (long int) jb;
@@ -464,18 +464,18 @@ void PSMP3::symmetrize()
 void PSMP3::term_1()
 {
   int naux = dfints_->naux();
- 
+
   if ((long int) 2*naocc_*navir_*naux > (mem_)) {
     throw PsiException("Not enough memory", __FILE__,
       __LINE__);
   }
 
-  shared_ptr<TensorChunk> BpIA;    
+  shared_ptr<TensorChunk> BpIA;
 
   BpIA = dfints_->get_ov_iterator(mem_-(long int) naocc_*navir_*naux);
 
   shared_ptr<Matrix> BpIA_chunk = BpIA->chunk();
-  
+
   double **B_p_OV = BpIA_chunk->pointer();
   double *T_p_OV = init_array(naocc_*navir_*naux);
 
@@ -495,7 +495,7 @@ void PSMP3::term_1()
     B_p_OV[0],naux,0.0,t2IAJB_,naocc_*navir_);
 
   free(T_p_OV);
-} 
+}
 
 void PSMP3::term_2()
 {
@@ -534,13 +534,13 @@ void PSMP3::term_3()
   }
 
   BpIA->read_block(0);
-  
+
   C_DGEMM('N','N',naocc_*navir_,naux,naocc_*navir_,1.0,
     tIAJB_,naocc_*navir_,B_p_OV[0],naux,0.0,S_p_OV,naux);
-  
+
   C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,naux,-2.0,S_p_OV,naux,
     B_p_OV[0],naux,1.0,t2IAJB_,naocc_*navir_);
-  
+
   free(S_p_OV);
 }
 

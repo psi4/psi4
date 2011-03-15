@@ -23,14 +23,15 @@
 using namespace std;
 using namespace psi;
 using namespace psi::functional;
+using namespace boost;
 
 namespace psi { namespace scf {
 
-KS::KS(Options & options, shared_ptr<PSIO> psio) : 
+KS::KS(Options & options, shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
     common_init();
-} 
+}
 KS::~KS()
 {
 }
@@ -42,13 +43,13 @@ void KS::common_init()
     // Load in the basis set
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
-   
+
     // Build the integrator
     int block_size = options_.get_int("DFT_BLOCK_SIZE");
     integrator_ = Integrator::build_integrator(molecule_, psio_, options_);
     integrator_->buildGrid(block_size);
-    
-    //Build the superfunctional 
+
+    //Build the superfunctional
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
 
     // Temporary print, to make sure we're in the right spot
@@ -69,18 +70,18 @@ void KS::common_init()
     }
 }
 RKS::RKS(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) :
-    RHF(options, psio, chkpt), KS(options,psio) 
+    RHF(options, psio, chkpt), KS(options,psio)
 {
     common_init();
 }
 RKS::RKS(Options & options, shared_ptr<PSIO> psio) :
-    RHF(options, psio), KS(options,psio) 
+    RHF(options, psio), KS(options,psio)
 {
     common_init();
 }
 void RKS::common_init()
 {
-    V_ = factory_->create_shared_matrix("Va (Kohn-Sham Potential)");    
+    V_ = factory_->create_shared_matrix("Va (Kohn-Sham Potential)");
 }
 RKS::~RKS()
 {
@@ -91,8 +92,8 @@ void RKS::form_V()
     V_->zero();
 
     // Some temporary buffers
-    shared_ptr<Matrix> Vt1 = factory_->create_shared_matrix("V Temp 1"); 
-    shared_ptr<Matrix> Vt2 = factory_->create_shared_matrix("V Temp 2"); 
+    shared_ptr<Matrix> Vt1 = factory_->create_shared_matrix("V Temp 1");
+    shared_ptr<Matrix> Vt2 = factory_->create_shared_matrix("V Temp 2");
     double** V_temp1 = Vt1->pointer();
     double** V_temp2 = Vt2->pointer();
 
@@ -110,7 +111,7 @@ void RKS::form_V()
     double *z;
     double *w;
 
-    // Grab the properties references 
+    // Grab the properties references
     double *rho_a       = properties_->getRhoA();
     double *gamma_aa    = properties_->getGammaAA();
     double *tau_a       = properties_->getTauA();
@@ -130,11 +131,11 @@ void RKS::form_V()
     double **bas_z = properties_->getGradientsZ();
     // (These will not be used unless needed)
 
-    // Grab the functional references 
+    // Grab the functional references
     double *zk          = functional_->getFunctionalValue();
     double *v_rho_a     = functional_->getV_RhoA();
     double *v_gamma_aa  = functional_->getV_GammaAA();
-    double *v_tau_a     = functional_->getV_TauA(); 
+    double *v_tau_a     = functional_->getV_TauA();
     // (These will not be used unless needed)
 
     // GGA? Meta?
@@ -146,22 +147,22 @@ void RKS::form_V()
     double contribution;
 
     nbf = KS::basisset_->nbf();
-   
+
     // Traverse grid blocks
     for (int N = 0; N < nblocks; N++) {
 
-        // Compute integration points 
+        // Compute integration points
         shared_ptr<GridBlock> block = integrator_->getBlock(N);
         x = block->getX();
         y = block->getY();
         z = block->getZ();
         w = block->getWeights();
-        ntrue = block->getTruePoints(); 
-        
+        ntrue = block->getTruePoints();
+
         // Compute properties and basis points
         properties_->computeRKSProperties(block, D_, Ca_, doccpi_);
-        nsigf = properties_->nSignificantFunctions();       
- 
+        nsigf = properties_->nSignificantFunctions();
+
         // Compute functional values and partials
         functional_->computeRKSFunctional(properties_);
 
@@ -181,7 +182,7 @@ void RKS::form_V()
             }
         }
 
-        // Compute functional energy 
+        // Compute functional energy
         // And monopole/dipole checks
         for (index = 0; index < ntrue; index++) {
             //printf(" Block %d, Point %d, rho %14.10E\n", N, index, rho_a[index]);
@@ -191,13 +192,13 @@ void RKS::form_V()
             dipoleCheckX += w[index]*x[index]*rho_a[index];
             dipoleCheckY += w[index]*y[index]*rho_a[index];
             dipoleCheckZ += w[index]*z[index]*rho_a[index];
-        } 
+        }
 
         // LSDA contribution to potential:
         // V_mn += v_rho_a * phi_m * phi_n
         for (index = 0; index < ntrue; index++) {
             memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-            C_DSCAL(nsigf, v_rho_a[index], &scratch[index][0], 1); 
+            C_DSCAL(nsigf, v_rho_a[index], &scratch[index][0], 1);
         }
         C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
             &bas[0][0], nbf, 0.0, &V_temp1[0][0], nbf);
@@ -208,7 +209,7 @@ void RKS::form_V()
             // Gradient x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, v_gamma_aa[index]*rho_x[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, v_gamma_aa[index]*rho_x[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_x[0][0], nbf, 0.0, &V_temp2[0][0], nbf);
@@ -216,7 +217,7 @@ void RKS::form_V()
             // Gradient y
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, v_gamma_aa[index]*rho_y[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, v_gamma_aa[index]*rho_y[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_y[0][0], nbf, 1.0, &V_temp2[0][0], nbf);
@@ -224,7 +225,7 @@ void RKS::form_V()
             // Gradient z
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, v_gamma_aa[index]*rho_z[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, v_gamma_aa[index]*rho_z[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp2[0][0], nbf);
@@ -242,7 +243,7 @@ void RKS::form_V()
             // phi_x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_x[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_x[0][0], nbf, 1.0, &V_temp1[0][0], nbf);
@@ -250,7 +251,7 @@ void RKS::form_V()
             // phi_y
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_y[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_y[0][0], nbf, 1.0, &V_temp1[0][0], nbf);
@@ -258,7 +259,7 @@ void RKS::form_V()
             // phi_z
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_z[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp1[0][0], nbf);
@@ -270,23 +271,23 @@ void RKS::form_V()
                 V_->add(0, rel2abs[m], rel2abs[n], V_temp1[m][n]);
                 if (m!=n)
                     V_->add(0, rel2abs[n], rel2abs[m], V_temp1[n][m]);
-            } 
+            }
 
     } // End traverse over grid blocks
 
     // Now count beta electrons
-    densityCheck *= 2.0;  
-    dipoleCheckX *= 2.0; 
-    dipoleCheckY *= 2.0; 
-    dipoleCheckZ *= 2.0; 
-      
+    densityCheck *= 2.0;
+    dipoleCheckX *= 2.0;
+    dipoleCheckY *= 2.0;
+    dipoleCheckZ *= 2.0;
+
     quad_values_["E_xc"] = functional_E;
     quad_values_["<rho>"] = densityCheck;
     quad_values_["<rho*x>"] = dipoleCheckX;
     quad_values_["<rho*y>"] = dipoleCheckX;
     quad_values_["<rho*z>"] = dipoleCheckX;
- 
-    if (print_ > 2) { 
+
+    if (print_ > 2) {
         fprintf(outfile,"\n\n  @RKS Numerical Density: %14.10f\n",densityCheck);
         fprintf(outfile,"  @RKS Numerical Dipole: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckX,dipoleCheckY,dipoleCheckZ);
     }
@@ -295,7 +296,7 @@ void RKS::form_G()
 {
     form_V();
     if (!functional_->isHybrid()) {
-        // This will build J (stored in G) 
+        // This will build J (stored in G)
         J_Functor j_builder(G_, D_);
         process_tei<J_Functor>(j_builder);
         J_->copy(G_);
@@ -308,7 +309,7 @@ void RKS::form_G()
         J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
         process_tei<J_K_Functor>(jk_builder);
         J_->copy(G_);
-        
+
         double alpha = functional_->getExactExchange();
         G_->scale(2.0);
         K_->scale(alpha);
@@ -322,7 +323,7 @@ double RKS::compute_E()
     // E_DFT = 2.0 D*H + 2.0 D*J - \alpha D*K + E_xc
     double one_electron_E = 2.0*D_->vector_dot(H_);
     double coulomb_E = 2.0*D_->vector_dot(J_);
-    
+
     double exchange_E = 0.0;
     if (functional_->isHybrid()) {
         exchange_E = -functional_->getExactExchange()*D_->vector_dot(K_);
@@ -332,7 +333,7 @@ double RKS::compute_E()
     Etotal += one_electron_E;
     Etotal += coulomb_E;
     Etotal += exchange_E;
-    Etotal += quad_values_["E_xc"]; 
+    Etotal += quad_values_["E_xc"];
     if (functional_->isDashD()) {
         double dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
         Etotal += dashD_E;
@@ -341,19 +342,19 @@ double RKS::compute_E()
     return Etotal;
 }
 UKS::UKS(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) :
-    UHF(options, psio, chkpt), KS(options,psio) 
+    UHF(options, psio, chkpt), KS(options,psio)
 {
     common_init();
 }
 UKS::UKS(Options & options, shared_ptr<PSIO> psio) :
-    UHF(options, psio), KS(options,psio) 
+    UHF(options, psio), KS(options,psio)
 {
     common_init();
 }
 void UKS::common_init()
 {
-    Va_ = factory_->create_shared_matrix("Va (Kohn-Sham Potential)");    
-    Vb_ = factory_->create_shared_matrix("Vb (Kohn-Sham Potential)");    
+    Va_ = factory_->create_shared_matrix("Va (Kohn-Sham Potential)");
+    Vb_ = factory_->create_shared_matrix("Vb (Kohn-Sham Potential)");
 }
 UKS::~UKS()
 {
@@ -365,12 +366,12 @@ void UKS::form_V()
     Vb_->zero();
 
     // Some temporary buffers
-    shared_ptr<Matrix> Vt1a = factory_->create_shared_matrix("V Temp 1 (Alpha)"); 
-    shared_ptr<Matrix> Vt2a = factory_->create_shared_matrix("V Temp 2 (Alpha)"); 
+    shared_ptr<Matrix> Vt1a = factory_->create_shared_matrix("V Temp 1 (Alpha)");
+    shared_ptr<Matrix> Vt2a = factory_->create_shared_matrix("V Temp 2 (Alpha)");
     double** V_temp1a = Vt1a->pointer();
     double** V_temp2a = Vt2a->pointer();
-    shared_ptr<Matrix> Vt1b = factory_->create_shared_matrix("V Temp 1 (Beta)"); 
-    shared_ptr<Matrix> Vt2b = factory_->create_shared_matrix("V Temp 2 (Beta)"); 
+    shared_ptr<Matrix> Vt1b = factory_->create_shared_matrix("V Temp 1 (Beta)");
+    shared_ptr<Matrix> Vt2b = factory_->create_shared_matrix("V Temp 2 (Beta)");
     double** V_temp1b = Vt1b->pointer();
     double** V_temp2b = Vt2b->pointer();
 
@@ -392,7 +393,7 @@ void UKS::form_V()
     double *z;
     double *w;
 
-    // Grab the properties references 
+    // Grab the properties references
     double *rho_a       = properties_->getRhoA();
     double *rho_b       = properties_->getRhoB();
     double *gamma_aa    = properties_->getGammaAA();
@@ -420,15 +421,15 @@ void UKS::form_V()
     double **bas_z = properties_->getGradientsZ();
     // (These will not be used unless needed)
 
-    // Grab the functional references 
+    // Grab the functional references
     double *zk          = functional_->getFunctionalValue();
     double *v_rho_a     = functional_->getV_RhoA();
     double *v_rho_b     = functional_->getV_RhoB();
     double *v_gamma_aa  = functional_->getV_GammaAA();
     double *v_gamma_ab  = functional_->getV_GammaAB();
     double *v_gamma_bb  = functional_->getV_GammaBB();
-    double *v_tau_a     = functional_->getV_TauA(); 
-    double *v_tau_b     = functional_->getV_TauB(); 
+    double *v_tau_a     = functional_->getV_TauA();
+    double *v_tau_b     = functional_->getV_TauB();
     // (These will not be used unless needed)
 
     // GGA? Meta?
@@ -440,22 +441,22 @@ void UKS::form_V()
     double contribution;
 
     nbf = KS::basisset_->nbf();
-   
+
     // Traverse grid blocks
     for (int N = 0; N < nblocks; N++) {
 
-        // Compute integration points 
+        // Compute integration points
         shared_ptr<GridBlock> block = integrator_->getBlock(N);
         x = block->getX();
         y = block->getY();
         z = block->getZ();
         w = block->getWeights();
-        ntrue = block->getTruePoints(); 
-        
+        ntrue = block->getTruePoints();
+
         // Compute properties and basis points
         properties_->computeUKSProperties(block, Da_, Db_, Ca_, Cb_, nalphapi_, nalphapi_);
-        nsigf = properties_->nSignificantFunctions();       
- 
+        nsigf = properties_->nSignificantFunctions();
+
         // Compute functional values and partials
         functional_->computeUKSFunctional(properties_);
 
@@ -478,7 +479,7 @@ void UKS::form_V()
             }
         }
 
-        // Compute functional energy 
+        // Compute functional energy
         // And monopole/dipole checks
         for (index = 0; index < ntrue; index++) {
             //printf(" Block %d, Point %d, rho %14.10E\n", N, index, rho_a[index]);
@@ -492,14 +493,14 @@ void UKS::form_V()
             dipoleCheckXB += w[index]*x[index]*rho_b[index];
             dipoleCheckYB += w[index]*y[index]*rho_b[index];
             dipoleCheckZB += w[index]*z[index]*rho_b[index];
-        } 
+        }
 
         // LSDA contribution to potential:
         // Alpha
         // V_mn^a += v_rho_a * phi_m * phi_n
         for (index = 0; index < ntrue; index++) {
             memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-            C_DSCAL(nsigf, v_rho_a[index], &scratch[index][0], 1); 
+            C_DSCAL(nsigf, v_rho_a[index], &scratch[index][0], 1);
         }
         C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
             &bas[0][0], nbf, 0.0, &V_temp1a[0][0], nbf);
@@ -507,19 +508,19 @@ void UKS::form_V()
         // V_mn^b += v_rho_b * phi_m * phi_n
         for (index = 0; index < ntrue; index++) {
             memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-            C_DSCAL(nsigf, v_rho_b[index], &scratch[index][0], 1); 
+            C_DSCAL(nsigf, v_rho_b[index], &scratch[index][0], 1);
         }
         C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
             &bas[0][0], nbf, 0.0, &V_temp1b[0][0], nbf);
 
         // GGA contribution to potential:
-        //V_mn^a += [2 * v_gamma_aa * \nabla rho_a + v_gamma_ab * \nabla rho_b] \dot \nabla (phi_m * phi_n) 
+        //V_mn^a += [2 * v_gamma_aa * \nabla rho_a + v_gamma_ab * \nabla rho_b] \dot \nabla (phi_m * phi_n)
         if (GGA) {
             // Alpha
             // Gradient x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_gamma_aa[index]*rho_ax[index] + v_gamma_ab[index]*rho_bx[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_gamma_aa[index]*rho_ax[index] + v_gamma_ab[index]*rho_bx[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_x[0][0], nbf, 0.0, &V_temp2a[0][0], nbf);
@@ -527,7 +528,7 @@ void UKS::form_V()
             // Gradient y
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_gamma_aa[index]*rho_ay[index] + v_gamma_ab[index]*rho_by[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_gamma_aa[index]*rho_ay[index] + v_gamma_ab[index]*rho_by[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_y[0][0], nbf, 1.0, &V_temp2a[0][0], nbf);
@@ -535,7 +536,7 @@ void UKS::form_V()
             // Gradient z
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_gamma_aa[index]*rho_az[index] + v_gamma_ab[index]*rho_bz[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_gamma_aa[index]*rho_az[index] + v_gamma_ab[index]*rho_bz[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp2a[0][0], nbf);
@@ -549,7 +550,7 @@ void UKS::form_V()
             // Gradient x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_gamma_bb[index]*rho_bx[index] + v_gamma_ab[index]*rho_ax[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_gamma_bb[index]*rho_bx[index] + v_gamma_ab[index]*rho_ax[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_x[0][0], nbf, 0.0, &V_temp2b[0][0], nbf);
@@ -557,7 +558,7 @@ void UKS::form_V()
             // Gradient y
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_gamma_bb[index]*rho_by[index] + v_gamma_ab[index]*rho_ay[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_gamma_bb[index]*rho_by[index] + v_gamma_ab[index]*rho_ay[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_y[0][0], nbf, 1.0, &V_temp2b[0][0], nbf);
@@ -565,7 +566,7 @@ void UKS::form_V()
             // Gradient z
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_gamma_bb[index]*rho_bz[index] + v_gamma_ab[index]*rho_az[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_gamma_bb[index]*rho_bz[index] + v_gamma_ab[index]*rho_az[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp2b[0][0], nbf);
@@ -585,7 +586,7 @@ void UKS::form_V()
             // phi_x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_x[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_x[0][0], nbf, 1.0, &V_temp1a[0][0], nbf);
@@ -593,7 +594,7 @@ void UKS::form_V()
             // phi_y
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_y[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_y[0][0], nbf, 1.0, &V_temp1a[0][0], nbf);
@@ -601,16 +602,16 @@ void UKS::form_V()
             // phi_z
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_z[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_a[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp1a[0][0], nbf);
 
-            // Beta 
+            // Beta
             // phi_x
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_x[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_b[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_b[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_x[0][0], nbf, 1.0, &V_temp1b[0][0], nbf);
@@ -618,7 +619,7 @@ void UKS::form_V()
             // phi_y
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_y[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_b[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_b[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_y[0][0], nbf, 1.0, &V_temp1b[0][0], nbf);
@@ -626,7 +627,7 @@ void UKS::form_V()
             // phi_z
             for (index = 0; index < ntrue; index++) {
                 memcpy((void*) &scratch[index][0], (void*) &bas_z[index][0], nsigf*sizeof(double));
-                C_DSCAL(nsigf, 2.0*v_tau_b[index], &scratch[index][0], 1); 
+                C_DSCAL(nsigf, 2.0*v_tau_b[index], &scratch[index][0], 1);
             }
             C_DGEMM('T','N', nsigf, nsigf, ntrue, 1.0, &scratch[0][0], nbf, \
                 &bas_z[0][0], nbf, 1.0, &V_temp1b[0][0], nbf);
@@ -638,13 +639,13 @@ void UKS::form_V()
                 Va_->add(0, rel2abs[m], rel2abs[n], V_temp1a[m][n]);
                 if (m!=n)
                     Va_->add(0, rel2abs[n], rel2abs[m], V_temp1a[n][m]);
-            } 
+            }
         for (int m = 0; m < nsigf; m++)
             for (int n = 0; n <= m; n++) {
                 Vb_->add(0, rel2abs[m], rel2abs[n], V_temp1b[m][n]);
                 if (m!=n)
                     Vb_->add(0, rel2abs[n], rel2abs[m], V_temp1b[n][m]);
-            } 
+            }
 
     } // End traverse over grid blocks
 
@@ -657,8 +658,8 @@ void UKS::form_V()
     quad_values_["<rho_b*x>"] = dipoleCheckXB;
     quad_values_["<rho_b*y>"] = dipoleCheckYB;
     quad_values_["<rho_b*z>"] = dipoleCheckZB;
-    
-    if (print_ > 2) { 
+
+    if (print_ > 2) {
         fprintf(outfile,"\n\n  @RKS Numerical Alpha Density: %14.10f\n",densityCheckA);
         fprintf(outfile,"  @RKS Numerical Beta Density: %14.10f\n",densityCheckB);
         fprintf(outfile,"  @RKS Numerical Alpha Dipole: <%14.10f,%14.10f,%14.10f>\n",dipoleCheckXA,dipoleCheckYA,dipoleCheckZA);
@@ -669,7 +670,7 @@ void UKS::form_G()
 {
     form_V();
     if (!functional_->isHybrid()) {
-        // This will build J (stored in G) 
+        // This will build J (stored in G)
         J_Functor j_builder(Ga_, Da_);
         process_tei<J_Functor>(j_builder);
         J_->copy(Ga_);
@@ -684,7 +685,7 @@ void UKS::form_G()
         process_tei<J_Ka_Kb_Functor>(jk_builder);
         J_->copy(Ga_);
         Gb_->copy(Ga_);
-        
+
         double alpha = functional_->getExactExchange();
         Ka_->scale(alpha);
         Kb_->scale(alpha);
@@ -714,7 +715,7 @@ double UKS::compute_E()
     one_electron_E += Db_->vector_dot(H_);
     double coulomb_E = Da_->vector_dot(J_);
     coulomb_E += Db_->vector_dot(J_);
-    
+
     double exchange_E = 0.0;
     if (functional_->isHybrid()) {
         exchange_E = -functional_->getExactExchange()*Da_->vector_dot(Ka_);
@@ -725,7 +726,7 @@ double UKS::compute_E()
     Etotal += one_electron_E;
     Etotal += 0.5*coulomb_E;
     Etotal += exchange_E;
-    Etotal += quad_values_["E_xc"]; 
+    Etotal += quad_values_["E_xc"];
     if (functional_->isDashD()) {
         double dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
         Etotal += dashD_E;

@@ -21,10 +21,13 @@
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
+#include <libmints/mints.h>
 
 #include "mcscf.h"
 #include "git.h"
 #include "scf.h"
+
+using namespace boost;
 
 namespace psi{
 MemoryManager* memory_manager = 0;

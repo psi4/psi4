@@ -4,6 +4,8 @@
 #include <libsapt_solver/sapt0.h>
 #include "wrapper.h"
 
+using namespace boost;
+
 namespace psi { namespace sapt {
 
 std::string to_string(const int val);   // In matrix.cpp
@@ -11,8 +13,6 @@ std::string to_string(const int val);   // In matrix.cpp
 PsiReturnType sapt(Options & options)
 {
   tstart();
-
-  Wavefunction::initialize_singletons();
 
   shared_ptr<PSIO> psio(new PSIO);
 

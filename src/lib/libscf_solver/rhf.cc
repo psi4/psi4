@@ -36,9 +36,7 @@
 
 #include "rhf_functor.h"
 
-#define TIME_SCF
-#define _DEBUG
-
+using namespace boost;
 using namespace psi;
 using namespace std;
 

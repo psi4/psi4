@@ -5,7 +5,7 @@
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 
-using namespace std;
+using namespace boost;
 using namespace psi;
 
 namespace psi { namespace dfcc {
@@ -105,9 +105,9 @@ void CC::get_params()
   // We're almost always using Laplace, but, just in case
   denominator_algorithm_ = options_.get_str("DENOMINATOR_ALGORITHM");
   denominator_delta_ = options_.get_double("DENOMINATOR_DELTA");
- 
+
   schwarz_cutoff_ = options_.get_double("SCHWARZ_CUTOFF");
-  fitting_condition_ = options_.get_double("FITTING_CONDITION"); 
+  fitting_condition_ = options_.get_double("FITTING_CONDITION");
   fitting_algorithm_ = options_.get_str("FITTING_TYPE");
 
   doubles_ = memory_ / 8L;
@@ -124,11 +124,11 @@ void CC::get_dealiasbasis()
 {
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   if (options_.get_str("DEALIAS_BASIS_CC") != "NONE") {
-    dealias_ = BasisSet::construct(parser, molecule_, "DEALIAS_BASIS_CC"); 
+    dealias_ = BasisSet::construct(parser, molecule_, "DEALIAS_BASIS_CC");
     ndealias_ = dealias_->nbf();
   } else {
     ndealias_ = 0;
-  } 
+  }
 }
 void CC::get_pseudogrid()
 {
@@ -160,14 +160,14 @@ void CC::df_integrals()
 {
   IntegralFactory rifactory_J(ribasis_, zero_, ribasis_, zero_);
   TwoBodyAOInt* Jint = rifactory_J.eri();
-  
+
   double **J = block_matrix(ndf_,ndf_);
   double **J_mhalf = block_matrix(ndf_,ndf_);
   const double *Jbuffer = Jint->buffer();
-  
+
   for (int MU=0; MU < ribasis_->nshell(); ++MU) {
     int nummu = ribasis_->shell(MU)->nfunction();
-    
+
     for (int NU=0; NU <= MU; ++NU) {
       int numnu = ribasis_->shell(NU)->nfunction();
 
@@ -434,8 +434,8 @@ void CC::iajb_ibja(double *ijkl)
   for (int a=0; a<navir_; a++) {
     for (int j=0; j<naocc_; j++) {
     for (int b=0; b<navir_; b++) {
-      int iajb = i*navir_*naocc_*navir_ + a*naocc_*navir_ + j*navir_ + b; 
-      int ibja = i*navir_*naocc_*navir_ + b*naocc_*navir_ + j*navir_ + a; 
+      int iajb = i*navir_*naocc_*navir_ + a*naocc_*navir_ + j*navir_ + b;
+      int ibja = i*navir_*naocc_*navir_ + b*naocc_*navir_ + j*navir_ + a;
       X[ibja] = ijkl[iajb];
   }}}}
 
@@ -539,20 +539,20 @@ void CC::zero_disk(int file, const char *array, char *zero, int nri, int ijmax)
 
 DFCCDIIS::DFCCDIIS(int diisfile, int length, int maxvec, shared_ptr<PSIO> psio)
   : psio_(psio)
-{   
+{
     diis_file_ = diisfile;
     psio_->open(diis_file_,0);
-    
+
     max_diis_vecs_ = maxvec;
-    
+
     vec_length_ = length;
 
     curr_vec_ = 0;
     num_vecs_ = 0;
-}   
-    
+}
+
 DFCCDIIS::~DFCCDIIS()
-{   
+{
     psio_->close(diis_file_,0);
 }
 
@@ -563,7 +563,7 @@ void DFCCDIIS::store_vectors(double *t_vec, double *err_vec)
     curr_vec_ = (curr_vec_+1)%max_diis_vecs_;
     num_vecs_++;
     if (num_vecs_ > max_diis_vecs_) num_vecs_ = max_diis_vecs_;
-  
+
     psio_->write_entry(diis_file_,diis_vec_label,(char *) &(t_vec[0]),
       vec_length_*(ULI) sizeof(double));
 

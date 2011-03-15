@@ -21,9 +21,11 @@
 
 #include <psi4-dec.h>
 
+using namespace boost;
+
 namespace psi { namespace dfcc {
 
-std::string to_string(const int val); 
+std::string to_string(const int val);
 
 PsiReturnType dfcc(Options & options)
 {
@@ -40,9 +42,9 @@ PsiReturnType dfcc(Options & options)
 
     CCD ccd(options, psio, chkpt);
     ccd.compute_energy();
-    
-    } else if (options.get_str("WAVEFUNCTION") == "MP2") {   
-    
+
+    } else if (options.get_str("WAVEFUNCTION") == "MP2") {
+
     MP2 mp2(options, psio, chkpt);
     mp2.compute_energy();
 
