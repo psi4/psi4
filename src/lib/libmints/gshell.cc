@@ -86,7 +86,8 @@ void GaussianShell::contraction_normalization()
     for (i=0; i<nprimitive_; ++i)
         coef_[i] *= norm;
 
-    if (std::isnan(norm))
+    //if (std::isnan(norm))
+    if (norm != norm) 
         for (i=0; i<nprimitive_; ++i)
             coef_[i] = 1.0;
 }
