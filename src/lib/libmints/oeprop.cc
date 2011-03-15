@@ -317,7 +317,7 @@ void OEProp::compute_dipole()
 }
 void OEProp::compute_quadrupole()
 {
-    fprintf(outfile, " CARTESIAN MULTIPOLE ANALYSIS [a.u.]:\n\n");
+    fprintf(outfile, " CARTESIAN MULTIPOLE ANALYSIS:\n\n");
 
     // Awesome code goes here. 
 
@@ -396,7 +396,7 @@ void OEProp::compute_quadrupole()
 }
 void OEProp::compute_octupole()
 {
-    //throw FeatureNotImplemented("OEProp::compute_octupole", "Octupole expectation value not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("OEProp::compute_octupole", "Octupole expectation value not implemented", __FILE__, __LINE__);    
 
     fprintf(outfile, " OCTUPOLE ANALYSIS [a.u.]:\n\n");
 
@@ -406,7 +406,7 @@ void OEProp::compute_octupole()
 }
 void OEProp::compute_hexadecapole()
 {
-    //throw FeatureNotImplemented("OEProp::compute_hexadecapole", "Hexadecapole expectation value not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("OEProp::compute_hexadecapole", "Hexadecapole expectation value not implemented", __FILE__, __LINE__);    
 
     fprintf(outfile, " HEXADECAPOLE ANALYSIS [a.u.]:\n\n");
 
