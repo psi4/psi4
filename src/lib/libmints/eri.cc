@@ -23,6 +23,7 @@ void ERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, do
         libint.PrimQuartet[nprim].F[i] = F[i] * coef1;
     }
 }
+
 void ErfERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)
 {
     double T = rho*PQ2;
@@ -48,45 +49,6 @@ void ErfERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim,
         libint.PrimQuartet[nprim].F[i] += coef1 * beta_ * (factor2 / factor1) * F[i];
         prod1 *= factor1;
         prod2 *= factor2;
-    }
-}
-inline void calc_f(double *F, int n, double t)
-{
-    int i, m;
-    int m2;
-    double t2;
-    double num;
-    double sum;
-    double term1;
-    static double K = 1.0/M_2_SQRTPI;
-    double et;
-
-    if (t>20.0){
-        t2 = 2*t;
-        et = exp(-t);
-        t = sqrt(t);
-        F[0] = K*erf(t)/t;
-        for(m=0; m<=n-1; m++){
-            F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
-        }
-    }
-    else {
-        et = exp(-t);
-        t2 = 2*t;
-        m2 = 2*n;
-        num = df[m2];
-        i=0;
-        sum = 1.0/(m2+1);
-        do{
-            i++;
-            num = num*t2;
-            term1 = num/df[m2+2*i+2];
-            sum += term1;
-        } while (fabs(term1) > EPS && i < MAX_FAC);
-        F[n] = sum*et;
-        for(m=n-1;m>=0;m--){
-            F[m] = (t2*F[m+1] + et)/(2*m+1);
-        }
     }
 }
 
