@@ -115,12 +115,12 @@ void QuadrupoleInt::compute_pair(const shared_ptr<GaussianShell>& s1,
                             double y11 = y[m1+1][m2+1];
                             double z11 = z[n1+1][n2+1];
 
-                            double mxx = -over_pf*(x11 + x10*(B[0]) + x01*(A[0]) + x00*(A[0])*(B[0]))*y00*z00;
-                            double myy = -over_pf*(y11 + y10*(B[1]) + y01*(A[1]) + y00*(A[1])*(B[1]))*x00*z00;
-                            double mzz = -over_pf*(z11 + z10*(B[2]) + z01*(A[2]) + z00*(A[2])*(B[2]))*x00*y00;
-                            double mxy = -over_pf*(x01+x00*(B[0]))*(y01+y00*(B[1]))*z00;
-                            double mxz = -over_pf*(x01+x00*(B[0]))*y00*(z01+z00*(B[2]));
-                            double myz = -over_pf*x00*(y01+y00*(B[1]))*(z01+z00*(B[2]));
+                            double mxx = -over_pf*(x11 + x10*(B[0] - origin_[0]) + x01*(A[0] - origin_[0]) + x00*(A[0] - origin_[0])*(B[0] - origin_[0]))*y00*z00;
+                            double myy = -over_pf*(y11 + y10*(B[1] - origin_[1]) + y01*(A[1] - origin_[1]) + y00*(A[1] - origin_[1])*(B[1] - origin_[1]))*x00*z00;
+                            double mzz = -over_pf*(z11 + z10*(B[2] - origin_[2]) + z01*(A[2] - origin_[2]) + z00*(A[2] - origin_[2])*(B[2] - origin_[2]))*x00*y00;
+                            double mxy = -over_pf*(x01+x00*(B[0] - origin_[0]))*(y01+y00*(B[1] - origin_[1]))*z00;
+                            double mxz = -over_pf*(x01+x00*(B[0] - origin_[0]))*y00*(z01+z00*(B[2] - origin_[2]));
+                            double myz = -over_pf*x00*(y01+y00*(B[1] - origin_[1]))*(z01+z00*(B[2] - origin_[2]));
 
                             buffer_[ao12]        += mxx;
                             buffer_[ao12+xydisp] += mxy;
