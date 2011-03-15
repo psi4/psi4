@@ -18,6 +18,7 @@
 #include <boost/python.hpp>
 #include <boost/python/call.hpp>
 
+using namespace boost;
 using namespace psi;
 
 namespace psi {

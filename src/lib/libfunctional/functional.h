@@ -11,6 +11,10 @@
 #include <string>
 #include <vector>
 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
 namespace psi {
 
 class Properties;
@@ -54,7 +58,7 @@ class Functional {
         void setParameters(const std::vector<std::pair<std::string,double> > & params) { params_ = params; }
         void setParameter(const std::string & key, double value);
 
-        std::string testFunctional(shared_ptr<Properties> props);
+        std::string testFunctional(boost::shared_ptr<Properties> props);
 
         bool isGGA() const { return is_gga_; }
         bool isMeta() const { return is_meta_; }

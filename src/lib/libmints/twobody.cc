@@ -5,6 +5,7 @@
 
 #include "mints.h"
 
+using namespace boost;
 using namespace psi;
 
 static void transform2e_1(int, SphericalTransformIter&, double*, double*, int);

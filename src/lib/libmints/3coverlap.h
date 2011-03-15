@@ -1,7 +1,9 @@
 #ifndef _psi_src_lib_libmints_3coverlap_h
 #define _psi_src_lib_libmints_3coverlap_h
 
-#include <boost/shared_ptr.hpp>
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi {
 
@@ -32,9 +34,9 @@ protected:
     /// Buffer used during the spherical transformation.
     double *tformbuf_;
 
-    void compute_pair(shared_ptr<GaussianShell> s1,
-                      shared_ptr<GaussianShell> s2,
-                      shared_ptr<GaussianShell> s3);
+    void compute_pair(boost::shared_ptr<GaussianShell> s1,
+                      boost::shared_ptr<GaussianShell> s2,
+                      boost::shared_ptr<GaussianShell> s3);
 public:
     ThreeCenterOverlapInt(std::vector<SphericalTransform>&,
                           boost::shared_ptr<BasisSet> bs1,

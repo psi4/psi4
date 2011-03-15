@@ -6,7 +6,6 @@
 #include "vector3.h"
 #include <boost/shared_ptr.hpp>
 
-using namespace boost;
 namespace psi {
 
 class Vector3;
@@ -37,7 +36,7 @@ public:
     /// Flag the current value as outdated
     void invalidate() { computed_ = false; }
     /// Clones the current object, using a user-provided variable array, for deep copying
-    virtual shared_ptr<CoordValue> clone( std::map<std::string, double>& map) =0;
+    virtual boost::shared_ptr<CoordValue> clone( std::map<std::string, double>& map) =0;
 };
 
 /**
@@ -51,8 +50,8 @@ public:
     double compute() { return value_; }
     void set(double val) { value_ = val; }
     CoordValueType type() { return NumberType; }
-    shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
-        return shared_ptr<CoordValue>(new NumberValue(value_));
+    boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+        return boost::shared_ptr<CoordValue>(new NumberValue(value_));
     }
 };
 
@@ -71,8 +70,8 @@ public:
     double compute();
     void set(double val) { geometryVariables_[name_] = negate_ ? -val : val; }
     CoordValueType type() { return VariableType; }
-    shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
-        return shared_ptr<CoordValue>(new VariableValue(name_, map, negate_));
+    boost::shared_ptr<CoordValue> clone(std::map<std::string, double>& map) {
+        return boost::shared_ptr<CoordValue>(new VariableValue(name_, map, negate_));
     }
 };
 
@@ -140,7 +139,7 @@ public:
     /// Flags the current coordinates as being outdated.
     virtual void invalidate() =0;
     /// Clones the current object, using a user-provided variable array, for deep copying
-    virtual shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map) =0;
+    virtual boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map) =0;
 
     /// Whether the current atom is ghosted or not.
     bool is_ghosted() const { return ghosted_; }
@@ -187,8 +186,8 @@ public:
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return CartesianCoord; }
     void invalidate () { computed_ = false; x_->invalidate(); y_->invalidate(); z_->invalidate(); }
-    shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
-        shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_));
+    boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+        boost::shared_ptr<CoordEntry> temp(new CartesianEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, x_->clone(map), y_->clone(map), z_->clone(map), basissets_));
         return temp;
     }
 };
@@ -226,20 +225,20 @@ public:
     const Vector3& compute();
     void set_coordinates(double x, double y, double z);
     CoordEntryType type() { return ZMatrixCoord; }
-    shared_ptr<CoordEntry> clone( std::vector<shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
-        shared_ptr<CoordEntry> temp;
+    boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map){
+        boost::shared_ptr<CoordEntry> temp;
         if(rto_ == 0 && ato_ == 0 && dto_ == 0){
-            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_));
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_));
         }else if(ato_ == 0 && dto_ == 0){
-            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
                                           atoms[rto_->entry_number()], rval_->clone(map)));
         }else if(dto_ == 0){
-            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
                                           atoms[rto_->entry_number()], rval_->clone(map),
                                           atoms[ato_->entry_number()], aval_->clone(map)));
         }
         else {
-            temp = shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
+            temp = boost::shared_ptr<CoordEntry>(new ZMatrixEntry(entry_number_, Z_, charge_, mass_, symbol_, label_, basissets_,
                                       atoms[rto_->entry_number()], rval_->clone(map),
                                       atoms[ato_->entry_number()], aval_->clone(map),
                                       atoms[dto_->entry_number()], dval_->clone(map)));

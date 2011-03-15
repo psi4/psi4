@@ -14,7 +14,7 @@
 using namespace psi;
 
 /* Definition of global data */
-shared_ptr<Chkpt> psi::_default_chkpt_lib_;
+boost::shared_ptr<Chkpt> psi::_default_chkpt_lib_;
 
 //extern "C" {
 /* first definition of chkpt_prefix */
@@ -65,7 +65,7 @@ Chkpt::Chkpt(psi::PSIO& psioObject, int status, std::string use_prefix) : psio(&
     }
 }
 
-Chkpt::Chkpt(shared_ptr<PSIO> psioObject, int status, std::string use_prefix) : psio(psioObject.get())
+Chkpt::Chkpt(boost::shared_ptr<PSIO> psioObject, int status, std::string use_prefix) : psio(psioObject.get())
 {
     char *prefix;
 
@@ -108,7 +108,7 @@ extern "C" {
     int chkpt_init(int status)
     {
         if (_default_chkpt_lib_.get() == 0) {
-                        shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
+                        boost::shared_ptr<Chkpt> temp(new Chkpt(_default_psio_lib_, status));
             _default_chkpt_lib_ = temp;
             if (_default_chkpt_lib_ == 0) {
                 fprintf(stderr, "LIBCHKPT::init() -- failed to allocate memory\n");

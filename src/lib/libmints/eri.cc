@@ -13,6 +13,7 @@
 
 #define ERI_GRADIENT_NTYPE 9
 
+using namespace boost;
 using namespace psi;
 
 void ERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)

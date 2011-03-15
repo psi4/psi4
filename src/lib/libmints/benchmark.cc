@@ -1345,7 +1345,7 @@ void benchmark_disk(int N, double min_time)
     for (int op = 0; op < ops.size(); op++)
         timings[ops[op]].resize(N);
 
-    shared_ptr<PSIO> psio_ = PSIO::shared_object();
+    boost::shared_ptr<PSIO> psio_ = PSIO::shared_object();
     psio_address psiadd;
     dim = 1;
     for (int k = 0; k < N; k++) {
@@ -2251,16 +2251,16 @@ void benchmark_integrals(int max_am, double min_time)
     Timer* qq;
 
     //We'll contract one each for s, p, and d.
-    std::pair<std::vector<std::string>, shared_ptr<BasisSet> > bases = BasisSet::test_basis_set(max_am);
+    std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > bases = BasisSet::test_basis_set(max_am);
     std::vector<std::string> shell_names = bases.first;
-    shared_ptr<BasisSet> basis = bases.second;
+    boost::shared_ptr<BasisSet> basis = bases.second;
     int max_shell = basis->nshell() / basis->molecule()->natom();
-    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
     //Factories
-    shared_ptr<IntegralFactory> bbbb(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<IntegralFactory> b0bb(new IntegralFactory(basis, zero, basis, basis));
-    shared_ptr<IntegralFactory> b0b0(new IntegralFactory(basis, zero, basis, zero));
+    boost::shared_ptr<IntegralFactory> bbbb(new IntegralFactory(basis, basis, basis, basis));
+    boost::shared_ptr<IntegralFactory> b0bb(new IntegralFactory(basis, zero, basis, basis));
+    boost::shared_ptr<IntegralFactory> b0b0(new IntegralFactory(basis, zero, basis, zero));
 
     std::vector<std::string> int_types;
     int_types.push_back("2C Overlap");
@@ -2334,7 +2334,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Overlap Ints
     this_type = "2C Overlap";
     this_ncenter = 2;
-    shared_ptr<OneBodyAOInt> o2c(bbbb->ao_overlap());
+    boost::shared_ptr<OneBodyAOInt> o2c(bbbb->ao_overlap());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2354,7 +2354,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Kinetic Ints
     this_type = "2C Kinetic";
     this_ncenter = 2;
-    shared_ptr<OneBodyAOInt> k2c(bbbb->ao_kinetic());
+    boost::shared_ptr<OneBodyAOInt> k2c(bbbb->ao_kinetic());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2374,7 +2374,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Potential Ints
     this_type = "2C Potential";
     this_ncenter = 2;
-    shared_ptr<OneBodyAOInt> v2c(bbbb->ao_potential());
+    boost::shared_ptr<OneBodyAOInt> v2c(bbbb->ao_potential());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2394,7 +2394,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Dipole Ints
     this_type = "2C Dipole";
     this_ncenter = 2;
-    shared_ptr<OneBodyAOInt> d2c(bbbb->ao_dipole());
+    boost::shared_ptr<OneBodyAOInt> d2c(bbbb->ao_dipole());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2414,7 +2414,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Quadrupole Ints
     this_type = "2C Quadrupole";
     this_ncenter = 2;
-    shared_ptr<OneBodyAOInt> q2c(bbbb->ao_quadrupole());
+    boost::shared_ptr<OneBodyAOInt> q2c(bbbb->ao_quadrupole());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2434,7 +2434,7 @@ void benchmark_integrals(int max_am, double min_time)
     // 2C ERIs
     this_type = "2C ERI";
     this_ncenter = 2;
-    shared_ptr<TwoBodyAOInt> e2c(b0b0->eri());
+    boost::shared_ptr<TwoBodyAOInt> e2c(b0b0->eri());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2454,7 +2454,7 @@ void benchmark_integrals(int max_am, double min_time)
     // Poisson Ints
     this_type = "2C Poisson";
     this_ncenter = 2;
-    shared_ptr<OneBodyAOInt> p2c(bbbb->poisson_overlap());
+    boost::shared_ptr<OneBodyAOInt> p2c(bbbb->poisson_overlap());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++, index++) {
             T = 0.0;
@@ -2474,7 +2474,7 @@ void benchmark_integrals(int max_am, double min_time)
     // 3C ERIs
     this_type = "3C ERI";
     this_ncenter = 3;
-    shared_ptr<TwoBodyAOInt> e3c(b0bb->eri());
+    boost::shared_ptr<TwoBodyAOInt> e3c(b0bb->eri());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++) {
             for (int R = 0; R < max_shell; R++, index++) {
@@ -2496,7 +2496,7 @@ void benchmark_integrals(int max_am, double min_time)
     // 3C Overlap
     this_type = "3C Overlap";
     this_ncenter = 3;
-    shared_ptr<ThreeCenterOverlapInt> o3c(bbbb->overlap_3c());
+    boost::shared_ptr<ThreeCenterOverlapInt> o3c(bbbb->overlap_3c());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++) {
             for (int R = 0; R < max_shell; R++, index++) {
@@ -2518,7 +2518,7 @@ void benchmark_integrals(int max_am, double min_time)
     // 4C ERI
     this_type = "4C ERI";
     this_ncenter = 4;
-    shared_ptr<TwoBodyAOInt> e4c(bbbb->eri());
+    boost::shared_ptr<TwoBodyAOInt> e4c(bbbb->eri());
     for (int P = 0, index = 0; P < max_shell; P++) {
         for (int Q = 0; Q < max_shell; Q++) {
             for (int R = 0; R < max_shell; R++) {

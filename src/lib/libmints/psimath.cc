@@ -4,6 +4,8 @@
 #include <psi4-dec.h>
 #include <libmints/psimath.h>
 
+using namespace boost;
+
 namespace psi {
 
 /// PSI_DGBMV, a wrapper to C_DGBMV using objects

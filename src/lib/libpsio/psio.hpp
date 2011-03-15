@@ -10,16 +10,14 @@
 
 #include <libpsio/config.h>
 
-using namespace boost;
-
 namespace psi {
 
 extern FILE *outfile;
 
 class PSIO;
 class PSIOManager;
-extern shared_ptr<PSIO> _default_psio_lib_;
-extern shared_ptr<PSIOManager> _default_psio_manager_;
+extern boost::shared_ptr<PSIO> _default_psio_lib_;
+extern boost::shared_ptr<PSIOManager> _default_psio_manager_;
 
 /**
     PSIOManager is a class designed to be used as a static object to track all
@@ -134,7 +132,7 @@ public:
             **/
     void crashclean();
     /// The one and (should be) only instance of PSIOManager for a PSI4 instance
-    static shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
+    static boost::shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
 };
 
 /**
@@ -248,7 +246,7 @@ public:
     static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
 
     /// Return the global shared object
-    static shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
+    static boost::shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
 
     /** Read the length of the TOC for a given unit directly from the file.
        **
@@ -321,16 +319,16 @@ private:
     /// End address pointer argument
     psio_address *end_;
     /// PSIO object this AIO_Handler is built on
-    shared_ptr<PSIO> psio_;
+    boost::shared_ptr<PSIO> psio_;
     /// Thread this AIO_Handler is currently running on
-    shared_ptr<boost::thread> thread_;
+    boost::shared_ptr<boost::thread> thread_;
 public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
-    AIO_Handler(shared_ptr<PSIO> psio);
+    AIO_Handler(boost::shared_ptr<PSIO> psio);
     /// Destructor
     ~AIO_Handler();
     /// Thread object this AIO_Handler is currently running on
-    shared_ptr<boost::thread> get_thread();
+    boost::shared_ptr<boost::thread> get_thread();
     /// When called, synchronize will not return until all requested data has been read or written
     void synchronize();
     /// Asynchronous read, same as PSIO::read, but nonblocking
@@ -354,9 +352,7 @@ public:
     void call_write_entry();
 };
 
-//  int psiopp_ipv1_config(shared_ptr<PSIO> psio_obj);
-//  int psiopp_ipv1_config(PSIO *psio_obj);
-extern shared_ptr<PSIO> _default_psio_lib_;
+extern boost::shared_ptr<PSIO> _default_psio_lib_;
 }
 
 #endif /* header guard */

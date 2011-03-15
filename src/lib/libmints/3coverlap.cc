@@ -136,9 +136,9 @@ void ThreeCenterOverlapInt::compute_shell(int sh1, int sh2, int sh3)
     compute_pair(bs1_->shell(sh1), bs2_->shell(sh2), bs3_->shell(sh3));
 }
 
-void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA,
-                                         shared_ptr<GaussianShell> sB,
-                                         shared_ptr<GaussianShell> sC)
+void ThreeCenterOverlapInt::compute_pair(boost::shared_ptr<GaussianShell> sA,
+                                         boost::shared_ptr<GaussianShell> sB,
+                                         boost::shared_ptr<GaussianShell> sC)
 {
     unsigned int ao123;
     int amA = sA->am();
@@ -259,9 +259,9 @@ void ThreeCenterOverlapInt::compute_pair(shared_ptr<GaussianShell> sA,
     pure_transform(sA, sB, sC);
 }
 
-void ThreeCenterOverlapInt::normalize_am(shared_ptr<GaussianShell>& sA,
-                                         shared_ptr<GaussianShell>& sB,
-                                         shared_ptr<GaussianShell>& sC)
+void ThreeCenterOverlapInt::normalize_am(boost::shared_ptr<GaussianShell>& sA,
+                                         boost::shared_ptr<GaussianShell>& sB,
+                                         boost::shared_ptr<GaussianShell>& sC)
 {
     // Assume integrals are done. Normalize for angular momentum
     int amA = sA->am();
@@ -303,9 +303,9 @@ void ThreeCenterOverlapInt::normalize_am(shared_ptr<GaussianShell>& sA,
     }
 }
 
-void ThreeCenterOverlapInt::pure_transform(shared_ptr<GaussianShell>& s1,
-                                           shared_ptr<GaussianShell>& s2,
-                                           shared_ptr<GaussianShell>& s3)
+void ThreeCenterOverlapInt::pure_transform(boost::shared_ptr<GaussianShell>& s1,
+                                           boost::shared_ptr<GaussianShell>& s2,
+                                           boost::shared_ptr<GaussianShell>& s3)
 {
     // Get the transforms from the basis set
 #pragma warn Get the SphericalTransformIter from the integral factory.

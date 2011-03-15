@@ -14,8 +14,8 @@ class VWN5RPA_C_Functional : public Functional {
 public:
     VWN5RPA_C_Functional(int npoints, int deriv);
     virtual ~VWN5RPA_C_Functional();
-    virtual void computeRKSFunctional(shared_ptr<Properties> prop);
-    virtual void computeUKSFunctional(shared_ptr<Properties> prop);
+    virtual void computeRKSFunctional(boost::shared_ptr<Properties> prop);
+    virtual void computeUKSFunctional(boost::shared_ptr<Properties> prop);
 };
 }}
 #endif

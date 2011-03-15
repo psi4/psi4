@@ -7,6 +7,7 @@
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 
+using namespace boost;
 using namespace psi;
 
 Vector::Vector()

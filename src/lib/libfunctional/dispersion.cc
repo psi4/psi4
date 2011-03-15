@@ -22,7 +22,7 @@ using namespace std;
 namespace psi { namespace functional {
 
 
-Dispersion::Dispersion() 
+Dispersion::Dispersion()
 {
 }
 Dispersion::~Dispersion()
@@ -37,7 +37,7 @@ std::string Dispersion::printEnergy(shared_ptr<Molecule> m)
 
     s << "   " << name_ << " Dispersion Energy: " << e << " [H]" << endl;
 
-    return s.str(); 
+    return s.str();
 }
 std::string Dispersion::printGradient(shared_ptr<Molecule> m)
 {
@@ -52,11 +52,11 @@ std::string Dispersion::printGradient(shared_ptr<Molecule> m)
 
     for (int k = 1; k <= m->natom(); k++) {
         s << "  " << setw(5) << k <<  \
-            setw(20) << g[(k-1)*3 + 0] << \    
-            setw(20) << g[(k-1)*3 + 1] << \    
-            setw(20) << g[(k-1)*3 + 2] << endl;    
+            setw(20) << g[(k-1)*3 + 0] << \
+            setw(20) << g[(k-1)*3 + 1] << \
+            setw(20) << g[(k-1)*3 + 2] << endl;
     }
-    return s.str(); 
+    return s.str();
 }
 std::string Dispersion::printHessian(shared_ptr<Molecule> m)
 {
@@ -71,27 +71,27 @@ std::string Dispersion::printHessian(shared_ptr<Molecule> m)
     s << "   " << name_ << " Dispersion Hessian ([a.u.]): " << endl << endl;
     for (int k = 1; k <= m->natom(); k++) {
         for (int j = 1; j <= m->natom(); j++) {
-    
-            s << "    Atom Pair A = " << k << " B = "  << j << ":" << endl << endl; 
+
+            s << "    Atom Pair A = " << k << " B = "  << j << ":" << endl << endl;
             s << "                   xB                 yB                  zB" << endl;
             s << "   -----------------------------------------------------------------" << endl;
 
             s << "  " << setw(5) << "xA" <<  \
-                setw(20) << h[(k-1)*3 + 0][(j-1)*3 + 0] << \    
-                setw(20) << h[(k-1)*3 + 0][(j-1)*3 + 1] << \    
-                setw(20) << h[(k-1)*3 + 0][(j-1)*3 + 2] << endl;    
+                setw(20) << h[(k-1)*3 + 0][(j-1)*3 + 0] << \
+                setw(20) << h[(k-1)*3 + 0][(j-1)*3 + 1] << \
+                setw(20) << h[(k-1)*3 + 0][(j-1)*3 + 2] << endl;
             s << "  " << setw(5) << "yA" <<  \
-                setw(20) << h[(k-1)*3 + 1][(j-1)*3 + 0] << \    
-                setw(20) << h[(k-1)*3 + 1][(j-1)*3 + 1] << \    
-                setw(20) << h[(k-1)*3 + 1][(j-1)*3 + 2] << endl;    
+                setw(20) << h[(k-1)*3 + 1][(j-1)*3 + 0] << \
+                setw(20) << h[(k-1)*3 + 1][(j-1)*3 + 1] << \
+                setw(20) << h[(k-1)*3 + 1][(j-1)*3 + 2] << endl;
             s << "  " << setw(5) << "zA" <<  \
-                setw(20) << h[(k-1)*3 + 2][(j-1)*3 + 0] << \    
-                setw(20) << h[(k-1)*3 + 2][(j-1)*3 + 1] << \    
-                setw(20) << h[(k-1)*3 + 2][(j-1)*3 + 2] << endl;   
-            s << endl; 
+                setw(20) << h[(k-1)*3 + 2][(j-1)*3 + 0] << \
+                setw(20) << h[(k-1)*3 + 2][(j-1)*3 + 1] << \
+                setw(20) << h[(k-1)*3 + 2][(j-1)*3 + 2] << endl;
+            s << endl;
         }
     }
-    return s.str(); 
+    return s.str();
 }
 boost::shared_ptr<Dispersion> Dispersion::createDispersion(const std::string & name, double s6, double s8, double sr6, double sr8)
 {
@@ -106,18 +106,18 @@ boost::shared_ptr<Dispersion> Dispersion::createDispersion(const std::string & n
         return shared_ptr<Dispersion> (new D3(s6, s8, sr6, sr8));
     }
 }
-D1::D1(double s6) : Dispersion() 
+D1::D1(double s6) : Dispersion()
 {
     name_ = "-D1";
     description_ = "Grimme's -D1 Dispersion Correction";
-    citation_ = "Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473"; 
+    citation_ = "Grimme, S. (2004), J. Comp. Chem., 25: 1463-1473";
 
-    d_ = 23.0; 
+    d_ = 23.0;
     RvdW_ = RvdW_D1_;
     C6_ = C6_D1_;
     s6_ = s6;
 }
-D1::~D1() 
+D1::~D1()
 {
 }
 double D1::computeEnergy(shared_ptr<Molecule> mol)
@@ -168,9 +168,9 @@ double D1::computeEnergy(shared_ptr<Molecule> mol)
                            (y[i]-y[j])*(y[i]-y[j]) + \
                            (z[i]-z[j])*(z[i]-z[j]));
             r[j][i] = r[i][j];
-            
+
         }
-    } 
+    }
 
     // Compute energy
     for (int i = 1; i < natom; i++) {
@@ -225,7 +225,7 @@ double* D1::computeGradient(shared_ptr<Molecule> mol)
 
     // gradient array in [x1 y1 z1 x2 y2 z2 ... ]
     double* grad = init_array(3*natom);
-    
+
     // Build C6 (C6_ij = C6_i*C6_j/(C6_i+C6_j) in -D1 )
     double **C6 = block_matrix(natom, natom);
     for (int i = 1; i < natom; i++) {
@@ -252,9 +252,9 @@ double* D1::computeGradient(shared_ptr<Molecule> mol)
                            (y[i]-y[j])*(y[i]-y[j]) + \
                            (z[i]-z[j])*(z[i]-z[j]));
             r[j][i] = r[i][j];
-            
+
         }
-    } 
+    }
 
     // Compute gradient by perturbing nucleus i
     int Ax, Ay, Az;
@@ -362,7 +362,7 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
 
     // gradient array in [x1 y1 z1 x2 y2 z2 ... ]
     double** hess = block_matrix(3*natom,3*natom);
-    
+
     // Build C6 (C6_ij = C6_i*C6_j/(C6_i+C6_j) in -D1 )
     double **C6 = block_matrix(natom, natom);
     for (int i = 1; i < natom; i++) {
@@ -389,9 +389,9 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
                            (y[i]-y[j])*(y[i]-y[j]) + \
                            (z[i]-z[j])*(z[i]-z[j]));
             r[j][i] = r[i][j];
-            
+
         }
-    } 
+    }
 
     int Ax, Ay, Az, Bx, By, Bz;
     double f;
@@ -403,7 +403,7 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
         Az = 3*i + 2;
 
         for (int j = 0; j < natom; j++) {
-            if (i == j) 
+            if (i == j)
                 continue;
 
               double t4019 = x[i]-x[j];
@@ -575,8 +575,8 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
         hess[Ay][Ax] = hess[Ax][Ay];
         hess[Az][Ax] = hess[Ax][Az];
         hess[Az][Ay] = hess[Ay][Az];
-   
-        //fprintf(outfile," A = %d B = %d\n",i,i); 
+
+        //fprintf(outfile," A = %d B = %d\n",i,i);
         //print_mat(hess,3*mol->natom(),3*mol->natom(),outfile);
     }
     // Case 2: A B
@@ -586,13 +586,13 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
         Az = 3*i + 2;
 
         for (int j = 0; j < i; j++) {
-            if (i == j) 
+            if (i == j)
                 continue;
 
             Bx = 3*j;
             By = 3*j + 1;
             Bz = 3*j + 2;
-            
+
               double t4166 = x[i]-x[j];
               double t4167 = y[i]-y[j];
               double t4168 = z[i]-z[j];
@@ -842,16 +842,16 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
                    C6[i][j]*d_*1/pow(t4370,7.0/2.0)*t4372*t4383*t4376+C6[i][j]*t4382*t4383*t4384*t4376*t4385*t4386*(1.0/ \
                    4.0)+C6[i][j]*d_*1/pow(t4370,9.0/2.0)*t4372*t4382*t4383*t4376*(1.3E1/4.0)-C6[i][j]*t4382*t4384*t4385* \
                    1/(t4377*t4377*t4377)*t4386*exp(d_*t4375*-2.0)*(1.0/2.0);
-            
-            hess[Bx][Ax] = hess[Ax][Bx]; 
-            hess[Bx][Ay] = hess[Ay][Bx]; 
-            hess[Bx][Az] = hess[Az][Bx]; 
-            hess[By][Ax] = hess[Ax][By]; 
-            hess[By][Ay] = hess[Ay][By]; 
-            hess[By][Az] = hess[Az][By]; 
-            hess[Bz][Ax] = hess[Ax][Bz]; 
-            hess[Bz][Ay] = hess[Ay][Bz]; 
-            hess[Bz][Az] = hess[Az][Bz]; 
+
+            hess[Bx][Ax] = hess[Ax][Bx];
+            hess[Bx][Ay] = hess[Ay][Bx];
+            hess[Bx][Az] = hess[Az][Bx];
+            hess[By][Ax] = hess[Ax][By];
+            hess[By][Ay] = hess[Ay][By];
+            hess[By][Az] = hess[Az][By];
+            hess[Bz][Ax] = hess[Ax][Bz];
+            hess[Bz][Ay] = hess[Ay][Bz];
+            hess[Bz][Az] = hess[Az][Bz];
         }
     }
 
@@ -873,18 +873,18 @@ double** D1::computeHessian(shared_ptr<Molecule> mol)
     delete []z;
     return hess;
 }
-D2::D2(double s6) : Dispersion() 
+D2::D2(double s6) : Dispersion()
 {
     name_ = "-D2";
     description_ = "Grimme's -D2 Dispersion Correction";
     citation_ = "Grimme, S. (2006),  J. Comp. Chem., 27: 1787-1799";
-    
-    d_ = 20.0; 
+
+    d_ = 20.0;
     RvdW_ = RvdW_D2_;
     C6_ = C6_D2_;
     s6_ = s6;
 }
-D2::~D2() 
+D2::~D2()
 {
 }
 double D2::computeEnergy(shared_ptr<Molecule> mol)
@@ -935,9 +935,9 @@ double D2::computeEnergy(shared_ptr<Molecule> mol)
                            (y[i]-y[j])*(y[i]-y[j]) + \
                            (z[i]-z[j])*(z[i]-z[j]));
             r[j][i] = r[i][j];
-            
+
         }
-    } 
+    }
 
     // Compute energy
     for (int i = 1; i < natom; i++) {
@@ -992,7 +992,7 @@ double* D2::computeGradient(shared_ptr<Molecule> mol)
 
     // gradient array in [x1 y1 z1 x2 y2 z2 ... ]
     double* grad = init_array(3*natom);
-    
+
     // Build C6 (C6_ij = C6_i*C6_j/(C6_i+C6_j) in -D1 )
     double **C6 = block_matrix(natom, natom);
     for (int i = 1; i < natom; i++) {
@@ -1019,9 +1019,9 @@ double* D2::computeGradient(shared_ptr<Molecule> mol)
                            (y[i]-y[j])*(y[i]-y[j]) + \
                            (z[i]-z[j])*(z[i]-z[j]));
             r[j][i] = r[i][j];
-            
+
         }
-    } 
+    }
 
     // Compute gradient by perturbing nucleus i
     int Ax, Ay, Az;
@@ -1129,7 +1129,7 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
 
     // gradient array in [x1 y1 z1 x2 y2 z2 ... ]
     double** hess = block_matrix(3*natom,3*natom);
-    
+
     // Build C6 (C6_ij = C6_i*C6_j/(C6_i+C6_j) in -D1 )
     double **C6 = block_matrix(natom, natom);
     for (int i = 1; i < natom; i++) {
@@ -1156,9 +1156,9 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
                            (y[i]-y[j])*(y[i]-y[j]) + \
                            (z[i]-z[j])*(z[i]-z[j]));
             r[j][i] = r[i][j];
-            
+
         }
-    } 
+    }
 
     int Ax, Ay, Az, Bx, By, Bz;
     double f;
@@ -1170,7 +1170,7 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
         Az = 3*i + 2;
 
         for (int j = 0; j < natom; j++) {
-            if (i == j) 
+            if (i == j)
                 continue;
 
               double t4019 = x[i]-x[j];
@@ -1342,8 +1342,8 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
         hess[Ay][Ax] = hess[Ax][Ay];
         hess[Az][Ax] = hess[Ax][Az];
         hess[Az][Ay] = hess[Ay][Az];
-   
-        //fprintf(outfile," A = %d B = %d\n",i,i); 
+
+        //fprintf(outfile," A = %d B = %d\n",i,i);
         //print_mat(hess,3*mol->natom(),3*mol->natom(),outfile);
     }
     // Case 2: A B
@@ -1353,13 +1353,13 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
         Az = 3*i + 2;
 
         for (int j = 0; j < i; j++) {
-            if (i == j) 
+            if (i == j)
                 continue;
 
             Bx = 3*j;
             By = 3*j + 1;
             Bz = 3*j + 2;
-            
+
               double t4166 = x[i]-x[j];
               double t4167 = y[i]-y[j];
               double t4168 = z[i]-z[j];
@@ -1609,16 +1609,16 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
                    C6[i][j]*d_*1/pow(t4370,7.0/2.0)*t4372*t4383*t4376+C6[i][j]*t4382*t4383*t4384*t4376*t4385*t4386*(1.0/ \
                    4.0)+C6[i][j]*d_*1/pow(t4370,9.0/2.0)*t4372*t4382*t4383*t4376*(1.3E1/4.0)-C6[i][j]*t4382*t4384*t4385* \
                    1/(t4377*t4377*t4377)*t4386*exp(d_*t4375*-2.0)*(1.0/2.0);
-            
-            hess[Bx][Ax] = hess[Ax][Bx]; 
-            hess[Bx][Ay] = hess[Ay][Bx]; 
-            hess[Bx][Az] = hess[Az][Bx]; 
-            hess[By][Ax] = hess[Ax][By]; 
-            hess[By][Ay] = hess[Ay][By]; 
-            hess[By][Az] = hess[Az][By]; 
-            hess[Bz][Ax] = hess[Ax][Bz]; 
-            hess[Bz][Ay] = hess[Ay][Bz]; 
-            hess[Bz][Az] = hess[Az][Bz]; 
+
+            hess[Bx][Ax] = hess[Ax][Bx];
+            hess[Bx][Ay] = hess[Ay][Bx];
+            hess[Bx][Az] = hess[Az][Bx];
+            hess[By][Ax] = hess[Ax][By];
+            hess[By][Ay] = hess[Ay][By];
+            hess[By][Az] = hess[Az][By];
+            hess[Bz][Ax] = hess[Ax][Bz];
+            hess[Bz][Ay] = hess[Ay][Bz];
+            hess[Bz][Az] = hess[Az][Bz];
         }
     }
 
@@ -1640,7 +1640,7 @@ double** D2::computeHessian(shared_ptr<Molecule> mol)
     delete []z;
     return hess;
 }
-D3::D3(double s6, double s8, double sr6, double sr8) 
+D3::D3(double s6, double s8, double sr6, double sr8)
 {
     name_ = "-D3";
     description_ = "Grimme's -D3 Dispersion Correction";
@@ -1652,11 +1652,11 @@ D3::D3(double s6, double s8, double sr6, double sr8)
     sr8_ = sr8;
     alpha6_ = 14.0;
     alpha6_ = 16.0;
-    k1_ = 16.0; 
+    k1_ = 16.0;
     k2_ = 4.0/3.0;
     k3_ = 4.0;
 }
-D3::~D3() 
+D3::~D3()
 {
 }
 double D3::computeEnergy(shared_ptr<Molecule> mol)

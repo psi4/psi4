@@ -26,8 +26,9 @@
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 
- using namespace psi;
- using namespace std;
+using namespace boost;
+using namespace psi;
+using namespace std;
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))

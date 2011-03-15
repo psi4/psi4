@@ -1,5 +1,6 @@
 #include "mints.h"
 
+using namespace boost;
 using namespace psi;
 
 namespace psi {
