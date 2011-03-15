@@ -137,11 +137,14 @@ void export_mints()
             def("ao_kinetic", &MintsHelper::ao_kinetic).
             def("ao_potential", &MintsHelper::ao_potential).
             def("one_electron_integrals", &MintsHelper::one_electron_integrals).
-            //            def("ao_dipole", &MintsHelper::ao_dipole).
             def("so_overlap", &MintsHelper::so_overlap).
             def("so_kinetic", &MintsHelper::so_kinetic).
             def("so_potential", &MintsHelper::so_potential).
             def("so_dipole", &MintsHelper::so_dipole).
+            def("so_quadrupole", &MintsHelper::so_quadrupole).
+            def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole).
+            def("so_nabla", &MintsHelper::so_nabla).
+            def("so_angular_momentum", &MintsHelper::so_angular_momentum).
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 

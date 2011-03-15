@@ -144,6 +144,17 @@ OneBodySOInt* IntegralFactory::so_quadrupole()
     return new OneBodySOInt(ao_int, this);
 }
 
+OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole()
+{
+    return new TracelessQuadrupoleInt(spherical_transforms_, bs1_, bs2_);
+}
+
+OneBodySOInt* IntegralFactory::so_traceless_quadrupole()
+{
+    shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
+    return new OneBodySOInt(ao_int, this);
+}
+
 OneBodyAOInt* IntegralFactory::electric_field()
 {
     return new ElectricFieldInt(spherical_transforms_, bs1_, bs2_);
