@@ -2,6 +2,7 @@
 #include "libciomr/libciomr.h"
 
 using namespace psi;
+using namespace boost;
 
 /// Keeps track of which labels have been assigned, for safety
 std::map<char, int> MOSpace::labelsUsed;

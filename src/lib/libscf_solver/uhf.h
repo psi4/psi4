@@ -4,9 +4,9 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
-#include <psi4-dec.h>
-
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi { namespace scf {
 
@@ -42,8 +42,8 @@ protected:
     virtual void finalize();
 
 public:
-    UHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    UHF(Options& options, shared_ptr<PSIO> psio);
+    UHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    UHF(Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~UHF();
 
     virtual bool restricted() const { return false; }

@@ -20,6 +20,7 @@
 #define EXTERN
 #include "globals.h"
 
+using namespace boost;
 using namespace psi;
 
 namespace psi{
@@ -110,7 +111,7 @@ void LMP2::get_fock() {
 
   if(Communicator::world->nproc() > 1)
     Communicator::world->bcast(X, (nso*nso+nso)/2, 0);
-  
+
   tri_to_sq(X, aoF, nso);
   free(X);
 
@@ -138,7 +139,7 @@ int* LMP2::get_ij_owner() {
 
 }
 
-/* 
+/*
 ** we distribute ij's among processes as follows...
 **
 ** ij0 -> proc0
@@ -154,7 +155,7 @@ int* LMP2::get_ij_owner() {
 ** to the corresponding local index on a particular process, so we
 ** know where in local memory to find it.
 **
-** From the above mapping, we see that 
+** From the above mapping, we see that
 ** ij_local[0] = 0
 ** ij_local[1] = 0
 ** ..
@@ -265,7 +266,7 @@ int** LMP2::get_ij_map() {
     }
 
     //for (int ij2 = 0; ij2<ij_pairs; ij2++)
-	//fprintf(outfile," %d (%d %d)\n", ij2,ij_map_[ij2][0], ij_map_[ij2][1]);
+    //fprintf(outfile," %d (%d %d)\n", ij2,ij_map_[ij2][0], ij_map_[ij2][1]);
 
     return ij_map_;
 
@@ -284,11 +285,11 @@ int* LMP2::original_ij_map() {
     for (i = 0, ij=0 ; i < nocc; i++) {
         for (j = 0; j <= i; j++, ij++) {
             if (pairdom_exist[ij]) {
-            	map_[ij] = counter;
+                map_[ij] = counter;
                 counter++;
             }
-	    else 
-		map_[ij] = -1;
+        else
+        map_[ij] = -1;
         }
     }
 

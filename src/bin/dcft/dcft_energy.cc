@@ -1,5 +1,6 @@
 #include "dcft.h"
 #include "psifiles.h"
+#include <libtrans/integraltransform.h>
 #include "defines.h"
 
 namespace psi{ namespace dcft{
@@ -69,7 +70,7 @@ DCFTSolver::compute_energy()
     eAab = -dpd_buf4_dot(&A, &L);
     dpd_buf4_close(&A);
     dpd_buf4_close(&L);
-    
+
     // E += 1/4 L_ijab G_ijab
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
@@ -115,7 +116,7 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\tTotal T Energy = %20.12f\n", eTaa + eTab + eTbb);
     fprintf(outfile, "\tTotal A Energy = %20.12f\n", eAaa + eAab + eAbb);
 #endif
-    _newTotalEnergy += eGaa + eGab + eGbb + eAaa + eAab + eAbb 
+    _newTotalEnergy += eGaa + eGab + eGbb + eAaa + eAab + eAbb
                      + eTaa + eTab + eTbb + eIaa + eIab + eIbb;
 }
 

@@ -2,7 +2,6 @@
 #define CC_H
 
 #include <libmints/wavefunction.h>
-#include <psi4-dec.h>
 
 #define DFCC_INT_FILE 56  // temporary
 #define DFCC_DIIS_FILE 42  // temporary
@@ -10,13 +9,15 @@
 // This is a dirty hack...bite me
 #define INDEX(i,j) ((i>=j) ? (ioff[i] + j) : (ioff[j] + i))
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
-namespace psi { 
+namespace psi {
 
-class BasisSet; 
-class Matrix; 
-class Vector; 
+class BasisSet;
+class Matrix;
+class Vector;
 class PSIO;
 class Options;
 class PseudoGrid;
@@ -32,12 +33,12 @@ private:
   void get_pseudogrid();
 
 protected:
-  shared_ptr<BasisSet> ribasis_;
-  shared_ptr<BasisSet> dealias_;
-  shared_ptr<BasisSet> zero_;
-  shared_ptr<PseudoGrid> grid_;
+  boost::shared_ptr<BasisSet> ribasis_;
+  boost::shared_ptr<BasisSet> dealias_;
+  boost::shared_ptr<BasisSet> zero_;
+  boost::shared_ptr<PseudoGrid> grid_;
 
-  virtual void print_header(); 
+  virtual void print_header();
 
   // Available memory in doubles
   unsigned long int doubles_;
@@ -70,20 +71,20 @@ protected:
   std::string denominator_algorithm_;
   double denominator_delta_;
 
-  // Schwarz cutoff 
+  // Schwarz cutoff
   double schwarz_cutoff_;
 
   // Maximum allowed fitting metric condition
   std::string fitting_algorithm_;
   double fitting_condition_;
 
-  // New libmints objects for HF information 
-  shared_ptr<Vector> evals_; // HF eigenvalues (all)
-  shared_ptr<Vector> evals_aocc_; // HF active occupied eigenvalues
-  shared_ptr<Vector> evals_avir_; // HF active virtual eigenvalues
-  shared_ptr<Matrix> C_; // HF eigenvectors (all)
-  shared_ptr<Matrix> C_aocc_; // HF eigenvectors (active occupieds) 
-  shared_ptr<Matrix> C_avir_; // HF eigenvectors (active virtuals) 
+  // New libmints objects for HF information
+  boost::shared_ptr<Vector> evals_; // HF eigenvalues (all)
+  boost::shared_ptr<Vector> evals_aocc_; // HF active occupied eigenvalues
+  boost::shared_ptr<Vector> evals_avir_; // HF active virtual eigenvalues
+  boost::shared_ptr<Matrix> C_; // HF eigenvectors (all)
+  boost::shared_ptr<Matrix> C_aocc_; // HF eigenvectors (active occupieds)
+  boost::shared_ptr<Matrix> C_avir_; // HF eigenvectors (active virtuals)
 
   // Pointers to the new libmints objects so's Ed doesn't get bitchy
   double *evalsp_;
@@ -107,7 +108,7 @@ protected:
   void zero_disk(int, const char *, char *, int, int);
 
 public:
-  CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+  CC(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
   virtual ~CC();
 
   virtual double compute_energy()=0;
@@ -131,10 +132,10 @@ private:
     char *get_vec_label(int);
 
 protected:
-    shared_ptr<PSIO> psio_;
+    boost::shared_ptr<PSIO> psio_;
 
 public:
-    DFCCDIIS(int, int, int, shared_ptr<PSIO>);
+    DFCCDIIS(int, int, int, boost::shared_ptr<PSIO>);
     ~DFCCDIIS();
 
     void store_vectors(double *, double *);

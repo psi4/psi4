@@ -1,23 +1,25 @@
 #ifndef CCD_H
 #define CCD_H
 
-#include <libpsio/psio.hpp>
-#include <libmints/wavefunction.h>
-#include <libmints/basisset.h>
-#include <psi4-dec.h>
-
 #include "cc.h"
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
-namespace psi { namespace dfcc {
+namespace psi {
+
+class PSIO;
+class Chkpt;
+
+namespace dfcc {
 
 class CCD : public CC {
 private:
   void print_header();
 
 protected:
-  shared_ptr<DFCCDIIS> diis_;
+  boost::shared_ptr<DFCCDIIS> diis_;
 
   double *tIAJB_;
   double *t2IAJB_;
@@ -43,7 +45,7 @@ protected:
   double store_error_vecs();
 
 public:
-  CCD(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+  CCD(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
   virtual ~CCD();
 
   virtual double compute_energy();

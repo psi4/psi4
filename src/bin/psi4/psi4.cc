@@ -58,8 +58,8 @@ int main(int argc, char **argv, char **envp)
     #if HAVE_MADNESS == 1
         if(communicator == "MADNESS") {
             madness::initialize(argc, argv);
-            Communicator::world = shared_ptr<Communicator>(new MadCommunicator(
-                    shared_ptr<madness::World>(new madness::World(MPI::COMM_WORLD)) ));
+            Communicator::world = boost::shared_ptr<Communicator>(new MadCommunicator(
+                    boost::shared_ptr<madness::World>(new madness::World(MPI::COMM_WORLD)) ));
         }
         else {
     #endif
@@ -69,7 +69,7 @@ int main(int argc, char **argv, char **envp)
             MPI_Init(&argc, &argv);
 
             // Create the global world communicator
-            Communicator::world = shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
+            Communicator::world = boost::shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
 
     #if HAVE_MADNESS == 1
         }
@@ -77,13 +77,13 @@ int main(int argc, char **argv, char **envp)
 
 #else
     // Initialize local communicator
-    Communicator::world = shared_ptr<Communicator>(new LocalCommunicator);
+    Communicator::world = boost::shared_ptr<Communicator>(new LocalCommunicator);
 #endif
 
     Wavefunction::initialize_singletons();
 
     // Create the scripting object
-    Script::language = shared_ptr<Script>(new Python);
+    Script::language = boost::shared_ptr<Script>(new Python);
     // Create base objects in the scripting language and initialize the language
     Script::language->initialize();
 
@@ -102,7 +102,7 @@ int main(int argc, char **argv, char **envp)
 
     // Okay, we might only need to make this function call if we're using IPV1
     // TODO: Need to come up with a way to interface with optking
-    // 
+    //
     Script::language->run(infile);
 
     // Shut things down:

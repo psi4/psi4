@@ -1,5 +1,6 @@
 #include "dcft.h"
-#include "libdpd/dpd.h"
+#include <libdpd/dpd.h>
+#include <libtrans/integraltransform.h>
 #include "defines.h"
 
 namespace psi{ namespace dcft{
@@ -441,7 +442,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_close(&L);
     dpd_buf4_close(&G);
 
-    
+
     /*
      * G_ijab -= P(ij)P(ab) Sum_kc gbar_jckb lambda_ikac
      */
@@ -482,7 +483,7 @@ DCFTSolver::build_intermediates()
 
     // T_IbjA -= Sum_Kc g_IbKc lambda_KcjA
     dpd_contract444(&I, &Lab, &Tab, 0, 1, -1.0, 1.0);
-    
+
     // T_IbjA -> T_IAjb
     dpd_buf4_sort(&Tab, PSIF_DCFT_DPD, psrq, ID("[O,V]"),ID("[o,v]"), "Temp (OV|ov)");
     dpd_buf4_close(&Tab);
@@ -754,7 +755,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_add(&G, &T, -1.0);
     dpd_buf4_close(&T);
     dpd_buf4_close(&G);
-    
+
 
 
     /*

@@ -7,6 +7,7 @@
 #include <libchkpt/chkpt.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
+#include <libmints/molecule.h>
 
 #include "scf.h"
 

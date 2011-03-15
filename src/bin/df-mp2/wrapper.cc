@@ -18,6 +18,8 @@
 
 #include <psi4-dec.h>
 
+using namespace boost;
+
 namespace psi { namespace dfmp2 {
 
 std::string to_string(const int val);   // In matrix.cpp

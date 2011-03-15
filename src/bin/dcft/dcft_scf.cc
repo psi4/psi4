@@ -1,11 +1,14 @@
 #include <map>
 #include "dcft.h"
-#include "libiwl/iwl.hpp"
-#include "libdpd/dpd.h"
-#include "libqt/qt.h"
-#include "libmints/matrix.h"
+#include <libiwl/iwl.hpp>
+#include <libdpd/dpd.h>
+#include <libqt/qt.h>
+#include <libmints/matrix.h>
+#include <libchkpt/chkpt.hpp>
+#include <libtrans/integraltransform.h>
 #include "defines.h"
 
+using namespace boost;
 using namespace std;
 
 namespace psi{ namespace dcft{
@@ -642,7 +645,7 @@ namespace psi{ namespace dcft{
             dpd_buf4_mat_irrep_init(&tau2_AO_ab, h);
 
         }
-        
+
     }
 
     bool lastBuffer;

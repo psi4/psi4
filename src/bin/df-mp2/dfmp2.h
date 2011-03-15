@@ -9,17 +9,20 @@
 #ifndef DFMP2_H
 #define DFMP2_H
 
-#include <libpsio/psio.hpp>
-#include <libmints/wavefunction.h>
-#include <libmints/basisset.h>
-#include <libdiis/diismanager.h>
-#include <psi4-dec.h>
 #include <float.h>
-#include <cstring>
+#include <libmints/wavefunction.h>
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
-namespace psi { namespace  dfmp2 {
+namespace psi {
+
+class Options;
+class PSIO;
+class Chkpt;
+
+namespace  dfmp2 {
 
 class DFMP2 : public Wavefunction {
 protected:
@@ -31,16 +34,16 @@ protected:
     int rank_;
 
     unsigned long int df_memory_;
-    
+
     int print_;
     std::string algorithm_type_;
     std::string fitting_symmetry_;
     std::string fitting_conditioning_;
     std::string fitting_inversion_;
 
-    shared_ptr<BasisSet> ribasis_;
-    shared_ptr<BasisSet> zerobasis_;
-    
+    boost::shared_ptr<BasisSet> ribasis_;
+    boost::shared_ptr<BasisSet> zerobasis_;
+
     int nirrep_;
     int ndocc_;
     int nvirt_;
@@ -72,9 +75,9 @@ protected:
     double E_tot_scs_;
 
     double** C_docc_;
-    double** C_virt_; 
-    double* eps_docc_; 
-    double* eps_virt_; 
+    double** C_virt_;
+    double* eps_docc_;
+    double* eps_virt_;
     int* sym_docc_;
     int* sym_virt_;
 
@@ -91,30 +94,30 @@ protected:
     double compute_E_old();
     //Threaded core algorithm
     double compute_E_core();
-    //Threaded disk algorithm 
+    //Threaded disk algorithm
     double compute_E_disk();
 
     //Form the Schwarz Sieve
     void form_Schwarz();
 
     // Raw fitting metric
-    double** form_W(shared_ptr<BasisSet> b);
+    double** form_W(boost::shared_ptr<BasisSet> b);
     // Raw fitting overlap
-    double** form_W_overlap(shared_ptr<BasisSet> b);
+    double** form_W_overlap(boost::shared_ptr<BasisSet> b);
     // Form orthogonlization matrix
     double** form_X(double** W, int n, double max_cond, int* clipped);
     // Matrix power, in-place, with clipping
     int matrix_power(double** J, int n, double pow, double max_cond = DBL_MAX);
-    // Matrix upper cholesky decomposition (U'U = J, FORTRAN -style), in-place 
+    // Matrix upper cholesky decomposition (U'U = J, FORTRAN -style), in-place
     void cholesky_decomposition(double** J, int n);
-    // Matrix inverse, via cholesky decomposition, in-place 
+    // Matrix inverse, via cholesky decomposition, in-place
     void cholesky_inverse(double** J, int n);
 
     //Form the inverse square root of the fitting metric (preconditioned)
     void form_Wm12_fin();
     //Form the inverse square root of the fitting metric (raw)
     void form_Wm12_raw();
-    //Form the square root of the fitting metric and it's cholesky decomposition 
+    //Form the square root of the fitting metric and it's cholesky decomposition
     void form_Wp12_chol();
 
     //Build the (A|ia) tensor and stripe it here
@@ -122,32 +125,32 @@ protected:
     //Embed the fitting  and stripe here
     void form_Qia_disk();
     //Manage the IO and delegate the summation
-    void evaluate_contributions_disk();   
+    void evaluate_contributions_disk();
     //Do the summation
     void find_disk_contributions(double** Qia, double** Qjb, double***I, int* starts, int* sizes, int* stops, int block1, int block2);
-    
+
     //Build Aia directly on corei (returns double** as transform might be in place)
     double** form_Aia_core();
     //Build Qia directly on core
     void form_Qia_core();
     //Evaluate and sum the energy contributions
-    void evaluate_contributions_core_sym();   
+    void evaluate_contributions_core_sym();
     //Build Aia directly on corei (returns double** as transform might be in place)
     double** form_Aia_core_parallel();
     //Build Qia directly on core
     void form_Qia_core_parallel();
     //Evaluate and sum the energy contributions NEW PARALLEL ALGORITHM
-    void evaluate_contributions_core_parallel();   
-    //Free Qia_ 
+    void evaluate_contributions_core_parallel();
+    //Free Qia_
     void free_Qia_core();
-    
+
     //Build Cia directly on core
     void form_Cia_core();
     //Evaluate and sum the energy contributions
-    void evaluate_contributions_core_asym();   
-    //Free Cia_ 
+    void evaluate_contributions_core_asym();
+    //Free Cia_
     void free_Cia_core();
- 
+
     //Figure out all indexing and parameters
     //Only chkpt reads in here for disk-based
     //Called by constructor
@@ -156,7 +159,7 @@ protected:
     void print_header();
 
 public:
-    DFMP2(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+    DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     /// Compute DF-MP2 energy.
     double compute_energy();
 

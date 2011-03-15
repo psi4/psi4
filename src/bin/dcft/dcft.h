@@ -1,32 +1,37 @@
 #ifndef _PSI4_SRC_BIN_DCFT_DCFT_H_
 #define _PSI4_SRC_BIN_DCFT_DCFT_H_
-#include "psi4-dec.h"
-#include <libmints/mints.h>
-#include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.hpp>
-#include <libscf_solver/uhf.h>
-#include <libtrans/integraltransform.h>
-#include <libdpd/dpd.h>
-#include <libdiis/diismanager.h>
-#include <libmints/matrix.h>
 
+#include <libmints/matrix.h>
+#include <libmints/vector.h>
+#include <libdpd/dpd.h>
+
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi{
-    using namespace scf;
- namespace dcft{
+
+class Options;
+class PSIO;
+class Chkpt;
+class Matrix;
+class Vector;
+class IntegralTransform;
+
+namespace dcft{
 
 class DCFTSolver
 {
-  public:
+public:
     DCFTSolver(Options &options);
     ~DCFTSolver();
 
     void compute();
 
-  protected:
+protected:
     Options           _options;
-    shared_ptr<Chkpt> _chkpt;
-    shared_ptr<PSIO>  _psio;
+    boost::shared_ptr<Chkpt> _chkpt;
+    boost::shared_ptr<PSIO>  _psio;
     IntegralTransform *_ints;
 
     void perform_scf();
@@ -55,11 +60,11 @@ class DCFTSolver
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
     void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix& C1, Matrix& C2,
-            int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
-            bool backwards, double alpha, double beta);
+                        int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
+                        bool backwards, double alpha, double beta);
     void file2_transform(dpdfile2 *A, dpdfile2 *B, Matrix *C, bool backwards);
     void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
-            int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
+                       int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);

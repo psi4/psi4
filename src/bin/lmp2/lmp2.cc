@@ -12,6 +12,8 @@
 #include <libmints/mints.h>
 #include "globals.h"
 
+using namespace boost;
+
 namespace psi {
 
 namespace lmp2 {

@@ -22,6 +22,7 @@
 #include <libscf_solver/uhf.h>
 #include <libscf_solver/ks.h>
 
+using namespace boost;
 using namespace std;
 
 namespace psi { namespace scf {

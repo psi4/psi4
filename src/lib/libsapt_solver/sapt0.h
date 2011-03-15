@@ -3,7 +3,9 @@
 
 #include "sapt.h"
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi { namespace sapt {
 
@@ -40,7 +42,7 @@ private:
 
   Iterator get_iterator(long int, SAPTDFInts*, SAPTDFInts*);
   Iterator set_iterator(int, SAPTDFInts*, SAPTDFInts*);
- 
+
   void read_all(SAPTDFInts*);
   void read_block(Iterator *, SAPTDFInts *);
   void read_block(Iterator *, SAPTDFInts *, SAPTDFInts *);
@@ -49,7 +51,7 @@ private:
   void ind20rB_A();
 
 protected:
-  shared_ptr<SAPTLaplaceDenominator> denom_;
+  boost::shared_ptr<SAPTLaplaceDenominator> denom_;
 
   int maxiter_;
   double e_conv_;
@@ -68,7 +70,7 @@ protected:
   double **wABS_;
 
 public:
-  SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
+  SAPT0(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
   virtual ~SAPT0();
 
   virtual double compute_energy();
@@ -104,12 +106,12 @@ struct SAPTDFInts {
   psio_address next_DF_;
 
   SAPTDFInts() { next_DF_ = PSIO_ZERO; B_p_ = NULL; B_d_ = NULL; };
-  ~SAPTDFInts() { 
-    if (B_p_ != NULL) free_block(B_p_); 
+  ~SAPTDFInts() {
+    if (B_p_ != NULL) free_block(B_p_);
     if (B_d_ != NULL) free_block(B_d_); };
   void rewind() { next_DF_ = PSIO_ZERO; };
   void clear() { free_block(B_p_); B_p_ = NULL; next_DF_ = PSIO_ZERO; };
-  void done() { 
+  void done() {
     free_block(B_p_); if (dress_) free_block(B_d_);
     B_p_ = NULL; B_d_ = NULL; };
 };

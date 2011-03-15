@@ -1,5 +1,6 @@
 #include "dcft.h"
-#include "libdpd/dpd.h"
+#include <libdpd/dpd.h>
+#include <libtrans/integraltransform.h>
 #include "psifiles.h"
 #include "defines.h"
 
@@ -16,7 +17,7 @@ DCFTSolver::compute_lambda_residual()
     dpdbuf4 R, G, T, A;
     double sumSQ = 0.0;
     size_t nElements = 0;
-    
+
     /*
      * R_ijab = G_ijab + T_ijab - A_ijab
      */

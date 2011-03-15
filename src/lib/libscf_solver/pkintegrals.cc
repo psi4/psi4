@@ -1,12 +1,14 @@
 #include "pkintegrals.h"
-#include "libiwl/iwl.hpp"
-#include "liboptions/liboptions.h"
-#include "exception.h"
-#include "libmints/matrix.h"
-#include "libpsio/psio.hpp"
-#include "boost/shared_ptr.hpp"
+#include <libiwl/iwl.hpp>
+#include <liboptions/liboptions.h>
+#include <exception.h>
+#include <libmints/matrix.h>
+#include <libpsio/psio.hpp>
+#include <boost/shared_ptr.hpp>
 
 #define INDEX2(i,j) (i < j ? (j)*((j)+1)/2 + i : (i)*((i)+1)/2 + j)
+
+using namespace boost;
 
 namespace psi{ namespace scf{
 

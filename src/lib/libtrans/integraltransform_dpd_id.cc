@@ -1,7 +1,8 @@
 #include "integraltransform.h"
 #include "mospace.h"
-#include "exception.h"
+#include <exception.h>
 
+using namespace boost;
 using namespace psi;
 
 /**

@@ -10,6 +10,8 @@
 
 extern FILE* outfile;
 
+using namespace boost;
+
 namespace psi{
 namespace mcscf{
 

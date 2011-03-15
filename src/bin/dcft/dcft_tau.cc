@@ -1,8 +1,9 @@
 #include "dcft.h"
-#include "libdpd/dpd.h"
-#include "libqt/qt.h"
-#include "libiwl/iwl.hpp"
-#include "psifiles.h"
+#include <libdpd/dpd.h>
+#include <libqt/qt.h>
+#include <libiwl/iwl.hpp>
+#include <psifiles.h>
+#include <libtrans/integraltransform.h>
 #include "defines.h"
 
 using namespace std;
@@ -180,7 +181,7 @@ DCFTSolver::print_opdm()
     std::vector<std::pair<double, int> > bPairs;
 
     for(int h = 0; h < _nIrreps; ++h){
-        for(int row = 0; row < T_OO.params->coltot[h]; ++row) 
+        for(int row = 0; row < T_OO.params->coltot[h]; ++row)
             aPairs.push_back(std::make_pair(1.0 + T_OO.matrix[h][row][row], h));
         for(int row = 0; row < T_VV.params->coltot[h]; ++row)
             aPairs.push_back(std::make_pair(T_VV.matrix[h][row][row], h));

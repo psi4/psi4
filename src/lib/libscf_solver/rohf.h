@@ -5,9 +5,9 @@
 #include <libpsio/psio.hpp>
 #include "hf.h"
 
-#include <psi4-dec.h>
-
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi { namespace scf {
 
@@ -48,8 +48,8 @@ protected:
 
     void common_init();
 public:
-    ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    ROHF(Options& options, shared_ptr<PSIO> psio);
+    ROHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    ROHF(Options& options, boost::shared_ptr<PSIO> psio);
     virtual ~ROHF();
     virtual bool restricted() const { return false; }
 };

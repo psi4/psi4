@@ -7,7 +7,6 @@
  *  Created by Robert Parrish on 02/15/10.
  *
  */
-using namespace psi;
 
 namespace psi {
 /*! \ingroup SCF */
@@ -31,13 +30,13 @@ struct RadialQuadrature {
 /// Enumeration defining available pruning modes
 enum PruningScheme {constant_p, SG0_p, SG1_p, automatic_p};
 /*! \ingroup SCF */
-/// Enumeration defining available Voronoi closeness functions 
+/// Enumeration defining available Voronoi closeness functions
 enum CoordinateScheme {elliptical_c, projection_c};
 /*! \ingroup SCF */
-/// Enumeration defining available point grouping functions 
+/// Enumeration defining available point grouping functions
 enum GroupingScheme {boxes_g, voronoi_g};
 /*! \ingroup SCF */
-/// Enumeration defining available fuzzy voronoi functions 
+/// Enumeration defining available fuzzy voronoi functions
 enum VoronoiScheme {stratmann_v, becke_v};
 /*! \ingroup SCF */
 /// Enumeration defining available nuclear weights
@@ -56,7 +55,7 @@ enum SpecialScheme {SG1, SG0, NONE};
 const double INVLN2 = 1.0/log(2.0);
 
 /// Lebedev orders available
-const int lebedev_orders_[] = 
+const int lebedev_orders_[] =
 {
     3,
     5,
@@ -65,7 +64,7 @@ const int lebedev_orders_[] =
     11,
     13,
     15,
-    17, 
+    17,
     19,
     21,
     23,
@@ -131,7 +130,7 @@ const int n_lebedev_ = 32;
 
 /// Treutler radial mapping radii (See Treutler 1995, Table 1, pp. 348)
 const int maxTreutlerIndex_ = 36;
-const double treutlerRadii_[] = 
+const double treutlerRadii_[] =
 {
     1.0, /* Ghost Atom */
     0.8, /* H */
@@ -240,7 +239,7 @@ const double braggSlaterRadii_[] =
 /*
 *Declaration of SG1_radii for use with SG1 grid
 *Gill, M.W., Johnson, B.G., Pople, J.A., Chem. Phys. Lett.,
-*209, July 1993, pp. 506 
+*209, July 1993, pp. 506
 *See Table 1, pp. 508
 * TODO: Add more radii (Ar just wont cut it)
 */
@@ -271,7 +270,7 @@ const double SG1Radii_[] =
 /*
 *Declaration of SG1 spherical grid orders used
 *Gill, M.W., Johnson, B.G., Pople, J.A., Chem. Phys. Lett.,
-*209, July 1993, pp. 506 
+*209, July 1993, pp. 506
 *See pp. 509, right column
 */
 const int SG1GridOrders_[] =
@@ -287,7 +286,7 @@ const int SG1GridOrders_[] =
 * Declaration of SG1 sphere cutoffs
 * \alpha in \alpha R
 * Gill, M.W., Johnson, B.G., Pople, J.A., Chem. Phys. Lett.,
-* 209, July 1993, pp. 506 
+* 209, July 1993, pp. 506
 * See Table 4 pp. 509
 * TODO: Add higher atoms
 */
@@ -320,7 +319,7 @@ const double SG0Radii_[] =
     1.4500, /* Cl */
     1.4500 /* Ar */ // Noble gases not defined
 };
-const int SG0NRad_[] = 
+const int SG0NRad_[] =
 {
     23, /* Ghost *///Ghost not defined
     23, /* H */
@@ -342,7 +341,7 @@ const int SG0NRad_[] =
     26, /* Cl */
     26 /* Ar */ // Noble gases not defined
 };
-const int SG0Orders_[] = 
+const int SG0Orders_[] =
 {
       6,  6,  6,  6,  6,  6, 18, 18, 18, 26, 38, 74,110,146,146,146,146,146,146, 86, 50, 38, 18,  0,  0,  0, /* Ghost *///Ghost not defined
       6,  6,  6,  6,  6,  6, 18, 18, 18, 26, 38, 74,110,146,146,146,146,146,146, 86, 50, 38, 18,  0,  0,  0, /* H */

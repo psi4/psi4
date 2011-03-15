@@ -12,6 +12,8 @@
 #define EXTERN
 #include "globals.h"
 
+using namespace boost;
+
 namespace psi {
 
 namespace lmp2 {

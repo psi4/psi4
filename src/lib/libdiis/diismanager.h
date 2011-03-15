@@ -5,8 +5,12 @@
 #include <vector>
 #include <stdarg.h>
 #include <map>
-#include "psifiles.h"
+#include <psifiles.h>
 #include "diisentry.h"
+
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi{
 
@@ -34,7 +38,7 @@ class DIISManager{
         DIISManager(int maxSubspaceSize, std::string label,
                     RemovalPolicy = LargestError,
                     StoragePolicy = OnDisk,
-                    shared_ptr<PSIO> psio = _default_psio_lib_);
+                    boost::shared_ptr<PSIO> psio = _default_psio_lib_);
         DIISManager() {_maxSubspaceSize = 0;}
         ~DIISManager();
 
@@ -75,7 +79,7 @@ class DIISManager{
         /// The label used in disk storage of the DIISEntry objects
         std::string _label;
         /// The PSIO object to use for I/O
-        shared_ptr<PSIO> _psio;
+        boost::shared_ptr<PSIO> _psio;
 };
 
 } // End namespace

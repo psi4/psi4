@@ -6,7 +6,6 @@
  *  Copyright 2008 by Justin M. Turney, Ph.D.. All rights reserved.
  *
  */
-//#define _MKL
 
 #ifndef HF_H
 #define HF_H
@@ -17,15 +16,17 @@
 #include <libdiis/diismanager.h>
 #include <psi4-dec.h>
 
-using namespace psi;
+namespace boost {
+template<class T> class shared_ptr;
+}
 
 namespace psi {
-    class TwoBodySOInt;
-    namespace scf {
+class TwoBodySOInt;
+namespace scf {
 
 class PseudospectralHF;
 class PKIntegrals;
-class DFHF; 
+class DFHF;
 
 class HF : public Wavefunction {
 protected:
@@ -91,11 +92,11 @@ protected:
     boost::shared_ptr<TwoBodySOInt> eri_;
 
     /// Pseudospectral stuff
-    shared_ptr<PseudospectralHF> pseudospectral_;
+    boost::shared_ptr<PseudospectralHF> pseudospectral_;
     /// DF stuff
-    shared_ptr<DFHF> df_;
+    boost::shared_ptr<DFHF> df_;
     /// PK Matrix approach
-    shared_ptr<PKIntegrals> pk_integrals_;
+    boost::shared_ptr<PKIntegrals> pk_integrals_;
 
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
@@ -123,11 +124,11 @@ public:
     void form_Shalf();
 
     /// Perform casting of basis set if desired.
-    shared_ptr<Matrix> dualBasisProjection(SharedMatrix _C, int *_noccpi, shared_ptr<BasisSet> _old, shared_ptr<BasisSet> _new);
+    boost::shared_ptr<Matrix> dualBasisProjection(SharedMatrix _C, int *_noccpi, boost::shared_ptr<BasisSet> _old, boost::shared_ptr<BasisSet> _new);
 
     /// UHF Atomic Density Matrix for SAD
     /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
-    void getUHFAtomicDensity(shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
+    void getUHFAtomicDensity(boost::shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
     // Computes the C and D matrix in place for SAD Atomic UHF
     void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
 
@@ -270,8 +271,8 @@ protected:
         return type;
     }
 public:
-    HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt);
-    HF(Options& options, shared_ptr<PSIO> psio);
+    HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    HF(Options& options, boost::shared_ptr<PSIO> psio);
 
     virtual ~HF();
 

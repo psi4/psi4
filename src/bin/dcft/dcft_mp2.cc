@@ -8,6 +8,8 @@
 #include <libdpd/dpd.h>
 #include <libdiis/diismanager.h>
 
+using namespace boost;
+
 namespace psi{ namespace dcft{
 
 /**
