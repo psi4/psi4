@@ -51,7 +51,7 @@ class SuperFunctional {
 
         void setParameter(const std::string & functional, const std::string & param, double val);
 
-        std::string testSuperFunctional(shared_ptr<Properties> props);
+        std::string testSuperFunctional(boost::shared_ptr<Properties> props);
 
         double getExactExchange() { return exact_exchange_; }
         void setExactExchange(double exch) {exact_exchange_ = exch; }
@@ -63,7 +63,7 @@ class SuperFunctional {
         void setOmega(double omega) {omega_ = omega; }
 
         boost::shared_ptr<Dispersion> getDashD() { return dashD_; }
-        void setDashD(shared_ptr<Dispersion> disp);
+        void setDashD(boost::shared_ptr<Dispersion> disp);
 
         void setNPoints(int npoints) { reallocate(npoints,deriv_); }
         void setDeriv(int deriv) { reallocate(npoints_,deriv); }

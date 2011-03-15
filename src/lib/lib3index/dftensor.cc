@@ -23,16 +23,16 @@
 #include <omp.h>
 #endif
 
-
+using namespace boost;
 using namespace std;
 using namespace psi;
 
-namespace psi { 
+namespace psi {
 
 DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux) :
     psio_(psio), primary_(primary), auxiliary_(aux), metric_(new FittingMetric(aux))
 {
-    common_init(); 
+    common_init();
     keep_ = 0;
 }
 DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, bool keep) :
@@ -153,18 +153,18 @@ void DFTensor::form_Aia(bool do_all)
     psio_address next_PSIF_DFMP2_AAA = PSIO_ZERO;
 
     if (do_all) {
-        // Zero everything out to prevent collision 
+        // Zero everything out to prevent collision
         double *temp = init_array(nao_*nao_);
         for (int P = 0; P < naux_; P++) {
-            psio_->write(PSIF_DFMP2_AIA, "OO Integrals", (char*) temp, nocc_*nocc_*sizeof(double), next_PSIF_DFMP2_AII, &next_PSIF_DFMP2_AII);    
+            psio_->write(PSIF_DFMP2_AIA, "OO Integrals", (char*) temp, nocc_*nocc_*sizeof(double), next_PSIF_DFMP2_AII, &next_PSIF_DFMP2_AII);
         }
         next_PSIF_DFMP2_AII = PSIO_ZERO;
         for (int P = 0; P < naux_; P++) {
-            psio_->write(PSIF_DFMP2_AIA, "OV Integrals", (char*) temp, nocc_*nvir_*sizeof(double), next_PSIF_DFMP2_AII, &next_PSIF_DFMP2_AII);    
+            psio_->write(PSIF_DFMP2_AIA, "OV Integrals", (char*) temp, nocc_*nvir_*sizeof(double), next_PSIF_DFMP2_AII, &next_PSIF_DFMP2_AII);
         }
         next_PSIF_DFMP2_AII = PSIO_ZERO;
         for (int P = 0; P < naux_; P++) {
-            psio_->write(PSIF_DFMP2_AIA, "VV Integrals", (char*) temp, nvir_*nvir_*sizeof(double), next_PSIF_DFMP2_AII, &next_PSIF_DFMP2_AII);    
+            psio_->write(PSIF_DFMP2_AIA, "VV Integrals", (char*) temp, nvir_*nvir_*sizeof(double), next_PSIF_DFMP2_AII, &next_PSIF_DFMP2_AII);
         }
         next_PSIF_DFMP2_AII = PSIO_ZERO;
         free(temp);
@@ -246,7 +246,7 @@ void DFTensor::form_Aia(bool do_all)
           nocc_, &(Cvp[0][0]), nvir_, 0.0, &(Aia[A][0]), nvir_);
       }
       timer_off("(A|ia)");
-         
+
 //    fprintf(outfile, "  Aia\n");
 //    print_mat(Aia,max_rows,nocc_*nvir_, outfile);
 
@@ -256,8 +256,8 @@ void DFTensor::form_Aia(bool do_all)
       timer_on("(A|ia) Write");
       psio_->write(PSIF_DFMP2_AIA,"OV Integrals",(char *)(&Aia[0][0]),sizeof(double)*p_sizes[block]*nocc_*(ULI)nvir_,next_PSIF_DFMP2_AIA,&next_PSIF_DFMP2_AIA);
       timer_off("(A|ia) Write");
-      
-      if (do_all) { 
+
+      if (do_all) {
           //TODO: fix VV/OO integrals
 
           timer_on("(A|ii)");
@@ -267,7 +267,7 @@ void DFTensor::form_Aia(bool do_all)
               nocc_, &(Cop[0][0]), nocc_, 0.0, &(Aii[A][0]), nocc_);
           }
           timer_off("(A|ii)");
-         
+
           //fprintf(outfile, "  Aii\n");
           //print_mat(Aii,max_rows,nocc_*nocc_, outfile);
 
@@ -275,7 +275,7 @@ void DFTensor::form_Aia(bool do_all)
           timer_on("(A|ii) Write");
           psio_->write(PSIF_DFMP2_AIA,"OO Integrals",(char *)(&Aii[0][0]),sizeof(double)*p_sizes[block]*nocc_*(ULI)nocc_,next_PSIF_DFMP2_AII,&next_PSIF_DFMP2_AII);
           timer_off("(A|ii) Write");
-          
+
           #ifdef HAVE_MKL
              mkl_set_num_threads(mkl_nthreads);
           #endif
@@ -297,7 +297,7 @@ void DFTensor::form_Aia(bool do_all)
               nvir_, &(Cvp[0][0]), nvir_, 0.0, &(Aaa[A][0]), nvir_);
           }
           timer_off("(A|aa)");
-         
+
           //fprintf(outfile, "  Aaa\n");
           //print_mat(Aaa,max_rows,nvir_*nvir_, outfile);
 
@@ -331,7 +331,7 @@ void DFTensor::form_Aia(bool do_all)
 }
 void DFTensor::apply_fitting(const std::string& entry)
 {
-  //Available memory is lower due to fitting metric 
+  //Available memory is lower due to fitting metric
   unsigned long int available_memory = memory_-naux_*naux_;
   unsigned long int entry_size;
   if (entry == "OO Integrals")
@@ -440,7 +440,7 @@ void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     fprintf(outfile, "  %s striping will be used for the fitted integrals.\n", (Qia_striping ? "(Q|ia)" : "(ia|Q)"));
     fprintf(outfile, "  A %s algorithm will be used for fitting, with a target inverse condition of %7.3E.\n", fitting_algorithm.c_str(), condition);
     fprintf(outfile, "  A Cauchy-Schwarz sieve with cutoff of %7.3E will be applied to AO integrals.\n", schwarz);
-    
+
     memory_ = memory_doubles;
     Co_ = Co;
     Cv_ = Cv;
@@ -449,8 +449,8 @@ void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     Qia_striping_ = Qia_striping;
     fitting_algorithm_ = fitting_algorithm;
     fitting_condition_ = condition;
-    schwarz_cutoff_ = schwarz;   
- 
+    schwarz_cutoff_ = schwarz;
+
     psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_NEW);
 
     form_Aia(true);
@@ -461,10 +461,10 @@ void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     else if (fitting_algorithm_ == "EIG")
         metric_->form_eig_inverse(condition);
 
-    apply_fitting("OO Integrals"); 
-    apply_fitting("OV Integrals"); 
-    apply_fitting("VV Integrals"); 
-    
+    apply_fitting("OO Integrals");
+    apply_fitting("OV Integrals");
+    apply_fitting("VV Integrals");
+
     metric_.reset();
     psio_->close(PSIF_DFMP2_AIA, 0);
 }
@@ -484,8 +484,8 @@ void DFTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     Qia_striping_ = Qia_striping;
     fitting_algorithm_ = fitting_algorithm;
     fitting_condition_ = condition;
-    schwarz_cutoff_ = schwarz;   
-    
+    schwarz_cutoff_ = schwarz;
+
     psio_->open(PSIF_DFMP2_AIA, PSIO_OPEN_NEW);
 
     form_Aia(false);
@@ -495,8 +495,8 @@ void DFTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Ma
         metric_->form_QR_inverse(condition);
     else if (fitting_algorithm_ == "EIG")
         metric_->form_eig_inverse(condition);
-    apply_fitting("OV Integrals"); 
-    
+    apply_fitting("OV Integrals");
+
     metric_.reset();
     psio_->close(PSIF_DFMP2_AIA, 0);
 }

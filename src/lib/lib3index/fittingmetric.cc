@@ -25,6 +25,7 @@
 #include <omp.h>
 #endif
 
+using namespace boost;
 using namespace std;
 using namespace psi;
 

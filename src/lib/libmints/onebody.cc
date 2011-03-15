@@ -4,6 +4,7 @@
 #include "mints.h"
 #include <compiler.h>
 
+using namespace boost;
 using namespace psi;
 
 static void transform1e_1(int am, SphericalTransformIter& sti, double *s, double *t, int nl)

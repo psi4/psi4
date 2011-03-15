@@ -4,6 +4,10 @@
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
 namespace psi {
 
     class BasisSet;
@@ -151,7 +155,7 @@ protected:
     ShellPair **pairs12_, **pairs34_;
 
     //! Evaluates how much memory (in doubles) is needed to store shell pair data
-    size_t memory_to_store_shell_pairs(const shared_ptr<BasisSet>&, const shared_ptr<BasisSet>&);
+    size_t memory_to_store_shell_pairs(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<BasisSet>&);
 
     //! Original shell index requested
     int osh1_, osh2_, osh3_, osh4_;

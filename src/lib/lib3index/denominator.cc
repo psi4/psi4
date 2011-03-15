@@ -32,10 +32,11 @@
 #include <omp.h>
 #endif
 
+using namespace boost;
 using namespace std;
 using namespace psi;
 
-namespace psi { 
+namespace psi {
 
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
@@ -47,14 +48,14 @@ bool from_string(T& t,
     std::istringstream iss(s);
     return !(iss >> f >> t).fail();
 }
-Denominator::Denominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta) : 
+Denominator::Denominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta) :
     eps_occ_(eps_occ), eps_vir_(eps_vir), delta_(delta)
 {
 }
 Denominator::~Denominator()
 {
 }
-LaplaceDenominator::LaplaceDenominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta) : 
+LaplaceDenominator::LaplaceDenominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta) :
     Denominator(eps_occ, eps_vir, delta)
 {
     decompose();
@@ -81,7 +82,7 @@ void Denominator::debug()
     for (int j = 0; j < nocc; j++)
     for (int b = 0; b < nvir; b++)
         tp[i*nvir + a][j*nvir + b] =  1.0 / (e_v[a] + e_v[b] - e_o[i] - e_o[j]);
-    
+
     for (int alpha = 0; alpha < nvector_; alpha++)
     for (int i = 0; i < nocc; i++)
     for (int a = 0; a < nvir; a++)
@@ -118,8 +119,8 @@ void LaplaceDenominator::decompose()
     std::string err_table_filename = PSIDATADIR + "quadratures/1_x/error.bin";
     std::string R_filename = PSIDATADIR + "quadratures/1_x/R_avail.bin";
 
-    ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);    
-    ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);    
+    ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);
+    ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);
 
     if (!err_table_file)
         throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate error property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/error.bin)");
@@ -132,10 +133,10 @@ void LaplaceDenominator::decompose()
     // Read in the R available
     double* R_availp = new double[nR];
     R_avail_file.read((char*) R_availp, nR*sizeof(double));
- 
+
     shared_ptr<Matrix> err_table(new Matrix("Error Table (nR x nk)", nR, nk));
     double** err_tablep = err_table->pointer();
-    err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double)); 
+    err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
@@ -170,34 +171,34 @@ void LaplaceDenominator::decompose()
             break;
     }
 
- 
+
     if (!found) {
         throw PSIEXCEPTION("Laplace Quadrature rule could not be found with specified accuracy for this system");
     }
 
-    nvector_ = k + 1; 
+    nvector_ = k + 1;
 
     int exponent = (int) floor(log(R_availp[r])/log(10.0));
-    int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));   
+    int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));
 
     std::stringstream st;
     st << setfill('0');
     st << "1_xk" <<  setw(2) << nvector_;
-    st << "_" << mantissa; 
-    st << "E" << exponent;  
- 
+    st << "_" << mantissa;
+    st << "E" << exponent;
+
     std::string quadfile = PSIDATADIR + "quadratures/1_x/" + st.str().c_str();
 
-    fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n"); 
+    fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n");
     fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
     fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
-    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy); 
-    fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());    
+    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+    fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[nvector_];
     double* omega = new double[nvector_];
-   
+
     std::vector<std::string> lines;
     std::string text;
     ifstream infile(quadfile.c_str());
@@ -210,7 +211,7 @@ void LaplaceDenominator::decompose()
 
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
     regex numberline("^\\s*(" NUMBER ").*");
-    smatch what;  
+    smatch what;
 
     // We'll be rigorous, the files are extremely well defined
     int lineno = 0;
@@ -231,16 +232,16 @@ void LaplaceDenominator::decompose()
 
     //for (int k = 0; k < nvector_; k++)
     //    printf("  %24.16E, %24.16E\n", omega[k], alpha[k]);
- 
-    // Cast weights back to problem size 
+
+    // Cast weights back to problem size
     for (int k = 0; k < nvector_; k++) {
         alpha[k] /= A;
         omega[k] /= A;
-    }       
+    }
 
-    denominator_occ_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor", nvector_, nocc)); 
-    denominator_vir_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor", nvector_, nvir)); 
-    denominator_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor", nvector_, nocc*nvir)); 
+    denominator_occ_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor", nvector_, nocc));
+    denominator_vir_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor", nvector_, nvir));
+    denominator_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor", nvector_, nocc*nvir));
 
     double** dop = denominator_occ_->pointer();
     double** dvp = denominator_vir_->pointer();
@@ -264,13 +265,13 @@ void LaplaceDenominator::decompose()
     }
 
     delete[] alpha;
-    delete[] omega; 
+    delete[] omega;
     delete[] R_availp;
 }
 void LaplaceDenominator::debug()
 {
     fprintf(outfile, "\n  DEBUG: Laplace Denominator. Compound results: \n");
-    
+
     Denominator::debug();
 
     fprintf(outfile, "\n  DEBUG: Laplace Denominator. Compound results: \n");
@@ -296,7 +297,7 @@ void LaplaceDenominator::debug()
     for (int j = 0; j < nocc; j++)
     for (int b = 0; b < nvir; b++)
         tp[i*nvir + a][j*nvir + b] =  1.0 / (e_v[a] + e_v[b] - e_o[i] - e_o[j]);
-    
+
     for (int alpha = 0; alpha < nvector_; alpha++)
     for (int i = 0; i < nocc; i++)
     for (int a = 0; a < nvir; a++)
@@ -310,9 +311,9 @@ void LaplaceDenominator::debug()
     true_denom->print();
     app_denom->print();
     err_denom->print();
-    
+
 }
-CholeskyDenominator::CholeskyDenominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta, double dm) : 
+CholeskyDenominator::CholeskyDenominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta, double dm) :
     Denominator(eps_occ, eps_vir, delta), degeneracy_multiplier_(dm)
 {
     decompose();
@@ -326,11 +327,11 @@ bool CholeskyDenominator::criteria(std::pair<int, double> a, std::pair<int, doub
 }
 void CholeskyDenominator::decompose()
 {
-    int noccA = eps_occ_->dimpi()[0];    
-    int nvirA = eps_vir_->dimpi()[0];    
-    int nspan = noccA*nvirA; 
+    int noccA = eps_occ_->dimpi()[0];
+    int nvirA = eps_vir_->dimpi()[0];
+    int nspan = noccA*nvirA;
 
-    std::vector<std::pair<int, double> > eps(nspan);    
+    std::vector<std::pair<int, double> > eps(nspan);
     std::vector<int> degenerate_index(nspan);
 
     for (int i = 0; i < noccA; i++) {
@@ -344,7 +345,7 @@ void CholeskyDenominator::decompose()
     double* w_ia = new double[nspan];
     w_ia[0] = eps[0].second;
     degenerate_index[0] = 0;
-    
+
     int N = 1;
     for (int k = 1; k < nspan; k++) {
         if (fabs(eps[k].second - w_ia[N-1]) > delta_ / degeneracy_multiplier_) {
@@ -353,7 +354,7 @@ void CholeskyDenominator::decompose()
         }
         degenerate_index[k] = N - 1;
     }
-    
+
     int Ndelta; double max_error = 0.0;
     for (Ndelta = 1; Ndelta <= N; Ndelta++) {
         max_error = 0.0;
@@ -366,15 +367,15 @@ void CholeskyDenominator::decompose()
                 D *= Q * Q;
             }
             if (fabs(D) > max_error)
-                max_error = fabs(D);           
- 
+                max_error = fabs(D);
+
             //printf("  D(%d)^%d = %14.10E\n", p, Ndelta, D);
             if (fabs(D) > delta_) {
                 OK = false;
                 break;
             }
         }
-        if (OK) 
+        if (OK)
             break;
     }
 
@@ -401,13 +402,13 @@ void CholeskyDenominator::decompose()
 
     delete[] w_ia;
 
-    fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n"); 
+    fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n");
     fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
-    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", max_error); 
+    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", max_error);
 
     denominator_ = shared_ptr<Matrix>(new Matrix("Cholesky Delta Tensor", Ndelta, nspan));
-    double** Lar = denominator_->pointer();   
- 
+    double** Lar = denominator_->pointer();
+
     for (int k = 0; k < nspan; k++) {
         int ind = eps[k].first;
         C_DCOPY(Ndelta, Lp[degenerate_index[k]], 1, &Lar[0][ind], noccA*nvirA);
@@ -421,21 +422,21 @@ void CholeskyDenominator::decompose()
     //shared_ptr<Matrix> Delta(new Matrix(noccA*nvirA, noccB*nvirB));
     //double** Delt = Delta->get_pointer();
 
-    //C_DGEMM('T','N', noccA*nvirA, noccB*nvirB, Ndelta, 1.0, Lar[0], noccA*nvirA, Lbs[0], noccB*nvirB, 0.0, Delt[0], noccB*nvirB); 
+    //C_DGEMM('T','N', noccA*nvirA, noccB*nvirB, Ndelta, 1.0, Lar[0], noccA*nvirA, Lbs[0], noccB*nvirB, 0.0, Delt[0], noccB*nvirB);
     //Delta->print();
- 
+
 }
 void CholeskyDenominator::debug()
 {
     fprintf(outfile, "\n  DEBUG: Cholesky Denominator. Compound results: \n");
-    
+
     Denominator::debug();
 }
 
-SAPTDenominator::SAPTDenominator(shared_ptr<Vector> eps_occA, 
-  shared_ptr<Vector> eps_virA, shared_ptr<Vector> eps_occB, 
-  shared_ptr<Vector> eps_virB, double delta, bool debug) : 
-    eps_occA_(eps_occA), eps_virA_(eps_virA), eps_occB_(eps_occB), 
+SAPTDenominator::SAPTDenominator(shared_ptr<Vector> eps_occA,
+  shared_ptr<Vector> eps_virA, shared_ptr<Vector> eps_occB,
+  shared_ptr<Vector> eps_virB, double delta, bool debug) :
+    eps_occA_(eps_occA), eps_virA_(eps_virA), eps_occB_(eps_occB),
     eps_virB_(eps_virB), delta_(delta), debug_(debug)
 {
 }
@@ -449,7 +450,7 @@ void SAPTDenominator::debug()
     fprintf(outfile, "\n  ==> Debug Monomer B Denominator <==\n\n");
     check_denom(eps_occB_,eps_virB_,denominatorB_);
 }
-void SAPTDenominator::check_denom(shared_ptr<Vector> eps_occ, 
+void SAPTDenominator::check_denom(shared_ptr<Vector> eps_occ,
   shared_ptr<Vector> eps_vir, shared_ptr<Matrix> denominator)
 {
     int nocc = eps_occ->dimpi()[0];
@@ -489,9 +490,9 @@ void SAPTDenominator::check_denom(shared_ptr<Vector> eps_occ,
 }
 SAPTLaplaceDenominator::SAPTLaplaceDenominator(shared_ptr<Vector> eps_occA,
   shared_ptr<Vector> eps_virA, shared_ptr<Vector> eps_occB,
-  shared_ptr<Vector> eps_virB, double delta, bool debug) : 
+  shared_ptr<Vector> eps_virB, double delta, bool debug) :
     SAPTDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug)
-{   
+{
     decompose();
 }
 SAPTLaplaceDenominator::~SAPTLaplaceDenominator()
@@ -527,8 +528,8 @@ void SAPTLaplaceDenominator::decompose()
     std::string err_table_filename = PSIDATADIR + "/quadratures/1_x/error.bin";
     std::string R_filename = PSIDATADIR + "/quadratures/1_x/R_avail.bin";
 
-    ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);    
-    ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);    
+    ifstream err_table_file(err_table_filename.c_str(), ios::in | ios::binary);
+    ifstream R_avail_file(R_filename.c_str(), ios::in | ios::binary);
 
     if (!err_table_file)
         throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate error property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/error.bin)");
@@ -541,10 +542,10 @@ void SAPTLaplaceDenominator::decompose()
     // Read in the R available
     double* R_availp = new double[nR];
     R_avail_file.read((char*) R_availp, nR*sizeof(double));
- 
+
     shared_ptr<Matrix> err_table(new Matrix("Error Table (nR x nk)", nR, nk));
     double** err_tablep = err_table->pointer();
-    err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double)); 
+    err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double));
 
     R_avail_file.close();
     err_table_file.close();
@@ -579,36 +580,36 @@ void SAPTLaplaceDenominator::decompose()
             break;
     }
 
- 
+
     if (!found) {
         throw PSIEXCEPTION("Laplace Quadrature rule could not be found with specified accuracy for this system");
     }
 
-    nvector_ = k + 1; 
+    nvector_ = k + 1;
 
     int exponent = (int) floor(log(R_availp[r])/log(10.0));
-    int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));   
+    int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));
 
     std::stringstream st;
     st << setfill('0');
     st << "1_xk" <<  setw(2) << nvector_;
-    st << "_" << mantissa; 
-    st << "E" << exponent;  
- 
+    st << "_" << mantissa;
+    st << "E" << exponent;
+
     std::string quadfile = PSIDATADIR + "/quadratures/1_x/" + st.str().c_str();
 
     if (debug_) {
-        fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n"); 
+        fprintf(outfile, "\n  ==> Laplace Denominator <==\n\n");
         fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
         fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
-        fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy); 
-        fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());    
+        fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
+        fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());
     }
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[nvector_];
     double* omega = new double[nvector_];
-   
+
     std::vector<std::string> lines;
     std::string text;
     ifstream infile(quadfile.c_str());
@@ -621,7 +622,7 @@ void SAPTLaplaceDenominator::decompose()
 
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
     regex numberline("^\\s*(" NUMBER ").*");
-    smatch what;  
+    smatch what;
 
     // We'll be rigorous, the files are extremely well defined
     int lineno = 0;
@@ -642,20 +643,20 @@ void SAPTLaplaceDenominator::decompose()
 
     //for (int k = 0; k < nvector_; k++)
     //    printf("  %24.16E, %24.16E\n", omega[k], alpha[k]);
- 
-    // Cast weights back to problem size 
+
+    // Cast weights back to problem size
     for (int k = 0; k < nvector_; k++) {
         alpha[k] /= A;
         omega[k] /= A;
-    }       
+    }
 
-    denominator_occA_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (A)", nvector_, noccA)); 
-    denominator_virA_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (A)", nvector_, nvirA)); 
-    denominatorA_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (A)", nvector_, noccA*nvirA)); 
+    denominator_occA_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (A)", nvector_, noccA));
+    denominator_virA_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (A)", nvector_, nvirA));
+    denominatorA_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (A)", nvector_, noccA*nvirA));
 
-    denominator_occB_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (B)", nvector_, noccB)); 
-    denominator_virB_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (B)", nvector_, nvirB)); 
-    denominatorB_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (B)", nvector_, noccB*nvirB)); 
+    denominator_occB_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (B)", nvector_, noccB));
+    denominator_virB_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (B)", nvector_, nvirB));
+    denominatorB_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (B)", nvector_, noccB*nvirB));
 
     double** doA = denominator_occA_->pointer();
     double** dvA = denominator_virA_->pointer();
@@ -699,7 +700,7 @@ void SAPTLaplaceDenominator::decompose()
 
 
     delete[] alpha;
-    delete[] omega; 
+    delete[] omega;
     delete[] R_availp;
 }
 void SAPTLaplaceDenominator::debug()
@@ -710,8 +711,8 @@ void SAPTLaplaceDenominator::debug()
     fprintf(outfile, "\n  ==> Debug Monomer B Split Denominator <==\n\n");
     check_split(eps_occB_,eps_virB_,denominator_occB_,denominator_virB_);
 }
-void SAPTLaplaceDenominator::check_split(shared_ptr<Vector> eps_occ, 
-  shared_ptr<Vector> eps_vir, shared_ptr<Matrix> denominator_occ, 
+void SAPTLaplaceDenominator::check_split(shared_ptr<Vector> eps_occ,
+  shared_ptr<Vector> eps_vir, shared_ptr<Matrix> denominator_occ,
   shared_ptr<Matrix> denominator_vir)
 {
     int nocc = eps_occ->dimpi()[0];
@@ -735,7 +736,7 @@ void SAPTLaplaceDenominator::check_split(shared_ptr<Vector> eps_occ,
     for (int j = 0; j < nocc; j++)
     for (int b = 0; b < nvir; b++)
         tp[i*nvir + a][j*nvir + b] =  1.0 / (e_v[a] + e_v[b] - e_o[i] - e_o[j]);
-    
+
     for (int alpha = 0; alpha < nvector_; alpha++)
     for (int i = 0; i < nocc; i++)
     for (int a = 0; a < nvir; a++)

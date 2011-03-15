@@ -10,11 +10,15 @@
  */
 
 #include "integrator_defines.h"
-#include <stdlib.h>
+#include <cstdlib>
 #include <vector>
 #include <string>
 
-namespace psi { 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
+namespace psi {
 
 class Molecule;
 class Vector3;
@@ -31,33 +35,33 @@ class PSIO;
 
 class Integrator {
 public:
-    Integrator(shared_ptr<Molecule> mol, shared_ptr<PSIO> psio);
+    Integrator(boost::shared_ptr<Molecule> mol, boost::shared_ptr<PSIO> psio);
     ~Integrator();
-    static shared_ptr<Integrator>  build_integrator(shared_ptr<Molecule> molecule, \
-        shared_ptr<PSIO> psio, Options& options);
+    static boost::shared_ptr<Integrator>  build_integrator(boost::shared_ptr<Molecule> molecule, \
+        boost::shared_ptr<PSIO> psio, Options& options);
 
     void setRadialQuadrature(RadialScheme type, int npoints);
     void setSphericalQuadrature(SphericalScheme type, int npoints);
     void setNuclearWeighting(NuclearScheme type);
     void setVoronoiWeighting(VoronoiScheme type, double alpha = 0.64);
     void setNamedIntegrator(SpecialScheme name);
-    void setBoxParameters(double delta, double overage);   
-    void setVoronoiParameters(double a1 , double a2);   
+    void setBoxParameters(double delta, double overage);
+    void setVoronoiParameters(double a1 , double a2);
     void setPointGrouping(GroupingScheme s);
     void setVoronoiCoordinates(CoordinateScheme s);
     void setPruningMode(PruningScheme s);
- 
+
     int buildGrid(int max_block_size);
-     
+
     unsigned long int getNPoints() const { return npoints_; }
     unsigned long int getNBlocks() const { return nblocks_; }
     int getBlockSize() const { return block_size_; }
-    
-    shared_ptr<GridBlock> getBlock(int N);
-    shared_ptr<GridBlock> getAddress(unsigned long int n);
+
+    boost::shared_ptr<GridBlock> getBlock(int N);
+    boost::shared_ptr<GridBlock> getAddress(unsigned long int n);
     SphericalQuadrature getLebedevSpherical(int n);
     SphericalQuadrature getEMSpherical(int n);
- 
+
     std::string getString();
 
 protected:
@@ -66,7 +70,7 @@ protected:
     void groupPointsVoronoi();
     void groupPointsBoxes();
     void applyNuclearWeights();
- 
+
     RadialQuadrature getBeckeRadial(int n, double xi);
     RadialQuadrature getMuraRadial(int n, double xi);
     RadialQuadrature getMultiExpRadial(int n, double xi);
@@ -74,7 +78,7 @@ protected:
     RadialQuadrature getTreutlerRadial(int n, double xi, double alpha = 0.6);
 
     int getLebedevReccurencePoints(int type, int start, double a, double b, double v, const SphericalQuadrature & leb);
-    
+
     int getSphericalOrderConstant(double, int, int, int);
     int getSphericalOrderSG1(double, int, int, int);
     int getSphericalOrderSG0(double, int, int, int);
@@ -82,7 +86,7 @@ protected:
 
 protected:
 
-    shared_ptr<Molecule> mol_;
+    boost::shared_ptr<Molecule> mol_;
 
     unsigned long int npoints_;
     unsigned long int nblocks_;
@@ -94,12 +98,12 @@ protected:
     int nspherical_;
     int nradial_;
 
-    RadialScheme radial_type_; 
-    SphericalScheme spherical_type_; 
-    SpecialScheme special_type_; 
-    NuclearScheme nuclear_type_; 
-    VoronoiScheme voronoi_type_; 
-    GroupingScheme group_type_; 
+    RadialScheme radial_type_;
+    SphericalScheme spherical_type_;
+    SpecialScheme special_type_;
+    NuclearScheme nuclear_type_;
+    VoronoiScheme voronoi_type_;
+    GroupingScheme group_type_;
     CoordinateScheme coord_type_;
     PruningScheme prune_type_;
 
@@ -115,12 +119,12 @@ protected:
     double* z_;
     double* w_;
 
-    shared_ptr<PSIO> psio_;
+    boost::shared_ptr<PSIO> psio_;
 
-    bool built_; 
+    bool built_;
 };
 
-typedef shared_ptr<Integrator> SharedIntegrator;
+typedef boost::shared_ptr<Integrator> SharedIntegrator;
 
 }
 #endif

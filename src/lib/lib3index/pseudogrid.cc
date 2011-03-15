@@ -16,6 +16,7 @@
 #include <utility>
 #include <ctype.h>
 
+using namespace boost;
 using namespace std;
 using namespace psi;
 
@@ -54,14 +55,14 @@ void PseudoGrid::parse(const std::string& filename)
     // Phase I: read the grid in
     std::vector<std::vector<std::pair<int, std::pair<double, double> > > > array;
     array.resize(molecule_->natom());
-    
+
     regex comment("^\\s*\\!.*");                                       // line starts with !
     regex separator("^\\*\\*\\*\\*");                                  // line starts with ****
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
 
 #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
-    regex grid_shell("^\\s*(\\d+)\\s+" NUMBER ".*"); // match  
+    regex grid_shell("^\\s*(\\d+)\\s+" NUMBER ".*"); // match
     // Hold the result of a regex_match
     smatch what;
 
@@ -74,7 +75,7 @@ void PseudoGrid::parse(const std::string& filename)
         getline(infile, text);
         lines.push_back(text);
     }
-   
+
     for (int atom=0; atom<molecule_->natom(); ++atom) {
 
         int lineno = 0;
@@ -121,7 +122,7 @@ void PseudoGrid::parse(const std::string& filename)
                                 throw PSIEXCEPTION("PseudoGridParser::parse: Unable to convert grid shell radius:\n" + line);
                             array[atom].push_back(make_pair(L, make_pair(r,1.0)));
                         }
-                        line = lines[lineno++]; 
+                        line = lines[lineno++];
                     }
                     break;
                 } else {
@@ -130,25 +131,25 @@ void PseudoGrid::parse(const std::string& filename)
             } else {
                 continue;
             }
-            
+
         }
         if (found == false)
             throw PSIEXCEPTION("PseudoGridParser::parser: Unable to find the grid for " + molecule_->label(atom));
     }
 
-    int npoints = 0; 
+    int npoints = 0;
     for (int atom = 0; atom < molecule_->natom(); atom++) {
 
-        for (std::vector<std::pair<int, std::pair<double, double> > >::iterator it = array[atom].begin(); it != array[atom].end(); it++) {  
+        for (std::vector<std::pair<int, std::pair<double, double> > >::iterator it = array[atom].begin(); it != array[atom].end(); it++) {
             std::pair<int, std::pair<double,double> > row = (*it);
-            int L = row.first; 
-            // Defined in integrator_defines.h 
+            int L = row.first;
+            // Defined in integrator_defines.h
             int max_grid = n_lebedev_;
             int ngrid;
             for (int index = 0; index < max_grid; index++) {
                 if (lebedev_orders_[index] == L)
-                    ngrid = lebedev_points_[index]; 
-            } 
+                    ngrid = lebedev_points_[index];
+            }
             if (ngrid == 0)
                 throw PSIEXCEPTION("Grid order does not match available Lebedev grid orders");
             npoints += ngrid;
@@ -159,7 +160,7 @@ void PseudoGrid::parse(const std::string& filename)
         throw PSIEXCEPTION("PseudoGridParser: No Grid points in this molecule");
 
     // Phase II: build the grid
-    shared_ptr<Integrator> integrator(new Integrator(molecule_, shared_ptr<PSIO>(new PSIO()))); 
+    shared_ptr<Integrator> integrator(new Integrator(molecule_, shared_ptr<PSIO>(new PSIO())));
     grid_ = shared_ptr<GridBlock>(new GridBlock());
     grid_->setMaxPoints(npoints);
     grid_->setTruePoints(npoints);
@@ -177,24 +178,24 @@ void PseudoGrid::parse(const std::string& filename)
         double xc = center[0];
         double yc = center[1];
         double zc = center[2];
-    
-        for (std::vector<std::pair<int, std::pair<double, double> > >::iterator it = array[atom].begin(); it != array[atom].end(); it++) {  
+
+        for (std::vector<std::pair<int, std::pair<double, double> > >::iterator it = array[atom].begin(); it != array[atom].end(); it++) {
             std::pair<int, std::pair<double,double> > row = (*it);
-            int L = row.first; 
-            double r = row.second.first; 
+            int L = row.first;
+            double r = row.second.first;
             double w = row.second.second;
 
             int ngrid = 0;
-            
-            // Defined in integrator_defines.h 
+
+            // Defined in integrator_defines.h
             int max_grid = n_lebedev_;
             for (int index = 0; index < max_grid; index++) {
                 if (lebedev_orders_[index] == L)
-                    ngrid = lebedev_points_[index]; 
-            } 
+                    ngrid = lebedev_points_[index];
+            }
             if (ngrid == 0)
                 throw PSIEXCEPTION("Grid order does not match available Lebedev grid orders");
-    
+
             SphericalQuadrature quad = integrator->getLebedevSpherical(ngrid);
 
             for (int p = 0; p < ngrid; p++) {
@@ -207,7 +208,7 @@ void PseudoGrid::parse(const std::string& filename)
             free(quad.y);
             free(quad.z);
             free(quad.w);
-            
+
             // Scale to radius
             for (int l = 0; l < ngrid; l++) {
                 xp[counter + l] *= r;
@@ -222,11 +223,11 @@ void PseudoGrid::parse(const std::string& filename)
                 yp[counter + l] += yc;
                 zp[counter + l] += zc;
             }
-           
-            // TODO rotate to standard orientation  
+
+            // TODO rotate to standard orientation
             // TODO scale for radial weight
             // TODO account for atomic cells
- 
+
             counter += ngrid;
         }
     }

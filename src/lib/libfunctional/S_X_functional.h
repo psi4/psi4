@@ -14,8 +14,8 @@ class S_X_Functional : public Functional {
 public:
     S_X_Functional(int npoints, int deriv);
     virtual ~S_X_Functional();
-    virtual void computeRKSFunctional(shared_ptr<Properties> prop);
-    virtual void computeUKSFunctional(shared_ptr<Properties> prop);
+    virtual void computeRKSFunctional(boost::shared_ptr<Properties> prop);
+    virtual void computeUKSFunctional(boost::shared_ptr<Properties> prop);
 };
 }}
 #endif

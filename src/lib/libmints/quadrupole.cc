@@ -5,6 +5,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+using namespace boost;
 using namespace psi;
 
 // Initialize overlap_recur_ to +2 basis set angular momentum

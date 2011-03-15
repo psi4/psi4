@@ -6,6 +6,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+using namespace boost;
 using namespace psi;
 
 OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :

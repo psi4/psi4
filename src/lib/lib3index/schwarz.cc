@@ -24,11 +24,11 @@
 #include <omp.h>
 #endif
 
-
+using namespace boost;
 using namespace std;
 using namespace psi;
 
-namespace psi { 
+namespace psi {
 
 SchwarzSieve::SchwarzSieve(shared_ptr<BasisSet> bas, double cut) :
     basis_(bas), schwarz_(cut), initialized_(false)
@@ -51,19 +51,19 @@ void SchwarzSieve::form_schwarz_ints()
     int nshell = basis_->nshell();
     int nbf = basis_->nbf();
 
-    schwarz_shell_vals_ = (double*) malloc(nshell*(nshell+1)/2L * sizeof(double)); 
-    schwarz_fun_vals_ = (double*) malloc(nbf*(nbf+1)/2L * sizeof(double)); 
+    schwarz_shell_vals_ = (double*) malloc(nshell*(nshell+1)/2L * sizeof(double));
+    schwarz_fun_vals_ = (double*) malloc(nbf*(nbf+1)/2L * sizeof(double));
 
     max_global_val_ = 0.0;
     for (ULI Q = 0L; Q < nshell*(nshell+1)/2L; Q++)
-        schwarz_shell_vals_[Q] = 0.0;   
+        schwarz_shell_vals_[Q] = 0.0;
     for (ULI Q = 0L; Q < nbf*(nbf+1)/2L; Q++)
-        schwarz_fun_vals_[Q] = 0.0;   
+        schwarz_fun_vals_[Q] = 0.0;
 
     IntegralFactory schwarzfactory(basis_,basis_,basis_,basis_);
     shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
     const double *buffer = eri->buffer();
-    
+
     int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
     ULI MUNU = 0L;
     ULI munu = 0L;
@@ -76,7 +76,7 @@ void SchwarzSieve::form_schwarz_ints()
                 omu = basis_->shell(MU)->function_index() + mu;
                 for (nu=0; nu < numnu; ++nu) {
                     onu = basis_->shell(NU)->function_index() + nu;
-    
+
                     if (omu>=onu) {
                         index = mu*(numnu*nummu*numnu+numnu)+nu*(nummu*numnu+1);
                         if (max_global_val_ < fabs(buffer[index]))
@@ -100,8 +100,8 @@ void SchwarzSieve::form_schwarz_sieve(double cut)
     if (!initialized_) {
         initialized_ = true;
         form_schwarz_ints();
-        schwarz_shells_ = (int*) malloc(nshell * (nshell + 1L) * sizeof(int)); 
-        schwarz_funs_ = (int*) malloc(nbf * (nbf + 1L) * sizeof(int)); 
+        schwarz_shells_ = (int*) malloc(nshell * (nshell + 1L) * sizeof(int));
+        schwarz_funs_ = (int*) malloc(nbf * (nbf + 1L) * sizeof(int));
         schwarz_shells_reverse_ = (long int*) malloc(nshell * (nshell + 1L) / 2L * sizeof(long int));
         schwarz_funs_reverse_ = (long int*) malloc(nbf * (nbf + 1L) / 2L * sizeof(long int));
     }
@@ -113,20 +113,20 @@ void SchwarzSieve::form_schwarz_sieve(double cut)
 
     for (ULI Q = 0L; Q < nshell*(nshell+1)/2L; Q++) {
         if (schwarz_shell_vals_[Q] >= tol)
-            nshell_pairs_++; 
+            nshell_pairs_++;
     }
     for (ULI Q = 0L; Q < nbf*(nbf+1)/2L; Q++) {
         if (schwarz_fun_vals_[Q] >= tol)
-            nfun_pairs_++; 
+            nfun_pairs_++;
     }
 
-    
+
     for (ULI Q = 0L; Q < nshell*(nshell+1)/2L; Q++)
-        schwarz_shells_reverse_[Q] = -1L; 
+        schwarz_shells_reverse_[Q] = -1L;
 
     for (ULI Q = 0L; Q < nbf*(nbf+1)/2L; Q++)
-        schwarz_funs_reverse_[Q] = -1L; 
-    
+        schwarz_funs_reverse_[Q] = -1L;
+
     ULI counter = 0L; int MU;
     for (ULI Q = 0L, MU = 0; MU < nshell; MU++) {
         for (int NU = 0; NU <= MU;  NU++, Q++) {
@@ -135,7 +135,7 @@ void SchwarzSieve::form_schwarz_sieve(double cut)
                 schwarz_shells_[2*counter + 1] = NU;
                 schwarz_shells_reverse_[Q] = counter;
                 counter++;
-            } 
+            }
         }
     }
     counter = 0L;
@@ -146,7 +146,7 @@ void SchwarzSieve::form_schwarz_sieve(double cut)
                 schwarz_funs_[2*counter + 1] = NU;
                 schwarz_funs_reverse_[Q] = counter;
                 counter++;
-            } 
+            }
         }
     }
 }

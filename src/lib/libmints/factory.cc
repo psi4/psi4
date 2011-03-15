@@ -11,8 +11,8 @@
 #include <libparallel/parallel.h>
 #include "libciomr/libciomr.h"
 
-
- using namespace psi;
+using namespace boost;
+using namespace psi;
 
 MatrixFactory::MatrixFactory()
 {

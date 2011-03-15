@@ -6,6 +6,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+using namespace boost;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum

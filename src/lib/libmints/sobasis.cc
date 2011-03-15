@@ -9,6 +9,7 @@
 #include <psi4-dec.h>
 #include <cstdio>
 
+using namespace boost;
 using namespace psi;
 
 SOTransform::SOTransform()

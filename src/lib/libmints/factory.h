@@ -8,6 +8,10 @@
 #include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 
+namespace boost {
+template<class T> class shared_ptr;
+}
+
 namespace psi {
 
 /*! \ingroup MINTS
@@ -35,10 +39,10 @@ public:
     ~MatrixFactory();
 
     /// Initializes the matrix factory by creating a chkpt object with a psio reference.
-    bool init_with_chkpt(shared_ptr<psi::PSIO> psio);
+    bool init_with_chkpt(boost::shared_ptr<psi::PSIO> psio);
 
     /// Initializes the matrix factory using the given chkpt object.
-    bool init_with_chkpt(shared_ptr<psi::Chkpt> chkpt);
+    bool init_with_chkpt(boost::shared_ptr<psi::Chkpt> chkpt);
 
     /// Manually initialize the matrix factory
     bool init_with(int nirrep, int *rowspi, int *colspi);

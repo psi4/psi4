@@ -27,7 +27,7 @@ class MOSpace{
          * The label associated with this space is 'o'
          */
         #define MOSPACE_OCC 'O'
-        static shared_ptr<MOSpace> occ;
+        static boost::shared_ptr<MOSpace> occ;
         /**
          * The MOSpace::vir space can be used to define the virtual space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -38,7 +38,7 @@ class MOSpace{
          * The label associated with this space is 'v'
          */
         #define MOSPACE_VIR 'V'
-        static shared_ptr<MOSpace> vir;
+        static boost::shared_ptr<MOSpace> vir;
         /**
          * The MOSpace::all space can be used to define the virtual space.  Frozen
          * orbitals are handled consistently with how the transformation object is
@@ -47,14 +47,14 @@ class MOSpace{
          * The label associated with this space is 'a'
          */
         #define MOSPACE_ALL 'A'
-        static shared_ptr<MOSpace> all;
+        static boost::shared_ptr<MOSpace> all;
         /**
          * The MOSpace::nil space can be used to define the atomic orbital space.
          *
          * The label associated with this space is 'n'
          */
         #define MOSPACE_NIL 'n'
-        static shared_ptr<MOSpace> nil;
+        static boost::shared_ptr<MOSpace> nil;
 
         // These are to allow the map to be used
         friend bool operator==(const MOSpace &lhs, const MOSpace &rhs)

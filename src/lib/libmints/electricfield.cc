@@ -7,6 +7,7 @@
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+using namespace boost;
 using namespace psi;
 using namespace std;
 

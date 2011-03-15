@@ -1,17 +1,20 @@
 #ifndef _psi_src_lib_libmints_electrostatic_h_
 #define _psi_src_lib_libmints_electrostatic_h_
 
+namespace boost {
+template<class T> class shared_ptr;
+}
 namespace psi {
 
-    class BasisSet;
-    class GaussianShell;
-    class ObaraSaikaTwoCenterRecursion;
-    class OneBodyAOInt;
-    class PotentialInt;
-    class IntegralFactory;
-    class SphericalTransform;
-    class SimpleMatrix;
-    class Vector3;
+class BasisSet;
+class GaussianShell;
+class ObaraSaikaTwoCenterRecursion;
+class OneBodyAOInt;
+class PotentialInt;
+class IntegralFactory;
+class SphericalTransform;
+class SimpleMatrix;
+class Vector3;
 
 /*! \ingroup MINTS
  *  \class PotentialInt
@@ -25,7 +28,7 @@ class ElectrostaticInt : public PotentialInt
 
 public:
     /// Constructor
-    ElectrostaticInt(std::vector<SphericalTransform>&, shared_ptr<BasisSet>, shared_ptr<BasisSet>, int deriv=0);
+    ElectrostaticInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     ~ElectrostaticInt();
 
     // Intel C++ 12 thinks we're trying to overload the "void compute_shell(int, int)" and warns us about it.
