@@ -34,5 +34,6 @@ void export_psio()
         def( "mark_file_for_retention", &PSIOManager::mark_file_for_retention ).
         def( "set_default_path", &PSIOManager::set_default_path ).
         def( "set_specific_path", &PSIOManager::set_specific_path ).
+        def( "get_file_path", &PSIOManager::get_file_path ).
         def( "set_specific_retention", &PSIOManager::set_specific_retention );
 }
