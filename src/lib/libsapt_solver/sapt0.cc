@@ -1,9 +1,5 @@
 #include "sapt0.h"
 
-using namespace boost;
-using namespace std;
-using namespace psi;
-
 namespace psi { namespace sapt {
 
 SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
@@ -41,6 +37,7 @@ double SAPT0::compute_energy()
   exch_ind20A_B();
   exch_ind20B_A();
   disp20();
+  exch_disp20();
 
   print_results();
 

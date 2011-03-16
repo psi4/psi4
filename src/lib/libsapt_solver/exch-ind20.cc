@@ -508,6 +508,7 @@ void SAPT0::exch_ind20B_A()
 
   if (print_) {
     fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exind);
+    fprintf(outfile,"    Exch-Ind20          = %18.12lf H\n",e_exch_ind20_);
     fflush(outfile);
   }
 } 
