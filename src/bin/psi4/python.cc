@@ -302,8 +302,15 @@ bool py_psi_set_option_string(std::string const & module, std::string const & ke
 bool py_psi_set_option_int(std::string const & module, std::string const & key, int value)
 {
     string nonconst_key = boost::to_upper_copy(key);
-    Process::environment.options.set_int(module, nonconst_key, value);
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    if (data.type() == "boolean") {
+        Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
+    }else{
+        Process::environment.options.set_int(module, nonconst_key, value);
+    }
     return true;
+
 }
 
 bool py_psi_set_option_float(std::string const & module, std::string const & key, float value)
@@ -326,36 +333,44 @@ bool py_psi_set_option_array(std::string const & module, std::string const & key
     return true;
 }
 
-bool py_psi_set_global_option_string(std::string const & name, std::string const & value)
+bool py_psi_set_global_option_string(std::string const & key, std::string const & value)
 {
-    string nonconst_key = boost::to_upper_copy(name);
+    string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options.use(nonconst_key);
 
     if (data.type() == "string") {
-        Process::environment.options.set_global_str(name, value);
+        Process::environment.options.set_global_str(nonconst_key, value);
         check_for_basis(value, nonconst_key);
     } else if (data.type() == "boolean") {
         if (boost::to_upper_copy(value) == "TRUE" || boost::to_upper_copy(value) == "YES" || \
           boost::to_upper_copy(value) == "ON")
-            Process::environment.options.set_global_bool(name, true);
+            Process::environment.options.set_global_bool(nonconst_key, true);
         else if (boost::to_upper_copy(value) == "FALSE" || boost::to_upper_copy(value) == "NO" || \
           boost::to_upper_copy(value) == "OFF")
-            Process::environment.options.set_global_bool(name, false);
+            Process::environment.options.set_global_bool(nonconst_key, false);
         else
             throw std::domain_error("Required option type is boolean, no boolean specified");
     }
     return true;
 }
 
-bool py_psi_set_global_option_int(std::string const & name, int value)
+bool py_psi_set_global_option_int(std::string const & key, int value)
 {
-    Process::environment.options.set_global_int(name, value);
+    string nonconst_key = boost::to_upper_copy(key);
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    if (data.type() == "boolean") {
+        Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
+    }else{
+        Process::environment.options.set_global_int(nonconst_key, value);
+    }
     return true;
 }
 
-bool py_psi_set_global_option_float(std::string const & name, float value)
+bool py_psi_set_global_option_float(std::string const & key, float value)
 {
-    Process::environment.options.set_global_double(name, value);
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_global_double(nonconst_key, value);
     return true;
 }
 
