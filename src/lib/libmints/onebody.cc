@@ -227,7 +227,7 @@ void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
     int i_offset=0;
     double *location;
 
-    if (likely(bs1_ == bs1_)) {
+    if (likely(bs1_ == bs2_)) {
         for (int i=0; i<ns1; ++i) {
             int ni = bs1_->shell(i)->nfunction();
             int j_offset=0;
@@ -242,7 +242,8 @@ void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
                 for (int p=0; p<ni; ++p) {
                     for (int q=0; q<nj; ++q) {
                         result->add(0, i_offset+p, j_offset+q, *location);
-                        result->add(0, j_offset+q, i_offset+p, *location);
+                        if (i_offset+p != j_offset+q)
+                            result->add(0, j_offset+q, i_offset+p, *location);
                         location++;
                     }
                 }
