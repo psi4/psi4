@@ -21,3 +21,4 @@ debug_latest
 svn_source
 psi4.xcodeproj
 do-configure*
+update_debug_latest.sh
