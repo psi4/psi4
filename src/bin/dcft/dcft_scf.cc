@@ -4,6 +4,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libmints/matrix.h>
+#include <libmints/wavefunction.h>
 #include <libchkpt/chkpt.hpp>
 #include <libtrans/integraltransform.h>
 #include "defines.h"
@@ -13,127 +14,16 @@ using namespace std;
 
 namespace psi{ namespace dcft{
 
-
-  /**
-   * Performs the SCF procedure to update the orbitals, unless orbitals already exist in checkpoint.
-   */
-  void
-  DCFTSolver::perform_scf()
-  {
-      char *keyword = _chkpt->build_keyword("Alpha MO coefficients");
-      if(_chkpt->exist(keyword)){
-          fprintf(outfile, "\tUsing the orbitals found in the checkpoint file\n");
-          double **Ca    = _chkpt->rd_alpha_scf();
-          double **Cb    = _chkpt->rd_beta_scf();
-          double *aEvals = _chkpt->rd_alpha_evals();
-          double *bEvals = _chkpt->rd_beta_evals();
-          int nirreps    = _chkpt->rd_nirreps();
-          int *mopi      = _chkpt->rd_orbspi();
-          int *sopi      = _chkpt->rd_sopi();
-          _scfEnergy = _chkpt->rd_escf();
-          _eNuc      = _chkpt->rd_enuc();
-          int moOffset   = 0;
-          int soOffset   = 0;
-          for(int h = 0; h < nirreps; ++h){
-              for(int mo = 0; mo < mopi[h]; ++mo){
-                  for(int so = 0; so < sopi[h]; ++so){
-                      _Ca.set(h, so, mo, Ca[so + soOffset][mo + moOffset]);
-                      _Cb.set(h, so, mo, Cb[so + soOffset][mo + moOffset]);
-                  }
-                  _aEvals.set(h, mo, aEvals[mo + moOffset]);
-                  _bEvals.set(h, mo, bEvals[mo + moOffset]);
-              }
-              moOffset += mopi[h];
-              soOffset += sopi[h];
-          }
-          free_block(Ca);
-          free_block(Cb);
-          free(aEvals);
-          free(bEvals);
-          free(mopi);
-          free(sopi);
-          free(keyword);
-          return;
-      }else{
-          fprintf(outfile, "\tNo orbitals found in the checkpoint file, SCF guess will be used\n");
-      }
-      free(keyword);
-      scf_guess();
-      bool converged = false;
-      _nScfIterations = 0;
-      Matrix tmp("temp", _nIrreps, _soPI, _soPI);
-      fprintf(outfile, "\t*===================================================================*\n"
-                      "\t* Cycle   RMS Density Change   delta E            SCF Energy        *\n"
-                      "\t*-------------------------------------------------------------------*\n");
-      while(!converged && _nScfIterations++ < _scfMaxIter){
-          double oldEnergy = _scfEnergy;
-          _Fa.copy(_soH);
-          _Fb.copy(_soH);
-          // This will build the new Fock matrix from the SO integrals
-          build_G();
-          compute_scf_energy();
-          // Having computed the energy using the standard Fock matrix, add the external
-          // potential before diagonalizing
-          _Fa.add(_aGTau);
-          _Fb.add(_bGTau);
-          _Fa.transform(_sHalfInv);
-          _Fb.transform(_sHalfInv);
-          _Fa.diagonalize(tmp, _aEvals);
-          _oldCa.copy(_Ca);
-          _Ca.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
-          _Fb.diagonalize(tmp, _bEvals);
-          _oldCb.copy(_Cb);
-          _Cb.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
-          find_occupation(_aEvals);
-          double rmsDeltaP = update_scf_density(_nScfIterations > 10);
-          converged = rmsDeltaP < pow(10.0,-_options.get_int("SCF_CONV"));
-          fprintf(outfile, "\t*  %-3d      %10.2e       %10.2e      %20.16f  *\n",
-                  _nScfIterations, rmsDeltaP, _scfEnergy - oldEnergy, _scfEnergy);
-      }
-      fprintf(outfile, "\t*===================================================================*\n\n");
-
-      if(!converged){
-
-//          throw ConvergenceError<int>("DCFT SCF guess", _scfMaxIter, _scfThreshold,
-//                                _scfConvergence, __FILE__, __LINE__);
-      }
-
-      // Dump information to checkpoint
-      _nMo = _nSo;
-      _chkpt->wt_nmo(_nMo);
-      int *temp = init_int_array(_nIrreps);
-      _chkpt->wt_orbspi(_soPI);
-      for(int h = 0; h < _nIrreps; ++h) temp[h] = _nBOccPI[h];
-      _chkpt->wt_clsdpi(temp);
-      for(int h = 0; h < _nIrreps; ++h) temp[h] = _nAOccPI[h] - _nBOccPI[h];
-      _chkpt->wt_openpi(temp);
-      // TODO implement frozen core
-      for(int h = 0; h < _nIrreps; ++h) temp[h] = 0;
-      _chkpt->wt_frzcpi(temp);
-      _chkpt->wt_frzvpi(temp);
-      delete [] temp;
-      double *aEvals = _aEvals.to_block_vector();
-      _chkpt->wt_alpha_evals(aEvals);
-      delete [] aEvals;
-      double *bEvals = _bEvals.to_block_vector();
-      _chkpt->wt_beta_evals(bEvals);
-      delete [] bEvals;
-      _chkpt->wt_escf(_scfEnergy);
-      _chkpt->wt_eref(_scfEnergy);
-      write_orbitals_to_checkpoint();
-  }
-
-
   /**
   * Dumps the current Fock matrix eigenvectors to the checkpoint file
   */
   void
   DCFTSolver::write_orbitals_to_checkpoint()
   {
-      double **aEvecs = _Ca.to_block_matrix();
+      double **aEvecs = _Ca->to_block_matrix();
       _chkpt->wt_alpha_scf(aEvecs);
       free_block(aEvecs);
-      double **bEvecs = _Cb.to_block_matrix();
+      double **bEvecs = _Cb->to_block_matrix();
       _chkpt->wt_beta_scf(bEvecs);
       free_block(bEvecs);
   }
@@ -174,17 +64,17 @@ namespace psi{ namespace dcft{
               if(mosUsed[bestMO + offset]++){
                   if(dieOnError){
                       overlap.print();
-                      _oldCa.print();
+                      _oldCa->print();
                       temp.print();
                       throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
                   }else{
                       // Copy Ca back from temp
-                      _Ca.copy(temp);
+                      _Ca->copy(temp);
                       return false;
                   }
               }
               for(int so = 0; so < _soPI[h]; ++so){
-                  _Ca.set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+                  _Ca->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
               }
           }
           offset += _soPI[h];
@@ -213,17 +103,17 @@ namespace psi{ namespace dcft{
               if(mosUsed[bestMO + offset]++){
                   if(dieOnError){
                       overlap.print();
-                      _oldCb.print();
+                      _oldCb->print();
                       temp.print();
                       throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
                   }else{
                       // Copy Cb back from temp
-                      _Cb.copy(temp);
+                      _Cb->copy(temp);
                       return false;
                   }
               }
               for(int so = 0; so < _soPI[h]; ++so){
-                  _Cb.set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+                  _Cb->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
               }
           }
           offset += _soPI[h];
@@ -241,8 +131,8 @@ namespace psi{ namespace dcft{
       std::vector<std::pair<double, int> > bPairs;
       for (int h = 0; h < _nIrreps; ++h) {
           for (int i=0; i < _soPI[h]; ++i){
-              aPairs.push_back(make_pair(_aEvals.get(h, i), h));
-              bPairs.push_back(make_pair(_bEvals.get(h, i), h));
+              aPairs.push_back(make_pair(_aEvals->get(h, i), h));
+              bPairs.push_back(make_pair(_bEvals->get(h, i), h));
           }
       }
       sort(aPairs.begin(), aPairs.end());
@@ -253,28 +143,28 @@ namespace psi{ namespace dcft{
       char **irrepLabels = _chkpt->rd_irr_labs();
 
       fprintf(outfile, "\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
-      for (int i = 0, count = 0; i < _nAOcc; ++i, ++count) {
+      for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
           int irrep = aPairs[i].second;
           fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
-          if (count % 4 == 3 && i != _nAOcc)
+          if (count % 4 == 3 && i != nalpha_)
               fprintf(outfile, "\n\t\t");
       }
       fprintf(outfile, "\n\n\t\tBeta occupied orbitals\n\t\t");
-      for (int i = 0, count = 0; i < _nBOcc; ++i, ++count) {
+      for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
           int irrep = bPairs[i].second;
           fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
-          if (count % 4 == 3 && i != _nBOcc)
+          if (count % 4 == 3 && i != nbeta_)
               fprintf(outfile, "\n\t\t");
       }
       fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
-      for (int i = _nAOcc, count = 0; i < _nMo; ++i, ++count) {
+      for (int i = nalpha_, count = 0; i < _nMo; ++i, ++count) {
           int irrep = aPairs[i].second;
           fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
           if (count % 4 == 3 && i != _nMo)
               fprintf(outfile, "\n\t\t");
       }
       fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
-      for (int i = _nBOcc, count = 0; i < _nMo; ++i, ++count) {
+      for (int i = nbeta_, count = 0; i < _nMo; ++i, ++count) {
           int irrep = bPairs[i].second;
           fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
           if (count % 4 == 3 && i != _nMo)
@@ -301,8 +191,8 @@ namespace psi{ namespace dcft{
       fprintf(outfile, "\n\n");
 
       if(_print > 2){
-          _Ca.print();
-          _Cb.print();
+          _Ca->print();
+          _Cb->print();
       }
       for (int h = 0; h < _nIrreps; ++h)
           delete [] irrepLabels[h];
@@ -310,33 +200,31 @@ namespace psi{ namespace dcft{
       delete[] aIrrepCount;
       delete[] bIrrepCount;
   }
+
   /**
-  * Computes the initial Hartree-Fock orbitals by either reading them from the
-  * checkpoint file or computing a core Hamiltonian guess.
-  */
+   * Computes the initial Hartree-Fock orbitals by either reading them from the
+   * checkpoint file or computing a core Hamiltonian guess.
+   */
   void
   DCFTSolver::scf_guess()
   {
-      Matrix T("SO basis kinetic energy integrals", _nIrreps, _soPI, _soPI);
-      Matrix V("SO basis potential energy integrals", _nIrreps, _soPI, _soPI);
+      SharedMatrix T = shared_ptr<Matrix>(new Matrix("SO basis kinetic energy integrals", _nIrreps, _soPI, _soPI));
+      SharedMatrix V = shared_ptr<Matrix>(new Matrix("SO basis potential energy integrals", _nIrreps, _soPI, _soPI));
       double *ints = init_array(_nTriSo);
 
       IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_T, ints, _nTriSo, 0, 0, outfile);
-      T.set(ints);
+      T->set(ints);
       IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_V, ints, _nTriSo, 0, 0, outfile);
-      V.set(ints);
-      delete [] ints;
+      V->set(ints);
+      free(ints);
 
-      _soH.add(T);
-      _soH.add(V);
+      _soH->add(T);
+      _soH->add(V);
 
-      Matrix tmp("temp", _nIrreps, _soPI, _soPI);
-
-      _Fa.copy(_soH);
-      _Fa.transform(_sHalfInv);
-      _Fa.diagonalize(tmp, _aEvals);
-      _Ca.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
-      _Cb.copy(_Ca);
+      _aEvals->copy(Process::environment.reference_wavefunction()->epsilon_a().get());
+      _bEvals->copy(Process::environment.reference_wavefunction()->epsilon_b().get());
+      _Ca->copy(Process::environment.reference_wavefunction()->Ca());
+      _Cb->copy(Process::environment.reference_wavefunction()->Cb());
       find_occupation(_aEvals);
       update_scf_density();
   }
@@ -349,10 +237,10 @@ namespace psi{ namespace dcft{
   DCFTSolver::compute_scf_energy()
   {
       _scfEnergy = _eNuc;
-      _scfEnergy += 0.5 * _aKappa.vector_dot(_soH);
-      _scfEnergy += 0.5 * _aKappa.vector_dot(_Fa);
-      _scfEnergy += 0.5 * _bKappa.vector_dot(_soH);
-      _scfEnergy += 0.5 * _bKappa.vector_dot(_Fb);
+      _scfEnergy += 0.5 * _aKappa->vector_dot(_soH);
+      _scfEnergy += 0.5 * _aKappa->vector_dot(_Fa);
+      _scfEnergy += 0.5 * _bKappa->vector_dot(_soH);
+      _scfEnergy += 0.5 * _bKappa->vector_dot(_Fb);
   }
 
 
@@ -374,7 +262,7 @@ namespace psi{ namespace dcft{
           for(int i = 0; i < _nAOccPI[h]; ++i){
               for(int a = 0; a < _nAVirPI[h]; ++a){
                   double kappaF = moF.get(h, i, a + _nAOccPI[h]);
-                  _aScfError.set(h, i, a, -kappaF);
+                  _aScfError->set(h, i, a, -kappaF);
                   ++nElements;
                   sumOfSquares += pow(-kappaF, 2.0);
               }
@@ -386,7 +274,7 @@ namespace psi{ namespace dcft{
           for(int i = 0; i < _nBOccPI[h]; ++i){
               for(int a = 0; a < _nBVirPI[h]; ++a){
                   double kappaF = moF.get(h, i, a + _nBOccPI[h]);
-                  _aScfError.set(h, i, a, -kappaF);
+                  _aScfError->set(h, i, a, -kappaF);
                   ++nElements;
                   sumOfSquares += pow(-kappaF, 2.0);
               }
@@ -414,8 +302,8 @@ namespace psi{ namespace dcft{
               for (int nu = 0; nu < _soPI[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < _nAOccPI[h]; ++i)
-                      val += _Ca.get(h, mu, i) * _Ca.get(h, nu, i);
-                  _aKappa.set(h, mu, nu, newFraction*val + (1.0-newFraction) * _aKappa.get(h, mu, nu));
+                      val += _Ca->get(h, mu, i) * _Ca->get(h, nu, i);
+                  _aKappa->set(h, mu, nu, newFraction*val + (1.0-newFraction) * _aKappa->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
@@ -427,8 +315,8 @@ namespace psi{ namespace dcft{
               for (int nu = 0; nu < _soPI[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < _nBOccPI[h]; ++i)
-                      val += _Cb.get(h, mu, i) * _Cb.get(h, nu, i);
-                  _bKappa.set(h, mu, nu, newFraction*val + (1.0-newFraction) * _bKappa.get(h, mu, nu));
+                      val += _Cb->get(h, mu, i) * _Cb->get(h, nu, i);
+                  _bKappa->set(h, mu, nu, newFraction*val + (1.0-newFraction) * _bKappa->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
               }
@@ -468,8 +356,8 @@ namespace psi{ namespace dcft{
           for(int mu = 0; mu < _soPI[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
-                  Da[muNu] = _aKappa.get(h, mu, nu);
-                  Db[muNu] = _bKappa.get(h, mu, nu);
+                  Da[muNu] = _aKappa->get(h, mu, nu);
+                  Db[muNu] = _bKappa->get(h, mu, nu);
                   Ta[muNu] = _aTau[h][mu][nu];
                   Tb[muNu] = _bTau[h][mu][nu];
               }
@@ -556,7 +444,7 @@ namespace psi{ namespace dcft{
         dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
         dpd_file2_scm(&s_aa_1, 0.0);
         dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-        file2_transform(&s_aa_1, &tau, &_aVirC, true);
+        file2_transform(&s_aa_1, &tau, _aVirC, true);
         dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
         dpd_file2_scm(&s_aa_2, 0.0);
         dpd_file2_close(&tau);
@@ -590,7 +478,7 @@ namespace psi{ namespace dcft{
         dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
         dpd_file2_scm(&s_bb_1, 0.0);
         dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-        file2_transform(&s_bb_1, &tau, &_bVirC, true);
+        file2_transform(&s_bb_1, &tau, _bVirC, true);
         dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
         dpd_file2_scm(&s_bb_2, 0.0);
         dpd_file2_close(&tau);
@@ -974,7 +862,7 @@ namespace psi{ namespace dcft{
         // And now the same thing for the X intermediate terms...
         dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "s(add)A <V|V>");
         dpd_file2_scm(&tau, 0.0);
-        file2_transform(&s_aa_2, &tau, &_aVirC, false);
+        file2_transform(&s_aa_2, &tau, _aVirC, false);
         dpd_file2_close(&s_aa_1);
         dpd_file2_close(&s_aa_2);
         dpd_file2_close(&tau);
@@ -998,7 +886,7 @@ namespace psi{ namespace dcft{
         // And now the same thing for the X intermediate terms...
         dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "s(add)B <v|v>");
         dpd_file2_scm(&tau, 0.0);
-        file2_transform(&s_bb_2, &tau, &_bVirC, false);
+        file2_transform(&s_bb_2, &tau, _bVirC, false);
         dpd_file2_close(&s_bb_1);
         dpd_file2_close(&s_bb_2);
         dpd_file2_close(&tau);
@@ -1040,15 +928,15 @@ namespace psi{ namespace dcft{
                 double bVal   = Gb[muNu];
                 double aGTVal = Va[muNu];
                 double bGTVal = Vb[muNu];
-                _Fa.add(h, mu, nu, aVal);
-                _Fb.add(h, mu, nu, bVal);
-                _aGTau.set(h, mu, nu, aGTVal);
-                _bGTau.set(h, mu, nu, bGTVal);
+                _Fa->add(h, mu, nu, aVal);
+                _Fb->add(h, mu, nu, bVal);
+                _aGTau->set(h, mu, nu, aGTVal);
+                _bGTau->set(h, mu, nu, bGTVal);
                 if(mu != nu){
-                    _Fa.add(h, nu, mu, aVal);
-                    _Fb.add(h, nu, mu, bVal);
-                    _aGTau.set(h, nu, mu, aGTVal);
-                    _bGTau.set(h, nu, mu, bGTVal);
+                    _Fa->add(h, nu, mu, aVal);
+                    _Fb->add(h, nu, mu, bVal);
+                    _aGTau->set(h, nu, mu, aGTVal);
+                    _bGTau->set(h, nu, mu, bGTVal);
                 }
             }
         }
@@ -1156,7 +1044,7 @@ namespace psi{ namespace dcft{
           dpd_file2_init(&s_aa_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)A <n|n>");
           dpd_file2_scm(&s_aa_1, 0.0);
           dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "Tau <V|V>");
-          file2_transform(&s_aa_1, &tau, &_aVirC, true);
+          file2_transform(&s_aa_1, &tau, _aVirC, true);
           dpd_file2_init(&s_aa_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)A <n|n>");
           dpd_file2_scm(&s_aa_2, 0.0);
           dpd_file2_close(&tau);
@@ -1191,7 +1079,7 @@ namespace psi{ namespace dcft{
           dpd_file2_init(&s_bb_1, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s1(temp)B <n|n>");
           dpd_file2_scm(&s_bb_1, 0.0);
           dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "Tau <v|v>");
-          file2_transform(&s_bb_1, &tau, &_bVirC, true);
+          file2_transform(&s_bb_1, &tau, _bVirC, true);
           dpd_file2_init(&s_bb_2, PSIF_DCFT_DPD, 0, ID('n'), ID('n'), "s2(temp)B <n|n>");
           dpd_file2_scm(&s_bb_2, 0.0);
           dpd_file2_close(&tau);
@@ -1320,7 +1208,7 @@ namespace psi{ namespace dcft{
           // And now the same thing for the X intermediate terms...
           dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "s(add)A <V|V>");
           dpd_file2_scm(&tau, 0.0);
-          file2_transform(&s_aa_2, &tau, &_aVirC, false);
+          file2_transform(&s_aa_2, &tau, _aVirC, false);
           dpd_file2_close(&s_aa_1);
           dpd_file2_close(&s_aa_2);
           dpd_file2_close(&tau);
@@ -1344,7 +1232,7 @@ namespace psi{ namespace dcft{
           // And now the same thing for the X intermediate terms...
           dpd_file2_init(&tau, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "s(add)B <v|v>");
           dpd_file2_scm(&tau, 0.0);
-          file2_transform(&s_bb_2, &tau, &_bVirC, false);
+          file2_transform(&s_bb_2, &tau, _bVirC, false);
           dpd_file2_close(&s_bb_1);
           dpd_file2_close(&s_bb_2);
           dpd_file2_close(&tau);
@@ -1405,8 +1293,8 @@ namespace psi{ namespace dcft{
           for(int mu = 0; mu < _soPI[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
-                  Da[muNu] = _aKappa.get(h, mu, nu);
-                  Db[muNu] = _bKappa.get(h, mu, nu);
+                  Da[muNu] = _aKappa->get(h, mu, nu);
+                  Db[muNu] = _bKappa->get(h, mu, nu);
                   Ta[muNu] = _aTau[h][mu][nu];
                   Tb[muNu] = _bTau[h][mu][nu];
               }
@@ -1706,15 +1594,15 @@ namespace psi{ namespace dcft{
                   double bVal   = Gb[muNu];
                   double aGTVal = Va[muNu];
                   double bGTVal = Vb[muNu];
-                  _Fa.add(h, mu, nu, aVal);
-                  _Fb.add(h, mu, nu, bVal);
-                  _aGTau.set(h, mu, nu, aGTVal);
-                  _bGTau.set(h, mu, nu, bGTVal);
+                  _Fa->add(h, mu, nu, aVal);
+                  _Fb->add(h, mu, nu, bVal);
+                  _aGTau->set(h, mu, nu, aGTVal);
+                  _bGTau->set(h, mu, nu, bGTVal);
                   if(mu != nu){
-                      _Fa.add(h, nu, mu, aVal);
-                      _Fb.add(h, nu, mu, bVal);
-                      _aGTau.set(h, nu, mu, aGTVal);
-                      _bGTau.set(h, nu, mu, bGTVal);
+                      _Fa->add(h, nu, mu, aVal);
+                      _Fb->add(h, nu, mu, bVal);
+                      _aGTau->set(h, nu, mu, aGTVal);
+                      _bGTau->set(h, nu, mu, bGTVal);
                   }
               }
           }
@@ -1736,41 +1624,41 @@ namespace psi{ namespace dcft{
    *  * the aufbau principle
    *  */
   void
-  DCFTSolver::find_occupation(Vector & evals, bool forcePrint)
+  DCFTSolver::find_occupation(SharedVector & evals, bool forcePrint)
   {
       std::vector<std::pair<double, int> > pairs;
-      for (int h=0; h<evals.nirrep(); ++h) {
-          for (int i=0; i<evals.dimpi()[h]; ++i)
-              pairs.push_back(make_pair(evals.get(h, i), h));
+      for (int h=0; h<evals->nirrep(); ++h) {
+          for (int i=0; i<evals->dimpi()[h]; ++i)
+              pairs.push_back(make_pair(evals->get(h, i), h));
       }
       sort(pairs.begin(),pairs.end());
 
-      if(_inputDocc){
+      if(_options["DOCC"].has_changed()){
           for(int h = 0; h < _nIrreps; ++h)
               _nBOccPI[h] = _options["DOCC"][h].to_integer();
       }else{
           memset(_nBOccPI, 0, sizeof(int) * _nIrreps);
-          for (int i=0; i < _nBOcc; ++i)
+          for (int i=0; i < nbeta_; ++i)
               _nBOccPI[pairs[i].second]++;
       }
-      if(_inputSocc){
+      if(_options["SOCC"].has_changed()){
           for(int h = 0; h < _nIrreps; ++h)
               _nAOccPI[h] = _nBOccPI[h] + _options["SOCC"][h].to_integer();
       }else{
           for(int h = 0; h < _nIrreps; ++h)
               _nAOccPI[h] = _nBOccPI[h];
-          for (int i=_nBOcc; i < _nAOcc; ++i)
+          for (int i=nbeta_; i < nalpha_; ++i)
               _nAOccPI[pairs[i].second]++;
       }
 
       if(_print > 1 || forcePrint){
           fprintf(outfile, "\t\t\t\tDOCC: [");
-          for (int h = 0; h < evals.nirrep(); ++h){
+          for (int h = 0; h < evals->nirrep(); ++h){
               fprintf(outfile, "%3d ", _nBOccPI[h]);
           }
           fprintf(outfile, "]\n");
           fprintf(outfile, "\t\t\t\tSOCC: [");
-          for (int h = 0; h < evals.nirrep(); ++h){
+          for (int h = 0; h < evals->nirrep(); ++h){
               fprintf(outfile, "%3d ", _nAOccPI[h] - _nBOccPI[h]);
           }
           fprintf(outfile, "]\n");

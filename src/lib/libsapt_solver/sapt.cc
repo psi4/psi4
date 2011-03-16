@@ -32,7 +32,7 @@ void SAPT::initialize()
   zero_ = BasisSet::zero_ao_basis_set();
 
   print_ = options_.get_int("PRINT");
-  debug_ = options_.get_bool("DEBUG");
+  debug_ = options_.get_int("DEBUG");
   schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
   mem_ = (long int) ((double) memory_*options_.get_double("SAPT_MEM_SAFETY"));
   mem_ /= 8L;

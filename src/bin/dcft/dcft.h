@@ -17,6 +17,8 @@ class Chkpt;
 class Matrix;
 class Vector;
 class IntegralTransform;
+typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef boost::shared_ptr<Vector> SharedVector;
 
 namespace dcft{
 
@@ -34,7 +36,6 @@ protected:
     boost::shared_ptr<PSIO>  _psio;
     IntegralTransform *_ints;
 
-    void perform_scf();
     void transform_integrals();
     void build_lambda();
     void init_moinfo();
@@ -49,7 +50,7 @@ protected:
     void write_orbitals_to_checkpoint();
     void check_n_representability();
     void print_orbital_energies();
-    void find_occupation(Vector &evals, bool forcePrint = false);
+    void find_occupation(SharedVector &evals, bool forcePrint = false);
     void build_intermediates();
     void process_so_ints();
     void build_G();
@@ -59,10 +60,10 @@ protected:
     void mulliken_charges();
     void dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha);
     void scf_guess();
-    void half_transform(dpdbuf4 *A, dpdbuf4 *B, Matrix& C1, Matrix& C2,
+    void half_transform(dpdbuf4 *A, dpdbuf4 *B, SharedMatrix& C1, SharedMatrix& C2,
                         int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
                         bool backwards, double alpha, double beta);
-    void file2_transform(dpdfile2 *A, dpdfile2 *B, Matrix *C, bool backwards);
+    void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
     void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
                        int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
@@ -71,10 +72,6 @@ protected:
     double compute_lambda_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
-    /// Whether the DOCC array was provided by the user
-    bool _inputDocc;
-    /// Whether the SOCC array was provided by the user
-    bool _inputSocc;
     /// The maximum number of lambda iterations per update
     int _lambdaMaxIter;
     /// The maximum number of SCF iterations per update
@@ -90,9 +87,9 @@ protected:
     /// The number of unique pairs of symmetrized atomic orbitals
     int _nTriSo;
     /// The number of occupied alpha orbitals
-    int _nAOcc;
+    int nalpha_;
     /// The number of occupied beta orbitals
-    int _nBOcc;
+    int nbeta_;
     /// The number of virtual alpha orbitals
     int _nAVir;
     /// The number of virtual beta orbitals
@@ -150,51 +147,51 @@ protected:
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
     double _regularizer;
     /// The alpha occupied eigenvectors, per irrep
-    Matrix _aOccC;
+    SharedMatrix _aOccC;
     /// The beta occupied eigenvectors, per irrep
-    Matrix _bOccC;
+    SharedMatrix _bOccC;
     /// The alpha virtual eigenvectors, per irrep
-    Matrix _aVirC;
+    SharedMatrix _aVirC;
     /// The beta virtual eigenvectors, per irrep
-    Matrix _bVirC;
+    SharedMatrix _bVirC;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
     double ***_aTau;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
     double ***_bTau;
     /// The overlap matrix in the AO basis
-    Matrix _aoS;
+    SharedMatrix _aoS;
     /// The one-electron integrals in the SO basis
-    Matrix _soH;
+    SharedMatrix _soH;
     /// The alpha Fock matrix in the SO basis
-    Matrix _Fa;
+    SharedMatrix _Fa;
     /// The beta Fock matrix in the SO basis
-    Matrix _Fb;
+    SharedMatrix _Fb;
     /// The inverse square root overlap matrix in the SO basis
-    Matrix _sHalfInv;
+    SharedMatrix _sHalfInv;
     /// The full alpha MO coefficients
-    Matrix _Ca;
+    SharedMatrix _Ca;
     /// The full beta MO coefficients
-    Matrix _Cb;
+    SharedMatrix _Cb;
     /// The old full alpha MO coefficients
-    Matrix _oldCa;
+    SharedMatrix _oldCa;
     /// The old full beta MO coefficients
-    Matrix _oldCb;
+    SharedMatrix _oldCb;
     /// The alpha kappa matrix in the SO basis
-    Matrix _aKappa;
+    SharedMatrix _aKappa;
     /// The beta kappa matrix in the SO basis
-    Matrix _bKappa;
+    SharedMatrix _bKappa;
     /// The alpha external potential in the SO basis
-    Matrix _aGTau;
+    SharedMatrix _aGTau;
     /// The beta external potential in the SO basis
-    Matrix _bGTau;
+    SharedMatrix _bGTau;
     /// The alpha SCF error vector
-    Matrix _aScfError;
+    SharedMatrix _aScfError;
     /// The beta SCF error vector
-    Matrix _bScfError;
+    SharedMatrix _bScfError;
     /// The full alpha MO energies
-    Vector _aEvals;
+    SharedVector _aEvals;
     /// The full beta MO energies
-    Vector _bEvals;
+    SharedVector _bEvals;
     /// Used to align things in the output
     std::string indent;
 };

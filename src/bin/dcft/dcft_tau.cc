@@ -111,34 +111,38 @@ DCFTSolver::build_tau()
          * Backtransform the Tau matrices to the AO basis
          * tauTrans = C moTau Ct
          */
+        double **paOccC = _aOccC->pointer(h);
+        double **pbOccC = _bOccC->pointer(h);
+        double **paVirC = _aVirC->pointer(h);
+        double **pbVirC = _bVirC->pointer(h);
 
         // Alpha occupied
         if(_nAOccPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nAOccPI[h], _nAOccPI[h], 1.0, _aOccC[h][0], _nAOccPI[h],
+            C_DGEMM('n', 'n', _soPI[h], _nAOccPI[h], _nAOccPI[h], 1.0, paOccC[0], _nAOccPI[h],
                     T_OO.matrix[h][0], _nAOccPI[h], 0.0, temp[0], _soPI[h]);
             C_DGEMM('n', 't', _soPI[h], _soPI[h], _nAOccPI[h], 1.0, temp[0], _soPI[h],
-                    _aOccC[h][0], _nAOccPI[h], 1.0, _aTau[h][0], _soPI[h]);
+                    paOccC[0], _nAOccPI[h], 1.0, _aTau[h][0], _soPI[h]);
         }
         // Beta occupied
         if(_nBOccPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nBOccPI[h], _nBOccPI[h], 1.0, _bOccC[h][0], _nBOccPI[h],
+            C_DGEMM('n', 'n', _soPI[h], _nBOccPI[h], _nBOccPI[h], 1.0, pbOccC[0], _nBOccPI[h],
                     T_oo.matrix[h][0], _nBOccPI[h], 0.0, temp[0], _soPI[h]);
             C_DGEMM('n', 't', _soPI[h], _soPI[h], _nBOccPI[h], 1.0, temp[0], _soPI[h],
-                    _bOccC[h][0], _nBOccPI[h], 1.0, _bTau[h][0], _soPI[h]);
+                    pbOccC[0], _nBOccPI[h], 1.0, _bTau[h][0], _soPI[h]);
         }
         // Alpha virtual
         if(_nAVirPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nAVirPI[h], _nAVirPI[h], 1.0, _aVirC[h][0], _nAVirPI[h],
+            C_DGEMM('n', 'n', _soPI[h], _nAVirPI[h], _nAVirPI[h], 1.0, paVirC[0], _nAVirPI[h],
                     T_VV.matrix[h][0], _nAVirPI[h], 0.0, temp[0], _soPI[h]);
             C_DGEMM('n', 't', _soPI[h], _soPI[h], _nAVirPI[h], 1.0, temp[0], _soPI[h],
-                    _aVirC[h][0], _nAVirPI[h], 1.0, _aTau[h][0], _soPI[h]);
+                    paVirC[0], _nAVirPI[h], 1.0, _aTau[h][0], _soPI[h]);
         }
         // Beta virtual
         if(_nBVirPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nBVirPI[h], _nBVirPI[h], 1.0, _bVirC[h][0], _nBVirPI[h],
+            C_DGEMM('n', 'n', _soPI[h], _nBVirPI[h], _nBVirPI[h], 1.0, pbVirC[0], _nBVirPI[h],
                     T_vv.matrix[h][0], _nBVirPI[h], 0.0, temp[0], _soPI[h]);
             C_DGEMM('n', 't', _soPI[h], _soPI[h], _nBVirPI[h], 1.0, temp[0], _soPI[h],
-                    _bVirC[h][0], _nBVirPI[h], 1.0, _bTau[h][0], _soPI[h]);
+                    pbVirC[0], _nBVirPI[h], 1.0, _bTau[h][0], _soPI[h]);
         }
         free_block(temp);
     }
@@ -203,28 +207,28 @@ DCFTSolver::print_opdm()
     char **irrepLabels = _chkpt->rd_irr_labs();
 
     fprintf(outfile, "\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
-    for (int i = 0, count = 0; i < _nAOcc; ++i, ++count) {
+    for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
         int irrep = aPairs[i].second;
         fprintf(outfile, "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
-        if (count % 4 == 3 && i != _nAOcc)
+        if (count % 4 == 3 && i != nalpha_)
             fprintf(outfile, "\n\t\t");
     }
     fprintf(outfile, "\n\n\t\tBeta occupied orbitals\n\t\t");
-    for (int i = 0, count = 0; i < _nBOcc; ++i, ++count) {
+    for (int i = 0, count = 0; i < nbeta_; ++i, ++count) {
         int irrep = bPairs[i].second;
         fprintf(outfile, "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
-        if (count % 4 == 3 && i != _nBOcc)
+        if (count % 4 == 3 && i != nbeta_)
             fprintf(outfile, "\n\t\t");
     }
     fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
-    for (int i = _nAOcc, count = 0; i < _nMo; ++i, ++count) {
+    for (int i = nalpha_, count = 0; i < _nMo; ++i, ++count) {
         int irrep = aPairs[i].second;
         fprintf(outfile, "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
         if (count % 4 == 3 && i != _nMo)
             fprintf(outfile, "\n\t\t");
     }
     fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
-    for (int i = _nBOcc, count = 0; i < _nMo; ++i, ++count) {
+    for (int i = nbeta_, count = 0; i < _nMo; ++i, ++count) {
         int irrep = bPairs[i].second;
         fprintf(outfile, "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
         if (count % 4 == 3 && i != _nMo)

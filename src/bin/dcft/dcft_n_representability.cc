@@ -849,6 +849,7 @@ DCFTSolver::check_n_representability()
 void
 DCFTSolver::mulliken_charges()
 {
+#if 0
     SimpleMatrix aOPDM(_aKappa.to_simple_matrix());
     SimpleMatrix bOPDM(_bKappa.to_simple_matrix());
     int offset = 0;
@@ -906,7 +907,7 @@ DCFTSolver::mulliken_charges()
                 labels[atom], zVals[atom] - aCharges[atom] - bCharges[atom],
                 aCharges[atom] - bCharges[atom]);
     }
-
+#endif
 }
 
 }} // Namespaces

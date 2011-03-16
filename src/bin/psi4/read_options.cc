@@ -36,7 +36,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0");
     /*- The ubiquitous debug flag -*/
-    options.add_bool("DEBUG",false);
+    options.add_int("DEBUG",0);
     /*- The ubiquitous print flag -*/
     options.add_int("PRINT",1);
     /*- E converge value -*/
@@ -266,7 +266,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether to print the molecular orbitals -*/
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
-    options.add_bool("DEBUG", false);
+    options.add_int("DEBUG", false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 8);
     /*- -Log10 of the density convergence criterion -*/
@@ -844,7 +844,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
-    options.add_bool("DEBUG", false);
+    options.add_int("DEBUG", false);
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 12);
     /*- -Log10 of the density convergence criterion -*/
@@ -1092,7 +1092,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of threads to compute integrals with. 0 is wild card -*/
     options.add_int("RI_INTS_NUM_THREADS", 1);
     /*- Debugging information? -*/
-    options.add_bool("DEBUG",false);
+    options.add_int("DEBUG",0);
     /*- Parallel algoritmh? -*/
     options.add_bool("PARALLEL_DFMP2",false);
     /*- -Log10 of the energy convergence criterion -*/
@@ -1154,20 +1154,19 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The maximum number iterations allowed -*/
     options.add_int("MAXITER", 40);
     /*- Debugging information? -*/
-    options.add_bool("DEBUG",false);
+    options.add_int("DEBUG",0);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
     /*- -*/
     options.add_int("CORR_CHARGE",0);
     /*- -*/
-    options.add_bool("DEBUG",false);
+    options.add_int("DEBUG",0);
     /*- -*/
     options.add_int("DAMPING_FACTOR",0);
     /*- -*/
     options.add_int("MAXDIIS",7);
     /*- -*/
     options.add_int("NUM_THREADS",1);
-    /*- -*/
     /*- -*/
     options.add_int("NEL",0);
     /*- -*/

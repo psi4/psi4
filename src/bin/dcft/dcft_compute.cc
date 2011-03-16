@@ -4,6 +4,8 @@
 #include <libdiis/diismanager.h>
 #include "defines.h"
 
+using namespace boost;
+
 namespace psi{ namespace dcft{
 
 /**
@@ -17,6 +19,7 @@ DCFTSolver::compute()
     bool densityConverged = false;
     bool energyConverged = false;
     double oldEnergy;
+    scf_guess();
     mp2_guess();
 
     int cycle = 0;
@@ -27,7 +30,7 @@ DCFTSolver::compute()
         // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
         // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
         // the desired cutoff, we're done
-        Matrix tmp("temp", _nIrreps, _soPI, _soPI);
+        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", _nIrreps, _soPI, _soPI));
         // Set up the DIIS manager
         dpdbuf4 Laa, Lab, Lbb;
         dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -37,10 +40,10 @@ DCFTSolver::compute()
         dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                       ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
         DIISManager scfDiisManager(_maxDiis, "DCFT DIIS Orbitals",DIISManager::LargestError,DIISManager::InCore);
-        scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, &_aScfError,
-                                                DIISEntry::Matrix, &_bScfError);
-        scfDiisManager.set_vector_size(2, DIISEntry::Matrix, &_Fa,
-                                          DIISEntry::Matrix, &_Fb);
+        scfDiisManager.set_error_vector_size(2, DIISEntry::Matrix, _aScfError.get(),
+                                                DIISEntry::Matrix, _bScfError.get());
+        scfDiisManager.set_vector_size(2, DIISEntry::Matrix, _Fa.get(),
+                                          DIISEntry::Matrix, _Fb.get());
         DIISManager lambdaDiisManager(_maxDiis, "DCFT DIIS Lambdas",DIISManager::LargestError,DIISManager::InCore);
         lambdaDiisManager.set_error_vector_size(3, DIISEntry::DPDBuf4, &Laa,
                                                    DIISEntry::DPDBuf4, &Lab,
@@ -51,8 +54,8 @@ DCFTSolver::compute()
         dpd_buf4_close(&Laa);
         dpd_buf4_close(&Lab);
         dpd_buf4_close(&Lbb);
-        _oldCa.copy(_Ca);
-        _oldCb.copy(_Cb);
+        _oldCa->copy(_Ca);
+        _oldCb->copy(_Cb);
         // The macro-iterations
         while((!scfDone || !lambdaDone) && cycle++ < _maxNumIterations){
             // The lambda iterations
@@ -118,32 +121,32 @@ DCFTSolver::compute()
             while((!densityConverged || _scfConvergence > _scfThreshold)
                     && nSCFCycles++ < _options.get_int("SCF_MAXITER")){
                 std::string diisString;
-                _Fa.copy(_soH);
-                _Fb.copy(_soH);
+                _Fa->copy(_soH);
+                _Fb->copy(_soH);
                 // This will build the new Fock matrix from the SO integrals
                 process_so_ints();
                 // The SCF energy has to be evaluated before adding Tau and orthonormalizing F
                 oldEnergy = _newTotalEnergy;
                 compute_scf_energy();
-                _Fa.add(_aGTau);
-                _Fb.add(_bGTau);
+                _Fa->add(_aGTau);
+                _Fb->add(_bGTau);
                 _scfConvergence = compute_scf_error_vector();
                 if(_scfConvergence < _diisStartThresh){
-                    if(scfDiisManager.add_entry(4, &_aScfError, &_bScfError, &_Fa, &_Fb))
+                    if(scfDiisManager.add_entry(4, _aScfError.get(), _bScfError.get(), _Fa.get(), _Fb.get()))
                         diisString += "S";
                 }
                 if(scfDiisManager.subspace_size() > _minDiisVecs){
                     diisString += "/E";
-                    scfDiisManager.extrapolate(2, &_Fa, &_Fb);
+                    scfDiisManager.extrapolate(2, _Fa.get(), _Fb.get());
                 }
-                _Fa.transform(_sHalfInv);
-                _Fa.diagonalize(tmp, _aEvals);
-                _oldCa.copy(_Ca);
-                _Ca.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
-                _Fb.transform(_sHalfInv);
-                _Fb.diagonalize(tmp, _bEvals);
-                _oldCb.copy(_Cb);
-                _Cb.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+                _Fa->transform(_sHalfInv);
+                _Fa->diagonalize(tmp, _aEvals);
+                _oldCa->copy(_Ca);
+                _Ca->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+                _Fb->transform(_sHalfInv);
+                _Fb->diagonalize(tmp, _bEvals);
+                _oldCb->copy(_Cb);
+                _Cb->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
                 correct_mo_phases(false);
                 find_occupation(_aEvals);
                 densityConverged = update_scf_density() < _scfThreshold;
@@ -159,7 +162,7 @@ DCFTSolver::compute()
         }
     }else{
         // This is the simultaneous orbital/lambda update algorithm
-        Matrix tmp("temp", _nIrreps, _soPI, _soPI);
+        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", _nIrreps, _soPI, _soPI));
         // Set up the DIIS manager
         DIISManager diisManager(_maxDiis, "DCFT DIIS vectors");
         dpdbuf4 Laa, Lab, Lbb;
@@ -169,13 +172,13 @@ DCFTSolver::compute()
                       ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
         dpd_buf4_init(&Lbb, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                       ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
-        diisManager.set_error_vector_size(5, DIISEntry::Matrix, &_aScfError,
-                                             DIISEntry::Matrix, &_bScfError,
+        diisManager.set_error_vector_size(5, DIISEntry::Matrix, _aScfError.get(),
+                                             DIISEntry::Matrix, _bScfError.get(),
                                              DIISEntry::DPDBuf4, &Laa,
                                              DIISEntry::DPDBuf4, &Lab,
                                              DIISEntry::DPDBuf4, &Lbb);
-        diisManager.set_vector_size(5, DIISEntry::Matrix, &_Fa,
-                                       DIISEntry::Matrix, &_Fb,
+        diisManager.set_vector_size(5, DIISEntry::Matrix, _Fa.get(),
+                                       DIISEntry::Matrix, _Fb.get(),
                                        DIISEntry::DPDBuf4, &Laa,
                                        DIISEntry::DPDBuf4, &Lab,
                                        DIISEntry::DPDBuf4, &Lbb);
@@ -187,14 +190,14 @@ DCFTSolver::compute()
             std::string diisString;
             oldEnergy = _newTotalEnergy;
             build_tau();
-            _Fa.copy(_soH);
-            _Fb.copy(_soH);
+            _Fa->copy(_soH);
+            _Fb->copy(_soH);
             // This will build the new Fock matrix from the SO integrals
             process_so_ints();
             // The SCF energy has to be evaluated before adding Tau and orthonormalizing F
             compute_scf_energy();
-            _Fa.add(_aGTau);
-            _Fb.add(_bGTau);
+            _Fa->add(_aGTau);
+            _Fb->add(_bGTau);
             _scfConvergence = compute_scf_error_vector();
             scfDone = _scfConvergence < _scfThreshold;
             build_intermediates();
@@ -218,13 +221,13 @@ DCFTSolver::compute()
                               ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
                 dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                               ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
-                if(diisManager.add_entry(10, &_aScfError, &_bScfError, &Raa, &Rab, &Rbb,
-                                           &_Fa, &_Fb, &Laa, &Lab, &Lbb)){
+                if(diisManager.add_entry(10, _aScfError.get(), _bScfError.get(), &Raa, &Rab, &Rbb,
+                                           _Fa.get(), _Fb.get(), &Laa, &Lab, &Lbb)){
                     diisString += "S";
                 }
                 if(diisManager.subspace_size() > _minDiisVecs){
                     diisString += "/E";
-                    diisManager.extrapolate(5, &_Fa, &_Fb, &Laa, &Lab, &Lbb);
+                    diisManager.extrapolate(5, _Fa.get(), _Fb.get(), &Laa, &Lab, &Lbb);
                 }
                 dpd_buf4_close(&Raa);
                 dpd_buf4_close(&Rab);
@@ -233,14 +236,14 @@ DCFTSolver::compute()
                 dpd_buf4_close(&Lab);
                 dpd_buf4_close(&Lbb);
             }
-            _Fa.transform(_sHalfInv);
-            _Fa.diagonalize(tmp, _aEvals);
-            _oldCa.copy(_Ca);
-            _Ca.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
-            _Fb.transform(_sHalfInv);
-            _Fb.diagonalize(tmp, _bEvals);
-            _oldCb.copy(_Cb);
-            _Cb.gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+            _Fa->transform(_sHalfInv);
+            _Fa->diagonalize(tmp, _aEvals);
+            _oldCa->copy(_Ca);
+            _Ca->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+            _Fb->transform(_sHalfInv);
+            _Fb->diagonalize(tmp, _bEvals);
+            _oldCb->copy(_Cb);
+            _Cb->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
             if(!correct_mo_phases(false)){
                 fprintf(outfile,"\t\tThere was a problem correcting the MO phases.\n"
                                 "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
@@ -260,6 +263,10 @@ DCFTSolver::compute()
     if(!scfDone || !lambdaDone || !densityConverged)
         throw ConvergenceError<int>("DCFT", _maxNumIterations, _lambdaThreshold,
                                _lambdaConvergence, __FILE__, __LINE__);
+
+    Process::environment.globals["CURRENT ENERGY"] = _newTotalEnergy;
+    Process::environment.globals["DCFT ENERGY"] = _newTotalEnergy;
+    Process::environment.globals["DCFT SCF ENERGY"] = _scfEnergy;
 
     fprintf(outfile, "\t*=================================================================================*\n");
     fprintf(outfile, "\n\t*DCFT SCF Energy            = %20.15f\n", _scfEnergy);

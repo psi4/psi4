@@ -19,14 +19,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::mp2_guess()
 {
-    // Start with good old SCF
-    fprintf(outfile, "\n\tComputing Hartree-Fock orbital guess...\n\n"); fflush(outfile);
-    perform_scf();
-    // Now that SCF has run, we can get the resulting orbital info, and initialize the memory
+    // SCF has already been run, we can get the resulting orbital info, and initialize the memory
     init_moinfo();
-
-    // Print out orbital energies.
-    print_orbital_energies();
 
     // Initialize the integral transformation object
     std::vector<shared_ptr<MOSpace> > spaces;
@@ -131,6 +125,8 @@ DCFTSolver::mp2_guess()
     fprintf(outfile, "\t Beta  - Beta  MP2 energy         = %20.15f\n", eBB);
     fprintf(outfile, "\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
     fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", _newTotalEnergy);
+
+    Process::environment.globals["MP2 ENERGY"] = _newTotalEnergy;
 
     _psio->close(PSIF_LIBTRANS_DPD, 1);
 }
