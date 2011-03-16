@@ -4,7 +4,9 @@
 #include "sapt.h"
 
 namespace boost {
+
 template<class T> class shared_ptr;
+
 }
 
 namespace psi { namespace sapt {
@@ -37,11 +39,29 @@ private:
   SAPTDFInts set_C_BS();
   SAPTDFInts set_C_SS();
 
-  Iterator get_iterator(long int, SAPTDFInts*);
-  Iterator set_iterator(int, SAPTDFInts*);
+  SAPTDFInts set_act_A_AR();
+  SAPTDFInts set_act_B_BS();
+  SAPTDFInts set_act_C_AR();
+  SAPTDFInts set_act_C_BS();
 
-  Iterator get_iterator(long int, SAPTDFInts*, SAPTDFInts*);
-  Iterator set_iterator(int, SAPTDFInts*, SAPTDFInts*);
+  SAPTDFInts set_act_A_AS();
+  SAPTDFInts set_act_B_RB();
+  SAPTDFInts set_H2_BS();
+  SAPTDFInts set_H2_AS();
+  SAPTDFInts set_H4_AR();
+  SAPTDFInts set_H4_RB();
+  SAPTDFInts set_Q2_AR();
+  SAPTDFInts set_Q6_BS();
+  SAPTDFInts set_Q12_AS();
+  SAPTDFInts set_Q12_RB();
+  SAPTDFInts set_Q13_BS();
+  SAPTDFInts set_Q14_AR();
+
+  Iterator get_iterator(long int, SAPTDFInts*, bool alloc=true);
+  Iterator set_iterator(int, SAPTDFInts*, bool alloc=true);
+
+  Iterator get_iterator(long int, SAPTDFInts*, SAPTDFInts*, bool alloc=true);
+  Iterator set_iterator(int, SAPTDFInts*, SAPTDFInts*, bool alloc=true);
 
   void read_all(SAPTDFInts*);
   void read_block(Iterator *, SAPTDFInts *);
@@ -50,8 +70,30 @@ private:
   void ind20rA_B();
   void ind20rB_A();
 
+  void v1();
+  void h1();
+  void h2();
+  void h3();
+  void h4();
+  void q1();
+  void q2();
+  void q3();
+  void q5();
+  void q6();
+  void q7();
+  void q10();
+  void q11();
+  void q12();
+  void q13();
+  void q14();
+
 protected:
   boost::shared_ptr<SAPTLaplaceDenominator> denom_;
+
+  int nvec_;
+
+  double **dAR_;
+  double **dBS_;
 
   int maxiter_;
   double e_conv_;
@@ -83,12 +125,14 @@ public:
   void exch_ind20A_B();
   void exch_ind20B_A();
   void disp20();
+  void exch_disp20();
 
 };
 
 struct SAPTDFInts {
 
   bool dress_;
+  bool dress_disk_;
   bool active_;
 
   int i_length_;

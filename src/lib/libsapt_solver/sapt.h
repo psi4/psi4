@@ -20,7 +20,9 @@
 #define INDEX(i,j) ((i>=j) ? (ioff[i] + j) : (ioff[j] + i))
 
 namespace boost {
+
 template<class T> class shared_ptr;
+
 }
 
 namespace psi { namespace sapt {

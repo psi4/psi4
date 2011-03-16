@@ -1,8 +1,8 @@
-#! SAPT0 aug-cc-pVDZ computation of the ethane-ethyne binding energy, using the aug-cc-pVDZ-JKFIT RI basis for SCF
-#! and aug-cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+#! SAPT0 cc-pVDZ computation of the ethane-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF
+#! and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
-Eref = [ 85.189070701792517,  -0.00344543428812,  0.00371594329204, #TEST
-         -0.00093383748364, -0.0021703152891553, -0.00283364386] #TEST
+Eref = [ 85.189070701792517,  -0.003599150860,  0.003629113572,  #TEST
+         -0.000831371296,     -0.001505424063, -0.002306832646 ] #TEST
 
 molecule ethene_ethyne {
      0 1
@@ -24,9 +24,9 @@ molecule ethene_ethyne {
 }
 
 set globals {
-    basis         aug-cc-pvdz
-    ri_basis_scf  aug-cc-pvdz-jkfit
-    ri_basis_sapt aug-cc-pvdz-ri
+    basis         cc-pvdz
+    ri_basis_scf  cc-pvdz-jkfit
+    ri_basis_sapt cc-pvdz-ri
     guess         sad
     scf_type      df
     sad_print     2
@@ -37,17 +37,19 @@ set globals {
 
 energy('sapt0')
 
-Elst  = PsiMod.get_variable("SAPT ELST ENERGY") 
-Eexch = PsiMod.get_variable("SAPT EXCH ENERGY") 
-Eind  = PsiMod.get_variable("SAPT IND ENERGY") 
-Edisp = PsiMod.get_variable("SAPT DISP ENERGY") 
-ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY") 
+Eelst = PsiMod.get_variable("SAPT ELST ENERGY")
+Eexch = PsiMod.get_variable("SAPT EXCH ENERGY")
+Eind  = PsiMod.get_variable("SAPT IND ENERGY")
+Edisp = PsiMod.get_variable("SAPT DISP ENERGY")
+ET    = PsiMod.get_variable("SAPT SAPT0 ENERGY")
 
 compare_values(Eref[0], ethene_ethyne.nuclear_repulsion_energy(), 9, "Nuclear Repulsion Energy") #TEST
-compare_values(Eref[1], Elst, 6, "SAPT0 Elst")                                                   #TEST
+compare_values(Eref[1], Eelst, 6, "SAPT0 Eelst")                                                 #TEST
 compare_values(Eref[2], Eexch, 6, "SAPT0 Eexch")                                                 #TEST
 compare_values(Eref[3], Eind, 6, "SAPT0 Eind")                                                   #TEST
-#compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
-#compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST
+compare_values(Eref[4], Edisp, 6, "SAPT0 Edisp")                                                 #TEST
+compare_values(Eref[5], ET, 6, "SAPT0 Etotal")                                                   #TEST
 
 clean()
+
+
