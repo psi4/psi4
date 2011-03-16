@@ -1,5 +1,6 @@
 import PsiMod
 import re
+import os
 import math
 import warnings
 from driver import *
@@ -122,15 +123,15 @@ def basis_set_extrapolate(basis_name, **kwargs):
         the basis name for letters given in an array by the optional 'labels' keyword.  The indices in
         labels must correspond to the number of zetas (or other extrapolation parameter).  The default is
              ['','', 'D', 'T', 'Q', '5', '6', '7', '8', '9'].  Other optional keywords include:
-            * smallest:\t\tindicates the smallest number of zetas 
+            * smallest: indicates the smallest number of zetas 
                         (or other extrapolation parameter) to include in the calculation.  The default is 2.
-            * largest: \t\tindicates the largest number of zetas 
+            * largest: indicates the largest number of zetas 
                         (or other extrapolation parameter) to include in the extrapolation.  The default is 4.
-            * molecule:\t\toptionally specify a specific molecule to check.  If no molecule is specified,
+            * molecule: optionally specify a specific molecule to check.  If no molecule is specified,
                         the last molecule from the input file will be used.
-            * wfn:     \t\tThe type of wavefunction to use for the extrapolation.  If this keyword is not
+            * wfn: The type of wavefunction to use for the extrapolation.  If this keyword is not
                         specified, the wfn from the globals block is used.
-            * largest_correlated:\tSpecify a different largest number of zetas for the correlated portion of
+            * largest_correlated: Specify a different largest number of zetas for the correlated portion of
                         the basis set extrapolation.
     """
     # TODO Implement more extrapolation schemes and put them in as an "extrapolation type" option   
@@ -212,6 +213,12 @@ def basis_set_extrapolate(basis_name, **kwargs):
         banner("Finding " + wavefunction + " energy with basis set " + basis)
         PsiMod.print_out("\n")
         PsiMod.set_local_option("SCF", "REFERENCE", reference)
+        #  Blow away the user's file32 if they like to keep such things.  They shouldn't need it for this type of thing anyway
+        #  TODO devise a more elegant solution (if necessary?) for the file32 keeping problem
+        path32 = PsiMod.IOManager.shared_object().get_file_path(32);
+        filename = path32 + "psi." + str(os.getpid()) + ".32"
+        if(os.path.isfile(filename)):
+            os.remove(filename)
         if (hf_only):
             PsiMod.set_local_option("SCF", "BASIS", basis)
             PsiMod.clean()
