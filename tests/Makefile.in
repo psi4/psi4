@@ -34,8 +34,8 @@ $(opt_subdirs) \
 $(df_subdirs) \
 $(cc_subdirs) \
 $(python_test_subdirs) \
-${mcscf_subdirs} 
-#$(dcft_subdirs) \
+${mcscf_subdirs} \
+$(dcft_subdirs)
 
 # Compile the plugins, if we activated them
 HAVE_PLUGINS=@HAVE_PLUGINS@

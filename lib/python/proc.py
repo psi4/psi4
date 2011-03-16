@@ -3,6 +3,17 @@ from driver import *
 from molecule import *
 from text import *
 
+def run_dcft(**kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+      molecule = kwargs.pop('molecule')
+
+    if not molecule:
+      raise ValueNotSet("no molecule found")
+   
+    PsiMod.scf()
+    return PsiMod.dcft()
+
 def run_scf(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()

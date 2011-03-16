@@ -212,8 +212,8 @@ DCFTSolver::build_denominators()
     IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, aF0, _nTriSo, 0, 0, outfile);
     IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, bF0, _nTriSo, 0, 0, outfile);
 
-    double *aOccEvals = new double [_nAOcc];
-    double *bOccEvals = new double [_nBOcc];
+    double *aOccEvals = new double [nalpha_];
+    double *bOccEvals = new double [nbeta_];
     double *aVirEvals = new double [_nAVir];
     double *bVirEvals = new double [_nBVir];
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
@@ -227,25 +227,25 @@ DCFTSolver::build_denominators()
         for(int a = 0; a < _nAOccPI[h]; ++a){
             aOccEvals[aOccCount++] = aF0[INDEX(aCount, aCount)];
             for(int mu = 0; mu < _soPI[h]; ++mu)
-                _aOccC[h][mu][a] = Ca[mu+soOffset][aCount];
+                _aOccC->set(h, mu, a, Ca[mu+soOffset][aCount]);
             ++aCount;
         }
         for(int a = 0; a < _nAVirPI[h]; ++a){
             aVirEvals[aVirCount++] = aF0[INDEX(aCount, aCount)];
             for(int mu = 0; mu < _soPI[h]; ++mu)
-                _aVirC[h][mu][a] = Ca[mu+soOffset][aCount];
+                _aVirC->set(h, mu, a, Ca[mu+soOffset][aCount]);
             ++aCount;
         }
         for(int b = 0; b < _nBOccPI[h]; ++b){
             bOccEvals[bOccCount++] = bF0[INDEX(bCount, bCount)];
             for(int mu = 0; mu < _soPI[h]; ++mu)
-                _bOccC[h][mu][b] = Cb[mu+soOffset][bCount];
+                _bOccC->set(h, mu, b, Cb[mu+soOffset][bCount]);
             ++bCount;
         }
         for(int b = 0; b < _nBVirPI[h]; ++b){
             bVirEvals[bVirCount++] = bF0[INDEX(bCount, bCount)];
             for(int mu = 0; mu < _soPI[h]; ++mu)
-                _bVirC[h][mu][b] = Cb[mu+soOffset][bCount];
+                _bVirC->set(h, mu, b, Cb[mu+soOffset][bCount]);
             ++bCount;
         }
         pitzerOffset += _moPI[h];

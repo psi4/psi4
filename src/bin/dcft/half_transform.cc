@@ -28,7 +28,7 @@ namespace psi { namespace dcft {
  */
 
 void
-DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
+DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMatrix& C2,
         int *mospi_left, int *mospi_right, int **so_row, int **mo_row,
         bool backwards, double alpha, double beta)
 {
@@ -40,7 +40,7 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
 
     double **X;
 
-    for(int h = 0; h < _nIrreps; ++h){
+        for(int h = 0; h < _nIrreps; ++h){
         dpd_buf4_mat_irrep_init(SO, h);
         dpd_buf4_mat_irrep_init(MO, h);
 
@@ -55,6 +55,8 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
 
         for(Gc=0; Gc < _nIrreps; Gc++) {
             Gd = h^Gc;
+            double **pC1 = C1->pointer(Gc);
+            double **pC2 = C2->pointer(Gd);
 
             cd = mo_row[h][Gc];
             pq = so_row[h][Gc];
@@ -67,11 +69,11 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
                     for(ij = 0; ij < MO->params->rowtot[h]; ij++) {
 
                         C_DGEMM('n','t', mospi_left[Gc], _soPI[Gd], mospi_right[Gd], 1.0,
-                                &(MO->matrix[h][ij][cd]), mospi_right[Gd], &(C2[Gd][0][0]),
+                                &(MO->matrix[h][ij][cd]), mospi_right[Gd], &(pC2[0][0]),
                                 mospi_right[Gd], 0.0, &(X[0][0]), _soPI[Gd]);
 
                         C_DGEMM('n','n', _soPI[Gc], _soPI[Gd], mospi_left[Gc], alpha,
-                                &(C1[Gc][0][0]), mospi_left[Gc], &(X[0][0]), _soPI[Gd],
+                                &(pC1[0][0]), mospi_left[Gc], &(X[0][0]), _soPI[Gd],
                                 beta, &(SO->matrix[h][ij][pq]), _soPI[Gd]);
                     }
                 }
@@ -81,11 +83,11 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
                     for(ij=0; ij < MO->params->rowtot[h]; ij++) {
 
                         C_DGEMM('n','n', _soPI[Gc], mospi_right[Gd], _soPI[Gd], 1.0,
-                                &(SO->matrix[h][ij][pq]), _soPI[Gd], &(C2[Gd][0][0]), mospi_right[Gd],
+                                &(SO->matrix[h][ij][pq]), _soPI[Gd], &(pC2[0][0]), mospi_right[Gd],
                                 0.0, &(X[0][0]), mospi_right[Gd]);
 
                         C_DGEMM('t','n', mospi_left[Gc], mospi_right[Gd], _soPI[Gc], alpha,
-                                &(C1[Gc][0][0]), mospi_left[Gc], &(X[0][0]), mospi_right[Gd],
+                                &(pC1[0][0]), mospi_left[Gc], &(X[0][0]), mospi_right[Gd],
                                 beta, &(MO->matrix[h][ij][cd]), mospi_right[Gd]);
 
                     }
@@ -125,7 +127,7 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, Matrix& C1, Matrix& C2,
  */
 
 void
-DCFTSolver::file2_transform(dpdfile2 *SO, dpdfile2 *MO, Matrix *C, bool backwards)
+DCFTSolver::file2_transform(dpdfile2 *SO, dpdfile2 *MO, SharedMatrix C, bool backwards)
 {
     if(backwards) {
         Matrix MO_mat(MO);
