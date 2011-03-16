@@ -1,5 +1,7 @@
 #include "sapt.h"
 
+using namespace boost;
+
 namespace psi { namespace sapt {
 
 SAPT::SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
