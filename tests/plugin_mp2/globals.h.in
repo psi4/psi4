@@ -12,6 +12,8 @@
 //#define INDEX(i,j) ((i>j) ? ((i*(i+1)/2)+j) : ((j*(j+1)/2)+i))
 #define ID(x) ints.DPD_ID(x)
 
+using namespace boost;
+
 namespace psi{ namespace plugin_mp2{
     // Nasty, nasty global variables.
     EXTERN int nirreps, nmo;

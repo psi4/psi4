@@ -12,6 +12,8 @@
 #define ID(x) ints.DPD_ID(x)
 INIT_PLUGIN
 
+using namespace boost;
+
 namespace psi{ namespace tpdmtest{
 
 extern "C" int

@@ -7,6 +7,8 @@
 
 INIT_PLUGIN
 
+using namespace boost;
+
 namespace psi{ namespace aointegrals{
 
 extern "C" int
