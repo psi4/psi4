@@ -43,28 +43,28 @@ DCFTSolver::dump_density()
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
-    Matrix aOccOPDM(nirrep_, _nAOccPI, _nAOccPI);
-    Matrix bOccOPDM(nirrep_, _nBOccPI, _nBOccPI);
-    Matrix aVirOPDM(nirrep_, _nAVirPI, _nAVirPI);
-    Matrix bVirOPDM(nirrep_, _nBVirPI, _nBVirPI);
+    Matrix aOccOPDM(nirrep_, naoccpi_, naoccpi_);
+    Matrix bOccOPDM(nirrep_, nboccpi_, nboccpi_);
+    Matrix aVirOPDM(nirrep_, navirpi_, navirpi_);
+    Matrix bVirOPDM(nirrep_, nbvirpi_, nbvirpi_);
     for(int h = 0; h < nirrep_; ++h){
-        for(int i = 0; i < _nAOccPI[h]; ++i){
-            for(int j = 0; j < _nAOccPI[h]; ++j){
+        for(int i = 0; i < naoccpi_[h]; ++i){
+            for(int j = 0; j < naoccpi_[h]; ++j){
                 aOccOPDM.set(h, i, j, (i == j ? 1.0 : 0.0) + T_OO.matrix[h][i][j]);
             }
         }
-        for(int a = 0; a < _nAVirPI[h]; ++a){
-            for(int b = 0; b < _nAVirPI[h]; ++b){
+        for(int a = 0; a < navirpi_[h]; ++a){
+            for(int b = 0; b < navirpi_[h]; ++b){
                 aVirOPDM.set(h, a, b, T_VV.matrix[h][a][b]);
             }
         }
-        for(int i = 0; i < _nBOccPI[h]; ++i){
-            for(int j = 0; j < _nBOccPI[h]; ++j){
+        for(int i = 0; i < nboccpi_[h]; ++i){
+            for(int j = 0; j < nboccpi_[h]; ++j){
                 bOccOPDM.set(h, i, j, (i == j ? 1.0 : 0.0) + T_oo.matrix[h][i][j]);
             }
         }
-        for(int a = 0; a < _nBVirPI[h]; ++a){
-            for(int b = 0; b < _nBVirPI[h]; ++b){
+        for(int a = 0; a < nbvirpi_[h]; ++a){
+            for(int b = 0; b < nbvirpi_[h]; ++b){
                 bVirOPDM.set(h, a, b, T_vv.matrix[h][a][b]);
             }
         }
@@ -477,8 +477,8 @@ DCFTSolver::dump_density()
     /*
      * As a sanity check, compute the energy from the density matrices.
      */
-    Matrix aH(_soH);
-    Matrix bH(_soH);
+    Matrix aH(so_h_);
+    Matrix bH(so_h_);
     aH.transform(Ca_);
     bH.transform(Cb_);
     double hCoreEnergy = 0.0;
@@ -495,12 +495,12 @@ DCFTSolver::dump_density()
         }
         for(int p = 0; p < aVirOPDM.rowspi()[h]; ++p){
             for(int q = 0; q < aVirOPDM.colspi()[h]; ++q){
-                hCoreEnergy += aH.get(h, p + _nAOccPI[h], q + _nAOccPI[h]) * aVirOPDM.get(h, p, q);
+                hCoreEnergy += aH.get(h, p + naoccpi_[h], q + naoccpi_[h]) * aVirOPDM.get(h, p, q);
             }
         }
         for(int p = 0; p < bVirOPDM.rowspi()[h]; ++p){
             for(int q = 0; q < bVirOPDM.colspi()[h]; ++q){
-                hCoreEnergy += bH.get(h, p + _nBOccPI[h], q + _nBOccPI[h]) * bVirOPDM.get(h, p, q);
+                hCoreEnergy += bH.get(h, p + nboccpi_[h], q + nboccpi_[h]) * bVirOPDM.get(h, p, q);
             }
         }
     }
@@ -680,7 +680,7 @@ fprintf(outfile, "testbb = %16.10f\n", dpd_buf4_dot(&I, &L));
     dpd_buf4_close(&L);
     fprintf(outfile, "\tOVOV Energy          = %16.10f\n", OVOVEnergy);
 
-    fprintf(outfile, "\tTotal Energy         = %16.10f\n", _eNuc + hCoreEnergy
+    fprintf(outfile, "\tTotal Energy         = %16.10f\n", enuc_ + hCoreEnergy
             + OOOOEnergy + VVVVEnergy + OOVVEnergy + VVOOEnergy + OVOVEnergy);
 
     psio_->close(PSIF_DCFT_DENSITY, 1);
@@ -723,8 +723,8 @@ DCFTSolver::check_n_representability()
     dpd_file2_mat_rd(&T_vv);
 
     for(int h = 0; h < nirrep_; ++h){
-        int nOcc = _nAOccPI[h];
-        int nVir = _nAVirPI[h];
+        int nOcc = naoccpi_[h];
+        int nVir = navirpi_[h];
         unsigned long int dim = nmopi_[h];
 
         dpd_buf4_mat_irrep_init(&Laa, h);

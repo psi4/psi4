@@ -118,15 +118,15 @@ DCFTSolver::mp2_guess()
     dpd_buf4_close(&I);
     dpd_buf4_close(&L);
 
-    _newTotalEnergy = _scfEnergy + eAA + eAB + eBB;
-    fprintf(outfile, "\t*Total Hartree-Fock energy        = %20.15f\n", _scfEnergy);
+    new_total_energy_ = scf_energy_ + eAA + eAB + eBB;
+    fprintf(outfile, "\t*Total Hartree-Fock energy        = %20.15f\n", scf_energy_);
     fprintf(outfile, "\t Alpha - Alpha MP2 energy         = %20.15f\n", eAA);
     fprintf(outfile, "\t Alpha - Beta  MP2 energy         = %20.15f\n", eAB);
     fprintf(outfile, "\t Beta  - Beta  MP2 energy         = %20.15f\n", eBB);
     fprintf(outfile, "\t Total MP2 correlation energy     = %20.15f\n", eAA + eAB + eBB);
-    fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", _newTotalEnergy);
+    fprintf(outfile, "\t*Total MP2 energy                 = %20.15f\n", new_total_energy_);
 
-    Process::environment.globals["MP2 ENERGY"] = _newTotalEnergy;
+    Process::environment.globals["MP2 ENERGY"] = new_total_energy_;
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }

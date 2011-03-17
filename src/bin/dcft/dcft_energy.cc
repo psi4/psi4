@@ -14,8 +14,8 @@ DCFTSolver::compute_dcft_energy()
     dpdbuf4 L, G, T, A, I;
     double eGaa, eGab, eGbb, eAaa, eAab, eAbb;
     double eTaa, eTab, eTbb, eIaa, eIab, eIbb;
-    _oldTotalEnergy = _newTotalEnergy;
-    _newTotalEnergy = _scfEnergy;
+    old_total_energy_ = new_total_energy_;
+    new_total_energy_ = scf_energy_;
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -116,7 +116,7 @@ DCFTSolver::compute_dcft_energy()
     fprintf(outfile, "\tTotal T Energy = %20.12f\n", eTaa + eTab + eTbb);
     fprintf(outfile, "\tTotal A Energy = %20.12f\n", eAaa + eAab + eAbb);
 #endif
-    _newTotalEnergy += eGaa + eGab + eGbb + eAaa + eAab + eAbb
+    new_total_energy_ += eGaa + eGab + eGbb + eAaa + eAab + eAbb
                      + eTaa + eTab + eTbb + eIaa + eIab + eIbb;
 }
 
