@@ -9,13 +9,14 @@
 #include <libdiis/diismanager.h>
 #include <libiwl/iwl.hpp>
 
+using namespace boost;
+
 namespace psi{ namespace dcft{
 
-DCFTSolver::DCFTSolver(Options &options):
-    _psio(_default_psio_lib_),
-    _chkpt(new Chkpt(_default_psio_lib_, PSIO_OPEN_OLD))
+DCFTSolver::DCFTSolver(shared_ptr<Wavefunction> reference_wavefunction, Options &options):
+        Wavefunction(options, _default_psio_lib_)
 {
-    _options          = options;
+    reference_wavefunction_ = reference_wavefunction;
     _scfMaxIter       = options.get_int("SCF_MAXITER");
     _lambdaMaxIter    = options.get_int("LAMBDA_MAXITER");
     _maxNumIterations = options.get_int("MAXITER");
@@ -27,8 +28,7 @@ DCFTSolver::DCFTSolver(Options &options):
     _scfThreshold     = pow(10.0, -options.get_int("CONVERGENCE"));
     _lambdaThreshold  = pow(10.0, -options.get_int("CONVERGENCE"));
     _intTolerance     = pow(10.0, -options.get_int("INT_THRESH"));
-    _psio->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
-    read_checkpoint();
+    psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
 }
 
 /**
@@ -37,7 +37,7 @@ DCFTSolver::DCFTSolver(Options &options):
 void
 DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
 {
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(A, h);
         dpd_buf4_mat_irrep_init(B, h);
         dpd_buf4_mat_irrep_rd(A, h);
@@ -57,7 +57,7 @@ DCFTSolver::~DCFTSolver()
 {
     free_moinfo();
     delete _ints;
-    _psio->close(PSIF_DCFT_DPD, 1);
+    psio_->close(PSIF_DCFT_DPD, 1);
 }
 
 }} // Namespaces

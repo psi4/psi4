@@ -61,6 +61,8 @@ protected:
     /// Matrix factory for creating standard sized matrices
     boost::shared_ptr<MatrixFactory> factory_;
 
+    boost::shared_ptr<Wavefunction> reference_wavefunction_;
+
     /// How much memory you have access to.
     long int memory_;
 
@@ -151,6 +153,10 @@ public:
     boost::shared_ptr<SOBasisSet> sobasisset() const;
     /// Returns the MatrixFactory object that pertains to this wavefunction
     boost::shared_ptr<MatrixFactory> matrix_factory() const; 
+    /// Returns the reference wavefunction
+    boost::shared_ptr<Wavefunction> reference_wavefunction() const;
+    /// Returns the reference wavefunction
+    void set_reference_wavefunction(const boost::shared_ptr<Wavefunction> wfn);
 
     static void initialize_singletons();
 

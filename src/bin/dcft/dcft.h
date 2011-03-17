@@ -3,6 +3,7 @@
 
 #include <libmints/matrix.h>
 #include <libmints/vector.h>
+#include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
 
 namespace boost {
@@ -22,26 +23,22 @@ typedef boost::shared_ptr<Vector> SharedVector;
 
 namespace dcft{
 
-class DCFTSolver
+class DCFTSolver:public Wavefunction
 {
 public:
-    DCFTSolver(Options &options);
+    DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     ~DCFTSolver();
 
-    void compute();
-
+    double compute_energy();
 protected:
-    Options           _options;
-    boost::shared_ptr<Chkpt> _chkpt;
-    boost::shared_ptr<PSIO>  _psio;
     IntegralTransform *_ints;
 
     void transform_integrals();
     void build_lambda();
     void init_moinfo();
     void free_moinfo();
-    void read_checkpoint();
-    void compute_energy();
+    void init();
+    void compute_dcft_energy();
     void update_lambda_from_residual();
     void compute_scf_energy();
     void mp2_guess();
@@ -76,19 +73,13 @@ protected:
     int _lambdaMaxIter;
     /// The maximum number of SCF iterations per update
     int _scfMaxIter;
-    /// The number of irreps in the current point group
-    int _nIrreps;
     /// The amount of information to print
     int _print;
-    /// The number of ymmetrized atomic orbitals
-    int _nSo;
-    /// The number of molecular orbitals
-    int _nMo;
     /// The number of unique pairs of symmetrized atomic orbitals
     int _nTriSo;
-    /// The number of occupied alpha orbitals
+    /// The number of active alpha electrons
     int nalpha_;
-    /// The number of occupied beta orbitals
+    /// The number of active beta electrons
     int nbeta_;
     /// The number of virtual alpha orbitals
     int _nAVir;
@@ -104,18 +95,6 @@ protected:
     int _minDiisVecs;
     /// The maximum number of iterations
     int _maxNumIterations;
-    /// The number of unpaired electrons per irrep
-    int *_openPI;
-    /// The number of doubly-occupied orbitals per irrep
-    int *_clsdPI;
-    /// The number of frozen core orbitals per irrep
-    int *_frzcPI;
-    /// The number of frozen virtual orbitals per irrep
-    int *_frzvPI;
-    /// The number of molecular orbitals per irrep
-    int *_moPI;
-    /// The number of symmetrized atomic orbitals per irrep
-    int *_soPI;
     /// The number of occupied alpha orbitals per irrep
     int *_nAOccPI;
     /// The number of occupied beta orbitals per irrep
@@ -168,10 +147,6 @@ protected:
     SharedMatrix _Fb;
     /// The inverse square root overlap matrix in the SO basis
     SharedMatrix _sHalfInv;
-    /// The full alpha MO coefficients
-    SharedMatrix _Ca;
-    /// The full beta MO coefficients
-    SharedMatrix _Cb;
     /// The old full alpha MO coefficients
     SharedMatrix _oldCa;
     /// The old full beta MO coefficients
@@ -188,10 +163,6 @@ protected:
     SharedMatrix _aScfError;
     /// The beta SCF error vector
     SharedMatrix _bScfError;
-    /// The full alpha MO energies
-    SharedVector _aEvals;
-    /// The full beta MO energies
-    SharedVector _bEvals;
     /// Used to align things in the output
     std::string indent;
 };

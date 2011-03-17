@@ -29,9 +29,9 @@ DCFTSolver::compute_lambda_residual()
     dpd_buf4_close(&G);
     dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
-    for(int h = 0; h < _nIrreps; ++h)
+    for(int h = 0; h < nirrep_; ++h)
         nElements += R.params->coltot[h] * R.params->rowtot[h];
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         // R_IJAB += T_IJAB
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
@@ -53,9 +53,9 @@ DCFTSolver::compute_lambda_residual()
     dpd_buf4_close(&G);
     dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-    for(int h = 0; h < _nIrreps; ++h)
+    for(int h = 0; h < nirrep_; ++h)
         nElements += R.params->coltot[h] * R.params->rowtot[h];
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         // R_IjAb += T_IjAb
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "T <Oo|Vv>");
@@ -77,9 +77,9 @@ DCFTSolver::compute_lambda_residual()
     dpd_buf4_close(&G);
     dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
-    for(int h = 0; h < _nIrreps; ++h)
+    for(int h = 0; h < nirrep_; ++h)
         nElements += R.params->coltot[h] * R.params->rowtot[h];
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         // R_ijab += T_ijab
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                       ID("[o,o]"), ID("[v,v]"), 0, "T <oo|vv>");
@@ -106,7 +106,7 @@ DCFTSolver::update_lambda_from_residual()
 {
     dpdbuf4 L, D, R;
 
-    _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     /*
      * Lambda_ijab += R_ijab / D_ijab
@@ -150,7 +150,7 @@ DCFTSolver::update_lambda_from_residual()
     dpd_buf4_close(&R);
     dpd_buf4_close(&L);
 
-    _psio->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 }} // Namespaces
