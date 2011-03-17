@@ -40,7 +40,7 @@ void set_params(void)
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
 // Which RFO root to follow; internally 0 (externally 1) indicates minimum; {integer}
 //  Opt_params.rfo_root = 0;
-    Opt_params.rfo_root = options.get_int("RFO_ROOT") - 1;
+    Opt_params.rfo_root = options.get_int("RFO_ROOT");
 
 // When determining connectivity, a bond is assigned if interatomic distance
 // is less than (this number) * sum of covalent radii {double}
@@ -160,8 +160,8 @@ void set_params(void)
 // follow root   (default 0)
   Opt_params.rfo_follow_root = rem_read(REM_GEOM_OPT2_RFO_FOLLOW_ROOT);
 
-// which root    (default is 1 for minimum)
-  Opt_params.rfo_root = rem_read(REM_GEOM_OPT2_RFO_ROOT) - 1;
+// which root    (default is 0 for minimum) - should be corrected in qchem default
+  Opt_params.rfo_root = rem_read(REM_GEOM_OPT2_RFO_ROOT);
 
 // scale = i / 10   (default 13)
   i = rem_read(REM_GEOM_OPT2_SCALE_CONNECTIVITY);
@@ -333,10 +333,7 @@ void print_params(void) {
   else
   fprintf(outfile, "rfo_follow_root        = %18s\n", "false");
 
-  if (Opt_params.rfo_root)
-  fprintf(outfile, "rfo_root               = %18s\n", "true");
-  else
-  fprintf(outfile, "rfo_root               = %18s\n", "false");
+  fprintf(outfile, "rfo_root               = %18d\n", Opt_params.rfo_root);
 
   fprintf(outfile, "rfo_normalization_min  = %18.2e\n", Opt_params.rfo_normalization_min);
 
