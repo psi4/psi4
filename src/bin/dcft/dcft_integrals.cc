@@ -18,11 +18,11 @@ DCFTSolver::transform_integrals()
     dpdbuf4 I, Irs, Isr;
 
     _ints->update_orbitals();
-    if(_print > 1){
+    if(print_ > 1){
         fprintf(outfile, "\tTransforming integrals...\n");
         fflush(outfile);
     }
-    _ints->set_print(_print - 2 >= 0 ? _print - 2 : 0);
+    _ints->set_print(print_ - 2 >= 0 ? print_ - 2 : 0);
 
     // Generate the integrals in various spaces in chemists' notation
     _ints->transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
@@ -206,16 +206,16 @@ DCFTSolver::build_denominators()
     dpdbuf4 D;
     dpdfile2 F;
 
-    double *aF0 = new double[_nTriSo];
-    double *bF0 = new double[_nTriSo];
+    double *aF0 = new double[ntriso_];
+    double *bF0 = new double[ntriso_];
 
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, aF0, _nTriSo, 0, 0, outfile);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, bF0, _nTriSo, 0, 0, outfile);
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, aF0, ntriso_, 0, 0, outfile);
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, bF0, ntriso_, 0, 0, outfile);
 
     double *aOccEvals = new double [nalpha_];
     double *bOccEvals = new double [nbeta_];
-    double *aVirEvals = new double [_nAVir];
-    double *bVirEvals = new double [_nBVir];
+    double *aVirEvals = new double [navir_];
+    double *bVirEvals = new double [nbvir_];
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int pitzerOffset = 0;
@@ -224,28 +224,28 @@ DCFTSolver::build_denominators()
     double **Cb = chkpt_->rd_beta_scf();
     for(int h = 0, soOffset = 0; h < nirrep_; ++h){
         bCount = aCount = pitzerOffset + frzcpi_[h];
-        for(int a = 0; a < _nAOccPI[h]; ++a){
+        for(int a = 0; a < naoccpi_[h]; ++a){
             aOccEvals[aOccCount++] = aF0[INDEX(aCount, aCount)];
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                _aOccC->set(h, mu, a, Ca[mu+soOffset][aCount]);
+                aocc_c_->set(h, mu, a, Ca[mu+soOffset][aCount]);
             ++aCount;
         }
-        for(int a = 0; a < _nAVirPI[h]; ++a){
+        for(int a = 0; a < navirpi_[h]; ++a){
             aVirEvals[aVirCount++] = aF0[INDEX(aCount, aCount)];
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                _aVirC->set(h, mu, a, Ca[mu+soOffset][aCount]);
+                avir_c_->set(h, mu, a, Ca[mu+soOffset][aCount]);
             ++aCount;
         }
-        for(int b = 0; b < _nBOccPI[h]; ++b){
+        for(int b = 0; b < nboccpi_[h]; ++b){
             bOccEvals[bOccCount++] = bF0[INDEX(bCount, bCount)];
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                _bOccC->set(h, mu, b, Cb[mu+soOffset][bCount]);
+                bocc_c_->set(h, mu, b, Cb[mu+soOffset][bCount]);
             ++bCount;
         }
-        for(int b = 0; b < _nBVirPI[h]; ++b){
+        for(int b = 0; b < nbvirpi_[h]; ++b){
             bVirEvals[bVirCount++] = bF0[INDEX(bCount, bCount)];
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                _bVirC->set(h, mu, b, Cb[mu+soOffset][bCount]);
+                bvir_c_->set(h, mu, b, Cb[mu+soOffset][bCount]);
             ++bCount;
         }
         pitzerOffset += nmopi_[h];
@@ -280,8 +280,8 @@ DCFTSolver::build_denominators()
     int offset = 0;
     for(int h = 0; h < nirrep_; ++h){
         offset += frzcpi_[h];
-        for(int i = 0 ; i < _nAOccPI[h]; ++i){
-            for(int j = 0 ; j < _nAOccPI[h]; ++j){
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            for(int j = 0 ; j < naoccpi_[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
             }
         }
@@ -296,8 +296,8 @@ DCFTSolver::build_denominators()
     offset = 0;
     for(int h = 0; h < nirrep_; ++h){
         offset += frzcpi_[h];
-        for(int i = 0 ; i < _nBOccPI[h]; ++i){
-            for(int j = 0 ; j < _nBOccPI[h]; ++j){
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            for(int j = 0 ; j < nboccpi_[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
             }
         }
@@ -311,13 +311,13 @@ DCFTSolver::build_denominators()
     dpd_file2_mat_init(&F);
     offset = 0;
     for(int h = 0; h < nirrep_; ++h){
-        offset += _nAOccPI[h];
-        for(int i = 0 ; i < _nAVirPI[h]; ++i){
-            for(int j = 0 ; j < _nAVirPI[h]; ++j){
+        offset += naoccpi_[h];
+        for(int i = 0 ; i < navirpi_[h]; ++i){
+            for(int j = 0 ; j < navirpi_[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
             }
         }
-        offset += nmopi_[h] - _nAOccPI[h];
+        offset += nmopi_[h] - naoccpi_[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
@@ -327,13 +327,13 @@ DCFTSolver::build_denominators()
     dpd_file2_mat_init(&F);
     offset = 0;
     for(int h = 0; h < nirrep_; ++h){
-        offset += _nBOccPI[h];
-        for(int i = 0 ; i < _nBVirPI[h]; ++i){
-            for(int j = 0 ; j < _nBVirPI[h]; ++j){
+        offset += nboccpi_[h];
+        for(int i = 0 ; i < nbvirpi_[h]; ++i){
+            for(int j = 0 ; j < nbvirpi_[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
             }
         }
-        offset += nmopi_[h] - _nBOccPI[h];
+        offset += nmopi_[h] - nboccpi_[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
@@ -365,7 +365,7 @@ DCFTSolver::build_denominators()
                 int a = D.params->colorb[h][col][0];
                 int b = D.params->colorb[h][col][1];
                 D.matrix[h][row][col] = 1.0/
-                                    (_regularizer + aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
+                                    (regularizer_ + aOccEvals[i] + aOccEvals[j] - aVirEvals[a] - aVirEvals[b]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&D, h);
@@ -387,7 +387,7 @@ DCFTSolver::build_denominators()
                 int a = D.params->colorb[h][col][0];
                 int b = D.params->colorb[h][col][1];
                 D.matrix[h][row][col] = 1.0/
-                                    (_regularizer + aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
+                                    (regularizer_ + aOccEvals[i] + bOccEvals[j] - aVirEvals[a] - bVirEvals[b]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&D, h);
@@ -409,7 +409,7 @@ DCFTSolver::build_denominators()
                 int a = D.params->colorb[h][col][0];
                 int b = D.params->colorb[h][col][1];
                 D.matrix[h][row][col] = 1.0/
-                                    (_regularizer + bOccEvals[i] + bOccEvals[j] - bVirEvals[a] - bVirEvals[b]);
+                                    (regularizer_ + bOccEvals[i] + bOccEvals[j] - bVirEvals[a] - bVirEvals[b]);
             }
         }
         dpd_buf4_mat_irrep_wrt(&D, h);

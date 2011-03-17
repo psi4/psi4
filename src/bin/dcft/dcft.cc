@@ -17,18 +17,20 @@ DCFTSolver::DCFTSolver(shared_ptr<Wavefunction> reference_wavefunction, Options 
         Wavefunction(options, _default_psio_lib_)
 {
     reference_wavefunction_ = reference_wavefunction;
-    _scfMaxIter       = options.get_int("SCF_MAXITER");
-    _lambdaMaxIter    = options.get_int("LAMBDA_MAXITER");
-    _maxNumIterations = options.get_int("MAXITER");
-    _print            = options.get_int("PRINT");
-    _maxDiis          = options.get_int("MAX_DIIS");
-    _minDiisVecs      = options.get_int("DIIS_NUM_VECS");
-    _regularizer      = options.get_double("REGULARIZER");
-    _diisStartThresh  = pow(10.0, -options.get_int("DIIS_START"));
-    _scfThreshold     = pow(10.0, -options.get_int("CONVERGENCE"));
-    _lambdaThreshold  = pow(10.0, -options.get_int("CONVERGENCE"));
-    _intTolerance     = pow(10.0, -options.get_int("INT_THRESH"));
+    scfmaxiter_       = options.get_int("SCF_MAXITER");
+    lambdamaxiter_    = options.get_int("LAMBDA_MAXITER");
+    maxiter_ = options.get_int("MAXITER");
+    print_            = options.get_int("PRINT");
+    maxdiis_          = options.get_int("MAX_DIIS");
+    mindiisvecs_      = options.get_int("DIIS_NUM_VECS");
+    regularizer_      = options.get_double("REGULARIZER");
+    diis_start_thresh_  = pow(10.0, -options.get_int("DIIS_START"));
+    scf_threshold_     = pow(10.0, -options.get_int("CONVERGENCE"));
+    lambda_threshold_  = pow(10.0, -options.get_int("CONVERGENCE"));
+    int_tolerance_     = pow(10.0, -options.get_int("INT_THRESH"));
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
+    // Sets up the memory, and orbital info
+    init();
 }
 
 /**

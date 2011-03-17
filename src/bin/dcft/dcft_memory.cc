@@ -35,9 +35,9 @@ DCFTSolver::init()
     nso_       = reference_wavefunction_->nso();
     nirrep_    = reference_wavefunction_->nirrep();
     nmo_       = reference_wavefunction_->nmo();
-    _eNuc      = Process::environment.molecule()->nuclear_repulsion_energy();
-    _scfEnergy = reference_wavefunction_->reference_energy();
-    _nTriSo    = nso_ * (nso_ + 1) / 2;
+    enuc_      = Process::environment.molecule()->nuclear_repulsion_energy();
+    scf_energy_ = reference_wavefunction_->reference_energy();
+    ntriso_    = nso_ * (nso_ + 1) / 2;
     for(int h = 0; h < nirrep_; ++h){
         soccpi_[h] = reference_wavefunction_->soccpi()[h];
         doccpi_[h] = reference_wavefunction_->doccpi()[h];
@@ -47,56 +47,56 @@ DCFTSolver::init()
         nsopi_[h]  = reference_wavefunction_->nsopi()[h];
     }
 
-    _nAOccPI = new int[nirrep_];
-    _nBOccPI = new int[nirrep_];
-    _nAVirPI = new int[nirrep_];
-    _nBVirPI = new int[nirrep_];
-    nalpha_  = nbeta_ =  _nAVir = _nBVir = 0;
+    naoccpi_ = new int[nirrep_];
+    nboccpi_ = new int[nirrep_];
+    navirpi_ = new int[nirrep_];
+    nbvirpi_ = new int[nirrep_];
+    nalpha_  = nbeta_ =  navir_ = nbvir_ = 0;
     for(int h = 0; h < nirrep_; ++h){
-        _nAOccPI[h] = doccpi_[h] + soccpi_[h];
-        _nBOccPI[h] = doccpi_[h];
-        _nAVirPI[h] = nmopi_[h] - doccpi_[h] - soccpi_[h] - frzvpi_[h];
-        _nBVirPI[h] = nmopi_[h] - doccpi_[h] - frzvpi_[h];
-        for(int n = 0; n < _nAOccPI[h]; ++n) ++nalpha_;
-        for(int n = 0; n < _nBOccPI[h]; ++n) ++nbeta_;
-        for(int n = 0; n < _nAVirPI[h]; ++n) ++_nAVir;
-        for(int n = 0; n < _nBVirPI[h]; ++n) ++_nBVir;
+        naoccpi_[h] = doccpi_[h] + soccpi_[h];
+        nboccpi_[h] = doccpi_[h];
+        navirpi_[h] = nmopi_[h] - doccpi_[h] - soccpi_[h] - frzvpi_[h];
+        nbvirpi_[h] = nmopi_[h] - doccpi_[h] - frzvpi_[h];
+        for(int n = 0; n < naoccpi_[h]; ++n) ++nalpha_;
+        for(int n = 0; n < nboccpi_[h]; ++n) ++nbeta_;
+        for(int n = 0; n < navirpi_[h]; ++n) ++navir_;
+        for(int n = 0; n < nbvirpi_[h]; ++n) ++nbvir_;
     }
 
-    _aOccC     = shared_ptr<Matrix>(new Matrix("Alpha Occupied MO Coefficients", nirrep_, nsopi_, _nAOccPI));
-    _bOccC     = shared_ptr<Matrix>(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, _nBOccPI));
-    _aVirC     = shared_ptr<Matrix>(new Matrix("Alpha Virtual MO Coefficients", nirrep_, nsopi_, _nAVirPI));
-    _bVirC     = shared_ptr<Matrix>(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, _nBVirPI));
-    _aScfError = shared_ptr<Matrix>(new Matrix("Alpha SCF Error Vector", nirrep_, _nAOccPI, _nAVirPI));
-    _bScfError = shared_ptr<Matrix>(new Matrix("Beta SCF Error Vector", nirrep_, _nBOccPI, _nBVirPI));
-    _Fa        = shared_ptr<Matrix>(new Matrix("Alpha Fock Matrix", nirrep_, nsopi_, nsopi_));
-    _Fb        = shared_ptr<Matrix>(new Matrix("Beta Fock Matrix", nirrep_, nsopi_, nsopi_));
+    aocc_c_     = shared_ptr<Matrix>(new Matrix("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_));
+    bocc_c_     = shared_ptr<Matrix>(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_));
+    avir_c_     = shared_ptr<Matrix>(new Matrix("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_));
+    bvir_c_     = shared_ptr<Matrix>(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
+    scf_error_a_ = shared_ptr<Matrix>(new Matrix("Alpha SCF Error Vector", nirrep_, naoccpi_, navirpi_));
+    scf_error_b_ = shared_ptr<Matrix>(new Matrix("Beta SCF Error Vector", nirrep_, nboccpi_, nbvirpi_));
+    Fa_        = shared_ptr<Matrix>(new Matrix("Alpha Fock Matrix", nirrep_, nsopi_, nsopi_));
+    Fb_        = shared_ptr<Matrix>(new Matrix("Beta Fock Matrix", nirrep_, nsopi_, nsopi_));
     Ca_        = shared_ptr<Matrix>(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     Cb_        = shared_ptr<Matrix>(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    _oldCa     = shared_ptr<Matrix>(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
-    _oldCb     = shared_ptr<Matrix>(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    _aKappa    = shared_ptr<Matrix>(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    _bKappa    = shared_ptr<Matrix>(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    _aGTau     = shared_ptr<Matrix>(new Matrix("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_));
-    _bGTau     = shared_ptr<Matrix>(new Matrix("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_));
-    _aoS       = shared_ptr<Matrix>(new Matrix("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_));
-    _soH       = shared_ptr<Matrix>(new Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_));
-    _sHalfInv  = shared_ptr<Matrix>(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
+    old_ca_     = shared_ptr<Matrix>(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
+    old_cb_     = shared_ptr<Matrix>(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
+    kappa_a_    = shared_ptr<Matrix>(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
+    kappa_b_    = shared_ptr<Matrix>(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
+    g_tau_a_     = shared_ptr<Matrix>(new Matrix("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_));
+    g_tau_b_     = shared_ptr<Matrix>(new Matrix("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_));
+    ao_s_       = shared_ptr<Matrix>(new Matrix("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_));
+    so_h_       = shared_ptr<Matrix>(new Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_));
+    s_half_inv_  = shared_ptr<Matrix>(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
     epsilon_a_    = shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
     epsilon_b_    = shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
 
-    _aTau    = new double**[nirrep_];
-    _bTau    = new double**[nirrep_];
+    a_tau_    = new double**[nirrep_];
+    b_tau_    = new double**[nirrep_];
     for(int h = 0; h < nirrep_; ++h){
-        _aTau[h] = block_matrix(nsopi_[h], nsopi_[h]);
-        _bTau[h] = block_matrix(nsopi_[h], nsopi_[h]);
+        a_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
+        b_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
     }
     
 
     // Store the AO overlap matrix
-    double *sArray = new double[_nTriSo];
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, _nTriSo, 0, 0, outfile);
-    _aoS->set(sArray);
+    double *sArray = new double[ntriso_];
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_S, sArray, ntriso_, 0, 0, outfile);
+    ao_s_->set(sArray);
     delete [] sArray;
 
     // Form S^(-1/2) matrix
@@ -104,7 +104,7 @@ DCFTSolver::init()
     Matrix eigtemp(nirrep_, nsopi_, nsopi_);
     Matrix eigtemp2(nirrep_, nsopi_, nsopi_);
     Vector eigval(nirrep_, nsopi_);
-    _aoS->diagonalize(eigvec, eigval);
+    ao_s_->diagonalize(eigvec, eigval);
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     for (int h=0; h < nirrep_; ++h) {
         for (int i=0; i < nsopi_[h]; ++i) {
@@ -114,7 +114,7 @@ DCFTSolver::init()
     }
     eigtemp2.set(eigval);
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-    _sHalfInv->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
+    s_half_inv_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 }
 
 
@@ -129,19 +129,19 @@ DCFTSolver::free_moinfo()
         //free_block(_bOccC[h]);
         //free_block(_aVirC[h]);
         //free_block(_bVirC[h]);
-        free_block(_aTau[h]);
-        free_block(_bTau[h]);
+        free_block(a_tau_[h]);
+        free_block(b_tau_[h]);
     }
     //delete [] _aOccC;
     //delete [] _bOccC;
     //delete [] _aVirC;
     //delete [] _bVirC;
-    delete [] _aTau;
-    delete [] _bTau;
-    delete [] _nAOccPI;
-    delete [] _nBOccPI;
-    delete [] _nAVirPI;
-    delete [] _nBVirPI;
+    delete [] a_tau_;
+    delete [] b_tau_;
+    delete [] naoccpi_;
+    delete [] nboccpi_;
+    delete [] navirpi_;
+    delete [] nbvirpi_;
 }
 
 }}//Namespaces

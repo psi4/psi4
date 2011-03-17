@@ -70,99 +70,95 @@ protected:
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
     /// The maximum number of lambda iterations per update
-    int _lambdaMaxIter;
+    int lambdamaxiter_;
     /// The maximum number of SCF iterations per update
-    int _scfMaxIter;
+    int scfmaxiter_;
     /// The amount of information to print
-    int _print;
+    int print_;
     /// The number of unique pairs of symmetrized atomic orbitals
-    int _nTriSo;
+    int ntriso_;
     /// The number of active alpha electrons
     int nalpha_;
     /// The number of active beta electrons
     int nbeta_;
     /// The number of virtual alpha orbitals
-    int _nAVir;
+    int navir_;
     /// The number of virtual beta orbitals
-    int _nBVir;
-    /// The number of iterations needed to reach lambda convergence
-    int _nLambdaIterations;
-    /// The number of iterations needed to reach scf convergence
-    int _nScfIterations;
+    int nbvir_;
     /// The maximum size of the DIIS subspace
-    int _maxDiis;
+    int maxdiis_;
     /// The number of DIIS vectors needed for extrapolation
-    int _minDiisVecs;
+    int mindiisvecs_;
     /// The maximum number of iterations
-    int _maxNumIterations;
+    int maxiter_;
     /// The number of occupied alpha orbitals per irrep
-    int *_nAOccPI;
+    int *naoccpi_;
     /// The number of occupied beta orbitals per irrep
-    int *_nBOccPI;
+    int *nboccpi_;
     /// The number of virtual alpha orbitals per irrep
-    int *_nAVirPI;
+    int *navirpi_;
     /// The number of virtual beta orbitals per irrep
-    int *_nBVirPI;
+    int *nbvirpi_;
     /// The nuclear repulsion energy in Hartree
-    double _eNuc;
+    double enuc_;
     /// The cutoff below which and integral is assumed to be zero
-    double _intTolerance;
+    double int_tolerance_;
     /// The RMS value of the error vector after the SCF iterations
-    double _scfConvergence;
+    double scf_convergence_;
     /// The RMS value of the change in lambda after the lambda iterations
-    double _lambdaConvergence;
+    double lambda_convergence_;
     /// The convergence criterion for the lambda iterations
-    double _lambdaThreshold;
+    double lambda_threshold_;
     /// The convergence criterion for the scf iterations
-    double _scfThreshold;
+    double scf_threshold_;
     /// The convergence that must be achieved before DIIS extrapolation starts
-    double _diisStartThresh;
+    double diis_start_thresh_;
     /// The SCF component of the energy
-    double _scfEnergy;
+    double scf_energy_;
     /// The previous total energy
-    double _oldTotalEnergy;
+    double old_total_energy_;
     /// The updated total energy
-    double _newTotalEnergy;
+    double new_total_energy_;
     /// The Tikhonow regularizer used to remove singularities (c.f. Taube and Bartlett, JCP, 2009)
-    double _regularizer;
+    double regularizer_;
     /// The alpha occupied eigenvectors, per irrep
-    SharedMatrix _aOccC;
+    SharedMatrix aocc_c_;
     /// The beta occupied eigenvectors, per irrep
-    SharedMatrix _bOccC;
+    SharedMatrix bocc_c_;
     /// The alpha virtual eigenvectors, per irrep
-    SharedMatrix _aVirC;
+    SharedMatrix avir_c_;
     /// The beta virtual eigenvectors, per irrep
-    SharedMatrix _bVirC;
+    SharedMatrix bvir_c_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
-    double ***_aTau;
+    double ***a_tau_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
-    double ***_bTau;
+    double ***b_tau_;
     /// The overlap matrix in the AO basis
-    SharedMatrix _aoS;
+    SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
-    SharedMatrix _soH;
+    SharedMatrix so_h_;
     /// The alpha Fock matrix in the SO basis
-    SharedMatrix _Fa;
+    SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
-    SharedMatrix _Fb;
+    SharedMatrix Fb_;
     /// The inverse square root overlap matrix in the SO basis
-    SharedMatrix _sHalfInv;
+    SharedMatrix s_half_inv_;
     /// The old full alpha MO coefficients
-    SharedMatrix _oldCa;
+    SharedMatrix old_ca_;
     /// The old full beta MO coefficients
-    SharedMatrix _oldCb;
+    SharedMatrix old_cb_;
     /// The alpha kappa matrix in the SO basis
-    SharedMatrix _aKappa;
+    SharedMatrix kappa_a_;
     /// The beta kappa matrix in the SO basis
-    SharedMatrix _bKappa;
+    SharedMatrix kappa_b_;
     /// The alpha external potential in the SO basis
-    SharedMatrix _aGTau;
+    SharedMatrix g_tau_a_;
     /// The beta external potential in the SO basis
-    SharedMatrix _bGTau;
+    SharedMatrix g_tau_b_;
     /// The alpha SCF error vector
-    SharedMatrix _aScfError;
+    SharedMatrix scf_error_a_;
     /// The beta SCF error vector
-    SharedMatrix _bScfError;
+    SharedMatrix scf_error_b_;
     /// Used to align things in the output
     std::string indent;
 };
