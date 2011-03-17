@@ -172,7 +172,7 @@ void MOLECULE::rfo_step(void) {
   // if not root following, then use rfo_root'th lowest eigenvalue; default is 0 (lowest)
   if ( (!Opt_params.rfo_follow_root) || (p_Opt_data->g_iteration() == 1)) {
     rfo_root = Opt_params.rfo_root;
-    fprintf(outfile,"\tFollowing RFO solution %d.\n", rfo_root+1);
+    fprintf(outfile,"\tFollowing RFO solution %d.\n", rfo_root);
   }
   else { // do root following
     double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
