@@ -20,11 +20,11 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::write_orbitals_to_checkpoint()
   {
-      double **aEvecs = _Ca->to_block_matrix();
-      _chkpt->wt_alpha_scf(aEvecs);
+      double **aEvecs = Ca_->to_block_matrix();
+      chkpt_->wt_alpha_scf(aEvecs);
       free_block(aEvecs);
-      double **bEvecs = _Cb->to_block_matrix();
-      _chkpt->wt_beta_scf(bEvecs);
+      double **bEvecs = Cb_->to_block_matrix();
+      chkpt_->wt_beta_scf(bEvecs);
       free_block(bEvecs);
   }
 
@@ -38,20 +38,20 @@ namespace psi{ namespace dcft{
   bool
   DCFTSolver::correct_mo_phases(bool dieOnError)
   {
-      Matrix temp("temp", _nIrreps, _soPI, _soPI);
-      Matrix overlap("Old - New Overlap", _nIrreps, _soPI, _soPI);
+      Matrix temp("temp", nirrep_, nsopi_, nsopi_);
+      Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
 
       temp.gemm(true, false, 1.0, _oldCa, _aoS, 0.0);
-      overlap.gemm(false, false, 1.0, temp, _Ca, 0.0);
-      temp.copy(_Ca);
+      overlap.gemm(false, false, 1.0, temp, Ca_, 0.0);
+      temp.copy(Ca_);
       std::map<int, int> mosUsed;
       int offset = 0;
-      for(int h = 0; h < _nIrreps; ++h){
-          for(int oldMO = 0; oldMO < _soPI[h]; ++oldMO){
+      for(int h = 0; h < nirrep_; ++h){
+          for(int oldMO = 0; oldMO < nsopi_[h]; ++oldMO){
               int bestMO = 0;
               double maximumProjection = 0.0;
               double prefactor = 0.0;
-              for(int newMO = 0; newMO < _soPI[h]; ++newMO){
+              for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
                   if(fabs(val) > maximumProjection){
                       maximumProjection = fabs(val);
@@ -69,28 +69,28 @@ namespace psi{ namespace dcft{
                       throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
                   }else{
                       // Copy Ca back from temp
-                      _Ca->copy(temp);
+                      Ca_->copy(temp);
                       return false;
                   }
               }
-              for(int so = 0; so < _soPI[h]; ++so){
-                  _Ca->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+              for(int so = 0; so < nsopi_[h]; ++so){
+                  Ca_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
               }
           }
-          offset += _soPI[h];
+          offset += nsopi_[h];
       }
 
       temp.gemm(true, false, 1.0, _oldCb, _aoS, 0.0);
-      overlap.gemm(false, false, 1.0, temp, _Cb, 0.0);
-      temp.copy(_Cb);
+      overlap.gemm(false, false, 1.0, temp, Cb_, 0.0);
+      temp.copy(Cb_);
       mosUsed.clear();
       offset = 0;
-      for(int h = 0; h < _nIrreps; ++h){
-          for(int oldMO = 0; oldMO < _soPI[h]; ++oldMO){
+      for(int h = 0; h < nirrep_; ++h){
+          for(int oldMO = 0; oldMO < nsopi_[h]; ++oldMO){
               int bestMO = 0;
               double bestOverlap = 0.0;
               double prefactor = 0.0;
-              for(int newMO = 0; newMO < _soPI[h]; ++newMO){
+              for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
                   double val = overlap.get(h, oldMO, newMO);
                   if(fabs(val) > bestOverlap){
                       bestOverlap = fabs(val);
@@ -108,15 +108,15 @@ namespace psi{ namespace dcft{
                       throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
                   }else{
                       // Copy Cb back from temp
-                      _Cb->copy(temp);
+                      Cb_->copy(temp);
                       return false;
                   }
               }
-              for(int so = 0; so < _soPI[h]; ++so){
-                  _Cb->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+              for(int so = 0; so < nsopi_[h]; ++so){
+                  Cb_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
               }
           }
-          offset += _soPI[h];
+          offset += nsopi_[h];
       }
       return true;
   }
@@ -129,18 +129,18 @@ namespace psi{ namespace dcft{
   {
       std::vector<std::pair<double, int> > aPairs;
       std::vector<std::pair<double, int> > bPairs;
-      for (int h = 0; h < _nIrreps; ++h) {
-          for (int i=0; i < _soPI[h]; ++i){
-              aPairs.push_back(make_pair(_aEvals->get(h, i), h));
-              bPairs.push_back(make_pair(_bEvals->get(h, i), h));
+      for (int h = 0; h < nirrep_; ++h) {
+          for (int i=0; i < nsopi_[h]; ++i){
+              aPairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+              bPairs.push_back(make_pair(epsilon_b_->get(h, i), h));
           }
       }
       sort(aPairs.begin(), aPairs.end());
       sort(bPairs.begin(), bPairs.end());
 
-      int *aIrrepCount = init_int_array(_nIrreps);
-      int *bIrrepCount = init_int_array(_nIrreps);
-      char **irrepLabels = _chkpt->rd_irr_labs();
+      int *aIrrepCount = init_int_array(nirrep_);
+      int *bIrrepCount = init_int_array(nirrep_);
+      char **irrepLabels = chkpt_->rd_irr_labs();
 
       fprintf(outfile, "\n\tOrbital energies (a.u.):\n\t\tAlpha occupied orbitals\n\t\t");
       for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
@@ -157,44 +157,44 @@ namespace psi{ namespace dcft{
               fprintf(outfile, "\n\t\t");
       }
       fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
-      for (int i = nalpha_, count = 0; i < _nMo; ++i, ++count) {
+      for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
           int irrep = aPairs[i].second;
           fprintf(outfile, "%4d%-4s%11.6f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
-          if (count % 4 == 3 && i != _nMo)
+          if (count % 4 == 3 && i != nmo_)
               fprintf(outfile, "\n\t\t");
       }
       fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
-      for (int i = nbeta_, count = 0; i < _nMo; ++i, ++count) {
+      for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
           int irrep = bPairs[i].second;
           fprintf(outfile, "%4d%-4s%11.6f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
-          if (count % 4 == 3 && i != _nMo)
+          if (count % 4 == 3 && i != nmo_)
               fprintf(outfile, "\n\t\t");
       }
       fprintf(outfile, "\n\n");
 
       fprintf(outfile, "\n\tIrrep              ");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "%4s ", irrepLabels[h]);
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4s ", irrepLabels[h]);
       fprintf(outfile, "\n\t-------------------");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "-----");
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "-----");
       fprintf(outfile, "\n\t#Symmetry Orbitals ");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "%4d ", _soPI[h]);
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", nsopi_[h]);
       fprintf(outfile, "\n\t#Alpha Occupied    ");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "%4d ", _nAOccPI[h]);
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", _nAOccPI[h]);
       fprintf(outfile, "\n\t#Beta Occupied     ");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "%4d ", _nBOccPI[h]);
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", _nBOccPI[h]);
       fprintf(outfile, "\n\t#Alpha Virtual     ");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "%4d ", _nAVirPI[h]);
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", _nAVirPI[h]);
       fprintf(outfile, "\n\t#Beta Virtual      ");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "%4d ", _nBVirPI[h]);
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "%4d ", _nBVirPI[h]);
       fprintf(outfile, "\n\t-------------------");
-      for(int h = 0; h < _nIrreps; ++h) fprintf(outfile, "-----");
+      for(int h = 0; h < nirrep_; ++h) fprintf(outfile, "-----");
       fprintf(outfile, "\n\n");
 
       if(_print > 2){
-          _Ca->print();
-          _Cb->print();
+          Ca_->print();
+          Cb_->print();
       }
-      for (int h = 0; h < _nIrreps; ++h)
+      for (int h = 0; h < nirrep_; ++h)
           delete [] irrepLabels[h];
       delete[] irrepLabels;
       delete[] aIrrepCount;
@@ -208,24 +208,24 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::scf_guess()
   {
-      SharedMatrix T = shared_ptr<Matrix>(new Matrix("SO basis kinetic energy integrals", _nIrreps, _soPI, _soPI));
-      SharedMatrix V = shared_ptr<Matrix>(new Matrix("SO basis potential energy integrals", _nIrreps, _soPI, _soPI));
+      SharedMatrix T = shared_ptr<Matrix>(new Matrix("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_));
+      SharedMatrix V = shared_ptr<Matrix>(new Matrix("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_));
       double *ints = init_array(_nTriSo);
 
-      IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_T, ints, _nTriSo, 0, 0, outfile);
+      IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, ints, _nTriSo, 0, 0, outfile);
       T->set(ints);
-      IWL::read_one(_psio.get(), PSIF_OEI, PSIF_SO_V, ints, _nTriSo, 0, 0, outfile);
+      IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_V, ints, _nTriSo, 0, 0, outfile);
       V->set(ints);
       free(ints);
 
       _soH->add(T);
       _soH->add(V);
 
-      _aEvals->copy(Process::environment.reference_wavefunction()->epsilon_a().get());
-      _bEvals->copy(Process::environment.reference_wavefunction()->epsilon_b().get());
-      _Ca->copy(Process::environment.reference_wavefunction()->Ca());
-      _Cb->copy(Process::environment.reference_wavefunction()->Cb());
-      find_occupation(_aEvals);
+      epsilon_a_->copy(reference_wavefunction_->epsilon_a().get());
+      epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
+      Ca_->copy(reference_wavefunction_->Ca());
+      Cb_->copy(reference_wavefunction_->Cb());
+      find_occupation(epsilon_a_);
       update_scf_density();
   }
 
@@ -254,11 +254,11 @@ namespace psi{ namespace dcft{
   {
       size_t nElements = 0;
       double sumOfSquares = 0.0;
-      Matrix tmp("tmp", _nIrreps, _soPI, _soPI);
-      Matrix moF("MO Basis Fock Matrix", _nIrreps, _soPI, _soPI);
-      tmp.gemm(true, false, 1.0, _Ca, _Fa, 0.0);
-      moF.gemm(false, false, 1.0, tmp, _Ca, 0.0);
-      for(int h = 0; h < _nIrreps; ++h){
+      Matrix tmp("tmp", nirrep_, nsopi_, nsopi_);
+      Matrix moF("MO Basis Fock Matrix", nirrep_, nsopi_, nsopi_);
+      tmp.gemm(true, false, 1.0, Ca_, _Fa, 0.0);
+      moF.gemm(false, false, 1.0, tmp, Ca_, 0.0);
+      for(int h = 0; h < nirrep_; ++h){
           for(int i = 0; i < _nAOccPI[h]; ++i){
               for(int a = 0; a < _nAVirPI[h]; ++a){
                   double kappaF = moF.get(h, i, a + _nAOccPI[h]);
@@ -268,9 +268,9 @@ namespace psi{ namespace dcft{
               }
           }
       }
-      tmp.gemm(true, false, 1.0, _Cb, _Fb, 0.0);
-      moF.gemm(false, false, 1.0, tmp, _Cb, 0.0);
-      for(int h = 0; h < _nIrreps; ++h){
+      tmp.gemm(true, false, 1.0, Cb_, _Fb, 0.0);
+      moF.gemm(false, false, 1.0, tmp, Cb_, 0.0);
+      for(int h = 0; h < nirrep_; ++h){
           for(int i = 0; i < _nBOccPI[h]; ++i){
               for(int a = 0; a < _nBVirPI[h]; ++a){
                   double kappaF = moF.get(h, i, a + _nBOccPI[h]);
@@ -292,17 +292,17 @@ namespace psi{ namespace dcft{
   double
   DCFTSolver::update_scf_density(bool damp)
   {
-      int dampingFactor = _options.get_int("DAMPING_FACTOR");
+      int dampingFactor = options_.get_int("DAMPING_FACTOR");
       double newFraction = damp ? 1.0 : 1.0 - dampingFactor/1000.0;
       size_t nElements = 0;
       double sumOfSquares = 0.0;
       Matrix old(_aKappa);
-      for (int h = 0; h < _nIrreps; ++h) {
-          for (int mu = 0; mu < _soPI[h]; ++mu) {
-              for (int nu = 0; nu < _soPI[h]; ++nu) {
+      for (int h = 0; h < nirrep_; ++h) {
+          for (int mu = 0; mu < nsopi_[h]; ++mu) {
+              for (int nu = 0; nu < nsopi_[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < _nAOccPI[h]; ++i)
-                      val += _Ca->get(h, mu, i) * _Ca->get(h, nu, i);
+                      val += Ca_->get(h, mu, i) * Ca_->get(h, nu, i);
                   _aKappa->set(h, mu, nu, newFraction*val + (1.0-newFraction) * _aKappa->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
@@ -310,12 +310,12 @@ namespace psi{ namespace dcft{
           }
       }
       old.copy(_bKappa);
-      for (int h = 0; h < _nIrreps; ++h) {
-          for (int mu = 0; mu < _soPI[h]; ++mu) {
-              for (int nu = 0; nu < _soPI[h]; ++nu) {
+      for (int h = 0; h < nirrep_; ++h) {
+          for (int mu = 0; mu < nsopi_[h]; ++mu) {
+              for (int nu = 0; nu < nsopi_[h]; ++nu) {
                   double val = 0.0;
                   for (int i = 0; i < _nBOccPI[h]; ++i)
-                      val += _Cb->get(h, mu, i) * _Cb->get(h, nu, i);
+                      val += Cb_->get(h, mu, i) * Cb_->get(h, nu, i);
                   _bKappa->set(h, mu, nu, newFraction*val + (1.0-newFraction) * _bKappa->get(h, mu, nu));
                   ++nElements;
                   sumOfSquares += pow(val - old.get(h, mu, nu), 2.0);
@@ -338,7 +338,7 @@ namespace psi{ namespace dcft{
   DCFTSolver::process_so_ints()
   {
 
-      IWL *iwl = new IWL(_psio.get(), PSIF_SO_TEI, _intTolerance, 1, 1);
+      IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, _intTolerance, 1, 1);
 
       Label *lblptr = iwl->labels();
       Value *valptr = iwl->values();
@@ -352,8 +352,8 @@ namespace psi{ namespace dcft{
       double *Va = init_array(_nTriSo);
       double *Vb = init_array(_nTriSo);
       int soOffset = 0;
-      for(int h = 0; h < _nIrreps; ++h){
-          for(int mu = 0; mu < _soPI[h]; ++ mu){
+      for(int h = 0; h < nirrep_; ++h){
+          for(int mu = 0; mu < nsopi_[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   Da[muNu] = _aKappa->get(h, mu, nu);
@@ -362,7 +362,7 @@ namespace psi{ namespace dcft{
                   Tb[muNu] = _bTau[h][mu][nu];
               }
           }
-          soOffset += _soPI[h];
+          soOffset += nsopi_[h];
       }
 
     double value;
@@ -379,34 +379,34 @@ namespace psi{ namespace dcft{
     dpdfile2 s_bb_1, s_bb_2;
 
 
-    bool buildTensors = (_options.get_str("AO_BASIS") == "DISK");
+    bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
 
     if(buildTensors){
 
         counter = 0;
 
         //Build the offset arrays needed for the DGEMM in half_transform
-        pq_row_start = init_int_matrix(_nIrreps, _nIrreps);
-        CD_row_start = init_int_matrix(_nIrreps, _nIrreps);
-        cd_row_start = init_int_matrix(_nIrreps, _nIrreps);
-        Cd_row_start = init_int_matrix(_nIrreps, _nIrreps);
-        for(h = 0; h < _nIrreps; ++h){
-            for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+        pq_row_start = init_int_matrix(nirrep_, nirrep_);
+        CD_row_start = init_int_matrix(nirrep_, nirrep_);
+        cd_row_start = init_int_matrix(nirrep_, nirrep_);
+        Cd_row_start = init_int_matrix(nirrep_, nirrep_);
+        for(h = 0; h < nirrep_; ++h){
+            for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                 Gd = Gc ^ h;
                 pq_row_start[h][Gc] = offset;
-                offset += _soPI[Gc] * _soPI[Gd];
+                offset += nsopi_[Gc] * nsopi_[Gd];
             }
-            for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+            for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                 Gd = Gc ^ h;
                 CD_row_start[h][Gc] = offset;
                 offset += _nAVirPI[Gc] * _nAVirPI[Gd];
             }
-            for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+            for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                 Gd = Gc ^ h;
                 Cd_row_start[h][Gc] = offset;
                 offset += _nAVirPI[Gc] * _nBVirPI[Gd];
             }
-            for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+            for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                 Gd = Gc ^ h;
                 cd_row_start[h][Gc] = offset;
                 offset += _nBVirPI[Gc] * _nBVirPI[Gd];
@@ -519,7 +519,7 @@ namespace psi{ namespace dcft{
         dpd_file2_mat_init(&s_bb_2);
         dpd_file2_mat_rd(&s_bb_1);
         dpd_file2_mat_rd(&s_bb_2);
-        for(int h = 0; h < _nIrreps; ++h){
+        for(int h = 0; h < nirrep_; ++h){
             dpd_buf4_mat_irrep_init(&tau1_AO_aa, h);
             dpd_buf4_mat_irrep_rd(&tau1_AO_aa, h);
             dpd_buf4_mat_irrep_init(&tau2_AO_aa, h);
@@ -819,7 +819,7 @@ namespace psi{ namespace dcft{
         if(_print > 1){
             fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
         }
-        for(int h = 0; h < _nIrreps; ++h){
+        for(int h = 0; h < nirrep_; ++h){
             dpd_buf4_mat_irrep_wrt(&tau2_AO_aa, h);
             dpd_buf4_mat_irrep_close(&tau1_AO_aa, h);
             dpd_buf4_mat_irrep_close(&tau2_AO_aa, h);
@@ -920,8 +920,8 @@ namespace psi{ namespace dcft{
 
     // Build the Fock matrices from the H and G matrices
     soOffset = 0;
-    for(int h = 0; h < _nIrreps; ++h){
-        for(int mu = 0; mu < _soPI[h]; ++mu){
+    for(int h = 0; h < nirrep_; ++h){
+        for(int mu = 0; mu < nsopi_[h]; ++mu){
             for(int nu = 0; nu <= mu; ++nu){
                 int muNu = INDEX((nu+soOffset), (mu+soOffset));
                 double aVal   = Ga[muNu];
@@ -940,7 +940,7 @@ namespace psi{ namespace dcft{
                 }
             }
         }
-        soOffset += _soPI[h];
+        soOffset += nsopi_[h];
     }
 
     delete [] Ta;
@@ -961,7 +961,7 @@ namespace psi{ namespace dcft{
   DCFTSolver::build_tensors()
   {
 
-      IWL *iwl = new IWL(_psio.get(), PSIF_SO_TEI, _intTolerance, 1, 1);
+      IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, _intTolerance, 1, 1);
 
       Label *lblptr = iwl->labels();
       Value *valptr = iwl->values();
@@ -978,7 +978,7 @@ namespace psi{ namespace dcft{
       dpdfile2 s_bb_1, s_bb_2;
 
 
-      bool buildTensors = (_options.get_str("AO_BASIS") == "DISK");
+      bool buildTensors = (options_.get_str("AO_BASIS") == "DISK");
 
 
       if(buildTensors){
@@ -986,27 +986,27 @@ namespace psi{ namespace dcft{
           counter = 0;
 
           //Build the offset arrays needed for the DGEMM in half_transform
-          pq_row_start = init_int_matrix(_nIrreps, _nIrreps);
-          CD_row_start = init_int_matrix(_nIrreps, _nIrreps);
-          cd_row_start = init_int_matrix(_nIrreps, _nIrreps);
-          Cd_row_start = init_int_matrix(_nIrreps, _nIrreps);
-          for(h = 0; h < _nIrreps; ++h){
-              for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+          pq_row_start = init_int_matrix(nirrep_, nirrep_);
+          CD_row_start = init_int_matrix(nirrep_, nirrep_);
+          cd_row_start = init_int_matrix(nirrep_, nirrep_);
+          Cd_row_start = init_int_matrix(nirrep_, nirrep_);
+          for(h = 0; h < nirrep_; ++h){
+              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                   Gd = Gc ^ h;
                   pq_row_start[h][Gc] = offset;
-                  offset += _soPI[Gc] * _soPI[Gd];
+                  offset += nsopi_[Gc] * nsopi_[Gd];
               }
-              for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                   Gd = Gc ^ h;
                   CD_row_start[h][Gc] = offset;
                   offset += _nAVirPI[Gc] * _nAVirPI[Gd];
               }
-              for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                   Gd = Gc ^ h;
                   Cd_row_start[h][Gc] = offset;
                   offset += _nAVirPI[Gc] * _nBVirPI[Gd];
               }
-              for(Gc = 0, offset = 0; Gc < _nIrreps; ++Gc){
+              for(Gc = 0, offset = 0; Gc < nirrep_; ++Gc){
                   Gd = Gc ^ h;
                   cd_row_start[h][Gc] = offset;
                   offset += _nBVirPI[Gc] * _nBVirPI[Gd];
@@ -1121,7 +1121,7 @@ namespace psi{ namespace dcft{
           dpd_file2_mat_init(&s_bb_2);
           dpd_file2_mat_rd(&s_bb_1);
           dpd_file2_mat_rd(&s_bb_2);
-          for(int h = 0; h < _nIrreps; ++h){
+          for(int h = 0; h < nirrep_; ++h){
               dpd_buf4_mat_irrep_init(&tau1_AO_aa, h);
               dpd_buf4_mat_irrep_rd(&tau1_AO_aa, h);
               dpd_buf4_mat_irrep_init(&tau2_AO_aa, h);
@@ -1164,7 +1164,7 @@ namespace psi{ namespace dcft{
           if(_print > 1){
               fprintf(outfile, "Processed %d SO integrals each for AA, BB, and AB\n", counter);
           }
-          for(int h = 0; h < _nIrreps; ++h){
+          for(int h = 0; h < nirrep_; ++h){
               dpd_buf4_mat_irrep_wrt(&tau2_AO_aa, h);
               dpd_buf4_mat_irrep_close(&tau1_AO_aa, h);
               dpd_buf4_mat_irrep_close(&tau2_AO_aa, h);
@@ -1275,7 +1275,7 @@ namespace psi{ namespace dcft{
   DCFTSolver::build_G()
   {
 
-      IWL *iwl = new IWL(_psio.get(), PSIF_SO_TEI, _intTolerance, 1, 1);
+      IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, _intTolerance, 1, 1);
 
       Label *lblptr = iwl->labels();
       Value *valptr = iwl->values();
@@ -1289,8 +1289,8 @@ namespace psi{ namespace dcft{
       double *Va = init_array(_nTriSo);
       double *Vb = init_array(_nTriSo);
       int soOffset = 0;
-      for(int h = 0; h < _nIrreps; ++h){
-          for(int mu = 0; mu < _soPI[h]; ++ mu){
+      for(int h = 0; h < nirrep_; ++h){
+          for(int mu = 0; mu < nsopi_[h]; ++ mu){
               for(int nu = 0; nu <= mu; ++ nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   Da[muNu] = _aKappa->get(h, mu, nu);
@@ -1299,7 +1299,7 @@ namespace psi{ namespace dcft{
                   Tb[muNu] = _bTau[h][mu][nu];
               }
           }
-          soOffset += _soPI[h];
+          soOffset += nsopi_[h];
       }
 
       double value;
@@ -1586,8 +1586,8 @@ namespace psi{ namespace dcft{
 
       // Build the Fock matrices from the H and G matrices
       soOffset = 0;
-      for(int h = 0; h < _nIrreps; ++h){
-          for(int mu = 0; mu < _soPI[h]; ++mu){
+      for(int h = 0; h < nirrep_; ++h){
+          for(int mu = 0; mu < nsopi_[h]; ++mu){
               for(int nu = 0; nu <= mu; ++nu){
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   double aVal   = Ga[muNu];
@@ -1606,7 +1606,7 @@ namespace psi{ namespace dcft{
                   }
               }
           }
-          soOffset += _soPI[h];
+          soOffset += nsopi_[h];
       }
 
       delete [] Ta;
@@ -1633,19 +1633,19 @@ namespace psi{ namespace dcft{
       }
       sort(pairs.begin(),pairs.end());
 
-      if(_options["DOCC"].has_changed()){
-          for(int h = 0; h < _nIrreps; ++h)
-              _nBOccPI[h] = _options["DOCC"][h].to_integer();
+      if(options_["DOCC"].has_changed()){
+          for(int h = 0; h < nirrep_; ++h)
+              _nBOccPI[h] = options_["DOCC"][h].to_integer();
       }else{
-          memset(_nBOccPI, 0, sizeof(int) * _nIrreps);
+          memset(_nBOccPI, 0, sizeof(int) * nirrep_);
           for (int i=0; i < nbeta_; ++i)
               _nBOccPI[pairs[i].second]++;
       }
-      if(_options["SOCC"].has_changed()){
-          for(int h = 0; h < _nIrreps; ++h)
-              _nAOccPI[h] = _nBOccPI[h] + _options["SOCC"][h].to_integer();
+      if(options_["SOCC"].has_changed()){
+          for(int h = 0; h < nirrep_; ++h)
+              _nAOccPI[h] = _nBOccPI[h] + options_["SOCC"][h].to_integer();
       }else{
-          for(int h = 0; h < _nIrreps; ++h)
+          for(int h = 0; h < nirrep_; ++h)
               _nAOccPI[h] = _nBOccPI[h];
           for (int i=nbeta_; i < nalpha_; ++i)
               _nAOccPI[pairs[i].second]++;

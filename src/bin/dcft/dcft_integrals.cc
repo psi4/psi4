@@ -29,12 +29,12 @@ DCFTSolver::transform_integrals()
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::occ, MOSpace::occ);
     _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::occ, MOSpace::occ);
     _ints->transform_tei(MOSpace::occ, MOSpace::occ, MOSpace::vir, MOSpace::vir);
-    if((_options.get_str("AO_BASIS") == "NONE")){
+    if((options_.get_str("AO_BASIS") == "NONE")){
         _ints->transform_tei(MOSpace::vir, MOSpace::vir, MOSpace::vir, MOSpace::vir);
     }
 
     // The integral object closes this file - we need to re-open it.
-    _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     /*
      * Re-sort the chemists' notation integrals to physisicts' notation
@@ -115,7 +115,7 @@ DCFTSolver::transform_integrals()
     dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[o,v]"), ID("[o,v]"), "MO Ints <ov|ov>");
     dpd_buf4_close(&I);
 
-    if(_options.get_str("AO_BASIS") == "NONE"){
+    if(options_.get_str("AO_BASIS") == "NONE"){
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                       ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
         dpd_buf4_sort(&I, PSIF_LIBTRANS_DPD, prqs, ID("[V,V]"), ID("[V,V]"), "MO Ints <VV|VV>");
@@ -148,7 +148,7 @@ DCFTSolver::transform_integrals()
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints <OV|OV> - (OV|OV)");
     dpd_buf4_init(&Isr, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[O,V]"),
                   ID("[O,V]"), ID("[O,V]"), 0, "MO Ints (OV|OV)");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Irs, h);
         dpd_buf4_mat_irrep_init(&Isr, h);
         dpd_buf4_mat_irrep_rd(&Irs, h);
@@ -171,7 +171,7 @@ DCFTSolver::transform_integrals()
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints <ov|ov> - (ov|ov)");
     dpd_buf4_init(&Isr, PSIF_LIBTRANS_DPD, 0, ID("[o,v]"), ID("[o,v]"),
                   ID("[o,v]"), ID("[o,v]"), 0, "MO Ints (ov|ov)");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Irs, h);
         dpd_buf4_mat_irrep_init(&Isr, h);
         dpd_buf4_mat_irrep_rd(&Irs, h);
@@ -193,7 +193,7 @@ DCFTSolver::transform_integrals()
     // elements of F0 in the current basis; F is diagonal, not F0.
     build_denominators();
 
-    _psio->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 /**
@@ -209,8 +209,8 @@ DCFTSolver::build_denominators()
     double *aF0 = new double[_nTriSo];
     double *bF0 = new double[_nTriSo];
 
-    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, aF0, _nTriSo, 0, 0, outfile);
-    IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FOCK, bF0, _nTriSo, 0, 0, outfile);
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, aF0, _nTriSo, 0, 0, outfile);
+    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, bF0, _nTriSo, 0, 0, outfile);
 
     double *aOccEvals = new double [nalpha_];
     double *bOccEvals = new double [nbeta_];
@@ -220,36 +220,36 @@ DCFTSolver::build_denominators()
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int pitzerOffset = 0;
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0, aCount = 0, bCount = 0;
-    double **Ca = _chkpt->rd_alpha_scf();
-    double **Cb = _chkpt->rd_beta_scf();
-    for(int h = 0, soOffset = 0; h < _nIrreps; ++h){
-        bCount = aCount = pitzerOffset + _frzcPI[h];
+    double **Ca = chkpt_->rd_alpha_scf();
+    double **Cb = chkpt_->rd_beta_scf();
+    for(int h = 0, soOffset = 0; h < nirrep_; ++h){
+        bCount = aCount = pitzerOffset + frzcpi_[h];
         for(int a = 0; a < _nAOccPI[h]; ++a){
             aOccEvals[aOccCount++] = aF0[INDEX(aCount, aCount)];
-            for(int mu = 0; mu < _soPI[h]; ++mu)
+            for(int mu = 0; mu < nsopi_[h]; ++mu)
                 _aOccC->set(h, mu, a, Ca[mu+soOffset][aCount]);
             ++aCount;
         }
         for(int a = 0; a < _nAVirPI[h]; ++a){
             aVirEvals[aVirCount++] = aF0[INDEX(aCount, aCount)];
-            for(int mu = 0; mu < _soPI[h]; ++mu)
+            for(int mu = 0; mu < nsopi_[h]; ++mu)
                 _aVirC->set(h, mu, a, Ca[mu+soOffset][aCount]);
             ++aCount;
         }
         for(int b = 0; b < _nBOccPI[h]; ++b){
             bOccEvals[bOccCount++] = bF0[INDEX(bCount, bCount)];
-            for(int mu = 0; mu < _soPI[h]; ++mu)
+            for(int mu = 0; mu < nsopi_[h]; ++mu)
                 _bOccC->set(h, mu, b, Cb[mu+soOffset][bCount]);
             ++bCount;
         }
         for(int b = 0; b < _nBVirPI[h]; ++b){
             bVirEvals[bVirCount++] = bF0[INDEX(bCount, bCount)];
-            for(int mu = 0; mu < _soPI[h]; ++mu)
+            for(int mu = 0; mu < nsopi_[h]; ++mu)
                 _bVirC->set(h, mu, b, Cb[mu+soOffset][bCount]);
             ++bCount;
         }
-        pitzerOffset += _moPI[h];
-        soOffset     += _soPI[h];
+        pitzerOffset += nmopi_[h];
+        soOffset     += nsopi_[h];
     }
 
 //    fprintf(outfile, "All Alpha MOs\n");
@@ -278,14 +278,14 @@ DCFTSolver::build_denominators()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F0 <O|O>");
     dpd_file2_mat_init(&F);
     int offset = 0;
-    for(int h = 0; h < _nIrreps; ++h){
-        offset += _frzcPI[h];
+    for(int h = 0; h < nirrep_; ++h){
+        offset += frzcpi_[h];
         for(int i = 0 ; i < _nAOccPI[h]; ++i){
             for(int j = 0 ; j < _nAOccPI[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
             }
         }
-        offset += _moPI[h];
+        offset += nmopi_[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
@@ -294,14 +294,14 @@ DCFTSolver::build_denominators()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F0 <o|o>");
     dpd_file2_mat_init(&F);
     offset = 0;
-    for(int h = 0; h < _nIrreps; ++h){
-        offset += _frzcPI[h];
+    for(int h = 0; h < nirrep_; ++h){
+        offset += frzcpi_[h];
         for(int i = 0 ; i < _nBOccPI[h]; ++i){
             for(int j = 0 ; j < _nBOccPI[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
             }
         }
-        offset += _moPI[h];
+        offset += nmopi_[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
@@ -310,14 +310,14 @@ DCFTSolver::build_denominators()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F0 <V|V>");
     dpd_file2_mat_init(&F);
     offset = 0;
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         offset += _nAOccPI[h];
         for(int i = 0 ; i < _nAVirPI[h]; ++i){
             for(int j = 0 ; j < _nAVirPI[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
             }
         }
-        offset += _moPI[h] - _nAOccPI[h];
+        offset += nmopi_[h] - _nAOccPI[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
@@ -326,14 +326,14 @@ DCFTSolver::build_denominators()
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F0 <v|v>");
     dpd_file2_mat_init(&F);
     offset = 0;
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         offset += _nBOccPI[h];
         for(int i = 0 ; i < _nBVirPI[h]; ++i){
             for(int j = 0 ; j < _nBVirPI[h]; ++j){
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
             }
         }
-        offset += _moPI[h] - _nBOccPI[h];
+        offset += nmopi_[h] - _nBOccPI[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
@@ -356,7 +356,7 @@ DCFTSolver::build_denominators()
     ///////////////////////////////
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -378,7 +378,7 @@ DCFTSolver::build_denominators()
     //////////////////////////////
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "D <Oo|Vv>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];
@@ -400,7 +400,7 @@ DCFTSolver::build_denominators()
     /////////////////////////////
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "D <oo|vv>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         for(int row = 0; row < D.params->rowtot[h]; ++row){
             int i = D.params->roworb[h][row][0];

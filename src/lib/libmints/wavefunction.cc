@@ -154,6 +154,14 @@ boost::shared_ptr<MatrixFactory> Wavefunction::matrix_factory() const
 {
     return factory_;
 }
+boost::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const
+{
+    return reference_wavefunction_;
+}
+void Wavefunction::set_reference_wavefunction(const boost::shared_ptr<Wavefunction> wfn)
+{
+    reference_wavefunction_ = wfn;
+}
 
 void Wavefunction::add_preiteration_callback(PyObject *pyobject)
 {

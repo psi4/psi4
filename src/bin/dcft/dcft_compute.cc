@@ -11,14 +11,16 @@ namespace psi{ namespace dcft{
 /**
  * Computes the DCFT density matrix and energy
  */
-void
-DCFTSolver::compute()
+double
+DCFTSolver::compute_energy()
 {
     bool scfDone    = false;
     bool lambdaDone = false;
     bool densityConverged = false;
     bool energyConverged = false;
     double oldEnergy;
+    // Sets up the memory, and orbital info
+    init();
     scf_guess();
     mp2_guess();
 
@@ -26,11 +28,11 @@ DCFTSolver::compute()
     fprintf(outfile, "\n\n\t*=================================================================================*\n"
                      "\t* Cycle  RMS [F, Kappa]   RMS Lambda Error   delta E        Total Energy     DIIS *\n"
                      "\t*---------------------------------------------------------------------------------*\n");
-    if(_options.get_str("ALGORITHM") == "TWOSTEP"){
+    if(options_.get_str("ALGORITHM") == "TWOSTEP"){
         // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
         // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
         // the desired cutoff, we're done
-        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", _nIrreps, _soPI, _soPI));
+        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         dpdbuf4 Laa, Lab, Lbb;
         dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -54,8 +56,8 @@ DCFTSolver::compute()
         dpd_buf4_close(&Laa);
         dpd_buf4_close(&Lab);
         dpd_buf4_close(&Lbb);
-        _oldCa->copy(_Ca);
-        _oldCb->copy(_Cb);
+        _oldCa->copy(Ca_);
+        _oldCb->copy(Cb_);
         // The macro-iterations
         while((!scfDone || !lambdaDone) && cycle++ < _maxNumIterations){
             // The lambda iterations
@@ -64,7 +66,7 @@ DCFTSolver::compute()
             fprintf(outfile, "\t                          *** Macro Iteration %d ***\n"
                              "\tCumulant Iterations\n",cycle);
             lambdaDone = false;
-            while(!lambdaDone && nLambdaIterations++ < _options.get_int("LAMBDA_MAXITER")){
+            while(!lambdaDone && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
                 build_tensors();
                 build_intermediates();
@@ -104,7 +106,7 @@ DCFTSolver::compute()
                     update_lambda_from_residual();
                 }
                 oldEnergy = _newTotalEnergy;
-                compute_energy();
+                compute_dcft_energy();
                 lambdaDone = _lambdaConvergence < _lambdaThreshold &&
                                 fabs(_newTotalEnergy - oldEnergy) < _lambdaThreshold;
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
@@ -119,7 +121,7 @@ DCFTSolver::compute()
             scfDiisManager.reset_subspace();
             fprintf(outfile, "\tOrbital Updates\n");
             while((!densityConverged || _scfConvergence > _scfThreshold)
-                    && nSCFCycles++ < _options.get_int("SCF_MAXITER")){
+                    && nSCFCycles++ < options_.get_int("SCF_MAXITER")){
                 std::string diisString;
                 _Fa->copy(_soH);
                 _Fb->copy(_soH);
@@ -140,17 +142,17 @@ DCFTSolver::compute()
                     scfDiisManager.extrapolate(2, _Fa.get(), _Fb.get());
                 }
                 _Fa->transform(_sHalfInv);
-                _Fa->diagonalize(tmp, _aEvals);
-                _oldCa->copy(_Ca);
-                _Ca->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+                _Fa->diagonalize(tmp, epsilon_a_);
+                _oldCa->copy(Ca_);
+                Ca_->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
                 _Fb->transform(_sHalfInv);
-                _Fb->diagonalize(tmp, _bEvals);
-                _oldCb->copy(_Cb);
-                _Cb->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+                _Fb->diagonalize(tmp, epsilon_b_);
+                _oldCb->copy(Cb_);
+                Cb_->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
                 correct_mo_phases(false);
-                find_occupation(_aEvals);
+                find_occupation(epsilon_a_);
                 densityConverged = update_scf_density() < _scfThreshold;
-                compute_energy();
+                compute_dcft_energy();
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     nSCFCycles, _scfConvergence, _lambdaConvergence, _newTotalEnergy - oldEnergy,
                     _newTotalEnergy, diisString.c_str());
@@ -162,7 +164,7 @@ DCFTSolver::compute()
         }
     }else{
         // This is the simultaneous orbital/lambda update algorithm
-        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", _nIrreps, _soPI, _soPI));
+        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(_maxDiis, "DCFT DIIS vectors");
         dpdbuf4 Laa, Lab, Lbb;
@@ -204,7 +206,7 @@ DCFTSolver::compute()
             _lambdaConvergence = compute_lambda_residual();
             lambdaDone = _lambdaConvergence < _lambdaThreshold;
             update_lambda_from_residual();
-            compute_energy();
+            compute_dcft_energy();
             energyConverged = fabs(oldEnergy - _newTotalEnergy) < _lambdaConvergence;
             if(_scfConvergence < _diisStartThresh && _lambdaConvergence < _diisStartThresh){
                 //Store the DIIS vectors
@@ -237,20 +239,20 @@ DCFTSolver::compute()
                 dpd_buf4_close(&Lbb);
             }
             _Fa->transform(_sHalfInv);
-            _Fa->diagonalize(tmp, _aEvals);
-            _oldCa->copy(_Ca);
-            _Ca->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+            _Fa->diagonalize(tmp, epsilon_a_);
+            _oldCa->copy(Ca_);
+            Ca_->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
             _Fb->transform(_sHalfInv);
-            _Fb->diagonalize(tmp, _bEvals);
-            _oldCb->copy(_Cb);
-            _Cb->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
+            _Fb->diagonalize(tmp, epsilon_b_);
+            _oldCb->copy(Cb_);
+            Cb_->gemm(false, false, 1.0, _sHalfInv, tmp, 0.0);
             if(!correct_mo_phases(false)){
                 fprintf(outfile,"\t\tThere was a problem correcting the MO phases.\n"
                                 "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
             }
             write_orbitals_to_checkpoint();
             transform_integrals();
-            find_occupation(_aEvals);
+            find_occupation(epsilon_a_);
             densityConverged = update_scf_density() < _scfThreshold;
             // If we've performed enough lambda updates since the last orbitals
             // update, reset the counter so another SCF update is performed
@@ -272,19 +274,19 @@ DCFTSolver::compute()
     fprintf(outfile, "\n\t*DCFT SCF Energy            = %20.15f\n", _scfEnergy);
     fprintf(outfile, "\t*DCFT Total Energy          = %20.15f\n", _newTotalEnergy);
 
-    if(!_options.get_bool("RELAX_ORBITALS")){
+    if(!options_.get_bool("RELAX_ORBITALS")){
         fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
     }
 
     print_opdm();
 
 
-    if(_options.get_bool("COMPUTE_TPDM")) dump_density();
+    if(options_.get_bool("COMPUTE_TPDM")) dump_density();
     mulliken_charges();
     check_n_representability();
 
-    if(!_options.get_bool("RELAX_ORBITALS") && _options.get_bool("IGNORE_TAU")){
-        _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    if(!options_.get_bool("RELAX_ORBITALS") && options_.get_bool("IGNORE_TAU")){
+        psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
         /*
          * Comout the CEPA-0 correlation energy
          * E = 1/4 L_IJAB <IJ||AB>
@@ -320,8 +322,10 @@ DCFTSolver::compute()
         dpd_buf4_close(&L);
         fprintf(outfile, "\t!CEPA0 Total Energy         = %20.15f\n",
                 _scfEnergy + eAA + eAB + eBB);
-        _psio->close(PSIF_LIBTRANS_DPD, 1);
+        psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
+
+    return(_newTotalEnergy);
 }
 
 }} // Namespaces

@@ -6,10 +6,10 @@
 namespace psi{ namespace dcft{
 
 /**
- * Uses the intermediates to computed the energy
+ * Uses the intermediates to compute the energy
  */
 void
-DCFTSolver::compute_energy()
+DCFTSolver::compute_dcft_energy()
 {
     dpdbuf4 L, G, T, A, I;
     double eGaa, eGab, eGbb, eAaa, eAab, eAbb;
@@ -17,7 +17,7 @@ DCFTSolver::compute_energy()
     _oldTotalEnergy = _newTotalEnergy;
     _newTotalEnergy = _scfEnergy;
 
-    _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     // E += 1/4 L_IJAB G_IJAB
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -26,7 +26,7 @@ DCFTSolver::compute_energy()
                   ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
     eGaa = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         // E += 1/8 L_IJAB T_IJAB
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
@@ -52,7 +52,7 @@ DCFTSolver::compute_energy()
                   ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     eGab =  dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         // E += 1/2 L_IjAb T_IjAb
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "T <Oo|Vv>");
@@ -78,7 +78,7 @@ DCFTSolver::compute_energy()
                   ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
     eGbb = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         // E += 1/8 L_ijab T_ijab
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                       ID("[o,o]"), ID("[v,v]"), 0, "T <oo|vv>");
@@ -96,7 +96,7 @@ DCFTSolver::compute_energy()
     eAbb = -0.25 * dpd_buf4_dot(&A, &L);
     dpd_buf4_close(&A);
     dpd_buf4_close(&L);
-    _psio->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 
 #if PRINT_ENERGY_COMPONENTS
     fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);

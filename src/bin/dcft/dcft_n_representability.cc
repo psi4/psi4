@@ -12,8 +12,8 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::dump_density()
 {
-    _psio->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
-    _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_DCFT_DENSITY, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     dpdbuf4 Laa, Lab, Lbb, Gaa, Gab, Gbb, I, L;
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
@@ -43,11 +43,11 @@ DCFTSolver::dump_density()
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
-    Matrix aOccOPDM(_nIrreps, _nAOccPI, _nAOccPI);
-    Matrix bOccOPDM(_nIrreps, _nBOccPI, _nBOccPI);
-    Matrix aVirOPDM(_nIrreps, _nAVirPI, _nAVirPI);
-    Matrix bVirOPDM(_nIrreps, _nBVirPI, _nBVirPI);
-    for(int h = 0; h < _nIrreps; ++h){
+    Matrix aOccOPDM(nirrep_, _nAOccPI, _nAOccPI);
+    Matrix bOccOPDM(nirrep_, _nBOccPI, _nBOccPI);
+    Matrix aVirOPDM(nirrep_, _nAVirPI, _nAVirPI);
+    Matrix bVirOPDM(nirrep_, _nBVirPI, _nBVirPI);
+    for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < _nAOccPI[h]; ++i){
             for(int j = 0; j < _nAOccPI[h]; ++j){
                 aOccOPDM.set(h, i, j, (i == j ? 1.0 : 0.0) + T_OO.matrix[h][i][j]);
@@ -80,7 +80,7 @@ DCFTSolver::dump_density()
      */
     dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[V,V]"), ID("[V,V]"),
               ID("[V,V]"), ID("[V,V]"), 0, "Gamma <VV|VV>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
@@ -115,7 +115,7 @@ DCFTSolver::dump_density()
 
     dpd_buf4_init(&Gab, PSIF_DCFT_DENSITY, 0, ID("[V,v]"), ID("[V,v]"),
               ID("[V,v]"), ID("[V,v]"), 0, "Gamma <Vv|Vv>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_init(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
@@ -149,7 +149,7 @@ DCFTSolver::dump_density()
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[v,v]"), ID("[v,v]"),
               ID("[v,v]"), ID("[v,v]"), 0, "Gamma <vv|vv>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_init(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
@@ -187,7 +187,7 @@ DCFTSolver::dump_density()
      */
     dpd_buf4_init(&Gaa, PSIF_DCFT_DENSITY, 0, ID("[O,O]"), ID("[O,O]"),
               ID("[O,O]"), ID("[O,O]"), 0, "Gamma <OO|OO>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_rd(&Laa, h);
@@ -223,7 +223,7 @@ DCFTSolver::dump_density()
 
     dpd_buf4_init(&Gab, PSIF_DCFT_DENSITY, 0, ID("[O,o]"), ID("[O,o]"),
               ID("[O,o]"), ID("[O,o]"), 0, "Gamma <Oo|Oo>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_init(&Lab, h);
         dpd_buf4_mat_irrep_rd(&Lab, h);
@@ -257,7 +257,7 @@ DCFTSolver::dump_density()
 
     dpd_buf4_init(&Gbb, PSIF_DCFT_DENSITY, 0, ID("[o,o]"), ID("[o,o]"),
               ID("[o,o]"), ID("[o,o]"), 0, "Gamma <oo|oo>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_init(&Lbb, h);
         dpd_buf4_mat_irrep_rd(&Lbb, h);
@@ -341,7 +341,7 @@ DCFTSolver::dump_density()
     dpd_contract444(&Lab, &Lab2, &Gaa, 0, 0, -1.0, 1.0);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lab2);
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gaa, h);
         dpd_buf4_mat_irrep_rd(&Gaa, h);
         for(size_t ia = 0; ia < Gaa.params->rowtot[h]; ++ia){
@@ -405,7 +405,7 @@ DCFTSolver::dump_density()
                   ID("[O,v]"), ID("[o,V]"), 0, "Gamma <Ov|oV>");
 //    dpd_buf4_print(&Tab, outfile, 1);
 //    dpd_buf4_close(&Tab);
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gab, h);
         dpd_buf4_mat_irrep_rd(&Gab, h);
         for(size_t ia = 0; ia < Gab.params->rowtot[h]; ++ia){
@@ -448,7 +448,7 @@ DCFTSolver::dump_density()
     dpd_contract444(&Lab, &Lab2, &Gbb, 1, 1, -1.0, 1.0);
     dpd_buf4_close(&Lab);
     dpd_buf4_close(&Lab2);
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&Gbb, h);
         dpd_buf4_mat_irrep_rd(&Gbb, h);
         for(size_t ia = 0; ia < Gbb.params->rowtot[h]; ++ia){
@@ -479,10 +479,10 @@ DCFTSolver::dump_density()
      */
     Matrix aH(_soH);
     Matrix bH(_soH);
-    aH.transform(_Ca);
-    bH.transform(_Cb);
+    aH.transform(Ca_);
+    bH.transform(Cb_);
     double hCoreEnergy = 0.0;
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int p = 0; p < aOccOPDM.rowspi()[h]; ++p){
             for(int q = 0; q < aOccOPDM.colspi()[h]; ++q){
                 hCoreEnergy += aH.get(h, p, q) * aOccOPDM.get(h, p, q);
@@ -683,8 +683,8 @@ fprintf(outfile, "testbb = %16.10f\n", dpd_buf4_dot(&I, &L));
     fprintf(outfile, "\tTotal Energy         = %16.10f\n", _eNuc + hCoreEnergy
             + OOOOEnergy + VVVVEnergy + OOVVEnergy + VVOOEnergy + OVOVEnergy);
 
-    _psio->close(PSIF_DCFT_DENSITY, 1);
-    _psio->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_DCFT_DENSITY, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 
@@ -722,10 +722,10 @@ DCFTSolver::check_n_representability()
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         int nOcc = _nAOccPI[h];
         int nVir = _nAVirPI[h];
-        unsigned long int dim = _moPI[h];
+        unsigned long int dim = nmopi_[h];
 
         dpd_buf4_mat_irrep_init(&Laa, h);
         dpd_buf4_mat_irrep_init(&Lab, h);

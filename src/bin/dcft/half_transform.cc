@@ -40,7 +40,7 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
 
     double **X;
 
-        for(int h = 0; h < _nIrreps; ++h){
+        for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(SO, h);
         dpd_buf4_mat_irrep_init(MO, h);
 
@@ -53,7 +53,7 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
             if(beta != 0.0) dpd_buf4_mat_irrep_rd(MO, h);
         }
 
-        for(Gc=0; Gc < _nIrreps; Gc++) {
+        for(Gc=0; Gc < nirrep_; Gc++) {
             Gd = h^Gc;
             double **pC1 = C1->pointer(Gc);
             double **pC2 = C2->pointer(Gd);
@@ -61,32 +61,32 @@ DCFTSolver::half_transform(dpdbuf4 *SO, dpdbuf4 *MO, SharedMatrix& C1, SharedMat
             cd = mo_row[h][Gc];
             pq = so_row[h][Gc];
 
-            if(mospi_left[Gc] && mospi_right[Gd] && _soPI[Gc] && _soPI[Gd]) {
+            if(mospi_left[Gc] && mospi_right[Gd] && nsopi_[Gc] && nsopi_[Gd]) {
 
                 if(backwards) {
-                    X = block_matrix(mospi_left[Gc], _soPI[Gd]);
+                    X = block_matrix(mospi_left[Gc], nsopi_[Gd]);
 
                     for(ij = 0; ij < MO->params->rowtot[h]; ij++) {
 
-                        C_DGEMM('n','t', mospi_left[Gc], _soPI[Gd], mospi_right[Gd], 1.0,
+                        C_DGEMM('n','t', mospi_left[Gc], nsopi_[Gd], mospi_right[Gd], 1.0,
                                 &(MO->matrix[h][ij][cd]), mospi_right[Gd], &(pC2[0][0]),
-                                mospi_right[Gd], 0.0, &(X[0][0]), _soPI[Gd]);
+                                mospi_right[Gd], 0.0, &(X[0][0]), nsopi_[Gd]);
 
-                        C_DGEMM('n','n', _soPI[Gc], _soPI[Gd], mospi_left[Gc], alpha,
-                                &(pC1[0][0]), mospi_left[Gc], &(X[0][0]), _soPI[Gd],
-                                beta, &(SO->matrix[h][ij][pq]), _soPI[Gd]);
+                        C_DGEMM('n','n', nsopi_[Gc], nsopi_[Gd], mospi_left[Gc], alpha,
+                                &(pC1[0][0]), mospi_left[Gc], &(X[0][0]), nsopi_[Gd],
+                                beta, &(SO->matrix[h][ij][pq]), nsopi_[Gd]);
                     }
                 }
                 else {
-                    X = block_matrix(_soPI[Gc],mospi_right[Gd]);
+                    X = block_matrix(nsopi_[Gc],mospi_right[Gd]);
 
                     for(ij=0; ij < MO->params->rowtot[h]; ij++) {
 
-                        C_DGEMM('n','n', _soPI[Gc], mospi_right[Gd], _soPI[Gd], 1.0,
-                                &(SO->matrix[h][ij][pq]), _soPI[Gd], &(pC2[0][0]), mospi_right[Gd],
+                        C_DGEMM('n','n', nsopi_[Gc], mospi_right[Gd], nsopi_[Gd], 1.0,
+                                &(SO->matrix[h][ij][pq]), nsopi_[Gd], &(pC2[0][0]), mospi_right[Gd],
                                 0.0, &(X[0][0]), mospi_right[Gd]);
 
-                        C_DGEMM('t','n', mospi_left[Gc], mospi_right[Gd], _soPI[Gc], alpha,
+                        C_DGEMM('t','n', mospi_left[Gc], mospi_right[Gd], nsopi_[Gc], alpha,
                                 &(pC1[0][0]), mospi_left[Gc], &(X[0][0]), mospi_right[Gd],
                                 beta, &(MO->matrix[h][ij][cd]), mospi_right[Gd]);
 

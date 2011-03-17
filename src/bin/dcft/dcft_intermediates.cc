@@ -11,7 +11,7 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::build_intermediates()
 {
-    _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
     dpdfile2 X_OO, X_oo, X_VV, X_vv,
              T_OO, T_oo, T_VV, T_vv,
@@ -19,7 +19,7 @@ DCFTSolver::build_intermediates()
     dpdbuf4 I, L, G, T, A, D,
             Taa, Tab, Tbb,
             Laa, Lab, Lbb;
-    if(!_options.get_bool("IGNORE_TAU")){
+    if(!options_.get_bool("IGNORE_TAU")){
         /*
          * Form the X intermediates from the MO integrals
          */
@@ -30,7 +30,7 @@ DCFTSolver::build_intermediates()
 
         dpd_file2_init(&X_VV, PSIF_DCFT_DPD, 0, ID('V'), ID('V'), "X <V|V>");
 
-        if(_options.get_str("AO_BASIS") == "NONE"){
+        if(options_.get_str("AO_BASIS") == "NONE"){
             // X_AB = (AB|CD) Tau_CD
             dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                     ID("[V>=V]+"), ID("[V>=V]+"), 0, "MO Ints (VV|VV)");
@@ -74,7 +74,7 @@ DCFTSolver::build_intermediates()
 
         dpd_file2_init(&X_vv, PSIF_DCFT_DPD, 0, ID('v'), ID('v'), "X <v|v>");
 
-        if(_options.get_str("AO_BASIS") == "NONE"){
+        if(options_.get_str("AO_BASIS") == "NONE"){
             // X_ab = +(ab|cd) Tau_cd
             dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[v,v]"), ID("[v,v]"),
                     ID("[v>=v]+"), ID("[v>=v]+"), 0, "MO Ints (vv|vv)");
@@ -332,7 +332,7 @@ DCFTSolver::build_intermediates()
     /*
      * G_ijab += 1/2 Sum_cd gbar_cdab lambda_ijcd
      */
-    if(_options.get_str("AO_BASIS") == "NONE"){
+    if(options_.get_str("AO_BASIS") == "NONE"){
         // G_IJAB += 1/2 Sum_CD gbar_CDAB lambda_IJCD
         dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[V,V]"), ID("[V,V]"),
                       ID("[V,V]"), ID("[V,V]"), 1, "MO Ints <VV|VV>");
@@ -768,7 +768,7 @@ DCFTSolver::build_intermediates()
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&A, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "A <OO|VV>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         dpd_buf4_mat_irrep_init(&L, h);
         dpd_buf4_mat_irrep_init(&A, h);
@@ -795,7 +795,7 @@ DCFTSolver::build_intermediates()
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     dpd_buf4_init(&A, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "A <Oo|Vv>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         dpd_buf4_mat_irrep_init(&L, h);
         dpd_buf4_mat_irrep_init(&A, h);
@@ -822,7 +822,7 @@ DCFTSolver::build_intermediates()
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&A, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "A <oo|vv>");
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         dpd_buf4_mat_irrep_init(&D, h);
         dpd_buf4_mat_irrep_init(&L, h);
         dpd_buf4_mat_irrep_init(&A, h);
@@ -842,7 +842,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_close(&L);
     dpd_buf4_close(&A);
 
-    _psio->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 }} // Namespaces

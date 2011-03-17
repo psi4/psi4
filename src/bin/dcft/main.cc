@@ -9,7 +9,7 @@
 #include "dcft.h"
 
 using namespace psi;
-
+using namespace boost;
 
 namespace psi{ namespace dcft{
 
@@ -24,10 +24,10 @@ dcft(Options &options)
     fprintf(outfile,    "\t\t*  Theory code written by Andy Simmonett  *\n");
     fprintf(outfile,    "\t\t*******************************************\n\n");
 
-    // The solver object doesn't really need to be an object at this point
-    // but one fine day, main might do something a bit more elaborate...
-    DCFTSolver dcft(options);
-    dcft.compute();
+    shared_ptr<Wavefunction> dcft = shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.reference_wavefunction(), options));
+    Process::environment.set_reference_wavefunction(dcft);
+
+    dcft->compute_energy();
 
     // Shut down the timers
     tstop();

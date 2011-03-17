@@ -29,7 +29,7 @@ DCFTSolver::mp2_guess()
 //    _ints = new IntegralTransform(spaces, IntegralTransform::Unrestricted,
 //            IntegralTransform::DPDOnly, IntegralTransform::QTOrder,
 //            IntegralTransform::None,false);
-    _ints = new IntegralTransform(_chkpt, spaces, IntegralTransform::Unrestricted);
+    _ints = new IntegralTransform(chkpt_, spaces, IntegralTransform::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
 //    _ints->set_chkpt(_chkpt);
@@ -37,7 +37,7 @@ DCFTSolver::mp2_guess()
     dpd_set_default(_ints->get_dpd_id());
     fprintf(outfile, "\n\n\tComputing MP2 amplitude guess...\n\n"); fflush(outfile);
     transform_integrals();
-    _psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
 
     dpdbuf4 I, D;
@@ -128,7 +128,7 @@ DCFTSolver::mp2_guess()
 
     Process::environment.globals["MP2 ENERGY"] = _newTotalEnergy;
 
-    _psio->close(PSIF_LIBTRANS_DPD, 1);
+    psio_->close(PSIF_LIBTRANS_DPD, 1);
 }
 
 

@@ -102,11 +102,11 @@ DCFTSolver::build_tau()
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
-    for(int h = 0; h < _nIrreps; ++h){
-        if(_soPI[h] == 0) continue;
-        ::memset(_aTau[h][0], 0, _soPI[h]*_soPI[h]*sizeof(double));
-        ::memset(_bTau[h][0], 0, _soPI[h]*_soPI[h]*sizeof(double));
-        double **temp = block_matrix(_soPI[h], _soPI[h]);
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+        ::memset(_aTau[h][0], 0, nsopi_[h]*nsopi_[h]*sizeof(double));
+        ::memset(_bTau[h][0], 0, nsopi_[h]*nsopi_[h]*sizeof(double));
+        double **temp = block_matrix(nsopi_[h], nsopi_[h]);
         /*
          * Backtransform the Tau matrices to the AO basis
          * tauTrans = C moTau Ct
@@ -117,32 +117,32 @@ DCFTSolver::build_tau()
         double **pbVirC = _bVirC->pointer(h);
 
         // Alpha occupied
-        if(_nAOccPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nAOccPI[h], _nAOccPI[h], 1.0, paOccC[0], _nAOccPI[h],
-                    T_OO.matrix[h][0], _nAOccPI[h], 0.0, temp[0], _soPI[h]);
-            C_DGEMM('n', 't', _soPI[h], _soPI[h], _nAOccPI[h], 1.0, temp[0], _soPI[h],
-                    paOccC[0], _nAOccPI[h], 1.0, _aTau[h][0], _soPI[h]);
+        if(_nAOccPI[h] && nsopi_[h]){
+            C_DGEMM('n', 'n', nsopi_[h], _nAOccPI[h], _nAOccPI[h], 1.0, paOccC[0], _nAOccPI[h],
+                    T_OO.matrix[h][0], _nAOccPI[h], 0.0, temp[0], nsopi_[h]);
+            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], _nAOccPI[h], 1.0, temp[0], nsopi_[h],
+                    paOccC[0], _nAOccPI[h], 1.0, _aTau[h][0], nsopi_[h]);
         }
         // Beta occupied
-        if(_nBOccPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nBOccPI[h], _nBOccPI[h], 1.0, pbOccC[0], _nBOccPI[h],
-                    T_oo.matrix[h][0], _nBOccPI[h], 0.0, temp[0], _soPI[h]);
-            C_DGEMM('n', 't', _soPI[h], _soPI[h], _nBOccPI[h], 1.0, temp[0], _soPI[h],
-                    pbOccC[0], _nBOccPI[h], 1.0, _bTau[h][0], _soPI[h]);
+        if(_nBOccPI[h] && nsopi_[h]){
+            C_DGEMM('n', 'n', nsopi_[h], _nBOccPI[h], _nBOccPI[h], 1.0, pbOccC[0], _nBOccPI[h],
+                    T_oo.matrix[h][0], _nBOccPI[h], 0.0, temp[0], nsopi_[h]);
+            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], _nBOccPI[h], 1.0, temp[0], nsopi_[h],
+                    pbOccC[0], _nBOccPI[h], 1.0, _bTau[h][0], nsopi_[h]);
         }
         // Alpha virtual
-        if(_nAVirPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nAVirPI[h], _nAVirPI[h], 1.0, paVirC[0], _nAVirPI[h],
-                    T_VV.matrix[h][0], _nAVirPI[h], 0.0, temp[0], _soPI[h]);
-            C_DGEMM('n', 't', _soPI[h], _soPI[h], _nAVirPI[h], 1.0, temp[0], _soPI[h],
-                    paVirC[0], _nAVirPI[h], 1.0, _aTau[h][0], _soPI[h]);
+        if(_nAVirPI[h] && nsopi_[h]){
+            C_DGEMM('n', 'n', nsopi_[h], _nAVirPI[h], _nAVirPI[h], 1.0, paVirC[0], _nAVirPI[h],
+                    T_VV.matrix[h][0], _nAVirPI[h], 0.0, temp[0], nsopi_[h]);
+            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], _nAVirPI[h], 1.0, temp[0], nsopi_[h],
+                    paVirC[0], _nAVirPI[h], 1.0, _aTau[h][0], nsopi_[h]);
         }
         // Beta virtual
-        if(_nBVirPI[h] && _soPI[h]){
-            C_DGEMM('n', 'n', _soPI[h], _nBVirPI[h], _nBVirPI[h], 1.0, pbVirC[0], _nBVirPI[h],
-                    T_vv.matrix[h][0], _nBVirPI[h], 0.0, temp[0], _soPI[h]);
-            C_DGEMM('n', 't', _soPI[h], _soPI[h], _nBVirPI[h], 1.0, temp[0], _soPI[h],
-                    pbVirC[0], _nBVirPI[h], 1.0, _bTau[h][0], _soPI[h]);
+        if(_nBVirPI[h] && nsopi_[h]){
+            C_DGEMM('n', 'n', nsopi_[h], _nBVirPI[h], _nBVirPI[h], 1.0, pbVirC[0], _nBVirPI[h],
+                    T_vv.matrix[h][0], _nBVirPI[h], 0.0, temp[0], nsopi_[h]);
+            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], _nBVirPI[h], 1.0, temp[0], nsopi_[h],
+                    pbVirC[0], _nBVirPI[h], 1.0, _bTau[h][0], nsopi_[h]);
         }
         free_block(temp);
     }
@@ -184,7 +184,7 @@ DCFTSolver::print_opdm()
     std::vector<std::pair<double, int> > aPairs;
     std::vector<std::pair<double, int> > bPairs;
 
-    for(int h = 0; h < _nIrreps; ++h){
+    for(int h = 0; h < nirrep_; ++h){
         for(int row = 0; row < T_OO.params->coltot[h]; ++row)
             aPairs.push_back(std::make_pair(1.0 + T_OO.matrix[h][row][row], h));
         for(int row = 0; row < T_VV.params->coltot[h]; ++row)
@@ -202,9 +202,9 @@ DCFTSolver::print_opdm()
     sort(aPairs.begin(), aPairs.end(), greater<std::pair<double, int> >());
     sort(bPairs.begin(), bPairs.end(), greater<std::pair<double, int> >());
 
-    int *aIrrepCount = init_int_array(_nIrreps);
-    int *bIrrepCount = init_int_array(_nIrreps);
-    char **irrepLabels = _chkpt->rd_irr_labs();
+    int *aIrrepCount = init_int_array(nirrep_);
+    int *bIrrepCount = init_int_array(nirrep_);
+    char **irrepLabels = chkpt_->rd_irr_labs();
 
     fprintf(outfile, "\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {
@@ -221,21 +221,21 @@ DCFTSolver::print_opdm()
             fprintf(outfile, "\n\t\t");
     }
     fprintf(outfile, "\n\n\t\tAlpha virtual orbitals\n\t\t");
-    for (int i = nalpha_, count = 0; i < _nMo; ++i, ++count) {
+    for (int i = nalpha_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = aPairs[i].second;
         fprintf(outfile, "%4d%-4s%11.4f  ", ++aIrrepCount[irrep], irrepLabels[irrep], aPairs[i].first);
-        if (count % 4 == 3 && i != _nMo)
+        if (count % 4 == 3 && i != nmo_)
             fprintf(outfile, "\n\t\t");
     }
     fprintf(outfile, "\n\n\t\tBeta virtual orbitals\n\t\t");
-    for (int i = nbeta_, count = 0; i < _nMo; ++i, ++count) {
+    for (int i = nbeta_, count = 0; i < nmo_; ++i, ++count) {
         int irrep = bPairs[i].second;
         fprintf(outfile, "%4d%-4s%11.4f  ", ++bIrrepCount[irrep], irrepLabels[irrep], bPairs[i].first);
-        if (count % 4 == 3 && i != _nMo)
+        if (count % 4 == 3 && i != nmo_)
             fprintf(outfile, "\n\t\t");
     }
     fprintf(outfile, "\n\n");
-    for (int h = 0; h < _nIrreps; ++h)
+    for (int h = 0; h < nirrep_; ++h)
         delete [] irrepLabels[h];
     delete[] irrepLabels;
     delete[] aIrrepCount;
