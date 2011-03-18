@@ -15,29 +15,18 @@ using namespace boost;
 namespace psi{ namespace dcft{
 
 /**
- * Sets aside memory for the various arrays and matrices needed, and obtains
- * important information from the checkpoint file.  Must be run after an SCF
- * computation for this reason.
- */
-void
-DCFTSolver::init_moinfo()
-{
-}
-
-
-/**
  * Reads the orbital information that can be determined before the SCF procedure
  * and initializes SO matrices.
  */
 void
 DCFTSolver::init()
 {
-    nso_       = reference_wavefunction_->nso();
-    nirrep_    = reference_wavefunction_->nirrep();
-    nmo_       = reference_wavefunction_->nmo();
-    enuc_      = Process::environment.molecule()->nuclear_repulsion_energy();
+    nso_        = reference_wavefunction_->nso();
+    nirrep_     = reference_wavefunction_->nirrep();
+    nmo_        = reference_wavefunction_->nmo();
+    enuc_       = Process::environment.molecule()->nuclear_repulsion_energy();
     scf_energy_ = reference_wavefunction_->reference_energy();
-    ntriso_    = nso_ * (nso_ + 1) / 2;
+    ntriso_     = nso_ * (nso_ + 1) / 2;
     for(int h = 0; h < nirrep_; ++h){
         soccpi_[h] = reference_wavefunction_->soccpi()[h];
         doccpi_[h] = reference_wavefunction_->doccpi()[h];
@@ -69,10 +58,10 @@ DCFTSolver::init()
     bvir_c_     = shared_ptr<Matrix>(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
     scf_error_a_ = shared_ptr<Matrix>(new Matrix("Alpha SCF Error Vector", nirrep_, naoccpi_, navirpi_));
     scf_error_b_ = shared_ptr<Matrix>(new Matrix("Beta SCF Error Vector", nirrep_, nboccpi_, nbvirpi_));
-    Fa_        = shared_ptr<Matrix>(new Matrix("Alpha Fock Matrix", nirrep_, nsopi_, nsopi_));
-    Fb_        = shared_ptr<Matrix>(new Matrix("Beta Fock Matrix", nirrep_, nsopi_, nsopi_));
-    Ca_        = shared_ptr<Matrix>(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
-    Cb_        = shared_ptr<Matrix>(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
+    Fa_          = shared_ptr<Matrix>(new Matrix("Alpha Fock Matrix", nirrep_, nsopi_, nsopi_));
+    Fb_          = shared_ptr<Matrix>(new Matrix("Beta Fock Matrix", nirrep_, nsopi_, nsopi_));
+    Ca_          = shared_ptr<Matrix>(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
+    Cb_          = shared_ptr<Matrix>(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
     old_ca_     = shared_ptr<Matrix>(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     old_cb_     = shared_ptr<Matrix>(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
     kappa_a_    = shared_ptr<Matrix>(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));

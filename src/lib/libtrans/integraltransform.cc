@@ -60,7 +60,7 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
 void
 IntegralTransform::initialize()
 {
-    raid_checkpoint();
+    read_moinfo();
     process_spaces();
 
     // Set up the DPD library

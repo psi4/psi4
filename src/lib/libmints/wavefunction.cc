@@ -89,7 +89,7 @@ void Wavefunction::common_init()
         nbetapi_[k] = 0;
     }
 
-    reference_energy_ = 0.0;
+    energy_ = 0.0;
 
     // Read in the debug flag
     debug_ = options_.get_int("DEBUG");

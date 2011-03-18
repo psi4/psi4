@@ -11,10 +11,10 @@ using namespace boost;
 using namespace psi;
 
 /**
- * Gathers MO information from the checkpoint file
+ * Gathers MO information
  */
 void
-IntegralTransform::raid_checkpoint()
+IntegralTransform::read_moinfo()
 {
     _labels  = Process::environment.molecule()->irrep_labels();
     _nirreps = Process::environment.reference_wavefunction()->nirrep();
@@ -331,10 +331,13 @@ IntegralTransform::process_eigenvectors()
     // Read the eigenvectors from the checkpoint file
     if(_transformationType == Restricted){
         // Set up for a restricted transformation
-        if(_Ca == NULL) _Ca = new double**[_nirreps];
+        if(_Ca == NULL){
+            _Ca = new double**[_nirreps];
+            for(int h = 0; h < _nirreps; ++h) _Ca[h] = NULL;
+        }
         for(int h = 0; h < _nirreps; ++h){
             if(_sopi[h] && _mopi[h]){
-                _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+                if(_Ca[h] == NULL) _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
                 ::memcpy(_Ca[h][0], matCa->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
             }
         }
@@ -342,13 +345,19 @@ IntegralTransform::process_eigenvectors()
     }else if(_transformationType == Unrestricted){
         // Set up for an unrestricted transformation
         // The semicanonical evecs are already in _Ca and _Cb if needed.
-        if(_Ca == NULL) _Ca = new double**[_nirreps];
-        if(_Cb == NULL) _Cb = new double**[_nirreps];
+        if(_Ca == NULL){
+            _Ca = new double**[_nirreps];
+            for(int h = 0; h < _nirreps; ++h) _Ca[h] = NULL;
+        }
+        if(_Cb == NULL){
+            _Cb = new double**[_nirreps];
+            for(int h = 0; h < _nirreps; ++h) _Cb[h] = NULL;
+        }
         for(int h = 0; h < _nirreps; ++h){
             if(_sopi[h] && _mopi[h]){
-                _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
+                if(_Ca[h] == NULL) _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
                 ::memcpy(_Ca[h][0], matCa->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
-                _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
+                if(_Cb[h] == NULL) _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
                 ::memcpy(_Cb[h][0], matCb->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
             }
         }

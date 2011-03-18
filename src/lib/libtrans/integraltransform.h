@@ -158,7 +158,7 @@ class IntegralTransform{
 
     protected:
         void semicanonicalize();
-        void raid_checkpoint();
+        void read_moinfo();
         void process_eigenvectors();
         void process_spaces();
         void presort_mo_tpdm_restricted();
