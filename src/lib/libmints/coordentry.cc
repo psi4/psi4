@@ -34,6 +34,21 @@ CoordEntry::~CoordEntry()
 
 }
 
+bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) const
+{
+    if(other->Z_ != Z_) return false;
+    if(other->mass_ != mass_) return false;
+    std::map<std::string, std::string>::const_iterator iter = basissets_.begin();
+    std::map<std::string, std::string>::const_iterator stop = basissets_.end();
+    for(; iter != stop; ++iter){
+        std::map<std::string, std::string>::const_iterator other_it = other->basissets_.find(iter->first);
+        if(other_it == other->basissets_.end()) return false; // This basis was never defined for the other atom
+        if(iter->second != other_it->second) return false; // The basis sets are different
+    }
+
+    return true;
+}
+
 void CoordEntry::set_basisset(const std::string& name, const std::string& type)
 {
     basissets_[type] = name;

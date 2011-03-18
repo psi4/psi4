@@ -1654,7 +1654,7 @@ boost::shared_ptr<PointGroup> Molecule::find_highest_point_group(double tol) con
             double AdotA = A.dot(A);
             for (j=0; j<=i; ++j) {
                 // the atoms must be identical
-                if (Z(i) != Z(j)) continue;
+                if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                 Vector3 B = xyz(j)-com;
                 // the atoms must be the same distance from the com
                 if (fabs(AdotA - B.dot(B)) > tol) continue;
@@ -1700,7 +1700,7 @@ found_c2axis:
                 double AdotA = A.dot(A);
                 for (j=0; j<i; ++j) {
                     // the atoms must be identical
-                    if (Z(i) != Z(j) || fabs(mass(i) - mass(j)) > tol) continue;
+                    if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
                     if (fabs(AdotA - B.dot(B)) > tol) continue;
@@ -1773,7 +1773,7 @@ found_c2axisperp:
                 // in the plane
                 for (j=0; j<=i; ++j) {
                     // the atoms must be identical
-                    if (Z(i) != Z(j) || fabs(mass(i) - mass(j)) > tol) continue;
+                    if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j) - com;
                     // the atoms must be the same distance from the com
                     if (fabs(AdotA - B.dot(B)) > tol) continue;
@@ -1839,7 +1839,7 @@ found_sigmav:
                 double AdotA = A.dot(A);
                 for (j=0; j<i; ++j) {
                     // the atomsmust be identical
-                    if (Z(i) != Z(j) || fabs(mass(i)-mass(j)) > tol) continue;
+                    if (!atoms_[i]->is_equivalent_to(atoms_[j])) continue;
                     Vector3 B = xyz(j)-com;
                     double BdotB = B.dot(B);
                     // the atoms must be the same distance from the com

@@ -136,6 +136,8 @@ public:
     virtual CoordEntryType type() =0;
     /// Whether the current atom's coordinates are up-to-date.
     bool is_computed() const { return computed_; }
+    /// Whether this atom has the same mass and basis sets as another atom
+    bool is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) const;
     /// Flags the current coordinates as being outdated.
     virtual void invalidate() =0;
     /// Clones the current object, using a user-provided variable array, for deep copying
