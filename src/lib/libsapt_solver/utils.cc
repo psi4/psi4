@@ -863,7 +863,7 @@ SAPTDFInts SAPT0::set_act_B_BS()
 
   return(B_BS);
 }
-
+/*
 SAPTDFInts SAPT0::set_act_B_RB()
 {
   double enuc, NA, NB;
@@ -915,7 +915,7 @@ SAPTDFInts SAPT0::set_act_A_AS()
 
   return(A_AS);
 }
-
+*/
 SAPTDFInts SAPT0::set_H2_BS()
 {
   SAPTDFInts B_BS;

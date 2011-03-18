@@ -2,11 +2,108 @@
 
 namespace psi { namespace sapt {
 
-void SAPT0::exch_disp20()
+void SAPT0::exch_disp20_n5()
 {
   psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
 
+  arbs();
   v1();
+  q12();
+
+  double v_1 = 0.0, q_12 = 0.0;
+
+  double *tabRS = init_array(nvirA_*nvirB_);
+  double *vabRS = init_array(nvirA_*nvirB_);
+  double *qabRS = init_array(nvirA_*nvirB_);
+
+  double **T_AR = block_matrix(nvirA_,ndf_);
+  double **T_BS = block_matrix(nvirB_,ndf_);
+  double **V_BR = block_matrix(nvirA_,ndf_+3);
+  double **V_AS = block_matrix(nvirB_,ndf_+3);
+  double **Q_BR = block_matrix(nvirA_,ndf_+3);
+  double **Q_AS = block_matrix(nvirB_,ndf_+3);
+
+  psio_address next_T_AR = PSIO_ZERO;
+  psio_address next_T_BS = PSIO_ZERO;
+  psio_address next_V_BR = PSIO_ZERO;
+  psio_address next_V_AS = PSIO_ZERO;
+  psio_address next_Q_BR = PSIO_ZERO;
+  psio_address next_Q_AS = PSIO_ZERO;
+
+  for (int a=0; a<aoccA_; a++) {
+
+    psio_->read(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+      &(T_AR[0][0]),sizeof(double)*nvirA_*ndf_,next_T_AR,
+      &next_T_AR);
+    psio_->read(PSIF_SAPT_TEMP,"V1 AS RI Integrals",(char *)
+      &(V_AS[0][0]),sizeof(double)*nvirB_*(ndf_+3),next_V_AS,
+      &next_V_AS);
+    psio_->read(PSIF_SAPT_TEMP,"Q12 AS RI Integrals",(char *)
+      &(Q_AS[0][0]),sizeof(double)*nvirB_*(ndf_+3),next_Q_AS,
+      &next_Q_AS);
+
+    for (int b=0; b<aoccB_; b++) {
+
+      psio_->read(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+        &(T_BS[0][0]),sizeof(double)*nvirB_*ndf_,next_T_BS,
+        &next_T_BS);
+      psio_->read(PSIF_SAPT_TEMP,"V1 BR RI Integrals",(char *)
+        &(V_BR[0][0]),sizeof(double)*nvirA_*(ndf_+3),next_V_BR,
+        &next_V_BR);
+      psio_->read(PSIF_SAPT_TEMP,"Q12 BR RI Integrals",(char *)
+        &(Q_BR[0][0]),sizeof(double)*nvirA_*(ndf_+3),next_Q_BR,
+        &next_Q_BR);
+
+      C_DGEMM('N','T',nvirA_,nvirB_,ndf_,1.0,T_AR[0],ndf_,T_BS[0],ndf_,
+        0.0,tabRS,nvirB_);
+      C_DGEMM('N','T',nvirA_,nvirB_,ndf_+3,1.0,V_BR[0],ndf_+3,V_AS[0],ndf_+3,
+        0.0,vabRS,nvirB_);
+      C_DGEMM('N','T',nvirA_,nvirB_,ndf_+3,1.0,Q_BR[0],ndf_+3,Q_AS[0],ndf_+3,
+        0.0,qabRS,nvirB_);
+
+      for (int r=0,rs=0; r<nvirA_; r++) {
+        for (int s=0; s<nvirB_; s++,rs++) {
+          double denom =  evalsA_[a+foccA_] + evalsB_[b+foccB_] 
+            - evalsA_[r+noccA_] - evalsB_[s+noccB_];
+          tabRS[rs] /= denom;
+      }}
+
+      v_1 += C_DDOT(nvirA_*nvirB_,tabRS,1,vabRS,1);
+      q_12 += C_DDOT(nvirA_*nvirB_,tabRS,1,qabRS,1);
+
+    }
+  
+    next_T_BS = PSIO_ZERO;
+    next_V_BR = PSIO_ZERO;
+    next_Q_BR = PSIO_ZERO;
+
+  }
+
+  free(tabRS);
+  free(vabRS);
+  free(qabRS);
+
+  free_block(T_AR);
+  free_block(T_BS);
+  free_block(V_BR);
+  free_block(V_AS);
+  free_block(Q_BR);
+  free_block(Q_AS);
+
+  e_exch_disp20_ = -2.0*(v_1+q_12);
+
+  if (debug_) {
+    fprintf(outfile,"\n    V1 + H2 + H4 + Q9   = %18.12lf H\n",v_1);
+    fprintf(outfile,"    Q12                 = %18.12lf H\n",q_12);
+  }
+
+  psio_->close(PSIF_SAPT_TEMP,0);
+}
+
+void SAPT0::exch_disp20_n4()
+{
+  psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
+
   h1();
   h2();
   h3();
@@ -19,16 +116,13 @@ void SAPT0::exch_disp20()
   q7();
   q10();
   q11();
-  q12();
   q13();
   q14();
 
-	double v_1 = 0.0;
   double h_1 = 0.0, h_2 = 0.0, h_3 = 0.0, h_4 = 0.0;
   double q_1 = 0.0, q_2 = 0.0, q_3 = 0.0, q_4 = 0.0; 
   double q_5 = 0.0, q_6 = 0.0, q_7 = 0.0, q_8 = 0.0;
-  double q_9 = 0.0, q_10 = 0.0, q_11 = 0.0, q_12 = 0.0; 
-  double q_13 = 0.0, q_14 = 0.0;
+  double q_10 = 0.0, q_11 = 0.0, q_13 = 0.0, q_14 = 0.0;
 
   double **sAS = block_matrix(aoccA_,nvirB_);
   double **sRB = block_matrix(nvirA_,aoccB_);
@@ -92,46 +186,30 @@ void SAPT0::exch_disp20()
 
   SAPTDFInts T_p_AR = set_act_C_AR();
   SAPTDFInts T_p_BS = set_act_C_BS();
-  Iterator T_ARBS_iter = get_iterator(mem_/3,&T_p_AR,&T_p_BS);
-
-  SAPTDFInts A_p_AS = set_act_A_AS();
-  SAPTDFInts B_p_RB = set_act_B_RB();
-  Iterator ASRB_iter = get_iterator(mem_/3,&A_p_AS,&B_p_RB);
+  Iterator T_ARBS_iter = get_iterator(mem_/2,&T_p_AR,&T_p_BS);
 
   SAPTDFInts A_p_AR = set_act_A_AR();
   SAPTDFInts B_p_BS = set_act_B_BS();
-  Iterator ARBS_iter = get_iterator(mem_/3,&A_p_AR,&B_p_BS);
+  Iterator ARBS_iter = get_iterator(mem_/2,&A_p_AR,&B_p_BS);
 
   SAPTDFInts H2_p_BS = set_H2_BS();
-  SAPTDFInts H2_p_AS = set_H2_AS();
   SAPTDFInts H4_p_AR = set_H4_AR();
-  SAPTDFInts H4_p_RB = set_H4_RB();
   SAPTDFInts Q2_p_AR = set_Q2_AR();
   SAPTDFInts Q6_p_BS = set_Q6_BS();
-  SAPTDFInts Q12_p_AS = set_Q12_AS();
-  SAPTDFInts Q12_p_RB = set_Q12_RB();
   SAPTDFInts Q13_p_BS = set_Q13_BS();
   SAPTDFInts Q14_p_AR = set_Q14_AR();
 
   H2_p_BS.B_p_ = B_p_BS.B_p_;
-  H2_p_AS.B_p_ = A_p_AS.B_p_;
   H4_p_AR.B_p_ = A_p_AR.B_p_;
-  H4_p_RB.B_p_ = B_p_RB.B_p_;
   Q2_p_AR.B_p_ = A_p_AR.B_p_;
   Q6_p_BS.B_p_ = B_p_BS.B_p_;
-  Q12_p_AS.B_p_ = A_p_AS.B_p_;
-  Q12_p_RB.B_p_ = B_p_RB.B_p_;
   Q13_p_BS.B_p_ = B_p_BS.B_p_;
   Q14_p_AR.B_p_ = A_p_AR.B_p_;
 
-  Iterator H2_ASRB_iter = get_iterator(mem_/3,&H2_p_AS,&B_p_RB,false);
   Iterator H2_ARBS_iter = get_iterator(mem_/3,&A_p_AR,&H2_p_BS,false);
-  Iterator H4_ASRB_iter = get_iterator(mem_/3,&A_p_AS,&H4_p_RB,false);
   Iterator H4_ARBS_iter = get_iterator(mem_/3,&H4_p_AR,&B_p_BS,false);
   Iterator Q2_ARBS_iter = get_iterator(mem_/3,&Q2_p_AR,&B_p_BS,false);
   Iterator Q6_ARBS_iter = get_iterator(mem_/3,&A_p_AR,&Q6_p_BS,false);
-  Iterator Q9_ASRB_iter = get_iterator(mem_/3,&H2_p_AS,&H4_p_RB,false);
-  Iterator Q12_ASRB_iter = get_iterator(mem_/3,&Q12_p_AS,&Q12_p_RB,false);
   Iterator Q13_ARBS_iter = get_iterator(mem_/3,&A_p_AR,&Q13_p_BS,false);
   Iterator Q14_ARBS_iter = get_iterator(mem_/3,&Q14_p_AR,&B_p_BS,false);
 
@@ -166,23 +244,6 @@ void SAPT0::exch_disp20()
         }
       }
 
-      for (int k=0; k<ASRB_iter.num_blocks; k++) {
-        read_block(&ASRB_iter,&A_p_AS,&B_p_RB);
-
-        for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-          for (int q=0; q<ASRB_iter.curr_size; q++) {
-            C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
-              B_p_RB.B_p_[q],aoccB_,0.0,xAB,aoccB_);
-            C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,A_p_AS.B_p_[q],nvirB_,
-              T_p_BS.B_p_[p],nvirB_,0.0,yAB,aoccB_);
-            v_1 += C_DDOT(aoccA_*aoccB_,xAB,1,yAB,1);
-          }
-        }
-      }
-      A_p_AS.rewind();
-      B_p_RB.rewind();
-      ASRB_iter.rewind();
-
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
           H1_RB[0],aoccB_,0.0,xAB,aoccB_);
@@ -209,23 +270,6 @@ void SAPT0::exch_disp20()
       H2_p_BS.rewind();
       H2_ARBS_iter.rewind();
 
-      for (int k=0; k<H2_ASRB_iter.num_blocks; k++) {
-        read_block(&H2_ASRB_iter,&H2_p_AS,&B_p_RB);
-
-        for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-          for (int q=0; q<H2_ASRB_iter.curr_size; q++) {
-            C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
-              B_p_RB.B_p_[q],aoccB_,0.0,xAB,aoccB_);
-            C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,H2_p_AS.B_p_[q],nvirB_,
-              T_p_BS.B_p_[p],nvirB_,0.0,yAB,aoccB_);
-            h_2 -= C_DDOT(aoccA_*aoccB_,xAB,1,yAB,1);
-          }
-        }
-      }
-      H2_p_AS.rewind();
-      B_p_RB.rewind();
-      H2_ASRB_iter.rewind();
-
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
           sRB[0],aoccB_,0.0,xAB,aoccB_);
@@ -251,23 +295,6 @@ void SAPT0::exch_disp20()
       H4_p_AR.rewind();
       B_p_BS.rewind();
       H4_ARBS_iter.rewind();
-
-      for (int k=0; k<H4_ASRB_iter.num_blocks; k++) {
-        read_block(&H4_ASRB_iter,&A_p_AS,&H4_p_RB);
-
-        for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-          for (int q=0; q<H4_ASRB_iter.curr_size; q++) {
-            C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
-              H4_p_RB.B_p_[q],aoccB_,0.0,xAB,aoccB_);
-            C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,A_p_AS.B_p_[q],nvirB_,
-              T_p_BS.B_p_[p],nvirB_,0.0,yAB,aoccB_);
-            h_4 -= C_DDOT(aoccA_*aoccB_,xAB,1,yAB,1);
-          }
-        }
-      }
-      A_p_AS.rewind();
-      H4_p_RB.rewind();
-      H4_ASRB_iter.rewind();
 
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
@@ -347,23 +374,6 @@ void SAPT0::exch_disp20()
           C_DDOT(aoccB_*nvirB_,T_p_BS.B_p_[p],1,sBS[0],1);
       }
 
-      for (int k=0; k<Q9_ASRB_iter.num_blocks; k++) {
-        read_block(&Q9_ASRB_iter,&H2_p_AS,&H4_p_RB);
-
-        for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-          for (int q=0; q<Q9_ASRB_iter.curr_size; q++) {
-            C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
-              H4_p_RB.B_p_[q],aoccB_,0.0,xAB,aoccB_);
-            C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,H2_p_AS.B_p_[q],nvirB_,
-              T_p_BS.B_p_[p],nvirB_,0.0,yAB,aoccB_);
-            q_9 += C_DDOT(aoccA_*aoccB_,xAB,1,yAB,1);
-          }
-        }
-      }
-      H2_p_AS.rewind();
-      H4_p_RB.rewind();
-      Q9_ASRB_iter.rewind();
-
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
           sRB[0],aoccB_,0.0,xAB,aoccB_);
@@ -379,23 +389,6 @@ void SAPT0::exch_disp20()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB,aoccB_);
         q_11 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB,1,yAB,1);
       }
-
-      for (int k=0; k<Q12_ASRB_iter.num_blocks; k++) {
-        read_block(&Q12_ASRB_iter,&Q12_p_AS,&Q12_p_RB);
-
-        for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-          for (int q=0; q<Q12_ASRB_iter.curr_size; q++) {
-            C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
-              Q12_p_RB.B_p_[q],aoccB_,0.0,xAB,aoccB_);
-            C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,Q12_p_AS.B_p_[q],nvirB_,
-              T_p_BS.B_p_[p],nvirB_,0.0,yAB,aoccB_);
-            q_12 += C_DDOT(aoccA_*aoccB_,xAB,1,yAB,1);
-          }
-        }
-      }
-      Q12_p_AS.rewind();
-      Q12_p_RB.rewind();
-      Q12_ASRB_iter.rewind();
 
       for (int k=0; k<Q13_ARBS_iter.num_blocks; k++) {
         read_block(&Q13_ARBS_iter,&A_p_AR,&Q13_p_BS);
@@ -437,7 +430,6 @@ void SAPT0::exch_disp20()
   }
 
   if (debug_) {
-    fprintf(outfile,"\n    V1                  = %18.12lf H\n",v_1);
     fprintf(outfile,"    H1                  = %18.12lf H\n",h_1);
     fprintf(outfile,"    H2                  = %18.12lf H\n",h_2);
     fprintf(outfile,"    H3                  = %18.12lf H\n",h_3);
@@ -450,22 +442,16 @@ void SAPT0::exch_disp20()
     fprintf(outfile,"    Q6                  = %18.12lf H\n",q_6);
     fprintf(outfile,"    Q7                  = %18.12lf H\n",q_7);
     fprintf(outfile,"    Q8                  = %18.12lf H\n",q_8);
-    fprintf(outfile,"    Q9                  = %18.12lf H\n",q_9);
     fprintf(outfile,"    Q10                 = %18.12lf H\n",q_10);
     fprintf(outfile,"    Q11                 = %18.12lf H\n",q_11);
-    fprintf(outfile,"    Q12                 = %18.12lf H\n",q_12);
     fprintf(outfile,"    Q13                 = %18.12lf H\n",q_13);
     fprintf(outfile,"    Q14                 = %18.12lf H\n\n",q_14);
   }
 
   H2_p_BS.B_p_ = NULL;
-  H2_p_AS.B_p_ = NULL;
   H4_p_AR.B_p_ = NULL;
-  H4_p_RB.B_p_ = NULL;
   Q2_p_AR.B_p_ = NULL;
   Q6_p_BS.B_p_ = NULL;
-  Q12_p_AS.B_p_ = NULL;
-  Q12_p_RB.B_p_ = NULL;
   Q13_p_BS.B_p_ = NULL;
   Q14_p_AR.B_p_ = NULL;
 
@@ -489,8 +475,8 @@ void SAPT0::exch_disp20()
   free(xPQ);
   free(yPQ);
 
-  e_exch_disp20_ = 2.0*(v_1+h_1+h_2+h_3+h_4+q_1+q_2+q_3+q_4+q_5+q_6+q_7
-    +q_8+q_9+q_10+q_11+q_12+q_13+q_14);
+  e_exch_disp20_ += 2.0*(h_1+h_2+h_3+h_4+q_1+q_2+q_3+q_4+q_5+q_6+q_7+q_8+
+    q_10+q_11+q_13+q_14);
 
   if (print_) {
     fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
@@ -500,62 +486,182 @@ void SAPT0::exch_disp20()
   psio_->close(PSIF_SAPT_TEMP,0);
 }
 
+void SAPT0::arbs()
+{
+  zero_disk(PSIF_SAPT_TEMP,"AR RI Integrals",aoccA_*nvirA_,ndf_);
+  zero_disk(PSIF_SAPT_TEMP,"BS RI Integrals",aoccB_*nvirB_,ndf_);
+
+  SAPTDFInts T_p_AR = set_act_C_AR();
+  Iterator T_AR_iter = get_iterator(mem_/2,&T_p_AR);
+
+  double **X_AR_p = block_matrix(aoccA_*nvirA_,T_AR_iter.block_size[0]);
+
+  psio_address next_T_AR = PSIO_ZERO;
+
+  for (int i=0,off=0; i<T_AR_iter.num_blocks; i++) {
+    read_block(&T_AR_iter,&T_p_AR);
+    for (int p=0; p<T_AR_iter.curr_size; p++) {
+      C_DCOPY(aoccA_*nvirA_,&(T_p_AR.B_p_[p][0]),1,&(X_AR_p[0][p]),
+        T_AR_iter.block_size[0]);
+    }
+
+    int skip = ndf_ - T_AR_iter.curr_size;
+
+    next_T_AR = psio_get_address(PSIO_ZERO,sizeof(double)*off);
+
+    for (int ar=0; ar<aoccA_*nvirA_; ar++) {
+      psio_->write(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+        &(X_AR_p[ar][0]),sizeof(double)*T_AR_iter.curr_size,next_T_AR,
+        &next_T_AR);
+      next_T_AR = psio_get_address(next_T_AR,sizeof(double)*skip);
+    }
+
+    off += T_AR_iter.curr_size;
+  }
+
+  free_block(X_AR_p);
+  T_p_AR.done();
+
+  SAPTDFInts T_p_BS = set_act_C_BS();
+  Iterator T_BS_iter = get_iterator(mem_/2,&T_p_BS);
+
+  double **X_BS_p = block_matrix(aoccB_*nvirB_,T_BS_iter.block_size[0]);
+
+  psio_address next_T_BS = PSIO_ZERO;
+
+  for (int i=0,off=0; i<T_BS_iter.num_blocks; i++) {
+    read_block(&T_BS_iter,&T_p_BS);
+    for (int p=0; p<T_BS_iter.curr_size; p++) {
+      C_DCOPY(aoccB_*nvirB_,&(T_p_BS.B_p_[p][0]),1,&(X_BS_p[0][p]),
+        T_BS_iter.block_size[0]);
+    }
+
+    int skip = ndf_ - T_BS_iter.curr_size; 
+
+    next_T_BS = psio_get_address(PSIO_ZERO,sizeof(double)*off);
+
+    for (int bs=0; bs<aoccB_*nvirB_; bs++) {
+      psio_->write(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+        &(X_BS_p[bs][0]),sizeof(double)*T_BS_iter.curr_size,next_T_BS,
+        &next_T_BS);
+      next_T_BS = psio_get_address(next_T_BS,sizeof(double)*skip);
+    }
+  
+    off += T_BS_iter.curr_size;
+  }
+  
+  free_block(X_BS_p);
+  T_p_BS.done();
+}
+
 void SAPT0::v1()
 {
+  zero_disk(PSIF_SAPT_TEMP,"V1 AS RI Integrals",aoccA_*nvirB_,ndf_+3);
+  zero_disk(PSIF_SAPT_TEMP,"V1 BR RI Integrals",aoccB_*nvirA_,ndf_+3);
+
+  SAPTDFInts A_p_AA = set_A_AA();
   SAPTDFInts A_p_AS = set_A_AS();
-  Iterator AS_iter = get_iterator(mem_,&A_p_AS);
+  Iterator AS_iter = get_iterator(mem_/2,&A_p_AA,&A_p_AS);
   double **xAS = block_matrix(aoccA_,nvirB_);
+  double **X_AS_p = block_matrix(aoccA_*nvirB_,AS_iter.block_size[0]);
 
   psio_address next_A_AS = PSIO_ZERO;
 
-  for (int i=0; i<AS_iter.num_blocks; i++) {
-    read_block(&AS_iter,&A_p_AS);
+  for (int i=0,off=0; i<AS_iter.num_blocks; i++) {
+    read_block(&AS_iter,&A_p_AA,&A_p_AS);
     for (int p=0; p<AS_iter.curr_size; p++) {
-      C_DCOPY(aoccA_*nvirB_,&(A_p_AS.B_p_[p][foccA_*nvirB_]),1,xAS[0],1);
-      psio_->write(PSIF_SAPT_TEMP,"Active AS RI Integrals",(char *) 
-        &(xAS[0][0]),sizeof(double)*aoccA_*nvirB_,next_A_AS,&next_A_AS);
+      C_DGEMM('N','N',aoccA_,nvirB_,noccA_,-1.0,
+        &(A_p_AA.B_p_[p][foccA_*noccA_]),noccA_,&(sAB_[0][noccB_]),nmo_,
+        0.0,xAS[0],nvirB_);
+      C_DCOPY(aoccA_*nvirB_,&(A_p_AS.B_p_[p][foccA_*nvirB_]),1,
+        &(X_AS_p[0][p]),AS_iter.block_size[0]);
+      C_DAXPY(aoccA_*nvirB_,1.0,xAS[0],1,&(X_AS_p[0][p]),
+        AS_iter.block_size[0]); 
     }
+
+    int skip = ndf_ + 3 - AS_iter.curr_size;
+
+    next_A_AS = psio_get_address(PSIO_ZERO,sizeof(double)*off);
+
+    for (int as=0; as<aoccA_*nvirB_; as++) {
+      psio_->write(PSIF_SAPT_TEMP,"V1 AS RI Integrals",(char *)
+        &(X_AS_p[as][0]),sizeof(double)*AS_iter.curr_size,next_A_AS,
+        &next_A_AS);
+      next_A_AS = psio_get_address(next_A_AS,sizeof(double)*skip);
+    }
+
+    off += AS_iter.curr_size;
   }
 
   free_block(xAS);
+  free_block(X_AS_p);
+  A_p_AA.done();
   A_p_AS.done();
 
+  SAPTDFInts B_p_BB = set_B_BB();
   SAPTDFInts B_p_RB = set_B_RB();
-  Iterator RB_iter = get_iterator(mem_,&B_p_RB);
-  double **xRB = block_matrix(nvirA_,aoccB_);
+  Iterator BR_iter = get_iterator(mem_/2,&B_p_BB,&B_p_RB);
+  double **xBR = block_matrix(aoccB_,nvirA_);
+  double **X_BR_p = block_matrix(aoccB_*nvirA_,BR_iter.block_size[0]);
 
-  psio_address next_B_RB = PSIO_ZERO;
+  psio_address next_B_BR = PSIO_ZERO;
 
-  for (int i=0; i<RB_iter.num_blocks; i++) {
-    read_block(&RB_iter,&B_p_RB);
-    for (int p=0; p<RB_iter.curr_size; p++) {
-      for (int r=0; r<nvirA_; r++) {
-        C_DCOPY(aoccB_,&(B_p_RB.B_p_[p][r*noccB_+foccB_]),1,xRB[r],1);
+  for (int i=0,off=0; i<BR_iter.num_blocks; i++) {
+    read_block(&BR_iter,&B_p_BB,&B_p_RB);
+    for (int p=0; p<BR_iter.curr_size; p++) {
+      C_DGEMM('N','T',aoccB_,nvirA_,noccB_,-1.0,
+        &(B_p_BB.B_p_[p][foccB_*noccB_]),noccB_,&(sAB_[noccA_][0]),nmo_,
+        0.0,xBR[0],nvirA_);
+      for (int b=0; b<aoccB_; b++) {
+        C_DCOPY(nvirA_,&(B_p_RB.B_p_[p][b+foccB_]),noccB_,
+          &(X_BR_p[b*nvirA_][p]),BR_iter.block_size[0]);
       }
-      psio_->write(PSIF_SAPT_TEMP,"Active RB RI Integrals",(char *) 
-        &(xRB[0][0]),sizeof(double)*nvirA_*aoccB_,next_B_RB,&next_B_RB);
+      C_DAXPY(aoccB_*nvirA_,1.0,xBR[0],1,&(X_BR_p[0][p]),
+        BR_iter.block_size[0]);
     }
+
+    int skip = ndf_ + 3 - BR_iter.curr_size;
+
+    next_B_BR = psio_get_address(PSIO_ZERO,sizeof(double)*off);
+
+    for (int br=0; br<aoccB_*nvirA_; br++) {
+      psio_->write(PSIF_SAPT_TEMP,"V1 BR RI Integrals",(char *)
+        &(X_BR_p[br][0]),sizeof(double)*BR_iter.curr_size,next_B_BR,
+        &next_B_BR);
+      next_B_BR = psio_get_address(next_B_BR,sizeof(double)*skip);
+    }
+
+    off += BR_iter.curr_size;
   }
 
-  free_block(xRB);
+  free_block(xBR);
+  free_block(X_BR_p);
+  B_p_BB.done();
   B_p_RB.done();
 }
 
 void SAPT0::h1()
 {
-  SAPTDFInts B_p_RB = set_act_B_RB();
+  SAPTDFInts B_p_RB = set_B_RB();
   Iterator RB_iter = get_iterator(mem_,&B_p_RB);
 
-  double *xRB = init_array(nvirA_*aoccB_);
+  double *tRB = init_array(nvirA_*noccB_);
 
   for (int i=0,off=0; i<RB_iter.num_blocks; i++) {
     read_block(&RB_iter,&B_p_RB);
-    C_DGEMV('t',RB_iter.curr_size,nvirA_*aoccB_,2.0,&(B_p_RB.B_p_[0][0]),
-      nvirA_*aoccB_,&(diagAA_[off]),1,1.0,xRB,1);
+    C_DGEMV('t',RB_iter.curr_size,nvirA_*noccB_,2.0,&(B_p_RB.B_p_[0][0]),
+      nvirA_*noccB_,&(diagAA_[off]),1,1.0,tRB,1);
     off += RB_iter.curr_size;
   }
 
   B_p_RB.done();
+
+  double *xRB = init_array(nvirA_*aoccB_);
+
+  for (int r=0; r<nvirA_; r++)
+    C_DCOPY(aoccB_,&(tRB[r*noccB_ + foccB_]),1,&(xRB[r*aoccB_]),1);
+
+  free(tRB);
 
   SAPTDFInts A_p_AR = set_A_AR();
   SAPTDFInts B_p_AB = set_B_AB();
@@ -599,42 +705,29 @@ void SAPT0::h2()
   free_block(xBS);
   B_p_AB.done();
 
-  SAPTDFInts A_p_AA = set_A_AA();
-  Iterator AA_iter = get_iterator(mem_,&A_p_AA);
-
-  double **xAS = block_matrix(aoccA_,nvirB_);
-  psio_address next_AS = PSIO_ZERO;
-
-  for (int i=0; i<AA_iter.num_blocks; i++) {
-    read_block(&AA_iter,&A_p_AA);
-    for (int p=0; p<AA_iter.curr_size; p++) {
-      C_DGEMM('N','N',aoccA_,nvirB_,noccA_,1.0,
-        &(A_p_AA.B_p_[p][foccA_*noccA_]),noccA_,&(sAB_[0][noccB_]),nmo_,
-        0.0,xAS[0],nvirB_);
-      psio_->write(PSIF_SAPT_TEMP,"H2 AS RI Integrals",(char *)
-        &(xAS[0][0]),sizeof(double)*aoccA_*nvirB_,next_AS,&next_AS);
-    }
-  }
-
-  free_block(xAS);
-  A_p_AA.done();
 }
 
 void SAPT0::h3()
 {
-  SAPTDFInts A_p_AS = set_act_A_AS();
+  SAPTDFInts A_p_AS = set_A_AS();
   Iterator AS_iter = get_iterator(mem_,&A_p_AS);
 
-  double *xAS = init_array(aoccA_*nvirB_);
+  double *tAS = init_array(noccA_*nvirB_);
 
   for (int i=0,off=0; i<AS_iter.num_blocks; i++) {
     read_block(&AS_iter,&A_p_AS);
-    C_DGEMV('t',AS_iter.curr_size,aoccA_*nvirB_,2.0,&(A_p_AS.B_p_[0][0]),
-      aoccA_*nvirB_,&(diagBB_[off]),1,1.0,xAS,1);
+    C_DGEMV('t',AS_iter.curr_size,noccA_*nvirB_,2.0,&(A_p_AS.B_p_[0][0]),
+      noccA_*nvirB_,&(diagBB_[off]),1,1.0,tAS,1);
     off += AS_iter.curr_size;
   }
 
   A_p_AS.done();
+
+  double *xAS = init_array(aoccA_*nvirB_);
+
+  C_DCOPY(aoccA_*nvirB_,&(tAS[foccA_*nvirB_]),1,xAS,1);
+
+  free(tAS);
 
   SAPTDFInts A_p_AB = set_A_AB();
   SAPTDFInts B_p_BS = set_B_BS();
@@ -677,24 +770,6 @@ void SAPT0::h4()
   free_block(xAR);
   A_p_AB.done();
 
-  SAPTDFInts B_p_BB = set_B_BB();
-  Iterator BB_iter = get_iterator(mem_,&B_p_BB);
-
-  double **xRB = block_matrix(nvirA_,aoccB_);
-  psio_address next_RB = PSIO_ZERO;
-
-  for (int i=0; i<BB_iter.num_blocks; i++) {
-    read_block(&BB_iter,&B_p_BB);
-    for (int p=0; p<BB_iter.curr_size; p++) {
-      C_DGEMM('N','N',nvirA_,aoccB_,noccB_,1.0,&(sAB_[noccA_][0]),nmo_,
-        &(B_p_BB.B_p_[p][foccB_]),noccB_,0.0,xRB[0],aoccB_);
-      psio_->write(PSIF_SAPT_TEMP,"H4 RB RI Integrals",(char *)
-        &(xRB[0][0]),sizeof(double)*nvirA_*aoccB_,next_RB,&next_RB);
-    }
-  }
-
-  free_block(xRB);
-  B_p_BB.done();
 }
 
 void SAPT0::q1()
@@ -918,42 +993,77 @@ void SAPT0::q11()
 
 void SAPT0::q12()
 {
-  SAPTDFInts A_p_AR = set_A_AR();
-  Iterator AR_iter = get_iterator(mem_,&A_p_AR);
-  
-  double *xRB = init_array(nvirA_*aoccB_);
-  psio_address next_RB = PSIO_ZERO;
+  zero_disk(PSIF_SAPT_TEMP,"Q12 AS RI Integrals",aoccA_*nvirB_,ndf_+3);
+  zero_disk(PSIF_SAPT_TEMP,"Q12 BR RI Integrals",aoccB_*nvirA_,ndf_+3);
 
-  for (int i=0; i<AR_iter.num_blocks; i++) {
+  SAPTDFInts A_p_AR = set_A_AR();
+  Iterator AR_iter = get_iterator(mem_/2,&A_p_AR);
+ 
+  double **xBR = block_matrix(aoccB_,nvirA_); 
+  double **X_BR_p = block_matrix(aoccB_*nvirA_,AR_iter.block_size[0]);
+  psio_address next_B_BR = PSIO_ZERO;
+
+  for (int i=0,off=0; i<AR_iter.num_blocks; i++) {
     read_block(&AR_iter,&A_p_AR);
     for (int j=0; j<AR_iter.curr_size; j++) {
-      C_DGEMM('T','N',nvirA_,aoccB_,noccA_,1.0,
-        &(A_p_AR.B_p_[j][0]),nvirA_,&(sAB_[0][foccB_]),nmo_,0.0,xRB,aoccB_);
-      psio_->write(PSIF_SAPT_TEMP,"Q12 RB RI Integrals",(char *)
-        &(xRB[0]),sizeof(double)*nvirA_*aoccB_,next_RB,&next_RB);
+      C_DGEMM('T','N',aoccB_,nvirA_,noccA_,1.0,&(sAB_[0][foccB_]),nmo_,
+        &(A_p_AR.B_p_[j][0]),nvirA_,0.0,xBR[0],nvirA_);
+      for (int b=0; b<aoccB_; b++) {
+        C_DCOPY(nvirA_,xBR[b],1,&(X_BR_p[b*nvirA_][j]),AR_iter.block_size[0]);
+      }
     }
+
+    int skip = ndf_ + 3 - AR_iter.curr_size;
+
+    next_B_BR = psio_get_address(PSIO_ZERO,sizeof(double)*off);
+
+    for (int br=0; br<aoccB_*nvirA_; br++) {
+      psio_->write(PSIF_SAPT_TEMP,"Q12 BR RI Integrals",(char *)
+        &(X_BR_p[br][0]),sizeof(double)*AR_iter.curr_size,next_B_BR,
+        &next_B_BR);
+      next_B_BR = psio_get_address(next_B_BR,sizeof(double)*skip);
+    }
+
+    off += AR_iter.curr_size;
   }
 
-  free(xRB);
+  free_block(xBR);
+  free_block(X_BR_p);
   A_p_AR.done();
 
   SAPTDFInts B_p_BS = set_B_BS();
-  Iterator BS_iter = get_iterator(mem_,&B_p_BS);
+  Iterator BS_iter = get_iterator(mem_/2,&B_p_BS);
 
-  double *xAS = init_array(aoccA_*nvirB_);
+  double **xAS = block_matrix(aoccA_,nvirB_); 
+  double **X_AS_p = block_matrix(aoccA_*nvirB_,BS_iter.block_size[0]);
   psio_address next_AS = PSIO_ZERO;
 
-  for (int i=0; i<BS_iter.num_blocks; i++) {
+  for (int i=0,off=0; i<BS_iter.num_blocks; i++) {
     read_block(&BS_iter,&B_p_BS);
     for (int j=0; j<BS_iter.curr_size; j++) {
       C_DGEMM('N','N',aoccA_,nvirB_,noccB_,1.0,&(sAB_[foccA_][0]),nmo_,
-        &(B_p_BS.B_p_[j][0]),nvirB_,0.0,xAS,nvirB_);
-      psio_->write(PSIF_SAPT_TEMP,"Q12 AS RI Integrals",(char *)
-        &(xAS[0]),sizeof(double)*aoccA_*nvirB_,next_AS,&next_AS);
+        &(B_p_BS.B_p_[j][0]),nvirB_,0.0,xAS[0],nvirB_);
+      for (int a=0; a<aoccA_; a++) {
+        C_DCOPY(nvirB_,xAS[a],1,&(X_AS_p[a*nvirB_][j]),BS_iter.block_size[0]);
+      }
     }
+
+    int skip = ndf_ + 3 - BS_iter.curr_size;
+
+    next_AS = psio_get_address(PSIO_ZERO,sizeof(double)*off);
+
+    for (int as=0; as<aoccA_*nvirB_; as++) {
+      psio_->write(PSIF_SAPT_TEMP,"Q12 AS RI Integrals",(char *)
+        &(X_AS_p[as][0]),sizeof(double)*BS_iter.curr_size,next_AS,
+        &next_AS);
+      next_AS = psio_get_address(next_AS,sizeof(double)*skip);
+    }
+    
+    off += BS_iter.curr_size;
   }
 
-  free(xAS);
+  free_block(xAS);
+  free_block(X_AS_p);
 }
 
 void SAPT0::q13()
