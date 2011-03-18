@@ -35,7 +35,6 @@ protected:
 
     void transform_integrals();
     void build_lambda();
-    void init_moinfo();
     void free_moinfo();
     void init();
     void compute_dcft_energy();

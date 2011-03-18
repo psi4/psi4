@@ -19,9 +19,6 @@ namespace psi{ namespace dcft{
 void
 DCFTSolver::mp2_guess()
 {
-    // SCF has already been run, we can get the resulting orbital info, and initialize the memory
-    init_moinfo();
-
     // Initialize the integral transformation object
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);

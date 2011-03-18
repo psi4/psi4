@@ -282,7 +282,7 @@ void HF::finalize()
     // Figure out how many frozen virtual and frozen core per irrep
     compute_fcpi();
     compute_fvpi();
-    reference_energy_ = E_;
+    energy_ = E_;
 
     dump_to_checkpoint();
 

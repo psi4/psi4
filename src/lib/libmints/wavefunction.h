@@ -93,8 +93,8 @@ protected:
     /// Number of mo per irrep
     int nmopi_[8];
 
-    /// The reference energy associated with this wavefunction
-    double reference_energy_;
+    /// The energy associated with this wavefunction
+    double energy_;
 
     /// Total number of SOs
     int nso_;
@@ -183,7 +183,7 @@ public:
     /// Returns the number of irreps
     int nirrep() const { return nirrep_; }
     /// Returns the reference energy
-    double reference_energy () const { return reference_energy_; }
+    double reference_energy () const { return energy_; }
 
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const { return Ca_; }
