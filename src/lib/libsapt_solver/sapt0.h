@@ -44,8 +44,8 @@ private:
   SAPTDFInts set_act_C_AR();
   SAPTDFInts set_act_C_BS();
 
-  SAPTDFInts set_act_A_AS();
-  SAPTDFInts set_act_B_RB();
+//SAPTDFInts set_act_A_AS();
+//SAPTDFInts set_act_B_RB();
   SAPTDFInts set_H2_BS();
   SAPTDFInts set_H2_AS();
   SAPTDFInts set_H4_AR();
@@ -70,6 +70,7 @@ private:
   void ind20rA_B();
   void ind20rB_A();
 
+  void arbs();
   void v1();
   void h1();
   void h2();
@@ -125,7 +126,8 @@ public:
   void exch_ind20A_B();
   void exch_ind20B_A();
   void disp20();
-  void exch_disp20();
+  void exch_disp20_n4();
+  void exch_disp20_n5();
 
 };
 
