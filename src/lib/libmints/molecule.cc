@@ -1151,7 +1151,7 @@ void Molecule::update_geometry()
         for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
             full_atoms_[atom]->compute();
             full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
-            if(full_atoms_[atom]->label() != "X") atoms_.push_back(full_atoms_[atom]);
+            if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
         }
     }
 

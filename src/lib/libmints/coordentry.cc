@@ -154,7 +154,10 @@ ZMatrixEntry::set_coordinates(double x, double y, double z)
     if(dto_ != 0){
         if(!dto_->is_computed())
              throw PSIEXCEPTION("Coordinates have been set in the wrong order");
-        dval_->set(180.0*d(coordinates_, rto_->compute(), ato_->compute(), dto_->compute())/M_PI);
+        double val = d(coordinates_, rto_->compute(), ato_->compute(), dto_->compute());
+        // Check for NaN, and don't update if we find one
+        if(val == val)
+            dval_->set(180.0*val/M_PI);
     }
 
     computed_ = true;
@@ -200,7 +203,7 @@ const Vector3& ZMatrixEntry::compute()
         /*
          * The atom specification is
          *      this       rTo   rVal  aTo  aVal   dTo   dVal
-         *        D         C           B           A
+         *        A         B           C           D
          * which allows us to define the vector from B->C (eBC) as the +z axis, and eAB
          * lies in the xz plane.  Then eX, eY and eZ (=eBC) are the x, y, and z axes, respecively.
          */
@@ -215,17 +218,16 @@ const Vector3& ZMatrixEntry::compute()
         double cosBCD = cos(a);
         double sinBCD = sin(a);
         double cosABCD = cos(d);
-        double sinABCD = sin(d);
-        double cosABC = -eAB.dot(eBC);
-        double sinABC = sqrt(1.0 - cosABC * cosABC);
-        if(sinABC < LINEAR_A_TOL || sinBCD < LINEAR_A_TOL)
-            throw PSIEXCEPTION("Atom defines a dihedral using a linear bond angle");
+        double sinABCD = sin(-d);
+//        double cosABC = -eAB.dot(eBC);
+//        double sinABC = sqrt(1.0 - cosABC * cosABC);
+//        if(sinABC < LINEAR_A_TOL || sinBCD < LINEAR_A_TOL)
+//            throw PSIEXCEPTION("Atom defines a dihedral using a linear bond angle");
         Vector3 eY = eAB.perp_unit(eBC);
         Vector3 eX = eY.perp_unit(eBC);
 
-        coordinates_[0] = rTo[0] + r * ( -eBC[0] * cosBCD + eX[0] * sinBCD * cosABCD + eY[0] * sinBCD * sinABCD);
-        coordinates_[1] = rTo[1] + r * ( -eBC[1] * cosBCD + eX[1] * sinBCD * cosABCD + eY[1] * sinBCD * sinABCD);
-        coordinates_[2] = rTo[2] + r * ( -eBC[2] * cosBCD + eX[2] * sinBCD * cosABCD + eY[2] * sinBCD * sinABCD);
+        for(int xyz = 0; xyz < 3; ++xyz)
+           coordinates_[xyz] = rTo[xyz] + r * ( -eBC[xyz] * cosBCD + eX[xyz] * sinBCD * cosABCD + eY[xyz] * sinBCD * sinABCD);
     }
     computed_ = true;
     return coordinates_;

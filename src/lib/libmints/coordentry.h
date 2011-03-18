@@ -3,6 +3,7 @@
 
 #include <map>
 #include <string>
+#include <cmath>
 #include "vector3.h"
 #include <boost/shared_ptr.hpp>
 
@@ -110,12 +111,11 @@ protected:
         { Vector3 eBA(a2-a1), eBC(a2-a3); eBA.normalize(); eBC.normalize(); return acos(eBA.dot(eBC)); }
     /// Computes the dihedral (in rad.) between four sets of coordinates.
     static double d(const Vector3 &a1, const Vector3 &a2, const Vector3 &a3, const Vector3 &a4)
-        { Vector3 eBA(a1-a2), eBC(a3-a2), eCD(a4-a3), eCB(a2-a3);
-          eBA.normalize(); eBC.normalize(); eCD.normalize(); eCB.normalize();
-          Vector3 BAxBC(eBA.cross(eBC)), CBxCD(eCB.cross(eCD));
-          double cosTau = BAxBC.dot(CBxCD)/(sin(a(a1,a2,a3))*sin(a(a2,a3,a4)));
-          if(cosTau < -1.0) cosTau = -1.0; if(cosTau > 1.0) cosTau = 1.0; return acos(cosTau); }
-
+        { Vector3 eBA(a2-a1), eDC(a4-a3), eCB(a3-a2);
+          double CBNorm = eCB.norm();
+          Vector3 DCxCB(eDC.cross(eCB));
+          Vector3 CBxBA(eCB.cross(eBA));
+          return atan2(CBNorm * eDC.dot(eCB.cross(eBA)), DCxCB.dot(CBxBA));}
 public:
     /**
      * The type of CoordEntry specialization
