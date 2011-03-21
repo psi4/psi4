@@ -633,9 +633,9 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
     double x = molecule_->x(center);
     double y = molecule_->y(center);
     double z = molecule_->z(center);
-    double mass = molecule_->fmass(center);
-    double charge = molecule_->fcharge(center);
-    std::string lab = molecule_->flabel(center);
+    double mass = molecule_->mass(center);
+    double charge = molecule_->charge(center);
+    std::string lab = molecule_->label(center);
     char* label = new char[lab.length() + 1];
     strcpy(label,lab.c_str());
 
