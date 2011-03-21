@@ -66,6 +66,12 @@ void SAPT0::ind20rA_B()
   double *tAR_old = init_array(noccA_*nvirA_);
   double *tAR_new = init_array(noccA_*nvirA_);
 
+  int nthreads = 1;
+#ifdef _OPENMP
+  nthreads = omp_get_max_threads();
+#endif
+  int rank = 0;
+
   for (int a=0, ar=0; a<noccA_; a++) {
     for (int r=0; r<nvirA_; r++, ar++) {
       tAR_old[ar] = wBAR_[a][r]/(evalsA_[a] - evalsA_[r+noccA_]);
@@ -91,12 +97,14 @@ void SAPT0::ind20rA_B()
   SAPTDFInts C_p_RR = set_C_RR();
 
   double *X = init_array(ndf_);
-  double **xAA = block_matrix(noccA_,noccA_);
-  double **xAR = block_matrix(noccA_,nvirA_);
+  double **xAA = block_matrix(nthreads,noccA_*noccA_);
+  double **xAR = block_matrix(nthreads,noccA_*nvirA_);
+  double **tAR_dump = block_matrix(nthreads,noccA_*nvirA_);
 
   do {
 
     memset(&(tAR_new[0]),'\0',sizeof(double)*noccA_*nvirA_);
+    memset(&(tAR_dump[0][0]),'\0',sizeof(double)*nthreads*noccA_*nvirA_);
 
     if (iter > 2) {
       memset(&(tAR_old[0]),'\0',sizeof(double)*noccA_*nvirA_);
@@ -113,13 +121,21 @@ void SAPT0::ind20rA_B()
       C_DGEMV('t',AR_iter.curr_size,noccA_*nvirA_,4.0,&(C_p_AR.B_p_[0][0]),
         noccA_*nvirA_,&(X[0]),1,1.0,tAR_new,1);
 
+#pragma omp parallel
+{
+#pragma omp for private(rank)
       for (int j=0; j<AR_iter.curr_size; j++) {
-        C_DGEMM('N','T',noccA_,noccA_,nvirA_,1.0,&(C_p_AR.B_p_[j][0]),nvirA_,
-          tAR_old,nvirA_,0.0,xAA[0],noccA_);
-        C_DGEMM('N','N',noccA_,nvirA_,noccA_,-1.0,xAA[0],noccA_,
-          &(C_p_AR.B_p_[j][0]),nvirA_,1.0,tAR_new,nvirA_);
-      }
 
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif
+
+        C_DGEMM('N','T',noccA_,noccA_,nvirA_,1.0,&(C_p_AR.B_p_[j][0]),nvirA_,
+          tAR_old,nvirA_,0.0,xAA[rank],noccA_);
+        C_DGEMM('N','N',noccA_,nvirA_,noccA_,-1.0,xAA[rank],noccA_,
+          &(C_p_AR.B_p_[j][0]),nvirA_,1.0,tAR_dump[rank],nvirA_);
+      }
+}
       off += AR_iter.curr_size;
     }
 
@@ -130,18 +146,29 @@ void SAPT0::ind20rA_B()
     for (int i=0, off=0; i<RR_iter.num_blocks; i++) {
       read_block(&RR_iter,&C_p_AA,&C_p_RR);
 
+#pragma omp parallel
+{
+#pragma omp for private(rank)
       for (int j=0; j<RR_iter.curr_size; j++) {
-        C_DGEMM('N','N',noccA_,nvirA_,nvirA_,1.0,tAR_old,nvirA_,
-          &(C_p_RR.B_p_[j][0]),nvirA_,0.0,xAR[0],nvirA_);
-        C_DGEMM('N','N',noccA_,nvirA_,noccA_,-1.0,&(C_p_AA.B_p_[j][0]),noccA_,
-          xAR[0],nvirA_,1.0,tAR_new,nvirA_);
-      }
+ 
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif
 
+        C_DGEMM('N','N',noccA_,nvirA_,nvirA_,1.0,tAR_old,nvirA_,
+          &(C_p_RR.B_p_[j][0]),nvirA_,0.0,xAR[rank],nvirA_);
+        C_DGEMM('N','N',noccA_,nvirA_,noccA_,-1.0,&(C_p_AA.B_p_[j][0]),noccA_,
+          xAR[rank],nvirA_,1.0,tAR_dump[rank],nvirA_);
+      }
+}
       off += RR_iter.curr_size;
     }
 
     C_p_AA.clear();
     C_p_RR.clear();
+
+    for (int n=0; n<nthreads; n++) 
+      C_DAXPY(noccA_*nvirA_,1.0,tAR_dump[n],1,tAR_new,1);
 
     C_DAXPY(noccA_*nvirA_,1.0,&(wBAR_[0][0]),1,tAR_new,1);
 
@@ -178,8 +205,7 @@ void SAPT0::ind20rA_B()
       fprintf(outfile,"\n    CHF Iterations converged\n\n");
     }
   else {
-    if (print_)
-      fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
     }
 
   CHFA_ = block_matrix(noccA_,nvirA_);
@@ -201,6 +227,12 @@ void SAPT0::ind20rB_A()
   double conv,dE;
   double *tBS_old = init_array(noccB_*nvirB_);
   double *tBS_new = init_array(noccB_*nvirB_);
+
+  int nthreads = 1;
+#ifdef _OPENMP
+  nthreads = omp_get_max_threads();
+#endif
+  int rank = 0;
 
   for (int b=0, bs=0; b<noccB_; b++) {
     for (int s=0; s<nvirB_; s++, bs++) {
@@ -227,12 +259,14 @@ void SAPT0::ind20rB_A()
   SAPTDFInts C_p_SS = set_C_SS();
 
   double *X = init_array(ndf_);
-  double **xBB = block_matrix(noccB_,noccB_);
-  double **xBS = block_matrix(noccB_,nvirB_);
+  double **xBB = block_matrix(nthreads,noccB_*noccB_);
+  double **xBS = block_matrix(nthreads,noccB_*nvirB_);
+  double **tBS_dump = block_matrix(nthreads,noccB_*nvirB_);
 
   do {
 
     memset(&(tBS_new[0]),'\0',sizeof(double)*noccB_*nvirB_);
+    memset(&(tBS_dump[0][0]),'\0',sizeof(double)*nthreads*noccB_*nvirB_);
 
     if (iter > 2) {
       memset(&(tBS_old[0]),'\0',sizeof(double)*noccB_*nvirB_);
@@ -249,13 +283,21 @@ void SAPT0::ind20rB_A()
       C_DGEMV('t',BS_iter.curr_size,noccB_*nvirB_,4.0,&(C_p_BS.B_p_[0][0]),
         noccB_*nvirB_,&(X[0]),1,1.0,tBS_new,1);
 
+#pragma omp parallel
+{
+#pragma omp for private(rank)
       for (int j=0; j<BS_iter.curr_size; j++) {
-        C_DGEMM('N','T',noccB_,noccB_,nvirB_,1.0,&(C_p_BS.B_p_[j][0]),nvirB_,
-          tBS_old,nvirB_,0.0,xBB[0],noccB_);
-        C_DGEMM('N','N',noccB_,nvirB_,noccB_,-1.0,xBB[0],noccB_,
-          &(C_p_BS.B_p_[j][0]),nvirB_,1.0,tBS_new,nvirB_);
-      }
 
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif
+
+        C_DGEMM('N','T',noccB_,noccB_,nvirB_,1.0,&(C_p_BS.B_p_[j][0]),nvirB_,
+          tBS_old,nvirB_,0.0,xBB[rank],noccB_);
+        C_DGEMM('N','N',noccB_,nvirB_,noccB_,-1.0,xBB[rank],noccB_,
+          &(C_p_BS.B_p_[j][0]),nvirB_,1.0,tBS_dump[rank],nvirB_);
+      }
+}
       off += BS_iter.curr_size;
     }
 
@@ -266,18 +308,29 @@ void SAPT0::ind20rB_A()
     for (int i=0, off=0; i<SS_iter.num_blocks; i++) {
       read_block(&SS_iter,&C_p_BB,&C_p_SS);
 
+#pragma omp parallel
+{
+#pragma omp for private(rank)
       for (int j=0; j<SS_iter.curr_size; j++) {
-        C_DGEMM('N','N',noccB_,nvirB_,nvirB_,1.0,tBS_old,nvirB_,
-          &(C_p_SS.B_p_[j][0]),nvirB_,0.0,xBS[0],nvirB_);
-        C_DGEMM('N','N',noccB_,nvirB_,noccB_,-1.0,&(C_p_BB.B_p_[j][0]),noccB_,
-          xBS[0],nvirB_,1.0,tBS_new,nvirB_);
-      }
 
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif
+
+        C_DGEMM('N','N',noccB_,nvirB_,nvirB_,1.0,tBS_old,nvirB_,
+          &(C_p_SS.B_p_[j][0]),nvirB_,0.0,xBS[rank],nvirB_);
+        C_DGEMM('N','N',noccB_,nvirB_,noccB_,-1.0,&(C_p_BB.B_p_[j][0]),noccB_,
+          xBS[rank],nvirB_,1.0,tBS_dump[rank],nvirB_);
+      }
+}
       off += SS_iter.curr_size;
     }
 
     C_p_BB.clear();
     C_p_SS.clear();
+
+    for (int n=0; n<nthreads; n++)
+      C_DAXPY(noccB_*nvirB_,1.0,tBS_dump[n],1,tBS_new,1);
 
     C_DAXPY(noccB_*nvirB_,1.0,&(wABS_[0][0]),1,tBS_new,1);
 
@@ -314,8 +367,7 @@ void SAPT0::ind20rB_A()
       fprintf(outfile,"\n    CHF Iterations converged\n\n");
     }
   else {
-    if (print_)
-      fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
     }
 
   CHFB_ = block_matrix(noccB_,nvirB_);

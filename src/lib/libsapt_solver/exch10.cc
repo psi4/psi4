@@ -6,6 +6,12 @@ void SAPT0::exch10_s2()
 { 
   double ex1 = 0.0, ex2 = 0.0, ex3 = 0.0, ex4 = 0.0, ex5 = 0.0, ex6 = 0.0;
 
+  int nthreads = 1;
+#ifdef _OPENMP
+  nthreads = omp_get_max_threads();
+#endif
+  int rank = 0;
+
   SAPTDFInts A_p_AA = set_A_AA();
   SAPTDFInts B_p_BB = set_B_BB();
   SAPTDFInts A_p_AB = set_A_AB();
@@ -15,7 +21,7 @@ void SAPT0::exch10_s2()
 
   for (int i=0; i<E1_iter.num_blocks; i++) {
     read_block(&E1_iter,&A_p_AB,&B_p_AB);
-    ex1 += C_DDOT(E1_iter.curr_size*noccA_*noccB_,A_p_AB.B_p_[0],1,
+    ex1 += C_DDOT((long int) E1_iter.curr_size*noccA_*noccB_,A_p_AB.B_p_[0],1,
       B_p_AB.B_p_[0],1); 
   }
 
@@ -23,19 +29,30 @@ void SAPT0::exch10_s2()
   B_p_AB.clear();
 
   double *Ap_diag = init_array(ndf_+3);
-  double **X_AA = block_matrix(noccA_,noccA_);
+  double **X_AA = block_matrix(nthreads,noccA_*noccA_);
 
   Iterator E2_iter = get_iterator(mem_,&A_p_AA,&B_p_AB);
 
   for (int i=0, off=0; i<E2_iter.num_blocks; i++) {
     read_block(&E2_iter,&A_p_AA,&B_p_AB);
+
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex2)
     for (int j=0; j<E2_iter.curr_size; j++) {
+
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif 
+
       C_DGEMM('N','T',noccA_,noccA_,noccB_,1.0,B_p_AB.B_p_[j],noccB_,
-        sAB_[0],nmo_,0.0,X_AA[0],noccA_);
-      ex2 -= C_DDOT(noccA_*noccA_,X_AA[0],1,A_p_AA.B_p_[j],1);
-      for (int a=0; a<noccA_; a++) {
-        Ap_diag[j+off] += X_AA[a][a];
+        sAB_[0],nmo_,0.0,X_AA[rank],noccA_);
+      ex2 -= C_DDOT(noccA_*noccA_,X_AA[rank],1,A_p_AA.B_p_[j],1);
+      for (int a=0,aa=0; a<noccA_; a++, aa += noccA_+1) {
+        Ap_diag[j+off] += X_AA[rank][aa];
     }}
+}
+
     off += E2_iter.curr_size;
   }
 
@@ -48,19 +65,30 @@ void SAPT0::exch10_s2()
   B_p_AB.done();
 
   double *Bp_diag = init_array(ndf_+3);
-  double **X_BB = block_matrix(noccB_,noccB_);
+  double **X_BB = block_matrix(nthreads,noccB_*noccB_);
 
   Iterator E3_iter = get_iterator(mem_,&A_p_AB,&B_p_BB);
 
   for (int i=0, off=0; i<E3_iter.num_blocks; i++) {
     read_block(&E3_iter,&A_p_AB,&B_p_BB);
+
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex3)
     for (int j=0; j<E3_iter.curr_size; j++) {
+
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif
+
       C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,A_p_AB.B_p_[j],noccB_,
-        sAB_[0],nmo_,0.0,X_BB[0],noccB_);
-      ex3 -= C_DDOT(noccB_*noccB_,X_BB[0],1,B_p_BB.B_p_[j],1);
-      for (int b=0; b<noccB_; b++) {
-        Bp_diag[j+off] += X_BB[b][b];
+        sAB_[0],nmo_,0.0,X_BB[rank],noccB_);
+      ex3 -= C_DDOT(noccB_*noccB_,X_BB[rank],1,B_p_BB.B_p_[j],1);
+      for (int b=0,bb=0; b<noccB_; b++, bb += noccB_+1) {
+        Bp_diag[j+off] += X_BB[rank][bb];
     }}
+}
+
     off += E3_iter.curr_size;
   }
 
@@ -72,73 +100,60 @@ void SAPT0::exch10_s2()
   A_p_AB.done();
   B_p_BB.clear();
 
-  double **S_BB = block_matrix(noccB_,noccB_);
-
-  C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,&(sAB_[0][0]),nmo_,&(sAB_[0][0]),
-    nmo_,0.0,&(S_BB[0][0]),noccB_);
-
-  double *BB_ints = init_array(ndf_+3);
-
-  Iterator E4_iter = get_iterator(mem_,&B_p_BB);
-
-  for (int i=0,off=0; i<E4_iter.num_blocks; i++) {
-    read_block(&E4_iter,&B_p_BB);
-
-    C_DGEMV('n',E4_iter.curr_size,noccB_*noccB_,1.0,&(B_p_BB.B_p_[0][0]),
-      noccB_*noccB_,S_BB[0],1,0.0,&(BB_ints[off]),1);
-
-    off += E4_iter.curr_size;
-  }
-
-  ex4 = 2.0*C_DDOT(ndf_+3,BB_ints,1,diagAA_,1);
-
-  B_p_BB.clear();
-  free_block(S_BB);
-  free(BB_ints);
-
   double **S_AA = block_matrix(noccA_,noccA_);
 
   C_DGEMM('N','T',noccA_,noccA_,noccB_,1.0,&(sAB_[0][0]),nmo_,&(sAB_[0][0]),
     nmo_,0.0,&(S_AA[0][0]),noccA_);
 
+  double **S_BB = block_matrix(noccB_,noccB_);
+
+  C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,&(sAB_[0][0]),nmo_,&(sAB_[0][0]),
+    nmo_,0.0,&(S_BB[0][0]),noccB_);
+
+  double **A_AB = block_matrix(nthreads,noccA_*noccB_);
+  double **B_AB = block_matrix(nthreads,noccA_*noccB_);
   double *AA_ints = init_array(ndf_+3);
+  double *BB_ints = init_array(ndf_+3);
+  Iterator E4_iter = get_iterator(mem_,&A_p_AA,&B_p_BB);
 
-  Iterator E5_iter = get_iterator(mem_,&A_p_AA);
+  for (int i=0, off=0; i<E4_iter.num_blocks; i++) {
+    read_block(&E4_iter,&A_p_AA,&B_p_BB);
 
-  for (int i=0,off=0; i<E5_iter.num_blocks; i++) {
-    read_block(&E5_iter,&A_p_AA);
-
-    C_DGEMV('n',E5_iter.curr_size,noccA_*noccA_,1.0,&(A_p_AA.B_p_[0][0]),
+    C_DGEMV('n',E4_iter.curr_size,noccA_*noccA_,1.0,&(A_p_AA.B_p_[0][0]),
       noccA_*noccA_,S_AA[0],1,0.0,&(AA_ints[off]),1);
-    
-    off += E5_iter.curr_size;
-  }
+    C_DGEMV('n',E4_iter.curr_size,noccB_*noccB_,1.0,&(B_p_BB.B_p_[0][0]),
+      noccB_*noccB_,S_BB[0],1,0.0,&(BB_ints[off]),1);
 
-  ex5 = 2.0*C_DDOT(ndf_+3,AA_ints,1,diagBB_,1);
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex6)
+    for (int j=0; j<E4_iter.curr_size; j++) {
 
-  A_p_AA.clear();
-  free_block(S_AA);
-  free(AA_ints);
+#ifdef _OPENMP
+      rank = omp_get_thread_num();
+#endif
 
-  double **A_AB = block_matrix(noccA_,noccB_);
-  double **B_AB = block_matrix(noccA_,noccB_);
-
-  Iterator E6_iter = get_iterator(mem_,&A_p_AA,&B_p_BB);
-
-  for (int i=0, off=0; i<E6_iter.num_blocks; i++) {
-    read_block(&E6_iter,&A_p_AA,&B_p_BB);
-    for (int j=0; j<E6_iter.curr_size; j++) {
       C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,A_p_AA.B_p_[j],noccA_,
-        sAB_[0],nmo_,0.0,A_AB[0],noccB_);
+        sAB_[0],nmo_,0.0,A_AB[rank],noccB_);
       C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,sAB_[0],nmo_,
-        B_p_BB.B_p_[j],noccB_,0.0,B_AB[0],noccB_);
-      ex6 += C_DDOT(noccA_*noccB_,A_AB[0],1,B_AB[0],1);
+        B_p_BB.B_p_[j],noccB_,0.0,B_AB[rank],noccB_);
+      ex6 += C_DDOT(noccA_*noccB_,A_AB[rank],1,B_AB[rank],1);
     }
-    off += E6_iter.curr_size;
+}
+    off += E4_iter.curr_size;
   }
+
+  ex4 = 2.0*C_DDOT(ndf_+3,BB_ints,1,diagAA_,1);
+  ex5 = 2.0*C_DDOT(ndf_+3,AA_ints,1,diagBB_,1);
 
   A_p_AA.done();
   B_p_BB.done();
+
+  free_block(S_AA);
+  free_block(S_BB);
+
+  free(AA_ints);
+  free(BB_ints);
   free_block(A_AB);
   free_block(B_AB);
 
@@ -162,6 +177,12 @@ void SAPT0::exch10_s2()
 void SAPT0::exch10()
 {
   double ex1=0, ex2=0, ex3=0, ex4=0, ex5=0, ex6=0, ex7=0, ex8=0, ex9=0;
+
+  int nthreads = 1;
+#ifdef _OPENMP
+  nthreads = omp_get_max_threads();
+#endif
+  int rank = 0;
 
   double **P = block_matrix(noccA_+noccB_,noccA_+noccB_);
 
@@ -203,11 +224,13 @@ void SAPT0::exch10()
 
   free_block(P);
 
+  double *W = init_array(ndf_+3);
   double *X = init_array(ndf_+3);
   double *Y = init_array(ndf_+3);
+  double *Z = init_array(ndf_+3);
 
-  double **xAB = block_matrix(noccA_,noccB_);
-  double **yAB = block_matrix(noccA_,noccB_);
+  double **xAB = block_matrix(nthreads,noccA_*noccB_);
+  double **yAB = block_matrix(nthreads,noccA_*noccB_);
 
   SAPTDFInts A_p_AA = set_A_AA();
   SAPTDFInts B_p_BB = set_B_BB();
@@ -216,287 +239,148 @@ void SAPT0::exch10()
 
   Iterator E1_iter = get_iterator(mem_,&A_p_AB,&B_p_AB);
 
-  for (int i=0; i<E1_iter.num_blocks; i++) {
+  for (int i=0, off=0; i<E1_iter.num_blocks; i++) {
     read_block(&E1_iter,&A_p_AB,&B_p_AB);
-    ex1 += C_DDOT(E1_iter.curr_size*noccA_*noccB_,A_p_AB.B_p_[0],1,
+    ex1 += C_DDOT((long int) E1_iter.curr_size*noccA_*noccB_,A_p_AB.B_p_[0],1,
       B_p_AB.B_p_[0],1);
+
+    C_DGEMV('n',E1_iter.curr_size,noccA_*noccB_,1.0,&(B_p_AB.B_p_[0][0]),
+      noccA_*noccB_,pAB[0],1,0.0,&(W[off]),1);
+
+    C_DGEMV('n',E1_iter.curr_size,noccA_*noccB_,1.0,&(A_p_AB.B_p_[0][0]),
+      noccA_*noccB_,pAB[0],1,0.0,&(X[off]),1);
+
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex2,ex3,ex8)
+    for (int j=0; j<E1_iter.curr_size; j++) {
+
+#ifdef _OPENMP 
+      rank = omp_get_thread_num();
+#endif
+
+      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,pAA[0],noccA_,
+        A_p_AB.B_p_[j],noccB_,0.0,xAB[rank],noccB_);
+      ex2 += C_DDOT(noccA_*noccB_,xAB[rank],1,B_p_AB.B_p_[j],1);
+
+      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,B_p_AB.B_p_[j],noccB_,
+        pBB[0],noccB_,0.0,yAB[rank],noccB_);
+      ex3 += C_DDOT(noccA_*noccB_,yAB[rank],1,A_p_AB.B_p_[j],1);
+
+      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,xAB[rank],noccB_,
+        pBB[0],noccB_,0.0,yAB[rank],noccB_);
+      ex8 += C_DDOT(noccA_*noccB_,yAB[rank],1,B_p_AB.B_p_[j],1);
+    }
+}
+    off += E1_iter.curr_size;
   }
+
+  ex4 -= 2.0*C_DDOT(ndf_+3,W,1,diagAA_,1);
+  ex5 -= 2.0*C_DDOT(ndf_+3,X,1,diagBB_,1);
+  ex9 -= 2.0*C_DDOT(ndf_+3,W,1,X,1);
 
   A_p_AB.clear();
   B_p_AB.clear();
 
-  Iterator E2_iter = get_iterator(mem_,&A_p_AA);
+  Iterator E2_iter = get_iterator(mem_,&A_p_AA,&B_p_BB);
   
   for (int i=0, off=0; i<E2_iter.num_blocks; i++) {
-    read_block(&E2_iter,&A_p_AA);
+    read_block(&E2_iter,&A_p_AA,&B_p_BB);
 
     C_DGEMV('n',E2_iter.curr_size,noccA_*noccA_,1.0,&(A_p_AA.B_p_[0][0]),
-      noccA_*noccA_,pAA[0],1,0.0,&(X[off]),1);
+      noccA_*noccA_,pAA[0],1,0.0,&(Y[off]),1);
 
+    C_DGEMV('n',E2_iter.curr_size,noccB_*noccB_,1.0,&(B_p_BB.B_p_[0][0]),
+      noccB_*noccB_,pBB[0],1,0.0,&(Z[off]),1);
+
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex9)
+    for (int j=0; j<E2_iter.curr_size; j++) {
+
+#ifdef _OPENMP 
+      rank = omp_get_thread_num();
+#endif
+
+      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,A_p_AA.B_p_[j],noccA_,
+        pAB[0],noccB_,0.0,xAB[rank],noccB_);
+      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,pAB[0],noccB_,
+        B_p_BB.B_p_[j],noccB_,0.0,yAB[rank],noccB_);
+      ex9 += C_DDOT(noccA_*noccB_,xAB[rank],1,yAB[rank],1);
+    }
+}
     off += E2_iter.curr_size;
   }
   
-  ex2 = -2.0*C_DDOT(ndf_+3,X,1,diagBB_,1);
+  ex2 += -2.0*C_DDOT(ndf_+3,Y,1,diagBB_,1);
+  ex3 += -2.0*C_DDOT(ndf_+3,Z,1,diagAA_,1);
+  ex6 += -2.0*C_DDOT(ndf_+3,X,1,Z,1);
+  ex7 += -2.0*C_DDOT(ndf_+3,W,1,Y,1);
+  ex8 += -2.0*C_DDOT(ndf_+3,Y,1,Z,1);
 
   A_p_AA.clear();
-
-  Iterator E3_iter = get_iterator(mem_,&A_p_AB,&B_p_AB);
-
-  for (int i=0, off=0; i<E3_iter.num_blocks; i++) {
-    read_block(&E3_iter,&A_p_AB,&B_p_AB);
-    for (int j=0; j<E3_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,pAA[0],noccA_,
-        A_p_AB.B_p_[j],noccB_,0.0,xAB[0],noccB_);
-      ex2 += C_DDOT(noccA_*noccB_,xAB[0],1,B_p_AB.B_p_[j],1);
-  }}
-
-  A_p_AB.clear();
-  B_p_AB.clear();
-
-  Iterator E4_iter = get_iterator(mem_,&B_p_BB);
-
-  for (int i=0, off=0; i<E4_iter.num_blocks; i++) {
-    read_block(&E4_iter,&B_p_BB);
-
-    C_DGEMV('n',E4_iter.curr_size,noccB_*noccB_,1.0,&(B_p_BB.B_p_[0][0]),
-      noccB_*noccB_,pBB[0],1,0.0,&(X[off]),1);
-
-    off += E4_iter.curr_size;
-  }
-
-  ex3 = -2.0*C_DDOT(ndf_+3,X,1,diagAA_,1);
-
   B_p_BB.clear();
 
-  Iterator E5_iter = get_iterator(mem_,&A_p_AB,&B_p_AB);
-
-  for (int i=0, off=0; i<E5_iter.num_blocks; i++) {
-    read_block(&E5_iter,&A_p_AB,&B_p_AB);
-    for (int j=0; j<E5_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,B_p_AB.B_p_[j],noccB_,
-        pBB[0],noccB_,0.0,xAB[0],noccB_);
-      ex3 += C_DDOT(noccA_*noccB_,xAB[0],1,A_p_AB.B_p_[j],1);
-  }}
-
-  A_p_AB.clear();
-  B_p_AB.clear();
-
-  Iterator E6_iter = get_iterator(mem_,&A_p_AA,&B_p_AB);
-
-  for (int i=0, off=0; i<E6_iter.num_blocks; i++) {
-    read_block(&E6_iter,&A_p_AA,&B_p_AB);
-
-    C_DGEMV('n',E6_iter.curr_size,noccA_*noccB_,1.0,&(B_p_AB.B_p_[0][0]),
-      noccA_*noccB_,pAB[0],1,0.0,&(X[off]),1);
-
-    for (int j=0; j<E6_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,A_p_AA.B_p_[j],noccA_,
-        pAB[0],noccB_,0.0,xAB[0],noccB_);
-      ex4 += C_DDOT(noccA_*noccB_,xAB[0],1,B_p_AB.B_p_[j],1);
-    }
-    off += E6_iter.curr_size;
-  }
-
-  ex4 -= 2.0*C_DDOT(ndf_+3,X,1,diagAA_,1);
-
-  A_p_AA.clear();
-  B_p_AB.clear();
-
-  Iterator E7_iter = get_iterator(mem_,&A_p_AB,&B_p_BB);
-
-  for (int i=0, off=0; i<E7_iter.num_blocks; i++) {
-    read_block(&E7_iter,&A_p_AB,&B_p_BB);
-    
-    C_DGEMV('n',E7_iter.curr_size,noccA_*noccB_,1.0,&(A_p_AB.B_p_[0][0]),
-      noccA_*noccB_,pAB[0],1,0.0,&(X[off]),1);
-    
-    for (int j=0; j<E7_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,pAB[0],noccB_,
-        B_p_BB.B_p_[j],noccB_,0.0,xAB[0],noccB_);
-      ex5 += C_DDOT(noccA_*noccB_,xAB[0],1,A_p_AB.B_p_[j],1);
-    }
-    off += E7_iter.curr_size;
-  }
-
-  ex5 -= 2.0*C_DDOT(ndf_+3,X,1,diagBB_,1);
-
-  A_p_AB.clear();
-  B_p_BB.clear();
-
-  Iterator E8_iter = get_iterator(mem_,&A_p_AB);
-
-  for (int i=0, off=0; i<E8_iter.num_blocks; i++) {
-    read_block(&E8_iter,&A_p_AB);
-
-    C_DGEMV('n',E8_iter.curr_size,noccA_*noccB_,1.0,&(A_p_AB.B_p_[0][0]),
-      noccA_*noccB_,pAB[0],1,0.0,&(X[off]),1);
-
-    off += E8_iter.curr_size;
-  }
-
-  A_p_AB.clear();
-
-  Iterator E9_iter = get_iterator(mem_,&B_p_BB);
-
-  for (int i=0, off=0; i<E9_iter.num_blocks; i++) {
-    read_block(&E9_iter,&B_p_BB);
-
-    C_DGEMV('n',E9_iter.curr_size,noccB_*noccB_,1.0,&(B_p_BB.B_p_[0][0]),
-      noccB_*noccB_,pBB[0],1,0.0,&(Y[off]),1);
-
-    off += E9_iter.curr_size;
-  }
-
-  ex6 = -2.0*C_DDOT(ndf_+3,X,1,Y,1);
-
-  B_p_BB.clear();
-
-  Iterator E10_iter = get_iterator(mem_,&A_p_AB,&B_p_BB);
-
-  for (int i=0, off=0; i<E10_iter.num_blocks; i++) {
-    read_block(&E10_iter,&A_p_AB,&B_p_BB);
-    for (int j=0; j<E10_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,pAB[0],noccB_,
-        B_p_BB.B_p_[j],noccB_,0.0,xAB[0],noccB_);
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,xAB[0],noccB_,
-        pBB[0],noccB_,0.0,yAB[0],noccB_);
-      ex6 += C_DDOT(noccA_*noccB_,yAB[0],1,A_p_AB.B_p_[j],1);
-  }}
-
-  A_p_AB.clear();
-  B_p_BB.clear();
-
-  Iterator E11_iter = get_iterator(mem_,&A_p_AA);
-
-  for (int i=0, off=0; i<E11_iter.num_blocks; i++) {
-    read_block(&E11_iter,&A_p_AA);
-
-    C_DGEMV('n',E11_iter.curr_size,noccA_*noccA_,1.0,&(A_p_AA.B_p_[0][0]),
-      noccA_*noccA_,pAA[0],1,0.0,&(X[off]),1);
-
-    off += E11_iter.curr_size;
-  }
-
-  A_p_AA.clear();
-
-  Iterator E12_iter = get_iterator(mem_,&B_p_AB);
-
-  for (int i=0, off=0; i<E12_iter.num_blocks; i++) {
-    read_block(&E12_iter,&B_p_AB);
-
-    C_DGEMV('n',E12_iter.curr_size,noccA_*noccB_,1.0,&(B_p_AB.B_p_[0][0]),
-      noccA_*noccB_,pAB[0],1,0.0,&(Y[off]),1);
-
-    off += E12_iter.curr_size;
-  }
-
-  ex7 = -2.0*C_DDOT(ndf_+3,X,1,Y,1);
-
-  B_p_AB.clear();
-
-  Iterator E13_iter = get_iterator(mem_,&A_p_AA,&B_p_AB);
-
-  for (int i=0, off=0; i<E13_iter.num_blocks; i++) {
-    read_block(&E13_iter,&A_p_AA,&B_p_AB);
-    for (int j=0; j<E13_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,A_p_AA.B_p_[j],noccA_,
-        pAB[0],noccB_,0.0,xAB[0],noccB_);
-      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,pAA[0],noccA_,
-        xAB[0],noccB_,0.0,yAB[0],noccB_);
-      ex7 += C_DDOT(noccA_*noccB_,yAB[0],1,B_p_AB.B_p_[j],1);
-  }}
+  Iterator E3_iter = get_iterator(mem_,&A_p_AA,&B_p_AB);
   
-  A_p_AA.clear();
-  B_p_AB.clear();
+  for (int i=0; i<E3_iter.num_blocks; i++) {
+    read_block(&E3_iter,&A_p_AA,&B_p_AB);
 
-  Iterator E14_iter = get_iterator(mem_,&A_p_AA);
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex4,ex7)
+    for (int j=0; j<E3_iter.curr_size; j++) {
 
-  for (int i=0, off=0; i<E14_iter.num_blocks; i++) {
-    read_block(&E14_iter,&A_p_AA);
+#ifdef _OPENMP 
+      rank = omp_get_thread_num();
+#endif
 
-    C_DGEMV('n',E14_iter.curr_size,noccA_*noccA_,1.0,&(A_p_AA.B_p_[0][0]),
-      noccA_*noccA_,pAA[0],1,0.0,&(X[off]),1);
-
-    off += E14_iter.curr_size;
-  }
-
-  A_p_AA.clear();
-
-  Iterator E15_iter = get_iterator(mem_,&B_p_BB);
-
-  for (int i=0, off=0; i<E15_iter.num_blocks; i++) {
-    read_block(&E15_iter,&B_p_BB);
-
-    C_DGEMV('n',E15_iter.curr_size,noccB_*noccB_,1.0,&(B_p_BB.B_p_[0][0]),
-      noccB_*noccB_,pBB[0],1,0.0,&(Y[off]),1);
-
-    off += E15_iter.curr_size;
-  }
-
-  ex8 = -2.0*C_DDOT(ndf_+3,X,1,Y,1);
-
-  B_p_BB.clear();
-
-  Iterator E16_iter = get_iterator(mem_,&A_p_AB,&B_p_AB);
-
-  for (int i=0, off=0; i<E16_iter.num_blocks; i++) {
-    read_block(&E16_iter,&A_p_AB,&B_p_AB);
-    for (int j=0; j<E16_iter.curr_size; j++) {
-      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,pAA[0],noccA_,
-        A_p_AB.B_p_[j],noccB_,0.0,xAB[0],noccB_);
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,xAB[0],noccB_,
-        pBB[0],noccB_,0.0,yAB[0],noccB_);
-      ex8 += C_DDOT(noccA_*noccB_,yAB[0],1,B_p_AB.B_p_[j],1);
-  }}
-
-  A_p_AB.clear();
-  B_p_AB.clear();
-
-  Iterator E17_iter = get_iterator(mem_,&A_p_AB);
-
-  for (int i=0, off=0; i<E17_iter.num_blocks; i++) {
-    read_block(&E17_iter,&A_p_AB);
-
-    C_DGEMV('n',E17_iter.curr_size,noccA_*noccB_,1.0,&(A_p_AB.B_p_[0][0]),
-      noccA_*noccB_,pAB[0],1,0.0,&(X[off]),1);
-
-    off += E17_iter.curr_size;
-  }
-
-  A_p_AB.done();
-
-  Iterator E18_iter = get_iterator(mem_,&B_p_AB);
-
-  for (int i=0, off=0; i<E18_iter.num_blocks; i++) {
-    read_block(&E18_iter,&B_p_AB);
-
-    C_DGEMV('n',E18_iter.curr_size,noccA_*noccB_,1.0,&(B_p_AB.B_p_[0][0]),
-      noccA_*noccB_,pAB[0],1,0.0,&(Y[off]),1);
-
-    off += E18_iter.curr_size;
-  }
-
-  ex9 = -2.0*C_DDOT(ndf_+3,X,1,Y,1);
-
-  B_p_AB.done();
-
-  Iterator E19_iter = get_iterator(mem_,&A_p_AA,&B_p_BB);
-
-  for (int i=0, off=0; i<E19_iter.num_blocks; i++) {
-    read_block(&E19_iter,&A_p_AA,&B_p_BB);
-    for (int j=0; j<E19_iter.curr_size; j++) {
       C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,A_p_AA.B_p_[j],noccA_,
-        pAB[0],noccB_,0.0,xAB[0],noccB_);
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,pAB[0],noccB_,
-        B_p_BB.B_p_[j],noccB_,0.0,yAB[0],noccB_);
-      ex9 += C_DDOT(noccA_*noccB_,xAB[0],1,yAB[0],1);
-  }}
+        pAB[0],noccB_,0.0,xAB[rank],noccB_);
+      ex4 += C_DDOT(noccA_*noccB_,xAB[rank],1,B_p_AB.B_p_[j],1);
+
+      C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,pAA[0],noccA_,
+        xAB[rank],noccB_,0.0,yAB[rank],noccB_);
+      ex7 += C_DDOT(noccA_*noccB_,yAB[rank],1,B_p_AB.B_p_[j],1);
+    }
+}
+  }
 
   A_p_AA.done();
+  B_p_AB.done();
+
+  Iterator E4_iter = get_iterator(mem_,&A_p_AB,&B_p_BB);
+  
+  for (int i=0; i<E4_iter.num_blocks; i++) {
+    read_block(&E4_iter,&A_p_AB,&B_p_BB);
+    
+#pragma omp parallel
+{
+#pragma omp for private(rank) reduction(+:ex5,ex6)
+    for (int j=0; j<E4_iter.curr_size; j++) {
+
+#ifdef _OPENMP 
+      rank = omp_get_thread_num();
+#endif
+
+      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,pAB[0],noccB_,
+        B_p_BB.B_p_[j],noccB_,0.0,xAB[rank],noccB_);
+      ex5 += C_DDOT(noccA_*noccB_,xAB[rank],1,A_p_AB.B_p_[j],1);
+
+      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,xAB[rank],noccB_,
+        pBB[0],noccB_,0.0,yAB[rank],noccB_);
+      ex6 += C_DDOT(noccA_*noccB_,yAB[rank],1,A_p_AB.B_p_[j],1);
+    }
+}
+  } 
+
+  A_p_AB.done();
   B_p_BB.done();
 
+  free(W);
   free(X);
   free(Y);
+  free(Z);
   free_block(xAB);
   free_block(yAB);
 

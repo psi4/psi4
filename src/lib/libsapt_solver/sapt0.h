@@ -44,8 +44,6 @@ private:
   SAPTDFInts set_act_C_AR();
   SAPTDFInts set_act_C_BS();
 
-//SAPTDFInts set_act_A_AS();
-//SAPTDFInts set_act_B_RB();
   SAPTDFInts set_H2_BS();
   SAPTDFInts set_H2_AS();
   SAPTDFInts set_H4_AR();
@@ -69,6 +67,8 @@ private:
 
   void ind20rA_B();
   void ind20rB_A();
+
+  void get_denom();
 
   void arbs();
   void v1();
