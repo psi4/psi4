@@ -31,7 +31,7 @@ def process_option(spaces, module, key, value, line):
         temp = '%s %s)' % (command_string, value[1:])
     else:
         # This must contain only alphanumeric (plus -,* for basis sets) or it's bad
-        if re.match(r'^[-*\w]+$', value):
+        if re.match(r'^[-*\(\)\w]+$', value):
             temp = '%s "%s")' % (command_string, value)
         else:
             bad_option_syntax(line)
@@ -125,23 +125,49 @@ def process_memory_command(matchobj):
     return command
 
 def process_basis_file(matchobj):
-
-    spacing = str(matchobj.group(1))
+    spacing   = str(matchobj.group(1))
     basisfile = str(matchobj.group(2)).strip()
-
-    command = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
+    command   = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
 
     return command
 
 def process_basis_block(matchobj):
+    command = ""
+    return command
 
-    spacing = str(matchobj.group(1))
-    filename = str(matchobj.group(2))
-    block = str(matchobj.group(3))
-
-    # TODO: Rob's updated PSIOManager is going to be updated to make this easy.
-    command = "%s# do something with the block of basis set data for %s" % (spacing, filename)
-
+def process_basis_assign_block(matchobj):
+    spacing       = str(matchobj.group(1))
+    basistype     = str(matchobj.group(2)).upper()
+    block         = str(matchobj.group(3)).upper()
+    command_lines = re.split('\n', block)
+    label_re      = re.compile(r'^\s*([A-Za-z]+\d+)\s+([-*\(\)\w]+)\s*$')
+    symbol_re     = re.compile(r'^\s*([A-Za-z]+)\s+([-*\(\)\w]+)\s*$')
+    number_re     = re.compile(r'^\s*(\d+)\s+([-*\(\)\w]+)\s*$')
+    all_re        = re.compile(r'^\s*([-*\(\)\w]+)\s*$')
+    command = ""
+    if(not basistype or basistype.isspace()):
+        basistype = "BASIS"
+    for line in command_lines:
+        if (not line or line.isspace()):
+            continue
+    #void set_basis_all_atoms(const std::string& name, const std::string& type="BASIS");
+    #void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
+    #void set_basis_by_number(int number, const std::string& name, const std::string& type="BASIS");
+    #void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
+        if(label_re.match(line)):
+            m = label_re.match(line)
+            command += "%sget_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(symbol_re.match(line)):
+            m = symbol_re.match(line)
+            command += "%sget_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(number_re.match(line)):
+            m = number_re.match(line)
+            command += "%sget_active_molecule().set_basis_by_number(%s,\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+        elif(all_re.match(line)):
+            m = all_re.match(line)
+            command += "%sget_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
+        else:
+            bad_option_syntax(line)
     return command
 
 def process_input(raw_input):
@@ -196,9 +222,14 @@ def process_input(raw_input):
     basis_file = re.compile(r'(\s*?)basis\s+file\s*(\b.*\b)\s*$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(basis_file,process_basis_file,temp)
 
+    # Process "basis assign (name) { ... }"
+    basis_block = re.compile(r'(\s*?)basis\s+assign\s*(\w*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(basis_block,process_basis_assign_block,temp)
+
     # Process "basis name { ... }"
     basis_block = re.compile(r'(\s*?)basis\s+([-\(\)\+\*\w]*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block,process_basis_block,temp)
+
 
     # imports
     imports  = 'from PsiMod import *\n'
@@ -265,8 +296,16 @@ set scf,ccsd  = {
 basis file ~/basis/sto3g.gbs
 basis file ~/basis sets/cc-pvdz.gbs
 
-basis sto-3g {
- blah blah
+basis assign {
+ h1 cc-pvdz
+ 1 sto-3g
+  dz
+}
+
+basis assign ri_basis_scf {
+ h1 cc-pvdz
+ 1 sto-3g
+  dz
 }
 
 """)

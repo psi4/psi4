@@ -1469,7 +1469,7 @@ bool Molecule::has_inversion(Vector3& origin, double tol) const
     for (int i=0; i<natom(); ++i) {
         Vector3 inverted = origin-(xyz(i) - origin);
         int atom = atom_at_position2(inverted, tol);
-        if (atom < 0 || Z(atom) != Z(i)) {
+        if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
             return false;
         }
     }
@@ -1484,7 +1484,7 @@ bool Molecule::is_plane(Vector3& origin, Vector3& uperp, double tol) const
         Vector3 Aperp = A - Apar;
         A = (Aperp- Apar) + origin;
         int atom = atom_at_position2(A, tol);
-        if (atom < 0 || Z(atom) != Z(i)) {
+        if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
             return false;
         }
     }
@@ -1500,7 +1500,7 @@ bool Molecule::is_axis(Vector3& origin, Vector3& axis, int order, double tol) co
             R.rotate(j*2.0*M_PI/order, axis);
             R += origin;
             int atom = atom_at_position2(R, tol);
-            if (atom < 0 || Z(atom) != Z(i)) {
+            if (atom < 0 || !atoms_[atom]->is_equivalent_to(atoms_[i])) {
                 return false;
             }
         }
@@ -2014,7 +2014,7 @@ bool Molecule::has_symmetry_element(Vector3& op, double tol) const
         int atom = atom_at_position2(result, tol);
 
         if (atom != -1) {
-            if (Z(atom) != Z(i) || mass(atom) != mass(i))
+            if (!atoms_[atom]->is_equivalent_to(atoms_[i]))
                 return false;
         }
         else
@@ -2272,6 +2272,16 @@ void Molecule::set_basis_all_atoms(const std::string& name, const std::string& t
     BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
         atom->set_basisset(name, type);
     }
+}
+
+void Molecule::set_basis_by_number(int number, const std::string& name, const std::string& type)
+{
+    if (number >= nallatom()){
+        char msg[100];
+        sprintf(&msg[0], "Basis specified for atom %d, but there are only %d atoms in this molecule", number, natom());
+        throw PSIEXCEPTION(msg);
+    }
+    full_atoms_[number-1]->set_basisset(name, type);
 }
 
 void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)

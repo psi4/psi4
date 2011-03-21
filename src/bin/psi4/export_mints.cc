@@ -262,7 +262,8 @@ void export_mints()
             def("update_geometry", &Molecule::update_geometry).
             def("set_basis_all_atoms", &Molecule::set_basis_all_atoms).
             def("set_basis_by_symbol", &Molecule::set_basis_by_symbol).
-            def("set_basis_by_label", &Molecule::set_basis_by_label);
+            def("set_basis_by_label", &Molecule::set_basis_by_label).
+            def("set_basis_by_number", &Molecule::set_basis_by_number);
 
     class_<PetiteList, shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", no_init).
             def("aotoso", &PetiteList::aotoso).
