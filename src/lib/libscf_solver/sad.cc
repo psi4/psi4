@@ -322,7 +322,7 @@ void HF::getUHFAtomicDensity(shared_ptr<BasisSet> bas, int nelec, int nhigh, dou
         //Check convergence
     } while (!converged);
     if (converged && print_ > 1)
-        fprintf(outfile, "\n  @Atomic UHF Final Energy for atom %s: %20.14f", mol->symbol(0).c_str(),E);
+        fprintf(outfile, "  @Atomic UHF Final Energy for atom %s: %20.14f\n", mol->symbol(0).c_str(),E);
 
     delete TEI;
     free_block(Dold);

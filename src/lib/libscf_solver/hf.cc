@@ -732,6 +732,7 @@ bool HF::load_or_compute_initial_C()
            E_ = chkpt_->rd_escf();
 
            ret = true;
+           loaded = true;
         }
     }
     else if (guess_type == "DUAL_BASIS") {
@@ -758,6 +759,7 @@ bool HF::load_or_compute_initial_C()
 
         psio_->close(PSIF_SCF_DB_MOS,1);
         ret = true;
+        loaded = true;
     }
     else if (guess_type == "SAD") {
         if (print_)
@@ -765,6 +767,7 @@ bool HF::load_or_compute_initial_C()
 
         //Superposition of Atomic Density (will be preferred when we can figure it out)
         compute_SAD_guess();
+        loaded = true;
     }
     else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -773,7 +776,6 @@ bool HF::load_or_compute_initial_C()
 
         Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
         int h, i, j;
-        S_->print(outfile);
         int *opi = S_->rowspi();
         int nirreps = S_->nirrep();
         for (h=0; h<nirreps; ++h) {
@@ -785,6 +787,7 @@ bool HF::load_or_compute_initial_C()
         }
 
         form_C();
+        loaded = true;
     }
     else if (guess_type == "READ" || guess_type == "BASIS2") {
         throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
@@ -897,15 +900,14 @@ double HF::compute_energy()
         for (int h = 0 ; h < nirrep(); h++) {
             nalphapi_[h] = sad_nocc_[h];
         }
+    } else {
+        // Guess the occupation, if needed.
+        find_occupation();
+        form_D();
+        // Compute an initial energy using H and D
+        E_ = compute_initial_E();
     }
 
-    // Guess the occupation, if needed.
-    find_occupation();
-
-    form_D();
-
-    // Compute an initial energy using H and D
-    E_ = compute_initial_E();
     if (print_)
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
 
