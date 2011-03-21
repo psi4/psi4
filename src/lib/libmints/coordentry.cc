@@ -34,6 +34,11 @@ CoordEntry::~CoordEntry()
 
 }
 
+/**
+ * Compares the charge, mass and basis set(s) of the current atom with those of another atom
+ *
+ * @return Whether the two atoms are the same.
+ */
 bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) const
 {
     if(other->Z_ != Z_) return false;
@@ -45,7 +50,6 @@ bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) co
         if(other_it == other->basissets_.end()) return false; // This basis was never defined for the other atom
         if(iter->second != other_it->second) return false; // The basis sets are different
     }
-
     return true;
 }
 

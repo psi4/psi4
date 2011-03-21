@@ -260,6 +260,7 @@ public:
 
     void set_basis_all_atoms(const std::string& name, const std::string& type="BASIS");
     void set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type="BASIS");
+    void set_basis_by_number(int number, const std::string& name, const std::string& type="BASIS");
     void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
