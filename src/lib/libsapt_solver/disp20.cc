@@ -8,35 +8,12 @@ namespace psi { namespace sapt {
  * This dispersion evaluation will work with an arbitrary amount of memory,
  * however, it is not optimal if everything would fit in core.
  *
+ * This exists only for debugging purposes to test the accuracy of Laplace
+ * denominators.
+ *
  */
 void SAPT0::disp20()
 {
-  shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
-  shared_ptr<Vector> evals_virA(new Vector(nvirA_));
-  shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
-  shared_ptr<Vector> evals_virB(new Vector(nvirB_));
-
-  for (int a=0; a<aoccA_; a++)
-    evals_aoccA->set(0,a,evalsA_[a+foccA_]);
-  for (int r=0; r<nvirA_; r++)
-    evals_virA->set(0,r,evalsA_[r+noccA_]);
-  for (int b=0; b<aoccB_; b++)
-    evals_aoccB->set(0,b,evalsB_[b+foccB_]);
-  for (int s=0; s<nvirB_; s++)
-    evals_virB->set(0,s,evalsB_[s+noccB_]);
-
-  denom_ = shared_ptr<SAPTLaplaceDenominator>(new SAPTLaplaceDenominator(
-    evals_aoccA,evals_virA,evals_aoccB,evals_virB,
-    options_.get_double("DENOMINATOR_DELTA"),debug_));
-
-  shared_ptr<Matrix> tauAR = denom_->denominatorA();
-  shared_ptr<Matrix> tauBS = denom_->denominatorB();
-
-  dAR_ = tauAR->pointer();
-  dBS_ = tauBS->pointer();
-
-  nvec_ = denom_->nvector();
-
   long int avail_mem = mem_ - (long int) ndf_*ndf_;
 
   SAPTDFInts B_p_AR = set_act_C_AR();
@@ -47,9 +24,9 @@ void SAPT0::disp20()
   SAPTDFInts C_p_BS = set_act_C_BS();
   Iterator C_ARBS_iter = get_iterator(avail_mem/2,&C_p_AR,&C_p_BS);
 
-  double *xPQ = init_array(B_ARBS_iter.block_size[0]*
+  double *xPQ = init_array((long int) B_ARBS_iter.block_size[0]*
     C_ARBS_iter.block_size[0]);
-  double *yPQ = init_array(B_ARBS_iter.block_size[0]*
+  double *yPQ = init_array((long int) B_ARBS_iter.block_size[0]*
     C_ARBS_iter.block_size[0]);
 
   e_disp20_ = 0.0;
@@ -61,23 +38,24 @@ void SAPT0::disp20()
 
       for (int i=0; i<nvec_; i++) {
 
-        for (int a=0,ar=0; a<aoccA_; a++) {
-          for (int r=0; r<nvirA_; r++,ar++) {
-            double scale = dAR_[i][ar];
-            if (i) scale /= dAR_[i-1][ar];
-            C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
-              aoccA_*nvirA_);
-          }
+#pragma omp parallel
+{
+#pragma omp for 
+        for (int ar=0; ar<aoccA_*nvirA_; ar++) {
+          double scale = dAR_[i][ar];
+          if (i) scale /= dAR_[i-1][ar];
+          C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
+            aoccA_*nvirA_);
         }
       
-        for (int b=0,bs=0; b<aoccB_; b++) {
-          for (int s=0; s<nvirB_; s++,bs++) {
-            double scale = dBS_[i][bs];
-            if (i) scale /= dBS_[i-1][bs];
-            C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
-              aoccB_*nvirB_);
-          }
+#pragma omp for 
+        for (int bs=0; bs<aoccB_*nvirB_; bs++) {
+          double scale = dBS_[i][bs];
+          if (i) scale /= dBS_[i-1][bs];
+          C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
+            aoccB_*nvirB_);
         }
+}
 
         C_DGEMM('N','T',B_ARBS_iter.curr_size,C_ARBS_iter.curr_size,
           aoccA_*nvirA_,2.0,B_p_AR.B_p_[0],aoccA_*nvirA_,C_p_AR.B_p_[0],

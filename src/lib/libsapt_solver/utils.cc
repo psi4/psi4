@@ -17,12 +17,12 @@ void SAPT::zero_disk(int file, const char *array, int rows, int columns)
 
 void SAPT0::read_all(SAPTDFInts *ints)
 {
-  int nri = ndf_;
-  if (ints->dress_) nri += 3;
+  long int nri = ndf_;
+  if (ints->dress_) nri += 3L;
 
   ints->B_p_ = block_matrix(nri,ints->ij_length_);
 
-  int tot_i = ints->i_length_ + ints->i_start_;
+  long int tot_i = ints->i_length_ + ints->i_start_;
 
   if (!ints->active_ && !ints->dress_disk_) {
     psio_->read_entry(ints->filenum_,ints->label_,(char *) 
@@ -42,7 +42,7 @@ void SAPT0::read_all(SAPTDFInts *ints)
   }
 
   if (ints->dress_ && !ints->dress_disk_)
-    C_DCOPY(3*ints->ij_length_,&(ints->B_d_[0][0]),1,
+    C_DCOPY(3L*ints->ij_length_,&(ints->B_d_[0][0]),1,
       &(ints->B_p_[ndf_][0]),1);
 }
 
@@ -52,7 +52,7 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA)
   if (iter->curr_block == iter->num_blocks) last_block = true;
   bool dress = false;
   if (intA->dress_) dress = true;
-  int block_length = iter->block_size[iter->curr_block-1];
+  long int block_length = iter->block_size[iter->curr_block-1];
   iter->curr_block++;
 
 //  printf("%d %d %d %d %d %d\n",iter->num_blocks,block_length,
@@ -68,7 +68,7 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA)
   }
   else if (!intA->active_) {
     psio_->read(intA->filenum_,intA->label_,(char *) &(intA->B_p_[0][0]),
-      sizeof(double)*(block_length+3)*intA->ij_length_,intA->next_DF_,
+      sizeof(double)*(block_length+3L)*intA->ij_length_,intA->next_DF_,
       &intA->next_DF_);
   }
   else {
@@ -82,11 +82,11 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA)
 
   if (dress && last_block) {
     if (intA->dress_ && !intA->dress_disk_) {
-      C_DCOPY(3*intA->ij_length_,&(intA->B_d_[0][0]),1,
+      C_DCOPY(3L*intA->ij_length_,&(intA->B_d_[0][0]),1,
         &(intA->B_p_[block_length][0]),1);
     }
     else if (!intA->dress_disk_) {
-      memset(&(intA->B_p_[block_length][0]),'\0',sizeof(double)*3*
+      memset(&(intA->B_p_[block_length][0]),'\0',sizeof(double)*3L*
         intA->ij_length_);
     }
   }
@@ -98,7 +98,7 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA, SAPTDFInts *intB)
   if (iter->curr_block == iter->num_blocks) last_block = true;
   bool dress = false;
   if (intA->dress_ || intB->dress_) dress = true;
-  int block_length = iter->block_size[iter->curr_block-1];
+  long int block_length = iter->block_size[iter->curr_block-1];
   iter->curr_block++;
 
 //  printf("%d %d %d %d %d %d\n",iter->num_blocks,block_length,
@@ -114,7 +114,7 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA, SAPTDFInts *intB)
   }
   else if (!intA->active_) {
     psio_->read(intA->filenum_,intA->label_,(char *) &(intA->B_p_[0][0]),
-      sizeof(double)*(block_length+3)*intA->ij_length_,intA->next_DF_,
+      sizeof(double)*(block_length+3L)*intA->ij_length_,intA->next_DF_,
       &intA->next_DF_);
   }
   else {
@@ -133,7 +133,7 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA, SAPTDFInts *intB)
   }
   else if (!intB->active_) {
     psio_->read(intB->filenum_,intB->label_,(char *) &(intB->B_p_[0][0]),
-      sizeof(double)*(block_length+3)*intB->ij_length_,intB->next_DF_,
+      sizeof(double)*(block_length+3L)*intB->ij_length_,intB->next_DF_,
       &intB->next_DF_);
   }
   else {
@@ -147,20 +147,20 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA, SAPTDFInts *intB)
 
   if (dress && last_block) {
     if (intA->dress_ && !intA->dress_disk_) {
-      C_DCOPY(3*intA->ij_length_,&(intA->B_d_[0][0]),1,
+      C_DCOPY(3L*intA->ij_length_,&(intA->B_d_[0][0]),1,
         &(intA->B_p_[block_length][0]),1);
     }
     else if (!intA->dress_disk_) {
-      memset(&(intA->B_p_[block_length][0]),'\0',sizeof(double)*3*
+      memset(&(intA->B_p_[block_length][0]),'\0',sizeof(double)*3L*
         intA->ij_length_);
     }
   
     if (intB->dress_ && !intB->dress_disk_) {
-      C_DCOPY(3*intB->ij_length_,&(intB->B_d_[0][0]),1,
+      C_DCOPY(3L*intB->ij_length_,&(intB->B_d_[0][0]),1,
         &(intB->B_p_[block_length][0]),1);
     }
     else if (!intB->dress_disk_) {
-      memset(&(intB->B_p_[block_length][0]),'\0',sizeof(double)*3*
+      memset(&(intB->B_p_[block_length][0]),'\0',sizeof(double)*3L*
         intB->ij_length_);
     }
   }
@@ -169,15 +169,14 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA, SAPTDFInts *intB)
 Iterator SAPT0::get_iterator(long int mem, SAPTDFInts *intA, bool alloc)
 {
   long int ij_size = intA->ij_length_;
-  int max_length = ndf_;
-  if (intA->dress_) max_length += 3;
+  long int max_length = ndf_;
+  if (intA->dress_) max_length += 3L;
   if (ij_size > mem)
     throw PsiException("Not enough memory", __FILE__,__LINE__);
   int length = mem/ij_size;
   if (length > max_length) length = max_length;
 
-  return(set_iterator(100,intA,alloc));
-//return(set_iterator(length,intA,alloc));
+  return(set_iterator(length,intA,alloc));
 }
 
 Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, bool alloc)
@@ -220,16 +219,15 @@ Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, bool alloc)
 Iterator SAPT0::get_iterator(long int mem, SAPTDFInts *intA, SAPTDFInts *intB,
    bool alloc)
 {
-  int ij_size = intA->ij_length_ + intB->ij_length_;
-  int max_length = ndf_;
-  if (intA->dress_ || intB->dress_) max_length += 3;
+  long int ij_size = intA->ij_length_ + intB->ij_length_;
+  long int max_length = ndf_;
+  if (intA->dress_ || intB->dress_) max_length += 3L;
   if (ij_size > mem)
     throw PsiException("Not enough memory", __FILE__,__LINE__);
   int length = mem/ij_size;
   if (length > max_length) length = max_length;
 
-  return(set_iterator(100,intA,intB,alloc));
-//return(set_iterator(length,intA,intB,alloc));
+  return(set_iterator(length,intA,intB,alloc));
 }
 
 Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, SAPTDFInts *intB,
@@ -863,59 +861,7 @@ SAPTDFInts SAPT0::set_act_B_BS()
 
   return(B_BS);
 }
-/*
-SAPTDFInts SAPT0::set_act_B_RB()
-{
-  double enuc, NA, NB;
 
-  NA = 1.0 / NA_;
-  NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
-
-  SAPTDFInts B_RB;
-
-  B_RB.dress_ = true;
-  B_RB.dress_disk_ = true;
-  B_RB.active_ = false;
-
-  B_RB.i_length_ = nvirA_;
-  B_RB.j_length_ = aoccB_;
-  B_RB.ij_length_ = nvirA_*aoccB_;
-  B_RB.i_start_ = 0;
-  B_RB.j_start_ = 0;
-
-  B_RB.filenum_ = PSIF_SAPT_TEMP;
-  B_RB.label_ = "Active RB RI Integrals";
-
-  return(B_RB);
-}
-
-SAPTDFInts SAPT0::set_act_A_AS()
-{
-  double enuc, NA, NB;
-
-  NA = 1.0 / NA_;
-  NB = 1.0 / NB_;
-  enuc = sqrt(enuc_*NA*NB);
-
-  SAPTDFInts A_AS;
-
-  A_AS.dress_ = true;
-  A_AS.dress_disk_ = true;
-  A_AS.active_ = false;
-
-  A_AS.i_length_ = aoccA_;
-  A_AS.j_length_ = nvirB_;
-  A_AS.ij_length_ = aoccA_*nvirB_;
-  A_AS.i_start_ = 0;
-  A_AS.j_start_ = 0;
-
-  A_AS.filenum_ = PSIF_SAPT_TEMP;
-  A_AS.label_ = "Active AS RI Integrals";
-
-  return(A_AS);
-}
-*/
 SAPTDFInts SAPT0::set_H2_BS()
 {
   SAPTDFInts B_BS;

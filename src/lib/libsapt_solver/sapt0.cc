@@ -11,6 +11,8 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
   d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
 
+  wBAR_ = NULL;
+  wABS_ = NULL;
   psio_->open(PSIF_SAPT_AA_DF_INTS,PSIO_OPEN_NEW);
   psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
   psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
@@ -18,12 +20,13 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   print_header();
   df_integrals();
   w_integrals();
+  get_denom();
 }
 
 SAPT0::~SAPT0()
 {
-  free_block(wBAR_);
-  free_block(wABS_);
+  if (wBAR_ != NULL) free_block(wBAR_);
+  if (wABS_ != NULL) free_block(wABS_);
   psio_->close(PSIF_SAPT_AA_DF_INTS,1);
   psio_->close(PSIF_SAPT_BB_DF_INTS,1);
   psio_->close(PSIF_SAPT_AB_DF_INTS,1);
@@ -38,7 +41,7 @@ double SAPT0::compute_energy()
   ind20r();
   exch_ind20A_B();
   exch_ind20B_A();
-  disp20();
+  if (debug_) disp20();
   exch_disp20_n5();
   exch_disp20_n4();
 
@@ -122,6 +125,7 @@ void SAPT0::df_integrals()
   metric.reset();
 
   // Get Schwartz screening arrays
+  double maxSchwartz = 0.0;
   double *Schwartz = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
 
   shared_ptr<IntegralFactory> ao_eri_factory(new IntegralFactory(basisset_,
@@ -146,8 +150,11 @@ void SAPT0::df_integrals()
         }
       }
       Schwartz[PQ] = max;
+      if (max > maxSchwartz) maxSchwartz = max;
     }
   }
+
+  
 
   ao_eri.reset();
   ao_eri_factory.reset();
@@ -241,6 +248,11 @@ void SAPT0::df_integrals()
   PQ_stop[num_blocks-1] = basisset_->nshell()*(basisset_->nshell()+1)/2;
   block_length[num_blocks-1] = size;
 
+  int max_func_per_shell = basisset_->max_function_per_shell();
+
+  if (max_func_per_shell*max_func_per_shell > max_size) 
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+
 //for (int i=0; i<num_blocks; i++) 
 //  fprintf(outfile,"Block %2d : PQ %4d - %4d : %d\n",i,PQ_start[i],
 //    PQ_stop[i],block_length[i]);
@@ -287,7 +299,8 @@ void SAPT0::df_integrals()
           rank = omp_get_thread_num();
         #endif
 
-        if (sqrt(Schwartz[MUNU]*DFSchwartz[Pshell])>schwarz_) {
+        if (sqrt(Schwartz[MUNU]*DFSchwartz[Pshell])>schwarz_ && 
+            sqrt(Schwartz[MUNU]*maxSchwartz)>schwarz_ ) {
           eri[rank]->compute_shell(Pshell, 0, MU, NU);
 
           if (MU != NU) {
@@ -425,11 +438,6 @@ void SAPT0::df_integrals()
   zero_disk(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",ndf_,noccA_*nvirB_);
   zero_disk(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",ndf_,nvirA_*noccB_);
 
-  #ifdef HAVE_MKL
-    int mkl_nthread = mkl_get_max_threads();
-    mkl_set_num_threads(1);
-  #endif
-
   int Prel;
 
   for (int Pbl=0; Pbl<Pblocks; Pbl++) {
@@ -561,10 +569,6 @@ void SAPT0::df_integrals()
 
   }
 
-  #ifdef HAVE_MKL
-    mkl_set_num_threads(mkl_nthread);
-  #endif
-
   free_block(B_p_munu); 
   free_block(B_p_AA);
   free_block(B_p_AR);
@@ -659,6 +663,35 @@ void SAPT0::w_integrals()
   }
 
   B_p_BS.done();
+}
+
+void SAPT0::get_denom()
+{
+  shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
+  shared_ptr<Vector> evals_virA(new Vector(nvirA_));
+  shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
+  shared_ptr<Vector> evals_virB(new Vector(nvirB_));
+
+  for (int a=0; a<aoccA_; a++)
+    evals_aoccA->set(0,a,evalsA_[a+foccA_]);
+  for (int r=0; r<nvirA_; r++)
+    evals_virA->set(0,r,evalsA_[r+noccA_]);
+  for (int b=0; b<aoccB_; b++)
+    evals_aoccB->set(0,b,evalsB_[b+foccB_]);
+  for (int s=0; s<nvirB_; s++)
+    evals_virB->set(0,s,evalsB_[s+noccB_]);
+
+  denom_ = shared_ptr<SAPTLaplaceDenominator>(new SAPTLaplaceDenominator(
+    evals_aoccA,evals_virA,evals_aoccB,evals_virB,
+    options_.get_double("DENOMINATOR_DELTA"),debug_));
+
+  shared_ptr<Matrix> tauAR = denom_->denominatorA();
+  shared_ptr<Matrix> tauBS = denom_->denominatorB();
+
+  dAR_ = tauAR->pointer();
+  dBS_ = tauBS->pointer();
+
+  nvec_ = denom_->nvector();
 }
 
 }}

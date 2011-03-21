@@ -7,26 +7,47 @@ namespace psi { namespace sapt {
 SAPT::SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt)
 {
+
+#ifdef HAVE_MKL
+  mkl_set_dynamic(1);
+#endif
+
+#ifdef _OPENMP
+  omp_set_nested(0);
+#endif
+
   initialize();
 }
 
 SAPT::~SAPT()
 {
-  free(evalsA_);
-  free(evalsB_);
-  free(diagAA_);
-  free(diagBB_);
-  free_block(CA_);
-  free_block(CB_);
-  free_block(sAB_);
-  free_block(vABB_);
-  free_block(vBAA_);
-  free_block(vAAB_);
-  free_block(vBAB_);
+  if (evalsA_ != NULL) free(evalsA_);
+  if (evalsB_ != NULL) free(evalsB_);
+  if (diagAA_ != NULL) free(diagAA_);
+  if (diagBB_ != NULL) free(diagBB_);
+  if (CA_ != NULL) free_block(CA_);
+  if (CB_ != NULL) free_block(CB_);
+  if (sAB_ != NULL) free_block(sAB_);
+  if (vABB_ != NULL) free_block(vABB_);
+  if (vBAA_ != NULL) free_block(vBAA_);
+  if (vAAB_ != NULL) free_block(vAAB_);
+  if (vBAB_ != NULL) free_block(vBAB_);
 }
 
 void SAPT::initialize()
 {
+  evalsA_ = NULL;
+  evalsB_ = NULL;
+  diagAA_ = NULL;
+  diagBB_ = NULL;
+  CA_ = NULL;
+  CB_ = NULL;
+  sAB_ = NULL;
+  vABB_ = NULL;
+  vBAA_ = NULL;
+  vAAB_ = NULL;
+  vBAB_ = NULL;
+
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_SAPT");
   zero_ = BasisSet::zero_ao_basis_set();
