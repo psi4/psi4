@@ -1,0 +1,59 @@
+#! A test of the basis specification.  A benzene atom is defined using a ZMatrix containing dummy atoms
+#! and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically
+#! lowered to account for the different basis sets.
+
+refnuc =  204.01997295842617 #TEST
+refscf = -228.95763006847639 #TEST
+
+molecule bz {
+    X
+    X   1  RXX
+    X   2  RXX  1  90.0
+    C   3  RCC  2  90.0  1   0.0
+    C   3  RCC  2  90.0  1  60.0
+    C   3  RCC  2  90.0  1 120.0
+    C   3  RCC  2  90.0  1 180.0
+    C   3  RCC  2  90.0  1 240.0
+    C   3  RCC  2  90.0  1 300.0
+    H1  3  RCH  2  90.0  1   0.0
+    H   3  RCH  2  90.0  1  60.0
+    H   3  RCH  2  90.0  1 120.0
+    H1  3  RCH  2  90.0  1 180.0
+    H   3  RCH  2  90.0  1 240.0
+    H   3  RCH  2  90.0  1 300.0
+
+    RCC  = 1.3915
+    RCH  = 2.4715
+    RXX  = 1.00
+}
+
+basis assign {
+   # First, assign DZ to all atoms
+   DZ
+   # Now, assign 3-21G to all carbon atoms
+   C 3-21G
+   # The two atoms labelled H1 get a STO-3G basis two
+   H1 sto-3g
+   # Atoms 6 and 8 (Carbons 3 and 5) get a STO-3G basis, too
+   6 sto-3g
+   8 sto-3g
+   # With all these in place, the symmetry is lowered to C2v automatically
+   # The commands are applied in order i.e., adding a line like
+   # cc-pvtz
+   # here would override all of the above and assign cc-pvtz to all atoms
+}
+
+basis  assign ri_basis_scf{
+   # This is analogous to the block above, but sets the scf ri basis
+   # all of the same commands can be used
+}
+ 
+set d_converge 11
+ 
+scfenergy = energy('scf')
+
+compare_strings("c2v", bz.schoenflies_symbol(), "Point group")                        #TEST
+compare_values(refnuc, bz.nuclear_repulsion_energy(), 10, "Nuclear repulsion energy") #TEST
+compare_values(refscf, scfenergy, 10, "SCF Energy")                                   #TEST
+
+clean()

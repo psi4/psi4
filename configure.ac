@@ -944,6 +944,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile
           tests/mints1/Makefile
+          tests/mints2/Makefile
           tests/matrix1/Makefile
           tests/plugin_aointegrals/Makefile
           tests/plugin_aointegrals/input.dat
