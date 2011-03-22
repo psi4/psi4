@@ -426,7 +426,7 @@ void OEProp::compute_mo_extents()
 }
 void OEProp::compute_mulliken_charges()
 {
-    fprintf(outfile, " Mulliken Charges [a.u.]:\n\n");
+    fprintf(outfile, "\n Mulliken Charges [a.u.]:\n\n");
 
     shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -444,6 +444,8 @@ void OEProp::compute_mulliken_charges()
     shared_ptr<Matrix> Da;
     shared_ptr<Matrix> Db;
 
+//    Get the Density Matrices for alpha and beta spins
+
     if (restricted_) {
         Da = Da_ao();
         Db = Da;
@@ -452,21 +454,21 @@ void OEProp::compute_mulliken_charges()
         Db = Db_ao();
     }
     
+//    Compute the overlap matrix
+
     shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
     shared_ptr<Matrix> S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
     overlap->compute(S);
 
-    //S->print();
-    //fprintf(outfile, "  Is restricted? %s", (restricted_ ? "YES": "NO"));
-    //Da->print();
-    //Db->print();   
+//    Form the idempotent D*S matrix
 
     shared_ptr<Matrix> PSam(new Matrix("PSa",basisset_->nbf(),basisset_->nbf()));
-    PSam->gemm('n','n',1.0,Da,S,0.0);  
+    PSam->gemm(false,false,1.0,Da,S,0.0);
     shared_ptr<Matrix> PSbm(new Matrix("PSb",basisset_->nbf(),basisset_->nbf()));
-    PSbm->gemm('n','n',1.0,Db,S,0.0);  
+    PSbm->gemm(false,false,1.0,Db,S,0.0);
 
-    // Accumulate registers
+//     Accumulate registers
+
     for (int mu = 0; mu < basisset_->nbf(); mu++) {
         PSa[mu] = PSam->get(0,mu,mu); 
         PSb[mu] = PSbm->get(0,mu,mu);
@@ -481,7 +483,9 @@ void OEProp::compute_mulliken_charges()
         sumb += PSb[mu]; 
     } 
 
-    fprintf(outfile, "   Center  Symbol    Alpha    Beta   Spin   Total\n");
+//    Print out the Mulliken populations and charges
+
+    fprintf(outfile, "   Center  Symbol    Alpha    Beta     Spin     Total\n");
     double nuc = 0.0;  
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
@@ -491,18 +495,93 @@ void OEProp::compute_mulliken_charges()
         nuc += (double) mol->Z(A);
    }  
 
-    fprintf(outfile, "  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+    fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);    
 
     fflush(outfile);
 }
 void OEProp::compute_lowdin_charges()
 {
-    throw FeatureNotImplemented("OEProp::compute_lowdin_charges", "Lowdin charges not implemented", __FILE__, __LINE__);    
+    fprintf(outfile, "\n LOWDIN CHARGES [a.u.]:\n\n");
 
-    fprintf(outfile, " LOWDIN CHARGES [a.u.]:\n\n");
+    shared_ptr<Molecule> mol = basisset_->molecule();
 
-    // Awesome code goes here. 
+    double* Qa = new double[mol->natom()];
+    double suma = 0.0;
+
+    double* Qb = new double[mol->natom()];
+    double sumb = 0.0;
+
+    ::memset(Qa, '\0', mol->natom()*sizeof(double));
+    ::memset(Qb, '\0', mol->natom()*sizeof(double));
+
+    shared_ptr<Matrix> Da;
+    shared_ptr<Matrix> Db;
+    shared_ptr<Matrix> evecs(new Matrix("Eigenvectors of S matrix",basisset_->nbf(),basisset_->nbf()));
+    shared_ptr<Matrix> temp(new Matrix("Temporary matrix",basisset_->nbf(),basisset_->nbf()));
+    shared_ptr<Matrix> SDSa(new Matrix("S_12 * D * S_12 alpha matrix",basisset_->nbf(),basisset_->nbf()));
+    shared_ptr<Matrix> SDSb(new Matrix("S_12 * D * S_12 beta matrix",basisset_->nbf(),basisset_->nbf()));
+    shared_ptr<Vector> evals(new Vector(basisset_->nbf()));
+    shared_ptr<Matrix> evals_S12(new Matrix("S_12 matrix",basisset_->nbf(),basisset_->nbf()));
+
+//    Get the Density Matrices for alpha and beta spins
+
+    if (restricted_) {
+        Da = Da_ao();
+        Db = Da;
+    } else {
+        Da = Da_ao();
+        Db = Db_ao();
+    }
+
+//    Compute the overlap matrix
+
+    shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
+    shared_ptr<Matrix> S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
+    overlap->compute(S);
+
+//    Form the S^(1/2) matrix
+
+    S->diagonalize(evecs,evals);
+    S->zero();
+    S->set(evals);
+    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(S->get(0, p, p)));
+    S->back_transform(evecs);
+
+//    Compute the S^(1/2)*D*S^(1/2) matrix
+
+    temp->gemm(false,false,1.0,Da,S,0.0);
+    SDSa->gemm(false,false,1.0,S,temp,0.0);
+    temp->gemm(false,false,1.0,Db,S,0.0);
+    SDSb->gemm(false,false,1.0,S,temp,0.0);
+
+//    Accumulate AO populations for each atom
+
+    for (int mu = 0; mu < basisset_->nbf(); mu++) {
+        int shell = basisset_->function_to_shell(mu);
+        int A = basisset_->shell_to_center(shell);
+
+        Qa[A] += SDSa->get(0,mu,mu);
+        Qb[A] += SDSb->get(0,mu,mu);
+
+        suma += SDSa->get(0,mu,mu);
+        sumb += SDSb->get(0,mu,mu);
+    }
+
+//    Print out the populations and charges
+
+    fprintf(outfile, "   Center  Symbol    Alpha    Beta     Spin     Total\n");
+    double nuc = 0.0;
+    for (int A = 0; A < mol->natom(); A++) {
+        double Qs = Qa[A] - Qb[A];
+        double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
+        fprintf(outfile,"   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
+            Qa[A], Qb[A], Qs, Qt);
+        nuc += (double) mol->Z(A);
+   }
+
+    fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+        suma, sumb, nuc - suma - sumb);
 
     fflush(outfile);
 }
