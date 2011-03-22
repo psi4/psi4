@@ -1,5 +1,0 @@
-lp64 seems to use 32-bit integers
-ilp64 seems to use 64-bit integers (probably should be using this)
-
-not sure what the difference between lapack95 and scalapack is
-
