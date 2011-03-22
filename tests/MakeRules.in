@@ -1,5 +1,5 @@
 $(TARGET):
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 $(SRCDIR)/input.dat
+	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) ../../bin/psi4 $(SRCDIR)/input.dat | tee $(TARGET)
 
 clean:
 	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) 
