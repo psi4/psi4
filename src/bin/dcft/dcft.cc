@@ -57,9 +57,6 @@ DCFTSolver::dpd_buf4_add(dpdbuf4 *A, dpdbuf4 *B, double alpha)
 
 DCFTSolver::~DCFTSolver()
 {
-    free_moinfo();
-    delete _ints;
-    psio_->close(PSIF_DCFT_DPD, 1);
 }
 
 }} // Namespaces

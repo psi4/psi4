@@ -323,6 +323,8 @@ DCFTSolver::compute_energy()
         psio_->close(PSIF_LIBTRANS_DPD, 1);
     }
 
+    // Free up memory and close files
+    finalize();
     return(new_total_energy_);
 }
 
