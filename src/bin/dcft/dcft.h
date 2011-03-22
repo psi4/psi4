@@ -33,9 +33,9 @@ public:
 protected:
     IntegralTransform *_ints;
 
+    void finalize();
     void transform_integrals();
     void build_lambda();
-    void free_moinfo();
     void init();
     void compute_dcft_energy();
     void update_lambda_from_residual();

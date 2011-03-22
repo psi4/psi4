@@ -111,20 +111,33 @@ DCFTSolver::init()
  * Frees up the memory sequestered by the init_moinfo() and read_checkpoint() routines.
  */
 void
-DCFTSolver::free_moinfo()
+DCFTSolver::finalize()
 {
+    psio_->close(PSIF_DCFT_DPD, 1);
+    delete _ints;
+
+    aocc_c_.reset();
+    bocc_c_.reset();
+    avir_c_.reset();
+    bvir_c_.reset();
+    scf_error_a_.reset();
+    scf_error_b_.reset();
+    Fa_.reset();
+    Fb_.reset();
+    old_ca_.reset();
+    old_cb_.reset();
+    kappa_a_.reset();
+    kappa_b_.reset();
+    g_tau_a_.reset();
+    g_tau_b_.reset();
+    ao_s_.reset();
+    so_h_.reset();
+    s_half_inv_.reset();
+
     for(int h = 0; h < nirrep_; ++h){
-        //free_block(_aOccC[h]);
-        //free_block(_bOccC[h]);
-        //free_block(_aVirC[h]);
-        //free_block(_bVirC[h]);
         free_block(a_tau_[h]);
         free_block(b_tau_[h]);
     }
-    //delete [] _aOccC;
-    //delete [] _bOccC;
-    //delete [] _aVirC;
-    //delete [] _bVirC;
     delete [] a_tau_;
     delete [] b_tau_;
     delete [] naoccpi_;
