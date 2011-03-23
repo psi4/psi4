@@ -27,11 +27,81 @@ molecule bz {
     RXX  = 1.00
 }
 
+# Here we specify some of the basis sets manually.  They could be written to one or more external
+# files and included with the command
+#
+# basis file relative/path/to/basis.file
+#
+# or
+#
+# basis file /absolute/path/to/basis.file
+#
+# The format of these external files follows the same format as those below, where there's a [name]
+# tag before the standard G94 basis set specification:
+
+# [DZ]
+# spherical
+# ****
+# H     0 
+# S   3   1.00
+#      19.2406000              0.0328280        
+#       2.8992000              0.2312080        
+#       0.6534000              0.8172380        
+# S   1   1.00
+#       0.1776000              1.0000000        
+# ****
+# C     0
+# definition of carbon atom DZ basis...
+# ****
+# Any more atoms needed...
+# ****
+
+# The keywords cartesian or spherical are optional and provide default behavior if the 
+# puream keyword is not set.  Multiple basis sets can appear in the same file, as long 
+# as there is a [name] tag above the definition of each basis set. The basis sets specified 
+# using either "basis" or "basis file" keywords are utilized first (in the order specified 
+# in the input file).  Any remaining basis sets required are extracted from the built-in library, 
+# if they exist, or an error message is printed.
+basis  {
+[my3-21G] #This is really the standard 3-21G basis, but with a different name
+cartesian
+****
+H     0
+S   2   1.00
+      5.4471780              0.1562850
+      0.8245470              0.9046910
+S   1   1.00
+      0.1831920              1.0000000
+****
+C     0
+S   3   1.00
+    172.2560000              0.0617669
+     25.9109000              0.3587940
+      5.5333500              0.7007130
+SP   2   1.00
+      3.6649800             -0.3958970              0.2364600
+      0.7705450              1.2158400              0.8606190
+SP   1   1.00
+      0.1958570              1.0000000              1.0000000
+****
+[DZ]
+spherical
+****
+H     0 
+S   3   1.00
+     19.2406000              0.0328280        
+      2.8992000              0.2312080        
+      0.6534000              0.8172380        
+S   1   1.00
+      0.1776000              1.0000000        
+****
+}
+
 basis assign {
    # First, assign DZ to all atoms
    DZ
    # Now, assign 3-21G to all carbon atoms
-   C 3-21G
+   C my3-21G
    # The two atoms labelled H1 get a STO-3G basis two
    H1 sto-3g
    # Atoms 6 and 8 (Carbons 3 and 5) get a STO-3G basis, too
@@ -43,7 +113,7 @@ basis assign {
    # here would override all of the above and assign cc-pvtz to all atoms
 }
 
-basis  assign ri_basis_scf{
+basis assign ri_basis_scf{
    # This is analogous to the block above, but sets the scf ri basis
    # all of the same commands can be used
 }

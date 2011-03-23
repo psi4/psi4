@@ -1,3 +1,4 @@
+import PsiMod
 import re;
 import os;
 
@@ -127,13 +128,35 @@ def process_memory_command(matchobj):
 def process_basis_file(matchobj):
     spacing   = str(matchobj.group(1))
     basisfile = str(matchobj.group(2)).strip()
-    command   = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
+    command   = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile) 
 
     return command
 
 def process_basis_block(matchobj):
-    command = ""
-    return command
+    command_lines = re.split('\n', matchobj.group(2))
+    spacing   = str(matchobj.group(1))
+    result   = "%stemppsioman = PsiMod.IOManager.shared_object()" % spacing
+    result  += "%spsi4tempscratchdir = temppsioman.get_file_path(100)" % spacing
+    basislabel = re.compile(r'\s*\[([-*\(\)\w]+)\]\s*')
+    basisstring = ""
+    for line in command_lines:
+        # Ignore blank/empty lines
+        if (not line or line.isspace()):
+            continue
+        m = re.match(basislabel, line)
+        if(m):
+            if(basisstring != ""):
+                result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
+                result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing) 
+                result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
+                basisstring = ""
+            basisname = PsiMod.BasisSet.make_filename(m.group(1))
+        basisstring += line + "\n"
+    if(basisstring != ""):
+        result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
+        result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing) 
+        result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
+    return result 
 
 def process_basis_assign_block(matchobj):
     spacing       = str(matchobj.group(1))
@@ -156,16 +179,16 @@ def process_basis_assign_block(matchobj):
     #void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
         if(label_re.match(line)):
             m = label_re.match(line)
-            command += "%sget_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            command += "%sPsiMod.get_active_molecule().set_basis_by_label(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
         elif(symbol_re.match(line)):
             m = symbol_re.match(line)
-            command += "%sget_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            command += "%sPsiMod.get_active_molecule().set_basis_by_symbol(\"%s\",\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
         elif(number_re.match(line)):
             m = number_re.match(line)
-            command += "%sget_active_molecule().set_basis_by_number(%s,\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
+            command += "%sPsiMod.get_active_molecule().set_basis_by_number(%s,\"%s\",\"%s\")" % (spacing, m.group(1), m.group(2), basistype)
         elif(all_re.match(line)):
             m = all_re.match(line)
-            command += "%sget_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
+            command += "%sPsiMod.get_active_molecule().set_basis_all_atoms(\"%s\",\"%s\")" % (spacing, m.group(1), basistype)
         else:
             bad_option_syntax(line)
     return command
@@ -223,11 +246,11 @@ def process_input(raw_input):
     temp = re.sub(basis_file,process_basis_file,temp)
 
     # Process "basis assign (name) { ... }"
-    basis_block = re.compile(r'(\s*?)basis\s+assign\s*(\w*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
-    temp = re.sub(basis_block,process_basis_assign_block,temp)
+    basis_assign_block = re.compile(r'(\s*?)basis\s+assign\s*(\w*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(basis_assign_block,process_basis_assign_block,temp)
 
     # Process "basis name { ... }"
-    basis_block = re.compile(r'(\s*?)basis\s+([-\(\)\+\*\w]*)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block,process_basis_block,temp)
 
 
@@ -308,6 +331,11 @@ basis assign ri_basis_scf {
   dz
 }
 
+basis = {
+   name = cc-pvdz
+   cartesian
+   0 1
+}
 """)
 
     print "Result\n=========================="

@@ -2,6 +2,7 @@
 #include "psio.h"
 #include <unistd.h>
 #include <cstdio>
+#include "exception.h"
 
 namespace psi{
 
@@ -30,6 +31,18 @@ void PSIOManager::set_specific_retention(int fileno, bool retain)
         specific_retains_.erase(fileno);
     mirror_to_disk();
 }
+
+void PSIOManager::write_scratch_file(const std::string & full_path, const std::string &text)
+{
+    files_[full_path] = true;
+    FILE* fh = fopen(full_path.c_str(),"w");
+    if(!fh)
+        throw PSIEXCEPTION("Unable to write to " + full_path);
+    fprintf(fh, "%s",text.c_str());
+    fclose(fh);
+    mirror_to_disk();
+}
+
 void PSIOManager::open_file(const std::string& full_path, int fileno)
 {
     files_[full_path] = true;

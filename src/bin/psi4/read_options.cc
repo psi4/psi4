@@ -109,6 +109,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
       /*- The algorithm to use for lambda and orbital updates -*/
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
+      /*- Whether to force the occupation to be that of the SCF starting point -*/
+      options.add_bool("LOCK_OCCUPATION", true);
       /*- The molecular charge -*/
       options.add_int("CHARGE", 0);
       /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
