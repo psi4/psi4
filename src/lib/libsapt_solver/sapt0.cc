@@ -19,9 +19,18 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
 
   print_header();
-  df_integrals();
-  w_integrals();
-  get_denom();
+
+  check_memory();
+
+  timer_on("DF Integrals       ");
+    df_integrals();
+  timer_off("DF Integrals       ");
+  timer_on("W Integrals        ");
+    w_integrals();
+  timer_off("W Integrals        ");
+  timer_on("Laplace Denom      ");
+    get_denom();
+  timer_off("Laplace Denom      ");
 }
 
 SAPT0::~SAPT0()
@@ -35,16 +44,30 @@ SAPT0::~SAPT0()
 
 double SAPT0::compute_energy()
 {
-  elst10();
-  exch10();
-  exch10_s2();
+  timer_on("Elst10             ");
+    elst10();
+  timer_off("Elst10             ");
+  timer_on("Exch10             ");
+    exch10();
+  timer_off("Exch10             ");
+  timer_on("Exch10 S^2         ");
+    exch10_s2();
+  timer_off("Exch10 S^2         ");
   if (debug_) ind20();
-  ind20r();
-  exch_ind20A_B();
-  exch_ind20B_A();
+  timer_on("Ind20              ");
+    ind20r();
+  timer_off("Ind20              ");
+  timer_on("Exch-Ind20         ");
+    exch_ind20A_B();
+    exch_ind20B_A();
+  timer_off("Exch-Ind20         ");
   if (debug_) disp20();
-  exch_disp20_n5();
-  exch_disp20_n4();
+  timer_on("Exch-Disp20 N^5    ");
+    exch_disp20_n5();
+  timer_off("Exch-Disp20 N^5    ");
+  timer_on("Exch-Disp20 N^4    ");
+    exch_disp20_n4();
+  timer_off("Exch-Disp20 N^4    ");
 //  if (do_disp21_) disp21();
 
   print_results();
@@ -112,6 +135,34 @@ void SAPT0::print_results()
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
+}
+
+void SAPT0::check_memory()
+{
+  double memory = 8.0*mem_/1000000.0;
+
+  if (debug_) {
+    fprintf(outfile,"    Using %8.1lf MB Memory\n\n",memory);
+    fflush(outfile);
+  }
+
+  bool fail = false;
+
+  int max_func_per_shell = basisset_->max_function_per_shell(); 
+  int nsotri = nso_*(nso_+1)/2;
+
+  long int dfint = ndf_*ndf_ + 2*max_func_per_shell*ndf_;
+  long int indices = nsotri + noccA_*noccA_ + noccA_*nvirA_ + nvirA_*nvirA_
+    + noccB_*noccB_ + noccB_*nvirB_ + nvirB_*nvirB_ + noccB_*noccB_
+    + noccA_*nvirB_ + noccB_*nvirA_;
+  long int exchdisp = 2L*nvirB_*(ndf_+3) + 1L*nvirA_*(ndf_) 
+    + 2L*nvirA_*(ndf_+3) + 1L*nvirB_*(ndf_);
+
+  if (dfint > mem_) fail = true;
+  if (indices > mem_) fail = true;
+  if (exchdisp > mem_) fail = true;
+
+  if (fail) throw PsiException("Not enough memory", __FILE__,__LINE__);
 }
 
 void SAPT0::df_integrals()

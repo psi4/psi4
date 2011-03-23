@@ -19,6 +19,8 @@ private:
   void print_header();
   void print_results();
 
+  void check_memory();
+
   void df_integrals();
   void w_integrals();
 
