@@ -877,11 +877,8 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libyeti/Makefile
           src/lib/libdfcc_solver/Makefile
           src/util/tocprint/Makefile
-          src/util/psiclean/Makefile
 
           src/bin/psi4/Makefile
-          src/bin/cints/Makefile
-          src/bin/cscf/Makefile
           src/bin/response/Makefile
           src/bin/cusp/Makefile
           src/bin/dcft/Makefile
@@ -895,7 +892,6 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cphf/Makefile
           src/bin/ccsort/Makefile
           src/bin/mvo/Makefile
-          src/bin/oeprop/Makefile
           src/bin/geom/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
