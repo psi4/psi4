@@ -7,7 +7,6 @@ namespace psi { namespace sapt {
 SAPT::SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt)
 {
-
 #ifdef HAVE_MKL
   mkl_set_dynamic(1);
 #endif
