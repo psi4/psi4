@@ -66,7 +66,7 @@ BasisSetParser::~BasisSetParser()
 {
 }
 
-vector<string> BasisSetParser::load_file(const std::string &filename, const std::string& basisname)
+vector<string> BasisSetParser::load_file(const std::string &filename, const std::string&    basisname)
 {
     smatch what;
 
@@ -123,8 +123,8 @@ std::vector<boost::shared_ptr<GaussianShell> >
 Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::string> &lines)
 {
     // Regular expressions that we'll be checking for.
-    regex cartesian("^cartesian", regbase::icase);
-    regex spherical("^spherical", regbase::icase);
+    regex cartesian("^\\s*cartesian\\s*", regbase::icase);
+    regex spherical("^\\s*spherical\\s*", regbase::icase);
     regex comment("^\\s*\\!.*");                                       // line starts with !
     regex separator("^\\*\\*\\*\\*");                                  // line starts with ****
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
@@ -189,7 +189,6 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
         // Match: H    0
         // or:    H    O...     0
         if (regex_match(line, what, atom_array)) {
-
             // Check the captures and see if this basis set is for the atom we need.
             found = false;
             if (iequals(symbol, what[1].str())) {

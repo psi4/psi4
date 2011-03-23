@@ -68,6 +68,8 @@ protected:
     double compute_lambda_residual();
     double compute_scf_error_vector();
     double update_scf_density(bool damp = false);
+    /// Whether to force the code to keep the same occupation from SCF
+    bool lock_occupation_;
     /// The maximum number of lambda iterations per update
     int lambdamaxiter_;
     /// The maximum number of SCF iterations per update

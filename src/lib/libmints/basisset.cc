@@ -293,12 +293,12 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
                     // Need to wrap this is a try catch block
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
 
-                    fprintf(outfile, "  Basis set for %s read from %s\n", symbol.c_str(), user_file.c_str());
+                    fprintf(outfile, "  Basis set %s for %s read from %s\n", basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = false;
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
-                    fprintf(outfile, "  Unable to find %s in %s will try next level.\n", symbol.c_str(), user_file.c_str());
+                    fprintf(outfile, "  Unable to find %s for %s in %s will try next level.\n", basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = true;
                 }
             }

@@ -148,7 +148,7 @@ DCFTSolver::compute_energy()
                 old_cb_->copy(Cb_);
                 Cb_->gemm(false, false, 1.0, s_half_inv_, tmp, 0.0);
                 correct_mo_phases(false);
-                find_occupation(epsilon_a_);
+                if(!lock_occupation_) find_occupation(epsilon_a_);
                 densityConverged = update_scf_density() < scf_threshold_;
                 compute_dcft_energy();
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
@@ -250,7 +250,7 @@ DCFTSolver::compute_energy()
             }
             write_orbitals_to_checkpoint();
             transform_integrals();
-            find_occupation(epsilon_a_);
+            if(!lock_occupation_) find_occupation(epsilon_a_);
             densityConverged = update_scf_density() < scf_threshold_;
             // If we've performed enough lambda updates since the last orbitals
             // update, reset the counter so another SCF update is performed

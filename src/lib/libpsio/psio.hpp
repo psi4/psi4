@@ -77,6 +77,12 @@ public:
             * \return the appropriate full path
             */
     std::string get_file_path(int fileno);
+    /**
+     * Write a string to a temporary file.  The scratch file is opened and closed by this function.
+     * @param full_path The fill path to the scratch file
+     * @param text The text to be placed in the file
+     */
+    void write_scratch_file(const std::string &full_path, const std::string &text);
 
     /**
             * Record the opening of a file

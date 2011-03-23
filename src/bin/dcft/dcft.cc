@@ -28,6 +28,7 @@ DCFTSolver::DCFTSolver(shared_ptr<Wavefunction> reference_wavefunction, Options 
     scf_threshold_     = pow(10.0, -options.get_int("CONVERGENCE"));
     lambda_threshold_  = pow(10.0, -options.get_int("CONVERGENCE"));
     int_tolerance_     = pow(10.0, -options.get_int("INT_THRESH"));
+    lock_occupation_   = options.get_bool("LOCK_OCCUPATION");
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
     // Sets up the memory, and orbital info
     init();
