@@ -295,6 +295,8 @@ void SAPT0::df_integrals()
     for(int NU=0;NU<=MU;NU++,MUNU++) {
       int numnu = basisset_->shell(NU)->nfunction();
 
+#pragma omp parallel
+{
       #pragma omp for private(Pshell,rank) schedule(dynamic)
       for (Pshell=0; Pshell < ribasis_->nshell(); ++Pshell) {
         int numPshell = ribasis_->shell(Pshell)->nfunction();
@@ -340,7 +342,7 @@ void SAPT0::df_integrals()
           }
         }
       }
-
+}
       if (MU != NU) {
         munu_offset += nummu*numnu;
       }
@@ -452,6 +454,8 @@ void SAPT0::df_integrals()
     psio_->read(PSIF_SAPT_TEMP,"AO RI Integrals",(char *) &(B_p_munu[0][0]),
       sizeof(double)*length*nsotri,next_DF_AO,&next_DF_AO);
 
+#pragma omp parallel
+{
     #pragma omp for private(Prel,rank) schedule(dynamic)
     for (Prel=0; Prel<length; Prel++) {
 
@@ -540,7 +544,7 @@ void SAPT0::df_integrals()
       } 
  
     }
-
+}
     psio_->write(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
       &(B_p_AA[0][0]),sizeof(double)*length*noccA_*noccA_,
       next_DF_AA,&next_DF_AA);
