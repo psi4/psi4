@@ -47,6 +47,8 @@ plugin_aointegrals(Options &options)
     // fully initialized until this time.
     molecule->print();
     int nbf[] = { aoBasis->nbf() };
+    double nucrep = molecule->nuclear_repulsion_energy();
+    fprintf(outfile, "\n\tNuclear repulsion energy: %16.8f\n", nucrep);
 
     // The matrix factory can create matrices of the correct dimensions...
     shared_ptr<MatrixFactory> factory(new MatrixFactory);
@@ -66,14 +68,10 @@ plugin_aointegrals(Options &options)
     tOBI->compute(tMat);
     vOBI->compute(vMat);
 
-    if(print > 5){
-        sMat->print();
-    }
+    sMat->print();
+    tMat->print();
+    vMat->print();
 
-    if(print > 3){
-        tMat->print();
-        vMat->print();
-    }
     // Form h = T + V by first cloning T and then adding V
     hMat->copy(tMat);
     hMat->add(vMat);
