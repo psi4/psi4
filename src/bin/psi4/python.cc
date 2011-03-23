@@ -55,7 +55,6 @@ namespace psi {
     namespace cchbar    { PsiReturnType cchbar(Options&);    }
     namespace cclambda  { PsiReturnType cclambda(Options&);  }
     namespace ccdensity { PsiReturnType ccdensity(Options&); }
-    namespace oeprop    { PsiReturnType oeprop(Options&);    }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
@@ -227,13 +226,6 @@ double py_psi_psimrcc()
 {
     py_psi_prepare_options_for_module("PSIMRCC");
     psimrcc::psimrcc(Process::environment.options);
-    return 0.0;
-}
-
-double py_psi_oeprop()
-{
-    py_psi_prepare_options_for_module("OEPROP");
-    oeprop::oeprop(Process::environment.options);
     return 0.0;
 }
 
@@ -546,7 +538,6 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cchbar", py_psi_cchbar);
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);
-    def("oeprop", py_psi_oeprop);
 
     // Define library classes
     export_psio();
