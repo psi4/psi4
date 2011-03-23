@@ -936,7 +936,7 @@ void SAPT0::h1()
   psio_->write_entry(PSIF_SAPT_TEMP,"H1 RB Array",(char *) &(xRB[0][0]),
     sizeof(double)*nvirA_*aoccB_);
 
-  free(xRB);
+  free_block(xRB);
 }
 
 void SAPT0::h2()
@@ -1018,7 +1018,7 @@ void SAPT0::h3()
   psio_->write_entry(PSIF_SAPT_TEMP,"H3 AS Array",(char *) &(xAS[0][0]),
     sizeof(double)*aoccA_*nvirB_);
 
-  free(xAS);
+  free_block(xAS);
 }
 
 void SAPT0::h4()
