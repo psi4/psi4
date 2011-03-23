@@ -48,7 +48,7 @@ plugin_aointegrals(Options &options)
     molecule->print();
     int nbf[] = { aoBasis->nbf() };
     double nucrep = molecule->nuclear_repulsion_energy();
-    fprintf(outfile, "\n\tNuclear repulsion energy: %16.8f\n", nucrep);
+    fprintf(outfile, "\n    Nuclear repulsion energy: %16.8f\n\n", nucrep);
 
     // The matrix factory can create matrices of the correct dimensions...
     shared_ptr<MatrixFactory> factory(new MatrixFactory);
@@ -78,6 +78,8 @@ plugin_aointegrals(Options &options)
     hMat->print();
 
     if(doTei){
+         fprintf(outfile, "\n  Two-electron Integrals\n\n");
+
         // Now, the two-electron integrals
         shared_ptr<TwoBodyAOInt> eri(integral->eri());
         // The buffer will hold the integrals for each shell, as they're computed
