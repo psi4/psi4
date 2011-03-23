@@ -52,13 +52,16 @@ mcscf3:       RHF 6-31G** energy of water, using the MCSCF module and Z-matrix i
 mints1:       Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.
 
 
+mints2:       A test of the basis specification.  A benzene atom is defined using a ZMatrix containing dummy atoms and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically lowered to account for the different basis sets.
+
+
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 
 sad1:         Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.
 
 
-sapt1:        SAPT0 aug-cc-pVDZ computation of the ethane-ethyne binding energy, using the aug-cc-pVDZ-JKFIT RI basis for SCF and aug-cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+sapt1:        SAPT0 cc-pVDZ computation of the ethane-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
 
 
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
