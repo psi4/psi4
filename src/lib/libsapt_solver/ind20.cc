@@ -213,6 +213,7 @@ void SAPT0::ind20rA_B()
 
   free(tAR_new); 
   free(tAR_old);
+  free_block(tAR_dump);
   free(X); 
   free_block(xAA); 
   free_block(xAR); 
@@ -375,6 +376,7 @@ void SAPT0::ind20rB_A()
 
   free(tBS_new); 
   free(tBS_old);
+  free_block(tBS_dump);
   free(X); 
   free_block(xBB); 
   free_block(xBS); 

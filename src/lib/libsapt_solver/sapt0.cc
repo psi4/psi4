@@ -10,6 +10,7 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   maxiter_ = options_.get_int("MAXITER");
   e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
   d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
+//  do_disp21_ = options_.get_bool("DO_DISP21");
 
   wBAR_ = NULL;
   wABS_ = NULL;
@@ -44,6 +45,7 @@ double SAPT0::compute_energy()
   if (debug_) disp20();
   exch_disp20_n5();
   exch_disp20_n4();
+//  if (do_disp21_) disp21();
 
   print_results();
 
@@ -117,7 +119,8 @@ void SAPT0::df_integrals()
   psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
 
   // Get fitting metric
-  shared_ptr<FittingMetric> metric(new FittingMetric(ribasis_));
+  shared_ptr<FittingMetric> metric = shared_ptr<FittingMetric>(
+    new FittingMetric(ribasis_));
   metric->form_eig_inverse();
   double **J_temp = metric->get_metric()->pointer();
   double **J_mhalf = block_matrix(ndf_,ndf_);
@@ -128,8 +131,8 @@ void SAPT0::df_integrals()
   double maxSchwartz = 0.0;
   double *Schwartz = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
 
-  shared_ptr<IntegralFactory> ao_eri_factory(new IntegralFactory(basisset_,
-    basisset_, basisset_, basisset_));
+  shared_ptr<IntegralFactory> ao_eri_factory = shared_ptr<IntegralFactory>(
+    new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
   shared_ptr<TwoBodyAOInt> ao_eri = shared_ptr<TwoBodyAOInt>(
     ao_eri_factory->eri());
   const double *ao_buffer = ao_eri->buffer();
@@ -161,8 +164,8 @@ void SAPT0::df_integrals()
 
   double *DFSchwartz = init_array(ribasis_->nshell());
 
-  shared_ptr<IntegralFactory> df_eri_factory(new IntegralFactory(ribasis_,
-    zero_, ribasis_, zero_));
+  shared_ptr<IntegralFactory> df_eri_factory = shared_ptr<IntegralFactory>(
+    new IntegralFactory(ribasis_, zero_, ribasis_, zero_));
   shared_ptr<TwoBodyAOInt> df_eri = shared_ptr<TwoBodyAOInt>(
     df_eri_factory->eri());
   const double *df_buffer = df_eri->buffer();
@@ -258,7 +261,8 @@ void SAPT0::df_integrals()
 //    PQ_stop[i],block_length[i]);
 //fprintf(outfile,"\n");
 
-  shared_ptr<IntegralFactory> rifactory(new IntegralFactory(ribasis_, zero_,
+  shared_ptr<IntegralFactory> rifactory = 
+    shared_ptr<IntegralFactory>(new IntegralFactory(ribasis_, zero_, 
     basisset_, basisset_));
 
   int nthreads = 1;
@@ -586,6 +590,9 @@ void SAPT0::df_integrals()
   free(PQ_stop);
   free(block_length);
   free(PQ_offset);
+
+  for(int i = 0; i < nthreads; ++i)
+    eri[i].reset();
 
   psio_->close(PSIF_SAPT_TEMP,0);
 }

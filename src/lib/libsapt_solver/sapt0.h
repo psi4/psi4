@@ -87,7 +87,11 @@ private:
   void q12();
   void q13();
   void q14();
-
+/*
+  void disp210_init(int, const char*, const char*, const char*, int, 
+    const char*, int, int, int, int, int, int, int, int);
+  void thetaARAR(const char*, const char*, int, int, int, int, double*);
+*/
 protected:
   boost::shared_ptr<SAPTLaplaceDenominator> denom_;
 
@@ -95,6 +99,8 @@ protected:
 
   double **dAR_;
   double **dBS_;
+
+//bool do_disp21_;
 
   int maxiter_;
   double e_conv_;
@@ -113,7 +119,8 @@ protected:
   double **wABS_;
 
 public:
-  SAPT0(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+  SAPT0(Options& options, boost::shared_ptr<PSIO> psio, 
+    boost::shared_ptr<Chkpt> chkpt);
   virtual ~SAPT0();
 
   virtual double compute_energy();
@@ -128,6 +135,7 @@ public:
   void disp20();
   void exch_disp20_n4();
   void exch_disp20_n5();
+//void disp21();
 
 };
 

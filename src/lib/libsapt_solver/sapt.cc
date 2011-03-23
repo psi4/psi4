@@ -27,11 +27,15 @@ SAPT::~SAPT()
   if (diagBB_ != NULL) free(diagBB_);
   if (CA_ != NULL) free_block(CA_);
   if (CB_ != NULL) free_block(CB_);
+  if (CHFA_ != NULL) free_block(CHFA_);
+  if (CHFB_ != NULL) free_block(CHFB_);
   if (sAB_ != NULL) free_block(sAB_);
   if (vABB_ != NULL) free_block(vABB_);
   if (vBAA_ != NULL) free_block(vBAA_);
   if (vAAB_ != NULL) free_block(vAAB_);
   if (vBAB_ != NULL) free_block(vBAB_);
+  ribasis_.reset();
+  zero_.reset();
 }
 
 void SAPT::initialize()
@@ -42,6 +46,8 @@ void SAPT::initialize()
   diagBB_ = NULL;
   CA_ = NULL;
   CB_ = NULL;
+  CHFA_ = NULL;
+  CHFB_ = NULL;
   sAB_ = NULL;
   vABB_ = NULL;
   vBAA_ = NULL;
@@ -49,8 +55,10 @@ void SAPT::initialize()
   vBAB_ = NULL;
 
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_SAPT");
-  zero_ = BasisSet::zero_ao_basis_set();
+  ribasis_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
+    "RI_BASIS_SAPT"));
+  zero_ = shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
+  parser.reset();
 
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");
