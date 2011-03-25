@@ -142,10 +142,14 @@ protected:
     void compute_hexadecapole();
     /// Compute mo extents 
     void compute_mo_extents();
-    /// Compute mulliken charges 
+    /// Compute Mulliken Charges
     void compute_mulliken_charges();
-    /// Compute Lowdin charges 
+    /// Compute Lowdin Charges
     void compute_lowdin_charges();
+    /// Compute Mayer Bond Indices (non-orthogoal basis)
+    void compute_mayer_indices();
+    /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
+    void compute_wiberg_lowdin_indices();
 public:
     /// Constructor, uses globals
     OEProp(boost::shared_ptr<Wavefunction> wfn);
