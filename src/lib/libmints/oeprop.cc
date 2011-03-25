@@ -279,6 +279,10 @@ void OEProp::compute()
         compute_mulliken_charges();
     if (tasks_.count("LOWDIN_CHARGES"))
         compute_lowdin_charges();
+    if (tasks_.count("MAYER_INDICES"))
+        compute_mayer_indices();
+    if (tasks_.count("WIBERG_LOWDIN_INDICES"))
+        compute_wiberg_lowdin_indices();
 }
 void OEProp::compute_dipole()
 {
@@ -426,7 +430,7 @@ void OEProp::compute_mo_extents()
 }
 void OEProp::compute_mulliken_charges()
 {
-    fprintf(outfile, "\n Mulliken Charges [a.u.]:\n\n");
+    fprintf(outfile, "\n\n Mulliken Charges [a.u.]:\n\n");
 
     shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -502,7 +506,7 @@ void OEProp::compute_mulliken_charges()
 }
 void OEProp::compute_lowdin_charges()
 {
-    fprintf(outfile, "\n LOWDIN CHARGES [a.u.]:\n\n");
+    fprintf(outfile, "\n\n Lowdin Charges [a.u.]:\n\n");
 
     shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -522,7 +526,6 @@ void OEProp::compute_lowdin_charges()
     shared_ptr<Matrix> SDSa(new Matrix("S_12 * D * S_12 alpha matrix",basisset_->nbf(),basisset_->nbf()));
     shared_ptr<Matrix> SDSb(new Matrix("S_12 * D * S_12 beta matrix",basisset_->nbf(),basisset_->nbf()));
     shared_ptr<Vector> evals(new Vector(basisset_->nbf()));
-    shared_ptr<Matrix> evals_S12(new Matrix("S_12 matrix",basisset_->nbf(),basisset_->nbf()));
 
 //    Get the Density Matrices for alpha and beta spins
 
@@ -544,8 +547,7 @@ void OEProp::compute_lowdin_charges()
 
     S->diagonalize(evecs,evals);
     S->zero();
-    S->set(evals);
-    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(S->get(0, p, p)));
+    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(evals->get(0,p)));
     S->back_transform(evecs);
 
 //    Compute the S^(1/2)*D*S^(1/2) matrix
@@ -578,14 +580,238 @@ void OEProp::compute_lowdin_charges()
         fprintf(outfile,"   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
             Qa[A], Qb[A], Qs, Qt);
         nuc += (double) mol->Z(A);
-   }
+    }
 
     fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
 
     fflush(outfile);
 }
+void OEProp::compute_mayer_indices()
+{
+    fprintf(outfile, "\n\n Mayer Bond Indices:\n\n");
 
+    shared_ptr<Molecule> mol = basisset_->molecule();
+
+    int nbf = basisset_->nbf();
+
+    shared_ptr<Matrix> Da;      // Density matrix for alpha spin
+    shared_ptr<Matrix> Db;      // Density matrix for beta spin
+
+    shared_ptr<Matrix> DSa(new Matrix("D * S alpha matrix",nbf,nbf));
+    shared_ptr<Matrix> DSb(new Matrix("D * S beta matrix",nbf,nbf));
+
+//    Get the Density Matrices for alpha and beta spins
+
+    if (restricted_) {
+        Da = Da_ao();
+        Db = Da;
+    } else {
+        Da = Da_ao();
+        Db = Db_ao();
+    }
+
+//    Compute the overlap matrix
+
+    shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
+    shared_ptr<Matrix> S(new Matrix("S matrix",nbf,nbf));
+    overlap->compute(S);
+
+//    Form the idempotent D*S matrix
+
+    DSa->gemm(false,false,1.0,Da,S,0.0);
+    DSb->gemm(false,false,1.0,Db,S,0.0);
+
+//     Compute Mayer bond indices
+
+    int natom = mol->natom();
+
+    shared_ptr<Matrix> MBI_total(new Matrix(natom,natom));
+    shared_ptr<Matrix> MBI_alpha;
+    shared_ptr<Matrix> MBI_beta;
+
+    if (!restricted_) {
+        MBI_alpha = shared_ptr<Matrix> (new Matrix(natom,natom));
+        MBI_beta = shared_ptr<Matrix> (new Matrix(natom,natom));
+    }
+
+    for (int mu = 0; mu < nbf; mu++) {
+        for (int nu = 0; nu < mu; nu++) {
+            int shell_mu = basisset_->function_to_shell(mu);
+            int shell_nu = basisset_->function_to_shell(nu);
+            int atom_mu = basisset_->shell_to_center(shell_mu);
+            int atom_nu = basisset_->shell_to_center(shell_nu);
+            if (atom_mu == atom_nu) continue;
+
+            double alpha = DSa->get(0, mu, nu) * DSa->get(0, nu, mu) ;
+            double beta = DSb->get(0, mu, nu) * DSb->get(0, nu, mu);
+            MBI_total->add(0, atom_mu, atom_nu, 2 * (alpha + beta));
+            MBI_total->add(0, atom_nu, atom_mu, 2 * (alpha + beta));
+
+            if (!restricted_) {
+                MBI_alpha->add(0, atom_mu, atom_nu, 2 * (alpha));
+                MBI_alpha->add(0, atom_nu, atom_mu, 2 * (alpha));
+                MBI_beta->add(0, atom_mu, atom_nu, 2 * (beta));
+                MBI_beta->add(0, atom_nu, atom_mu, 2 * (beta));
+            }
+        }
+    }
+
+//    Compute valences
+
+    shared_ptr<Vector> MBI_valence(new Vector(natom));
+
+    for (int iat = 0; iat < natom; iat++) {
+        for (int jat = 0; jat < natom; jat++) {
+            double valence = MBI_valence->get(0, iat);
+            MBI_valence->set(0, iat, valence + MBI_total->get(0, iat, jat));
+        }
+    }
+
+//    Print out the bond index matrix and valences
+
+//    Note: The computed Mayer bond indices (MBI) will be different from the MBI values computed using
+//    some other program packages for the unrestricted case. The reason is that these programs left out
+//    the spin density contribution in the MBI equation for the unrestricted wavefunctions. As the result,
+//    the MBI value will be underestimated. For example, the MBI value for the H–H bond of H2+
+//    is calculated to be 0.25 using the NBO program. The equation coded above gives the correct value of 0.5.
+//    For reference, see IJQC 29 (1986) P. 73 and IJQC 29 (1986) P. 477.
+
+//    A nicer output is needed ...
+
+    if (restricted_) {
+        MBI_total->print();
+        fprintf(outfile, "  Atomic Valences: \n");
+        MBI_valence->print();
+    }
+    else {
+        fprintf(outfile, "  Total Bond Index: \n");
+        MBI_total->print();
+        fprintf(outfile, "  Alpha Contribution: \n");
+        MBI_alpha->print();
+        fprintf(outfile, "  Beta Contribution: \n");
+        MBI_beta->print();
+        fprintf(outfile, "  Atomic Valences: \n");
+        MBI_valence->print();
+    }
+
+    fflush(outfile);
+}
+void OEProp::compute_wiberg_lowdin_indices()
+{
+    fprintf(outfile, "\n\n Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+
+//    We may wanna get rid of these if we have NAOs...
+
+    shared_ptr<Molecule> mol = basisset_->molecule();
+
+    int nbf = basisset_->nbf();
+
+    shared_ptr<Matrix> Da;
+    shared_ptr<Matrix> Db;
+    shared_ptr<Matrix> evecs(new Matrix("Eigenvectors of S matrix",nbf,nbf));
+    shared_ptr<Matrix> temp(new Matrix("Temporary matrix",nbf,nbf));
+    shared_ptr<Matrix> SDSa(new Matrix("S_12 * D * S_12 alpha matrix",nbf,nbf));
+    shared_ptr<Matrix> SDSb(new Matrix("S_12 * D * S_12 beta matrix",nbf,nbf));
+    shared_ptr<Vector> evals(new Vector(nbf));
+
+//    Get the Density Matrices for alpha and beta spins
+
+    if (restricted_) {
+        Da = Da_ao();
+        Db = Da;
+    } else {
+        Da = Da_ao();
+        Db = Db_ao();
+    }
+
+//    Compute the overlap matrix
+
+    shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
+    shared_ptr<Matrix> S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
+    overlap->compute(S);
+
+//    Form the S^(1/2) matrix
+
+    S->diagonalize(evecs,evals);
+    S->zero();
+    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(evals->get(0,p)));
+    S->back_transform(evecs);
+
+//    Compute the S^(1/2)*D*S^(1/2) matrix
+
+    temp->gemm(false,false,1.0,Da,S,0.0);
+    SDSa->gemm(false,false,1.0,S,temp,0.0);
+    temp->gemm(false,false,1.0,Db,S,0.0);
+    SDSb->gemm(false,false,1.0,S,temp,0.0);
+
+//    Compute Wiberg bond indices
+
+    int natom = mol->natom();
+
+    shared_ptr<Matrix> WBI_total(new Matrix(natom,natom));
+    shared_ptr<Matrix> WBI_alpha;
+    shared_ptr<Matrix> WBI_beta;
+
+    if (!restricted_) {
+        WBI_alpha = shared_ptr<Matrix> (new Matrix(natom,natom));
+        WBI_beta = shared_ptr<Matrix> (new Matrix(natom,natom));
+    }
+
+    for (int mu = 0; mu < nbf; mu++) {
+        for (int nu = 0; nu < mu; nu++) {
+            int shell_mu = basisset_->function_to_shell(mu);
+            int shell_nu = basisset_->function_to_shell(nu);
+            int atom_mu = basisset_->shell_to_center(shell_mu);
+            int atom_nu = basisset_->shell_to_center(shell_nu);
+            if (atom_mu == atom_nu) continue;
+
+            double alpha = SDSa->get(0, mu, nu) * SDSa->get(0, nu, mu) ;
+            double beta = SDSb->get(0, mu, nu) * SDSb->get(0, nu, mu);
+            WBI_total->add(0, atom_mu, atom_nu, 2 * (alpha + beta));
+            WBI_total->add(0, atom_nu, atom_mu, 2 * (alpha + beta));
+
+            if (!restricted_) {
+                WBI_alpha->add(0, atom_mu, atom_nu, 2 * (alpha));
+                WBI_alpha->add(0, atom_nu, atom_mu, 2 * (alpha));
+                WBI_beta->add(0, atom_mu, atom_nu, 2 * (beta));
+                WBI_beta->add(0, atom_nu, atom_mu, 2 * (beta));
+            }
+        }
+    }
+
+//    Compute valences
+
+        shared_ptr<Vector> WBI_valence(new Vector(natom));
+
+        for (int iat = 0; iat < natom; iat++) {
+            for (int jat = 0; jat < natom; jat++) {
+                double valence = WBI_valence->get(0, iat);
+                WBI_valence->set(0, iat, valence + WBI_total->get(0, iat, jat));
+            }
+        }
+
+//    Print out the bond index matrix
+//    A nicer output is needed ...
+
+    if (restricted_) {
+        WBI_total->print();
+        fprintf(outfile, "  Atomic Valences: \n");
+        WBI_valence->print();
+    }
+    else {
+        fprintf(outfile, "  Total Bond Index: \n");
+        WBI_total->print();
+        fprintf(outfile, "  Alpha Contribution: \n");
+        WBI_alpha->print();
+        fprintf(outfile, "  Beta Contribution: \n");
+        WBI_beta->print();
+        fprintf(outfile, "  Atomic Valences: \n");
+        WBI_valence->print();
+    }
+
+    fflush(outfile);
+}
 GridProp::GridProp(shared_ptr<Wavefunction> wfn) : filename_("out.grid"), Prop(wfn)
 {
     common_init();
