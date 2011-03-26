@@ -38,6 +38,8 @@ protected:
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
 
+    /// 
+
     /// Previous iteration's energy and current energy
     double Eold_;
     double E_;

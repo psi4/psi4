@@ -216,7 +216,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FREEZE_VIRT",0);
 
     /*- The guess type to be used in the computation -*/
-    options.add_str("GUESS", "READ", "CORE GWH SAD READ BASIS2 DUAL_BASIS");
+    options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF");
     /*- The maximum number of iterations -*/

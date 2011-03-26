@@ -41,9 +41,6 @@ protected:
     double compute_initial_E();
     virtual double compute_E();
 
-    // Form G routines
-    double **G_vector_;                                // Used in form_G_from_PK to handle threading.
-
     //Some stuff for Ed Hohenstein's SAPT code
     // TODO: This must be removed for a conforming SCF module
     // The SAPT driver should save the three references and extract info from
@@ -53,6 +50,8 @@ protected:
 
 // PK specific stuff
 #if CUSTOM_PK_CODE
+    // Form G routines
+    double **G_vector_;                                // Used in form_G_from_PK to handle threading.
     double *pk_;
     size_t pk_size_;
     size_t pk_pairs_;
@@ -62,7 +61,7 @@ protected:
     void form_G_from_PK();
 #endif
 
-    void form_F();
+    virtual void form_F();
     virtual void form_G();
 
     void save_fock();
