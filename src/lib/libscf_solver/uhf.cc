@@ -59,8 +59,6 @@ void UHF::common_init()
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = SharedVector(factory_->create_vector());
 
-    fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
-    fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
 }
 
 void UHF::finalize()

@@ -69,12 +69,13 @@ private:
     boost:: shared_ptr<IntegralFactory> integral_;
     boost::shared_ptr<BasisSet> basisset_;
     boost::shared_ptr<SOBasisSet> sobasis_;
+    int print_;
 
 public:
 
     void init_helper();
     /// Constructor, just lines references up
-    MintsHelper(Options&);
+    MintsHelper(Options&, int print = 1);
     /// Constructor, uses globals
     MintsHelper();
     /// Destructor, does nothing

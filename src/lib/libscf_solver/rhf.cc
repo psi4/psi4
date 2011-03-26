@@ -104,12 +104,6 @@ void RHF::common_init()
     J_         = SharedMatrix(factory_->create_matrix("J"));
     K_         = SharedMatrix(factory_->create_matrix("K"));
 
-    //What are we using?
-    fprintf(outfile, "  SCF Algorithm Type is %s.\n", scf_type_.c_str());
-    // Print DIIS status
-    fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
-
-    fflush(outfile);
     // Allocate memory for PK matrix
 
 #if CUSTOM_PK_CODE

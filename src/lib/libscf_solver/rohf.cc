@@ -61,7 +61,6 @@ void ROHF::common_init()
     epsilon_a_ = SharedVector(factory_->create_vector());
     epsilon_b_ = epsilon_a_;
 
-    fprintf(outfile, "  DIIS %s.\n\n", diis_enabled_ ? "enabled" : "disabled");
 }
 
 void ROHF::finalize()

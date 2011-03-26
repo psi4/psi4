@@ -167,6 +167,12 @@ protected:
     /// Prints some opening information
     void print_header();
 
+    /// Prints some details about nsopi/nmopi, and initial occupations
+    void print_preiterations(); 
+
+    /// Do any needed integral setup
+    void integrals();
+
     /// The amout of information to print
     int print_;
 
