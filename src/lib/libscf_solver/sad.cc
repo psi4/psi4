@@ -683,7 +683,7 @@ void HF::compute_SAD_guess()
     int temp_nocc;
     for (int h = 0 ; h < Da_->nirrep(); h++) {
         temp_nocc = sad_nocc_[h];
-        sad_nocc_[h] = nalphapi_[h];
+        sad_nocc_[h] = doccpi_[h];
         nalphapi_[h] = temp_nocc;
         nbetapi_[h]  = temp_nocc;
         doccpi_[h]   = temp_nocc;

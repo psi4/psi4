@@ -415,10 +415,10 @@ void Matrix::set(const shared_ptr<SimpleMatrix>& sq)
     set(sq->const_pointer());
 }
 
-void Matrix::set(const Vector * const vec)
+void Matrix::set_diagonal(const Vector * const vec)
 {
     if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
+        throw PSIEXCEPTION("Matrix::set_diagonal called on a non-totally symmetric matrix.");
     }
 
     int h, i, size;
@@ -432,14 +432,14 @@ void Matrix::set(const Vector * const vec)
     }
 }
 
-void Matrix::set(const Vector& vec)
+void Matrix::set_diagonal(const Vector& vec)
 {
-    set(&vec);
+    set_diagonal(&vec);
 }
 
-void Matrix::set(const shared_ptr<Vector>& vec)
+void Matrix::set_diagonal(const shared_ptr<Vector>& vec)
 {
-    set(vec.get());
+    set_diagonal(vec.get());
 }
 
 double *Matrix::to_lower_triangle() const
@@ -1041,6 +1041,134 @@ void Matrix::invert()
         }
     }
     copy_lower_to_upper();
+}
+
+void Matrix::power(double alpha, double cutoff)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::power: Matrix is non-totally symmetric.");
+    }
+
+    for (int h=0; h<nirrep_; ++h) {
+        if (rowspi_[h] == 0) continue; 
+        
+        int n = rowspi_[h];
+        double** A = matrix_[h];
+
+        double** A1 = Matrix::matrix(n,n);
+        double** A2 = Matrix::matrix(n,n);
+        double* a  = new double[n];
+        
+        memcpy(static_cast<void*>(A1[0]), static_cast<void*>(A[0]), sizeof(double)*n*n);
+    
+        // Eigendecomposition
+        double lwork;
+        int stat = C_DSYEV('V','U',n,A1[0],n,a,&lwork,-1);
+        double* work = new double[(int)lwork];
+        stat = C_DSYEV('V','U',n,A1[0],n,a,work,(int)lwork);
+        delete[] work;
+
+        if (stat) 
+            throw PSIEXCEPTION("Matrix::power: C_DSYEV failed");
+
+        memcpy(static_cast<void*>(A2[0]), static_cast<void*>(A1[0]), sizeof(double)*n*n);
+
+        double max_a = (fabs(a[n-1]) > fabs(a[0]) ? fabs(a[n-1]) : fabs(a[0]));
+        for (int i=0; i<n; i++) {
+
+            if (alpha < 0.0 && fabs(a[i]) < cutoff * max_a)
+                a[i] = 0.0;
+            else 
+                a[i] = pow(a[i],alpha); 
+
+            C_DSCAL(n, a[i], A2[i], 1);
+        }
+
+        C_DGEMM('T','N',n,n,n,1.0,A2[0],n,A1[0],n,0.0,A[0],n);
+ 
+        delete[] a;
+        Matrix::free(A1);   
+        Matrix::free(A2);   
+
+    }
+}
+
+void Matrix::exp()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::exp: Matrix is non-totally symmetric.");
+    }
+
+    for (int h=0; h<nirrep_; ++h) {
+        if (rowspi_[h] == 0) continue; 
+        
+        int n = rowspi_[h];
+        double** A = matrix_[h];
+
+        double** A1 = Matrix::matrix(n,n);
+        double** A2 = Matrix::matrix(n,n);
+        double* a  = new double[n];
+        
+        memcpy(static_cast<void*>(A1[0]), static_cast<void*>(A[0]), sizeof(double)*n*n);
+    
+        // Eigendecomposition
+        double lwork;
+        int stat = C_DSYEV('V','U',n,A1[0],n,a,&lwork,-1);
+        double* work = new double[(int)lwork];
+        stat = C_DSYEV('V','U',n,A1[0],n,a,work,(int)lwork);
+        delete[] work;
+
+        if (stat) 
+            throw PSIEXCEPTION("Matrix::exp: C_DSYEV failed");
+
+        memcpy(static_cast<void*>(A2[0]), static_cast<void*>(A1[0]), sizeof(double)*n*n);
+
+        for (int i=0; i<n; i++) {
+
+            a[i] = ::exp(a[i]); 
+
+            C_DSCAL(n, a[i], A2[i], 1);
+        }
+
+        C_DGEMM('T','N',n,n,n,1.0,A2[0],n,A1[0],n,0.0,A[0],n);
+ 
+        delete[] a;
+        Matrix::free(A1);   
+        Matrix::free(A2);   
+
+    }
+}
+
+void Matrix::zero_lower()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::zero_lower: Matrix is non-totally symmetric.");
+    }
+    
+    for (int h=0; h<nirrep_; ++h) {
+        for (int m=0; m<rowspi_[h]; ++m) {
+            for (int n=0; n<m; ++n) {
+                matrix_[h][m][n] = 0.0;
+            }
+        }
+    }
+    
+}
+
+void Matrix::zero_upper()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::zero_upper: Matrix is non-totally symmetric.");
+    }
+    
+    for (int h=0; h<nirrep_; ++h) {
+        for (int m=0; m<rowspi_[h]; ++m) {
+            for (int n=0; n<m; ++n) {
+                matrix_[h][n][m] = 0.0;
+            }
+        }
+    }
+    
 }
 
 void Matrix::copy_lower_to_upper()

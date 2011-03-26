@@ -210,10 +210,13 @@ void RHF::form_D()
         int nmo = nmopi_[h];
         int na = doccpi_[h];
     
-        if (nso == 0 || nmo == 0 || na == 0) continue;
+        if (nso == 0 || nmo == 0) continue;
 
         double** Ca = Ca_->pointer(h);
         double** D = D_->pointer(h);
+
+        if (na == 0)
+            memset(static_cast<void*>(D[0]), '\0', sizeof(double)*nso*nso);
 
         C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,D[0],nso);
 

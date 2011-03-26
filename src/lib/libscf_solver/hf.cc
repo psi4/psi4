@@ -65,7 +65,8 @@ HF::~HF()
 
 void HF::common_init()
 {
-    integral_threshold_ = 1.0E-14;
+    integral_threshold_ = 0.0;
+    //integral_threshold_ = 1.0E-14;
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
@@ -84,7 +85,7 @@ void HF::common_init()
         nsopi_[h] = dimpi[h];
         nmopi_[h] = nsopi_[h]; //For now
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h]; //For now (form_Shalf may change this, and will record things in the chkpt)
+        nmo_ += nmopi_[h]; //For now 
     }
 
     // Form the SO lookup information
@@ -189,14 +190,6 @@ void HF::common_init()
 
     nbeta_  = (nelectron_ - multiplicity_ + 1)/2;
     nalpha_ = nbeta_ + multiplicity_ - 1;
-
-    // implicit case
-    if (nirreps == 1) {
-        doccpi_[0] = nbeta_;
-        soccpi_[0] = nalpha_ - nbeta_;
-        nalphapi_[0] = nalpha_;
-        nbetapi_[0] = nbeta_;
-    }
 
     perturb_h_ = false;
     perturb_h_ = options_.get_bool("PERTURB_H");
@@ -512,37 +505,10 @@ void HF::form_Shalf()
     if (print_)
         fprintf(outfile,"  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
-    eigtemp2->set(eigval);
+    eigtemp2->set_diagonal(eigval);
 
     eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     X_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
-
-    // S^+1/2 is not needed apparently
-    /**
-    //Sphalf needs a fresh copy of the factorization of S
-    eigvec->copy(eigvec_store.get());
-    eigval->copy(eigval_store.get());
-    // Convert the eigenvalues to sqrt(eigenvalues)
-    for (int h=0; h<eigval->nirrep(); ++h) {
-        for (int i=0; i<dimpi[h]; ++i) {
-            double scale = sqrt(eigval->get(h, i));
-            eigval->set(h, i, scale);
-        }
-    }
-    // Create a vector matrix from the converted eigenvalues
-    eigtemp2->set(eigval);
-
-    // Works for diagonalize:
-    eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-    Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
-
-    X_->set_name("X (Symmetric Orthognalization)");
-
-    if (debug_ > 3) {
-        X_->print(outfile);
-        Sphalf_->print(outfile);
-    }
-    **/
 
     // ==> CANONICAL ORTHOGONALIZATION <== //
 
@@ -1078,11 +1044,28 @@ double HF::compute_energy()
             fprintf(outfile, " with %f perturbation", lambda_);
         }
         fprintf(outfile, "\n");
+
+        // Properties
+        if (print_) {
+            shared_ptr<OEProp> oe(new OEProp());
+            if (print_ < 2)
+                oe->add("DIPOLE");
+            else
+                oe->add("QUADRUPOLE");
+        
+            if (print_ >= 2)
+                oe->add("MULLIKEN_CHARGES");
+
+            fprintf(outfile, "\n  ==> Properties <==\n");
+            oe->compute(); 
+        }
+
         save_information();
     } else {
         fprintf(outfile, "\n  Failed to converged.\n");
         E_ = 0.0;
-        psio_->close(PSIF_CHKPT, 1);
+        if(psio_->open_check(PSIF_CHKPT))
+            psio_->close(PSIF_CHKPT, 1);
     }
 
     // Orbitals are always saved, in case a dual basis is required later
@@ -1165,7 +1148,8 @@ shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, 
         
         if (nmo == 0 || nso == 0 || nvir == 0 || nocc == 0) continue;
 
-        double** C = Cso->pointer(h);
+        //double** C = Cso->pointer(h);
+        double** C = C2->pointer(h);
         double** F = Fso->pointer(h);
         double** Fiap = Fia->pointer(h);
     
@@ -1176,10 +1160,10 @@ shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, 
 
         free_block(Temp);
 
-        double* eps = E2->pointer(h);
-        for (int i = 0; i < nocc; i++)
-            for (int a = 0; a < nvir; a++)
-                Fiap[i][a] /= eps[a + nocc] - eps[i];
+        //double* eps = E2->pointer(h);
+        //for (int i = 0; i < nocc; i++)
+        //    for (int a = 0; a < nvir; a++)
+        //        Fiap[i][a] /= eps[a + nocc] - eps[i];
 
     }
 
@@ -1191,21 +1175,18 @@ shared_ptr<Matrix> HF::form_FDSmSDF(shared_ptr<Matrix> Fso, shared_ptr<Matrix> D
 {
     shared_ptr<Matrix> FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
     shared_ptr<Matrix> DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
-    shared_ptr<Matrix> FDS(new Matrix("FDS", nirrep_, nsopi_, nsopi_));
 
     DS->gemm(false,false,1.0,Dso,S_,0.0);
-    FDS->gemm(false,false,1.0,Fso,DS,0.0);
-    FDSmSDF->copy(FDS);    
+    FDSmSDF->gemm(false,false,1.0,Fso,DS,0.0);
 
-    DS->gemm(false,false,1.0,S_,Dso,0.0);
-    FDS->gemm(false,false,1.0,DS,Fso,0.0);
-    FDSmSDF->subtract(FDS);
+    shared_ptr<Matrix> SDF(FDSmSDF->transpose()); 
+    FDSmSDF->subtract(SDF);
 
     DS.reset();
-    FDS.reset(); 
+    SDF.reset(); 
 
-    shared_ptr<Matrix> XP(new Matrix("X'([F,DS])", nirrep_, nmopi_, nsopi_));
-    shared_ptr<Matrix> XPX(new Matrix("X'([F,DS])X", nirrep_, nmopi_, nmopi_));
+    shared_ptr<Matrix> XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
+    shared_ptr<Matrix> XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));
     XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
     XPX->gemm(false,false,1.0,XP,X_,0.0);
 

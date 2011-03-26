@@ -96,6 +96,10 @@ void export_mints()
             def("cols", &Matrix::coldim).
             def("nirrep", &Matrix::nirrep).
             def("identity", &Matrix::identity).
+            def("copy_lower_to_upper", &Matrix::copy_lower_to_upper).
+            def("copy_upper_to_lower", &Matrix::copy_upper_to_lower).
+            def("zero_lower", &Matrix::zero_lower).
+            def("zero_upper", &Matrix::zero_upper).
             def("zero", &Matrix::zero).
             def("zero_diagonal", &Matrix::zero_diagonal).
             def("trace", &Matrix::trace).
@@ -117,6 +121,8 @@ void export_mints()
             def("diagonalize", matrix_diagonalize(&Matrix::diagonalize)).
             def("cholesky_factorize", &Matrix::cholesky_factorize).
             def("invert", &Matrix::invert).
+            def("power", &Matrix::power).
+            def("exp", &Matrix::exp).
             def("get", &Matrix::get).
             def("set", matrix_set(&Matrix::set)).
             def("__getitem__", &Matrix::pyget).

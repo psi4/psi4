@@ -294,9 +294,9 @@ public:
      *
      * @param vec Vector to apply to the diagonal.
      */
-    void set(const Vector * const vec);
-    void set(const Vector& vec);
-    void set(const boost::shared_ptr<Vector>& vec);
+    void set_diagonal(const Vector * const vec);
+    void set_diagonal(const Vector& vec);
+    void set_diagonal(const boost::shared_ptr<Vector>& vec);
     /** @} */
 
     /**
@@ -591,10 +591,43 @@ public:
      */
     void invert();
 
+    /*! Computes the pseudo power of a real symmetric matrix
+    *   A using eigendecomposition. This operation is uniquely defined
+    *   for all symmetric matrices for integral alpha, and for 
+    *   all symmetric positive definite matrices for all alpha.
+    *   
+    *   A fractional power of a Hermitian non-SPD matrix is not uniquely
+    *   defined due to the ambiguity of the complex roots of unity, and 
+    *   will often be returned as NaN due to the formation of an imaginary 
+    *   root of an eigenvalue. Fractional powers should only be called for SPD
+    *   matrices, and integral powers should always be specified with literals.
+    *
+    *   For negative powers, this operation is very sensitive to condition,
+    *   and will discard eigenvectors corresponding to small eigenvalues which 
+    *   contribute to a condition number smaller than cutoff. 
+    *   The resultant power is actually a pseudo-power
+    *
+    *   \param alpha  The power to raise the matrix to
+    *   \param cutoff The smallest absolute value of a condition number to allow to
+    *   contribute in the formation of a negative power of A
+    */
+    void power(double alpha, double cutoff = 1.0E-12);
+    
+    /*! Computes the exponential of a real symmetric matrix 
+    *   A using eigendecoposition. This operation is uniquely defined
+    *   for all symmetric matrices (in fact all matrices, by DSYEV will
+    *   be used here)
+    */
+    void exp();
+
     /*! Copy lower triangle to upper triangle */
     void copy_lower_to_upper();
     /*! Copy upper triangle to lower triangle */
     void copy_upper_to_lower();
+    /*! Zero lower triangle */
+    void zero_lower();
+    /*! Zero upper triangle */
+    void zero_upper();
 
     // Reference versions of the above functions
     /// Transform a by transformer save result to this

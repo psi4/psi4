@@ -545,10 +545,7 @@ void OEProp::compute_lowdin_charges()
 
 //    Form the S^(1/2) matrix
 
-    S->diagonalize(evecs,evals);
-    S->zero();
-    for (int p = 0; p < basisset_->nbf(); ++p) S->set(0, p, p, sqrt(evals->get(0,p)));
-    S->back_transform(evecs);
+    S->power(1.0/2.0);
 
 //    Compute the S^(1/2)*D*S^(1/2) matrix
 
