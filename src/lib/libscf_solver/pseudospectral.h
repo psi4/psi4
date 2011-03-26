@@ -21,6 +21,8 @@ namespace scf {
 class PseudospectralHF {
 
     protected:
+        // Print or not?
+        int print_;
         // Whether the alpha and beta orbitals are equal or not
         bool restricted_;
         // The psio object

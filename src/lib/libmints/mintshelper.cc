@@ -32,14 +32,16 @@ void MintsHelper::init_helper()
     molecule_->update_geometry();
 
     // Print the molecule.
-    molecule_->print();
+    if (print_)
+        molecule_->print();
 
     // Read in the basis set
     shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
     basisset_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
 
     // Print the basis set
-    basisset_->print_detail();
+    if (print_)
+        basisset_->print_detail();
 
     // Create integral factory
     integral_ = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
@@ -55,12 +57,12 @@ void MintsHelper::init_helper()
     factory_->init_with(dimension, dimension);
 }
 
-MintsHelper::MintsHelper(Options & options): options_(options)
+MintsHelper::MintsHelper(Options & options, int print): options_(options), print_(print)
 {
     init_helper();
 }
 
-MintsHelper::MintsHelper() : options_(Process::environment.options)
+MintsHelper::MintsHelper() : options_(Process::environment.options), print_(1)
 {
     init_helper();
 }

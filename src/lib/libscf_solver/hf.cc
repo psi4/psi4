@@ -31,6 +31,10 @@
 
 #include "hf.h"
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif 
+
 using namespace boost;
 using namespace std;
 using namespace psi;
@@ -243,11 +247,15 @@ void HF::common_init()
     initialized_diis_manager_ = false;
 
     print_header();
-
+}
+void HF::integrals()
+{
+    if (print_)
+        fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // We need some integrals on disk for these cases
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        shared_ptr<MintsHelper> mints (new MintsHelper());
+        shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->integrals();
         if(scf_type_ == "PK") pk_integrals_ = shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
                                                                                      nsopi_, so2index_, so2symblk_));
@@ -261,6 +269,8 @@ void HF::common_init()
             throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DIRECT"){
+        if (print_)
+            fprintf(outfile, "  Building Direct Integral Objects...\n\n");
         shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         shared_ptr<TwoBodyAOInt> aoeri = shared_ptr<TwoBodyAOInt>(integral->eri());
         eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
@@ -271,7 +281,11 @@ void HF::finalize()
 {
     delete[] so2symblk_;
     delete[] so2index_;
-    if (scf_type_ == "PK") pk_integrals_.reset();
+
+    pk_integrals_.reset();
+    df_.reset();
+    pseudospectral_.reset();
+    eri_.reset();
 
     // Clean up after DIIS
     if(initialized_diis_manager_)
@@ -295,8 +309,6 @@ void HF::finalize()
     if(psio_->open_check(PSIF_CHKPT))
         psio_->close(PSIF_CHKPT, 1);
 }
-
-
 
 void HF::find_occupation()
 {
@@ -339,40 +351,60 @@ void HF::find_occupation()
 
 void HF::print_header()
 {
-    fprintf(outfile, "\n %s: by Justin Turney and Rob Parrish\n\n", options_.get_str("REFERENCE").c_str());
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = omp_get_max_threads();
+    #endif 
 
-#ifdef _DEBUG
-    fprintf(outfile, "  Debug version.\n\n");
-#else
-    fprintf(outfile, "  Release version.\n\n");
-#endif
+    fprintf(outfile, "\n");
+    fprintf(outfile, "         ---------------------------------------------------------\n");
+    fprintf(outfile, "                                   SCF\n"); 
+    fprintf(outfile, "            by Justin Turney, Rob Parrish, and Andy Simmonnett\n");
+    fprintf(outfile, "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
+    fprintf(outfile, "                      %3d Threads, %6d MiB Core\n", nthread, memory_ / 1000000L);
+    fprintf(outfile, "         ---------------------------------------------------------\n");
+    fprintf(outfile, "\n");
+
+    fprintf(outfile, "  ==> Geometry <==\n\n");
 
     molecule_->print();
 
     fprintf(outfile, "  Running in %s symmetry.\n\n", molecule_->point_group()->symbol());
 
+    fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", nuclearrep_);
+    fprintf(outfile, "  Charge       = %d\n", charge_);
+    fprintf(outfile, "  Multiplicity = %d\n", multiplicity_);
+    fprintf(outfile, "  Electrons    = %d\n", nelectron_);
+    fprintf(outfile, "  Nalpha       = %d\n", nalpha_);
+    fprintf(outfile, "  Nbeta        = %d\n\n", nbeta_);
+
+    fprintf(outfile, "  ==> Algorithm <==\n\n");
+    fprintf(outfile, "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
+    fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    fprintf(outfile, "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
+    fprintf(outfile, "  Energy threshold   = %3.2e\n", energy_threshold_);
+    fprintf(outfile, "  Density threshold  = %3.2e\n", density_threshold_);
+    fprintf(outfile, "  Integral threshold = %3.2e\n\n", integral_threshold_);
+    fflush(outfile);
+
+    fprintf(outfile, "  ==> Primary Basis: %s <==\n\n", options_.get_str("BASIS").c_str());
+    basisset_->print_by_level(outfile, print_); 
+
+}
+void HF::print_preiterations()
+{
     CharacterTable ct = molecule_->point_group()->char_table();
 
-    fprintf(outfile, "  Input DOCC vector = (");
-    for (int h=0; h<factory_->nirrep(); ++h) {
-        fprintf(outfile, "%2d %3s ", doccpi_[h], ct.gamma(h).symbol());
+    fprintf(outfile, "   -------------------------------------------------------\n");
+    fprintf(outfile, "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
+    fprintf(outfile, "   -------------------------------------------------------\n");
+    for (int h= 0; h < nirrep_; h++) {
+        fprintf(outfile, "     %3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);   
     }
-    fprintf(outfile, ")\n");
-    fprintf(outfile, "  Input SOCC vector = (");
-    for (int h=0; h<factory_->nirrep(); ++h) {
-        fprintf(outfile, "%2d %3s ", soccpi_[h], ct.gamma(h).symbol());
-    }
-
-    fprintf(outfile, ")\n\n");
-
-    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", nuclearrep_);
-
-    fprintf(outfile, "  Energy threshold  = %3.2e\n", energy_threshold_);
-    fprintf(outfile, "  Density threshold = %3.2e\n\n", density_threshold_);
-    fflush(outfile);
+    fprintf(outfile, "   -------------------------------------------------------\n");
+    fprintf(outfile, "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);   
+    fprintf(outfile, "   -------------------------------------------------------\n\n");
 }
-
-
 
 void HF::form_H()
 {
@@ -478,7 +510,7 @@ void HF::form_Shalf()
         }
     }
     if (print_)
-        fprintf(outfile,"\n  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
+        fprintf(outfile,"  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2->set(eigval);
 
@@ -571,6 +603,10 @@ void HF::form_Shalf()
         S_->print(outfile);
         X_->print(outfile);
     }
+    if (print_) {
+        fprintf(outfile,"\n");
+        fflush(outfile);
+    }
 }
 
 void HF::compute_fcpi()
@@ -635,7 +671,7 @@ void HF::guess()
     if (guess_type == "READ") {
 
         if (print_)
-            fprintf(outfile, "  SCF Guess: Projection.\n");
+            fprintf(outfile, "  SCF Guess: Projection.\n\n");
 
         load_orbitals();
         form_D();
@@ -643,7 +679,7 @@ void HF::guess()
     } else if (guess_type == "SAD") {
 
         if (print_)
-            fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n");
+            fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
@@ -694,6 +730,9 @@ void HF::guess()
         Da_->print();
         Db_->print();
     }
+    
+    if (print_) 
+        fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
 }
 void HF::save_orbitals()
 {
@@ -880,6 +919,9 @@ double HF::compute_energy()
     else
         iteration_ = 0;
 
+    if (print_)
+        fprintf(outfile, "  ==> Pre-Iterations <==\n\n");
+
     timer_on("Form H");
     form_H(); //Core Hamiltonian
     timer_off("Form H");
@@ -893,8 +935,11 @@ double HF::compute_energy()
     timer_off("Guess");
 
     if (print_)
-        fprintf(outfile, "  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
+        print_preiterations();
 
+    integrals();     
+
+    fprintf(outfile, "  ==> Iterations <==\n\n");
     fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
     fflush(outfile);
 
@@ -962,6 +1007,9 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
+    if (print_) 
+        fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
+
     if (converged) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
@@ -969,7 +1017,7 @@ double HF::compute_energy()
 
         // Print the orbitals
         if(print_){
-            fprintf(outfile, "\n\n\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
+            fprintf(outfile, "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
             std::vector<std::pair<double, int> > aPairs;
             std::vector<std::pair<double, int> > bPairs;
             for (int h = 0; h < nirrep_; ++h) {

@@ -44,6 +44,8 @@ class DFHF {
         int* index_sizes_;
 
     protected:
+        // Print or not?
+        int print_;
         // Is this disk or core?
         bool is_disk_;
         // Is this object RI-J or RI-JK?
