@@ -368,6 +368,10 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
 }
 void HF::compute_SAD_guess()
 {
+    if (restricted()) {
+        throw PSIEXCEPTION("SCF::compute_SAD_guess: SAD Guess only supported for restricted references at this time.");
+    }
+
     int sad_print_ = options_.get_int("SAD_PRINT");
 
     shared_ptr<Molecule> mol = basisset_->molecule();
@@ -377,7 +381,6 @@ void HF::compute_SAD_guess()
         fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
         mol->print();
     }
-
 
     //Build the atomic basis sets for libmints use in UHF
     for (int A = 0; A<mol->natom(); A++) {
@@ -682,6 +685,9 @@ void HF::compute_SAD_guess()
         temp_nocc = sad_nocc_[h];
         sad_nocc_[h] = nalphapi_[h];
         nalphapi_[h] = temp_nocc;
+        nbetapi_[h]  = temp_nocc;
+        doccpi_[h]   = temp_nocc;
+        soccpi_[h]   = 0;
     }
 
     fflush(outfile);

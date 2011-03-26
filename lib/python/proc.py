@@ -51,6 +51,10 @@ def scf_helper(name, **kwargs):
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
 
+    if (kwargs.has_key('cast_up')):
+        cast = kwargs.pop('cast_up')
+
+
     precallback = None
     if (kwargs.has_key('precallback')):
         precallback = kwargs.pop('precallback')
@@ -61,49 +65,59 @@ def scf_helper(name, **kwargs):
 
     if (cast):
 
-        namespace = PsiMod.IO.get_default_namespace()
-        basis = PsiMod.get_option('BASIS')
-        ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
-        scf_type = PsiMod.get_option('SCF_TYPE')
+        if (cast == True):
+            custom = 'Default' 
+            guessbasis = '3-21G'
+        else:
+            custom = 'Custom'
+            guessbasis = cast     
+
         # Hack to ensure cartesian or pure are used throughout
+        # This touches the option, as if the user set it
         puream = PsiMod.get_global_option('PUREAM')
         PsiMod.set_global_option("PUREAM",puream)
 
+        # Switch to the guess namespace
+        namespace = PsiMod.IO.get_default_namespace()
         PsiMod.IO.set_default_namespace((namespace + ".guess"))
 
-        PsiMod.set_local_option('SCF','GUESS','SAD')
-        PsiMod.set_local_option('SCF','BASIS','3-21G')
-        PsiMod.set_local_option('SCF','RI_BASIS_SCF','cc-pvdz-ri')
-        PsiMod.set_local_option('SCF','DUAL_BASIS_SCF',basis)
-        PsiMod.set_local_option('SCF','DUAL_BASIS',True)
-        PsiMod.set_local_option('SCF','SCF_TYPE','DF')
+        # Are we in a DF algorithm here? 
+        scf_type = PsiMod.get_option('SCF_TYPE')
+        ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
 
+        # Which basis is the final one
+        basis = PsiMod.get_option('BASIS')
+
+        # Setup initial SCF
+        PsiMod.set_local_option('SCF','BASIS',guessbasis)
+        if (scf_type == 'DF'):
+            PsiMod.set_local_option('SCF','RI_BASIS_SCF','cc-pvdz-ri')
+
+        # Print some info about the guess
         PsiMod.print_out('\n')
-        banner('Cast-up SCF Computation')
+        banner('Guess SCF, %s Basis' %(guessbasis))
         PsiMod.print_out('\n')
 
-        PsiMod.print_out('\n')
-        banner('3-21G/SAD Guess')
-        PsiMod.print_out('\n')
-
+        # Perform the guess scf
         PsiMod.scf()
 
+        # Move files to proper namespace
         PsiMod.IO.change_file_namespace(100,(namespace + ".guess"),namespace)
         PsiMod.IO.set_default_namespace(namespace)
 
-
-        PsiMod.set_local_option('SCF','GUESS','DUAL_BASIS')
+        # Set to read and project, and reset bases
+        PsiMod.set_local_option('SCF','GUESS','READ')
         PsiMod.set_local_option('SCF','BASIS',basis)
-        PsiMod.set_local_option('SCF','RI_BASIS_SCF',ri_basis_scf)
-        PsiMod.set_local_option('SCF','DUAL_BASIS_SCF','')
-        PsiMod.set_local_option('SCF','DUAL_BASIS',False)
-        PsiMod.set_local_option('SCF','SCF_TYPE',scf_type)
+        if (scf_type == 'DF'):
+            PsiMod.set_local_option('SCF','RI_BASIS_SCF',ri_basis_scf)
 
+        # Print the banner for the standard operation
         PsiMod.print_out('\n')
         banner(name.upper())
         PsiMod.print_out('\n')
 
         e_scf = PsiMod.scf(precallback, postcallback)
+
     else:
 
         e_scf = PsiMod.scf(precallback, postcallback)

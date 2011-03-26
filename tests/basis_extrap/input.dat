@@ -9,7 +9,6 @@ Li
 
 set globals {
     reference rohf
-    guess gwh
 }
 
 # The extrapolated value is returned, but you don't have to store it if you don't want to.

@@ -114,6 +114,14 @@ void  DFMP2::setup()
  // printf("nact_docc_ is %d before anything happens\n", nact_docc_);
   nmo_ = ndocc_+nvirt_;
 
+  // If the user doesn't spec a basis name, pick it yourself
+  // TODO: Verify that the basis assign does not messs this up
+  if (options_.get_str("RI_BASIS_MP2") == "") {
+      molecule_->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_MP2");
+      fprintf(outfile, ("  No auxiliary basis selected, defaulting to " + options_.get_str("BASIS") + "-RI\n\n").c_str());
+      fflush(outfile); 
+  }
+  
   // Form ribasis object and auxiliary basis indexing:
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_MP2");

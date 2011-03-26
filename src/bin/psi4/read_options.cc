@@ -1013,10 +1013,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
-    options.add_str("RI_BASIS_MP2", "NONE");
+    options.add_str("RI_BASIS_MP2", "");
 //    options.read_ipv1();
     /*- -*/
-    if(options.get_str("RI_BASIS_MP2") != "NONE")
+    if(options.get_str("RI_BASIS_MP2") != "")
     /*- -*/
       options.add_bool("RI_LMP2", true);
     else
@@ -1066,7 +1066,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name=="DFMP2"|| options.read_globals()) {
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
-    options.add_str("RI_BASIS_MP2","NONE");
+    options.add_str("RI_BASIS_MP2","");
     /*- Basis, needed by Python -*/
     options.add_str("BASIS","NONE");
     /*- OS Scale  -*/
