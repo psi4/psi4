@@ -74,7 +74,7 @@ class Table:
             row_data += self.format_values(datarow[1])
             lines.append(row_data)
 
-        return "\n".join(lines)
+        return "\n".join(lines) + "\n"
 
     def copy(self):
         import copy

@@ -575,18 +575,27 @@ void HF::form_Shalf()
                     nmo_--;
                 }
             }
-            //eigvec.print(outfile);
-            //Copy significant columns of eigvec into X in
-            //descending order
-            X_->init(eigvec->nirrep(),nsopi_,nmopi_,"X (Canonical Orthogonalization)");
-            for (int i=0; i<dimpi[h]-start_index; ++i) {
-                for (int m = 0; m < dimpi[h]; m++)
-                    X_->set(h,m,i,eigvec->get(h,m,dimpi[h]-i-1));
-            }
             if (print_>2)
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
 
             delta_mos += start_index;
+        }
+
+        X_->init(eigvec->nirrep(),nsopi_,nmopi_,"X (Canonical Orthogonalization)");
+        for (int h=0; h<eigval->nirrep(); ++h) {
+            //Copy significant columns of eigvec into X in
+            //descending order
+            int start_index = 0;
+            for (int i=0; i<dimpi[h]; ++i) {
+                if (S_cutoff  < eigval->get(h,i)) {
+                } else {
+                    start_index++;    
+                }
+            }
+            for (int i=0; i<dimpi[h]-start_index; ++i) {
+                for (int m = 0; m < dimpi[h]; m++)
+                    X_->set(h,m,i,eigvec->get(h,m,dimpi[h]-i-1));
+            }
         }
 
         if (print_)
@@ -1131,6 +1140,78 @@ void HF::reset_SAD_occupation()
         doccpi_[h]   = sad_nocc_[h];
         soccpi_[h]   = 0;
     }
+}
+shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, int* noccpi)
+{
+    int* nsopi = Cso->rowspi();
+    int* nmopi = Cso->colspi();  
+    int nvirpi[nirrep_];
+
+    for (int h = 0; h < nirrep_; h++)
+        nvirpi[h] = nmopi[h] - noccpi[h];
+
+    shared_ptr<Matrix> Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
+
+    // Hack to get orbital e for this Fock
+    shared_ptr<Matrix> C2(new Matrix("C2", nirrep_, nsopi, nmopi));
+    shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
+    diagonalizeFock(Fso, C2, E2);
+
+    for (int h = 0; h < nirrep_; h++) {
+        int nmo = nmopi[h];
+        int nso = nsopi[h];
+        int nvir = nvirpi[h];
+        int nocc = noccpi[h]; 
+        
+        if (nmo == 0 || nso == 0 || nvir == 0 || nocc == 0) continue;
+
+        double** C = Cso->pointer(h);
+        double** F = Fso->pointer(h);
+        double** Fiap = Fia->pointer(h);
+    
+        double** Temp = block_matrix(nocc, nso);
+
+        C_DGEMM('T','N',nocc,nso,nso,1.0,C[0],nmo,F[0],nso,0.0,Temp[0],nso);
+        C_DGEMM('N','N',nocc,nvir,nso,1.0,Temp[0],nso,&C[0][nocc],nmo,0.0,Fiap[0],nvir);
+
+        free_block(Temp);
+
+        double* eps = E2->pointer(h);
+        for (int i = 0; i < nocc; i++)
+            for (int a = 0; a < nvir; a++)
+                Fiap[i][a] /= eps[a + nocc] - eps[i];
+
+    }
+
+    //Fia->print();
+
+    return Fia; 
+}
+shared_ptr<Matrix> HF::form_FDSmSDF(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Dso)
+{
+    shared_ptr<Matrix> FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
+    shared_ptr<Matrix> DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
+    shared_ptr<Matrix> FDS(new Matrix("FDS", nirrep_, nsopi_, nsopi_));
+
+    DS->gemm(false,false,1.0,Dso,S_,0.0);
+    FDS->gemm(false,false,1.0,Fso,DS,0.0);
+    FDSmSDF->copy(FDS);    
+
+    DS->gemm(false,false,1.0,S_,Dso,0.0);
+    FDS->gemm(false,false,1.0,DS,Fso,0.0);
+    FDSmSDF->subtract(FDS);
+
+    DS.reset();
+    FDS.reset(); 
+
+    shared_ptr<Matrix> XP(new Matrix("X'([F,DS])", nirrep_, nmopi_, nsopi_));
+    shared_ptr<Matrix> XPX(new Matrix("X'([F,DS])X", nirrep_, nmopi_, nmopi_));
+    XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
+    XPX->gemm(false,false,1.0,XP,X_,0.0);
+
+    //XPX->print();
+
+    return XPX;
 }
 
 }}

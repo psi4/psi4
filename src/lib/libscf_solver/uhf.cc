@@ -239,49 +239,21 @@ double UHF::compute_E()
 
 void UHF::save_fock()
 {
-    initialized_diis_manager_ = false;
+    shared_ptr<Matrix> FDSmSDFa = form_FDSmSDF(Fa_, Da_);
+    shared_ptr<Matrix> FDSmSDFb = form_FDSmSDF(Fb_, Db_);
+
     if (initialized_diis_manager_ == false) {
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
         diis_manager_->set_error_vector_size(2,
-                                             DIISEntry::Matrix, Fa_.get(),
-                                             DIISEntry::Matrix, Fb_.get());
+                                             DIISEntry::Matrix, FDSmSDFa.get(),
+                                             DIISEntry::Matrix, FDSmSDFb.get());
         diis_manager_->set_vector_size(2,
                                        DIISEntry::Matrix, Fa_.get(),
                                        DIISEntry::Matrix, Fb_.get());
         initialized_diis_manager_ = true;
     }
 
-    // Determine error matrix for this Fock
-    SharedMatrix FaDaS(factory_->create_matrix()), DaS(factory_->create_matrix());
-    SharedMatrix SDaFa(factory_->create_matrix()), DaFa(factory_->create_matrix());
-    SharedMatrix FbDbS(factory_->create_matrix()), DbS(factory_->create_matrix());
-    SharedMatrix SDbFb(factory_->create_matrix()), DbFb(factory_->create_matrix());
-
-    // FDS = F_ * D_ * S_; Alpha
-    DaS->gemm(false, false, 1.0, Da_, S_, 0.0);
-    FaDaS->gemm(false, false, 1.0, Fa_, DaS, 0.0);
-    // SDF = S_ * D_ * F_;
-    DaFa->gemm(false, false, 1.0, Da_, Fa_, 0.0);
-    SDaFa->gemm(false, false, 1.0, S_, DaFa, 0.0);
-
-    // FDS = F_ * D_ * S_; Beta
-    DbS->gemm(false, false, 1.0, Db_, S_, 0.0);
-    FbDbS->gemm(false, false, 1.0, Fb_, DbS, 0.0);
-    // SDF = S_ * D_ * F_;
-    DbFb->gemm(false, false, 1.0, Db_, Fb_, 0.0);
-    SDbFb->gemm(false, false, 1.0, S_, DbFb, 0.0);
-
-    Matrix FaDaSmSDaFa;
-    FaDaSmSDaFa.copy(FaDaS);
-    FaDaSmSDaFa.subtract(SDaFa);
-    FaDaSmSDaFa.transform(X_);
-
-    Matrix FbDbSmSDbFb;
-    FbDbSmSDbFb.copy(FbDbS);
-    FbDbSmSDbFb.subtract(SDbFb);
-    FbDbSmSDbFb.transform(X_);
-
-    diis_manager_->add_entry(4, &FaDaSmSDaFa, &FbDbSmSDbFb, Fa_.get(), Fb_.get());
+    diis_manager_->add_entry(4, FDSmSDFa.get(), FDSmSDFb.get(), Fa_.get(), Fb_.get());
 }
 
 bool UHF::diis()

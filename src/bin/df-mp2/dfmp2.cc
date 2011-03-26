@@ -228,18 +228,9 @@ void  DFMP2::setup()
   schwarz_shell_pairs_ = NULL;
   sig_shell_pairs_ = 0;
 
-  if (print_)
-      print_header();
+  print_header();
 
-  if (print_) {
-    fprintf(outfile, "\n\t  ==================================================\n");
-    fprintf(outfile, "\t    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR \n");
-    fprintf(outfile, "\t   ------------------------------------------------\n");
-    fprintf(outfile, "\t   %5d %5d %5d %5d %5d %5d %5d %5d\n",
-          nso_,naux_raw_,nf_docc_,ndocc_,nact_docc_,nact_virt_,nvirt_,nf_virt_);
-    fprintf(outfile, "\t  ==================================================\n");
-    fflush(outfile);
-  }
+  //
   //diagnostics
   if (print_>3) {
     fprintf(outfile, "  C_occ:\n");
@@ -274,14 +265,17 @@ void DFMP2::print_header()
     fprintf(outfile, "\t*        Andy Simmonett, and Edward Hohenstein         *\n");
     fprintf(outfile, "\t*                                                      *\n");
     fprintf(outfile, "\t********************************************************\n");
+    fprintf(outfile, "\n\t  ==================================================\n");
+    fprintf(outfile, "\t    NSO  NAUX  FOCC  DOCC  AOCC  AVIR  VIRT  FVIR \n");
+    fprintf(outfile, "\t   ------------------------------------------------\n");
+    fprintf(outfile, "\t   %5d %5d %5d %5d %5d %5d %5d %5d\n",
+          nso_,naux_raw_,nf_docc_,ndocc_,nact_docc_,nact_virt_,nvirt_,nf_virt_);
+    fprintf(outfile, "\t  ==================================================\n");
+    fflush(outfile);
     fflush(outfile);
 }
 DFMP2::~DFMP2()
 {
-   //free(clsdpi_);
-   //free(orbspi_);
-   //free(frzcpi_);
-   //free(frzvpi_);
    free(sym_docc_);
    free(sym_virt_);
    free(eps_docc_);
@@ -309,20 +303,17 @@ double DFMP2::compute_energy()
     E_tot_scs_ = E_scs_ + E_scf_;
 
     //Display energies
-    if (print_) {
-        fprintf(outfile,"  DF-MP2 Energy Evaluation Complete:\n\n");
-        fprintf(outfile,"   Canonical DF-MP2:\n");
-        fprintf(outfile,"    Same-Spin Energy:                %20.16Lf [H]\n",E_ss_);
-        fprintf(outfile,"    Opposite-Spin Energy:            %20.16Lf [H]\n",E_os_);
-        fprintf(outfile,"    DF-MP2 Correlation Energy:       %20.16f [H]\n",E_);
-        fprintf(outfile,"    DF-MP2 Total Energy:             %20.16f [H]\n",E_tot_);
-        fprintf(outfile,"   SCS-DF-MP2 (Pss = %14.10f, Pos = %14.10f):\n",ss_scale_,os_scale_);
-        fprintf(outfile,"    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_);
-        fprintf(outfile,"    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_);
-        fprintf(outfile,"    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_);
-        fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
-        fflush(outfile);
-    }
+    fprintf(outfile,"\n   Canonical DF-MP2:\n");
+    fprintf(outfile,"    Same-Spin Energy:                %20.16Lf [H]\n",E_ss_);
+    fprintf(outfile,"    Opposite-Spin Energy:            %20.16Lf [H]\n",E_os_);
+    fprintf(outfile,"    DF-MP2 Correlation Energy:       %20.16f [H]\n",E_);
+    fprintf(outfile,"    DF-MP2 Total Energy:             %20.16f [H]\n",E_tot_);
+    fprintf(outfile,"   SCS-DF-MP2 (Pss = %14.10f, Pos = %14.10f):\n",ss_scale_,os_scale_);
+    fprintf(outfile,"    SCS-Same-Spin Energy:            %20.16f [H]\n",E_sss_);
+    fprintf(outfile,"    SCS-Opposite-Spin Energy:        %20.16f [H]\n",E_sos_);
+    fprintf(outfile,"    SCS-DF-MP2 Correlation Energy:   %20.16f [H]\n",E_scs_);
+    fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
+    fflush(outfile);
 
     Process::environment.globals["CURRENT ENERGY"] = E_tot_;
     Process::environment.globals["DF-MP2 ENERGY"] = E_tot_;

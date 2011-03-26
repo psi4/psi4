@@ -2089,7 +2089,7 @@ void Molecule::form_symmetry_information(double tol)
         equiv_   = 0;
         nequiv_  = 0;
         atom_to_unique_ = 0;
-        fprintf(outfile, "No atoms detected, returning\n");fflush(outfile);
+        //fprintf(outfile, "No atoms detected, returning\n");fflush(outfile);
         return;
     }
 
