@@ -55,10 +55,8 @@ DFHF::~DFHF()
 void DFHF::common_init()
 {
     print_ = options_.get_int("PRINT");
-    if (print_) {
-        fprintf(outfile, " DFHF: Density-Fitted SCF Algorithms.\n");
-        fprintf(outfile, "   by Rob Parrish\n\n");
-    }
+    fprintf(outfile, " DFHF: Density-Fitted SCF Algorithms.\n");
+    fprintf(outfile, "   by Rob Parrish\n\n");
     
     is_initialized_ = false;
     is_jk_ = false;
