@@ -20,8 +20,6 @@ protected:
     SharedMatrix Gb_;
     SharedMatrix Ka_;
     SharedMatrix Kb_;
-    SharedMatrix Da_;
-    SharedMatrix Db_;
     SharedMatrix moFa_;
     SharedMatrix moFb_;
 

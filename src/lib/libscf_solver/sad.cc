@@ -689,7 +689,8 @@ void HF::compute_SAD_guess()
     E_ = 0.0; // This is the -1th iteration
     timer_off("SAD Cholesky");
 }
-SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) {
+SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<BasisSet> old_basis, shared_ptr<BasisSet> new_basis) 
+{
 
     //Based on Werner's method from Mol. Phys. 102, 21-22, 2311
     shared_ptr<IntegralFactory> newfactory(new IntegralFactory(new_basis,new_basis,new_basis,new_basis));
@@ -705,6 +706,9 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
 
     intAB->compute(SAB);
     intBB->compute(SBB);
+
+    //SAB->print();
+    //SBB->print();
 
     newfactory.reset();
     hybfactory.reset();
@@ -745,7 +749,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
 
         //Form T
         double** Temp1 = block_matrix(nb,nocc);
-        C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],na,0.0,Temp1[0],nocc);
+        C_DGEMM('T','N',nb,nocc,na,1.0,Sab[0],nb,Ca[0],nocc,0.0,Temp1[0],nocc);
 
         //fprintf(outfile," Temp1:\n");
         //print_mat(Temp1,nb,nocc,outfile);
@@ -763,7 +767,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
         //print_mat(Temp3,na,nocc,outfile);
 
         double** T = block_matrix(nocc,nocc);
-        C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],na,Temp3[0],nocc,0.0,T[0],nocc);
+        C_DGEMM('T','N',nocc,nocc,na,1.0,Ca[0],nocc,Temp3[0],nocc,0.0,T[0],nocc);
 
         //fprintf(outfile," T:\n");
         //print_mat(T,nocc,nocc,outfile);
@@ -816,9 +820,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, shared_ptr<B
         free_block(T_mhalf);
 
     }
-
     return C_B;
-
 }
 
 }}

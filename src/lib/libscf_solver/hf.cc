@@ -244,6 +244,7 @@ void HF::common_init()
 
     print_header();
 
+
     // We need some integrals on disk for these cases
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
         shared_ptr<MintsHelper> mints (new MintsHelper());
@@ -687,6 +688,12 @@ void HF::guess()
         form_D();
         E_ = compute_initial_E();
     }
+    if (print_ > 3) {
+        Ca_->print();
+        Cb_->print();
+        Da_->print();
+        Db_->print();
+    }
 }
 void HF::save_orbitals()
 {
@@ -728,7 +735,7 @@ void HF::load_orbitals()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
 
     int basislength;
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(basislength),sizeof(int)); 
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int)); 
     char basisnamec[basislength];
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char)); 
 
@@ -737,11 +744,17 @@ void HF::load_orbitals()
     if (basisname == "")
         throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for small-basis guess");
  
-    if (print_)
-        fprintf(outfile,"  Computing dual basis set projection from %s to %s.\n", \
-            basisname.c_str(),options_.get_str("BASIS").c_str());
+    if (print_) {
+        if (basisname != options_.get_str("BASIS")) {
+            fprintf(outfile,"  Computing dual basis set projection from %s to %s.\n", \
+                basisname.c_str(),options_.get_str("BASIS").c_str());
+        } else {
+            fprintf(outfile,"  Using orbitals from previous SCF, no projection.\n");
+        }
+    }
 
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
     shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
@@ -756,21 +769,36 @@ void HF::load_orbitals()
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
 
+    for (int h = 0; h < nirrep_; h++) {
+        doccpi_[h] = nbetapi_[h];
+        soccpi_[h] = nalphapi_[h] - nbetapi_[h];
+    }
+
     shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
     Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    shared_ptr<Matrix> Ca = dualBasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+    shared_ptr<Matrix> Ca;
+    if (basisname != options_.get_str("BASIS")) {
+        Ca = dualBasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+    } else {
+        Ca = Ctemp_a;
+    }
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nalphapi_[h]; i++)
-                Ca_->set(h,m,i,Ctemp_a->get(h,m,i));
+                Ca_->set(h,m,i,Ca->get(h,m,i));
 
     shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
     Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    shared_ptr<Matrix> Cb = dualBasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+    shared_ptr<Matrix> Cb;
+    if (basisname != options_.get_str("BASIS")) {
+        Cb = dualBasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+    } else {
+        Cb = Ctemp_b;
+    }
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nbetapi_[h]; i++)
-                Cb_->set(h,m,i,Ctemp_b->get(h,m,i));
+                Cb_->set(h,m,i,Cb->get(h,m,i));
 
     psio_->close(PSIF_SCF_DB_MOS,1);
 }
@@ -852,10 +880,17 @@ double HF::compute_energy()
     else
         iteration_ = 0;
 
+    timer_on("Form H");
     form_H(); //Core Hamiltonian
-    form_Shalf(); //S and X Matrix
+    timer_off("Form H");
 
+    timer_on("Form S/X");
+    form_Shalf(); //S and X Matrix
+    timer_off("Form S/X");
+
+    timer_on("Guess");
     guess(); // Guess
+    timer_off("Guess");
 
     if (print_)
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
@@ -876,16 +911,14 @@ double HF::compute_energy()
         form_G();
         timer_off("Form G");
 
-//        if (print_>3) {
-//            J_->print(outfile);
-//            K_->print(outfile);
-//            G_->print(outfile);
-//        }
-
+        timer_on("Form F");
         form_F();
-//        if (print_>3) {
-//            Fa_->print(outfile);
-//        }
+        timer_off("Form F");
+
+        if (print_>3) {
+            Fa_->print(outfile);
+            Fb_->print(outfile);
+        }
 
         E_ = compute_E();
 
@@ -899,20 +932,28 @@ double HF::compute_energy()
         }
         timer_off("DIIS");
 
-//        if (print_>4 && diis_iter) {
-//            fprintf(outfile,"  After DIIS:\n");
-//            Fa_->print(outfile);
-//        }
+        if (print_>4 && diis_iter) {
+            fprintf(outfile,"  After DIIS:\n");
+            Fa_->print(outfile);
+            Fb_->print(outfile);
+        }
+
         fprintf(outfile, "   @%s iter %3d: %20.14f   % 10.5e   % 10.5e %s\n", reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
         fflush(outfile);
 
+        timer_on("Form C");
         form_C();
+        timer_off("Form C");
+        timer_on("Form D");
         form_D();
+        timer_off("Form D");
 
-//        if (print_>2) {
-//            Ca_->print(outfile);
-//            D_->print(outfile);
-//        }
+        if (print_ > 3){
+            Ca_->print(outfile);
+            Cb_->print(outfile);
+            Da_->print(outfile);
+            Db_->print(outfile);
+        }
 
         converged = test_convergency();
 
