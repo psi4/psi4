@@ -116,6 +116,12 @@ void CC::get_params()
 void CC::get_ribasis()
 {
   shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  // If the user doesn't spec a basis name, pick it yourself
+  // TODO: Verify that the basis assign does not messs this up
+  if (options_.get_str("RI_BASIS_CC") == "") {
+      basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_CC");
+      fprintf(outfile, ("  No auxiliary basis selected, defaulting to " + options_.get_str("BASIS") + "-RI\n\n").c_str()); 
+  }
   ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_CC");
   zero_ = BasisSet::zero_ao_basis_set();
   ndf_ = ribasis_->nbf();

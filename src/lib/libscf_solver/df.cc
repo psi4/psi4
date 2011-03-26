@@ -69,9 +69,22 @@ void DFHF::common_init()
 
     // Build auxiliary basis from options
     zero_ = BasisSet::zero_ao_basis_set();
+    
+    // If the user doesn't spec a basis name, pick it yourself
+    // TODO: Verify that the basis assign does not messs this up
+    if (options_.get_str("RI_BASIS_SCF") == "") {
+        primary_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-JKFIT", "RI_BASIS_SCF");
+        fprintf(outfile, ("  No auxiliary basis selected, defaulting to " + options_.get_str("BASIS") + "-JKFIT\n\n").c_str()); 
+    }
+
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "RI_BASIS_SCF");
     parser.reset();
+
+    if (print_) {
+        fprintf(outfile, "  ==> Auxiliary Basis: %s <==\n\n", options_.get_str("RI_BASIS_SCF").c_str());
+        auxiliary_->print_by_level(outfile, print_);
+    }
 
     schwarz_ = shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
     Jinv_ = shared_ptr<FittingMetric>(new FittingMetric(auxiliary_));

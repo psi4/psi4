@@ -266,7 +266,7 @@ void RHF::form_D()
     }
 
     if (debug_) {
-        fprintf(outfile, "in UHF::form_D:\n");
+        fprintf(outfile, "in RHF::form_D:\n");
         D_->print();
     }
 }

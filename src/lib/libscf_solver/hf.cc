@@ -683,10 +683,6 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
-        // Fractional occupation
-        for (int h = 0 ; h < nirrep(); h++) {
-            nalphapi_[h] = sad_nocc_[h];
-        }
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -956,6 +952,10 @@ double HF::compute_energy()
         form_G();
         timer_off("Form G");
 
+        // Reset fractional SAD occupation
+        if (iteration_ == 0 && options_.get_str("GUESS") == "SAD")
+            reset_SAD_occupation();
+
         timer_on("Form F");
         form_F();
         timer_off("Form F");
@@ -1120,6 +1120,16 @@ void HF::diagonalizeFock(shared_ptr<Matrix> Fm, shared_ptr<Matrix> Cm, shared_pt
         free_block(Temp);
         free_block(Cp);
         free_block(Fp);
+    }
+}
+void HF::reset_SAD_occupation()
+{
+    // RHF style for now
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        nalphapi_[h] = sad_nocc_[h];
+        nbetapi_[h]  = sad_nocc_[h];
+        doccpi_[h]   = sad_nocc_[h];
+        soccpi_[h]   = 0;
     }
 }
 

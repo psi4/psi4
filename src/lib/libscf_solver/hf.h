@@ -197,6 +197,9 @@ protected:
     /// SAD Guess and propagation
     void compute_SAD_guess();
 
+    /// Reset to regular occupation from the fractional occupation
+    void reset_SAD_occupation();
+
     /// Form the guess (gaurantees C, D, and E)
     virtual void guess();
 
