@@ -34,8 +34,6 @@
 #include "pseudospectral.h"
 #include "df.h"
 
-#include "rhf_functor.h"
-
 using namespace boost;
 using namespace psi;
 using namespace std;
