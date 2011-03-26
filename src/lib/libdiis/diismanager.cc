@@ -317,9 +317,15 @@ DIISManager::extrapolate(int numQuantities, ...)
 {
     if(!_subspace.size()) return false;
     int dimension = _subspace.size() + 1;
-    double **bMatrix = block_matrix(dimension, dimension);
+    shared_ptr<Matrix> B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
+    double **bMatrix = B->pointer();
     double *coefficients = init_array(dimension);
+    double *force = init_array(dimension);
+
+    // This is superfluous, pseudoinverse is used instead of LU
     int *pivots = init_int_array(dimension);
+    for (int i = 0; i < dimension; i++)
+        pivots[i] = i;
 
     for(int i = 0; i < _subspace.size(); ++i){
         coefficients[i] = 0.0;
@@ -343,23 +349,15 @@ DIISManager::extrapolate(int numQuantities, ...)
             }
         }
     }
-    coefficients[_subspace.size()] = 1.0;
+    force[_subspace.size()] = 1.0;
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
 
-    int ret = 0;
-    ret = C_DGESV(dimension, 1, bMatrix[0], dimension, pivots, coefficients, dimension);
-
-    if (ret != 0) {
-        if (ret < 0) {
-            fprintf(stderr, "libdiis: DIIS extrapolation error: %d argument to DGESV had an illegal value.\n", -ret);
-            abort();
-        }
-        else {
-            fprintf(stderr, "libdiis: DIIS extrapolation error: DGESV matrix element (%d, %d) is exactly zero\n"
-                            "         resulting in a singularity.\nTry turning DIIS off.\n", ret, ret);
-            abort();
-        }
-    }
+    // Form the pseudoinverse
+    //B->print();
+    B->power(-1.0, 1.0E-16);
+    //B->print();
+    // Multiply pseudoinverse by forcing vector to get coefficients
+    C_DGEMV('n',dimension,dimension,1.0,bMatrix[0],dimension,force,1,0.0,coefficients,1);
 
     dpdfile2 *file2;
     dpdbuf4 *buf4;
@@ -447,7 +445,8 @@ DIISManager::extrapolate(int numQuantities, ...)
         if(_storagePolicy == OnDisk) _subspace[n]->free_vector_memory();
         va_end(args);
     }
-    free_block(bMatrix);
+    free(coefficients);
+    free(force);
     return true;
 }
 

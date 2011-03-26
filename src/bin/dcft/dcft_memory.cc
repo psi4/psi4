@@ -101,7 +101,7 @@ DCFTSolver::init()
             eigval.set(h, i, scale);
         }
     }
-    eigtemp2.set(eigval);
+    eigtemp2.set_diagonal(eigval);
     eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     s_half_inv_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 }

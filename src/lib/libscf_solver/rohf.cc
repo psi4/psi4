@@ -244,11 +244,17 @@ void ROHF::form_D()
         int na = nalphapi_[h];
         int nb = nbetapi_[h];
     
-        if (nso == 0 || nmo == 0 || na == 0) continue;
+        if (nso == 0 || nmo == 0) continue;
 
         double** Ca = Ca_->pointer(h);
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
+
+        if (na == 0) 
+            memset(static_cast<void*>(Da[0]), '\0', sizeof(double)*nso*nso);
+        if (nb == 0) 
+            memset(static_cast<void*>(Db[0]), '\0', sizeof(double)*nso*nso);
+        
 
         C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Da[0],nso);
         C_DGEMM('N','T',nso,nso,nb,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Db[0],nso);

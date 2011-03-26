@@ -83,6 +83,7 @@ def scf_helper(name, **kwargs):
 
         # Are we in a DF algorithm here? 
         scf_type = PsiMod.get_option('SCF_TYPE')
+        guess_type = PsiMod.get_option('GUESS')
         ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
 
         # Which basis is the final one
@@ -116,7 +117,10 @@ def scf_helper(name, **kwargs):
         banner(name.upper())
         PsiMod.print_out('\n')
 
+        # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
+        
+        PsiMod.set_local_option('SCF','GUESS',guess_type)
 
     else:
 
