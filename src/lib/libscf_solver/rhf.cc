@@ -40,35 +40,6 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-static void sort_rows_based_on_energies(SimpleMatrix* C, double *energies, int *order_mapping)
-{
-    unsigned int i, j;
-    int itemp;
-    double dtemp;
-    int length = C->nrow();
-
-    // Populate order_mapping with original ordering.
-    for (i=0; i< length; ++i)
-        order_mapping[i] = i;
-
-    // Sort using Quicksort algorithm
-    for (i=0; i<length; ++i) {
-        for (j = i+1; j<length; ++j) {
-            if (energies[i] > energies[j]) {
-                C->swap_rows(i, j);
-
-                dtemp = energies[i];
-                energies[i] = energies[j];
-                energies[j] = dtemp;
-
-                itemp = order_mapping[i];
-                order_mapping[i] = order_mapping[j];
-                order_mapping[j] = itemp;
-            }
-        }
-    }
-}
-
 RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : HF(options, psio, chkpt)
 {
@@ -178,34 +149,17 @@ void RHF::save_information()
 
 void RHF::save_fock()
 {
+    // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
+    shared_ptr<Matrix> FDSmSDF = form_FDSmSDF(Fa_, Da_);
+
     if (initialized_diis_manager_ == false) {
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
-        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, Fa_.get());
+        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, FDSmSDF.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
         initialized_diis_manager_ = true;
     }
 
-    // Determine error matrix for this Fock
-    SharedMatrix FDS(factory_->create_matrix()), DS(factory_->create_matrix());
-    SharedMatrix SDF(factory_->create_matrix()), DF(factory_->create_matrix());
-
-    // FDS = Fa_ * D_ * S_;
-    DS->gemm(false, false, 1.0, D_, S_, 0.0);
-    FDS->gemm(false, false, 1.0, Fa_, DS, 0.0);
-    // SDF = S_ * D_ * Fa_;
-    DF->gemm(false, false, 1.0, D_, Fa_, 0.0);
-    SDF->gemm(false, false, 1.0, S_, DF, 0.0);
-
-    Matrix FDSmSDF;
-    FDSmSDF.copy(FDS);
-    FDSmSDF.subtract(SDF);
-
-    // Orthonormalize the error matrix
-    FDSmSDF.transform(X_);
-
-    //FDSmSDF.print(outfile);
-
-    diis_manager_->add_entry(2, &FDSmSDF, Fa_.get());
+    diis_manager_->add_entry(2, FDSmSDF.get(), Fa_.get());
 }
 
 bool RHF::diis()

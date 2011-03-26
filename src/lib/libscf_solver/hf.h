@@ -239,6 +239,12 @@ protected:
     /** Performs DIIS extrapolation */
     virtual bool diis() { return false; }
 
+    /** Form Fia (for DIIS) **/
+    virtual boost::shared_ptr<Matrix> form_Fia(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Cso, int* noccpi);
+ 
+    /** Form X'(FDS - SDF)X (for DIIS) **/
+    virtual boost::shared_ptr<Matrix> form_FDSmSDF(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Dso);
+
     /** Save orbitals to File 100 **/
     virtual void save_orbitals();
 
