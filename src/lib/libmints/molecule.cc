@@ -1380,6 +1380,19 @@ void Molecule::print() const
     else
         fprintf(outfile, "  No atoms in this molecule.\n");
 }
+void Molecule::save_xyz(const std::string& filename) const
+{
+    FILE* fh = fopen(filename.c_str(), "w");
+    
+    fprintf(fh,"%d\n\n", natom());
+
+    for (int i = 0; i < natom(); i++) {
+        Vector3 geom = atoms_[i]->compute();
+        fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), geom[0], geom[1], geom[2]);  
+    }
+
+    fclose(fh);
+}
 
 shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
 {

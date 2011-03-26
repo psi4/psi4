@@ -65,11 +65,10 @@ void HF::common_init()
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
-    S_.reset(factory_->create_matrix("S"));
-    Shalf_.reset(factory_->create_matrix("S^-1/2"));
-    X_.reset(factory_->create_matrix("X"));
-    Sphalf_.reset(factory_->create_matrix("S^+1/2"));
     H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
+    S_.reset(factory_->create_matrix("S"));
+    X_.reset(factory_->create_matrix("X"));
+    //Sphalf_.reset(factory_->create_matrix("S^+1/2"));
 
     memset((void*) nsopi_, '\0', factory_->nirrep()*sizeof(int));
     memset((void*) nmopi_, '\0', factory_->nirrep()*sizeof(int));
@@ -287,8 +286,7 @@ void HF::finalize()
     dump_to_checkpoint();
 
     S_.reset();
-    Shalf_.reset();
-    Sphalf_.reset();
+    //Sphalf_.reset();
     X_.reset();
     H_.reset();
 
@@ -383,22 +381,13 @@ void HF::form_H()
     // Load in kinetic and potential matrices
     double *integrals = init_array(ioff[nso_]);
 
-    // Kinetic
-    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE") {
-        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_T), integrals, ioff[nso_], 0, 0, outfile);
-        kinetic->set(integrals);
-        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_V), integrals, ioff[nso_], 0, 0, outfile);
-        potential->set(integrals);
-    }
-    else {
-        // Integral factory
-        shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
-        shared_ptr<OneBodySOInt>    soV(integral->so_potential());
+    // Integral factory
+    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
+    shared_ptr<OneBodySOInt>    soV(integral->so_potential());
 
-        soT->compute(kinetic);
-        soV->compute(potential);
-    }
+    soT->compute(kinetic);
+    soV->compute(potential);
 
     if (debug_ > 2)
         kinetic->print(outfile);
@@ -458,116 +447,95 @@ void HF::form_H()
 
 void HF::form_Shalf()
 {
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    //
-    //          SYMMETRIC ORTHOGONALIZATION
-    //
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    // ==> SYMMETRIC ORTHOGONALIZATION <== //
 
-    // Overlap
-    if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE") {
-        double *integrals = init_array(ioff[nso_]);
-        IWL::read_one(psio_.get(), PSIF_OEI, const_cast<char*>(PSIF_SO_S), integrals, ioff[nso_], 0, 0, outfile);
-        S_->set(integrals);
-        free(integrals);
+    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
+    so_overlap->compute(S_);
 
-    }
-    else {
-        // Integral factory
-        shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
-        so_overlap->compute(S_);
-    }
-    // Form S^(-1/2) matrix
-    Matrix eigvec;
-    Matrix eigtemp;
-    Matrix eigtemp2;
-    Matrix eigvec_store;
-    Vector eigval;
-    Vector eigval_store;
-    factory_->create_matrix(eigvec, "L");
-    factory_->create_matrix(eigtemp, "Temp");
-    factory_->create_matrix(eigtemp2);
-    factory_->create_matrix(eigvec_store);
-    factory_->create_vector(eigval);
-    factory_->create_vector(eigval_store);
+    SharedMatrix eigvec= factory_->create_shared_matrix("L");
+    SharedMatrix eigtemp= factory_->create_shared_matrix("Temp");
+    SharedMatrix eigtemp2= factory_->create_shared_matrix("Temp2");
+    SharedMatrix eigvec_store= factory_->create_shared_matrix("TempStore");
+    SharedVector eigval(factory_->create_vector());
+    SharedVector eigval_store(factory_->create_vector());
 
     //Used to do this 3 times, now only once
     S_->diagonalize(eigvec, eigval);
-    eigvec_store.copy(eigvec);
-    eigval_store.copy(eigval);
+    eigvec_store->copy(eigvec);
+    eigval_store->copy(eigval.get());
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
-    int *dimpi = eigval.dimpi();
-    double min_S = fabs(eigval.get(0,0));
-    for (int h=0; h<eigval.nirrep(); ++h) {
+    int *dimpi = eigval->dimpi();
+    double min_S = fabs(eigval->get(0,0));
+    for (int h=0; h<eigval->nirrep(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
-            if (min_S > eigval.get(h,i))
-                min_S = eigval.get(h,i);
-            double scale = 1.0 / sqrt(eigval.get(h, i));
-            eigval.set(h, i, scale);
+            if (min_S > eigval->get(h,i))
+                min_S = eigval->get(h,i);
+            double scale = 1.0 / sqrt(eigval->get(h, i));
+            eigval->set(h, i, scale);
         }
     }
     if (print_)
         fprintf(outfile,"\n  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
-    eigtemp2.set(eigval);
+    eigtemp2->set(eigval);
 
-    eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
-    Shalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
+    eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
+    X_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
+    // S^+1/2 is not needed apparently
+    /**
     //Sphalf needs a fresh copy of the factorization of S
-    eigvec.copy(eigvec_store);
-    eigval.copy(eigval_store);
+    eigvec->copy(eigvec_store.get());
+    eigval->copy(eigval_store.get());
     // Convert the eigenvalues to sqrt(eigenvalues)
-    for (int h=0; h<eigval.nirrep(); ++h) {
+    for (int h=0; h<eigval->nirrep(); ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
-            double scale = sqrt(eigval.get(h, i));
-            eigval.set(h, i, scale);
+            double scale = sqrt(eigval->get(h, i));
+            eigval->set(h, i, scale);
         }
     }
     // Create a vector matrix from the converted eigenvalues
-    eigtemp2.set(eigval);
+    eigtemp2->set(eigval);
 
     // Works for diagonalize:
-    eigtemp.gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
+    eigtemp->gemm(false, true, 1.0, eigtemp2, eigvec, 0.0);
     Sphalf_->gemm(false, false, 1.0, eigvec, eigtemp, 0.0);
 
+    X_->set_name("X (Symmetric Orthognalization)");
+
     if (debug_ > 3) {
-        Shalf_->print(outfile);
+        X_->print(outfile);
         Sphalf_->print(outfile);
     }
-    //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
-    //
-    //          CANONICAL ORTHOGONALIZATION
-    //
-    //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    **/
 
-    //If symmetric orthogonalization will work, use it
-    //Unless the user wants canonical
+    // ==> CANONICAL ORTHOGONALIZATION <== //
+
+    // Decide symmetric or canonical 
     double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
+
         if (print_)
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
-        canonical_X_ = false;
 
-        return;
     } else {
+
         if (print_)
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
-        canonical_X_ = true;
 
         //Diagonalize S (or just get a fresh copy)
-        eigvec.copy(eigvec_store);
-        eigval.copy(eigval_store);
+        eigvec->copy(eigvec_store.get());
+        eigval->copy(eigval_store.get());
         int delta_mos = 0;
-        for (int h=0; h<eigval.nirrep(); ++h) {
+        for (int h=0; h<eigval->nirrep(); ++h) {
             //in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
             int start_index = 0;
             for (int i=0; i<dimpi[h]; ++i) {
-                if (S_cutoff  < eigval.get(h,i)) {
-                    double scale = 1.0 / sqrt(eigval.get(h, i));
-                    eigvec.scale_column(h, i, scale);
+                if (S_cutoff  < eigval->get(h,i)) {
+                    double scale = 1.0 / sqrt(eigval->get(h, i));
+                    eigvec->scale_column(h, i, scale);
                 } else {
                     start_index++;
                     nmopi_[h]--;
@@ -577,12 +545,11 @@ void HF::form_Shalf()
             //eigvec.print(outfile);
             //Copy significant columns of eigvec into X in
             //descending order
-            X_->zero();
+            X_->init(eigvec->nirrep(),nsopi_,nmopi_,"X (Canonical Orthogonalization)");
             for (int i=0; i<dimpi[h]-start_index; ++i) {
                 for (int m = 0; m < dimpi[h]; m++)
-                    X_->set(h,m,i,eigvec.get(h,m,dimpi[h]-i-1));
+                    X_->set(h,m,i,eigvec->get(h,m,dimpi[h]-i-1));
             }
-            //X_->print(outfile);
             if (print_>2)
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
 
@@ -592,15 +559,16 @@ void HF::form_Shalf()
         if (print_)
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
 
-        epsilon_a_->init(eigvec.nirrep(), nmopi_);
-        Ca_->init(eigvec.nirrep(),nsopi_,nmopi_,"MO coefficients");
+        // Refreshes twice in RHF, no big deal
+        epsilon_a_->init(eigvec->nirrep(), nmopi_);
+        Ca_->init(eigvec->nirrep(),nsopi_,nmopi_,"MO coefficients");
+        epsilon_b_->init(eigvec->nirrep(), nmopi_);
+        Cb_->init(eigvec->nirrep(),nsopi_,nmopi_,"MO coefficients");
     }
 
     if (print_ > 3) {
         S_->print(outfile);
-        Shalf_->print(outfile);
-        if (canonical_X_)
-            X_->print(outfile);
+        X_->print(outfile);
     }
 }
 
@@ -654,122 +622,36 @@ void HF::print_orbitals(const char* header, int *&irrep_count,
         delete [] labels[h];
 }
 
-
-bool HF::load_or_compute_initial_C()
+void HF::guess()
 {
-    bool ret = false;
-    bool loaded = false;
-
     //What does the user want?
     //Options will be:
-    // ""-Either READ or CORE (try READ first)
-    // "READ"-try to read MOs from checkpoint (restart style)
-    // "BASIS2"-try to read MOs from checkpoint after basis cast up (in INPUT) NOT WORKING!
-    // "DUAL_BASIS"-real the results of the DB computation from File 100, Temporary hack
+    // "READ"-try to read MOs from file100, projecting if needed 
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
     string guess_type = options_.get_str("GUESS");
-    if (guess_type == "" || guess_type == "READ" || guess_type == "BASIS2") {
+    if (guess_type == "READ") {
 
-        // Read MOs from checkpoint and set C_ to them
-        double **vectors;
+        if (print_)
+            fprintf(outfile, "  SCF Guess: Projection.\n");
 
-        if (restricted()) {
-            // Check to see if there are MOs already in the checkpoint file.
-            // If so, read them in instead of forming them.
-            string prefix(chkpt_->build_keyword(const_cast<char*>("MO coefficients")));
+        load_orbitals();
+        form_D();
 
-            if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
+    } else if (guess_type == "SAD") {
 
-                vectors = chkpt_->rd_scf();
-                Ca_->set(const_cast<const double**>(vectors));
-                free_block(vectors);
-
-                double *orbitale;
-                orbitale = chkpt_->rd_evals();
-                epsilon_a_->set(orbitale);
-                delete[] orbitale;
-
-                loaded = true;
-            }
-        }
-        else {
-            string prefix(chkpt_->build_keyword(const_cast<char*>("Alpha MO coefficients")));
-            if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-
-                vectors = chkpt_->rd_alpha_scf();
-                Ca_->set(const_cast<const double**>(vectors));
-                free_block(vectors);
-
-                double *orbitale;
-                orbitale = chkpt_->rd_alpha_evals();
-                epsilon_a_->set(orbitale);
-                delete[] orbitale;
-            }
-
-            prefix = chkpt_->build_keyword(const_cast<char*>("Beta MO coefficients"));
-            if (chkpt_->exist(const_cast<char*>(prefix.c_str()))) {
-                vectors = chkpt_->rd_beta_scf();
-                Ca_->set(const_cast<const double**>(vectors));
-                free_block(vectors);
-
-                double *orbitale;
-                orbitale = chkpt_->rd_beta_evals();
-                epsilon_b_->set(orbitale);
-                delete[] orbitale;
-
-                loaded = true;
-            }
-        }
-
-        if (loaded) {
-            //Try for existing MOs already. Deuces of loaded spades
-           if (print_)
-               fprintf(outfile, "  SCF Guess: Reading previous MOs.\n\n");
-
-           // Read SCF energy from checkpoint file.
-           E_ = chkpt_->rd_escf();
-
-           ret = true;
-           loaded = true;
-        }
-    }
-    else if (guess_type == "DUAL_BASIS") {
-         //Try for dual basis MOs,
-        if (print_ && Communicator::world->me() == 0)
-            fprintf(outfile, "  SCF Guess: Dual-Basis. Reading from File 100.\n\n");
-
-        psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirrep_),sizeof(int));
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
-        psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
-
-        shared_ptr<Matrix> Ctemp(new Matrix("DUAL BASIS MOS", nirrep_, nsopi_, doccpi_));
-        Ctemp->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-
-        Ca_->zero();
-        for (int h = 0; h < nirrep_; h++)
-            for (int m = 0; m<nsopi_[h]; m++)
-                for (int i = 0; i<doccpi_[h]; i++)
-                    Ca_->set(h,m,i,Ctemp->get(h,m,i));
-
-        psio_->close(PSIF_SCF_DB_MOS,1);
-        ret = true;
-        loaded = true;
-    }
-    else if (guess_type == "SAD") {
         if (print_)
             fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n");
 
-        //Superposition of Atomic Density (will be preferred when we can figure it out)
+        //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
-        loaded = true;
-    }
-    else if (guess_type == "GWH") {
+        // Fractional occupation
+        for (int h = 0 ; h < nirrep(); h++) {
+            nalphapi_[h] = sad_nocc_[h];
+        }
+
+    } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
         if (print_)
             fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
@@ -785,32 +667,113 @@ bool HF::load_or_compute_initial_C()
                 }
             }
         }
+        Fb_->copy(Fa_);
 
-        form_C();
-        loaded = true;
-    }
-    else if (guess_type == "READ" || guess_type == "BASIS2") {
-        throw std::invalid_argument("Checkpoint MOs requested, but do not exist!");
-    }
+        form_initial_C();
+        find_occupation();
+        form_D();
+        E_ = compute_initial_E();
 
-    // If the user specified CORE or we tried to READ and we couldn't find the coefficients.
-    if (guess_type == "CORE" || loaded == false) {
-        //CORE is an old Psi standby, so we'll play this as spades
+    } else if (guess_type == "CORE") {
+
         if (print_)
             fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
         Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
         Fb_->copy(H_);
 
-        if (options_.get_str("REFERENCE") == "ROHF")
-            form_initial_C();
-        else
-            form_C();
+        form_initial_C();
+        find_occupation();
+        form_D();
+        E_ = compute_initial_E();
     }
-
-    return ret;
 }
+void HF::save_orbitals()
+{
+    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
+    if (print_)
+        fprintf(outfile,"\n  Saving occupied orbitals to File 100.\n");
+
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) &(nsopi_),8*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
+
+    char *basisname = strdup(options_.get_str("BASIS").c_str());
+    int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
+
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int)); 
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char)); 
+    
+    shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
+    for (int h = 0; h < nirrep_; h++)
+        for (int m = 0; m<nsopi_[h]; m++)
+            for (int i = 0; i<nalphapi_[h]; i++)
+                Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
+    Ctemp_a->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+
+    shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
+    for (int h = 0; h < nirrep_; h++)
+        for (int m = 0; m<nsopi_[h]; m++)
+            for (int i = 0; i<nbetapi_[h]; i++)
+                Ctemp_b->set(h,m,i,Cb_->get(h,m,i));
+    Ctemp_b->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+
+    psio_->close(PSIF_SCF_DB_MOS,1);
+}
+void HF::load_orbitals()
+{
+    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
+
+    int basislength;
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(basislength),sizeof(int)); 
+    char basisnamec[basislength];
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char)); 
+
+    std::string basisname(basisnamec);   
+
+    if (basisname == "")
+        throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for small-basis guess");
+ 
+    if (print_)
+        fprintf(outfile,"  Computing dual basis set projection from %s to %s.\n", \
+            basisname.c_str(),options_.get_str("BASIS").c_str());
+
+    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
+
+    int old_nirrep, old_nsopi[8];
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(old_nirrep),sizeof(int));
+
+    if (old_nirrep != nirrep_) 
+        throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
+
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),8*sizeof(int));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
+
+    shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+    Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    shared_ptr<Matrix> Ca = dualBasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
+    for (int h = 0; h < nirrep_; h++)
+        for (int m = 0; m<nsopi_[h]; m++)
+            for (int i = 0; i<nalphapi_[h]; i++)
+                Ca_->set(h,m,i,Ctemp_a->get(h,m,i));
+
+    shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
+    Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
+    shared_ptr<Matrix> Cb = dualBasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
+    for (int h = 0; h < nirrep_; h++)
+        for (int m = 0; m<nsopi_[h]; m++)
+            for (int i = 0; i<nbetapi_[h]; i++)
+                Cb_->set(h,m,i,Ctemp_b->get(h,m,i));
+
+    psio_->close(PSIF_SCF_DB_MOS,1);
+}
 
 void HF::dump_to_checkpoint()
 {
@@ -882,31 +845,17 @@ double HF::compute_energy()
     std::string reference = options_.get_str("REFERENCE");
 
     bool converged = false, diis_iter = false;
-    if (options_.get_str("GUESS") == "SAD")
+
+    // Neither of these are idempotent
+    if ((options_.get_str("GUESS") == "SAD") || (options_.get_str("GUESS") == "READ"))
         iteration_ = -1;
     else
         iteration_ = 0;
 
     form_H(); //Core Hamiltonian
-    form_Shalf(); //Shalf Matrix
+    form_Shalf(); //S and X Matrix
 
-    // Form initial MO guess by user specified method
-    // Check to see if there are MOs already in the checkpoint file.
-    // If so, read them in instead of forming them, unless the user disagrees.
-    load_or_compute_initial_C();
-
-    // Maybe this goes here?
-    if (options_.get_str("GUESS") == "SAD") {
-        for (int h = 0 ; h < nirrep(); h++) {
-            nalphapi_[h] = sad_nocc_[h];
-        }
-    } else {
-        // Guess the occupation, if needed.
-        find_occupation();
-        form_D();
-        // Compute an initial energy using H and D
-        E_ = compute_initial_E();
-    }
+    guess(); // Guess
 
     if (print_)
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", reference.c_str(), E_);
@@ -992,10 +941,10 @@ double HF::compute_energy()
             sort(bPairs.begin(), bPairs.end());
             int *irrep_count = new int[nirrep_];
             ::memset(irrep_count, 0, nirrep_ * sizeof(int));
-            if(reference == "RHF"){
+            if((reference == "RHF") || (reference == "RKS")){
                 print_orbitals("Doubly Occupied:", irrep_count, aPairs, 0, nalpha_);
                 print_orbitals("Virtual:", irrep_count, aPairs, nalpha_, nmo_);
-            }else if(reference == "UHF"){
+            }else if((reference == "UHF") || (reference == "UKS")){
                 print_orbitals("Alpha Occupied:", irrep_count, aPairs, 0, nalpha_);
                 print_orbitals("Alpha Virtual:", irrep_count, aPairs, nalpha_, nmo_);
                 ::memset(irrep_count, 0, nirrep_ * sizeof(int));
@@ -1038,14 +987,10 @@ double HF::compute_energy()
         psio_->close(PSIF_CHKPT, 1);
     }
 
-    //often, we're close!
-    if (options_.get_bool("DUAL_BASIS"))
-        save_dual_basis_projection();
+    // Orbitals are always saved, in case a dual basis is required later
+    save_orbitals();
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();
-
-    // Compute the final dipole.
-//    compute_multipole();
 
     // Clean memory off, handle diis closeout, etc
     finalize();
@@ -1053,6 +998,40 @@ double HF::compute_energy()
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
     return E_;
+}
+void HF::diagonalizeFock(shared_ptr<Matrix> Fm, shared_ptr<Matrix> Cm, shared_ptr<Vector> epsm)
+{
+    for (int h = 0; h < Cm->nirrep(); h++) {
+
+        int nso = nsopi_[h];
+        int nmo = nmopi_[h];
+
+        if (nmo == 0 || nso == 0) continue;
+
+        double **Temp = block_matrix(nmo,nso);
+        double **Fp = block_matrix(nmo,nmo);
+        double **Cp = block_matrix(nmo,nmo);
+
+        double** X = X_->pointer(h);
+        double** F = Fm->pointer(h);
+        double** C = Cm->pointer(h);
+
+        double* eigvals = epsm->pointer(h);
+
+        //Form F' = X'FX for canonical orthogonalization
+        C_DGEMM('T','N',nmo,nso,nso,1.0,X[0],nmo,F[0],nso,0.0,Temp[0],nso);
+        C_DGEMM('N','N',nmo,nmo,nso,1.0,Temp[0],nso,X[0],nmo,0.0,Fp[0],nmo);
+
+        //Form C' = eig(F')
+        sq_rsp(nmo, nmo, Fp,  eigvals, 1, Cp, 1.0e-14);
+
+        //Form C = XC'
+        C_DGEMM('N','N',nso,nmo,nmo,1.0,X[0],nmo,Cp[0],nmo,0.0,C[0],nmo);
+
+        free_block(Temp);
+        free_block(Cp);
+        free_block(Fp);
+    }
 }
 
 }}

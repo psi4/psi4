@@ -79,23 +79,6 @@ void ROHF::finalize()
     HF::finalize();
 }
 
-void ROHF::form_initial_C()
-{
-    SharedMatrix temp = shared_ptr<Matrix>(factory_->create_matrix());
-
-    // In ROHF the creation of the C matrix depends on the previous iteration's C
-    // matrix. Here we use H to generate the first C.
-    temp->copy(H_);
-    temp->transform(Shalf_);
-    temp->diagonalize(Ca_, epsilon_a_);
-    find_occupation();
-    temp->gemm(false, false, 1.0, Shalf_, Ca_, 0.0);
-    Ca_->copy(temp);
-
-    if (print_ > 3)
-        Ca_->print(outfile, "initial C");
-}
-
 void ROHF::save_density_and_energy()
 {
     Dt_old_->copy(Dt_);
@@ -114,6 +97,9 @@ void ROHF::save_fock()
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, Feff_.get());
         initialized_diis_manager_ = true;
     }
+
+    // Dear DIIS person (with my luck, future Rob):
+    // Remember that X is nso x nmo, so an MO or orthogonal basis F matrix is not the same size as the SO basis
 }
 
 bool ROHF::diis()
@@ -142,7 +128,7 @@ void ROHF::form_initialF()
 {
     // Form the initial Fock matrix, closed and open variants
     Fa_->copy(H_);
-    Fa_->transform(Shalf_);
+    Fa_->transform(X_);
     Fb_->copy(Fa_);
 
 #ifdef _DEBUG
@@ -233,25 +219,45 @@ void ROHF::form_C()
     }
 }
 
+void ROHF::form_initial_C()
+{
+    SharedMatrix temp = shared_ptr<Matrix>(factory_->create_matrix());
+
+    // In ROHF the creation of the C matrix depends on the previous iteration's C
+    // matrix. Here we use Fa to generate the first C, where Fa was set by guess()
+    // to either H or the GWH Hamiltonian.
+    temp->copy(Fa_);
+    temp->transform(X_);
+    temp->diagonalize(Ca_, epsilon_a_);
+    find_occupation();
+    temp->gemm(false, false, 1.0, X_, Ca_, 0.0);
+    Ca_->copy(temp);
+
+    if (print_ > 3)
+        Ca_->print(outfile, "initial C");
+}
+
 void ROHF::form_D()
 {
     for (int h = 0; h < nirrep_; ++h) {
-        for (int i = 0; i < nsopi_[h]; ++i) {
-            for (int j = 0; j < nsopi_[h]; ++j) {
-                double val = 0.0;
-                for(int m = 0; m < doccpi_[h]; ++m)
-                    val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
-                Db_->set(h, i, j, val);
+        int nso = nsopi_[h];
+        int nmo = nmopi_[h];
+        int na = nalphapi_[h];
+        int nb = nbetapi_[h];
+    
+        if (nso == 0 || nmo == 0 || na == 0) continue;
 
-                for(int m = doccpi_[h]; m < doccpi_[h] + soccpi_[h]; ++m)
-                    val += Ca_->get(h, i, m) * Ca_->get(h, j, m);
-                Da_->set(h, i, j, val);
-            }
-        }
+        double** Ca = Ca_->pointer(h);
+        double** Da = Da_->pointer(h);
+        double** Db = Db_->pointer(h);
+
+        C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Da[0],nso);
+        C_DGEMM('N','T',nso,nso,nb,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Db[0],nso);
+
     }
 
     Dt_->copy(Da_);
-    Dt_->copy(Db_);
+    Dt_->add(Db_);
 
     if (debug_) {
         fprintf(outfile, "in ROHF::form_D:\n");
@@ -262,7 +268,7 @@ void ROHF::form_D()
 
 double ROHF::compute_initial_E()
 {
-    return compute_E();
+    return 0.5 * (compute_E() + nuclearrep_);
 }
 
 double ROHF::compute_E() {
