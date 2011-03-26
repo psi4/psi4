@@ -180,31 +180,6 @@ void RHF::form_G()
     G_->subtract(K_);
 }
 
-void RHF::save_dual_basis_projection()
-{
-    if (print_)
-        fprintf(outfile,"\n  Computing dual basis set projection from %s to %s.\n  Results will be stored in File 100.\n", \
-            options_.get_str("BASIS").c_str(),options_.get_str("DUAL_BASIS_SCF").c_str());
-
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
-
-    SharedMatrix C_2 = dualBasisProjection(Ca_,doccpi_,basisset_,dual_basis);
-    C_2->set_name("DUAL BASIS MOS");
-    if(print_>3)
-        C_2->print(outfile);
-
-    psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
-    C_2->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF Energy",(char *) &(E_),sizeof(double));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREPS",(char *) &(nirrep_),sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB DOCCPI",(char *) (doccpi_),8*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB SOCCPI",(char *) (soccpi_),8*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
-    psio_->close(PSIF_SCF_DB_MOS,1);
-}
-
 void RHF::save_information()
 {
 }
@@ -234,10 +209,7 @@ void RHF::save_fock()
     FDSmSDF.subtract(SDF);
 
     // Orthonormalize the error matrix
-    if (!canonical_X_)
-        FDSmSDF.transform(Shalf_);
-    else
-        FDSmSDF.transform(X_);
+    FDSmSDF.transform(X_);
 
     //FDSmSDF.print(outfile);
 
@@ -281,119 +253,30 @@ void RHF::form_F()
 
 void RHF::form_C()
 {
-    if (!canonical_X_) {
-        Matrix eigvec;
-        factory_->create_matrix(eigvec);
-
-        Fa_->transform(Shalf_);
-        Fa_->diagonalize(eigvec, *epsilon_a_);
-
-        Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
-
-        // Save C to checkpoint file.
-        //double **vectors = C_->to_block_matrix();
-        //chkpt_->wt_scf(vectors);
-        //free_block(vectors);
-
-#ifdef _DEBUG
-        if (debug_) {
-            Ca_->eivprint(epsilon_a_);
-        }
-#endif
-    } else {
-
-        Ca_->zero();
-
-        for (int h = 0; h<Ca_->nirrep(); h++) {
-
-            int norbs = nsopi_[h];
-            int nmos = nmopi_[h];
-
-            //fprintf(outfile,"  Norbs = %d, Nmos = %d\n",norbs,nmos); fflush(outfile);
-
-            double **X = block_matrix(norbs,nmos);
-            for (int m = 0 ; m<norbs; m++)
-                for (int i = 0; i<nmos; i++)
-                    X[m][i] = X_->get(h,m,i);
-
-            double **F = block_matrix(norbs,norbs);
-            for (int m = 0 ; m<norbs; m++)
-                for (int i = 0; i<norbs; i++)
-                    F[m][i] = Fa_->get(h,m,i);
-
-            double **C = block_matrix(norbs,nmos);
-            double **Temp = block_matrix(nmos,norbs);
-            double **Fp = block_matrix(nmos,nmos);
-            double **Cp = block_matrix(nmos,nmos);
-
-            //Form F' = X'FX for canonical orthogonalization
-            C_DGEMM('T','N',nmos,norbs,norbs,1.0,X[0],nmos,F[0],norbs,0.0,Temp[0],norbs);
-            C_DGEMM('N','N',nmos,nmos,norbs,1.0,Temp[0],norbs,X[0],nmos,0.0,Fp[0],nmos);
-
-            //Form C' = eig(F')
-            double *eigvals = init_array(nmos);
-            sq_rsp(nmos, nmos, Fp,  eigvals, 1, Cp, 1.0e-14);
-
-            for (int i = 0; i<nmos; i++)
-                epsilon_a_->set(h,i,eigvals[i]);
-
-            //fprintf(outfile,"  Canonical orbital eigenvalues");
-            //for (int i = 0; i<nmos; i++)
-            //    fprintf(outfile,"  %d: %10.6f\n",i+1,eigvals[i]);
-
-            free(eigvals);
-
-            //Form C = XC'
-            C_DGEMM('N','N',norbs,nmos,nmos,1.0,X[0],nmos,Cp[0],nmos,0.0,C[0],nmos);
-
-            for (int m = 0 ; m<norbs; m++)
-                for (int i = 0; i<nmos; i++)
-                    Ca_->set(h,m,i,C[m][i]);
-
-            free_block(X);
-            free_block(F);
-            free_block(C);
-            free_block(Temp);
-            free_block(Cp);
-            free_block(Fp);
-        }
-
-    }
+    diagonalizeFock(Fa_, Ca_, epsilon_a_);
     find_occupation();
 }
 
 void RHF::form_D()
 {
-    int h, i, j;
-    int *opi = D_->rowspi();
-    int nirreps = D_->nirrep();
-    int norbs = basisset_->nbf();
+    for (int h = 0; h < nirrep_; ++h) {
+        int nso = nsopi_[h];
+        int nmo = nmopi_[h];
+        int na = doccpi_[h];
+    
+        if (nso == 0 || nmo == 0 || na == 0) continue;
 
-    double** C = Ca_->to_block_matrix();
-    double** D = block_matrix(norbs,norbs);
+        double** Ca = Ca_->pointer(h);
+        double** D = D_->pointer(h);
 
-    int offset_R = 0;
-    int offset_C = 0;
-    for (h = 0; h<nirreps; ++h) {
-        C_DGEMM('n','t',opi[h],opi[h],doccpi_[h],1.0,&C[offset_R][offset_C],nmo_,&C[offset_R][offset_C],nmo_,0.0,&D[offset_R][offset_R],norbs);
+        C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,D[0],nso);
 
-        for (i = 0; i<opi[h]; i++)
-            for (j = 0; j<opi[h]; j++)
-                D_->set(h,i,j,D[offset_R+i][offset_R+j]);
-
-        offset_R += opi[h];
-        offset_C += nmopi_[h];
     }
 
-    free_block(C);
-    free_block(D);
-
-
-#ifdef _DEBUG
     if (debug_) {
-        D_->print(outfile);
+        fprintf(outfile, "in UHF::form_D:\n");
+        D_->print();
     }
-#endif
 }
 
 double RHF::compute_initial_E()

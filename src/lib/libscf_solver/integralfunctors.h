@@ -782,5 +782,4 @@ void HF::process_tei(JKFunctor & functor)
 
 }} // Namespaces
 
-
 #endif // INTEGRALFUNCTORS_H

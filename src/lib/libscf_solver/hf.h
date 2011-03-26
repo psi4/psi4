@@ -30,11 +30,13 @@ class DFHF;
 
 class HF : public Wavefunction {
 protected:
+
+    /// The core hamiltonian
     SharedMatrix H_;
+    /// The overlap metric
     SharedMatrix S_;
-    SharedMatrix Shalf_;
+    /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
-    SharedMatrix Sphalf_;
 
     /// Previous iteration's energy and current energy
     double Eold_;
@@ -116,22 +118,7 @@ public:
     /// Nuclear contributions
     SimpleVector nuclear_dipole_contribution_;
     SimpleVector nuclear_quadrupole_contribution_;
-
-    /// Formation of H is the same regardless of RHF, ROHF, UHF
-    void form_H();
-
-    /// Formation of S^+1/2 and S^-1/2 are the same
-    void form_Shalf();
-
-    /// Perform casting of basis set if desired.
-    boost::shared_ptr<Matrix> dualBasisProjection(SharedMatrix _C, int *_noccpi, boost::shared_ptr<BasisSet> _old, boost::shared_ptr<BasisSet> _new);
-
-    /// UHF Atomic Density Matrix for SAD
-    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
-    void getUHFAtomicDensity(boost::shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
-    // Computes the C and D matrix in place for SAD Atomic UHF
-    void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
-
+    //
     /// Set the amount of information to print
     void set_print(const int n) {print_ = n;}
 
@@ -141,6 +128,22 @@ public:
     /// The RMS error in the density
     double rms_density_error() {return Drms_;}
 protected:
+
+    /// Formation of H is the same regardless of RHF, ROHF, UHF
+    void form_H();
+
+    /// Formation of S^+1/2 and S^-1/2 are the same
+    void form_Shalf();
+
+    /// Perform casting of basis set if desired.
+    boost::shared_ptr<Matrix> dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
+
+    /// UHF Atomic Density Matrix for SAD
+    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
+    void getUHFAtomicDensity(boost::shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
+    // Computes the C and D matrix in place for SAD Atomic UHF
+    void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
+
     /// Common initializer
     void common_init();
 
@@ -186,18 +189,17 @@ protected:
     /// SAD Guess and propagation
     void compute_SAD_guess();
 
-    /** Read in C from checkpoint. Default implementation works for RHF and ROHF. UHF needs to read in additional C.
-     *  If unable to load C from checkpoint, will call form_C to compute the value.
-     *  If unable to load call compute_initial_E(), else loads SCF energy from checkpoint.
-     * @returns true if successfully loaded from checkpoint, else false.
-     */
-    virtual bool load_or_compute_initial_C();
+    /// Form the guess (gaurantees C, D, and E)
+    virtual void guess();
 
     /** Computes the density matrix (D_) */
     virtual void form_D() =0;
 
     /** Compute the MO coefficients (C_) */
     virtual void form_C() =0;
+
+    /** Transformation, diagonalization, and backtransform of Fock matrix */
+    virtual void diagonalizeFock(boost::shared_ptr<Matrix> F, boost::shared_ptr<Matrix> C, boost::shared_ptr<Vector> eps);
 
     /** Computes the Fock matrix */
     virtual void form_F() =0;
@@ -226,7 +228,13 @@ protected:
     /** Performs DIIS extrapolation */
     virtual bool diis() { return false; }
 
-    virtual void save_dual_basis_projection() {}
+    /** Save orbitals to File 100 **/
+    virtual void save_orbitals();
+
+    /** Load orbitals from File 100, projecting if needed **/
+    virtual void load_orbitals();
+
+    /** Save SAPT info (TODO: Move to Python driver **/
     virtual void save_sapt_info() {}
 
     /** Saves all wavefunction information to the checkpoint file*/

@@ -159,10 +159,6 @@ void UHF::form_initialF()
     Fa_->copy(H_);
     Fb_->copy(H_);
 
-    // Transform the Focks
-    // Fa_->transform(Shalf_);
-    // Fb_->transform(Shalf_);
-
     if (debug_) {
         fprintf(outfile, "Initial Fock alpha matrix:\n");
         Fa_->print(outfile);
@@ -187,17 +183,8 @@ void UHF::form_F()
 
 void UHF::form_C()
 {
-    SharedMatrix eigvec = factory_->create_shared_matrix();
-
-    Fa_->transform(Shalf_);
-    Fa_->diagonalize(eigvec, epsilon_a_);
-
-    Ca_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
-
-    Fb_->transform(Shalf_);
-    Fb_->diagonalize(eigvec, epsilon_b_);
-
-    Cb_->gemm(false, false, 1.0, Shalf_, eigvec, 0.0);
+    diagonalizeFock(Fa_, Ca_, epsilon_a_);
+    diagonalizeFock(Fb_, Cb_, epsilon_b_);
 
     if (debug_) {
         Ca_->print(outfile);
@@ -207,30 +194,31 @@ void UHF::form_C()
 
 void UHF::form_D()
 {
-    double val;
     for (int h = 0; h < nirrep_; ++h) {
-        for (int p = 0; p < nsopi_[h]; ++p) {
-            for (int q = 0; q < nsopi_[h]; ++q) {
-                val = 0.0;
-                for (int i = 0; i < nalphapi_[h]; ++i)
-                    val += Ca_->get(h, p, i) * Ca_->get(h, q, i);
-                Da_->set(h, p, q, val);
+        int nso = nsopi_[h];
+        int nmo = nmopi_[h];
+        int na = nalphapi_[h];
+        int nb = nbetapi_[h];
+    
+        if (nso == 0 || nmo == 0 || na == 0) continue;
 
-                val = 0.0;
-                for (int i = 0; i < nbetapi_[h]; ++i)
-                    val += Cb_->get(h, p, i) * Cb_->get(h, q, i);
-                Db_->set(h, p, q, val);
-            }
-        }
+        double** Ca = Ca_->pointer(h);
+        double** Cb = Cb_->pointer(h);
+        double** Da = Da_->pointer(h);
+        double** Db = Db_->pointer(h);
+
+        C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Da[0],nso);
+        C_DGEMM('N','T',nso,nso,nb,1.0,Cb[0],nmo,Cb[0],nmo,0.0,Db[0],nso);
+
     }
 
-    // Form total density
     Dt_->copy(Da_);
     Dt_->add(Db_);
 
     if (debug_) {
-        Da_->print(outfile);
-        Db_->print(outfile);
+        fprintf(outfile, "in UHF::form_D:\n");
+        Da_->print();
+        Db_->print();
     }
 }
 
@@ -288,12 +276,12 @@ void UHF::save_fock()
     Matrix FaDaSmSDaFa;
     FaDaSmSDaFa.copy(FaDaS);
     FaDaSmSDaFa.subtract(SDaFa);
-    FaDaSmSDaFa.transform(Shalf_);
+    FaDaSmSDaFa.transform(X_);
 
     Matrix FbDbSmSDbFb;
     FbDbSmSDbFb.copy(FbDbS);
     FbDbSmSDbFb.subtract(SDbFb);
-    FbDbSmSDbFb.transform(Shalf_);
+    FbDbSmSDbFb.transform(X_);
 
     diis_manager_->add_entry(4, &FaDaSmSDaFa, &FbDbSmSDbFb, Fa_.get(), Fb_.get());
 }

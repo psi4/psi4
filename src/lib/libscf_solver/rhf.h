@@ -51,9 +51,6 @@ protected:
     void save_sapt_info();
 
 
-    //Save Dual Basis
-    void save_dual_basis_projection();
-
 // PK specific stuff
 #if CUSTOM_PK_CODE
     double *pk_;
