@@ -434,12 +434,36 @@ void Matrix::set_diagonal(const Vector * const vec)
 
 void Matrix::set_diagonal(const Vector& vec)
 {
-    set_diagonal(&vec);
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set_diagonal called on a non-totally symmetric matrix.");
+    }
+
+    int h, i, size;
+    zero();
+    for (h=0; h<nirrep_; ++h) {
+        size = rowspi_[h];
+        if (size) {
+            for (i=0; i<size; ++i)
+                matrix_[h][i][i] = vec.vector_[h][i];
+        }
+    }
 }
 
 void Matrix::set_diagonal(const shared_ptr<Vector>& vec)
 {
-    set_diagonal(vec.get());
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::set_diagonal called on a non-totally symmetric matrix.");
+    }
+
+    int h, i, size;
+    zero();
+    for (h=0; h<nirrep_; ++h) {
+        size = rowspi_[h];
+        if (size) {
+            for (i=0; i<size; ++i)
+                matrix_[h][i][i] = vec->vector_[h][i];
+        }
+    }
 }
 
 double *Matrix::to_lower_triangle() const
