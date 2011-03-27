@@ -258,8 +258,6 @@ void HF::integrals()
         df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DF"){
-        if(nirrep_ > 1)
-            throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DIRECT"){
         if (print_)
@@ -392,7 +390,7 @@ void HF::print_preiterations()
     fprintf(outfile, "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
     fprintf(outfile, "   -------------------------------------------------------\n");
     for (int h= 0; h < nirrep_; h++) {
-        fprintf(outfile, "     %3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);   
+        fprintf(outfile, "     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);   
     }
     fprintf(outfile, "   -------------------------------------------------------\n");
     fprintf(outfile, "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);   

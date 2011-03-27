@@ -54,13 +54,14 @@ FittingMetric::FittingMetric()
         is_poisson_ = false;
     }
     is_inverted_ = false;
+    force_C1_ = false;
 }
-FittingMetric::FittingMetric(shared_ptr<BasisSet> aux) :
-    aux_(aux), is_poisson_(false), is_inverted_(false)
+FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, bool force_C1) :
+    aux_(aux), is_poisson_(false), is_inverted_(false), force_C1_(force_C1)
 {
 }
-FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, shared_ptr<BasisSet> pois) :
-    aux_(aux), pois_(pois), is_poisson_(true), is_inverted_(false)
+FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, shared_ptr<BasisSet> pois, bool force_C1) :
+    aux_(aux), pois_(pois), is_poisson_(true), is_inverted_(false), force_C1_(force_C1)
 {
 }
 
@@ -232,7 +233,7 @@ void FittingMetric::form_fitting_metric()
     }
 
     // If C1, form indexing and exit immediately (multiplying by 1 is not so gratifying)
-    if (auxpet->nirrep() == 1) {
+    if (auxpet->nirrep() == 1 || force_C1_ == true) {
         metric_ = AOmetric;
         metric_->set_name("SO Basis Fitting Metric");
         pivots_ = shared_ptr<IntVector>(new IntVector(naux));

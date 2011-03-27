@@ -86,7 +86,9 @@ namespace psi {
         fprintf(stderr, "PSIO_MAXUNIT = %d.\n", PSIO_MAXUNIT);
         break;
     }
-    exit(PSIO::_error_exit_code_);
+    fflush(stderr);
+    throw PSIEXCEPTION("PSIO Error");
+    //exit(PSIO::_error_exit_code_);
   }
 
 }
