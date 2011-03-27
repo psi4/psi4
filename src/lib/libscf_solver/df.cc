@@ -54,10 +54,15 @@ DFHF::~DFHF()
 }
 void DFHF::common_init()
 {
-    print_ = options_.get_int("PRINT");
-    fprintf(outfile, " DFHF: Density-Fitted SCF Algorithms.\n");
-    fprintf(outfile, "   by Rob Parrish\n\n");
-    
+    print_ = 1;
+    if (options_["PRINT"].has_changed())
+        print_ = options_.get_int("PRINT");
+
+    if (print_) {
+        fprintf(outfile, " DFHF: Density-Fitted SCF Algorithms.\n");
+        fprintf(outfile, "   by Rob Parrish\n\n");
+    }    
+
     is_initialized_ = false;
     is_jk_ = false;
     restricted_ = false;
@@ -87,12 +92,7 @@ void DFHF::common_init()
     }
 
     schwarz_ = shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
-    Jinv_ = shared_ptr<FittingMetric>(new FittingMetric(auxiliary_));
-}
-void DFHF::initialize()
-{
-    if (is_initialized_) return;
-    is_initialized_ = true;
+    Jinv_ = shared_ptr<FittingMetric>(new FittingMetric(auxiliary_, true));
 
     // Make a memory decision here
     int ntri = schwarz_->get_nfun_pairs();
@@ -102,6 +102,209 @@ void DFHF::initialize()
     // Two is for buffer space in fitting
     is_disk_ = (three_memory + 2*two_memory < memory_ ? false : true);
 
+    if (print_) {
+        fprintf(outfile, "  Using %s Algorithm.\n\n", (is_disk_ ? "Disk" : "Core")); 
+    }
+    if (print_ > 1) {
+        fprintf(outfile, "    ----------------------------------------------\n");
+        fprintf(outfile, "     Quantity         Doubles              MiB   \n");
+        fprintf(outfile, "    ----------------------------------------------\n");
+        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "Memory", memory_, (ULI) (memory_*8.0 / 1.0E6));            
+        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|mn)", two_memory, (ULI) (two_memory*8.0 / 1.0E6));            
+        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|B)", three_memory, (ULI) (three_memory*8.0 / 1.0E6));            
+        fprintf(outfile, "    ----------------------------------------------\n\n");
+    }
+
+    if (print_) {
+        if (options_.get_str("RI_INTS_IO") == "LOAD") {
+            fprintf(outfile, "  Will attempt to load (Q|mn) integrals from File 97.\n\n");    
+        } else if (options_.get_str("RI_INTS_IO") == "SAVE") {
+            fprintf(outfile, "  Will save (Q|mn) integrals to File 97.\n\n");    
+        }
+    }
+
+    initializeUSO2AO();
+}
+void DFHF::initializeUSO2AO()
+{
+    shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
+    shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
+    AO2USO_ = shared_ptr<Matrix>(pet->aotoso());
+}
+void DFHF::USO2AO()
+{
+    if (Da_->nirrep() == 1) {
+        Da_ao_ = Da_;
+        Db_ao_ = Db_;
+        Ca_ao_ = Ca_;
+        Cb_ao_ = Cb_;
+        Ja_ao_ = Ja_;
+        Ka_ao_ = Ka_;
+        Kb_ao_ = Kb_;
+        nalpha_ = nalphapi_[0];
+        nbeta_ = 0;
+        if (!restricted_)
+            nbeta_ = nbetapi_[0];
+        return;
+    } 
+
+    // Sizing 
+    nalpha_ = 0;
+    nbeta_ = 0;
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        nalpha_ += nalphapi_[h];
+        if (!restricted_)
+            nbeta_ += nbetapi_[h];
+    }    
+    
+    int nao = primary_->nbf();
+    int nmo = 0;
+    if (is_jk_) 
+        for (int h = 0; h < Ca_->nirrep(); h++) nmo += Ca_->colspi()[h];
+   
+    // Allocation 
+    Da_ao_ = shared_ptr<Matrix>(new Matrix("D Alpha (AO Basis)", nao, nao));
+    Ja_ao_ = shared_ptr<Matrix>(new Matrix("J (AO Basis)", nao, nao));
+    if (!restricted_) 
+        Db_ao_ = shared_ptr<Matrix>(new Matrix("D Beta (AO Basis)", nao, nao));
+
+    if (is_jk_) {
+        Ca_ao_ = shared_ptr<Matrix>(new Matrix("C Alpha (AO Basis)", nao, nmo));
+        Ka_ao_ = shared_ptr<Matrix>(new Matrix("K Alpha (AO Basis)", nao, nao));
+        if (!restricted_) {
+            Cb_ao_ = shared_ptr<Matrix>(new Matrix("C Beta (AO Basis)", nao, nmo));
+            Kb_ao_ = shared_ptr<Matrix>(new Matrix("K Beta (AO Basis)", nao, nao));
+        } 
+    }
+
+    // Filling
+    double** D_ao = Da_ao_->pointer();
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        int nso = Da_->colspi()[h];
+        if (nso == 0) continue;
+    
+        double** D_so = Da_->pointer(h);
+        double** U = AO2USO_->pointer(h);
+        double** Temp = block_matrix(nso,nao);
+
+        C_DGEMM('N','T',nso,nao,nso,1.0,D_so[0],nso,U[0],nso,0.0,Temp[0],nao);
+        C_DGEMM('N','N',nao,nao,nso,1.0,U[0],nso,Temp[0],nao,1.0,D_ao[0],nao);
+
+        free_block(Temp);
+    }
+    
+    if (!restricted_) {
+        double** D_ao = Db_ao_->pointer();
+        for (int h = 0; h < Da_->nirrep(); h++) {
+            int nso = Da_->colspi()[h];
+            if (nso == 0) continue;
+        
+            double** D_so = Db_->pointer(h);
+            double** U = AO2USO_->pointer(h);
+            double** Temp = block_matrix(nso,nao);
+
+            C_DGEMM('N','T',nso,nao,nso,1.0,D_so[0],nso,U[0],nso,0.0,Temp[0],nao);
+            C_DGEMM('N','N',nao,nao,nso,1.0,U[0],nso,Temp[0],nao,1.0,D_ao[0],nao);
+
+            free_block(Temp);
+        }
+    }
+
+    if (is_jk_) {
+        double** C_ao = Ca_ao_->pointer();
+        int counter = 0;
+        for (int h = 0; h < Da_->nirrep(); h++) {
+            int nso = Da_->colspi()[h];
+            int nmopi = Ca_->colspi()[h];
+            int nalpha = nalphapi_[h];
+            if (nso == 0 || nmopi == 0 || nalpha == 0) continue;
+        
+            double** C_so = Ca_->pointer(h);
+            double** U = AO2USO_->pointer(h);
+
+            C_DGEMM('N','N',nao,nalpha,nso,1.0,U[0],nso,C_so[0],nmopi,0.0,&C_ao[0][counter],nmo);
+
+            counter += nalpha;
+        }
+        if (!restricted_) {
+            double** C_ao = Cb_ao_->pointer();
+            counter = 0;
+            for (int h = 0; h < Da_->nirrep(); h++) {
+                int nso = Da_->colspi()[h];
+                int nmopi = Ca_->colspi()[h];
+                int nbeta = nbetapi_[h];
+                if (nso == 0 || nmopi == 0 || nbeta == 0) continue;
+            
+                double** C_so = Cb_->pointer(h);
+                double** U = AO2USO_->pointer(h);
+
+                C_DGEMM('N','N',nao,nbeta,nso,1.0,U[0],nso,C_so[0],nmopi,0.0,&C_ao[0][counter],nmo);
+
+                counter += nbeta;
+            }
+        }
+    }
+}
+void DFHF::AO2USO()
+{
+    if (Da_->nirrep() == 1) return;
+    int nao = Ja_ao_->colspi()[0];
+
+    double** J_ao = Ja_ao_->pointer();
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        int nso = Da_->colspi()[h];
+        if (nso == 0) continue;
+    
+        double** J_so = Ja_->pointer(h);
+        double** U = AO2USO_->pointer(h);
+        double** Temp = block_matrix(nso,nao);
+
+        C_DGEMM('T','N',nso,nao,nao,1.0,U[0],nso,J_ao[0],nao,0.0,Temp[0],nao);
+        C_DGEMM('N','N',nso,nso,nao,1.0,Temp[0],nao,U[0],nso,0.0,J_so[0],nso);
+
+        free_block(Temp);
+    }
+
+    if (!is_jk_) return;
+
+    double** K_ao = Ka_ao_->pointer();
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        int nso = Da_->colspi()[h];
+        if (nso == 0) continue;
+    
+        double** K_so = Ka_->pointer(h);
+        double** U = AO2USO_->pointer(h);
+        double** Temp = block_matrix(nso,nao);
+
+        C_DGEMM('T','N',nso,nao,nao,1.0,U[0],nso,K_ao[0],nao,0.0,Temp[0],nao);
+        C_DGEMM('N','N',nso,nso,nao,1.0,Temp[0],nao,U[0],nso,0.0,K_so[0],nso);
+
+        free_block(Temp);
+    }
+
+    if (restricted_) return;
+
+    K_ao = Kb_ao_->pointer();
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        int nso = Da_->colspi()[h];
+        if (nso == 0) continue;
+    
+        double** K_so = Kb_->pointer(h);
+        double** U = AO2USO_->pointer(h);
+        double** Temp = block_matrix(nso,nao);
+
+        C_DGEMM('T','N',nso,nao,nao,1.0,U[0],nso,K_ao[0],nao,0.0,Temp[0],nao);
+        C_DGEMM('N','N',nso,nso,nao,1.0,Temp[0],nao,U[0],nso,0.0,K_so[0],nso);
+
+        free_block(Temp);
+    }
+
+}
+void DFHF::initialize()
+{
+    if (is_initialized_) return;
+    is_initialized_ = true;
+
     if (is_jk_) {
         if (is_disk_)
             initialize_JK_disk();
@@ -109,120 +312,20 @@ void DFHF::initialize()
             initialize_JK_core();
     } else {
         if (is_disk_)
-            initialize_J_disk();
+            initialize_JK_disk();
         else
             initialize_J_core();
     }
 }
-void DFHF::initialize_JK_core()
-{
-    int ntri = schwarz_->get_nfun_pairs();
-    ULI three_memory = ((ULI)primary_->nbf())*ntri;
-    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
-
-    int nthread = 1;
-    #ifdef _OPENMP
-        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
-            nthread = omp_get_max_threads();
-        } else {
-            nthread = options_.get_int("RI_INTS_NUM_THREADS");
-        }
-    #endif
-    int rank = 0;
-
-    Qmn_ = shared_ptr<Matrix>(new Matrix("Qmn (Fitted Integrals)",
-        auxiliary_->nbf(), ntri));
-    double** Qmnp = Qmn_->pointer();
-
-    //Get a TEI for each thread
-    shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
-    const double **buffer = new const double*[nthread];
-    shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
-    for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory->eri());
-        buffer[Q] = eri[Q]->buffer();
-    }
-
-    long int* schwarz_shell_pairs = schwarz_->get_schwarz_shells_reverse();
-    long int* schwarz_fun_pairs = schwarz_->get_schwarz_funs_reverse();
-    int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
-    int index;
-    //The integrals (A|mn)
-    timer_on("(A|mn)");
-    #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
-    for (MU=0; MU < primary_->nshell(); ++MU) {
-        #ifdef _OPENMP
-            rank = omp_get_thread_num();
-            //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
-        #endif
-        nummu = primary_->shell(MU)->nfunction();
-        for (NU=0; NU <= MU; ++NU) {
-            numnu = primary_->shell(NU)->nfunction();
-            if (schwarz_shell_pairs[MU*(MU+1)/2+NU] > -1) {
-                for (Pshell=0; Pshell < auxiliary_->nshell(); ++Pshell) {
-                    numP = auxiliary_->shell(Pshell)->nfunction();
-                    eri[rank]->compute_shell(Pshell, 0, MU, NU);
-                    for (mu=0 ; mu < nummu; ++mu) {
-                        omu = primary_->shell(MU)->function_index() + mu;
-                        for (nu=0; nu < numnu; ++nu) {
-                            onu = primary_->shell(NU)->function_index() + nu;
-                            if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] > -1) {
-                                for (P=0; P < numP; ++P) {
-                                    PHI = auxiliary_->shell(Pshell)->function_index() + P;
-                                    Qmnp[PHI][schwarz_fun_pairs[omu*(omu+1)/2+onu]] = buffer[rank][P*nummu*numnu + mu*numnu + nu];
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    timer_off("(A|mn)");
-
-    delete []buffer;
-    delete []eri;
-
-    if (options_.get_str("FITTING_TYPE") == "EIG") {
-        Jinv_->form_eig_inverse();
-    } else {
-        throw PSIEXCEPTION("Fitting Metric type is not implemented.");
-    }
-    double** Jinvp = Jinv_->get_metric()->pointer();
-
-    ULI max_cols = (memory_-three_memory-two_memory) / auxiliary_->nbf();
-    if (max_cols < 1)
-        max_cols = 1;
-    if (max_cols > ntri)
-        max_cols = ntri;
-    shared_ptr<Matrix> temp(new Matrix("Qmn buffer", auxiliary_->nbf(), max_cols));
-    double** tempp = temp->pointer();
-
-    int nblocks = ntri / max_cols;
-    if ((ULI)nblocks*max_cols != ntri) nblocks++;
-
-    int ncol = 0;
-    int col = 0;
-    for (int block = 0; block < nblocks; block++) {
-        ncol = max_cols;
-        if (col + ncol > ntri)
-            ncol = ntri - col;
-
-        C_DGEMM('N','N',auxiliary_->nbf(), ncol, auxiliary_->nbf(), 1.0,
-            Jinvp[0], auxiliary_->nbf(), &Qmnp[0][col], ntri, 0.0,
-            tempp[0], max_cols);
-
-        for (int Q = 0; Q < auxiliary_->nbf(); Q++) {
-            C_DCOPY(ncol, tempp[Q], 1, &Qmnp[Q][col], 1);
-        }
-
-        col += ncol;
-    }
-
-    Jinv_.reset();
-}
 void DFHF::initialize_JK_disk()
 {
+    // Try to load
+    if (options_.get_str("RI_INTS_IO") == "LOAD") {
+        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+        Jinv_.reset();
+        return;
+    } 
+
     // Indexing
     int naux = auxiliary_->nbf();
     int ntri = schwarz_->get_nfun_pairs();
@@ -442,11 +545,12 @@ void DFHF::initialize_JK_disk()
         }
     }
 }
-void DFHF::initialize_J_core()
+void DFHF::initialize_JK_core()
 {
+
     int ntri = schwarz_->get_nfun_pairs();
-    ULI three_memory = (ULI)primary_->nbf()*ntri;
-    ULI two_memory = (ULI)auxiliary_->nbf()*auxiliary_->nbf();
+    ULI three_memory = ((ULI)primary_->nbf())*ntri;
+    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
 
     int nthread = 1;
     #ifdef _OPENMP
@@ -462,6 +566,15 @@ void DFHF::initialize_J_core()
         auxiliary_->nbf(), ntri));
     double** Qmnp = Qmn_->pointer();
 
+    // Try to load
+    if (options_.get_str("RI_INTS_IO") == "LOAD") {
+        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+        psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(PSIF_DFSCF_BJ, 1);
+        Jinv_.reset();
+        return;
+    } 
+    
     //Get a TEI for each thread
     shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
     const double **buffer = new const double*[nthread];
@@ -511,35 +624,166 @@ void DFHF::initialize_J_core()
     delete []buffer;
     delete []eri;
 
+    if (options_.get_str("FITTING_TYPE") == "EIG") {
+        Jinv_->form_eig_inverse();
+    } else {
+        throw PSIEXCEPTION("Fitting Metric type is not implemented.");
+    }
+    double** Jinvp = Jinv_->get_metric()->pointer();
+
+    ULI max_cols = (memory_-three_memory-two_memory) / auxiliary_->nbf();
+    if (max_cols < 1)
+        max_cols = 1;
+    if (max_cols > ntri)
+        max_cols = ntri;
+    shared_ptr<Matrix> temp(new Matrix("Qmn buffer", auxiliary_->nbf(), max_cols));
+    double** tempp = temp->pointer();
+
+    int nblocks = ntri / max_cols;
+    if ((ULI)nblocks*max_cols != ntri) nblocks++;
+
+    int ncol = 0;
+    int col = 0;
+    for (int block = 0; block < nblocks; block++) {
+        ncol = max_cols;
+        if (col + ncol > ntri)
+            ncol = ntri - col;
+
+        C_DGEMM('N','N',auxiliary_->nbf(), ncol, auxiliary_->nbf(), 1.0,
+            Jinvp[0], auxiliary_->nbf(), &Qmnp[0][col], ntri, 0.0,
+            tempp[0], max_cols);
+
+        for (int Q = 0; Q < auxiliary_->nbf(); Q++) {
+            C_DCOPY(ncol, tempp[Q], 1, &Qmnp[Q][col], 1);
+        }
+
+        col += ncol;
+    }
+
+    Jinv_.reset();
+
+    // Save if needed
+    if (options_.get_str("RI_INTS_IO") == "SAVE") {
+        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
+        psio_->write_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(PSIF_DFSCF_BJ, 1);
+    } 
+}
+void DFHF::initialize_J_core()
+{
     // TODO respect pivoting
     Jinv_->form_cholesky_factor();
-}
-void DFHF::initialize_J_disk()
-{
-}
-void DFHF::compute_JK_block(double** Qmnp, int nrows, int max_rows)
-{
-    // Standard indexing
-    int nbf = primary_->nbf();
-    int nalpha = nalphapi_[0];
-    int nbeta = 0;
-    if (!restricted_)
-        nbeta = nbetapi_[0];
-    int ntri = schwarz_->get_nfun_pairs();
 
-    // J part (wow classical mechanics is easy)
+    int ntri = schwarz_->get_nfun_pairs();
+    ULI three_memory = (ULI)primary_->nbf()*ntri;
+    ULI two_memory = (ULI)auxiliary_->nbf()*auxiliary_->nbf();
+
+    int nthread = 1;
+    #ifdef _OPENMP
+        if (options_.get_int("RI_INTS_NUM_THREADS") == 0) {
+            nthread = omp_get_max_threads();
+        } else {
+            nthread = options_.get_int("RI_INTS_NUM_THREADS");
+        }
+    #endif
+    int rank = 0;
+
+    Qmn_ = shared_ptr<Matrix>(new Matrix("Qmn (Fitted Integrals)",
+        auxiliary_->nbf(), ntri));
+    double** Qmnp = Qmn_->pointer();
+
+    // Save if needed
+    if (options_.get_str("RI_INTS_IO") == "LOAD") {
+        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+        psio_->read_entry(PSIF_DFSCF_BJ, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(PSIF_DFSCF_BJ, 1);
+        return;
+    } 
+    
+    //Get a TEI for each thread
+    shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
+    const double **buffer = new const double*[nthread];
+    shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
+    for (int Q = 0; Q<nthread; Q++) {
+        eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        buffer[Q] = eri[Q]->buffer();
+    }
+
+    long int* schwarz_shell_pairs = schwarz_->get_schwarz_shells_reverse();
+    long int* schwarz_fun_pairs = schwarz_->get_schwarz_funs_reverse();
+    int numP,Pshell,MU,NU,P,PHI,mu,nu,nummu,numnu,omu,onu;
+    int index;
+    //The integrals (A|mn)
+    timer_on("(A|mn)");
+    #pragma omp parallel for private (numP, Pshell, MU, NU, P, PHI, mu, nu, nummu, numnu, omu, onu, rank) schedule (dynamic) num_threads(nthread)
+    for (MU=0; MU < primary_->nshell(); ++MU) {
+        #ifdef _OPENMP
+            rank = omp_get_thread_num();
+            //fprintf(outfile,"  Thread %d doing MU = %d",rank,MU); fflush(outfile);
+        #endif
+        nummu = primary_->shell(MU)->nfunction();
+        for (NU=0; NU <= MU; ++NU) {
+            numnu = primary_->shell(NU)->nfunction();
+            if (schwarz_shell_pairs[MU*(MU+1)/2+NU] > -1) {
+                for (Pshell=0; Pshell < auxiliary_->nshell(); ++Pshell) {
+                    numP = auxiliary_->shell(Pshell)->nfunction();
+                    eri[rank]->compute_shell(Pshell, 0, MU, NU);
+                    for (mu=0 ; mu < nummu; ++mu) {
+                        omu = primary_->shell(MU)->function_index() + mu;
+                        for (nu=0; nu < numnu; ++nu) {
+                            onu = primary_->shell(NU)->function_index() + nu;
+                            if(omu>=onu && schwarz_fun_pairs[omu*(omu+1)/2+onu] > -1) {
+                                for (P=0; P < numP; ++P) {
+                                    PHI = auxiliary_->shell(Pshell)->function_index() + P;
+                                    Qmnp[PHI][schwarz_fun_pairs[omu*(omu+1)/2+onu]] = buffer[rank][P*nummu*numnu + mu*numnu + nu];
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    timer_off("(A|mn)");
+
+    delete []buffer;
+    delete []eri;
+
+    // Save if needed
+    if (options_.get_str("RI_INTS_IO") == "SAVE") {
+        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
+        psio_->write_entry(PSIF_DFSCF_BJ, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(PSIF_DFSCF_BJ, 1);
+        return;
+    } 
+}
+void DFHF::compute_JK_block_J(double** Qmnp, int nrows, int max_rows)
+{
+    int ntri = schwarz_->get_nfun_pairs();
     C_DGEMV('N', nrows, ntri, 1.0, Qmnp[0], ntri, Dtri_, 1, 0.0, dQ_, 1);
     C_DGEMV('T', nrows, ntri, 1.0, Qmnp[0], ntri, dQ_, 1, 1.0, Jtri_, 1);
-
-    // K part (unfortunately I defected many years ago)
-    double** Cap = Ca_->pointer();
-    double** Kap = Ka_->pointer();
-    double** Cbp;
-    double** Kbp;
-    if (!restricted_) {
-        Cbp = Cb_->pointer();
-        Kbp = Kb_->pointer();
+}
+void DFHF::compute_JK_block_K(double** Qmnp, int nrows, int max_rows, bool is_alpha)
+{
+    int nbf = primary_->nbf();
+    int nalpha = nalpha_;
+    int nelec;
+    if (is_alpha)
+        nelec = nalpha_;
+    else
+        nelec = nbeta_;
+    int ntri = schwarz_->get_nfun_pairs();
+    
+    double** Cp;
+    double** Kp;
+    if (is_alpha) {
+        Cp = Ca_ao_->pointer();
+        Kp = Ka_ao_->pointer();
+    } else {
+        Cp = Cb_ao_->pointer();
+        Kp = Kb_ao_->pointer();
     }
+
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
@@ -566,49 +810,17 @@ void DFHF::compute_JK_block(double** Qmnp, int nrows, int max_rows)
             n = n_indices_[m][index];
 
             C_DCOPY(nrows,&Qmnp[0][ij],ntri,&QS_[rank][0][index],nbf);
-            C_DCOPY(nalpha,Cap[n],1,&Ctemp_[rank][0][index],nbf);
+            C_DCOPY(nelec,Cp[n],1,&Ctemp_[rank][0][index],nbf);
         }
 
-        C_DGEMM('N','T',nalpha,nrows,index_sizes_[m],1.0,Ctemp_[rank][0],nbf,QS_[rank][0],nbf, 0.0, Ep_[m], nrows);
+        C_DGEMM('N','T',nelec,nrows,index_sizes_[m],1.0,Ctemp_[rank][0],nbf,QS_[rank][0],nbf, 0.0, Ep_[m], nrows);
     }
 
     #ifdef HAVE_MKL
         mkl_set_num_threads(mkl_nthread);
     #endif
 
-    C_DGEMM('N','T',nbf,nbf,nrows*nalpha,1.0,Ep_[0],max_rows*nalpha,Ep_[0],max_rows*nalpha,1.0,Kap[0], nbf);
-
-    if (!restricted_) {
-        #ifdef HAVE_MKL
-            int mkl_nthread = mkl_get_max_threads();
-            mkl_set_num_threads(1);
-        #endif
-
-        #pragma omp parallel for private (m, n , ij, index, rank) schedule (dynamic)
-        for (m = 0; m<nbf; m++) {
-
-            rank = 0;
-            #ifdef _OPENMP
-                rank = omp_get_thread_num();
-            #endif
-
-            int n, ij;
-            for (index = 0; index<index_sizes_[m]; index++) {
-                ij = m_ij_indices_[m][index];
-                n = n_indices_[m][index];
-                C_DCOPY(nrows,&Qmnp[0][ij],ntri,&QS_[rank][0][index],nbf);
-                C_DCOPY(nbeta,Cbp[n],1,&Ctemp_[rank][0][index],nbf);
-            }
-
-            C_DGEMM('N','T',nbeta,nrows,index_sizes_[m],1.0,Ctemp_[rank][0],nbf,QS_[rank][0],nbf, 0.0, Ep_[m], nrows);
-        }
-
-        #ifdef HAVE_MKL
-            mkl_set_num_threads(mkl_nthread);
-        #endif
-
-        C_DGEMM('N','T',nbf,nbf,nrows*nbeta,1.0,Ep_[0],max_rows*nalpha,Ep_[0],max_rows*nalpha,1.0,Kbp[0], nbf);
-    }
+    C_DGEMM('N','T',nbf,nbf,nrows*nelec,1.0,Ep_[0],max_rows*nalpha,Ep_[0],max_rows*nalpha,1.0,Kp[0], nbf);
 }
 void DFHF::compute_J_core()
 {
@@ -620,8 +832,8 @@ void DFHF::compute_J_core()
 
     shared_ptr<Matrix> Dt(new Matrix("D Total",nbf,nbf));
     double** Dtp = Dt->pointer();
-    Dt->copy(Da_);
-    Dt->add(Db_);
+    Dt->copy(Da_ao_);
+    Dt->add(Db_ao_);
     double* Dtri = new double[ntri];
     double* Jtri = new double[ntri];
     int* schwarz_funs = schwarz_->get_schwarz_funs();
@@ -639,7 +851,7 @@ void DFHF::compute_J_core()
     C_DPOTRS('L', naux, 1, Jinv_->get_metric()->pointer()[0], naux, dQ, naux);
     C_DGEMV('T', naux, ntri, 1.0, Qmnp[0], ntri, dQ, 1, 0.0, Jtri, 1);
 
-    double** Jp = Ja_->pointer();
+    double** Jp = Ja_ao_->pointer();
     for (int munu = 0; munu < ntri; munu++) {
         int mu = schwarz_funs[2*munu];
         int nu = schwarz_funs[2*munu + 1];
@@ -656,21 +868,27 @@ void DFHF::form_J_DF()
 {
     initialize();
 
+    USO2AO();
+
     if (is_disk_) {
         throw FeatureNotImplemented("psi::scf::DF", "form_J_disk()", __FILE__, __LINE__);
     } else {
         compute_J_core();
     }
+
+    AO2USO();
 }
 void DFHF::form_JK_DF()
 {
     // Initialize if needed (build Qmn)
     initialize();
 
+    USO2AO();
+
     // Standard indexing
     int nbf = primary_->nbf();
     int naux = auxiliary_->nbf();
-    int nalpha = nalphapi_[0];
+    int nalpha = nalpha_;
     int ntri = schwarz_->get_nfun_pairs();
 
     // Number of threads (needed for allocation/memory)
@@ -707,8 +925,8 @@ void DFHF::form_JK_DF()
     memset(static_cast<void*>(Jtri_), '\0', ntri*sizeof(double));
 
     // Build D triangular matrix
-    double** Dap = Da_->pointer();
-    double** Dbp = restricted_ ? Da_->pointer() : Db_->pointer();
+    double** Dap = Da_ao_->pointer();
+    double** Dbp = restricted_ ? Da_ao_->pointer() : Db_ao_->pointer();
     int* schwarz_funs = schwarz_->get_schwarz_funs();
     for (int munu = 0; munu < ntri; munu++) {
         int mu = schwarz_funs[2*munu];
@@ -753,7 +971,7 @@ void DFHF::form_JK_DF()
         if (!is_initialized_disk_) {
             QmnA_ = shared_ptr<Matrix>(new Matrix("(Q|mn) Buffer A", max_rows, ntri));
             QmnB_ = shared_ptr<Matrix>(new Matrix("(Q|mn) Buffer B", max_rows, ntri));
-
+            //TODO
         }
 
     } else {
@@ -762,12 +980,15 @@ void DFHF::form_JK_DF()
             int current_rows = max_rows;
             if (block == nblocks - 1)
                 current_rows = naux - (block*max_rows);
-            compute_JK_block(&Qmnp[block*(ULI)max_rows], current_rows, max_rows);
+            compute_JK_block_J(&Qmnp[block*(ULI)max_rows], current_rows, max_rows);
+            compute_JK_block_K(&Qmnp[block*(ULI)max_rows], current_rows, max_rows, true);
+            if (!restricted_)
+                compute_JK_block_K(&Qmnp[block*(ULI)max_rows], current_rows, max_rows, false);
         }
     }
 
     // JK J copy out
-    double** Jp = Ja_->pointer();
+    double** Jp = Ja_ao_->pointer();
     for (int munu = 0; munu < ntri; munu++) {
         int mu = schwarz_funs[2*munu];
         int nu = schwarz_funs[2*munu + 1];
@@ -794,6 +1015,8 @@ void DFHF::form_JK_DF()
     free(n_indices_[0]);
     free(n_indices_);
     free(index_sizes_);
+
+    AO2USO();
 }
 
 }}

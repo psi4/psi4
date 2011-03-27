@@ -20,6 +20,8 @@ def cp(name, **kwargs):
     if not molecule:
         raise ValueNotSet("no molecule found")
     
+    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+    PsiMod.set_global_option('RI_INTS_IO','SAVE')
     activate(molecule) 
     molecule.update_geometry()
 
@@ -27,7 +29,7 @@ def cp(name, **kwargs):
     banner("CP Computation: Complex.\nFull Basis Set.")
     PsiMod.print_out("\n")
     e_dimer = energy(name, **kwargs)
-
+    PsiMod.set_global_option('RI_INTS_IO','LOAD')
 
     #All monomers with ghosts
     monomers = extract_clusters(molecule, True, 1)
@@ -42,6 +44,8 @@ def cp(name, **kwargs):
         e_monomer_full.append(energy(name,**kwargs))
         cluster_n = cluster_n + 1
         
+
+    PsiMod.set_global_option('RI_INTS_IO','NONE')
     if (check_bsse): 
         #All monomers without ghosts
         monomers = extract_clusters(molecule, False, 1)
@@ -57,6 +61,7 @@ def cp(name, **kwargs):
             e_monomer_bsse.append(energy(name,**kwargs))
             cluster_n = cluster_n + 1
 
+    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
     activate(molecule) 
         
     if (check_bsse != True):

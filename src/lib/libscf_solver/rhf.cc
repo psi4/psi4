@@ -58,6 +58,7 @@ RHF::~RHF()
 
 void RHF::common_init()
 {
+    if (multiplicity_ != 1) throw PSIEXCEPTION("RHF: RHF reference is only for singlets.");
     Drms_ = 0.0;
 
     // Allocate matrix memory

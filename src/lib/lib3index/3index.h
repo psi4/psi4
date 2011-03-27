@@ -24,6 +24,8 @@ protected:
     boost::shared_ptr<BasisSet> pois_;
     /// Is the metric poisson?
     bool is_poisson_;
+    /// Should we force C1?
+    bool force_C1_;
 
     /// The fitting metric or symmetric inverse
     boost::shared_ptr<Matrix> metric_;
@@ -45,9 +47,9 @@ public:
     /// Default constructor, for python
     FittingMetric();
     /// DF Fitting Metric
-    FittingMetric(boost::shared_ptr<BasisSet> aux);
+    FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1 = false);
     /// Poisson Fitting Metric
-    FittingMetric(boost::shared_ptr<BasisSet> aux, boost::shared_ptr<BasisSet> pois);
+    FittingMetric(boost::shared_ptr<BasisSet> aux, boost::shared_ptr<BasisSet> pois, bool force_C1 = false);
 
     /// Destructor
     ~FittingMetric();

@@ -85,6 +85,7 @@ def scf_helper(name, **kwargs):
         scf_type = PsiMod.get_option('SCF_TYPE')
         guess_type = PsiMod.get_option('GUESS')
         ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
+        ri_ints = PsiMod.get_option("RI_INTS_IO")
 
         # Which basis is the final one
         basis = PsiMod.get_option('BASIS')
@@ -93,6 +94,7 @@ def scf_helper(name, **kwargs):
         PsiMod.set_local_option('SCF','BASIS',guessbasis)
         if (scf_type == 'DF'):
             PsiMod.set_local_option('SCF','RI_BASIS_SCF','cc-pvdz-ri')
+            PsiMod.set_global_option('RI_INTS_IO','none')
 
         # Print some info about the guess
         PsiMod.print_out('\n')
@@ -111,11 +113,14 @@ def scf_helper(name, **kwargs):
         PsiMod.set_local_option('SCF','BASIS',basis)
         if (scf_type == 'DF'):
             PsiMod.set_local_option('SCF','RI_BASIS_SCF',ri_basis_scf)
+            PsiMod.set_global_option('RI_INTS_IO',ri_ints)
 
         # Print the banner for the standard operation
         PsiMod.print_out('\n')
         banner(name.upper())
         PsiMod.print_out('\n')
+
+        PsiMod.print_options()
 
         # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
@@ -234,14 +239,21 @@ def run_sapt(name, **kwargs):
     monomerB = molecule.extract_subsets(2,1)
     monomerB.set_name("monomerB")
 
+    ri = PsiMod.get_option('SCF_TYPE')
+    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+
     PsiMod.IO.set_default_namespace("dimer")
     PsiMod.set_local_option("SCF","SAPT","2-dimer")
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
+    PsiMod.set_global_option('RI_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
+    PsiMod.set_global_option('RI_INTS_IO','LOAD')
 
     activate(monomerA)
+    if (ri == "DF"):
+        PsiMod.IO.change_file_namespace(97,"dimer","monomerA")
     PsiMod.IO.set_default_namespace("monomerA")
     PsiMod.set_local_option("SCF","SAPT","2-monomer_A")
     PsiMod.print_out("\n")
@@ -250,12 +262,15 @@ def run_sapt(name, **kwargs):
     e_monomerA = scf_helper('RHF',**kwargs)
 
     activate(monomerB)
+    if (ri == "DF"):
+        PsiMod.IO.change_file_namespace(97,"monomerA","monomerB")
     PsiMod.IO.set_default_namespace("monomerB")
     PsiMod.set_local_option("SCF","SAPT","2-monomer_B")
     PsiMod.print_out("\n")
     banner('Monomer B HF')
     PsiMod.print_out("\n")
     e_monomerB = scf_helper('RHF',**kwargs)
+    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
 
     PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
     PsiMod.IO.change_file_namespace(122,"monomerB","dimer")

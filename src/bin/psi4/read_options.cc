@@ -247,6 +247,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
     options.add_int("RI_INTS_NUM_THREADS",1);
+    /*- IO caching for CP corrections, etc -*/
+    options.add_str("RI_INTS_IO", "NONE", "NONE SAVE LOAD");
 
     /*- SO orthogonalization: symmetric or canonical? -*/
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
