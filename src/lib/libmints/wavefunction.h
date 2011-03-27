@@ -75,6 +75,9 @@ protected:
     /// Density convergence threshold
     double density_threshold_;
 
+    /// Total alpha and beta electrons per irrep
+    int nalpha_, nbeta_;
+
     /// Number of doubly occupied per irrep
     int doccpi_[8];
     /// Number of singly occupied per irrep

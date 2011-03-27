@@ -38,8 +38,6 @@ protected:
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
 
-    /// 
-
     /// Previous iteration's energy and current energy
     double Eold_;
     double E_;
@@ -62,16 +60,8 @@ protected:
     /// SOCC vector from input (if found)
     bool input_socc_;
 
-    /// Number of alpha and beta electrons
-    int nalpha_, nbeta_;
-    /// Number of alpha and beta electrons per irrep
-    //int nalphapi_[8], nbetapi_[8];
-
     //Initial SAD doubly occupied may be more than ndocc
     int sad_nocc_[8];
-
-    //Canonical or Symmetric orthogonalization?
-    bool canonical_X_;
 
     /// Mapping arrays
     int *so2symblk_;
