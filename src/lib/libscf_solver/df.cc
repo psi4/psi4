@@ -521,10 +521,10 @@ void DFHF::compute_JK_block(double** Qmnp, int nrows, int max_rows)
 {
     // Standard indexing
     int nbf = primary_->nbf();
-    int nalpha = nalpha_[0];
+    int nalpha = nalphapi_[0];
     int nbeta = 0;
     if (!restricted_)
-        nbeta = nbeta_[0];
+        nbeta = nbetapi_[0];
     int ntri = schwarz_->get_nfun_pairs();
 
     // J part (wow classical mechanics is easy)
@@ -670,7 +670,7 @@ void DFHF::form_JK_DF()
     // Standard indexing
     int nbf = primary_->nbf();
     int naux = auxiliary_->nbf();
-    int nalpha = nalpha_[0];
+    int nalpha = nalphapi_[0];
     int ntri = schwarz_->get_nfun_pairs();
 
     // Number of threads (needed for allocation/memory)
