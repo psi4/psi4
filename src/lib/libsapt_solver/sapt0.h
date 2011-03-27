@@ -72,23 +72,27 @@ private:
 
   void get_denom();
 
+  void theta_ar();
+  void theta_bs();
+  void test_theta();
+
   void arbs();
   void v1();
   void h1();
-  void h2();
+  double h2();
   void h3();
-  void h4();
+  double h4();
   void q1();
-  void q2();
+  double q2();
   void q3();
   void q5();
-  void q6();
+  double q6();
   void q7();
   void q10();
   void q11();
   void q12();
-  void q13();
-  void q14();
+  double q13();
+  double q14();
 /*
   void disp210_init(int, const char*, const char*, const char*, int, 
     const char*, int, int, int, int, int, int, int, int);
