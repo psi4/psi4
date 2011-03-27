@@ -63,10 +63,12 @@ double SAPT0::compute_energy()
   timer_off("Exch-Ind20         ");
   if (debug_) disp20();
   timer_on("Exch-Disp20 N^5    ");
+    psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
     exch_disp20_n5();
   timer_off("Exch-Disp20 N^5    ");
   timer_on("Exch-Disp20 N^4    ");
     exch_disp20_n4();
+    psio_->close(PSIF_SAPT_TEMP,0);
   timer_off("Exch-Disp20 N^4    ");
 //  if (do_disp21_) disp21();
 

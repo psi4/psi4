@@ -10,8 +10,6 @@ void SAPT0::exch_disp20_n5()
 #endif
   int rank = 0;
 
-  psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
-
   arbs();
   v1();
   q12();
@@ -222,9 +220,8 @@ void SAPT0::exch_disp20_n5()
   if (debug_) {
     fprintf(outfile,"\n    V1 + H2 + H4 + Q9   = %18.12lf H\n",v_1);
     fprintf(outfile,"    Q12                 = %18.12lf H\n",q_12);
+    fflush(outfile);
   }
-
-  psio_->close(PSIF_SAPT_TEMP,0);
 }
 
 void SAPT0::exch_disp20_n4()
@@ -235,27 +232,40 @@ void SAPT0::exch_disp20_n4()
 #endif
   int rank = 0;
 
-  psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
-
-  h1();
-  h2();
-  h3();
-  h4();
-  q1();
-  q2();
-  q3();
-  q5();
-  q6();
-  q7();
-  q10();
-  q11();
-  q13();
-  q14();
-
   double h_1 = 0.0, h_2 = 0.0, h_3 = 0.0, h_4 = 0.0;
   double q_1 = 0.0, q_2 = 0.0, q_3 = 0.0, q_4 = 0.0; 
   double q_5 = 0.0, q_6 = 0.0, q_7 = 0.0, q_8 = 0.0;
   double q_10 = 0.0, q_11 = 0.0, q_13 = 0.0, q_14 = 0.0;
+
+  theta_ar();
+  theta_bs();
+  if (debug_) test_theta();
+
+  h_2 = h2();
+	h_4 = h4();
+  q_2 = q2();
+  q_6 = q6();
+  q_13 = q13();
+  q_14 = q14();
+
+  if (debug_) {
+    fprintf(outfile,"    H2                  = %18.12lf H\n",h_2);
+    fprintf(outfile,"    H4                  = %18.12lf H\n",h_4);
+    fprintf(outfile,"    Q2                  = %18.12lf H\n",q_2);
+    fprintf(outfile,"    Q6                  = %18.12lf H\n",q_6);
+    fprintf(outfile,"    Q13                 = %18.12lf H\n",q_13);
+    fprintf(outfile,"    Q14                 = %18.12lf H\n",q_14);
+    fflush(outfile);
+  }
+
+  h1();
+  h3();
+  q1();
+  q3();
+  q5();
+  q7();
+  q10();
+  q11();
 
   double **sAS = block_matrix(aoccA_,nvirB_);
   double **sRB = block_matrix(nvirA_,aoccB_);
@@ -319,40 +329,10 @@ void SAPT0::exch_disp20_n4()
 
   SAPTDFInts T_p_AR = set_act_C_AR();
   SAPTDFInts T_p_BS = set_act_C_BS();
-  Iterator T_ARBS_iter = get_iterator(mem_/2,&T_p_AR,&T_p_BS);
-
-  SAPTDFInts A_p_AR = set_act_A_AR();
-  SAPTDFInts B_p_BS = set_act_B_BS();
-  Iterator ARBS_iter = get_iterator(mem_/2,&A_p_AR,&B_p_BS);
-
-  SAPTDFInts H2_p_BS = set_H2_BS();
-  SAPTDFInts H4_p_AR = set_H4_AR();
-  SAPTDFInts Q2_p_AR = set_Q2_AR();
-  SAPTDFInts Q6_p_BS = set_Q6_BS();
-  SAPTDFInts Q13_p_BS = set_Q13_BS();
-  SAPTDFInts Q14_p_AR = set_Q14_AR();
-
-  H2_p_BS.B_p_ = B_p_BS.B_p_;
-  H4_p_AR.B_p_ = A_p_AR.B_p_;
-  Q2_p_AR.B_p_ = A_p_AR.B_p_;
-  Q6_p_BS.B_p_ = B_p_BS.B_p_;
-  Q13_p_BS.B_p_ = B_p_BS.B_p_;
-  Q14_p_AR.B_p_ = A_p_AR.B_p_;
-
-  Iterator H2_ARBS_iter = get_iterator(mem_/3,&A_p_AR,&H2_p_BS,false);
-  Iterator H4_ARBS_iter = get_iterator(mem_/3,&H4_p_AR,&B_p_BS,false);
-  Iterator Q2_ARBS_iter = get_iterator(mem_/3,&Q2_p_AR,&B_p_BS,false);
-  Iterator Q6_ARBS_iter = get_iterator(mem_/3,&A_p_AR,&Q6_p_BS,false);
-  Iterator Q13_ARBS_iter = get_iterator(mem_/3,&A_p_AR,&Q13_p_BS,false);
-  Iterator Q14_ARBS_iter = get_iterator(mem_/3,&Q14_p_AR,&B_p_BS,false);
+  Iterator T_ARBS_iter = get_iterator(mem_,&T_p_AR,&T_p_BS);
 
   double **xAB = block_matrix(nthreads,aoccA_*aoccB_);
   double **yAB = block_matrix(nthreads,aoccA_*aoccB_);
-
-  double *xPQ = init_array((long int) T_ARBS_iter.block_size[0]*
-    H2_ARBS_iter.block_size[0]);
-  double *yPQ = init_array((long int) T_ARBS_iter.block_size[0]*
-    H2_ARBS_iter.block_size[0]);
 
   for (int j=0; j<T_ARBS_iter.num_blocks; j++) {
     read_block(&T_ARBS_iter,&T_p_AR,&T_p_BS);
@@ -376,10 +356,7 @@ void SAPT0::exch_disp20_n4()
           C_DSCAL(T_ARBS_iter.curr_size,scale,&(T_p_BS.B_p_[0][bs]),
             aoccB_*nvirB_);
         }
-}
 
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:h_1)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
 
@@ -393,28 +370,7 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         h_1 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
-}
 
-      for (int k=0; k<H2_ARBS_iter.num_blocks; k++) {
-        read_block(&H2_ARBS_iter,&A_p_AR,&H2_p_BS);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,H2_ARBS_iter.curr_size,
-          aoccA_*nvirA_,1.0,T_p_AR.B_p_[0],aoccA_*nvirA_,A_p_AR.B_p_[0],
-          aoccA_*nvirA_,0.0,xPQ,H2_ARBS_iter.curr_size);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,H2_ARBS_iter.curr_size,
-          aoccB_*nvirB_,1.0,T_p_BS.B_p_[0],aoccB_*nvirB_,H2_p_BS.B_p_[0],
-          aoccB_*nvirB_,0.0,yPQ,H2_ARBS_iter.curr_size);
-
-        h_2 += 2.0*C_DDOT(T_ARBS_iter.curr_size*H2_ARBS_iter.curr_size,
-          xPQ,1,yPQ,1);
-      }
-      A_p_AR.rewind();
-      H2_p_BS.rewind();
-      H2_ARBS_iter.rewind();
-
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:h_3)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         
@@ -428,28 +384,7 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         h_3 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
-}
 
-      for (int k=0; k<H4_ARBS_iter.num_blocks; k++) {
-        read_block(&H4_ARBS_iter,&H4_p_AR,&B_p_BS);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,H4_ARBS_iter.curr_size,
-          aoccA_*nvirA_,1.0,T_p_AR.B_p_[0],aoccA_*nvirA_,H4_p_AR.B_p_[0],
-          aoccA_*nvirA_,0.0,xPQ,H4_ARBS_iter.curr_size);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,H4_ARBS_iter.curr_size,
-          aoccB_*nvirB_,1.0,T_p_BS.B_p_[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
-          aoccB_*nvirB_,0.0,yPQ,H4_ARBS_iter.curr_size);
-
-        h_4 += 2.0*C_DDOT(T_ARBS_iter.curr_size*H4_ARBS_iter.curr_size,
-          xPQ,1,yPQ,1);
-      }
-      H4_p_AR.rewind();
-      B_p_BS.rewind();
-      H4_ARBS_iter.rewind();
-
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:q_1)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
 
@@ -463,28 +398,7 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_1 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       } 
-}
 
-      for (int k=0; k<Q2_ARBS_iter.num_blocks; k++) {
-        read_block(&Q2_ARBS_iter,&Q2_p_AR,&B_p_BS);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q2_ARBS_iter.curr_size,
-          aoccA_*nvirA_,1.0,T_p_AR.B_p_[0],aoccA_*nvirA_,Q2_p_AR.B_p_[0],
-          aoccA_*nvirA_,0.0,xPQ,Q2_ARBS_iter.curr_size);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q2_ARBS_iter.curr_size,
-          aoccB_*nvirB_,1.0,T_p_BS.B_p_[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
-          aoccB_*nvirB_,0.0,yPQ,Q2_ARBS_iter.curr_size);
-
-        q_2 -= 2.0*C_DDOT(T_ARBS_iter.curr_size*Q2_ARBS_iter.curr_size,
-          xPQ,1,yPQ,1);
-      }
-      Q2_p_AR.rewind();
-      B_p_BS.rewind();
-      Q2_ARBS_iter.rewind();
-
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:q_3)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
 
@@ -498,19 +412,13 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_3 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
-}
 
-#pragma omp parallel
-{
 #pragma omp for reduction(+:q_4)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         q_4 += 4.0*C_DDOT(aoccA_*nvirA_,T_p_AR.B_p_[p],1,sAR[0],1)*
           C_DDOT(aoccB_*nvirB_,T_p_BS.B_p_[p],1,Q4_BS[0],1);
       }
-}
 
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:q_5)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
 
@@ -524,28 +432,7 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_5 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
-}
 
-      for (int k=0; k<Q6_ARBS_iter.num_blocks; k++) {
-        read_block(&Q6_ARBS_iter,&A_p_AR,&Q6_p_BS);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q6_ARBS_iter.curr_size,
-          aoccA_*nvirA_,1.0,T_p_AR.B_p_[0],aoccA_*nvirA_,A_p_AR.B_p_[0],
-          aoccA_*nvirA_,0.0,xPQ,Q6_ARBS_iter.curr_size);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q6_ARBS_iter.curr_size,
-          aoccB_*nvirB_,1.0,T_p_BS.B_p_[0],aoccB_*nvirB_,Q6_p_BS.B_p_[0],
-          aoccB_*nvirB_,0.0,yPQ,Q6_ARBS_iter.curr_size);
-
-        q_6 -= 2.0*C_DDOT(T_ARBS_iter.curr_size*Q6_ARBS_iter.curr_size,
-          xPQ,1,yPQ,1);
-      }
-      A_p_AR.rewind();
-      Q6_p_BS.rewind();
-      Q6_ARBS_iter.rewind();
-
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:q_7)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) { 
         
@@ -559,19 +446,13 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_7 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
-}
 
-#pragma omp parallel
-{
 #pragma omp for reduction(+:q_8)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
         q_8 += 4.0*C_DDOT(aoccA_*nvirA_,T_p_AR.B_p_[p],1,Q8_AR[0],1)*
           C_DDOT(aoccB_*nvirB_,T_p_BS.B_p_[p],1,sBS[0],1);
       }
-}
 
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:q_10)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
 
@@ -585,10 +466,7 @@ void SAPT0::exch_disp20_n4()
           T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_10 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
-}
 
-#pragma omp parallel
-{
 #pragma omp for private(rank) reduction(+:q_11)
       for (int p=0; p<T_ARBS_iter.curr_size; p++) {
 
@@ -604,70 +482,21 @@ void SAPT0::exch_disp20_n4()
       }
 }
 
-      for (int k=0; k<Q13_ARBS_iter.num_blocks; k++) {
-        read_block(&Q13_ARBS_iter,&A_p_AR,&Q13_p_BS);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q13_ARBS_iter.curr_size,
-          aoccA_*nvirA_,1.0,T_p_AR.B_p_[0],aoccA_*nvirA_,A_p_AR.B_p_[0],
-          aoccA_*nvirA_,0.0,xPQ,Q13_ARBS_iter.curr_size);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q13_ARBS_iter.curr_size,
-          aoccB_*nvirB_,1.0,T_p_BS.B_p_[0],aoccB_*nvirB_,Q13_p_BS.B_p_[0],
-          aoccB_*nvirB_,0.0,yPQ,Q13_ARBS_iter.curr_size);
-
-        q_13 -= 2.0*C_DDOT(T_ARBS_iter.curr_size*Q13_ARBS_iter.curr_size,
-          xPQ,1,yPQ,1);
-      }
-      A_p_AR.rewind();
-      Q13_p_BS.rewind();
-      Q13_ARBS_iter.rewind();
-
-      for (int k=0; k<Q14_ARBS_iter.num_blocks; k++) {
-        read_block(&Q14_ARBS_iter,&Q14_p_AR,&B_p_BS);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q14_ARBS_iter.curr_size,
-          aoccA_*nvirA_,1.0,T_p_AR.B_p_[0],aoccA_*nvirA_,Q14_p_AR.B_p_[0],
-          aoccA_*nvirA_,0.0,xPQ,Q14_ARBS_iter.curr_size);
-
-        C_DGEMM('N','T',T_ARBS_iter.curr_size,Q14_ARBS_iter.curr_size,
-          aoccB_*nvirB_,1.0,T_p_BS.B_p_[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
-          aoccB_*nvirB_,0.0,yPQ,Q14_ARBS_iter.curr_size);
-
-        q_14 -= 2.0*C_DDOT(T_ARBS_iter.curr_size*Q14_ARBS_iter.curr_size,
-          xPQ,1,yPQ,1);
-      }
-      Q14_p_AR.rewind();
-      B_p_BS.rewind();
-      Q14_ARBS_iter.rewind();
-
     }
   }
 
   if (debug_) {
     fprintf(outfile,"    H1                  = %18.12lf H\n",h_1);
-    fprintf(outfile,"    H2                  = %18.12lf H\n",h_2);
     fprintf(outfile,"    H3                  = %18.12lf H\n",h_3);
-    fprintf(outfile,"    H4                  = %18.12lf H\n",h_4);
     fprintf(outfile,"    Q1                  = %18.12lf H\n",q_1);
-    fprintf(outfile,"    Q2                  = %18.12lf H\n",q_2);
     fprintf(outfile,"    Q3                  = %18.12lf H\n",q_3);
     fprintf(outfile,"    Q4                  = %18.12lf H\n",q_4);
     fprintf(outfile,"    Q5                  = %18.12lf H\n",q_5);
-    fprintf(outfile,"    Q6                  = %18.12lf H\n",q_6);
     fprintf(outfile,"    Q7                  = %18.12lf H\n",q_7);
     fprintf(outfile,"    Q8                  = %18.12lf H\n",q_8);
     fprintf(outfile,"    Q10                 = %18.12lf H\n",q_10);
-    fprintf(outfile,"    Q11                 = %18.12lf H\n",q_11);
-    fprintf(outfile,"    Q13                 = %18.12lf H\n",q_13);
-    fprintf(outfile,"    Q14                 = %18.12lf H\n\n",q_14);
+    fprintf(outfile,"    Q11                 = %18.12lf H\n\n",q_11);
   }
-
-  H2_p_BS.B_p_ = NULL;
-  H4_p_AR.B_p_ = NULL;
-  Q2_p_AR.B_p_ = NULL;
-  Q6_p_BS.B_p_ = NULL;
-  Q13_p_BS.B_p_ = NULL;
-  Q14_p_AR.B_p_ = NULL;
 
   free_block(sAS);
   free_block(sRB);
@@ -686,8 +515,6 @@ void SAPT0::exch_disp20_n4()
 
   free_block(xAB);
   free_block(yAB);
-  free(xPQ);
-  free(yPQ);
 
   e_exch_disp20_ += 2.0*(h_1+h_2+h_3+h_4+q_1+q_2+q_3+q_4+q_5+q_6+q_7+q_8+
     q_10+q_11+q_13+q_14);
@@ -696,8 +523,343 @@ void SAPT0::exch_disp20_n4()
     fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
     fflush(outfile);
   }
+}
 
-  psio_->close(PSIF_SAPT_TEMP,0);
+void SAPT0::theta_ar() 
+{
+  long int avail_mem = mem_ - (long int) nvec_*ndf_*(ndf_+3);
+
+  if ((long int) 2*aoccB_*nvirB_ > avail_mem) 
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+
+  SAPTDFInts B_p_BS = set_act_B_BS();
+  Iterator B_BS_iter = get_iterator(avail_mem/2,&B_p_BS);
+
+  SAPTDFInts C_p_BS = set_act_C_BS();
+  Iterator C_BS_iter = get_iterator(avail_mem/2,&C_p_BS);
+
+  double **yPQ = block_matrix(nvec_,(long int) ndf_*(ndf_+3));
+
+  for (int j=0,offB=0; j<B_BS_iter.num_blocks; j++) {
+    read_block(&B_BS_iter,&B_p_BS);
+
+    for (int k=0,offC=0; k<C_BS_iter.num_blocks; k++) {
+      read_block(&C_BS_iter,&C_p_BS);
+
+      for (int i=0; i<nvec_; i++) {
+
+#pragma omp parallel
+{
+#pragma omp for 
+        for (int bs=0; bs<aoccB_*nvirB_; bs++) {
+          double scale = dBS_[i][bs];
+          if (i) scale /= dBS_[i-1][bs];
+          C_DSCAL(C_BS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
+            aoccB_*nvirB_);
+        }
+}
+        C_DGEMM('N','T',C_BS_iter.curr_size,B_BS_iter.curr_size,
+          aoccB_*nvirB_,1.0,C_p_BS.B_p_[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
+          aoccB_*nvirB_,0.0,&(yPQ[i][(long int) offC*(ndf_+3)+offB]),
+          ndf_+3);
+      }
+      offC += C_BS_iter.curr_size;
+    }
+    C_p_BS.rewind();
+    C_BS_iter.rewind();
+    offB += B_BS_iter.curr_size;
+  }
+
+  B_p_BS.done();
+  C_p_BS.done();
+
+  bool in_core = false;
+
+  if (avail_mem > 1L*aoccA_*nvirA_*(ndf_+3) + 1L*aoccA_*nvirA_*ndf_) {
+    in_core = true;
+  }
+  else if (avail_mem > 1L*nvirA_*ndf_ + 1L*nvirA_*(ndf_+3)) {
+    in_core = false;
+  }
+  else {
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+  }
+
+  int chunk;
+  int blocks;
+
+  if (in_core) {
+    chunk = aoccA_;
+    blocks = 1;
+  }
+  else {
+    chunk = avail_mem / (1L*nvirA_*ndf_ + 1L*nvirA_*(ndf_+3));
+    if (chunk > aoccA_) chunk = aoccA_;
+    blocks = aoccA_ / chunk;
+    if (aoccA_ % chunk) blocks++;
+  }
+
+  double **B_AR = block_matrix(chunk*nvirA_,ndf_);
+  double **T_AR = block_matrix(chunk*nvirA_,ndf_+3);
+  double *temp = init_array(chunk*nvirA_);
+
+  if (in_core) {
+    psio_->read_entry(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+      &(B_AR[0][0]),sizeof(double)*chunk*nvirA_*ndf_);
+  }
+
+  psio_address next_B_AR = PSIO_ZERO;
+  psio_address next_T_AR = PSIO_ZERO;
+
+  zero_disk(PSIF_SAPT_TEMP,"Theta AR Intermediate",ndf_+3,aoccA_*nvirA_);
+
+  for (int a=0,amax=0; a<blocks; a++) {
+
+    int length = -amax;
+    int amin = amax;
+    amax += chunk;
+    if (amax > aoccA_) amax = aoccA_;
+    length += amax;
+
+    if (!in_core) {
+      psio_->read(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+        &(B_AR[0][0]),sizeof(double)*length*nvirA_*ndf_,next_B_AR,
+        &next_B_AR);
+    }
+
+    memset(&(T_AR[0][0]),'\0',sizeof(double)*length*nvirA_*(ndf_+3));
+
+    for (int i=0; i<nvec_; i++) {
+
+#pragma omp parallel
+{
+#pragma omp for 
+      for (int ar=amin*nvirA_; ar<amax*nvirA_; ar++) {
+          double scale = dAR_[i][ar];
+          if (i) scale /= dAR_[i-1][ar];
+          C_DSCAL(ndf_,scale,B_AR[ar-amin*nvirA_],1);
+        }
+}
+
+      C_DGEMM('N','N',length*nvirA_,ndf_+3,ndf_,1.0,B_AR[0],ndf_,yPQ[i],ndf_+3,
+        1.0,T_AR[0],ndf_+3);
+ 
+    }
+    for (int P=0; P<ndf_+3; P++) {
+      next_T_AR = psio_get_address(PSIO_ZERO,sizeof(double)*P*aoccA_*nvirA_
+        +sizeof(double)*amin*nvirA_);
+      C_DCOPY(length*nvirA_,&(T_AR[0][P]),ndf_+3,temp,1);
+      psio_->write(PSIF_SAPT_TEMP,"Theta AR Intermediate",(char *)
+        &(temp[0]),sizeof(double)*length*nvirA_,next_T_AR,&next_T_AR);
+    }
+  }
+
+  free_block(B_AR);
+  free_block(T_AR);
+  free(temp);
+
+  if (debug_)
+    psio_->write_entry(PSIF_SAPT_TEMP,"Y PQ Intermediate",(char *)
+      &(yPQ[0][0]),sizeof(double)*nvec_*ndf_*(ndf_+3));
+
+  free_block(yPQ);
+}
+
+void SAPT0::theta_bs()
+{
+  long int avail_mem = mem_ - (long int) nvec_*ndf_*(ndf_+3);
+
+  if ((long int) 2*aoccA_*nvirA_ > avail_mem) 
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+
+  SAPTDFInts B_p_AR = set_act_A_AR();
+  Iterator B_AR_iter = get_iterator(avail_mem/2,&B_p_AR);
+
+  SAPTDFInts C_p_AR = set_act_C_AR();
+  Iterator C_AR_iter = get_iterator(avail_mem/2,&C_p_AR);
+
+  double **xPQ = block_matrix(nvec_,(long int) ndf_*(ndf_+3));
+
+  for (int j=0,offB=0; j<B_AR_iter.num_blocks; j++) {
+    read_block(&B_AR_iter,&B_p_AR);
+
+    for (int k=0,offC=0; k<C_AR_iter.num_blocks; k++) {
+      read_block(&C_AR_iter,&C_p_AR);
+
+      for (int i=0; i<nvec_; i++) {
+
+#pragma omp parallel
+{
+#pragma omp for 
+        for (int ar=0; ar<aoccA_*nvirA_; ar++) {
+          double scale = dAR_[i][ar];
+          if (i) scale /= dAR_[i-1][ar];
+          C_DSCAL(C_AR_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
+            aoccA_*nvirA_);
+        }
+}
+        C_DGEMM('N','T',C_AR_iter.curr_size,B_AR_iter.curr_size,
+          aoccA_*nvirA_,1.0,C_p_AR.B_p_[0],aoccA_*nvirA_,B_p_AR.B_p_[0],
+          aoccA_*nvirA_,0.0,&(xPQ[i][(long int) offC*(ndf_+3)+offB]),
+          ndf_+3);
+      }
+      offC += C_AR_iter.curr_size;
+    }
+    C_p_AR.rewind();
+    C_AR_iter.rewind();
+    offB += B_AR_iter.curr_size;
+  }
+
+  B_p_AR.done();
+  C_p_AR.done();
+
+  bool in_core = false;
+
+  if (avail_mem > 1L*aoccB_*nvirB_*(ndf_+3) + 1L*aoccB_*nvirB_*ndf_) {
+    in_core = true;
+  }
+  else if (avail_mem > 1L*nvirB_*ndf_ + 1L*nvirB_*(ndf_+3)) {
+    in_core = false;
+  }
+  else {
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+  }
+
+  int chunk;
+  int blocks;
+
+  if (in_core) {
+    chunk = aoccB_;
+    blocks = 1;
+  }
+  else {
+    chunk = avail_mem / (1L*nvirB_*ndf_ + 1L*nvirB_*(ndf_+3));
+    if (chunk > aoccB_) chunk = aoccB_;
+    blocks = aoccB_ / chunk;
+    if (aoccB_ % chunk) blocks++;
+  }
+
+  double **B_BS = block_matrix(chunk*nvirB_,ndf_);
+  double **T_BS = block_matrix(chunk*nvirB_,ndf_+3);
+  double *temp = init_array(chunk*nvirB_);
+
+  if (in_core) {
+    psio_->read_entry(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+      &(B_BS[0][0]),sizeof(double)*chunk*nvirB_*ndf_);
+  }
+
+  psio_address next_B_BS = PSIO_ZERO;
+  psio_address next_T_BS = PSIO_ZERO;
+
+  zero_disk(PSIF_SAPT_TEMP,"Theta BS Intermediate",ndf_+3,aoccB_*nvirB_);
+
+  for (int b=0,bmax=0; b<blocks; b++) {
+
+    int length = -bmax;
+    int bmin = bmax;
+    bmax += chunk;
+    if (bmax > aoccB_) bmax = aoccB_;
+    length += bmax;
+
+    if (!in_core) {
+      psio_->read(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+        &(B_BS[0][0]),sizeof(double)*length*nvirB_*ndf_,next_B_BS,
+        &next_B_BS);
+    }
+
+    memset(&(T_BS[0][0]),'\0',sizeof(double)*length*nvirB_*(ndf_+3));
+
+    for (int i=0; i<nvec_; i++) {
+
+#pragma omp parallel
+{
+#pragma omp for 
+      for (int bs=bmin*nvirB_; bs<bmax*nvirB_; bs++) {
+          double scale = dBS_[i][bs];
+          if (i) scale /= dBS_[i-1][bs];
+          C_DSCAL(ndf_,scale,B_BS[bs-bmin*nvirB_],1);
+        }
+}
+
+      C_DGEMM('N','N',length*nvirB_,ndf_+3,ndf_,1.0,B_BS[0],ndf_,xPQ[i],ndf_+3,
+        1.0,T_BS[0],ndf_+3);
+ 
+    }
+    for (int P=0; P<ndf_+3; P++) {
+      next_T_BS = psio_get_address(PSIO_ZERO,sizeof(double)*P*aoccB_*nvirB_
+        +sizeof(double)*bmin*nvirB_);
+      C_DCOPY(length*nvirB_,&(T_BS[0][P]),ndf_+3,temp,1);
+      psio_->write(PSIF_SAPT_TEMP,"Theta BS Intermediate",(char *)
+        &(temp[0]),sizeof(double)*length*nvirB_,next_T_BS,&next_T_BS);
+    }
+  }
+
+  free_block(B_BS);
+  free_block(T_BS);
+  free(temp);
+
+  if (debug_)
+    psio_->write_entry(PSIF_SAPT_TEMP,"X PQ Intermediate",(char *)
+      &(xPQ[0][0]),sizeof(double)*nvec_*ndf_*(ndf_+3));
+
+  free_block(xPQ);
+}
+
+void SAPT0::test_theta()
+{
+/*
+  double **B_AR = block_matrix(aoccA_*nvirA_,ndf_);
+  double **T_AR = block_matrix(aoccA_*nvirA_,ndf_+3);
+
+  psio_->read_entry(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+    &(B_AR[0][0]),sizeof(double)*aoccA_*nvirA_*ndf_);
+
+  psio_->read_entry(PSIF_SAPT_TEMP,"Theta AR Intermediate",(char *)
+    &(T_AR[0][0]),sizeof(double)*aoccA_*nvirA_*(ndf_+3));
+
+  double disp_ar = 0.0;	
+
+  for (int ar=0; ar<aoccA_*nvirA_; ar++) {
+    disp_ar += -4.0*C_DDOT(ndf_,B_AR[ar],1,T_AR[ar],1);
+  }
+
+  free_block(B_AR);
+  free_block(T_AR);
+
+  double **B_BS = block_matrix(aoccB_*nvirB_,ndf_);
+  double **T_BS = block_matrix(aoccB_*nvirB_,ndf_+3);
+
+  psio_->read_entry(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+    &(B_BS[0][0]),sizeof(double)*aoccB_*nvirB_*ndf_);
+
+  psio_->read_entry(PSIF_SAPT_TEMP,"Theta BS Intermediate",(char *)
+    &(T_BS[0][0]),sizeof(double)*aoccB_*nvirB_*(ndf_+3));
+
+  double disp_bs = 0.0;
+
+  for (int bs=0; bs<aoccB_*nvirB_; bs++) {
+    disp_bs += -4.0*C_DDOT(ndf_,B_BS[bs],1,T_BS[bs],1);
+  }
+
+  free_block(B_BS);
+  free_block(T_BS);
+*/
+  double **xPQ = block_matrix(nvec_,ndf_*(ndf_+3));
+  double **yPQ = block_matrix(nvec_,ndf_*(ndf_+3));
+
+  psio_->read_entry(PSIF_SAPT_TEMP,"X PQ Intermediate",(char *)
+    &(xPQ[0][0]),sizeof(double)*nvec_*ndf_*(ndf_+3));
+  psio_->read_entry(PSIF_SAPT_TEMP,"Y PQ Intermediate",(char *)
+    &(yPQ[0][0]),sizeof(double)*nvec_*ndf_*(ndf_+3));
+
+  double disp_xy = -4.0*C_DDOT(nvec_*ndf_*(ndf_+3),xPQ[0],1,yPQ[0],1);
+
+  free_block(xPQ); 
+  free_block(yPQ);
+
+  fprintf(outfile,"    Disp20 (xPQ yPQ)    = %18.12lf H\n",disp_xy);
+//fprintf(outfile,"    Disp20 (Theta AR)   = %18.12lf H\n",disp_ar);
+//fprintf(outfile,"    Disp20 (Theta BS)   = %18.12lf H\n",disp_bs);
 }
 
 void SAPT0::arbs()
@@ -939,13 +1101,17 @@ void SAPT0::h1()
   free_block(xRB);
 }
 
-void SAPT0::h2()
+double SAPT0::h2()
 {
+  double h_2 = 0.0;
+
   SAPTDFInts B_p_AB = set_B_AB();
   Iterator AB_iter = get_iterator(mem_,&B_p_AB);
 
   double **xBS = block_matrix(aoccB_,nvirB_);
+  double **yBS = block_matrix(aoccB_,nvirB_);
   psio_address next_BS = PSIO_ZERO;
+  psio_address next_T_BS = PSIO_ZERO;
 
   for (int i=0; i<AB_iter.num_blocks; i++) {
     read_block(&AB_iter,&B_p_AB);
@@ -954,12 +1120,17 @@ void SAPT0::h2()
         noccB_,&(sAB_[0][noccB_]),nmo_,0.0,xBS[0],nvirB_);
       psio_->write(PSIF_SAPT_TEMP,"H2 BS RI Integrals",(char *)
         &(xBS[0][0]),sizeof(double)*aoccB_*nvirB_,next_BS,&next_BS);
+      psio_->read(PSIF_SAPT_TEMP,"Theta BS Intermediate",(char *)
+        &(yBS[0][0]),sizeof(double)*aoccB_*nvirB_,next_T_BS,&next_T_BS);
+      h_2 += 2.0*C_DDOT(aoccB_*nvirB_,xBS[0],1,yBS[0],1);
     }
   }
 
   free_block(xBS);
+  free_block(yBS);
   B_p_AB.done();
 
+  return(h_2);
 }
 
 void SAPT0::h3()
@@ -1021,13 +1192,17 @@ void SAPT0::h3()
   free_block(xAS);
 }
 
-void SAPT0::h4()
+double SAPT0::h4()
 {
+  double h_4 = 0.0;
+
   SAPTDFInts A_p_AB = set_A_AB();
   Iterator AB_iter = get_iterator(mem_,&A_p_AB);
 
   double **xAR = block_matrix(aoccA_,nvirA_);
+  double **yAR = block_matrix(aoccA_,nvirA_);
   psio_address next_AR = PSIO_ZERO;
+  psio_address next_T_AR = PSIO_ZERO;
 
   for (int i=0; i<AB_iter.num_blocks; i++) {
     read_block(&AB_iter,&A_p_AB);
@@ -1037,12 +1212,17 @@ void SAPT0::h4()
         0.0,xAR[0],nvirA_);
       psio_->write(PSIF_SAPT_TEMP,"H4 AR RI Integrals",(char *)
         &(xAR[0][0]),sizeof(double)*aoccA_*nvirA_,next_AR,&next_AR);
+      psio_->read(PSIF_SAPT_TEMP,"Theta AR Intermediate",(char *)
+        &(yAR[0][0]),sizeof(double)*aoccA_*nvirA_,next_T_AR,&next_T_AR);
+      h_4 += 2.0*C_DDOT(aoccA_*nvirA_,xAR[0],1,yAR[0],1);
     }
   }
 
   free_block(xAR);
+  free_block(yAR);
   A_p_AB.done();
 
+  return(h_4);
 }
 
 void SAPT0::q1()
@@ -1090,8 +1270,10 @@ void SAPT0::q1()
   free_block(xAS);
 }
 
-void SAPT0::q2()
+double SAPT0::q2()
 {
+  double q_2 = 0.0;
+
   double *sAR = init_array(noccA_*nvirA_);
 
   C_DGEMM('N','T',noccA_,nvirA_,noccB_,1.0,&(sAB_[0][0]),nmo_,
@@ -1101,7 +1283,9 @@ void SAPT0::q2()
   Iterator AA_iter = get_iterator(mem_,&A_p_AA);
 
   double *xAR = init_array(aoccA_*nvirA_);
+  double *yAR = init_array(aoccA_*nvirA_);
   psio_address next_AR = PSIO_ZERO;
+  psio_address next_T_AR = PSIO_ZERO;
 
   for (int i=0; i<AA_iter.num_blocks; i++) {
     read_block(&AA_iter,&A_p_AA);
@@ -1111,11 +1295,17 @@ void SAPT0::q2()
         0.0,xAR,nvirA_);
       psio_->write(PSIF_SAPT_TEMP,"Q2 AR RI Integrals",(char *)
         &(xAR[0]),sizeof(double)*aoccA_*nvirA_,next_AR,&next_AR);
+      psio_->read(PSIF_SAPT_TEMP,"Theta AR Intermediate",(char *)
+        &(yAR[0]),sizeof(double)*aoccA_*nvirA_,next_T_AR,&next_T_AR);
+      q_2 -= 2.0*C_DDOT(aoccA_*nvirA_,xAR,1,yAR,1);
     }
   }
 
   free(sAR);
   free(xAR);
+  free(yAR);
+
+  return(q_2);
 }
 
 void SAPT0::q3()
@@ -1191,8 +1381,9 @@ void SAPT0::q5()
   free_block(xRB);
 }
 
-void SAPT0::q6()
+double SAPT0::q6()
 {
+  double q_6 = 0.0;
   double *sBS = init_array(noccB_*nvirB_);
 
   C_DGEMM('T','N',noccB_,nvirB_,noccA_,1.0,&(sAB_[0][0]),nmo_,
@@ -1202,7 +1393,9 @@ void SAPT0::q6()
   Iterator BB_iter = get_iterator(mem_,&B_p_BB);
 
   double *xBS = init_array(aoccB_*nvirB_);
+  double *yBS = init_array(aoccB_*nvirB_);
   psio_address next_BS = PSIO_ZERO;
+  psio_address next_T_BS = PSIO_ZERO;
 
   for (int i=0; i<BB_iter.num_blocks; i++) {
     read_block(&BB_iter,&B_p_BB);
@@ -1212,11 +1405,17 @@ void SAPT0::q6()
         0.0,xBS,nvirB_);
       psio_->write(PSIF_SAPT_TEMP,"Q6 BS RI Integrals",(char *)
         &(xBS[0]),sizeof(double)*aoccB_*nvirB_,next_BS,&next_BS);
+      psio_->read(PSIF_SAPT_TEMP,"Theta BS Intermediate",(char *)
+        &(yBS[0]),sizeof(double)*aoccB_*nvirB_,next_T_BS,&next_T_BS);
+      q_6 -= 2.0*C_DDOT(aoccB_*nvirB_,xBS,1,yBS,1);
     }
   }
 
   free(sBS);
   free(xBS);
+  free(yBS);
+
+  return(q_6);
 }
 
 void SAPT0::q7()
@@ -1400,8 +1599,9 @@ void SAPT0::q12()
   free_block(X_AS_p);
 }
 
-void SAPT0::q13()
+double SAPT0::q13()
 {
+  double q_13 = 0.0;
   double **sBB = block_matrix(aoccB_,noccB_);
 
   C_DGEMM('T','N',aoccB_,noccB_,noccA_,1.0,&(sAB_[0][foccB_]),nmo_,
@@ -1411,7 +1611,9 @@ void SAPT0::q13()
   Iterator BS_iter = get_iterator(mem_,&B_p_BS);
 
   double *xBS = init_array(aoccB_*nvirB_);
+  double *yBS = init_array(aoccB_*nvirB_);
   psio_address next_BS = PSIO_ZERO;
+  psio_address next_T_BS = PSIO_ZERO;
 
   for (int i=0; i<BS_iter.num_blocks; i++) {
     read_block(&BS_iter,&B_p_BS);
@@ -1420,15 +1622,22 @@ void SAPT0::q13()
         &(B_p_BS.B_p_[j][0]),nvirB_,0.0,xBS,nvirB_);
       psio_->write(PSIF_SAPT_TEMP,"Q13 BS RI Integrals",(char *)
         &(xBS[0]),sizeof(double)*aoccB_*nvirB_,next_BS,&next_BS);
+      psio_->read(PSIF_SAPT_TEMP,"Theta BS Intermediate",(char *)
+        &(yBS[0]),sizeof(double)*aoccB_*nvirB_,next_T_BS,&next_T_BS);
+      q_13 -= 2.0*C_DDOT(aoccB_*nvirB_,xBS,1,yBS,1);
     }
   }
 
   free(xBS);
+  free(yBS);
   free_block(sBB);
+
+  return(q_13);
 }
 
-void SAPT0::q14()
+double SAPT0::q14()
 {
+  double q_14 = 0.0;
   double **sAA = block_matrix(aoccA_,noccA_);
 
   C_DGEMM('N','T',aoccA_,noccA_,noccB_,1.0,&(sAB_[foccA_][0]),nmo_,
@@ -1438,7 +1647,9 @@ void SAPT0::q14()
   Iterator AR_iter = get_iterator(mem_,&A_p_AR);
 
   double *xAR = init_array(aoccA_*nvirA_);
+  double *yAR = init_array(aoccA_*nvirA_);
   psio_address next_AR = PSIO_ZERO;
+  psio_address next_T_AR = PSIO_ZERO;
 
   for (int i=0; i<AR_iter.num_blocks; i++) {
     read_block(&AR_iter,&A_p_AR);
@@ -1447,11 +1658,17 @@ void SAPT0::q14()
         &(A_p_AR.B_p_[j][0]),nvirA_,0.0,xAR,nvirA_);
       psio_->write(PSIF_SAPT_TEMP,"Q14 AR RI Integrals",(char *)
         &(xAR[0]),sizeof(double)*aoccA_*nvirA_,next_AR,&next_AR);
+      psio_->read(PSIF_SAPT_TEMP,"Theta AR Intermediate",(char *)
+        &(yAR[0]),sizeof(double)*aoccA_*nvirA_,next_T_AR,&next_T_AR);
+      q_14 -= 2.0*C_DDOT(aoccA_*nvirA_,xAR,1,yAR,1);
     }
   }
 
   free(xAR);
+  free(yAR);
   free_block(sAA);
+
+  return(q_14);
 }
 
 }}
