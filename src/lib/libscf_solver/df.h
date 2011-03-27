@@ -75,9 +75,9 @@ class DFHF {
         // Shared pointer to beta Exchange matrix
         boost::shared_ptr<Matrix> Kb_;
         // Number of alpha electrons
-        const int* nalpha_;
+        const int* nalphapi_;
         // Number of beta electrons
-        const int* nbeta_;
+        const int* nbetapi_;
         // Constant reference to the options object
         Options& options_;
         // Zero basis set
@@ -132,8 +132,8 @@ class DFHF {
         void set_Db(boost::shared_ptr<Matrix> Db) {Db_ = Db;}
         void set_Ca(boost::shared_ptr<Matrix> Ca) {Ca_ = Ca;}
         void set_Cb(boost::shared_ptr<Matrix> Cb) {Cb_ = Cb;}
-        void set_Na(const int* Na) {nalpha_ = Na;}
-        void set_Nb(const int* Nb) {nbeta_ = Nb;}
+        void set_Na(const int* Na) {nalphapi_ = Na;}
+        void set_Nb(const int* Nb) {nbetapi_ = Nb;}
         // form J only
         void form_J_DF();
         // form J and K
