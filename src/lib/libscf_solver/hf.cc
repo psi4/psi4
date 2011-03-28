@@ -698,6 +698,8 @@ void HF::guess()
         Cb_->print();
         Da_->print();
         Db_->print();
+        Fa_->print();
+        Fb_->print();
     }
     
     if (print_) 

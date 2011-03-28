@@ -210,7 +210,7 @@ void RHF::form_D()
         int nso = nsopi_[h];
         int nmo = nmopi_[h];
         int na = doccpi_[h];
-    
+
         if (nso == 0 || nmo == 0) continue;
 
         double** Ca = Ca_->pointer(h);
