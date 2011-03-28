@@ -1186,9 +1186,9 @@ double HF::compute_energy()
 {
     std::string reference = options_.get_str("REFERENCE");
 
-    bool converged = false, diis_iter = false;
-
     // Neither of these are idempotent
+    bool converged = false;
+    diis_performed_ = false;
     if ((options_.get_str("GUESS") == "SAD") || (options_.get_str("GUESS") == "READ"))
         iteration_ = -1;
     else
@@ -1250,19 +1250,20 @@ double HF::compute_energy()
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
             save_fock();
         if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
-            diis_iter = diis();
+            diis_performed_ = diis();
         } else {
-            diis_iter = false;
+            diis_performed_ = false;
         }
         timer_off("DIIS");
 
-        if (print_>4 && diis_iter) {
+        if (print_>4 && diis_performed_) {
             fprintf(outfile,"  After DIIS:\n");
             Fa_->print(outfile);
             Fb_->print(outfile);
         }
 
-        fprintf(outfile, "   @%s iter %3d: %20.14f   % 10.5e   % 10.5e %s\n", reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_iter == false ? " " : "DIIS");
+        fprintf(outfile, "   @%s iter %3d: %20.14f   % 10.5e   % 10.5e %s\n", 
+                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_performed_ == false ? " " : "DIIS");
         fflush(outfile);
 
         timer_on("Form C");
