@@ -181,8 +181,8 @@ void UHF::form_F()
 
 void UHF::form_C()
 {
-    diagonalizeFock(Fa_, Ca_, epsilon_a_);
-    diagonalizeFock(Fb_, Cb_, epsilon_b_);
+    diagonalize_F(Fa_, Ca_, epsilon_a_);
+    diagonalize_F(Fb_, Cb_, epsilon_b_);
 
     if (debug_) {
         Ca_->print(outfile);
