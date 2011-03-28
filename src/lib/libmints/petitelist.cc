@@ -41,6 +41,9 @@ using namespace boost;
     #define F_DGESVD DGESVD_
 #endif
 
+extern int sing_(double *q, int *lq, int *iq, double *s, double *p,
+     int *lp, int *ip, double *a, int *la, int *m, int *n, double *w);
+
 extern "C" {
 extern int F_DGESVD(const char *, const char *, int *, int *, double *, int *,
                     double *, double *, int *, double *, int *, double *, int *, int *);
@@ -830,6 +833,14 @@ SO_block* PetiteList::aotoso_info()
                             }
                         }
                     }
+
+                    for (int m=0; m<nfuncuniq; ++m) {
+                        for (int n=0; n<nfuncall; ++n) {
+                            if (fabs(linorb[m][n]) < 1.0e-14)
+                                linorb[m][n] = 0.0;
+                        }
+                    }
+
                     // find the linearly independent SO's for this irrep/component
                     memcpy(linorbcop[0], linorb[0], nfuncuniq*nfuncall*sizeof(double));
                     double *singval = new double[nfuncuniq];
@@ -840,12 +851,10 @@ SO_block* PetiteList::aotoso_info()
 
 //                    fprintf(outfile, "linorb before SVD call\n");
 //                    print_mat(linorb, nfuncuniq, nfuncuniq, outfile);
-
                     // solves At = V SIGMA Ut (since FORTRAN array layout is used)
                     F_DGESVD("N","A",&nfuncall,&nfuncuniq,linorb[0],&nfuncall,
                              singval, &djunk, &ijunk, u[0], &nfuncuniq,
                              work, &lwork, &info);
-//                    C_DGESVD('A', 'N', nfuncuniq, nfuncall, linorb[0], nfuncall, singval, u[0], nfuncuniq, &djunk, ijunk, work, lwork);
 
 //                    fprintf(outfile, "U:\n");
 //                    print_mat(u, nfuncuniq, nfuncuniq, outfile);
@@ -934,30 +943,30 @@ SO_block* PetiteList::aotoso_info()
     }
 
     // Correct phases
-    Dimension sodim = SO_basisdim();
-    for (int h=0; h<nblocks_; ++h) {
-        // If the block is empty, skip
-        if (sodim[h] == 0)
-            continue;
+//    Dimension sodim = SO_basisdim();
+//    for (int h=0; h<nblocks_; ++h) {
+//        // If the block is empty, skip
+//        if (sodim[h] == 0)
+//            continue;
 
-        SO_block& sob = SOs[h];
-        for (i=0; i<sob.len; ++i) {
-            SO& soi = sob.so[i];
+//        SO_block& sob = SOs[h];
+//        for (i=0; i<sob.len; ++i) {
+//            SO& soi = sob.so[i];
 
-            // do the sum
-            double coefs = 0.0;
-            for (j=0; j<soi.len; ++j) {
-                coefs += soi.cont[j].coef;
-            }
+//            // do the sum
+//            double coefs = 0.0;
+//            for (j=0; j<soi.len; ++j) {
+//                coefs += soi.cont[j].coef;
+//            }
 
-            // if less than 0 fix to be positive.
-            if (coefs < 0.0) {
-                for (j=0; j<soi.len; ++j) {
-                    soi.cont[j].coef *= -1.0;
-                }
-            }
-        }
-    }
+//            // if less than 0 fix to be positive.
+//            if (coefs < 0.0) {
+//                for (j=0; j<soi.len; ++j) {
+//                    soi.cont[j].coef *= -1.0;
+//                }
+//            }
+//        }
+//    }
 
     if (ct.complex()) {
         SO_block *nSOs = new SO_block[nblocks_];

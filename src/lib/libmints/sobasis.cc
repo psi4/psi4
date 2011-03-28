@@ -154,7 +154,7 @@ void SOBasisSet::init()
 
     petite_ = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
 
-//    petite->print();
+//    petite_->print();
 
     int nblocks = petite_->nblocks();
     SO_block *soblocks = petite_->aotoso_info();
