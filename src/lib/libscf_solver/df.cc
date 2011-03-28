@@ -79,7 +79,7 @@ void DFHF::common_init()
     // TODO: Verify that the basis assign does not messs this up
     if (options_.get_str("RI_BASIS_SCF") == "") {
         primary_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-JKFIT", "RI_BASIS_SCF");
-        fprintf(outfile, ("  No auxiliary basis selected, defaulting to " + options_.get_str("BASIS") + "-JKFIT\n\n").c_str()); 
+        fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-JKFIT\n\n", options_.get_str("BASIS").c_str()); 
     }
 
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
