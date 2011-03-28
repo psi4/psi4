@@ -502,6 +502,12 @@ void OEProp::compute_mulliken_charges()
     fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);    
 
+//    Free memory
+    delete[] Qa;
+    delete[] Qb;
+    delete[] PSa;
+    delete[] PSb;
+    
     fflush(outfile);
 }
 void OEProp::compute_lowdin_charges()
@@ -581,6 +587,9 @@ void OEProp::compute_lowdin_charges()
 
     fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
+
+    delete[] Qa;
+    delete[] Qb;
 
     fflush(outfile);
 }

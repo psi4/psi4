@@ -447,6 +447,7 @@ DIISManager::extrapolate(int numQuantities, ...)
     }
     free(coefficients);
     free(force);
+    free(pivots);
     return true;
 }
 
