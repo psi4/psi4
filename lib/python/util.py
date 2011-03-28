@@ -17,21 +17,21 @@ def get_num_threads():
 # Test functions
 def compare_values(expected, computed, digits, label):
     if (abs(expected-computed) > 10**(-digits)):
-        print "\t%s: computed value (%f) does not match (%f) to %d digits." % (label, expected, computed, digits)
+        print "\t%s: computed value (%f) does not match (%f) to %d digits." % (label, computed, expected, digits)
         sys.exit(1)
 
     print "\t%s: matched." % (label)
 
 def compare_integers(expected, computed, label):
     if (expected != computed):
-        print "\t%s: computed value (%d) does not match (%d)." % (label, expected, computed)
+        print "\t%s: computed value (%d) does not match (%d)." % (label, computed, expected)
         sys.exit(1)
 
     print "\t%s: matched." % (label)
 
 def compare_strings(expected, computed, label):
     if(expected != computed):
-        print "\t%s: computed value (%s) does not match (%s)." % (label, expected, computed)
+        print "\t%s: computed value (%s) does not match (%s)." % (label, computed, expected)
         sys.exit(1)
 
     print "\t%s: matched." % (label)
@@ -79,7 +79,7 @@ def compare_vectors(expected, computed, digits, label):
         failed = 0;
         for entry in range(dim):
             if(abs(expected.get(irrep, entry) - computed.get(irrep, entry)) > 10**(-digits)):
-                 print "\t%s: computed value (%s) does not match (%s)." % (label, expected.get(irrep, entry) , computed.get(irrep, entry))
+                 print "\t%s: computed value (%s) does not match (%s)." % (label, computed.get(irrep, entry), expected.get(irrep, entry))
                  failed = 1
                  break
 
