@@ -37,6 +37,12 @@ protected:
     SharedMatrix S_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
+    /// Temporary matrix for diagonalize_F
+    SharedMatrix diag_temp_;
+    /// Temporary matrix for diagonalize_F
+    SharedMatrix diag_F_temp_;
+    /// Temporary matrix for diagonalize_F
+    SharedMatrix diag_C_temp_;
 
     /// Old C Alpha matrix (if needed for MOM)
     SharedMatrix Ca_old_;
@@ -166,7 +172,7 @@ protected:
     void print_header();
 
     /// Prints some details about nsopi/nmopi, and initial occupations
-    void print_preiterations(); 
+    void print_preiterations();
 
     /// Do any needed integral setup
     void integrals();
@@ -208,7 +214,7 @@ protected:
     virtual void form_C() =0;
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
-    virtual void diagonalizeFock(boost::shared_ptr<Matrix> F, boost::shared_ptr<Matrix> C, boost::shared_ptr<Vector> eps);
+    virtual void diagonalize_F(const boost::shared_ptr<Matrix>& F, boost::shared_ptr<Matrix>& C, boost::shared_ptr<Vector>& eps);
 
     /** Computes the Fock matrix */
     virtual void form_F() =0;
@@ -239,7 +245,7 @@ protected:
 
     /** Form Fia (for DIIS) **/
     virtual boost::shared_ptr<Matrix> form_Fia(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Cso, int* noccpi);
- 
+
     /** Form X'(FDS - SDF)X (for DIIS) **/
     virtual boost::shared_ptr<Matrix> form_FDSmSDF(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Dso);
 

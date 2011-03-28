@@ -33,7 +33,7 @@
 
 #ifdef _OPENMP
 #include <omp.h>
-#endif 
+#endif
 
 using namespace boost;
 using namespace std;
@@ -88,7 +88,7 @@ void HF::common_init()
         nsopi_[h] = dimpi[h];
         nmopi_[h] = nsopi_[h]; //For now
         nso_ += nsopi_[h];
-        nmo_ += nmopi_[h]; //For now 
+        nmo_ += nmopi_[h]; //For now
     }
 
     // Form the SO lookup information
@@ -298,6 +298,9 @@ void HF::finalize()
     //Sphalf_.reset();
     X_.reset();
     H_.reset();
+    diag_temp_.reset();
+    diag_F_temp_.reset();
+    diag_C_temp_.reset();
 
     // Close the chkpt
     if(psio_->open_check(PSIF_CHKPT))
@@ -641,11 +644,11 @@ void HF::print_header()
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
-    #endif 
+    #endif
 
     fprintf(outfile, "\n");
     fprintf(outfile, "         ---------------------------------------------------------\n");
-    fprintf(outfile, "                                   SCF\n"); 
+    fprintf(outfile, "                                   SCF\n");
     fprintf(outfile, "            by Justin Turney, Rob Parrish, and Andy Simmonnett\n");
     fprintf(outfile, "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
     fprintf(outfile, "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
@@ -675,7 +678,7 @@ void HF::print_header()
     fflush(outfile);
 
     fprintf(outfile, "  ==> Primary Basis: %s <==\n\n", options_.get_str("BASIS").c_str());
-    basisset_->print_by_level(outfile, print_); 
+    basisset_->print_by_level(outfile, print_);
 
 }
 void HF::print_preiterations()
@@ -686,10 +689,10 @@ void HF::print_preiterations()
     fprintf(outfile, "    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc\n");
     fprintf(outfile, "   -------------------------------------------------------\n");
     for (int h= 0; h < nirrep_; h++) {
-        fprintf(outfile, "     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);   
+        fprintf(outfile, "     %-3s   %6d  %6d  %6d  %6d  %6d  %6d\n", ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], nalphapi_[h], nbetapi_[h], doccpi_[h], soccpi_[h]);
     }
     fprintf(outfile, "   -------------------------------------------------------\n");
-    fprintf(outfile, "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);   
+    fprintf(outfile, "    Total  %6d  %6d  %6d  %6d  %6d  %6d\n", nso_, nmo_, nalpha_, nbeta_, nbeta_, nalpha_-nbeta_);
     fprintf(outfile, "   -------------------------------------------------------\n\n");
 }
 
@@ -783,7 +786,7 @@ void HF::form_Shalf()
     // Convert the eigenvales to 1/sqrt(eigenvalues)
     int *dimpi = eigval->dimpi();
     double min_S = fabs(eigval->get(0,0));
-    for (int h=0; h<eigval->nirrep(); ++h) {
+    for (int h=0; h<nirrep_; ++h) {
         for (int i=0; i<dimpi[h]; ++i) {
             if (min_S > eigval->get(h,i))
                 min_S = eigval->get(h,i);
@@ -801,7 +804,7 @@ void HF::form_Shalf()
 
     // ==> CANONICAL ORTHOGONALIZATION <== //
 
-    // Decide symmetric or canonical 
+    // Decide symmetric or canonical
     double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
@@ -817,7 +820,7 @@ void HF::form_Shalf()
         eigvec->copy(eigvec_store.get());
         eigval->copy(eigval_store.get());
         int delta_mos = 0;
-        for (int h=0; h<eigval->nirrep(); ++h) {
+        for (int h=0; h<nirrep_; ++h) {
             //in each irrep, scale significant cols i  by 1.0/sqrt(s_i)
             int start_index = 0;
             for (int i=0; i<dimpi[h]; ++i) {
@@ -836,7 +839,7 @@ void HF::form_Shalf()
             delta_mos += start_index;
         }
 
-        X_->init(eigvec->nirrep(),nsopi_,nmopi_,"X (Canonical Orthogonalization)");
+        X_->init(nirrep_,nsopi_,nmopi_,"X (Canonical Orthogonalization)");
         for (int h=0; h<eigval->nirrep(); ++h) {
             //Copy significant columns of eigvec into X in
             //descending order
@@ -844,7 +847,7 @@ void HF::form_Shalf()
             for (int i=0; i<dimpi[h]; ++i) {
                 if (S_cutoff  < eigval->get(h,i)) {
                 } else {
-                    start_index++;    
+                    start_index++;
                 }
             }
             for (int i=0; i<dimpi[h]-start_index; ++i) {
@@ -857,11 +860,16 @@ void HF::form_Shalf()
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
 
         // Refreshes twice in RHF, no big deal
-        epsilon_a_->init(eigvec->nirrep(), nmopi_);
-        Ca_->init(eigvec->nirrep(),nsopi_,nmopi_,"MO coefficients");
+        epsilon_a_->init(nirrep_, nmopi_);
+        Ca_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
         epsilon_b_->init(eigvec->nirrep(), nmopi_);
-        Cb_->init(eigvec->nirrep(),nsopi_,nmopi_,"MO coefficients");
+        Cb_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
     }
+
+    // Temporary variables needed by diagonalize_F
+    diag_temp_   = SharedMatrix(new Matrix(nirrep_, nmopi_, nsopi_));
+    diag_F_temp_ = SharedMatrix(new Matrix(nirrep_, nmopi_, nmopi_));
+    diag_C_temp_ = SharedMatrix(new Matrix(nirrep_, nmopi_, nmopi_));
 
     if (print_ > 3) {
         S_->print(outfile);
@@ -928,7 +936,7 @@ void HF::guess()
 {
     //What does the user want?
     //Options will be:
-    // "READ"-try to read MOs from file100, projecting if needed 
+    // "READ"-try to read MOs from file100, projecting if needed
     // "CORE"-CORE Hamiltonain
     // "GWH"-Generalized Wolfsberg-Helmholtz
     // "SAD"-Superposition of Atomic Denisties
@@ -993,8 +1001,8 @@ void HF::guess()
         Fa_->print();
         Fb_->print();
     }
-    
-    if (print_) 
+
+    if (print_)
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
 }
 void HF::save_orbitals()
@@ -1013,9 +1021,9 @@ void HF::save_orbitals()
     char *basisname = strdup(options_.get_str("BASIS").c_str());
     int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
 
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int)); 
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char)); 
-    
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char));
+
     shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
@@ -1038,15 +1046,15 @@ void HF::load_orbitals()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_OLD);
 
     int basislength;
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int)); 
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
     char basisnamec[basislength];
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char)); 
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char));
 
-    std::string basisname(basisnamec);   
+    std::string basisname(basisnamec);
 
     if (basisname == "")
         throw PSIEXCEPTION("SCF::load_orbitals: Custom basis sets not allowed for small-basis guess");
- 
+
     if (print_) {
         if (basisname != options_.get_str("BASIS")) {
             fprintf(outfile,"  Computing dual basis set projection from %s to %s.\n", \
@@ -1065,7 +1073,7 @@ void HF::load_orbitals()
     int old_nirrep, old_nsopi[8];
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(old_nirrep),sizeof(int));
 
-    if (old_nirrep != nirrep_) 
+    if (old_nirrep != nirrep_)
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),8*sizeof(int));
@@ -1204,7 +1212,7 @@ double HF::compute_energy()
     if (print_)
         print_preiterations();
 
-    integrals();     
+    integrals();
 
     fprintf(outfile, "  ==> Iterations <==\n\n");
     fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
@@ -1278,7 +1286,7 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
-    if (print_) 
+    if (print_)
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     if (converged) {
@@ -1344,16 +1352,15 @@ double HF::compute_energy()
         // Properties
         if (print_) {
             shared_ptr<OEProp> oe(new OEProp());
-            if (print_ < 2)
-                oe->add("DIPOLE");
-            else
+            oe->add("DIPOLE");
+
+            if (print_ >= 2) {
                 oe->add("QUADRUPOLE");
-        
-            if (print_ >= 2)
                 oe->add("MULLIKEN_CHARGES");
+            }
 
             fprintf(outfile, "\n  ==> Properties <==\n");
-            oe->compute(); 
+            oe->compute();
         }
 
         save_information();
@@ -1376,40 +1383,20 @@ double HF::compute_energy()
     fflush(outfile);
     return E_;
 }
-void HF::diagonalizeFock(shared_ptr<Matrix> Fm, shared_ptr<Matrix> Cm, shared_ptr<Vector> epsm)
+
+void HF::diagonalize_F(const shared_ptr<Matrix>& Fm, shared_ptr<Matrix>& Cm, shared_ptr<Vector>& epsm)
 {
-    for (int h = 0; h < Cm->nirrep(); h++) {
+    //Form F' = X'FX for canonical orthogonalization
+    diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
+    diag_F_temp_->gemm(false, false, 1.0, diag_temp_, X_, 0.0);
 
-        int nso = nsopi_[h];
-        int nmo = nmopi_[h];
+    //Form C' = eig(F')
+    diag_F_temp_->diagonalize(diag_C_temp_, epsm);
 
-        if (nmo == 0 || nso == 0) continue;
-
-        double **Temp = block_matrix(nmo,nso);
-        double **Fp = block_matrix(nmo,nmo);
-        double **Cp = block_matrix(nmo,nmo);
-
-        double** X = X_->pointer(h);
-        double** F = Fm->pointer(h);
-        double** C = Cm->pointer(h);
-
-        double* eigvals = epsm->pointer(h);
-
-        //Form F' = X'FX for canonical orthogonalization
-        C_DGEMM('T','N',nmo,nso,nso,1.0,X[0],nmo,F[0],nso,0.0,Temp[0],nso);
-        C_DGEMM('N','N',nmo,nmo,nso,1.0,Temp[0],nso,X[0],nmo,0.0,Fp[0],nmo);
-
-        //Form C' = eig(F')
-        sq_rsp(nmo, nmo, Fp,  eigvals, 1, Cp, 1.0e-14);
-
-        //Form C = XC'
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,X[0],nmo,Cp[0],nmo,0.0,C[0],nmo);
-
-        free_block(Temp);
-        free_block(Cp);
-        free_block(Fp);
-    }
+    //Form C = XC'
+    Cm->gemm(false, false, 1.0, X_, diag_C_temp_, 0.0);
 }
+
 void HF::reset_SAD_occupation()
 {
     // RHF style for now
@@ -1423,7 +1410,7 @@ void HF::reset_SAD_occupation()
 shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, int* noccpi)
 {
     int* nsopi = Cso->rowspi();
-    int* nmopi = Cso->colspi();  
+    int* nmopi = Cso->colspi();
     int nvirpi[nirrep_];
 
     for (int h = 0; h < nirrep_; h++)
@@ -1434,21 +1421,21 @@ shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, 
     // Hack to get orbital e for this Fock
     shared_ptr<Matrix> C2(new Matrix("C2", nirrep_, nsopi, nmopi));
     shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
-    diagonalizeFock(Fso, C2, E2);
+    diagonalize_F(Fso, C2, E2);
 
     for (int h = 0; h < nirrep_; h++) {
         int nmo = nmopi[h];
         int nso = nsopi[h];
         int nvir = nvirpi[h];
-        int nocc = noccpi[h]; 
-        
+        int nocc = noccpi[h];
+
         if (nmo == 0 || nso == 0 || nvir == 0 || nocc == 0) continue;
 
         //double** C = Cso->pointer(h);
         double** C = C2->pointer(h);
         double** F = Fso->pointer(h);
         double** Fiap = Fia->pointer(h);
-    
+
         double** Temp = block_matrix(nocc, nso);
 
         C_DGEMM('T','N',nocc,nso,nso,1.0,C[0],nmo,F[0],nso,0.0,Temp[0],nso);
@@ -1465,7 +1452,7 @@ shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, 
 
     //Fia->print();
 
-    return Fia; 
+    return Fia;
 }
 shared_ptr<Matrix> HF::form_FDSmSDF(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Dso)
 {
@@ -1475,11 +1462,11 @@ shared_ptr<Matrix> HF::form_FDSmSDF(shared_ptr<Matrix> Fso, shared_ptr<Matrix> D
     DS->gemm(false,false,1.0,Dso,S_,0.0);
     FDSmSDF->gemm(false,false,1.0,Fso,DS,0.0);
 
-    shared_ptr<Matrix> SDF(FDSmSDF->transpose()); 
+    shared_ptr<Matrix> SDF(FDSmSDF->transpose());
     FDSmSDF->subtract(SDF);
 
     DS.reset();
-    SDF.reset(); 
+    SDF.reset();
 
     shared_ptr<Matrix> XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
     shared_ptr<Matrix> XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));

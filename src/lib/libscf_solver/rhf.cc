@@ -200,7 +200,7 @@ void RHF::form_F()
 
 void RHF::form_C()
 {
-    diagonalizeFock(Fa_, Ca_, epsilon_a_);
+    diagonalize_F(Fa_, Ca_, epsilon_a_);
     find_occupation();
 }
 
