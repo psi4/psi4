@@ -65,6 +65,9 @@ protected:
     /// Nuclear repulsion energy
     double nuclearrep_;
 
+    /// Whether DIIS was performed this iteration, or not
+    bool diis_performed_;
+
     /// DOCC vector from input (if found)
     bool input_docc_;
 
