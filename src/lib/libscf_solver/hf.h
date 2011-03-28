@@ -38,6 +38,11 @@ protected:
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
 
+    /// Old C Alpha matrix (if needed for MOM)
+    SharedMatrix Ca_old_;
+    /// Old C Beta matrix (if needed for MOM)
+    SharedMatrix Cb_old_;
+
     /// Previous iteration's energy and current energy
     double Eold_;
     double E_;
@@ -144,6 +149,9 @@ protected:
 
     /// Figure out how to occupy the orbitals in the absence of DOCC and SOCC
     void find_occupation();
+
+    /// Maximum overlap method for prevention of oscillation/excited state SCF
+    void MOM();
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();

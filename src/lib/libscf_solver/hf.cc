@@ -75,8 +75,11 @@ void HF::common_init()
     X_.reset(factory_->create_matrix("X"));
     //Sphalf_.reset(factory_->create_matrix("S^+1/2"));
 
-    memset((void*) nsopi_, '\0', factory_->nirrep()*sizeof(int));
-    memset((void*) nmopi_, '\0', factory_->nirrep()*sizeof(int));
+    memset((void*) nsopi_,    '\0', 8*sizeof(int));
+    memset((void*) nmopi_,    '\0', 8*sizeof(int));
+    memset((void*) nalphapi_, '\0', 8*sizeof(int));
+    memset((void*) nbetapi_,  '\0', 8*sizeof(int));
+
     nmo_ = 0;
     nso_ = 0;
     nirrep_ = factory_->nirrep();
@@ -301,6 +304,296 @@ void HF::finalize()
         psio_->close(PSIF_CHKPT, 1);
 }
 
+void HF::MOM()
+{
+    int MOM_start = options_.get_int("MOM_START");
+    
+    // Not yet MOM!
+    if (MOM_start == -1 || iteration_ < MOM_start) return;
+
+    // Set MOM up
+    if (iteration_ == MOM_start) {
+        
+        // Build Ca_old_ matrices
+        Ca_old_ = shared_ptr<Matrix>(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
+        if (!restricted()) {
+            Cb_old_ = shared_ptr<Matrix>(new Matrix("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_));
+        } else {
+            Cb_old_ = Ca_old_;
+        }
+       
+        // Excite if needed
+        
+        // Find out which orbitals are where
+        std::vector<std::pair<double, std::pair<int, int> > > orbs;
+        for (int h = 0; h < nirrep_; h++) {
+            int nmo = nmopi_[h];
+            if (nmo == 0) continue;
+            double* eps = epsilon_a_->pointer(h);
+            for (int a = 0; a < nmo; a++)
+                orbs.push_back(make_pair(eps[a], make_pair(h, a)));
+        }
+
+        sort(orbs.begin(),orbs.end());
+
+        if (options_["MOM_OCC_ALPHA"].size() != options_["MOM_VIR_ALPHA"].size())
+            throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA are not the same size");
+        if (options_["MOM_OCC_BETA"].size() != options_["MOM_VIR_BETA"].size())
+            throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA are not the same size");
+
+        // Alpha        
+        for (int n = 0; n < options_["MOM_OCC_ALPHA"].size(); n++) {
+            int i = options_["MOM_OCC_ALPHA"][n].to_integer() - 1; 
+            int a = options_["MOM_VIR_ALPHA"][n].to_integer() - 1;
+            
+            int hi = orbs[i].second.first;
+            int ha = orbs[a].second.first;
+
+            if (hi != ha)
+                throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA not in the same irrep");
+
+            // TODO More error checking
+ 
+            int pi = orbs[i].second.second;
+            int pa = orbs[a].second.second;
+   
+            int nso = nsopi_[hi];
+            int nmo = nmopi_[ha];
+
+            double** Ca = Ca_->pointer(hi);
+            double* Ct = new double[nso]; 
+            double* eps = epsilon_a_->pointer(hi);
+            double  epst;
+         
+            // Swap eigvals 
+            epst = eps[pi];
+            eps[pi] = eps[pa];
+            eps[pa] = epst; 
+
+            // Swap eigvecs
+            C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+            C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+            C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
+ 
+            delete[] Ct; 
+        }
+ 
+        Ca_old_->copy(Ca_);
+ 
+        if (restricted()) return; 
+
+        // Beta
+        for (int n = 0; n < options_["MOM_OCC_BETA"].size(); n++) {
+            int i = options_["MOM_OCC_BETA"][n].to_integer() - 1; 
+            int a = options_["MOM_VIR_BETA"][n].to_integer() - 1;
+            
+            int hi = orbs[i].second.first;
+            int ha = orbs[a].second.first;
+
+            if (hi != ha)
+                throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA not in the same irrep");
+
+            // TODO More error checking
+ 
+            int pi = orbs[i].second.second;
+            int pa = orbs[a].second.second;
+   
+            int nso = nsopi_[hi];
+            int nmo = nmopi_[ha];
+
+            double** Ca = Cb_->pointer(hi);
+            double* Ct = new double[nso]; 
+            double* eps = epsilon_b_->pointer(hi);
+            double  epst;
+         
+            // Swap eigvals 
+            epst = eps[pi];
+            eps[pi] = eps[pa];
+            eps[pa] = epst; 
+
+            // Swap eigvecs
+            C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+            C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+            C_DCOPY(nso, Ct, 1, &Ca[0][pi], nmo);
+ 
+            delete[] Ct; 
+        } 
+        Cb_old_->copy(Cb_);
+
+        return;
+    } 
+
+    // Go MOM go!
+    // Alpha
+    for (int h = 0; h < nirrep_; h++) {
+    
+        // Indexing
+        int nso = nsopi_[h];
+        int nmo = nmopi_[h];
+        int nalpha = nalphapi_[h];
+    
+        if (nso == 0 || nmo == 0 || nalpha == 0) continue;
+        
+        double** Cold = Ca_old_->pointer(h);
+        double** Cnew = Ca_->pointer(h);
+        double*  eps  = epsilon_a_->pointer(h);
+        double** S = S_->pointer(h);
+
+        double* c = new double[nso];
+        double* d = new double[nso];
+        double* p = new double[nmo]; 
+        
+        memset(static_cast<void*>(c), '\0', sizeof(double)*nso);
+        
+        for (int i = 0; i < nalpha; i++)
+            C_DAXPY(nso,1.0,&Cold[0][i],nmo,c,1);
+
+        C_DGEMV('N',nso,nso,1.0,S[0],nso,c,1,0.0,d,1);
+        C_DGEMV('T',nso,nmo,1.0,Cnew[0],nmo,d,1,0.0,p,1);
+
+        //fprintf(outfile,"  P_a:\n");
+        //for (int a = 0; a < nmo; a++)
+        //    fprintf(outfile,"   a = %3d: %14.10f\n", a + 1, p[a]);
+
+        // Find the largest contributions
+        std::vector<std::pair<double, int> > pvec;
+        pvec.resize(nmo);
+        for (int a = 0; a < nmo; a++)
+            pvec[a] = make_pair(fabs(p[a]), a);
+        sort(pvec.begin(),pvec.end(), greater<std::pair<double, int> >());
+
+        //fprintf(outfile,"  P_a sorted:\n");
+        //for (int a = 0; a < nmo; a++)
+        //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, pvec[a].second, pvec[a].first);
+
+        // Now order the mos in each group
+        std::vector<std::pair<double, int> > occvec;
+        occvec.resize(nalpha);
+        for (int a = 0; a < nalpha; a++)
+            occvec[a] = make_pair(eps[a], pvec[a].second);
+        sort(occvec.begin(),occvec.end());
+
+        //fprintf(outfile,"  P_a_occ sorted:\n");
+        //for (int a = 0; a < nalpha; a++)
+        //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, occvec[a].second, occvec[a].first);
+
+        std::vector<std::pair<double, int> > virvec;
+        virvec.resize(nmo - nalpha);
+        for (int a = 0; a < nmo - nalpha; a++)
+            virvec[a] = make_pair(eps[a + nalpha], pvec[a + nalpha].second);
+        sort(virvec.begin(),virvec.end());
+
+        //fprintf(outfile,"  P_a_vir sorted:\n");
+        //for (int a = 0; a < nmo - nalpha; a++)
+        //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
+
+        // Use Cold and p as a buffer
+        memcpy(static_cast<void*>(Cold[0]),static_cast<void*>(Cnew[0]),sizeof(double)*nso*nmo);
+        memcpy(static_cast<void*>(p),      static_cast<void*>(eps),    sizeof(double)*nmo);
+
+        for (int a = 0; a < nalpha; a++) {
+            eps[a] = occvec[a].first;
+            C_DCOPY(nso,&Cold[0][a],nmo,&Cnew[0][occvec[a].second],nmo);    
+        } 
+
+        for (int a = 0; a < nmo - nalpha; a++) {
+            eps[a + nalpha] = virvec[a].first;
+            C_DCOPY(nso,&Cold[0][a + nalpha],nmo,&Cnew[0][virvec[a].second],nmo);    
+        } 
+
+        delete[] c;
+        delete[] d;
+        delete[] p;
+    }   
+ 
+    Ca_old_->copy(Ca_);
+   
+    // Beta
+    if (restricted()) return;
+  
+    for (int h = 0; h < nirrep_; h++) {
+    
+        // Indexing
+        int nso = nsopi_[h];
+        int nmo = nmopi_[h];
+        int nbeta = nbetapi_[h];
+    
+        if (nso == 0 || nmo == 0 || nbeta == 0) continue;
+        
+        double** Cold = Cb_old_->pointer(h);
+        double** Cnew = Cb_->pointer(h);
+        double*  eps  = epsilon_b_->pointer(h);
+        double** S = S_->pointer(h);
+
+        double* c = new double[nso];
+        double* d = new double[nso];
+        double* p = new double[nmo]; 
+        
+        memset(static_cast<void*>(c), '\0', sizeof(double)*nso);
+        
+        for (int i = 0; i < nbeta; i++)
+            C_DAXPY(nso,1.0,&Cold[0][i],nmo,c,1);
+
+        C_DGEMV('N',nso,nso,1.0,S[0],nso,c,1,0.0,d,1);
+        C_DGEMV('T',nso,nmo,1.0,Cnew[0],nmo,d,1,0.0,p,1);
+
+        //fprintf(outfile,"  P_a:\n");
+        //for (int a = 0; a < nmo; a++)
+        //    fprintf(outfile,"   a = %3d: %14.10f\n", a + 1, p[a]);
+
+        // Find the largest contributions
+        std::vector<std::pair<double, int> > pvec;
+        pvec.resize(nmo);
+        for (int a = 0; a < nmo; a++)
+            pvec[a] = make_pair(fabs(p[a]), a);
+        sort(pvec.begin(),pvec.end(), greater<std::pair<double, int> >());
+
+        //fprintf(outfile,"  P_a sorted:\n");
+        //for (int a = 0; a < nmo; a++)
+        //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, pvec[a].second, pvec[a].first);
+
+        // Now order the mos in each group
+        std::vector<std::pair<double, int> > occvec;
+        occvec.resize(nbeta);
+        for (int a = 0; a < nbeta; a++)
+            occvec[a] = make_pair(eps[a], pvec[a].second);
+        sort(occvec.begin(),occvec.end());
+
+        //fprintf(outfile,"  P_a_occ sorted:\n");
+        //for (int a = 0; a < nbeta; a++)
+        //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, occvec[a].second, occvec[a].first);
+
+        std::vector<std::pair<double, int> > virvec;
+        virvec.resize(nmo - nbeta);
+        for (int a = 0; a < nmo - nbeta; a++)
+            virvec[a] = make_pair(eps[a + nbeta], pvec[a + nbeta].second);
+        sort(virvec.begin(),virvec.end());
+
+        //fprintf(outfile,"  P_a_vir sorted:\n");
+        //for (int a = 0; a < nmo - nalpha; a++)
+        //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
+
+        // Use Cold and p as a buffer
+        memcpy(static_cast<void*>(Cold[0]),static_cast<void*>(Cnew[0]),sizeof(double)*nso*nmo);
+        memcpy(static_cast<void*>(p),      static_cast<void*>(eps),    sizeof(double)*nmo);
+
+        for (int a = 0; a < nbeta; a++) {
+            eps[a] = occvec[a].first;
+            C_DCOPY(nso,&Cold[0][a],nmo,&Cnew[0][occvec[a].second],nmo);    
+        } 
+
+        for (int a = 0; a < nmo - nbeta; a++) {
+            eps[a + nbeta] = virvec[a].first;
+            C_DCOPY(nso,&Cold[0][a + nbeta],nmo,&Cnew[0][virvec[a].second],nmo);    
+        } 
+
+        delete[] c;
+        delete[] d;
+        delete[] p;
+    }   
+    Cb_old_->copy(Cb_);
+}
+
 void HF::find_occupation()
 {
     std::vector<std::pair<double, int> > pairs;
@@ -338,6 +631,9 @@ void HF::find_occupation()
         nalphapi_[i] = doccpi_[i] + soccpi_[i];
         nbetapi_[i]  = doccpi_[i];
     }
+
+    // MOM if needed
+    MOM();
 }
 
 void HF::print_header()
@@ -402,9 +698,6 @@ void HF::form_H()
     SharedMatrix kinetic(factory_->create_matrix("Kinetic Integrals"));
     SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
 
-    // Load in kinetic and potential matrices
-    double *integrals = init_array(ioff[nso_]);
-
     // Integral factory
     shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
@@ -424,8 +717,6 @@ void HF::form_H()
 
     if (debug_ > 2)
         H_->print(outfile);
-
-    free(integrals);
 
     if (perturb_h_) {
         shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
@@ -629,7 +920,8 @@ void HF::print_orbitals(const char* header, int *&irrep_count,
     }
     fprintf(outfile, "\n\n");
     for(int h = 0; h < nirrep_; ++h)
-        delete [] labels[h];
+        free(labels[h]);
+    free(labels);
 }
 
 void HF::guess()
@@ -739,6 +1031,7 @@ void HF::save_orbitals()
     Ctemp_b->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
 
     psio_->close(PSIF_SCF_DB_MOS,1);
+    free(basisname);
 }
 void HF::load_orbitals()
 {
@@ -821,8 +1114,8 @@ void HF::dump_to_checkpoint()
     char **labels = molecule_->irrep_labels();
     chkpt_->wt_irr_labs(labels);
     for(int h = 0; h < nirrep_; ++h)
-        delete [] labels[h];
-    delete [] labels;
+        free(labels[h]);
+    free(labels);
     chkpt_->wt_nmo(nmo_);
     chkpt_->wt_nso(nso_);
     chkpt_->wt_nao(basisset_->nao());
@@ -853,24 +1146,27 @@ void HF::dump_to_checkpoint()
     if(options_.get_str("REFERENCE") == "UHF"){
         double* values = epsilon_a_->to_block_vector();
         chkpt_->wt_alpha_evals(values);
-        free(values);
+        delete[] values;
         values = epsilon_b_->to_block_vector();
         chkpt_->wt_beta_evals(values);
-        free(values);
+        delete[] values;
         double** vectors = Ca_->to_block_matrix();
         chkpt_->wt_alpha_scf(vectors);
-        free_block(vectors);
+        delete[] vectors[0];
+        delete[] vectors;
         vectors = Cb_->to_block_matrix();
         chkpt_->wt_beta_scf(vectors);
-        free_block(vectors);
+        delete[] vectors[0];
+        delete[] vectors;
     }else{
         // All other reference type yield restricted orbitals
         double* values = epsilon_a_->to_block_vector();
         chkpt_->wt_evals(values);
-        free(values);
+        delete[] values;
         double** vectors = Ca_->to_block_matrix();
         chkpt_->wt_scf(vectors);
-        free_block(vectors);
+        delete[] vectors[0];
+        delete[] vectors;
         double *ftmp = Fa_->to_lower_triangle();
         chkpt_->wt_fock(ftmp);
         delete[] ftmp;
@@ -1034,7 +1330,7 @@ double HF::compute_energy()
                 for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", soccpi_[h]);
                 fprintf(outfile, " %4d ]\n", soccpi_[nirrep_-1]);
             }
-            for(int h = 0; h < nirrep_; ++h) delete[] labels[h]; delete[] labels;
+            for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
             delete [] irrep_count;
         }
 

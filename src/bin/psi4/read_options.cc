@@ -203,10 +203,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Cholesky Integral factory only? -*/
     options.add_bool("CHOLESKY_INTEGRALS_ONLY",false);
 
-    /*- Dual basis projection? -*/
-    options.add_bool("DUAL_BASIS",false);
-    /*- Dual basis set -*/
-    options.add_str("DUAL_BASIS_SCF","");
     /*- primary basis set -*/
     options.add_str("BASIS","");
     /*- The scope of core orbitals to freeze in later correlated computations -*/
@@ -254,6 +250,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("S_ORTHOGONALIZATION","SYMMETRIC","SYMMETRIC CANONICAL");
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
     options.add_double("S_MIN_EIGENVALUE",1E-7);
+
+    /*- The iteration to start MOM on (or -1 for no MOM) -*/
+    options.add_int("MOM_START", -1);
+    /*- The absolute indices of orbitals to excite from in MOM -*/
+    options.add("MOM_OCC_ALPHA", new ArrayType());
+    /*- The absolute indices of orbitals to excite to in MOM -*/
+    options.add("MOM_VIR_ALPHA", new ArrayType());
+    /*- The absolute indices of orbitals to excite from in MOM -*/
+    options.add("MOM_OCC_BETA", new ArrayType());
+    /*- The absolute indices of orbitals to excite to in MOM -*/
+    options.add("MOM_VIR_BETA", new ArrayType());
 
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("START_DIIS_ITER", 1);
