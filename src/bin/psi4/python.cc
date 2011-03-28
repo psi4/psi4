@@ -674,6 +674,7 @@ void Python::run(FILE *input)
         }
         catch (error_already_set const& e)
         {
+            throw PSIEXCEPTION("Python produced the following error:\n");
             PyErr_Print();
         }
     }
