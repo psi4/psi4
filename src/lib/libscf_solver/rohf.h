@@ -14,8 +14,10 @@ namespace psi { namespace scf {
 class ROHF : public HF {
 protected:
     SharedMatrix Feff_;
+    SharedMatrix soFeff_;
     SharedMatrix Dt_old_;
     SharedMatrix Dt_;
+    SharedMatrix Ct_;
     SharedMatrix Ga_;
     SharedMatrix Gb_;
     SharedMatrix Ka_;

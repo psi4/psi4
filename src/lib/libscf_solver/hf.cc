@@ -1186,9 +1186,9 @@ double HF::compute_energy()
 {
     std::string reference = options_.get_str("REFERENCE");
 
-    // Neither of these are idempotent
     bool converged = false;
     diis_performed_ = false;
+    // Neither of these are idempotent
     if ((options_.get_str("GUESS") == "SAD") || (options_.get_str("GUESS") == "READ"))
         iteration_ = -1;
     else
