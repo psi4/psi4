@@ -141,6 +141,9 @@ protected:
     /// Formation of S^+1/2 and S^-1/2 are the same
     void form_Shalf();
 
+    /// Prints the orbital occupation
+    void print_occupation();
+
     /// Perform casting of basis set if desired.
     boost::shared_ptr<Matrix> dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
 
