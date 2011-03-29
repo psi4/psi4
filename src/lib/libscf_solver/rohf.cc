@@ -45,6 +45,8 @@ void ROHF::common_init()
     Fa_      = SharedMatrix(factory_->create_matrix("Alpha Fock Matrix"));
     Fb_      = SharedMatrix(factory_->create_matrix("Beta Fock Matrix"));
     Feff_    = SharedMatrix(factory_->create_matrix("F effective (MO basis)"));
+    soFeff_  = SharedMatrix(factory_->create_matrix("F effective (orthogonalized SO basis)"));
+    Ct_      = SharedMatrix(factory_->create_matrix("Orthogonalized Molecular orbitals"));
     Ca_      = SharedMatrix(factory_->create_matrix("Molecular orbitals"));
     Cb_      = Ca_;
     Da_      = SharedMatrix(factory_->create_matrix("Alpha density matrix"));
@@ -92,18 +94,20 @@ void ROHF::save_fock()
 {
     if (initialized_diis_manager_ == false) {
         diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
-        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, Feff_.get());
-        diis_manager_->set_vector_size(1, DIISEntry::Matrix, Feff_.get());
+        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
+        diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
         initialized_diis_manager_ = true;
     }
 
-    // Dear DIIS person (with my luck, future Rob):
-    // Remember that X is nso x nmo, so an MO or orthogonal basis F matrix is not the same size as the SO basis
+    SharedMatrix errvec(Feff_);
+    errvec->zero_diagonal();
+    errvec->back_transform(Ct_);
+    diis_manager_->add_entry(2, errvec.get(), soFeff_.get());
 }
 
 bool ROHF::diis()
 {
-    return diis_manager_->extrapolate(1, Feff_.get());
+    return diis_manager_->extrapolate(1, soFeff_.get());
 }
 
 bool ROHF::test_convergency()
@@ -188,49 +192,44 @@ void ROHF::form_F()
         }
     }
 
+    // Form the orthogonalized SO basis Feff matrix, for use in DIIS
+    soFeff_->copy(Feff_);
+    soFeff_->back_transform(Ct_);
+
     if (debug_) {
         Fa_->print();
         Fb_->print();
         moFa_->print();
         moFb_->print();
-        Feff_->print(outfile);
+        Feff_->print();
+        soFeff_->print();
     }
 }
 
 void ROHF::form_C()
 {
-    SharedMatrix temp(factory_->create_matrix());
-    SharedMatrix eigvec(factory_->create_matrix());
+    soFeff_->diagonalize(Ct_, epsilon_a_);
+    //Form C = XC'
+    Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
-    // Obtain new eigenvectors
-    Feff_->diagonalize(eigvec, epsilon_a_);
     find_occupation();
 
     if (debug_) {
-        fprintf(outfile, "In ROHF::form_C:\n");
-        eigvec->eivprint(epsilon_a_);
-    }
-    temp->gemm(false, false, 1.0, Ca_, eigvec, 0.0);
-    Ca_->copy(temp);
-
-    if (debug_) {
         Ca_->print(outfile);
+        fprintf(outfile, "In ROHF::form_C:\n");
+        Ct_->eivprint(epsilon_a_);
     }
 }
 
 void ROHF::form_initial_C()
 {
-    SharedMatrix temp = shared_ptr<Matrix>(factory_->create_matrix());
-
     // In ROHF the creation of the C matrix depends on the previous iteration's C
     // matrix. Here we use Fa to generate the first C, where Fa was set by guess()
     // to either H or the GWH Hamiltonian.
-    temp->copy(Fa_);
-    temp->transform(X_);
-    temp->diagonalize(Ca_, epsilon_a_);
+    Fa_->transform(X_);
+    Fa_->diagonalize(Ct_, epsilon_a_);
     find_occupation();
-    temp->gemm(false, false, 1.0, X_, Ca_, 0.0);
-    Ca_->copy(temp);
+    Ca_->gemm(false, false, 1.0, X_, Ct_, 0.0);
 
     if (print_ > 3)
         Ca_->print(outfile, "initial C");
