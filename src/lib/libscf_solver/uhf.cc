@@ -183,7 +183,7 @@ void UHF::form_C()
 {
     diagonalize_F(Fa_, Ca_, epsilon_a_);
     diagonalize_F(Fb_, Cb_, epsilon_b_);
-
+    find_occupation();
     if (debug_) {
         Ca_->print(outfile);
         Cb_->print(outfile);

@@ -606,6 +606,14 @@ void HF::find_occupation()
     }
     sort(pairs.begin(),pairs.end());
 
+    // Store the current occupation
+    int old_socc[8];
+    int old_docc[8];
+    for(int h = 0; h < nirrep_; ++h){
+        old_socc[h] = soccpi_[h];
+        old_docc[h] = doccpi_[h];
+    }
+
     if(!input_docc_){
         memset(doccpi_, 0, sizeof(int) * epsilon_a_->nirrep());
         for (int i=0; i<nbeta_; ++i)
@@ -617,19 +625,6 @@ void HF::find_occupation()
             soccpi_[pairs[i].second]++;
     }
 
-    if(print_>5) {
-        fprintf(outfile, "\tDOCC: [");
-        for (int h=0; h<epsilon_a_->nirrep(); ++h){
-            fprintf(outfile, "%3d ", doccpi_[h]);
-        }
-        fprintf(outfile, "]\n");
-        fprintf(outfile, "\tSOCC: [");
-        for (int h=0; h<epsilon_a_->nirrep(); ++h){
-            fprintf(outfile, "%3d ", soccpi_[h]);
-        }
-        fprintf(outfile, "]\n");
-    }
-
     for (int i=0; i<epsilon_a_->nirrep(); ++i) {
         nalphapi_[i] = doccpi_[i] + soccpi_[i];
         nbetapi_[i]  = doccpi_[i];
@@ -637,6 +632,18 @@ void HF::find_occupation()
 
     // MOM if needed
     MOM();
+
+    bool occ_changed = false;
+    for(int h = 0; h < nirrep_; ++h){
+        if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
+            occ_changed = true;
+            break;
+        }
+    }
+    if(print_ > 1 || print_ && occ_changed){
+        fprintf(outfile, "\tOccupation by irrep:\n");
+        print_occupation();
+    }
 }
 
 void HF::print_header()
@@ -1327,19 +1334,9 @@ double HF::compute_energy()
                 throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
             }
 
-            char **labels = molecule_->irrep_labels();
             fprintf(outfile, "\tFinal Occupation by Irrep:\n");
-            fprintf(outfile, "\t      ");
-            for(int h = 0; h < nirrep_; ++h) fprintf(outfile, " %4s ", labels[h]); fprintf(outfile, "\n");
-            fprintf(outfile, "\tDOCC [ ");
-            for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", doccpi_[h]);
-            fprintf(outfile, " %4d ]\n", doccpi_[nirrep_-1]);
-            if(reference != "RHF"){
-                fprintf(outfile, "\tSOCC [ ");
-                for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", soccpi_[h]);
-                fprintf(outfile, " %4d ]\n", soccpi_[nirrep_-1]);
-            }
-            for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
+            print_occupation();
+
             delete [] irrep_count;
         }
 
@@ -1383,6 +1380,23 @@ double HF::compute_energy()
     //fprintf(outfile,"\nComputation Completed\n");
     fflush(outfile);
     return E_;
+}
+
+void HF::print_occupation()
+{
+    char **labels = molecule_->irrep_labels();
+    std::string reference = options_.get_str("REFERENCE");
+    fprintf(outfile, "\t      ");
+    for(int h = 0; h < nirrep_; ++h) fprintf(outfile, " %4s ", labels[h]); fprintf(outfile, "\n");
+    fprintf(outfile, "\tDOCC [ ");
+    for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", doccpi_[h]);
+    fprintf(outfile, " %4d ]\n", doccpi_[nirrep_-1]);
+    if(reference != "RHF"){
+        fprintf(outfile, "\tSOCC [ ");
+        for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", soccpi_[h]);
+        fprintf(outfile, " %4d ]\n", soccpi_[nirrep_-1]);
+    }
+    for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
 }
 
 void HF::diagonalize_F(const shared_ptr<Matrix>& Fm, shared_ptr<Matrix>& Cm, shared_ptr<Vector>& epsm)
