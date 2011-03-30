@@ -19,9 +19,9 @@ using namespace std;
 
 namespace psi {
 
-Prop::Prop(shared_ptr<Wavefunction> wfn) : wfn_(wfn) 
+Prop::Prop(shared_ptr<Wavefunction> wfn) : wfn_(wfn)
 {
-    if (wfn_.get() == NULL) 
+    if (wfn_.get() == NULL)
         throw PSIEXCEPTION("Prop: Wavefunction is null");
     common_init();
 }
@@ -34,16 +34,16 @@ void Prop::common_init()
 
     basisset_ = wfn_->basisset();
     restricted_ = wfn_->restricted();
-    
+
     integral_ = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
 
     shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral_));
-    AO2USO_ = shared_ptr<Matrix>(pet->aotoso());
+    AO2USO_ = pet->aotoso();
     factory_ = wfn_->matrix_factory();
 
     // For now wavefunction has SO quantities only, so we'll use those
     Ca_so_ = wfn_->Ca();
-    Da_so_ = wfn_->Da();    
+    Da_so_ = wfn_->Da();
 
     if (restricted_) {
         Cb_so_ = Ca_so_;
@@ -53,11 +53,11 @@ void Prop::common_init()
         Db_so_ = wfn_->Db();
     }
 }
-void Prop::add(const std::string& prop) 
+void Prop::add(const std::string& prop)
 {
     tasks_.insert(prop);
 }
-void Prop::add(std::vector<std::string> props) 
+void Prop::add(std::vector<std::string> props)
 {
     for (int i = 0; i < props.size(); i++) {
         tasks_.insert(props[i]);
@@ -74,8 +74,8 @@ shared_ptr<Matrix> Prop::Da_ao()
         double** Da = Da_so_->pointer(h);
         double** X = AO2USO_->pointer(h);
         double** Temp = block_matrix(nao,nso);
-        C_DGEMM('N','N',nao,nso,nso,1.0,X[0],nso,Da[0],nso,0.0,Temp[0],nso);    
-        C_DGEMM('N','T',nao,nao,nso,1.0,Temp[0],nso,X[0],nso,1.0,Dp[0],nao);    
+        C_DGEMM('N','N',nao,nso,nso,1.0,X[0],nso,Da[0],nso,0.0,Temp[0],nso);
+        C_DGEMM('N','T',nao,nao,nso,1.0,Temp[0],nso,X[0],nso,1.0,Dp[0],nao);
         free_block(Temp);
     }
     return D;
@@ -94,8 +94,8 @@ shared_ptr<Matrix> Prop::Db_ao()
         double** Db = Db_so_->pointer(h);
         double** X = AO2USO_->pointer(h);
         double** Temp = block_matrix(nao,nso);
-        C_DGEMM('N','N',nao,nso,nso,1.0,X[0],nso,Db[0],nso,0.0,Temp[0],nso);    
-        C_DGEMM('N','T',nao,nao,nso,1.0,Temp[0],nso,X[0],nso,1.0,Dp[0],nao);    
+        C_DGEMM('N','N',nao,nso,nso,1.0,X[0],nso,Db[0],nso,0.0,Temp[0],nso);
+        C_DGEMM('N','T',nao,nao,nso,1.0,Temp[0],nso,X[0],nso,1.0,Dp[0],nao);
         free_block(Temp);
     }
     return D;
@@ -113,9 +113,9 @@ shared_ptr<Matrix> Prop::Ca_ao()
         if (nso == 0 || nmo == 0) continue;
         double** Ca = Ca_so_->pointer(h);
         double** X = AO2USO_->pointer(h);
-        
+
         C_DGEMM('N','N',nao,nmo,nso,1.0,X[0],nso,Ca[0],nmo,0.0,&Cp[0][counter],nao);
-        
+
         counter += nmo;
     }
     return C;
@@ -136,9 +136,9 @@ shared_ptr<Matrix> Prop::Cb_ao()
         if (nso == 0 || nmo == 0) continue;
         double** Ca = Ca_so_->pointer(h);
         double** X = AO2USO_->pointer(h);
-        
+
         C_DGEMM('N','N',nao,nmo,nso,1.0,X[0],nso,Ca[0],nmo,0.0,&Cp[0][counter],nao);
-        
+
         counter += nmo;
     }
     return C;
@@ -152,15 +152,15 @@ shared_ptr<Matrix> Prop::Da_mo()
         int nmo = Ca_so_->colspi()[h];
         if (nso == 0 || nmo == 0) continue;
         double** Dso = Da_so_->pointer(h);
-        double** Cso = Ca_so_->pointer(h); 
-        double** Dmo = D->pointer(h); 
+        double** Cso = Ca_so_->pointer(h);
+        double** Dmo = D->pointer(h);
         double** Temp = block_matrix(nso,nmo);
-        
+
         C_DGEMM('N','N',nso,nmo,nso,1.0,Dso[0],nso,Cso[0],nmo,0.0,Temp[0],nmo);
         C_DGEMM('T','N',nmo,nmo,nso,1.0,Cso[0],nso,Temp[0],nmo,0.0,Dmo[0],nso);
-               
-        free_block(Temp); 
-    }    
+
+        free_block(Temp);
+    }
     return D;
 }
 shared_ptr<Matrix> Prop::Db_mo()
@@ -175,74 +175,74 @@ shared_ptr<Matrix> Prop::Db_mo()
         int nmo = Ca_so_->colspi()[h];
         if (nso == 0 || nmo == 0) continue;
         double** Dso = Db_so_->pointer(h);
-        double** Cso = Cb_so_->pointer(h); 
-        double** Dmo = D->pointer(h); 
+        double** Cso = Cb_so_->pointer(h);
+        double** Dmo = D->pointer(h);
         double** Temp = block_matrix(nso,nmo);
-        
+
         C_DGEMM('N','N',nso,nmo,nso,1.0,Dso[0],nso,Cso[0],nmo,0.0,Temp[0],nmo);
         C_DGEMM('T','N',nmo,nmo,nso,1.0,Cso[0],nso,Temp[0],nmo,0.0,Dmo[0],nso);
-               
-        free_block(Temp); 
-    }    
+
+        free_block(Temp);
+    }
     return D;
 }
-void Prop::set_Da_so(shared_ptr<Matrix> D) 
+void Prop::set_Da_so(shared_ptr<Matrix> D)
 {
     Da_so_ = D;
 }
-void Prop::set_Db_so(shared_ptr<Matrix> D) 
+void Prop::set_Db_so(shared_ptr<Matrix> D)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = D;
 }
-void Prop::set_Ca_so(shared_ptr<Matrix> C) 
+void Prop::set_Ca_so(shared_ptr<Matrix> C)
 {
     Ca_so_ = C;
 }
-void Prop::set_Cb_so(shared_ptr<Matrix> C) 
+void Prop::set_Cb_so(shared_ptr<Matrix> C)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
 
     Cb_so_ = C;
 }
-void Prop::set_Da_ao(shared_ptr<Matrix> D) 
+void Prop::set_Da_ao(shared_ptr<Matrix> D)
 {
-    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Db_ao(shared_ptr<Matrix> D) 
+void Prop::set_Db_ao(shared_ptr<Matrix> D)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
-    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Ca_ao(shared_ptr<Matrix> C) 
+void Prop::set_Ca_ao(shared_ptr<Matrix> C)
 {
-    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Cb_ao(shared_ptr<Matrix> C) 
+void Prop::set_Cb_ao(shared_ptr<Matrix> C)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
 
-    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Da_mo(shared_ptr<Matrix> D) 
+void Prop::set_Da_mo(shared_ptr<Matrix> D)
 {
-    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Db_mo(shared_ptr<Matrix> D) 
+void Prop::set_Db_mo(shared_ptr<Matrix> D)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
-    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
 
-OEProp::OEProp(shared_ptr<Wavefunction> wfn) : Prop(wfn_) 
+OEProp::OEProp(shared_ptr<Wavefunction> wfn) : Prop(wfn_)
 {
     common_init();
 }
@@ -260,7 +260,7 @@ void OEProp::print_header()
 {
     fprintf(outfile, "\n OEPROP: One-electron properties/analyses.\n");
     fprintf(outfile, "  by Rob Parrish and Justin Turney.\n");
-    fprintf(outfile, "  built on LIBMINTS.\n\n"); 
+    fprintf(outfile, "  built on LIBMINTS.\n\n");
 }
 void OEProp::compute()
 {
@@ -323,7 +323,7 @@ void OEProp::compute_quadrupole()
 {
     fprintf(outfile, " CARTESIAN MULTIPOLE ANALYSIS:\n\n");
 
-    // Awesome code goes here. 
+    // Awesome code goes here.
 
     shared_ptr<Molecule> mol = basisset_->molecule();
     shared_ptr<Matrix> Da;
@@ -400,31 +400,31 @@ void OEProp::compute_quadrupole()
 }
 void OEProp::compute_octupole()
 {
-    throw FeatureNotImplemented("OEProp::compute_octupole", "Octupole expectation value not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("OEProp::compute_octupole", "Octupole expectation value not implemented", __FILE__, __LINE__);
 
     fprintf(outfile, " OCTUPOLE ANALYSIS [a.u.]:\n\n");
 
-    // Awesome code goes here. 
+    // Awesome code goes here.
 
     fflush(outfile);
 }
 void OEProp::compute_hexadecapole()
 {
-    throw FeatureNotImplemented("OEProp::compute_hexadecapole", "Hexadecapole expectation value not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("OEProp::compute_hexadecapole", "Hexadecapole expectation value not implemented", __FILE__, __LINE__);
 
     fprintf(outfile, " HEXADECAPOLE ANALYSIS [a.u.]:\n\n");
 
-    // Awesome code goes here. 
+    // Awesome code goes here.
 
     fflush(outfile);
 }
 void OEProp::compute_mo_extents()
 {
-    throw FeatureNotImplemented("OEProp::compute_mo_extents", "MO Extents not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("OEProp::compute_mo_extents", "MO Extents not implemented", __FILE__, __LINE__);
 
     fprintf(outfile, " MO Extents (<r^2>) [a.u.]:\n\n");
 
-    // Awesome code goes here. 
+    // Awesome code goes here.
 
     fflush(outfile);
 }
@@ -434,11 +434,11 @@ void OEProp::compute_mulliken_charges()
 
     shared_ptr<Molecule> mol = basisset_->molecule();
 
-    double* Qa = new double[mol->natom()]; 
+    double* Qa = new double[mol->natom()];
     double* PSa = new double[basisset_->nbf()];
     double suma = 0.0;
 
-    double* Qb = new double[mol->natom()]; 
+    double* Qb = new double[mol->natom()];
     double* PSb = new double[basisset_->nbf()];
     double sumb = 0.0;
 
@@ -457,7 +457,7 @@ void OEProp::compute_mulliken_charges()
         Da = Da_ao();
         Db = Db_ao();
     }
-    
+
 //    Compute the overlap matrix
 
     shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
@@ -474,40 +474,40 @@ void OEProp::compute_mulliken_charges()
 //     Accumulate registers
 
     for (int mu = 0; mu < basisset_->nbf(); mu++) {
-        PSa[mu] = PSam->get(0,mu,mu); 
+        PSa[mu] = PSam->get(0,mu,mu);
         PSb[mu] = PSbm->get(0,mu,mu);
-       
+
         int shell = basisset_->function_to_shell(mu);
         int A = basisset_->shell_to_center(shell);
 
-        Qa[A] += PSa[mu]; 
+        Qa[A] += PSa[mu];
         Qb[A] += PSb[mu];
 
-        suma += PSa[mu]; 
-        sumb += PSb[mu]; 
-    } 
+        suma += PSa[mu];
+        sumb += PSb[mu];
+    }
 
 //    Print out the Mulliken populations and charges
 
     fprintf(outfile, "   Center  Symbol    Alpha    Beta     Spin     Total\n");
-    double nuc = 0.0;  
+    double nuc = 0.0;
     for (int A = 0; A < mol->natom(); A++) {
         double Qs = Qa[A] - Qb[A];
         double Qt = mol->Z(A) - (Qa[A] + Qb[A]);
         fprintf(outfile,"   %5d    %2s    %8.5f %8.5f %8.5f %8.5f\n", A+1,mol->label(A).c_str(), \
             Qa[A], Qb[A], Qs, Qt);
         nuc += (double) mol->Z(A);
-   }  
+   }
 
     fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
-        suma, sumb, nuc - suma - sumb);    
+        suma, sumb, nuc - suma - sumb);
 
 //    Free memory
     delete[] Qa;
     delete[] Qb;
     delete[] PSa;
     delete[] PSb;
-    
+
     fflush(outfile);
 }
 void OEProp::compute_lowdin_charges()
@@ -834,7 +834,7 @@ GridProp::~GridProp()
 void GridProp::common_init()
 {
     initialized_ = false;
-    format_ = "DF3";    
+    format_ = "DF3";
 
     n_[0] = 40;
     n_[1] = 40;
@@ -852,7 +852,7 @@ void GridProp::common_init()
 
     irrep_offsets_[0] = 0;
     for (int h = 0; h < Ca_so_->nirrep() - 1; h++)
-        irrep_offsets_[h + 1] = irrep_offsets_[h] + Ca_so_->colspi()[h]; 
+        irrep_offsets_[h + 1] = irrep_offsets_[h] + Ca_so_->colspi()[h];
 
     temp_tens_ = block_matrix(block_size_, basisset_->nbf());
 }
@@ -872,43 +872,43 @@ void GridProp::print_header()
 {
     fprintf(outfile, "\n GRIDPROP: One-electron grid properties.\n");
     fprintf(outfile, "  by Rob Parrish and Justin Turney.\n");
-    fprintf(outfile, "  built on LIBMINTS.\n\n"); 
+    fprintf(outfile, "  built on LIBMINTS.\n\n");
 }
 double*** GridProp::block_grid(int nx, int ny, int nz)
 {
     double*** grid = new double**[nx];
 
     double** pointers = new double*[nx*(unsigned long int)ny];
-    
+
     double* memory = new double[nx*(unsigned long int)ny*nz];
     memset(static_cast<void*>(memory), '\0', sizeof(double)*nx*ny*nz);
 
     for (int i = 0; i < nx; i++)
-        for (int j = 0; j < ny; j++) 
+        for (int j = 0; j < ny; j++)
             pointers[i*(unsigned long int)ny + j] = &memory[i*(unsigned long int)ny*nz + j*(unsigned long int)nz];
 
     for (int i = 0; i < nx; i++)
-        grid[i] = &pointers[i*(unsigned long int)ny]; 
-   
-    return grid; 
+        grid[i] = &pointers[i*(unsigned long int)ny];
+
+    return grid;
 }
-void GridProp::free_grid(double*** grid) 
+void GridProp::free_grid(double*** grid)
 {
     delete[] grid[0][0];
     delete[] grid[0];
-    delete[] grid;    
+    delete[] grid;
 }
 void GridProp::build_grid_overages(double over)
 {
     shared_ptr<Molecule> mol = basisset_->molecule();
-    
+
     double min_x = mol->x(0);
     double min_y = mol->y(0);
     double min_z = mol->z(0);
     double max_x = mol->x(0);
     double max_y = mol->y(0);
     double max_z = mol->z(0);
-   
+
     for (int A = 0; A < mol->natom(); A++) {
         if (mol->x(A) <= min_x)
             min_x = mol->x(A);
@@ -923,7 +923,7 @@ void GridProp::build_grid_overages(double over)
         if (mol->z(A) >= max_z)
             max_z = mol->z(A);
     }
- 
+
     min_x -= over;
     min_y -= over;
     min_z -= over;
@@ -931,12 +931,12 @@ void GridProp::build_grid_overages(double over)
     max_y += over;
     max_z += over;
 
-    o_[0] = 0.5*(min_x + max_x); 
-    o_[1] = 0.5*(min_y + max_y); 
-    o_[2] = 0.5*(min_z + max_z); 
-    l_[0] = (-min_x + max_x); 
-    l_[1] = (-min_y + max_y); 
-    l_[2] = (-min_z + max_z); 
+    o_[0] = 0.5*(min_x + max_x);
+    o_[1] = 0.5*(min_y + max_y);
+    o_[2] = 0.5*(min_z + max_z);
+    l_[0] = (-min_x + max_x);
+    l_[1] = (-min_y + max_y);
+    l_[2] = (-min_z + max_z);
 
     caxis_[0] = 0.0;
     caxis_[1] = 1.0;
@@ -963,17 +963,17 @@ void GridProp::build_grid()
 
     if (nx == 0)
         x[0] = 0.0;
-    else 
+    else
         for (int i = 0; i < nx; i++)
             x[i] = ((double) i) / (double (nx - 1));
     if (ny == 0)
         y[0] = 0.0;
-    else 
+    else
         for (int i = 0; i < ny; i++)
            y[i] = ((double) i) / (double (ny - 1));
     if (nz == 0)
         z[0] = 0.0;
-    else 
+    else
         for (int i = 0; i < nz; i++)
            z[i] = ((double) i) / (double (nz - 1));
 
@@ -1035,9 +1035,9 @@ void GridProp::compute()
     build_grid();
     allocate_arrays();
 
-    int nx = n_[0] + 1;    
-    int ny = n_[1] + 1;    
-    int nz = n_[2] + 1;    
+    int nx = n_[0] + 1;
+    int ny = n_[1] + 1;
+    int nz = n_[2] + 1;
     ULI ngrid = nx*(ULI)ny*nz;
     int nblock = ngrid / block_size_;
     if (ngrid % block_size_ != 0)
@@ -1046,9 +1046,9 @@ void GridProp::compute()
     double*** xp = grid_["x"];
     double*** yp = grid_["y"];
     double*** zp = grid_["z"];
-    
+
     // Basis points object (heavy lifting)
-    points_ = shared_ptr<BasisPoints>(new BasisPoints(basisset_, block_size_));    
+    points_ = shared_ptr<BasisPoints>(new BasisPoints(basisset_, block_size_));
     if (tasks_.count("GAMMA_AA") || tasks_.count("GAMMA_BB") || tasks_.count("GAMMA_AB") \
         || tasks_.count("TAU_A") || tasks_.count("TAU_B"))
         points_->setToComputeGradients(true);
@@ -1067,7 +1067,7 @@ void GridProp::compute()
 
         // Line up gridblock pointers
         // Last xp is a dirty hack b/c w is not needed for points
-        gridblock->setGrid(&xp[0][0][offset],&yp[0][0][offset],&zp[0][0][offset],&xp[0][0][offset]);  
+        gridblock->setGrid(&xp[0][0][offset],&yp[0][0][offset],&zp[0][0][offset],&xp[0][0][offset]);
         gridblock->setTruePoints(size);
 
         // Compute basis functions/gradients
@@ -1075,40 +1075,40 @@ void GridProp::compute()
 
         // Call compute routines
         if (tasks_.count("MOS"))
-            compute_mos(gridblock, offset); 
+            compute_mos(gridblock, offset);
         if (tasks_.count("BASIS_FUNS"))
-            compute_basis_funs(gridblock, offset); 
+            compute_basis_funs(gridblock, offset);
         if (tasks_.count("RHO"))
-            compute_rho(gridblock, &grid_["RHO"][0][0][offset]); 
+            compute_rho(gridblock, &grid_["RHO"][0][0][offset]);
         if (tasks_.count("RHO_S"))
-            compute_rho_s(gridblock, &grid_["RHO_S"][0][0][offset]); 
+            compute_rho_s(gridblock, &grid_["RHO_S"][0][0][offset]);
         if (tasks_.count("RHO_A"))
-            compute_rho_a(gridblock, &grid_["RHO_A"][0][0][offset]); 
+            compute_rho_a(gridblock, &grid_["RHO_A"][0][0][offset]);
         if (tasks_.count("RHO_B"))
-            compute_rho_b(gridblock, &grid_["RHO_B"][0][0][offset]); 
+            compute_rho_b(gridblock, &grid_["RHO_B"][0][0][offset]);
         if (tasks_.count("GAMMA_AA"))
-            compute_gamma_aa(gridblock, &grid_["GAMMA_AA"][0][0][offset]); 
+            compute_gamma_aa(gridblock, &grid_["GAMMA_AA"][0][0][offset]);
         if (tasks_.count("GAMMA_AB"))
-            compute_gamma_ab(gridblock, &grid_["GAMMA_AB"][0][0][offset]); 
+            compute_gamma_ab(gridblock, &grid_["GAMMA_AB"][0][0][offset]);
         if (tasks_.count("GAMMA_BB"))
-            compute_gamma_bb(gridblock, &grid_["GAMMA_BB"][0][0][offset]); 
+            compute_gamma_bb(gridblock, &grid_["GAMMA_BB"][0][0][offset]);
         if (tasks_.count("TAU_A"))
-            compute_rho_b(gridblock, &grid_["TAU_A"][0][0][offset]); 
+            compute_rho_b(gridblock, &grid_["TAU_A"][0][0][offset]);
         if (tasks_.count("TAU_B"))
-            compute_rho_b(gridblock, &grid_["TAU_B"][0][0][offset]); 
-    }   
- 
+            compute_rho_b(gridblock, &grid_["TAU_B"][0][0][offset]);
+    }
+
     // ESP is special we think
     if (tasks_.count("ESP"))
         compute_ESP();
 
     if (format_ == "DF3")
         write_df3_grid();
-    else 
+    else
         write_data_grid();
 
 }
-void GridProp::write_data_grid() 
+void GridProp::write_data_grid()
 {
     int nx = n_[0] + 1;
     int ny = n_[1] + 1;
@@ -1117,7 +1117,7 @@ void GridProp::write_data_grid()
     for (std::map<std::string, double***>::iterator it = grid_.begin(); it != grid_.end(); it++) {
         std::string key = (*it).first;
         double*** data = (*it).second;
-    
+
         /* Write it to a file */
         int i,j,k;
         std::string file = filename_ + "." + key + ".dat";
@@ -1130,7 +1130,7 @@ void GridProp::write_data_grid()
                 }
             fprintf(fptr,"\n");
            }
-           fprintf(fptr,"\n"); 
+           fprintf(fptr,"\n");
         }
         fclose(fptr);
     }
@@ -1144,7 +1144,7 @@ void GridProp::write_df3_grid()
     for (std::map<std::string, double***>::iterator it = grid_.begin(); it != grid_.end(); it++) {
         std::string key = (*it).first;
         double*** data = (*it).second;
-    
+
         double v;
         double themin = data[0][0][0];
         double themax = data[0][0][0];
@@ -1166,7 +1166,7 @@ void GridProp::write_df3_grid()
                     v = 255;
                  else if (data[i][j][k] < caxis_[0])
                     v = 0;
-                 else 
+                 else
                     v = 255 * (data[i][j][k]-caxis_[0])/(caxis_[1] - caxis_[0]);
                  fputc((int)v,fptr);
               }
@@ -1190,11 +1190,11 @@ void GridProp::reset()
 }
 void GridProp::compute_mos(boost::shared_ptr<GridBlock> g, ULI offset)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_basis_funs(boost::shared_ptr<GridBlock> g, ULI offset)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_rho(boost::shared_ptr<GridBlock> g, double* results)
 {
@@ -1209,7 +1209,7 @@ void GridProp::compute_rho(boost::shared_ptr<GridBlock> g, double* results)
     C_DGEMM('N', 'N', npoints, nbf, nbf, 1.0, &points[0][0], nbf, &Da[0][0], nbf, \
         0.0, &temp_tens_[0][0], nbf);
 
-    for (int Q = 0; Q < npoints; Q++) { 
+    for (int Q = 0; Q < npoints; Q++) {
         results[Q] = C_DDOT(nbf, &temp_tens_[Q][0], 1, &points[Q][0], 1);
         //printf(" Q = %d, rho = %14.10E\n", Q, rho_a_[Q]);
     }
@@ -1220,7 +1220,7 @@ void GridProp::compute_rho(boost::shared_ptr<GridBlock> g, double* results)
         C_DGEMM('N', 'N', npoints, nbf, nbf, 1.0, &points[0][0], nbf, &Db[0][0], nbf, \
             0.0, &temp_tens_[0][0], nbf);
 
-        for (int Q = 0; Q < npoints; Q++) { 
+        for (int Q = 0; Q < npoints; Q++) {
             results[Q] += C_DDOT(nbf, &temp_tens_[Q][0], 1, &points[Q][0], 1);
             //printf(" Q = %d, rho = %14.10E\n", Q, rho_b_[Q]);
         }
@@ -1231,39 +1231,39 @@ void GridProp::compute_rho(boost::shared_ptr<GridBlock> g, double* results)
 }
 void GridProp::compute_rho_s(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_rho_a(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_rho_b(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_gamma_aa(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_gamma_ab(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_gamma_bb(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_tau_a(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_tau_b(boost::shared_ptr<GridBlock> g, double* results)
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 void GridProp::compute_ESP()
 {
-    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);    
+    throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
 
 }
