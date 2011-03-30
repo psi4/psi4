@@ -59,7 +59,7 @@ void SAPT::initialize()
   // TODO: Verify that the basis assign does not messs this up
   if (options_.get_str("RI_BASIS_SAPT") == "") {
       basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_SAPT");
-      fprintf(outfile, ("    No auxiliary basis selected, defaulting to " + options_.get_str("BASIS") + "-RI\n\n").c_str()); 
+      fprintf(outfile, "    No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str()); 
   }
 
   ribasis_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
