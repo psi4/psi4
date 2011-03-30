@@ -106,6 +106,15 @@ protected:
     /// PK Matrix approach
     boost::shared_ptr<PKIntegrals> pk_integrals_;
 
+    /// Are we to do MOM?
+    bool MOM_enabled_;
+    /// Are we to do excited-state MOM?
+    bool MOM_excited_;
+    /// MOM started?
+    bool MOM_started_;
+    /// MOM performed?
+    bool MOM_performed_;
+
     /// DIIS manager intiialized?
     bool initialized_diis_manager_;
     /// DIIS manager for all SCF wavefunctions
@@ -164,6 +173,8 @@ protected:
 
     /// Maximum overlap method for prevention of oscillation/excited state SCF
     void MOM();
+    /// Start the MOM algorithm (requires one iteration worth of setup)
+    void MOM_start();
 
     /// Determine how many core and virtual orbitals to freeze
     void compute_fcpi();
