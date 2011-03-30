@@ -3,10 +3,6 @@
 
 #include <stdio.h>
 #include <string>
-#include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
 
 #ifdef MAIN
 #define EXT
@@ -16,10 +12,11 @@
 
 namespace psi {
 
-EXT char **atom_basis; // basis set label for each atom
-
 EXT FILE* infile;
 EXT std::string outfile_name;
+
+/*! Directory location of the input file */
+EXT std::string infile_directory;
 
 /*! Verbosity */
 EXT bool verbose;
@@ -32,12 +29,6 @@ EXT bool messy;
 
 /*! clean-up */
 EXT bool clean_only;
-
-/*! Run python script? */
-EXT bool script;
-
-/*! Dispatch table for calling modules */
-EXT std::map<std::string, PsiReturnType(*)(Options &)> dispatch_table;
 
 }
 
