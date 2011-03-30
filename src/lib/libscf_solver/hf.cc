@@ -490,6 +490,311 @@ void HF::MOM_start()
             }
 
         } else if (options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS") {
+
+            if (si && sa) {
+
+                // Alpha - alpha
+                int hi = orbs_a[i].second.first;
+                int ha = orbs_a[a].second.first;
+ 
+                if (hi == ha) {
+                    // Same irrep
+                    int pi = orbs_a[i].second.second;
+                    int pa = orbs_a[a].second.second;
+  
+                    int nso = nsopi_[hi];
+                    int nmo = nmopi_[hi];
+
+                    double** Ca = Ca_->pointer(hi);
+                    double* Ct = new double[nso]; 
+                    double* eps = epsilon_a_->pointer(hi);
+                    double  epst;
+     
+                    // Swap eigvals 
+                    epst = eps[pi];
+                    eps[pi] = eps[pa];
+                    eps[pa] = epst; 
+
+                    // Swap eigvecs
+                    C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                    C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+                    C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
+                
+                    delete[] Ct;
+
+                    fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+                } else {
+                    // Different irrep
+                    // Occ -> Vir
+                    int pi = orbs_a[i].second.second;
+                    int pi2 = nalphapi_[hi] - 1;  
+ 
+                    int nso = nsopi_[hi];
+                    int nmo = nmopi_[hi];
+
+                    double** Ca = Ca_->pointer(hi);
+                    double* Ct = new double[nso]; 
+                    double* eps = epsilon_a_->pointer(hi);
+                    double  epst;
+     
+                    // Swap eigvals 
+                    epst = eps[pi];
+                    eps[pi] = eps[pi2];
+                    eps[pi2] = epst; 
+
+                    // Swap eigvecs
+                    C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                    C_DCOPY(nso, &Ca[0][pi2], nmo, &Ca[0][pi], nmo);
+                    C_DCOPY(nso, Ct, 1, &Ca[0][pi2], nmo);
+                
+                    delete[] Ct;
+                    
+                    // Redo indexing
+                    nalphapi_[hi]--;
+
+                    // Vir -> Occ 
+                    int pa = orbs_a[a].second.second;
+                    int pa2 = nalphapi_[ha];  
+ 
+                    nso = nsopi_[ha];
+                    nmo = nmopi_[ha];
+
+                    Ca = Ca_->pointer(ha);
+                    Ct = new double[nso]; 
+                    eps = epsilon_a_->pointer(ha);
+     
+                    // Swap eigvals 
+                    epst = eps[pa];
+                    eps[pa] = eps[pa2];
+                    eps[pa2] = epst; 
+
+                    // Swap eigvecs
+                    C_DCOPY(nso, &Ca[0][pa], nmo, Ct, 1);
+                    C_DCOPY(nso, &Ca[0][pa2], nmo, &Ca[0][pa], nmo);
+                    C_DCOPY(nso, Ct, 1, &Ca[0][pa2], nmo);
+                
+                    delete[] Ct;
+                    
+                    // Redo indexing
+                    nalphapi_[ha]++;
+
+                    fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+                }
+            } else if (!si && !si) {
+                // Beta->Beta
+                int hi = orbs_b[i].second.first;
+                int ha = orbs_b[a].second.first;
+ 
+                if (hi == ha) {
+                    // Same irrep
+                    int pi = orbs_b[i].second.second;
+                    int pa = orbs_b[a].second.second;
+  
+                    int nso = nsopi_[hi];
+                    int nmo = nmopi_[hi];
+
+                    double** Ca = Cb_->pointer(hi);
+                    double* Ct = new double[nso]; 
+                    double* eps = epsilon_b_->pointer(hi);
+                    double  epst;
+     
+                    // Swap eigvals 
+                    epst = eps[pi];
+                    eps[pi] = eps[pa];
+                    eps[pa] = epst; 
+
+                    // Swap eigvecs
+                    C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                    C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+                    C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
+                
+                    delete[] Ct;
+
+                    fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+                } else {
+                    // Different irrep
+                    // Occ -> Vir
+                    int pi = orbs_b[i].second.second;
+                    int pi2 = nbetapi_[hi] - 1;  
+ 
+                    int nso = nsopi_[hi];
+                    int nmo = nmopi_[hi];
+
+                    double** Ca = Cb_->pointer(hi);
+                    double* Ct = new double[nso]; 
+                    double* eps = epsilon_b_->pointer(hi);
+                    double  epst;
+     
+                    // Swap eigvals 
+                    epst = eps[pi];
+                    eps[pi] = eps[pi2];
+                    eps[pi2] = epst; 
+
+                    // Swap eigvecs
+                    C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                    C_DCOPY(nso, &Ca[0][pi2], nmo, &Ca[0][pi], nmo);
+                    C_DCOPY(nso, Ct, 1, &Ca[0][pi2], nmo);
+                
+                    delete[] Ct;
+                    
+                    // Redo indexing
+                    nbetapi_[hi]--;
+
+                    // Vir -> Occ 
+                    int pa = orbs_b[a].second.second;
+                    int pa2 = nbetapi_[ha];  
+ 
+                    nso = nsopi_[ha];
+                    nmo = nmopi_[ha];
+
+                    Ca = Cb_->pointer(ha);
+                    Ct = new double[nso]; 
+                    eps = epsilon_b_->pointer(ha);
+     
+                    // Swap eigvals 
+                    epst = eps[pa];
+                    eps[pa] = eps[pa2];
+                    eps[pa2] = epst; 
+
+                    // Swap eigvecs
+                    C_DCOPY(nso, &Ca[0][pa], nmo, Ct, 1);
+                    C_DCOPY(nso, &Ca[0][pa2], nmo, &Ca[0][pa], nmo);
+                    C_DCOPY(nso, Ct, 1, &Ca[0][pa2], nmo);
+                
+                    delete[] Ct;
+                    
+                    // Redo indexing
+                    nbetapi_[ha]++;
+
+                    fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+                }
+            } else if (!si && sa) {
+                // Beta->Alpha
+                int hi = orbs_b[i].second.first;
+                int ha = orbs_a[a].second.first;
+ 
+                // Different irrep
+                // Occ -> Vir
+                int pi = orbs_b[i].second.second;
+                int pi2 = nbetapi_[hi] - 1;  
+ 
+                int nso = nsopi_[hi];
+                int nmo = nmopi_[hi];
+
+                double** Ca = Cb_->pointer(hi);
+                double* Ct = new double[nso]; 
+                double* eps = epsilon_b_->pointer(hi);
+                double  epst;
+     
+                // Swap eigvals 
+                epst = eps[pi];
+                eps[pi] = eps[pi2];
+                eps[pi2] = epst; 
+
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pi2], nmo, &Ca[0][pi], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pi2], nmo);
+                
+                delete[] Ct;
+                
+                // Redo indexing
+                nbetapi_[hi]--;
+                nbeta_--;
+
+                // Vir -> Occ 
+                int pa = orbs_a[a].second.second;
+                int pa2 = nalphapi_[ha];  
+ 
+                nso = nsopi_[ha];
+                nmo = nmopi_[ha];
+
+                Ca = Ca_->pointer(ha);
+                Ct = new double[nso]; 
+                eps = epsilon_a_->pointer(ha);
+     
+                // Swap eigvals 
+                epst = eps[pa];
+                eps[pa] = eps[pa2];
+                eps[pa2] = epst; 
+
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pa], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pa2], nmo, &Ca[0][pa], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pa2], nmo);
+                
+                delete[] Ct;
+                
+                // Redo indexing
+                nalphapi_[ha]++;
+                nalpha_++;
+
+                fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "B  -> A ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+            } else if (sa && !si) {
+                // Alpha->Beta
+                int hi = orbs_a[i].second.first;
+                int ha = orbs_b[a].second.first;
+ 
+                // Different irrep
+                // Occ -> Vir
+                int pi = orbs_a[i].second.second;
+                int pi2 = nalphapi_[hi] - 1;  
+ 
+                int nso = nsopi_[hi];
+                int nmo = nmopi_[hi];
+
+                double** Ca = Ca_->pointer(hi);
+                double* Ct = new double[nso]; 
+                double* eps = epsilon_a_->pointer(hi);
+                double  epst;
+     
+                // Swap eigvals 
+                epst = eps[pi];
+                eps[pi] = eps[pi2];
+                eps[pi2] = epst; 
+
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pi2], nmo, &Ca[0][pi], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pi2], nmo);
+                
+                delete[] Ct;
+                
+                // Redo indexing
+                nalphapi_[hi]--;
+                nalpha_--;
+
+                // Vir -> Occ 
+                int pa = orbs_b[a].second.second;
+                int pa2 = nbetapi_[ha];  
+ 
+                nso = nsopi_[ha];
+                nmo = nmopi_[ha];
+
+                Ca = Cb_->pointer(ha);
+                Ct = new double[nso]; 
+                eps = epsilon_b_->pointer(ha);
+     
+                // Swap eigvals 
+                epst = eps[pa];
+                eps[pa] = eps[pa2];
+                eps[pa2] = epst; 
+
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pa], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pa2], nmo, &Ca[0][pa], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pa2], nmo);
+                
+                delete[] Ct;
+                
+                // Redo indexing
+                nbetapi_[ha]++;
+                nbeta_++;
+
+                fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "A  -> B ", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+            }
+            if (nalpha_ < nbeta_) throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
+            // TODO: Make some sense of docc/socc for printing 
         } else if (options_.get_str("REFERENCE") == "ROHF") {
             throw PSIEXCEPTION("SCF::MOM_start: MOM excited states are not implemented for ROHF");
         }
