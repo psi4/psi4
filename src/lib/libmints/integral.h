@@ -354,6 +354,10 @@ public:
     virtual OneBodyAOInt* ao_nabla(int deriv=0);
     virtual OneBodySOInt* so_nabla(int deriv=0);
 
+    /// Returns an OneBodyInt that computes the nabla integral.
+    virtual OneBodyAOInt* ao_angular_momentum(int deriv=0);
+    virtual OneBodySOInt* so_angular_momentum(int deriv=0);
+
     /// Returns an OneBodyInt that computes the electric field
     virtual OneBodyAOInt *electric_field();
 

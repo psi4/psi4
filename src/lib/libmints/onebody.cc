@@ -1,3 +1,4 @@
+#include <boost/foreach.hpp>
 #include <stdexcept>
 #include <exception.h>
 
@@ -227,55 +228,28 @@ void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
     int i_offset=0;
     double *location;
 
-    if (likely(bs1_ == bs2_)) {
-        for (int i=0; i<ns1; ++i) {
-            int ni = bs1_->shell(i)->nfunction();
-            int j_offset=0;
-            for (int j=0; j<=i; ++j) {
-                int nj = bs2_->shell(j)->nfunction();
+    // Leave as this full double for loop. We could be computing nonsymmetric integrals
+    for (int i=0; i<ns1; ++i) {
+        int ni = bs1_->shell(i)->nfunction();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = bs2_->shell(j)->nfunction();
 
-                // Compute the shell (automatically transforms to pure am in needed)
-                compute_shell(i, j);
+            // Compute the shell (automatically transforms to pure am in needed)
+            compute_shell(i, j);
 
-                // For each integral that we got put in its contribution
-                location = buffer_;
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-                        result->add(0, i_offset+p, j_offset+q, *location);
-                        if (i_offset+p != j_offset+q)
-                            result->add(0, j_offset+q, i_offset+p, *location);
-                        location++;
-                    }
+            // For each integral that we got put in its contribution
+            location = buffer_;
+            for (int p=0; p<ni; ++p) {
+                for (int q=0; q<nj; ++q) {
+                    result->add(0, i_offset+p, j_offset+q, *location);
+                    location++;
                 }
-
-                j_offset += nj;
             }
-            i_offset += ni;
+
+            j_offset += nj;
         }
-    }
-    else {
-        for (int i=0; i<ns1; ++i) {
-            int ni = bs1_->shell(i)->nfunction();
-            int j_offset=0;
-            for (int j=0; j<ns2; ++j) {
-                int nj = bs2_->shell(j)->nfunction();
-
-                // Compute the shell (automatically transforms to pure am in needed)
-                compute_shell(i, j);
-
-                // For each integral that we got put in its contribution
-                location = buffer_;
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-                        result->add(0, i_offset+p, j_offset+q, *location);
-                        location++;
-                    }
-                }
-
-                j_offset += nj;
-            }
-            i_offset += ni;
-        }
+        i_offset += ni;
     }
 }
 
@@ -288,6 +262,7 @@ void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
     int i_offset=0;
     double *location;
 
+    // Leave as this full double for loop. We could be computing nonsymmetric integrals
     for (int i=0; i<ns1; ++i) {
         int ni = bs1_->shell(i)->nfunction();
         int j_offset=0;
@@ -314,7 +289,49 @@ void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
 
 void OneBodyAOInt::compute(std::vector<shared_ptr<Matrix> > &result)
 {
-    throw FeatureNotImplemented("libmints", "OneBodyInt::compute(Array)", __FILE__, __LINE__);
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    int i_offset = 0;
+    double *location = 0;
+
+    // Check the length of result, must be chunk
+    // There not an easy way of checking the size now.
+    if (result.size() != nchunk_) {
+        fprintf(stderr, "result length = %ld, nchunk = %d\n", result.size(), nchunk_);
+        throw SanityCheckError("OneBodyInt::compute(result): result incorrect length.", __FILE__, __LINE__);
+    }
+
+    // Check the individual matrices, we can only handle nirrep() == 1
+    BOOST_FOREACH(SharedMatrix a, result) {
+        if (a->nirrep() != 1) {
+            throw SanityCheckError("OneBodyInt::compute(result): one or more of the matrices given has symmetry.", __FILE__, __LINE__);
+        }
+    }
+
+    for (int i=0; i<ns1; ++i) {
+        int ni = bs1_->shell(i)->nfunction();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = bs2_->shell(j)->nfunction();
+
+            // Compute the shell
+            compute_shell(i, j);
+
+            // For each integral that we got put in its contribution
+            location = buffer_;
+            for (int r=0; r<nchunk_; ++r) {
+                for (int p=0; p<ni; ++p) {
+                    for (int q=0; q<nj; ++q) {
+                        result[r]->add(0, i_offset+p, j_offset+q, *location);
+                        location++;
+                    }
+                }
+            }
+            j_offset += nj;
+        }
+        i_offset += ni;
+    }
 }
 
 void OneBodyAOInt::compute(std::vector<shared_ptr<SimpleMatrix> > &result)

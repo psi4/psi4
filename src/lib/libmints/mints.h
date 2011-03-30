@@ -39,5 +39,5 @@
 #include <libmints/multipolesymmetry.h>
 #include <libmints/oeprop.h>
 #include <libmints/nabla.h>
+#include <libmints/angularmomentum.h>
 #include <libmints/tracelessquadrupole.h>
-
