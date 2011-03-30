@@ -525,7 +525,6 @@ void HF::MOM_start()
             if (nalpha_ < nbeta_) throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
            
             // Fix doccpi/soccpi. For now, they are all socc 
-            docc_ 0; socc_ = nalpha_ + nbeta_;
             for (int h = 0; h < nirrep_; h++) {
                 doccpi_[h] = 0;
                 soccpi_[h] = nalphapi_[h] + nbetapi_[h];
