@@ -276,12 +276,17 @@ void export_mints()
             def("aotoso", &PetiteList::aotoso).
             def("sotoao", &PetiteList::sotoao);
 
+    class_<BasisSetParser, shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", no_init);
+    class_<Gaussian94BasisSetParser, shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser");
+
     typedef void (BasisSet::*basis_print_out)() const;
     class_<BasisSet, shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", no_init).
             def("print_out", basis_print_out(&BasisSet::print)).
             def("print_detail_out", basis_print_out(&BasisSet::print_detail)).
             def("make_filename", &BasisSet::make_filename).
-            staticmethod("make_filename");
+            staticmethod("make_filename").
+            def("construct", &BasisSet::construct).
+            staticmethod("construct");
 
     class_<SOBasisSet, shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", no_init).
             def("petite_list", &SOBasisSet::petitelist);
