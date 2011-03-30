@@ -3,7 +3,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <psi4-dec.h>
-#include <libmints/mints.h>
+#include <libmints/molecule.h>
+#include <libmints/wavefunction.h>
 #include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
 
