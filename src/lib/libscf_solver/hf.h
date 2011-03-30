@@ -180,7 +180,7 @@ protected:
     void compute_fcpi();
     void compute_fvpi();
 
-    /// Prints the orbitals energies and symmetries
+    /// Prints the orbitals energies and symmetries (helper method)
     void print_orbitals(const char* header, std::vector<std::pair<double, 
                         std::pair<const char*, int> > > orbs);
     
