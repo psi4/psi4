@@ -160,7 +160,7 @@ void RKS::form_V()
         ntrue = block->getTruePoints();
 
         // Compute properties and basis points
-        properties_->computeRKSProperties(block, D_, Ca_, doccpi_);
+        properties_->computeRKSProperties(block, D_, Ca_, nalphapi_);
         nsigf = properties_->nSignificantFunctions();
 
         // Compute functional values and partials
