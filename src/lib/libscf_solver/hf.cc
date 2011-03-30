@@ -243,7 +243,7 @@ void HF::common_init()
     initialized_diis_manager_ = false;
 
     MOM_enabled_ = (options_.get_int("MOM_START") != 0);
-    MOM_excited_ = (options_["MOM_OCC"].size() != 0);
+    MOM_excited_ = (options_["MOM_OCC"].size() != 0 && MOM_enabled_);
     MOM_started_ = false;
     MOM_performed_ = false;
 
@@ -1011,20 +1011,150 @@ void HF::compute_fvpi()
         frzvpi_[pairs[i].second]++;
 }
 
-void HF::print_orbitals(const char* header, int *&irrep_count,
-                        const std::vector< std::pair<double, int> >& evals,
-                        int start, int end)
+void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
 {
-    char **labels = molecule_->irrep_labels();
     fprintf(outfile, "\t%-70s\n\n\t", header);
     int count = 0;
-    for (int i = start; i < end; ++i) {
-        int irrep = evals[i].second;
-        fprintf(outfile, "%4d%-4s%10.6f  ", ++irrep_count[irrep], labels[irrep], evals[i].first);
-        if (count++ % 3 == 2 && count != end)
+    for (int i = 0; i < orbs.size(); i++) {
+        fprintf(outfile, "%4d%-4s%10.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
+        if (count++ % 3 == 2 && count != orbs.size())
             fprintf(outfile, "\n\t");
     }
     fprintf(outfile, "\n\n");
+}   
+
+void HF::print_orbitals()
+{
+    char **labels = molecule_->irrep_labels();
+
+    fprintf(outfile, "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
+
+    std::string reference = options_.get_str("REFERENCE");
+    if((reference == "RHF") || (reference == "RKS")){
+
+        std::vector<std::pair<double, std::pair<const char*, int> > > occ;
+        std::vector<std::pair<double, std::pair<const char*, int> > > vir;
+
+        for (int h = 0; h < nirrep_; h++) {
+
+            std::vector<std::pair<double, int> > orb_e;
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_e.push_back(make_pair(epsilon_a_->get(h,a), a));
+            std::sort(orb_e.begin(), orb_e.end());
+
+            std::vector<int> orb_order(nmopi_[h]);
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_order[orb_e[a].second] = a;
+           
+            for (int a = 0; a < nalphapi_[h]; a++)
+                occ.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+            for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
+                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+
+        }
+        std::sort(occ.begin(), occ.end());
+        std::sort(vir.begin(), vir.end());
+
+        print_orbitals("Doubly Occupied:", occ);
+        print_orbitals("Virtual:", vir);
+
+    }else if((reference == "UHF") || (reference == "UKS")){
+
+        std::vector<std::pair<double, std::pair<const char*, int> > > occA;
+        std::vector<std::pair<double, std::pair<const char*, int> > > virA;
+        std::vector<std::pair<double, std::pair<const char*, int> > > occB;
+        std::vector<std::pair<double, std::pair<const char*, int> > > virB;
+
+        for (int h = 0; h < nirrep_; h++) {
+
+            std::vector<std::pair<double, int> > orb_eA;
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_eA.push_back(make_pair(epsilon_a_->get(h,a), a));
+            std::sort(orb_eA.begin(), orb_eA.end());
+
+            std::vector<int> orb_orderA(nmopi_[h]);
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_orderA[orb_eA[a].second] = a;
+           
+            for (int a = 0; a < nalphapi_[h]; a++)
+                occA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1))); 
+            for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
+                virA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1))); 
+
+            std::vector<std::pair<double, int> > orb_eB;
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_eB.push_back(make_pair(epsilon_b_->get(h,a), a));
+            std::sort(orb_eB.begin(), orb_eB.end());
+
+            std::vector<int> orb_orderB(nmopi_[h]);
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_orderB[orb_eB[a].second] = a;
+           
+            for (int a = 0; a < nbetapi_[h]; a++)
+                occB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1))); 
+            for (int a = nbetapi_[h]; a < nmopi_[h]; a++)
+                virB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1))); 
+
+        }
+        std::sort(occA.begin(), occA.end());
+        std::sort(virA.begin(), virA.end());
+        std::sort(occB.begin(), occB.end());
+        std::sort(virB.begin(), virB.end());
+
+        print_orbitals("Alpha Occupied:", occA);
+        print_orbitals("Alpha Virtual:", virA);
+        print_orbitals("Beta Occupied:", occB);
+        print_orbitals("Beta Virtual:", virB);
+
+    }else if(reference == "ROHF"){
+
+        std::vector<std::pair<double, std::pair<const char*, int> > > docc;
+        std::vector<std::pair<double, std::pair<const char*, int> > > socc;
+        std::vector<std::pair<double, std::pair<const char*, int> > > vir;
+
+        for (int h = 0; h < nirrep_; h++) {
+
+            std::vector<std::pair<double, int> > orb_e;
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_e.push_back(make_pair(epsilon_a_->get(h,a), a));
+            std::sort(orb_e.begin(), orb_e.end());
+
+            std::vector<int> orb_order(nmopi_[h]);
+            for (int a = 0; a < nmopi_[h]; a++)
+                orb_order[orb_e[a].second] = a;
+           
+            for (int a = 0; a < nbetapi_[h]; a++)
+                docc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+            for (int a = nbetapi_[h] ; a < nalphapi_[h]; a++)
+                socc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+            for (int a = nalphapi_[h] ; a < nmopi_[h]; a++)
+                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+
+        }
+        std::sort(docc.begin(), docc.end());
+        std::sort(socc.begin(), socc.end());
+        std::sort(vir.begin(), vir.end());
+
+        print_orbitals("Doubly Occupied:", docc);
+        print_orbitals("Singly Occupied:", socc);
+        print_orbitals("Virtual:", vir);
+
+    }else{
+        throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
+    }
+
+    fprintf(outfile, "\tFinal Occupation by Irrep:\n");
+    fprintf(outfile, "\t      ");
+    for(int h = 0; h < nirrep_; ++h) fprintf(outfile, " %4s ", labels[h]); fprintf(outfile, "\n");
+    fprintf(outfile, "\tDOCC [ ");
+    for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", doccpi_[h]);
+    fprintf(outfile, " %4d ]\n", doccpi_[nirrep_-1]);
+    if(reference != "RHF" && reference != "RKS"){
+        fprintf(outfile, "\tSOCC [ ");
+        for(int h = 0; h < nirrep_-1; ++h) fprintf(outfile, " %4d,", soccpi_[h]);
+        fprintf(outfile, " %4d ]\n", soccpi_[nirrep_-1]);
+    }
+
     for(int h = 0; h < nirrep_; ++h)
         free(labels[h]);
     free(labels);
@@ -1403,42 +1533,8 @@ double HF::compute_energy()
         form_F();
 
         // Print the orbitals
-        if(print_){
-            fprintf(outfile, "\tOrbital Energies (a.u.)\n\t-----------------------\n\n");
-            std::vector<std::pair<double, int> > aPairs;
-            std::vector<std::pair<double, int> > bPairs;
-            for (int h = 0; h < nirrep_; ++h) {
-                for (int i=0; i < nmopi_[h]; ++i){
-                    aPairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-                    bPairs.push_back(make_pair(epsilon_b_->get(h, i), h));
-                }
-            }
-            sort(aPairs.begin(), aPairs.end());
-            sort(bPairs.begin(), bPairs.end());
-            int *irrep_count = new int[nirrep_];
-            ::memset(irrep_count, 0, nirrep_ * sizeof(int));
-            if((reference == "RHF") || (reference == "RKS")){
-                print_orbitals("Doubly Occupied:", irrep_count, aPairs, 0, nalpha_);
-                print_orbitals("Virtual:", irrep_count, aPairs, nalpha_, nmo_);
-            }else if((reference == "UHF") || (reference == "UKS")){
-                print_orbitals("Alpha Occupied:", irrep_count, aPairs, 0, nalpha_);
-                print_orbitals("Alpha Virtual:", irrep_count, aPairs, nalpha_, nmo_);
-                ::memset(irrep_count, 0, nirrep_ * sizeof(int));
-                print_orbitals("Beta Occupied:", irrep_count, bPairs, 0, nbeta_);
-                print_orbitals("Beta Virtual:", irrep_count, bPairs, nbeta_, nmo_);
-            }else if(reference == "ROHF"){
-                print_orbitals("Doubly Occupied:", irrep_count, aPairs, 0, nbeta_);
-                print_orbitals("Singly Occupied:", irrep_count, aPairs, nbeta_, nalpha_);
-                print_orbitals("Virtual:", irrep_count, aPairs, nalpha_, nmo_);
-            }else{
-                throw PSIEXCEPTION("Unknown reference in HF::print_orbitals");
-            }
-
-            fprintf(outfile, "\tFinal Occupation by Irrep:\n");
-            print_occupation();
-
-            delete [] irrep_count;
-        }
+        if(print_)
+            print_orbitals();
 
         fprintf(outfile, "\n  Energy converged.\n");
         fprintf(outfile, "\n  @%s Final Energy: %20.14f",reference.c_str(), E_);
