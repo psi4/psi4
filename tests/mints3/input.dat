@@ -1,0 +1,84 @@
+#! Test individual integral objects for correctness.
+print_stdout(' Case Study Test of Integrals')
+
+molecule h2o {
+  symmetry c1
+  o
+  h 1 1.0
+  h 1 1.0 2 103.1
+}
+
+set {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+nbf = mints.basisset().nbf()
+
+Li = mints.ao_angular_momentum()
+
+Li[0].print_out()
+Li[1].print_out()
+Li[2].print_out()
+
+#Li[0].save("Lx.dat", False, False, True) #TEST
+#Li[1].save("Ly.dat", False, False, True) #TEST
+#Li[2].save("Lz.dat", False, False, True) #TEST
+
+RefX = Matrix(nbf, nbf) #TEST
+RefY = Matrix(nbf, nbf) #TEST
+RefZ = Matrix(nbf, nbf) #TEST
+
+# Correct Lx values  #TEST
+RefX.set(0, 0, 3, -0.131784209778556) #TEST
+RefX.set(0, 0, 5, -0.006334223073958) #TEST
+RefX.set(0, 0, 6,  0.006334223073958) #TEST
+RefX.set(0, 1, 3, -0.085795162727672) #TEST
+RefX.set(0, 1, 5, -0.034661339960122) #TEST
+RefX.set(0, 1, 6,  0.034661339960122) #TEST
+RefX.set(0, 3, 0,  0.131784209778556) #TEST
+RefX.set(0, 3, 1,  0.085795162727672) #TEST
+RefX.set(0, 3, 4, -1.000000000000000) #TEST
+RefX.set(0, 3, 5, -0.240536471121216) #TEST
+RefX.set(0, 3, 6, -0.240536471121216) #TEST
+RefX.set(0, 4, 3,  1.000000000000000) #TEST
+RefX.set(0, 4, 5,  0.271038033371973) #TEST
+RefX.set(0, 4, 6, -0.271038033371973) #TEST
+RefX.set(0, 5, 0,  0.006334223073958) #TEST
+RefX.set(0, 5, 1,  0.034661339960122) #TEST
+RefX.set(0, 5, 3,  0.240536471121216) #TEST
+RefX.set(0, 5, 4, -0.271038033371973) #TEST
+RefX.set(0, 5, 6, -0.187939834790614) #TEST
+RefX.set(0, 6, 0, -0.006334223073958) #TEST
+RefX.set(0, 6, 1, -0.034661339960122) #TEST
+RefX.set(0, 6, 3,  0.240536471121216) #TEST
+RefX.set(0, 6, 4,  0.271038033371973) #TEST
+RefX.set(0, 6, 5,  0.187939834790614) #TEST
+
+# Correct Ly values #TEST
+RefY.set(0, 0, 2,  0.131784209778556) #TEST
+RefY.set(0, 1, 2,  0.085795162727672) #TEST
+RefY.set(0, 2, 0, -0.131784209778556) #TEST
+RefY.set(0, 2, 1, -0.085795162727672) #TEST
+RefY.set(0, 2, 4,  1.000000000000000) #TEST
+RefY.set(0, 2, 5,  0.208858812083036) #TEST
+RefY.set(0, 2, 6,  0.208858812083036) #TEST
+RefY.set(0, 4, 2, -1.000000000000000) #TEST
+RefY.set(0, 5, 2, -0.208858812083036) #TEST
+RefY.set(0, 6, 2, -0.208858812083036) #TEST
+
+# Correct Lz values #TEST
+RefZ.set(0, 2, 3, -1.000000000000000) #TEST
+RefZ.set(0, 2, 5, -0.296190477604325) #TEST
+RefZ.set(0, 2, 6,  0.296190477604325) #TEST
+RefZ.set(0, 3, 2,  1.000000000000000) #TEST
+RefZ.set(0, 5, 2,  0.296190477604325) #TEST
+RefZ.set(0, 6, 2, -0.296190477604325) #TEST
+
+print_stdout("   -H2O STO-3G Angular Momentum Integrals:") #TEST
+compare_matrices(RefX, Li[0], 13, "AO Lx") #TEST
+compare_matrices(RefX, Li[0], 13, "AO Ly") #TEST
+compare_matrices(RefX, Li[0], 13, "AO Lz") #TEST
+
+# There shouldn't be anything to clean
+clean()

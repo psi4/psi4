@@ -80,6 +80,12 @@ public:
     MintsHelper();
     /// Destructor, does nothing
     ~MintsHelper();
+
+    /// Basis set being used.
+    boost::shared_ptr<BasisSet> basisset() const;
+    /// SO basis set being used.
+    boost::shared_ptr<SOBasisSet> sobasisset() const;
+
     /// Molecular integrals (just like cints used to do)
     void integrals();
     /// Standard one electron integrals (just like oeints used to do)
@@ -100,6 +106,8 @@ public:
     boost::shared_ptr<Matrix> ao_kinetic();
     /// AO Potential Integrals
     boost::shared_ptr<Matrix> ao_potential();
+    /// Vector SO Angular Momentum Integrals
+    std::vector<boost::shared_ptr<Matrix> > ao_angular_momentum();
     /// AO Overlap Integrals
     boost::shared_ptr<Matrix> so_overlap();
     /// AO Kinetic Integrals
@@ -110,8 +118,6 @@ public:
     std::vector<boost::shared_ptr<Matrix> > so_dipole();
     /// Vector SO Nabla Integrals
     std::vector<boost::shared_ptr<Matrix> > so_nabla();
-    /// Vector SO Angular Momentum Integrals
-    std::vector<boost::shared_ptr<Matrix> > so_angular_momentum();
     /// Vector SO Quadrupole Integrals
     std::vector<boost::shared_ptr<Matrix> > so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals

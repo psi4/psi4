@@ -71,6 +71,16 @@ MintsHelper::~MintsHelper()
 {
 }
 
+shared_ptr<BasisSet> MintsHelper::basisset() const
+{
+    return basisset_;
+}
+
+shared_ptr<SOBasisSet> MintsHelper::sobasisset() const
+{
+    return sobasis_;
+}
+
 void MintsHelper::integrals()
 {
     timer_init();
@@ -364,14 +374,18 @@ std::vector<shared_ptr<Matrix> > MintsHelper::so_nabla()
 
     return nabla;
 }
-std::vector<shared_ptr<Matrix> > MintsHelper::so_angular_momentum()
-{
-    // The matrix factory can create matrices of the correct dimensions...
-    MultipoleSymmetry msymm(1, molecule_, integral_, factory_);
-    // Create a vector of matrices with the proper symmetry
-    std::vector<SharedMatrix> angmom = msymm.create_matrices("SO Angular Momentum");
 
-    // Jet, here's a stub
+std::vector<shared_ptr<Matrix> > MintsHelper::ao_angular_momentum()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> angmom;
+
+    angmom.push_back(SharedMatrix(new Matrix("AO Lx", basisset_->nbf(), basisset_->nbf())));
+    angmom.push_back(SharedMatrix(new Matrix("AO Ly", basisset_->nbf(), basisset_->nbf())));
+    angmom.push_back(SharedMatrix(new Matrix("AO Lz", basisset_->nbf(), basisset_->nbf())));
+
+    shared_ptr<OneBodyAOInt> ints(integral_->ao_angular_momentum());
+    ints->compute(angmom);
 
     return angmom;
 }
