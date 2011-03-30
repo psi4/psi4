@@ -242,6 +242,11 @@ void HF::common_init()
 
     initialized_diis_manager_ = false;
 
+    MOM_enabled_ = (options_.get_int("MOM_START") != 0);
+    MOM_excited_ = ((options_["MOM_OCC_ALPHA"].size() + options_["MOM_OCC_BETA"].size()) != 0);
+    MOM_started_ = false;
+    MOM_performed_ = false;
+
     print_header();
 }
 void HF::integrals()
@@ -307,125 +312,138 @@ void HF::finalize()
         psio_->close(PSIF_CHKPT, 1);
 }
 
+void HF::MOM_start()
+{
+    // Perhaps no MOM (or at least no MOM_start())? 
+    if (iteration_ != options_.get_int("MOM_START") || iteration_ == 0 || MOM_started_)  return;
+    
+    // If we're here, we're doing MOM of some kind
+    MOM_started_ = true;
+    MOM_performed_ = true; // Gets printed next iteration   
+ 
+    // Build Ca_old_ matrices
+    Ca_old_ = shared_ptr<Matrix>(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
+    if (!restricted()) {
+        Cb_old_ = shared_ptr<Matrix>(new Matrix("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_));
+    } else {
+        Cb_old_ = Ca_old_;
+    }
+    
+    Ca_old_->copy(Ca_);
+    Cb_old_->copy(Cb_);
+
+    // If no excitation requested, it's a stabilizer MOM, nothing fancy, don't print 
+    if (!options_["MOM_OCC_ALPHA"].size() && !options_["MOM_OCC_BETA"].size()) return;      
+   
+    // If we're here, its an exciting MOM
+    fprintf(outfile, "\n  ==> MOM Excited-State Iterations <==\n\n");
+    fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
+    
+    // Reset iterations and DIIS (will automagically restart)
+    iteration_ = 0;
+    if (initialized_diis_manager_) {
+        diis_manager_->delete_diis_file();
+        diis_manager_.reset();
+        initialized_diis_manager_ = false;
+    }
+ 
+    // Find out which orbitals are where
+    std::vector<std::pair<double, std::pair<int, int> > > orbs;
+    for (int h = 0; h < nirrep_; h++) {
+        int nmo = nmopi_[h];
+        if (nmo == 0) continue;
+        double* eps = epsilon_a_->pointer(h);
+        for (int a = 0; a < nmo; a++)
+            orbs.push_back(make_pair(eps[a], make_pair(h, a)));
+    }
+
+    sort(orbs.begin(),orbs.end());
+
+    if (options_["MOM_OCC_ALPHA"].size() != options_["MOM_VIR_ALPHA"].size())
+        throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA are not the same size");
+    if (options_["MOM_OCC_BETA"].size() != options_["MOM_VIR_BETA"].size())
+        throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA are not the same size");
+
+    // Alpha        
+    for (int n = 0; n < options_["MOM_OCC_ALPHA"].size(); n++) {
+        int i = options_["MOM_OCC_ALPHA"][n].to_integer() - 1; 
+        int a = options_["MOM_VIR_ALPHA"][n].to_integer() - 1;
+        
+        int hi = orbs[i].second.first;
+        int ha = orbs[a].second.first;
+
+        if (hi != ha)
+            throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA not in the same irrep");
+
+        // TODO More error checking
+ 
+        int pi = orbs[i].second.second;
+        int pa = orbs[a].second.second;
+   
+        int nso = nsopi_[hi];
+        int nmo = nmopi_[ha];
+
+        double** Ca = Ca_->pointer(hi);
+        double* Ct = new double[nso]; 
+        double* eps = epsilon_a_->pointer(hi);
+        double  epst;
+     
+        // Swap eigvals 
+        epst = eps[pi];
+        eps[pi] = eps[pa];
+        eps[pa] = epst; 
+
+        // Swap eigvecs
+        C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+        C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+        C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
+ 
+        delete[] Ct; 
+    }
+    Ca_old_->copy(Ca_);
+ 
+    if (restricted()) return; 
+
+    // Beta
+    for (int n = 0; n < options_["MOM_OCC_BETA"].size(); n++) {
+        int i = options_["MOM_OCC_BETA"][n].to_integer() - 1; 
+        int a = options_["MOM_VIR_BETA"][n].to_integer() - 1;
+        
+        int hi = orbs[i].second.first;
+        int ha = orbs[a].second.first;
+
+        if (hi != ha)
+            throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA not in the same irrep");
+
+        // TODO More error checking
+ 
+        int pi = orbs[i].second.second;
+        int pa = orbs[a].second.second;
+   
+        int nso = nsopi_[hi];
+        int nmo = nmopi_[ha];
+
+        double** Ca = Cb_->pointer(hi);
+        double* Ct = new double[nso]; 
+        double* eps = epsilon_b_->pointer(hi);
+        double  epst;
+     
+        // Swap eigvals 
+        epst = eps[pi];
+        eps[pi] = eps[pa];
+        eps[pa] = epst; 
+
+        // Swap eigvecs
+        C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+        C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+        C_DCOPY(nso, Ct, 1, &Ca[0][pi], nmo);
+ 
+        delete[] Ct; 
+    } 
+    Cb_old_->copy(Cb_);
+}
 void HF::MOM()
 {
-    int MOM_start = options_.get_int("MOM_START");
-    
-    // Not yet MOM!
-    if (MOM_start == -1 || iteration_ < MOM_start) return;
-
-    // Set MOM up
-    if (iteration_ == MOM_start) {
-        
-        // Build Ca_old_ matrices
-        Ca_old_ = shared_ptr<Matrix>(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
-        if (!restricted()) {
-            Cb_old_ = shared_ptr<Matrix>(new Matrix("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_));
-        } else {
-            Cb_old_ = Ca_old_;
-        }
-       
-        // Excite if needed
-        
-        // Find out which orbitals are where
-        std::vector<std::pair<double, std::pair<int, int> > > orbs;
-        for (int h = 0; h < nirrep_; h++) {
-            int nmo = nmopi_[h];
-            if (nmo == 0) continue;
-            double* eps = epsilon_a_->pointer(h);
-            for (int a = 0; a < nmo; a++)
-                orbs.push_back(make_pair(eps[a], make_pair(h, a)));
-        }
-
-        sort(orbs.begin(),orbs.end());
-
-        if (options_["MOM_OCC_ALPHA"].size() != options_["MOM_VIR_ALPHA"].size())
-            throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA are not the same size");
-        if (options_["MOM_OCC_BETA"].size() != options_["MOM_VIR_BETA"].size())
-            throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA are not the same size");
-
-        // Alpha        
-        for (int n = 0; n < options_["MOM_OCC_ALPHA"].size(); n++) {
-            int i = options_["MOM_OCC_ALPHA"][n].to_integer() - 1; 
-            int a = options_["MOM_VIR_ALPHA"][n].to_integer() - 1;
-            
-            int hi = orbs[i].second.first;
-            int ha = orbs[a].second.first;
-
-            if (hi != ha)
-                throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA not in the same irrep");
-
-            // TODO More error checking
- 
-            int pi = orbs[i].second.second;
-            int pa = orbs[a].second.second;
-   
-            int nso = nsopi_[hi];
-            int nmo = nmopi_[ha];
-
-            double** Ca = Ca_->pointer(hi);
-            double* Ct = new double[nso]; 
-            double* eps = epsilon_a_->pointer(hi);
-            double  epst;
-         
-            // Swap eigvals 
-            epst = eps[pi];
-            eps[pi] = eps[pa];
-            eps[pa] = epst; 
-
-            // Swap eigvecs
-            C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
-            C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
-            C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
- 
-            delete[] Ct; 
-        }
- 
-        Ca_old_->copy(Ca_);
- 
-        if (restricted()) return; 
-
-        // Beta
-        for (int n = 0; n < options_["MOM_OCC_BETA"].size(); n++) {
-            int i = options_["MOM_OCC_BETA"][n].to_integer() - 1; 
-            int a = options_["MOM_VIR_BETA"][n].to_integer() - 1;
-            
-            int hi = orbs[i].second.first;
-            int ha = orbs[a].second.first;
-
-            if (hi != ha)
-                throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA not in the same irrep");
-
-            // TODO More error checking
- 
-            int pi = orbs[i].second.second;
-            int pa = orbs[a].second.second;
-   
-            int nso = nsopi_[hi];
-            int nmo = nmopi_[ha];
-
-            double** Ca = Cb_->pointer(hi);
-            double* Ct = new double[nso]; 
-            double* eps = epsilon_b_->pointer(hi);
-            double  epst;
-         
-            // Swap eigvals 
-            epst = eps[pi];
-            eps[pi] = eps[pa];
-            eps[pa] = epst; 
-
-            // Swap eigvecs
-            C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
-            C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
-            C_DCOPY(nso, Ct, 1, &Ca[0][pi], nmo);
- 
-            delete[] Ct; 
-        } 
-        Cb_old_->copy(Cb_);
-
-        return;
-    } 
-
     // Go MOM go!
     // Alpha
     for (int h = 0; h < nirrep_; h++) {
@@ -473,7 +491,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > occvec;
         occvec.resize(nalpha);
         for (int a = 0; a < nalpha; a++)
-            occvec[a] = make_pair(eps[a], pvec[a].second);
+            occvec[a] = make_pair(eps[pvec[a].second], pvec[a].second);
         sort(occvec.begin(),occvec.end());
 
         //fprintf(outfile,"  P_a_occ sorted:\n");
@@ -483,33 +501,35 @@ void HF::MOM()
         std::vector<std::pair<double, int> > virvec;
         virvec.resize(nmo - nalpha);
         for (int a = 0; a < nmo - nalpha; a++)
-            virvec[a] = make_pair(eps[a + nalpha], pvec[a + nalpha].second);
+            virvec[a] = make_pair(eps[pvec[a + nalpha].second], pvec[a + nalpha].second);
         sort(virvec.begin(),virvec.end());
 
         //fprintf(outfile,"  P_a_vir sorted:\n");
         //for (int a = 0; a < nmo - nalpha; a++)
         //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
 
+        double** Ct = block_matrix(nso,nmo);
+
         // Use Cold and p as a buffer
-        memcpy(static_cast<void*>(Cold[0]),static_cast<void*>(Cnew[0]),sizeof(double)*nso*nmo);
+        memcpy(static_cast<void*>(Ct[0]),static_cast<void*>(Cnew[0]),sizeof(double)*nso*nmo);
         memcpy(static_cast<void*>(p),      static_cast<void*>(eps),    sizeof(double)*nmo);
 
         for (int a = 0; a < nalpha; a++) {
             eps[a] = occvec[a].first;
-            C_DCOPY(nso,&Cold[0][a],nmo,&Cnew[0][occvec[a].second],nmo);    
+            C_DCOPY(nso,&Ct[0][occvec[a].second],nmo,&Cnew[0][a],nmo);    
         } 
 
         for (int a = 0; a < nmo - nalpha; a++) {
             eps[a + nalpha] = virvec[a].first;
-            C_DCOPY(nso,&Cold[0][a + nalpha],nmo,&Cnew[0][virvec[a].second],nmo);    
+            C_DCOPY(nso,&Ct[0][virvec[a].second],nmo,&Cnew[0][a + nalpha],nmo);    
         } 
+
+        free_block(Ct);
 
         delete[] c;
         delete[] d;
         delete[] p;
     }   
- 
-    Ca_old_->copy(Ca_);
    
     // Beta
     if (restricted()) return;
@@ -559,7 +579,7 @@ void HF::MOM()
         std::vector<std::pair<double, int> > occvec;
         occvec.resize(nbeta);
         for (int a = 0; a < nbeta; a++)
-            occvec[a] = make_pair(eps[a], pvec[a].second);
+            occvec[a] = make_pair(eps[pvec[a].second], pvec[a].second);
         sort(occvec.begin(),occvec.end());
 
         //fprintf(outfile,"  P_a_occ sorted:\n");
@@ -569,26 +589,30 @@ void HF::MOM()
         std::vector<std::pair<double, int> > virvec;
         virvec.resize(nmo - nbeta);
         for (int a = 0; a < nmo - nbeta; a++)
-            virvec[a] = make_pair(eps[a + nbeta], pvec[a + nbeta].second);
+            virvec[a] = make_pair(eps[pvec[a + nbeta].second], pvec[a + nbeta].second);
         sort(virvec.begin(),virvec.end());
 
         //fprintf(outfile,"  P_a_vir sorted:\n");
         //for (int a = 0; a < nmo - nalpha; a++)
         //    fprintf(outfile,"   a = %3d: Index = %3d, %14.10f\n", a + 1, virvec[a].second, virvec[a].first);
 
+        double** Ct = block_matrix(nso,nmo);
+        
         // Use Cold and p as a buffer
-        memcpy(static_cast<void*>(Cold[0]),static_cast<void*>(Cnew[0]),sizeof(double)*nso*nmo);
+        memcpy(static_cast<void*>(Ct[0]),static_cast<void*>(Cnew[0]),sizeof(double)*nso*nmo);
         memcpy(static_cast<void*>(p),      static_cast<void*>(eps),    sizeof(double)*nmo);
 
         for (int a = 0; a < nbeta; a++) {
             eps[a] = occvec[a].first;
-            C_DCOPY(nso,&Cold[0][a],nmo,&Cnew[0][occvec[a].second],nmo);    
+            C_DCOPY(nso,&Ct[0][occvec[a].second],nmo,&Cnew[0][a],nmo);    
         } 
 
         for (int a = 0; a < nmo - nbeta; a++) {
             eps[a + nbeta] = virvec[a].first;
-            C_DCOPY(nso,&Cold[0][a + nbeta],nmo,&Cnew[0][virvec[a].second],nmo);    
+            C_DCOPY(nso,&Ct[0][virvec[a].second],nmo,&Cnew[0][a + nbeta],nmo);    
         } 
+
+        free_block(Ct);
 
         delete[] c;
         delete[] d;
@@ -599,6 +623,12 @@ void HF::MOM()
 
 void HF::find_occupation()
 {
+    // Don't mess with the occ, MOM's got it!
+    if (MOM_started_) {
+        MOM();
+        return; 
+    }
+
     std::vector<std::pair<double, int> > pairs;
     for (int h=0; h<epsilon_a_->nirrep(); ++h) {
         for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
@@ -630,9 +660,6 @@ void HF::find_occupation()
         nbetapi_[i]  = doccpi_[i];
     }
 
-    // MOM if needed
-    MOM();
-
     bool occ_changed = false;
     for(int h = 0; h < nirrep_; ++h){
         if( old_socc[h] != soccpi_[h] || old_docc[h] != doccpi_[h]){
@@ -644,6 +671,9 @@ void HF::find_occupation()
         fprintf(outfile, "\tOccupation by irrep:\n");
         print_occupation();
     }
+    // Start MOM if needed (called here because we need the nocc
+    // to be decided by Aufbau ordering prior to MOM_start)
+    MOM_start();
 }
 
 void HF::print_header()
@@ -678,6 +708,10 @@ void HF::print_header()
     fprintf(outfile, "  ==> Algorithm <==\n\n");
     fprintf(outfile, "  SCF Algorithm Type is %s.\n", options_.get_str("SCF_TYPE").c_str());
     fprintf(outfile, "  DIIS %s.\n", diis_enabled_ ? "enabled" : "disabled");
+    if (MOM_excited_)
+        fprintf(outfile, "  Excited-state MOM enabled.\n");
+    else 
+        fprintf(outfile, "  MOM %s.\n", MOM_enabled_ ? "enabled" : "disabled");
     fprintf(outfile, "  Guess Type is %s.\n", options_.get_str("GUESS").c_str());
     fprintf(outfile, "  Energy threshold   = %3.2e\n", energy_threshold_);
     fprintf(outfile, "  Density threshold  = %3.2e\n", density_threshold_);
@@ -1194,6 +1228,7 @@ double HF::compute_energy()
     std::string reference = options_.get_str("REFERENCE");
 
     bool converged = false;
+    MOM_performed_ = false;
     diis_performed_ = false;
     // Neither of these are idempotent
     if ((options_.get_str("GUESS") == "SAD") || (options_.get_str("GUESS") == "READ"))
@@ -1269,8 +1304,14 @@ double HF::compute_energy()
             Fb_->print(outfile);
         }
 
+        std::string status;
+        if (!MOM_performed_ && !diis_performed_) status = "";
+        else if (!MOM_performed_ && diis_performed_) status = "DIIS";
+        else if (MOM_performed_ && !diis_performed_) status = "MOM";
+        else if (MOM_performed_ && diis_performed_) status = "DIIS/MOM";
+
         fprintf(outfile, "   @%s iter %3d: %20.14f   % 10.5e   % 10.5e %s\n", 
-                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, diis_performed_ == false ? " " : "DIIS");
+                          reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
         fflush(outfile);
 
         timer_on("Form C");
@@ -1288,6 +1329,8 @@ double HF::compute_energy()
         }
 
         converged = test_convergency();
+        // If a an excited MOM is requested but not started, don't stop yet
+        if (MOM_excited_ && !MOM_started_) converged = false;
 
         // Call any postiteration callbacks
         call_postiteration_callbacks();

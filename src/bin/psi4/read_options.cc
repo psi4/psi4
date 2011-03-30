@@ -251,8 +251,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Minimum S matrix eigenvalue to be used before compensating for linear dependencies -*/
     options.add_double("S_MIN_EIGENVALUE",1E-7);
 
-    /*- The iteration to start MOM on (or -1 for no MOM) -*/
-    options.add_int("MOM_START", -1);
+    /*- The iteration to start MOM on (or 0 for no MOM) -*/
+    options.add_int("MOM_START", 0);
     /*- The absolute indices of orbitals to excite from in MOM -*/
     options.add("MOM_OCC_ALPHA", new ArrayType());
     /*- The absolute indices of orbitals to excite to in MOM -*/
