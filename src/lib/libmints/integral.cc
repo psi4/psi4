@@ -134,6 +134,17 @@ OneBodySOInt* IntegralFactory::so_nabla(int deriv)
     return new OneBodySOInt(ao_int, this);
 }
 
+OneBodyAOInt* IntegralFactory::ao_angular_momentum(int deriv)
+{
+    return new AngularMomentumInt(spherical_transforms_, bs1_, bs2_, deriv);
+}
+
+OneBodySOInt* IntegralFactory::so_angular_momentum(int deriv)
+{
+    shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
+    return new OneBodySOInt(ao_int, this);
+}
+
 OneBodyAOInt* IntegralFactory::ao_quadrupole()
 {
     return new QuadrupoleInt(spherical_transforms_, bs1_, bs2_);

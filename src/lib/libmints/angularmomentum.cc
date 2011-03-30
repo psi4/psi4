@@ -128,59 +128,67 @@ void AngularMomentumInt::compute_pair(const shared_ptr<GaussianShell>& s1, const
                             //
 
                             // (a+1x|b+1y)
-                            Sxy1 = x10 * y01 * z00;
+                            Sxy1 = x10 * y01 * z00 * over_pf;
                             // (a+1x|b-1y)
                             if (m2)
-                                Sxy2 = x10 * y[m1][m2-1] * z00;
+                                Sxy2 = x10 * y[m1][m2-1] * z00 * over_pf;
                             // (a+1x|b+1z)
-                            Sxz1 = x10 * y00 * z01;
+                            Sxz1 = x10 * y00 * z01 * over_pf;
                             // (a+1x|b-1z)
                             if (n2)
-                                Sxz2 = x10 * y00 * z[n1][n2-1];
+                                Sxz2 = x10 * y00 * z[n1][n2-1] * over_pf;
+
+//                            fprintf(outfile, "Sxy1 %f Sxy2 %f Sxz1 %f Sxz2 %f\n", Sxy1, Sxy2, Sxz1, Sxz2);
 
                             Syx1 = Syx2 = Syz1 = Syz2 = 0.0;
 
                             // (a+1y|b+1x)
-                            Syx1 = x01 * y10 * z00;
+                            Syx1 = x01 * y10 * z00 * over_pf;
                             // (a+1y|b-1x)
                             if (l2)
-                                Syx2 = x[l1][l2-1] * y10 * z00;
+                                Syx2 = x[l1][l2-1] * y10 * z00 * over_pf;
                             // (a+1y|b+1z)
-                            Syz1 = x00 * y10 * z01;
+                            Syz1 = x00 * y10 * z01 * over_pf;
                             // (a+1y|b-1z)
                             if (n2)
-                                Syz2 = x00 * y10 * z[n1][n2-1];
+                                Syz2 = x00 * y10 * z[n1][n2-1] * over_pf;
+
+//                            fprintf(outfile, "Syx1 %f Syx2 %f Syz1 %f Syz2 %f\n", Syx1, Syx2, Syz1, Syz2);
 
                             Szx1 = Szx2 = Szy1 = Szy2 = 0.0;
 
                             // (a+1z|b+1x)
-                            Szx1 = x01 * y00 * z10;
+                            Szx1 = x01 * y00 * z10 * over_pf;
                             // (a+1z|b-1x)
                             if (l2)
-                                Szx2 = x[l1][l2-1] * y00 * z10;
+                                Szx2 = x[l1][l2-1] * y00 * z10 * over_pf;
                             // (a+1z|b+1y)
-                            Szy1 = x00 * y01 * z10;
+                            Szy1 = x00 * y01 * z10 * over_pf;
                             // (a+1z|b-1y)
                             if (m2)
-                                Szy2 = x00 * y[m1][m2-1] * z10;
+                                Szy2 = x00 * y[m1][m2-1] * z10 * over_pf;
+
+//                            fprintf(outfile, "Szx1 %f Szx2 %f Szy1 %f Szy2 %f\n", Szx1, Szx2, Szy1, Szy2);
 
                             S0x1 = S0x2 = S0y1 = S0y2 = S0z1 = S0z2 = 0.0;
 
                             // (a|b+1x)
-                            S0x1 = x01 * y00 * z00;
+                            S0x1 = x01 * y00 * z00 * over_pf;
                             // (a|b-1x)
                             if (l2)
-                                S0x2 = x[l1][l2-1] * y00 * z00;
+                                S0x2 = x[l1][l2-1] * y00 * z00 * over_pf;
                             // (a|b+1y)
-                            S0y1 = x00 * y01 * z00;
+                            S0y1 = x00 * y01 * z00 * over_pf;
                             // (a|b-1y)
                             if (m2)
-                                S0y2 = x00 * y[m1][m2-1] * z00;
+                                S0y2 = x00 * y[m1][m2-1] * z00 * over_pf;
                             // (a|b+1z)
-                            S0z1 = x00 * y00 * z01;
+                            S0z1 = x00 * y00 * z01 * over_pf;
                             // (a|b-1z)
                             if (n2)
-                                S0z2 = x00 * y00 * z[n1][n2-1];
+                                S0z2 = x00 * y00 * z[n1][n2-1] * over_pf;
+
+//                            fprintf(outfile, "S0x1 %f S0x2 %f S0y1 %f S0y2 %f S0z1 S0z2\n", S0x1, S0x2, S0y1, S0y2, S0z1, S0z2);
 
                             //
                             // Moment integrals
@@ -218,20 +226,20 @@ void AngularMomentumInt::compute_pair(const shared_ptr<GaussianShell>& s1, const
 
                             /* (a|Lx|b) = 2 a2 * (a|(y-Cy)|b+1z) - B.z * (a|(y-Cy)|b-1z)
                                - 2 a2 * (a|(z-Cz)|b+1y) + B.y * (a|(z-Cz)|b-1y) */
-                            double Lx = (2.0*a2*muyz1 - n2*muyz2 - 2.0*a2*muzy1 + m2*muzy2) * over_pf;
+                            double Lx = (2.0*a2*muyz1 - n2*muyz2 - 2.0*a2*muzy1 + m2*muzy2)/* * over_pf*/;
 
                             /* (a|Ly|b) = 2 a2 * (a|(z-Cz)|b+1x) - B.x * (a|(z-Cz)|b-1x)
                                - 2 a2 * (a|(x-Cx)|b+1z) + B.z * (a|(x-Cx)|b-1z) */
-                            double Ly = (2.0*a2*muzx1 - l2*muzx2 - 2.0*a2*muxz1 + n2*muxz2) * over_pf;
+                            double Ly = (2.0*a2*muzx1 - l2*muzx2 - 2.0*a2*muxz1 + n2*muxz2)/* * over_pf*/;
 
                             /* (a|Lz|b) = 2 a2 * (a|(x-Cx)|b+1y) - B.y * (a|(x-Cx)|b-1y)
                                - 2 a2 * (a|(y-Cy)|b+1x) + B.x * (a|(y-Cy)|b-1x) */
-                            double Lz = (2.0*a2*muxy1 - m2*muxy2 - 2.0*a2*muyx1 + l2*muyx2) * over_pf;
+                            double Lz = (2.0*a2*muxy1 - m2*muxy2 - 2.0*a2*muyx1 + l2*muyx2)/* * over_pf*/;
 
                             // Electrons have a negative charge
-                            buffer_[ao12]       -= (Lx);
-                            buffer_[ao12+ydisp] -= (Ly);
-                            buffer_[ao12+zdisp] -= (Lz);
+                            buffer_[ao12]       += (Lx);
+                            buffer_[ao12+ydisp] += (Ly);
+                            buffer_[ao12+zdisp] += (Lz);
 
                             ao12++;
                         }
