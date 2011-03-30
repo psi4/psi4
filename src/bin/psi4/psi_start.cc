@@ -87,6 +87,7 @@ int psi_start(int argc, char *argv[])
 
       case 'n': // -n or --nthread
       Process::environment.set_n_threads(atoi(optarg));
+      break;
 
       case 'h': // -h or --help
       print_usage();
