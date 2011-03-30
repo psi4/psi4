@@ -139,6 +139,8 @@ void export_mints()
             def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix));
 
     class_<MintsHelper, shared_ptr<MintsHelper> >("MintsHelper").
+            def("basisset", &MintsHelper::basisset).
+            def("sobasisset", &MintsHelper::sobasisset).
             def("ao_overlap", &MintsHelper::ao_overlap).
             def("ao_kinetic", &MintsHelper::ao_kinetic).
             def("ao_potential", &MintsHelper::ao_potential).
@@ -150,7 +152,7 @@ void export_mints()
             def("so_quadrupole", &MintsHelper::so_quadrupole).
             def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole).
             def("so_nabla", &MintsHelper::so_nabla).
-            def("so_angular_momentum", &MintsHelper::so_angular_momentum).
+            def("ao_angular_momentum", &MintsHelper::ao_angular_momentum).
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 
@@ -286,7 +288,12 @@ void export_mints()
             def("make_filename", &BasisSet::make_filename).
             staticmethod("make_filename").
             def("construct", &BasisSet::construct).
-            staticmethod("construct");
+            staticmethod("construct").
+            def("nbf", &BasisSet::nbf).
+            def("nao", &BasisSet::nao).
+            def("nprimitive", &BasisSet::nprimitive).
+            def("nshell", &BasisSet::nshell).
+            def("max_am", &BasisSet::max_am);
 
     class_<SOBasisSet, shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", no_init).
             def("petite_list", &SOBasisSet::petitelist);
