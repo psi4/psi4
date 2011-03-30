@@ -45,7 +45,6 @@ int main(int argc, char **argv, char **envp)
     // Setup the environment
     Process::arguments.init(argc, argv);
     Process::environment.init(envp);
-    Process::environment.set_memory(256000000L);
 
     // If no OMP thread variable is set, set nthreads to default to 1
     if (Process::environment("OMP_NUM_THREADS") == "")
@@ -80,6 +79,7 @@ int main(int argc, char **argv, char **envp)
     Communicator::world = boost::shared_ptr<Communicator>(new LocalCommunicator);
 #endif
 
+    // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
     // Create the scripting object
@@ -91,18 +91,20 @@ int main(int argc, char **argv, char **envp)
 
     if(!clean_only) print_version(outfile);
 
+    // Set the default memory limit for Psi4
     set_memory(outfile);
 
+    // Initialize the I/O library
     psio_init();
 
+    // If the user ran 'psi4 -w' catch it and exit
     if(clean_only) {
         psiclean();
         exit(EXIT_SUCCESS);
     }
 
-    // Okay, we might only need to make this function call if we're using IPV1
-    // TODO: Need to come up with a way to interface with optking
-    //
+    // Finish linking Psi4 into Python, preprocess the input file,
+    // and then run the input file.
     Script::language->run(infile);
 
     // Shut things down:
