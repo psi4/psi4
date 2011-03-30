@@ -253,14 +253,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The iteration to start MOM on (or 0 for no MOM) -*/
     options.add_int("MOM_START", 0);
-    /*- The absolute indices of orbitals to excite from in MOM -*/
-    options.add("MOM_OCC_ALPHA", new ArrayType());
-    /*- The absolute indices of orbitals to excite to in MOM -*/
-    options.add("MOM_VIR_ALPHA", new ArrayType());
-    /*- The absolute indices of orbitals to excite from in MOM -*/
-    options.add("MOM_OCC_BETA", new ArrayType());
-    /*- The absolute indices of orbitals to excite to in MOM -*/
-    options.add("MOM_VIR_BETA", new ArrayType());
+    /*- The absolute indices of orbitals to excite from in MOM (+/- for alpha/beta) -*/
+    options.add("MOM_OCC", new ArrayType());
+    /*- The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) -*/
+    options.add("MOM_VIR", new ArrayType());
 
     /*- The minimum iteration to start storing DIIS vectors -*/
     options.add_int("START_DIIS_ITER", 1);

@@ -243,7 +243,7 @@ void HF::common_init()
     initialized_diis_manager_ = false;
 
     MOM_enabled_ = (options_.get_int("MOM_START") != 0);
-    MOM_excited_ = ((options_["MOM_OCC_ALPHA"].size() + options_["MOM_OCC_BETA"].size()) != 0);
+    MOM_excited_ = (options_["MOM_OCC"].size() != 0);
     MOM_started_ = false;
     MOM_performed_ = false;
 
@@ -320,7 +320,7 @@ void HF::MOM_start()
     // If we're here, we're doing MOM of some kind
     MOM_started_ = true;
     MOM_performed_ = true; // Gets printed next iteration   
- 
+    //
     // Build Ca_old_ matrices
     Ca_old_ = shared_ptr<Matrix>(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
     if (!restricted()) {
@@ -333,11 +333,10 @@ void HF::MOM_start()
     Cb_old_->copy(Cb_);
 
     // If no excitation requested, it's a stabilizer MOM, nothing fancy, don't print 
-    if (!options_["MOM_OCC_ALPHA"].size() && !options_["MOM_OCC_BETA"].size()) return;      
+    if (!options_["MOM_OCC"].size()) return;      
    
     // If we're here, its an exciting MOM
     fprintf(outfile, "\n  ==> MOM Excited-State Iterations <==\n\n");
-    fprintf(outfile, "                        Total Energy        Delta E      Density RMS\n\n");
     
     // Reset iterations and DIIS (will automagically restart)
     iteration_ = 0;
@@ -348,99 +347,157 @@ void HF::MOM_start()
     }
  
     // Find out which orbitals are where
-    std::vector<std::pair<double, std::pair<int, int> > > orbs;
+    std::vector<std::pair<double, std::pair<int, int> > > orbs_a;
     for (int h = 0; h < nirrep_; h++) {
         int nmo = nmopi_[h];
         if (nmo == 0) continue;
         double* eps = epsilon_a_->pointer(h);
         for (int a = 0; a < nmo; a++)
-            orbs.push_back(make_pair(eps[a], make_pair(h, a)));
+            orbs_a.push_back(make_pair(eps[a], make_pair(h, a)));
+    }
+    std::vector<std::pair<double, std::pair<int, int> > > orbs_b;
+    for (int h = 0; h < nirrep_; h++) {
+        int nmo = nmopi_[h];
+        if (nmo == 0) continue;
+        double* eps = epsilon_b_->pointer(h);
+        for (int a = 0; a < nmo; a++)
+            orbs_b.push_back(make_pair(eps[a], make_pair(h, a)));
+    }
+    sort(orbs_a.begin(),orbs_a.end());
+    sort(orbs_b.begin(),orbs_b.end());
+
+    if (options_["MOM_OCC"].size() != options_["MOM_VIR"].size())
+        throw PSIEXCEPTION("SCF: MOM_OCC and MOM_VIR are not the same size");
+    
+    std::set<int> tot_check;
+
+    for (int n = 0; n < options_["MOM_OCC"].size(); n++) {
+        tot_check.insert(options_["MOM_OCC"][n].to_integer());
+        tot_check.insert(options_["MOM_VIR"][n].to_integer());
     }
 
-    sort(orbs.begin(),orbs.end());
+    if (tot_check.size() != 2*options_["MOM_OCC"].size())
+        throw PSIEXCEPTION("SCF::MOM_start: Occupied/Virtual index array elements are not unique");
 
-    if (options_["MOM_OCC_ALPHA"].size() != options_["MOM_VIR_ALPHA"].size())
-        throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA are not the same size");
-    if (options_["MOM_OCC_BETA"].size() != options_["MOM_VIR_BETA"].size())
-        throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA are not the same size");
+    CharacterTable ct = molecule_->point_group()->char_table();
 
-    // Alpha        
-    for (int n = 0; n < options_["MOM_OCC_ALPHA"].size(); n++) {
-        int i = options_["MOM_OCC_ALPHA"][n].to_integer() - 1; 
-        int a = options_["MOM_VIR_ALPHA"][n].to_integer() - 1;
-        
-        int hi = orbs[i].second.first;
-        int ha = orbs[a].second.first;
+    fprintf(outfile, "  Excitations:\n");
 
-        if (hi != ha)
-            throw PSIEXCEPTION("SCF: MOM_OCC_ALPHA and MOM_VIR_ALPHA not in the same irrep");
+    for (int n = 0; n < options_["MOM_OCC"].size(); n++) {
+        int i = options_["MOM_OCC"][n].to_integer(); 
+        int a = options_["MOM_VIR"][n].to_integer();
+       
+        bool si = (i > 0);
+        bool sa = (a > 0);
+    
+        i = abs(i) - 1;
+        a = abs(a) - 1;
 
-        // TODO More error checking
+        if (options_.get_str("REFERENCE") == "RHF" || options_.get_str("REFERENCE") == "RKS") {
+
+            if (!si || !sa) 
+                throw PSIEXCEPTION("SCF::MOM_start: RHF/RKS requires + -> + in input, as only double excitations are performed");
+
+            int hi = orbs_a[i].second.first;
+            int ha = orbs_a[a].second.first;
  
-        int pi = orbs[i].second.second;
-        int pa = orbs[a].second.second;
-   
-        int nso = nsopi_[hi];
-        int nmo = nmopi_[ha];
+            if (hi == ha) {
+                // Same irrep
+                int pi = orbs_a[i].second.second;
+                int pa = orbs_a[a].second.second;
+  
+                int nso = nsopi_[hi];
+                int nmo = nmopi_[hi];
 
-        double** Ca = Ca_->pointer(hi);
-        double* Ct = new double[nso]; 
-        double* eps = epsilon_a_->pointer(hi);
-        double  epst;
+                double** Ca = Ca_->pointer(hi);
+                double* Ct = new double[nso]; 
+                double* eps = epsilon_a_->pointer(hi);
+                double  epst;
      
-        // Swap eigvals 
-        epst = eps[pi];
-        eps[pi] = eps[pa];
-        eps[pa] = epst; 
+                // Swap eigvals 
+                epst = eps[pi];
+                eps[pi] = eps[pa];
+                eps[pa] = epst; 
 
-        // Swap eigvecs
-        C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
-        C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
-        C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pa], nmo);
+            
+                delete[] Ct;
+
+                fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+            } else {
+                // Different irrep
+                // Occ -> Vir
+                int pi = orbs_a[i].second.second;
+                int pi2 = nalphapi_[hi] - 1;  
  
-        delete[] Ct; 
+                int nso = nsopi_[hi];
+                int nmo = nmopi_[hi];
+
+                double** Ca = Ca_->pointer(hi);
+                double* Ct = new double[nso]; 
+                double* eps = epsilon_a_->pointer(hi);
+                double  epst;
+     
+                // Swap eigvals 
+                epst = eps[pi];
+                eps[pi] = eps[pi2];
+                eps[pi2] = epst; 
+
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pi2], nmo, &Ca[0][pi], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pi2], nmo);
+            
+                delete[] Ct;
+                
+                // Redo indexing
+                nalphapi_[hi]--;
+                nbetapi_[hi]--;
+                doccpi_[hi]--; 
+
+                // Vir -> Occ 
+                int pa = orbs_a[a].second.second;
+                int pa2 = nalphapi_[ha];  
+ 
+                nso = nsopi_[ha];
+                nmo = nmopi_[ha];
+
+                Ca = Ca_->pointer(ha);
+                Ct = new double[nso]; 
+                eps = epsilon_a_->pointer(ha);
+     
+                // Swap eigvals 
+                epst = eps[pa];
+                eps[pa] = eps[pa2];
+                eps[pa2] = epst; 
+
+                // Swap eigvecs
+                C_DCOPY(nso, &Ca[0][pa], nmo, Ct, 1);
+                C_DCOPY(nso, &Ca[0][pa2], nmo, &Ca[0][pa], nmo);
+                C_DCOPY(nso, Ct, 1, &Ca[0][pa2], nmo);
+            
+                delete[] Ct;
+                
+                // Redo indexing
+                nalphapi_[ha]++;
+                nbetapi_[ha]++;
+                doccpi_[ha]++; 
+
+                fprintf(outfile, "   %8s: %4d%-4s -> %4d%-4s \n", "AB -> AB", pi + 1, ct.gamma(hi).symbol(), pa + 1, ct.gamma(ha).symbol()); 
+            }
+
+        } else if (options_.get_str("REFERENCE") == "UHF" || options_.get_str("REFERENCE") == "UKS") {
+        } else if (options_.get_str("REFERENCE") == "ROHF") {
+            throw PSIEXCEPTION("SCF::MOM_start: MOM excited states are not implemented for ROHF");
+        }
     }
     Ca_old_->copy(Ca_);
- 
-    if (restricted()) return; 
-
-    // Beta
-    for (int n = 0; n < options_["MOM_OCC_BETA"].size(); n++) {
-        int i = options_["MOM_OCC_BETA"][n].to_integer() - 1; 
-        int a = options_["MOM_VIR_BETA"][n].to_integer() - 1;
-        
-        int hi = orbs[i].second.first;
-        int ha = orbs[a].second.first;
-
-        if (hi != ha)
-            throw PSIEXCEPTION("SCF: MOM_OCC_BETA and MOM_VIR_BETA not in the same irrep");
-
-        // TODO More error checking
- 
-        int pi = orbs[i].second.second;
-        int pa = orbs[a].second.second;
-   
-        int nso = nsopi_[hi];
-        int nmo = nmopi_[ha];
-
-        double** Ca = Cb_->pointer(hi);
-        double* Ct = new double[nso]; 
-        double* eps = epsilon_b_->pointer(hi);
-        double  epst;
-     
-        // Swap eigvals 
-        epst = eps[pi];
-        eps[pi] = eps[pa];
-        eps[pa] = epst; 
-
-        // Swap eigvecs
-        C_DCOPY(nso, &Ca[0][pi], nmo, Ct, 1);
-        C_DCOPY(nso, &Ca[0][pa], nmo, &Ca[0][pi], nmo);
-        C_DCOPY(nso, Ct, 1, &Ca[0][pi], nmo);
- 
-        delete[] Ct; 
-    } 
     Cb_old_->copy(Cb_);
+
+    fprintf(outfile, "\n                        Total Energy        Delta E      Density RMS\n\n");
 }
 void HF::MOM()
 {
