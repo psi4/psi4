@@ -1,11 +1,13 @@
-#include "plugin.h"
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
-#include <libparallel/parallel.h>
 
+#include "plugin.h"
+
+#include <libparallel/parallel.h>
+#include <libchkpt/chkpt.hpp>
 
 namespace psi {
-#if HAVE_DLFCN_H == 1
+#ifdef HAVE_DLFCN_H
 
 #include <dlfcn.h>
 

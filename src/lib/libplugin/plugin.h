@@ -2,19 +2,21 @@
 #define __psi4_src_lib_libplugin_plugin_h
 
 #include <psi4-dec.h>
-#include <psiconfig.h>
-#include <libchkpt/chkpt.hpp>
-#include <libyeti/env.h>
+#include <libyeti/yeti.h>
+#include <string>
 
 namespace boost {
 template<class T> class shared_ptr;
 }
 
-class yeti::Env;
+namespace yeti {
+class Env;
+}
 
 namespace psi {
     class Chkpt;
     class Communicator;
+    class PSIO;
 
     // Useful typedef's
     typedef PsiReturnType (*plugin_t)(Options &);
