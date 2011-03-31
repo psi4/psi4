@@ -86,6 +86,7 @@ void export_mints()
     typedef void   (Matrix::*matrix_two)(const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&);
     typedef void   (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
     typedef void   (Matrix::*matrix_set)(int, int, int, double);
+    typedef void   (Matrix::*matrix_load)(const std::string&);
 
     class_<Matrix, shared_ptr<Matrix> >("Matrix").
             def(init<int, int>()).
@@ -127,7 +128,8 @@ void export_mints()
             def("set", matrix_set(&Matrix::set)).
             def("__getitem__", &Matrix::pyget).
             def("__setitem__", &Matrix::pyset).
-            def("save", matrix_save(&Matrix::save));
+            def("save", matrix_save(&Matrix::save)).
+            def("load", matrix_load(&Matrix::load));
 
     typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix)();
     typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(const std::string&);

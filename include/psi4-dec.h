@@ -29,6 +29,9 @@ namespace psi {
     #define WHEREAMI()
   #endif
 
+  // Very useful regex for matching floating point numbers
+  #define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+
   class Molecule;
   class Wavefunction;
 

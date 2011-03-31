@@ -130,8 +130,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
     regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
 
-#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
-
+    // NUMBER is in psi4-dec.h
     regex primitives1("^\\s*" NUMBER "\\s+" NUMBER ".*");    // Match s, p, d, f, g, ... functions
     regex primitives2("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match sp functions
     regex primitives3("^\\s*" NUMBER "\\s+" NUMBER "\\s+" NUMBER "\\s+" NUMBER ".*"); // match spd functions
