@@ -1,4 +1,4 @@
-#include <psi4-dec.h>
+#include <psi4-def.h>
 #include <libparallel/parallel.h>
 #include <libmints/wavefunction.h>
 #include <libpsio/psio.hpp>
