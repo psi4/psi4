@@ -20,15 +20,29 @@
 #include "dimension.h"
 
 #include <cmath>
+#include <cstdio>
+#include <fstream>
+#include <algorithm>
+#include <ctype.h>
 #include <sstream>
 #include <string>
 
+#include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 
 using namespace boost;
 using namespace psi;
 using namespace std;
+
+// In molecule.cc
+namespace psi {
+extern int str_to_int(const std::string& s);
+extern double str_to_double(const std::string& s);
+}
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
@@ -1074,17 +1088,17 @@ void Matrix::power(double alpha, double cutoff)
     }
 
     for (int h=0; h<nirrep_; ++h) {
-        if (rowspi_[h] == 0) continue; 
-        
+        if (rowspi_[h] == 0) continue;
+
         int n = rowspi_[h];
         double** A = matrix_[h];
 
         double** A1 = Matrix::matrix(n,n);
         double** A2 = Matrix::matrix(n,n);
         double* a  = new double[n];
-        
+
         memcpy(static_cast<void*>(A1[0]), static_cast<void*>(A[0]), sizeof(double)*n*n);
-    
+
         // Eigendecomposition
         double lwork;
         int stat = C_DSYEV('V','U',n,A1[0],n,a,&lwork,-1);
@@ -1092,7 +1106,7 @@ void Matrix::power(double alpha, double cutoff)
         stat = C_DSYEV('V','U',n,A1[0],n,a,work,(int)lwork);
         delete[] work;
 
-        if (stat) 
+        if (stat)
             throw PSIEXCEPTION("Matrix::power: C_DSYEV failed");
 
         memcpy(static_cast<void*>(A2[0]), static_cast<void*>(A1[0]), sizeof(double)*n*n);
@@ -1102,17 +1116,17 @@ void Matrix::power(double alpha, double cutoff)
 
             if (alpha < 0.0 && fabs(a[i]) < cutoff * max_a)
                 a[i] = 0.0;
-            else 
-                a[i] = pow(a[i],alpha); 
+            else
+                a[i] = pow(a[i],alpha);
 
             C_DSCAL(n, a[i], A2[i], 1);
         }
 
         C_DGEMM('T','N',n,n,n,1.0,A2[0],n,A1[0],n,0.0,A[0],n);
- 
+
         delete[] a;
-        Matrix::free(A1);   
-        Matrix::free(A2);   
+        Matrix::free(A1);
+        Matrix::free(A2);
 
     }
 }
@@ -1124,17 +1138,17 @@ void Matrix::exp()
     }
 
     for (int h=0; h<nirrep_; ++h) {
-        if (rowspi_[h] == 0) continue; 
-        
+        if (rowspi_[h] == 0) continue;
+
         int n = rowspi_[h];
         double** A = matrix_[h];
 
         double** A1 = Matrix::matrix(n,n);
         double** A2 = Matrix::matrix(n,n);
         double* a  = new double[n];
-        
+
         memcpy(static_cast<void*>(A1[0]), static_cast<void*>(A[0]), sizeof(double)*n*n);
-    
+
         // Eigendecomposition
         double lwork;
         int stat = C_DSYEV('V','U',n,A1[0],n,a,&lwork,-1);
@@ -1142,23 +1156,23 @@ void Matrix::exp()
         stat = C_DSYEV('V','U',n,A1[0],n,a,work,(int)lwork);
         delete[] work;
 
-        if (stat) 
+        if (stat)
             throw PSIEXCEPTION("Matrix::exp: C_DSYEV failed");
 
         memcpy(static_cast<void*>(A2[0]), static_cast<void*>(A1[0]), sizeof(double)*n*n);
 
         for (int i=0; i<n; i++) {
 
-            a[i] = ::exp(a[i]); 
+            a[i] = ::exp(a[i]);
 
             C_DSCAL(n, a[i], A2[i], 1);
         }
 
         C_DGEMM('T','N',n,n,n,1.0,A2[0],n,A1[0],n,0.0,A[0],n);
- 
+
         delete[] a;
-        Matrix::free(A1);   
-        Matrix::free(A2);   
+        Matrix::free(A1);
+        Matrix::free(A2);
 
     }
 }
@@ -1168,7 +1182,7 @@ void Matrix::zero_lower()
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::zero_lower: Matrix is non-totally symmetric.");
     }
-    
+
     for (int h=0; h<nirrep_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
@@ -1176,7 +1190,7 @@ void Matrix::zero_lower()
             }
         }
     }
-    
+
 }
 
 void Matrix::zero_upper()
@@ -1184,7 +1198,7 @@ void Matrix::zero_upper()
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::zero_upper: Matrix is non-totally symmetric.");
     }
-    
+
     for (int h=0; h<nirrep_; ++h) {
         for (int m=0; m<rowspi_[h]; ++m) {
             for (int n=0; n<m; ++n) {
@@ -1192,7 +1206,7 @@ void Matrix::zero_upper()
             }
         }
     }
-    
+
 }
 
 void Matrix::copy_lower_to_upper()
@@ -1615,10 +1629,87 @@ void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
         delete[] lower;
     }
     else {
-        throw PSIEXCEPTION("Matrix::: Unknown SaveType\n");
+        throw PSIEXCEPTION("Matrix::load: Unknown SaveType\n");
     }
     if (!already_open)
         psio->close(fileno, 1);     // Close and keep // Idempotent, win!
+}
+
+void Matrix::load(const std::string &filename)
+{
+    // Entire file.
+    vector<string> lines;
+    // temp
+    string text;
+
+    // Stream to use
+    ifstream infile(filename.c_str());
+    if (!infile)
+        throw PSIEXCEPTION("Matrix::load: Unable to open file " + filename);
+
+    // stupid way of reading in entire file
+    while (infile.good()) {
+        getline(infile, text);
+        trim(text);
+        if (!text.empty())
+            lines.push_back(text);
+    }
+
+    // File MUST be at least 3 lines
+    if (lines.size() < 3)
+        throw PSIEXCEPTION("Matrix::load: " + filename + " insufficient length.");
+
+    // First line is label (name of the matrix)
+    set_name(lines[0]);
+
+    // Second line is symmetry information
+    smatch match;
+    int infile_symm=-1;
+    regex symmetry_line("^\\s*symmetry\\s*(\\d+)\\s*", regbase::icase);
+    if (regex_match(lines[1], match, symmetry_line))
+        infile_symm = str_to_int(match[1]);
+    if (infile_symm != symmetry_)
+        throw PSIEXCEPTION("Matrix::load: File symmetry does not match matrix symmetry.");
+
+    // Third line is number of nonzero elements in the matrix.
+    int infile_nonzero=0;
+    regex nonzero_line("^\\s*(\\d+)\\s*");
+    if (regex_match(lines[2], match, nonzero_line))
+        infile_nonzero = str_to_int(match[1]);
+
+    // Check the number of lines with the number of nonzero elements
+    int nline = lines.size();
+    if (nline-3 != infile_nonzero)
+        throw PSIEXCEPTION("Matrix::load: Specified number of nonzero elements does not match number of elements given.");
+
+    // Clear out this matrix
+    zero();
+
+    // Go through the file grabbing the data.
+    regex element_line("^\\s*(\\d+)\\s*(\\d+)\\s*(\\d+)\\s*" NUMBER);
+    int h, m, n;
+    double val;
+    for (int elem=0; elem<infile_nonzero; ++elem) {
+        if (regex_match(lines[elem+3], match, element_line)) {
+            h = str_to_int(match[1]);
+            m = str_to_int(match[2]);
+            n = str_to_int(match[3]);
+            val = str_to_double(match[4]);
+        }
+        else
+            throw PSIEXCEPTION("Matrix::load: Unable to match the following line:\n" + lines[elem+3]);
+
+        // Check the info to make sure it is good
+        if (h >= nirrep_)
+            throw PSIEXCEPTION("Matrix::load: Irrep number is too large:\n" + lines[elem+3]);
+        if (m >= rowspi_[h])
+            throw PSIEXCEPTION("Matrix::load: Row number is too large:\n" + lines[elem+3]);
+        if (n >= colspi_[h])
+            throw PSIEXCEPTION("Matrix::load: Column number is too large:\n" + lines[elem+3]);
+
+        // Set the data
+        set(h, m, n, val);
+    }
 }
 
 void Matrix::send(Communicator* comm)

@@ -4,17 +4,18 @@
 ** \ingroup
 */
 
+#include "psi4.h"
+#include <psi4-dec.h>
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <string>
-#include <boost/regex.hpp>
+#include <boost/filesystem.hpp>
 #include <getopt.h>
 #include <psifiles.h>
 #include <psiconfig.h>
-#include <libparallel/parallel.h>
 #include <libplugin/plugin.h>
-#include "psi4.h"
 
 using namespace std;
 
@@ -167,10 +168,16 @@ int psi_start(int argc, char *argv[])
     /* default prefix is not assigned here yet because need to check input file first */
 
     /* open input and output files */
-    if(ifname == "stdin")
+    if(ifname == "stdin") {
         infile=stdin;
-    else
+        infile_directory = ".";
+    }
+    else {
         infile = fopen(ifname.c_str(), "r");
+
+        boost::filesystem::path ipath = boost::filesystem::system_complete(ifname);
+        infile_directory = ipath.parent_path().string();
+    }
 
     if(infile == NULL) {
         fprintf(stderr, "Error: could not open input file %s\n",ifname.c_str());

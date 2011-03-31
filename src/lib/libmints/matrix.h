@@ -220,6 +220,13 @@ public:
     /** @} */
 
     /**
+     * Loads a block matrix from an ASCII file (see tests/mints3 for file format).
+     *
+     * @param filename Name of the file to read in.
+     */
+    void load(const std::string& filename);
+
+    /**
      * @{
      * Saves the matrix in ASCII format to filename
      *
@@ -593,18 +600,18 @@ public:
 
     /*! Computes the pseudo power of a real symmetric matrix
     *   A using eigendecomposition. This operation is uniquely defined
-    *   for all symmetric matrices for integral alpha, and for 
+    *   for all symmetric matrices for integral alpha, and for
     *   all symmetric positive definite matrices for all alpha.
-    *   
+    *
     *   A fractional power of a Hermitian non-SPD matrix is not uniquely
-    *   defined due to the ambiguity of the complex roots of unity, and 
-    *   will often be returned as NaN due to the formation of an imaginary 
+    *   defined due to the ambiguity of the complex roots of unity, and
+    *   will often be returned as NaN due to the formation of an imaginary
     *   root of an eigenvalue. Fractional powers should only be called for SPD
     *   matrices, and integral powers should always be specified with literals.
     *
     *   For negative powers, this operation is very sensitive to condition,
-    *   and will discard eigenvectors corresponding to small eigenvalues which 
-    *   contribute to a condition number smaller than cutoff. 
+    *   and will discard eigenvectors corresponding to small eigenvalues which
+    *   contribute to a condition number smaller than cutoff.
     *   The resultant power is actually a pseudo-power
     *
     *   \param alpha  The power to raise the matrix to
@@ -612,8 +619,8 @@ public:
     *   contribute in the formation of a negative power of A
     */
     void power(double alpha, double cutoff = 1.0E-12);
-    
-    /*! Computes the exponential of a real symmetric matrix 
+
+    /*! Computes the exponential of a real symmetric matrix
     *   A using eigendecoposition. This operation is uniquely defined
     *   for all symmetric matrices (in fact all matrices, by DSYEV will
     *   be used here)

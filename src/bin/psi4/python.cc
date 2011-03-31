@@ -1,18 +1,19 @@
-#include <cstdio>
 #include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
 #include <boost/filesystem.hpp>
-#include <boost/algorithm/string.hpp>
-#include <psiconfig.h>
+#include <cstdio>
 #include <sstream>
-#include "script.h"
-#include "liboptions/liboptions.h"
+#include <map>
+
+#include <psiconfig.h>
 #include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
-#include <map>
+#include <liboptions/liboptions.h>
 
 #include <psi4-dec.h>
+#include "script.h"
+#include "psi4.h"
 
 using namespace psi;
 using namespace boost;
@@ -459,6 +460,11 @@ void py_psi_add_user_specified_basis_file(const string& file)
     Process::environment.user_basis_files.push_front(file);
 }
 
+string py_psi_get_input_directory()
+{
+    return infile_directory;
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     enum_<PsiReturnType>("PsiReturnType")
@@ -513,6 +519,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_variable", py_psi_get_variable);
 
     def("add_user_basis_file", py_psi_add_user_specified_basis_file);
+
+    def("get_input_directory", py_psi_get_input_directory);
 
     // modules
     def("mints", py_psi_mints);
