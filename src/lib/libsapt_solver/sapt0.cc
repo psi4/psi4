@@ -444,9 +444,9 @@ void SAPT0::df_integrals()
   free(DFSchwartz);
 
   avail_mem = mem_;
-  long int indices = nsotri + noccA_*noccA_ + noccA_*nvirA_ + nvirA_*nvirA_
-    + noccB_*noccB_ + noccB_*nvirB_ + nvirB_*nvirB_ + noccB_*noccB_ 
-    + noccA_*nvirB_ + noccB_*nvirA_;
+  long int indices = nsotri + noccA_*noccA_ + noccA_*nvirA_ 
+    + nvirA_*(nvirA_+1)/2 + noccB_*noccB_ + noccB_*nvirB_ 
+    + nvirB_*(nvirB_+1)/2 + noccB_*noccB_ + noccA_*nvirB_ + noccB_*nvirA_;
   mem_tot = (long int) ndf_*indices;
   if (indices > avail_mem)
     throw PsiException("Not enough memory", __FILE__,__LINE__);
@@ -464,10 +464,10 @@ void SAPT0::df_integrals()
   double **B_p_munu = block_matrix(Plength,nsotri);
   double **B_p_AA = block_matrix(Plength,noccA_*noccA_);
   double **B_p_AR = block_matrix(Plength,noccA_*nvirA_);
-  double **B_p_RR = block_matrix(Plength,nvirA_*nvirA_);
+  double **B_p_RR = block_matrix(Plength,nvirA_*(nvirA_+1)/2);
   double **B_p_BB = block_matrix(Plength,noccB_*noccB_);
   double **B_p_BS = block_matrix(Plength,noccB_*nvirB_);
-  double **B_p_SS = block_matrix(Plength,nvirB_*nvirB_);
+  double **B_p_SS = block_matrix(Plength,nvirB_*(nvirB_+1)/2);
   double **B_p_AB = block_matrix(Plength,noccA_*noccB_);
   double **B_p_AS = block_matrix(Plength,noccA_*nvirB_);
   double **B_p_RB = block_matrix(Plength,noccB_*nvirA_);
@@ -489,10 +489,10 @@ void SAPT0::df_integrals()
 
   zero_disk(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",ndf_,noccA_*noccA_);
   zero_disk(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",ndf_,noccA_*nvirA_);
-  zero_disk(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",ndf_,nvirA_*nvirA_);
+  zero_disk(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",ndf_,nvirA_*(nvirA_+1)/2);
   zero_disk(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",ndf_,noccB_*noccB_);
   zero_disk(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",ndf_,noccB_*nvirB_);
-  zero_disk(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",ndf_,nvirB_*nvirB_);
+  zero_disk(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",ndf_,nvirB_*(nvirB_+1)/2);
   zero_disk(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",ndf_,noccA_*noccB_);
   zero_disk(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",ndf_,noccA_*nvirB_);
   zero_disk(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",ndf_,nvirA_*noccB_);
@@ -564,8 +564,8 @@ void SAPT0::df_integrals()
           &(B_p_AR[Prel][a*nvirA_]),1);
       }
       for (int r=0; r<nvirA_; r++) {
-        C_DCOPY(nvirA_,&(IJ_temp[rank][(r+noccA_)*nmo_+noccA_]),1,
-          &(B_p_RR[Prel][r*nvirA_]),1);
+        C_DCOPY(r+1,&(IJ_temp[rank][(r+noccA_)*nmo_+noccA_]),1,
+          &(B_p_RR[Prel][r*(r+1)/2]),1);
       }
   
       C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
@@ -592,8 +592,8 @@ void SAPT0::df_integrals()
           &(B_p_BS[Prel][b*nvirB_]),1);
       }
       for (int s=0; s<nvirB_; s++) {
-        C_DCOPY(nvirB_,&(IJ_temp[rank][(s+noccB_)*nmo_+noccB_]),1,
-          &(B_p_SS[Prel][s*nvirB_]),1);
+        C_DCOPY(s+1,&(IJ_temp[rank][(s+noccB_)*nmo_+noccB_]),1,
+          &(B_p_SS[Prel][s*(s+1)/2]),1);
       } 
  
     }
@@ -605,7 +605,7 @@ void SAPT0::df_integrals()
       &(B_p_AR[0][0]),sizeof(double)*length*noccA_*nvirA_,
       next_DF_AR,&next_DF_AR);
     psio_->write(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *)
-      &(B_p_RR[0][0]),sizeof(double)*length*nvirA_*nvirA_,
+      &(B_p_RR[0][0]),sizeof(double)*length*(nvirA_*(nvirA_+1)/2),
       next_DF_RR,&next_DF_RR);
 
     psio_->write(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
@@ -615,7 +615,7 @@ void SAPT0::df_integrals()
       &(B_p_BS[0][0]),sizeof(double)*length*noccB_*nvirB_,
       next_DF_BS,&next_DF_BS);
     psio_->write(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",(char *)
-      &(B_p_SS[0][0]),sizeof(double)*length*nvirB_*nvirB_,
+      &(B_p_SS[0][0]),sizeof(double)*length*(nvirB_*(nvirB_+1)/2),
       next_DF_SS,&next_DF_SS);
 
     psio_->write(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *)
