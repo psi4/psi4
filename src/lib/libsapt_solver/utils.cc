@@ -536,9 +536,9 @@ SAPTDFInts SAPT0::set_C_RR()
   C_RR.dress_disk_ = false;
   C_RR.active_ = false;
 
-  C_RR.i_length_ = nvirA_;
+  C_RR.i_length_ = nvirA_; // BAD
   C_RR.j_length_ = nvirA_;
-  C_RR.ij_length_ = nvirA_*nvirA_;
+  C_RR.ij_length_ = nvirA_*(nvirA_+1)/2;
   C_RR.i_start_ = 0;
   C_RR.j_start_ = 0;
 
@@ -596,9 +596,9 @@ SAPTDFInts SAPT0::set_C_SS()
   C_SS.dress_disk_ = false;
   C_SS.active_ = false;
 
-  C_SS.i_length_ = nvirB_;
+  C_SS.i_length_ = nvirB_; // This is bad...probably OK though
   C_SS.j_length_ = nvirB_;
-  C_SS.ij_length_ = nvirB_*nvirB_;
+  C_SS.ij_length_ = nvirB_*(nvirB_+1)/2;
   C_SS.i_start_ = 0;
   C_SS.j_start_ = 0;
 

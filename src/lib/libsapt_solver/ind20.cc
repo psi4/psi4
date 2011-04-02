@@ -99,6 +99,7 @@ void SAPT0::ind20rA_B()
   double *X = init_array(ndf_);
   double **xAA = block_matrix(nthreads,noccA_*noccA_);
   double **xAR = block_matrix(nthreads,noccA_*nvirA_);
+  double **xRR = block_matrix(nthreads,nvirA_*nvirA_);
   double **tAR_dump = block_matrix(nthreads,noccA_*nvirA_);
 
   do {
@@ -155,8 +156,14 @@ void SAPT0::ind20rA_B()
       rank = omp_get_thread_num();
 #endif
 
+        for (int a=0, ab=0; a<nvirA_; a++) {
+          for (int b=0; b<=a; b++) {
+            xRR[rank][a*nvirA_+b] = C_p_RR.B_p_[j][ab];
+            xRR[rank][b*nvirA_+a] = C_p_RR.B_p_[j][ab++];
+        }}
+
         C_DGEMM('N','N',noccA_,nvirA_,nvirA_,1.0,tAR_old,nvirA_,
-          &(C_p_RR.B_p_[j][0]),nvirA_,0.0,xAR[rank],nvirA_);
+          &(xRR[rank][0]),nvirA_,0.0,xAR[rank],nvirA_);
         C_DGEMM('N','N',noccA_,nvirA_,noccA_,-1.0,&(C_p_AA.B_p_[j][0]),noccA_,
           xAR[rank],nvirA_,1.0,tAR_dump[rank],nvirA_);
       }
@@ -217,6 +224,7 @@ void SAPT0::ind20rA_B()
   free(X); 
   free_block(xAA); 
   free_block(xAR); 
+  free_block(xRR); 
 }
 
 void SAPT0::ind20rB_A()
@@ -262,6 +270,7 @@ void SAPT0::ind20rB_A()
   double *X = init_array(ndf_);
   double **xBB = block_matrix(nthreads,noccB_*noccB_);
   double **xBS = block_matrix(nthreads,noccB_*nvirB_);
+  double **xSS = block_matrix(nthreads,nvirB_*nvirB_);
   double **tBS_dump = block_matrix(nthreads,noccB_*nvirB_);
 
   do {
@@ -318,8 +327,14 @@ void SAPT0::ind20rB_A()
       rank = omp_get_thread_num();
 #endif
 
+        for (int a=0, ab=0; a<nvirB_; a++) {
+          for (int b=0; b<=a; b++) {
+            xSS[rank][a*nvirB_+b] = C_p_SS.B_p_[j][ab];
+            xSS[rank][b*nvirB_+a] = C_p_SS.B_p_[j][ab++];
+        }}
+
         C_DGEMM('N','N',noccB_,nvirB_,nvirB_,1.0,tBS_old,nvirB_,
-          &(C_p_SS.B_p_[j][0]),nvirB_,0.0,xBS[rank],nvirB_);
+          &(xSS[rank][0]),nvirB_,0.0,xBS[rank],nvirB_);
         C_DGEMM('N','N',noccB_,nvirB_,noccB_,-1.0,&(C_p_BB.B_p_[j][0]),noccB_,
           xBS[rank],nvirB_,1.0,tBS_dump[rank],nvirB_);
       }
@@ -380,6 +395,7 @@ void SAPT0::ind20rB_A()
   free(X); 
   free_block(xBB); 
   free_block(xBS); 
+  free_block(xSS); 
 }
 
 }}
