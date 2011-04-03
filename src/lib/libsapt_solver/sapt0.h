@@ -69,6 +69,8 @@ private:
 
   void ind20rA_B();
   void ind20rB_A();
+  void ind20rA_B_aio();
+  void ind20rB_A_aio();
 
   void get_denom();
 
@@ -107,6 +109,8 @@ protected:
   double **dBS_;
 
 //bool do_disp21_;
+  bool no_response_;
+  bool aio_cphf_;
 
   int maxiter_;
   double e_conv_;

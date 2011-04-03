@@ -6,6 +6,7 @@
 #include <string>
 #include <map>
 #include <set>
+#include <queue>
 #include <libparallel/parallel.h>
 
 #include <libpsio/config.h>
@@ -312,22 +313,26 @@ private:
 
 class AIO_Handler {
 private:
+    /// What is the job type?
+    std::queue<unsigned int> job_;
     /// Unit number argument
-    unsigned int unit_;
+    std::queue<unsigned int> unit_;
     /// Entry Key (80-char) argument
-    const char* key_;
+    std::queue<const char*> key_;
     /// Memory buffer argument
-    char* buffer_;
+    std::queue<char*> buffer_;
     /// Size argument
-    ULI size_;
+    std::queue<ULI> size_;
     /// Start address argument
-    psio_address start_;
+    std::queue<psio_address> start_;
     /// End address pointer argument
-    psio_address *end_;
+    std::queue<psio_address*> end_;
     /// PSIO object this AIO_Handler is built on
     boost::shared_ptr<PSIO> psio_;
     /// Thread this AIO_Handler is currently running on
     boost::shared_ptr<boost::thread> thread_;
+    /// Lock variable
+    boost::mutex locked_;
 public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
     AIO_Handler(boost::shared_ptr<PSIO> psio);
@@ -348,14 +353,8 @@ public:
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
     void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
 
-    /// Function bound to thread internally
-    void call_read();
-    /// Function bound to thread internally
-    void call_write();
-    /// Function bound to thread internally
-    void call_read_entry();
-    /// Function bound to thread internally
-    void call_write_entry();
+    /// Generic function bound to thread internally
+    void call_aio();
 };
 
 extern boost::shared_ptr<PSIO> _default_psio_lib_;
