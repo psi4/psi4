@@ -319,7 +319,10 @@ void SAPT0::exch_ind20A_B()
   }
 
   if (print_) {
-    fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",exind);
+    if (no_response_) 
+      fprintf(outfile,"    Exch-Ind20 (A<-B)   = %18.12lf H\n",exind);
+    else
+      fprintf(outfile,"    Exch-Ind20,r (A<-B) = %18.12lf H\n",exind);
     fflush(outfile);
   }
 }
@@ -638,8 +641,14 @@ void SAPT0::exch_ind20B_A()
   }
 
   if (print_) {
-    fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exind);
-    fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
+    if (no_response_) {
+      fprintf(outfile,"    Exch-Ind20 (B<-A)   = %18.12lf H\n",exind);
+      fprintf(outfile,"    Exch-Ind20          = %18.12lf H\n",e_exch_ind20_);
+    } 
+    else {
+      fprintf(outfile,"    Exch-Ind20,r (B<-A) = %18.12lf H\n",exind);
+      fprintf(outfile,"    Exch-Ind20,r        = %18.12lf H\n",e_exch_ind20_);
+    }
     fflush(outfile);
   }
 } 

@@ -11,6 +11,8 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
   d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
 //  do_disp21_ = options_.get_bool("DO_DISP21");
+  no_response_ = options_.get_bool("NO_RESPONSE");
+  aio_cphf_ = options_.get_bool("AIO_CPHF");
 
   wBAR_ = NULL;
   wABS_ = NULL;
@@ -53,9 +55,9 @@ double SAPT0::compute_energy()
   timer_on("Exch10 S^2         ");
     exch10_s2();
   timer_off("Exch10 S^2         ");
-  if (debug_) ind20();
   timer_on("Ind20              ");
-    ind20r();
+    if (debug_ || no_response_) ind20();
+    if (!no_response_) ind20r();
   timer_off("Ind20              ");
   timer_on("Exch-Ind20         ");
     exch_ind20A_B();
@@ -107,18 +109,27 @@ void SAPT0::print_results()
   fprintf(outfile,"  ------------------------------------------------------------------\n");
   fprintf(outfile,"    E_HF          %16.8lf mH %16.8lf kcal mol^-1\n",
     eHF_*1000.0,eHF_*627.5095);
-  fprintf(outfile,"    Elst10        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Elst10,r      %16.8lf mH %16.8lf kcal mol^-1\n",
     e_elst10_*1000.0,e_elst10_*627.5095);
   fprintf(outfile,"    Exch10        %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_*1000.0,e_exch10_*627.5095);
   fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
-  fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_ind20_*1000.0,e_ind20_*627.5095);
-  fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
-    e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
-  fprintf(outfile,"    delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
-    dHF*1000.0,dHF*627.5095);
+  if (no_response_) {
+    fprintf(outfile,"    Ind20         %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_ind20_*1000.0,e_ind20_*627.5095);
+    fprintf(outfile,"    Exch-Ind20    %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
+    fprintf(outfile,"    delta HF      %16.8lf mH %16.8lf kcal mol^-1\n",
+      dHF*1000.0,dHF*627.5095);
+  } else {
+    fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_ind20_*1000.0,e_ind20_*627.5095);
+    fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
+    fprintf(outfile,"    delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
+      dHF*1000.0,dHF*627.5095);
+  }
   fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp20_*1000.0,e_disp20_*627.5095);
   fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
