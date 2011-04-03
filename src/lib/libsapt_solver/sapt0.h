@@ -22,6 +22,7 @@ private:
   void check_memory();
 
   void df_integrals();
+  void df_integrals_aio();
   void w_integrals();
 
   SAPTDFInts set_A_AA();
@@ -111,6 +112,7 @@ protected:
 //bool do_disp21_;
   bool no_response_;
   bool aio_cphf_;
+  bool aio_dfints_;
 
   int maxiter_;
   double e_conv_;

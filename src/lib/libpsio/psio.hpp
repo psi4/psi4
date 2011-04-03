@@ -327,6 +327,14 @@ private:
     std::queue<psio_address> start_;
     /// End address pointer argument
     std::queue<psio_address*> end_;
+    /// Matrix pointer for discontinuous I/O
+    std::queue<double**> matrix_;
+    /// Size argument for discontinuous I/O
+    std::queue<ULI> row_length_;
+    /// Size argument for discontinuous I/O
+    std::queue<ULI> col_length_;
+    /// Size argument for discontinuous I/O
+    std::queue<ULI> col_skip_;
     /// PSIO object this AIO_Handler is built on
     boost::shared_ptr<PSIO> psio_;
     /// Thread this AIO_Handler is currently running on
@@ -352,6 +360,27 @@ public:
     void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
     /// Asynchronous read_entry, same as PSIO::write_entry, but nonblocking
     void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
+    /// Asynchronous read for reading discontinuous disk space
+    /// into a continuous chunk of memory, i.e.
+    /// 
+    /// [***]        [----***-----]
+    /// [***]        [----***-----]
+    /// [***]        [----***-----]
+    /// [***]  <<--  [----***-----]
+    /// [***]        [----***-----]
+    /// [***]        [----***-----]
+    /// [***]        [----***-----]
+    ///
+    /// The buffer has dimensions row_length by col_length. The disk space
+    /// has dimensions row_length by col_length + col_skip.
+    ///
+    /// These functions are not necessary for psio, but for aio they are.
+    ///
+    void read_discont(unsigned int unit, const char *key, double **matrix, 
+      ULI row_length, ULI col_length, ULI col_skip, psio_address start);
+    /// Same as read_discont, but for writing
+    void write_discont(unsigned int unit, const char *key, double **matrix, 
+      ULI row_length, ULI col_length, ULI col_skip, psio_address start);
 
     /// Generic function bound to thread internally
     void call_aio();
