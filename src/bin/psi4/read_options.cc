@@ -47,6 +47,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NO_RESPONSE",false);
     /*- Use asynchronous I/O in the CPHF solver -*/
     options.add_bool("AIO_CPHF",false);
+    /*- Use asynchronous I/O in the DF integral formation -*/
+    options.add_bool("AIO_DFINTS",false);
     /*- Max CPHF iterations -*/
     options.add_int("MAXITER",50);
     /*- DIIS vecs -*/
