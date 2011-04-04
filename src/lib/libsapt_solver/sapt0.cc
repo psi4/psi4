@@ -669,7 +669,7 @@ void SAPT0::df_integrals()
 
 void SAPT0::df_integrals_aio()
 {
-  shared_ptr<AIO_Handler> aio(new AIO_Handler(psio_));
+  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
 
