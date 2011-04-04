@@ -2,7 +2,7 @@
 #define __psi4_src_lib_libplugin_plugin_h
 
 #include <psi4-dec.h>
-#include <libyeti/yeti.h>
+#include <libyeti/env.h>
 #include <string>
 
 namespace boost {
