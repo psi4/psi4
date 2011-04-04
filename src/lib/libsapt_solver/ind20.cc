@@ -466,7 +466,7 @@ void SAPT0::ind20rA_B_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
 
-  shared_ptr<AIO_Handler> aio(new AIO_Handler(psio_));
+  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_AA[2];
   double **C_p_RR[2];
@@ -681,7 +681,7 @@ void SAPT0::ind20rB_A_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
   
-  shared_ptr<AIO_Handler> aio(new AIO_Handler(psio_));
+  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_BB[2];
   double **C_p_SS[2];
