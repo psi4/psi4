@@ -223,7 +223,7 @@ void MP3::term_5()
 
   psio_address next_VVVVp = PSIO_ZERO;
 
-  shared_ptr<AIO_Handler> aio(new AIO_Handler(psio_));
+  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   psio_->read(DFCC_INT_FILE,"VVVV+ Integrals",(char *) &(vVVVVp[0][0][0]),
         blocksize*virtri*(ULI) sizeof(double),next_VVVVp,&next_VVVVp);
@@ -616,7 +616,7 @@ void PSMP3::term_6()
 
   psio_address next_VVVVp = PSIO_ZERO;
 
-  shared_ptr<AIO_Handler> aio(new AIO_Handler(psio_));
+  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   psio_->read(DFCC_INT_FILE,"VVVV+ Integrals",(char *) &(vVVVVp[0][0][0]),
         blocksize*virtri*(ULI) sizeof(double),next_VVVVp,&next_VVVVp);

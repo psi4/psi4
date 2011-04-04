@@ -120,8 +120,6 @@ def scf_helper(name, **kwargs):
         banner(name.upper())
         PsiMod.print_out('\n')
 
-        PsiMod.print_options()
-
         # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
         
