@@ -987,7 +987,7 @@ void DFHF::form_JK_DF()
     if (nblocks * max_rows != naux)
         nblocks++;
 
-    printf("Doing DF-SCF iteration with %d blocks\n", nblocks);
+    //printf("Doing DF-SCF iteration with %d blocks\n", nblocks);
 
     // JK J allocation
     Dtri_ = new double[ntri];
