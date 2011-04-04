@@ -521,9 +521,16 @@ public:
      *  a symmetry matrix.
      *
      *  \param a SimpleMatrix to transform
-     *  \param transformer Matrix from PetiteList to act as transformer
+     *  \param transformer The matrix returned by PetiteList::aotoso() that acts as the transformer
      */
     void apply_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+
+    /** Special function to transform a SimpleMatrix (no symmetry) into
+     *  a symmetry matrix.
+     *
+     *  \param a SimpleMatrix to transform
+     *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
+     */
     void remove_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
     /** Performs a the transformation L^ F R. Result goes to this.
      *
