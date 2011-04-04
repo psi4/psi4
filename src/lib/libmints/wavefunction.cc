@@ -141,6 +141,16 @@ shared_ptr<Molecule> Wavefunction::molecule() const
     return molecule_;
 }
 
+shared_ptr<PSIO> Wavefunction::psio() const
+{
+    return psio_;
+}
+
+Options& Wavefunction::options() const
+{
+    return options_;
+}
+
 boost::shared_ptr<BasisSet> Wavefunction::basisset() const
 {
     return basisset_;

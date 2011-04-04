@@ -150,6 +150,9 @@ public:
 
     /// Returns the molecule object that pertains to this wavefunction.
     boost::shared_ptr<Molecule> molecule() const;
+    boost::shared_ptr<PSIO> psio() const;
+    Options& options() const;
+
     /// Returns the basis set object that pertains to this wavefunction.
     boost::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.

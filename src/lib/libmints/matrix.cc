@@ -1249,14 +1249,18 @@ void Matrix::transform(const Matrix& a, const Matrix& transformer)
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
 
-void Matrix::transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::shared_ptr<Matrix>& transformer)
+void Matrix::apply_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer)
 {
-    // Check dimensions of the simple matrix and matrix
+    // Check dimensions of the two matrices and symmetry
+    if(a->nirrep() > 1)
+        {
+            throw PSIEXCEPTION("Matrix::apply_symmetry: first matrix must have no symmetry.\n");
+        }
     if (a->nrow() != transformer->rowdim(0)
             || a->ncol() != transformer->ncol()) {
         a->print();
         transformer->print();
-        throw PSIEXCEPTION("Matrix::transform: simple to regular. Sizes are not compatible.\n");
+        throw PSIEXCEPTION("Matrix::apply_symmetry: simple to regular. Sizes are not compatible.\n");
     }
 
     // Create temporary matrix of proper size.
@@ -1278,7 +1282,7 @@ void Matrix::transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::sh
         ncc = n;
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->pointer()[0][0]),
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[0][0][0]),
                     nca, &(transformer->matrix_[h][0][0]), ncb,
                     0.0, &(temp.matrix_[h][0][0]), ncc);
         }
@@ -1297,6 +1301,69 @@ void Matrix::transform(const boost::shared_ptr<SimpleMatrix>& a, const boost::sh
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]),
                     nca, &(temp.matrix_[h][0][0]), ncb, 0.0, &(matrix_[h][0][0]),
+                    ncc);
+        }
+    }
+}
+
+void Matrix::remove_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer)
+{
+    // Check dimensions of the two matrices and symmetry
+    if(a->nirrep() !=  transformer->nirrep())
+        {
+            throw PSIEXCEPTION("Matrix::remove_symmetry: matrices must have same symmetry.\n");
+        }
+    if(nirrep() != 1)
+        {
+            throw PSIEXCEPTION("Matrix::remove_symmetry: result matrix must not have symmetry. \n");
+        }
+    if (ncol() != transformer->coldim(0)
+            || a->nrow() != transformer->nrow()) {
+        a->print();
+        transformer->print();
+        throw PSIEXCEPTION("Matrix::remove_symmetry: Sizes are not compatible.\n");
+    }
+
+    zero();
+
+    // Create temporary matrix of proper size.
+    Matrix temp(transformer->nirrep(), transformer->rowspi(), transformer->colspi());
+
+    char ta = 'n';
+    char tb = 'n';
+    int h, m, n, k, nca, ncb, ncc;
+
+    // Solve F = T^ M T
+
+    // temp = M T
+    for(int h=0; h<transformer->nirrep(); ++h) {
+        m = temp.rowdim(h);
+        n = temp.coldim(h);
+        k = a->coldim(h);
+        nca = k;
+        ncb = n;
+        ncc = n;
+
+        if (m && n && k) {
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[h][0][0]),
+                    nca, &(transformer->matrix_[h][0][0]), ncb,
+                    1.0, &(temp.matrix_[h][0][0]), ncc);
+        }
+    }
+
+    // F = T^ temp
+    ta = 't';
+    for (int h=0; h<transformer->nirrep(); ++h) {
+        m = nrow();
+        n = ncol();
+        k = temp.rowdim(h);
+        nca = m; //k
+        ncb = n; //k
+        ncc = n; //k
+
+        if (m && n && k) {
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]),
+                    nca, &(temp.matrix_[h][0][0]), ncb, 1.0, &(matrix_[0][0][0]),
                     ncc);
         }
     }

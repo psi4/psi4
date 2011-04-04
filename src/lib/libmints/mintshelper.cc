@@ -18,10 +18,18 @@ using namespace boost;
 
 namespace psi {
 
-void MintsHelper::init_helper()
+void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
-    psio_ = shared_ptr<PSIO>(new PSIO());
-    molecule_ = shared_ptr<Molecule>(Process::environment.molecule());
+    if (wavefunction)
+        {
+            psio_ = wavefunction->psio();
+            molecule_ = wavefunction->molecule ();
+        }
+    else
+        {
+            psio_ = shared_ptr<PSIO>(new PSIO());
+            molecule_ = shared_ptr<Molecule>(Process::environment.molecule());
+        }
 
     if (molecule_.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
@@ -36,8 +44,15 @@ void MintsHelper::init_helper()
         molecule_->print();
 
     // Read in the basis set
-    shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
-    basisset_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
+    if(wavefunction)
+        {
+            basisset_ = wavefunction->basisset();
+        }
+    else
+        {
+            shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+            basisset_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
+        }
 
     // Print the basis set
     if (print_)
@@ -65,6 +80,11 @@ MintsHelper::MintsHelper(Options & options, int print): options_(options), print
 MintsHelper::MintsHelper() : options_(Process::environment.options), print_(1)
 {
     init_helper();
+}
+
+MintsHelper::MintsHelper(boost::shared_ptr<Wavefunction> wavefunction) :options_(wavefunction->options())
+{
+    init_helper(wavefunction);
 }
 
 MintsHelper::~MintsHelper()
@@ -210,7 +230,7 @@ shared_ptr<Matrix> MintsHelper::ao_overlap()
 {
     // Overlap
     shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    shared_ptr<Matrix>       overlap_mat(factory_->create_matrix(PSIF_AO_S));
+    shared_ptr<Matrix>       overlap_mat(new Matrix(PSIF_AO_S, basisset_->nbf (), basisset_->nbf ()));
     overlap->compute(overlap_mat);
     overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
@@ -219,18 +239,16 @@ shared_ptr<Matrix> MintsHelper::ao_overlap()
 shared_ptr<Matrix> MintsHelper::ao_kinetic()
 {
     shared_ptr<OneBodyAOInt> T(integral_->ao_kinetic());
-    shared_ptr<Matrix>       kinetic_mat(factory_->create_matrix());
+    shared_ptr<Matrix>       kinetic_mat(new Matrix( basisset_->nbf (), basisset_->nbf ()));
     T->compute(kinetic_mat);
-    kinetic_mat->save(psio_, PSIF_OEI);
     return kinetic_mat;
 }
 
 shared_ptr<Matrix> MintsHelper::ao_potential()
 {
     shared_ptr<OneBodyAOInt> V(integral_->ao_potential());
-    shared_ptr<Matrix>       potential_mat(factory_->create_matrix());
+    shared_ptr<Matrix>       potential_mat(new Matrix(basisset_->nbf (), basisset_->nbf ()));
     V->compute(potential_mat);
-    potential_mat->save(psio_, PSIF_OEI);
     return potential_mat;
 }
 

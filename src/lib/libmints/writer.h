@@ -33,6 +33,19 @@ public:
     void write(const std::string& filename);
 };
 
+
+
+class NBOWriter
+{
+    boost::shared_ptr<Wavefunction> wavefunction_;
+
+public:
+    NBOWriter(boost::shared_ptr<Wavefunction> wavefunction);
+
+    void write(const std::string &filename);
+
+};
+
 }
 
 #endif // WRITER_H

@@ -3,6 +3,7 @@
 
 #include <libiwl/iwl.hpp>
 #include <vector>
+#include "wavefunction.h"
 
 namespace psi {
 
@@ -73,11 +74,13 @@ private:
 
 public:
 
-    void init_helper();
+    void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
     /// Constructor, just lines references up
     MintsHelper(Options&, int print = 1);
     /// Constructor, uses globals
     MintsHelper();
+    /// Constructor, using wavefunction
+    MintsHelper(boost::shared_ptr<Wavefunction> wavefunction);
     /// Destructor, does nothing
     ~MintsHelper();
 
