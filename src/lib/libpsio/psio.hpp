@@ -311,7 +311,7 @@ private:
     friend class AIO_Handler;
 };
 
-class AIO_Handler {
+class AIOHandler {
 private:
     /// What is the job type?
     std::queue<unsigned int> job_;
@@ -343,9 +343,9 @@ private:
     boost::mutex locked_;
 public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
-    AIO_Handler(boost::shared_ptr<PSIO> psio);
+    AIOHandler(boost::shared_ptr<PSIO> psio);
     /// Destructor
-    ~AIO_Handler();
+    ~AIOHandler();
     /// Thread object this AIO_Handler is currently running on
     boost::shared_ptr<boost::thread> get_thread();
     /// When called, synchronize will not return until all requested data has been read or written

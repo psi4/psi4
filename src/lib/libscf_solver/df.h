@@ -14,8 +14,11 @@ class FittingMetric;
 class SchwarzSieve;
 class TwoBodyAOInt;
 class PSIO;
+class AIOHandler;
 
 namespace scf {
+
+class DFHFDiskIterator;
 
 class DFHF {
 
@@ -120,16 +123,8 @@ class DFHF {
 
         // The psio object
         boost::shared_ptr<PSIO> psio_;
-        // Is the object disk initialized?
-        bool is_initialized_disk_;
-        // Buffer A for AIO
-        boost::shared_ptr<Matrix> QmnA_;
-        // Buffer B for AIO
-        boost::shared_ptr<Matrix> QmnB_;
-        // Use A or B buffer for computation
-        bool aio_bufferA_;
-        // Current iteration disk order
-        bool aio_forward_;
+        // The asynchronous, cyclic disk iterator
+        boost::shared_ptr<DFHFDiskIterator> disk_iter_;
 
         // Setup
         void common_init();
@@ -145,8 +140,6 @@ class DFHF {
         void compute_JK_block_J(double** Qmnp, int nrows, int max_rows);
         void compute_JK_block_K(double** Qmnp, int nrows, int max_rows, bool is_alpha);
 
-        // Setup the memory for USO2AO stuff
-        void initializeUSO2AO();
         // Transform C/D back to AO
         void USO2AO();
         // Transform J/K forward to USO
@@ -175,6 +168,66 @@ class DFHF {
         void form_J_DF();
         // form J and K
         void form_JK_DF();
+
+};
+
+/*!
+ * Disk iterator object for use with DFHF
+ * Uses a cyclic algorithm to provide blocks
+ *
+ */
+class DFHFDiskIterator {
+
+    // The PSIO object
+    boost::shared_ptr<PSIO> psio_;
+    // The AIOHandler object
+    boost::shared_ptr<AIOHandler> aio_;
+
+    // Buffer A
+    boost::shared_ptr<Matrix> A_;
+    // Buffer B
+    boost::shared_ptr<Matrix> B_;    
+
+    // Fast index size
+    int ntri_;
+    // Slow index total size
+    int naux_;
+    // Max rows in each block (memory purposes)
+    int max_rows_;
+    // Currnet rows
+    int current_rows_;
+
+    // How many times has next_block been called?
+    int iteration_;
+  
+    // number of blocks
+    int nblocks_; 
+    // Start row of each block
+    std::vector<int> block_starts_;
+    // Size in rows of each block
+    std::vector<int> block_sizes_;
+    // Block address order for this cycle
+    std::vector<int> blocks_;
+ 
+    // Initialize the block
+    void common_init();
+    // reset (not user called typically)
+    void reset();
+    // Post the read for a block
+    void read(boost::shared_ptr<Matrix> A, int start, int rows);
+
+public: 
+    // Opens disk
+    DFHFDiskIterator(boost::shared_ptr<PSIO>, int ntri, int naux, int max_rows);
+    // Closes disk
+    ~DFHFDiskIterator();
+
+    // Call to get a block/Post theread for the next, if needed 
+    boost::shared_ptr<Matrix> next_block();
+    // How many rows are there in the current block 
+    int current_rows() const { return current_rows_; }
+    // are we finished (not idempotent, resets)
+    bool finished();
 
 };
 
