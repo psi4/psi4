@@ -324,6 +324,10 @@ void export_mints()
             def(init<shared_ptr<Wavefunction> >()).
             def("write", &MoldenWriter::write);
 
+    class_<NBOWriter, shared_ptr<NBOWriter> >("NBOWriter", no_init).
+            def(init<shared_ptr<Wavefunction> >()).
+            def("write", &NBOWriter::write);
+
     class_<MultipoleSymmetry, shared_ptr<MultipoleSymmetry> >("MultipoleSymmetry", no_init).
             def(init<int, const boost::shared_ptr<Molecule>&,
                 const boost::shared_ptr<IntegralFactory>&,
