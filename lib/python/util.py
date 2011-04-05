@@ -40,16 +40,20 @@ def compare_matrices(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
         print "\t%s has %d irreps, but %s has %d\n." % (expected.name(), expected.nirrep(), computed.name(), computed.nirrep())
         sys.exit(1)
+    if (expected.symmetry() != computed.symmetry()):
+        print "\t%s has %d symmetry, but %s has %d\n." % (expected.name(), expected.symmetry(), computed.name(), computed.symmetry())
+        sys.exit(1)
     nirreps = expected.nirrep()
+    symmetry = expected.symmetry()
     for irrep in range(nirreps):
         if(expected.rows(irrep) != computed.rows(irrep)):
             print "\t%s has %d rows in irrep %d, but %s has %d\n." % (expected.name(), expected.rows(irrep), irrep, computed.name(), computed.rows(irrep))
             sys.exit(1)
-        if(expected.cols(irrep) != computed.cols(irrep)):
+        if(expected.cols(irrep ^ symmetry) != computed.cols(irrep ^ symmetry)):
             print "\t%s has %d columns in irrep, but %s has %d\n." % (expected.name(), expected.cols(irrep), irrep, computed.name(), computed.cols(irrep))
             sys.exit(1)
         rows = expected.rows(irrep)
-        cols = expected.cols(irrep)
+        cols = expected.cols(irrep ^ symmetry)
         failed = 0;
         for row in range(rows):
             for col in range(cols):
