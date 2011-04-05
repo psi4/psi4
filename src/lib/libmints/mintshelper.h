@@ -109,8 +109,10 @@ public:
     boost::shared_ptr<Matrix> ao_kinetic();
     /// AO Potential Integrals
     boost::shared_ptr<Matrix> ao_potential();
-    /// Vector SO Angular Momentum Integrals
+    /// Vector AO Angular Momentum Integrals
     std::vector<boost::shared_ptr<Matrix> > ao_angular_momentum();
+    /// Vector AO Nabla Integrals
+    std::vector<boost::shared_ptr<Matrix> > ao_nabla();
     /// AO Overlap Integrals
     boost::shared_ptr<Matrix> so_overlap();
     /// AO Kinetic Integrals
@@ -121,6 +123,8 @@ public:
     std::vector<boost::shared_ptr<Matrix> > so_dipole();
     /// Vector SO Nabla Integrals
     std::vector<boost::shared_ptr<Matrix> > so_nabla();
+    /// Vector SO Angular Momentum Integrals
+    std::vector<boost::shared_ptr<Matrix> > so_angular_momentum();
     /// Vector SO Quadrupole Integrals
     std::vector<boost::shared_ptr<Matrix> > so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals

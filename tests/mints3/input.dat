@@ -8,11 +8,11 @@ molecule h2o {
   h 1 1.0 2 103.1
 }
 
+input_directory = get_input_directory() + "/"                        #TEST
+
 set {
   basis sto-3g
 }
-
-input_directory = get_input_directory() + "/"                        #TEST
 
 mints = MintsHelper()
 nbf = mints.basisset().nbf()                                         #TEST
@@ -40,8 +40,6 @@ set {
   basis 6-311G**
 }
 
-input_directory = get_input_directory() + "/"                        #TEST
-
 mints = MintsHelper()
 nbf = mints.basisset().nbf()                                         #TEST
 
@@ -66,10 +64,7 @@ compare_matrices(RefX, Li[0], 13, "AO Lz")                           #TEST
 
 set {
   basis cc-pVTZ
-  puream false
 }
-
-input_directory = get_input_directory() + "/"                        #TEST
 
 mints = MintsHelper()
 nbf = mints.basisset().nbf()                                         #TEST
@@ -92,6 +87,88 @@ print_stdout("   -H2O cc-pVTZ Angular Momentum Integrals:")          #TEST
 compare_matrices(RefX, Li[0], 13, "AO Lx")                           #TEST
 compare_matrices(RefX, Li[0], 13, "AO Ly")                           #TEST
 compare_matrices(RefX, Li[0], 13, "AO Lz")                           #TEST
+
+#################################################################### #TEST
+# Test Nabla integrals                                               #TEST
+#################################################################### #TEST
+
+set {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+nbf = mints.basisset().nbf()                                         #TEST
+
+Pi = mints.ao_nabla()
+
+#Pi[0].save("Px-STO-3G.dat", False, False, True)                     #TEST
+#Pi[1].save("Py-STO-3G.dat", False, False, True)                     #TEST
+#Pi[2].save("Pz-STO-3G.dat", False, False, True)                     #TEST
+
+RefX = Matrix(nbf, nbf)                                              #TEST
+RefY = Matrix(nbf, nbf)                                              #TEST
+RefZ = Matrix(nbf, nbf)                                              #TEST
+
+RefX.load(input_directory + "Px-STO-3G.dat")                         #TEST
+RefY.load(input_directory + "Py-STO-3G.dat")                         #TEST
+RefZ.load(input_directory + "Pz-STO-3G.dat")                         #TEST
+
+print_stdout("   -H2O STO-3G Nabla Integrals:")                      #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Px")                           #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Py")                           #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Pz")                           #TEST
+
+set {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+nbf = mints.basisset().nbf()                                         #TEST
+
+Pi = mints.ao_nabla()
+
+#Pi[0].save("Px-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[1].save("Py-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[2].save("Pz-6-311Gss.dat", False, False, True)                   #TEST
+
+RefX = Matrix(nbf, nbf)                                              #TEST
+RefY = Matrix(nbf, nbf)                                              #TEST
+RefZ = Matrix(nbf, nbf)                                              #TEST
+
+RefX.load(input_directory + "Px-6-311Gss.dat")                       #TEST
+RefY.load(input_directory + "Py-6-311Gss.dat")                       #TEST
+RefZ.load(input_directory + "Pz-6-311Gss.dat")                       #TEST
+
+print_stdout("   -H2O 6-311G** Nabla Integrals:")                    #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Px")                           #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Py")                           #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Pz")                           #TEST
+
+set {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+nbf = mints.basisset().nbf()                                         #TEST
+
+Pi = mints.ao_nabla()
+
+#Pi[0].save("Px-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[1].save("Py-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[2].save("Pz-cc-pVTZ.dat", False, False, True)                    #TEST
+
+RefX = Matrix(nbf, nbf)                                              #TEST
+RefY = Matrix(nbf, nbf)                                              #TEST
+RefZ = Matrix(nbf, nbf)                                              #TEST
+
+RefX.load(input_directory + "Px-cc-pVTZ.dat")                        #TEST
+RefY.load(input_directory + "Py-cc-pVTZ.dat")                        #TEST
+RefZ.load(input_directory + "Pz-cc-pVTZ.dat")                        #TEST
+
+print_stdout("   -H2O cc-pVTZ Nabla Integrals:")                     #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Px")                           #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Py")                           #TEST
+compare_matrices(RefX, Pi[0], 13, "AO Pz")                           #TEST
 
 # There shouldn't be anything to clean
 clean()
