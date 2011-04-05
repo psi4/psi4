@@ -41,6 +41,28 @@ class MultipoleSymmetry
     std::string form_suffix(int x, int y, int z);
 
 public:
+    enum OperatorSymmetry {
+        Dipole = 1,
+        Quadrupole = 2,
+
+        L = -1,
+        AngularMomentum = -1,
+        P = -2,
+        Nabla = -2
+    };
+
+    /** Constructor
+     * Constructs an object that determines the symmetry of the different
+     * components of the order-th multipole. Orders with negative values
+     * have a special meaning (see OperatorSymmetry enum)
+     *
+     * @param order Order of the multipole (1 = dipole, 2 = quadrupole, etc.)
+     * @param mol Molecule the the multipole will be computed for. Needed to obtain
+     *            point group object.
+     * @param ints Integral factory. Needed for creation of ShellRotation objects.
+     * @param mats Matrix factory. Used by create_matrices to create matrices of the
+     *             proper size and symmetry.
+     */
     MultipoleSymmetry(int order,
                       const boost::shared_ptr<Molecule>& mol,
                       const boost::shared_ptr<IntegralFactory>& ints,

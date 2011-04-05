@@ -96,6 +96,7 @@ void export_mints()
             def("rows", &Matrix::rowdim).
             def("cols", &Matrix::coldim).
             def("nirrep", &Matrix::nirrep).
+            def("symmetry", &Matrix::symmetry).
             def("identity", &Matrix::identity).
             def("copy_lower_to_upper", &Matrix::copy_lower_to_upper).
             def("copy_upper_to_lower", &Matrix::copy_upper_to_lower).
@@ -143,6 +144,7 @@ void export_mints()
     class_<MintsHelper, shared_ptr<MintsHelper> >("MintsHelper").
             def("basisset", &MintsHelper::basisset).
             def("sobasisset", &MintsHelper::sobasisset).
+            def("factory", &MintsHelper::factory).
             def("ao_overlap", &MintsHelper::ao_overlap).
             def("ao_kinetic", &MintsHelper::ao_kinetic).
             def("ao_potential", &MintsHelper::ao_potential).

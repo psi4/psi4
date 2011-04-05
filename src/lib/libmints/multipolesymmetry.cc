@@ -12,43 +12,68 @@ MultipoleSymmetry::MultipoleSymmetry(int order,
                                      const boost::shared_ptr<MatrixFactory>& mats)
     : order_(order), molecule_(mol), integral_(ints), matrix_(mats)
 {
-    int ncart = INT_NCART(order_);
-    component_symmetry_ = new int[ncart];
-    memset(component_symmetry_, 0, sizeof(int)*ncart);
+    // Nabla operator has same symmetry as dipole
+    if (order_ == P)
+        order_ = 1;
 
-    CharacterTable ct = molecule_->point_group()->char_table();
-    SymmetryOperation so;
-    int nirrep = ct.nirrep();
+    if (order_ > 0) {
+        int ncart = INT_NCART(order_);
+        component_symmetry_ = new int[ncart];
+        memset(component_symmetry_, 0, sizeof(int)*ncart);
 
-    double *t = new double[ncart];
+        CharacterTable ct = molecule_->point_group()->char_table();
+        SymmetryOperation so;
+        int nirrep = ct.nirrep();
 
-    for (int irrep=0; irrep<nirrep; ++irrep) {
-        IrreducibleRepresentation gamma = ct.gamma(irrep);
+        double *t = new double[ncart];
 
-        memset(t, 0, sizeof(double)*ncart);
+        for (int irrep=0; irrep<nirrep; ++irrep) {
+            IrreducibleRepresentation gamma = ct.gamma(irrep);
 
-        // Apply the projection
-        for (int G=0; G<nirrep; ++G) {
-            SymmetryOperation so = ct.symm_operation(G);
-            ShellRotation rr(order_, so, integral_.get(), false);
+            memset(t, 0, sizeof(double)*ncart);
 
-            // rr(xyz, xyz) tells us how the orbitals transform in this
-            // symmetry operation, then we multiply by the character in
-            // the irrep
+            // Apply the projection
+            for (int G=0; G<nirrep; ++G) {
+                SymmetryOperation so = ct.symm_operation(G);
+                ShellRotation rr(order_, so, integral_.get(), false);
+
+                // rr(xyz, xyz) tells us how the orbitals transform in this
+                // symmetry operation, then we multiply by the character in
+                // the irrep
+                for (int xyz=0; xyz<ncart; ++xyz) {
+                    t[xyz] += rr(xyz, xyz) * gamma.character(G) / nirrep;
+                }
+            }
+
+            // Print out t
             for (int xyz=0; xyz<ncart; ++xyz) {
-                t[xyz] += rr(xyz, xyz) * gamma.character(G) / nirrep;
+                if (t[xyz] != 0) {
+                    component_symmetry_[xyz]= irrep;
+                }
             }
         }
 
-        // Print out t
-        for (int xyz=0; xyz<ncart; ++xyz) {
-            if (t[xyz] != 0) {
-                component_symmetry_[xyz]= irrep;
-            }
-        }
+        delete[] t;
     }
+    else if (order_ == L) {
+        // Angular momentum operator is a rotation operator
+        // so symmetry of Lz is Lx ^ Ly which can
+        // come from quadrupole
+        MultipoleSymmetry quad(2, mol, ints, mats);
 
-    delete[] t;
+        // Make sure order is 1 for the other routines in this class.
+        order_ = 1;
+
+        int n = 3;
+        component_symmetry_ = new int[n];
+
+        component_symmetry_[0] = quad.component_symmetry(4);  // Lx === yz
+        component_symmetry_[1] = quad.component_symmetry(2);  // Ly === xz
+        component_symmetry_[2] = quad.component_symmetry(1);  // Lz === xy
+    }
+    else {
+        throw PSIEXCEPTION("MultipoleSymmetry: Don't understand the multipole order given.");
+    }
 }
 
 MultipoleSymmetry::~MultipoleSymmetry()

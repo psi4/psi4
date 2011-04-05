@@ -1546,7 +1546,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             int count=0;
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
-                    for (int j=0; j<colspi_[h]; ++j) {
+                    for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-14) {
                             count++;
                         }
@@ -1556,7 +1556,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             fprintf(out, "%5d\n", count);
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
-                    for (int j=0; j<colspi_[h]; ++j) {
+                    for (int j=0; j<colspi_[h^symmetry_]; ++j) {
                         if (fabs(matrix_[h][i][j]) > 1.0e-14) {
                             fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
@@ -1735,8 +1735,11 @@ void Matrix::load(const std::string &filename)
     regex symmetry_line("^\\s*symmetry\\s*(\\d+)\\s*", regbase::icase);
     if (regex_match(lines[1], match, symmetry_line))
         infile_symm = str_to_int(match[1]);
-    if (infile_symm != symmetry_)
-        throw PSIEXCEPTION("Matrix::load: File symmetry does not match matrix symmetry.");
+    if (infile_symm != symmetry_) {
+        release();
+        symmetry_ = infile_symm;
+        alloc();
+    }
 
     // Third line is number of nonzero elements in the matrix.
     int infile_nonzero=0;
@@ -1771,7 +1774,7 @@ void Matrix::load(const std::string &filename)
             throw PSIEXCEPTION("Matrix::load: Irrep number is too large:\n" + lines[elem+3]);
         if (m >= rowspi_[h])
             throw PSIEXCEPTION("Matrix::load: Row number is too large:\n" + lines[elem+3]);
-        if (n >= colspi_[h])
+        if (n >= colspi_[h^symmetry_])
             throw PSIEXCEPTION("Matrix::load: Column number is too large:\n" + lines[elem+3]);
 
         // Set the data

@@ -88,6 +88,8 @@ public:
     boost::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.
     boost::shared_ptr<SOBasisSet> sobasisset() const;
+    /// Matrix factory being used
+    boost::shared_ptr<MatrixFactory> factory() const;
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
