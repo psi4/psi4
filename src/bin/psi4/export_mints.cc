@@ -153,7 +153,9 @@ void export_mints()
             def("so_dipole", &MintsHelper::so_dipole).
             def("so_quadrupole", &MintsHelper::so_quadrupole).
             def("so_traceless_quadrupole", &MintsHelper::so_traceless_quadrupole).
+            def("ao_nabla", &MintsHelper::ao_nabla).
             def("so_nabla", &MintsHelper::so_nabla).
+            def("so_angular_momentum", &MintsHelper::so_angular_momentum).
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum).
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);

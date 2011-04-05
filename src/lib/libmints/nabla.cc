@@ -7,7 +7,6 @@
 using namespace psi;
 using namespace boost;
 
-// Initialize overlap_recur_ to +1 basis set angular momentum, +1 on each center is sufficient
 // to compute the Nabla derivatives
 NablaInt::NablaInt(std::vector<SphericalTransform>& spherical_transforms,
                    shared_ptr<BasisSet> bs1,

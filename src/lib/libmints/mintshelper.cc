@@ -381,6 +381,7 @@ std::vector<shared_ptr<Matrix> > MintsHelper::so_traceless_quadrupole()
 
     return quadrupole;
 }
+
 std::vector<shared_ptr<Matrix> > MintsHelper::so_nabla()
 {
     // The matrix factory can create matrices of the correct dimensions...
@@ -388,7 +389,19 @@ std::vector<shared_ptr<Matrix> > MintsHelper::so_nabla()
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> nabla = msymm.create_matrices("SO Nabla");
 
-    // Jet, here's a stub
+    throw NotImplementedException("MintsHelper::so_nabla: Are you trying to kill me?");
+
+    return nabla;
+}
+
+std::vector<shared_ptr<Matrix> > MintsHelper::so_angular_momentum()
+{
+    // The matrix factory can create matrices of the correct dimensions...
+    MultipoleSymmetry msymm(1, molecule_, integral_, factory_);
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> nabla = msymm.create_matrices("SO Nabla");
+
+    throw NotImplementedException("MintsHelper::so_angular_momentum: Are you trying to kill me?");
 
     return nabla;
 }
@@ -406,6 +419,21 @@ std::vector<shared_ptr<Matrix> > MintsHelper::ao_angular_momentum()
     ints->compute(angmom);
 
     return angmom;
+}
+
+std::vector<shared_ptr<Matrix> > MintsHelper::ao_nabla()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> nabla;
+
+    nabla.push_back(SharedMatrix(new Matrix("AO Px", basisset_->nbf(), basisset_->nbf())));
+    nabla.push_back(SharedMatrix(new Matrix("AO Py", basisset_->nbf(), basisset_->nbf())));
+    nabla.push_back(SharedMatrix(new Matrix("AO Pz", basisset_->nbf(), basisset_->nbf())));
+
+    shared_ptr<OneBodyAOInt> ints(integral_->ao_nabla());
+    ints->compute(nabla);
+
+    return nabla;
 }
 
 }
