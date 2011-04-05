@@ -182,23 +182,45 @@ NBOWriter::NBOWriter(boost::shared_ptr<Wavefunction> wavefunction)
 
 void NBOWriter::write(const std::string &filename)
 {
+    int pure_order[][7] = {
+        { 1, 0, 0, 0, 0, 0, 0},      // s
+        { 101, 102, 103, 0, 0, 0, 0}, // p
+        // z2  xz   yz  x2-y2 xy
+        { 255, 252, 253, 254, 251, 0, 0}, // d
+        //z(z2-r2), x(z2-r2), y(z2-r2) z(x2-y2), xyz, x(x2-y2), y(x2-y2)
+        { 351, 352, 353, 354, 355, 356, 357 } //f
+    };
+
+    SharedMatrix sotoao = wavefunction_->sobasisset ()->petitelist()->sotoao();
+
     FILE *file47 = fopen(filename.c_str(), "a");
 
     //Get the basis set and molecule from the wavefuntion
     BasisSet& basisset = *wavefunction_->basisset().get();
     Molecule& mol = *basisset.molecule().get();
 
+    //NBO can only handle up to f functions
+    if( basisset.max_am () > 3)
+        {
+            throw PSIEXCEPTION("NBO cannot handle angular momentum above f functions. \n");
+        }
     //print $GENNBO section of file
     //BOHR indicates atomic units for the coordinates
     //OPEN indicates that we'll provide separate alpha and beta matrices
-    fprintf(file47, "$GENNBO NATOMS = %d NBAS = %d BOHR OPEN $END\n", mol.natom(), basisset.nbf());
+    fprintf(file47, "$GENNBO NATOMS = %d NBAS = %d BOHR BODM ", mol.natom(), basisset.nbf());
 
-    //print NBO section of file47
+    //To make this more user-friendly in the case of RHF wavefunctions...
+    if(wavefunction_->restricted() )
+        fprintf(file47, "OPEN $END\n");
+    else
+        fprintf(file47, "$END\n");
+
+    //print NBO section of file47; user can modify this to suit their needs
     fprintf(file47, "$NBO       $END\n");
 
     //Now print out the molecule
     fprintf(file47, "$COORD\n");
-    fprintf(file47, "GENNBO expects one comment line here.\n");
+    fprintf(file47, "GENNBO expects one comment line here. So, here's a comment line.\n");
     for( int i =0; i< mol.natom(); i++)
         {
             //the second mol.Z() should be modified when pseudopotentials are implemented
@@ -227,20 +249,22 @@ void NBOWriter::write(const std::string &filename)
         {
             shared_ptr<GaussianShell> gshell(basisset.shell(i));
             int nfns = gshell->nfunction(); //get number of functions in shell
-            components.set(0, i, (double)nfns);
+            components.set(0, i, nfns);
             int angm = gshell->am(); //get angular momentum of shell
-            angmom.set(0, i, (double)angm);
+            angmom.set(0, i, angm);
             for( int j = 0; j< nfns; j++)
                 {
-                    centers.set (0, fnindex, (double)gshell->ncenter());
-                    if(gshell->is_pure())
-                        labels.set (0, fnindex, angm*100+51+j);
+                    centers.set (0, fnindex, gshell->ncenter());
+                    if(gshell->is_pure()) {
+                        //fprintf(outfile, "fnindex %d pure_order[%d][%d] %d\n", fnindex, angm, j, pure_order[angm][j]);
+                        labels.set (0, fnindex, pure_order[angm][j]);
+                    }
                     else
                         labels.set (0, fnindex, angm*100+j+1);
                     fnindex++;
                 }
             int nshellprim = gshell->nprimitive();
-            nprimitives.set (0, i, (double)nshellprim);
+            nprimitives.set (0, i, nshellprim);
             for( int k =0; k < nshellprim; k++)
                 {
                     exponents.set(0, primindex, gshell->exp(k));
@@ -255,16 +279,16 @@ void NBOWriter::write(const std::string &filename)
     fprintf(file47, "CENTER = ");
     for( int i =0; i < basisset.nbf(); i++)
         {
-            fprintf(file47, "%d, ", (int)centers.get(0, i)+1);
+            fprintf(file47, "%5d      ", (int)centers.get(0, i)+1);
             if((i+1)%10 == 0)
                 fprintf(file47, "\n");
         }
 
     //The LABEL section
-    fprintf(file47, "LABEL = ");
+    fprintf(file47, "\nLABEL = ");
     for( int i =0; i < basisset.nbf(); i++)
         {
-            fprintf(file47, "%d, ", (int)labels.get(0, i));
+            fprintf(file47, "%5d      ", (int)labels.get(0, i));
             if((i+1)%10 == 0)
                 fprintf(file47, "\n");
         }
@@ -279,71 +303,72 @@ void NBOWriter::write(const std::string &filename)
     fprintf(file47, "NCOMP = ");
     for(int i = 0; i < nshells; i++)
         {
-            fprintf(file47, "%d, ", (int)components.get(0, i));
+            fprintf(file47, "%5d      ", (int)components.get(0, i));
             if((i+1)%10 == 0)
                 fprintf(file47, "\n");
         }
+    //List the number of primitives per shell
     fprintf(file47, "\nNPRIM = ");
     for(int i =0; i < nshells; i++)
         {
-            fprintf(file47, "%d, ", (int)nprimitives.get(0, i));
+            fprintf(file47, "%d      ", (int)nprimitives.get(0, i));
             if((i+1)%10 == 0)
                 fprintf(file47, "\n");
         }
-
+    //location of the first exponent for each shell
     fprintf(file47, "\nNPTR = ");
     int ptr = 1;
     for( int i =0; i < nshells; i++)
         {
-            fprintf(file47, "%d, ", ptr);
+            fprintf(file47, "%d      ", ptr);
             ptr += nprimitives.get(0, i);
             if((i+1)%10 == 0)
                 fprintf(file47, "\n");
 
         }
-    fprintf(file47, "\nEXP = ");
+    //The exponents
+    fprintf(file47, "\nEXP = \n");
     for( int i =0; i < nprim; i++)
         {
-            fprintf(file47, "%20.10f, ", exponents.get(0, i));
+            fprintf(file47, "%20.10f ", exponents.get(0, i));
             if((i+1)%4 == 0)
                 fprintf(file47, "\n");
         }
-
-    fprintf(file47, "\nCS = ");
+    //Coefficients for s functions
+    fprintf(file47, "\nCS = \n");
     for( int i =0; i < nprim; i++)
         {
-            fprintf(file47, "%20.10f, ", coefficient.get (0, 0, i));
+            fprintf(file47, "%20.10f ", coefficient.get (0, 0, i));
             if((i+1)%4 == 0)
                 fprintf(file47, "\n");
         }
-
-    fprintf(file47, "\nCP = ");
+    //Coefficients for p functions
+    fprintf(file47, "\nCP = \n");
     for( int i =0; i < nprim; i++)
         {
-            fprintf(file47, "%20.10f, ", coefficient.get (0, 1, i));
+            fprintf(file47, "%20.10f ", coefficient.get (0, 1, i));
             if((i+1)%4 == 0)
                 fprintf(file47, "\n");
         }
-
-    fprintf(file47, "\nCD = ");
+    //coefficients for d functions
+    fprintf(file47, "\nCD = \n");
     for( int i =0; i < nprim; i++)
         {
-            fprintf(file47, "%20.10f, ", coefficient.get (0, 2, i));
+            fprintf(file47, "%20.10f ", coefficient.get (0, 2, i));
             if((i+1)%4 == 0)
                 fprintf(file47, "\n");
         }
-
-    fprintf(file47, "\nCF = ");
+    //coefficients for f functions
+    fprintf(file47, "\nCF = \n");
     for( int i =0; i < nprim; i++)
         {
-            fprintf(file47, "%20.10f, ", coefficient.get (0, 3, i));
+            fprintf(file47, "%20.10f ", coefficient.get (0, 3, i));
             if((i+1)%4 == 0)
                 fprintf(file47, "\n");
         }
     fprintf(file47, "\n$END");
 
     //Matrix transformation information we'll need
-    SharedMatrix sotoao = wavefunction_->sobasisset ()->petitelist()->sotoao();
     int nbf = basisset.nbf ();
 
     //Now we need the overlap matrix in the AO basis
@@ -355,13 +380,12 @@ void NBOWriter::write(const std::string &filename)
         {
             for(int j =0; j < nbf; j++)
                 {
-                    fprintf(file47, "%20.10f, ", overlap->get (0, i, j));
+                    fprintf(file47, "%20.10f ", overlap->get (0, i, j));
                     if(((nbf*i+j+1)%4)==0)
                         fprintf(file47, "\n");
                 }
         }
-    fprintf(file47, "\n$END");
-
+    fprintf(file47, "\n$END"); 
 
     //Alpha Density Matrix
     SharedMatrix soalphadens = wavefunction_->Da();
@@ -369,31 +393,47 @@ void NBOWriter::write(const std::string &filename)
     alphadens->remove_symmetry (soalphadens, sotoao);
     //Beta density
     SharedMatrix betadens(new Matrix(nbf, nbf));
-    if(wavefunction_->restricted ())
-        betadens->copy(alphadens);
-    else
-        {
-        SharedMatrix sobetadens = wavefunction_->Db();
-        betadens->remove_symmetry (sobetadens, sotoao);
-        }
+    SharedMatrix sobetadens = wavefunction_->Db();
+    betadens->remove_symmetry (sobetadens, sotoao);
     //Now print the density matrix
     fprintf(file47, "\n$DENSITY\n ");
-    for(int i =0; i < nbf; i++)
+    if(wavefunction_->restricted ())
         {
-            for(int j =0; j < nbf; j++)
+            SharedMatrix density(new Matrix(nbf, nbf));
+            density->copy (alphadens);
+            density->add (betadens);
+            for( int i =0; i < nbf; i++)
                 {
-                    fprintf(file47, "%20.10f, ", alphadens->get (0, i, j));
-                    if(((nbf*i+j+1)%4)==0)
-                        fprintf(file47, "\n");
+                    for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", density->get(0, i, j));
+                            if(((nbf*i+j+1)%4)==0)
+                                fprintf(file47, "\n");
+                        }
                 }
         }
-    for(int i =0; i < nbf; i++)
+    else
         {
-            for(int j =0; j < nbf; j++)
+            int count = 0;
+            for(int i =0; i < nbf; i++)
                 {
-                    fprintf(file47, "%20.10f, ", betadens->get (0, i, j));
-                    if(((nbf*i+j+1)%4)==0)
-                        fprintf(file47, "\n");
+                     for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", alphadens->get (0, i, j));
+                            count++;
+                            if(count%4 ==0)
+                            fprintf(file47, "\n");
+                        }
+                }
+            for(int i =0; i < nbf; i++)
+                {
+                    for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", betadens->get (0, i, j));
+                            count++;
+                            if(count%4 ==0)
+                                fprintf(file47, "\n");
+                        }
                 }
         }
     fprintf(file47, "\n$END");
@@ -403,33 +443,47 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix alphasofock = wavefunction_->Fa();
     SharedMatrix alphafock(new Matrix(nbf, nbf));
     alphafock->remove_symmetry (alphasofock, sotoao);
-    //Beta Fock
-    SharedMatrix betafock(new Matrix(nbf, nbf));
-    if(wavefunction_->restricted ())
-        betafock->copy(alphafock);
-    else
-        {
-            SharedMatrix betasofock = wavefunction_->Fb();
-            betafock->remove_symmetry(betasofock, sotoao);
-        }
     //Print the Fock matrix
     fprintf(file47, "\n$FOCK\n ");
-    for(int i =0; i < nbf; i++)
+    if(wavefunction_->restricted ())
         {
-            for(int j =0; j < nbf; j++)
+            for(int i = 0; i < nbf; i++)
                 {
-                    fprintf(file47, "%20.10f, ", alphafock->get (0, i, j));
-                    if(((nbf*i+j+1)%4)==0)
-                        fprintf(file47, "\n");
+                    for(int j = 0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", alphafock->get (0, i, j));
+                            if(((nbf*i+j+1)%4)==0)
+                                fprintf(file47, "\n");
+                        }
                 }
         }
-    for(int i =0; i < nbf; i++)
+
+    else
         {
-            for(int j =0; j < nbf; j++)
+            //Beta Fock
+            SharedMatrix betafock(new Matrix(nbf, nbf));
+            SharedMatrix betasofock = wavefunction_->Fb();
+            betafock->remove_symmetry(betasofock, sotoao);
+            int count=0;
+            for(int i =0; i < nbf; i++)
                 {
-                    fprintf(file47, "%20.10f, ", betafock->get (0, i, j));
-                    if(((nbf*i+j+1)%4)==0)
-                        fprintf(file47, "\n");
+                    for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", alphafock->get (0, i, j));
+                            count++;
+                            if(count%4 ==0)
+                                fprintf(file47, "\n");
+                        }
+                }
+            for(int i =0; i < nbf; i++)
+                {
+                    for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", betafock->get (0, i, j));
+                            count++;
+                            if(count%4 ==0)
+                                fprintf(file47, "\n");
+                        }
                 }
         }
     fprintf(file47, "\n$END");
@@ -438,46 +492,53 @@ void NBOWriter::write(const std::string &filename)
     SharedMatrix soalphac = wavefunction_->Ca();
     SharedMatrix alphac(new Matrix(nbf, nbf));
     alphac->gemm(true, false, 1.00, sotoao, soalphac, 0.00);
-    //Beta AO->MO transformation
-    SharedMatrix betac(new Matrix(nbf, nbf));
-    if(wavefunction_->restricted ())
-        betac->copy (alphac);
-    else
-        {
-            SharedMatrix sobetac = wavefunction_->Cb();
-            betac->gemm(true, false, 1.00, sotoao, sobetac, 0.00);
-        }
-    //Print the AO->MO coefficients
+
     fprintf(file47, "\n$LCAOMO\n ");
-    for(int i =0; i < nbf; i++)
+    if(wavefunction_->restricted ())
         {
-            for(int j =0; j < nbf; j++)
+            for(int i = 0; i < nbf; i++)
                 {
-                    fprintf(file47, "%20.10f, ", alphac->get (0, i, j));
-                    if(((nbf*i+j+1)%4)==0)
-                        fprintf(file47, "\n");
+                    for(int j = 0; j < nbf; j++)
+                        {
+                            fprintf(file47, "20.10f ", alphac->get (0, i, j));
+                            if(((nbf*i+j+1)%4)==0)
+                                fprintf(file47, "\n");
+                        }
                 }
         }
-    for(int i =0; i < nbf; i++)
+
+    else
         {
-            for(int j =0; j < nbf; j++)
+            //Beta AO->MO transformation
+            SharedMatrix betac(new Matrix(nbf, nbf));
+            SharedMatrix sobetac = wavefunction_->Cb();
+            betac->gemm(true, false, 1.00, sotoao, sobetac, 0.00);
+
+            //Print the AO->MO coefficients
+            int count = 0;
+            for(int i =0; i < nbf; i++)
                 {
-                    fprintf(file47, "%20.10f, ", betac->get (0,   i, j));
-                    if(((nbf*i+j+1)%4)==0)
-                        fprintf(file47, "\n");
+                    for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", alphac->get (0, i, j));
+                            count++;
+                            if(count%4==0)
+                                fprintf(file47, "\n");
+                        }
+                }
+            for(int i =0; i < nbf; i++)
+                {
+                    for(int j =0; j < nbf; j++)
+                        {
+                            fprintf(file47, "%20.10f ", betac->get (0,   i, j));
+                            count++;
+                            if(count%4 ==0)
+                                fprintf(file47, "\n");
+                        }
                 }
         }
     fprintf(file47, "\n$END\n");
-
-
-
-
-
-
-
     fclose(file47);
-
-
 }
 
 
