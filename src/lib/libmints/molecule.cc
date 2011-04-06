@@ -67,6 +67,7 @@ namespace psi {
     boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal);
     boost::regex Molecule::fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
     boost::regex Molecule::orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
+    boost::regex Molecule::comCommand_("\\s*no_?com\\s*", boost::regbase::normal| boost::regbase::icase);
     boost::regex Molecule::symmetry_("\\s*symmetry[\\s=]+(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
     boost::smatch Molecule::reMatches_;
 
@@ -147,6 +148,7 @@ Molecule::Molecule():
     units_(Angstrom),
     input_units_to_au_(1.0/_bohr2angstroms),
     fix_orientation_(false),
+    move_to_com_(true),
     charge_specified_(false),
     multiplicity_specified_(false),
     name_("default")
@@ -171,7 +173,8 @@ Molecule& Molecule::operator=(const Molecule& other)
     fragment_charges_        = other.fragment_charges_;
     fragment_multiplicities_ = other.fragment_multiplicities_;
     fix_orientation_         = other.fix_orientation_;
-    molecular_charge_         = other.molecular_charge_;
+    move_to_com_             = other.move_to_com_;
+    molecular_charge_        = other.molecular_charge_;
     multiplicity_            = other.multiplicity_;
     units_                   = other.units_;
     input_units_to_au_       = other.input_units_to_au_;
@@ -958,6 +961,10 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             mol->set_orientation_fixed(true);
             lines.erase(lines.begin() + lineNumber);
         }
+        else if(regex_match(lines[lineNumber], reMatches, comCommand_)) {
+            mol->move_to_com_ = false;
+            lines.erase(lines.begin() + lineNumber);
+        }
         else if(regex_match(lines[lineNumber], reMatches, symmetry_)) {
             mol->symmetry_from_input_ = boost::to_lower_copy(reMatches[1].str());
             lines.erase(lines.begin() + lineNumber);
@@ -1155,7 +1162,8 @@ void Molecule::update_geometry()
         }
     }
 
-    move_to_com();
+    if (move_to_com_)
+        move_to_com();
 
     // If the no_reorient command was given, don't reorient
     if (fix_orientation_ == false) {
@@ -1383,12 +1391,12 @@ void Molecule::print() const
 void Molecule::save_xyz(const std::string& filename) const
 {
     FILE* fh = fopen(filename.c_str(), "w");
-    
+
     fprintf(fh,"%d\n\n", natom());
 
     for (int i = 0; i < natom(); i++) {
         Vector3 geom = atoms_[i]->compute();
-        fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), geom[0], geom[1], geom[2]);  
+        fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), geom[0], geom[1], geom[2]);
     }
 
     fclose(fh);

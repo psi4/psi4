@@ -80,6 +80,8 @@ protected:
 
     /// Reorient or not?
     bool fix_orientation_;
+    /// Move to center of mass or not?
+    bool move_to_com_;
     /// Whether the user specified the charge, or default was used
     bool charge_specified_;
     /// Whether the user spefified the multiplicity, or default was used
@@ -147,6 +149,8 @@ protected:
     static boost::regex fragmentMarker_;
     /// A regular expression to test if a string is a no_?reorient flag
     static boost::regex orientCommand_;
+    /// A regular expression to test if a string is a no_?com flag
+    static boost::regex comCommand_;
     /// A regular expression to test if a string is a symmetry %s flag
     static boost::regex symmetry_;
 
