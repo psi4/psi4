@@ -312,19 +312,15 @@ void OEProp::compute_dipole()
     de[1] += ndip->get(0, 1);
     de[2] += ndip->get(0, 2);
 
-    fprintf(outfile," Total Dipoles: (a.u.)\n\n");
-    fprintf(outfile,"\tX: %lf   Y: %lf   Z: %lf\n", de[0], de[1], de[2]);
-    fprintf(outfile,"\tTotal:\t%lf a.u.\n", de.norm());
-    fprintf(outfile,"\t\t%lf Debye\n", de.norm()*_dipmom_au2debye);
+    fprintf(outfile," Total Dipoles: (a.u.)\n");
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n", de[0], de[1], de[2]);
+    fprintf(outfile,"    Total:     %10.4lf a.u.", de.norm());
+    fprintf(outfile,"  %10.4lf Debye\n\n", de.norm()*_dipmom_au2debye);
 
     fflush(outfile);
 }
 void OEProp::compute_quadrupole()
 {
-    fprintf(outfile, " CARTESIAN MULTIPOLE ANALYSIS:\n\n");
-
-    // Awesome code goes here.
-
     shared_ptr<Molecule> mol = basisset_->molecule();
     shared_ptr<Matrix> Da;
     shared_ptr<Matrix> Db;
@@ -339,26 +335,18 @@ void OEProp::compute_quadrupole()
 
     // Form the one-electron integral matrices from the matrix factory
     //    parameters: 1 (multipole order: 1=dipole, 2=quadrupole, etc.)
-    MultipoleSymmetry dipsymm (1, mol, integral_, factory_);
     MultipoleSymmetry quadsymm(2, mol, integral_, factory_);
 
     // Create a vector of matrices with the proper symmetry
-    std::vector<SharedMatrix> so_Dpole = dipsymm.create_matrices("SO Dipole");
     std::vector<SharedMatrix> so_Qpole = quadsymm.create_matrices("SO Quadrupole");
 
     // Form the one-electron integral objects from the integral factory
-    shared_ptr<OneBodySOInt> sodOBI(integral_->so_dipole());
     shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
 
     // Compute multipole moment integrals
-    sodOBI->compute(so_Dpole);
     soqOBI->compute(so_Qpole);
 
     // Each multipole integral needs to be dotted with the SO Density
-    SimpleVector de(3);
-    de[0] = Da->vector_dot(so_Dpole[0]) + Db->vector_dot(so_Dpole[0]);
-    de[1] = Da->vector_dot(so_Dpole[1]) + Db->vector_dot(so_Dpole[1]);
-    de[2] = Da->vector_dot(so_Dpole[2]) + Db->vector_dot(so_Dpole[2]);
     SimpleVector qe(6);
     qe[0] = Da->vector_dot(so_Qpole[0]) + Db->vector_dot(so_Qpole[0]);
     qe[1] = Da->vector_dot(so_Qpole[1]) + Db->vector_dot(so_Qpole[1]);
@@ -368,10 +356,6 @@ void OEProp::compute_quadrupole()
     qe[5] = Da->vector_dot(so_Qpole[5]) + Db->vector_dot(so_Qpole[5]);
 
     // Add in nuclear contribution
-    SharedVector ndip = mol->nuclear_dipole_contribution();
-    de[0] += ndip->get(0, 0);
-    de[1] += ndip->get(0, 1);
-    de[2] += ndip->get(0, 2);
     SharedVector nquad = mol->nuclear_quadrupole_contribution();
     qe[0] += nquad->get(0, 0);
     qe[1] += nquad->get(0, 1);
@@ -381,16 +365,7 @@ void OEProp::compute_quadrupole()
     qe[5] += nquad->get(0, 5);
 
     // Print multipole components
-    fprintf(outfile, " Dipole Moment: (a.u.)\n");
-    fprintf(outfile, "     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", \
-       de[0], de[1], de[2], de.magnitude());
-
-    double dfac = _dipmom_au2debye;
-    fprintf(outfile, " Dipole Moment: (Debye)\n");
-    fprintf(outfile, "     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", \
-       de[0]*dfac, de[1]*dfac, de[2]*dfac, de.magnitude()*dfac);
-
-    dfac = _dipmom_au2debye * _bohr2angstroms;
+    double dfac = _dipmom_au2debye * _bohr2angstroms;
     fprintf(outfile, " Quadrupole Moments: (Debye Ang)\n");
     fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
     fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
@@ -430,7 +405,7 @@ void OEProp::compute_mo_extents()
 }
 void OEProp::compute_mulliken_charges()
 {
-    fprintf(outfile, "\n\n Mulliken Charges [a.u.]:\n\n");
+    fprintf(outfile, " Mulliken Charges: (a.u.)\n");
 
     shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -499,7 +474,7 @@ void OEProp::compute_mulliken_charges()
         nuc += (double) mol->Z(A);
    }
 
-    fprintf(outfile, "\n  Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
+    fprintf(outfile, "\n   Total alpha = %8.5f, Total beta = %8.5f, Total charge = %8.5f\n", \
         suma, sumb, nuc - suma - sumb);
 
 //    Free memory
