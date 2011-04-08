@@ -145,7 +145,10 @@ void AIOHandler::call_aio()
 
   while (job_.size() > 0) {
     lock.unlock();
-    if (job_.front() == 1) { 
+    int jobtype = job_.front();
+
+    if (jobtype == 1) { 
+
       psio_->read(unit_.front(),key_.front(),buffer_.front(),size_.front(),
         start_.front(),end_.front());
 
@@ -159,7 +162,7 @@ void AIOHandler::call_aio()
       end_.pop();
       lock.unlock();
     }
-    else if (job_.front() == 2) {
+    else if (jobtype == 2) {
       psio_->write(unit_.front(),key_.front(),buffer_.front(),size_.front(),
         start_.front(),end_.front());
 
@@ -173,7 +176,7 @@ void AIOHandler::call_aio()
       end_.pop();
       lock.unlock();
     }
-    else if (job_.front() == 3) {
+    else if (jobtype == 3) {
       psio_->read_entry(unit_.front(),key_.front(),buffer_.front(),
         size_.front());
 
@@ -185,7 +188,7 @@ void AIOHandler::call_aio()
       size_.pop();
       lock.unlock();
     }
-    else if (job_.front() == 4) {
+    else if (jobtype == 4) {
       psio_->write_entry(unit_.front(),key_.front(),buffer_.front(),
         size_.front());
 
@@ -197,7 +200,7 @@ void AIOHandler::call_aio()
       size_.pop();
       lock.unlock();
     }
-    else if (job_.front() == 5) {
+    else if (jobtype == 5) {
 
       double **A = matrix_.front();
 
@@ -220,7 +223,7 @@ void AIOHandler::call_aio()
       start_.pop();
       lock.unlock();
     }
-    else if (job_.front() == 6) {
+    else if (jobtype == 6) {
 
       double **A = matrix_.front();
 
