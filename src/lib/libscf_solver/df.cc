@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <vector>
 #include <utility>
+#include <sstream>
 
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
@@ -98,7 +99,7 @@ void DFHF::common_init()
 
     // Make a memory decision here
     int ntri = schwarz_->get_nfun_pairs();
-    ULI three_memory = ((ULI)primary_->nbf())*ntri;
+    ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
 
     // Two is for buffer space in fitting
@@ -180,13 +181,32 @@ void DFHF::initialize_JK_disk()
     long int* schwarz_shell_pairs_r = schwarz_->get_schwarz_shells_reverse();
     long int* schwarz_fun_pairs_r = schwarz_->get_schwarz_funs_reverse();
 
+    //fprintf(outfile,"Schwarz Shell Pairs:\n");
+    //for (int MN = 0; MN < nshellpairs; MN++) {
+    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);   
+    //}
+
+    //fprintf(outfile,"Schwarz Function Pairs:\n");
+    //for (int MN = 0; MN < ntri; MN++) {
+    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);   
+    //}
+
+    //fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
+    //for (int MN = 0; MN < primary_->nshell() * (primary_->nshell() + 1) / 2; MN++) {
+    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
+    //}
+
+    //fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
+    //for (int MN = 0; MN < primary_->nbf() * (primary_->nbf() + 1) / 2; MN++) {
+    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
+    //}
+
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
-
-    if (2*two_memory > memory_)
-        throw PSIEXCEPTION("SCF::DF: Must be able to fit at least 2 (A|B) Tensors on core");
-
+    ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI buffer_memory = memory_ - 2*two_memory; // Two is for buffer space in fitting
 
+    //fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
+    
     std::vector<ULI> memory_per_MU; // Ceiling memory of all functions for given MU in canonical order
     std::vector<int> MU_starts; // First MU shell index in a block
     std::vector<int> NU_starts; // First NU shell index for the given MU (as [MU, 0] is not always cool)
@@ -200,12 +220,42 @@ void DFHF::initialize_JK_disk()
     for (int shellpair = 0; shellpair < nshellpairs; shellpair++) {
         memory_per_MU[schwarz_shell_pairs[2*shellpair]] += (ULI)primary_->shell(schwarz_shell_pairs[2*shellpair + 1])->nfunction();
     }
+
+    //fprintf(outfile,"  Pairs per MU:\n");
+    //for (int MU = 0; MU < primary_->nshell(); MU++)
+    //    fprintf(outfile, "  MU = %4d, pairs = %10ld\n", MU, memory_per_MU[MU]);
+    //fflush(outfile);
+
     for (int MU = 0; MU < primary_->nshell(); MU++) memory_per_MU[MU] *= (ULI)primary_->shell(MU)->nfunction() * naux;
 
-    fprintf(outfile,"  Memory per MU:\n");
-    for (int MU = 0; MU < primary_->nshell(); MU++)
-        fprintf(outfile, "  MU = %4d, memory = %10ld\n", MU, memory_per_MU[MU]);
-    fflush(outfile);
+    //fprintf(outfile,"  Memory per MU:\n");
+    //for (int MU = 0; MU < primary_->nshell(); MU++)
+    //    fprintf(outfile, "  MU = %4d, memory = %10ld\n", MU, memory_per_MU[MU]);
+    //fflush(outfile);
+
+    // Determine memory requirements for (A|mn) chunk
+    ULI max_fun_pairs = 0L; 
+    ULI max_memory = 0L; 
+    for (int MU = 0; MU < primary_->nshell(); MU++) {
+        if (memory_per_MU[MU] > max_memory) {
+            max_memory = memory_per_MU[MU];
+        } 
+    }
+    max_fun_pairs = max_memory / naux;
+
+    //fprintf(outfile, "Max function pairs for any MU = %ld\n", max_fun_pairs);
+
+    // Throw if not enough buffer space provided
+    if (max_memory + 2*two_memory > memory_) {
+        std::stringstream message;
+        message << "SCF::DF: Disk based algorithm requires 2 (A|B) fitting metrics and an (A|mn) chunk on core." << std::endl;
+        message << "         This is 2Q^2 + QNP doubles, where Q is the auxiliary basis size, N is the" << std::endl;
+        message << "         primary basis size, and P is the maximum number of functions in a primary shell." << std::endl;   
+        message << "         For this problem, that is " << ((8L*(max_memory + 2*two_memory))) << " bytes before taxes,"; 
+        message << ((80L*(max_memory + 2*two_memory) / 7L)) << " bytes after taxes. " << std::endl;     
+
+        throw PSIEXCEPTION(message.str());
+    }
 
     // Figure out where appropriate blocks start in MU
     MU_starts.push_back(0);
@@ -218,10 +268,10 @@ void DFHF::initialize_JK_disk()
         memory_counter += memory_per_MU[MU];
     }
 
-    fprintf(outfile,"  MU Starts:\n");
-    for (int MU = 0; MU < MU_starts.size(); MU++)
-        fprintf(outfile, "  Block = %4d, MU_start = %4d\n", MU, MU_starts[MU]);
-    fflush(outfile);
+    //fprintf(outfile,"  MU Starts:\n");
+    //for (int MU = 0; MU < MU_starts.size(); MU++)
+    //    fprintf(outfile, "  Block = %4d, MU_start = %4d\n", MU, MU_starts[MU]);
+    //fflush(outfile);
 
     // How many blocks are there?
     int nblock = MU_starts.size();
@@ -234,9 +284,7 @@ void DFHF::initialize_JK_disk()
     schwarz_pair_starts[0] = 0;
     NU_starts[0] = schwarz_shell_pairs[1];
     int block_index = 1;
-    int munu_size = 0;
     int MUNU_size = 0;
-    int max_cols = 0;
     for (int shellpair = 0; shellpair < nshellpairs; shellpair++) {
         int MU = schwarz_shell_pairs[2*shellpair];
         int NU = schwarz_shell_pairs[2*shellpair + 1];
@@ -245,58 +293,70 @@ void DFHF::initialize_JK_disk()
             schwarz_pair_starts[block_index] = shellpair;
             schwarz_pair_sizes[block_index - 1] = MUNU_size;
             NU_starts[block_index] = NU;
-            if (munu_size > max_cols);
-                max_cols = munu_size;
             block_index++;
             MUNU_size = 0;
-            munu_size = 0;
         }
-
-        if (MU == NU)
-            munu_size += primary_->shell(MU)->nfunction() * (primary_->shell(NU)->nfunction() + 1) / 2;
-        else
-            munu_size += primary_->shell(MU)->nfunction() * primary_->shell(NU)->nfunction();
 
         MUNU_size++;
     }
     schwarz_pair_sizes[nblock - 1] = MUNU_size;
 
-    fprintf(outfile,"  NU Starts:\n");
-    for (int MU = 0; MU < MU_starts.size(); MU++)
-        fprintf(outfile, "  Block = %4d, NU_start = %4d\n", MU, NU_starts[MU]);
-    fflush(outfile);
+    //fprintf(outfile,"  NU Starts:\n");
+    //for (int MU = 0; MU < MU_starts.size(); MU++)
+    //    fprintf(outfile, "  Block = %4d, NU_start = %4d\n", MU, NU_starts[MU]);
+    //fflush(outfile);
 
-    fprintf(outfile,"  Schwwarz Pair Starts:\n");
-    for (int MU = 0; MU < MU_starts.size(); MU++)
-        fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_starts[MU]);
-    fflush(outfile);
+    //fprintf(outfile,"  Schwarz Pair Starts:\n");
+    //for (int MU = 0; MU < MU_starts.size(); MU++)
+    //    fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_starts[MU]);
+    //fflush(outfile);
 
-    fprintf(outfile,"  Schwwarz Pair Sizes:\n");
-    for (int MU = 0; MU < MU_starts.size(); MU++)
-        fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_sizes[MU]);
-    fflush(outfile);
-
-    fprintf(outfile,"  Max Cols = %d\n", max_cols);
-
+    //fprintf(outfile,"  Schwarz Pair Sizes:\n");
+    //for (int MU = 0; MU < MU_starts.size(); MU++)
+    //    fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_sizes[MU]);
+    //fflush(outfile);
 
     // Determine munu offsets by block (use the schwarz backmap)
     // This is perhaps a bit excessive, but will always work
+    munu_offsets[0] = 0;
     for (int block = 1; block < nblock; block++) {
+
         int MU = MU_starts[block];
         int NU = NU_starts[block];
         int mu = primary_->shell(MU)->function_index();
         int nu = primary_->shell(NU)->function_index();
+     
+        bool found = false;
+                
         for (int m = 0; m < primary_->shell(MU)->nfunction(); m++) {
             for (int n = 0; n < primary_->shell(NU)->nfunction(); n++) {
                 int om = mu + m;
                 int on = nu + n;
-                if (schwarz_fun_pairs_r[om*(om+1)/2 + on] >= 0){
+                if (om >= on && schwarz_fun_pairs_r[om*(om+1)/2 + on] >= 0){
                     munu_offsets[block] = schwarz_fun_pairs_r[om*(om+1)/2 + on];
+                    found = true;
                     break;
                 }
             }
+            if (found) break;
         }
     }
+
+    // Determine max cols
+    int max_cols = 0;
+    for (int block = 1; block < nblock; block++) {
+        if (max_cols < munu_offsets[block] - munu_offsets[block - 1])
+            max_cols = munu_offsets[block] - munu_offsets[block - 1]; 
+    }
+    if (max_cols < ntri - munu_offsets[nblock - 1]) 
+        max_cols = ntri - munu_offsets[nblock - 1]; 
+
+    //fprintf(outfile,"  munu offsets:\n");
+    //for (int MU = 0; MU < MU_starts.size(); MU++)
+    //    fprintf(outfile, "  Block = %4d, %4d\n", MU, munu_offsets[MU]);
+    //fflush(outfile);
+
+    //fprintf(outfile, "Max cols = %d\n", max_cols);
 
     // Thread setup
     int nthread = 1;
@@ -352,7 +412,7 @@ void DFHF::initialize_JK_disk()
         int offset = munu_offsets[block];
         int current_cols = 0;
 
-        // COmpute current cols (prevents required reduction later)
+        // Compute current cols (prevents required reduction later)
         for (int MUNU = 0; MUNU < schwarz_sizes; MUNU++) {
 
             int MU = schwarz_shell_pairs[2*(MUNU + schwarz_start) + 0];
@@ -364,7 +424,7 @@ void DFHF::initialize_JK_disk()
             for (int dm = 0; dm < nummu; dm++) {
                 int omu = mu + dm;
                 for (int dn = 0; dn < numnu;  dn++) {
-                    int onu = nu + dm;
+                    int onu = nu + dn;
                     if (omu >= onu && schwarz_fun_pairs_r[omu*(omu+1)/2 + onu] >= 0) {
                             current_cols++;
                     }
@@ -373,11 +433,11 @@ void DFHF::initialize_JK_disk()
         }
 
         // Form (A|mn) integrals
-        #pragma omp parallel for schedule(guided) num_threads(nthread)
+        //#pragma omp parallel for schedule(guided) num_threads(nthread)
         for (int MUNU = 0; MUNU < schwarz_sizes; MUNU++) {
             int rank = 0;
             #ifdef _OPENMP
-                rank = omp_get_thread_num();
+                //rank = omp_get_thread_num();
             #endif
 
             int MU = schwarz_shell_pairs[2*(MUNU + schwarz_start) + 0];
@@ -393,17 +453,21 @@ void DFHF::initialize_JK_disk()
                 for (int dm = 0; dm < nummu; dm++) {
                     int omu = mu + dm;
                     for (int dn = 0; dn < numnu;  dn++) {
-                        int onu = nu + dm;
+                        int onu = nu + dn;
                         if (omu >= onu && schwarz_fun_pairs_r[omu*(omu+1)/2 + onu] >= 0) {
+                            int delta = schwarz_fun_pairs_r[omu*(omu+1)/2 + onu] - offset;
                             for (int dp = 0; dp < nump; dp ++) {
                                 int op = p + dp;
-                                Qmnp[op][schwarz_fun_pairs_r[omu*(omu+1)/2 + onu] - offset] = buffer[rank][op*nummu*numnu + omu*numnu + onu];
+                                Qmnp[op][delta] = buffer[rank][dp*nummu*numnu + dm*numnu + dn];
                             }
                         }
                     }
                 }
             }
         }
+        
+        //Qmn_->print(); 
+        //fflush(outfile);
 
         // Apply Fitting
         for (int mn = 0; mn < current_cols; mn+=naux) {
@@ -412,16 +476,19 @@ void DFHF::initialize_JK_disk()
                 cols = current_cols - mn;
 
             for (int Q = 0; Q < naux; Q++)
-                C_DCOPY(cols,Qmnp[Q],1,Amnp[Q],1);
+                C_DCOPY(cols,&Qmnp[Q][mn],1,Amnp[Q],1);
 
             C_DGEMM('N','N',naux,cols,naux,1.0,Jinvp[0],naux,Amnp[0],naux,0.0,&Qmnp[0][mn],max_cols);
         }
+
+        //Qmn_->print();
+        //fflush(outfile);
 
         // Stripe to disk
         psio_address addr;
         for (int Q = 0; Q < naux; Q++) {
             addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + offset)*sizeof(double));
-            psio_->write(PSIF_DFSCF_BJ,"(Q|mn) Integrals",(char*)Qmnp[Q],current_cols*sizeof(double),addr,&addr);
+            psio_->write(PSIF_DFSCF_BJ,"(Q|mn) Integrals", (char*)Qmnp[Q],current_cols*sizeof(double),addr,&addr);
         }
     } 
     // Close down (for RAII in DFDiskIterator)
@@ -504,6 +571,8 @@ void DFHF::initialize_JK_core()
     }
     timer_off("(A|mn)");
 
+    //Qmn_->print();
+
     delete []buffer;
     delete []eri;
 
@@ -548,6 +617,8 @@ void DFHF::initialize_JK_core()
     timer_off("(Q|mn)");
 
     Jinv_.reset();
+
+    //Qmn_->print();
 
     // Save if needed
     if (options_.get_str("RI_INTS_IO") == "SAVE") {
@@ -964,6 +1035,7 @@ void DFHF::form_J_DF()
     USO2AO();
 
     if (is_disk_) {
+        // TODO
         //do {
         //    shared_ptr<Matrix> Q = disk_iter_->next_block();
         //    int current_rows = disk_iter_->current_rows();
