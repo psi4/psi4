@@ -63,6 +63,7 @@ void DFHF::common_init()
     }    
 
     is_initialized_ = false;
+    is_disk_initialized_ = false;
     is_jk_ = false;
     restricted_ = false;
     is_disk_ = false;
@@ -166,7 +167,6 @@ void DFHF::initialize_JK_disk()
 {
     // Try to load
     if (options_.get_str("RI_INTS_IO") == "LOAD") {
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
         Jinv_.reset();
         return;
     } 
@@ -181,6 +181,10 @@ void DFHF::initialize_JK_disk()
     long int* schwarz_fun_pairs_r = schwarz_->get_schwarz_funs_reverse();
 
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
+
+    if (2*two_memory > memory_)
+        throw PSIEXCEPTION("SCF::DF: Must be able to fit at least 2 (A|B) Tensors on core");
+
     ULI buffer_memory = memory_ - 2*two_memory; // Two is for buffer space in fitting
 
     std::vector<ULI> memory_per_MU; // Ceiling memory of all functions for given MU in canonical order
@@ -198,6 +202,11 @@ void DFHF::initialize_JK_disk()
     }
     for (int MU = 0; MU < primary_->nshell(); MU++) memory_per_MU[MU] *= (ULI)primary_->shell(MU)->nfunction() * naux;
 
+    fprintf(outfile,"  Memory per MU:\n");
+    for (int MU = 0; MU < primary_->nshell(); MU++)
+        fprintf(outfile, "  MU = %4d, memory = %10ld\n", MU, memory_per_MU[MU]);
+    fflush(outfile);
+
     // Figure out where appropriate blocks start in MU
     MU_starts.push_back(0);
     ULI memory_counter = 0L;
@@ -208,6 +217,11 @@ void DFHF::initialize_JK_disk()
         }
         memory_counter += memory_per_MU[MU];
     }
+
+    fprintf(outfile,"  MU Starts:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, MU_start = %4d\n", MU, MU_starts[MU]);
+    fflush(outfile);
 
     // How many blocks are there?
     int nblock = MU_starts.size();
@@ -246,6 +260,24 @@ void DFHF::initialize_JK_disk()
         MUNU_size++;
     }
     schwarz_pair_sizes[nblock - 1] = MUNU_size;
+
+    fprintf(outfile,"  NU Starts:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, NU_start = %4d\n", MU, NU_starts[MU]);
+    fflush(outfile);
+
+    fprintf(outfile,"  Schwwarz Pair Starts:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_starts[MU]);
+    fflush(outfile);
+
+    fprintf(outfile,"  Schwwarz Pair Sizes:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_sizes[MU]);
+    fflush(outfile);
+
+    fprintf(outfile,"  Max Cols = %d\n", max_cols);
+
 
     // Determine munu offsets by block (use the schwarz backmap)
     // This is perhaps a bit excessive, but will always work
@@ -300,6 +332,9 @@ void DFHF::initialize_JK_disk()
 
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
+
+    // Open for business
+    psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
 
     // Prestripe
     double* prestripe = new double[ntri];
@@ -388,7 +423,10 @@ void DFHF::initialize_JK_disk()
             addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + offset)*sizeof(double));
             psio_->write(PSIF_DFSCF_BJ,"(Q|mn) Integrals",(char*)Qmnp[Q],current_cols*sizeof(double),addr,&addr);
         }
-    }
+    } 
+    // Close down (for RAII in DFDiskIterator)
+    psio_->close(PSIF_DFSCF_BJ,1);
+    Qmn_.reset();
 }
 void DFHF::initialize_JK_core()
 {
@@ -958,36 +996,57 @@ void DFHF::form_JK_DF()
         nthread = omp_get_max_threads();
     #endif
 
-    // Determine max rows
-    ULI overhead;
-    ULI per_row;
+    // Determine max rows, nblocks, possible disk iterator
+    ULI max_rows;
+    int nblocks;
     if (is_disk_) {
-        overhead = nthread*(ULI)nalpha*nbf + nbf*(ULI)nbf + nbf + 2L* (ULI)ntri;
-        per_row = nalpha*(ULI)nbf + nthread*(ULI)nbf + (ULI)ntri;
-    } else {
-        overhead = nthread*(ULI)nalpha*nbf + ntri*(ULI)naux + nbf*(ULI)nbf + nbf + 2L * (ULI)ntri;
-        per_row = nalpha*(ULI)nbf + nthread*(ULI)nbf;
-    }
-    int max_rows = (memory_ - overhead) / per_row;
-    if (max_rows > naux)
-        max_rows = naux;
-    if (max_rows < 1)
-        max_rows = 1;
+        if (!is_disk_initialized_) {
+            is_disk_initialized_ = true;    
 
-    // Get's a little weird, for disk, we divide into two blocks within the big block for AIO
-    if (is_disk_) {
-        max_rows /= 2;
+            // Static disk overhead, CTemp * nthread, Jtri, Dtri, indexing 
+            ULI overhead = nthread*(ULI)nalpha*nbf + nbf*(ULI)nbf + nbf + 2L* (ULI)ntri;
+            // Dynamic disk overhead, (A|mn), (A|mi), Q_S * nthread
+            ULI per_row = nalpha*(ULI)nbf + nthread*(ULI)nbf + (ULI)ntri;
+  
+            // How many rows at a time, on disk? 
+            max_rows = (memory_ - overhead) / per_row;
+            if (max_rows > naux)
+                max_rows = naux;
+            if (max_rows < 1)
+                max_rows = 1;
+            
+            // Now split things in two
+            max_rows = max_rows / 2 + (((max_rows % 2) == 0) ? 0 : 1);    
+        
+            // Determine number of blocks (gimp shouldn't hurt much, K is fine-grained)
+             nblocks = naux / max_rows;
+            if (nblocks * max_rows != naux)
+                nblocks++;
+
+            // Build the disk iterator
+            disk_iter_ = shared_ptr<DFHFDiskIterator>(new DFHFDiskIterator(psio_, ntri, naux, max_rows)); 
+         } else {
+            max_rows = disk_iter_->max_rows();
+            nblocks = disk_iter_->nblock();
+         }
+    } else {
+        // Static core overhead, (A|mn), CTemp * nthread, Jtri, Dtri, indexing 
+        ULI overhead = nthread*(ULI)nalpha*nbf + ntri*(ULI)naux + nbf*(ULI)nbf + nbf + 2L * (ULI)ntri;
+        // Dynamic core overhead, (A|mi),  Q_S * nthread
+        ULI per_row = nalpha*(ULI)nbf + nthread*(ULI)nbf;
+  
+        // How many rows at a time, on core? 
+        max_rows = (memory_ - overhead) / per_row;
+        if (max_rows > naux)
+            max_rows = naux;
         if (max_rows < 1)
             max_rows = 1;
         
+        // Determine number of blocks (gimp shouldn't hurt much, K is fine-grained)
+        nblocks = naux / max_rows;
+        if (nblocks * max_rows != naux)
+            nblocks++;
     }
-
-    // Determine number of blocks (gimp shouldn't hurt much, K is fine-grained)
-    int nblocks = naux / max_rows;
-    if (nblocks * max_rows != naux)
-        nblocks++;
-
-    //printf("Doing DF-SCF iteration with %d blocks\n", nblocks);
 
     // JK J allocation
     Dtri_ = new double[ntri];
@@ -1039,10 +1098,10 @@ void DFHF::form_JK_DF()
 
     // Block formation of J/K
     if (is_disk_) {
+        int counter = 0;
         do {
-            shared_ptr<Matrix> Q = disk_iter_->next_block();
+            double** Qmnp = disk_iter_->next_block();
             int current_rows = disk_iter_->current_rows();
-            double** Qmnp = Q->pointer();
             compute_JK_block_J(Qmnp, current_rows, max_rows);
             compute_JK_block_K(Qmnp, current_rows, max_rows, true);
             if (!restricted_)
@@ -1124,7 +1183,7 @@ void DFHFDiskIterator::common_init()
         block_starts_[i] = i * max_rows_;
         block_sizes_[i] = max_rows_;
         if (i == nblocks_ - 1) {
-            block_sizes_[i] = naux_ - i* max_rows_;
+            block_sizes_[i] = naux_ - i * max_rows_;
         }
     }
 
@@ -1132,52 +1191,79 @@ void DFHFDiskIterator::common_init()
     for (int i = 0; i < nblocks_; i++)
         blocks_.push_back(i);  
 
+    //fprintf(outfile,"  DFHFDiskIterator::common_init Debug:\n\n");
+    //fprintf(outfile,"  Max rows = %d, Naux = %d, nblocks = %d\n\n", max_rows_, naux_, nblocks_);
+    //fprintf(outfile,"  Block Starts/Block Sizes\n");
+    //for (int i = 0; i < nblocks_; i++) {
+    //    fprintf(outfile,"   Block %3d, %3d/%3d\n", i, block_starts_[i], block_sizes_[i]);
+    //}
+    //fprintf(outfile,"  Block Order\n");
+    //for (int i = 0; i < nblocks_; i++) {
+    //    fprintf(outfile,"  Local Index = %3d, Global Index = %3d\n", i, blocks_[i]);
+    //}
+    //fflush(outfile);
 
     // Build the blocks
     A_ = shared_ptr<Matrix>(new Matrix("(Q|mn) Block A", max_rows_, ntri_));
     B_ = shared_ptr<Matrix>(new Matrix("(Q|mn) Block B", max_rows_, ntri_));
-        
+   
+    // Build the AIO object
+    aio_ = shared_ptr<AIOHandler>(new AIOHandler(psio_));
+     
     // Read the first two bits in, so they are ready
     read(A_, block_starts_[0], block_sizes_[0]);
-    aio_->synchronize();
+    synchronize();
     read(B_, block_starts_[1], block_sizes_[1]);
-    aio_->synchronize();
+    synchronize();
+
+    iteration_ = 0;
 }
-boost::shared_ptr<Matrix> DFHFDiskIterator::next_block()
+double** DFHFDiskIterator::next_block()
 {
-    iteration_++;    
+    synchronize(); 
+    //fprintf(outfile, "  DFHFDiskIterator::next_block Debug, Block %d\n", iteration_);
 
     // Synchronize the AIOHandler, if needed
     // Not needed for the first two iterations of the cycle
     if (iteration_ > 1) {
-        aio_->synchronize();
+        //synchronize();
+        //fprintf(outfile, "  Flushing AIO\n");
     }
 
     // If not first or last block, there's reading to be done
     if (iteration_ > 0 && iteration_ < nblocks_ - 1) {
-        // The address in the cycle is one greater than the one's based iteration
+        // The address in the cycle is two greater than the iteration number 
         int index = blocks_[iteration_ + 1];
         if (iteration_ % 2 == 1) {
-            // Odd iteration, read into B
-            read(B_, block_starts_[index], block_sizes_[index]); 
-        } else {
-            // Even iteration, read into A
+            // Odd iteration, read into A
             read(A_, block_starts_[index], block_sizes_[index]); 
+            //fprintf(outfile,"  Reading index %d, start = %3d, size = %3d into A\n", index, \
+                block_starts_[index], block_sizes_[index]); 
+        } else {
+            // Even iteration, read into B
+            read(B_, block_starts_[index], block_sizes_[index]); 
+            //fprintf(outfile,"  Reading index %d, start = %3d, size = %3d into B\n", index, \
+                block_starts_[index], block_sizes_[index]); 
         }
     }
 
     // Determine current rows
-    // Return index is in the cycle is one less than the one's based iteration 
-    int index = blocks_[iteration_ - 1];
+    int index = blocks_[iteration_];
     current_rows_ = block_sizes_[index];
-    
+   
+    shared_ptr<Matrix> val;
+ 
+    //fprintf(outfile, "  Current rows = %d\n", current_rows_);
+    fflush(outfile);
     // Return a block
-    // Odd iteration, return A
-    if (iteration_ % 2 == 1) { 
-        return A_;
-    // Even iteration, return B
+    // Odd iteration, return B
+    if ((iteration_++) % 2 == 1) { 
+        return B_->pointer();
+        //fprintf(outfile, "  Pointing to B, which is global block %d\n", index);
+    // Even iteration, return A
     } else {
-        return B_;
+        return A_->pointer();
+        //fprintf(outfile, "  Pointing to A, which is global block %d\n", index);
     }
 }
 void DFHFDiskIterator::read(shared_ptr<Matrix> A, int start, int rows)
@@ -1190,6 +1276,10 @@ void DFHFDiskIterator::read(shared_ptr<Matrix> A, int start, int rows)
 
     // Post the read
     aio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
+}
+void DFHFDiskIterator::synchronize()
+{
+    aio_->synchronize();
 }
 bool DFHFDiskIterator::finished()
 {
@@ -1212,6 +1302,16 @@ void DFHFDiskIterator::reset()
     for (int j = 0; j < k; j++) {
         blocks_[counter++] = j;
     } 
+
+    // If odd number of blocks, must switch A and B to have A first in next iteration
+    if (nblocks_ % 2 == 1)
+        boost::swap(A_,B_); 
+
+    //fprintf(outfile,"  DFHFDiskIterator::reset Debug: Block Order\n");
+    //for (int i = 0; i < nblocks_; i++) {
+        //fprintf(outfile,"  Local Index = %3d, Global Index = %3d\n", i, blocks_[i]);
+    //}
+    //fflush(outfile);
 }
 
 }}

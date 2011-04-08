@@ -58,6 +58,8 @@ class DFHF {
         bool is_jk_;
         // Is this object initialized?
         bool is_initialized_;
+        // Is this object's disk iterator initialized?
+        bool is_disk_initialized_;
         // Whether the alpha and beta orbitals are equal or not
         bool restricted_;
         
@@ -223,11 +225,17 @@ public:
     ~DFHFDiskIterator();
 
     // Call to get a block/Post theread for the next, if needed 
-    boost::shared_ptr<Matrix> next_block();
+    double** next_block();
     // How many rows are there in the current block 
     int current_rows() const { return current_rows_; }
     // are we finished (not idempotent, resets)
     bool finished();
+    // How many blocks are there?
+    int nblock() const { return nblocks_; }
+    // What is max_rows?
+    int max_rows() const { return max_rows_; }
+    // Sychronize the AIO
+    void synchronize();
 
 };
 

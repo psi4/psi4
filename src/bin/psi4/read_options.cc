@@ -248,7 +248,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- SCF Fitting Type -*/
     options.add_str("RI_FITTING_TYPE", "FINISHED", "FINISHED RAW CHOLESKY");
     /*- Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank -*/
-    options.add_int("RI_INTS_NUM_THREADS",1);
+    options.add_int("RI_INTS_NUM_THREADS",0);
     /*- IO caching for CP corrections, etc -*/
     options.add_str("RI_INTS_IO", "NONE", "NONE SAVE LOAD");
 
@@ -1103,7 +1103,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -Maximum number of rows to read/write in each DF-MP2 operation -*/
     options.add_int("ROWS_PER_READ", 0);
     /*- Number of threads to compute integrals with. 0 is wild card -*/
-    options.add_int("RI_INTS_NUM_THREADS", 1);
+    options.add_int("RI_INTS_NUM_THREADS", 0);
     /*- Debugging information? -*/
     options.add_int("DEBUG",0);
     /*- Parallel algoritmh? -*/
