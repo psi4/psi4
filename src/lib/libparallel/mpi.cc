@@ -6,15 +6,15 @@ using namespace boost;
 
 #if HAVE_MPI == 1
 
-MPICommunicator::MPICommunicator(MPI_Comm comm)
-    : Communicator(), comm_(comm)
+MPICommunicator::MPICommunicator(MPI_Comm comm, const std::string &communicator)
+    : Communicator(communicator), comm_(comm), communicator_(communicator)
 {
     MPI_Comm_rank(comm_, &me_);
     MPI_Comm_size(comm_, &nproc_);
 }
 
 MPICommunicator::MPICommunicator(const MPICommunicator &copy)
-    : Communicator(), comm_(copy.comm_)
+    : Communicator(copy.communicator_), comm_(copy.comm_), communicator_(copy.communicator_)
 {
     me_ = copy.me_;
     nproc_ = copy.nproc_;
@@ -39,17 +39,13 @@ void MPICommunicator::sync()
     MPI_Barrier(comm_);
 }
 
-void MPICommunicator::barrier()
-{
-    MPI_Barrier(comm_);
-}
 
-void MPICommunicator::raw_send(int target, const void* data, int nbyte)
+void MPICommunicator::raw_send(const void* data, int nbyte, int target)
 {
     MPI_Send(const_cast<void*>(data), nbyte, MPI_BYTE, target, 0, comm_);
 }
 
-void MPICommunicator::raw_recv(int sender, void* data, int nbyte)
+void MPICommunicator::raw_recv(void* data, int nbyte, int sender)
 {
     MPI_Status status;
     MPI_Recv(data, nbyte, MPI_BYTE, sender, 0, comm_, &status);
@@ -61,7 +57,7 @@ void MPICommunicator::raw_bcast(void* data, int nbyte, int broadcaster)
 }
 
 #define SUMMEMBER(T, M) \
-void MPICommunicator::sum(T* data, int n, T* receive_buffer, int target) \
+void MPICommunicator::raw_sum(T *data, int n, T *receive_buffer, int target) \
 { \
     bool alloc = false; \
     if (receive_buffer == NULL) { \

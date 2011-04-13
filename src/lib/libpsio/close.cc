@@ -42,7 +42,8 @@ void PSIO::close(unsigned int unit, int keep) {
     if (Communicator::world->me() == 0) {
       errcod = ::close(this_unit->vol[i].stream);
     }
-    Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
+    Communicator::world->bcast(&errcod, 1, 0);
+    //Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
     if (errcod == -1)
       psio_error(unit,PSIO_ERROR_CLOSE);
     /* Delete the file completely if requested */

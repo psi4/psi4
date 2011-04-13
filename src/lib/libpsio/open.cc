@@ -87,7 +87,8 @@ void PSIO::open(unsigned int unit, int status) {
       if (Communicator::world->me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR,0644);
       }
-      Communicator::world->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
+      Communicator::world->bcast(&(this_unit->vol[i].stream), 1, 0);
+      //Communicator::world->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
       if(this_unit->vol[i].stream == -1)
         psio_error(unit,PSIO_ERROR_OPEN);
     }
@@ -95,7 +96,8 @@ void PSIO::open(unsigned int unit, int status) {
       if (Communicator::world->me() == 0) {
         this_unit->vol[i].stream = ::open(this_unit->vol[i].path,O_CREAT|O_RDWR|O_TRUNC,0644);
       }
-      Communicator::world->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
+      Communicator::world->bcast(&(this_unit->vol[i].stream), 1, 0);
+      //Communicator::world->raw_bcast(&(this_unit->vol[i].stream), sizeof(int), 0);
       if(this_unit->vol[i].stream == -1)
         psio_error(unit,PSIO_ERROR_OPEN);
     }

@@ -72,7 +72,7 @@ void  DFMP2::setup()
 
   } else {
       // Form primary basis indexing
-      if (Communicator::world->me() == 0) {
+//      if (Communicator::world->me() == 0) {
           E_scf_ = chkpt_->rd_escf();
           nirrep_ = chkpt_->rd_nirreps();
           clsdpi_ = chkpt_->rd_clsdpi();
@@ -81,20 +81,20 @@ void  DFMP2::setup()
           frzvpi_ = chkpt_->rd_frzvpi();
           nso_ = chkpt_->rd_nso();
 
-      }	else {
-          // Leak a little memory in parallel
-          clsdpi_ = new int[8];
-          orbspi_ = new int[8];
-          frzcpi_ = new int[8];
-          frzvpi_ = new int[8];
-      }
-      Communicator::world->bcast(E_scf_, 0);
-      Communicator::world->bcast(nirrep_, 0);
-      Communicator::world->bcast(clsdpi_, nirrep_, 0);
-      Communicator::world->bcast(orbspi_, nirrep_, 0);
-      Communicator::world->bcast(frzcpi_, nirrep_, 0);
-      Communicator::world->bcast(frzvpi_, nirrep_, 0);
-      Communicator::world->bcast(nso_, 0);
+//      }	else {
+//          // Leak a little memory in parallel
+//          clsdpi_ = new int[8];
+//          orbspi_ = new int[8];
+//          frzcpi_ = new int[8];
+//          frzvpi_ = new int[8];
+//      }
+//      Communicator::world->bcast(E_scf_, 0);
+//      Communicator::world->bcast(nirrep_, 0);
+//      Communicator::world->bcast(clsdpi_, nirrep_, 0);
+//      Communicator::world->bcast(orbspi_, nirrep_, 0);
+//      Communicator::world->bcast(frzcpi_, nirrep_, 0);
+//      Communicator::world->bcast(frzvpi_, nirrep_, 0);
+//      Communicator::world->bcast(nso_, 0);
   }
 
   ndocc_ = 0;
@@ -171,7 +171,7 @@ void  DFMP2::setup()
       C = boost::shared_ptr<Matrix>(new Matrix("C Matrix", nso_, nmo_));
       epsilon = boost::shared_ptr<Vector>(new Vector(nmo_));
 
-      if (Communicator::world->me() == 0) {
+//      if (Communicator::world->me() == 0) {
         double **vectors;
         double *orbital_energies;
 
@@ -188,9 +188,9 @@ void  DFMP2::setup()
         free(orbital_energies);
         free_block(vectors);
 
-      }
-      Communicator::world->bcast(C->pointer()[0], nmo_*nso_, 0);
-      Communicator::world->bcast(epsilon->pointer(), nmo_, 0);
+//      }
+//      Communicator::world->bcast(C->pointer()[0], nmo_*nso_, 0);
+//      Communicator::world->bcast(epsilon->pointer(), nmo_, 0);
 
   }
 
