@@ -37,7 +37,8 @@ ULI PSIO::rd_toclen(unsigned int unit) {
   if (Communicator::world->me() == 0) {
     errcod = ::lseek(stream, 0L, SEEK_SET);
   }
-  Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
+  Communicator::world->bcast(&(errcod), 1, 0);
+  //Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
   if (errcod == -1)
     psio_error(unit, PSIO_ERROR_LSEEK);
   
@@ -46,8 +47,10 @@ ULI PSIO::rd_toclen(unsigned int unit) {
     errcod = ::read(stream, (char *) &len, sizeof(ULI));
   }
 
-  Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
-  Communicator::world->raw_bcast(&(len), sizeof(ULI), 0);
+  Communicator::world->bcast(&(errcod), 1, 0);
+  Communicator::world->bcast(&(len), 1, 0);
+  //Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
+  //Communicator::world->raw_bcast(&(len), sizeof(ULI), 0);
 
   if(errcod != sizeof(ULI)) return(0); /* assume that all is well (see comments above) */
 
@@ -65,7 +68,8 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   if (Communicator::world->me() == 0) {
     errcod = ::lseek(stream, 0L, SEEK_SET);
   }
-  Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
+  Communicator::world->bcast(&(errcod), 1, 0);
+  //Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
   if (errcod == -1) {
     fprintf(stderr, "Error in PSIO_WT_TOCLEN()!\n");
     exit(_error_exit_code_);
@@ -75,7 +79,8 @@ void PSIO::wt_toclen(unsigned int unit, ULI len) {
   if (Communicator::world->me() == 0) {
     errcod = ::write(stream, (char *) &len, sizeof(ULI));
   }
-  Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
+  Communicator::world->bcast(&(errcod), 1, 0);
+  //Communicator::world->raw_bcast(&(errcod), sizeof(int), 0);
   if(errcod != sizeof(ULI)) {
     fprintf(stderr, "PSIO_ERROR: Failed to write toclen to unit %d.\n", unit);
     psio_error(unit,PSIO_ERROR_WRITE);

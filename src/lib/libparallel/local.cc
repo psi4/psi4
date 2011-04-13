@@ -5,15 +5,15 @@
 using namespace psi;
 using namespace boost;
 
-LocalCommunicator::LocalCommunicator()
-    : Communicator()
+LocalCommunicator::LocalCommunicator(const std::string &communicator)
+    : Communicator(communicator)
 {
     me_ = 0;
     nproc_ = 1;
 }
 
 LocalCommunicator::LocalCommunicator(const LocalCommunicator &copy)
-    : Communicator()
+    : Communicator(copy.communicator_), communicator_(copy.communicator_)
 {
     me_ = 0;
     nproc_ = 1;
@@ -32,57 +32,36 @@ LocalCommunicator& LocalCommunicator::operator =(const LocalCommunicator& other)
     return *this;
 }
 
-void LocalCommunicator::raw_send(int target, const void *data, int nbyte)
+void LocalCommunicator::raw_send(const void* data, int nbyte, int target)
 {
 
 }
 
-void LocalCommunicator::raw_recv(int sender, void *data, int nbyte)
+void LocalCommunicator::raw_recv(void* data, int nbyte, int sender)
 {
 
 }
 
-void LocalCommunicator::sum(double *data, int n, double *receive_buffer, int target)
+void LocalCommunicator::raw_bcast(void* data, int nbyte, int broadcaster)
 {
-    if (receive_buffer != 0) {
-        ::memcpy(receive_buffer, data, sizeof(double) * n);
-    }
+
 }
 
-void LocalCommunicator::sum(unsigned int *data, int n, unsigned int *receive_buffer, int target)
-{
-    if (receive_buffer != 0) {
-        ::memcpy(receive_buffer, data, sizeof(unsigned int) * n);
-    }
+#define SUMMEMBER(T) \
+void LocalCommunicator::raw_sum(T *data, int n, T *receive_buffer, int target) \
+{ \
+    if (receive_buffer != 0) { \
+        ::memcpy(receive_buffer, data, sizeof(T) * n); \
+    } \
 }
 
-void LocalCommunicator::sum(int *data, int n, int *receive_buffer, int target)
-{
-    if (receive_buffer != 0) {
-        ::memcpy(receive_buffer, data, sizeof(int) * n);
-    }
-}
-
-void LocalCommunicator::sum(char *data, int n, char *receive_buffer, int target)
-{
-    if (receive_buffer != 0) {
-        ::memcpy(receive_buffer, data, sizeof(char) * n);
-    }
-}
-
-void LocalCommunicator::sum(long *data, int n, long *receive_buffer, int target)
-{
-    if (receive_buffer != 0) {
-        ::memcpy(receive_buffer, data, sizeof(long) * n);
-    }
-}
+SUMMEMBER(double)
+SUMMEMBER(unsigned int)
+SUMMEMBER(int)
+SUMMEMBER(char)
+SUMMEMBER(long)
 
 void LocalCommunicator::sync()
-{
-
-}
-
-void LocalCommunicator::barrier()
 {
 
 }
@@ -91,4 +70,5 @@ void LocalCommunicator::print(FILE *out) const
 {
     fprintf(out, "\n    Using LocalCommunicator (Number of processes = 1)\n\n");
 }
+
 

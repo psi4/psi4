@@ -58,7 +58,7 @@ int main(int argc, char **argv, char **envp)
         if(communicator == "MADNESS") {
             madness::initialize(argc, argv);
             Communicator::world = boost::shared_ptr<Communicator>(new MadCommunicator(
-                    boost::shared_ptr<madness::World>(new madness::World(MPI::COMM_WORLD)) ));
+                    boost::shared_ptr<madness::World>(new madness::World(MPI::COMM_WORLD)), communicator ));
         }
         else {
     #endif
@@ -68,7 +68,7 @@ int main(int argc, char **argv, char **envp)
             MPI_Init(&argc, &argv);
 
             // Create the global world communicator
-            Communicator::world = boost::shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD));
+            Communicator::world = boost::shared_ptr<Communicator>(new MPICommunicator(MPI_COMM_WORLD, communicator));
 
     #if HAVE_MADNESS == 1
         }
@@ -76,7 +76,7 @@ int main(int argc, char **argv, char **envp)
 
 #else
     // Initialize local communicator
-    Communicator::world = boost::shared_ptr<Communicator>(new LocalCommunicator);
+    Communicator::world = boost::shared_ptr<Communicator>(new LocalCommunicator(communicator));
 #endif
 
     // There should only be one of these in Psi4

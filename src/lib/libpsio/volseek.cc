@@ -26,7 +26,8 @@ namespace psi {
     /* Set file pointer to beginning of file */
     if (Communicator::world->me() == 0)
         errcod = lseek(stream, (ULI) 0, SEEK_SET);
-    Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
+    Communicator::world->bcast(&(errcod), 1, 0);
+    //Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
     if (errcod == -1)
       return (errcod);
     
@@ -35,7 +36,8 @@ namespace psi {
       total_offset = PSIO_BIGNUM * PSIO_PAGELEN;
       if (Communicator::world->me() == 0)
           errcod = lseek(stream, total_offset, SEEK_CUR);
-      Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
+      Communicator::world->bcast(&(errcod), 1, 0);
+      //Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
       if (errcod == -1)
         return (errcod);
     }
@@ -46,7 +48,8 @@ namespace psi {
     total_offset += offset; /* Add the page-relative term */
     if (Communicator::world->me() == 0)
         errcod = lseek(stream, total_offset, SEEK_CUR);
-    Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
+    Communicator::world->bcast(&(errcod), 1, 0);
+    //Communicator::world->raw_bcast(&errcod, sizeof(int), 0);
     if (errcod == -1)
       return (errcod);
     
