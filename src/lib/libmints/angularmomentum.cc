@@ -12,7 +12,7 @@ using namespace boost;
 
 // Initialize overlap_recur_ to +1 basis set angular momentum, +1 on each center is sufficient
 // to compute the dipole derivatives
-AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherical_transforms, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int nderiv) :
+AngularMomentumInt::AngularMomentumInt(std::vector<SphericalTransform>& spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int nderiv) :
     OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+1, bs2->max_am()+1)
 {
     int maxam1 = bs1_->max_am();
@@ -39,7 +39,7 @@ AngularMomentumInt::~AngularMomentumInt()
 }
 
 // The engine only supports segmented basis sets
-void AngularMomentumInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
+void AngularMomentumInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -252,7 +252,7 @@ void AngularMomentumInt::compute_pair(const shared_ptr<GaussianShell>& s1, const
 
 #if 0
 // The engine only supports segmented basis sets
-void AngularMomentumInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
+void AngularMomentumInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();

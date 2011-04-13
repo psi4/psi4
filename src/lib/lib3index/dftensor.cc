@@ -29,13 +29,13 @@ using namespace psi;
 
 namespace psi {
 
-DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux) :
+DFTensor::DFTensor(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> aux) :
     psio_(psio), primary_(primary), auxiliary_(aux), metric_(new FittingMetric(aux))
 {
     common_init();
     keep_ = 0;
 }
-DFTensor::DFTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> aux, bool keep) :
+DFTensor::DFTensor(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> aux, bool keep) :
     psio_(psio), primary_(primary), auxiliary_(aux), metric_(new FittingMetric(aux))
 {
     common_init();
@@ -137,12 +137,12 @@ void DFTensor::form_Aia(bool do_all)
     int rank = 0;
 
     //Get an ERI object for the AO three-index integrals
-    shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(), primary_, primary_));
+    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_,BasisSet::zero_ao_basis_set(), primary_, primary_));
     //Get a TEI for each thread
     const double **buffer = new const double*[nthread];
-    shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
+    boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-      eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory->eri());
+      eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
       buffer[Q] = eri[Q]->buffer();
     }
 //  Seems to be cauing a seg fault...why was this being called anyway?
@@ -173,7 +173,7 @@ void DFTensor::form_Aia(bool do_all)
     //indices for three-index integrals
     int P, MU, NU, nump, nummu, numnu, p, mu, nu, op, omu, onu, index;
 
-    shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(primary_, schwarz_cutoff_));
+    boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(primary_, schwarz_cutoff_));
     long int* schwarz_shell_pairs = schwarz->get_schwarz_shells_reverse();
 
     //for (int Q = 0; Q < primary_->nshell(); Q++) {
@@ -433,7 +433,7 @@ void DFTensor::apply_fitting(const std::string& entry)
   free_block(Aia);
   free_block(Qia);
 }
-void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
+void DFTensor::form_MO_integrals(unsigned long int memory_doubles, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
         double condition, double schwarz)
 {
     fprintf(outfile, "\n  ==> DF Tensor OO/OV/VV Integrals <==\n\n");
@@ -468,7 +468,7 @@ void DFTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     metric_.reset();
     psio_->close(PSIF_DFMP2_AIA, 0);
 }
-void DFTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
+void DFTensor::form_OV_integrals(unsigned long int memory_doubles, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv, bool Qia_striping, const std::string& fitting_algorithm,
         double condition, double schwarz)
 {
     fprintf(outfile, "\n  ==> DF Tensor OV Integrals <==\n\n");
@@ -500,10 +500,10 @@ void DFTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     metric_.reset();
     psio_->close(PSIF_DFMP2_AIA, 0);
 }
-shared_ptr<TensorChunk> DFTensor::get_oo_iterator(unsigned long int memory)
+boost::shared_ptr<TensorChunk> DFTensor::get_oo_iterator(unsigned long int memory)
 {
     if (Qia_striping_)
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_DF_TENSOR,
             "OO Integrals",
@@ -512,7 +512,7 @@ shared_ptr<TensorChunk> DFTensor::get_oo_iterator(unsigned long int memory)
             memory
         ));
     else
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_DF_TENSOR,
             "OO Integrals",
@@ -522,10 +522,10 @@ shared_ptr<TensorChunk> DFTensor::get_oo_iterator(unsigned long int memory)
             nocc_
         ));
 }
-shared_ptr<TensorChunk> DFTensor::get_ov_iterator(unsigned long int memory)
+boost::shared_ptr<TensorChunk> DFTensor::get_ov_iterator(unsigned long int memory)
 {
     if (Qia_striping_)
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_DF_TENSOR,
             "OV Integrals",
@@ -534,7 +534,7 @@ shared_ptr<TensorChunk> DFTensor::get_ov_iterator(unsigned long int memory)
             memory
         ));
     else
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_DF_TENSOR,
             "OV Integrals",
@@ -544,10 +544,10 @@ shared_ptr<TensorChunk> DFTensor::get_ov_iterator(unsigned long int memory)
             nvir_
         ));
 }
-shared_ptr<TensorChunk> DFTensor::get_vv_iterator(unsigned long int memory)
+boost::shared_ptr<TensorChunk> DFTensor::get_vv_iterator(unsigned long int memory)
 {
     if (Qia_striping_)
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_DF_TENSOR,
             "VV Integrals",
@@ -556,7 +556,7 @@ shared_ptr<TensorChunk> DFTensor::get_vv_iterator(unsigned long int memory)
             memory
         ));
     else
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_DF_TENSOR,
             "VV Integrals",

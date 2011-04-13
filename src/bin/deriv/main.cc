@@ -26,13 +26,13 @@ PsiReturnType deriv(Options & options)
 {
     tstart();
 
-    shared_ptr<PSIO> psio(new PSIO);
-//    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+    boost::shared_ptr<PSIO> psio(new PSIO);
+//    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     fprintf(outfile, " DERIV: Wrapper to libmints.\n   by Justin Turney\n\n");
 
     // We'll only be working with the active molecule.
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!\n   Mints wrapper is not meant to be run with IPV1 inputs.");
@@ -40,17 +40,17 @@ PsiReturnType deriv(Options & options)
     }
 
     // Create a new matrix factory
-    shared_ptr<MatrixFactory> factory(new MatrixFactory);
+    boost::shared_ptr<MatrixFactory> factory(new MatrixFactory);
 
     // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, "BASIS");
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSet> basisset = BasisSet::construct(parser, molecule, "BASIS");
 
     // Initialize an integral object.
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset, basisset, basisset, basisset));
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset, basisset, basisset, basisset));
 
     // Create an SOBasisSet
-    shared_ptr<SOBasisSet> sobasisset(new SOBasisSet(basisset, integral));
+    boost::shared_ptr<SOBasisSet> sobasisset(new SOBasisSet(basisset, integral));
     SharedMatrix usotoao(sobasisset->petitelist()->sotoao());
 //    SharedMatrix aotoso(sobasisset->petitelist()->aotoso());
 
@@ -115,7 +115,7 @@ PsiReturnType deriv(Options & options)
 
     // Load in orbital energies
     SharedVector etmp = Process::environment.reference_wavefunction()->epsilon_a();
-    shared_ptr<SimpleMatrix> W(factory->create_simple_matrix("W"));
+    boost::shared_ptr<SimpleMatrix> W(factory->create_simple_matrix("W"));
 
     int nbf = basisset->nbf();
     for (int m=0; m<nbf; ++m) {

@@ -15,7 +15,7 @@ using namespace psi;
 
 namespace psi { namespace dfmp2 {
 
-DFMP2Energy::DFMP2Energy(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+DFMP2Energy::DFMP2Energy(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt)
 {
 

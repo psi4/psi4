@@ -46,9 +46,9 @@ using namespace std;
 PsiReturnType mcscf(Options& options)
 {
   using namespace psi;
-  shared_ptr<PSIO> psio(new PSIO);
+  boost::shared_ptr<PSIO> psio(new PSIO);
 //  psiopp_ipv1_config(psio);
-  shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+  boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
   memory_manager  = new psi::MemoryManager();
 
@@ -65,7 +65,7 @@ PsiReturnType mcscf(Options& options)
       mints->integrals();
       delete mints;
       // Now, set the reference wavefunction for subsequent codes to use
-      shared_ptr<Wavefunction> wfn(new SCF(options,psio,chkpt));
+      boost::shared_ptr<Wavefunction> wfn(new SCF(options,psio,chkpt));
       Process::environment.set_reference_wavefunction(wfn);
       moinfo_scf      = new psi::MOInfoSCF(options);
       wfn->compute_energy();

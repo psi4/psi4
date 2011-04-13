@@ -7,7 +7,7 @@
 using namespace psi;
 using namespace boost;
 
-GradientWriter::GradientWriter(shared_ptr<Molecule> mol, const SimpleMatrix& grad)
+GradientWriter::GradientWriter(boost::shared_ptr<Molecule> mol, const SimpleMatrix& grad)
     : molecule_(mol), gradient_(grad)
 {
 }
@@ -247,7 +247,7 @@ void NBOWriter::write(const std::string &filename)
     //Loop over all the shells
     for( int i =0; i < nshells; i++)
         {
-            shared_ptr<GaussianShell> gshell(basisset.shell(i));
+            boost::shared_ptr<GaussianShell> gshell(basisset.shell(i));
             int nfns = gshell->nfunction(); //get number of functions in shell
             components.set(0, i, nfns);
             int angm = gshell->am(); //get angular momentum of shell

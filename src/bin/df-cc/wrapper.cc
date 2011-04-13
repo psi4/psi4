@@ -33,8 +33,8 @@ PsiReturnType dfcc(Options & options)
 
     Wavefunction::initialize_singletons();
 
-    shared_ptr<PSIO> psio(new PSIO);
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+    boost::shared_ptr<PSIO> psio(new PSIO);
+    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     timer_init();
 

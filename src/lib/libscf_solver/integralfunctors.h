@@ -27,9 +27,9 @@ template<class T> class shared_ptr;
  *                   this is called by the out-of-core and direct codes, and will take
  *                   the relative (within irrep) and absolute values of p, q, r and s, along
  *                   with their symmetries, to generate the J and K matrices.
- * void operator()(shared_ptr<DFHF> dfhf, shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
- * void operator()(shared_ptr<DSHF> dfHF) which will set up a DFHF object
- * void operator()(shared_ptr<PKIntegrals> pk_integrals) which is used in the PK algorithms.
+ * void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> psHF) which will set up a PSHF object
+ * void operator()(boost::shared_ptr<DSHF> dfHF) which will set up a DFHF object
+ * void operator()(boost::shared_ptr<PKIntegrals> pk_integrals) which is used in the PK algorithms.
  */
 
 

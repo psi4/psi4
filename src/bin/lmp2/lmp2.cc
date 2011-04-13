@@ -20,9 +20,9 @@ namespace lmp2 {
 
 PsiReturnType lmp2(Options &options) {
 
-    shared_ptr<PSIO> psio_obj(new PSIO);
+    boost::shared_ptr<PSIO> psio_obj(new PSIO);
 //    psiopp_ipv1_config(psio_obj);
-    shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));
+    boost::shared_ptr<Chkpt> chkpt_obj(new Chkpt(psio_obj, PSIO_OPEN_OLD));
 
     if (Communicator::world->me() == 0) {
         tstart();

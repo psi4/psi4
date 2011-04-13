@@ -35,7 +35,7 @@ LMP2::~LMP2() {
 //  free_block(D);
 }
 
-LMP2::LMP2(shared_ptr<PSIO> psio_o, shared_ptr<Chkpt> chkpt_o) {
+LMP2::LMP2(boost::shared_ptr<PSIO> psio_o, boost::shared_ptr<Chkpt> chkpt_o) {
 
   psio = psio_o;
   chkpt = chkpt_o;
@@ -229,7 +229,7 @@ int LMP2::get_num_unique_shells() {
     return count;
 }
 
-int** LMP2::get_MN_shell(shared_ptr<BasisSet> basisset) {
+int** LMP2::get_MN_shell(boost::shared_ptr<BasisSet> basisset) {
 
     int ** MN_shell = init_int_matrix(4, num_unique_shells);
     int count = 0;

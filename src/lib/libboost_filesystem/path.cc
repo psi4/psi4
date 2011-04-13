@@ -760,7 +760,7 @@ namespace
 
 #   else
     // ISO C calls this "the locale-specific native environment":
-    return std::locale("");
+    return std::locale();
 
 #   endif
   }

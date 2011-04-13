@@ -42,9 +42,9 @@ void LMP2::direct_df_transformation2() {
   Wavefunction::initialize_singletons();
 
   // Create a basis set object and initialize it using the checkpoint file.
-  shared_ptr<BasisSet>basis = shared_ptr<BasisSet > (new BasisSet(chkpt));
-  shared_ptr<BasisSet>ribasis = shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS_MP2"));
-  shared_ptr<BasisSet>zero = BasisSet::zero_basis_set();
+  boost::shared_ptr<BasisSet>basis = boost::shared_ptr<BasisSet > (new BasisSet(chkpt));
+  boost::shared_ptr<BasisSet>ribasis = boost::shared_ptr<BasisSet > (new BasisSet(chkpt, "DF_BASIS_MP2"));
+  boost::shared_ptr<BasisSet>zero = BasisSet::zero_basis_set();
 
   // Create integral factory
   IntegralFactory rifactory(ribasis, zero, basis, basis);

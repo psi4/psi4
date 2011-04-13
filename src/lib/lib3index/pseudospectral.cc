@@ -31,8 +31,8 @@ using namespace psi;
 
 namespace psi {
 
-PSTensor::PSTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary,
-                   shared_ptr<BasisSet> dealias, shared_ptr<PseudoGrid> grid) :
+PSTensor::PSTensor(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+                   boost::shared_ptr<BasisSet> dealias, boost::shared_ptr<PseudoGrid> grid) :
                    psio_(psio), primary_(primary), dealias_(dealias), grid_(grid)
 {
     common_init();
@@ -50,32 +50,32 @@ void PSTensor::common_init()
     nvir_ = 0;
     psio_->open(PSIF_PS_TENSOR, PSIO_OPEN_NEW);
 }
-shared_ptr<Matrix> PSTensor::form_Q(shared_ptr<Matrix> C)
+boost::shared_ptr<Matrix> PSTensor::form_Q(boost::shared_ptr<Matrix> C)
 {
     int nocc = C->colspi()[0];
-    shared_ptr<Matrix> Q = form_Q_AO();
-    shared_ptr<Matrix> Qnew( new Matrix("Q_i^P (Fitted Collocation Matrix)", nocc, naux_));
+    boost::shared_ptr<Matrix> Q = form_Q_AO();
+    boost::shared_ptr<Matrix> Qnew( new Matrix("Q_i^P (Fitted Collocation Matrix)", nocc, naux_));
 
     C_DGEMM('T', 'N', nocc, naux_, nao_, 1.0, C->pointer()[0], nocc, Q->pointer()[0], naux_, 0.0, Qnew->pointer(0)[0], naux_);
 
     return Qnew;
 }
-shared_ptr<Matrix> PSTensor::form_X(shared_ptr<Matrix> C)
+boost::shared_ptr<Matrix> PSTensor::form_X(boost::shared_ptr<Matrix> C)
 {
     int nocc = C->colspi()[0];
-    shared_ptr<Matrix> Q = form_X_AO();
-    shared_ptr<Matrix> Qnew( new Matrix("X_a^P (Collocation Matrix)", nocc, naux_));
+    boost::shared_ptr<Matrix> Q = form_X_AO();
+    boost::shared_ptr<Matrix> Qnew( new Matrix("X_a^P (Collocation Matrix)", nocc, naux_));
 
     C_DGEMM('T', 'N', nocc, naux_, nao_, 1.0, C->pointer()[0], nocc, Q->pointer()[0], naux_, 0.0, Qnew->pointer(0)[0], naux_);
 
     return Qnew;
 }
-shared_ptr<Matrix> PSTensor::form_X_AO()
+boost::shared_ptr<Matrix> PSTensor::form_X_AO()
 {
-    shared_ptr<Matrix> X(new Matrix("Primary Collocation Metric (Dirac)", primary_->nbf(), naux_));
+    boost::shared_ptr<Matrix> X(new Matrix("Primary Collocation Metric (Dirac)", primary_->nbf(), naux_));
     double** Xp = X->pointer();
 
-    shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
+    boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -90,12 +90,12 @@ shared_ptr<Matrix> PSTensor::form_X_AO()
 
     return X;
 }
-shared_ptr<Matrix> PSTensor::form_X_dealias()
+boost::shared_ptr<Matrix> PSTensor::form_X_dealias()
 {
-    shared_ptr<Matrix> X(new Matrix("Dealias Collocation Metric (Dirac)", dealias_->nbf(), naux_));
+    boost::shared_ptr<Matrix> X(new Matrix("Dealias Collocation Metric (Dirac)", dealias_->nbf(), naux_));
     double** Xp = X->pointer();
 
-    shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
+    boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
@@ -110,37 +110,37 @@ shared_ptr<Matrix> PSTensor::form_X_dealias()
 
     return X;
 }
-shared_ptr<Matrix> PSTensor::form_S()
+boost::shared_ptr<Matrix> PSTensor::form_S()
 {
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
-    shared_ptr<OneBodyAOInt> o2(fact->ao_overlap());
-    shared_ptr<Matrix> S(new Matrix("Primary Overlap Matrix", primary_->nbf(), primary_->nbf()));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
+    boost::shared_ptr<OneBodyAOInt> o2(fact->ao_overlap());
+    boost::shared_ptr<Matrix> S(new Matrix("Primary Overlap Matrix", primary_->nbf(), primary_->nbf()));
     o2->compute(S);
 
     return S;
 }
-shared_ptr<Matrix> PSTensor::form_S_dealias()
+boost::shared_ptr<Matrix> PSTensor::form_S_dealias()
 {
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_, primary_, primary_, primary_));
-    shared_ptr<OneBodyAOInt> o2(fact->ao_overlap());
-    shared_ptr<Matrix> S(new Matrix("Dealias Overlap Matrix", dealias_->nbf(), primary_->nbf()));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_, primary_, primary_, primary_));
+    boost::shared_ptr<OneBodyAOInt> o2(fact->ao_overlap());
+    boost::shared_ptr<Matrix> S(new Matrix("Dealias Overlap Matrix", dealias_->nbf(), primary_->nbf()));
     o2->compute(S);
 
     return S;
 }
-shared_ptr<Matrix> PSTensor::form_Q_AO()
+boost::shared_ptr<Matrix> PSTensor::form_Q_AO()
 {
     int nbf = primary_->nbf();
     int ndf = dealias_->nbf();
     int ntotal = nbf + ndf;
 
-    shared_ptr<Matrix> Q(new Matrix("Q (Least-Squares)", nbf, naux_));
+    boost::shared_ptr<Matrix> Q(new Matrix("Q (Least-Squares)", nbf, naux_));
     double** Qp = Q->pointer();
 
-    shared_ptr<Matrix> X = form_X_AO();
-    shared_ptr<Matrix> Xd = form_X_dealias();
-    shared_ptr<Matrix> S = form_S();
-    shared_ptr<Matrix> Sd = form_S_dealias();
+    boost::shared_ptr<Matrix> X = form_X_AO();
+    boost::shared_ptr<Matrix> Xd = form_X_dealias();
+    boost::shared_ptr<Matrix> S = form_S();
+    boost::shared_ptr<Matrix> Sd = form_S_dealias();
 
     //X->print();
     //Xd->print();
@@ -153,7 +153,7 @@ shared_ptr<Matrix> PSTensor::form_Q_AO()
     double** Sdp = Sd->pointer();
 
     // Copy S for later use (final projection)
-    shared_ptr<Matrix> S2(new Matrix("S (Copy)", nbf, nbf));
+    boost::shared_ptr<Matrix> S2(new Matrix("S (Copy)", nbf, nbf));
     double** S2p = S->pointer();
     memcpy(static_cast<void*> (S2p[0]), static_cast<void*> (Sp[0]), nbf*nbf*sizeof(double));
 
@@ -164,7 +164,7 @@ shared_ptr<Matrix> PSTensor::form_Q_AO()
     //Sd->print();
 
     // Build the Collocation matrix
-    shared_ptr<Matrix> R(new Matrix("R (Full Collocation Matrix)", ntotal, naux_));
+    boost::shared_ptr<Matrix> R(new Matrix("R (Full Collocation Matrix)", ntotal, naux_));
     double** Rp = R->pointer();
     double** Rdp = &Rp[nbf];
     memcpy(static_cast<void*> (Rp[0]), static_cast<void*> (Xp[0]), nbf*naux_*sizeof(double));
@@ -202,7 +202,7 @@ shared_ptr<Matrix> PSTensor::form_Q_AO()
     //R->print();
 
     // Put R in the upper triangle where it belongs
-    shared_ptr<Matrix> r(new Matrix("R (of QR decomposition)", ntotal, ntotal));
+    boost::shared_ptr<Matrix> r(new Matrix("R (of QR decomposition)", ntotal, ntotal));
     double** rp = r->pointer();
     for (int i = 0; i < ntotal; i++)
         for (int j = i; j < ntotal; j++) {
@@ -242,18 +242,18 @@ shared_ptr<Matrix> PSTensor::form_Q_AO()
 
     return Q;
 }
-shared_ptr<Matrix> PSTensor::form_A_AO()
+boost::shared_ptr<Matrix> PSTensor::form_A_AO()
 {
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
-    shared_ptr<Matrix> A(new Matrix("A Integrals", naux_, primary_->nbf()*primary_->nbf()));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
+    boost::shared_ptr<Matrix> A(new Matrix("A Integrals", naux_, primary_->nbf()*primary_->nbf()));
     double** Ap = A->pointer();
-    shared_ptr<Matrix> T(new Matrix("Temp", primary_->nbf(), primary_->nbf()));
+    boost::shared_ptr<Matrix> T(new Matrix("Temp", primary_->nbf(), primary_->nbf()));
     double** Tp = T->pointer();
 
-    shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+    boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
     const double* buffer = ints->buffer();
 
-    shared_ptr<GridBlock> block = grid_->getBlock();
+    boost::shared_ptr<GridBlock> block = grid_->getBlock();
     double* x = block->getX();
     double* y = block->getY();
     double* z = block->getZ();
@@ -273,9 +273,9 @@ shared_ptr<Matrix> PSTensor::form_A_AO()
 }
 void PSTensor::form_I_AO()
 {
-    shared_ptr<Matrix> X = form_X_AO();
-    shared_ptr<Matrix> Q = form_Q_AO();
-    shared_ptr<Matrix> A = form_A_AO();
+    boost::shared_ptr<Matrix> X = form_X_AO();
+    boost::shared_ptr<Matrix> Q = form_Q_AO();
+    boost::shared_ptr<Matrix> A = form_A_AO();
 
     X->print();
     Q->print();
@@ -283,14 +283,14 @@ void PSTensor::form_I_AO()
 
     int nbf = primary_->nbf();
 
-    shared_ptr<Matrix> I(new Matrix("PS ERIs", nbf*nbf, nbf*nbf));
+    boost::shared_ptr<Matrix> I(new Matrix("PS ERIs", nbf*nbf, nbf*nbf));
 
     double** Xp = X->pointer();
     double** Ap = A->pointer();
     double** Qp = Q->pointer();
     double** Ip = I->pointer();
 
-    shared_ptr<Matrix> temp(new Matrix("Temp", naux_, nbf*nbf));
+    boost::shared_ptr<Matrix> temp(new Matrix("Temp", naux_, nbf*nbf));
     double** Tp = temp->pointer();
 
     for (int P = 0; P < naux_; P++) {
@@ -329,22 +329,22 @@ void PSTensor::form_Aia(bool do_all)
         free(temp);
     }
 
-    std::vector<shared_ptr<PseudospectralInt> > ints;
+    std::vector<boost::shared_ptr<PseudospectralInt> > ints;
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
     #endif
     ints.resize(nthread);
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
     for (int thread = 0; thread < nthread; thread++)
-        ints[thread] = shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+        ints[thread] = boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
-    shared_ptr<Matrix> Amn(new Matrix("(A|mn) Pseudospectral Integrals", nthread, nao_*nao_));
-    shared_ptr<Matrix> Ami(new Matrix("(A|mi) Pseudospectral Integrals", nthread, nao_*nocc_));
-    shared_ptr<Matrix> Ama;
+    boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn) Pseudospectral Integrals", nthread, nao_*nao_));
+    boost::shared_ptr<Matrix> Ami(new Matrix("(A|mi) Pseudospectral Integrals", nthread, nao_*nocc_));
+    boost::shared_ptr<Matrix> Ama;
     if (do_all)
-        Ama = shared_ptr<Matrix> (new Matrix("(A|ma) Pseudospectral Integrals", nthread, nao_*nvir_));
+        Ama = boost::shared_ptr<Matrix> (new Matrix("(A|ma) Pseudospectral Integrals", nthread, nao_*nvir_));
 
     unsigned long int scratch = (ULI)nthread*(nao_*nao_ + nao_*nocc_ + (do_all ? nao_*nvir_: 0L));
     int max_rows = (memory_ - scratch)/ (nocc_ *(ULI) nvir_ + (do_all ? nocc_*nocc_ + nvir_*nvir_ : 0L));
@@ -353,12 +353,12 @@ void PSTensor::form_Aia(bool do_all)
     if (max_rows < 1L)
         max_rows = 1L;
 
-    shared_ptr<Matrix> Aia(new Matrix("(A|ia) Pseudospectral Integrals", max_rows, nvir_*nocc_));
-    shared_ptr<Matrix> Aii;
-    shared_ptr<Matrix> Aaa;
+    boost::shared_ptr<Matrix> Aia(new Matrix("(A|ia) Pseudospectral Integrals", max_rows, nvir_*nocc_));
+    boost::shared_ptr<Matrix> Aii;
+    boost::shared_ptr<Matrix> Aaa;
     if (do_all) {
-        Aii = shared_ptr<Matrix>(new Matrix("(A|ii) Pseudospectral Integrals", max_rows, nocc_*nocc_));
-        Aaa = shared_ptr<Matrix>(new Matrix("(A|aa) Pseudospectral Integrals", max_rows, nvir_*nvir_));
+        Aii = boost::shared_ptr<Matrix>(new Matrix("(A|ii) Pseudospectral Integrals", max_rows, nocc_*nocc_));
+        Aaa = boost::shared_ptr<Matrix>(new Matrix("(A|aa) Pseudospectral Integrals", max_rows, nvir_*nvir_));
     }
 
     int nblocks = naux_ / max_rows;
@@ -410,12 +410,12 @@ void PSTensor::form_Aia(bool do_all)
     double** Cop = Co_->pointer();
     double** Cvp = Cv_->pointer();
 
-    shared_ptr<GridBlock> block = grid_->getBlock();
+    boost::shared_ptr<GridBlock> block = grid_->getBlock();
     double* x = block->getX();
     double* y = block->getY();
     double* z = block->getZ();
 
-    shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(primary_,schwarz_cutoff_));
+    boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(primary_,schwarz_cutoff_));
     long int* schwarz_shell_pairs = schwarz->get_schwarz_shells_reverse();
 
     for (int block_i = 0; block_i < nblocks; block_i++) {
@@ -575,7 +575,7 @@ void PSTensor::restripe(const std::string& entry)
   free_block(Aia);
   free_block(Qia);
 }
-void PSTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, double schwarz)
+void PSTensor::form_MO_integrals(unsigned long int memory_doubles, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv, bool Qia_striping, double schwarz)
 {
     fprintf(outfile, "\n  ==> PS Tensor OO/OV/VV Integrals <==\n\n");
     fprintf(outfile, "  %s striping will be used for the integrals.\n", (Qia_striping ? "(Q|ia)" : "(ia|Q)"));
@@ -596,7 +596,7 @@ void PSTensor::form_MO_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     restripe("VV Integrals");
     psio_->close(PSIF_DFMP2_AIA,0);
 }
-void PSTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Matrix> Co, shared_ptr<Matrix> Cv, bool Qia_striping, double schwarz)
+void PSTensor::form_OV_integrals(unsigned long int memory_doubles, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv, bool Qia_striping, double schwarz)
 {
     fprintf(outfile, "\n  ==> PS Tensor OV Integrals <==\n\n");
     fprintf(outfile, "  %s striping will be used for the integrals.\n", (Qia_striping ? "(Q|ia)" : "(ia|Q)"));
@@ -616,10 +616,10 @@ void PSTensor::form_OV_integrals(unsigned long int memory_doubles, shared_ptr<Ma
     restripe("OV Integrals");
     psio_->close(PSIF_DFMP2_AIA,0);
 }
-shared_ptr<TensorChunk> PSTensor::get_oo_iterator(unsigned long int memory)
+boost::shared_ptr<TensorChunk> PSTensor::get_oo_iterator(unsigned long int memory)
 {
     if (Qia_striping_)
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_PS_TENSOR,
             "OO Integrals",
@@ -628,7 +628,7 @@ shared_ptr<TensorChunk> PSTensor::get_oo_iterator(unsigned long int memory)
             memory
         ));
     else
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_PS_TENSOR,
             "OO Integrals",
@@ -638,10 +638,10 @@ shared_ptr<TensorChunk> PSTensor::get_oo_iterator(unsigned long int memory)
             nocc_
         ));
 }
-shared_ptr<TensorChunk> PSTensor::get_ov_iterator(unsigned long int memory)
+boost::shared_ptr<TensorChunk> PSTensor::get_ov_iterator(unsigned long int memory)
 {
     if (Qia_striping_)
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_PS_TENSOR,
             "OV Integrals",
@@ -650,7 +650,7 @@ shared_ptr<TensorChunk> PSTensor::get_ov_iterator(unsigned long int memory)
             memory
         ));
     else
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_PS_TENSOR,
             "OV Integrals",
@@ -660,10 +660,10 @@ shared_ptr<TensorChunk> PSTensor::get_ov_iterator(unsigned long int memory)
             nvir_
         ));
 }
-shared_ptr<TensorChunk> PSTensor::get_vv_iterator(unsigned long int memory)
+boost::shared_ptr<TensorChunk> PSTensor::get_vv_iterator(unsigned long int memory)
 {
     if (Qia_striping_)
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_PS_TENSOR,
             "VV Integrals",
@@ -672,7 +672,7 @@ shared_ptr<TensorChunk> PSTensor::get_vv_iterator(unsigned long int memory)
             memory
         ));
     else
-        return shared_ptr<TensorChunk>(new TensorChunk(
+        return boost::shared_ptr<TensorChunk>(new TensorChunk(
             psio_,
             PSIF_PS_TENSOR,
             "VV Integrals",
@@ -684,22 +684,22 @@ shared_ptr<TensorChunk> PSTensor::get_vv_iterator(unsigned long int memory)
 }
 
 
-DirectPSTensor::DirectPSTensor(shared_ptr<PSIO> psio, shared_ptr<BasisSet> primary,
-                   shared_ptr<BasisSet> dealias, shared_ptr<PseudoGrid> grid) :
+DirectPSTensor::DirectPSTensor(boost::shared_ptr<PSIO> psio, boost::shared_ptr<BasisSet> primary,
+                   boost::shared_ptr<BasisSet> dealias, boost::shared_ptr<PseudoGrid> grid) :
                    PSTensor(psio,primary,dealias,grid)
 {
 }
 DirectPSTensor::~DirectPSTensor()
 {
 }
-void DirectPSTensor::initialize_OV_integrals(shared_ptr<Matrix> Cocc, shared_ptr<Matrix> Cvir, unsigned long int memory, double schwarz_cutoff)
+void DirectPSTensor::initialize_OV_integrals(boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir, unsigned long int memory, double schwarz_cutoff)
 {
     memory_ = memory;
     Co_ = Cocc;
     Cv_ = Cvir;
     nocc_ = Cocc->colspi()[0];
     nvir_ = Cvir->colspi()[0];
-    schwarz_ = shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, schwarz_cutoff));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, schwarz_cutoff));
 
     // Initialize indexing
     block_ = -1;
@@ -710,12 +710,12 @@ void DirectPSTensor::initialize_OV_integrals(shared_ptr<Matrix> Cocc, shared_ptr
     #endif
     ints_.resize(nthread);
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_, primary_, primary_, primary_));
     for (int thread = 0; thread < nthread; thread++)
-        ints_[thread] = shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+        ints_[thread] = boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
-    Amn_ = shared_ptr<Matrix>(new Matrix("(A|mn) Pseudospectral Integrals", nthread, nao_*nao_));
-    Ami_ = shared_ptr<Matrix>(new Matrix("(A|mi) Pseudospectral Integrals", nthread, nao_*nocc_));
+    Amn_ = boost::shared_ptr<Matrix>(new Matrix("(A|mn) Pseudospectral Integrals", nthread, nao_*nao_));
+    Ami_ = boost::shared_ptr<Matrix>(new Matrix("(A|mi) Pseudospectral Integrals", nthread, nao_*nocc_));
 
     max_rows_ = memory_ / (nocc_ *(ULI) nvir_);
     if (max_rows_ > naux_)
@@ -723,7 +723,7 @@ void DirectPSTensor::initialize_OV_integrals(shared_ptr<Matrix> Cocc, shared_ptr
     if (max_rows_ < 1L)
         max_rows_ = 1L;
 
-    Aia_ = shared_ptr<Matrix>(new Matrix("(A|ia) Pseudospectral Integrals", max_rows_, nvir_*nocc_));
+    Aia_ = boost::shared_ptr<Matrix>(new Matrix("(A|ia) Pseudospectral Integrals", max_rows_, nvir_*nocc_));
 
     int nblocks = naux_ / max_rows_;
     if (nblocks * max_rows_ != naux_)
@@ -775,7 +775,7 @@ void DirectPSTensor::compute_block(int block_number)
     double** Cop = Co_->pointer();
     double** Cvp = Cv_->pointer();
 
-    shared_ptr<GridBlock> block = grid_->getBlock();
+    boost::shared_ptr<GridBlock> block = grid_->getBlock();
     double* x = block->getX();
     double* y = block->getY();
     double* z = block->getZ();

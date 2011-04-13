@@ -27,17 +27,17 @@ std::string Functional::testFunctionals()
 
     s << "  Testing Functionals:" << endl;
 
-    shared_ptr<Properties> props = Properties::get_testbed();
+    boost::shared_ptr<Properties> props = Properties::get_testbed();
     int npoints = props->getTrueSize();
 
     for (int A = 0; A < names.size(); A++ ) { 
-        shared_ptr<Functional> func = Functional::createFunctional(names[A],npoints,2);
+        boost::shared_ptr<Functional> func = Functional::createFunctional(names[A],npoints,2);
         s << func->testFunctional(props);
     }
 
     return s.str();
 }
-std::string Functional::testFunctional(shared_ptr<Properties> props)
+std::string Functional::testFunctional(boost::shared_ptr<Properties> props)
 {    
     std::stringstream s;
     

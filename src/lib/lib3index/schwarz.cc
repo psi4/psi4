@@ -30,7 +30,7 @@ using namespace psi;
 
 namespace psi {
 
-SchwarzSieve::SchwarzSieve(shared_ptr<BasisSet> bas, double cut) :
+SchwarzSieve::SchwarzSieve(boost::shared_ptr<BasisSet> bas, double cut) :
     basis_(bas), schwarz_(cut), initialized_(false)
 {
     form_schwarz_sieve(cut);
@@ -61,7 +61,7 @@ void SchwarzSieve::form_schwarz_ints()
         schwarz_fun_vals_[Q] = 0.0;
 
     IntegralFactory schwarzfactory(basis_,basis_,basis_,basis_);
-    shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
+    boost::shared_ptr<TwoBodyAOInt> eri = boost::shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
     const double *buffer = eri->buffer();
 
     int MU, NU, mu, nu,omu,onu, nummu, numnu, index;

@@ -33,27 +33,27 @@ TwoBodyAOInt::~TwoBodyAOInt()
 
 }
 
-shared_ptr<BasisSet> TwoBodyAOInt::basis()
+boost::shared_ptr<BasisSet> TwoBodyAOInt::basis()
 {
     return original_bs1_;
 }
 
-shared_ptr<BasisSet> TwoBodyAOInt::basis1()
+boost::shared_ptr<BasisSet> TwoBodyAOInt::basis1()
 {
     return original_bs1_;
 }
 
-shared_ptr<BasisSet> TwoBodyAOInt::basis2()
+boost::shared_ptr<BasisSet> TwoBodyAOInt::basis2()
 {
     return original_bs2_;
 }
 
-shared_ptr<BasisSet> TwoBodyAOInt::basis3()
+boost::shared_ptr<BasisSet> TwoBodyAOInt::basis3()
 {
     return original_bs3_;
 }
 
-shared_ptr<BasisSet> TwoBodyAOInt::basis4()
+boost::shared_ptr<BasisSet> TwoBodyAOInt::basis4()
 {
     return original_bs4_;
 }
@@ -68,7 +68,7 @@ TwoBodyAOInt* TwoBodyAOInt::clone()
     throw FeatureNotImplemented("libmints", "TwoBodyInt::clone()", __FILE__, __LINE__);
 }
 
-void TwoBodyAOInt::normalize_am(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4, int nchunk)
+void TwoBodyAOInt::normalize_am(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2, boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4, int nchunk)
 {
 #ifdef MINTS_TIMER
     timer_on("Angular momentum normalization");
@@ -133,7 +133,7 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
 #ifdef MINTS_TIMER
     timer_on("Permute target");
 #endif
-    shared_ptr<GaussianShell> s1, s2, s3, s4;
+    boost::shared_ptr<GaussianShell> s1, s2, s3, s4;
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);
@@ -306,7 +306,7 @@ void TwoBodyAOInt::pure_transform(int sh1, int sh2, int sh3, int sh4, int nchunk
 #ifdef MINTS_TIMER
     timer_on("Pure transformation");
 #endif
-    shared_ptr<GaussianShell> s1, s2, s3, s4;
+    boost::shared_ptr<GaussianShell> s1, s2, s3, s4;
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);

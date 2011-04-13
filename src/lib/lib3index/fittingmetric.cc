@@ -34,7 +34,7 @@ namespace psi {
 FittingMetric::FittingMetric()
 {
     Options& opt = Process::environment.options;
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
     if (molecule.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
@@ -45,7 +45,7 @@ FittingMetric::FittingMetric()
     molecule->update_geometry();
 
     // Grab the auxiliary bases (use the SCF tags for now)
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     aux_ = BasisSet::construct(parser, molecule, "RI_BASIS_SCF");
     if (opt.get_str("POISSON_BASIS_SCF") != "") {
         pois_ =  BasisSet::construct(parser, molecule, "POISSON_BASIS_SCF");
@@ -56,11 +56,11 @@ FittingMetric::FittingMetric()
     is_inverted_ = false;
     force_C1_ = false;
 }
-FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, bool force_C1) :
+FittingMetric::FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1) :
     aux_(aux), is_poisson_(false), is_inverted_(false), force_C1_(force_C1)
 {
 }
-FittingMetric::FittingMetric(shared_ptr<BasisSet> aux, shared_ptr<BasisSet> pois, bool force_C1) :
+FittingMetric::FittingMetric(boost::shared_ptr<BasisSet> aux, boost::shared_ptr<BasisSet> pois, bool force_C1) :
     aux_(aux), pois_(pois), is_poisson_(true), is_inverted_(false), force_C1_(force_C1)
 {
 }
@@ -75,13 +75,13 @@ void FittingMetric::form_fitting_metric()
     algorithm_ = "NONE";
 
     // Sizing/symmetry indexing
-    shared_ptr<IntegralFactory> auxfact(new IntegralFactory(aux_, aux_, aux_, aux_));
-    shared_ptr<PetiteList> auxpet(new PetiteList(aux_, auxfact));
-    shared_ptr<IntegralFactory> poisfact;
-    shared_ptr<PetiteList> poispet;
+    boost::shared_ptr<IntegralFactory> auxfact(new IntegralFactory(aux_, aux_, aux_, aux_));
+    boost::shared_ptr<PetiteList> auxpet(new PetiteList(aux_, auxfact));
+    boost::shared_ptr<IntegralFactory> poisfact;
+    boost::shared_ptr<PetiteList> poispet;
     if (is_poisson_) {
-        poisfact = shared_ptr<IntegralFactory>(new IntegralFactory(pois_, pois_, pois_, pois_));
-        poispet = shared_ptr<PetiteList>(new PetiteList(pois_, poisfact));
+        poisfact = boost::shared_ptr<IntegralFactory>(new IntegralFactory(pois_, pois_, pois_, pois_));
+        poispet = boost::shared_ptr<PetiteList>(new PetiteList(pois_, poisfact));
     }
 
     int naux = 0;
@@ -101,9 +101,9 @@ void FittingMetric::form_fitting_metric()
     Dimension ngauspi = auxpet->SO_basisdim();
 
     // Build the full DF/Poisson matrix in the AO basis first
-    shared_ptr<Matrix> AOmetric(new Matrix("AO Basis DF Metric", naux, naux));
+    boost::shared_ptr<Matrix> AOmetric(new Matrix("AO Basis DF Metric", naux, naux));
     double** W = AOmetric->pointer(0);
-    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
     // Only thread if not already in parallel (handy for local fitting)
     int nthread = 1;
@@ -116,9 +116,9 @@ void FittingMetric::form_fitting_metric()
     // == (A|B) Block == //
     IntegralFactory rifactory_J(aux_, zero, aux_, zero);
     const double **Jbuffer = new const double*[nthread];
-    shared_ptr<TwoBodyAOInt> *Jint = new shared_ptr<TwoBodyAOInt>[nthread];
+    boost::shared_ptr<TwoBodyAOInt> *Jint = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        Jint[Q] = shared_ptr<TwoBodyAOInt>(rifactory_J.eri());
+        Jint[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory_J.eri());
         Jbuffer[Q] = Jint[Q]->buffer();
     }
 
@@ -156,9 +156,9 @@ void FittingMetric::form_fitting_metric()
         // == (AB) Block == //
         IntegralFactory rifactory_RP(pois_, aux_,  zero, zero);
         const double **Obuffer = new const double*[nthread];
-        shared_ptr<OneBodyAOInt> *Oint = new shared_ptr<OneBodyAOInt>[nthread];
+        boost::shared_ptr<OneBodyAOInt> *Oint = new boost::shared_ptr<OneBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
-            Oint[Q] = shared_ptr<OneBodyAOInt>(rifactory_RP.ao_overlap());
+            Oint[Q] = boost::shared_ptr<OneBodyAOInt>(rifactory_RP.ao_overlap());
             Obuffer[Q] = Oint[Q]->buffer();
         }
 
@@ -193,9 +193,9 @@ void FittingMetric::form_fitting_metric()
         // == (A|T|B) Block == //
         IntegralFactory rifactory_P(pois_, pois_,  zero, zero);
         const double **Tbuffer = new const double*[nthread];
-        shared_ptr<OneBodyAOInt> *Tint = new shared_ptr<OneBodyAOInt>[nthread];
+        boost::shared_ptr<OneBodyAOInt> *Tint = new boost::shared_ptr<OneBodyAOInt>[nthread];
         for (int Q = 0; Q<nthread; Q++) {
-            Tint[Q] = shared_ptr<OneBodyAOInt>(rifactory_P.ao_kinetic());
+            Tint[Q] = boost::shared_ptr<OneBodyAOInt>(rifactory_P.ao_kinetic());
             Tbuffer[Q] = Tint[Q]->buffer();
         }
 
@@ -236,8 +236,8 @@ void FittingMetric::form_fitting_metric()
     if (auxpet->nirrep() == 1 || force_C1_ == true) {
         metric_ = AOmetric;
         metric_->set_name("SO Basis Fitting Metric");
-        pivots_ = shared_ptr<IntVector>(new IntVector(naux));
-        rev_pivots_ = shared_ptr<IntVector>(new IntVector(naux));
+        pivots_ = boost::shared_ptr<IntVector>(new IntVector(naux));
+        rev_pivots_ = boost::shared_ptr<IntVector>(new IntVector(naux));
         int* piv = pivots_->pointer();
         int* rpiv = pivots_->pointer();
         for (int Q = 0; Q < naux; Q++) {
@@ -248,17 +248,17 @@ void FittingMetric::form_fitting_metric()
     }
 
     // Get the similarity transform objects
-    shared_ptr<Matrix> auxAO2USO(auxpet->sotoao());
+    boost::shared_ptr<Matrix> auxAO2USO(auxpet->sotoao());
     //auxAO2USO->print();
-    shared_ptr<Matrix> poisAO2USO;
+    boost::shared_ptr<Matrix> poisAO2USO;
     if (is_poisson_) {
-        poisAO2USO = shared_ptr<Matrix>(poispet->sotoao());
+        poisAO2USO = boost::shared_ptr<Matrix>(poispet->sotoao());
         //poisAO2USO->print();
     }
 
     // Allocate the fitting metric
-    metric_ = shared_ptr<Matrix>(new Matrix("SO Basis Fitting Metric", nauxpi, nauxpi));
-    shared_ptr<Matrix> Temp;
+    metric_ = boost::shared_ptr<Matrix>(new Matrix("SO Basis Fitting Metric", nauxpi, nauxpi));
+    boost::shared_ptr<Matrix> Temp;
     double** Temp1;
 
     // Transform AO to SO
@@ -269,7 +269,7 @@ void FittingMetric::form_fitting_metric()
         double** auxU = auxAO2USO->pointer(h);
 
         if (ngauspi[h] != 0) {
-            Temp = shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], ngaussian));
+            Temp = boost::shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], ngaussian));
             Temp1 = Temp->pointer();
             C_DGEMM('N', 'N', ngauspi[h], ngaussian, ngaussian, 1.0, auxU[0], ngaussian, W[0], naux, 0.0, Temp1[0], ngaussian);
             C_DGEMM('N', 'T', ngauspi[h], ngauspi[h], ngaussian, 1.0, Temp1[0], ngaussian, auxU[0], ngaussian, 0.0, J[0], nauxpi[h]);
@@ -282,7 +282,7 @@ void FittingMetric::form_fitting_metric()
 
             // Gaussian-Poisson part
             if (ngauspi[h] != 0) {
-                Temp = shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], npoisson));
+                Temp = boost::shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], npoisson));
                 Temp1 = Temp->pointer();
                 C_DGEMM('N', 'N', ngauspi[h], npoisson, ngaussian, 1.0, auxU[0], ngaussian, &W[0][ngaussian], naux, 0.0, Temp1[0], npoisson);
                 C_DGEMM('N', 'T', ngauspi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][ngauspi[h]], nauxpi[h]);
@@ -295,7 +295,7 @@ void FittingMetric::form_fitting_metric()
             // Poisson-Poisson part
             unsigned long int AOoffset = ngaussian*(unsigned long int)naux + (unsigned long int) ngaussian;
             unsigned long int SOoffset = ngauspi[h]*(unsigned long int)nauxpi[h] + (unsigned long int) ngauspi[h];
-            Temp = shared_ptr<Matrix>(new Matrix("Temp", npoispi[h], npoisson));
+            Temp = boost::shared_ptr<Matrix>(new Matrix("Temp", npoispi[h], npoisson));
             Temp1 = Temp->pointer();
             C_DGEMM('N', 'N', npoispi[h], npoisson, npoisson, 1.0, poisU[0], npoisson, &W[0][AOoffset], naux, 0.0, Temp1[0], npoisson);
             C_DGEMM('N', 'T', npoispi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][SOoffset], nauxpi[h]);
@@ -305,8 +305,8 @@ void FittingMetric::form_fitting_metric()
     }
 
     // Form indexing
-    pivots_ = shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
-    rev_pivots_ = shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
+    pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
+    rev_pivots_ = boost::shared_ptr<IntVector>(new IntVector(nauxpi.n(), nauxpi.pointer()));
     for (int h = 0; h < auxpet->nirrep(); h++) {
         int* piv = pivots_->pointer(h);
         int* rpiv = pivots_->pointer(h);
@@ -357,7 +357,7 @@ void FittingMetric::form_QR_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy the J matrix to R (actually R')
-        shared_ptr<Matrix> R(new Matrix("R", n, n));
+        boost::shared_ptr<Matrix> R(new Matrix("R", n, n));
         double** Rp = R->pointer();
         C_DCOPY(n*(unsigned long int)n, J[0], 1, Rp[0], 1);
 
@@ -375,7 +375,7 @@ void FittingMetric::form_QR_inverse(double tol)
         delete[] work;
 
         // Copy Jcopy to Q (actually Q')
-        shared_ptr<Matrix> Q(new Matrix("Q", n, n));
+        boost::shared_ptr<Matrix> Q(new Matrix("Q", n, n));
         double** Qp = Q->pointer();
         C_DCOPY(n*(unsigned long int)n, Rp[0], 1, Qp[0], 1);
 
@@ -444,7 +444,7 @@ void FittingMetric::form_eig_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy J to W
-        shared_ptr<Matrix> W(new Matrix("W", n, n));
+        boost::shared_ptr<Matrix> W(new Matrix("W", n, n));
         double** Wp = W->pointer();
         C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
 
@@ -454,7 +454,7 @@ void FittingMetric::form_eig_inverse(double tol)
         int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
         delete[] work;
 
-        shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
+        boost::shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
         double** Jcopyp = Jcopy->pointer();
 
         C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);

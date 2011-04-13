@@ -30,7 +30,7 @@ using namespace psi;
 
 namespace psi {
 
-TensorChunk::TensorChunk(shared_ptr<PSIO> psio,
+TensorChunk::TensorChunk(boost::shared_ptr<PSIO> psio,
                          unsigned int unit,
                          const std::string& name,
                          int slow_size,
@@ -58,7 +58,7 @@ TensorChunk::TensorChunk(shared_ptr<PSIO> psio,
         max_rows_ = slow_size_;
     max_rows_ = (max_rows_ / min_rows_) * min_rows_;
 
-    chunk_ = shared_ptr<Matrix>(new Matrix("Tensor Chunk of " + name_, max_rows_, fast_size_));
+    chunk_ = boost::shared_ptr<Matrix>(new Matrix("Tensor Chunk of " + name_, max_rows_, fast_size_));
 
     int nblocks = slow_size_ / max_rows_;
     if (max_rows_ * nblocks < slow_size_)

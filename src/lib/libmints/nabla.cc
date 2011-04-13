@@ -9,8 +9,8 @@ using namespace boost;
 
 // to compute the Nabla derivatives
 NablaInt::NablaInt(std::vector<SphericalTransform>& spherical_transforms,
-                   shared_ptr<BasisSet> bs1,
-                   shared_ptr<BasisSet> bs2,
+                   boost::shared_ptr<BasisSet> bs1,
+                   boost::shared_ptr<BasisSet> bs2,
                    int nderiv)
     : OneBodyAOInt(spherical_transforms, bs1, bs2, nderiv), overlap_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
@@ -38,7 +38,7 @@ NablaInt::~NablaInt()
 }
 
 // The engine only supports segmented basis sets
-void NablaInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
+void NablaInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -145,7 +145,7 @@ void NablaInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_pt
 
 #if 0
 // The engine only supports segmented basis sets
-void NablaInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
+void NablaInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();

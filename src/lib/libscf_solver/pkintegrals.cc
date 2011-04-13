@@ -12,7 +12,7 @@ using namespace boost;
 
 namespace psi{ namespace scf{
 
-PKIntegrals::PKIntegrals(size_t memory, shared_ptr<PSIO> psio, Options& options,
+PKIntegrals::PKIntegrals(size_t memory, boost::shared_ptr<PSIO> psio, Options& options,
                          int nirreps, const int* sopi, const int *so2index, const int *so2symblk):
         memory_(memory),
         psio_(psio),
@@ -48,7 +48,7 @@ PKIntegrals::~PKIntegrals()
  * @param Db a shared pointer to a beta density matrix
  */
 void
-PKIntegrals::setup(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
+PKIntegrals::setup(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
 {
     J_  = J;
     Da_ = Da;
@@ -64,7 +64,7 @@ PKIntegrals::setup(shared_ptr<Matrix> J, const shared_ptr<Matrix> Da, const shar
  * @param D a shared pointer to the density matrix
  */
 void
-PKIntegrals::setup(shared_ptr<Matrix> J, shared_ptr<Matrix> K,  const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
+PKIntegrals::setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K,  const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
 {
     J_  = J;
     Ka_ = K;
@@ -83,8 +83,8 @@ PKIntegrals::setup(shared_ptr<Matrix> J, shared_ptr<Matrix> K,  const shared_ptr
  * @param Db a shared pointer to a beta density matrix
  */
 void
-PKIntegrals::setup(shared_ptr<Matrix> J, shared_ptr<Matrix> Ka, shared_ptr<Matrix> Kb,
-                   const shared_ptr<Matrix> Da, const shared_ptr<Matrix> Db)
+PKIntegrals::setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<Matrix> Kb,
+                   const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
 {
     J_  = J;
     Ka_ = Ka;

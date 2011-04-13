@@ -11,8 +11,8 @@ static void swap(T& x, T& y) {
 }
 
 /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
-IntegralFactory::IntegralFactory(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
-                shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4)
+IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
+                boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4)
 {
     set_basis(bs1, bs2, bs3, bs4);
 }
@@ -42,8 +42,8 @@ boost::shared_ptr<BasisSet> IntegralFactory::basis4() const
     return bs4_;
 }
 
-void IntegralFactory::set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2,
-                shared_ptr<BasisSet> bs3, shared_ptr<BasisSet> bs4)
+void IntegralFactory::set_basis(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
+                boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4)
 {
     bs1_ = bs1;
     bs2_ = bs2;
@@ -51,9 +51,9 @@ void IntegralFactory::set_basis(shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> b
     bs4_ = bs4;
 
     // Find the max am
-    shared_ptr<BasisSet> max12(bs1_->max_am() > bs2_->max_am() ? bs1_ : bs2_);
-    shared_ptr<BasisSet> max34(bs3_->max_am() > bs4_->max_am() ? bs3_ : bs4_);
-    shared_ptr<BasisSet> max1234(max12->max_am() > max34->max_am() ? max12 : max34);
+    boost::shared_ptr<BasisSet> max12(bs1_->max_am() > bs2_->max_am() ? bs1_ : bs2_);
+    boost::shared_ptr<BasisSet> max34(bs3_->max_am() > bs4_->max_am() ? bs3_ : bs4_);
+    boost::shared_ptr<BasisSet> max1234(max12->max_am() > max34->max_am() ? max12 : max34);
 
     init_spherical_harmonics(max1234->max_am());
 }
@@ -65,7 +65,7 @@ OneBodyAOInt* IntegralFactory::ao_overlap(int deriv)
 
 OneBodySOInt* IntegralFactory::so_overlap(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_overlap(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -81,7 +81,7 @@ OneBodyAOInt* IntegralFactory::ao_kinetic(int deriv)
 
 OneBodySOInt* IntegralFactory::so_kinetic(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_kinetic(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -92,7 +92,7 @@ OneBodyAOInt* IntegralFactory::ao_potential(int deriv)
 
 OneBodySOInt* IntegralFactory::so_potential(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -103,7 +103,7 @@ OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv)
 
 OneBodySOInt* IntegralFactory::so_pseudospectral(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_pseudospectral(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -119,7 +119,7 @@ OneBodyAOInt* IntegralFactory::ao_dipole(int deriv)
 
 OneBodySOInt* IntegralFactory::so_dipole(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_dipole(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_dipole(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -130,7 +130,7 @@ OneBodyAOInt* IntegralFactory::ao_nabla(int deriv)
 
 OneBodySOInt* IntegralFactory::so_nabla(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_nabla(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_nabla(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -141,7 +141,7 @@ OneBodyAOInt* IntegralFactory::ao_angular_momentum(int deriv)
 
 OneBodySOInt* IntegralFactory::so_angular_momentum(int deriv)
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_angular_momentum(deriv));
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -152,7 +152,7 @@ OneBodyAOInt* IntegralFactory::ao_quadrupole()
 
 OneBodySOInt* IntegralFactory::so_quadrupole()
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_quadrupole());
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_quadrupole());
     return new OneBodySOInt(ao_int, this);
 }
 
@@ -163,7 +163,7 @@ OneBodyAOInt* IntegralFactory::ao_traceless_quadrupole()
 
 OneBodySOInt* IntegralFactory::so_traceless_quadrupole()
 {
-    shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
+    boost::shared_ptr<OneBodyAOInt> ao_int(ao_traceless_quadrupole());
     return new OneBodySOInt(ao_int, this);
 }
 

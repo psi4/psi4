@@ -66,10 +66,10 @@ void LMP2::localize() {
   // **** Read in the overlap matrix ****
   aoovlp = block_matrix(nso, nso);
 
-//  shared_ptr<BasisSet> basis(new BasisSet(chkpt));
-//  shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
-//  shared_ptr<OneBodyInt> S(integral->overlap());
-//  shared_ptr<Matrix> overlap(factory->create_matrix("Overlap"));
+//  boost::shared_ptr<BasisSet> basis(new BasisSet(chkpt));
+//  boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
+//  boost::shared_ptr<OneBodyInt> S(integral->overlap());
+//  boost::shared_ptr<Matrix> overlap(factory->create_matrix("Overlap"));
 
 //  S->compute(overlap);
 

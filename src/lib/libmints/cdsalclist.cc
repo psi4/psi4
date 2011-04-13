@@ -238,9 +238,9 @@ CdSalcList::~CdSalcList()
     }
 }
 
-std::vector<shared_ptr<Matrix> > CdSalcList::create_matrices(const std::string &basename)
+std::vector<boost::shared_ptr<Matrix> > CdSalcList::create_matrices(const std::string &basename)
 {
-    std::vector<shared_ptr<Matrix> > matrices;
+    std::vector<boost::shared_ptr<Matrix> > matrices;
     std::string name;
 
     for (int i=0; i<salcs_.size(); ++i) {

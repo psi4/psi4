@@ -9,7 +9,7 @@
 using namespace boost;
 using namespace psi;
 
-OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
+OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
     OneBodyAOInt(st, bs1, bs2, deriv), overlap_recur_(bs1->max_am()+deriv, bs2->max_am()+deriv)
 {
     int maxam1 = bs1_->max_am();
@@ -45,7 +45,7 @@ OverlapInt::~OverlapInt()
 }
 
 // The engine only supports segmented basis sets
-void OverlapInt::compute_pair(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
+void OverlapInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -241,7 +241,7 @@ void OverlapInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1,
 //    }
 }
 
-void OverlapInt::compute_pair_deriv2(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2)
+void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2)
 {
     int ao12;
     int am1 = s1->am();

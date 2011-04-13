@@ -32,7 +32,7 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
-PseudoGrid::PseudoGrid(shared_ptr<Molecule> mol, const std::string& name) :
+PseudoGrid::PseudoGrid(boost::shared_ptr<Molecule> mol, const std::string& name) :
     molecule_(mol), name_(name)
 {
 }
@@ -160,8 +160,8 @@ void PseudoGrid::parse(const std::string& filename)
         throw PSIEXCEPTION("PseudoGridParser: No Grid points in this molecule");
 
     // Phase II: build the grid
-    shared_ptr<Integrator> integrator(new Integrator(molecule_, shared_ptr<PSIO>(new PSIO())));
-    grid_ = shared_ptr<GridBlock>(new GridBlock());
+    boost::shared_ptr<Integrator> integrator(new Integrator(molecule_, boost::shared_ptr<PSIO>(new PSIO())));
+    grid_ = boost::shared_ptr<GridBlock>(new GridBlock());
     grid_->setMaxPoints(npoints);
     grid_->setTruePoints(npoints);
 

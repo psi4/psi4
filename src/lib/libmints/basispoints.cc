@@ -18,7 +18,7 @@ using namespace boost;
 
 namespace psi {
 
-BasisPoints::BasisPoints(shared_ptr<BasisSet> bas, int block_size)
+BasisPoints::BasisPoints(boost::shared_ptr<BasisSet> bas, int block_size)
 {
     basis_ = bas;
     block_size_ = block_size;
@@ -127,13 +127,13 @@ BasisPoints::~BasisPoints()
 }
 void BasisPoints::init_basis_data()
 {
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis_,basis_,basis_,basis_));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis_,basis_,basis_,basis_));
 
     int offset = 0;
     for (int P = 0; P < nshell_; P++) {
         
         // Grab the shell
-        shared_ptr<GaussianShell> shell = basis_->shell(P);
+        boost::shared_ptr<GaussianShell> shell = basis_->shell(P);
         int l = shell->am(); 
         int nao = shell->ncartesian();
         int nprim = shell->nprimitive();
@@ -605,7 +605,7 @@ void BasisPoints::computeCutoffRadii2(double epsilon)
     // Valid for epsilon << 1
     for (int P = 0; P < basis_->nshell(); P++) {
         
-        shared_ptr<GaussianShell> shell = basis_->shell(P);
+        boost::shared_ptr<GaussianShell> shell = basis_->shell(P);
 
         double mean_alpha = 0;
         for (int K = 0; K < shell->nprimitive(); K++)

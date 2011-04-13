@@ -13,7 +13,7 @@ using namespace boost;
 
 namespace psi{ namespace dcft{
 
-DCFTSolver::DCFTSolver(shared_ptr<Wavefunction> reference_wavefunction, Options &options):
+DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options):
         Wavefunction(options, _default_psio_lib_)
 {
     reference_wavefunction_ = reference_wavefunction;

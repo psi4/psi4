@@ -18,16 +18,16 @@ using namespace boost;
 
 namespace psi { namespace deriv {
 
-Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared_ptr<BasisSet>& basis)
+Deriv::Deriv(reftype ref, const boost::shared_ptr<MatrixFactory>& factory, const boost::shared_ptr<BasisSet>& basis)
     : basis_(basis), natom_(basis->molecule()->natom()),
       factory_(factory), cdsalcs_(basis->molecule(), factory, 0x1), ref_(ref)
 {
     // Initialize an integral object.
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
 #if SO   // Broken SO code.
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
-    shared_ptr<OneBodySOInt> oei_dS(integral->so_overlap(1));
+    boost::shared_ptr<OneBodySOInt> oei_dS(integral->so_overlap(1));
 
     // Allocate some temp memory to store integrals.
     vector<SharedMatrix> dK;
@@ -76,9 +76,9 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
     // AO version of the code
 
     // Create new one-electron integral evaluators telling them we want 1st derivatives (1)
-    shared_ptr<OneBodyAOInt> oei_dK(integral->ao_kinetic(1));
-    shared_ptr<OneBodyAOInt> oei_dV(integral->ao_potential(1));
-    shared_ptr<OneBodyAOInt> oei_dS(integral->ao_overlap(1));
+    boost::shared_ptr<OneBodyAOInt> oei_dK(integral->ao_kinetic(1));
+    boost::shared_ptr<OneBodyAOInt> oei_dV(integral->ao_potential(1));
+    boost::shared_ptr<OneBodyAOInt> oei_dS(integral->ao_overlap(1));
 
     // Allocate memory to store integrals.
     vector<SharedSimpleMatrix> dK;
@@ -135,13 +135,13 @@ Deriv::Deriv(reftype ref, const shared_ptr<MatrixFactory>& factory, const shared
 void Deriv::compute(const SharedSimpleMatrix& Q, const SharedSimpleMatrix& G, const SharedSimpleMatrix& W)
 {
     // Initialize an integral object.
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basis_, basis_, basis_, basis_));
 
     // Initialize an integral iterator for computing two-electron integral derivatives.
     AOShellCombinationsIterator shells = integral->shells_iterator();
 
     // Initialize an ERI object requesting derivatives.
-    shared_ptr<TwoBodyAOInt> eri(integral->eri(1));
+    boost::shared_ptr<TwoBodyAOInt> eri(integral->eri(1));
 
     // Gain access to the eri buffer
     double *buffer = const_cast<double*>(eri->buffer());

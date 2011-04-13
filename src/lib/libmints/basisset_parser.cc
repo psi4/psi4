@@ -150,7 +150,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     // Need a dummy center for the shell.
     Vector3 center;
 
-    vector<shared_ptr<GaussianShell> > shell_list;
+    vector<boost::shared_ptr<GaussianShell> > shell_list;
 
     int lineno = 0;
     bool found = false;
@@ -247,7 +247,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
 
                             //                                printf("Adding new shell. nprimitive = %d\n", nprimitive);
                             // We have a full shell, push it to the basis set
-                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
+                            boost::shared_ptr<GaussianShell> new_shell(new GaussianShell);
                             new_shell->init(nprimitive,
                                             exponents,
                                             am,
@@ -310,7 +310,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             }
 
                             //                                printf("Adding 2 new shells. nprimitive = %d\n", nprimitive);
-                            shared_ptr<GaussianShell> new_shell(new GaussianShell);
+                            boost::shared_ptr<GaussianShell> new_shell(new GaussianShell);
                             new_shell->init(nprimitive,
                                             exponents,
                                             am1,
@@ -322,7 +322,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
                             new_shell->normalize_shell();
                             shell_list.push_back(new_shell);
 
-                            new_shell = shared_ptr<GaussianShell>(new GaussianShell);
+                            new_shell = boost::shared_ptr<GaussianShell>(new GaussianShell);
                             new_shell->init(nprimitive,
                                             exponents,
                                             am2,

@@ -42,14 +42,14 @@ void LMP2::direct_transformation() {
     //  ****  These are required to utilize libmints  ****
 
     // Create a basis set object and initialize it.
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSet> basis = BasisSet::construct(parser, Process::environment.molecule(), "BASIS");
 
     // Initialize an integral factory
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basis, basis, basis, basis));
 
     // Create an integral object for ERIs
-    shared_ptr<TwoBodyAOInt> eri(integral->eri());
+    boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
 
     // Get the storage buffer from the eri object
     const double *buffer = eri->buffer();

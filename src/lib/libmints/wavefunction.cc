@@ -31,14 +31,14 @@ double df[MAX_DF];
 double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
-Wavefunction::Wavefunction(Options & options, shared_ptr<PSIO> psio) :
+Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
-    chkpt_ = shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
+    chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
 }
 
-Wavefunction::Wavefunction(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) :
+Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     options_(options), psio_(psio), chkpt_(chkpt)
 {
     common_init();
@@ -56,7 +56,7 @@ void Wavefunction::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
 
     // Check the point group of the molecule. If it is not set, set it.
@@ -65,12 +65,12 @@ void Wavefunction::common_init()
     }
 
     // Create an SO basis...we need the point group for this part.
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    sobasisset_ = shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral));
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, integral));
 
     // Obtain the dimension object to initialize the factory.
     const Dimension dimension = sobasisset_->dimension();
-    factory_ = shared_ptr<MatrixFactory>(new MatrixFactory);
+    factory_ = boost::shared_ptr<MatrixFactory>(new MatrixFactory);
     factory_->init_with(dimension, dimension);
 
     nirrep_ = dimension.n();
@@ -136,12 +136,12 @@ void Wavefunction::initialize_singletons()
     done = true;
 }
 
-shared_ptr<Molecule> Wavefunction::molecule() const
+boost::shared_ptr<Molecule> Wavefunction::molecule() const
 {
     return molecule_;
 }
 
-shared_ptr<PSIO> Wavefunction::psio() const
+boost::shared_ptr<PSIO> Wavefunction::psio() const
 {
     return psio_;
 }

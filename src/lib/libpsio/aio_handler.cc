@@ -15,13 +15,13 @@ using namespace boost;
 
 namespace psi {
 
-AIOHandler::AIOHandler(shared_ptr<PSIO> psio)
+AIOHandler::AIOHandler(boost::shared_ptr<PSIO> psio)
     : psio_(psio)
 {
 }
 AIOHandler::~AIOHandler() {
 }
-shared_ptr<boost::thread> AIOHandler::get_thread()
+boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 {
     return thread_;
 }
@@ -45,7 +45,7 @@ void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size
   lock.unlock();
 
   //thread start
-  thread_ = shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
 void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
 {
@@ -63,7 +63,7 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
   lock.unlock();
 
   //thread start
-  thread_ = shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
 void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size) 
 {
@@ -79,7 +79,7 @@ void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, UL
   lock.unlock();
 
   //thread start
-  thread_ = shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
 void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size) 
 {
@@ -95,7 +95,7 @@ void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, U
   lock.unlock();
 
   //thread start
-  thread_ = shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
 void AIOHandler::read_discont(unsigned int unit, const char *key, 
   double **matrix, ULI row_length, ULI col_length, ULI col_skip, 
@@ -116,7 +116,7 @@ void AIOHandler::read_discont(unsigned int unit, const char *key,
   lock.unlock();
 
   //thread start
-  thread_ = shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
 void AIOHandler::write_discont(unsigned int unit, const char *key, 
   double **matrix, ULI row_length, ULI col_length, ULI col_skip, 
@@ -137,7 +137,7 @@ void AIOHandler::write_discont(unsigned int unit, const char *key,
   lock.unlock();
 
   //thread start
-  thread_ = shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
 void AIOHandler::call_aio()
 {

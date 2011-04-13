@@ -7,7 +7,7 @@ using namespace psi::functional;
 
 void export_functional()
 {
-    class_<SuperFunctional, shared_ptr<SuperFunctional> >("SuperFunctional").
+    class_<SuperFunctional, boost::shared_ptr<SuperFunctional> >("SuperFunctional").
         def("create_superfunctional", &SuperFunctional::createSuperFunctional).
         staticmethod("create_superfunctional").
         def("build_superfunctional", &SuperFunctional::buildSuperFunctional).
@@ -58,7 +58,7 @@ void export_functional()
         def("computeRKSFunctional", &SuperFunctional::computeRKSFunctional).
         def("computeUKSFunctional", &SuperFunctional::computeUKSFunctional);
 
-    class_<Functional, shared_ptr<Functional> >("Functional").
+    class_<Functional, boost::shared_ptr<Functional> >("Functional").
         def("create_functional", &Functional::createFunctional).
         staticmethod("create_functional").
         def("available_functionals", &Functional::availableFunctionals).
