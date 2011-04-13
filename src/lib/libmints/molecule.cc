@@ -722,9 +722,11 @@ void Molecule::reorient()
     // Delete the tensor matrix
     delete itensor;
 
-    fprintf(outfile, "after reorient should_invert %d %d %d must_invert %d %d %d:\n",
+    if (Communicator::world->me() == 0) {
+        fprintf(outfile, "after reorient should_invert %d %d %d must_invert %d %d %d:\n",
             should_invert[0], should_invert[1], should_invert[2],
             must_invert[0], must_invert[1], must_invert[2]);
+    }
     print();
 }
 #endif
@@ -1353,53 +1355,57 @@ void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
 
 void Molecule::print() const
 {
-    if (natom()) {
-        if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol());
-        fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
-                units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
-        fprintf(outfile,"       Center              X                  Y                   Z       \n");
-        fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+    if (Communicator::world->me() == 0) {
+        if (natom()) {
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    units_ == Angstrom ? "Angstrom" : "Bohr", molecular_charge_, multiplicity_);
+            fprintf(outfile,"       Center              X                  Y                   Z       \n");
+            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
 
-        for(int i = 0; i < natom(); ++i){
-            Vector3 geom = atoms_[i]->compute();
-            fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
-            for(int j = 0; j < 3; j++)
-                fprintf(outfile, "  %17.12f", geom[j]);
+            for(int i = 0; i < natom(); ++i){
+                Vector3 geom = atoms_[i]->compute();
+                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                for(int j = 0; j < 3; j++)
+                    fprintf(outfile, "  %17.12f", geom[j]);
+                fprintf(outfile,"\n");
+            }
             fprintf(outfile,"\n");
-        }
-        fprintf(outfile,"\n");
-        fflush(outfile);
+            fflush(outfile);
 
-        // Print symmetry information, if available
-        if (nunique_) {
-            fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
-            fprintf(outfile, "    Atoms equivalency:\n");
-            for (int i=0; i<nunique_; ++i) {
-                fprintf(outfile, "       unique atom %d: ", i);
-                for (int j=0; j<nequiv_[i]; ++j) {
-                    fprintf(outfile, "%d ", equiv_[i][j]);
+            // Print symmetry information, if available
+            if (nunique_) {
+                fprintf(outfile, "    Number of unique atoms: %d\n\n", nunique_);
+                fprintf(outfile, "    Atoms equivalency:\n");
+                for (int i=0; i<nunique_; ++i) {
+                    fprintf(outfile, "       unique atom %d: ", i);
+                    for (int j=0; j<nequiv_[i]; ++j) {
+                        fprintf(outfile, "%d ", equiv_[i][j]);
+                    }
+                    fprintf(outfile, "\n");
                 }
                 fprintf(outfile, "\n");
+                fflush(outfile);
             }
-            fprintf(outfile, "\n");
-            fflush(outfile);
         }
+        else
+            fprintf(outfile, "  No atoms in this molecule.\n");
     }
-    else
-        fprintf(outfile, "  No atoms in this molecule.\n");
 }
 void Molecule::save_xyz(const std::string& filename) const
 {
-    FILE* fh = fopen(filename.c_str(), "w");
+    if (Communicator::world->me() == 0) {
+        FILE* fh = fopen(filename.c_str(), "w");
 
-    fprintf(fh,"%d\n\n", natom());
+        fprintf(fh,"%d\n\n", natom());
 
-    for (int i = 0; i < natom(); i++) {
-        Vector3 geom = atoms_[i]->compute();
-        fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), geom[0], geom[1], geom[2]);
+        for (int i = 0; i < natom(); i++) {
+            Vector3 geom = atoms_[i]->compute();
+            fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), geom[0], geom[1], geom[2]);
+        }
+
+        fclose(fh);
     }
-
-    fclose(fh);
 }
 
 boost::shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
@@ -2356,7 +2362,8 @@ int Molecule::get_anchor_atom(const std::string &str, const std::string &line)
 void Molecule::set_variable(const std::string &str, double val)
 {
     geometry_variables_[str] = val;
-    fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
+    if (Communicator::world->me() == 0)
+        fprintf(outfile, "Setting geometry variable %s to %f\n", str.c_str(), val);
     try {
         update_geometry();
     }
