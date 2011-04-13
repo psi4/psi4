@@ -25,13 +25,13 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
-ROHF::ROHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+ROHF::ROHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : HF(options, psio, chkpt)
 {
     common_init();
 }
 
-ROHF::ROHF(Options& options, shared_ptr<PSIO> psio)
+ROHF::ROHF(Options& options, boost::shared_ptr<PSIO> psio)
     : HF(options, psio)
 {
     common_init();
@@ -93,7 +93,7 @@ void ROHF::save_information()
 void ROHF::save_fock()
 {
     if (initialized_diis_manager_ == false) {
-        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
         diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
         initialized_diis_manager_ = true;

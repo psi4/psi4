@@ -16,8 +16,8 @@ static void swap(T& x, T& y) {
 }
 }
 
-AOIntegralsIterator::AOIntegralsIterator(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2,
-                                     shared_ptr<GaussianShell> s3, shared_ptr<GaussianShell> s4)
+AOIntegralsIterator::AOIntegralsIterator(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2,
+                                     boost::shared_ptr<GaussianShell> s3, boost::shared_ptr<GaussianShell> s4)
 {
     done = false;
     usi = s1;
@@ -194,8 +194,8 @@ void AOIntegralsIterator::next()
 // ===========================================================================
 //  AOShellCombinationsIterator
 // ===========================================================================
-AOShellCombinationsIterator::AOShellCombinationsIterator(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-                                                         shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4) :
+AOShellCombinationsIterator::AOShellCombinationsIterator(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
+                                                         boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4) :
     bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
 {
 
@@ -211,8 +211,8 @@ AOIntegralsIterator AOShellCombinationsIterator::integrals_iterator()
     return AOIntegralsIterator(bs1_->shell(p()), bs2_->shell(q()), bs3_->shell(r()), bs4_->shell(s()));
 }
 
-void AOShellCombinationsIterator::init(shared_ptr<BasisSet>bs1, shared_ptr<BasisSet>bs2,
-                                     shared_ptr<BasisSet>bs3, shared_ptr<BasisSet>bs4)
+void AOShellCombinationsIterator::init(boost::shared_ptr<BasisSet>bs1, boost::shared_ptr<BasisSet>bs2,
+                                     boost::shared_ptr<BasisSet>bs3, boost::shared_ptr<BasisSet>bs4)
 {
     bs1_=bs1;
     bs2_=bs2;
@@ -334,8 +334,8 @@ void AOShellCombinationsIterator::next()
 // ===========================================================================
 //  SOShellCombinationsIterator
 // ===========================================================================
-SOShellCombinationsIterator::SOShellCombinationsIterator(shared_ptr<SOBasisSet>bs1, shared_ptr<SOBasisSet>bs2,
-                                                         shared_ptr<SOBasisSet>bs3, shared_ptr<SOBasisSet>bs4) :
+SOShellCombinationsIterator::SOShellCombinationsIterator(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                                                         boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4) :
     bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
 {
 
@@ -346,8 +346,8 @@ SOShellCombinationsIterator::SOShellCombinationsIterator()
 
 }
 
-void SOShellCombinationsIterator::init(shared_ptr<SOBasisSet>bs1, shared_ptr<SOBasisSet>bs2,
-                                       shared_ptr<SOBasisSet>bs3, shared_ptr<SOBasisSet>bs4)
+void SOShellCombinationsIterator::init(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                                       boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4)
 {
     bs1_=bs1;
     bs2_=bs2;

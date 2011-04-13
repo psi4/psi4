@@ -39,14 +39,14 @@ MatrixFactory::~MatrixFactory()
         Chkpt::free(colspi_);
 }
 
-bool MatrixFactory::init_with_chkpt(shared_ptr<PSIO> psio)
+bool MatrixFactory::init_with_chkpt(boost::shared_ptr<PSIO> psio)
 {
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
+    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     bool result = init_with_chkpt(chkpt);
     return result;
 }
 
-bool MatrixFactory::init_with_chkpt(shared_ptr<Chkpt> chkpt)
+bool MatrixFactory::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 {
     nirrep_ = chkpt->rd_nirreps();
     rowspi_  = chkpt->rd_sopi();

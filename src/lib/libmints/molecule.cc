@@ -185,7 +185,7 @@ Molecule& Molecule::operator=(const Molecule& other)
     multiplicity_specified_  = other.multiplicity_specified_;
 
     // These are symmetry related variables, and are filled in by the following funtions
-    pg_             = shared_ptr<PointGroup>();
+    pg_             = boost::shared_ptr<PointGroup>();
     nunique_        = 0;
     nequiv_         = 0;
     equiv_          = 0;
@@ -195,7 +195,7 @@ Molecule& Molecule::operator=(const Molecule& other)
 
     atoms_.clear();
     // Deep copy the map of variables
-    std::vector<shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
+    std::vector<boost::shared_ptr<CoordEntry> >::const_iterator iter = other.full_atoms_.begin();
     for(; iter != other.full_atoms_.end(); ++iter)
          full_atoms_.push_back((*iter)->clone(full_atoms_, geometry_variables_));
     // This is called here, so that the atoms list is populated
@@ -241,10 +241,10 @@ void Molecule::add_atom(int Z, double x, double y, double z,
 
     if (atom_at_position2(temp) == -1) {
         // Dummies go to full_atoms_, ghosts need to go to both.
-        full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
-                                                                        shared_ptr<CoordValue>(new NumberValue(x)),
-                                                                        shared_ptr<CoordValue>(new NumberValue(y)),
-                                                                        shared_ptr<CoordValue>(new NumberValue(z)))));
+        full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(full_atoms_.size(), Z, charge, mass, l, l,
+                                                                        boost::shared_ptr<CoordValue>(new NumberValue(x)),
+                                                                        boost::shared_ptr<CoordValue>(new NumberValue(y)),
+                                                                        boost::shared_ptr<CoordValue>(new NumberValue(z)))));
         if(strcmp(label, "X") && strcmp(label, "x")) atoms_.push_back(full_atoms_.back());
     }
     else {
@@ -763,14 +763,14 @@ int Molecule::nfrozen_core(const std::string& depth)
     }
 }
 
-void Molecule::init_with_psio(shared_ptr<PSIO> psio)
+void Molecule::init_with_psio(boost::shared_ptr<PSIO> psio)
 {
     // User sent a psio object. Create a chkpt object based on it.
-    shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
+    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     init_with_chkpt(chkpt);
 }
 
-void Molecule::init_with_chkpt(shared_ptr<Chkpt> chkpt)
+void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 {
 
     int natoms = 0;
@@ -897,14 +897,14 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     update_geometry();
 }
 
-shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text)
+boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text)
 {
     smatch reMatches;
     // Split the input at newlines, storing the result in "lines"
     std::vector<std::string> lines;
     boost::split(lines, text, boost::is_any_of("\n"));
 
-    shared_ptr<Molecule> mol(new Molecule);
+    boost::shared_ptr<Molecule> mol(new Molecule);
     std::string units = Process::environment.options.get_str("UNITS");
     std::string symtemp;
 
@@ -1060,16 +1060,16 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
 
         if(numEntries == 4){
             // This is a Cartesian entry
-            shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
-            shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
-            shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
-            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            boost::shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
+            boost::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
+            boost::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                  an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                  xval, yval, zval)));
         }
         else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
-            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                    an2masses[(int)zVals[atomSym]], atomSym, atomLabel)));
         }
         else if(numEntries == 3) {
@@ -1078,8 +1078,8 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
             if(rTo >= currentAtom)
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                    + splitLine[1] + " has not been defined yet.");
-            shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
+            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
                                                                                an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval)));
         }
@@ -1095,9 +1095,9 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
                                      + splitLine[3] + " has not been defined yet.");
             if(aTo == rTo)
                 throw PSIEXCEPTION("Atom used multiple times on line " + *line);
-            shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
         }
@@ -1119,10 +1119,10 @@ shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &te
                  throw PSIEXCEPTION("Atom used multiple times on line " + *line);
 
             int zval = (int)zVals[atomSym];
-            shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-            shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
-            mol->full_atoms_.push_back(shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
+            boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
+            boost::shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
                                                                                an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
                                                                                aval, mol->full_atoms_[dTo], dval)));
@@ -1306,7 +1306,7 @@ boost::shared_ptr<Molecule> Molecule::extract_subsets(const std::vector<int> &re
     return clone;
 }
 
-void Molecule::save_to_chkpt(shared_ptr<Chkpt> chkpt, std::string prefix)
+void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
 {
     // Save the current prefix
     string pre = chkpt->get_prefix();
@@ -1402,9 +1402,9 @@ void Molecule::save_xyz(const std::string& filename) const
     fclose(fh);
 }
 
-shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
+boost::shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
 {
-    shared_ptr<Vector> sret(new Vector(3));
+    boost::shared_ptr<Vector> sret(new Vector(3));
     double *ret = sret->pointer();
 
     for(int i=0; i<natom(); ++i) {
@@ -1417,9 +1417,9 @@ shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
     return sret;
 }
 
-shared_ptr<Vector> Molecule::nuclear_quadrupole_contribution()
+boost::shared_ptr<Vector> Molecule::nuclear_quadrupole_contribution()
 {
-    shared_ptr<Vector> sret(new Vector(6));
+    boost::shared_ptr<Vector> sret(new Vector(6));
     double *ret = sret->pointer();
     double xx, xy, xz, yy, yz, zz;
 
@@ -1971,36 +1971,36 @@ found_sigma:
     if (have_inversion) {
         if (have_c2axis) {
             if (have_sigmav) {
-                pg = shared_ptr<PointGroup>(new PointGroup("d2h", frame, origin));
+                pg = boost::shared_ptr<PointGroup>(new PointGroup("d2h", frame, origin));
             }
             else {
-                pg = shared_ptr<PointGroup>(new PointGroup("c2h", frame, origin));
+                pg = boost::shared_ptr<PointGroup>(new PointGroup("c2h", frame, origin));
             }
         }
         else {
-            pg = shared_ptr<PointGroup>(new PointGroup("ci", frame, origin));
+            pg = boost::shared_ptr<PointGroup>(new PointGroup("ci", frame, origin));
         }
     }
     else {
         if (have_c2axis) {
             if (have_sigmav) {
-                pg = shared_ptr<PointGroup>(new PointGroup("c2v", frame, origin));
+                pg = boost::shared_ptr<PointGroup>(new PointGroup("c2v", frame, origin));
             }
             else {
                 if (have_c2axisperp) {
-                    pg = shared_ptr<PointGroup>(new PointGroup("d2", frame, origin));
+                    pg = boost::shared_ptr<PointGroup>(new PointGroup("d2", frame, origin));
                 }
                 else {
-                    pg = shared_ptr<PointGroup>(new PointGroup("c2", frame, origin));
+                    pg = boost::shared_ptr<PointGroup>(new PointGroup("c2", frame, origin));
                 }
             }
         }
         else {
             if (have_sigma) {
-                pg = shared_ptr<PointGroup>(new PointGroup("cs", frame, origin));
+                pg = boost::shared_ptr<PointGroup>(new PointGroup("cs", frame, origin));
             }
             else {
-                pg = shared_ptr<PointGroup>(new PointGroup("c1", frame, origin));
+                pg = boost::shared_ptr<PointGroup>(new PointGroup("c1", frame, origin));
             }
         }
     }
@@ -2008,14 +2008,14 @@ found_sigma:
     return pg;
 }
 
-shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
+boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 {
-    shared_ptr<PointGroup> pg = find_highest_point_group(tol);
+    boost::shared_ptr<PointGroup> pg = find_highest_point_group(tol);
 
     if (!symmetry_from_input().empty()) {
         // If they're not the same
         if (symmetry_from_input() != pg->symbol()) {
-            shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
+            boost::shared_ptr<PointGroup> user(new PointGroup(symmetry_from_input().c_str()));
 
             // Make sure user is subgroup of pg
             CorrelationTable corrtable(pg, user);
@@ -2290,7 +2290,7 @@ double Molecule::fcharge(int atom) const
 
 void Molecule::set_basis_all_atoms(const std::string& name, const std::string& type)
 {
-    BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
+    BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
         atom->set_basisset(name, type);
     }
 }
@@ -2307,7 +2307,7 @@ void Molecule::set_basis_by_number(int number, const std::string& name, const st
 
 void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string& name, const std::string& type)
 {
-    BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
+    BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
         if (atom->symbol() == symbol)
             atom->set_basisset(name, type);
     }
@@ -2315,7 +2315,7 @@ void Molecule::set_basis_by_symbol(const std::string& symbol, const std::string&
 
 void Molecule::set_basis_by_label(const std::string& label, const std::string& name, const std::string& type)
 {
-    BOOST_FOREACH(shared_ptr<CoordEntry> atom, full_atoms_) {
+    BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
         if (atom->label() == label)
             atom->set_basisset(name, type);
     }

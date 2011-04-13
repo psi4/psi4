@@ -46,7 +46,7 @@ EDF1_C_Functional::EDF1_C_Functional(int npoints, int deriv) : Functional(npoint
 EDF1_C_Functional::~EDF1_C_Functional()
 {
 }
-void EDF1_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void EDF1_C_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -345,7 +345,7 @@ void EDF1_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void EDF1_C_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void EDF1_C_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

@@ -67,7 +67,7 @@ private:
     boost::shared_ptr<PSIO> psio_;
     boost::shared_ptr<MatrixFactory> factory_;
     boost::shared_ptr<Molecule> molecule_;
-    boost:: shared_ptr<IntegralFactory> integral_;
+    boost::shared_ptr<IntegralFactory> integral_;
     boost::shared_ptr<BasisSet> basisset_;
     boost::shared_ptr<SOBasisSet> sobasis_;
     int print_;

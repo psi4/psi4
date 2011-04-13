@@ -40,13 +40,13 @@ using namespace std;
 
 namespace psi { namespace scf {
 
-RHF::RHF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+RHF::RHF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : HF(options, psio, chkpt)
 {
     common_init();
 }
 
-RHF::RHF(Options& options, shared_ptr<PSIO> psio)
+RHF::RHF(Options& options, boost::shared_ptr<PSIO> psio)
     : HF(options, psio)
 {
     common_init();
@@ -151,10 +151,10 @@ void RHF::save_information()
 void RHF::save_fock()
 {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
-    shared_ptr<Matrix> FDSmSDF = form_FDSmSDF(Fa_, Da_);
+    boost::shared_ptr<Matrix> FDSmSDF = form_FDSmSDF(Fa_, Da_);
 
     if (initialized_diis_manager_ == false) {
-        diis_manager_ = shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
         diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, FDSmSDF.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
         initialized_diis_manager_ = true;
@@ -533,7 +533,7 @@ void RHF::save_sapt_info()
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
     SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
     IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    shared_ptr<OneBodySOInt> V(integral.so_potential());
+    boost::shared_ptr<OneBodySOInt> V(integral.so_potential());
     V->compute(potential);
     double *sapt_V_ints = potential->to_lower_triangle();
     double *sapt_S_ints = S_->to_lower_triangle();

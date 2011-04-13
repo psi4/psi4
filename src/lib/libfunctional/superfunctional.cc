@@ -27,17 +27,17 @@ std::string SuperFunctional::testSuperFunctionals()
 
     s << "  Testing SuperFunctionals:" << endl;
 
-    shared_ptr<Properties> props = Properties::get_testbed();
+    boost::shared_ptr<Properties> props = Properties::get_testbed();
     int npoints = props->getTrueSize();
 
     for (int A = 0; A < names.size(); A++ ) { 
-        shared_ptr<SuperFunctional> func = SuperFunctional::createSuperFunctional(names[A],npoints,2);
+        boost::shared_ptr<SuperFunctional> func = SuperFunctional::createSuperFunctional(names[A],npoints,2);
         s << func->testSuperFunctional(props);
     }
 
     return s.str();
 }
-std::string SuperFunctional::testSuperFunctional(shared_ptr<Properties> props)
+std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> props)
 {
     std::stringstream s;
     int npoints = props->getTrueSize();
@@ -505,7 +505,7 @@ bool SuperFunctional::isMeta()
 
     return false;
 }
-void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props) 
+void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props)
 {
     for (int A = 0; A < functionals_.size(); A++) {
         functionals_[A].first->computeRKSFunctional(props);
@@ -513,7 +513,7 @@ void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props)
     //Add up the results
     collectResults();
 }
-void SuperFunctional::computeUKSFunctional(boost::shared_ptr<Properties> props) 
+void SuperFunctional::computeUKSFunctional(boost::shared_ptr<Properties> props)
 {
     for (int A = 0; A < functionals_.size(); A++) {
         functionals_[A].first->computeUKSFunctional(props);
@@ -689,7 +689,7 @@ void SuperFunctional::addFunctional(const std::string & name, double weight)
 {
     functionals_.push_back(make_pair(Functional::createFunctional(name, npoints_, deriv_), weight));
 }
-void SuperFunctional::setDashD(shared_ptr<Dispersion> disp)
+void SuperFunctional::setDashD(boost::shared_ptr<Dispersion> disp)
 {
     dashD_ = disp;
     isDashD_ = true;

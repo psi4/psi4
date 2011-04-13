@@ -12,7 +12,7 @@ namespace psi{
 
 DIISEntry::DIISEntry(std::string label, int ID, int orderAdded,
                      int errorVectorSize, double *errorVector,
-                     int vectorSize, double *vector, shared_ptr<PSIO> psio):
+                     int vectorSize, double *vector, boost::shared_ptr<PSIO> psio):
         _vectorSize(vectorSize),
         _errorVectorSize(errorVectorSize),
         _vector(vector),

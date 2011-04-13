@@ -10,10 +10,10 @@ using namespace boost;
 using namespace boost::python;
 using namespace psi;
 
-shared_ptr<MatrixFactory> get_matrix_factory()
+boost::shared_ptr<MatrixFactory> get_matrix_factory()
 {
     // We need a valid molecule with a valid point group to create a matrix factory.
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     if (!molecule) {
         fprintf(outfile, "  Active molecule not set!");
         throw PSIEXCEPTION("Active molecule not set!");
@@ -24,13 +24,13 @@ shared_ptr<MatrixFactory> get_matrix_factory()
     }
 
     // Read in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser);
-    shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
-    shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser);
+    boost::shared_ptr<BasisSet> basis = BasisSet::construct(parser, molecule, "BASIS");
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basis, basis, basis, basis));
+    boost::shared_ptr<SOBasisSet> sobasis(new SOBasisSet(basis, fact));
     const Dimension& dim = sobasis->dimension();
 
-    shared_ptr<MatrixFactory> matfac(new MatrixFactory);
+    boost::shared_ptr<MatrixFactory> matfac(new MatrixFactory);
     matfac->init_with(dim, dim);
 
     return matfac;
@@ -39,11 +39,11 @@ shared_ptr<MatrixFactory> get_matrix_factory()
 void export_mints()
 {
     // This is needed to wrap an STL vector into Boost.Python. Since the vector
-    // is going to contain shared_ptr's we MUST set the no_proxy flag to true
+    // is going to contain boost::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
     // the vector's data type.
-    class_<std::vector<shared_ptr<Matrix> > >("matrix_vector").
-            def(vector_indexing_suite<std::vector<shared_ptr<Matrix> >, true >());
+    class_<std::vector<boost::shared_ptr<Matrix> > >("matrix_vector").
+            def(vector_indexing_suite<std::vector<boost::shared_ptr<Matrix> >, true >());
 
     // Use typedefs to explicitly tell Boost.Python which function in the class
     // to use. In most cases, you should not be making Python specific versions
@@ -58,7 +58,7 @@ void export_mints()
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
-    class_<Vector, shared_ptr<Vector> >( "Vector").
+    class_<Vector, boost::shared_ptr<Vector> >( "Vector").
             def(init<int>()).
             def("get", &Vector::get).
             def("set", vector_set(&Vector::set)).
@@ -71,7 +71,7 @@ void export_mints()
             def("nirrep", &Vector::nirrep);
 
     typedef void  (IntVector::*int_vector_set)(int, int, int);
-    class_<IntVector, shared_ptr<IntVector> >( "IntVector").
+    class_<IntVector, boost::shared_ptr<IntVector> >( "IntVector").
             def(init<int>()).
             def("get", &IntVector::get).
             def("set", int_vector_set(&IntVector::set)).
@@ -88,7 +88,7 @@ void export_mints()
     typedef void   (Matrix::*matrix_set)(int, int, int, double);
     typedef void   (Matrix::*matrix_load)(const std::string&);
 
-    class_<Matrix, shared_ptr<Matrix> >("Matrix").
+    class_<Matrix, boost::shared_ptr<Matrix> >("Matrix").
             def(init<int, int>()).
             def("set_name", &Matrix::set_name).
             def("name", &Matrix::name).
@@ -132,16 +132,16 @@ void export_mints()
             def("save", matrix_save(&Matrix::save)).
             def("load", matrix_load(&Matrix::load));
 
-    typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix)();
-    typedef shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(const std::string&);
+    typedef boost::shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix)();
+    typedef boost::shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
-    class_<MatrixFactory, shared_ptr<MatrixFactory> >("MatrixFactory").
+    class_<MatrixFactory, boost::shared_ptr<MatrixFactory> >("MatrixFactory").
             def("shared_object", &get_matrix_factory).
             staticmethod("shared_object").
             def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix)).
             def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix));
 
-    class_<MintsHelper, shared_ptr<MintsHelper> >("MintsHelper").
+    class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper").
             def("basisset", &MintsHelper::basisset).
             def("sobasisset", &MintsHelper::sobasisset).
             def("factory", &MintsHelper::factory).
@@ -162,7 +162,7 @@ void export_mints()
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri);
 
-    class_<FittingMetric, shared_ptr<FittingMetric> >("FittingMetric").
+    class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric").
             def("get_algorithm", &FittingMetric::get_algorithm).
             def("is_poisson", &FittingMetric::is_poisson).
             def("is_inverted", &FittingMetric::is_inverted).
@@ -215,13 +215,13 @@ void export_mints()
             def("c2_y", &SymmetryOperation::c2_y).
             def("transpose", &SymmetryOperation::transpose);
 
-    class_<PointGroup, shared_ptr<PointGroup> >("PointGroup").
+    class_<PointGroup, boost::shared_ptr<PointGroup> >("PointGroup").
             def(init<const char*>()).
             def("symbol", &PointGroup::symbol).
             //def("origin", &PointGroup::origin).
             def("set_symbol", &PointGroup::set_symbol);
 
-    class_<Molecule, shared_ptr<Molecule> >("Molecule").
+    class_<Molecule, boost::shared_ptr<Molecule> >("Molecule").
             def("set_name", &Molecule::set_name).
             def("name", &Molecule::name).
             def("fix_orientation", &Molecule::set_orientation_fixed).
@@ -280,15 +280,15 @@ void export_mints()
             def("set_basis_by_label", &Molecule::set_basis_by_label).
             def("set_basis_by_number", &Molecule::set_basis_by_number);
 
-    class_<PetiteList, shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", no_init).
+    class_<PetiteList, boost::shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", no_init).
             def("aotoso", &PetiteList::aotoso).
             def("sotoao", &PetiteList::sotoao);
 
-    class_<BasisSetParser, shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", no_init);
-    class_<Gaussian94BasisSetParser, shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser");
+    class_<BasisSetParser, boost::shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", no_init);
+    class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser");
 
     typedef void (BasisSet::*basis_print_out)() const;
-    class_<BasisSet, shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", no_init).
+    class_<BasisSet, boost::shared_ptr<BasisSet>, boost::noncopyable>("BasisSet", no_init).
             def("print_out", basis_print_out(&BasisSet::print)).
             def("print_detail_out", basis_print_out(&BasisSet::print_detail)).
             def("make_filename", &BasisSet::make_filename).
@@ -301,10 +301,10 @@ void export_mints()
             def("nshell", &BasisSet::nshell).
             def("max_am", &BasisSet::max_am);
 
-    class_<SOBasisSet, shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", no_init).
+    class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", no_init).
             def("petite_list", &SOBasisSet::petitelist);
 
-    class_<Wavefunction, shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
+    class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
             def("nso", &Wavefunction::nso).
             def("nmo", &Wavefunction::nmo).
             def("nirrep", &Wavefunction::nirrep).
@@ -321,18 +321,18 @@ void export_mints()
             def("basisset", &Wavefunction::basisset).
             def("sobasisset", &Wavefunction::sobasisset);
 
-    class_<scf::HF, shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
-    class_<scf::RHF, shared_ptr<scf::RHF>, bases<scf::HF> >("RHF", no_init);
+    class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
+    class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF> >("RHF", no_init);
 
-    class_<MoldenWriter, shared_ptr<MoldenWriter> >("MoldenWriter", no_init).
-            def(init<shared_ptr<Wavefunction> >()).
+    class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", no_init).
+            def(init<boost::shared_ptr<Wavefunction> >()).
             def("write", &MoldenWriter::write);
 
-    class_<NBOWriter, shared_ptr<NBOWriter> >("NBOWriter", no_init).
-            def(init<shared_ptr<Wavefunction> >()).
+    class_<NBOWriter, boost::shared_ptr<NBOWriter> >("NBOWriter", no_init).
+            def(init<boost::shared_ptr<Wavefunction> >()).
             def("write", &NBOWriter::write);
 
-    class_<MultipoleSymmetry, shared_ptr<MultipoleSymmetry> >("MultipoleSymmetry", no_init).
+    class_<MultipoleSymmetry, boost::shared_ptr<MultipoleSymmetry> >("MultipoleSymmetry", no_init).
             def(init<int, const boost::shared_ptr<Molecule>&,
                 const boost::shared_ptr<IntegralFactory>&,
                 const boost::shared_ptr<MatrixFactory>&>()).

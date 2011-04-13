@@ -30,7 +30,7 @@ DCFTSolver::compute_energy()
         // This is the two-step update - in each macro iteration, update the orbitals first, then update lambda
         // to self-consistency, until converged.  When lambda is converged and only one scf cycle is needed to reach
         // the desired cutoff, we're done
-        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", nirrep_, nsopi_, nsopi_));
+        SharedMatrix tmp = boost::shared_ptr<Matrix>(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         dpdbuf4 Laa, Lab, Lbb;
         dpd_buf4_init(&Laa, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -162,7 +162,7 @@ DCFTSolver::compute_energy()
         }
     }else{
         // This is the simultaneous orbital/lambda update algorithm
-        SharedMatrix tmp = shared_ptr<Matrix>(new Matrix("temp", nirrep_, nsopi_, nsopi_));
+        SharedMatrix tmp = boost::shared_ptr<Matrix>(new Matrix("temp", nirrep_, nsopi_, nsopi_));
         // Set up the DIIS manager
         DIISManager diisManager(maxdiis_, "DCFT DIIS vectors");
         dpdbuf4 Laa, Lab, Lbb;

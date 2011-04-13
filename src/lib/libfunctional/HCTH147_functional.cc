@@ -116,7 +116,7 @@ HCTH147_Functional::HCTH147_Functional(int npoints, int deriv) : Functional(npoi
 HCTH147_Functional::~HCTH147_Functional()
 {
 }
-void HCTH147_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void HCTH147_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -1497,7 +1497,7 @@ void HCTH147_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void HCTH147_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void HCTH147_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

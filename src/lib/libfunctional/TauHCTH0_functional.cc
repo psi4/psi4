@@ -122,7 +122,7 @@ TauHCTH0_Functional::TauHCTH0_Functional(int npoints, int deriv) : Functional(np
 TauHCTH0_Functional::~TauHCTH0_Functional()
 {
 }
-void TauHCTH0_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void TauHCTH0_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -1586,7 +1586,7 @@ void TauHCTH0_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void TauHCTH0_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void TauHCTH0_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

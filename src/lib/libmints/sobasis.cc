@@ -152,7 +152,7 @@ void SOBasisSet::init()
         }
     }
 
-    petite_ = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    petite_ = boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
 
 //    petite_->print();
 
@@ -369,7 +369,7 @@ void SOBasisSet::print(FILE *out) const
 
 Dimension SOBasisSet::dimension() const
 {
-    shared_ptr<PetiteList> petite = shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    boost::shared_ptr<PetiteList> petite = boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
     return petite->SO_basisdim();
 }
 

@@ -46,7 +46,7 @@ LYP_C_Functional::LYP_C_Functional(int npoints, int deriv) : Functional(npoints,
 LYP_C_Functional::~LYP_C_Functional()
 {
 }
-void LYP_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void LYP_C_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -343,7 +343,7 @@ void LYP_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void LYP_C_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void LYP_C_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

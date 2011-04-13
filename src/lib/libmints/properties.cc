@@ -9,7 +9,7 @@ using namespace boost;
 
 namespace psi {
 
-Properties::Properties(shared_ptr<BasisSet> _b, int _block_size): BasisPoints(_b, _block_size)
+Properties::Properties(boost::shared_ptr<BasisSet> _b, int _block_size): BasisPoints(_b, _block_size)
 {
     // Default to do density only
     do_density_ = false;
@@ -42,7 +42,7 @@ Properties::~Properties()
     // Free temporary tensor
     free_block(temp_tens_);
 }
-void Properties::computeUKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> Da, shared_ptr<Matrix> Db, shared_ptr<Matrix> Ca, shared_ptr<Matrix> Cb, int* na, int* nb)
+void Properties::computeUKSProperties(boost::shared_ptr<GridBlock> grid, boost::shared_ptr<Matrix> Da, boost::shared_ptr<Matrix> Db, boost::shared_ptr<Matrix> Ca, boost::shared_ptr<Matrix> Cb, int* na, int* nb)
 {
     // All C1 for now (irrep information flow is a problem)
 
@@ -207,7 +207,7 @@ void Properties::computeUKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Mat
             tau_b_[Q] += C_DDOT(nb[0], &temp_tens_[Q][0], 1, &temp_tens_[Q][0], 1);
     }
 }
-void Properties::computeRKSProperties(shared_ptr<GridBlock> grid, shared_ptr<Matrix> D, shared_ptr<Matrix> C, int* docc)
+void Properties::computeRKSProperties(boost::shared_ptr<GridBlock> grid, boost::shared_ptr<Matrix> D, boost::shared_ptr<Matrix> C, int* docc)
 {
     // All C1 for now (irrep information flow is a problem)
 
@@ -358,7 +358,7 @@ void Properties::setToComputeKEDensity(bool v)
     if (v)
         setToComputeGradients(true);
 }
-shared_ptr<Properties> Properties::get_testbed()
+boost::shared_ptr<Properties> Properties::get_testbed()
 {
     int npoints = 23;
     Properties * props = new Properties(BasisSet::zero_ao_basis_set(), npoints);
@@ -401,7 +401,7 @@ shared_ptr<Properties> Properties::get_testbed()
     rho_a_[i] = 0.12E+00; rho_b_[i] = 0.10E+00; gamma_aa_[i] = 0.12E+00; gamma_ab_[i] = 0.13E+00; gamma_bb_[i] = 0.14E+00; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
     rho_a_[i] = 0.48E-01; rho_b_[i] = 0.25E-01; gamma_aa_[i] = 0.46E-02; gamma_ab_[i] = 0.44E-02; gamma_bb_[i] = 0.41E-02; tau_a_[i] = 0.00E+00; tau_b_[i] = 0.00E+00; i++; 
 
-    return (shared_ptr<Properties>) props;
+    return (boost::shared_ptr<Properties>) props;
 }
 
 }

@@ -33,14 +33,14 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
-PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<Matrix> Da,
-shared_ptr<Matrix> Ja, shared_ptr<Matrix> Ka, shared_ptr<PSIO> psio, Options& opt) :
+PseudospectralHF::PseudospectralHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<Matrix> Da,
+boost::shared_ptr<Matrix> Ja, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<PSIO> psio, Options& opt) :
     primary_(basis), Da_(Da), Ja_(Ja), Ka_(Ka), psio_(psio), options_(opt), restricted_(true)
 {
     common_init();
 }
 
-PseudospectralHF::PseudospectralHF(shared_ptr<BasisSet> basis, shared_ptr<PSIO> psio, Options& opt) :
+PseudospectralHF::PseudospectralHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<PSIO> psio, Options& opt) :
     primary_(basis), psio_(psio), options_(opt), restricted_(true)
 {
     common_init();
@@ -60,17 +60,17 @@ void PseudospectralHF::common_init()
     memory_ = (unsigned long int) 0.7 * memory_;
 
     // Build auxiliary basis from options
-    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, primary_->molecule(), "RI_BASIS_SCF");
     parser.reset();
 
     // Build a fitting metric object
-    Jinv_ = shared_ptr<FittingMetric>(new FittingMetric(auxiliary_));
+    Jinv_ = boost::shared_ptr<FittingMetric>(new FittingMetric(auxiliary_));
     Jinv_->form_cholesky_factor();
 
     // Build a Schwarz sieve object
-    schwarz_ = shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
 
     // Build a set of thread-local integrators
     int nthread = 1;
@@ -87,32 +87,32 @@ void PseudospectralHF::common_init()
             thread = omp_get_thread_num();
         #endif
 
-        shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_, zero, primary_, primary_));
-        eri_[thread] = shared_ptr<TwoBodyAOInt>(fact->eri());
+        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_, zero, primary_, primary_));
+        eri_[thread] = boost::shared_ptr<TwoBodyAOInt>(fact->eri());
         fact.reset();
 
-        shared_ptr<IntegralFactory> fact2(new IntegralFactory(primary_, primary_, zero, zero));
-        pot_[thread] = shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact2->ao_pseudospectral()));
+        boost::shared_ptr<IntegralFactory> fact2(new IntegralFactory(primary_, primary_, zero, zero));
+        pot_[thread] = boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact2->ao_pseudospectral()));
     }
 
     // Build the peudospectral grid points and X matrix
-    shared_ptr<Integrator> quad = Integrator::build_integrator(primary_->molecule(), psio_, options_);
+    boost::shared_ptr<Integrator> quad = Integrator::build_integrator(primary_->molecule(), psio_, options_);
     quad->buildGrid(5000);
     P_ = quad->getNPoints();
 
-    shared_ptr<BasisPoints> points(new BasisPoints(primary_, 5000));
+    boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, 5000));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
-    points_ = shared_ptr<Matrix>(new Matrix("Pseudospectral Points", P_, 3));
+    points_ = boost::shared_ptr<Matrix>(new Matrix("Pseudospectral Points", P_, 3));
     double** rp = points_->pointer(0);
 
-    X_ = shared_ptr<Matrix>(new Matrix("Pseudospectral X", P_, primary_->nbf()));
+    X_ = boost::shared_ptr<Matrix>(new Matrix("Pseudospectral X", P_, primary_->nbf()));
     double** Xp = X_->pointer(0);
 
     unsigned long int counter = 0L;
     for (int P = 0; P < quad->getNBlocks(); P++) {
-        shared_ptr<GridBlock> block = quad->getBlock(P);
+        boost::shared_ptr<GridBlock> block = quad->getBlock(P);
         double* x = block->getX();
         double* y = block->getY();
         double* z = block->getZ();
@@ -312,7 +312,7 @@ void PseudospectralHF::form_K_PS_RHF()
 {
     // Cheesy N^3 approach for now
     // We can exploit sparsity like crazy
-    shared_ptr<Matrix> Q(new Matrix("Q", P_, primary_->nbf()));
+    boost::shared_ptr<Matrix> Q(new Matrix("Q", P_, primary_->nbf()));
 
     C_DGEMM('N', 'N', P_, primary_->nbf(), primary_->nbf(), 1.0, X_->pointer()[0], primary_->nbf(),
         Da_->pointer()[0], primary_->nbf(), 0.0, Q->pointer()[0], primary_->nbf());
@@ -322,8 +322,8 @@ void PseudospectralHF::form_K_PS_RHF()
         nthread = omp_get_max_threads();
     #endif
 
-    shared_ptr<Matrix> Z(new Matrix("Z", P_, primary_->nbf()));
-    std::vector<shared_ptr<Matrix> > A;
+    boost::shared_ptr<Matrix> Z(new Matrix("Z", P_, primary_->nbf()));
+    std::vector<boost::shared_ptr<Matrix> > A;
     A.resize(nthread);
 
     #pragma omp parallel
@@ -332,7 +332,7 @@ void PseudospectralHF::form_K_PS_RHF()
         #ifdef _OMP
             thread = omp_thread_num();
         #endif
-        A[thread] = shared_ptr<Matrix>(new Matrix("A", primary_->nbf(), primary_->nbf()));
+        A[thread] = boost::shared_ptr<Matrix>(new Matrix("A", primary_->nbf(), primary_->nbf()));
     }
 
     #ifdef HAVE_MKL

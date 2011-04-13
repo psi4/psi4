@@ -23,7 +23,7 @@ using namespace std;
 
 namespace psi {
 
-Integrator::Integrator(shared_ptr<Molecule> mol, shared_ptr<PSIO> psio) :
+Integrator::Integrator(boost::shared_ptr<Molecule> mol, boost::shared_ptr<PSIO> psio) :
     mol_(mol), psio_(psio)
 {
     built_ = false;
@@ -61,9 +61,9 @@ Integrator::~Integrator()
     psio_->close(PSIF_DFT_GRID, 1);
     free_grid();
 }
-shared_ptr<Integrator>  Integrator::build_integrator(shared_ptr<Molecule> molecule, shared_ptr<PSIO> psio, Options& options)
+boost::shared_ptr<Integrator>  Integrator::build_integrator(boost::shared_ptr<Molecule> molecule, boost::shared_ptr<PSIO> psio, Options& options)
 {
-    shared_ptr<Integrator> integrator(new Integrator(molecule, psio));
+    boost::shared_ptr<Integrator> integrator(new Integrator(molecule, psio));
     std::string special = options.get_str("DFT_GRID_NAME");
     if (special != "") {
         if (special == "SG1")
@@ -226,12 +226,12 @@ void Integrator::setNamedIntegrator(SpecialScheme name)
         prune_type_ = SG0_p;
     }
 }
-shared_ptr<GridBlock> Integrator::getAddress(unsigned long int N)
+boost::shared_ptr<GridBlock> Integrator::getAddress(unsigned long int N)
 {
     if (!built_)
         buildGrid(block_size_);
 
-    shared_ptr<GridBlock> block(new GridBlock());
+    boost::shared_ptr<GridBlock> block(new GridBlock());
     block->setMaxPoints(block_size_);
     unsigned long int start = N;
     if (block_size_ + start >= npoints_)
@@ -241,14 +241,14 @@ shared_ptr<GridBlock> Integrator::getAddress(unsigned long int N)
     block->setGrid(&x_[start], &y_[start], &z_[start], &w_[start]);
     return block;
 }
-shared_ptr<GridBlock> Integrator::getBlock(int N)
+boost::shared_ptr<GridBlock> Integrator::getBlock(int N)
 {
     if (!built_)
         buildGrid(block_size_);
 
     unsigned long int start = block_starts_[N];
     unsigned long int size = block_sizes_[N];
-    shared_ptr<GridBlock> block(new GridBlock());
+    boost::shared_ptr<GridBlock> block(new GridBlock());
     block->setMaxPoints(block_size_);
     block->setTruePoints(size);
     block->setGrid(&x_[start], &y_[start], &z_[start], &w_[start]);

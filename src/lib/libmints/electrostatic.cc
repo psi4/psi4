@@ -10,7 +10,7 @@ using namespace boost;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
+ElectrostaticInt::ElectrostaticInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
     PotentialInt(st, bs1, bs2, deriv)
 {
 }
@@ -23,7 +23,7 @@ void ElectrostaticInt::compute_shell(int s1, int s2, Vector3& C)
     compute_pair(bs1_->shell(s1), bs2_->shell(s2), C);
 }
 // The engine only supports segmented basis sets
-void ElectrostaticInt::compute_pair(shared_ptr<GaussianShell> s1, shared_ptr<GaussianShell> s2, Vector3& C)
+void ElectrostaticInt::compute_pair(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2, Vector3& C)
 {
     int ao12;
     int am1 = s1->am();

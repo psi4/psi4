@@ -497,7 +497,7 @@ void ERI::free_shell_pairs34()
 #endif
 }
 
-size_t ERI::memory_to_store_shell_pairs(const shared_ptr<BasisSet> &bs1, const shared_ptr<BasisSet> &bs2)
+size_t ERI::memory_to_store_shell_pairs(const boost::shared_ptr<BasisSet> &bs1, const boost::shared_ptr<BasisSet> &bs2)
 {
     int i, j, np_i, np_j;
     size_t mem = 0;
@@ -563,7 +563,7 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
 
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    shared_ptr<BasisSet> bs_temp;
+    boost::shared_ptr<BasisSet> bs_temp;
 
     p13p24_ = false; p12_ = false; p34_ = false;
 
@@ -677,7 +677,7 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4, FundamentalFunctor
 #ifdef MINTS_TIMER
     timer_on("setup");
 #endif
-    shared_ptr<GaussianShell> s1, s2, s3, s4;
+    boost::shared_ptr<GaussianShell> s1, s2, s3, s4;
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);
@@ -1015,7 +1015,7 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     // is not guaranteed.
     int s1, s2, s3, s4;
     int am1, am2, am3, am4, temp;
-    shared_ptr<BasisSet> bs_temp;
+    boost::shared_ptr<BasisSet> bs_temp;
     bool p13p24 = false, p12 = false, p34 = false;
 
     // AM used for ordering
@@ -1103,7 +1103,7 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 
 void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
-    shared_ptr<GaussianShell> s1, s2, s3, s4;
+    boost::shared_ptr<GaussianShell> s1, s2, s3, s4;
 
 //    fprintf(outfile, "sh1 = %d sh2 = %d sh3 = %d sh4 = %d\n", sh1, sh2, sh3, sh4);
 

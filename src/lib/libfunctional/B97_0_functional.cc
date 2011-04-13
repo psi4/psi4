@@ -104,7 +104,7 @@ B97_0_Functional::B97_0_Functional(int npoints, int deriv) : Functional(npoints,
 B97_0_Functional::~B97_0_Functional()
 {
 }
-void B97_0_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void B97_0_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -1014,7 +1014,7 @@ void B97_0_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void B97_0_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void B97_0_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

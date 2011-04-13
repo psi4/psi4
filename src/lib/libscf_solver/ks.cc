@@ -27,7 +27,7 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
-KS::KS(Options & options, shared_ptr<PSIO> psio) :
+KS::KS(Options & options, boost::shared_ptr<PSIO> psio) :
     options_(options), psio_(psio)
 {
     common_init();
@@ -41,7 +41,7 @@ void KS::common_init()
     molecule_ = Process::environment.molecule();
 
     // Load in the basis set
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
 
     // Build the integrator
@@ -56,7 +56,7 @@ void KS::common_init()
     fprintf(outfile,"\n  Selected Functional is %s.\n",functional_->getName().c_str());
 
     //Grab the properties object for this basis
-    properties_ = shared_ptr<Properties> (new Properties(basisset_,block_size));
+    properties_ = boost::shared_ptr<Properties> (new Properties(basisset_,block_size));
     properties_->setCutoffEpsilon(options_.get_double("DFT_BASIS_EPSILON"));
     //Always need rho
     properties_->setToComputeDensity(true);
@@ -69,12 +69,12 @@ void KS::common_init()
         properties_->setToComputeKEDensity(true);
     }
 }
-RKS::RKS(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) :
+RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
 {
     common_init();
 }
-RKS::RKS(Options & options, shared_ptr<PSIO> psio) :
+RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio) :
     RHF(options, psio), KS(options,psio)
 {
     common_init();
@@ -92,8 +92,8 @@ void RKS::form_V()
     V_->zero();
 
     // Some temporary buffers
-    shared_ptr<Matrix> Vt1 = factory_->create_shared_matrix("V Temp 1");
-    shared_ptr<Matrix> Vt2 = factory_->create_shared_matrix("V Temp 2");
+    boost::shared_ptr<Matrix> Vt1 = factory_->create_shared_matrix("V Temp 1");
+    boost::shared_ptr<Matrix> Vt2 = factory_->create_shared_matrix("V Temp 2");
     double** V_temp1 = Vt1->pointer();
     double** V_temp2 = Vt2->pointer();
 
@@ -152,7 +152,7 @@ void RKS::form_V()
     for (int N = 0; N < nblocks; N++) {
 
         // Compute integration points
-        shared_ptr<GridBlock> block = integrator_->getBlock(N);
+        boost::shared_ptr<GridBlock> block = integrator_->getBlock(N);
         x = block->getX();
         y = block->getY();
         z = block->getZ();
@@ -341,12 +341,12 @@ double RKS::compute_E()
 
     return Etotal;
 }
-UKS::UKS(Options & options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt) :
+UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     UHF(options, psio, chkpt), KS(options,psio)
 {
     common_init();
 }
-UKS::UKS(Options & options, shared_ptr<PSIO> psio) :
+UKS::UKS(Options & options, boost::shared_ptr<PSIO> psio) :
     UHF(options, psio), KS(options,psio)
 {
     common_init();
@@ -366,12 +366,12 @@ void UKS::form_V()
     Vb_->zero();
 
     // Some temporary buffers
-    shared_ptr<Matrix> Vt1a = factory_->create_shared_matrix("V Temp 1 (Alpha)");
-    shared_ptr<Matrix> Vt2a = factory_->create_shared_matrix("V Temp 2 (Alpha)");
+    boost::shared_ptr<Matrix> Vt1a = factory_->create_shared_matrix("V Temp 1 (Alpha)");
+    boost::shared_ptr<Matrix> Vt2a = factory_->create_shared_matrix("V Temp 2 (Alpha)");
     double** V_temp1a = Vt1a->pointer();
     double** V_temp2a = Vt2a->pointer();
-    shared_ptr<Matrix> Vt1b = factory_->create_shared_matrix("V Temp 1 (Beta)");
-    shared_ptr<Matrix> Vt2b = factory_->create_shared_matrix("V Temp 2 (Beta)");
+    boost::shared_ptr<Matrix> Vt1b = factory_->create_shared_matrix("V Temp 1 (Beta)");
+    boost::shared_ptr<Matrix> Vt2b = factory_->create_shared_matrix("V Temp 2 (Beta)");
     double** V_temp1b = Vt1b->pointer();
     double** V_temp2b = Vt2b->pointer();
 
@@ -446,7 +446,7 @@ void UKS::form_V()
     for (int N = 0; N < nblocks; N++) {
 
         // Compute integration points
-        shared_ptr<GridBlock> block = integrator_->getBlock(N);
+        boost::shared_ptr<GridBlock> block = integrator_->getBlock(N);
         x = block->getX();
         y = block->getY();
         z = block->getZ();

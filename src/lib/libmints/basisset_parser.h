@@ -6,7 +6,7 @@
 #include <psi4-dec.h>
 #include "gshell.h"
 
-// Forward declare boost shared_ptr
+// Forward declare boost boost::shared_ptr
 namespace boost {
 template<class T> class shared_ptr;
 

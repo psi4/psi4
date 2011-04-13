@@ -48,7 +48,7 @@ using namespace psi;
 
 namespace psi { namespace dfmp2 {
 
-DFMP2::DFMP2(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt_)
+DFMP2::DFMP2(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt_)
     : Wavefunction(options, psio, chkpt_)
 {
     setup();
@@ -57,9 +57,9 @@ void  DFMP2::setup()
 {
   timer_on("Setup");
 
-  shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
-  shared_ptr<Matrix> C;
-  shared_ptr<Vector> epsilon;
+  boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
+  boost::shared_ptr<Matrix> C;
+  boost::shared_ptr<Vector> epsilon;
 
   if (ref.get() != NULL) {
       E_scf_ = Process::environment.globals["SCF ENERGY"];
@@ -123,7 +123,7 @@ void  DFMP2::setup()
   }
 
   // Form ribasis object and auxiliary basis indexing:
-  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_MP2");
   naux_raw_ = ribasis_->nbf();
   naux_fin_ = ribasis_->nbf(); //For now, may be pared later
@@ -168,8 +168,8 @@ void  DFMP2::setup()
       C = ref->Ca();
       epsilon = ref->epsilon_a();
   } else {
-      C = shared_ptr<Matrix>(new Matrix("C Matrix", nso_, nmo_));
-      epsilon = shared_ptr<Vector>(new Vector(nmo_));
+      C = boost::shared_ptr<Matrix>(new Matrix("C Matrix", nso_, nmo_));
+      epsilon = boost::shared_ptr<Vector>(new Vector(nmo_));
 
       if (Communicator::world->me() == 0) {
         double **vectors;
@@ -353,7 +353,7 @@ void DFMP2::form_Schwarz()
         double max_global_val = 0.0;
 
         IntegralFactory schwarzfactory(basisset_,basisset_,basisset_,basisset_);
-        shared_ptr<TwoBodyAOInt> eri = shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
+        boost::shared_ptr<TwoBodyAOInt> eri = boost::shared_ptr<TwoBodyAOInt>(schwarzfactory.eri());
         const double *buffer = eri->buffer();
 
         int MU, NU, mu, nu,omu,onu, nummu, numnu, index;
@@ -398,15 +398,15 @@ void DFMP2::form_Schwarz()
     timer_off("Schwarz");
 
 }
-double** DFMP2::form_W(shared_ptr<BasisSet> bas)
+double** DFMP2::form_W(boost::shared_ptr<BasisSet> bas)
 {
-  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+  boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
   IntegralFactory rifactory_J(bas, zero, bas, zero);
 
   int naux = bas->nbf();
 
-  shared_ptr<TwoBodyAOInt> Jint = (shared_ptr<TwoBodyAOInt>)rifactory_J.eri();
+  boost::shared_ptr<TwoBodyAOInt> Jint = (boost::shared_ptr<TwoBodyAOInt>)rifactory_J.eri();
   const double *Jbuffer = Jint->buffer();
 
   double **J = block_matrix(naux, naux);
@@ -436,18 +436,18 @@ double** DFMP2::form_W(shared_ptr<BasisSet> bas)
 
   return J;
 }
-double** DFMP2::form_W_overlap(shared_ptr<BasisSet> bas)
+double** DFMP2::form_W_overlap(boost::shared_ptr<BasisSet> bas)
 {
 
-  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+  boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
   int naux = bas->nbf();
 
   IntegralFactory rifactory_JS(bas, bas, zero, zero);
-  shared_ptr<OneBodyAOInt> S = (shared_ptr<OneBodyAOInt>)rifactory_JS.ao_overlap();
+  boost::shared_ptr<OneBodyAOInt> S = (boost::shared_ptr<OneBodyAOInt>)rifactory_JS.ao_overlap();
 
   //Put the integrals in a good old double**
   double** SJ;
-  shared_ptr<SimpleMatrix> S_J(new SimpleMatrix("J Overlap", naux, naux));
+  boost::shared_ptr<SimpleMatrix> S_J(new SimpleMatrix("J Overlap", naux, naux));
   //Compute those integrals
   S->compute(S_J);
   //S_J->print(outfile);
@@ -822,9 +822,9 @@ void DFMP2::form_Aia_disk()
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
-  shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
+  boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
   for (int Q = 0; Q<nthread; Q++) {
-    eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
+    eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     buffer[Q] = eri[Q]->buffer();
   }
 
@@ -1293,9 +1293,9 @@ double** DFMP2::form_Aia_core()
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
-  shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
+  boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
   for (int Q = 0; Q<nthread; Q++) {
-    eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
+    eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     buffer[Q] = eri[Q]->buffer();
   }
 
@@ -1653,9 +1653,9 @@ double** DFMP2::form_Aia_core_parallel()
   IntegralFactory rifactory(ribasis_,zerobasis_, basisset_, basisset_);
   //Get a TEI for each thread
   const double **buffer = new const double*[nthread];
-  shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthread];
+  boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
   for (int Q = 0; Q<nthread; Q++) {
-    eri[Q] = shared_ptr<TwoBodyAOInt>(rifactory.eri());
+    eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory.eri());
     buffer[Q] = eri[Q]->buffer();
   }
 
@@ -1983,7 +1983,7 @@ double DFMP2::compute_E_old()
   escf = chkpt_->rd_escf();
 
   // Create a new matrix factory
-  shared_ptr<MatrixFactory> factory = shared_ptr<MatrixFactory>(new MatrixFactory());
+  boost::shared_ptr<MatrixFactory> factory = boost::shared_ptr<MatrixFactory>(new MatrixFactory());
 
   // Initialize the factory with data from checkpoint
   factory->init_with_chkpt(chkpt_);
@@ -2017,9 +2017,9 @@ double DFMP2::compute_E_old()
   orbital_energies = chkpt_->rd_evals();
 
   // Form ribasis object:
-  shared_ptr<BasisSet> ribasis =shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_MP2"));
+  boost::shared_ptr<BasisSet> ribasis =boost::shared_ptr<BasisSet>(new BasisSet(chkpt_, "DF_BASIS_MP2"));
   int naux = ribasis->nbf();
-  shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+  boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
   //Put the orbitals and C matrix into some nice arrays
   double** Co   = block_matrix(norbs, nact_docc);

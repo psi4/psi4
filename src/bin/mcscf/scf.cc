@@ -15,7 +15,7 @@ using namespace boost;
 namespace psi{
 namespace mcscf{
 
-SCF::SCF(Options& options_, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+SCF::SCF(Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
 : Wavefunction(options_, psio, chkpt)
 {
 //  startup();

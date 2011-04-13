@@ -20,7 +20,7 @@ void
 DCFTSolver::mp2_guess()
 {
     // Initialize the integral transformation object
-    std::vector<shared_ptr<MOSpace> > spaces;
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
 //    _ints = new IntegralTransform(spaces, IntegralTransform::Unrestricted,

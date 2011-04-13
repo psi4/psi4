@@ -411,7 +411,7 @@ object py_psi_get_global_option(const string& key)
     return object();
 }
 
-void py_psi_set_active_molecule(shared_ptr<Molecule> molecule)
+void py_psi_set_active_molecule(boost::shared_ptr<Molecule> molecule)
 {
     Process::environment.set_molecule(molecule);
 }
@@ -450,7 +450,7 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
-shared_ptr<Wavefunction> py_psi_reference_wavefunction()
+boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()
 {
     return Process::environment.reference_wavefunction();
 }
@@ -554,7 +554,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     export_functional();
 
     /**
-    class_<DFTensor, shared_ptr<DFTensor> >( "DFTensor", no_init).
+    class_<DFTensor, boost::shared_ptr<DFTensor> >( "DFTensor", no_init).
         def("bootstrap", &DFTensor::bootstrap_DFTensor).
         staticmethod("booststrap").
         def("form_fitting_metric", &DFTensor::form_fitting_metric).

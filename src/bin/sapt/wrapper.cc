@@ -14,9 +14,9 @@ PsiReturnType sapt(Options & options)
 {
   tstart();
 
-  shared_ptr<PSIO> psio(new PSIO);
+  boost::shared_ptr<PSIO> psio(new PSIO);
 
-  shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+  boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
   // Initialize the psi3 timer library.
   timer_init();

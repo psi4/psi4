@@ -112,9 +112,9 @@ string MultipoleSymmetry::name_of_component(int i)
     return form_suffix(components[0], components[1], components[2]);
 }
 
-vector<shared_ptr<Matrix> > MultipoleSymmetry::create_matrices(const std::string &basename)
+vector<boost::shared_ptr<Matrix> > MultipoleSymmetry::create_matrices(const std::string &basename)
 {
-    vector<shared_ptr<Matrix> > matrices;
+    vector<boost::shared_ptr<Matrix> > matrices;
     string name;
 
     for (int i=0; i<INT_NCART(order_); ++i) {

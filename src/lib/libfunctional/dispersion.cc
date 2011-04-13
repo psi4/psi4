@@ -28,7 +28,7 @@ Dispersion::Dispersion()
 Dispersion::~Dispersion()
 {
 }
-std::string Dispersion::printEnergy(shared_ptr<Molecule> m)
+std::string Dispersion::printEnergy(boost::shared_ptr<Molecule> m)
 {
     double e = computeEnergy(m);
     std::stringstream s;
@@ -39,7 +39,7 @@ std::string Dispersion::printEnergy(shared_ptr<Molecule> m)
 
     return s.str();
 }
-std::string Dispersion::printGradient(shared_ptr<Molecule> m)
+std::string Dispersion::printGradient(boost::shared_ptr<Molecule> m)
 {
     double* g = computeGradient(m);
     std::stringstream s;
@@ -58,7 +58,7 @@ std::string Dispersion::printGradient(shared_ptr<Molecule> m)
     }
     return s.str();
 }
-std::string Dispersion::printHessian(shared_ptr<Molecule> m)
+std::string Dispersion::printHessian(boost::shared_ptr<Molecule> m)
 {
     double** h = computeHessian(m);
 
@@ -99,11 +99,11 @@ boost::shared_ptr<Dispersion> Dispersion::createDispersion(const std::string & n
         boost::shared_ptr<Dispersion> disp;
         return disp;
     } else if (boost::to_upper_copy(name) == "-D1") {
-        return shared_ptr<Dispersion> (new D1(s6));
+        return boost::shared_ptr<Dispersion> (new D1(s6));
     } else if (boost::to_upper_copy(name) == "-D2") {
-        return shared_ptr<Dispersion> (new D2(s6));
+        return boost::shared_ptr<Dispersion> (new D2(s6));
     } else if (boost::to_upper_copy(name) == "-D3") {
-        return shared_ptr<Dispersion> (new D3(s6, s8, sr6, sr8));
+        return boost::shared_ptr<Dispersion> (new D3(s6, s8, sr6, sr8));
     }
 }
 D1::D1(double s6) : Dispersion()
@@ -120,7 +120,7 @@ D1::D1(double s6) : Dispersion()
 D1::~D1()
 {
 }
-double D1::computeEnergy(shared_ptr<Molecule> mol)
+double D1::computeEnergy(boost::shared_ptr<Molecule> mol)
 {
     double energy = 0.0;
 
@@ -203,7 +203,7 @@ double D1::computeEnergy(shared_ptr<Molecule> mol)
 
     return energy;
 }
-double* D1::computeGradient(shared_ptr<Molecule> mol)
+double* D1::computeGradient(boost::shared_ptr<Molecule> mol)
 {
     // Build Z, x, y, and z
     int natom = 0;
@@ -340,7 +340,7 @@ double* D1::computeGradient(shared_ptr<Molecule> mol)
     delete []z;
     return grad;
 }
-double** D1::computeHessian(shared_ptr<Molecule> mol)
+double** D1::computeHessian(boost::shared_ptr<Molecule> mol)
 {
     // Build Z, x, y, and z
     int natom = 0;
@@ -887,7 +887,7 @@ D2::D2(double s6) : Dispersion()
 D2::~D2()
 {
 }
-double D2::computeEnergy(shared_ptr<Molecule> mol)
+double D2::computeEnergy(boost::shared_ptr<Molecule> mol)
 {
     double energy = 0.0;
 
@@ -970,7 +970,7 @@ double D2::computeEnergy(shared_ptr<Molecule> mol)
 
     return energy;
 }
-double* D2::computeGradient(shared_ptr<Molecule> mol)
+double* D2::computeGradient(boost::shared_ptr<Molecule> mol)
 {
     // Build Z, x, y, and z
     int natom = 0;
@@ -1107,7 +1107,7 @@ double* D2::computeGradient(shared_ptr<Molecule> mol)
     delete []z;
     return grad;
 }
-double** D2::computeHessian(shared_ptr<Molecule> mol)
+double** D2::computeHessian(boost::shared_ptr<Molecule> mol)
 {
     // Build Z, x, y, and z
     int natom = 0;
@@ -1659,17 +1659,17 @@ D3::D3(double s6, double s8, double sr6, double sr8)
 D3::~D3()
 {
 }
-double D3::computeEnergy(shared_ptr<Molecule> mol)
+double D3::computeEnergy(boost::shared_ptr<Molecule> mol)
 {
     double energy = 0.0;
     return energy;
 }
-double* D3::computeGradient(shared_ptr<Molecule> mol)
+double* D3::computeGradient(boost::shared_ptr<Molecule> mol)
 {
     double* grad;
     return grad;
 }
-double** D3::computeHessian(shared_ptr<Molecule> mol)
+double** D3::computeHessian(boost::shared_ptr<Molecule> mol)
 {
     double** hess;
     return hess;

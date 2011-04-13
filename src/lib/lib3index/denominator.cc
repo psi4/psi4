@@ -48,14 +48,14 @@ bool from_string(T& t,
     std::istringstream iss(s);
     return !(iss >> f >> t).fail();
 }
-Denominator::Denominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta) :
+Denominator::Denominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta) :
     eps_occ_(eps_occ), eps_vir_(eps_vir), delta_(delta)
 {
 }
 Denominator::~Denominator()
 {
 }
-LaplaceDenominator::LaplaceDenominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta) :
+LaplaceDenominator::LaplaceDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta) :
     Denominator(eps_occ, eps_vir, delta)
 {
     decompose();
@@ -69,9 +69,9 @@ void Denominator::debug()
     double* e_v = eps_vir_->pointer();
     double** denp = denominator_->pointer();
 
-    shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
 
     double** tp = true_denom->pointer();
     double** ap = app_denom->pointer();
@@ -134,7 +134,7 @@ void LaplaceDenominator::decompose()
     double* R_availp = new double[nR];
     R_avail_file.read((char*) R_availp, nR*sizeof(double));
 
-    shared_ptr<Matrix> err_table(new Matrix("Error Table (nR x nk)", nR, nk));
+    boost::shared_ptr<Matrix> err_table(new Matrix("Error Table (nR x nk)", nR, nk));
     double** err_tablep = err_table->pointer();
     err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double));
 
@@ -239,9 +239,9 @@ void LaplaceDenominator::decompose()
         omega[k] /= A;
     }
 
-    denominator_occ_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor", nvector_, nocc));
-    denominator_vir_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor", nvector_, nvir));
-    denominator_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor", nvector_, nocc*nvir));
+    denominator_occ_ = boost::shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor", nvector_, nocc));
+    denominator_vir_ = boost::shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor", nvector_, nvir));
+    denominator_ = boost::shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor", nvector_, nocc*nvir));
 
     double** dop = denominator_occ_->pointer();
     double** dvp = denominator_vir_->pointer();
@@ -284,9 +284,9 @@ void LaplaceDenominator::debug()
     double** denop = denominator_occ_->pointer();
     double** denvp = denominator_vir_->pointer();
 
-    shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor (Fully Separated)", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor (Fully Separated)", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
 
     double** tp = true_denom->pointer();
     double** ap = app_denom->pointer();
@@ -313,7 +313,7 @@ void LaplaceDenominator::debug()
     err_denom->print();
 
 }
-CholeskyDenominator::CholeskyDenominator(shared_ptr<Vector> eps_occ, shared_ptr<Vector> eps_vir, double delta, double dm) :
+CholeskyDenominator::CholeskyDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta, double dm) :
     Denominator(eps_occ, eps_vir, delta), degeneracy_multiplier_(dm)
 {
     decompose();
@@ -381,7 +381,7 @@ void CholeskyDenominator::decompose()
 
     nvector_ = Ndelta;
 
-    shared_ptr<Matrix> L(new Matrix("Cholesky L, Energy Denominator", N, Ndelta));
+    boost::shared_ptr<Matrix> L(new Matrix("Cholesky L, Energy Denominator", N, Ndelta));
     double** Lp = L->pointer(0);
 
     for (int n = 0; n < Ndelta; n++) {
@@ -406,7 +406,7 @@ void CholeskyDenominator::decompose()
     fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
     fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", max_error);
 
-    denominator_ = shared_ptr<Matrix>(new Matrix("Cholesky Delta Tensor", Ndelta, nspan));
+    denominator_ = boost::shared_ptr<Matrix>(new Matrix("Cholesky Delta Tensor", Ndelta, nspan));
     double** Lar = denominator_->pointer();
 
     for (int k = 0; k < nspan; k++) {
@@ -419,7 +419,7 @@ void CholeskyDenominator::decompose()
     //fprintf(outfile, " Lbs\n");
     //print_mat(Lbs, Ndelta, noccA*nvirA, outfile);
 
-    //shared_ptr<Matrix> Delta(new Matrix(noccA*nvirA, noccB*nvirB));
+    //boost::shared_ptr<Matrix> Delta(new Matrix(noccA*nvirA, noccB*nvirB));
     //double** Delt = Delta->get_pointer();
 
     //C_DGEMM('T','N', noccA*nvirA, noccB*nvirB, Ndelta, 1.0, Lar[0], noccA*nvirA, Lbs[0], noccB*nvirB, 0.0, Delt[0], noccB*nvirB);
@@ -433,9 +433,9 @@ void CholeskyDenominator::debug()
     Denominator::debug();
 }
 
-SAPTDenominator::SAPTDenominator(shared_ptr<Vector> eps_occA,
-  shared_ptr<Vector> eps_virA, shared_ptr<Vector> eps_occB,
-  shared_ptr<Vector> eps_virB, double delta, bool debug) :
+SAPTDenominator::SAPTDenominator(boost::shared_ptr<Vector> eps_occA,
+  boost::shared_ptr<Vector> eps_virA, boost::shared_ptr<Vector> eps_occB,
+  boost::shared_ptr<Vector> eps_virB, double delta, bool debug) :
     eps_occA_(eps_occA), eps_virA_(eps_virA), eps_occB_(eps_occB),
     eps_virB_(eps_virB), delta_(delta), debug_(debug)
 {
@@ -450,8 +450,8 @@ void SAPTDenominator::debug()
     fprintf(outfile, "\n  ==> Debug Monomer B Denominator <==\n\n");
     check_denom(eps_occB_,eps_virB_,denominatorB_);
 }
-void SAPTDenominator::check_denom(shared_ptr<Vector> eps_occ,
-  shared_ptr<Vector> eps_vir, shared_ptr<Matrix> denominator)
+void SAPTDenominator::check_denom(boost::shared_ptr<Vector> eps_occ,
+  boost::shared_ptr<Vector> eps_vir, boost::shared_ptr<Matrix> denominator)
 {
     int nocc = eps_occ->dimpi()[0];
     int nvir = eps_vir->dimpi()[0];
@@ -460,9 +460,9 @@ void SAPTDenominator::check_denom(shared_ptr<Vector> eps_occ,
     double* e_v = eps_vir->pointer();
     double** denp = denominator->pointer();
 
-    shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
 
     double** tp = true_denom->pointer();
     double** ap = app_denom->pointer();
@@ -488,9 +488,9 @@ void SAPTDenominator::check_denom(shared_ptr<Vector> eps_occ,
     app_denom->print();
     err_denom->print();
 }
-SAPTLaplaceDenominator::SAPTLaplaceDenominator(shared_ptr<Vector> eps_occA,
-  shared_ptr<Vector> eps_virA, shared_ptr<Vector> eps_occB,
-  shared_ptr<Vector> eps_virB, double delta, bool debug) :
+SAPTLaplaceDenominator::SAPTLaplaceDenominator(boost::shared_ptr<Vector> eps_occA,
+  boost::shared_ptr<Vector> eps_virA, boost::shared_ptr<Vector> eps_occB,
+  boost::shared_ptr<Vector> eps_virB, double delta, bool debug) :
     SAPTDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug)
 {
     decompose();
@@ -543,7 +543,7 @@ void SAPTLaplaceDenominator::decompose()
     double* R_availp = new double[nR];
     R_avail_file.read((char*) R_availp, nR*sizeof(double));
 
-    shared_ptr<Matrix> err_table(new Matrix("Error Table (nR x nk)", nR, nk));
+    boost::shared_ptr<Matrix> err_table(new Matrix("Error Table (nR x nk)", nR, nk));
     double** err_tablep = err_table->pointer();
     err_table_file.read((char*) err_tablep[0], nR*nk*sizeof(double));
 
@@ -650,13 +650,13 @@ void SAPTLaplaceDenominator::decompose()
         omega[k] /= A;
     }
 
-    denominator_occA_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (A)", nvector_, noccA));
-    denominator_virA_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (A)", nvector_, nvirA));
-    denominatorA_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (A)", nvector_, noccA*nvirA));
+    denominator_occA_ = boost::shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (A)", nvector_, noccA));
+    denominator_virA_ = boost::shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (A)", nvector_, nvirA));
+    denominatorA_ = boost::shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (A)", nvector_, noccA*nvirA));
 
-    denominator_occB_ = shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (B)", nvector_, noccB));
-    denominator_virB_ = shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (B)", nvector_, nvirB));
-    denominatorB_ = shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (B)", nvector_, noccB*nvirB));
+    denominator_occB_ = boost::shared_ptr<Matrix>(new Matrix("Occupied Laplace Delta Tensor (B)", nvector_, noccB));
+    denominator_virB_ = boost::shared_ptr<Matrix>(new Matrix("Virtual Laplace Delta Tensor (B)", nvector_, nvirB));
+    denominatorB_ = boost::shared_ptr<Matrix>(new Matrix("OV Laplace Delta Tensor (B)", nvector_, noccB*nvirB));
 
     double** doA = denominator_occA_->pointer();
     double** dvA = denominator_virA_->pointer();
@@ -711,9 +711,9 @@ void SAPTLaplaceDenominator::debug()
     fprintf(outfile, "\n  ==> Debug Monomer B Split Denominator <==\n\n");
     check_split(eps_occB_,eps_virB_,denominator_occB_,denominator_virB_);
 }
-void SAPTLaplaceDenominator::check_split(shared_ptr<Vector> eps_occ,
-  shared_ptr<Vector> eps_vir, shared_ptr<Matrix> denominator_occ,
-  shared_ptr<Matrix> denominator_vir)
+void SAPTLaplaceDenominator::check_split(boost::shared_ptr<Vector> eps_occ,
+  boost::shared_ptr<Vector> eps_vir, boost::shared_ptr<Matrix> denominator_occ,
+  boost::shared_ptr<Matrix> denominator_vir)
 {
     int nocc = eps_occ->dimpi()[0];
     int nvir = eps_vir->dimpi()[0];
@@ -723,9 +723,9 @@ void SAPTLaplaceDenominator::check_split(shared_ptr<Vector> eps_occ,
     double** denop = denominator_occ->pointer();
     double** denvp = denominator_vir->pointer();
 
-    shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor (Fully Separated)", nocc*nvir, nocc*nvir));
-    shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> true_denom(new Matrix("Exact Delta Tensor", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> app_denom(new Matrix("Approximate Delta Tensor (Fully Separated)", nocc*nvir, nocc*nvir));
+    boost::shared_ptr<Matrix> err_denom(new Matrix("Error in Delta Tensor", nocc*nvir, nocc*nvir));
 
     double** tp = true_denom->pointer();
     double** ap = app_denom->pointer();

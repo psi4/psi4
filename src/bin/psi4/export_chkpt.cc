@@ -8,7 +8,7 @@ using namespace psi;
 
 void export_chkpt()
 {
-    class_<Chkpt, shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
+    class_<Chkpt, boost::shared_ptr<Chkpt> >( "Checkpoint", init<PSIO*, int>() ).
         add_property( "enuc", &Chkpt::rd_enuc, &Chkpt::wt_enuc).
         add_property( "label", &Chkpt::rd_label, &Chkpt::wt_label).
         add_property( "escf", &Chkpt::rd_escf, &Chkpt::wt_escf).

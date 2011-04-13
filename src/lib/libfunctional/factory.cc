@@ -204,7 +204,7 @@ std::vector<std::string> Functional::availableNames()
 }
 boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const std::string & name, int npoints, int deriv)
 {
-    shared_ptr<SuperFunctional> superfun = (shared_ptr<SuperFunctional>) new SuperFunctional(npoints, deriv);
+    boost::shared_ptr<SuperFunctional> superfun = (boost::shared_ptr<SuperFunctional>) new SuperFunctional(npoints, deriv);
 
     //Alias Table
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("S_X"))) {

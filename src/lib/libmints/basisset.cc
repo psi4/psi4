@@ -126,7 +126,7 @@ void BasisSet::print_summary(FILE* out) const
 
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
-        shared_ptr<GaussianShell> shell;
+        boost::shared_ptr<GaussianShell> shell;
 
         for (int Q = 0; Q < n_shell; Q++) {
             shell = shells_[Q + first_shell];
@@ -164,7 +164,7 @@ void BasisSet::print_detail(FILE* out) const
     for (int A = 0; A < molecule_->natom(); A++) {
         fprintf(out, "  -Basis set on unique center %d: %s\n", A+1,molecule_->symbol(A).c_str());
 
-        shared_ptr<GaussianShell> shell;
+        boost::shared_ptr<GaussianShell> shell;
         int first_shell = center_to_shell_[A];
         int n_shell = center_to_nshell_[A];
 
@@ -184,21 +184,21 @@ void BasisSet::print_detail(FILE* out) const
     }
 }
 
-shared_ptr<GaussianShell> BasisSet::shell(int si) const
+boost::shared_ptr<GaussianShell> BasisSet::shell(int si) const
 {
     if (si < 0 || si > nshell())
         throw PSIEXCEPTION("BasisSet::shell: requested shell is out-of-bounds.");
     return shells_[si];
 }
 
-shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
+boost::shared_ptr<GaussianShell> BasisSet::shell(int center, int si) const
 {
     return shell(center_to_shell_[center] + si);
 }
 
-shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
+boost::shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
 {
-    shared_ptr<BasisSet> new_basis(new BasisSet());
+    boost::shared_ptr<BasisSet> new_basis(new BasisSet());
 
     // Setup all the parameters needed for a zero basis set
     new_basis->shell_center_.push_back(0);
@@ -208,7 +208,7 @@ shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     new_basis->puream_ = false;
 
     // Add "ghost" atom to the molecule for this basis
-    new_basis->molecule_ = shared_ptr<Molecule>(new Molecule);
+    new_basis->molecule_ = boost::shared_ptr<Molecule>(new Molecule);
     // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
     // but to the fxyz array.
     new_basis->molecule_->add_atom(0, 0.0, 0.0, 0.0);
@@ -220,7 +220,7 @@ shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     new_basis->nbf_ = 1;
 
     // Create shell array
-    new_basis->shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
+    new_basis->shells_.push_back(boost::shared_ptr<GaussianShell>(new GaussianShell));
 
     // Create out basis set arrays
     // null basis set
@@ -234,18 +234,18 @@ shared_ptr<BasisSet> BasisSet::zero_ao_basis_set()
     return new_basis;
 }
 
-shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const shared_ptr<IntegralFactory>& factory)
+boost::shared_ptr<SOBasisSet> BasisSet::zero_so_basis_set(const boost::shared_ptr<IntegralFactory>& factory)
 {
-    shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
-    shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
+    boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
+    boost::shared_ptr<SOBasisSet> sozero(new SOBasisSet(zero, factory));
     return sozero;
 }
 
-shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parser,
-        const shared_ptr<Molecule>& mol,
+boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSetParser>& parser,
+        const boost::shared_ptr<Molecule>& mol,
         const std::string& type)
 {
-    shared_ptr<BasisSet> basisset(new BasisSet);
+    boost::shared_ptr<BasisSet> basisset(new BasisSet);
 
     // Update geometry in molecule, if there is a problem an exception is thrown.
     mol->update_geometry();
@@ -258,8 +258,8 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
 
     // Map of GaussianShells
     //  basis           atom        gaussian shells
-    typedef map<string, map<string, vector<shared_ptr<GaussianShell> > > > map_ssv;
-    typedef map<string, vector<shared_ptr<GaussianShell> > > map_sv;
+    typedef map<string, map<string, vector<boost::shared_ptr<GaussianShell> > > > map_ssv;
+    typedef map<string, vector<boost::shared_ptr<GaussianShell> > > map_sv;
     map_ssv basis_atom_shell;
 
     for (int atom=0; atom<mol->natom(); ++atom) {
@@ -330,10 +330,10 @@ shared_ptr<BasisSet> BasisSet::construct(const shared_ptr<BasisSetParser>& parse
         string symbol = mol->atom_entry(atom)->symbol();
         Vector3 center = mol->xyz(atom);
 
-        vector<shared_ptr<GaussianShell> >& shells = basis_atom_shell[basis][symbol];
+        vector<boost::shared_ptr<GaussianShell> >& shells = basis_atom_shell[basis][symbol];
 
         for (int i=0; i<shells.size(); ++i) {
-            shared_ptr<GaussianShell> temp(shells[i]->copy(atom, center));
+            boost::shared_ptr<GaussianShell> temp(shells[i]->copy(atom, center));
             basisset->shells_.push_back(temp);
         }
     }
@@ -576,10 +576,10 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
         max_shells = 10;
     }
 
-    shared_ptr<BasisSet> new_basis(new BasisSet());
+    boost::shared_ptr<BasisSet> new_basis(new BasisSet());
 
     // Add 4 atoms to the molecule for this basis (max integal centers is 4 at the moment)
-    new_basis->molecule_ = shared_ptr<Molecule>(new Molecule);
+    new_basis->molecule_ = boost::shared_ptr<Molecule>(new Molecule);
     // Ghost atoms are now handled differently, they are not added to the normal xyz information array,
     // but to the fxyz array.
     double x = 0.0;
@@ -602,7 +602,7 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     // Create shell array
     for (int A = 0; A < max_centers; A++)
         for (int Q = 0; Q < max_shells; Q++)
-            new_basis->shells_.push_back(shared_ptr<GaussianShell>(new GaussianShell));
+            new_basis->shells_.push_back(boost::shared_ptr<GaussianShell>(new GaussianShell));
     // Add shells
     for (int A = 0; A < max_centers; A++) {
         Vector3 center = new_basis->molecule_->fxyz(A);
@@ -621,13 +621,13 @@ std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test
     return make_pair(labels, new_basis);
 }
 
-shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
+boost::shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
 {
     //May only work in C1!!!!
     //Construct a blank BasisSet on the heap
-    shared_ptr<BasisSet> bas(new BasisSet);
+    boost::shared_ptr<BasisSet> bas(new BasisSet);
     //Construct a blank Molecule on the heap
-    shared_ptr<Molecule> mol(new Molecule);
+    boost::shared_ptr<Molecule> mol(new Molecule);
 
     int Z = molecule_->Z(center);
     double x = molecule_->x(center);
@@ -661,7 +661,7 @@ shared_ptr<BasisSet> BasisSet::atomic_basis_set(int center)
         if (shell_center_[i] == center) {
             if (shell_start == -1)
                 shell_start = i;
-            shared_ptr<GaussianShell> shell(new GaussianShell);
+            boost::shared_ptr<GaussianShell> shell(new GaussianShell);
             int nprm = shells_[i]->nprimitive();
             int am = shells_[i]->am();
             GaussianType harmonics = (shells_[i]->is_pure() ? Pure : Cartesian);

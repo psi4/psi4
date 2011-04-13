@@ -41,7 +41,7 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+HF::HF(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : Wavefunction(options, psio, chkpt),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
@@ -50,7 +50,7 @@ HF::HF(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     common_init();
 }
 
-HF::HF(Options& options, shared_ptr<PSIO> psio)
+HF::HF(Options& options, boost::shared_ptr<PSIO> psio)
     : Wavefunction(options, psio),
       nuclear_dipole_contribution_(3),
       nuclear_quadrupole_contribution_(6),
@@ -256,23 +256,23 @@ void HF::integrals()
 
     // We need some integrals on disk for these cases
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
-        shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
+        boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->integrals();
-        if(scf_type_ == "PK") pk_integrals_ = shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
+        if(scf_type_ == "PK") pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
                                                                                      nsopi_, so2index_, so2symblk_));
     }else if (scf_type_ == "PSEUDOSPECTRAL"){
         if(nirrep_ > 1)
             throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
-        df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
-        pseudospectral_ = shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
+        df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
+        pseudospectral_ = boost::shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DF"){
-        df_ = shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
+        df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DIRECT"){
         if (print_)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
-        shared_ptr<IntegralFactory> integral = shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        shared_ptr<TwoBodyAOInt> aoeri = shared_ptr<TwoBodyAOInt>(integral->eri());
-        eri_ = shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
+        boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        boost::shared_ptr<TwoBodyAOInt> aoeri = boost::shared_ptr<TwoBodyAOInt>(integral->eri());
+        eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
 }
 
@@ -436,9 +436,9 @@ void HF::form_H()
     SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
 
     // Integral factory
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
-    shared_ptr<OneBodySOInt>    soV(integral->so_potential());
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    boost::shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
+    boost::shared_ptr<OneBodySOInt>    soV(integral->so_potential());
 
     soT->compute(kinetic);
     soV->compute(potential);
@@ -456,7 +456,7 @@ void HF::form_H()
         H_->print(outfile);
 
     if (perturb_h_) {
-        shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+        boost::shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         MultipoleSymmetry msymm(1, molecule_, ifact, factory_);
         vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
 
@@ -501,8 +501,8 @@ void HF::form_Shalf()
 {
     // ==> SYMMETRIC ORTHOGONALIZATION <== //
 
-    shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+    boost::shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
     so_overlap->compute(S_);
 
     SharedMatrix eigvec= factory_->create_shared_matrix("L");
@@ -879,14 +879,14 @@ void HF::save_orbitals()
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char));
 
-    shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
+    boost::shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
     Ctemp_a->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
 
-    shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
+    boost::shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nbetapi_[h]; i++)
@@ -919,9 +919,9 @@ void HF::load_orbitals()
         }
     }
 
-    shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     molecule_->set_basis_all_atoms(basisname, "DUAL_BASIS_SCF");
-    shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
+    boost::shared_ptr<BasisSet> dual_basis = BasisSet::construct(parser, molecule_, "DUAL_BASIS_SCF");
 
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
 
@@ -940,9 +940,9 @@ void HF::load_orbitals()
         soccpi_[h] = nalphapi_[h] - nbetapi_[h];
     }
 
-    shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+    boost::shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
     Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    shared_ptr<Matrix> Ca;
+    boost::shared_ptr<Matrix> Ca;
     if (basisname != options_.get_str("BASIS")) {
         Ca = dualBasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
     } else {
@@ -953,9 +953,9 @@ void HF::load_orbitals()
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ca_->set(h,m,i,Ca->get(h,m,i));
 
-    shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
+    boost::shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
     Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    shared_ptr<Matrix> Cb;
+    boost::shared_ptr<Matrix> Cb;
     if (basisname != options_.get_str("BASIS")) {
         Cb = dualBasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
     } else {
@@ -1172,7 +1172,7 @@ double HF::compute_energy()
 
         // Properties
         if (print_) {
-            shared_ptr<OEProp> oe(new OEProp());
+            boost::shared_ptr<OEProp> oe(new OEProp());
             oe->add("DIPOLE");
 
             if (print_ >= 2) {
@@ -1232,7 +1232,7 @@ void HF::print_occupation()
     for(int h = 0; h < nirrep_; ++h) free(labels[h]); free(labels);
 }
 
-void HF::diagonalize_F(const shared_ptr<Matrix>& Fm, shared_ptr<Matrix>& Cm, shared_ptr<Vector>& epsm)
+void HF::diagonalize_F(const boost::shared_ptr<Matrix>& Fm, boost::shared_ptr<Matrix>& Cm, boost::shared_ptr<Vector>& epsm)
 {
     //Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
@@ -1255,7 +1255,7 @@ void HF::reset_SAD_occupation()
         soccpi_[h]   = 0;
     }
 }
-shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, int* noccpi)
+boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Cso, int* noccpi)
 {
     int* nsopi = Cso->rowspi();
     int* nmopi = Cso->colspi();
@@ -1264,11 +1264,11 @@ shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, 
     for (int h = 0; h < nirrep_; h++)
         nvirpi[h] = nmopi[h] - noccpi[h];
 
-    shared_ptr<Matrix> Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
+    boost::shared_ptr<Matrix> Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
 
     // Hack to get orbital e for this Fock
-    shared_ptr<Matrix> C2(new Matrix("C2", nirrep_, nsopi, nmopi));
-    shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
+    boost::shared_ptr<Matrix> C2(new Matrix("C2", nirrep_, nsopi, nmopi));
+    boost::shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
     diagonalize_F(Fso, C2, E2);
 
     for (int h = 0; h < nirrep_; h++) {
@@ -1302,22 +1302,22 @@ shared_ptr<Matrix> HF::form_Fia(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Cso, 
 
     return Fia;
 }
-shared_ptr<Matrix> HF::form_FDSmSDF(shared_ptr<Matrix> Fso, shared_ptr<Matrix> Dso)
+boost::shared_ptr<Matrix> HF::form_FDSmSDF(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Dso)
 {
-    shared_ptr<Matrix> FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
-    shared_ptr<Matrix> DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
+    boost::shared_ptr<Matrix> FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
+    boost::shared_ptr<Matrix> DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
 
     DS->gemm(false,false,1.0,Dso,S_,0.0);
     FDSmSDF->gemm(false,false,1.0,Fso,DS,0.0);
 
-    shared_ptr<Matrix> SDF(FDSmSDF->transpose());
+    boost::shared_ptr<Matrix> SDF(FDSmSDF->transpose());
     FDSmSDF->subtract(SDF);
 
     DS.reset();
     SDF.reset();
 
-    shared_ptr<Matrix> XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
-    shared_ptr<Matrix> XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));
+    boost::shared_ptr<Matrix> XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
+    boost::shared_ptr<Matrix> XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));
     XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
     XPX->gemm(false,false,1.0,XP,X_,0.0);
 

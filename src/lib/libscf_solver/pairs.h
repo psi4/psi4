@@ -20,12 +20,12 @@ namespace psi{ namespace scf{
 
 class PARALLEL_G_BUILD_INFO {
     private:
-        shared_ptr<madness::Spinlock> eri_lock;
-        shared_ptr<BasisSet> basis_info;
-        shared_ptr<IntegralFactory> integral;
-        shared_ptr<TwoBodyAOInt> eri_info;
-        shared_ptr<SimpleMatrix> pG;
-        shared_ptr<SimpleMatrix> pD;
+        boost::shared_ptr<madness::Spinlock> eri_lock;
+        boost::shared_ptr<BasisSet> basis_info;
+        boost::shared_ptr<IntegralFactory> integral;
+        boost::shared_ptr<TwoBodyAOInt> eri_info;
+        boost::shared_ptr<SimpleMatrix> pG;
+        boost::shared_ptr<SimpleMatrix> pD;
         int nso;
 
     public:
@@ -33,48 +33,48 @@ class PARALLEL_G_BUILD_INFO {
         PARALLEL_G_BUILD_INFO() {};
         ~PARALLEL_G_BUILD_INFO() {};
 
-        void initialize(shared_ptr<BasisSet> _basis, SharedMatrix sh_D, const int & _nso) {
+        void initialize(boost::shared_ptr<BasisSet> _basis, SharedMatrix sh_D, const int & _nso) {
             if(basis_info.get() == NULL)
                 basis_info = _basis;
 
             nso = _nso;
 
             if(integral.get() == NULL)
-                integral = shared_ptr<IntegralFactory> (new IntegralFactory(basis_info, basis_info, basis_info, basis_info));
+                integral = boost::shared_ptr<IntegralFactory> (new IntegralFactory(basis_info, basis_info, basis_info, basis_info));
 
             if (eri_info.get() == NULL)
-                eri_info = shared_ptr<TwoBodyAOInt>(integral->eri());
+                eri_info = boost::shared_ptr<TwoBodyAOInt>(integral->eri());
 
             if(pD.get() == NULL)
-                pD = shared_ptr<SimpleMatrix>(sh_D->to_simple_matrix());
+                pD = boost::shared_ptr<SimpleMatrix>(sh_D->to_simple_matrix());
             else {
                 pD->zero();
-                pD = shared_ptr<SimpleMatrix>(sh_D->to_simple_matrix());
+                pD = boost::shared_ptr<SimpleMatrix>(sh_D->to_simple_matrix());
             }
 
             if(pG.get() == NULL) {
-                pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
+                pG = boost::shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
             }
             else {
-                pG = shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
+                pG = boost::shared_ptr<SimpleMatrix>(new SimpleMatrix(nso, nso));
                 pG->zero();
             }
 
             if(eri_lock.get() == NULL)
-                eri_lock = shared_ptr<madness::Spinlock> (Communicator::world->mad_mutex());
+                eri_lock = boost::shared_ptr<madness::Spinlock> (Communicator::world->mad_mutex());
         }
 
-        shared_ptr<IntegralsIterator> create_int_iter(const int & P, const int & Q,
+        boost::shared_ptr<IntegralsIterator> create_int_iter(const int & P, const int & Q,
           const int & R, const int & S) {
 
-            return shared_ptr<IntegralsIterator>(new IntegralsIterator(basis_info->shell(P), basis_info->shell(Q),
+            return boost::shared_ptr<IntegralsIterator>(new IntegralsIterator(basis_info->shell(P), basis_info->shell(Q),
                basis_info->shell(R), basis_info->shell(S)));
 
         }
 
-        shared_ptr<ShellCombinationsIterator> create_shell_iter() {
-            return shared_ptr<ShellCombinationsIterator>(new ShellCombinationsIterator(basis_info, basis_info, basis_info, basis_info));
+        boost::shared_ptr<ShellCombinationsIterator> create_shell_iter() {
+            return boost::shared_ptr<ShellCombinationsIterator>(new ShellCombinationsIterator(basis_info, basis_info, basis_info, basis_info));
         }
 
 
@@ -118,8 +118,8 @@ class PARALLEL_G_BUILD_INFO {
 
 };
 
-shared_ptr<PARALLEL_G_BUILD_INFO> g_info(new PARALLEL_G_BUILD_INFO());
-//shared_ptr<PARALLEL_G_BUILD_INFO> g_info();
+boost::shared_ptr<PARALLEL_G_BUILD_INFO> g_info(new PARALLEL_G_BUILD_INFO());
+//boost::shared_ptr<PARALLEL_G_BUILD_INFO> g_info();
 
 inline int integral_type(int i, int j, int k, int l)
 {
@@ -205,7 +205,7 @@ class G_MAT {
 
             g_info->compute_integrals(_P, _Q, _R, _S);
 
-            shared_ptr<IntegralsIterator> integral_iter = g_info->create_int_iter(_P, _Q, _R, _S);
+            boost::shared_ptr<IntegralsIterator> integral_iter = g_info->create_int_iter(_P, _Q, _R, _S);
 
             for(integral_iter->first(); !integral_iter->is_done(); integral_iter->next()) {
                 int i = integral_iter->i();

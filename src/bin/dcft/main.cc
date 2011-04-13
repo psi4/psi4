@@ -24,7 +24,7 @@ dcft(Options &options)
     fprintf(outfile,    "\t\t*  Theory code written by Andy Simmonett  *\n");
     fprintf(outfile,    "\t\t*******************************************\n\n");
 
-    shared_ptr<Wavefunction> dcft = shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.reference_wavefunction(), options));
+    boost::shared_ptr<Wavefunction> dcft = boost::shared_ptr<Wavefunction>(new DCFTSolver(Process::environment.reference_wavefunction(), options));
     Process::environment.set_reference_wavefunction(dcft);
 
     dcft->compute_energy();

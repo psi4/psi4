@@ -86,7 +86,7 @@ P86_C_Functional::P86_C_Functional(int npoints, int deriv) : Functional(npoints,
 P86_C_Functional::~P86_C_Functional()
 {
 }
-void P86_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void P86_C_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -535,7 +535,7 @@ void P86_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void P86_C_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void P86_C_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

@@ -72,7 +72,7 @@ FT97_C_Functional::FT97_C_Functional(int npoints, int deriv) : Functional(npoint
 FT97_C_Functional::~FT97_C_Functional()
 {
 }
-void FT97_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void FT97_C_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -1819,7 +1819,7 @@ void FT97_C_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void FT97_C_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void FT97_C_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

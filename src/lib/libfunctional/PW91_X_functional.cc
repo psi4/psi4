@@ -50,7 +50,7 @@ PW91_X_Functional::PW91_X_Functional(int npoints, int deriv) : Functional(npoint
 PW91_X_Functional::~PW91_X_Functional()
 {
 }
-void PW91_X_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void PW91_X_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -396,7 +396,7 @@ void PW91_X_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void PW91_X_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void PW91_X_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

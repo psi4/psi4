@@ -11,7 +11,7 @@ PsiReturnType mints(Options & options)
 {
     tstart();
 
-    shared_ptr<MintsHelper> mints(new MintsHelper(options));
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper(options));
     mints->integrals();
 
     tstop();

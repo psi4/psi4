@@ -10,7 +10,7 @@ using namespace boost;
 using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
-PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, shared_ptr<BasisSet> bs1, shared_ptr<BasisSet> bs2, int deriv) :
+PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
     OneBodyAOInt(st, bs1, bs2, deriv), potential_recur_(bs1->max_am()+1, bs2->max_am()+1),
     potential_deriv_recur_(bs1->max_am()+2, bs2->max_am()+2)
 {
@@ -40,8 +40,8 @@ PotentialInt::~PotentialInt()
 }
 
 // The engine only supports segmented basis sets
-void PotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
-                                const shared_ptr<GaussianShell>& s2)
+void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
+                                const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -141,7 +141,7 @@ void PotentialInt::compute_pair(const shared_ptr<GaussianShell>& s1,
 }
 
 // The engine only supports segmented basis sets
-void PotentialInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, const shared_ptr<GaussianShell>& s2)
+void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     const int am1 = s1->am();
@@ -296,7 +296,7 @@ void PotentialInt::compute_pair_deriv1(const shared_ptr<GaussianShell>& s1, cons
     }
 }
 
-void PotentialInt::compute_deriv1(std::vector<shared_ptr<SimpleMatrix> > &result)
+void PotentialInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result)
 {
     if (deriv_ < 1)
         throw SanityCheckError("PotentialInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);

@@ -136,7 +136,7 @@ M05_Functional::M05_Functional(int npoints, int deriv) : Functional(npoints, der
 M05_Functional::~M05_Functional()
 {
 }
-void M05_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void M05_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -2079,7 +2079,7 @@ void M05_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void M05_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void M05_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 

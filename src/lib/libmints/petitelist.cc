@@ -325,7 +325,7 @@ int **compute_atom_map(const Molecule* molecule)
     return atom_map;
 }
 
-int **compute_atom_map(const shared_ptr<Molecule> &molecule)
+int **compute_atom_map(const boost::shared_ptr<Molecule> &molecule)
 {
     return compute_atom_map(molecule.get());
 }
@@ -340,12 +340,12 @@ void delete_atom_map(int **atom_map, const Molecule* molecule)
     }
 }
 
-void delete_atom_map(int **atom_map, const shared_ptr<Molecule> &molecule)
+void delete_atom_map(int **atom_map, const boost::shared_ptr<Molecule> &molecule)
 {
     delete_atom_map(atom_map, molecule.get());
 }
 
-int **compute_shell_map(int **atom_map, const shared_ptr<BasisSet> &basis)
+int **compute_shell_map(int **atom_map, const boost::shared_ptr<BasisSet> &basis)
 {
     int **shell_map;
 
@@ -377,7 +377,7 @@ int **compute_shell_map(int **atom_map, const shared_ptr<BasisSet> &basis)
     return shell_map;
 }
 
-void delete_shell_map(int **shell_map, const shared_ptr<BasisSet> &basis)
+void delete_shell_map(int **shell_map, const boost::shared_ptr<BasisSet> &basis)
 {
     int nshell = basis->nshell();
     if (shell_map) {
@@ -389,13 +389,13 @@ void delete_shell_map(int **shell_map, const shared_ptr<BasisSet> &basis)
 
 ////////////////////////////////////////////////////////////////////////////
 
-PetiteList::PetiteList(const shared_ptr<BasisSet> &gbs, const shared_ptr<IntegralFactory> &ints)
+PetiteList::PetiteList(const boost::shared_ptr<BasisSet> &gbs, const boost::shared_ptr<IntegralFactory> &ints)
     : basis_(gbs), integral_(ints.get())
 {
     init();
 }
 
-PetiteList::PetiteList(const shared_ptr<BasisSet> &gbs, const IntegralFactory* ints)
+PetiteList::PetiteList(const boost::shared_ptr<BasisSet> &gbs, const IntegralFactory* ints)
     : basis_(gbs), integral_(ints)
 {
     init();
@@ -1007,17 +1007,17 @@ SO_block* PetiteList::aotoso_info()
     return SOs;
 }
 
-shared_ptr<Matrix> PetiteList::sotoao()
+boost::shared_ptr<Matrix> PetiteList::sotoao()
 {
-    return shared_ptr<Matrix>(aotoso()->transpose());
+    return boost::shared_ptr<Matrix>(aotoso()->transpose());
 }
 
-shared_ptr<Matrix> PetiteList::aotoso()
+boost::shared_ptr<Matrix> PetiteList::aotoso()
 {
     Dimension aodim = AO_basisdim();
     Dimension sodim = SO_basisdim();
 
-    shared_ptr<Matrix> aoso(new Matrix("AO->SO matrix", aodim, sodim));
+    boost::shared_ptr<Matrix> aoso(new Matrix("AO->SO matrix", aodim, sodim));
 
     if (c1_) {
         aoso->identity();

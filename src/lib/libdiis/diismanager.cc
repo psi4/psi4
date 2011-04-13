@@ -24,7 +24,7 @@ DIISManager::DIISManager(int maxSubspaceSize,
                          std::string label,
                          RemovalPolicy removalPolicy,
                          StoragePolicy storagePolicy,
-                         shared_ptr<PSIO> psio):
+                         boost::shared_ptr<PSIO> psio):
             _maxSubspaceSize(maxSubspaceSize),
             _removalPolicy(removalPolicy),
             _storagePolicy(storagePolicy),
@@ -317,7 +317,7 @@ DIISManager::extrapolate(int numQuantities, ...)
 {
     if(!_subspace.size()) return false;
     int dimension = _subspace.size() + 1;
-    shared_ptr<Matrix> B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
+    boost::shared_ptr<Matrix> B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
     double **bMatrix = B->pointer();
     double *coefficients = init_array(dimension);
     double *force = init_array(dimension);

@@ -38,7 +38,7 @@ B88_X_Functional::B88_X_Functional(int npoints, int deriv) : Functional(npoints,
 B88_X_Functional::~B88_X_Functional()
 {
 }
-void B88_X_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void B88_X_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -235,7 +235,7 @@ void B88_X_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void B88_X_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void B88_X_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
