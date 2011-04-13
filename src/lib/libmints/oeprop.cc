@@ -312,10 +312,21 @@ void OEProp::compute_dipole()
     de[1] += ndip->get(0, 1);
     de[2] += ndip->get(0, 2);
 
-    fprintf(outfile," Total Dipoles: (a.u.)\n");
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n", de[0], de[1], de[2]);
-    fprintf(outfile,"    Total:     %10.4lf a.u.", de.norm());
-    fprintf(outfile,"  %10.4lf Debye\n\n", de.norm()*_dipmom_au2debye);
+    fprintf(outfile," Dipole Moment: (a.u.)\n");
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", \
+       de[0], de[1], de[2], de.norm());
+    fprintf(outfile, "\n");
+
+    double dfac = _dipmom_au2debye;
+    fprintf(outfile," Dipole Moment: (Debye)\n");
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", \
+       de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
+    fprintf(outfile, "\n");
+
+    // Dipole components in Debye
+    Process::environment.globals["DIPOLE X"] = de[0]*dfac;
+    Process::environment.globals["DIPOLE Y"] = de[1]*dfac;
+    Process::environment.globals["DIPOLE Z"] = de[2]*dfac;
 
     fflush(outfile);
 }
@@ -366,10 +377,28 @@ void OEProp::compute_quadrupole()
 
     // Print multipole components
     double dfac = _dipmom_au2debye * _bohr2angstroms;
-    fprintf(outfile, " Quadrupole Moments: (Debye Ang)\n");
-    fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
-    fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
+    fprintf(outfile, " Quadrupole Moment: (Debye Ang)\n");
+    fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
+       qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
+    fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
+       qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
     fprintf(outfile, "\n");
+
+    double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
+    fprintf(outfile, " Traceless Quadrupole Moment: (Debye Ang)\n");
+    fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
+       (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
+    fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
+       qe[1]*dfac, qe[2]*dfac, qe[4]*dfac);
+    fprintf(outfile, "\n");
+
+    // Quadrupole components in Debye Ang
+    Process::environment.globals["QUADRUPOLE XX"] = qe[0]*dfac;
+    Process::environment.globals["QUADRUPOLE YY"] = qe[3]*dfac;
+    Process::environment.globals["QUADRUPOLE ZZ"] = qe[5]*dfac;
+    Process::environment.globals["QUADRUPOLE XY"] = qe[1]*dfac;
+    Process::environment.globals["QUADRUPOLE XZ"] = qe[2]*dfac;
+    Process::environment.globals["QUADRUPOLE YZ"] = qe[4]*dfac;
 
     fflush(outfile);
 }
