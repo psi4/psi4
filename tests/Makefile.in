@@ -21,7 +21,7 @@ matrix_subdirs = matrix1
 
 opt_subdirs = scf5 scf6 scf7 scf8
 
-scf_subdirs = scf1 scf2 scf3 scf4 scf9 sad1
+scf_subdirs = scf1 scf2 scf3 scf4 scf9 sad1 props2
 
 python_test_subdirs = basis_extrap
 
