@@ -465,6 +465,13 @@ string py_psi_get_input_directory()
     return infile_directory;
 }
 
+void py_psi_print_variable_map()
+{
+    for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
+        fprintf(outfile, "\"%s\" => %20.15f\n", it->first.c_str(), (double)it->second);
+    }
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     enum_<PsiReturnType>("PsiReturnType")
@@ -517,6 +524,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_global_option", py_psi_get_global_option);
 
     def("get_variable", py_psi_get_variable);
+    def("print_variables", py_psi_print_variable_map);
 
     def("add_user_basis_file", py_psi_add_user_specified_basis_file);
 
