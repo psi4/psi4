@@ -524,12 +524,39 @@ void HF::MOM_start()
             }
             if (nalpha_ < nbeta_) throw PSIEXCEPTION("PSI::MOM_start: Nbeta ends up being less than Nalpha, this is not supported");
            
-            // Fix doccpi/soccpi. For now, they are all socc 
+            // Fix doccpi/soccpi. 
             for (int h = 0; h < nirrep_; h++) {
+                std::vector<std::pair<double,std::pair<int, bool> > > alphas;    
+                std::vector<std::pair<double,std::pair<int, bool> > > betas;
+
+                for (int i = 0; i < nalphapi_[h]; i++) {
+                    alphas.push_back(make_pair(epsilon_a_->get(h,i), make_pair(i, true)));                                
+                }
+                for (int i = 0; i < nbetapi_[h]; i++) {
+                    betas.push_back(make_pair(epsilon_b_->get(h,i), make_pair(i, true)));                                
+                }
+                for (int i = nalphapi_[h]; i < nmopi_[h]; i++) {
+                    alphas.push_back(make_pair(epsilon_a_->get(h,i), make_pair(i, false)));                                
+                }
+                for (int i = nbetapi_[h]; i < nmopi_[h]; i++) {
+                    betas.push_back(make_pair(epsilon_b_->get(h,i), make_pair(i, false)));                                
+                }
+                sort(alphas.begin(),alphas.end());       
+                sort(betas.begin(),betas.end());       
+
                 doccpi_[h] = 0;
-                soccpi_[h] = nalphapi_[h] + nbetapi_[h];
-            } 
- 
+                soccpi_[h] = 0;
+
+                for (int i = 0; i < nmopi_[h]; i++) {
+                    bool alpha_occ = alphas[i].second.second;
+                    bool beta_occ = betas[i].second.second;
+                    if (alpha_occ && beta_occ)
+                        doccpi_[h]++;
+                    else if (alpha_occ || beta_occ) // Careful, could be beta occ
+                        soccpi_[h]++;
+                }
+            }
+
         } else if (options_.get_str("REFERENCE") == "ROHF") {
             throw PSIEXCEPTION("SCF::MOM_start: MOM excited states are not implemented for ROHF");
         }
