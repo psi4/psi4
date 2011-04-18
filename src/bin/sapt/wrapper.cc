@@ -2,6 +2,7 @@
 #include <libqt/qt.h>
 
 #include <libsapt_solver/sapt0.h>
+#include <libsapt_solver/sapt_dft.h>
 #include "wrapper.h"
 
 using namespace boost;
@@ -23,6 +24,9 @@ PsiReturnType sapt(Options & options)
 
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
     SAPT0 sapt(options, psio, chkpt);
+    sapt.compute_energy();
+  } else if (options.get_str("SAPT_LEVEL") == "SAPT_DFT") {
+    SAPT_DFT sapt(options, psio, chkpt);
     sapt.compute_energy();
   }
 

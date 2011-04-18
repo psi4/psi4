@@ -8,6 +8,7 @@ procedures = {'energy' : {
             'dfmp2'         : run_dfmp2,
             'dfcc'          : run_dfcc,
             'sapt0'         : run_sapt,
+            'sapt_dft'      : run_sapt,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t
         },

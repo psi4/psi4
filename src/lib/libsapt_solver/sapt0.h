@@ -16,8 +16,8 @@ struct Iterator;
 
 class SAPT0 : public SAPT {
 private:
-  void print_header();
-  void print_results();
+  virtual void print_header();
+  virtual void print_results();
 
   void check_memory();
 

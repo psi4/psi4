@@ -433,11 +433,11 @@ void DFHF::initialize_JK_disk()
         }
 
         // Form (A|mn) integrals
-        //#pragma omp parallel for schedule(guided) num_threads(nthread)
+        #pragma omp parallel for schedule(guided) num_threads(nthread)
         for (int MUNU = 0; MUNU < schwarz_sizes; MUNU++) {
             int rank = 0;
             #ifdef _OPENMP
-                //rank = omp_get_thread_num();
+                rank = omp_get_thread_num();
             #endif
 
             int MU = schwarz_shell_pairs[2*(MUNU + schwarz_start) + 0];

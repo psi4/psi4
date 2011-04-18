@@ -34,6 +34,9 @@ protected:
     /// Buffer used during the spherical transformation.
     double *tformbuf_;
 
+    /// Vector of Sphericaltransforms
+    std::vector<SphericalTransform> st_;
+
     void compute_pair(boost::shared_ptr<GaussianShell> s1,
                       boost::shared_ptr<GaussianShell> s2,
                       boost::shared_ptr<GaussianShell> s3);
@@ -55,7 +58,7 @@ public:
     boost::shared_ptr<BasisSet> basis3();
 
     /// Buffer where the integrals are placed.
-    const double *buffer() const { return target_; }
+    const double *buffer() const { return buffer_; }
 
     /// Compute the integrals of the form (a|c|b).
     virtual void compute_shell(int, int, int);

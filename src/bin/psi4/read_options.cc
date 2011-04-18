@@ -34,7 +34,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   if (name == "SAPT"|| options.read_globals()) {
     /*- The level of theory for SAPT -*/
-    options.add_str("SAPT_LEVEL","SAPT0","SAPT0");
+    options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT");
     /*- The ubiquitous debug flag -*/
     options.add_int("DEBUG",0);
     /*- The ubiquitous print flag -*/
@@ -71,7 +71,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_BASIS_SAPT", "");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
-  }
+    /*- Number of Omega points for Casimir-Polder -*/
+    options.add_int("OMEGA_POINTS",8);
+    /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/
+    options.add_double("OMEGA_CENTER", 1.0);
+}
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
