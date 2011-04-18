@@ -71,7 +71,7 @@ ThreeCenterOverlapInt::ThreeCenterOverlapInt(std::vector<SphericalTransform>& st
                                              boost::shared_ptr<BasisSet> bs2,
                                              boost::shared_ptr<BasisSet> bs3)
     : overlap_recur_(bs1->max_am(), bs2->max_am(), bs3->max_am()),
-      bs1_(bs1), bs2_(bs2), bs3_(bs3)
+      bs1_(bs1), bs2_(bs2), bs3_(bs3), st_(st)
 {
     size_t size = INT_NCART(bs1->max_am()) * INT_NCART(bs2->max_am()) * INT_NCART(bs3->max_am());
 
@@ -308,11 +308,9 @@ void ThreeCenterOverlapInt::pure_transform(boost::shared_ptr<GaussianShell>& s1,
                                            boost::shared_ptr<GaussianShell>& s3)
 {
     // Get the transforms from the basis set
-#pragma warn Get the SphericalTransformIter from the integral factory.
-#if 0
-    SphericalTransformIter trans1(bs1_->spherical_transform(s1->am()));
-    SphericalTransformIter trans2(bs2_->spherical_transform(s2->am()));
-    SphericalTransformIter trans3(bs3_->spherical_transform(s3->am()));
+    SphericalTransformIter trans1(st_[s1->am()]);
+    SphericalTransformIter trans2(st_[s2->am()]);
+    SphericalTransformIter trans3(st_[s3->am()]);
 
     // Get the angular momentum for each shell
     int am1 = s1->am();
@@ -405,5 +403,4 @@ void ThreeCenterOverlapInt::pure_transform(boost::shared_ptr<GaussianShell>& s1,
         transform3c_1(am1, trans1, source1, target1, nbf2*nbf3);
         size *= nbf1;
     }
-#endif
 }
