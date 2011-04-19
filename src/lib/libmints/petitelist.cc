@@ -446,6 +446,8 @@ void PetiteList::init()
 {
     int i;
 
+    SOs_ = 0;
+
     // grab references to the Molecule and BasisSet for convenience
     BasisSet& gbs = *basis_.get();
     Molecule& mol = *gbs.molecule().get();
@@ -472,6 +474,7 @@ void PetiteList::init()
         shell_map_=0;
         lamij_=0;
         nbf_in_ir_=0;
+        form_aotoso_info();
         return;
     }
 
@@ -616,6 +619,8 @@ void PetiteList::init()
     }
 
     delete[] red_rep;
+
+    form_aotoso_info();
 }
 
 Dimension PetiteList::AO_basisdim()
@@ -701,8 +706,106 @@ void PetiteList::print(FILE *out)
         fprintf(out, "%5d functions of %s symmetry\n", nbf_in_ir_[i], ct.gamma(i).symbol());
 }
 
-SO_block* PetiteList::aotoso_info()
+void PetiteList::form_aotoso_info()
 {
+#if 1
+    if(SOs_) return;
+
+    if (c1_) {
+        SOs_ = new SO_block[1];
+        SOs_[0].set_length(basis_->nbf());
+        for (int i = 0; i < basis_->nbf(); i++) {
+            SOs_[0].so[i].set_length(1);
+            SOs_[0].so[i].cont[0].bfn = i;
+            SOs_[0].so[i].cont[0].coef = 1.0;
+        }
+        return;
+    }
+
+    shared_ptr<Molecule> mol = basis_->molecule();
+    CharacterTable ct = mol->point_group()->char_table();
+    int nunique = mol->nunique();
+    int maxam = basis_->max_am();
+    int **atom_map = compute_atom_map(mol);
+    unsigned int functions_per_irrep[8];
+    SOs_ = new SO_block[nirrep_];
+    for(int h = 0; h < nirrep_; ++h){
+        SOs_[h].set_length(nbf_in_ir_[h]);
+        functions_per_irrep[h] = 0;
+    }
+    double*** function_parities = new double**[nirrep_];
+    for(int symop = 0; symop < nirrep_; ++symop){
+        function_parities[symop] = new double*[maxam+1];
+        SymmetryOperation so = ct.symm_operation(symop);
+        for(int am = 0; am <= maxam; ++am){
+            int nfunctions = basis_->has_puream() ? 2 * am + 1 : (am + 1)*(am + 2)/2;
+            function_parities[symop][am] = new double[nfunctions];
+            ShellRotation rr(am, so, integral_, basis_->has_puream());
+            for(int bf = 0; bf < nfunctions; ++bf){
+                function_parities[symop][am][bf] = rr(bf, bf);
+            }
+        }
+    }
+
+    for(int uatom = 0; uatom < nunique; ++uatom){
+        int atom = mol->unique(uatom);
+        double norm = 1.0 / sqrt(mol->nequivalent(uatom));
+        int nshells = basis_->nshell_on_center(atom);
+        for(int shell = 0; shell < nshells; ++shell){
+            int abs_shell = basis_->shell_on_center(atom, shell);
+            int nfunc = basis_->shell(abs_shell)->nfunction();
+            int l = basis_->shell(abs_shell)->am();
+            for(int bf = 0; bf < nfunc; ++bf){
+                for(int h = 0; h < nirrep_; ++h){
+                    std::map<int, double> contributions;
+                    IrreducibleRepresentation gamma = ct.gamma(h);
+                    int nstab = 0;
+                    for(int symop = 0; symop < nirrep_; ++symop){
+                        int mapped_atom = atom_map[atom][symop];
+                        int mapped_shell = basis_->shell_on_center(mapped_atom, shell);
+                        int mapped_bf = basis_->shell_to_basis_function(mapped_shell) + bf;
+                        if (mapped_atom == atom) ++nstab;
+                        contributions[mapped_bf] += function_parities[symop][l][bf] * norm * gamma.character(symop);
+                    }
+                    std::map<int, double>::const_iterator iter = contributions.begin();
+                    std::map<int, double>::const_iterator end  = contributions.end();
+                    int dimension = 0;
+                    for(; iter != end; ++iter){
+                        double coefficient = iter->second / (double) nstab;
+                        if(fabs(coefficient) > 1.0E-10) ++dimension;
+                    }
+                    if(dimension){
+                        SO so;
+                        so.set_length(dimension);
+                        unsigned int count = 0;
+                        for(iter = contributions.begin(); iter != end; ++iter){
+                            double coefficient = iter->second / (double) nstab;
+                            if(fabs(coefficient) > 1.0E-10){
+                                so.cont[count].bfn  = iter->first;
+                                so.cont[count].coef = iter->second / (double)nstab;
+                                ++count;
+                            }
+                        }
+                        if (SOs_[h].add(so, functions_per_irrep[h])) {
+                            ++functions_per_irrep[h];
+                        }else{
+                            throw PSIEXCEPTION("PetiteList::aotoso_info: internal error: impossible duplicate SO");
+                        }
+                    }
+                }
+            }
+        }
+    }
+    for(int h = 0; h < nirrep_; ++h){
+        if(functions_per_irrep[h] != nbf_in_ir_[h]){
+            std::stringstream err;
+            err << "PetiteList::aotoso_info(): In irrep " << h << " found " <<
+                functions_per_irrep[h] << " SOs, but expected " << nbf_in_ir_[h];
+            throw PSIEXCEPTION(err.str());
+        }
+    }
+    delete_atom_map(atom_map, mol);
+#else
     int iuniq, i, j, d, ii, jj, g, s, c, ir;
 
     BasisSet& gbs = *basis_.get();
@@ -713,14 +816,14 @@ SO_block* PetiteList::aotoso_info()
     SymmetryOperation so;
 
     if (c1_) {
-        SO_block *SOs = new SO_block[1];
-        SOs[0].set_length(gbs.nbf());
+        SOs_ = new SO_block[1];
+        SOs_[0].set_length(gbs.nbf());
         for (i=0; i < gbs.nbf(); i++) {
-            SOs[0].so[i].set_length(1);
-            SOs[0].so[i].cont[0].bfn=i;
-            SOs[0].so[i].cont[0].coef=1.0;
+            SOs_[0].so[i].set_length(1);
+            SOs_[0].so[i].cont[0].bfn=i;
+            SOs_[0].so[i].cont[0].coef=1.0;
         }
-        return SOs;
+        return;
     }
 
     // ncomp is the number of symmetry blocks we have. for point groups with
@@ -1003,8 +1106,8 @@ SO_block* PetiteList::aotoso_info()
     delete[] saoelem;
     delete[] whichir;
     delete[] whichcmp;
-
-    return SOs;
+    return;
+#endif
 }
 
 boost::shared_ptr<Matrix> PetiteList::sotoao()
@@ -1024,15 +1127,13 @@ boost::shared_ptr<Matrix> PetiteList::aotoso()
         return aoso;
     }
 
-    SO_block *sos = aotoso_info();
-
     // There is an SO_block for each irrep
     for (int h=0; h < nblocks(); ++h) {
         // If the block is empty, don't do anything.
         if (sodim[h] == 0)
             continue;
 
-        SO_block& sob = sos[h];
+        SO_block& sob = SOs_[h];
 
         for (int j=0; j<sob.len; ++j) {
             SO& soj = sob.so[j];
@@ -1045,7 +1146,6 @@ boost::shared_ptr<Matrix> PetiteList::aotoso()
         }
     }
 
-    delete[] sos;
     return aoso;
 }
 

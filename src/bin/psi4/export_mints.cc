@@ -282,7 +282,8 @@ void export_mints()
 
     class_<PetiteList, boost::shared_ptr<PetiteList>, boost::noncopyable>("PetiteList", no_init).
             def("aotoso", &PetiteList::aotoso).
-            def("sotoao", &PetiteList::sotoao);
+            def("sotoao", &PetiteList::sotoao).
+            def("print", &PetiteList::print);
 
     class_<BasisSetParser, boost::shared_ptr<BasisSetParser>, boost::noncopyable>("BasisSetParser", no_init);
     class_<Gaussian94BasisSetParser, boost::shared_ptr<Gaussian94BasisSetParser>, bases<BasisSetParser> >("Gaussian94BasisSetParser");

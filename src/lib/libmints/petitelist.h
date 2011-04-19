@@ -109,6 +109,9 @@ class PetiteList
     int nirrep_;
     int nblocks_;
     bool c1_;
+    /// The list of non-zero AO->SO transformation coefficients
+    SO_block *SOs_;
+
 
     boost::shared_ptr<BasisSet> basis_;
     const IntegralFactory* integral_;
@@ -142,6 +145,9 @@ public:
     int in_p2(int i, int j) const { return (c1_) ? 1 : lamij_[ij_offset64(i, j)]; }
     int in_p4(int ij, int kl, int i, int j, int k, int l) const;
     int in_p4(int i, int j, int k, int l) const;
+
+    // Return the list of non-zero SOs
+    const SO_block *SOs() const { return SOs_; }
 
     int nfunction(int i) const;
 
@@ -202,8 +208,9 @@ public:
     /// @param g index of the group operation
     Matrix* r(int g);
 
-    /// @return information about the transformation from AOs to SOs
-    SO_block* aotoso_info();
+    /// Form information about the transformation from AOs to SOs
+    void form_aotoso_info();
+
 
     /** @return the AO->SO coefficient matrix. The columns correspond to SOs (see SO_basisdim() )
         and rows to AOs (see AO_basisdim() ).

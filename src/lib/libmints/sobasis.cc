@@ -157,7 +157,7 @@ void SOBasisSet::init()
 //    petite_->print();
 
     int nblocks = petite_->nblocks();
-    SO_block *soblocks = petite_->aotoso_info();
+    const SO_block *soblocks = petite_->SOs();
 //    for (i=0; i<nblocks; ++i) {
 //        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
 //        soblocks[i].print("");
@@ -221,7 +221,6 @@ void SOBasisSet::init()
         throw PSIEXCEPTION("SOBasis::SOBasis: miscounted number of functions");
     }
 
-    delete[] soblocks;
     delete[] aoshell_to_soshell;
 
     for (i=0; i<nshell_; i++) {
