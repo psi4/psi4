@@ -690,9 +690,8 @@ void Python::run(FILE *input)
         }
         catch (error_already_set const& e)
         {
-            fprintf(stderr, "Python produced the following error:\n");
             PyErr_Print();
-            abort();
+            exit(1);
         }
     }
     else {

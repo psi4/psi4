@@ -1,3 +1,17 @@
-# get Perl utility functions for testing PSI4
-require("@top_srcdir@/tests/psitest.pl");
-do_tests(@ARGV);
+use strict;
+use warnings;
+
+die "Usage\n\t\t$0 input_file target\n" unless @ARGV == 2;
+
+my $psi = "../../bin/psi4";
+my $input = shift;
+my $target = shift;
+
+my $output =  `$psi $input 2>&1`;
+my $return = $? ? 1 : 0;
+print $output;
+open(TARGET,">$target") or die "I can't write to $target\n";
+print TARGET $output;
+close TARGET;
+
+exit $return;
