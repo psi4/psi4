@@ -5,7 +5,6 @@ nucenergy = 9.3008002554                                                        
 refenergy = -76.027053513                                                                    #TEST
 
 molecule h2o {
-  symmetry c1
      O
      H 1 1.0
      H 1 1.0 2 104.5
