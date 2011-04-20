@@ -109,26 +109,28 @@ void ObaraSaikaTwoCenterMIRecursion::compute(double PA[3], double PB[3], double 
     // Upward recursion in i for all j's
     for (i=0; i<am1; ++i) {
         for (j=0; j<=am2; ++j) {
-            x_[i+1][j][k] = PA[0] * x_[i][j][k];
-            y_[i+1][j][k] = PA[1] * y_[i][j][k];
-            z_[i+1][j][k] = PA[2] * z_[i][j][k];
+            for (k=0; k<=max_m_; ++k) {
+                x_[i+1][j][k] = PA[0] * x_[i][j][k];
+                y_[i+1][j][k] = PA[1] * y_[i][j][k];
+                z_[i+1][j][k] = PA[2] * z_[i][j][k];
 
-            if (i > 0) {
-                x_[i+1][j][k] += i * oog * x_[i-1][j][k];
-                y_[i+1][j][k] += i * oog * y_[i-1][j][k];
-                z_[i+1][j][k] += i * oog * z_[i-1][j][k];
-            }
+                if (i > 0) {
+                    x_[i+1][j][k] += i * oog * x_[i-1][j][k];
+                    y_[i+1][j][k] += i * oog * y_[i-1][j][k];
+                    z_[i+1][j][k] += i * oog * z_[i-1][j][k];
+                }
 
-            if (j > 0) {
-                x_[i+1][j][k] += j * oog * x_[i][j-1][k];
-                y_[i+1][j][k] += j * oog * y_[i][j-1][k];
-                z_[i+1][j][k] += j * oog * z_[i][j-1][k];
-            }
+                if (j > 0) {
+                    x_[i+1][j][k] += j * oog * x_[i][j-1][k];
+                    y_[i+1][j][k] += j * oog * y_[i][j-1][k];
+                    z_[i+1][j][k] += j * oog * z_[i][j-1][k];
+                }
 
-            if (k > 0) {
-                x_[i+1][j][k] += k * oog * x_[i][j][k-1];
-                y_[i+1][j][k] += k * oog * y_[i][j][k-1];
-                z_[i+1][j][k] += k * oog * z_[i][j][k-1];
+                if (k > 0) {
+                    x_[i+1][j][k] += k * oog * x_[i][j][k-1];
+                    y_[i+1][j][k] += k * oog * y_[i][j][k-1];
+                    z_[i+1][j][k] += k * oog * z_[i][j][k-1];
+                }
             }
         }
     }
