@@ -48,6 +48,7 @@ set globals {
     MAX_DIIS_VECTORS 9
     MAXITER 1000
     E_CONVERGE 11
+    D_CONVERGE 11
     GUESS SAD
     SCF_TYPE DF
     RI_BASIS_SCF cc-pVDZ-JKFIT
@@ -71,9 +72,9 @@ for R in Rvals:
     compare_values(refENuc[count], dimer.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
-    compare_values(refDipY[count], get_variable("DIPOLE Y"), 8, "Y Component of Dipole %d" % count)  #TEST
+    compare_values(refDipY[count], get_variable("DIPOLE Y"), 5, "Y Component of Dipole %d" % count)  #TEST
     compare_values(refQuadYY[count], get_variable("QUADRUPOLE YY"),                                  #TEST
-                      8, "YY Component of Quadrupole %d" % count)                                    #TEST
+                      5, "YY Component of Quadrupole %d" % count)                                    #TEST
 
     clean()
     count = count + 1                                                                                #TEST
@@ -90,9 +91,9 @@ for R in Rvals:
     compare_values(refENuc[count], monoB.nuclear_repulsion_energy(),                                 #TEST
                       9, "Nuclear repulsion energy %d" % count)                                      #TEST
     compare_values(refESCF[count], eehf, 9, "Reference energy %d" % count)                           #TEST
-    compare_values(refDipY[count], get_variable("DIPOLE Y"), 8, "Y Component of Dipole %d" % count)  #TEST
+    compare_values(refDipY[count], get_variable("DIPOLE Y"), 5, "Y Component of Dipole %d" % count)  #TEST
     compare_values(refQuadYY[count], get_variable("QUADRUPOLE YY"),                                  #TEST
-                      8, "YY Component of Quadrupole %d" % count)                                    #TEST
+                      5, "YY Component of Quadrupole %d" % count)                                    #TEST
 
     clean()
     count = count + 1                                                                                #TEST
