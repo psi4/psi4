@@ -22,9 +22,9 @@ factory = mints.factory()                                            #TEST
 
 Li = mints.so_angular_momentum()
 
-Li[0].save("Lx-STO-3G.dat", False, False, True)                     #TEST
-Li[1].save("Ly-STO-3G.dat", False, False, True)                     #TEST
-Li[2].save("Lz-STO-3G.dat", False, False, True)                     #TEST
+#Li[0].save("Lx-STO-3G.dat", False, False, True)                     #TEST
+#Li[1].save("Ly-STO-3G.dat", False, False, True)                     #TEST
+#Li[2].save("Lz-STO-3G.dat", False, False, True)                     #TEST
 
 RefX = factory.create_matrix("Lx SO")                                #TEST
 RefY = factory.create_matrix("Ly SO")                                #TEST
@@ -48,9 +48,9 @@ factory = mints.factory()                                            #TEST
 
 Li = mints.so_angular_momentum()
 
-Li[0].save("Lx-6-311Gss.dat", False, False, True)                   #TEST
-Li[1].save("Ly-6-311Gss.dat", False, False, True)                   #TEST
-Li[2].save("Lz-6-311Gss.dat", False, False, True)                   #TEST
+#Li[0].save("Lx-6-311Gss.dat", False, False, True)                   #TEST
+#Li[1].save("Ly-6-311Gss.dat", False, False, True)                   #TEST
+#Li[2].save("Lz-6-311Gss.dat", False, False, True)                   #TEST
 
 RefX = factory.create_matrix("Lx SO")                                #TEST
 RefY = factory.create_matrix("Ly SO")                                #TEST
@@ -74,9 +74,9 @@ factory = mints.factory()                                            #TEST
 
 Li = mints.so_angular_momentum()
 
-Li[0].save("Lx-cc-pVTZ.dat", False, False, True)                    #TEST
-Li[1].save("Ly-cc-pVTZ.dat", False, False, True)                    #TEST
-Li[2].save("Lz-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[0].save("Lx-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[1].save("Ly-cc-pVTZ.dat", False, False, True)                    #TEST
+#Li[2].save("Lz-cc-pVTZ.dat", False, False, True)                    #TEST
 
 RefX = factory.create_matrix("Lx SO")                                #TEST
 RefY = factory.create_matrix("Ly SO")                                #TEST
@@ -104,9 +104,9 @@ factory = mints.factory()                                            #TEST
 
 Pi = mints.so_nabla()
 
-Pi[0].save("Px-STO-3G.dat", False, False, True)                     #TEST
-Pi[1].save("Py-STO-3G.dat", False, False, True)                     #TEST
-Pi[2].save("Pz-STO-3G.dat", False, False, True)                     #TEST
+#Pi[0].save("Px-STO-3G.dat", False, False, True)                     #TEST
+#Pi[1].save("Py-STO-3G.dat", False, False, True)                     #TEST
+#Pi[2].save("Pz-STO-3G.dat", False, False, True)                     #TEST
 
 RefX = factory.create_matrix("Px SO")                                #TEST
 RefY = factory.create_matrix("Py SO")                                #TEST
@@ -130,9 +130,9 @@ factory = mints.factory()                                            #TEST
 
 Pi = mints.so_nabla()
 
-Pi[0].save("Px-6-311Gss.dat", False, False, True)                   #TEST
-Pi[1].save("Py-6-311Gss.dat", False, False, True)                   #TEST
-Pi[2].save("Pz-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[0].save("Px-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[1].save("Py-6-311Gss.dat", False, False, True)                   #TEST
+#Pi[2].save("Pz-6-311Gss.dat", False, False, True)                   #TEST
 
 RefX = factory.create_matrix("Px SO")                                #TEST
 RefY = factory.create_matrix("Py SO")                                #TEST
@@ -156,9 +156,9 @@ factory = mints.factory()                                            #TEST
 
 Pi = mints.so_nabla()
 
-Pi[0].save("Px-cc-pVTZ.dat", False, False, True)                    #TEST
-Pi[1].save("Py-cc-pVTZ.dat", False, False, True)                    #TEST
-Pi[2].save("Pz-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[0].save("Px-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[1].save("Py-cc-pVTZ.dat", False, False, True)                    #TEST
+#Pi[2].save("Pz-cc-pVTZ.dat", False, False, True)                    #TEST
 
 RefX = factory.create_matrix("Lx SO")                                #TEST
 RefY = factory.create_matrix("Ly SO")                                #TEST
