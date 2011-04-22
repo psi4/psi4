@@ -325,7 +325,6 @@ struct params {
                         many holes allowed from RAS II for MRCC */
    int cc_a_val_ex_lvl; /* alpha part of cc_val_ex_lvl */
    int cc_b_val_ex_lvl; /* beta part of cc_val_ex_lvl */
-   int max_dets;     /* maximum number of allowed determinants */
    int maxiter;      /* maximum number of allowed iterations */
    int num_roots;    /* number of CI roots to find */
    int istop;        /* stop after setting up CI space */
@@ -335,9 +334,7 @@ struct params {
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
    int energy_convergence;  /* convergence, 10^-n, on CI energy */
    int oei_file;     /* file number for one-electron integrals */
-   int oei_erase;    /* erase onel ints after reading them? */
    int tei_file;     /* file number for two-electron integrals */
-   int tei_erase;    /* erase twoel ints after reading them? */
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */
    int fci;          /* do a FULL ci calc?  (affects sigma1-2 subroutines) */
    int fci_strings;  /* do a FULL ci calc?  (affects string storage) */
