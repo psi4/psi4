@@ -181,31 +181,31 @@ void DFHF::initialize_JK_disk()
     long int* schwarz_shell_pairs_r = schwarz_->get_schwarz_shells_reverse();
     long int* schwarz_fun_pairs_r = schwarz_->get_schwarz_funs_reverse();
 
-    //fprintf(outfile,"Schwarz Shell Pairs:\n");
-    //for (int MN = 0; MN < nshellpairs; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);   
-    //}
+    fprintf(outfile,"Schwarz Shell Pairs:\n");
+    for (int MN = 0; MN < nshellpairs; MN++) {
+        fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);   
+    }
 
-    //fprintf(outfile,"Schwarz Function Pairs:\n");
-    //for (int MN = 0; MN < ntri; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);   
-    //}
+    fprintf(outfile,"Schwarz Function Pairs:\n");
+    for (int MN = 0; MN < ntri; MN++) {
+        fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);   
+    }
 
-    //fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
-    //for (int MN = 0; MN < primary_->nshell() * (primary_->nshell() + 1) / 2; MN++) {
-    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
-    //}
+    fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
+    for (int MN = 0; MN < primary_->nshell() * (primary_->nshell() + 1) / 2; MN++) {
+        fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_shell_pairs_r[MN]);
+    }
 
-    //fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
-    //for (int MN = 0; MN < primary_->nbf() * (primary_->nbf() + 1) / 2; MN++) {
-    //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
-    //}
+    fprintf(outfile,"Schwarz Reverse Function Pairs:\n");
+    for (int MN = 0; MN < primary_->nbf() * (primary_->nbf() + 1) / 2; MN++) {
+        fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
+    }
 
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI buffer_memory = memory_ - 2*two_memory; // Two is for buffer space in fitting
 
-    //fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
+    fprintf(outfile, "Buffer memory = %ld words\n", buffer_memory);
     
     std::vector<ULI> memory_per_MU; // Ceiling memory of all functions for given MU in canonical order
     std::vector<int> MU_starts; // First MU shell index in a block
@@ -221,17 +221,17 @@ void DFHF::initialize_JK_disk()
         memory_per_MU[schwarz_shell_pairs[2*shellpair]] += (ULI)primary_->shell(schwarz_shell_pairs[2*shellpair + 1])->nfunction();
     }
 
-    //fprintf(outfile,"  Pairs per MU:\n");
-    //for (int MU = 0; MU < primary_->nshell(); MU++)
-    //    fprintf(outfile, "  MU = %4d, pairs = %10ld\n", MU, memory_per_MU[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  Pairs per MU:\n");
+    for (int MU = 0; MU < primary_->nshell(); MU++)
+        fprintf(outfile, "  MU = %4d, pairs = %10ld\n", MU, memory_per_MU[MU]);
+    fflush(outfile);
 
     for (int MU = 0; MU < primary_->nshell(); MU++) memory_per_MU[MU] *= (ULI)primary_->shell(MU)->nfunction() * naux;
 
-    //fprintf(outfile,"  Memory per MU:\n");
-    //for (int MU = 0; MU < primary_->nshell(); MU++)
-    //    fprintf(outfile, "  MU = %4d, memory = %10ld\n", MU, memory_per_MU[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  Memory per MU:\n");
+    for (int MU = 0; MU < primary_->nshell(); MU++)
+        fprintf(outfile, "  MU = %4d, memory = %10ld\n", MU, memory_per_MU[MU]);
+    fflush(outfile);
 
     // Determine memory requirements for (A|mn) chunk
     ULI max_fun_pairs = 0L; 
@@ -243,7 +243,7 @@ void DFHF::initialize_JK_disk()
     }
     max_fun_pairs = max_memory / naux;
 
-    //fprintf(outfile, "Max function pairs for any MU = %ld\n", max_fun_pairs);
+    fprintf(outfile, "Max function pairs for any MU = %ld\n", max_fun_pairs);
 
     // Throw if not enough buffer space provided
     if (max_memory + 2*two_memory > memory_) {
@@ -268,10 +268,10 @@ void DFHF::initialize_JK_disk()
         memory_counter += memory_per_MU[MU];
     }
 
-    //fprintf(outfile,"  MU Starts:\n");
-    //for (int MU = 0; MU < MU_starts.size(); MU++)
-    //    fprintf(outfile, "  Block = %4d, MU_start = %4d\n", MU, MU_starts[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  MU Starts:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, MU_start = %4d\n", MU, MU_starts[MU]);
+    fflush(outfile);
 
     // How many blocks are there?
     int nblock = MU_starts.size();
@@ -301,20 +301,20 @@ void DFHF::initialize_JK_disk()
     }
     schwarz_pair_sizes[nblock - 1] = MUNU_size;
 
-    //fprintf(outfile,"  NU Starts:\n");
-    //for (int MU = 0; MU < MU_starts.size(); MU++)
-    //    fprintf(outfile, "  Block = %4d, NU_start = %4d\n", MU, NU_starts[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  NU Starts:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, NU_start = %4d\n", MU, NU_starts[MU]);
+    fflush(outfile);
 
-    //fprintf(outfile,"  Schwarz Pair Starts:\n");
-    //for (int MU = 0; MU < MU_starts.size(); MU++)
-    //    fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_starts[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  Schwarz Pair Starts:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_starts[MU]);
+    fflush(outfile);
 
-    //fprintf(outfile,"  Schwarz Pair Sizes:\n");
-    //for (int MU = 0; MU < MU_starts.size(); MU++)
-    //    fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_sizes[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  Schwarz Pair Sizes:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, %4d\n", MU, schwarz_pair_sizes[MU]);
+    fflush(outfile);
 
     // Determine munu offsets by block (use the schwarz backmap)
     // This is perhaps a bit excessive, but will always work
@@ -351,12 +351,12 @@ void DFHF::initialize_JK_disk()
     if (max_cols < ntri - munu_offsets[nblock - 1]) 
         max_cols = ntri - munu_offsets[nblock - 1]; 
 
-    //fprintf(outfile,"  munu offsets:\n");
-    //for (int MU = 0; MU < MU_starts.size(); MU++)
-    //    fprintf(outfile, "  Block = %4d, %4d\n", MU, munu_offsets[MU]);
-    //fflush(outfile);
+    fprintf(outfile,"  munu offsets:\n");
+    for (int MU = 0; MU < MU_starts.size(); MU++)
+        fprintf(outfile, "  Block = %4d, %4d\n", MU, munu_offsets[MU]);
+    fflush(outfile);
 
-    //fprintf(outfile, "Max cols = %d\n", max_cols);
+    fprintf(outfile, "Max cols = %d\n", max_cols);
 
     // Thread setup
     int nthread = 1;

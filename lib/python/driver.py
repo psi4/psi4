@@ -10,7 +10,8 @@ procedures = {'energy' : {
             'sapt0'         : run_sapt,
             'sapt_dft'      : run_sapt,
             'ccsd'          : run_ccsd,
-            'ccsd(t)'       : run_ccsd_t
+            'ccsd(t)'       : run_ccsd_t,
+            'detci'         : run_detci
         },
         'gradient' : {
         },

@@ -32,6 +32,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Print level -*/
   options.add_int("PRINT", 0);
 
+  if (name == "DETCI" || options.read_globals()) {
+    /*- E converge value -*/
+    options.add_int("E_CONVERGE",10);
+    /*- D converge value -*/
+    options.add_int("D_CONVERGE",8);
+  
+  }
+
   if (name == "SAPT"|| options.read_globals()) {
     /*- The level of theory for SAPT -*/
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT_DFT");
@@ -75,7 +83,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("OMEGA_POINTS",8);
     /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/
     options.add_double("OMEGA_CENTER", 1.0);
-}
+  }
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/

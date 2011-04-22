@@ -1354,9 +1354,11 @@ double *** construct_evects(const char *spin, int nirreps, int *active, int *sop
   double ***evects;
   double **scf;
 
-  if(spin == "alpha")     scf = moinfo.scf_vector_alpha;
-  else if(spin == "beta") scf = moinfo.scf_vector_beta;
-  else if(spin == "RHF")  scf = moinfo.scf_vector;
+  std::string spin_str = spin;
+
+  if(spin_str == "alpha")     scf = moinfo.scf_vector_alpha;
+  else if(spin_str == "beta") scf = moinfo.scf_vector_beta;
+  else if(spin_str == "RHF")  scf = moinfo.scf_vector;
   else throw PsiException ("Bad spin value in construct_evects", __FILE__, __LINE__);
 
   evects = (double ***) malloc(nirreps * sizeof(double **));

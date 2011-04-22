@@ -198,6 +198,26 @@ def run_ccsd_response(name, **kwargs):
     # Need oeprop integrals here -- code will fail at present
     PsiMod.ccresponse()
 
+def run_detci(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    # For a CCSD energy, we need SCF to be run.
+    # Could we somehow do a check to see if SCF was run?
+    # This would be useful of the user had to do something special with SCF to get
+    # it to converge.
+    run_scf("scf", **kwargs);
+    PsiMod.transqt()
+    PsiMod.detci()
+
 def run_dfmp2(name, **kwargs):
 
     run_scf('RHF',**kwargs)
