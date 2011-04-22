@@ -33,10 +33,61 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("PRINT", 0);
 
   if (name == "DETCI" || options.read_globals()) {
+    /*- Derivative level -*/
+    options.add_str("DERTYPE", "NONE", "NONE FIRST");
+
+    /*- Wavefunction type -*/
+    options.add_str("WFN", "CI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
+
+    /*- The CI excitation level -*/
+    options.add_int("EX_LVL", 2);
+
+    /*- The CC excitation level -*/
+    options.add_int("CC_EX_LVL", 2);
+
+    /*- The valence excitation level -*/
+    options.add_int("VAL_EX_LVL", 0);
+
+    /*- The CC valence excitation level -*/
+    options.add_int("CC_VAL_EX_LVL", 0);
+
+    /*- number of CI roots to find -*/
+    options.add_int("NUM_ROOTS", 1);
+
+    /*- stop after setting up CI space -*/
+    options.add_bool("ISTOP",false);
+
+    /*- print a summary of the CI blocks? -*/
+    options.add_bool("PRINT_CIBLKS",false);
+
+    /*- Open-shell type */
+    options.add_str("OPENTYPE", "NONE", "NONE HIGHSPIN SINGLET");
+
+    /*- irrep for CI vectors;  -1 = find automatically -*/
+    options.add_int("REF_SYM", -1);
+
+    /*- size of H0 block in preconditioner -*/
+    options.add_int("H0_BLOCKSIZE", 400);
+
+    /*- size of H0 block for initial guess -*/
+    options.add_int("H0_GUESS_SIZE", 100);
+
+    /*- Use coupling block in preconditioner? -*/
+    options.add_bool("H0_BLOCK_COUPLING",false);
+
+    /*- size of coupling block in preconditioner -*/
+    options.add_int("H0_BLOCK_COUPLING_SIZE",0);
+
+    /*- number of important determinants to print out -*/
+    options.add_int("NPRINT",20);
+
+    /*- number of important CC amps per ex lvl to print -*/
+    options.add_int("CC_NPRINT",10);
+
     /*- E converge value -*/
-    options.add_int("E_CONVERGE",10);
+    //options.add_int("E_CONVERGE",10);
     /*- D converge value -*/
-    options.add_int("D_CONVERGE",8);
+    //options.add_int("D_CONVERGE",8);
   
   }
 

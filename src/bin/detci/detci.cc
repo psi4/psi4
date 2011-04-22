@@ -19,16 +19,17 @@
    
 */
 
+#include <sstring>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <cstring>
 #include <psifiles.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
 #include <masses.h>
 #include "structs.h"
@@ -125,14 +126,17 @@ extern void calc_mrpt(void);
 
 }} // namespace psi::detci
 
-using namespace psi::detci;
 
-int main(int argc, char *argv[])
+namespace psi { namespace detci {
+
+int detci(Options &options)
 {
    Parameters.print_lvl = 1;
    Parameters.have_special_conv = 0;
    int fci_norb_check = 0;
    int i = 0;
+
+   boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
    init_io(argc, argv);         /* parse cmd line and open input and output */
    get_parameters();            /* get running params (convergence, etc)    */
@@ -156,7 +160,9 @@ int main(int argc, char *argv[])
 
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
-     return(0);
+     Process::environment.globals["CURRENT ENERGY"] = 0.0;
+     Process::environment.globals["CI ENERGY"] = 0.0;
+     return Success;
    }
 
    
@@ -189,10 +195,9 @@ int main(int argc, char *argv[])
    if (Parameters.pthreads) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
    close_io();
-   return(0);
+   return Success;
 }
 
-namespace psi { namespace detci {
 
 /*
 ** init_io(): Figure out command-line arguments and start up I/O for
@@ -201,9 +206,12 @@ namespace psi { namespace detci {
 */
 void init_io(int argc, char *argv[])
 {
+   /*
    int i, num_unparsed;
    char *argv_unparsed[100]; 
+   */
 
+   /*
    Parameters.write_energy = 0;
 
    for (i=1,num_unparsed=0; i<argc; i++) {
@@ -229,13 +237,15 @@ void init_io(int argc, char *argv[])
         argv_unparsed[num_unparsed++] = argv[i];
       }
    }
+   */
 
    /* initialize input and output files.  We want to pass the list
     * of arguments starting after the last one we have parsed, so
     * we do pointer arithmetic on argv
     */
    /* init_in_out(argc-parsed,argv+parsed); */
-   errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
+   
+    // errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
 
    if (Parameters.print_lvl) tstart(outfile);
 
@@ -246,8 +256,11 @@ void init_io(int argc, char *argv[])
    ip_cwk_clear();
    ip_cwk_add(":DEFAULT");
    */
+  
+   /*
    ip_cwk_add(":DETCI");
    psio_init(); psio_ipv1_config();
+   */
    
 }
  
@@ -944,11 +957,20 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
    /* write the CI energy to PSIF_CHKPT: later fix this to loop over roots */
    chkpt_init(PSIO_OPEN_OLD);
-   chkpt_wt_etot(evals[Parameters.root]+efzc+nucrep);
+   tval = evals[Parameters.root]+efzc+nucrep;
+   chkpt_wt_etot(tval);
+   Process::environment.globals["CURRENT ENERGY"] = tval;
+   Process::environment.globals["CI ENERGY"] = tval;
 
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
-     chkpt_wt_e_labeled(e_label, evals[i]+efzc+nucrep);
+     tval = evals[i]+efzc+nucrep;
+     chkpt_wt_e_labeled(e_label, tval);
+
+     std::stringstream s;
+     s << "CI ROOT " << i << " ENERGY";
+     
+     Process::environment.globals[s.str()] = tval;
    }
 
    if (Parameters.average_num > 1) {
@@ -957,6 +979,7 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
        tval += Parameters.average_weights[i] * 
                (efzc+nucrep+evals[Parameters.average_states[i]]);
      chkpt_wt_e_labeled("State averaged energy",tval);
+     Process::environment.globals["CI STATE AVERAGED ENERGY"] = tval;
    }
  
    chkpt_close();
@@ -1361,5 +1384,4 @@ BIGINT strings2det(int alp_code, int alp_idx, int bet_code, int bet_idx) {
 
 }} // namespace psi::detci
 
-extern "C" { const char *gprgid(void) { const char *prgid = "DETCI"; return (prgid); } }
 

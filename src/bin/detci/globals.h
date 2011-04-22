@@ -6,6 +6,10 @@
 #ifndef _psi_src_bin_detci_globals_h
 #define _psi_src_bin_detci_globals_h
 
+
+#include <psi4-dec.h>
+#include <string>
+
 /* nice stuff to extern or not to extern properly */
 #ifdef EXTERN
 # undef EXTERN
@@ -13,11 +17,6 @@
 #else
 # define EXTERN
 #endif
-
-extern "C" {
-  EXTERN FILE *infile, *outfile;
-  EXTERN char *psi_file_prefix;
-}
 
 namespace psi { namespace detci {
 

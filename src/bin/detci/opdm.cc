@@ -198,6 +198,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     sprintf(opdm_key,"Root %2d energy",Parameters.root);
     overlap = chkpt_rd_e_labeled(opdm_key);
     chkpt_wt_etot(overlap);
+    Process::environment.globals["CURRENT ENERGY"] = overlap;
+    Process::environment.globals["CI ENERGY"] = overlap;
     chkpt_close();
   
   }

@@ -105,13 +105,13 @@ void get_parameters(void)
    chkpt_close();
 
    /* need to figure out wheter to filter tei's */
-*  errcod = ip_string("DERTYPE", &(Parameters.dertype),0); 
+   errcod = ip_string("DERTYPE", &(Parameters.dertype),0); 
    if(errcod == IPE_KEY_NOT_FOUND) {
      Parameters.dertype = (char *) malloc(sizeof(char)*5);
      strcpy(Parameters.dertype, "NONE");
    }
 
-*  errcod = ip_string("WFN", &(Parameters.wfn),0);
+   errcod = ip_string("WFN", &(Parameters.wfn),0);
    if(errcod == IPE_KEY_NOT_FOUND) {
      Parameters.wfn = (char *) malloc(sizeof(char)*5);
      strcpy(Parameters.wfn, "NONE");
@@ -136,30 +136,28 @@ void get_parameters(void)
  
    /* Parameters.print_lvl is set in detci.cc */
    /* Parameters.have_special_conv is set in detci.cc */
-/* symbol * = put in read_options
- *        I = was internal parameter, not in read_options
- *        X = now it's an internal parameter, not in read_options
- */
-
-*  Parameters.ex_lvl = 2;
-*  Parameters.cc_ex_lvl = 2;
-*  Parameters.val_ex_lvl = 0;
-*  Parameters.cc_val_ex_lvl = 0;
-I  Parameters.cc_a_val_ex_lvl = -1;
-I  Parameters.cc_b_val_ex_lvl = -1;
-*  Parameters.num_roots = 1;
-*  Parameters.istop = 0;
-*  Parameters.print_ciblks = 0;
-*  Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
-*  Parameters.ref_sym = -1;
-X  Parameters.oei_file = PSIF_OEI;  /* always need fzc operator */
-X  Parameters.tei_file = PSIF_MO_TEI;
-*  Parameters.h0blocksize = 400;
-*  Parameters.h0guess_size = 100;
-*  Parameters.h0block_coupling = 0;
-*  Parameters.h0block_coupling_size = 0;
-*  Parameters.nprint = 20;
-*  Parameters.cc_nprint = 10;
+   Parameters.ex_lvl = 2;
+   Parameters.cc_ex_lvl = 2;
+   Parameters.val_ex_lvl = 0;
+   Parameters.cc_val_ex_lvl = 0;
+   Parameters.cc_a_val_ex_lvl = -1;
+   Parameters.cc_b_val_ex_lvl = -1;
+   Parameters.max_dets = 10000;
+   Parameters.num_roots = 1;
+   Parameters.istop = 0;
+   Parameters.print_ciblks = 0;
+   Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
+   Parameters.ref_sym = -1;
+   Parameters.oei_file = PSIF_OEI;  /* always need fzc operator */
+   Parameters.oei_erase = 0;
+   Parameters.tei_file = PSIF_MO_TEI;
+   Parameters.tei_erase = 0;
+   Parameters.h0blocksize = 400;
+   Parameters.h0guess_size = 100;
+   Parameters.h0block_coupling = 0;
+   Parameters.h0block_coupling_size = 0;
+   Parameters.nprint = 20;
+   Parameters.cc_nprint = 10;
    Parameters.hd_ave = EVANGELISTI;
    Parameters.hd_otf = TRUE;
    Parameters.nodfile = 0;
@@ -303,6 +301,7 @@ X  Parameters.tei_file = PSIF_MO_TEI;
    errcod = ip_data("CC_EX_LVL","%d",&(Parameters.cc_ex_lvl),0);
    errcod = ip_data("VAL_EX_LVL","%d",&(Parameters.val_ex_lvl),0);
    errcod = ip_data("CC_VAL_EX_LVL","%d",&(Parameters.cc_val_ex_lvl),0);
+   errcod = ip_data("MAX_DET","%d",&(Parameters.max_dets),0);
    errcod = ip_data("MAXITER","%d",&(Parameters.maxiter),0);
    errcod = ip_data("NUM_ROOTS","%d",&(Parameters.num_roots),0);
    errcod = ip_boolean("ISTOP",&(Parameters.istop),0);
@@ -367,7 +366,9 @@ X  Parameters.tei_file = PSIF_MO_TEI;
    errcod = ip_boolean("MS0",&(Parameters.Ms0),0);
    errcod = ip_data("REF_SYM","%d",&(Parameters.ref_sym),0);
    errcod = ip_data("OEI_FILE","%d",&(Parameters.oei_file),0);
+   errcod = ip_boolean("OEI_ERASE",&(Parameters.oei_erase),0);
    errcod = ip_data("TEI_FILE","%d",&(Parameters.tei_file),0);
+   errcod = ip_boolean("TEI_ERASE",&(Parameters.tei_erase),0);
    errcod = ip_data("H0_BLOCKSIZE","%d",&(Parameters.h0blocksize),0);
    Parameters.h0guess_size = Parameters.h0blocksize;
    errcod = ip_data("H0_GUESS_SIZE","%d",&(Parameters.h0guess_size),0);
@@ -985,7 +986,8 @@ void print_parameters(void)
       Parameters.val_ex_lvl, Parameters.h0guess_size);
    fprintf(outfile, "   H0COUPLINGSIZE=   %6d      H0 COUPLING  =   %6s\n", 
       Parameters.h0block_coupling_size, Parameters.h0block_coupling ? "yes" : "no");
-   fprintf(outfile, "   NPRINT        =   %6d\n", Parameters.nprint);
+   fprintf(outfile, "   NPRINT        =   %6d      MAX DET      =   %6d\n", 
+      Parameters.nprint, Parameters.max_dets);
    fprintf(outfile, "   MAXITER       =   %6d      FREEZE CORE  =   %6s\n", 
       Parameters.maxiter, Parameters.fzc ? "yes" : "no");
    fprintf(outfile, "   NUM ROOTS     =   %6d      ICORE        =   %6d\n", 
@@ -1004,8 +1006,8 @@ void print_parameters(void)
       Parameters.energy_convergence, Parameters.mixed4 ? "yes" : "no");
    fprintf(outfile, "   OEI FILE      =   %6d      R4S          =   %6s\n", 
       Parameters.oei_file, Parameters.r4s ? "yes" : "no");
-   fprintf(outfile, "   REPL OTF     =   %6s\n",  
-      Parameters.repl_otf ? "yes" : "no");
+   fprintf(outfile, "   OEI ERASE     =   %6s      REPL OTF     =   %6s\n",  
+      Parameters.oei_erase ? "yes" : "no", Parameters.repl_otf ? "yes" : "no");
    fprintf(outfile, "   TEI FILE      =   %6d      DIAG METHOD  =   ", 
       Parameters.tei_file);
 
@@ -1073,7 +1075,8 @@ void print_parameters(void)
 
    fprintf(outfile, "   S             =   %6lf     Ms0          =   %6s\n",
       Parameters.S, Parameters.Ms0 ? "yes" : "no");           
-   fprintf(outfile, "   MAXNVECT     =   %6d\n", Parameters.maxnvect);
+   fprintf(outfile, "   TEI ERASE     =   %6s      MAXNVECT     =   %6d\n", 
+      Parameters.tei_erase ? "yes" : "no", Parameters.maxnvect);
    fprintf(outfile, "   RESTART       =   %6s      RESTART VECS =   %6d\n",
       Parameters.restart ? "yes" : "no", Parameters.restart_vecs);
    fprintf(outfile, "   GUESS VECTOR  =  ");
