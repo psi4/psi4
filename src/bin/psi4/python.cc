@@ -56,6 +56,8 @@ namespace psi {
     namespace cchbar    { PsiReturnType cchbar(Options&);    }
     namespace cclambda  { PsiReturnType cclambda(Options&);  }
     namespace ccdensity { PsiReturnType ccdensity(Options&); }
+    // DETCI: uncomment
+    //namespace detci     { PsiReturnType detci(Options&);     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
@@ -200,6 +202,22 @@ double py_psi_cctriples()
     }
     else
         return 0.0;
+}
+
+double py_psi_detci()
+{
+    py_psi_prepare_options_for_module("DETCI");
+
+    // DETCI: Uncomment
+    //if (detci::detci(Process::environment.options) == Success) {
+    //    return Process::environment.globals["CURRENT ENERGY"];
+    //}
+    //else
+    //    return 0.0;
+    fprintf(outfile,"\n\nWorld's slowest quantum method goes here.\n\n");
+    fflush(outfile);
+
+    return 0.0;
 }
 
 double py_psi_cchbar()
@@ -551,6 +569,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccsort", py_psi_ccsort);
     def("ccenergy", py_psi_ccenergy);
     def("cctriples", py_psi_cctriples);
+    def("detci", py_psi_detci);
     def("cchbar", py_psi_cchbar);
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);
