@@ -334,17 +334,16 @@ void SAPT0::exch_disp20_n4()
   double **xAB = block_matrix(nthreads,aoccA_*aoccB_);
   double **yAB = block_matrix(nthreads,aoccA_*aoccB_);
 
-  for (int j=0; j<T_ARBS_iter.num_blocks; j++) {
-    read_block(&T_ARBS_iter,&T_p_AR,&T_p_BS);
+  for (int i=0; i<nvec_; i++) {
 
-    for (int i=0; i<nvec_; i++) {
+    for (int j=0; j<T_ARBS_iter.num_blocks; j++) {
+      read_block(&T_ARBS_iter,&T_p_AR,&T_p_BS);
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int ar=0; ar<aoccA_*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          if (i) scale /= dAR_[i-1][ar];
           C_DSCAL(T_ARBS_iter.curr_size,scale,&(T_p_AR.B_p_[0][ar]),
             aoccA_*nvirA_);
         }
@@ -352,7 +351,6 @@ void SAPT0::exch_disp20_n4()
 #pragma omp for 
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          if (i) scale /= dBS_[i-1][bs];
           C_DSCAL(T_ARBS_iter.curr_size,scale,&(T_p_BS.B_p_[0][bs]),
             aoccB_*nvirB_);
         }
@@ -483,6 +481,9 @@ void SAPT0::exch_disp20_n4()
 }
 
     }
+    T_p_AR.rewind();
+    T_p_BS.rewind();
+    T_ARBS_iter.rewind();
   }
 
   if (debug_) {
@@ -543,17 +544,16 @@ void SAPT0::theta_ar()
   for (int j=0,offB=0; j<B_BS_iter.num_blocks; j++) {
     read_block(&B_BS_iter,&B_p_BS);
 
-    for (int k=0,offC=0; k<C_BS_iter.num_blocks; k++) {
-      read_block(&C_BS_iter,&C_p_BS);
+    for (int i=0; i<nvec_; i++) {
 
-      for (int i=0; i<nvec_; i++) {
+      for (int k=0,offC=0; k<C_BS_iter.num_blocks; k++) {
+        read_block(&C_BS_iter,&C_p_BS);
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          if (i) scale /= dBS_[i-1][bs];
           C_DSCAL(C_BS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
             aoccB_*nvirB_);
         }
@@ -562,11 +562,12 @@ void SAPT0::theta_ar()
           aoccB_*nvirB_,1.0,C_p_BS.B_p_[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
           aoccB_*nvirB_,0.0,&(yPQ[i][(long int) offC*(ndf_+3)+offB]),
           ndf_+3);
+
+        offC += C_BS_iter.curr_size;
       }
-      offC += C_BS_iter.curr_size;
+      C_p_BS.rewind();
+      C_BS_iter.rewind();
     }
-    C_p_BS.rewind();
-    C_BS_iter.rewind();
     offB += B_BS_iter.curr_size;
   }
 
@@ -603,12 +604,6 @@ void SAPT0::theta_ar()
   double **T_AR = block_matrix(chunk*nvirA_,ndf_+3);
   double *temp = init_array(chunk*nvirA_);
 
-  if (in_core) {
-    psio_->read_entry(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
-      &(B_AR[0][0]),sizeof(double)*chunk*nvirA_*ndf_);
-  }
-
-  psio_address next_B_AR = PSIO_ZERO;
   psio_address next_T_AR = PSIO_ZERO;
 
   zero_disk(PSIF_SAPT_TEMP,"Theta AR Intermediate",ndf_+3,aoccA_*nvirA_);
@@ -621,22 +616,21 @@ void SAPT0::theta_ar()
     if (amax > aoccA_) amax = aoccA_;
     length += amax;
 
-    if (!in_core) {
-      psio_->read(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
-        &(B_AR[0][0]),sizeof(double)*length*nvirA_*ndf_,next_B_AR,
-        &next_B_AR);
-    }
-
     memset(&(T_AR[0][0]),'\0',sizeof(double)*length*nvirA_*(ndf_+3));
 
     for (int i=0; i<nvec_; i++) {
+
+      psio_address next_B_AR = psio_get_address(PSIO_ZERO,
+        sizeof(double)*amin*nvirA_*ndf_);
+      psio_->read(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+        &(B_AR[0][0]),sizeof(double)*length*nvirA_*ndf_,next_B_AR,
+        &next_B_AR);
 
 #pragma omp parallel
 {
 #pragma omp for 
       for (int ar=amin*nvirA_; ar<amax*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          if (i) scale /= dAR_[i-1][ar];
           C_DSCAL(ndf_,scale,B_AR[ar-amin*nvirA_],1);
         }
 }
@@ -683,17 +677,16 @@ void SAPT0::theta_bs()
   for (int j=0,offB=0; j<B_AR_iter.num_blocks; j++) {
     read_block(&B_AR_iter,&B_p_AR);
 
-    for (int k=0,offC=0; k<C_AR_iter.num_blocks; k++) {
-      read_block(&C_AR_iter,&C_p_AR);
+    for (int i=0; i<nvec_; i++) {
 
-      for (int i=0; i<nvec_; i++) {
+      for (int k=0,offC=0; k<C_AR_iter.num_blocks; k++) {
+        read_block(&C_AR_iter,&C_p_AR);
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int ar=0; ar<aoccA_*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          if (i) scale /= dAR_[i-1][ar];
           C_DSCAL(C_AR_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
             aoccA_*nvirA_);
         }
@@ -702,11 +695,12 @@ void SAPT0::theta_bs()
           aoccA_*nvirA_,1.0,C_p_AR.B_p_[0],aoccA_*nvirA_,B_p_AR.B_p_[0],
           aoccA_*nvirA_,0.0,&(xPQ[i][(long int) offC*(ndf_+3)+offB]),
           ndf_+3);
+
+        offC += C_AR_iter.curr_size;
       }
-      offC += C_AR_iter.curr_size;
+      C_p_AR.rewind();
+      C_AR_iter.rewind();
     }
-    C_p_AR.rewind();
-    C_AR_iter.rewind();
     offB += B_AR_iter.curr_size;
   }
 
@@ -743,12 +737,6 @@ void SAPT0::theta_bs()
   double **T_BS = block_matrix(chunk*nvirB_,ndf_+3);
   double *temp = init_array(chunk*nvirB_);
 
-  if (in_core) {
-    psio_->read_entry(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
-      &(B_BS[0][0]),sizeof(double)*chunk*nvirB_*ndf_);
-  }
-
-  psio_address next_B_BS = PSIO_ZERO;
   psio_address next_T_BS = PSIO_ZERO;
 
   zero_disk(PSIF_SAPT_TEMP,"Theta BS Intermediate",ndf_+3,aoccB_*nvirB_);
@@ -761,22 +749,21 @@ void SAPT0::theta_bs()
     if (bmax > aoccB_) bmax = aoccB_;
     length += bmax;
 
-    if (!in_core) {
-      psio_->read(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
-        &(B_BS[0][0]),sizeof(double)*length*nvirB_*ndf_,next_B_BS,
-        &next_B_BS);
-    }
-
     memset(&(T_BS[0][0]),'\0',sizeof(double)*length*nvirB_*(ndf_+3));
 
     for (int i=0; i<nvec_; i++) {
+
+      psio_address next_B_BS = psio_get_address(PSIO_ZERO,
+        sizeof(double)*bmin*nvirB_*ndf_);
+      psio_->read(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+        &(B_BS[0][0]),sizeof(double)*length*nvirB_*ndf_,next_B_BS,
+        &next_B_BS);
 
 #pragma omp parallel
 {
 #pragma omp for 
       for (int bs=bmin*nvirB_; bs<bmax*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          if (i) scale /= dBS_[i-1][bs];
           C_DSCAL(ndf_,scale,B_BS[bs-bmin*nvirB_],1);
         }
 }

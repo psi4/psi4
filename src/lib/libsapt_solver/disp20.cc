@@ -33,17 +33,17 @@ void SAPT0::disp20()
   for (int j=0; j<B_ARBS_iter.num_blocks; j++) {
     read_block(&B_ARBS_iter,&B_p_AR,&B_p_BS);
 
-    for (int k=0; k<C_ARBS_iter.num_blocks; k++) {
-      read_block(&C_ARBS_iter,&C_p_AR,&C_p_BS);
+    for (int i=0; i<nvec_; i++) {
 
-      for (int i=0; i<nvec_; i++) {
+      for (int k=0; k<C_ARBS_iter.num_blocks; k++) {
+        read_block(&C_ARBS_iter,&C_p_AR,&C_p_BS);
+
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int ar=0; ar<aoccA_*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          if (i) scale /= dAR_[i-1][ar];
           C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
             aoccA_*nvirA_);
         }
@@ -51,7 +51,6 @@ void SAPT0::disp20()
 #pragma omp for 
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          if (i) scale /= dBS_[i-1][bs];
           C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
             aoccB_*nvirB_);
         }
@@ -68,10 +67,10 @@ void SAPT0::disp20()
         e_disp20_ -= C_DDOT(B_ARBS_iter.curr_size*C_ARBS_iter.curr_size,
           xPQ,1,yPQ,1);
       }
+      C_p_AR.rewind();
+      C_p_BS.rewind();
+      C_ARBS_iter.rewind();
     }
-    C_p_AR.rewind();
-    C_p_BS.rewind();
-    C_ARBS_iter.rewind();
   }
 
   B_p_AR.done();
