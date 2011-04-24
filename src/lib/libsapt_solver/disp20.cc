@@ -18,59 +18,64 @@ void SAPT0::disp20()
 
   SAPTDFInts B_p_AR = set_act_C_AR();
   SAPTDFInts B_p_BS = set_act_C_BS();
-  Iterator B_ARBS_iter = get_iterator(avail_mem/2,&B_p_AR,&B_p_BS);
+  Iterator B_ARBS_iter = get_iterator(avail_mem/3,&B_p_AR,&B_p_BS);
 
   SAPTDFInts C_p_AR = set_act_C_AR();
   SAPTDFInts C_p_BS = set_act_C_BS();
-  Iterator C_ARBS_iter = get_iterator(avail_mem/2,&C_p_AR,&C_p_BS);
+  Iterator C_ARBS_iter = get_iterator(avail_mem/3,&C_p_AR,&C_p_BS);
 
   double *xPQ = init_array((long int) B_ARBS_iter.block_size[0]*
     C_ARBS_iter.block_size[0]);
   double *yPQ = init_array((long int) B_ARBS_iter.block_size[0]*
     C_ARBS_iter.block_size[0]);
 
+  double **T_p_AR = block_matrix(C_ARBS_iter.block_size[0],aoccA_*nvirA_);
+  double **T_p_BS = block_matrix(C_ARBS_iter.block_size[0],aoccB_*nvirB_);
+
   e_disp20_ = 0.0;
   for (int j=0; j<B_ARBS_iter.num_blocks; j++) {
     read_block(&B_ARBS_iter,&B_p_AR,&B_p_BS);
 
-    for (int i=0; i<nvec_; i++) {
+    for (int k=0; k<C_ARBS_iter.num_blocks; k++) {
+      read_block(&C_ARBS_iter,&C_p_AR,&C_p_BS);
 
-      for (int k=0; k<C_ARBS_iter.num_blocks; k++) {
-        read_block(&C_ARBS_iter,&C_p_AR,&C_p_BS);
+      for (int i=0; i<nvec_; i++) {
 
+        C_DCOPY(C_ARBS_iter.block_size[k]*aoccA_*nvirA_,C_p_AR.B_p_[0],1,
+          T_p_AR[0],1);
+        C_DCOPY(C_ARBS_iter.block_size[k]*aoccB_*nvirB_,C_p_BS.B_p_[0],1,
+          T_p_BS[0],1);
 
 #pragma omp parallel
 {
-#pragma omp for 
+#pragma omp for
         for (int ar=0; ar<aoccA_*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
-            aoccA_*nvirA_);
+          C_DSCAL(C_ARBS_iter.curr_size,scale,&(T_p_AR[0][ar]),aoccA_*nvirA_);
         }
       
 #pragma omp for 
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          C_DSCAL(C_ARBS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
-            aoccB_*nvirB_);
+          C_DSCAL(C_ARBS_iter.curr_size,scale,&(T_p_BS[0][bs]),aoccB_*nvirB_);
         }
 }
 
         C_DGEMM('N','T',B_ARBS_iter.curr_size,C_ARBS_iter.curr_size,
-          aoccA_*nvirA_,2.0,B_p_AR.B_p_[0],aoccA_*nvirA_,C_p_AR.B_p_[0],
+          aoccA_*nvirA_,2.0,B_p_AR.B_p_[0],aoccA_*nvirA_,T_p_AR[0],
           aoccA_*nvirA_,0.0,xPQ,C_ARBS_iter.curr_size);
 
         C_DGEMM('N','T',B_ARBS_iter.curr_size,C_ARBS_iter.curr_size,
-          aoccB_*nvirB_,2.0,B_p_BS.B_p_[0],aoccB_*nvirB_,C_p_BS.B_p_[0],
+          aoccB_*nvirB_,2.0,B_p_BS.B_p_[0],aoccB_*nvirB_,T_p_BS[0],
           aoccB_*nvirB_,0.0,yPQ,C_ARBS_iter.curr_size);
 
         e_disp20_ -= C_DDOT(B_ARBS_iter.curr_size*C_ARBS_iter.curr_size,
           xPQ,1,yPQ,1);
       }
-      C_p_AR.rewind();
-      C_p_BS.rewind();
-      C_ARBS_iter.rewind();
     }
+    C_p_AR.rewind();
+    C_p_BS.rewind();
+    C_ARBS_iter.rewind();
   }
 
   B_p_AR.done();
@@ -80,6 +85,9 @@ void SAPT0::disp20()
 
   free(xPQ);
   free(yPQ);
+
+  free_block(T_p_AR);
+  free_block(T_p_BS);
 
   if (print_) {
     fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);

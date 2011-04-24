@@ -327,163 +327,166 @@ void SAPT0::exch_disp20_n4()
   psio_->read_entry(PSIF_SAPT_TEMP,"Q11 RB Array",(char *) &(Q11_RB[0][0]),
     sizeof(double)*nvirA_*aoccB_);
 
-  SAPTDFInts T_p_AR = set_act_C_AR();
-  SAPTDFInts T_p_BS = set_act_C_BS();
-  Iterator T_ARBS_iter = get_iterator(mem_,&T_p_AR,&T_p_BS);
+  SAPTDFInts B_p_AR = set_act_C_AR();
+  SAPTDFInts B_p_BS = set_act_C_BS();
+  Iterator B_ARBS_iter = get_iterator(mem_/2,&B_p_AR,&B_p_BS);
 
   double **xAB = block_matrix(nthreads,aoccA_*aoccB_);
   double **yAB = block_matrix(nthreads,aoccA_*aoccB_);
 
-  for (int i=0; i<nvec_; i++) {
+  double **T_p_AR = block_matrix(B_ARBS_iter.block_size[0],aoccA_*nvirA_);
+  double **T_p_BS = block_matrix(B_ARBS_iter.block_size[0],aoccB_*nvirB_);
 
-    for (int j=0; j<T_ARBS_iter.num_blocks; j++) {
-      read_block(&T_ARBS_iter,&T_p_AR,&T_p_BS);
+  for (int j=0; j<B_ARBS_iter.num_blocks; j++) {
+    read_block(&B_ARBS_iter,&B_p_AR,&B_p_BS);
+
+    for (int i=0; i<nvec_; i++) {
+
+      C_DCOPY(B_ARBS_iter.block_size[j]*aoccA_*nvirA_,B_p_AR.B_p_[0],1,
+        T_p_AR[0],1);
+      C_DCOPY(B_ARBS_iter.block_size[j]*aoccB_*nvirB_,B_p_BS.B_p_[0],1,
+        T_p_BS[0],1);
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int ar=0; ar<aoccA_*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          C_DSCAL(T_ARBS_iter.curr_size,scale,&(T_p_AR.B_p_[0][ar]),
-            aoccA_*nvirA_);
+          C_DSCAL(B_ARBS_iter.curr_size,scale,&(T_p_AR[0][ar]),aoccA_*nvirA_);
         }
 
 #pragma omp for 
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          C_DSCAL(T_ARBS_iter.curr_size,scale,&(T_p_BS.B_p_[0][bs]),
-            aoccB_*nvirB_);
+          C_DSCAL(B_ARBS_iter.curr_size,scale,&(T_p_BS[0][bs]),aoccB_*nvirB_);
         }
 
 #pragma omp for private(rank) reduction(+:h_1)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           H1_RB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,sAS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         h_1 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 
 #pragma omp for private(rank) reduction(+:h_3)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
         
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           sRB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,H3_AS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         h_3 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 
 #pragma omp for private(rank) reduction(+:q_1)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           sRB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,Q1_AS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_1 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       } 
 
 #pragma omp for private(rank) reduction(+:q_3)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           sRB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,Q3_AS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_3 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 
 #pragma omp for reduction(+:q_4)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-        q_4 += 4.0*C_DDOT(aoccA_*nvirA_,T_p_AR.B_p_[p],1,sAR[0],1)*
-          C_DDOT(aoccB_*nvirB_,T_p_BS.B_p_[p],1,Q4_BS[0],1);
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
+        q_4 += 4.0*C_DDOT(aoccA_*nvirA_,T_p_AR[p],1,sAR[0],1)*
+          C_DDOT(aoccB_*nvirB_,T_p_BS[p],1,Q4_BS[0],1);
       }
 
 #pragma omp for private(rank) reduction(+:q_5)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           Q5_RB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,sAS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_5 += C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 
 #pragma omp for private(rank) reduction(+:q_7)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) { 
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) { 
         
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           Q7_RB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,sAS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_7 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 
 #pragma omp for reduction(+:q_8)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
-        q_8 += 4.0*C_DDOT(aoccA_*nvirA_,T_p_AR.B_p_[p],1,Q8_AR[0],1)*
-          C_DDOT(aoccB_*nvirB_,T_p_BS.B_p_[p],1,sBS[0],1);
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
+        q_8 += 4.0*C_DDOT(aoccA_*nvirA_,T_p_AR[p],1,Q8_AR[0],1)*
+          C_DDOT(aoccB_*nvirB_,T_p_BS[p],1,sBS[0],1);
       }
 
 #pragma omp for private(rank) reduction(+:q_10)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           sRB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,Q10_AS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_10 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 
 #pragma omp for private(rank) reduction(+:q_11)
-      for (int p=0; p<T_ARBS_iter.curr_size; p++) {
+      for (int p=0; p<B_ARBS_iter.curr_size; p++) {
 
 #ifdef _OPENMP
         rank = omp_get_thread_num();
 #endif
 
-        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR.B_p_[p],nvirA_,
+        C_DGEMM('N','N',aoccA_,aoccB_,nvirA_,1.0,T_p_AR[p],nvirA_,
           Q11_RB[0],aoccB_,0.0,xAB[rank],aoccB_);
         C_DGEMM('N','T',aoccA_,aoccB_,nvirB_,1.0,sAS[0],nvirB_,
-          T_p_BS.B_p_[p],nvirB_,0.0,yAB[rank],aoccB_);
+          T_p_BS[p],nvirB_,0.0,yAB[rank],aoccB_);
         q_11 -= 2.0*C_DDOT(aoccA_*aoccB_,xAB[rank],1,yAB[rank],1);
       }
 }
 
     }
-    T_p_AR.rewind();
-    T_p_BS.rewind();
-    T_ARBS_iter.rewind();
   }
 
   if (debug_) {
@@ -517,6 +520,12 @@ void SAPT0::exch_disp20_n4()
   free_block(xAB);
   free_block(yAB);
 
+  B_p_AR.done();
+  B_p_BS.done();
+
+  free_block(T_p_AR);
+  free_block(T_p_BS);
+
   e_exch_disp20_ += 2.0*(h_1+h_2+h_3+h_4+q_1+q_2+q_3+q_4+q_5+q_6+q_7+q_8+
     q_10+q_11+q_13+q_14);
 
@@ -530,56 +539,62 @@ void SAPT0::theta_ar()
 {
   long int avail_mem = mem_ - (long int) nvec_*ndf_*(ndf_+3);
 
-  if ((long int) 2*aoccB_*nvirB_ > avail_mem) 
+  if ((long int) 3*aoccB_*nvirB_ > avail_mem) 
     throw PsiException("Not enough memory", __FILE__,__LINE__);
 
   SAPTDFInts B_p_BS = set_act_B_BS();
-  Iterator B_BS_iter = get_iterator(avail_mem/2,&B_p_BS);
+  Iterator B_BS_iter = get_iterator(avail_mem/3,&B_p_BS);
 
   SAPTDFInts C_p_BS = set_act_C_BS();
-  Iterator C_BS_iter = get_iterator(avail_mem/2,&C_p_BS);
+  Iterator C_BS_iter = get_iterator(avail_mem/3,&C_p_BS);
 
   double **yPQ = block_matrix(nvec_,(long int) ndf_*(ndf_+3));
+  double **T_p_BS = block_matrix(C_BS_iter.block_size[0],aoccB_*nvirB_);
 
   for (int j=0,offB=0; j<B_BS_iter.num_blocks; j++) {
     read_block(&B_BS_iter,&B_p_BS);
 
-    for (int i=0; i<nvec_; i++) {
+    for (int k=0,offC=0; k<C_BS_iter.num_blocks; k++) {
+      read_block(&C_BS_iter,&C_p_BS);
 
-      for (int k=0,offC=0; k<C_BS_iter.num_blocks; k++) {
-        read_block(&C_BS_iter,&C_p_BS);
+      for (int i=0; i<nvec_; i++) {
+
+        C_DCOPY(C_BS_iter.block_size[k]*aoccB_*nvirB_,C_p_BS.B_p_[0],1,
+          T_p_BS[0],1);
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int bs=0; bs<aoccB_*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          C_DSCAL(C_BS_iter.curr_size,scale,&(C_p_BS.B_p_[0][bs]),
+          C_DSCAL(C_BS_iter.curr_size,scale,&(T_p_BS[0][bs]),
             aoccB_*nvirB_);
         }
 }
         C_DGEMM('N','T',C_BS_iter.curr_size,B_BS_iter.curr_size,
-          aoccB_*nvirB_,1.0,C_p_BS.B_p_[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
+          aoccB_*nvirB_,1.0,T_p_BS[0],aoccB_*nvirB_,B_p_BS.B_p_[0],
           aoccB_*nvirB_,0.0,&(yPQ[i][(long int) offC*(ndf_+3)+offB]),
           ndf_+3);
 
-        offC += C_BS_iter.curr_size;
       }
-      C_p_BS.rewind();
-      C_BS_iter.rewind();
+      offC += C_BS_iter.curr_size;
     }
+    C_p_BS.rewind();
+    C_BS_iter.rewind();
     offB += B_BS_iter.curr_size;
   }
 
   B_p_BS.done();
   C_p_BS.done();
 
+  free_block(T_p_BS);
+
   bool in_core = false;
 
-  if (avail_mem > 1L*aoccA_*nvirA_*(ndf_+3) + 1L*aoccA_*nvirA_*ndf_) {
+  if (avail_mem > 1L*aoccA_*nvirA_*(ndf_+3) + 2L*aoccA_*nvirA_*ndf_) {
     in_core = true;
   }
-  else if (avail_mem > 1L*nvirA_*ndf_ + 1L*nvirA_*(ndf_+3)) {
+  else if (avail_mem > 2L*nvirA_*ndf_ + 1L*nvirA_*(ndf_+3)) {
     in_core = false;
   }
   else {
@@ -594,16 +609,23 @@ void SAPT0::theta_ar()
     blocks = 1;
   }
   else {
-    chunk = avail_mem / (1L*nvirA_*ndf_ + 1L*nvirA_*(ndf_+3));
+    chunk = avail_mem / (2L*nvirA_*ndf_ + 1L*nvirA_*(ndf_+3));
     if (chunk > aoccA_) chunk = aoccA_;
     blocks = aoccA_ / chunk;
     if (aoccA_ % chunk) blocks++;
   }
 
   double **B_AR = block_matrix(chunk*nvirA_,ndf_);
+  double **L_AR = block_matrix(chunk*nvirA_,ndf_);
   double **T_AR = block_matrix(chunk*nvirA_,ndf_+3);
   double *temp = init_array(chunk*nvirA_);
 
+  if (in_core) {
+    psio_->read_entry(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+      &(B_AR[0][0]),sizeof(double)*chunk*nvirA_*ndf_);
+  }
+
+  psio_address next_B_AR = PSIO_ZERO;
   psio_address next_T_AR = PSIO_ZERO;
 
   zero_disk(PSIF_SAPT_TEMP,"Theta AR Intermediate",ndf_+3,aoccA_*nvirA_);
@@ -616,26 +638,28 @@ void SAPT0::theta_ar()
     if (amax > aoccA_) amax = aoccA_;
     length += amax;
 
+    if (!in_core) {
+      psio_->read(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
+        &(B_AR[0][0]),sizeof(double)*length*nvirA_*ndf_,next_B_AR,
+        &next_B_AR);
+    }
+
     memset(&(T_AR[0][0]),'\0',sizeof(double)*length*nvirA_*(ndf_+3));
 
     for (int i=0; i<nvec_; i++) {
 
-      psio_address next_B_AR = psio_get_address(PSIO_ZERO,
-        sizeof(double)*amin*nvirA_*ndf_);
-      psio_->read(PSIF_SAPT_TEMP,"AR RI Integrals",(char *)
-        &(B_AR[0][0]),sizeof(double)*length*nvirA_*ndf_,next_B_AR,
-        &next_B_AR);
+      C_DCOPY(ndf_*length*nvirA_,B_AR[0],1,L_AR[0],1);
 
 #pragma omp parallel
 {
 #pragma omp for 
       for (int ar=amin*nvirA_; ar<amax*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          C_DSCAL(ndf_,scale,B_AR[ar-amin*nvirA_],1);
+          C_DSCAL(ndf_,scale,L_AR[ar-amin*nvirA_],1);
         }
 }
 
-      C_DGEMM('N','N',length*nvirA_,ndf_+3,ndf_,1.0,B_AR[0],ndf_,yPQ[i],ndf_+3,
+      C_DGEMM('N','N',length*nvirA_,ndf_+3,ndf_,1.0,L_AR[0],ndf_,yPQ[i],ndf_+3,
         1.0,T_AR[0],ndf_+3);
  
     }
@@ -649,6 +673,7 @@ void SAPT0::theta_ar()
   }
 
   free_block(B_AR);
+  free_block(L_AR);
   free_block(T_AR);
   free(temp);
 
@@ -663,56 +688,62 @@ void SAPT0::theta_bs()
 {
   long int avail_mem = mem_ - (long int) nvec_*ndf_*(ndf_+3);
 
-  if ((long int) 2*aoccA_*nvirA_ > avail_mem) 
+  if ((long int) 3*aoccA_*nvirA_ > avail_mem) 
     throw PsiException("Not enough memory", __FILE__,__LINE__);
 
   SAPTDFInts B_p_AR = set_act_A_AR();
-  Iterator B_AR_iter = get_iterator(avail_mem/2,&B_p_AR);
+  Iterator B_AR_iter = get_iterator(avail_mem/3,&B_p_AR);
 
   SAPTDFInts C_p_AR = set_act_C_AR();
-  Iterator C_AR_iter = get_iterator(avail_mem/2,&C_p_AR);
+  Iterator C_AR_iter = get_iterator(avail_mem/3,&C_p_AR);
 
   double **xPQ = block_matrix(nvec_,(long int) ndf_*(ndf_+3));
+  double **T_p_AR = block_matrix(C_AR_iter.block_size[0],aoccA_*nvirA_);
 
   for (int j=0,offB=0; j<B_AR_iter.num_blocks; j++) {
     read_block(&B_AR_iter,&B_p_AR);
 
-    for (int i=0; i<nvec_; i++) {
+    for (int k=0,offC=0; k<C_AR_iter.num_blocks; k++) {
+      read_block(&C_AR_iter,&C_p_AR);
 
-      for (int k=0,offC=0; k<C_AR_iter.num_blocks; k++) {
-        read_block(&C_AR_iter,&C_p_AR);
+      for (int i=0; i<nvec_; i++) {
+
+        C_DCOPY(C_AR_iter.block_size[k]*aoccA_*nvirA_,C_p_AR.B_p_[0],1,
+          T_p_AR[0],1);
 
 #pragma omp parallel
 {
 #pragma omp for 
         for (int ar=0; ar<aoccA_*nvirA_; ar++) {
           double scale = dAR_[i][ar];
-          C_DSCAL(C_AR_iter.curr_size,scale,&(C_p_AR.B_p_[0][ar]),
+          C_DSCAL(C_AR_iter.curr_size,scale,&(T_p_AR[0][ar]),
             aoccA_*nvirA_);
         }
 }
         C_DGEMM('N','T',C_AR_iter.curr_size,B_AR_iter.curr_size,
-          aoccA_*nvirA_,1.0,C_p_AR.B_p_[0],aoccA_*nvirA_,B_p_AR.B_p_[0],
+          aoccA_*nvirA_,1.0,T_p_AR[0],aoccA_*nvirA_,B_p_AR.B_p_[0],
           aoccA_*nvirA_,0.0,&(xPQ[i][(long int) offC*(ndf_+3)+offB]),
           ndf_+3);
 
-        offC += C_AR_iter.curr_size;
       }
-      C_p_AR.rewind();
-      C_AR_iter.rewind();
+      offC += C_AR_iter.curr_size;
     }
+    C_p_AR.rewind();
+    C_AR_iter.rewind();
     offB += B_AR_iter.curr_size;
   }
 
   B_p_AR.done();
   C_p_AR.done();
 
+  free_block(T_p_AR);
+
   bool in_core = false;
 
-  if (avail_mem > 1L*aoccB_*nvirB_*(ndf_+3) + 1L*aoccB_*nvirB_*ndf_) {
+  if (avail_mem > 1L*aoccB_*nvirB_*(ndf_+3) + 2L*aoccB_*nvirB_*ndf_) {
     in_core = true;
   }
-  else if (avail_mem > 1L*nvirB_*ndf_ + 1L*nvirB_*(ndf_+3)) {
+  else if (avail_mem > 2L*nvirB_*ndf_ + 1L*nvirB_*(ndf_+3)) {
     in_core = false;
   }
   else {
@@ -727,16 +758,23 @@ void SAPT0::theta_bs()
     blocks = 1;
   }
   else {
-    chunk = avail_mem / (1L*nvirB_*ndf_ + 1L*nvirB_*(ndf_+3));
+    chunk = avail_mem / (2L*nvirB_*ndf_ + 1L*nvirB_*(ndf_+3));
     if (chunk > aoccB_) chunk = aoccB_;
     blocks = aoccB_ / chunk;
     if (aoccB_ % chunk) blocks++;
   }
 
   double **B_BS = block_matrix(chunk*nvirB_,ndf_);
+  double **L_BS = block_matrix(chunk*nvirB_,ndf_);
   double **T_BS = block_matrix(chunk*nvirB_,ndf_+3);
   double *temp = init_array(chunk*nvirB_);
 
+  if (in_core) {
+    psio_->read_entry(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+      &(B_BS[0][0]),sizeof(double)*chunk*nvirB_*ndf_);
+  }
+
+  psio_address next_B_BS = PSIO_ZERO;
   psio_address next_T_BS = PSIO_ZERO;
 
   zero_disk(PSIF_SAPT_TEMP,"Theta BS Intermediate",ndf_+3,aoccB_*nvirB_);
@@ -749,26 +787,28 @@ void SAPT0::theta_bs()
     if (bmax > aoccB_) bmax = aoccB_;
     length += bmax;
 
+    if (!in_core) {
+      psio_->read(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
+        &(B_BS[0][0]),sizeof(double)*length*nvirB_*ndf_,next_B_BS,
+        &next_B_BS);
+    }
+
     memset(&(T_BS[0][0]),'\0',sizeof(double)*length*nvirB_*(ndf_+3));
 
     for (int i=0; i<nvec_; i++) {
 
-      psio_address next_B_BS = psio_get_address(PSIO_ZERO,
-        sizeof(double)*bmin*nvirB_*ndf_);
-      psio_->read(PSIF_SAPT_TEMP,"BS RI Integrals",(char *)
-        &(B_BS[0][0]),sizeof(double)*length*nvirB_*ndf_,next_B_BS,
-        &next_B_BS);
+      C_DCOPY(ndf_*length*nvirB_,B_BS[0],1,L_BS[0],1);
 
 #pragma omp parallel
 {
 #pragma omp for 
       for (int bs=bmin*nvirB_; bs<bmax*nvirB_; bs++) {
           double scale = dBS_[i][bs];
-          C_DSCAL(ndf_,scale,B_BS[bs-bmin*nvirB_],1);
+          C_DSCAL(ndf_,scale,L_BS[bs-bmin*nvirB_],1);
         }
 }
 
-      C_DGEMM('N','N',length*nvirB_,ndf_+3,ndf_,1.0,B_BS[0],ndf_,xPQ[i],ndf_+3,
+      C_DGEMM('N','N',length*nvirB_,ndf_+3,ndf_,1.0,L_BS[0],ndf_,xPQ[i],ndf_+3,
         1.0,T_BS[0],ndf_+3);
  
     }
@@ -782,6 +822,7 @@ void SAPT0::theta_bs()
   }
 
   free_block(B_BS);
+  free_block(L_BS);
   free_block(T_BS);
   free(temp);
 
