@@ -5,17 +5,19 @@ using namespace boost;
 
 namespace psi { namespace sapt {
 
-SAPT_DFT::SAPT_DFT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+MP2C::MP2C(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : SAPT0(options, psio, chkpt)
 {
 }
 
-SAPT_DFT::~SAPT_DFT()
+MP2C::~MP2C()
 {
 }
 
-double SAPT_DFT::compute_energy()
+double MP2C::compute_energy()
 {
+    print_header();
+
     form_quadrature();
     form_J();
     form_W();
@@ -35,6 +37,10 @@ double SAPT_DFT::compute_energy()
     double E_UCHF = 0.0;
     double E_TDDFT = 0.0;
     double E_DeltaMP2C = 0.0;
+    double E_MP2_int = Process::environment.globals["MP2C DIMER MP2 ENERGY"] -
+                       Process::environment.globals["MP2C MONOMER A MP2 ENERGY"] -
+                       Process::environment.globals["MP2C MONOMER B MP2 ENERGY"];
+    double E_MP2C_int = 0.0;
 
     int n = 0;
     for (quad_->reset(); !quad_->isDone(); quad_->nextPoint() ) {
@@ -55,6 +61,7 @@ double SAPT_DFT::compute_energy()
     }
 
     E_DeltaMP2C = E_TDDFT - E_UCHF; 
+    E_MP2C_int = E_MP2_int + E_DeltaMP2C; 
 
     fprintf(outfile, "  ------------------------------------------------------------------------------\n");       
     fprintf(outfile, "   @ UCHF Dispersion Energy:  %18.12f [mH] %18.12f [kcal]\n", E_UCHF*1000.0, \
@@ -63,13 +70,26 @@ double SAPT_DFT::compute_energy()
         E_TDDFT*627.509);   
     fprintf(outfile, "   @ Delta MP2C Energy:       %18.12f [mH] %18.12f [kcal]\n", E_DeltaMP2C*1000.0, \
         E_DeltaMP2C*627.509);   
-    fprintf(outfile, "  ------------------------------------------------------------------------------\n");       
+    fprintf(outfile, "   @ MP20 Interaction Energy: %18.12f [mH] %18.12f [kcal]\n", E_MP2_int*1000.0, \
+        E_MP2_int*627.509);   
+    fprintf(outfile, "   @ MP2C Interaction Energy: %18.12f [mH] %18.12f [kcal]\n", E_MP2C_int*1000.0, \
+        E_MP2C_int*627.509);   
+    fprintf(outfile, "  ------------------------------------------------------------------------------\n\n");       
+
+    fprintf(outfile, "  --\"We're looking for a bug no one's ever seen before...some kinda smart bug.\"\n");
+    
     fflush(outfile); 
+
+    Process::environment.globals["MP2C UCHF ENERGY"] = E_UCHF; 
+    Process::environment.globals["MP2C TDDFT ENERGY"] = E_TDDFT; 
+    Process::environment.globals["MP2C DELTA MP2C ENERGY"] = E_DeltaMP2C; 
+    Process::environment.globals["MP2C MP2 ENERGY"] = E_MP2_int; 
+    Process::environment.globals["MP2C MP2C ENERGY"] = E_MP2C_int; 
  
-    return E_DeltaMP2C; 
+    return E_MP2C_int; 
 }
 
-void SAPT_DFT::form_quadrature()
+void MP2C::form_quadrature()
 {
     quad_ = shared_ptr<Quadrature>(new ChebyshevIIQuadrature(options_.get_int("OMEGA_POINTS"),
         options_.get_double("OMEGA_CENTER"))); 
@@ -79,7 +99,7 @@ void SAPT_DFT::form_quadrature()
     }
 }
 
-void SAPT_DFT::form_J()
+void MP2C::form_J()
 {
     int naux = ribasis_->nbf();
 
@@ -126,7 +146,7 @@ void SAPT_DFT::form_J()
     }
 }
 
-void SAPT_DFT::form_W()
+void MP2C::form_W()
 {
     int naux = ribasis_->nbf();
 
@@ -440,7 +460,7 @@ void SAPT_DFT::form_W()
     }
 }
 
-void SAPT_DFT::form_X0()
+void MP2C::form_X0()
 {
     int NA = ribasis_->nbf(); 
     int NB = ribasis_->nbf(); 
@@ -652,7 +672,7 @@ void SAPT_DFT::form_X0()
     LiaB.reset();
 }
 
-void SAPT_DFT::form_XC()
+void MP2C::form_XC()
 {
     int naux = ribasis_->nbf();
     int* piv = new int[naux];
@@ -689,7 +709,7 @@ void SAPT_DFT::form_XC()
         error |= C_DGETRI(naux,T1p[0],naux,piv,work,lwork);
 
         if (error != 0)
-            throw PSIEXCEPTION("SAPT_DFT::form_XC: LU inverse failed in Dyson Equation");
+            throw PSIEXCEPTION("MP2C::form_XC: LU inverse failed in Dyson Equation");
 
         if (debug_) 
             T1->print();
@@ -722,7 +742,7 @@ void SAPT_DFT::form_XC()
         error |= C_DGETRI(naux,T1p[0],naux,piv,work,lwork);
 
         if (error != 0)
-            throw PSIEXCEPTION("SAPT_DFT::form_XC: LU inverse failed in Dyson Equation");
+            throw PSIEXCEPTION("MP2C::form_XC: LU inverse failed in Dyson Equation");
 
         if (debug_) 
             T1->print();
@@ -738,7 +758,7 @@ void SAPT_DFT::form_XC()
     delete[] work;
 }
 
-std::vector<double> SAPT_DFT::casimirPolder()
+std::vector<double> MP2C::casimirPolder()
 {
     int naux = ribasis_->nbf(); 
 
@@ -760,12 +780,21 @@ std::vector<double> SAPT_DFT::casimirPolder()
     return E;
 }
 
-void SAPT_DFT::print_header()
+void MP2C::print_header()
 {
-  fprintf(outfile,"         SAPT-DFT  \n");
-  fprintf(outfile,"      Ed Hohenstein\n"); 
-  fprintf(outfile,"       Rob Parish\n") ;
-  fprintf(outfile,"     13 April 2011\n") ;
+  int nthread = 1;
+  #ifdef _OPENMP
+      nthread = omp_get_max_threads();
+  #endif
+
+  fprintf(outfile, "\n");
+  fprintf(outfile, "         ---------------------------------------------------------\n");
+  fprintf(outfile, "                                   MP2C\n");
+  fprintf(outfile, "                     by Rob Parrish, and Ed Hohenstein\n");
+  fprintf(outfile, "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
+  fprintf(outfile, "         ---------------------------------------------------------\n");
+  fprintf(outfile, "\n");
+
   fprintf(outfile,"\n");
   fprintf(outfile,"    Orbital Information\n");
   fprintf(outfile,"  -----------------------\n");
@@ -782,7 +811,7 @@ void SAPT_DFT::print_header()
   fflush(outfile);
 }
 
-void SAPT_DFT::print_results()
+void MP2C::print_results()
 {
 }
 

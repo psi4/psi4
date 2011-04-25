@@ -242,6 +242,85 @@ def run_dfcc(name, **kwargs):
     e_dfcc = PsiMod.dfcc()
     return e_dfcc
 
+def run_mp2c(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    monomerA = molecule.extract_subsets(1,2)
+    monomerA.set_name("monomerA")
+    monomerB = molecule.extract_subsets(2,1)
+    monomerB.set_name("monomerB")
+
+    ri = PsiMod.get_option('SCF_TYPE')
+    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+
+    PsiMod.IO.set_default_namespace("dimer")
+    PsiMod.set_local_option("SCF","SAPT","2-dimer")
+    PsiMod.print_out("\n")
+    banner('Dimer HF')
+    PsiMod.print_out("\n")
+    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    e_dimer = scf_helper('RHF',**kwargs)
+    PsiMod.print_out("\n")
+    banner('Dimer DFMP2')
+    PsiMod.print_out("\n")
+    e_dimer_mp2 = PsiMod.dfmp2()
+    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+
+    activate(monomerA)
+    if (ri == "DF"):
+        PsiMod.IO.change_file_namespace(97,"dimer","monomerA")
+    PsiMod.IO.set_default_namespace("monomerA")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_A")
+    PsiMod.print_out("\n")
+    banner('Monomer A HF')
+    PsiMod.print_out("\n")
+    e_monomerA = scf_helper('RHF',**kwargs)
+    PsiMod.print_out("\n")
+    banner('Monomer A DFMP2')
+    PsiMod.print_out("\n")
+    e_monomerA_mp2 = PsiMod.dfmp2()
+
+    activate(monomerB)
+    if (ri == "DF"):
+        PsiMod.IO.change_file_namespace(97,"monomerA","monomerB")
+    PsiMod.IO.set_default_namespace("monomerB")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_B")
+    PsiMod.print_out("\n")
+    banner('Monomer B HF')
+    PsiMod.print_out("\n")
+    e_monomerB = scf_helper('RHF',**kwargs)
+    PsiMod.print_out("\n")
+    banner('Monomer B DFMP2')
+    PsiMod.print_out("\n")
+    e_monomerB_mp2 = PsiMod.dfmp2()
+    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+
+    PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
+    PsiMod.IO.change_file_namespace(122,"monomerB","dimer")
+
+    activate(molecule)
+    PsiMod.IO.set_default_namespace("dimer")
+    PsiMod.set_local_option("SAPT","E_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","D_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","SAPT_LEVEL","MP2C")
+    PsiMod.print_out("\n")
+    banner("MP2C")
+    PsiMod.print_out("\n")
+
+    PsiMod.set_variable("MP2C DIMER MP2 ENERGY",e_dimer_mp2)
+    PsiMod.set_variable("MP2C MONOMER A MP2 ENERGY",e_monomerA_mp2)
+    PsiMod.set_variable("MP2C MONOMER B MP2 ENERGY",e_monomerB_mp2)
+    
+    e_sapt = PsiMod.sapt()
+    return e_sapt
+
 def run_sapt(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()

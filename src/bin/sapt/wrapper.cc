@@ -25,10 +25,13 @@ PsiReturnType sapt(Options & options)
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
     SAPT0 sapt(options, psio, chkpt);
     sapt.compute_energy();
-  } else if (options.get_str("SAPT_LEVEL") == "SAPT_DFT") {
-    SAPT_DFT sapt(options, psio, chkpt);
+  } else if (options.get_str("SAPT_LEVEL") == "MP2C") {
+    MP2C sapt(options, psio, chkpt);
     sapt.compute_energy();
+  } else {
+    throw PSIEXCEPTION("Unrecognized SAPT type");
   }
+
 
   // Shut down psi.
   timer_done();
