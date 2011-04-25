@@ -688,6 +688,12 @@ void MP2C::form_XC()
     T1->gemm(false,false,1.0,Jinv_,W_B_,0.0);
     W_B_->gemm(false,false,1.0,T1,Jinv_,0.0);
 
+    if (debug_) {
+        Jinv_->print();
+        W_A_->print();
+        W_B_->print();
+    }
+
     // ==> XC_A <== //
     for (int om = 0; om < X_A_.size(); om++) {
 

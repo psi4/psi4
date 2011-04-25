@@ -133,7 +133,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of Omega points for Casimir-Polder -*/
     options.add_int("OMEGA_POINTS",8);
     /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/
-    options.add_double("OMEGA_CENTER", 1.0);
+    options.add_double("OMEGA_CENTER", 0.4);
   }
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
