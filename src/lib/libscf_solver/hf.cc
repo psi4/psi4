@@ -673,7 +673,7 @@ void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::p
         fprintf(outfile, "\t%-70s\n\n\t", header);
         int count = 0;
         for (int i = 0; i < orbs.size(); i++) {
-            fprintf(outfile, "%4d%-4s%10.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
+            fprintf(outfile, "%4d%-4s%11.6f  ", orbs[i].second.second, orbs[i].second.first, orbs[i].first);
             if (count++ % 3 == 2 && count != orbs.size())
                 fprintf(outfile, "\n\t");
         }
@@ -1182,7 +1182,7 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
-    if (print_ & (Communicator::world->me() == 0))
+    if (Communicator::world->me() == 0) 
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     if (converged) {

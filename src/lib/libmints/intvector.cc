@@ -79,8 +79,10 @@ void IntVector::alloc() {
     
     vector_ = (int**)malloc(sizeof(int*) * nirrep_);
     for (int h=0; h<nirrep_; ++h) {
-        if (dimpi_[h])
+        if (dimpi_[h]) {
             vector_[h] = new int[dimpi_[h]];
+            memset(vector_[h], 0, dimpi_[h] * sizeof(int));
+        }
     }
 }
 
@@ -149,7 +151,7 @@ void IntVector::print(FILE *out) {
     for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
-            fprintf(out, "   %4d: %10.7d\n", i+1, vector_[h][i]);
+            fprintf(out, "   %4d: %10d\n", i+1, vector_[h][i]);
         fprintf(out, "\n");
     }
 }
@@ -236,7 +238,7 @@ void SimpleIntVector::set(int *vec) {
 
 void SimpleIntVector::print(FILE *out) {
     for (int i=0; i<dim_; ++i)
-        fprintf(out, "   %4d: %10.df\n", i+1, vector_[i]);
+        fprintf(out, "   %4d: %10d\n", i+1, vector_[i]);
     fprintf(out, "\n");
 }
 
