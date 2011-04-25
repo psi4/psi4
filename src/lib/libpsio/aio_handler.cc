@@ -27,6 +27,7 @@ boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 }
 void AIOHandler::synchronize()
 {
+    unique_lock<mutex> lock(locked_);
     thread_->join();
 }
 void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
@@ -42,7 +43,6 @@ void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size
   end_.push(end);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
@@ -60,7 +60,6 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
   end_.push(end);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
@@ -76,7 +75,6 @@ void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, UL
   size_.push(size);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
@@ -92,7 +90,6 @@ void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, U
   size_.push(size);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
@@ -113,7 +110,6 @@ void AIOHandler::read_discont(unsigned int unit, const char *key,
   start_.push(start);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
@@ -134,7 +130,6 @@ void AIOHandler::write_discont(unsigned int unit, const char *key,
   start_.push(start);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
@@ -151,7 +146,6 @@ void AIOHandler::zero_disk(unsigned int unit, const char *key,
   col_length_.push(cols);
 
   if (job_.size() > 1) return;
-  lock.unlock();
 
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
