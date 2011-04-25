@@ -9,7 +9,7 @@ class Quadrature;
 
 namespace sapt {
 
-class SAPT_DFT : public SAPT0 {
+class MP2C : public SAPT0 {
 
 private:
 
@@ -52,8 +52,8 @@ protected:
 
 
 public:
-    SAPT_DFT(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
-    virtual ~SAPT_DFT();
+    MP2C(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    virtual ~MP2C();
 
     virtual double compute_energy();
 };

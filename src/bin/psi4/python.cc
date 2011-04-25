@@ -446,6 +446,13 @@ double py_psi_get_variable(const std::string & key)
     return Process::environment.globals[uppercase_key];
 }
 
+void py_psi_set_variable(const std::string & key, double val)
+{
+    string uppercase_key = key;
+    transform(uppercase_key.begin(), uppercase_key.end(), uppercase_key.begin(), ::toupper);
+    Process::environment.globals[uppercase_key] = val;
+}
+
 void py_psi_set_memory(unsigned long int mem)
 {
     Process::environment.set_memory(mem);
@@ -541,7 +548,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_option", py_psi_get_option);
     def("get_global_option", py_psi_get_global_option);
 
-    def("get_variable", py_psi_get_variable);
+    def("set_variable", py_psi_set_variable);
+    def("set_variable", py_psi_set_variable);
     def("print_variables", py_psi_print_variable_map);
 
     def("add_user_basis_file", py_psi_add_user_specified_basis_file);

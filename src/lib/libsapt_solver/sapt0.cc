@@ -21,8 +21,6 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
   psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
 
-  print_header();
-
   check_memory();
 
   timer_on("DF Integrals       ");
@@ -50,6 +48,8 @@ SAPT0::~SAPT0()
 
 double SAPT0::compute_energy()
 {
+  print_header();
+
   timer_on("Elst10             ");
     elst10();
   timer_off("Elst10             ");
