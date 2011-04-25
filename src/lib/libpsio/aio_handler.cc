@@ -139,6 +139,23 @@ void AIOHandler::write_discont(unsigned int unit, const char *key,
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
+void AIOHandler::zero_disk(unsigned int unit, const char *key,
+    ULI rows, ULI cols)
+{
+  unique_lock<mutex> lock(locked_);
+
+  job_.push(7);
+  unit_.push(unit);
+  key_.push(key);
+  row_length_.push(rows);
+  col_length_.push(cols);
+
+  if (job_.size() > 1) return;
+  lock.unlock();
+
+  //thread start
+  thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
+}
 void AIOHandler::call_aio()
 {
   unique_lock<mutex> lock(locked_);
@@ -244,6 +261,30 @@ void AIOHandler::call_aio()
       col_length_.pop();
       col_skip_.pop();
       start_.pop();
+      lock.unlock();
+    }
+    else if (jobtype == 7) {
+
+      ULI rows = row_length_.front();
+      ULI cols = col_length_.front();
+
+      double* buf = new double[cols];
+      memset(static_cast<void*>(buf),'\0',cols*sizeof(double));
+
+      psio_address next_psio = PSIO_ZERO;
+      for (int i=0; i<rows; i++) {
+        psio_->write(unit_.front(),key_.front(),(char *) (buf),
+          sizeof(double)*cols,next_psio,&next_psio);
+      }
+
+      delete[] buf;
+
+      lock.lock();
+      job_.pop();
+      unit_.pop();
+      key_.pop();
+      row_length_.pop();
+      col_length_.pop();
       lock.unlock();
     }
     else {

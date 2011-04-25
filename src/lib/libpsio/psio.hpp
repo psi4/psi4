@@ -218,6 +218,19 @@ public:
     void read_entry(unsigned int unit, const char *key, char *buffer, ULI size);
     void write_entry(unsigned int unit, const char *key, char *buffer, ULI size);
 
+    /** Zeros out a double precision array in a PSI file.
+       ** Typically used before striping out a transposed array
+       **  Total fill size is rows*cols*sizeof(double)
+       **  Buffer memory of cols*sizeof(double) is used
+       ** 
+       **  \param unit    = The PSI unit number used to identify the file 
+       **  \param key     = The TOC keyword identifying the desired entry.
+       **  \param rows    = The number of rows in the full array      
+       **  \param cols    = The number of columnss in the full array      
+       **
+       */ 
+    void zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols);
+
     /** Central function for all reads and writes on a PSIO unit.
        **
        ** \params unit    = The PSI unit number.
@@ -381,6 +394,12 @@ public:
     /// Same as read_discont, but for writing
     void write_discont(unsigned int unit, const char *key, double **matrix, 
       ULI row_length, ULI col_length, ULI col_skip, psio_address start);
+
+    /// Zero disk
+    /// Fills a double precision disk entry with zeros
+    /// Total fill size is rows*cols*sizeof(double)
+    /// Buffer memory of cols*sizeof(double) is used
+    void zero_disk(unsigned int unit, const char* key, ULI rows, ULI cols);
 
     /// Generic function bound to thread internally
     void call_aio();

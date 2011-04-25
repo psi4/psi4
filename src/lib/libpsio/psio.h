@@ -44,6 +44,7 @@ namespace psi {
                       ULI start_blk, ULI end_blk);
   int psio_rw(unsigned int unit, char *buffer, psio_address address, ULI size,
               int wrt);
+  int psio_zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols);
   
   int psio_open_check(unsigned int unit);
   
