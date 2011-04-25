@@ -356,3 +356,169 @@ def basis_set_extrapolate(basis_name, **kwargs):
 bse = basis_set_extrapolate
 # Easily mistyped long-hand
 basis_set_extrapolation = basis_set_extrapolate
+
+
+#########################
+##  Start of Database  ##
+#########################
+
+def database_execute(e_name, db_name, **kwargs):
+
+    import input
+    #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
+    hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
+
+    # Define path and load module for requested database
+    sys.path.append('%sdatabases' % (os.environ.get('PSIDATADIR')))
+    try: 
+        database = __import__(db_name)
+    except ImportError: 
+        PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
+        raise Exception("Python module loading problem for database " + str(db_name))
+    else:
+        HRXN = database.HRXN
+        HSYS = database.HSYS
+        GEOS = database.GEOS
+        BIND = database.BIND
+        TAGL = database.TAGL
+        ACTV = database.ACTV
+        RXNM = database.RXNM
+
+    #yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
+    #no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
+
+    user_basis = PsiMod.get_option('BASIS')
+
+    # Deal with options particular to database calculations
+    # Option mode of operation- whether db run in one job or files farmed out
+    db_mode = 'continuous'
+    if(kwargs.has_key('mode')):
+        db_mode = kwargs['mode'];
+
+    if db_mode == 'sow':
+        raise Exception('Database mode %s not yet implemented.' % (db_mode))
+    elif db_mode == 'reap':
+        raise Exception('Database mode %s not yet implemented.' % (db_mode))
+    elif db_mode == 'continuous':
+        pass
+    else:
+        raise Exception('Database mode %s not valid.' % (db_mode))
+      
+    # Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
+    db_cp = 'no'  # make this a yes = re.compile statement
+    if(kwargs.has_key('cp')):
+        db_cp = kwargs['cp'];
+
+    if db_cp == 'yes':
+        raise Exception('Counterpoise correction mode %s not yet implemented.' % (db_cp))
+    elif db_cp == 'no':
+        pass
+    else:
+        raise Exception('Counterpoise correction mode %s not valid.' % (db_cp))
+
+    # Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
+    db_zpe = 'no'  # make this a yes = re.compile statement
+    if(kwargs.has_key('zpe')):
+        db_zpe = kwargs['zpe'];
+
+    if db_zpe == 'yes':
+        raise Exception('Zero-point-correction mode %s not yet implemented.' % (db_zpe))
+    elif db_zpe == 'no':
+        pass
+    else:
+        raise Exception('Zero-point-correction mode %s not valid.' % (db_zpe))
+
+    # Option subset- whether all of the database or just a portion is run
+    db_subset = HRXN 
+    if(kwargs.has_key('subset')):
+        db_subset = kwargs['subset'];
+
+    temp = []
+    for rxn in db_subset:
+        if rxn in HRXN:
+            temp.append(rxn)
+        else:
+            raise Exception('Subset element %s not a member of database %s.' % (str(rxn), db_name))
+    HRXN = temp
+
+    temp = []
+    for rxn in HRXN:
+        temp.append(ACTV['%s-%s' % (db_name, rxn)])
+    HSYS = sum(temp, [])
+
+    # Sow all the necessary reagent computations
+    ERGT = {}
+    ERXN = {}
+
+    PsiMod.print_out("\n")
+    banner(("Database %s Computation" % (db_name)))
+    PsiMod.print_out("\n")
+
+    for rgt in HSYS:
+
+        #print 'MOLECULE LIVES %s' % (rgt)
+        PsiMod.print_out("\n")
+        banner(("Database %s Computation:\nReagent %s" % (db_name, TAGL[rgt])))
+        PsiMod.print_out("\n")
+
+        exec GEOS[rgt]
+
+        PsiMod.set_global_option('BASIS', user_basis)
+        molecule = PsiMod.get_active_molecule()
+        if not molecule:
+            print "NO MOLECULE"
+            raise ValueNotSet("no molecule found")
+
+        elecenergy = energy(e_name, **kwargs)
+        #print elecenergy
+        ERGT[rgt] = elecenergy
+        PsiMod.clean()
+
+    # Reap all the necessary reaction computations
+    PsiMod.print_out("\n")
+    banner(("Database %s Results" % (db_name)))
+    PsiMod.print_out("\n")
+
+    table_delimit = '-' * 111
+    PsiMod.print_out('\n   %s\n' % (table_delimit))
+    PsiMod.print_out('%23s %19s %19s %19s %21s %8s\n' % ('REACTION', '(DIMER) REAGENT_A',
+        '(MONOA) REAGENT_B', '(MONOB) REAGENT_C', 'REACTION ENERGY', 'ERROR'))
+    PsiMod.print_out('%23s %19s %19s %19s %21s\n' % ('', '[H] WT', '[H] WT', '[H] WT', '[kcal/mol]  REF'))
+    PsiMod.print_out('   %s\n' % (table_delimit))
+
+    #print '\n   %s' % (table_delimit)
+    #print '%23s %19s %19s %19s %21s %8s' % ('REACTION', '(DIMER) REAGENT_A',
+    #    '(MONOA) REAGENT_B', '(MONOB) REAGENT_C', 'REACTION ENERGY', 'ERROR')
+    #print '%23s %19s %19s %19s %21s' % ('', '[H] WT', '[H] WT', '[H] WT', '[kcal/mol]  REF')
+    #print '   %s' % (table_delimit)
+    for rxn in HRXN:
+
+        db_rxn = db_name + '-' + str(rxn)
+
+        ERXN[db_rxn] = (ERGT[ACTV[db_rxn][0]] * RXNM[db_rxn][ACTV[db_rxn][0]] +
+                        ERGT[ACTV[db_rxn][1]] * RXNM[db_rxn][ACTV[db_rxn][1]] +
+                        ERGT[ACTV[db_rxn][2]] * RXNM[db_rxn][ACTV[db_rxn][2]]  )
+        
+        PsiMod.print_out('%23s %16.8f %2.0f %16.8f %2.0f %16.8f %2.0f     %8.4f %8.4f %8.4f\n' % (db_rxn,
+            ERGT[ACTV[db_rxn][0]], RXNM[db_rxn][ACTV[db_rxn][0]],
+            ERGT[ACTV[db_rxn][1]], RXNM[db_rxn][ACTV[db_rxn][1]],
+            ERGT[ACTV[db_rxn][2]], RXNM[db_rxn][ACTV[db_rxn][2]],
+            hartree2kcalmol*ERXN[db_rxn], BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn]-BIND[db_rxn]))
+        #print '%23s %16.8f %2.0f %16.8f %2.0f %16.8f %2.0f     %8.4f %8.4f %8.4f' % (db_rxn,
+            #ERGT[ACTV[db_rxn][0]], RXNM[db_rxn][ACTV[db_rxn][0]],
+            #ERGT[ACTV[db_rxn][1]], RXNM[db_rxn][ACTV[db_rxn][1]],
+            #ERGT[ACTV[db_rxn][2]], RXNM[db_rxn][ACTV[db_rxn][2]],
+            #hartree2kcalmol*ERXN[db_rxn], BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn]-BIND[db_rxn])
+
+    PsiMod.print_out('   %s\n\n' % (table_delimit))
+    #print '   %s\n' % (table_delimit)
+
+## Aliases  ##
+database = database_execute
+db = database_execute
+
+#######################
+##  End of Database  ##
+#######################
+
+

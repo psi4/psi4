@@ -274,7 +274,11 @@ def process_input(raw_input):
         psirc = fh.read()
         fh.close()
 
-    temp = imports + psirc + temp
+    blank_mol = 'geometry("""\n'
+    blank_mol += 'X\n'
+    blank_mol += '""","blank_molecule_psi4_yo")\n'
+    
+    temp = imports + psirc + blank_mol + temp
 
     return temp
 
