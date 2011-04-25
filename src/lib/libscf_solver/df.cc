@@ -1336,12 +1336,12 @@ void DFHFDiskIterator::read(boost::shared_ptr<Matrix> A, int start, int rows)
     psio_address addr = psio_get_address(PSIO_ZERO, sizeof(double)*start*ntri_);
 
     // Post the read
-    psio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
-    //aio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
+    //psio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
+    aio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
 }
 void DFHFDiskIterator::synchronize()
 {
-    //aio_->synchronize();
+    aio_->synchronize();
 }
 bool DFHFDiskIterator::finished()
 {
