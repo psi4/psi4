@@ -374,18 +374,22 @@ void DFHF::initialize_JK_disk()
     shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     // Dispatch the prestripe
+    timer_on("(Q|mn) Prestripe");
     aio->zero_disk(PSIF_DFSCF_BJ,"(Q|mn) Integrals",naux,ntri);
     
     // Form the J symmetric inverse
+    timer_on("(Q|A)^-1/2");
     if (options_.get_str("FITTING_TYPE") == "EIG") {
         Jinv_->form_eig_inverse();
     } else {
         throw PSIEXCEPTION("Fitting Metric type is not implemented.");
     }
     double** Jinvp = Jinv_->get_metric()->pointer();
+    timer_off("(Q|A)^-1/2");
 
     // Synch up
     aio->synchronize();
+    timer_off("(Q|mn) Prestripe");
 
     // ==> Thread setup <== //
     int nthread = 1;
@@ -414,6 +418,7 @@ void DFHF::initialize_JK_disk()
         int mn_col_val = mn_col_b[block]; 
     
         // ==> (A|mn) integrals <== //
+        timer_on("(A|mn)");
         #pragma omp parallel for schedule(guided) num_threads(nthread)
         for (int MUNU = MN_start_val; MUNU < MN_start_val + MN_col_val; MUNU++) {
 
@@ -447,8 +452,10 @@ void DFHF::initialize_JK_disk()
                 }
             }
         }
+        timer_off("(A|mn)");
 
         // ==> (Q|mn) fitting <== //
+        timer_on("(Q|mn)");
         for (int mn = 0; mn < mn_col_val; mn+=naux) {
             int cols = naux;
             if (mn + naux >= mn_col_val)
@@ -459,13 +466,16 @@ void DFHF::initialize_JK_disk()
 
             C_DGEMM('N','N',naux,cols,naux,1.0,Jinvp[0],naux,Amnp[0],naux,0.0,&Qmnp[0][mn],max_cols);
         }
+        timer_off("(Q|mn)");
 
         // ==> Disk striping <== //
         psio_address addr;
+        timer_on("(Q|mn) Write");
         for (int Q = 0; Q < naux; Q++) {
             addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + mn_start_val)*sizeof(double));
             psio_->write(PSIF_DFSCF_BJ,"(Q|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
         }
+        timer_off("(Q|mn) Write");
     }
 
     // ==> Close out <== //
