@@ -28,6 +28,7 @@ boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 void AIOHandler::synchronize()
 {
     unique_lock<mutex> lock(locked_);
+    lock.unlock();
     thread_->join();
 }
 void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
