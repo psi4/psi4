@@ -7,6 +7,8 @@ namespace psi { namespace sapt {
 SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
     : SAPT(options, psio, chkpt)
 {
+  print_header();
+
   maxiter_ = options_.get_int("MAXITER");
   e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
   d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
@@ -48,8 +50,6 @@ SAPT0::~SAPT0()
 
 double SAPT0::compute_energy()
 {
-  print_header();
-
   timer_on("Elst10             ");
     elst10();
   timer_off("Elst10             ");
