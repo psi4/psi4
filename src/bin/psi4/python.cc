@@ -548,7 +548,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_option", py_psi_get_option);
     def("get_global_option", py_psi_get_global_option);
 
-    def("set_variable", py_psi_set_variable);
+    def("get_variable", py_psi_get_variable);
     def("set_variable", py_psi_set_variable);
     def("print_variables", py_psi_print_variable_map);
 
