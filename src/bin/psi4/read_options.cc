@@ -84,6 +84,110 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- number of important CC amps per ex lvl to print -*/
     options.add_int("CC_NPRINT",10);
 
+    /*- How to average H diag energies over spin coupling sets.
+      HD_EXACT uses the exact diagonal energies which results in expansion
+      vectors which break spin symmetry. HD_KAVE averages the diagonal
+      energies over a spin-coupling set yielding spin pure expansion vectors.
+      ORB_ENER employs the sum of orbital energy approximation giving
+      spin pure expansion vectors but usually doubles the number of Davidson
+      iterations. EVANGELISTI uses the sums and differences of orbital
+      energies with the SCF reference energy to produce spin pure expansion
+      vectors. LEININGER approximation which subtracts the one-electron
+      contribution from the orbital energies, multiplies by 0.5, and adds
+      the one-electron contribution back in, producing spin pure expansion
+      vectors and developed by Matt Leininger and works as well as 
+      EVANGELISTI. -*/
+    options.add_str("HD_AVE", "EVANGELISTI", 
+      "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
+
+    /*- If TRUE the diagonal elements of the Hamiltonian matrix are
+      computed on-the-fly, otherwise a diagonal element vector is written 
+      to a separate file on disk. -*/
+    options.add_bool("HD_OTF",true);
+
+    /*- If TRUE, use the last vector space in the BVEC file to write 
+      scratch DVEC rather than using a separate DVEC file. (Only
+      possible if NUM_ROOTS = 1). -*/
+    options.add_bool("NODFILE",false);
+    
+    /*- Freeze core orbitals? -*/
+    // CDS: Need to make DETCI compatible with normal FREEZE_CORE
+    options.add_bool("DETCI_FREEZE_CORE",true);
+
+    /*- Store strings specifically for FCI? -*/
+    // this should default to TRUE if it is a FCI
+    options.add_bool("FCI_STRINGS",false);
+
+    /*- This determines whether `mixed' RAS II/RAS III excitations are
+      allowed into the CI space.  This is useful for placing additional 
+      constraints on a RAS CI. -*/
+    options.add_bool("MIXED",true);
+
+    /*- This determines whether `mixed' excitations involving RAS IV are
+      allowed into the CI space.  This is useful for placing additional 
+      constraints on a RAS CI. -*/
+    options.add_bool("MIXED4",true);
+
+    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in 
+      RAS IV, then the holes in RAS I must equal the particles in RAS III 
+      + RAS IV else the string is discarded -*/
+    options.add_bool("R4S",false);
+
+    /*- Tells DETCI whether or not to do string replacements on the fly.  Can
+      save a gigantic amount of memory (especially for truncated CI's) but
+      is somewhat flaky and hasn't been tested for a while.  It may work
+      only works for certain classes of RAS calculations.  The current
+      code is very slow with this option turned on. -*/
+    options.add_bool("REPL_OTF",false);
+
+    /*- If TRUE, calculate the value of <S^2> for each root -*/
+    options.add_bool("CALC_SSQ",false);
+
+    /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
+    options.add_bool("SAVE_MPN2",false);
+
+    /*- If TRUE, an orthonormal vector space is employed rather than 
+      storing the kth order wfn -*/
+    options.add_bool("MPN_SCHMIDT",false);
+
+    /*- Use Wigner formulas in the Empn series? -*/
+    options.add_bool("WIGNER",false);
+
+    /*- z in H = H0 + z * H1 -*/
+    options.add_double("PERTURBATION_PARAMETER",1.0);
+
+    /*- maximum number of alpha electrons in RAS III -*/
+    options.add_int("A_RAS3_MAX",-1);
+
+    /*- maximum number of beta electrons in RAS III -*/
+    options.add_int("B_RAS3_MAX",-1);
+
+    /*- maximum number of alpha electrons in RAS III, for CC -*/
+    options.add_int("CC_A_RAS3_MAX",-1);
+
+    /*- maximum number of beta electrons in RAS III, for CC -*/
+    options.add_int("CC_B_RAS3_MAX",-1);
+
+    /*- maximum number of electrons in RAS III -*/
+    options.add_int("RAS3_MAX",-1);
+
+    /*- maximum number of electrons in RAS III, for CC -*/
+    options.add_int("CC_RAS3_MAX",-1);
+
+    /*- maximum number of electrons in RAS IV -*/
+    options.add_int("RAS4_MAX",-1);
+
+    /*- maximum number of electrons in RAS IV, for CC -*/
+    options.add_int("CC_RAS4_MAX",-1);
+
+    /*- maximum number of electrons in RAS III + IV -*/
+    options.add_int("RAS34_MAX",-1);
+
+    /*- maximum number of electrons in RAS III + IV, for CC -*/
+    options.add_int("CC_RAS34_MAX",-1);
+
+
+
     /*- E converge value -*/
     //options.add_int("E_CONVERGE",10);
     /*- D converge value -*/

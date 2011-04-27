@@ -378,7 +378,8 @@ struct params {
    int h0guess_size; /* size of H0 block for initial guess */
    int h0block_coupling_size; /* size of coupling block in preconditioner */
    int h0block_coupling; /* 1 if true; 0 otherwise */
-   int hd_ave;       /* 1 if average H diag energies over spin coupling sets */
+   int hd_ave;       /* how to average H diag energies over spin coupling
+                        sets */
    int hd_otf;       /* 1 if diag energies computed on the fly 0 otherwise */
    int nodfile;      /* 1 if no dfile used 0 otherwise works for nroots=1 */
    int nprint;       /* number of important determinants to print out */

@@ -160,20 +160,20 @@ X  Parameters.tei_file = PSIF_MO_TEI;
 *  Parameters.h0block_coupling_size = 0;
 *  Parameters.nprint = 20;
 *  Parameters.cc_nprint = 10;
-   Parameters.hd_ave = EVANGELISTI;
-   Parameters.hd_otf = TRUE;
-   Parameters.nodfile = 0;
-   Parameters.fzc = 1;
+*  Parameters.hd_ave = EVANGELISTI;
+*  Parameters.hd_otf = TRUE;
+*  Parameters.nodfile = 0;
+*  Parameters.fzc = 1;
    if (strcmp(Parameters.wfn, "CASSCF")==0)
      Parameters.fci = 1;
    else
      Parameters.fci = 0;
-   Parameters.fci_strings = 0;
-   Parameters.mixed = 1;
-   Parameters.mixed4 = 1;
-   Parameters.r4s = 0;
-   Parameters.repl_otf = 0;
-   Parameters.calc_ssq = 0;
+*  Parameters.fci_strings = 0;
+*  Parameters.mixed = 1;
+*  Parameters.mixed4 = 1;
+*  Parameters.r4s = 0;
+*  Parameters.repl_otf = 0;
+*  Parameters.calc_ssq = 0;
    if (strcmp(Parameters.wfn, "ZAPTN")==0) {
      Parameters.mpn = 1;
      Parameters.zaptn = 1;
@@ -181,30 +181,30 @@ X  Parameters.tei_file = PSIF_MO_TEI;
      Parameters.mpn = 0;
      Parameters.zaptn = 0;
    }
-   Parameters.save_mpn2 = 0;
-   Parameters.mpn_schmidt = 0;
-   Parameters.wigner = 0;
-   Parameters.perturbation_parameter = 1.0;
-   Parameters.z_scale_H = 0;
+*  Parameters.save_mpn2 = 0;
+*  Parameters.mpn_schmidt = 0;
+*  Parameters.wigner = 0;
+*  Parameters.perturbation_parameter = 1.0;
+I  Parameters.z_scale_H = 0;
 
-   Parameters.ras1_lvl = -1;
-   Parameters.ras1_min = -1;
-   Parameters.a_ras1_lvl = -1;
-   Parameters.a_ras1_min = -1;
-   Parameters.b_ras1_lvl = -1;
-   Parameters.b_ras1_min = -1;
-   Parameters.a_ras3_max = -1;
-   Parameters.b_ras3_max = -1;
-   Parameters.cc_a_ras3_max = -1;
-   Parameters.cc_b_ras3_max = -1;
-   Parameters.ras3_lvl = -1;
-   Parameters.ras3_max = -1;
-   Parameters.cc_ras3_max = -1;
-   Parameters.ras4_lvl = -1;
-   Parameters.ras4_max = -1;
-   Parameters.cc_ras4_max = -1;
-   Parameters.ras34_max = -1;
-   Parameters.cc_ras34_max = -1;
+I  Parameters.ras1_lvl = -1;
+I  Parameters.ras1_min = -1;
+I  Parameters.a_ras1_lvl = -1;
+I  Parameters.a_ras1_min = -1;
+I  Parameters.b_ras1_lvl = -1;
+I  Parameters.b_ras1_min = -1;
+*  Parameters.a_ras3_max = -1;
+*  Parameters.b_ras3_max = -1;
+*  Parameters.cc_a_ras3_max = -1;
+*  Parameters.cc_b_ras3_max = -1;
+I  Parameters.ras3_lvl = -1;
+*  Parameters.ras3_max = -1;
+*  Parameters.cc_ras3_max = -1;
+I  Parameters.ras4_lvl = -1;
+*  Parameters.ras4_max = -1;
+*  Parameters.cc_ras4_max = -1;
+*  Parameters.ras34_max = -1;
+*  Parameters.cc_ras34_max = -1;
 
    if (strcmp(Parameters.wfn, "DETCAS")==0 ||
        strcmp(Parameters.wfn, "CASSCF")==0 ||
