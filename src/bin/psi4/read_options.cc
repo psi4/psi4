@@ -37,7 +37,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DERTYPE", "NONE", "NONE FIRST");
 
     /*- Wavefunction type -*/
-    options.add_str("WFN", "CI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
+    options.add_str("WFN", "CI", "" /*"DETCI CI ZAPTN DETCAS CASSCF RASSCF"*/);
 
     /*- The CI excitation level -*/
     options.add_int("EX_LVL", 2);
@@ -88,7 +88,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     //options.add_int("E_CONVERGE",10);
     /*- D converge value -*/
     //options.add_int("D_CONVERGE",8);
-  
+
   }
 
   if (name == "SAPT"|| options.read_globals()) {
