@@ -587,10 +587,15 @@ public:
     /// @}
 
     /// @{
-    /// Diagonalize this places eigvectors and eigvalues must be created by caller.
+    /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz = 1);
     void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz = 1);
     void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, int nMatz = 1);
+    /// @}
+
+    /// @{
+    /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.
+    void diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz = 1);
     /// @}
 
     /*! Computes the Cholesky factorization of a real symmetric

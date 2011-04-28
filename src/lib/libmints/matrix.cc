@@ -1028,6 +1028,38 @@ void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalue
     diagonalize(eigvectors.get(), &eigvalues, nMatz);
 }
 
+void Matrix::diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::diagonalize: Matrix non-totally symmetric.");
+    }
+
+    for (int h=0; h<nirrep_; ++h) {
+        if (!rowspi_[h] && !colspi_[h])
+            continue;
+
+        int lwork = 3*rowspi_[h];
+        double *work = new double[lwork];
+
+        int err = C_DSYGV(1, 'V', 'U', rowspi_[h], matrix_[h][0], rowspi_[h], metric->matrix_[h][0], rowspi_[h],
+                          eigvalues->pointer(h), work, lwork);
+        delete[] work;
+
+        if (err != 0) {
+            if (err < 0) {
+                fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: argument %d has invalid parameter.\n", -err);
+                fflush(outfile);
+                abort();
+            }
+            if (err > 0) {
+                fprintf(outfile, "Matrix::diagonalize with metric: C_DSYGV: error value: %d\n", err);
+                fflush(outfile);
+                abort();
+            }
+        }
+    }
+}
+
 void Matrix::cholesky_factorize()
 {
     if (symmetry_) {
