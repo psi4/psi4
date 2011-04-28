@@ -1005,7 +1005,7 @@ double Matrix::vector_dot(const boost::shared_ptr<Matrix>& rhs)
     return vector_dot(rhs.get());
 }
 
-void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz)
+void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix is non-totally symmetric.");
@@ -1013,37 +1013,44 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz)
     int h;
     for (h=0; h<nirrep_; ++h) {
         if (rowspi_[h]) {
-            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], nMatz, eigvectors->matrix_[h], 1.0e-14);
+            sq_rsp(rowspi_[h], colspi_[h], matrix_[h], eigvalues->vector_[h], static_cast<int>(nMatz), eigvectors->matrix_[h], 1.0e-14);
         }
     }
 }
 
-void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz)
+void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
 {
     diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
 
-void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, int nMatz)
+void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz)
 {
     diagonalize(eigvectors.get(), &eigvalues, nMatz);
 }
 
-void Matrix::diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz)
+void Matrix::diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix non-totally symmetric.");
     }
 
+    // this and metric are destroyed in the process, so let's make a copy
+    // that we work with.
+    Matrix t(*this);
+    Matrix m(metric);
+
+    int lwork = max_nrow();
+    double *work = new double[lwork];
+
     for (int h=0; h<nirrep_; ++h) {
         if (!rowspi_[h] && !colspi_[h])
             continue;
 
-        int lwork = 3*rowspi_[h];
-        double *work = new double[lwork];
-
-        int err = C_DSYGV(1, 'V', 'U', rowspi_[h], matrix_[h][0], rowspi_[h], metric->matrix_[h][0], rowspi_[h],
-                          eigvalues->pointer(h), work, lwork);
-        delete[] work;
+        int err = C_DSYGV(1, 'V', 'U',
+                          rowspi_[h], t.matrix_[h][0],
+                          rowspi_[h], m.matrix_[h][0],
+                          rowspi_[h], eigvalues->pointer(h),
+                          work, lwork);
 
         if (err != 0) {
             if (err < 0) {
@@ -1057,7 +1064,20 @@ void Matrix::diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Ma
                 abort();
             }
         }
+
+        // TODO: Sort the data according to eigenvalues.
     }
+    delete[] work;
+}
+
+void Matrix::swap_rows(int h, int i, int j)
+{
+    C_DSWAP(colspi_[h], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);
+}
+
+void Matrix::swap_columns(int h, int i, int j)
+{
+    C_DSWAP(rowspi_[h], &(matrix_[h][0][i]), colspi_[h], &(matrix_[h][0][j]), colspi_[h]);
 }
 
 void Matrix::cholesky_factorize()
