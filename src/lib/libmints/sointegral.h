@@ -152,8 +152,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     timer_on("TwoBodySOInt::compute_shell overall");
 #endif
 
-//    fprintf(outfile, "computing shell (%d %d %d %d)\n", ish, jsh, ksh, lsh);
-
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell setup");
 #endif // MINTS_TIMER
@@ -175,25 +173,11 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     int nao3 = b3_->naofunction(ksh);
     int nao4 = b4_->naofunction(lsh);
 
-//    fprintf(outfile, "nao1 = %d nao2 = %d nao3 = %d nao4 = %d\n", nao1, nao2, nao3, nao4);
-
-//    memset(buffer_, 0, size_*sizeof(double));
-    int irrepoff[8];
-
-    irrepoff[0] = 0;
-    for (int h=1; h<b1_->nirrep(); ++h) {
-        irrepoff[h] = irrepoff[h-1] + b1_->nfunction_in_irrep(h-1);
-    }
-
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell zero buffer");
 #endif // MINTS_TIMER
 
     memset(buffer_, 0, nso1*nso2*nso3*nso4*sizeof(double));
-
-//    for (size_t i=0; i<size_; ++i) {
-//        buffer_[i] = 0.0;
-//    }
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell zero buffer");
@@ -223,19 +207,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                     tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell AO eri overhead");
-#endif // MINTS_TIMER
-
-//                    fprintf(outfile, "ao: (%d %d %d %d)\n", s1.aoshell, s2.aoshell,
-//                            s3.aoshell, s4.aoshell);
-
-//                    for (int z=0; z < INT_NPURE(tb_->basis1()->shell(s1.aoshell)->am()) *
-//                                      INT_NPURE(tb_->basis2()->shell(s2.aoshell)->am()) *
-//                                      INT_NPURE(tb_->basis3()->shell(s3.aoshell)->am()) *
-//                                      INT_NPURE(tb_->basis4()->shell(s4.aoshell)->am()); ++z) {
-//                        fprintf(outfile, "raw: %d -> %8.5f\n", z, aobuff[z]);
-//                    }
-
-#ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell AO->SO transform");
 #endif // MINTS_TIMER
 
@@ -248,8 +219,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                                 + ifunc.sofunc;
                         int iaooff = iaofunc;
                         int isooff = isofunc;
-//                        int irel = b1_->function_within_irrep(ish, isofunc);
-//                        int iabs = irrepoff[ifunc.irrep] + irel;
 
                         for (int jtr=0; jtr<s2.nfunc; jtr++) {
                             const SOTransformFunction &jfunc = s2.func[jtr];
@@ -260,8 +229,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                                     + jfunc.sofunc;
                             int jaooff = iaooff*nao2 + jaofunc;
                             int jsooff = isooff*nso2 + jsofunc;
-//                            int jrel = b2_->function_within_irrep(jsh, jsofunc);
-//                            int jabs = irrepoff[jfunc.irrep] + jrel;
 
                             for (int ktr=0; ktr<s3.nfunc; ktr++) {
                                 const SOTransformFunction &kfunc = s3.func[ktr];
@@ -272,8 +239,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                                         + kfunc.sofunc;
                                 int kaooff = jaooff*nao3 + kaofunc;
                                 int ksooff = jsooff*nso3 + ksofunc;
-//                                int krel = b3_->function_within_irrep(ksh, ksofunc);
-//                                int kabs = irrepoff[kfunc.irrep] + krel;
 
                                 for (int ltr=0; ltr<s4.nfunc; ltr++) {
                                     const SOTransformFunction &lfunc = s4.func[ltr];
@@ -284,8 +249,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                                             + lfunc.sofunc;
                                     int laooff = kaooff*nao4 + laofunc;
                                     int lsooff = ksooff*nso4 + lsofunc;
-//                                    int lrel = b4_->function_within_irrep(lsh, lsofunc);
-//                                    int labs = irrepoff[lfunc.irrep] + lrel;
 
                                     // If you're doing the two-stage SO integral uncomment the next line
                                     buffer_[lsooff] += lcoef * aobuff[laooff];

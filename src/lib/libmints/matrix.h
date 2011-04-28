@@ -74,6 +74,12 @@ protected:
     void print_mat(const double *const *const a, int m, int n, FILE *out) const;
 
 public:
+
+    enum DiagonalizeOrder {
+        Ascending = 1,
+        Descending = 3
+    };
+
     /// Default constructor, zeros everything out
     Matrix();
     /**
@@ -460,6 +466,24 @@ public:
         return cols;
     }
 
+    /// Returns the row size of the largest block.
+    int max_nrow() const {
+        int row = 0;
+        for (int h=0; h<nirrep(); ++h)
+            if (row < rowdim(h))
+                row = rowdim(h);
+        return row;
+    }
+
+    /// Returns the column size of the largest block.
+    int max_ncol() const {
+        int col = 0;
+        for (int h=0; h<nirrep(); ++h)
+            if (col < coldim(h))
+                col = coldim(h);
+        return col;
+    }
+
     /**
      * Returns the overall symmetry of the matrix.
      * For a totally-symmetric matrix this will be 0.
@@ -588,14 +612,14 @@ public:
 
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
-    void diagonalize(Matrix* eigvectors, Vector* eigvalues, int nMatz = 1);
-    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz = 1);
-    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, int nMatz = 1);
+    void diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz = Ascending);
     /// @}
 
     /// @{
     /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.
-    void diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, int nMatz = 1);
+    void diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
     /// @}
 
     /*! Computes the Cholesky factorization of a real symmetric
@@ -638,6 +662,11 @@ public:
     *   be used here)
     */
     void exp();
+
+    /// Swap rows i and j
+    void swap_rows(int h, int i, int j);
+    /// Swap cols i and j
+    void swap_columns(int h, int i, int j);
 
     /*! Copy lower triangle to upper triangle */
     void copy_lower_to_upper();
