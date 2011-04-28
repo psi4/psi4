@@ -402,25 +402,24 @@ void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > 
             int nj = bs2_->shell(j)->nfunction();
             int center_j3 = 3*bs2_->shell(j)->ncenter();
 
-            // Compute the shell
-            compute_shell_deriv1(i, j);
+            if (center_i3 != center_j3) {
+                // Compute the shell
+                compute_shell_deriv1(i, j);
 
-//            fprintf(outfile, "i %d j %d\n", i, j);
+                //            fprintf(outfile, "i %d j %d\n", i, j);
 
-            // Center i
-            location = buffer_;
-            for (int r=0; r<3; ++r) {
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-//                        fprintf(outfile, "i %d: r %d p %d q %d value %lf\n", center_i3, r, p, q, *location);
-                        result[center_i3+r]->add(i_offset+p, j_offset+q, *location);
-                        location++;
+                // Center i
+                location = buffer_;
+                for (int r=0; r<3; ++r) {
+                    for (int p=0; p<ni; ++p) {
+                        for (int q=0; q<nj; ++q) {
+                            //                        fprintf(outfile, "i %d: r %d p %d q %d value %lf\n", center_i3, r, p, q, *location);
+                            result[center_i3+r]->add(i_offset+p, j_offset+q, *location);
+                            location++;
+                        }
                     }
                 }
-            }
 
-            // Center j -- only if center i != center j
-            if (center_i3 != center_j3) {
                 for (int r=0; r<3; ++r) {
                     for (int p=0; p<ni; ++p) {
                         for (int q=0; q<nj; ++q) {
@@ -431,7 +430,6 @@ void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > 
                     }
                 }
             }
-
             j_offset += nj;
         }
         i_offset += ni;
