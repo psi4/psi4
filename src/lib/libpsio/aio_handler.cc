@@ -156,15 +156,20 @@ void AIOHandler::call_aio()
   unique_lock<mutex> lock(locked_);
 
   while (job_.size() > 0) {
-    lock.unlock();
     int jobtype = job_.front();
+    lock.unlock();
 
     if (jobtype == 1) { 
 
-      psio_->read(unit_.front(),key_.front(),buffer_.front(),size_.front(),
-        start_.front(),end_.front());
-
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      char* buffer = buffer_.front();
+      ULI size = size_.front();
+      psio_address start = start_.front();
+      psio_address* end = end_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
@@ -172,13 +177,22 @@ void AIOHandler::call_aio()
       size_.pop();
       start_.pop();
       end_.pop();
+
       lock.unlock();
+
+      psio_->read(unit,key,buffer,size,start,end);
     }
     else if (jobtype == 2) {
-      psio_->write(unit_.front(),key_.front(),buffer_.front(),size_.front(),
-        start_.front(),end_.front());
 
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      char* buffer = buffer_.front();
+      ULI size = size_.front();
+      psio_address start = start_.front();
+      psio_address* end = end_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
@@ -186,45 +200,61 @@ void AIOHandler::call_aio()
       size_.pop();
       start_.pop();
       end_.pop();
+
       lock.unlock();
+
+      psio_->write(unit,key,buffer,size,start,end);
     }
     else if (jobtype == 3) {
-      psio_->read_entry(unit_.front(),key_.front(),buffer_.front(),
-        size_.front());
 
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      char* buffer = buffer_.front();
+      ULI size = size_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
       buffer_.pop();
       size_.pop();
+
       lock.unlock();
+
+      psio_->read_entry(unit,key,buffer,size);
     }
     else if (jobtype == 4) {
-      psio_->write_entry(unit_.front(),key_.front(),buffer_.front(),
-        size_.front());
 
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      char* buffer = buffer_.front();
+      ULI size = size_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
-      buffer_.pop();
+      buffer_.pop(); 
       size_.pop();
+
       lock.unlock();
+
+      psio_->write_entry(unit,key,buffer,size);
     }
     else if (jobtype == 5) {
 
-      double **A = matrix_.front();
-
-      psio_address next_psio = start_.front();
-      for (int i=0; i<row_length_.front(); i++) {
-        psio_->read(unit_.front(),key_.front(),(char *) &(A[i][0]),
-          sizeof(double)*col_length_.front(),next_psio,&next_psio);
-        next_psio = psio_get_address(next_psio,sizeof(double)*
-          col_skip_.front());
-      }
-
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      double** matrix = matrix_.front();
+      ULI row_length = row_length_.front();
+      ULI col_length = col_length_.front();
+      ULI col_skip = col_skip_.front();
+      psio_address start = start_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
@@ -233,21 +263,27 @@ void AIOHandler::call_aio()
       col_length_.pop();
       col_skip_.pop();
       start_.pop();
+
       lock.unlock();
+
+      for (int i=0; i<row_length; i++) {
+        psio_->read(unit,key,(char *) &(matrix[i][0]),
+          sizeof(double)*col_length,start,&start);
+        start = psio_get_address(start,sizeof(double)*col_skip);
+      }
     }
     else if (jobtype == 6) {
 
-      double **A = matrix_.front();
-
-      psio_address next_psio = start_.front();
-      for (int i=0; i<row_length_.front(); i++) {
-        psio_->write(unit_.front(),key_.front(),(char *) &(A[i][0]),
-          sizeof(double)*col_length_.front(),next_psio,&next_psio);
-        next_psio = psio_get_address(next_psio,sizeof(double)*
-          col_skip_.front());
-      }
-
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      double** matrix = matrix_.front();
+      ULI row_length = row_length_.front();
+      ULI col_length = col_length_.front();
+      ULI col_skip = col_skip_.front();
+      psio_address start = start_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
@@ -256,31 +292,42 @@ void AIOHandler::call_aio()
       col_length_.pop();
       col_skip_.pop();
       start_.pop();
+
       lock.unlock();
+
+      for (int i=0; i<row_length; i++) {
+        psio_->write(unit,key,(char *) &(matrix[i][0]),
+          sizeof(double)*col_length,start,&start);
+        start = psio_get_address(start,sizeof(double)*col_skip);
+      }
     }
     else if (jobtype == 7) {
 
-      ULI rows = row_length_.front();
-      ULI cols = col_length_.front();
-
-      double* buf = new double[cols];
-      memset(static_cast<void*>(buf),'\0',cols*sizeof(double));
-
-      psio_address next_psio = PSIO_ZERO;
-      for (int i=0; i<rows; i++) {
-        psio_->write(unit_.front(),key_.front(),(char *) (buf),
-          sizeof(double)*cols,next_psio,&next_psio);
-      }
-
-      delete[] buf;
-
       lock.lock();
+
+      unsigned int unit = unit_.front();
+      const char* key = key_.front();
+      ULI row_length = row_length_.front();
+      ULI col_length = col_length_.front();
+
       job_.pop();
       unit_.pop();
       key_.pop();
       row_length_.pop();
       col_length_.pop();
+
       lock.unlock();
+
+      double* buf = new double[col_length];
+      memset(static_cast<void*>(buf),'\0',col_length*sizeof(double));
+
+      psio_address next_psio = PSIO_ZERO;
+      for (int i=0; i<row_length; i++) {
+        psio_->write(unit,key,(char *) (buf),sizeof(double)*col_length,
+          next_psio,&next_psio);
+      }
+
+      delete[] buf;
     }
     else {
       throw PsiException("Error in AIO: Unknown job type", __FILE__,__LINE__);
