@@ -342,10 +342,10 @@ void SAPT0::exch_disp20_n4()
 
     for (int i=0; i<nvec_; i++) {
 
-      C_DCOPY(B_ARBS_iter.block_size[j]*aoccA_*nvirA_,B_p_AR.B_p_[0],1,
-        T_p_AR[0],1);
-      C_DCOPY(B_ARBS_iter.block_size[j]*aoccB_*nvirB_,B_p_BS.B_p_[0],1,
-        T_p_BS[0],1);
+      C_DCOPY((long int) B_ARBS_iter.block_size[j]*aoccA_*nvirA_,
+        B_p_AR.B_p_[0],1,T_p_AR[0],1);
+      C_DCOPY((long int) B_ARBS_iter.block_size[j]*aoccB_*nvirB_,
+        B_p_BS.B_p_[0],1,T_p_BS[0],1);
 
 #pragma omp parallel
 {
@@ -559,8 +559,8 @@ void SAPT0::theta_ar()
 
       for (int i=0; i<nvec_; i++) {
 
-        C_DCOPY(C_BS_iter.block_size[k]*aoccB_*nvirB_,C_p_BS.B_p_[0],1,
-          T_p_BS[0],1);
+        C_DCOPY((long int) C_BS_iter.block_size[k]*aoccB_*nvirB_,
+          C_p_BS.B_p_[0],1,T_p_BS[0],1);
 
 #pragma omp parallel
 {
@@ -648,7 +648,7 @@ void SAPT0::theta_ar()
 
     for (int i=0; i<nvec_; i++) {
 
-      C_DCOPY(ndf_*length*nvirA_,B_AR[0],1,L_AR[0],1);
+      C_DCOPY((long int) ndf_*length*nvirA_,B_AR[0],1,L_AR[0],1);
 
 #pragma omp parallel
 {
@@ -666,7 +666,7 @@ void SAPT0::theta_ar()
     for (int P=0; P<ndf_+3; P++) {
       next_T_AR = psio_get_address(PSIO_ZERO,sizeof(double)*P*aoccA_*nvirA_
         +sizeof(double)*amin*nvirA_);
-      C_DCOPY(length*nvirA_,&(T_AR[0][P]),ndf_+3,temp,1);
+      C_DCOPY((long int) length*nvirA_,&(T_AR[0][P]),ndf_+3,temp,1);
       psio_->write(PSIF_SAPT_TEMP,"Theta AR Intermediate",(char *)
         &(temp[0]),sizeof(double)*length*nvirA_,next_T_AR,&next_T_AR);
     }
@@ -708,8 +708,8 @@ void SAPT0::theta_bs()
 
       for (int i=0; i<nvec_; i++) {
 
-        C_DCOPY(C_AR_iter.block_size[k]*aoccA_*nvirA_,C_p_AR.B_p_[0],1,
-          T_p_AR[0],1);
+        C_DCOPY((long int) C_AR_iter.block_size[k]*aoccA_*nvirA_,
+          C_p_AR.B_p_[0],1,T_p_AR[0],1);
 
 #pragma omp parallel
 {
@@ -797,7 +797,7 @@ void SAPT0::theta_bs()
 
     for (int i=0; i<nvec_; i++) {
 
-      C_DCOPY(ndf_*length*nvirB_,B_BS[0],1,L_BS[0],1);
+      C_DCOPY((long int) ndf_*length*nvirB_,B_BS[0],1,L_BS[0],1);
 
 #pragma omp parallel
 {
@@ -815,7 +815,7 @@ void SAPT0::theta_bs()
     for (int P=0; P<ndf_+3; P++) {
       next_T_BS = psio_get_address(PSIO_ZERO,sizeof(double)*P*aoccB_*nvirB_
         +sizeof(double)*bmin*nvirB_);
-      C_DCOPY(length*nvirB_,&(T_BS[0][P]),ndf_+3,temp,1);
+      C_DCOPY((long int) length*nvirB_,&(T_BS[0][P]),ndf_+3,temp,1);
       psio_->write(PSIF_SAPT_TEMP,"Theta BS Intermediate",(char *)
         &(temp[0]),sizeof(double)*length*nvirB_,next_T_BS,&next_T_BS);
     }
@@ -880,7 +880,8 @@ void SAPT0::test_theta()
   psio_->read_entry(PSIF_SAPT_TEMP,"Y PQ Intermediate",(char *)
     &(yPQ[0][0]),sizeof(double)*nvec_*ndf_*(ndf_+3));
 
-  double disp_xy = -4.0*C_DDOT(nvec_*ndf_*(ndf_+3),xPQ[0],1,yPQ[0],1);
+  double disp_xy = -4.0*C_DDOT((long int) nvec_*ndf_*(ndf_+3),xPQ[0],1,
+    yPQ[0],1);
 
   free_block(xPQ); 
   free_block(yPQ);
@@ -905,7 +906,7 @@ void SAPT0::arbs()
   for (int i=0,off=0; i<T_AR_iter.num_blocks; i++) {
     read_block(&T_AR_iter,&T_p_AR);
     for (int p=0; p<T_AR_iter.curr_size; p++) {
-      C_DCOPY(aoccA_*nvirA_,&(T_p_AR.B_p_[p][0]),1,&(X_AR_p[0][p]),
+      C_DCOPY((long int) aoccA_*nvirA_,&(T_p_AR.B_p_[p][0]),1,&(X_AR_p[0][p]),
         T_AR_iter.block_size[0]);
     }
 
@@ -936,7 +937,7 @@ void SAPT0::arbs()
   for (int i=0,off=0; i<T_BS_iter.num_blocks; i++) {
     read_block(&T_BS_iter,&T_p_BS);
     for (int p=0; p<T_BS_iter.curr_size; p++) {
-      C_DCOPY(aoccB_*nvirB_,&(T_p_BS.B_p_[p][0]),1,&(X_BS_p[0][p]),
+      C_DCOPY((long int) aoccB_*nvirB_,&(T_p_BS.B_p_[p][0]),1,&(X_BS_p[0][p]),
         T_BS_iter.block_size[0]);
     }
 
@@ -991,7 +992,7 @@ void SAPT0::v1()
       C_DGEMM('N','N',aoccA_,nvirB_,noccA_,-1.0,
         &(A_p_AA.B_p_[p][foccA_*noccA_]),noccA_,&(sAB_[0][noccB_]),nmo_,
         0.0,xAS[rank],nvirB_);
-      C_DCOPY(aoccA_*nvirB_,&(A_p_AS.B_p_[p][foccA_*nvirB_]),1,
+      C_DCOPY((long int) aoccA_*nvirB_,&(A_p_AS.B_p_[p][foccA_*nvirB_]),1,
         &(X_AS_p[0][p]),AS_iter.block_size[0]);
       C_DAXPY(aoccA_*nvirB_,1.0,xAS[rank],1,&(X_AS_p[0][p]),
         AS_iter.block_size[0]); 
