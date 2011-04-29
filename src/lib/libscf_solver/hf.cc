@@ -847,13 +847,14 @@ void HF::guess()
         int nirreps = S_->nirrep();
         for (h=0; h<nirreps; ++h) {
             for (i=0; i<opi[h]; ++i) {
-                for (j=0; j<opi[h]; ++j) {
-                    Fa_->set(h,i,j,0.5*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
+                Fa_->set(h,i,i,H_->get(h,i,i));
+                for (j=0; j<i; ++j) {
+                    Fa_->set(h,i,j,0.875*S_->get(h,i,j)*(H_->get(h,i,i)+H_->get(h,j,j)));
+                    Fa_->set(h,j,i,Fa_->get(h,i,j));
                 }
             }
         }
         Fb_->copy(Fa_);
-
         form_initial_C();
         find_occupation();
         form_D();
