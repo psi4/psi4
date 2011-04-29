@@ -428,7 +428,125 @@ void OEProp::compute_mo_extents()
 
     fprintf(outfile, " MO Extents (<r^2>) [a.u.]:\n\n");
 
-    // Awesome code goes here.
+    boost::shared_ptr<Molecule> mol = basisset_->molecule();
+    boost::shared_ptr<Matrix> Ca;
+    boost::shared_ptr<Matrix> Cb;
+
+    if (restricted_) {
+        Ca = Ca_so_;
+        Cb = Ca;
+    } else {
+        Ca = Ca_so_;
+        Cb = Cb_so_;
+    }
+
+    // Form the one-electron integral matrices from the matrix factory parameters
+    //    (multipole order: 1=dipole, 2=quadrupole, etc.)
+    MultipoleSymmetry diplsymm(1, mol, integral_, factory_);
+    MultipoleSymmetry quadsymm(2, mol, integral_, factory_);
+
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> so_Dpole = diplsymm.create_matrices("SO Dipole");
+    std::vector<SharedMatrix> so_Qpole = quadsymm.create_matrices("SO Quadrupole");
+
+    // Form the one-electron integral objects from the integral factory
+    boost::shared_ptr<OneBodySOInt> sodOBI(integral_->so_dipole());
+    boost::shared_ptr<OneBodySOInt> soqOBI(integral_->so_quadrupole());
+
+    // Compute multipole moment integrals
+    sodOBI->compute(so_Dpole);
+    soqOBI->compute(so_Qpole);
+
+
+    //so_Dpole[0]->print();
+    //so_Dpole[1]->print();
+    //so_Dpole[2]->print();
+
+    //so_Qpole[0]->print();
+    //so_Qpole[3]->print();
+    //so_Qpole[5]->print();
+
+    boost::shared_ptr<Matrix> temp = factory_->create_shared_matrix("Temporary Matrix");
+
+    // Compute directional expectation values for dipole contributions by molecular orbital
+    //boost::shared_ptr<Matrix> CDCax = factory_->create_shared_matrix("CDxC alpha");
+    //temp->gemm(false, false, 1.0, so_Dpole[0], Ca, 0.0);
+    //CDCax->gemm(true, false, 1.0, Ca, temp, 0.0);
+    //boost::shared_ptr<Matrix> CDCbx = factory_->create_shared_matrix("CDxC beta");
+    //temp->gemm(false, false, 1.0, so_Dpole[0], Cb, 0.0);
+    //CDCbx->gemm(true, false, 1.0, Cb, temp, 0.0);
+
+    //boost::shared_ptr<Matrix> CDCay = factory_->create_shared_matrix("CDyC alpha");
+    //temp->gemm(false, false, 1.0, so_Dpole[1], Ca, 0.0);
+    //CDCay->gemm(true, false, 1.0, Ca, temp, 0.0);
+    //boost::shared_ptr<Matrix> CDCby = factory_->create_shared_matrix("CDyC beta");
+    //temp->gemm(false, false, 1.0, so_Dpole[1], Cb, 0.0);
+    //CDCby->gemm(true, false, 1.0, Cb, temp, 0.0);
+
+    boost::shared_ptr<Matrix> CDCaz = factory_->create_shared_matrix("CDzC alpha");
+    temp->gemm(false, false, 1.0, so_Dpole[2], Ca, 0.0);
+    CDCaz->gemm(true, false, 1.0, Ca, temp, 0.0);
+    boost::shared_ptr<Matrix> CDCbz = factory_->create_shared_matrix("CDzC beta");
+    temp->gemm(false, false, 1.0, so_Dpole[2], Cb, 0.0);
+    CDCbz->gemm(true, false, 1.0, Cb, temp, 0.0);
+
+    // Compute directional expectation values for quadrupole contributions by molecular orbital
+    boost::shared_ptr<Matrix> CQCaxx = factory_->create_shared_matrix("CQxxC alpha");
+    temp->gemm(false, false, 1.0, so_Qpole[0], Ca, 0.0);
+    CQCaxx->gemm(true, false, 1.0, Ca, temp, 0.0);
+    boost::shared_ptr<Matrix> CQCbxx = factory_->create_shared_matrix("CQxxC beta");
+    temp->gemm(false, false, 1.0, so_Qpole[0], Cb, 0.0);
+    CQCbxx->gemm(true, false, 1.0, Cb, temp, 0.0);
+
+    boost::shared_ptr<Matrix> CQCayy = factory_->create_shared_matrix("CQyyC alpha");
+    temp->gemm(false, false, 1.0, so_Qpole[3], Ca, 0.0);
+    CQCayy->gemm(true, false, 1.0, Ca, temp, 0.0);
+    boost::shared_ptr<Matrix> CQCbyy = factory_->create_shared_matrix("CQyyC beta");
+    temp->gemm(false, false, 1.0, so_Qpole[3], Cb, 0.0);
+    CQCbyy->gemm(true, false, 1.0, Cb, temp, 0.0);
+
+    boost::shared_ptr<Matrix> CQCazz = factory_->create_shared_matrix("CQzzC alpha");
+    temp->gemm(false, false,  1.0, so_Qpole[5], Ca, 0.0);
+    CQCazz->gemm(true, false, 1.0, Ca, temp, 0.0);
+    boost::shared_ptr<Matrix> CQCbzz = factory_->create_shared_matrix("CQzzC beta");
+    temp->gemm(false, false,  1.0, so_Qpole[5], Cb, 0.0);
+    CQCbzz->gemm(true, false, 1.0, Cb, temp, 0.0);
+
+    // Accumulate registers for dipole
+    double xi, yi, zi;
+    char **labels = mol->irrep_labels();
+    fprintf(outfile, " Molecular Orbital Polarities: (Bohr)\n");
+    fprintf(outfile, "  Symmetry    MO        < x >      < y >      < z >          < r >\n");
+    for (int h = 0; h < Ca->nirrep(); h++) {
+       for (int i = 0; i < Ca->rowspi()[h]; i++) {
+
+    //      xi = CDCax->get(h,i,i);
+    //      yi = CDCay->get(h,i,i);
+          zi = CDCaz->get(h,i,i);
+          fprintf(outfile,"      %4s  %4d   %10.4lf %10.4lf %10.4lf     %10.4lf\n", \
+             labels[h], i+1, xi, yi, zi, xi+yi+zi);
+       }
+    }
+    fprintf(outfile, "\n");
+    ////for(int h = 0; h < Ca->nirrep(); h++) free(labels[h]); free(labels);
+
+    // Accumulate registers for quadrupole
+    double x2i, y2i, z2i;
+    ////char **labels = mol->irrep_labels();
+    fprintf(outfile, " Molecular Orbital Extents: (Bohr^2)\n");
+    fprintf(outfile, "  Symmetry    MO      < x^2 >    < y^2 >    < z^2 >        < r^2 >\n");
+    for (int h = 0; h < Ca->nirrep(); h++) {
+       for (int i = 0; i < Ca->rowspi()[h]; i++) {
+
+          x2i = -CQCaxx->get(h,i,i);
+          y2i = -CQCayy->get(h,i,i);
+          z2i = -CQCazz->get(h,i,i);
+          fprintf(outfile,"      %4s  %4d   %10.4lf %10.4lf %10.4lf     %10.4lf\n", \
+             labels[h], i+1, x2i, y2i, z2i, x2i+y2i+z2i);
+       }
+    }
+    fprintf(outfile, "\n");
+    for(int h = 0; h < Ca->nirrep(); h++) free(labels[h]); free(labels);
 
     fflush(outfile);
 }

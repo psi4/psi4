@@ -369,82 +369,130 @@ def database_execute(e_name, db_name, **kwargs):
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
     # Define path and load module for requested database
-    sys.path.append('%sdatabases' % (os.environ.get('PSIDATADIR')))
+    sys.path.append('%sdatabases' % (os.environ.get('PSIDATADIR')))  # for normal use (clearly, must set PSIDATADIR)
+    sys.path.append('./../../../lib/databases')  # for the test suite (better soln needed)
     try: 
         database = __import__(db_name)
     except ImportError: 
         PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
         raise Exception("Python module loading problem for database " + str(db_name))
     else:
+        dbse = database.dbse
         HRXN = database.HRXN
-        HSYS = database.HSYS
-        GEOS = database.GEOS
-        BIND = database.BIND
-        TAGL = database.TAGL
         ACTV = database.ACTV
         RXNM = database.RXNM
+        BIND = database.BIND
+        TAGL = database.TAGL
+        GEOS = database.GEOS
 
-    #yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
-    #no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
-
+    # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
+    user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
+    user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
+    user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
+    user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
+    user_reference = PsiMod.get_option('REFERENCE')
+
+    if re.match(r'^sapt0$', e_name, re.IGNORECASE):
+        raise Exception('Databases not yet compatible with SAPT or MP2C calculations (supermolecular vs sapt structure).')
+    if re.match(r'^ccsd', e_name, re.IGNORECASE):
+        raise Exception('Databases not yet compatible with CC calculations (checkpoint file, perhaps).')
 
     # Deal with options particular to database calculations
-    # Option mode of operation- whether db run in one job or files farmed out
+    yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
+    no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
+
+        # Option mode of operation- whether db run in one job or files farmed out
     db_mode = 'continuous'
     if(kwargs.has_key('mode')):
         db_mode = kwargs['mode'];
 
-    if db_mode == 'sow':
-        raise Exception('Database mode %s not yet implemented.' % (db_mode))
-    elif db_mode == 'reap':
-        raise Exception('Database mode %s not yet implemented.' % (db_mode))
-    elif db_mode == 'continuous':
+    if re.match(r'^sow$', db_mode, re.IGNORECASE):
+        raise Exception('Database execution mode \'sow\' not yet implemented.')
+    elif re.match(r'^reap$', db_mode, re.IGNORECASE):
+        raise Exception('Database execution mode \'reap\' not yet implemented.')
+    elif re.match(r'^continuous$', db_mode, re.IGNORECASE):
         pass
     else:
-        raise Exception('Database mode %s not valid.' % (db_mode))
+        raise Exception('Database execution mode \'%s\' not valid.' % (db_mode))
       
-    # Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
-    db_cp = 'no'  # make this a yes = re.compile statement
+        # Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
+    db_cp = 'no'
     if(kwargs.has_key('cp')):
         db_cp = kwargs['cp'];
 
-    if db_cp == 'yes':
-        raise Exception('Counterpoise correction mode %s not yet implemented.' % (db_cp))
-    elif db_cp == 'no':
+    if yes.match(str(db_cp)):
+        raise Exception('Counterpoise correction not yet working right.')
+        try:
+            database.ACTV_CP
+        except AttributeError:
+             raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
+        else:
+             ACTV = database.ACTV_CP
+    elif no.match(str(db_cp)):
         pass
     else:
-        raise Exception('Counterpoise correction mode %s not valid.' % (db_cp))
+        raise Exception('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
 
-    # Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
-    db_zpe = 'no'  # make this a yes = re.compile statement
+        # Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
+    db_zpe = 'no'
     if(kwargs.has_key('zpe')):
         db_zpe = kwargs['zpe'];
 
-    if db_zpe == 'yes':
-        raise Exception('Zero-point-correction mode %s not yet implemented.' % (db_zpe))
-    elif db_zpe == 'no':
+    if yes.match(str(db_zpe)):
+        raise Exception('Zero-point-correction mode \'yes\' not yet implemented.')
+    elif no.match(str(db_zpe)):
         pass
     else:
-        raise Exception('Zero-point-correction mode %s not valid.' % (db_zpe))
+        raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
 
-    # Option subset- whether all of the database or just a portion is run
-    db_subset = HRXN 
+        # Option subset- whether all of the database or just a portion is run
+    db_subset = HRXN
     if(kwargs.has_key('subset')):
         db_subset = kwargs['subset'];
 
-    temp = []
-    for rxn in db_subset:
-        if rxn in HRXN:
-            temp.append(rxn)
+    if isinstance(db_subset, basestring):
+        if re.match(r'^small$', db_subset, re.IGNORECASE):
+            try:
+                database.HRXN_SM
+            except AttributeError:
+                raise Exception('Special subset \'small\' not available for database %s.' % (db_name))
+            else:
+                HRXN = database.HRXN_SM
+        elif re.match(r'^large$', db_subset, re.IGNORECASE):
+            try:
+                database.HRXN_LG
+            except AttributeError:
+                raise Exception('Special subset \'large\' not available for database %s.' % (db_name))
+            else:
+                HRXN = database.HRXN_LG
+        elif re.match(r'^equilibrium$', db_subset, re.IGNORECASE):
+            try:
+                database.HRXN_EQ
+            except AttributeError:
+                raise Exception('Special subset \'equilibrium\' not available for database %s.' % (db_name))
+            else:
+                HRXN = database.HRXN_EQ
         else:
-            raise Exception('Subset element %s not a member of database %s.' % (str(rxn), db_name))
-    HRXN = temp
+            try:
+                getattr(database, db_subset)
+            except AttributeError:
+                raise Exception('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+            else:
+                HRXN = getattr(database, db_subset)
+    else:
+        temp = []
+        for rxn in db_subset:
+            if rxn in HRXN:
+                temp.append(rxn)
+            else:
+                raise Exception('Subset element \'%s\' not a member of database %s.' % (str(rxn), db_name))
+        HRXN = temp
 
     temp = []
     for rxn in HRXN:
-        temp.append(ACTV['%s-%s' % (db_name, rxn)])
-    HSYS = sum(temp, [])
+        temp.append(ACTV['%s-%s' % (dbse, rxn)])
+    HSYS = drop_duplicates(sum(temp, []))
 
     # Sow all the necessary reagent computations
     ERGT = {}
@@ -454,9 +502,21 @@ def database_execute(e_name, db_name, **kwargs):
     banner(("Database %s Computation" % (db_name)))
     PsiMod.print_out("\n")
 
+        # Force open-shell if needed
+    if user_reference == 'RHF':
+        try:
+            database.isOS
+        except AttributeError:
+            pass
+        else:
+            PsiMod.set_global_option('REFERENCE', 'UHF')
+            PsiMod.print_out('\nDatabase %s requires an open-shell reference; reset to UHF.\n' % (db_name))
+            #print 'Database %s requires an open-shell reference; reset to UHF.' % (db_name)
+
+        # Loop through chemical systems
     for rgt in HSYS:
 
-        #print 'MOLECULE LIVES %s' % (rgt)
+        #print 'MOLECULE LIVES %s %s' % (rgt, PsiMod.get_option('REFERENCE'))
         PsiMod.print_out("\n")
         banner(("Database %s Computation:\nReagent %s" % (db_name, TAGL[rgt])))
         PsiMod.print_out("\n")
@@ -464,9 +524,18 @@ def database_execute(e_name, db_name, **kwargs):
         exec GEOS[rgt]
 
         PsiMod.set_global_option('BASIS', user_basis)
+        if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
+            PsiMod.set_global_option('RI_BASIS_SCF', user_ri_basis_scf)
+        if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
+            PsiMod.set_global_option('RI_BASIS_MP2', user_ri_basis_mp2)
+        if not((user_ri_basis_cc == "") or (user_ri_basis_cc == 'NONE')):
+            PsiMod.set_global_option('RI_BASIS_SCF', user_ri_basis_scf)
+        if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
+            PsiMod.set_global_option('RI_BASIS_SAPT', user_ri_basis_sapt)
+
         molecule = PsiMod.get_active_molecule()
         if not molecule:
-            print "NO MOLECULE"
+            #print "NO MOLECULE"
             raise ValueNotSet("no molecule found")
 
         elecenergy = energy(e_name, **kwargs)
@@ -479,39 +548,93 @@ def database_execute(e_name, db_name, **kwargs):
     banner(("Database %s Results" % (db_name)))
     PsiMod.print_out("\n")
 
-    table_delimit = '-' * 111
-    PsiMod.print_out('\n   %s\n' % (table_delimit))
-    PsiMod.print_out('%23s %19s %19s %19s %21s %8s\n' % ('REACTION', '(DIMER) REAGENT_A',
-        '(MONOA) REAGENT_B', '(MONOB) REAGENT_C', 'REACTION ENERGY', 'ERROR'))
-    PsiMod.print_out('%23s %19s %19s %19s %21s\n' % ('', '[H] WT', '[H] WT', '[H] WT', '[kcal/mol]  REF'))
-    PsiMod.print_out('   %s\n' % (table_delimit))
+    maxactv = []
+    for rxn in HRXN:
+        maxactv.append(len(ACTV[dbse+'-'+str(rxn)]))
+    maxrgt = max(maxactv) 
+    table_delimit = '-' * (52+20*maxrgt)
+
+    minDerror = 10000.0
+    maxDerror = 0.0
+    MSDerror  = 0.0
+    MADerror  = 0.0
+    RMSDerror = 0.0
 
     #print '\n   %s' % (table_delimit)
-    #print '%23s %19s %19s %19s %21s %8s' % ('REACTION', '(DIMER) REAGENT_A',
-    #    '(MONOA) REAGENT_B', '(MONOB) REAGENT_C', 'REACTION ENERGY', 'ERROR')
-    #print '%23s %19s %19s %19s %21s' % ('', '[H] WT', '[H] WT', '[H] WT', '[kcal/mol]  REF')
-    #print '   %s' % (table_delimit)
+    #print '%23s %19s %8s' % ('Reaction', 'Reaction Energy', 'Error'),
+    PsiMod.print_out('\n   %s\n' % (table_delimit))
+    PsiMod.print_out('%23s %19s %8s' % ('Reaction', 'Reaction Energy', 'Error'),)
+    for i in range(maxrgt):
+         #print '%20s' % ('Reagent '+str(i+1)),
+         PsiMod.print_out('%20s' % ('Reagent '+str(i+1)),)
+    #print '\n%23s %10s %17s' % ('', 'Ref', '[kcal/mol]'),
+    PsiMod.print_out('\n%23s %10s %17s' % ('', 'Ref', '[kcal/mol]'),)
+    for i in range(maxrgt):
+         #print '%20s' % ('[H] Wt'),
+         PsiMod.print_out('%20s' % ('[H] Wt'),)
+    #print '\n   %s' % (table_delimit),
+    PsiMod.print_out('\n   %s' % (table_delimit),)
+
+    count_rxn = 0
     for rxn in HRXN:
 
-        db_rxn = db_name + '-' + str(rxn)
+        db_rxn = dbse + '-' + str(rxn)
+        fail_rxn = 0
+        for i in range(len(ACTV[db_rxn])):
+            if abs(ERGT[ACTV[db_rxn][i]]) < 1.0e-12:
+                fail_rxn = 1
 
-        ERXN[db_rxn] = (ERGT[ACTV[db_rxn][0]] * RXNM[db_rxn][ACTV[db_rxn][0]] +
-                        ERGT[ACTV[db_rxn][1]] * RXNM[db_rxn][ACTV[db_rxn][1]] +
-                        ERGT[ACTV[db_rxn][2]] * RXNM[db_rxn][ACTV[db_rxn][2]]  )
+        if fail_rxn:
+            #print '\n%23s   %8.4f %8s %8s' % (db_rxn, BIND[db_rxn], '****', '****'),
+            PsiMod.print_out('\n%23s   %8.4f %8s %8s' % (db_rxn, BIND[db_rxn], '****', '****'),)
+            for i in range(len(ACTV[db_rxn])):
+                #print ' %16.8f %2.0f' % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]]),
+                PsiMod.print_out(' %16.8f %2.0f' % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]]),)
+
+        else:
+            ERXN[db_rxn] = 0.0
+            for i in range(len(ACTV[db_rxn])):
+                ERXN[db_rxn] += ERGT[ACTV[db_rxn][i]] * RXNM[db_rxn][ACTV[db_rxn][i]]
+            error = hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
         
-        PsiMod.print_out('%23s %16.8f %2.0f %16.8f %2.0f %16.8f %2.0f     %8.4f %8.4f %8.4f\n' % (db_rxn,
-            ERGT[ACTV[db_rxn][0]], RXNM[db_rxn][ACTV[db_rxn][0]],
-            ERGT[ACTV[db_rxn][1]], RXNM[db_rxn][ACTV[db_rxn][1]],
-            ERGT[ACTV[db_rxn][2]], RXNM[db_rxn][ACTV[db_rxn][2]],
-            hartree2kcalmol*ERXN[db_rxn], BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn]-BIND[db_rxn]))
-        #print '%23s %16.8f %2.0f %16.8f %2.0f %16.8f %2.0f     %8.4f %8.4f %8.4f' % (db_rxn,
-            #ERGT[ACTV[db_rxn][0]], RXNM[db_rxn][ACTV[db_rxn][0]],
-            #ERGT[ACTV[db_rxn][1]], RXNM[db_rxn][ACTV[db_rxn][1]],
-            #ERGT[ACTV[db_rxn][2]], RXNM[db_rxn][ACTV[db_rxn][2]],
-            #hartree2kcalmol*ERXN[db_rxn], BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn]-BIND[db_rxn])
+            #print '\n%23s   %8.4f %8.4f %8.4f' % (db_rxn, BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn], error),
+            PsiMod.print_out('\n%23s   %8.4f %8.4f %8.4f' % (db_rxn, BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn], error),)
+            for i in range(len(ACTV[db_rxn])):
+                #print ' %16.8f %2.0f' % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]]),
+                PsiMod.print_out(' %16.8f %2.0f' % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]]),)
 
-    PsiMod.print_out('   %s\n\n' % (table_delimit))
+            if abs(error) < abs(minDerror): minDerror = error
+            if abs(error) > abs(maxDerror): maxDerror = error
+            MSDerror += error
+            MADerror += abs(error)
+            RMSDerror += error*error
+            count_rxn += 1
+
+    #print '\n   %s' % (table_delimit)
+    #print '%23s   %17s %8.4f' % ('Minimal Dev', '', minDerror)
+    #print '%23s   %17s %8.4f' % ('Maximal Dev', '', maxDerror)
+    #print '%23s   %17s %8.4f' % ('Mean Signed Dev', '', MSDerror/float(count_rxn))
+    #print '%23s   %17s %8.4f' % ('Mean Absolute Dev', '', MADerror/float(count_rxn))
+    #print '%23s   %17s %8.4f' % ('RMS Dev', '', sqrt(RMSDerror/float(count_rxn)))
     #print '   %s\n' % (table_delimit)
+
+    PsiMod.print_out('\n   %s' % (table_delimit))
+    PsiMod.print_out('\n%23s   %17s %8.4f' % ('Minimal Dev', '', minDerror))
+    PsiMod.print_out('\n%23s   %17s %8.4f' % ('Maximal Dev', '', maxDerror))
+    PsiMod.print_out('\n%23s   %17s %8.4f' % ('Mean Signed Dev', '', MSDerror/float(count_rxn)))
+    PsiMod.print_out('\n%23s   %17s %8.4f' % ('Mean Absolute Dev', '', MADerror/float(count_rxn)))
+    PsiMod.print_out('\n%23s   %17s %8.4f' % ('RMS Dev', '', sqrt(RMSDerror/float(count_rxn))))
+    PsiMod.print_out('\n   %s\n' % (table_delimit))
+
+    # Restore global options that may be changed
+    PsiMod.set_global_option("REFERENCE", user_reference)
+
+    return MADerror
+
+def drop_duplicates(seq): 
+    noDupes = []
+    [noDupes.append(i) for i in seq if not noDupes.count(i)]
+    return noDupes
 
 ## Aliases  ##
 database = database_execute
