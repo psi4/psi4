@@ -126,20 +126,73 @@ void MoldenWriter::write(const std::string &filename)
     const Dimension aos = sobasisset.petitelist()->AO_basisdim();
     const Dimension sos = sobasisset.petitelist()->SO_basisdim();
 
-//    Ca.print();
-//    Cb.print();
-//    aotoso->print();
-
-    Matrix Ca_ao_mo("Ca AO x MO", aos, sos);
-    Matrix Cb_ao_mo("Cb AO x MO", aos, sos);
+    SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, sos));
+    SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, sos));
 
     // do the half transform
-    Ca_ao_mo.gemm(false, false, 1.0, aotoso, Ca, 0.0);
-    Cb_ao_mo.gemm(false, false, 1.0, aotoso, Cb, 0.0);
+    Ca_ao_mo->gemm(false, false, 1.0, aotoso, Ca, 0.0);
+    Cb_ao_mo->gemm(false, false, 1.0, aotoso, Cb, 0.0);
 
-//    Ca_ao_mo.print();
-//    Cb_ao_mo.print();
+    // The order Molden expects
+    //    5D: D 0, D+1, D-1, D+2, D-2
+    //    6D: xx, yy, zz, xy, xz, yz
+    //
+    //    7F: F 0, F+1, F-1, F+2, F-2, F+3, F-3
+    //   10F: xxx, yyy, zzz, xyy, xxy, xxz, xzz, yzz, yyz, xyz
+    //
+    //    9G: G 0, G+1, G-1, G+2, G-2, G+3, G-3, G+4, G-4
+    //   15G: xxxx yyyy zzzz xxxy xxxz yyyx yyyz zzzx zzzy,
+    //        xxyy xxzz yyzz xxyz yyxz zzxy
+    // Since Molden doesn't handle higher than g we'll just leave them be.
+    int molden_cartesian_order[][15] = {
+        { 0, 3, 4, 1, 5, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0 },    // d
+        { 0, 4, 5, 3, 9, 6, 1, 8, 7, 2, 0, 0, 0, 0, 0 },    // f
+        { 0, 3, 4, 9, 12, 10, 5, 13, 14, 7, 1, 6, 11, 8, 2} // g
+    };
 
+    int nirrep = Ca_ao_mo->nirrep();
+    int *countpi = new int[nirrep];
+    int *zeropi = new int[nirrep];
+    int *ncartpi = new int[nirrep];
+
+    memset(countpi, 0, sizeof(int) * nirrep);
+    memset(zeropi, 0, sizeof(int) * nirrep);
+
+    for(int i = 0; i < basisset.nshell(); i++) {
+        int am = basisset.shell(i)->am();
+
+        int ncart = basisset.shell(i)->nfunction();
+        if(am > 1 && am < 5 && basisset.shell(i)->is_cartesian()) {
+            for (int h=0; h<nirrep; ++h)
+                ncartpi[h] = ncart;
+
+            View block_a(Ca_ao_mo, ncartpi, Ca_ao_mo->colspi(), countpi, zeropi);
+            View block_b(Cb_ao_mo, ncartpi, Cb_ao_mo->colspi(), countpi, zeropi);
+
+            SharedMatrix temp_a = block_a();
+            SharedMatrix temp_b = block_b();
+
+            for( int j =0; j < ncart; j++) {
+                for (int h=0; h < Ca_ao_mo->nirrep(); ++h) {
+                    for (int k=0; k<Ca_ao_mo->coldim(h); ++k) {
+                        Ca_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-2][j], k, temp_a->get(h, j, k));
+                        Cb_ao_mo->set(h, countpi[h] + molden_cartesian_order[am-2][j], k, temp_b->get(h, j, k));
+                    }
+                }
+            }
+        }
+
+        for (int h=0; h<nirrep; ++h)
+            countpi[h] += ncart;
+    }
+    delete[] countpi;
+    delete[] zeropi;
+    delete[] ncartpi;
+
+    if (basisset.has_puream()) {
+        // Tell Molden to use spherical.  5d implies 5d and 7f.
+        fprintf(molden, "[5d]\n[9g]\n\n");
+    }
     CharacterTable ct = mol.point_group()->char_table();
 
     // Dump MO's to the molden file
@@ -153,7 +206,7 @@ void MoldenWriter::write(const std::string &filename)
             int occ = n < (wavefunction_->doccpi()[h] + wavefunction_->soccpi()[h]) ? 1.0 : 0.0;
             fprintf(molden, " Occup= %3.1d\n", occ);
             for (int so=0; so<wavefunction_->nso(); ++so)
-                fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo.get(h, so, n));
+                fprintf(molden, "%3d %20.12f\n", so+1, Ca_ao_mo->get(h, so, n));
         }
     }
 
@@ -166,7 +219,7 @@ void MoldenWriter::write(const std::string &filename)
             int occ = n < (wavefunction_->doccpi()[h]) ? 1.0 : 0.0;
             fprintf(molden, " Occup= %3.1d\n", occ);
             for (int so=0; so<wavefunction_->nso(); ++so)
-                fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo.get(h, so, n));
+                fprintf(molden, "%3d %20.12f\n", so+1, Cb_ao_mo->get(h, so, n));
         }
     }
 
@@ -385,7 +438,7 @@ void NBOWriter::write(const std::string &filename)
                         fprintf(file47, "\n");
                 }
         }
-    fprintf(file47, "\n$END"); 
+    fprintf(file47, "\n$END");
 
     //Alpha Density Matrix
     SharedMatrix soalphadens = wavefunction_->Da();
