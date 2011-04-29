@@ -178,8 +178,13 @@ void LaplaceDenominator::decompose()
 
     nvector_ = k + 1;
 
+    // A bit hacky, but OK
     int exponent = (int) floor(log(R_availp[r])/log(10.0));
     int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));
+    if (mantissa == 10) {
+        exponent++;
+        mantissa = 1;
+    }
 
     std::stringstream st;
     st << setfill('0');
@@ -587,8 +592,13 @@ void SAPTLaplaceDenominator::decompose()
 
     nvector_ = k + 1;
 
+		// A bit hacky, but OK
     int exponent = (int) floor(log(R_availp[r])/log(10.0));
     int mantissa = (int) round(R_availp[r]/pow(10.0,exponent));
+		if (mantissa == 10) {
+			  exponent++;
+        mantissa = 1;
+		}
 
     std::stringstream st;
     st << setfill('0');
