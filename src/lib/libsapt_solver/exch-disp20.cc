@@ -994,7 +994,7 @@ void SAPT0::v1()
         0.0,xAS[rank],nvirB_);
       C_DCOPY((long int) aoccA_*nvirB_,&(A_p_AS.B_p_[p][foccA_*nvirB_]),1,
         &(X_AS_p[0][p]),AS_iter.block_size[0]);
-      C_DAXPY(aoccA_*nvirB_,1.0,xAS[rank],1,&(X_AS_p[0][p]),
+      C_DAXPY((long int) aoccA_*nvirB_,1.0,xAS[rank],1,&(X_AS_p[0][p]),
         AS_iter.block_size[0]); 
     }
 }
