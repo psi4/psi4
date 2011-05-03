@@ -98,6 +98,8 @@ namespace psi {
 
       static Environment environment;
       static Arguments arguments;
+
+      static Environment get_environment() { return environment; }
   };
 }
 

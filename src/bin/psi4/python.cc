@@ -611,8 +611,9 @@ BOOST_PYTHON_MODULE(PsiMod)
         def("__getitem__", argumentsStringFunction(&Process::Arguments::operator ()));
 
     class_<Process>("Process").
-        add_static_property("environment", &Process::environment);
-
+        add_static_property("environment", Process::get_environment);
+//            def("environment", &Process::environment).
+//            staticmethod("environment");
 }
 
 Python::Python() : Script()
