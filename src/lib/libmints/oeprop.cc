@@ -287,7 +287,7 @@ void OEProp::compute()
 void OEProp::compute_dipole()
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-    MultipoleSymmetry dipsymm (1, mol, integral_, factory_);
+    OperatorSymmetry dipsymm (1, mol, integral_, factory_);
     std::vector<SharedMatrix> so_dipole = dipsymm.create_matrices("SO Dipole");
     boost::shared_ptr<OneBodySOInt> sodOBI (integral_->so_dipole());
     sodOBI->compute(so_dipole);
@@ -346,7 +346,7 @@ void OEProp::compute_quadrupole()
 
     // Form the one-electron integral matrices from the matrix factory
     //    parameters: 1 (multipole order: 1=dipole, 2=quadrupole, etc.)
-    MultipoleSymmetry quadsymm(2, mol, integral_, factory_);
+    OperatorSymmetry quadsymm(2, mol, integral_, factory_);
 
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> so_Qpole = quadsymm.create_matrices("SO Quadrupole");

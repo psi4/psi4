@@ -1039,7 +1039,7 @@ void Matrix::diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Ma
     Matrix t(*this);
     Matrix m(metric);
 
-    int lwork = max_nrow();
+    int lwork = 3*max_nrow();
     double *work = new double[lwork];
 
     for (int h=0; h<nirrep_; ++h) {

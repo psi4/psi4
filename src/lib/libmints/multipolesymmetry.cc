@@ -6,7 +6,7 @@ using namespace std;
 
 namespace psi{
 
-MultipoleSymmetry::MultipoleSymmetry(int order,
+OperatorSymmetry::OperatorSymmetry(int order,
                                      const boost::shared_ptr<Molecule>& mol,
                                      const boost::shared_ptr<IntegralFactory>& ints,
                                      const boost::shared_ptr<MatrixFactory>& mats)
@@ -59,7 +59,7 @@ MultipoleSymmetry::MultipoleSymmetry(int order,
         // Angular momentum operator is a rotation operator
         // so symmetry of Lz is Lx ^ Ly which can
         // come from quadrupole
-        MultipoleSymmetry quad(2, mol, ints, mats);
+        OperatorSymmetry quad(2, mol, ints, mats);
 
         // Make sure order is 1 for the other routines in this class.
         order_ = 1;
@@ -76,12 +76,12 @@ MultipoleSymmetry::MultipoleSymmetry(int order,
     }
 }
 
-MultipoleSymmetry::~MultipoleSymmetry()
+OperatorSymmetry::~OperatorSymmetry()
 {
     delete[] component_symmetry_;
 }
 
-string MultipoleSymmetry::form_suffix(int x, int y, int z)
+string OperatorSymmetry::form_suffix(int x, int y, int z)
 {
     string suffix;
 
@@ -106,13 +106,13 @@ string MultipoleSymmetry::form_suffix(int x, int y, int z)
     return suffix;
 }
 
-string MultipoleSymmetry::name_of_component(int i)
+string OperatorSymmetry::name_of_component(int i)
 {
     Vector3 components = BasisSet::exp_ao[order_][i];
     return form_suffix(components[0], components[1], components[2]);
 }
 
-vector<boost::shared_ptr<Matrix> > MultipoleSymmetry::create_matrices(const std::string &basename)
+vector<boost::shared_ptr<Matrix> > OperatorSymmetry::create_matrices(const std::string &basename)
 {
     vector<boost::shared_ptr<Matrix> > matrices;
     string name;

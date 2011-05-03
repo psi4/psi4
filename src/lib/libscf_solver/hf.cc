@@ -472,7 +472,7 @@ void HF::form_H()
 
     if (perturb_h_) {
         boost::shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        MultipoleSymmetry msymm(1, molecule_, ifact, factory_);
+        OperatorSymmetry msymm(1, molecule_, ifact, factory_);
         vector<SharedMatrix> dipoles = msymm.create_matrices("Dipole");
 
         OneBodySOInt *so_dipole = ifact->so_dipole();

@@ -15,7 +15,7 @@ class Molecule;
 class IntegralFactory;
 class MatrixFactory;
 
-class MultipoleSymmetry
+class OperatorSymmetry
 {
     // The order of the multipole (dipole=1, quadrupole=2, etc...)
     int order_;
@@ -41,7 +41,7 @@ class MultipoleSymmetry
     std::string form_suffix(int x, int y, int z);
 
 public:
-    enum OperatorSymmetry {
+    enum Operator {
         Dipole = 1,
         Quadrupole = 2,
 
@@ -63,11 +63,11 @@ public:
      * @param mats Matrix factory. Used by create_matrices to create matrices of the
      *             proper size and symmetry.
      */
-    MultipoleSymmetry(int order,
-                      const boost::shared_ptr<Molecule>& mol,
-                      const boost::shared_ptr<IntegralFactory>& ints,
-                      const boost::shared_ptr<MatrixFactory>& mats);
-    virtual ~MultipoleSymmetry();
+    OperatorSymmetry(int order,
+                     const boost::shared_ptr<Molecule>& mol,
+                     const boost::shared_ptr<IntegralFactory>& ints,
+                     const boost::shared_ptr<MatrixFactory>& mats);
+    virtual ~OperatorSymmetry();
 
     std::string name_of_component(int i);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
