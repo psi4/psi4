@@ -442,8 +442,8 @@ void OEProp::compute_mo_extents()
 
     // Form the one-electron integral matrices from the matrix factory parameters
     //    (multipole order: 1=dipole, 2=quadrupole, etc.)
-    MultipoleSymmetry diplsymm(1, mol, integral_, factory_);
-    MultipoleSymmetry quadsymm(2, mol, integral_, factory_);
+    OperatorSymmetry diplsymm(1, mol, integral_, factory_);
+    OperatorSymmetry quadsymm(2, mol, integral_, factory_);
 
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> so_Dpole = diplsymm.create_matrices("SO Dipole");
