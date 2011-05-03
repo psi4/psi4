@@ -18,7 +18,7 @@ set globals {
 }
 
 S22mad = database('scf','S22',subset=[2,8])
-compare_values(refS22mad, S22mad, 8, "S22 subset mean absolute deviation")  #TEST
+compare_values(refS22mad, S22mad, 5, "S22 subset mean absolute deviation")  #TEST
 NBCmad = database('scf','NBC10',subset='small')
-compare_values(refNBCmad, NBCmad, 8, "NBC subset mean absolute deviation")  #TEST
+compare_values(refNBCmad, NBCmad, 5, "NBC subset mean absolute deviation")  #TEST
 
