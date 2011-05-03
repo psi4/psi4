@@ -353,7 +353,7 @@ boost::shared_ptr<Matrix> MintsHelper::so_potential()
 std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_dipole()
 {
     // The matrix factory can create matrices of the correct dimensions...
-    MultipoleSymmetry msymm(1, molecule_, integral_, factory_);
+    OperatorSymmetry msymm(1, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> dipole = msymm.create_matrices("SO Dipole");
 
@@ -365,7 +365,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_dipole()
 std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_quadrupole()
 {
     // The matrix factory can create matrices of the correct dimensions...
-    MultipoleSymmetry msymm(2, molecule_, integral_, factory_);
+    OperatorSymmetry msymm(2, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> quadrupole = msymm.create_matrices("SO Quadrupole");
 
@@ -377,7 +377,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_quadrupole()
 std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_traceless_quadrupole()
 {
     // The matrix factory can create matrices of the correct dimensions...
-    MultipoleSymmetry msymm(2, molecule_, integral_, factory_);
+    OperatorSymmetry msymm(2, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> quadrupole = msymm.create_matrices("SO Traceless Quadrupole");
 
@@ -390,7 +390,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_traceless_quadrupole()
 std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_nabla()
 {
     // The matrix factory can create matrices of the correct dimensions...
-    MultipoleSymmetry msymm(MultipoleSymmetry::P, molecule_, integral_, factory_);
+    OperatorSymmetry msymm(OperatorSymmetry::P, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> nabla = msymm.create_matrices("SO Nabla");
 
@@ -403,7 +403,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_nabla()
 std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_angular_momentum()
 {
     // The matrix factory can create matrices of the correct dimensions...
-    MultipoleSymmetry msymm(MultipoleSymmetry::L, molecule_, integral_, factory_);
+    OperatorSymmetry msymm(OperatorSymmetry::L, molecule_, integral_, factory_);
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> am = msymm.create_matrices("SO Angular Momentum");
 

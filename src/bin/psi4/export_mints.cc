@@ -338,9 +338,9 @@ void export_mints()
             def(init<boost::shared_ptr<Wavefunction> >()).
             def("write", &NBOWriter::write);
 
-    class_<MultipoleSymmetry, boost::shared_ptr<MultipoleSymmetry> >("MultipoleSymmetry", no_init).
+    class_<OperatorSymmetry, boost::shared_ptr<OperatorSymmetry> >("MultipoleSymmetry", no_init).
             def(init<int, const boost::shared_ptr<Molecule>&,
                 const boost::shared_ptr<IntegralFactory>&,
                 const boost::shared_ptr<MatrixFactory>&>()).
-            def("create_matrices", &MultipoleSymmetry::create_matrices);
+            def("create_matrices", &OperatorSymmetry::create_matrices);
 }
