@@ -369,8 +369,9 @@ def database_execute(e_name, db_name, **kwargs):
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
     # Define path and load module for requested database
-    sys.path.append('%sdatabases' % (os.environ.get('PSIDATADIR')))  # for normal use (clearly, must set PSIDATADIR)
+    sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
     sys.path.append('./../../../lib/databases')  # for the test suite (better soln needed)
+    sys.path.append('./../../../source/lib/databases')  # for the test suite with other directory structures
     try: 
         database = __import__(db_name)
     except ImportError: 
@@ -398,10 +399,38 @@ def database_execute(e_name, db_name, **kwargs):
     if re.match(r'^ccsd', e_name, re.IGNORECASE):
         raise Exception('Databases not yet compatible with CC calculations (checkpoint file, perhaps).')
 
-    # Deal with options particular to database calculations
-    yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
-    no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
 
+
+
+    # Configuration based upon e_name & db_name options
+        # Force non-supramolecular if needed
+    sapt_override = 0
+    if re.match(r'^sapt0$', e_name, re.IGNORECASE):
+        try:
+            database.ACTV_SA
+        except AttributeError:
+            raise Exception('Database %s not suitable for non-supramolecular calculation.' % (db_name))
+        else:
+            sapt_override = 1
+            ACTV = database.ACTV_SA
+        # Force open-shell if needed
+    openshell_override = 0
+    if user_reference == 'RHF':
+        try:
+            database.isOS
+        except AttributeError:
+            pass
+        else:
+            openshell_override = 1
+            PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
+
+
+
+
+
+
+
+    # Configuration based upon database keyword options
         # Option mode of operation- whether db run in one job or files farmed out
     db_mode = 'continuous'
     if(kwargs.has_key('mode')):
@@ -421,7 +450,7 @@ def database_execute(e_name, db_name, **kwargs):
     if(kwargs.has_key('cp')):
         db_cp = kwargs['cp'];
 
-    if yes.match(str(db_cp)):
+    if input.yes.match(str(db_cp)):
         raise Exception('Counterpoise correction not yet working right.')
         try:
             database.ACTV_CP
@@ -429,7 +458,7 @@ def database_execute(e_name, db_name, **kwargs):
              raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
         else:
              ACTV = database.ACTV_CP
-    elif no.match(str(db_cp)):
+    elif input.no.match(str(db_cp)):
         pass
     else:
         raise Exception('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
@@ -439,9 +468,9 @@ def database_execute(e_name, db_name, **kwargs):
     if(kwargs.has_key('zpe')):
         db_zpe = kwargs['zpe'];
 
-    if yes.match(str(db_zpe)):
+    if input.yes.match(str(db_zpe)):
         raise Exception('Zero-point-correction mode \'yes\' not yet implemented.')
-    elif no.match(str(db_zpe)):
+    elif input.no.match(str(db_zpe)):
         pass
     else:
         raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
@@ -502,21 +531,9 @@ def database_execute(e_name, db_name, **kwargs):
     banner(("Database %s Computation" % (db_name)))
     PsiMod.print_out("\n")
 
-        # Force open-shell if needed
-    if user_reference == 'RHF':
-        try:
-            database.isOS
-        except AttributeError:
-            pass
-        else:
-            PsiMod.set_global_option('REFERENCE', 'UHF')
-            PsiMod.print_out('\nDatabase %s requires an open-shell reference; reset to UHF.\n' % (db_name))
-            #print 'Database %s requires an open-shell reference; reset to UHF.' % (db_name)
-
         # Loop through chemical systems
     for rgt in HSYS:
 
-        #print 'MOLECULE LIVES %s %s' % (rgt, PsiMod.get_option('REFERENCE'))
         PsiMod.print_out("\n")
         banner(("Database %s Computation:\nReagent %s" % (db_name, TAGL[rgt])))
         PsiMod.print_out("\n")
@@ -534,13 +551,20 @@ def database_execute(e_name, db_name, **kwargs):
             PsiMod.set_global_option('RI_BASIS_SAPT', user_ri_basis_sapt)
 
         molecule = PsiMod.get_active_molecule()
+        molecule.update_geometry()
+
+        if (openshell_override) and (molecule.multiplicity() != 1):
+            PsiMod.set_global_option('REFERENCE', 'UHF')
+
         if not molecule:
             #print "NO MOLECULE"
             raise ValueNotSet("no molecule found")
 
+        #print 'MOLECULE LIVES %23s %8s %4d %4d' % (rgt, PsiMod.get_option('REFERENCE'), molecule.molecular_charge(), molecule.multiplicity())
         elecenergy = energy(e_name, **kwargs)
         #print elecenergy
         ERGT[rgt] = elecenergy
+        PsiMod.set_global_option("REFERENCE", user_reference)
         PsiMod.clean()
 
     # Reap all the necessary reaction computations
@@ -627,7 +651,7 @@ def database_execute(e_name, db_name, **kwargs):
     PsiMod.print_out('\n   %s\n' % (table_delimit))
 
     # Restore global options that may be changed
-    PsiMod.set_global_option("REFERENCE", user_reference)
+    #PsiMod.set_global_option("REFERENCE", user_reference)
 
     return MADerror
 

@@ -5946,21 +5946,6 @@ units angstrom
 """)
 
 #<<< Geometry Specification Strings >>>
-#GEOS = {}
-#for rxn in HRXN:
-#   distance = rxnpattern.match(rxn)
-
-#   GEOS['%s-%s-dimer'    % (dbse, rxn)] = '%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) ))
-#   GEOS['%s-%s-monoA-CP' % (dbse, rxn)] = '%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )) #+ monoA_CP
-#   GEOS['%s-%s-monoB-CP' % (dbse, rxn)] = '%s_%s_%s' % (dbse, distance.group(1), re.sub(r'\.', 'p', distance.group(2) )) #+ monoB_CP
-
-#GEOS['%s-Bz-mono-unCP'  % (dbse)] = '%s_Bz_monomer'  % (dbse)
-#GEOS['%s-H2S-mono-unCP' % (dbse)] = '%s_H2S_monomer' % (dbse)
-#GEOS['%s-Bz2-mono-unCP' % (dbse)] = '%s_Bz2_monomer' % (dbse)
-#GEOS['%s-Me-mono-unCP'  % (dbse)] = '%s_Me_monomer'  % (dbse)
-#GEOS['%s-Py-mono-unCP'  % (dbse)] = '%s_Py_monomer'  % (dbse)
-
-
 GEOS = {}
 for rxn in HRXN:
    distance = rxnpattern.match(rxn)

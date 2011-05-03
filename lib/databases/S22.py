@@ -14,6 +14,7 @@ HRXN_LG = [15]
 RXNM = {}     # reaction matrix of reagent contributions per reaction
 ACTV = {}     # order of active reagents per reaction
 ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
+ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
    RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1, 
@@ -21,6 +22,8 @@ for rxn in HRXN:
                                      '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
                                      '%s-%s-monoA-unCP' % (dbse, rxn) : -1, 
                                      '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+
+   ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
    ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn), 
                                      '%s-%s-monoA-CP'   % (dbse, rxn), 
