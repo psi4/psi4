@@ -8,6 +8,7 @@
  */
 
 #include "factory.h"
+#include "sobasis.h"
 #include <libparallel/parallel.h>
 #include "libciomr/libciomr.h"
 
@@ -90,4 +91,9 @@ bool MatrixFactory::init_with(const Dimension& rows, const Dimension& cols)
     }
 
     return true;
+}
+
+bool MatrixFactory::init_with(const boost::shared_ptr<SOBasisSet>& sobasis)
+{
+    return init_with(sobasis->dimension(), sobasis->dimension());
 }

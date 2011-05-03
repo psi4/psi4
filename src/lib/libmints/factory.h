@@ -14,6 +14,8 @@ template<class T> class shared_ptr;
 
 namespace psi {
 
+class SOBasisSet;
+
 /*! \ingroup MINTS
  *  \class MatrixFactory
  *  \brief A class for creating Matrix, SimpleMatrix, Vector, and SimpleVector objects.
@@ -49,6 +51,9 @@ public:
 
     /// Manually initialize the matrix factory with Dimension objects
     bool init_with(const Dimension& rows, const Dimension& cols);
+
+    /// Manually initialize the matrix factory with SOBasisSet object
+    bool init_with(const boost::shared_ptr<SOBasisSet>& sobasis);
 
     /// Returns number of irreps
     int nirrep() const {
