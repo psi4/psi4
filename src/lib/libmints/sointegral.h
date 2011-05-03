@@ -436,6 +436,10 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
     timer_off("TwoBodySOInt::provide_IJKL overall");
 #endif
 }
+
+typedef boost::shared_ptr<OneBodySOInt> SharedOneBodySOInt;
+typedef boost::shared_ptr<TwoBodySOInt> SharedTwoBodySOInt;
+
 }
 
 #endif // _psi_src_lib_libmints_sointegral_h_
