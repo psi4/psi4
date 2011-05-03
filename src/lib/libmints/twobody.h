@@ -104,6 +104,8 @@ public:
     void pure_transform(int, int, int, int, int nchunk);
 };
 
+typedef boost::shared_ptr<TwoBodyAOInt> SharedTwoBodyAOInt;
+
 }
 
 #endif
