@@ -120,6 +120,7 @@ public:
     void set_origin(const Vector3& _origin) { origin_ = _origin; }
 };
 
+typedef boost::shared_ptr<OneBodyAOInt> SharedOneBodyAOInt;
 }
 
 #endif
