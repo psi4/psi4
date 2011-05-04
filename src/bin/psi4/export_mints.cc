@@ -270,6 +270,7 @@ void export_mints()
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
             def("nuclear_dipole_contribution", &Molecule::nuclear_dipole_contribution).
             def("find_point_group", &Molecule::find_point_group).
+            def("reset_point_group", &Molecule::reset_point_group).
             def("set_point_group", &Molecule::set_point_group).
             def("point_group", &Molecule::point_group).
             def("schoenflies_symbol", &Molecule::schoenflies_symbol).
