@@ -395,6 +395,8 @@ public:
     void is_linear_planar(bool& linear, bool& planar, double tol) const;
     /// Find computational molecular point group, user can override this with the "symmetry" keyword
     boost::shared_ptr<PointGroup> find_point_group(double tol=1.0e-8) const;
+    /// Override symmetry from outside the molecule string
+    void reset_point_group(const std::string& pgname);
     /// Find highest molecular point group
     boost::shared_ptr<PointGroup> find_highest_point_group(double tol=1.0e-8) const;
     /// Release symmetry information

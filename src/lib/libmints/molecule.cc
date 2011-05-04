@@ -2014,6 +2014,12 @@ found_sigma:
     return pg;
 }
 
+void Molecule::reset_point_group(const std::string& pgname)
+{
+    symmetry_from_input_ = boost::to_lower_copy(pgname);
+}
+
+
 boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
 {
     boost::shared_ptr<PointGroup> pg = find_highest_point_group(tol);
