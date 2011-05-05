@@ -6,6 +6,7 @@
 
 namespace psi {
 
+    class Matrix;
     class BasisSet;
     class GaussianShell;
     class ObaraSaikaTwoCenterVIRecursion;
@@ -32,13 +33,22 @@ protected:
     /// Recursion object that does the heavy lifting.
     ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
 
+    /// Matrix of coordinates/charges of partial charges
+    boost::shared_ptr<Matrix> xyzZ_;
+
 public:
-    /// Constructor
+    /// Constructor. Assumes nuclear centers/charges as the potential
     PotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     ~PotentialInt();
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
+
+    /// Set the field of charges
+    void setChargeField(boost::shared_ptr<Matrix> xyzZ) { xyzZ_ = xyzZ; }
+
+    /// Get the field of charges
+    boost::shared_ptr<Matrix> chargeField() const { return xyzZ_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
