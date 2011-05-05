@@ -32,6 +32,17 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
     }
 
     buffer_ = new double[maxnao1*maxnao2];
+
+    // Setup the initial field of partial charges
+    xyzZ_ = shared_ptr<Matrix> (new Matrix("Partial Charge Field", bs1_->molecule()->natom(), 4));
+    double** xyzZp = xyzZ_->pointer();
+
+    for (int A = 0; A < bs1_->molecule()->natom(); A++) {
+        xyzZp[A][0] = bs1_->molecule()->x(A);
+        xyzZp[A][1] = bs1_->molecule()->y(A);
+        xyzZp[A][2] = bs1_->molecule()->z(A);
+        xyzZp[A][3] = (double) bs1_->molecule()->Z(A);
+    } 
 }
 
 PotentialInt::~PotentialInt()
@@ -73,6 +84,9 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
 
     double ***vi = potential_recur_.vi();
 
+    double** xyzZp = xyzZ_->pointer();
+    int ncharge = xyzZ_->rowspi()[0];
+
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
         double c1 = s1->coef(p1);
@@ -99,14 +113,14 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
 
             // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
             // molecule)
-            for (int atom=0; atom<bs1_->molecule()->natom(); ++atom) {
+            for (int atom=0; atom<ncharge; ++atom) {
                 double PC[3];
-                double Z = (double)bs1_->molecule()->Z(atom);
-                Vector3 C = bs1_->molecule()->xyz(atom);
 
-                PC[0] = P[0] - C[0];
-                PC[1] = P[1] - C[1];
-                PC[2] = P[2] - C[2];
+                double Z = xyzZp[atom][3];
+
+                PC[0] = P[0] - xyzZp[atom][0];
+                PC[1] = P[1] - xyzZp[atom][1];
+                PC[2] = P[2] - xyzZp[atom][2];
 
                 // Do recursion
                 potential_recur_.compute(PA, PB, PC, gamma, am1, am2);
@@ -184,6 +198,9 @@ void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
     double ***vy = potential_deriv_recur_.vy();
     double ***vz = potential_deriv_recur_.vz();
 
+    double** xyzZp = xyzZ_->pointer();
+    int ncharge = xyzZ_->rowspi()[0];
+
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
         double c1 = s1->coef(p1);
@@ -210,14 +227,14 @@ void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
 
             // Loop over atoms of basis set 1 (only works if bs1_ and bs2_ are on the same
             // molecule)
-            for (int atom=0; atom<bs1_->molecule()->natom(); ++atom) {
+            for (int atom=0; atom<ncharge; ++atom) {
                 double PC[3];
-                double Z = (double)bs1_->molecule()->Z(atom);
-                Vector3 C = bs1_->molecule()->xyz(atom);
 
-                PC[0] = P[0] - C[0];
-                PC[1] = P[1] - C[1];
-                PC[2] = P[2] - C[2];
+                double Z = xyzZp[atom][3];
+
+                PC[0] = P[0] - xyzZp[atom][0];
+                PC[1] = P[1] - xyzZp[atom][1];
+                PC[2] = P[2] - xyzZp[atom][2];
 
                 // Do recursion
                 potential_deriv_recur_.compute(PA, PB, PC, gamma, am1+1, am2+1);
