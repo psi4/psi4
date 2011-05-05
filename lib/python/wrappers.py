@@ -394,18 +394,18 @@ def database_execute(e_name, db_name, **kwargs):
     user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
     user_reference = PsiMod.get_option('REFERENCE')
 
-    if re.match(r'^sapt0$', e_name, re.IGNORECASE):
+    # Temporary alarms until more things are working
+    if re.match(r'^dfmp2$', e_name, re.IGNORECASE):
+        raise Exception('Databases not yet compatible with DF-MP2 calculations (who knows why).')
+    if re.match(r'^mp2c$', e_name, re.IGNORECASE):
         raise Exception('Databases not yet compatible with SAPT or MP2C calculations (supermolecular vs sapt structure).')
     if re.match(r'^ccsd', e_name, re.IGNORECASE):
         raise Exception('Databases not yet compatible with CC calculations (checkpoint file, perhaps).')
 
-
-
-
     # Configuration based upon e_name & db_name options
-        # Force non-supramolecular if needed
+    #   Force non-supramolecular if needed
     sapt_override = 0
-    if re.match(r'^sapt0$', e_name, re.IGNORECASE):
+    if re.match(r'^sapt', e_name, re.IGNORECASE):
         try:
             database.ACTV_SA
         except AttributeError:
@@ -413,7 +413,7 @@ def database_execute(e_name, db_name, **kwargs):
         else:
             sapt_override = 1
             ACTV = database.ACTV_SA
-        # Force open-shell if needed
+    #   Force open-shell if needed
     openshell_override = 0
     if user_reference == 'RHF':
         try:
@@ -424,14 +424,8 @@ def database_execute(e_name, db_name, **kwargs):
             openshell_override = 1
             PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
 
-
-
-
-
-
-
     # Configuration based upon database keyword options
-        # Option mode of operation- whether db run in one job or files farmed out
+    #   Option mode of operation- whether db run in one job or files farmed out
     db_mode = 'continuous'
     if(kwargs.has_key('mode')):
         db_mode = kwargs['mode'];
@@ -445,25 +439,25 @@ def database_execute(e_name, db_name, **kwargs):
     else:
         raise Exception('Database execution mode \'%s\' not valid.' % (db_mode))
       
-        # Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
+    #   Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
     db_cp = 'no'
     if(kwargs.has_key('cp')):
         db_cp = kwargs['cp'];
 
     if input.yes.match(str(db_cp)):
-        raise Exception('Counterpoise correction not yet working right.')
         try:
             database.ACTV_CP
         except AttributeError:
-             raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
+            raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
         else:
-             ACTV = database.ACTV_CP
+            raise Exception('Counterpoise correction not yet working right.')
+            ACTV = database.ACTV_CP
     elif input.no.match(str(db_cp)):
         pass
     else:
         raise Exception('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
 
-        # Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
+    #   Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
     db_zpe = 'no'
     if(kwargs.has_key('zpe')):
         db_zpe = kwargs['zpe'];
@@ -475,7 +469,7 @@ def database_execute(e_name, db_name, **kwargs):
     else:
         raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
 
-        # Option subset- whether all of the database or just a portion is run
+    #   Option subset- whether all of the database or just a portion is run
     db_subset = HRXN
     if(kwargs.has_key('subset')):
         db_subset = kwargs['subset'];
@@ -524,14 +518,14 @@ def database_execute(e_name, db_name, **kwargs):
     HSYS = drop_duplicates(sum(temp, []))
 
     # Sow all the necessary reagent computations
-    ERGT = {}
-    ERXN = {}
-
     PsiMod.print_out("\n")
     banner(("Database %s Computation" % (db_name)))
     PsiMod.print_out("\n")
 
-        # Loop through chemical systems
+    ERGT = {}
+    ERXN = {}
+
+    #   Loop through chemical systems
     for rgt in HSYS:
 
         PsiMod.print_out("\n")
@@ -553,14 +547,18 @@ def database_execute(e_name, db_name, **kwargs):
         molecule = PsiMod.get_active_molecule()
         molecule.update_geometry()
 
+        if sapt_override:
+            molecule.reset_point_group('c1')
+            molecule.fix_orientation(1) 
+            molecule.update_geometry()
+
         if (openshell_override) and (molecule.multiplicity() != 1):
             PsiMod.set_global_option('REFERENCE', 'UHF')
 
         if not molecule:
-            #print "NO MOLECULE"
-            raise ValueNotSet("no molecule found")
+            raise ValueNotSet("No molecule found.")
 
-        #print 'MOLECULE LIVES %23s %8s %4d %4d' % (rgt, PsiMod.get_option('REFERENCE'), molecule.molecular_charge(), molecule.multiplicity())
+        #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'), molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
         elecenergy = energy(e_name, **kwargs)
         #print elecenergy
         ERGT[rgt] = elecenergy
@@ -589,13 +587,13 @@ def database_execute(e_name, db_name, **kwargs):
     PsiMod.print_out('\n   %s\n' % (table_delimit))
     PsiMod.print_out('%23s %19s %8s' % ('Reaction', 'Reaction Energy', 'Error'),)
     for i in range(maxrgt):
-         #print '%20s' % ('Reagent '+str(i+1)),
-         PsiMod.print_out('%20s' % ('Reagent '+str(i+1)),)
+        #print '%20s' % ('Reagent '+str(i+1)),
+        PsiMod.print_out('%20s' % ('Reagent '+str(i+1)),)
     #print '\n%23s %10s %17s' % ('', 'Ref', '[kcal/mol]'),
     PsiMod.print_out('\n%23s %10s %17s' % ('', 'Ref', '[kcal/mol]'),)
     for i in range(maxrgt):
-         #print '%20s' % ('[H] Wt'),
-         PsiMod.print_out('%20s' % ('[H] Wt'),)
+        #print '%20s' % ('[H] Wt'),
+        PsiMod.print_out('%20s' % ('[H] Wt'),)
     #print '\n   %s' % (table_delimit),
     PsiMod.print_out('\n   %s' % (table_delimit),)
 
@@ -649,9 +647,6 @@ def database_execute(e_name, db_name, **kwargs):
     PsiMod.print_out('\n%23s   %17s %8.4f' % ('Mean Absolute Dev', '', MADerror/float(count_rxn)))
     PsiMod.print_out('\n%23s   %17s %8.4f' % ('RMS Dev', '', sqrt(RMSDerror/float(count_rxn))))
     PsiMod.print_out('\n   %s\n' % (table_delimit))
-
-    # Restore global options that may be changed
-    #PsiMod.set_global_option("REFERENCE", user_reference)
 
     return MADerror
 

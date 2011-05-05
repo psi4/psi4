@@ -64,12 +64,15 @@ HRXN_EQ = ['BzBz_S-3.9', 'BzBz_T-5.0', 'BzBz_PD34-1.8', 'BzH2S-3.8', 'BzMe-3.8',
 RXNM = {}     # reaction matrix of reagent contributions per reaction
 ACTV = {}     # order of active reagents per reaction
 ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
+ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
    if (rxn in BzBz_S) or (rxn in BzBz_PD34) or (rxn in BzBz_PD32) or (rxn in BzBz_PD36):
       RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
                                         '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
                                         '%s-Bz-mono-unCP'  % (dbse)      : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn) ]
@@ -82,6 +85,8 @@ for rxn in HRXN:
                                         '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
                                         '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
                                         '%s-Bz-mono-unCP'  % (dbse)      : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn),
@@ -96,6 +101,8 @@ for rxn in HRXN:
                                         '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
                                         '%s-Bz-mono-unCP'  % (dbse)      : -1,
                                         '%s-H2S-mono-unCP' % (dbse)      : -1 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn),
@@ -112,6 +119,8 @@ for rxn in HRXN:
                                         '%s-Bz2-mono-unCP' % (dbse)      : -1,
                                         '%s-Me-mono-unCP'  % (dbse)      : -1 }
 
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn),
                                         '%s-%s-monoB-CP'   % (dbse, rxn) ]
@@ -125,6 +134,8 @@ for rxn in HRXN:
                                         '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
                                         '%s-Me-mono-unCP'  % (dbse)      : -2 }
 
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn) ]
 
@@ -135,6 +146,8 @@ for rxn in HRXN:
       RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
                                         '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
                                         '%s-Py-mono-unCP'  % (dbse)      : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn) ]
@@ -147,6 +160,8 @@ for rxn in HRXN:
                                         '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
                                         '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
                                         '%s-Py-mono-unCP'  % (dbse)      : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn),

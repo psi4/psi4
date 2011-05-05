@@ -12,14 +12,13 @@ FaONFaON = []
 FaNNFaNN = []
 FaOOFaON = []
 FaONFaNN = []
+FaOOFaNN = []
 dist = [3.4,3.5,3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8,6.4,7.0,8.0,10.0]
 for d in dist: FaOOFaOO.append('FaOOFaOO-' + str(d))
 for d in dist: FaONFaON.append('FaONFaON-' + str(d))
 for d in dist: FaNNFaNN.append('FaNNFaNN-' + str(d))
 for d in dist: FaOOFaON.append('FaOOFaON-' + str(d))
 for d in dist: FaONFaNN.append('FaONFaNN-' + str(d))
-
-FaOOFaNN = []
 dist = [3.6,3.7,3.8,3.9,4.0,4.1,4.2,4.3,4.4,4.6,4.8,5.0,5.4,5.8,6.4,7.0,8.0,10.0]
 for d in dist: FaOOFaNN.append('FaOOFaNN-' + str(d))
 
@@ -34,12 +33,15 @@ HRXN_EQ = ['FaOOFaOO-3.6', 'FaONFaON-4.0', 'FaNNFaNN-4.1', 'FaOOFaON-3.8', 'FaON
 RXNM = {}     # reaction matrix of reagent contributions per reaction
 ACTV = {}     # order of active reagents per reaction
 ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
+ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
 for rxn in HRXN:
 
    if (rxn in FaOOFaOO) or (rxn in FaONFaON) or (rxn in FaNNFaNN):
       RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
                                         '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
                                         '%s-%s-monoA-unCP' % (dbse, rxn) : -2 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn) ]
@@ -53,6 +55,8 @@ for rxn in HRXN:
                                         '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
                                         '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
                                         '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+
+      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
       ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
                                         '%s-%s-monoA-CP'   % (dbse, rxn),

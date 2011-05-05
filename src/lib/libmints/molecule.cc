@@ -2017,6 +2017,7 @@ found_sigma:
 void Molecule::reset_point_group(const std::string& pgname)
 {
     symmetry_from_input_ = boost::to_lower_copy(pgname);
+    set_point_group(find_point_group());
 }
 
 
