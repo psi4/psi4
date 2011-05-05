@@ -226,7 +226,7 @@ def run_dfmp2(name, **kwargs):
     banner("DFMP2")
     PsiMod.print_out("\n")
     e_dfmp2 = PsiMod.dfmp2()
-    #e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
+    e_scs_dfmp2 = PsiMod.get_variable('SCS-DF-MP2 ENERGY')
     if (name.upper() == 'SCS-DFMP2'):
         return e_scs_dfmp2
     elif (name.upper() == 'DFMP2'):
