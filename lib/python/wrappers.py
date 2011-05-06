@@ -450,7 +450,6 @@ def database_execute(e_name, db_name, **kwargs):
         except AttributeError:
             raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
         else:
-            raise Exception('Counterpoise correction not yet working right.')
             ACTV = database.ACTV_CP
     elif input.no.match(str(db_cp)):
         pass
