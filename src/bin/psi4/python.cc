@@ -683,6 +683,13 @@ void Python::run(FILE *input)
             file << line;
         }
 
+        // Echo the input, so's the user does not have to carry the infile around
+        fprintf(outfile,"\n  ==> Input File <==\n\n");
+        fprintf(outfile,"--------------------------------------------------------------------------\n");
+        fprintf(outfile,"%s", file.str().c_str());
+        fprintf(outfile,"--------------------------------------------------------------------------\n");
+        fflush(outfile);
+
         try {
             PyImport_AppendInittab(strdup("PsiMod"), initPsiMod);
             object objectMain(handle<>(borrowed(PyImport_AddModule("__main__"))));
@@ -705,9 +712,8 @@ void Python::run(FILE *input)
             Py_DECREF(function);
             Py_DECREF(input);
 
-
             if (verbose) {
-                fprintf(outfile, "Input file to run:\n%s", inputfile.c_str());
+                fprintf(outfile, "\n Input file to run:\n%s", inputfile.c_str());
                 fflush(outfile);
             }
 

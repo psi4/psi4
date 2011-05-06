@@ -426,7 +426,7 @@ void HF::print_header()
         fprintf(outfile, "  ==> Primary Basis: %s <==\n\n", options_.get_str("BASIS").c_str());
     }
     basisset_->print_by_level(outfile, print_);
-
+    fflush(outfile);
 }
 void HF::print_preiterations()
 {
