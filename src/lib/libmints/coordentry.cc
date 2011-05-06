@@ -35,7 +35,7 @@ CoordEntry::~CoordEntry()
 }
 
 /**
- * Compares the charge, mass and basis set(s) of the current atom with those of another atom
+ * Compares the charge, mass, ghost status, and basis set(s) of the current atom with those of another atom
  *
  * @return Whether the two atoms are the same.
  */
@@ -43,6 +43,7 @@ bool CoordEntry::is_equivalent_to(const boost::shared_ptr<CoordEntry> &other) co
 {
     if(other->Z_ != Z_) return false;
     if(other->mass_ != mass_) return false;
+    if(other->ghosted_ != ghosted_) return false;
     std::map<std::string, std::string>::const_iterator iter = basissets_.begin();
     std::map<std::string, std::string>::const_iterator stop = basissets_.end();
     for(; iter != stop; ++iter){
