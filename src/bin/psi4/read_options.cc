@@ -401,6 +401,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("LAMBDA", 0.0);
     /*- The operator used to perturb the Hamiltonian, if requested -*/
     options.add_str("PERTURB_WITH", "DIPOLE_X", "DIPOLE_X DIPOLE_Y DIPOLE_Z");
+    /*- Look for an ExternalPotential object in Python or not? -*/
+    options.add_bool("EXTERN", false);
 
     /*- The storage scheme for the three index tensors in density fitting -*/
     options.add_str("RI_SCF_STORAGE", "DEFAULT", "DEFAULT CORE DISK");

@@ -312,6 +312,8 @@ void HF::finalize()
     //Sphalf_.reset();
     X_.reset();
     H_.reset();
+    T_.reset();
+    V_.reset();
     diag_temp_.reset();
     diag_F_temp_.reset();
     diag_C_temp_.reset();
@@ -447,28 +449,22 @@ void HF::print_preiterations()
 
 void HF::form_H()
 {
-    SharedMatrix kinetic(factory_->create_matrix("Kinetic Integrals"));
-    SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
+    SharedMatrix T_(factory_->create_matrix("Kinetic Integrals"));
+    SharedMatrix V_(factory_->create_matrix("Potential Integrals"));
 
     // Integral factory
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
     boost::shared_ptr<OneBodySOInt>    soT(integral->so_kinetic());
     boost::shared_ptr<OneBodySOInt>    soV(integral->so_potential());
 
-    soT->compute(kinetic);
-    soV->compute(potential);
+    soT->compute(T_);
+    soV->compute(V_);
 
     if (debug_ > 2)
-        kinetic->print(outfile);
+        T_->print(outfile);
 
     if (debug_ > 2)
-        potential->print(outfile);
-
-    H_->copy(kinetic);
-    H_->add(potential);
-
-    if (debug_ > 2)
-        H_->print(outfile);
+        V_->print(outfile);
 
     if (perturb_h_) {
         boost::shared_ptr<IntegralFactory> ifact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
@@ -486,7 +482,7 @@ void HF::form_H()
                 if (Communicator::world->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(x).\n", lambda_);
                 dipoles[0]->scale(lambda_);
-                H_->add(dipoles[0]);
+                V_->add(dipoles[0]);
             }
         } else if (perturb_ == dipole_y) {
             if (msymm.component_symmetry(1) != 0){
@@ -497,7 +493,7 @@ void HF::form_H()
                 if (Communicator::world->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(y).\n", lambda_);
                 dipoles[1]->scale(lambda_);
-                H_->add(dipoles[1]);
+                V_->add(dipoles[1]);
             }
         } else if (perturb_ == dipole_z) {
             if (msymm.component_symmetry(2) != 0){
@@ -508,10 +504,24 @@ void HF::form_H()
                 if (Communicator::world->me() == 0)
                     fprintf(outfile, "  Perturbing H by %f mu(z).\n", lambda_);
                 dipoles[2]->scale(lambda_);
-                H_->add(dipoles[2]);
+                V_->add(dipoles[2]);
             }
         }
     }
+
+    if (options_.get_bool("EXTERN")) {
+        shared_ptr<ExternalPotential> external = Process::environment.potential();
+        if (print_) {
+            external->print();
+        }
+        shared_ptr<Matrix> Vprime = external->computePotentialMatrix(basisset_); 
+        if (print_ > 3)
+            Vprime->print(); 
+        V_->add(Vprime); 
+    }
+
+    H_->copy(T_);
+    H_->add(V_);
 
     if (print_ > 3)
         H_->print(outfile);
