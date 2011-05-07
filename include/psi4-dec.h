@@ -34,6 +34,7 @@ namespace psi {
 
   class Molecule;
   class Wavefunction;
+  class ExternalPotential;
 
   class Process
   {
@@ -45,6 +46,7 @@ namespace psi {
           int nthread_;
 
           boost::shared_ptr<Molecule> molecule_;
+          boost::shared_ptr<ExternalPotential> potential_;
           boost::shared_ptr<Wavefunction> reference_wavefunction_;
       public:
           void init(char **envp);
@@ -57,6 +59,11 @@ namespace psi {
           void set_molecule(const boost::shared_ptr<Molecule>& molecule);
           /// Return active molecule
           boost::shared_ptr<Molecule> molecule() const;
+
+          /// Set active external potential
+          void set_potential(const boost::shared_ptr<ExternalPotential>& pot);
+          /// Return active external potential
+          boost::shared_ptr<ExternalPotential> potential() const;
 
           /// Set reference wavefunction
           void set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction);

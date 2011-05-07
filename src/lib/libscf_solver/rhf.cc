@@ -531,11 +531,7 @@ void RHF::save_sapt_info()
     double *sapt_evals = epsilon_a_->to_block_vector();
     double **sapt_C = Ca_->to_block_matrix();
     //print_mat(sapt_C,sapt_nso,sapt_nso,outfile);
-    SharedMatrix potential(factory_->create_matrix("Potential Integrals"));
-    IntegralFactory integral(basisset_, basisset_, basisset_, basisset_);
-    boost::shared_ptr<OneBodySOInt> V(integral.so_potential());
-    V->compute(potential);
-    double *sapt_V_ints = potential->to_lower_triangle();
+    double *sapt_V_ints = V_->to_lower_triangle();
     double *sapt_S_ints = S_->to_lower_triangle();
 
     int errcod;

@@ -31,6 +31,10 @@ class DFHF;
 class HF : public Wavefunction {
 protected:
 
+    /// The kinetic energy matrix
+    SharedMatrix T_;
+    /// The 1e potential energy matrix
+    SharedMatrix V_;
     /// The core hamiltonian
     SharedMatrix H_;
     /// The overlap metric

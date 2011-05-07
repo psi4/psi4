@@ -34,14 +34,14 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
     buffer_ = new double[maxnao1*maxnao2];
 
     // Setup the initial field of partial charges
-    xyzZ_ = shared_ptr<Matrix> (new Matrix("Partial Charge Field", bs1_->molecule()->natom(), 4));
-    double** xyzZp = xyzZ_->pointer();
+    Zxyz_ = shared_ptr<Matrix> (new Matrix("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4));
+    double** Zxyzp = Zxyz_->pointer();
 
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {
-        xyzZp[A][0] = bs1_->molecule()->x(A);
-        xyzZp[A][1] = bs1_->molecule()->y(A);
-        xyzZp[A][2] = bs1_->molecule()->z(A);
-        xyzZp[A][3] = (double) bs1_->molecule()->Z(A);
+        Zxyzp[A][0] = (double) bs1_->molecule()->Z(A);
+        Zxyzp[A][1] = bs1_->molecule()->x(A);
+        Zxyzp[A][2] = bs1_->molecule()->y(A);
+        Zxyzp[A][3] = bs1_->molecule()->z(A);
     } 
 }
 
@@ -84,8 +84,8 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
 
     double ***vi = potential_recur_.vi();
 
-    double** xyzZp = xyzZ_->pointer();
-    int ncharge = xyzZ_->rowspi()[0];
+    double** Zxyzp = Zxyz_->pointer();
+    int ncharge = Zxyz_->rowspi()[0];
 
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
@@ -116,11 +116,11 @@ void PotentialInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
             for (int atom=0; atom<ncharge; ++atom) {
                 double PC[3];
 
-                double Z = xyzZp[atom][3];
+                double Z = Zxyzp[atom][0];
 
-                PC[0] = P[0] - xyzZp[atom][0];
-                PC[1] = P[1] - xyzZp[atom][1];
-                PC[2] = P[2] - xyzZp[atom][2];
+                PC[0] = P[0] - Zxyzp[atom][1];
+                PC[1] = P[1] - Zxyzp[atom][2];
+                PC[2] = P[2] - Zxyzp[atom][3];
 
                 // Do recursion
                 potential_recur_.compute(PA, PB, PC, gamma, am1, am2);
@@ -198,8 +198,8 @@ void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
     double ***vy = potential_deriv_recur_.vy();
     double ***vz = potential_deriv_recur_.vz();
 
-    double** xyzZp = xyzZ_->pointer();
-    int ncharge = xyzZ_->rowspi()[0];
+    double** Zxyzp = Zxyz_->pointer();
+    int ncharge = Zxyz_->rowspi()[0];
 
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
@@ -230,11 +230,11 @@ void PotentialInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
             for (int atom=0; atom<ncharge; ++atom) {
                 double PC[3];
 
-                double Z = xyzZp[atom][3];
+                double Z = Zxyzp[atom][0];
 
-                PC[0] = P[0] - xyzZp[atom][0];
-                PC[1] = P[1] - xyzZp[atom][1];
-                PC[2] = P[2] - xyzZp[atom][2];
+                PC[0] = P[0] - Zxyzp[atom][1];
+                PC[1] = P[1] - Zxyzp[atom][2];
+                PC[2] = P[2] - Zxyzp[atom][3];
 
                 // Do recursion
                 potential_deriv_recur_.compute(PA, PB, PC, gamma, am1+1, am2+1);

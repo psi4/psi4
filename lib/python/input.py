@@ -193,6 +193,76 @@ def process_basis_assign_block(matchobj):
             bad_option_syntax(line)
     return command
 
+def process_extern_block(matchobj):
+
+    spacing = str(matchobj.group(1))
+    name = str(matchobj.group(2))
+    if (not name or name.isspace()):
+        name = "EXTERN"
+    block = str(matchobj.group(3))
+    lines = re.split('\n', block)
+
+    extern = "%s%s = PsiMod.ExternalPotential()" % (spacing, name)
+    extern += '%sactivate_potential(%s)' %(spacing,name)
+    extern += '%s%s.setName("%s")' % (spacing,name,name)
+
+    addType = "None"
+
+    NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"  
+
+    charge_re = re.compile(r'^\s*(charges?)\s*$', re.IGNORECASE)
+    dip_re = re.compile(r'^\s*(dipoles?)\s*$', re.IGNORECASE)
+    quad_re = re.compile(r'^\s*(quadrupoles?)\s*$', re.IGNORECASE)
+    spacer_re = re.compile(r'^\s*\*{4}\s*$')
+
+    c_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$') 
+    d_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$') 
+    q_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$') 
+
+    for line in lines:
+        if (not line or line.isspace()):
+            continue
+        
+        if spacer_re.match(line):
+            continue
+        elif charge_re.match(line):
+            addType = "Charge"
+            continue
+        elif dip_re.match(line): 
+            addType = "Dipole"
+            continue
+        elif quad_re.match(line):
+            addType = "Quadrupole"
+            continue
+        else:
+            if addType == "None":
+                print "First Line of extern section must be a type of potential (charge, dipole, etc)\n"
+                bad_option_syntax(line)
+           
+            if addType == "Charge": 
+                mobj = c_re.match(line)
+                if not mobj:
+                    bad_option_syntax(line)
+                extern += "%s%s.addCharge(%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
+                     mobj.group(2), mobj.group(3), mobj.group(4))
+                
+            if addType == "Dipole": 
+                mobj = d_re.match(line)
+                if not mobj:
+                    bad_option_syntax(line)
+                extern += "%s%s.addDipole(%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
+                     mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6))
+                
+            if addType == "Quadrupole": 
+                mobj = q_re.match(line)
+                if not mobj:
+                    bad_option_syntax(line)
+                extern += "%s%s.addQuadrupole(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
+                     mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6), mobj.group(7),\
+                     mobj.group(8),mobj.group(9))
+
+    return extern
+
 def process_input(raw_input):
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
@@ -222,7 +292,7 @@ def process_input(raw_input):
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
-    molecule = re.compile(r'^(\s*?)molecule\s*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    molecule = re.compile(r'^(\s*?)molecule[=\s]*(\w*?)\s*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(molecule, process_molecule_command, temp)
 
     # Then remove repeated newlines
@@ -238,7 +308,7 @@ def process_input(raw_input):
     temp = re.sub(print_string,process_print_command,temp)
 
     # Process "memory ... "
-    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]B)', re.IGNORECASE)
+    memory_string = re.compile(r'(\s*?)memory\s+([+-]?\d*\.?\d+)\s+([KMG]i?B)', re.IGNORECASE)
     temp = re.sub(memory_string,process_memory_command,temp)
 
     # Process "basis file ... "
@@ -253,6 +323,9 @@ def process_input(raw_input):
     basis_block = re.compile(r'(\s*?)basis[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
     temp = re.sub(basis_block,process_basis_block,temp)
 
+    # Process "extern name { ... }"
+    extern_block = re.compile(r'(\s*?)extern\s*(\w*?)[=\s]*\{(.*?)\}', re.MULTILINE | re.DOTALL | re.IGNORECASE)
+    temp = re.sub(extern_block,process_extern_block,temp)
 
     # imports
     imports  = 'from PsiMod import *\n'

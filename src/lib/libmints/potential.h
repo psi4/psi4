@@ -34,7 +34,7 @@ protected:
     ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
 
     /// Matrix of coordinates/charges of partial charges
-    boost::shared_ptr<Matrix> xyzZ_;
+    boost::shared_ptr<Matrix> Zxyz_;
 
 public:
     /// Constructor. Assumes nuclear centers/charges as the potential
@@ -45,10 +45,10 @@ public:
     virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
 
     /// Set the field of charges
-    void setChargeField(boost::shared_ptr<Matrix> xyzZ) { xyzZ_ = xyzZ; }
+    void setChargeField(boost::shared_ptr<Matrix> Zxyz) { Zxyz_ = Zxyz; }
 
     /// Get the field of charges
-    boost::shared_ptr<Matrix> chargeField() const { return xyzZ_; }
+    boost::shared_ptr<Matrix> chargeField() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }

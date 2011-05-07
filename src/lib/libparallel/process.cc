@@ -1,6 +1,7 @@
 #include <psi4-dec.h>
 #include <psiconfig.h>
 #include <libmints/molecule.h>
+#include <libmints/extern.h>
 #include <boost/algorithm/string.hpp>
 
 //MKL Header
@@ -123,6 +124,16 @@ void Process::Environment::set_molecule(const boost::shared_ptr<Molecule>& molec
 boost::shared_ptr<Molecule> Process::Environment::molecule() const
 {
   return molecule_;
+}
+
+void Process::Environment::set_potential(const boost::shared_ptr<ExternalPotential>& potential)
+{
+  potential_ = potential;
+}
+
+boost::shared_ptr<ExternalPotential> Process::Environment::potential() const
+{
+  return potential_;
 }
 
 void Process::Environment::set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction)

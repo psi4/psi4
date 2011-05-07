@@ -439,6 +439,16 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
+{
+    Process::environment.set_potential(potential);
+}
+
+boost::shared_ptr<ExternalPotential> py_psi_get_active_potential()
+{
+    return Process::environment.potential();
+}
+
 double py_psi_get_variable(const std::string & key)
 {
     string uppercase_key = key;
@@ -525,6 +535,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("prepare_options_for_module", py_psi_prepare_options_for_module);
     def("set_active_molecule", py_psi_set_active_molecule);
     def("get_active_molecule", &py_psi_get_active_molecule);
+    def("set_active_potential", py_psi_set_active_potential);
+    def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("set_memory", py_psi_set_memory);
     def("get_memory", py_psi_get_memory);
