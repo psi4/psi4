@@ -7,6 +7,10 @@
 #include <libmints/mints.h>
 #include <utility> 
 
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace boost;
 using namespace psi;
 using namespace std;
@@ -65,18 +69,15 @@ double dRPA::df_compute_energy()
   C_DGEMM('N','N',naocc_*navir_,ndf_,naocc_*navir_,1.0,tIAJB_,naocc_*navir_,
     B_p_IA_[0],ndf_,0.0,Th_p_IA_[0],ndf_); 
 
-  double emp2 = df_energy();
+  double e_mp2j = df_energy();
 
-  fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
-  fprintf(outfile,"  Correlation Energy          %18.10lf\n",emp2);
-  fprintf(outfile,"  Total DF-MP2 (J) Energy     %18.10lf\n\n",Eref_+emp2);
   fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)     Time (s)\n");
   fflush(outfile);
 
   int iter = 1;
   int done = 0;
   double e_new;
-  double e_old = emp2;
+  double e_old = e_mp2j;
   double rms = 1.0;
 
   do {
@@ -126,6 +127,24 @@ double dRPA::df_compute_energy()
   }
   while(!done);
 
+  double scale = options_.get_double("RPA_ALPHA");
+
+  fprintf(outfile,"\n");
+  fprintf(outfile,"  Reference Energy                    %18.10lf [H]\n",Eref_);
+  fprintf(outfile,"  Total CD-dRPA Energy                %18.10lf [H]\n",Eref_ + e_old);
+  fprintf(outfile,"  DF-MP2J Energy                      %18.10lf [H]\n",e_mp2j);
+  fprintf(outfile,"  DF-dRPA Energy                      %18.10lf [H]\n",e_old);
+  fprintf(outfile,"  Delta DF-dRPA/MP2J Energy           %18.10lf [H]\n",e_old - e_mp2j);
+  fprintf(outfile,"  Delta DF-dRPA/MP2J Scale            %18.10lf [-]\n",scale); 
+  fprintf(outfile,"  Scaled Delta DF-dRPA/MP2J Energy    %18.10lf [H]\n",scale*(e_old - e_mp2j));
+
+  Process::environment.globals["RPA TOTAL ENERGY"]        = Eref_ + e_old;
+  Process::environment.globals["RPA MP2J ENERGY"]         = e_mp2j;
+  Process::environment.globals["RPA DRPA ENERGY"]         = e_old;
+  Process::environment.globals["RPA DELTA ENERGY"]        = e_old - e_mp2j;
+  Process::environment.globals["RPA SCALED DELTA ENERGY"] = scale*(e_old - e_mp2j);
+  Process::environment.globals["CURRENT ENERGY"]          = Eref_ + e_old;
+ 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
   fprintf(outfile,"  Correlation Energy          %18.10lf\n",e_old);
@@ -143,6 +162,12 @@ double dRPA::df_compute_energy()
 double dRPA::cd_compute_energy()
 {
     // ==> Initialization <== // 
+    fprintf(outfile,"  CD-dRPA Algorithm Selected.\n\n");
+
+    int nthread = 1;
+    #ifdef _OPENMP
+        nthread = omp_get_max_threads();
+    #endif
 
     time_t start = time(NULL);
     time_t stop;
@@ -199,7 +224,7 @@ double dRPA::cd_compute_energy()
     double delta = options_.get_double("RPA_DELTA"); 
  
     // => Iterations <= //
-    fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)     Time (s)   N_P\n");
+    fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)     Time (s) Vectors\n");
     do {
  
         // => Validation <= //
@@ -215,7 +240,6 @@ double dRPA::cd_compute_energy()
                 for (int jb = 0; jb < nov; jb++) {
                     int j = jb / nvir;
                     int b = jb % nvir;
-                    fprintf(outfile," (%3d %d | %3d %3d) => (%3d | %3d)\n", i, a, j , b, ia, jb);
                     Texactp[ia][jb] /= evals_avirp_[a] + evals_avirp_[b] - evals_aoccp_[i] - evals_aoccp_[j];
                 }
             }    
@@ -293,7 +317,7 @@ double dRPA::cd_compute_energy()
 
             // TODO OpenMP that guy
             for (int R = 0; R < P; R++) {
-                C_DAXPY(nov,-tau[R][P], tau[R], 1, tau_ia, 1); 
+                C_DAXPY(nov - P - 1,-tau[R][P], &tau[R][P+1], 1, &tau_ia[P+1], 1); 
             }
 
             C_DSCAL(nov,1.0/diag,tau_ia,1);
@@ -305,12 +329,21 @@ double dRPA::cd_compute_energy()
             if (diag < delta) break;
         }
 
+        if (debug_) {
+            shared_ptr<Matrix> Tau_u(new Matrix("Tau Unsorted", nP, nov));
+            double** Tau_up = Tau_u->pointer();
+            for (int P = 0; P < nP; P++) {
+                C_DCOPY(nov,tau[P],1,Tau_up[P],1);
+            }
+            Tau_u->print(); 
+        }
 
         // Make a contiguous block, and backsort
         shared_ptr<Matrix> Tau(new Matrix("Tau_P^ia", nP, nov));
         double** Taup = Tau->pointer();
 
-        // Painful unsort, TODO OpenMP
+        // Painful unsort
+        #pragma omp parallel for num_threads(nthread)
         for (int P = 0; P < nP; P++) {
             for (int ia = 0; ia < nov; ia++) {
                 Taup[P][orderp[ia]] = tau[P][ia];
@@ -392,14 +425,25 @@ double dRPA::cd_compute_energy()
     }
     while(!done);
   
+    double scale = options_.get_double("RPA_ALPHA");
+
     fprintf(outfile,"\n");
-    fprintf(outfile,"  Reference Energy               %18.10lf\n",Eref_);
-    fprintf(outfile,"  Total CD-dRPA Energy           %18.10lf\n",Eref_ + e_old);
-    fprintf(outfile,"  CD-MP2J Energy                 %18.10lf\n",e_mp2j);
-    fprintf(outfile,"  CD-dRPA Energy                 %18.10lf\n",e_old);
-    fprintf(outfile,"  Delta CD-dRPA/MP2J Energy      %18.10lf\n",e_old - e_mp2j);
-  
-    return(0.0);
+    fprintf(outfile,"  Reference Energy                    %18.10lf [H]\n",Eref_);
+    fprintf(outfile,"  Total CD-dRPA Energy                %18.10lf [H]\n",Eref_ + e_old);
+    fprintf(outfile,"  CD-MP2J Energy                      %18.10lf [H]\n",e_mp2j);
+    fprintf(outfile,"  CD-dRPA Energy                      %18.10lf [H]\n",e_old);
+    fprintf(outfile,"  Delta CD-dRPA/MP2J Energy           %18.10lf [H]\n",e_old - e_mp2j);
+    fprintf(outfile,"  Delta CD-dRPA/MP2J Scale            %18.10lf [-]\n",scale); 
+    fprintf(outfile,"  Scaled Delta CD-dRPA/MP2J Energy    %18.10lf [H]\n",scale*(e_old - e_mp2j));
+
+    Process::environment.globals["RPA TOTAL ENERGY"]        = Eref_ + e_old;
+    Process::environment.globals["RPA MP2J ENERGY"]         = e_mp2j;
+    Process::environment.globals["RPA DRPA ENERGY"]         = e_old;
+    Process::environment.globals["RPA DELTA ENERGY"]        = e_old - e_mp2j;
+    Process::environment.globals["RPA SCALED DELTA ENERGY"] = scale*(e_old - e_mp2j);
+    Process::environment.globals["CURRENT ENERGY"]          = Eref_ + e_old;
+ 
+    return Eref_ + e_old;
 }
 
 void dRPA::print_header()
