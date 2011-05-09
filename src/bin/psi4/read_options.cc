@@ -1325,9 +1325,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         DF N^5
         CD N^4
     -*/
-    options.add_str("RPA_ALGORITHM", "DF", "DF CD");
+    options.add_str("RPA_ALGORITHM", "DF", "CD DF");
     /*- RPA Cholesky delta -*/ 
     options.add_double("RPA_DELTA", 1.0E-6);
+    /*- RPA alpha parameter -*/
+    options.add_double("RPA_ALPHA", 1.0);
 
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
