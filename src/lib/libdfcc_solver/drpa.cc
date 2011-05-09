@@ -5,9 +5,11 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libmints/mints.h>
+#include <utility> 
 
 using namespace boost;
 using namespace psi;
+using namespace std;
 
 namespace psi { namespace dfcc {
 
@@ -140,51 +142,252 @@ double dRPA::df_compute_energy()
 
 double dRPA::cd_compute_energy()
 {
-  time_t start = time(NULL);
-  time_t stop;
+    // ==> Initialization <== // 
 
-  double **B_p_IA = block_matrix(naocc_*navir_,ndf_);
+    time_t start = time(NULL);
+    time_t stop;
+  
+    int naux = ndf_;
+    int nocc = naocc_;
+    int nvir = navir_;
+    ULI nov = nocc*(ULI)nvir;
+ 
+    if (debug_) {
+        evals_aocc_->print();
+        evals_avir_->print();
+    }
 
-  psio_->read_entry(DFCC_INT_FILE,"OV DF Integrals",(char *)
-      &(B_p_IA[0][0]),naocc_*navir_*ndf_*sizeof(double));
+    // => DF Integrals <= //  
+    shared_ptr<Matrix> Qia(new Matrix("(Q|ia) Integrals", nov,naux));
+    double** Qiap = Qia->pointer();
+ 
+    // TODO run out of core with (Q|ia) striping
+    psio_->read_entry(DFCC_INT_FILE,"OV DF Integrals",(char *)
+        &(Qiap[0][0]),nov*naux*sizeof(double));
 
-  double emp2 = 0.0;
+    if (debug_)
+        Qia->print();
 
-  fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
-  fprintf(outfile,"  Correlation Energy          %18.10lf\n",emp2);
-  fprintf(outfile,"  Total DF-MP2 (J) Energy     %18.10lf\n\n",Eref_+emp2);
-  fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)     Time (s)\n");
-  fflush(outfile);
+    // => Initial ZiaQ tensor <= //
+    shared_ptr<Matrix> ZiaQ (new Matrix("Z_ia^Q Tensor", nov, naux)); 
+    double** ZiaQp = ZiaQ->pointer();
+    C_DCOPY(nov*naux,Qiap[0],1,ZiaQp[0],1);
 
-  int iter = 1;
-  int done = 0;
-  double e_new;
-  double e_old = emp2;
-  double rms;
+    if (debug_)
+        ZiaQ->print();
 
-  do {
+    // Restripe for the preferred (Qia) order
+    Qia.reset();
+    Qia = shared_ptr<Matrix>(new Matrix("(Q|ia) Integrals", naux, nov));
+    Qiap = Qia->pointer();
 
-    stop = time(NULL);
-    fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld\n",iter,e_new,
-      e_old-e_new,rms,stop-start);
-    fflush(outfile);
-    iter++;
+    for (int Q = 0; Q < naux; Q++) {
+        C_DCOPY(nov, &ZiaQp[0][Q], naux, Qiap[Q], 1);
+    }   
 
-    if (iter > options_.get_int("MAXITER")) done = 1;
-    if (fabs(e_old-e_new) < pow(10.0,-(double) options_.get_int("E_CONVERGE")))
-      done = 1;
-    if (rms < pow(10.0,-(double) options_.get_int("T_CONVERGE"))) done = 1;
+    if (debug_)
+        Qia->print();
 
-    e_old = e_new;
-  }
-  while(!done);
+    // => Iteration Control <= //
+    int iter = 1;
+    int done = 0;
+    double e_new;
+    double emp2 = 0.0;
+    double e_old = emp2;
+    double rms = 1.0;
 
-  fprintf(outfile,"\n");
-  fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
-  fprintf(outfile,"  Correlation Energy          %18.10lf\n",e_old);
-  fprintf(outfile,"  Total DF-dRPA Energy         %18.10lf\n\n",Eref_+e_old);
+    double delta = options_.get_double("RPA_DELTA"); 
+ 
+    // => Iterations <= //
+    do {
+ 
+        // => Validation <= //
+        shared_ptr<Matrix> Texact; 
+        if (debug_) {
+            Texact = shared_ptr<Matrix>(new Matrix("-T exact", nov, nov));
+            double** Texactp = Texact->pointer();
+            C_DGEMM('N','T',nov,nov,naux,1.0,ZiaQp[0],naux,ZiaQp[0],naux,0.0,Texactp[0],nov);
 
-  return(0.0);
+            for (int ia = 0; ia < nov; ia++) {
+                int i = ia / nvir;
+                int a = ia % nvir;
+                for (int jb = 0; jb < nov; jb++) {
+                    int j = jb / nvir;
+                    int b = jb % nvir;
+                    fprintf(outfile," (%3d %d | %3d %3d) => (%3d | %3d)\n", i, a, j , b, ia, jb);
+                    Texactp[ia][jb] /= evals_avirp_[a] + evals_avirp_[b] - evals_aoccp_[i] - evals_aoccp_[j];
+                }
+            }    
+
+            Texact->print();
+        }
+
+        // => Superdiagonal <= // 
+        shared_ptr<Vector> t_iaia(new Vector("-t_ia^ia",nov));
+        double* t_iaiap = t_iaia->pointer();
+        std::vector<std::pair<double, int> > super;
+        for (int i = 0, ia = 0; i < nocc; i++) {
+            for (int a = 0; a < nvir; a++, ia++) {
+                t_iaiap[ia] = C_DDOT(naux,ZiaQp[ia],1,ZiaQp[ia],1) / \
+                    (2.0 * (evals_avirp_[a] - evals_aoccp_[i]));
+                super.push_back(make_pair(t_iaiap[ia], ia));
+            }
+        }
+      
+        if (debug_) 
+            t_iaia->print();
+ 
+        // => Sort <= //
+        std::sort(super.begin(), super.end(), greater<std::pair<double, int> >() );
+        shared_ptr<IntVector> order(new IntVector("ia' Order", nov));
+        int* orderp = order->pointer();
+        for (int ia = 0; ia < nov; ia++) {
+            orderp[ia] = super[ia].second;
+        }
+
+        if (debug_) {
+            order->print(outfile);
+            fflush(outfile);
+        }    
+
+        // => Cholesky <= //
+        std::vector<double*> tau;
+        double* temp = new double[nov];
+        int nP = 0;
+
+        while (nP < nov) {
+            nP++;
+            int P = nP - 1;
+            int ia = orderp[P];
+            int i = ia / nvir;
+            int a = ia % nvir;
+
+            double* tau_ia = new double[nov];
+            memset(static_cast<void*>(tau_ia), '\0', nov*sizeof(double));
+            tau.push_back(tau_ia);
+
+            // => L_ii type element <= //
+            double diag = C_DDOT(naux,ZiaQp[ia],1,ZiaQp[ia],1) / \
+                (2.0 * (evals_avirp_[a] - evals_aoccp_[i]));
+
+            for (int R = 0; R < P; R++) {
+                diag -= tau[R][P] * tau[R][P];
+            }
+
+            diag = sqrt(diag);
+
+            // => L_ij type element <= //
+            C_DGEMV('N',nov,naux,1.0,ZiaQp[0],naux,ZiaQp[ia],1,0.0,temp,1);
+            for (int j = 0, jb = 0; j < nocc; j++) {
+                for (int b = 0; b < nvir; b++, jb++) {
+                    temp[jb] /= (evals_avirp_[a] + evals_avirp_[b] - \
+                        evals_aoccp_[i] - evals_aoccp_[j]);
+                }
+            }         
+
+            // Sort
+            for (int jb = P+1; jb < nov; jb++) {
+                tau_ia[jb] = temp[orderp[jb]];
+            }
+
+            // TODO OpenMP that guy
+            for (int R = 0; R < P; R++) {
+                C_DAXPY(nov,-tau[R][P], tau[R], 1, tau_ia, 1); 
+            }
+
+            C_DSCAL(nov,1.0/diag,tau_ia,1);
+            
+            // Must not forget the diagonal 
+            tau_ia[P] = diag;
+ 
+            // => Convergence Check <= //
+            if (diag < delta) break;
+        }
+
+
+        // Make a contiguous block, and backsort
+        shared_ptr<Matrix> Tau(new Matrix("Tau_P^ia", nP, nov));
+        double** Taup = Tau->pointer();
+
+        // Painful unsort, TODO OpenMP
+        for (int P = 0; P < nP; P++) {
+            for (int ia = 0; ia < nov; ia++) {
+                Taup[P][orderp[ia]] = tau[P][ia];
+            }
+        }
+
+        if (debug_) {
+            Tau->print();
+            shared_ptr<Matrix> Tapp(new Matrix("-T Approximate",nov,nov));
+            double** Tappp = Tapp->pointer();
+            C_DGEMM('T','N',nov,nov,nP,1.0,Taup[0],nov,Taup[0],nov,0.0,Tappp[0],nov);
+            Tapp->print();
+            fflush(outfile);
+        }
+        
+        // Clear the memory off
+        delete[] temp;
+        for (int P = 0; P < nP; P++)
+            delete[] tau[P]; 
+   
+        // => Energy Evaluation <= //
+        shared_ptr<Matrix> A(new Matrix("A_PQ", nP, naux));
+        double** Ap = A->pointer();
+
+        C_DGEMM('N','T',nP,naux,nov,1.0,Taup[0],nov,Qiap[0],nov,0.0,Ap[0],naux);
+
+        double E = 0.0;
+        for (ULI PR = 0L; PR < naux*(ULI)nP; PR++) {
+            E += Ap[0][PR] * Ap[0][PR];    
+        } 
+        E *= -2.0; 
+
+        // => Store the MP2J energy <= //
+        if (iter == 1) emp2 = E;  
+        e_new = E; 
+
+        // => X_PQ <= //
+        shared_ptr<Matrix> X(new Matrix("X_PQ", nP, naux));
+        double** Xp = X->pointer();
+        
+        C_DGEMM('N','T',nP,naux,nov,1.0,Taup[0],nov,Qiap[0],nov,0.0,Xp[0],naux);
+        
+        // => Y_ia_Q <= //
+        ZiaQ->set_name("Y_ia_Q");
+        C_DGEMM('T','N',nov,naux,nP,1.0,Taup[0],nov,Xp[0],naux,0.0,ZiaQp[0],naux);       
+        X.reset();
+ 
+        // => DIIS Y_ia^Q <= //
+        // TODO 
+ 
+        // => Z_ia_Q <= //
+        ZiaQ->set_name("Z_ia_Q");
+        for (int Q = 0; Q < naux; Q++) {
+            C_DAXPY(naux,1.0,Qiap[Q],1,&ZiaQp[0][Q],naux);
+        }
+ 
+        // => Convergence Check <= // 
+        stop = time(NULL);
+        fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld\n",iter,e_new,
+          e_old-e_new,rms,stop-start);
+        fflush(outfile);
+        iter++;
+    
+        if (iter > options_.get_int("MAXITER")) done = 1;
+        if (fabs(e_old-e_new) < pow(10.0,-(double) options_.get_int("E_CONVERGE")))
+          done = 1;
+        if (rms < pow(10.0,-(double) options_.get_int("T_CONVERGE"))) done = 1;
+    
+        e_old = e_new;
+    }
+    while(!done);
+  
+    fprintf(outfile,"\n");
+    fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
+    fprintf(outfile,"  Correlation Energy          %18.10lf\n",e_old);
+    fprintf(outfile,"  Total DF-dRPA Energy         %18.10lf\n\n",Eref_+e_old);
+  
+    return(0.0);
 }
 
 void dRPA::print_header()
