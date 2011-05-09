@@ -189,16 +189,17 @@ double dRPA::cd_compute_energy()
         Qia->print();
 
     // => Iteration Control <= //
-    int iter = 1;
+    int iter = 0;
     int done = 0;
     double e_new;
-    double emp2 = 0.0;
-    double e_old = emp2;
+    double e_mp2j = 0.0;
+    double e_old = e_mp2j;
     double rms = 1.0;
 
     double delta = options_.get_double("RPA_DELTA"); 
  
     // => Iterations <= //
+    fprintf(outfile,"  Iter       Energy (H)          dE (H)             RMS (H)     Time (s)   N_P\n");
     do {
  
         // => Validation <= //
@@ -343,7 +344,7 @@ double dRPA::cd_compute_energy()
         E *= -2.0; 
 
         // => Store the MP2J energy <= //
-        if (iter == 1) emp2 = E;  
+        if (iter == 0) e_mp2j = E;  
         e_new = E; 
 
         // => X_PQ <= //
@@ -351,11 +352,17 @@ double dRPA::cd_compute_energy()
         double** Xp = X->pointer();
         
         C_DGEMM('N','T',nP,naux,nov,1.0,Taup[0],nov,Qiap[0],nov,0.0,Xp[0],naux);
-        
+       
+        if (debug_) 
+            X->print();
+ 
         // => Y_ia_Q <= //
         ZiaQ->set_name("Y_ia_Q");
-        C_DGEMM('T','N',nov,naux,nP,1.0,Taup[0],nov,Xp[0],naux,0.0,ZiaQp[0],naux);       
+        C_DGEMM('T','N',nov,naux,nP,-1.0,Taup[0],nov,Xp[0],naux,0.0,ZiaQp[0],naux);       
         X.reset();
+
+        if (debug_)
+            ZiaQ->print();
  
         // => DIIS Y_ia^Q <= //
         // TODO 
@@ -363,13 +370,16 @@ double dRPA::cd_compute_energy()
         // => Z_ia_Q <= //
         ZiaQ->set_name("Z_ia_Q");
         for (int Q = 0; Q < naux; Q++) {
-            C_DAXPY(naux,1.0,Qiap[Q],1,&ZiaQp[0][Q],naux);
+            C_DAXPY(nov,1.0,Qiap[Q],1,&ZiaQp[0][Q],naux);
         }
- 
+        
+        if (debug_) 
+            ZiaQ->print();
+        
         // => Convergence Check <= // 
         stop = time(NULL);
-        fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld\n",iter,e_new,
-          e_old-e_new,rms,stop-start);
+        fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld %6d\n",iter,e_new,
+          e_old-e_new,rms,stop-start, nP);
         fflush(outfile);
         iter++;
     
@@ -383,9 +393,11 @@ double dRPA::cd_compute_energy()
     while(!done);
   
     fprintf(outfile,"\n");
-    fprintf(outfile,"  Reference Energy            %18.10lf\n",Eref_);
-    fprintf(outfile,"  Correlation Energy          %18.10lf\n",e_old);
-    fprintf(outfile,"  Total DF-dRPA Energy         %18.10lf\n\n",Eref_+e_old);
+    fprintf(outfile,"  Reference Energy               %18.10lf\n",Eref_);
+    fprintf(outfile,"  Total CD-dRPA Energy           %18.10lf\n",Eref_ + e_old);
+    fprintf(outfile,"  CD-MP2J Energy                 %18.10lf\n",e_mp2j);
+    fprintf(outfile,"  CD-dRPA Energy                 %18.10lf\n",e_old);
+    fprintf(outfile,"  Delta CD-dRPA/MP2J Energy      %18.10lf\n",e_old - e_mp2j);
   
     return(0.0);
 }
