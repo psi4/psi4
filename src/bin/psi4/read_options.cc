@@ -1284,7 +1284,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
-    options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD");
+    options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD RPA");
     /*- MO basis -*/
     options.add_str("BASIS","NONE");
     /*- DF basis for MO integrals -*/
@@ -1320,6 +1320,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
+
+    /*- RPA algorithm 
+        DF N^5
+        CD N^4
+    -*/
+    options.add_str("RPA_ALGORITHM", "DF", "DF CD");
 
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
