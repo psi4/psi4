@@ -16,6 +16,7 @@
 #include <libdfcc_solver/ccd.h>
 #include <libdfcc_solver/mp2.h>
 #include <libdfcc_solver/mp3.h>
+#include <libdfcc_solver/drpa.h>
 #include <libmints/mints.h>
 #include "wrapper.h"
 
@@ -52,6 +53,11 @@ PsiReturnType dfcc(Options & options)
 
     MP3 mp3(options, psio, chkpt);
     mp3.compute_energy();
+
+    } else if (options.get_str("WAVEFUNCTION") == "DRPA") {
+
+    dRPA drpa(options, psio, chkpt);
+    drpa.compute_energy();
 
     }
 
