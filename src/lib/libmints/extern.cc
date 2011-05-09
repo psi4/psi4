@@ -32,7 +32,7 @@ void ExternalPotential::addQuadrupole(double qxx, double qxy, double qxz, double
 }
 void ExternalPotential::print(FILE* out) const
 {
-    fprintf(out, "  ==> %s: External Potential Field <==\n\n", name_.c_str());
+    fprintf(out, "  ==> External Potential Field: %s <==\n\n", name_.c_str());
     
     // Charges
     fprintf(out, "   => Charges [a.u.] <=\n\n");
