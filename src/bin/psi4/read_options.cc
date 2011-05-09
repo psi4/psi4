@@ -1284,7 +1284,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
-    options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD RPA");
+    options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- MO basis -*/
     options.add_str("BASIS","NONE");
     /*- DF basis for MO integrals -*/
