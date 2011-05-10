@@ -396,7 +396,8 @@ def database(e_name, db_name, **kwargs):
 
     # Temporary alarms until more things are working
     if re.match(r'^dfmp2$', e_name, re.IGNORECASE):
-        raise Exception('Databases not yet compatible with DF-MP2 calculations (who knows why).')
+        #raise Exception('Databases not yet compatible with DF-MP2 calculations (who knows why).')
+        pass
     if re.match(r'^mp2c$', e_name, re.IGNORECASE):
         raise Exception('Databases not yet compatible with SAPT or MP2C calculations (supermolecular vs sapt structure).')
     if re.match(r'^ccsd', e_name, re.IGNORECASE):
@@ -404,14 +405,14 @@ def database(e_name, db_name, **kwargs):
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
-    sapt_override = 0
+    symmetry_override = 0
     if re.match(r'^sapt', e_name, re.IGNORECASE):
         try:
             database.ACTV_SA
         except AttributeError:
             raise Exception('Database %s not suitable for non-supramolecular calculation.' % (db_name))
         else:
-            sapt_override = 1
+            symmetry_override = 1
             ACTV = database.ACTV_SA
     #   Force open-shell if needed
     openshell_override = 0
@@ -425,6 +426,18 @@ def database(e_name, db_name, **kwargs):
             PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
 
     # Configuration based upon database keyword options
+    #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2)
+    db_symm = 'yes'
+    if(kwargs.has_key('symm')):
+        db_symm = kwargs['symm']
+
+    if input.no.match(str(db_symm)):
+        symmetry_override = 1
+    elif input.yes.match(str(db_symm)):
+        pass
+    else:
+        raise Exception('Symmetry mode \'%s\' not valid.' % (db_symm))
+
     #   Option mode of operation- whether db run in one job or files farmed out
     db_mode = 'continuous'
     if(kwargs.has_key('mode')):
@@ -557,7 +570,7 @@ def database(e_name, db_name, **kwargs):
         commands += """molecule = PsiMod.get_active_molecule()\n"""
         commands += """molecule.update_geometry()\n"""
 
-        if sapt_override:
+        if symmetry_override:
             commands += """molecule.reset_point_group('c1')\n"""
             commands += """molecule.fix_orientation(1)\n"""
             commands += """molecule.update_geometry()\n"""
