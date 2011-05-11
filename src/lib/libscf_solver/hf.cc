@@ -449,8 +449,8 @@ void HF::print_preiterations()
 
 void HF::form_H()
 {
-    SharedMatrix T_(factory_->create_matrix("Kinetic Integrals"));
-    SharedMatrix V_(factory_->create_matrix("Potential Integrals"));
+    T_ = shared_ptr<Matrix>(factory_->create_matrix("Kinetic Integrals"));
+    V_ = shared_ptr<Matrix>(factory_->create_matrix("Potential Integrals"));
 
     // Integral factory
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
