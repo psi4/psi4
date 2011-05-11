@@ -564,7 +564,7 @@ def database(e_name, db_name, **kwargs):
         if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_MP2', '%s')\n""" % (user_ri_basis_mp2)
         if not((user_ri_basis_cc == "") or (user_ri_basis_cc == 'NONE')):
-            commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
+            commands += """PsiMod.set_global_option('RI_BASIS_CC', '%s')\n""" % (user_ri_basis_cc)
         if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SAPT', '%s')\n""" % (user_ri_basis_sapt)
         commands += """molecule = PsiMod.get_active_molecule()\n"""
