@@ -326,7 +326,7 @@ double dRPA::cd_compute_energy()
             tau_ia[P] = diag;
  
             // => Convergence Check <= //
-            if (diag < delta) break;
+            if (diag * diag < delta) break;
         }
 
         if (debug_) {
