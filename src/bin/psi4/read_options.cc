@@ -1328,6 +1328,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RPA_ALGORITHM", "CD", "CD DF");
     /*- RPA Cholesky delta -*/ 
     options.add_double("RPA_DELTA", 1.0E-6);
+    /*- Continue RPA even if T's are not numerically SPD? -*/
+    options.add_bool("RPA_RISKY",false);
+    /*- Continue RPA numerical SPD Tolerance -*/
+    options.add_double("RPA_PLUS_EPSILON",1.0E-12);
     /*- RPA alpha parameter -*/
     options.add_double("RPA_ALPHA", 1.0);
 

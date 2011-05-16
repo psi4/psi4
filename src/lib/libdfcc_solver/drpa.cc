@@ -164,6 +164,8 @@ double dRPA::cd_compute_energy()
     // ==> Initialization <== // 
     fprintf(outfile,"  CD-dRPA Algorithm Selected.\n\n");
 
+    double PLUS_EPSILON = options_.get_double("RPA_PLUS_EPSILON");
+
     int nthread = 1;
     #ifdef _OPENMP
         nthread = omp_get_max_threads();
@@ -291,10 +293,22 @@ double dRPA::cd_compute_energy()
             Tsort->print();
 
             C_DPOTRF('L',nov,Tsortp[0],nov);
-            Tsort->zero_lower();
+            //Tsort->zero_lower();
             Tsort->set_name("-t_ia_jb Cholesky Unsorted Exact");
             Tsort->print();
         } 
+
+        // => Eigenstructure Validation <= //
+        if (debug_) {
+            shared_ptr<Matrix> Temp(  new Matrix("-T Temp",nov,nov));
+            shared_ptr<Matrix> Eigmat(new Matrix("-T Eigenvectors",nov,nov));
+            shared_ptr<Vector> Eigval(new Vector("-T Eigenvalues" ,nov));
+
+            Eigmat->copy(Texact);
+            Texact->diagonalize(Eigmat.get(),Eigval.get());
+
+            Eigval->print();
+        }
 
         // => Cholesky <= //
         std::vector<double*> tau;
@@ -316,35 +330,45 @@ double dRPA::cd_compute_energy()
             double diag = C_DDOT(naux,ZiaQp[ia],1,ZiaQp[ia],1) / \
                 (2.0 * (evals_avirp_[a] - evals_aoccp_[i]));
 
+            //fprintf(outfile," P = %d, ia = %d, t = %14.10f\n",P,ia,diag);
+
             for (int R = 0; R < P; R++) {
                 diag -= tau[R][P] * tau[R][P];
             }
 
-            diag = sqrt(diag);
+            // Throw if the user is feeling conservative and the diagonal is imaginary
+            if (diag < PLUS_EPSILON && !options_.get_bool("RPA_RISKY")) 
+                throw PSIEXCEPTION("dRPA T amplitudes are not numerically positive definite");
 
-            // => L_ij type element <= //
-            C_DGEMV('N',nov,naux,1.0,ZiaQp[0],naux,ZiaQp[ia],1,0.0,temp,1);
-            for (int j = 0, jb = 0; j < nocc; j++) {
-                for (int b = 0; b < nvir; b++, jb++) {
-                    temp[jb] /= (evals_avirp_[a] + evals_avirp_[b] - \
-                        evals_aoccp_[i] - evals_aoccp_[j]);
+            // Else, ignore the row if imaginary
+            if (diag > PLUS_EPSILON) {
+                diag = sqrt(diag);
+
+                // => L_ij type element <= //
+                C_DGEMV('N',nov,naux,1.0,ZiaQp[0],naux,ZiaQp[ia],1,0.0,temp,1);
+                for (int j = 0, jb = 0; j < nocc; j++) {
+                    for (int b = 0; b < nvir; b++, jb++) {
+                        temp[jb] /= (evals_avirp_[a] + evals_avirp_[b] - \
+                            evals_aoccp_[i] - evals_aoccp_[j]);
+                    }
+                }         
+
+                // Sort
+                for (int jb = P+1; jb < nov; jb++) {
+                    tau_ia[jb] = temp[orderp[jb]];
                 }
-            }         
 
-            // Sort
-            for (int jb = P+1; jb < nov; jb++) {
-                tau_ia[jb] = temp[orderp[jb]];
+                // TODO OpenMP that guy
+                for (int R = 0; R < P; R++) {
+                    C_DAXPY(nov - P - 1,-tau[R][P], &tau[R][P+1], 1, &tau_ia[P+1], 1); 
+                }
+
+                C_DSCAL(nov,1.0/diag,tau_ia,1);
+                
+                // Must not forget the diagonal 
+                //fprintf(outfile," P = %d, diagonal = %14.10f\n", P, diag);
+                tau_ia[P] = diag;
             }
-
-            // TODO OpenMP that guy
-            for (int R = 0; R < P; R++) {
-                C_DAXPY(nov - P - 1,-tau[R][P], &tau[R][P+1], 1, &tau_ia[P+1], 1); 
-            }
-
-            C_DSCAL(nov,1.0/diag,tau_ia,1);
-            
-            // Must not forget the diagonal 
-            tau_ia[P] = diag;
  
             // => Convergence Check <= //
             
@@ -356,7 +380,7 @@ double dRPA::cd_compute_energy()
 
             // Case where degeneracies occur
             //fprintf(outfile,"nP = %3d\n", nP);
-            for (int R = P + 1; P < nov && OK; R++) {
+            for (int R = P + 1; R < nov && OK; R++) {
                 double errR = t_iaiap[orderp[R]];
                 for (int Q = 0; Q < nP; Q++) {
                     errR -= tau[Q][R] * tau[Q][R];
