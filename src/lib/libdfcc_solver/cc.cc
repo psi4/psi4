@@ -580,6 +580,39 @@ void DFCCDIIS::store_vectors(double *t_vec, double *err_vec)
     free(diis_err_label);
 }
 
+void DFCCDIIS::store_current_vector(char *t_vec)
+{
+    char *diis_vec_label = get_vec_label(curr_vec_);
+
+    psio_->write_entry(diis_file_,diis_vec_label,t_vec,
+        vec_length_*(ULI) sizeof(double));
+    
+    free(diis_vec_label);
+}
+
+void DFCCDIIS::store_error_vector(char *err_vec)
+{
+    char *diis_err_label = get_err_label(curr_vec_);
+
+    psio_->write_entry(diis_file_,diis_err_label,err_vec,
+        vec_length_*sizeof(double));
+
+    free(diis_err_label);
+}
+
+void DFCCDIIS::increment_vectors()
+{
+    curr_vec_ = (curr_vec_+1)%max_diis_vecs_;
+    num_vecs_++;
+    if (num_vecs_ > max_diis_vecs_) num_vecs_ = max_diis_vecs_;
+}
+
+char *DFCCDIIS::get_last_vec_label()
+{
+    int vec_num = (curr_vec_+max_diis_vecs_-1)%max_diis_vecs_;
+    return(get_vec_label(vec_num));
+}
+
 void DFCCDIIS::get_new_vector(double *vec_j, double *vec_i)
 {
     int *ipiv;
@@ -628,6 +661,69 @@ void DFCCDIIS::get_new_vector(double *vec_j, double *vec_i)
 
     free(ipiv);
     free(Cvec);
+    free_block(Bmat);
+}
+
+void DFCCDIIS::get_new_vector(double **vec_i, int cols)
+{
+    int *ipiv;
+    double *Cvec;
+    double **Bmat;
+
+    double *temp = init_array(cols);
+    int rows = vec_length_/cols;
+
+    ipiv = init_int_array(num_vecs_+1);
+    Bmat = block_matrix(num_vecs_+1,num_vecs_+1);
+    Cvec = (double *) malloc((num_vecs_+1)*sizeof(double));
+
+    for (int i=0; i<num_vecs_; i++) {
+      char *err_label_i = get_err_label(i);
+      psio_->read_entry(diis_file_,err_label_i,(char *) &(vec_i[0][0]),
+        vec_length_*(ULI) sizeof(double));
+      for (int j=0; j<=i; j++) {
+        char *err_label_j = get_err_label(j);
+        psio_address next_j = PSIO_ZERO;
+        double Bval = 0.0;
+        for (int n=0; n < rows; n++) {
+            psio_->read(diis_file_,err_label_j,(char *) &(temp[0]),
+                cols*(ULI) sizeof(double),next_j,&next_j);
+            Bval = C_DDOT(cols,vec_i[n],1,temp,1);
+        }
+        Bmat[i][j] = Bmat[j][i] = Bval;
+        free(err_label_j);
+      }
+      free(err_label_i);
+    }
+
+    for (int i=0; i<num_vecs_; i++) {
+      Bmat[num_vecs_][i] = -1.0;
+      Bmat[i][num_vecs_] = -1.0;
+      Cvec[i] = 0.0;
+    }
+
+    Bmat[num_vecs_][num_vecs_] = 0.0;
+    Cvec[num_vecs_] = -1.0;
+
+    C_DGESV(num_vecs_+1,1,&(Bmat[0][0]),num_vecs_+1,&(ipiv[0]),&(Cvec[0]),
+      num_vecs_+1);
+
+    memset(vec_i[0],'\0',sizeof(double)*vec_length_);
+
+    for (int i=0; i<num_vecs_; i++) {
+        char *vec_label_i = get_vec_label(i);
+        psio_address next_i = PSIO_ZERO;
+        for (int n=0; n < rows; n++) {
+            psio_->read(diis_file_,vec_label_i,(char *) &(temp[0]),
+                cols*(ULI) sizeof(double),next_i,&next_i);
+            C_DAXPY(cols,Cvec[i],temp,1,vec_i[n],1);
+        }
+        free(vec_label_i);
+    }
+
+    free(ipiv);
+    free(Cvec);
+    free(temp);
     free_block(Bmat);
 }
 

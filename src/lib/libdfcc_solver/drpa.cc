@@ -81,6 +81,8 @@ double dRPA::df_compute_energy()
   double rms = 1.0;
 
   do {
+    C_DGEMM('N','N',naocc_*navir_,ndf_,naocc_*navir_,1.0,tIAJB_,naocc_*navir_,
+      B_p_IA_[0],ndf_,0.0,Th_p_IA_[0],ndf_); 
 
     C_DGEMM('N','T',naocc_*navir_,naocc_*navir_,ndf_,1.0,B_p_IA_[0],ndf_,
       B_p_IA_[0],ndf_,0.0,tIAJB_,naocc_*navir_);
@@ -109,14 +111,13 @@ double dRPA::df_compute_energy()
         options_.get_bool("DIIS")) {
       diis_->get_new_vector(tIAJB_,xIAJB_);
       fprintf(outfile,"  DIIS\n");
-      C_DGEMM('N','N',naocc_*navir_,ndf_,naocc_*navir_,1.0,tIAJB_,
-        naocc_*navir_,B_p_IA_[0],ndf_,0.0,Th_p_IA_[0],ndf_);
     }
     else {
       fprintf(outfile,"\n");
     }
     fflush(outfile);
 
+    C_DCOPY((long int) naocc_*navir_*naocc_*navir_,tIAJB_,1,t2IAJB_,1);
     iter++;
 
     if (iter > options_.get_int("MAXITER")) done = 1;
@@ -173,12 +174,16 @@ double dRPA::cd_compute_energy()
 
     time_t start = time(NULL);
     time_t stop;
-  
+
     int naux = ndf_;
     int nocc = naocc_;
     int nvir = navir_;
     ULI nov = nocc*(ULI)nvir;
  
+    if (options_.get_bool("DIIS"))
+      diis_ = shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,nov*naux,
+        options_.get_int("MAX_DIIS_VECS"),psio_));
+  
     if (debug_) {
         evals_aocc_->print();
         evals_avir_->print();
@@ -190,7 +195,7 @@ double dRPA::cd_compute_energy()
  
     // TODO run out of core with (Q|ia) striping
     psio_->read_entry(DFCC_INT_FILE,"OV DF Integrals",(char *)
-        &(Qiap[0][0]),nov*naux*sizeof(double));
+        &(Qiap[0][0]),sizeof(double)*nov*naux);
 
     if (debug_)
         Qia->print();
@@ -471,7 +476,66 @@ double dRPA::cd_compute_energy()
             ZiaQ->print();
  
         // => DIIS Y_ia^Q <= //
-        // TODO 
+        if (options_.get_bool("DIIS")) {
+            if (iter == 0) {
+              psio_->write_entry(DFCC_INT_FILE,"Old Y_ia_Q",(char *)
+                  &(ZiaQp[0][0]),sizeof(double)*nov*naux);
+            }
+            else {
+                diis_->store_current_vector((char *) &(ZiaQp[0][0]));
+  
+                double *temp = init_array(naux);
+                psio_address next_YiaQ = PSIO_ZERO;
+                for (int ia=0; ia < nov; ia++) {
+                    psio_->read(DFCC_INT_FILE,"Old Y_ia_Q",(char *)
+                        &(temp[0]),sizeof(double)*naux,next_YiaQ,&next_YiaQ);
+                    C_DAXPY(naux,-1.0,temp,1,ZiaQp[ia],1);
+                }
+                diis_->store_error_vector((char *) &(ZiaQp[0][0]));
+                free(temp);
+
+                diis_->increment_vectors();
+
+                rms = C_DDOT(nov*naux,ZiaQp[0],1,ZiaQp[0],1);
+                rms /= (double) nov*naux;
+                rms = sqrt(rms);
+
+                char *veclabel = diis_->get_last_vec_label();
+                psio_->read_entry(DFCC_DIIS_FILE,veclabel,(char *)
+                    &(ZiaQp[0][0]),sizeof(double)*nov*naux);
+                free(veclabel);
+
+                psio_->write_entry(DFCC_INT_FILE,"Old Y_ia_Q",(char *)
+                    &(ZiaQp[0][0]),sizeof(double)*nov*naux);
+            }
+            if (options_.get_int("MIN_DIIS_VECS") <= iter) {
+              diis_->get_new_vector(ZiaQp,naux);
+            }
+        }
+        else {
+            if (iter == 0) {
+              psio_->write_entry(DFCC_INT_FILE,"Old Y_ia_Q",(char *)
+                  &(ZiaQp[0][0]),sizeof(double)*nov*naux);
+            }
+            else {
+                rms = 0.0;
+                double *temp = init_array(naux);
+                psio_address next_YiaQ = PSIO_ZERO;
+                for (int ia=0; ia < nov; ia++) {
+                    psio_->read(DFCC_INT_FILE,"Old Y_ia_Q",(char *)
+                        &(temp[0]),sizeof(double)*naux,next_YiaQ,&next_YiaQ);
+                    C_DAXPY(naux,-1.0,ZiaQp[ia],1,temp,1);
+                    rms += C_DDOT(naux,temp,1,temp,1);
+                }
+                free(temp);
+
+                rms /= (double) nov*naux;
+                rms = sqrt(rms);
+
+                psio_->write_entry(DFCC_INT_FILE,"Old Y_ia_Q",(char *)
+                    &(ZiaQp[0][0]),sizeof(double)*nov*naux);
+            }
+        }
  
         // => Z_ia_Q <= //
         ZiaQ->set_name("Z_ia_Q");
@@ -484,8 +548,20 @@ double dRPA::cd_compute_energy()
         
         // => Convergence Check <= // 
         stop = time(NULL);
-        fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld %6d\n",iter,e_new,
-          e_old-e_new,rms,stop-start, nP);
+        if (iter == 0)
+            fprintf(outfile,
+                "  %4d %16.8lf %17.9lf                   %12ld %6d",
+                iter,e_new,e_old-e_new,stop-start, nP);
+        else
+            fprintf(outfile,"  %4d %16.8lf %17.9lf %17.9lf %12ld %6d",
+                iter,e_new,e_old-e_new,rms,stop-start, nP);
+
+        if (options_.get_int("MIN_DIIS_VECS") <= iter && 
+            options_.get_bool("DIIS"))
+            fprintf(outfile," DIIS\n");
+        else 
+            fprintf(outfile,"\n");
+ 
         fflush(outfile);
         iter++;
     
@@ -565,8 +641,6 @@ double dRPA::df_store_error_vecs()
 
   rms = C_DDOT((long int) naocc_*navir_*naocc_*navir_,t2IAJB_,1,t2IAJB_,1);
   rms /= (double) naocc_*navir_*naocc_*navir_;
-
-  C_DCOPY((long int) naocc_*navir_*naocc_*navir_,tIAJB_,1,t2IAJB_,1);
 
   return(sqrt(rms));
 }
