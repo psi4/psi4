@@ -273,7 +273,28 @@ double dRPA::cd_compute_energy()
         if (debug_) {
             order->print(outfile);
             fflush(outfile);
-        }    
+        }   
+
+        // => More Validation <= //
+        shared_ptr<Matrix> Tsort;
+        if (debug_) {
+            Tsort = shared_ptr<Matrix>(new Matrix("-t_ia^jb Unsorted",nov,nov));
+            double** Tsortp = Tsort->pointer();
+            double** Texactp = Texact->pointer();
+
+            for (int ia = 0; ia < nov; ia++) {
+                for (int jb = 0; jb < nov; jb++) {
+                    Tsortp[ia][jb] = Texactp[orderp[ia]][orderp[jb]];
+                }
+            }
+
+            Tsort->print();
+
+            C_DPOTRF('L',nov,Tsortp[0],nov);
+            Tsort->zero_lower();
+            Tsort->set_name("-t_ia_jb Cholesky Unsorted Exact");
+            Tsort->print();
+        } 
 
         // => Cholesky <= //
         std::vector<double*> tau;
@@ -326,7 +347,25 @@ double dRPA::cd_compute_energy()
             tau_ia[P] = diag;
  
             // => Convergence Check <= //
-            if (diag * diag < delta) break;
+            
+            // Assume OK
+            bool OK = true;
+
+            // Conventional wisdom
+            if (diag * diag >= delta) OK = false;
+
+            // Case where degeneracies occur
+            //fprintf(outfile,"nP = %3d\n", nP);
+            for (int R = P + 1; P < nov && OK; R++) {
+                double errR = t_iaiap[orderp[R]];
+                for (int Q = 0; Q < nP; Q++) {
+                    errR -= tau[Q][R] * tau[Q][R];
+                }
+                //fprintf(outfile,"  R = %d, errR = %14.10f\n", R, errR);
+                if (fabs(errR) > delta) OK = false; 
+            }
+        
+            if (OK) break;
         }
 
         if (debug_) {
@@ -358,7 +397,17 @@ double dRPA::cd_compute_energy()
             Tapp->print();
             fflush(outfile);
         }
-        
+       
+        if (debug_) {
+            shared_ptr<Matrix> Tapp(new Matrix("-T Approximate (from Exact Cholesky)",nov,nov));
+            double** Tappp = Tapp->pointer();
+            double** Tsortp = Tsort->pointer();
+            C_DGEMM('T','N',nov,nov,nP,1.0,Tsortp[0],nov,Tsortp[0],nov,0.0,Tappp[0],nov);
+            Tapp->print();
+            fflush(outfile);
+            
+        }
+ 
         // Clear the memory off
         delete[] temp;
         for (int P = 0; P < nP; P++)
@@ -477,6 +526,7 @@ void dRPA::apply_denom()
 
 double dRPA::df_energy()
 {
+  // Because Ed's a pussy
   return(2.0*C_DDOT(naocc_*navir_*ndf_,Th_p_IA_[0],1,B_p_IA_[0],1));
 }
 
