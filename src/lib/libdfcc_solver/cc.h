@@ -138,8 +138,24 @@ public:
     DFCCDIIS(int, int, int, boost::shared_ptr<PSIO>);
     ~DFCCDIIS();
 
+    /* Stores new vectors and error vectors in one call */
     void store_vectors(double *, double *);
+
+    /* Stores new vectors and error vectors separately
+       these should be called as a pair, followed by increment_vectors()
+       or the DIIS will not work properly. */
+    void store_current_vector(char *t_vec);
+    void store_error_vector(char *err_vec);
+    void increment_vectors();
+
+    /* Performs the DIIS extrapolation with two arrays in core */
     void get_new_vector(double *, double *);
+
+    /* Performs the DIIS extrapolation in chunks with one array */
+    void get_new_vector(double **vec_i, int cols);
+
+    char *get_last_vec_label();
+
 };
 
 }}
