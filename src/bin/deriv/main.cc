@@ -51,8 +51,11 @@ PsiReturnType deriv(Options & options)
 
     // Create an SOBasisSet
     boost::shared_ptr<SOBasisSet> sobasisset(new SOBasisSet(basisset, integral));
-    SharedMatrix usotoao(sobasisset->petitelist()->sotoao());
-//    SharedMatrix aotoso(sobasisset->petitelist()->aotoso());
+    // TODO change this back to use sobasisset's petitelist when we get the SO derivs working.  We make a new one
+    // here because we don't want the pure transform folded in when we use AO integrals.
+    shared_ptr<PetiteList> petite(new PetiteList(basisset, integral, false));
+    SharedMatrix usotoao(petite->sotoao());
+//    SharedMatrix usotoao(sobasisset->petitelist()->sotoao());
 
     const Dimension dimension = sobasisset->dimension();
     // Initialize the factory

@@ -37,7 +37,6 @@ OneBodySOInt::~OneBodySOInt()
 
 void OneBodySOInt::common_init()
 {
-    ob_->set_force_cartesian(true);
 
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis1(), integral_));
 
@@ -45,6 +44,8 @@ void OneBodySOInt::common_init()
         b2_ = b1_;
     else
         b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis2(), integral_));
+
+    ob_->set_force_cartesian(b1_->petitelist()->include_pure_transform());
 
     int max1_nequivalent_atoms = ob_->basis1()->molecule()->max_nequivalent();
     int max2_nequivalent_atoms = ob_->basis2()->molecule()->max_nequivalent();
@@ -488,8 +489,6 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral)
     : tb_(tb), integral_(integral)
 {
-    tb_->set_force_cartesian(true);
-
     // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis1(), integral));
 
@@ -507,6 +506,8 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
         b4_ = b3_;
     else
         b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis4(), integral));
+
+    tb_->set_force_cartesian(b1_->petitelist()->include_pure_transform());
 
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *

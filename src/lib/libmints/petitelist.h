@@ -113,6 +113,7 @@ struct SOCoefficients{
     }
 
     void print() const {
+        fprintf(outfile, "\nSOCoefficients, irrep = %d\n", irrep);
         std::map<int, double>::const_iterator iter;
         for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
             fprintf(outfile, "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
@@ -161,8 +162,8 @@ class PetiteList
     void init();
 
 public:
-    PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
-    PetiteList(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
+    PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&, bool include_pure_transform = false);
+    PetiteList(const boost::shared_ptr<BasisSet>&, const IntegralFactory*, bool include_pure_transform = false);
     ~PetiteList();
 
     bool include_pure_transform() const {return include_pure_transform_;}
@@ -242,7 +243,7 @@ public:
     /// @param g index of the group operation
     Matrix* r(int g);
 
-    SO_block* compute_aotoso_info(bool include_pure_to_cart = false);
+    SO_block* compute_aotoso_info();
 
 
     /** @return the AO->SO coefficient matrix. The columns correspond to SOs (see SO_basisdim() )

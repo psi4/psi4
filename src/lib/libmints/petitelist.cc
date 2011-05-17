@@ -389,14 +389,14 @@ void delete_shell_map(int **shell_map, const boost::shared_ptr<BasisSet> &basis)
 
 ////////////////////////////////////////////////////////////////////////////
 
-PetiteList::PetiteList(const boost::shared_ptr<BasisSet> &gbs, const boost::shared_ptr<IntegralFactory> &ints)
-    : basis_(gbs), integral_(ints.get())
+PetiteList::PetiteList(const boost::shared_ptr<BasisSet> &gbs, const boost::shared_ptr<IntegralFactory> &ints, bool include_pure_transform)
+    : basis_(gbs), integral_(ints.get()), include_pure_transform_(include_pure_transform)
 {
     init();
 }
 
-PetiteList::PetiteList(const boost::shared_ptr<BasisSet> &gbs, const IntegralFactory* ints)
-    : basis_(gbs), integral_(ints)
+PetiteList::PetiteList(const boost::shared_ptr<BasisSet> &gbs, const IntegralFactory* ints, bool include_pure_transform)
+    : basis_(gbs), integral_(ints), include_pure_transform_(include_pure_transform)
 {
     init();
 }
@@ -444,8 +444,6 @@ int PetiteList::nfunction(int i) const
 
 void PetiteList::init()
 {
-
-    include_pure_transform_ = true;
 
     int i;
 
@@ -705,14 +703,16 @@ void PetiteList::print(FILE *out)
  * This function forms the mapping info from Cartesian AOs, to symmetry adapted pure (or Cartesian if the
  * basis requires this) functions, storing the result in a sparse buffer.
  * @param include_cart_to_pure whether to fold the spherical transform coefficients in or not.  IF true, a
- *        Cartesian AOs to pure/Cartesian (depending on the basis) SOs is returned.  If false, a Cartesian
- *        AOs to Cartesian SOs is returned.
+ *        pure/Cartesian AOs to pure/Cartesian (depending on the basis) SOs transformation is returned.
+ *        If false, a Cartesian AOs to Cartesian SOs is returned.
  * @return A pointer to the newly-created sparse SO_Block (remember to delete it!).
  */
 SO_block*
-PetiteList::compute_aotoso_info(bool include_cart_to_pure)
+PetiteList::compute_aotoso_info()
 {
-    bool cart_to_pure = include_cart_to_pure && basis_->has_puream();
+    bool to_pure   = include_pure_transform_ && basis_->has_puream();
+    bool from_cart = include_pure_transform_ || !basis_->has_puream();
+
     shared_ptr<Molecule> mol = basis_->molecule();
     CharacterTable ct = mol->point_group()->char_table();
     int nunique = mol->nunique();
@@ -729,37 +729,52 @@ PetiteList::compute_aotoso_info(bool include_cart_to_pure)
         function_parities[symop] = new double*[maxam+1];
         SymmetryOperation so = ct.symm_operation(symop);
         // How does this symmetry operation affect the x, y and z coordinates?
-        double op_x = so(0, 0);
-        double op_y = so(1, 1);
-        double op_z = so(2, 2);
+        bool op_inverts_x = so(0, 0) < 0.0;
+        bool op_inverts_y = so(1, 1) < 0.0;
+        bool op_inverts_z = so(2, 2) < 0.0;
         for(int am = 0; am <= maxam; ++am){
             // This is always the number of Cartesian functions
-            int nfunctions =  (am + 1) * (am + 2) / 2;
+            int nfunctions = from_cart ? (am + 1) * (am + 2) / 2 :  2 * am + 1;
             function_parities[symop][am] = new double[nfunctions];
-            CartesianIter cart_it(am);
-#if 1
             int bf = 0;
-            for(cart_it.start(); cart_it; cart_it.next()){
-                // What's the parity of this basis function, under the symmetry operation?
-                bool x_is_odd = cart_it.a()%2;
-                bool y_is_odd = cart_it.b()%2;
-                bool z_is_odd = cart_it.c()%2;
-                double x = x_is_odd && op_x < 0.0 ? -1.0 : 1.0;
-                double y = y_is_odd && op_y < 0.0 ? -1.0 : 1.0;
-                double z = z_is_odd && op_z < 0.0 ? -1.0 : 1.0;
-                function_parities[symop][am][bf] = x * y * z;
-//                fprintf(outfile, "op %d L %d fn %d = %f\n", symop, am, bf, function_parities[symop][am][bf]);
-                ++bf;
+            if(from_cart){
+                CartesianIter cart_it(am);
+                for(cart_it.start(); cart_it; cart_it.next()){
+                    // What's the parity of this basis function, under the symmetry operation?
+                    bool x_is_odd = cart_it.a()%2;
+                    bool y_is_odd = cart_it.b()%2;
+                    bool z_is_odd = cart_it.c()%2;
+                    double x = x_is_odd && op_inverts_x ? -1.0 : 1.0;
+                    double y = y_is_odd && op_inverts_y ? -1.0 : 1.0;
+                    double z = z_is_odd && op_inverts_z ? -1.0 : 1.0;
+                    function_parities[symop][am][bf] = x * y * z;
+                    ++bf;
+                }
+            }else{
+                const SphericalTransform &trans = *integral_->spherical_transform(am);
+                SphericalTransformIter iter(trans);
+                for(iter.first(); !iter.is_done(); iter.next()){
+                    int pure = iter.pureindex();
+                    if(pure == bf){
+                        // Only process this the first time we encounter each pure index
+                        bool x_is_odd = iter.a()%2;
+                        bool y_is_odd = iter.b()%2;
+                        bool z_is_odd = iter.c()%2;
+                        double x = x_is_odd && op_inverts_x ? -1.0 : 1.0;
+                        double y = y_is_odd && op_inverts_y ? -1.0 : 1.0;
+                        double z = z_is_odd && op_inverts_z ? -1.0 : 1.0;
+//                        fprintf(outfile, "l = %d, Setting functionparities[%d][%d][%d] = %f\n", am, symop, am, bf, x*y*z);
+                        function_parities[symop][am][bf] = x * y * z;
+                        ++bf;
+                    }
+                }
             }
-            if(bf != nfunctions)
-                throw PSIEXCEPTION("aotoso_info(): problem with CartesianIter!");
-#else
-            ShellRotation rr(am, so, integral_, basis_->has_puream());
-            for(int bf = 0; bf < nfunctions; ++bf){
-                function_parities[symop][am][bf] = rr(bf, bf);
-                fprintf(outfile, "op %d L %d fn %d = %f\n", symop, am, bf, function_parities[symop][am][bf]);
+            if(bf != nfunctions){
+                std::stringstream err;
+                err << "form_ao_to_so_info(): BF count problem, expected " << nfunctions
+                    << " symmetry adapted functions, but found " << bf;
+                throw PSIEXCEPTION(err.str());
             }
-#endif
         }
     }
 
@@ -769,18 +784,19 @@ PetiteList::compute_aotoso_info(bool include_cart_to_pure)
         double norm = 1.0 / sqrt(nimages);
         int nshells = basis_->nshell_on_center(atom);
         for(int shell = 0; shell < nshells; ++shell){
+//fprintf(outfile, "working on shell %d\n", shell);fflush(outfile);
             int abs_shell = basis_->shell_on_center(atom, shell);
             int ncart = basis_->shell(abs_shell)->ncartesian();
             int npure = basis_->shell(abs_shell)->nfunction();
+            int src_nfunc = to_pure ? ncart : npure;
+            int src_dimension = nimages * src_nfunc;
             int l = basis_->shell(abs_shell)->am();
+
             // Store the coefficients for each symmetry
             SOCoefficients *coefficients_list;
-            size_t dimension;
-            dimension = cart_to_pure ? nimages * npure : nimages * ncart;
-//            fprintf(outfile, "Dimension is %d\n", dimension);
-            coefficients_list = new SOCoefficients[dimension];
-            size_t cart_count = 0;
-            for(int bf = 0; bf < ncart; ++bf){
+            coefficients_list = new SOCoefficients[src_dimension];
+            size_t salc_count = 0;
+            for(int bf = 0; bf < src_nfunc; ++bf){
                 size_t so_count = 0;
                 for(int h = 0; h < nirrep_; ++h){
                     SOCoefficients coefficients;
@@ -788,11 +804,11 @@ PetiteList::compute_aotoso_info(bool include_cart_to_pure)
                     // The number of stabilizers, i.e. operations that don't move the atom
                     int nstab = 0;
                     // First, figure out the symmetrization, by applying symmetry operations.
-                    // At this point we're dealing only with Cartesian functions
                     for(int symop = 0; symop < nirrep_; ++symop){
                         int mapped_atom = atom_map[atom][symop];
                         int mapped_shell = basis_->shell_on_center(mapped_atom, shell);
-                        int mapped_bf = basis_->shell_to_ao_function(mapped_shell) + bf;
+                        int mapped_bf = (to_pure ? basis_->shell_to_ao_function(mapped_shell) + bf :
+                                                        basis_->shell_to_basis_function(mapped_shell) + bf);
                         if (mapped_atom == atom) ++nstab;
                         coefficients.add_contribution(mapped_bf,
                                                       function_parities[symop][l][bf] * norm * gamma.character(symop),
@@ -800,25 +816,27 @@ PetiteList::compute_aotoso_info(bool include_cart_to_pure)
                     }
                     coefficients.delete_zeros();
                     if(coefficients.size()){
+//coefficients.print();fflush(outfile);
                         // Normalize the SO
                         coefficients.scale_coefficients(1.0/(double)nstab);
                         // We've found a non-zero contribution
-                        if(cart_to_pure){
+                        if(to_pure){
                             // Pure, contract with the Cart->Pure transform and add to the list
-                            const SphericalTransform *trans = integral_->spherical_transform(l);
-                            std::map<int, double>::const_iterator iter;
+                            std::map<int, double>::const_iterator coef_iter;
                             std::map<int, double>::const_iterator stop = coefficients.coefficients.end();
                             int irrep = coefficients.irrep;
-                            for(int n = 0; n < trans->n(); ++n){
-                                int cart = trans->cartindex(n);
+                            const SphericalTransform &trans = *integral_->spherical_transform(l);
+                            SphericalTransformIter cart_iter(trans);
+                            for(cart_iter.first(); !cart_iter.is_done(); cart_iter.next()){
+                                int cart = cart_iter.cartindex();
                                 if(cart == bf){
-                                    int pure = trans->pureindex(n);
-                                    for(iter = coefficients.coefficients.begin(); iter!=stop; ++iter){
+                                    int pure = cart_iter.pureindex();
+                                    for(coef_iter = coefficients.coefficients.begin(); coef_iter!=stop; ++coef_iter){
                                         size_t address = nimages * pure + so_count;
-                                        double val = iter->second * trans->coef(n);
-//printf(outfile, "l %d C %d P %d V %f v %f\n", l, cart, pure, trans->coef(n), val);
-//fprintf(outfile, "Adding %d, %f, %d to %d\n",iter->first, val, irrep, address);fflush(outfile);
-                                        coefficients_list[address].add_contribution(iter->first, val, irrep);
+                                        double val = coef_iter->second * cart_iter.coef();
+//fprintf(outfile, "l %d C %d P %d V %f v %f\n", l, cart, pure, trans->coef(n), val);
+//fprintf(outfile, "Adding %d, %f, %d to %d\n",coef_iter->first, val, irrep, address);fflush(outfile);
+                                        coefficients_list[address].add_contribution(coef_iter->first, val, irrep);
                                     }
                                 }
                             }
@@ -827,29 +845,31 @@ PetiteList::compute_aotoso_info(bool include_cart_to_pure)
                             // Cartesian, all we do is add it to the list
 //                            coefficients.print();
 //                            fprintf(outfile, "\n\n");
-                            coefficients_list[cart_count] = coefficients;
+                            coefficients_list[salc_count] = coefficients;
                         }
-                        ++cart_count;
+                        ++salc_count;
                     }
                 }
             }
-            if(cart_count != nimages * ncart){
+            // Sanity check
+            int expected = from_cart ? nimages * ncart : nimages * npure;
+            if(salc_count != expected){
                 std::stringstream err;
-                err << "form_ao_to_so_info(): Expected " << nimages * ncart
-                    << " symmetry adapted functions, but found " << cart_count;
+                err << "form_ao_to_so_info(): Expected " << expected
+                    << " symmetry adapted functions, but found " << salc_count;
                 throw PSIEXCEPTION(err.str());
             }
-            for(int n = 0; n < dimension; ++n){
+            for(int n = 0; n < nimages * npure; ++n){
                 SO so;
                 so.set_length(coefficients_list[n].size());
                 int irrep = coefficients_list[n].irrep;
                 std::map<int, double>::const_iterator iter;
                 std::map<int, double>::const_iterator stop = coefficients_list[n].coefficients.end();
-                cart_count = 0;
+                salc_count = 0;
                 for(iter = coefficients_list[n].coefficients.begin(); iter != stop; ++iter){
-                    so.cont[cart_count].bfn  = iter->first;
-                    so.cont[cart_count].coef = iter->second;
-                    ++cart_count;
+                    so.cont[salc_count].bfn  = iter->first;
+                    so.cont[salc_count].coef = iter->second;
+                    ++salc_count;
                 }
                 if (SOs[irrep].add(so, functions_per_irrep[irrep])) {
                     ++functions_per_irrep[irrep];
@@ -862,14 +882,24 @@ PetiteList::compute_aotoso_info(bool include_cart_to_pure)
     for(int h = 0; h < nirrep_; ++h){
 //fprintf(outfile, "Coeffs for irrep %d\n",h);
 //SOs[h].print("");
-        if(!c1_ && functions_per_irrep[h] != nbf_in_ir_[h] && include_cart_to_pure){
+        if(!c1_ && functions_per_irrep[h] != nbf_in_ir_[h] && include_pure_transform_){
             std::stringstream err;
             err << "PetiteList::aotoso_info(): In irrep " << h << " found " <<
                 functions_per_irrep[h] << " SOs, but expected " << nbf_in_ir_[h];
             throw PSIEXCEPTION(err.str());
         }
     }
+
+    // Free the cached temporaries.
     delete_atom_map(atom_map, mol);
+    for(int h = 0; h < nirrep_; ++h){
+        for(int am = 0; am <= maxam; ++am){
+            delete [] function_parities[h][am];
+        }
+        delete [] function_parities[h];
+    }
+    delete [] function_parities;
+
     return SOs;
 }
 
@@ -890,7 +920,7 @@ boost::shared_ptr<Matrix> PetiteList::aotoso()
 //        return aoso;
 //    }
 
-    SO_block* SOs = compute_aotoso_info(true);
+    SO_block* SOs = compute_aotoso_info();
 
     // There is an SO_block for each irrep
     for (int h=0; h < nblocks(); ++h) {

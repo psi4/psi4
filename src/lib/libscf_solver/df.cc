@@ -560,7 +560,7 @@ void DFHF::initialize_JK_core()
     }
     timer_off("(A|mn)");
 
-    Qmn_->print();
+//    Qmn_->print();
 
     delete []buffer;
     delete []eri;
