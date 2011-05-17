@@ -99,6 +99,42 @@ struct SO_block {
     void print(const char *title);
 };
 
+struct SOCoefficients{
+    std::map<int, double> coefficients;
+    int irrep;
+    //        Contribution(std::map<int, double> coefficients_, int irrep_):
+    //            coefficients(coefficients_), irrep(irrep_){}
+    SOCoefficients(): irrep(-1){}
+    void add_contribution(int bf, double coeff, int symm){
+        if(irrep != -1 && irrep != symm)
+            throw PSIEXCEPTION("Contribution::symmetry changed!");
+        irrep = symm;
+        coefficients[bf] += coeff;
+    }
+
+    void print() const {
+        std::map<int, double>::const_iterator iter;
+        for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
+            fprintf(outfile, "Basis function:%d Coefficient: %.5f\n", iter->first, iter->second);
+        }
+    }
+
+    size_t size() const {return(coefficients.size());}
+
+    void scale_coefficients(double factor){
+        std::map<int, double>::iterator iter;
+        for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
+            iter->second *= factor;
+        }
+    }
+
+    void delete_zeros(){
+        std::map<int, double>::iterator iter;
+        for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
+            if(fabs(iter->second) < 1E-10) coefficients.erase(iter);
+        }
+    }
+};
 /////////////////////////////////////////////////////////////////////////////
 
 class PetiteList
@@ -208,8 +244,7 @@ public:
     /// @param g index of the group operation
     Matrix* r(int g);
 
-    /// Form information about the transformation from AOs to SOs
-    void form_aotoso_info();
+    void form_aotoso_info(bool include_pure_to_cart = false);
 
 
     /** @return the AO->SO coefficient matrix. The columns correspond to SOs (see SO_basisdim() )
