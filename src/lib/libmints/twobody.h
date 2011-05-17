@@ -41,6 +41,8 @@ protected:
     int natom_;
     /// Derivative level.
     int deriv_;
+    /// Whether to force integrals to be generated in the Cartesian (AO) basis;
+    bool force_cartesian_;
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -72,6 +74,9 @@ public:
     boost::shared_ptr<BasisSet> basis3();
     /// Basis set on center four
     boost::shared_ptr<BasisSet> basis4();
+
+    /// Sets whether we're forcing this object to always generate Cartesian integrals
+    void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; };

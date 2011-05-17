@@ -538,10 +538,18 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
 
         if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
         {
-            size_t nfill = bs1_->shell(sh1)->nfunction();
-            nfill*=     bs2_->shell(sh2)->nfunction();
-            nfill*=     bs3_->shell(sh3)->nfunction();
-            nfill*=     bs4_->shell(sh4)->nfunction();
+            size_t nfill = 0;
+            if(force_cartesian_){
+                nfill *= bs1_->shell(sh1)->ncartesian();
+                nfill *= bs2_->shell(sh2)->ncartesian();
+                nfill *= bs3_->shell(sh3)->ncartesian();
+                nfill *= bs4_->shell(sh4)->ncartesian();
+            }else{
+                nfill *= bs1_->shell(sh1)->nfunction();
+                nfill *= bs2_->shell(sh2)->nfunction();
+                nfill *= bs3_->shell(sh3)->nfunction();
+                nfill *= bs4_->shell(sh4)->nfunction();
+            }
             memset(target_, 0, sizeof(double)*nfill);
             return;
         }
@@ -573,10 +581,21 @@ void ERI::compute_shell(int sh1, int sh2, int sh3, int sh4)
     am3 = original_bs3_->shell(sh3)->am();
     am4 = original_bs4_->shell(sh4)->am();
 
-    int n1 = original_bs1_->shell(sh1)->nfunction();
-    int n2 = original_bs2_->shell(sh2)->nfunction();
-    int n3 = original_bs3_->shell(sh3)->nfunction();
-    int n4 = original_bs4_->shell(sh4)->nfunction();
+    int n1;
+    int n2;
+    int n3;
+    int n4;
+    if(force_cartesian_){
+        n1 = original_bs1_->shell(sh1)->ncartesian();
+        n2 = original_bs2_->shell(sh2)->ncartesian();
+        n3 = original_bs3_->shell(sh3)->ncartesian();
+        n4 = original_bs4_->shell(sh4)->ncartesian();
+    }else{
+        n1 = original_bs1_->shell(sh1)->nfunction();
+        n2 = original_bs2_->shell(sh2)->nfunction();
+        n3 = original_bs3_->shell(sh3)->nfunction();
+        n4 = original_bs4_->shell(sh4)->nfunction();
+    }
 
     // Save the original requested shell ordering. The pre-computed shell pair information
     // requires the original ordering.
@@ -999,7 +1018,8 @@ void ERI::compute_quartet(int sh1, int sh2, int sh3, int sh4, FundamentalFunctor
 //        fprintf(outfile, "pre-tranformed raw: %d -> %8.5f\n", z, source_[z]);
 
     // Transform the integrals into pure angular momentum
-    pure_transform(sh1, sh2, sh3, sh4, 1);
+    if(!force_cartesian_)
+        pure_transform(sh1, sh2, sh3, sh4, 1);
 
     // Results are in source_
 }

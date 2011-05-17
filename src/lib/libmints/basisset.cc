@@ -451,6 +451,16 @@ void BasisSet::refresh()
             ifunc++;
         }
     }
+    ao_to_shell_.resize(nao());
+    ifunc = 0;
+    for (int i=0; i<nshell_; ++i) {
+        int nfun = shell(i)->ncartesian();
+        for (int j=0; j<nfun; ++j) {
+            ao_to_shell_[ifunc] = i;
+            ifunc++;
+        }
+    }
+
 }
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
 {

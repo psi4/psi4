@@ -22,6 +22,7 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     deriv_(deriv)
 {
     // The derived classes allocate this memory.
+    force_cartesian_ = false;
     target_ = 0;
     tformbuf_ = 0;
     source_ = 0;
@@ -140,10 +141,22 @@ void TwoBodyAOInt::permute_target(double *s, double *t, int sh1, int sh2, int sh
     s3 = bs3_->shell(sh3);
     s4 = bs4_->shell(sh4);
 
-    int nbf1 = s1->nfunction();
-    int nbf2 = s2->nfunction();
-    int nbf3 = s3->nfunction();
-    int nbf4 = s4->nfunction();
+    int nbf1;
+    int nbf2;
+    int nbf3;
+    int nbf4;
+    if(force_cartesian_){
+        nbf1 = s1->ncartesian();
+        nbf2 = s2->ncartesian();
+        nbf3 = s3->ncartesian();
+        nbf4 = s4->ncartesian();
+    }else{
+        nbf1 = s1->nfunction();
+        nbf2 = s2->nfunction();
+        nbf3 = s3->nfunction();
+        nbf4 = s4->nfunction();
+    }
+
 
     if (!p13p24) {
         if (p12) {

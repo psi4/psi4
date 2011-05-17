@@ -6,6 +6,7 @@
 #include "gshell.h"
 #include "dimension.h"
 
+#include "matrix.h"
 #include <psi4-dec.h>
 #include <cstdio>
 
@@ -156,8 +157,9 @@ void SOBasisSet::init()
 
 //    petite_->print();
 
+    bool include_pure_transform = petite_->include_pure_transform();
     int nblocks = petite_->nblocks();
-    const SO_block *soblocks = petite_->SOs();
+    SO_block *soblocks(petite_->compute_aotoso_info(include_pure_transform));
 //    for (i=0; i<nblocks; ++i) {
 //        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
 //        soblocks[i].print("");
@@ -168,7 +170,8 @@ void SOBasisSet::init()
         for (j=0; j<soblocks[i].len; j++) {
             if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
-            int aoshell0 = basis_->function_to_shell(bfn0);
+            int aoshell0 = include_pure_transform ?
+                        basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);
             int soshell0 = aoshell_to_soshell[aoshell0];
             int atom0 = basis_->shell_to_center(aoshell0);
             int nequiv0 = mol->nequivalent(mol->atom_to_unique(atom0));
@@ -181,15 +184,15 @@ void SOBasisSet::init()
     int nfuncall = 0;
     for (i=0; i<nblocks; i++) {
         int irrep = ct.which_irrep(i);
-//        fprintf(outfile, "i = %d, irrep = %d...I think they should be equal.\n", i, irrep); fflush(outfile);
         for (j=0; j<soblocks[i].len; j++) {
             if (soblocks[i].so[j].length == 0) continue;
             int bfn0 = soblocks[i].so[j].cont[0].bfn;
-            int aoshell0 = basis_->function_to_shell(bfn0);
+            int aoshell0 = include_pure_transform ?
+                        basis_->ao_to_shell(bfn0) : basis_->function_to_shell(bfn0);
             int soshell0 = aoshell_to_soshell[aoshell0];
             int sofunc = nfunc_[soshell0][irrep];
 
-            int naofunc = basis_->shell(aoshell0)->nfunction();
+            int naofunc = include_pure_transform ? basis_->shell(aoshell0)->ncartesian() : basis_->shell(aoshell0)->nfunction();
             if (naofunc_[soshell0] && (naofunc_[soshell0] != naofunc)) {
                 throw PSIEXCEPTION("SOBasis::SOBasis: mismatch in naofunc");
             }
@@ -201,9 +204,9 @@ void SOBasisSet::init()
             for (k=0; k<soblocks[i].so[j].length; k++) {
                 int bfn = soblocks[i].so[j].cont[k].bfn;
                 double coef = soblocks[i].so[j].cont[k].coef;
-                int aoshell = basis_->function_to_shell(bfn);
-                // This might need to be shell_to_basis_function.
-                int aoshellfunc = bfn - basis_->shell_to_basis_function(aoshell);
+                int aoshell = include_pure_transform ? basis_->ao_to_shell(bfn) : basis_->function_to_shell(bfn);
+                int aoshellfunc = bfn - (include_pure_transform ?
+                            basis_->shell_to_ao_function(aoshell) : basis_->shell_to_basis_function(aoshell));
                 int soshell = aoshell_to_soshell[aoshell];
 
                 if (soshell != soshell0) {
@@ -222,6 +225,7 @@ void SOBasisSet::init()
     }
 
     delete[] aoshell_to_soshell;
+    delete[] soblocks;
 
     for (i=0; i<nshell_; i++) {
         funcoff_[i][0] = 0;
