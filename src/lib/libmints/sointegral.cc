@@ -37,6 +37,8 @@ OneBodySOInt::~OneBodySOInt()
 
 void OneBodySOInt::common_init()
 {
+    ob_->set_force_cartesian(true);
+
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis1(), integral_));
 
     if (ob_->basis2() == ob_->basis1())
@@ -108,7 +110,6 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
                 const SOTransformShell &s1 = t1.aoshell[i];
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
-
                     ob_->compute_shell(s1.aoshell, s2.aoshell);
 
                     for (int itr=0; itr<s1.nfunc; ++itr) {
@@ -487,6 +488,8 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral)
     : tb_(tb), integral_(integral)
 {
+    tb_->set_force_cartesian(true);
+
     // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis1(), integral));
 

@@ -50,6 +50,7 @@ static void transform1e_2(int am, SphericalTransformIter& sti, double *s, double
 OneBodyAOInt::OneBodyAOInt(std::vector<SphericalTransform> &spherical_transforms, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv)
     : bs1_(bs1), bs2_(bs2), spherical_transforms_(spherical_transforms), deriv_(deriv), nchunk_(1)
 {
+    force_cartesian_ = false;
     buffer_ = 0;
     natom_ = bs1_->molecule()->natom();
 
@@ -194,9 +195,10 @@ void OneBodyAOInt::compute_shell(int sh1, int sh2)
 
     // Normalize for angular momentum
     normalize_am(s1, s2, nchunk_);
-
-    // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
+    if(!force_cartesian_){
+        // Pure angular momentum (6d->5d, ...) transformation
+        pure_transform(s1, s2, nchunk_);
+    }
 }
 
 void OneBodyAOInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
@@ -230,10 +232,10 @@ void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
 
     // Leave as this full double for loop. We could be computing nonsymmetric integrals
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
 
             // Compute the shell (automatically transforms to pure am in needed)
             compute_shell(i, j);
@@ -264,10 +266,10 @@ void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
 
     // Leave as this full double for loop. We could be computing nonsymmetric integrals
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
 
             // Compute the shell (automatically transforms to pure am if needed)
             compute_shell(i, j);
@@ -310,10 +312,10 @@ void OneBodyAOInt::compute(std::vector<boost::shared_ptr<Matrix> > &result)
     }
 
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
 
             // Compute the shell
             compute_shell(i, j);
@@ -350,10 +352,10 @@ void OneBodyAOInt::compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result
     }
 
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
 
             // Compute the shell
             compute_shell(i, j);

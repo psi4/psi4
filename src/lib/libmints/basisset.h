@@ -61,6 +61,8 @@ class BasisSet
 
     //! Map function number to shell
     std::vector<int> function_to_shell_;
+    //! Map Cartesian function number to shell
+    std::vector<int> ao_to_shell_;
 
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
@@ -159,6 +161,9 @@ public:
 
     /** Given a function number what shell does it correspond to. */
     int function_to_shell(int i) const { return function_to_shell_[i]; }
+
+    /** Given a Cartesian function (AO) number what shell does it correspond to. */
+    int ao_to_shell(int i) const { return ao_to_shell_[i]; }
 
     /** Return the si'th Gaussian shell
      *  @param i Shell number

@@ -145,12 +145,11 @@ class PetiteList
     int nirrep_;
     int nblocks_;
     bool c1_;
-    /// The list of non-zero AO->SO transformation coefficients
-    SO_block *SOs_;
-
 
     boost::shared_ptr<BasisSet> basis_;
     const IntegralFactory* integral_;
+
+    bool include_pure_transform_;
 
     char *p1_;
     int **atom_map_;
@@ -165,6 +164,8 @@ public:
     PetiteList(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
     PetiteList(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
     ~PetiteList();
+
+    bool include_pure_transform() const {return include_pure_transform_;}
 
     boost::shared_ptr<BasisSet> basis() { return basis_; }
     const IntegralFactory* integral() { return integral_; }
@@ -181,9 +182,6 @@ public:
     int in_p2(int i, int j) const { return (c1_) ? 1 : lamij_[ij_offset64(i, j)]; }
     int in_p4(int ij, int kl, int i, int j, int k, int l) const;
     int in_p4(int i, int j, int k, int l) const;
-
-    // Return the list of non-zero SOs
-    const SO_block *SOs() const { return SOs_; }
 
     int nfunction(int i) const;
 
@@ -244,7 +242,7 @@ public:
     /// @param g index of the group operation
     Matrix* r(int g);
 
-    void form_aotoso_info(bool include_pure_to_cart = false);
+    SO_block* compute_aotoso_info(bool include_pure_to_cart = false);
 
 
     /** @return the AO->SO coefficient matrix. The columns correspond to SOs (see SO_basisdim() )

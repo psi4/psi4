@@ -191,6 +191,7 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     timer_on("TwoBodySOInt::compute_shell full shell transform");
 #endif // MINTS_TIMER
 
+
     // loop through the ao shells that make up this so shell
     for (int i=0; i<t1.naoshell; i++) {
         const SOTransformShell &s1 = t1.aoshell[i];
@@ -249,7 +250,6 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
                                             + lfunc.sofunc;
                                     int laooff = kaooff*nao4 + laofunc;
                                     int lsooff = ksooff*nso4 + lsofunc;
-
                                     // If you're doing the two-stage SO integral uncomment the next line
                                     buffer_[lsooff] += lcoef * aobuff[laooff];
                                 }
