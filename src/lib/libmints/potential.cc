@@ -330,10 +330,10 @@ void PotentialInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > 
         throw SanityCheckError("PotentialInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
 
             // Compute the shell
             compute_shell_deriv1(i, j);
