@@ -26,7 +26,9 @@ DCFTSolver::compute_dcft_energy()
                   ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
     eGaa = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
-    if(!options_.get_bool("IGNORE_TAU")){
+    if(options_.get_bool("IGNORE_TAU")){
+        eTaa = 0.0;
+    }else{
         // E += 1/8 L_IJAB T_IJAB
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                       ID("[O,O]"), ID("[V,V]"), 0, "T <OO|VV>");
@@ -52,7 +54,9 @@ DCFTSolver::compute_dcft_energy()
                   ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     eGab =  dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
-    if(!options_.get_bool("IGNORE_TAU")){
+    if(options_.get_bool("IGNORE_TAU")){
+        eTab = 0.0;
+    }else{
         // E += 1/2 L_IjAb T_IjAb
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                       ID("[O,o]"), ID("[V,v]"), 0, "T <Oo|Vv>");
@@ -78,7 +82,9 @@ DCFTSolver::compute_dcft_energy()
                   ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
     eGbb = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
-    if(!options_.get_bool("IGNORE_TAU")){
+    if(options_.get_bool("IGNORE_TAU")){
+        eTbb = 0.0;
+    }else{
         // E += 1/8 L_ijab T_ijab
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                       ID("[o,o]"), ID("[v,v]"), 0, "T <oo|vv>");
