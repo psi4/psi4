@@ -1044,10 +1044,21 @@ void ERI::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     am3 = original_bs3_->shell(sh3)->am();
     am4 = original_bs4_->shell(sh4)->am();
 
-    int n1 = original_bs1_->shell(sh1)->nfunction();
-    int n2 = original_bs2_->shell(sh2)->nfunction();
-    int n3 = original_bs3_->shell(sh3)->nfunction();
-    int n4 = original_bs4_->shell(sh4)->nfunction();
+    int n1;
+    int n2;
+    int n3;
+    int n4;
+    if(force_cartesian_){
+        n1 = original_bs1_->shell(sh1)->ncartesian();
+        n2 = original_bs2_->shell(sh2)->ncartesian();
+        n3 = original_bs3_->shell(sh3)->ncartesian();
+        n4 = original_bs4_->shell(sh4)->ncartesian();
+    }else{
+        n1 = original_bs1_->shell(sh1)->nfunction();
+        n2 = original_bs2_->shell(sh2)->nfunction();
+        n3 = original_bs3_->shell(sh3)->nfunction();
+        n4 = original_bs4_->shell(sh4)->nfunction();
+    }
 
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
@@ -1143,6 +1154,7 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     int nprim2 = s2->nprimitive();
     int nprim3 = s3->nprimitive();
     int nprim4 = s4->nprimitive();
+
     size_t nprim;
 
     double A[3], B[3], C[3], D[3];
@@ -1420,7 +1432,8 @@ void ERI::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 //        fprintf(outfile, " A%d %20.14lf\n", center_l, source_[z + 11 * size]);
 
     // Transform the integrals to the spherical basis
-    pure_transform(sh1, sh2, sh3, sh4, ERI_GRADIENT_NTYPE);
+    if(!force_cartesian_)
+        pure_transform(sh1, sh2, sh3, sh4, ERI_GRADIENT_NTYPE);
 
     // Results are in source_
 }
@@ -1465,8 +1478,13 @@ void ERI::form_sieve()
         for (NU = 0; NU <= MU; NU++, MN++)
         {
             compute_shell(MU,NU,MU,NU);
-            numMU = original_bs1_->shell(MU)->nfunction();
-            numNU = original_bs1_->shell(NU)->nfunction();
+            if(force_cartesian_){
+                numMU = original_bs1_->shell(MU)->ncartesian();
+                numNU = original_bs1_->shell(NU)->ncartesian();
+            }else{
+                numMU = original_bs1_->shell(MU)->nfunction();
+                numNU = original_bs1_->shell(NU)->nfunction();
+            }
             max = 0.0;
 
             for (M = 0, ind = 0; M<numMU*numMU; M++)

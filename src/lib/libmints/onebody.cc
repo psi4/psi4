@@ -131,12 +131,12 @@ void OneBodyAOInt::pure_transform(const boost::shared_ptr<GaussianShell>& s1,
 {
     for (int chunk=0; chunk<chunks; ++chunk) {
         const int am1 = s1->am();
-        const int is_pure1 = s1->is_pure() && am1 > 1;
+        const int is_pure1 = s1->is_pure() && am1 > 0;
         const int ncart1 = s1->ncartesian();
         const int nbf1 = s1->nfunction();
 
         const int am2 = s2->am();
-        const int is_pure2 = s2->is_pure() && am2 > 1;
+        const int is_pure2 = s2->is_pure() && am2 > 0;
         const int ncart2 = s2->ncartesian();
         const int nbf2 = s2->nfunction();
 
@@ -397,11 +397,11 @@ void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > 
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() :bs1_->shell(i)->nfunction();
         int center_i3 = 3*bs1_->shell(i)->ncenter();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
             int center_j3 = 3*bs2_->shell(j)->ncenter();
 
             if (center_i3 != center_j3) {

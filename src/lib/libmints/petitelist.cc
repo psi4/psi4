@@ -702,9 +702,11 @@ void PetiteList::print(FILE *out)
 }
 
 /**
- * This function forms the mapping info from Cartesian AOs, so symmetry adapted pure (or Cartesian if the
+ * This function forms the mapping info from Cartesian AOs, to symmetry adapted pure (or Cartesian if the
  * basis requires this) functions, storing the result in a sparse buffer.
- * @param include_cart_to_pure whether to fold the spherical transform coefficients in or not.
+ * @param include_cart_to_pure whether to fold the spherical transform coefficients in or not.  IF true, a
+ *        Cartesian AOs to pure/Cartesian (depending on the basis) SOs is returned.  If false, a Cartesian
+ *        AOs to Cartesian SOs is returned.
  * @return A pointer to the newly-created sparse SO_Block (remember to delete it!).
  */
 SO_block*

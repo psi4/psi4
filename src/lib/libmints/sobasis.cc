@@ -259,6 +259,7 @@ void SOBasisSet::init()
             }
         }
     }
+//    print();
 }
 
 SOBasisSet::~SOBasisSet()
