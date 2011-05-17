@@ -153,13 +153,16 @@ void SOBasisSet::init()
         }
     }
 
-    petite_ = boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+    bool include_pure_transform = true;
+
+    petite_ = boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_, include_pure_transform));
 
 //    petite_->print();
 
-    bool include_pure_transform = petite_->include_pure_transform();
+
     int nblocks = petite_->nblocks();
-    SO_block *soblocks(petite_->compute_aotoso_info(include_pure_transform));
+    SO_block *soblocks(petite_->compute_aotoso_info());
+
 //    for (i=0; i<nblocks; ++i) {
 //        fprintf(outfile, "soblock[%d]\n", i); fflush(outfile);
 //        soblocks[i].print("");
