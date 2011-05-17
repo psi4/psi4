@@ -797,6 +797,8 @@ void PetiteList::form_aotoso_info()
         }
     }
     for(int h = 0; h < nirrep_; ++h){
+//fprintf(outfile, "Orbitals for irrep %d\n", h);
+//SOs_[h].print("");
         if(functions_per_irrep[h] != nbf_in_ir_[h]){
             std::stringstream err;
             err << "PetiteList::aotoso_info(): In irrep " << h << " found " <<
