@@ -507,6 +507,11 @@ void py_psi_print_variable_map()
     }
 }
 
+std::string py_psi_top_srcdir()
+{
+    return PSI_TOP_SRCDIR;
+}
+
 BOOST_PYTHON_MODULE(PsiMod)
 {
     enum_<PsiReturnType>("PsiReturnType")
@@ -567,6 +572,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("add_user_basis_file", py_psi_add_user_specified_basis_file);
 
     def("get_input_directory", py_psi_get_input_directory);
+    def("psi_top_srcdir", py_psi_top_srcdir);
 
     // modules
     def("mints", py_psi_mints);

@@ -26,6 +26,9 @@ AC_DEFINE(PSI_BUGREPORT,"psi_bugreport")
 AC_SUBST(abs_top_srcdir)
 AC_SUBST(abs_top_builddir)
 
+PSI_TOP_SRCDIR=`cd $srcdir && pwd`
+AC_DEFINE_UNQUOTED([PSI_TOP_SRCDIR],["$PSI_TOP_SRCDIR"])
+
 AC_CONFIG_AUX_DIR(bin)
 AC_CONFIG_MACRO_DIR([m4])
 

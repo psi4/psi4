@@ -10,6 +10,9 @@
 #undef PSI_BUILDID
 #undef PSI_BUGREPORT
 
+/* Top source code directory */
+#define PSI_TOP_SRCDIR @top_srcdir@
+
 /* Which integrals standard is used? */
 #undef PSI_INTEGRALS_STANDARD
 
