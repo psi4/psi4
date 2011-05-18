@@ -1,8 +1,37 @@
-Tuesday, August 24, 2010
-notes on psi4 basis sets -- LAB
+*******************************************************************************
+*******************************************************************************
+
+
+Wednesday, May 18, 2011 -- LAB
+
+[28]   Added Douglas-Kroll Dunning basis sets. Strongly suspect that the EMSL coefficients for Scandium diffuse-aug-cc-pvtz (and by association diffuse-aug-cc-pvdz) are wrong since they're the same as the diffuse-aug-cc-pvtz-dk in EMSL yet different in the source publication. However, not overruling EMSL just yet.
+
+[27]   Added Ga-Kr to aug-cc-pvdz-prime basis sets- had to invent a definition, esp. for jkfit.
+
+[26]   EMSL has updates for some existing Dunning basis sets. Basically, Sc-Zn added for basis-cc-pvdz.gbs and diffuse-aug-cc-pvdz.gbs, exponent correction for Cr for basis-cc-pvtz.gbs, and Al-Ar added for corevalence-cc-pcv6z.
+
+[25]   Regarding item [11], the JKFIT basis sets for Ga-Br in Molpro have since been corrected, so energies should match.
+
+[24]   Regarding item [9], Q-Chem has since corrected their coeffiecients for the RI basis sets.
+
 
 *******************************************************************************
 *******************************************************************************
+
+
+Thursday, August 26, 2010 -- LAB
+
+[23]     Only considering elements through Kr at present.
+
+[22]     Basis sets have been collected from EMSL with optimized general contractions checked, since this generates same energies with fewer functions. The pbasis file had basis sets built from both optimized and unoptimized forms.
+
+
+*******************************************************************************
+*******************************************************************************
+
+
+Tuesday, August 24, 2010
+notes on psi4 basis sets -- LAB
 
 
 General
@@ -111,6 +140,8 @@ specification, the amendments (D) need to be made. Basis sets are available at z
 2		=  basis-cc-pv_xpd_z			DTQ56	only def. for Al-Ar, other elements appended from basis-cc-pvxz
 19		=  basis-cc-pvxz-ri			DTQ56
 37		=  molpro-basis-cc-pvxz-jkfit		DTQ5
+97              =  basis-cc-pvxz-dk                     DTQ5
+101             =  basis-cc-pwcvxz-dk                    TQ5
 
 diffuse		=  diffuse-aug-cc-pvxz			DTQ56
 diffuse_xpd 	=  diffuse-aug-cc-pv_xpd_z		DTQ56	only def. for Al-Ar, other elements appended from diffuse-aug-cc-pvxz
@@ -120,6 +151,8 @@ diffuse_ri	=  diffuse-aug-cc-pvxz-ri		DTQ56
 d-diffuse_ri	=  DNE					-----
 diffuse_jk	=  molpro-diffuse-aug-cc-pvxz-jkfit	DTQ5
 d-diffuse_jk	=  DNE					-----
+diffuse_dk      =  diffuse-aug-cc-pvxz-dk               DTQ5
+d-diffuse_dk    =  DNE                                  -----
 
 core		=  corevalence-cc-pcvxz			DTQ56	blanks-added-for: H,He
 w-core		=  tight-cc-pwcvxz			DTQ5	blanks-added-for: H,He
@@ -127,6 +160,8 @@ core_ri		=  DNE					-----
 w-core_ri	=  tight-cc-pwcvxz-ri			DTQ5	blanks-added-for: H,He
 core_jk		=  DNE					-----
 w-core_jk	=  DNE					-----
+core_dk         =  --> corevalence-cc-pcvxz
+w-core_dk       =  DNE
 
 
 detailed description of necessary constructions
@@ -137,7 +172,9 @@ diffuse_xpd 	=  diffuse-aug-cc-pvxz.gbs with elements Al-Ar replaced by diffuse-
 core		=  corevalence-cc-pcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
 w-core		=  tight-cc-pwcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
 w-core_ri	=  tight-cc-pwcvxz-ri.gbs with blank entries added for H and He, which require no supplementary functions to describe core
-
+core_dk         =  same as core
+w-core_dk       =  cc-pwcvxz-dk almost but not quite disentanglable into cc-pvxz-dk + w-core_dk, so cc-pwcvxz-dk must be defined in its
+                   own right and w-core_dk remain undefined 
 
 key
 [elem: label]	=  elements in list elem are taken from basis set label
@@ -261,6 +298,35 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  d-aug-cc-pCV(X+d)Z-DUAL	70	= 
 !  d-aug-cc-pwCVXZ-DUAL		71	= 
 !  d-aug-cc-pwCV(X+d)Z-DUAL	72	= 
+
+
+!  cc-pVXZ-DK                   97      =  97                           =  97                                                   DTQ5
+!  cc-pV(X+d)Z-DK               98      =
+!  cc-pCVXZ-DK                  99      =  97 + core                    =  97 + core                                            DTQ5
+!  cc-pCV(X+d)Z-DK              100     =
+!  cc-pwCVXZ-DK                 101     = 101                           = 101                                                    TQ5
+!  cc-pwCV(X+d)Z-DK             102     =
+
+!  aug-cc-pVXZ-DK               103     =  97 + diffuse_dk              =  97 + diffuse_dk                                      DTQ5  
+!  aug-cc-pV(X+d)Z-DK           104     =
+!  aug-cc-pCVXZ-DK              105     =  99 + diffuse_dk              =  97 + core + diffuse_dk                               DTQ5
+!  aug-cc-pCV(X+d)Z-DK          106     =
+!  aug-cc-pwCVXZ-DK             107     = 101 + diffuse_dk              = 101 + diffuse_dk                                       TQ5
+!  aug-cc-pwCV(X+d)Z-DK         108     =
+
+!  heavy-aug-cc-pVXZ-DK         109     = 103 [H-He:  97]               =  97 + diffuse_dk [H-He:  97]                          DTQ5
+!  heavy-aug-cc-pV(X+d)Z-DK     110     =
+!  heavy-aug-cc-pCVXZ-DK        111     = 105 [H-He:  97]               =  97 + core + diffuse_dk [H-He:  97]                   DTQ5
+!  heavy-aug-cc-pCV(X+d)Z-DK    112     =
+!  heavy-aug-cc-pwCVXZ-DK       113     = 107 [H-He:  97]               = 101 + diffuse_dk [H-He:  97]                           TQ5
+!  heavy-aug-cc-pwCV(X+d)Z-DK   114     =
+
+!  d-aug-cc-pVXZ-DK             115     = 103 + d-diffuse_dk            =  97 + diffuse_dk + d-diffuse_dk                       ----
+!  d-aug-cc-pV(X+d)Z-DK         116     = 
+!  d-aug-cc-pCVXZ-DK            117     = 105 + d-diffuse_dk            =  97 + core + diffuse_dk + d-diffuse_dk                ----
+!  d-aug-cc-pCV(X+d)Z-DK        118     = 
+!  d-aug-cc-pwCVXZ-DK           119     = 107 + d-diffuse_dk            = 101 + diffuse_dk + d-diffuse_dk                       ----
+!  d-aug-cc-pwCV(X+d)Z-DK       120     = 
 
 
 *******************************************************************************
