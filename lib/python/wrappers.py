@@ -370,12 +370,13 @@ def database(e_name, db_name, **kwargs):
 
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
-    sys.path.append('./../../../lib/databases')  # for the test suite (better soln needed)
-    sys.path.append('./../../../source/lib/databases')  # for the test suite with other directory structures
+    sys.path.append('%s/lib/databases' % PsiMod.psi_top_srcdir())
     try: 
         database = __import__(db_name)
     except ImportError: 
         PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
+        PsiMod.print_out('\nSearch path that was tried:\n')
+        PsiMod.print_out(", ".join(map(str, sys.path)))
         raise Exception("Python module loading problem for database " + str(db_name))
     else:
         dbse = database.dbse
