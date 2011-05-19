@@ -2,6 +2,47 @@
 *******************************************************************************
 
 
+Thursday, May 19, 2011 -- LAB
+
+[31]   Three "old Dunning" basis sets [DZP, TZ2P, TZ2PF] have been translated from psi3's pbasis.dat back into Gaussian94 format for psi4. The DZP basis only differs from EMSL in the polarization exponents for H, Al, & Si. The TZ2P and TZ2PF are built off the EMSL TZ (Dunning) basis set but are defined for more elements.
+
+[30]   Karlsruhe/Aldrichs basis sets added. According to the document at ftp://ftp.chemie.uni-karlsruhe.de/pub/BASES/Def2/README , def2-* are the current (and sometimes revised) basis sets of choice in the Karlsruhe family. Therefore none of the basis sets from an "Ahlrichs" search in EMSL (basis name without the def2- prefix or with a def- prefix) are introduced into psi4. None of the def2 basis sets have diffuse functions; the Turbomole manual recommends instead adding polarization or going up a zeta level. Alternately, diffuse functions can be borrowed from the Dunning sets- this has not been done for psi4. Truhlar has a paper [Theor Chem Acc (2011) 128:295–305] on appending a reduced set of diffuse functions (ma-TZV, etc.) and obtaining good results for DFT at less cost than going up a zeta level. This too has not been done for psi4. A portion of the def2 readme from the ftp site above is pasted here for reference.
+
+   Karlsruhe CGTO basis sets of split valence (SV), triple zeta valence (TZV) and 
+   quadruple zeta valence (QZV) quality for H-Rn, except Lanthanides are collected
+   here. Two sets of polarization functions (partly identical) are provided, as 
+   recommendable for different purposes. These bases are termed def2-SV(P), 
+   def2-SVP, def2-TZVP, def2-TZVPP, def2-QZVP and def2-QZVPP, and are specified 
+   in ref. 1. 
+   For Rb-Rn they are designed to be used in connection with the ECPs of the 
+   Stuttgart/Koeln group (refs. 2-6), which are also provided here. def2-bases 
+   are related to basis sets made previously in the Karlsruhe group (refs. 7-10), 
+   in many cases they are just slightly modified or even unmodified.
+   
+   The central idea behind these basis sets is a balanced decription of compounds 
+   (similar errors) all accross the periodic table at each of the three basis set 
+   levels. This was assessed by treating a large molecular test set (more than 300 
+   compounds) representing (nearly) all elements in their common oxidation states. 
+   Recommendations for reasonable combinations of bases and methods due to the 
+   results of the tests (for details see ref.1):
+   
+                | 
+                |  Explorative    Qualitative     Quantitative    Reference calc.
+    ------------|------------------------------------------------------------
+                |
+    DFT         |                    def2-SV(P)       def2-TZVP    def2-QZVP
+                |
+    HF          |                    def2-SVP         def2-TZVPP   def2-QZVPP
+                |
+    MP2, CC     |     def2-SVP           def2-TZVPP   def2-QZVPP
+                |
+
+[29]   Controversy of item [28] resolved in favor of EMSL; see http://tyr0.chem.wsu.edu/~kipeters/basissets/tm3dbasis.html for justification.
+
+*******************************************************************************
+*******************************************************************************
+
+
 Wednesday, May 18, 2011 -- LAB
 
 [28]   Added Douglas-Kroll Dunning basis sets. Strongly suspect that the EMSL coefficients for Scandium diffuse-aug-cc-pvtz (and by association diffuse-aug-cc-pvdz) are wrong since they're the same as the diffuse-aug-cc-pvtz-dk in EMSL yet different in the source publication. However, not overruling EMSL just yet.
