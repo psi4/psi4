@@ -51,6 +51,10 @@ print HTML_OUT "<tr><td><big><b>Pople</b></big></td></tr>\n\n";
 @HPOPLE = ("sto-3g.gbs","3-21g.gbs",<6-31[gp]*.gbs>,<6-311*.gbs>);
 foreach $gbs (@HPOPLE) { htmlline($gbs); }
 
+print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
+@HAHLRICHS = <def2-*.gbs>;
+foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
+
 print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
 @HDDUNNING = (<cc-*dz*.gbs>,<cc-*dpd*.gbs>,<aug-cc-*dz*.gbs>,<aug-cc-*dpd*.gbs>,<d-aug-cc-*dz*.gbs>,<d-aug-cc-*dpd*.gbs>,<heavy-aug-cc-*dz*.gbs>,<heavy-aug-cc-*dpd*.gbs>);
 foreach $gbs (@HDDUNNING) { htmlline($gbs); }
@@ -71,7 +75,7 @@ print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
 @H6DUNNING = (<cc-*6z*.gbs>,<cc-*6pd*.gbs>,<aug-cc-*6z*.gbs>,<aug-cc-*6pd*.gbs>,<d-aug-cc-*6z*.gbs>,<d-aug-cc-*6pd*.gbs>,<heavy-aug-cc-*6z*.gbs>,<heavy-aug-cc-*6pd*.gbs>);
 foreach $gbs (@H6DUNNING) { htmlline($gbs); }
 
-@HCATBASIS = (@HPOPLE,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
+@HCATBASIS = (@HPOPLE,@HAHLRICHS,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
 
 @HREST = ();
 foreach my $item (@HGBS) {
@@ -127,7 +131,7 @@ sub htmlline {
 }
 
 close(HTML_OUT);
-system("open -a /Applications/Safari.app psi4bases.html");
+#system("open -a /Applications/Safari.app psi4bases.html");
 
 
 sub print_html_topfile {
