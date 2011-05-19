@@ -1,0 +1,81 @@
+#! DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with
+#! Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy
+#! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
+#! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
+
+
+molecule dimer {
+0 1
+C
+C  1  CC
+C  2  CC  1  A1
+C  3  CC  2  A1   1  0
+H  1  CH  2  A1   3  A2
+H  4  CH  3  A1   2  A2
+C  1  CC  5  A1   2  A2
+C  4  CC  6  A1   3  -A2
+H  2  CH  3  A1   1  A2
+H  3  CH  2  A1   4  -A2
+H  7  CH  8  A1   1  -A2
+H  8  CH  7  A1   4  A2
+--
+1 1
+X  1  CC  3  30   2  A2
+O  13 R   1  90   2  90
+H  14 OH  13 TDA  1  0
+H  14 OH  15 TDA  13 A1
+H  14 OH  15 TDA  13 -A1
+
+CC    = 1.421
+CH    = 1.088
+A1    = 120.0
+A2    = 180.0
+OH    = 1.05
+units angstrom
+}
+
+Rvals = [ 4.0, 5.0 ]
+
+set globals {
+    BASIS cc-pVDZ
+    RI_BASIS_SCF cc-pVDZ-JKFIT
+    DIIS True
+    MIN_DIIS_VECTORS 5
+    MAX_DIIS_VECTORS 9
+    MAXITER 1000
+    E_CONVERGE 11
+    D_CONVERGE 11
+    GUESS SAD
+    SCF_TYPE DF
+    RI_BASIS_SCF cc-pVDZ-JKFIT
+    REFERENCE RHF
+}
+
+
+
+for R in Rvals:
+    dimer.R = R
+
+    activate(dimer)
+
+    eehf = energy('scf')
+    oe = OEProp()
+    oe.add("DIPOLE")
+    oe.add("QUADRUPOLE")
+    oe.compute()
+
+
+    clean()
+
+
+    monoB = dimer.extract_subsets(2)
+
+    eehf = energy('scf')
+    oe = OEProp()
+    oe.add("DIPOLE")
+    oe.add("QUADRUPOLE")
+    oe.compute()
+
+
+    clean()
+

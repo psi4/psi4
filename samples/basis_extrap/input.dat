@@ -29,6 +29,7 @@ R = 1
 
 set globals {
     reference rhf
+    guess core
     wfn ccsd
 }
 

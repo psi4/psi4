@@ -18,7 +18,8 @@ use warnings;
 my $DriverFile = "../../src/bin/psi4/read_options.cc";
 
 my $CurrentModule;
-my %Data;
+my %Keywords;
+my %Expert;
 open(DRIVER, $DriverFile) or die "\nI can't read the PSI driver file\n";
 
 # Start looping over the driver file
@@ -30,68 +31,89 @@ while(<DRIVER>){
     my $Default;
     my $Keyword;
     my $Possibilities;
+    my $Expert;
     # If we find a /*- it means the comment block has started, but we
     # don't know if it's a multi-line comment, let's find out
     if(/\/\*-/ and $CurrentModule){
-        $CommentString = determine_comment($_);
+        ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
-        $Data{$CurrentModule}{$Keyword}{"Type"}    = $Type;
-        $Data{$CurrentModule}{$Keyword}{"Default"} = $Default;
-        $Data{$CurrentModule}{$Keyword}{"Comment"} = $CommentString;
-        $Data{$CurrentModule}{$Keyword}{"Possibilities"} = $Possibilities;
+        if($Expert){
+            $Expert{$CurrentModule}{$Keyword}{"Type"}    = $Type;
+            $Expert{$CurrentModule}{$Keyword}{"Default"} = $Default;
+            $Expert{$CurrentModule}{$Keyword}{"Comment"} = $CommentString;
+            $Expert{$CurrentModule}{$Keyword}{"Possibilities"} = $Possibilities;
+        }else{
+            $Keywords{$CurrentModule}{$Keyword}{"Type"}    = $Type;
+            $Keywords{$CurrentModule}{$Keyword}{"Default"} = $Default;
+            $Keywords{$CurrentModule}{$Keyword}{"Comment"} = $CommentString;
+            $Keywords{$CurrentModule}{$Keyword}{"Possibilities"} = $Possibilities;
+        }
     }
 }
 close DRIVER;
 
-open(OUT,">keywords.tex") or die "\nI can't write to keywords.tex\n";
-print OUT "\\section{Keywords Recognized by Each Module}\n";
-print OUT "{\n \\footnotesize\n";
-foreach my $Module (sort {$a gt $b} keys %Data){
-    printf OUT "\n\\subsection{%s}\n",$Module;
-    foreach my $Keyword (sort {$a gt $b} keys %{$Data{$Module}}){
-        printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
-        printf OUT "\n\t %s & %s \\\\ \n", $Keyword, $Data{$Module}{$Keyword}{"Comment"};
-        my $Options = $Data{$Module}{$Keyword}{"Possibilities"};
-        if($Options =~ /\w+/){
-             my @Options = split(/ +/,$Options);
-             printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
-        }
-        print OUT "\\end{tabular*}\n";
-        printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
-        printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", 
-                    $Data{$Module}{$Keyword}{"Type"}, $Data{$Module}{$Keyword}{"Default"}; 
-        print OUT "\\end{tabular*}\n";
-    }
+print_hash(\%Keywords, "keywords.tex", "Keywords Recognized by Each Module");
+print_hash(\%Expert, "expert_keywords.tex", "Expert Keywords Recognized by Each Module, for Advanced Users");
+
+
+
+sub print_hash
+{
+ my %hash     = %{$_[0]};
+ my $filename = $_[1];
+ my $title    = $_[2];
+ open(OUT,">$filename") or die "\nI can't write to $filename\n";
+ print OUT "\\section{$title}\n";
+ print OUT "{\n \\footnotesize\n";
+ foreach my $Module (sort {$a gt $b} keys %hash){
+     printf OUT "\n\\subsection{%s}\n",$Module;
+     foreach my $Keyword (sort {$a gt $b} keys %{$hash{$Module}}){
+         printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
+         printf OUT "\n\t %s & %s \\\\ \n", $Keyword, $hash{$Module}{$Keyword}{"Comment"};
+         my $Options = $hash{$Module}{$Keyword}{"Possibilities"};
+         if($Options =~ /\w+/){
+              my @Options = split(/ +/,$Options);
+              printf OUT "\n\t  & {\\bf Possible Values:} %s \\\\ \n", join(", ", @Options);
+         }
+         print OUT "\\end{tabular*}\n";
+         printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.35\\textwidth}p{0.35\\textwidth}}';
+         printf OUT "\n\t   & {\\bf Type:} %s &  {\\bf Default:} %s\\\\\n\t & & \\\\\n", 
+                     $hash{$Module}{$Keyword}{"Type"}, $hash{$Module}{$Keyword}{"Default"}; 
+         print OUT "\\end{tabular*}\n";
+     }
+ }
+ print OUT "}\n";
+ close OUT;
 }
-print OUT "}\n";
-close OUT;
+
 
 sub determine_comment
 {
  my $Line = shift;
+ chomp $Line;
  my $String;
  #Process the inputted line
  if($Line =~ /(?:\/\*\-)\s+(.*)/){
      $String = $1;
-     # If we find -*/ we're done
-     return $String if $String =~ s/ -\*\///g;
  }else{
      die "\nI don't know what to do with $Line\n";
  }
- if($Line !~ /-\*\//){
+ if(!($String =~ s/\s*-\*\///g)){
      # 'twas more than a one-liner, let's keep searching
      while(<DRIVER>){
          # Add on the current line, sans the newline
          chomp;
          $String .= $_;
          # Attempt to nuke any -*/ patterns, if successful we're done
-         last if $String =~ s/ -\*\///g;
+         last if $String =~ s/\s*-\*\///g;
      }
  }
  # Search and replace multiple spaces with a single space, not that LaTeX cares
  $String =~ s/ +/ /g;
- $String;
+ # Look for the expert flag and nuke it, if found
+ my $Expert = ($String =~ s/!expert//g);
+ ($String, $Expert);
 }
 
 

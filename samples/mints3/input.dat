@@ -1,0 +1,86 @@
+#! Test individual integral objects for correctness.
+print_stdout(' Case Study Test of Integrals')
+
+molecule h2o {
+  o
+  h 1 1.0
+  h 1 1.0 2 103.1
+}
+
+
+
+set {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+set {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+set {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+
+Li = mints.so_angular_momentum()
+
+
+
+
+
+
+set {
+  basis sto-3g
+}
+
+mints = MintsHelper()
+
+Pi = mints.so_nabla()
+
+
+
+
+
+set {
+  basis 6-311G**
+}
+
+mints = MintsHelper()
+
+Pi = mints.so_nabla()
+
+
+
+
+
+set {
+  basis cc-pVTZ
+}
+
+mints = MintsHelper()
+
+Pi = mints.so_nabla()
+
+
+
+
+
+# There shouldn't be anything to clean
+clean()

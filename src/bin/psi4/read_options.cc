@@ -37,7 +37,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DERTYPE", "NONE", "NONE FIRST");
 
     /*- Wavefunction type -*/
-    options.add_str("WFN", "" /*"DETCI CI ZAPTN DETCAS CASSCF RASSCF"*/);
+    options.add_str("WFN", "", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- The CI excitation level -*/
     options.add_int("EX_LVL", 2);
@@ -140,7 +140,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       code is very slow with this option turned on. -*/
     options.add_bool("REPL_OTF",false);
 
-    /*- If TRUE, calculate the value of <S^2> for each root -*/
+    /*- If TRUE, calculate the value of $<S^2>$ for each root -*/
     options.add_bool("CALC_SSQ",false);
 
     /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
@@ -1249,7 +1249,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_BASIS_MP2","");
     /*- Basis, needed by Python -*/
     options.add_str("BASIS","NONE");
-    /*- OS Scale  -*/
+    /*- OS Scale  !expert -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
@@ -1305,15 +1305,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
 
     /** MP2-Specific Options **/
-    /*- MP2 Algorithm
-
-            Algorithm Keyword   MP2J          MP2K
-                DF               DF            DF
-                SOS              DF            -
-                MOS              DF(Omega)     -
-                PS               DF            PS
-                PS2              DF           PS/PS
-                PS3              PS           PS/PS
+    /*- MP2 Algorithm:
+            \begin{tabular}{ccc}
+            Algorithm Keyword &  MP2J        &  MP2K  \\
+             \hline
+                DF            &   DF         &   DF   \\
+                SOS           &   DF         &   -    \\
+                MOS           &   DF(Omega)  &   -    \\
+                PS            &   DF         &   PS   \\
+                PS2           &   DF         &  PS/PS \\
+                PS3           &   PS         &  PS/PS \\
+            \end{tabular}
     -*/
     options.add_str("MP2_ALGORITHM", "DF", "DF SOS MOS PS PS2 PS3");
     /*- OS Scale  -*/
@@ -1321,9 +1323,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
 
-    /*- RPA algorithm 
-        DF N^5
-        CD N^4
+    /*- RPA algorithm:
+        \begin{tabular}{cc}
+        DF & $\mathcal{O}(N^5)$ \\
+        CD & $\mathcal{O}(N^4)$ \\
+        \end{tabular}
     -*/
     options.add_str("RPA_ALGORITHM", "CD", "CD DF");
     /*- RPA Cholesky delta -*/ 
