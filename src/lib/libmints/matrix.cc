@@ -1106,6 +1106,111 @@ void Matrix::cholesky_factorize()
     }
 }
 
+shared_ptr<Matrix> Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::partial_cholesky_factorize: Matrix is non-totally symmetric.");
+    }
+
+    // Temporary cholesky factor (full memory)
+    shared_ptr<Matrix> K(new Matrix("L Temp", nirrep_, rowspi_, rowspi_));
+
+    // Significant Cholesky columns per irrep
+    int sigpi[nirrep_];
+    ::memset(static_cast<void*>(sigpi), '\0', nirrep_*sizeof(int));
+
+    for (int h=0; h<nirrep_; ++h) {
+        
+        if (!rowspi_[h]) continue;
+        
+        // Dimension
+        int n = rowspi_[h];
+        // Cholesky factor
+        double** Kp = K->pointer(h);
+        // Original matrix
+        double** Ap = matrix_[h];    
+
+        // Diagonal (or later Schur complement diagonal)
+        double* Dp = new double[n];
+        ::memset(static_cast<void*>(Dp), '\0', nirrep_*sizeof(double));
+        for (int i = 0; i < n; i++)
+            Dp[i] = Ap[i][i];
+        
+        // Vector of completed columns (absolute)
+        std::vector<int> order;
+    
+        int nQ = 0;
+        int Q = -1;
+        while (nQ < n) {
+
+            // Find max error on diagonal
+            // (Should always be in the Schur complement) 
+            int imax = 0;
+            for (int i = 0; i < n; i++)
+                if (fabs(Dp[i]) > fabs(Dp[imax]))
+                    imax = i;
+
+            double dmax = Dp[imax];
+            if (fabs(dmax) <= delta)
+                break;  
+
+            if (dmax <= 0.0) {
+                if (throw_if_negative)
+                    throw PSIEXCEPTION("Matrix::partial_cholesky_factorize: Pivot is numerically negative or zero"); 
+                else
+                    break;
+            }
+
+            // New vector!
+            nQ++;
+            Q++;
+
+            // Find the diagonal
+            double diag = sqrt(dmax);
+
+            // Update the vector
+            C_DCOPY(n,&Ap[0][imax],n,&Kp[0][Q],n);
+            C_DGEMV('N',n,nQ-1,-1.0,Kp[0],n,Kp[imax],1,1.0,&Kp[0][Q],n); 
+            C_DSCAL(n,1.0 / diag, &Kp[0][Q], n);   
+ 
+            // Explicitly zero out elements of the vector 
+            // Which are psychologically upper triangular
+            for (int i = 0; i < order.size(); i++)
+                Kp[order[i]][Q] = 0.0;
+           
+            // Place the diagonal
+            Kp[imax][Q] = diag;
+ 
+            // Update the Schur complement
+            for (int i = 0; i < n; i++)
+                Dp[i] -= Kp[i][Q] * Kp[i][Q];
+
+            // Explicitly zero out elements of the Schur complement 
+            // Which are already exact, and do not really belong
+            // This prevents false selection due to roundoff
+            Dp[imax] = 0.0;
+ 
+            // Add the diagonal index to the list of completed indices
+            order.push_back(imax);
+        }
+        sigpi[h] = nQ;
+    }
+
+    // Copy out to properly sized array
+    shared_ptr<Matrix> L(new Matrix("Partial Cholesky Factor", nirrep_, rowspi_, sigpi));
+    for (int h = 0; h < nirrep_; h++) {
+        if (!rowspi_[h]) continue;
+        double** Kp = K->pointer(h);
+        double** Lp = L->pointer(h);
+
+        for (int i = 0; i < rowspi_[h]; i++) {
+            ::memcpy(static_cast<void*>(Lp[i]),static_cast<void*>(Kp[i]),sizeof(double)*sigpi[h]);
+        }
+    } 
+
+    return L;
+}
+
 void Matrix::invert()
 {
     if (symmetry_) {
