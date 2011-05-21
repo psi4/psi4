@@ -13,12 +13,14 @@ class Options;
 class FittingMetric;
 class SchwarzSieve;
 class TwoBodyAOInt;
+class IntegralFactory;
 class PSIO;
 class AIOHandler;
 
 namespace scf {
 
 class DFHFDiskIterator;
+class DFHFLocalizer; 
 
 class DFHF {
 
@@ -236,6 +238,150 @@ public:
     int max_rows() const { return max_rows_; }
     // Sychronize the AIO
     void synchronize();
+
+};
+
+
+class DFHFLocalizer {
+
+protected:
+    /// The number of orbitals to work with 
+    int nocc_;
+    /// Debug? Defaults false
+    bool debug_;
+
+    /// The alpha parameter
+    double alpha_;
+
+    /// Speed tricks and cutoffs
+    /// Variable threshold schwarz sieve
+    boost::shared_ptr<SchwarzSieve> schwarz_;
+    /// Charge cutoff (a.u.) for primary domain selection
+    double charge_cutoff_;
+    /// Charge leak allowed a.u.
+    double charge_leak_cutoff_;
+    /// Radial cutoff (bohr) for extended domain selection
+    double R_ext_;
+    /// number of am cardinal numbers to drop in the fitting bases
+    int l_drop_;
+
+    /// The primary basis 
+    boost::shared_ptr<BasisSet> primary_;
+    /// The auxiliary basis 
+    boost::shared_ptr<BasisSet> auxiliary_;
+    /// The zero basis
+    boost::shared_ptr<BasisSet> zero_;
+
+    /// The (mm|00) one-body integral constructor (note: not for conventional TEIs)
+    boost::shared_ptr<IntegralFactory> factory_; 
+    /// The (A0|mm) three-index integral constructor
+    boost::shared_ptr<IntegralFactory> auxfactory_; 
+    /// The (A0|A0) J matrix constructor
+    boost::shared_ptr<IntegralFactory> Jfactory_; 
+
+    /// The J matrix ERI
+    boost::shared_ptr<TwoBodyAOInt> Jint_;
+    /// The Amn matrix ERI
+    boost::shared_ptr<TwoBodyAOInt> Amnint_;
+
+    /// The localized orbitals (C1 obviously)
+    boost::shared_ptr<Matrix> C_;
+    /// The C1 S^1/2 matrix (for Lowdin charges)
+    boost::shared_ptr<Matrix> Sp12_;
+    /// The Lowdin charges (basis functions in rows, orbitals in cols)
+    boost::shared_ptr<Matrix> Itemp_;
+    /// The Lowdin charges (Atoms in rows, orbitals in cols)
+    boost::shared_ptr<Matrix> I_;
+    /// The custom int array for selection of domains (0-no, 1-charge, 2-distance, 3-unification, 4-alpha delocalized, 5-leak delocalized) (atoms x orbitals)
+    int** domains_;
+    /// The custom old int array for selection of domains (0-no, 1-charge, 2-distance, 3-unification, 4-alpha delocalized, 5-leak delocalized) (atoms x orbitals)
+    int** old_domains_;
+    /// Have domains changed/require recomputation?
+    std::vector<bool> domains_changed_;
+    /// Have superdomains changed/require recomputation? 
+    std::vector<bool> superdomains_changed_; 
+
+    /// Vector of Cholesky decompositions of J (or pointers where superdomains exist)
+    std::vector<boost::shared_ptr<Matrix> > JCholesky_;
+
+    /// Vector of significant shell indices (fast) for each orbital (slow) 
+    std::vector<std::vector<int> > primary_shells_;
+    /// Vector of significant function indices (fast) for each orbital (slow) 
+    std::vector<std::vector<int> > primary_funs_;
+    /// Vecotr of significant function starts per significant shell (fast) for each orbital (slow)
+    std::vector<std::vector<int> > primary_starts_;
+    /// Vector of significant shell indices (fast) for each orbital (slow) 
+    std::vector<std::vector<int> > auxiliary_shells_;
+    /// Vector of significant function indices (fast) for each orbital (slow) 
+    std::vector<std::vector<int> > auxiliary_funs_;
+    /// Vecotr of significant function starts per significant shell (fast) for each orbital (slow)
+    std::vector<std::vector<int> > auxiliary_starts_;
+
+    /// The vector of superdomains, which is indexes as superdomains[superdomain][member] = orbital member
+    /// Superdomains are for localizable orbitals only 
+    std::vector<std::vector<int> > superdomains_;
+    /// The vector of orbitals in the completely delocalized set 
+    std::set<int> delocal_set_;
+    /// The vector of orbitals in the localizeable set
+    std::set<int> local_set_;
+
+    /// The common init routine
+    void common_init();
+    /// Computes the J matrix and associated Cholesky decomposition for orbital i
+    boost::shared_ptr<Matrix> computeJCholesky(int i);
+    /// Computes Amn for orbital i
+    boost::shared_ptr<Matrix> computeAmn(int i);
+    /// Computes the local K matrix for orbital i
+    boost::shared_ptr<Matrix> computeK(int i, boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Amn);
+    /// Find the primary/extended domains due to Lowdin charges
+    void lowdinDomains();
+    /// Identify completely delocalized domains 
+    void delocalDomains();
+    /// Populate the superdomain maps due to synergetic interdomain overlap
+    void superDomains();
+    /// Find the basis functions for each domain based on atoms and l_drop_ 
+    void basisDomains();
+    /// Check for changes in the atomic domains
+    void checkForChanges();
+    /// A silent global chnage has occurred, flag all the domains as stale 
+    void globalChange();
+    /// We've just computed everything, no need to repeat unless stuff changes 
+    void globalReset();
+    
+
+public:
+    DFHFLocalizer(int nocc, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary);
+    ~DFHFLocalizer();
+
+    /// The local C matrix
+    boost::shared_ptr<Matrix> C() const { return C_; }    
+    /// The delocal orbital set
+    std::set<int> local_set() const { return local_set_; }
+    /// The local orbital set
+    std::set<int> delocal_set() const { return delocal_set_; }
+
+    /// Set the debug flag 
+    void set_debug(bool d) { debug_ = d; }
+    /// Set the Schwarz cutoff 
+    void set_schwarz_cutoff(double schwarz); 
+    /// Set the Lowdin charge cutoff (a.u.)
+    void set_charge_cutoff(double cut) { charge_cutoff_ = cut; } 
+    /// Set the Lowdin charge leak cutoff (a.u.)
+    void set_charge_leak_cutoff(double cut) { charge_leak_cutoff_ = cut; } 
+    /// Set the extended domains cutoff radius (bohr)
+    void set_R_ext(double R) { R_ext_ = R; } 
+    /// The fraction of atoms in a domain to declare the orbital delocalized
+    void set_alpha(double a) { alpha_ = a; }
+    /// Set the number of angular momenta to drop in the fitting basis (1 or 0 usually)
+    void set_l_drop(int l) { l_drop_ = l; globalChange(); }
+
+    /*!
+    * Localize based on C1 square SPSD matrix D 
+    * @param D density matrix in C1 AO basis
+    */
+    void choleskyLocalize(boost::shared_ptr<Matrix> D); 
+    /// Computes the local part of matrix K, as determind by indices
+    void computeKLocal(boost::shared_ptr<Matrix> Kglobal);
 
 };
 
