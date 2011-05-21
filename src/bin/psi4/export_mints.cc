@@ -127,6 +127,7 @@ void export_mints()
             def("gemm", matrix_multiply(&Matrix::gemm)).
             def("diagonalize", matrix_diagonalize(&Matrix::diagonalize)).
             def("cholesky_factorize", &Matrix::cholesky_factorize).
+            def("partial_cholesky_factorize", &Matrix::partial_cholesky_factorize).
             def("invert", &Matrix::invert).
             def("power", &Matrix::power).
             def("exp", &Matrix::exp).

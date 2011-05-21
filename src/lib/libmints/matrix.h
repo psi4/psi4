@@ -628,6 +628,35 @@ public:
      *  This is the block version of the algorithm, calling Level 3 BLAS.
      */
     void cholesky_factorize();
+
+    /*! Computes the fully pivoted partial Cholesky factorization of a real symmetric
+     * positive semidefinite matrix A, to numerical precision \delta.
+     *
+     * The results L is dimpi x sigpi, where dimpi is the dimension of the original
+     * matrix, and sigpi is the number of columns required to reach accuracy delta.
+     * Sigpi is strictly less than or equal to dimpi
+     *
+     * The decomposition is of the form:
+     *   A' \approx LL^T, 
+     *  where A is the original matrix, and L is the resultant
+     *  Cholesky factor. The error matrix is:
+     *   D = A - A'
+     *
+     * This function recursively computes the Schur complement to determine the
+     * optimal ordering of columns. 
+     *
+     * This algorithm requires up to 3 total core matrices of the size of the original
+     * These are 1) the original, 2) The resultant, and 3) a temporary matrix 
+     *
+     * \param delta, double,  maximum allowed error in the error matrix D, which always 
+     * occurs on the diagonal. Defaults to 0.0, in which case the numerically 
+     * exact factor is returned. 
+     * \param throw_if_negative, bool, throw if pivot <= 0.0 is detected? 
+     * \return L, shared_ptr<Matrix>, with rows of dimension dimpi and columns of 
+     * dimension sigpi 
+     */
+     boost::shared_ptr<Matrix> partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);  
+
     /*! Computes the inverse of a real symmetric positive definite
      *  matrix A using the Cholesky factorization A = L*L**T
      *  computed by cholesky_factorize().
