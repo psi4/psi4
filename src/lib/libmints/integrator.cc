@@ -1203,9 +1203,9 @@ SphericalQuadrature Integrator::getLebedevSpherical(int degree)
     switch (degree){
 
     case 1:
-        leb_tmp.x[0] = 1.0;
+        leb_tmp.x[0] = 0.0;
         leb_tmp.y[0] = 0.0;
-        leb_tmp.z[0] = 0.0;
+        leb_tmp.z[0] = 1.0;
         leb_tmp.w[0] = 4*M_PI;
         break;
 

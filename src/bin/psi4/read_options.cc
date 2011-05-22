@@ -1294,7 +1294,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Desired Fitting condition (inverse of max condition number) -*/
     options.add_double("FITTING_CONDITION", 1.0E-10);
     /*- Dealias basis for PS integrals -*/
-    options.add_str("DEALIAS_BASIS_CC","NONE");
+    options.add_str("DEALIAS_BASIS_CC","");
     /*- Filename to read grid from -*/
     options.add_str_i("PS_GRID_FILE","");
     /*- File path to read grids from -*/

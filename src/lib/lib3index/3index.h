@@ -463,32 +463,133 @@ public:
     int max_rows() const { return max_rows_; }
 
 };
-/**
-class Pseudospectral {
+
+// Class to demonstrate pseudospectral techniques
+// given the current molecule and options.
+//
+// "C'mon you apes, you want to live forever?!"
+//
+class PseudoTrial {
 
 protected:
+
+    // => Starter stuff <= //
+    
+    // Debug flag
+    int debug_;
+    // Print flag
+    int print_;
+    // options 
+    Options& options_;
+    // Molecule
+    boost::shared_ptr<Molecule> molecule_;
+
+    // => Bases/Grids <= // 
+
+    // Dealias or not? 
+    bool do_dealias_;
+    // Primary basis set
     boost::shared_ptr<BasisSet> primary_;
+    // Dealias basis set
     boost::shared_ptr<BasisSet> dealias_;
+    // Pseudospectral grid
     boost::shared_ptr<PseudoGrid> grid_;
-    int npoints_;
-    boost::shared_ptr<PSIO> psio_;
+    // Number of primary basis functions
+    int nso_;
+    // Number of dealias basis functions
+    int ndealias_;
+    // Number of primary + dealias basis functions
+    int naug_;
+    // Number of grid points
+    int naux_;
+
+    // => Temps <= // 
+
+    // Overlap matrix (primary x primary)
+    boost::shared_ptr<Matrix> Spp_;
+    // Overlap matrix (primary x dealias)
+    boost::shared_ptr<Matrix> Spd_;
+    // Overlap matrix (dealias x dealias)
+    boost::shared_ptr<Matrix> Sdd_;
+    // Overlap matrix (aug x aug)
+    boost::shared_ptr<Matrix> Sa_;
+    // Orthogonalization matrix (dealias x primary)
+    boost::shared_ptr<Matrix> Cdp_;
+    // Collocation matrix (primary)
+    boost::shared_ptr<Matrix> Rp_;
+    // Collocation matrix (dealias)
+    boost::shared_ptr<Matrix> Rd_;
+    // Collocation matrix (augmented)
+    boost::shared_ptr<Matrix> Ra_;
+    // Weight Vector 
+    boost::shared_ptr<Vector> w_;
+    // C matrix
+    boost::shared_ptr<Matrix> C_;
+    // Cinv matrix
+    boost::shared_ptr<Matrix> Cinv_;
+    // Full Q matrix
+    boost::shared_ptr<Matrix> Qfull_;
+    // Projector matrix 
+    boost::shared_ptr<Matrix> P_;
+
+    // => Targets <= //
+
+    // Q_m^P
+    boost::shared_ptr<Matrix> Q_;
+    // R_n^P
+    boost::shared_ptr<Matrix> R_;
+    // A_ls^P
+    boost::shared_ptr<Matrix> A_;
+    // QR_mn^P 
+    boost::shared_ptr<Matrix> T_;
+
+    // => Final Targets <= //  
+
+    // AO basis (mn|ls) tensor (exact)
+    boost::shared_ptr<Matrix> I_; 
+    // AO basis (mn|ls) tensor (PS)
+    boost::shared_ptr<Matrix> Ips_; 
+
+    // => Helpers <= //
+    
+    // Build everything 
+    void common_init();
+    void print_header();
+    void form_molecule();
+    void form_bases();
+    void form_grid();
+    void form_Spp();
+    void form_Spd();
+    void form_Sdd();
+    void form_Cdp();
+    void form_Sa();
+    void form_Rp();
+    void form_Rd();
+    void form_Ra();
+    
+    void form_Q();
+    void form_P();
+    void form_A(); 
+
+    void form_I();
+    void form_Ips();
+    void verify(); 
+
 public:
-    Pseudospectral(boost::shared_ptr<PSIO>, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> dealias, boost::shared_ptr<PseudoGrid> grid);
-    ~Pseudospectral();
 
-    boost::shared_ptr<Matrix> form_X();
-    boost::shared_ptr<Matrix> form_X_dealias();
-    boost::shared_ptr<Matrix> form_S();
-    boost::shared_ptr<Matrix> form_S_dealias();
-    boost::shared_ptr<Matrix> form_Q();
-    boost::shared_ptr<Matrix> form_A();
-    void form_A_disk();
-    int npoints() const { return npoints_; }
+    PseudoTrial();
+    ~PseudoTrial();
+    
+    boost::shared_ptr<Matrix> getI() const { return I_; }    
+    boost::shared_ptr<Matrix> getIPS() const { return Ips_; }    
 
-    boost::shared_ptr<Matrix> form_I();
+    boost::shared_ptr<Matrix> getQ() const { return Q_; }    
+    boost::shared_ptr<Matrix> getR() const { return R_; }    
+    boost::shared_ptr<Matrix> getA() const { return A_; }    
+
 
 };
-**/
+
 
 // Denominator Factorizations (MP2-like for now)
 class Denominator {
