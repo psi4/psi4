@@ -181,6 +181,13 @@ void export_mints()
             def("form_eig_inverse", &FittingMetric::form_eig_inverse).
             def("form_full_inverse", &FittingMetric::form_full_inverse);
 
+    class_<PseudoTrial, boost::shared_ptr<PseudoTrial> >("PseudoTrial").
+            def("getI", &PseudoTrial::getI).
+            def("getIPS", &PseudoTrial::getIPS).
+            def("getQ", &PseudoTrial::getQ).
+            def("getR", &PseudoTrial::getR).
+            def("getA", &PseudoTrial::getA);
+
     class_<Vector3>("Vector3").
             def(init<double>()).
             def(init<double, double, double>()).

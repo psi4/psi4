@@ -57,6 +57,7 @@ const double INVLN2 = 1.0/log(2.0);
 /// Lebedev orders available
 const int lebedev_orders_[] =
 {
+    0,
     3,
     5,
     7,
@@ -93,6 +94,7 @@ const int lebedev_orders_[] =
 /// Lebedev points per grid
 const int lebedev_points_[] =
 {
+    1,
     6,
     14,
     26,
@@ -126,7 +128,7 @@ const int lebedev_points_[] =
     5294,
     5810
 };
-const int n_lebedev_ = 32;
+const int n_lebedev_ = 33;
 
 /// Treutler radial mapping radii (See Treutler 1995, Table 1, pp. 348)
 const int maxTreutlerIndex_ = 36;

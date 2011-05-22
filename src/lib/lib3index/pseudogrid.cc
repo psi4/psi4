@@ -50,7 +50,7 @@ void PseudoGrid::parse(const std::string& filename)
     std::string PSIDATADIR = Process::environment("PSIDATADIR");
     std::string gridname = PSIDATADIR + "grids/" + filename + ".grid";
 
-    cout << gridname;
+    //cout << gridname;
 
     // Phase I: read the grid in
     std::vector<std::vector<std::pair<int, std::pair<double, double> > > > array;
@@ -202,7 +202,8 @@ void PseudoGrid::parse(const std::string& filename)
                 xp[counter + p] = quad.x[p];
                 yp[counter + p] = quad.y[p];
                 zp[counter + p] = quad.z[p];
-                wp[counter + p] = quad.w[p];
+                //wp[counter + p] = quad.w[p];
+                wp[counter + p] = w;
             }
             free(quad.x);
             free(quad.y);
@@ -232,10 +233,10 @@ void PseudoGrid::parse(const std::string& filename)
         }
     }
 
-    fprintf(outfile, "  Pseudospectral Grid Points:\n");
-    for (int P = 0; P < npoints; P++) {
-        fprintf(outfile, "   P = %5d: (%24.16E, %24.16E, %24.16E) x %24.16E\n", P, xp[P], yp[P], zp[P], wp[P]);
-    }
+    //fprintf(outfile, "  Pseudospectral Grid Points:\n");
+    //for (int P = 0; P < npoints; P++) {
+    //    fprintf(outfile, "   P = %5d: (%24.16E, %24.16E, %24.16E) x %24.16E\n", P, xp[P], yp[P], zp[P], wp[P]);
+    //}
 
 }
 
