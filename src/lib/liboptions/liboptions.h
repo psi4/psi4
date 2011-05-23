@@ -121,7 +121,7 @@ namespace psi {
 
     virtual std::string to_string() const {
       throw DataTypeException("don't know how to convert to a string");
-    };
+    }
     virtual int to_integer() const {
       throw DataTypeException("don't know how to convert to an integer");
     }
