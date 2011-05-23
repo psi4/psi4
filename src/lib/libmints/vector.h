@@ -124,6 +124,9 @@ public:
     /// Vector dot product
     double dot(Vector* X);
 
+    /// Scale the elements of the vector
+    void scale(double sc);
+
     friend class Matrix;
 };
 
