@@ -56,8 +56,8 @@ DCFTSolver::init()
     bocc_c_      = boost::shared_ptr<Matrix>(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_));
     avir_c_      = boost::shared_ptr<Matrix>(new Matrix("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_));
     bvir_c_      = boost::shared_ptr<Matrix>(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
-    scf_error_a_ = boost::shared_ptr<Matrix>(new Matrix("Alpha SCF Error Vector", nirrep_, naoccpi_, navirpi_));
-    scf_error_b_ = boost::shared_ptr<Matrix>(new Matrix("Beta SCF Error Vector", nirrep_, nboccpi_, nbvirpi_));
+    scf_error_a_ = boost::shared_ptr<Matrix>(new Matrix("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_));
+    scf_error_b_ = boost::shared_ptr<Matrix>(new Matrix("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_));
     Fa_          = boost::shared_ptr<Matrix>(new Matrix("Alpha Fock Matrix", nirrep_, nsopi_, nsopi_));
     Fb_          = boost::shared_ptr<Matrix>(new Matrix("Beta Fock Matrix", nirrep_, nsopi_, nsopi_));
     Ca_          = boost::shared_ptr<Matrix>(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
