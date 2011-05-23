@@ -1,14 +1,14 @@
-#! DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with
-#! Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy
-#! atoms, fixed parameters, updated parameters, and separate charge/multiplicity
-#! specifiers for each monomer. One-electron properties computed for dimer and one monomer.
+#! Database calculation, so no molecule section in input file. Portions of the full
+#! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
-refS22mad = 1.2098747476                                                    #TEST
-refNBCmad = 0.262738148496                                                  #TEST
+refS22mad = 2.105857738420                                                 #TEST
+refNBCmad = 0.117344794875                                                 #TEST
 
 set globals {
     BASIS sto-3g
-    RI_BASIS_SCF cc-pVDZ-JKFIT
+    RI_BASIS_SCF  cc-pVDZ-JKFIT
+    RI_BASIS_SAPT cc-pVDZ-RI
+    RI_BASIS_MP2  cc-pVDZ-RI
     REFERENCE RHF
     SCF_TYPE DF
     PRINT 1
@@ -17,8 +17,8 @@ set globals {
     GUESS CORE
 }
 
-S22mad = database('scf','S22',subset=[2,8])
+S22mad = database('sapt0','S22',subset=[2,8])
 compare_values(refS22mad, S22mad, 5, "S22 subset mean absolute deviation")  #TEST
-NBCmad = database('scf','NBC10',subset='small')
+NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')
 compare_values(refNBCmad, NBCmad, 5, "NBC subset mean absolute deviation")  #TEST
 
