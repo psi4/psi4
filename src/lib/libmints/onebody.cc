@@ -218,7 +218,8 @@ void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
     normalize_am(s1, s2, nchunk_);
 
     // Pure angular momentum (6d->5d, ...) transformation
-    pure_transform(s1, s2, nchunk_);
+    if (!force_cartesian_)
+        pure_transform(s1, s2, nchunk_);
 }
 
 void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
