@@ -66,7 +66,7 @@ public:
     }
     void finalize(){
 
-        if (comm != "LOCAL" & scf_type == "DIRECT") {
+        if (comm != "LOCAL" && scf_type == "DIRECT") {
             for (int i=0; i < J_->nirrep(); i++)
                 Communicator::world->sum(J_->get_pointer(i), J_->rowdim(i)*J_->coldim(i));
             for (int i=0; i < K_->nirrep(); i++)
@@ -307,7 +307,7 @@ public:
     }
     void finalize(){
 
-        if (comm != "LOCAL" & scf_type == "DIRECT") {
+        if (comm != "LOCAL" && scf_type == "DIRECT") {
             for (int i=0; i < J_->nirrep(); i++)
                 Communicator::world->sum(J_->get_pointer(i), J_->rowdim(i)*J_->coldim(i));
         }
@@ -460,7 +460,7 @@ public:
     }
     void finalize(){
 
-        if (comm != "LOCAL" & scf_type == "DIRECT") {
+        if (comm != "LOCAL" && scf_type == "DIRECT") {
             for (int i=0; i < J_->nirrep(); i++)
                 Communicator::world->sum(J_->get_pointer(i), J_->rowdim(i)*J_->coldim(i));
             for (int i=0; i < Ka_->nirrep(); i++)
@@ -735,7 +735,7 @@ void HF::process_tei(JKFunctor & functor)
         std::string comm_ = Process::environment("COMMUNICATOR");
         functor.initialize(comm_, scf_type_);
 
-        if (comm_ == "LOCAL" | comm_ == "MPI" | comm_ == "GA") {
+        if (comm_ == "LOCAL" || comm_ == "MPI" || comm_ == "GA") {
             int v=0;
             for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
                 if (Communicator::world->me() == v%Communicator::world->nproc())
