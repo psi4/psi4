@@ -274,7 +274,7 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
             int nso2 = b2_->nfunction(jsh);
             int nao2 = b2_->naofunction(jsh);
 
-            fprintf(outfile, "nso2 = %d, nao2 = %d\n", nso2, nao2);
+//            fprintf(outfile, "nso2 = %d, nao2 = %d\n", nso2, nao2);
 
             int nao12 = nao1 * nao2;
             int nso12 = nso1 * nso2;
