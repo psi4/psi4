@@ -46,6 +46,7 @@ void PseudoTrial::common_init()
 
     debug_ = options_.get_int("DEBUG");
     print_ = options_.get_int("PRINT");   
+    min_S_ = options_.get_double("S_MIN_EIGENVALUE");
 
     form_molecule();
     fflush(outfile);
@@ -57,20 +58,27 @@ void PseudoTrial::common_init()
     form_Spp();
     form_Spd();
     form_Sdd();
+    form_Sa();
+
+    form_Xpp();
 
     if (do_dealias_) {
         form_Cdp();
-        form_Sa();
+        form_Xdd();
+        form_Sa2();
     }
 
     form_Rp();
     form_Rd();
+    form_Rp2();
+    form_Rd2();
     form_Ra();
+
     form_P();
+    form_SX();
+
     form_Q();
-
     form_A();
-
 
     form_Ips();
     form_I();
@@ -193,6 +201,39 @@ void PseudoTrial::form_Sdd()
         Sdd_->print();
 }
 
+void PseudoTrial::form_Sa()
+{
+    Sa_ = shared_ptr<Matrix>(new Matrix("S Augmented, Raw (primary + dealias x primary + dealias)", naug_, naug_));
+    double** Sap = Sa_->pointer();
+    double** Sppp = Spp_->pointer();
+    double** Spdp = Spd_->pointer();
+    double** Sddp = Sdd_->pointer();
+
+    for (int m = 0; m < nso_; m++) {
+        C_DCOPY(nso_, Sppp[m], 1, Sap[m], 1);
+    } 
+
+    for (int m = 0; m < nso_; m++) {
+        C_DCOPY(ndealias_, Spdp[m], 1, &Sap[m][nso_], 1);
+    } 
+    
+    for (int m = 0; m < nso_; m++) {
+        C_DCOPY(ndealias_, Spdp[m], 1, &Sap[nso_][m], naug_);
+    }
+
+    for (int a = 0; a < ndealias_; a++) {
+        C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nso_ + a][nso_], 1);
+    } 
+   
+    if (debug_)
+        Sa_->print();
+}
+
+void PseudoTrial::form_Xpp()
+{
+    
+}
+
 void PseudoTrial::form_Cdp()
 {
     Cdp_ = shared_ptr<Matrix>(new Matrix("Orthogonalization coefficients (dealias x primary)", ndealias_, nso_));
@@ -219,6 +260,10 @@ void PseudoTrial::form_Cdp()
 
     if (debug_)
         Cdp_->print();
+}
+
+void PseudoTrial::form_Xdd()
+{
 }
 
 void PseudoTrial::form_Rp()
@@ -272,10 +317,18 @@ void PseudoTrial::form_Rd()
         Rd_->print();
 }
 
+void PseudoTrial::form_Rp2()
+{
+}
+
+void PseudoTrial::form_Rd2()
+{
+}
+
 void PseudoTrial::form_Ra()
 {
     if (!do_dealias_) {
-        Ra_ = Rp_;
+        Ra_ = Rp2_;
         return;
     }
 
@@ -295,10 +348,10 @@ void PseudoTrial::form_Ra()
         Ra_->print();
 }
 
-void PseudoTrial::form_Sa()
+void PseudoTrial::form_Sa2()
 {
-    Sa_ = shared_ptr<Matrix>(new Matrix("S Augmented (primary + dealias x primary + dealias)", naug_, naug_));
-    double** Sap = Sa_->pointer();
+    Sa2_ = shared_ptr<Matrix>(new Matrix("S Augmented (primary + dealias x primary + dealias)", naug_, naug_));
+    double** Sap = Sa2_->pointer();
     double** Sppp = Spp_->pointer();
     double** Spdp = Spd_->pointer();
     double** Sddp = Sdd_->pointer();
@@ -396,20 +449,24 @@ void PseudoTrial::form_Q()
 
 void PseudoTrial::form_P()
 {
-    P_ = shared_ptr<Matrix>(new Matrix("Projector Matrix (primary x primary + dealias)", nso_, naug_));
+    P_ = shared_ptr<Matrix>(new Matrix("Projector Matrix (primary x primary + dealias)", nmo_, naug2_));
     double** Pp = P_->pointer();
 
     // First try: [1 0]
-    //for (int i = 0; i < nso_; i++)
-    //    Pp[i][i] = 1.0;
+    for (int i = 0; i < nmo_; i++)
+        Pp[i][i] = 1.0;
 
     // Next try: [S 0]
-    double** Sp = Spp_->pointer();
-    for (int i = 0; i < nso_; i++)
-        C_DCOPY(nso_,Sp[i],1,Pp[i],1);
+    //double** Sp = Spp_->pointer();
+    //for (int i = 0; i < nso_; i++)
+    //    C_DCOPY(nso_,Sp[i],1,Pp[i],1);
 
     if (debug_)
         P_->print();
+}
+
+void PseudoTrial::form_SX()
+{
 }
     
 void PseudoTrial::form_A()
