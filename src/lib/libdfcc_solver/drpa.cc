@@ -17,7 +17,7 @@ using namespace std;
 
 namespace psi { namespace dfcc {
 
-dRPA::dRPA(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+dRPA::dRPA(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
   : CC(options, psio, chkpt)
 {
   print_header();
@@ -48,7 +48,7 @@ double dRPA::df_compute_energy()
   time_t stop;
 
   if (options_.get_bool("DIIS"))
-    diis_ = shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,naocc_*naocc_*
+    diis_ = boost::shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,naocc_*naocc_*
       navir_*navir_,options_.get_int("MAX_DIIS_VECS"),psio_));
 
   B_p_IA_ = block_matrix(naocc_*navir_,ndf_);
@@ -181,7 +181,7 @@ double dRPA::cd_compute_energy()
     ULI nov = nocc*(ULI)nvir;
  
     if (options_.get_bool("DIIS"))
-      diis_ = shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,nov*naux,
+      diis_ = boost::shared_ptr<DFCCDIIS>(new DFCCDIIS(DFCC_DIIS_FILE,nov*naux,
         options_.get_int("MAX_DIIS_VECS"),psio_));
   
     if (debug_) {
@@ -190,7 +190,7 @@ double dRPA::cd_compute_energy()
     }
 
     // => DF Integrals <= //  
-    shared_ptr<Matrix> Qia(new Matrix("(Q|ia) Integrals", nov,naux));
+    boost::shared_ptr<Matrix> Qia(new Matrix("(Q|ia) Integrals", nov,naux));
     double** Qiap = Qia->pointer();
  
     // TODO run out of core with (Q|ia) striping
@@ -201,7 +201,7 @@ double dRPA::cd_compute_energy()
         Qia->print();
 
     // => Initial ZiaQ tensor <= //
-    shared_ptr<Matrix> ZiaQ (new Matrix("Z_ia^Q Tensor", nov, naux)); 
+    boost::shared_ptr<Matrix> ZiaQ (new Matrix("Z_ia^Q Tensor", nov, naux)); 
     double** ZiaQp = ZiaQ->pointer();
     C_DCOPY(nov*naux,Qiap[0],1,ZiaQp[0],1);
 
@@ -210,7 +210,7 @@ double dRPA::cd_compute_energy()
 
     // Restripe for the preferred (Qia) order
     Qia.reset();
-    Qia = shared_ptr<Matrix>(new Matrix("(Q|ia) Integrals", naux, nov));
+    Qia = boost::shared_ptr<Matrix>(new Matrix("(Q|ia) Integrals", naux, nov));
     Qiap = Qia->pointer();
 
     for (int Q = 0; Q < naux; Q++) {
@@ -235,9 +235,9 @@ double dRPA::cd_compute_energy()
     do {
  
         // => Validation <= //
-        shared_ptr<Matrix> Texact; 
+        boost::shared_ptr<Matrix> Texact; 
         if (debug_) {
-            Texact = shared_ptr<Matrix>(new Matrix("-T exact", nov, nov));
+            Texact = boost::shared_ptr<Matrix>(new Matrix("-T exact", nov, nov));
             double** Texactp = Texact->pointer();
             C_DGEMM('N','T',nov,nov,naux,1.0,ZiaQp[0],naux,ZiaQp[0],naux,0.0,Texactp[0],nov);
 
@@ -255,7 +255,7 @@ double dRPA::cd_compute_energy()
         }
 
         // => Superdiagonal <= // 
-        shared_ptr<Vector> t_iaia(new Vector("-t_ia^ia",nov));
+        boost::shared_ptr<Vector> t_iaia(new Vector("-t_ia^ia",nov));
         double* t_iaiap = t_iaia->pointer();
         std::vector<std::pair<double, int> > super;
         for (int i = 0, ia = 0; i < nocc; i++) {
@@ -271,7 +271,7 @@ double dRPA::cd_compute_energy()
  
         // => Sort <= //
         std::sort(super.begin(), super.end(), greater<std::pair<double, int> >() );
-        shared_ptr<IntVector> order(new IntVector("ia' Order", nov));
+        boost::shared_ptr<IntVector> order(new IntVector("ia' Order", nov));
         int* orderp = order->pointer();
         for (int ia = 0; ia < nov; ia++) {
             orderp[ia] = super[ia].second;
@@ -283,9 +283,9 @@ double dRPA::cd_compute_energy()
         }   
 
         // => More Validation <= //
-        shared_ptr<Matrix> Tsort;
+        boost::shared_ptr<Matrix> Tsort;
         if (debug_) {
-            Tsort = shared_ptr<Matrix>(new Matrix("-t_ia^jb Unsorted",nov,nov));
+            Tsort = boost::shared_ptr<Matrix>(new Matrix("-t_ia^jb Unsorted",nov,nov));
             double** Tsortp = Tsort->pointer();
             double** Texactp = Texact->pointer();
 
@@ -305,9 +305,9 @@ double dRPA::cd_compute_energy()
 
         // => Eigenstructure Validation <= //
         if (debug_) {
-            shared_ptr<Matrix> Temp(  new Matrix("-T Temp",nov,nov));
-            shared_ptr<Matrix> Eigmat(new Matrix("-T Eigenvectors",nov,nov));
-            shared_ptr<Vector> Eigval(new Vector("-T Eigenvalues" ,nov));
+            boost::shared_ptr<Matrix> Temp(  new Matrix("-T Temp",nov,nov));
+            boost::shared_ptr<Matrix> Eigmat(new Matrix("-T Eigenvectors",nov,nov));
+            boost::shared_ptr<Vector> Eigval(new Vector("-T Eigenvalues" ,nov));
 
             Eigmat->copy(Texact);
             Texact->diagonalize(Eigmat.get(),Eigval.get());
@@ -398,7 +398,7 @@ double dRPA::cd_compute_energy()
         }
 
         if (debug_) {
-            shared_ptr<Matrix> Tau_u(new Matrix("Tau Unsorted", nP, nov));
+            boost::shared_ptr<Matrix> Tau_u(new Matrix("Tau Unsorted", nP, nov));
             double** Tau_up = Tau_u->pointer();
             for (int P = 0; P < nP; P++) {
                 C_DCOPY(nov,tau[P],1,Tau_up[P],1);
@@ -407,7 +407,7 @@ double dRPA::cd_compute_energy()
         }
 
         // Make a contiguous block, and backsort
-        shared_ptr<Matrix> Tau(new Matrix("Tau_P^ia", nP, nov));
+        boost::shared_ptr<Matrix> Tau(new Matrix("Tau_P^ia", nP, nov));
         double** Taup = Tau->pointer();
 
         // Painful unsort
@@ -420,7 +420,7 @@ double dRPA::cd_compute_energy()
 
         if (debug_) {
             Tau->print();
-            shared_ptr<Matrix> Tapp(new Matrix("-T Approximate",nov,nov));
+            boost::shared_ptr<Matrix> Tapp(new Matrix("-T Approximate",nov,nov));
             double** Tappp = Tapp->pointer();
             C_DGEMM('T','N',nov,nov,nP,1.0,Taup[0],nov,Taup[0],nov,0.0,Tappp[0],nov);
             Tapp->print();
@@ -428,7 +428,7 @@ double dRPA::cd_compute_energy()
         }
        
         if (debug_) {
-            shared_ptr<Matrix> Tapp(new Matrix("-T Approximate (from Exact Cholesky)",nov,nov));
+            boost::shared_ptr<Matrix> Tapp(new Matrix("-T Approximate (from Exact Cholesky)",nov,nov));
             double** Tappp = Tapp->pointer();
             double** Tsortp = Tsort->pointer();
             C_DGEMM('T','N',nov,nov,nP,1.0,Tsortp[0],nov,Tsortp[0],nov,0.0,Tappp[0],nov);
@@ -443,7 +443,7 @@ double dRPA::cd_compute_energy()
             delete[] tau[P]; 
    
         // => Energy Evaluation <= //
-        shared_ptr<Matrix> A(new Matrix("A_PQ", nP, naux));
+        boost::shared_ptr<Matrix> A(new Matrix("A_PQ", nP, naux));
         double** Ap = A->pointer();
 
         C_DGEMM('N','T',nP,naux,nov,1.0,Taup[0],nov,Qiap[0],nov,0.0,Ap[0],naux);
@@ -459,7 +459,7 @@ double dRPA::cd_compute_energy()
         e_new = E; 
 
         // => X_PQ <= //
-        shared_ptr<Matrix> X(new Matrix("X_PQ", nP, naux));
+        boost::shared_ptr<Matrix> X(new Matrix("X_PQ", nP, naux));
         double** Xp = X->pointer();
         
         C_DGEMM('N','T',nP,naux,nov,1.0,Taup[0],nov,Qiap[0],nov,0.0,Xp[0],naux);
