@@ -353,9 +353,9 @@ DIISManager::extrapolate(int numQuantities, ...)
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
 
     // Form the pseudoinverse
-    //B->print();
+//    B->print();
     B->power(-1.0, 1.0E-16);
-    //B->print();
+//    B->print();
     // Multiply pseudoinverse by forcing vector to get coefficients
     C_DGEMV('n',dimension,dimension,1.0,bMatrix[0],dimension,force,1,0.0,coefficients,1);
 
@@ -365,8 +365,12 @@ DIISManager::extrapolate(int numQuantities, ...)
     Matrix *matrix;
     double *array;
     va_list args;
+    int print  = Process::environment.options.get_int("PRINT");
+    if(print > 2)
+        fprintf(outfile, "DIIS coefficients: ");
     for(int n = 0; n < _subspace.size(); ++n){
         double coefficient = coefficients[n];
+        if(print > 2) fprintf(outfile, " %.3f ", coefficient);
         const double *arrayPtr = _subspace[n]->vector();
         va_start(args, numQuantities);
         for(int i=0; i < numQuantities; ++i) {
@@ -445,6 +449,7 @@ DIISManager::extrapolate(int numQuantities, ...)
         if(_storagePolicy == OnDisk) _subspace[n]->free_vector_memory();
         va_end(args);
     }
+    if(print > 2) fprintf(outfile, "\n");
     free(coefficients);
     free(force);
     free(pivots);
