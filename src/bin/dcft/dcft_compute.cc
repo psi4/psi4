@@ -69,9 +69,10 @@ DCFTSolver::compute_energy()
                 build_tensors();
                 build_intermediates();
                 lambda_convergence_ = compute_lambda_residual();
+                update_lambda_from_residual();
                 if(lambda_convergence_ < diis_start_thresh_){
                     //Store the DIIS vectors
-                    dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
+                    dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb, J;
                     dpd_buf4_init(&Raa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                                   ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
                     dpd_buf4_init(&Rab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -84,15 +85,21 @@ DCFTSolver::compute_energy()
                                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
                     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
+
+    //                    dpd_buf4_init(&J, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    //                                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+    //                    fprintf(outfile, "DOT = %f\n",dpd_buf4_dot(&Rab, &J));
+    //                    dpd_buf4_close(&J);
+
                     if(lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)){
                         diisString += "S";
                     }
-                    if(lambdaDiisManager.subspace_size() == maxdiis_ && maxdiis_ > 0){
+                    if(lambdaDiisManager.subspace_size() >= mindiisvecs_ && maxdiis_ > 0){
                         diisString += "/E";
                         lambdaDiisManager.extrapolate(3, &Laa, &Lab, &Lbb);
-                        lambdaDiisManager.reset_subspace();
-                    }else{
-                        update_lambda_from_residual();
+//                        lambdaDiisManager.reset_subspace();
+//                    }else{
+//                        update_lambda_from_residual();
                     }
                     dpd_buf4_close(&Raa);
                     dpd_buf4_close(&Rab);
@@ -100,8 +107,8 @@ DCFTSolver::compute_energy()
                     dpd_buf4_close(&Laa);
                     dpd_buf4_close(&Lab);
                     dpd_buf4_close(&Lbb);
-                }else{
-                    update_lambda_from_residual();
+//                }else{
+//                    update_lambda_from_residual();
                 }
                 oldEnergy = new_total_energy_;
                 compute_dcft_energy();

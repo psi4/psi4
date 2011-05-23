@@ -38,6 +38,7 @@ namespace psi{ namespace dcft{
   bool
   DCFTSolver::correct_mo_phases(bool dieOnError)
   {
+#if 1
       Matrix temp("temp", nirrep_, nsopi_, nsopi_);
       Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
 
@@ -119,6 +120,85 @@ namespace psi{ namespace dcft{
           offset += nsopi_[h];
       }
       return true;
+#else
+      Matrix temp("temp", nirrep_, nsopi_, nsopi_);
+      Matrix overlap("Old - New Overlap", nirrep_, nsopi_, nsopi_);
+
+      temp.gemm(true, false, 1.0, old_ca_, ao_s_, 0.0);
+      overlap.gemm(false, false, 1.0, temp, Ca_, 0.0);
+      temp.copy(Ca_);
+      int offset = 0;
+      std::vector<std::pair<double, int> > proj_orb;
+      for(int h = 0; h < nirrep_; ++h){
+          proj_orb.clear();
+          for(int mo = 0; mo < nsopi_[h]; ++mo){
+              double proj = 0.0;
+              for(int occ = 0; occ < nalphapi_[h]; ++occ){
+                  proj += overlap.get(h, occ, mo);
+              }
+              proj_orb.push_back(std::make_pair(proj, mo));
+          }
+              // Now we've found the MO to use, check it's not been used already then
+              // copy it over.
+              if(mosUsed[bestMO + offset]++){
+                  if(dieOnError){
+                      overlap.print();
+                      old_ca_->print();
+                      temp.print();
+                      throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
+                  }else{
+                      // Copy Ca back from temp
+                      Ca_->copy(temp);
+                      return false;
+                  }
+              }
+              for(int so = 0; so < nsopi_[h]; ++so){
+                  Ca_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+              }
+          }
+          offset += nsopi_[h];
+      }
+
+      temp.gemm(true, false, 1.0, old_cb_, ao_s_, 0.0);
+      overlap.gemm(false, false, 1.0, temp, Cb_, 0.0);
+      temp.copy(Cb_);
+      mosUsed.clear();
+      offset = 0;
+      for(int h = 0; h < nirrep_; ++h){
+          for(int oldMO = 0; oldMO < nsopi_[h]; ++oldMO){
+              int bestMO = 0;
+              double bestOverlap = 0.0;
+              double prefactor = 0.0;
+              for(int newMO = 0; newMO < nsopi_[h]; ++newMO){
+                  double val = overlap.get(h, oldMO, newMO);
+                  if(fabs(val) > bestOverlap){
+                      bestOverlap = fabs(val);
+                      bestMO = newMO;
+                      prefactor = val < 0.0 ? -1.0 : 1.0;
+                  }
+              }
+              // Now we've found the MO to use, check it's not been used already then
+              // copy it over.
+              if(mosUsed[bestMO + offset]++){
+                  if(dieOnError){
+                      overlap.print();
+                      old_cb_->print();
+                      temp.print();
+                      throw SanityCheckError("Duplicate MOs used in phase check", __FILE__, __LINE__);
+                  }else{
+                      // Copy Cb back from temp
+                      Cb_->copy(temp);
+                      return false;
+                  }
+              }
+              for(int so = 0; so < nsopi_[h]; ++so){
+                  Cb_->set(h, so, oldMO, prefactor * temp.get(h, so, bestMO));
+              }
+          }
+          offset += nsopi_[h];
+      }
+      return true;
+#endif
   }
 
   /**
@@ -254,29 +334,34 @@ namespace psi{ namespace dcft{
   {
       size_t nElements = 0;
       double sumOfSquares = 0.0;
-      Matrix tmp("tmp", nirrep_, nsopi_, nsopi_);
-      Matrix moF("MO Basis Fock Matrix", nirrep_, nsopi_, nsopi_);
-      tmp.gemm(true, false, 1.0, Ca_, Fa_, 0.0);
-      moF.gemm(false, false, 1.0, tmp, Ca_, 0.0);
+      SharedMatrix tmp1(new Matrix("tmp1", nirrep_, nsopi_, nsopi_));
+      SharedMatrix tmp2(new Matrix("tmp2", nirrep_, nsopi_, nsopi_));
+      // form FDS
+      tmp1->gemm(false, false, 1.0, kappa_a_, ao_s_, 0.0);
+      scf_error_a_->gemm(false, false, 1.0, Fa_, tmp1, 0.0);
+      // form SDF
+      tmp1->gemm(false, false, 1.0, kappa_a_, Fa_, 0.0);
+      tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+      scf_error_a_->subtract(tmp2);
+      // Orthogonalize
+      scf_error_a_->transform(s_half_inv_);
+
+      // form FDS
+      tmp1->gemm(false, false, 1.0, kappa_b_, ao_s_, 0.0);
+      scf_error_b_->gemm(false, false, 1.0, Fb_, tmp1, 0.0);
+      // form SDF
+      tmp1->gemm(false, false, 1.0, kappa_b_, Fb_, 0.0);
+      tmp2->gemm(false, false, 1.0, ao_s_, tmp1, 0.0);
+      scf_error_b_->subtract(tmp2);
+      // Orthogonalize
+      scf_error_b_->transform(s_half_inv_);
+
       for(int h = 0; h < nirrep_; ++h){
-          for(int i = 0; i < naoccpi_[h]; ++i){
-              for(int a = 0; a < navirpi_[h]; ++a){
-                  double kappaF = moF.get(h, i, a + naoccpi_[h]);
-                  scf_error_a_->set(h, i, a, -kappaF);
-                  ++nElements;
-                  sumOfSquares += pow(-kappaF, 2.0);
-              }
-          }
-      }
-      tmp.gemm(true, false, 1.0, Cb_, Fb_, 0.0);
-      moF.gemm(false, false, 1.0, tmp, Cb_, 0.0);
-      for(int h = 0; h < nirrep_; ++h){
-          for(int i = 0; i < nboccpi_[h]; ++i){
-              for(int a = 0; a < nbvirpi_[h]; ++a){
-                  double kappaF = moF.get(h, i, a + nboccpi_[h]);
-                  scf_error_a_->set(h, i, a, -kappaF);
-                  ++nElements;
-                  sumOfSquares += pow(-kappaF, 2.0);
+          for(int p = 0; p < nsopi_[h]; ++p){
+              for(int q = 0; q < nsopi_[h]; ++q){
+                  nElements += 2;
+                  sumOfSquares += pow(scf_error_a_->get(h, p, q), 2.0);
+                  sumOfSquares += pow(scf_error_b_->get(h, p, q), 2.0);
               }
           }
       }
