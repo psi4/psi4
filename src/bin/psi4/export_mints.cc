@@ -1,10 +1,11 @@
-#include <string>
 #include <boost/python.hpp>
 #include <boost/python/suite/indexing/vector_indexing_suite.hpp>
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libscf_solver/hf.h>
 #include <libscf_solver/rhf.h>
+
+#include <string>
 
 using namespace boost;
 using namespace boost::python;

@@ -1,3 +1,5 @@
+#include <libmints/mints.h>
+
 #include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
 #include <boost/filesystem.hpp>
@@ -6,7 +8,6 @@
 #include <map>
 
 #include <psiconfig.h>
-#include <libmints/mints.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>

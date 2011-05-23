@@ -1,5 +1,3 @@
-#include <string>
-#include <vector>
 #include <boost/python.hpp>
 #include <boost/filesystem.hpp>
 #include <boost/algorithm/string.hpp>
@@ -7,6 +5,9 @@
 #include <libparallel/parallel.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
+
+#include <string>
+#include <vector>
 
 using namespace boost::python;
 using namespace psi;
