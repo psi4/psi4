@@ -488,6 +488,8 @@ protected:
 
     // Dealias or not? 
     bool do_dealias_;
+    // Minimum eigenvalue for a basis function
+    double min_S_;
     // Primary basis set
     boost::shared_ptr<BasisSet> primary_;
     // Dealias basis set
@@ -496,10 +498,16 @@ protected:
     boost::shared_ptr<PseudoGrid> grid_;
     // Number of primary basis functions
     int nso_;
+    // Number of orthogonalized primary basis functions
+    int nmo_;
     // Number of dealias basis functions
     int ndealias_;
-    // Number of primary + dealias basis functions
+    // Number of orthogonalized dealias basis functions
+    int ndealias2_;
+    // Number of primary + dealias basis functions (raw)
     int naug_;
+    // Number of primary + dealias basis functions (finished)
+    int naug2_;
     // Number of grid points
     int naux_;
 
@@ -511,14 +519,24 @@ protected:
     boost::shared_ptr<Matrix> Spd_;
     // Overlap matrix (dealias x dealias)
     boost::shared_ptr<Matrix> Sdd_;
-    // Overlap matrix (aug x aug)
+    // Augmented Overlap matrix (aug x aug)
     boost::shared_ptr<Matrix> Sa_;
-    // Orthogonalization matrix (dealias x primary)
+    // Augmented Overlap matrix (aug x aug) (finished)
+    boost::shared_ptr<Matrix> Sa2_;
+    // X matrix, primary (primary x primary')
+    boost::shared_ptr<Matrix> Xpp_;
+    // X matrix, dealias (dealias x dealias')
+    boost::shared_ptr<Matrix> Xdd_;
+    // Orthogonalization matrix (dealias x primary')
     boost::shared_ptr<Matrix> Cdp_;
     // Collocation matrix (primary)
     boost::shared_ptr<Matrix> Rp_;
     // Collocation matrix (dealias)
     boost::shared_ptr<Matrix> Rd_;
+    // Collocation matrix (primary')
+    boost::shared_ptr<Matrix> Rp2_;
+    // Collocation matrix (dealias')
+    boost::shared_ptr<Matrix> Rd2_;
     // Collocation matrix (augmented)
     boost::shared_ptr<Matrix> Ra_;
     // Weight Vector 
@@ -531,6 +549,8 @@ protected:
     boost::shared_ptr<Matrix> Qfull_;
     // Projector matrix 
     boost::shared_ptr<Matrix> P_;
+    // Transformer matrix
+    boost::shared_ptr<Matrix> SX_;
 
     // => Targets <= //
 
@@ -561,14 +581,20 @@ protected:
     void form_Spp();
     void form_Spd();
     void form_Sdd();
-    void form_Cdp();
     void form_Sa();
+    void form_Xpp();
+    void form_Cdp();
+    void form_Xdd();
+    void form_Sa2();
     void form_Rp();
     void form_Rd();
+    void form_Rp2();
+    void form_Rd2();
     void form_Ra();
     
     void form_Q();
     void form_P();
+    void form_SX();
     void form_A(); 
 
     void form_I();
