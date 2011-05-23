@@ -42,3 +42,4 @@
 #include <libmints/angularmomentum.h>
 #include <libmints/tracelessquadrupole.h>
 #include <libmints/extern.h>
+#include <libmints/integralparameters.h>

@@ -26,13 +26,15 @@
 //
 
 #include <cmath>
-#include <libmints/integral.h>
-#include <libmints/fjt.h>
-#include <libmints/wavefunction.h>
+#include "integral.h"
+#include "fjt.h"
+#include "wavefunction.h"
+#include "integralparameters.h"
 #include <libciomr/libciomr.h>
 
 using namespace psi;
 using namespace std;
+using namespace boost;
 
 const double oon[] = {0.0, 1.0, 1.0/2.0, 1.0/3.0, 1.0/4.0, 1.0/5.0, 1.0/6.0, 1.0/7.0, 1.0/8.0, 1.0/9.0, 1.0/10.0, 1.0/11.0};
 
@@ -48,9 +50,9 @@ double Taylor_Fjt::relative_zero_(1e-6);
   gamma function via Taylor interpolation)
  ------------------------------------------------------*/
 Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
-        cutoff_(accuracy), interp_order_(TAYLOR_INTERPOLATION_ORDER),
-        ExpMath_(interp_order_+1,2*(mmax + interp_order_ - 1)),
-        F_(new double[mmax+1])
+    cutoff_(accuracy), interp_order_(TAYLOR_INTERPOLATION_ORDER),
+    ExpMath_(interp_order_+1,2*(mmax + interp_order_ - 1)),
+    F_(new double[mmax+1])
 {
     const double sqrt_pi = std::sqrt(M_PI);
 
@@ -137,18 +139,18 @@ Taylor_Fjt::Taylor_Fjt(unsigned int mmax, double accuracy) :
             double denom = (m+0.5);
             double term = 0.5*std::exp(-T)/denom;
             double sum = term;
-//            double rel_error;
+            //            double rel_error;
             double epsilon;
             do {
                 denom += 1.0;
                 term *= T/denom;
                 sum += term;
-//                rel_error = term/sum;
+                //                rel_error = term/sum;
                 // stop if adding a term smaller or equal to cutoff_/10 and smaller than relative_zero * sum
                 // When sum is small in absolute value, the second threshold is more important
                 epsilon = std::min(cutoff_o_10, sum*relative_zero_);
             } while (term > epsilon);
-//            } while (term > epsilon || term > sum*relative_zero_);
+            //            } while (term > epsilon || term > sum*relative_zero_);
 
             grid_[T_idx][m] = sum;
         }
@@ -169,7 +171,7 @@ Taylor_Fjt::~Taylor_Fjt()
  * The result is placed in the global intermediate int_fjttable.
  */
 double *
-        Taylor_Fjt::values(int l, double T)
+Taylor_Fjt::values(int l, double T)
 {
     static const double sqrt_pio2 = std::sqrt(M_PI/2);
     const double two_T = 2.0*T;
@@ -198,52 +200,52 @@ double *
 
             /*--- Taylor interpolation ---*/
             F_[j] =          F_row[0]
-#if TAYLOR_INTERPOLATION_ORDER > 0
-                             +       h*(F_row[1]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 1
-                                        +oon[2]*h*(F_row[2]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 2
-                                                   +oon[3]*h*(F_row[3]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 3
-                                                              +oon[4]*h*(F_row[4]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 4
-                                                                         +oon[5]*h*(F_row[5]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 5
-                                                                                    +oon[6]*h*(F_row[6]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 6
-                                                                                               +oon[7]*h*(F_row[7]
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 7
-                                                                                                          +oon[8]*h*(F_row[8])
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 6
-                                                                                                          )
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 5
-                                                                                               )
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 4
-                                                                                    )
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 3
-                                                                         )
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 2
-                                                              )
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 1
-                                                   )
-#endif
-#if TAYLOR_INTERPOLATION_ORDER > 0
-                                        )
-#endif
-                             ;
+        #if TAYLOR_INTERPOLATION_ORDER > 0
+                    +       h*(F_row[1]
+                   #endif
+                   #if TAYLOR_INTERPOLATION_ORDER > 1
+                               +oon[2]*h*(F_row[2]
+                              #endif
+                              #if TAYLOR_INTERPOLATION_ORDER > 2
+                                          +oon[3]*h*(F_row[3]
+                                         #endif
+                                         #if TAYLOR_INTERPOLATION_ORDER > 3
+                                                     +oon[4]*h*(F_row[4]
+                                                    #endif
+                                                    #if TAYLOR_INTERPOLATION_ORDER > 4
+                                                                +oon[5]*h*(F_row[5]
+                                                               #endif
+                                                               #if TAYLOR_INTERPOLATION_ORDER > 5
+                                                                           +oon[6]*h*(F_row[6]
+                                                                          #endif
+                                                                          #if TAYLOR_INTERPOLATION_ORDER > 6
+                                                                                      +oon[7]*h*(F_row[7]
+                                                                                     #endif
+                                                                                     #if TAYLOR_INTERPOLATION_ORDER > 7
+                                                                                                 +oon[8]*h*(F_row[8])
+                                                                                     #endif
+                                                                                     #if TAYLOR_INTERPOLATION_ORDER > 6
+                                                                                                 )
+                                                                          #endif
+                                                                          #if TAYLOR_INTERPOLATION_ORDER > 5
+                                                                                      )
+                                                               #endif
+                                                               #if TAYLOR_INTERPOLATION_ORDER > 4
+                                                                           )
+                                                    #endif
+                                                    #if TAYLOR_INTERPOLATION_ORDER > 3
+                                                                )
+                                         #endif
+                                         #if TAYLOR_INTERPOLATION_ORDER > 2
+                                                     )
+                              #endif
+                              #if TAYLOR_INTERPOLATION_ORDER > 1
+                                          )
+                   #endif
+                   #if TAYLOR_INTERPOLATION_ORDER > 0
+                               )
+        #endif
+                    ;
         } // interpolation for F_j(T), jrecur<=j<=l
     } // if T < T_crit
 
@@ -383,7 +385,7 @@ FJT::~FJT()
  * The result is placed in the global intermediate int_fjttable.
  */
 double *
-        FJT::values(int J,double wval)
+FJT::values(int J,double wval)
 {
     const double sqrpih =  0.886226925452758;
     const double coef2 =  0.5000000000000000;
@@ -492,6 +494,298 @@ double *
     /* printf(" %2d %12.8f %4d %12.8f\n",J,wval,itable,int_fjttable[0]); */
 
     return int_fjttable;
+}
+
+////////
+// GaussianFundamental
+////////
+
+GaussianFundamental::GaussianFundamental(shared_ptr<CorrelationFactor> cf, int maxJ)
+{
+    cf_ = cf;
+
+    // For now, set the rho vars to zero. They will be set by the compute_shell routine.
+    rho_ = 0.0;
+
+    // allocate memory for the values
+    value_ = new double[maxJ + 1];
+}
+
+GaussianFundamental::~GaussianFundamental()
+{
+    delete[] value_;
+}
+
+void GaussianFundamental::set_rho(double rho)
+{
+    rho_ = rho;
+}
+
+////////
+// F12Fundamental
+////////
+
+F12Fundamental::F12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+    : GaussianFundamental(cf, max)
+{
+
+}
+
+F12Fundamental::~F12Fundamental()
+{
+
+}
+
+double *F12Fundamental::values(int J, double T)
+{
+    // because the current implementation is just a hack of the eri
+    // routines, we have to undo the eri prefactor of 2pi/rho that
+    // will be added later
+    double* exps = cf_->exponent();
+    double* coeffs = cf_->coeff();
+    int nparam = cf_->nparam();
+
+    // zero the values array
+    for (int n=0; n<=J; ++n)
+        value_[n] = 0.0;
+
+    double pfac, expterm, rhotilde, omega;
+    double eri_correct = rho_ / 2 / M_PI;
+    for (int i=0; i<nparam; ++i) {
+        omega = exps[i];
+        rhotilde = omega / (rho_ + omega);
+        pfac = coeffs[i] * pow(M_PI/(rho_ + omega), 1.5) * eri_correct;
+        expterm = exp(-rhotilde*T)*pfac;
+        for (int n=0; n<=J; ++n) {
+            value_[n] += expterm;
+            expterm *= rhotilde;
+        }
+    }
+
+    return value_;
+}
+
+////////
+// F12SquaredFundamental
+////////
+
+F12SquaredFundamental::F12SquaredFundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+    : GaussianFundamental(cf, max)
+{
+
+}
+
+F12SquaredFundamental::~F12SquaredFundamental()
+{
+
+}
+
+double* F12SquaredFundamental::values(int J, double T)
+{
+    double* exps = cf_->exponent();
+    double* coeffs = cf_->coeff();
+    int nparam = cf_->nparam();
+
+    double pfac, expterm, rhotilde, omega;
+    double eri_correct = rho_ / 2 / M_PI;
+
+    // zero the values
+    for (int n=0; n<=J; ++n)
+        value_[n] = 0.0;
+
+    for (int i=0; i<nparam; ++i) {
+        for (int j=0; j<nparam; ++j) {
+            omega = exps[i] + exps[j];
+            rhotilde = omega / (rho_ + omega);
+            pfac = coeffs[i] * coeffs[j] * pow(M_PI/(rho_+omega), 1.5) * eri_correct;
+            expterm = exp(-rhotilde * T) * pfac;
+            for (int n=0; n<=J; ++n) {
+                value_[n] += expterm;
+                expterm *= rhotilde;
+            }
+        }
+    }
+}
+
+////////
+// F12G12Fundamental
+////////
+
+F12G12Fundamental::F12G12Fundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+    : GaussianFundamental(cf, max)
+{
+    Fm_ = shared_ptr<FJT>(new FJT(max));
+}
+
+F12G12Fundamental::~F12G12Fundamental()
+{
+
+}
+
+double* F12G12Fundamental::values(int J, double T)
+{
+    double *Fvals;
+
+    double* exps = cf_->exponent();
+    double* coeffs = cf_->coeff();
+    int nparam = cf_->nparam();
+
+    double pfac, expterm, rhotilde, omega, rhohat;
+    double boysterm, rhotilde_term, rhohat_term;
+    double eri_correct = rho_ / 2 / M_PI;
+    double binom_term;
+
+    // Zero the values
+    for (int n=0; n<=J; ++n)
+        value_[n] = 0.0;
+
+    for (int i=0; i<nparam; ++i) {
+        omega = exps[i];
+        rhotilde = omega / (rho_ + omega);
+        rhohat = rho_ / (rho_ + omega);
+        expterm = exp(-rhotilde * T);
+        pfac = 2*M_PI / (rho_ + omega) * coeffs[i] * expterm * eri_correct;
+        Fvals = Fm_->values(J, rhohat * T);
+        for (int n=0; n<=J; ++n) {
+            boysterm = 0.0;
+            rhotilde_term = pow(rhotilde, n);
+            rhohat_term = 1.0;
+            for (int m=0; m<=n; ++m) {
+                binom_term = bc[n][m];   // bc is formed by Wavefunction::initialize_singletons
+                boysterm += binom_term * rhotilde_term * rhohat_term * Fvals[m];
+
+                rhotilde_term /= rhotilde;
+                rhohat_term *= rhohat;
+            }
+            value_[n] += pfac * boysterm;
+        }
+    }
+    return value_;
+}
+
+////////
+// F12DoubleCommutatorFundamental
+////////
+
+F12DoubleCommutatorFundamental::F12DoubleCommutatorFundamental(boost::shared_ptr<CorrelationFactor> cf, int max)
+    : GaussianFundamental(cf, max)
+{
+}
+
+F12DoubleCommutatorFundamental::~F12DoubleCommutatorFundamental()
+{
+}
+
+double* F12DoubleCommutatorFundamental::values(int J, double T)
+{
+    double *exps = cf_->exponent();
+    double *coeffs = cf_->coeff();
+    int nparam = cf_->nparam();
+
+    double pfac, expterm, rhotilde, omega, sqrt_term, rhohat;
+    double eri_correct = rho_ / 2 / M_PI;
+    double term1, term2;
+
+    // Zero the values
+    for (int n=0; n<=J; ++n)
+        value_[n] = 0.0;
+
+    for (int i=0; i<nparam; ++i) {
+        for (int j=0; j<nparam; ++j) {
+            omega = exps[i] + exps[j];
+            rhotilde = omega / (rho_ + omega);
+            rhohat = rho_ / (rho_ + omega);
+            expterm = exp(-rhotilde * T);
+            sqrt_term = sqrt(M_PI*M_PI*M_PI / pow(rho_ + omega, 5.0));
+            pfac = 4.0*coeffs[i] * coeffs[j] * exps[i] * exps[j] * sqrt_term * eri_correct * expterm;
+
+            term1 = 1.5*rhotilde + rhotilde*rhohat*T;
+            term2 = 1.0/rhotilde*pfac;
+            for (int n=0; n<=J; ++n) {
+                value_[n] += term1 * term2;
+                term1 -= rhohat;
+                term2 *= rhotilde;
+            }
+        }
+    }
+
+    return value_;
+}
+
+////////
+// ErfFundamental
+////////
+
+ErfFundamental::ErfFundamental(double omega, int max)
+    : GaussianFundamental(shared_ptr<CorrelationFactor>(), max)
+{
+    omega_ = omega;
+    rho_ = 0;
+    boys_ = shared_ptr<FJT>(new FJT(max));
+}
+
+ErfFundamental::~ErfFundamental()
+{
+}
+
+double* ErfFundamental::values(int J, double T)
+{
+    double *Fvals = boys_->values(J, T);
+
+    for (int n=0; n<=J; ++n)
+        value_[n] = 0.0;
+
+    // build the erf constants
+    double omegasq = omega_ * omega_;
+    double T_prefac = omegasq / (omegasq + rho_);
+    double F_prefac = omega_ / sqrt(omegasq + rho_);
+    double erf_T = T_prefac * T;
+
+    Fvals = boys_->values(J, erf_T);
+    for (int n=0; n<=J; ++n) {
+        value_[n] += Fvals[n] * F_prefac;
+        F_prefac *= T_prefac;
+    }
+
+    return value_;
+}
+
+////////
+// ErfComplementFundamental
+////////
+
+ErfComplementFundamental::ErfComplementFundamental(double omega, int max)
+    : GaussianFundamental(shared_ptr<CorrelationFactor>(), max)
+{
+    omega_ = omega;
+    rho_ = 0;
+    boys_ = shared_ptr<FJT>(new FJT(max));
+}
+
+ErfComplementFundamental::~ErfComplementFundamental()
+{
+}
+
+double* ErfComplementFundamental::values(int J, double T)
+{
+    double *Fvals = boys_->values(J, T);
+
+    for (int n=0; n<=J; ++n)
+        value_[n] = Fvals[n];
+
+    // build the erf constants
+    double omegasq = omega_ * omega_;
+    double T_prefac = omegasq / (omegasq + rho_);
+    double F_prefac = omega_ / sqrt(omegasq + rho_);
+    double erf_T = T_prefac * T;
+
+    Fvals = boys_->values(J, erf_T);
+    for (int n=0; n<=J; ++n) {
+        value_[n] -= Fvals[n] * F_prefac;
+        F_prefac *= T_prefac;
+    }
+
+    return value_;
 }
 
 /////////////////////////////////////////////////////////////////////////////
