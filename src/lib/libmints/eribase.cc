@@ -767,27 +767,19 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
         for (int p1=0; p1<nprim1; ++p1) {
             for (int p2=0; p2<nprim2; ++p2) {
-//      for (int p1=0; p1 < nprim1; ++p1) {
-//          int max_p2 = (sh1 == sh2) ? p1+1: nprim2;
-//          for (int p2=0; p2<max_p2; ++p2) {
-//              int m = (1 + (sh1 == sh2 && p1 != p2));
                 double zeta = p12->gamma[p1][p2];
                 double overlap12 = p12->overlap[p1][p2];
+
                 for (int p3=0; p3<nprim3; ++p3) {
                     for (int p4=0; p4<nprim4; ++p4) {
-//              for (int p3=0; p3<nprim3; ++p3) {
-//                  int max_p4 = (s3 == s4) ? p3+1 : nprim4;
-//                  for (int p4=0; p4<max_p4; ++p4){
-//                      int n = m * (1 + (s3 == s4 && p3 != p4));
 
                         double eta  = p34->gamma[p3][p4];
                         double oozn = 1.0 / (zeta+eta);
                         libint_.PrimQuartet[nprim].poz = eta * oozn;
                         double rho = zeta * libint_.PrimQuartet[nprim].poz;
-                        //                    double rho = (zeta*eta) * oozn;
-//                        double coef1 = double(n) * 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
                         double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
                         double PQ[3];
+
                         PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
                         PQ[1] = p12->P[p1][p2][1] - p34->P[p3][p4][1];
                         PQ[2] = p12->P[p1][p2][2] - p34->P[p3][p4][2];
@@ -1462,13 +1454,12 @@ void TwoElectronInt::form_sieve()
     double max;
     int MU,NU,numMU,numNU,N,M, MN, ind;
     for (MU = 0, MN = 0; MU < nshell; MU++) {
-        for (NU = 0; NU <= MU; NU++, MN++)
-        {
+        for (NU = 0; NU <= MU; NU++, MN++) {
             compute_shell(MU,NU,MU,NU);
 
             if (force_cartesian_) {
                 numMU = original_bs1_->shell(MU)->ncartesian();
-                numNU = original_bs1_->shell(NU)->ncartesianvi on   ();
+                numNU = original_bs1_->shell(NU)->ncartesian();
             }
             else {
                 numMU = original_bs1_->shell(MU)->nfunction();
