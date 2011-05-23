@@ -353,9 +353,9 @@ DIISManager::extrapolate(int numQuantities, ...)
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
 
     // Form the pseudoinverse
-    B->print();
+//    B->print();
     B->power(-1.0, 1.0E-16);
-    B->print();
+//    B->print();
     // Multiply pseudoinverse by forcing vector to get coefficients
     C_DGEMV('n',dimension,dimension,1.0,bMatrix[0],dimension,force,1,0.0,coefficients,1);
 

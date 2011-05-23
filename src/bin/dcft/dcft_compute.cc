@@ -69,6 +69,7 @@ DCFTSolver::compute_energy()
                 build_tensors();
                 build_intermediates();
                 lambda_convergence_ = compute_lambda_residual();
+                update_lambda_from_residual();
                 if(lambda_convergence_ < diis_start_thresh_){
                     //Store the DIIS vectors
                     dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb, J;
@@ -85,10 +86,10 @@ DCFTSolver::compute_energy()
                     dpd_buf4_init(&Lbb, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
 
-                    dpd_buf4_init(&J, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
-                    fprintf(outfile, "DOT = %f\n",dpd_buf4_dot(&Rab, &J));
-                    dpd_buf4_close(&J);
+    //                    dpd_buf4_init(&J, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+    //                                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+    //                    fprintf(outfile, "DOT = %f\n",dpd_buf4_dot(&Rab, &J));
+    //                    dpd_buf4_close(&J);
 
                     if(lambdaDiisManager.add_entry(6, &Raa, &Rab, &Rbb, &Laa, &Lab, &Lbb)){
                         diisString += "S";
@@ -97,8 +98,8 @@ DCFTSolver::compute_energy()
                         diisString += "/E";
                         lambdaDiisManager.extrapolate(3, &Laa, &Lab, &Lbb);
 //                        lambdaDiisManager.reset_subspace();
-                    }else{
-                        update_lambda_from_residual();
+//                    }else{
+//                        update_lambda_from_residual();
                     }
                     dpd_buf4_close(&Raa);
                     dpd_buf4_close(&Rab);
@@ -106,8 +107,8 @@ DCFTSolver::compute_energy()
                     dpd_buf4_close(&Laa);
                     dpd_buf4_close(&Lab);
                     dpd_buf4_close(&Lbb);
-                }else{
-                    update_lambda_from_residual();
+//                }else{
+//                    update_lambda_from_residual();
                 }
                 oldEnergy = new_total_energy_;
                 compute_dcft_energy();
