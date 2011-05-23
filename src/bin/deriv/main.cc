@@ -27,16 +27,14 @@ PsiReturnType deriv(Options & options)
     tstart();
 
     boost::shared_ptr<PSIO> psio(new PSIO);
-//    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
     fprintf(outfile, " DERIV: Wrapper to libmints.\n   by Justin Turney\n\n");
 
     // We'll only be working with the active molecule.
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
 
-    if (molecule.get() == 0) {
-        fprintf(outfile, "  Active molecule not set!\n   Mints wrapper is not meant to be run with IPV1 inputs.");
-        throw PSIEXCEPTION("Active molecule not set!");
+    if (!molecule) {
+        throw PSIEXCEPTION("deriv: Active molecule not set!");
     }
 
     // Create a new matrix factory
@@ -57,12 +55,11 @@ PsiReturnType deriv(Options & options)
     SharedMatrix usotoao(petite->sotoao());
 //    SharedMatrix usotoao(sobasisset->petitelist()->sotoao());
 
+    // From the SOBasisSet obtain the block dimensions
     const Dimension dimension = sobasisset->dimension();
+
     // Initialize the factory
     factory->init_with(dimension, dimension);
-
-//    usotoao->print();
-//    aotoso->print();
 
     // Print the molecule.
     basisset->molecule()->print();
@@ -88,9 +85,6 @@ PsiReturnType deriv(Options & options)
     SharedSimpleMatrix simple_usotoao(new SimpleMatrix("USO -> AO",
                                                        Process::environment.reference_wavefunction()->nso(),
                                                        basisset->nbf()));
-//    SharedSimpleMatrix Cao(new SimpleMatrix("Cao",
-//                                            basisset->nbf(),
-//                                            Process::environment.reference_wavefunction()->nmo()));
 
     int sooffset = 0, mooffset = 0;
     for (int h=0; h<Cso->nirrep(); ++h) {
@@ -106,15 +100,7 @@ PsiReturnType deriv(Options & options)
         mooffset += Cso->rowspi()[h];
     }
 
-//    simple_usotoao->print();
-//    simple_Cso->print();
     int nso = Process::environment.reference_wavefunction()->nso();
-
-//    ShareSimpleMatrix Wso(new SharedSimpleMatrix("Wso", nso, nso));
-//    ShareSimpleMatrix Qso(new SharedSimpleMatrix("Qso", nso, nso));
-
-//    Cao->gemm(true, false, 1.0, simple_usotoao, simple_Cso, 0.0);
-//    Cao->print();
 
     // Load in orbital energies
     SharedVector etmp = Process::environment.reference_wavefunction()->epsilon_a();
@@ -129,13 +115,8 @@ PsiReturnType deriv(Options & options)
             int mooffset = 0;
             for (int h=0; h<sobasisset->nirrep(); ++h) {
                 for (int i=0; i<clsdpi[h]; ++i) {
-//                    sum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset) * etmp->get(h, i);
-//                    qsum += Cao->get(m, i+mooffset) * Cao->get(n, i+mooffset);
-
-                    sum += simple_Cso->get(m, i+mooffset) * simple_Cso->get(n, i+mooffset) * etmp->get(h, i);
+                    sum  += simple_Cso->get(m, i+mooffset) * simple_Cso->get(n, i+mooffset) * etmp->get(h, i);
                     qsum += simple_Cso->get(m, i+mooffset) * simple_Cso->get(n, i+mooffset);
-
-//                    fprintf(outfile, "sum = %lf, qsum = %lf\n", sum, qsum);
                 }
                 mooffset += Process::environment.reference_wavefunction()->nmopi()[h];
             }
@@ -144,14 +125,8 @@ PsiReturnType deriv(Options & options)
         }
     }
 
-//    Q->print();
-//    W->print();
-
     Q->transform(simple_usotoao);
     W->transform(simple_usotoao);
-
-//    Q->print();
-//    W->print();
 
     SharedSimpleMatrix G;
 

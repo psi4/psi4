@@ -43,6 +43,8 @@ public:
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
+    /// Computes the first derivatives and stores them in result
+    virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result);
 
     /// Set the field of charges
     void setChargeField(boost::shared_ptr<Matrix> Zxyz) { Zxyz_ = Zxyz; }

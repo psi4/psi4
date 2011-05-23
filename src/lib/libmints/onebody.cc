@@ -378,7 +378,60 @@ void OneBodyAOInt::compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result
 
 void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result)
 {
-    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_deriv1(Array)", __FILE__, __LINE__);
+    if (deriv_ < 1)
+        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
+
+    // Do not worry about zeroing out result
+    int ns1 = bs1_->nshell();
+    int ns2 = bs2_->nshell();
+    int i_offset = 0;
+    double *location = 0;
+
+    // Check the length of result, must be 3*natom_
+    if (result.size() != 3*natom_)
+        throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
+
+    if (result[0]->nirrep() != 1)
+        throw SanityCheckError("OneBodyInt::compute_deriv1(result): results must be C1 symmetry.", __FILE__, __LINE__);
+
+    for (int i=0; i<ns1; ++i) {
+        int ni = bs1_->shell(i)->nfunction();
+        int center_i3 = 3*bs1_->shell(i)->ncenter();
+        int j_offset=0;
+        for (int j=0; j<ns2; ++j) {
+            int nj = bs2_->shell(j)->nfunction();
+            int center_j3 = 3*bs2_->shell(j)->ncenter();
+
+            // Compute the shell
+            compute_shell_deriv1(i, j);
+
+            // Center i
+            location = buffer_;
+            for (int r=0; r<3; ++r) {
+                for (int p=0; p<ni; ++p) {
+                    for (int q=0; q<nj; ++q) {
+                        result[center_i3+r]->add(0, i_offset+p, j_offset+q, *location);
+                        location++;
+                    }
+                }
+            }
+
+            // Center j -- only if center i != center j
+            if (center_i3 != center_j3) {
+                for (int r=0; r<3; ++r) {
+                    for (int p=0; p<ni; ++p) {
+                        for (int q=0; q<nj; ++q) {
+                            result[center_j3+r]->add(0, i_offset+p, j_offset+q, *location);
+                            location++;
+                        }
+                    }
+                }
+            }
+
+            j_offset += nj;
+        }
+        i_offset += ni;
+    }
 }
 
 void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result)
@@ -425,7 +478,6 @@ void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > 
                 for (int r=0; r<3; ++r) {
                     for (int p=0; p<ni; ++p) {
                         for (int q=0; q<nj; ++q) {
-                            //                        fprintf(outfile, "j %d: r %d p %d q %d value %lf\n", center_j3, r, p, q, *location);
                             result[center_j3+r]->add(i_offset+p, j_offset+q, *location);
                             location++;
                         }
