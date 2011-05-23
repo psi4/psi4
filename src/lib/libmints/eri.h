@@ -10,15 +10,17 @@ template<class T> class shared_ptr;
 
 namespace psi {
 
-    class BasisSet;
-    class GaussianShell;
-    class TwoBodyAOInt;
-    class IntegralFactory;
-    class SphericalTransform;
-    class SimpleMatrix;
-    class Fjt;
-    class AOShellCombinationsIterator;
+class BasisSet;
+class GaussianShell;
+class TwoBodyAOInt;
+class IntegralFactory;
+class SphericalTransform;
+class SimpleMatrix;
+class Fjt;
+class AOShellCombinationsIterator;
+class CorrelationFactor;
 
+#if 0
 /**
  * \ingroup MINTS
  * Functor for fundamental ERIs
@@ -78,6 +80,7 @@ public:
     /// The fundamental ErfcERI integral (effective contracted incomplete gamma function)
     virtual void operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho);
 };
+#endif
 
 /**
   * \ingroup MINTS
@@ -108,16 +111,13 @@ typedef struct ShellPair_typ {
  *  \class ERI
  *  \brief Capable of computing two-electron repulsion integrals.
  */
-class ERI : public TwoBodyAOInt
+class TwoElectronInt : public TwoBodyAOInt
 {
 protected:
     //! Libint object.
     Libint_t libint_;
     //! Libderiv object
     Libderiv_t libderiv_;
-
-    //! ERIFundamentalFunctor
-    ERIFundamentalFunctor *eri_functor_;
 
     //! Maximum cartesian class size.
     int max_cart_;
@@ -126,12 +126,11 @@ protected:
     double schwarz2_; //square of schwarz cutoff value;
     double *schwarz_norm_;
 
-    //! Fj(T)
+    //! Computes the fundamental
     Fjt *fjt_;
 
     //! Computes the ERIs between four shells.
-    template <typename FundamentalFunctor>
-    void compute_quartet(int, int, int, int, FundamentalFunctor &functor);
+    void compute_quartet(int, int, int, int);
 
     //! Computes the ERI derivatives between four shells.
     // TODO: Add integral derivative functor for erf integrals (and others)
@@ -165,9 +164,9 @@ protected:
 
 public:
     //! Constructor. Use an IntegralFactory to create this object.
-    ERI(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    TwoElectronInt(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
 
-    virtual ~ERI();
+    virtual ~TwoElectronInt();
 
     //! Performs integral screening calculations
     void form_sieve();
@@ -188,6 +187,42 @@ public:
     int shell_is_zero(int,int,int,int);
 };
 
+class ERI : public TwoElectronInt
+{
+public:
+    ERI(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    virtual ~ERI();
+};
+
+class F12 : public TwoElectronInt
+{
+public:
+    F12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    virtual ~F12();
+};
+
+class F12Squared : public TwoElectronInt
+{
+public:
+    F12Squared(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    virtual ~F12Squared();
+};
+
+class F12G12 : public TwoElectronInt
+{
+public:
+    F12G12(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    virtual ~F12G12();
+};
+
+class F12DoubleCommutator : public TwoElectronInt
+{
+public:
+    F12DoubleCommutator(boost::shared_ptr<CorrelationFactor> cf, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
+    virtual ~F12DoubleCommutator();
+};
+
+#if 0
 /** \ingroup MINTS
 * ErfERI - two-electron integrals involving error functions
 *
@@ -202,7 +237,7 @@ public:
 *  - $\alpha = 1.0, \beta = \sqrt{2.0} -1.0$:                     (MHG's MOS-MP2 integrals)
 *  - $\alpha = 1.0, \beta = 0.0$:             $1/r$               (ERI)
 */
-class ErfERI : public ERI {
+class ErfERI : public ERIBase {
 
 public:
     //! Constructor. Use an IntegralFactory to create this object.
@@ -220,6 +255,7 @@ public:
     void set_beta(double beta) { (static_cast<ErfERIFundamentalFunctor*> (eri_functor_))->set_beta(beta); }
 
 };
+#endif
 
 }
 
