@@ -79,7 +79,7 @@ public:
     void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
     /// Buffer where the integrals are placed
-    const double *buffer() const { return target_; };
+    const double *buffer() const { return target_; }
 
     /// Returns the integral factory used to create this object
     const IntegralFactory* integral() const { return integral_; }

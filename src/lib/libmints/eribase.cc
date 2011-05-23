@@ -527,8 +527,7 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     //NOTE: Schwarz Sieve only holds if all indices correspond to the same basis.
     //A calling code may only access the schwarz screening functionality by literally
     //specifying a cutoff index. This should only be done for ERIs all based on the same basis set
-    if (schwarz2_ != 0.0)
-    {
+    if (schwarz2_ != 0.0) {
 #ifdef MINTS_TIMER
     timer_on("sieving");
 #endif
@@ -536,12 +535,21 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
         if (screen_ == false)
             form_sieve();
 
-        if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_)
-        {
-            size_t nfill = bs1_->shell(sh1)->nfunction();
-            nfill*=     bs2_->shell(sh2)->nfunction();
-            nfill*=     bs3_->shell(sh3)->nfunction();
-            nfill*=     bs4_->shell(sh4)->nfunction();
+        if (schwarz_norm_[ioff[((sh1>sh2)?sh1:sh2)]+((sh1>sh2)?sh2:sh1)]*schwarz_norm_[ioff[((sh3>sh4)?sh3:sh4)]+((sh3>sh4)?sh4:sh3)]<schwarz2_) {
+            size_t nfill = 1;
+
+            if (force_cartesian_) {
+                nfill *= bs1_->shell(sh1)->ncartesian();
+                nfill *= bs2_->shell(sh2)->ncartesian();
+                nfill *= bs3_->shell(sh3)->ncartesian();
+                nfill *= bs4_->shell(sh4)->ncartesian();
+            }
+            else {
+                nfill *= bs1_->shell(sh1)->nfunction();
+                nfill *= bs2_->shell(sh2)->nfunction();
+                nfill *= bs3_->shell(sh3)->nfunction();
+                nfill *= bs4_->shell(sh4)->nfunction();
+            }
             memset(target_, 0, sizeof(double)*nfill);
             return;
         }
@@ -573,10 +581,20 @@ void TwoElectronInt::compute_shell(int sh1, int sh2, int sh3, int sh4)
     am3 = original_bs3_->shell(sh3)->am();
     am4 = original_bs4_->shell(sh4)->am();
 
-    int n1 = original_bs1_->shell(sh1)->nfunction();
-    int n2 = original_bs2_->shell(sh2)->nfunction();
-    int n3 = original_bs3_->shell(sh3)->nfunction();
-    int n4 = original_bs4_->shell(sh4)->nfunction();
+    int n1, n2, n3, n4;
+
+    if (force_cartesian_) {
+        n1 = original_bs1_->shell(sh1)->ncartesian();
+        n2 = original_bs2_->shell(sh2)->ncartesian();
+        n3 = original_bs3_->shell(sh3)->ncartesian();
+        n4 = original_bs4_->shell(sh4)->ncartesian();
+    }
+    else {
+        n1 = original_bs1_->shell(sh1)->nfunction();
+        n2 = original_bs2_->shell(sh2)->nfunction();
+        n3 = original_bs3_->shell(sh3)->nfunction();
+        n4 = original_bs4_->shell(sh4)->nfunction();
+    }
 
     // Save the original requested shell ordering. The pre-computed shell pair information
     // requires the original ordering.
@@ -990,11 +1008,9 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // Normalize the integrals for angular momentum
     normalize_am(s1, s2, s3, s4);
 
-//    for (int z=0; z<size; ++z)
-//        fprintf(outfile, "pre-tranformed raw: %d -> %8.5f\n", z, source_[z]);
-
     // Transform the integrals into pure angular momentum
-    pure_transform(sh1, sh2, sh3, sh4, 1);
+    if (!force_cartesian_)
+        pure_transform(sh1, sh2, sh3, sh4, 1);
 
     // Results are in source_
 }
@@ -1019,11 +1035,19 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     am3 = original_bs3_->shell(sh3)->am();
     am4 = original_bs4_->shell(sh4)->am();
 
-    int n1 = original_bs1_->shell(sh1)->nfunction();
-    int n2 = original_bs2_->shell(sh2)->nfunction();
-    int n3 = original_bs3_->shell(sh3)->nfunction();
-    int n4 = original_bs4_->shell(sh4)->nfunction();
-
+    int n1, n2, n3, n4;
+    if (force_cartesian_) {
+        n1 = original_bs1_->shell(sh1)->ncartesian();
+        n2 = original_bs2_->shell(sh2)->ncartesian();
+        n3 = original_bs3_->shell(sh3)->ncartesian();
+        n4 = original_bs4_->shell(sh4)->ncartesian();
+    }
+    else {
+        n1 = original_bs1_->shell(sh1)->nfunction();
+        n2 = original_bs2_->shell(sh2)->nfunction();
+        n3 = original_bs3_->shell(sh3)->nfunction();
+        n4 = original_bs4_->shell(sh4)->nfunction();
+    }
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
         s1 = sh1;
@@ -1395,7 +1419,8 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 //        fprintf(outfile, " A%d %20.14lf\n", center_l, source_[z + 11 * size]);
 
     // Transform the integrals to the spherical basis
-    pure_transform(sh1, sh2, sh3, sh4, ERI_GRADIENT_NTYPE);
+    if (!force_cartesian_)
+        pure_transform(sh1, sh2, sh3, sh4, ERI_GRADIENT_NTYPE);
 
     // Results are in source_
 }
@@ -1440,8 +1465,15 @@ void TwoElectronInt::form_sieve()
         for (NU = 0; NU <= MU; NU++, MN++)
         {
             compute_shell(MU,NU,MU,NU);
-            numMU = original_bs1_->shell(MU)->nfunction();
-            numNU = original_bs1_->shell(NU)->nfunction();
+
+            if (force_cartesian_) {
+                numMU = original_bs1_->shell(MU)->ncartesian();
+                numNU = original_bs1_->shell(NU)->ncartesianvi on   ();
+            }
+            else {
+                numMU = original_bs1_->shell(MU)->nfunction();
+                numNU = original_bs1_->shell(NU)->nfunction();
+            }
             max = 0.0;
 
             for (M = 0, ind = 0; M<numMU*numMU; M++)
