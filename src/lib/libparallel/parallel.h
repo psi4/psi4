@@ -126,14 +126,14 @@ namespace psi {
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1) = 0;
 
         const std::string get_comm() {return communicator_;}
-        virtual int nthread() {return 1;};
-        virtual void print(FILE *out=outfile) const {};
+        virtual int nthread() {return 1;}
+        virtual void print(FILE *out=outfile) const {}
 
 #if HAVE_MADNESS == 1
-        virtual boost::shared_ptr<madness::World> get_madworld() {};
-        virtual madness::Spinlock* get_mutex() {};
+        virtual boost::shared_ptr<madness::World> get_madworld() {}
+        virtual madness::Spinlock* get_mutex() {}
 #endif
-        virtual int get_threadid(pthread_t thr_) { return 0; };
+        virtual int get_threadid(pthread_t thr_) { return 0; }
 
 
     };
@@ -162,9 +162,8 @@ namespace psi {
         virtual void sync();
 
         //virtual void runTask () { if (where == me_) task_->runTask(); }
-        virtual int nthread() {return 1;};
+        virtual int nthread() {return 1;}
         virtual void print(FILE *out=outfile) const;
-
     };
 
 #if HAVE_MPI == 1
@@ -193,8 +192,6 @@ namespace psi {
         //virtual void runTask () { if (where == me_) task_->runTask(); }
         virtual int nthread() { return 1; }
         virtual void print(FILE *out=outfile) const;
-
-
     };
 #endif
 
@@ -229,12 +226,11 @@ namespace psi {
         virtual void print(FILE *out=outfile) const;
         //virtual void runTask () { task_->madTask(madworld_); }
 
-        virtual int nthread() {return nthread_; };
+        virtual int nthread() {return nthread_; }
 
-        virtual madness::Spinlock* get_mutex() { return new madness::Spinlock(); };
-        virtual boost::shared_ptr<madness::World> get_madworld() { return madworld_; };
-        virtual int get_threadid(pthread_t thr_) { return thread_id_[thr_]; };
-
+        virtual madness::Spinlock* get_mutex() { return new madness::Spinlock(); }
+        virtual boost::shared_ptr<madness::World> get_madworld() { return madworld_; }
+        virtual int get_threadid(pthread_t thr_) { return thread_id_[thr_]; }
     };
 
 #endif

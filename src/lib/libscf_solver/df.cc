@@ -213,7 +213,7 @@ void DFHF::initialize_JK_disk()
     //}
 
     // Find out exactly how much memory per MN shell 
-    shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
+    boost::shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
     int *MN_memp = MN_mem->pointer();
 
     for (int mn = 0; mn < ntri; mn++) { 
@@ -264,7 +264,7 @@ void DFHF::initialize_JK_disk()
     // ==> Reduced indexing by M <== //
  
     // Figure out the MN start index per M row
-    shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
+    boost::shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
     int* MN_startp = MN_start->pointer();
     
     MN_startp[0] = schwarz_shell_pairs_r[0];
@@ -277,7 +277,7 @@ void DFHF::initialize_JK_disk()
     }
 
     // Figure out the mn start index per M row
-    shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
+    boost::shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
     int* mn_startp = mn_start->pointer();
     
     mn_startp[0] = schwarz_fun_pairs[0];
@@ -290,7 +290,7 @@ void DFHF::initialize_JK_disk()
     }
 
     // Figure out the MN columns per M row 
-    shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
+    boost::shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
     int* MN_colp = MN_col->pointer();
    
     for (int M = 1; M < nshell; M++) {
@@ -299,7 +299,7 @@ void DFHF::initialize_JK_disk()
     MN_colp[nshell - 1] = nshellpairs - MN_startp[nshell - 1];
     
     // Figure out the mn columns per M row 
-    shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
+    boost::shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
     int* mn_colp = mn_col->pointer();
    
     for (int M = 1; M < nshell; M++) {
@@ -365,13 +365,13 @@ void DFHF::initialize_JK_disk()
     // Primary buffer
     Qmn_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) (Disk Chunk)", naux, max_cols));
     // Fitting buffer
-    shared_ptr<Matrix>Amn (new Matrix("(Q|mn) (Buffer)",naux,naux));
+    boost::shared_ptr<Matrix>Amn (new Matrix("(Q|mn) (Buffer)",naux,naux));
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
     // ==> Prestripe/Jinv <== // 
     psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
-    shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+    boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     // Dispatch the prestripe
     timer_on("(Q|mn) Prestripe");
@@ -402,7 +402,7 @@ void DFHF::initialize_JK_disk()
     #endif
 
     // ==> ERI initialization <== //
-    shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
+    boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
     const double **buffer = new const double*[nthread];
     boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {

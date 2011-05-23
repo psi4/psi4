@@ -23,13 +23,13 @@
 
 //MKL Header
 #include <psiconfig.h>
-#ifdef HAVE_MKL
+#if HAVE_MKL
 #include <mkl.h>
 #endif
 
 //OpenMP Header
 //_OPENMP is defined by the compiler if it exists
-#ifdef _OPENMP
+#if _OPENMP
 #include <omp.h>
 #endif
 
@@ -41,7 +41,7 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-DFHFLocalizer::DFHFLocalizer(int nocc, shared_ptr<BasisSet> primary, shared_ptr<BasisSet> auxiliary) : 
+DFHFLocalizer::DFHFLocalizer(int nocc, boost::shared_ptr<BasisSet> primary, boost::shared_ptr<BasisSet> auxiliary) : 
     nocc_(nocc), primary_(primary), auxiliary_(auxiliary)
 {
     common_init();
@@ -56,7 +56,7 @@ void DFHFLocalizer::common_init()
     debug_ = false;
 
     // Defaults (tight)
-    schwarz_ = shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, 0.0)); 
+    schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, 0.0)); 
     charge_cutoff_ = 0.05;
     charge_leak_cutoff_ = 0.01;
     R_ext_ = 5.0;
@@ -67,18 +67,18 @@ void DFHFLocalizer::common_init()
 
     zero_ = BasisSet::zero_ao_basis_set();
 
-    factory_ = shared_ptr<IntegralFactory>(new IntegralFactory(primary_, primary_, zero_, zero_));
-    auxfactory_ = shared_ptr<IntegralFactory>(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
-    Jfactory_ = shared_ptr<IntegralFactory>(new IntegralFactory(auxiliary_, zero_, auxiliary_, zero_));
+    factory_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(primary_, primary_, zero_, zero_));
+    auxfactory_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
+    Jfactory_ = boost::shared_ptr<IntegralFactory>(new IntegralFactory(auxiliary_, zero_, auxiliary_, zero_));
 
-    C_ = shared_ptr<Matrix>(new Matrix("C Occupied (Localized AO Basis)", n, nocc_));
+    C_ = boost::shared_ptr<Matrix>(new Matrix("C Occupied (Localized AO Basis)", n, nocc_));
 
-    Sp12_ = shared_ptr<Matrix>(new Matrix("S^+1/2 (AO Basis)", n, n));
-    shared_ptr<OneBodyAOInt> overlap(factory_->ao_overlap());
+    Sp12_ = boost::shared_ptr<Matrix>(new Matrix("S^+1/2 (AO Basis)", n, n));
+    boost::shared_ptr<OneBodyAOInt> overlap(factory_->ao_overlap());
     overlap->compute(Sp12_);
 
     double** Sp = Sp12_->pointer();
-    shared_ptr<Matrix> W(new Matrix("W", n, n));
+    boost::shared_ptr<Matrix> W(new Matrix("W", n, n));
     double** Wp = W->pointer();
     C_DCOPY(n*(unsigned long int)n,Sp[0],1,Wp[0],1);
 
@@ -88,7 +88,7 @@ void DFHFLocalizer::common_init()
     int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
     delete[] work;
 
-    shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
+    boost::shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
     double** Jcopyp = Jcopy->pointer();
 
     C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);
@@ -103,15 +103,15 @@ void DFHFLocalizer::common_init()
 
     C_DGEMM('T','N',n,n,n,1.0,Jcopyp[0],n,Wp[0],n,0.0,Sp[0],n);
    
-    Itemp_ = shared_ptr<Matrix>(new Matrix("Lowdin Charges (basis functions x orbitals)", n, nocc_));
-    I_ = shared_ptr<Matrix>(new Matrix("Lowdin Charges (atoms x orbitals)", primary_->molecule()->natom(), nocc_));
+    Itemp_ = boost::shared_ptr<Matrix>(new Matrix("Lowdin Charges (basis functions x orbitals)", n, nocc_));
+    I_ = boost::shared_ptr<Matrix>(new Matrix("Lowdin Charges (atoms x orbitals)", primary_->molecule()->natom(), nocc_));
     domains_ = init_int_matrix(primary_->molecule()->natom(), nocc_); 
     old_domains_ = init_int_matrix(primary_->molecule()->natom(), nocc_); 
     domains_changed_.resize(nocc_);
     globalChange();
     
-    Jint_ = shared_ptr<TwoBodyAOInt> (Jfactory_->eri());
-    Amnint_ = shared_ptr<TwoBodyAOInt> (auxfactory_->eri());
+    Jint_ = boost::shared_ptr<TwoBodyAOInt> (Jfactory_->eri());
+    Amnint_ = boost::shared_ptr<TwoBodyAOInt> (auxfactory_->eri());
 
 }
 void DFHFLocalizer::set_schwarz_cutoff(double d) 
@@ -133,12 +133,12 @@ void DFHFLocalizer::globalReset()
     for (int s = 0; s < superdomains_changed_.size(); s++)
         superdomains_changed_[s] = false;
 }
-void DFHFLocalizer::choleskyLocalize(shared_ptr<Matrix> D)
+void DFHFLocalizer::choleskyLocalize(boost::shared_ptr<Matrix> D)
 {
     if (debug_) 
         D->print();
 
-    shared_ptr<Matrix> Dc = D->partial_cholesky_factorize(0.0,false);
+    boost::shared_ptr<Matrix> Dc = D->partial_cholesky_factorize(0.0,false);
     double** Dcp = Dc->pointer();
     
     int rank = Dc->colspi()[0];
@@ -170,7 +170,7 @@ void DFHFLocalizer::lowdinDomains()
     double cutoff = charge_cutoff_;
     double R = R_ext_;
 
-    shared_ptr<Molecule> mol = primary_->molecule();
+    boost::shared_ptr<Molecule> mol = primary_->molecule();
     int n = primary_->nbf(); 
     int nA = mol->natom();
     int nocc = nocc_;
@@ -412,7 +412,7 @@ void DFHFLocalizer::checkForChanges()
             fprintf(outfile, "  %4d: %s\n", i, superdomains_changed_[i] ? "CHANGED" : "SAME");
     }
 }
-shared_ptr<Matrix> DFHFLocalizer::computeJCholesky(int i)
+boost::shared_ptr<Matrix> DFHFLocalizer::computeJCholesky(int i)
 {
     // Sizing
     std::stringstream name;
@@ -420,7 +420,7 @@ shared_ptr<Matrix> DFHFLocalizer::computeJCholesky(int i)
     name << i;
     int n = auxiliary_funs_[i].size();
     int nshell = auxiliary_shells_[i].size();
-    shared_ptr<Matrix> J(new Matrix(name.str().c_str(), n, n));
+    boost::shared_ptr<Matrix> J(new Matrix(name.str().c_str(), n, n));
     double** Jp = J->pointer();  
     const double* buffer = Jint_->buffer();
 
@@ -465,7 +465,7 @@ shared_ptr<Matrix> DFHFLocalizer::computeJCholesky(int i)
 
     return J;
 }
-shared_ptr<Matrix> DFHFLocalizer::computeAmn(int i)
+boost::shared_ptr<Matrix> DFHFLocalizer::computeAmn(int i)
 {
     // Sizing
     std::stringstream name;
@@ -475,7 +475,7 @@ shared_ptr<Matrix> DFHFLocalizer::computeAmn(int i)
     int nauxshell = auxiliary_shells_[i].size();
     int n = primary_funs_[i].size();
     int nshell = primary_shells_[i].size();
-    shared_ptr<Matrix> Amn(new Matrix(name.str().c_str(), naux, n*(ULI)n));
+    boost::shared_ptr<Matrix> Amn(new Matrix(name.str().c_str(), naux, n*(ULI)n));
     double** Amnp = Amn->pointer();  
     const double* buffer = Amnint_->buffer();
 
@@ -523,7 +523,7 @@ shared_ptr<Matrix> DFHFLocalizer::computeAmn(int i)
 
     return Amn;        
 }
-shared_ptr<Matrix> DFHFLocalizer::computeK(int i, shared_ptr<Matrix> J, shared_ptr<Matrix> Amn)
+boost::shared_ptr<Matrix> DFHFLocalizer::computeK(int i, boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Amn)
 {
     int n = primary_funs_[i].size();
     int naux = auxiliary_funs_[i].size();
@@ -532,7 +532,7 @@ shared_ptr<Matrix> DFHFLocalizer::computeK(int i, shared_ptr<Matrix> J, shared_p
     std::stringstream kname;
     kname << "K for Orbital ";
     kname << i;
-    shared_ptr<Matrix> K(new Matrix(kname.str().c_str(), n, n));
+    boost::shared_ptr<Matrix> K(new Matrix(kname.str().c_str(), n, n));
     double** Kp = K->pointer();
 
     // (A|mi) <- C_in (A|mn)
@@ -540,14 +540,14 @@ shared_ptr<Matrix> DFHFLocalizer::computeK(int i, shared_ptr<Matrix> J, shared_p
     std::stringstream Aname;
     Aname << "(A|mi) for Orbital ";
     Aname << i;
-    shared_ptr<Matrix> Ami(new Matrix(Aname.str().c_str(), naux, n));
+    boost::shared_ptr<Matrix> Ami(new Matrix(Aname.str().c_str(), naux, n));
     double** Amip = Ami->pointer();    
     
     // Local C matrix
     std::stringstream Cname;
     Cname << "C_mi for Orbital ";
     Cname << i;
-    shared_ptr<Vector> C(new Vector(Cname.str().c_str(), n));
+    boost::shared_ptr<Vector> C(new Vector(Cname.str().c_str(), n));
     double* Cp = C->pointer();
     for (int m = 0; m < n; m++) {
         Cp[m] = C_->get(0, primary_funs_[i][m], i);    
@@ -585,7 +585,7 @@ shared_ptr<Matrix> DFHFLocalizer::computeK(int i, shared_ptr<Matrix> J, shared_p
  
     return K;
 }
-void DFHFLocalizer::computeKLocal(shared_ptr<Matrix> Kglobal)
+void DFHFLocalizer::computeKLocal(boost::shared_ptr<Matrix> Kglobal)
 {
     double** Kp = Kglobal->pointer();
 
@@ -601,11 +601,11 @@ void DFHFLocalizer::computeKLocal(shared_ptr<Matrix> Kglobal)
 
         // Compute (A|mn) for this superdomain (recomputed in each iteration,
         // but only once per 
-        shared_ptr<Matrix> Amn = computeAmn(index);        
+        boost::shared_ptr<Matrix> Amn = computeAmn(index);        
 
         for (int q = 0; q < superdomains_[s].size(); q++) {
             // Compute the actual local K
-            shared_ptr<Matrix> Klocal = computeK(superdomains_[s][q], JCholesky_[s], Amn);
+            boost::shared_ptr<Matrix> Klocal = computeK(superdomains_[s][q], JCholesky_[s], Amn);
 
             // Add the contribution in 
             double** Klp = Klocal->pointer(); 

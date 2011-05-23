@@ -449,8 +449,8 @@ void HF::print_preiterations()
 
 void HF::form_H()
 {
-    T_ = shared_ptr<Matrix>(factory_->create_matrix("Kinetic Integrals"));
-    V_ = shared_ptr<Matrix>(factory_->create_matrix("Potential Integrals"));
+    T_ = boost::shared_ptr<Matrix>(factory_->create_matrix("Kinetic Integrals"));
+    V_ = boost::shared_ptr<Matrix>(factory_->create_matrix("Potential Integrals"));
 
     // Integral factory
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
@@ -510,11 +510,11 @@ void HF::form_H()
     }
 
     if (options_.get_bool("EXTERN")) {
-        shared_ptr<ExternalPotential> external = Process::environment.potential();
+        boost::shared_ptr<ExternalPotential> external = Process::environment.potential();
         if (print_) {
             external->print();
         }
-        shared_ptr<Matrix> Vprime = external->computePotentialMatrix(basisset_); 
+        boost::shared_ptr<Matrix> Vprime = external->computePotentialMatrix(basisset_); 
         if (print_ > 3)
             Vprime->print(); 
         V_->add(Vprime); 
