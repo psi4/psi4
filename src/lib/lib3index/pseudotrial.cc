@@ -14,14 +14,16 @@
 
 //MKL Header
 #include <psiconfig.h>
-#ifdef HAVE_MKL
+#if HAVE_MKL
 #include <mkl.h>
 #endif
 
 //OpenMP Header
-#ifdef _OPENMP
+#if _OPENMP
 #include <omp.h>
 #endif
+
+#include <boost/shared_ptr.hpp>
 
 using namespace boost;
 using namespace std;
@@ -137,7 +139,7 @@ void PseudoTrial::form_bases()
 
 void PseudoTrial::form_grid()
 {
-    grid_ = shared_ptr<PseudoGrid>(new PseudoGrid(molecule_, options_.get_str("PS_GRID_FILE")));
+    grid_ = boost::shared_ptr<PseudoGrid>(new PseudoGrid(molecule_, options_.get_str("PS_GRID_FILE")));
     grid_->parse(options_.get_str("PS_GRID_FILE"));
     naux_ = grid_->getBlock()->getTruePoints();
 
@@ -154,7 +156,7 @@ void PseudoTrial::form_grid()
     }
     fprintf(outfile,"\n"); 
 
-    w_ = shared_ptr<Vector> (new Vector("Grid Weights", naux_));
+    w_ = boost::shared_ptr<Vector> (new Vector("Grid Weights", naux_));
     double* wp = w_->pointer();
 
     for (int Q = 0; Q < naux_; Q++)
@@ -163,10 +165,10 @@ void PseudoTrial::form_grid()
 
 void PseudoTrial::form_Spp()
 {
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
-    shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
-    Spp_ = shared_ptr<Matrix>(new Matrix("S (primary x primary)", nso_, nso_));
+    Spp_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x primary)", nso_, nso_));
     Sint->compute(Spp_);
 
     if (debug_)
@@ -177,10 +179,10 @@ void PseudoTrial::form_Spd()
 {
     if (!do_dealias_) return;
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
-    shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
+    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
-    Spd_ = shared_ptr<Matrix>(new Matrix("S (primary x dealias)", nso_, ndealias_));
+    Spd_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x dealias)", nso_, ndealias_));
     Sint->compute(Spd_);
 
     if (debug_)
@@ -191,10 +193,10 @@ void PseudoTrial::form_Sdd()
 {
     if (!do_dealias_) return;
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
-    shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
+    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
-    Sdd_ = shared_ptr<Matrix>(new Matrix("S (dealias x dealias)", ndealias_, ndealias_));
+    Sdd_ = boost::shared_ptr<Matrix>(new Matrix("S (dealias x dealias)", ndealias_, ndealias_));
     Sint->compute(Sdd_);
 
     if (debug_)
@@ -203,7 +205,7 @@ void PseudoTrial::form_Sdd()
 
 void PseudoTrial::form_Sa()
 {
-    Sa_ = shared_ptr<Matrix>(new Matrix("S Augmented, Raw (primary + dealias x primary + dealias)", naug_, naug_));
+    Sa_ = boost::shared_ptr<Matrix>(new Matrix("S Augmented, Raw (primary + dealias x primary + dealias)", naug_, naug_));
     double** Sap = Sa_->pointer();
     double** Sppp = Spp_->pointer();
     double** Spdp = Spd_->pointer();
@@ -236,7 +238,7 @@ void PseudoTrial::form_Xpp()
 
 void PseudoTrial::form_Cdp()
 {
-    Cdp_ = shared_ptr<Matrix>(new Matrix("Orthogonalization coefficients (dealias x primary)", ndealias_, nso_));
+    Cdp_ = boost::shared_ptr<Matrix>(new Matrix("Orthogonalization coefficients (dealias x primary)", ndealias_, nso_));
     double** Cp = Cdp_->pointer();
     double** Spdp = Spd_->pointer();
     for (int i = 0; i < ndealias_; i++)
@@ -245,7 +247,7 @@ void PseudoTrial::form_Cdp()
     if (debug_)
         Cdp_->print(outfile, " Before solution");
 
-    shared_ptr<Matrix> St(new Matrix("S Primary Temp", nso_, nso_));
+    boost::shared_ptr<Matrix> St(new Matrix("S Primary Temp", nso_, nso_));
     St->copy(Spp_);
     double** Stp = St->pointer();
 
@@ -268,7 +270,7 @@ void PseudoTrial::form_Xdd()
 
 void PseudoTrial::form_Rp()
 {
-    Rp_ = shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
+    Rp_ = boost::shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
     double** Rp = Rp_->pointer();
 
     boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
@@ -297,7 +299,7 @@ void PseudoTrial::form_Rd()
         return;
     }
 
-    Rd_ = shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndealias_, naux_));
+    Rd_ = boost::shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndealias_, naux_));
     double** Rp = Rd_->pointer();
 
     boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
@@ -332,7 +334,7 @@ void PseudoTrial::form_Ra()
         return;
     }
 
-    Ra_ = shared_ptr<Matrix>(new Matrix("R Augmented (primary + dealias x points)", naug_, naux_));
+    Ra_ = boost::shared_ptr<Matrix>(new Matrix("R Augmented (primary + dealias x points)", naug_, naux_));
     double** Rap = Ra_->pointer(); 
     double** Rpp = Rp_->pointer();
     double** Rdp = Rd_->pointer();
@@ -350,7 +352,7 @@ void PseudoTrial::form_Ra()
 
 void PseudoTrial::form_Sa2()
 {
-    Sa2_ = shared_ptr<Matrix>(new Matrix("S Augmented (primary + dealias x primary + dealias)", naug_, naug_));
+    Sa2_ = boost::shared_ptr<Matrix>(new Matrix("S Augmented (primary + dealias x primary + dealias)", naug_, naug_));
     double** Sap = Sa2_->pointer();
     double** Sppp = Spp_->pointer();
     double** Spdp = Spd_->pointer();
@@ -388,7 +390,7 @@ void PseudoTrial::form_Sa2()
     C_DGEMM('N','N',ndealias_,ndealias_,nso_,1.0,Cp[0],nso_,Spdp[0],ndealias_,1.0,&Sap[nso_][nso_],naug_);   
     C_DGEMM('T','T',ndealias_,ndealias_,nso_,1.0,Spdp[0],ndealias_,Cp[0],nso_,1.0,&Sap[nso_][nso_],naug_);   
 
-    shared_ptr<Matrix> T(new Matrix("Temp dp matrix", ndealias_, nso_));
+    boost::shared_ptr<Matrix> T(new Matrix("Temp dp matrix", ndealias_, nso_));
     double** Tp = T->pointer();
 
     C_DGEMM('N','N',ndealias_,nso_,nso_,1.0,Cp[0],nso_,Sppp[0],nso_,0.0,Tp[0],nso_);
@@ -400,10 +402,10 @@ void PseudoTrial::form_Sa2()
 
 void PseudoTrial::form_Q()
 {
-    C_ = shared_ptr<Matrix>(new Matrix("C Matrix (primary + dealias x primary + dealias", naug_, naug_));
-    Cinv_ = shared_ptr<Matrix>(new Matrix("C^-1 Matrix (primary + dealias x primary + dealias", naug_, naug_));
-    Qfull_ = shared_ptr<Matrix>(new Matrix("Full Q Matrix (primary + dealias x points", naug_, naux_));
-    Q_ = shared_ptr<Matrix>(new Matrix("Q Matrix (primary x points)", nso_, naux_));
+    C_ = boost::shared_ptr<Matrix>(new Matrix("C Matrix (primary + dealias x primary + dealias", naug_, naug_));
+    Cinv_ = boost::shared_ptr<Matrix>(new Matrix("C^-1 Matrix (primary + dealias x primary + dealias", naug_, naug_));
+    Qfull_ = boost::shared_ptr<Matrix>(new Matrix("Full Q Matrix (primary + dealias x points", naug_, naux_));
+    Q_ = boost::shared_ptr<Matrix>(new Matrix("Q Matrix (primary x points)", nso_, naux_));
     double** Cp = C_->pointer();
     double** Cinvp = Cinv_->pointer();
     double** Qfullp = Qfull_->pointer();
@@ -412,7 +414,7 @@ void PseudoTrial::form_Q()
     double** Rp = Ra_->pointer();
     double* w = w_->pointer();
 
-    shared_ptr<Matrix> Rt(new Matrix("Shared R matrix for scaling",naug_, naux_));
+    boost::shared_ptr<Matrix> Rt(new Matrix("Shared R matrix for scaling",naug_, naux_));
     Rt->copy(Ra_);
     double** Rtp = Rt->pointer();
 
@@ -449,7 +451,7 @@ void PseudoTrial::form_Q()
 
 void PseudoTrial::form_P()
 {
-    P_ = shared_ptr<Matrix>(new Matrix("Projector Matrix (primary x primary + dealias)", nmo_, naug2_));
+    P_ = boost::shared_ptr<Matrix>(new Matrix("Projector Matrix (primary x primary + dealias)", nmo_, naug2_));
     double** Pp = P_->pointer();
 
     // First try: [1 0]
@@ -471,10 +473,10 @@ void PseudoTrial::form_SX()
     
 void PseudoTrial::form_A()
 {
-    A_ = shared_ptr<Matrix>(new Matrix("A (primary-primary x points)", nso_ * nso_, naux_));
+    A_ = boost::shared_ptr<Matrix>(new Matrix("A (primary-primary x points)", nso_ * nso_, naux_));
     double** Ap = A_->pointer();
 
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
     boost::shared_ptr<GridBlock> block = grid_->getBlock();
@@ -499,17 +501,17 @@ void PseudoTrial::form_A()
 
 void PseudoTrial::form_I()
 {
-    shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
     I_ = mints->ao_eri();
     I_->print();
 }
 
 void PseudoTrial::form_Ips()
 {
-    Ips_ = shared_ptr<Matrix>(new Matrix("PS AO ERI Tensor", nso_ * nso_, nso_ * nso_));
+    Ips_ = boost::shared_ptr<Matrix>(new Matrix("PS AO ERI Tensor", nso_ * nso_, nso_ * nso_));
     double** Ip = Ips_->pointer();
 
-    T_ = shared_ptr<Matrix>(new Matrix("QR product", nso_ * nso_, naux_));
+    T_ = boost::shared_ptr<Matrix>(new Matrix("QR product", nso_ * nso_, naux_));
     double** Tp = T_->pointer();
 
     double** Qp = Q_->pointer();
@@ -534,7 +536,7 @@ void PseudoTrial::form_Ips()
 
 void PseudoTrial::verify()
 {
-    shared_ptr<Matrix> E(new Matrix("Error in AO TEI tensor", nso_ * nso_ , nso_ * nso_));
+    boost::shared_ptr<Matrix> E(new Matrix("Error in AO TEI tensor", nso_ * nso_ , nso_ * nso_));
     double** Ep = E->pointer();
     double** Ip = I_->pointer();
     double** Ipsp = Ips_->pointer();
