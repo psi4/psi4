@@ -502,9 +502,23 @@ string py_psi_get_input_directory()
 
 void py_psi_print_variable_map()
 {
+    int largest_key = 0;
     for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
-        fprintf(outfile, "\"%s\" => %20.15f\n", it->first.c_str(), (double)it->second);
+        it->first.size() > largest_key ? largest_key = it->first.size() : 0;
     }
+    largest_key += 2;  // for quotation marks 
+
+    std::stringstream line;
+    std::string first_tmp;
+    for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
+        first_tmp = "\"" + it->first + "\"";
+        line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right << 
+            std::fixed << std::setprecision(12) << it->second << std::endl;
+    }
+
+    fprintf(outfile, "\n\n  Variable Map:");
+    fprintf(outfile, "\n  ----------------------------------------------------------------------------\n");
+    fprintf(outfile, "%s\n\n", line.str().c_str());
 }
 
 std::string py_psi_top_srcdir()
