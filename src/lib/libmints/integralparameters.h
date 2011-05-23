@@ -39,6 +39,16 @@ public:
     double *coeff() const { return coeff_; }
 };
 
+class FittedSlaterCorrelationFactor : public CorrelationFactor
+{
+private:
+    double slater_exponent_;
+
+public:
+    FittedSlaterCorrelationFactor(double exponent);
+    double exponent(){return slater_exponent_;}
+};
+
 }
 
 #endif // INTEGRALPARAMETERS_H

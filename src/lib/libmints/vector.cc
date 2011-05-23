@@ -251,6 +251,15 @@ double Vector::dot(Vector* X)
     return tmp;
 }
 
+void Vector::scale(double sc)
+{
+    for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<dimpi_[h]; ++i) {
+            vector_[h][i] *= sc;
+        }
+    }
+}
+
 //
 // SimpleVector class
 //
