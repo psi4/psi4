@@ -513,6 +513,8 @@ protected:
 
     // => Temps <= // 
 
+    // Raw S matrices
+    
     // Overlap matrix (primary x primary)
     boost::shared_ptr<Matrix> Spp_;
     // Overlap matrix (primary x dealias)
@@ -521,14 +523,33 @@ protected:
     boost::shared_ptr<Matrix> Sdd_;
     // Augmented Overlap matrix (aug x aug)
     boost::shared_ptr<Matrix> Sa_;
+
+    // Orthonormal primary
+    
+    // Overlap matrix (primary x dealias)
+    boost::shared_ptr<Matrix> Spd3_;
+    // Augmented Overlap matrix (aug x aug)
+    boost::shared_ptr<Matrix> Sa3_;
+
+    // Orthogonal primary - dealias
+
+    // Overlap matrix (dealias x dealias)
+    boost::shared_ptr<Matrix> Sdd4_;
     // Augmented Overlap matrix (aug x aug) (finished)
-    boost::shared_ptr<Matrix> Sa2_;
+    boost::shared_ptr<Matrix> Sa4_;
+
+    // Orthonormal primary - dealias
+    
+    // Augmented Overlap matrix (aug' x aug') (finished)
+    boost::shared_ptr<Matrix> Sa2_;    
+
     // X matrix, primary (primary x primary')
     boost::shared_ptr<Matrix> Xpp_;
     // X matrix, dealias (dealias x dealias')
     boost::shared_ptr<Matrix> Xdd_;
     // Orthogonalization matrix (dealias x primary')
     boost::shared_ptr<Matrix> Cdp_;
+
     // Collocation matrix (primary)
     boost::shared_ptr<Matrix> Rp_;
     // Collocation matrix (dealias)
@@ -537,8 +558,9 @@ protected:
     boost::shared_ptr<Matrix> Rp2_;
     // Collocation matrix (dealias')
     boost::shared_ptr<Matrix> Rd2_;
-    // Collocation matrix (augmented)
+    // Collocation matrix (augmented')
     boost::shared_ptr<Matrix> Ra_;
+
     // Weight Vector 
     boost::shared_ptr<Vector> w_;
     // C matrix
@@ -547,6 +569,8 @@ protected:
     boost::shared_ptr<Matrix> Cinv_;
     // Full Q matrix
     boost::shared_ptr<Matrix> Qfull_;
+    // Full Q matrix
+    boost::shared_ptr<Matrix> Qmo_;
     // Projector matrix 
     boost::shared_ptr<Matrix> P_;
     // Transformer matrix
@@ -575,17 +599,26 @@ protected:
     // Build everything 
     void common_init();
     void print_header();
+
     void form_molecule();
     void form_bases();
     void form_grid();
+
     void form_Spp();
     void form_Spd();
     void form_Sdd();
+
     void form_Sa();
-    void form_Xpp();
-    void form_Cdp();
-    void form_Xdd();
+    void form_Sa3();
+    void form_Sa4();
     void form_Sa2();
+
+    void form_Xpp();
+    void form_Spd3();
+    void form_Cdp();
+    void form_Sdd4();
+    void form_Xdd();
+
     void form_Rp();
     void form_Rd();
     void form_Rp2();
