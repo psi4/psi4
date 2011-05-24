@@ -60,13 +60,20 @@ void PseudoTrial::common_init()
     form_Spp();
     form_Spd();
     form_Sdd();
-    form_Sa();
 
     form_Xpp();
 
     if (do_dealias_) {
+
+        form_Spd3();
         form_Cdp();
+        form_Sdd4();
         form_Xdd();
+
+        // Verify
+        form_Sa();
+        form_Sa3();
+        form_Sa4();
         form_Sa2();
     }
 
@@ -203,6 +210,141 @@ void PseudoTrial::form_Sdd()
         Sdd_->print();
 }
 
+void PseudoTrial::form_Spd3()
+{
+    Spd3_ = shared_ptr<Matrix>(new Matrix("S (primary' x dealias)", nmo_, ndealias_));
+    double** Spd3p = Spd3_->pointer();
+    double** Spdp = Spd_->pointer();
+    double** Xp = Xpp_->pointer();
+
+    C_DGEMM('T','N',nmo_,ndealias_,nso_,1.0,Xp[0],nmo_,Spdp[0],ndealias_,0.0,Spd3p[0],ndealias_);
+
+    if (debug_)
+        Spd3_->print();
+}
+
+void PseudoTrial::form_Sdd4()
+{
+    Sdd4_ = shared_ptr<Matrix>(new Matrix("S Separated (dealias x dealias)", ndealias_, ndealias_));
+    double** Sdd4p = Sdd4_->pointer();
+    double** Spdp = Spd3_->pointer();
+    double** Cp = Cdp_->pointer();
+
+    Sdd4_->copy(Sdd_);
+
+    C_DGEMM('T','T',ndealias_,ndealias_,nmo_,1.0,Spdp[0],ndealias_,Cp[0],nmo_,1.0,Sdd4p[0],ndealias_);
+    C_DGEMM('N','N',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Spdp[0],ndealias_,1.0,Sdd4p[0],ndealias_);
+    C_DGEMM('N','T',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Cp[0],nmo_,1.0,Sdd4p[0],ndealias_);
+
+    if (debug_)
+        Sdd4_->print();
+}
+
+void PseudoTrial::form_Xpp()
+{
+    shared_ptr<Matrix> St(new Matrix("Temporary S", nso_, nso_));        
+    shared_ptr<Matrix> Xt(new Matrix("Temporary X", nso_, nso_));        
+    shared_ptr<Vector> st(new Vector("s", nso_));
+
+    double** Stp = St->pointer();
+    double** Xtp = Xt->pointer();
+    double* stp = st->pointer();
+
+    St->copy(Spp_);
+
+    St->diagonalize(Xt, st);
+
+    if (debug_) 
+        Xt->eivprint(st);
+
+    nmo_ = 0;
+    for (int i = 0; i < nso_; i++)
+    {
+        if (stp[i] > min_S_)
+            nmo_++;
+    }
+
+    Xpp_ = shared_ptr<Matrix>(new Matrix("X Matrix (primary x primary')", nso_, nmo_)); 
+    double** Xp = Xpp_->pointer();    
+ 
+    int m = 0;
+    for (int i = 0; i < nso_; i++) {
+        if (stp[i] > min_S_) {
+            C_DCOPY(nso_, &Xtp[0][i], nso_, &Xp[0][m], nmo_);
+            C_DSCAL(nso_, pow(stp[i], -1.0 / 2.0), &Xp[0][m], nmo_);
+            m++;
+        }
+    }
+
+    if (debug_)
+        Xpp_->print();
+
+    ndealias2_ = 0;
+    naug2_ = nmo_;
+}
+
+void PseudoTrial::form_Cdp()
+{
+    Cdp_ = shared_ptr<Matrix>(new Matrix("Orthogonalization coefficients (dealias x primary')", ndealias_, nmo_));
+    double** Cp = Cdp_->pointer();
+    double** Sp = Spd3_->pointer();
+
+    for (int i = 0; i < ndealias_; i++)
+        C_DCOPY(nmo_,&Sp[0][i],ndealias_,Cp[i],1);
+
+    Cdp_->scale(-1.0);
+
+    if (debug_)
+        Cdp_->print();
+}
+
+void PseudoTrial::form_Xdd()
+{
+    if (!do_dealias_) {
+        ndealias2_ = 0;
+        naug2_ = nmo_;
+        return;
+    }
+
+    shared_ptr<Matrix> St(new Matrix("Temporary S", ndealias_, ndealias_));        
+    shared_ptr<Matrix> Xt(new Matrix("Temporary X", ndealias_, ndealias_));        
+    shared_ptr<Vector> st(new Vector("s", ndealias_));
+
+    double** Stp = St->pointer();
+    double** Xtp = Xt->pointer();
+    double* stp = st->pointer();
+
+    St->copy(Sdd4_);
+
+    St->diagonalize(Xt, st);
+
+    if (debug_) 
+        Xt->eivprint(st);
+
+    ndealias2_ = 0;
+    for (int i = 0; i < ndealias_; i++)
+    {
+        if (stp[i] > min_S_)
+            ndealias2_++;
+    }
+    naug2_ = nmo_ + ndealias2_;
+
+    Xdd_ = shared_ptr<Matrix>(new Matrix("X Matrix (dealias x dealias')", ndealias_, ndealias2_)); 
+    double** Xp = Xdd_->pointer();    
+ 
+    int m = 0;
+    for (int i = 0; i < ndealias_; i++) {
+        if (stp[i] > min_S_) {
+            C_DCOPY(ndealias_, &Xtp[0][i], ndealias_, &Xp[0][m], ndealias2_);
+            C_DSCAL(ndealias_, pow(stp[i], -1.0 / 2.0), &Xp[0][m], ndealias2_);
+            m++;
+        }
+    }
+
+    if (debug_)
+        Xdd_->print();
+}
+
 void PseudoTrial::form_Sa()
 {
     Sa_ = boost::shared_ptr<Matrix>(new Matrix("S Augmented, Raw (primary + dealias x primary + dealias)", naug_, naug_));
@@ -231,41 +373,79 @@ void PseudoTrial::form_Sa()
         Sa_->print();
 }
 
-void PseudoTrial::form_Xpp()
+void PseudoTrial::form_Sa3()
 {
-    
-}
+    Sa3_ = shared_ptr<Matrix>(new Matrix("S3 Augmented, Raw (primary' + dealias x primary' + dealias)", nmo_ + ndealias_, nmo_ + ndealias_));
 
-void PseudoTrial::form_Cdp()
-{
-    Cdp_ = boost::shared_ptr<Matrix>(new Matrix("Orthogonalization coefficients (dealias x primary)", ndealias_, nso_));
-    double** Cp = Cdp_->pointer();
+    double** Sap = Sa3_->pointer();
+
+    double** Sppp = Spp_->pointer();
+    double** Xp   = Xpp_->pointer();
     double** Spdp = Spd_->pointer();
-    for (int i = 0; i < ndealias_; i++)
-        C_DCOPY(nso_, &Spdp[0][i], ndealias_, Cp[i], 1);
+    double** Sddp = Sdd_->pointer();
 
+    shared_ptr<Matrix> T(new Matrix("Temp",nmo_,nso_));
+    double** Tp = T->pointer();
+
+    C_DGEMM('T','N',nmo_,nso_,nso_,1.0,Xp[0],nmo_,Sppp[0],nso_,0.0,Tp[0],nso_);
+    C_DGEMM('N','N',nmo_,nmo_,nso_,1.0,Tp[0],nso_,Xp[0],nmo_,0.0,Sap[0],nmo_ + ndealias_);
+
+    C_DGEMM('T','N',nmo_,ndealias_,nso_,1.0,Xp[0],nmo_,Spdp[0],ndealias_,0.0,&Sap[0][nmo_], nmo_ + ndealias_);
+    C_DGEMM('T','N',ndealias_,nmo_,nso_,1.0,Spdp[0],ndealias_,Xp[0],nmo_,0.0,&Sap[nmo_][0], nmo_ + ndealias_);
+    
+    for (int a = 0; a < ndealias_; a++) {
+        C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nmo_ + a][nmo_], 1);
+    } 
+   
     if (debug_)
-        Cdp_->print(outfile, " Before solution");
-
-    boost::shared_ptr<Matrix> St(new Matrix("S Primary Temp", nso_, nso_));
-    St->copy(Spp_);
-    double** Stp = St->pointer();
-
-    C_DPOTRF('L', nso_, Stp[0], nso_);
-    St->zero_lower();   
-
-    if (debug_)
-        St->print(outfile, " after Cholesky");
-
-    C_DPOTRS('L',nso_,ndealias_,Stp[0],nso_,Cp[0],nso_);
-    C_DSCAL(nso_*ndealias_, -1.0, Cp[0], 1);
-
-    if (debug_)
-        Cdp_->print();
+        Sa3_->print();
 }
 
-void PseudoTrial::form_Xdd()
+void PseudoTrial::form_Sa4()
 {
+    Sa4_ = shared_ptr<Matrix>(new Matrix("S4 Augmented, Raw (primary' + dealias x primary' + dealias)", nmo_ + ndealias_, nmo_ + ndealias_));
+    Sa4_->copy(Sa3_);
+
+    double** Sap = Sa4_->pointer();
+    double** Sppp = Spp_->pointer();
+    double** Spdp = Spd3_->pointer();
+    double** Sddp = Sdd_->pointer();
+
+    double** Cp = Cdp_->pointer();
+
+    C_DGEMM('N','T',nmo_,ndealias_,nmo_,1.0,Sap[0], nmo_ + ndealias_, Cp[0], nmo_,1.0,&Sap[0][nmo_], nmo_ + ndealias_);
+    C_DGEMM('N','N',ndealias_,nmo_,nmo_,1.0,Cp[0],nmo_,Sap[0],nmo_ + ndealias_,1.0,&Sap[nmo_][0], nmo_ + ndealias_);
+
+    C_DGEMM('T','T',ndealias_,ndealias_,nmo_,1.0,Spdp[0],ndealias_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
+    C_DGEMM('N','N',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Spdp[0],ndealias_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
+    C_DGEMM('N','T',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
+ 
+    if (debug_)
+        Sa4_->print();
+}
+
+void PseudoTrial::form_Sa2()
+{
+    Sa2_ = shared_ptr<Matrix>(new Matrix("S2 Augmented, Finished (primary' + dealias' x primary' + dealias')", naug2_, naug2_));
+
+    double** Sap = Sa2_->pointer();
+
+    double** Sppp = Sa3_->pointer();
+    double** Sddp = Sdd4_->pointer();
+
+    for (int i = 0; i < nmo_; i++)
+        C_DCOPY(nmo_,Sppp[i],1,Sap[i],1);
+
+    shared_ptr<Matrix> T(new Matrix("Temp", ndealias2_, ndealias_));
+    double** Tp = T->pointer();
+
+    double** Xp = Xdd_->pointer();
+
+    C_DGEMM('T','N',ndealias2_,ndealias_,ndealias_,1.0,Xp[0],ndealias2_,Sddp[0],ndealias_,0.0,Tp[0],ndealias_);
+    C_DGEMM('N','N',ndealias2_,ndealias2_,ndealias_,1.0,Tp[0],ndealias_,Xp[0],ndealias2_,0.0,&Sap[nmo_][nmo_],naug2_);
+
+    if (debug_)
+        Sa2_->print();
 }
 
 void PseudoTrial::form_Rp()
@@ -321,10 +501,44 @@ void PseudoTrial::form_Rd()
 
 void PseudoTrial::form_Rp2()
 {
+    Rp2_ = shared_ptr<Matrix>(new Matrix("R2 (primary' x points)", nmo_, naux_));
+    double** Rp2 = Rp2_->pointer();
+    double** Rp = Rp_->pointer();
+    double** Xp = Xpp_->pointer();
+
+    C_DGEMM('T','N',nmo_,naux_,nso_,1.0,Xp[0],nmo_,Rp[0],naux_,0.0,Rp2[0],naux_);
+
+    if (debug_)
+        Rp2_->print();
+
+    R_ = Rp_;
 }
 
 void PseudoTrial::form_Rd2()
 {
+    if (!do_dealias_) {
+        Rd2_ = Rp2_;
+        return;
+    }
+
+    Rd2_ = shared_ptr<Matrix>(new Matrix("R2 (dealias' x points)", ndealias2_, naux_));
+    double** Rd2p = Rd2_->pointer();
+    double** Rp2p = Rp2_->pointer();
+    double** Rdp = Rd_->pointer();
+
+    double** Xdp = Xdd_->pointer();
+    double** Cdp = Cdp_->pointer();
+
+    C_DGEMM('T','N',ndealias2_,naux_,ndealias_,1.0,Xdp[0],ndealias2_,Rdp[0],naux_,0.0,Rd2p[0],naux_);
+
+    shared_ptr<Matrix> T(new Matrix("Temp",ndealias_,naux_));
+    double** Tp = T->pointer();
+
+    C_DGEMM('N','N',ndealias_,naux_,nmo_,1.0,Cdp[0],nmo_,Rp2p[0],naux_,0.0,Tp[0],naux_);
+    C_DGEMM('T','N',ndealias2_,naux_,ndealias_,1.0,Xdp[0],ndealias2_,Tp[0],naux_,1.0,Rd2p[0],naux_);
+
+    if (debug_)
+        Rd2_->print();
 }
 
 void PseudoTrial::form_Ra()
@@ -334,87 +548,38 @@ void PseudoTrial::form_Ra()
         return;
     }
 
-    Ra_ = boost::shared_ptr<Matrix>(new Matrix("R Augmented (primary + dealias x points)", naug_, naux_));
+    Ra_ = shared_ptr<Matrix>(new Matrix("R Augmented (primary' + dealias' x points)", naug2_, naux_));
     double** Rap = Ra_->pointer(); 
-    double** Rpp = Rp_->pointer();
-    double** Rdp = Rd_->pointer();
 
-    double** Cp = Cdp_->pointer();
+    double** Rpp = Rp2_->pointer();
+    double** Rdp = Rd2_->pointer();
 
-    C_DCOPY(nso_ * naux_, Rpp[0], 1, Rap[0], 1);
-    C_DCOPY(ndealias_ * naux_, Rdp[0], 1, Rap[nso_], 1);
-
-    C_DGEMM('N','N',ndealias_,naux_,nso_,1.0,Cp[0],nso_,Rap[0],naux_,1.0,Rap[nso_],naux_);
+    C_DCOPY(nmo_ * naux_, Rpp[0], 1, Rap[0], 1);
+    C_DCOPY(ndealias2_ * naux_, Rdp[0], 1, Rap[nmo_], 1);
 
     if (debug_)
         Ra_->print();
 }
 
-void PseudoTrial::form_Sa2()
-{
-    Sa2_ = boost::shared_ptr<Matrix>(new Matrix("S Augmented (primary + dealias x primary + dealias)", naug_, naug_));
-    double** Sap = Sa2_->pointer();
-    double** Sppp = Spp_->pointer();
-    double** Spdp = Spd_->pointer();
-    double** Sddp = Sdd_->pointer();
-
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(nso_, Sppp[m], 1, Sap[m], 1);
-    } 
-
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(ndealias_, Spdp[m], 1, &Sap[m][nso_], 1);
-    } 
-    
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(ndealias_, Spdp[m], 1, &Sap[nso_][m], naug_);
-    }
-
-    for (int a = 0; a < ndealias_; a++) {
-        C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nso_ + a][nso_], 1);
-    } 
-   
-    if (debug_)
-        Sa_->print(outfile, "Before Orthogonalization");
-
-    double** Cp = Cdp_->pointer();
-
-    // pd block
-    C_DGEMM('N','N',ndealias_,nso_,nso_,1.0,Cp[0],nso_,Sap[0],naug_,1.0,Sap[nso_],naug_); 
-    
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(ndealias_, &Sap[nso_][m], naug_, &Sap[m][nso_], 1);
-    }
-
-    // dd block
-    C_DGEMM('N','N',ndealias_,ndealias_,nso_,1.0,Cp[0],nso_,Spdp[0],ndealias_,1.0,&Sap[nso_][nso_],naug_);   
-    C_DGEMM('T','T',ndealias_,ndealias_,nso_,1.0,Spdp[0],ndealias_,Cp[0],nso_,1.0,&Sap[nso_][nso_],naug_);   
-
-    boost::shared_ptr<Matrix> T(new Matrix("Temp dp matrix", ndealias_, nso_));
-    double** Tp = T->pointer();
-
-    C_DGEMM('N','N',ndealias_,nso_,nso_,1.0,Cp[0],nso_,Sppp[0],nso_,0.0,Tp[0],nso_);
-    C_DGEMM('N','T',ndealias_,ndealias_,nso_,1.0,Tp[0],nso_,Cp[0],nso_,1.0,&Sap[nso_][nso_],naug_);
-
-    if (debug_)
-        Sa_->print(); 
-}
-
 void PseudoTrial::form_Q()
 {
-    C_ = boost::shared_ptr<Matrix>(new Matrix("C Matrix (primary + dealias x primary + dealias", naug_, naug_));
-    Cinv_ = boost::shared_ptr<Matrix>(new Matrix("C^-1 Matrix (primary + dealias x primary + dealias", naug_, naug_));
-    Qfull_ = boost::shared_ptr<Matrix>(new Matrix("Full Q Matrix (primary + dealias x points", naug_, naux_));
-    Q_ = boost::shared_ptr<Matrix>(new Matrix("Q Matrix (primary x points)", nso_, naux_));
+    C_ = shared_ptr<Matrix>(new Matrix("C Matrix (primary' + dealias' x primary' + dealias'", naug2_, naug2_));
+    Cinv_ = shared_ptr<Matrix>(new Matrix("C^-1 Matrix (primary' + dealias' x primary' + dealias'", naug2_, naug2_));
+    Qfull_ = shared_ptr<Matrix>(new Matrix("Full Q Matrix (primary' + dealias' x points", naug2_, naux_));
+    Qmo_ = shared_ptr<Matrix>(new Matrix("Q Matrix (primary' x points)", nmo_, naux_));
+    Q_ = shared_ptr<Matrix>(new Matrix("Q Matrix (primary x points)", nso_, naux_));
+
     double** Cp = C_->pointer();
     double** Cinvp = Cinv_->pointer();
     double** Qfullp = Qfull_->pointer();
+    double** Qmop = Qmo_->pointer();
     double** Qp = Q_->pointer();
     double** Pp = P_->pointer();
+    double** SXp = SX_->pointer();
     double** Rp = Ra_->pointer();
     double* w = w_->pointer();
 
-    boost::shared_ptr<Matrix> Rt(new Matrix("Shared R matrix for scaling",naug_, naux_));
+    shared_ptr<Matrix> Rt(new Matrix("Shared R matrix for scaling",naug2_, naux_));
     Rt->copy(Ra_);
     double** Rtp = Rt->pointer();
 
@@ -424,26 +589,31 @@ void PseudoTrial::form_Q()
     for (int Q = 0; Q < naux_; Q++)
         C_DSCAL(naug_, w[Q], &Rtp[0][Q], naux_);
 
-    C_DGEMM('N','T',naug_,naug_,naux_,1.0,Rtp[0],naux_,Rp[0],naux_,0.0,Cp[0],naug_);
+    C_DGEMM('N','T',naug2_,naug2_,naux_,1.0,Rtp[0],naux_,Rp[0],naux_,0.0,Cp[0],naug2_);
 
     if (debug_)
         C_->print();
 
     Cinv_->copy(C_);
 
-    C_DPOTRF('L',naug_,Cinvp[0],naug_);
-    C_DPOTRI('L',naug_,Cinvp[0],naug_);
+    C_DPOTRF('L',naug2_,Cinvp[0],naug2_);
+    C_DPOTRI('L',naug2_,Cinvp[0],naug2_);
     Cinv_->copy_upper_to_lower();
     
     if (debug_)
         Cinv_->print();
 
-    C_DGEMM('N','N',naug_,naux_,naug_,1.0,Cinvp[0],naug_,Rtp[0],naux_,0.0,Qfullp[0],naux_);
+    C_DGEMM('N','N',naug2_,naux_,naug2_,1.0,Cinvp[0],naug2_,Rtp[0],naux_,0.0,Qfullp[0],naux_);
 
     if (debug_)
         Qfull_->print(); 
 
-    C_DGEMM('N','N',nso_,naux_,naug_,1.0,Pp[0],naug_,Qfullp[0],naux_,0.0,Qp[0],naux_);
+    C_DGEMM('N','N',nmo_,naux_,naug_,1.0,Pp[0],naug_,Qfullp[0],naux_,0.0,Qmop[0],naux_);
+
+    if (debug_)
+        Qmo_->print();
+
+    C_DGEMM('N','N',nso_,naux_,nmo_,1.0,SXp[0],nmo_,Qmop[0],naux_,0.0,Qp[0],naux_);
 
     if (debug_)
         Q_->print();
@@ -451,7 +621,7 @@ void PseudoTrial::form_Q()
 
 void PseudoTrial::form_P()
 {
-    P_ = boost::shared_ptr<Matrix>(new Matrix("Projector Matrix (primary x primary + dealias)", nmo_, naug2_));
+    P_ = shared_ptr<Matrix>(new Matrix("Projector Matrix (primary' x primary' + dealias')", nmo_, naug2_));
     double** Pp = P_->pointer();
 
     // First try: [1 0]
@@ -469,7 +639,17 @@ void PseudoTrial::form_P()
 
 void PseudoTrial::form_SX()
 {
-}
+    SX_ = shared_ptr<Matrix>(new Matrix("SX (primary x primary')", nso_, nmo_));
+
+    double** SXp = SX_->pointer();
+    double** Sp = Spp_->pointer();
+    double** Xp = Xpp_->pointer();
+    
+    C_DGEMM('N','N',nso_,nmo_,nso_,1.0,Sp[0],nso_,Xp[0],nmo_,0.0,SXp[0],nmo_);
+
+    if (debug_)
+        SX_->pointer();
+}   
     
 void PseudoTrial::form_A()
 {
