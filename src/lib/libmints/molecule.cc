@@ -899,6 +899,34 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
     update_geometry();
 }
 
+/**
+ * Checks whether the user has specified the charge in the options, and returns the appropriate value.
+ * @return The charge from the options keywords, if specified.  If not, the value passed to the molecule
+ *         specification, which takes the default value provided by liboptions if not specified.
+ */
+int Molecule::molecular_charge() const
+{
+    if(Process::environment.options["CHARGE"].has_changed()){
+        return Process::environment.options.get_int("CHARGE");
+    }else{
+        return molecular_charge_;
+    }
+}
+
+/**
+ * Checks whether the user has specified the multiplicity in the options, and returns the appropriate value.
+ * @return The multiplicity from the options keywords, if specified.  If not, the value passed to the molecule
+ *         specification, which takes the default value provided by liboptions if not specified.
+ */
+int Molecule::multiplicity() const
+{
+    if(Process::environment.options["MULTP"].has_changed()){
+        return Process::environment.options.get_int("MULTP");
+    }else{
+        return multiplicity_;
+    }
+}
+
 boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text)
 {
     smatch reMatches;
