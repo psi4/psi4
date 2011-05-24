@@ -532,11 +532,11 @@ public:
     /// Sets the molecular charge
     void set_molecular_charge(int charge) {molecular_charge_ = charge;}
     /// Gets the molecular charge
-    int molecular_charge() const {return molecular_charge_;}
+    int molecular_charge() const;
     /// Sets the multiplicity (defined as 2Ms + 1)
     void set_multiplicity(int mult) { multiplicity_ = mult; }
     /// Get the multiplicity (defined as 2Ms + 1)
-    int multiplicity() const { return multiplicity_; }
+    int multiplicity() const;
     /// Sets the geometry units
     void set_units(GeometryUnits units) { units_ = units; }
     /// Gets the geometry units
