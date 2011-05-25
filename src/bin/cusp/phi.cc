@@ -29,7 +29,7 @@ int **xexp, **yexp, **zexp, *l_length;
 
 void setup_phi(void)
 {
-  static int use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
+  static int use_cca_integrals_standard = 1;
   static int done=0;
   int i,l,j,ao;
 
