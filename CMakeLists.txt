@@ -10,9 +10,34 @@ set(PSI_VERSION 4.0.0-alpha)
 set(PSI_BUILDID alpha)
 set(PSI_BUGREPORT psicode@users.sourceforge.net)
 
+# Any executables/libraries we create go here:
+set(EXECUTABLE_OUTPUT_PATH ${PSI4_BINARY_DIR}/bin)
+set(LIBRARY_OUTPUT_PATH ${PSI4_BINARY_DIR}/lib)
+
 # We need BLAS and LAPACK
-find_package(BLAS REQUIRED)
-find_package(LAPACK REQUIRED)
+#find_package(BLAS REQUIRED)
+find_package(LAPACK REQUIRED)   # LAPACK requires BLAS for us.
+
+# Determine Fortran name mangling for BLAS/LAPACK
+#    Interesting fact: Apple's BLAS/LAPACK provides all possible manglings.
+include(CheckFunctionExists)
+set(CMAKE_REQUIRED_LIBRARIES ${BLAS_LIBRARIES})
+check_function_exists(dgemm FORTRAN_LC)
+check_function_exists(dgemm_ FORTRAN_LCU)
+check_function_exists(DGEMM FORTRAN_UC)
+check_function_exists(DGEMM_ FORTRAN_UCU)
+
+if (FORTRAN_LC)
+    add_definitions(-DFC_SYMBOL=1)
+elseif (FORTRAN_LCU)
+    add_definitions(-DFC_SYMBOL=2)
+elseif (FC_SYMBOL_UC)
+    add_definitions(-DFC_SYMBOL=3)
+elseif (FC_SYMBOL_UCU)
+    add_definitions(-DFC_SYMBOL=4)
+else(FORTRAN_LC)
+    message(FATAL_ERROR "Unable to determine Fortran name mangling for BLAS/LAPACK.")
+endif(FORTRAN_LC)
 
 # Detect Python and its libraries
 find_package(PythonInterp 2.4 REQUIRED)
@@ -21,10 +46,10 @@ find_package(PythonLibs 2.4 REQUIRED)
 # Some Perl is used in the tests
 find_package(Perl REQUIRED)
 
-# Determine settings for OpenMP
+# Determine compiler flags for OpenMP
 find_package(OpenMP)
 
-# MPI
+# MPI (currently not linked in, modify src/bin/psi4/CMakeList.txt to add it)
 find_package(MPI)
 
 # Check for C++ header files

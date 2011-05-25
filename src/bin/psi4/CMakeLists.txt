@@ -50,5 +50,7 @@ target_link_libraries(psi4
     boost_filesystem
     boost_system
     ${PYTHON_LIBRARIES}
+    ${LAPACK_LIBRARIES}
+    ${BLAS_LIBRARIES}
 )
 
