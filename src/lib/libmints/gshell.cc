@@ -136,15 +136,7 @@ void GaussianShell::print(FILE *out) const
 
 double GaussianShell::normalize(int l, int m, int n)
 {
-    static int use_cca_integrals_standard = (PSI_INTEGRALS_STANDARD == 1);
-    if (use_cca_integrals_standard) {
-        return 1.0;
-    } else {
-        double numer = df[2*l_];
-        double denom = df[2*l] * df[2*m] * df[2*n];
-        // printf("l_=%d, l=%d, m=%d, n=%d, norm=%15.10f\n", l_[0], l, m, n, sqrt(numer/denom));
-        return sqrt(numer/denom);
-    }
+    return 1.0;
 }
 
 Vector3 GaussianShell::center() const
