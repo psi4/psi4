@@ -125,7 +125,7 @@ file(GLOB MOINFO_HEADERS libmoinfo/*.h libmoinfo/*.hpp)
 add_library(PSI_moinfo ${MOINFO_SOURCES})
 
 ## libint
-file(GLOB LIBINT_SOURCES libint/libint/*.cc)
+file(GLOB LIBINT_SOURCES libint/libint/*.cc libint/libint/vrr_build.c)
 file(GLOB LIBINT_HEADERS libint/libint/libint.h)
 add_library(PSI_int ${LIBINT_SOURCES})
 
