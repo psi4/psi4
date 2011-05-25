@@ -1,8 +1,10 @@
+#include <psiconfig.h>
+
 #include "plugin.h"
 
 namespace psi {
 
-#if HAVE_DLFCN_H == 1
+#ifdef HAVE_DLFCN_H
 
 #include <dlfcn.h>
 
