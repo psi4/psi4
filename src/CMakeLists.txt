@@ -3,4 +3,4 @@ include_directories(lib)
 
 # Recurse through lib and bin
 add_subdirectory(lib)
-#add_subdirectory(bin)
+add_subdirectory(bin)

@@ -5,6 +5,11 @@ cmake_minimum_required(VERSION 2.6)
 # and to the root binary directory of the project as ${PSI4_BINARY_DIR}
 project(PSI4)
 
+# Set version
+set(PSI_VERSION 4.0.0-alpha)
+set(PSI_BUILDID alpha)
+set(PSI_BUGREPORT psicode@users.sourceforge.net)
+
 # We need BLAS and LAPACK
 find_package(BLAS REQUIRED)
 find_package(LAPACK REQUIRED)
@@ -38,13 +43,14 @@ check_library_exists(m isinf "" HAVE_FUNC_ISINF)
 check_library_exists(m finite "" HAVE_FUNC_FINITE)
 
 # There are headers in include that we need to be able to find.
-include_directories(include ${PSI4_BINARY_DIR}/include)
+include_directories(include ${PSI4_BINARY_DIR}/include src/lib/libint src/lib/libderiv)
 
 # Additional header search path as a consequence of the checks done above
 include_directories(${PYTHON_INCLUDE_DIRS})
 
 # Prepare to handle the psiconfig.h header file
 set(PSI_TOP_SRCDIR ${PSI4_SOURCE_DIR})
+set(INSTALLEDPSIDATADIR /usr/local/psi4/lib)
 configure_file(${PSI4_SOURCE_DIR}/include/psiconfig.h.cmake ${PSI4_BINARY_DIR}/include/psiconfig.h)
 
 # Recurse into the src subdirectory. This does not actually cause another
