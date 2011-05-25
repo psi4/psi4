@@ -5,9 +5,12 @@
 #undef HAVE_STDINT_H
 
 /* PSI version information */
-#undef PSI_VERSION
-#undef PSI_BUILDID
-#undef PSI_BUGREPORT
+#cmakedefine PSI_VERSION "@PSI_VERSION@"
+#cmakedefine PSI_BUILDID "@PSI_BUILDID@"
+#cmakedefine PSI_BUGREPORT "@PSI_BUGREPORT@"
+
+/* Installed data directory */
+#cmakedefine INSTALLEDPSIDATADIR "@INSTALLEDPSIDATADIR@"
 
 /* Top source code directory */
 #cmakedefine PSI_TOP_SRCDIR "@PSI_TOP_SRCDIR@"
