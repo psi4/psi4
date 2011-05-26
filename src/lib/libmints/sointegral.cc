@@ -286,14 +286,19 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
             // by the end of these 4 for loops we will have our final integral in buffer_
             for (int i=0; i<t1.naoshell; ++i) {
                 const SOTransformShell &s1 = t1.aoshell[i];
-                int atom1 = 3*ob_->basis1()->shell(s1.aoshell)->ncenter();
+                int center_i = 3*ob_->basis1()->shell(s1.aoshell)->ncenter();
 
-                fprintf(outfile, "center1 = %d\n", atom1);
+                fprintf(outfile, "center_i = %d\n", center_i);
                 for (int j=0; j<t2.naoshell; ++j) {
                     const SOTransformShell &s2 = t2.aoshell[j];
-                    int atom2 = 3*ob_->basis2()->shell(s2.aoshell)->ncenter();
+                    int center_j = 3*ob_->basis2()->shell(s2.aoshell)->ncenter();
 
-                    fprintf(outfile, "center2 = %d\n", atom2);
+                    fprintf(outfile, "center_j = %d\n", center_j);
+
+                    // If we're working on the same atomic center, don't even bother with the derivative
+                    if (center_i == center_j)
+                        continue;
+
                     ob_->compute_shell_deriv1(s1.aoshell, s2.aoshell);
 
                     for (int itr=0; itr<s1.nfunc; ++itr) {
@@ -315,40 +320,41 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                             int jirrep = jfunc.irrep;
 
                             fprintf(outfile, "ish %d jsh %d\n\tx1aobuf %lf aopos %d sopos %d\n", ish, jsh,
-                                    aobuf[jaooff + (atom1+0)*nao12], jaooff + (atom1+0)*nao12,
-                                    jsooff + (atom1+0)*nso12);
+                                    aobuf[jaooff + (center_i+0)*nao12], jaooff + (center_i+0)*nao12,
+                                    jsooff + 0*nso12);
                             fprintf(outfile, "\ty1aobuf %lf aopos %d sopos %d\n",
-                                    aobuf[jaooff + (atom1+1)*nao12], jaooff + (atom1+1)*nao12,
-                                    jsooff + (atom1+1)*nso12);
+                                    aobuf[jaooff + (center_i+1)*nao12], jaooff + (center_i+1)*nao12,
+                                    jsooff + 1*nso12);
                             fprintf(outfile, "\tz1aobuf %lf aopos %d sopos %d\n",
-                                    aobuf[jaooff + (atom1+2)*nao12], jaooff + (atom1+2)*nao12,
-                                    jsooff + (atom1+2)*nso12);
+                                    aobuf[jaooff + (center_i+2)*nao12], jaooff + (center_i+2)*nao12,
+                                    jsooff + 2*nso12);
                             fprintf(outfile, "\tx2aobuf %lf aopos %d sopos %d\n",
-                                    aobuf[jaooff + (atom2+0)*nao12], jaooff + (atom2+0)*nao12,
-                                    jsooff + (atom2+0)*nso12);
+                                    aobuf[jaooff + (center_j+0)*nao12], jaooff + (center_j+0)*nao12,
+                                    jsooff + 3*nso12);
                             fprintf(outfile, "\ty2aobuf %lf aopos %d sopos %d\n",
-                                    aobuf[jaooff + (atom2+1)*nao12], jaooff + (atom2+1)*nao12,
-                                    jsooff + (atom2+1)*nso12);
+                                    aobuf[jaooff + (center_j+1)*nao12], jaooff + (center_j+1)*nao12,
+                                    jsooff + 4*nso12);
                             fprintf(outfile, "\tz2aobuf %lf aopos %d sopos %d\n",
-                                    aobuf[jaooff + (atom2+2)*nao12], jaooff + (atom2+2)*nao12,
-                                    jsooff + (atom2+2)*nso12);
+                                    aobuf[jaooff + (center_j+2)*nao12], jaooff + (center_j+2)*nao12,
+                                    jsooff + 5*nso12);
                             fprintf(outfile, "isooff %d jsooff %d iaooff %d jaooff %d\n", isooff, jsooff,
                                     iaooff, jaooff);
+
                             // atom 1
                             //    x
-                            buffer_[jsooff + (atom1+0)*nso12] += jcoef * aobuf[jaooff + (atom1+0)*nao12];
+                            buffer_[jsooff + 0*nso12] += jcoef * aobuf[jaooff + 0*nao12];
                             //    y
-                            buffer_[jsooff + (atom1+1)*nso12] += jcoef * aobuf[jaooff + (atom1+1)*nao12];
+                            buffer_[jsooff + 1*nso12] += jcoef * aobuf[jaooff + 1*nao12];
                             //    z
-                            buffer_[jsooff + (atom1+2)*nso12] += jcoef * aobuf[jaooff + (atom1+2)*nao12];
+                            buffer_[jsooff + 2*nso12] += jcoef * aobuf[jaooff + 2*nao12];
 
                             // atom 2
                             //    x
-                            buffer_[jsooff + (atom2+0)*nso12] += jcoef * aobuf[jaooff + (atom2+0)*nao12];
+                            buffer_[jsooff + 3*nso12] += jcoef * aobuf[jaooff + 3*nao12];
                             //    y
-                            buffer_[jsooff + (atom2+1)*nso12] += jcoef * aobuf[jaooff + (atom2+1)*nao12];
+                            buffer_[jsooff + 4*nso12] += jcoef * aobuf[jaooff + 4*nao12];
                             //    z
-                            buffer_[jsooff + (atom2+2)*nso12] += jcoef * aobuf[jaooff + (atom2+2)*nao12];
+                            buffer_[jsooff + 5*nso12] += jcoef * aobuf[jaooff + 5*nao12];
                         }
                     }
                 }
@@ -365,9 +371,8 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
 
             for (int i=0; i<t1.naoshell; ++i) {
                 const SOTransformShell &s1 = t1.aoshell[i];
-                int atom1 = ob_->basis1()->shell(s1.aoshell)->ncenter();
-                const CdSalcWRTAtom& cdsalc1 = cdsalcs.atom_salc(atom1);
-                atom1 *= 3;
+                int center_i = ob_->basis1()->shell(s1.aoshell)->ncenter();
+                const CdSalcWRTAtom& cdsalc1 = cdsalcs.atom_salc(center_i);
 
                 for (int itr=0; itr<nso1; ++itr) {
 
@@ -386,10 +391,10 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                         // atom 1
                         for (int nx=0; nx<cdsalc1.nx(); ++nx) {
                             const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
-                            double temp = element.coef * buffer_[jsooff + (atom1+0)*nso12];
+                            double temp = element.coef * buffer_[jsooff + 0*nso12];
 
                             fprintf(outfile, "x1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                    temp, element.coef, buffer_[jsooff + (atom1+0)*nso12], iirrep, jirrep, element.irrep);
+                                    temp, element.coef, buffer_[jsooff + (center_i+0)*nso12], iirrep, jirrep, element.irrep);
                             if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
                                 fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
                                 result[element.salc]->add(iirrep, irel, jrel, temp);
@@ -398,9 +403,9 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                         }
                         for (int ny=0; ny<cdsalc1.ny(); ++ny) {
                             const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
-                            double temp = element.coef * buffer_[jsooff + (atom1+1)*nso12];
+                            double temp = element.coef * buffer_[jsooff + 1*nso12];
                             fprintf(outfile, "y1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                    temp, element.coef, buffer_[jsooff + (atom1+1)*nso12], iirrep, jirrep, element.irrep);
+                                    temp, element.coef, buffer_[jsooff + (center_i+1)*nso12], iirrep, jirrep, element.irrep);
                             if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
                                 fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
                                 result[element.salc]->add(iirrep, irel, jrel, temp);
@@ -408,9 +413,9 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                         }
                         for (int nz=0; nz<cdsalc1.nz(); ++nz) {
                             const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
-                            double temp = element.coef * buffer_[jsooff + (atom1+2)*nso12];
+                            double temp = element.coef * buffer_[jsooff + 2*nso12];
                             fprintf(outfile, "z1 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                    temp, element.coef, buffer_[jsooff + (atom1+2)*nso12], iirrep, jirrep, element.irrep);
+                                    temp, element.coef, buffer_[jsooff + (center_i+2)*nso12], iirrep, jirrep, element.irrep);
                             if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
                                 fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
                                 result[element.salc]->add(iirrep, irel, jrel, temp);
@@ -425,9 +430,8 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
 
             for (int j=0; j<t2.naoshell; ++j) {
                 const SOTransformShell &s2 = t2.aoshell[j];
-                int atom2 = ob_->basis2()->shell(s2.aoshell)->ncenter();
-                const CdSalcWRTAtom& cdsalc2 = cdsalcs.atom_salc(atom2);
-                atom2 *= 3;
+                int center_j = ob_->basis2()->shell(s2.aoshell)->ncenter();
+                const CdSalcWRTAtom& cdsalc2 = cdsalcs.atom_salc(center_j);
 
                 for (int itr=0; itr<nso1; ++itr) {
 
@@ -446,10 +450,10 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                         // atom 2
                         for (int nx=0; nx<cdsalc2.nx(); ++nx) {
                             const CdSalcWRTAtom::Component element = cdsalc2.x(nx);
-                            double temp = element.coef * buffer_[jsooff + (atom2+0)*nso12];
+                            double temp = element.coef * buffer_[jsooff + 3*nso12];
 
                             fprintf(outfile, "x2 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                    temp, element.coef, buffer_[jsooff + (atom2+0)*nso12], iirrep, jirrep, element.irrep);
+                                    temp, element.coef, buffer_[jsooff + (center_j+0)*nso12], iirrep, jirrep, element.irrep);
                             if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
                                 fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
                                 result[element.salc]->add(iirrep, irel, jrel, temp);
@@ -458,9 +462,9 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                         }
                         for (int ny=0; ny<cdsalc2.ny(); ++ny) {
                             const CdSalcWRTAtom::Component element = cdsalc2.y(ny);
-                            double temp = element.coef * buffer_[jsooff + (atom2+1)*nso12];
+                            double temp = element.coef * buffer_[jsooff + 4*nso12];
                             fprintf(outfile, "y2 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                    temp, element.coef, buffer_[jsooff + (atom2+1)*nso12], iirrep, jirrep, element.irrep);
+                                    temp, element.coef, buffer_[jsooff + (center_j+1)*nso12], iirrep, jirrep, element.irrep);
                             if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
                                 fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
                                 result[element.salc]->add(iirrep, irel, jrel, temp);
@@ -468,9 +472,9 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
                         }
                         for (int nz=0; nz<cdsalc2.nz(); ++nz) {
                             const CdSalcWRTAtom::Component element = cdsalc2.z(nz);
-                            double temp = element.coef * buffer_[jsooff + (atom2+2)*nso12];
+                            double temp = element.coef * buffer_[jsooff + 5*nso12];
                             fprintf(outfile, "z2 component temp %20.16f, coef %f buffer %f iirrep %d, jirrep %d, salc symmetry %d\n",
-                                    temp, element.coef, buffer_[jsooff + (atom2+2)*nso12], iirrep, jirrep, element.irrep);
+                                    temp, element.coef, buffer_[jsooff + (center_j+2)*nso12], iirrep, jirrep, element.irrep);
                             if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-14) {
                                 fprintf(outfile, "\tadding iirrep %d, irel %d, jrel %d salc %d\n", iirrep, irel, jrel, element.salc);
                                 result[element.salc]->add(iirrep, irel, jrel, temp);
