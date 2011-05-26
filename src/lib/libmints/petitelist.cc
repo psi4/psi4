@@ -424,6 +424,8 @@ PetiteList::~PetiteList()
         delete[] shell_map_;
     }
 
+    if (stablizer_)
+        delete[] stablizer_;
     natom_=0;
     nshell_=0;
     ng_=0;
@@ -444,7 +446,6 @@ int PetiteList::nfunction(int i) const
 
 void PetiteList::init()
 {
-
     int i;
 
     // grab references to the Molecule and BasisSet for convenience
@@ -473,6 +474,7 @@ void PetiteList::init()
         shell_map_=0;
         lamij_=0;
         nbf_in_ir_=0;
+        stablizer_=0;
         return;
     }
 
@@ -488,6 +490,8 @@ void PetiteList::init()
     for (i=0; i < nshell_; i++)
         shell_map_[i] = new int[ng_];
 
+    stablizer_ = new int[natom_];
+
     // set up atom and shell mappings
     double np[3];
     SymmetryOperation so;
@@ -495,6 +499,8 @@ void PetiteList::init()
     // loop over all centers
     for (i=0; i < natom_; i++) {
         Vector3 ac(mol.xyz(i));
+
+        stablizer_[i] = 0;
 
         // then for each symop in the pointgroup, transform the coordinates of
         // center "i" and see which atom it maps into
@@ -508,6 +514,10 @@ void PetiteList::init()
             }
 
             atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
+
+            // We want the first operation the keeps the atom the same that is not E.
+            if (stablizer_[i] == 0 && atom_map_[i][g] == i)
+                stablizer_[i] = g;
 
             if (atom_map_[i][g] < 0) {
                 fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
@@ -671,6 +681,10 @@ void PetiteList::print(FILE *out)
             fprintf(out, "%5d ", atom_map_[i][g]);
         fprintf(outfile, "\n");
     }
+
+    fprintf(out, "  stabilizer_ =\n");
+    for (i=0; i<natom_; ++i)
+        fprintf(out, "    %5d %5d\n", i, stablizer_[i]);
 
     fprintf(out, "  shell_map_ = \n");
     for (i=0; i<nshell_; ++i) {

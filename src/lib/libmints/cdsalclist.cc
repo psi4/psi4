@@ -259,7 +259,8 @@ std::string CdSalcList::name_of_component(int component)
     for (int i=0; i<salc.ncomponent(); ++i) {
         const CdSalc::Component& com = salc.component(i);
 
-        name += to_string(com.coef) + " ";
+        name += com.coef > 0.0 ? "+" : "-";
+        name += to_string(fabs(com.coef)) + " ";
         name += molecule_->label(com.atom);
         if (com.xyz == 0)
             name += "-x";
@@ -267,6 +268,7 @@ std::string CdSalcList::name_of_component(int component)
             name += "-y";
         else if (com.xyz == 2)
             name += "-z";
+        name += " ";
     }
 
     return name;
