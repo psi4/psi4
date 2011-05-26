@@ -243,9 +243,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
-      /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
-      options.add("SOCC", new ArrayType());
       /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
+      options.add("SOCC", new ArrayType());
+      /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
       options.add("DOCC", new ArrayType());
       /*- The amount of memory available (in Mb) -*/
       options.add_int("MEMORY", 2000);
@@ -634,9 +634,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("IVO", false);
     /*- -*/
     options.add("MOORDER", new ArrayType());
-    /*- -*/
+    /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("DOCC", new ArrayType());
-    /*- -*/
+    /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("SOCC", new ArrayType());
 
   }
@@ -897,9 +897,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The scope of core orbitals to freeze in later correlated computations -*/
     options.add_str("FREEZE_CORE","FALSE", \
       "FALSE TRUE SMALL LARGE");
-    /*- -*/
+    /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("DOCC", new ArrayType());
-    /*- -*/
+    /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("SOCC", new ArrayType());
   }
   if(name == "CCHBAR"|| options.read_globals()) {
