@@ -159,6 +159,8 @@ class PetiteList
     int *nbf_in_ir_;
     unsigned int group_;
 
+    int *stablizer_;
+
     void init();
 
 public:
