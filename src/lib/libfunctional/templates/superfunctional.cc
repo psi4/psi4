@@ -27,17 +27,17 @@ std::string SuperFunctional::testSuperFunctionals()
 
     s << "  Testing SuperFunctionals:" << endl;
 
-    shared_ptr<Properties> props = Properties::get_testbed();
+    boost::shared_ptr<Properties> props = Properties::get_testbed();
     int npoints = props->getTrueSize();
 
     for (int A = 0; A < names.size(); A++ ) { 
-        shared_ptr<SuperFunctional> func = SuperFunctional::createSuperFunctional(names[A],npoints,2);
+        boost::shared_ptr<SuperFunctional> func = SuperFunctional::createSuperFunctional(names[A],npoints,2);
         s << func->testSuperFunctional(props);
     }
 
     return s.str();
 }
-std::string SuperFunctional::testSuperFunctional(shared_ptr<Properties> props)
+std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> props)
 {
     std::stringstream s;
     int npoints = props->getTrueSize();
@@ -489,6 +489,13 @@ void SuperFunctional::setParameter(const std::string & name, const std::string &
             break;
         }
 }
+void SuperFunctional::setOmega(double omega)
+{
+    omega_ = omega;
+    for (int A = 0; A < functionals_.size(); A++) {
+        functionals_[A].first->setParameter("omega", omega_);
+    }
+}
 bool SuperFunctional::isGGA()
 {
     for (int A = 0; A < functionals_.size(); A++)
@@ -689,7 +696,7 @@ void SuperFunctional::addFunctional(const std::string & name, double weight)
 {
     functionals_.push_back(make_pair(Functional::createFunctional(name, npoints_, deriv_), weight));
 }
-void SuperFunctional::setDashD(shared_ptr<Dispersion> disp, double weight)
+void SuperFunctional::setDashD(boost::shared_ptr<Dispersion> disp, double weight)
 {
     dashD_ = disp;
     dashD_weight_ = weight;
