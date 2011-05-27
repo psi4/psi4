@@ -8,33 +8,15 @@
 *
 ***********************************************************/
 #include <psi4-dec.h>
+#include <cstdlib>
 #include <string>
 #include <vector>
-
-namespace boost {
-template<class T> class shared_ptr;
-}
 
 namespace psi {
 
 class Properties;
 
 namespace functional {
-
-/// heaviside(x) = 1.0 if x >  0
-//                 0.0 if x <= 0
-// for matlab peicewise functions
-inline double heaviside(double x)
-{
-    return (x > 0.0 ? 1.0 : 0.0);
-}
-/// dirac(...) = 0.0 for all x
-/// this is due to MATLAB's ccode
-inline double dirac(double x, ...)
-{
-    return 0.0;
-}
-double Ei(double x);
 
 class Functional {
     public:
@@ -58,7 +40,7 @@ class Functional {
         void setParameters(const std::vector<std::pair<std::string,double> > & params) { params_ = params; }
         void setParameter(const std::string & key, double value);
 
-        std::string testFunctional(boost::shared_ptr<Properties> props);
+        std::string testFunctional(shared_ptr<Properties> props);
 
         bool isGGA() const { return is_gga_; }
         bool isMeta() const { return is_meta_; }
@@ -71,8 +53,8 @@ class Functional {
         double getDensityCutoff() const { return cutoff_; }
         void setDensityCutoff(double cutoff) {cutoff = cutoff; }
 
-        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) {};
-        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) {};
+        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) {}
+        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) {}
 
         double* getFunctional() const { return functional_; }
         double* getV_RhoA() const { return v_rho_a_; }

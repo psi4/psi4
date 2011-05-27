@@ -37,7 +37,7 @@ NAME_Functional::NAME_Functional(int npoints, int deriv) : Functional(npoints, d
 NAME_Functional::~NAME_Functional()
 {
 }
-void NAME_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
+void NAME_Functional::computeRKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
@@ -112,7 +112,7 @@ void NAME_Functional::computeRKSFunctional(shared_ptr<Properties> prop)
         }
     }
 }
-void NAME_Functional::computeUKSFunctional(shared_ptr<Properties> prop)
+void NAME_Functional::computeUKSFunctional(boost::shared_ptr<Properties> prop)
 {
     int ntrue = prop->getTrueSize();
 
