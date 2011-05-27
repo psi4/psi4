@@ -41,13 +41,13 @@ std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> p
 {
     std::stringstream s;
     int npoints = props->getTrueSize();
-    double* rho_a = props->getRhoA();
-    double* rho_b = props->getRhoB();
-    double* gamma_aa = props->getGammaAA();
-    double* gamma_ab = props->getGammaAB();
-    double* gamma_bb = props->getGammaBB();
-    double* tau_a = props->getTauA();
-    double* tau_b = props->getTauB();
+    const double* rho_a = props->getDensityA();
+    const double* rho_b = props->getDensityB();
+    const double* gamma_aa = props->getDensityGradientSquaredAA();
+    const double* gamma_ab = props->getDensityGradientSquaredAB();
+    const double* gamma_bb = props->getDensityGradientSquaredBB();
+    const double* tau_a = props->getKEDensityA();
+    const double* tau_b = props->getKEDensityB();
 
     double* functional = getFunctionalValue();
 
@@ -114,7 +114,7 @@ std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> p
             " gamma_bb= " << gamma_bb[Q] << " tau_a= " << tau_a[Q] << " tau_b= " << tau_b[Q] << endl;             
 
         s.setf(ios::scientific);
-        s.precision(11);
+        s.precision(12);
 
         s << endl;
 
@@ -234,7 +234,7 @@ std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> p
             " gamma_bb= " << gamma_bb[Q] << " tau_a= " << tau_a[Q] << " tau_b= " << tau_b[Q] << endl;             
 
         s.setf(ios::scientific);
-        s.precision(11);
+        s.precision(12);
 
         s << endl;
 
@@ -340,7 +340,7 @@ std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> p
     return s.str();
 }
 SuperFunctional::SuperFunctional(int npoints, int deriv) : npoints_(npoints), deriv_(deriv),
-    exact_exchange_(0.0), pt2_(0.0), isDashD_(false), omega_(0.0), oldGGA_(false), oldMeta_(false)
+    exact_exchange_(0.0), pt2_(0.0), dashD_weight_(0.0), omega_(0.0), oldGGA_(false), oldMeta_(false)
 {
     allocate();
 }
@@ -394,7 +394,7 @@ void SuperFunctional::allocate()
             v_rho_a_tau_b_ = init_array(npoints_);
             v_rho_b_tau_a_ = init_array(npoints_);
             v_rho_b_tau_b_ = init_array(npoints_);
-            v_tau_a_tau_a_ = init_array(npoints_);
+            v_tau_a_tau_b_ = init_array(npoints_);
             v_tau_a_tau_b_ = init_array(npoints_);
             v_tau_b_tau_b_ = init_array(npoints_);
             if (isGGA()) {
@@ -467,7 +467,7 @@ void SuperFunctional::release()
             free(v_rho_a_tau_b_);
             free(v_rho_b_tau_a_);
             free(v_rho_b_tau_b_);
-            free(v_tau_a_tau_a_);
+            free(v_tau_a_tau_b_);
             free(v_tau_a_tau_b_);
             free(v_tau_b_tau_b_);
             if (oldGGA_) {
@@ -489,6 +489,13 @@ void SuperFunctional::setParameter(const std::string & name, const std::string &
             break;
         }
 }
+void SuperFunctional::setOmega(double omega)
+{
+    omega_ = omega;
+    for (int A = 0; A < functionals_.size(); A++) {
+        functionals_[A].first->setParameter("omega", omega_);
+    }
+}
 bool SuperFunctional::isGGA()
 {
     for (int A = 0; A < functionals_.size(); A++)
@@ -505,7 +512,7 @@ bool SuperFunctional::isMeta()
 
     return false;
 }
-void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props)
+void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props) 
 {
     for (int A = 0; A < functionals_.size(); A++) {
         functionals_[A].first->computeRKSFunctional(props);
@@ -513,7 +520,7 @@ void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props)
     //Add up the results
     collectResults();
 }
-void SuperFunctional::computeUKSFunctional(boost::shared_ptr<Properties> props)
+void SuperFunctional::computeUKSFunctional(boost::shared_ptr<Properties> props) 
 {
     for (int A = 0; A < functionals_.size(); A++) {
         functionals_[A].first->computeUKSFunctional(props);
@@ -689,10 +696,10 @@ void SuperFunctional::addFunctional(const std::string & name, double weight)
 {
     functionals_.push_back(make_pair(Functional::createFunctional(name, npoints_, deriv_), weight));
 }
-void SuperFunctional::setDashD(boost::shared_ptr<Dispersion> disp)
+void SuperFunctional::setDashD(boost::shared_ptr<Dispersion> disp, double weight)
 {
     dashD_ = disp;
-    isDashD_ = true;
+    dashD_weight_ = weight;
 }
 std::string SuperFunctional::getComposition()
 {
@@ -710,7 +717,7 @@ std::string SuperFunctional::getComposition()
     if (isDoubleHybrid())
         s << "  " << pt2_*100.0 << "% PT2 Long Range Correlation" << endl;
     if (isDashD())
-        s << "  " << dashD_->getName() << endl;
+        s << "  " << dashD_weight_*100.0 << "% " << dashD_->getName() << endl;
     if (isRangeCorrected())
         s << "  Range-Correction with omega of " << omega_ << endl; 
         

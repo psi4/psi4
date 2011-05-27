@@ -56,11 +56,11 @@ class SuperFunctional {
         double getExactExchange() { return exact_exchange_; }
         void setExactExchange(double exch) {exact_exchange_ = exch; }
 
+        double getOmega() { return omega_; }
+        void setOmega(double omega);
+
         double getPT2() { return pt2_; }
         void setPT2(double pt2) {pt2_ = pt2; }
-
-        double getOmega() { return omega_; }
-        void setOmega(double omega) {omega_ = omega; }
 
         double getDashDWeight() { return dashD_weight_; }
         boost::shared_ptr<Dispersion> getDashD() { return dashD_; }
@@ -132,8 +132,8 @@ class SuperFunctional {
         std::string citation_;
 
         double exact_exchange_;
-        double pt2_;
         double omega_;
+        double pt2_;
         double dashD_weight_;
         boost::shared_ptr<Dispersion> dashD_;
 

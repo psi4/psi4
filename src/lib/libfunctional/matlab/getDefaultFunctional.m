@@ -1,5 +1,8 @@
 function data = getDefaultFunctional()
 
+data.algorithm = 1;
+data.expand = 0;
+
 %Functional symbolic definition
 data.functional = 0;
 %Functional symbolic definition (for rho_a -> 0)
@@ -33,6 +36,9 @@ data.is_meta = 0;
 %exchange or correlation or both?
 %['x', 'c', 'xc']
 data.type = 'x';
+
+% Do second partials?
+data.deriv2 = 1;
 
 %Functional name
 data.name = 'null';

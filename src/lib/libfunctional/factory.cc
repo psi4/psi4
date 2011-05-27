@@ -37,6 +37,8 @@
 #include "M05_2X_functional.h"
 #include "TauHCTH_functional.h"
 #include "TauHCTH0_functional.h"
+#include "wB97_functional.h"
+#include "wB97X_functional.h"
 #include <boost/algorithm/string.hpp>
 #include <string>
 #include <sstream>
@@ -111,12 +113,15 @@ boost::shared_ptr<Functional> Functional::createFunctional(const std::string & n
         return boost::shared_ptr<Functional> (new TauHCTH_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("TauHCTH0")))
         return boost::shared_ptr<Functional> (new TauHCTH0_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97")))
+        return boost::shared_ptr<Functional> (new wB97_Functional(npoints,deriv));
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97X")))
+        return boost::shared_ptr<Functional> (new wB97X_Functional(npoints,deriv));
 }
 std::string Functional::availableFunctionals()
 {
     std::stringstream f;
     f << "   Available Exchange Functionals:   " << endl;
-    f << endl;
     f << "    Name:        LSDA:      GGA:     Meta: " << endl;
     f << "  ------------ --------- --------- ---------" << endl;
     f << "   S_X             X                     " << endl;
@@ -130,7 +135,6 @@ std::string Functional::availableFunctionals()
  
     f << endl; 
     f << "   Available Correlation Functionals:   " << endl;
-    f << endl;
     f << "    Name:        LSDA:      GGA:     Meta: " << endl;
     f << "  ------------ --------- --------- ---------" << endl;
     f << "   LYP_C           X         X           " << endl;
@@ -146,7 +150,6 @@ std::string Functional::availableFunctionals()
     
     f << endl; 
     f << "   Available Combined Functionals:   " << endl;
-    f << endl;
     f << "    Name:        LSDA:      GGA:     Meta: " << endl;
     f << "  ------------ --------- --------- ---------" << endl;
     f << "   EDF1            X         X           " << endl;
@@ -162,6 +165,8 @@ std::string Functional::availableFunctionals()
     f << "   M05_2X          X         X         X " << endl;
     f << "   TauHCTH         X         X         X " << endl;
     f << "   TauHCTH0        X         X         X " << endl;
+    f << "   wB97            X         X           " << endl;
+    f << "   wB97X           X         X           " << endl;
     
     return f.str();
     
@@ -200,6 +205,8 @@ std::vector<std::string> Functional::availableNames()
     names.push_back("M05_2X");
     names.push_back("TauHCTH");
     names.push_back("TauHCTH0");
+    names.push_back("wB97");
+    names.push_back("wB97X");
     return names;
 }
 boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const std::string & name, int npoints, int deriv)
@@ -659,6 +666,24 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
     }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97"))) {
+        superfun->addFunctional(Functional::createFunctional("wB97",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wB97");
+        superfun->setDescription("Range-Corrected B97 Pure GGA");
+        superfun->setCitation("J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008");
+        superfun->setExactExchange(  0.0000000000000000E+00);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  4.0000000000000002E-01);
+    }
+    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("wB97X"))) {
+        superfun->addFunctional(Functional::createFunctional("wB97X",npoints,deriv),  1.0000000000000000E+00);
+        superfun->setName("wB97X");
+        superfun->setDescription("Range-Corrected B97 Hybrid GGA");
+        superfun->setCitation("J. Chai and M. Head-Gordon, J. Chem. Phys., 128, 084106, 2008");
+        superfun->setExactExchange(  1.5770599999999999E-01);
+        superfun->setPT2(  0.0000000000000000E+00);
+        superfun->setOmega(  3.0000000000000004E-01);
+    }
 
     return superfun;
 }
@@ -667,7 +692,6 @@ std::string SuperFunctional::availableSuperFunctionals()
     std::stringstream f;
     
     f << "   Available Exchange SuperFunctionals:   " << endl;
-    f << endl;
     f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
     f << "   S_X             X                                                             " << endl;
@@ -681,7 +705,6 @@ std::string SuperFunctional::availableSuperFunctionals()
  
     f << endl; 
     f << "   Available Correlation SuperFunctionals:   " << endl;
-    f << endl;
     f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
     f << "   PZ81_C          X                                                             " << endl;
@@ -696,7 +719,6 @@ std::string SuperFunctional::availableSuperFunctionals()
 
     f << endl; 
     f << "   Available Combined SuperFunctionals:   " << endl;
-    f << endl;
     f << "    Name:        LSDA:      GGA:     Meta:    Hybrid:     PT2:      RC:       -D:" << endl;
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
     f << "   PW91            X         X                                                   " << endl;
@@ -728,6 +750,8 @@ std::string SuperFunctional::availableSuperFunctionals()
     f << "   M05_2X          X         X         X         X                               " << endl;
     f << "   TauHCTH         X         X         X                                         " << endl;
     f << "   TauHCTH0        X         X         X         X                               " << endl;
+    f << "   wB97            X         X                                       X           " << endl;
+    f << "   wB97X           X         X                   X                   X           " << endl;
 
     return f.str();
 }
@@ -780,6 +804,8 @@ std::vector<std::string> SuperFunctional::availableNames()
     names.push_back("M05_2X");
     names.push_back("TauHCTH");
     names.push_back("TauHCTH0");
+    names.push_back("wB97");
+    names.push_back("wB97X");
     return names;
 }
 
