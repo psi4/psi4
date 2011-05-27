@@ -366,7 +366,10 @@ public:
     virtual TwoBodyAOInt* eri(int deriv=0, double schwarz = 0.0);
 
     /// Returns an erf ERI integral object (omega integral)
-    virtual TwoBodyAOInt* erf_eri(double omega, double alpha, double beta, int deriv=0, double schwarz = 0.0);
+    virtual TwoBodyAOInt* erf_eri(double omega, int deriv=0, double schwarz = 0.0);
+
+    /// Returns an erf complement ERI integral object (omega integral)
+    virtual TwoBodyAOInt* erf_complement_eri(double omega, int deriv=0, double schwarz = 0.0);
 
     /// Returns an F12 integral object
     virtual TwoBodyAOInt* f12(boost::shared_ptr<CorrelationFactor> cf, int deriv=0, double schwarz = 0.0);

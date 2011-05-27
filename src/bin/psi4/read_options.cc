@@ -1295,6 +1295,18 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("FITTING_CONDITION", 1.0E-10);
     /*- Dealias basis for PS integrals -*/
     options.add_str("DEALIAS_BASIS_CC","");
+    /*- Dealias basis beta parameter -*/
+    options.add_double("DEALIAS_BETA", 3.5);
+    /*- Dealias basis delta parameter -*/
+    options.add_double("DEALIAS_DELTA", 2.0);
+    /*- Dealias basis N core parameter -*/
+    options.add_int("DEALIAS_N_CORE", 1);
+    /*- Dealias basis N intercalater parameter -*/
+    options.add_int("DEALIAS_N_INTERCALATER", 1);
+    /*- Dealias basis N diffuse parameter -*/
+    options.add_int("DEALIAS_N_DIFFUSE", 1);
+    /*- Dealias basis N cap parameter -*/
+    options.add_int("DEALIAS_N_CAP", 1);
     /*- Filename to read grid from -*/
     options.add_str_i("PS_GRID_FILE","");
     /*- File path to read grids from -*/

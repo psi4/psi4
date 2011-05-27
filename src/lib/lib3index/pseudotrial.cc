@@ -125,23 +125,33 @@ void PseudoTrial::form_bases()
     fprintf(outfile," => Primary Basis Set <= \n\n");
     primary_->print_by_level(outfile,print_);
 
+    fprintf(outfile," => Dealias Basis Set <= \n\n");
     if (options_.get_str("DEALIAS_BASIS_CC") == "") {
-        do_dealias_ = false;
-        ndealias_ = 0;
-        naug_ = nso_;
-        fprintf(outfile," => Dealias Basis Set <= \n\n");
-        fprintf(outfile, "  No dealiasing basis provided.\n\n");
+
+        fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
+
+        boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_));
+
+        d->setBeta(options_.get_double("DEALIAS_BETA"));    
+        d->setDelta(options_.get_double("DEALIAS_DELTA"));    
+        d->setNCore(options_.get_int("DEALIAS_N_CORE"));   
+        d->setNIntercalater(options_.get_int("DEALIAS_N_INTERCALATER"));   
+        d->setNDiffuse(options_.get_int("DEALIAS_N_DIFFUSE"));
+        d->setNCap(options_.get_int("DEALIAS_N_CAP"));
+ 
+        dealias_ = d->buildDealiasBasisSet();
+
     } else {
-        do_dealias_ = true;
-        // Dealias 
+        fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
         molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
         dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");  
-        ndealias_ = dealias_->nbf();
-        naug_ = nso_ + ndealias_;
 
-        fprintf(outfile," => Dealias Basis Set <= \n\n");
-        dealias_->print_by_level(outfile,print_);
     }
+    do_dealias_ = true;
+    ndealias_ = dealias_->nbf();
+    naug_ = nso_ + ndealias_;
+
+    dealias_->print_by_level(outfile,print_);
 }
 
 void PseudoTrial::form_grid()

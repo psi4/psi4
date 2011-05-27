@@ -20,6 +20,7 @@ namespace psi {
 
     class Chkpt;
     class BasisSetParser;
+    class DealiasBasisSet;
     class SOTransformShell;
     class SphericalTransform;
     class SOTransform;
@@ -39,6 +40,7 @@ namespace psi {
 class BasisSet
 {
     friend class BasisSetParser;
+    friend class DealiasBasisSet;
 
     //! Number of primitives.
     int nprimitive_;
