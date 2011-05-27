@@ -19,6 +19,7 @@
 #include <libfunctional/superfunctional.h>
 #include "ks.h"
 #include "integralfunctors.h"
+#include "omegafunctors.h"
 
 using namespace std;
 using namespace psi;
@@ -43,6 +44,8 @@ void KS::common_init()
     // Load in the basis set
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     basisset_ = BasisSet::construct(parser, molecule_, "BASIS");
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
+    sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
     // Build the integrator
     int block_size = options_.get_int("DFT_BLOCK_SIZE");
@@ -68,6 +71,11 @@ void KS::common_init()
         //sometimes need tau
         properties_->setToComputeKEDensity(true);
     }
+    if (functional_->isRangeCorrected()) {
+        omega_eri_ao_ = boost::shared_ptr<ErfERI>(static_cast<ErfERI*>(fact->erf_eri(functional_->getOmega())));
+        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(omega_eri_ao_, fact));
+    }
+    
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
@@ -82,6 +90,7 @@ RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio) :
 void RKS::common_init()
 {
     V_ = factory_->create_shared_matrix("Va (Kohn-Sham Potential)");
+    wK_ = factory_->create_shared_matrix("wKa (Long-Range Hartree-Fock Exchange)");
 }
 RKS::~RKS()
 {
@@ -295,6 +304,10 @@ void RKS::form_V()
 void RKS::form_G()
 {
     form_V();
+    if (functional_->isRangeCorrected()) {
+        Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
+        process_omega_tei<Omega_K_Functor>(k_builder); 
+    }
     if (!functional_->isHybrid()) {
         // This will build J (stored in G)
         J_Functor j_builder(G_, D_);
@@ -303,6 +316,7 @@ void RKS::form_G()
 
         G_->scale(2.0);
         G_->add(V_);
+        G_->subtract(wK_);
 
     } else {
         // This will build J (stored in G) and K
@@ -316,6 +330,7 @@ void RKS::form_G()
         G_->subtract(K_);
         K_->scale(1.0/alpha);
         G_->add(V_);
+        G_->subtract(wK_);
     }
 }
 double RKS::compute_E()
@@ -355,6 +370,8 @@ void UKS::common_init()
 {
     Va_ = factory_->create_shared_matrix("Va (Kohn-Sham Potential)");
     Vb_ = factory_->create_shared_matrix("Vb (Kohn-Sham Potential)");
+    wKa_ = factory_->create_shared_matrix("wKa (Long-Range Hartree-Fock Exchange)");
+    wKb_ = factory_->create_shared_matrix("wKb (Long-Range Hartree-Fock Exchange)");
 }
 UKS::~UKS()
 {
@@ -669,6 +686,10 @@ void UKS::form_V()
 void UKS::form_G()
 {
     form_V();
+    if (functional_->isRangeCorrected()) {
+        Omega_Ka_Kb_Functor k_builder(functional_->getOmega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
+        process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
+    }
     if (!functional_->isHybrid()) {
         // This will build J (stored in G)
         J_Functor j_builder(Ga_, Da_);
@@ -678,6 +699,8 @@ void UKS::form_G()
         Gb_->copy(Ga_);
         Ga_->add(Va_);
         Gb_->add(Vb_);
+        Ga_->subtract(wKa_);
+        Gb_->subtract(wKb_);
 
     } else {
         // This will build J (stored in G) and K
@@ -695,6 +718,8 @@ void UKS::form_G()
         Kb_->scale(1.0/alpha);
         Ga_->add(Va_);
         Gb_->add(Vb_);
+        Ga_->subtract(wKa_);
+        Gb_->subtract(wKb_);
     }
 
     //J_->print(outfile);

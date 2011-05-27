@@ -161,6 +161,7 @@ public:
     ErfFundamental(double omega, int max);
     virtual ~ErfFundamental();
     double* values(int J, double T);
+    void setOmega(double omega) { omega_ = omega; }
 };
 
 class ErfComplementFundamental : public GaussianFundamental {
@@ -171,6 +172,7 @@ public:
     ErfComplementFundamental(double omega, int max);
     virtual ~ErfComplementFundamental();
     double* values(int J, double T);
+    void setOmega(double omega) { omega_ = omega; }
 };
 
 } // end of namespace sc

@@ -194,9 +194,9 @@ if (libdata.install)
         if (strcmpi(data.dashD, 'none')) 
             dashD_treatment = '';
         elseif (strcmpi(data.dashD, '-D1'))
-            dashD_treatment = sprintf('    superfun->setDashD(Dispersion::createDispersion("%s",%24.16E));\n','-D1',data.dashD_s6);
+            dashD_treatment = sprintf('    superfun->setDashD(Dispersion::createDispersion("%s",%24.16E),1.0);\n','-D1',data.dashD_s6);
         elseif (strcmpi(data.dashD, '-D2'))
-            dashD_treatment = sprintf('    superfun->setDashD(Dispersion::createDispersion("%s",%24.16E));\n','-D2',data.dashD_s6);
+            dashD_treatment = sprintf('    superfun->setDashD(Dispersion::createDispersion("%s",%24.16E),1.0);\n','-D2',data.dashD_s6);
         end   
  
         super_name_str = [super_name_str sprintf('names.push_back("%s");\n',data.name)];
