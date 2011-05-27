@@ -101,7 +101,7 @@ public:
     /// Construct a grid object from a molecule and name, then parse (or maybe autogen)
     PseudoGrid(boost::shared_ptr<Molecule> mol, const std::string& name);
     /// Destructor, frees grid memory if created
-    ~PseudoGrid();
+    virtual ~PseudoGrid();
 
     /// The GridBlock associated with this grid
     boost::shared_ptr<GridBlock> getBlock() const { return grid_; }

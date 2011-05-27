@@ -19,7 +19,6 @@ lib.functionals = {...
     'S_X',
     'B_X',
     'B88_X',
-    'B88II_X',
     'PBE_X',
     'PW91_X',
     'FT97B_X',
