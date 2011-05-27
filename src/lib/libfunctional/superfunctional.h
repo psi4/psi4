@@ -10,7 +10,7 @@
 #include "functional.h"
 #include "dispersion.h"
 #include <psi4-dec.h>
-#include <cstdlib>
+#include <stdlib.h>
 #include <string>
 #include <vector>
 
@@ -47,7 +47,7 @@ class SuperFunctional {
         bool isHybrid() { return  exact_exchange_ > 0.0; }
         bool isDoubleHybrid() { return pt2_ > 0.0; }
         bool isRangeCorrected() { return omega_ > 0.0; }
-        bool isDashD() { return isDashD_; }
+        bool isDashD() { return dashD_weight_ > 0.0; }
 
         void setParameter(const std::string & functional, const std::string & param, double val);
 
@@ -56,14 +56,15 @@ class SuperFunctional {
         double getExactExchange() { return exact_exchange_; }
         void setExactExchange(double exch) {exact_exchange_ = exch; }
 
+        double getOmega() { return omega_; }
+        void setOmega(double omega);
+
         double getPT2() { return pt2_; }
         void setPT2(double pt2) {pt2_ = pt2; }
 
-        double getOmega() { return omega_; }
-        void setOmega(double omega) {omega_ = omega; }
-
+        double getDashDWeight() { return dashD_weight_; }
         boost::shared_ptr<Dispersion> getDashD() { return dashD_; }
-        void setDashD(boost::shared_ptr<Dispersion> disp);
+        void setDashD(boost::shared_ptr<Dispersion> disp, double weight);
 
         void setNPoints(int npoints) { reallocate(npoints,deriv_); }
         void setDeriv(int deriv) { reallocate(npoints_,deriv); }
@@ -131,9 +132,9 @@ class SuperFunctional {
         std::string citation_;
 
         double exact_exchange_;
-        double pt2_;
         double omega_;
-        bool isDashD_;
+        double pt2_;
+        double dashD_weight_;
         boost::shared_ptr<Dispersion> dashD_;
 
         double* functional_;

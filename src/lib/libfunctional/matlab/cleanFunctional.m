@@ -1,25 +1,17 @@
 function polished = cleanFunctional(name, handle)
 
-%Clean internal variables
-rho_a_str = sprintf('sed -i s/%s/%s/g "%s"','rho_a','rho_a\[index\]',name);
-rho_b_str = sprintf('sed -i s/%s/%s/g "%s"','rho_b','rho_b\[index\]',name);
-gamma_aa_str = sprintf('sed -i s/%s/%s/g "%s"','gamma_aa','gamma_aa\[index\]',name);
-gamma_ab_str = sprintf('sed -i s/%s/%s/g "%s"','gamma_ab','gamma_ab\[index\]',name);
-gamma_bb_str = sprintf('sed -i s/%s/%s/g "%s"','gamma_bb','gamma_bb\[index\]',name);
-tau_a_str = sprintf('sed -i s/%s/%s/g "%s"','tau_a','tau_a\[index\]',name);
-tau_b_str = sprintf('sed -i s/%s/%s/g "%s"','tau_b','tau_b\[index\]',name);
-
-system(rho_a_str);
-system(rho_b_str);
-system(gamma_aa_str);
-system(gamma_ab_str);
-system(gamma_bb_str);
-system(tau_a_str);
-system(tau_b_str);
-
 %Now deal with leading variables
 %Newline is a hack
 raw = [sprintf('\n') extractText(name)];
+raw = regexprep(raw,'rho_a','rho_a[index]');
+raw = regexprep(raw,'rho_b','rho_b[index]');
+raw = regexprep(raw,'gamma_aa','gamma_aa[index]');
+raw = regexprep(raw,'gamma_ab','gamma_ab[index]');
+raw = regexprep(raw,'gamma_bb','gamma_bb[index]');
+raw = regexprep(raw,'tau_a','tau_a[index]');
+raw = regexprep(raw,'tau_b','tau_b[index]');
+raw = extractHeavisides(raw);
+raw = extractDiracs(raw);
 
 [starts ends extents match tokens] = regexp(raw,'\n\s*?(t)(\d+)');
 
