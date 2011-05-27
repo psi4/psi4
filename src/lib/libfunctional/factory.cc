@@ -9,7 +9,6 @@
 #include "S_X_functional.h"
 #include "B_X_functional.h"
 #include "B88_X_functional.h"
-#include "B88II_X_functional.h"
 #include "PBE_X_functional.h"
 #include "PW91_X_functional.h"
 #include "FT97B_X_functional.h"
@@ -57,8 +56,6 @@ boost::shared_ptr<Functional> Functional::createFunctional(const std::string & n
         return boost::shared_ptr<Functional> (new B_X_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("B88_X")))
         return boost::shared_ptr<Functional> (new B88_X_Functional(npoints,deriv));
-    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("B88II_X")))
-        return boost::shared_ptr<Functional> (new B88II_X_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("PBE_X")))
         return boost::shared_ptr<Functional> (new PBE_X_Functional(npoints,deriv));
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("PW91_X")))
@@ -127,7 +124,6 @@ std::string Functional::availableFunctionals()
     f << "   S_X             X                     " << endl;
     f << "   B_X             X         X           " << endl;
     f << "   B88_X           X         X           " << endl;
-    f << "   B88II_X         X         X           " << endl;
     f << "   PBE_X           X         X           " << endl;
     f << "   PW91_X          X         X           " << endl;
     f << "   FT97B_X         X         X           " << endl;
@@ -177,7 +173,6 @@ std::vector<std::string> Functional::availableNames()
     names.push_back("S_X");
     names.push_back("B_X");
     names.push_back("B88_X");
-    names.push_back("B88II_X");
     names.push_back("PBE_X");
     names.push_back("PW91_X");
     names.push_back("FT97B_X");
@@ -227,15 +222,6 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->addFunctional(Functional::createFunctional("B88_X",npoints,deriv),  1.0000000000000000E+00);
         superfun->setName("B88_X");
         superfun->setDescription("Becke 88 Exchange (GGA Only)");
-        superfun->setCitation("A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988");
-        superfun->setExactExchange(  0.0000000000000000E+00);
-        superfun->setPT2(  0.0000000000000000E+00);
-        superfun->setOmega(  0.0000000000000000E+00);
-    }
-    if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("B88II_X"))) {
-        superfun->addFunctional(Functional::createFunctional("B88II_X",npoints,deriv),  1.0000000000000000E+00);
-        superfun->setName("B88II_X");
-        superfun->setDescription("Becke 88 Exchange (GGA Only, Tree)");
         superfun->setCitation("A.D. Becke, Phys. Rev. A, 38(6):3098-3100, 1988");
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
@@ -430,7 +416,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D1",  1.3999999999999999E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D1",  1.3999999999999999E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("BLYP_D2"))) {
         superfun->addFunctional(Functional::createFunctional("B_X",npoints,deriv),  1.0000000000000000E+00);
@@ -441,7 +427,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D2",  1.2000000000000000E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D2",  1.2000000000000000E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("B3LYP"))) {
         superfun->addFunctional(Functional::createFunctional("S_X",npoints,deriv),  8.0000000000000004E-01);
@@ -478,7 +464,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  2.0000000000000001E-01);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D2",  1.0500000000000000E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D2",  1.0500000000000000E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("B3LYP5_D2"))) {
         superfun->addFunctional(Functional::createFunctional("S_X",npoints,deriv),  8.0000000000000004E-01);
@@ -491,7 +477,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  2.0000000000000001E-01);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D2",  1.0500000000000000E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D2",  1.0500000000000000E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("BP86"))) {
         superfun->addFunctional(Functional::createFunctional("B_X",npoints,deriv),  1.0000000000000000E+00);
@@ -512,7 +498,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D1",  1.3000000000000000E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D1",  1.3000000000000000E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("BP86_D2"))) {
         superfun->addFunctional(Functional::createFunctional("B_X",npoints,deriv),  1.0000000000000000E+00);
@@ -523,7 +509,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D2",  1.0500000000000000E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D2",  1.0500000000000000E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("PBE"))) {
         superfun->addFunctional(Functional::createFunctional("PBE_X",npoints,deriv),  1.0000000000000000E+00);
@@ -544,7 +530,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D1",  6.9999999999999996E-01));
+        superfun->setDashD(Dispersion::createDispersion("-D1",  6.9999999999999996E-01),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("PBE_D2"))) {
         superfun->addFunctional(Functional::createFunctional("PBE_X",npoints,deriv),  1.0000000000000000E+00);
@@ -555,7 +541,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D2",  7.5000000000000000E-01));
+        superfun->setDashD(Dispersion::createDispersion("-D2",  7.5000000000000000E-01),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("B97_0"))) {
         superfun->addFunctional(Functional::createFunctional("B97_0",npoints,deriv),  1.0000000000000000E+00);
@@ -592,7 +578,7 @@ boost::shared_ptr<SuperFunctional> SuperFunctional::createSuperFunctional(const 
         superfun->setExactExchange(  0.0000000000000000E+00);
         superfun->setPT2(  0.0000000000000000E+00);
         superfun->setOmega(  0.0000000000000000E+00);
-        superfun->setDashD(Dispersion::createDispersion("-D2",  1.2500000000000000E+00));
+        superfun->setDashD(Dispersion::createDispersion("-D2",  1.2500000000000000E+00),1.0);
     }
     if (boost::to_upper_copy(name) == boost::to_upper_copy(std::string("HCTH"))) {
         superfun->addFunctional(Functional::createFunctional("HCTH",npoints,deriv),  1.0000000000000000E+00);
@@ -696,7 +682,6 @@ std::string SuperFunctional::availableSuperFunctionals()
     f << "  ------------ --------- --------- --------- --------- --------- --------- ---------" << endl;
     f << "   S_X             X                                                             " << endl;
     f << "   B88_X           X         X                                                   " << endl;
-    f << "   B88II_X         X         X                                                   " << endl;
     f << "   B_X             X         X                                                   " << endl;
     f << "   PBE_X           X         X                                                   " << endl;
     f << "   PW91_X          X         X                                                   " << endl;
@@ -760,7 +745,6 @@ std::vector<std::string> SuperFunctional::availableNames()
     std::vector<std::string> names;
     names.push_back("S_X");
     names.push_back("B88_X");
-    names.push_back("B88II_X");
     names.push_back("B_X");
     names.push_back("PBE_X");
     names.push_back("PW91_X");

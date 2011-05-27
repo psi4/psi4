@@ -177,10 +177,14 @@ TwoBodyAOInt* IntegralFactory::eri(int deriv, double schwarz)
     return new ERI(this, deriv, schwarz);
 }
 
-TwoBodyAOInt* IntegralFactory::erf_eri(double omega, double alpha, double beta, int deriv, double schwarz)
+TwoBodyAOInt* IntegralFactory::erf_eri(double omega, int deriv, double schwarz)
 {
-//    return new ErfERI(this, omega, alpha, beta, deriv, schwarz);
-    return NULL;
+    return new ErfERI(omega, this, deriv, schwarz);
+}
+
+TwoBodyAOInt* IntegralFactory::erf_complement_eri(double omega, int deriv, double schwarz)
+{
+    return new ErfComplementERI(omega, this, deriv, schwarz);
 }
 
 TwoBodyAOInt* IntegralFactory::f12(boost::shared_ptr<CorrelationFactor> cf, int deriv, double schwarz)

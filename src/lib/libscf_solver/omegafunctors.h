@@ -414,10 +414,11 @@ public:
 template <class OmegaKFunctor>
 void KS::process_omega_tei(OmegaKFunctor & functor)
 {
-    if (scf_type_ == "DIRECT"){
+    if (options_.get_str("SCF_TYPE") == "DIRECT"){
         SOShellCombinationsIterator shellIter(sobasisset_, sobasisset_, sobasisset_, sobasisset_);
         std::string comm_ = Process::environment("COMMUNICATOR");
-        functor.initialize(comm_, scf_type_);
+        functor.initialize(comm_, options_.get_str("SCF_TYPE"));
+        omega_eri_ao_->setOmega(functional_->getOmega());
 
         if (comm_ == "LOCAL" || comm_ == "MPI" || comm_ == "GA") {
             int v=0;
@@ -433,7 +434,7 @@ void KS::process_omega_tei(OmegaKFunctor & functor)
 
         functor.finalize();
     }else{
-        throw PSIEXCEPTION("SCF_TYPE " + scf_type_ + " is not supported in KS::process_omega_tei");
+        throw PSIEXCEPTION("SCF_TYPE " + options_.get_str("SCF_TYPE") + " is not supported in KS::process_omega_tei");
     }
 }
 
