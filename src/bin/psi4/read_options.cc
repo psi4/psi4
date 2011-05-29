@@ -232,6 +232,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAPT_MEM_SAFETY",0.9);
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
+    /*- SAPT DF Basis for Elst10 and Exch10 -*/
+    options.add_str("RI_BASIS_ELST", "");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
     /*- Number of Omega points for Casimir-Polder -*/

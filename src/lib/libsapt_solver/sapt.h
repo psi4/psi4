@@ -34,6 +34,7 @@ private:
 
 protected:
   boost::shared_ptr<BasisSet> ribasis_;
+  boost::shared_ptr<BasisSet> elstbasis_;
   boost::shared_ptr<BasisSet> zero_;
 
   int nso_;
@@ -52,6 +53,7 @@ protected:
 
   int print_;
   bool debug_;
+  bool elst_basis_;
 
   long int mem_;
 
