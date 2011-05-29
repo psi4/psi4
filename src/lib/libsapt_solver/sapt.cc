@@ -64,8 +64,15 @@ void SAPT::initialize()
 
   ribasis_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
     "RI_BASIS_SAPT"));
+  elst_basis_ = 0;
+  if (options_.get_str("RI_BASIS_ELST") != "") {
+    elstbasis_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_,
+      "RI_BASIS_ELST"));
+    elst_basis_ = 1;
+  }
   zero_ = shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
   parser.reset();
+
 
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");

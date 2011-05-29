@@ -12,31 +12,12 @@ SAPT0::SAPT0(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   maxiter_ = options_.get_int("MAXITER");
   e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
   d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
-//  do_disp21_ = options_.get_bool("DO_DISP21");
   no_response_ = options_.get_bool("NO_RESPONSE");
   aio_cphf_ = options_.get_bool("AIO_CPHF");
   aio_dfints_ = options_.get_bool("AIO_DFINTS");
 
   wBAR_ = NULL;
   wABS_ = NULL;
-  psio_->open(PSIF_SAPT_AA_DF_INTS,PSIO_OPEN_NEW);
-  psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
-  psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
-
-  check_memory();
-
-  timer_on("DF Integrals       ");
-    if (aio_dfints_)
-      df_integrals_aio();
-    else
-      df_integrals();
-  timer_off("DF Integrals       ");
-  timer_on("W Integrals        ");
-    w_integrals();
-  timer_off("W Integrals        ");
-  timer_on("Laplace Denom      ");
-    get_denom();
-  timer_off("Laplace Denom      ");
 }
 
 SAPT0::~SAPT0()
@@ -50,15 +31,38 @@ SAPT0::~SAPT0()
 
 double SAPT0::compute_energy()
 {
-  timer_on("Elst10             ");
-    elst10();
-  timer_off("Elst10             ");
-  timer_on("Exch10             ");
-    exch10();
-  timer_off("Exch10             ");
-  timer_on("Exch10 S^2         ");
-    exch10_s2();
-  timer_off("Exch10 S^2         ");
+  check_memory();
+
+  if (elst_basis_) 
+    first_order_terms();
+
+  psio_->open(PSIF_SAPT_AA_DF_INTS,PSIO_OPEN_NEW);
+  psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
+  psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
+
+  timer_on("DF Integrals       ");
+    if (aio_dfints_)
+      df_integrals_aio();
+    else
+      df_integrals();
+  timer_off("DF Integrals       ");
+  timer_on("W Integrals        ");
+    w_integrals();
+  timer_off("W Integrals        ");
+  timer_on("Laplace Denom      ");
+    get_denom();
+  timer_off("Laplace Denom      ");
+  if (!elst_basis_) {
+    timer_on("Elst10             ");
+      elst10();
+    timer_off("Elst10             ");
+    timer_on("Exch10             ");
+      exch10();
+    timer_off("Exch10             ");
+    timer_on("Exch10 S^2         ");
+      exch10_s2();
+    timer_off("Exch10 S^2         ");
+  }
   timer_on("Ind20              ");
     if (debug_ || no_response_) ind20();
     if (!no_response_) ind20r();
@@ -76,7 +80,6 @@ double SAPT0::compute_energy()
     exch_disp20_n4();
     psio_->close(PSIF_SAPT_TEMP,0);
   timer_off("Exch-Disp20 N^4    ");
-//  if (do_disp21_) disp21();
 
   print_results();
 
@@ -89,17 +92,23 @@ void SAPT0::print_header()
   fprintf(outfile,"    Ed Hohenstein\n") ;
   fprintf(outfile,"     6 June 2009\n") ;
   fprintf(outfile,"\n");
-  fprintf(outfile,"    Orbital Information\n");
-  fprintf(outfile,"  -----------------------\n");
-  fprintf(outfile,"    NSO     = %9d\n",nso_);
-  fprintf(outfile,"    NMO     = %9d\n",nmo_);
-  fprintf(outfile,"    NRI     = %9d\n",ndf_);
-  fprintf(outfile,"    NOCC A  = %9d\n",noccA_);
-  fprintf(outfile,"    NOCC B  = %9d\n",noccB_);
-  fprintf(outfile,"    FOCC A  = %9d\n",foccA_);
-  fprintf(outfile,"    FOCC B  = %9d\n",foccB_);
-  fprintf(outfile,"    NVIR A  = %9d\n",nvirA_);
-  fprintf(outfile,"    NVIR B  = %9d\n",nvirB_);
+  fprintf(outfile,"      Orbital Information\n");
+  fprintf(outfile,"  --------------------------\n");
+  fprintf(outfile,"    NSO        = %9d\n",nso_);
+  fprintf(outfile,"    NMO        = %9d\n",nmo_);
+  if (elst_basis_) {
+    fprintf(outfile,"    NRI        = %9d\n",ribasis_->nbf());
+    fprintf(outfile,"    NRI (Elst) = %9d\n",elstbasis_->nbf());
+  }
+  else {
+    fprintf(outfile,"    NRI        = %9d\n",ndf_);
+  }
+  fprintf(outfile,"    NOCC A     = %9d\n",noccA_);
+  fprintf(outfile,"    NOCC B     = %9d\n",noccB_);
+  fprintf(outfile,"    FOCC A     = %9d\n",foccA_);
+  fprintf(outfile,"    FOCC B     = %9d\n",foccB_);
+  fprintf(outfile,"    NVIR A     = %9d\n",nvirA_);
+  fprintf(outfile,"    NVIR B     = %9d\n",nvirB_);
   fprintf(outfile,"\n");
   fflush(outfile);
 }
@@ -180,6 +189,37 @@ void SAPT0::check_memory()
   if (exchdisp > mem_) fail = true;
 
   if (fail) throw PsiException("Not enough memory", __FILE__,__LINE__);
+}
+
+void SAPT0::first_order_terms()
+{
+  ndf_ = elstbasis_->nbf();
+
+  psio_->open(PSIF_SAPT_AA_DF_INTS,PSIO_OPEN_NEW);
+  psio_->open(PSIF_SAPT_BB_DF_INTS,PSIO_OPEN_NEW);
+  psio_->open(PSIF_SAPT_AB_DF_INTS,PSIO_OPEN_NEW);
+
+  timer_on("OO DF Integrals    ");
+    oo_df_integrals();
+  timer_off("OO DF Integrals    ");
+  timer_on("Elst10             ");
+    elst10();
+  timer_off("Elst10             ");
+  timer_on("Exch10             ");
+    exch10();
+  timer_off("Exch10             ");
+  timer_on("Exch10 S^2         ");
+    exch10_s2();
+  timer_off("Exch10 S^2         ");
+
+  psio_->close(PSIF_SAPT_AA_DF_INTS,1);
+  psio_->close(PSIF_SAPT_BB_DF_INTS,1);
+  psio_->close(PSIF_SAPT_AB_DF_INTS,1);
+
+  free(diagAA_);
+  free(diagBB_);
+
+  ndf_ = ribasis_->nbf();
 }
 
 void SAPT0::df_integrals()
@@ -1372,6 +1412,373 @@ void SAPT0::get_denom()
   dBS_ = tauBS->pointer();
 
   nvec_ = denom_->nvector();
+}
+
+void SAPT0::oo_df_integrals()
+{
+  psio_->open(PSIF_SAPT_TEMP,PSIO_OPEN_NEW);
+  
+  // Get Schwartz screening arrays
+  double maxSchwartz = 0.0;
+  int nshelltri = basisset_->nshell()*(basisset_->nshell()+1)/2;
+  double *Schwartz = init_array(basisset_->nshell()*(basisset_->nshell()+1)/2);
+  
+  shared_ptr<IntegralFactory> ao_eri_factory = shared_ptr<IntegralFactory>(
+    new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
+  shared_ptr<TwoBodyAOInt> ao_eri = shared_ptr<TwoBodyAOInt>(
+    ao_eri_factory->eri()); 
+  const double *ao_buffer = ao_eri->buffer();
+  
+  for(int P=0,PQ=0;P<basisset_->nshell();P++) {
+    int numw = basisset_->shell(P)->nfunction();
+    for(int Q=0;Q<=P;Q++,PQ++) {
+      int numx = basisset_->shell(Q)->nfunction();
+      double tei, max=0.0;
+
+      ao_eri->compute_shell(P, Q, P, Q);
+
+      for(int w=0;w<numw;w++) { 
+        for(int x=0;x<numx;x++) { 
+          int index = ( ( (w*numx + x) * numw + w) * numx + x);
+          tei = ao_buffer[index]; 
+          if(fabs(tei) > max) max = fabs(tei);
+        }
+      }
+      Schwartz[PQ] = max;
+      if (max > maxSchwartz) maxSchwartz = max;
+    }
+  }
+  
+  ao_eri.reset();
+  ao_eri_factory.reset();
+
+  double *DFSchwartz = init_array(elstbasis_->nshell());
+    
+  shared_ptr<IntegralFactory> df_eri_factory = shared_ptr<IntegralFactory>(
+    new IntegralFactory(elstbasis_, zero_, elstbasis_, zero_));
+  shared_ptr<TwoBodyAOInt> df_eri = shared_ptr<TwoBodyAOInt>(
+    df_eri_factory->eri());
+  const double *df_buffer = df_eri->buffer();
+  
+  for(int P=0;P<elstbasis_->nshell();P++) {
+    int numw = elstbasis_->shell(P)->nfunction();
+    double tei, max=0.0;
+
+    df_eri->compute_shell(P, 0, P, 0);
+
+    for(int w=0;w<numw;w++) {
+      tei = df_buffer[w];
+      if(fabs(tei) > max) max = fabs(tei);
+    }
+    DFSchwartz[P] = max;
+  }
+
+  df_eri.reset();
+  df_eri_factory.reset();
+
+  int maxPshell = elstbasis_->max_function_per_shell();
+
+  shared_ptr<IntegralFactory> rifactory =
+    shared_ptr<IntegralFactory>(new IntegralFactory(elstbasis_, zero_,
+    basisset_, basisset_));
+
+  int nthreads = 1;
+  #ifdef _OPENMP
+    nthreads = omp_get_max_threads();
+  #endif
+  int rank = 0;
+
+  shared_ptr<TwoBodyAOInt> *eri = new shared_ptr<TwoBodyAOInt>[nthreads];
+  const double **buffer = new const double*[nthreads];
+  for(int i = 0;i < nthreads;++i){
+    eri[i] = shared_ptr<TwoBodyAOInt>(rifactory->eri());
+    buffer[i] = eri[i]->buffer();
+  }
+
+  int *MUNUtoMU = init_int_array(nshelltri);
+  int *MUNUtoNU = init_int_array(nshelltri);
+
+  for(int MU=0, MUNU=0; MU < basisset_->nshell(); MU++) { 
+    for(int NU=0; NU <= MU; NU++, MUNU++) {
+      MUNUtoMU[MUNU] = MU;
+      MUNUtoNU[MUNU] = NU;
+  }}
+
+  long int avail_mem = mem_ - (long int) maxPshell*(noccA_*noccA_ 
+    + noccA_*noccB_ + noccB_*noccB_ + nso_*nso_);
+
+  if (0 > avail_mem)
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+
+  double **B_p_AA = block_matrix(maxPshell,noccA_*noccA_);
+  double **B_p_AB = block_matrix(maxPshell,noccA_*noccB_);
+  double **B_p_BB = block_matrix(maxPshell,noccB_*noccB_);
+
+  double **temp = block_matrix(maxPshell,nso_*nso_);
+  double *tempA = init_array(noccA_*nso_);
+  double *tempB = init_array(noccB_*nso_);
+
+  psio_address next_DF_AA = PSIO_ZERO;
+  psio_address next_DF_AB = PSIO_ZERO;
+  psio_address next_DF_BB = PSIO_ZERO;
+
+  zero_disk(PSIF_SAPT_TEMP,"AA RI Integrals",ndf_,noccA_*noccA_);
+  zero_disk(PSIF_SAPT_TEMP,"AB RI Integrals",ndf_,noccA_*noccB_);
+  zero_disk(PSIF_SAPT_TEMP,"BB RI Integrals",ndf_,noccB_*noccB_);
+
+  for (int Pshell=0; Pshell<elstbasis_->nshell(); Pshell++) {
+    int numPshell = elstbasis_->shell(Pshell)->nfunction();
+
+#pragma omp parallel
+{
+    #pragma omp for private(rank) schedule(dynamic)
+    for(int MUNU=0; MUNU < nshelltri; MUNU++) {
+      #ifdef _OPENMP
+        rank = omp_get_thread_num();
+      #endif
+
+      int MU = MUNUtoMU[MUNU];
+      int NU = MUNUtoNU[MUNU];
+      int nummu = basisset_->shell(MU)->nfunction();
+      int numnu = basisset_->shell(NU)->nfunction();
+      if (sqrt(Schwartz[MUNU]*maxSchwartz)>schwarz_ && 
+        sqrt(Schwartz[MUNU]*DFSchwartz[Pshell])>schwarz_) {
+
+        eri[rank]->compute_shell(Pshell, 0, MU, NU);
+ 
+        for (int P=0, index=0; P < numPshell; ++P) {
+          for (int mu=0; mu < nummu; ++mu) {
+            int omu = basisset_->shell(MU)->function_index() + mu;
+            for (int nu=0; nu < numnu; ++nu, ++index) {
+              int onu = basisset_->shell(NU)->function_index() + nu;
+
+              temp[P][omu*nso_+onu] = buffer[rank][index];
+              temp[P][onu*nso_+omu] = buffer[rank][index];
+            }
+          }
+        }
+      }
+    }
+}
+    for (int P=0, index=0; P < numPshell; ++P) {
+      C_DGEMM('T', 'N', noccA_, nso_, nso_, 1.0, &(CA_[0][0]), nmo_,
+        temp[P], nso_, 0.0, tempA, nso_);
+      C_DGEMM('N', 'N', noccA_, noccA_, nso_, 1.0, tempA, nso_,
+        &(CA_[0][0]), nmo_, 0.0, B_p_AA[P], noccA_);
+      C_DGEMM('N', 'N', noccA_, noccB_, nso_, 1.0, tempA, nso_,
+        &(CB_[0][0]), nmo_, 0.0, B_p_AB[P], noccB_);
+      C_DGEMM('T', 'N', noccB_, nso_, nso_, 1.0, &(CB_[0][0]), nmo_,
+        temp[P], nso_, 0.0, tempB, nso_);
+      C_DGEMM('N', 'N', noccB_, noccB_, nso_, 1.0, tempB, nso_,
+        &(CB_[0][0]), nmo_, 0.0, B_p_BB[P], noccB_);
+    }
+
+    psio_->write(PSIF_SAPT_TEMP,"AA RI Integrals",(char *)
+      &(B_p_AA[0][0]),sizeof(double)*numPshell*noccA_*noccA_,
+      next_DF_AA,&next_DF_AA);
+    psio_->write(PSIF_SAPT_TEMP,"AB RI Integrals",(char *)
+      &(B_p_AB[0][0]),sizeof(double)*numPshell*noccA_*noccB_,
+      next_DF_AB,&next_DF_AB);
+    psio_->write(PSIF_SAPT_TEMP,"BB RI Integrals",(char *)
+      &(B_p_BB[0][0]),sizeof(double)*numPshell*noccB_*noccB_,
+      next_DF_BB,&next_DF_BB);
+  }
+
+  free_block(temp);
+  free(tempA);
+  free(tempB);
+  free_block(B_p_AA);
+  free_block(B_p_AB);
+  free_block(B_p_BB);
+
+  // Get fitting metric
+  shared_ptr<FittingMetric> metric = shared_ptr<FittingMetric>(
+    new FittingMetric(elstbasis_));
+  metric->form_eig_inverse();
+  double **J_temp = metric->get_metric()->pointer();
+  double **J_mhalf = block_matrix(ndf_,ndf_);
+  C_DCOPY(ndf_*ndf_,J_temp[0],1,J_mhalf[0],1);
+  metric.reset();
+
+  avail_mem = mem_ - (long int) ndf_*ndf_;
+
+  if (2L*ndf_ > avail_mem)
+    throw PsiException("Not enough memory", __FILE__,__LINE__);
+
+  long int max_size = avail_mem/(2L*ndf_);
+  if (max_size > noccA_*noccA_)
+    max_size = noccA_*noccA_;
+
+  B_p_AA = block_matrix(ndf_,max_size);
+  double **B_q_AA = block_matrix(ndf_,max_size);
+
+  next_DF_AA = PSIO_ZERO;
+  psio_address next_DFJ_AA = PSIO_ZERO;
+
+  int blocks = (noccA_*noccA_)/max_size;
+  if ((noccA_*noccA_)%max_size)
+    blocks++;
+
+  zero_disk(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",ndf_,noccA_*noccA_);
+
+  for (int n=0; n<blocks; n++) { 
+
+    int start = n*max_size;
+    int size = max_size;
+    if (n == blocks-1)
+      size = noccA_*noccA_ - start;
+
+    for (int P=0; P<ndf_; P++) {
+      next_DF_AA = psio_get_address(PSIO_ZERO,sizeof(double)*P*noccA_*noccA_
+        + sizeof(double)*start);
+      psio_->read(PSIF_SAPT_TEMP,"AA RI Integrals",(char *) &(B_p_AA[P][0]),
+        sizeof(double)*size,next_DF_AA,&next_DF_AA);
+    }
+  
+    C_DGEMM('N','N',ndf_,size,ndf_,1.0,J_mhalf[0],ndf_,B_p_AA[0],max_size,
+      0.0,B_q_AA[0],max_size);
+  
+    for (int P=0; P<ndf_; P++) {
+      next_DFJ_AA = psio_get_address(PSIO_ZERO,sizeof(double)*P*noccA_*noccA_
+        + sizeof(double)*start);
+      psio_->write(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *) 
+        &(B_q_AA[P][0]),sizeof(double)*size,next_DFJ_AA,
+        &next_DFJ_AA);
+    }
+  }
+
+  free_block(B_p_AA);
+  free_block(B_q_AA);
+
+  max_size = avail_mem/(2L*ndf_);
+  if (max_size > noccA_*noccB_)
+    max_size = noccA_*noccB_;
+
+  B_p_AB = block_matrix(ndf_,max_size);
+  double **B_q_AB = block_matrix(ndf_,max_size);
+
+  next_DF_AB = PSIO_ZERO;
+  psio_address next_DFJ_AB = PSIO_ZERO;
+
+  blocks = (noccA_*noccB_)/max_size;
+  if ((noccA_*noccB_)%max_size)
+    blocks++;
+
+  zero_disk(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",ndf_,noccA_*noccB_);
+
+  for (int n=0; n<blocks; n++) {
+
+    int start = n*max_size;
+    int size = max_size;
+    if (n == blocks-1)
+      size = noccA_*noccB_ - start;
+
+    for (int P=0; P<ndf_; P++) {
+      next_DF_AB = psio_get_address(PSIO_ZERO,sizeof(double)*P*noccA_*noccB_
+        + sizeof(double)*start);
+      psio_->read(PSIF_SAPT_TEMP,"AB RI Integrals",(char *) &(B_p_AB[P][0]),
+        sizeof(double)*size,next_DF_AB,&next_DF_AB);
+    }
+
+    C_DGEMM('N','N',ndf_,size,ndf_,1.0,J_mhalf[0],
+      ndf_,B_p_AB[0],max_size,0.0,B_q_AB[0],max_size);
+
+    for (int P=0; P<ndf_; P++) {
+      next_DFJ_AB = psio_get_address(PSIO_ZERO,sizeof(double)*P*noccA_*noccB_
+        + sizeof(double)*start);
+      psio_->write(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *)
+        &(B_q_AB[P][0]),sizeof(double)*size,next_DFJ_AB,
+        &next_DFJ_AB);
+    }
+  }
+
+  free_block(B_p_AB);
+  free_block(B_q_AB);
+
+  max_size = avail_mem/(2L*ndf_);
+  if (max_size > noccB_*noccB_)
+    max_size = noccB_*noccB_;
+
+  B_p_BB = block_matrix(ndf_,max_size);
+  double **B_q_BB = block_matrix(ndf_,max_size);
+
+  next_DF_BB = PSIO_ZERO;
+  psio_address next_DFJ_BB = PSIO_ZERO;
+
+  blocks = (noccB_*noccB_)/max_size;
+  if ((noccB_*noccB_)%max_size)
+    blocks++;
+
+  zero_disk(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",ndf_,noccB_*noccB_);
+
+  for (int n=0; n<blocks; n++) {
+
+    int start = n*max_size;
+    int size = max_size;
+    if (n == blocks-1)
+      size = noccB_*noccB_ - start;
+
+    for (int P=0; P<ndf_; P++) {
+      next_DF_BB = psio_get_address(PSIO_ZERO,sizeof(double)*P*noccB_*noccB_
+        + sizeof(double)*start);
+      psio_->read(PSIF_SAPT_TEMP,"BB RI Integrals",(char *) &(B_p_BB[P][0]),
+        sizeof(double)*size,next_DF_BB,&next_DF_BB);
+    }
+
+    C_DGEMM('N','N',ndf_,size,ndf_,1.0,J_mhalf[0],
+      ndf_,B_p_BB[0],max_size,0.0,B_q_BB[0],max_size);
+
+    for (int P=0; P<ndf_; P++) {
+      next_DFJ_BB = psio_get_address(PSIO_ZERO,sizeof(double)*P*noccB_*noccB_
+        + sizeof(double)*start);
+      psio_->write(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
+        &(B_q_BB[P][0]),sizeof(double)*size,next_DFJ_BB,
+        &next_DFJ_BB);
+    }
+  }
+
+  free_block(B_p_BB);
+  free_block(B_q_BB);
+
+  free_block(J_mhalf);
+  free(MUNUtoMU);
+  free(MUNUtoNU);
+
+  psio_->close(PSIF_SAPT_TEMP,0);
+
+  diagAA_ = init_array(ndf_+3);
+  SAPTDFInts C_p_AA = set_A_AA();
+  Iterator AA_iter = get_iterator(mem_,&C_p_AA);
+
+  for (int i=0,off=0; i<AA_iter.num_blocks; i++) {
+    read_block(&AA_iter,&C_p_AA);
+
+    for (int a=0; a<noccA_; a++){
+      C_DAXPY(AA_iter.curr_size,1.0,&(C_p_AA.B_p_[0][a*noccA_+a]),
+        noccA_*noccA_,&(diagAA_[off]),1);
+    }
+
+    off += AA_iter.curr_size;
+  }
+
+  C_p_AA.done();
+
+  diagBB_ = init_array(ndf_+3);
+  SAPTDFInts C_p_BB = set_B_BB();
+  Iterator BB_iter = get_iterator(mem_,&C_p_BB);
+
+  for (int i=0,off=0; i<BB_iter.num_blocks; i++) {
+    read_block(&BB_iter,&C_p_BB);
+
+    for (int b=0; b<noccB_; b++){
+      C_DAXPY(BB_iter.curr_size,1.0,&(C_p_BB.B_p_[0][b*noccB_+b]),
+        noccB_*noccB_,&(diagBB_[off]),1);
+    }
+
+    off += BB_iter.curr_size;
+  }
+
+  C_p_BB.done();
 }
 
 }}

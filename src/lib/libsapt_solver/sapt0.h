@@ -25,6 +25,9 @@ private:
   void df_integrals_aio();
   void w_integrals();
 
+  void first_order_terms();
+  void oo_df_integrals();
+
   SAPTDFInts set_A_AA();
   SAPTDFInts set_B_BB();
   SAPTDFInts set_A_AR();
@@ -96,11 +99,7 @@ private:
   void q12();
   double q13();
   double q14();
-/*
-  void disp210_init(int, const char*, const char*, const char*, int, 
-    const char*, int, int, int, int, int, int, int, int);
-  void thetaARAR(const char*, const char*, int, int, int, int, double*);
-*/
+
 protected:
   boost::shared_ptr<SAPTLaplaceDenominator> denom_;
 
@@ -109,7 +108,6 @@ protected:
   double **dAR_;
   double **dBS_;
 
-//bool do_disp21_;
   bool no_response_;
   bool aio_cphf_;
   bool aio_dfints_;
@@ -147,7 +145,6 @@ public:
   void disp20();
   void exch_disp20_n4();
   void exch_disp20_n5();
-//void disp21();
 
 };
 
