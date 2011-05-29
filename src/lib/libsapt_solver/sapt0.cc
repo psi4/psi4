@@ -1584,6 +1584,8 @@ void SAPT0::oo_df_integrals()
       next_DF_BB,&next_DF_BB);
   }
 
+  free(Schwartz);
+  free(DFSchwartz);
   free_block(temp);
   free(tempA);
   free(tempB);
