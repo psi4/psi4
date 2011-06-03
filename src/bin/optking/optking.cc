@@ -195,16 +195,16 @@ fflush(outfile);
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
 
   if (p_Opt_data->g_iteration() == 1) { // 1st iteration -> put initial Hessian in p_Opt_data
-    bool worked = true;
+    bool read_H_worked = false;
     if (Opt_params.read_cartesian_H) {
-      worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
-      if (worked)
+      read_H_worked = mol1->cartesian_H_to_internals(); // read and transform cartesian Hessian
+      if (read_H_worked)
         fprintf(outfile,"\tRead in cartesian Hessian and transformed it.\n");
       else 
         fprintf(outfile,"\tUnable to read and transform Hessian.\n");
     }
 
-    if ( (!Opt_params.read_cartesian_H) || (!worked) )
+    if ( (!Opt_params.read_cartesian_H) || (!read_H_worked) )
       mol1->H_guess(); // empirical model guess Hessian
   }
   else { // do Hessian update
@@ -220,10 +220,13 @@ fflush(outfile);
 
   mol1->project_f_and_H();
 
+  // puts dq in p_Opt_data->step
   if (Opt_params.step_type == OPT_PARAMS::NR)
-    mol1->nr_step(); // puts dq in p_Opt_data->step
+    mol1->nr_step();
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
-    mol1->rfo_step(); // puts dq in p_Opt_data->step
+    mol1->rfo_step(); 
+  else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
+    mol1->p_rfo_step(); 
 
   bool converged = p_Opt_data->conv_check();
 
