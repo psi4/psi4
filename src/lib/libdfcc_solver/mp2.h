@@ -22,6 +22,7 @@ protected:
   void print_energies();
   std::string mp2_algorithm_;
 
+  void check_integrals(boost::shared_ptr<Matrix> E); 
   void test_denominators();
   void test_df();
   void test_ps();
