@@ -139,7 +139,7 @@ void CC::get_dealiasbasis()
 void CC::get_pseudogrid()
 {
   if (options_.get_str("PS_GRID_FILE") != "") {
-    grid_ = shared_ptr<PseudoGrid>(new PseudoGrid(basisset_->molecule(), "File"));
+    grid_ = shared_ptr<PseudoGrid>(new PseudoGrid(basisset_->molecule()));
     grid_->parse(options_.get_str("PS_GRID_FILE"));
   }
 }
