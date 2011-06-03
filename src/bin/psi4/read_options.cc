@@ -1295,6 +1295,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
     /*- Desired Fitting condition (inverse of max condition number) -*/
     options.add_double("FITTING_CONDITION", 1.0E-10);
+
     /*- Dealias basis for PS integrals -*/
     options.add_str("DEALIAS_BASIS_CC","");
     /*- Dealias basis beta parameter -*/
@@ -1309,10 +1310,29 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEALIAS_N_DIFFUSE", 1);
     /*- Dealias basis N cap parameter -*/
     options.add_int("DEALIAS_N_CAP", 1);
+    /*- Dealias basis highest delta l parameter -*/
+    options.add_int("DEALIAS_N_L", 1);
     /*- Filename to read grid from -*/
     options.add_str_i("PS_GRID_FILE","");
     /*- File path to read grids from -*/
     options.add_str_i("PS_GRID_PATH","");
+    /*- Maximum order of spherical grids -*/
+    options.add_int("PS_ORDER_SPHERICAL", 7);
+    /*- Number of radial points -*/
+    options.add_int("PS_N_RADIAL", 5);
+    /*- Spherical Scheme -*/
+    options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV"); 
+    /*- Radial Scheme -*/
+    options.add_str("PS_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA"); 
+    /*- Nuclear Scheme -*/
+    options.add_str("PS_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
+    /*- Pruning Scheme -*/
+    options.add_str("PS_PRUNING_SCHEME", "FLAT", "FLAT");
+    /*- Minumum eigenvalue for primary basis -*/
+    options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
+    /*- Minumum eigenvalue for dealias basis -*/
+    options.add_double("PS_MIN_S_DEALIAS",1.0E-7);
+
     /*- Denominator algorithm for PT methods -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
