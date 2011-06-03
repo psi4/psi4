@@ -156,7 +156,7 @@ void PseudoTrial::form_bases()
 
 void PseudoTrial::form_grid()
 {
-    grid_ = boost::shared_ptr<PseudoGrid>(new PseudoGrid(molecule_, options_.get_str("PS_GRID_FILE")));
+    grid_ = boost::shared_ptr<PseudoGrid>(new PseudoGrid(molecule_));
     grid_->parse(options_.get_str("PS_GRID_FILE"));
     naux_ = grid_->getBlock()->getTruePoints();
 

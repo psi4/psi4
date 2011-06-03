@@ -829,4 +829,13 @@ void DirectPSTensor::compute_block(int block_number)
 
 }
 
+double** DirectPSTensor::chunk_pointer() const 
+{
+    return Aia_->pointer();
+}
+double** TensorChunk::chunk_pointer() const 
+{
+    return chunk_->pointer();
+}
+
 }
