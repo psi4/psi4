@@ -11,6 +11,8 @@ namespace psi {
 class DealiasBasisSet {
 
 protected:
+    /// The options object
+    Options& options_; 
     /// The primary basis set
     boost::shared_ptr<BasisSet> primary_;
     /// The effective alphas of the primary set [center][am][index]
@@ -33,6 +35,8 @@ protected:
     int ndiffuse_;
     /// Number of cap functions (~1)
     int ncap_;
+    /// Number of higher cardinal numbers to cap with
+    int nl_; 
 
     /// Helper functions
     void form_primary_alpha();
@@ -42,8 +46,11 @@ protected:
     void form_cap();
     void form_basis();
 
+    /// Master build routine 
+    void buildDealiasBasisSet();
+
 public:
-    DealiasBasisSet(boost::shared_ptr<BasisSet> primary_);
+    DealiasBasisSet(boost::shared_ptr<BasisSet> primary_, Options& options);
     virtual ~DealiasBasisSet();
 
     /// Parameter entry
@@ -51,12 +58,10 @@ public:
     void setBeta(double beta) { beta_ = beta; }
     void setNCore(double n) { ncore_ = n; }
     void setNCap(double n) { ncap_ = n; }
+    void setNL(double n) { nl_ = n; }
     void setNIntercalater(double n) { nintercalater_ = n; }
     void setNDiffuse(double n) { ndiffuse_ = n; }
    
-    /// Master build routine 
-    boost::shared_ptr<BasisSet> buildDealiasBasisSet();
-
     /// Convenience routine
     boost::shared_ptr<BasisSet> dealiasSet() const { return dealias_; }
 };
