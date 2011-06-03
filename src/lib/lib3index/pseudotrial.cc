@@ -1,4 +1,5 @@
 #include "3index.h"
+#include "cubature.h"
 #include <psi4-dec.h>
 #include <libmints/mints.h>
 #include <libqt/qt.h>
@@ -151,30 +152,16 @@ void PseudoTrial::form_grid()
 {
 
     if (options_.get_str("PS_GRID_FILE") != "") {
-        grid_ = boost::shared_ptr<PseudoGrid>(new PseudoGrid(molecule_));
-        grid_->parse(options_.get_str("PS_GRID_FILE")); 
+        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, dealias_, options_.get_str("PS_GRID_FILE"), options_));
     } else {
-        boost::shared_ptr<PseudospectralGrid> ps(new PseudospectralGrid(molecule_, primary_, dealias_, options_));
-        ps->print();
-        grid_ = ps->getPseudoGrid();
+        grid_ = boost::shared_ptr<PseudospectralGrid>(new PseudospectralGrid(molecule_, primary_, dealias_, options_));
     }
 
-    naux_ = grid_->getBlock()->getTruePoints();
+    grid_->print();
 
+    naux_ = grid_->npoints();
 
-    double* x = grid_->getBlock()->getX();
-    double* y = grid_->getBlock()->getY();
-    double* z = grid_->getBlock()->getZ();
-    double* w = grid_->getBlock()->getWeights();
-
-    if (options_.get_str("PS_GRID_FILE") != "") {
-        fprintf(outfile," => Pseudospectral Grid [a.u.] <= \n\n");
-        fprintf(outfile," %6s %16s %16s %16s %16s\n","N","x","y","z","w");
-        for (int Q = 0; Q < naux_; Q++) {
-            fprintf(outfile," %6d %16.10f %16.10f %16.10f %16.10f\n",Q+1,x[Q],y[Q],z[Q],w[Q]);
-        }
-        fprintf(outfile,"\n"); 
-    }
+    double* w = grid_->w();
 
     w_ = boost::shared_ptr<Vector> (new Vector("Grid Weights", naux_));
     double* wp = w_->pointer();
@@ -471,7 +458,7 @@ void PseudoTrial::form_Rp()
     double** bpoints = points->getPoints();
 
     // Compute the basis points
-    points->computePoints(grid_->getBlock());
+    points->computePoints(grid_->fullGrid());
 
     // Copy the points in
     for (int i = 0; i < naux_; i++) {
@@ -500,7 +487,7 @@ void PseudoTrial::form_Rd()
     double** bpoints = points->getPoints();
 
     // Compute the basis points
-    points->computePoints(grid_->getBlock());
+    points->computePoints(grid_->fullGrid());
 
     // Copy the points in
     for (int i = 0; i < naux_; i++) {
@@ -672,10 +659,9 @@ void PseudoTrial::form_A()
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
 
-    boost::shared_ptr<GridBlock> block = grid_->getBlock();
-    double* x = block->getX();
-    double* y = block->getY();
-    double* z = block->getZ();
+    double* x = grid_->x();
+    double* y = grid_->y();
+    double* z = grid_->z();
 
     boost::shared_ptr<Matrix> T(new Matrix("Temp", primary_->nbf(), primary_->nbf()));
     double** Tp = T->pointer();

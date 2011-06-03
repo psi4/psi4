@@ -1,3 +1,4 @@
+#include "3index.h"
 #include "libmints/mints.h"
 #include <libqt/qt.h>
 
@@ -19,6 +20,14 @@ namespace psi {
 DealiasBasisSet::DealiasBasisSet(boost::shared_ptr<BasisSet> primary, Options& options) :
     primary_(primary), options_(options)
 {
+    setDelta(options_.get_double("DEALIAS_DELTA")); 
+    setBeta(options_.get_double("DEALIAS_BETA")); 
+    setNCore(options_.get_int("DEALIAS_N_CORE")); 
+    setNIntercalater(options_.get_int("DEALIAS_N_INTERCALATER")); 
+    setNDiffuse(options_.get_int("DEALIAS_N_DIFFUSE")); 
+    setNCap(options_.get_int("DEALIAS_N_CAP")); 
+    setNL(options_.get_int("DEALIAS_N_L")); 
+
     buildDealiasBasisSet();
 }
 
@@ -28,14 +37,6 @@ DealiasBasisSet::~DealiasBasisSet()
 
 void DealiasBasisSet::buildDealiasBasisSet()
 {
-    setDelta(options_.get_double("DEALIAS_DELTA")); 
-    setBeta(options_.get_double("DEALIAS_BETA")); 
-    setNCore(options_.get_int("DEALIAS_N_CORE")); 
-    setNIntercalater(options_.get_int("DEALIAS_N_INTERCALATER")); 
-    setNDiffuse(options_.get_int("DEALIAS_N_DIFFUSE")); 
-    setNCap(options_.get_int("DEALIAS_N_CAP")); 
-    setNL(options_.get_int("DEALIAS_N_L")); 
-
     form_primary_alpha();
     form_core();
     form_intercalater();
@@ -48,6 +49,9 @@ void DealiasBasisSet::form_primary_alpha()
 {
     int natom = primary_->molecule()->natom();
     int max_am = primary_->max_am();
+
+    primary_alpha_.clear();
+    dealias_alpha_.clear();
 
     primary_alpha_.resize(natom);
     dealias_alpha_.resize(natom);
@@ -205,13 +209,7 @@ void DealiasBasisSet::form_basis()
         }
     } 
 
-    dealias_ = boost::shared_ptr<BasisSet>(new BasisSet());
-    dealias_->molecule_ = primary_->molecule();
-
-    for (int i = 0; i < shells.size(); i++)
-        dealias_->shells_.push_back(shells[i]);
-
-    dealias_->refresh(); 
+    dealias_ = BasisSet::buildBasisSet(primary_->molecule(), shells);
 } 
 
 }

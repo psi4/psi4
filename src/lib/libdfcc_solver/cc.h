@@ -20,7 +20,6 @@ class Matrix;
 class Vector;
 class PSIO;
 class Options;
-class PseudoGrid;
 
 namespace dfcc {
 
@@ -29,14 +28,16 @@ private:
   void get_options();
   void get_params();
   void get_ribasis();
-  void get_dealiasbasis();
-  void get_pseudogrid();
 
 protected:
+
+  // Print level
+  int print_;
+  // Debug level
+  int debug_;
+
   boost::shared_ptr<BasisSet> ribasis_;
-  boost::shared_ptr<BasisSet> dealias_;
   boost::shared_ptr<BasisSet> zero_;
-  boost::shared_ptr<PseudoGrid> grid_;
 
   virtual void print_header();
 
@@ -57,7 +58,6 @@ protected:
 
   // DF basis parameters
   int ndf_; // Number of DF auxiliary functions
-  int ndealias_; // Number of dealias functions
 
   // Energies
   double Eref_; // HF Reference energy
