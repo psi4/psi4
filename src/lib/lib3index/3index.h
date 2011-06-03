@@ -109,6 +109,8 @@ public:
     /// Build the grid automatically from quadratures
     void build();
 
+friend class PseudospectralGrid; 
+
 };
 
 class SphericalGrid {
@@ -318,6 +320,9 @@ protected:
     boost::shared_ptr<BasisSet> dealias_;
     /// The Options object
     Options& options_;   
+
+    /// Master builder method
+    void buildGridFromOptions();
  
 public:
     PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
@@ -325,6 +330,8 @@ public:
                        boost::shared_ptr<BasisSet> dealias_,
                        Options& options); 
     virtual ~PseudospectralGrid();
+
+    boost::shared_ptr<PseudoGrid> getPseudoGrid();
 
 };
 
@@ -711,8 +718,10 @@ protected:
 
     // Dealias or not? 
     bool do_dealias_;
-    // Minimum eigenvalue for a basis function
-    double min_S_;
+    // Minimum eigenvalue for a primary basis function
+    double min_S_primary_;
+    // Minimum eigenvalue for a dealias basis function
+    double min_S_dealias_;
     // Primary basis set
     boost::shared_ptr<BasisSet> primary_;
     // Dealias basis set

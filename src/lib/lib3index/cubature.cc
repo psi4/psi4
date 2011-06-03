@@ -21,16 +21,83 @@ using namespace psi;
 
 namespace psi {
 
+std::map<int,int> SphericalGrid::lebedev_order_to_points_;
+std::vector<double> MolecularGrid::BSRadii_;
+
 PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
                                        boost::shared_ptr<BasisSet> primary,
                                        boost::shared_ptr<BasisSet> dealias,
                                        Options& options) :
     MolecularGrid(molecule), primary_(primary), dealias_(dealias), options_(options)
 {
+    buildGridFromOptions();
 }
 PseudospectralGrid::~PseudospectralGrid()
 {
 } 
+void PseudospectralGrid::buildGridFromOptions()
+{
+    boost::shared_ptr<Matrix> rotation(new Matrix("Standard nuclear orientation transformation", 3,3));
+    /// TODO: Implement standard nuclear orientation
+    rotation->identity(); 
+
+    std::vector<boost::shared_ptr<AtomicGrid> > atoms;
+
+    boost::shared_ptr<Vector> alpha(new Vector("Alpha Center per Atom", molecule_->natom()));
+    double* alphap = alpha->pointer(); 
+
+    /// TODO: Determine alpha based on primary basis 
+    MolecularGrid::getBSRadii();
+    for (int A = 0; A < molecule_->natom(); A++) {
+        alphap[A] = BSRadii_[molecule_->Z(A)];
+    }
+
+    for (int A = 0; A < molecule_->natom(); A++) {
+        boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
+            options_.get_str("PS_RADIAL_SCHEME"), 
+            options_.get_int("PS_N_RADIAL"),
+            alphap[A]);
+        std::vector<boost::shared_ptr<SphericalGrid> > spheres;
+        for (int i = 0; i < radial->npoints(); i++) {
+            // TODO: Use envelope functions for pruning
+            if (options_.get_str("PS_PRUNING_SCHEME") == "FLAT") {
+                spheres.push_back(SphericalGrid::buildGrid(
+                    options_.get_str("PS_SPHERICAL_SCHEME"),
+                    options_.get_int("PS_ORDER_SPHERICAL")));
+            }
+        }
+        boost::shared_ptr<AtomicGrid> atom(new AtomicGrid());
+        atom->buildGrid(molecule_->xyz(A),
+            rotation,
+            radial,
+            spheres);
+        atoms.push_back(atom);
+    }
+
+    /// Apply nuclear weights
+    buildGrid(atoms, options_.get_str("PS_NUCLEAR_SCHEME"));     
+}
+boost::shared_ptr<PseudoGrid> PseudospectralGrid::getPseudoGrid()
+{
+    PseudoGrid* ps = new PseudoGrid(molecule_);
+
+    double* xp = new double[npoints_];    
+    double* yp = new double[npoints_];    
+    double* zp = new double[npoints_];    
+    double* wp = new double[npoints_];    
+
+    ps->grid_ = boost::shared_ptr<GridBlock>(new GridBlock());
+    ps->grid_->setMaxPoints(npoints_);
+    ps->grid_->setTruePoints(npoints_);
+    ps->grid_->setGrid(xp,yp,zp,wp);
+    
+    ::memcpy(static_cast<void*>(xp), static_cast<void*>(x_), npoints_*sizeof(double));
+    ::memcpy(static_cast<void*>(yp), static_cast<void*>(y_), npoints_*sizeof(double));
+    ::memcpy(static_cast<void*>(zp), static_cast<void*>(z_), npoints_*sizeof(double));
+    ::memcpy(static_cast<void*>(wp), static_cast<void*>(w_), npoints_*sizeof(double));
+
+    return shared_ptr<PseudoGrid>(ps);
+}
 
 MolecularGrid::MolecularGrid(boost::shared_ptr<Molecule> molecule) :
     molecule_(molecule), npoints_(0), scheme_("")
@@ -297,7 +364,7 @@ void MolecularGrid::print(FILE* out)
     fprintf(out, "   Total Quadrature:\n\n");
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.8E %14.8E %14.8E %14.8E\n", i+1, 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
             x_[i], y_[i], z_[i], w_[i]); 
     } 
     fprintf(out, "\n\n");
@@ -408,7 +475,7 @@ void AtomicGrid::print(FILE* out)
 
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.8E %14.8E %14.8E %14.8E\n", i+1, 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
             x_[i], y_[i], z_[i], w_[i]); 
     } 
     fprintf(out, "\n\n");
@@ -430,9 +497,9 @@ void RadialGrid::print(FILE* out)
 {
     fprintf(out, "   => Radial Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);
-    fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "R", "W", "WR^2");
+    fprintf(out, "   %4s %14s %14s %14s\n", "N", "R", "W", "WR^2");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.8E %14.8E %14.8E\n", i+1, 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E\n", i+1, r_[i], 
             w_x_[i], w_r_[i]); 
     } 
     fprintf(out, "\n\n");
@@ -534,7 +601,7 @@ void SphericalGrid::print(FILE* out)
     fprintf(out, "      Points: %d, Order %d\n\n", npoints_, order_);
     fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
     for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.8E %14.8E %14.8E %14.8E\n", i+1, 
+        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
             x_[i], y_[i], z_[i], w_[i]); 
     } 
     fprintf(out, "\n\n");

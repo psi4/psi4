@@ -48,7 +48,8 @@ void PseudoTrial::common_init()
 
     debug_ = options_.get_int("DEBUG");
     print_ = options_.get_int("PRINT");   
-    min_S_ = options_.get_double("S_MIN_EIGENVALUE");
+    min_S_primary_ = options_.get_double("PS_MIN_S_PRIMARY");
+    min_S_dealias_ = options_.get_double("PS_MIN_S_DEALIAS");
 
     form_molecule();
     fflush(outfile);
@@ -130,16 +131,8 @@ void PseudoTrial::form_bases()
 
         fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
 
-        boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_));
-
-        d->setBeta(options_.get_double("DEALIAS_BETA"));    
-        d->setDelta(options_.get_double("DEALIAS_DELTA"));    
-        d->setNCore(options_.get_int("DEALIAS_N_CORE"));   
-        d->setNIntercalater(options_.get_int("DEALIAS_N_INTERCALATER"));   
-        d->setNDiffuse(options_.get_int("DEALIAS_N_DIFFUSE"));
-        d->setNCap(options_.get_int("DEALIAS_N_CAP"));
- 
-        dealias_ = d->buildDealiasBasisSet();
+        boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
+        dealias_ = d->dealiasSet();
 
     } else {
         fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
@@ -156,22 +149,32 @@ void PseudoTrial::form_bases()
 
 void PseudoTrial::form_grid()
 {
-    grid_ = boost::shared_ptr<PseudoGrid>(new PseudoGrid(molecule_));
-    grid_->parse(options_.get_str("PS_GRID_FILE"));
+
+    if (options_.get_str("PS_GRID_FILE") != "") {
+        grid_ = boost::shared_ptr<PseudoGrid>(new PseudoGrid(molecule_));
+        grid_->parse(options_.get_str("PS_GRID_FILE")); 
+    } else {
+        boost::shared_ptr<PseudospectralGrid> ps(new PseudospectralGrid(molecule_, primary_, dealias_, options_));
+        ps->print();
+        grid_ = ps->getPseudoGrid();
+    }
+
     naux_ = grid_->getBlock()->getTruePoints();
 
-    fprintf(outfile," => Pseudospectral Grid [a.u.] <= \n\n");
 
     double* x = grid_->getBlock()->getX();
     double* y = grid_->getBlock()->getY();
     double* z = grid_->getBlock()->getZ();
     double* w = grid_->getBlock()->getWeights();
 
-    fprintf(outfile," %6s %16s %16s %16s %16s\n","N","x","y","z","w");
-    for (int Q = 0; Q < naux_; Q++) {
-        fprintf(outfile," %6d %16.10f %16.10f %16.10f %16.10f\n",Q+1,x[Q],y[Q],z[Q],w[Q]);
+    if (options_.get_str("PS_GRID_FILE") != "") {
+        fprintf(outfile," => Pseudospectral Grid [a.u.] <= \n\n");
+        fprintf(outfile," %6s %16s %16s %16s %16s\n","N","x","y","z","w");
+        for (int Q = 0; Q < naux_; Q++) {
+            fprintf(outfile," %6d %16.10f %16.10f %16.10f %16.10f\n",Q+1,x[Q],y[Q],z[Q],w[Q]);
+        }
+        fprintf(outfile,"\n"); 
     }
-    fprintf(outfile,"\n"); 
 
     w_ = boost::shared_ptr<Vector> (new Vector("Grid Weights", naux_));
     double* wp = w_->pointer();
@@ -270,7 +273,7 @@ void PseudoTrial::form_Xpp()
     nmo_ = 0;
     for (int i = 0; i < nso_; i++)
     {
-        if (stp[i] > min_S_)
+        if (stp[i] > min_S_primary_)
             nmo_++;
     }
 
@@ -279,7 +282,7 @@ void PseudoTrial::form_Xpp()
  
     int m = 0;
     for (int i = 0; i < nso_; i++) {
-        if (stp[i] > min_S_) {
+        if (stp[i] > min_S_primary_) {
             C_DCOPY(nso_, &Xtp[0][i], nso_, &Xp[0][m], nmo_);
             C_DSCAL(nso_, pow(stp[i], -1.0 / 2.0), &Xp[0][m], nmo_);
             m++;
@@ -334,7 +337,7 @@ void PseudoTrial::form_Xdd()
     ndealias2_ = 0;
     for (int i = 0; i < ndealias_; i++)
     {
-        if (stp[i] > min_S_)
+        if (stp[i] > min_S_dealias_)
             ndealias2_++;
     }
     naug2_ = nmo_ + ndealias2_;
@@ -344,7 +347,7 @@ void PseudoTrial::form_Xdd()
  
     int m = 0;
     for (int i = 0; i < ndealias_; i++) {
-        if (stp[i] > min_S_) {
+        if (stp[i] > min_S_dealias_) {
             C_DCOPY(ndealias_, &Xtp[0][i], ndealias_, &Xp[0][m], ndealias2_);
             C_DSCAL(ndealias_, pow(stp[i], -1.0 / 2.0), &Xp[0][m], ndealias2_);
             m++;
@@ -597,7 +600,7 @@ void PseudoTrial::form_Q()
         w_->print();
 
     for (int Q = 0; Q < naux_; Q++)
-        C_DSCAL(naug_, w[Q], &Rtp[0][Q], naux_);
+        C_DSCAL(naug2_, w[Q], &Rtp[0][Q], naux_);
 
     C_DGEMM('N','T',naug2_,naug2_,naux_,1.0,Rtp[0],naux_,Rp[0],naux_,0.0,Cp[0],naug2_);
 
@@ -618,7 +621,7 @@ void PseudoTrial::form_Q()
     if (debug_)
         Qfull_->print(); 
 
-    C_DGEMM('N','N',nmo_,naux_,naug_,1.0,Pp[0],naug_,Qfullp[0],naux_,0.0,Qmop[0],naux_);
+    C_DGEMM('N','N',nmo_,naux_,naug2_,1.0,Pp[0],naug2_,Qfullp[0],naux_,0.0,Qmop[0],naux_);
 
     if (debug_)
         Qmo_->print();
