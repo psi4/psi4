@@ -102,6 +102,9 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_eri();
+    /// MO ERI Integrals, (ov|ov) type  (Full matrix, N^8, not recommended for large systems)
+    /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
+    boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
 

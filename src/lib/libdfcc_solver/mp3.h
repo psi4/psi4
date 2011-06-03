@@ -42,6 +42,7 @@ public:
 
 };
 
+#if 0
 class PSMP3 : public CC {
 private:
   void print_header();
@@ -73,6 +74,8 @@ public:
   virtual double compute_energy();
 
 };
+
+#endif
 
 }}
 

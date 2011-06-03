@@ -22,11 +22,16 @@ protected:
   void print_energies();
   std::string mp2_algorithm_;
 
+  void test_denominators();
+  void test_df();
+  void test_ps();
+  void compute_MP2();
   void compute_DF_MP2();
-  void compute_OS_MP2();
   void compute_PS_MP2();
-  void compute_PS2_MP2();
-  void compute_PS3_MP2();
+  void compute_DF_MP2J();
+  void compute_PS_MP2J();
+  void compute_PS_MP2K();
+  void compute_PS_DF_MP2K();
   void common_init();
 
 public:

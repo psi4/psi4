@@ -13,10 +13,9 @@ namespace psi { namespace dfcc {
 CC::CC(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   : Wavefunction(options, psio, chkpt)
 {
+  get_options();
   get_params();
   get_ribasis();
-  get_dealiasbasis(); // Only builds one if defined
-  get_pseudogrid(); // Only builds one if defined
 }
 
 CC::~CC()
@@ -25,6 +24,8 @@ CC::~CC()
 
 void CC::get_options()
 {
+    print_ = options_.get_int("PRINT"); 
+    debug_ = options_.get_int("DEBUG"); 
 }
 
 void CC::get_params()
@@ -125,23 +126,6 @@ void CC::get_ribasis()
   ribasis_ = BasisSet::construct(parser, molecule_, "RI_BASIS_CC");
   zero_ = BasisSet::zero_ao_basis_set();
   ndf_ = ribasis_->nbf();
-}
-void CC::get_dealiasbasis()
-{
-  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-  if (options_.get_str("DEALIAS_BASIS_CC") != "NONE") {
-    dealias_ = BasisSet::construct(parser, molecule_, "DEALIAS_BASIS_CC");
-    ndealias_ = dealias_->nbf();
-  } else {
-    ndealias_ = 0;
-  }
-}
-void CC::get_pseudogrid()
-{
-  if (options_.get_str("PS_GRID_FILE") != "") {
-    grid_ = shared_ptr<PseudoGrid>(new PseudoGrid(basisset_->molecule()));
-    grid_->parse(options_.get_str("PS_GRID_FILE"));
-  }
 }
 
 void CC::print_header()

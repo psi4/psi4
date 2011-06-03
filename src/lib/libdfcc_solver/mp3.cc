@@ -330,7 +330,7 @@ void MP3::term_5()
 
   C_DAXPY(naocc_*navir_*naocc_*(long int) navir_,1.0,vIAJB_,1,t2IAJB_,1);
 }
-
+#if 0
 PSMP3::PSMP3(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
   : CC(options, psio, chkpt)
 {
@@ -723,5 +723,5 @@ void PSMP3::term_6()
 
   C_DAXPY(naocc_*navir_*naocc_*(long int) navir_,1.0,vIAJB_,1,t2IAJB_,1);
 }
-
+#endif
 }}
