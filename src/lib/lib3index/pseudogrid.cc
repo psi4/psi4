@@ -32,8 +32,8 @@ bool from_string(T& t,
     return !(iss >> f >> t).fail();
 }
 
-PseudoGrid::PseudoGrid(boost::shared_ptr<Molecule> mol, const std::string& name) :
-    molecule_(mol), name_(name)
+PseudoGrid::PseudoGrid(boost::shared_ptr<Molecule> mol) : 
+    molecule_(mol)
 {
 }
 PseudoGrid::~PseudoGrid()
@@ -238,6 +238,9 @@ void PseudoGrid::parse(const std::string& filename)
     //    fprintf(outfile, "   P = %5d: (%24.16E, %24.16E, %24.16E) x %24.16E\n", P, xp[P], yp[P], zp[P], wp[P]);
     //}
 
+}
+void PseudoGrid::build()
+{
 }
 
 
