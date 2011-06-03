@@ -395,7 +395,7 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
   if (!data_file_present) {
     fprintf(outfile, "\tPrevious optimization step data not found.  Starting new optimization.\n\n");
     iteration = 0;
-    consecutive_back_steps = 0;
+    consecutive_backsteps = 0;
   }
   else {
     int Nintco_old, Ncart_old;
@@ -410,13 +410,13 @@ OPT_DATA::OPT_DATA(int Nintco_in, int Ncart_in) {
 
     if ( (Nintco_old != Nintco) || (Ncart_old != Ncart) ) {
       iteration = 0;
-      consecutive_back_steps = 0;
+      consecutive_backsteps = 0;
       opt_io_close(0); // close and delete
     }
     else { // read in old optimization data
       opt_io_read_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
       opt_io_read_entry("iteration", (char *) &iteration, sizeof(int));
-      opt_io_read_entry("consecutive_back_steps", (char *) &consecutive_back_steps, sizeof(int));
+      opt_io_read_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
       opt_io_read_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
       for (int i=0; i<iteration; ++i) {
         STEP_DATA *one_step = new STEP_DATA(Nintco, Ncart);
@@ -442,7 +442,7 @@ void OPT_DATA::write(void) {
   opt_io_write_entry("Ncart" , (char *) &Ncart , sizeof(int));
   opt_io_write_entry("H", (char *) H[0], Nintco * Nintco * sizeof(double) );
   opt_io_write_entry("iteration", (char *) &iteration, sizeof(int));
-  opt_io_write_entry("consecutive_back_steps", (char *) &consecutive_back_steps, sizeof(int));
+  opt_io_write_entry("consecutive_backsteps", (char *) &consecutive_backsteps, sizeof(int));
   opt_io_write_entry("rfo_eigenvector", (char *) rfo_eigenvector, (Nintco+1)*sizeof(double));
 
   for (int i=0; i<steps.size(); ++i)
@@ -456,12 +456,34 @@ void OPT_DATA::write(void) {
 // Report on performance of last step
 // Eventually might have this function return false to reject a step
 bool OPT_DATA::previous_step_report(void) const {
-    fprintf(outfile,"\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
-  if (steps.size() > 1) {
-    fprintf(outfile,"\tEnergy change for the previous step:\n");
-    fprintf(outfile,"\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
-    fprintf(outfile,"\t\tActual       : %20.10lf\n",
+
+  fprintf(outfile,  "\tCurrent energy   : %20.10lf\n\n", p_Opt_data->g_energy());
+
+  if (steps.size() == 1) 
+    return true;
+
+  fprintf(outfile,"\tEnergy change for the previous step:\n");
+  fprintf(outfile,"\t\tProjected    : %20.10lf\n", p_Opt_data->g_last_DE_predicted());
+  fprintf(outfile,"\t\tActual       : %20.10lf\n",
       p_Opt_data->g_energy() - p_Opt_data->g_last_energy());
+
+  double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
+
+  // Minimum search
+  if (Opt_params.rfo_root == 0 ) {
+    if (Energy_ratio < 0.0) {
+      throw(BAD_STEP_EXCEPT("Energy has increased in a minimization."));
+    }
+    else if (Energy_ratio < 0.25)
+    {
+      Opt_params.intrafragment_step_limit /= 4;
+      fprintf(outfile,"\tEnergy ratio small: Trust radius decreased.\n\n");
+    }
+    else if (Energy_ratio > 0.75)
+    {
+      Opt_params.intrafragment_step_limit *= 2;
+      fprintf(outfile,"\tEnergy ratio large: Trust radius increased.\n\n");
+    }
   }
 
   return true;

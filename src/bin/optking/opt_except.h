@@ -14,6 +14,11 @@ class INTCO_EXCEPT {
    bool try_other_intcos;
 
   public:
+
+    static bool already_tried_other_intcos; // defined in optking.cc
+    static bool override_fragment_mode;
+
+
     INTCO_EXCEPT(const char * m) {
       message = m;
       try_other_intcos = false;
@@ -35,13 +40,7 @@ class BAD_STEP_EXCEPT {
    const char * message;
 
   public:
-    BAD_STEP_EXCEPT(const char * m) {
-      message = m;
-    }
-
-    BAD_STEP_EXCEPT(const char * m, bool t) {
-      message = m;
-    }
+    BAD_STEP_EXCEPT(const char * m) { message = m; }
 
     ~BAD_STEP_EXCEPT() {};
 
