@@ -40,8 +40,6 @@ namespace psi {
 class BasisSet
 {
     friend class BasisSetParser;
-    friend class DealiasBasisSet;
-
     //! Number of primitives.
     int nprimitive_;
     //! Number of shells.
@@ -103,6 +101,14 @@ public:
     BasisSet(const BasisSet&);
     /// Destructor
     ~BasisSet();
+
+    /** Builder factory method
+     * @param molecule the molecule to build the BasisSet around
+     * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
+     * @return BasisSet corresponding to this molecule and set of shells 
+     */
+    static boost::shared_ptr<BasisSet> buildBasisSet(boost::shared_ptr<Molecule> molecule,
+                                                     std::vector<boost::shared_ptr<GaussianShell> > shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
