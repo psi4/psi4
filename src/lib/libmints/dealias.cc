@@ -16,26 +16,32 @@ using namespace psi;
 
 namespace psi {
 
-DealiasBasisSet::DealiasBasisSet(boost::shared_ptr<BasisSet> primary) :
-    primary_(primary), delta_(2.0), beta_(3.5), ncore_(1), nintercalater_(1),
-    ndiffuse_(1), ncap_(1)
+DealiasBasisSet::DealiasBasisSet(boost::shared_ptr<BasisSet> primary, Options& options) :
+    primary_(primary), options_(options)
 {
+    buildDealiasBasisSet();
 }
 
 DealiasBasisSet::~DealiasBasisSet()
 {
 }
 
-boost::shared_ptr<BasisSet> DealiasBasisSet::buildDealiasBasisSet()
+void DealiasBasisSet::buildDealiasBasisSet()
 {
+    setDelta(options_.get_double("DEALIAS_DELTA")); 
+    setBeta(options_.get_double("DEALIAS_BETA")); 
+    setNCore(options_.get_int("DEALIAS_N_CORE")); 
+    setNIntercalater(options_.get_int("DEALIAS_N_INTERCALATER")); 
+    setNDiffuse(options_.get_int("DEALIAS_N_DIFFUSE")); 
+    setNCap(options_.get_int("DEALIAS_N_CAP")); 
+    setNL(options_.get_int("DEALIAS_N_L")); 
+
     form_primary_alpha();
     form_core();
     form_intercalater();
     form_diffuse();
     form_cap();
     form_basis();
-
-    return dealias_;
 }
 
 void DealiasBasisSet::form_primary_alpha()
@@ -49,7 +55,7 @@ void DealiasBasisSet::form_primary_alpha()
     // Little bigger than needed, but no big deal
     for (int A = 0; A < natom; A++) {
         primary_alpha_[A].resize(max_am + 1);    
-        dealias_alpha_[A].resize(max_am + 1 + (ncap_ > 0 ? 1 : 0)); 
+        dealias_alpha_[A].resize(max_am + 1 + nl_); 
     }
 
     // Geometric mean of all contractions to extract a single alpha
@@ -158,8 +164,11 @@ void DealiasBasisSet::form_cap()
 
                 double alpha_c = exp(numerator / denominator);      
 
-                for (int i = 1; i <= ncap_; i++) {
-                    dealias_alpha_[A][l+1].push_back(alpha_c * pow(beta_, ((double) ncap_ + 1.0) / 2.0 - (double) i));
+                for (int dl = 1; dl <= nl_; dl++) {
+                    int nfun = ncap_ + nl_ - dl;
+                    for (int i = 1; i <= nfun; i++) {
+                        dealias_alpha_[A][l+dl].push_back(alpha_c * pow(beta_, ((double) nfun + 1.0) / 2.0 - (double) i));
+                    }
                 }
 
                 break;
@@ -173,7 +182,7 @@ void DealiasBasisSet::form_basis()
     std::vector<boost::shared_ptr<GaussianShell> > shells; 
     int natom = primary_->molecule()->natom();
     int max_am = primary_->max_am();
-    int max_l = max_am + (ncap_ > 0 ? 1 : 0);
+    int max_l = max_am + nl_;
     double weight = 1.0;
 
     for (int A = 0; A < natom; A++) {
