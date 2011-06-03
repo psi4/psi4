@@ -43,8 +43,8 @@ namespace opt {
   void print_title(void); // print header
   void print_end(void);   // print footer
   void init_ioff(void);
-  static bool already_tried_other_intcos = false;
-  static bool override_fragment_mode = false; // to override MULTI setting by exception algorithm
+  bool INTCO_EXCEPT::already_tried_other_intcos = false;
+  bool INTCO_EXCEPT::override_fragment_mode = false; // to override MULTI setting by exception algorithm
 
 #if defined(OPTKING_PACKAGE_PSI)
   void set_params(psi::Options & options);      // set optimization parameters
@@ -75,7 +75,7 @@ OptReturnType optking(void) {
 #else
   set_params(); // set optimization parameters
 #endif
-  if (override_fragment_mode && Opt_params.fragment_mode == OPT_PARAMS::MULTI)
+  if (INTCO_EXCEPT::override_fragment_mode && (Opt_params.fragment_mode == OPT_PARAMS::MULTI))
     Opt_params.fragment_mode = OPT_PARAMS::SINGLE;
 
   // try to open old internal coordinates
@@ -119,6 +119,7 @@ OptReturnType optking(void) {
     // if fragment_mode == SINGLE, connects all separated groups of atoms by modifying frag.connectivity
     // if fragment_mode == MULTI, splits into fragments and makes interfragment coordinates
     mol1->fragmentize();
+mol1->print_connectivity(outfile);
 
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
       mol1->add_intrafragment_simples_by_connectivity();
@@ -181,8 +182,14 @@ OptReturnType optking(void) {
   p_Opt_data->save_geom_energy(x, mol1->g_energy());
   if (x!=NULL) free_array(x);
 
+fprintf(outfile, "previous step begins.\n");
+fflush(outfile);
+
   // print out report on progress
   p_Opt_data->previous_step_report();
+
+fprintf(outfile, "previous step ends.\n");
+fflush(outfile);
 
   // compute forces in internal coordinates from cartesian gradient
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
@@ -267,7 +274,7 @@ OptReturnType optking(void) {
   } // end big try
   catch (INTCO_EXCEPT exc) {
 
-    if (exc.try_again() && !already_tried_other_intcos) {
+    if (exc.try_again() && !exc.already_tried_other_intcos) {
 
       fprintf(outfile,"\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
       fprintf(outfile,"\tWill attempt to restart optimization with redefined internal coordinates.\n");
@@ -280,9 +287,9 @@ OptReturnType optking(void) {
 #endif
       // if multi mode has failed, for now try single mode.
       if (Opt_params.fragment_mode == OPT_PARAMS::MULTI)
-        override_fragment_mode = true;
+        exc.override_fragment_mode = true;
 
-      already_tried_other_intcos = true;
+      exc.already_tried_other_intcos = true;
       close_output_dat();
       return OptReturnSuccess;
     }
@@ -295,6 +302,23 @@ OptReturnType optking(void) {
       abort();
 #endif
     }
+  }
+  catch (BAD_STEP_EXCEPT exc) {
+
+    fprintf(outfile,"\tA bad-step exception has been caught.\n");
+    fprintf(outfile,"\t%s", exc.g_message());
+
+    mol1->backstep();
+
+    close_output_dat();
+    return OptReturnSuccess;
+  }
+  catch (...) {
+#if defined (OPTKING_PACKAGE_QCHEM)
+      QCrash(exc.g_message());
+#elif defined (OPTKING_PACKAGE_PSI)
+      abort();
+#endif
   }
 
   close_output_dat();
