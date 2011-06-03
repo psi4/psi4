@@ -77,6 +77,228 @@ double MP2::compute_energy()
   print_energies();
   return energies_["Total Energy"];
 }
+void MP2::check_integrals(boost::shared_ptr<Matrix> E)
+{
+    fprintf(outfile, "  => Complete MO ERI Analysis <=\n\n");
+    fprintf(outfile, "   -o : Active Occupied\n");   
+    fprintf(outfile, "   -v : Active Virtual\n\n");   
+
+    char type[4];
+ 
+    double current; 
+    int index;
+    int bits[4];
+    double sum[16];
+    double max[16];
+    ULI    n[16];
+
+    ::memset(static_cast<void*>(sum), '\0', 16 * sizeof(double));
+    ::memset(static_cast<void*>(max), '\0', 16 * sizeof(double));
+    ::memset(static_cast<void*>(n), '\0', 16 * sizeof(ULI));
+
+    double** Ip = E->pointer();    
+    
+    bits[0] = 0; 
+    for (int a = nfocc_; a < nocc_; a++) {
+        bits[1] = 0; 
+        for (int b = nfocc_; b < nocc_; b++) {
+            bits[2] = 0; 
+            for (int c = nfocc_; c < nocc_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+            bits[2] = 1; 
+            for (int c = nocc_; c < nocc_ + navir_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+        } 
+        bits[1] = 1; 
+        for (int b = nocc_; b < nocc_ + navir_; b++) {
+            bits[2] = 0; 
+            for (int c = nfocc_; c < nocc_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+            bits[2] = 1; 
+            for (int c = nocc_; c < nocc_ + navir_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+        } 
+    } 
+    bits[0] = 1; 
+    for (int a = nocc_; a < nocc_ + navir_; a++) {
+        bits[1] = 0; 
+        for (int b = nfocc_; b < nocc_; b++) {
+            bits[2] = 0; 
+            for (int c = nfocc_; c < nocc_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+            bits[2] = 1; 
+            for (int c = nocc_; c < nocc_ + navir_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+        } 
+        bits[1] = 1; 
+        for (int b = nocc_; b < nocc_ + navir_; b++) {
+            bits[2] = 0; 
+            for (int c = nfocc_; c < nocc_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+            bits[2] = 1; 
+            for (int c = nocc_; c < nocc_ + navir_; c++) {
+                bits[3] = 0;
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nfocc_; d < nocc_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+                bits[3] = 1; 
+                index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
+                for (int d = nocc_; d < nocc_ + navir_; d++) {
+                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    if (max[index] < fabs(current))
+                        max[index] = fabs(current);
+                    sum[index] += current * current;
+                    n[index]++; 
+                } 
+            } 
+        } 
+    } 
+
+    for (int i = 0; i < 16; i++) {
+        sum[index] = sqrt(sum[index] / (double) n[index]);
+    } 
+
+    fprintf(outfile, "     Type %14s %14s %14s\n", "Number", "Max Error" , "RMS Error"); 
+    for (int i = 0; i < 16; i++) {
+        type[0] = (i & 8 ? 'v' : 'o');
+        type[1] = (i & 4 ? 'v' : 'o');
+        type[2] = (i & 2 ? 'v' : 'o');
+        type[3] = (i & 1 ? 'v' : 'o');
+        fprintf(outfile, "  (%c%c|%c%c) %14ld %14.7E %14.7E\n", type[0], type[1], type[2], type[3], n[i], max[i], sum[i]); 
+    }
+
+}
 void MP2::test_denominators()
 {
     fprintf(outfile, "  ==> Test Denominator <==\n\n");
@@ -102,9 +324,13 @@ void MP2::test_ps()
     E->copy(Ips);
     E->subtract(I);
 
-    I->print();
-    Ips->print();
-    E->print();
+    if (debug_) {
+        I->print();
+        Ips->print();
+        E->print();
+    }
+
+    check_integrals(E);
 }
 void MP2::test_df()
 {
@@ -118,9 +344,13 @@ void MP2::test_df()
     E->copy(Idf);
     E->subtract(I);
 
-    I->print();
-    Idf->print();
-    E->print();
+    if (debug_) {
+        I->print();
+        Idf->print();
+        E->print();
+    }
+
+    check_integrals(E);
 }
 void MP2::compute_MP2()
 {
