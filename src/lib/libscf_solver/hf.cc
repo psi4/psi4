@@ -1231,8 +1231,10 @@ double HF::compute_energy()
 
         save_information();
     } else {
-        if (Communicator::world->me() == 0)
+        if (Communicator::world->me() == 0) {
             fprintf(outfile, "\n  Failed to converged.\n");
+            fprintf(outfile, "    NOTE: MO Coefficients will not be saved to Checkpoint.\n");
+        }
         E_ = 0.0;
         if(psio_->open_check(PSIF_CHKPT))
             psio_->close(PSIF_CHKPT, 1);

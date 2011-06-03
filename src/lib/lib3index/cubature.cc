@@ -1,3 +1,4 @@
+#include "cubature.h"
 #include "3index.h"
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
@@ -14,6 +15,10 @@
 #include <ctype.h>
 
 #include <boost/algorithm/string.hpp>
+#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
+#include <boost/algorithm/string.hpp>
 
 using namespace boost;
 using namespace std;
@@ -21,20 +26,220 @@ using namespace psi;
 
 namespace psi {
 
+// the third parameter of from_string() should be
+// one of std::hex, std::dec or std::oct
+template <class T>
+bool from_string(T& t,
+                 const std::string& s,
+                 std::ios_base& (*f)(std::ios_base&))
+{
+    std::istringstream iss(s);
+    return !(iss >> f >> t).fail();
+}
+
 std::map<int,int> SphericalGrid::lebedev_order_to_points_;
+std::map<int, boost::shared_ptr<SphericalGrid> > SphericalGrid::lebedev_grids_;
 std::vector<double> MolecularGrid::BSRadii_;
 
 PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
                                        boost::shared_ptr<BasisSet> primary,
                                        boost::shared_ptr<BasisSet> dealias,
                                        Options& options) :
-    MolecularGrid(molecule), primary_(primary), dealias_(dealias), options_(options)
+    MolecularGrid(molecule), primary_(primary), dealias_(dealias), filename_(""),  options_(options)
 {
     buildGridFromOptions();
+}
+PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
+                                       boost::shared_ptr<BasisSet> primary,
+                                       boost::shared_ptr<BasisSet> dealias,
+                                       const std::string& filename,
+                                       Options& options) :
+    MolecularGrid(molecule), primary_(primary), dealias_(dealias), filename_(filename), options_(options)
+{
+    buildGridFromFile();
 }
 PseudospectralGrid::~PseudospectralGrid()
 {
 } 
+void PseudospectralGrid::buildGridFromFile()
+{
+    throw FeatureNotImplemented("PseudospectralGrid","buildGridFromFile",__FILE__,__LINE__);
+/**
+    std::string PSIDATADIR = Process::environment("PSIDATADIR");
+    std::string gridname = PSIDATADIR + "grids/" + filename_ + ".grid";
+
+    //cout << gridname;
+
+    // Phase I: read the grid in
+    std::vector<std::vector<std::pair<int, std::pair<double, double> > > > array;
+    array.resize(molecule_->natom());
+
+    regex comment("^\\s*\\!.*");                                       // line starts with !
+    regex separator("^\\*\\*\\*\\*");                                  // line starts with ****
+    regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
+
+#define NUMBER "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+
+    regex grid_shell("^\\s*(\\d+)\\s+" NUMBER ".*"); // match
+    // Hold the result of a regex_match
+    smatch what;
+
+    std::vector<std::string> lines;
+    std::string text;
+    ifstream infile(gridname.c_str());
+    if (!infile)
+        throw PSIEXCEPTION("PseudoGridParser::parse: Unable to open pseudospectral grid file: " + filename);
+    while (infile.good()) {
+        getline(infile, text);
+        lines.push_back(text);
+    }
+
+    for (int atom=0; atom<molecule_->natom(); ++atom) {
+
+        int lineno = 0;
+        bool found = false;
+        while (lineno < lines.size()) {
+            string line = lines[lineno++];
+
+            // Spit out the line for debugging.
+            //cout << line << endl;
+
+            // Ignore blank lines
+            if (line.empty())
+                continue;
+
+            // Do some matches
+            if (regex_match(line, what, comment)) {
+                //cout << " matched a comment line.\n";
+                continue;
+            }
+            if (regex_match(line, what, separator)) {
+                //cout << " matched a separator line.\n";
+                continue;
+            }
+            // Match: H    0
+            // or:    H    O...     0
+            if (regex_match(line, what, atom_array)) {
+                //cout << " matched a atom array line.\n";
+                //cout << " what.captures(1)" << what[1].str() << "\n";
+
+                // Check the captures and see if this basis set is for the atom we need.
+                if (iequals(molecule_->label(atom), what[1].str())) {
+                    found = true;
+                    line = lines[lineno++];
+
+                    // Need to do the following until we match a "****" which is the end of the basis set
+                    while (!regex_match(line, what, separator)) {
+                        // cout << " Atom line " << line;
+                        if (regex_match(line, what, grid_shell)) {
+                            int L;
+                            double r;
+                            if (!from_string<int>(L, what[1], std::dec))
+                                throw PSIEXCEPTION("PseudoGridParser::parse: Unable to convert number of points (order):\n" + line);
+                            if (!from_string<double>(r, what[2], std::dec))
+                                throw PSIEXCEPTION("PseudoGridParser::parse: Unable to convert grid shell radius:\n" + line);
+                            array[atom].push_back(make_pair(L, make_pair(r,1.0)));
+                        }
+                        line = lines[lineno++];
+                    }
+                    break;
+                } else {
+                    continue;
+                }
+            } else {
+                continue;
+            }
+
+        }
+        if (found == false)
+            throw PSIEXCEPTION("PseudoGridParser::parser: Unable to find the grid for " + molecule_->label(atom));
+    }
+
+    std::map<int,int> lebedev_orders_to_points = SphericalGrid::lebedevOrdersToPoints(); 
+
+    int npoints = 0;
+    for (int atom = 0; atom < molecule_->natom(); atom++) {
+
+        for (std::vector<std::pair<int, std::pair<double, double> > >::iterator it = array[atom].begin(); it != array[atom].end(); it++) {
+            std::pair<int, std::pair<double,double> > row = (*it);
+            int L = row.first;
+
+            if (lebedev_orders_to_points.count(L) == 0)
+                throw PSIEXCEPTION("Grid order does not match available Lebedev grid orders");
+
+            npoints += lebedev_orders_to_points[L];
+        }
+    }
+
+    if (npoints == 0)
+        throw PSIEXCEPTION("PseudoGridParser: No Grid points in this molecule");
+
+
+    std::vector<AtomicGrid> atoms;    
+
+    // Phase II: build the grid
+    for (int atom = 0; atom < molecule_->natom(); atom++) {
+
+        Vector3 center = molecule_->xyz(atom);
+        double xc = center[0];
+        double yc = center[1];
+        double zc = center[2];
+
+        for (std::vector<std::pair<int, std::pair<double, double> > >::iterator it = array[atom].begin(); it != array[atom].end(); it++) {
+            std::pair<int, std::pair<double,double> > row = (*it);
+            int L = row.first;
+            double r = row.second.first;
+            double w = row.second.second;
+
+            int ngrid = 0;
+
+            // Defined in integrator_defines.h
+            int max_grid = n_lebedev_;
+            for (int index = 0; index < max_grid; index++) {
+                if (lebedev_orders_[index] == L)
+                    ngrid = lebedev_points_[index];
+            }
+            if (ngrid == 0)
+                throw PSIEXCEPTION("Grid order does not match available Lebedev grid orders");
+
+            SphericalQuadrature quad = integrator->getLebedevSpherical(ngrid);
+
+            for (int p = 0; p < ngrid; p++) {
+                xp[counter + p] = quad.x[p];
+                yp[counter + p] = quad.y[p];
+                zp[counter + p] = quad.z[p];
+                //wp[counter + p] = quad.w[p];
+                wp[counter + p] = w;
+            }
+            free(quad.x);
+            free(quad.y);
+            free(quad.z);
+            free(quad.w);
+
+            // Scale to radius
+            for (int l = 0; l < ngrid; l++) {
+                xp[counter + l] *= r;
+                yp[counter + l] *= r;
+                zp[counter + l] *= r;
+//                wp[counter + l] *= r*r;
+            }
+
+            // Center
+            for (int l = 0; l < ngrid; l++) {
+                xp[counter + l] += xc;
+                yp[counter + l] += yc;
+                zp[counter + l] += zc;
+            }
+
+            // TODO rotate to standard orientation
+            // TODO scale for radial weight
+            // TODO account for atomic cells
+
+            counter += ngrid;
+        }
+    }
+**/
+}
 void PseudospectralGrid::buildGridFromOptions()
 {
     boost::shared_ptr<Matrix> rotation(new Matrix("Standard nuclear orientation transformation", 3,3));
@@ -77,27 +282,6 @@ void PseudospectralGrid::buildGridFromOptions()
     /// Apply nuclear weights
     buildGrid(atoms, options_.get_str("PS_NUCLEAR_SCHEME"));     
 }
-boost::shared_ptr<PseudoGrid> PseudospectralGrid::getPseudoGrid()
-{
-    PseudoGrid* ps = new PseudoGrid(molecule_);
-
-    double* xp = new double[npoints_];    
-    double* yp = new double[npoints_];    
-    double* zp = new double[npoints_];    
-    double* wp = new double[npoints_];    
-
-    ps->grid_ = boost::shared_ptr<GridBlock>(new GridBlock());
-    ps->grid_->setMaxPoints(npoints_);
-    ps->grid_->setTruePoints(npoints_);
-    ps->grid_->setGrid(xp,yp,zp,wp);
-    
-    ::memcpy(static_cast<void*>(xp), static_cast<void*>(x_), npoints_*sizeof(double));
-    ::memcpy(static_cast<void*>(yp), static_cast<void*>(y_), npoints_*sizeof(double));
-    ::memcpy(static_cast<void*>(zp), static_cast<void*>(z_), npoints_*sizeof(double));
-    ::memcpy(static_cast<void*>(wp), static_cast<void*>(w_), npoints_*sizeof(double));
-
-    return shared_ptr<PseudoGrid>(ps);
-}
 
 MolecularGrid::MolecularGrid(boost::shared_ptr<Molecule> molecule) :
     molecule_(molecule), npoints_(0), scheme_("")
@@ -111,6 +295,14 @@ MolecularGrid::~MolecularGrid()
         delete[] z_;
         delete[] w_;
     }
+}
+boost::shared_ptr<GridBlock> MolecularGrid::fullGrid() 
+{
+    boost::shared_ptr<GridBlock>g(new GridBlock());
+    g->setMaxPoints(npoints_);
+    g->setTruePoints(npoints_);
+    g->setGrid(x_,y_,z_,w_);
+    return g;
 }
 void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> > atoms, const std::string& scheme) 
 {
@@ -351,23 +543,42 @@ void MolecularGrid::applyStratmannWeights()
 {
     throw FeatureNotImplemented("psi::MolecularGrid","applyStratmannWeights", __FILE__, __LINE__);
 }
-void MolecularGrid::print(FILE* out)
+void MolecularGrid::print(FILE* out, int print)
 {
     fprintf(out, "   => Molecular Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);
-    
-    for (int i = 0; i < atoms_.size(); i++) {
-        fprintf(out, "   Atomic Quadrature %d:\n\n", i+1);
-        atoms_[i]->print(out);
+   
+    if (print > 1) {
+        for (int A = 0; A < atoms_.size(); A++) {
+            fprintf(outfile,"\tAtom %d: %s <%8.5f, %8.5f, %8.5f>, %6d Points\n", A+1, molecule_->label(A).c_str(),
+                molecule_->x(A), molecule_->y(A), molecule_->z(A), atoms_[A]->npoints());
+            boost::shared_ptr<AtomicGrid> atom = atoms_[A];
+            boost::shared_ptr<RadialGrid> rad = atom->radial();
+            std::vector<boost::shared_ptr<SphericalGrid> > sphere = atom->spherical();
+            fprintf(outfile,"\t Radial Grid: %s, %4d Points\n", rad->scheme().c_str(), rad->npoints());
+            for (int i = 0; i < sphere.size(); i++) {
+                fprintf(outfile,"\t  Spherical Grid: R %11.5E, Order %4d, Points %4d, %s\n", 
+                    rad->r()[i], sphere[i]->order(), sphere[i]->npoints(),sphere[i]->scheme().c_str());    
+            }   
+            fprintf(outfile, "\n"); 
+        }
     }
+ 
+    if (print > 3) {
 
-    fprintf(out, "   Total Quadrature:\n\n");
-    fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
-    for (int i = 0; i < npoints_; i++) {
-        fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
-            x_[i], y_[i], z_[i], w_[i]); 
-    } 
-    fprintf(out, "\n\n");
+        for (int i = 0; i < atoms_.size(); i++) {
+            fprintf(out, "   Atomic Quadrature %d:\n\n", i+1);
+            atoms_[i]->print(out);
+        }
+
+        fprintf(out, "   Total Quadrature:\n\n");
+        fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
+        for (int i = 0; i < npoints_; i++) {
+            fprintf(out, "   %4d %14.6E %14.6E %14.6E %14.6E\n", i+1, 
+                x_[i], y_[i], z_[i], w_[i]); 
+        } 
+        fprintf(out, "\n\n");
+    }
 }
 
 AtomicGrid::AtomicGrid() : npoints_(0)
@@ -609,12 +820,70 @@ void SphericalGrid::print(FILE* out)
 boost::shared_ptr<SphericalGrid> SphericalGrid::buildGrid(const std::string& scheme, int order)
 {
     if (boost::to_upper_copy(scheme) == "LEBEDEV") {
-        return SphericalGrid::buildLebedevGrid(order);
+        return SphericalGrid::lookupLebedevGrid(order);
     } else {
         throw PSIEXCEPTION("Unrecognized spherical grid type.");
     }
 }
-boost::shared_ptr<SphericalGrid> SphericalGrid::buildLebedevGrid(int order)
+boost::shared_ptr<SphericalGrid> SphericalGrid::lookupLebedevGrid(int order) 
+{
+    if (lebedev_grids_.size() == 0) {
+        lebedev_grids_[0]   = buildLebedevGrid(0);   
+        lebedev_grids_[3]   = buildLebedevGrid(3); 
+        lebedev_grids_[5]   = buildLebedevGrid(5); 
+        lebedev_grids_[7]   = buildLebedevGrid(7); 
+        lebedev_grids_[9]   = buildLebedevGrid(9); 
+        lebedev_grids_[11]  = buildLebedevGrid(11); 
+        lebedev_grids_[13]  = buildLebedevGrid(13); 
+        lebedev_grids_[15]  = buildLebedevGrid(15); 
+        lebedev_grids_[17]  = buildLebedevGrid(17); 
+        lebedev_grids_[19]  = buildLebedevGrid(19); 
+        lebedev_grids_[21]  = buildLebedevGrid(21); 
+        lebedev_grids_[23]  = buildLebedevGrid(23); 
+        lebedev_grids_[25]  = buildLebedevGrid(25); 
+        lebedev_grids_[27]  = buildLebedevGrid(27); 
+        lebedev_grids_[29]  = buildLebedevGrid(29); 
+        lebedev_grids_[31]  = buildLebedevGrid(31); 
+        lebedev_grids_[35]  = buildLebedevGrid(35); 
+        lebedev_grids_[41]  = buildLebedevGrid(41); 
+        lebedev_grids_[47]  = buildLebedevGrid(47); 
+        lebedev_grids_[53]  = buildLebedevGrid(53); 
+        lebedev_grids_[59]  = buildLebedevGrid(59); 
+        lebedev_grids_[65]  = buildLebedevGrid(65); 
+        lebedev_grids_[71]  = buildLebedevGrid(71); 
+        lebedev_grids_[77]  = buildLebedevGrid(77); 
+        lebedev_grids_[83]  = buildLebedevGrid(83); 
+        lebedev_grids_[89]  = buildLebedevGrid(89); 
+        lebedev_grids_[95]  = buildLebedevGrid(95); 
+        lebedev_grids_[101] = buildLebedevGrid(101); 
+        lebedev_grids_[107] = buildLebedevGrid(107); 
+        lebedev_grids_[113] = buildLebedevGrid(113); 
+        lebedev_grids_[119] = buildLebedevGrid(119); 
+        lebedev_grids_[125] = buildLebedevGrid(125); 
+        lebedev_grids_[131] = buildLebedevGrid(131); 
+    }
+    if (lebedev_grids_.count(order) == 0) {
+        fprintf(outfile, " Valid Lebedev Grid Orders/Points:\n\n");
+    
+        // Sort keys for pretty printing
+        std::vector<int> keys;
+        for (std::map<int,int>::iterator it = lebedev_order_to_points_.begin();
+             it != lebedev_order_to_points_.end(); it++) {
+            keys.push_back((*it).first);  
+        }    
+        std::sort(keys.begin(), keys.end());
+        
+        for (int i = 0; i < keys.size(); i++) {
+            fprintf(outfile, "  %4d - %4d\n", keys[i], lebedev_order_to_points_[keys[i]]); 
+        }
+
+        fflush(outfile);
+        throw PSIEXCEPTION("Invalid Lebedev Grid requested");
+    }
+
+    return lebedev_grids_[order];
+}
+std::map<int,int> SphericalGrid::lebedevOrdersToPoints()
 {
     // Setup the valid grid order/points map
     if (lebedev_order_to_points_.size() == 0) {
@@ -652,6 +921,11 @@ boost::shared_ptr<SphericalGrid> SphericalGrid::buildLebedevGrid(int order)
         lebedev_order_to_points_[125] = 5294;
         lebedev_order_to_points_[131] = 5810;
     }
+    return lebedev_order_to_points_;
+}
+boost::shared_ptr<SphericalGrid> SphericalGrid::buildLebedevGrid(int order)
+{
+    lebedevOrdersToPoints();
 
     // We don't have your grid
     if (lebedev_order_to_points_.count(order) == 0) {

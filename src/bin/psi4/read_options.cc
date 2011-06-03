@@ -1289,12 +1289,33 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WAVEFUNCTION","MP2","MP2 MP3 CCD DRPA");
     /*- MO basis -*/
     options.add_str("BASIS","NONE");
+    /*- Schwarz cutoff -*/
+    options.add_double("SCHWARZ_CUTOFF", 0.0);
+    /*- Convergence of CC energy -*/
+    options.add_int("E_CONVERGE", 8);
+    /*- Convergence of cluster amplitudes (RMS change) -*/
+    options.add_int("T_CONVERGE", 8);
+    /*- Turn on DIIS -*/
+    options.add_bool("DIIS",true);
+    /*- Minimum DIIS vectors -*/
+    options.add_int("MIN_DIIS_VECS", 2);
+    /*- Maximum DIIS vectors -*/
+    options.add_int("MAX_DIIS_VECS", 6);
+    /*- The maximum number iterations allowed -*/
+    options.add_int("MAXITER", 40);
+    /*- Debugging information? -*/
+    options.add_int("DEBUG",0);
+
+    // => DF <= //
+
     /*- DF basis for MO integrals -*/
     options.add_str("RI_BASIS_CC","NONE");
     /*- Fitting metric algorithm -*/
     options.add_str("FITTING_TYPE", "EIG", "EIG CHOLESKY QR");
     /*- Desired Fitting condition (inverse of max condition number) -*/
     options.add_double("FITTING_CONDITION", 1.0E-10);
+
+    // => PS <= //
 
     /*- Dealias basis for PS integrals -*/
     options.add_str("DEALIAS_BASIS_CC","");
@@ -1332,30 +1353,41 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
     /*- Minumum eigenvalue for dealias basis -*/
     options.add_double("PS_MIN_S_DEALIAS",1.0E-7);
+    /*- Inversion technique in PS fitting equations -*/
+    options.add_str("PS_INVERSION","CHOLESKY", "CHOLESKY SVD QR");
+
+    // => DENOMINATOR <= //
 
     /*- Denominator algorithm for PT methods -*/
     options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
 
-    /** MP2-Specific Options **/
+    // => MP2 <= //
+
     /*- MP2 Algorithm:
             \begin{tabular}{ccc}
             Algorithm Keyword &  MP2J        &  MP2K  \\
              \hline
-                DF            &   DF         &   DF   \\
-                SOS           &   DF         &   -    \\
-                MOS           &   DF(Omega)  &   -    \\
-                PS            &   DF         &   PS   \\
+                MP2           &   MP2        &  MP2   \\
+                DF            &   DF         &  DF    \\
+                PS            &   PS         &  PS    \\
+                PS1           &   DF         &  PS/DF \\
                 PS2           &   DF         &  PS/PS \\
-                PS3           &   PS         &  PS/PS \\
+                PS3           &   PS         &  PS/DF \\
+                PS4           &   PS         &  PS/PS \\
+                TEST_DENOM    &   Test       &  Test  \\
+                TEST_PS       &   Test       &  Test  \\
+                TEST_DF       &   Test       &  Test  \\
             \end{tabular}
     -*/
-    options.add_str("MP2_ALGORITHM", "DF", "DF SOS MOS PS PS2 PS3");
+    options.add_str("MP2_ALGORITHM", "DF", "MP2 DF PS PS1 PS2 PS3 PS4 TEST_DENOM TEST_PS TEST_DF");
     /*- OS Scale  -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
     options.add_double("SCALE_SS", 1.0/3.0);
+
+    // => RPA <= //
 
     /*- RPA algorithm:
         \begin{tabular}{cc}
@@ -1373,22 +1405,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- RPA alpha parameter -*/
     options.add_double("RPA_ALPHA", 1.0);
 
-    /*- Schwarz cutoff -*/
-    options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Convergence of CC energy -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- Convergence of cluster amplitudes (RMS change) -*/
-    options.add_int("T_CONVERGE", 8);
-    /*- Turn on DIIS -*/
-    options.add_bool("DIIS",true);
-    /*- Minimum DIIS vectors -*/
-    options.add_int("MIN_DIIS_VECS", 2);
-    /*- Maximum DIIS vectors -*/
-    options.add_int("MAX_DIIS_VECS", 6);
-    /*- The maximum number iterations allowed -*/
-    options.add_int("MAXITER", 40);
-    /*- Debugging information? -*/
-    options.add_int("DEBUG",0);
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
     /*- -*/

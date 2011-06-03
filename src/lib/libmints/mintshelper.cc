@@ -322,7 +322,39 @@ boost::shared_ptr<Matrix> MintsHelper::ao_eri()
 
     return I;
 }
+boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
+{
+    int nso = basisset_->nbf();
+    int nocc = Co->colspi()[0];
+    int nvir = Cv->colspi()[0];
 
+    boost::shared_ptr<Matrix> Iso = ao_eri();   
+    boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
+
+    double** Isop = Iso->pointer();
+    double** Imop = Imo->pointer();
+    double** Cop = Co->pointer();   
+    double** Cvp = Cv->pointer();   
+
+    for (int a = 0; a < nocc; a++) {
+    for (int b = 0; b < nvir; b++) {
+    for (int c = 0; c < nocc; c++) {
+    for (int d = 0; d < nvir; d++) {
+   
+    for (int m = 0; m < nso; m++) {
+    for (int n = 0; n < nso; n++) {
+    for (int o = 0; o < nso; o++) {
+    for (int p = 0; p < nso; p++) {
+
+        Imop[a * nvir + b][c * nvir + d] += Cop[m][a] * Cvp[n][b] * Cop[o][c] * Cvp[p][d] * Isop[m * nso + n][o * nso + p];
+
+    }}}}
+ 
+    }}}}
+
+    return Imo; 
+    
+}
 boost::shared_ptr<Matrix> MintsHelper::so_overlap()
 {
     boost::shared_ptr<OneBodySOInt> S(integral_->so_overlap());

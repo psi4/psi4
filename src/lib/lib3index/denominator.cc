@@ -55,6 +55,21 @@ Denominator::Denominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Ve
 Denominator::~Denominator()
 {
 }
+boost::shared_ptr<Denominator> Denominator::buildDenominator(const std::string& algorithm,
+    boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta)
+{
+    Denominator* d;
+    if (algorithm == "LAPLACE") {
+        d = new LaplaceDenominator(eps_occ, eps_vir, delta);
+    } else if (algorithm == "CHOLESKY") {
+        d = new CholeskyDenominator(eps_occ, eps_vir, delta);
+    } else {
+        throw PSIEXCEPTION("Denominator: algorithm is not LAPLACE or CHOLESKY"); 
+    }
+
+    return boost::shared_ptr<Denominator>(d);
+}
+
 LaplaceDenominator::LaplaceDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta) :
     Denominator(eps_occ, eps_vir, delta)
 {
@@ -198,7 +213,7 @@ void LaplaceDenominator::decompose()
     fprintf(outfile, "  This system has an intrinsic R = (E_HUMO - E_LOMO)/(E_LUMO - E_HOMO) of %7.4E.\n", R);
     fprintf(outfile, "  A %d point minimax quadrature with R of %1.0E will be used for the denominator.\n", nvector_, R_availp[r]);
     fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", accuracy);
-    fprintf(outfile, "  Quadrature rule read from file %s.\n", quadfile.c_str());
+    fprintf(outfile, "  Quadrature rule read from file %s.\n\n", quadfile.c_str());
 
     // The quadrature is defined as \omega_v exp(-\alpha_v x) = 1/x
     double* alpha = new double[nvector_];
@@ -318,118 +333,110 @@ void LaplaceDenominator::debug()
     err_denom->print();
 
 }
-CholeskyDenominator::CholeskyDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta, double dm) :
-    Denominator(eps_occ, eps_vir, delta), degeneracy_multiplier_(dm)
+CholeskyDenominator::CholeskyDenominator(boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta) :
+    Denominator(eps_occ, eps_vir, delta)
 {
     decompose();
 }
 CholeskyDenominator::~CholeskyDenominator()
 {
 }
-bool CholeskyDenominator::criteria(std::pair<int, double> a, std::pair<int, double> b)
-{
-    return a.second < b.second;
-}
 void CholeskyDenominator::decompose()
 {
-    int noccA = eps_occ_->dimpi()[0];
-    int nvirA = eps_vir_->dimpi()[0];
-    int nspan = noccA*nvirA;
+    double* eps_occp = eps_occ_->pointer();
+    double* eps_virp = eps_vir_->pointer();
 
-    std::vector<std::pair<int, double> > eps(nspan);
-    std::vector<int> degenerate_index(nspan);
+    int nocc = eps_occ_->dimpi()[0];
+    int nvir = eps_vir_->dimpi()[0];
+    int nspan = nocc * nvir;
 
-    for (int i = 0; i < noccA; i++) {
-        for (int a = 0; a < nvirA; a++) {
-            eps[i*nvirA + a] = make_pair(i*nvirA + a, eps_vir_->get(0,a) - eps_occ_->get(0,i));
+    double* diagonal = new double[nspan];
+    
+    for (int i = 0; i < nocc; i++) {
+        for (int a = 0; a < nvir; a++) {
+            diagonal[i*nvir + a] = 1.0 / (2.0 * (eps_virp[a] - eps_occp[i]));
         }
     }
 
-    std::sort(eps.begin(), eps.end(), &CholeskyDenominator::criteria);
+    std::vector<double*> L;
+    std::vector<int> order;
 
-    double* w_ia = new double[nspan];
-    w_ia[0] = eps[0].second;
-    degenerate_index[0] = 0;
+    int Q = -1;
+    nvector_ = 0;
+    double max_err;
+    while (nvector_ < nspan) {  
 
-    int N = 1;
-    for (int k = 1; k < nspan; k++) {
-        if (fabs(eps[k].second - w_ia[N-1]) > delta_ / degeneracy_multiplier_) {
-            w_ia[N] = eps[k].second;
-            N++;
-        }
-        degenerate_index[k] = N - 1;
-    }
-
-    int Ndelta; double max_error = 0.0;
-    for (Ndelta = 1; Ndelta <= N; Ndelta++) {
-        max_error = 0.0;
-        bool OK = true;
-        for (int p = Ndelta; p < N; p++) {
-            double D = 1.0 / (2.0 * w_ia[p]);
-            double Q = 0.0;
-            for (int m = 0; m < Ndelta - 1; m++) {
-                Q = (w_ia[p] - w_ia[m]) / (w_ia[p] + w_ia[m]);
-                D *= Q * Q;
-            }
-            if (fabs(D) > max_error)
-                max_error = fabs(D);
-
-            //printf("  D(%d)^%d = %14.10E\n", p, Ndelta, D);
-            if (fabs(D) > delta_) {
-                OK = false;
-                break;
+        max_err = diagonal[0];
+        int max_index = 0;     
+        
+        for (int ia = 0; ia < nspan; ia++) {
+            if (max_err <= diagonal[ia]) {
+                max_index = ia;
+                max_err = diagonal[ia];
             }
         }
-        if (OK)
+        
+        if (max_err < delta_) 
             break;
-    }
 
-    nvector_ = Ndelta;
+        int j = max_index / nvir;
+        int b = max_index % nvir;
 
-    boost::shared_ptr<Matrix> L(new Matrix("Cholesky L, Energy Denominator", N, Ndelta));
-    double** Lp = L->pointer(0);
+        Q++;
+        nvector_++;
+        L.push_back(new double[nspan]);
 
-    for (int n = 0; n < Ndelta; n++) {
-        for (int p = n; p < N; p++) {
-            double wn = w_ia[n];
-            double wp = w_ia[p];
-            double wm = 0.0;
-            double Q = 0.0;
-            double Lpp = sqrt(2.0*wn) / (wp + wn);
-            for (int m = 0; m < n; m++) {
-                wm = w_ia[m];
-                Q = (wp - wm) / (wp + wm);
-                Lpp *= Q;
+        ::memset(static_cast<void*>(L[Q]), '\0', nspan*sizeof(double)); 
+
+        // Find the diagonal
+        double LL = sqrt(max_err);
+ 
+        // Update the vector
+        for (int i = 0; i < nocc; i++) {
+            for (int a = 0; a < nvir; a++) {
+                L[Q][i*nvir + a] = 1.0 / (eps_virp[a] + eps_virp[b] -
+                    eps_occp[i] - eps_occp[j]); 
             }
-            Lp[p][n] = Lpp;
         }
-    }
 
-    delete[] w_ia;
+        for (int P = 0; P < Q; P++) {
+            C_DAXPY(nspan,-L[P][max_index],L[P],1,L[Q],1);
+        }
+
+        C_DSCAL(nspan,1.0 / LL, L[Q], 1);
+
+        // Explicitly zero out elements of the vector
+        // Which are psychologically upper triangular
+        for (int i = 0; i < order.size(); i++)
+            L[Q][order[i]] = 0.0;
+
+        // Place the diagonal
+        L[Q][max_index] = LL;
+
+        // Update the Schur complement
+        for (int i = 0; i < nspan; i++)
+            diagonal[i] -= L[Q][i] * L[Q][i];
+
+        // Explicitly zero out elements of the Schur complement
+        // Which are already exact, and do not really belong
+        // This prevents false selection due to roundoff
+        diagonal[max_index] = 0.0;
+
+        // Add the diagonal index to the list of completed indices
+        order.push_back(max_index);
+    }
 
     fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n");
     fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
-    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n", max_error);
+    fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
 
-    denominator_ = boost::shared_ptr<Matrix>(new Matrix("Cholesky Delta Tensor", Ndelta, nspan));
+    denominator_ = boost::shared_ptr<Matrix>(new Matrix("Cholesky Delta Tensor", nvector_, nspan));
     double** Lar = denominator_->pointer();
 
-    for (int k = 0; k < nspan; k++) {
-        int ind = eps[k].first;
-        C_DCOPY(Ndelta, Lp[degenerate_index[k]], 1, &Lar[0][ind], noccA*nvirA);
+    for (int d = 0; d < nvector_; d++) {
+        C_DCOPY(nspan, L[d], 1, Lar[d], 1);
+        delete[] L[d];
     }
-
-    //fprintf(outfile, " Lar\n");
-    //print_mat(Lar, Ndelta, noccA*nvirA, outfile);
-    //fprintf(outfile, " Lbs\n");
-    //print_mat(Lbs, Ndelta, noccA*nvirA, outfile);
-
-    //boost::shared_ptr<Matrix> Delta(new Matrix(noccA*nvirA, noccB*nvirB));
-    //double** Delt = Delta->get_pointer();
-
-    //C_DGEMM('T','N', noccA*nvirA, noccB*nvirB, Ndelta, 1.0, Lar[0], noccA*nvirA, Lbs[0], noccB*nvirB, 0.0, Delt[0], noccB*nvirB);
-    //Delta->print();
-
 }
 void CholeskyDenominator::debug()
 {

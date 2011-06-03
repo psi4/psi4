@@ -38,19 +38,30 @@ double MP2::compute_energy()
   energies_["MP2J Energy"] = 0.0;
   energies_["MP2K Energy"] = 0.0;
 
-  if (mp2_algorithm_ == "DF") {
+  if (mp2_algorithm_ == "MP2") {
+    compute_MP2();
+  } else if (mp2_algorithm_ == "DF") {
     compute_DF_MP2();
-  } else if (mp2_algorithm_ == "SOS") {
-    compute_OS_MP2();
-  } else if (mp2_algorithm_ == "MOS") {
-    compute_OS_MP2();
   } else if (mp2_algorithm_ == "PS") {
     compute_PS_MP2();
+  } else if (mp2_algorithm_ == "PS1") {
+    compute_DF_MP2J();
+    compute_PS_DF_MP2K();
   } else if (mp2_algorithm_ == "PS2") {
-    compute_OS_MP2();
-    compute_PS2_MP2();
+    compute_DF_MP2J();
+    compute_PS_MP2K();
   } else if (mp2_algorithm_ == "PS3") {
-    compute_PS3_MP2();
+    compute_PS_MP2J();
+    compute_PS_DF_MP2K();
+  } else if (mp2_algorithm_ == "PS4") {
+    compute_PS_MP2J();
+    compute_PS_MP2K();
+  } else if (mp2_algorithm_ == "TEST_DENOM") {
+    test_denominators();
+  } else if (mp2_algorithm_ == "TEST_DF") {
+    test_df();
+  } else if (mp2_algorithm_ == "TEST_PS") {
+    test_ps();
   }
 
   energies_["Opposite-Spin Energy"] = 0.5*energies_["MP2J Energy"];
@@ -66,370 +77,161 @@ double MP2::compute_energy()
   print_energies();
   return energies_["Total Energy"];
 }
-void MP2::compute_DF_MP2()
+void MP2::test_denominators()
 {
-    shared_ptr<DFTensor> df(new DFTensor(psio_, basisset_, ribasis_));
-    df->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
-    int nocc = df->nocc();
-    int nvir = df->nvir();
-    int naux = df->naux();
+    fprintf(outfile, "  ==> Test Denominator <==\n\n");
 
-    int nthread = 1;
-    #ifdef _OPENMP
-        nthread = omp_get_max_threads();
-    #endif
-    int rank = 0;
+    boost::shared_ptr<Denominator> cholesky(Denominator::buildDenominator("CHOLESKY", evals_aocc_, evals_avir_,
+        options_.get_double("DENOMINATOR_DELTA")));
+    boost::shared_ptr<Denominator> laplace(Denominator::buildDenominator("LAPLACE", evals_aocc_, evals_avir_,
+        options_.get_double("DENOMINATOR_DELTA")));
+    if (debug_) {
+        cholesky->debug(); 
+        laplace->debug();
+    } 
+}
+void MP2::test_ps()
+{
+    fprintf(outfile, "  ==> Test PS <==\n\n");
 
-    #ifdef HAVE_MKL
-        int mkl_nthread = mkl_get_max_threads();
-        mkl_set_num_threads(1);
-    #endif
+    boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> I = ps->Imo();
+    boost::shared_ptr<Matrix> Ips = ps->Ipsmo();
+    boost::shared_ptr<Matrix> E(new Matrix("Error in PS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
-    double*** Iab = new double**[nthread];
-    for (int thread = 0; thread < nthread; thread++)
-        Iab[thread] = block_matrix(nvir, nvir);
+    E->copy(Ips);
+    E->subtract(I);
 
-    shared_ptr<TensorChunk> chunk1;
-    shared_ptr<TensorChunk> chunk2;
+    I->print();
+    Ips->print();
+    E->print();
+}
+void MP2::test_df()
+{
+    fprintf(outfile, "  ==> Test DF <==\n\n");
 
-    unsigned long int scratch = nthread*nvir*(ULI)nvir;
-    if (nocc*nvir*(ULI)naux < doubles_ - scratch) {
-        // 1 block
-        chunk1 = df->get_ov_iterator(doubles_ - scratch);
-        chunk2 = chunk1;
-    } else {
-        // 2 blocks
-        chunk1 = df->get_ov_iterator((doubles_ - scratch) / 2L);
-        chunk2 = df->get_ov_iterator((doubles_ - scratch) / 2L);
-    }
-    int nblock = chunk1->nblock();
-    shared_ptr<Matrix> Qia1 = chunk1->chunk();
-    shared_ptr<Matrix> Qia2 = chunk2->chunk();
-    double** Qia1p = Qia1->pointer();
-    double** Qia2p = Qia2->pointer();
+    boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> I = df->Imo();
+    boost::shared_ptr<Matrix> Idf = df->Idfmo();
+    boost::shared_ptr<Matrix> E(new Matrix("Error in DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
-    // ==> Energy Evaluation <== //
+    E->copy(Idf);
+    E->subtract(I);
+
+    I->print();
+    Idf->print();
+    E->print();
+}
+void MP2::compute_MP2()
+{
+    fprintf(outfile, "  ==> Conventional MP2 <==\n\n");
+    
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<Matrix> I = mints->mo_eri(C_aocc_, C_avir_);
+
+    double** Ip = I->pointer();
+
     double E_MP2J = 0.0;
     double E_MP2K = 0.0;
 
-    // Outer loop is blocks
-    for (int block1 = 0; block1 < nblock; block1++) {
-        chunk1->read_block(block1);
-        Qia1->print();
-        int istart = chunk1->block_start() / nvir;
-        int isize  = chunk1->block_size()  / nvir;
-
-        // First do B = B blocks (diagonal)
-        // TODO unroll and thread
-        for (int ilocal = 0; ilocal < isize; ilocal++) {
-            rank = 0;
-
-            for (int jlocal = 0; jlocal <= ilocal; jlocal++) {
-                int i = ilocal + istart;
-                int j = jlocal + istart;
-
-                C_DGEMM('N','T', nvir, nvir, naux, 1.0, &Qia1p[ilocal*nvir][0], naux,
-                    &Qia1p[jlocal*nvir][0], naux, 0.0, Iab[rank][0], nvir);
-
-                for (int a = 0; a < nvir; a++) {
-                    for (int b = 0; b < nvir; b++) {
-                        double iajb = Iab[rank][a][b];
-                        double ibja = Iab[rank][b][a];
-                        double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b]
-                                             -evals_aoccp_[i] - evals_aoccp_[j]);
-                        double perm_scale = ((i == j) ? 1.0 : 2.0);
-
-                        E_MP2J += -2.0 * perm_scale*iajb*iajb*denom;
-                        E_MP2K +=  1.0 * perm_scale*iajb*ibja*denom;
-                    }
-                }
-            }
-        }
-
-        // Now do B != C blocks (lower triangle)
-        // TODO unroll and thread
-        for (int block2 = 0; block2 < block1; block2++) {
-            chunk2->read_block(block2);
-            int jstart = chunk2->block_start() / nvir;
-            int jsize  = chunk2->block_size()  / nvir;
-
-            for (int ilocal = 0; ilocal < isize; ilocal++) {
-                rank = 0;
-
-                for (int jlocal = 0; jlocal < jsize; jlocal++) {
-                    int i = ilocal + istart;
-                    int j = jlocal + jstart;
-
-                    C_DGEMM('N','T', nvir, nvir, naux, 1.0, &Qia1p[ilocal*nvir][0], naux,
-                        &Qia2p[jlocal*nvir][0], naux, 0.0, Iab[rank][0], nvir);
-
-                    for (int a = 0; a < nvir; a++) {
-                        for (int b = 0; b < nvir; b++) {
-                            double iajb = Iab[rank][a][b];
-                            double ibja = Iab[rank][b][a];
-                            double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b]
-                                                 -evals_aoccp_[i] - evals_aoccp_[j]);
-
-                            E_MP2J += -4.0 * iajb*iajb*denom;
-                            E_MP2K +=  2.0 * iajb*ibja*denom;
-                        }
-                    }
+    for (int i = 0; i < naocc_; i++) {
+        for (int a = 0; a < nvir_; a++) {
+            for (int j = 0; j < naocc_; j++) {
+                for (int b = 0; b < navir_; b++) {
+                    double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b] -
+                        evals_aoccp_[i] - evals_aoccp_[j]);
+                    double iajb = Ip[i * navir_ + a][j * navir_ + b];
+                    double ibja = Ip[i * navir_ + b][j * navir_ + a];
+                    E_MP2J -= 2.0 * iajb * iajb * denom;    
+                    E_MP2K += 1.0 * iajb * ibja * denom;    
                 }
             }
         }
     }
-
-    #ifdef HAVE_MKL
-        mkl_set_num_threads(mkl_nthread);
-    #endif
-
-    // Free scratch
-    for (int thread = 0; thread < nthread; thread++)
-        free_block(Iab[thread]);
-    delete[] Iab;
 
     energies_["MP2J Energy"] = E_MP2J;
     energies_["MP2K Energy"] = E_MP2K;
 }
-void MP2::compute_OS_MP2()
+void MP2::compute_DF_MP2()
 {
-    shared_ptr<DFTensor> df(new DFTensor(psio_, basisset_, ribasis_));
-    df->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, fitting_algorithm_, fitting_condition_, schwarz_cutoff_);
-    int nocc = df->nocc();
-    int nvir = df->nvir();
-    int naux = df->naux();
+    fprintf(outfile, "  ==> DF-MP2 <==\n\n");
 
-    shared_ptr<LaplaceDenominator> denom(new LaplaceDenominator(evals_aocc_, evals_avir_, denominator_delta_));
-    shared_ptr<Matrix> Tau = denom->denominator();
-    denom->debug();
-    int nvector = denom->nvector();
-
-    unsigned long int scratch = naux*(ULI)naux;
-    shared_ptr<Matrix> Z(new Matrix("Z_QQ'^w", naux, naux));
-
-    shared_ptr<TensorChunk> chunk = df->get_ov_iterator((doubles_ - scratch)/2);
-    int max_rows = chunk->max_rows();
-    int nblock = chunk->nblock();
-    shared_ptr<Matrix> Qia = chunk->chunk();
-    shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w", max_rows, naux));
-
+    boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> Qia = df->Qov();
     double** Qiap = Qia->pointer();
-    double** Qiawp = Qiaw->pointer();
-    double** Zp = Z->pointer();
-    double** Taup = Tau->pointer();
+    int nQ = ribasis_->nbf();
 
-    // ==> Energy Evaluation <== //
+    boost::shared_ptr<Matrix> I(new Matrix("DF (ia|jb)", naocc_ * navir_ , naocc_ * navir_));
+    double** Ip = I->pointer();
+
+    C_DGEMM('T','N', naocc_ * navir_, naocc_ * navir_, nQ, 1.0, Qiap[0], naocc_ * navir_,
+        Qiap[0], naocc_ * navir_, 0.0, Ip[0], naocc_ * navir_);
+
     double E_MP2J = 0.0;
-    for (int block = 0; block < nblock; block++) {
+    double E_MP2K = 0.0;
 
-        chunk->read_block(block);
-        int start = chunk->block_start();
-        int size = chunk->block_size();
-
-        for (int w = 0; w < nvector; w++) {
-            memcpy(static_cast<void*>(Qiawp[0]), static_cast<void*>(Qiap[0]), size*(ULI)naux*sizeof(double));
-
-            for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Qiawp[ia], 1);
-
-            C_DGEMM('T','N', naux, naux, size, 1.0, Qiawp[0], naux, Qiawp[0], naux, 0.0, Zp[0], naux);
-
-            E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Zp[0], 1, Zp[0], 1);
+    for (int i = 0; i < naocc_; i++) {
+        for (int a = 0; a < nvir_; a++) {
+            for (int j = 0; j < naocc_; j++) {
+                for (int b = 0; b < navir_; b++) {
+                    double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b] -
+                        evals_aoccp_[i] - evals_aoccp_[j]);
+                    double iajb = Ip[i * navir_ + a][j * navir_ + b];
+                    double ibja = Ip[i * navir_ + b][j * navir_ + a];
+                    E_MP2J -= 2.0 * iajb * iajb * denom;    
+                    E_MP2K += 1.0 * iajb * ibja * denom;    
+                }
+            }
         }
     }
 
     energies_["MP2J Energy"] = E_MP2J;
+    energies_["MP2K Energy"] = E_MP2K;
 }
 void MP2::compute_PS_MP2()
 {
-    throw FeatureNotImplemented("libdfcc_solver", "psi::dfcc::MP2::compute_PS_MP2", __FILE__, __LINE__);
-}
-void MP2::compute_PS2_MP2()
-{
-    shared_ptr<PSTensor> ps(new PSTensor(psio_, basisset_, dealias_, grid_));
-    ps->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, schwarz_cutoff_);
+    fprintf(outfile, "  ==> PS-MP2 <==\n\n");
 
-    int naux = ps->naux();
-    int nocc = ps->nocc();
-    int nvir = ps->nvir();
+    boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> Pia = ps->Aov();
+    boost::shared_ptr<Matrix> Qi = ps->Qaocc();
+    boost::shared_ptr<Matrix> Ra = ps->Ravir();
+    double** Piap = Pia->pointer();
+    double** Rap = Ra->pointer();
+    double** Qip = Qi->pointer();
+    int nP = Pia->rowspi()[0];
 
-    shared_ptr<LaplaceDenominator> denom(new LaplaceDenominator(evals_aocc_, evals_avir_, denominator_delta_));
-    shared_ptr<Matrix> Tau = denom->denominator();
-    shared_ptr<Matrix> Tau_i = denom->denominator_occ();
-    shared_ptr<Matrix> Tau_a = denom->denominator_vir();
-    int nvector = denom->nvector();
+    boost::shared_ptr<Matrix> QRia(new Matrix("QR", nP, naocc_ * navir_));
+    double** QRiap = QRia->pointer();
 
-    double** Taup = Tau->pointer();
-    double** Tau_ip = Tau_i->pointer();
-    double** Tau_ap = Tau_a->pointer();
-
-    ULI scratch = 2L * (naux*nocc + naux*nvir) + 2L * (naux*naux);
-    shared_ptr<TensorChunk> chunk = ps->get_ov_iterator((doubles_ - scratch)/2);
-    int max_rows = chunk->max_rows();
-    int nblock = chunk->nblock();
-
-    shared_ptr<Matrix> Q = ps->form_Q(C_aocc_);
-    shared_ptr<Matrix> X = ps->form_X(C_avir_);
-    shared_ptr<Matrix> A = chunk->chunk();
-
-    // Copies of Q and X for Tau scaling
-    shared_ptr<Matrix> Qw(new Matrix("Q_i^Pw (Scaled)", nocc, naux));
-    shared_ptr<Matrix> Xw(new Matrix("X_a^Pw (Scaled)", nvir, naux));
-
-    // Copy of A_jb^P for Tau scaling
-    shared_ptr<Matrix> Aw(new Matrix("A_jb^Pw (Scaled)", max_rows, naux));
-
-    double** Qp = Q->pointer();
-    double** Qwp = Qw->pointer();
-    double** Xp = X->pointer();
-    double** Xwp = Xw->pointer();
-    double** Ap = A->pointer();
-    double** Awp = Aw->pointer();
-
-    // The Z, Lambda, and Gamma intermediates
-    shared_ptr<Matrix> Z(new Matrix("Z_j^PQw", naux, naux));
-    shared_ptr<Matrix> L(new Matrix("L^PQw", naux, naux));
-
-    double** Zp = Z->pointer();
-    double** Lp = L->pointer();
-
-    double E_MP2K = 0.0;
-
-    for (int block = 0; block < nblock; block++) {
-
-        chunk->read_block(block);
-        int start = chunk->block_start();
-        int size = chunk->block_size();
-        int istart = start / nvir;
-        int isize = size / nvir;
-
-        for (int w = 0; w < nvector; w++) {
-
-            memcpy(static_cast<void*>(Awp[0]), static_cast<void*>(Ap[0]), size*(ULI)naux*sizeof(double));
-            for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);
-
-            memcpy(static_cast<void*>(Xwp[0]), static_cast<void*>(Xp[0]), nvir*(ULI)naux*sizeof(double));
-            for (int a = 0; a < nvir; a++)
-                C_DSCAL(naux, sqrt(Tau_ap[w][a]), Xwp[a], 1);
-
-            memcpy(static_cast<void*>(Qwp[0]), static_cast<void*>(Qp[0]), nocc*(ULI)naux*sizeof(double));
-            for (int i = 0; i < nocc; i++)
-                C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);
-
-            C_DGEMM('T','N',naux,naux,nocc,1.0,Qwp[0],naux,Qwp[0],naux,0.0,Lp[0],naux);
-            L->print();
-
-            for (int j = 0; j < isize; j++) {
-                C_DGEMM('T','N',naux,naux,nvir,1.0,Xwp[0],naux,Awp[j*nvir],naux,0.0,Zp[0],naux);
-                Z->print();
-
-                for (ULI QP = 0; QP < naux*(ULI)naux; QP++)
-                    Zp[0][QP] *= Zp[0][QP];
-                Z->print();
-
-                E_MP2K += C_DDOT(naux*(ULI)naux, Zp[0], 1, Lp[0], 1);
+    for (int i = 0; i < naocc_; i++) {
+        for (int a = 0; a < navir_; a++) {
+            for (int P = 0; P < nP; P++) {
+                QRiap[P][i * navir_ + a] = Qip[i][P] * Rap[a][P];
             }
         }
     }
 
-    energies_["MP2K Energy"] = E_MP2K;
-}
-void MP2::compute_PS3_MP2()
-{
-    shared_ptr<PSTensor> ps(new PSTensor(psio_, basisset_, dealias_, grid_));
-    ps->form_OV_integrals((ULI)(0.9*(double)doubles_), C_aocc_, C_avir_, false, schwarz_cutoff_);
+    boost::shared_ptr<Matrix> I(new Matrix("PS (ia|jb)", naocc_ * navir_ , naocc_ * navir_));
+    double** Ip = I->pointer();
 
-    int naux = ps->naux();
-    int nocc = ps->nocc();
-    int nvir = ps->nvir();
-
-    shared_ptr<LaplaceDenominator> denom(new LaplaceDenominator(evals_aocc_, evals_avir_, denominator_delta_));
-    shared_ptr<Matrix> Tau = denom->denominator();
-    shared_ptr<Matrix> Tau_i = denom->denominator_occ();
-    shared_ptr<Matrix> Tau_a = denom->denominator_vir();
-    int nvector = denom->nvector();
-
-    double** Taup = Tau->pointer();
-    double** Tau_ip = Tau_i->pointer();
-    double** Tau_ap = Tau_a->pointer();
-
-    ULI scratch = 2L * (naux*nocc + naux*nvir) + 3L * (naux*naux);
-    shared_ptr<TensorChunk> chunk = ps->get_ov_iterator((doubles_ - scratch)/2);
-    int max_rows = chunk->max_rows();
-    int nblock = chunk->nblock();
-
-    shared_ptr<Matrix> Q = ps->form_Q(C_aocc_);
-    shared_ptr<Matrix> X = ps->form_X(C_avir_);
-    shared_ptr<Matrix> A = chunk->chunk();
-
-    // Copies of Q and X for Tau scaling
-    shared_ptr<Matrix> Qw(new Matrix("Q_i^Pw (Scaled)", nocc, naux));
-    shared_ptr<Matrix> Xw(new Matrix("X_a^Pw (Scaled)", nvir, naux));
-
-    // Copy of A_jb^P for Tau scaling
-    shared_ptr<Matrix> Aw(new Matrix("A_jb^Pw (Scaled)", max_rows, naux));
-
-    double** Qp = Q->pointer();
-    double** Qwp = Qw->pointer();
-    double** Xp = X->pointer();
-    double** Xwp = Xw->pointer();
-    double** Ap = A->pointer();
-    double** Awp = Aw->pointer();
-
-    // The Z, Lambda, and Gamma intermediates
-    shared_ptr<Matrix> Z(new Matrix("Z_j^PQw", naux, naux));
-    shared_ptr<Matrix> L(new Matrix("L^PQw", naux, naux));
-    shared_ptr<Matrix> G(new Matrix("G^PQw", naux, naux));
-
-    double** Zp = Z->pointer();
-    double** Lp = L->pointer();
-    double** Gp = G->pointer();
+    C_DGEMM('T','N', naocc_ * navir_, naocc_ * navir_, nP, 1.0, Piap[0], naocc_ * navir_,
+        QRiap[0], naocc_ * navir_, 0.0, Ip[0], naocc_ * navir_);
 
     double E_MP2J = 0.0;
     double E_MP2K = 0.0;
 
-    for (int block = 0; block < nblock; block++) {
-
-        chunk->read_block(block);
-        int start = chunk->block_start();
-        int size = chunk->block_size();
-        int istart = start / nvir;
-        int isize = size / nvir;
-
-        for (int w = 0; w < nvector; w++) {
-
-            memcpy(static_cast<void*>(Awp[0]), static_cast<void*>(Ap[0]), size*(ULI)naux*sizeof(double));
-            for (int ia = 0; ia < size; ia++)
-                C_DSCAL(naux, sqrt(Taup[w][ia + start]), Awp[ia], 1);
-
-            memcpy(static_cast<void*>(Xwp[0]), static_cast<void*>(Xp[0]), nvir*(ULI)naux*sizeof(double));
-            for (int a = 0; a < nvir; a++)
-                C_DSCAL(naux, sqrt(Tau_ap[w][a]), Xwp[a], 1);
-
-            memcpy(static_cast<void*>(Qwp[0]), static_cast<void*>(Qp[0]), nocc*(ULI)naux*sizeof(double));
-            for (int i = 0; i < nocc; i++)
-                C_DSCAL(naux, sqrt(Tau_ip[w][i]), Qwp[i], 1);
-
-            // MP2J
-            C_DGEMM('T','N',naux,naux,nocc,1.0,Qwp[0],naux,Qwp[0],naux,0.0,Lp[0],naux);
-            C_DGEMM('T','N',naux,naux,nvir,1.0,Xwp[0],naux,Xwp[0],naux,0.0,Gp[0],naux);
-
-            for (ULI PQ = 0L; PQ < naux*(ULI)naux; PQ++)
-                Gp[0][PQ] *= Lp[0][PQ];
-
-            C_DGEMM('T','N', naux, naux, size, 1.0, Awp[0], naux, Awp[0], naux, 0.0, Zp[0], naux);
-
-            E_MP2J -= 2.0 * C_DDOT(naux*(ULI)naux, Zp[0], 1, Gp[0], 1);
-
-            // MP2K
-            for (int j = 0; j < isize; j++) {
-                C_DGEMM('T','N',naux,naux,nvir,1.0,Xwp[0],naux,Awp[j*nvir],naux,0.0,Zp[0],naux);
-
-                for (ULI QP = 0; QP < naux*(ULI)naux; QP++)
-                    Zp[0][QP] *= Zp[0][QP];
-
-                E_MP2K += C_DDOT(naux*(ULI)naux, Zp[0], 1, Lp[0], 1);
+    for (int i = 0; i < naocc_; i++) {
+        for (int a = 0; a < nvir_; a++) {
+            for (int j = 0; j < naocc_; j++) {
+                for (int b = 0; b < navir_; b++) {
+                    double denom = 1.0 / (evals_avirp_[a] + evals_avirp_[b] -
+                        evals_aoccp_[i] - evals_aoccp_[j]);
+                    double iajb = Ip[i * navir_ + a][j * navir_ + b];
+                    double ibja = Ip[i * navir_ + b][j * navir_ + a];
+                    E_MP2J -= 2.0 * iajb * iajb * denom;    
+                    E_MP2K += 1.0 * iajb * ibja * denom;    
+                }
             }
         }
     }
@@ -437,7 +239,170 @@ void MP2::compute_PS3_MP2()
     energies_["MP2J Energy"] = E_MP2J;
     energies_["MP2K Energy"] = E_MP2K;
 }
+void MP2::compute_DF_MP2J()
+{
+    fprintf(outfile, "  ==> DF-MP2J <==\n\n");
 
+    boost::shared_ptr<Denominator> denom(Denominator::buildDenominator(
+        options_.get_str("DENOMINATOR_ALGORITHM"), evals_aocc_, evals_avir_,
+        options_.get_double("DENOMINATOR_DELTA")));
+    shared_ptr<Matrix> tau = denom->denominator();
+    double** taup = tau->pointer();
+    int nW = denom->nvector();    
+
+    boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> Qia = df->Qov();
+    double** Qiap = Qia->pointer();
+    int nQ = ribasis_->nbf();
+
+    boost::shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w", nQ, naocc_*navir_));  
+    double** Qiawp = Qiaw->pointer();
+
+    boost::shared_ptr<Matrix> Z(new Matrix("Z^QQw", nQ, nQ));  
+    double** Zp = Z->pointer();
+
+    double E_MP2J = 0.0;
+
+    for (int w = 0; w < nW; w++) {
+        C_DCOPY(nQ * (ULI) naocc_ * navir_, Qiap[0], 1, Qiawp[0], 1);
+        for (int ia = 0; ia < naocc_ * navir_; ia++) {
+            C_DSCAL(nQ, sqrt(taup[w][ia]), &Qiawp[0][ia], naocc_ * navir_);    
+        }
+        C_DGEMM('N','T', nQ, nQ, naocc_ * navir_, 1.0, Qiawp[0], naocc_ * navir_, Qiawp[0], naocc_ * navir_, 0.0, Zp[0], nQ);
+        E_MP2J -= 2.0 * C_DDOT(nQ * (ULI) nQ, Zp[0], 1, Zp[0], 1);
+    }
+    
+    energies_["MP2J Energy"] = E_MP2J;
+}
+void MP2::compute_PS_MP2J()
+{
+    fprintf(outfile, "  ==> PS-MP2J <==\n\n");
+
+    boost::shared_ptr<Denominator> denom(Denominator::buildDenominator(
+        options_.get_str("DENOMINATOR_ALGORITHM"), evals_aocc_, evals_avir_,
+        options_.get_double("DENOMINATOR_DELTA")));
+    shared_ptr<Matrix> tau = denom->denominator();
+    double** taup = tau->pointer();
+    int nW = denom->nvector();    
+
+    boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> Pia = ps->Aov();
+    boost::shared_ptr<Matrix> Qi = ps->Qaocc();
+    boost::shared_ptr<Matrix> Ra = ps->Ravir();
+    double** Piap = Pia->pointer();
+    double** Rap = Ra->pointer();
+    double** Qip = Qi->pointer();
+    int nP = Pia->rowspi()[0];
+
+    boost::shared_ptr<Matrix> X(new Matrix("X", nP, naocc_ * navir_));
+    boost::shared_ptr<Matrix> Z(new Matrix("Z", nP, nP));
+    
+    double** Xp = X->pointer();
+    double** Zp = Z->pointer();
+
+    double E_MP2J = 0.0;
+
+    for (int w = 0; w < nW; w++) {
+
+        for (int i = 0; i < naocc_; i++) {
+            for (int a = 0; a < navir_; a++) {
+                for (int P = 0; P < nP; P++) {
+                    Xp[P][i * navir_ + a] = Qip[i][P] * Rap[a][P] * taup[w][i * navir_ + a]; 
+                }    
+            }    
+        }
+
+        C_DGEMM('N','T', nP, nP, naocc_ * navir_, 1.0, Xp[0], naocc_ * navir_, 
+            Piap[0], naocc_ * navir_, 0.0,  Zp[0], nP);
+
+        // I think it's transposed
+        for (int P = 0; P < nP; P++) {
+            for (int Q = 0; Q < nP; Q++) {
+                E_MP2J -= 2.0 * Zp[P][Q] * Zp[Q][P];
+            }
+        }
+    }     
+
+    energies_["MP2J Energy"] = E_MP2J;
+}
+void MP2::compute_PS_DF_MP2K()
+{
+    fprintf(outfile, "  ==> PS-DF-MP2K <==\n\n");
+
+    boost::shared_ptr<Denominator> denom(Denominator::buildDenominator(
+        options_.get_str("DENOMINATOR_ALGORITHM"), evals_aocc_, evals_avir_,
+        options_.get_double("DENOMINATOR_DELTA")));
+    shared_ptr<Matrix> tau = denom->denominator();
+    double** taup = tau->pointer();
+    int nW = denom->nvector();    
+
+    boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> Qia = df->Qov();
+    double** Qiap = Qia->pointer();
+    int nQ = ribasis_->nbf();
+
+    boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
+    boost::shared_ptr<Matrix> Pia = ps->Aov();
+    boost::shared_ptr<Matrix> Qi = ps->Qaocc();
+    boost::shared_ptr<Matrix> Ra = ps->Ravir();
+    double** Piap = Pia->pointer();
+    double** Rap = Ra->pointer();
+    double** Qip = Qi->pointer();
+    int nP = Pia->rowspi()[0];
+
+    boost::shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w", nQ, naocc_*navir_));  
+    double** Qiawp = Qiaw->pointer();
+
+    boost::shared_ptr<Matrix> X(new Matrix("X", nP, navir_ * nQ));
+    boost::shared_ptr<Matrix> Y(new Matrix("Y", nP, naocc_ * nQ));
+    boost::shared_ptr<Matrix> Z(new Matrix("Z", nP, naocc_ * navir_));
+    
+    double** Xp = X->pointer();
+    double** Yp = Y->pointer();
+    double** Zp = Z->pointer();
+
+    boost::shared_ptr<Matrix> Temp(new Matrix("Transpose Temp", nQ, naocc_));
+    double** Tempp = Temp->pointer();
+    boost::shared_ptr<Matrix> Temp2(new Matrix("Transpose Temp", nP, navir_));
+    double** Temp2p = Temp2->pointer();
+
+    double E_MP2K = 0.0;
+
+    for (int w = 0; w < nW; w++) {
+        C_DCOPY(nQ * (ULI) naocc_ * navir_, Qiap[0], 1, Qiawp[0], 1);
+        for (int ia = 0; ia < naocc_ * navir_; ia++) {
+            C_DSCAL(nQ, taup[w][ia], &Qiawp[0][ia], naocc_ * navir_);    
+        }
+      
+        for (int Q = 0; Q < nQ; Q++) {
+            C_DGEMM('T','N', nP, navir_, naocc_, 1.0, Qip[0], nP, Qiawp[Q], navir_, 0.0, Temp2p[0], navir_);
+            C_DCOPY(nP * (ULI) navir_, Temp2p[0], 1, &Xp[0][Q], nQ);      
+        }
+ 
+        C_DGEMM('T','T', nP, nQ * naocc_, navir_, 1.0, Rap[0], nP, Qiawp[0], navir_, 0.0, Yp[0], nQ * naocc_);  
+
+        for (int P = 0; P < nP; P++) {
+            C_DCOPY(nQ * (ULI) naocc_, Yp[P], 1, Tempp[0], 1);
+            for (int Q = 0; Q < nQ; Q++) {
+                C_DCOPY(naocc_, Tempp[Q], 1, &Yp[P][Q], nQ);
+            }
+        }
+
+        for (int P = 0; P < nP; P++) {
+            C_DGEMM('N','T', naocc_, navir_, nQ, 1.0, Yp[P], nQ, Xp[P], nQ, 0.0, Zp[P], navir_);
+        }
+
+        E_MP2K += C_DDOT(nP * (ULI) naocc_ * navir_, Zp[0], 1, Piap[0], 1);
+    }     
+
+    energies_["MP2K Energy"] = E_MP2K;
+}
+void MP2::compute_PS_MP2K()
+{
+    throw FeatureNotImplemented("dfcc::MP2", "compute_PS_MP2K", __FILE__, __LINE__);    
+
+    fprintf(outfile, "  ==> PS-PS-MP2K <==\n\n");
+}
 void MP2::print_header()
 {
     fprintf(outfile, "\t ********************************************************\n");
