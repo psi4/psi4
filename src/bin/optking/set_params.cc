@@ -29,10 +29,12 @@ void set_params(void)
 
 #if defined(OPTKING_PACKAGE_PSI)
 
+
 // Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO}
     s = options.get_str("STEP_TYPE");
     if (s == "RFO")     Opt_params.step_type = OPT_PARAMS::RFO;
     else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
+    else if (s == "P_RFO") Opt_params.step_type = OPT_PARAMS::P_RFO;
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");
@@ -129,7 +131,6 @@ void set_params(void)
     Opt_params.test_B = options.get_bool("TEST_B");
     Opt_params.test_derivative_B = options.get_bool("TEST_DERIVATIVE_B");
 
-// Print level {1=default; 2=medium; 3=lots}
 //  Opt_params.print_lvl = 1;
     Opt_params.print_lvl = options.get_int("PRINT");
 
@@ -341,6 +342,8 @@ void print_params(void) {
   fprintf(outfile, "step_type              = %18s\n", "N-R");
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
   fprintf(outfile, "step_type              = %18s\n", "RFO");
+  else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
+  fprintf(outfile, "step_type              = %18s\n", "P_RFO");
 
   if (Opt_params.intrafragment_H == OPT_PARAMS::FISCHER)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
