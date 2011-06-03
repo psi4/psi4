@@ -59,6 +59,9 @@ class STEP_DATA {
     double *g_dq_pointer(void) const { return dq; }
     double g_energy(void) const { return energy; }
     double g_DE_predicted(void) const { return DE_predicted; }
+    double g_dq_norm(void) const { return dq_norm; }
+    double g_dq_gradient(void) const { return dq_norm; }
+    double g_dq_hessian(void) const { return dq_norm; }
 };
 
 // data for an optimization
@@ -68,7 +71,7 @@ class OPT_DATA {
   double **H;        // Hessian matrix
   int iteration;     // num. of current iteration, 0, 1, 2, ...
                      // # of previous steps of data stored should be == iteration
-  int consecutive_back_steps; // # of consecutive steps backwards, if any
+  int consecutive_backsteps; // # of consecutive steps backwards, if any
   double *rfo_eigenvector;  // for RFO root-following
   std::vector<STEP_DATA *> steps; 
 
@@ -142,6 +145,15 @@ class OPT_DATA {
     double *g_dq_pointer(int i) const {
       return steps.at(i)->g_dq_pointer();
     }
+    double g_dq_norm(int i) const {
+      return steps.at(i)->g_dq_norm();
+    }
+    double g_dq_gradient(int i) const {
+      return steps.at(i)->g_dq_gradient();
+    }
+    double g_dq_hessian(int i) const {
+      return steps.at(i)->g_dq_hessian();
+    }
 
     bool previous_step_report(void) const;
 
@@ -159,6 +171,14 @@ class OPT_DATA {
 
     // return number of steps present
     int nsteps(void) const { return steps.size(); }
+
+    void decrement_iteration(void) { --iteration; }
+    void increment_consecutive_backsteps(void) { ++consecutive_backsteps; }
+
+    void erase_last_step(void) {
+      delete *(steps.end());  // free last step
+      steps.erase(steps.end());
+    }
 
 };
 

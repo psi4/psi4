@@ -82,7 +82,7 @@ void MOLECULE::fragmentize(void) {
   for (i=0; i<nfrag; ++i) {
     fprintf(outfile, "\tDetected frag with atoms: ");
     for (j=0; j<natom; ++j)
-      if (frag_atoms[i][j]) printf(" %d", j+1);
+      if (frag_atoms[i][j]) fprintf(outfile," %d", j+1);
     fprintf(outfile,"\n"); 
   }
 
