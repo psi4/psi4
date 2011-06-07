@@ -73,7 +73,7 @@ void KS::common_init()
     }
     if (functional_->isRangeCorrected()) {
         omega_eri_ao_ = boost::shared_ptr<ErfERI>(static_cast<ErfERI*>(fact->erf_eri(functional_->getOmega())));
-        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(omega_eri_ao_, fact));
+        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(boost::shared_ptr<TwoBodyAOInt>(static_cast<TwoBodyAOInt*>(omega_eri_ao_.get())), fact));
     }
     
 }
