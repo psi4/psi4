@@ -558,7 +558,7 @@ void HF::form_Shalf()
             eigval->set(h, i, scale);
         }
     }
-    if (print_ & (Communicator::world->me() == 0))
+    if (print_ && (Communicator::world->me() == 0))
         fprintf(outfile,"  Minimum eigenvalue in the overlap matrix is %14.10E.\n",min_S);
     // Create a vector matrix from the converted eigenvalues
     eigtemp2->set_diagonal(eigval);
@@ -572,12 +572,12 @@ void HF::form_Shalf()
     double S_cutoff = options_.get_double("S_MIN_EIGENVALUE");
     if (min_S > S_cutoff && options_.get_str("S_ORTHOGONALIZATION") == "SYMMETRIC") {
 
-        if (print_ & (Communicator::world->me() == 0))
+        if (print_ && (Communicator::world->me() == 0))
             fprintf(outfile,"  Using Symmetric Orthogonalization.\n");
 
     } else {
 
-        if (print_ & (Communicator::world->me() == 0))
+        if (print_ && (Communicator::world->me() == 0))
             fprintf(outfile,"  Using Canonical Orthogonalization with cutoff of %14.10E.\n",S_cutoff);
 
         //Diagonalize S (or just get a fresh copy)
@@ -597,7 +597,7 @@ void HF::form_Shalf()
                     nmo_--;
                 }
             }
-            if (print_>2 & (Communicator::world->me() == 0))
+            if (print_>2 && (Communicator::world->me() == 0))
                 fprintf(outfile,"  Irrep %d, %d of %d possible MOs eliminated.\n",h,start_index,nsopi_[h]);
 
             delta_mos += start_index;
@@ -620,8 +620,8 @@ void HF::form_Shalf()
             }
         }
 
-        if (print_ & (Communicator::world->me() == 0))
-            fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n",delta_mos,nso_);
+        if (print_ && (Communicator::world->me() == 0))
+            fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
 
         // Refreshes twice in RHF, no big deal
         epsilon_a_->init(nirrep_, nmopi_);
@@ -639,10 +639,7 @@ void HF::form_Shalf()
         S_->print(outfile);
         X_->print(outfile);
     }
-    if (print_ & (Communicator::world->me() == 0)) {
-        fprintf(outfile,"\n");
-        fflush(outfile);
-    }
+    fflush(outfile);
 }
 
 void HF::compute_fcpi()
