@@ -302,7 +302,7 @@ class MOLECULE {
   void project_f_and_H(void);
   void nr_step(void);
   void rfo_step(void);
-  void p_rfo_step(void);
+  void prfo_step(void);
   void backstep(void);
 
   void apply_intrafragment_step_limit(double * & dq);
