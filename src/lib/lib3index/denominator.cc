@@ -376,7 +376,7 @@ void CholeskyDenominator::decompose()
             }
         }
         
-        if (max_err < delta_) 
+        if (fabs(max_err) < delta_) 
             break;
 
         int j = max_index / nvir;
