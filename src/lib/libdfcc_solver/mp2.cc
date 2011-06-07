@@ -496,9 +496,9 @@ void MP2::compute_DF_MP2J()
     for (int w = 0; w < nW; w++) {
         C_DCOPY(nQ * (ULI) naocc_ * navir_, Qiap[0], 1, Qiawp[0], 1);
         for (int ia = 0; ia < naocc_ * navir_; ia++) {
-            C_DSCAL(nQ, sqrt(taup[w][ia]), &Qiawp[0][ia], naocc_ * navir_);    
+            C_DSCAL(nQ, taup[w][ia], &Qiawp[0][ia], naocc_ * navir_);    
         }
-        C_DGEMM('N','T', nQ, nQ, naocc_ * navir_, 1.0, Qiawp[0], naocc_ * navir_, Qiawp[0], naocc_ * navir_, 0.0, Zp[0], nQ);
+        C_DGEMM('N','T', nQ, nQ, naocc_ * navir_, 1.0, Qiap[0], naocc_ * navir_, Qiawp[0], naocc_ * navir_, 0.0, Zp[0], nQ);
         E_MP2J -= 2.0 * C_DDOT(nQ * (ULI) nQ, Zp[0], 1, Zp[0], 1);
     }
     
@@ -565,6 +565,10 @@ void MP2::compute_PS_DF_MP2K()
     shared_ptr<Matrix> tau = denom->denominator();
     double** taup = tau->pointer();
     int nW = denom->nvector();    
+
+    if (debug_) {
+        tau->print();
+    }
 
     boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
     boost::shared_ptr<Matrix> Qia = df->Qov();
