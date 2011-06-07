@@ -293,7 +293,7 @@ boost::shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, do
 boost::shared_ptr<Matrix> MintsHelper::ao_eri()
 {
     int nbf = basisset_->nbf();
-    boost::shared_ptr<Matrix> I(new Matrix("AO ERI Integrals", nbf*nbf, nbf*nbf));
+    boost::shared_ptr<Matrix> I(new Matrix("AO ERI Tensor", nbf*nbf, nbf*nbf));
 
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri());
     double** Ip = I->pointer();
@@ -329,6 +329,13 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boos
     int nvir = Cv->colspi()[0];
 
     boost::shared_ptr<Matrix> Iso = ao_eri();   
+    //C_DGEMM('N','N', nso * nso * nso,  nocc, nso, 1.0, Ixyzwp[0][0], nso, Cop[0][0], nocc, 0.0, Ixyzip[0][0], nso * nocc);
+    //C_DGEMM('T','N', nocc, nso * nso * nocc, nso, 1.0, Cop[0][0], nocc, Ixyzip[0][0], nso * nso * nocc, Ijyzip[0][0], nso * nso * nocc);
+    
+
+    //boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
+    //boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
+    //boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
     boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
 
     double** Isop = Iso->pointer();

@@ -251,11 +251,20 @@ void PseudospectralGrid::buildGridFromOptions()
     boost::shared_ptr<Vector> alpha(new Vector("Alpha Center per Atom", molecule_->natom()));
     double* alphap = alpha->pointer(); 
 
-    /// TODO: Determine alpha based on primary basis 
     MolecularGrid::getBSRadii();
     for (int A = 0; A < molecule_->natom(); A++) {
         alphap[A] = BSRadii_[molecule_->Z(A)];
     }
+
+    std::map<int, int> leb_orders = SphericalGrid::lebedevOrdersToPoints();
+    std::vector<int> valid_orders;
+
+    for (std::map<int, int>::iterator it = leb_orders.begin(); it != leb_orders.end(); it++) {
+        if ((*it).first > 1) // Order 1 is for trial purposes only
+            valid_orders.push_back((*it).first);
+    } 
+
+    std::sort(valid_orders.begin(), valid_orders.end());
 
     for (int A = 0; A < molecule_->natom(); A++) {
         boost::shared_ptr<RadialGrid> radial = RadialGrid::buildGrid(
@@ -264,11 +273,154 @@ void PseudospectralGrid::buildGridFromOptions()
             alphap[A]);
         std::vector<boost::shared_ptr<SphericalGrid> > spheres;
         for (int i = 0; i < radial->npoints(); i++) {
-            // TODO: Use envelope functions for pruning
             if (options_.get_str("PS_PRUNING_SCHEME") == "FLAT") {
                 spheres.push_back(SphericalGrid::buildGrid(
                     options_.get_str("PS_SPHERICAL_SCHEME"),
                     options_.get_int("PS_ORDER_SPHERICAL")));
+            } else if (options_.get_str("PS_PRUNING_SCHEME") == "P_SLATER") {
+
+                double exponent = 1.0 / (alphap[A]);
+                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A]);
+                double R = radial->r()[i];
+
+                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R) - 1.0E-10); 
+    
+                int Lselected = 0;
+
+                for (int j = 0; j < valid_orders.size(); j++) {
+                    if (Ldesired <= valid_orders[j]) {
+                        Lselected = valid_orders[j];
+                        break;
+                    }
+                }
+
+                if (Lselected == 0)
+                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+
+                // Must use lebedev for pruned grids 
+                spheres.push_back(SphericalGrid::buildGrid(
+                    "LEBEDEV",
+                    Lselected));
+            } else if (options_.get_str("PS_PRUNING_SCHEME") == "D_SLATER") {
+
+                double exponent = 2.0 / (alphap[A]);
+                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(2.0) / (alphap[A] * alphap[A]);
+                double R = radial->r()[i];
+
+                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R) - 1.0E-10); 
+    
+                int Lselected = 0;
+
+                for (int j = 0; j < valid_orders.size(); j++) {
+                    if (Ldesired <= valid_orders[j]) {
+                        Lselected = valid_orders[j];
+                        break;
+                    }
+                }
+
+                if (Lselected == 0)
+                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+
+                // Must use lebedev for pruned grids 
+                spheres.push_back(SphericalGrid::buildGrid(
+                    "LEBEDEV",
+                    Lselected));
+            } else if (options_.get_str("PS_PRUNING_SCHEME") == "LOG_SLATER") {
+
+                double exponent = options_.get_double("PS_PRUNING_ALPHA");
+                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL"));
+                double R = log(radial->r()[i] / alphap[A]);
+
+                int Ldesired = (int) ceil(Ap * exp(-exponent * fabs(R)) - 1.0E-10); 
+    
+                int Lselected = 0;
+
+                for (int j = 0; j < valid_orders.size(); j++) {
+                    if (Ldesired <= valid_orders[j]) {
+                        Lselected = valid_orders[j];
+                        break;
+                    }
+                }
+
+                if (Lselected == 0)
+                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+
+                // Must use lebedev for pruned grids 
+                spheres.push_back(SphericalGrid::buildGrid(
+                    "LEBEDEV",
+                    Lselected));
+            } else if (options_.get_str("PS_PRUNING_SCHEME") == "P_GAUSSIAN") {
+
+                double exponent = 1.0 / (2.0 * alphap[A]);
+                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0 / 2.0) / (alphap[A]);
+                double R = radial->r()[i];
+
+                int Ldesired = (int) ceil(Ap * R * exp(-exponent * R * R) - 1.0E-10); 
+    
+                int Lselected = 0;
+
+                for (int j = 0; j < valid_orders.size(); j++) {
+                    if (Ldesired <= valid_orders[j]) {
+                        Lselected = valid_orders[j];
+                        break;
+                    }
+                }
+
+                if (Lselected == 0)
+                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+
+                // Must use lebedev for pruned grids 
+                spheres.push_back(SphericalGrid::buildGrid(
+                    "LEBEDEV",
+                    Lselected));
+            } else if (options_.get_str("PS_PRUNING_SCHEME") == "D_GAUSSIAN") {
+
+                double exponent = 1.0 / (alphap[A] * alphap[A]);
+                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL")) * exp(1.0) / (alphap[A] * alphap[A]);
+                double R = radial->r()[i];
+
+                int Ldesired = (int) ceil(Ap * R * R * exp(-exponent * R * R) - 1.0E-10); 
+    
+                int Lselected = 0;
+
+                for (int j = 0; j < valid_orders.size(); j++) {
+                    if (Ldesired <= valid_orders[j]) {
+                        Lselected = valid_orders[j];
+                        break;
+                    }
+                }
+
+                if (Lselected == 0)
+                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+
+                // Must use lebedev for pruned grids 
+                spheres.push_back(SphericalGrid::buildGrid(
+                    "LEBEDEV",
+                    Lselected));
+            } else if (options_.get_str("PS_PRUNING_SCHEME") == "LOG_GAUSSIAN") {
+
+                double exponent = options_.get_double("PS_PRUNING_ALPHA");
+                double Ap = ((double) options_.get_int("PS_ORDER_SPHERICAL"));
+                double R = log(radial->r()[i] / alphap[A]);
+
+                int Ldesired = (int) ceil(Ap * exp(-exponent * R * R) - 1.0E-10); 
+    
+                int Lselected = 0;
+
+                for (int j = 0; j < valid_orders.size(); j++) {
+                    if (Ldesired <= valid_orders[j]) {
+                        Lselected = valid_orders[j];
+                        break;
+                    }
+                }
+
+                if (Lselected == 0)
+                    throw PSIEXCEPTION("PseudospectralGrid: Requested Spherical Order is too high in pruned grid");
+
+                // Must use lebedev for pruned grids 
+                spheres.push_back(SphericalGrid::buildGrid(
+                    "LEBEDEV",
+                    Lselected));
             }
         }
         boost::shared_ptr<AtomicGrid> atom(new AtomicGrid());
@@ -353,61 +505,61 @@ void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> > atoms,
 void MolecularGrid::getBSRadii()
 {
     if (BSRadii_.size() == 0) {
-        BSRadii_.push_back(0.5*1.000);     
-        BSRadii_.push_back(0.5*1.001);     
-        BSRadii_.push_back(0.5*1.012);     
-        BSRadii_.push_back(0.5*0.825);     
-        BSRadii_.push_back(0.5*1.408);     
-        BSRadii_.push_back(0.5*1.485);     
-        BSRadii_.push_back(0.5*1.452);     
-        BSRadii_.push_back(0.5*1.397);     
-        BSRadii_.push_back(0.5*1.342);     
-        BSRadii_.push_back(0.5*1.287);     
-        BSRadii_.push_back(0.5*1.243);     
-        BSRadii_.push_back(0.5*1.144);     
-        BSRadii_.push_back(0.5*1.364);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.716);     
-        BSRadii_.push_back(0.5*1.705);     
-        BSRadii_.push_back(0.5*1.683);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.595);     
-        BSRadii_.push_back(0.5*1.485);     
-        BSRadii_.push_back(0.5*1.474);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.562);     
-        BSRadii_.push_back(0.5*1.650);     
-        BSRadii_.push_back(0.5*1.727);     
-        BSRadii_.push_back(0.5*1.760);     
-        BSRadii_.push_back(0.5*1.771);     
-        BSRadii_.push_back(0.5*1.749);     
-        BSRadii_.push_back(0.5*1.727);     
-        BSRadii_.push_back(0.5*1.628);     
-        BSRadii_.push_back(0.5*1.606);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.639);     
-        BSRadii_.push_back(0.5*1.672);     
-        BSRadii_.push_back(0.5*1.804);     
-        BSRadii_.push_back(0.5*1.881);     
-        BSRadii_.push_back(0.5*1.892);     
-        BSRadii_.push_back(0.5*1.892);     
-        BSRadii_.push_back(0.5*1.881);     
+        BSRadii_.push_back(1.000);     
+        BSRadii_.push_back(1.001);     
+        BSRadii_.push_back(1.012);     
+        BSRadii_.push_back(0.825);     
+        BSRadii_.push_back(1.408);     
+        BSRadii_.push_back(1.485);     
+        BSRadii_.push_back(1.452);     
+        BSRadii_.push_back(1.397);     
+        BSRadii_.push_back(1.342);     
+        BSRadii_.push_back(1.287);     
+        BSRadii_.push_back(1.243);     
+        BSRadii_.push_back(1.144);     
+        BSRadii_.push_back(1.364);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.716);     
+        BSRadii_.push_back(1.705);     
+        BSRadii_.push_back(1.683);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.595);     
+        BSRadii_.push_back(1.485);     
+        BSRadii_.push_back(1.474);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.562);     
+        BSRadii_.push_back(1.650);     
+        BSRadii_.push_back(1.727);     
+        BSRadii_.push_back(1.760);     
+        BSRadii_.push_back(1.771);     
+        BSRadii_.push_back(1.749);     
+        BSRadii_.push_back(1.727);     
+        BSRadii_.push_back(1.628);     
+        BSRadii_.push_back(1.606);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.639);     
+        BSRadii_.push_back(1.672);     
+        BSRadii_.push_back(1.804);     
+        BSRadii_.push_back(1.881);     
+        BSRadii_.push_back(1.892);     
+        BSRadii_.push_back(1.892);     
+        BSRadii_.push_back(1.881);     
     }
 }
 void MolecularGrid::applyStandardWeights(boost::shared_ptr<Matrix> chi_values)
