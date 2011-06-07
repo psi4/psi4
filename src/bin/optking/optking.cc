@@ -226,7 +226,7 @@ fflush(outfile);
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
     mol1->rfo_step(); 
   else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
-    mol1->p_rfo_step(); 
+    mol1->prfo_step(); 
 
   bool converged = p_Opt_data->conv_check();
 
