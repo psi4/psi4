@@ -1,3 +1,5 @@
+#ifndef HF_H
+#define HF_H
 /*
  *  hf.h
  *  matrix
@@ -7,8 +9,6 @@
  *
  */
 
-#ifndef HF_H
-#define HF_H
 
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
