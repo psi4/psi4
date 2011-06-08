@@ -1,0 +1,340 @@
+#include <stdio.h>
+#include <map>
+#include <vector>
+#include <sstream>
+
+#define NUM_TO_OPERATOR_ID(x) ((x) ? 1<<((x)-1) : 0)
+#define SKIP_THIS_OPERATOR(num,bit) ((bit) ? !((1<<((bit)-1)) & (num)) : 0 )
+
+std::map<int, const char*> labels;
+std::map<int, const char*> pointGroups;
+std::stringstream stream;
+
+namespace Ops{
+    enum Operations { E = 0, C2_z = 1, C2_y = 2, C2_x = 4, i = 8, Sigma_xy = 16, Sigma_xz = 32, Sigma_yz = 64, ID = 128};
+}
+
+std::vector<int>
+determine_subgroups(int group)
+{
+     std::vector<int> subgroups;
+     std::map<int, const char*>::const_iterator iter = pointGroups.begin();
+     for(; iter != pointGroups.end(); ++iter){
+         int subgroup = iter->first;
+         if((subgroup & group) == subgroup) subgroups.push_back(subgroup);
+     }
+     return subgroups;
+}
+
+const char*
+determine_operators(int group, int subgroup)
+{
+     stream.str(""); // clear the buffer
+     stream << "        " << pointGroups[subgroup] << "_operators_";
+     std::string arrayName(stream.str());
+     int count = 1;
+     std::vector<int> operators;
+     operators.push_back(0); // E is always present
+     // This extra array is just used for printing later.  Not really needed
+     std::vector<int> operator_ids;
+     operator_ids.push_back(0); // E is always present
+     for(int n = 1; n < 8; ++n){
+         if(1 & group){
+             if(1 & subgroup){
+                 operators.push_back(count);
+                 operator_ids.push_back(n);
+             }
+             ++count;
+         }
+         group >>= 1;
+         subgroup >>= 1;
+     }
+     int size = operators.size();
+     stream << " = new int[" << size << "];" << std::endl;
+     stream << arrayName << "[0] = " << size << "; // " << size << " element(s) in the list" << std::endl;
+     for(count = 0; count < operators.size(); ++count){
+        stream << arrayName << "[" << count+1 << "] = " << operators[count] << "; // " << 
+        labels[NUM_TO_OPERATOR_ID(operator_ids[count])] << std::endl;
+     }
+
+     return stream.str().c_str();
+}
+
+int
+bits_to_subgroup(int group, int subgroup){
+    std::vector<int> subgroups = determine_subgroups(group);
+    std::vector<int>::const_iterator subIter1 = subgroups.begin();
+    std::vector<int>::const_iterator stop = subgroups.end();
+    int count = 0;
+    for(; subIter1 != stop; ++subIter1){
+        int subgroup1 = *subIter1;
+        if(subgroup == subgroup1) return count;
+        ++count;
+    }
+}
+
+int
+product(int group1, int group2)
+{
+    int result = 0;
+    for(int op1 = 0; op1 < 8; ++op1){
+        if(SKIP_THIS_OPERATOR(group1, op1)) continue;
+        for(int op2 = 0; op2 < 8; ++op2){
+            if(SKIP_THIS_OPERATOR(group2, op2)) continue;
+            result |= NUM_TO_OPERATOR_ID(op1^op2);
+        }
+    }
+    return result;
+}
+
+int
+intersection(int group1, int group2)
+{
+    return group1 & group2;
+}
+
+void
+print_group(int group)
+{
+    for(int op = 0; op < 9; ++op){
+        if(SKIP_THIS_OPERATOR(group, op)) continue;
+        printf("%s ", labels[NUM_TO_OPERATOR_ID(op)]);
+    }
+    printf("\n");
+}
+
+int
+determine_degeneracy(int group)
+{
+    int degeneracy = 0;
+    for(int op = 0; op < 8; ++op){
+        if(SKIP_THIS_OPERATOR(group, op)) continue;
+        ++degeneracy;
+    }
+    return degeneracy;
+}
+
+int
+determine_r_operators(int group, int subgroup1, int subgroup2)
+{
+    std::map<int,bool> uniqueCosets;
+    for(int g = 0; g < 8; ++g){
+        int coset = 0;
+        if(SKIP_THIS_OPERATOR(group, g)) continue;
+        for(int mu = 0; mu < 8; ++mu){
+            if(SKIP_THIS_OPERATOR(subgroup1, mu)) continue;
+            for(int nu = 0; nu < 8; ++nu){
+                if(SKIP_THIS_OPERATOR(subgroup2, nu)) continue;
+                coset |= NUM_TO_OPERATOR_ID(mu^g^nu);
+                if(!NUM_TO_OPERATOR_ID(mu^g^nu)) coset |= Ops::ID;
+            }
+        }
+        //printf("Operator %d generated %d\n", g, coset);
+        uniqueCosets[coset] = 1;
+    }
+    std::map<int, bool>::const_iterator iter = uniqueCosets.begin();
+    std::map<int, bool>::const_iterator stop = uniqueCosets.end();
+    int rOperators = 0;
+    for(; iter != stop; ++iter){
+        int coset = iter->first;
+        for(int op = 1; op < 9; ++op){
+            if(SKIP_THIS_OPERATOR(coset, op)) continue;
+            rOperators |= (coset & Ops::ID ? Ops::E : NUM_TO_OPERATOR_ID(op));
+            break;
+        }
+    }
+    return rOperators;
+}
+
+int
+main()
+{
+
+   labels[Ops::E]        = " E ";
+   labels[Ops::C2_x]     = "C2x";
+   labels[Ops::C2_y]     = "C2y";
+   labels[Ops::C2_z]     = "C2z";
+   labels[Ops::i]        = " i ";
+   labels[Ops::Sigma_xy] = "Sxy";
+   labels[Ops::Sigma_xz] = "Sxz";
+   labels[Ops::Sigma_yz] = "Syz";
+   labels[Ops::ID]       = "E";
+
+   int C1    = 0;                                             pointGroups[C1]    = "C1";
+   int Ci    = Ops::i;                                        pointGroups[Ci]    = "Ci";
+   int C2X   = Ops::C2_x ;                                    pointGroups[C2X]   = "C2_x";
+   int C2Y   = Ops::C2_y ;                                    pointGroups[C2Y]   = "C2_y";
+   int C2Z   = Ops::C2_z ;                                    pointGroups[C2Z]   = "C2_z";
+   int CsXY  = Ops::Sigma_xy ;                                pointGroups[CsXY]  = "Cs_xy";
+   int CsXZ  = Ops::Sigma_xz ;                                pointGroups[CsXZ]  = "Cs_xz";
+   int CsYZ  = Ops::Sigma_yz ;                                pointGroups[CsYZ]  = "Cs_yz";
+   int D2    = Ops::C2_x | Ops::C2_y | Ops::C2_z ;            pointGroups[D2]    = "D2";
+   int C2vX  = Ops::C2_x | Ops::Sigma_xy | Ops::Sigma_xz ;    pointGroups[C2vX]  = "C2v_x";
+   int C2vY  = Ops::C2_y | Ops::Sigma_xy | Ops::Sigma_yz ;    pointGroups[C2vY]  = "C2v_y";
+   int C2vZ  = Ops::C2_z | Ops::Sigma_xz | Ops::Sigma_yz ;    pointGroups[C2vZ]  = "C2v_z";
+   int C2hX  = Ops::C2_x | Ops::Sigma_yz | Ops::i ;           pointGroups[C2hX]  = "C2h_x";
+   int C2hY  = Ops::C2_y | Ops::Sigma_xz | Ops::i ;           pointGroups[C2hY]  = "C2h_y";
+   int C2hZ  = Ops::C2_z | Ops::Sigma_xy | Ops::i ;           pointGroups[C2hZ]  = "C2h_z";
+   int D2h   = Ops::C2_x | Ops::C2_y | Ops::C2_z | Ops::i |
+               Ops::Sigma_xy | Ops::Sigma_xz | Ops::Sigma_yz; pointGroups[D2h]   = "D2h";
+
+
+#if 0
+   printf("\nThe D2h Direct Product Table\n");
+   for(int op1 = 0; op1 < 8; ++op1){
+       for(int op2 = 0; op2 < 8; ++op2){
+           printf(" %s ", labels[NUM_TO_OPERATOR_ID(op1^op2)]);
+       }
+       printf("\n\n");
+   }
+
+   std::map<int, const char*>::const_iterator iter = pointGroups.begin();
+   for(; iter != pointGroups.end(); ++iter){
+       int group = iter->first;
+       //if(group != C2vZ) continue;
+       std::vector<int> subgroups = determine_subgroups(group);
+       std::vector<int>::const_iterator subIter1 = subgroups.begin();
+       std::vector<int>::const_iterator stop = subgroups.end();
+       for(; subIter1 != stop; ++subIter1){
+           int subgroup1 = *subIter1;
+           std::vector<int>::const_iterator subIter2 = subgroups.begin();
+           for(; subIter2 != stop; ++subIter2){
+               int subgroup2 = *subIter2;
+               printf("\n\t%s, %s\n", pointGroups[subgroup1], pointGroups[subgroup2]);
+               int rOperators = determine_r_operators(group, subgroup1, subgroup2);
+               printf("\tThe operators are ");
+               print_group(rOperators);
+               printf("\tDegeneracy = %d\n", determine_degeneracy(rOperators));
+               printf("\tIntersection  = %s\n", pointGroups[intersection(subgroup1, subgroup2)]);
+           }
+       }
+   }
+#endif
+
+
+   printf("#include<map>\n\n"
+          " /**\n"
+          "  * Provides the data needed to implement Davidson's DCD approach to symmetrizing integrals\n"
+          "  * E. R. Davidson, J. Chem. Phys., 62, 400 (1975)\n"
+          "  * Do not modify this file! It was autogenerated by the C++ program DCD.cplusplus in the source folder.\n"
+          "  * Two ordering schemes are used here.  Dense numbering is a point group specific scheme, which runs from\n"
+          "  * zero to the number of subgroups in the point group.   This is used for the arrays, to make them as compact as\n"
+          "  * possible.  Bitwise numbering represents point groups by considering each bit as a symmetry operation.  This\n"
+          "  * is not dense, but allows me to do group theory very conveniently, so it's used internally.\n"
+          "  * Andy Simmonett.\n"
+          "  */\n\n"
+          "class DCD{\n"
+          "private:\n\n"
+          "  /// The number of subgroups in the current point group, pg_.\n"
+          "  int nsub_;\n"
+          "  /// The lookup array for the DCR list of operators for all possiblepairs of stabilizer subgroups.\n"
+          "  int ***dcr_;\n"
+          "  /// The lookup array for the intersection of all possible pairs of subgroups.\n"
+          "  int ***gng_;\n"
+          "  /// The bit representation to dense numbering mapping.\n"
+          "  std::map<int, int> bits_to_subgroup_;\n"
+          "  /// The lists of operators in each possible subgroup.\n");
+   std::vector<int> allsubgroups = determine_subgroups(D2h);
+   std::vector<int>::const_iterator d2h_iter = allsubgroups.begin();
+   for(; d2h_iter != allsubgroups.end(); ++d2h_iter){
+       printf("  int *%s_operators_;\n", pointGroups[*d2h_iter]);
+   }
+
+   printf("\n\npublic:\n\n"
+          "  /**\n"
+          "   * Builds a DCD object, to perform double coset decompositions\n"
+          "   * @param group the point group of the molecule, in bitwise representation\n"
+          "   */\n"
+          "  DCD(int pg)\n"
+          "  {\n");
+   for(d2h_iter = allsubgroups.begin(); d2h_iter != allsubgroups.end(); ++d2h_iter){
+       printf("    %s_operators_ = 0;\n", pointGroups[*d2h_iter]);
+   }
+   std::map<int, const char*>::const_iterator groupIter = pointGroups.begin();
+   for(; groupIter != pointGroups.end(); ++groupIter){
+       int group = groupIter->first;
+       std::vector<int> subgroups = determine_subgroups(group);
+       std::vector<int>::const_iterator stop = subgroups.end();
+       if(group)
+            printf("else ");
+       else
+            printf("    ");
+       printf("if(pg == %d) { // %s\n", group, pointGroups[group]);
+       printf("        nsub_ = %d;\n\n", (int)subgroups.size());
+       int count = 0;
+       for(std::vector<int>::const_iterator subIter1 = subgroups.begin(); subIter1 != stop; ++subIter1){
+           int subgroup1 = *subIter1;
+           printf("%s\n", determine_operators(group, subgroup1));
+       }
+       for(std::vector<int>::const_iterator subIter1 = subgroups.begin(); subIter1 != stop; ++subIter1){
+           int subgroup1 = *subIter1;
+           printf("        bits_to_subgroup_[%d] = %d; // %s\n", subgroup1, count++, pointGroups[subgroup1]);
+       }
+       printf("\n");
+       printf("        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];\n");
+       int row = 0;
+       for(std::vector<int>::const_iterator subIter1 = subgroups.begin(); subIter1 != stop; ++subIter1){
+           int subgroup1 = *subIter1;
+           int col = 0;
+           for(std::vector<int>::const_iterator subIter2 = subgroups.begin(); subIter2 != stop; ++subIter2){
+                int subgroup2 = *subIter2;
+                int dcr = determine_r_operators(group, subgroup1, subgroup2);
+                printf("        dcr_[%d][%d] = %s_operators_; // %s, %s = %s\n", 
+                                row, col, pointGroups[dcr], pointGroups[subgroup1], pointGroups[subgroup2], pointGroups[dcr]);
+                                  
+                ++col;
+           }
+           ++row;
+       }
+
+       printf("\n");
+       printf("        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];\n");
+       row = 0;
+       for(std::vector<int>::const_iterator subIter1 = subgroups.begin(); subIter1 != stop; ++subIter1){
+           int subgroup1 = *subIter1;
+           int col = 0;
+           for(std::vector<int>::const_iterator subIter2 = subgroups.begin(); subIter2 != stop; ++subIter2){
+                int subgroup2 = *subIter2;
+                int gng = intersection(subgroup1, subgroup2);
+                printf("        gng_[%d][%d] = %d; // %s, %s = %s\n", 
+                                row, col, bits_to_subgroup(group, gng), pointGroups[subgroup1], pointGroups[subgroup2], pointGroups[gng]);
+                                  
+                ++col;
+           }
+           ++row;
+       }
+
+       printf("    }");
+   }
+   printf("\n  }\n\n"); // End of c'tor
+
+   printf("  ~DCD()\n"
+          "  {\n");
+   for(d2h_iter = allsubgroups.begin(); d2h_iter != allsubgroups.end(); ++d2h_iter){
+       printf("      if(%s_operators_ != 0) delete [] %s_operators_;\n", pointGroups[*d2h_iter], pointGroups[*d2h_iter]);
+   }
+   printf("\n      for(int n = 0; n < nsub_; ++n) delete [] gng_[n];\n"
+          "      delete [] gng_;\n"
+          "\n      for(int n = 0; n < nsub_; ++n) delete [] dcr_[n];\n"
+          "      delete [] dcr_;\n");
+   printf("  }\n\n");
+  
+   printf("  /// Takes a point group expressed as a bitset for each operator, and returns the corresponding dense\n"
+          "  /// numbering representation for this point group.\n"
+          "  int bits_to_dense_numbering(int group) { return bits_to_subgroup_[group]; }\n\n"); 
+
+   printf("  /// Returns the intersection (in dense subgroup numbering) of the two subgroups, group1 and group2,\n" 
+          "  /// which are also in the dense ordering scheme.\n"
+          "  int intersection(int group1, int group2) const { return gng_[group1][group2]; }\n\n"); 
+
+   printf("  /// Returns the list of operators (numbered appropriately for the current point group) for the pair of stabilizer subgroups\n"
+          "  /// group1 and group2, which are densely numbered.  The first element is the size of the list, so iterate as follows:\n" 
+          "  /// int* dcr = dcr(g1, g2);  int size = dcr[0];  for(int i = 1; i <= size; ++i) do something with dcr[i]...\n"
+          "  const int* dcr(int group1, int group2) const { return dcr_[group1][group2]; }\n"); 
+
+   printf("\n};\n");
+   
+
+}
+
+
