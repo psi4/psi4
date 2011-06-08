@@ -56,7 +56,7 @@ void KS::common_init()
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
 
     // Temporary print, to make sure we're in the right spot
-    fprintf(outfile,"\n  Selected Functional is %s.\n",functional_->getName().c_str());
+    fprintf(outfile,"\n  Selected Functional is %s.\n\n",functional_->getName().c_str());
 
     //Grab the properties object for this basis
     properties_ = boost::shared_ptr<Properties> (new Properties(basisset_,block_size));
@@ -72,8 +72,8 @@ void KS::common_init()
         properties_->setToComputeKEDensity(true);
     }
     if (functional_->isRangeCorrected()) {
-        omega_eri_ao_ = boost::shared_ptr<ErfERI>(static_cast<ErfERI*>(fact->erf_eri(functional_->getOmega())));
-        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(boost::shared_ptr<TwoBodyAOInt>(static_cast<TwoBodyAOInt*>(omega_eri_ao_.get())), fact));
+        //omega_eri_ao_ = boost::shared_ptr<ErfERI>(static_cast<ErfERI*>(fact->erf_eri(functional_->getOmega())));
+        //omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(boost::shared_ptr<TwoBodyAOInt>(static_cast<TwoBodyAOInt*>(omega_eri_ao_.get())), fact));
     }
     
 }
@@ -471,7 +471,7 @@ void UKS::form_V()
         ntrue = block->getTruePoints();
 
         // Compute properties and basis points
-        properties_->computeUKSProperties(block, Da_, Db_, Ca_, Cb_, nalphapi_, nalphapi_);
+        properties_->computeUKSProperties(block, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
         nsigf = properties_->nSignificantFunctions();
 
         // Compute functional values and partials
@@ -745,6 +745,10 @@ double UKS::compute_E()
     if (functional_->isHybrid()) {
         exchange_E = -functional_->getExactExchange()*Da_->vector_dot(Ka_);
         exchange_E = -functional_->getExactExchange()*Db_->vector_dot(Kb_);
+    }
+    if (functional_->isRangeCorrected()) {
+        exchange_E = -Da_->vector_dot(wKa_);
+        exchange_E = -Db_->vector_dot(wKb_);
     }
     double Etotal = 0.0;
     Etotal += nuclearrep_;

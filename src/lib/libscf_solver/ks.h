@@ -1,3 +1,5 @@
+#ifndef KS_H
+#define KS_H
 /*
  *  ks.h
  *  matrix
@@ -6,8 +8,6 @@
  *
  */
 
-#ifndef KS_H
-#define KS_H
 
 #include "hf.h"
 #include "rhf.h"
@@ -63,7 +63,7 @@ protected:
 
 public:
     KS(Options & options, boost::shared_ptr<PSIO> psio);
-    ~KS();
+    virtual ~KS();
 };
 
 class RKS : public RHF, public KS {
@@ -82,7 +82,7 @@ protected:
 public:
     RKS(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     RKS(Options& options, boost::shared_ptr<PSIO> psio);
-    ~RKS();
+    virtual ~RKS();
 };
 
 class UKS : public UHF, public KS {
@@ -105,7 +105,7 @@ protected:
 public:
     UKS(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     UKS(Options& options, boost::shared_ptr<PSIO> psio);
-    ~UKS();
+    virtual ~UKS();
 };
 
 }} // Namespaces
