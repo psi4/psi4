@@ -486,6 +486,16 @@ int py_psi_get_n_threads()
     return Process::environment.get_n_threads();
 }
 
+int py_psi_get_nproc()
+{
+    return Communicator::world->nproc();
+}
+
+int py_psi_get_me()
+{
+    return Communicator::world->me();
+}
+
 boost::shared_ptr<Wavefunction> py_psi_reference_wavefunction()
 {
     return Process::environment.reference_wavefunction();
@@ -560,8 +570,10 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("set_memory", py_psi_set_memory);
     def("get_memory", py_psi_get_memory);
-    def("set_n_threads", &py_psi_set_n_threads);
-    def("get_n_threads", &py_psi_get_n_threads);
+    def("set_nthread", &py_psi_set_n_threads);
+    def("nthread", &py_psi_get_n_threads);
+    def("nproc", &py_psi_get_nproc);
+    def("me", &py_psi_get_me);
 
     def("print_options", py_psi_print_options);
     def("print_global_options", py_psi_print_global_options);
