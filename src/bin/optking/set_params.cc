@@ -29,12 +29,30 @@ void set_params(void)
 
 #if defined(OPTKING_PACKAGE_PSI)
 
+// optimization type
+    s = options.get_str("OPT_TYPE");
+    if(s == "MIN")  Opt_params.opt_type = OPT_PARAMS::MIN;
+    else if (s == "TS")  Opt_params.opt_type = OPT_PARAMS::TS;
+    else if (s == "IRC")  Opt_params.opt_type = OPT_PARAMS::IRC;
 
-// Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO}
-    s = options.get_str("STEP_TYPE");
-    if (s == "RFO")     Opt_params.step_type = OPT_PARAMS::RFO;
-    else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
-    else if (s == "P_RFO") Opt_params.step_type = OPT_PARAMS::P_RFO;
+    if (options["OPT_TYPE"].has_changed()) {
+      s = options.get_str("STEP_TYPE");
+      if (s == "RFO") {
+        if (Opt_params.opt_type == OPT_PARAMS::MIN)
+          Opt_params.step_type = OPT_PARAMS::RFO;
+        else if (Opt_params.opt_type == OPT_PARAMS::TS)
+          Opt_params.step_type = OPT_PARAMS::P_RFO;
+      }
+      else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
+   }
+   else { // set defaults for step type
+     if (Opt_params.opt_type == OPT_PARAMS::MIN)
+       Opt_params.step_type = OPT_PARAMS::RFO;
+     else if (Opt_params.opt_type == OPT_PARAMS::TS)
+       Opt_params.step_type = OPT_PARAMS::P_RFO;
+     // else if (Opt_params.opt_type == OPT_PARAMS::IRC) options?
+   }
+
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");

@@ -28,6 +28,7 @@ struct OPT_PARAMS {
   int rfo_root;         // which root to follow
   double rfo_normalization_min; // small threshold for rfo normalization
 
+  enum OPT_TYPE {MIN, TS, IRC} opt_type;
   enum STEP_TYPE {NR, RFO, P_RFO} step_type; // Newton-Raphson (NR) or RFO step
 
   // Hessian guess
