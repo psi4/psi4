@@ -300,6 +300,7 @@ class MOLECULE {
 
   void forces(void);
   void project_f_and_H(void);
+  void irc_step(void);
   void nr_step(void);
   void rfo_step(void);
   void prfo_step(void);
