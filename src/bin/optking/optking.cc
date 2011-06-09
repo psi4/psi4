@@ -220,13 +220,16 @@ fflush(outfile);
 
   mol1->project_f_and_H();
 
-  // puts dq in p_Opt_data->step
-  if (Opt_params.step_type == OPT_PARAMS::NR)
-    mol1->nr_step();
-  else if (Opt_params.step_type == OPT_PARAMS::RFO)
-    mol1->rfo_step(); 
-  else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
-    mol1->prfo_step(); 
+  if (Opt_params.opt_type == OPT_PARAMS::IRC)
+    mol1->irc_step();
+  else {// puts dq in p_Opt_data->step
+    if (Opt_params.step_type == OPT_PARAMS::NR)
+      mol1->nr_step();
+    else if (Opt_params.step_type == OPT_PARAMS::RFO)
+      mol1->rfo_step(); 
+    else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
+      mol1->prfo_step();
+  }
 
   bool converged = p_Opt_data->conv_check();
 
