@@ -145,7 +145,6 @@ protected:
 
     void form_Spdao(); 
     void form_Spdmo();
-    void validate_S();
 
     void form_Rpao();
     void form_Rdao();
