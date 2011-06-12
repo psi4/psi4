@@ -102,6 +102,8 @@ protected:
     /// Active virtual C Matrix (for convenience)
     boost::shared_ptr<Matrix> Cavir_;
 
+    /// Minimum eigenvalue to keep in the primary basis
+    double min_S_primary_;
     /// Minimum eigenvalue to keep in the dealias basis
     double min_S_dealias_;
 
@@ -109,16 +111,15 @@ protected:
     int nso_;
     /// Number of MO primary functions
     int nmo_;
-
     /// Number of AO dealias functions
     int ndealias_;
-    /// Number of conditioned dealias functions
-    int ndealias2_;
-
-    /// nso_ + ndealias_
+    /// nmo_ + ndealias_
     int naug_;
-    /// nmo_ + ndealias2_
-    int naug2_;
+
+    /// Number of primary functions felt by the grid
+    int nmo2_;
+    /// Number of dealias functions felt by the grid
+    int ndealias2_;
 
     /// Number of grid points
     int naux_;
@@ -141,31 +142,27 @@ protected:
     void buildDealiasSet();
     void buildGrid();
     void buildR();
-    void buildQ();
 
-    void form_Spp(); 
-    void form_Spd(); 
-    void form_Sdd(); 
+    void form_Spdao(); 
+    void form_Spdmo();
+    void validate_S();
 
-    void form_Spd3();
-    void form_Cdp();
-    void form_Sdd4();
-    void form_Xdd();
-
-    void form_Sa();
-    void form_Sa3();
-    void form_Sa4();
-    void form_Sa2();
-
-    void form_Rp();
-    void form_Rd();
+    void form_Rpao();
+    void form_Rdao();
     void form_Rpmo();
     void form_Rdmo();
-    void form_Ramo();
+    void form_Ra();
 
-    void form_Q_cholesky();
-    void form_Q_SVD();
-    void form_Q_QR();
+    void buildQ();
+    void form_Cpp();
+    void form_U();
+    void form_Cpd();
+    void form_V();
+    void form_Cdd();
+    void form_W();
+    void form_X();
+    void form_Q();
+    void validate_X();
 
     /// Grid weights (hopefull SPD) 
     boost::shared_ptr<Vector> w_;
@@ -175,41 +172,30 @@ protected:
     /// Target R tensor (nmo x naux)
     boost::shared_ptr<Matrix> Rmo_;
 
-    /// AO-basis overlap (primary x primary)
-    boost::shared_ptr<Matrix> Spp_;
-    /// AO-basis overlap (primary x dealias)
-    boost::shared_ptr<Matrix> Spd_;
-    /// AO-basis overlap (dealias x dealias)
-    boost::shared_ptr<Matrix> Sdd_;
-
-    /// Overlap matrix (primary' x dealias)
-    boost::shared_ptr<Matrix> Spd3_;
-    /// Orthogonalization matrix (dealias x primary')
-    boost::shared_ptr<Matrix> Cdp_;
-    /// Overlap matrix (dealias x dealias)
-    boost::shared_ptr<Matrix> Sdd4_;
-    /// Orthonormalization matrix (dealias x dealias')
-    boost::shared_ptr<Matrix> Xdd_;
-
-    /// Augmented Overlap matrix (aug x aug)
-    boost::shared_ptr<Matrix> Sa_;
-    /// Augmented Overlap matrix (aug'' x aug'')
-    boost::shared_ptr<Matrix> Sa3_;
-    /// Augmented Overlap matrix (aug'' x aug'') (orthogonalized)
-    boost::shared_ptr<Matrix> Sa4_;
-    /// Augmented Overlap matrix (aug' x aug') (orthonormalized)
-    boost::shared_ptr<Matrix> Sa2_;
+    /// AO-basis overlap (nso x dealias)
+    boost::shared_ptr<Matrix> Spdao_;
+    /// Overlap matrix (nmo x dealias)
+    boost::shared_ptr<Matrix> Spdmo_;
 
     /// AO primary collocation matrix (primary x naux)
-    boost::shared_ptr<Matrix> Rp_;
-    /// AO dealias collocation matrix (primary x naux)
-    boost::shared_ptr<Matrix> Rd_;
+    boost::shared_ptr<Matrix> Rpao_;
+    /// AO dealias collocation matrix (dealias x naux)
+    boost::shared_ptr<Matrix> Rdao_;
     /// MO primary collocation matrix (primary' x naux)
     boost::shared_ptr<Matrix> Rpmo_;
-    /// MO dealias collocation matrix (dealias' x naux)
+    /// MO dealias collocation matrix (dealias x naux)
     boost::shared_ptr<Matrix> Rdmo_;
-    /// Finished augmented collocation matrix (naug' x naux)
+    /// Finished augmented collocation matrix (naug x naux)
     boost::shared_ptr<Matrix> Ra_;
+
+    boost::shared_ptr<Matrix> Cpp_;
+    boost::shared_ptr<Matrix> Cpd_;
+    boost::shared_ptr<Matrix> Cdd_;
+
+    boost::shared_ptr<Matrix> U_;
+    boost::shared_ptr<Matrix> V_;
+    boost::shared_ptr<Matrix> W_;
+    boost::shared_ptr<Matrix> X_;
 
 public:
 
