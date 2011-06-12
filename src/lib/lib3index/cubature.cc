@@ -253,7 +253,7 @@ void PseudospectralGrid::buildGridFromOptions()
 
     MolecularGrid::getBSRadii();
     for (int A = 0; A < molecule_->natom(); A++) {
-        alphap[A] = BSRadii_[molecule_->Z(A)];
+        alphap[A] = BSRadii_[molecule_->Z(A)] * options_.get_double("PS_BS_RADIUS_ALPHA");
     }
 
     std::map<int, int> leb_orders = SphericalGrid::lebedevOrdersToPoints();
