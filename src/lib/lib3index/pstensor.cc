@@ -45,7 +45,7 @@ void PSTensor::common_init()
     nfvir_ = nvir_ - navir_;
 
     nso_ = C_->rowspi()[0];
-    nmo_ = C_->colspi()[0];
+    nmo_ = nmo2_ = C_->colspi()[0];
 
     Caocc_ = boost::shared_ptr<Matrix>(new Matrix("C active occupied", nso_, naocc_));
     Cavir_ = boost::shared_ptr<Matrix>(new Matrix("C active virtual", nso_, navir_));
@@ -65,6 +65,7 @@ void PSTensor::common_init()
         Cavir_->print();
     }
 
+    min_S_primary_ = options_.get_double("PS_MIN_S_PRIMARY");
     min_S_dealias_ = options_.get_double("PS_MIN_S_DEALIAS");
 
     buildDealiasSet();
@@ -100,7 +101,7 @@ void PSTensor::buildDealiasSet()
 
     dealias_->print_by_level(outfile,print_);
     ndealias_ = ndealias2_ = dealias_->nbf();
-    naug_ = naug2_ = nso_ + ndealias_;
+    naug_ = nmo_ + ndealias_;
     fflush(outfile);
 }
 void PSTensor::buildGrid()
@@ -125,258 +126,57 @@ void PSTensor::buildGrid()
 void PSTensor::buildR()
 {
     // First build the orthonormal dealias set
-    form_Spp();
-    form_Spd();
-    form_Sdd();
+    form_Spdao(); // <\phi_\mu | \phi_\eta>
+    form_Spdmo(); // <\phi_s | \phi_\eta>
 
-    form_Spd3();
-    form_Cdp();
-    form_Sdd4();
-    form_Xdd();
-
-    // Check if it worked
-    if (debug_) {
-        form_Sa();
-        form_Sa3();
-        form_Sa4();
-        form_Sa2();
-    }
+    if (debug_ > 1)
+        validate_S();
 
     // Now build the collocation matrices
-    form_Rp();
-    form_Rd();
-    form_Rpmo();
-    form_Rdmo();
-    form_Ramo();
+    form_Rpao(); // R_\nu^P
+    form_Rdao(); // R_\eta^P
+    form_Rpmo(); // R_s^P 
+    form_Rdmo(); // R_n^P
+    form_Ra(); // R_a^P
 }
-void PSTensor::buildQ()
-{
-    if (options_.get_str("PS_INVERSION") == "CHOLESKY") {
-        form_Q_cholesky();
-    } else if (options_.get_str("PS_INVERSION") == "SVD") {
-        form_Q_SVD();
-    } else if (options_.get_str("PS_INVERSION") == "QR") {
-        form_Q_QR();
-    }
-}
-void PSTensor::form_Spp()
-{
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
-
-    Spp_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x primary)", nso_, nso_));
-    Sint->compute(Spp_);
-
-    if (debug_)
-        Spp_->print();
-}
-void PSTensor::form_Spd()
+void PSTensor::form_Spdao()
 {
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
     boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
-    Spd_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x dealias)", nso_, ndealias_));
-    Sint->compute(Spd_);
+    Spdao_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x dealias)", nso_, ndealias_));
+    Sint->compute(Spdao_);
 
     if (debug_)
-        Spd_->print();
+        Spdao_->print();
 }
-void PSTensor::form_Sdd()
+void PSTensor::form_Spdmo()
 {
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(dealias_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
-
-    Sdd_ = boost::shared_ptr<Matrix>(new Matrix("S (dealias x dealias)", ndealias_, ndealias_));
-    Sint->compute(Sdd_);
-
-    if (debug_)
-        Sdd_->print();
-}
-void PSTensor::form_Spd3()
-{
-    Spd3_ = boost::shared_ptr<Matrix>(new Matrix("S (primary' x dealias)", nmo_, ndealias_));
-    double** Spd3p = Spd3_->pointer();
-    double** Spdp = Spd_->pointer();
+    Spdmo_ = boost::shared_ptr<Matrix>(new Matrix("S (primary' x dealias)", nmo_, ndealias_));
+    double** Spd3p = Spdmo_->pointer();
+    double** Spdp = Spdao_->pointer();
     double** Xp = C_->pointer();
 
     C_DGEMM('T','N',nmo_,ndealias_,nso_,1.0,Xp[0],nmo_,Spdp[0],ndealias_,0.0,Spd3p[0],ndealias_);
 
     if (debug_)
-        Spd3_->print();
+        Spdmo_->print();
+
+    Spdao_.reset();
 }
-void PSTensor::form_Cdp()
+void PSTensor::validate_S()
 {
-    Cdp_ = boost::shared_ptr<Matrix>(new Matrix("Orthogonalization coefficients (dealias x primary')", ndealias_, nmo_));
-    double** Cp = Cdp_->pointer();
-    double** Sp = Spd3_->pointer();
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
+    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
 
-    for (int i = 0; i < ndealias_; i++)
-        C_DCOPY(nmo_,&Sp[0][i],ndealias_,Cp[i],1);
+    Spdao_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x dealias)", nso_, ndealias_));
+    Sint->compute(Spdao_);
 
-    Cdp_->scale(-1.0);
-
-    if (debug_)
-        Cdp_->print();
 }
-void PSTensor::form_Sdd4()
+void PSTensor::form_Rpao()
 {
-    Sdd4_ = boost::shared_ptr<Matrix>(new Matrix("S Separated (dealias x dealias)", ndealias_, ndealias_));
-    double** Sdd4p = Sdd4_->pointer();
-    double** Spdp = Spd3_->pointer();
-    double** Cp = Cdp_->pointer();
-
-    Sdd4_->copy(Sdd_);
-
-    C_DGEMM('T','T',ndealias_,ndealias_,nmo_,1.0,Spdp[0],ndealias_,Cp[0],nmo_,1.0,Sdd4p[0],ndealias_);
-    C_DGEMM('N','N',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Spdp[0],ndealias_,1.0,Sdd4p[0],ndealias_);
-    C_DGEMM('N','T',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Cp[0],nmo_,1.0,Sdd4p[0],ndealias_);
-
-    if (debug_)
-        Sdd4_->print();
-}
-void PSTensor::form_Xdd()
-{
-    boost::shared_ptr<Matrix> St(new Matrix("Temporary S", ndealias_, ndealias_));        
-    boost::shared_ptr<Matrix> Xt(new Matrix("Temporary X", ndealias_, ndealias_));        
-    boost::shared_ptr<Vector> st(new Vector("s", ndealias_));
-
-    double** Stp = St->pointer();
-    double** Xtp = Xt->pointer();
-    double* stp = st->pointer();
-
-    St->copy(Sdd4_);
-
-    St->diagonalize(Xt, st);
-
-    if (debug_) 
-        Xt->eivprint(st);
-
-    ndealias2_ = 0;
-    for (int i = 0; i < ndealias_; i++)
-    {
-        if (stp[i] > min_S_dealias_)
-            ndealias2_++;
-    }
-    naug2_ = nmo_ + ndealias2_;
-
-    Xdd_ = boost::shared_ptr<Matrix>(new Matrix("X Matrix (dealias x dealias')", ndealias_, ndealias2_)); 
-    double** Xp = Xdd_->pointer();    
- 
-    int m = 0;
-    for (int i = 0; i < ndealias_; i++) {
-        if (stp[i] > min_S_dealias_) {
-            C_DCOPY(ndealias_, &Xtp[0][i], ndealias_, &Xp[0][m], ndealias2_);
-            C_DSCAL(ndealias_, pow(stp[i], -1.0 / 2.0), &Xp[0][m], ndealias2_);
-            m++;
-        }
-    }
-
-    if (debug_)
-        Xdd_->print();
-}
-void PSTensor::form_Sa()
-{
-    Sa_ = boost::shared_ptr<Matrix>(new Matrix("S Augmented, Raw (primary + dealias x primary + dealias)", naug_, naug_));
-    double** Sap = Sa_->pointer();
-    double** Sppp = Spp_->pointer();
-    double** Spdp = Spd_->pointer();
-    double** Sddp = Sdd_->pointer();
-
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(nso_, Sppp[m], 1, Sap[m], 1);
-    } 
-
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(ndealias_, Spdp[m], 1, &Sap[m][nso_], 1);
-    } 
-    
-    for (int m = 0; m < nso_; m++) {
-        C_DCOPY(ndealias_, Spdp[m], 1, &Sap[nso_][m], naug_);
-    }
-
-    for (int a = 0; a < ndealias_; a++) {
-        C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nso_ + a][nso_], 1);
-    } 
-   
-    if (debug_)
-        Sa_->print();
-}
-void PSTensor::form_Sa3()
-{
-    Sa3_ = boost::shared_ptr<Matrix>(new Matrix("S3 Augmented, Raw (primary' + dealias x primary' + dealias)", nmo_ + ndealias_, nmo_ + ndealias_));
-
-    double** Sap = Sa3_->pointer();
-
-    double** Sppp = Spp_->pointer();
-    double** Xp   = C_->pointer();
-    double** Spdp = Spd_->pointer();
-    double** Sddp = Sdd_->pointer();
-
-    boost::shared_ptr<Matrix> T(new Matrix("Temp",nmo_,nso_));
-    double** Tp = T->pointer();
-
-    C_DGEMM('T','N',nmo_,nso_,nso_,1.0,Xp[0],nmo_,Sppp[0],nso_,0.0,Tp[0],nso_);
-    C_DGEMM('N','N',nmo_,nmo_,nso_,1.0,Tp[0],nso_,Xp[0],nmo_,0.0,Sap[0],nmo_ + ndealias_);
-
-    C_DGEMM('T','N',nmo_,ndealias_,nso_,1.0,Xp[0],nmo_,Spdp[0],ndealias_,0.0,&Sap[0][nmo_], nmo_ + ndealias_);
-    C_DGEMM('T','N',ndealias_,nmo_,nso_,1.0,Spdp[0],ndealias_,Xp[0],nmo_,0.0,&Sap[nmo_][0], nmo_ + ndealias_);
-    
-    for (int a = 0; a < ndealias_; a++) {
-        C_DCOPY(ndealias_, Sddp[a], 1, &Sap[nmo_ + a][nmo_], 1);
-    } 
-   
-    if (debug_)
-        Sa3_->print();
-}
-void PSTensor::form_Sa4()
-{
-    Sa4_ = boost::shared_ptr<Matrix>(new Matrix("S4 Augmented, Raw (primary' + dealias x primary' + dealias)", nmo_ + ndealias_, nmo_ + ndealias_));
-    Sa4_->copy(Sa3_);
-
-    double** Sap = Sa4_->pointer();
-    double** Sppp = Spp_->pointer();
-    double** Spdp = Spd3_->pointer();
-    double** Sddp = Sdd_->pointer();
-
-    double** Cp = Cdp_->pointer();
-
-    C_DGEMM('N','T',nmo_,ndealias_,nmo_,1.0,Sap[0], nmo_ + ndealias_, Cp[0], nmo_,1.0,&Sap[0][nmo_], nmo_ + ndealias_);
-    C_DGEMM('N','N',ndealias_,nmo_,nmo_,1.0,Cp[0],nmo_,Sap[0],nmo_ + ndealias_,1.0,&Sap[nmo_][0], nmo_ + ndealias_);
-
-    C_DGEMM('T','T',ndealias_,ndealias_,nmo_,1.0,Spdp[0],ndealias_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
-    C_DGEMM('N','N',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Spdp[0],ndealias_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
-    C_DGEMM('N','T',ndealias_,ndealias_,nmo_,1.0,Cp[0],nmo_,Cp[0],nmo_,1.0,&Sap[nmo_][nmo_], nmo_ + ndealias_); 
- 
-    if (debug_)
-        Sa4_->print();
-}
-void PSTensor::form_Sa2()
-{
-    Sa2_ = boost::shared_ptr<Matrix>(new Matrix("S2 Augmented, Finished (primary' + dealias' x primary' + dealias')", naug2_, naug2_));
-
-    double** Sap = Sa2_->pointer();
-
-    double** Sppp = Sa3_->pointer();
-    double** Sddp = Sdd4_->pointer();
-
-    for (int i = 0; i < nmo_; i++)
-        C_DCOPY(nmo_,Sppp[i],1,Sap[i],1);
-
-    boost::shared_ptr<Matrix> T(new Matrix("Temp", ndealias2_, ndealias_));
-    double** Tp = T->pointer();
-
-    double** Xp = Xdd_->pointer();
-
-    C_DGEMM('T','N',ndealias2_,ndealias_,ndealias_,1.0,Xp[0],ndealias2_,Sddp[0],ndealias_,0.0,Tp[0],ndealias_);
-    C_DGEMM('N','N',ndealias2_,ndealias2_,ndealias_,1.0,Tp[0],ndealias_,Xp[0],ndealias2_,0.0,&Sap[nmo_][nmo_],naug2_);
-
-    if (debug_)
-        Sa2_->print();
-}
-void PSTensor::form_Rp()
-{
-    Rp_ = boost::shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
-    double** Rp = Rp_->pointer();
+    Rpao_ = boost::shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
+    double** Rp = Rpao_->pointer();
 
     boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
@@ -392,12 +192,12 @@ void PSTensor::form_Rp()
     }
 
     if (debug_)
-        Rp_->print();
+        Rpao_->print();
 }
-void PSTensor::form_Rd()
+void PSTensor::form_Rdao()
 {
-    Rd_ = boost::shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndealias_, naux_));
-    double** Rp = Rd_->pointer();
+    Rdao_ = boost::shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndealias_, naux_));
+    double** Rp = Rdao_->pointer();
 
     boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
@@ -413,13 +213,13 @@ void PSTensor::form_Rd()
     }
 
     if (debug_)
-        Rd_->print();
+        Rdao_->print();
 }
 void PSTensor::form_Rpmo()
 {
     Rpmo_ = boost::shared_ptr<Matrix>(new Matrix("R2 (primary' x points)", nmo_, naux_));
     double** Rp2 = Rpmo_->pointer();
-    double** Rp = Rp_->pointer();
+    double** Rp = Rpao_->pointer();
     double** Xp = C_->pointer();
 
     C_DGEMM('T','N',nmo_,naux_,nso_,1.0,Xp[0],nmo_,Rp[0],naux_,0.0,Rp2[0],naux_);
@@ -428,89 +228,319 @@ void PSTensor::form_Rpmo()
         Rpmo_->print();
 
     Rmo_ = Rpmo_;
+    Rpao_.reset();
 }
 void PSTensor::form_Rdmo()
 {
-    Rdmo_ = boost::shared_ptr<Matrix>(new Matrix("R2 (dealias' x points)", ndealias2_, naux_));
+    Rdmo_ = boost::shared_ptr<Matrix>(new Matrix("R2 (dealias' x points)", ndealias_, naux_));
+    Rdmo_->copy(Rdao_);
     double** Rd2p = Rdmo_->pointer();
     double** Rp2p = Rpmo_->pointer();
-    double** Rdp = Rd_->pointer();
+    double** Cdp = Spdmo_->pointer();
 
-    double** Xdp = Xdd_->pointer();
-    double** Cdp = Cdp_->pointer();
-
-    C_DGEMM('T','N',ndealias2_,naux_,ndealias_,1.0,Xdp[0],ndealias2_,Rdp[0],naux_,0.0,Rd2p[0],naux_);
-
-    boost::shared_ptr<Matrix> T(new Matrix("Temp",ndealias_,naux_));
-    double** Tp = T->pointer();
-
-    C_DGEMM('N','N',ndealias_,naux_,nmo_,1.0,Cdp[0],nmo_,Rp2p[0],naux_,0.0,Tp[0],naux_);
-    C_DGEMM('T','N',ndealias2_,naux_,ndealias_,1.0,Xdp[0],ndealias2_,Tp[0],naux_,1.0,Rd2p[0],naux_);
+    C_DGEMM('T','N',ndealias_,naux_,nmo_,-1.0,Cdp[0],ndealias_,Rp2p[0],naux_,1.0,Rd2p[0],naux_);
 
     if (debug_)
         Rdmo_->print();
+
+    Spdmo_.reset();
 }
-void PSTensor::form_Ramo()
+void PSTensor::form_Ra()
 {
-    Ra_ = boost::shared_ptr<Matrix>(new Matrix("R Augmented (primary' + dealias' x points)", naug2_, naux_));
+    Ra_ = boost::shared_ptr<Matrix>(new Matrix("R Augmented (primary' + dealias' x points)", naug_, naux_));
     double** Rap = Ra_->pointer(); 
 
     double** Rpp = Rpmo_->pointer();
     double** Rdp = Rdmo_->pointer();
 
     C_DCOPY(nmo_ * naux_, Rpp[0], 1, Rap[0], 1);
-    C_DCOPY(ndealias2_ * naux_, Rdp[0], 1, Rap[nmo_], 1);
+    C_DCOPY(ndealias_ * naux_, Rdp[0], 1, Rap[nmo_], 1);
 
     if (debug_)
         Ra_->print();
 }
-void PSTensor::form_Q_cholesky()
+void PSTensor::buildQ()
 {
-    boost::shared_ptr<Matrix> T(new Matrix("Rw (points x  naug')", naux_, naug2_));
+    form_Cpp();
+    form_U();
+
+    form_Cpd();    
+    form_V();
+
+    form_Cdd();
+    form_W();
+
+    form_X();
+
+    if (debug_ > 1) 
+        validate_X();
+    
+    form_Q();
+}
+void PSTensor::form_Cpp()
+{
+    Cpp_ = boost::shared_ptr<Matrix>(new Matrix("Cpp" , nmo_, nmo_));
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", nmo_, naux_));
+    double** Cp = Cpp_->pointer();
     double** Rp = Ra_->pointer();
-    double** Tp = T->pointer();
-    double*  wp = w_->pointer();
-   
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY(nmo_ * naux_, Rp[0], 1, Rwp[0], 1);
+
     for (int Q = 0; Q < naux_; Q++) {
-        C_DCOPY(naug2_, &Rp[0][Q], naux_, Tp[Q], 1);
-        C_DSCAL(naug2_, wp[Q], Tp[Q], 1);
+        C_DSCAL(nmo_, wp[Q], &Rwp[0][Q], naux_);
     } 
 
-    boost::shared_ptr<Matrix> C(new Matrix("C (naug' x naug')", naug2_, naug2_));
-    double** Cp = C->pointer(); 
+    C_DGEMM('N','T',nmo_,nmo_,naux_,1.0,Rp[0],naux_,Rwp[0],naux_,0.0,Cp[0],nmo_);
 
-    C_DGEMM('N','N',naug2_, naug2_, naux_, 1.0, Rp[0], naux_, Tp[0], naug2_, 0.0, Cp[0], naug2_);
+    if (debug_)
+        Cpp_->print();
+}
+void PSTensor::form_U()
+{
+    boost::shared_ptr<Matrix> V(new Matrix("Eigvecs", nmo_, nmo_));
+    boost::shared_ptr<Vector> c(new Vector("Eigvals", nmo_));
+    double** Vp = V->pointer();
+    double*  cp = c->pointer();
 
-    if (debug_) 
-        C->print();
+    Cpp_->diagonalize(V,c);
 
-    int info = C_DPOTRF('L',naug2_,Cp[0],naug2_);
-
-    if (info != 0)
-        throw PSIEXCEPTION("PSTensor::form_Q_cholesky: C_DPOTRF failed.");
-
-    info = C_DPOTRS('L',naug2_,naux_,Cp[0],naug2_,Tp[0],naug2_);
-
-    if (info != 0)
-        throw PSIEXCEPTION("PSTensor::form_Q_cholesky: C_DPOTRS failed.");
-
-    Qmo_ = boost::shared_ptr<Matrix>(new Matrix("Q2 (primary' x points", nmo_, naux_));
-    double** Qp = Qmo_->pointer();
-         
+    if (debug_ > 1)
+        V->eivprint(c);
+   
+    nmo2_ = 0;
     for (int i = 0; i < nmo_; i++) {
-        C_DCOPY(naux_, &Tp[0][i], naug2_, Qp[i], 1);
+        if (cp[i] >= min_S_primary_)
+            nmo2_++;
+    }
+
+    if (nmo2_ < nmo_) {
+        fprintf(outfile, "  WARNING: This grid cannot numerically distinguish primary basis functions.\n"); 
+        fprintf(outfile, "           These pseudospectral results may be inaccurate.\n\n");
+    }
+ 
+    U_ = boost::shared_ptr<Matrix>(new Matrix("U", nmo_, nmo2_)); 
+    double** Up = U_->pointer();
+   
+    int j = 0; 
+    for (int i = 0; i < nmo_; i++) {
+        if (cp[i] >= min_S_primary_) {
+            C_DAXPY(nmo_, pow(cp[i], -1.0/2.0), &Vp[0][i], nmo_, &Up[0][j], nmo2_); 
+            j++;
+        }
+    }
+
+    if (debug_)
+        U_->print();
+
+    Cpp_.reset();
+}
+void PSTensor::form_Cpd()
+{
+    boost::shared_ptr<Matrix> Cpdao(new Matrix("Cpdao", nmo_, ndealias_));
+    double** Cpdaop = Cpdao->pointer();
+
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", nmo_, naux_));
+    double** Rp = Ra_->pointer();
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY(nmo_ * naux_, Rp[0], 1, Rwp[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(nmo_, wp[Q], &Rwp[0][Q], naux_);
+    } 
+
+    C_DGEMM('N','T',nmo_,ndealias_,naux_,1.0,Rwp[0],naux_,Rp[nmo_],naux_,0.0,Cpdaop[0],ndealias_);
+
+    Rw.reset();
+
+    if (debug_ > 1)
+        Cpdao->print();
+
+    Cpd_ = boost::shared_ptr<Matrix>(new Matrix("Cpd", nmo2_, ndealias_));
+    double** Cpdp = Cpd_->pointer();
+    double** Xp = U_->pointer();
+
+    C_DGEMM('T','N',nmo2_,ndealias_,nmo_,1.0,Xp[0],nmo2_,Cpdaop[0],ndealias_,0.0,Cpdp[0],ndealias_);
+
+
+    if (debug_)
+        Cpd_->print();
+
+    Cpdao.reset();
+}
+void PSTensor::form_V()
+{
+    V_ = boost::shared_ptr<Matrix>(new Matrix("V", nmo2_, ndealias_));
+    V_->copy(Cpd_);
+    V_->scale(-1.0);
+    
+    if (debug_) 
+        V_->print();
+}
+void PSTensor::form_Cdd()
+{
+    Cdd_ = boost::shared_ptr<Matrix>(new Matrix("Cdd",ndealias_,ndealias_));
+    double** Cddp = Cdd_->pointer();
+
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", ndealias_, naux_));
+    double** Rp = Ra_->pointer();
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY(ndealias_ * naux_, Rp[nmo_], 1, Rwp[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(ndealias_, wp[Q], &Rwp[0][Q], naux_);
+    } 
+
+    C_DGEMM('N','T',ndealias_,ndealias_,naux_,1.0,Rwp[0],naux_,Rp[nmo_],naux_,0.0,Cddp[0],ndealias_);
+    
+    Rw.reset();
+
+    if (debug_ > 1)
+        Cdd_->print(outfile, "before orthogonalization");
+    
+    double** Cpdp = Cpd_->pointer();
+
+    C_DGEMM('T','N',ndealias_,ndealias_,nmo2_,-1.0,Cpdp[0],ndealias_,Cpdp[0],ndealias_,1.0,Cddp[0],ndealias_);
+
+    if (debug_)
+        Cdd_->print();
+}
+void PSTensor::form_W()
+{
+    boost::shared_ptr<Matrix> V(new Matrix("Eigvecs", ndealias_, ndealias_));
+    boost::shared_ptr<Vector> c(new Vector("Eigvals", ndealias_));
+    double** Vp = V->pointer();
+    double*  cp = c->pointer();
+
+    Cdd_->diagonalize(V,c);
+
+    if (debug_ > 1)
+        V->eivprint(c);
+   
+    ndealias2_ = 0;
+    for (int i = 0; i < ndealias_; i++) {
+        if (cp[i] >= min_S_dealias_)
+            ndealias2_++;
+    }
+
+    if (print_)
+        fprintf(outfile, "  %d of %d dealias functions selected, %d projected out.\n\n", ndealias2_, ndealias_,
+            ndealias_ - ndealias2_); 
+ 
+    W_ = boost::shared_ptr<Matrix>(new Matrix("w", ndealias_, ndealias2_)); 
+    double** Wp = W_->pointer();
+   
+    int j = 0; 
+    for (int i = 0; i < ndealias_; i++) {
+        if (cp[i] >= min_S_dealias_) {
+            C_DAXPY(ndealias_, pow(cp[i], -1.0/2.0), &Vp[0][i], ndealias_, &Wp[0][j], ndealias2_); 
+            j++;
+        }
+    }
+
+    if (debug_)
+        W_->print();
+
+    Cdd_.reset();
+}
+void PSTensor::form_X()
+{
+    X_ = boost::shared_ptr<Matrix>(new Matrix("X", nmo_ + ndealias_, nmo2_ + ndealias2_));
+    double** Xp = X_->pointer(); 
+
+    double** Up = U_->pointer();
+    double** Vp = V_->pointer();
+    double** Wp = W_->pointer();
+
+    for (int m = 0; m < nmo_; m++) {
+        C_DCOPY(nmo2_, Up[m], 1, Xp[m], 1);
+    }
+
+    boost::shared_ptr<Matrix> T(new Matrix("T",nmo_,ndealias2_));   
+    double** Tp = T->pointer();
+
+    C_DGEMM('N','N',nmo_,ndealias_,nmo2_,1.0,Up[0],nmo2_,Vp[0],ndealias_,0.0,Tp[0],ndealias_);
+    C_DGEMM('N','N',nmo_,ndealias2_,ndealias_,1.0,Tp[0],ndealias_,Wp[0],ndealias2_,0.0,&Xp[0][nmo2_],nmo2_ + ndealias2_);
+
+    for (int d = 0; d < ndealias_; d++) {
+        C_DCOPY(ndealias2_, Wp[d], 1, &Xp[nmo2_ + d][nmo_], 1);
     }
     
     if (debug_)
+        X_->print();
+}
+void PSTensor::validate_X()
+{
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", nmo_ + ndealias_, naux_));
+    double** Rp = Ra_->pointer();
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY((nmo_ + ndealias_) * naux_, Rp[0], 1, Rwp[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(nmo_ + ndealias_, wp[Q], &Rwp[0][Q], naux_);
+    } 
+
+    boost::shared_ptr<Matrix> C(new Matrix("C", nmo_ + ndealias_, nmo_ + ndealias_));
+    double** Cp = C->pointer();
+
+    C_DGEMM('N','T',nmo_ + ndealias_, nmo_ + ndealias_, naux_, 1.0, Rp[0], naux_, Rwp[0], naux_, 
+        0.0, Cp[0], nmo_ + ndealias_);
+
+    C->print();
+
+    boost::shared_ptr<Matrix> T(new Matrix("T", nmo_ + ndealias_, nmo2_ + ndealias2_));
+    double** Tp = T->pointer();
+
+    double** Xp = X_->pointer();
+
+    C_DGEMM('N','N',nmo_ + ndealias_, nmo2_ + ndealias2_, nmo_ + ndealias_, 1.0, Cp[0], nmo_ + ndealias_,
+        Xp[0], nmo2_ + ndealias2_, 0.0, Tp[0], nmo2_ + ndealias2_);
+
+    boost::shared_ptr<Matrix> Cinv(new Matrix("Cinv", nmo2_ + ndealias2_, nmo2_ + ndealias2_));
+    double** Cinvp = Cinv->pointer();
+    
+    C_DGEMM('T','N',nmo2_ + ndealias2_, nmo2_ + ndealias2_, nmo_ + ndealias_, 1.0, Xp[0], nmo2_ + ndealias2_,
+        Tp[0], nmo2_ + ndealias2_, 0.0, Cinvp[0], nmo2_ + ndealias2_);
+
+    Cinv->print();
+}
+void PSTensor::form_Q()
+{
+    boost::shared_ptr<Matrix> XX(new Matrix("XX^T", nmo_, nmo_ + ndealias_));
+    double** XXp = XX->pointer(); 
+    double** Xp = X_->pointer();
+    
+    C_DGEMM('N','T',nmo_,nmo_ + ndealias_,nmo2_ + ndealias2_,1.0,Xp[0],nmo2_ + ndealias2_,
+        Xp[0],nmo2_ + ndealias2_,0.0,XXp[0],nmo_ + ndealias_);
+
+    if (debug_ > 1)
+        XX->print();
+
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", nmo_ + ndealias_, naux_));
+    double** Rp = Ra_->pointer();
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY((nmo_ + ndealias_) * naux_, Rp[0], 1, Rwp[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(nmo_ + ndealias_, wp[Q], &Rwp[0][Q], naux_);
+    } 
+
+    Qmo_ = boost::shared_ptr<Matrix> (new Matrix("Qmo", nmo_, naux_));
+    double** Qmop = Qmo_->pointer();
+    
+    C_DGEMM('N','N',nmo_,naux_,nmo_ + ndealias_,1.0,XXp[0],nmo_ + ndealias_,Rwp[0],naux_,0.0,Qmop[0],naux_);
+
+    if (debug_)
         Qmo_->print();
-}
-void PSTensor::form_Q_SVD()
-{
-    throw FeatureNotImplemented("PSTensor","form_Q_SVD",__FILE__,__LINE__);
-}
-void PSTensor::form_Q_QR()
-{
-    throw FeatureNotImplemented("PSTensor","form_Q_QR",__FILE__,__LINE__);
 }
 boost::shared_ptr<Matrix> PSTensor::Q() 
 {

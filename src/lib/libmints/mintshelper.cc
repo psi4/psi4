@@ -328,39 +328,63 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boos
     int nocc = Co->colspi()[0];
     int nvir = Cv->colspi()[0];
 
-    boost::shared_ptr<Matrix> Iso = ao_eri();   
-    //C_DGEMM('N','N', nso * nso * nso,  nocc, nso, 1.0, Ixyzwp[0][0], nso, Cop[0][0], nocc, 0.0, Ixyzip[0][0], nso * nocc);
-    //C_DGEMM('T','N', nocc, nso * nso * nocc, nso, 1.0, Cop[0][0], nocc, Ixyzip[0][0], nso * nso * nocc, Ijyzip[0][0], nso * nso * nocc);
-    
-
-    //boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
-    //boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
-    //boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
-    boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
-
-    double** Isop = Iso->pointer();
-    double** Imop = Imo->pointer();
     double** Cop = Co->pointer();   
     double** Cvp = Cv->pointer();   
 
-    for (int a = 0; a < nocc; a++) {
-    for (int b = 0; b < nvir; b++) {
-    for (int c = 0; c < nocc; c++) {
-    for (int d = 0; d < nvir; d++) {
-   
-    for (int m = 0; m < nso; m++) {
-    for (int n = 0; n < nso; n++) {
-    for (int o = 0; o < nso; o++) {
-    for (int p = 0; p < nso; p++) {
+    boost::shared_ptr<Matrix> Iso = ao_eri();   
+    double** Isop = Iso->pointer();
+    boost::shared_ptr<Matrix> I2(new Matrix("MO ERI Tensor", nocc * nso, nso * nso));
+    double** I2p = I2->pointer();
 
-        Imop[a * nvir + b][c * nvir + d] += Cop[m][a] * Cvp[n][b] * Cop[o][c] * Cvp[p][d] * Isop[m * nso + n][o * nso + p];
+    C_DGEMM('T','N',nocc,nso * (ULI) nso * nso,nso,1.0,Cop[0],nocc,Isop[0],nso * (ULI) nso * nso,0.0,I2p[0],nso * (ULI) nso * nso);
 
-    }}}}
- 
-    }}}}
+    Iso.reset();
+    boost::shared_ptr<Matrix> I3(new Matrix("MO ERI Tensor", nocc * nso, nso * nocc));
+    double** I3p = I3->pointer();
+
+    C_DGEMM('N','N',nocc * (ULI) nso * nso,nocc,nso,1.0,I2p[0],nso,Cop[0],nocc,0.0,I3p[0],nocc);
+
+    I2.reset();
+    boost::shared_ptr<Matrix> I4(new Matrix("MO ERI Tensor", nso * nocc, nocc * nso));
+    double** I4p = I4->pointer();
+
+    for (int i = 0; i < nocc; i++) {
+        for (int j = 0; j < nocc; j++) {
+            for (int m = 0; m < nso; m++) {
+                for (int n = 0; n < nso; n++) {
+                    I4p[m * nocc + i][j * nso + n] = I3p[i * nso + m][n * nocc + j];
+                }
+            }
+        }
+    }
+
+    I3.reset();
+    boost::shared_ptr<Matrix> I5(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nso));
+    double** I5p = I5->pointer();
+
+    C_DGEMM('T','N',nvir,nocc * (ULI) nocc * nso, nso,1.0,Cvp[0],nvir,I4p[0],nocc*(ULI)nocc*nso,0.0,I5p[0],nocc*(ULI)nocc*nso);
+
+    I4.reset();
+    boost::shared_ptr<Matrix> I6(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nvir));
+    double** I6p = I6->pointer();
+
+    C_DGEMM('N','N',nvir * (ULI) nocc * nocc, nvir, nso,1.0,I5p[0],nso,Cvp[0],nvir,0.0,I6p[0],nvir);
+
+    I5.reset();
+    boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
+    double** Imop = Imo->pointer();
+
+    for (int i = 0; i < nocc; i++) {
+        for (int j = 0; j < nocc; j++) {
+            for (int a = 0; a < nvir; a++) {
+                for (int b = 0; b < nvir; b++) {
+                    Imop[i * nvir + a][j * nvir + b] = I6p[a * nocc + i][j * nvir + b];                    
+                }
+            }
+        }
+    }
 
     return Imo; 
-    
 }
 boost::shared_ptr<Matrix> MintsHelper::so_overlap()
 {
