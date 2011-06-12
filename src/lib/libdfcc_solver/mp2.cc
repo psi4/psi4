@@ -107,7 +107,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -116,7 +116,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -128,7 +128,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -137,7 +137,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -152,7 +152,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -161,7 +161,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -173,7 +173,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -182,7 +182,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -200,7 +200,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -209,7 +209,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -221,7 +221,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -230,7 +230,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -245,7 +245,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -254,7 +254,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -266,7 +266,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 0;
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nfocc_; d < nocc_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
@@ -275,7 +275,7 @@ void MP2::check_integrals(boost::shared_ptr<Matrix> E)
                 bits[3] = 1; 
                 index = 8 * bits[0] + 4 * bits[1] + 2 * bits[2] + 1 * bits[3]; 
                 for (int d = nocc_; d < nocc_ + navir_; d++) {
-                    current = Ip[a * nmo_ + b][c * nmo_ * d];
+                    current = Ip[a * nmo_ + b][c * nmo_ + d];
                     if (max[index] < fabs(current))
                         max[index] = fabs(current);
                     sum[index] += current * current;
