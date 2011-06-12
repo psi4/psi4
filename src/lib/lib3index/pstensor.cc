@@ -129,9 +129,6 @@ void PSTensor::buildR()
     form_Spdao(); // <\phi_\mu | \phi_\eta>
     form_Spdmo(); // <\phi_s | \phi_\eta>
 
-    if (debug_ > 1)
-        validate_S();
-
     // Now build the collocation matrices
     form_Rpao(); // R_\nu^P
     form_Rdao(); // R_\eta^P
@@ -163,15 +160,6 @@ void PSTensor::form_Spdmo()
         Spdmo_->print();
 
     Spdao_.reset();
-}
-void PSTensor::validate_S()
-{
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,dealias_,primary_,primary_));
-    boost::shared_ptr<OneBodyAOInt> Sint(fact->ao_overlap());
-
-    Spdao_ = boost::shared_ptr<Matrix>(new Matrix("S (primary x dealias)", nso_, ndealias_));
-    Sint->compute(Spdao_);
-
 }
 void PSTensor::form_Rpao()
 {
