@@ -1349,14 +1349,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PS_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
     /*- Pruning Scheme -*/
     options.add_str("PS_PRUNING_SCHEME", "FLAT", "FLAT P_GAUSSIAN D_GAUSSIAN P_SLATER D_SLATER LOG_GAUSSIAN LOG_SLATER");
+    /*- Factor for effective BS radius in radial grid -*/
+    options.add_double("PS_BS_RADIUS_ALPHA",1.0);
     /*- Spread alpha for logarithmic pruning -*/
     options.add_double("PS_PRUNING_ALPHA",1.0);
     /*- Minumum eigenvalue for primary basis -*/
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
     /*- Minumum eigenvalue for dealias basis -*/
     options.add_double("PS_MIN_S_DEALIAS",1.0E-7);
-    /*- Inversion technique in PS fitting equations -*/
-    options.add_str("PS_INVERSION","CHOLESKY", "CHOLESKY SVD QR");
 
     // => DENOMINATOR <= //
 
