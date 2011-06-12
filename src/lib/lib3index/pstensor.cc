@@ -416,10 +416,13 @@ void PSTensor::form_W()
             ndealias2_++;
     }
 
-    if (print_)
+    if (print_) {
         fprintf(outfile, "  %d of %d dealias functions selected, %d projected out.\n\n", ndealias2_, ndealias_,
             ndealias_ - ndealias2_); 
- 
+        fflush(outfile);
+    }
+    
+
     W_ = boost::shared_ptr<Matrix>(new Matrix("w", ndealias_, ndealias2_)); 
     double** Wp = W_->pointer();
    
@@ -449,7 +452,7 @@ void PSTensor::form_X()
         C_DCOPY(nmo2_, Up[m], 1, Xp[m], 1);
     }
 
-    boost::shared_ptr<Matrix> T(new Matrix("T",nmo_,ndealias2_));   
+    boost::shared_ptr<Matrix> T(new Matrix("T",nmo_,ndealias_));   
     double** Tp = T->pointer();
 
     C_DGEMM('N','N',nmo_,ndealias_,nmo2_,1.0,Up[0],nmo2_,Vp[0],ndealias_,0.0,Tp[0],ndealias_);
