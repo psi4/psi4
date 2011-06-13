@@ -293,6 +293,11 @@ public:
     void set_geometry(SimpleMatrix& geom);
 
     /**
+     * Sets the geometry, given a Matrix of coordinates (in Bohr).
+     */
+    void set_geometry(Matrix& geom);
+
+    /**
      * Sets the full geometry, given a matrix of coordinates (in Bohr).
      */
     void set_full_geometry(double** geom);
