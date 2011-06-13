@@ -116,6 +116,13 @@ protected:
 
     int iirrepoff_[8], jirrepoff_[8], kirrepoff_[8], lirrepoff_[8];
 
+    boost::shared_ptr<PetiteList> petite1_;
+    boost::shared_ptr<PetiteList> petite2_;
+    boost::shared_ptr<PetiteList> petite3_;
+    boost::shared_ptr<PetiteList> petite4_;
+
+    boost::shared_ptr<PointGroup> pg_;
+
     template<typename TwoBodySOIntFunctor>
     void provide_IJKL(int, int, int, int, TwoBodySOIntFunctor& body);
 
@@ -163,15 +170,20 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     const SOTransform &t3 = b3_->trans(ksh);
     const SOTransform &t4 = b4_->trans(lsh);
 
-    int nso1 = b1_->nfunction(ish);
-    int nso2 = b2_->nfunction(jsh);
-    int nso3 = b3_->nfunction(ksh);
-    int nso4 = b4_->nfunction(lsh);
+    const int nso1 = b1_->nfunction(ish);
+    const int nso2 = b2_->nfunction(jsh);
+    const int nso3 = b3_->nfunction(ksh);
+    const int nso4 = b4_->nfunction(lsh);
 
-    int nao1 = b1_->naofunction(ish);
-    int nao2 = b2_->naofunction(jsh);
-    int nao3 = b3_->naofunction(ksh);
-    int nao4 = b4_->naofunction(lsh);
+    const int nao1 = b1_->naofunction(ish);
+    const int nao2 = b2_->naofunction(jsh);
+    const int nao3 = b3_->naofunction(ksh);
+    const int nao4 = b4_->naofunction(lsh);
+
+    const int iatom = tb_->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
+    const int jatom = tb_->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
+    const int katom = tb_->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
+    const int latom = tb_->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell zero buffer");
@@ -191,7 +203,95 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
     timer_on("TwoBodySOInt::compute_shell full shell transform");
 #endif // MINTS_TIMER
 
+    // Get the atomic stablizer (the first symmetry operation that maps the atom
+    // onto itself.
 
+    // These 3 sections are not shell specific so we can just use petite1_
+    const unsigned char istablizer = petite1_->stablizer(iatom);
+    const unsigned char jstablizer = petite1_->stablizer(jatom);
+    const unsigned char kstablizer = petite1_->stablizer(katom);
+    const unsigned char lstablizer = petite1_->stablizer(latom);
+
+    const unsigned char ijstablizer = petite1_->GnG(istablizer, jstablizer);
+    const unsigned char klstablizer = petite1_->GnG(kstablizer, lstablizer);
+
+    const unsigned char R_list = petite1_->dcr(istablizer, jstablizer);
+    const unsigned char S_list = petite1_->dcr(kstablizer, lstablizer);
+    const unsigned char T_list = petite1_->dcr(ijstablizer, klstablizer);
+
+    const unsigned char group = petite1_->group();
+
+    // Check with Andy on this:
+    int lambda_T = petite1_->nirrep() / petite1_->dcr_degeneracy(T_list);
+
+    std::vector<int> R = PointGroup::bits_to_operator_list(group, R_list);
+    std::vector<int> S = PointGroup::bits_to_operator_list(group, S_list);
+    std::vector<int> T = PointGroup::bits_to_operator_list(group, T_list);
+
+    std::vector<int> sj_arr, sk_arr, sl_arr;
+
+    for (int ij=0; ij < R.size(); ++ij) {
+        int sj = petite2_->shell_map(jsh, R[ij]);
+
+        for (int ijkl=0; ijkl < T.size(); ++ijkl) {
+            int sk = petite3_->shell_map(ksh, T[ijkl]);
+            int llsh = petite4_->shell_map(lsh, T[ijkl]);
+
+            for (int kl=0; kl < S.size(); ++kl) {
+                int sl = petite4_->shell_map(llsh, S[kl]);
+
+                // Check AM
+                int total_am = tb_->basis1()->shell(ish)->am() +
+                        tb_->basis2()->shell(sj)->am() +
+                        tb_->basis3()->shell(sk)->am() +
+                        tb_->basis4()->shell(sl)->am();
+
+                if (!(total_am % 2) ||
+                        (iatom != jatom) ||
+                        (jatom != katom) ||
+                        (katom != latom)) {
+                    sj_arr.push_back(sj);
+                    sk_arr.push_back(sk);
+                    sl_arr.push_back(sl);
+                }
+            }
+        }
+    }
+
+    fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", ish, jsh, ksh, lsh);
+    fprintf(outfile, "\tgroup = %d, R_list %d S_list %d T_list %d\n", group, R_list, S_list, T_list);
+    fprintf(outfile, "\tistablizer: ");
+    pg_->print_group(istablizer);
+    fprintf(outfile, "\tjstablizer: ");
+    pg_->print_group(jstablizer);
+    fprintf(outfile, "\tkstablizer: ");
+    pg_->print_group(kstablizer);
+    fprintf(outfile, "\tlstablizer: ");
+    pg_->print_group(lstablizer);
+    fprintf(outfile, "\tijstablizer: ");
+    pg_->print_group(ijstablizer);
+    fprintf(outfile, "\tklstablizer: ");
+    pg_->print_group(klstablizer);
+    fprintf(outfile, "\tR.size = %d\n", R.size());
+    for (int i=0; i<R.size(); ++i)
+        fprintf(outfile, "\t%d\n", R[i]);
+    fprintf(outfile, "\tS.size = %d\n", S.size());
+    for (int i=0; i<S.size(); ++i)
+        fprintf(outfile, "\t%d\n", S[i]);
+    fprintf(outfile, "\tT.size = %d\n", T.size());
+    for (int i=0; i<T.size(); ++i)
+        fprintf(outfile, "\t%d\n", T[i]);
+    fprintf(outfile, "\tR_list: ");
+    pg_->print_group(R_list);
+    fprintf(outfile, "\tS_list: ");
+    pg_->print_group(S_list);
+    fprintf(outfile, "\tT_list: ");
+    pg_->print_group(T_list);
+    for (int i=0; i<sj_arr.size(); ++i) {
+        fprintf(outfile, "\t(%d %d | %d %d)\n", ish, sj_arr[i], sk_arr[i], sl_arr[i]);
+    }
+
+#if 0
     // loop through the ao shells that make up this so shell
     for (int i=0; i<t1.naoshell; i++) {
         const SOTransformShell &s1 = t1.aoshell[i];
@@ -265,6 +365,8 @@ void TwoBodySOInt::compute_shell(int ish, int jsh, int ksh, int lsh, TwoBodySOIn
             }
         }
     }
+
+#endif
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell full shell transform");

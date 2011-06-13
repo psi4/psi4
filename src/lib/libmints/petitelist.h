@@ -155,11 +155,12 @@ class PetiteList
     char *p1_;
     int **atom_map_;
     int **shell_map_;
+    int **unique_shell_map_;
     char *lamij_;
     int *nbf_in_ir_;
-    unsigned int group_;
+    unsigned short group_;
 
-    int *stablizer_;
+    unsigned short *stablizer_;
 
     void init();
 
@@ -192,10 +193,12 @@ public:
 
     void print(FILE *out=outfile);
 
-    unsigned int group() const { return group_; }
+    unsigned short stablizer(int atom) const { return stablizer_[atom]; }
 
-    unsigned int dcr(int subgroup1, int subgroup2) const {
-        std::map<unsigned int,bool> uniqueCosets;
+    unsigned short group() const { return group_; }
+
+    unsigned short dcr(unsigned short subgroup1, unsigned short subgroup2) const {
+        std::map<unsigned short,bool> uniqueCosets;
         for(int g = 0; g < 8; ++g){
             int coset = 0;
             if(SKIP_THIS_OPERATOR(group_, g)) continue;
@@ -208,10 +211,10 @@ public:
             }
             uniqueCosets[coset] = 1;
         }
-        std::map<unsigned int, bool>::const_iterator iter = uniqueCosets.begin();
-        std::map<unsigned int, bool>::const_iterator stop = uniqueCosets.end();
+        std::map<unsigned short, bool>::const_iterator iter = uniqueCosets.begin();
+        std::map<unsigned short, bool>::const_iterator stop = uniqueCosets.end();
         int count = 0;
-        unsigned int rOperators = 0;
+        unsigned short rOperators = 0;
         for(; iter != stop; ++iter){
             int coset = iter->first;
             if(count++){
@@ -226,7 +229,7 @@ public:
     }
     /// Number of operators in the point group.
     /// @param group Get this from dcr()
-    int dcr_degeneracy(unsigned int group) const {
+    int dcr_degeneracy(unsigned short group) const {
         int degeneracy = 0;
         for(int op = 0; op < 8; ++op){
             if(SKIP_THIS_OPERATOR(group, op)) continue;
@@ -234,7 +237,7 @@ public:
         }
         return degeneracy;
     }
-    unsigned int GnG(unsigned int group1, unsigned int group2) const {
+    unsigned short GnG(unsigned short group1, unsigned short group2) const {
          return group1 & group2;
     }
 

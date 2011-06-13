@@ -1064,6 +1064,10 @@ int CharacterTable::make_table()
         _inv[gi] = gj;
     }
 
+    for (int i=0; i<g; ++i) {
+        bits_ |= symop[i].bit();
+    }
+
     return 0;
 }
 

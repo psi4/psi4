@@ -456,7 +456,7 @@ void PetiteList::init()
     // create the character table for the point group
     CharacterTable ct = mol.point_group()->char_table();
 
-    group_ = mol.point_group()->bits();
+    group_ = ct.bits();
 
     // initialize private members
     c1_=0;
@@ -491,7 +491,7 @@ void PetiteList::init()
     for (i=0; i < nshell_; i++)
         shell_map_[i] = new int[ng_];
 
-    stablizer_ = new int[natom_];
+    stablizer_ = new unsigned short[natom_];
 
     // set up atom and shell mappings
     double np[3];
@@ -516,9 +516,9 @@ void PetiteList::init()
 
             atom_map_[i][g] = mol.atom_at_position1(np, 0.05);
 
-            // We want the first operation the keeps the atom the same that is not E.
-            if (stablizer_[i] == 0 && atom_map_[i][g] == i)
-                stablizer_[i] = so.bit();
+            // We want the list of operations that keeps the atom the same that is not E.
+            if (atom_map_[i][g] == i)
+                stablizer_[i] |= so.bit();
 
             if (atom_map_[i][g] < 0) {
                 fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
