@@ -95,8 +95,8 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
     for (int ish=0; ish<ns1; ++ish) {
         for (int jsh=0; jsh<ns2; ++jsh) {
 
-            const SOTransform &t1 = b1_->trans(ish);
-            const SOTransform &t2 = b2_->trans(jsh);
+            const SOTransform &t1 = b1_->sotrans(ish);
+            const SOTransform &t2 = b2_->sotrans(jsh);
 
             int nso1 = b1_->nfunction(ish);
             int nso2 = b2_->nfunction(jsh);
@@ -170,8 +170,8 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
     for (int ish=0; ish<ns1; ++ish) {
         for (int jsh=0; jsh<ns2; ++jsh) {
 
-            const SOTransform &t1 = b1_->trans(ish);
-            const SOTransform &t2 = b2_->trans(jsh);
+            const SOTransform &t1 = b1_->sotrans(ish);
+            const SOTransform &t2 = b2_->sotrans(jsh);
 
             int nso1 = b1_->nfunction(ish);
             int nso2 = b2_->nfunction(jsh);
@@ -263,12 +263,12 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
 
     // Loop over unique SO shells.
     for (int ish=0; ish<ns1; ++ish) {
-        const SOTransform& t1 = b1_->trans(ish);
+        const SOTransform& t1 = b1_->sotrans(ish);
         int nso1 = b1_->nfunction(ish);
         int nao1 = b1_->naofunction(ish);
 
         for (int jsh=0; jsh<ns2; ++jsh) {
-            const SOTransform& t2= b2_->trans(jsh);
+            const SOTransform& t2= b2_->sotrans(jsh);
             int nso2 = b2_->nfunction(jsh);
             int nao2 = b2_->naofunction(jsh);
 

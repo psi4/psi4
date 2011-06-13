@@ -218,9 +218,9 @@ public:
     /** The symmetry operations that keep the atom unchanged in bit representation.
      *  \param atom The atom of interest.
      */
-    unsigned short stablizer(int atom) const { return stablizer_[atom]; }
+    unsigned short stablizer(int atom) const { return (c1_) ? group_ : stablizer_[atom]; }
 
-    int max_stablizer() const { return max_stablizer_;}
+    int max_stablizer() const { return (c1_) ? 1 : max_stablizer_;}
 
     /** The bit representation of the symmetry operation in the point group.
      */

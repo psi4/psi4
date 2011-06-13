@@ -24,7 +24,7 @@ class PetiteList;
 /** SOTransformFunction describes how an AO function contributes to an SO
     function in a particular SO shell. */
 class SOTransformFunction {
-  public:
+public:
     /// The coefficient of the AO.
     double coef;
     /// The AO function number.
@@ -35,12 +35,23 @@ class SOTransformFunction {
     int irrep;
 };
 
+class AOTransformFunction {
+public:
+    double coef;
+    int aofunc;
+    int sofunc;
+    int irrep;
+
+    AOTransformFunction(double cf, int af, int sf, int irr)
+        : coef(cf), aofunc(af), sofunc(sf), irrep(irr) {}
+};
+
 /*! \ingroup MINTS */
 /** SOTransformShell maintains a list of AO functions contribute to an SO
     function in a particular SO shell.  The information is stored in
     objects of type SOTransformFunction. */
 class SOTransformShell {
-  public:
+public:
     /// The number of the AO shell from which these functions come.
     int aoshell;
     /// The number of AO/SO function pairs contributing.
@@ -54,40 +65,11 @@ class SOTransformShell {
 };
 
 /*! \ingroup MINTS */
-//class SOTransformIter
-//{
-//private:
-//    SOTransformShell *trans_;
-//    int i_;
-
-//public:
-//    SOTransformIter(SOTransformShell* trans) { trans_ = trans; i_ = 0; }
-
-//    void first() { i_ = 0; }
-//    void next()  { i_++;   }
-//    bool is_done() { return i_ < trans_->nfunc() ? false : true; }
-
-//    /// Returns the number of shells in the transform.
-//    int n() const { return trans_->nfunc(); }
-
-//    /// Returns the coefficient of component i
-//    double coef() const { return trans_->func(i_)->coef(); }
-//    /// Returns the AO function number of component i
-//    int aofunc() const  { return trans_->func(i_)->aofunc(); }
-//    /// Returns the SO function number of component i
-//    int sofunc() const  { return trans_->func(i_)->sofunc(); }
-//    /// Returns the SO function's irrep of component i
-//    int irrep() const   { return trans_->func(i_)->irrep(); }
-//    /// Returns the SO function number in its irrep for component i
-//    int sofuncirrep() const { return trans_->func(i_)->sofuncirrep(); }
-//};
-
-/*! \ingroup MINTS */
 /** SOTransform maintains a list of AO shells that are be used
     to compute the SO.  The information is stored in objects of
     type SOTransformShell. */
 class SOTransform {
-  public:
+public:
     int naoshell_allocated;
     /// The number of AO shells that make up this SO shell.
     int naoshell;
@@ -99,6 +81,15 @@ class SOTransform {
     /// Adds another term to the transform.
     void add_transform(int aoshell, int irrep,
                        double coef, int aofunc, int sofunc);
+};
+
+class AOTransform {
+public:
+    std::vector<AOTransformFunction> soshell;
+
+    AOTransform();
+    ~AOTransform();
+    void add_transform(int irrep, double coef, int aofunc, int sofunc);
 };
 
 /** An SOBasis object describes the transformation from an atomic orbital basis
@@ -122,7 +113,8 @@ protected:
     int *irrep_;
     int *func_within_irrep_;
 
-    SOTransform *trans_;
+    SOTransform *sotrans_;
+    AOTransform *aotrans_;
 
     /// Handles initializing SOBasis
     void init();
@@ -171,7 +163,9 @@ public:
     int function_within_irrep(int ifunc) const;
 
     /// Return the SOTransform object for the given shell.
-    const SOTransform &trans(int i) const { return trans_[i]; }
+    const SOTransform &sotrans(int i) const { return sotrans_[i]; }
+    /// Return the AOTransform object for the given shell.
+    const AOTransform &aotrans(int i) const { return aotrans_[i]; }
 
     /// Return the PetiteList object used in creating this SOBasis.
     const boost::shared_ptr<PetiteList> petitelist() const;
@@ -184,46 +178,46 @@ public:
 
 inline int SOBasisSet::function(int ishell)
 {
-  return func_[ishell];
+    return func_[ishell];
 }
 
 inline int SOBasisSet::irrep(int ishell, int ifunc) const
 {
-  return irrep_[func_[ishell]+ifunc];
+    return irrep_[func_[ishell]+ifunc];
 }
 
 inline int SOBasisSet::irrep(int ifunc) const
 {
-  return irrep_[ifunc];
+    return irrep_[ifunc];
 }
 
 inline int SOBasisSet::function_offset_for_irrep(int irrep) const
 {
-  int r = 0;
-  for (int i=0; i<irrep; i++) {
-      r += nfunc_in_irrep_[i];
+    int r = 0;
+    for (int i=0; i<irrep; i++) {
+        r += nfunc_in_irrep_[i];
     }
-  return r;
+    return r;
 }
 
 inline int SOBasisSet::function_within_irrep(int ishell, int ifunc) const
 {
-  return func_within_irrep_[func_[ishell]+ifunc];
+    return func_within_irrep_[func_[ishell]+ifunc];
 }
 
 inline int SOBasisSet::function_within_irrep(int ifunc) const
 {
-  return func_within_irrep_[ifunc];
+    return func_within_irrep_[ifunc];
 }
 
 inline int SOBasisSet::nfunction(int ishell, int iirrep) const
 {
-  return nfunc_[ishell][iirrep];
+    return nfunc_[ishell][iirrep];
 }
 
 inline int SOBasisSet::function_offset_within_shell(int ishell, int iirrep) const
 {
-  return funcoff_[ishell][iirrep];
+    return funcoff_[ishell][iirrep];
 }
 
 }
