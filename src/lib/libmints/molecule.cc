@@ -310,9 +310,9 @@ Vector3 Molecule::center_of_mass() const
     return ret;
 }
 
-SimpleMatrix Molecule::distance_matrix()
+Matrix Molecule::distance_matrix() const
 {
-    SimpleMatrix distance("Distances between atoms in Bohr", natom(), natom());
+    Matrix distance("Distances between atoms in Bohr", natom(), natom());
 
     for (int i=0; i<natom(); ++i) {
         for (int j=0; j<=i; ++j) {
@@ -323,7 +323,7 @@ SimpleMatrix Molecule::distance_matrix()
     return distance;
 }
 
-double Molecule::nuclear_repulsion_energy()
+double Molecule::nuclear_repulsion_energy() const
 {
     double e=0.0;
 
@@ -336,9 +336,9 @@ double Molecule::nuclear_repulsion_energy()
     return e;
 }
 
-SimpleMatrix Molecule::nuclear_repulsion_energy_deriv1()
+Matrix Molecule::nuclear_repulsion_energy_deriv1() const
 {
-    SimpleMatrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
+    Matrix de("Nuclear Repulsion Energy 1st Derivatives", natom(), 3);
 
     for (int i=0; i<natom(); ++i) {
         for (int j=0; j<natom(); ++j) {
@@ -357,9 +357,9 @@ SimpleMatrix Molecule::nuclear_repulsion_energy_deriv1()
 /*
     TODO Test nuclear_repulsion_energy_deriv2
 */
-SimpleMatrix Molecule::nuclear_repulsion_energy_deriv2()
+Matrix Molecule::nuclear_repulsion_energy_deriv2() const
 {
-    SimpleMatrix hess("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
+    Matrix hess("Nuclear Repulsion Energy 2nd Derivatives", 3*natom(), 3*natom());
     double sx, sy, sz, x2, y2, z2, r2, r, r5, pfac;
 
     for (int i=1; i<natom(); ++i) {
@@ -430,25 +430,25 @@ void Molecule::move_to_com()
     translate(com);
 }
 
-SimpleMatrix Molecule::geometry()
+Matrix Molecule::geometry() const
 {
-    SimpleMatrix geom(natom(), 3);
+    Matrix geom(natom(), 3);
     for (int i=0; i<natom(); ++i) {
-        geom[i][0] = x(i);
-        geom[i][1] = y(i);
-        geom[i][2] = z(i);
+        geom(i, 0) = x(i);
+        geom(i, 1) = y(i);
+        geom(i, 2) = z(i);
     }
 
     return geom;
 }
 
-SimpleMatrix Molecule::full_geometry()
+Matrix Molecule::full_geometry() const
 {
-    SimpleMatrix geom(nallatom(), 3);
+    Matrix geom(nallatom(), 3);
     for (int i=0; i<nallatom(); ++i) {
-        geom[i][0] = fx(i);
-        geom[i][1] = fy(i);
-        geom[i][2] = fz(i);
+        geom(i, 0) = fx(i);
+        geom(i, 1) = fy(i);
+        geom(i, 2) = fz(i);
     }
 
     return geom;
@@ -472,7 +472,7 @@ void Molecule::set_full_geometry(double** geom)
     }
 }
 
-void Molecule::set_geometry(SimpleMatrix& geom)
+void Molecule::set_geometry(const Matrix& geom)
 {
     for (int i=0; i<natom(); ++i) {
         atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
@@ -481,16 +481,7 @@ void Molecule::set_geometry(SimpleMatrix& geom)
     }
 }
 
-void Molecule::set_geometry(Matrix& geom)
-{
-    for (int i=0; i<natom(); ++i) {
-        atoms_[i]->set_coordinates(geom.get(0,i,0) / input_units_to_au_,
-                                   geom.get(0,i,1) / input_units_to_au_,
-                                   geom.get(0,i,2) / input_units_to_au_);
-    }
-}
-
-void Molecule::set_full_geometry(SimpleMatrix& geom)
+void Molecule::set_full_geometry(const Matrix& geom)
 {
     for (int i=0; i<nallatom(); ++i) {
         full_atoms_[i]->set_coordinates(geom.get(i,0) / input_units_to_au_,
@@ -499,246 +490,27 @@ void Molecule::set_full_geometry(SimpleMatrix& geom)
     }
 }
 
-void Molecule::rotate(SimpleMatrix& R)
+void Molecule::rotate(const Matrix& R)
 {
-    SimpleMatrix new_geom(natom(), 3);
-    SimpleMatrix geom = geometry();
+    Matrix new_geom(natom(), 3);
+    Matrix geom = geometry();
 
     // Multiple the geometry by the rotation matrix.
-    new_geom.gemm(false, false, 1.0, &geom, &R, 0.0);
+    new_geom.gemm(false, false, 1.0, geom, R, 0.0);
 
     set_geometry(new_geom);
 }
 
-void Molecule::rotate_full(SimpleMatrix& R)
+void Molecule::rotate_full(const Matrix& R)
 {
-    SimpleMatrix new_geom(nallatom(), 3);
-    SimpleMatrix geom = full_geometry();
+    Matrix new_geom(nallatom(), 3);
+    Matrix geom = full_geometry();
 
     // Multiply the geometry by the rotation matrix.
-    new_geom.gemm(false, false, 1.0, &geom, &R, 0.0);
+    new_geom.gemm(false, false, 1.0, geom, R, 0.0);
 
     set_full_geometry(new_geom);
 }
-
-#if 0
-void Molecule::reorient()
-{
-    return;
-
-    if (fix_orientation_)
-        return;
-
-    // Nothing for us to do.
-    if (natom() <= 1)
-        return;
-
-    // Otherwise, do something.
-    // Retrieve the inertia tensor.
-    SimpleMatrix *itensor = inertia_tensor();
-    SimpleMatrix itensor_axes(3, 3);
-    SimpleVector itensor_moments(3);
-
-    // Diagonalize the tensor matrix
-    itensor->diagonalize(&itensor_axes, &itensor_moments, 3);
-
-    // Locate degeneracies
-    int degen=0, deg_IM1=0, deg_IM2=0;
-    int i, j;
-    double abs, rel;
-    for (i=0; i<2; ++i) {
-        for (j=i+1; j<3; ++j) {
-            abs = fabs(itensor_moments[i] - itensor_moments[j]);
-            double tmp = (itensor_moments[i] > itensor_moments[j]) ? itensor_moments[i] : itensor_moments[j];
-            if (abs > 1.0e-14)
-                rel = abs / tmp;
-            else
-                rel = 0.0;
-            if (rel < ZERO_MOMENT_INERTIA) {
-                degen++;
-                deg_IM1 = i;
-                deg_IM2 = j;
-            }
-        }
-    }
-
-    Vector3 v1(itensor_axes(0, 1), itensor_axes(1, 1), itensor_axes(2, 1));
-    Vector3 v2(itensor_axes(0, 2), itensor_axes(1, 2), itensor_axes(2, 2));
-    Vector3 v3 = v1.cross(v2);
-    itensor_axes(0, 0) = v3[0];
-    itensor_axes(1, 0) = v3[1];
-    itensor_axes(2, 0) = v3[2];
-
-    int nmust = 0, nshould = 0, must_invert[3], should_invert[3];
-    int axis;
-    double maxproj[3];
-    for (axis=0; axis<3; ++axis) {
-        v1[0] = itensor_axes(0, axis);
-        v1[1] = itensor_axes(1, axis);
-        v1[2] = itensor_axes(2, axis);
-
-        if_to_invert_axis(v1, must_invert[axis], should_invert[axis], maxproj[axis]);
-        nmust += must_invert[axis];
-        nshould += should_invert[axis];
-    }
-
-    SimpleMatrix R(3, 3);
-    if (nmust == 2) {
-        for (axis=0; axis<3; ++axis) {
-            if (must_invert[axis])
-                R[axis][axis] = -1.0;
-            else
-                R[axis][axis] = 1.0;
-        }
-    }
-    else if (nmust == 1 && nshould > 0) {
-        int axis1, axis2;
-        if (nshould == 2) {
-            for (axis=0; axis<3; ++axis) {
-                if (should_invert[axis]) {
-                    axis1 = axis;
-                    axis++;
-                    break;
-                }
-            }
-            for (; axis<3; ++axis) {
-                if (should_invert[axis]) {
-                    axis2 = axis;
-                    break;
-                }
-            }
-            if (fabs(maxproj[axis1]) > fabs(maxproj[axis2])) {
-                nshould = 1;
-                should_invert[axis2] = 0;
-            }
-            else {
-                nshould = 1;
-                should_invert[axis1] = 0;
-            }
-        }
-        for (axis=0; axis<3; ++axis) {
-            if (must_invert[axis])
-                R[axis][axis] = -1.0;
-            else if (should_invert[axis])
-                R[axis][axis] = -1.0;
-            else
-                R[axis][axis] = 1.0;
-        }
-    }
-    else if (nmust == 3) {
-        R[0][0] = -1.0;
-        R[1][1] = -1.0;
-        R[2][2] = 1.0;
-    }
-    else if (nmust == 0 && nshould > 1) {
-        if (nshould == 3) {
-            double tmp = fabs(maxproj[0]);
-            i=0;
-            for (axis=1; axis<3; ++axis) {
-                if (fabs(maxproj[axis]) < fabs(tmp)) {
-                    i = axis;
-                    tmp = fabs(maxproj[axis]);
-                }
-            }
-            should_invert[i] = 0;
-            nshould = 2;
-        }
-        for (axis=0; axis<3; ++axis) {
-            if (should_invert[axis])
-                R[axis][axis] = -1.0;
-            else
-                R[axis][axis] = 1.0;
-        }
-    }
-    else {
-        R[0][0] = 1.0;
-        R[1][1] = 1.0;
-        R[2][2] = 1.0;
-    }
-
-    if (degen == 0) {
-        rotate_full(itensor_axes);
-        rotate_full(R);
-    }
-
-    if (degen == 1) {
-        int must_invert, should_invert, unique_axis;
-        double maxproj, invert_pfac;
-
-        if (deg_IM1 + deg_IM2 == 3)
-            unique_axis = 0;
-        else
-            unique_axis = 2;
-
-        v1[0] = itensor_axes[0][unique_axis];
-        v1[1] = itensor_axes[1][unique_axis];
-        v1[2] = itensor_axes[2][unique_axis];
-
-        if_to_invert_axis(v1, must_invert, should_invert, maxproj);
-        if (must_invert || should_invert)
-            invert_pfac = 1.0;
-        else
-            invert_pfac = -1.0;
-
-        v1 *= invert_pfac;
-
-        double cos_theta = v1[2];
-        double theta, sin_theta, v2norm, cos_phix, cos_phiy, phix;
-        double sin_phix;
-        if ( (1.0 - fabs(cos_theta)) > ZERO_MOMENT_INERTIA) {
-            theta = acos(cos_theta);
-            sin_theta = sin(theta);
-
-            v3[0] = 0.0; v3[1] = 0.0; v3[2] = 1.0;
-            v2 = v1.cross(v3);
-            v2.normalize();
-
-            cos_phix = v2[0];
-            cos_phiy = v2[1];
-            phix = acos(cos_phix);
-
-            if (cos_phiy > 0.0) {
-                phix *= -1.0;
-            }
-            sin_phix = sin(phix);
-
-            R.zero();
-            R[2][2] = 1.0;
-            R[0][0] = cos_phix;
-            R[1][1] = cos_phix;
-            R[0][1] = sin_phix;
-            R[1][0] = -sin_phix;
-            rotate_full(R);
-
-            R.zero();
-            R[0][0] = 1.0;
-            R[1][1] = cos_theta;
-            R[2][2] = cos_theta;
-            R[1][2] = sin_theta;
-            R[2][1] = -sin_theta;
-            rotate_full(R);
-
-            R.zero();
-            R[2][2] = 1.0;
-            R[0][0] = cos_phix;
-            R[1][1] = cos_phix;
-            R[0][1] = -sin_phix;
-            R[1][0] = sin_phix;
-            rotate_full(R);
-        }
-    }
-
-    // Delete the tensor matrix
-    delete itensor;
-
-    if (Communicator::world->me() == 0) {
-        fprintf(outfile, "after reorient should_invert %d %d %d must_invert %d %d %d:\n",
-            should_invert[0], should_invert[1], should_invert[2],
-            must_invert[0], must_invert[1], must_invert[2]);
-    }
-    print();
-}
-#endif
 
 int Molecule::nfrozen_core(const std::string& depth)
 {
@@ -783,12 +555,11 @@ void Molecule::init_with_psio(boost::shared_ptr<PSIO> psio)
 
 void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 {
-
     int natoms = 0;
     double *zvals, **geom;
     molecular_charge_       = Process::environment.options.get_int("CHARGE");
     charge_specified_       = Process::environment.options["CHARGE"].has_changed();
-    multiplicity_          = Process::environment.options.get_int("MULTP");
+    multiplicity_           = Process::environment.options.get_int("MULTP");
     multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
 
     natoms = chkpt->rd_natom();
@@ -1208,7 +979,7 @@ void Molecule::update_geometry()
     if (fix_orientation_ == false) {
         // Now we need to rotate the geometry to its symmetry frame
         // to align the axes correctly for the point group
-        SimpleMatrix R(3,3);
+        Matrix R(3,3);
         // We actually ask for the highest point group here so that we can align
         // the molecule according to its actual symmetry, rather than the symmetry
         // the the user might have provided.
@@ -1481,49 +1252,29 @@ boost::shared_ptr<Vector> Molecule::nuclear_quadrupole_contribution()
     return sret;
 }
 
-SimpleMatrix* Molecule::inertia_tensor()
+Matrix* Molecule::inertia_tensor() const
 {
     int i;
-    SimpleMatrix* tensor = new SimpleMatrix("Inertia Tensor", 3, 3);
+    Matrix* tensor = new Matrix("Inertia Tensor", 3, 3);
 
     for (i = 0; i < natom(); i++) {
         // I(alpha, alpha)
-        tensor->add(0, 0, mass(i) * (pow(y(i), 2) + pow(z(i), 2)));
-        tensor->add(1, 1, mass(i) * (pow(x(i), 2) + pow(z(i), 2)));
+        tensor->add(0, 0, 0, mass(i) * (pow(y(i), 2) + pow(z(i), 2)));
+        tensor->add(0, 1, 1, mass(i) * (pow(x(i), 2) + pow(z(i), 2)));
         tensor->add(2, 2, mass(i) * (pow(x(i), 2) + pow(y(i), 2)));
 
         // I(alpha, beta)
-        tensor->add(0, 1, -mass(i) * x(i) * y(i));
+        tensor->add(0, 0, 1, -mass(i) * x(i) * y(i));
         tensor->add(0, 2, -mass(i) * x(i) * z(i));
-        tensor->add(1, 2, -mass(i) * y(i) * z(i));
+        tensor->add(0, 1, 2, -mass(i) * y(i) * z(i));
         //    mirror
-        tensor->add(1, 0, -mass(i) * x(i) * y(i));
-        tensor->add(2, 0, -mass(i) * x(i) * z(i));
-        tensor->add(2, 1, -mass(i) * y(i) * z(i));
+        tensor->add(0, 1, 0, -mass(i) * x(i) * y(i));
+        tensor->add(0, 2, 0, -mass(i) * x(i) * z(i));
+        tensor->add(0, 2, 1, -mass(i) * y(i) * z(i));
     }
 
     return tensor;
 }
-
-//double& Molecule::xyz(int atom, int _xyz)
-//{
-//    if (_xyz == 0)
-//        return atoms_[atom].x;
-//    else if (_xyz == 1)
-//        return atoms_[atom].y;
-//    else
-//        return atoms_[atom].z;
-//}
-//
-//const double& Molecule::xyz(int atom, int _xyz) const
-//{
-//    if (_xyz == 0)
-//        return atoms_[atom].x;
-//    else if (_xyz == 1)
-//        return atoms_[atom].y;
-//    else
-//        return atoms_[atom].z;
-//}
 
 //
 // Symmetry
@@ -2097,7 +1848,7 @@ bool Molecule::has_symmetry_element(Vector3& op, double tol) const
 
 void Molecule::symmetrize()
 {
-    SimpleMatrix temp(natom(), 3);
+    Matrix temp(natom(), 3);
     CharacterTable ct = point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
@@ -2111,9 +1862,9 @@ void Molecule::symmetrize()
 
             SymmetryOperation so = ct.symm_operation(g);
 
-            temp.add(atom, 0, so(0, 0) * x(Gatom) / ct.order());
-            temp.add(atom, 1, so(1, 1) * y(Gatom) / ct.order());
-            temp.add(atom, 2, so(2, 2) * z(Gatom) / ct.order());
+            temp.add(0, atom, 0, so(0, 0) * x(Gatom) / ct.order());
+            temp.add(0, atom, 1, so(1, 1) * y(Gatom) / ct.order());
+            temp.add(0, atom, 2, so(2, 2) * z(Gatom) / ct.order());
         }
     }
 

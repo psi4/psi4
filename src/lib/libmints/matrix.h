@@ -302,6 +302,15 @@ public:
     void set(int h, int m, int n, double val) { matrix_[h][m][n] = val; }
 
     /**
+     * Set a single element of matrix_
+     *
+     * @param m Row
+     * @param n Column
+     * @param val Value
+     */
+    void set(int m, int n, double val) { matrix_[0][m][n] = val; }
+
+    /**
      * @{
      * Set the diagonal of matrix_ to vec
      *
@@ -321,6 +330,16 @@ public:
      * @returns value at position (h, m, n)
      */
     double get(int h, int m, int n) const { return matrix_[h][m][n]; }
+
+    /**
+     * Returns a single element of matrix_
+     *
+     * @param h Subblock
+     * @param m Row
+     * @param n Column
+     * @returns value at position (h, m, n)
+     */
+    double get(int m, int n) const { return matrix_[0][m][n]; }
 
     /**
      * Python wrapper for get
@@ -536,6 +555,27 @@ public:
         }
         matrix_[h][m][n] += val;
     }
+    /// Add val to an element of this
+    void add(int m, int n, double val) {
+        if (m > rowspi_[0] || n > colspi_[0^symmetry_]) {
+            fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
+                    symmetry_, 0, m, n);
+            fflush(outfile);
+            return;
+        }
+        matrix_[0][m][n] += val;
+    }
+
+    void element_add_mirror() {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int i=0; i<rowspi_[h]; ++i) {
+                for (int j=0; j<i; ++j) {
+                    matrix_[h][i][j] = matrix_[h][j][i] = (matrix_[h][i][j] + matrix_[h][j][i]);
+                }
+            }
+        }
+    }
+
     /// Scale row m of irrep h by a
     void scale_row(int h, int m, double a);
     /// Scale column n of irrep h by a
@@ -724,6 +764,8 @@ public:
     /// @{
     /// Retrieves the i'th irrep
     double** operator[](int i) { return matrix_[i]; }
+    double& operator()(int i, int j) { return matrix_[0][i][j]; }
+    const double& operator()(int i, int j) const { return matrix_[0][i][j]; }
     double& operator()(int h, int i, int j) { return matrix_[h][i][j]; }
     const double& operator()(int h, int i, int j) const { return matrix_[h][i][j]; }
     /// @}
