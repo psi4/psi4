@@ -426,6 +426,7 @@ PetiteList::~PetiteList()
 
     if (stablizer_)
         delete[] stablizer_;
+
     natom_=0;
     nshell_=0;
     ng_=0;
@@ -517,7 +518,7 @@ void PetiteList::init()
 
             // We want the first operation the keeps the atom the same that is not E.
             if (stablizer_[i] == 0 && atom_map_[i][g] == i)
-                stablizer_[i] = g;
+                stablizer_[i] = so.bit();
 
             if (atom_map_[i][g] < 0) {
                 fprintf(outfile, "ERROR: Symmetry operation %d did not map atom %d to another atom:\n", g, i+1);
