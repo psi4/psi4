@@ -481,6 +481,15 @@ void Molecule::set_geometry(SimpleMatrix& geom)
     }
 }
 
+void Molecule::set_geometry(Matrix& geom)
+{
+    for (int i=0; i<natom(); ++i) {
+        atoms_[i]->set_coordinates(geom.get(0,i,0) / input_units_to_au_,
+                                   geom.get(0,i,1) / input_units_to_au_,
+                                   geom.get(0,i,2) / input_units_to_au_);
+    }
+}
+
 void Molecule::set_full_geometry(SimpleMatrix& geom)
 {
     for (int i=0; i<nallatom(); ++i) {
