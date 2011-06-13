@@ -479,6 +479,7 @@ void PetiteList::init()
         p1_=0;
         atom_map_=0;
         shell_map_=0;
+        unique_shell_map_=0;
         lamij_=0;
         nbf_in_ir_=0;
         stablizer_=0;

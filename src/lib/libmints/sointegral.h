@@ -162,10 +162,10 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     const double *aobuff = tb_->buffer();
 
-    const SOTransform &t1 = b1_->trans(uish);
-    const SOTransform &t2 = b2_->trans(ujsh);
-    const SOTransform &t3 = b3_->trans(uksh);
-    const SOTransform &t4 = b4_->trans(ulsh);
+    const SOTransform &t1 = b1_->sotrans(uish);
+    const SOTransform &t2 = b2_->sotrans(ujsh);
+    const SOTransform &t3 = b3_->sotrans(uksh);
+    const SOTransform &t4 = b4_->sotrans(ulsh);
 
     const int nso1 = b1_->nfunction(uish);
     const int nso2 = b2_->nfunction(ujsh);
@@ -230,27 +230,35 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
+//    fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
     int si = petite1_->unique_shell_map(uish, 0);
+    const int siatom = tb_->basis1()->shell(si)->ncenter();
+
     for (int ij=0; ij < R.size(); ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R[ij]);
+        const int sjatom = tb_->basis2()->shell(sj)->ncenter();
 
         for (int ijkl=0; ijkl < T.size(); ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T[ijkl]);
+            const int skatom = tb_->basis3()->shell(sk)->ncenter();
 
             for (int kl=0; kl < S.size(); ++kl) {
                 int sl = petite4_->shell_map(llsh, S[kl]);
+                const int slatom = tb_->basis4()->shell(sl)->ncenter();
 
                 // Check AM
-                int total_am = tb_->basis1()->shell(uish)->am() +
+                int total_am = tb_->basis1()->shell(si)->am() +
                         tb_->basis2()->shell(sj)->am() +
                         tb_->basis3()->shell(sk)->am() +
                         tb_->basis4()->shell(sl)->am();
 
+//                fprintf(outfile, "\ttotal_am = %d atoms: %d %d %d %d\n", total_am, siatom, sjatom, skatom, slatom);
+
                 if (!(total_am % 2) ||
-                        (iatom != jatom) ||
-                        (jatom != katom) ||
-                        (katom != latom)) {
+                        (siatom != sjatom) ||
+                        (sjatom != skatom) ||
+                        (skatom != slatom)) {
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);
@@ -259,58 +267,58 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         }
     }
 
-    fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
-    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
-    fprintf(outfile, "\tgroup = %d, R_list %d S_list %d T_list %d\n", group, R_list, S_list, T_list);
-    fprintf(outfile, "\tistablizer: ");
-    petite1_->print_group(istablizer);
-    fprintf(outfile, "\tjstablizer: ");
-    petite1_->print_group(jstablizer);
-    fprintf(outfile, "\tkstablizer: ");
-    petite1_->print_group(kstablizer);
-    fprintf(outfile, "\tlstablizer: ");
-    petite1_->print_group(lstablizer);
-    fprintf(outfile, "\tijstablizer: ");
-    petite1_->print_group(ijstablizer);
-    fprintf(outfile, "\tklstablizer: ");
-    petite1_->print_group(klstablizer);
-    fprintf(outfile, "\tR.size = %lu\n", R.size());
-    for (int i=0; i<R.size(); ++i)
-        fprintf(outfile, "\t%d\n", R[i]);
-    fprintf(outfile, "\tS.size = %lu\n", S.size());
-    for (int i=0; i<S.size(); ++i)
-        fprintf(outfile, "\t%d\n", S[i]);
-    fprintf(outfile, "\tT.size = %lu\n", T.size());
-    for (int i=0; i<T.size(); ++i)
-        fprintf(outfile, "\t%d\n", T[i]);
-    fprintf(outfile, "\tR_list: ");
-    petite1_->print_group(R_list);
-    fprintf(outfile, "\tS_list: ");
-    petite1_->print_group(S_list);
-    fprintf(outfile, "\tT_list: ");
-    petite1_->print_group(T_list);
-    for (int i=0; i<sj_arr.size(); ++i) {
-        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
-    }
-    fflush(outfile);
+//    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
+//    fprintf(outfile, "\tgroup = %d, R_list %d S_list %d T_list %d\n", group, R_list, S_list, T_list);
+//    fprintf(outfile, "\tistablizer: ");
+//    petite1_->print_group(istablizer);
+//    fprintf(outfile, "\tjstablizer: ");
+//    petite1_->print_group(jstablizer);
+//    fprintf(outfile, "\tkstablizer: ");
+//    petite1_->print_group(kstablizer);
+//    fprintf(outfile, "\tlstablizer: ");
+//    petite1_->print_group(lstablizer);
+//    fprintf(outfile, "\tijstablizer: ");
+//    petite1_->print_group(ijstablizer);
+//    fprintf(outfile, "\tklstablizer: ");
+//    petite1_->print_group(klstablizer);
+//    fprintf(outfile, "\tR.size = %lu\n", R.size());
+//    for (int i=0; i<R.size(); ++i)
+//        fprintf(outfile, "\t%d\n", R[i]);
+//    fprintf(outfile, "\tS.size = %lu\n", S.size());
+//    for (int i=0; i<S.size(); ++i)
+//        fprintf(outfile, "\t%d\n", S[i]);
+//    fprintf(outfile, "\tT.size = %lu\n", T.size());
+//    for (int i=0; i<T.size(); ++i)
+//        fprintf(outfile, "\t%d\n", T[i]);
+//    fprintf(outfile, "\tR_list: ");
+//    petite1_->print_group(R_list);
+//    fprintf(outfile, "\tS_list: ");
+//    petite1_->print_group(S_list);
+//    fprintf(outfile, "\tT_list: ");
+//    petite1_->print_group(T_list);
+//    for (int i=0; i<sj_arr.size(); ++i) {
+//        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
+//    }
+//    fflush(outfile);
 
     // Compute integral using si, sj_arr, sk_arr, sl_arr
     // Loop over unique quartets
-    const SOTransformShell& s1 = t1.aoshell[0];
-    const SOTransformShell& s2 = t2.aoshell[0];
-    const SOTransformShell& s3 = t3.aoshell[0];
-    const SOTransformShell& s4 = t4.aoshell[0];
+    const AOTransform& s1 = b1_->aotrans(si);
 
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
 
+        const AOTransform& s2 = b2_->aotrans(sj);
+        const AOTransform& s3 = b3_->aotrans(sk);
+        const AOTransform& s4 = b4_->aotrans(sl);
+
         // Compute this unique AO shell
         tb_->compute_shell(si, sj, sk, sl);
 
-        for (int itr=0; itr<s1.nfunc; itr++) {
-            const SOTransformFunction &ifunc = s1.func[itr];
+        for (int itr=0; itr<s1.soshell.size(); itr++) {
+            const AOTransformFunction &ifunc = s1.soshell[itr];
             double icoef = ifunc.coef;
             int iaofunc = ifunc.aofunc;
             int isofunc = b1_->function_offset_within_shell(uish,
@@ -319,8 +327,8 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
             int iaooff = iaofunc;
             int isooff = isofunc;
 
-            for (int jtr=0; jtr<s2.nfunc; jtr++) {
-                const SOTransformFunction &jfunc = s2.func[jtr];
+            for (int jtr=0; jtr<s2.soshell.size(); jtr++) {
+                const AOTransformFunction &jfunc = s2.soshell[jtr];
                 double jcoef = jfunc.coef * icoef;
                 int jaofunc = jfunc.aofunc;
                 int jsofunc = b2_->function_offset_within_shell(ujsh,
@@ -329,8 +337,8 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                 int jaooff = iaooff*nao2 + jaofunc;
                 int jsooff = isooff*nso2 + jsofunc;
 
-                for (int ktr=0; ktr<s3.nfunc; ktr++) {
-                    const SOTransformFunction &kfunc = s3.func[ktr];
+                for (int ktr=0; ktr<s3.soshell.size(); ktr++) {
+                    const AOTransformFunction &kfunc = s3.soshell[ktr];
                     double kcoef = kfunc.coef * jcoef;
                     int kaofunc = kfunc.aofunc;
                     int ksofunc = b3_->function_offset_within_shell(uksh,
@@ -339,8 +347,8 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                     int kaooff = jaooff*nao3 + kaofunc;
                     int ksooff = jsooff*nso3 + ksofunc;
 
-                    for (int ltr=0; ltr<s4.nfunc; ltr++) {
-                        const SOTransformFunction &lfunc = s4.func[ltr];
+                    for (int ltr=0; ltr<s4.soshell.size(); ltr++) {
+                        const AOTransformFunction &lfunc = s4.soshell[ltr];
                         double lcoef = lfunc.coef * kcoef;
                         int laofunc = lfunc.aofunc;
                         int lsofunc = b4_->function_offset_within_shell(ulsh,
@@ -349,88 +357,18 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                         int laooff = kaooff*nao4 + laofunc;
                         int lsooff = ksooff*nso4 + lsofunc;
                         // If you're doing the two-stage SO integral uncomment the next line
-                        buffer_[lsooff] += lambda_T * lcoef * aobuff[laooff];
-                    }
-                }
-            }
-        }
-    }
-#if 0
-    // loop through the ao shells that make up this so shell
-    for (int i=0; i<t1.naoshell; i++) {
-        const SOTransformShell &s1 = t1.aoshell[i];
-        for (int j=0; j<t2.naoshell; j++) {
-            const SOTransformShell &s2 = t2.aoshell[j];
-            for (int k=0; k<t3.naoshell; k++) {
-                const SOTransformShell &s3 = t3.aoshell[k];
-                for (int l=0; l<t4.naoshell; l++) {
-                    const SOTransformShell &s4 = t4.aoshell[l];
+//                        fprintf(outfile, "\t\tbuffer_[%d] += %d * %f * %f symms: %d %d %d %d\n", lsooff, lambda_T, lcoef, aobuff[laooff],
+//                                ifunc.irrep, jfunc.irrep, kfunc.irrep, lfunc.irrep);
 
-#ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::compute_shell AO eri overhead");
-#endif // MINTS_TIMER
-                    tb_->compute_shell(s1.aoshell, s2.aoshell, s3.aoshell, s4.aoshell);
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell AO eri overhead");
-    timer_on("TwoBodySOInt::compute_shell AO->SO transform");
-#endif // MINTS_TIMER
-
-                    for (int itr=0; itr<s1.nfunc; itr++) {
-                        const SOTransformFunction &ifunc = s1.func[itr];
-                        double icoef = ifunc.coef;
-                        int iaofunc = ifunc.aofunc;
-                        int isofunc = b1_->function_offset_within_shell(ish,
-                                                                        ifunc.irrep)
-                                + ifunc.sofunc;
-                        int iaooff = iaofunc;
-                        int isooff = isofunc;
-
-                        for (int jtr=0; jtr<s2.nfunc; jtr++) {
-                            const SOTransformFunction &jfunc = s2.func[jtr];
-                            double jcoef = jfunc.coef * icoef;
-                            int jaofunc = jfunc.aofunc;
-                            int jsofunc = b2_->function_offset_within_shell(jsh,
-                                                                            jfunc.irrep)
-                                    + jfunc.sofunc;
-                            int jaooff = iaooff*nao2 + jaofunc;
-                            int jsooff = isooff*nso2 + jsofunc;
-
-                            for (int ktr=0; ktr<s3.nfunc; ktr++) {
-                                const SOTransformFunction &kfunc = s3.func[ktr];
-                                double kcoef = kfunc.coef * jcoef;
-                                int kaofunc = kfunc.aofunc;
-                                int ksofunc = b3_->function_offset_within_shell(ksh,
-                                                                                kfunc.irrep)
-                                        + kfunc.sofunc;
-                                int kaooff = jaooff*nao3 + kaofunc;
-                                int ksooff = jsooff*nso3 + ksofunc;
-
-                                for (int ltr=0; ltr<s4.nfunc; ltr++) {
-                                    const SOTransformFunction &lfunc = s4.func[ltr];
-                                    double lcoef = lfunc.coef * kcoef;
-                                    int laofunc = lfunc.aofunc;
-                                    int lsofunc = b4_->function_offset_within_shell(lsh,
-                                                                                    lfunc.irrep)
-                                            + lfunc.sofunc;
-                                    int laooff = kaooff*nao4 + laofunc;
-                                    int lsooff = ksooff*nso4 + lsofunc;
-                                    // If you're doing the two-stage SO integral uncomment the next line
-                                    buffer_[lsooff] += lcoef * aobuff[laooff];
-                                }
-                            }
+                        if ((ifunc.irrep ^ jfunc.irrep) == (kfunc.irrep ^ lfunc.irrep)) {
+//                            fprintf(outfile, "\t\tadded\n");
+                            buffer_[lsooff] += lambda_T * lcoef * aobuff[laooff];
                         }
                     }
-
-#ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell AO->SO transform");
-#endif // MINTS_TIMER
-
                 }
             }
         }
     }
-
-#endif
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell full shell transform");
@@ -452,10 +390,10 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 
     const double *aobuff = tb_->buffer();
 
-    const SOTransform &t1 = b1_->trans(ish);
-    const SOTransform &t2 = b2_->trans(jsh);
-    const SOTransform &t3 = b3_->trans(ksh);
-    const SOTransform &t4 = b4_->trans(lsh);
+    const SOTransform &t1 = b1_->sotrans(ish);
+    const SOTransform &t2 = b2_->sotrans(jsh);
+    const SOTransform &t3 = b3_->sotrans(ksh);
+    const SOTransform &t4 = b4_->sotrans(lsh);
 
     int nso1 = b1_->nfunction(ish);
     int nso2 = b2_->nfunction(jsh);
