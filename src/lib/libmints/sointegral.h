@@ -314,10 +314,15 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         const AOTransform& s3 = b3_->aotrans(sk);
         const AOTransform& s4 = b4_->aotrans(sl);
 
+        int ns1so = s1.soshell.size();
+        int ns2so = s2.soshell.size();
+        int ns3so = s3.soshell.size();
+        int ns4so = s4.soshell.size();
+
         // Compute this unique AO shell
         tb_->compute_shell(si, sj, sk, sl);
 
-        for (int itr=0; itr<s1.soshell.size(); itr++) {
+        for (int itr=0; itr<ns1so; itr++) {
             const AOTransformFunction &ifunc = s1.soshell[itr];
             double icoef = ifunc.coef;
             int iaofunc = ifunc.aofunc;
@@ -327,7 +332,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
             int iaooff = iaofunc;
             int isooff = isofunc;
 
-            for (int jtr=0; jtr<s2.soshell.size(); jtr++) {
+            for (int jtr=0; jtr<ns2so; jtr++) {
                 const AOTransformFunction &jfunc = s2.soshell[jtr];
                 double jcoef = jfunc.coef * icoef;
                 int jaofunc = jfunc.aofunc;
@@ -337,7 +342,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                 int jaooff = iaooff*nao2 + jaofunc;
                 int jsooff = isooff*nso2 + jsofunc;
 
-                for (int ktr=0; ktr<s3.soshell.size(); ktr++) {
+                for (int ktr=0; ktr<ns3so; ktr++) {
                     const AOTransformFunction &kfunc = s3.soshell[ktr];
                     double kcoef = kfunc.coef * jcoef;
                     int kaofunc = kfunc.aofunc;
@@ -347,7 +352,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                     int kaooff = jaooff*nao3 + kaofunc;
                     int ksooff = jsooff*nso3 + ksofunc;
 
-                    for (int ltr=0; ltr<s4.soshell.size(); ltr++) {
+                    for (int ltr=0; ltr<ns4so; ltr++) {
                         const AOTransformFunction &lfunc = s4.soshell[ltr];
                         double lcoef = lfunc.coef * kcoef;
                         int laofunc = lfunc.aofunc;
