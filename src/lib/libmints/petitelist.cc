@@ -923,6 +923,8 @@ PetiteList::compute_aotoso_info()
                     throw PSIEXCEPTION("PetiteList::aotoso_info: internal error: impossible duplicate SO");
                 }
             }
+
+            delete[] coefficients_list;
         }
     }
     for(int h = 0; h < nirrep_; ++h){
