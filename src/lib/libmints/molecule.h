@@ -23,7 +23,6 @@ class PSIO;
 class Chkpt;
 class PointGroup;
 class Matrix;
-class SimpleMatrix;
 class Vector;
 class SimpleVector;
 class Vector3;
@@ -276,10 +275,10 @@ public:
     int atom_at_position2(Vector3&, double tol = 0.05) const;
     /// @}
 
-    /// Returns the geometry in a SimpleMatrix
-    SimpleMatrix geometry();
-    /// Returns the full (dummies included) in a SimpleMatrix
-    SimpleMatrix full_geometry();
+    /// Returns the geometry in a Matrix
+    Matrix geometry() const;
+    /// Returns the full (dummies included) in a Matrix
+    Matrix full_geometry() const;
 
     /**
      * Sets the geometry, given a matrix of coordinates (in Bohr).
@@ -288,14 +287,9 @@ public:
     void set_geometry(double** geom);
 
     /**
-     * Sets the geometry, given a SimpleMatrix of coordinates (in Bohr).
-     */
-    void set_geometry(SimpleMatrix& geom);
-
-    /**
      * Sets the geometry, given a Matrix of coordinates (in Bohr).
      */
-    void set_geometry(Matrix& geom);
+    void set_geometry(const Matrix& geom);
 
     /**
      * Sets the full geometry, given a matrix of coordinates (in Bohr).
@@ -303,24 +297,24 @@ public:
     void set_full_geometry(double** geom);
 
     /**
-     * Sets the full geometry, given a SimpleMatrix of coordinates (in Bohr).
+     * Sets the full geometry, given a Matrix of coordinates (in Bohr).
      */
-    void set_full_geometry(SimpleMatrix& geom);
+    void set_full_geometry(const Matrix& geom);
 
     /**
      * Rotates the molecule using rotation matrix R
      */
-    void rotate(SimpleMatrix& R);
-    void rotate_full(SimpleMatrix& R);
+    void rotate(const Matrix& R);
+    void rotate_full(const Matrix& R);
 
     /// Computes center of mass of molecule (does not translate molecule)
     Vector3 center_of_mass() const;
     /// Computes nuclear repulsion energy
-    double nuclear_repulsion_energy();
+    double nuclear_repulsion_energy() const;
     /// Computes nuclear repulsion energy derivatives.
-    SimpleMatrix nuclear_repulsion_energy_deriv1();
+    Matrix nuclear_repulsion_energy_deriv1() const;
     /// Computes nuclear repulsion energy second derivatives.
-    SimpleMatrix nuclear_repulsion_energy_deriv2();
+    Matrix nuclear_repulsion_energy_deriv2() const;
 
     /// Returns the nuclear contribution to the dipole moment
     boost::shared_ptr<Vector> nuclear_dipole_contribution();
@@ -339,10 +333,10 @@ public:
 //    void reorient();
 
     /// Computes and returns a matrix depicting distances between atoms.
-    SimpleMatrix distance_matrix();
+    Matrix distance_matrix() const;
 
     /// Compute inertia tensor.
-    SimpleMatrix* inertia_tensor();
+    Matrix* inertia_tensor() const;
 
     /// Returns true if the user specified the charge
     bool charge_specified() const { return charge_specified_; }
