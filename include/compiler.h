@@ -22,10 +22,10 @@
  *  }
  */
 
-#ifdef HAVE_BUILTIN_EXPECT && HAVE_BUILTIN_CONSTANT_P
+#if defined(HAVE_BUILTIN_EXPECT) && defined(HAVE_BUILTIN_CONSTANT_P)
 #   define likely(x)   (__builtin_constant_p(x) ? !!(x) : __builtin_expect(!!(x), 1))
 #   define unlikely(x) (__builtin_constant_p(x) ? !!(x) : __builtin_expect(!!(x), 0))
-#elif HAVE_BUILTIN_EXPECT
+#elif defined(HAVE_BUILTIN_EXPECT)
 #   define likely(x)   (__builtin_expect(!!(x), 1))
 #   define unlikely(x) (__builtin_expect(!!(x), 0))
 #else
