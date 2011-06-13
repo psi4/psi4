@@ -108,8 +108,6 @@ boost::shared_ptr<MatrixFactory> MintsHelper::factory() const
 
 void MintsHelper::integrals()
 {
-    timer_init();
-
     fprintf(outfile, " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
 
     // Get ERI object
@@ -178,7 +176,6 @@ void MintsHelper::integrals()
 
     fprintf(outfile, "done\n\n");
     fprintf(outfile, "      Computed %lu non-zero integrals.\n\n", writer.count());
-    timer_done();
 }
 
 void MintsHelper::one_electron_integrals()
@@ -328,10 +325,10 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boos
     int nocc = Co->colspi()[0];
     int nvir = Cv->colspi()[0];
 
-    double** Cop = Co->pointer();   
-    double** Cvp = Cv->pointer();   
+    double** Cop = Co->pointer();
+    double** Cvp = Cv->pointer();
 
-    boost::shared_ptr<Matrix> Iso = ao_eri();   
+    boost::shared_ptr<Matrix> Iso = ao_eri();
     double** Isop = Iso->pointer();
     boost::shared_ptr<Matrix> I2(new Matrix("MO ERI Tensor", nocc * nso, nso * nso));
     double** I2p = I2->pointer();
@@ -378,13 +375,13 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boos
         for (int j = 0; j < nocc; j++) {
             for (int a = 0; a < nvir; a++) {
                 for (int b = 0; b < nvir; b++) {
-                    Imop[i * nvir + a][j * nvir + b] = I6p[a * nocc + i][j * nvir + b];                    
+                    Imop[i * nvir + a][j * nvir + b] = I6p[a * nocc + i][j * nvir + b];
                 }
             }
         }
     }
 
-    return Imo; 
+    return Imo;
 }
 boost::shared_ptr<Matrix> MintsHelper::so_overlap()
 {
