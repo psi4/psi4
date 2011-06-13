@@ -437,6 +437,8 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
     petite4_ = b4_->petitelist();
 
     pg_ = tb_->basis()->molecule()->point_group();
+
+    dcd_ = boost::shared_ptr<DCD>(new DCD(petite1_->group()));
 }
 
 TwoBodySOInt::~TwoBodySOInt()
