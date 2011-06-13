@@ -128,6 +128,9 @@ void SOBasisSet::init()
 //    fprintf(outfile, "nshell_ = %d\n", nshell_);
     //=-----  End debug printing  -----=
 
+    // Allocate memory for unique shell to am
+    ushell_am_ = new int[nshell_];
+
     // map each ao shell to an so shell
     int *aoshell_to_soshell = new int[basis_->nshell()];
     int soshell = 0;
@@ -139,6 +142,10 @@ void SOBasisSet::init()
 //                fprintf(outfile, "i = %d j = %d k = %d aoshell = %d soshell = %d, mol->equivalent = %d\n",
 //                        i, j, k, aoshell, soshell, mol->equivalent(i,k));
             }
+
+            // For each so shell obtain its angular momentum
+            ushell_am_[soshell] = basis_->shell(mol->unique(i), j)->am();
+
             soshell++;
         }
     }
@@ -304,6 +311,7 @@ SOBasisSet::~SOBasisSet()
     delete[] irrep_;
     delete[] func_within_irrep_;
     delete[] nfunc_in_irrep_;
+    delete[] ushell_am_;
 }
 
 int SOBasisSet::max_nfunction_in_shell() const
