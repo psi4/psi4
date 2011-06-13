@@ -424,6 +424,12 @@ PetiteList::~PetiteList()
         delete[] shell_map_;
     }
 
+    if (unique_shell_map_) {
+        for (int i=0; i < nunique_shell_; i++)
+            delete[] unique_shell_map_[i];
+        delete[] unique_shell_map_;
+    }
+
     if (stablizer_)
         delete[] stablizer_;
 
@@ -462,7 +468,7 @@ void PetiteList::init()
     c1_=0;
     ng_ = ct.order();
     natom_ = mol.natom();
-    nshell_ = gbs.nshell();
+    nshell_ = gbs.nshell();  // full number of shells
     nirrep_ = ct.nirrep();
 
     // if point group is C1, then zero everything
@@ -479,6 +485,12 @@ void PetiteList::init()
         return;
     }
 
+    // count the number of so shells
+    nunique_shell_ = 0;
+    for (i=0; i<mol.nunique(); i++) {
+        nunique_shell_ += basis_->nshell_on_center(mol.unique(i));
+    }
+
     // allocate storage for arrays
     p1_ = new char[nshell_];
     lamij_ = new char[i_offset64(nshell_)];
@@ -491,11 +503,17 @@ void PetiteList::init()
     for (i=0; i < nshell_; i++)
         shell_map_[i] = new int[ng_];
 
+    unique_shell_map_ = new int*[nunique_shell_];
+    for (i=0; i < nunique_shell_; i++)
+        unique_shell_map_[i] = new int[ng_];
+
     stablizer_ = new unsigned short[natom_];
 
     // set up atom and shell mappings
     double np[3];
     SymmetryOperation so;
+
+    max_stablizer_ = nirrep_ / mol.max_nequivalent();
 
     // loop over all centers
     for (i=0; i < natom_; i++) {
@@ -537,6 +555,18 @@ void PetiteList::init()
             for (int g=0; g < ng_; g++) {
                 shell_map_[shellnum][g] = gbs.shell_on_center(atom_map_[i][g],s);
             }
+        }
+    }
+
+    int ushell=0;
+    for (int i=0; i<mol.nunique(); ++i) {
+        int atom = mol.unique(i);
+        for (int s=0; s<gbs.nshell_on_center(atom); ++s) {
+            for (int g=0; g<ng_; ++g) {
+                unique_shell_map_[ushell][g] = gbs.shell_on_center(atom_map_[atom][g], s);
+            }
+
+            ++ushell;
         }
     }
 
@@ -959,5 +989,29 @@ boost::shared_ptr<Matrix> PetiteList::aotoso()
     delete[] SOs;
     return aoso;
 }
+
+const char *labels[] = {
+    " E ",
+    "C2z",
+    "C2y",
+    "C2x",
+    " i ",
+    "Sxy",
+    "Sxz",
+    "Syz",
+    " E "
+};
+
+void PetiteList::print_group(unsigned short group) const
+{
+    fprintf(outfile, "(group_ %d group %d) ", group_, group);
+    fprintf(outfile, "%s ", labels[0]);
+    for(int op = 1; op < 9; ++op){
+        if (group & (1 << (op-1)))
+            fprintf(outfile, "%s ", labels[op]);
+    }
+    fprintf(outfile, "\n");
+}
+
 
 } // end namespace psi

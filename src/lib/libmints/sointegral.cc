@@ -415,6 +415,7 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
             b2_->max_nfunction_in_shell() *
             b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();
+
     buffer_ = new double[size_];
 
     ::memset(iirrepoff_, 0, sizeof(int) * 8);
