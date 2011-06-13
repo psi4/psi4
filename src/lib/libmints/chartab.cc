@@ -78,7 +78,7 @@ CharacterTable::~CharacterTable()
 }
 
 CharacterTable&
-    CharacterTable::operator=(const CharacterTable& ct)
+CharacterTable::operator=(const CharacterTable& ct)
 {
     g=ct.g; nt=ct.nt; pg=ct.pg; nirrep_=ct.nirrep_;
 
@@ -142,9 +142,9 @@ void CharacterTable::print(FILE *out) const
 CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
     : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
 {
-  // first parse the point group symbol, this will give us the order of the
-  // point group(g), the type of point group (pg), the order of the principle
-  // rotation axis (nt), and the number of irreps (nirrep_)
+    // first parse the point group symbol, this will give us the order of the
+    // point group(g), the type of point group (pg), the order of the principle
+    // rotation axis (nt), and the number of irreps (nirrep_)
 
     if (!cpg) {
         // ExEnv::errn() << "CharacterTable::CharacterTable: null point group" << endl;
@@ -173,9 +173,9 @@ CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
 CharacterTable::CharacterTable(const char *cpg)
     : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
 {
-  // first parse the point group symbol, this will give us the order of the
-  // point group(g), the type of point group (pg), the order of the principle
-  // rotation axis (nt), and the number of irreps (nirrep_)
+    // first parse the point group symbol, this will give us the order of the
+    // point group(g), the type of point group (pg), the order of the principle
+    // rotation axis (nt), and the number of irreps (nirrep_)
 
     if (!cpg) {
         // ExEnv::errn() << "CharacterTable::CharacterTable: null point group" << endl;
@@ -204,7 +204,7 @@ CharacterTable::CharacterTable(const char *cpg)
 
 int CharacterTable::parse_symbol()
 {
-  // default to C1 symmetry
+    // default to C1 symmetry
     g=1; pg=C1; nt=1; nirrep_=1;
 
     if (!symb) return 0;
