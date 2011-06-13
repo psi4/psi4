@@ -425,18 +425,18 @@ void SOShellCombinationsIterator::next()
     int usi, usj, usk, usl;
     usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
 
-//    // Sort shells based on AM, save ERI some work doing permutation resorting.
-//    if (bs1_->shell(usi)->am() < bs2_->shell(usj)->am()) {
-//        swap(usi, usj);
-//    }
-//    if (bs3_->shell(usk)->am() < bs4_->shell(usl)->am()) {
-//        swap(usk, usl);
-//    }
-//    if (bs1_->shell(usi)->am() + bs2_->shell(usj)->am() >
-//            bs3_->shell(usk)->am() + bs4_->shell(usl)->am()) {
-//        swap(usi, usk);
-//        swap(usj, usl);
-//    }
+    // Sort shells based on AM, save ERI some work doing permutation resorting.
+    if (bs1_->am(usi) < bs2_->am(usj)) {
+        swap(usi, usj);
+    }
+    if (bs3_->am(usk) < bs4_->am(usl)) {
+        swap(usk, usl);
+    }
+    if (bs1_->am(usi) + bs2_->am(usj) >
+            bs3_->am(usk) + bs4_->am(usl)) {
+        swap(usi, usk);
+        swap(usj, usl);
+    }
 
     current.P = usi; current.Q = usj; current.R = usk; current.S = usl; current.end_of_PK = false;
 
