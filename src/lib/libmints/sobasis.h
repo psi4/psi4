@@ -113,6 +113,8 @@ protected:
     int *irrep_;
     int *func_within_irrep_;
 
+    int *ushell_am_;
+
     SOTransform *sotrans_;
     AOTransform *aotrans_;
 
@@ -136,6 +138,8 @@ public:
     int function_offset_for_irrep(int irrep) const;
     /// Return the number of functions in the given shell.
     int nfunction(int ishell) const;
+    /// Return tehe angular momentum of the unique shell
+    int am(int ishell) const { return ushell_am_[ishell]; }
     /** Return the number of functions in the AO shell that make up
         the given SO shell. */
     int naofunction(int ishell) const { return naofunc_[ishell]; }
