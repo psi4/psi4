@@ -58,12 +58,14 @@ using namespace psi;
 ////////////////////////////////////////////////////////////////////////
 
 CharacterTable::CharacterTable()
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
+    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+      bits_(0)
 {
 }
 
 CharacterTable::CharacterTable(const CharacterTable& ct)
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
+    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+      bits_(0)
 {
     *this = ct;
 }
@@ -140,7 +142,8 @@ void CharacterTable::print(FILE *out) const
 }
 
 CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
+    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+      bits_(0)
 {
     // first parse the point group symbol, this will give us the order of the
     // point group(g), the type of point group (pg), the order of the principle
@@ -171,7 +174,8 @@ CharacterTable::CharacterTable(const char *cpg, const SymmetryOperation& frame)
 }
 
 CharacterTable::CharacterTable(const char *cpg)
-    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0)
+    : g(0), nt(0), pg(C1), nirrep_(0), gamma_(0), symop(0), _inv(0), symb(0),
+      bits_(0)
 {
     // first parse the point group symbol, this will give us the order of the
     // point group(g), the type of point group (pg), the order of the principle

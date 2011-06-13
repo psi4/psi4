@@ -428,6 +428,14 @@ TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
         kirrepoff_[h] = kirrepoff_[h-1] + b3_->nfunction_in_irrep(h-1);
         lirrepoff_[h] = lirrepoff_[h-1] + b4_->nfunction_in_irrep(h-1);
     }
+
+    // We need the petite list.
+    petite1_ = b1_->petitelist();
+    petite2_ = b2_->petitelist();
+    petite3_ = b3_->petitelist();
+    petite4_ = b4_->petitelist();
+
+    pg_ = tb_->basis()->molecule()->point_group();
 }
 
 TwoBodySOInt::~TwoBodySOInt()

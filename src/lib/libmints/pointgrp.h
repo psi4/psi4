@@ -68,27 +68,27 @@ extern FILE *outfile;
 #define SKIP_THIS_OPERATOR(num,bit) ((bit) ? !((1<<((bit)-1)) & (num)) : 0 )
 
 namespace SymmOps {
-   enum Operations { E = 0, C2_z = 1, C2_y = 2, C2_x = 4, i = 8, Sigma_xy = 16, Sigma_xz = 32, Sigma_yz = 64 };
+   enum Operations { E = 1, C2_z = 2, C2_y = 4, C2_x = 8, i = 16, Sigma_xy = 32, Sigma_xz = 64, Sigma_yz = 128 };
 }
 
 namespace PointGroups {
 enum Groups {
-    C1    = 0,
-    Ci    = SymmOps::i,
-    C2X   = SymmOps::C2_x ,
-    C2Y   = SymmOps::C2_y ,
-    C2Z   = SymmOps::C2_z ,
-    CsZ   = SymmOps::Sigma_xy ,
-    CsY   = SymmOps::Sigma_xz ,
-    CsX   = SymmOps::Sigma_yz ,
-    D2    = SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z ,
-    C2vX  = SymmOps::C2_x | SymmOps::Sigma_xy | SymmOps::Sigma_xz ,
-    C2vY  = SymmOps::C2_y | SymmOps::Sigma_xy | SymmOps::Sigma_yz ,
-    C2vZ  = SymmOps::C2_z | SymmOps::Sigma_xz | SymmOps::Sigma_yz ,
-    C2hX  = SymmOps::C2_x | SymmOps::Sigma_yz | SymmOps::i ,
-    C2hY  = SymmOps::C2_y | SymmOps::Sigma_xz | SymmOps::i ,
-    C2hZ  = SymmOps::C2_z | SymmOps::Sigma_xy | SymmOps::i ,
-    D2h   = SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z | SymmOps::i |
+    C1    = SymmOps::E,
+    Ci    = SymmOps::E | SymmOps::i,
+    C2X   = SymmOps::E | SymmOps::C2_x ,
+    C2Y   = SymmOps::E | SymmOps::C2_y ,
+    C2Z   = SymmOps::E | SymmOps::C2_z ,
+    CsZ   = SymmOps::E | SymmOps::Sigma_xy ,
+    CsY   = SymmOps::E | SymmOps::Sigma_xz ,
+    CsX   = SymmOps::E | SymmOps::Sigma_yz ,
+    D2    = SymmOps::E | SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z ,
+    C2vX  = SymmOps::E | SymmOps::C2_x | SymmOps::Sigma_xy | SymmOps::Sigma_xz ,
+    C2vY  = SymmOps::E | SymmOps::C2_y | SymmOps::Sigma_xy | SymmOps::Sigma_yz ,
+    C2vZ  = SymmOps::E | SymmOps::C2_z | SymmOps::Sigma_xz | SymmOps::Sigma_yz ,
+    C2hX  = SymmOps::E | SymmOps::C2_x | SymmOps::Sigma_yz | SymmOps::i ,
+    C2hY  = SymmOps::E | SymmOps::C2_y | SymmOps::Sigma_xz | SymmOps::i ,
+    C2hZ  = SymmOps::E | SymmOps::C2_z | SymmOps::Sigma_xy | SymmOps::i ,
+    D2h   = SymmOps::E | SymmOps::C2_x | SymmOps::C2_y | SymmOps::C2_z | SymmOps::i |
             SymmOps::Sigma_xy | SymmOps::Sigma_xz | SymmOps::Sigma_yz
 };
 }
@@ -101,7 +101,7 @@ enum Groups {
 class SymmetryOperation {
   private:
     double d[3][3];
-    unsigned int bit_;
+    unsigned short bits_;
 
     void analyze_d();
 
@@ -138,35 +138,35 @@ class SymmetryOperation {
     SymmetryOperation transform(const SymmetryOperation& r) const;
 
     /// Get the bit value.
-    unsigned int bit() const { return bit_; }
+    unsigned char bit() const { return bits_; }
 
     /// Set equal to a unit matrix
     void unit() { zero(); d[0][0] = d[1][1] = d[2][2] = 1.0;}
 
     /// Set equal to E
-    void E() { unit(); bit_ = SymmOps::E; }
+    void E() { unit(); bits_ = SymmOps::E; }
 
     /// Set equal to an inversion
-    void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; bit_ = SymmOps::i; }
+    void i() { zero(); d[0][0] = d[1][1] = d[2][2] = -1.0; bits_ = SymmOps::i; }
 
     /// Set equal to reflection in xy plane
-    void sigma_h() { unit(); d[2][2] = -1.0; bit_ = SymmOps::Sigma_xy; }
+    void sigma_h() { unit(); d[2][2] = -1.0; bits_ = SymmOps::Sigma_xy; }
 
     /// Set equal to reflection in xz plane
-    void sigma_xz() { unit(); d[1][1] = -1.0; bit_ = SymmOps::Sigma_xz; }
+    void sigma_xz() { unit(); d[1][1] = -1.0; bits_ = SymmOps::Sigma_xz; }
 
     /// Set equal to reflection in yz plane
-    void sigma_yz() { unit(); d[0][0] = -1.0; bit_ = SymmOps::Sigma_yz; }
+    void sigma_yz() { unit(); d[0][0] = -1.0; bits_ = SymmOps::Sigma_yz; }
 
     /// Set equal to a clockwise rotation by 2pi/n
     void rotation(int n);
     void rotation(double theta);
 
     /// Set equal to C2 about the x axis
-    void c2_x() { i(); d[0][0] = 1.0; bit_ = SymmOps::C2_x; }
+    void c2_x() { i(); d[0][0] = 1.0; bits_ = SymmOps::C2_x; }
 
     /// Set equal to C2 about the x axis
-    void c2_y() { i(); d[1][1] = 1.0; bit_ = SymmOps::C2_y; }
+    void c2_y() { i(); d[1][1] = 1.0; bits_ = SymmOps::C2_y; }
 
     void transpose();
 
@@ -392,6 +392,7 @@ class CharacterTable {
     SymmetryOperation *symop;            //< the matrices describing sym ops
     int *_inv;                           //< index of the inverse symop
     char *symb;                          //< the Schoenflies symbol for the pg
+    unsigned short bits_;                //< Bitwise representation of the symmetry operations
 
     /// this determines what type of point group we're dealing with
     int parse_symbol();
@@ -476,6 +477,8 @@ class CharacterTable {
       return -1;
     }
 
+    unsigned char bits() const { return bits_; }
+
     /// This prints the irrep to the given file, or stdout if none is given.
      void print(FILE *out=outfile) const;
 };
@@ -494,7 +497,9 @@ class PointGroup {
     char *symb;
     SymmetryOperation frame;
     Vector3 origin_;
-    unsigned int bits_;
+    unsigned char bits_;
+
+    void init_once();
 
   public:
     PointGroup();
@@ -551,9 +556,9 @@ class PointGroup {
     PointGroup& operator=(const PointGroup&);
 
     /// Set the bit representation of this group
-    void set_bits(unsigned int bits) { bits_ = bits; }
+    void set_bits(unsigned char bits) { bits_ = bits; }
     /// Get the bit representation of this group
-    unsigned int bits() const { return bits_; }
+    unsigned char bits() const { return bits_; }
 
     /// Returns 1 if the point groups are equivalent, 0 otherwise.
     int equiv(const boost::shared_ptr<PointGroup> &, double tol = 1.0e-6) const;
@@ -573,12 +578,32 @@ class PointGroup {
     /// Sets (or resets) the Schoenflies symbol.
     void set_symbol(const char*);
 
-    static const char* bits_to_full_name(unsigned int bits);
-    static const char* bits_to_basic_name(unsigned int bits);
+    static const char* bits_to_full_name(unsigned char bits);
+    static const char* bits_to_basic_name(unsigned char bits);
+
+    static std::vector<int> bits_to_operator_list(unsigned short group, unsigned short list) {
+        std::vector<int> positions;
+        int position = 0;
+        unsigned short g = group;
+
+        for (int n=0; n<9; n++) {
+            if (g & 1) {
+                if (g & (list & 1))
+                    positions.push_back(position);
+                position += 1;
+            }
+
+            g >>= 1;
+            list >>= 1;
+        }
+        return positions;
+    }
+
+    void print_group(unsigned short group) const;
 
     // void save_data_state(StateOut& so);
 
-    // void print(std::ostream&o=ExEnv::out0()) const;
+    void print(FILE *out = outfile) const;
 };
 
 }
