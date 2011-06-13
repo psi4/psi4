@@ -31,6 +31,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_bool("PUREAM", true);
   /*- Print level -*/
   options.add_int("PRINT", 0);
+  /*- Default number of geometry optimization steps -*/
+  options.add_int("NOPT", 20);
 
   if (name == "DETCI" || options.read_globals()) {
     /*- Derivative level -*/
@@ -95,21 +97,21 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       vectors. LEININGER approximation which subtracts the one-electron
       contribution from the orbital energies, multiplies by 0.5, and adds
       the one-electron contribution back in, producing spin pure expansion
-      vectors and developed by Matt Leininger and works as well as 
+      vectors and developed by Matt Leininger and works as well as
       EVANGELISTI. -*/
-    options.add_str("HD_AVE", "EVANGELISTI", 
+    options.add_str("HD_AVE", "EVANGELISTI",
       "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
 
     /*- If TRUE the diagonal elements of the Hamiltonian matrix are
-      computed on-the-fly, otherwise a diagonal element vector is written 
+      computed on-the-fly, otherwise a diagonal element vector is written
       to a separate file on disk. -*/
     options.add_bool("HD_OTF",true);
 
-    /*- If TRUE, use the last vector space in the BVEC file to write 
+    /*- If TRUE, use the last vector space in the BVEC file to write
       scratch DVEC rather than using a separate DVEC file. (Only
       possible if NUM_ROOTS = 1). -*/
     options.add_bool("NODFILE",false);
-    
+
     /*- Freeze core orbitals? -*/
     // CDS: Need to make DETCI compatible with normal FREEZE_CORE
     options.add_bool("DETCI_FREEZE_CORE",true);
@@ -119,17 +121,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("FCI_STRINGS",false);
 
     /*- This determines whether `mixed' RAS II/RAS III excitations are
-      allowed into the CI space.  This is useful for placing additional 
+      allowed into the CI space.  This is useful for placing additional
       constraints on a RAS CI. -*/
     options.add_bool("MIXED",true);
 
     /*- This determines whether `mixed' excitations involving RAS IV are
-      allowed into the CI space.  This is useful for placing additional 
+      allowed into the CI space.  This is useful for placing additional
       constraints on a RAS CI. -*/
     options.add_bool("MIXED4",true);
 
-    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in 
-      RAS IV, then the holes in RAS I must equal the particles in RAS III 
+    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in
+      RAS IV, then the holes in RAS I must equal the particles in RAS III
       + RAS IV else the string is discarded -*/
     options.add_bool("R4S",false);
 
@@ -146,7 +148,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
     options.add_bool("SAVE_MPN2",false);
 
-    /*- If TRUE, an orthonormal vector space is employed rather than 
+    /*- If TRUE, an orthonormal vector space is employed rather than
       storing the kth order wfn -*/
     options.add_bool("MPN_SCHMIDT",false);
 
@@ -1398,7 +1400,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
         \end{tabular}
     -*/
     options.add_str("RPA_ALGORITHM", "CD", "CD DF");
-    /*- RPA Cholesky delta -*/ 
+    /*- RPA Cholesky delta -*/
     options.add_double("RPA_DELTA", 1.0E-6);
     /*- Continue RPA even if T's are not numerically SPD? -*/
     options.add_bool("RPA_RISKY",false);

@@ -58,7 +58,7 @@ def gradient(energy_method):
 # TODO: Need to get options from liboptions
 nopt = 20
 
-def opt(method = scf_gradient):
+def opt(method = scf_gradient, nopt = 20):
     # Assume the active molecule is the one we want to use.
 
     # Tell the user what we're going to do:
@@ -66,14 +66,12 @@ def opt(method = scf_gradient):
 
     mol = get_active_molecule()
     mol.update_geometry()
-    print_out("Molecule printed from python:")
-    mol.print_to_output()
 
     for n in range(nopt):
         # Compute the gradient
         gradient = method()
 
         # Take step
-        if optking(get_active_molecule(), gradient) == 3:
+        if optking() == PsiReturnType.EndLoop:
             print_out("Optimizer: Optimization complete!")
             return
