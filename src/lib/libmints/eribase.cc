@@ -16,45 +16,6 @@
 using namespace boost;
 using namespace psi;
 
-#if 0
-void ERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)
-{
-    double T = rho*PQ2;
-    double* F = fjt->values(max_am, T);
-    for (int i = 0; i <= max_am; i++) {
-        libint.PrimQuartet[nprim].F[i] = F[i] * coef1;
-    }
-}
-
-void ErfERIFundamentalFunctor::operator()(Libint_t &libint, Fjt* fjt, int nprim, double coef1, int max_am, double PQ2, double rho)
-{
-    double T = rho*PQ2;
-    double rho_w = omega2_*rho / (omega2_ + rho);
-    double T_w = rho_w*PQ2;
-
-    double prod1;
-    double prod2;
-    double factor1;
-    double factor2;
-    double* F;
-
-    F = fjt->values(max_am, T);
-    for (int i = 0; i <= max_am; i++) {
-        libint.PrimQuartet[nprim].F[i] = coef1 * alpha_ * F[i];
-    }
-    factor1 = 2.0*rho;
-    prod1 = sqrt(factor1);
-    factor2 = 2.0*rho_w;
-    prod2 = sqrt(factor2);
-    F = fjt->values(max_am, T_w);
-    for (int i = 0; i <= max_am; i++) {
-        libint.PrimQuartet[nprim].F[i] += coef1 * beta_ * (factor2 / factor1) * F[i];
-        prod1 *= factor1;
-        prod2 *= factor2;
-    }
-}
-#endif
-
 TwoElectronInt::TwoElectronInt(const IntegralFactory* integral, int deriv, double schwarz)
     : TwoBodyAOInt(integral, deriv)
 {
@@ -159,21 +120,6 @@ TwoElectronInt::~TwoElectronInt()
     free_shell_pairs12();
     free_shell_pairs34();       // This shouldn't do anything, but this might change in the future
 }
-
-#if 0
-ErfERI::ErfERI(const IntegralFactory* fact, double omega, double alpha, double beta, int deriv, double schwarz):
-    ERIBase(fact,deriv,schwarz)
-{
-    eri_functor_ = (static_cast<ERIFundamentalFunctor*> (new ErfERIFundamentalFunctor(omega, alpha, beta)));
-
-    //printf(" Omega = %14.10f\n", omega);
-    //printf(" Alpha = %14.10f\n", alpha);
-    //printf(" Beta = %14.10f\n", beta);
-}
-ErfERI::~ErfERI()
-{
-}
-#endif
 
 void TwoElectronInt::init_shell_pairs12()
 {
@@ -765,19 +711,26 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         nprim3 = s3->nprimitive();
         nprim4 = s4->nprimitive();
 
+        int max_p2, max_p4, m, n;
+
         for (int p1=0; p1<nprim1; ++p1) {
-            for (int p2=0; p2<nprim2; ++p2) {
+            max_p2 = (sh1 == sh2) ? p1+1 : nprim2;
+            for (int p2=0; p2<max_p2; ++p2) {
+                m = (1 + (sh1 == sh2 && p1 != p2));
+
                 double zeta = p12->gamma[p1][p2];
                 double overlap12 = p12->overlap[p1][p2];
 
                 for (int p3=0; p3<nprim3; ++p3) {
-                    for (int p4=0; p4<nprim4; ++p4) {
+                    max_p4 = (sh3 == sh4) ? p3+1 : nprim4;
+                    for (int p4=0; p4<max_p4; ++p4) {
+                        n = m * (1 + (sh3 == sh4 && p3 != p4));
 
                         double eta  = p34->gamma[p3][p4];
                         double oozn = 1.0 / (zeta+eta);
                         libint_.PrimQuartet[nprim].poz = eta * oozn;
                         double rho = zeta * libint_.PrimQuartet[nprim].poz;
-                        double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4];
+                        double coef1 = 2.0 * sqrt(rho*M_1_PI) * overlap12 * p34->overlap[p3][p4] * n;
                         double PQ[3];
 
                         PQ[0] = p12->P[p1][p2][0] - p34->P[p3][p4][0];
@@ -985,7 +938,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     else {
         // Handle (ss|ss)
         double temp = 0.0;
-        for (size_t i=0; i<nprim_combination; ++i)
+        for (size_t i=0; i<nprim; ++i)
             temp += (double)libint_.PrimQuartet[i].F[0];
         source_[0] = temp;
 //        fprintf(outfile, "s-functions = %8.5f\n", temp);
