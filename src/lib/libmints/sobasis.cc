@@ -13,6 +13,8 @@
 using namespace boost;
 using namespace psi;
 
+///////////////////////////////////////////////////////////////////////////////
+
 SOTransform::SOTransform()
 {
     naoshell_allocated = 0;
@@ -48,6 +50,22 @@ void SOTransform::add_transform(int aoshellnum, int irrep,
     aoshell[i].add_func(irrep,coef,aofunc,sofunc);
     aoshell[i].aoshell = aoshellnum;
     if (i==naoshell) naoshell++;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+AOTransform::AOTransform()
+{
+}
+
+AOTransform::~AOTransform()
+{
+}
+
+void AOTransform::add_transform(int irrep,
+                                double coef, int aofunc, int sofunc)
+{
+    soshell.push_back(AOTransformFunction(coef, aofunc, sofunc, irrep));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -168,7 +186,10 @@ void SOBasisSet::init()
 //        soblocks[i].print("");
 //    }
 
-    trans_ = new SOTransform[nshell_];
+    // == Begin forming (A|S)OTransform array ==
+    sotrans_ = new SOTransform[nshell_];
+    aotrans_ = new AOTransform[basis_->nshell()];
+
     for (i=0; i<nblocks; i++) {
         for (j=0; j<soblocks[i].len; j++) {
             if (soblocks[i].so[j].length == 0) continue;
@@ -178,8 +199,7 @@ void SOBasisSet::init()
             int soshell0 = aoshell_to_soshell[aoshell0];
             int atom0 = basis_->shell_to_center(aoshell0);
             int nequiv0 = mol->nequivalent(mol->atom_to_unique(atom0));
-            trans_[soshell0].set_naoshell(nequiv0);
-
+            sotrans_[soshell0].set_naoshell(nequiv0);
 //            fprintf(outfile, "i = %d j = %d bfn0 = %d aoshell0 = %d soshell0 = %d atom0 = %d nequiv0 = %d\n", i, j, bfn0, aoshell0, soshell0, atom0, nequiv0);
         }
     }
@@ -218,10 +238,13 @@ void SOBasisSet::init()
 
 //                fprintf(outfile, "add_transform(...): aoshell = %d irrep = %d coef = %lf aoshellfunc = %d sofunc = %d\n",
 //                       aoshell,irrep, coef,aoshellfunc,sofunc);
-                trans_[soshell].add_transform(aoshell, irrep, coef,aoshellfunc,sofunc);
+                sotrans_[soshell].add_transform(aoshell, irrep, coef, aoshellfunc, sofunc);
+                aotrans_[aoshell].add_transform(irrep, coef, aoshellfunc, sofunc);
             }
         }
     }
+
+    // == End forming (A|S)OTransform array ==
 
     if (nfuncall != basis_->nbf()) {
         throw PSIEXCEPTION("SOBasis::SOBasis: miscounted number of functions");
@@ -275,7 +298,8 @@ SOBasisSet::~SOBasisSet()
     delete[] funcoff_;
     delete[] naofunc_;
     delete[] ncomp_;
-    delete[] trans_;
+    delete[] sotrans_;
+    delete[] aotrans_;
     delete[] func_;
     delete[] irrep_;
     delete[] func_within_irrep_;
@@ -354,22 +378,35 @@ void SOBasisSet::print(FILE *out) const
         fprintf(out, "\n");
     }
 
-    fprintf(out, "    transform:\n");
+    fprintf(out, "    sotransform:\n");
     for (i=0; i<nshell_; i++) {
         if (i>0) fprintf(out, "\n");
-        for (j=0; j<trans_[i].naoshell; j++) {
-            for (k=0; k<trans_[i].aoshell[j].nfunc; k++) {
-                fprintf(out, "      SO(%3d %2d %d [%2d]) += % 12.8f * AO(%3d %2d)\n",
+        for (j=0; j<sotrans_[i].naoshell; j++) {
+            for (k=0; k<sotrans_[i].aoshell[j].nfunc; k++) {
+                fprintf(out, "      SO(%3d %2d %d [%2d]) += %12.8f * AO(%3d %2d)\n",
                         i,
-                        trans_[i].aoshell[j].func[k].sofunc,
-                        trans_[i].aoshell[j].func[k].irrep,
+                        sotrans_[i].aoshell[j].func[k].sofunc,
+                        sotrans_[i].aoshell[j].func[k].irrep,
                         function_offset_within_shell(
-                            i, trans_[i].aoshell[j].func[k].irrep)
-                        + trans_[i].aoshell[j].func[k].sofunc,
-                        trans_[i].aoshell[j].func[k].coef,
-                        trans_[i].aoshell[j].aoshell,
-                        trans_[i].aoshell[j].func[k].aofunc);
+                            i, sotrans_[i].aoshell[j].func[k].irrep)
+                        + sotrans_[i].aoshell[j].func[k].sofunc,
+                        sotrans_[i].aoshell[j].func[k].coef,
+                        sotrans_[i].aoshell[j].aoshell,
+                        sotrans_[i].aoshell[j].func[k].aofunc);
             }
+        }
+    }
+
+    fprintf(out, "    aotransform:\n");
+    for (i=0; i<basis_->nshell(); ++i) {
+        if (i>0) fprintf(out, "\n");
+        for (j=0; j<aotrans_[i].soshell.size(); ++j) {
+            fprintf(out, "      AO(%3d) sofunc %d aofunc %d irrep %d coef %12.8f\n",
+                    i,
+                    aotrans_[i].soshell[j].sofunc,
+                    aotrans_[i].soshell[j].aofunc,
+                    aotrans_[i].soshell[j].irrep,
+                    aotrans_[i].soshell[j].coef);
         }
     }
 }
