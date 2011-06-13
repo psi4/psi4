@@ -59,27 +59,11 @@
 using namespace std;
 using namespace psi;
 
-std::map<int, const char*> labels;
-
-void call_once()
-{
-    labels[SymmOps::E]        = " E ";
-    labels[SymmOps::C2_x]     = "C2x";
-    labels[SymmOps::C2_y]     = "C2y";
-    labels[SymmOps::C2_z]     = "C2z";
-    labels[SymmOps::i]        = " i ";
-    labels[SymmOps::Sigma_xy] = "Sxy";
-    labels[SymmOps::Sigma_xz] = "Sxz";
-    labels[SymmOps::Sigma_yz] = "Syz";
-    //    labels[SymmOps::ID]       = "E";
-}
-
 ////////////////////////////////////////////////////////////////////////
 
 PointGroup::PointGroup()
     : symb(0)
 {
-    init_once();
     set_symbol("c1");
     frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
@@ -88,7 +72,6 @@ PointGroup::PointGroup()
 PointGroup::PointGroup(const char *s)
     : symb(0)
 {
-    init_once();
     set_symbol(s);
     frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
@@ -97,7 +80,6 @@ PointGroup::PointGroup(const char *s)
 PointGroup::PointGroup(const char *s, SymmetryOperation& so)
     : symb(0)
 {
-    init_once();
     set_symbol(s);
     frame = so;
     origin_[0] = origin_[1] = origin_[2] =0;
@@ -107,7 +89,6 @@ PointGroup::PointGroup(const char *s, SymmetryOperation& so,
                        const Vector3& origin)
     : symb(0)
 {
-    init_once();
     set_symbol(s);
     frame = so;
     origin_ = origin;
@@ -116,23 +97,13 @@ PointGroup::PointGroup(const char *s, SymmetryOperation& so,
 PointGroup::PointGroup(const PointGroup& pg)
     : symb(0)
 {
-    init_once();
     *this = pg;
 }
 
 PointGroup::PointGroup(const boost::shared_ptr<PointGroup>& pg)
     : symb(0)
 {
-    init_once();
     *this = *pg.get();
-}
-
-void PointGroup::init_once()
-{
-    static bool called = false;
-    if (!called)
-        call_once();
-    called = true;
 }
 
 PointGroup::~PointGroup()
@@ -176,23 +147,12 @@ PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
     if (strcmp(symb,grp->symb)) return 0;
 
     for (int i=0; i < 3; i++) {
-        // origin isn't realy used, so don't check
-        //if (fabs(origin_[i] - grp->origin_[i]) > tol) return 0;
         for (int j=0; j < 3; j++) {
             if (fabs(frame(i,j) - grp->frame(i,j)) > tol) return 0;
         }
     }
 
     return 1;
-}
-
-void PointGroup::print_group(unsigned short group) const
-{
-    for(int op = 1; op < 9; ++op){
-        if(SKIP_THIS_OPERATOR(group, op)) continue;
-        fprintf(outfile, "%s ", labels[NUM_TO_OPERATOR_ID(op)]);
-    }
-    fprintf(outfile, "\n");
 }
 
 const char* PointGroup::bits_to_full_name(unsigned char bits)

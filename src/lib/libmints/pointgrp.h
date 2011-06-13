@@ -68,7 +68,7 @@ extern FILE *outfile;
 #define SKIP_THIS_OPERATOR(num,bit) ((bit) ? !((1<<((bit)-1)) & (num)) : 0 )
 
 namespace SymmOps {
-   enum Operations { E = 1, C2_z = 2, C2_y = 4, C2_x = 8, i = 16, Sigma_xy = 32, Sigma_xz = 64, Sigma_yz = 128 };
+   enum Operations { E = 0, C2_z = 1, C2_y = 2, C2_x = 4, i = 8, Sigma_xy = 16, Sigma_xz = 32, Sigma_yz = 64, ID = 128 };
 }
 
 namespace PointGroups {
@@ -499,8 +499,6 @@ class PointGroup {
     Vector3 origin_;
     unsigned char bits_;
 
-    void init_once();
-
   public:
     PointGroup();
     /** This constructor takes a string containing the Schoenflies symbol
@@ -580,26 +578,6 @@ class PointGroup {
 
     static const char* bits_to_full_name(unsigned char bits);
     static const char* bits_to_basic_name(unsigned char bits);
-
-    static std::vector<int> bits_to_operator_list(unsigned short group, unsigned short list) {
-        std::vector<int> positions;
-        int position = 0;
-        unsigned short g = group;
-
-        for (int n=0; n<9; n++) {
-            if (g & 1) {
-                if (g & (list & 1))
-                    positions.push_back(position);
-                position += 1;
-            }
-
-            g >>= 1;
-            list >>= 1;
-        }
-        return positions;
-    }
-
-    void print_group(unsigned short group) const;
 
     // void save_data_state(StateOut& so);
 

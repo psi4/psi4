@@ -142,6 +142,7 @@ class PetiteList
 {
     int natom_;
     int nshell_;
+    int nunique_shell_;
     int ng_;
     int nirrep_;
     int nblocks_;
@@ -161,6 +162,7 @@ class PetiteList
     unsigned short group_;
 
     unsigned short *stablizer_;
+    int max_stablizer_;
 
     void init();
 
@@ -195,6 +197,13 @@ public:
      */
     int shell_map(int n, int g) const { return (c1_) ? n : shell_map_[n][g]; }
 
+    /** How a unique shell index maps to an absolute with the specified symmetry operation
+     *  \param n Unique shell index
+     *  \param g Operation number for mapping
+     *  \returns the absolute shell n maps into when g is applied.
+     */
+    int unique_shell_map(int n, int g) const { return (c1_) ? n : unique_shell_map_[n][g]; }
+
     /** Number of functions in irrep.
      *  \param h Irrep of interest.
      */
@@ -210,6 +219,8 @@ public:
      *  \param atom The atom of interest.
      */
     unsigned short stablizer(int atom) const { return stablizer_[atom]; }
+
+    int max_stablizer() const { return max_stablizer_;}
 
     /** The bit representation of the symmetry operation in the point group.
      */
@@ -227,22 +238,20 @@ public:
                 for(int nu = 0; nu < 8; ++nu){
                     if(SKIP_THIS_OPERATOR(subgroup2, nu)) continue;
                     coset |= NUM_TO_OPERATOR_ID(mu^g^nu);
+                    if(!NUM_TO_OPERATOR_ID(mu^g^nu)) coset |= SymmOps::ID;
                 }
             }
             uniqueCosets[coset] = 1;
         }
         std::map<unsigned short, bool>::const_iterator iter = uniqueCosets.begin();
         std::map<unsigned short, bool>::const_iterator stop = uniqueCosets.end();
-        int count = 0;
-        unsigned short rOperators = 0;
+        int rOperators = 0;
         for(; iter != stop; ++iter){
             int coset = iter->first;
-            if(count++){
-                for(int op = 1; op < 8; ++op){
-                    if(SKIP_THIS_OPERATOR(coset, op)) continue;
-                    rOperators |= NUM_TO_OPERATOR_ID(op);
-                    break;
-                }
+            for(int op = 1; op < 9; ++op){
+                if(SKIP_THIS_OPERATOR(coset, op)) continue;
+                rOperators |= (coset & SymmOps::ID ? SymmOps::E : NUM_TO_OPERATOR_ID(op));
+                break;
             }
         }
         return rOperators;
@@ -262,6 +271,26 @@ public:
     unsigned short GnG(unsigned short group1, unsigned short group2) const {
          return group1 & group2;
     }
+
+    std::vector<int> bits_to_operator_list(unsigned short list) {
+        std::vector<int> positions;
+        int position = 1;
+        unsigned short g = group_;
+        positions.push_back(0);
+        for (int n=1; n<9; n++) {
+            if (g & 1) {
+                if (g & (list & 1))
+                    positions.push_back(position);
+                position += 1;
+            }
+
+            g >>= 1;
+            list >>= 1;
+        }
+        return positions;
+    }
+
+    void print_group(unsigned short group) const;
 
     /// Returns the number of atomic orbitals in a convenient Dimension object.
     Dimension AO_basisdim();
