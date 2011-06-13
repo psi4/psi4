@@ -16,6 +16,8 @@ private:
 
   /// The number of subgroups in the current point group, pg_.
   int nsub_;
+  /// The dimensions of each subgroup.
+  int *subgroup_dimensions_;
   /// The lookup array for the DCR list of operators for all possiblepairs of stabilizer subgroups.
   int ***dcr_;
   /// The lookup array for the intersection of all possible pairs of subgroups.
@@ -67,10 +69,12 @@ public:
     D2h_operators_ = 0;
     if(pg == 0) { // C1
         nsub_ = 1;
+        subgroup_dimensions_ = new int[1];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         bits_to_subgroup_[0] = 0; // C1
 
@@ -81,15 +85,18 @@ public:
         gng_[0][0] = 0; // C1, C1 = C1
     }else if(pg == 1) { // C2_z
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[1] = 1; // C2_z
@@ -107,15 +114,18 @@ public:
         gng_[1][1] = 1; // C2_z, C2_z = C2_z
     }else if(pg == 2) { // C2_y
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 1; // C2y
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[2] = 1; // C2_y
@@ -133,15 +143,18 @@ public:
         gng_[1][1] = 1; // C2_y, C2_y = C2_y
     }else if(pg == 4) { // C2_x
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 1; // C2x
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[4] = 1; // C2_x
@@ -159,25 +172,30 @@ public:
         gng_[1][1] = 1; // C2_x, C2_x = C2_x
     }else if(pg == 7) { // D2
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
+        subgroup_dimensions_[1] = 2;
 
         C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 2; // C2y
+        subgroup_dimensions_[2] = 2;
 
         C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 3; // C2x
+        subgroup_dimensions_[3] = 2;
 
         D2_operators_ = new int[5];
         D2_operators_[0] = 4; // 4 element(s) in the list
@@ -185,6 +203,7 @@ public:
         D2_operators_[2] = 1; // C2z
         D2_operators_[3] = 2; // C2y
         D2_operators_[4] = 3; // C2x
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[1] = 1; // C2_z
@@ -247,15 +266,18 @@ public:
         gng_[4][4] = 4; // D2, D2 = D2
     }else if(pg == 8) { // Ci
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 1; //  i 
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[8] = 1; // Ci
@@ -273,15 +295,18 @@ public:
         gng_[1][1] = 1; // Ci, Ci = Ci
     }else if(pg == 16) { // Cs_xy
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 1; // Sxy
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[16] = 1; // Cs_xy
@@ -299,25 +324,30 @@ public:
         gng_[1][1] = 1; // Cs_xy, Cs_xy = Cs_xy
     }else if(pg == 25) { // C2h_z
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
+        subgroup_dimensions_[1] = 2;
 
         Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 2; //  i 
+        subgroup_dimensions_[2] = 2;
 
         Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 3; // Sxy
+        subgroup_dimensions_[3] = 2;
 
         C2h_z_operators_ = new int[5];
         C2h_z_operators_[0] = 4; // 4 element(s) in the list
@@ -325,6 +355,7 @@ public:
         C2h_z_operators_[2] = 1; // C2z
         C2h_z_operators_[3] = 2; //  i 
         C2h_z_operators_[4] = 3; // Sxy
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[1] = 1; // C2_z
@@ -387,15 +418,18 @@ public:
         gng_[4][4] = 4; // C2h_z, C2h_z = C2h_z
     }else if(pg == 32) { // Cs_xz
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 1; // Sxz
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[32] = 1; // Cs_xz
@@ -413,25 +447,30 @@ public:
         gng_[1][1] = 1; // Cs_xz, Cs_xz = Cs_xz
     }else if(pg == 42) { // C2h_y
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 1; // C2y
+        subgroup_dimensions_[1] = 2;
 
         Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 2; //  i 
+        subgroup_dimensions_[2] = 2;
 
         Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 3; // Sxz
+        subgroup_dimensions_[3] = 2;
 
         C2h_y_operators_ = new int[5];
         C2h_y_operators_[0] = 4; // 4 element(s) in the list
@@ -439,6 +478,7 @@ public:
         C2h_y_operators_[2] = 1; // C2y
         C2h_y_operators_[3] = 2; //  i 
         C2h_y_operators_[4] = 3; // Sxz
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[2] = 1; // C2_y
@@ -501,25 +541,30 @@ public:
         gng_[4][4] = 4; // C2h_y, C2h_y = C2h_y
     }else if(pg == 52) { // C2v_x
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 1; // C2x
+        subgroup_dimensions_[1] = 2;
 
         Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 2; // Sxy
+        subgroup_dimensions_[2] = 2;
 
         Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 3; // Sxz
+        subgroup_dimensions_[3] = 2;
 
         C2v_x_operators_ = new int[5];
         C2v_x_operators_[0] = 4; // 4 element(s) in the list
@@ -527,6 +572,7 @@ public:
         C2v_x_operators_[2] = 1; // C2x
         C2v_x_operators_[3] = 2; // Sxy
         C2v_x_operators_[4] = 3; // Sxz
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[4] = 1; // C2_x
@@ -589,15 +635,18 @@ public:
         gng_[4][4] = 4; // C2v_x, C2v_x = C2v_x
     }else if(pg == 64) { // Cs_yz
         nsub_ = 2;
+        subgroup_dimensions_ = new int[2];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 1; // Syz
+        subgroup_dimensions_[1] = 2;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[64] = 1; // Cs_yz
@@ -615,25 +664,30 @@ public:
         gng_[1][1] = 1; // Cs_yz, Cs_yz = Cs_yz
     }else if(pg == 76) { // C2h_x
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 1; // C2x
+        subgroup_dimensions_[1] = 2;
 
         Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 2; //  i 
+        subgroup_dimensions_[2] = 2;
 
         Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 3; // Syz
+        subgroup_dimensions_[3] = 2;
 
         C2h_x_operators_ = new int[5];
         C2h_x_operators_[0] = 4; // 4 element(s) in the list
@@ -641,6 +695,7 @@ public:
         C2h_x_operators_[2] = 1; // C2x
         C2h_x_operators_[3] = 2; //  i 
         C2h_x_operators_[4] = 3; // Syz
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[4] = 1; // C2_x
@@ -703,25 +758,30 @@ public:
         gng_[4][4] = 4; // C2h_x, C2h_x = C2h_x
     }else if(pg == 82) { // C2v_y
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 1; // C2y
+        subgroup_dimensions_[1] = 2;
 
         Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 2; // Sxy
+        subgroup_dimensions_[2] = 2;
 
         Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 3; // Syz
+        subgroup_dimensions_[3] = 2;
 
         C2v_y_operators_ = new int[5];
         C2v_y_operators_[0] = 4; // 4 element(s) in the list
@@ -729,6 +789,7 @@ public:
         C2v_y_operators_[2] = 1; // C2y
         C2v_y_operators_[3] = 2; // Sxy
         C2v_y_operators_[4] = 3; // Syz
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[2] = 1; // C2_y
@@ -791,25 +852,30 @@ public:
         gng_[4][4] = 4; // C2v_y, C2v_y = C2v_y
     }else if(pg == 97) { // C2v_z
         nsub_ = 5;
+        subgroup_dimensions_ = new int[5];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
+        subgroup_dimensions_[1] = 2;
 
         Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 2; // Sxz
+        subgroup_dimensions_[2] = 2;
 
         Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 3; // Syz
+        subgroup_dimensions_[3] = 2;
 
         C2v_z_operators_ = new int[5];
         C2v_z_operators_[0] = 4; // 4 element(s) in the list
@@ -817,6 +883,7 @@ public:
         C2v_z_operators_[2] = 1; // C2z
         C2v_z_operators_[3] = 2; // Sxz
         C2v_z_operators_[4] = 3; // Syz
+        subgroup_dimensions_[4] = 4;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[1] = 1; // C2_z
@@ -879,25 +946,30 @@ public:
         gng_[4][4] = 4; // C2v_z, C2v_z = C2v_z
     }else if(pg == 127) { // D2h
         nsub_ = 16;
+        subgroup_dimensions_ = new int[16];
 
         C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
+        subgroup_dimensions_[0] = 1;
 
         C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
+        subgroup_dimensions_[1] = 2;
 
         C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 2; // C2y
+        subgroup_dimensions_[2] = 2;
 
         C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 3; // C2x
+        subgroup_dimensions_[3] = 2;
 
         D2_operators_ = new int[5];
         D2_operators_[0] = 4; // 4 element(s) in the list
@@ -905,16 +977,19 @@ public:
         D2_operators_[2] = 1; // C2z
         D2_operators_[3] = 2; // C2y
         D2_operators_[4] = 3; // C2x
+        subgroup_dimensions_[4] = 4;
 
         Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 4; //  i 
+        subgroup_dimensions_[5] = 2;
 
         Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 5; // Sxy
+        subgroup_dimensions_[6] = 2;
 
         C2h_z_operators_ = new int[5];
         C2h_z_operators_[0] = 4; // 4 element(s) in the list
@@ -922,11 +997,13 @@ public:
         C2h_z_operators_[2] = 1; // C2z
         C2h_z_operators_[3] = 4; //  i 
         C2h_z_operators_[4] = 5; // Sxy
+        subgroup_dimensions_[7] = 4;
 
         Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 6; // Sxz
+        subgroup_dimensions_[8] = 2;
 
         C2h_y_operators_ = new int[5];
         C2h_y_operators_[0] = 4; // 4 element(s) in the list
@@ -934,6 +1011,7 @@ public:
         C2h_y_operators_[2] = 2; // C2y
         C2h_y_operators_[3] = 4; //  i 
         C2h_y_operators_[4] = 6; // Sxz
+        subgroup_dimensions_[9] = 4;
 
         C2v_x_operators_ = new int[5];
         C2v_x_operators_[0] = 4; // 4 element(s) in the list
@@ -941,11 +1019,13 @@ public:
         C2v_x_operators_[2] = 3; // C2x
         C2v_x_operators_[3] = 5; // Sxy
         C2v_x_operators_[4] = 6; // Sxz
+        subgroup_dimensions_[10] = 4;
 
         Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 7; // Syz
+        subgroup_dimensions_[11] = 2;
 
         C2h_x_operators_ = new int[5];
         C2h_x_operators_[0] = 4; // 4 element(s) in the list
@@ -953,6 +1033,7 @@ public:
         C2h_x_operators_[2] = 3; // C2x
         C2h_x_operators_[3] = 4; //  i 
         C2h_x_operators_[4] = 7; // Syz
+        subgroup_dimensions_[12] = 4;
 
         C2v_y_operators_ = new int[5];
         C2v_y_operators_[0] = 4; // 4 element(s) in the list
@@ -960,6 +1041,7 @@ public:
         C2v_y_operators_[2] = 2; // C2y
         C2v_y_operators_[3] = 5; // Sxy
         C2v_y_operators_[4] = 7; // Syz
+        subgroup_dimensions_[13] = 4;
 
         C2v_z_operators_ = new int[5];
         C2v_z_operators_[0] = 4; // 4 element(s) in the list
@@ -967,6 +1049,7 @@ public:
         C2v_z_operators_[2] = 1; // C2z
         C2v_z_operators_[3] = 6; // Sxz
         C2v_z_operators_[4] = 7; // Syz
+        subgroup_dimensions_[14] = 4;
 
         D2h_operators_ = new int[9];
         D2h_operators_[0] = 8; // 8 element(s) in the list
@@ -978,6 +1061,7 @@ public:
         D2h_operators_[6] = 5; // Sxy
         D2h_operators_[7] = 6; // Sxz
         D2h_operators_[8] = 7; // Syz
+        subgroup_dimensions_[15] = 8;
 
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[1] = 1; // C2_z
@@ -1538,7 +1622,11 @@ public:
 
       for(int n = 0; n < nsub_; ++n) delete [] dcr_[n];
       delete [] dcr_;
+      delete [] subgroup_dimensions_;
   }
+
+  /// Takes a densely numbered subgroup and returns its dimension
+  int subgroup_dimensions(int group) { return subgroup_dimensions_[group]; }
 
   /// Takes a point group expressed as a bitset for each operator, and returns the corresponding dense
   /// numbering representation for this point group.

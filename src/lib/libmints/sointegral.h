@@ -232,7 +232,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     const int T_size = T_list[0];
 
     // Check with Andy on this:
-    int lambda_T = /*petite1_->nirrep() / */T_size;
+    int lambda_T = petite1_->nirrep() / dcd_->subgroup_dimensions(ijklstablizer);
 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
