@@ -19,7 +19,7 @@ private:
   /// The lookup array for the DCR list of operators for all possiblepairs of stabilizer subgroups.
   int ***dcr_;
   /// The lookup array for the intersection of all possible pairs of subgroups.
-  int ***gng_;
+  int **gng_;
   /// The bit representation to dense numbering mapping.
   std::map<int, int> bits_to_subgroup_;
   /// The lists of operators in each possible subgroup.
@@ -68,25 +68,25 @@ public:
     if(pg == 0) { // C1
         nsub_ = 1;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
         bits_to_subgroup_[0] = 0; // C1
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C1_operators_; // C1, C1 = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
     }else if(pg == 1) { // C2_z
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_z_operators_ = new int[2];
+        C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
@@ -94,13 +94,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[1] = 1; // C2_z
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2_z_operators_; // C1, C1 = C2_z
         dcr_[0][1] = C1_operators_; // C1, C2_z = C1
         dcr_[1][0] = C1_operators_; // C2_z, C1 = C1
         dcr_[1][1] = C1_operators_; // C2_z, C2_z = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_z = C1
         gng_[1][0] = 0; // C2_z, C1 = C1
@@ -108,11 +108,11 @@ public:
     }else if(pg == 2) { // C2_y
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_y_operators_ = new int[2];
+        C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 1; // C2y
@@ -120,13 +120,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[2] = 1; // C2_y
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2_y_operators_; // C1, C1 = C2_y
         dcr_[0][1] = C1_operators_; // C1, C2_y = C1
         dcr_[1][0] = C1_operators_; // C2_y, C1 = C1
         dcr_[1][1] = C1_operators_; // C2_y, C2_y = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_y = C1
         gng_[1][0] = 0; // C2_y, C1 = C1
@@ -134,11 +134,11 @@ public:
     }else if(pg == 4) { // C2_x
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_x_operators_ = new int[2];
+        C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 1; // C2x
@@ -146,13 +146,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[4] = 1; // C2_x
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2_x_operators_; // C1, C1 = C2_x
         dcr_[0][1] = C1_operators_; // C1, C2_x = C1
         dcr_[1][0] = C1_operators_; // C2_x, C1 = C1
         dcr_[1][1] = C1_operators_; // C2_x, C2_x = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_x = C1
         gng_[1][0] = 0; // C2_x, C1 = C1
@@ -160,26 +160,26 @@ public:
     }else if(pg == 7) { // D2
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_z_operators_ = new int[2];
+        C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
 
-        C2_y_operators_ = new int[2];
+        C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 2; // C2y
 
-        C2_x_operators_ = new int[2];
+        C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 3; // C2x
 
-        D2_operators_ = new int[4];
+        D2_operators_ = new int[5];
         D2_operators_[0] = 4; // 4 element(s) in the list
         D2_operators_[1] = 0; //  E 
         D2_operators_[2] = 1; // C2z
@@ -192,7 +192,7 @@ public:
         bits_to_subgroup_[4] = 3; // C2_x
         bits_to_subgroup_[7] = 4; // D2
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = D2_operators_; // C1, C1 = D2
         dcr_[0][1] = C2_y_operators_; // C1, C2_z = C2_y
         dcr_[0][2] = C2_z_operators_; // C1, C2_y = C2_z
@@ -219,7 +219,7 @@ public:
         dcr_[4][3] = C1_operators_; // D2, C2_x = C1
         dcr_[4][4] = C1_operators_; // D2, D2 = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_z = C1
         gng_[0][2] = 0; // C1, C2_y = C1
@@ -248,11 +248,11 @@ public:
     }else if(pg == 8) { // Ci
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        Ci_operators_ = new int[2];
+        Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 1; //  i 
@@ -260,13 +260,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[8] = 1; // Ci
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = Ci_operators_; // C1, C1 = Ci
         dcr_[0][1] = C1_operators_; // C1, Ci = C1
         dcr_[1][0] = C1_operators_; // Ci, C1 = C1
         dcr_[1][1] = C1_operators_; // Ci, Ci = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, Ci = C1
         gng_[1][0] = 0; // Ci, C1 = C1
@@ -274,11 +274,11 @@ public:
     }else if(pg == 16) { // Cs_xy
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        Cs_xy_operators_ = new int[2];
+        Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 1; // Sxy
@@ -286,13 +286,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[16] = 1; // Cs_xy
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = Cs_xy_operators_; // C1, C1 = Cs_xy
         dcr_[0][1] = C1_operators_; // C1, Cs_xy = C1
         dcr_[1][0] = C1_operators_; // Cs_xy, C1 = C1
         dcr_[1][1] = C1_operators_; // Cs_xy, Cs_xy = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, Cs_xy = C1
         gng_[1][0] = 0; // Cs_xy, C1 = C1
@@ -300,26 +300,26 @@ public:
     }else if(pg == 25) { // C2h_z
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_z_operators_ = new int[2];
+        C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
 
-        Ci_operators_ = new int[2];
+        Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 2; //  i 
 
-        Cs_xy_operators_ = new int[2];
+        Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 3; // Sxy
 
-        C2h_z_operators_ = new int[4];
+        C2h_z_operators_ = new int[5];
         C2h_z_operators_[0] = 4; // 4 element(s) in the list
         C2h_z_operators_[1] = 0; //  E 
         C2h_z_operators_[2] = 1; // C2z
@@ -332,7 +332,7 @@ public:
         bits_to_subgroup_[16] = 3; // Cs_xy
         bits_to_subgroup_[25] = 4; // C2h_z
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2h_z_operators_; // C1, C1 = C2h_z
         dcr_[0][1] = Ci_operators_; // C1, C2_z = Ci
         dcr_[0][2] = C2_z_operators_; // C1, Ci = C2_z
@@ -359,7 +359,7 @@ public:
         dcr_[4][3] = C1_operators_; // C2h_z, Cs_xy = C1
         dcr_[4][4] = C1_operators_; // C2h_z, C2h_z = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_z = C1
         gng_[0][2] = 0; // C1, Ci = C1
@@ -388,11 +388,11 @@ public:
     }else if(pg == 32) { // Cs_xz
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        Cs_xz_operators_ = new int[2];
+        Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 1; // Sxz
@@ -400,13 +400,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[32] = 1; // Cs_xz
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = Cs_xz_operators_; // C1, C1 = Cs_xz
         dcr_[0][1] = C1_operators_; // C1, Cs_xz = C1
         dcr_[1][0] = C1_operators_; // Cs_xz, C1 = C1
         dcr_[1][1] = C1_operators_; // Cs_xz, Cs_xz = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, Cs_xz = C1
         gng_[1][0] = 0; // Cs_xz, C1 = C1
@@ -414,26 +414,26 @@ public:
     }else if(pg == 42) { // C2h_y
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_y_operators_ = new int[2];
+        C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 1; // C2y
 
-        Ci_operators_ = new int[2];
+        Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 2; //  i 
 
-        Cs_xz_operators_ = new int[2];
+        Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 3; // Sxz
 
-        C2h_y_operators_ = new int[4];
+        C2h_y_operators_ = new int[5];
         C2h_y_operators_[0] = 4; // 4 element(s) in the list
         C2h_y_operators_[1] = 0; //  E 
         C2h_y_operators_[2] = 1; // C2y
@@ -446,7 +446,7 @@ public:
         bits_to_subgroup_[32] = 3; // Cs_xz
         bits_to_subgroup_[42] = 4; // C2h_y
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2h_y_operators_; // C1, C1 = C2h_y
         dcr_[0][1] = Ci_operators_; // C1, C2_y = Ci
         dcr_[0][2] = C2_y_operators_; // C1, Ci = C2_y
@@ -473,7 +473,7 @@ public:
         dcr_[4][3] = C1_operators_; // C2h_y, Cs_xz = C1
         dcr_[4][4] = C1_operators_; // C2h_y, C2h_y = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_y = C1
         gng_[0][2] = 0; // C1, Ci = C1
@@ -502,26 +502,26 @@ public:
     }else if(pg == 52) { // C2v_x
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_x_operators_ = new int[2];
+        C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 1; // C2x
 
-        Cs_xy_operators_ = new int[2];
+        Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 2; // Sxy
 
-        Cs_xz_operators_ = new int[2];
+        Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 3; // Sxz
 
-        C2v_x_operators_ = new int[4];
+        C2v_x_operators_ = new int[5];
         C2v_x_operators_[0] = 4; // 4 element(s) in the list
         C2v_x_operators_[1] = 0; //  E 
         C2v_x_operators_[2] = 1; // C2x
@@ -534,7 +534,7 @@ public:
         bits_to_subgroup_[32] = 3; // Cs_xz
         bits_to_subgroup_[52] = 4; // C2v_x
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2v_x_operators_; // C1, C1 = C2v_x
         dcr_[0][1] = Cs_xy_operators_; // C1, C2_x = Cs_xy
         dcr_[0][2] = C2_x_operators_; // C1, Cs_xy = C2_x
@@ -561,7 +561,7 @@ public:
         dcr_[4][3] = C1_operators_; // C2v_x, Cs_xz = C1
         dcr_[4][4] = C1_operators_; // C2v_x, C2v_x = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_x = C1
         gng_[0][2] = 0; // C1, Cs_xy = C1
@@ -590,11 +590,11 @@ public:
     }else if(pg == 64) { // Cs_yz
         nsub_ = 2;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        Cs_yz_operators_ = new int[2];
+        Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 1; // Syz
@@ -602,13 +602,13 @@ public:
         bits_to_subgroup_[0] = 0; // C1
         bits_to_subgroup_[64] = 1; // Cs_yz
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = Cs_yz_operators_; // C1, C1 = Cs_yz
         dcr_[0][1] = C1_operators_; // C1, Cs_yz = C1
         dcr_[1][0] = C1_operators_; // Cs_yz, C1 = C1
         dcr_[1][1] = C1_operators_; // Cs_yz, Cs_yz = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, Cs_yz = C1
         gng_[1][0] = 0; // Cs_yz, C1 = C1
@@ -616,26 +616,26 @@ public:
     }else if(pg == 76) { // C2h_x
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_x_operators_ = new int[2];
+        C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 1; // C2x
 
-        Ci_operators_ = new int[2];
+        Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 2; //  i 
 
-        Cs_yz_operators_ = new int[2];
+        Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 3; // Syz
 
-        C2h_x_operators_ = new int[4];
+        C2h_x_operators_ = new int[5];
         C2h_x_operators_[0] = 4; // 4 element(s) in the list
         C2h_x_operators_[1] = 0; //  E 
         C2h_x_operators_[2] = 1; // C2x
@@ -648,7 +648,7 @@ public:
         bits_to_subgroup_[64] = 3; // Cs_yz
         bits_to_subgroup_[76] = 4; // C2h_x
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2h_x_operators_; // C1, C1 = C2h_x
         dcr_[0][1] = Ci_operators_; // C1, C2_x = Ci
         dcr_[0][2] = C2_x_operators_; // C1, Ci = C2_x
@@ -675,7 +675,7 @@ public:
         dcr_[4][3] = C1_operators_; // C2h_x, Cs_yz = C1
         dcr_[4][4] = C1_operators_; // C2h_x, C2h_x = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_x = C1
         gng_[0][2] = 0; // C1, Ci = C1
@@ -704,26 +704,26 @@ public:
     }else if(pg == 82) { // C2v_y
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_y_operators_ = new int[2];
+        C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 1; // C2y
 
-        Cs_xy_operators_ = new int[2];
+        Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 2; // Sxy
 
-        Cs_yz_operators_ = new int[2];
+        Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 3; // Syz
 
-        C2v_y_operators_ = new int[4];
+        C2v_y_operators_ = new int[5];
         C2v_y_operators_[0] = 4; // 4 element(s) in the list
         C2v_y_operators_[1] = 0; //  E 
         C2v_y_operators_[2] = 1; // C2y
@@ -736,7 +736,7 @@ public:
         bits_to_subgroup_[64] = 3; // Cs_yz
         bits_to_subgroup_[82] = 4; // C2v_y
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2v_y_operators_; // C1, C1 = C2v_y
         dcr_[0][1] = Cs_xy_operators_; // C1, C2_y = Cs_xy
         dcr_[0][2] = C2_y_operators_; // C1, Cs_xy = C2_y
@@ -763,7 +763,7 @@ public:
         dcr_[4][3] = C1_operators_; // C2v_y, Cs_yz = C1
         dcr_[4][4] = C1_operators_; // C2v_y, C2v_y = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_y = C1
         gng_[0][2] = 0; // C1, Cs_xy = C1
@@ -792,26 +792,26 @@ public:
     }else if(pg == 97) { // C2v_z
         nsub_ = 5;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_z_operators_ = new int[2];
+        C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
 
-        Cs_xz_operators_ = new int[2];
+        Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 2; // Sxz
 
-        Cs_yz_operators_ = new int[2];
+        Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 3; // Syz
 
-        C2v_z_operators_ = new int[4];
+        C2v_z_operators_ = new int[5];
         C2v_z_operators_[0] = 4; // 4 element(s) in the list
         C2v_z_operators_[1] = 0; //  E 
         C2v_z_operators_[2] = 1; // C2z
@@ -824,7 +824,7 @@ public:
         bits_to_subgroup_[64] = 3; // Cs_yz
         bits_to_subgroup_[97] = 4; // C2v_z
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = C2v_z_operators_; // C1, C1 = C2v_z
         dcr_[0][1] = Cs_xz_operators_; // C1, C2_z = Cs_xz
         dcr_[0][2] = C2_z_operators_; // C1, Cs_xz = C2_z
@@ -851,7 +851,7 @@ public:
         dcr_[4][3] = C1_operators_; // C2v_z, Cs_yz = C1
         dcr_[4][4] = C1_operators_; // C2v_z, C2v_z = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_z = C1
         gng_[0][2] = 0; // C1, Cs_xz = C1
@@ -880,95 +880,95 @@ public:
     }else if(pg == 127) { // D2h
         nsub_ = 16;
 
-        C1_operators_ = new int[1];
+        C1_operators_ = new int[2];
         C1_operators_[0] = 1; // 1 element(s) in the list
         C1_operators_[1] = 0; //  E 
 
-        C2_z_operators_ = new int[2];
+        C2_z_operators_ = new int[3];
         C2_z_operators_[0] = 2; // 2 element(s) in the list
         C2_z_operators_[1] = 0; //  E 
         C2_z_operators_[2] = 1; // C2z
 
-        C2_y_operators_ = new int[2];
+        C2_y_operators_ = new int[3];
         C2_y_operators_[0] = 2; // 2 element(s) in the list
         C2_y_operators_[1] = 0; //  E 
         C2_y_operators_[2] = 2; // C2y
 
-        C2_x_operators_ = new int[2];
+        C2_x_operators_ = new int[3];
         C2_x_operators_[0] = 2; // 2 element(s) in the list
         C2_x_operators_[1] = 0; //  E 
         C2_x_operators_[2] = 3; // C2x
 
-        D2_operators_ = new int[4];
+        D2_operators_ = new int[5];
         D2_operators_[0] = 4; // 4 element(s) in the list
         D2_operators_[1] = 0; //  E 
         D2_operators_[2] = 1; // C2z
         D2_operators_[3] = 2; // C2y
         D2_operators_[4] = 3; // C2x
 
-        Ci_operators_ = new int[2];
+        Ci_operators_ = new int[3];
         Ci_operators_[0] = 2; // 2 element(s) in the list
         Ci_operators_[1] = 0; //  E 
         Ci_operators_[2] = 4; //  i 
 
-        Cs_xy_operators_ = new int[2];
+        Cs_xy_operators_ = new int[3];
         Cs_xy_operators_[0] = 2; // 2 element(s) in the list
         Cs_xy_operators_[1] = 0; //  E 
         Cs_xy_operators_[2] = 5; // Sxy
 
-        C2h_z_operators_ = new int[4];
+        C2h_z_operators_ = new int[5];
         C2h_z_operators_[0] = 4; // 4 element(s) in the list
         C2h_z_operators_[1] = 0; //  E 
         C2h_z_operators_[2] = 1; // C2z
         C2h_z_operators_[3] = 4; //  i 
         C2h_z_operators_[4] = 5; // Sxy
 
-        Cs_xz_operators_ = new int[2];
+        Cs_xz_operators_ = new int[3];
         Cs_xz_operators_[0] = 2; // 2 element(s) in the list
         Cs_xz_operators_[1] = 0; //  E 
         Cs_xz_operators_[2] = 6; // Sxz
 
-        C2h_y_operators_ = new int[4];
+        C2h_y_operators_ = new int[5];
         C2h_y_operators_[0] = 4; // 4 element(s) in the list
         C2h_y_operators_[1] = 0; //  E 
         C2h_y_operators_[2] = 2; // C2y
         C2h_y_operators_[3] = 4; //  i 
         C2h_y_operators_[4] = 6; // Sxz
 
-        C2v_x_operators_ = new int[4];
+        C2v_x_operators_ = new int[5];
         C2v_x_operators_[0] = 4; // 4 element(s) in the list
         C2v_x_operators_[1] = 0; //  E 
         C2v_x_operators_[2] = 3; // C2x
         C2v_x_operators_[3] = 5; // Sxy
         C2v_x_operators_[4] = 6; // Sxz
 
-        Cs_yz_operators_ = new int[2];
+        Cs_yz_operators_ = new int[3];
         Cs_yz_operators_[0] = 2; // 2 element(s) in the list
         Cs_yz_operators_[1] = 0; //  E 
         Cs_yz_operators_[2] = 7; // Syz
 
-        C2h_x_operators_ = new int[4];
+        C2h_x_operators_ = new int[5];
         C2h_x_operators_[0] = 4; // 4 element(s) in the list
         C2h_x_operators_[1] = 0; //  E 
         C2h_x_operators_[2] = 3; // C2x
         C2h_x_operators_[3] = 4; //  i 
         C2h_x_operators_[4] = 7; // Syz
 
-        C2v_y_operators_ = new int[4];
+        C2v_y_operators_ = new int[5];
         C2v_y_operators_[0] = 4; // 4 element(s) in the list
         C2v_y_operators_[1] = 0; //  E 
         C2v_y_operators_[2] = 2; // C2y
         C2v_y_operators_[3] = 5; // Sxy
         C2v_y_operators_[4] = 7; // Syz
 
-        C2v_z_operators_ = new int[4];
+        C2v_z_operators_ = new int[5];
         C2v_z_operators_[0] = 4; // 4 element(s) in the list
         C2v_z_operators_[1] = 0; //  E 
         C2v_z_operators_[2] = 1; // C2z
         C2v_z_operators_[3] = 6; // Sxz
         C2v_z_operators_[4] = 7; // Syz
 
-        D2h_operators_ = new int[8];
+        D2h_operators_ = new int[9];
         D2h_operators_[0] = 8; // 8 element(s) in the list
         D2h_operators_[1] = 0; //  E 
         D2h_operators_[2] = 1; // C2z
@@ -996,7 +996,7 @@ public:
         bits_to_subgroup_[97] = 14; // C2v_z
         bits_to_subgroup_[127] = 15; // D2h
 
-        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];
+        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];
         dcr_[0][0] = D2h_operators_; // C1, C1 = D2h
         dcr_[0][1] = C2h_y_operators_; // C1, C2_z = C2h_y
         dcr_[0][2] = C2h_z_operators_; // C1, C2_y = C2h_z
@@ -1254,7 +1254,7 @@ public:
         dcr_[15][14] = C1_operators_; // D2h, C2v_z = C1
         dcr_[15][15] = C1_operators_; // D2h, D2h = C1
 
-        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];
+        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];
         gng_[0][0] = 0; // C1, C1 = C1
         gng_[0][1] = 0; // C1, C2_z = C1
         gng_[0][2] = 0; // C1, C2_y = C1

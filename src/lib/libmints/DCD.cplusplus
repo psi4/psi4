@@ -50,7 +50,7 @@ determine_operators(int group, int subgroup, int denseCount)
          subgroup >>= 1;
      }
      int size = operators.size();
-     stream << " = new int[" << size << "];" << std::endl;
+     stream << " = new int[" << size+1 << "];" << std::endl;
      stream << arrayName << "[0] = " << size << "; // " << size << " element(s) in the list" << std::endl;
      for(count = 0; count < operators.size(); ++count){
         stream << arrayName << "[" << count+1 << "] = " << operators[count] << "; // " << 
@@ -148,7 +148,7 @@ determine_r_operators(int group, int subgroup1, int subgroup2)
 }
 
 int
-main()
+main(int argc, char* argv[])
 {
 
    labels[Ops::E]        = " E ";
@@ -233,7 +233,7 @@ main()
           "  /// The lookup array for the DCR list of operators for all possiblepairs of stabilizer subgroups.\n"
           "  int ***dcr_;\n"
           "  /// The lookup array for the intersection of all possible pairs of subgroups.\n"
-          "  int ***gng_;\n"
+          "  int **gng_;\n"
           "  /// The bit representation to dense numbering mapping.\n"
           "  std::map<int, int> bits_to_subgroup_;\n"
           "  /// The lists of operators in each possible subgroup.\n");
@@ -276,7 +276,7 @@ main()
            printf("        bits_to_subgroup_[%d] = %d; // %s\n", subgroup1, count++, pointGroups[subgroup1]);
        }
        printf("\n");
-       printf("        dcr_ = new double***[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new double**[nsub_];\n");
+       printf("        dcr_ = new int**[nsub_]; for(int n = 0; n < nsub_; ++n) dcr_[n] = new int*[nsub_];\n");
        int row = 0;
        for(std::vector<int>::const_iterator subIter1 = subgroups.begin(); subIter1 != stop; ++subIter1){
            int subgroup1 = *subIter1;
@@ -293,7 +293,7 @@ main()
        }
 
        printf("\n");
-       printf("        gng_ = new double**[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new double*[nsub_];\n");
+       printf("        gng_ = new int*[nsub_]; for(int n = 0; n < nsub_; ++n) gng_[n] = new int[nsub_];\n");
        row = 0;
        for(std::vector<int>::const_iterator subIter1 = subgroups.begin(); subIter1 != stop; ++subIter1){
            int subgroup1 = *subIter1;
