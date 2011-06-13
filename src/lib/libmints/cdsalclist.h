@@ -44,7 +44,8 @@ public:
 
     size_t ncomponent() const { return components_.size(); }
 
-    const Component& component(int com) { return components_[com]; }
+    // made const function to access coef,atom,xyz through CdSalc[i]
+    const Component& component(int com) const { return components_[com]; }
 
     char irrep() const { return irrep_; }
     void print() const;
