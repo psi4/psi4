@@ -25,11 +25,11 @@ void SAPT0::read_all(SAPTDFInts *ints)
   long int tot_i = ints->i_length_ + ints->i_start_;
 
   if (!ints->active_ && !ints->dress_disk_) {
-    psio_->read_entry(ints->filenum_,ints->label_,(char *) 
+    psio_->read_entry(ints->filenum_,ints->label_,(char *)
       &(ints->B_p_[0][0]),sizeof(double)*ndf_*ints->ij_length_);
   }
   else if (!ints->active_ && ints->dress_disk_) {
-    psio_->read_entry(ints->filenum_,ints->label_,(char *) 
+    psio_->read_entry(ints->filenum_,ints->label_,(char *)
       &(ints->B_p_[0][0]),sizeof(double)*nri*ints->ij_length_);
   }
   else {
@@ -154,7 +154,7 @@ void SAPT0::read_block(Iterator *iter, SAPTDFInts *intA, SAPTDFInts *intB)
       memset(&(intA->B_p_[block_length][0]),'\0',sizeof(double)*3L*
         intA->ij_length_);
     }
-  
+
     if (intB->dress_ && !intB->dress_disk_) {
       C_DCOPY(3L*intB->ij_length_,&(intB->B_d_[0][0]),1,
         &(intB->B_p_[block_length][0]),1);
@@ -239,12 +239,12 @@ Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, SAPTDFInts *intB,
   int max_length = ndf_;
   if (intA->dress_ || intB->dress_) max_length += 3;
 
-  if (length > max_length) 
+  if (length > max_length)
     length = max_length;
-  
+
   int num = max_length/length;
   int gimp = max_length%length;
-    
+
   Iterator iter;
   iter.num_blocks = num;
   if (gimp > 3) iter.num_blocks++;
@@ -263,8 +263,8 @@ Iterator SAPT0::set_iterator(int length, SAPTDFInts *intA, SAPTDFInts *intB,
   int max_block = iter.block_size[0];
 
   if (alloc) {
-    intA->B_p_ = block_matrix(max_block,intA->ij_length_); 
-    intB->B_p_ = block_matrix(max_block,intB->ij_length_); 
+    intA->B_p_ = block_matrix(max_block,intA->ij_length_);
+    intB->B_p_ = block_matrix(max_block,intB->ij_length_);
   }
 
   return(iter);
@@ -293,7 +293,7 @@ SAPTDFInts SAPT0::set_A_AA()
   A_AA.B_d_ = block_matrix(3,noccA_*noccA_);
 
   A_AA.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  A_AA.label_ = "AA RI Integrals";
+  A_AA.label_ = const_cast<char*>("AA RI Integrals");
 
   for (int a=0; a<noccA_; a++){
     int aa = a*noccA_+a;
@@ -324,15 +324,15 @@ SAPTDFInts SAPT0::set_B_BB()
 
   B_BB.i_length_ = noccB_;
   B_BB.j_length_ = noccB_;
-  B_BB.ij_length_ = noccB_*noccB_; 
+  B_BB.ij_length_ = noccB_*noccB_;
   B_BB.i_start_ = 0;
   B_BB.j_start_ = 0;
-    
+
   B_BB.B_d_ = block_matrix(3,noccB_*noccB_);
 
   B_BB.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  B_BB.label_ = "BB RI Integrals";
-    
+  B_BB.label_ = const_cast<char*>("BB RI Integrals");
+
   for (int b=0; b<noccB_; b++){
     int bb = b*noccB_+b;
     B_BB.B_d_[1][bb] = 1.0;
@@ -347,19 +347,19 @@ SAPTDFInts SAPT0::set_B_BB()
 }
 
 SAPTDFInts SAPT0::set_A_AR()
-{ 
+{
   double enuc, NA, NB;
-  
+
   NA = 1.0 / NA_;
-  NB = 1.0 / NB_; 
+  NB = 1.0 / NB_;
   enuc = sqrt(enuc_*NA*NB);
-  
+
   SAPTDFInts A_AR;
-  
+
   A_AR.dress_ = true;
   A_AR.dress_disk_ = false;
   A_AR.active_ = false;
-  
+
   A_AR.i_length_ = noccA_;
   A_AR.j_length_ = nvirA_;
   A_AR.ij_length_ = noccA_*nvirA_;
@@ -367,9 +367,9 @@ SAPTDFInts SAPT0::set_A_AR()
   A_AR.j_start_ = 0;
 
   A_AR.B_d_ = block_matrix(3,noccA_*nvirA_);
-  
+
   A_AR.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  A_AR.label_ = "AR RI Integrals";
+  A_AR.label_ = const_cast<char*>("AR RI Integrals");
 
   for (int a=0; a<noccA_; a++){
     for (int r=0; r<nvirA_; r++){
@@ -384,28 +384,28 @@ SAPTDFInts SAPT0::set_A_AR()
 SAPTDFInts SAPT0::set_B_BS()
 {
   double enuc, NA, NB;
-  
+
   NA = 1.0 / NA_;
   NB = 1.0 / NB_;
   enuc = sqrt(enuc_*NA*NB);
-  
+
   SAPTDFInts B_BS;
-  
+
   B_BS.dress_ = true;
   B_BS.dress_disk_ = false;
   B_BS.active_ = false;
-  
+
   B_BS.i_length_ = noccB_;
   B_BS.j_length_ = nvirB_;
   B_BS.ij_length_ = noccB_*nvirB_;
   B_BS.i_start_ = 0;
   B_BS.j_start_ = 0;
-    
+
   B_BS.B_d_ = block_matrix(3,noccB_*nvirB_);
-  
+
   B_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  B_BS.label_ = "BS RI Integrals";
-    
+  B_BS.label_ = const_cast<char*>("BS RI Integrals");
+
   for (int b=0; b<noccB_; b++){
     for (int s=0; s<nvirB_; s++){
       int bs = b*nvirB_+s;
@@ -439,7 +439,7 @@ SAPTDFInts SAPT0::set_A_AB()
   A_AB.B_d_ = block_matrix(3,noccA_*noccB_);
 
   A_AB.filenum_ = PSIF_SAPT_AB_DF_INTS;
-  A_AB.label_ = "AB RI Integrals";
+  A_AB.label_ = const_cast<char*>("AB RI Integrals");
 
   for (int a=0; a<noccA_; a++){
     for (int b=0; b<noccB_; b++){
@@ -475,7 +475,7 @@ SAPTDFInts SAPT0::set_B_AB()
   B_AB.B_d_ = block_matrix(3,noccA_*noccB_);
 
   B_AB.filenum_ = PSIF_SAPT_AB_DF_INTS;
-  B_AB.label_ = "AB RI Integrals";
+  B_AB.label_ = const_cast<char*>("AB RI Integrals");
 
   for (int a=0; a<noccA_; a++){
     for (int b=0; b<noccB_; b++){
@@ -503,7 +503,7 @@ SAPTDFInts SAPT0::set_C_AA()
   C_AA.j_start_ = 0;
 
   C_AA.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  C_AA.label_ = "AA RI Integrals";
+  C_AA.label_ = const_cast<char*>("AA RI Integrals");
 
   return(C_AA);
 }
@@ -523,7 +523,7 @@ SAPTDFInts SAPT0::set_C_AR()
   C_AR.j_start_ = 0;
 
   C_AR.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  C_AR.label_ = "AR RI Integrals";
+  C_AR.label_ = const_cast<char*>("AR RI Integrals");
 
   return(C_AR);
 }
@@ -543,7 +543,7 @@ SAPTDFInts SAPT0::set_C_RR()
   C_RR.j_start_ = 0;
 
   C_RR.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  C_RR.label_ = "RR RI Integrals";
+  C_RR.label_ = const_cast<char*>("RR RI Integrals");
 
   return(C_RR);
 }
@@ -563,7 +563,7 @@ SAPTDFInts SAPT0::set_C_BB()
   C_BB.j_start_ = 0;
 
   C_BB.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  C_BB.label_ = "BB RI Integrals";
+  C_BB.label_ = const_cast<char*>("BB RI Integrals");
 
   return(C_BB);
 }
@@ -583,7 +583,7 @@ SAPTDFInts SAPT0::set_C_BS()
   C_BS.j_start_ = 0;
 
   C_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  C_BS.label_ = "BS RI Integrals";
+  C_BS.label_ = const_cast<char*>("BS RI Integrals");
 
   return(C_BS);
 }
@@ -603,7 +603,7 @@ SAPTDFInts SAPT0::set_C_SS()
   C_SS.j_start_ = 0;
 
   C_SS.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  C_SS.label_ = "SS RI Integrals";
+  C_SS.label_ = const_cast<char*>("SS RI Integrals");
 
   return(C_SS);
 }
@@ -631,7 +631,7 @@ SAPTDFInts SAPT0::set_A_RB()
   A_RB.B_d_ = block_matrix(3,nvirA_*noccB_);
 
   A_RB.filenum_ = PSIF_SAPT_AB_DF_INTS;
-  A_RB.label_ = "RB RI Integrals";
+  A_RB.label_ = const_cast<char*>("RB RI Integrals");
 
   for (int r=0; r<nvirA_; r++){
     for (int b=0; b<noccB_; b++){
@@ -667,7 +667,7 @@ SAPTDFInts SAPT0::set_B_RB()
   B_RB.B_d_ = block_matrix(3,nvirA_*noccB_);
 
   B_RB.filenum_ = PSIF_SAPT_AB_DF_INTS;
-  B_RB.label_ = "RB RI Integrals";
+  B_RB.label_ = const_cast<char*>("RB RI Integrals");
 
   for (int r=0; r<nvirA_; r++){
     for (int b=0; b<noccB_; b++){
@@ -703,7 +703,7 @@ SAPTDFInts SAPT0::set_A_AS()
   A_AS.B_d_ = block_matrix(3,noccA_*nvirB_);
 
   A_AS.filenum_ = PSIF_SAPT_AB_DF_INTS;
-  A_AS.label_ = "AS RI Integrals";
+  A_AS.label_ = const_cast<char*>("AS RI Integrals");
 
   for (int a=0; a<noccA_; a++){
     for (int s=0; s<nvirB_; s++){
@@ -739,7 +739,7 @@ SAPTDFInts SAPT0::set_B_AS()
   B_AS.B_d_ = block_matrix(3,noccA_*nvirB_);
 
   B_AS.filenum_ = PSIF_SAPT_AB_DF_INTS;
-  B_AS.label_ = "AS RI Integrals";
+  B_AS.label_ = const_cast<char*>("AS RI Integrals");
 
   for (int a=0; a<noccA_; a++){
     for (int s=0; s<nvirB_; s++){
@@ -767,37 +767,37 @@ SAPTDFInts SAPT0::set_act_C_AR()
   C_AR.j_start_ = 0;
 
   C_AR.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  C_AR.label_ = "AR RI Integrals";
+  C_AR.label_ = const_cast<char*>("AR RI Integrals");
 
   return(C_AR);
 }
 
 SAPTDFInts SAPT0::set_act_C_BS()
-{ 
+{
   SAPTDFInts C_BS;
-  
+
   C_BS.dress_ = false;
   C_BS.dress_disk_ = false;
   C_BS.active_ = true;
-  
+
   C_BS.i_length_ = aoccB_;
   C_BS.j_length_ = nvirB_;
   C_BS.ij_length_ = aoccB_*nvirB_;
   C_BS.i_start_ = foccB_;
   C_BS.j_start_ = 0;
-  
-  C_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  C_BS.label_ = "BS RI Integrals";
 
-  return(C_BS); 
-} 
+  C_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
+  C_BS.label_ = const_cast<char*>("BS RI Integrals");
+
+  return(C_BS);
+}
 
 SAPTDFInts SAPT0::set_act_A_AR()
 {
   double enuc, NA, NB;
-  
+
   NA = 1.0 / NA_;
-  NB = 1.0 / NB_; 
+  NB = 1.0 / NB_;
   enuc = sqrt(enuc_*NA*NB);
 
   SAPTDFInts A_AR;
@@ -813,9 +813,9 @@ SAPTDFInts SAPT0::set_act_A_AR()
   A_AR.j_start_ = 0;
 
   A_AR.B_d_ = block_matrix(3,aoccA_*nvirA_);
-  
+
   A_AR.filenum_ = PSIF_SAPT_AA_DF_INTS;
-  A_AR.label_ = "AR RI Integrals";
+  A_AR.label_ = const_cast<char*>("AR RI Integrals");
 
   for (int a=0; a<aoccA_; a++){
     for (int r=0; r<nvirA_; r++){
@@ -830,9 +830,9 @@ SAPTDFInts SAPT0::set_act_A_AR()
 SAPTDFInts SAPT0::set_act_B_BS()
 {
   double enuc, NA, NB;
-  
+
   NA = 1.0 / NA_;
-  NB = 1.0 / NB_; 
+  NB = 1.0 / NB_;
   enuc = sqrt(enuc_*NA*NB);
 
   SAPTDFInts B_BS;
@@ -848,10 +848,10 @@ SAPTDFInts SAPT0::set_act_B_BS()
   B_BS.j_start_ = 0;
 
   B_BS.B_d_ = block_matrix(3,aoccB_*nvirB_);
-  
+
   B_BS.filenum_ = PSIF_SAPT_BB_DF_INTS;
-  B_BS.label_ = "BS RI Integrals";
-    
+  B_BS.label_ = const_cast<char*>("BS RI Integrals");
+
   for (int b=0; b<aoccB_; b++){
     for (int s=0; s<nvirB_; s++){
       int bs = b*nvirB_+s;
@@ -877,7 +877,7 @@ SAPTDFInts SAPT0::set_H2_BS()
   B_BS.j_start_ = 0;
 
   B_BS.filenum_ = PSIF_SAPT_TEMP;
-  B_BS.label_ = "H2 BS RI Integrals";
+  B_BS.label_ = const_cast<char*>("H2 BS RI Integrals");
 
   return(B_BS);
 }
@@ -897,7 +897,7 @@ SAPTDFInts SAPT0::set_H2_AS()
   A_AS.j_start_ = 0;
 
   A_AS.filenum_ = PSIF_SAPT_TEMP;
-  A_AS.label_ = "H2 AS RI Integrals";
+  A_AS.label_ = const_cast<char*>("H2 AS RI Integrals");
 
   return(A_AS);
 }
@@ -917,7 +917,7 @@ SAPTDFInts SAPT0::set_H4_AR()
   A_AR.j_start_ = 0;
 
   A_AR.filenum_ = PSIF_SAPT_TEMP;
-  A_AR.label_ = "H4 AR RI Integrals";
+  A_AR.label_ = const_cast<char*>("H4 AR RI Integrals");
 
   return(A_AR);
 }
@@ -937,7 +937,7 @@ SAPTDFInts SAPT0::set_H4_RB()
   B_RB.j_start_ = 0;
 
   B_RB.filenum_ = PSIF_SAPT_TEMP;
-  B_RB.label_ = "H4 RB RI Integrals";
+  B_RB.label_ = const_cast<char*>("H4 RB RI Integrals");
 
   return(B_RB);
 }
@@ -957,7 +957,7 @@ SAPTDFInts SAPT0::set_Q2_AR()
   A_AR.j_start_ = 0;
 
   A_AR.filenum_ = PSIF_SAPT_TEMP;
-  A_AR.label_ = "Q2 AR RI Integrals";
+  A_AR.label_ = const_cast<char*>("Q2 AR RI Integrals");
 
   return(A_AR);
 }
@@ -977,7 +977,7 @@ SAPTDFInts SAPT0::set_Q6_BS()
   B_BS.j_start_ = 0;
 
   B_BS.filenum_ = PSIF_SAPT_TEMP;
-  B_BS.label_ = "Q6 BS RI Integrals";
+  B_BS.label_ = const_cast<char*>("Q6 BS RI Integrals");
 
   return(B_BS);
 }
@@ -997,7 +997,7 @@ SAPTDFInts SAPT0::set_Q12_AS()
   A_AS.j_start_ = 0;
 
   A_AS.filenum_ = PSIF_SAPT_TEMP;
-  A_AS.label_ = "Q12 AS RI Integrals";
+  A_AS.label_ = const_cast<char*>("Q12 AS RI Integrals");
 
   return(A_AS);
 }
@@ -1017,7 +1017,7 @@ SAPTDFInts SAPT0::set_Q12_RB()
   B_RB.j_start_ = 0;
 
   B_RB.filenum_ = PSIF_SAPT_TEMP;
-  B_RB.label_ = "Q12 RB RI Integrals";
+  B_RB.label_ = const_cast<char*>("Q12 RB RI Integrals");
 
   return(B_RB);
 }
@@ -1025,22 +1025,22 @@ SAPTDFInts SAPT0::set_Q12_RB()
 SAPTDFInts SAPT0::set_Q13_BS()
 {
   SAPTDFInts B_BS;
-  
+
   B_BS.dress_ = true;
   B_BS.dress_disk_ = true;
   B_BS.active_ = false;
-  
+
   B_BS.i_length_ = aoccB_;
   B_BS.j_length_ = nvirB_;
   B_BS.ij_length_ = aoccB_*nvirB_;
   B_BS.i_start_ = 0;
   B_BS.j_start_ = 0;
-  
+
   B_BS.filenum_ = PSIF_SAPT_TEMP;
-  B_BS.label_ = "Q13 BS RI Integrals";
-  
+  B_BS.label_ = const_cast<char*>("Q13 BS RI Integrals");
+
   return(B_BS);
-} 
+}
 
 SAPTDFInts SAPT0::set_Q14_AR()
 {
@@ -1057,7 +1057,7 @@ SAPTDFInts SAPT0::set_Q14_AR()
   A_AR.j_start_ = 0;
 
   A_AR.filenum_ = PSIF_SAPT_TEMP;
-  A_AR.label_ = "Q14 AR RI Integrals";
+  A_AR.label_ = const_cast<char*>("Q14 AR RI Integrals");
 
   return(A_AR);
 }
