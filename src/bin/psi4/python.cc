@@ -515,15 +515,16 @@ void py_psi_print_variable_map()
 {
     int largest_key = 0;
     for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
-        it->first.size() > largest_key ? largest_key = it->first.size() : 0;
+        if (it->first.size() > largest_key)
+            largest_key = it->first.size();
     }
-    largest_key += 2;  // for quotation marks 
+    largest_key += 2;  // for quotation marks
 
     std::stringstream line;
     std::string first_tmp;
     for ( std::map<string,double>::iterator it = Process::environment.globals.begin() ; it != Process::environment.globals.end(); it++ ) {
         first_tmp = "\"" + it->first + "\"";
-        line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right << 
+        line << "  " << std::left << std::setw(largest_key) << first_tmp << " => " << std::setw(20) << std::right <<
             std::fixed << std::setprecision(12) << it->second << std::endl;
     }
 
