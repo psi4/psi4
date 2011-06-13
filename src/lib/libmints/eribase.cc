@@ -653,11 +653,10 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     int am3 = s3->am();
     int am4 = s4->am();
     int am = am1 + am2 + am3 + am4; // total am
-    int nprim1 = s1->nprimitive();
-    int nprim2 = s2->nprimitive();
-    int nprim3 = s3->nprimitive();
-    int nprim4 = s4->nprimitive();
-    size_t nprim, nprim_combination = nprim1 * nprim2 * nprim3 * nprim4;
+    int nprim1;
+    int nprim2;
+    int nprim3;
+    int nprim4;
     double A[3], B[3], C[3], D[3];
 
     A[0] = s1->center()[0];
@@ -699,19 +698,18 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 #endif
 
     // Prepare all the data needed by libint
+    int max_p2, max_p4, m, n;
     nprim = 0;
+    nprim1 = s1->nprimitive();
+    nprim2 = s2->nprimitive();
+    nprim3 = s3->nprimitive();
+    nprim4 = s4->nprimitive();
+
     if (use_shell_pairs_) {
-        // New version - with ShellPair
         ShellPair *p12, *p34;
         // 1234 -> 1234 no change
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
-        nprim1 = s1->nprimitive();
-        nprim2 = s2->nprimitive();
-        nprim3 = s3->nprimitive();
-        nprim4 = s4->nprimitive();
-
-        int max_p2, max_p4, m, n;
 
         for (int p1=0; p1<nprim1; ++p1) {
             max_p2 = (sh1 == sh2) ? p1+1 : nprim2;
@@ -791,11 +789,12 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         }
     }
     else {
-        // Old version - without ShellPair
+        // Old version - without ShellPair - STILL USED BY RI CODES
         for (int p1=0; p1<nprim1; ++p1) {
-            double a1 = s1->exp(p1);
-            double c1 = s1->coef(p1);
-            for (int p2=0; p2<nprim2; ++p2) {
+            max_p2 = (sh1 == sh2) ? p1+1 : nprim2;
+            for (int p2=0; p2<max_p2; ++p2) {
+                m = (1 + (sh1 == sh2 && p1 != p2));
+
                 double a2 = s2->exp(p2);
                 double c2 = s2->coef(p2);
                 double zeta = a1 + a2;
@@ -818,9 +817,10 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                 double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
 
                 for (int p3=0; p3<nprim3; ++p3) {
-                    double a3 = s3->exp(p3);
-                    double c3 = s3->coef(p3);
-                    for (int p4=0; p4<nprim4; ++p4) {
+                    max_p4 = (sh3 == sh4) ? p3+1 : nprim4;
+                    for (int p4=0; p4<max_p4; ++p4) {
+                        n = m * (1 + (sh3 == sh4 && p3 != p4));
+
                         double a4 = s4->exp(p4);
                         double c4 = s4->coef(p4);
                         double nu = a3 + a4;
