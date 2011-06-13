@@ -131,9 +131,12 @@ struct SOCoefficients{
 
     void delete_zeros(){
         std::map<int, double>::iterator iter;
-        for(iter = coefficients.begin(); iter != coefficients.end(); ++iter){
-            if(fabs(iter->second) < 1E-10) coefficients.erase(iter);
+        for(iter = coefficients.begin(); iter != coefficients.end();){
+            std::map<int, double>::iterator erase_iter = iter++;
+
+            if(fabs(erase_iter->second) < 1E-10) coefficients.erase(erase_iter);
         }
+
     }
 };
 /////////////////////////////////////////////////////////////////////////////
