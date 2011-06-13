@@ -260,7 +260,7 @@ void HF::common_init()
 }
 void HF::integrals()
 {
-    if (print_ & Communicator::world->me() == 0)
+    if (print_ && Communicator::world->me() == 0)
         fprintf(outfile, "  ==> Integral Setup <==\n\n");
 
     // We need some integrals on disk for these cases
@@ -277,7 +277,7 @@ void HF::integrals()
     }else if (scf_type_ == "DF"){
         df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
     }else if (scf_type_ == "DIRECT"){
-        if (print_ & Communicator::world->me() == 0)
+        if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
         boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         boost::shared_ptr<TwoBodyAOInt> aoeri = boost::shared_ptr<TwoBodyAOInt>(integral->eri());
@@ -328,7 +328,7 @@ void HF::find_occupation()
     // Don't mess with the occ, MOM's got it!
     if (MOM_started_) {
         MOM();
-        return; 
+        return;
     }
 
     std::vector<std::pair<double, int> > pairs;
@@ -474,7 +474,7 @@ void HF::form_H()
         OneBodySOInt *so_dipole = ifact->so_dipole();
         so_dipole->compute(dipoles);
 
-        if (perturb_ == dipole_x & (Communicator::world->me() == 0)) {
+        if (perturb_ == dipole_x && (Communicator::world->me() == 0)) {
             if (msymm.component_symmetry(0) != 0){
                 fprintf(outfile, "  WARNING: You requested mu(x) perturbation, but mu(x) is not symmetric.\n");
             }
@@ -514,10 +514,10 @@ void HF::form_H()
         if (print_) {
             external->print();
         }
-        boost::shared_ptr<Matrix> Vprime = external->computePotentialMatrix(basisset_); 
+        boost::shared_ptr<Matrix> Vprime = external->computePotentialMatrix(basisset_);
         if (print_ > 3)
-            Vprime->print(); 
-        V_->add(Vprime); 
+            Vprime->print();
+        V_->add(Vprime);
     }
 
     H_->copy(T_);
@@ -686,7 +686,7 @@ void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::p
         }
         fprintf(outfile, "\n\n");
     }
-}   
+}
 
 void HF::print_orbitals()
 {
@@ -711,11 +711,11 @@ void HF::print_orbitals()
             std::vector<int> orb_order(nmopi_[h]);
             for (int a = 0; a < nmopi_[h]; a++)
                 orb_order[orb_e[a].second] = a;
-           
+
             for (int a = 0; a < nalphapi_[h]; a++)
-                occ.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+                occ.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
 
         }
         std::sort(occ.begin(), occ.end());
@@ -741,11 +741,11 @@ void HF::print_orbitals()
             std::vector<int> orb_orderA(nmopi_[h]);
             for (int a = 0; a < nmopi_[h]; a++)
                 orb_orderA[orb_eA[a].second] = a;
-           
+
             for (int a = 0; a < nalphapi_[h]; a++)
-                occA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1))); 
+                occA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1)));
             for (int a = nalphapi_[h]; a < nmopi_[h]; a++)
-                virA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1))); 
+                virA.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_orderA[a] + 1)));
 
             std::vector<std::pair<double, int> > orb_eB;
             for (int a = 0; a < nmopi_[h]; a++)
@@ -755,11 +755,11 @@ void HF::print_orbitals()
             std::vector<int> orb_orderB(nmopi_[h]);
             for (int a = 0; a < nmopi_[h]; a++)
                 orb_orderB[orb_eB[a].second] = a;
-           
+
             for (int a = 0; a < nbetapi_[h]; a++)
-                occB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1))); 
+                occB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1)));
             for (int a = nbetapi_[h]; a < nmopi_[h]; a++)
-                virB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1))); 
+                virB.push_back(make_pair(epsilon_b_->get(h,a), make_pair(labels[h],orb_orderB[a] + 1)));
 
         }
         std::sort(occA.begin(), occA.end());
@@ -788,13 +788,13 @@ void HF::print_orbitals()
             std::vector<int> orb_order(nmopi_[h]);
             for (int a = 0; a < nmopi_[h]; a++)
                 orb_order[orb_e[a].second] = a;
-           
+
             for (int a = 0; a < nbetapi_[h]; a++)
-                docc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+                docc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nbetapi_[h] ; a < nalphapi_[h]; a++)
-                socc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+                socc.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
             for (int a = nalphapi_[h] ; a < nmopi_[h]; a++)
-                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1))); 
+                vir.push_back(make_pair(epsilon_a_->get(h,a), make_pair(labels[h],orb_order[a] + 1)));
 
         }
         std::sort(docc.begin(), docc.end());
@@ -829,7 +829,7 @@ void HF::guess()
     string guess_type = options_.get_str("GUESS");
     if (guess_type == "READ") {
 
-        if (print_ & (Communicator::world->me() == 0))
+        if (print_ && (Communicator::world->me() == 0))
             fprintf(outfile, "  SCF Guess: Projection.\n\n");
 
         load_orbitals();
@@ -837,7 +837,7 @@ void HF::guess()
 
     } else if (guess_type == "SAD") {
 
-        if (print_ & (Communicator::world->me() == 0))
+        if (print_ && (Communicator::world->me() == 0))
             fprintf(outfile, "  SCF Guess: Superposition of Atomic Densities via on-the-fly atomic UHF.\n\n");
 
         //Superposition of Atomic Density (RHF only at present)
@@ -845,7 +845,7 @@ void HF::guess()
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
-        if (print_ & (Communicator::world->me() == 0))
+        if (print_ && (Communicator::world->me() == 0))
             fprintf(outfile, "  SCF Guess: Generalized Wolfsberg-Helmholtz.\n\n");
 
         Fa_->zero(); //Try Fa_{mn} = S_{mn} (H_{mm} + H_{nn})/2
@@ -869,7 +869,7 @@ void HF::guess()
 
     } else if (guess_type == "CORE") {
 
-        if (print_ & (Communicator::world->me() == 0))
+        if (print_ && (Communicator::world->me() == 0))
             fprintf(outfile, "  SCF Guess: Core (One-Electron) Hamiltonian.\n\n");
 
         Fa_->copy(H_); //Try the core Hamiltonian as the Fock Matrix
@@ -889,14 +889,14 @@ void HF::guess()
         Fb_->print();
     }
 
-    if (print_ & (Communicator::world->me() == 0))
+    if (print_ && (Communicator::world->me() == 0))
         fprintf(outfile, "  Initial %s energy: %20.14f\n\n", options_.get_str("REFERENCE").c_str(), E_);
 }
 void HF::save_orbitals()
 {
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
-    if (print_ & (Communicator::world->me() == 0))
+    if (print_ && (Communicator::world->me() == 0))
         fprintf(outfile,"\n  Saving occupied orbitals to File 100.\n");
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
@@ -1085,7 +1085,7 @@ double HF::compute_energy()
     else
         iteration_ = 0;
 
-    if (print_ & (Communicator::world->me() == 0))
+    if (print_ && (Communicator::world->me() == 0))
         fprintf(outfile, "  ==> Pre-Iterations <==\n\n");
 
     timer_on("Form H");
@@ -1149,7 +1149,7 @@ double HF::compute_energy()
         }
         timer_off("DIIS");
 
-        if (print_>4 && diis_performed_ & (Communicator::world->me() == 0)) {
+        if (print_>4 && diis_performed_ && (Communicator::world->me() == 0)) {
             fprintf(outfile,"  After DIIS:\n");
             Fa_->print(outfile);
             Fb_->print(outfile);
@@ -1190,7 +1190,7 @@ double HF::compute_energy()
 
     } while (!converged && iteration_ < maxiter_ );
 
-    if (Communicator::world->me() == 0) 
+    if (Communicator::world->me() == 0)
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
     if (converged) {
