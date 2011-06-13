@@ -78,7 +78,8 @@ SOTransformShell::SOTransformShell()
 
 SOTransformShell::~SOTransformShell()
 {
-    delete[] func;
+    if (func)
+        delete[] func;
 }
 
 void SOTransformShell::add_func(int irrep, double coef, int aofunc, int sofunc)
@@ -194,8 +195,8 @@ void SOBasisSet::init()
 //    }
 
     // == Begin forming (A|S)OTransform array ==
-    sotrans_ = new SOTransform[nshell_];
-    aotrans_ = new AOTransform[basis_->nshell()];
+    sotrans_ = new SOTransform[nshell_];   // nshell_ is symmetry unique shells
+    aotrans_ = new AOTransform[basis_->nshell()]; // we need the ao shell number here
 
     for (i=0; i<nblocks; i++) {
         for (j=0; j<soblocks[i].len; j++) {
