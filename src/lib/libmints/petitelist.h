@@ -171,32 +171,52 @@ public:
 
     bool include_pure_transform() const {return include_pure_transform_;}
 
+    /// The AO basis set used to create this petite list
     boost::shared_ptr<BasisSet> basis() { return basis_; }
+    /// The integral factory used to create this petite list
     const IntegralFactory* integral() { return integral_; }
+    /// Create a clone of this petite list
     boost::shared_ptr<PetiteList> clone() { return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_)); }
 
+    /// Number of irreps
     int nirrep() const { return nirrep_; }
+    /// The order of the group
     int order() const { return ng_; }
+    /** How a full atom maps to another with the specified symmetry operation
+     *  \param n Full atom index
+     *  \param g Operation number for mapping
+     *  \returns the atom n maps into when g is applied.
+     */
     int atom_map(int n, int g) const { return (c1_) ? n : atom_map_[n][g]; }
+    /** How a full shell index maps to another with the specified symmetry operation
+     *  \param n Full shell index
+     *  \param g Operation number for mapping
+     *  \returns the shell n maps into when g is applied.
+     */
     int shell_map(int n, int g) const { return (c1_) ? n : shell_map_[n][g]; }
-    int lambda(int ij) const { return (c1_) ? 1 : lamij_[ij]; }
-    int lambda(int i, int j) const { return (c1_) ? 1 : lamij_[ij_offset64(i, j)]; }
-    int in_p1(int n) const { return (c1_) ? 1 : p1_[n]; }
-    int in_p2(int ij) const { return (c1_) ? 1 : lamij_[ij]; }
-    int in_p2(int i, int j) const { return (c1_) ? 1 : lamij_[ij_offset64(i, j)]; }
-    int in_p4(int ij, int kl, int i, int j, int k, int l) const;
-    int in_p4(int i, int j, int k, int l) const;
 
-    int nfunction(int i) const;
+    /** Number of functions in irrep.
+     *  \param h Irrep of interest.
+     */
+    int nfunction(int h) const;
 
+    /** Number of blocks in symmetry information. Should be same as nirrep().
+     */
     int nblocks() const { return nblocks_; }
 
     void print(FILE *out=outfile);
 
+    /** The symmetry operations that keep the atom unchanged in bit representation.
+     *  \param atom The atom of interest.
+     */
     unsigned short stablizer(int atom) const { return stablizer_[atom]; }
 
+    /** The bit representation of the symmetry operation in the point group.
+     */
     unsigned short group() const { return group_; }
 
+    /** Returns the bit representation of the double coset representation.
+     */
     unsigned short dcr(unsigned short subgroup1, unsigned short subgroup2) const {
         std::map<unsigned short,bool> uniqueCosets;
         for(int g = 0; g < 8; ++g){
@@ -227,8 +247,10 @@ public:
         }
         return rOperators;
     }
-    /// Number of operators in the point group.
-    /// @param group Get this from dcr()
+
+    /** Number of operators in the point group.
+     *  @param group Get this from dcr()
+     */
     int dcr_degeneracy(unsigned short group) const {
         int degeneracy = 0;
         for(int op = 0; op < 8; ++op){
@@ -241,7 +263,9 @@ public:
          return group1 & group2;
     }
 
+    /// Returns the number of atomic orbitals in a convenient Dimension object.
     Dimension AO_basisdim();
+    /// Returns the number of symmetry orbitals per irrep in a convenient Dimension object.
     Dimension SO_basisdim();
 
     /// Return the basis function rotation matrix R(g)
@@ -249,7 +273,6 @@ public:
     Matrix* r(int g);
 
     SO_block* compute_aotoso_info();
-
 
     /** @return the AO->SO coefficient matrix. The columns correspond to SOs (see SO_basisdim() )
         and rows to AOs (see AO_basisdim() ).
@@ -278,54 +301,6 @@ public:
         */
     boost::shared_ptr<Matrix> sotoao();
 };
-
-inline int
-PetiteList::in_p4(int ij, int kl, int i, int j, int k, int l) const
-{
-    if (c1_)
-        return 1;
-
-    int64_t ijkl = i_offset64(ij)+kl;
-    int nijkl=1;
-
-    for (int g=1; g < ng_; g++) {
-        int64_t gij = ij_offset64(shell_map_[i][g],shell_map_[j][g]);
-        int64_t gkl = ij_offset64(shell_map_[k][g],shell_map_[l][g]);
-        int64_t gijkl = ij_offset64(gij,gkl);
-
-        if (gijkl > ijkl)
-            return 0;
-        else if (gijkl == ijkl)
-            nijkl++;
-    }
-
-    return ng_/nijkl;
-}
-
-inline int
-PetiteList::in_p4(int i, int j, int k, int l) const
-{
-    if (c1_)
-        return 1;
-
-    int64_t ij = ij_offset64(i,j);
-    int64_t kl = ij_offset64(k,l);
-    int64_t ijkl = ij_offset64(ij,kl);
-    int nijkl=1;
-
-    for (int g=1; g < ng_; g++) {
-        int64_t gij = ij_offset64(shell_map_[i][g],shell_map_[j][g]);
-        int64_t gkl = ij_offset64(shell_map_[k][g],shell_map_[l][g]);
-        int64_t gijkl = ij_offset64(gij,gkl);
-
-        if (gijkl > ijkl)
-            return 0;
-        else if (gijkl == ijkl)
-            nijkl++;
-    }
-
-    return ng_/nijkl;
-}
 
 }
 
