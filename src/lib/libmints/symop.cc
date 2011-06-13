@@ -65,6 +65,7 @@ SymmetryOperation & SymmetryOperation::operator = (SymmetryOperation const & so)
         }
     }
     bits_ = so.bits_;
+    return *this;
 }
 
 void SymmetryOperation::analyze_d()
