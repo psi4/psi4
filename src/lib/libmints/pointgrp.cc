@@ -59,11 +59,27 @@
 using namespace std;
 using namespace psi;
 
+std::map<int, const char*> labels;
+
+void call_once()
+{
+    labels[SymmOps::E]        = " E ";
+    labels[SymmOps::C2_x]     = "C2x";
+    labels[SymmOps::C2_y]     = "C2y";
+    labels[SymmOps::C2_z]     = "C2z";
+    labels[SymmOps::i]        = " i ";
+    labels[SymmOps::Sigma_xy] = "Sxy";
+    labels[SymmOps::Sigma_xz] = "Sxz";
+    labels[SymmOps::Sigma_yz] = "Syz";
+    //    labels[SymmOps::ID]       = "E";
+}
+
 ////////////////////////////////////////////////////////////////////////
 
 PointGroup::PointGroup()
     : symb(0)
 {
+    init_once();
     set_symbol("c1");
     frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
@@ -72,6 +88,7 @@ PointGroup::PointGroup()
 PointGroup::PointGroup(const char *s)
     : symb(0)
 {
+    init_once();
     set_symbol(s);
     frame(0,0) = frame(1,1) = frame(2,2) = 1;
     origin_[0] = origin_[1] = origin_[2] =0;
@@ -80,6 +97,7 @@ PointGroup::PointGroup(const char *s)
 PointGroup::PointGroup(const char *s, SymmetryOperation& so)
     : symb(0)
 {
+    init_once();
     set_symbol(s);
     frame = so;
     origin_[0] = origin_[1] = origin_[2] =0;
@@ -89,75 +107,95 @@ PointGroup::PointGroup(const char *s, SymmetryOperation& so,
                        const Vector3& origin)
     : symb(0)
 {
+    init_once();
     set_symbol(s);
     frame = so;
     origin_ = origin;
 }
 
 PointGroup::PointGroup(const PointGroup& pg)
-  : symb(0)
+    : symb(0)
 {
-  *this = pg;
+    init_once();
+    *this = pg;
 }
 
 PointGroup::PointGroup(const boost::shared_ptr<PointGroup>& pg)
-  : symb(0)
+    : symb(0)
 {
-  *this = *pg.get();
+    init_once();
+    *this = *pg.get();
+}
+
+void PointGroup::init_once()
+{
+    static bool called = false;
+    if (!called)
+        call_once();
+    called = true;
 }
 
 PointGroup::~PointGroup()
 {
-  if (symb) { delete[] symb; symb=0; }
+    if (symb) { delete[] symb; symb=0; }
 }
 
 PointGroup&
 PointGroup::operator=(const PointGroup& pg)
 {
-  set_symbol(pg.symb);
-  frame = pg.frame;
-  origin_ = pg.origin_;
-  return *this;
+    set_symbol(pg.symb);
+    frame = pg.frame;
+    origin_ = pg.origin_;
+    return *this;
 }
 
 void
 PointGroup::set_symbol(const char *sym)
 {
-  if (sym) {
-    if (symb) delete[] symb;
-    int len;
-    symb = new char[(len=strlen(sym))+1];
-    for (int i=0; i<len; i++) symb[i] = (char) tolower(sym[i]);
-    symb[len] = '\0';
-  } else {
-    set_symbol("c1");
-  }
+    if (sym) {
+        if (symb) delete[] symb;
+        int len;
+        symb = new char[(len=strlen(sym))+1];
+                for (int i=0; i<len; i++) symb[i] = (char) tolower(sym[i]);
+        symb[len] = '\0';
+    } else {
+        set_symbol("c1");
+    }
 }
 
 CharacterTable
 PointGroup::char_table() const
 {
-  CharacterTable ret(symb,frame);
-  return ret;
+    CharacterTable ret(symb,frame);
+    return ret;
 }
 
 int
 PointGroup::equiv(const boost::shared_ptr<PointGroup> &grp, double tol) const
 {
-  if (strcmp(symb,grp->symb)) return 0;
+    if (strcmp(symb,grp->symb)) return 0;
 
-  for (int i=0; i < 3; i++) {
-    // origin isn't realy used, so don't check
-    //if (fabs(origin_[i] - grp->origin_[i]) > tol) return 0;
-    for (int j=0; j < 3; j++) {
-      if (fabs(frame(i,j) - grp->frame(i,j)) > tol) return 0;
+    for (int i=0; i < 3; i++) {
+        // origin isn't realy used, so don't check
+        //if (fabs(origin_[i] - grp->origin_[i]) > tol) return 0;
+        for (int j=0; j < 3; j++) {
+            if (fabs(frame(i,j) - grp->frame(i,j)) > tol) return 0;
+        }
     }
-  }
 
-  return 1;
+    return 1;
 }
 
-const char* PointGroup::bits_to_full_name(unsigned int bits)
+void PointGroup::print_group(unsigned short group) const
+{
+    for(int op = 1; op < 9; ++op){
+        if(SKIP_THIS_OPERATOR(group, op)) continue;
+        fprintf(outfile, "%s ", labels[NUM_TO_OPERATOR_ID(op)]);
+    }
+    fprintf(outfile, "\n");
+}
+
+const char* PointGroup::bits_to_full_name(unsigned char bits)
 {
     switch(bits) {
     case PointGroups::C1:
@@ -197,7 +235,7 @@ const char* PointGroup::bits_to_full_name(unsigned int bits)
     }
 }
 
-const char* PointGroup::bits_to_basic_name(unsigned int bits)
+const char* PointGroup::bits_to_basic_name(unsigned char bits)
 {
     switch(bits) {
     case PointGroups::C1:
@@ -229,46 +267,11 @@ const char* PointGroup::bits_to_basic_name(unsigned int bits)
     }
 }
 
-// void
-// PointGroup::print(ostream &o) const
-// {
-//   int i,j;
-//
-//   o << indent << "symmetry = " << symb << endl;
-//
-//   int unit_frame = 1;
-//   int zero_origin = 1;
-//   for (i=0; i<3; i++) {
-//     for (j=0; j<3; j++) {
-//       if (i==j && fabs(frame(i,j)-1.0) > 1.0e-10) unit_frame = 0;
-//       else if (i != j && fabs(frame(i,j)) > 1.0e-10) unit_frame = 0;
-//     }
-//     if (fabs(origin_[i]) > 1.0e-10) zero_origin = 0;
-//   }
-//
-//   if (!unit_frame) {
-//     o << indent << "symmetry_frame = [";
-//     o << incindent;
-//     for (i=0; i<3; i++) {
-//       o << endl << indent;
-//       o << "[";
-//       for (j=0; j<3; j++) {
-//         o << scprintf(" % 18.16f", frame(i,j));
-//       }
-//       o << "]";
-//     }
-//     o << "]" << endl;
-//     o << decindent;
-//   }
-//
-//   if (!zero_origin) {
-//     o << indent << "origin = [";
-//     for (i=0; i<3; i++) {
-//       o << scprintf(" % 18.16f", origin_[i]);
-//     }
-//     o << "]" << endl;
-//   }
-// }
+void
+PointGroup::print(FILE *out) const
+{
+    fprintf(outfile, "PointGroup: %s\n", symb);
+}
 
 /////////////////////////////////////////////////////////////////////////////
 
