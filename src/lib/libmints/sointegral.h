@@ -10,6 +10,7 @@
 #include "petitelist.h"
 #include "wavefunction.h"
 #include "cdsalclist.h"
+#include "dcd.h"
 
 #include <libqt/qt.h>
 #include <vector>
@@ -120,6 +121,8 @@ protected:
 
     boost::shared_ptr<PointGroup> pg_;
 
+    boost::shared_ptr<DCD> dcd_;
+
     template<typename TwoBodySOIntFunctor>
     void provide_IJKL(int, int, int, int, TwoBodySOIntFunctor& body);
 
@@ -206,45 +209,48 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     // onto itself.
 
     // These 3 sections are not shell specific so we can just use petite1_
-    const unsigned char istablizer = petite1_->stablizer(iatom);
-    const unsigned char jstablizer = petite1_->stablizer(jatom);
-    const unsigned char kstablizer = petite1_->stablizer(katom);
-    const unsigned char lstablizer = petite1_->stablizer(latom);
+    const unsigned short istablizer = petite1_->stablizer(iatom);
+    const unsigned short jstablizer = petite1_->stablizer(jatom);
+    const unsigned short kstablizer = petite1_->stablizer(katom);
+    const unsigned short lstablizer = petite1_->stablizer(latom);
 
-    const unsigned char ijstablizer = petite1_->GnG(istablizer, jstablizer);
-    const unsigned char klstablizer = petite1_->GnG(kstablizer, lstablizer);
-    const unsigned char ijklstablizer = petite1_->GnG(ijstablizer, klstablizer);
+    const int istabdense = dcd_->bits_to_dense_numbering(istablizer);
+    const int jstabdense = dcd_->bits_to_dense_numbering(jstablizer);
+    const int kstabdense = dcd_->bits_to_dense_numbering(kstablizer);
+    const int lstabdense = dcd_->bits_to_dense_numbering(lstablizer);
 
-    const unsigned char R_list = petite1_->dcr(istablizer, jstablizer);
-    const unsigned char S_list = petite1_->dcr(kstablizer, lstablizer);
-    const unsigned char T_list = petite1_->dcr(ijstablizer, klstablizer);
+    const int ijstablizer = dcd_->intersection(istabdense, jstabdense);
+    const int klstablizer = dcd_->intersection(kstabdense, lstabdense);
+    const int ijklstablizer = dcd_->intersection(ijstablizer, klstablizer);
 
-    const unsigned char group = petite1_->group();
+    const int* R_list = dcd_->dcr(istabdense, jstabdense);
+    const int* S_list = dcd_->dcr(kstabdense, lstabdense);
+    const int* T_list = dcd_->dcr(ijstablizer, klstablizer);
+
+    const int R_size = R_list[0];
+    const int S_size = S_list[0];
+    const int T_size = T_list[0];
 
     // Check with Andy on this:
-    int lambda_T = petite1_->nirrep() / petite1_->dcr_degeneracy(ijklstablizer);
-
-    std::vector<int> R = petite1_->bits_to_operator_list(R_list);
-    std::vector<int> S = petite1_->bits_to_operator_list(S_list);
-    std::vector<int> T = petite1_->bits_to_operator_list(T_list);
+    int lambda_T = /*petite1_->nirrep() / */T_size;
 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
-//    fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
+    fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
     int si = petite1_->unique_shell_map(uish, 0);
     const int siatom = tb_->basis1()->shell(si)->ncenter();
 
-    for (int ij=0; ij < R.size(); ++ij) {
-        int sj = petite2_->unique_shell_map(ujsh, R[ij]);
+    for (int ij=1; ij <= R_size; ++ij) {
+        int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
         const int sjatom = tb_->basis2()->shell(sj)->ncenter();
 
-        for (int ijkl=0; ijkl < T.size(); ++ijkl) {
-            int sk = petite3_->unique_shell_map(uksh, T[ijkl]);
-            int llsh = petite4_->unique_shell_map(ulsh, T[ijkl]);
+        for (int ijkl=1; ijkl <= T_size; ++ijkl) {
+            int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
+            int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
             const int skatom = tb_->basis3()->shell(sk)->ncenter();
 
-            for (int kl=0; kl < S.size(); ++kl) {
-                int sl = petite4_->shell_map(llsh, S[kl]);
+            for (int kl=1; kl <= S_size; ++kl) {
+                int sl = petite4_->shell_map(llsh, S_list[kl]);
                 const int slatom = tb_->basis4()->shell(sl)->ncenter();
 
                 // Check AM
@@ -267,39 +273,33 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         }
     }
 
-//    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
+    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
 //    fprintf(outfile, "\tgroup = %d, R_list %d S_list %d T_list %d\n", group, R_list, S_list, T_list);
-//    fprintf(outfile, "\tistablizer: ");
-//    petite1_->print_group(istablizer);
-//    fprintf(outfile, "\tjstablizer: ");
-//    petite1_->print_group(jstablizer);
-//    fprintf(outfile, "\tkstablizer: ");
-//    petite1_->print_group(kstablizer);
-//    fprintf(outfile, "\tlstablizer: ");
-//    petite1_->print_group(lstablizer);
-//    fprintf(outfile, "\tijstablizer: ");
-//    petite1_->print_group(ijstablizer);
-//    fprintf(outfile, "\tklstablizer: ");
-//    petite1_->print_group(klstablizer);
-//    fprintf(outfile, "\tR.size = %lu\n", R.size());
-//    for (int i=0; i<R.size(); ++i)
-//        fprintf(outfile, "\t%d\n", R[i]);
-//    fprintf(outfile, "\tS.size = %lu\n", S.size());
-//    for (int i=0; i<S.size(); ++i)
-//        fprintf(outfile, "\t%d\n", S[i]);
-//    fprintf(outfile, "\tT.size = %lu\n", T.size());
-//    for (int i=0; i<T.size(); ++i)
-//        fprintf(outfile, "\t%d\n", T[i]);
+    fprintf(outfile, "\tistablizer: %d\n", istabdense);
+    fprintf(outfile, "\tjstablizer: %d\n", jstabdense);
+    fprintf(outfile, "\tkstablizer: %d\n", kstabdense);
+    fprintf(outfile, "\tlstablizer: %d\n", lstabdense);
+    fprintf(outfile, "\tijstablizer: %d\n", ijstablizer);
+    fprintf(outfile, "\tklstablizer: %d\n", klstablizer);
+    fprintf(outfile, "\tR.size = %d\n", R_size);
+    for (int i=1; i<=R_size; ++i)
+        fprintf(outfile, "\t%d\n", R_list[i]);
+    fprintf(outfile, "\tS.size = %d\n", S_size);
+    for (int i=1; i<=S_size; ++i)
+        fprintf(outfile, "\t%d\n", S_list[i]);
+    fprintf(outfile, "\tT.size = %d\n", T_size);
+    for (int i=1; i<=T_size; ++i)
+        fprintf(outfile, "\t%d\n", T_list[i]);
 //    fprintf(outfile, "\tR_list: ");
 //    petite1_->print_group(R_list);
 //    fprintf(outfile, "\tS_list: ");
 //    petite1_->print_group(S_list);
 //    fprintf(outfile, "\tT_list: ");
 //    petite1_->print_group(T_list);
-//    for (int i=0; i<sj_arr.size(); ++i) {
-//        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
-//    }
-//    fflush(outfile);
+    for (int i=0; i<sj_arr.size(); ++i) {
+        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
+    }
+    fflush(outfile);
 
     // Compute integral using si, sj_arr, sk_arr, sl_arr
     // Loop over unique quartets
