@@ -51,8 +51,8 @@ protected:
     boost::shared_ptr<PSIO> psio_;
     /// ERI object for omega integrals
     boost::shared_ptr<TwoBodySOInt> omega_eri_;
-    /// ERI hook to AO integral object to reset omega 
-    boost::shared_ptr<ErfERI> omega_eri_ao_;
+    /// Factory (for Spherical Harmonics)
+    boost::shared_ptr<IntegralFactory> omega_factory_;
 
     /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
