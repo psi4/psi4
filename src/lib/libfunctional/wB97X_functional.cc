@@ -78,7 +78,7 @@ wB97X_Functional::wB97X_Functional(int npoints, int deriv) : Functional(npoints,
     params_.push_back(make_pair("gcaa",gcaa));
     double gx = 4.0000000000000001E-03;
     params_.push_back(make_pair("gx",gx));
-    double ccab0 = 8.4229399999999999E-01;
+    double ccab0 = 1.0000000000000000E+00;
     params_.push_back(make_pair("ccab0",ccab0));
     double ccab1 = 2.3703099999999999E+00;
     params_.push_back(make_pair("ccab1",ccab1));
@@ -98,7 +98,7 @@ wB97X_Functional::wB97X_Functional(int npoints, int deriv) : Functional(npoints,
     params_.push_back(make_pair("ccaa3",ccaa3));
     double ccaa4 = 1.7290099999999999E+01;
     params_.push_back(make_pair("ccaa4",ccaa4));
-    double cx0 = 1.0000000000000000E+00;
+    double cx0 = 8.4229399999999999E-01;
     params_.push_back(make_pair("cx0",cx0));
     double cx1 = 7.2647899999999999E-01;
     params_.push_back(make_pair("cx1",cx1));

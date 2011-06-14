@@ -82,7 +82,7 @@ wB97_Functional::wB97_Functional(int npoints, int deriv) : Functional(npoints, d
     params_.push_back(make_pair("ccab0",ccab0));
     double ccab1 = 3.9905100000000000E+00;
     params_.push_back(make_pair("ccab1",ccab1));
-    double ccab2 = -1.7006600000000000E+02;
+    double ccab2 = -1.7006600000000000E+01;
     params_.push_back(make_pair("ccab2",ccab2));
     double ccab3 = 1.0729200000000001E+00;
     params_.push_back(make_pair("ccab3",ccab3));

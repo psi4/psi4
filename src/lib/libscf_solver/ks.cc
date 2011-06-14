@@ -349,9 +349,15 @@ double RKS::compute_E()
     double coulomb_E = D_->vector_dot(J_);
 
     double exchange_E = 0.0;
+    double alpha = functional_->getExactExchange();
+    double beta = 1.0 - alpha;
     if (functional_->isHybrid()) {
-        exchange_E = -functional_->getExactExchange()*D_->vector_dot(K_);
+        exchange_E -= alpha*Da_->vector_dot(K_);
     }
+    if (functional_->isRangeCorrected()) {
+        exchange_E -=  beta*Da_->vector_dot(wK_);
+    }
+
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_E;
@@ -775,14 +781,17 @@ double UKS::compute_E()
     coulomb_E += Db_->vector_dot(J_);
 
     double exchange_E = 0.0;
+    double alpha = functional_->getExactExchange();
+    double beta = 1.0 - alpha;
     if (functional_->isHybrid()) {
-        exchange_E -= functional_->getExactExchange()*Da_->vector_dot(Ka_);
-        exchange_E -= functional_->getExactExchange()*Db_->vector_dot(Kb_);
+        exchange_E -= alpha*Da_->vector_dot(Ka_);
+        exchange_E -= alpha*Db_->vector_dot(Kb_);
     }
     if (functional_->isRangeCorrected()) {
-        exchange_E -= Da_->vector_dot(wKa_);
-        exchange_E -= Db_->vector_dot(wKb_);
+        exchange_E -=  beta*Da_->vector_dot(wKa_);
+        exchange_E -=  beta*Db_->vector_dot(wKb_);
     }
+
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_E;
