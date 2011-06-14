@@ -82,6 +82,8 @@ public:
     void form_eig_inverse(double tol = 1.0E-10);
     /// Build the full inverse metric. NOT RECOMMENDED: Numerical stability (calls form_fitting_metric)
     void form_full_inverse();
+    /// Build the full inverse metric. 
+    void form_full_eig_inverse(double tol = 1.0E-10);
     /// Build the full metric's Cholesky factor. RECOMMENDED: Numerical stability
     void form_cholesky_factor();
 };

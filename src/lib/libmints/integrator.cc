@@ -47,6 +47,7 @@ Integrator::Integrator(boost::shared_ptr<Molecule> mol, boost::shared_ptr<PSIO> 
     voronoi_type_ = stratmann_v;
     group_type_ = boxes_g;
     coord_type_ = elliptical_c;
+    special_type_ = NONE; 
 
     stratmann_a_ = 0.64;
     box_overage_ = 4.0;
@@ -54,11 +55,11 @@ Integrator::Integrator(boost::shared_ptr<Molecule> mol, boost::shared_ptr<PSIO> 
     vor_a1_ = 1.5;
     vor_a1_ = 3.0;
 
-    psio_->open(PSIF_DFT_GRID, PSIO_OPEN_NEW);
+    //psio_->open(PSIF_DFT_GRID, PSIO_OPEN_NEW);
 }
 Integrator::~Integrator()
 {
-    psio_->close(PSIF_DFT_GRID, 1);
+    //psio_->close(PSIF_DFT_GRID, 1);
     free_grid();
 }
 boost::shared_ptr<Integrator>  Integrator::build_integrator(boost::shared_ptr<Molecule> molecule, boost::shared_ptr<PSIO> psio, Options& options)
@@ -386,24 +387,24 @@ int Integrator::buildGrid(int max_block_size)
         free(radials[k].w);
     }
 
-    psio_->write_entry(PSIF_DFT_GRID, "Raw_x", (char*) &x_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Raw_y", (char*) &y_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Raw_z", (char*) &z_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Raw_w", (char*) &w_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Raw_Z", (char*) &Z_[0], npoints_*sizeof(int));
+    //psio_->write_entry(PSIF_DFT_GRID, "Raw_x", (char*) &x_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Raw_y", (char*) &y_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Raw_z", (char*) &z_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Raw_w", (char*) &w_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Raw_Z", (char*) &Z_[0], npoints_*sizeof(int));
 
     applyNuclearWeights();
 
-    psio_->write_entry(PSIF_DFT_GRID, "Nuc_w", (char*) &w_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Nuc_Z", (char*) &Z_[0], npoints_*sizeof(int));
+    //psio_->write_entry(PSIF_DFT_GRID, "Nuc_w", (char*) &w_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Nuc_Z", (char*) &Z_[0], npoints_*sizeof(int));
 
     partitionGrid();
 
-    psio_->write_entry(PSIF_DFT_GRID, "Split_x", (char*) &x_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Split_y", (char*) &y_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Split_z", (char*) &z_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Split_w", (char*) &w_[0], npoints_*sizeof(double));
-    psio_->write_entry(PSIF_DFT_GRID, "Split_Z", (char*) &Z_[0], npoints_*sizeof(int));
+    //psio_->write_entry(PSIF_DFT_GRID, "Split_x", (char*) &x_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Split_y", (char*) &y_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Split_z", (char*) &z_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Split_w", (char*) &w_[0], npoints_*sizeof(double));
+    //psio_->write_entry(PSIF_DFT_GRID, "Split_Z", (char*) &Z_[0], npoints_*sizeof(int));
 
     return block_size_;
 }
@@ -433,7 +434,7 @@ void Integrator::partitionGrid()
         }
     }
 
-    fprintf(outfile, "  %ld out of %ld grid points eliminated, %6.3f%% elimination.\n", nzero, npoints_, nzero/(0.01*npoints_));
+    fprintf(outfile, "  %ld out of %ld grid points eliminated, %6.3f%% elimination.\n\n", nzero, npoints_, nzero/(0.01*npoints_));
     nblocks_ = npoints_ / block_size_ + (npoints_ % block_size_ == 0 ? 0L : 1L);
     npoints_ -= nzero;
 

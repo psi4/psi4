@@ -191,11 +191,9 @@ void RHF::form_F()
     Fa_->copy(H_);
     Fa_->add(G_);
 
-#ifdef _DEBUG
     if (debug_) {
         Fa_->print(outfile);
     }
-#endif
 }
 
 void RHF::form_C()

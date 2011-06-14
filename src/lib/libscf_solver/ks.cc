@@ -50,7 +50,6 @@ void KS::common_init()
     // Build the integrator
     int block_size = options_.get_int("DFT_BLOCK_SIZE");
     integrator_ = Integrator::build_integrator(molecule_, psio_, options_);
-    integrator_->buildGrid(block_size);
 
     //Build the superfunctional
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
@@ -72,8 +71,8 @@ void KS::common_init()
         properties_->setToComputeKEDensity(true);
     }
     if (functional_->isRangeCorrected()) {
-        //omega_eri_ao_ = boost::shared_ptr<ErfERI>(static_cast<ErfERI*>(fact->erf_eri(functional_->getOmega())));
-        //omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(boost::shared_ptr<TwoBodyAOInt>(static_cast<TwoBodyAOInt*>(omega_eri_ao_.get())), fact));
+        boost::shared_ptr<TwoBodyAOInt> ao_erf(fact->erf_eri(functional_->getOmega()));
+        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(ao_erf, fact));
     }
     
 }
@@ -314,7 +313,7 @@ void RKS::form_G()
         process_tei<J_Functor>(j_builder);
         J_->copy(G_);
 
-        G_->scale(2.0);
+        G_->scale(1.0);
         G_->add(V_);
         G_->subtract(wK_);
 
@@ -325,19 +324,29 @@ void RKS::form_G()
         J_->copy(G_);
 
         double alpha = functional_->getExactExchange();
-        G_->scale(2.0);
+        double beta = 1.0 - alpha;
+        G_->scale(1.0);
         K_->scale(alpha);
         G_->subtract(K_);
         K_->scale(1.0/alpha);
         G_->add(V_);
+        wK_->scale(beta);
         G_->subtract(wK_);
+        wK_->scale(1.0/beta);
+    }
+
+    if (debug_ > 2) {
+        J_->print();
+        K_->print();
+        wK_->print();
+        V_->print();
     }
 }
 double RKS::compute_E()
 {
     // E_DFT = 2.0 D*H + 2.0 D*J - \alpha D*K + E_xc
     double one_electron_E = 2.0*D_->vector_dot(H_);
-    double coulomb_E = 2.0*D_->vector_dot(J_);
+    double coulomb_E = D_->vector_dot(J_);
 
     double exchange_E = 0.0;
     if (functional_->isHybrid()) {
@@ -349,9 +358,19 @@ double RKS::compute_E()
     Etotal += coulomb_E;
     Etotal += exchange_E;
     Etotal += quad_values_["E_xc"];
+    double dashD_E = 0.0;
     if (functional_->isDashD()) {
-        double dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
-        Etotal += dashD_E;
+        dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
+    }
+    Etotal += dashD_E;
+
+    if (debug_ > 2) {
+        fprintf(outfile, "Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
+        fprintf(outfile, "One-Electron Energy =      %24.14f\n", one_electron_E);
+        fprintf(outfile, "Coulomb Energy =           %24.14f\n", coulomb_E);
+        fprintf(outfile, "Hybrid Exchange Energy =   %24.14f\n", exchange_E);
+        fprintf(outfile, "XC Functional Energy =     %24.14f\n", quad_values_["E_xc"]);
+        fprintf(outfile, "-D Energy =                %24.14f\n", dashD_E);
     }
 
     return Etotal;
@@ -692,7 +711,12 @@ void UKS::form_G()
     }
     if (!functional_->isHybrid()) {
         // This will build J (stored in G)
-        J_Functor j_builder(Ga_, Da_);
+        boost::shared_ptr<Matrix> Dh(factory_->create_matrix("Dh"));
+        Dh->copy(Da_);      
+        Dh->add(Db_);
+        Dh->scale(0.5);
+
+        J_Functor j_builder(Ga_, Dh);
         process_tei<J_Functor>(j_builder);
         J_->copy(Ga_);
 
@@ -710,6 +734,7 @@ void UKS::form_G()
         Gb_->copy(Ga_);
 
         double alpha = functional_->getExactExchange();
+        double beta = 1.0 - alpha;
         Ka_->scale(alpha);
         Kb_->scale(alpha);
         Ga_->subtract(Ka_);
@@ -718,15 +743,23 @@ void UKS::form_G()
         Kb_->scale(1.0/alpha);
         Ga_->add(Va_);
         Gb_->add(Vb_);
+        wKa_->scale(beta);
+        wKb_->scale(beta);
         Ga_->subtract(wKa_);
         Gb_->subtract(wKb_);
+        wKa_->scale(1.0/beta);
+        wKb_->scale(1.0/beta);
     }
 
-    //J_->print(outfile);
-    //Ka_->print(outfile);
-    //Kb_->print(outfile);
-    //Va_->print();
-    //Vb_->print();
+    if (debug_ > 2) {
+        J_->print(outfile);
+        Ka_->print(outfile);
+        Kb_->print(outfile);
+        wKa_->print(outfile);
+        wKb_->print(outfile);
+        Va_->print();
+        Vb_->print();
+    }
 }
 double UKS::compute_E()
 {
@@ -735,7 +768,7 @@ double UKS::compute_E()
     //Ca_->print(outfile);
     //Cb_->print(outfile);
 
-    // E_DFT = 2.0 D*H + 2.0 D*J - \alpha D*K + E_xc
+    // E_DFT = 2.0 D*H + D*J - \alpha D*K + E_xc
     double one_electron_E = Da_->vector_dot(H_);
     one_electron_E += Db_->vector_dot(H_);
     double coulomb_E = Da_->vector_dot(J_);
@@ -743,31 +776,34 @@ double UKS::compute_E()
 
     double exchange_E = 0.0;
     if (functional_->isHybrid()) {
-        exchange_E = -functional_->getExactExchange()*Da_->vector_dot(Ka_);
-        exchange_E = -functional_->getExactExchange()*Db_->vector_dot(Kb_);
+        exchange_E -= functional_->getExactExchange()*Da_->vector_dot(Ka_);
+        exchange_E -= functional_->getExactExchange()*Db_->vector_dot(Kb_);
     }
     if (functional_->isRangeCorrected()) {
-        exchange_E = -Da_->vector_dot(wKa_);
-        exchange_E = -Db_->vector_dot(wKb_);
+        exchange_E -= Da_->vector_dot(wKa_);
+        exchange_E -= Db_->vector_dot(wKb_);
     }
     double Etotal = 0.0;
     Etotal += nuclearrep_;
     Etotal += one_electron_E;
-    Etotal += 0.5*coulomb_E;
-    Etotal += exchange_E;
+    Etotal += 0.5 * coulomb_E;
+    Etotal += 0.5 * exchange_E;
     Etotal += quad_values_["E_xc"];
+    double dashD_E;
     if (functional_->isDashD()) {
-        double dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
-        Etotal += dashD_E;
+        dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
+    }
+    Etotal += dashD_E;
+
+    if (debug_ > 2) {
+        fprintf(outfile, "Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
+        fprintf(outfile, "One-Electron Energy =      %24.14f\n", one_electron_E);
+        fprintf(outfile, "Coulomb Energy =           %24.14f\n", 0.5 * coulomb_E);
+        fprintf(outfile, "Hybrid Exchange Energy =   %24.14f\n", 0.5 * exchange_E);
+        fprintf(outfile, "XC Functional Energy =     %24.14f\n", quad_values_["E_xc"]);
+        fprintf(outfile, "-D Energy =                %24.14f\n", dashD_E);
     }
 
-    if (print_ > 2) {
-        fprintf(outfile, "Nuclear Repulsion energy: %24.16f\n", nuclearrep_);
-        fprintf(outfile, "One-electron energy:      %24.16f\n", one_electron_E);
-        fprintf(outfile, "Coulomb energy:           %24.16f\n", 0.5*coulomb_E);
-        fprintf(outfile, "Exchange energy:          %24.16f\n", exchange_E);
-        fprintf(outfile, "Functional energy:        %24.16f\n", quad_values_["E_xc"]);
-    }
     return Etotal;
 }
 
