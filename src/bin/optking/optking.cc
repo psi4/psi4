@@ -182,14 +182,8 @@ mol1->print_connectivity(outfile);
   p_Opt_data->save_geom_energy(x, mol1->g_energy());
   if (x!=NULL) free_array(x);
 
-fprintf(outfile, "previous step begins.\n");
-fflush(outfile);
-
   // print out report on progress
   p_Opt_data->previous_step_report();
-
-fprintf(outfile, "previous step ends.\n");
-fflush(outfile);
 
   // compute forces in internal coordinates from cartesian gradient
   mol1->forces(); // puts forces in p_Opt_data->step[last one]

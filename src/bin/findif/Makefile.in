@@ -1,0 +1,21 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+LDLIBS += $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_findif.a
+
+CXXSRC = \
+fd_geoms_1_0.cc fd_grad_1_0.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
