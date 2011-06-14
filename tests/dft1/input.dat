@@ -1,0 +1,119 @@
+E11 = -74.9493412744 #TEST
+E12 = -75.3196957567 #TEST
+E13 = -75.3185459160 #TEST
+E14 = -75.3128178610 #TEST
+E21 = -74.9493412744 #TEST
+E22 = -75.3196957567 #TEST
+E23 = -75.3185459160 #TEST
+E24 = -75.3128178610 #TEST
+E31 = -74.6448669477 #TEST
+E32 = -74.9677634492 #TEST
+E33 = -74.9709217377 #TEST
+E34 = -74.9632650037 #TEST
+E41 = -74.4108252721 #TEST
+E42 = -74.8155846044 #TEST
+E43 = -74.8011166756 #TEST
+E44 = -74.7977834552 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set globals {
+print 2
+basis sto-3g
+guess core
+scf_type direct
+dft_spherical_points 302 
+dft_radial_points 100
+reference rks
+}
+
+set dft_functional b_x
+V11 = energy('scf')
+
+set dft_functional b3lyp
+V12 = energy('scf')
+
+set dft_functional wB97
+V13 = energy('scf')
+
+set dft_functional wB97X 
+V14 = energy('scf')
+
+set reference uks
+set dft_functional b_x
+V21 = energy('scf')
+
+set dft_functional b3lyp
+V22 = energy('scf')
+
+set dft_functional wB97
+V23 = energy('scf')
+
+set dft_functional wB97X 
+V24 = energy('scf')
+
+molecule h2op {
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set basis sto-3g
+set dft_functional b_x
+V31 = energy('scf')
+
+set dft_functional b3lyp
+V32 = energy('scf')
+
+set dft_functional wB97
+V33 = energy('scf')
+
+set dft_functional wB97X 
+V34 = energy('scf')
+
+molecule h2om {
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set basis sto-3g
+set dft_functional b_x
+V41 = energy('scf')
+
+set dft_functional b3lyp
+V42 = energy('scf')
+
+set dft_functional wB97
+V43 = energy('scf')
+
+set dft_functional wB97X 
+V44 = energy('scf')
+
+compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
+compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
+compare_values(E13,V13, 3, "RKS  0 1  wB97 Energy") #TEST
+compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
+compare_values(E21,V21, 3, "UKS  0 1   B97 Energy") #TEST
+compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
+compare_values(E23,V23, 3, "UKS  0 1  wB97 Energy") #TEST
+compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
+compare_values(E31,V31, 3, "UKS  1 2   B97 Energy") #TEST
+compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
+compare_values(E33,V33, 3, "UKS  1 2  wB97 Energy") #TEST
+compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
+compare_values(E41,V41, 3, "UKS -1 2   B97 Energy") #TEST
+compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
+compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
+compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
+
