@@ -418,7 +418,6 @@ void KS::process_omega_tei(OmegaKFunctor & functor)
         SOShellCombinationsIterator shellIter(sobasisset_, sobasisset_, sobasisset_, sobasisset_);
         std::string comm_ = Process::environment("COMMUNICATOR");
         functor.initialize(comm_, options_.get_str("SCF_TYPE"));
-        omega_eri_ao_->setOmega(functional_->getOmega());
 
         if (comm_ == "LOCAL" || comm_ == "MPI" || comm_ == "GA") {
             int v=0;
