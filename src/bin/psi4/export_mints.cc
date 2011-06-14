@@ -240,7 +240,10 @@ void export_mints()
             //def("origin", &PointGroup::origin).
             def("set_symbol", &PointGroup::set_symbol);
 
+    typedef void (Molecule::*matrix_set_geometry)(const Matrix &);
+
     class_<Molecule, boost::shared_ptr<Molecule> >("Molecule").
+            def("set_geometry", matrix_set_geometry(&Molecule::set_geometry)).
             def("set_name", &Molecule::set_name).
             def("name", &Molecule::name).
             def("fix_orientation", &Molecule::set_orientation_fixed).

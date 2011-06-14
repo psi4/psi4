@@ -47,7 +47,6 @@ namespace psi {
     namespace sapt      { PsiReturnType sapt(Options &);  }
     namespace dcft      { PsiReturnType dcft(Options &);  }
     namespace mcscf     { PsiReturnType mcscf(Options &);  }
-
     namespace psimrcc   { PsiReturnType psimrcc(Options &);  }
     namespace transqt   { PsiReturnType transqt(Options &);  }
     namespace transqt2  { PsiReturnType transqt2(Options &); }
@@ -59,6 +58,10 @@ namespace psi {
     namespace ccdensity { PsiReturnType ccdensity(Options&); }
     // DETCI: uncomment
     //namespace detci     { PsiReturnType detci(Options&);     }
+    namespace findif    {
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
+      PsiReturnType fd_grad_1_0(Options &, boost::shared_ptr<Vector>);
+    }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
     extern FILE *outfile;
@@ -117,6 +120,18 @@ double py_psi_mcscf()
     }
     else
         return 0.0;
+}
+
+std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_1_0()
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_geoms_1_0(Process::environment.options);
+}
+
+PsiReturnType py_psi_fd_grad_1_0(boost::shared_ptr<Vector> energies)
+{
+    py_psi_prepare_options_for_module("FINDIF");
+    return findif::fd_grad_1_0(Process::environment.options, energies);
 }
 
 double py_psi_scf()
@@ -615,6 +630,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
     def("mcscf", py_psi_mcscf);
+    def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
+    def("fd_grad_1_0", py_psi_fd_grad_1_0);
     def("sapt", py_psi_sapt);
     def("psimrcc", py_psi_psimrcc);
     def("optking", py_psi_optking);
