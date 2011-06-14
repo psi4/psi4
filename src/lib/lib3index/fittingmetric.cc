@@ -482,6 +482,61 @@ void FittingMetric::form_eig_inverse(double tol)
     }
     metric_->set_name("SO Basis Fitting Inverse (Eig)");
 }
+void FittingMetric::form_full_eig_inverse(double tol)
+{
+    is_inverted_ = true;
+    algorithm_ = "EIG";
+
+    form_fitting_metric();
+
+    //metric_->print();
+
+    for (int h = 0; h < metric_->nirrep(); h++) {
+
+        if (metric_->colspi()[h] == 0) continue;
+
+        double** J = metric_->pointer(h);
+        int n = metric_->colspi()[h];
+
+        // Copy J to W
+        boost::shared_ptr<Matrix> W(new Matrix("W", n, n));
+        double** Wp = W->pointer();
+        C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
+
+        double* eigval = new double[n];
+        int lwork = n * 3;
+        double* work = new double[lwork];
+        int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
+        delete[] work;
+
+        boost::shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
+        double** Jcopyp = Jcopy->pointer();
+
+        C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);
+
+        // Now form Jp^{-1/2} = U(T)*j'^{-1/2}*U,
+        // where j'^{-1/2} is the diagonal matrix of the inverse square roots
+        // of the eigenvalues, and U is the matrix of eigenvectors of J'
+        double max_J = eigval[n-1];
+
+        int nsig = 0;
+        for (int ind=0; ind<n; ind++) {
+            if (eigval[ind] / max_J < tol || eigval[ind] <= 0.0)
+                eigval[ind] = 0.0;
+            else {
+                nsig++;
+                eigval[ind] = 1.0 / eigval[ind];
+            }
+            // scale one set of eigenvectors by the diagonal elements j^{-1/2}
+            C_DSCAL(n, eigval[ind], Wp[ind], 1);
+        }
+        delete[] eigval;
+
+        C_DGEMM('T','N',n,n,n,1.0,Jcopyp[0],n,Wp[0],n,0.0,J[0],n);
+
+    }
+    metric_->set_name("SO Basis Fitting Inverse (Eig)");
+}
 void FittingMetric::form_full_inverse()
 {
     is_inverted_ = true;
