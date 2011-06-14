@@ -949,6 +949,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/matrix1/Makefile
           tests/props2/Makefile
           tests/scf10/Makefile
+          tests/dft1/Makefile
           tests/mom/Makefile
           tests/plugin_aointegrals/Makefile
           tests/plugin_aointegrals/input.dat
