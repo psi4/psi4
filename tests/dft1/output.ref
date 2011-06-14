@@ -1,0 +1,2724 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+E11 = -74.9493412744 #TEST
+E12 = -75.3196957567 #TEST
+E13 = -75.3185459160 #TEST
+E14 = -75.3128178610 #TEST
+E21 = -74.9493412744 #TEST
+E22 = -75.3196957567 #TEST
+E23 = -75.3185459160 #TEST
+E24 = -75.3128178610 #TEST
+E31 = -74.6448669477 #TEST
+E32 = -74.9677634492 #TEST
+E33 = -74.9709217377 #TEST
+E34 = -74.9632650037 #TEST
+E41 = -74.4108252721 #TEST
+E42 = -74.8155846044 #TEST
+E43 = -74.8011166756 #TEST
+E44 = -74.7977834552 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set globals {
+print 2
+basis sto-3g
+guess core
+scf_type direct
+dft_spherical_points 302 
+dft_radial_points 100
+reference rks
+}
+
+set dft_functional b_x
+V11 = energy('scf')
+
+set dft_functional b3lyp
+V12 = energy('scf')
+
+set dft_functional wB97
+V13 = energy('scf')
+
+set dft_functional wB97X 
+V14 = energy('scf')
+
+set reference uks
+set dft_functional b_x
+V21 = energy('scf')
+
+set dft_functional b3lyp
+V22 = energy('scf')
+
+set dft_functional wB97
+V23 = energy('scf')
+
+set dft_functional wB97X 
+V24 = energy('scf')
+
+molecule h2op {
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set basis sto-3g
+set dft_functional b_x
+V31 = energy('scf')
+
+set dft_functional b3lyp
+V32 = energy('scf')
+
+set dft_functional wB97
+V33 = energy('scf')
+
+set dft_functional wB97X 
+V34 = energy('scf')
+
+molecule h2om {
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set basis sto-3g
+set dft_functional b_x
+V41 = energy('scf')
+
+set dft_functional b3lyp
+V42 = energy('scf')
+
+set dft_functional wB97
+V43 = energy('scf')
+
+set dft_functional wB97X 
+V44 = energy('scf')
+
+compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
+compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
+compare_values(E13,V13, 3, "RKS  0 1  wB97 Energy") #TEST
+compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
+compare_values(E21,V21, 3, "UKS  0 1   B97 Energy") #TEST
+compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
+compare_values(E23,V23, 3, "UKS  0 1  wB97 Energy") #TEST
+compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
+compare_values(E31,V31, 3, "UKS  1 2   B97 Energy") #TEST
+compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
+compare_values(E33,V33, 3, "UKS  1 2  wB97 Energy") #TEST
+compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
+compare_values(E41,V41, 3, "UKS -1 2   B97 Energy") #TEST
+compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
+compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
+compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
+
+--------------------------------------------------------------------------
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:13:22 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              RKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B_X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @RKS iter   1:   -73.16581109545533   -1.85316e+01    0.00000e+00 
+   @RKS iter   2:   -74.08225054130983   -9.16439e-01    3.22986e-01 DIIS
+   @RKS iter   3:   -74.94822207057689   -8.65972e-01    2.00286e-01 DIIS
+   @RKS iter   4:   -74.94930117945040   -1.07911e-03    9.41987e-03 DIIS
+   @RKS iter   5:   -74.94933708475966   -3.59053e-05    8.08733e-04 DIIS
+   @RKS iter   6:   -74.94934109166476   -4.00691e-06    2.88677e-04 DIIS
+   @RKS iter   7:   -74.94934127389286   -1.82228e-07    8.02024e-05 DIIS
+   @RKS iter   8:   -74.94934127443422   -5.41363e-10    4.12777e-06 DIIS
+   @RKS iter   9:   -74.94934127443409    1.27898e-13    2.05977e-10 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -18.450273     2A     -0.782610     3A     -0.334071  
+	   4A     -0.129767     5A     -0.029249  
+
+	Virtual:                                                              
+
+	   6A      0.304252     7A      0.410099  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -74.94934127443409
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.5888     Total:     0.5888
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     1.4966     Total:     1.4966
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1510     YY:    -4.4803     ZZ:    -5.2766
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8484     YY:     0.8224     ZZ:     0.0261
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.14909  4.14909  0.00000 -0.29819
+       2     H     0.42545  0.42545  0.00000  0.14909
+       3     H     0.42545  0.42545  0.00000  0.14909
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:13:29 2011
+	user time   =       6.23 seconds =       0.10 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:13:29 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              RKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B3LYP.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @RKS iter   1:   -73.57670119067343   -1.89424e+01    0.00000e+00 
+   @RKS iter   2:   -74.52407242978759   -9.47371e-01    3.18749e-01 DIIS
+   @RKS iter   3:   -75.31683675372004   -7.92764e-01    1.77480e-01 DIIS
+   @RKS iter   4:   -75.31948777587837   -2.65102e-03    7.60172e-03 DIIS
+   @RKS iter   5:   -75.31968359387925   -1.95818e-04    2.12756e-03 DIIS
+   @RKS iter   6:   -75.31969452598962   -1.09321e-05    4.26897e-04 DIIS
+   @RKS iter   7:   -75.31969575544178   -1.22945e-06    2.00061e-04 DIIS
+   @RKS iter   8:   -75.31969575674586   -1.30407e-09    6.49766e-06 DIIS
+   @RKS iter   9:   -75.31969575674576    9.94760e-14    1.24215e-09 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -18.840654     2A     -0.916524     3A     -0.427085  
+	   4A     -0.233328     5A     -0.142447  
+
+	Virtual:                                                              
+
+	   6A      0.317890     7A      0.427521  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -75.31969575674576
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.6324     Total:     0.6324
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     1.6074     Total:     1.6074
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1357     YY:    -4.3648     ZZ:    -5.2207
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8953     YY:     0.8756     ZZ:     0.0197
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.16495  4.16495  0.00000 -0.32989
+       2     H     0.41753  0.41753  0.00000  0.16495
+       3     H     0.41753  0.41753  0.00000  0.16495
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:13:40 2011
+	user time   =      17.40 seconds =       0.29 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:13:40 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              RKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @RKS iter   1:   -73.57267022416453   -1.89384e+01    0.00000e+00 
+   @RKS iter   2:   -75.13435335206040   -1.56168e+00    2.84043e-01 DIIS
+   @RKS iter   3:   -75.31784644193966   -1.83493e-01    7.56866e-02 DIIS
+   @RKS iter   4:   -75.31849405319731   -6.47611e-04    6.25359e-03 DIIS
+   @RKS iter   5:   -75.31854507197450   -5.10188e-05    1.96495e-03 DIIS
+   @RKS iter   6:   -75.31854591468763   -8.42713e-07    2.64346e-04 DIIS
+   @RKS iter   7:   -75.31854591600805   -1.32042e-09    5.34168e-06 DIIS
+   @RKS iter   8:   -75.31854591600818   -1.27898e-13    1.30968e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -18.702723     2A     -1.047204     3A     -0.547587  
+	   4A     -0.349299     5A     -0.256665  
+
+	Virtual:                                                              
+
+	   6A      0.445353     7A      0.556386  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -75.31854591600818
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.6338     Total:     0.6338
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     1.6109     Total:     1.6109
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1387     YY:    -4.3852     ZZ:    -5.2348
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8858     YY:     0.8677     ZZ:     0.0181
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.15991  4.15991  0.00000 -0.31983
+       2     H     0.42004  0.42004  0.00000  0.15991
+       3     H     0.42004  0.42004  0.00000  0.15991
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:13:51 2011
+	user time   =      29.10 seconds =       0.49 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =         11 seconds =       0.18 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:13:51 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              RKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @RKS iter   1:   -73.58121020980791   -1.89469e+01    0.00000e+00 
+   @RKS iter   2:   -75.12092177614477   -1.53971e+00    2.84195e-01 DIIS
+   @RKS iter   3:   -75.31202850911356   -1.91107e-01    7.89698e-02 DIIS
+   @RKS iter   4:   -75.31276786865163   -7.39360e-04    6.22818e-03 DIIS
+   @RKS iter   5:   -75.31281717451648   -4.93059e-05    1.94134e-03 DIIS
+   @RKS iter   6:   -75.31281786034083   -6.85824e-07    2.37814e-04 DIIS
+   @RKS iter   7:   -75.31281786104371   -7.02883e-10    3.94080e-06 DIIS
+   @RKS iter   8:   -75.31281786104390   -1.84741e-13    8.08996e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -18.901908     2A     -1.039656     3A     -0.535887  
+	   4A     -0.342146     5A     -0.251869  
+
+	Virtual:                                                              
+
+	   6A      0.432866     7A      0.543502  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RKS Final Energy:   -75.31281786104390
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.6398     Total:     0.6398
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     1.6261     Total:     1.6261
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1350     YY:    -4.3589     ZZ:    -5.2202
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8970     YY:     0.8792     ZZ:     0.0178
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.16448  4.16448  0.00000 -0.32895
+       2     H     0.41776  0.41776  0.00000  0.16448
+       3     H     0.41776  0.41776  0.00000  0.16448
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:14:01 2011
+	user time   =      38.53 seconds =       0.64 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:14:01 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B_X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.16581109545533   -1.85316e+01    0.00000e+00 
+   @UKS iter   2:   -74.08225054130983   -9.16439e-01    6.45971e-01 DIIS
+   @UKS iter   3:   -74.94822207057683   -8.65972e-01    4.00572e-01 DIIS
+   @UKS iter   4:   -74.94930117945046   -1.07911e-03    1.88397e-02 DIIS
+   @UKS iter   5:   -74.94933708475975   -3.59053e-05    1.61747e-03 DIIS
+   @UKS iter   6:   -74.94934109166482   -4.00691e-06    5.77354e-04 DIIS
+   @UKS iter   7:   -74.94934127389281   -1.82228e-07    1.60405e-04 DIIS
+   @UKS iter   8:   -74.94934127443393   -5.41121e-10    8.25632e-06 DIIS
+   @UKS iter   9:   -74.94934127443400   -7.10543e-14    2.57428e-10 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.450273     2A     -0.782610     3A     -0.334071  
+	   4A     -0.129767     5A     -0.029249  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.304252     7A      0.410099  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.450273     2A     -0.782610     3A     -0.334071  
+	   4A     -0.129767     5A     -0.029249  
+
+	Beta Virtual:                                                         
+
+	   6A      0.304252     7A      0.410099  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.94934127443400
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.5888     Total:     0.5888
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     1.4966     Total:     1.4966
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1510     YY:    -4.4803     ZZ:    -5.2766
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8484     YY:     0.8224     ZZ:     0.0261
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.14909  4.14909  0.00000 -0.29819
+       2     H     0.42545  0.42545  0.00000  0.14909
+       3     H     0.42545  0.42545  0.00000  0.14909
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+  @Spin Contamination Metric: -0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:              -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:14:11 2011
+	user time   =      48.61 seconds =       0.81 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:14:11 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B3LYP.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.57670119067343   -1.89424e+01    0.00000e+00 
+   @UKS iter   2:   -74.52407242978759   -9.47371e-01    6.37498e-01 DIIS
+   @UKS iter   3:   -75.31683675371998   -7.92764e-01    3.54959e-01 DIIS
+   @UKS iter   4:   -75.31948777587844   -2.65102e-03    1.52034e-02 DIIS
+   @UKS iter   5:   -75.31968359387920   -1.95818e-04    4.25513e-03 DIIS
+   @UKS iter   6:   -75.31969452598972   -1.09321e-05    8.53794e-04 DIIS
+   @UKS iter   7:   -75.31969575544190   -1.22945e-06    4.00123e-04 DIIS
+   @UKS iter   8:   -75.31969575674594   -1.30404e-09    1.29953e-05 DIIS
+   @UKS iter   9:   -75.31969575674589    5.68434e-14    2.72919e-09 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.840654     2A     -0.916524     3A     -0.427085  
+	   4A     -0.233328     5A     -0.142447  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.317890     7A      0.427521  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.840654     2A     -0.916524     3A     -0.427085  
+	   4A     -0.233328     5A     -0.142447  
+
+	Beta Virtual:                                                         
+
+	   6A      0.317890     7A      0.427521  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -75.31969575674589
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:     0.6324     Total:     0.6324
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:     1.6074     Total:     1.6074
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1357     YY:    -4.3648     ZZ:    -5.2207
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8953     YY:     0.8756     ZZ:     0.0197
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.16495  4.16495 -0.00000 -0.32989
+       2     H     0.41753  0.41753  0.00000  0.16495
+       3     H     0.41753  0.41753  0.00000  0.16495
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+  @Spin Contamination Metric: -0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:              -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:14:32 2011
+	user time   =      69.80 seconds =       1.16 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         21 seconds =       0.35 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:14:32 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.57267022416453   -1.89384e+01    0.00000e+00 
+   @UKS iter   2:   -75.13435335206037   -1.56168e+00    5.68085e-01 DIIS
+   @UKS iter   3:   -75.31784644193954   -1.83493e-01    1.51373e-01 DIIS
+   @UKS iter   4:   -75.31849405319726   -6.47611e-04    1.25072e-02 DIIS
+   @UKS iter   5:   -75.31854507197446   -5.10188e-05    3.92990e-03 DIIS
+   @UKS iter   6:   -75.31854591468760   -8.42713e-07    5.28691e-04 DIIS
+   @UKS iter   7:   -75.31854591600809   -1.32049e-09    1.06834e-05 DIIS
+   @UKS iter   8:   -75.31854591600822   -1.27898e-13    2.62012e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.702723     2A     -1.047204     3A     -0.547587  
+	   4A     -0.349299     5A     -0.256665  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.445353     7A      0.556386  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.702723     2A     -1.047204     3A     -0.547587  
+	   4A     -0.349299     5A     -0.256665  
+
+	Beta Virtual:                                                         
+
+	   6A      0.445353     7A      0.556386  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -75.31854591600822
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.6338     Total:     0.6338
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     1.6109     Total:     1.6109
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1387     YY:    -4.3852     ZZ:    -5.2348
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8858     YY:     0.8677     ZZ:     0.0181
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.15991  4.15991 -0.00000 -0.31983
+       2     H     0.42004  0.42004 -0.00000  0.15991
+       3     H     0.42004  0.42004  0.00000  0.15991
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+  @Spin Contamination Metric: -0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:              -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:15:02 2011
+	user time   =      99.80 seconds =       1.66 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         30 seconds =       0.50 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:15:02 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.58121020980791   -1.89469e+01    0.00000e+00 
+   @UKS iter   2:   -75.12092177614474   -1.53971e+00    5.68390e-01 DIIS
+   @UKS iter   3:   -75.31202850911350   -1.91107e-01    1.57940e-01 DIIS
+   @UKS iter   4:   -75.31276786865162   -7.39360e-04    1.24564e-02 DIIS
+   @UKS iter   5:   -75.31281717451650   -4.93059e-05    3.88267e-03 DIIS
+   @UKS iter   6:   -75.31281786034086   -6.85824e-07    4.75629e-04 DIIS
+   @UKS iter   7:   -75.31281786104375   -7.02897e-10    7.88159e-06 DIIS
+   @UKS iter   8:   -75.31281786104375    0.00000e+00    1.62485e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.901908     2A     -1.039656     3A     -0.535887  
+	   4A     -0.342146     5A     -0.251869  
+
+	Alpha Virtual:                                                        
+
+	   6A      0.432866     7A      0.543502  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.901908     2A     -1.039656     3A     -0.535887  
+	   4A     -0.342146     5A     -0.251869  
+
+	Beta Virtual:                                                         
+
+	   6A      0.432866     7A      0.543502  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -75.31281786104375
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     0.6398     Total:     0.6398
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     1.6261     Total:     1.6261
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.1350     YY:    -4.3589     ZZ:    -5.2202
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.8970     YY:     0.8792     ZZ:     0.0178
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.16448  4.16448 -0.00000 -0.32895
+       2     H     0.41776  0.41776 -0.00000  0.16448
+       3     H     0.41776  0.41776  0.00000  0.16448
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
+
+  @Spin Contamination Metric: -0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:              -0.00000
+
+*** tstop() called on ender at Tue Jun 14 16:15:32 2011
+	user time   =     129.10 seconds =       2.15 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =         30 seconds =       0.50 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:15:32 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B_X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       4       4       1
+   -------------------------------------------------------
+    Total       7       7       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.44456474860772   -2.25214e+01    0.00000e+00 
+   @UKS iter   2:   -74.06421122939857   -6.19646e-01    5.73451e-01 DIIS
+   @UKS iter   3:   -74.64375487997897   -5.79544e-01    2.78681e-01 DIIS
+   @UKS iter   4:   -74.64485617935694   -1.10130e-03    1.23214e-02 DIIS
+   @UKS iter   5:   -74.64486620658388   -1.00272e-05    4.37489e-04 DIIS
+   @UKS iter   6:   -74.64486694307074   -7.36487e-07    3.92930e-05 DIIS
+   @UKS iter   7:   -74.64486694773798   -4.66724e-09    2.07549e-05 DIIS
+   @UKS iter   8:   -74.64486694776700   -2.90186e-11    1.80389e-06 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -19.227404     2A     -1.404097     3A     -0.884431  
+	   4A     -0.738197     5A     -0.715771  
+
+	Alpha Virtual:                                                        
+
+	   6A     -0.195462     7A     -0.107900  
+
+	Beta Occupied:                                                        
+
+	   1A    -19.208457     2A     -1.332505     3A     -0.860790  
+	   4A     -0.678547  
+
+	Beta Virtual:                                                         
+
+	   5A     -0.561255     6A     -0.178111     7A     -0.096594  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     4 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.64486694776700
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     1.0098     Total:     1.0098
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     2.5667     Total:     2.5667
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -4.7245     YY:    -2.3727     ZZ:    -3.9605
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0386     YY:     1.3132     ZZ:    -0.2746
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.46010  3.37670  1.08340  0.16320
+       2     H     0.26995  0.31165 -0.04170  0.41840
+       3     H     0.26995  0.31165 -0.04170  0.41840
+
+   Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
+
+  @Spin Contamination Metric:  0.00268
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75268
+
+*** tstop() called on ender at Tue Jun 14 16:15:40 2011
+	user time   =     137.77 seconds =       2.30 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:15:40 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B3LYP.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       4       4       1
+   -------------------------------------------------------
+    Total       7       7       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.79428678662821   -2.28711e+01    0.00000e+00 
+   @UKS iter   2:   -74.45541278842335   -6.61126e-01    5.63373e-01 DIIS
+   @UKS iter   3:   -74.96738597939455   -5.11973e-01    2.43539e-01 DIIS
+   @UKS iter   4:   -74.96776239713402   -3.76418e-04    8.83283e-03 DIIS
+   @UKS iter   5:   -74.96776343124745   -1.03411e-06    6.21040e-04 DIIS
+   @UKS iter   6:   -74.96776344924737   -1.79999e-08    4.49948e-05 DIIS
+   @UKS iter   7:   -74.96776344926559   -1.82183e-11    1.41773e-06 DIIS
+   @UKS iter   8:   -74.96776344926883   -3.24007e-12    7.49721e-07 DIIS
+   @UKS iter   9:   -74.96776344926901   -1.84741e-13    1.57431e-07 DIIS
+   @UKS iter  10:   -74.96776344926894    7.10543e-14    1.42909e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -19.615258     2A     -1.537181     3A     -0.978396  
+	   4A     -0.841090     5A     -0.819210  
+
+	Alpha Virtual:                                                        
+
+	   6A     -0.180485     7A     -0.089469  
+
+	Beta Occupied:                                                        
+
+	   1A    -19.597326     2A     -1.460438     3A     -0.956049  
+	   4A     -0.783735  
+
+	Beta Virtual:                                                         
+
+	   5A     -0.553923     6A     -0.163987     7A     -0.078839  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     4 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.96776344926894
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0519     Total:     1.0519
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.6736     Total:     2.6736
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -4.7093     YY:    -2.2607     ZZ:    -3.9035
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0848     YY:     1.3638     ZZ:    -0.2790
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.47042  3.39933  1.07109  0.13025
+       2     H     0.26479  0.30034 -0.03555  0.43487
+       3     H     0.26479  0.30034 -0.03555  0.43487
+
+   Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
+
+  @Spin Contamination Metric:  0.00199
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75199
+
+*** tstop() called on ender at Tue Jun 14 16:16:04 2011
+	user time   =     161.63 seconds =       2.69 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         24 seconds =       0.40 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:16:04 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       4       4       1
+   -------------------------------------------------------
+    Total       7       7       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.79378392927897   -2.28706e+01    0.00000e+00 
+   @UKS iter   2:   -74.94190403979518   -1.14812e+00    4.68931e-01 DIIS
+   @UKS iter   3:   -74.97041628520559   -2.85122e-02    5.99344e-02 DIIS
+   @UKS iter   4:   -74.97089198623571   -4.75701e-04    6.98574e-03 DIIS
+   @UKS iter   5:   -74.97091909368734   -2.71075e-05    1.49811e-03 DIIS
+   @UKS iter   6:   -74.97092163393687   -2.54025e-06    2.24918e-04 DIIS
+   @UKS iter   7:   -74.97092173596111   -1.02024e-07    1.08206e-04 DIIS
+   @UKS iter   8:   -74.97092173775251   -1.79139e-09    1.43857e-05 DIIS
+   @UKS iter   9:   -74.97092173776072   -8.21387e-12    1.39921e-07 DIIS
+   @UKS iter  10:   -74.97092173776072    0.00000e+00    7.65095e-08 DIIS
+   @UKS iter  11:   -74.97092173776072    0.00000e+00    1.01434e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -19.476080     2A     -1.665480     3A     -1.100907  
+	   4A     -0.955369     5A     -0.938364  
+
+	Alpha Virtual:                                                        
+
+	   6A     -0.056059     7A      0.036338  
+
+	Beta Occupied:                                                        
+
+	   1A    -19.473040     2A     -1.590593     3A     -1.073828  
+	   4A     -0.900102  
+
+	Beta Virtual:                                                         
+
+	   5A     -0.420208     6A     -0.035043     7A      0.053586  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     4 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.97092173776072
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     1.0435     Total:     1.0435
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     2.6523     Total:     2.6523
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -4.7154     YY:    -2.3023     ZZ:    -3.9280
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0669     YY:     1.3463     ZZ:    -0.2794
+    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.46757  3.38561  1.08195  0.14682
+       2     H     0.26622  0.30719 -0.04098  0.42659
+       3     H     0.26622  0.30719 -0.04098  0.42659
+
+   Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
+
+  @Spin Contamination Metric:  0.00259
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75259
+
+*** tstop() called on ender at Tue Jun 14 16:16:43 2011
+	user time   =     200.04 seconds =       3.33 minutes
+	system time =       0.12 seconds =       0.00 minutes
+	total time  =         39 seconds =       0.65 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:16:43 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
+  Nalpha       = 5
+  Nbeta        = 4
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       4       4       1
+   -------------------------------------------------------
+    Total       7       7       5       4       4       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.79844706831727   -2.28753e+01    0.00000e+00 
+   @UKS iter   2:   -74.93347996681118   -1.13503e+00    4.67978e-01 DIIS
+   @UKS iter   3:   -74.96268022498414   -2.92003e-02    6.21227e-02 DIIS
+   @UKS iter   4:   -74.96324261446750   -5.62389e-04    7.89563e-03 DIIS
+   @UKS iter   5:   -74.96326329865866   -2.06842e-05    1.50039e-03 DIIS
+   @UKS iter   6:   -74.96326492216869   -1.62351e-06    2.66920e-04 DIIS
+   @UKS iter   7:   -74.96326500229486   -8.01262e-08    8.87037e-05 DIIS
+   @UKS iter   8:   -74.96326500377403   -1.47917e-09    1.11599e-05 DIIS
+   @UKS iter   9:   -74.96326500377906   -5.03064e-12    1.59273e-07 DIIS
+   @UKS iter  10:   -74.96326500377899    7.10543e-14    4.79073e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -19.677346     2A     -1.660227     3A     -1.089821  
+	   4A     -0.950414     5A     -0.931035  
+
+	Alpha Virtual:                                                        
+
+	   6A     -0.067716     7A      0.023767  
+
+	Beta Occupied:                                                        
+
+	   1A    -19.665565     2A     -1.580684     3A     -1.063410  
+	   4A     -0.892714  
+
+	Beta Virtual:                                                         
+
+	   5A     -0.431371     6A     -0.047316     7A      0.039584  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     4 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.96326500377899
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:     1.0521     Total:     1.0521
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:     2.6741     Total:     2.6741
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -4.7111     YY:    -2.2724     ZZ:    -3.9115
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.0794     YY:     1.3593     ZZ:    -0.2798
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.47116  3.39239  1.07877  0.13646
+       2     H     0.26442  0.30381 -0.03938  0.43177
+       3     H     0.26442  0.30381 -0.03938  0.43177
+
+   Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
+
+  @Spin Contamination Metric:  0.00241
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75241
+
+*** tstop() called on ender at Tue Jun 14 16:17:19 2011
+	user time   =     236.90 seconds =       3.95 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =         36 seconds =       0.60 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:17:19 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = -1
+  Multiplicity = 2
+  Electrons    = 11
+  Nalpha       = 6
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B_X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       6       5       5       1
+   -------------------------------------------------------
+    Total       7       7       6       5       5       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -72.90296794659149   -1.61903e+01    0.00000e+00 
+   @UKS iter   2:   -74.05210795117530   -1.14914e+00    5.74323e-01 DIIS
+   @UKS iter   3:   -74.40990037418089   -3.57792e-01    2.11513e-01 DIIS
+   @UKS iter   4:   -74.41075562190871   -8.55248e-04    6.82695e-03 DIIS
+   @UKS iter   5:   -74.41082247263547   -6.68507e-05    1.55079e-03 DIIS
+   @UKS iter   6:   -74.41082526663075   -2.79400e-06    5.03938e-04 DIIS
+   @UKS iter   7:   -74.41082527218332   -5.55256e-09    2.18867e-05 DIIS
+   @UKS iter   8:   -74.41082527219508   -1.17666e-11    1.05658e-06 DIIS
+   @UKS iter   9:   -74.41082527219507    1.42109e-14    1.60556e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -17.777538     2A     -0.258080     3A      0.166078  
+	   4A      0.334626     5A      0.478440     6A      0.783724  
+
+	Alpha Virtual:                                                        
+
+	   7A      0.894896  
+
+	Beta Occupied:                                                        
+
+	   1A    -17.762334     2A     -0.215602     3A      0.200859  
+	   4A      0.370208     5A      0.502012  
+
+	Beta Virtual:                                                         
+
+	   6A      0.882214     7A      0.940995  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.41082527219507
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3874     Total:     0.3874
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.9847     Total:     0.9847
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.9796     YY:    -8.3916     ZZ:    -7.7493
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.7272     YY:    -0.6848     ZZ:    -0.0425
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.46820  4.00985  0.45835 -0.47804
+       2     H     0.76590  0.49508  0.27083 -0.26098
+       3     H     0.76590  0.49508  0.27083 -0.26098
+
+   Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
+
+  @Spin Contamination Metric:  0.00094
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75094
+
+*** tstop() called on ender at Tue Jun 14 16:17:29 2011
+	user time   =     246.64 seconds =       4.11 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         10 seconds =       0.17 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:17:29 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = -1
+  Multiplicity = 2
+  Electrons    = 11
+  Nalpha       = 6
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is B3LYP.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       6       5       5       1
+   -------------------------------------------------------
+    Total       7       7       6       5       5       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.32248785353823   -1.66098e+01    0.00000e+00 
+   @UKS iter   2:   -74.52689757363854   -1.20441e+00    5.68177e-01 DIIS
+   @UKS iter   3:   -74.81450989275956   -2.87612e-01    1.81634e-01 DIIS
+   @UKS iter   4:   -74.81551276262188   -1.00287e-03    9.97057e-03 DIIS
+   @UKS iter   5:   -74.81558366127958   -7.08987e-05    1.59942e-03 DIIS
+   @UKS iter   6:   -74.81558460444482   -9.43165e-07    2.61752e-04 DIIS
+   @UKS iter   7:   -74.81558460448032   -3.54987e-11    2.25333e-06 DIIS
+   @UKS iter   8:   -74.81558460448154   -1.22213e-12    4.32926e-07 DIIS
+   @UKS iter   9:   -74.81558460448147    7.10543e-14    1.56574e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.178965     2A     -0.404442     3A      0.066419  
+	   4A      0.222328     5A      0.359100     6A      0.697364  
+
+	Alpha Virtual:                                                        
+
+	   7A      0.901848  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.161679     2A     -0.356036     3A      0.101367  
+	   4A      0.262659     5A      0.382800  
+
+	Beta Virtual:                                                         
+
+	   6A      0.887787     7A      0.950964  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.81558460448147
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3655     Total:     0.3655
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:    -0.9291     Total:     0.9291
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.9703     YY:    -8.3229     ZZ:    -7.7160
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.6995     YY:    -0.6532     ZZ:    -0.0463
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.46598  4.03147  0.43452 -0.49745
+       2     H     0.76701  0.48427  0.28274 -0.25127
+       3     H     0.76701  0.48427  0.28274 -0.25127
+
+   Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
+
+  @Spin Contamination Metric:  0.00154
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75154
+
+*** tstop() called on ender at Tue Jun 14 16:17:51 2011
+	user time   =     268.07 seconds =       4.47 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =         22 seconds =       0.37 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:17:51 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = -1
+  Multiplicity = 2
+  Electrons    = 11
+  Nalpha       = 6
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       6       5       5       1
+   -------------------------------------------------------
+    Total       7       7       6       5       5       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.28509506168849   -1.65724e+01    0.00000e+00 
+   @UKS iter   2:   -74.71583634712795   -1.43074e+00    5.09777e-01 DIIS
+   @UKS iter   3:   -74.79005717791269   -7.42208e-02    8.09365e-02 DIIS
+   @UKS iter   4:   -74.80014136329213   -1.00842e-02    1.74849e-02 DIIS
+   @UKS iter   5:   -74.80110867331567   -9.67310e-04    6.25955e-03 DIIS
+   @UKS iter   6:   -74.80111666254092   -7.98923e-06    7.80288e-04 DIIS
+   @UKS iter   7:   -74.80111667525884   -1.27179e-08    1.19522e-05 DIIS
+   @UKS iter   8:   -74.80111667560240   -3.43562e-10    8.91305e-06 DIIS
+   @UKS iter   9:   -74.80111667560423   -1.83320e-12    3.31133e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.035849     2A     -0.526758     3A     -0.057883  
+	   4A      0.108091     5A      0.242945     6A      0.595298  
+
+	Alpha Virtual:                                                        
+
+	   7A      1.021913  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.028447     2A     -0.488502     3A     -0.022675  
+	   4A      0.142608     5A      0.267594  
+
+	Beta Virtual:                                                         
+
+	   6A      1.011660     7A      1.075688  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.80111667560423
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.3725     Total:     0.3725
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:    -0.9468     Total:     0.9468
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.9747     YY:    -8.3573     ZZ:    -7.7352
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.7143     YY:    -0.6682     ZZ:    -0.0461
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.46922  4.01650  0.45272 -0.48572
+       2     H     0.76539  0.49175  0.27364 -0.25714
+       3     H     0.76539  0.49175  0.27364 -0.25714
+
+   Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
+
+  @Spin Contamination Metric:  0.00097
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75097
+
+*** tstop() called on ender at Tue Jun 14 16:18:24 2011
+	user time   =     301.53 seconds =       5.03 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =         33 seconds =       0.55 minutes
+
+*** tstart() called on ender
+*** at Tue Jun 14 16:18:24 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = -1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = -1
+  Multiplicity = 2
+  Electrons    = 11
+  Nalpha       = 6
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  4968 out of 90600 grid points eliminated,  5.483% elimination.
+
+
+  Selected Functional is wB97X.
+
+  Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
+  Using Symmetric Orthogonalization.
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       6       5       5       1
+   -------------------------------------------------------
+    Total       7       7       6       5       5       1
+   -------------------------------------------------------
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E      Density RMS
+
+   @UKS iter   1:   -73.29374901565477   -1.65810e+01    0.00000e+00 
+   @UKS iter   2:   -74.68796972775517   -1.39422e+00    5.25852e-01 DIIS
+   @UKS iter   3:   -74.79060718673989   -1.02637e-01    1.00790e-01 DIIS
+   @UKS iter   4:   -74.79694689880711   -6.33971e-03    1.46696e-02 DIIS
+   @UKS iter   5:   -74.79777392894285   -8.27030e-04    5.31020e-03 DIIS
+   @UKS iter   6:   -74.79778340582482   -9.47688e-06    7.73248e-04 DIIS
+   @UKS iter   7:   -74.79778345315580   -4.73310e-08    3.31164e-05 DIIS
+   @UKS iter   8:   -74.79778345522428   -2.06848e-09    1.44379e-05 DIIS
+   @UKS iter   9:   -74.79778345522850   -4.22062e-12    5.38914e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A    -18.241010     2A     -0.526414     3A     -0.046061  
+	   4A      0.112527     5A      0.246818     6A      0.602084  
+
+	Alpha Virtual:                                                        
+
+	   7A      1.011374  
+
+	Beta Occupied:                                                        
+
+	   1A    -18.227560     2A     -0.481359     3A     -0.010842  
+	   4A      0.150698     5A      0.271778  
+
+	Beta Virtual:                                                         
+
+	   6A      0.998383     7A      1.062483  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -74.79778345522850
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.3678     Total:     0.3678
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:    -0.9347     Total:     0.9347
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -6.9722     YY:    -8.3376     ZZ:    -7.7245
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.7059     YY:    -0.6595     ZZ:    -0.0464
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.46883  4.02332  0.44551 -0.49215
+       2     H     0.76559  0.48834  0.27725 -0.25393
+       3     H     0.76559  0.48834  0.27725 -0.25393
+
+   Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
+
+  @Spin Contamination Metric:  0.00113
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75113
+
+*** tstop() called on ender at Tue Jun 14 16:18:58 2011
+	user time   =     335.30 seconds =       5.59 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =         34 seconds =       0.57 minutes
+
+*** PSI4 exiting successfully, buy a developer a beer!
