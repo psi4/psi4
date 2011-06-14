@@ -910,6 +910,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/deriv/Makefile
           src/bin/optking/Makefile
           src/bin/df-cc/Makefile
+          src/bin/findif/Makefile
 
           tests/Makefile
           tests/MakeVars
@@ -923,6 +924,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/scf3/Makefile
           tests/scf4/Makefile
           tests/scf5/Makefile
+          tests/scf5-fd/Makefile
           tests/scf6/Makefile
           tests/scf7/Makefile
           tests/scf8/Makefile

@@ -1578,7 +1578,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Read Cartesian Hessian -*/
       options.add_bool("READ_CARTESIAN_H", false);
   }
-
+  if(name == "FINDIF"|| options.read_globals()) {
+      /*- Number of points for finite-differences (3 or 5) -*/
+      options.add_int("POINTS", 3); // Can we error check integers?
+      /*- Displacement size in au for finite-differences. -*/
+      options.add_double("DISP_SIZE", 0.010);
+  }
   return true;
 }
 

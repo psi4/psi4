@@ -19,7 +19,7 @@ mints_subdirs = mints1 mints2 mints3
 
 matrix_subdirs = matrix1
 
-opt_subdirs = scf5 scf6 scf7 scf8
+opt_subdirs = scf5 scf6 scf7 scf8 scf5-fd
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf9 sad1 mom props2 scf10
 
