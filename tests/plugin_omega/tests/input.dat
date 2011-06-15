@@ -1,0 +1,24 @@
+molecule {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+plugin_load("../plugin_omega.so")
+
+set globals {
+  scf_type direct
+  basis sto-3g 
+  ri_basis_scf cc-pvdz-ri
+  reference uks
+  dft_functional wB97
+  dft_spherical_points 110
+  dft_radial_points 50
+  omega_procedure ip
+  d_converge 6
+}
+
+energy('scf')
+plugin("../plugin_omega.so")
