@@ -1155,14 +1155,14 @@ double HF::compute_energy()
             Fb_->print(outfile);
         }
 
-        std::string status;
+        std::string status = "";
         if (!MOM_performed_ && !diis_performed_) status = "";
         else if (!MOM_performed_ && diis_performed_) status = "DIIS";
         else if (MOM_performed_ && !diis_performed_) status = "MOM";
         else if (MOM_performed_ && diis_performed_) status = "DIIS/MOM";
 
         if (Communicator::world->me() == 0) {
-            fprintf(outfile, "   @%s iter %3d: %20.14f   % 10.5e   % 10.5e %s\n",
+            fprintf(outfile, "   @%s iter %3d: %20.14f   %10.5e   %10.5e %s\n",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
         }
