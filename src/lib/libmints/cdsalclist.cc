@@ -5,17 +5,13 @@
 #include <libmints/petitelist.h>
 #include <libmints/cdsalclist.h>
 #include <libmints/factory.h>
+#include <libqt/qt.h>
 
 #include <algorithm>
 
 using namespace boost;
 
 namespace psi {
-
-bool cdsalc_sort_predicate(const CdSalc& d1, const CdSalc& d2)
-{
-    return d1.irrep() < d2.irrep();
-}
 
 void CdSalc::print() const
 {
@@ -73,12 +69,82 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
         throw PSIEXCEPTION("CdSalcList::CdSalcList: Molecule point group has not been set.");
     }
 
-    // Ideally this could be 3n-5 or 3n-6.
-    ncd_ = 3 * molecule_->natom();
+    int natom = molecule_->natom();
+    ncd_ = 3 * natom;
+
+    // Immediately create the rotation and translation vectors to be projected out.
+    Matrix constraints("COM & Rotational Constraints", 6, ncd_);
+
+    SharedMatrix pX(molecule_->inertia_tensor());
+    Matrix& X = *pX.get();
+
+    // Pull out data to local variables to reduce memory lookup
+    double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
+    double X10 = X(1, 0), X11 = X(1, 1), X12 = X(1, 2);
+    double X20 = X(2, 0), X21 = X(2, 1), X22 = X(2, 2);
+
+//    Matrix constraints("COM & Rotational Constraints", 6, 3*natom);
+    double tval0, tval1, tval2;
+    for (int i=0; i < natom; ++i) {
+        // Local lookups
+        double atomx = molecule_->x(i);
+        double atomy = molecule_->y(i);
+        double atomz = molecule_->z(i);
+        double smass = sqrt(molecule_->mass(i));
+
+        // COM constraints
+        if (project_out_translations_) {
+            constraints(0, 3*i+0) = smass;
+            constraints(1, 3*i+1) = smass;
+            constraints(2, 3*i+2) = smass;
+        }
+
+        // Rotational constraints
+        if (project_out_rotations_) {
+            tval0 = (atomx * X00) + (atomy * X10) + (atomz * X20);
+            tval1 = (atomx * X01) + (atomy * X11) + (atomz * X21);
+            tval2 = (atomx * X02) + (atomy * X12) + (atomz * X22);
+
+            constraints(3, 3*i+0) = (tval2 * X02 - tval2 * X01) * smass;
+            constraints(3, 3*i+1) = (tval1 * X12 - tval2 * X11) * smass;
+            constraints(3, 3*i+2) = (tval1 * X22 - tval2 * X21) * smass;
+
+            constraints(4, 3*i+0) = (tval2 * X00 - tval0 * X02) * smass;
+            constraints(4, 3*i+1) = (tval2 * X10 - tval0 * X12) * smass;
+            constraints(4, 3*i+2) = (tval2 * X20 - tval0 * X22) * smass;
+
+            constraints(5, 3*i+0) = (tval0 * X01 - tval1 * X00) * smass;
+            constraints(5, 3*i+1) = (tval0 * X11 - tval1 * X10) * smass;
+            constraints(5, 3*i+2) = (tval0 * X21 - tval1 * X20) * smass;
+        }
+    }
+
+    // Remove NULL constraint (if present) and normalize the rest of them
+    for (int i=0; i<6; ++i) {
+        double normval = C_DDOT(ncd_, constraints[0][i], 1, constraints[0][i], 1);
+        if (normval > 1.0E-10)
+            constraints.scale_row(0, i, 1.0 / sqrt(normval));
+        else
+            constraints.scale_row(0, i, 0.0);
+    }
+
+//    constraints.print();
+
+    Matrix constraints_ortho("Orthogonalized COM & Rotational constraints", 6, 3*natom);
+    // Ensure rotations and translations are exactly orthogonal
+    int count = 0;
+    for (int i=0; i<6; ++i)
+        count += constraints_ortho.schmidt_add(i, constraints[0][i]);
+
+//    constraints_ortho.print();
+
     double *salc = new double[ncd_];
 
+    Matrix salcs("Requested SALCs", ncd_, ncd_);
+    int *salcirrep = new int[ncd_];
+
     // We know how many atom_salcs_ we have.
-    for (int i=0; i<molecule_->natom(); ++i)
+    for (int i=0; i<natom; ++i)
         atom_salcs_.push_back(CdSalcWRTAtom());
 
     // Obtain handy reference to point group.
@@ -98,8 +164,7 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     // Obtain atom mapping of atom * symm op to atom
     int **atom_map = compute_atom_map(molecule_);
 
-//    print_int_mat(atom_map, molecule_->natom(), nirrep_, outfile);
-
+    int nsalc = 0;
     for (int uatom=0; uatom < molecule_->nunique(); ++uatom) {
         int atom = molecule_->unique(uatom);
 
@@ -134,7 +199,6 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     salc[Gcd] += coeff;
                 }
 
-//                fprintf(outfile, "salc atom %d, xyz %d, h %d = [", atom, xyz, irrep);
                 int nonzero=0;
                 for (int cd=0; cd<ncd_; ++cd) {
                     // Normalize the salc
@@ -143,32 +207,17 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     // Count number of nonzeros
                     if (fabs(salc[cd]) > 1e-10)
                         ++nonzero;
-
-//                    fprintf(outfile, " %lf,", salc[cd]);
                 }
-//                fprintf(outfile, "]\n");
 
                 // We're only interested in doing the following if there are nonzeros
                 // AND the irrep that we're on is what the user wants.
                 if (nonzero && (1 << irrep) & needed_irreps) {
-                    CdSalc new_salc(irrep);
 
-                    // Go through the salc and take the non-zero values
-                    // push them onto the sparse salc transform object
-                    for (int cd=0; cd<ncd_; ++cd) {
-                        if (fabs(salc[cd]) > 1e-10) {
-                            new_salc.add(salc[cd], cd/3, xyz);
+                    // Store the salc so we can project out constraints below
+                    memcpy(salcs[0][nsalc], salc, ncd_*sizeof(double));
+                    salcirrep[nsalc] = irrep;
+                    nsalc++;
 
-                            // Find the unique atom.
-                            // How many equivalent atoms to this unique
-//                            int unique_atom = molecule_->atom_to_unique(cd/3);
-//                            double nequiv = (double)molecule_->nequivalent(unique_atom);
-                            atom_salcs_[cd/3].add(xyz, salc[cd], irrep, salcs_.size());
-                        }
-                    }
-
-                    // Save this salc.
-                    salcs_.push_back(new_salc);
                 }
 
                 // TODO: I want to delete this, eventually. It's useful
@@ -185,8 +234,20 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
         }
     }
 
-    // Sort the salcs based on irrep
-//    std::sort(salcs_.begin(), salcs_.end(), cdsalc_sort_predicate);
+    // Project out any constraints
+    salcs.project_out(constraints_ortho);
+
+    // Walk through the new salcs and populate our sparse vectors.
+    for (int i=0; i<nsalc; ++i) {
+        CdSalc new_salc(salcirrep[i]);
+        for (int cd=0; cd < ncd_; ++cd) {
+            if (fabs(salcs(i, cd)) > 1.0e-10) {
+                new_salc.add(salcs(i, cd), cd/3, cd % 3);
+                atom_salcs_[cd/3].add(cd % 3, salcs(i, cd), salcirrep[i], salcs_.size());
+            }
+        }
+        salcs_.push_back(new_salc);
+    }
 
     // TODO: I want to delete this, too. This was used in psi3's input.
     // In psi4 I'm using a sparse transform object...no need to store
@@ -212,10 +273,8 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     }
     fprintf(outfile,"\n");
 
-    // Print out the salcs
-//    print();
-
     // Free memory.
+    delete[] salcirrep;
     delete[] salc;
     delete_atom_map(atom_map, molecule_);
 }
@@ -278,8 +337,8 @@ void CdSalcList::print() const
 {
     fprintf(outfile, "By SALC:\n");
     fprintf(outfile, "Number of SALCs %ld, irreps = %d\n"
-            "Project out translations %s (not programmed)\n"
-            "Project out rotations %s (not programmed)\n",
+            "Project out translations %s\n"
+            "Project out rotations %s\n",
             salcs_.size(), needed_irreps_,
             project_out_translations_ ? "true" : "false",
             project_out_rotations_ ? "true" : "false");
