@@ -18,7 +18,7 @@ PsiReturnType fd_grad_1_0(Options &options, boost::shared_ptr<Vector> E) {
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
 
-  CdSalcList cdsalc(mol, fact, '1', true, true);
+  CdSalcList cdsalc(mol, fact, 0x1, true, true);
   int Nsalc = cdsalc.ncd();
 
   // Compute number of displacements - check with number of energies passed in
