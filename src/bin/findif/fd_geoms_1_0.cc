@@ -57,15 +57,8 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
   fprintf(outfile, "\tNumber of displacements (including reference) is %d.\n", Ndisp);
 
   // Get reference geometry
-  SimpleMatrix ref_geom_simple = mol->geometry();
-
-  // SimpleMatrix will be phased out so convert to Matrix
-  boost::shared_ptr<Matrix> ref_geom(new Matrix("Reference geometry", Natom, 3));
-
-  for (int a=0; a<Natom; ++a)
-    for (int xyz=0; xyz<3; ++xyz)
-      ref_geom->set(0, a, xyz, ref_geom_simple(a, xyz) ) ;
-  //ref_geom->print(outfile);
+  Matrix ref_geom_temp = mol->geometry();
+  SharedMatrix ref_geom(ref_geom_temp.clone());
 
   // to be returned and converted into "matrix_vector" list in python
   std::vector< boost::shared_ptr<Matrix> > disp_geoms;
