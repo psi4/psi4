@@ -239,15 +239,20 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
 
     // Walk through the new salcs and populate our sparse vectors.
     for (int i=0; i<nsalc; ++i) {
+        bool added = false;
         CdSalc new_salc(salcirrep[i]);
         for (int cd=0; cd < ncd_; ++cd) {
             if (fabs(salcs(i, cd)) > 1.0e-10) {
+                added = true;
                 new_salc.add(salcs(i, cd), cd/3, cd % 3);
                 atom_salcs_[cd/3].add(cd % 3, salcs(i, cd), salcirrep[i], salcs_.size());
             }
         }
-        salcs_.push_back(new_salc);
+        if (added)
+            salcs_.push_back(new_salc);
     }
+
+    ncd_ = salcs_.size();
 
     // TODO: I want to delete this, too. This was used in psi3's input.
     // In psi4 I'm using a sparse transform object...no need to store
@@ -265,13 +270,13 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
         }
     }
 
-    fprintf(outfile,"    -Cartesian displacement SALCs per irrep:\n");
-    fprintf(outfile,"    Irrep  #SALCs\n");
-    fprintf(outfile,"    -----  ------\n");
-    for (int irrep=0; irrep<nirrep_; irrep++) {
-        fprintf(outfile,"    %3d    %4d\n", irrep, cdsalcpi_[irrep]);
-    }
-    fprintf(outfile,"\n");
+//    fprintf(outfile,"    -Cartesian displacement SALCs per irrep:\n");
+//    fprintf(outfile,"    Irrep  #SALCs\n");
+//    fprintf(outfile,"    -----  ------\n");
+//    for (int irrep=0; irrep<nirrep_; irrep++) {
+//        fprintf(outfile,"    %3d    %4d\n", irrep, cdsalcpi_[irrep]);
+//    }
+//    fprintf(outfile,"\n");
 
     // Free memory.
     delete[] salcirrep;
