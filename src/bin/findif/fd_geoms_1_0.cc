@@ -39,7 +39,7 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
 
   // Get SALCS from libmints
   boost::shared_ptr<MatrixFactory> fact;
-  CdSalcList cdsalc(mol, fact, '1', true, true);
+  CdSalcList cdsalc(mol, fact, 0x1, true, true);
 
   int Nsalc = cdsalc.ncd();
   fprintf(outfile,"\tNumber of SALC's is %d.\n", Nsalc);
