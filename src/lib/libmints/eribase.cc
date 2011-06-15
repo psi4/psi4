@@ -769,19 +769,6 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         libint_.PrimQuartet[nprim].U[5][1] = W[1] - p34->P[p3][p4][1];
                         libint_.PrimQuartet[nprim].U[5][2] = W[2] - p34->P[p3][p4][2];
 
-//                        fprintf(outfile, "-----\n");
-//                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
-//                        fprintf(outfile, "T   = %lf\n", T);
-//                        fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
-//                        fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
-//                        fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
-//                        fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
-//                        fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
-//                        fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
-//                        fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
-//                        fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
-//                        fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
-//                        fprintf(outfile, "Q = %lf %lf %lf\n", p34->P[p3][p4][0], p34->P[p3][p4][1], p34->P[p3][p4][2]);
                         nprim++;
                     }
                 }
@@ -840,10 +827,6 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         a4D[1] = a4*D[1];
                         a4D[2] = a4*D[2];
 
-                        //                  Q[0] = (a3*C[0] + a4*D[0])*oon;
-                        //                  Q[1] = (a3*C[1] + a4*D[1])*oon;
-                        //                  Q[2] = (a3*C[2] + a4*D[2])*oon;
-
                         Q[0] = (a3C[0] + a4D[0])*oon;
                         Q[1] = (a3C[1] + a4D[1])*oon;
                         Q[2] = (a3C[2] + a4D[2])*oon;
@@ -887,8 +870,8 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         libint_.PrimQuartet[nprim].oo2p = oo2rho;
 
                         double T = rho * PQ2;
+                        fjt_->set_rho(rho);
                         double *F = fjt_->values(am, T);
-//                        calc_f(libint_.PrimQuartet[nprim].F, am+1, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
@@ -896,19 +879,6 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                         for (int i=0; i<=am; ++i) {
                             libint_.PrimQuartet[nprim].F[i] = F[i] * val;
                         }
-//                        fprintf(outfile, "----- %d\n", nprim);
-//                        fprintf(outfile, "poz = %lf\n", libint_.PrimQuartet[nprim].poz);
-//                        fprintf(outfile, "T   = %lf\n", T);
-//                        fprintf(outfile, "oo2zn = %lf\n", libint_.PrimQuartet[nprim].oo2zn);
-//                        fprintf(outfile, "pon = %lf\n", libint_.PrimQuartet[nprim].pon);
-//                        fprintf(outfile, "oo2z = %lf\n", libint_.PrimQuartet[nprim].oo2z);
-//                        fprintf(outfile, "oo2n = %lf\n", libint_.PrimQuartet[nprim].oo2n);
-//                        fprintf(outfile, "U[0] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[0][0], libint_.PrimQuartet[nprim].U[0][1], libint_.PrimQuartet[nprim].U[0][2]);
-//                        fprintf(outfile, "U[2] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[2][0], libint_.PrimQuartet[nprim].U[2][1], libint_.PrimQuartet[nprim].U[2][2]);
-//                        fprintf(outfile, "U[4] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[4][0], libint_.PrimQuartet[nprim].U[4][1], libint_.PrimQuartet[nprim].U[4][2]);
-//                        fprintf(outfile, "U[5] = %lf %lf %lf\n", libint_.PrimQuartet[nprim].U[5][0], libint_.PrimQuartet[nprim].U[5][1], libint_.PrimQuartet[nprim].U[5][2]);
-//                        fprintf(outfile, "W = %lf %lf %lf\n", W[0], W[1], W[2]);
-//                        fprintf(outfile, "Q = %lf %lf %lf\n", Q[0], Q[1], Q[2]);
                         nprim++;
                     }
                 }
