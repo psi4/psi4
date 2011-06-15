@@ -236,7 +236,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
-    fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
+    //fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
     int si = petite1_->unique_shell_map(uish, 0);
     const int siatom = tb_->basis1()->shell(si)->ncenter();
 
@@ -273,33 +273,33 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         }
     }
 
-    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
+//    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
 //    fprintf(outfile, "\tgroup = %d, R_list %d S_list %d T_list %d\n", group, R_list, S_list, T_list);
-    fprintf(outfile, "\tistablizer: %d\n", istabdense);
-    fprintf(outfile, "\tjstablizer: %d\n", jstabdense);
-    fprintf(outfile, "\tkstablizer: %d\n", kstabdense);
-    fprintf(outfile, "\tlstablizer: %d\n", lstabdense);
-    fprintf(outfile, "\tijstablizer: %d\n", ijstablizer);
-    fprintf(outfile, "\tklstablizer: %d\n", klstablizer);
-    fprintf(outfile, "\tR.size = %d\n", R_size);
-    for (int i=1; i<=R_size; ++i)
-        fprintf(outfile, "\t%d\n", R_list[i]);
-    fprintf(outfile, "\tS.size = %d\n", S_size);
-    for (int i=1; i<=S_size; ++i)
-        fprintf(outfile, "\t%d\n", S_list[i]);
-    fprintf(outfile, "\tT.size = %d\n", T_size);
-    for (int i=1; i<=T_size; ++i)
-        fprintf(outfile, "\t%d\n", T_list[i]);
+//    fprintf(outfile, "\tistablizer: %d\n", istabdense);
+//    fprintf(outfile, "\tjstablizer: %d\n", jstabdense);
+//    fprintf(outfile, "\tkstablizer: %d\n", kstabdense);
+//    fprintf(outfile, "\tlstablizer: %d\n", lstabdense);
+//    fprintf(outfile, "\tijstablizer: %d\n", ijstablizer);
+//    fprintf(outfile, "\tklstablizer: %d\n", klstablizer);
+//    fprintf(outfile, "\tR.size = %d\n", R_size);
+//    for (int i=1; i<=R_size; ++i)
+//        fprintf(outfile, "\t%d\n", R_list[i]);
+//    fprintf(outfile, "\tS.size = %d\n", S_size);
+//    for (int i=1; i<=S_size; ++i)
+//        fprintf(outfile, "\t%d\n", S_list[i]);
+//    fprintf(outfile, "\tT.size = %d\n", T_size);
+//    for (int i=1; i<=T_size; ++i)
+//        fprintf(outfile, "\t%d\n", T_list[i]);
 //    fprintf(outfile, "\tR_list: ");
 //    petite1_->print_group(R_list);
 //    fprintf(outfile, "\tS_list: ");
 //    petite1_->print_group(S_list);
 //    fprintf(outfile, "\tT_list: ");
 //    petite1_->print_group(T_list);
-    for (int i=0; i<sj_arr.size(); ++i) {
-        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
-    }
-    fflush(outfile);
+//    for (int i=0; i<sj_arr.size(); ++i) {
+//        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
+//    }
+//    fflush(outfile);
 
     // Compute integral using si, sj_arr, sk_arr, sl_arr
     // Loop over unique quartets
