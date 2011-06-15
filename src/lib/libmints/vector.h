@@ -72,6 +72,19 @@ public:
         vector_[h][m] = val;
     }
 
+    /// Returns a single element value
+    double get(int m) {
+        return vector_[0][m];
+    }
+    /// Sets a single element value
+    void set(int m, double val) {
+        vector_[0][m] = val;
+    }
+
+
+    double& operator()(int i) { return vector_[0][i]; }
+    const double& operator()(int i) const { return vector_[0][i]; }
+
     double pyget(const boost::python::tuple& key);
     void pyset(const boost::python::tuple& key, double value);
     double pyget(int key);
