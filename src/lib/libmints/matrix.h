@@ -756,6 +756,34 @@ public:
     /// Back transform this by transformer
     void back_transform(const Matrix& transformer);
 
+    /*! @{
+     * Assume this is a orthogonal matrix.  This function Gram-Schmidt
+     * orthogonalizes a new vector v and adds it to matrix A. This must contain
+     * a free row pointer for a new row.  Don't add orthogonalized v' if
+     * norm(v') < NORM_TOL.
+     *
+     * Adapted from libqt's version by David Sherrill, Feb 1994
+     *
+     * \param rows current number of valid rows in this
+     *             (this must have space for 'rows+1' row.)
+     * \param v vector to add to A after it has been made orthogonal
+     *             to rest of A
+     *
+     * \returns true if a vector is added, false otherwise
+    */
+    bool schmidt_add(int rows, Vector& v) throw();
+    bool schmidt_add(int rows, double* v) throw();
+    /// @}
+
+    /*!
+     * Project out the row vectors in the matrix provided out of this matrix.
+     * Assumes all matrices are C1 in nature. Future version will handle irreps.
+     * Note: this is destroyed.
+     *
+     * \param v Matrix to project out
+     */
+    void project_out(Matrix& v);
+
     /// General matrix multiply, saves result to this
     void gemm(bool transa, bool transb, double alpha, const Matrix& a, const Matrix& b, double beta);
     /// Diagonalize. Eigvectors and eigvalues must be created by caller.

@@ -53,16 +53,19 @@ void export_mints()
     // For example in Vector there are 2 versions of set: a (double*) version and a
     // (int, int, double) version. We create a typedef function pointer to tell
     // Boost.Python we only want the (int, int, double) version.
-    typedef void (Vector::*vector_set)(int, int, double);
     typedef void (Vector::*vector_setitem_1)(int, double);
+    typedef void (Vector::*vector_setitem_2)(int, int, double);
     typedef double (Vector::*vector_getitem_1)(int);
+    typedef double (Vector::*vector_getitem_2)(int, int);
     typedef void (Vector::*vector_setitem_n)(const boost::python::tuple&, double);
     typedef double (Vector::*vector_getitem_n)(const boost::python::tuple&);
 
     class_<Vector, boost::shared_ptr<Vector> >( "Vector").
             def(init<int>()).
-            def("get", &Vector::get).
-            def("set", vector_set(&Vector::set)).
+            def("get", vector_getitem_1(&Vector::get)).
+            def("get", vector_getitem_2(&Vector::get)).
+            def("set", vector_setitem_1(&Vector::set)).
+            def("set", vector_setitem_2(&Vector::set)).
             def("print_out", &Vector::print).
             def("dim", &Vector::dim).
             def("__getitem__", vector_getitem_1(&Vector::pyget)).
