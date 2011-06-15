@@ -982,6 +982,86 @@ void Matrix::gemm(bool transa, bool transb, double alpha,
     gemm(transa, transb, alpha, &a, &b, beta);
 }
 
+bool Matrix::schmidt_add(int rows, Vector& v) throw()
+{
+    if (nirrep_ > 1 || v.nirrep() > 1)
+        throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
+
+    double dotval, normval;
+    int i, I;
+
+    for (i=0; i<rows; ++i) {
+        dotval = C_DDOT(colspi_[0], matrix_[0][i], 1, v.pointer(), 1);
+        for (I=0; I<colspi_[0]; ++I)
+            v(I) -= dotval * matrix_[0][i][I];
+    }
+
+    normval = C_DDOT(colspi_[0], v.pointer(), 1, v.pointer(), 1);
+    normval = sqrt(normval);
+
+    if (normval > 1.0e-5) {
+        for (I=0; I<colspi_[0]; ++I)
+            matrix_[0][rows][I] = v(I) / normval;
+        return true;
+    }
+    else
+        return false;
+}
+
+bool Matrix::schmidt_add(int rows, double* v) throw()
+{
+    if (nirrep_ > 1)
+        throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
+
+    double dotval, normval;
+    int i, I;
+
+    for (i=0; i<rows; ++i) {
+        dotval = C_DDOT(colspi_[0], matrix_[0][i], 1, v, 1);
+        for (I=0; I<colspi_[0]; ++I)
+            v[I] -= dotval * matrix_[0][i][I];
+    }
+
+    normval = C_DDOT(colspi_[0], v, 1, v, 1);
+    normval = sqrt(normval);
+
+    if (normval > 1.0e-5) {
+        for (I=0; I<colspi_[0]; ++I)
+            matrix_[0][rows][I] = v[I] / normval;
+        return true;
+    }
+    else
+        return false;
+}
+
+void Matrix::project_out(Matrix &constraints)
+{
+    // We're going to work through temp and add to this
+    Matrix temp = *this;
+    zero();
+
+    double *v = new double[coldim()];
+    for (int i=0; i<rowdim(); ++i) {
+        memcpy(v, temp[0][i], sizeof(double)*coldim());
+        for (int j=0; j<constraints.rowdim(); ++j) {
+            double dotval = C_DDOT(coldim(), temp[0][i], 1, constraints[0][j], 1);
+            for (int I=0; I<coldim(); ++I)
+                v[I] -= dotval * constraints[0][j][I];
+        }
+
+        // At this point all constraints have been projected out of "v"
+        // Normalize it add Schmidt orthogonalize it against this
+        double normval = C_DDOT(coldim(), v, 1, v, 1);
+        if (normval > 1.0E-10) {
+            for (int j=0; j<coldim(); ++j)
+                v[j] /= normval;
+
+            schmidt_add(i, v);
+        }
+    }
+    delete[] v;
+}
+
 double Matrix::vector_dot(const Matrix* const rhs)
 {
     if (symmetry_ != rhs->symmetry_)
