@@ -924,11 +924,12 @@ AC_CONFIG_FILES([include/Makefile
           tests/scf3/Makefile
           tests/scf4/Makefile
           tests/scf5/Makefile
-          tests/scf5-fd/Makefile
           tests/scf6/Makefile
-          tests/scf7/Makefile
-          tests/scf8/Makefile
-          tests/scf9/Makefile
+          tests/opt1/Makefile
+          tests/opt1-fd/Makefile
+          tests/opt2/Makefile
+          tests/opt3/Makefile
+          tests/opt4/Makefile
           tests/basis_extrap/Makefile
           tests/sad1/Makefile
           tests/sapt1/Makefile
@@ -948,7 +949,6 @@ AC_CONFIG_FILES([include/Makefile
           tests/mints3/Makefile
           tests/matrix1/Makefile
           tests/props2/Makefile
-          tests/scf10/Makefile
           tests/dft1/Makefile
           tests/mom/Makefile
           tests/plugin_aointegrals/Makefile

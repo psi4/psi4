@@ -34,9 +34,9 @@ class Deriv
 #endif
 
     // Results go here.
-    SharedSimpleMatrix QdH_;
-    SharedSimpleMatrix WdS_;
-    SharedSimpleMatrix tb_;
+    SharedMatrix QdH_;
+    SharedMatrix WdS_;
+    SharedMatrix tb_;
 
 public:
     Deriv(reftype ref, const boost::shared_ptr<MatrixFactory>& factory, const boost::shared_ptr<BasisSet>& basis);
@@ -48,15 +48,15 @@ public:
     void compute(const SharedSimpleMatrix& Q, const SharedSimpleMatrix& G, const SharedSimpleMatrix& W);
 #endif
 
-    const SharedSimpleMatrix& one_electron() {
+    const SharedMatrix& one_electron() {
         return QdH_;
     }
 
-    const SharedSimpleMatrix& overlap() {
+    const SharedMatrix& overlap() {
         return WdS_;
     }
 
-    const SharedSimpleMatrix& two_body() {
+    const SharedMatrix& two_body() {
         return tb_;
     }
 };

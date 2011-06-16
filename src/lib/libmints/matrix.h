@@ -435,6 +435,9 @@ public:
      */
     void print(FILE *out = outfile, const char *extra=NULL) const;
 
+    /// Prints the matrix with atom and xyz styling.
+    void print_atom_vector(FILE *out = outfile);
+
     /**
      * Print the matrix with corresponding eigenvalues below each column
      *

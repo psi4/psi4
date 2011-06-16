@@ -7,7 +7,7 @@
 using namespace psi;
 using namespace boost;
 
-GradientWriter::GradientWriter(boost::shared_ptr<Molecule> mol, const SimpleMatrix& grad)
+GradientWriter::GradientWriter(boost::shared_ptr<Molecule> mol, const Matrix& grad)
     : molecule_(mol), gradient_(grad)
 {
 }
