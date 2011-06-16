@@ -105,7 +105,7 @@ PsiReturnType fd_grad_1_0(Options &options, boost::shared_ptr<Vector> E) {
 
   for (int a=0; a<Natom; ++a)
     for (int xyz=0; xyz<3; ++xyz)
-      gradient_matrix.set(a, xyz, g_cart[3*a+xyz]);
+        gradient_matrix.set(a, xyz, g_cart[3*a+xyz] * sqrt(mol->mass(a)));
 
   GradientWriter grad(mol, gradient_matrix);
   grad.write("psi.file11.dat");
