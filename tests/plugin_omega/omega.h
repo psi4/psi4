@@ -105,6 +105,9 @@ public:
     // Clear, without resetting DIIS
     void clear();
 
+    // Perform a guess using the given KS matrices
+    void guess(boost::shared_ptr<Matrix> Fa, boost::shared_ptr<Matrix> Fb);
+
     // Print the orbital energies
     void print_orbitals();
 
@@ -114,6 +117,15 @@ public:
     double E() const { return E_; }
     double koopmansIP();
     double koopmansEA();
+
+    int nso() const { return nso_; }
+    int nmo() const { return nmo_; }
+    int nalpha() const { return nalpha_; }
+    int nbeta() const { return nbeta_; }
+    boost::shared_ptr<Matrix> Fa() const { return Fa_; } 
+    boost::shared_ptr<Matrix> Fb() const { return Fb_; } 
+    boost::shared_ptr<Matrix> Ca() const { return Ca_; } 
+    boost::shared_ptr<Matrix> Cb() const { return Cb_; } 
 };
 
 class OmegaKS {
@@ -208,7 +220,17 @@ protected:
     // Delta is kIP - IP
     double delta_l_;
     double delta_r_;
- 
+
+    // Left and right F matrices
+    boost::shared_ptr<Matrix> Fa_l_N_; 
+    boost::shared_ptr<Matrix> Fa_l_M_; 
+    boost::shared_ptr<Matrix> Fb_l_N_; 
+    boost::shared_ptr<Matrix> Fb_l_M_; 
+    boost::shared_ptr<Matrix> Fa_r_N_; 
+    boost::shared_ptr<Matrix> Fa_r_M_; 
+    boost::shared_ptr<Matrix> Fb_r_N_; 
+    boost::shared_ptr<Matrix> Fb_r_M_; 
+
 public:
     OmegaIPKS(Options&, boost::shared_ptr<PSIO>);
     virtual ~OmegaIPKS();

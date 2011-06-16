@@ -335,6 +335,20 @@ void OmegaIPKS::common_init()
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "RI_BASIS_SCF");
     parser.reset();
+
+    if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {
+        int nso = basisset_->nbf();
+
+        Fa_l_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fa_l_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fb_l_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fb_l_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fa_r_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fa_r_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fb_r_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fb_r_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+
+    }
 }
 void OmegaIPKS::print_header()
 {
@@ -455,6 +469,20 @@ void OmegaIPKS::omega_step(int iteration)
         double IP = wfns_["N-1"]->E() - wfns_["N"]->E();    
         omega_trace_.push_back(make_tuple(old_omega, kIP, IP, "Initial Guess"));        
         bracketed_ = false;
+
+        if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {
+            if (kIP - IP > 0.0) {
+                Fa_r_N_->copy(wfns_["N"]->Fa());
+                Fb_r_N_->copy(wfns_["N"]->Fb());
+                Fa_r_M_->copy(wfns_["N-1"]->Fa());
+                Fb_r_M_->copy(wfns_["N-1"]->Fb());
+            } else {
+                Fa_l_N_->copy(wfns_["N"]->Fa());
+                Fb_l_N_->copy(wfns_["N"]->Fb());
+                Fa_l_M_->copy(wfns_["N-1"]->Fa());
+                Fb_l_M_->copy(wfns_["N-1"]->Fb());
+            }
+        }
     }
 
     // Bracket first
@@ -491,7 +519,6 @@ void OmegaIPKS::omega_step(int iteration)
         return;
     }
 
-    
     double new_omega = 0.0;
     
     if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI") {
@@ -599,8 +626,56 @@ void OmegaIPKS::omega_step(int iteration)
         }
     }
 
+    // Set the omega
     df_->set_omega(new_omega);
     ks_->set_omega(new_omega);
+
+    // Interpolate the guess
+    if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {
+
+        boost::shared_ptr<Matrix> Fa(new Matrix("Fa Interpolated", basisset_->nbf(), basisset_->nbf()));
+        boost::shared_ptr<Matrix> Fb(new Matrix("Fa Interpolated", basisset_->nbf(), basisset_->nbf()));
+        double** Fap = Fa->pointer();
+        double** Fbp = Fb->pointer();
+        double** Fa_l_Np = Fa_l_N_->pointer();
+        double** Fa_l_Mp = Fa_l_M_->pointer();
+        double** Fb_l_Np = Fb_l_N_->pointer();
+        double** Fb_l_Mp = Fb_l_M_->pointer();
+        double** Fa_r_Np = Fa_r_N_->pointer();
+        double** Fa_r_Mp = Fa_r_M_->pointer();
+        double** Fb_r_Np = Fb_r_N_->pointer();
+        double** Fb_r_Mp = Fb_r_M_->pointer();
+
+        double alpha = (new_omega - omega_l_) / (omega_r_ - omega_l_); 
+        double beta = 1.0 - alpha;
+   
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), alpha, Fa_r_Np[0], 1,
+            Fap[0], 1);
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), beta, Fa_l_Np[0], 1,
+            Fap[0], 1);
+ 
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), alpha, Fb_r_Np[0], 1,
+            Fbp[0], 1);
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), beta, Fb_l_Np[0], 1,
+            Fbp[0], 1);
+ 
+        wfns_["N"]->guess(Fa,Fb);
+
+        Fa->zero();
+        Fb->zero();
+        
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), alpha, Fa_r_Mp[0], 1,
+            Fap[0], 1);
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), beta, Fa_l_Mp[0], 1,
+            Fap[0], 1);
+ 
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), alpha, Fb_r_Mp[0], 1,
+            Fbp[0], 1);
+        C_DAXPY(basisset_->nbf() * (ULI) basisset_->nbf(), beta, Fb_l_Mp[0], 1,
+            Fbp[0], 1);
+
+        wfns_["N-1"]->guess(Fa,Fb);
+    }
 
     fprintf(outfile, "    New Omega:    %15.8E\n\n", new_omega); 
 }
@@ -610,7 +685,21 @@ bool OmegaIPKS::is_omega_converged()
     double new_kIP = wfns_["N"]->koopmansIP();
     double new_IP = wfns_["N-1"]->E() - wfns_["N"]->E();    
     double new_delta = new_kIP - new_IP; 
-   
+
+    if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {
+        if (new_delta > 0.0) { 
+            Fa_r_N_->copy(wfns_["N"]->Fa());
+            Fb_r_N_->copy(wfns_["N"]->Fb());
+            Fa_r_M_->copy(wfns_["N-1"]->Fa());
+            Fb_r_M_->copy(wfns_["N-1"]->Fb());
+        } else {
+            Fa_l_N_->copy(wfns_["N"]->Fa());
+            Fb_l_N_->copy(wfns_["N"]->Fb());
+            Fa_l_M_->copy(wfns_["N-1"]->Fa());
+            Fb_l_M_->copy(wfns_["N-1"]->Fb());
+        }
+    }
+
     fprintf(outfile, "  *** Step Results ***\n\n");
     fprintf(outfile, "    Omega:    %15.8E\n", new_omega); 
     fprintf(outfile, "    kIP:      %15.8E\n", new_kIP); 

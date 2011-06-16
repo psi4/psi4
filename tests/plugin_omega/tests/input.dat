@@ -17,7 +17,9 @@ set globals {
   dft_spherical_points 110
   dft_radial_points 50
   omega_procedure ip
-  d_converge 6
+  omega_guess_interpolate False
+  d_converge 5
+  e_converge 7
 }
 
 energy('scf')
