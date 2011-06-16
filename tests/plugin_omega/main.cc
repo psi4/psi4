@@ -39,6 +39,9 @@ read_options(std::string name, Options &options)
         /*- Convergence threshold for omega, 10^-thresh 
             -*/
         options.add_int("OMEGA_CONVERGE", 3);
+        /*- Interpolate Fock matrices at omega steps? 
+            -*/
+        options.add_bool("OMEGA_GUESS_INTERPOLATE", true);
         /*- The Omega functional selected for this procedure 
             -*/
         options.add_str("DFT_FUNCTIONAL", "");
