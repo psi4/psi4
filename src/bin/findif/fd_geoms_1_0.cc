@@ -18,7 +18,8 @@ ss << t;
 return ss.str();
 }
 
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
+std::vector< boost::shared_ptr<Matrix> >
+fd_geoms_1_0(Options &options) {
 
   // Print what we are doing
   fprintf(outfile,"\tUsing finite-differences of energies to determine gradients.\n");
