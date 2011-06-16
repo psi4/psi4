@@ -153,6 +153,14 @@ std::string OmegaWavefunction::step()
 
     return status;
 }
+void OmegaWavefunction::guess(boost::shared_ptr<Matrix> Fa, boost::shared_ptr<Matrix> Fb)
+{
+    Fa_->copy(Fa);
+    Fb_->copy(Fb);
+
+    form_C();
+    form_D();
+}
 void OmegaWavefunction::save_info()
 {
     Eold_ = E_;
