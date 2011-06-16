@@ -32,7 +32,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Print level -*/
   options.add_int("PRINT", 0);
   /*- Default number of geometry optimization steps -*/
-  options.add_int("NOPT", 20);
+  options.add_int("GEOM_MAXITER", 20);
 
   if (name == "DETCI" || options.read_globals()) {
     /*- Derivative level -*/
@@ -1344,9 +1344,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of radial points -*/
     options.add_int("PS_N_RADIAL", 5);
     /*- Spherical Scheme -*/
-    options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV"); 
+    options.add_str("PS_SPHERICAL_SCHEME", "LEBEDEV", "LEBEDEV");
     /*- Radial Scheme -*/
-    options.add_str("PS_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA"); 
+    options.add_str("PS_RADIAL_SCHEME", "TREUTLER", "TREUTLER BECKE MULTIEXP EM MURA");
     /*- Nuclear Scheme -*/
     options.add_str("PS_NUCLEAR_SCHEME", "TREUTLER", "TREUTLER BECKE NAIVE STRATMANN");
     /*- Pruning Scheme -*/

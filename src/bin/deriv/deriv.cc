@@ -85,9 +85,9 @@ Deriv::Deriv(reftype ref, const boost::shared_ptr<MatrixFactory>& factory, const
     vector<SharedSimpleMatrix> dV;
 
     // Results go here.
-    QdH_ = SharedSimpleMatrix(factory_->create_simple_matrix("One-electron contribution to gradient", natom_, 3));
-    WdS_ = SharedSimpleMatrix(factory_->create_simple_matrix("Overlap contribution to gradient", natom_, 3));
-    tb_  = SharedSimpleMatrix(factory_->create_simple_matrix("Two-electron contribution to gradient", natom_, 3));
+    QdH_ = SharedMatrix(new Matrix("One-electron contribution to gradient", natom_, 3));
+    WdS_ = SharedMatrix(new Matrix("Overlap contribution to gradient", natom_, 3));
+    tb_  = SharedMatrix(new Matrix("Two-electron contribution to gradient", natom_, 3));
 
     // Allocate memory for dK, dV, and dH.
     for (int i=0; i<3*natom_; ++i) {
