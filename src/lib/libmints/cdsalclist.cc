@@ -5,6 +5,7 @@
 #include <libmints/petitelist.h>
 #include <libmints/cdsalclist.h>
 #include <libmints/factory.h>
+#include <libmints/matrix.h>
 #include <libqt/qt.h>
 
 #include <algorithm>
@@ -75,8 +76,10 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
     // Immediately create the rotation and translation vectors to be projected out.
     Matrix constraints("COM & Rotational Constraints", 6, ncd_);
 
-    SharedMatrix pX(molecule_->inertia_tensor());
-    Matrix& X = *pX.get();
+    SharedMatrix pI(molecule_->inertia_tensor());
+    Vector ev(3);
+    Matrix X(3, 3);
+    pI->diagonalize(X, ev);
 
     // Pull out data to local variables to reduce memory lookup
     double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
@@ -105,17 +108,17 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
             tval1 = (atomx * X01) + (atomy * X11) + (atomz * X21);
             tval2 = (atomx * X02) + (atomy * X12) + (atomz * X22);
 
-            constraints(3, 3*i+0) = (tval2 * X02 - tval2 * X01) * smass;
-            constraints(3, 3*i+1) = (tval1 * X12 - tval2 * X11) * smass;
-            constraints(3, 3*i+2) = (tval1 * X22 - tval2 * X21) * smass;
+            constraints(3, 3*i+0) = (tval2 * X02 - tval2 * X01) / smass;
+            constraints(3, 3*i+1) = (tval1 * X12 - tval2 * X11) / smass;
+            constraints(3, 3*i+2) = (tval1 * X22 - tval2 * X21) / smass;
 
-            constraints(4, 3*i+0) = (tval2 * X00 - tval0 * X02) * smass;
-            constraints(4, 3*i+1) = (tval2 * X10 - tval0 * X12) * smass;
-            constraints(4, 3*i+2) = (tval2 * X20 - tval0 * X22) * smass;
+            constraints(4, 3*i+0) = (tval2 * X00 - tval0 * X02) / smass;
+            constraints(4, 3*i+1) = (tval2 * X10 - tval0 * X12) / smass;
+            constraints(4, 3*i+2) = (tval2 * X20 - tval0 * X22) / smass;
 
-            constraints(5, 3*i+0) = (tval0 * X01 - tval1 * X00) * smass;
-            constraints(5, 3*i+1) = (tval0 * X11 - tval1 * X10) * smass;
-            constraints(5, 3*i+2) = (tval0 * X21 - tval1 * X20) * smass;
+            constraints(5, 3*i+0) = (tval0 * X01 - tval1 * X00) / smass;
+            constraints(5, 3*i+1) = (tval0 * X11 - tval1 * X10) / smass;
+            constraints(5, 3*i+2) = (tval0 * X21 - tval1 * X20) / smass;
         }
     }
 
@@ -199,6 +202,9 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
                     salc[Gcd] += coeff;
                 }
 
+                if (stab_order == 0)
+                    throw PSIEXCEPTION("CdSalcList::CdSalcList: Stabilizer order is 0 this is not possible.");
+
                 int nonzero=0;
                 for (int cd=0; cd<ncd_; ++cd) {
                     // Normalize the salc
@@ -236,6 +242,7 @@ CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
 
     // Project out any constraints
     salcs.project_out(constraints_ortho);
+    salcs.set_name("Resulting SALCs after projections");
 
     // Walk through the new salcs and populate our sparse vectors.
     for (int i=0; i<nsalc; ++i) {
