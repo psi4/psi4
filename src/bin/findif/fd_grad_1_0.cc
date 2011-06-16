@@ -7,10 +7,16 @@
 #include <libqt/qt.h>
 #include <psi4-dec.h>
 
+#include <boost/python.hpp>
+#include <boost/python/list.hpp>
+
+using namespace boost::python;
+
 namespace psi { namespace findif {
 
-PsiReturnType fd_grad_1_0(Options &options, boost::shared_ptr<Vector> E) {
-
+PsiReturnType
+fd_grad_1_0(Options &options, const boost::python::list& E)
+{
   int pts = options.get_int("POINTS");
   double Dx = options.get_double("DISP_SIZE");
 
@@ -28,24 +34,28 @@ PsiReturnType fd_grad_1_0(Options &options, boost::shared_ptr<Vector> E) {
     Ndisp += 2 * Nsalc;
   else if (pts == 5)
     Ndisp += 4 * Nsalc;
+  else
+      throw PSIEXCEPTION("fd_grad_1_0: Unable to handle requested point formula. 3 or 5-point formula are supported.");
 
-  if (E->dim() != Ndisp)
+  if (len(E) != Ndisp)
     throw PsiException("FINDIF: Incorrect number of energies passed in!",__FILE__,__LINE__);
 
   // Compute gradient in mass-weighted symmetry-adapted cartesians in ATOMIC units
   double *g_q = init_array(Nsalc);
   if (pts == 3) {
     for (int i=0; i<Nsalc; ++i)
-      g_q[i] = (E->get(0,2*i+1) - E->get(0,2*i)) / (2.0 * Dx);
+      g_q[i] = (extract<double>(E[2*i+1]) - extract<double>(E[2*i])) / (2.0 * Dx);
   }
   else if (pts == 5) {
     for (int i=0; i<Nsalc; ++i)
-      g_q[i] = (E->get(0,4*i) - 8.0*E->get(0,4*i+1) + 8.0*E->get(0,4*i+2)
-              - E->get(0,4*i+3)) / (12.0 * Dx);
+      g_q[i] = (extract<double>(E[4*i])
+                - 8.0*extract<double>(E[4*i+1])
+                + 8.0*extract<double>(E[4*i+2])
+                - extract<double>(E[4*i+3])) / (12.0 * Dx);
   }
 
   // Print out energies and gradients
-  double energy_ref = E->get(0, Ndisp-1);
+  double energy_ref = extract<double>(E[Ndisp-1]);
   fprintf(outfile, "\tFinite difference computation of gradient using %d-point formula\n", pts);
   fprintf(outfile, "\tCheck for precision!\n");
   fprintf(outfile, "\tEnergy without displacment: %15.10lf\n", energy_ref);
@@ -57,7 +67,11 @@ PsiReturnType fd_grad_1_0(Options &options, boost::shared_ptr<Vector> E) {
     fprintf(outfile," Coord      Energy(-)        Energy(+)        Force\n");
     for (int i=0; i<Nsalc; ++i) {
       cnt += 2;
-      fprintf(outfile,"%5d %17.10lf%17.10lf%17.10lf\n", i, E->get(0,cnt), E->get(0,cnt+1), g_q[i]);
+      fprintf(outfile,"%5d %17.10lf%17.10lf%17.10lf\n",
+              i,
+              (double)extract<double>(E[cnt]),
+              (double)extract<double>(E[cnt+1]),
+              g_q[i]);
     }
     fprintf(outfile,"\n");
   }
@@ -67,8 +81,13 @@ PsiReturnType fd_grad_1_0(Options &options, boost::shared_ptr<Vector> E) {
       " Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
     for (int i=0; i<Nsalc; ++i) {
       cnt += 4;
-      fprintf(outfile,"%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n", i, E->get(0,cnt),
-        E->get(0,cnt+1), E->get(0,cnt+2), E->get(0,cnt+3), g_q[i]);
+      fprintf(outfile,"%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
+              i,
+              (double)extract<double>(E[cnt]),
+              (double)extract<double>(E[cnt+1]),
+              (double)extract<double>(E[cnt+2]),
+              (double)extract<double>(E[cnt+3]),
+              g_q[i]);
     }
     fprintf(outfile,"\n");
   }

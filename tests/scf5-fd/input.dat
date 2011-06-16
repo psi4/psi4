@@ -33,13 +33,12 @@ while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
     # generate geometry list for finite differences (undisplaced geometry is last)
     geoms = fd_geoms_1_0()
     #initialize vector of correct length
-    if cycle == 0:
-        E = PsiMod.Vector(len(geoms))
+    E = list()
     # compute energy for each geometry
     for i in range(len(geoms)):
         h2o.set_geometry(geoms[i])
-        E.set(0, i, energy('scf'))
-    thisenergy = E.get(0,len(geoms)-1)
+        E.append(energy('scf'))
+    thisenergy = E[-1]
     # pass energies to function to compute gradient
     fd_grad_1_0(E)
     #take optimization step

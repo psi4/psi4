@@ -60,7 +60,7 @@ namespace psi {
     //namespace detci     { PsiReturnType detci(Options&);     }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
-      PsiReturnType fd_grad_1_0(Options &, boost::shared_ptr<Vector>);
+      PsiReturnType fd_grad_1_0(Options &, const boost::python::list&);
     }
 
     extern int read_options(const std::string &name, Options & options, bool suppress_printing = false);
@@ -128,7 +128,7 @@ std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_1_0()
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
-PsiReturnType py_psi_fd_grad_1_0(boost::shared_ptr<Vector> energies)
+PsiReturnType py_psi_fd_grad_1_0(const boost::python::list& energies)
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_grad_1_0(Process::environment.options, energies);
