@@ -186,6 +186,21 @@ protected:
     // History of omegas, with <omega, kIP, IP, status>
     std::vector<boost::tuple<double,double,double,std::string > > omega_trace_;
 
+    // Used in modified Regula Falsi
+    int left_;
+    int right_;
+
+    // Used in Brent's method
+    double omega_a_;
+    double omega_b_;
+    double omega_c_;
+    double omega_d_;
+    double delta_a_;
+    double delta_b_;
+    double delta_c_;
+
+    bool mflag_;
+
     // Left and right omegas
     double omega_l_;
     double omega_r_;
