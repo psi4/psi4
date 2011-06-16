@@ -120,7 +120,7 @@ fd_grad_1_0(Options &options, const boost::python::list& E)
   // energy in globals["CURRENT ENERGY"], since we did that one last.  Clever, huh.
 
   // Write out the geometry and gradient to file 11
-  SimpleMatrix gradient_matrix("F-D gradient", Natom, 3);
+  Matrix gradient_matrix("F-D gradient", Natom, 3);
 
   // Convert gradient to un-massweighted cartesians
   for (int a=0; a<Natom; ++a)
@@ -129,6 +129,9 @@ fd_grad_1_0(Options &options, const boost::python::list& E)
 
   GradientWriter grad(mol, gradient_matrix);
   grad.write("psi.file11.dat");
+
+  SharedMatrix sgradient(gradient_matrix.clone());
+  Process::environment.reference_wavefunction()->set_gradient(sgradient);
 
   free(g_cart);
 

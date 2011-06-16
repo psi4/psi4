@@ -18,6 +18,7 @@
 #include <psi4-dec.h>
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
+#include <libmints/wavefunction.h>
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
 #include <qchem.h> // typedefs INTEGER
@@ -90,6 +91,39 @@ void MOLECULE::read_geom_grad(void) {
   int nallatom = g_natom();
 
 #if defined(OPTKING_PACKAGE_PSI)
+
+  using namespace psi;
+  SharedMatrix pgradient = Process::environment.reference_wavefunction()->gradient();
+  Matrix& gradient = *pgradient.get();
+
+  boost::shared_ptr<Molecule> mol = Process::environment.reference_wavefunction()->molecule();
+  Matrix geometry = mol->geometry();
+
+  energy = Process::environment.reference_wavefunction()->reference_energy();
+
+  int atom =0;
+  for (int f=0; f<nfrag; ++f) {
+      double *Z = fragments[f]->g_Z_pointer();
+      double **geom = fragments[f]->g_geom_pointer();
+      double **grad = fragments[f]->g_grad_pointer();
+
+      for (int i=0; i<fragments[f]->g_natom(); ++i) {
+          Z[i] = mol->Z(atom);
+
+          geom[i][0] = geometry(atom, 0);
+          geom[i][1] = geometry(atom, 1);
+          geom[i][2] = geometry(atom, 2);
+
+          grad[i][0] = gradient(atom, 0);
+          grad[i][1] = gradient(atom, 1);
+          grad[i][2] = gradient(atom, 2);
+
+          atom++;
+      }
+  }
+
+
+#if 0
   // for now read from file 11
   std::ifstream fin;
 
@@ -161,6 +195,7 @@ void MOLECULE::read_geom_grad(void) {
     fprintf(outfile,"Error reading molecular geometry and gradient\n");
     throw(INTCO_EXCEPT("Error reading molecular geometry and gradient"));
   }
+#endif
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
@@ -171,7 +206,7 @@ void MOLECULE::read_geom_grad(void) {
   ::get_carts(NULL, &QX, &QZ, &QNATOMS, Qnoghosts);
 
   if (QNATOMS != g_natom()) {
-    fprintf(outfile,"read_geom_grad() QNATOMS=%d\n", QNATOMS); 
+    fprintf(outfile,"read_geom_grad() QNATOMS=%d\n", QNATOMS);
     //QCrash("Number of atoms read inconsistent with REM variable.");
   }
   //fprintf(outfile, "QX read with get_carts()\n");
@@ -229,7 +264,7 @@ void MOLECULE::symmetrize_geom(void) {
   psi::Process::environment.molecule()->update_geometry();
   free_matrix(geom_2D);
 
-  psi::SimpleMatrix geom = psi::Process::environment.molecule()->geometry();
+  psi::Matrix geom = psi::Process::environment.molecule()->geometry();
   geom_2D = geom.pointer(); // don't free; it's shared
   set_geom_array(geom_2D[0]);
 

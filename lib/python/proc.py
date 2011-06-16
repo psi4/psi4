@@ -10,12 +10,11 @@ def run_dcft(**kwargs):
 
     if not molecule:
       raise ValueNotSet("no molecule found")
-   
+
     PsiMod.scf()
     return PsiMod.dcft()
 
 def run_scf(name, **kwargs):
-
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
         molecule = kwargs.pop('molecule')
@@ -25,6 +24,20 @@ def run_scf(name, **kwargs):
 
     molecule.update_geometry()
     return scf_helper(name, **kwargs)
+
+def run_scf_gradient(name, **kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+
+    scf_helper(name, **kwargs)
+    PsiMod.deriv()
+
 
 # SCF helper chooses whether to cast up or just run SCF
 # with a standard guess. This preserves previous SCF options
@@ -66,11 +79,11 @@ def scf_helper(name, **kwargs):
     if (cast):
 
         if (cast == True):
-            custom = 'Default' 
+            custom = 'Default'
             guessbasis = '3-21G'
         else:
             custom = 'Custom'
-            guessbasis = cast     
+            guessbasis = cast
 
         # Hack to ensure cartesian or pure are used throughout
         # This touches the option, as if the user set it
@@ -81,7 +94,7 @@ def scf_helper(name, **kwargs):
         namespace = PsiMod.IO.get_default_namespace()
         PsiMod.IO.set_default_namespace((namespace + ".guess"))
 
-        # Are we in a DF algorithm here? 
+        # Are we in a DF algorithm here?
         scf_type = PsiMod.get_option('SCF_TYPE')
         guess_type = PsiMod.get_option('GUESS')
         ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
@@ -122,7 +135,7 @@ def scf_helper(name, **kwargs):
 
         # Do the full scf
         e_scf = PsiMod.scf(precallback, postcallback)
-        
+
         PsiMod.set_local_option('SCF','GUESS',guess_type)
 
     else:
@@ -250,12 +263,12 @@ def run_mp2drpa(name, **kwargs):
     PsiMod.print_out("\n")
     banner("MP2/dRPA Analysis")
     PsiMod.print_out("\n")
-   
-    PsiMod.print_out('  Reference Energy               %20.14f\n' % (e_scf)) 
-    PsiMod.print_out('  MP2 Correlation Energy         %20.14f\n' % (e_dfmp2 - e_scf)) 
-    PsiMod.print_out('  MP2 Total Energy               %20.14f\n' % (e_dfmp2)) 
-    PsiMod.print_out('  Scaled dRPA/MP2J Delta Energy  %20.14f\n' % (e_delta)) 
-    PsiMod.print_out('  Total MP2/dRPA Energy          %20.14f\n\n' % (e_dfmp2 + e_delta)) 
+
+    PsiMod.print_out('  Reference Energy               %20.14f\n' % (e_scf))
+    PsiMod.print_out('  MP2 Correlation Energy         %20.14f\n' % (e_dfmp2 - e_scf))
+    PsiMod.print_out('  MP2 Total Energy               %20.14f\n' % (e_dfmp2))
+    PsiMod.print_out('  Scaled dRPA/MP2J Delta Energy  %20.14f\n' % (e_delta))
+    PsiMod.print_out('  Total MP2/dRPA Energy          %20.14f\n\n' % (e_dfmp2 + e_delta))
 
     return e_dfmp2 + e_delta
 
@@ -344,7 +357,7 @@ def run_mp2c(name, **kwargs):
     PsiMod.set_variable("MP2C DIMER MP2 ENERGY",e_dimer_mp2)
     PsiMod.set_variable("MP2C MONOMER A MP2 ENERGY",e_monomerA_mp2)
     PsiMod.set_variable("MP2C MONOMER B MP2 ENERGY",e_monomerB_mp2)
-    
+
     e_sapt = PsiMod.sapt()
     return e_sapt
 
