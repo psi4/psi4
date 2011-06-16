@@ -128,6 +128,9 @@ protected:
     std::vector<void*> precallbacks_;
     std::vector<void*> postcallbacks_;
 
+    /// If a gradient is available it will be here:
+    SharedMatrix gradient_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -158,7 +161,7 @@ public:
     /// Returns the SO basis set object that pertains to this wavefunction.
     boost::shared_ptr<SOBasisSet> sobasisset() const;
     /// Returns the MatrixFactory object that pertains to this wavefunction
-    boost::shared_ptr<MatrixFactory> matrix_factory() const; 
+    boost::shared_ptr<MatrixFactory> matrix_factory() const;
     /// Returns the reference wavefunction
     boost::shared_ptr<Wavefunction> reference_wavefunction() const;
     /// Returns the reference wavefunction
@@ -218,6 +221,11 @@ public:
     void call_preiteration_callbacks();
     /// Call post iteration callbacks
     void call_postiteration_callbacks();
+
+    /// Returns the gradient
+    SharedMatrix gradient() const { return gradient_; }
+    /// Set the gradient for the wavefunction
+    void set_gradient(SharedMatrix& grad) { gradient_ = grad; }
 };
 
 }

@@ -422,7 +422,7 @@ object py_psi_get_option(const string& key)
 
     if (data.type() == "string")
         return str(data.to_string());
-    else if (data.type() == "boolean" || data.type() == "integer")
+    else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());
@@ -437,7 +437,7 @@ object py_psi_get_global_option(const string& key)
 
     if (data.type() == "string")
         return str(data.to_string());
-    else if (data.type() == "boolean" || data.type() == "integer")
+    else if (data.type() == "boolean" || data.type() == "int")
         return object(data.to_integer());
     else if (data.type() == "double")
         return object(data.to_double());

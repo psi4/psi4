@@ -605,6 +605,25 @@ void Matrix::print(FILE *out, const char *extra) const
     fflush(out);
 }
 
+void Matrix::print_atom_vector(FILE *out)
+{
+    int i;
+
+    if (name_.length()) {
+        fprintf(out,"\n  -%s:\n", name_.c_str());
+    }
+    fprintf(out,"     Atom            X                  Y                   Z\n");
+    fprintf(out,"    ------   -----------------  -----------------  -----------------\n");
+
+    for(i=0;i<nrow();i++) {
+        fprintf(out,"    %4d   ",i+1);
+        fprintf(out,"  %17.12lf  %17.12lf  %17.12lf", matrix_[0][i][0], matrix_[0][i][1], matrix_[0][i][2]);
+        fprintf(out,"\n");
+    }
+    fprintf(out,"\n");
+}
+
+
 void Matrix::eivprint(const Vector * const values, FILE *out)
 {
     if (symmetry_)

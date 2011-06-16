@@ -1,4 +1,3 @@
-
 SRCDIR = @srcdir@
 
 include ../MakeVars

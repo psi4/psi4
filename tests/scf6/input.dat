@@ -1,36 +1,24 @@
-#! SCF DZ allene geometry optimzation, with Cartesian input
+#! Database calculation, so no molecule section in input file. Portions of the full
+#! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
-nucenergy =   59.2532646680161                                                                 #TEST
-refenergy = -115.8302823663                                                                    #TEST
+refS22mad = 2.105857738420                                                 #TEST
+refNBCmad = 0.117344794875                                                 #TEST
 
-molecule allene {
-  H -2.0  0.0  1.0
-  H -2.0  0.0 -1.0
-  C -1.5  0.0  0.0
-  C  0.0  0.0  0.0
-  C  1.5  0.0  0.0
-  H  2.0  1.0  0.0
-  H  2.0 -1.0  0.0
+set globals {
+    BASIS sto-3g
+    RI_BASIS_SCF  cc-pVDZ-JKFIT
+    RI_BASIS_SAPT cc-pVDZ-RI
+    RI_BASIS_MP2  cc-pVDZ-RI
+    REFERENCE RHF
+    SCF_TYPE DF
+    PRINT 1
+    CONVERGENCE 11
+    JOBTYPE SP
+    GUESS CORE
 }
 
-set global {
-  basis DZ
-  e_converge 10
-  d_converge 10
-}
+S22mad = database('sapt0','S22',subset=[2,8])
+compare_values(refS22mad, S22mad, 5, "S22 subset mean absolute deviation")  #TEST
+NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')
+compare_values(refNBCmad, NBCmad, 5, "NBC subset mean absolute deviation")  #TEST
 
-# Hack variables
-cycle = 0
-returnValue = 0
-thisenergy = 0.0
-
-while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
-    thisenergy = energy('scf')
-    deriv()
-    returnValue = optking()
-    cycle = cycle + 1
-
-compare_values(nucenergy, allene.nuclear_repulsion_energy(), 2, "Nuclear repulsion energy")    #TEST
-compare_values(refenergy, thisenergy, 2, "Reference energy")                                   #TEST
-
-clean()

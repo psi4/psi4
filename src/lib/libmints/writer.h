@@ -15,10 +15,10 @@ class Wavefunction;
 class GradientWriter
 {
     boost::shared_ptr<Molecule> molecule_;
-    const SimpleMatrix& gradient_;
+    const Matrix& gradient_;
 
 public:
-    GradientWriter(boost::shared_ptr<Molecule> mol, const SimpleMatrix& grad);
+    GradientWriter(boost::shared_ptr<Molecule> mol, const Matrix& grad);
 
     void write(const std::string& filename);
 };

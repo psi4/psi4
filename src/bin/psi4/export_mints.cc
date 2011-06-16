@@ -358,10 +358,11 @@ void export_mints()
             def("add_preiteration_callback", &Wavefunction::add_preiteration_callback).
             def("add_postiteration_callback", &Wavefunction::add_postiteration_callback).
             def("basisset", &Wavefunction::basisset).
-            def("sobasisset", &Wavefunction::sobasisset);
+            def("sobasisset", &Wavefunction::sobasisset).
+            def("energy", &Wavefunction::reference_energy);
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
-    class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF> >("RHF", no_init);
+    class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", no_init);
 
     class_<MoldenWriter, boost::shared_ptr<MoldenWriter> >("MoldenWriter", no_init).
             def(init<boost::shared_ptr<Wavefunction> >()).

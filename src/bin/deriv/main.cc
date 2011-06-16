@@ -131,20 +131,20 @@ PsiReturnType deriv(Options & options)
     SharedSimpleMatrix G;
 
     Deriv deriv(ref_rhf, factory, basisset);
-    SharedSimpleMatrix WdS(deriv.overlap());
-    SharedSimpleMatrix QdH(deriv.one_electron());
-    SharedSimpleMatrix tb(deriv.two_body());
+    SharedMatrix WdS(deriv.overlap());
+    SharedMatrix QdH(deriv.one_electron());
+    SharedMatrix tb(deriv.two_body());
     deriv.compute(Q, G, W);
 
-    SimpleMatrix enuc = basisset->molecule()->nuclear_repulsion_energy_deriv1();
+    Matrix enuc = basisset->molecule()->nuclear_repulsion_energy_deriv1();
 
     enuc.print_atom_vector();
     QdH->print_atom_vector();
     WdS->print_atom_vector();
     tb->print_atom_vector();
 
-    SimpleMatrix scf_grad("SCF gradient", basisset->molecule()->natom(), 3);
-    SimpleMatrix temp("Temp SCF gradient", basisset->molecule()->natom(), 3);
+    SharedMatrix scf_grad(new Matrix("SCF gradient", basisset->molecule()->natom(), 3));
+    Matrix temp("Temp SCF gradient", basisset->molecule()->natom(), 3);
     temp.add(&enuc);
     temp.add(QdH);
     temp.add(WdS);
@@ -163,9 +163,9 @@ PsiReturnType deriv(Options & options)
 
             SymmetryOperation so = ct.symm_operation(g);
 
-            scf_grad.add(atom, 0, so(0, 0) * temp.get(Gatom, 0) / ct.order());
-            scf_grad.add(atom, 1, so(1, 1) * temp.get(Gatom, 1) / ct.order());
-            scf_grad.add(atom, 2, so(2, 2) * temp.get(Gatom, 2) / ct.order());
+            scf_grad->add(atom, 0, so(0, 0) * temp.get(Gatom, 0) / ct.order());
+            scf_grad->add(atom, 1, so(1, 1) * temp.get(Gatom, 1) / ct.order());
+            scf_grad->add(atom, 2, so(2, 2) * temp.get(Gatom, 2) / ct.order());
         }
     }
 
@@ -173,10 +173,12 @@ PsiReturnType deriv(Options & options)
     delete_atom_map(atom_map, basisset->molecule());
 
     // Print the atom vector
-    scf_grad.print_atom_vector();
+    scf_grad->print_atom_vector();
 
-    GradientWriter grad(basisset->molecule(), scf_grad);
+    GradientWriter grad(basisset->molecule(), *scf_grad.get());
     grad.write("psi.file11.dat");
+
+    Process::environment.reference_wavefunction()->set_gradient(scf_grad);
 
 //    SimpleMatrix enuc2 = basis->molecule()->nuclear_repulsion_energy_deriv2();
 //    enuc2.print();
