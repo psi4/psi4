@@ -107,7 +107,7 @@ fd_grad_1_0(Options &options, const boost::python::list& E)
 
   }
 
-  // compute gradient in ordinary cartesians
+  // compute gradient in mass-weighted (non-SALC) cartesians
   double *g_cart = init_array(3*Natom);
 
   // B^t g_q^t = g_x^t -> g_q B = g_x
@@ -122,9 +122,10 @@ fd_grad_1_0(Options &options, const boost::python::list& E)
   // Write out the geometry and gradient to file 11
   SimpleMatrix gradient_matrix("F-D gradient", Natom, 3);
 
+  // Convert gradient to un-massweighted cartesians
   for (int a=0; a<Natom; ++a)
     for (int xyz=0; xyz<3; ++xyz)
-        gradient_matrix.set(a, xyz, g_cart[3*a+xyz] * sqrt(mol->mass(a)));
+      gradient_matrix.set(a, xyz, g_cart[3*a+xyz] * sqrt(mol->mass(a)));
 
   GradientWriter grad(mol, gradient_matrix);
   grad.write("psi.file11.dat");
