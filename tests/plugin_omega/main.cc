@@ -29,7 +29,7 @@ read_options(std::string name, Options &options)
         options.add_str("OMEGA_PROCEDURE", "IP", "IP");
         /*- The Omega optimization root-finding algorithm
             -*/
-        options.add_str("OMEGA_ROOT_ALGORITHM", "BISECTION", "BISECTION REGULA_FALSI");
+        options.add_str("OMEGA_ROOT_ALGORITHM", "REGULA_FALSI3", "BISECTION REGULA_FALSI REGULA_FALSI2 REGULA_FALSI3 BRENT");
         /*- Maximum number of omega iterations to perform 
             -*/
         options.add_int("OMEGA_MAXITER", 30);

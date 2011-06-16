@@ -94,6 +94,8 @@ void OmegaKS::run_procedure()
 
     // Burn-in the wavefunctions
     fprintf(outfile, "  ==> Burn-In Procedure <==\n\n");
+    fprintf(outfile, "  *** Step %4d: Burn-In Step ***\n\n", 1);
+
     for (std::map<std::string, boost::shared_ptr<OmegaWavefunction> >::iterator it = wfns_.begin(); it != wfns_.end(); it++) {
 
         std::string name = (*it).first;
@@ -136,7 +138,7 @@ void OmegaKS::run_procedure()
     fprintf(outfile, "  ==> Omega Optimization Procedure <==\n\n"); 
 
     bool omega_converged = false;
-    for (int omega_iter = 0; omega_iter < options_.get_int("OMEGA_MAXITER"); omega_iter++) {
+    for (int omega_iter = 1; omega_iter <= options_.get_int("OMEGA_MAXITER"); omega_iter++) {
 
         omega_step(omega_iter);
 
@@ -447,7 +449,7 @@ void OmegaIPKS::populate()
 }
 void OmegaIPKS::omega_step(int iteration)
 {
-    if (iteration == 0) {
+    if (iteration == 1) {
         double old_omega = functional_->getOmega();
         double kIP = wfns_["N"]->koopmansIP();
         double IP = wfns_["N-1"]->E() - wfns_["N"]->E();    
@@ -478,7 +480,7 @@ void OmegaIPKS::omega_step(int iteration)
         df_->set_omega(new_omega);
         ks_->set_omega(new_omega);
    
-        fprintf(outfile, "  *** Bracketing Step ***\n\n");
+        fprintf(outfile, "  *** Step %4d: Bracketing Step ***\n\n", iteration + 1);
         fprintf(outfile, "    Old Omega:    %15.8E\n", old_omega); 
         fprintf(outfile, "    Old kIP:      %15.8E\n", kIP); 
         fprintf(outfile, "    Old IP:       %15.8E\n", IP); 
@@ -493,15 +495,108 @@ void OmegaIPKS::omega_step(int iteration)
     double new_omega = 0.0;
     
     if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI") {
-        fprintf(outfile, "  *** Regula-Falsi Step ***\n\n");
-        if (fabs(delta_l_ - delta_r_) > 1.0E-12) {
+        fprintf(outfile, "  *** Step %4d: Regula Falsi Step ***\n\n", iteration + 1);
+        if (fabs(delta_l_ - delta_r_) > 1.0E-14) {
             new_omega = -delta_l_ * (omega_r_ - omega_l_) / (delta_r_ - delta_l_) + omega_l_;
         } else { 
-            new_omega = omega_l_;
+            new_omega = 0.5 * (omega_l_ + omega_r_); 
         }
     } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "BISECTION") {
-        fprintf(outfile, "  *** Bisection Step ***\n\n");
+        fprintf(outfile, "  *** Step %4d: Bisection Step ***\n\n", iteration + 1);
         new_omega = 0.5 * (omega_l_ + omega_r_); 
+    } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "BRENT") {
+        fprintf(outfile, "  *** Step %4d: Brent's Method Step ***\n\n", iteration + 1);
+
+        // Assing temps so that larger absolute delta is on the left
+        if (fabs(delta_l_) > fabs(delta_r_)) {
+            omega_a_ = omega_r_;
+            omega_b_ = omega_l_;
+            delta_a_ = delta_r_;
+            delta_b_ = delta_l_;
+        } else { 
+            omega_b_ = omega_r_;
+            omega_a_ = omega_l_;
+            delta_b_ = delta_r_;
+            delta_a_ = delta_l_;
+        }
+
+        // First iteration
+        if (omega_c_ == -1.0) {
+            omega_c_ = omega_a_;
+            delta_c_ = delta_a_;
+        }
+
+        // Quadratic interpolation (if reasonably well-conditioned)
+        if (fabs(delta_a_ - delta_b_) > 1.0E-14 &&fabs(delta_a_ - delta_b_) > 1.0E-14 &&
+            fabs(delta_a_ - delta_b_) > 1.0E-14) {
+            new_omega = omega_a_ * delta_b_ * delta_c_ / ((delta_a_ - delta_b_) * (delta_a_ - delta_c_)) +
+                        omega_b_ * delta_a_ * delta_c_ / ((delta_b_ - delta_a_) * (delta_b_ - delta_c_)) +
+                        omega_c_ * delta_b_ * delta_a_ / ((delta_c_ - delta_a_) * (delta_c_ - delta_b_));
+        } else if (fabs(delta_a_ - delta_b_) > 1.0E-14) {
+        // Otherwise linear interpolation
+            new_omega = omega_b_ - delta_b_ * (omega_b_ - omega_a_) / (delta_b_ - delta_a_);    
+        } else {
+        // Otherwise give up
+            new_omega = omega_a_;
+        }
+
+        // check if we gotta bisect
+        bool bisection_required = false;
+
+        // Condition 1: s \in [(3a+b)/4, b]
+        if ((3.0 * omega_a_ + omega_b_) / 4.0 < omega_b_) {
+            if ((3.0 * omega_a_ + omega_b_) / 4.0 > new_omega ||
+                omega_b_ < new_omega)
+                bisection_required = true;    
+        } else {
+            if ((3.0 * omega_a_ + omega_b_) / 4.0 < new_omega ||
+                omega_b_ > new_omega)
+
+                bisection_required = true;    
+        }
+
+        if (mflag_ && fabs(new_omega - omega_b_) >= 0.5 * fabs(omega_b_ - omega_c_))
+            bisection_required = true;
+        
+        if (!mflag_ && fabs(new_omega - omega_b_) >= 0.5 * fabs(omega_b_ - omega_d_))
+            bisection_required = true;
+        
+
+        if (bisection_required) {
+            new_omega = 0.5 * (omega_a_ + omega_b_); 
+            mflag_ = true;
+        } else {
+            mflag_ = false;
+        }
+
+        // Update the old guys
+        omega_d_ = omega_c_;
+        omega_c_ = omega_b_;
+    } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI2") {
+        fprintf(outfile, "  *** Step %4d: Regula Falsi/Bisection Step ***\n\n", iteration + 1);
+        
+        // Regula Falsi
+        if (left_ < 2 && right_ < 2 && fabs(delta_l_ - delta_r_) > 1.0E-14) {  
+            new_omega = omega_l_ - delta_l_ * (omega_r_ - omega_l_) / (delta_r_ - delta_l_);    
+        } else {
+        // Bisection
+            new_omega = 0.5 * (omega_l_ + omega_r_); 
+            left_ = right_ = 0;
+        }
+
+    } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI3") {
+        fprintf(outfile, "  *** Step %4d: Regula Falsi 3 Step ***\n\n", iteration + 1);
+        
+        // Regula Falsi
+        if (fabs(delta_l_ - delta_r_) > 1.0E-14) {  
+            if (left_ > 1) 
+                delta_l_ *= 0.5;
+            if (right_ > 1) 
+                delta_r_ *= 0.5;
+            new_omega = omega_l_ - delta_l_ * (omega_r_ - omega_l_) / (delta_r_ - delta_l_);    
+        } else {    
+            new_omega = 0.5 * (omega_l_ + omega_r_); 
+        }
     }
 
     df_->set_omega(new_omega);
@@ -548,6 +643,14 @@ bool OmegaIPKS::is_omega_converged()
                 delta_l_ = new_delta;
             }
 
+            // Brent's method special stuff
+            omega_a_ = omega_b_ = omega_c_ = omega_d_ = -1.0;
+            omega_a_ = omega_b_ = omega_c_ = -1.0;
+            mflag_ = true;
+
+            left_ = 0;
+            right_ = 0;
+
             bracketed_ = true;
         }
         return false;
@@ -556,18 +659,28 @@ bool OmegaIPKS::is_omega_converged()
     if (new_delta < 0.0) {
         omega_l_ = new_omega;
         delta_l_ = new_delta;
+        left_ = 0;
+        right_++;
     } else {
         omega_r_ = new_omega;
         delta_r_ = new_delta;
+        left_++;
+        right_ = 0;
     }
 
     if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI") {
         omega_trace_.push_back(make_tuple(new_omega, new_kIP, new_IP, "Regula-Falsi Step"));        
+    } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI2") {
+        omega_trace_.push_back(make_tuple(new_omega, new_kIP, new_IP, "Regula-Falsi2 Step"));        
+    } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "REGULA_FALSI3") {
+        omega_trace_.push_back(make_tuple(new_omega, new_kIP, new_IP, "Regula-Falsi3 Step"));        
     } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "BISECTION") {
         omega_trace_.push_back(make_tuple(new_omega, new_kIP, new_IP, "Bisection Step"));        
+    } else if (options_.get_str("OMEGA_ROOT_ALGORITHM") == "BRENT") {
+        omega_trace_.push_back(make_tuple(new_omega, new_kIP, new_IP, "Brent's Method Step"));        
     }
 
-    double w_converge = pow(10.0, - options_.get_int("OMEGA_CONVERGE"));
+    double w_converge = pow(10.0, - (double) options_.get_int("OMEGA_CONVERGE"));
     return (fabs(omega_l_ - omega_r_) < w_converge); 
 }    
 
