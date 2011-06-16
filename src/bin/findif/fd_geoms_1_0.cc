@@ -60,6 +60,8 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
   Matrix ref_geom_temp = mol->geometry();
   SharedMatrix ref_geom(ref_geom_temp.clone());
 
+  ref_geom->set_name("Reference geometry");
+
   // to be returned and converted into "matrix_vector" list in python
   std::vector< boost::shared_ptr<Matrix> > disp_geoms;
 
@@ -67,11 +69,11 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
     for (int i=0; i<Nsalc; ++i) {
       // - displacement
       boost::shared_ptr<Matrix> geom_m(ref_geom->clone());
-      geom_m->set_name("Displacement -" + to_string(i+1));
+      geom_m->set_name("Displacement - SALC #" + to_string(i+1));
 
       // + displacement
       boost::shared_ptr<Matrix> geom_p(ref_geom->clone());
-      geom_p->set_name("Displacement +" + to_string(i+1));
+      geom_p->set_name("Displacement + SALC #" + to_string(i+1));
 
       int nc = cdsalc[i].ncomponent();
       //fprintf(outfile, "Ncomponent of salc %d is %d\n", i, nc);
@@ -92,16 +94,16 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
   else if (pts == 5) {
     for (int i=0; i<Nsalc; ++i) {
       boost::shared_ptr<Matrix> geom_m2(ref_geom->clone());
-      geom_m2->set_name("Displacement -" + to_string(i+1) + " * 2");
+      geom_m2->set_name("Displacement - SALC #" + to_string(i+1) + " * 2");
 
       boost::shared_ptr<Matrix> geom_m1(ref_geom->clone());
-      geom_m1->set_name("Displacement -" + to_string(i+1));
+      geom_m1->set_name("Displacement - SALC #" + to_string(i+1));
 
       boost::shared_ptr<Matrix> geom_p1(ref_geom->clone());
-      geom_p1->set_name("Displacement +" + to_string(i+1));
+      geom_p1->set_name("Displacement + SALC #" + to_string(i+1));
 
       boost::shared_ptr<Matrix> geom_p2(ref_geom->clone());
-      geom_p2->set_name("Displacement +" + to_string(i+1) + " * 2");
+      geom_p2->set_name("Displacement + SALC #" + to_string(i+1) + " * 2");
 
       int nc = cdsalc[i].ncomponent();
 
