@@ -1582,7 +1582,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Number of points for finite-differences (3 or 5) -*/
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
-      options.add_double("DISP_SIZE", 0.010);
+      options.add_double("DISP_SIZE", 0.005);
   }
   return true;
 }
