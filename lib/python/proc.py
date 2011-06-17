@@ -164,7 +164,7 @@ def run_ccsd(name, **kwargs):
 
     PsiMod.transqt2()
     PsiMod.ccsort()
-    PsiMod.ccenergy()
+    return PsiMod.ccenergy()
 
 def run_ccsd_t(name, **kwargs):
 
