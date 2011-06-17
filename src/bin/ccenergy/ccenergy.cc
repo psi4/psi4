@@ -116,6 +116,10 @@ CCEnergyWavefunction::~CCEnergyWavefunction()
 
 void CCEnergyWavefunction::init()
 {
+    // Wavefunction creates a chkpt object for your, but we're not going to use it.
+    // Destroy it. Otherwise we will see a "file already open" error.
+    chkpt_.reset();
+
     nso_        = reference_wavefunction_->nso();
     nirrep_     = reference_wavefunction_->nirrep();
     nmo_        = reference_wavefunction_->nmo();
@@ -131,6 +135,7 @@ void CCEnergyWavefunction::init()
 
 double CCEnergyWavefunction::compute_energy()
 {
+    energy_ = 0.0;
     if (psi::ccenergy::ccenergy(options_) == Success) {
         // Get the total energy of the CCSD wavefunction
         energy_ = Process::environment.globals["CURRENT ENERGY"];
