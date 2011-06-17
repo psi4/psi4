@@ -208,8 +208,9 @@ double py_psi_ccenergy()
                                                Process::environment.reference_wavefunction(),
                                                Process::environment.options)
                                            );
-    double energy = ccwave->compute_energy();
     Process::environment.set_reference_wavefunction(ccwave);
+
+    double energy = ccwave->compute_energy();
     return energy;
 
 //    py_psi_prepare_options_for_module("CCENERGY");
