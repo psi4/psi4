@@ -189,6 +189,9 @@ boost::shared_ptr<Matrix> OmegaDF::K(boost::shared_ptr<Matrix> C, int nocc)
     int nmo = C->colspi()[0];   
  
     boost::shared_ptr<Matrix> K(new Matrix("K",nso,nso));
+
+    if (nocc == 0) return K;
+
     boost::shared_ptr<Matrix> W(new Matrix("W",naux, nocc * (ULI) nso));
     boost::shared_ptr<Matrix> Q(new Matrix("Q",naux, nocc * (ULI) nso));
     boost::shared_ptr<Matrix> T(new Matrix("T",nso, nocc));
@@ -226,6 +229,9 @@ boost::shared_ptr<Matrix> OmegaDF::wK(boost::shared_ptr<Matrix> C, int nocc)
     int nmo = C->colspi()[0];   
  
     boost::shared_ptr<Matrix> K(new Matrix("wK",nso,nso));
+
+    if (nocc == 0) return K;
+
     boost::shared_ptr<Matrix> W(new Matrix("W",naux, nocc * (ULI) nso));
     boost::shared_ptr<Matrix> Q(new Matrix("Q",naux, nocc * (ULI) nso));
     boost::shared_ptr<Matrix> T(new Matrix("T",nso, nocc));
