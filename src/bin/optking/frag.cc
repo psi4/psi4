@@ -35,6 +35,7 @@ FRAG::FRAG(int natom_in, double *Z_in, double **geom_in) {
   grad = init_matrix(natom,3);
   connectivity = init_bool_matrix(natom,natom);
   mass = init_array(natom);
+  set_default_masses();
 }
 
 FRAG::FRAG(int natom_in) {
@@ -47,6 +48,7 @@ FRAG::FRAG(int natom_in) {
   grad = init_matrix(natom,3);
   connectivity = init_bool_matrix(natom,natom);
   mass = init_array(natom);
+  set_default_masses();
 }
 
 FRAG::~FRAG() {
