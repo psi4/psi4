@@ -334,6 +334,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DFT_FUNCTIONAL", "");
     /*- The DFT basis cutoff -*/
     options.add_double("DFT_BASIS_EPSILON", 0.0);
+    /*- The DFT Range-separation parameter (only used if changed by the user) -*/
+    options.add_double("DFT_OMEGA", 0.0);
 
     /*- Save a grid or not?  -*/
     options.add_bool("SAVE_CARTESIAN_GRID",false);
