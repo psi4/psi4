@@ -605,6 +605,8 @@ double* F12SquaredFundamental::values(int J, double T)
             }
         }
     }
+
+    return value_;
 }
 
 ////////
