@@ -496,12 +496,17 @@ void UKS::form_V()
         ntrue = block->getTruePoints();
 
         // Compute properties and basis points
+        timer_on("Properties");
         properties_->computeUKSProperties(block, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+        timer_off("Properties");
         nsigf = properties_->nSignificantFunctions();
 
         // Compute functional values and partials
+        timer_on("Functional");
         functional_->computeUKSFunctional(properties_);
+        timer_off("Functional");
 
+        timer_on("V");
         for (index = 0; index < ntrue; index++) {
             zk[index] *= w[index];
             v_rho_a[index] *= w[index];
@@ -688,6 +693,7 @@ void UKS::form_V()
                 if (m!=n)
                     Vb_->add(0, rel2abs[n], rel2abs[m], V_temp1b[n][m]);
             }
+        timer_off("V");
 
     } // End traverse over grid blocks
 
@@ -710,7 +716,9 @@ void UKS::form_V()
 }
 void UKS::form_G()
 {
+    timer_on("Form V");
     form_V();
+    timer_off("Form V");
     if (functional_->isRangeCorrected()) {
         Omega_Ka_Kb_Functor k_builder(functional_->getOmega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
         process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
