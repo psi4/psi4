@@ -422,7 +422,7 @@ void OmegaWavefunction::print_orbitals()
 double OmegaWavefunction::koopmansIP()
 {
     double ea = epsilon_a_->get(0, nalpha_ - 1);
-    double eb = (nbeta_ > 0 ? epsilon_b_->get(0, nbeta_ - 1) : 0.0);
+    double eb = (nbeta_ > 0 ? epsilon_b_->get(0, nbeta_ - 1) : ea);
 
     return - (ea > eb ? ea : eb);
 }
