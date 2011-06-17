@@ -371,6 +371,15 @@ bool MOLECULE::cartesian_H_to_internals(void) const {
   return success;
 }
 
+double *MOLECULE::g_masses(void) const {
+  double *u = init_array(g_natom());
+  int cnt = 0;
+  for (int f=0; f<fragments.size(); ++f)
+    for (int i=0; i<fragments[f]->g_natom(); ++i)
+      u[cnt++] = fragments[f]->g_mass(i);
+  return u;
+}
+
 // compute B matrix - leave rows for EFP coordinates empty
 double ** MOLECULE::compute_B(void) const {
   double **B, **B_frag, **B_inter;

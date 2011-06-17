@@ -174,6 +174,8 @@ class FRAG {
     intcos.push_back(i);
   }
 
+  double g_mass(int i) { return mass[i]; }
+
   // relating to frozen fragments
   bool is_frozen(void) const { return frozen; }
   void freeze(void)   { frozen = true; }
