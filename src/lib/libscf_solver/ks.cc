@@ -71,6 +71,11 @@ void KS::common_init()
         properties_->setToComputeKEDensity(true);
     }
     if (functional_->isRangeCorrected()) {
+        
+        if (options_["DFT_OMEGA"].has_changed()) {
+            functional_->setOmega(options_.get_double("DFT_OMEGA"));
+        }
+
         boost::shared_ptr<TwoBodyAOInt> ao_erf(fact->erf_eri(functional_->getOmega()));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(ao_erf, fact));
     }
