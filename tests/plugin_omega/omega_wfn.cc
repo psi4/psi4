@@ -315,9 +315,17 @@ void OmegaWavefunction::form_D()
     double** Cap = Ca_->pointer();
     double** Dbp = Db_->pointer();
     double** Cbp = Cb_->pointer();
-    
-    C_DGEMM('N','T',nso_,nso_,nalpha_,1.0,Cap[0],nmo_,Cap[0],nmo_,0.0,Dap[0],nso_); 
-    C_DGEMM('N','T',nso_,nso_,nbeta_,1.0,Cbp[0],nmo_,Cbp[0],nmo_,0.0,Dbp[0],nso_); 
+   
+    if (nalpha_ > 0) {
+        C_DGEMM('N','T',nso_,nso_,nalpha_,1.0,Cap[0],nmo_,Cap[0],nmo_,0.0,Dap[0],nso_); 
+    } else {
+        Da_->zero();
+    }
+    if (nbeta_ > 0) {
+        C_DGEMM('N','T',nso_,nso_,nbeta_,1.0,Cbp[0],nmo_,Cbp[0],nmo_,0.0,Dbp[0],nso_); 
+    } else {
+        Db_->zero();
+    }
 
     Dt_->copy(Da_);
     Dt_->add(Db_);
@@ -414,7 +422,7 @@ void OmegaWavefunction::print_orbitals()
 double OmegaWavefunction::koopmansIP()
 {
     double ea = epsilon_a_->get(0, nalpha_ - 1);
-    double eb = epsilon_b_->get(0, nbeta_ - 1);
+    double eb = (nbeta_ > 0 ? epsilon_b_->get(0, nbeta_ - 1) : 0.0);
 
     return - (ea > eb ? ea : eb);
 }
