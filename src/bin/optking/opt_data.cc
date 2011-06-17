@@ -470,7 +470,7 @@ bool OPT_DATA::previous_step_report(void) const {
   double Energy_ratio = (p_Opt_data->g_energy() - p_Opt_data->g_last_energy()) / g_last_DE_predicted();
 
   // Minimum search
-  if (Opt_params.rfo_root == 0 ) {
+  if (Opt_params.opt_type == OPT_PARAMS::MIN) {
     if (Energy_ratio < 0.0) {
       throw(BAD_STEP_EXCEPT("Energy has increased in a minimization."));
     }
