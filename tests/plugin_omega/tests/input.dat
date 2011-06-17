@@ -1,6 +1,7 @@
 molecule {
 0 1
-He
+H
+H 1 0.7
 symmetry c1
 }
 
@@ -15,9 +16,12 @@ set globals {
   dft_spherical_points 110
   dft_radial_points 50
   omega_procedure ip
+  #omega_guess default
   d_converge 5
   e_converge 7
+  debug 3
 }
+
 
 energy('scf')
 plugin("../plugin_omega.so")

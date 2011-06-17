@@ -147,6 +147,8 @@ protected:
     
     std::map<std::string, boost::shared_ptr<OmegaWavefunction> > wfns_;
 
+    double initial_omega_;
+
     void common_init();
     static boost::shared_ptr<Matrix> build_X(boost::shared_ptr<BasisSet> primary, double min_S);
     static boost::shared_ptr<Matrix> build_H(boost::shared_ptr<BasisSet> primary);
@@ -159,6 +161,7 @@ public:
     virtual void run_procedure();
 
     virtual void print_header() = 0;
+    virtual void guess_omega() = 0;
     virtual void form_H() = 0;
     virtual void form_X() = 0;
     virtual void form_DF() = 0;
@@ -236,6 +239,7 @@ public:
     virtual ~OmegaIPKS();
 
     void print_header();
+    void guess_omega();
     void form_H();
     void form_X();
     void form_DF();

@@ -76,6 +76,9 @@ void OmegaKS::run_procedure()
     // What are we doing?
     print_header();
 
+    // Pick a starting omega
+    guess_omega();
+
     // Form H
     form_H();
 
@@ -349,6 +352,7 @@ void OmegaIPKS::common_init()
         Fb_r_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
 
     }
+
 }
 void OmegaIPKS::print_header()
 {
@@ -360,6 +364,8 @@ void OmegaIPKS::print_header()
     fprintf(outfile, "                      %3d Threads, %6ld MiB Core\n", nthread_, memory_ / 1000000L);
     fprintf(outfile, "         ---------------------------------------------------------\n\n");
     
+    fprintf(outfile, " ==> Functional <==\n\n");
+    fprintf(outfile, "  %s\n\n", functional_->getName().c_str());
     fprintf(outfile, " ==> Geometry <==\n\n");
     molecule_->print();
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n\n", basisset_->molecule()->nuclear_repulsion_energy());
@@ -372,15 +378,154 @@ void OmegaIPKS::print_header()
     fflush(outfile);
 
 }
+void OmegaIPKS::guess_omega() 
+{
+
+    if (options_.get_str("OMEGA_GUESS") == "HOMO_SIZE") {
+
+        double alpha = options_.get_double("OMEGA_GUESS_A");
+        double beta  = options_.get_double("OMEGA_GUESS_B");
+
+        // HOMO extent
+        double Rext = 0.0;
+        double x,y,z,xx,yy,zz;
+        int nalpha = reference_->nalphapi()[0];
+        int nbeta = reference_->nbetapi()[0];
+        int nmo = reference_->nmo();
+        int nso = basisset_->nbf();
+
+        // Make integral generators
+        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
+        boost::shared_ptr<OneBodyAOInt> dipole(fact->ao_dipole());
+        boost::shared_ptr<OneBodyAOInt> quadrupole(fact->ao_quadrupole());
+
+        // Find the HOMO
+        int HOMO_index;
+        double** Cp;
+
+        if (nbeta > 0) {
+            double e_a = reference_->epsilon_a()->get(0, nalpha - 1);  
+            double e_b = reference_->epsilon_b()->get(0, nbeta - 1);  
+            if (e_a > e_b) {
+                HOMO_index = nalpha - 1;
+                Cp = reference_->Ca()->pointer();
+            } else {
+                HOMO_index = nbeta - 1;
+                Cp = reference_->Cb()->pointer();
+            }
+        } else {
+            HOMO_index = nalpha - 1;
+            Cp = reference_->Ca()->pointer();
+        }
+
+        // Build a temp for the half-transformed array
+        double* T = new double[nso];
+
+        // Get dipole integrals
+        std::vector<boost::shared_ptr<Matrix> > dipole_ints;
+        dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole X", nso, nso))); 
+        dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso))); 
+        dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso))); 
+        dipole->compute(dipole_ints);
+
+        if (debug_ > 2) {
+            for (int i = 0; i < dipole_ints.size(); i++) {
+                dipole_ints[i]->print();
+            }
+        }
+
+        double** Xp = dipole_ints[0]->pointer();
+        double** Yp = dipole_ints[1]->pointer();
+        double** Zp = dipole_ints[2]->pointer();
+
+        C_DGEMV('N', nso, nso, 1.0, Xp[0], nso, &Cp[0][HOMO_index], nmo, 0.0, T, 1);
+        x = -C_DDOT(nso, T, 1, &Cp[0][HOMO_index], nmo);
+    
+        C_DGEMV('N', nso, nso, 1.0, Yp[0], nso, &Cp[0][HOMO_index], nmo, 0.0, T, 1);
+        y = -C_DDOT(nso, T, 1, &Cp[0][HOMO_index], nmo);
+    
+        C_DGEMV('N', nso, nso, 1.0, Zp[0], nso, &Cp[0][HOMO_index], nmo, 0.0, T, 1);
+        z = -C_DDOT(nso, T, 1, &Cp[0][HOMO_index], nmo);
+
+        dipole_ints.clear();
+        
+        std::vector<boost::shared_ptr<Matrix> > quadrupole_ints;
+        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole XX", nso, nso))); 
+        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole XY", nso, nso))); 
+        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole XZ", nso, nso))); 
+        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole YY", nso, nso))); 
+        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole YZ", nso, nso))); 
+        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole ZZ", nso, nso))); 
+        quadrupole->compute(quadrupole_ints);
+
+        if (debug_ > 2) {
+            for (int i = 0; i < quadrupole_ints.size(); i++) {
+                quadrupole_ints[i]->print();
+            }
+        }
+
+        double** XXp = quadrupole_ints[0]->pointer();
+        double** YYp = quadrupole_ints[3]->pointer();
+        double** ZZp = quadrupole_ints[5]->pointer();
+
+        C_DGEMV('N', nso, nso, 1.0, XXp[0], nso, &Cp[0][HOMO_index], nmo, 0.0, T, 1);
+        xx = -C_DDOT(nso, T, 1, &Cp[0][HOMO_index], nmo);
+
+        C_DGEMV('N', nso, nso, 1.0, YYp[0], nso, &Cp[0][HOMO_index], nmo, 0.0, T, 1);
+        yy = -C_DDOT(nso, T, 1, &Cp[0][HOMO_index], nmo);
+
+        C_DGEMV('N', nso, nso, 1.0, ZZp[0], nso, &Cp[0][HOMO_index], nmo, 0.0, T, 1);
+        zz = -C_DDOT(nso, T, 1, &Cp[0][HOMO_index], nmo);
+
+        quadrupole_ints.clear();
+        
+        delete[] T;
+
+        double Sx2 = xx - x * x;
+        double Sy2 = yy - y * y;
+        double Sz2 = zz - z * z;
+
+        Rext = sqrt(Sx2 + Sy2 + Sz2); 
+
+        if (debug_) {
+            fprintf(outfile, "  <x> =  %24.14f\n", x);
+            fprintf(outfile, "  <y> =  %24.14f\n", y);
+            fprintf(outfile, "  <z> =  %24.14f\n", z);
+            fprintf(outfile, "  <xx> = %24.14f\n", xx);
+            fprintf(outfile, "  <yy> = %24.14f\n", yy);
+            fprintf(outfile, "  <zz> = %24.14f\n", zz);
+            fprintf(outfile, "  Sx^2 = %24.14f\n", Sx2);
+            fprintf(outfile, "  Sy^2 = %24.14f\n", Sy2);
+            fprintf(outfile, "  Sz^2 = %24.14f\n", Sz2);
+            fprintf(outfile, "  <R> =  %24.14f\n", Rext);
+            fprintf(outfile, "  a =    %24.14f\n", alpha);
+            fprintf(outfile, "  b =    %24.14f\n\n", beta);
+        }
+
+        initial_omega_ = 1.0 / (alpha * Rext + beta);        
+   
+        fprintf(outfile, "  ==> Omega Guess: HOMO Size <== \n\n");
+        fprintf(outfile, "   HOMO <R>:         %12.5E\n", Rext);
+        fprintf(outfile, "   Initial Omega^-1: %12.5E\n", 1.0 / initial_omega_);
+        fprintf(outfile, "   Initial Omega:    %12.5E\n\n", initial_omega_);
+ 
+    } else {
+        initial_omega_ = functional_->getOmega();
+
+        fprintf(outfile, "  ==> Omega Guess: Functional Default <== \n\n");
+        fprintf(outfile, "   Initial Omega^-1: %12.5E\n", 1.0 / initial_omega_);
+        fprintf(outfile, "   Initial Omega:    %12.5E\n\n", initial_omega_);
+    }
+
+    fflush(outfile);
+}
 void OmegaIPKS::form_DF()
 {
     df_ = boost::shared_ptr<OmegaDF>(new OmegaDF(psio_, basisset_, auxiliary_));
-    df_->set_omega(functional_->getOmega());
+    df_->set_omega(initial_omega_);
 }
 void OmegaIPKS::form_KS()
 {
-    // Temporary print, to make sure we're in the right spot
-    fprintf(outfile,"  Selected Functional is %s.\n\n",functional_->getName().c_str());
     boost::shared_ptr<Integrator> integrator = Integrator::build_integrator(molecule_, psio_, options_);
 
     //Grab the properties object for this basis
@@ -399,6 +544,8 @@ void OmegaIPKS::form_KS()
 
     ks_ = boost::shared_ptr<OmegaV>(new OmegaV(psio_, basisset_,
         functional_, integrator, properties));
+
+    ks_->set_omega(initial_omega_);
 }
 void OmegaIPKS::form_H()
 {
