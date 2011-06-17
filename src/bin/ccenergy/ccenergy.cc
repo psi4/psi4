@@ -17,12 +17,14 @@
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <libint/libint.h>
+#include <libmints/wavefunction.h>
 #include <sys/types.h>
 #include <psifiles.h>
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
 #include "globals.h"
+#include "ccwave.h"
 
 namespace psi { namespace ccenergy {
 
@@ -94,9 +96,48 @@ void checkpoint(void);
 void local_init(void);
 void local_done(void);
 
+int ccenergy(Options &options);
+
 }} //namespace psi::ccenergy
 
 namespace psi { namespace ccenergy {
+
+CCEnergyWavefunction::CCEnergyWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction(options, _default_psio_lib_)
+{
+    set_reference_wavefunction(reference_wavefunction);
+    init();
+}
+
+CCEnergyWavefunction::~CCEnergyWavefunction()
+{
+
+}
+
+void CCEnergyWavefunction::init()
+{
+    nso_        = reference_wavefunction_->nso();
+    nirrep_     = reference_wavefunction_->nirrep();
+    nmo_        = reference_wavefunction_->nmo();
+    for(int h = 0; h < nirrep_; ++h){
+        soccpi_[h] = reference_wavefunction_->soccpi()[h];
+        doccpi_[h] = reference_wavefunction_->doccpi()[h];
+        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
+        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
+        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
+        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
+    }
+}
+
+double CCEnergyWavefunction::compute_energy()
+{
+    if (psi::ccenergy::ccenergy(options_) == Success) {
+        // Get the total energy of the CCSD wavefunction
+        energy_ = Process::environment.globals["CURRENT ENERGY"];
+    }
+
+    return energy_;
+}
 
 int ccenergy(Options &options)
 {

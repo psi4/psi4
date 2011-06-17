@@ -16,6 +16,8 @@
 #include "script.h"
 #include "psi4.h"
 
+#include "../ccenergy/ccwave.h"
+
 using namespace psi;
 using namespace boost;
 using namespace boost::python;
@@ -51,7 +53,7 @@ namespace psi {
     namespace transqt   { PsiReturnType transqt(Options &);  }
     namespace transqt2  { PsiReturnType transqt2(Options &); }
     namespace ccsort    { PsiReturnType ccsort(Options&);    }
-    namespace ccenergy  { PsiReturnType ccenergy(Options&);  }
+//    namespace ccenergy  { PsiReturnType ccenergy(Options&);  }
     namespace cctriples { PsiReturnType cctriples(Options&); }
     namespace cchbar    { PsiReturnType cchbar(Options&);    }
     namespace cclambda  { PsiReturnType cclambda(Options&);  }
@@ -202,12 +204,20 @@ double py_psi_ccsort()
 
 double py_psi_ccenergy()
 {
-    py_psi_prepare_options_for_module("CCENERGY");
-    if (ccenergy::ccenergy(Process::environment.options) == Success) {
-        return Process::environment.globals["CURRENT ENERGY"];
-    }
-    else
-        return 0.0;
+    boost::shared_ptr<Wavefunction> ccwave(new ccenergy::CCEnergyWavefunction(
+                                               Process::environment.reference_wavefunction(),
+                                               Process::environment.options)
+                                           );
+    double energy = ccwave->compute_energy();
+    Process::environment.set_reference_wavefunction(ccwave);
+    return energy;
+
+//    py_psi_prepare_options_for_module("CCENERGY");
+//    if (ccenergy::ccenergy(Process::environment.options) == Success) {
+//        return Process::environment.globals["CURRENT ENERGY"];
+//    }
+//    else
+//        return 0.0;
 }
 
 double py_psi_cctriples()
