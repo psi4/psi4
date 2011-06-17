@@ -19,7 +19,7 @@ set globals {
   #omega_guess default
   d_converge 5
   e_converge 7
-  debug 3
+  #debug 3
 }
 
 
