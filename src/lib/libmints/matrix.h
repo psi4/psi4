@@ -179,6 +179,13 @@ public:
     Matrix* clone() const;
 
     /**
+     * Convenient creation function return shared_ptr<Matrix>
+     */
+    boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols) {
+        return boost::shared_ptr<Matrix>(new Matrix(name, nirrep, rows, cols));
+    }
+
+    /**
      * @{
      * Copies data onto this
      * @param cp Object to copy from.
