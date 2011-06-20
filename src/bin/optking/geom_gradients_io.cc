@@ -44,27 +44,7 @@ int read_natoms(void) {
   int natom=0;
 
 #if defined(OPTKING_PACKAGE_PSI)
-  // for now read from file11
-  std::ifstream fin;
-
-  stringstream sline (stringstream::in | stringstream::out);
-  char cline[256];
-
-  try {
-    fin.open(FILENAME_GEOM_GRAD_IN, ios_base::in);
-    fin.clear();
-    fin.getline(cline, 256);   // header row
-    fin.getline(cline, 256);   // natom_i and energy row
-    sline << cline;
-    sline >> natom ;
-    psi::Communicator::world->sync();
-    fin.close();
-  }
-  catch (std::ios_base::failure & bf) {
-    printf("Error reading number of atoms.\n");
-    fprintf(outfile,"Error reading number of atoms.\n");
-    throw(INTCO_EXCEPT("Error reading number of atoms."));
-  }
+  natom = psi::Process::environment.reference_wavefunction()->molecule()->natom();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
