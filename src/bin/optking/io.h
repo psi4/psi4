@@ -20,6 +20,8 @@ void opt_io_open(OPT_IO_FILE_STATUS status);
 void opt_io_close(int keep);
 void opt_io_read_entry(const char *key, char *buffer, ULI size);
 void opt_io_write_entry(const char *key, char *buffer, ULI size);
+void opt_intco_dat_remove(void);
+void opt_clean(void);
 
 }
 

@@ -5,6 +5,9 @@
 
 #include "io.h"
 
+#define EXTERN
+#include "globals.h"
+
 // PSI unit number for opt_data binary file
 #if defined (OPTKING_PACKAGE_PSI)
 #define PSI_OPTDATA_FILE_NUM 1
@@ -21,7 +24,7 @@ using namespace psi;
 // binary QCHEM data file
 #if defined (OPTKING_PACKAGE_QCHEM)
 #include <fstream>
-namespace opt_io { 
+namespace opt_io {
   std::fstream opt_data_stream;
 }
 #endif
@@ -72,6 +75,15 @@ void opt_io_remove(void) {
 #endif
 }
 
+void opt_intco_dat_remove(void) {
+  std::remove(FILENAME_INTCO_DAT); // rm intco definitions
+}
+
+void opt_clean(void) {
+  opt_io_remove();        // remove file1
+  opt_intco_dat_remove(); // remove intco.dat
+  printf("\tCleaning optimization helper files.\n");
+}
 
 // if OPT_IO_OPEN_OLD, open old file or new one
 // if OPT_IO_OPEN_NEW, open new file, deleting any existing file
