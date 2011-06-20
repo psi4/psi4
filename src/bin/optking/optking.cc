@@ -279,7 +279,7 @@ mol1->print_connectivity(outfile);
       fprintf(outfile,"\tThe optimizer encountered the following error:\n\t%s\n", exc.g_message());
       fprintf(outfile,"\tWill attempt to restart optimization with redefined internal coordinates.\n");
 
-      std::remove(FILENAME_INTCO_DAT); // rm intco definitions
+      opt_intco_dat_remove(); // rm intco definitions
       opt_io_remove(); // rm optimization data
 
 #if defined(OPTKING_PACKAGE_QCHEM)

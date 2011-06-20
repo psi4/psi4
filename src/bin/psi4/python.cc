@@ -38,7 +38,10 @@ void py_psi_plugin_close_all();
 
 extern std::map<std::string, plugin_info> plugins;
 
-namespace opt      { psi::PsiReturnType optking(psi::Options &); }
+namespace opt {
+  psi::PsiReturnType optking(psi::Options &);
+  void opt_clean(void);
+}
 
 namespace psi {
     namespace mints     { PsiReturnType mints(Options &); }
@@ -90,6 +93,11 @@ int py_psi_optking()
 {
     py_psi_prepare_options_for_module("OPTKING");
     return opt::optking(Process::environment.options);
+}
+
+void py_psi_opt_clean(void)
+{
+    opt::opt_clean();
 }
 
 int py_psi_mints()
@@ -655,6 +663,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cchbar", py_psi_cchbar);
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);
+    def("opt_clean", py_psi_opt_clean);
 
     // Define library classes
     export_psio();
