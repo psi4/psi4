@@ -329,7 +329,6 @@ def process_input(raw_input):
 
     # imports
     imports  = 'from PsiMod import *\n'
-    imports += 'from opt import *\n'
     imports += 'from molecule import *\n'
     imports += 'from driver import *\n'
     imports += 'from text import *\n'
