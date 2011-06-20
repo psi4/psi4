@@ -35,7 +35,7 @@ void set_params(void)
     else if (s == "TS")  Opt_params.opt_type = OPT_PARAMS::TS;
     else if (s == "IRC")  Opt_params.opt_type = OPT_PARAMS::IRC;
 
-    if (options["OPT_TYPE"].has_changed()) {
+    if (options["STEP_TYPE"].has_changed()) {
       s = options.get_str("STEP_TYPE");
       if (s == "RFO") {
         if (Opt_params.opt_type == OPT_PARAMS::MIN)
