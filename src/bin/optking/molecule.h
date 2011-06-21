@@ -328,6 +328,10 @@ class MOLECULE {
 
   bool cartesian_H_to_internals(void) const;
 
+  void set_masses(void) {
+    for (int f=0; f<fragments.size(); ++f)
+      fragments[f]->set_masses();
+  }
 
   bool read_intcos(std::ifstream & fin);
   // function to obtain geometry and gradient
