@@ -100,6 +100,7 @@ OptReturnType optking(void) {
 
     // read geometry and gradient into the existing fragments
     mol1->read_geom_grad();
+    mol1->set_masses();
 
   }
   else { // automatically generate coordinates
@@ -112,6 +113,7 @@ OptReturnType optking(void) {
 
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
+    mol1->set_masses();
 
     // use covalent radii to define bonds
     mol1->update_connectivity_by_distances();
