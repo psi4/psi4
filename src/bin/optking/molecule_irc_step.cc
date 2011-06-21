@@ -33,6 +33,9 @@ inline double DE_nr_energy(double step, double grad, double hess) {
 void MOLECULE::irc_step(void) {
 
   fprintf(outfile, "Hello World!");
+
+  double *m = g_masses();
+
   // Development plan
   // 1. implement Eqn (2) scheme first:  fixed step size s ; step in direction of -1*gradient
   // 2. Muller and Brown (Figure 2)

@@ -55,7 +55,7 @@ class FRAG {
     */
   int g_natom(void) const { return natom; };
 
-  void set_default_masses(void);
+  void set_masses(void);
 
   void print_geom(FILE *fp, const int id, bool print_mass = false);
   void print_geom_grad(FILE *fp, const int id, bool print_mass = false);

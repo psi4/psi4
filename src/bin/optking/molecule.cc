@@ -377,6 +377,9 @@ double *MOLECULE::g_masses(void) const {
   for (int f=0; f<fragments.size(); ++f)
     for (int i=0; i<fragments[f]->g_natom(); ++i)
       u[cnt++] = fragments[f]->g_mass(i);
+
+print_array(outfile, u, g_natom());
+
   return u;
 }
 
