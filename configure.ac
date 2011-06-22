@@ -261,6 +261,9 @@ AC_SUBST(AR)
 
 AC_LANG([C++])
 
+# I need the restrict keyword, this test handles the language set by AC_LANG
+AC_C_RESTRICT
+
 ARFLAGS=r
 AC_ARG_WITH(ar-flags,
 [  --with-ar-flags         Flags for the the archive creator.],
