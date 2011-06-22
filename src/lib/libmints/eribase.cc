@@ -8,6 +8,10 @@
 #include <physconst.h>
 #include <exception.h>
 
+// Cancel out restrict keyword for timings
+#undef restrict
+#define restrict
+
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 #define EPS 1.0e-17
 
@@ -706,7 +710,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     nprim4 = s4->nprimitive();
 
     if (use_shell_pairs_) {
-        ShellPair *p12, *p34;
+        ShellPair * restrict p12, * restrict p34;
         // 1234 -> 1234 no change
         p12 = &(pairs12_[sh1][sh2]);
         p34 = &(pairs34_[sh3][sh4]);
@@ -738,7 +742,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
                         double T = rho*PQ2;
                         fjt_->set_rho(rho);
-                        double *F = fjt_->values(am, T);
+                        double * restrict F = fjt_->values(am, T);
                         for (int i=0; i<=am; ++i)
                             libint_.PrimQuartet[nprim].F[i] = F[i] * coef1;
 
@@ -776,13 +780,22 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
         }
     }
     else {
+        double * restrict a1s = s1->exps();
+        double * restrict a2s = s2->exps();
+        double * restrict a3s = s3->exps();
+        double * restrict a4s = s4->exps();
+        double * restrict c1s = s1->coefs();
+        double * restrict c2s = s2->coefs();
+        double * restrict c3s = s3->coefs();
+        double * restrict c4s = s4->coefs();
+
         // Old version - without ShellPair - STILL USED BY RI CODES
         for (int p1=0; p1<nprim1; ++p1) {
-            double a1 = s1->exp(p1);
-            double c1 = s1->coef(p1);
+            double a1 = a1s[p1];
+            double c1 = c1s[p1];
             for (int p2=0; p2<nprim2; ++p2) {
-                double a2 = s2->exp(p2);
-                double c2 = s2->coef(p2);
+                double a2 = a2s[p2];
+                double c2 = c2s[p2];
                 double zeta = a1 + a2;
                 double ooz = 1.0/zeta;
                 double oo2z = 1.0/(2.0 * zeta);
@@ -803,12 +816,11 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
                 double Sab = pow(M_PI*ooz, 3.0/2.0) * exp(-a1*a2*ooz*AB2) * c1 * c2;
 
                 for (int p3=0; p3<nprim3; ++p3) {
-                    double a3 = s3->exp(p3);
-                    double c3 = s3->coef(p3);
+                    double a3 = a3s[p3];
+                    double c3 = c3s[p3];
                     for (int p4=0; p4<nprim4; ++p4) {
-
-                        double a4 = s4->exp(p4);
-                        double c4 = s4->coef(p4);
+                        double a4 = a4s[p4];
+                        double c4 = c4s[p4];
                         double nu = a3 + a4;
                         double oon = 1.0/nu;
                         double oo2n = 1.0/(2.0*nu);
@@ -871,7 +883,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
 
                         double T = rho * PQ2;
                         fjt_->set_rho(rho);
-                        double *F = fjt_->values(am, T);
+                        double * restrict F = fjt_->values(am, T);
 
                         // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                         double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
