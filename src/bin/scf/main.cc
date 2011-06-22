@@ -33,9 +33,6 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
 
     boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
-    // Initialize the psi3 timer library.
-    timer_init();
-
     string reference = options.get_str("REFERENCE");
     boost::shared_ptr<Wavefunction> scf;
     double energy;
@@ -76,7 +73,6 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     Process::environment.globals["CURRENT ENERGY"] = energy;
 
     // Shut down psi.
-    timer_done();
 
     tstop();
 

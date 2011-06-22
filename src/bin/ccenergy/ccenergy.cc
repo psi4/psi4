@@ -163,7 +163,6 @@ int ccenergy(Options &options)
   title();
 
 #ifdef TIME_CCENERGY
-  timer_init();
   timer_on("CCEnergy");
 #endif
 
@@ -373,7 +372,6 @@ int ccenergy(Options &options)
     cleanup();
 #ifdef TIME_CCENERGY
     timer_off("CCEnergy");
-    timer_done();
 #endif
     exit_io();
     return Failure;
@@ -501,7 +499,6 @@ int ccenergy(Options &options)
 
 #ifdef TIME_CCENERGY
   timer_off("CCEnergy");
-  timer_done();
 #endif
 
   Process::environment.globals["CCSD ENERGY"] = moinfo.ecc;

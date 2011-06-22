@@ -207,7 +207,6 @@ int main(int argc, char * argv[]) {
   const double *Jbuffer = Jint->buffer();
 
 #ifdef TIME_DF_MP2
-  timer_init();
   timer_on("Form J");
 #endif
 
@@ -502,7 +501,6 @@ for (Pshell=0; Pshell < ribasis->nshell(); ++Pshell) {
 
 #ifdef TIME_DF_MP2
   timer_off("Compute EMP2");
-  timer_done();
 #endif
 
   free(I);

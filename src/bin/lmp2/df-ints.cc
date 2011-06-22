@@ -31,7 +31,6 @@ namespace lmp2 {
 void LMP2::direct_df_transformation() {
 #ifdef TIME_DF_LMP2
 if(Communicator::world->me() == 0){
-  timer_init();
   timer_on("Compute DF-LMP2");
 }
 #endif

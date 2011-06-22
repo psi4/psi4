@@ -37,8 +37,6 @@ PsiReturnType dfcc(Options & options)
     boost::shared_ptr<PSIO> psio(new PSIO);
     boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
-    timer_init();
-
     if (options.get_str("WAVEFUNCTION") == "CCD") {
 
     CCD ccd(options, psio, chkpt);
@@ -60,8 +58,6 @@ PsiReturnType dfcc(Options & options)
     drpa.compute_energy();
 
     }
-
-    timer_done();
 
     tstop();
 

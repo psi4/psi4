@@ -48,7 +48,6 @@ PsiReturnType lmp2(Options &options) {
     /** Compute the LMP2 energy **/
     {
         LMP2 lmp2_obj(psio_obj, chkpt_obj);
-        timer_init();
 
         if (Communicator::world->me() == 0)
             timer_on("GETPARAMS");
@@ -113,7 +112,6 @@ PsiReturnType lmp2(Options &options) {
     }
     /** LMP2 complete **/
 
-    timer_done();
     if (Communicator::world->me() == 0) {
         fprintf(
                 outfile,
