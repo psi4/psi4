@@ -90,10 +90,6 @@ void timer_init(void)
 */
 void timer_done(void)
 {
-    if (!global_timer) {
-        printf("time_done: Double call to timer_done!\n");
-        return;
-    }
   FILE *timer_out;
   char *host;
   extern time_t timer_start, timer_end;
