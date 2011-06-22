@@ -48,5 +48,8 @@
 /* Compiler supports __builtin_constant_p */
 #undef HAVE_BUILTIN_CONSTANT_P
 
+/* Restrict keyword definition */
+#undef restrict
+
 #endif /* _psi_src_psiconfig_h */
 
