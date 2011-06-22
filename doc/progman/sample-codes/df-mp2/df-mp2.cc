@@ -286,12 +286,11 @@ dfmp2(Options &options, int argc, char *argv[])
 
 #ifdef TIME_DF_MP2
     timer_off("Compute EMP2");
-    timer_done();
 #endif
 
     free(I);
     free_block(B_ia_p);
-    
+
     double escf = chkpt->rd_escf();
     fprintf(outfile,"\tRI-MP2 correlation energy         = %20.15f\n",emp2);
     fprintf(outfile,"      * RI-MP2 total energy               = %20.15f\n\n",

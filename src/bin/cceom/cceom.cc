@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCEOM
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 **  CCEOM: Program to calculate the EOM CCSD right-hand eigenvector and  energy
@@ -53,15 +53,14 @@ int main(int argc, char *argv[])
   get_params();
   get_eom_params();
 #ifdef TIME_CCEOM
-  timer_init();
   timer_on("CCEOM");
 #endif
 
   form_dpd_dp();
- 
+
   cachefiles = init_int_array(PSIO_MAXUNIT);
-  
-  if (params.ref == 2) { /* UHF */ 
+
+  if (params.ref == 2) { /* UHF */
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
     /* cachelist = init_int_matrix(32,32); */
 
@@ -84,10 +83,9 @@ int main(int argc, char *argv[])
 
   dpd_close(0);
   if(params.local) local_done();
-  cleanup(); 
+  cleanup();
 #ifdef TIME_CCEOM
   timer_off("CCEOM");
-  timer_done();
 #endif
   exit_io();
   exit(0);

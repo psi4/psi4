@@ -19,9 +19,6 @@ PsiReturnType sapt(Options & options)
 
   boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
-  // Initialize the psi3 timer library.
-  timer_init();
-
   if (options.get_str("SAPT_LEVEL") == "SAPT0") {
     SAPT0 sapt(options, psio, chkpt);
     sapt.compute_energy();
@@ -34,7 +31,6 @@ PsiReturnType sapt(Options & options)
 
 
   // Shut down psi.
-  timer_done();
 
   tstop();
 

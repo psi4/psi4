@@ -34,7 +34,7 @@ plugin_omega(Options &options)
     tstart();
 
     // Initialize the psi3 timer library.
-    timer_init();
+//    timer_init();
 
     boost::shared_ptr<PSIO> psio = PSIO::shared_object();
     boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
@@ -50,7 +50,7 @@ plugin_omega(Options &options)
     Process::environment.globals["CURRENT ENERGY"] = energy;
 
     // Shut down psi.
-    timer_done();
+//    timer_done();
 
     tstop();
 

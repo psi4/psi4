@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CPHF
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** CPHF: Program to solve the Coupled Perturbed Hartree-Fock equations
@@ -77,12 +77,11 @@ PsiReturnType cphf(Options & options, int argc, char *argv[])
   double ***UF;
   double **hessian;
   double **L;
-  
+
   init_io(argc,argv);
   title();
   init_ioff();
 
-  timer_init();
   timer_on("CPHF Main");
 
   print_lvl = 0;
@@ -104,7 +103,7 @@ PsiReturnType cphf(Options & options, int argc, char *argv[])
   out_of_core(F, S, B, A);
 
   Baijk = block_matrix(natom*3, num_ai);
-  
+
   sort_B(B, Baijk);
 
   for(coord=0; coord < natom*3; coord++) {
@@ -113,16 +112,16 @@ PsiReturnType cphf(Options & options, int argc, char *argv[])
   free(B);
 
   Aaibj = block_matrix(num_ai,num_ai);
-  
+
   sort_A(A, Aaibj);
-  
+
   mohess(Aaibj);
-  
+
   UX = (double ***) malloc(natom*3 * sizeof(double **));
   for(coord=0; coord < natom*3; coord++) {
     UX[coord] = block_matrix(nmo,nmo);
   }
-  
+
   cphf_X(S, Baijk, Aaibj, UX);
 
   if (X_only) { /* only compute cphf coefficients, then quit */
@@ -137,52 +136,50 @@ PsiReturnType cphf(Options & options, int argc, char *argv[])
     }
     free(UX); free(F); free(S);
     timer_off("CPHF Main");
-    timer_done();
     exit_io();
     return (Success);
   }
-  
+
   UF = (double ***) malloc(3 * sizeof(double **));
   for(coord=0; coord < 3; coord++)
     UF[coord] = block_matrix(nmo,nmo);
 
   cphf_F(Aaibj, UF);
-  
+
   polarize(UF);
-  
+
   hessian = block_matrix(natom*3, natom*3);
   build_hessian(F, S, A, UX, hessian);
-  
+
   dipder = block_matrix(3, natom*3);
   dipder_q = block_matrix(3, natom*3);
   build_dipder(UX);
-  
+
   L = block_matrix(natom*3, natom*3);
   vibration(hessian,L);
 
   cphf_B(UX,L);
-  
-  cleanup(); 
+
+  cleanup();
 
   free_block(A);
   free_block(Baijk);
   free_block(Aaibj);
 
-  for(coord=0; coord < natom*3; coord++) { 
+  for(coord=0; coord < natom*3; coord++) {
     free_block(UX[coord]);
     free_block(F[coord]);
     free_block(S[coord]);
   }
-  for(coord=0; coord < 3; coord++) { 
+  for(coord=0; coord < 3; coord++) {
     free_block(UF[coord]);
   }
   free(UX); free(UF); free(F); free(S);
   free_block(hessian);
   free_block(dipder);
   free_block(L);
-  
+
   timer_off("CPHF Main");
-  timer_done();
 
   exit_io();
   return (Success);
