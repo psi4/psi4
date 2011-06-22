@@ -1092,6 +1092,10 @@ double Matrix::vector_dot(const Matrix* const rhs)
 
     for (h=0; h<nirrep_; ++h) {
         size = rowspi_[h] * colspi_[h^symmetry_];
+        // Check the size of the other
+        if (size != rhs->rowdim(h) * rhs->coldim(h^symmetry_))
+            throw PSIEXCEPTION("Matrix::vector_dot: Dimensions do not match!\n");
+
         if (size)
             sum += C_DDOT(size, (&matrix_[h][0][0]), 1, &(rhs->matrix_[h][0][0]), 1);
     }
