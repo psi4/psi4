@@ -1,6 +1,6 @@
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 **  ccresponse: Program to compute CC linear response properties.
@@ -61,7 +61,6 @@ int ccresponse(Options &options, int argc, char *argv[])
   get_moinfo();
   get_params();
 
-  timer_init();
   timer_on("ccresponse");
 
   cachefiles = init_int_array(PSIO_MAXUNIT);
@@ -69,15 +68,15 @@ int ccresponse(Options &options, int argc, char *argv[])
   if(params.ref == 2) { /*** UHF references ***/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, 
-	     NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
-	     moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
-  } 
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
+         NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
+         moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+  }
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
     dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+         2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
   }
 
   if(params.local) local_init();
@@ -107,7 +106,6 @@ int ccresponse(Options &options, int argc, char *argv[])
   cleanup();
 
   timer_off("ccresponse");
-  timer_done();
 
   exit_io();
   return 0;

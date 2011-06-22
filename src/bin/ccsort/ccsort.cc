@@ -65,8 +65,6 @@ int ccsort(Options &options)
   init_ioff();
   title();
 
-  timer_init();
-
   get_params(options);
   get_moinfo();
 
@@ -118,8 +116,6 @@ int ccsort(Options &options)
   if(params.ref == 2) cachedone_uhf(cachelist);
   else cachedone_rhf(cachelist);
   free(cachefiles);
-
-  timer_done();
 
   cleanup();
   exit_io();

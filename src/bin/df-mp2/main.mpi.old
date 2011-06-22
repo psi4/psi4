@@ -214,7 +214,6 @@ int main(int argc, char * argv[]) {
 
 #ifdef TIME_DF_MP2
   if (myproc == 0) {
-    timer_init();
     timer_on("Form J");
   }
 #endif
@@ -502,7 +501,6 @@ int main(int argc, char * argv[]) {
 #ifdef TIME_DF_MP2
   if (myproc == 0) {
     timer_off("Compute EMP2");
-    timer_done();
   }
 #endif
 

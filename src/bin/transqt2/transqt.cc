@@ -77,8 +77,6 @@ PsiReturnType transqt2(Options & options)
   get_params(options);
   get_moinfo();
 
-  timer_init();
-
   nso = moinfo.nso;
   nmo = moinfo.nmo;
   ntri_so = nso*(nso+1)/2;
@@ -305,8 +303,6 @@ PsiReturnType transqt2(Options & options)
 
   cachedone_rhf(cachelist);
   free(cachefiles);
-
-  timer_done();
 
   cleanup();
   exit_io();
