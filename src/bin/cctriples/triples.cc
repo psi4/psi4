@@ -78,7 +78,6 @@ PsiReturnType cctriples(Options &options)
   init_io();
   title();
 
-  timer_init();
   timer_on("CCtriples");
 
   get_moinfo(options);
@@ -229,7 +228,6 @@ PsiReturnType cctriples(Options &options)
   cleanup();
 
   timer_off("CCtriples");
-  timer_done();
 
   exit_io();
   return Success;

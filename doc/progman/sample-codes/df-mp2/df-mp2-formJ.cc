@@ -4,7 +4,7 @@
 #include <libqt/qt.h>
 
 namespace psi{ namespace dfmp2{
-    
+
 void formInvSqrtJ(double **&J_mhalf, shared_ptr<BasisSet> basis,
                        shared_ptr<BasisSet> ribasis, shared_ptr<BasisSet> zero)
 {
@@ -18,10 +18,9 @@ void formInvSqrtJ(double **&J_mhalf, shared_ptr<BasisSet> basis,
     const double *Jbuffer = Jint->buffer();
 
 #ifdef TIME_DF_MP2
-    timer_init();
     timer_on("Form J");
 #endif
-    
+
     int index = 0;
     for (int MU=0; MU < ribasis->nshell(); ++MU) {
         int nummu = ribasis->shell(MU)->nfunction();

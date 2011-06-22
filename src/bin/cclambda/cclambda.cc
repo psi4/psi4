@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 **  CCLAMBDA: Program to calculate the coupled-cluster lambda vector.
@@ -79,7 +79,6 @@ PsiReturnType cclambda(Options& options)
   dpdfile2 L1;
 
   init_io();
-  timer_init();
   title();
   moinfo.iter=0;
   get_moinfo();
@@ -87,7 +86,7 @@ PsiReturnType cclambda(Options& options)
 
   /* throw any existing CC_LAMBDA, CC_DENOM away */
   /* Do this only if we're not running an analytic gradient on the
-     ground state. Keeping the files around should allow us to 
+     ground state. Keeping the files around should allow us to
      restart from old Lambda amplitudes. -TDC, 11/2007 */
   if(!(params.dertype==1 && !cc_excited(params.wfn))) {
     fprintf(outfile, "\tDeleting old CC_LAMBDA data.\n");
@@ -104,11 +103,11 @@ PsiReturnType cclambda(Options& options)
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
     dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+         2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
 
     if(params.aobasis) { /* Set up new DPD for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
-	       2, moinfo.occpi, moinfo.occ_sym, moinfo.sopi, moinfo.sosym);
+      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+           2, moinfo.occpi, moinfo.occ_sym, moinfo.sopi, moinfo.sosym);
       dpd_set_default(0);
     }
 
@@ -117,13 +116,13 @@ PsiReturnType cclambda(Options& options)
 
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, 
-	     cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-	     moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles,
+         cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
+         moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
 
     if(params.aobasis) { /* Set up new DPD's for AO-basis algorithm */
-      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
-               4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym, 
+      dpd_init(1, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+               4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.sopi, moinfo.sosym,
                moinfo.boccpi, moinfo.bocc_sym, moinfo.sopi, moinfo.sosym);
       dpd_set_default(0);
     }
@@ -144,10 +143,10 @@ PsiReturnType cclambda(Options& options)
   for (i=0; i<params.nstates; ++i) {
 
     /* delete and reopen intermediate files */
-    psio_close(CC_TMP,0); psio_close(CC_TMP0,0); 
-    psio_close(CC_TMP1,0); psio_close(CC_TMP2,0); 
-    psio_open(CC_TMP,0); psio_open(CC_TMP0,0); 
-    psio_open(CC_TMP1,0); psio_open(CC_TMP2,0); 
+    psio_close(CC_TMP,0); psio_close(CC_TMP0,0);
+    psio_close(CC_TMP1,0); psio_close(CC_TMP2,0);
+    psio_open(CC_TMP,0); psio_open(CC_TMP0,0);
+    psio_open(CC_TMP1,0); psio_open(CC_TMP2,0);
     /* Keep the old lambda amps if this is a ground-state geomopt */
     if(!(params.dertype==1 && !cc_excited(params.wfn))) {
       psio_close(CC_LAMBDA,0);
@@ -182,22 +181,22 @@ PsiReturnType cclambda(Options& options)
 
       if(params.wfn == "CC2" || params.wfn == "EOM_CC2") {
 
-	cc2_Gai_build(pL_params[i].irrep);
-	cc2_L1_build(pL_params[i]);
-	if(params.print & 2) status("L1 amplitudes", outfile);
-	cc2_L2_build(pL_params[i]);
+    cc2_Gai_build(pL_params[i].irrep);
+    cc2_L1_build(pL_params[i]);
+    if(params.print & 2) status("L1 amplitudes", outfile);
+    cc2_L2_build(pL_params[i]);
 
       }
       else {
-	G_build(pL_params[i].irrep);
-	L1_build(pL_params[i]);
-	if(params.print & 2) status("L1 amplitudes", outfile);
-	L2_build(pL_params[i]);
+    G_build(pL_params[i].irrep);
+    L1_build(pL_params[i]);
+    if(params.print & 2) status("L1 amplitudes", outfile);
+    L2_build(pL_params[i]);
 
-	if(params.wfn == "CC3") {
-	  cc3_l3l2();
-	  cc3_l3l1();
-	}
+    if(params.wfn == "CC3") {
+      cc3_l3l2();
+      cc3_l3l1();
+    }
       }
 
       if (params.ref == 1) L_clean(pL_params[i]);
@@ -213,13 +212,13 @@ PsiReturnType cclambda(Options& options)
         }
         Lsave_index(pL_params[i]); /* save Ls with indices in LAMPS */
         Lamp_write(pL_params[i]); /* write out largest  Ls */
-	/* sort_amps(); to be done by later functions */
+    /* sort_amps(); to be done by later functions */
         fprintf(outfile, "\n\tIterations converged.\n");
         fflush(outfile);
         moinfo.iter = 0;
         break;
       }
-  
+
       if(params.diis) diis(moinfo.iter, pL_params[i].irrep);
       Lsave(pL_params[i].irrep);
       moinfo.lcc = pseudoenergy(pL_params[i]);
@@ -228,7 +227,7 @@ PsiReturnType cclambda(Options& options)
     fprintf(outfile, "\n");
     if(!done) {
       fprintf(outfile, "\t ** Lambda not converged to %2.1e ** \n",
-	      params.convergence);
+          params.convergence);
       fflush(outfile);
       dpd_close(0);
       cleanup();
@@ -255,8 +254,7 @@ PsiReturnType cclambda(Options& options)
   else cachedone_rhf(cachelist);
   free(cachefiles);
 
-  timer_done();
-  cleanup(); 
+  cleanup();
   exit_io();
   return Success;
 }
@@ -307,7 +305,7 @@ void exit_io(void)
   }
   psio_close(CC_DENOM,0);
   psio_open(CC_DENOM,PSIO_OPEN_NEW);
- 
+
   /* Close all dpd data files here */
   for(i=CC_MIN; i < CC_TMP; i++) psio_close(i,1);
   for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0); /* delete CC_TMP files */
@@ -451,9 +449,9 @@ void L_clean(struct L_Params L_params) {
   dpd_buf4_init(&LIJAB, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New LIJAB");
   dpd_buf4_init(&Lijab, CC_LAMBDA, L_irr, 2, 7, 2, 7, 0, "New Lijab");
   dpd_buf4_init(&LIjAb, CC_LAMBDA, L_irr, 0, 5, 0, 5, 0, "New LIjAb");
-  
+
   c_clean(&LIA, &Lia, &LIJAB, &Lijab, &LIjAb);
- 
+
   dpd_file2_close(&LIA);
   dpd_file2_close(&Lia);
   dpd_buf4_close(&LIJAB);

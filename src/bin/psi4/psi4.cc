@@ -16,6 +16,7 @@
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
 #include <libmints/wavefunction.h>
+#include <libqt/qt.h>
 #include "script.h"
 #include <physconst.h>
 #include <psifiles.h>
@@ -79,6 +80,9 @@ int main(int argc, char **argv, char **envp)
     Communicator::world = boost::shared_ptr<Communicator>(new LocalCommunicator(communicator));
 #endif
 
+    // There is only one timer:
+    timer_init();
+
     // There should only be one of these in Psi4
     Wavefunction::initialize_singletons();
 
@@ -109,6 +113,9 @@ int main(int argc, char **argv, char **envp)
 
     // Shut things down:
     Communicator::world->sync();
+    // There is only one timer:
+    timer_done();
+
     psi_stop(infile, outfile, psi_file_prefix);
     Script::language->finalize();
 
