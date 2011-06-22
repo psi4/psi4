@@ -3,6 +3,7 @@
 
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
+#include <psiconfig.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -28,21 +29,21 @@ typedef struct ShellPair_typ {
     //! Shells for this information.
     int i, j;
     //! Matrix over primitives with x, y, z coordinate of average Gaussian
-    double ***P;
+    double *** restrict P;
     //! Distance between shell i and shell j centers
     double AB[3];
     //! Distance between P and shell i center
-    double ***PA;
+    double *** restrict PA;
     //! Distance between P and shell j center
-    double ***PB;
+    double *** restrict PB;
     //! Array of alphas for both centers
-    double *ai, *aj;
+    double * restrict ai, * restrict aj;
     //! Array of the gammas (ai + aj)
-    double **gamma;
+    double ** restrict gamma;
     //! Contraction coefficients
-    double *ci, *cj;
+    double * restrict ci, * restrict cj;
     //! Overlap between primitives on i and j
-    double **overlap;
+    double ** restrict overlap;
 } ShellPair;
 
 /*! \ingroup MINTS
@@ -166,7 +167,7 @@ public:
     ErfERI(double omega, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
     virtual ~ErfERI();
 
-    void setOmega(double omega); 
+    void setOmega(double omega);
 };
 
 class ErfComplementERI : public TwoElectronInt
@@ -175,7 +176,7 @@ public:
     ErfComplementERI(double omega, const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
     virtual ~ErfComplementERI();
 
-    void setOmega(double omega); 
+    void setOmega(double omega);
 };
 
 }
