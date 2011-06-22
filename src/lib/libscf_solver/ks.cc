@@ -71,7 +71,7 @@ void KS::common_init()
         properties_->setToComputeKEDensity(true);
     }
     if (functional_->isRangeCorrected()) {
-        
+
         if (options_["DFT_OMEGA"].has_changed()) {
             functional_->setOmega(options_.get_double("DFT_OMEGA"));
         }
@@ -79,7 +79,7 @@ void KS::common_init()
         boost::shared_ptr<TwoBodyAOInt> ao_erf(fact->erf_eri(functional_->getOmega()));
         omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(ao_erf, fact));
     }
-    
+
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
     RHF(options, psio, chkpt), KS(options,psio)
@@ -310,7 +310,7 @@ void RKS::form_G()
     form_V();
     if (functional_->isRangeCorrected()) {
         Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
-        process_omega_tei<Omega_K_Functor>(k_builder); 
+        process_omega_tei<Omega_K_Functor>(k_builder);
     }
     if (!functional_->isHybrid()) {
         // This will build J (stored in G)
@@ -731,7 +731,7 @@ void UKS::form_G()
     if (!functional_->isHybrid()) {
         // This will build J (stored in G)
         boost::shared_ptr<Matrix> Dh(factory_->create_matrix("Dh"));
-        Dh->copy(Da_);      
+        Dh->copy(Da_);
         Dh->add(Db_);
         Dh->scale(0.5);
 
@@ -811,7 +811,7 @@ double UKS::compute_E()
     Etotal += 0.5 * coulomb_E;
     Etotal += 0.5 * exchange_E;
     Etotal += quad_values_["E_xc"];
-    double dashD_E;
+    double dashD_E=0.0;
     if (functional_->isDashD()) {
         dashD_E = functional_->getDashD()->computeEnergy(HF::molecule_);
     }
