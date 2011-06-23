@@ -7,15 +7,18 @@ dbse = 'BAKERJCC93'
 isOS = 'true'
 
 # <<< Database Members >>>
-HRXN = ['1_3_5_trifluorobenzene', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
-HRXN_SM = ['water', 'ethane','ACHTAR10']
-HRXN_LG = ['water', ]
+HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
+HRXN_SM = ['ACANIL01']
+HRXN_LG = ['allene','1_3_5_trifluorobenzene','ethanol','furan','benzaldehyde']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
 ACTV = {}     # order of active reagents per reaction
 ACTV['%s-%s'            % (dbse, '1_3_5_trifluorobenzene' )] = ['%s-%s-reagent'      % (dbse, '1_3_5_trifluorobenzene')]
 RXNM['%s-%s'            % (dbse, '1_3_5_trifluorobenzene' )] = dict(zip(ACTV['%s-%s' % (dbse, '1_3_5_trifluorobenzene')], [+1]))
+
+ACTV['%s-%s'            % (dbse, '1_3_5_trisilacyclohexane' )] = ['%s-%s-reagent'      % (dbse, '1_3_5_trisilacyclohexane')]
+RXNM['%s-%s'            % (dbse, '1_3_5_trisilacyclohexane' )] = dict(zip(ACTV['%s-%s' % (dbse, '1_3_5_trisilacyclohexane')], [+1]))
 
 ACTV['%s-%s'            % (dbse, '1_3_difluorobenzene'   )] = ['%s-%s-reagent'      % (dbse, '1_3_difluorobenzene')]
 RXNM['%s-%s'            % (dbse, '1_3_difluorobenzene'   )] = dict(zip(ACTV['%s-%s' % (dbse, '1_3_difluorobenzene')], [+1]))
@@ -59,6 +62,9 @@ RXNM['%s-%s'            % (dbse, 'caffeine'              )] = dict(zip(ACTV['%s-
 ACTV['%s-%s'            % (dbse, 'difuropyrazine'        )] = ['%s-%s-reagent'      % (dbse, 'difuropyrazine')]
 RXNM['%s-%s'            % (dbse, 'difuropyrazine'        )] = dict(zip(ACTV['%s-%s' % (dbse, 'difuropyrazine')], [+1]))
 
+ACTV['%s-%s'            % (dbse, 'dimethylpentane'       )] = ['%s-%s-reagent'      % (dbse, 'dimethylpentane')]
+RXNM['%s-%s'            % (dbse, 'dimethylpentane'       )] = dict(zip(ACTV['%s-%s' % (dbse, 'dimethylpentane')], [+1]))
+
 ACTV['%s-%s'            % (dbse, 'disilyl_ether'         )] = ['%s-%s-reagent'      % (dbse, 'disilyl_ether')]
 RXNM['%s-%s'            % (dbse, 'disilyl_ether'         )] = dict(zip(ACTV['%s-%s' % (dbse, 'disilyl_ether')], [+1]))
 
@@ -76,6 +82,9 @@ RXNM['%s-%s'            % (dbse, 'histidine'             )] = dict(zip(ACTV['%s-
 
 ACTV['%s-%s'            % (dbse, 'hydroxysulphane'       )] = ['%s-%s-reagent'      % (dbse, 'hydroxysulphane')]
 RXNM['%s-%s'            % (dbse, 'hydroxysulphane'       )] = dict(zip(ACTV['%s-%s' % (dbse, 'hydroxysulphane')], [+1]))
+
+ACTV['%s-%s'            % (dbse, 'menthone'              )] = ['%s-%s-reagent'      % (dbse, 'menthone')]
+RXNM['%s-%s'            % (dbse, 'menthone'              )] = dict(zip(ACTV['%s-%s' % (dbse, 'menthone')], [+1]))
 
 ACTV['%s-%s'            % (dbse, 'mesityl_oxide'         )] = ['%s-%s-reagent'      % (dbse, 'mesityl_oxide')]
 RXNM['%s-%s'            % (dbse, 'mesityl_oxide'         )] = dict(zip(ACTV['%s-%s' % (dbse, 'mesityl_oxide')], [+1]))
@@ -98,6 +107,7 @@ RXNM['%s-%s'            % (dbse, 'water'                 )] = dict(zip(ACTV['%s-
 # <<< Reference Values [kcal/mol] >>>
 BIND = {}
 BIND['%s-%s'            % (dbse, '1_3_5_trifluorobenzene' )] =    0.000
+BIND['%s-%s'            % (dbse, '1_3_5_trisilacyclohexane' )] =    0.000
 BIND['%s-%s'            % (dbse, '1_3_difluorobenzene'   )] =    0.000
 BIND['%s-%s'            % (dbse, '1_5_difluoronaphthalene' )] =    0.000
 BIND['%s-%s'            % (dbse, '2_hydroxybicyclopentane' )] =    0.000
@@ -112,12 +122,14 @@ BIND['%s-%s'            % (dbse, 'benzene'               )] =    0.000
 BIND['%s-%s'            % (dbse, 'benzidine'             )] =    0.000
 BIND['%s-%s'            % (dbse, 'caffeine'              )] =    0.000
 BIND['%s-%s'            % (dbse, 'difuropyrazine'        )] =    0.000
+BIND['%s-%s'            % (dbse, 'dimethylpentane'       )] =    0.000
 BIND['%s-%s'            % (dbse, 'disilyl_ether'         )] =    0.000
 BIND['%s-%s'            % (dbse, 'ethane'                )] =    0.000
 BIND['%s-%s'            % (dbse, 'ethanol'               )] =    0.000
 BIND['%s-%s'            % (dbse, 'furan'                 )] =    0.000
 BIND['%s-%s'            % (dbse, 'histidine'             )] =    0.000
 BIND['%s-%s'            % (dbse, 'hydroxysulphane'       )] =    0.000
+BIND['%s-%s'            % (dbse, 'menthone'              )] =    0.000
 BIND['%s-%s'            % (dbse, 'mesityl_oxide'         )] =    0.000
 BIND['%s-%s'            % (dbse, 'methylamine'           )] =    0.000
 BIND['%s-%s'            % (dbse, 'naphthalene'           )] =    0.000
@@ -129,6 +141,8 @@ BIND['%s-%s'            % (dbse, 'water'                 )] =    0.000
 TAGL = {}
 TAGL['%s-%s'            % (dbse, '1_3_5_trifluorobenzene' )] = ''
 TAGL['%s-%s-reagent'    % (dbse, '1_3_5_trifluorobenzene' )] = ''
+TAGL['%s-%s'            % (dbse, '1_3_5_trisilacyclohexane' )] = ''
+TAGL['%s-%s-reagent'    % (dbse, '1_3_5_trisilacyclohexane' )] = ''
 TAGL['%s-%s'            % (dbse, '1_3_difluorobenzene'   )] = ''
 TAGL['%s-%s-reagent'    % (dbse, '1_3_difluorobenzene'   )] = ''
 TAGL['%s-%s'            % (dbse, '1_5_difluoronaphthalene' )] = ''
@@ -157,6 +171,8 @@ TAGL['%s-%s'            % (dbse, 'caffeine'              )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'caffeine'              )] = ''
 TAGL['%s-%s'            % (dbse, 'difuropyrazine'        )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'difuropyrazine'        )] = ''
+TAGL['%s-%s'            % (dbse, 'dimethylpentane'       )] = ''
+TAGL['%s-%s-reagent'    % (dbse, 'dimethylpentane'       )] = ''
 TAGL['%s-%s'            % (dbse, 'disilyl_ether'         )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'disilyl_ether'         )] = ''
 TAGL['%s-%s'            % (dbse, 'ethane'                )] = ''
@@ -169,6 +185,8 @@ TAGL['%s-%s'            % (dbse, 'histidine'             )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'histidine'             )] = ''
 TAGL['%s-%s'            % (dbse, 'hydroxysulphane'       )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'hydroxysulphane'       )] = ''
+TAGL['%s-%s'            % (dbse, 'menthone'              )] = ''
+TAGL['%s-%s-reagent'    % (dbse, 'menthone'              )] = ''
 TAGL['%s-%s'            % (dbse, 'mesityl_oxide'         )] = ''
 TAGL['%s-%s-reagent'    % (dbse, 'mesityl_oxide'         )] = ''
 TAGL['%s-%s'            % (dbse, 'methylamine'           )] = ''
@@ -198,6 +216,31 @@ C        0.00000000     2.62632703     0.00000000
 H        4.04176646    -2.33351496     0.00000000
 H       -4.04176646    -2.33351496     0.00000000
 H        0.00000000     4.66702991     0.00000000
+units bohr
+}
+""")
+
+BAKERJCC93_1_3_5_trisilacyclohexane = input.process_input("""
+molecule dimer {
+0 1
+Si       2.87562701     1.66024403     0.50009833
+Si      -2.87562701     1.66024403     0.50009833
+Si       0.00000000    -3.32048805     0.50009833
+C        0.00000000     3.31617083    -0.65645952
+C        2.87188818    -1.65808542    -0.65645952
+C       -2.87188818    -1.65808542    -0.65645952
+H        0.00000000     5.25402682     0.04550787
+H        4.55012070    -2.62701341     0.04550787
+H       -4.55012070    -2.62701341     0.04550787
+H        0.00000000     3.33620321    -2.71676085
+H        2.88923673    -1.66810160    -2.71676085
+H       -2.88923673    -1.66810160    -2.71676085
+H        5.14953250     2.97308398    -0.46837999
+H       -5.14953250     2.97308398    -0.46837999
+H        2.91112385     1.68073814     3.29599415
+H       -2.91112385     1.68073814     3.29599415
+H        0.00000000    -3.36147627     3.29599415
+H        0.00000000    -5.94616795    -0.46837999
 units bohr
 }
 """)
@@ -269,7 +312,7 @@ units bohr
 
 BAKERJCC93_ACANIL01 = input.process_input("""
 molecule dimer {
-0 1
+0 2
 O        6.74334167     0.00000000     0.00000000
 N        2.75125398    -0.91996681     0.00000000
 C       -3.75958919    -3.62046813     0.00000000
@@ -495,6 +538,36 @@ units bohr
 }
 """)
 
+BAKERJCC93_dimethylpentane = input.process_input("""
+molecule dimer {
+0 1
+C       -1.90302142     1.79989214    -3.12819161
+C        0.68098191     1.17008149    -1.92744962
+C        0.57347759    -0.44273007     0.55332222
+C       -0.57536860     1.07092655     2.79511667
+C        0.00000000     0.00000000     5.44078830
+C        2.40130119     0.00000000    -3.96848713
+C       -0.75740445    -3.03396450     0.24401702
+H       -3.17069973     2.76026122    -1.77509550
+H       -2.89812692     0.08656618    -3.79174516
+H       -1.70835535     3.07391957    -4.77327789
+H        1.57127154     2.99847536    -1.42186024
+H        2.56484657    -0.84063638     1.06972922
+H       -2.64484782     1.25561061     2.54633021
+H        0.13997457     3.03676459     2.74695911
+H       -0.82887852    -1.89737304     5.71865173
+H       -0.77969219     1.22647944     6.94230752
+H        2.05566062    -0.15968979     5.78408339
+H        1.63584569    -1.79524917    -4.71467976
+H        2.65159319     1.28124788    -5.60071709
+H        4.31235662    -0.40611038    -3.22785050
+H       -0.60282164    -4.20392129     1.96624261
+H       -2.79329149    -2.82201336    -0.17320237
+H        0.07519864    -4.15853702    -1.30499111
+units bohr
+}
+""")
+
 BAKERJCC93_disilyl_ether = input.process_input("""
 molecule dimer {
 0 1
@@ -592,6 +665,42 @@ S        0.00000000     0.00000000     1.64344454
 O        1.55643788     0.00000000    -0.78417924
 H        0.70878977    -0.98889634    -2.04698233
 H       -2.26522765     0.98889634     1.18771703
+units bohr
+}
+""")
+
+BAKERJCC93_menthone = input.process_input("""
+molecule dimer {
+0 1
+O        0.00000000     0.00000000     4.83502957
+C       -5.06597212    -1.27592091     0.49885049
+C       -3.60348796    -1.49111229    -2.01995066
+C       -1.13779972     0.12182250    -2.02402508
+C        0.69335828    -0.53324847     0.24699141
+C       -0.81879368    -0.76420189     2.79442766
+C       -3.41755812    -2.06413311     2.77868746
+C        0.08327139    -0.18247958    -4.66184769
+C        3.16977849     1.11788425     0.33780916
+C        5.23967937     0.00000000     2.05851212
+C        2.74820737     3.91648659     1.03692914
+H       -5.73534045     0.69223903     0.75660810
+H       -6.80139535    -2.44289264     0.43045930
+H       -3.15419510    -3.50140339    -2.39715388
+H       -4.86109777    -0.90264082    -3.58603040
+H       -1.71463208     2.12647811    -1.82542348
+H        1.33530286    -2.48925976    -0.10949068
+H       -4.41049264    -1.64891601     4.56938165
+H       -3.10227312    -4.12767303     2.77142958
+H       -1.27515064     0.19340176    -6.20625544
+H        0.83979297    -2.10810531    -4.96157719
+H        1.65711962     1.15531285    -4.96195049
+H        4.01314574     1.10167735    -1.57473542
+H        4.69908810     0.02990650     4.07747056
+H        7.03475689     1.05859686     1.90111311
+H        5.66887645    -1.98486988     1.56898286
+H        4.52277834     5.01677786     0.95132487
+H        1.98900684     4.13531008     2.97264568
+H        1.40402606     4.85096335    -0.25821233
 units bohr
 }
 """)
