@@ -7,9 +7,9 @@ using namespace std;
 namespace psi{
 
 OperatorSymmetry::OperatorSymmetry(int order,
-                                     const boost::shared_ptr<Molecule>& mol,
-                                     const boost::shared_ptr<IntegralFactory>& ints,
-                                     const boost::shared_ptr<MatrixFactory>& mats)
+                                   const boost::shared_ptr<Molecule>& mol,
+                                   const boost::shared_ptr<IntegralFactory>& ints,
+                                   const boost::shared_ptr<MatrixFactory>& mats)
     : order_(order), molecule_(mol), integral_(ints), matrix_(mats)
 {
     // Nabla operator has same symmetry as dipole
@@ -18,8 +18,7 @@ OperatorSymmetry::OperatorSymmetry(int order,
 
     if (order_ > 0) {
         int ncart = INT_NCART(order_);
-        component_symmetry_ = new int[ncart];
-        memset(component_symmetry_, 0, sizeof(int)*ncart);
+        component_symmetry_.resize(ncart, 0);
 
         CharacterTable ct = molecule_->point_group()->char_table();
         SymmetryOperation so;
@@ -65,7 +64,7 @@ OperatorSymmetry::OperatorSymmetry(int order,
         order_ = 1;
 
         int n = 3;
-        component_symmetry_ = new int[n];
+        component_symmetry_.resize(n, 0);
 
         component_symmetry_[0] = quad.component_symmetry(4);  // Lx === yz
         component_symmetry_[1] = quad.component_symmetry(2);  // Ly === xz
@@ -78,7 +77,6 @@ OperatorSymmetry::OperatorSymmetry(int order,
 
 OperatorSymmetry::~OperatorSymmetry()
 {
-    delete[] component_symmetry_;
 }
 
 string OperatorSymmetry::form_suffix(int x, int y, int z)
