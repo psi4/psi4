@@ -74,6 +74,10 @@ namespace psi {
       std::transform(str.begin(), str.end(), str.begin(), ::toupper);
     }
 
+    virtual void add_choices(std::string str){
+        throw NotImplementedException("add(bool)");
+    }
+
     virtual std::string type() const {
       return std::string("unknown");
     }
@@ -282,7 +286,15 @@ namespace psi {
     StringDataType() : DataType(), str_(), choices_() { }
     StringDataType(std::string s) : DataType(), str_(s), choices_() { to_upper(str_); }
     StringDataType(std::string s, std::string c) : DataType(), str_(s), choices_() { to_upper(str_); to_upper(c); choices_ = split(c); }
+
     virtual ~StringDataType() { }
+
+    virtual void add_choices(std::string str){
+        to_upper(str);
+        std::vector<std::string> temp = split(str);
+        for(int i = 0; i < temp.size(); ++i)
+            choices_.push_back(temp[i]);
+    }
 
     virtual std::string type() const {
       return std::string("string");
@@ -342,6 +354,12 @@ namespace psi {
     IStringDataType(std::string s) : DataType(), str_(s), choices_() { }
     IStringDataType(std::string s, std::string c) : DataType(), str_(s), choices_() { choices_ = split(c); }
     virtual ~IStringDataType() { }
+
+    virtual void add_choices(std::string str){
+        std::vector<std::string> temp = split(str);
+        for(int i = 0; i < temp.size(); ++i)
+            choices_.push_back(temp[i]);
+    }
 
     virtual std::string type() const {
       return std::string("string");
@@ -422,6 +440,10 @@ namespace psi {
 
     void changed() {
       ptr_->changed();
+    }
+
+    void add_choices(std::string str) {
+      ptr_->add_choices(str);
     }
 
     std::string type() const {
@@ -699,10 +721,18 @@ namespace psi {
       add(key, new DoubleDataType(d));
     }
     void add(std::string key, std::string s, std::string c = "") {
-      add(key, new StringDataType(s, c));
+        if(edit_globals_  && globals_.count(key)){
+            globals_[key].add_choices(c);
+        }else{
+            add(key, new StringDataType(s, c));
+        }
     }
     void add_i(std::string key, std::string s, std::string c = "") {
-      add(key, new IStringDataType(s, c));
+        if(edit_globals_  && globals_.count(key)){
+            globals_[key].add_choices(c);
+        }else{
+            add(key, new IStringDataType(s, c));
+        }
     }
 
     void add_bool(std::string key, bool b) {
@@ -846,7 +876,7 @@ namespace psi {
                 return active;
             }else if (global.has_changed()){
                 // Pull from globals
-                return get(globals_, key);
+                return global;
             }else{
                 // No user input - the default should come from local vals
                 return active;
