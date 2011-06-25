@@ -19,14 +19,16 @@ realclean::
 clean::
 	/bin/rm -rf *~
 
-install:: install_html
+default:: install
+
+install:: html install_html
 
 .PHONY: install_html
 install_html::
 	$(MKDIRS) $(htmldir)/doxygen
 	$(INSTALL_DATA) html/* $(DOXYDIR)
 
-include ../MakeRules
+#include ../MakeRules
 
 # how to make the doxygen config file
 $(DOXYCFG): $(DOXYCFG).in $(top_objdir)/config.status
