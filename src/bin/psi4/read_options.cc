@@ -33,13 +33,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("PRINT", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
+  /*- Wavefunction type -*/
+  options.add_str("WFN", "SCF");
 
   if (name == "DETCI" || options.read_globals()) {
     /*- Derivative level -*/
     options.add_str("DERTYPE", "NONE", "NONE FIRST");
 
     /*- Wavefunction type -*/
-    options.add_str("WFN", ""/*, "DETCI CI ZAPTN DETCAS CASSCF RASSCF"*/);
+    options.add_str("WFN", "", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- The CI excitation level -*/
     options.add_int("EX_LVL", 2);
@@ -393,7 +395,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The guess type to be used in the computation -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
     /*- The reference wavefunction used in the computation -*/
-    options.add_str("REFERENCE", "RHF");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF RKS UKS");
     /*- The maximum number of iterations -*/
     options.add_int("MAXITER", 100);
     /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
