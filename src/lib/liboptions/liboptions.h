@@ -839,13 +839,17 @@ namespace psi {
             return get(globals_, key);
         else if (exists_in_active(key) && exists_in_global(key)) {
             Data& active = get(locals_[current_module_], key);
+            Data& global = get(globals_, key);
 
             if (active.has_changed()) {
                 // Pull from keyvals
                 return active;
-            } else {
+            }else if (global.has_changed()){
                 // Pull from globals
                 return get(globals_, key);
+            }else{
+                // No user input - the default should come from local vals
+                return active;
             }
         }
         else
