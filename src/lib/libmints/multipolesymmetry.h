@@ -29,7 +29,7 @@ class OperatorSymmetry
      * The symmetry of each component of the multipole.
      * Length = INT_NCART(order_)
      */
-    int *component_symmetry_;
+    std::vector<int> component_symmetry_;
 
     /**
      * Forms a string that describes what the name of the
@@ -47,8 +47,8 @@ public:
 
         L = -1,
         AngularMomentum = -1,
-        P = -2,
-        Nabla = -2
+        P = Dipole,
+        Nabla = Dipole
     };
 
     /** Constructor
