@@ -4,6 +4,7 @@
 #include <libiwl/iwl.hpp>
 #include <vector>
 #include "wavefunction.h"
+#include "multipolesymmetry.h"
 
 namespace psi {
 
@@ -83,6 +84,10 @@ public:
     MintsHelper(boost::shared_ptr<Wavefunction> wavefunction);
     /// Destructor, does nothing
     ~MintsHelper();
+
+    OperatorSymmetry operator_symmetry(int order) {
+        return OperatorSymmetry(order, molecule_, integral_, factory_);
+    }
 
     /// Basis set being used.
     boost::shared_ptr<BasisSet> basisset() const;
