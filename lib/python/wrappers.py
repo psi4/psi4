@@ -146,7 +146,6 @@ def basis_set_extrapolate(basis_name, **kwargs):
     backup_basis = PsiMod.get_global_option("BASIS")
     backup_wfn = PsiMod.get_global_option("WFN")
 
-
     labels = ['','','D','T','Q','5','6','7','8','9']
     if (kwargs.has_key('labels')):
         labels = kwargs['labels']    
