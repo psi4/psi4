@@ -52,8 +52,15 @@ def gradient(name, **kwargs):
     if (kwargs.has_key('dertype')):
         dertype = kwargs['dertype']
 
+    # By default, set func to the energy function
+    func = energy
+    func_existed = False
+    if (kwargs.has_key('func')):
+        func = kwargs['func']
+        func_existed = True
+
     # Does an analytic procedure exist for the requested method?
-    if (procedures['gradient'].has_key(name) and dertype == 1):
+    if (procedures['gradient'].has_key(name) and dertype == 1 and func_existed == False):
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
         procedures['gradient'][name](name, **kwargs)
@@ -90,7 +97,7 @@ def gradient(name, **kwargs):
             PsiMod.get_active_molecule().set_geometry(displacment)
 
             # Perform the energy calculation
-            E = energy(name, **kwargs)
+            E = func(name, **kwargs)
 
             # Save the energy
             energies.append(E)
@@ -124,5 +131,5 @@ def optimize(name, **kwargs):
             PsiMod.opt_clean()
             return thisenergy
 
-    PsiMod.print_out("Optimizer: Did not converge!")
+    PsiMod.print_out("\tOptimizer: Did not converge!")
     return 0.0
