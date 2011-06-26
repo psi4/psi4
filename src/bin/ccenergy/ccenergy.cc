@@ -96,9 +96,14 @@ void checkpoint(void);
 void local_init(void);
 void local_done(void);
 
-int ccenergy(Options &options);
+PsiReturnType ccenergy(Options &options);
 
 }} //namespace psi::ccenergy
+
+// Forward declaration to call cctriples
+namespace psi { namespace cctriples {
+PsiReturnType cctriples(Options &options);
+}}
 
 namespace psi { namespace ccenergy {
 
@@ -136,15 +141,28 @@ void CCEnergyWavefunction::init()
 double CCEnergyWavefunction::compute_energy()
 {
     energy_ = 0.0;
-    if (psi::ccenergy::ccenergy(options_) == Success) {
+    PsiReturnType ccsd_return;
+    if ((ccsd_return = psi::ccenergy::ccenergy(options_)) == Success) {
         // Get the total energy of the CCSD wavefunction
         energy_ = Process::environment.globals["CURRENT ENERGY"];
+    }
+
+    if (options_.get_str("WFN") == "CCSD_T") {
+        // Make sure ccenergy returned Success
+        if (ccsd_return != Success)
+            throw PSIEXCEPTION("CCEnergyWavefunction: CCSD did not converge, will not proceed to (T) correction.");
+
+        // Run cctriples
+        if (psi::cctriples::cctriples(options_) == Success)
+            energy_ = Process::environment.globals["CURRENT ENERGY"];
+        else
+            energy_ = 0.0;
     }
 
     return energy_;
 }
 
-int ccenergy(Options &options)
+PsiReturnType ccenergy(Options &options)
 {
   int done=0, brueckner_done=0;
   int h, i, j, a, b, row, col, natom;
