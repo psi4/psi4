@@ -178,16 +178,11 @@ def run_ccsd_t(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
-    # For a CCSD energy, we need SCF to be run.
-    # Could we somehow do a check to see if SCF was run?
-    # This would be useful of the user had to do something special with SCF to get
-    # it to converge.
-    run_scf("scf", **kwargs);
+    # Should probably do a check on the user's options to ensure wfn = ccsd_t
 
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    PsiMod.ccenergy()
-    PsiMod.cctriples()
+    # The new CCEnergyWavefunction object that is used to wrap ccenergy
+    # automatically handles cctriples.
+    return run_ccsd(name, **kwargs)
 
 def run_ccsd_response(name, **kwargs):
 
