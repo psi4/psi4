@@ -343,7 +343,7 @@ struct params {
    double S;         /* the value of quantum number S */
    int Ms0;          /* 1 if Ms=0, 0 otherwise */
    int ref_sym;      /* irrep for CI vectors;  -1 = find automatically */
-   int opentype;     /* closed, highspin, or open-shell singlet; see #define */
+   int opentype;     /* none, highspin, or open-shell singlet; see #define */
    int a_ras1_lvl;   /* orbital number defining RAS I for alpha electrons */
    int a_ras1_min;   /* minimum number of alpha electrons in RAS I */
    int a_ras1_max;   /* maximum number of alpha electrons in RAS I */
