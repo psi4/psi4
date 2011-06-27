@@ -96,7 +96,7 @@ void s3_block_vdiag(struct stringwr *alplist, struct stringwr *betlist,
 
 
           /* loop over Ia */
-          if (Parameters.pthreads) {
+          if (Parameters.nthreads > 1) {
               detci_time.s3_mt_before_time = wall_time_new();
               tpool_queue_open(thread_pool);
               for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
@@ -314,7 +314,7 @@ void s3_block_v(struct stringwr *alplist, struct stringwr *betlist,
 
 
        /* loop over Ia */
-       if (Parameters.pthreads) {
+       if (Parameters.nthreads > 1) {
            detci_time.s3_mt_before_time = wall_time_new();
            tpool_queue_open(thread_pool);
            for (Ia=alplist, Ia_idx=0; Ia_idx<nas; Ia_idx++, Ia++) {
