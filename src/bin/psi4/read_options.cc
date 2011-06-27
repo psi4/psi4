@@ -57,9 +57,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Do a full CI (FCI)? -*/
     options.add_bool("FCI",false);
 
-    /*- Do a full CI (FCI)? -*/
-    options.add_bool("FCI",false);
-
     /*- The CI excitation level -*/
     options.add_int("EX_LVL", 2);
 
