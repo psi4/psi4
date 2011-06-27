@@ -152,7 +152,7 @@ int detci(Options &options)
    fflush(outfile); 
 
    form_strings();              /* form the alpha/beta strings              */
-   if (Parameters.pthreads)
+   if (Parameters.nthreads > 1)
      tpool_init(&thread_pool, Parameters.nthreads, CalcInfo.num_alp_str, 0);
                                 /* initialize thread pool */
    init_time_new(detci_time);             /* initialize timing routines */
@@ -192,7 +192,7 @@ int detci(Options &options)
    if (Parameters.opdm || Parameters.transdens) form_opdm();
    if (Parameters.tpdm) form_tpdm();
    if (Parameters.print_lvl) print_time_new(detci_time);
-   if (Parameters.pthreads) tpool_destroy(thread_pool, 1);
+   if (Parameters.nthreads > 1) tpool_destroy(thread_pool, 1);
    if (Parameters.print_lvl > 0) quote();
    close_io();
    return Success;
