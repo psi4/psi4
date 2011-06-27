@@ -31,6 +31,7 @@ namespace psi {
 
 class Molecule;
 class BasisSet;
+class IntegralFactory;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
@@ -57,6 +58,9 @@ protected:
     // PSI file access variables
     boost::shared_ptr<PSIO> psio_;
     boost::shared_ptr<Chkpt> chkpt_;
+
+    /// Integral factory
+    boost::shared_ptr<IntegralFactory> integral_;
 
     /// Matrix factory for creating standard sized matrices
     boost::shared_ptr<MatrixFactory> factory_;
