@@ -209,39 +209,36 @@ I  Parameters.ras4_lvl = -1;
    if (strcmp(Parameters.wfn, "DETCAS")==0 ||
        strcmp(Parameters.wfn, "CASSCF")==0 ||
        strcmp(Parameters.wfn, "RASSCF")==0)
-     Parameters.guess_vector = PARM_GUESS_VEC_DFILE;
+*    Parameters.guess_vector = PARM_GUESS_VEC_DFILE;
    else
      Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
 
-   Parameters.icore = 1;
-   Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
-   Parameters.precon = PRECON_DAVIDSON;
-   Parameters.update = UPDATE_DAVIDSON;
-   Parameters.maxnvect = 0;
-   Parameters.collapse_size = 1;
-   Parameters.lse = 0;
-   Parameters.lse_collapse = 3;
-   Parameters.lse_tolerance = 3;
-   Parameters.neg_only = 1;
-   Parameters.zero_blocks = 0;
+*  Parameters.icore = 1;
+*  Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
+*  Parameters.precon = PRECON_DAVIDSON;
+*  Parameters.update = UPDATE_DAVIDSON;
+*  Parameters.maxnvect = 0;
+*  Parameters.collapse_size = 1;
+*  Parameters.lse = 0;
+*  Parameters.lse_collapse = 3;
+*  Parameters.lse_tolerance = 3;
+X  Parameters.neg_only = 1;
 
-   Parameters.nunits = 1;
-   Parameters.first_tmp_unit = 50;
-   Parameters.first_hd_tmp_unit = 0;
-   Parameters.num_hd_tmp_units = 0;
-   Parameters.first_c_tmp_unit = 0;
-   Parameters.num_c_tmp_units = 0;
-   Parameters.first_s_tmp_unit = 0;
-   Parameters.num_s_tmp_units = 0;
-   Parameters.first_d_tmp_unit = 0;
-   Parameters.num_d_tmp_units = 0;
+X  Parameters.nunits = 1;
+X  Parameters.first_tmp_unit = 50;
+X  Parameters.first_hd_tmp_unit = 0;
+X  Parameters.num_hd_tmp_units = 0;
+X  Parameters.first_c_tmp_unit = 0;
+X  Parameters.num_c_tmp_units = 0;
+X  Parameters.first_s_tmp_unit = 0;
+X  Parameters.num_s_tmp_units = 0;
+X  Parameters.first_d_tmp_unit = 0;
+X  Parameters.num_d_tmp_units = 0;
    
-   Parameters.restart = 0;
-   Parameters.restart_vecs = 0;
-   Parameters.restart_iter = 0;
-   Parameters.bendazzoli = 0;
+*  Parameters.restart = 0;
+*  Parameters.bendazzoli = 0;
 
-   Parameters.cc = 0;
+*  Parameters.cc = 0;
    errcod = ip_boolean("CC",&(Parameters.cc),0);
 
    if (strcmp(Parameters.dertype, "FIRST")==0 ||
@@ -249,13 +246,13 @@ I  Parameters.ras4_lvl = -1;
       strcmp(Parameters.wfn, "CASSCF")==0 ||
       strcmp(Parameters.wfn, "RASSCF")==0)
    {
-     Parameters.convergence = 7;
-     Parameters.energy_convergence = 8;
-     Parameters.opdm = 1;
-     Parameters.opdm_write = 1;
-     Parameters.tpdm = 1;
-     Parameters.tpdm_write = 1;
-     Parameters.maxiter = 12;
+*    Parameters.convergence = 7;
+*    Parameters.energy_convergence = 8;
+*    Parameters.opdm = 1;
+X    Parameters.opdm_write = 1;
+*    Parameters.tpdm = 1;
+X    Parameters.tpdm_write = 1;
+*    Parameters.maxiter = 12;
    }
 
    else {
@@ -275,28 +272,27 @@ I  Parameters.ras4_lvl = -1;
      Parameters.tpdm_write = 0;
    }
 
-   Parameters.opdm_file = PSIF_MO_OPDM;
-   Parameters.opdm_print = 0;
-   Parameters.opdm_diag = 0;
-   Parameters.opdm_wrtnos = 0;
-   Parameters.opdm_orbsfile = 76;
-   Parameters.opdm_ave = 0;
-   Parameters.opdm_orbs_root = -1;
-   Parameters.opdm_ke = 0;
-   Parameters.tpdm_file = PSIF_MO_TPDM;
-   Parameters.tpdm_print = 0;
-   Parameters.root = 1;
+X  Parameters.opdm_file = PSIF_MO_OPDM;
+*  Parameters.opdm_print = 0;
+X  Parameters.opdm_diag = 0;
+*  Parameters.opdm_wrtnos = 0;
+X  Parameters.opdm_orbsfile = 76;
+*  Parameters.opdm_ave = 0;
+*  Parameters.opdm_orbs_root = -1;
+*  Parameters.opdm_ke = 0;
+X  Parameters.tpdm_file = PSIF_MO_TPDM;
+*  Parameters.tpdm_print = 0;
+*  Parameters.root = 1;
 
-   Parameters.nthreads = 1;
-   Parameters.pthreads = 0;
-   Parameters.sf_restrict = 0;
-   Parameters.print_sigma_overlap = 0;
+*  Parameters.nthreads = 1;
+*  Parameters.sf_restrict = 0;
+*  Parameters.print_sigma_overlap = 0;
 
    tval = 1;
    if (ip_exist("MULTP",0)) {
-     errcod = ip_data("MULTP","%d",&tval,0);
+*    errcod = ip_data("MULTP","%d",&tval,0);
    }
-   Parameters.S = (((double) tval) - 1.0) / 2.0;
+*  Parameters.S = (((double) tval) - 1.0) / 2.0;
    errcod = ip_data("S","%lf",&(Parameters.S),0);
 
    errcod = ip_data("EX_LVL","%d",&(Parameters.ex_lvl),0);
@@ -364,7 +360,7 @@ I  Parameters.ras4_lvl = -1;
      else Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
      } /* end PSI3 parsing */
 
-   errcod = ip_boolean("MS0",&(Parameters.Ms0),0);
+*  errcod = ip_boolean("MS0",&(Parameters.Ms0),0);
    errcod = ip_data("REF_SYM","%d",&(Parameters.ref_sym),0);
    errcod = ip_data("OEI_FILE","%d",&(Parameters.oei_file),0);
    errcod = ip_data("TEI_FILE","%d",&(Parameters.tei_file),0);
@@ -378,8 +374,8 @@ I  Parameters.ras4_lvl = -1;
    errcod = ip_boolean("H0_BLOCK_COUPLING",&(Parameters.h0block_coupling),0);
    errcod = ip_data("NPRINT","%d",&(Parameters.nprint),0);
    errcod = ip_data("CC_NPRINT","%d",&(Parameters.cc_nprint),0);
-   errcod = ip_boolean("FREEZE_CORE",&(Parameters.fzc),0);
-   errcod = ip_boolean("FCI",&(Parameters.fci),0);
+   errcod = ip_boolean("DETCI_FREEZE_CORE",&(Parameters.fzc),0);
+*  errcod = ip_boolean("FCI",&(Parameters.fci),0);
    if (Parameters.fci) Parameters.fci_strings = 1;
    errcod = ip_boolean("FCI_STRINGS",&(Parameters.fci_strings),0);
    errcod = ip_boolean("MIXED",&(Parameters.mixed),0);
@@ -387,7 +383,7 @@ I  Parameters.ras4_lvl = -1;
    errcod = ip_boolean("R4S",&(Parameters.r4s),0);
    errcod = ip_boolean("REPL_OTF",&(Parameters.repl_otf),0);
    errcod = ip_boolean("CALC_SSQ",&(Parameters.calc_ssq),0);
-   errcod = ip_boolean("MPN",&(Parameters.mpn),0);
+*  errcod = ip_boolean("MPN",&(Parameters.mpn),0);
    if (Parameters.mpn) {
      Parameters.fci = 1;
      Parameters.mpn_schmidt = FALSE;
@@ -501,8 +497,8 @@ I  Parameters.ras4_lvl = -1;
      Parameters.update = UPDATE_DAVIDSON;
      }
    
-   errcod = ip_boolean("ZERO_BLOCKS",&(Parameters.zero_blocks),0);
-   if (Parameters.icore || !Parameters.mpn) Parameters.zero_blocks = 0;
+   // errcod = ip_boolean("ZERO_BLOCKS",&(Parameters.zero_blocks),0);
+   // if (Parameters.icore || !Parameters.mpn) Parameters.zero_blocks = 0;
    Parameters.num_init_vecs = Parameters.num_roots;
    errcod = ip_data("NUM_INIT_VECS","%d",&(Parameters.num_init_vecs),0);
 
@@ -592,11 +588,14 @@ I  Parameters.ras4_lvl = -1;
     * function as the master switch for all other OPDM parameters.
     */
    errcod = ip_boolean("OPDM_PRINT",&(Parameters.opdm_print),0);
-   errcod = ip_data("OPDM_FILE","%d",&(Parameters.opdm_file),0);
+   // Make this an internal parameter
+   // errcod = ip_data("OPDM_FILE","%d",&(Parameters.opdm_file),0);
    errcod = ip_boolean("WRTNOS",&(Parameters.opdm_wrtnos),0);
-   errcod = ip_boolean("OPDM_DIAG",&(Parameters.opdm_diag),0);
+   // Make this an internal parameter, essentially same as WRTNOS
+   // errcod = ip_boolean("OPDM_DIAG",&(Parameters.opdm_diag),0);
    errcod = ip_boolean("OPDM_AVE",&(Parameters.opdm_ave),0);
-   errcod = ip_data("ORBSFILE","%d",&(Parameters.opdm_orbsfile),0);
+   // Make an internal parameter
+   // errcod = ip_data("ORBSFILE","%d",&(Parameters.opdm_orbsfile),0);
    errcod = ip_data("ORBS_ROOT","%d",&(Parameters.opdm_orbs_root),0);
    errcod = ip_boolean("OPDM_KE",&(Parameters.opdm_ke),0);
    
@@ -607,7 +606,8 @@ I  Parameters.ras4_lvl = -1;
        || Parameters.opdm_ave || Parameters.opdm_ke) Parameters.opdm = 1;
    errcod = ip_boolean("OPDM",&(Parameters.opdm),0);
    if (Parameters.opdm) Parameters.opdm_write = 1;
-   errcod = ip_boolean("OPDM_WRITE",&(Parameters.opdm_write),0);
+//   No reason why the user would need to change this, make internal param
+//   errcod = ip_boolean("OPDM_WRITE",&(Parameters.opdm_write),0);
    errcod = ip_boolean("OPDM_PRINT",&(Parameters.opdm_print),0);
    errcod = ip_data("OPDM_DIAG","%d",&(Parameters.opdm_diag),0);
 
@@ -618,7 +618,7 @@ I  Parameters.ras4_lvl = -1;
    errcod = ip_boolean("TDM_WRITE",&(Parameters.tdm_write),0);
    if (Parameters.tdm_print || Parameters.tdm_write || 
        (Parameters.num_roots > 1))
-     Parameters.transdens = 1;
+*    Parameters.transdens = 1;
    else 
      Parameters.transdens = 0;
    errcod = ip_boolean("TRANSITION_DENSITY",&(Parameters.transdens),0);
@@ -633,7 +633,7 @@ I  Parameters.ras4_lvl = -1;
        strcmp(Parameters.wfn, "DETCAS")==0)
    Parameters.dipmom = 0;
    if (Parameters.transdens) Parameters.dipmom = 1;
-   errcod = ip_boolean("DIPMOM",&(Parameters.dipmom),0);
+*  errcod = ip_boolean("DIPMOM",&(Parameters.dipmom),0);
    if (Parameters.dipmom == 1) Parameters.opdm = 1; 
  
    errcod = ip_data("ROOT","%d",&(Parameters.root),0);
@@ -641,9 +641,11 @@ I  Parameters.ras4_lvl = -1;
 
    errcod = ip_boolean("TPDM",&(Parameters.tpdm),0);
    if (Parameters.tpdm) Parameters.tpdm_write = 1;
-   errcod = ip_boolean("TPDM_WRITE",&(Parameters.tpdm_write),0);
+//   Made this an internal parameter
+//   errcod = ip_boolean("TPDM_WRITE",&(Parameters.tpdm_write),0);
    errcod = ip_boolean("TPDM_PRINT",&(Parameters.tpdm_print),0);
-   errcod = ip_data("TPDM_FILE","%d",&(Parameters.tpdm_file),0);
+//   Made this an internal parameter
+//   errcod = ip_data("TPDM_FILE","%d",&(Parameters.tpdm_file),0);
 
    if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
        strcmp(Parameters.wfn, "DETCAS")!=0 &&
@@ -678,8 +680,6 @@ I  Parameters.ras4_lvl = -1;
 
    errcod = ip_data("NTHREADS", "%d", &(Parameters.nthreads),0);
    if (Parameters.nthreads < 1) Parameters.nthreads = 1;
-   errcod = ip_boolean("PTHREADS",&(Parameters.pthreads),0);
-   if (!Parameters.pthreads) Parameters.nthreads = 1;
 
    Parameters.export_ci_vector = 0;
    errcod = ip_boolean("EXPORT_VECTOR", &(Parameters.export_ci_vector), 0);
@@ -700,21 +700,21 @@ I  Parameters.ras4_lvl = -1;
    
    if (Parameters.cc) Parameters.ex_lvl = Parameters.cc_ex_lvl + 2;
 
-   Parameters.ex_type = (int *)malloc(Parameters.ex_lvl*sizeof(int));
-   if (ip_exist("EX_TYPE",0)) {
-     ip_count("EX_TYPE", &i, 0);
+   Parameters.ex_allow = (int *)malloc(Parameters.ex_lvl*sizeof(int));
+   if (ip_exist("EX_ALLOW",0)) {
+     ip_count("EX_ALLOW", &i, 0);
      if (i != Parameters.ex_lvl) {
-       fprintf(outfile,"Dim. of excitation type must be %d\n", 
+       fprintf(outfile,"Dim. of EX_ALLOW must be %d\n", 
                Parameters.ex_lvl);
        exit(0);
      }
      for (i=0;i<Parameters.ex_lvl;i++) {
-       errcod = ip_data("EX_TYPE","%d",&(Parameters.ex_type[i]),1,i);
+*      errcod = ip_data("EX_ALLOW","%d",&(Parameters.ex_allow[i]),1,i);
      }
    }
    else {
      for (i=0;i<Parameters.ex_lvl;i++) {
-       Parameters.ex_type[i] = 1;
+       Parameters.ex_allow[i] = 1;
      }
    }
 
@@ -728,17 +728,17 @@ I  Parameters.ras4_lvl = -1;
       which are to be kept.
     */
    Parameters.filter_guess = 0;
-   errcod = ip_boolean("FILTER_GUESS",&(Parameters.filter_guess),0);
+*  errcod = ip_boolean("FILTER_GUESS",&(Parameters.filter_guess),0);
    if (errcod == IPE_OK && Parameters.filter_guess == 1) {
      Parameters.filter_guess_sign = 1;
-     errcod = ip_data("FILTER_GUESS_SIGN","%d",
+*    errcod = ip_data("FILTER_GUESS_SIGN","%d",
                       &(Parameters.filter_guess_sign),0);
      if (errcod != IPE_OK || (Parameters.filter_guess_sign != 1 &&
          Parameters.filter_guess_sign != -1)) {
        fprintf(outfile, "FILTER_GUESS_SIGN should be 1 or -1 !\n");
        abort();
      }
-     errcod = ip_count("FILTER_GUESS_DET1",&i,0); 
+*    errcod = ip_count("FILTER_GUESS_DET1",&i,0); 
      if (errcod != IPE_OK || i != 2) {
        fprintf(outfile, "Need to specify FILTER_GUESS_DET1 = "
                         "(alphastr betastr)\n");
@@ -751,7 +751,7 @@ I  Parameters.ras4_lvl = -1;
                         &(Parameters.filter_guess_Ib),1,1);
      }
 
-     errcod = ip_count("FILTER_GUESS_DET2",&i,0); 
+*    errcod = ip_count("FILTER_GUESS_DET2",&i,0); 
      if (errcod != IPE_OK || i != 2) {
        fprintf(outfile, "Need to specify FILTER_GUESS_DET2 = "
                         "(alphastr betastr)\n");
@@ -772,23 +772,23 @@ I  Parameters.ras4_lvl = -1;
       user to select a determinant which should always have a zero
       coefficient in the desired target state
     */
-   Parameters.zero_det = 0;
-   if (ip_exist("ZERO_DET",0)) {
-     errcod = ip_count("ZERO_DET",&i,0); 
+   Parameters.filter_zero_det = 0;
+*  if (ip_exist("FILTER_ZERO_DET",0)) {
+     errcod = ip_count("FILTER_ZERO_DET",&i,0); 
      if (errcod != IPE_OK || i != 2) {
-       fprintf(outfile, "Need to specify ZERO_DET = "
+       fprintf(outfile, "Need to specify FILTER_ZERO_DET = "
                         "(alphastr betastr)\n");
        abort();
      }
-     Parameters.zero_det = 1;
-     errcod = ip_data("ZERO_DET","%d",
-                      &(Parameters.zero_det_Ia),1,0);
-     errcod = ip_data("ZERO_DET","%d",
-                      &(Parameters.zero_det_Ib),1,1);
+     Parameters.filter_zero_det = 1;
+     errcod = ip_data("FILTER_ZERO_DET","%d",
+                      &(Parameters.filter_zero_det_Ia),1,0);
+     errcod = ip_data("FILTER_ZERO_DET","%d",
+                      &(Parameters.filter_zero_det_Ib),1,1);
    }
 
    /* Does the user request a state-averaged calculation? */
-   if (ip_exist("AVERAGE_STATES",0)) {
+*  if (ip_exist("AVERAGE_STATES",0)) {
      ip_count("AVERAGE_STATES", &i, 0);
      if (i < 1 || i > Parameters.num_roots) {
        fprintf(outfile,"Invalid number of states to average (%d)\n", i);
@@ -809,7 +809,7 @@ I  Parameters.ras4_lvl = -1;
        Parameters.average_states[i] -= 1; /* number from 1 externally */
        Parameters.average_weights[i] = 1.0/((double)Parameters.average_num);
      }
-     if (ip_exist("AVERAGE_WEIGHTS",0)) {
+*    if (ip_exist("AVERAGE_WEIGHTS",0)) {
        ip_count("AVERAGE_WEIGHTS", &i, 0);
        if (i != Parameters.average_num) {
          fprintf(outfile,"Mismatched number of average weights (%d)\n", i);
@@ -838,6 +838,10 @@ I  Parameters.ras4_lvl = -1;
 
    /* Follow a vector to determine the root number? */
    Parameters.follow_vec_num = 0;
+
+   /* CDS-TODO: I'm going to rearrange this into 
+      FOLLOW_VECTOR_ALPHAS, FOLLOW_VECTOR_BETAS, and FOLLOW_VECTOR_COEFS
+   */
    if (ip_exist("FOLLOW_VECTOR",0)) {
      errcod = ip_count("FOLLOW_VECTOR",&i,0); 
      if (errcod != IPE_OK || (i % 2)!=0) {
@@ -847,9 +851,9 @@ I  Parameters.ras4_lvl = -1;
      }
      i = i/2;
      Parameters.follow_vec_num = i;     
-     Parameters.follow_vec_coef   = init_array(i);
-     Parameters.follow_vec_Ia     = init_int_array(i);
-     Parameters.follow_vec_Ib     = init_int_array(i);
+*    Parameters.follow_vec_coef   = init_array(i);
+*    Parameters.follow_vec_Ia     = init_int_array(i);
+*    Parameters.follow_vec_Ib     = init_int_array(i);
      Parameters.follow_vec_Iac    = init_int_array(i);
      Parameters.follow_vec_Ibc    = init_int_array(i);
      Parameters.follow_vec_Iaridx = init_int_array(i);
@@ -892,30 +896,30 @@ I  Parameters.ras4_lvl = -1;
 
   Parameters.cc_export = 0;
   Parameters.cc_import = 0;
-  errcod = ip_boolean("CC_EXPORT", &(Parameters.cc_export), 0);
-  errcod = ip_boolean("CC_IMPORT", &(Parameters.cc_import), 0);
+* errcod = ip_boolean("CC_EXPORT", &(Parameters.cc_export), 0);
+* errcod = ip_boolean("CC_IMPORT", &(Parameters.cc_import), 0);
 
   Parameters.cc_fix_external = 0;
-  errcod = ip_boolean("CC_FIX_EXTERNAL", &(Parameters.cc_fix_external), 0);
+* errcod = ip_boolean("CC_FIX_EXTERNAL", &(Parameters.cc_fix_external), 0);
   Parameters.cc_fix_external_min = 1;
-  errcod = ip_data("CC_FIX_EXTERNAL_MIN", "%d",
+* errcod = ip_data("CC_FIX_EXTERNAL_MIN", "%d",
     &(Parameters.cc_fix_external_min),0);
 
   Parameters.cc_variational = 0;
-  errcod = ip_boolean("CC_VARIATIONAL", &(Parameters.cc_variational), 0);
+* errcod = ip_boolean("CC_VARIATIONAL", &(Parameters.cc_variational), 0);
 
   Parameters.cc_mixed = 1;
-  errcod = ip_boolean("CC_MIXED", &(Parameters.cc_mixed), 0);
+* errcod = ip_boolean("CC_MIXED", &(Parameters.cc_mixed), 0);
 
   /* update using orb eigvals or not? */
   Parameters.cc_update_eps = 1;
-  errcod = ip_boolean("CC_UPDATE_EPS", &(Parameters.cc_update_eps), 0);
+* errcod = ip_boolean("CC_UPDATE_EPS", &(Parameters.cc_update_eps), 0);
 
-  Parameters.diis = 1;             /* only kicks in for CC anyway */
-  Parameters.diis_start = 1;       /* iteration to turn on DIIS */
-  Parameters.diis_freq  = 1;       /* how often to do a DIIS extrapolation */
-  Parameters.diis_min_vecs = 2;
-  Parameters.diis_max_vecs = 5;
+* Parameters.diis = 1;             /* only kicks in for CC anyway */
+* Parameters.diis_start = 1;       /* iteration to turn on DIIS */
+* Parameters.diis_freq  = 1;       /* how often to do a DIIS extrapolation */
+* Parameters.diis_min_vecs = 2;
+* Parameters.diis_max_vecs = 5;
 
   errcod = ip_boolean("DIIS", &(Parameters.diis), 0);
   errcod = ip_data("DIIS_START","%d",&(Parameters.diis_start),0);
@@ -933,8 +937,27 @@ I  Parameters.ras4_lvl = -1;
      particles in RAS IV, OR there are more than max_I+IV quasiparticles
      in RAS I + RAS IV]
    */
+  // CDS-TODO: Here we need an array of arrays.  This seems like it
+  // should work by analogy to src/bin/cis/local.cc.  Check.
+  // Here's the CIS example:
+  /*
+  if (options["DOMAINS"].size() > 0) {
+    num_entries = options["DOMAINS"].size();
+    for(i=0; i<num_entries; i++) {
+      entry_len = options["DOMAINS"][i].size();
+      orbital = options["DOMAINS"][i][0].to_integer();
+
+      for(j=1; j<entry_len; j++) {
+        atom = options["DOMAINS"][i][j].to_integer();
+        domain[orbital][atom] = 1;
+        domain_len[orbital]++;
+      }
+    }
+  }
+  */
+
   Parameters.cc_macro_on = 0;
-  if (Parameters.cc && ip_exist("CC_MACRO",0)) {
+* if (Parameters.cc && ip_exist("CC_MACRO",0)) {
     errcod = ip_count("CC_MACRO",&i,0);
     Parameters.cc_macro = init_int_matrix(Parameters.cc_ex_lvl +
       Parameters.cc_val_ex_lvl + 1, 3);
@@ -1074,8 +1097,8 @@ void print_parameters(void)
    fprintf(outfile, "   S             =   %6lf     Ms0          =   %6s\n",
       Parameters.S, Parameters.Ms0 ? "yes" : "no");           
    fprintf(outfile, "   MAXNVECT     =   %6d\n", Parameters.maxnvect);
-   fprintf(outfile, "   RESTART       =   %6s      RESTART VECS =   %6d\n",
-      Parameters.restart ? "yes" : "no", Parameters.restart_vecs);
+   fprintf(outfile, "   RESTART       =   %6s\n",
+      Parameters.restart ? "yes" : "no");
    fprintf(outfile, "   GUESS VECTOR  =  ");
    switch (Parameters.guess_vector) {
       case PARM_GUESS_VEC_UNIT:
@@ -1143,14 +1166,12 @@ void print_parameters(void)
            Parameters.hd_otf ? "yes" : "no", Parameters.nodfile ? "yes":"no");
    fprintf(outfile, "   MPN           =   %6s      MPN SCHMIDT  =   %6s\n",
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
-   fprintf(outfile, " ZAPTN           =   %6s\n",
-           Parameters.zaptn ? "yes":"no");
-   fprintf(outfile, "   WIGNER        =   %6s      ZERO BLOCKS  =   %6s\n", 
-           Parameters.wigner ? "yes":"no", Parameters.zero_blocks ? "yes":"no");
+   fprintf(outfile, " ZAPTN           =   %6s      WIGNER       =   %6s\n",
+           Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
    fprintf(outfile, "   PERT Z        =   %1.4f      ROOT         =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
-   fprintf(outfile, "   PTHREADS      =   %6s      NTHREADS     =   %6d\n",
-           Parameters.pthreads ? "yes":"no", Parameters.nthreads);
+   fprintf(outfile, "   NTHREADS     =   %6d\n",
+           Parameters.nthreads);
    fprintf(outfile, "   EXPORT VECTOR =   %6s      NUM EXPORT   =   %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
    fprintf(outfile, "   FILTER_GUESS  =   %6s      SF_RESTRICT  =   %6s\n",
@@ -1169,9 +1190,9 @@ void print_parameters(void)
       Parameters.first_hd_tmp_unit, Parameters.first_c_tmp_unit,
       Parameters.first_s_tmp_unit, Parameters.first_d_tmp_unit);
    
-   fprintf(outfile, "\n   EX_TYPE       = ");
+   fprintf(outfile, "\n   EX_ALLOW      = ");
    for (i=0;i<Parameters.ex_lvl;i++) {
-     fprintf(outfile, "%2d ", Parameters.ex_type[i]);
+     fprintf(outfile, "%2d ", Parameters.ex_allow[i]);
    }
 
    fprintf(outfile, "\n   STATE AVERAGE = ");
@@ -1221,9 +1242,9 @@ void set_ras_parms(void)
    {
      Parameters.val_ex_lvl = 0;
      Parameters.ex_lvl = CalcInfo.num_alp_expl + CalcInfo.num_bet_expl;
-     free(Parameters.ex_type);
-     Parameters.ex_type = init_int_array(Parameters.ex_lvl);
-     for (i=0; i<Parameters.ex_lvl; i++) Parameters.ex_type[i] = 1;
+     free(Parameters.ex_allow);
+     Parameters.ex_allow = init_int_array(Parameters.ex_lvl);
+     for (i=0; i<Parameters.ex_lvl; i++) Parameters.ex_allow[i] = 1;
 
      if (Parameters.print_lvl) {
        fprintf(outfile, "Note: Calculation requested is a full CI.\n");

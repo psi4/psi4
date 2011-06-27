@@ -712,7 +712,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
 
 #ifndef OLD_CDS_ALG
       if (fci) {
-          if (Parameters.pthreads)
+          if (Parameters.nthreads > 1)
               s2_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, F, 
                  cnac, nas, nbs, sac, cac, cnas);
           else
@@ -725,7 +725,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
                                  Toccs, cmat, smat, oei, tei, F, cnac, 
                                  nas, nbs, sac, cac, cnas);
             }
-          else if (Parameters.pthreads) {
+          else if (Parameters.nthreads > 1) {
             s2_block_vras_thread(alplist, betlist, cmat, smat, 
                             oei, tei, F, cnac, nas, nbs, sac, cac, cnas);  
             }
@@ -770,7 +770,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
       if (s1_contrib[sblock][cblock]) {
          #ifndef OLD_CDS_ALG
           if (fci) { 
-              if (Parameters.pthreads)
+              if (Parameters.nthreads > 1)
                   s1_block_vfci_thread(alplist, betlist, cmat, smat, oei, tei, F, cnbc,
                                        nas, nbs, sbc, cbc, cnbs);
               else
@@ -783,7 +783,7 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
                   Toccs, cmat, smat, oei, tei, F, cnbc, nas, nbs,
                   sbc, cbc, cnbs);
                }
-            else if (Parameters.pthreads) {
+            else if (Parameters.nthreads > 1) {
                s1_block_vras_thread(alplist, betlist, cmat, smat, oei, tei, F, cnbc, 
                   nas, nbs, sbc, cbc, cnbs);
               }

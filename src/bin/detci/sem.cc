@@ -713,7 +713,7 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
          }
 
        /* diagonalize sigma_overlap to see what that does
-          should be the same as diagnolizing H^2 in the basis of the
+          should be the same as diagonalizing H^2 in the basis of the
           Davidson subspace vectors
         */
 
@@ -1151,10 +1151,11 @@ void sem_iter(CIvect &Hd, struct stringwr **alplist, struct stringwr
                   "correction (root %d) is < 1.0E-13\n", k);  
            }
          Dvec.read(k,0); 
-         if (Parameters.zero_det) {
-           tval -= Dvec.zero_det(Parameters.zero_det_Iac,
-                     Parameters.zero_det_Iaridx, Parameters.zero_det_Ibc,
-                     Parameters.zero_det_Ibridx);
+         if (Parameters.filter_zero_det) {
+           tval -= Dvec.zero_det(Parameters.filter_zero_det_Iac,
+                     Parameters.filter_zero_det_Iaridx, 
+                     Parameters.filter_zero_det_Ibc,
+                     Parameters.filter_zero_det_Ibridx);
          }
          tval = sqrt(1.0 / tval);
          Dvec.symnorm(tval,0,0);
