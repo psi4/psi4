@@ -147,9 +147,6 @@ public:
 
     template<typename TwoBodySOIntFunctor>
     void compute_shell(int, int, int, int, TwoBodySOIntFunctor& body);
-
-    template<typename TwoBodySOIntFunctor>
-    void compute_shell_smart(int, int, int, int, TwoBodySOIntFunctor& body);
 };
 
 template<typename TwoBodySOIntFunctor>
