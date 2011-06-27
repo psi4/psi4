@@ -212,6 +212,7 @@ double py_psi_ccsort()
 
 double py_psi_ccenergy()
 {
+    py_psi_prepare_options_for_module("CCENERGY");
     boost::shared_ptr<Wavefunction> ccwave(new ccenergy::CCEnergyWavefunction(
                                                Process::environment.reference_wavefunction(),
                                                Process::environment.options)
@@ -221,7 +222,6 @@ double py_psi_ccenergy()
     double energy = ccwave->compute_energy();
     return energy;
 
-//    py_psi_prepare_options_for_module("CCENERGY");
 //    if (ccenergy::ccenergy(Process::environment.options) == Success) {
 //        return Process::environment.globals["CURRENT ENERGY"];
 //    }
