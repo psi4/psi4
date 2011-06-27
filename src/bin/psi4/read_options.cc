@@ -52,7 +52,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("DERTYPE", "NONE", "NONE FIRST");
 
     /*- Wavefunction type -*/
-    options.add_str("WFN", "", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
+    options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- Do a full CI (FCI)? -*/
     options.add_bool("FCI",false);
