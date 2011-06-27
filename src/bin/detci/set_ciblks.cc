@@ -234,14 +234,14 @@ void set_ciblks(struct olsen_graph *AlphaG, struct olsen_graph *BetaG)
 
                            /* add nonstandard excitation types, such as
 			      CID, CIST, CIDTQ, etc.
-			      Parameters.ex_type[0] = Single excitations
-			      Parameters.ex_type[1] = Double excitations
+			      Parameters.ex_allow[0] = Single excitations
+			      Parameters.ex_allow[1] = Double excitations
 			      etc.
 			      MLA 12/16/03
 			   */
 			   set = 0;
 			   for (i=0; i<Parameters.ex_lvl; i++) {
-			     if (Parameters.ex_type[i] == 0) {
+			     if (Parameters.ex_allow[i] == 0) {
 			       if (nalp3+nbet3 == i+1) set = 1;
 			     }
 			   }

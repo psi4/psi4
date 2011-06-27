@@ -467,12 +467,6 @@ prematurely.  It assumes that the CI and sigma vectors are on disk;
 the number of vectors specified by \fBRESTART_VECS\fP is collapsed
 down to one vector per root.
 
-.IP "\fBRESTART_VECS =\fP \fIinteger\fP"
-If \fBRESTART = TRUE\fP this specifies the number of CI (and sigma) 
-vectors to read from disk.  Typically this is the number of successfully
-completed iterations from a previous run times the number of roots
-for that run.
-
 .IP "\fBTEI_ERASE =\fP \fIboolean\fP"
 This determines whether the program erases the two-electron integrals
 file after it has been read.  The default will eventually

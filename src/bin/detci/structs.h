@@ -435,8 +435,6 @@ struct params {
    int num_d_tmp_units;    /* the number of such files */
    int num_init_vecs;      /* number of initial vectors for Davidson method */
    int restart;            /* restart flag, 0 or 1 */
-   int restart_vecs;       /* number of previous vectors to read for restart */
-   int restart_iter;       /* number of iterations previously completed */
    int bendazzoli;         /* use bendazzoli algorithm */
    int opdm;               /* call the opdm subroutine? */
    int opdm_write;         /* write the opdm? */
@@ -461,14 +459,12 @@ struct params {
    int tpdm_print;         /* print the tpdm? */
    int tpdm_file;          /* file number for tpdm */
    int root;               /* which root to optimize (write opdm/tpdm for) */
-   int zero_blocks;        /* 1(0) if use/ignore zero_blocks array icore=0,2 */
    double perturbation_parameter; /* z in H = H0 + z * H1 */
    int z_scale_H;          /* 1(0) if pert. scaling used */
    int have_special_conv;  /* have a special convergence value from the
                               command line or the DETCASMAN driver? */
    double special_conv;    /* special convergence value */
    int nthreads;           /* number of threads to use in sigma routines */
-   int pthreads;           /* 1(0) if use/not multithreading */
    int export_ci_vector;   /* 1 if export the CI vector with string info,
                               useful for BODC */
    int num_export;         /* number of vectors to export */
@@ -495,13 +491,13 @@ struct params {
    int filter_guess_Jbc;   /* string list number for beta of det 2 */
    int filter_guess_H0_det1; /* H0block determinant number for det 1 */
    int filter_guess_H0_det2; /* H0block determinant number for det 2 */
-   int zero_det;           /* zero out any particular determinant? */
-   int zero_det_Ia;        /* absolute alpha string addr for zero det */
-   int zero_det_Ib;        /* absolute beta  string addr for zero det */
-   int zero_det_Iac;       /* string list number for alpha of zero det */
-   int zero_det_Ibc;       /* string list number for beta of zero det */
-   int zero_det_Iaridx;    /* relative alpha string for zero det */
-   int zero_det_Ibridx;    /* relative beta string for zero det */
+   int filter_zero_det;       /* zero out any particular determinant? */
+   int filter_zero_det_Ia;    /* absolute alpha string addr for zero det */
+   int filter_zero_det_Ib;    /* absolute beta  string addr for zero det */
+   int filter_zero_det_Iac;   /* string list number for alpha of zero det */
+   int filter_zero_det_Ibc;   /* string list number for beta of zero det */
+   int filter_zero_det_Iaridx;/* relative alpha string for zero det */
+   int filter_zero_det_Ibridx;/* relative beta string for zero det */
    int follow_vec_num;     /* num components in user-specified vec to follow */
    double *follow_vec_coef;/* array of coefficients for vec to follow */
    int *follow_vec_Ia;     /* array of absolute alpha strings for vector */
@@ -510,8 +506,10 @@ struct params {
    int *follow_vec_Ibc;    /* array of beta  string lists for vector */
    int *follow_vec_Iaridx; /* array of alpha relative idx for vector */
    int *follow_vec_Ibridx; /* array of beta  relative idx for vector */
-   int *ex_type;           /* Determine nonstandard excitation types, such
-                                as CID, CIST, CIDTQ, etc. */
+   int *ex_allow;          /* Determine nonstandard excitation types, such
+                              as CID, CIST, CIDTQ, etc. Array is length
+                              ex_lvl and each element is 1 or 0.  1 means
+                              that excitation level is allowed. */
    int *average_states;    /* which states to average in a SA calc */
    double *average_weights;/* the weights for each state in a SA calc */
    int average_num;        /* length of the above two arrays */
