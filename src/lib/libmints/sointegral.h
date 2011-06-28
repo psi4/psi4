@@ -126,10 +126,15 @@ protected:
     template<typename TwoBodySOIntFunctor>
     void provide_IJKL(int, int, int, int, TwoBodySOIntFunctor& body);
 
+    bool only_totally_symmetric_;
+
 public:
     TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>&,
                  const boost::shared_ptr<IntegralFactory>&);
     virtual ~TwoBodySOInt();
+
+    bool only_totally_symmetric() const { return only_totally_symmetric_; }
+    void set_only_totally_symmetric(bool ots) { only_totally_symmetric_ = ots; }
 
     boost::shared_ptr<SOBasisSet> basis() const;
     boost::shared_ptr<SOBasisSet> basis1() const;
