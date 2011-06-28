@@ -209,7 +209,7 @@ void DealiasBasisSet::form_basis()
         }
     } 
 
-    dealias_ = BasisSet::buildBasisSet(primary_->molecule(), shells);
+    dealias_ = BasisSet::build(primary_->molecule(), shells);
 } 
 
 }
