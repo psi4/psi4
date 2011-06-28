@@ -51,15 +51,15 @@ BasisSet::~BasisSet()
 {
 
 }
-boost::shared_ptr<BasisSet> BasisSet::buildBasisSet(boost::shared_ptr<Molecule> molecule,
-                                                    std::vector<boost::shared_ptr<GaussianShell> > shells)
+boost::shared_ptr<BasisSet> BasisSet::build(boost::shared_ptr<Molecule> molecule,
+                                            std::vector<boost::shared_ptr<GaussianShell> > shells)
 {
     boost::shared_ptr<BasisSet> basis(new BasisSet());
     basis->molecule_ = molecule;
 
     for (int i = 0; i < shells.size(); i++) {
         basis->shells_.push_back(shells[i]);
-    }    
+    }
 
     basis->refresh();
 

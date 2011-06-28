@@ -107,7 +107,7 @@ public:
      * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
      * @return BasisSet corresponding to this molecule and set of shells 
      */
-    static boost::shared_ptr<BasisSet> buildBasisSet(boost::shared_ptr<Molecule> molecule,
+    static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
                                                      std::vector<boost::shared_ptr<GaussianShell> > shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
