@@ -389,7 +389,7 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
                            const boost::shared_ptr<IntegralFactory>& integral)
-    : tb_(tb), integral_(integral)
+    : tb_(tb), integral_(integral), only_totally_symmetric_(false)
 {
     // Try to reduce some work:
     b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb->basis1(), integral));
