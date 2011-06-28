@@ -347,23 +347,24 @@ std::string CdSalcList::name_of_component(int component)
 
 void CdSalcList::print() const
 {
-    fprintf(outfile, "By SALC:\n");
-    fprintf(outfile, "Number of SALCs %ld, irreps = %d\n"
-            "Project out translations %s\n"
-            "Project out rotations %s\n",
+    fprintf(outfile, "  Cartesian Displacement SALCs\n  By SALC:\n");
+    fprintf(outfile, "  Number of SALCs: %ld, nirreps: %d\n"
+            "  Project out translations: %s\n"
+            "  Project out rotations: %s\n",
             salcs_.size(), needed_irreps_,
-            project_out_translations_ ? "true" : "false",
-            project_out_rotations_ ? "true" : "false");
+            project_out_translations_ ? "True" : "False",
+            project_out_rotations_ ? "True" : "False");
 
     for (int i=0; i<salcs_.size(); ++i)
         salcs_[i].print();
 
-    fprintf(outfile, "By Atomic Center:\n");
-    fprintf(outfile, "Number of atomic centers %ld\n", atom_salcs_.size());
+    fprintf(outfile, "\n  By Atomic Center:\n");
+    fprintf(outfile, "  Number of atomic centers: %ld\n", atom_salcs_.size());
     for (int i=0; i<atom_salcs_.size(); ++i) {
-        fprintf(outfile, "Atomic Center %d\n", i);
+        fprintf(outfile, "   Atomic Center %d:\n", i);
         atom_salcs_[i].print();
     }
+    fprintf(outfile, "\n");
 }
 
 }
