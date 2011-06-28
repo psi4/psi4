@@ -160,6 +160,8 @@ public:
     boost::shared_ptr<PSIO> psio() const;
     Options& options() const;
 
+    /// An integral factory with basisset() on each center.
+    boost::shared_ptr<IntegralFactory> integral() const;
     /// Returns the basis set object that pertains to this wavefunction.
     boost::shared_ptr<BasisSet> basisset() const;
     /// Returns the SO basis set object that pertains to this wavefunction.

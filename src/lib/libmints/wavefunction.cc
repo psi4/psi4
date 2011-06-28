@@ -151,6 +151,11 @@ Options& Wavefunction::options() const
     return options_;
 }
 
+boost::shared_ptr<IntegralFactory> Wavefunction::integral() const
+{
+    return integral_;
+}
+
 boost::shared_ptr<BasisSet> Wavefunction::basisset() const
 {
     return basisset_;
@@ -160,14 +165,17 @@ boost::shared_ptr<SOBasisSet> Wavefunction::sobasisset() const
 {
     return sobasisset_;
 }
+
 boost::shared_ptr<MatrixFactory> Wavefunction::matrix_factory() const
 {
     return factory_;
 }
+
 boost::shared_ptr<Wavefunction> Wavefunction::reference_wavefunction() const
 {
     return reference_wavefunction_;
 }
+
 void Wavefunction::set_reference_wavefunction(const boost::shared_ptr<Wavefunction> wfn)
 {
     reference_wavefunction_ = wfn;
