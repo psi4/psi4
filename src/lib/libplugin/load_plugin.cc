@@ -1,10 +1,16 @@
-#include <boost/filesystem.hpp>
+#include <boost/regex.hpp>
+#include <boost/xpressive/xpressive.hpp>
+#include <boost/xpressive/regex_actions.hpp>
 #include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/trim.hpp>
+#include <boost/filesystem.hpp>
 
 #include "plugin.h"
 
 #include <libparallel/parallel.h>
 #include <libchkpt/chkpt.hpp>
+
+using namespace boost;
 
 namespace psi {
 #ifdef HAVE_DLFCN_H
@@ -43,6 +49,13 @@ plugin_info plugin_load(std::string& plugin_pathname)
 
     boost::filesystem::path pluginPath(plugin_pathname);
     info.name = pluginPath.stem().string();
+
+    // Modify info.name converting things that are allowed
+    // filename characters to allowed C++ function names.
+    std::string format_underscore("_");
+    // Replace all '-' with '_'
+    xpressive::sregex match_format = xpressive::as_xpr("-");
+    info.name = regex_replace(info.name, match_format, format_underscore);
 
     info.plugin = (plugin_t) dlsym(info.plugin_handle, info.name.c_str());
     const char *dlsym_error3 = dlerror();
