@@ -8,7 +8,7 @@ isOS = 'true'
 
 # <<< Database Members >>>
 HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
-HRXN_SM = ['ACANIL01']
+HRXN_SM = ['pterin']
 HRXN_LG = ['allene','1_3_5_trifluorobenzene','ethanol','furan','benzaldehyde']
 
 # <<< Chemical Systems Involved >>>
@@ -514,6 +514,7 @@ H       -6.44634525    -2.62051420     1.68782779
 H       -6.44634525    -2.62051420    -1.68782779
 units bohr
 }
+set { guess gwh }
 """)
 
 BAKERJCC93_difuropyrazine = input.process_input("""
@@ -728,6 +729,7 @@ H        2.56758840     5.33389639    -1.69384111
 H        5.38985873     4.60732325     0.00000000
 units bohr
 }
+set { guess gwh }
 """)
 
 BAKERJCC93_methylamine = input.process_input("""
@@ -779,8 +781,8 @@ C       -1.68781269    -1.68781269    -1.68781269
 C        1.68781269     1.68781269    -1.68781269
 H        2.93275937    -0.55961452     2.93275937
 H       -2.93275937     0.55961452     2.93275937
+H        2.93275937     0.55961452    -2.93275937
 H       -2.93275937    -0.55961452    -2.93275937
-H       -2.93275937     0.55961452    -2.93275937
 H        0.55961452    -2.93275937     2.93275937
 H       -0.55961452     2.93275937     2.93275937
 H       -0.55961452    -2.93275937    -2.93275937
@@ -815,6 +817,7 @@ H       -2.96601438     6.68621706     0.00000000
 H        0.40817199     7.60076128     0.00000000
 units bohr
 }
+set { guess gwh }
 """)
 
 BAKERJCC93_water = input.process_input("""
