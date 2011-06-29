@@ -336,6 +336,7 @@ def process_input(raw_input):
     imports += 'from wrappers import *\n'
     imports += 'from psiexceptions import *\n'
     imports += 'from util import *\n'
+    imports += 'import pickle\n'
 
     # psirc (a baby PSithon script that might live in ~/.psirc
     psirc = ''
