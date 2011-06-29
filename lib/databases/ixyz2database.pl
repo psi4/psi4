@@ -79,7 +79,7 @@ gobackC:
 $string2screen = <<END;
 # what is the nature of the systems in your incipient database?
 #    [1]   I have a bunch of plain molecules (no need to act on any subsystems) that I want to be able to act upon in parallel.
-#    [2]   I have a bunch of molecules, that I want to form into a database whose reference quantity corresponds to various combinations thereof.
+#    [2]   I have a bunch of molecules that I want to form into a database whose reference quantity corresponds to various combinations thereof.
 #    [3]   I have a bunch of dimers that I want to form into a database whose reference quantity is interaction energy.
 #    Your final database (for psi4) may of course resemble any combination of these choices. This is but a humble script to get you started.
 #    [SCALAR (required)]
