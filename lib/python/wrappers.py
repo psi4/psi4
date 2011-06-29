@@ -436,6 +436,7 @@ def database(name, db_name, **kwargs):
     """
 
     import input
+    import pickle
     #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
@@ -477,8 +478,6 @@ def database(name, db_name, **kwargs):
     # Temporary alarms until more things are working
     if re.match(r'^mp2c$', name, re.IGNORECASE):
         raise Exception('Databases not yet compatible with SAPT or MP2C calculations (supermolecular vs sapt structure).')
-    if re.match(r'^ccsd', name, re.IGNORECASE):
-        raise Exception('Databases not yet compatible with CC calculations (checkpoint file, perhaps).')
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -499,8 +498,9 @@ def database(name, db_name, **kwargs):
         except AttributeError:
             pass
         else:
-            openshell_override = 1
-            PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
+            if input.yes.match(str(database.isOS)):
+                openshell_override = 1
+                PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
 
     # Configuration based upon database keyword options
     #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2)
@@ -633,7 +633,8 @@ def database(name, db_name, **kwargs):
         instructions += """    and a single input file (%s-master.in) with a database(mode='reap') command.\n""" % (dbse)
         instructions += """    The former may look peculiar since processed python rather than raw imput\n"""
         instructions += """    is written. Follow the instructions below to continue.\n\n"""
-        instructions += """    (1)  Run all of the %s-*.in input files on any variety of computer architecture.\n\n""" % (dbse)
+        instructions += """    (1)  Run all of the %s-*.in input files on any variety of computer architecture.\n""" % (dbse)
+        instructions += """       The output file names must be as given below.\n\n"""
         for rgt in HSYS:
             instructions += """             psi4 -i %-27s -o %-27s\n""" % (rgt + '.in', rgt + '.out')
         instructions += """\n    (2)  Gather all the resulting output files in a directory. Place input file\n"""
@@ -724,9 +725,10 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-            lesserkwargs = kwargs.copy()
-            del lesserkwargs['func']
-            freagent.write("""\nkwargs = %s\n""" % (lesserkwargs))
+            freagent.write('''\npickle_kw = ("""''')
+            pickle.dump(kwargs, freagent)
+            freagent.write('''""")\n''')
+            freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['func'].__name__))
             freagent.write("""PsiMod.print_variables()\n""")
             freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: energy computation %d for reagent %s """
