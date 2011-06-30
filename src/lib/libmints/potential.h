@@ -14,6 +14,8 @@ namespace psi {
     class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
+    class OneBodySOInt;
+    class CdSalcList;
 
 /*! \ingroup MINTS
  *  \class PotentialInt
@@ -39,7 +41,7 @@ protected:
 public:
     /// Constructor. Assumes nuclear centers/charges as the potential
     PotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
-    ~PotentialInt();
+    virtual ~PotentialInt();
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
@@ -54,6 +56,24 @@ public:
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
+};
+
+class PotentialSOInt : public OneBodySOInt
+{
+    int natom_;
+public:
+    PotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& , const boost::shared_ptr<IntegralFactory> &);
+    PotentialSOInt(const boost::shared_ptr<OneBodyAOInt>& , const IntegralFactory*);
+
+    /**
+     * Computes one-electron integral derivative matrices.
+     * Specifically handles CdSalc SO potential integral derivatives.
+     *
+     * \param result Where the integral derivatives are going.
+     * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
+     */
+    void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+                        const CdSalcList& cdsalcs);
 };
 
 }

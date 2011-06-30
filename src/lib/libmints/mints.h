@@ -6,6 +6,7 @@
 #include <libmints/osrecur.h>
 #include <libmints/onebody.h>
 #include <libmints/twobody.h>
+#include <libmints/sointegral.h>
 #include <libmints/potential.h>
 #include <libmints/pseudospectral.h>
 #include <libmints/dipole.h>
@@ -33,7 +34,6 @@
 #include <libmints/wavefunction.h>
 #include <libmints/dimension.h>
 #include <libmints/3coverlap.h>
-#include <libmints/sointegral.h>
 #include <libmints/mintshelper.h>
 #include <libmints/integrator.h>
 #include <libmints/multipolesymmetry.h>

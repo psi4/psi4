@@ -118,6 +118,11 @@ public:
         return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_, symmetry));
     }
 
+    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int rows, int cols)
+    {
+        return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
+    }
+
     void create_matrix(Matrix& mat, std::string name, int symmetry=0)
     {
         mat.init(nirrep_, rowspi_, colspi_, name, symmetry);

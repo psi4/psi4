@@ -78,6 +78,9 @@ public:
     /// Sets whether we're forcing this object to always generate Cartesian integrals
     void set_force_cartesian(bool t_f) { force_cartesian_ = t_f; }
 
+    /// Returns the derivative level this object is setup for.
+    int deriv() const { return deriv_; }
+
     /// Buffer where the integrals are placed
     const double *buffer() const { return target_; }
 
