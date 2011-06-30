@@ -35,7 +35,7 @@ class OverlapInt : public OneBodyAOInt
 public:
     /// Constructor, it assumes you are not computing derivatives by default
     OverlapInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
-    ~OverlapInt();
+    virtual ~OverlapInt();
 
     /// Compute overlap between 2 shells. Result is stored in buffer.
 //    void compute_shell(int, int);

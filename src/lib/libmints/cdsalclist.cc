@@ -56,8 +56,8 @@ void CdSalcWRTAtom::print() const
     }
 }
 
-CdSalcList::CdSalcList(const boost::shared_ptr<Molecule>& mol,
-                       const boost::shared_ptr<MatrixFactory>& fact,
+CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
+                       boost::shared_ptr<MatrixFactory> fact,
                        char needed_irreps,
                        bool project_out_translations,
                        bool project_out_rotations)
@@ -343,6 +343,23 @@ std::string CdSalcList::name_of_component(int component)
     }
 
     return name;
+}
+
+boost::shared_ptr<Matrix> CdSalcList::matrix()
+{
+    SharedMatrix temp(new Matrix("Cartesian/SALC transformation", ncd(), 3*molecule_->natom()));
+
+    for (int i=0; i<ncd(); ++i) {
+        int nc = salcs_[i].ncomponent();
+        for (int c=0; c<nc; ++c) {
+            int a       = salcs_[i].component(c).atom;
+            int xyz     = salcs_[i].component(c).xyz;
+            double coef = salcs_[i].component(c).coef;
+            temp->set(i, 3*a+xyz, coef);
+        }
+    }
+
+    return temp;
 }
 
 void CdSalcList::print() const
