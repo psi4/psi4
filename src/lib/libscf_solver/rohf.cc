@@ -51,6 +51,8 @@ void ROHF::common_init()
     Cb_      = Ca_;
     Da_      = SharedMatrix(factory_->create_matrix("Alpha density matrix"));
     Db_      = SharedMatrix(factory_->create_matrix("Beta density matrix"));
+    Xa_      = SharedMatrix(factory_->create_matrix("Alpha lagrangian matrix"));
+    Xb_      = SharedMatrix(factory_->create_matrix("Beta lagrangian matrix"));
     Ka_      = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
     Ga_      = SharedMatrix(factory_->create_matrix("G alpha"));
@@ -67,6 +69,24 @@ void ROHF::common_init()
 
 void ROHF::finalize()
 {
+    // Form lagrangian
+    for (int h=0; h<nirrep_; ++h) {
+        for (int m=0; m<Xa_->rowdim(h); ++m) {
+            for (int n=0; n<Xa_->coldim(h); ++n) {
+                double asum = 0.0, bsum = 0.0;
+                for (int i=0; i<doccpi_[h]; ++i) {
+                    asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
+                    bsum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
+                }
+                for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i)
+                    asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
+
+                Xa_->set(h, m, n, asum);
+                Xb_->set(h, m, n, bsum);
+            }
+        }
+    }
+
     Feff_.reset();
     Ka_.reset();
     Kb_.reset();
@@ -242,18 +262,18 @@ void ROHF::form_D()
         int nmo = nmopi_[h];
         int na = nalphapi_[h];
         int nb = nbetapi_[h];
-    
+
         if (nso == 0 || nmo == 0) continue;
 
         double** Ca = Ca_->pointer(h);
         double** Da = Da_->pointer(h);
         double** Db = Db_->pointer(h);
 
-        if (na == 0) 
+        if (na == 0)
             memset(static_cast<void*>(Da[0]), '\0', sizeof(double)*nso*nso);
-        if (nb == 0) 
+        if (nb == 0)
             memset(static_cast<void*>(Db[0]), '\0', sizeof(double)*nso*nso);
-        
+
 
         C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Da[0],nso);
         C_DGEMM('N','T',nso,nso,nb,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Db[0],nso);

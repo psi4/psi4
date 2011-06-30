@@ -93,7 +93,7 @@ OneBodyAOInt* IntegralFactory::ao_potential(int deriv)
 OneBodySOInt* IntegralFactory::so_potential(int deriv)
 {
     boost::shared_ptr<OneBodyAOInt> ao_int(ao_potential(deriv));
-    return new OneBodySOInt(ao_int, this);
+    return new PotentialSOInt(ao_int, this);
 }
 
 OneBodyAOInt* IntegralFactory::ao_pseudospectral(int deriv)
