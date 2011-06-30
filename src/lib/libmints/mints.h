@@ -43,3 +43,4 @@
 #include <libmints/tracelessquadrupole.h>
 #include <libmints/extern.h>
 #include <libmints/integralparameters.h>
+#include <libmints/deriv.h>
