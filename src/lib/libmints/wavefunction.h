@@ -115,8 +115,15 @@ protected:
     /// Beta MO coefficients
     SharedMatrix Cb_;
 
+    /// Alpha density matrix
     SharedMatrix Da_;
+    /// Beta density matrix
     SharedMatrix Db_;
+
+    /// Alpha lagrangian matrix
+    SharedMatrix Xa_;
+    /// Beta lagrangian matrix
+    SharedMatrix Xb_;
 
     /// Alpha Fock matrix
     SharedMatrix Fa_;
@@ -217,6 +224,11 @@ public:
     SharedMatrix Da() const { return Da_; }
     /// Returns the beta OPDM for the wavefunction
     SharedMatrix Db() const { return Db_; }
+
+    /// Returns the alpha lagrangian in SO basis for the wavefunction
+    SharedMatrix Xa() const { return Xa_; }
+    /// Returns the beta lagrangian in SO basis for the wavefunction
+    SharedMatrix Xb() const { return Xb_; }
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);

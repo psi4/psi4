@@ -42,7 +42,7 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
         Zxyzp[A][1] = bs1_->molecule()->x(A);
         Zxyzp[A][2] = bs1_->molecule()->y(A);
         Zxyzp[A][3] = bs1_->molecule()->z(A);
-    } 
+    }
 }
 
 PotentialInt::~PotentialInt()
@@ -371,10 +371,10 @@ void PotentialInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
         throw SanityCheckError("PotentialInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
 
     for (int i=0; i<ns1; ++i) {
-        int ni = bs1_->shell(i)->nfunction();
+        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
         int j_offset=0;
         for (int j=0; j<ns2; ++j) {
-            int nj = bs2_->shell(j)->nfunction();
+            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
 
             // Compute the shell
             compute_shell_deriv1(i, j);
@@ -392,5 +392,135 @@ void PotentialInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
             j_offset += nj;
         }
         i_offset += ni;
+    }
+}
+
+PotentialSOInt::PotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, const boost::shared_ptr<IntegralFactory> &fact)
+    : OneBodySOInt(aoint, fact)
+{
+    natom_ = ob_->basis1()->molecule()->natom();
+}
+
+PotentialSOInt::PotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, const IntegralFactory *fact)
+    : OneBodySOInt(aoint, fact)
+{
+    natom_ = ob_->basis1()->molecule()->natom();
+}
+
+void PotentialSOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+                                    const CdSalcList &cdsalcs)
+{
+    // Do not worry about zeroing out result.
+
+    // Do some checks:
+    if (deriv_ < 1)
+        throw SanityCheckError("OneBodySOInt::compute_deriv1: integral object not created to handle derivatives.", __FILE__, __LINE__);
+
+    if (result.size() != cdsalcs.ncd())
+        throw SanityCheckError("OneBodySOInt::compute_deriv1: result vector size does not match SALC size.", __FILE__, __LINE__);
+
+    int ns1 = b1_->nshell();
+    int ns2 = b2_->nshell();
+    const double *aobuf = ob_->buffer();
+
+    // Loop over unique SO shells.
+    for (int ish=0; ish<ns1; ++ish) {
+        const SOTransform& t1 = b1_->sotrans(ish);
+        int nso1 = b1_->nfunction(ish);
+        int nao1 = b1_->naofunction(ish);
+
+        for (int jsh=0; jsh<ns2; ++jsh) {
+            const SOTransform& t2= b2_->sotrans(jsh);
+            int nso2 = b2_->nfunction(jsh);
+            int nao2 = b2_->naofunction(jsh);
+
+            int nao12 = nao1 * nao2;
+            int nso12 = nso1 * nso2;
+
+            // loop through the AO shells that make up this SO shell
+            // by the end of these 4 for loops we will have our final integral in buffer_
+            for (int i=0; i<t1.naoshell; ++i) {
+                const SOTransformShell &s1 = t1.aoshell[i];
+                int center_i = ob_->basis1()->shell(s1.aoshell)->ncenter();
+
+                for (int j=0; j<t2.naoshell; ++j) {
+                    const SOTransformShell &s2 = t2.aoshell[j];
+                    int center_j = ob_->basis2()->shell(s2.aoshell)->ncenter();
+
+                    // If we're working on the same atomic center, don't even bother with the derivative
+                    // Does this still hold for potentials? nope
+//                    if (center_i == center_j)
+//                        continue;
+
+                    ob_->compute_shell_deriv1(s1.aoshell, s2.aoshell);
+
+                    // handle SO transform
+                    for (int itr=0; itr<s1.nfunc; ++itr) {
+                        const SOTransformFunction &ifunc = s1.func[itr];
+                        // SO transform coefficient
+                        double icoef = ifunc.coef;
+                        // AO function offset in a linear array
+                        int iaofunc  = ifunc.aofunc;
+                        // SO function offset in a linear array
+                        int isofunc  = b1_->function_offset_within_shell(ish, ifunc.irrep) + ifunc.sofunc;
+                        // AO function offset in a linear array
+                        int iaooff   = iaofunc;
+                        // SO function offset in a lienar array
+                        int isooff   = isofunc;
+                        // Relative position of the SO function within its irrep
+                        int irel     = b1_->function_within_irrep(ish, isofunc);
+                        int iirrep   = ifunc.irrep;
+
+                        for (int jtr=0; jtr<s2.nfunc; ++jtr) {
+                            const SOTransformFunction &jfunc = s2.func[jtr];
+                            double jcoef = jfunc.coef * icoef;
+                            int jaofunc  = jfunc.aofunc;
+                            int jsofunc  = b2_->function_offset_within_shell(jsh, jfunc.irrep) + jfunc.sofunc;
+                            int jaooff   = iaooff*nao2 + jaofunc;
+                            int jsooff   = isooff*nso2 + jsofunc;
+                            int jrel     = b2_->function_within_irrep(jsh, jsofunc);
+                            int jirrep   = jfunc.irrep;
+
+                            // Need to loop over the cdsalcs over ALL atoms
+                            // Potential integral derivatives include contribution
+                            // to a third atom.
+
+                            // third atom loop (actually goes over all atoms)
+                            for (int a=0; a<natom_; ++a) {
+                                const CdSalcWRTAtom& cdsalc1 = cdsalcs.atom_salc(a);
+                                int offset = jaooff + 3*a*nao12;
+
+                                double jcoef_aobuf = jcoef * aobuf[offset+(0*nao12)];
+                                for (int nx=0; nx<cdsalc1.nx(); ++nx) {
+                                    const CdSalcWRTAtom::Component element = cdsalc1.x(nx);
+                                    double temp = jcoef_aobuf * element.coef;
+                                    if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                        result[element.salc]->add(iirrep, irel, jrel, temp);
+                                    }
+                                }
+
+                                jcoef_aobuf = jcoef * aobuf[offset+(1*nao12)];
+                                for (int ny=0; ny<cdsalc1.ny(); ++ny) {
+                                    const CdSalcWRTAtom::Component element = cdsalc1.y(ny);
+                                    double temp = jcoef_aobuf * element.coef;
+                                    if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                        result[element.salc]->add(iirrep, irel, jrel, temp);
+                                    }
+                                }
+
+                                jcoef_aobuf = jcoef * aobuf[offset+(2*nao12)];
+                                for (int nz=0; nz<cdsalc1.nz(); ++nz) {
+                                    const CdSalcWRTAtom::Component element = cdsalc1.z(nz);
+                                    double temp = jcoef_aobuf * element.coef;
+                                    if ((iirrep ^ jirrep) == element.irrep && fabs(temp) > 1.0e-10) {
+                                        result[element.salc]->add(iirrep, irel, jrel, temp);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
