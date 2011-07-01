@@ -23,9 +23,10 @@ PSTensor::PSTensor(boost::shared_ptr<BasisSet> primary,
                    int nvir,
                    int naocc,
                    int navir,
-                   Options& options) :
+                   Options& options,
+                   double omega) :
     primary_(primary), C_(C), nocc_(nocc), nvir_(nvir),
-    naocc_(naocc), navir_(navir), options_(options)
+    naocc_(naocc), navir_(navir), options_(options), omega_(omega)
 {
     common_init();
 }
@@ -36,6 +37,11 @@ void PSTensor::common_init()
 {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
+
+    use_omega_ = true;
+    if (omega_ == -1.0) {
+        use_omega_ = false;
+    }
 
     print_header();
 
@@ -71,35 +77,53 @@ void PSTensor::common_init()
     buildDealiasSet();
     buildGrid();
     buildR();
-    buildQ();
+    if (options_.get_str("PS_FITTING_ALGORITHM") == "CONDITIONED") {
+        buildQ();
+    } else if (options_.get_str("PS_FITTING_ALGORITHM") == "CANONICAL") { 
+        buildQ_canonical();
+    } else  if (options_.get_str("PS_FITTING_ALGORITHM") == "RENORMALIZED") { 
+        buildQ_renormalized();
+    } else  if (options_.get_str("PS_FITTING_ALGORITHM") == "QUADRATURE") { 
+        buildQ_quadrature();
+    }
 }
 void PSTensor::print_header()
 {
     fprintf(outfile,"  ==> PS Tensor (by Rob Parrish) <==\n\n");
+    fprintf(outfile,"   => Range-Separation Lowpass Proceedure\n\n");
+    if (use_omega_) {
+        fprintf(outfile, "    Range separation will be performed with \\omega of %11.4E.\n\n", omega_);
+    } else {
+        fprintf(outfile, "    No range separation requested.\n\n");
+    }
 }
 void PSTensor::buildDealiasSet() 
 {
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
 
-    fprintf(outfile," => Primary Basis Set <= \n\n");
-    primary_->print_by_level(outfile,print_);
-    fflush(outfile);
-
-    fprintf(outfile," => Dealias Basis Set <= \n\n");
-    if (options_.get_str("DEALIAS_BASIS_CC") == "") {
-
-        fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
-
-        boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
-        dealias_ = d->dealiasSet();
-
-    } else {
-        fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
-        molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
-        dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");  
+    if (print_) {
+        fprintf(outfile," => Primary Basis Set <= \n\n");
+        primary_->print_by_level(outfile,print_);
+        fflush(outfile);
     }
 
-    dealias_->print_by_level(outfile,print_);
+    if (print_) {
+        fprintf(outfile," => Dealias Basis Set <= \n\n");
+        if (options_.get_str("DEALIAS_BASIS_CC") == "") {
+
+            fprintf(outfile,"  Dealias Basis Automatically Generated\n\n");
+
+            boost::shared_ptr<DealiasBasisSet> d(new DealiasBasisSet(primary_, options_));
+            dealias_ = d->dealiasSet();
+
+        } else {
+            fprintf(outfile,"  Dealias Basis Read from %s", options_.get_str("DEALIAS_BASIS_CC").c_str()); 
+            molecule_->set_basis_all_atoms(options_.get_str("DEALIAS_BASIS_CC"),"DEALIAS_BASIS");
+            dealias_ = BasisSet::construct(parser,molecule_,"DEALIAS_BASIS");  
+        }
+        dealias_->print_by_level(outfile,print_);
+    }
+
     ndealias_ = ndealias2_ = dealias_->nbf();
     naug_ = nmo_ + ndealias_;
     fflush(outfile);
@@ -249,6 +273,8 @@ void PSTensor::form_Ra()
 }
 void PSTensor::buildQ()
 {
+    fprintf(outfile, "   => Fitting Procedure: Conditioned <=\n\n");
+
     form_Cpp();
     form_U();
 
@@ -264,6 +290,97 @@ void PSTensor::buildQ()
         validate_X();
     
     form_Q();
+}
+void PSTensor::buildQ_canonical()
+{
+    fprintf(outfile, "   => Fitting Procedure: Canonical <=\n\n");
+
+    nmo2_ = nmo_;
+    ndealias2_ = ndealias_;
+
+    boost::shared_ptr<Matrix> C(new Matrix("C" , nmo_ + ndealias_, nmo_ + ndealias_));
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", nmo_ + ndealias_, naux_));
+    double** Cp = C->pointer();
+    double** Rp = Ra_->pointer();
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY((nmo_ + ndealias_) * naux_, Rp[0], 1, Rwp[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(nmo_ + ndealias_, wp[Q], &Rwp[0][Q], naux_);
+    } 
+
+    C_DGEMM('N','T',nmo_ + ndealias_,nmo_+ndealias_,naux_,1.0,Rp[0],naux_,Rwp[0],naux_,0.0,Cp[0],nmo_+ndealias_);
+
+    if (debug_)
+        C->print();
+
+    C->power(-1.0);     
+
+    if (debug_)
+        C->print(outfile, "After Inversion");
+
+    Qmo_ = boost::shared_ptr<Matrix> (new Matrix("Qmo", nmo_, naux_));
+    double** Qmop = Qmo_->pointer();
+    
+    C_DGEMM('N','N',nmo_,naux_,nmo_ + ndealias_,1.0,Cp[0],nmo_ + ndealias_,Rwp[0],naux_,0.0,Qmop[0],naux_);
+
+    if (debug_)
+        Qmo_->print();
+}
+void PSTensor::buildQ_renormalized()
+{
+    fprintf(outfile, "   => Fitting Procedure: Renormalized <=\n\n");
+
+    nmo2_ = nmo_;
+    ndealias2_ = 0;
+
+    form_Cpp();
+    double** Cp = Cpp_->pointer();
+
+    Cpp_->power(-1.0);     
+
+    if (debug_)
+        Cpp_->print(outfile, "After Inversion");
+
+    boost::shared_ptr<Matrix> Rw(new Matrix("Rw", nmo_, naux_));
+    double** Rp = Ra_->pointer();
+    double** Rwp = Rw->pointer();
+    double* wp = w_->pointer();
+
+    C_DCOPY((nmo_) * naux_, Rp[0], 1, Rwp[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(nmo_, wp[Q], &Rwp[0][Q], naux_);
+    } 
+    Qmo_ = boost::shared_ptr<Matrix> (new Matrix("Qmo", nmo_, naux_));
+    double** Qmop = Qmo_->pointer();
+    
+    C_DGEMM('N','N',nmo_,naux_,nmo_,1.0,Cp[0],nmo_,Rwp[0],naux_,0.0,Qmop[0],naux_);
+
+    if (debug_)
+        Qmo_->print();
+}
+void PSTensor::buildQ_quadrature()
+{
+    fprintf(outfile, "   => Fitting Procedure: Quadrature <=\n\n");
+
+    nmo2_ = nmo_;
+    ndealias2_ = 0;
+
+    Qmo_ = boost::shared_ptr<Matrix> (new Matrix("Qmo", nmo_, naux_));
+    double** Qmop = Qmo_->pointer();
+    double** Rp = Ra_->pointer();
+    double* wp = w_->pointer();
+    C_DCOPY((nmo_) * naux_, Rp[0], 1, Qmop[0], 1);
+
+    for (int Q = 0; Q < naux_; Q++) {
+        C_DSCAL(nmo_, wp[Q], &Qmop[0][Q], naux_);
+    } 
+
+    if (debug_)
+        Qmo_->print();
 }
 void PSTensor::form_Cpp()
 {
@@ -628,6 +745,10 @@ boost::shared_ptr<Matrix> PSTensor::Aso()
 
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
+
+    if (use_omega_) {
+        ints->set_omega(omega_);
+    }
 
     double* x = grid_->x();
     double* y = grid_->y();

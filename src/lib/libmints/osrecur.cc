@@ -444,6 +444,156 @@ void ObaraSaikaTwoCenterVIRecursion::compute(double PA[3], double PB[3], double 
 
 }
 
+void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2, double zetam)
+{
+    int a, b, m;
+    int azm = 1;
+    int aym = am1 + 1;
+    int axm = aym * aym;
+    int bzm = 1;
+    int bym = am2 + 1;
+    int bxm = bym * bym;
+    int ax, ay, az, bx, by, bz;
+    int aind, bind;
+    double ooz = 1.0/(2.0 * zeta);
+    int mmax = max_am1_ + max_am2_;
+
+    // Prefactor from A20
+    double tmp = sqrt(zetam) * M_2_SQRTPI;
+    // U from A21
+    double u = zetam * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
+    double *F = new double[mmax+1];
+
+    // Form Fm(U) from A20
+    calculate_f(F, mmax, u);
+
+    // Think we're having problems with values being left over.
+    //zero_box(vi_, size_, size_, mmax + 1);
+
+    // Perform recursion in m for (a|A(0)|s) using A20
+    for (m=0; m<=mmax; ++m) {
+        vi_[0][0][m] = tmp * F[m];
+    }
+
+    // Perform recursion in b with a=0
+    //  subset of A19
+    for (b=1; b<=am2; ++b) {
+        for (bx=0; bx<=b; ++bx) {
+            for (by=0; by<=b-bx; ++by) {
+                bz = b-bx-by;
+
+                // Compute the index into VI for bx,by,bz
+                bind = bx*bxm + by*bym + bz*bzm;
+
+                // Compute each x, y, z contribution
+                if (bz > 0) {
+                    for (m=0; m<=mmax-b; ++m) {
+                        vi_[0][bind][m] = PB[2] * vi_[0][bind-bzm][m] - PC[2] * vi_[0][bind-bzm][m+1];
+                    }
+                    if (bz > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            vi_[0][bind][m] += ooz * (bz-1) * (vi_[0][bind-2*bzm][m] - vi_[0][bind-2*bzm][m+1]);
+                        }
+                    }
+                }
+                else if (by > 0) {
+                    for (m=0; m<=mmax-b; ++m) {
+                        vi_[0][bind][m] = PB[1] * vi_[0][bind-bym][m] - PC[1] * vi_[0][bind-bym][m+1];
+                    }
+                    if (by > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            vi_[0][bind][m] += ooz * (by-1) * (vi_[0][bind-2*bym][m] - vi_[0][bind-2*bym][m+1]);
+                        }
+                    }
+                }
+                else if (bx > 0) {
+                    for (m=0; m<=mmax-b; ++m) {
+                        vi_[0][bind][m] = PB[0] * vi_[0][bind-bxm][m] - PC[0] * vi_[0][bind-bxm][m+1];
+                    }
+                    if (bx > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            vi_[0][bind][m] += ooz * (bx-1) * (vi_[0][bind-2*bxm][m] - vi_[0][bind-2*bxm][m+1]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Perform upward recursion in a with all b's
+    for (b=0; b<=am2; b++) {
+        for (bx=0; bx<=b; bx++) {
+            for (by=0; by<=b-bx;by++) {
+                bz = b-bx-by;
+                bind = bx*bxm + by*bym + bz*bzm;
+
+                for (a=1; a<=am1; a++) {
+                    // This next for loop was for (ax=0; ax<=b; ax++)
+                    // this could explain why dx2 was not being computed.
+                    // change for for(ax=0; ax<a; ax++) on 2005-09-15 4:11pm
+                    for (ax=0; ax<=a; ax++) {
+                        for (ay=0; ay<=a-ax; ay++) {
+                            az = a-ax-ay;
+                            aind = ax*axm + ay*aym + az*azm;
+
+                            if (az > 0) {
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    vi_[aind][bind][m] = PA[2] * vi_[aind-azm][bind][m] - PC[2] * vi_[aind-azm][bind][m+1];
+                                }
+
+                                if (az > 1) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * (az-1) * (vi_[aind-2*azm][bind][m] - vi_[aind-2*azm][bind][m+1]);
+                                    }
+                                }
+                                if (bz > 0) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * bz * (vi_[aind-azm][bind-bzm][m] - vi_[aind-azm][bind-bzm][m+1]);
+                                    }
+                                }
+                            }
+                            else if (ay > 0) {
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    vi_[aind][bind][m] = PA[1] * vi_[aind-aym][bind][m] - PC[1] * vi_[aind-aym][bind][m+1];
+                                }
+                                if (ay > 1) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * (ay-1) * (vi_[aind-2*aym][bind][m] - vi_[aind-2*aym][bind][m+1]);
+                                    }
+                                }
+                                if (by > 0) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * by * (vi_[aind-aym][bind-bym][m] - vi_[aind-aym][bind-bym][m+1]);
+                                    }
+                                }
+                            }
+                            else if (ax > 0) {
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    vi_[aind][bind][m] = PA[0] * vi_[aind-axm][bind][m] - PC[0] * vi_[aind-axm][bind][m+1];
+                                }
+
+                                if (ax > 1) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * (ax-1) * (vi_[aind-2*axm][bind][m] - vi_[aind-2*axm][bind][m+1]);
+                                    }
+                                }
+                                if (bx > 0) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * bx * (vi_[aind-axm][bind-bxm][m] - vi_[aind-axm][bind-bxm][m+1]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    delete[] F;
+
+}
+
 ObaraSaikaTwoCenterVIDerivRecursion::ObaraSaikaTwoCenterVIDerivRecursion(int max_am1, int max_am2)
     : ObaraSaikaTwoCenterVIRecursion(max_am1+1, max_am2+1)
 {

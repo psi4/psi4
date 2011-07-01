@@ -17,6 +17,8 @@ PseudospectralInt::PseudospectralInt(std::vector<SphericalTransform>& st, boost:
     int maxam1 = bs1_->max_am();
     int maxam2 = bs2_->max_am();
 
+    use_omega_ = false;
+    omega_ = 0.0;
     C_[0] = 0.0; C_[1] = 0.0; C_[2] = 0.0;
     // These are equivalent to INT_NCART
 //    int maxnao1 = (maxam1+1)*(maxam1+2)/2;
@@ -82,8 +84,20 @@ void PseudospectralInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
         for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
             double c2 = s2->coef(p2);
-            double gamma = a1 + a2;
-            double oog = 1.0/gamma;
+
+            // The GPT gamma of the two cartesian functions.
+            // This is used for all GPT operations here, such as over_pf and P,
+            // And for OS relations AFTER the modified (0|A|0)^(m) integrals are built 
+            double gamma0 = a1 + a2;
+            double oog = 1.0/gamma0;
+
+            // An effective gamma if range-separation is to be used.
+            // This gamma is only for use in the generation of auxiliary integrals,
+            // particularly the (0|A|0)^(m) auxiliary integrals as built in potential_recur_.compute().
+            double gamma = gamma0; 
+            if (use_omega_) {
+                gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_); 
+            }
 
             double PA[3], PB[3];
             double P[3];
@@ -110,7 +124,7 @@ void PseudospectralInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
             PC[2] = P[2] - C_[2];
 
             // Do recursion
-            potential_recur_.compute(PA, PB, PC, gamma, am1, am2);
+            potential_recur_.compute_erf(PA, PB, PC, gamma0, am1, am2, gamma);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
@@ -186,8 +200,20 @@ void PseudospectralInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShel
         for (int p2=0; p2<nprim2; ++p2) {
             double a2 = s2->exp(p2);
             double c2 = s2->coef(p2);
-            double gamma = a1 + a2;
-            double oog = 1.0/gamma;
+
+            // The GPT gamma of the two cartesian functions.
+            // This is used for all GPT operations here, such as over_pf and P,
+            // And for OS relations AFTER the modified (0|A|0)^(m) integrals are built 
+            double gamma0 = a1 + a2;
+            double oog = 1.0/gamma0;
+
+            // An effective gamma if range-separation is to be used.
+            // This gamma is only for use in the generation of auxiliary integrals,
+            // particularly the (0|A|0)^(m) auxiliary integrals as built in potential_recur_.compute().
+            double gamma = gamma0; 
+            if (use_omega_) {
+                gamma = gamma0 * omega_ * omega_ / (gamma0 + omega_ * omega_); 
+            }
 
             double PA[3], PB[3];
             double P[3];
@@ -213,7 +239,7 @@ void PseudospectralInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShel
             PC[2] = P[2] - C_[2];
 
             // Do recursion
-            potential_deriv_recur_.compute(PA, PB, PC, gamma, am1+1, am2+1);
+            potential_deriv_recur_.compute_erf(PA, PB, PC, gamma0, am1+1, am2+1, gamma);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {

@@ -107,6 +107,11 @@ protected:
     /// Minimum eigenvalue to keep in the dealias basis
     double min_S_dealias_;
 
+    /// Omega to use for low-pass smoothing
+    double omega_;
+    /// Use omega integrals or not?
+    bool use_omega_;
+
     /// Number of AO primary functions
     int nso_;
     /// Number of MO primary functions
@@ -153,6 +158,9 @@ protected:
     void form_Ra();
 
     void buildQ();
+    void buildQ_renormalized();
+    void buildQ_canonical();
+    void buildQ_quadrature();
     void form_Cpp();
     void form_U();
     void form_Cpd();
@@ -163,7 +171,7 @@ protected:
     void form_Q();
     void validate_X();
 
-    /// Grid weights (hopefull SPD) 
+    /// Grid weights (hopefully SPD) 
     boost::shared_ptr<Vector> w_;
 
     /// Target Q tensor (nmo x naux)
@@ -204,7 +212,8 @@ public:
              int nvir,
              int naocc,
              int navir,
-             Options& options);
+             Options& options,
+             double omega = -1.0);
     ~PSTensor();
 
     boost::shared_ptr<Matrix> Q();

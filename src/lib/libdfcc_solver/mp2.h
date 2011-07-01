@@ -26,6 +26,7 @@ protected:
   void test_denominators();
   void test_df();
   void test_ps();
+  void test_ps_omega();
   void compute_MP2();
   void compute_DF_MP2();
   void compute_PS_MP2();
