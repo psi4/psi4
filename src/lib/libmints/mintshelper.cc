@@ -254,12 +254,12 @@ boost::shared_ptr<Matrix> MintsHelper::ao_potential()
     return potential_mat;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega, double alpha, double beta)
+boost::shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega)
 {
     int nbf = basisset_->nbf();
     boost::shared_ptr<Matrix> I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
 
-    boost::shared_ptr<TwoBodyAOInt> ints(integral_->erf_eri(omega, alpha, beta));
+    boost::shared_ptr<TwoBodyAOInt> ints(integral_->erf_eri(omega));
     double** Ip = I->pointer();
     const double* buffer = ints->buffer();
 
@@ -319,7 +319,19 @@ boost::shared_ptr<Matrix> MintsHelper::ao_eri()
 
     return I;
 }
+boost::shared_ptr<Matrix> MintsHelper::mo_erf_eri(double omega, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
+{
+    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_erf_eri(omega), Co, Cv);
+    mo_ints->set_name("MO ERF ERI Tensor");
+    return mo_ints; 
+}
 boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
+{
+    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
+    mo_ints->set_name("MO ERI Tensor");
+    return mo_ints; 
+}
+boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
 {
     int nso = basisset_->nbf();
     int nocc = Co->colspi()[0];
@@ -328,7 +340,6 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boos
     double** Cop = Co->pointer();
     double** Cvp = Cv->pointer();
 
-    boost::shared_ptr<Matrix> Iso = ao_eri();
     double** Isop = Iso->pointer();
     boost::shared_ptr<Matrix> I2(new Matrix("MO ERI Tensor", nocc * nso, nso * nso));
     double** I2p = I2->pointer();
