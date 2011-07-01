@@ -740,7 +740,7 @@ double* ErfFundamental::values(int J, double T)
     // build the erf constants
     double omegasq = omega_ * omega_;
     double T_prefac = omegasq / (omegasq + rho_);
-    double F_prefac = omega_ / sqrt(omegasq + rho_);
+    double F_prefac = sqrt(T_prefac);
     double erf_T = T_prefac * T;
 
     Fvals = boys_->values(J, erf_T);
@@ -778,7 +778,7 @@ double* ErfComplementFundamental::values(int J, double T)
     // build the erf constants
     double omegasq = omega_ * omega_;
     double T_prefac = omegasq / (omegasq + rho_);
-    double F_prefac = omega_ / sqrt(omegasq + rho_);
+    double F_prefac = sqrt(T_prefac);
     double erf_T = T_prefac * T;
 
     Fvals = boys_->values(J, erf_T);
