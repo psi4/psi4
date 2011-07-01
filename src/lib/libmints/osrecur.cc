@@ -470,9 +470,14 @@ void ObaraSaikaTwoCenterVIRecursion::compute_erf(double PA[3], double PB[3], dou
     // Think we're having problems with values being left over.
     //zero_box(vi_, size_, size_, mmax + 1);
 
+    // Backsub, to account for the fact that Jet/OS roll the \zeta^m in later
+    double F_prefac = 1.0;
+    double T_prefac = zetam / zeta;
+
     // Perform recursion in m for (a|A(0)|s) using A20
     for (m=0; m<=mmax; ++m) {
-        vi_[0][0][m] = tmp * F[m];
+        vi_[0][0][m] = tmp * F_prefac * F[m];
+        F_prefac *= T_prefac;
     }
 
     // Perform recursion in b with a=0
