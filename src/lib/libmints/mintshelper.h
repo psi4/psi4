@@ -73,6 +73,9 @@ private:
     boost::shared_ptr<SOBasisSet> sobasis_;
     int print_;
 
+    // In-core O(N^5) transqt
+    boost::shared_ptr<Matrix> mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv);
+
 public:
 
     void init_helper(boost::shared_ptr<Wavefunction> wavefunction = boost::shared_ptr<Wavefunction>());
@@ -107,11 +110,14 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_eri();
-    /// MO ERI Integrals, (ov|ov) type  (Full matrix, N^8, not recommended for large systems)
+    /// MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
-    boost::shared_ptr<Matrix> ao_erf_eri(double omega, double alpha, double beta);
+    boost::shared_ptr<Matrix> ao_erf_eri(double omega);
+    /// MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
+    /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
+    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);;
 
     /// AO Overlap Integrals
     boost::shared_ptr<Matrix> ao_overlap();
