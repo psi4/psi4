@@ -101,6 +101,8 @@ public:
 
     /// Computes the potential integral 3D matrix using the data provided.
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+    /// Computes the Ewald potential integral with modified zeta -> zetam 3D matrix using the data provided.
+    virtual void compute_erf(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2, double zetam);
 };
 
 /*! \ingroup MINTS

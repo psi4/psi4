@@ -1692,6 +1692,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("PS_MIN_S_PRIMARY",1.0E-7);
     /*- Minumum eigenvalue for dealias basis -*/
     options.add_double("PS_MIN_S_DEALIAS",1.0E-7);
+    /*- Fitting algorithm to use for pseudospectral -*/
+    options.add_str("PS_FITTING_ALGORITHM", "CONDITIONED", "CONDITIONED CANONICAL RENORMALIZED QUADRATURE");
+    /*- Pseudospectral range-separation parameter -*/
+    options.add_double("PS_OMEGA", 1.0);
+    /*- Use range-separation procedure in PS? -*/
+    options.add_bool("PS_USE_OMEGA", true);
 
     // => DENOMINATOR <= //
 
@@ -1715,10 +1721,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
                 PS4           &   PS         &  PS/PS \\
                 TEST_DENOM    &   Test       &  Test  \\
                 TEST_PS       &   Test       &  Test  \\
+                TEST_PS_OMEGA &   Test       &  Test  \\
                 TEST_DF       &   Test       &  Test  \\
             \end{tabular}
     -*/
-    options.add_str("MP2_ALGORITHM", "DF", "MP2 DF PS PS1 PS2 PS3 PS4 TEST_DENOM TEST_PS TEST_DF");
+    options.add_str("MP2_ALGORITHM", "DF", "MP2 DF PS PS1 PS2 PS3 PS4 TEST_DENOM TEST_PS TEST_PS_OMEGA TEST_DF");
     /*- OS Scale  -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- SS Scale  -*/
