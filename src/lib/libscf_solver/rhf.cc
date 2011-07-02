@@ -70,8 +70,7 @@ void RHF::common_init()
     epsilon_b_ = epsilon_a_;
     Da_        = SharedMatrix(factory_->create_matrix("D"));
     Db_        = Da_;
-    Xa_        = SharedMatrix(factory_->create_matrix("X"));
-    Xb_        = Xa_;
+    Lagrangian_ = SharedMatrix(factory_->create_matrix("X"));
     D_         = Da_;
     Dold_      = SharedMatrix(factory_->create_matrix("D old"));
     G_         = SharedMatrix(factory_->create_matrix("G"));
@@ -111,13 +110,13 @@ void RHF::finalize()
 {
     // Form lagrangian
     for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Xa_->rowdim(h); ++m) {
-            for (int n=0; n<Xa_->coldim(h); ++n) {
+        for (int m=0; m<Lagrangian_->rowdim(h); ++m) {
+            for (int n=0; n<Lagrangian_->coldim(h); ++n) {
                 double sum = 0.0;
                 for (int i=0; i<doccpi_[h]; ++i) {
                     sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
                 }
-                Xa_->set(h, m, n, sum);
+                Lagrangian_->set(h, m, n, sum);
             }
         }
     }

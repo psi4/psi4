@@ -51,8 +51,7 @@ void ROHF::common_init()
     Cb_      = Ca_;
     Da_      = SharedMatrix(factory_->create_matrix("Alpha density matrix"));
     Db_      = SharedMatrix(factory_->create_matrix("Beta density matrix"));
-    Xa_      = SharedMatrix(factory_->create_matrix("Alpha lagrangian matrix"));
-    Xb_      = SharedMatrix(factory_->create_matrix("Beta lagrangian matrix"));
+    Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian matrix"));
     Ka_      = SharedMatrix(factory_->create_matrix("K alpha"));
     Kb_      = SharedMatrix(factory_->create_matrix("K beta"));
     Ga_      = SharedMatrix(factory_->create_matrix("G alpha"));
@@ -70,9 +69,10 @@ void ROHF::common_init()
 void ROHF::finalize()
 {
     // Form lagrangian
+    // This is WRONG...haven't fixed yet.
     for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Xa_->rowdim(h); ++m) {
-            for (int n=0; n<Xa_->coldim(h); ++n) {
+        for (int m=0; m<Lagrangian_->rowdim(h); ++m) {
+            for (int n=0; n<Lagrangian_->coldim(h); ++n) {
                 double asum = 0.0, bsum = 0.0;
                 for (int i=0; i<doccpi_[h]; ++i) {
                     asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
@@ -81,8 +81,8 @@ void ROHF::finalize()
                 for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i)
                     asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
 
-                Xa_->set(h, m, n, asum);
-                Xb_->set(h, m, n, bsum);
+                Lagrangian_->set(h, m, n, asum);
+                Lagrangian_->set(h, m, n, bsum);
             }
         }
     }

@@ -110,24 +110,23 @@ public:
         if (INDEX2(pabs, qabs) == INDEX2(rabs, sabs))
             prefactor *= 0.5;
 
-        double four_index_Da = 0.0, four_index_Db = 0.0;
+        double four_index_D = 0.0;
 
         if (pirrep == qirrep && rirrep == sirrep) {
-            four_index_Da = 4.0 * Da_(pirrep, pso, qso) * Da_(rirrep, rso, sso);
-            four_index_Db = 4.0 * Db_(pirrep, pso, qso) * Db_(rirrep, rso, sso);
+            four_index_D = 4.0 * (Da_(pirrep, pso, qso) + Db_(pirrep, pso, qso)) *
+                                 (Da_(rirrep, rso, sso) + Db_(rirrep, rso, sso));
         }
         if (pirrep == rirrep && qirrep == sirrep) {
-            four_index_Da -= Da_(pirrep, pso, rso) * Da_(qirrep, qso, sso);
-            four_index_Db -= Db_(pirrep, pso, rso) * Db_(qirrep, qso, sso);
+            four_index_D -= 2.0 * (Da_(pirrep, pso, rso) * Da_(qirrep, qso, sso))
+                         -  2.0 * (Db_(pirrep, pso, rso) * Db_(qirrep, qso, sso));
         }
         if (pirrep == sirrep && qirrep == rirrep) {
-            four_index_Da -= Da_(pirrep, pso, sso) * Da_(qirrep, qso, rso);
-            four_index_Db -= Db_(pirrep, pso, sso) * Db_(qirrep, qso, rso);
+            four_index_D -= 2.0 * (Da_(pirrep, pso, sso) * Da_(rirrep, rso, qso))
+                         -  2.0 * (Db_(pirrep, pso, sso) * Db_(rirrep, rso, qso));
         }
-        four_index_Da *= prefactor;
-        four_index_Db *= prefactor;
+        four_index_D *= prefactor;
 
-        result[salc] += four_index_Da * value + four_index_Db * value;
+        result[salc] += four_index_D * value;
     }
 };
 
@@ -187,7 +186,7 @@ SharedMatrix Deriv::compute()
 
     if (wavefunction_->restricted()) {
         SharedMatrix D = wavefunction_->Da();
-        SharedMatrix X = wavefunction_->Xa();
+        SharedMatrix X = wavefunction_->X();
 
         // Check the incoming matrices.
         if (!D)
@@ -220,18 +219,20 @@ SharedMatrix Deriv::compute()
             fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
     }
     else /* unrestricted */ {
-        fprintf(outfile, "WARNING: This unrestricted derivatives do not work!!!\n");
+        fprintf(outfile, "WARNING: Unrestricted derivatives do not work!!!\n"
+                         "         Though UHF is close to working.\n");
 
         SharedMatrix Da = wavefunction_->Da();
         SharedMatrix Db = wavefunction_->Db();
-        SharedMatrix Xa = wavefunction_->Xa();
-        SharedMatrix Xb = wavefunction_->Xb();
+        SharedMatrix X = wavefunction_->X();
 
         // Check the incoming matrices.
         if (!Da || !Db)
             throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
-        if (!Xa || !Xb)
+        if (!X)
             throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
+
+        X->print();
 
         for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
             double temp = Da->vector_dot(h_deriv[cd]);
@@ -243,8 +244,7 @@ SharedMatrix Deriv::compute()
         fprintf(outfile, "\n");
 
         for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-            double temp = Xa->vector_dot(s_deriv[cd]);
-            temp       += Xb->vector_dot(s_deriv[cd]);
+            double temp = X->vector_dot(s_deriv[cd]);
             Xcont[cd] = -temp;
             fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
         }
