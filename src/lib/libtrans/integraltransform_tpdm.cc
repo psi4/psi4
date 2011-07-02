@@ -113,8 +113,8 @@ IntegralTransform::backtransform_density()
         /*
          * The Lagrangian
          */
-        _psio->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
-        _psio->read_entry(PSIF_MO_OPDM, "MO-basis Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
+        _psio->open(PSIF_MO_LAG, PSIO_OPEN_OLD);
+        _psio->read_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
               int P = toPitzer[p];
@@ -123,7 +123,7 @@ IntegralTransform::backtransform_density()
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
         }
-        _psio->close(PSIF_MO_OPDM, 1);
+        _psio->close(PSIF_MO_LAG, 1);
         if(_print>4){
             fprintf(outfile, "The MO basis Lagrangian\n");
             print_array(tempMo, _nmo, outfile);
