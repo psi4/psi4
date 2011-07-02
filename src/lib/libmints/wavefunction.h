@@ -206,9 +206,25 @@ public:
     double reference_energy () const { return energy_; }
 
     /// Returns the alpha electrons MO coefficients
-    SharedMatrix Ca() const { return Ca_; }
+    SharedMatrix Ca() const {
+        if (!Ca_)
+            if (!reference_wavefunction_)
+                throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
+            else
+                return reference_wavefunction_->Ca();
+
+        return Ca_;
+    }
     /// Returns the beta electrons MO coefficients
-    SharedMatrix Cb() const { return Cb_; }
+    SharedMatrix Cb() const {
+        if (!Cb_)
+            if (!reference_wavefunction_)
+                throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
+            else
+                return reference_wavefunction_->Cb();
+
+        return Cb_;
+    }
     /// Returns the alpha Fock matrix
     SharedMatrix Fa() const { return Fa_; }
     /// Returns the beta Fock matrix
