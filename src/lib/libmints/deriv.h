@@ -5,8 +5,8 @@
  *      Author: jturney
  */
 
-#ifndef DERIV_H_
-#define DERIV_H_
+#ifndef _psi_src_lib_libmints_deriv_h_
+#define _psi_src_lib_libmints_deriv_h_
 
 #include <vector>
 #include "matrix.h"
