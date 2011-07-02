@@ -48,8 +48,7 @@ void UHF::common_init()
     Db_     = SharedMatrix(factory_->create_matrix("D beta"));
     Dt_     = SharedMatrix(factory_->create_matrix("D total"));
     Dtold_  = SharedMatrix(factory_->create_matrix("D total old"));
-    Xa_     = SharedMatrix(factory_->create_matrix("X alpha"));
-    Xb_     = SharedMatrix(factory_->create_matrix("X beta"));
+    Lagrangian_ = SharedMatrix(factory_->create_matrix("Lagrangian"));
     Ca_     = SharedMatrix(factory_->create_matrix("C alpha"));
     Cb_     = SharedMatrix(factory_->create_matrix("C beta"));
     Ga_     = SharedMatrix(factory_->create_matrix("G alpha"));
@@ -67,18 +66,17 @@ void UHF::finalize()
 {
     // Form lagrangian
     for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Xa_->rowdim(h); ++m) {
-            for (int n=0; n<Xa_->coldim(h); ++n) {
-                double asum = 0.0, bsum = 0.0;
+        for (int m=0; m<Lagrangian_->rowdim(h); ++m) {
+            for (int n=0; n<Lagrangian_->coldim(h); ++n) {
+                double sum = 0.0;
                 for (int i=0; i<doccpi_[h]; ++i) {
-                    asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
-                    bsum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
+                    sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i)
+                        +  epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
                 }
                 for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i)
-                    asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
+                    sum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
 
-                Xa_->set(h, m, n, asum);
-                Xb_->set(h, m, n, bsum);
+                Lagrangian_->set(h, m, n, sum);
             }
         }
     }
