@@ -74,6 +74,13 @@ IntegralTransform::backtransform_density()
             pitzerOffset += _mopi[h];
         }
 
+        int *order = init_int_array(_nmo);
+        // We want to keep Pitzer ordering, so this is just an identity mapping
+        for(int n = 0; n < _nmo; ++n) order[n] = n;
+
+        /*
+         * The OPDM
+         */
         _psio->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
         _psio->read_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
@@ -84,17 +91,11 @@ IntegralTransform::backtransform_density()
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
         }
-        free_block(tempOPDM);
         _psio->close(PSIF_MO_OPDM, 1);
         if(_print>4){
-            fprintf(outfile, "The MO basis TPDM\n");
+            fprintf(outfile, "The MO basis OPDM");
             print_array(tempMo, _nmo, outfile);
         }
-
-        int *order = init_int_array(_nmo);
-        // We want to keep Pitzer ordering, so this is just an identity mapping
-        for(int n = 0; n < _nmo; ++n) order[n] = n;
-
         for(int n = 0; n < _nTriSo; ++n) tempSo[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
@@ -102,12 +103,46 @@ IntegralTransform::backtransform_density()
             moOffset += _mopi[h];
         }
         if(_print>4){
-            fprintf(outfile, "The SO basis OPDM\n");
+            fprintf(outfile, "The SO basis OPDM");
             print_array(tempSo, _nso, outfile);
         }
         _psio->open(PSIF_AO_OPDM, PSIO_OPEN_OLD);
         _psio->write_entry(PSIF_AO_OPDM, "SO-basis OPDM", (char *) tempSo, sizeof(double)*_nTriSo);
         _psio->close(PSIF_AO_OPDM, 1);
+
+        /*
+         * The Lagrangian
+         */
+        _psio->open(PSIF_MO_OPDM, PSIO_OPEN_OLD);
+        _psio->read_entry(PSIF_MO_OPDM, "MO-basis Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
+        for(int p = 0; p < nActive; ++p){
+          for(int q = 0; q <= p; ++q){
+              int P = toPitzer[p];
+              int Q = toPitzer[q];
+              size_t PQ = INDEX(P,Q);
+              tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
+          }
+        }
+        _psio->close(PSIF_MO_OPDM, 1);
+        if(_print>4){
+            fprintf(outfile, "The MO basis Lagrangian\n");
+            print_array(tempMo, _nmo, outfile);
+        }
+        for(int n = 0; n < _nTriSo; ++n) tempSo[n] = 0.0;
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
+        if(_print>4){
+            fprintf(outfile, "The SO basis Lagrangian\n");
+            print_array(tempSo, _nso, outfile);
+        }
+        _psio->open(PSIF_AO_OPDM, PSIO_OPEN_OLD);
+        _psio->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *) tempSo, sizeof(double)*_nTriSo);
+        _psio->close(PSIF_AO_OPDM, 1);
+
+        free_block(tempOPDM);
         delete [] tempMo;
         delete [] tempSo;
 
