@@ -31,6 +31,7 @@ DCFTSolver::compute_lambda_residual()
                   ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
     for(int h = 0; h < nirrep_; ++h)
         nElements += R.params->coltot[h] * R.params->rowtot[h];
+#if !REFACTORED
     if(!options_.get_bool("IGNORE_TAU")){
         // R_IJAB += T_IJAB
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
@@ -38,6 +39,7 @@ DCFTSolver::compute_lambda_residual()
         dpd_buf4_add(&R, &T, 1.0);
         dpd_buf4_close(&T);
     }
+#endif
     // R_IJAB -= A_IJAB
     dpd_buf4_init(&A, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "A <OO|VV>");
@@ -55,6 +57,7 @@ DCFTSolver::compute_lambda_residual()
                   ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     for(int h = 0; h < nirrep_; ++h)
         nElements += R.params->coltot[h] * R.params->rowtot[h];
+#if !REFACTORED
     if(!options_.get_bool("IGNORE_TAU")){
         // R_IjAb += T_IjAb
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
@@ -62,6 +65,7 @@ DCFTSolver::compute_lambda_residual()
         dpd_buf4_add(&R, &T, 1.0);
         dpd_buf4_close(&T);
     }
+#endif
     // R_IjAb -= A_IjAb
     dpd_buf4_init(&A, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "A <Oo|Vv>");
@@ -79,6 +83,7 @@ DCFTSolver::compute_lambda_residual()
                   ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
     for(int h = 0; h < nirrep_; ++h)
         nElements += R.params->coltot[h] * R.params->rowtot[h];
+#if !REFACTORED
     if(!options_.get_bool("IGNORE_TAU")){
         // R_ijab += T_ijab
         dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
@@ -86,6 +91,7 @@ DCFTSolver::compute_lambda_residual()
         dpd_buf4_add(&R, &T, 1.0);
         dpd_buf4_close(&T);
     }
+#endif
     // R_ijab -= A_ijab
     dpd_buf4_init(&A, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "A <oo|vv>");
