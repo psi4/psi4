@@ -51,6 +51,9 @@ double SAPT2::compute_energy()
   timer_on("DF Integrals       ");
     df_integrals();
   timer_off("DF Integrals       ");
+  timer_on("Amplitudes         "); 
+    amplitudes();
+  timer_off("Amplitudes         "); 
   timer_on("Omega Integrals    ");
     w_integrals();
   timer_off("Omega Integrals    ");
@@ -69,6 +72,12 @@ double SAPT2::compute_energy()
   timer_on("Exch-Ind20,r       ");
     exch_ind20r();
   timer_off("Exch-Ind20,r       ");
+  timer_on("Disp20             ");
+    disp20();
+  timer_off("Disp20             ");
+  timer_on("Exch-Disp20        ");
+    exch_disp20();
+  timer_off("Exch-Disp20        ");
 
   print_results();
 

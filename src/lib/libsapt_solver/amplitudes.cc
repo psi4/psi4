@@ -4,6 +4,17 @@ namespace psi { namespace sapt {
 
 void SAPT2::amplitudes()
 {
+  tOVOV(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+    PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+    PSIF_SAPT_AMPS,"tARAR Amplitudes");
+
+  tOVOV(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",foccB_,noccB_,nvirB_,evalsB_,
+    PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",foccB_,noccB_,nvirB_,evalsB_,
+    PSIF_SAPT_AMPS,"tBSBS Amplitudes");
+
+  tOVOV(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+    PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",foccB_,noccB_,nvirB_,evalsB_,
+    PSIF_SAPT_AMPS,"tARBS Amplitudes");
 }
 
 void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA,
@@ -30,6 +41,10 @@ void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA,
 
   psio_->write_entry(ampout,amplabel,(char *) tARBS[0],sizeof(double)*aoccA*
     nvirA*aoccB*nvirB); 
+
+  free_block(B_p_AR);
+  free_block(B_p_BS);
+  free_block(tARBS);
 }
 
 }}

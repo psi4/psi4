@@ -89,6 +89,8 @@ public:
   void exch10();
   void ind20r();
   void exch_ind20r();
+  void disp20();
+  void exch_disp20();
 };
 
 }}
