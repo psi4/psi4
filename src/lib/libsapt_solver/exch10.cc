@@ -1,4 +1,5 @@
 #include "sapt0.h"
+#include "sapt2.h"
     
 namespace psi { namespace sapt {
   
@@ -389,6 +390,342 @@ void SAPT0::exch10()
   free_block(pAB);
 
   e_exch10_ = -2.0*(ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9);
+
+  if (debug_) {
+    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
+    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
+    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
+    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
+    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
+    fprintf(outfile,"    Ex6                 = %18.12lf H\n",ex6);
+    fprintf(outfile,"    Ex7                 = %18.12lf H\n",ex7);
+    fprintf(outfile,"    Ex8                 = %18.12lf H\n",ex8);
+    fprintf(outfile,"    Ex9                 = %18.12lf H\n\n",ex9);
+  }
+
+  if (print_) {
+    fprintf(outfile,"    Exch10              = %18.12lf H\n",e_exch10_);
+    fflush(outfile);
+  }
+}
+
+void SAPT2::exch10_s2()
+{
+  double ex1, ex2, ex3, ex4, ex5, ex6;
+
+  double **B_p_AB = get_AB_ints(1);
+  double **B_q_AB = get_AB_ints(2);
+  double **B_p_AA = get_AA_ints(1);
+  double **B_p_BB = get_BB_ints(1);
+
+  ex1 = C_DDOT((long int) noccA_*noccB_*(ndf_+3),&(B_p_AB[0][0]),1,
+    &(B_q_AB[0][0]),1);
+
+  double **X_AB = block_matrix(noccA_,noccB_);
+
+  for (int a=0; a<noccA_; a++)
+    C_DCOPY(noccB_,&(sAB_[a][0]),1,&(X_AB[a][0]),1);
+
+  double **C_p_AA = block_matrix(noccA_*noccA_,ndf_+3);
+
+  for(int a=0; a<noccA_; a++){
+    C_DGEMM('N','N',noccA_,ndf_+3,noccB_,1.0,&(X_AB[0][0]),noccB_,
+      &(B_q_AB[a*noccB_][0]),ndf_+3,0.0,&(C_p_AA[a*noccA_][0]),ndf_+3);
+  }
+
+  double *Ap_diag = init_array(ndf_+3);
+
+  for(int a=0; a<noccA_; a++){
+    int aa = a*noccA_+a;
+    C_DAXPY(ndf_+3,1.0,&(C_p_AA[aa][0]),1,&(Ap_diag[0]),1);
+  }
+
+  ex2 = 2.0*C_DDOT(ndf_+3,diagAA_,1,Ap_diag,1);
+  ex2 -= C_DDOT((long int) noccA_*noccA_*(ndf_+3),&(B_p_AA[0][0]),1,
+    &(C_p_AA[0][0]),1);
+
+  double **C_p_BB = block_matrix(noccB_*noccB_,ndf_+3);
+
+  C_DGEMM('T','N',noccB_,noccB_*(ndf_+3),noccA_,1.0,&(X_AB[0][0]),noccB_,
+    &(B_p_AB[0][0]),noccB_*(ndf_+3),0.0,&(C_p_BB[0][0]),noccB_*(ndf_+3));
+
+  double *Bp_diag = init_array(ndf_+3);
+
+  for(int b=0; b<noccB_; b++){
+    int bb = b*noccB_+b;
+    C_DAXPY(ndf_+3,1.0,&(C_p_BB[bb][0]),1,&(Bp_diag[0]),1);
+  }
+
+  ex3 = 2.0*C_DDOT(ndf_+3,diagBB_,1,Bp_diag,1);
+  ex3 -= C_DDOT((long int) noccB_*noccB_*(ndf_+3),&(B_p_BB[0][0]),1,
+    &(C_p_BB[0][0]),1);
+
+  free_block(C_p_AA);
+  free_block(C_p_BB);
+
+  double **X_AA = block_matrix(noccA_,noccA_);
+
+  C_DGEMM('N','T',noccA_,noccA_,noccB_,1.0,&(X_AB[0][0]),noccB_,
+    &(X_AB[0][0]),noccB_,0.0,&(X_AA[0][0]),noccA_);
+
+  double **X_BB = block_matrix(noccB_,noccB_);
+
+  C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,&(X_AB[0][0]),noccB_,&(X_AB[0][0]),
+    noccB_,0.0,&(X_BB[0][0]),noccB_);
+
+  C_DGEMV('t',noccB_*noccB_,ndf_+3,1.0,&(B_p_BB[0][0]),ndf_+3,
+    &(X_BB[0][0]),1,0.0,Bp_diag,1);
+
+  ex4 = 2.0*C_DDOT(ndf_+3,diagAA_,1,Bp_diag,1);
+
+  C_DGEMV('t',noccA_*noccA_,ndf_+3,1.0,&(B_p_AA[0][0]),ndf_+3,&(X_AA[0][0]),1,
+    0.0,Ap_diag,1);
+
+  ex5 = 2.0*C_DDOT(ndf_+3,diagBB_,1,Ap_diag,1);
+
+  free(Ap_diag);
+  free(Bp_diag);
+  free_block(X_AA);
+  free_block(X_BB);
+
+  for(int a=0; a<noccA_; a++){
+    C_DGEMM('T','N',noccB_,ndf_+3,noccA_,1.0,&(X_AB[0][0]),noccB_,
+      &(B_p_AA[a*noccA_][0]),ndf_+3,0.0,&(B_p_AB[a*noccB_][0]),ndf_+3);
+  }
+
+  C_DGEMM('N','N',noccA_,noccB_*(ndf_+3),noccB_,1.0,&(X_AB[0][0]),noccB_,
+    &(B_p_BB[0][0]),noccB_*(ndf_+3),0.0,&(B_q_AB[0][0]),noccB_*(ndf_+3));
+
+  ex6 = C_DDOT((long int) noccA_*noccB_*(ndf_+3),&(B_p_AB[0][0]),1,
+    &(B_q_AB[0][0]),1);
+
+  free_block(X_AB);
+  free_block(B_p_AA);
+  free_block(B_p_BB);
+  free_block(B_p_AB);
+  free_block(B_q_AB);
+
+  e_exch10_s2_ = -2.0*(ex1+ex2+ex3-ex4-ex5+ex6);
+
+  if (debug_) {
+    fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);
+    fprintf(outfile,"    Ex2                 = %18.12lf H\n",ex2);
+    fprintf(outfile,"    Ex3                 = %18.12lf H\n",ex3);
+    fprintf(outfile,"    Ex4                 = %18.12lf H\n",ex4);
+    fprintf(outfile,"    Ex5                 = %18.12lf H\n",ex5);
+    fprintf(outfile,"    Ex6                 = %18.12lf H\n\n",ex6);
+  }
+
+  if (print_) {
+    fprintf(outfile,"    Exch10 (S^2)        = %18.12lf H\n",e_exch10_s2_);
+    fflush(outfile);
+  }
+}
+
+void SAPT2::exch10()
+{
+  double ex1=0, ex2=0, ex3=0, ex4=0, ex5=0, ex6=0, ex7=0, ex8=0, ex9=0;
+
+  int nthreads = 1;
+#ifdef _OPENMP
+  nthreads = omp_get_max_threads();
+#endif
+  int rank = 0;
+
+  double **P = block_matrix(noccA_+noccB_,noccA_+noccB_);
+
+  for (int i=0; i<noccA_+noccB_; i++)
+    P[i][i] = 1.0;
+
+  for (int a=0; a<noccA_; a++) {
+    for (int b=0; b<noccB_; b++) {
+      P[a][b+noccA_] = sAB_[a][b];
+      P[b+noccA_][a] = sAB_[a][b];
+  }}
+
+  C_DPOTRF('L',noccA_+noccB_,P[0],noccA_+noccB_);
+  C_DPOTRI('L',noccA_+noccB_,P[0],noccA_+noccB_);
+
+  for (int i=0; i<noccA_+noccB_; i++)
+    P[i][i] -= 1.0;
+
+  double **pAA = block_matrix(noccA_,noccA_);
+  double **pBB = block_matrix(noccB_,noccB_);
+  double **pAB = block_matrix(noccA_,noccB_);
+
+  for (int a1=0; a1<noccA_; a1++) {
+    for (int a2=0; a2<noccA_; a2++) {
+      if (a2 > a1) { pAA[a1][a2] = P[a1][a2]; }
+      else { pAA[a1][a2] = P[a2][a1]; }
+  }}
+
+  for (int b1=0; b1<noccB_; b1++) {
+    for (int b2=0; b2<noccB_; b2++) {
+      if (b2 > b1) { pBB[b1][b2] = P[b1+noccA_][b2+noccA_]; }
+      else { pBB[b1][b2] = P[b2+noccA_][b1+noccA_]; }
+  }}
+
+  for (int a=0; a<noccA_; a++) {
+    for (int b=0; b<noccB_; b++) {
+      pAB[a][b] = P[a][b+noccA_];
+  }}
+
+  free_block(P);
+
+  double **B_p_AB = get_AB_ints(1);
+  double **A_p_AB = get_AB_ints(2);
+  double **B_p_AA = get_AA_ints(1);
+  double **A_p_BB = get_BB_ints(1);
+
+  ex1 = -2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),&(B_p_AB[0][0]),1,
+    &(A_p_AB[0][0]),1);
+
+  double *X = init_array(ndf_+3);
+
+  C_DGEMV('t',noccA_*noccA_,ndf_+3,1.0,&(B_p_AA[0][0]),ndf_+3,&(pAA[0][0]),1,
+    0.0,X,1);
+
+  ex2 = 4.0*C_DDOT(ndf_+3,diagBB_,1,X,1);
+
+  double **C_p_AB = block_matrix(noccA_*noccB_,ndf_+3);
+
+  C_DGEMM('N','N',noccA_,noccB_*(ndf_+3),noccA_,1.0,pAA[0],noccA_,B_p_AB[0],
+    noccB_*(ndf_+3),0.0,C_p_AB[0],noccB_*(ndf_+3));
+
+  ex2 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),A_p_AB[0],1,C_p_AB[0],1);
+
+  C_DGEMV('t',noccB_*noccB_,ndf_+3,1.0,&(A_p_BB[0][0]),ndf_+3,&(pBB[0][0]),1,
+    0.0,X,1);
+
+  ex3 = 4.0*C_DDOT(ndf_+3,diagAA_,1,X,1);
+
+  for (int a1=0; a1<noccA_; a1++) {
+    C_DGEMM('N','N',noccB_,ndf_+3,noccB_,1.0,pBB[0],noccB_,A_p_AB[a1*noccB_],
+      ndf_+3,0.0,C_p_AB[a1*noccB_],ndf_+3);
+  }
+
+  ex3 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),B_p_AB[0],1,C_p_AB[0],1);
+
+  C_DGEMV('t',noccA_*noccB_,ndf_+3,1.0,&(A_p_AB[0][0]),ndf_+3,&(pAB[0][0]),1,
+    0.0,X,1);
+
+  ex4 = 4.0*C_DDOT(ndf_+3,diagAA_,1,X,1);
+
+  for (int a1=0; a1<noccA_; a1++) {
+    C_DGEMM('T','N',noccB_,ndf_+3,noccA_,1.0,pAB[0],noccB_,B_p_AA[a1*noccA_],
+      ndf_+3,0.0,C_p_AB[a1*noccB_],ndf_+3);
+  }
+
+  ex4 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),A_p_AB[0],1,C_p_AB[0],1);
+
+  free_block(C_p_AB);
+
+  C_DGEMV('t',noccA_*noccB_,ndf_+3,1.0,&(B_p_AB[0][0]),ndf_+3,&(pAB[0][0]),1,
+    0.0,X,1);
+
+  ex5 = 4.0*C_DDOT(ndf_+3,diagBB_,1,X,1);
+
+  double **C_p_BB = block_matrix(noccB_*noccB_,ndf_+3);
+
+  C_DGEMM('T','N',noccB_,noccB_*(ndf_+3),noccA_,1.0,pAB[0],noccB_,B_p_AB[0],
+    noccB_*(ndf_+3),0.0,C_p_BB[0],noccB_*(ndf_+3));
+
+  ex5 -= 2.0*C_DDOT((long int) noccB_*noccB_*(ndf_+3),A_p_BB[0],1,C_p_BB[0],1);
+
+  free_block(C_p_BB);
+
+  double *Y = init_array(ndf_+3);
+
+  C_DGEMV('t',noccA_*noccB_,ndf_+3,1.0,&(B_p_AB[0][0]),ndf_+3,&(pAB[0][0]),1,
+    0.0,X,1);
+
+  C_DGEMV('t',noccB_*noccB_,ndf_+3,1.0,&(A_p_BB[0][0]),ndf_+3,&(pBB[0][0]),1,
+    0.0,Y,1);
+
+  ex6 = 4.0*C_DDOT((ndf_+3),X,1,Y,1);
+
+  double **D_p_AB = block_matrix(noccA_*noccB_,ndf_+3);
+  double **E_p_AB = block_matrix(noccA_*noccB_,ndf_+3);
+
+  C_DGEMM('N','N',noccA_,noccB_*(ndf_+3),noccB_,1.0,pAB[0],noccB_,A_p_BB[0],
+    noccB_*(ndf_+3),0.0,D_p_AB[0],noccB_*(ndf_+3));
+
+  for (int a1=0; a1<noccA_; a1++) {
+    C_DGEMM('N','N',noccB_,ndf_+3,noccB_,1.0,pBB[0],noccB_,D_p_AB[a1*noccB_],
+      ndf_+3,0.0,E_p_AB[a1*noccB_],(ndf_+3));
+  }
+
+  ex6 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),B_p_AB[0],1,E_p_AB[0],1);
+
+  C_DGEMV('t',noccA_*noccB_,ndf_+3,1.0,&(A_p_AB[0][0]),ndf_+3,&(pAB[0][0]),1,
+    0.0,X,1);
+
+  C_DGEMV('t',noccA_*noccA_,ndf_+3,1.0,&(B_p_AA[0][0]),ndf_+3,&(pAA[0][0]),1,
+    0.0,Y,1);
+
+  ex7 = 4.0*C_DDOT((ndf_+3),X,1,Y,1);
+
+  for (int a1=0; a1<noccA_; a1++) {
+    C_DGEMM('T','N',noccB_,ndf_+3,noccA_,1.0,pAB[0],noccB_,B_p_AA[a1*noccA_],
+      ndf_+3,0.0,D_p_AB[a1*noccB_],(ndf_+3));
+  }
+
+  C_DGEMM('N','N',noccA_,noccB_*(ndf_+3),noccA_,1.0,pAA[0],noccA_,D_p_AB[0],
+    noccB_*(ndf_+3),0.0,E_p_AB[0],noccB_*(ndf_+3));
+
+  ex7 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),A_p_AB[0],1,E_p_AB[0],1);
+
+  C_DGEMV('t',noccA_*noccA_,ndf_+3,1.0,&(B_p_AA[0][0]),ndf_+3,&(pAA[0][0]),1,
+    0.0,X,1);
+
+  C_DGEMV('t',noccB_*noccB_,ndf_+3,1.0,&(A_p_BB[0][0]),ndf_+3,&(pBB[0][0]),1,
+    0.0,Y,1);
+
+  ex8 = 4.0*C_DDOT((ndf_+3),X,1,Y,1);
+
+  C_DGEMM('N','N',noccA_,noccB_*(ndf_+3),noccA_,1.0,pAA[0],noccA_,B_p_AB[0],
+    noccB_*(ndf_+3),0.0,D_p_AB[0],noccB_*(ndf_+3));
+
+  for (int a1=0; a1<noccA_; a1++) {
+    C_DGEMM('N','N',noccB_,ndf_+3,noccB_,1.0,pBB[0],noccB_,D_p_AB[a1*noccB_],
+      ndf_+3,0.0,E_p_AB[a1*noccB_],ndf_+3);
+  }
+
+  ex8 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),A_p_AB[0],1,E_p_AB[0],1);
+
+  C_DGEMV('t',noccA_*noccB_,ndf_+3,1.0,&(A_p_AB[0][0]),ndf_+3,&(pAB[0][0]),1,
+    0.0,X,1);
+
+  C_DGEMV('t',noccA_*noccB_,ndf_+3,1.0,&(B_p_AB[0][0]),ndf_+3,&(pAB[0][0]),1,
+    0.0,Y,1);
+
+  ex9 = 4.0*C_DDOT(ndf_+3,X,1,Y,1);
+
+  C_DGEMM('N','N',noccA_,noccB_*(ndf_+3),noccB_,1.0,pAB[0],noccB_,A_p_BB[0],
+    noccB_*(ndf_+3),0.0,D_p_AB[0],noccB_*(ndf_+3));
+
+  for (int a1=0; a1<noccA_; a1++) {
+    C_DGEMM('T','N',noccB_,ndf_+3,noccA_,1.0,pAB[0],noccB_,B_p_AA[a1*noccA_],
+      ndf_+3,0.0,E_p_AB[a1*noccB_],ndf_+3);
+  }
+
+  ex9 -= 2.0*C_DDOT((long int) noccA_*noccB_*(ndf_+3),D_p_AB[0],1,E_p_AB[0],1);
+
+  free(X);
+  free(Y);
+  free_block(D_p_AB);
+  free_block(E_p_AB);
+
+  free_block(pAA);
+  free_block(pBB);
+  free_block(pAB);
+
+  free_block(B_p_AA);
+  free_block(A_p_BB);
+  free_block(A_p_AB);
+  free_block(B_p_AB);
+
+  e_exch10_ = ex1+ex2+ex3+ex4+ex5+ex6+ex7+ex8+ex9;
 
   if (debug_) {
     fprintf(outfile,"\n    Ex1                 = %18.12lf H\n",ex1);

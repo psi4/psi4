@@ -164,7 +164,7 @@ struct SAPTDFInts {
   double **B_d_;
 
   int filenum_;
-  char *label_;
+  const char *label_;
 
   psio_address next_DF_;
 

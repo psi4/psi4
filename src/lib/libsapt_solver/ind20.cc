@@ -1,4 +1,5 @@
 #include "sapt0.h"
+#include "sapt2.h"
 
 using namespace boost;
 
@@ -466,7 +467,7 @@ void SAPT0::ind20rA_B_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
 
-  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+  boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_AA[2];
   double **C_p_RR[2];
@@ -681,7 +682,7 @@ void SAPT0::ind20rB_A_aio()
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
   
-  shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
+  boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_BB[2];
   double **C_p_SS[2];
@@ -844,6 +845,170 @@ void SAPT0::ind20rB_A_aio()
   free_block(xBB); 
   free_block(xBS); 
   free_block(xSS); 
+}
+
+void SAPT2::ind20r()
+{
+  CHFA_ = block_matrix(noccA_,nvirA_);
+
+  cphf_solver(CHFA_,wBAR_,evalsA_,PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
+    "AR RI Integrals","RR RI Integrals",noccA_,nvirA_);
+
+  CHFB_ = block_matrix(noccB_,nvirB_);
+
+  cphf_solver(CHFB_,wABS_,evalsB_,PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+    "BS RI Integrals","SS RI Integrals",noccB_,nvirB_);
+
+  double indA_B, indB_A;
+
+  indA_B = 2.0*C_DDOT(noccA_*nvirA_,CHFA_[0],1,wBAR_[0],1);
+  indB_A = 2.0*C_DDOT(noccB_*nvirB_,CHFB_[0],1,wABS_[0],1);
+
+  e_ind20_ = indA_B + indB_A;
+
+  if (print_) {
+    fprintf(outfile,"    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
+    fprintf(outfile,"    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
+    fprintf(outfile,"    Ind20,r             = %18.12lf H\n",e_ind20_);
+    fflush(outfile);
+  }
+}
+
+void SAPT2::cphf_solver(double **tAR, double **wBAR, double *evals, 
+  int intfile, const char *AAints, const char *ARints, const char *RRints, 
+  int nocc, int nvir)
+{
+  time_t start = time(NULL);
+  time_t stop;
+
+  double **B_p_AR = block_matrix(nocc*nvir,ndf_+3);
+
+  psio_->read_entry(intfile,ARints,(char *) &(B_p_AR[0][0]),
+    sizeof(double)*nocc*nvir*(ndf_+3));
+
+  double **Amat = block_matrix(nocc*nvir,nocc*nvir);
+
+  C_DGEMM('N','T',nocc*nvir,nocc*nvir,ndf_,1.0,B_p_AR[0],ndf_+3,B_p_AR[0],
+    ndf_+3,0.0,Amat[0],nocc*nvir);
+
+  double *X = init_array(nvir);
+
+  for (int a=0; a<nocc; a++) {
+    for (int ap=0; ap<a; ap++) {
+      for (int r=0; r<nvir; r++) {
+        int ar = a*nvir+r;
+        int apr = ap*nvir+r;
+        C_DCOPY(nvir,&(Amat[ar][ap*nvir]),1,X,1);
+        C_DSCAL(nvir,4.0,&(Amat[ar][ap*nvir]),1);
+        C_DAXPY(nvir,-1.0,&(Amat[apr][a*nvir]),1,&(Amat[ar][ap*nvir]),1);
+        C_DSCAL(nvir,4.0,&(Amat[apr][a*nvir]),1);
+        C_DAXPY(nvir,-1.0,X,1,&(Amat[apr][a*nvir]),1);
+  }}}
+
+  free(X);
+
+  for (int a=0; a<nocc; a++) {
+    for (int r=0; r<nvir; r++) {
+      int ar = a*nvir+r;
+      C_DSCAL(nvir,3.0,&(Amat[ar][a*nvir]),1);
+  }}
+
+  free_block(B_p_AR);
+
+  double **B_p_AA = block_matrix(nocc*nocc,ndf_+3);
+  double **B_p_R = block_matrix(nvir,ndf_+3);
+
+  psio_->read_entry(intfile,AAints,(char *) &(B_p_AA[0][0]),
+    sizeof(double)*nocc*nocc*(ndf_+3));
+
+  psio_address next_PSIF = PSIO_ZERO;
+
+  for (int r=0; r<nvir; r++) {
+    psio_->read(intfile,RRints,(char *) &(B_p_R[0][0]),
+      sizeof(double)*nvir*(ndf_+3),next_PSIF,&next_PSIF);
+    for (int a=0; a<nocc; a++) {
+      int ar = a*nvir+r;
+      C_DGEMM('N','T',nocc,nvir,ndf_,-1.0,B_p_AA[a*nocc],ndf_+3,B_p_R[0],
+        ndf_+3,1.0,Amat[ar],nvir);
+  }}
+
+  free_block(B_p_AA);
+  free_block(B_p_R);
+
+  int iter =0;
+
+  double e_old = 0.0;
+  double e_new;
+  double conv = 0.0;
+  double dE = 0.0;
+
+  double **tAR_old = block_matrix(nocc,nvir);
+
+  C_DCOPY(nocc*nvir,wBAR[0],1,tAR_old[0],1);
+
+  for (int a=0; a<nocc; a++) {
+    for (int r=0; r<nvir; r++) {
+      tAR_old[a][r] /= evals[a] - evals[r+nocc];
+  }}
+
+  e_new = 2.0*C_DDOT(nocc*nvir,tAR_old[0],1,wBAR[0],1);
+
+  if (print_)
+    fprintf(outfile,"\n    Iter     Energy (mH)           dE (mH)          RMS (mH)      Time (s)\n");
+
+  CPHFDIIS diis(nocc*nvir,options_.get_int("DIISVECS"));
+
+  do {
+    e_old = e_new;
+
+    if (iter > 2) {
+      memset(&(tAR_old[0][0]),'\0',sizeof(double)*nocc*nvir);
+      diis.get_new_vector(tAR_old[0]);
+    }
+
+    C_DGEMV('n',nocc*nvir,nocc*nvir,1.0,Amat[0],nocc*nvir,tAR_old[0],1,
+      0.0,tAR[0],1);
+
+    C_DAXPY(nocc*nvir,1.0,wBAR[0],1,tAR[0],1);
+
+    for (int a=0; a<nocc; a++) {
+      for (int r=0; r<nvir; r++) {
+        tAR[a][r] /= evals[a] - evals[r+nocc];
+    }}
+
+    e_new = 2.0*C_DDOT(nocc*nvir,tAR[0],1,wBAR[0],1);
+
+    C_DAXPY(nocc*nvir,-1.0,tAR[0],1,tAR_old[0],1);
+
+    conv = C_DDOT(nocc*nvir,tAR_old[0],1,tAR_old[0],1);
+    conv = sqrt(conv/(nocc*nvir));
+    dE = e_new-e_old;
+
+    diis.store_vectors(tAR[0],tAR_old[0]);
+
+    C_DCOPY(nocc*nvir,tAR[0],1,tAR_old[0],1);
+
+    iter++;
+    stop = time(NULL);
+    if (print_) {
+      fprintf(outfile,"    %4d %16.8lf %17.9lf %17.9lf    %10ld\n",
+        iter,e_new*1000.0,dE*1000.0,conv*1000.0,stop-start);
+      fflush(outfile);
+    }
+
+  } while ((conv > d_conv_ || fabs(dE) > e_conv_) && iter < maxiter_);
+
+  if ((conv <= d_conv_) && (fabs(dE) <= e_conv_)) {
+    if (print_)
+      fprintf(outfile,"\n    CHF Iterations converged\n\n");
+    }
+  else {
+    fprintf(outfile,"\n    CHF Iterations did not converge\n\n");
+    }
+  fflush(outfile);
+
+  free_block(Amat);
+  free_block(tAR_old);
 }
 
 }}
