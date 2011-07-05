@@ -1,4 +1,5 @@
 #include "sapt0.h"
+#include "sapt2.h"
 
 namespace psi { namespace sapt {
 
@@ -1698,6 +1699,429 @@ double SAPT0::q14()
   free_block(sAA);
 
   return(q_14);
+}
+
+void SAPT2::exch_disp20()
+{
+  double **yARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+
+  double **B_p_AA = get_AA_ints(1);
+  double **B_p_BB = get_BB_ints(1);
+  double **B_p_AB = get_AB_ints(1);
+  double **C_p_AB = get_AB_ints(2);
+  double **X_p_AS = get_AS_ints(1);
+  double **X_p_RB = get_RB_ints(1);
+  double **B_p_AR = get_AR_ints(1);
+  double **B_p_BS = get_BS_ints(1);
+
+  double **B_p_RB = block_matrix(nvirA_*aoccB_,ndf_+3);
+  double **B_p_AS = block_matrix(aoccA_*nvirB_,ndf_+3);
+
+  for (int r=0, rb=0; r<nvirA_; r++) {
+    for (int b=0; b<aoccB_; b++, rb++) {
+      C_DCOPY(ndf_+3,X_p_RB[r*noccB_+b+foccB_],1,B_p_RB[rb],1);
+  }}
+
+  for (int a=0, as=0; a<aoccA_; a++) {
+    for (int s=0; s<nvirB_; s++, as++) {
+      C_DCOPY(ndf_+3,X_p_AS[(a+foccA_)*nvirB_+s],1,B_p_AS[as],1);
+  }}
+
+  free_block(X_p_RB);
+  free_block(X_p_AS);
+
+  double **X_AA = block_matrix(aoccA_,noccA_);
+  double **X_BB = block_matrix(aoccB_,noccB_);
+  double **X_AR = block_matrix(noccA_,nvirA_);
+  double **X_BS = block_matrix(noccB_,nvirB_);
+  double **X_AS = block_matrix(aoccA_,nvirB_);
+  double **X_RB = block_matrix(nvirA_,aoccB_);
+
+  // v_asrb
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('N','T',nvirA_*aoccB_,nvirB_,ndf_+3,1.0,&(B_p_RB[0][0]),ndf_+3,
+      &(B_p_AS[a*nvirB_][0]),ndf_+3,0.0,&(yARBS[a*nvirA_][0]),nvirB_);
+  }
+
+  // 2 s_rb' v_ab'bs
+
+  double **D_p_AR = block_matrix(aoccA_*nvirA_,ndf_+3);
+ 
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('N','N',nvirA_,ndf_+3,noccB_,1.0,&(sAB_[noccA_][0]),nmo_,
+      &(B_p_AB[(a+foccA_)*noccB_][0]),ndf_+3,0.0,&(D_p_AR[a*nvirA_][0]),ndf_+3);
+  }
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,2.0,&(D_p_AR[0][0]),
+    ndf_+3,&(B_p_BS[foccB_*nvirB_][0]),ndf_+3,1.0,&(yARBS[0][0]),
+    aoccB_*nvirB_);
+
+  free_block(D_p_AR);
+
+  // - s_rb v_ab'b's
+
+  memset(&(X_AS[0][0]),'\0',sizeof(double)*aoccA_*nvirB_);
+
+  for (int b=0; b<noccB_; b++) {
+    C_DGEMM('N','T',aoccA_,nvirB_,ndf_+3,1.0,&(B_p_AB[foccA_*noccB_+b][0]),
+      noccB_*(ndf_+3),&(B_p_BS[b*nvirB_][0]),ndf_+3,1.0,&(X_AS[0][0]),nvirB_);
+  }
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,-sAB_[r+noccA_][b+foccB_],&(X_AS[a][0]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  // - s_rb' v_asbb'
+
+  double **D_p_RB = block_matrix(nvirA_*aoccB_,ndf_+3);
+
+  C_DGEMM('N','N',nvirA_,aoccB_*(ndf_+3),noccB_,1.0,&(sAB_[noccA_][0]),nmo_,
+    &(B_p_BB[foccB_][0]),noccB_*(ndf_+3),0.0,&(D_p_RB[0][0]),aoccB_*(ndf_+3));
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('N','T',nvirA_*aoccB_,nvirB_,ndf_+3,-1.0,&(D_p_RB[0][0]),(ndf_+3),
+      &(B_p_AS[a*nvirB_][0]),ndf_+3,1.0,&(yARBS[a*nvirA_][0]),nvirB_);
+  }
+
+  free_block(D_p_RB);
+
+  // 2 s_rb v_asb'b'
+
+  C_DGEMV('n',aoccA_*nvirB_,ndf_+3,1.0,&(B_p_AS[0][0]),ndf_+3,diagBB_,1,
+    0.0,&(X_AS[0][0]),1);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,2.0*sAB_[r+noccA_][b+foccB_],&(X_AS[a][0]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  // 2 s_a's v_ara'b
+
+  double **D_p_BS = block_matrix(aoccB_*nvirB_,ndf_+3);
+
+  for (int b=0; b<aoccB_; b++) {
+    C_DGEMM('T','N',nvirB_,ndf_+3,noccA_,1.0,&(sAB_[0][noccB_]),nmo_,
+      &(C_p_AB[b+foccB_][0]),noccB_*(ndf_+3),0.0,&(D_p_BS[b*nvirB_][0]),
+      ndf_+3);
+  }
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,2.0,
+    &(B_p_AR[foccA_*nvirA_][0]),ndf_+3,&(D_p_BS[0][0]),ndf_+3,1.0,
+    &(yARBS[0][0]),aoccB_*nvirB_);
+
+  free_block(D_p_BS);
+
+  // - s_as v_a'ra'b
+
+  memset(&(X_RB[0][0]),'\0',sizeof(double)*nvirA_*aoccB_);
+
+  for (int a=0; a<noccA_; a++) {
+    C_DGEMM('N','T',nvirA_,aoccB_,ndf_+3,1.0,&(B_p_AR[a*nvirA_][0]),ndf_+3,
+      &(C_p_AB[a*noccB_+foccB_][0]),ndf_+3,1.0,&(X_RB[0][0]),aoccB_);
+  }
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,-X_RB[r][b],&(sAB_[a+foccA_][noccB_]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  // - s_a's v_aa'rb
+
+  double **D_p_AS = block_matrix(aoccA_*nvirB_,
+    (ndf_+3));
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('T','N',nvirB_,ndf_+3,noccA_,1.0,&(sAB_[0][noccB_]),nmo_,
+      &(B_p_AA[(a+foccA_)*noccA_][0]),(ndf_+3),0.0,
+      &(D_p_AS[a*nvirB_][0]),(ndf_+3));
+  }
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('N','T',nvirA_*aoccB_,nvirB_,ndf_+3,-1.0,&(B_p_RB[0][0]),ndf_+3,
+      &(D_p_AS[a*nvirB_][0]),ndf_+3,1.0,&(yARBS[a*nvirA_][0]),nvirB_);
+  }
+
+  free_block(D_p_AS);
+
+  // 2 s_as v_a'a'rb
+
+  C_DGEMV('n',nvirA_*aoccB_,ndf_+3,1.0,&(B_p_RB[0][0]),ndf_+3,diagAA_,1,
+    0.0,&(X_RB[0][0]),1);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,2.0*X_RB[r][b],&(sAB_[a+foccA_][noccB_]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  // -2 s_a'b s_a'b' v_arb's
+
+  C_DGEMM('T','N',aoccB_,noccB_,noccA_,1.0,&(sAB_[0][foccB_]),nmo_,
+    &(sAB_[0][0]),nmo_,0.0,&(X_BB[0][0]),noccB_);
+
+  D_p_BS = block_matrix(aoccB_*nvirB_,ndf_+3);
+
+  C_DGEMM('N','N',aoccB_,nvirB_*(ndf_+3),noccB_,1.0,&(X_BB[0][0]),noccB_,
+    &(B_p_BS[0][0]),nvirB_*(ndf_+3),0.0,&(D_p_BS[0][0]),nvirB_*(ndf_+3));
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,-2.0,
+    &(B_p_AR[foccA_*nvirA_][0]),ndf_+3,&(D_p_BS[0][0]),ndf_+3,1.0,
+    &(yARBS[0][0]),aoccB_*nvirB_);
+
+  free_block(D_p_BS);
+
+  // -2 s_a's s_a'b' v_arbb'
+
+  C_DGEMM('T','N',noccB_,nvirB_,noccA_,1.0,&(sAB_[0][0]),nmo_,
+    &(sAB_[0][noccB_]),nmo_,0.0,&(X_BS[0][0]),nvirB_);
+
+  D_p_BS = block_matrix(aoccB_*nvirB_,(ndf_+3));
+
+  for (int b=0; b<aoccB_; b++) {
+    C_DGEMM('T','N',nvirB_,ndf_+3,noccB_,1.0,&(X_BS[0][0]),nvirB_,
+      &(B_p_BB[(b+foccB_)*noccB_][0]),ndf_+3,0.0,
+      &(D_p_BS[b*nvirB_][0]),ndf_+3);
+  }
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,-2.0,
+    &(B_p_AR[foccA_*nvirA_][0]),ndf_+3,&(D_p_BS[0][0]),ndf_+3,
+    1.0,&(yARBS[0][0]),aoccB_*nvirB_);
+
+  free_block(D_p_BS);
+
+  // 4 s_a's s_a'b v_arb'b'
+
+  C_DGEMV('n',noccA_*nvirA_,ndf_+3,1.0,&(B_p_AR[0][0]),ndf_+3,diagBB_,1,0.0,
+    &(X_AR[0][0]),1);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      C_DAXPY(aoccB_*nvirB_,4.0*X_AR[a+foccA_][r],&(X_BS[foccB_][0]),1,
+        &(yARBS[ar][0]),1);
+  }}
+
+  // -2 s_a'b' s_ab' v_a'rbs
+
+  C_DGEMM('N','T',aoccA_,noccA_,noccB_,1.0,&(sAB_[foccA_][0]),nmo_,
+    &(sAB_[0][0]),nmo_,0.0,&(X_AA[0][0]),noccA_);
+
+  D_p_AR = block_matrix(aoccA_*nvirA_,ndf_+3);
+
+  C_DGEMM('N','N',aoccA_,nvirA_*(ndf_+3),noccA_,1.0,&(X_AA[0][0]),noccA_,
+    &(B_p_AR[0][0]),nvirA_*(ndf_+3),0.0,&(D_p_AR[0][0]),nvirA_*(ndf_+3));
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,-2.0,
+    &(D_p_AR[0][0]),ndf_+3,&(B_p_BS[foccB_*nvirB_][0]),ndf_+3,1.0,
+    &(yARBS[0][0]),aoccB_*nvirB_);
+
+  free_block(D_p_AR);
+
+  // 2 s_rb' s_a'b' v_aa'bs
+
+  C_DGEMM('N','T',noccA_,nvirA_,noccB_,1.0,&(sAB_[0][0]),nmo_,
+    &(sAB_[noccA_][0]),nmo_,0.0,&(X_AR[0][0]),nvirA_);
+
+  D_p_AR = block_matrix(aoccA_*nvirA_,(ndf_+3));
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('T','N',nvirA_,ndf_+3,noccA_,1.0,&(X_AR[0][0]),nvirA_,
+      &(B_p_AA[(a+foccA_)*noccA_][0]),ndf_+3,0.0,
+      &(D_p_AR[a*nvirA_][0]),ndf_+3);
+  }
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,-2.0,&(D_p_AR[0][0]),
+    ndf_+3,&(B_p_BS[foccB_*nvirB_][0]),ndf_+3,1.0,
+    &(yARBS[0][0]),aoccB_*nvirB_);
+
+  free_block(D_p_AR);
+
+  // 4 s_rb' s_ab' v_a'a'bs
+
+  C_DGEMV('n',noccB_*nvirB_,ndf_+3,1.0,&(B_p_BS[0][0]),ndf_+3,diagAA_,1,
+    0.0,&(X_BS[0][0]),1);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      C_DAXPY(aoccB_*nvirB_,4.0*X_AR[a+foccA_][r],&(X_BS[foccB_][0]),1,
+        &(yARBS[ar][0]),1);
+  }}
+
+  // s_a'b s_ab' v_a'rb's
+
+  D_p_AS = block_matrix(noccA_*nvirB_,(ndf_+3));
+  D_p_RB = block_matrix(nvirA_*noccB_,(ndf_+3));
+
+  C_DGEMM('N','N',noccA_,nvirB_*(ndf_+3),noccB_,1.0,&(sAB_[0][0]),nmo_,
+    &(B_p_BS[0][0]),nvirB_*(ndf_+3),0.0,&(D_p_AS[0][0]),nvirB_*(ndf_+3));
+
+  for (int r=0; r<nvirA_; r++) {
+    C_DGEMM('T','N',noccB_,ndf_+3,noccA_,1.0,&(sAB_[0][0]),nmo_,
+      &(B_p_AR[r][0]),nvirA_*(ndf_+3),0.0,&(D_p_RB[r*noccB_][0]),ndf_+3);
+  }
+
+  for (int a=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++) {
+      C_DGEMM('N','T',aoccB_,nvirB_,ndf_+3,1.0,&(D_p_RB[r*noccB_+foccB_][0]),
+        ndf_+3,&(D_p_AS[(a+foccA_)*nvirB_][0]),ndf_+3,1.0,
+        &(yARBS[a*nvirA_+r][0]),nvirB_);
+  }}
+
+  // s_as s_a'b' v_a'rbb'
+
+  C_DGEMM('N','T',nvirA_,aoccB_,noccB_*(ndf_+3),1.0,&(D_p_RB[0][0]),
+    noccB_*(ndf_+3),&(B_p_BB[foccB_*noccB_][0]),noccB_*(ndf_+3),
+    0.0,&(X_RB[0][0]),aoccB_);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,X_RB[r][b],&(sAB_[a+foccA_][noccB_]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  // s_rb s_a'b' v_aa'b's
+
+  memset(&(X_AS[0][0]),'\0',sizeof(double)*aoccA_*nvirB_);
+
+  for (int a=0; a<noccA_; a++) {
+    C_DGEMM('N','T',aoccA_,nvirB_,ndf_+3,1.0,
+      &(B_p_AA[a*noccA_+foccA_][0]),ndf_+3,&(D_p_AS[a*nvirB_][0]),ndf_+3,
+      1.0,&(X_AS[0][0]),nvirB_);
+  }
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,sAB_[r+noccA_][b+foccB_],&(X_AS[a][0]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  free_block(D_p_AS);
+  free_block(D_p_RB);
+
+  // s_rb' s_a's v_aa'bb'
+
+  D_p_AS = block_matrix(aoccA_*nvirB_,(ndf_+3));
+  D_p_RB = block_matrix(nvirA_*aoccB_,(ndf_+3));
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('T','N',nvirB_,(ndf_+3),noccA_,1.0,&(sAB_[0][noccB_]),nmo_,
+      &(B_p_AA[(a+foccA_)*noccA_][0]),(ndf_+3),0.0,
+      &(D_p_AS[a*nvirB_][0]),(ndf_+3));
+  }
+
+  C_DGEMM('N','N',nvirA_,aoccB_*(ndf_+3),noccB_,1.0,&(sAB_[noccA_][0]),
+    nmo_,&(B_p_BB[foccB_][0]),noccB_*(ndf_+3),0.0,&(D_p_RB[0][0]),
+    aoccB_*(ndf_+3));
+
+  for (int a=0; a<aoccA_; a++) {
+    C_DGEMM('N','T',nvirA_*aoccB_,nvirB_,ndf_+3,1.0,&(D_p_RB[0][0]),ndf_+3,
+      &(D_p_AS[a*nvirB_][0]),ndf_+3,1.0,&(yARBS[a*nvirA_][0]),nvirB_);
+  }
+
+  free_block(D_p_AS);
+  free_block(D_p_RB);
+
+  // -2 s_rb s_ab' v_a'a'b's
+  // -2 s_as s_a'b v_a'rb'b'
+
+  C_DGEMV('n',noccA_*nvirA_,ndf_+3,1.0,&(B_p_AR[0][0]),ndf_+3,diagBB_,1,
+    0.0,&(X_AR[0][0]),1);
+
+  C_DGEMV('n',noccB_*nvirB_,ndf_+3,1.0,&(B_p_BS[0][0]),ndf_+3,diagAA_,1,
+    0.0,&(X_BS[0][0]),1);
+
+  C_DGEMM('T','N',nvirA_,aoccB_,noccA_,1.0,&(X_AR[0][0]),nvirA_,
+    &(sAB_[0][foccB_]),nmo_,0.0,&(X_RB[0][0]),aoccB_);
+
+  C_DGEMM('N','N',aoccA_,nvirB_,noccB_,1.0,&(sAB_[foccA_][0]),nmo_,
+    &(X_BS[0][0]),nvirB_,0.0,&(X_AS[0][0]),nvirB_);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,-2.0*X_RB[r][b],&(sAB_[a+foccA_][noccB_]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,-2.0*sAB_[r+noccA_][b+foccB_],
+          &(X_AS[a][0]),1,&(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  // -2 s_rb s_a's v_aa'b'b'
+  // -2 s_rb' s_as v_a'a'bb'
+
+  C_DGEMV('n',aoccA_*noccA_,ndf_+3,1.0,&(B_p_AA[foccA_*noccA_][0]),ndf_+3,
+    diagBB_,1,0.0,&(X_AA[0][0]),1);
+
+  C_DGEMV('n',aoccB_*noccB_,ndf_+3,1.0,&(B_p_BB[foccB_*noccB_][0]),ndf_+3,
+    diagAA_,1,0.0,&(X_BB[0][0]),1);
+
+  C_DGEMM('N','N',aoccA_,nvirB_,noccA_,1.0,&(X_AA[0][0]),noccA_,
+    &(sAB_[0][noccB_]),nmo_,0.0,&(X_AS[0][0]),nvirB_);
+
+  C_DGEMM('N','T',nvirA_,aoccB_,noccB_,1.0,&(sAB_[noccA_][0]),nmo_,
+    &(X_BB[0][0]),noccB_,0.0,&(X_RB[0][0]),aoccB_);
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,-2.0*X_RB[r][b],&(sAB_[a+foccA_][noccB_]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  for (int a=0,ar=0; a<aoccA_; a++) {
+    for (int r=0; r<nvirA_; r++,ar++) {
+      for (int b=0; b<aoccB_; b++) {
+        C_DAXPY(nvirB_,-2.0*sAB_[r+noccA_][b+foccB_],&(X_AS[a][0]),1,
+          &(yARBS[ar][b*nvirB_]),1);
+  }}}
+
+  double **tARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+  
+  psio_->read_entry(PSIF_SAPT_AMPS,"tARBS Amplitudes",(char *) tARBS[0],
+    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_); 
+
+  e_exch_disp20_ = -2.0*C_DDOT(aoccA_*nvirA_*aoccB_*nvirB_,tARBS[0],1,
+    yARBS[0],1);
+
+  free_block(tARBS);
+  free_block(B_p_AA);
+  free_block(B_p_BB);
+  free_block(B_p_AB);
+  free_block(C_p_AB);
+  free_block(B_p_AS);
+  free_block(B_p_RB);
+  free_block(B_p_AR);
+  free_block(B_p_BS);
+  free_block(X_AA);
+  free_block(X_BB);
+  free_block(X_AR);
+  free_block(X_BS);
+  free_block(X_AS);
+  free_block(X_RB);
+
+  if (print_) {
+    fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
+    fflush(outfile);
+  }
+
+  psio_->write_entry(PSIF_SAPT_AMPS,"Exch-Disp V_ARBS",(char *) yARBS[0],
+    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
+
+  free_block(yARBS);
 }
 
 }}

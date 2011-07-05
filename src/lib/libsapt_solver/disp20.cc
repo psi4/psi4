@@ -1,4 +1,5 @@
 #include "sapt0.h"
+#include "sapt2.h"
 
 namespace psi { namespace sapt {
 /*
@@ -91,6 +92,36 @@ void SAPT0::disp20()
     fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
     fflush(outfile);
   }
+}
+
+void SAPT2::disp20()
+{
+  double **B_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
+    foccA_,noccA_,0,nvirA_);
+  double **B_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
+    foccB_,noccB_,0,nvirB_);
+  double **vARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+
+  C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_,1.0,B_p_AR[0],ndf_+3,
+    B_p_BS[0],ndf_+3,0.0,vARBS[0],aoccB_*nvirB_);
+
+  free_block(B_p_AR);
+  free_block(B_p_BS);
+
+  double **tARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+
+  psio_->read_entry(PSIF_SAPT_AMPS,"tARBS Amplitudes",(char *) tARBS[0],
+    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_); 
+
+  e_disp20_ = 4.0*C_DDOT(aoccA_*nvirA_*aoccB_*nvirB_,vARBS[0],1,tARBS[0],1);
+
+  if (print_) {
+    fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
+    fflush(outfile);
+  }
+
+  free_block(tARBS);
+  free_block(vARBS);
 }
 /*
  * This version is probably worse...unless there isn't much memory available
