@@ -134,9 +134,17 @@ DCFTSolver::compute_energy()
                 process_so_ints();
                 // The SCF energy has to be evaluated before adding Tau and orthonormalizing F
                 oldEnergy = new_total_energy_;
+#if REFACTORED
+                Fa_->add(g_tau_a_);
+                Fb_->add(g_tau_b_);
+                compute_scf_energy();
+                fprintf(outfile, "\n  !SCF ENERGY = %20.15f \n", scf_energy_);
+#else
                 compute_scf_energy();
                 Fa_->add(g_tau_a_);
                 Fb_->add(g_tau_b_);
+                fprintf(outfile, "\n  !SCF ENERGY = %20.15f \n", scf_energy_);
+#endif
                 scf_convergence_ = compute_scf_error_vector();
                 if(scf_convergence_ < diis_start_thresh_){
                     if(scfDiisManager.add_entry(4, scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
@@ -202,9 +210,17 @@ DCFTSolver::compute_energy()
             // This will build the new Fock matrix from the SO integrals
             process_so_ints();
             // The SCF energy has to be evaluated before adding Tau and orthonormalizing F
-            compute_scf_energy();
-            Fa_->add(g_tau_a_);
-            Fb_->add(g_tau_b_);
+#if REFACTORED
+                Fa_->add(g_tau_a_);
+                Fb_->add(g_tau_b_);
+                compute_scf_energy();
+                fprintf(outfile, "\n  !SCF ENERGY = %20.15f \n", scf_energy_);
+#else
+                compute_scf_energy();
+                Fa_->add(g_tau_a_);
+                Fb_->add(g_tau_b_);
+                fprintf(outfile, "\n  !SCF ENERGY = %20.15f \n", scf_energy_);
+#endif
             scf_convergence_ = compute_scf_error_vector();
             scfDone = scf_convergence_ < scf_threshold_;
             build_intermediates();

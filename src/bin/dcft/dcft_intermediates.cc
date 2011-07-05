@@ -16,6 +16,9 @@ DCFTSolver::build_intermediates()
     dpdfile2 X_OO, X_oo, X_VV, X_vv,
              T_OO, T_oo, T_VV, T_vv,
              F_OO, F_oo, F_VV, F_vv, tmp;
+#if REFACTORED
+    dpdbuf4 F;
+#endif
     dpdbuf4 I, L, G, T, A, D,
             Taa, Tab, Tbb,
             Laa, Lab, Lbb;
@@ -556,6 +559,9 @@ DCFTSolver::build_intermediates()
 
     // T_IJAB -> T_JIAB
     dpd_buf4_sort(&Taa, PSIF_DCFT_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
+
+
+
     // G_IJAB -= T_JIAB
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
@@ -759,7 +765,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_close(&G);
 #else
     /*
-     * G_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
+     * F_ijab += P(ab) F_ca lambda_ijcb - P(ij) F_ki lambda_jkab
      */
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
@@ -770,16 +776,16 @@ DCFTSolver::build_intermediates()
     dpd_contract244(&F_VV, &Laa, &T, 1, 2, 1, 1.0, 0.0);
     dpd_file2_close(&F_VV);
     dpd_buf4_close(&Laa);
-    // G_IJAB += Temp_IJAB
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
-    dpd_buf4_add(&G, &T, 1.0);
+    // F_IJAB += Temp_IJAB
+    dpd_buf4_copy(&T, PSIF_DCFT_DPD, "F <OO|VV>");
+    dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
+                  ID("[O,O]"), ID("[V,V]"), 0, "F <OO|VV>");
     dpd_buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
     dpd_buf4_close(&T);
-    // G_IJAB -= Temp_IJBA
+    // F_IJAB -= Temp_IJBA
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
-    dpd_buf4_add(&G, &T, -1.0);
+    dpd_buf4_add(&F, &T, -1.0);
     dpd_buf4_close(&T);
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
@@ -788,41 +794,42 @@ DCFTSolver::build_intermediates()
     // Temp_IJAB = -lambda_KJAB X_IK
     dpd_file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_contract244(&F_OO, &Laa, &T, 1, 0, 0, -1.0, 0.0);
+
     dpd_file2_close(&F_OO);
     dpd_buf4_close(&Laa);
-    // G_IJAB += Temp_IJAB
-    dpd_buf4_add(&G, &T, 1.0);
+    // F_IJAB += Temp_IJAB
+    dpd_buf4_add(&F, &T, 1.0);
     dpd_buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[O,O]"), ID("[V,V]"), "P(Temp) <OO|VV>");
     dpd_buf4_close(&T);
-    // G_IJAB -= Temp_JIAB
+    // F_IJAB -= Temp_JIAB
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "P(Temp) <OO|VV>");
-    dpd_buf4_add(&G, &T, -1.0);
+    dpd_buf4_add(&F, &T, -1.0);
     dpd_buf4_close(&T);
-    dpd_buf4_close(&G);
+    dpd_buf4_close(&F);
 
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
+    dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
+                  ID("[O,o]"), ID("[V,v]"), 0, "F <Oo|Vv>");
     dpd_buf4_init(&Lab, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    // G_IjAb += lambda_IjCb F_AC
+    // F_IjAb += lambda_IjCb F_AC
     dpd_file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-    dpd_contract244(&F_VV, &Lab, &G, 1, 2, 1, 1.0, 1.0);
+    dpd_contract244(&F_VV, &Lab, &F, 1, 2, 1, 1.0, 1.0);
     dpd_file2_close(&F_VV);
-    // G_IjAb += lambda_IjAc F_bc
+    // F_IjAb += lambda_IjAc F_bc
     dpd_file2_init(&F_vv, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
-    dpd_contract424(&Lab, &F_vv, &G, 3, 1, 0, 1.0, 1.0);
+    dpd_contract424(&Lab, &F_vv, &F, 3, 1, 0, 1.0, 1.0);
     dpd_file2_close(&F_vv);
-    // G_IjAb -= lambda_KjAb F_IK
+    // F_IjAb -= lambda_KjAb F_IK
     dpd_file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-    dpd_contract244(&F_OO, &Lab, &G, 1, 0, 0, -1.0, 1.0);
+    dpd_contract244(&F_OO, &Lab, &F, 1, 0, 0, -1.0, 1.0);
     dpd_file2_close(&F_OO);
-    // G_IjAb -= lambda_IkAb F_jk
+    // F_IjAb -= lambda_IkAb F_jk
     dpd_file2_init(&F_oo, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
-    dpd_contract424(&Lab, &F_oo, &G, 1, 1, 1, -1.0, 1.0);
+    dpd_contract424(&Lab, &F_oo, &F, 1, 1, 1, -1.0, 1.0);
     dpd_file2_close(&F_oo);
     dpd_buf4_close(&Lab);
-    dpd_buf4_close(&G);
+    dpd_buf4_close(&F);
 
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
@@ -833,16 +840,16 @@ DCFTSolver::build_intermediates()
     dpd_contract244(&F_vv, &Lbb, &T, 1, 2, 1, 1.0, 0.0);
     dpd_file2_close(&F_vv);
     dpd_buf4_close(&Lbb);
-    // G_ijab = Temp_ijab
-    dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
-    dpd_buf4_add(&G, &T, 1.0);
+    // F_ijab = Temp_ijab
+    dpd_buf4_copy(&T, PSIF_DCFT_DPD, "F <oo|vv>");
+    dpd_buf4_init(&F, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
+                  ID("[o,o]"), ID("[v,v]"), 0, "F <oo|vv>");
     dpd_buf4_sort(&T, PSIF_DCFT_DPD, pqsr, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
     dpd_buf4_close(&T);
-    // G_ijab -= Temp_ijba
+    // F_ijab -= Temp_ijba
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
-    dpd_buf4_add(&G, &T, -1.0);
+    dpd_buf4_add(&F, &T, -1.0);
     dpd_buf4_close(&T);
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Temp <oo|vv>");
@@ -853,16 +860,16 @@ DCFTSolver::build_intermediates()
     dpd_contract244(&F_oo, &Lbb, &T, 1, 0, 0, -1.0, 0.0);
     dpd_file2_close(&F_oo);
     dpd_buf4_close(&Lbb);
-    // G_ijab += Temp_ijab
-    dpd_buf4_add(&G, &T, 1.0);
+    // F_ijab += Temp_ijab
+    dpd_buf4_add(&F, &T, 1.0);
     dpd_buf4_sort(&T, PSIF_DCFT_DPD, qprs, ID("[o,o]"), ID("[v,v]"), "P(Temp) <oo|vv>");
     dpd_buf4_close(&T);
-    // G_ijab -= Temp_jiab
+    // F_ijab -= Temp_jiab
     dpd_buf4_init(&T, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "P(Temp) <oo|vv>");
-    dpd_buf4_add(&G, &T, -1.0);
+    dpd_buf4_add(&F, &T, -1.0);
     dpd_buf4_close(&T);
-    dpd_buf4_close(&G);
+    dpd_buf4_close(&F);
 #endif
 
     /*
