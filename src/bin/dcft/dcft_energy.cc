@@ -26,6 +26,7 @@ DCFTSolver::compute_dcft_energy()
                   ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
     eGaa = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
+#if !REFACTORED
     if(options_.get_bool("IGNORE_TAU")){
         eTaa = 0.0;
     }else{
@@ -35,6 +36,7 @@ DCFTSolver::compute_dcft_energy()
         eTaa = (1.0/8.0) * dpd_buf4_dot(&L, &T);
         dpd_buf4_close(&T);
     }
+#endif
     // E += 1/4 gbar_IJAB L_IJAB
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 1, "MO Ints <OO|VV>");
@@ -54,6 +56,8 @@ DCFTSolver::compute_dcft_energy()
                   ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     eGab =  dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
+
+#if !REFACTORED
     if(options_.get_bool("IGNORE_TAU")){
         eTab = 0.0;
     }else{
@@ -62,7 +66,9 @@ DCFTSolver::compute_dcft_energy()
                       ID("[O,o]"), ID("[V,v]"), 0, "T <Oo|Vv>");
         eTab = 0.5 * dpd_buf4_dot(&L, &T);
         dpd_buf4_close(&T);
-    }
+    }    
+#endif
+
     // E += gbar_IjAb L_IjAb
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "MO Ints <Oo|Vv>");
@@ -82,6 +88,8 @@ DCFTSolver::compute_dcft_energy()
                   ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
     eGbb = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
+
+#if !REFACTORED
     if(options_.get_bool("IGNORE_TAU")){
         eTbb = 0.0;
     }else{
@@ -91,6 +99,8 @@ DCFTSolver::compute_dcft_energy()
         eTbb = (1.0/8.0) * dpd_buf4_dot(&L, &T);
         dpd_buf4_close(&T);
     }
+#endif
+
     // E += 1/4 gbar_ijab L_ijab
     dpd_buf4_init(&I, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 1, "MO Ints <oo|vv>");
@@ -122,8 +132,14 @@ DCFTSolver::compute_dcft_energy()
     fprintf(outfile, "\tTotal T Energy = %20.12f\n", eTaa + eTab + eTbb);
     fprintf(outfile, "\tTotal A Energy = %20.12f\n", eAaa + eAab + eAbb);
 #endif
+
+#if !REFACTORED
     new_total_energy_ += eGaa + eGab + eGbb + eAaa + eAab + eAbb
                      + eTaa + eTab + eTbb + eIaa + eIab + eIbb;
+#else
+    new_total_energy_ += eGaa + eGab + eGbb + eAaa + eAab + eAbb
+                      + eIaa + eIab + eIbb;
+#endif
 }
 
 }} // Namespaces
