@@ -7,8 +7,8 @@ void SAPT2::amplitudes()
 }
 
 void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA,
-  int nvirA, double evalsA, int intfileB, const char *BSlabel, int foccB,
-  int noccB, int nvirB, double evalsB, int ampout, const char *amplabel)
+  int nvirA, double *evalsA, int intfileB, const char *BSlabel, int foccB,
+  int noccB, int nvirB, double *evalsB, int ampout, const char *amplabel)
 {
   int aoccA = noccA - foccA;
   int aoccB = noccB - foccB;
@@ -24,8 +24,8 @@ void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA,
     for (int r=0; r<nvirA; r++, ar++){
       for (int b=0, bs=0; b<aoccB; b++){
         for (int s=0; s<nvirB; s++, bs++){
-          tARBS[ar][bs] \= evalsA[a+foccA]+evalsB[b+foccB]-evalsA[r+noccA]-
-            evalsB[s+noccB]
+          tARBS[ar][bs] /= evalsA[a+foccA]+evalsB[b+foccB]-evalsA[r+noccA]-
+            evalsB[s+noccB];
   }}}}
 
   psio_->write_entry(ampout,amplabel,(char *) tARBS[0],sizeof(double)*aoccA*
