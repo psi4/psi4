@@ -11,6 +11,7 @@ procedures = {
             'dfcc'          : run_dfcc,
             'mp2-drpa'      : run_mp2drpa,
             'sapt0'         : run_sapt,
+            'sapt2'         : run_sapt,
             'mp2c'          : run_mp2c,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
