@@ -1,11 +1,9 @@
 #include "sapt.h"
 
-using namespace boost;
-
 namespace psi { namespace sapt {
 
-SAPT::SAPT(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
-    : Wavefunction(options, psio, chkpt)
+SAPT::SAPT(Options& options, boost::shared_ptr<PSIO> psio, 
+  boost::shared_ptr<Chkpt> chkpt) : Wavefunction(options, psio, chkpt)
 {
 #ifdef HAVE_MKL
   mkl_set_dynamic(1);
@@ -53,24 +51,25 @@ void SAPT::initialize()
   vAAB_ = NULL;
   vBAB_ = NULL;
 
-  shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
   //
   // If the user doesn't spec a basis name, pick it yourself
   // TODO: Verify that the basis assign does not messs this up
   if (options_.get_str("RI_BASIS_SAPT") == "") {
-      basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_SAPT");
-      fprintf(outfile, "    No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str()); 
+    basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") 
+      + "-RI", "RI_BASIS_SAPT");
+    fprintf(outfile, "    No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str()); 
   }
 
-  ribasis_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
+  ribasis_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, 
     "RI_BASIS_SAPT"));
   elst_basis_ = 0;
   if (options_.get_str("RI_BASIS_ELST") != "") {
-    elstbasis_ = shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_,
-      "RI_BASIS_ELST"));
+    elstbasis_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, 
+      molecule_,"RI_BASIS_ELST"));
     elst_basis_ = 1;
   }
-  zero_ = shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
+  zero_ = boost::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
   parser.reset();
 
 
@@ -89,7 +88,7 @@ void SAPT::initialize()
     realsA.push_back(0);
     std::vector<int> ghostsA;
     ghostsA.push_back(1);
-    shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
+    boost::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
       ghostsA);
     foccA_ = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
 
@@ -97,7 +96,7 @@ void SAPT::initialize()
     realsB.push_back(1);
     std::vector<int> ghostsB;
     ghostsB.push_back(0);
-    shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
+    boost::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
       ghostsB);
     foccB_ = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
   }
