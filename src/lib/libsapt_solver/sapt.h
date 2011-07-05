@@ -11,13 +11,13 @@
   #include <mkl.h>
 #endif
 
+#define INDEX(i,j) ((i>=j) ? (ioff_[i] + j) : (ioff_[j] + i)
+
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <lib3index/3index.h>
-
-#define INDEX(i,j) ((i>=j) ? (ioff[i] + j) : (ioff[j] + i))
 
 namespace boost {
 
@@ -79,7 +79,8 @@ protected:
   void zero_disk(int, const char *, int, int);
 
 public:
-  SAPT(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+  SAPT(Options& options, boost::shared_ptr<PSIO> psio, 
+    boost::shared_ptr<Chkpt> chkpt);
   virtual ~SAPT();
 
   virtual double compute_energy()=0;

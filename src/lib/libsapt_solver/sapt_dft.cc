@@ -1,11 +1,9 @@
 #include "sapt_dft.h"
 #include <libutil/quad.h>
 
-using namespace boost;
-
 namespace psi { namespace sapt {
 
-MP2C::MP2C(Options& options, shared_ptr<PSIO> psio, shared_ptr<Chkpt> chkpt)
+MP2C::MP2C(Options& options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
     : SAPT0(options, psio, chkpt)
 {
 }
@@ -91,7 +89,7 @@ double MP2C::compute_energy()
 
 void MP2C::form_quadrature()
 {
-    quad_ = shared_ptr<Quadrature>(new ChebyshevIIQuadrature(options_.get_int("OMEGA_POINTS"),
+    quad_ = boost::shared_ptr<Quadrature>(new ChebyshevIIQuadrature(options_.get_int("OMEGA_POINTS"),
         options_.get_double("OMEGA_CENTER"))); 
 
     if (debug_) {
@@ -104,13 +102,13 @@ void MP2C::form_J()
     int naux = ribasis_->nbf();
 
     // ==> Allocation <== // 
-    Jinv_ = shared_ptr<Matrix>(new Matrix("J^-1",naux,naux));
-    J_ = shared_ptr<Matrix>(new Matrix("J",naux,naux));
+    Jinv_ = boost::shared_ptr<Matrix>(new Matrix("J^-1",naux,naux));
+    J_ = boost::shared_ptr<Matrix>(new Matrix("J",naux,naux));
     double** Jp = Jinv_->pointer();
 
     // ==> J <== //
-    shared_ptr<IntegralFactory> fact(new IntegralFactory(ribasis_,zero_,ribasis_,zero_));
-    shared_ptr<TwoBodyAOInt> Qint(fact->eri());
+    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(ribasis_,zero_,ribasis_,zero_));
+    boost::shared_ptr<TwoBodyAOInt> Qint(fact->eri());
     const double* buffer = Qint->buffer();
     
     for (int A = 0; A < ribasis_->nshell(); A++) {
@@ -151,14 +149,14 @@ void MP2C::form_W()
     int naux = ribasis_->nbf();
 
     // ==> Allocation <== //
-    W_A_ = shared_ptr<Matrix> (new Matrix("W_A",naux,naux));  
-    W_B_ = shared_ptr<Matrix> (new Matrix("W_B",naux,naux)); 
+    W_A_ = boost::shared_ptr<Matrix> (new Matrix("W_A",naux,naux));  
+    W_B_ = boost::shared_ptr<Matrix> (new Matrix("W_B",naux,naux)); 
     double** W_Ap = W_A_->pointer();
     double** W_Bp = W_B_->pointer();
 
     // ==> D_A/D_B <== // 
-    shared_ptr<Matrix> D_A(new Matrix("D_A",nso_,nso_));
-    shared_ptr<Matrix> D_B(new Matrix("D_B",nso_,nso_));
+    boost::shared_ptr<Matrix> D_A(new Matrix("D_A",nso_,nso_));
+    boost::shared_ptr<Matrix> D_B(new Matrix("D_B",nso_,nso_));
 
     double** D_Ap = D_A->pointer();
     double** D_Bp = D_B->pointer();
@@ -172,11 +170,11 @@ void MP2C::form_W()
     }
     
     // ==> S <== //
-    shared_ptr<Matrix> S_A = shared_ptr<Matrix> (new Matrix("S",naux,naux));
-    shared_ptr<Matrix> S = shared_ptr<Matrix> (new Matrix("S",naux,naux));
+    boost::shared_ptr<Matrix> S_A = boost::shared_ptr<Matrix> (new Matrix("S",naux,naux));
+    boost::shared_ptr<Matrix> S = boost::shared_ptr<Matrix> (new Matrix("S",naux,naux));
 
-    shared_ptr<IntegralFactory> Afact(new IntegralFactory(ribasis_,ribasis_,zero_,zero_));
-    shared_ptr<OneBodyAOInt> Aint(Afact->ao_overlap());
+    boost::shared_ptr<IntegralFactory> Afact(new IntegralFactory(ribasis_,ribasis_,zero_,zero_));
+    boost::shared_ptr<OneBodyAOInt> Aint(Afact->ao_overlap());
 
     Aint->compute(S_A);
     S->copy(S_A);   
@@ -189,8 +187,8 @@ void MP2C::form_W()
     }  
 
     // ==> V <== //
-    shared_ptr<Matrix> V (new Matrix("V",naux,naux));
-    shared_ptr<Vector> Veig (new Vector("Veig",naux));
+    boost::shared_ptr<Matrix> V (new Matrix("V",naux,naux));
+    boost::shared_ptr<Vector> Veig (new Vector("Veig",naux));
     double** Vp = V->pointer();
     double* Veigp = Veig->pointer();
     double maxS = Veigp[naux - 1];
@@ -214,7 +212,7 @@ void MP2C::form_W()
         V->print();
 
         S_A->gemm(true,false,1.0,V,S,0.0);
-        shared_ptr<Matrix> one (new Matrix("Assert I",naux,naux));
+        boost::shared_ptr<Matrix> one (new Matrix("Assert I",naux,naux));
         one->gemm(false,false,1.0,S_A,V,0.0);
         one->print();
     } 
@@ -223,17 +221,17 @@ void MP2C::form_W()
     S_A.reset(); 
 
     // ==> c <== //
-    shared_ptr<Vector> c_A(new Vector("c_A",naux));
-    shared_ptr<Vector> c_B(new Vector("c_B",naux));
+    boost::shared_ptr<Vector> c_A(new Vector("c_A",naux));
+    boost::shared_ptr<Vector> c_B(new Vector("c_B",naux));
     double* c_Ap = c_A->pointer();
     double* c_Bp = c_B->pointer();
 
     int maxA = ribasis_->max_function_per_shell();
-    shared_ptr<Matrix> QmnA (new Matrix("(Q|mn) A", maxA, nso_ * (ULI) nso_));
+    boost::shared_ptr<Matrix> QmnA (new Matrix("(Q|mn) A", maxA, nso_ * (ULI) nso_));
     double** QmnAp = QmnA->pointer();
     
-    shared_ptr<IntegralFactory> Afact2(new IntegralFactory(ribasis_, zero_, basisset_, basisset_));
-    shared_ptr<TwoBodyAOInt> Aeri (Afact2->eri());
+    boost::shared_ptr<IntegralFactory> Afact2(new IntegralFactory(ribasis_, zero_, basisset_, basisset_));
+    boost::shared_ptr<TwoBodyAOInt> Aeri (Afact2->eri());
     const double* Abuffer = Aeri->buffer();
 
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
@@ -281,8 +279,8 @@ void MP2C::form_W()
     }
 
     // ==> d <== //
-    shared_ptr<Vector> d_A(new Vector("d_A",naux));
-    shared_ptr<Vector> d_B(new Vector("d_B",naux));
+    boost::shared_ptr<Vector> d_A(new Vector("d_A",naux));
+    boost::shared_ptr<Vector> d_B(new Vector("d_B",naux));
     double* d_Ap = d_A->pointer();
     double* d_Bp = d_B->pointer();
    
@@ -300,16 +298,16 @@ void MP2C::form_W()
     c_B.reset();
     
     // ==> (M|\rho|Q) <== //
-    shared_ptr<IntegralFactory> PQRfactory(new IntegralFactory(ribasis_, ribasis_, ribasis_, ribasis_));
+    boost::shared_ptr<IntegralFactory> PQRfactory(new IntegralFactory(ribasis_, ribasis_, ribasis_, ribasis_));
 
-    shared_ptr<Matrix> PQR (new Matrix("PQR",maxA*maxA,naux));
-    shared_ptr<Vector> TempA (new Vector("TempA",maxA*maxA)); 
-    shared_ptr<Vector> TempB (new Vector("TempB",maxA*maxA)); 
+    boost::shared_ptr<Matrix> PQR (new Matrix("PQR",maxA*maxA,naux));
+    boost::shared_ptr<Vector> TempA (new Vector("TempA",maxA*maxA)); 
+    boost::shared_ptr<Vector> TempB (new Vector("TempB",maxA*maxA)); 
     double** PQRp = PQR->pointer(); 
     double* TempAp = TempA->pointer();
     double* TempBp = TempB->pointer();
  
-    shared_ptr<ThreeCenterOverlapInt> o3(PQRfactory->overlap_3c());
+    boost::shared_ptr<ThreeCenterOverlapInt> o3(PQRfactory->overlap_3c());
     const double* buffer = o3->buffer();
  
     // A bit naive at the moment (no sieves or threading)
@@ -366,8 +364,8 @@ void MP2C::form_W()
     }
 
     // ==> M-tilde <== //
-    shared_ptr<Matrix> T(new Matrix("T",naux,naux));
-    shared_ptr<Matrix> T2(new Matrix("T2",naux,naux));
+    boost::shared_ptr<Matrix> T(new Matrix("T",naux,naux));
+    boost::shared_ptr<Matrix> T2(new Matrix("T2",naux,naux));
     double** Tp = T->pointer();
     double** T2p = T2->pointer();
 
@@ -383,7 +381,7 @@ void MP2C::form_W()
 
     // ==> ALDAx Kernel <== //
     double C_x = 3.0/8.0*pow(3.0,1.0/3.0)*pow(4.0,2.0/3.0)*pow(M_PI,-1.0/3.0); 
-    shared_ptr<Vector> lambda(new Vector("Lambda",naux));
+    boost::shared_ptr<Vector> lambda(new Vector("Lambda",naux));
     double* lambdap = lambda->pointer();
 
     // Diagonalize
@@ -475,15 +473,15 @@ void MP2C::form_X0()
 
     // ==> X0_A <== //
     int maxA = ribasis_->max_function_per_shell();
-    shared_ptr<Matrix> QiaA (new Matrix("(Q|ia) A", NA, noccA_ * (ULI) nvirA_)); 
-    shared_ptr<Matrix> QmnA (new Matrix("(Q|mn) A", maxA, nso_ * (ULI) nso_));
-    shared_ptr<Matrix> QmiA (new Matrix("(Q|mi) A", maxA, noccA_ * (ULI) nso_));
+    boost::shared_ptr<Matrix> QiaA (new Matrix("(Q|ia) A", NA, noccA_ * (ULI) nvirA_)); 
+    boost::shared_ptr<Matrix> QmnA (new Matrix("(Q|mn) A", maxA, nso_ * (ULI) nso_));
+    boost::shared_ptr<Matrix> QmiA (new Matrix("(Q|mi) A", maxA, noccA_ * (ULI) nso_));
     double** QiaAp = QiaA->pointer();
     double** QmnAp = QmnA->pointer();
     double** QmiAp = QmiA->pointer();
     
-    shared_ptr<IntegralFactory> Afact(new IntegralFactory(ribasis_, zero_, basisset_, basisset_));
-    shared_ptr<TwoBodyAOInt> Aeri (Afact->eri());
+    boost::shared_ptr<IntegralFactory> Afact(new IntegralFactory(ribasis_, zero_, basisset_, basisset_));
+    boost::shared_ptr<TwoBodyAOInt> Aeri (Afact->eri());
     const double* Abuffer = Aeri->buffer();
 
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
@@ -534,7 +532,7 @@ void MP2C::form_X0()
     }
 
     // ==> Lambda <== //
-    shared_ptr<Matrix> LiaA (new Matrix("Lia A", omega.size(), noccA_*(ULI)nvirA_));
+    boost::shared_ptr<Matrix> LiaA (new Matrix("Lia A", omega.size(), noccA_*(ULI)nvirA_));
     double** LiaAp = LiaA->pointer();
     for (int om = 0; om < omega.size(); om++) {
         double OM = omega[om];
@@ -552,7 +550,7 @@ void MP2C::form_X0()
 
     // ==> X0 <== //
     for (int om = 0; om < omega.size(); om++) {
-        shared_ptr<Matrix> XA (new Matrix("XA", NA, NA));
+        boost::shared_ptr<Matrix> XA (new Matrix("XA", NA, NA));
 
         if (om == 0) {
             for (ULI ia = 0; ia < noccA_*(ULI)nvirA_; ia++) {
@@ -574,15 +572,15 @@ void MP2C::form_X0()
 
     // ==> X0_B <== //
     int maxB = ribasis_->max_function_per_shell();
-    shared_ptr<Matrix> QiaB (new Matrix("(Q|ia) B", NB, noccB_ * (ULI) nvirB_)); 
-    shared_ptr<Matrix> QmnB (new Matrix("(Q|mn) B", maxB, nso_ * (ULI) nso_));
-    shared_ptr<Matrix> QmiB (new Matrix("(Q|mi) B", maxB, noccB_ * (ULI) nso_));
+    boost::shared_ptr<Matrix> QiaB (new Matrix("(Q|ia) B", NB, noccB_ * (ULI) nvirB_)); 
+    boost::shared_ptr<Matrix> QmnB (new Matrix("(Q|mn) B", maxB, nso_ * (ULI) nso_));
+    boost::shared_ptr<Matrix> QmiB (new Matrix("(Q|mi) B", maxB, noccB_ * (ULI) nso_));
     double** QiaBp = QiaB->pointer();
     double** QmnBp = QmnB->pointer();
     double** QmiBp = QmiB->pointer();
     
-    shared_ptr<IntegralFactory> Bfact(new IntegralFactory(ribasis_, zero_, basisset_, basisset_));
-    shared_ptr<TwoBodyAOInt> Beri (Bfact->eri());
+    boost::shared_ptr<IntegralFactory> Bfact(new IntegralFactory(ribasis_, zero_, basisset_, basisset_));
+    boost::shared_ptr<TwoBodyAOInt> Beri (Bfact->eri());
     const double* Bbuffer = Beri->buffer();
 
     for (int Q = 0; Q < ribasis_->nshell(); Q++) {
@@ -633,7 +631,7 @@ void MP2C::form_X0()
     }
 
     // ==> Lambda <== //
-    shared_ptr<Matrix> LiaB (new Matrix("Lia B", omega.size(), noccB_*(ULI)nvirB_));
+    boost::shared_ptr<Matrix> LiaB (new Matrix("Lia B", omega.size(), noccB_*(ULI)nvirB_));
     double** LiaBp = LiaB->pointer();
     for (int om = 0; om < omega.size(); om++) {
         double OM = omega[om];
@@ -651,7 +649,7 @@ void MP2C::form_X0()
 
     // ==> X0 <== //
     for (int om = 0; om < omega.size(); om++) {
-        shared_ptr<Matrix> XB (new Matrix("XB", NB, NB));
+        boost::shared_ptr<Matrix> XB (new Matrix("XB", NB, NB));
 
         if (om == 0) {
             for (ULI ia = 0; ia < noccB_*(ULI)nvirB_; ia++) {
@@ -679,8 +677,8 @@ void MP2C::form_XC()
     int lwork = 3*naux;
     double* work = new double[lwork]; 
 
-    shared_ptr<Matrix> T1(new Matrix("T1",naux,naux));
-    shared_ptr<Matrix> T2(new Matrix("T2",naux,naux));
+    boost::shared_ptr<Matrix> T1(new Matrix("T1",naux,naux));
+    boost::shared_ptr<Matrix> T2(new Matrix("T2",naux,naux));
 
     // ==> S^-1 W S^-1 => W <== //
     T1->gemm(false,false,1.0,Jinv_,W_A_,0.0);
@@ -768,8 +766,8 @@ std::vector<double> MP2C::casimirPolder()
 {
     int naux = ribasis_->nbf(); 
 
-    shared_ptr<Matrix> T1(new Matrix("T1",naux,naux));
-    shared_ptr<Matrix> T2(new Matrix("T2",naux,naux));
+    boost::shared_ptr<Matrix> T1(new Matrix("T1",naux,naux));
+    boost::shared_ptr<Matrix> T2(new Matrix("T2",naux,naux));
 
     std::vector<double> E;
 
