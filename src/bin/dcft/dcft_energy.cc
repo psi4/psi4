@@ -136,9 +136,11 @@ DCFTSolver::compute_dcft_energy()
 #if !REFACTORED
     new_total_energy_ += eGaa + eGab + eGbb + eAaa + eAab + eAbb
                      + eTaa + eTab + eTbb + eIaa + eIab + eIbb;
+    fprintf(outfile, "\n  !LAMBDA ENERGY = %20.15f \n", new_total_energy_ - scf_energy_);
+
 #else
-    new_total_energy_ += eGaa + eGab + eGbb + eAaa + eAab + eAbb
-                      + eIaa + eIab + eIbb;
+    new_total_energy_ += eGaa + eGab + eGbb + eIaa + eIab + eIbb;
+    fprintf(outfile, "\n  !LAMBDA ENERGY = %20.15f \n", new_total_energy_ - scf_energy_);
 #endif
 }
 

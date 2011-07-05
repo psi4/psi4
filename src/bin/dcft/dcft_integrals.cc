@@ -276,7 +276,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = (i==j ? 0.0 : FMO->get(h, i, j));
+                F.matrix[h][i][j] = FMO->get(h, i, j);
 #endif
             }
         }
@@ -301,7 +301,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = (i==j ? 0.0 : FMO->get(h, i + naoccpi_[h], j + naoccpi_[h]));
+                F.matrix[h][i][j] = FMO->get(h, i + naoccpi_[h], j + naoccpi_[h]);
 #endif
             }
         }
@@ -314,6 +314,9 @@ DCFTSolver::build_denominators()
     FMO->copy(Fb_);
     FMO->transform(Cb_);
 #endif
+
+    pitzerOffset = 0; // We need to zero, because we split the for loop
+    aCount = 0, bCount = 0; ////
 
     //Diagonal elements of the Fock matrix
     //Beta spin
@@ -361,7 +364,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = (i==j ? 0.0 : FMO->get(h, i, j));
+                F.matrix[h][i][j] = FMO->get(h, i, j);
 #endif
             }
         }
@@ -385,7 +388,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = (i==j ? 0.0 : FMO->get(h, i + nboccpi_[h], j + nboccpi_[h]));
+                F.matrix[h][i][j] = FMO->get(h, i + nboccpi_[h], j + nboccpi_[h]);
 #endif
             }
         }
