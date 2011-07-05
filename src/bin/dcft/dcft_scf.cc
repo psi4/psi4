@@ -443,8 +443,9 @@ namespace psi{ namespace dcft{
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   Da[muNu] = kappa_a_->get(h, mu, nu);
                   Db[muNu] = kappa_b_->get(h, mu, nu);
-                  Ta[muNu] = a_tau_[h][mu][nu];
-                  Tb[muNu] = b_tau_[h][mu][nu];
+//                  Ta[muNu] = a_tau_[h][mu][nu];
+                  Ta[muNu] = a_tau_->get(h,mu,nu);
+                  Tb[muNu] = b_tau_->get(h,mu,nu);
               }
           }
           soOffset += nsopi_[h];
@@ -1380,8 +1381,8 @@ namespace psi{ namespace dcft{
                   int muNu = INDEX((nu+soOffset), (mu+soOffset));
                   Da[muNu] = kappa_a_->get(h, mu, nu);
                   Db[muNu] = kappa_b_->get(h, mu, nu);
-                  Ta[muNu] = a_tau_[h][mu][nu];
-                  Tb[muNu] = b_tau_[h][mu][nu];
+                  Ta[muNu] = a_tau_->get(h,mu,nu);
+                  Tb[muNu] = b_tau_->get(h,mu,nu);
               }
           }
           soOffset += nsopi_[h];
