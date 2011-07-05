@@ -104,8 +104,6 @@ DCFTSolver::build_tau()
 
     for(int h = 0; h < nirrep_; ++h){
         if(nsopi_[h] == 0) continue;
-        ::memset(a_tau_[h][0], 0, nsopi_[h]*nsopi_[h]*sizeof(double));
-        ::memset(b_tau_[h][0], 0, nsopi_[h]*nsopi_[h]*sizeof(double));
         double **temp = block_matrix(nsopi_[h], nsopi_[h]);
         /*
          * Backtransform the Tau matrices to the AO basis
@@ -115,34 +113,36 @@ DCFTSolver::build_tau()
         double **pbOccC = bocc_c_->pointer(h);
         double **paVirC = avir_c_->pointer(h);
         double **pbVirC = bvir_c_->pointer(h);
+        double **pa_tau_ = a_tau_->pointer(h);
+        double **pb_tau_ = b_tau_->pointer(h);
 
         // Alpha occupied
         if(naoccpi_[h] && nsopi_[h]){
             C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h],
                     T_OO.matrix[h][0], naoccpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h],
-                    paOccC[0], naoccpi_[h], 1.0, a_tau_[h][0], nsopi_[h]);
+                    paOccC[0], naoccpi_[h], 0.0, pa_tau_[0], nsopi_[h]);
         }
         // Beta occupied
         if(nboccpi_[h] && nsopi_[h]){
             C_DGEMM('n', 'n', nsopi_[h], nboccpi_[h], nboccpi_[h], 1.0, pbOccC[0], nboccpi_[h],
                     T_oo.matrix[h][0], nboccpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], nboccpi_[h], 1.0, temp[0], nsopi_[h],
-                    pbOccC[0], nboccpi_[h], 1.0, b_tau_[h][0], nsopi_[h]);
+                    pbOccC[0], nboccpi_[h], 0.0, pb_tau_[0], nsopi_[h]);
         }
         // Alpha virtual
         if(navirpi_[h] && nsopi_[h]){
             C_DGEMM('n', 'n', nsopi_[h], navirpi_[h], navirpi_[h], 1.0, paVirC[0], navirpi_[h],
                     T_VV.matrix[h][0], navirpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], navirpi_[h], 1.0, temp[0], nsopi_[h],
-                    paVirC[0], navirpi_[h], 1.0, a_tau_[h][0], nsopi_[h]);
+                    paVirC[0], navirpi_[h], 1.0, pa_tau_[0], nsopi_[h]);
         }
         // Beta virtual
         if(nbvirpi_[h] && nsopi_[h]){
             C_DGEMM('n', 'n', nsopi_[h], nbvirpi_[h], nbvirpi_[h], 1.0, pbVirC[0], nbvirpi_[h],
                     T_vv.matrix[h][0], nbvirpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], nbvirpi_[h], 1.0, temp[0], nsopi_[h],
-                    pbVirC[0], nbvirpi_[h], 1.0, b_tau_[h][0], nsopi_[h]);
+                    pbVirC[0], nbvirpi_[h], 1.0, pb_tau_[0], nsopi_[h]);
         }
         free_block(temp);
     }
