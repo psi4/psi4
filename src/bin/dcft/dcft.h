@@ -131,9 +131,11 @@ protected:
     /// The beta virtual eigenvectors, per irrep
     SharedMatrix bvir_c_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
-    double ***a_tau_;
+    SharedMatrix a_tau_;
+//    double ***a_tau_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
-    double ***b_tau_;
+    SharedMatrix b_tau_;
+//    double ***b_tau_;
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis

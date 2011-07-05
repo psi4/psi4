@@ -74,12 +74,14 @@ DCFTSolver::init()
     epsilon_a_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
     epsilon_b_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
 
-    a_tau_    = new double**[nirrep_];
-    b_tau_    = new double**[nirrep_];
-    for(int h = 0; h < nirrep_; ++h){
-        a_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
-        b_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
-    }
+    a_tau_    = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
+    b_tau_    = boost::shared_ptr<Matrix>(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
+//    a_tau_    = new double**[nirrep_];
+//    b_tau_    = new double**[nirrep_];
+//    for(int h = 0; h < nirrep_; ++h){
+//        a_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
+//        b_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
+//    }
     
 
     // Store the AO overlap matrix
@@ -135,12 +137,12 @@ DCFTSolver::finalize()
     so_h_.reset();
     s_half_inv_.reset();
 
-    for(int h = 0; h < nirrep_; ++h){
-        free_block(a_tau_[h]);
-        free_block(b_tau_[h]);
-    }
-    delete [] a_tau_;
-    delete [] b_tau_;
+//    for(int h = 0; h < nirrep_; ++h){
+//        free_block(a_tau_[h]);
+//        free_block(b_tau_[h]);
+//    }
+//    delete [] a_tau_;
+//    delete [] b_tau_;
     delete [] naoccpi_;
     delete [] nboccpi_;
     delete [] navirpi_;
