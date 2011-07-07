@@ -1,0 +1,23 @@
+Let
+  epsilon = 1e-6
+  k = 8
+  Omega = [-20, 20]^3
+  r = x -> sqrt(x_0^2 + x_1^2 + x_2^2)
+  g = x -> exp(-2*r(x))
+  v = x -> -2/r(x)
+In
+  nu = F v  
+  phi = F g
+  lambda = -1.0
+  for i in [0,13]
+    phi = phi * ||phi||^-1
+    V = nu - del^-2 4 * pi * phi^2
+    psi = -2 * (-2*lambda - del^2)^-1 V * phi
+    lambda = lambda + <V*phi|psi - phi> / <psi|psi>
+    phi = psi
+    print "iter", i, "norm", ||phi||, "eval",lambda
+  end
+End
+
+
+

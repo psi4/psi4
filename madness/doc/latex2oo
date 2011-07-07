@@ -1,0 +1,60 @@
+#!/bin/csh
+
+# This sed script partially automates the conversion
+# from latex to openoffice focussing on the equations.
+
+sed \
+    -e 's,\\begin{array}, matrix { ,g'   \
+    -e 's,\\begin{eqnarray}, matrix { ,g'   \
+    -e 's,\\begin{eqnarray\*}, matrix { ,g' \
+    -e 's,\\end{array}, } ,g'  \
+    -e 's,\\end{eqnarray}, } ,g'  \
+    -e 's,\\end{eqnarray\*}, } ,g' \
+    -e 's,\\left(, left ( ,g' \
+    -e 's,\\right), right ) ,g' \
+    -e 's,\\left\\lfloor, left lfloor ,g' \
+    -e 's,\\right\\rfloor, right rfloor,g' \
+    -e 's,\\left\\|, left ldline ,g' \
+    -e 's,\\right\\|, right rdline ,g' \
+    -e 's,\\left|, left lline ,g' \
+    -e 's,\\right|, right rline ,g' \
+    -e 's,\\left\., left none ,g' \
+    -e 's,\\right\., right none ,g' \
+    -e 's,& = &, # "=" # alignl ,g'  \
+    -e 's,&=&, # "=" # alignl ,g'  \
+    -e 's,\\asterisk, "*" ,g' \
+    -e 's,\\dagger, %dagger ,g' \
+    -e 's,\\ldots, dotslow ,g' \
+    -e 's,\\alpha, %alpha ,g' \
+    -e 's,\\beta, %beta ,g' \
+    -e 's,\\gamma, %gamma ,g' \
+    -e 's,\\delta, %delta ,g' \
+    -e 's,\\epsilon, %epsilon ,g' \
+    -e 's,\\mu, %mu ,g' \
+    -e 's,\\nu, %nu ,g' \
+    -e 's,\\omega, %omega ,g' \
+    -e 's,\\tau, %tau ,g' \
+    -e 's,\\phi, %phi ,g' \
+    -e 's,\\psi, %psi ,g' \
+    -e 's,\\sigma, %sigma ,g' \
+    -e 's,\\lambda, %lambda ,g' \
+    -e 's,\\approx, simeq ,g' \
+    -e 's,\\tmop, nitalic,g' \
+    -e 's,\\text, nitalic,g' \
+    -e 's,\\mathd, d,g' \
+    -e 's,\\sum_, sum from ,g' \
+    -e 's,\\int_, int from ,g' \
+    -e 's,\\infty, infinity ,g' \
+    -e 's,\\oplus, %oplus ,g' \
+    -e 's,\\\\, ## ,g' \
+    -e 's,\\nonumber,,g' \
+    -e 's,\\begin{equation},,g' \
+    -e 's,\\end{equation},,g' \
+    -e 's,\\\[,,g' \
+    -e 's,\\\],,g' \
+    -e 's,\\sqrt,sqrt,g' \
+    -e 's,\\leqslant,<=,g' \
+    -e 's,\\frac,frac,g' \
+    -e 's,\$,,g'    \
+    -e 's,&, # ,g' \
+    -e 's,\\, ,g'

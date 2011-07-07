@@ -1,0 +1,82 @@
+*
+* $Id: fciinfo.fh,v 1.2 1999/07/28 00:23:42 d3e129 Exp $
+*
+#include "fciparam.fh"
+c
+c     COMMON /FCIINFO/
+c
+c     nactiv = no. of orbitals in the full-CI space
+c     nacttr = nactiv*(nactiv+1)/2
+c     nelec  = no. of electrons in the full-CI space
+c     multi  = multiplicity.  Will work with S=Sz space of determinants
+c     iky(i) = i*(i-1)/2
+c     nwalko = no. of nelec orbital configurations or walks WITHOUT symmetry
+c     nwalkosym = no. of nelec orbital configurations or walks WITH symmetry
+c     ndets  = no. of determinants in the FCI WITH symmetry
+c     ncsf   = no. of CSF in the FCI WITH symmetry
+c     orbsym(i) = symmetry of orbital i (irreps numbered 0,1,...,7)
+c     statesym  = symmetry of the FCI state of interest
+c     
+      integer nactiv, nacttr, nelec, multi, iky, nwalko, ndets, ncsf
+      integer nwalkosym, orbsym, statesym
+      common /fciinfo/ nactiv, nacttr, nelec, multi, iky(nactmx),
+     $     nwalko, nwalkosym, ndets, ncsf, orbsym(nactmx), statesym
+c
+c     COMMON /FCIMGRAPH/
+c
+c     mwt    = weight of nodes in primitive spin function graph
+c     marc   = connecting arcs in ...
+c     marcwt = weight of arcs  in ...
+c     mnsdet(ns) = no. of determinants for given # of open shells
+c     mnscsf(ns) = no. of CSD for given # of open shells
+c
+c     This is ridiculously redundant!
+c     
+      integer mwt, marc, marcwt, mnsdet, mnscsf
+      common /fcimgraph/ 
+     $     mwt(nsmax1,nsmax1,nsmax2),
+     $     marc(2,nsmax1,nsmax1,nsmax2),
+     $     marcwt(2,nsmax1,nsmax1,nsmax2),
+     $     mnsdet(0:nsmax), mnscsf(0:nsmax)
+c
+c     COMMON /FCIEAJ/
+c
+c     This common holds the transformation data for the operators Eaj.
+c
+c     eajptr(ns)        = pointer into itrpseaj of the the transformation
+c                         table for ns electrons
+c     eajdata(pointer)  = T(v,type,j), v=1:ndets(s), type=1:3, j=1:s+1
+c     
+c     eajphase(type,j,ns) = Parity of permutation (+/- 1.0d0)
+c
+      integer eajptr, eajdata
+      double precision eajphase
+      common /fcieaj/ eajphase(3,nsmax+1,0:nsmax), eajptr(0:nsmax), 
+     $     eajdata(eajmax)
+c
+c     COMMON /FCIOGRAPH/
+c
+c     karc   = orbital graph arcs
+c     karcwt = weight of arc
+c     kwt    = weight of nodes
+c
+c     Again, lots of redundancy here
+c
+      integer karc, karcwt, kwt
+      common /fciograph/
+     $     karc(3, nelmax+1, nactmx+1),
+     $     karcwt(3, nelmax+1, nactmx+1),
+     $     kwt(nelmax+1, nactmx+1)
+c
+c     COMMON /FCIMAP/
+c
+c     indexo = index from orbital config to CI vector 
+c     ... indexo(1)=0, and indexo(nwalko+1)=ndets
+c
+c     This gets big and should be dynamically allocated.
+c
+      integer indexo
+      common /fcimap/ indexo(nwkomx+1)
+c
+*      integer ieor
+*      external ieor

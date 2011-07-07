@@ -1,0 +1,26 @@
+*
+* $Id: fcitime.fh,v 1.2 1999/07/28 00:23:42 d3e129 Exp $
+*
+c
+c     Common for performance stats inside the FCI
+c
+      integer maxroutine
+      parameter (maxroutine = 14)
+c
+c     If a routine is called more than maxcalls times timing is disabled
+c     to avoid large system time overhead.  Set for IBM and LINUX where
+c     MCLOCK/CLOCK have only 1us overhead.
+c
+      integer maxcalls
+      parameter (maxcalls = 10000000)
+c
+      double precision ncalls(maxroutine) ! No. of calls to this routine
+      double precision times(maxroutine) ! Time in this routine + descendents
+      double precision started(maxroutine)  ! Time this routine started
+      character*20 names(maxroutine) ! Name of routine
+c
+      common/fcitime/times, started, ncalls
+      common/fcictime/names
+c
+      double precision fci_time
+      external fci_time

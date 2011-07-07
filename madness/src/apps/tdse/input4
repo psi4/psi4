@@ -1,0 +1,17 @@
+L 60.0
+F 0.176
+omega 0.06
+k 8
+thresh 1e-4
+safety 1e-1
+cut 0.6
+prefix data4
+nprint 1
+nloadbal 10
+nio 5
+ndump 20
+ncycle 2
+target_time 209.44
+#target_time 0.5
+tScale 1.0
+

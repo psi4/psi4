@@ -1,0 +1,48 @@
+\contentsline {section}{\numberline {1}Introduction}{4}
+\contentsline {section}{\numberline {2}Determinant bases}{4}
+\contentsline {section}{\numberline {3}Graphical representation of primitive spin functions}{7}
+\contentsline {section}{\numberline {4}Graphical representation of CSF bases}{9}
+\contentsline {section}{\numberline {5}Graphical representation of orbital occupations}{12}
+\contentsline {section}{\numberline {6}Indexing the CI vector}{15}
+\contentsline {section}{\numberline {7}More details on the graphical representations}{15}
+\contentsline {subsection}{\numberline {7.1}Primitive spin graphs}{15}
+\contentsline {subsection}{\numberline {7.2}Orbital graphs}{17}
+\contentsline {subsection}{\numberline {7.3}Constructing the weights and walking the graphs}{18}
+\contentsline {section}{\numberline {8}Matrix elements of orbital replacement operators}{19}
+\contentsline {subsection}{\numberline {8.1}Computing matrix elements}{21}
+\contentsline {section}{\numberline {9}Density matrix operators}{23}
+\contentsline {section}{\numberline {10}Application Program Interface --- API}{24}
+\contentsline {subsection}{\numberline {10.1}Setting-up and solving a full-CI}{25}
+\contentsline {subsubsection}{\numberline {10.1.1}{\tt fci\_setup}}{25}
+\contentsline {subsubsection}{\numberline {10.1.2}{\tt fci\_solve}}{25}
+\contentsline {subsubsection}{\numberline {10.1.3}{\tt fci\_readvectors}}{26}
+\contentsline {subsection}{\numberline {10.2}Inquiring about occupations and dimensions}{26}
+\contentsline {subsubsection}{\numberline {10.2.1}{\tt fci\_ofind\_occ}}{26}
+\contentsline {subsubsection}{\numberline {10.2.2}{\tt fci\_ofind\_weight}}{27}
+\contentsline {subsubsection}{\numberline {10.2.3}{\tt fci\_mfind\_occ}}{27}
+\contentsline {subsubsection}{\numberline {10.2.4}{\tt fci\_mfind\_weight}}{27}
+\contentsline {subsubsection}{\numberline {10.2.5}{\tt fci\_num\_dets}}{28}
+\contentsline {subsubsection}{\numberline {10.2.6}{\tt fci\_num\_csf}}{28}
+\contentsline {subsubsection}{\numberline {10.2.7}{\tt fci\_num\_owalks}}{28}
+\contentsline {subsubsection}{\numberline {10.2.8}{\tt fci\_ndets}}{28}
+\contentsline {subsubsection}{\numberline {10.2.9}{\tt fci\_ncsf}}{29}
+\contentsline {subsubsection}{\numberline {10.2.10}{\tt fci\_max\_num\_dets}}{29}
+\contentsline {subsubsection}{\numberline {10.2.11}{\tt fci\_owalk\_info}}{29}
+\contentsline {subsubsection}{\numberline {10.2.12}{\tt fci\_det\_to\_walk}}{30}
+\contentsline {subsection}{\numberline {10.3}Transforming between CSF and determinats, and spin adaption}{30}
+\contentsline {subsubsection}{\numberline {10.3.1}{\tt fci\_spin\_adapt}}{30}
+\contentsline {subsubsection}{\numberline {10.3.2}{\tt fci\_spin\_adapt\_nvec}}{31}
+\contentsline {subsubsection}{\numberline {10.3.3}{\tt fci\_spin\_force}}{31}
+\contentsline {subsection}{\numberline {10.4}Coupling coefficients}{32}
+\contentsline {subsubsection}{\numberline {10.4.1}{\tt fci\_couple1}}{32}
+\contentsline {subsubsection}{\numberline {10.4.2}{\tt fci\_couple2}}{32}
+\contentsline {subsubsection}{\numberline {10.4.3}{\tt fci\_couple3}}{33}
+\contentsline {subsection}{\numberline {10.5}Miscellaneous}{34}
+\contentsline {subsubsection}{\numberline {10.5.1}{\tt fci\_onepdm}}{34}
+\contentsline {subsubsection}{\numberline {10.5.2}{\tt fci\_hv}}{34}
+\contentsline {subsubsection}{\numberline {10.5.3}{\tt fci\_hami}}{35}
+\contentsline {subsubsection}{\numberline {10.5.4}{\tt fci\_diags}}{35}
+\contentsline {subsubsection}{\numberline {10.5.5}{\tt fci\_prspnad}}{36}
+\contentsline {subsubsection}{\numberline {10.5.6}{\tt fci\_tprint}}{36}
+\contentsline {subsubsection}{\numberline {10.5.7}{\tt fci\_err}}{36}
+\contentsline {section}{References}{36}

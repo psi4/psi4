@@ -542,20 +542,12 @@ AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])
 # Check if we can link against mpi
 AC_MSG_CHECKING([if we can link to MPI])
 AC_TRY_LINK([#include <mpi.h>], [ MPI_Finalize(); ], [HAVE_MPI=1
-AC_MSG_RESULT([yes])],[HAVE_MPI=0
-AC_MSG_RESULT([no])])
+  AC_MSG_RESULT([yes])],[
+  AC_MSG_RESULT([no])]
+)
 AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
-
-/bin/rm -f a.out
-
-# Check if we can link against madness
-#AC_CXX_PROCESS_CHECK([world.h],[#include <world/world.h>],,[HAVE_MADNESS=1],[HAVE_MADNESS=0])
-# Check if we can link against madness
-AC_MSG_CHECKING([if we can link to MADNESS])
-AC_TRY_LINK([#include <world/world.h>], [ madness::finalize(); ], [HAVE_MADNESS=1
-AC_MSG_RESULT([yes])],[HAVE_MADNESS=0
-AC_MSG_RESULT([no])])
-AC_DEFINE_UNQUOTED(HAVE_MADNESS,$HAVE_MADNESS)
+AC_DEFINE_UNQUOTED(HAVE_MADNESS,$HAVE_MPI)
+AC_SUBST(HAVE_MPI)
 
 /bin/rm -f a.out
 
@@ -625,7 +617,11 @@ AC_SUBST(CXXLIBS)
 
 
 
-PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
+if test "$HAVE_MPI" = "1"; then
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include' AC_SUBST(PSICPPFLAGS)
+else
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib' AC_SUBST(PSICPPFLAGS)
+fi
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
 
@@ -972,5 +968,9 @@ AC_CONFIG_FILES([include/Makefile
 ])
 
 AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
+
+if test "$HAVE_MPI" = "1"; then
+  AC_CONFIG_SUBDIRS([madness])
+fi
 
 AC_OUTPUT
