@@ -372,6 +372,9 @@ namespace madness {
         /// Returns number of tasks in the queue
         static std::size_t queue_size();
 
+        /// Returns an array of the unique thread ids
+        static pthread_t* thread_id();
+
         /// Returns queue statistics
         static const DQStats& get_stats();
 

@@ -5,19 +5,29 @@
 using namespace psi;
 using namespace boost;
 
-LocalCommunicator::LocalCommunicator(const std::string &communicator)
-    : Communicator(communicator)
+LocalCommunicator::LocalCommunicator(const int &argc, char **argv)
+    : Communicator()
 {
+
+#if HAVE_MADNESS == 1
+    putenv("MAD_NUM_THREADS=1");
+
+    // Initialize madness and create a madness world communicator
+    madness::initialize(argc, argv);
+
+    madworld_ = SharedMadWorld(new madness::World(MPI::COMM_WORLD));
+#endif
+
     me_ = 0;
     nproc_ = 1;
+    nthread_ = 1;
+    communicator_ = "LOCAL";
 }
 
-LocalCommunicator::LocalCommunicator(const LocalCommunicator &copy)
-    : Communicator(copy.communicator_), communicator_(copy.communicator_)
-{
-    me_ = 0;
-    nproc_ = 1;
-}
+LocalCommunicator::LocalCommunicator(const LocalCommunicator &copy) :
+    Communicator(), me_(copy.me_), nproc_(copy.nproc_),
+    nthread_(copy.nthread_), communicator_(copy.communicator_)
+{ }
 
 LocalCommunicator::~LocalCommunicator()
 {
@@ -27,7 +37,9 @@ LocalCommunicator::~LocalCommunicator()
 LocalCommunicator& LocalCommunicator::operator =(const LocalCommunicator& other)
 {
     if (this != &other) {
-
+        me_   = other.me_;
+        nproc_ = other.nproc_;
+        nthread_ = other.nthread_;
     }
     return *this;
 }
@@ -69,6 +81,12 @@ void LocalCommunicator::sync()
 void LocalCommunicator::print(FILE *out) const
 {
     fprintf(out, "\n    Using LocalCommunicator (Number of processes = 1)\n\n");
+}
+
+void LocalCommunicator::finalize() {
+#if HAVE_MADNESS == 1
+    madness::finalize();
+#endif
 }
 
 

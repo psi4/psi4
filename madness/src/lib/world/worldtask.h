@@ -186,6 +186,15 @@ namespace madness {
         /// Returns the number of pending tasks
         size_t size() const { return nregistered; }
 
+        /// Returns the number of threads in the pool
+        size_t nthread() { return ThreadPool::size(); }
+
+        /// Returns all of the threads in the thread pool
+        pthread_t* thread_id() { return ThreadPool::thread_id(); }
+
+        /// Returns the thread id of the communicator thread
+        pthread_t comm_thread_id() { return RMI::get_comm_id(); }
+
         /// Add a new local task taking ownership of the pointer
 
         /// The task pointer (t) is assumed to have been created with
