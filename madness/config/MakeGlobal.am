@@ -1,0 +1,23 @@
+# Define paths for includes (note convention #include <dir/file.h>)
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/src/lib  -I$(top_srcdir)/src/apps -I$(top_builddir)/include
+
+# Define directories holding libraries and variables for corresponding libraries
+LIBWORLDDIR=$(top_builddir)/src/lib/world
+LIBTENSORDIR=$(top_builddir)/src/lib/tensor
+LIBLINALGDIR=$(top_builddir)/src/lib/linalg
+LIBMISCDIR=$(top_builddir)/src/lib/misc
+LIBMRADIR=$(top_builddir)/src/lib/mra
+LIBTINYXMLDIR=$(top_builddir)/src/lib/tinyxml
+LIBMUPARSERDIR=$(top_builddir)/src/lib/muParser
+
+LIBWORLD=$(LIBWORLDDIR)/libMADworld.a
+LIBTENSOR=$(LIBTENSORDIR)/libMADtensor.a
+LIBLINALG=$(LIBLINALGDIR)/libMADlinalg.a
+LIBMISC=$(LIBMISCDIR)/libMADmisc.a
+LIBMRA=$(LIBMRADIR)/libMADmra.a
+LIBTINYXML=$(LIBTINYXMLDIR)/libMADtinyxml.a
+LIBMUPARSER=$(LIBMUPARSERDIR)/libMADmuparser.a
+
+# Most scientific/numeric applications will link against these libraries
+MRALIBS=$(LIBMRA) $(LIBLINALG) $(LIBTENSOR) $(LIBMISC) $(LIBMUPARSER) $(LIBTINYXML) $(LIBWORLD) 
+

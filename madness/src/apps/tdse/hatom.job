@@ -1,0 +1,21 @@
+#PBS -A chm022 
+#PBS -l size=128
+#PBS -l walltime=00:20:00
+#PBS -j oe
+#PBS -M nevence@utk.edu
+#PBS -m a
+#PBS -m e
+#PBS -m b
+#PBS -S /bin/csh
+
+#module swap PrgEnv-pgi PrgEnv-gnu
+#module load subversion
+#module load acml/4.1.0
+export MRA_DATA_DIR=/tmp/work/nevence/trunk/src/lib/mra/
+export MPICH_PTL_UNEX_EVENTS=204800
+export MPICH_SMP_OFF
+
+cd /tmp/work/nevence/trunk/src/apps/tdse
+
+aprun -n 4096 ./tdse
+

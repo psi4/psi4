@@ -1,0 +1,663 @@
+    // Junk below due to void should be factored out by using the Void
+    // class recently introduced in typestuff.h as was done already in
+    // worldobj.h.
+
+    // Internal: This silliness since cannot use a void expression as a void argument
+    template <typename resultT>
+    struct TaskFunctionRun {
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T, typename a7T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6, a7T& a7) {
+            result.set(func(a1,a2,a3,a4,a5,a6,a7));
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6) {
+            result.set(func(a1,a2,a3,a4,a5,a6));
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5) {
+            result.set(func(a1,a2,a3,a4,a5));
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4) {
+            result.set(func(a1,a2,a3,a4));
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1, a2T& a2, a3T& a3) {
+            result.set(func(a1,a2,a3));
+        }
+
+        template <typename functionT, typename a1T, typename a2T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1, a2T& a2) {
+            result.set(func(a1,a2));
+        }
+
+        template <typename functionT, typename a1T>
+        static inline void run(Future<resultT>& result, functionT func, a1T& a1) {
+            result.set(func(a1));
+        }
+
+        template <typename functionT>
+        static inline void run(Future<resultT>& result, functionT func) {
+            result.set(func());
+        }
+
+    };
+
+    // Internal: This silliness since cannot use a void expression as a void argument
+    template <>
+    struct TaskFunctionRun<void> {
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T, typename a7T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6, a7T& a7) {
+            func(a1,a2,a3,a4,a5,a6,a7);
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6) {
+            func(a1,a2,a3,a4,a5,a6);
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5) {
+            func(a1,a2,a3,a4,a5);
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T, typename a4T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4) {
+            func(a1,a2,a3,a4);
+        }
+
+        template <typename functionT, typename a1T, typename a2T, typename a3T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1, a2T& a2, a3T& a3) {
+            func(a1,a2,a3);
+        }
+
+        template <typename functionT, typename a1T, typename a2T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1, a2T& a2) {
+            func(a1,a2);
+        }
+
+        template <typename functionT, typename a1T>
+        static inline void run(Future<void>& result, functionT func, a1T& a1) {
+            func(a1);
+        }
+
+        template <typename functionT>
+        static inline void run(Future<void>& result, functionT func) {
+            func();
+        }
+    };
+
+
+    // This silliness since cannot use a void expression as a void argument
+    template <typename resultT>
+    struct TaskMemfunRun {
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T, typename a7T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6, a7T& a7) {
+            result.set((obj.*func)(a1,a2,a3,a4,a5,a6,a7));
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6) {
+            result.set((obj.*func)(a1,a2,a3,a4,a5,a6));
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5) {
+            result.set((obj.*func)(a1,a2,a3,a4,a5));
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4) {
+            result.set((obj.*func)(a1,a2,a3,a4));
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3) {
+            result.set((obj.*func)(a1,a2,a3));
+        }
+
+        template <typename memfunT, typename a1T, typename a2T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2) {
+            result.set((obj.*func)(a1,a2));
+        }
+
+        template <typename memfunT, typename a1T>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1) {
+            result.set((obj.*func)(a1));
+        }
+
+        template <typename memfunT>
+        static inline void run(Future<resultT>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func) {
+            result.set((obj.*func)());
+        }
+    };
+
+
+    // This silliness since cannot use a void expression as a void argument
+    template <>
+    struct TaskMemfunRun<void> {
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T, typename a7T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6, a7T& a7) {
+            (obj.*func)(a1,a2,a3,a4,a5,a6,a7);
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6) {
+            (obj.*func)(a1,a2,a3,a4,a5,a6);
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5) {
+            (obj.*func)(a1,a2,a3,a4,a5);
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4) {
+            (obj.*func)(a1,a2,a3,a4);
+        }
+
+        template <typename memfunT, typename a1T, typename a2T, typename a3T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2, a3T& a3) {
+            (obj.*func)(a1,a2,a3);
+        }
+
+        template <typename memfunT, typename a1T, typename a2T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1, a2T& a2) {
+            (obj.*func)(a1,a2);
+        }
+
+        template <typename memfunT, typename a1T>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func, a1T& a1) {
+            (obj.*func)(a1);
+        }
+
+        template <typename memfunT>
+        static inline void run(Future<void>& result, MEMFUN_OBJT(memfunT)& obj, 
+                               memfunT func) {
+            (obj.*func)();
+        }
+    };
+
+
+
+
+
+        // This silliness since cannot use a void expression as a void argument or return value
+        template <typename returnT>
+        struct MemfunRun {
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T, typename a7T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6, a7T& a7) {
+                return (obj.*func)(a1,a2,a3,a4,a5,a6,a7);
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6) {
+                return (obj.*func)(a1,a2,a3,a4,a5,a6);
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5) {
+                return (obj.*func)(a1,a2,a3,a4,a5);
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4) {
+                return (obj.*func)(a1,a2,a3,a4);
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3) {
+                return (obj.*func)(a1,a2,a3);
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2) {
+                return (obj.*func)(a1,a2);
+            }
+            
+            template <typename memfunT, typename a1T>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1) {
+                return (obj.*func)(a1);
+            }
+            
+            template <typename memfunT>
+            static inline returnT run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func) {
+                return (obj.*func)();
+            }
+        };
+        
+        // This silliness since cannot use a void expression as a void argument or return value
+        template <>
+        struct MemfunRun<void> {
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T, typename a7T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6, a7T& a7) {
+                (obj.*func)(a1,a2,a3,a4,a5,a6,a7);
+                return Void();
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T, typename a6T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5, a6T& a6) {
+                (obj.*func)(a1,a2,a3,a4,a5,a6);
+                return Void();
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T, typename a5T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4, a5T& a5) {
+                (obj.*func)(a1,a2,a3,a4,a5);
+                return Void();
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T, typename a4T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3, a4T& a4) {
+                (obj.*func)(a1,a2,a3,a4);
+                return Void();
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T, typename a3T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2, a3T& a3) {
+                (obj.*func)(a1,a2,a3);
+                return Void();
+            }
+            
+            template <typename memfunT, typename a1T, typename a2T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1, a2T& a2) {
+                (obj.*func)(a1,a2);
+                return Void();
+            }
+            
+            template <typename memfunT, typename a1T>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func, a1T& a1) {
+                (obj.*func)(a1);
+                return Void();
+            }
+            
+            template <typename memfunT>
+            static inline Void run(MEMFUN_OBJT(memfunT)& obj, 
+                                   memfunT func) {
+                (obj.*func)();
+                return Void();
+            }
+        };
+
+
+
+        // Forwards call to derived class
+        template <typename memfunT>
+        static MEMFUN_RETURNT(memfunT)
+        forward(objT* obj, memfunT memfun) {
+            return ((static_cast<Derived*>(obj)->*memfun)());
+        }
+
+        // Forwards call to derived class
+        template <typename memfunT, typename arg1T>
+        static MEMFUN_RETURNT(memfunT)
+        forward(objT* obj, memfunT memfun,  const arg1T& arg1) {
+            return ((static_cast<Derived*>(obj)->*memfun)(arg1));
+        }
+
+        // Forwards call to derived class
+        template <typename memfunT, typename arg1T, typename arg2T>
+        static MEMFUN_RETURNT(memfunT)
+            forward(objT* obj, memfunT memfun,  const arg1T& arg1, const arg2T& arg2) {
+            return ((static_cast<Derived*>(obj)->*memfun)(arg1,arg2));
+        }
+
+        // Forwards call to derived class
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T>
+        static MEMFUN_RETURNT(memfunT)
+            forward(objT* obj, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3) {
+            return ((static_cast<Derived*>(obj)->*memfun)(arg1,arg2,arg3));
+        }
+
+        // Forwards call to derived class
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T, typename arg4T>
+        static MEMFUN_RETURNT(memfunT)
+            forward(objT* obj, memfunT memfun,  const arg1T& arg1, const arg2T& arg2, const arg3T& arg3, const arg4T& arg4) {
+            return ((static_cast<Derived*>(obj)->*memfun)(arg1,arg2,arg3,arg4));
+        }
+
+        // Forwards call to derived class
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T, typename arg4T, typename arg5T>
+        static MEMFUN_RETURNT(memfunT)
+            forward(objT* obj, memfunT memfun,  const arg1T& arg1, const arg2T& arg2, const arg3T& arg3, const arg4T& arg4, const arg5T& arg5) {
+            return ((static_cast<Derived*>(obj)->*memfun)(arg1,arg2,arg3,arg4,arg5));
+        }
+
+
+
+
+
+        /// Synchronizes all processes in communicator AND globally ensures no pending AM or tasks
+        
+        /// Runs Dykstra-like termination algorithm on binary tree by
+        /// summing (nsent-nrecv) over all proceses, applying
+        /// local fence before computing local sum.  If the global sum
+        /// is zero, and no more messages have been received then we are
+        /// then we are sure that all tasks and AM are processed
+        /// and there no AM in flight.
+        ///
+        /// By default fences both tasks and AM.  If the optional argument amonly is
+        /// set to true, if fences only the AM.
+        void fence(bool amonly = false) {
+            long nsent, nrecv, sum;
+            MPI::Request req0, req1;
+            ProcessID parent, child0, child1;
+            mpi.binary_tree_info(0, parent, child0, child1);
+            do {
+                long sum0=0, sum1=0;
+                if (child0 != -1) req0 = mpi.Irecv(&sum0, sizeof(sum0), MPI::BYTE, child0, gfence_tag);
+                if (child1 != -1) req1 = mpi.Irecv(&sum1, sizeof(sum1), MPI::BYTE, child1, gfence_tag);
+                if (child0 != -1) World::await(req0);
+                if (child1 != -1) World::await(req1);
+                
+                if (amonly)
+                    am.fence();
+                else
+                    taskq.fence();
+
+                nsent = am.nsent;
+                nrecv = am.nrecv;
+                sum = sum0 + sum1 + nsent - nrecv;
+                
+                if (parent != -1) {
+                    req0 = mpi.Isend(&sum, sizeof(sum), MPI::BYTE, parent, gfence_tag);
+                    World::await(req0);
+                }
+                
+                broadcast(sum);
+//                if (debug) {
+//                    print(rank,"fence:",sum0,sum1,sum);
+//                    usleep(1000000);
+//                }
+            } while (sum);
+
+            // If deferred cleanup occured we need another fence, but
+            // it will be much cheaper the second time since everyone
+            // is already synchronized.
+            //
+            // Uh?  Why do we need another fence?  Commented this out
+            // until I can reconvince myself it really is necessary.
+            //if (world.do_deferred_cleanup()) fence(amonly);
+            world.do_deferred_cleanup();
+        };
+        
+
+
+
+        /// Private: Finds/waits for a free send request
+        inline int get_free_send_request() {
+            // Testany() might be really slow.  It may be better to
+            // keep track of free handles ourselves and only call
+            // testany when full.  On the other hand, calling test
+            // could be necessary to make progress.
+
+            // IS THIS ACTUALLY WORKING??????????
+            // Susepect testany is always returning either UNDEFINED or 0.  
+
+            int i;
+            while (!MPI::Request::Testany(NSEND, send_handle, i)) {
+                // Must call poll here to avoid livelock with two
+                // processes trying to talk to each other when both
+                // are out of recv buffers.  However, don't need to
+                // poll in other worlds or run tasks.
+                poll();
+            }
+            if (i == MPI::UNDEFINED) i = 0;
+            //if (i != 0) print("i is non-zero",i);
+            free_managed_send_buf(i);
+            return i;
+        };
+
+
+
+
+
+
+//         /// Send array of lenbuf elements to process dest 
+//         template <class T>
+//             void Send(const T* buf, long lenbuf, ProcessID dest, Tag tag) const {
+//             Send((void* )buf, lenbuf*sizeof(T), MPI::BYTE, dest, tag);
+//         }
+        
+//         /// Send element to process dest with default tag=1
+        
+//         /// Disabled for pointers to reduce accidental misuse.
+//         template <class T>
+//         typename enable_if_c< !is_pointer<T>::value, void>::type
+//         Send(const T& datum, ProcessID dest, Tag tag=1) const {
+//             Send((void* )&datum, sizeof(T), MPI::BYTE, dest, tag);
+//         }
+        
+//         /// Same as MPI::Intracomm::Recv with status
+//         void Recv(void* buf, int count, const MPI::Datatype& datatype,
+//                          ProcessID source, Tag tag, MPI::Status& status) const {
+//             if (debug) madness::print("World:",rank(),"receiving",count,"bytes from",source,"with tag",tag);
+//             Recv(buf,count,datatype,source,tag,status);
+//             if (debug) madness::print("World:",rank(),"received");
+//         }
+        
+        
+//         /// Same as MPI::Intracomm::Recv
+//         void Recv(void* buf, int count, const MPI::Datatype& datatype,
+//                          ProcessID source, Tag tag) const {
+//             if (debug) madness::print("World:",rank(),"receiving",count,"bytes from",source,"with tag",tag);
+//             Recv(buf,count,datatype,source,tag);
+//             if (debug) madness::print("World:",rank(),"received");
+//         }
+        
+        
+//         /// Receive data of up to lenbuf elements from process dest
+//         template <class T>
+//             void
+//             Recv(T* buf, long lenbuf, ProcessID src, Tag tag) const {
+//             Recv(buf, lenbuf*sizeof(T), MPI::BYTE, src, tag);
+//         }
+        
+//         /// Receive data of up to lenbuf elements from process dest with status
+//         template <class T>
+//             void
+//             Recv(T* buf, long lenbuf, ProcessID src, Tag tag, MPI::Status& status) const {
+//             Recv(buf, lenbuf*sizeof(T), MPI::BYTE, src, tag, status);
+//         }
+        
+        
+//         /// Receive datum from process src with default tag=1
+//         template <class T>
+            
+//             typename enable_if_c< !is_pointer<T>::value, void>::type
+//             Recv(T& buf, ProcessID src, Tag tag=1) const {
+//             Recv(&buf, sizeof(T), MPI::BYTE, src, tag);
+//         }
+        
+
+
+
+        /// For each item in range if \c predicate(iterator) is true submit task formed by \c maketask(iterator) 
+
+        /// The default predicate is true.
+        ///
+        /// To enable use when the tasks might modify the data structure referred to 
+        /// by the iterators, the entire list of tasks is first formed and
+        /// then submitted en-masse.  
+        ///
+        /// To throttle the number of tasks we can add a maxtasks and submit 
+        /// a continuation task to finish the submission, and/or add granularity control.
+        /// However, both assume that tasks can be completed in the order submitted
+        /// and should probably be via a separate interface.
+        /// This gets into the Intel TBB concepts of splitting ranges, etc.
+        template < typename iteratorT, typename maketaskT, typename predicateT >
+        void for_each(const iteratorT& begin, 
+                      const iteratorT& end, 
+                      const maketaskT& maketask, 
+                      const predicateT& predicate=PredicateTrue<iteratorT>()) 
+        {
+            std::vector<TaskInterface*> v;
+            for (iteratorT it=begin; it!=end; ++it) {
+                if (predicate(it)) v.push_back(maketask(it));
+            }
+            add(v);
+        };
+
+        template <typename T> 
+        struct PredicateTrue {
+            bool operator()(const T& t) const {return true;}
+        };
+
+
+        void add(const std::vector<TaskInterface*>& v) 
+        {
+            for (unsigned int i=0; i<v.size(); i++)
+                add(v[i]);
+        }
+
+
+
+
+    class MutexReaderWriter : NO_DEFAULTS {
+        mutable MADATOMIC_INT nreader;
+        mutable MADATOMIC_INT writeflag;
+    public:
+        static const int NOLOCK=0;
+        static const int READLOCK=1;
+        static const int WRITELOCK=2;
+
+        MutexReaderWriter() {
+            MADATOMIC_INT_SET(&nreader,0);
+            MADATOMIC_INT_SET(&writeflag,1L);
+        }
+
+        bool try_read_lock() const {
+            MADATOMIC_INT_INC(&nreader);
+            if (MADATOMIC_INT_GET(&writeflag) == 0) {
+                return true;
+            }
+            else {
+                MADATOMIC_INT_DEC(&nreader);
+                return false;
+            }
+        }
+        
+        bool try_write_lock() const {
+            if (MADATOMIC_INT_DEC_AND_TEST(&writeflag) && MADATOMIC_INT_GET(&nreader) == 0) {
+                return true;
+            }
+            else {
+                MADATOMIC_INT_INC(&writeflag);
+                return false;
+            }
+        }
+
+        bool try_lock(int lockmode) const {
+            if (lockmode == READLOCK) {
+                return try_read_lock();
+            }
+            else if (lockmode == WRITELOCK) {
+                return try_write_lock();
+            }
+            else if (lockmode == NOLOCK) {
+                return true;
+            }
+            else {
+                throw "MutexReaderWriter: try_lock: invalid lock mode";
+            }
+        }
+
+        bool try_convert_read_lock_to_write_lock() const {
+            if (MADATOMIC_INT_DEC_AND_TEST(&writeflag) && MADATOMIC_INT_GET(&nreader) == 1) {
+                MADATOMIC_INT_DEC(&nreader);
+                return true;
+            }
+            else {
+                MADATOMIC_INT_INC(&writeflag);
+                return false;
+            }
+        }
+
+        void read_lock() const {
+            MutexWaiter waiter;
+            while (!try_read_lock()) waiter.wait();
+        }
+
+        void write_lock() const {
+            MutexWaiter waiter;
+            while (!try_write_lock()) waiter.wait();
+        }
+
+        void lock(int lockmode) const {
+            MutexWaiter waiter;
+            while (!try_lock(lockmode)) waiter.wait();
+        }
+
+        void read_unlock() const {
+            MADATOMIC_INT_DEC(&nreader);
+        }
+
+        void write_unlock() const {
+            MADATOMIC_INT_INC(&writeflag);
+        }
+
+        void unlock(int lockmode) const {
+            if (lockmode == READLOCK) read_unlock();
+            else if (lockmode == WRITELOCK) write_unlock();
+            else if (lockmode != NOLOCK) throw "MutexReaderWriter: try_lock: invalid lock mode";            
+        }
+
+        void convert_read_lock_to_write_lock() const {
+            MutexWaiter waiter;
+            while (!try_convert_read_lock_to_write_lock()) waiter.wait();
+        }
+
+        void convert_write_lock_to_read_lock() const {
+            MADATOMIC_INT_INC(&nreader);
+            MADATOMIC_INT_INC(&writeflag);
+        }
+
+        virtual ~MutexReaderWriter(){};
+    };
+    
+
+
+
+                {
+                    SAFE_MPI_GLOBAL_MUTEX;
+                    for (int i=0; i<NTEST; i++) {
+                        foundone = send_req[cur_msg].Test_got_lock_already();
+                        if (foundone) break;
+                        cur_msg++;
+                        if (cur_msg >= NSEND) cur_msg = 0;
+                    }
+                }
