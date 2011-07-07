@@ -1,0 +1,264 @@
+This is a demo of compiling a very high-level, Latex-like langauge
+into C++/MADNESS.  The objectives are
+
+  - lower the entry barrier for doing practical calculations with
+    MADNESS, even to the point of being useful in the classroom.
+
+  - automate mapping basic math constructs into C++ to facilitate
+    understanding of how to compose MADNESS applications in C++.
+
+The compiler is a quick and dirty hack using flex and bison.  It is
+far from production quality, but most problems can be easily fixed
+by looking at "mra.ll", "mra.yy", or "mra-driver.hh".  It's
+actually pretty simple.
+
+
+To build:
+
+   - you will need a recent version of bison, flex, and g++
+
+   - type "make"
+
+   - you now have the executable "mra"
+
+
+To run the compiler:
+
+   - "./mra inputfilename"
+
+     This produces output to the terminal and
+     three output files
+
+     * The terminal output informs you about errors
+       and type inferences.
+
+     * "prog.cc" holds the generated C++ file.
+       
+     * "prog.tex" holds the generated Latex equation.
+
+     * "prog.tree" holds the syntax tree that is 
+       useful for debugging the compiler
+
+To view the latex:
+
+   - you will need the AMS tex and font packages installed
+
+   - "pdflatex eqn.tex" will generate eqn.pdf
+     ("eqn.tex" is just boiler plate that includes "prog.tex")
+
+
+To compile and run the generated program:
+
+   - "make -f trunk/config/Makefile.sample prog"
+
+     where trunk/... refers to the trunk of your MADNESS tree
+
+   - "./prog"
+
+   
+Examples
+
+   - hatom - calculates the energy of the hydrogen atom ground state
+
+   - hehf - solves the HF equations for the helium atom
+
+   - hehf2 - solves the HF equations for the helium atom
+
+   - hatompolar - solves for the polarizability of the hydrogen atom
+
+   - he2el - calculates the energy of the two-term Hylleraars 
+     wavefunction for helium (this will require 40+ GB of memory)
+
+   - qa - a pathetic attempt at quality assurance testing
+
+
+The language
+
+   - Variables can be either names of Greek letters (no backslash
+     needed) or the usual alpha-numeric string. Capilize the
+     first letter to get uppercase Greek.
+
+   - There are lots of reserved names, mostly math functions 
+     and greek names - these are not actually checked for.
+
+   - For prettiest latex output use single character variable names
+
+   - Types are inferred, though if this breaks you can declare 
+     the type. 
+
+   - x is implicitly typed as a coordinate of the appropriate 
+     dimension
+
+   - pi (lowercase) is the real value 3.141...
+
+   - the boolean values true and false are recognized
+
+   - subscripts become array references in the C++ (x_1 --> x[1])
+
+   - comments - characters from # to EOL are ignored
+
+   - Each program has to have this form
+
+     Let
+       domain specification
+       optional declarations and other definitions
+     In
+       program source
+     End
+
+   - The Let block provides global defintions and parameters for the
+     main body of the code -- they will become global defintions in
+     the C++ file.
+
+     * domain specification is 
+
+       Omega = [lo,hi]^D
+
+       which specifies a cube in D dimensions.  The values of lo and
+       hi are available as box_lo and box_hi in the C++, and D as D.
+
+     * k = integer value
+
+       specifies the order of the wavelet, default is 6
+
+     * epsilon = real value
+
+       specifies the truncation threshold, default is 1e-4
+
+     * You can define other global constants
+
+     * Type declarations of the form (not usually needed)
+
+       comma-separated-list in field
+
+       e.g.,
+
+       a, b in R
+
+       where field is one of R (real), C (Complex), Z (Integer) (still
+       need to add RT, CT, RF, CF, Rd for tensors, functions, and
+       d-dimension vector/coordinate).
+
+     * One-line function definitions
+
+       name = paramlist -> expression
+
+       Have a look at the examples for usage.
+
+   - The In block provides the executable statements that will appear
+     in your C++ main program.
+
+     * Arithmetic (+,-,*,/), comparison (<,>,>=,<=,==,!=), boolean
+       (and, or, not), subscript/array (x_i), and power (x^y)
+       operations should work as expected.
+
+     * for variable in [lo,hi]
+          statements
+       end
+
+       specifies iteration over an inclusive range that is assumed integer
+
+     * while exp
+           statements
+       end
+       
+     * break jumps out of a loop
+
+     * if exp
+         statements
+       elif exp
+         statements
+       else
+         statements
+       end
+
+     * sum_var=lo^hi exp 
+
+       computes the sum of exp with variable var varied over the
+       inclusive range [lo,hi].  Should nest correctly and work
+       inside expressions.
+
+       Presently assumes result is a number so cannot yet sum up a
+       function result ... to fix this need to modify the
+       initialization of the accumulation variable by peeling off the
+       first term.
+
+     * print comma-separated-expression-list
+
+       does the obvious thing
+
+     * plot function
+
+       plots the madness function to file "plot" using opendx format.
+       You can also use the form
+
+       plot function, filename
+
+       where file name is a string valued expression (e.g., "fred")
+
+     * vec(x) in 1D
+     * vec(x,y) in 2D
+     * etc.
+
+       converts Cartesian coordinates into a vector coordinate
+
+     * f(x) in 1D
+     * f(x,y) in 2D
+     * etc.
+       
+       where f is a MADNESS function evaluates the function at a point
+
+
+     * function(r) 
+       
+       where f is a MADNESS function and r is a vector coordinate
+       evaluates the function at a point
+
+
+     * |x| is abs(x)
+
+     * ||x|| is norm(x)
+
+     * ||x||_F is normf(x)
+
+     * < f | g > is bra-ket notation for inner(f,g)
+
+       To get < f | Q | g > write <f | Q g>
+
+     * < f > is bra-ket notation for f.trace() = int(f(x),x in Omega)
+
+     * del_i is partial derivative in i'th direction
+       (i=0 is x, i=1 is y, etc.). E.g., 
+
+       dfdz = del_2 f
+
+       is the derivative in the z direction of the madness function f.
+
+     * del^2 applies the laplacian (is this working?)
+
+     * del^-2 applies the Coulomb GF
+ 
+     * (expression - del^2)^-1 applies the BSH with mu^2 = expression
+
+       The recognition of this pattern is very crude and it must be
+       typed in exactly the above ordering and form.
+
+       Application of the GFs truncates the input and the output
+       for efficiency.
+
+     * F is the operator that projects a C++ function into the
+       multiwavelet basis.  E.g., if in the Let block you had
+
+       g = x -> exp(-sqrt(x_0^2 + x_1^2 + x_2^2))
+
+       Then in the In block you could have
+
+       f = F g
+
+       You can use the result of "F g" in expressions (since it
+       compiles to real_function(function_factory(g))).
+
+Feel free to extend and fix.
+
+
+

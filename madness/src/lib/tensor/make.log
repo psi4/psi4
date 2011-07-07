@@ -1,0 +1,149 @@
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o lapack.o lapack.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in lapack.cc: 1
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o cblas.o cblas.cc
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o tensor.o tensor.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in tensor.cc: 2
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o tensoriter.o tensoriter.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in tensoriter.cc: 1
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o basetensor.o basetensor.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in basetensor.cc: 1
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o transform3d.o transform3d.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in transform3d.cc: 1
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o mtrand.o mtrand.cc
+ar -rv libtensor.a lapack.o cblas.o tensor.o tensoriter.o basetensor.o transform3d.o mtrand.o
+a - lapack.o
+a - cblas.o
+a - tensor.o
+a - tensoriter.o
+a - basetensor.o
+a - transform3d.o
+a - mtrand.o
+ranlib libtensor.a
+make: ranlib: Command not found
+make: [libtensor.a] Error 127 (ignored)
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o test.o test.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in test.cc: 2
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -o test test.o lapack.o cblas.o tensor.o tensoriter.o basetensor.o transform3d.o mtrand.o -lsci  -lm  -lpthread ../threads/libpool.a -lm
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_f__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_d__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_f__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_l__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_f__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_l__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_d__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_f__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "transform3d.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "_amo_afax" is multiply defined in "/opt/ctl/lib_2.5/libc.a:amo.o" and "/opt/ctl/lib_2.5/libc.a:hwintrinsics.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_f__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_d__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_f__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_l__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_f__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_l__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_d__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_f__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "test.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "test.o" and "transform3d.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "_amo_afax" is multiply defined in "/opt/ctl/lib_2.5/libc.a:amo.o" and "/opt/ctl/lib_2.5/libc.a:hwintrinsics.o"; 2nd definition ignored.
+CC-2111 CC: WARNING in command line
+  The lister will not be called.
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -I/spin/home/harrison/mad++-tree/typestuff -I/spin/home/harrison/mad++-tree/threads -I/spin/home/harrison/mad++-tree/tensor -I/spin/home/harrison/mad++-tree/tree -I/spin/home/harrison/mad++-tree/mra    -c -o miketest.o miketest.cc
+CC-7212 CC: WARNING File = /opt/ctl/CC/CC/include/xutility, Line = 208
+  Variable "_Cat" is used before it is defined.
+
+
+Total warnings detected in miketest.cc: 1
+CC -hssp -h new_for_init -h instantiate=used -h list=a -DRESTRICT=restrict -DMUTEX_ATOMIC=1 -o miketest miketest.o lapack.o cblas.o tensor.o tensoriter.o basetensor.o transform3d.o mtrand.o -lsci  -lm  -lpthread -lm
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "miketest.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "miketest.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_f__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_l__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_d__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_f__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "miketest.o" and "transform3d.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "_amo_afax" is multiply defined in "/opt/ctl/lib_2.5/libc.a:amo.o" and "/opt/ctl/lib_2.5/libc.a:hwintrinsics.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "miketest.o" and "lapack.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "miketest.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_f__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_l__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_d__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR117__new_copy__tm__26_Q2_3std16complex__tm__2_f__7madnessFRCQ2_J44J17Tensor__tm__4_Z1Z_PQ2_J44JJ66J" is multiply defined in "lapack.o" and "tensor.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "__CPR92__new_copy__tm__2_d__7madnessFRCQ2_J19J17Tensor__tm__4_Z1Z_PQ2_J19JJ41J" is multiply defined in "miketest.o" and "transform3d.o"; 2nd definition ignored.
+ld-402 ld: WARNING 
+  Symbol "_amo_afax" is multiply defined in "/opt/ctl/lib_2.5/libc.a:amo.o" and "/opt/ctl/lib_2.5/libc.a:hwintrinsics.o"; 2nd definition ignored.
+CC-2111 CC: WARNING in command line
+  The lister will not be called.

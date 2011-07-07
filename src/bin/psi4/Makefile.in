@@ -5,6 +5,8 @@ include ../MakeVars
 PSITARGET = $(top_objdir)/bin/$(shell basename `pwd`)
 MODULE = false
 
+MAKE_MADNESS=@HAVE_MPI@
+
 LDLIBS += $(LAPACK) $(BLAS) $(PYTHON_LDFLAGS) -lpthread
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 
@@ -22,6 +24,9 @@ PSILIBS = \
 -lPSI_deriv -lPSI_int -lPSI_util -lPSI_diis -lPSI_plugin -lPSI_parallel -lboost_python -lboost_regex -lboost_thread \
 -lboost_filesystem -lboost_system
 
+ifeq ($(MAKE_MADNESS),1)
+  PSILIBS += $(top_objdir)/madness/src/lib/world/libMADworld.a
+endif
 
 # The psilibs need a little extra handling for plugins on linux
 ifeq ($(HAVE_PLUGINS),yes)

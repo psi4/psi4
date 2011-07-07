@@ -1,0 +1,3402 @@
+<?xml version="1.0" ?>
+<name>
+   MCP
+</name>
+<basis symbol="H">
+  <shell type="S" nprim="3">
+    <exponents>
+      18.73113700
+      2.82539370
+      0.64012170
+    </exponents>
+    <coefficients>
+      0.03349460
+      0.23472695
+      0.81375733
+    </coefficients>
+  </shell>
+  <shell type="S" nprim="1">
+    <exponents>
+      0.16127780
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="He">
+  <shell type="S" nprim="3">
+    <exponents>
+      38.42163400
+      5.77803000
+      1.24177400
+    </exponents>
+    <coefficients>
+      0.02376600
+      0.15467900
+      0.46963000
+    </coefficients>
+  </shell>
+  <shell type="S" nprim="1">
+    <exponents>
+      0.29796400
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Li">
+  <shell type="S" nprim="6">
+    <exponents>
+      642.41892000
+      96.79851500
+      22.09112100
+      6.20107030
+      1.93511770
+      0.63673580
+    </exponents>
+    <coefficients>
+      0.00214260
+      0.01620890
+      0.07731560
+      0.24578600
+      0.47018900
+      0.34547080
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.32491840
+      0.63243060
+      0.07905340
+    </exponents>
+    <scoefficients>
+      -0.03509170
+      -0.19123280
+      1.08398780
+    </scoefficients>
+    <pcoefficients>
+      0.00894150
+      0.14100950
+      0.94536370
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.03596200
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Be">
+  <shell type="S" nprim="6">
+    <exponents>
+      1264.58570000
+      189.93681000
+      43.15908900
+      12.09866300
+      3.80632320
+      1.27289030
+    </exponents>
+    <coefficients>
+      0.00194480
+      0.01483510
+      0.07209060
+      0.23715420
+      0.46919870
+      0.35652020
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.19646310
+      0.74781330
+      0.21996630
+    </exponents>
+    <scoefficients>
+      -0.11264870
+      -0.22950640
+      1.18691670
+    </scoefficients>
+    <pcoefficients>
+      0.05598020
+      0.26155060
+      0.79397230
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.08230990
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="B">
+  <shell type="S" nprim="6">
+    <exponents>
+      2068.88230000
+      310.64957000
+      70.68303300
+      19.86108000
+      6.29930480
+      2.12702700
+    </exponents>
+    <coefficients>
+      0.00186630
+      0.01425150
+      0.06955160
+      0.23257290
+      0.46707870
+      0.36343140
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      4.72797100
+      1.19033770
+      0.35941170
+    </exponents>
+    <scoefficients>
+      -0.13039380
+      -0.13078890
+      1.13094440
+    </scoefficients>
+    <pcoefficients>
+      0.07459760
+      0.30784670
+      0.74345680
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.12675120
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="C">
+  <shell type="S" nprim="6">
+    <exponents>
+      3047.52490000
+      457.36951000
+      103.94869000
+      29.21015500
+      9.28666300
+      3.16392700
+    </exponents>
+    <coefficients>
+      0.00183470
+      0.01403730
+      0.06884260
+      0.23218440
+      0.46794130
+      0.36231200
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      7.86827240
+      1.88128850
+      0.54424930
+    </exponents>
+    <scoefficients>
+      -0.11933240
+      -0.16085420
+      1.14345640
+    </scoefficients>
+    <pcoefficients>
+      0.06899910
+      0.31642400
+      0.74430830
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.16871440
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="N">
+  <shell type="S" nprim="6">
+    <exponents>
+      4173.51100000
+      627.45790000
+      142.90210000
+      40.23433000
+      12.82021000
+      4.39043700
+    </exponents>
+    <coefficients>
+      0.00183480
+      0.01399500
+      0.06858700
+      0.23224100
+      0.46907000
+      0.36045500
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      11.62635800
+      2.71628000
+      0.77221800
+    </exponents>
+    <scoefficients>
+      -0.11496100
+      -0.16911800
+      1.14585200
+    </scoefficients>
+    <pcoefficients>
+      0.06758000
+      0.32390700
+      0.74089500
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.21203130
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="O">
+  <shell type="S" nprim="6">
+    <exponents>
+      5484.67170000
+      825.23495000
+      188.04696000
+      52.96450000
+      16.89757000
+      5.79963530
+    </exponents>
+    <coefficients>
+      0.00183110
+      0.01395010
+      0.06844510
+      0.23271430
+      0.47019300
+      0.35852090
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      15.53961600
+      3.59993360
+      1.01376180
+    </exponents>
+    <scoefficients>
+      -0.11077750
+      -0.14802630
+      1.13076700
+    </scoefficients>
+    <pcoefficients>
+      0.07087430
+      0.33975280
+      0.72715860
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.27000580
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="F">
+  <shell type="S" nprim="6">
+    <exponents>
+      7001.71309000
+      1051.36609000
+      239.28569000
+      67.39744530
+      21.51995730
+      7.40310130
+    </exponents>
+    <coefficients>
+      0.00181962
+      0.01391608
+      0.06840532
+      0.23318576
+      0.47126744
+      0.35661855
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      20.84795280
+      4.80830834
+      1.34406986
+    </exponents>
+    <scoefficients>
+      -0.10850698
+      -0.14645166
+      1.12868858
+    </scoefficients>
+    <pcoefficients>
+      0.07162872
+      0.34591210
+      0.72246996
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.35815139
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Ne">
+  <shell type="S" nprim="6">
+    <exponents>
+      8425.85153000
+      1268.51940000
+      289.62141400
+      81.85900400
+      26.25150790
+      9.09472051
+    </exponents>
+    <coefficients>
+      0.00188435
+      0.01433690
+      0.07010962
+      0.23737327
+      0.47300713
+      0.34840124
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      26.53213100
+      6.10175501
+      1.69627153
+    </exponents>
+    <scoefficients>
+      -0.10711829
+      -0.14616382
+      1.12777350
+    </scoefficients>
+    <pcoefficients>
+      0.07190959
+      0.34951337
+      0.71994051
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.44581870
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Na">
+  <shell type="S" nprim="3">
+    <exponents>
+    250.772430000
+     45.678511000
+     12.362388000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     12.040193000
+      2.797881900
+      0.909958000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.478740600
+      0.412564900
+      0.161475100
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Mg">
+  <shell type="S" nprim="3">
+    <exponents>
+    299.237400000
+     54.506470000
+     14.751580000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     15.121820000
+      3.513987000
+      1.142857000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.395448000
+      0.389326000
+      0.152380000
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Al">
+  <shell type="S" nprim="6">
+    <exponents>
+      13983.10000000
+      2098.75000000
+      477.70500000
+      134.36000000
+      42.87090000
+      14.51890000
+    </exponents>
+    <coefficients>
+      0.00194267
+      0.01485990
+      0.07284940
+      0.24683000
+      0.48725800
+      0.32349600
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      239.66800000
+      57.44190000
+      18.28590000
+      6.59914000
+      2.49049000
+      0.94454000
+    </exponents>
+    <scoefficients>
+      -0.00292619
+      -0.03740800
+      -0.11448700
+      0.11563500
+      0.61259500
+      0.39379900
+    </scoefficients>
+    <pcoefficients>
+      0.00460285
+      0.03319900
+      0.13628200
+      0.33047600
+      0.44914600
+      0.26570400
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.27790000
+      0.39759000
+      0.16009500
+    </exponents>
+    <scoefficients>
+      -0.22760600
+      0.00144583
+      1.09279000
+    </scoefficients>
+    <pcoefficients>
+      -0.01751300
+      0.24453300
+      0.80493400
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.05565770
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Si">
+  <shell type="S" nprim="6">
+    <exponents>
+      16115.90000000
+      2425.58000000
+      553.86700000
+      156.34000000
+      50.06830000
+      17.01780000
+    </exponents>
+    <coefficients>
+      0.00195948
+      0.01492880
+      0.07284780
+      0.24613000
+      0.48591400
+      0.32500200
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      292.71800000
+      69.87310000
+      22.33630000
+      8.15039000
+      3.13458000
+      1.22543000
+    </exponents>
+    <scoefficients>
+      -0.00278094
+      -0.03571460
+      -0.11498500
+      0.09356340
+      0.60301700
+      0.41895900
+    </scoefficients>
+    <pcoefficients>
+      0.00443826
+      0.03266790
+      0.13472100
+      0.32867800
+      0.44964000
+      0.26137200
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.72738000
+      0.57292200
+      0.22219200
+    </exponents>
+    <scoefficients>
+      -0.24463000
+      0.00431572
+      1.09818000
+    </scoefficients>
+    <pcoefficients>
+      -0.01779510
+      0.25353900
+      0.80066900
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.07783690
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="P">
+  <shell type="S" nprim="6">
+    <exponents>
+      19413.30000000
+      2909.42000000
+      661.36400000
+      185.75900000
+      59.19430000
+      20.03100000
+    </exponents>
+    <coefficients>
+      0.00185160
+      0.01420620
+      0.06999950
+      0.24007900
+      0.48476200
+      0.33520000
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      339.47800000
+      81.01010000
+      25.87800000
+      9.45221000
+      3.66566000
+      1.46746000
+    </exponents>
+    <scoefficients>
+      -0.00278217
+      -0.03604990
+      -0.11663100
+      0.09683280
+      0.61441800
+      0.40379800
+    </scoefficients>
+    <pcoefficients>
+      0.00456462
+      0.03369360
+      0.13975500
+      0.33936200
+      0.45092100
+      0.23858600
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.15623000
+      0.74899700
+      0.28314500
+    </exponents>
+    <scoefficients>
+      -0.25292300
+      0.03285170
+      1.08125000
+    </scoefficients>
+    <pcoefficients>
+      -0.01776530
+      0.27405800
+      0.78542100
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.09983170
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="S">
+  <shell type="S" nprim="6">
+    <exponents>
+      21917.10000000
+      3301.49000000
+      754.14600000
+      212.71100000
+      67.98960000
+      23.05150000
+    </exponents>
+    <coefficients>
+      0.00186900
+      0.01423000
+      0.06969600
+      0.23848700
+      0.48330700
+      0.33807400
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      423.73500000
+      100.71000000
+      32.15990000
+      11.80790000
+      4.63110000
+      1.87025000
+    </exponents>
+    <scoefficients>
+      -0.00237670
+      -0.03169300
+      -0.11331700
+      0.05609000
+      0.59225500
+      0.45500600
+    </scoefficients>
+    <pcoefficients>
+      0.00406100
+      0.03068100
+      0.13045200
+      0.32720500
+      0.45285100
+      0.25604200
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.61584000
+      0.92216700
+      0.34128700
+    </exponents>
+    <scoefficients>
+      -0.25037400
+      0.06695700
+      1.05451000
+    </scoefficients>
+    <pcoefficients>
+      -0.01451100
+      0.31026300
+      0.75448300
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.11716700
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Cl">
+  <shell type="S" nprim="6">
+    <exponents>
+      25180.10000000
+      3780.35000000
+      860.47400000
+      242.14500000
+      77.33490000
+      26.24700000
+    </exponents>
+    <coefficients>
+      0.00183300
+      0.01403400
+      0.06909700
+      0.23745200
+      0.48303400
+      0.33985600
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      491.76500000
+      116.98400000
+      37.41530000
+      13.78340000
+      5.45215000
+      2.22588000
+    </exponents>
+    <scoefficients>
+      -0.00229740
+      -0.03071400
+      -0.11252800
+      0.04501600
+      0.58935300
+      0.46520600
+    </scoefficients>
+    <pcoefficients>
+      0.00398940
+      0.03031800
+      0.12988000
+      0.32795100
+      0.45352700
+      0.25215400
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.18649000
+      1.14427000
+      0.42037700
+    </exponents>
+    <scoefficients>
+      -0.25183000
+      0.06158900
+      1.06018000
+    </scoefficients>
+    <pcoefficients>
+      -0.01429900
+      0.32357200
+      0.74350700
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.14265700
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Ar">
+  <shell type="S" nprim="6">
+    <exponents>
+      28348.30000000
+      4257.62000000
+      969.85700000
+      273.26300000
+      87.36950000
+      29.68670000
+    </exponents>
+    <coefficients>
+      0.00182526
+      0.01396860
+      0.06870730
+      0.23620400
+      0.48221400
+      0.34204300
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      575.89100000
+      136.81600000
+      43.80980000
+      16.20940000
+      6.46084000
+      2.65114000
+    </exponents>
+    <scoefficients>
+      -0.00215972
+      -0.02907750
+      -0.11082700
+      0.02769990
+      0.57761300
+      0.48868800
+    </scoefficients>
+    <pcoefficients>
+      0.00380665
+      0.02923050
+      0.12646700
+      0.32351000
+      0.45489600
+      0.25663000
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.86028000
+      1.41373000
+      0.51664600
+    </exponents>
+    <scoefficients>
+      -0.25559200
+      0.03780660
+      1.08056000
+    </scoefficients>
+    <pcoefficients>
+      -0.01591970
+      0.32464600
+      0.74399000
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.17388800
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="K">
+  <shell type="S" nprim="6">
+    <exponents>
+      31594.42000000
+      4744.33000000
+      1080.41900000
+      304.23380000
+      97.24586000
+      33.02495000
+    </exponents>
+    <coefficients>
+      0.00182801
+      0.01399403
+      0.06887129
+      0.23697600
+      0.48290400
+      0.34047950
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      622.76250000
+      147.88390000
+      47.32735000
+      17.51495000
+      6.92272200
+      2.76827700
+    </exponents>
+    <scoefficients>
+      -0.00250298
+      -0.03315550
+      -0.12263870
+      0.05353643
+      0.61938600
+      0.43458780
+    </scoefficients>
+    <pcoefficients>
+      0.00409464
+      0.03145199
+      0.13515580
+      0.33905000
+      0.46294550
+      0.22426380
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      11.84802000
+      4.07921100
+      1.76348100
+      0.78892700
+      0.35038700
+      0.14634400
+    </exponents>
+    <scoefficients>
+      0.01277689
+      0.20987670
+      -0.00309527
+      -0.55938840
+      -0.51347600
+      -0.06598035
+    </scoefficients>
+    <pcoefficients>
+      -0.01221377
+      -0.00690054
+      0.20074660
+      0.42813320
+      0.39701560
+      0.11047180
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.71680100
+      0.23374100
+      0.03867500
+    </exponents>
+    <scoefficients>
+      -0.05237772
+      -0.27985030
+      1.14154700
+    </scoefficients>
+    <pcoefficients>
+      0.03164300
+      -0.04046160
+      1.01202900
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.01652100
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Ca">
+  <shell type="S" nprim="6">
+    <exponents>
+      35264.86000000
+      5295.50300000
+      1206.02000000
+      339.68390000
+      108.62640000
+      36.92103000
+    </exponents>
+    <coefficients>
+      0.00181350
+      0.01388493
+      0.06836162
+      0.23561880
+      0.48206390
+      0.34298190
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      706.30960000
+      167.81870000
+      53.82558000
+      20.01638000
+      7.97027900
+      3.21205900
+    </exponents>
+    <scoefficients>
+      0.00244823
+      0.03241504
+      0.12262190
+      -0.04316965
+      -0.61269950
+      -0.44875400
+    </scoefficients>
+    <pcoefficients>
+      0.00402037
+      0.03100601
+      0.13372790
+      0.33679830
+      0.46312810
+      0.22575320
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      14.19518000
+      4.88082800
+      2.16039000
+      0.98789900
+      0.44951700
+      0.18738700
+    </exponents>
+    <scoefficients>
+      0.01084500
+      0.20883330
+      0.03150338
+      -0.55265180
+      -0.54379970
+      -0.06669342
+    </scoefficients>
+    <pcoefficients>
+      -0.01289621
+      -0.01025198
+      0.19597810
+      0.43579330
+      0.39964520
+      0.09713636
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.03227100
+      0.38117100
+      0.06513100
+    </exponents>
+    <scoefficients>
+      -0.04439720
+      -0.32845630
+      1.16301000
+    </scoefficients>
+    <pcoefficients>
+      -0.42986210
+      0.00693583
+      0.97059330
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.02601000
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+</basis>
+<basis symbol="Sc">
+  <shell type="S" nprim="6">
+    <exponents>
+      39088.98000000
+      5869.79200000
+      1336.91000000
+      376.60310000
+      120.46790000
+      40.98032000
+    </exponents>
+    <coefficients>
+      0.00180326
+      0.01380769
+      0.06800396
+      0.23470990
+      0.48156900
+      0.34456520
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      786.28520000
+      186.88700000
+      60.00935000
+      22.25883000
+      8.88514900
+      3.60921100
+    </exponents>
+    <scoefficients>
+      0.00245186
+      0.03259579
+      0.12382420
+      -0.04359890
+      -0.61771810
+      -0.44328230
+    </scoefficients>
+    <pcoefficients>
+      0.00403953
+      0.03122570
+      0.13498330
+      0.34247930
+      0.46231130
+      0.21775240
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      29.84355000
+      9.54238300
+      4.05679000
+      1.70470300
+      0.70623400
+      0.27953600
+    </exponents>
+    <scoefficients>
+      -0.00258630
+      0.07188424
+      0.25032600
+      -0.29910030
+      -0.74468180
+      -0.17997760
+    </scoefficients>
+    <pcoefficients>
+      -0.00609665
+      -0.02628884
+      0.05091001
+      0.37980970
+      0.51708830
+      0.18297720
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.06560900
+      0.42593300
+      0.07632000
+    </exponents>
+    <scoefficients>
+      0.06482978
+      0.32537560
+      -1.17080600
+    </scoefficients>
+    <pcoefficients>
+      -0.29384400
+      0.09235323
+      0.98479300
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.02959400
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      11.14701000
+      2.82104300
+      0.81962000
+    </exponents>
+    <coefficients>
+      0.08747672
+      0.37956350
+      0.71803930
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.22146800
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Ti">
+  <shell type="S" nprim="6">
+    <exponents>
+      43152.95000000
+      6479.57100000
+      1475.67500000
+      415.69910000
+      133.00060000
+      45.27222000
+    </exponents>
+    <coefficients>
+      0.00179187
+      0.01372392
+      0.06762830
+      0.23376420
+      0.48106960
+      0.34622800
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      874.68260000
+      207.97850000
+      66.87918000
+      24.87347000
+      9.96844100
+      4.06382600
+    </exponents>
+    <scoefficients>
+      0.00243101
+      0.03233027
+      0.12425200
+      -0.03903905
+      -0.61717890
+      -0.44730970
+    </scoefficients>
+    <pcoefficients>
+      0.00401768
+      0.03113966
+      0.13490770
+      0.34316720
+      0.46257600
+      0.21546030
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      33.64363000
+      10.87565000
+      4.62822500
+      1.95012600
+      0.80945200
+      0.32047400
+    </exponents>
+    <scoefficients>
+      -0.00294036
+      0.07163103
+      0.25289150
+      -0.29664010
+      -0.74322150
+      -0.18535200
+    </scoefficients>
+    <pcoefficients>
+      -0.00631162
+      -0.02697638
+      0.05316847
+      0.38455490
+      0.51276620
+      0.18111350
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.22414800
+      0.48426300
+      0.08409600
+    </exponents>
+    <scoefficients>
+      0.06351465
+      0.31514040
+      -1.16259500
+    </scoefficients>
+    <pcoefficients>
+      -0.21120700
+      0.07771998
+      0.98982140
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.03203600
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      13.69085000
+      3.51315400
+      1.04043400
+    </exponents>
+    <coefficients>
+      0.08589418
+      0.37846710
+      0.71612390
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.28696200
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="V">
+  <shell type="S" nprim="6">
+    <exponents>
+      47354.33000000
+      7110.78700000
+      1619.59100000
+      456.33790000
+      146.06060000
+      49.75791000
+    </exponents>
+    <coefficients>
+      0.00178451
+      0.01366754
+      0.06736122
+      0.23305520
+      0.48063160
+      0.34748020
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      968.14840000
+      230.28210000
+      74.14591000
+      27.64107000
+      11.11475000
+      4.54311300
+    </exponents>
+    <scoefficients>
+      0.00241060
+      0.03207243
+      0.12459420
+      -0.03482177
+      -0.61673740
+      -0.45098440
+    </scoefficients>
+    <pcoefficients>
+      0.00399500
+      0.03104061
+      0.13477470
+      0.34372790
+      0.46287590
+      0.21355470
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      37.64050000
+      12.28238000
+      5.23336600
+      2.20895000
+      0.91788000
+      0.36341200
+    </exponents>
+    <scoefficients>
+      -0.00323320
+      0.07130744
+      0.25438200
+      -0.29338870
+      -0.74156950
+      -0.19094100
+    </scoefficients>
+    <pcoefficients>
+      -0.00649406
+      -0.02753453
+      0.05516284
+      0.38796720
+      0.50902580
+      0.18038400
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.39278100
+      0.54391300
+      0.09147600
+    </exponents>
+    <scoefficients>
+      0.06139703
+      0.30611300
+      -1.15489000
+    </scoefficients>
+    <pcoefficients>
+      -0.18912650
+      0.08005453
+      0.98773990
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.03431200
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      16.05025000
+      4.16006300
+      1.24326500
+    </exponents>
+    <coefficients>
+      0.08599899
+      0.38029960
+      0.71276590
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.34427700
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Cr">
+  <shell type="S" nprim="6">
+    <exponents>
+      51789.81000000
+      7776.84900000
+      1771.38500000
+      499.15880000
+      159.79820000
+      54.47021000
+    </exponents>
+    <coefficients>
+      0.00177618
+      0.01360476
+      0.06706925
+      0.23231040
+      0.48024100
+      0.34876530
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1064.32800000
+      253.21380000
+      81.60924000
+      30.48193000
+      12.29439000
+      5.03772200
+    </exponents>
+    <scoefficients>
+      0.00239967
+      0.03194886
+      0.12508680
+      -0.03221866
+      -0.61722840
+      -0.45259360
+    </scoefficients>
+    <pcoefficients>
+      0.00398700
+      0.03104662
+      0.13505180
+      0.34488650
+      0.46285710
+      0.21104260
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      41.56291000
+      13.67627000
+      5.84439000
+      2.47160900
+      1.02830800
+      0.40725000
+    </exponents>
+    <scoefficients>
+      -0.00345422
+      0.07218428
+      0.25448200
+      -0.29345340
+      -0.73854550
+      -0.19471570
+    </scoefficients>
+    <pcoefficients>
+      -0.00672250
+      -0.02806471
+      0.05820028
+      0.39169880
+      0.50478230
+      0.17902900
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.57146400
+      0.60558000
+      0.09856100
+    </exponents>
+    <scoefficients>
+      0.05892219
+      0.29760550
+      -1.14750600
+    </scoefficients>
+    <pcoefficients>
+      -0.19301000
+      0.09605620
+      0.98176090
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.03645900
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      18.41930000
+      4.81266100
+      1.44644700
+    </exponents>
+    <coefficients>
+      0.08650816
+      0.38266990
+      0.70937720
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.40041300
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Mn">
+  <shell type="S" nprim="6">
+    <exponents>
+      56347.14000000
+      8460.94300000
+      1927.32500000
+      543.23430000
+      173.99050000
+      59.36005000
+    </exponents>
+    <coefficients>
+      0.00177158
+      0.01357081
+      0.06690605
+      0.23185410
+      0.47990460
+      0.34957370
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1165.41200000
+      277.32760000
+      89.47278000
+      33.48256000
+      13.54037000
+      5.55797200
+    </exponents>
+    <scoefficients>
+      0.00238875
+      0.03181708
+      0.12546700
+      -0.02955431
+      -0.61751600
+      -0.45444580
+    </scoefficients>
+    <pcoefficients>
+      0.00397732
+      0.03103112
+      0.13518940
+      0.34573870
+      0.46292050
+      0.20905920
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      45.83532000
+      15.18777000
+      6.50071000
+      2.75158300
+      1.14540400
+      0.45368700
+    </exponents>
+    <scoefficients>
+      -0.00366586
+      0.07231971
+      0.25444860
+      -0.29103800
+      -0.73598600
+      -0.19976170
+    </scoefficients>
+    <pcoefficients>
+      -0.00688758
+      -0.02846816
+      0.06031832
+      0.39389610
+      0.50137690
+      0.17922640
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.75799900
+      0.66702200
+      0.10512900
+    </exponents>
+    <scoefficients>
+      0.05628572
+      0.28974910
+      -1.14065300
+    </scoefficients>
+    <pcoefficients>
+      -0.50350240
+      0.23450110
+      0.91412570
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.03841800
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      20.94355000
+      5.51048600
+      1.66503800
+    </exponents>
+    <coefficients>
+      0.08672702
+      0.38418830
+      0.70690710
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.46173300
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Fe">
+  <shell type="S" nprim="6">
+    <exponents>
+      61132.62000000
+      9179.34200000
+      2090.85700000
+      589.24790000
+      188.75430000
+      64.44629000
+    </exponents>
+    <coefficients>
+      0.00176611
+      0.01353038
+      0.06673128
+      0.23148230
+      0.47970580
+      0.35019760
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1259.98000000
+      299.87610000
+      96.84917000
+      36.31020000
+      14.72996000
+      6.06607500
+    </exponents>
+    <scoefficients>
+      0.00243801
+      0.03224048
+      0.12657240
+      -0.03139902
+      -0.62075930
+      -0.45029140
+    </scoefficients>
+    <pcoefficients>
+      0.00402802
+      0.03144647
+      0.13683170
+      0.34872360
+      0.46179310
+      0.20430580
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      50.43485000
+      16.83929000
+      7.19208600
+      3.05342000
+      1.27364300
+      0.50409100
+    </exponents>
+    <scoefficients>
+      -0.00387326
+      0.07196598
+      0.25565910
+      -0.28828370
+      -0.73428220
+      -0.20493530
+    </scoefficients>
+    <pcoefficients>
+      -0.00701713
+      -0.02877660
+      0.06181383
+      0.39549460
+      0.49890590
+      0.17912510
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.95031600
+      0.73672100
+      0.11417700
+    </exponents>
+    <scoefficients>
+      0.05694869
+      0.28829150
+      -1.13815900
+    </scoefficients>
+    <pcoefficients>
+      -0.45937960
+      0.28521390
+      0.90764850
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.04114800
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      23.14994000
+      6.12236800
+      1.84660100
+    </exponents>
+    <coefficients>
+      0.08876935
+      0.38963190
+      0.70148160
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.50436100
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Co">
+  <shell type="S" nprim="6">
+    <exponents>
+      66148.99000000
+      9933.07700000
+      2262.81600000
+      637.91540000
+      204.41220000
+      69.82538000
+    </exponents>
+    <coefficients>
+      0.00175979
+      0.01348162
+      0.06649342
+      0.23079390
+      0.47929190
+      0.35140970
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1378.84100000
+      328.26940000
+      106.09460000
+      39.83275000
+      16.18622000
+      6.66778800
+    </exponents>
+    <scoefficients>
+      0.00237628
+      0.03167450
+      0.12628880
+      -0.02584552
+      -0.61834910
+      -0.45670080
+    </scoefficients>
+    <pcoefficients>
+      0.00397149
+      0.03108174
+      0.13574390
+      0.34768270
+      0.46263400
+      0.20516320
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      54.52355000
+      18.29783000
+      7.86734800
+      3.34053400
+      1.39375600
+      0.55132600
+    </exponents>
+    <scoefficients>
+      -0.00399300
+      0.07409663
+      0.25420000
+      -0.29216570
+      -0.73187030
+      -0.20407840
+    </scoefficients>
+    <pcoefficients>
+      -0.00729077
+      -0.02926027
+      0.06564150
+      0.40006520
+      0.49502360
+      0.17582400
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.15194700
+      0.81106300
+      0.12101700
+    </exponents>
+    <scoefficients>
+      0.05379843
+      0.27599710
+      -1.12969200
+    </scoefficients>
+    <pcoefficients>
+      -0.21654960
+      0.12404880
+      0.97240640
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.04303700
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      25.59306000
+      6.80099000
+      2.05164700
+    </exponents>
+    <coefficients>
+      0.09004748
+      0.39317030
+      0.69768440
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.55567100
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Ni">
+  <shell type="S" nprim="6">
+    <exponents>
+      71396.35000000
+      10720.84000000
+      2442.12900000
+      688.42650000
+      220.61530000
+      75.39373000
+    </exponents>
+    <coefficients>
+      0.00175300
+      0.01343122
+      0.06627041
+      0.23025080
+      0.47901860
+      0.35234440
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1492.53200000
+      355.40130000
+      114.95340000
+      43.22043000
+      17.59710000
+      7.25776500
+    </exponents>
+    <scoefficients>
+      0.00237071
+      0.03160566
+      0.12663350
+      -0.02417037
+      -0.61877750
+      -0.45767700
+    </scoefficients>
+    <pcoefficients>
+      0.00396755
+      0.03109479
+      0.13595170
+      0.34851360
+      0.46254980
+      0.20351860
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      59.35261000
+      20.02181000
+      8.61456100
+      3.66053100
+      1.52811100
+      0.60405700
+    </exponents>
+    <scoefficients>
+      -0.00416200
+      0.07425111
+      0.25413600
+      -0.29034770
+      -0.73021210
+      -0.20760570
+    </scoefficients>
+    <pcoefficients>
+      -0.00742145
+      -0.02953410
+      0.06731852
+      0.40166600
+      0.49266230
+      0.17568930
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.37927600
+      0.88583900
+      0.12852900
+    </exponents>
+    <scoefficients>
+      0.05157888
+      0.27076110
+      -1.12477000
+    </scoefficients>
+    <pcoefficients>
+      -0.18876630
+      0.10151990
+      0.97909060
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.04519500
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      28.19147000
+      7.52358400
+      2.27122800
+    </exponents>
+    <coefficients>
+      0.09098881
+      0.39582080
+      0.69471540
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.61160300
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Cu">
+  <shell type="S" nprim="6">
+    <exponents>
+      76794.38000000
+      11530.70000000
+      2626.57500000
+      740.49030000
+      237.35280000
+      81.15818000
+    </exponents>
+    <coefficients>
+      0.00174816
+      0.01339602
+      0.06610885
+      0.22982650
+      0.47876750
+      0.35307390
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1610.81400000
+      383.63670000
+      124.17330000
+      46.74678000
+      19.06569000
+      7.87156700
+    </exponents>
+    <scoefficients>
+      0.00236405
+      0.03153635
+      0.12694520
+      -0.02262840
+      -0.61920800
+      -0.45853930
+    </scoefficients>
+    <pcoefficients>
+      0.00396331
+      0.03110223
+      0.13613500
+      0.34929140
+      0.46247800
+      0.20201020
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      64.45732000
+      21.85212000
+      9.40534300
+      3.99916800
+      1.67029700
+      0.65962700
+    </exponents>
+    <scoefficients>
+      -0.00433108
+      0.07412307
+      0.25421080
+      -0.28748430
+      -0.72914360
+      -0.21139510
+    </scoefficients>
+    <pcoefficients>
+      -0.00752373
+      -0.02975687
+      0.06849654
+      0.40271410
+      0.49084900
+      0.17592680
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.60008800
+      0.96309400
+      0.13616100
+    </exponents>
+    <scoefficients>
+      0.05027577
+      0.26500400
+      -1.12015500
+    </scoefficients>
+    <pcoefficients>
+      -0.17029110
+      0.09310133
+      0.98143360
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.04733200
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      30.85341000
+      8.26498500
+      2.49533200
+    </exponents>
+    <coefficients>
+      0.09199905
+      0.39850210
+      0.69178970
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.66765800
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<basis symbol="Zn">
+  <shell type="S" nprim="6">
+    <exponents>
+      82400.94000000
+      12372.55000000
+      2818.35100000
+      794.57170000
+      254.72320000
+      87.13880000
+    </exponents>
+    <coefficients>
+      0.00174333
+      0.01335966
+      0.06594365
+      0.22941510
+      0.47854530
+      0.35377530
+    </coefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      1732.56900000
+      412.71490000
+      133.67800000
+      50.38585000
+      20.58358000
+      8.50594000
+    </exponents>
+    <scoefficients>
+      0.00236146
+      0.03150177
+      0.12727740
+      -0.02145928
+      -0.61976520
+      -0.45901800
+    </scoefficients>
+    <pcoefficients>
+      0.00396313
+      0.03113411
+      0.13639310
+      0.35012660
+      0.46231790
+      0.20049950
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="6">
+    <exponents>
+      69.36492000
+      23.62082000
+      10.18471000
+      4.33408200
+      1.81091800
+      0.71484100
+    </exponents>
+    <scoefficients>
+      -0.00444010
+      0.07505253
+      0.25331110
+      -0.28818970
+      -0.72670520
+      -0.21334390
+    </scoefficients>
+    <pcoefficients>
+      -0.00768926
+      -0.02997982
+      0.07082411
+      0.40461410
+      0.48823250
+      0.17519700
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.82384200
+      1.03954300
+      0.14326400
+    </exponents>
+    <scoefficients>
+      0.04898543
+      0.25927930
+      -1.11571100
+    </scoefficients>
+    <pcoefficients>
+      -0.15867630
+      0.08379327
+      0.98405470
+    </pcoefficients>
+  </shell>
+  <shell type="L" nprim="1">
+    <exponents>
+      0.04929600
+    </exponents>
+    <scoefficients>
+      1.00000000
+    </scoefficients>
+    <pcoefficients>
+      1.00000000
+    </pcoefficients>
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      33.70764000
+      9.06110600
+      2.73838300
+    </exponents>
+    <coefficients>
+      0.09262648
+      0.40029800
+      0.68966080
+    </coefficients>
+  </shell>
+  <shell type="D" nprim="1">
+    <exponents>
+      0.73029400
+    </exponents>
+    <coefficients>
+      1.00000000
+    </coefficients>
+  </shell>
+</basis>
+<atomicguess symbol="H" basis="MCP">
+   <guessdensitymatrix>
+     0.16371      0.27762 
+     0.27762      0.47079 
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     1.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+    -0.07019      0.91759 
+   </alphaeps>
+   <betaeps>
+    -0.25951      0.68500 
+   </betaeps>
+   <alphavectors>
+    -0.24849     -1.30499 
+    -0.81877      1.04612 
+   </alphavectors>
+   <betavectors>
+     0.40461      1.26532 
+     0.68614     -1.13753 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="He" basis="MCP">
+   <guessdensitymatrix>
+     0.66346      0.61066 
+     0.61066      0.56205 
+   </guessdensitymatrix>
+   <alphaocc>
+     1.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     1.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+    -0.55639      1.08876 
+   </alphaeps>
+   <betaeps>
+    -0.55639      1.08876 
+   </betaeps>
+   <alphavectors>
+    -0.57596     -1.15798 
+    -0.53012      1.17967 
+   </alphavectors>
+   <betavectors>
+     0.57596     -1.15798 
+     0.53012      1.17967 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Li" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.13445845    0.00000000    0.03725601    0.03660753    0.00000000    0.00000000   -0.20476244    0.94516820
+       0.00000000    0.22124123    0.00000000    1.35975730    1.29585091    0.00000000    0.00000000   -7.35883706   -1.55297899
+       0.00000000    0.04398268    0.24824310    0.22209541    0.00000000   -0.79645159    0.00000000    0.75718008    0.00662173
+       0.00000000    0.00000000   -0.88731203    0.24824310   -0.71231754   -5.80504234   -0.79645159    0.00000000    0.00000000
+       0.00000000    0.00000000    1.15650837   -0.88731203    0.24824310    0.00000000   -0.75968154    0.79645159    0.00000000
+       0.00000000    0.46824899    0.00000000   -1.31778467   -1.26185226    0.00000000    0.00000000    7.14876549   -3.29350284
+       0.00000000   -0.03083182    0.27656306    0.27408121    0.00000000   -0.88731203    0.00000000    0.93441295    0.03338988
+       0.00000000    0.00000000    0.87685433    0.27656306    1.18723160    4.02628436   -0.88731203    0.00000000    0.00000000
+       0.00000000    0.00000000   -0.63906918    0.87685433    0.27656306    0.00000000   -0.90426927    0.88731203    0.00000000
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.57941      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.42058      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+    -1.85210     -0.10528     -0.03630     -0.03630     -0.03630      0.09632      0.09632      0.09632      0.11891 
+   </alphaeps>
+   <betaeps>
+    -1.85081     -0.09961     -0.03174     -0.03174     -0.03174      0.09963      0.09963      0.09963      0.12267 
+   </betaeps>
+   <alphavectors>
+     0.00000     -0.20207     -0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.00000     -0.06595 
+     0.00000      0.34465     -0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.00000     -2.33453 
+     0.00000     -0.00000      0.49824     -0.00000     -0.00000     -1.59853      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.49824      0.00000     -0.00000     -1.59853     -0.00000     -0.00000 
+     0.00000     -0.00000      0.00000      0.00000     -0.49824     -0.00000      0.00000     -1.59853      0.00000 
+     0.00000      0.69292      0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000      2.27328 
+     0.00000      0.00000      0.55508      0.00000      0.00000      1.57969     -0.00000      0.00000      0.00000 
+     0.00000     -0.00000     -0.00000      0.55508      0.00000     -0.00000      1.57969     -0.00000     -0.00000 
+     0.00000      0.00000     -0.00000      0.00000     -0.55508      0.00000      0.00000      1.57969     -0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000     -0.20249      0.00000     -0.00000      0.00000      0.00000      0.00000      0.00000     -0.06406 
+     0.00000      0.32009     -0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.00000     -2.33804 
+     0.00000      0.00000     -0.00000      0.00000     -0.47127      1.60668      0.00000     -0.00000      0.00000 
+     0.00000      0.00000     -0.47127      0.00000     -0.00000     -0.00000      1.60668      0.00000      0.00000 
+     0.00000      0.00000      0.00000     -0.47127     -0.00000     -0.00000      0.00000     -1.60668     -0.00000 
+     0.00000      0.71678     -0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.00000      2.26587 
+     0.00000     -0.00000      0.00000     -0.00000     -0.58158     -1.57012     -0.00000      0.00000     -0.00000 
+     0.00000     -0.00000     -0.58158     -0.00000      0.00000      0.00000     -1.57012     -0.00000     -0.00000 
+     0.00000     -0.00000     -0.00000     -0.58158      0.00000      0.00000     -0.00000      1.57012      0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Be" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.13969297    0.00000000    0.00000000   -0.00917198    0.00000000    0.00000000   -0.01864164   -0.95490572
+       0.00000000    0.17394382    0.00000000    0.00000000    2.39508611    0.00000000    0.00000000    4.86790649    1.18903583
+       0.00000000   -0.94317413    0.00000000    0.74214605    0.00000000    0.62441014   -0.88396886    0.00000000    2.37452006
+       0.00000000   -0.94317413    0.00000000    0.74214605    0.00000000    2.13278913    0.62441014    0.00000000    2.37452006
+       0.00000000    0.00000000    1.48429211    0.00000000    0.49960008   -1.50837900    1.50837900   -1.24882027    0.00000000
+       0.00000000    0.44528461    0.00000000    0.00000000   -2.25812425    0.00000000    0.00000000   -4.58953757    3.04385271
+       0.00000000    0.91149643    0.00000000   -0.71722013    0.00000000    0.74214605    2.19986422    0.00000000   -2.29476878
+       0.00000000    0.91149643    0.00000000   -0.71722013    0.00000000   -0.71557212    0.74214605    0.00000000   -2.29476878
+       0.00000000    0.00000000   -1.43444027    0.00000000    0.59380238    1.45771817   -1.45771817   -1.48429211    0.00000000
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+    -3.81516     -0.19579     -0.06325     -0.06325     -0.06325      0.25595      0.25595      0.25595      0.29224 
+   </alphaeps>
+   <betaeps>
+    -3.81516     -0.19579     -0.06325     -0.06325     -0.06325      0.25595      0.25595      0.25595      0.29224 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.23684      0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.00000      0.00772 
+     0.00000     -0.29491     -0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000     -2.01593 
+     0.00000     -0.00000     -0.00000     -0.49980      0.00000      1.24932      0.00000      0.00000      0.00000 
+     0.00000     -0.00000      0.49980     -0.00000      0.00000     -0.00000     -1.24932      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000     -0.49980      0.00000     -0.00000      1.24932     -0.00000 
+     0.00000     -0.75495     -0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000      1.90065 
+     0.00000      0.00000      0.00000     -0.59404     -0.00000     -1.20736     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.59404      0.00000     -0.00000      0.00000      1.20736      0.00000     -0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000     -0.59404     -0.00000      0.00000     -1.20736      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.23684      0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000      0.00772 
+     0.00000     -0.29491     -0.00000     -0.00000      0.00000      0.00000      0.00000      0.00000     -2.01593 
+     0.00000      0.00000     -0.00000      0.49980     -0.00000     -0.00000      1.24932     -0.00000      0.00000 
+     0.00000      0.00000      0.49980      0.00000      0.00000      1.24932      0.00000      0.00000     -0.00000 
+     0.00000     -0.00000     -0.00000      0.00000     -0.49980      0.00000     -0.00000      1.24932     -0.00000 
+     0.00000     -0.75495     -0.00000     -0.00000     -0.00000      0.00000      0.00000     -0.00000      1.90065 
+     0.00000     -0.00000      0.00000      0.59404      0.00000      0.00000     -1.20736     -0.00000     -0.00000 
+     0.00000     -0.00000      0.59404     -0.00000     -0.00000     -1.20736      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000     -0.00000     -0.59404     -0.00000      0.00000     -1.20736      0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="B" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.18968602    0.00000000    0.00000000    0.00466647   -0.09259445   -0.09531960    0.00000000    0.00299936
+       0.00000000    0.30498359    0.00000000    0.00000000   -0.06900672    2.17012595    2.14873783    0.00000000   -0.05958192
+       0.00000000    0.00000000    0.66880228   -0.57950713    0.00000000    1.97470616   -1.32629619   -0.67537320    0.00000000
+       0.00000000    0.79026391   -0.57950713    0.03991849    0.00000000    0.00000000   -0.67537320   -0.68002893   -2.01745821
+       0.00000000    0.74204837    0.00000000   -0.62888380    0.67270849   -0.67537320    0.64626726   -1.32843890    2.00049270
+       0.00000000    0.52368200    0.00000000    0.00000000    0.05551758   -2.07263159   -2.03025894    0.00000000    0.06408270
+       0.00000000    0.00000000   -0.63502212    0.60040448    0.00000000   -0.70798401    1.37412317   -0.57950713    0.00000000
+       0.00000000   -0.79527812    0.60040448   -0.00214807    0.00000000    0.00000000   -0.57950713    2.00300697    2.03025894
+       0.00000000   -0.76880705    0.00000000    0.63287405    0.61362098   -0.57950713    0.62888380    1.33686781   -2.07263159
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      0.33289      0.33289      0.33289      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      0.00044      0.00044      0.00044      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+    -6.51886     -0.34388     -0.13051     -0.13051     -0.13051      0.36482      0.36482      0.36482      0.40796 
+   </alphaeps>
+   <betaeps>
+    -6.50722     -0.30028     -0.08958     -0.08958     -0.08958      0.39722      0.39722      0.39722      0.44082 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.24432      0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.00000     -0.07899 
+     0.00000     -0.40695     -0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000      1.85128 
+     0.00000      0.00000     -0.00000     -0.59692     -0.00000      0.00000      1.13143     -0.00000      0.00000 
+     0.00000      0.00000     -0.59692      0.00000     -0.00000      0.00000     -0.00000      1.13143      0.00000 
+     0.00000      0.00000     -0.00000      0.00000      0.59692     -1.13143      0.00000     -0.00000      0.00000 
+     0.00000     -0.65585      0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000     -1.76811 
+     0.00000     -0.00000     -0.00000     -0.51219      0.00000     -0.00000     -1.17223      0.00000     -0.00000 
+     0.00000     -0.00000     -0.51219      0.00000     -0.00000      0.00000     -0.00000     -1.17223     -0.00000 
+     0.00000     -0.00000     -0.00000      0.00000      0.51219      1.17223      0.00000     -0.00000     -0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000     -0.24177     -0.00000     -0.00000      0.00000      0.00000      0.00000     -0.00000     -0.08244 
+     0.00000      0.37333     -0.00000     -0.00000      0.00000      0.00000      0.00000     -0.00000      1.85840 
+     0.00000     -0.00000      0.00000      0.56249      0.00000     -0.00000     -0.00000     -1.14894      0.00000 
+     0.00000     -0.00000     -0.56249      0.00000      0.00000      1.14894      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000     -0.00000      0.00000     -0.56249      0.00000     -1.14894      0.00000     -0.00000 
+     0.00000      0.68782      0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.00000     -1.75593 
+     0.00000      0.00000      0.00000      0.54736     -0.00000      0.00000      0.00000      1.15623     -0.00000 
+     0.00000      0.00000     -0.54736      0.00000      0.00000     -1.15623     -0.00000      0.00000      0.00000 
+     0.00000     -0.00000     -0.00000      0.00000     -0.54736     -0.00000      1.15623     -0.00000      0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="C" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.21604469    0.00000000    0.08528735    0.00000000    0.00000000    0.18959151    0.00000000    0.78158759
+       0.00000000    0.42421933    0.00000000   -1.65736586    0.00000000    0.00000000   -3.69354272    0.00000000   -1.52972075
+       0.00000000   -1.27770888    0.79162234    0.00000000    0.00000000    0.03999471    0.00000000    0.00000000   -3.33403030
+       0.00000000    0.00000000    0.00000000    0.07591791    0.08517959    0.00000000   -0.04000531   -2.31090212    0.00000000
+       0.00000000    0.00000000   -0.08516899    0.00000000    0.07591791   -2.31090212    0.00000000   -1.30774527    0.00000000
+       0.00000000    0.56214996    0.00000000    1.59323137    0.00000000    0.00000000    3.55363779    0.00000000   -2.04069398
+       0.00000000    1.35980554    0.62370132    0.00000000    0.00000000   -0.08516899    0.00000000    0.00000000    3.55363779
+       0.00000000    0.00000000    0.00000000   -0.01038333   -0.05706459    0.00000000    0.08517959    2.46361784    0.00000000
+       0.00000000    0.00000000    0.05705363    0.00000000   -0.01037205    2.46361784    0.00000000   -1.03798582    0.00000000
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      0.66667      0.66667      0.66665      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+    -9.91065     -0.51518     -0.20791     -0.20791     -0.20791      0.46282      0.46282      0.46282      0.53156 
+   </alphaeps>
+   <betaeps>
+    -9.87822     -0.41688     -0.11467     -0.11467     -0.11466      0.53297      0.53297      0.53297      0.60218 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.23711      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.00000     -0.08230 
+     0.00000     -0.48734     -0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000      1.65653 
+     0.00000     -0.00000      0.65861     -0.00000     -0.00000      1.02317     -0.00000     -0.00000      0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000     -0.65861     -0.00000     -0.00000      1.02317     -0.00000 
+     0.00000      0.00000      0.00000     -0.65861     -0.00000     -0.00000      1.02317      0.00000      0.00000 
+     0.00000     -0.58641     -0.00000     -0.00000      0.00000     -0.00000     -0.00000     -0.00000     -1.61110 
+     0.00000      0.00000      0.46562      0.00000      0.00000     -1.12421     -0.00000      0.00000     -0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000     -0.46562     -0.00000     -0.00000     -1.12421      0.00000 
+     0.00000      0.00000     -0.00000     -0.46562      0.00000      0.00000     -1.12421     -0.00000     -0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.23256      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.08862 
+     0.00000     -0.43211     -0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.00000      1.67186 
+     0.00000      0.00000     -0.59821     -0.00000     -0.00000      1.05962      0.00000      0.00000      0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000      0.59820      0.00000      0.00000      1.05962      0.00000 
+     0.00000      0.00000      0.00000     -0.59821     -0.00000      0.00000      1.05962      0.00000      0.00000 
+     0.00000     -0.63958     -0.00000     -0.00000     -0.00000     -0.00000      0.00000     -0.00000     -1.59076 
+     0.00000      0.00000     -0.52998      0.00000      0.00000     -1.09534      0.00000      0.00000     -0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000      0.52999      0.00000      0.00000     -1.09534      0.00000 
+     0.00000     -0.00000     -0.00000     -0.52998      0.00000     -0.00000     -1.09534     -0.00000     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="N" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.23188710   -0.04253309   -0.05511043    0.00000000    0.00000000    0.00508321    0.00000000   -0.70337098
+       0.00000000    0.50302749    0.67401402    0.81389863    0.00000000    0.00000000    0.03592197    0.00000000    1.51982231
+       0.00000000   -0.61343558    0.37773316    0.00000000    0.90068900   -0.24468115    0.00000000    0.00000000    1.45297385
+       0.00000000   -0.51991960    0.47907162    0.37773316   -0.52953453    0.00000000   -0.04105480   -1.03787972    1.40102604
+       0.00000000    0.00000000    0.52953453    0.05745425    0.37773316    1.03787972    0.00000000    1.06139206    0.00000000
+       0.00000000    0.58183638   -0.66357514   -0.77599724    0.00000000    0.00000000   -0.08494544    0.00000000    1.77401899
+       0.00000000    0.64213166    0.32684428    0.00000000   -0.17396649   -2.12068601    0.00000000    0.00000000   -1.52094292
+       0.00000000    0.59594384    0.30930107    0.32684428    0.55430578    0.00000000    0.10791716    1.08643098   -1.60588836
+       0.00000000    0.00000000   -0.55430578    0.79256863    0.32684428   -1.08643098    0.00000000   -1.27745126    0.00000000
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -13.98305     -0.70902     -0.29458     -0.29458     -0.29458      0.57187      0.57187      0.57187      0.67010 
+   </alphaeps>
+   <betaeps>
+   -13.92154     -0.54822     -0.14082     -0.14082     -0.14082      0.68399      0.68399      0.68399      0.78289 
+   </betaeps>
+   <alphavectors>
+     0.00000     -0.23472     -0.00000      0.00000     -0.00000      0.00000     -0.00000      0.00000     -0.09518 
+     0.00000      0.53391      0.00000     -0.00000      0.00000     -0.00000      0.00000     -0.00000      1.50830 
+     0.00000      0.00000      0.00000      0.69215      0.00000     -0.00000      0.00000      0.94349     -0.00000 
+     0.00000     -0.00000     -0.00000      0.00000      0.69215     -0.94349      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.69215     -0.00000      0.00000     -0.00000     -0.94349      0.00000     -0.00000 
+     0.00000      0.55106      0.00000     -0.00000      0.00000     -0.00000      0.00000     -0.00000     -1.48494 
+     0.00000     -0.00000     -0.00000      0.44687     -0.00000      0.00000     -0.00000     -1.08145      0.00000 
+     0.00000      0.00000      0.00000     -0.00000      0.44687      1.08145     -0.00000      0.00000      0.00000 
+     0.00000     -0.00000      0.44687      0.00000     -0.00000      0.00000      1.08145      0.00000      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000     -0.22826     -0.00000     -0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.10363 
+     0.00000      0.46687      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.00000      1.53046 
+     0.00000      0.00000      0.61460      0.00000     -0.00000     -0.99574      0.00000     -0.00000      0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000      0.61460     -0.00000     -0.00000     -0.99574      0.00000 
+     0.00000     -0.00000     -0.00000      0.61460      0.00000     -0.00000      0.99574      0.00000      0.00000 
+     0.00000      0.61606      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.00000     -1.45919 
+     0.00000     -0.00000      0.53180     -0.00000      0.00000      1.04232     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.53180      0.00000      0.00000      1.04232     -0.00000 
+     0.00000      0.00000      0.00000      0.53180     -0.00000      0.00000     -1.04232      0.00000     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="O" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.25560803    0.00000000    0.10740998    0.00000000   -0.12447119    0.12161620    0.00000000   -0.00276383
+       0.00000000    0.58118762    0.00000000   -1.36245133    0.00000000    1.55390803   -1.57097400    0.00000000    0.04764461
+       0.00000000    0.48724146    0.03879241   -0.44003322    0.00000000   -1.27421461   -0.99260272    0.00000000   -1.33079735
+       0.00000000    0.00000000    0.00000000   -0.49905747    0.42022215    0.00000000    0.64630076   -2.59942746    0.00000000
+       0.00000000    0.53880280    0.04004291    0.00000000   -0.49905747   -0.97891090   -0.62791384   -0.64630076    1.36373781
+       0.00000000    0.59290089    0.00000000    1.33650475    0.00000000   -1.51074683    1.55645410    0.00000000   -0.06155557
+       0.00000000   -0.56986060    0.81874362   -0.32254730    0.00000000   -0.86025537    1.09960390    0.00000000    1.55645410
+       0.00000000    0.00000000    0.00000000   -0.30886263   -1.30024299    0.00000000    0.39999031    1.78423885    0.00000000
+       0.00000000   -0.59688499    0.79036200    0.00000000   -0.30886263    1.14490000   -0.46026506   -0.39999031   -1.51074683
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      0.33333      0.33333      0.33333      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -18.75258     -0.89462     -0.35779     -0.35779     -0.35779      0.74524      0.74525      0.74525      0.86315 
+   </alphaeps>
+   <betaeps>
+   -18.70223     -0.78176     -0.24795     -0.24795     -0.24795      0.82049      0.82049      0.82049      0.93847 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.23919      0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.00000      0.11366 
+     0.00000     -0.55739     -0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000     -1.46820 
+     0.00000     -0.00000      0.70644      0.00000      0.00000     -0.91487     -0.00000     -0.00000     -0.00000 
+     0.00000     -0.00000      0.00000      0.00000     -0.70644      0.00000      0.00000     -0.91487      0.00000 
+     0.00000     -0.00000     -0.00000      0.70644     -0.00000      0.00000     -0.91487     -0.00000      0.00000 
+     0.00000     -0.53258      0.00000     -0.00000      0.00000     -0.00000      0.00000      0.00000      1.45463 
+     0.00000      0.00000      0.43721      0.00000      0.00000      1.07000      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000     -0.43721     -0.00000     -0.00000      1.07000     -0.00000 
+     0.00000      0.00000     -0.00000      0.43721      0.00000     -0.00000      1.07000      0.00000     -0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.23512     -0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.11870 
+     0.00000     -0.52010     -0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000      1.48186 
+     0.00000     -0.00000      0.00000     -0.00000      0.66335     -0.00000     -0.00000      0.94658     -0.00000 
+     0.00000      0.00000     -0.66335      0.00000      0.00000     -0.00000      0.94658     -0.00000     -0.00000 
+     0.00000     -0.00000      0.00000     -0.66335     -0.00000     -0.94658      0.00000     -0.00000     -0.00000 
+     0.00000     -0.56921      0.00000     -0.00000     -0.00000      0.00000      0.00000     -0.00000     -1.44070 
+     0.00000      0.00000     -0.00000      0.00000      0.48624     -0.00000     -0.00000     -1.04862      0.00000 
+     0.00000     -0.00000     -0.48624     -0.00000     -0.00000      0.00000     -1.04862      0.00000      0.00000 
+     0.00000      0.00000     -0.00000     -0.48624      0.00000      1.04862      0.00000      0.00000      0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="F" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.25621902    0.00000000   -0.11831804    0.00000000    0.00000000    0.00000000   -0.27097491    0.72346885
+       0.00000000    0.55179595    0.00000000    1.36985109    0.00000000    0.00000000    0.00000000    3.13777782   -1.55779587
+       0.00000000    0.00000000    0.00000000    0.02382313   -0.85770357    0.00000000   -1.96439859   -0.00732972    0.00000000
+       0.00000000    0.02098725    0.00000000    0.00000000    0.94067070    0.00000000   -1.27332875    0.00000000    0.01311148
+       0.00000000    0.00000000    0.04813235    0.00000000    0.00000000    0.00177945    0.00000000    0.00000000    0.00000000
+       0.00000000    0.59460888    0.00000000   -1.33150706    0.00000000    0.00000000    0.00000000   -3.05024510   -1.67941464
+       0.00000000    0.00000000    0.00000000   -0.00555631    0.97698435    0.00000000    2.23821520    0.02430922    0.00000000
+       0.00000000   -0.01074352    0.00000000    0.00000000    0.63320507    0.00000000   -0.85770357    0.00000000    0.01859176
+       0.00000000    0.00000000   -0.02251210    0.00000000    0.00000000   -0.04258922    0.00000000    0.00000000    0.00000000
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      0.66667      0.66667      0.66667      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -24.16923     -1.07776     -0.40242     -0.40241     -0.40241      1.04434      1.04434      1.04434      1.22114 
+   </alphaeps>
+   <betaeps>
+   -24.13992     -1.01869     -0.34404     -0.34404     -0.34404      1.08446      1.08446      1.08446      1.26141 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.24480      0.00000     -0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.12703 
+     0.00000     -0.53280     -0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.00000      1.48038 
+     0.00000      0.00000     -0.00000      0.00000      0.69444      0.00000     -0.92208      0.00000     -0.00000 
+     0.00000     -0.00000      0.69444     -0.00000      0.00000      0.92208     -0.00000      0.00000     -0.00000 
+     0.00000     -0.00000      0.00000      0.69444      0.00000      0.00000     -0.00000     -0.92208     -0.00000 
+     0.00000     -0.55879     -0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.00000     -1.44458 
+     0.00000     -0.00000     -0.00000      0.00000      0.45191      0.00000      1.06219      0.00000      0.00000 
+     0.00000      0.00000      0.45191     -0.00000      0.00000     -1.06219     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.45191     -0.00000      0.00000      0.00000      1.06219      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.24302      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000     -0.12913 
+     0.00000     -0.51761      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000      1.48577 
+     0.00000      0.00000      0.00000      0.00000     -0.67707     -0.00000      0.93491      0.00000     -0.00000 
+     0.00000     -0.00000     -0.67707     -0.00000     -0.00000     -0.93491     -0.00000     -0.00000     -0.00000 
+     0.00000     -0.00000     -0.00000      0.67707     -0.00000      0.00000      0.00000     -0.93491      0.00000 
+     0.00000     -0.57357     -0.00000     -0.00000     -0.00000      0.00000      0.00000      0.00000     -1.43878 
+     0.00000     -0.00000     -0.00000     -0.00000     -0.47171      0.00000     -1.05355     -0.00000      0.00000 
+     0.00000      0.00000     -0.47171      0.00000      0.00000      1.05355      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.47171      0.00000     -0.00000     -0.00000      1.05355     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Ne" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000   -0.25885047   -0.06107796    0.06107796    0.00000000    0.00000000    0.00000000   -0.28084618   -0.72367370
+       0.00000000    0.55396233    0.67453028   -0.67453028    0.00000000    0.00000000    0.00000000    3.10159745    1.54872411
+       0.00000000   -1.04199287    0.00000000    0.47749482    0.47749482    0.00000000    0.63466504    0.63466504    2.62306665
+       0.00000000    0.00000000    0.47749482    0.42105880    0.05643602    2.57076036    0.00000000   -0.63466504    0.00000000
+       0.00000000    0.00000000    0.89855362    0.47749482   -0.42105880   -0.63466504    1.30143027    0.00000000    0.00000000
+       0.00000000    0.59707601   -0.65463857    0.65463857    0.00000000    0.00000000    0.00000000   -3.01013220    1.66925792
+       0.00000000    1.19575166    0.00000000    0.31678662    0.31678662    0.00000000    0.42105880    0.42105880   -3.01013220
+       0.00000000    0.00000000    0.31678662   -0.48319118    0.79997780   -1.80073104    0.00000000   -0.42105880    0.00000000
+       0.00000000    0.00000000   -0.16640455    0.31678662    0.48319118   -0.42105880   -2.64284864    0.00000000    0.00000000
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -30.27035     -1.27480     -0.44549     -0.44549     -0.44549      1.34280      1.34280      1.34280      1.57960 
+   </alphaeps>
+   <betaeps>
+   -30.27035     -1.27480     -0.44549     -0.44549     -0.44549      1.34280      1.34280      1.34280      1.57960 
+   </betaeps>
+   <alphavectors>
+     0.00000     -0.24592      0.00000      0.00000     -0.00000      0.00000     -0.00000      0.00000     -0.13323 
+     0.00000      0.52629     -0.00000     -0.00000     -0.00000      0.00000     -0.00000     -0.00000      1.47136 
+     0.00000      0.00000      0.00000      0.00000     -0.69101     -0.91846      0.00000     -0.00000      0.00000 
+     0.00000      0.00000     -0.69101      0.00000     -0.00000      0.00000      0.91846      0.00000      0.00000 
+     0.00000     -0.00000      0.00000     -0.69101     -0.00000      0.00000     -0.00000     -0.91846     -0.00000 
+     0.00000      0.56725     -0.00000     -0.00000     -0.00000      0.00000     -0.00000     -0.00000     -1.42797 
+     0.00000     -0.00000     -0.00000     -0.00000     -0.45844      1.05399     -0.00000      0.00000     -0.00000 
+     0.00000     -0.00000     -0.45844     -0.00000      0.00000     -0.00000     -1.05399      0.00000     -0.00000 
+     0.00000      0.00000     -0.00000     -0.45844      0.00000     -0.00000      0.00000      1.05399      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000     -0.24592     -0.00000     -0.00000      0.00000     -0.00000     -0.00000     -0.00000     -0.13323 
+     0.00000      0.52629      0.00000      0.00000     -0.00000      0.00000      0.00000      0.00000      1.47136 
+     0.00000      0.00000      0.00000      0.69101     -0.00000     -0.91846     -0.00000     -0.00000      0.00000 
+     0.00000     -0.00000     -0.00000     -0.00000      0.69101     -0.00000      0.91846      0.00000      0.00000 
+     0.00000      0.00000      0.69101      0.00000     -0.00000      0.00000      0.00000     -0.91846      0.00000 
+     0.00000      0.56725      0.00000      0.00000     -0.00000      0.00000      0.00000      0.00000     -1.42797 
+     0.00000     -0.00000     -0.00000      0.45844      0.00000      1.05399      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.45844      0.00000     -1.05399      0.00000     -0.00000 
+     0.00000     -0.00000      0.45844     -0.00000      0.00000     -0.00000     -0.00000      1.05399     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Na" basis="MCP">
+   <guessdensitymatrix>
+     0.02589     -0.10214      0.00000      0.00000      0.00000      0.18066      0.00000      0.00000      0.00000 
+    -0.10214      0.40298      0.00000      0.00000      0.00000     -0.71278      0.00000      0.00000      0.00000 
+     0.00000      0.00000      1.56498      0.00000      0.00000      0.00000      0.37415      0.00000      0.00000 
+     0.00000      0.00000      0.00000      1.56498      0.00000      0.00000      0.00000      0.37415      0.00000 
+     0.00000      0.00000      0.00000      0.00000      1.56498      0.00000      0.00000      0.00000      0.37415 
+     0.18066     -0.71278      0.00000      0.00000      0.00000      1.26074      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.37415      0.00000      0.00000      0.00000      0.08949      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.37415      0.00000      0.00000      0.00000      0.08949      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.37415      0.00000      0.00000      0.00000      0.08949 
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      1.00000      1.00000      1.00000      0.93972      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      1.00000      1.00000      1.00000      0.06028      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -37.35536     -1.89289     -0.84513     -0.84513     -0.84513      0.23693      0.51480      0.51480      0.51480 
+   </alphaeps>
+   <betaeps>
+   -37.34378     -1.88018     -0.83095     -0.83095     -0.83095      0.28084      0.55684      0.55684      0.55684 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000     -0.00000     -0.00000      0.00000      0.16095      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000     -0.00000     -0.63499     -0.00000      0.00000      0.00000 
+     0.00000      0.00000     -0.00000     -0.00000     -0.88203      0.00000      0.70216     -0.00000      0.00000 
+     0.00000      0.00000     -0.00000      0.88203     -0.00000      0.00000     -0.00000      0.00000     -0.70216 
+     0.00000      0.00000     -0.88203     -0.00000      0.00000      0.00000      0.00000      0.70216     -0.00000 
+     0.00000      0.00000      0.00000      0.00000     -0.00000      1.12281     -0.00000      0.00000      0.00000 
+     0.00000      0.00000     -0.00000     -0.00000     -0.21553     -0.00000     -1.10660     -0.00000      0.00000 
+     0.00000      0.00000     -0.00000      0.21553      0.00000     -0.00000      0.00000     -0.00000      1.10660 
+     0.00000      0.00000     -0.21553      0.00000     -0.00000     -0.00000     -0.00000     -1.10660      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000     -0.00000      0.00000      0.00000     -0.16005     -0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000     -0.00000     -0.00000      0.63200      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.88713     -0.00000     -0.00000     -0.00000     -0.69572     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000     -0.00000      0.88713      0.00000     -0.00000      0.00000     -0.69572 
+     0.00000      0.00000      0.00000      0.88713      0.00000      0.00000     -0.00000     -0.69572      0.00000 
+     0.00000      0.00000      0.00000     -0.00000     -0.00000     -1.12312      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.20746      0.00000      0.00000      0.00000      1.10814     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000     -0.00000      0.20746     -0.00000      0.00000     -0.00000      1.10814 
+     0.00000      0.00000      0.00000      0.20746     -0.00000     -0.00000      0.00000      1.10814     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Mg" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.06023306    0.00000000    0.00000000    0.00000000   -0.18158880    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.30432204    0.00000000    0.00000000    0.00000000    0.09188650    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    1.96215923   -0.00343007    0.00000000    0.00000000    0.03409429   -0.15766589   -0.01044504    0.00000000   -0.03164999   -0.21655682    0.24820680
+       0.00000000    0.00000000   -0.00639500    1.96901937    0.00982507    0.00000000    0.16811094    0.00000000    0.16811094    0.00000000    0.24820680   -0.36254077    0.43311363
+       0.00000000    0.00000000   -0.00296493    0.00000000    1.97541437    0.00000000    0.00000000   -0.49388777    0.15766589    0.00000000   -0.21655682    0.03164999   -0.24820680
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.67344976    0.00000000    0.00000000    0.00000000   -7.00472601    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.09837978    0.01865461    0.00000000    0.00000000   -0.55924195   -0.00639500    0.92067489    0.00000000   -0.58377137    0.57370399    0.01006738
+       0.00000000    0.00000000    0.01694168    0.06107057   -0.03559628    0.00000000   -0.91427989    0.00000000   -0.91427989    0.00000000    0.01006738    3.33164915   -1.14740799
+       0.00000000    0.00000000   -0.00171293    0.00000000    0.04412889    0.00000000    0.00000000    1.82216479    0.00639500    0.00000000    0.57370399    0.58377137   -0.01006738
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.56428748    0.00000000    0.00000000    0.00000000    7.09077545    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000   -0.04387302   -0.01670975    0.00000000    0.00000000    1.38476491    0.00217885   -0.82113970    0.00000000   -0.91084982    0.91427989   -0.00343007
+       0.00000000    0.00000000    0.02699900   -0.01045351   -0.01028925    0.00000000    0.81896085    0.00000000    0.81896085    0.00000000   -0.00343007   -2.97871746   -1.82855978
+       0.00000000    0.00000000    0.04370876    0.00000000   -0.03745252    0.00000000    0.00000000   -1.63574285   -0.00217885    0.00000000    0.91427989    0.91084982    0.00343007
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      1.00000      1.00000      1.00000      0.99999      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      1.00000      1.00000      1.00000      0.99999      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -45.95953     -2.89792     -1.71432     -1.71432     -1.71432     -0.17590     -0.04979     -0.04979     -0.04979      0.09325      0.14778      0.14778      0.14778 
+   </alphaeps>
+   <betaeps>
+   -45.95953     -2.89792     -1.71432     -1.71432     -1.71432     -0.17590     -0.04979     -0.04979     -0.04979      0.09325      0.14778      0.14778      0.14778 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000     -0.00000      0.00000     -0.00000      0.05190     -0.00000      0.00000     -0.00000     -0.04822     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000     -0.00000      0.00000     -0.26222      0.00000     -0.00000      0.00000      0.02440      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000     -0.99136      0.00000     -0.00000     -0.15904      0.00000     -0.00000     -0.00000     -0.00000     -0.25037      0.00000 
+     0.00000      0.00000     -0.99136     -0.00000      0.00000      0.00000      0.00000     -0.00000     -0.15904     -0.00000      0.25037      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000     -0.99136     -0.00000      0.00000      0.15904     -0.00000      0.00000     -0.00000      0.00000      0.25037 
+     0.00000      0.00000      0.00000     -0.00000     -0.00000      0.58028      0.00000      0.00000     -0.00000     -1.86007     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000     -0.00000     -0.04021     -0.00000      0.00000      0.42133     -0.00000      0.00000      0.00000      0.00000      1.36165     -0.00000 
+     0.00000      0.00000     -0.04021      0.00000     -0.00000     -0.00000     -0.00000      0.00000      0.42133      0.00000     -1.36165     -0.00000      0.00000 
+     0.00000      0.00000     -0.00000     -0.00000     -0.04021     -0.00000      0.00000     -0.42133      0.00000     -0.00000      0.00000     -0.00000     -1.36165 
+     0.00000      0.00000     -0.00000      0.00000      0.00000      0.48622     -0.00000      0.00000     -0.00000      1.88292     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000     -0.00000      0.01370      0.00000     -0.00000      0.67145      0.00000     -0.00000     -0.00000     -0.00000     -1.21969      0.00000 
+     0.00000      0.00000      0.01370      0.00000      0.00000      0.00000      0.00000      0.00000      0.67145     -0.00000      1.21969     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.01370      0.00000     -0.00000     -0.67145      0.00000      0.00000      0.00000     -0.00000      1.21969 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.05190     -0.00000     -0.00000      0.00000     -0.04822     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000     -0.00000      0.00000      0.00000      0.26222      0.00000      0.00000     -0.00000      0.02440      0.00000     -0.00000      0.00000 
+     0.00000      0.00000     -0.00000      0.99136     -0.00000      0.00000     -0.15904      0.00000     -0.00000     -0.00000      0.25037      0.00000      0.00000 
+     0.00000      0.00000      0.99136     -0.00000      0.00000      0.00000      0.00000     -0.15904      0.00000     -0.00000     -0.00000     -0.00000      0.25037 
+     0.00000      0.00000      0.00000     -0.00000     -0.99136     -0.00000     -0.00000      0.00000     -0.15904      0.00000     -0.00000     -0.25037     -0.00000 
+     0.00000      0.00000     -0.00000      0.00000      0.00000     -0.58028     -0.00000     -0.00000      0.00000     -1.86007      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.04021      0.00000     -0.00000      0.42133     -0.00000      0.00000      0.00000     -1.36165      0.00000     -0.00000 
+     0.00000      0.00000      0.04021      0.00000     -0.00000     -0.00000     -0.00000      0.42133     -0.00000      0.00000      0.00000      0.00000     -1.36165 
+     0.00000      0.00000     -0.00000      0.00000     -0.04021      0.00000     -0.00000      0.00000      0.42133      0.00000     -0.00000      1.36165      0.00000 
+     0.00000      0.00000      0.00000     -0.00000      0.00000     -0.48622     -0.00000     -0.00000      0.00000      1.88292      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000     -0.01370     -0.00000      0.00000      0.67145      0.00000     -0.00000     -0.00000      1.21969     -0.00000     -0.00000 
+     0.00000      0.00000     -0.01370     -0.00000      0.00000      0.00000      0.00000      0.67145      0.00000     -0.00000     -0.00000     -0.00000      1.21969 
+     0.00000      0.00000      0.00000     -0.00000      0.01370      0.00000      0.00000     -0.00000      0.67145     -0.00000      0.00000     -1.21969     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Al" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.08827778    0.00000000    0.00000000    0.00000000   -0.20413867    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.42295209    0.00000000    0.00000000    0.00000000    0.26515912    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.03663242   -0.02411333    0.00000000    0.00000000    0.57446199    0.57750492    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.03663242   -0.02411333    0.00000000    0.00000000   -0.57446199   -0.57750492
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.25737897    0.00000000   -0.03663242    0.00000000   -0.06658833    0.00000000   -0.57446199
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.97592397    0.00000000    0.00000000    0.00000000   -6.14631504    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.39727587    0.34785951    0.00000000    0.00000000   -2.26483054   -2.28394918    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.39727587    0.34785951    0.00000000    0.00000000    2.26483054    2.28394918
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.01237954    0.00000000    0.39727587    0.00000000    0.82846562    0.00000000    2.26483054
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.53542380    0.00000000    0.00000000    0.00000000    6.42412953    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.99266085   -0.97452985    0.00000000    0.00000000    0.79114451    0.83923254    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.99266085   -0.97452985    0.00000000    0.00000000   -0.79114451   -0.83923254
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.35349494    0.00000000   -0.99266085    0.00000000   -2.19947159    0.00000000   -0.79114451
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.29986      0.29986      0.29986      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.03347      0.03347      0.03347      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -55.13397     -3.92572     -2.55655     -2.55655     -2.55655     -0.29322     -0.10795     -0.10795     -0.10795      0.09206      0.15444      0.15444      0.15444 
+   </alphaeps>
+   <betaeps>
+   -55.13251     -3.92377     -2.55413     -2.55413     -2.55413     -0.27346     -0.08946     -0.08946     -0.08946      0.10538      0.16749      0.16749      0.16749 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.06326     -0.00000      0.00000      0.00000      0.05694     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.30199      0.00000     -0.00000     -0.00000     -0.07371      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.20234     -0.00000     -0.00000      0.00000      0.26127 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.20234     -0.00000      0.00000      0.00000     -0.26127     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.20234      0.00000     -0.00000     -0.00000      0.26127      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.70457     -0.00000      0.00000      0.00000      1.71437      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.57642      0.00000      0.00000     -0.00000     -1.26252 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.57642      0.00000     -0.00000     -0.00000      1.26252     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.57642     -0.00000      0.00000      0.00000     -1.26252     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.37225     -0.00000      0.00000      0.00000     -1.79415     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.53870     -0.00000      0.00000     -0.00000      1.23262 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.53870     -0.00000      0.00000      0.00000     -1.23262      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.53870      0.00000     -0.00000     -0.00000      1.23262      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.06298     -0.00000     -0.00000      0.00000      0.05707      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.30137      0.00000      0.00000     -0.00000     -0.07437      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.19787      0.00000     -0.00000     -0.00000      0.26377      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.19787     -0.00000     -0.00000     -0.00000      0.26377 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.19787     -0.00000      0.00000     -0.00000     -0.26377      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.69953     -0.00000     -0.00000     -0.00000      1.71645      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.55748     -0.00000      0.00000      0.00000     -1.27102     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000      0.55748      0.00000      0.00000      0.00000     -1.27102 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.55748      0.00000     -0.00000      0.00000      1.27102     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.37753     -0.00000      0.00000      0.00000     -1.79304     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.55708      0.00000     -0.00000     -0.00000      1.22442      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.55708     -0.00000     -0.00000      0.00000      1.22442 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.55708      0.00000     -0.00000      0.00000     -1.22442     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Si" basis="MCP">
+   <guessdensitymatrix>
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.15261225    0.00000000    0.00000000    0.00000000    0.00190812    0.00000000    0.00000000    0.00000000
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.52557407    0.00000000    0.00000000    0.00000000   -0.85549070    0.00000000    0.00000000    0.00000000
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00099244    0.14927644   -0.15141937    0.00000000   -0.06594663   -0.29365787    0.35432308
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.30069581   -0.13354255   -0.13255011    0.00000000   -0.64798096    0.35021660    0.28426998
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.01886926    0.28281899    0.00000000    0.00000000   -0.07005310   -0.64387448
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    2.30068874    0.00000000    0.00000000    0.00000000   -3.81187137    0.00000000    0.00000000    0.00000000
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.23958094   -0.66401520    0.41225388    0.00000000    0.81522555    0.79951198   -1.57610881
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -1.07626909    0.35488232    0.59446325    0.00000000    2.37562079   -1.57065809   -0.75543253
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.18220937   -1.01889752    0.00000000    0.00000000    0.82067628    2.37017007
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.82569159    0.00000000    0.00000000    0.00000000    7.83811196    0.00000000    0.00000000    0.00000000
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.91411013    0.65081449    0.30652422    0.00000000   -2.25504425    0.59446325    1.54477555
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.34429027    0.31193686   -0.60217326    0.00000000   -0.95031230    1.59102905   -0.66401520
+           0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.90869748    0.33887763    0.00000000    0.00000000   -2.20879076   -0.99656580
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.66587      0.66587      0.66587      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.00079      0.00079      0.00079      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -65.15103     -5.06017     -3.50217     -3.50217     -3.50217     -0.41417     -0.16726     -0.16726     -0.16726      0.13365      0.20385      0.20385      0.20385 
+   </alphaeps>
+   <betaeps>
+   -65.14538     -5.05300     -3.49339     -3.49339     -3.49339     -0.35848     -0.11655     -0.11655     -0.11655      0.16736      0.23720      0.23720      0.23720 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.07226      0.00000      0.00000     -0.00000     -0.06780      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.33048     -0.00000     -0.00000      0.00000      0.07732      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.23583     -0.00000      0.00000      0.00000     -0.00000      0.27765 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.23583      0.00000     -0.00000     -0.27765      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.23583     -0.00000     -0.00000      0.00000     -0.27765      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.71798      0.00000      0.00000     -0.00000     -1.72748     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.64207      0.00000     -0.00000     -0.00000      0.00000     -1.24521 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00000      0.64207     -0.00000      0.00000      1.24521     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.64207      0.00000      0.00000     -0.00000      1.24521     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.36420     -0.00000      0.00000     -0.00000      1.81043     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.47740     -0.00000      0.00000      0.00000     -0.00000      1.26136 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.47740      0.00000     -0.00000     -1.26136      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.47740      0.00000      0.00000     -0.00000     -1.26136      0.00000      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.07115     -0.00000      0.00000      0.00000     -0.06849      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.32846     -0.00000      0.00000      0.00000      0.08064      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.22417      0.00000      0.00000     -0.28508      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.22417     -0.00000     -0.00000      0.00000      0.00000     -0.28508 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.22417     -0.00000      0.00000      0.00000      0.28508      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.69725      0.00000     -0.00000      0.00000     -1.73600     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.59572     -0.00000     -0.00000      1.26810      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.59572      0.00000      0.00000     -0.00000     -0.00000      1.26810 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.59572      0.00000     -0.00000     -0.00000     -1.26810     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.38588     -0.00000      0.00000     -0.00000      1.80594      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000      0.52363      0.00000      0.00000     -1.24289      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.52363     -0.00000     -0.00000      0.00000      0.00000     -1.24289 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.52363      0.00000     -0.00000     -0.00000      1.24289      0.00000      0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="P" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.06029819    0.00000000    0.00000000    0.00000000   -0.53951750    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.44533599    0.00000000    0.00000000    0.00000000    1.58765118    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.33716505    0.12047502    0.14425133    0.00000000    0.68827162    0.00000000    0.05726442
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.12047502   -0.48141638    0.00000000    0.00000000   -0.36303125    0.06503211    0.31747270
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.14425133    0.00000000   -0.21669003    0.00000000    0.30576682   -0.68050394    0.37079893
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.17571783    0.00000000    0.00000000    0.00000000   -8.78535701    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.89285329   -0.51669324   -0.61127050    0.00000000   -2.42311920    0.00000000   -0.75983440
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.51669324    1.50412379    0.00000000    0.00000000    1.55696832   -0.77414064   -0.85184463
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.61127050    0.00000000    0.37616004    0.00000000   -0.79713393    2.40881295   -1.57127457
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.82199259    0.00000000    0.00000000    0.00000000    5.30490460    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.60643153    0.54118831    0.61172419    0.00000000    1.05574752    0.00000000    2.24205058
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.54118831   -0.00529266    0.00000000    0.00000000   -1.63078008    2.18371126   -0.51669324
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.61172419    0.00000000    1.14761984    0.00000000   -0.61127050   -1.11408684    1.57244076
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.99809      0.99809      0.99809      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.00191      0.00191      0.00191      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -76.02188     -6.31132     -4.56144     -4.56144     -4.56144     -0.53674     -0.22728     -0.22728     -0.22728      0.17832      0.25412      0.25412      0.25412 
+   </alphaeps>
+   <betaeps>
+   -76.01036     -6.29733     -4.54439     -4.54439     -4.54439     -0.44618     -0.14546     -0.14546     -0.14546      0.22983      0.30494      0.30494      0.30494 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.07890      0.00000     -0.00000     -0.00000      0.07394      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.35602     -0.00000      0.00000      0.00000     -0.09707     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000     -0.26039     -0.00000     -0.00000     -0.28428     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.26039      0.00000      0.00000      0.00000      0.00000     -0.28428 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.26039     -0.00000     -0.00000     -0.00000      0.28428     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.74674      0.00000      0.00000      0.00000      1.72286      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.69868      0.00000     -0.00000      1.21922      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.69868      0.00000     -0.00000     -0.00000     -0.00000      1.21922 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.69868      0.00000     -0.00000      0.00000     -1.21922      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.34136      0.00000     -0.00000     -0.00000     -1.81275     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.42379     -0.00000      0.00000     -1.27702     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.42379     -0.00000      0.00000      0.00000      0.00000     -1.27702 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.42379     -0.00000      0.00000     -0.00000      1.27702     -0.00000     -0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.07701     -0.00000     -0.00000     -0.00000      0.07519     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.35248      0.00000      0.00000      0.00000     -0.10302      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.24402     -0.00000      0.00000      0.00000      0.00000      0.00000      0.29570 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.24402      0.00000      0.00000     -0.00000     -0.29570      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.24402      0.00000      0.29570      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.71323     -0.00000     -0.00000     -0.00000      1.73707     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.63616      0.00000     -0.00000     -0.00000      0.00000     -0.00000     -1.25304 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.63616     -0.00000     -0.00000      0.00000      1.25304     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000      0.63616     -0.00000     -1.25304     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.37645     -0.00000     -0.00000     -0.00000     -1.80579      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.48783      0.00000     -0.00000      0.00000      0.00000     -0.00000      1.25397 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.48783      0.00000      0.00000     -0.00000     -1.25397      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000      0.48783      0.00000      1.25397     -0.00000      0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="S" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.08108412    0.00000000    0.00000000    0.00000000   -0.54543200    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.50158042    0.00000000    0.00000000    0.00000000    1.71265783    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.63636075    0.00000000    0.00000000    0.00000000    0.08215566    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.63636075    0.00000000    0.00000000    0.00000000    0.01174221    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.41541226    0.00000000    0.00000000    0.00000000   -0.63823265
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.15370391    0.00000000    0.00000000    0.00000000   -8.43316061    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    2.00240442    0.00000000    0.00000000    0.00000000   -1.21947328    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    2.00240442    0.00000000    0.00000000    0.00000000   -0.03993815    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.11164668    0.00000000    0.00000000    0.00000000    1.68478499
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.60962715    0.00000000    0.00000000    0.00000000    5.14138928    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.42214828    0.00000000    0.00000000    0.00000000    4.06126696    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.42214828    0.00000000    0.00000000    0.00000000    0.02337014    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.54310282    0.00000000    0.00000000    0.00000000    0.91412788
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.99982      0.99982      0.99982      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.33351      0.33351      0.33351      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+   -87.75745     -7.69076     -5.74497     -5.74497     -5.74497     -0.65154     -0.27936     -0.27936     -0.27936      0.21527      0.29683      0.29683      0.29683 
+   </alphaeps>
+   <betaeps>
+   -87.74724     -7.67898     -5.73061     -5.73061     -5.73061     -0.58843     -0.22278     -0.22278     -0.22278      0.24841      0.32960      0.32960      0.32960 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.08396      0.00000      0.00000      0.00000     -0.07581      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.37767     -0.00000     -0.00000     -0.00000      0.12900     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.28074     -0.00000     -0.00000      0.00000      0.28714      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.28074     -0.00000      0.00000      0.00000     -0.28714 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.28074      0.00000      0.00000     -0.00000      0.28714      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.78836      0.00000      0.00000      0.00000     -1.65662      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.74495      0.00000      0.00000     -0.00000     -1.15761     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00000      0.74495      0.00000     -0.00000     -0.00000      1.15761 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.74495      0.00000      0.00000      0.00000     -1.15761      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.30541     -0.00000      0.00000      0.00000      1.76224     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.38474      0.00000      0.00000      0.00000      1.25442      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00000      0.38474     -0.00000      0.00000      0.00000     -1.25442 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.38474     -0.00000     -0.00000     -0.00000      1.25442     -0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.08265      0.00000     -0.00000      0.00000     -0.07677     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.37489     -0.00000      0.00000     -0.00000      0.13350      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.27061     -0.00000     -0.00000     -0.00000     -0.29506     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.27061      0.00000      0.00000     -0.00000      0.29506      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.27061      0.00000     -0.00000     -0.00000      0.29506 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.76602     -0.00000     -0.00000      0.00000     -1.66711     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.70829      0.00000      0.00000      0.00000      1.18044      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.70829      0.00000      0.00000     -0.00000     -1.18044     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.70829     -0.00000      0.00000      0.00000     -1.18044 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.32910      0.00000     -0.00000     -0.00000      1.75798     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.42391      0.00000      0.00000      0.00000     -1.24174      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.42391      0.00000     -0.00000      0.00000      1.24174      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.42391     -0.00000      0.00000     -0.00000      1.24174 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Cl" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.13625492    0.00000000    0.00000000    0.00000000   -0.28424326    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.61028087    0.00000000    0.00000000    0.00000000    0.50235891    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.22330201   -0.33480285   -0.11290573    0.00000000    0.00000000   -0.37559608   -0.37063050
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.11039628    0.33480285    0.00000000    0.70847913    0.00000000   -0.03774745
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.20944506    0.00000000    0.22330201    0.00000000    0.70925030   -0.37063050   -0.33784863
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.19963632    0.00000000    0.00000000    0.00000000   -5.77656832    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.57232251    1.00622450    0.43393696    0.00000000    0.00000000    1.44071720    1.42446515
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.13838555   -1.00622450    0.00000000   -2.29037037    0.00000000    0.57481198
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.52741628    0.00000000   -0.57232251    0.00000000   -2.28680369    1.42446515    0.86590523
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.51641279    0.00000000    0.00000000    0.00000000    6.09871576    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.28681186   -0.19685560   -0.47182242    0.00000000    0.00000000   -1.55869672   -1.54883003
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.75863428    0.19685560    0.00000000    1.11489307    0.00000000   -1.99263368
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.31133821    0.00000000   -0.28681186    0.00000000    1.07988850   -1.54883003    0.43393696
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.99253      0.99253      0.99253      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      0.67414      0.67414      0.67414      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+  -100.34040     -9.18185     -7.03663     -7.03663     -7.03663     -0.76301     -0.32700     -0.32700     -0.32700      0.28860      0.37568      0.37568      0.37568 
+   </alphaeps>
+   <betaeps>
+  -100.33430     -9.17517     -7.02848     -7.02848     -7.02848     -0.73178     -0.29897     -0.29897     -0.29897      0.30455      0.39140      0.39140      0.39140 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.08823     -0.00000      0.00000     -0.00000      0.08121      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.39298      0.00000     -0.00000      0.00000     -0.14265      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.29517      0.00000      0.00000      0.00000     -0.00000      0.29781     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.29517      0.00000      0.00000     -0.00000     -0.29781 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.29517      0.00000      0.00000     -0.29781      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.78557     -0.00000      0.00000     -0.00000      1.65273      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.75652     -0.00000     -0.00000     -0.00000      0.00000     -1.14459      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.75652     -0.00000     -0.00000      0.00000      1.14459 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.75652     -0.00000     -0.00000      1.14459     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.31409      0.00000      0.00000     -0.00000     -1.74992     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.37912     -0.00000     -0.00000     -0.00000      0.00000      1.24452      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.37912     -0.00000     -0.00000      0.00000     -1.24452 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.37912     -0.00000     -0.00000     -1.24452     -0.00000      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.08761     -0.00000      0.00000      0.00000      0.08166      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.39166      0.00000     -0.00000     -0.00000     -0.14477     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.29085      0.00000     -0.00000      0.00000      0.30134 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.29085     -0.00000      0.00000     -0.00000     -0.30134      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.29085     -0.00000      0.00000     -0.00000     -0.30134      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.77558      0.00000      0.00000      0.00000      1.65747      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.74152     -0.00000      0.00000      0.00000     -1.15438 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.74152      0.00000     -0.00000      0.00000      1.15438     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.74152     -0.00000     -0.00000      0.00000      1.15438      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.32466      0.00000      0.00000      0.00000     -1.74800      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000     -0.39534      0.00000     -0.00000     -0.00000      1.23946 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.39534      0.00000     -0.00000     -0.00000     -1.23946      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.39534      0.00000      0.00000     -0.00000     -1.23946     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Ar" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.14076685    0.00000000    0.00000000    0.00000000   -0.30809776    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.61541871    0.00000000    0.00000000    0.00000000    0.50709723    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.46235921    0.00000000    0.00000000    0.00000000    0.76831024    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.34313235    0.11922686    0.00000000    0.00000000    0.35118464   -0.35118464
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.11922686   -0.34313235    0.00000000    0.00000000   -0.35118464    0.35118464
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.17158247    0.00000000    0.00000000    0.00000000   -5.82556884    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.14249751    0.00000000    0.00000000    0.00000000   -2.84587348    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.70087310   -0.44162442    0.00000000    0.00000000   -0.86778325    0.86778325
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.44162442    0.70087310    0.00000000    0.00000000    0.86778325   -0.86778325
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.51809426    0.00000000    0.00000000    0.00000000    6.11359531    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.58142952    0.00000000    0.00000000    0.00000000    3.07187770    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.05812541    0.47669589    0.00000000    0.00000000   -0.44162442    0.44162442
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.47669589    1.05812541    0.00000000    0.00000000    0.44162442   -0.44162442
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      1.00000      1.00000      1.00000      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+  -113.77020    -10.78627     -8.43810     -8.43810     -8.43810     -0.87550     -0.37388     -0.37388     -0.37388      0.38824      0.47891      0.47891      0.47891 
+   </alphaeps>
+   <betaeps>
+  -113.77020    -10.78627     -8.43810     -8.43810     -8.43810     -0.87550     -0.37388     -0.37388     -0.37388      0.38824      0.47891      0.47891      0.47891 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.09196     -0.00000     -0.00000      0.00000     -0.08811     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.40204     -0.00000      0.00000     -0.00000      0.14502      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.30587     -0.00000     -0.00000      0.00000     -0.30997      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.30587      0.00000     -0.00000     -0.00000      0.00000      0.30997 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.30587     -0.00000      0.00000     -0.30997      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.76537      0.00000     -0.00000      0.00000     -1.66600     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.75581      0.00000      0.00000     -0.00000      1.14815     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.75581     -0.00000      0.00000      0.00000     -0.00000     -1.14815 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00000      0.75581      0.00000      0.00000      1.14815     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.33846      0.00000     -0.00000      0.00000      1.74837      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.38464     -0.00000     -0.00000      0.00000     -1.23933      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.38464      0.00000     -0.00000     -0.00000      0.00000      1.23933 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000      0.38464     -0.00000     -0.00000     -1.23933      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.09196      0.00000      0.00000     -0.00000     -0.08811     -0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.40204     -0.00000     -0.00000      0.00000      0.14502      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.30587     -0.00000      0.00000     -0.00000     -0.30997      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.30587     -0.00000      0.00000      0.00000     -0.30997     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000      0.30587     -0.00000     -0.00000      0.00000     -0.30997 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.76537      0.00000      0.00000     -0.00000     -1.66600     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.75581      0.00000     -0.00000      0.00000      1.14815     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.75581      0.00000     -0.00000     -0.00000      1.14815     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.75581      0.00000      0.00000     -0.00000      1.14815 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.33846      0.00000      0.00000     -0.00000      1.74837      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.38464      0.00000     -0.00000      0.00000     -1.23933     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.38464     -0.00000      0.00000      0.00000     -1.23933     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.38464     -0.00000     -0.00000     -0.00000     -1.23933 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="K" basis="MCP">
+   <guessdensitymatrix>
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.02468730    0.00000000    0.00000000    0.00000000    0.10853849    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.06706804    0.00000000    0.00000000    0.00000000   -0.80115195    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.67418374    0.00103649    0.00046306    0.00000000    0.00357517   -0.00357517    0.00000000    0.00000000    0.00000000    0.16503850    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00051825   -0.00046306    0.00051825    0.00000000   -0.09346738   -0.00740766    0.02630312    0.00000000   -0.16503850    0.08218997    0.08218997
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00005519    0.00000000   -0.00051825    0.00000000    0.08989221    0.06358908   -0.02630312    0.00000000    0.00000000   -0.10078987    0.24722847
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.43539108    0.00000000    0.00000000    0.00000000   -0.33046321    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    2.18074905   -0.00416416   -0.00211142    0.00000000   -0.03056393    0.03056393    0.00000000    0.00000000    0.00000000   -0.53384192    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.00208208    0.00211142   -0.00208208    0.00000000    0.34192628   -0.03622317   -0.10567386    0.00000000    0.53384192   -0.33020151   -0.33020151
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00002934    0.00000000    0.00208208    0.00000000   -0.31136235   -0.20568849    0.10567386    0.00000000    0.00000000    0.50414217   -0.86404343
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.31899375    0.00000000    0.00000000    0.00000000  -12.78885523    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.02207460    0.01134098    0.01384640    0.00000000    0.60562821   -0.60562821    0.00000000    0.00000000    0.00000000   -0.00540381    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00567049   -0.01384640    0.00567049    0.00000000   -0.89134619    1.18331041    0.28780006    0.00000000    0.00540381    0.89929539    0.89929539
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.00817592    0.00000000   -0.00567049    0.00000000    0.28571798   -0.00208208   -0.28780006    0.00000000    0.00000000   -4.57221309    0.89389158
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.92019124    0.00000000    0.00000000    0.00000000    8.88096323    0.00000000    0.00000000    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.00862517    0.01126699   -0.01348032    0.00000000   -1.15572946    1.15572946    0.00000000    0.00000000    0.00000000    0.00211142    0.00000000
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00563349    0.01348032    0.00563349    0.00000000    0.86899351   -0.58469815    0.28592242    0.00000000   -0.00211142    0.89342827    0.89342827
+       0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.01911381    0.00000000   -0.00563349    0.00000000    0.28673594    0.00081353   -0.28592242    0.00000000    0.00000000    6.22027627    0.89553969
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      1.00000      1.00000      0.49994      0.00002      0.00002      0.00002      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      1.00000      1.00000      0.49994      0.00002      0.00002      0.00002      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+  -128.37560    -12.84460    -10.28997    -10.28997    -10.28997     -1.29275     -0.70296     -0.70296     -0.70296     -0.09002     -0.03178     -0.03178     -0.03178      0.02409      0.04356      0.04356      0.04356 
+   </alphaeps>
+   <betaeps>
+  -128.37560    -12.84460    -10.28997    -10.28997    -10.28997     -1.29275     -0.70296     -0.70296     -0.70296     -0.09002     -0.03178     -0.03178     -0.03178      0.02409      0.04356      0.04356      0.04356 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.01947      0.00000      0.00000      0.00000      0.00558      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.08777     -0.00000     -0.00000      0.00000     -0.09402     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.32282     -0.00000      0.00000     -0.00000      0.00000      0.00000     -0.04903      0.00000     -0.00000      0.05606      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.32282     -0.00000     -0.00000     -0.04903     -0.00000     -0.00000      0.00000      0.00000     -0.05606 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.32282      0.00000     -0.00000      0.04903      0.00000      0.00000      0.00000      0.05606      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.23428     -0.00000     -0.00000      0.00000      0.14828     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.04421     -0.00000      0.00000      0.00000      0.00000      0.00000      0.19698     -0.00000     -0.00000     -0.25562     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -1.04421      0.00000      0.00000      0.19698      0.00000      0.00000     -0.00000      0.00000      0.25562 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -1.04421     -0.00000      0.00000     -0.19698     -0.00000     -0.00000     -0.00000     -0.25562      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.00000      0.72600      0.00000     -0.00000     -0.00000     -2.13839      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.01057      0.00000     -0.00000     -0.00000     -0.00000     -0.00000     -0.53647      0.00000      0.00000      1.67632      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.01057     -0.00000      0.00000     -0.53647     -0.00000     -0.00000      0.00000     -0.00000     -1.67632 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.01057      0.00000     -0.00000      0.53647      0.00000      0.00000      0.00000      1.67632     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.32107      0.00000     -0.00000     -0.00000      2.26430      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00413     -0.00000      0.00000     -0.00000      0.00000      0.00000     -0.53297      0.00000      0.00000     -1.63200      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00413     -0.00000     -0.00000     -0.53297      0.00000      0.00000     -0.00000      0.00000      1.63200 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00413      0.00000     -0.00000      0.53297     -0.00000     -0.00000     -0.00000     -1.63200      0.00000      0.00000 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.01947      0.00000      0.00000      0.00000     -0.00558     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.08777     -0.00000     -0.00000      0.00000      0.09402      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.32282      0.00000     -0.00000      0.00000      0.00000     -0.00000      0.04903     -0.00000      0.00000      0.05606      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.32282     -0.00000      0.04903     -0.00000     -0.00000      0.00000      0.00000      0.00000      0.05606 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.32282      0.00000     -0.00000      0.00000      0.04903     -0.00000      0.00000      0.05606     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.23428      0.00000     -0.00000      0.00000     -0.14828      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.04421     -0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.19698      0.00000     -0.00000     -0.25562     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -1.04421      0.00000     -0.19698      0.00000      0.00000     -0.00000      0.00000     -0.00000     -0.25562 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.04421     -0.00000      0.00000     -0.00000     -0.19698      0.00000     -0.00000     -0.25562      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.72600     -0.00000     -0.00000      0.00000      2.13839     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.01057      0.00000     -0.00000      0.00000      0.00000     -0.00000      0.53647     -0.00000      0.00000      1.67632      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.01057     -0.00000      0.53647     -0.00000     -0.00000      0.00000     -0.00000      0.00000      1.67632 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.01057      0.00000     -0.00000      0.00000      0.53647     -0.00000      0.00000      1.67632     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000     -0.32107      0.00000     -0.00000      0.00000     -2.26430     -0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00413     -0.00000      0.00000      0.00000      0.00000     -0.00000      0.53297      0.00000     -0.00000     -1.63200      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00413      0.00000      0.53297     -0.00000     -0.00000      0.00000     -0.00000      0.00000     -1.63200 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00413     -0.00000      0.00000      0.00000      0.53297      0.00000     -0.00000     -1.63200     -0.00000     -0.00000 
+   </betavectors>
+</atomicguess>
+<atomicguess symbol="Ca" basis="MCP">
+    <guessdensitymatrix>
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.03746131    0.00000000    0.00000000    0.00000000    0.04974838    0.00000000    0.00000000    0.00000000
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.16889797    0.00000000    0.00000000    0.00000000    0.58461727    0.00000000    0.00000000    0.00000000
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.36210918    0.36268205    0.00001880    0.00000000   -0.02011862    0.03492654   -0.01480791    0.00000000   -0.20692470    0.00518638    0.10499406
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00059168    0.36325492    0.36210918    0.00000000    0.00000000   -0.04973445    0.02011862    0.00000000    0.00518638   -0.31710515    0.21517451
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.36325492   -0.00001880   -0.36268205    0.00000000    0.04973445   -0.01480791    0.17130356    0.00000000    0.10499406    0.21517451   -0.20692470
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.44260743    0.00000000    0.00000000    0.00000000    0.40608853    0.00000000    0.00000000    0.00000000
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -1.11039625   -1.11072629    0.00194097    0.00000000   -0.02522806   -0.02012169    0.04534975    0.00000000   -0.92684244    0.25807138   -0.32154794
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00161093   -1.11105633   -1.11039625    0.00000000    0.00000000    0.06547144    0.02522806    0.00000000    0.25807138   -0.86336588   -0.38502451
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.11105633   -0.00194097    1.11072629    0.00000000   -0.06547144    0.04534975    0.35118501    0.00000000   -0.32154794   -0.38502451   -0.92684244
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    1.02453887    0.00000000    0.00000000    0.00000000   -8.40768662    0.00000000    0.00000000    0.00000000
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.01167014   -0.00808349    0.00420225    0.00000000   -0.21899850    0.21866846    0.00033004    0.00000000   -3.48458757    0.69215911   -0.00234012
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00778890   -0.00449684   -0.01167014    0.00000000    0.00000000   -0.21833842    0.21899850    0.00000000    0.69215911   -4.17440656    0.68747888
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00449684   -0.00420225    0.00808349    0.00000000    0.21833842    0.00033004    2.01395035    0.00000000   -0.00234012    0.68747888   -3.48458757
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.50443219    0.00000000    0.00000000    0.00000000    8.90225891    0.00000000    0.00000000    0.00000000
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.00188487    0.00278232   -0.01213781    0.00000000   -0.28443317    0.28454677   -0.00011360    0.00000000    4.90146837    0.89683548    0.00080546
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.00747062    0.00744952   -0.00188487    0.00000000    0.00000000   -0.28466037    0.28443317    0.00000000    0.89683548    4.00382742    0.89844641
+        0.00000000    0.00000000    0.00000000    0.00000000    0.00000000    0.00000000   -0.00744952    0.01213781   -0.00278232    0.00000000    0.28466037   -0.00011360   -1.43737436    0.00000000    0.00080546    0.89844641    4.90146837
+   </guessdensitymatrix>
+   <alphaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      1.00000      1.00000      0.99885      0.00038      0.00038      0.00038      0.00000      0.00000      0.00000      0.00000 
+   </alphaocc>
+   <betaocc>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.00000      1.00000      1.00000      0.99885      0.00038      0.00038      0.00038      0.00000      0.00000      0.00000      0.00000 
+   </betaocc>
+   <alphaeps>
+  -143.89860    -15.05408    -12.29371    -12.29371    -12.29371     -1.71679     -1.03957     -1.03957     -1.03957     -0.14262     -0.05193     -0.05193     -0.05193      0.03957      0.09460      0.09460      0.09460 
+   </alphaeps>
+   <betaeps>
+  -143.89860    -15.05408    -12.29371    -12.29371    -12.29371     -1.71679     -1.03957     -1.03957     -1.03957     -0.14262     -0.05193     -0.05193     -0.05193      0.03957      0.09460      0.09460      0.09460 
+   </betaeps>
+   <alphavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.02617      0.00000     -0.00000      0.00000     -0.01179      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.11799     -0.00000     -0.00000      0.00000     -0.13855      0.00000      0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.34413     -0.00000     -0.00000      0.07469      0.00000     -0.00000     -0.11206      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.34413     -0.00000     -0.00000     -0.00000     -0.07469     -0.00000     -0.00000     -0.00000      0.00000      0.11206      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.34413      0.00000      0.00000      0.00000      0.00000     -0.07469     -0.00000     -0.00000      0.00000     -0.11206 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.30920     -0.00000     -0.00000      0.00000     -0.09624      0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      1.05391     -0.00000      0.00000     -0.04303      0.00000     -0.00000     -0.30510     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -1.05391      0.00000      0.00000     -0.00000      0.04303      0.00000      0.00000      0.00000      0.00000      0.30510      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -1.05391      0.00000      0.00000     -0.00000     -0.00000      0.04303     -0.00000     -0.00000      0.00000     -0.30510 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.71573      0.00000     -0.00000      0.00000      1.99256      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00767     -0.00000     -0.00000      0.46762      0.00000     -0.00000     -1.47517     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00767      0.00000      0.00000      0.00000     -0.46762     -0.00000     -0.00000      0.00000     -0.00000      1.47517      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00767      0.00000      0.00000      0.00000      0.00000     -0.46762     -0.00000     -0.00000      0.00000     -1.47517 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.00000     -0.35239     -0.00000      0.00000     -0.00000     -2.10977      0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000     -0.00264      0.00000     -0.00000      0.60850     -0.00000      0.00000      1.41489      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00264     -0.00000     -0.00000     -0.00000     -0.60850     -0.00000     -0.00000      0.00000     -0.00000     -1.41489     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00264     -0.00000     -0.00000      0.00000      0.00000     -0.60850      0.00000      0.00000     -0.00000      1.41489 
+   </alphavectors>
+   <betavectors>
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.02617     -0.00000      0.00000      0.00000     -0.01179     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000     -0.11799     -0.00000      0.00000      0.00000     -0.13855     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.34413      0.00000      0.00000      0.00000     -0.00000      0.07469      0.00000      0.00000     -0.00000      0.11206 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.34413      0.00000     -0.00000      0.00000      0.07469     -0.00000      0.00000     -0.00000     -0.00000      0.11206     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.34413      0.00000      0.00000      0.07469      0.00000     -0.00000      0.11206     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.30920     -0.00000     -0.00000      0.00000     -0.09624     -0.00000     -0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      1.05391      0.00000      0.00000      0.00000     -0.00000     -0.04303      0.00000      0.00000     -0.00000      0.30510 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -1.05391      0.00000      0.00000      0.00000     -0.04303     -0.00000      0.00000     -0.00000     -0.00000      0.30510      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -1.05391      0.00000     -0.00000     -0.04303      0.00000     -0.00000      0.30510     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00000      0.71573     -0.00000      0.00000      0.00000      1.99256      0.00000      0.00000     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00767     -0.00000     -0.00000     -0.00000      0.00000      0.46762     -0.00000     -0.00000      0.00000      1.47517 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00767     -0.00000     -0.00000      0.00000      0.46762     -0.00000     -0.00000     -0.00000     -0.00000      1.47517      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000     -0.00767      0.00000      0.00000      0.46762      0.00000     -0.00000      1.47517     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00000      0.35239      0.00000     -0.00000     -0.00000     -2.10977     -0.00000     -0.00000      0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00264      0.00000      0.00000      0.00000     -0.00000      0.60850      0.00000      0.00000     -0.00000     -1.41489 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000      0.00264      0.00000     -0.00000     -0.00000      0.60850      0.00000      0.00000      0.00000      0.00000     -1.41489     -0.00000 
+     0.00000      0.00000      0.00000      0.00000      0.00000      0.00000     -0.00000      0.00000      0.00264     -0.00000      0.00000      0.60850     -0.00000      0.00000     -1.41489      0.00000      0.00000 
+   </betavectors>
+</atomicguess>

@@ -1,0 +1,16 @@
+Let
+  Omega = [-20, 20]^3
+  r = x -> sqrt(x_0^2 + x_1^2 + x_2^2)
+  g = x -> exp(-r(x))
+  v = x -> -r(x)^-1
+In
+  psi = F g
+  nu = F v  
+  S = < psi | psi >
+  V = < psi | nu * psi >
+  T = 1/2 * sum_i=0^2 < del_i psi | del_i psi >
+  print S, V, T, (T + V)/S
+End
+
+
+

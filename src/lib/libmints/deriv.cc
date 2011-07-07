@@ -14,13 +14,12 @@
 #include "mints.h"
 
 using namespace std;
-using namespace boost;
 
 namespace psi {
 
 class ScfRestrictedFunctor
 {
-    shared_ptr<Wavefunction> wavefunction_;
+    boost::shared_ptr<Wavefunction> wavefunction_;
     Matrix& D_;
 
     const CdSalcList& cdsalcs_;
@@ -28,7 +27,7 @@ public:
     double *result;
     size_t counter;
 
-    ScfRestrictedFunctor(shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs)
+    ScfRestrictedFunctor(boost::shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs)
         : wavefunction_(wave), D_(*wave->Da().get()), cdsalcs_(cdsalcs), counter(0)
     {
         result = new double[cdsalcs_.ncd()];

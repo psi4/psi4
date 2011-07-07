@@ -1,0 +1,245 @@
+  
+CONFIGURING
+===========
+
+We are using standard GNU configure scripts but since we rely upon
+MPI, BLAS, LAPACK and other non-standard libraries most machines
+require options passed to configure and build.  More information on
+the MADNESS software environment is available on the wiki at
+
+   http://code.google.com/p/m-a-d-n-e-s-s/wiki/SoftwareEnvironment
+
+
+Hardware requirements:
+
+  o A recent x86 cpu (32 or 64 bit) with SSE3 instructions (if you do
+    not have SSE3, see below), or
+
+  o IBM BG/P
+
+
+Software requirements:
+
+  o  MPI-2 with mpicc and mpicxx (tested with mpich2 and openmpi)
+
+  o  BLAS
+
+  o  LAPACK
+
+  o  C and C++ compilers: gcc, g++ (most versions 4.1.*, 4.3.*, 4.4.*
+     should work but we recommend 4.4.2). Your compiler must also support
+     C++0x TR1. If it does not, you can use Boost to fulfill this requirement.
+
+  o  If you are building from the respository you will also need
+     autoconf and automake.
+
+
+Optional:
+
+  o  Google performance tools (the malloc library is fast and it is the only
+     free multithreaded performance analysis tool)
+     
+  o  GTest for google unit test
+  
+  o  Boost - Required if your compiler does not support C++0x TR1. Otherwise it
+     is not needed or used.
+
+
+If you checked the source out of subversion:
+
+  o  You will need to run autoreconf (no options necessary) in the trunk directory
+     to build the configure scripts
+
+
+Configure options:
+
+  Run the configure script with option --help to obtain a full list of options.
+  The most commonly used are:
+
+  o  --with-libunwind=dir ... directory containing libunwind.a for google profiler
+
+  o  --with-google-perf=dir ... installation directory for google performance tools 
+     (that specified with --prefix=dir when configuring the tools)
+
+  o  --with-google-test=dir ... installation directory for google unit test library
+     (that specified with --prefix=dir when configuring the library)
+     
+  o  --with-boost=dir ... installation directory for Boost (that specified with 
+     --prefix=dir when configuring the library)
+  
+  o  --enable-debugging[=yes|no|OPTION] ... Enable debugging C and C++ compilers 
+     [default=no]
+     
+  o  --enable-optimization[=yes|no|OPTION] ... Enable optimization for C and C++ 
+     [default=yes]
+     
+  o  --enable-warning[=yes|no|GNU|Pathscale|Portland|Intel|IBM] ... Automatically set 
+     warnings for compiler.[default=yes]
+     
+  o  --enable-optimal[=yes|no|GNU|Pathscale|Portland|Intel|IBM] ... Auto detect 
+     optimal CXXFLAGS for compiler, or specify compiler vendor.[default=yes] 
+
+  o  --enable-spinlocks ... forces use of spin locks instead of mutex (enabled by
+     default on Cray XT and IBM BG/P)
+
+  o  --enable-never-spin ... completely disables use of spinlocks (necessary for using VMs)
+
+
+CONFIGURE COMMAND EXAMPLES
+==========================
+
+  o  Linux workstation or cluster using GNU compilers
+     (some systems might require additional libraries to resolve Fortran
+      symbols used by LAPACK/BLAS)
+
+     - 32 or 64 bit using GCC TR1 support and system default BLAS and LAPACK
+    
+       ./configure LIBS="-llapack -lblas -lgfortran" CXXFLAGS="-std=c++0x"
+       
+     - 32 or 64 bit using Boost TR1 support (installed in /usr/local) and system
+       default BLAS and LAPACK
+    
+       ./configure LIBS="-llapack -lblas -lgfortran" --with-boost=/usr/local
+
+     - 64-bit with Intel MKL installed
+
+       ./configure LDFLAGS="-L/opt/intel/mkl/10.0.1.014/lib/em64t" LIBS="-lmkl -lguide -lpthread -lm" CXXFLAGS="-std=c++0x"
+
+     - 32-bit with Intel MKL installed
+
+       ./configure LDFLAGS="-L/opt/intel/mkl/10.0.1.014/lib/32" LIBS="-lmkl -lguide -lpthread -lm" CXXFLAGS="-std=c++0x"
+
+     - 32-bit with Intel MKL installed and also including MPFR and GSL 
+
+       ./configure LDFLAGS="-I/usr/include/gsl -L/opt/intel/mkl/10.0.1.014/lib/32" LIBS="-lgsl -lgslcblas -lmkl -lguide -lpthread -lm -lmpfr -lgmp" CXXFLAGS="-std=c++0x"
+
+     - 64-bit with MKL, google's fast malloc and profiler library
+
+       ./configure LDFLAGS="-L/opt/intel/mkl/10.0.1.014/lib/em64t" LIBS="-lmkl -lguide -lpthread -lm" -with-google-perf=/usr/local/gperftools CXXFLAGS="-std=c++0x"
+
+      - 64-bit with AMD ACML
+
+      ./configure LDFLAGS="-L/usr/local/acml4.2.0/gfortran64_int64/lib" LIBS="-lacml  -lacml_mv -lgfortran -lstdc++" CXXFLAGS="-std=c++0x"
+
+      - 64-bit with AMD ACML, google's super-fast malloc and google's profiler library
+
+      ./configure LDFLAGS="-L/usr/local/acml4.2.0/gfortran64_int64/lib -L/usr/local/gperftools-20090306/lib -L/usr/local/libunwind-20090306" LIBS="-lacml  -lacml_mv -lprofiler -ltcmalloc -lunwind-x86_64 -lgfortran -lstdc++" CXXFLAGS="-std=c++0x"
+
+
+  o  Cray-XT (e.g., jaguar@ornl and jaguarpf@ornl, kraken at NICS and franklin at NERSC) 
+     [Module commands assume you start from the default which is PGI and scilib]
+
+     - with GNU compilers and ACML - RECOMMENDED
+
+       This is recommended since the GNU compiler is about 10x faster at
+       compiling and has comparable execution speed to PGI.  ACML is
+       also faster than the Goto BLAS in scilib for the small matrices
+       primarily used by MADNESS and does not have a huge piece of
+       static memory reserved.
+     
+       module swap PrgEnv-pgi PrgEnv-gnu
+       module swap gcc/4.3.2 gcc/4.4.2
+       module load acml/4.3.0
+
+       ./configure CXXFLAGS=-std=c++0x
+
+     - with GNU compilers and scilib
+
+       module swap PrgEnv-pgi PrgEnv-gnu
+       module swap gcc/4.3.2 gcc/4.4.2
+       ./configure CXXFLAGS=-std=c++0x
+
+
+  o  IBM BlueGene-P @ ANL
+
+     For other BGP boxes you will need to find these compilers and libraries.  
+     They seem to be site dependent. You will also need a copy of the Boost
+     header files installed in your home directory.
+
+#!/bin/bash
+export LIBS=""
+export LIBS="${LIBS} -L/home/robert/install/lib -llapack_bgp"
+export LIBS="${LIBS} -L/soft/apps/ESSL-4.4.1-0/lib -lesslbg"
+export LIBS="${LIBS} -L/soft/apps/ibmcmp-aug2009/xlf/bg/11.1/bglib -lxlf90_r -lxlfmath"
+export LIBS="${LIBS} -L/soft/apps/ibmcmp-aug2009/xlsmp/bg/1.7/bglib -lxlsmp -lxl"
+export LIBS="${LIBS} -L/bgsys/drivers/ppcfloor/gnu-linux/powerpc-bgp-linux/lib -lrt"
+export LIBS="${LIBS} -lpthread"
+
+export CPPFLAGS="-I/bgsys/drivers/ppcfloor/arch/include -I/path/to/boost/install"
+
+./configure \
+  --build=powerpc-bgp-linux-gnu \
+  --with-google-test=/home/robert/install \
+  LIBS="${LIBS}" \
+  CPPFLAGS="${CPPFLAGS}" 
+
+
+  o  Macintosh Darwin 10.6, snow leopard
+     Tested with Apple GCC 4.2.1, Apple clang 2.0, Intel 11.1 & 12.0, GNU GCC 4.4.x & 4.5.x, 
+     and LLVM clang 2.8 
+     
+     - Apple GCC 4.2.1 using vecLib
+       
+       Set the following system variables
+       export OMPI_CC=/usr/bin/gcc-4.2
+       export OMPI_CXX=/usr/bin/g++-4.2
+
+       ./configure  MPICC=/usr/bin/mpicc MPICXX=/usr/bin/mpicxx \
+       LIBS="/System/Library/Frameworks/vecLib.framework/vecLib" \
+       CPPFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers"
+       
+     - Apple clang 2.0 using vecLib
+       
+       Set the following system variables
+       export OMPI_CC=/usr/bin/clang
+       export OMPI_CXX=/usr/bin/clang++
+
+       ./configure  MPICC=/usr/bin/mpicc MPICXX=/usr/bin/mpicxx \
+       LIBS="/System/Library/Frameworks/vecLib.framework/vecLib" \
+       CPPFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers" \
+       CXXFLAGS="-std=c++0x"
+     
+     - GNU GCC 4.4.x or later using vecLib
+     
+       Set the following system variables
+       export OMPI_CC=/path/to/gnu_gcc/gcc
+       export OMPI_CXX=/path/to/gun_gcc/g++
+
+       ./configure  MPICC=/usr/bin/mpicc MPICXX=/usr/bin/mpicxx \
+       LIBS="/System/Library/Frameworks/vecLib.framework/vecLib" \
+       CPPFLAGS="-I/System/Library/Frameworks/vecLib.framework/Headers" \
+       CXXFLAGS="-std=c++0x"
+       
+     - Intel 11.x and 2011 (12.x) with Apple GCC
+     
+       Set the following system variables
+       export OMPI_CC=icc
+       export OMPI_CXX=icpc
+
+       ./configure MPICC=/usr/bin/mpicc MPICXX=/usr/bin/mpicxx
+       
+     - Intel 11.x with GNU GCC 4.4.x and Boost
+       Note: Intel 11.x does not work correctly with GNU GCC 4.5.x and later on
+       Macs.
+     
+       Set the following system variables
+       export OMPI_CC=/path/to/intel/icc
+       export OMPI_CXX=/path/to/intel/icpc
+
+       ./configure --with-boost=/path/to/boost/ MPICC=/usr/bin/mpicc \
+        MPICXX=/usr/bin/mpicxx CFLAGS=-gcc-name=/path/to/gcc44/gcc \
+        CXXFLAGS=-gxx-name=/path/to/gcc44/g++
+        
+     - Intel 2011 (12.x) and GNU GCC 4.5.x and Boost
+     
+       Set the following system variables
+       export OMPI_CC=/path/to/intel/icc
+       export OMPI_CXX=/path/to/intel/icpc
+
+       ./configure --with-boost=/path/to/boost/ MPICC=/usr/bin/mpicc \
+       MPICXX=/usr/bin/mpicxx CFLAGS="-gcc-name=/path/to/gcc45/gcc" \
+        CXXFLAGS="-gxx-name=/path/to/gcc45/g++ -std=c++0x"
+
+
+  o On x86 without SSE3 -- configure with the option CPPFLAGS="-DDISABLE_SSE3", requires autoconf-2.65+, automake-1.11+
+    
