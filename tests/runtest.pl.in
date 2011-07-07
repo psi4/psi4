@@ -7,16 +7,6 @@ my $psi = "../../bin/psi4";
 my $input = shift;
 my $target = shift;
 
-my @cmd = ($psi, $input);
-my $output = backtick(@cmd);
-my $return = $? ? 1 : 0;
-open(TARGET,">$target") or die "I can't write to $target\n";
-print TARGET $output;
-close TARGET;
-
-exit $return;
-
-
 sub backtick(@)
 {
     my $pid = open(KID, '-|');
@@ -33,4 +23,14 @@ sub backtick(@)
         exec @_;
     }
 }
+
+my @cmd = ($psi, $input);
+my $output = backtick(@cmd);
+my $return = $? ? 1 : 0;
+open(TARGET,">$target") or die "I can't write to $target\n";
+print TARGET $output;
+close TARGET;
+
+exit $return;
+
 
