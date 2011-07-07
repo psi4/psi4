@@ -36,6 +36,7 @@ protected:
   double d_conv_;
 
   double e_elst10_;
+  double e_elst12_;
   double e_exch10_;
   double e_exch10_s2_;
   double e_ind20_;
@@ -43,6 +44,7 @@ protected:
   double e_disp20_;
   double e_exch_disp20_;
   double e_sapt0_;
+  double e_sapt2_;
 
   double **wBAA_;
   double **wBAR_;
@@ -65,6 +67,7 @@ protected:
   double** get_RB_ints(const int);
 
   double **get_DF_ints(int, const char *, int, int, int, int);
+  void antisym(double **, int, int);
 
   void cphf_solver(double**, double **, double *, int, const char *, 
     const char *, const char *, int, int);
@@ -74,6 +77,23 @@ protected:
 
   void tOVOV(int, const char *, int, int, int, double *, int, const char *, 
     int, int, int, double *, int, const char *);
+  void pOOpVV(int, const char *, const char *, int, int, int, const char *, 
+    const char *);
+  void theta(int, const char *, const char, bool, int, int, int, int, 
+    const char *, int, const char *);
+
+  void Y2(int, const char *, const char *, const char *, int, const char *, 
+    const char *, const char *, int, int, int, double *, int, const char *,
+    const char *);
+  void Y2_1(double **, int, const char *, const char *, int, const char *, 
+    int, int, int);
+  void Y2_2(double **, int, const char *, const char *, int, const char *, 
+    int, int, int);
+  void Y2_3(double **, int, const char *, const char *, int, const char *, 
+    int, int, int);
+
+  double elst120(double **, double **, double **, int, const char *, 
+    const char *, const char *, int, int, int);
 
 public:
   SAPT2(Options& options, boost::shared_ptr<PSIO> psio, 
@@ -91,6 +111,8 @@ public:
   void exch_ind20r();
   void disp20();
   void exch_disp20();
+  void elst12();
+
 };
 
 }}

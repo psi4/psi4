@@ -78,6 +78,9 @@ double SAPT2::compute_energy()
   timer_on("Exch-Disp20        ");
     exch_disp20();
   timer_off("Exch-Disp20        ");
+  timer_on("Elst12             ");
+    elst12();
+  timer_off("Elst12             ");
 
   print_results();
 
@@ -108,6 +111,7 @@ void SAPT2::print_header()
 void SAPT2::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
+  e_sapt2_ = e_sapt0_ + e_elst12_;
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
 
   fprintf(outfile,"\n    SAPT Results  \n");
@@ -116,6 +120,8 @@ void SAPT2::print_results()
     eHF_*1000.0,eHF_*627.5095);
   fprintf(outfile,"    Elst10,r      %16.8lf mH %16.8lf kcal mol^-1\n",
     e_elst10_*1000.0,e_elst10_*627.5095);
+  fprintf(outfile,"    Elst12,r      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_elst12_*1000.0,e_elst12_*627.5095);
   fprintf(outfile,"    Exch10        %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_*1000.0,e_exch10_*627.5095);
   fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -132,8 +138,10 @@ void SAPT2::print_results()
     e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
   fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
     e_sapt0_*1000.0,e_sapt0_*627.5095);
+  fprintf(outfile,"    Total SAPT2   %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_sapt2_*1000.0,e_sapt2_*627.5095);
 
-  double tot_elst = e_elst10_;
+  double tot_elst = e_elst10_ + e_elst12_;
   double tot_exch = e_exch10_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF;
   double tot_disp = e_disp20_ + e_exch_disp20_;
@@ -143,7 +151,8 @@ void SAPT2::print_results()
   Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
-  Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
+  Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
+  Process::environment.globals["SAPT ENERGY"] = e_sapt2_;
 }
 
 void SAPT2::df_integrals()
