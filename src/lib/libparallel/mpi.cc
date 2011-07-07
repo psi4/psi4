@@ -6,30 +6,46 @@ using namespace boost;
 
 #if HAVE_MPI == 1
 
-MPICommunicator::MPICommunicator(MPI_Comm comm, const std::string &communicator)
-    : Communicator(communicator), comm_(comm), communicator_(communicator)
+MPICommunicator::MPICommunicator(const int &argc, char **argv)
+    : Communicator()
 {
+#if HAVE_MADNESS == 1
+    putenv("MAD_NUM_THREADS=1");
+
+    // Initialize madness and create a madness world communicator
+    madness::initialize(argc, argv);
+
+    madworld_ = SharedMadWorld(new madness::World(MPI::COMM_WORLD));
+    comm_ = MPI::COMM_WORLD;
+    me_ = madworld_->rank();
+    nproc_ = madworld_->size();
+#else
+    MPI_Init(const_cast<int*>(&argc), &argv);
+
+    comm_ = MPI_COMM_WORLD;
     MPI_Comm_rank(comm_, &me_);
     MPI_Comm_size(comm_, &nproc_);
+#endif
+    nthread_ = 1;
+    communicator_ = "MPI";
 }
 
-MPICommunicator::MPICommunicator(const MPICommunicator &copy)
-    : Communicator(copy.communicator_), comm_(copy.comm_), communicator_(copy.communicator_)
-{
-    me_ = copy.me_;
-    nproc_ = copy.nproc_;
-}
+MPICommunicator::MPICommunicator(const MPICommunicator &copy) :
+    Communicator(), me_(copy.me_), nproc_(copy.nproc_),
+    nthread_(copy.nthread_), communicator_(copy.communicator_),
+    comm_(copy.comm_)
+{ }
 
 MPICommunicator::~MPICommunicator()
-{
-}
+{ }
 
 MPICommunicator& MPICommunicator::operator =(const MPICommunicator& other)
 {
     if (this != &other) {
-        comm_ = other.comm_;
         me_   = other.me_;
         nproc_ = other.nproc_;
+        nthread_ = other.nthread_;
+        comm_ = other.comm_;
     }
     return *this;
 }
@@ -88,5 +104,14 @@ void MPICommunicator::print(FILE *out) const
         fprintf(out, "\n    Using MPICommunicator (Number of processes = %d)\n\n", nproc());
     }
 }
+
+void MPICommunicator::finalize() {
+#if HAVE_MADNESS == 1
+    madness::finalize();
+#else
+    MPI_Finalize();
+#endif
+}
+
 
 #endif

@@ -202,6 +202,8 @@ namespace madness {
 
         static void set_debug(bool status);
 
+        static pthread_t get_comm_id() { return instance()->get_id(); }
+
         static bool get_debug();
 
         static const RMIStats& get_stats();
