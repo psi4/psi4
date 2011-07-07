@@ -1,10 +1,16 @@
 SHELL = /bin/sh
 
+MAKE_MADNESS=@HAVE_MPI@
+
 .PHONY:	default all install install_man install_inc install_host depend clean dclean targetclean tests testsclean doc
 
 default: all
 
-subdirs = lib include src
+ifeq ($(MAKE_MADNESS),1)
+  subdirs = madness lib include src
+else
+  subdirs = lib include src
+endif
 
 top_srcdir = @top_srcdir@
 srcdir = @srcdir@

@@ -1,0 +1,1010 @@
+
+=============== PHIL.CC ====================
+/*
+  This file is part of MADNESS.
+  
+  Copyright (C) 2007,2010 Oak Ridge National Laboratory
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  
+  For more information please contact:
+  
+  Robert J. Harrison
+  Oak Ridge National Laboratory
+  One Bethel Valley Road
+  P.O. Box 2008, MS-6367
+  
+  email: harrisonrj@ornl.gov
+  tel:   865-241-3937
+  fax:   865-572-0680
+  
+  $Id$
+*/
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES  
+#include <mra/mra.h>
+#include <mra/mra.h>
+#include <mra/operator.h>
+#include <constants.h>
+#include <mra/lbdeux.h>
+
+using namespace madness;
+using namespace std;
+
+
+typedef SharedPtr< FunctionFunctorInterface<double,3> > functorT;
+typedef FunctionFactory<double,3> factoryT;
+typedef Function<double,3> functionT;
+typedef Vector<double,3> coordT;
+
+template <typename T, int NDIM>
+struct lbcost {
+    double leaf_value;
+    double parent_value;
+    lbcost(double leaf_value=1.0, double parent_value=0.0) : leaf_value(leaf_value), parent_value(parent_value) {}
+    double operator()(const Key<NDIM>& key, const FunctionNode<T,NDIM>& node) const {
+        if (key.level() <= 1) {
+            return 1000;
+        }
+        else if (node.is_leaf()) {
+            return leaf_value;
+        }
+        else {
+            return parent_value;
+        }
+    }
+};
+
+const double PI = 3.1415926535897932384;
+
+// list of centers
+vector<coordT> centers;
+
+const double expnt = 60.0;
+const double coeff = pow(expnt/PI,1.5);
+
+// Test function
+class Test : public FunctionFunctorInterface<double,3> {
+public:
+    double operator()(const coordT& x) const {
+        double sum = 0.0;
+        for (unsigned int i=0; i<centers.size(); i++) {
+            const coordT& y = centers[i];
+            double xx = x[0]-y[0];
+            double yy = x[1]-y[1];
+            double zz = x[2]-y[2];
+            
+            double arg = expnt*(xx*xx + yy*yy + zz*zz);
+            if (arg < 46) sum += coeff*exp(-arg);
+        }
+
+        return sum;
+    }
+
+    vector<coordT> special_points() const {
+        return centers;
+    }
+
+    virtual Level special_level() {
+        return 6;
+    }
+
+};
+
+double ttt_, sss_;
+#define START_TIMER world.gop.fence(); ttt_=wall_time(); sss_=cpu_time()
+#define END_TIMER(msg) ttt_=wall_time()-ttt_; sss_=cpu_time()-sss_; if (world.rank()==0) printf("timer: %20.20s %8.4fs %8.4fs\n", msg, sss_, ttt_)
+        
+
+int main(int argc, char** argv) {
+    initialize(argc, argv);
+    try {
+        World world(MPI::COMM_WORLD);
+        
+        startup(world,argc,argv);
+        cout.precision(8);
+        
+        Tensor<double> cell(3,2);
+        double L = 30.0;
+        for (int i=0; i<3; i++) {
+            cell(i,0) = -L;
+            cell(i,1) =  L;
+        }
+        FunctionDefaults<3>::set_cell(cell);
+        FunctionDefaults<3>::set_k(10);
+        FunctionDefaults<3>::set_thresh(1e-10);
+        FunctionDefaults<3>::set_refine(true);
+        FunctionDefaults<3>::set_autorefine(false);
+        FunctionDefaults<3>::set_initial_level(2);
+        FunctionDefaults<3>::set_apply_randomize(false);
+        FunctionDefaults<3>::set_project_randomize(true);
+
+        const int ncent = 10; // No. of centers is ncent**3
+        double h = 2*L/ncent;
+        coordT v;
+        for (int ix=0; ix<ncent; ix++) {
+            double x = -L + h*(ix+0.5);
+            for (int iy=0; iy<ncent; iy++) {
+                double y = -L + h*(iy+0.5);
+                for (int iz=0; iz<ncent; iz++) {
+                    double z = -L + h*(iz+0.5);
+                    //if (world.rank() == 0) print(ix, iy, iz, x, y, z);
+                    v[0] = x; v[1] = y; v[2] = z;
+                    centers.push_back(v);
+                }
+            }
+        }
+
+        if (world.rank() == 0) print("FIRST WITHOUT LOAD BAL");
+        START_TIMER;
+        functionT rho = factoryT(world).functor(functorT(new Test()));
+        world.gop.fence();
+        END_TIMER("project");
+
+        START_TIMER;
+        LoadBalanceDeux<3> lb(world);
+        lb.add_tree(rho, lbcost<double,3>(1.0,1.0));
+        FunctionDefaults<3>::set_pmap(lb.load_balance(2.0));
+        world.gop.fence();
+        END_TIMER("load balance");
+
+        if (world.rank() == 0) print("NOW WITH LOAD BAL");
+        START_TIMER;
+        rho = functionT(factoryT(world).functor(functorT(new Test())));
+        world.gop.fence();
+        END_TIMER("project");
+
+        START_TIMER;
+        double norm = rho.trace();
+        END_TIMER("trace in scaling fn");
+        if (world.rank() == 0) print("trace", norm);
+        
+        START_TIMER;
+        norm = rho.norm2();
+        END_TIMER("norm2 in scaling fn");
+        if (world.rank() == 0) print("norm2", norm);
+        
+        START_TIMER;
+        rho.compress();
+        world.gop.fence();
+        END_TIMER("compress");
+
+        START_TIMER;
+        norm = rho.trace();
+        END_TIMER("trace in wavelets");
+        if (world.rank() == 0) print("trace", norm);
+        
+        START_TIMER;
+        norm = rho.norm2();
+        END_TIMER("norm2 in wavelets");
+        if (world.rank() == 0) print("norm2", norm);
+        
+        START_TIMER;
+        rho.reconstruct();
+        world.gop.fence();
+        END_TIMER("reconstruct");
+
+        START_TIMER;
+        rho.compress();
+        world.gop.fence();
+        END_TIMER("compress");
+
+        world.gop.fence();
+        START_TIMER;
+        rho.truncate();
+        END_TIMER("truncate");
+
+        START_TIMER;
+        rho.reconstruct();
+        END_TIMER("reconstruct");
+
+        START_TIMER;
+        rho.compress();
+        END_TIMER("compress");
+
+        START_TIMER;
+        rho.reconstruct();
+        END_TIMER("reconstruct");
+
+        SeparatedConvolution<double,3> op = CoulombOperator<double>(world, 
+                                                                    FunctionDefaults<3>::get_k(), 
+                                                                    1e-3, 
+                                                                    FunctionDefaults<3>::get_thresh());
+
+        world.gop.fence();
+        START_TIMER;
+        apply(op, rho);
+        END_TIMER("apply-1");
+
+        world.gop.fence();
+        START_TIMER;
+        apply(op, rho);
+        END_TIMER("apply-2");
+
+        world.gop.fence();
+        START_TIMER;
+        LoadBalanceDeux<3> lbX(world);
+        lbX.add_tree(rho, lbcost<double,3>(1.0,1.0));
+        world.gop.fence();
+        FunctionDefaults<3>::set_pmap(lbX.load_balance(2.0));
+        world.gop.fence();
+        rho = copy(rho, FunctionDefaults<3>::get_pmap());
+        world.gop.fence();
+        END_TIMER("load balance truncated");
+
+        START_TIMER;
+        rho.reconstruct();
+        END_TIMER("reconstruct");
+
+        START_TIMER;
+        rho.compress();
+        END_TIMER("compress");
+
+        START_TIMER;
+        rho.reconstruct();
+        END_TIMER("reconstruct");
+
+        START_TIMER;
+        apply(op, rho);
+        END_TIMER("apply-1");
+
+        START_TIMER;
+        apply(op, rho);
+        END_TIMER("apply-2");
+
+        START_TIMER;
+        size_t ncoeff = rho.size();
+        END_TIMER("count coeff");
+        if (world.rank() == 0) print("NCOEFF ", ncoeff);
+
+        START_TIMER;
+        size_t depth = rho.max_depth();
+        END_TIMER("count coeff");
+        if (world.rank() == 0) print("depth ", depth);
+
+        ThreadPool::end();
+        print_stats(world);
+
+    } catch (const MPI::Exception& e) {
+        //        print(e);
+        error("caught an MPI exception");
+    } catch (const madness::MadnessException& e) {
+        print(e);
+        error("caught a MADNESS exception");
+    } catch (const madness::TensorException& e) {
+        print(e);
+        error("caught a Tensor exception");
+    } catch (const char* s) {
+        print(s);
+        error("caught a c-string exception");
+    } catch (char* s) {
+        print(s);
+        error("caught a c-string exception");
+    } catch (const std::string& s) {
+        print(s);
+        error("caught a string (class) exception");
+    } catch (const std::exception& e) {
+        print(e.what());
+        error("caught an STL exception");
+    } catch (...) {
+        error("caught unhandled exception");
+    }
+
+    finalize();
+    return 0;
+}
+
+=====================================
+
+==== BIGBOY.CC =============
+/*
+  This file is part of MADNESS.
+  
+  Copyright (C) 2007,2010 Oak Ridge National Laboratory
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  
+  For more information please contact:
+
+  Robert J. Harrison
+  Oak Ridge National Laboratory
+  One Bethel Valley Road
+  P.O. Box 2008, MS-6367
+
+  email: harrisonrj@ornl.gov 
+  tel:   865-241-3937
+  fax:   865-572-0680
+
+  
+  $Id$
+*/
+
+/// \file bigboy.cc
+/// \brief artificial benchmark for Cray XT testing
+
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES  
+#include <mra/mra.h>
+using namespace madness;
+
+#include <examples/molecule.h>
+
+typedef Vector<double,3> coordT;
+typedef SharedPtr< FunctionFunctorInterface<double,3> > functorT;
+typedef Function<double,3> functionT;
+typedef FunctionFactory<double,3> factoryT;
+typedef SeparatedConvolution<double,3> operatorT;
+
+double ttt, sss;
+#define START_TIMER world.gop.fence(); ttt=wall_time(); sss=cpu_time()
+#define END_TIMER(msg) ttt=wall_time()-ttt; sss=cpu_time()-sss; if (world.rank()==0) printf("timer: %20.20s %8.2fs %8.2fs\n", msg, sss, ttt)
+
+static const double PI = 3.1415926535897932384;
+
+static inline double distancesq(double x1, double y1, double z1, double x2, double y2, double z2) {
+    double xx = x1-x2;
+    double yy = y1-y2;
+    double zz = z1-z2;
+    return (xx*xx + yy*yy + zz*zz);
+}
+
+class MolecularDensityFunctor : public FunctionFunctorInterface<double,3> {
+private:
+    const Molecule& molecule;
+
+public:
+    MolecularDensityFunctor(const Molecule& molecule) 
+        : molecule(molecule)
+    {}
+
+    double operator()(const coordT& x) const {
+        double sum = 0.0;
+        for (int i=0; i<molecule.natom(); i++) {
+            const Atom& atom = molecule.get_atom(i);
+            double rsq = distancesq(x[0],x[1],x[2],atom.x,atom.y,atom.z);
+            if (rsq < 144.0) {
+                double r = sqrt(rsq);
+                sum += exp(-2*r + 1e-6);
+            }
+        }
+        return sum;
+    }
+};
+
+
+void bigboy(World& world, const Molecule& molecule) {
+    // Solves Poisson's equation for a molecule-like charge density
+
+    START_TIMER;
+    functionT rho = factoryT(world).functor(functorT(new MolecularDensityFunctor(molecule)));
+    END_TIMER("project density");
+    START_TIMER;
+    LoadBalImpl<3> lb(rho);
+    world.gop.fence();
+    FunctionDefaults<3>::pmap = lb.load_balance();
+    rho = copy(rho, FunctionDefaults<3>::pmap);
+    END_TIMER("load balancing");
+    START_TIMER;
+    double rho_norm = rho.norm2();
+    END_TIMER("density norm");
+
+    if (world.rank() == 0) print("rho norm", rho_norm);
+
+    SeparatedConvolution<double,3> op = CoulombOperator<double>(world, 
+                                                                  FunctionDefaults<3>::k, 
+                                                                  1e-3, 
+                                                                  FunctionDefaults<3>::thresh);
+    if (world.rank() == 0) {
+        world.am.print_stats();
+        world.taskq.print_stats();
+    }
+
+    START_TIMER;
+    functionT V = apply(op,rho);
+    END_TIMER("Coulomb operator");
+
+    if (world.rank() == 0) {
+        world.am.print_stats();
+        world.taskq.print_stats();
+    }
+
+    world.gop.fence();
+}
+
+int main(int argc, char** argv) {
+    initialize(argc,argv);
+    World world(MPI::COMM_WORLD);
+    
+    try {
+        // Load info for MADNESS numerical routines
+        startup(world,argc,argv);
+        
+        // Process 0 reads the molecule information and
+        // broadcasts to everyone else
+        Molecule molecule;
+        if (world.rank() == 0) molecule.read_file("bigboy.input");
+        world.gop.broadcast_serializable(molecule, 0);
+        
+        // Use a cell big enough to have exp(-sqrt(2*I)*r) decay to
+        // 1e-6 with I=1ev=0.037Eh --> need 50 a.u. either side of the molecule
+        double L = molecule.bounding_cube();
+        L += 50.0;
+        for (int i=0; i<3; i++) {
+            FunctionDefaults<3>::cell(i,0) = -L;
+            FunctionDefaults<3>::cell(i,1) =  L;
+        }
+        
+        // Setup initial defaults for numerical functions
+        FunctionDefaults<3>::k = 8;
+        FunctionDefaults<3>::thresh = 1e-6;
+        FunctionDefaults<3>::refine = true;
+        FunctionDefaults<3>::initial_level = 2;
+        FunctionDefaults<3>::truncate_mode = 1;  
+        
+        // Warm and fuzzy for the user
+        if (world.rank() == 0) {
+            print("\n\n");
+            print(" MADNESS example Hartree-Fock program");
+            print(" ------------------------------------\n");
+            molecule.print();
+            print("\n");
+            print("            box size ", L);
+            print(" number of processes ", world.size());
+            //if (nelec&1) throw "Closed shell only --- number of electrons is odd";
+        }
+        
+        bigboy(world, molecule);
+
+        world.gop.fence();
+
+    } catch (const MPI::Exception& e) {
+        //        print(e);
+        error("caught an MPI exception");
+    } catch (const madness::MadnessException& e) {
+        print(e);
+        error("caught a MADNESS exception");
+    } catch (const madness::TensorException& e) {
+        print(e);
+        error("caught a Tensor exception");
+    } catch (const char* s) {
+        print(s);
+        error("caught a string exception");
+    } catch (const std::string& s) {
+        print(s);
+        error("caught a string (class) exception");
+    } catch (const std::exception& e) {
+        print(e.what());
+        error("caught an STL exception");
+    } catch (...) {
+        error("caught unhandled exception");
+    }
+
+    finalize();
+    
+    return 0;
+}
+
+=====================================
+=== bigboy2.cc -=====
+
+/*
+  This file is part of MADNESS.
+  
+  Copyright (C) 2007,2010 Oak Ridge National Laboratory
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  
+  For more information please contact:
+  
+  Robert J. Harrison
+  Oak Ridge National Laboratory
+  One Bethel Valley Road
+  P.O. Box 2008, MS-6367
+  
+  email: harrisonrj@ornl.gov
+  tel:   865-241-3937
+  fax:   865-572-0680
+  
+  $Id$
+*/
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES  
+#include <mra/mra.h>
+#include <mra/mra.h>
+#include <mra/operator.h>
+#include <constants.h>
+#include <mra/lbdeux.h>
+
+using namespace madness;
+using namespace std;
+
+const double PI = 3.1415926535897932384;
+
+
+
+template <typename T, int NDIM>
+struct lbcost {
+    double leaf_value;
+    double parent_value;
+    lbcost(double leaf_value=1.0, double parent_value=0.0) : leaf_value(leaf_value), parent_value(parent_value) {}
+    double operator()(const Key<NDIM>& key, const FunctionNode<T,NDIM>& node) const {
+        if (node.is_leaf()) {
+            return leaf_value;
+        }
+        else {
+            return parent_value;
+        }
+    }
+};
+
+/// Makes a square-normalized Gaussian with random origin and exponent
+
+template <typename T>
+T complexify(T c) {return c;}
+
+template <> double_complex complexify<double_complex>(double_complex c) {
+    return c*double_complex(0.5,-sqrt(3.0)*0.5);
+}
+
+template <> float_complex complexify<float_complex>(float_complex c) {
+    return c*float_complex(0.5,-sqrt(3.0)*0.5);
+}
+
+
+template <typename T, int NDIM>
+class Gaussian : public FunctionFunctorInterface<T,NDIM> {
+public:
+    typedef Vector<double,NDIM> coordT;
+    const coordT center;
+    const double exponent;
+    const T coefficient;
+    
+    Gaussian(const coordT& center, double exponent, T coefficient) 
+        : center(center), exponent(exponent), coefficient(complexify(coefficient)) {};
+
+    T operator()(const coordT& x) const {
+        double sum = 0.0;
+        for (int i=0; i<NDIM; i++) {
+            double xx = center[i]-x[i];
+            sum += xx*xx;
+        };
+        return coefficient*exp(-exponent*sum);
+    };
+};
+
+/// Makes a square-normalized Gaussian with random origin and exponent
+template <typename T, int NDIM>
+Gaussian<T,NDIM>*
+RandomGaussian(const Tensor<double> cell, double expntmax=1e5) {
+    typedef Vector<double,NDIM> coordT;
+    coordT origin;
+    for (int i=0; i<NDIM; i++) {
+        origin[i] = RandomValue<double>()*(cell(i,1)-cell(i,0)) + cell(i,0);
+    }
+//     double lo = log(0.1);
+//     double hi = log(expntmax);
+//     double expnt = exp(RandomValue<double>()*(hi-lo) + lo);
+    double expnt = 30.0;
+    T coeff = pow(2.0*expnt/PI,0.25*NDIM);            
+    return new Gaussian<T,NDIM>(origin,expnt,coeff);
+}
+
+double ttt, sss;
+#define START_TIMER world.gop.fence(); ttt=wall_time(); sss=cpu_time()
+#define END_TIMER(msg) ttt=wall_time()-ttt; sss=cpu_time()-sss; if (world.rank()==0) printf("timer: %20.20s %8.2fs %8.2fs\n", msg, sss, ttt)
+        
+
+typedef SharedPtr< FunctionFunctorInterface<double,3> > functorT;
+typedef FunctionFactory<double,3> factoryT;
+typedef Function<double,3> functionT;
+
+int main(int argc, char** argv) {
+    initialize(argc, argv);
+    try {
+        World world(MPI::COMM_WORLD);
+        
+        cout.precision(8);
+        startup(world,argc,argv);
+        
+        Tensor<double> cell(3,2);
+        for (int i=0; i<3; i++) {
+            cell(i,0) = -30;
+            cell(i,1) =  30;
+        }
+        FunctionDefaults<3>::set_cell(cell);
+        FunctionDefaults<3>::set_k(14);
+        FunctionDefaults<3>::set_thresh(1e-12);
+        FunctionDefaults<3>::set_refine(true);
+        FunctionDefaults<3>::set_autorefine(false);
+        FunctionDefaults<3>::set_initial_level(5);
+        FunctionDefaults<3>::set_apply_randomize(false);
+        FunctionDefaults<3>::set_project_randomize(true);
+
+        default_random_generator.setstate(314159);  // Ensure all processes have the same sequence (for exponents)
+    
+        int nfunc = 1000;
+        if (world.rank() == 0) print("FIRST WITHOUT LOAD BAL", nfunc);
+        std::vector< Function<double,3> > v(nfunc);
+        world.gop.fence();
+        START_TIMER;
+        for (int i=0; i<nfunc; i++) {
+            v[i] = functionT(factoryT(world).functor(functorT(RandomGaussian<double,3>(cell,100.0))).fence(false));
+        }
+        world.gop.fence();
+        END_TIMER("project");
+
+        world.gop.fence();
+        START_TIMER;
+        LoadBalanceDeux<3> lb(world);
+        for (int i=0; i<nfunc; i++) {
+            lb.add_tree(v[i], lbcost<double,3>(1.0,1.0), false);
+        }
+        world.gop.fence();
+        FunctionDefaults<3>::set_pmap(lb.load_balance(2.0));
+        world.gop.fence();
+        END_TIMER("load balance");
+
+        default_random_generator.setstate(314159);  // Ensure all processes have the same sequence (for exponents)
+
+        if (world.rank() == 0) print("NOW WITH LOAD BAL");
+        world.gop.fence();
+        START_TIMER;
+        for (int i=0; i<nfunc; i++) {
+            v[i] = functionT(factoryT(world).functor(functorT(RandomGaussian<double,3>(cell,1000.0))).fence(false));
+        }
+        world.gop.fence();
+        END_TIMER("project");
+        
+        world.gop.fence();
+        START_TIMER;
+        compress(world, v);
+        END_TIMER("compress");
+
+        world.gop.fence();
+        START_TIMER;
+        truncate(world, v);
+        END_TIMER("truncate");
+
+        START_TIMER;
+        reconstruct(world,v);
+        END_TIMER("reconstruct");
+
+        SeparatedConvolution<double,3> op = CoulombOperator<double>(world, 
+                                                                    FunctionDefaults<3>::get_k(), 
+                                                                    1e-3, 
+                                                                    FunctionDefaults<3>::get_thresh());
+
+        world.gop.fence();
+        START_TIMER;
+        apply(world, op, v);
+        END_TIMER("apply-1");
+
+        world.gop.fence();
+        START_TIMER;
+        apply(world, op, v);
+        END_TIMER("apply-2");
+
+        world.gop.fence();
+        START_TIMER;
+        LoadBalanceDeux<3> lbX(world);
+        for (int i=0; i<nfunc; i++) {
+            lbX.add_tree(v[i], lbcost<double,3>(1.0,1.0), false);
+        }
+        world.gop.fence();
+        FunctionDefaults<3>::set_pmap(lbX.load_balance(2.0));
+        world.gop.fence();
+        for (int i=0; i<nfunc; i++) {
+            v[i] = copy(v[i], FunctionDefaults<3>::get_pmap(), false);
+        }
+        world.gop.fence();
+        END_TIMER("load balance truncated");
+
+        START_TIMER;
+        reconstruct(world,v);
+        END_TIMER("reconstruct");
+
+        world.gop.fence();
+        START_TIMER;
+        apply(world, op, v);
+        END_TIMER("apply-1");
+
+        world.gop.fence();
+        START_TIMER;
+        apply(world, op, v);
+        END_TIMER("apply-2");
+
+        world.gop.fence();
+        START_TIMER;
+        size_t ncoeff = 0;
+        for (int i=0; i<nfunc; i++) ncoeff += v[i].size();
+        END_TIMER("count coeff");
+        if (world.rank() == 0) print("NCOEFF ", ncoeff);
+
+        ThreadPool::end();
+        print_stats(world);
+
+    } catch (const MPI::Exception& e) {
+        //        print(e);
+        error("caught an MPI exception");
+    } catch (const madness::MadnessException& e) {
+        print(e);
+        error("caught a MADNESS exception");
+    } catch (const madness::TensorException& e) {
+        print(e);
+        error("caught a Tensor exception");
+    } catch (const char* s) {
+        print(s);
+        error("caught a c-string exception");
+    } catch (char* s) {
+        print(s);
+        error("caught a c-string exception");
+    } catch (const std::string& s) {
+        print(s);
+        error("caught a string (class) exception");
+    } catch (const std::exception& e) {
+        print(e.what());
+        error("caught an STL exception");
+    } catch (...) {
+        error("caught unhandled exception");
+    }
+
+    finalize();
+    return 0;
+}
+=====================
+=== bigboy.input ===
+
+geometry
+  Cu  0.00000000000000   0.00000000000000   0.00000000000000
+  Cu  1.43432821090460  -1.43432821090460   1.43432821090460
+  Cu  2.86865642180919  -2.86865642180919   2.86865642180919
+  Cu  4.30298463271379  -4.30298463271379   4.30298463271379
+  Cu -1.43432821090460   1.43432821090460   1.43432821090460
+  Cu  0.00000000000000   0.00000000000000   2.86865642180919
+  Cu  1.43432821090460  -1.43432821090460   4.30298463271379
+  Cu  2.86865642180919  -2.86865642180919   5.73731284361838
+  Cu -2.86865642180919   2.86865642180919   2.86865642180919
+  Cu -1.43432821090460   1.43432821090460   4.30298463271379
+  Cu  0.00000000000000   0.00000000000000   5.73731284361838
+  Cu  1.43432821090460  -1.43432821090460   7.17164105452298
+  Cu -4.30298463271379   4.30298463271379   4.30298463271379
+  Cu -2.86865642180919   2.86865642180919   5.73731284361838
+  Cu -1.43432821090460   1.43432821090460   7.17164105452298
+  Cu  0.00000000000000   0.00000000000000   8.60596926542758
+  Cu  1.43432821090460   1.43432821090460  -1.43432821090460
+  Cu  2.86865642180919   0.00000000000000   0.00000000000000
+  Cu  4.30298463271379  -1.43432821090460   1.43432821090460
+  Cu  5.73731284361838  -2.86865642180919   2.86865642180919
+  Cu  0.00000000000000   2.86865642180919   0.00000000000000
+  Cu  1.43432821090460   1.43432821090460   1.43432821090460
+  Cu  2.86865642180919   0.00000000000000   2.86865642180919
+  Cu  4.30298463271379  -1.43432821090460   4.30298463271379
+  Cu -1.43432821090460   4.30298463271379   1.43432821090460
+  Cu  0.00000000000000   2.86865642180919   2.86865642180919
+  Cu  1.43432821090460   1.43432821090460   4.30298463271379
+  Cu  2.86865642180919   0.00000000000000   5.73731284361838
+  Cu -2.86865642180919   5.73731284361838   2.86865642180919
+  Cu -1.43432821090460   4.30298463271379   4.30298463271379
+  Cu  0.00000000000000   2.86865642180919   5.73731284361839
+  Cu  1.43432821090460   1.43432821090460   7.17164105452298
+end
+
+geometry
+  Cu  0.00000000000000   0.00000000000000   0.00000000000000
+  Cu  1.43432821090460  -1.43432821090460   1.43432821090460
+  Cu  2.86865642180919  -2.86865642180919   2.86865642180919
+  Cu  4.30298463271379  -4.30298463271379   4.30298463271379
+  Cu -1.43432821090460   1.43432821090460   1.43432821090460
+  Cu  0.00000000000000   0.00000000000000   2.86865642180919
+  Cu  1.43432821090460  -1.43432821090460   4.30298463271379
+  Cu  2.86865642180919  -2.86865642180919   5.73731284361838
+  Cu -2.86865642180919   2.86865642180919   2.86865642180919
+  Cu -1.43432821090460   1.43432821090460   4.30298463271379
+  Cu  0.00000000000000   0.00000000000000   5.73731284361838
+  Cu  1.43432821090460  -1.43432821090460   7.17164105452298
+  Cu -4.30298463271379   4.30298463271379   4.30298463271379
+  Cu -2.86865642180919   2.86865642180919   5.73731284361838
+  Cu -1.43432821090460   1.43432821090460   7.17164105452298
+  Cu  0.00000000000000   0.00000000000000   8.60596926542758
+  Cu  1.43432821090460   1.43432821090460  -1.43432821090460
+  Cu  2.86865642180919   0.00000000000000   0.00000000000000
+  Cu  4.30298463271379  -1.43432821090460   1.43432821090460
+  Cu  5.73731284361838  -2.86865642180919   2.86865642180919
+  Cu  0.00000000000000   2.86865642180919   0.00000000000000
+  Cu  1.43432821090460   1.43432821090460   1.43432821090460
+  Cu  2.86865642180919   0.00000000000000   2.86865642180919
+  Cu  4.30298463271379  -1.43432821090460   4.30298463271379
+  Cu -1.43432821090460   4.30298463271379   1.43432821090460
+  Cu  0.00000000000000   2.86865642180919   2.86865642180919
+  Cu  1.43432821090460   1.43432821090460   4.30298463271379
+  Cu  2.86865642180919   0.00000000000000   5.73731284361838
+  Cu -2.86865642180919   5.73731284361838   2.86865642180919
+  Cu -1.43432821090460   4.30298463271379   4.30298463271379
+  Cu  0.00000000000000   2.86865642180919   5.73731284361839
+  Cu  1.43432821090460   1.43432821090460   7.17164105452298
+  Cu  2.86865642180919   2.86865642180919  -2.86865642180919
+  Cu  4.30298463271379   1.43432821090460  -1.43432821090460
+  Cu  5.73731284361838   0.00000000000000   0.00000000000000
+  Cu  7.17164105452298  -1.43432821090460   1.43432821090460
+  Cu  1.43432821090460   4.30298463271379  -1.43432821090460
+  Cu  2.86865642180919   2.86865642180919   0.00000000000000
+  Cu  4.30298463271379   1.43432821090460   1.43432821090460
+  Cu  5.73731284361838   0.00000000000000   2.86865642180919
+  Cu  0.00000000000000   5.73731284361838   0.00000000000000
+  Cu  1.43432821090460   4.30298463271379   1.43432821090460
+  Cu  2.86865642180919   2.86865642180919   2.86865642180919
+  Cu  4.30298463271379   1.43432821090460   4.30298463271379
+  Cu -1.43432821090460   7.17164105452298   1.43432821090460
+  Cu  0.00000000000000   5.73731284361839   2.86865642180919
+  Cu  1.43432821090460   4.30298463271379   4.30298463271379
+  Cu  2.86865642180919   2.86865642180919   5.73731284361839
+  Cu  4.30298463271379   4.30298463271379  -4.30298463271379
+  Cu  5.73731284361838   2.86865642180919  -2.86865642180919
+  Cu  7.17164105452298   1.43432821090460  -1.43432821090460
+  Cu  8.60596926542758   0.00000000000000   0.00000000000000
+  Cu  2.86865642180919   5.73731284361838  -2.86865642180919
+  Cu  4.30298463271379   4.30298463271379  -1.43432821090460
+  Cu  5.73731284361839   2.86865642180919   0.00000000000000
+  Cu  7.17164105452298   1.43432821090460   1.43432821090460
+  Cu  1.43432821090460   7.17164105452298  -1.43432821090460
+  Cu  2.86865642180919   5.73731284361839   0.00000000000000
+  Cu  4.30298463271379   4.30298463271379   1.43432821090460
+  Cu  5.73731284361839   2.86865642180919   2.86865642180919
+  Cu  0.00000000000000   8.60596926542758   0.00000000000000
+  Cu  1.43432821090460   7.17164105452298   1.43432821090460
+  Cu  2.86865642180919   5.73731284361839   2.86865642180919
+  Cu  4.30298463271379   4.30298463271379   4.30298463271379
+end
+
+geometry
+  H 0 0 0
+  H 1 0 0
+  H 0 1 0
+  H 0 0 1
+end
+=============
+========= fast.cc ===========
+/*
+  This file is part of MADNESS.
+  
+  Copyright (C) 2007,2010 Oak Ridge National Laboratory
+  
+  This program is free software; you can redistribute it and/or modify
+  it under the terms of the GNU General Public License as published by
+  the Free Software Foundation; either version 2 of the License, or
+  (at your option) any later version.
+  
+  This program is distributed in the hope that it will be useful,
+  but WITHOUT ANY WARRANTY; without even the implied warranty of
+  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+  GNU General Public License for more details.
+  
+  You should have received a copy of the GNU General Public License
+  along with this program; if not, write to the Free Software
+  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+  
+  For more information please contact:
+  
+  Robert J. Harrison
+  Oak Ridge National Laboratory
+  One Bethel Valley Road
+  P.O. Box 2008, MS-6367
+  
+  email: harrisonrj@ornl.gov
+  tel:   865-241-3937
+  fax:   865-572-0680
+  
+  $Id$
+*/
+#define WORLD_INSTANTIATE_STATIC_TEMPLATES  
+#include <mra/mra.h>
+#include <mra/mra.h>
+#include <mra/operator.h>
+#include <constants.h>
+#include <mra/lbdeux.h>
+
+using namespace madness;
+using namespace std;
+
+Void doit(int niter) {
+    Tensor<double> c(20,20,20), d(20,20,20), e(20,20,20);
+    Tensor<double> a(20,20);
+    for (int i=0; i<niter; i++) {
+        fast_transform(c,a,d,e);
+    }
+    return None;
+}
+
+
+int main(int argc, char** argv) {
+    initialize(argc, argv);
+    try {
+        World world(MPI::COMM_WORLD);
+        cout.precision(8);
+
+        int niter = 100000;
+
+        world.gop.fence();
+        double start = wall_time();
+        if (world.rank() == 0) print("starting at", start);
+        world.gop.fence();
+        for (unsigned int i=0; i<=ThreadPool::size(); i++) world.taskq.add(doit, niter); // Note +1
+        world.taskq.fence();
+        world.gop.fence();
+        double end = wall_time();
+        if (world.rank() == 0) print("starting at", end);
+        world.gop.fence();
+
+        ThreadPool::end();
+        print_stats(world);
+
+        if (world.rank() == 0) {
+            double nflop = (ThreadPool::size()+1.0)*20.0*20.0*20.0*20.0*2.0*3.0*niter;
+            print("");
+            print("NFLOPS ", nflop);
+            print("  USED ", end-start);
+            print("  RATE ", nflop/(end-start));
+            print("");
+        }
+    } catch (const MPI::Exception& e) {
+        //        print(e);
+        error("caught an MPI exception");
+    } catch (const madness::MadnessException& e) {
+        print(e);
+        error("caught a MADNESS exception");
+    } catch (const madness::TensorException& e) {
+        print(e);
+        error("caught a Tensor exception");
+    } catch (const char* s) {
+        print(s);
+        error("caught a c-string exception");
+    } catch (char* s) {
+        print(s);
+        error("caught a c-string exception");
+    } catch (const std::string& s) {
+        print(s);
+        error("caught a string (class) exception");
+    } catch (const std::exception& e) {
+        print(e.what());
+        error("caught an STL exception");
+    } catch (...) {
+        error("caught unhandled exception");
+    }
+    
+    finalize();
+    return 0;
+}
+ ==========================

@@ -1,0 +1,4010 @@
+<?xml version="1.0" ?>
+<name>
+STO-3G
+</name>
+<basis symbol="H">
+  <shell type="S" nprim="3">
+    <exponents>
+      3.425250910
+      0.623913730
+      0.168855400
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+</basis>
+<basis symbol="He">
+  <shell type="S" nprim="3">
+    <exponents>
+      6.362421390
+      1.158923000
+      0.313649790
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+</basis>
+<basis symbol="Li">
+  <shell type="S" nprim="3">
+    <exponents>
+     16.119575000
+      2.936200700
+      0.794650500
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.636289700
+      0.147860100
+      0.048088700
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Be">
+  <shell type="S" nprim="3">
+    <exponents>
+     30.167871000
+      5.495115300
+      1.487192700
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.314833100
+      0.305538900
+      0.099370700
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="B">
+  <shell type="S" nprim="3">
+    <exponents>
+     48.791113000
+      8.887362200
+      2.405267000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.236956100
+      0.519820500
+      0.169061800
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="C">
+  <shell type="S" nprim="3">
+    <exponents>
+     71.616837000
+     13.045096000
+      3.530512200
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.941249400
+      0.683483100
+      0.222289900
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="N">
+  <shell type="S" nprim="3">
+    <exponents>
+     99.106169000
+     18.052312000
+      4.885660200
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.780455900
+      0.878496600
+      0.285714400
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="O">
+  <shell type="S" nprim="3">
+    <exponents>
+    130.709320000
+     23.808861000
+      6.443608300
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      5.033151300
+      1.169596100
+      0.380389000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="F">
+  <shell type="S" nprim="3">
+    <exponents>
+    166.679130000
+     30.360812000
+      8.216820700
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      6.464803200
+      1.502281200
+      0.488588500
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ne">
+  <shell type="S" nprim="3">
+    <exponents>
+    207.015610000
+     37.708151000
+     10.205297000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      8.246315100
+      1.916266200
+      0.623229300
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591627
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Na">
+  <shell type="S" nprim="3">
+    <exponents>
+    250.772430000
+     45.678511000
+     12.362388000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     12.040193000
+      2.797881900
+      0.909958000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.478740600
+      0.412564900
+      0.161475100
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Mg">
+  <shell type="S" nprim="3">
+    <exponents>
+    299.237400000
+     54.506470000
+     14.751580000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     15.121820000
+      3.513987000
+      1.142857000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.395448000
+      0.389326000
+      0.152380000
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Al">
+  <shell type="S" nprim="3">
+    <exponents>
+    351.421476700
+     64.011860670
+     17.324107610
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     18.899396210
+      4.391813233
+      1.428353970
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.395448293
+      0.389326532
+      0.152379766
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Si">
+  <shell type="S" nprim="3">
+    <exponents>
+    407.797551400
+     74.280833050
+     20.103292290
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     23.193656060
+      5.389706871
+      1.752899952
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.478740622
+      0.412564880
+      0.161475098
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="P">
+  <shell type="S" nprim="3">
+    <exponents>
+    468.365637800
+     85.313385590
+     23.089131560
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     28.032639580
+      6.514182577
+      2.118614352
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.743103231
+      0.486321377
+      0.190342891
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="S">
+  <shell type="S" nprim="3">
+    <exponents>
+    533.125735900
+     97.109518300
+     26.281625420
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     33.329751730
+      7.745117521
+      2.518952599
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.029194274
+      0.566140052
+      0.221583379
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Cl">
+  <shell type="S" nprim="3">
+    <exponents>
+    601.345613600
+    109.535854200
+     29.644676860
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     38.960418890
+      9.053563477
+      2.944499834
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.129386495
+      0.594093427
+      0.232524141
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ar">
+  <shell type="S" nprim="3">
+    <exponents>
+    674.446518400
+    122.851275300
+     33.248349450
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     45.164243920
+     10.495199000
+      3.413364448
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.621366518
+      0.731354605
+      0.286247236
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="K">
+  <shell type="S" nprim="3">
+    <exponents>
+    771.510368100
+    140.531576600
+     38.033328990
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     52.402039790
+     12.177107100
+      3.960373165
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.651583985
+      1.018782663
+      0.398744630
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.503982251
+      0.186001147
+      0.082140067
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ca">
+  <shell type="S" nprim="3">
+    <exponents>
+    854.032495100
+    155.563085100
+     42.101441790
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     59.560299440
+     13.840532700
+      4.501370797
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      4.374706256
+      1.220531941
+      0.477707930
+    </exponents>
+    <scoefficients>
+     -0.21962037
+      0.22559543
+      0.90039843
+    </scoefficients>      
+    <pcoefficients>
+      0.01058760
+      0.59516701
+      0.46200101
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.455848976
+      0.168236941
+      0.074295207
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Sc">
+  <shell type="S" nprim="3">
+    <exponents>
+    941.662425000
+    171.524986200
+     46.421355160
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     67.176687710
+     15.610417540
+      5.076992278
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      4.698159231
+      1.433088313
+      0.552930024
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      0.551700068
+      0.168286106
+      0.064930011
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.630932838
+      0.232853898
+      0.102830736
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ti">
+  <shell type="S" nprim="3">
+    <exponents>
+   1033.571245000
+    188.266292600
+     50.952206010
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     75.251204600
+     17.486761620
+      5.687237606
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      5.395535474
+      1.645810296
+      0.635004777
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      1.645981194
+      0.502076728
+      0.193716810
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.712264025
+      0.262870220
+      0.116086261
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="V">
+  <shell type="S" nprim="3">
+    <exponents>
+   1130.762517000
+    205.969804100
+     55.743467110
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     83.783850110
+     19.469564930
+      6.332106784
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      6.141151276
+      1.873246881
+      0.722756883
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      2.964817927
+      0.904363968
+      0.348931734
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.712264025
+      0.262870220
+      0.116086261
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Cr">
+  <shell type="S" nprim="3">
+    <exponents>
+   1232.320450000
+    224.468708200
+     60.749992510
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     92.774624230
+     21.558827490
+      7.011599810
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      6.899488096
+      2.104563782
+      0.812006134
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      4.241479241
+      1.293786360
+      0.499182999
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.754778054
+      0.278560571
+      0.123015285
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Mn">
+  <shell type="S" nprim="3">
+    <exponents>
+   1337.153266000
+    243.564136500
+     65.917960620
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    102.022002100
+     23.707719230
+      7.710486098
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      7.701960922
+      2.349343572
+      0.906449787
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      5.426950461
+      1.655392868
+      0.638702032
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.670982286
+      0.247634663
+      0.109358078
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Fe">
+  <shell type="S" nprim="3">
+    <exponents>
+   1447.400411000
+    263.645791600
+     71.352840190
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    111.919489100
+     26.007682360
+      8.458505490
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      8.548569754
+      2.607586250
+      1.006087840
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      6.411803475
+      1.955804428
+      0.754610151
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.592115681
+      0.218527925
+      0.096504236
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Co">
+  <shell type="S" nprim="3">
+    <exponents>
+   1557.298704000
+    283.663902900
+     76.770522340
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    121.834474100
+     28.311711640
+      9.207847321
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      9.480851678
+      2.891961952
+      1.115808827
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      7.664527389
+      2.337925151
+      0.902044205
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.592115681
+      0.218527925
+      0.096504236
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ni">
+  <shell type="S" nprim="3">
+    <exponents>
+   1679.771028000
+    305.972389600
+     82.808069430
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    132.858889900
+     30.873548780
+     10.041036270
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     10.330743350
+      3.151206003
+      1.215833241
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      8.627722755
+      2.631730438
+      1.015403419
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.630932838
+      0.232853898
+      0.102830736
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Cu">
+  <shell type="S" nprim="3">
+    <exponents>
+   1801.806730000
+    328.201345000
+     88.824092280
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    144.121218400
+     33.490671730
+     10.892205880
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     11.307754020
+      3.449225397
+      1.330818388
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      9.647911930
+      2.942920654
+      1.135470278
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.630932838
+      0.232853898
+      0.102830736
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Zn">
+  <shell type="S" nprim="3">
+    <exponents>
+   1929.432301000
+    351.448502100
+     95.115680210
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    155.841675500
+     36.214253910
+     11.777999340
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     12.281527440
+      3.746257327
+      1.445422541
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     10.947370770
+      3.339297018
+      1.288404602
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.889713885
+      0.328360379
+      0.145007406
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ga">
+  <shell type="S" nprim="3">
+    <exponents>
+   2061.424532000
+    375.491051700
+    101.622532400
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    167.761868000
+     38.984250280
+     12.678888130
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     12.615055200
+      3.847993927
+      1.484675684
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     12.615055200
+      3.847993927
+      1.484675684
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.798524374
+      0.294705714
+      0.130145151
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ge">
+  <shell type="S" nprim="3">
+    <exponents>
+   2196.384229000
+    400.074129200
+    108.275672600
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    180.389038000
+     41.918533040
+     13.633207950
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     14.196656190
+      4.330432640
+      1.670815538
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     14.196656190
+      4.330432640
+      1.670815538
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.985832560
+      0.363834215
+      0.160673025
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="As">
+  <shell type="S" nprim="3">
+    <exponents>
+   2337.065673000
+    425.699429800
+    115.210879000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    193.197053500
+     44.894840400
+     14.601195480
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     15.871635840
+      4.841354819
+      1.867945198
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     15.871635840
+      4.841354819
+      1.867945198
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.107681464
+      0.408804124
+      0.180532211
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Se">
+  <shell type="S" nprim="3">
+    <exponents>
+   2480.626814000
+    451.849270800
+    122.288046400
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    206.157878000
+     47.906657270
+     15.580731800
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     17.639994140
+      5.380760465
+      2.076064666
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     17.639994140
+      5.380760465
+      2.076064666
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.214644297
+      0.448280136
+      0.197965235
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Br">
+  <shell type="S" nprim="3">
+    <exponents>
+   2629.997471000
+    479.057322400
+    129.651607000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    219.835025500
+     51.084932220
+     16.614405460
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     19.501731090
+      5.948649577
+      2.295173940
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     19.501731090
+      5.948649577
+      2.295173940
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.396037488
+      0.515225632
+      0.227529071
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Kr">
+  <shell type="S" nprim="3">
+    <exponents>
+   2782.160055000
+    506.773927000
+    137.152801900
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    233.951411800
+     54.365276810
+     17.681275330
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     21.456846710
+      6.545022156
+      2.525273021
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     21.456846710
+      6.545022156
+      2.525273021
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      1.590049336
+      0.586828205
+      0.259149523
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Rb">
+  <shell type="S" nprim="3">
+    <exponents>
+   2938.601529000
+    535.269937000
+    144.864934000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    248.507037000
+     57.747691000
+     18.781341000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     23.505340970
+      7.169878201
+      2.766361909
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     23.505340970
+      7.169878201
+      2.766361909
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.247796820
+      0.829578393
+      0.366350565
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.486993992
+      0.262216156
+      0.115825488
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Sr">
+  <shell type="S" nprim="3">
+    <exponents>
+   3100.983951000
+    564.848097800
+    152.869938900
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    263.501900700
+     61.232174930
+     19.914603720
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     25.578866920
+      7.802369707
+      3.010396794
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     25.578866920
+      7.802369707
+      3.010396794
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.461032403
+      0.908275734
+      0.401104140
+    </exponents>
+    <scoefficients>
+     -0.30884412
+      0.01960641
+      1.13103444
+    </scoefficients>      
+    <pcoefficients>
+     -0.12154686
+      0.57152276
+      0.54989495
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.437080480
+      0.235340816
+      0.103954177
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Y">
+  <shell type="S" nprim="3">
+    <exponents>
+   3266.026869000
+    594.910871000
+    161.006099000
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    277.937724000
+     64.586750000
+     21.005616000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     30.671326000
+      8.557222000
+      3.349239000
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      5.660043000
+      1.774715000
+      0.691295000
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.667688000
+      0.984544000
+      0.434785000
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      2.128212000
+      0.962594000
+      0.472861000
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.207424000
+      0.111685000
+      0.049333000
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Zr">
+  <shell type="S" nprim="3">
+    <exponents>
+   3435.348677000
+    625.753049800
+    169.353195800
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    293.783029200
+     68.268857970
+     22.203151440
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     30.732931030
+      9.374523538
+      3.616982618
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     30.732931030
+      9.374523538
+      3.616982618
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      2.827607815
+      1.101055827
+      0.484687486
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      0.486993992
+      0.262216156
+      0.115825488
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.887830189
+      0.345716474
+      0.152185243
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Nb">
+  <shell type="S" nprim="3">
+    <exponents>
+   3610.742864000
+    657.701320100
+    177.999644500
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    310.067572800
+     72.053035690
+     23.433883480
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     33.019978580
+     10.072145940
+      3.886147028
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     33.019978580
+     10.072145940
+      3.886147028
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.144798430
+      1.224568208
+      0.539057940
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      1.344878866
+      0.523688859
+      0.230529125
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.486993992
+      0.262216156
+      0.115825488
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Mo">
+  <shell type="S" nprim="3">
+    <exponents>
+   3788.666115000
+    690.110262300
+    186.770769100
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    326.430956700
+     75.855534200
+     24.670574010
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     35.469481290
+     10.819322340
+      4.174430912
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     35.469481290
+     10.819322340
+      4.174430912
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.496895188
+      1.361672861
+      0.599411746
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      1.702112315
+      0.662793713
+      0.291763424
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.512962508
+      0.276198597
+      0.122001777
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Tc">
+  <shell type="S" nprim="3">
+    <exponents>
+   3970.868257000
+    723.298609800
+    195.752831100
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    343.584632300
+     79.841679520
+     25.966992190
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     38.089919830
+     11.618639620
+      4.482832367
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     38.089919830
+     11.618639620
+      4.482832367
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      3.829752708
+      1.491285854
+      0.656467704
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      2.101373228
+      0.818263843
+      0.360201758
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.461699983
+      0.248596896
+      0.109809621
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ru">
+  <shell type="S" nprim="3">
+    <exponents>
+   4159.274210000
+    757.616989400
+    205.040723900
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    360.798656100
+     83.841848430
+     27.267971270
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     40.717516780
+     12.420140440
+      4.792076302
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     40.717516780
+     12.420140440
+      4.792076302
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      4.197516371
+      1.634491118
+      0.719507014
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      2.390895761
+      0.931002417
+      0.409829556
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.413135485
+      0.222447917
+      0.098259157
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Rh">
+  <shell type="S" nprim="3">
+    <exponents>
+   4350.077794000
+    792.372100500
+    214.446813300
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    378.433426400
+     87.939789810
+     28.600748990
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     43.521794550
+     13.275534540
+      5.122113939
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     43.521794550
+     13.275534540
+      5.122113939
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      4.540857408
+      1.768186338
+      0.778359979
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      2.779066094
+      1.082153932
+      0.476366825
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.413135485
+      0.222447917
+      0.098259157
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Pd">
+  <shell type="S" nprim="3">
+    <exponents>
+   4545.160269000
+    827.906616800
+    224.063840200
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    396.488943300
+     92.135503650
+     29.965325350
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     46.419450970
+     14.159412110
+      5.463141383
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     46.419450970
+     14.159412110
+      5.463141383
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      4.919104589
+      1.915473830
+      0.843196295
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      3.025977448
+      1.178299934
+      0.518690532
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.437080480
+      0.235340816
+      0.103954177
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Ag">
+  <shell type="S" nprim="3">
+    <exponents>
+   4744.521634000
+    864.220538300
+    233.891804500
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    414.965206900
+     96.428989950
+     31.361700350
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     49.410486050
+     15.071773140
+      5.815158634
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     49.410486050
+     15.071773140
+      5.815158634
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      5.290230450
+      2.059988316
+      0.906811928
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      3.283395668
+      1.278537254
+      0.562815247
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.437080480
+      0.235340816
+      0.103954177
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Cd">
+  <shell type="S" nprim="3">
+    <exponents>
+   4950.261905000
+    901.696385600
+    244.034231300
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    433.446938500
+    100.723746900
+     32.758488610
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     52.592792350
+     16.042478000
+      6.189686744
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     52.592792350
+     16.042478000
+      6.189686744
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      5.674851796
+      2.209757875
+      0.972740857
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.15578745
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      3.642963976
+      1.418551290
+      0.624449770
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.594915098
+      0.320325000
+      0.141493186
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="In">
+  <shell type="S" nprim="3">
+    <exponents>
+   5158.224714000
+    939.577070700
+    254.286223100
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    452.331322300
+    105.112071600
+     34.185707990
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     55.975397690
+     17.074280440
+      6.587788204
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     55.975397690
+     17.074280440
+      6.587788204
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      5.048549180
+      1.965878882
+      0.865384724
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.11557874
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      5.048549180
+      1.965878882
+      0.865384724
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.566923061
+      0.305253019
+      0.134835626
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Sn">
+  <shell type="S" nprim="3">
+    <exponents>
+   5370.466413000
+    978.237161100
+    264.749152200
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    472.051532200
+    109.694624300
+     35.676096360
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     59.151411880
+     18.043066000
+      6.961575790
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     59.151411880
+     18.043066000
+      6.961575790
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      5.583138529
+      2.174045204
+      0.957020051
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.11557874
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      5.583138529
+      2.174045204
+      0.957020051
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.623581642
+      0.335760162
+      0.148311168
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Sb">
+  <shell type="S" nprim="3">
+    <exponents>
+   5586.987002000
+   1017.676657000
+    275.423018900
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    492.192488800
+    114.374949400
+     37.198283360
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     62.521797750
+     19.071141120
+      7.358239131
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     62.521797750
+     19.071141120
+      7.358239131
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      6.120693149
+      2.383366187
+      1.049163663
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.11557874
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      6.120693149
+      2.383366187
+      1.049163663
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.652922693
+      0.351558503
+      0.155289573
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="Te">
+  <shell type="S" nprim="3">
+    <exponents>
+   5810.061591000
+   1058.309972000
+    286.419979700
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    512.754192000
+    119.153047100
+     38.752269000
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     65.985562270
+     20.127699700
+      7.765892279
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     65.985562270
+     20.127699700
+      7.765892279
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      6.707956921
+      2.612043655
+      1.149828048
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.11557874
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      6.707956921
+      2.612043655
+      1.149828048
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.701271348
+      0.377591265
+      0.166788702
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<basis symbol="I">
+  <shell type="S" nprim="3">
+    <exponents>
+   6035.183623000
+   1099.316231000
+    297.517873700
+    </exponents>
+    <coefficients>
+      0.15432897
+      0.53532814
+      0.44463454
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+    533.736641800
+    124.028917100
+     40.338053280
+    </exponents>
+    <scoefficients>
+     -0.09996723
+      0.39951283
+      0.70011547
+    </scoefficients>      
+    <pcoefficients>
+      0.15591628
+      0.60768372
+      0.39195739
+    </pcoefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+     69.542705450
+     21.212741750
+      8.184535234
+    </exponents>
+    <scoefficients>
+     -0.22776350
+      0.21754360
+      0.91667696
+    </scoefficients>      
+    <pcoefficients>
+      0.00495151
+      0.57776647
+      0.48464604
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+     69.542705450
+     21.212741750
+      8.184535234
+    </exponents>
+    <coefficients>
+      0.21976795
+      0.65554736
+      0.28657326
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      7.295991196
+      2.841021154
+      1.250624506
+    </exponents>
+    <scoefficients>
+     -0.33061006
+      0.05761095
+      1.11557874
+    </scoefficients>      
+    <pcoefficients>
+     -0.12839276
+      0.58520476
+      0.54394420
+    </pcoefficients>      
+  </shell>
+  <shell type="D" nprim="3">
+    <exponents>
+      7.295991196
+      2.841021154
+      1.250624506
+    </exponents>
+    <coefficients>
+      0.12506621
+      0.66867856
+      0.30524682
+    </coefficients>      
+  </shell>
+  <shell type="L" nprim="3">
+    <exponents>
+      0.790036458
+      0.425385789
+      0.187900384
+    </exponents>
+    <scoefficients>
+     -0.38426426
+     -0.19725674
+      1.37549551
+    </scoefficients>      
+    <pcoefficients>
+     -0.34816915
+      0.62903237
+      0.66628327
+    </pcoefficients>      
+  </shell>
+</basis>
+<atomicguess symbol="H" basis="STO-3G">
+  <guessdensitymatrix>
+          1.00000
+  </guessdensitymatrix>
+  <alphavectors>
+          1.00000
+  </alphavectors>
+  <betavectors>
+          1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="He" basis="STO-3G">
+  <guessdensitymatrix>
+          2.00000
+  </guessdensitymatrix>
+  <alphavectors>
+          1.00000
+  </alphavectors>
+  <betavectors>
+          1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="Li" basis="STO-3G">
+  <guessdensitymatrix>
+     2.04425    -0.22218     0.00000     0.00000     0.00000
+    -0.22218     1.06290     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.00000
+  </guessdensitymatrix>
+  <alphavectors>
+     0.98393     0.30597     0.00000     0.00000     0.00000
+     0.05968    -1.02868     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000    -1.00000
+  </alphavectors>
+  <betavectors>
+     0.98446    -0.30427     0.00000     0.00000     0.00000
+     0.05790     1.02878     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="Be" basis="STO-3G">
+  <guessdensitymatrix>
+     2.14443    -0.55652     0.00000     0.00000     0.00000
+    -0.55652     2.14443     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.00000
+  </guessdensitymatrix>
+  <alphavectors>
+    -0.98625    -0.31547     0.00000     0.00000     0.00000
+    -0.04871     1.03433     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+  </alphavectors>
+  <betavectors>
+     0.98625    -0.31547     0.00000     0.00000     0.00000
+     0.04871     1.03433     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="B" basis="STO-3G">
+  <guessdensitymatrix>
+     2.15642    -0.58078     0.00000     0.00000     0.00000
+    -0.58078     2.15642     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.33333     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.33333     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.33333
+  </guessdensitymatrix>
+  <alphavectors>
+    -0.98732    -0.32158     0.00000     0.00000     0.00000
+    -0.04378     1.03745     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+  </alphavectors>
+  <betavectors>
+     0.98789    -0.31982     0.00000     0.00000     0.00000
+     0.04194     1.03752     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="C" basis="STO-3G">
+  <guessdensitymatrix>
+     2.13148    -0.52938     0.00000     0.00000     0.00000
+    -0.52938     2.13148     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.66667     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.66667     0.00000
+     0.00000     0.00000     0.00000     0.00000     0.66667
+  </guessdensitymatrix>
+  <alphavectors>
+    -0.99094    -0.28944     0.00000     0.00000     0.00000
+    -0.03426     1.03178     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </alphavectors>
+  <betavectors>
+     0.99155    -0.28733     0.00000     0.00000     0.00000
+     0.03206     1.03185     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="N" basis="STO-3G">
+  <guessdensitymatrix>
+     2.11695    -0.49756     0.00000     0.00000     0.00000
+    -0.49756     2.11695     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </guessdensitymatrix>
+  <alphavectors>
+     0.99274     0.27008     0.00000     0.00000     0.00000
+     0.02918    -1.02841     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000    -1.00000     0.00000
+  </alphavectors>
+  <betavectors>
+     0.99332    -0.26794     0.00000     0.00000     0.00000
+     0.02697     1.02847     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="O" basis="STO-3G">
+  <guessdensitymatrix>
+     2.11871    -0.50151     0.00000     0.00000     0.00000
+    -0.50151     2.11871     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.33333     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.33333     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.33333
+  </guessdensitymatrix>
+  <alphavectors>
+     0.99343     0.26916     0.00000     0.00000     0.00000
+     0.02636    -1.02891     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     0.00000    -1.00000     0.00000
+  </alphavectors>
+  <betavectors>
+     0.99372    -0.26808     0.00000     0.00000     0.00000
+     0.02525     1.02894     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="F" basis="STO-3G">
+  <guessdensitymatrix>
+     2.12008    -0.50456     0.00000     0.00000     0.00000
+    -0.50456     2.12008     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.66667     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.66667     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.66667
+  </guessdensitymatrix>
+  <alphavectors>
+    -0.99396    -0.26849     0.00000     0.00000     0.00000
+    -0.02422     1.02930     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+  </alphavectors>
+  <betavectors>
+     0.99407    -0.26806     0.00000     0.00000     0.00000
+     0.02378     1.02931     0.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+  </betavectors>
+</atomicguess>
+<atomicguess symbol="Ne" basis="STO-3G">
+  <guessdensitymatrix>
+     2.12527    -0.51598     0.00000     0.00000     0.00000
+    -0.51598     2.12527     0.00000     0.00000     0.00000
+     0.00000     0.00000     2.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     2.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     2.00000
+  </guessdensitymatrix>
+  <alphavectors>
+    -0.99416    -0.27254     0.00000     0.00000     0.00000
+    -0.02302     1.03058     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+  </alphavectors>
+  <betavectors>
+     0.99416    -0.27254     0.00000     0.00000     0.00000
+     0.02302     1.03058     0.00000     0.00000     0.00000
+     0.00000     0.00000     1.00000     0.00000     0.00000
+     0.00000     0.00000     0.00000     0.00000     1.00000
+     0.00000     0.00000     0.00000     1.00000     0.00000
+  </betavectors>
+</atomicguess>

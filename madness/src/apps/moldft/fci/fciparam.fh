@@ -1,0 +1,33 @@
+*
+* $Id: fciparam.fh,v 1.2 1999/07/28 00:23:42 d3e129 Exp $
+*
+c
+c     PARAMETERS
+c
+c     nav    = no. of integers per double precision word (MACHINE DEPENDENT)
+c     nactmx = maximum number of orbitals in the FCI space
+c     nelmax = maximum number of electrons in the FCI space (orbital graph)
+c     nsmax  = maximum number of open shell electrons in the FCI space
+c     nsmax1 = nsmax+1
+c     nsmax2 = nsmax/2+1
+c     nwkomx = max number of orbital configurations for nelec
+c     ndetmx = no. of determinants for nsmax open shells
+c     ncsfmx = no. of CSF for nsmax open shells
+c     eajmax = length of array to hold Eaj for all possible ns.  It must
+c     .        be of dimension sum(ns=0,nsmax) 3*(ns+1)*ndets(ns)
+c
+      integer nav, nactmx, nelmax, nsmax, nsmax1, nsmax2,
+     $     nwkomx, ndetmx, ncsfmx, eajmax
+      parameter (nav = 2)
+      parameter (nactmx = 20)
+      parameter (nelmax = 2*nactmx)  ! Not sure what to use here
+      parameter (nwkomx = 616227) ! 14e in 14 orbitals -> 2.5 MB for indexo
+c
+      parameter (nsmax  = 14)   ! 14 requires about 1.6 MB for eaj
+      parameter (nsmax1 = nsmax+1)
+      parameter (nsmax2 = nsmax/2+1)
+      parameter (ndetmx = 3432)  ! # dets for 14 open shells (singlet)
+      parameter (ncsfmx = 1001)  ! # CSF  for 14 open shells (triplet/quintet)
+      parameter (eajmax = 3*(
+     $     1*1 + 3*2 + 5*6 + 7*20 + 9*70 + 11*252 + 13*924 + 15*3432))
+c

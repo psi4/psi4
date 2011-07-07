@@ -1,0 +1,24 @@
+Let
+  Omega = [-60, 60]^3
+  r = x -> sqrt(x_0^2 + x_1^2 + x_2^2)
+  g = x -> exp(-r(x))
+  v = x -> -1/r(x)
+  u = x -> x_2
+In
+  lambda = -0.5
+  nu = F v  
+  U = F u
+  psi = F g
+  psi = psi * ||psi||^-1
+  phi = U * psi
+
+  for j in [0,13]
+    phi = -2 * (-2*lambda - del^2)^-1 (nu*phi + U*psi)
+    E2a = <phi|U*psi>
+    E2b = -1/2 * sum_i=0^2 < del_i phi | del_i phi > -  <phi | nu*phi> + lambda*<phi|phi>
+    print "iter", j, "norm", ||phi||, "alpha", E2a, E2b, 2*E2a-E2b
+  end
+End
+
+
+

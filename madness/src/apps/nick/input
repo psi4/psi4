@@ -1,0 +1,21 @@
+L 300.0
+Lsmall 10.0
+Llarge 50.0
+F 0.176
+omega 1.32
+natom 1
+   1.0    0.0 0.0 0.0
+k 8
+thresh 1e-5
+safety 1e-0
+cut 0.2
+prefix data
+nplot 999
+nprint 1
+nloadbal 20
+nio 1
+ndump 10
+ncycle 2
+target_time 5
+tScale 8.0
+

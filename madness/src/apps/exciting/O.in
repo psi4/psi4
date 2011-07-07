@@ -1,0 +1,30 @@
+ 'O'                                        : spsymb
+ 'oxygen'                                   : spname
+  -8.00000                                  : spzn
+   29165.12203                              : spmass
+  0.707107E-06    1.4500   30.0191   300    : sprmin, rmt, sprmax, nrmt
+   4                                        : spnst
+   1   0   1   2.00000    T                 : spn, spl, spk, spocc, spcore
+   2   0   1   2.00000    F
+   2   1   1   2.00000    F
+   2   1   2   2.00000    F
+   1                                        : apword
+  0.1500   0  F                             : apwe0, apwdm, apwve
+   0                                        : nlx
+   5                                        : nlorb
+   0   2                                    : lorbl, lorbord
+  0.1500   0  F                             : lorbe0, lorbdm, lorbve
+  0.1500   1  F
+   1   2                                    : lorbl, lorbord
+  0.1500   0  F                             : lorbe0, lorbdm, lorbve
+  0.1500   1  F
+   2   2                                    : lorbl, lorbord
+  0.1500   0  F                             : lorbe0, lorbdm, lorbve
+  0.1500   1  F
+   3   2                                    : lorbl, lorbord
+  0.1500   0  F                             : lorbe0, lorbdm, lorbve
+  0.1500   1  F
+   0   3                                    : lorbl, lorbord
+  0.1500   0  F                             : lorbe0, lorbdm, lorbve
+  0.1500   1  F
+ -0.7227   0  T
