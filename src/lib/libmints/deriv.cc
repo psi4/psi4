@@ -71,7 +71,7 @@ public:
 
 class ScfUnrestrictedFunctor
 {
-    shared_ptr<Wavefunction> wavefunction_;
+    boost::shared_ptr<Wavefunction> wavefunction_;
     Matrix& Da_;
     Matrix& Db_;
 
@@ -80,7 +80,7 @@ public:
     double *result;
     size_t counter;
 
-    ScfUnrestrictedFunctor(shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs)
+    ScfUnrestrictedFunctor(boost::shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs)
         : wavefunction_(wave),
           Da_(*wave->Da().get()),
           Db_(*wave->Db().get()),
