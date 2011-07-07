@@ -96,13 +96,14 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
 *                 useful for transforming integrals one irrep at a time and in this
 *                 case the offset would correspond to the position of the first
 *                 orbital in the current irrep.
-* @param backtransform - whether this is a forward or backwards transformation
 * @param order - a reordering array to change the order of the output
+* @param backtransform - whether this is a forward or backwards transformation
+* @param accumulate - whether to add the integrals to the existing output buffer
 */
 
 void
 IntegralTransform::trans_one(int m, int n, double *input, double *output,
-                             double **C, int offset, int* order, bool backtransform)
+                             double **C, int offset, int* order, bool backtransform, bool accumulate)
 {
     // TODO the order argument is actually not used right now.  I don't know that anybody will need it
     // so I haven't bothered so far...
@@ -137,7 +138,10 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
             size_t P = order[p];
             size_t Q = order[q];
             size_t PQ = INDEX(P,Q);
-            output[PQ] = TMP0[p][q];
+            if(accumulate)
+                output[PQ] += TMP0[p][q];
+            else
+                output[PQ] = TMP0[p][q];
         }
     }
 
