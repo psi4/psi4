@@ -397,6 +397,18 @@ namespace madness {
         return instance()->queue.size();
     }
 
+    /// Returns a map of the pthreads ids to the unique integer thread ids
+    pthread_t* ThreadPool::thread_id() {
+        int nthreads = ThreadPool::size();
+        pthread_t* id = new pthread_t[nthreads+1];
+
+        for (int i=0; i<nthreads+1; i++) {
+            id[i] = instance()->threads[i].get_id();
+        }
+
+        return id;
+    }
+
     /// Returns queue statistics
     const DQStats& ThreadPool::get_stats() {
         return instance()->queue.get_stats();

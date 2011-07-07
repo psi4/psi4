@@ -11,6 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <psiconfig.h>
 #include <cstdio>
+#include <psi4-dec.h>
 
 #if HAVE_MPI == 1
 #include <mpi.h>
@@ -26,6 +27,8 @@
 #endif
 
 #include <world/world.h>
+#include <world/archive.h>
+#include <world/safempi.h>
 
 #endif
 
@@ -36,15 +39,35 @@ namespace psi {
 
     class Serializable;
 
+#if HAVE_MADNESS == 1
+    typedef boost::shared_ptr<madness::Spinlock> SharedLock;
+    typedef boost::shared_ptr<madness::MutexFair> SharedMutex;
+    typedef boost::shared_ptr<madness::World> SharedMadWorld;
+#endif
+
     class Communicator {
     protected:
         int me_;
         int nproc_;
-        const std::string communicator_;
+        int nthread_;
+        std::string communicator_;
+
+        /**
+         * The raw send, recv, bcast, and sums will be overwritten by
+         * a given communicator.
+         */
+        virtual void raw_send(const void* data, int nbyte, int target) = 0;
+        virtual void raw_recv(void* data, int nbyte, int sender) = 0;
+        virtual void raw_bcast(void* data, int nbyte, int broadcaster) = 0;
+        virtual void raw_sum(double *data, int n, double *receive_buffer=0, int target=-1) = 0;
+        virtual void raw_sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1) = 0;
+        virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1) = 0;
+        virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1) = 0;
+        virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1) = 0;
 
     public:
 
-        Communicator(const std::string &communicator);
+        Communicator();
         virtual ~Communicator();
 
         static boost::shared_ptr<Communicator> world;
@@ -54,13 +77,32 @@ namespace psi {
          * Returns the local processor number in the communicator.
          * @return Integer between 0 and n, the number of processors
          */
-        int me() const { return me_; }
+        virtual int me() const { return me_; }
 
         /**
          * Returns the number of processors in the communicator
          * @return The number of processors
          */
-        int nproc() const { return nproc_; }
+        virtual int nproc() const { return nproc_; }
+
+        /**
+         * Return the total number of threads
+         * @return The number of threads
+         */
+        virtual int nthread() const { return nthread_; }
+
+        /**
+         * Return the communicator type
+         * @return The specific communicator type
+         */
+        virtual std::string communicator() const {return communicator_;}
+
+        /**
+         * Return a unique integer value for a given pthread
+         * @param thread The thread id of a given pthread
+         */
+        virtual int thread_id(const pthread_t &thread) = 0;
+
 
         /**
          * This function is a barrier that makes sure that all communication is complete
@@ -116,40 +158,88 @@ namespace psi {
             raw_sum(data, nelem, receive_buffer, target);
         }
 
-        virtual void raw_send(const void* data, int nbyte, int target) = 0;
-        virtual void raw_recv(void* data, int nbyte, int sender) = 0;
-        virtual void raw_bcast(void* data, int nbyte, int broadcaster) = 0;
-        virtual void raw_sum(double *data, int n, double *receive_buffer=0, int target=-1) = 0;
-        virtual void raw_sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1) = 0;
-        virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1) = 0;
-        virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1) = 0;
-        virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1) = 0;
+        /**
+         * Print some communicator information
+         * @param out The location where the communicator information is written.
+         */
+        virtual void print(FILE *out=outfile) const = 0;
 
-        const std::string get_comm() {return communicator_;}
-        virtual int nthread() {return 1;}
-        virtual void print(FILE *out=outfile) const {}
+        /**
+         * Call the correct finalize for a given communicator type
+         */
+        virtual void finalize() = 0;
+
 
 #if HAVE_MADNESS == 1
-        virtual boost::shared_ptr<madness::World> get_madworld() {}
-        virtual madness::Spinlock* get_mutex() {}
+        virtual SharedLock get_spinlock() { };
+        virtual SharedMutex get_mutex() { };
+        virtual SharedMadWorld get_madworld() = 0;
 #endif
-        virtual int get_threadid(pthread_t thr_) { return 0; }
 
 
     };
+
+    typedef boost::shared_ptr<Communicator> SharedComm;
+
 //    void p_fprintf(FILE * __restrict __stream, const char * __restrict __format, ...);
 
     class LocalCommunicator : public Communicator {
     private:
-        const std::string communicator_;
+        int me_;
+        int nproc_;
+        int nthread_;
+        std::string communicator_;
+#if HAVE_MADNESS == 1
+        SharedMadWorld madworld_;
+#endif
+
+        virtual void raw_send(const void* data, int nbyte, int target);
+        virtual void raw_recv(void* data, int nbyte, int sender);
+        virtual void raw_bcast(void* data, int nbyte, int broadcaster);
+        virtual void raw_sum(double *data, int n, double *receive_buffer=0, int target=-1);
+        virtual void raw_sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1);
+        virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1);
+        virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
+        virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
 
     public:
-        LocalCommunicator(const std::string &communicator);
+        LocalCommunicator(const int &argc, char **argv);
         LocalCommunicator(const LocalCommunicator &copy);
         virtual ~LocalCommunicator();
 
         LocalCommunicator& operator=(const LocalCommunicator& other);
 
+        virtual int me() const { return me_; }
+        virtual int nproc() const { return nproc_; }
+        virtual int nthread() const { return nthread_; }
+        virtual std::string communicator() const {return communicator_;}
+
+        virtual int thread_id(const pthread_t &thread) { return 0; }
+
+        virtual void sync();
+
+        virtual void print(FILE *out=outfile) const;
+
+        virtual void finalize();
+
+#if HAVE_MADNESS == 1
+        virtual SharedMadWorld get_madworld() { return madworld_; }
+#endif
+
+    };
+
+#if HAVE_MPI == 1
+    class MPICommunicator : public Communicator {
+        int me_;
+        int nproc_;
+        int nthread_;
+        std::string communicator_;
+        MPI_Comm comm_;
+
+#if HAVE_MADNESS == 1
+        SharedMadWorld madworld_;
+#endif
+
         virtual void raw_send(const void* data, int nbyte, int target);
         virtual void raw_recv(void* data, int nbyte, int sender);
         virtual void raw_bcast(void* data, int nbyte, int broadcaster);
@@ -159,39 +249,30 @@ namespace psi {
         virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
 
-        virtual void sync();
-
-        //virtual void runTask () { if (where == me_) task_->runTask(); }
-        virtual int nthread() {return 1;}
-        virtual void print(FILE *out=outfile) const;
-    };
-
-#if HAVE_MPI == 1
-    class MPICommunicator : public Communicator {
-        MPI_Comm comm_;
-        const std::string communicator_;
-
     public:
-        MPICommunicator(MPI_Comm comm, const std::string &communicator);
+        MPICommunicator(const int &argc, char **argv);
         MPICommunicator(const MPICommunicator &copy);
         virtual ~MPICommunicator();
 
         MPICommunicator& operator=(const MPICommunicator& other);
 
-        virtual void raw_send(const void* data, int nbyte, int target);
-        virtual void raw_recv(void* data, int nbyte, int sender);
-        virtual void raw_bcast(void* data, int nbyte, int broadcaster);
-        virtual void raw_sum(double *data, int n, double *receive_buffer=0, int target=-1);
-        virtual void raw_sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1);
-        virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1);
-        virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
-        virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
+        virtual int me() const { return me_; }
+        virtual int nproc() const { return nproc_; }
+        virtual int nthread() const { return nthread_; }
+        virtual std::string communicator() const {return communicator_;}
+
+        virtual int thread_id(const pthread_t &thread) { return 0; }
 
         virtual void sync();
 
-        //virtual void runTask () { if (where == me_) task_->runTask(); }
-        virtual int nthread() { return 1; }
         virtual void print(FILE *out=outfile) const;
+
+        virtual void finalize();
+
+#if HAVE_MADNESS == 1
+        virtual SharedMadWorld get_madworld() { return madworld_; }
+#endif
+
     };
 #endif
 
@@ -199,18 +280,13 @@ namespace psi {
 
     class MadCommunicator : public Communicator {
     private:
-        boost::shared_ptr<madness::World> madworld_;
+        int me_;
+        int nproc_;
         int nthread_;
+        std::string communicator_;
+
+        SharedMadWorld madworld_;
         std::map<pthread_t, int> thread_id_;
-
-        madness::Void set_thread_id();
-
-        boost::shared_ptr<madness::Spinlock> mutex_;
-        int thread_count;
-
-    public:
-        MadCommunicator(boost::shared_ptr<madness::World> madness_world, const std::string &communicator);
-        virtual ~MadCommunicator();
 
         virtual void raw_send(const void* data, int nbyte, int target);
         virtual void raw_recv(void* data, int nbyte, int sender);
@@ -221,16 +297,32 @@ namespace psi {
         virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
 
+    public:
+        MadCommunicator(const int &argc, char **argv);
+        MadCommunicator(const MadCommunicator &copy);
+        virtual ~MadCommunicator();
+
+        MadCommunicator& operator=(const MadCommunicator& other);
+
+        virtual int me() const { return me_; }
+        virtual int nproc() const { return nproc_; }
+        virtual int nthread() const { return nthread_; }
+        virtual std::string communicator() const {return communicator_;}
+
+        virtual int thread_id(const pthread_t &thread) { return thread_id_[thread]; }
+
         virtual void sync();
 
         virtual void print(FILE *out=outfile) const;
-        //virtual void runTask () { task_->madTask(madworld_); }
 
-        virtual int nthread() {return nthread_; }
+        virtual void finalize() { madness::finalize(); }
 
-        virtual madness::Spinlock* get_mutex() { return new madness::Spinlock(); }
-        virtual boost::shared_ptr<madness::World> get_madworld() { return madworld_; }
-        virtual int get_threadid(pthread_t thr_) { return thread_id_[thr_]; }
+        virtual SharedLock get_spinlock() { return SharedLock(new madness::Spinlock()); }
+
+        virtual SharedMutex get_mutex() { return SharedMutex(new madness::MutexFair()); }
+
+        virtual SharedMadWorld get_madworld() { return madworld_; }
+
     };
 
 #endif
