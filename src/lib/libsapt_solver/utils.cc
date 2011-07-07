@@ -1063,22 +1063,21 @@ SAPTDFInts SAPT0::set_Q14_AR()
   return(A_AR);
 }
 
-double** SAPT2::get_AA_ints(const int dress)
+double** SAPT2::get_AA_ints(const int dress, int foccA, int foccAp)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(noccA_*noccA_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*noccA_*noccA_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
+      foccA,noccA_,foccAp,noccA_);
 
   if (dress) {
-    for (int a=0, aap=0; a<noccA_; a++){
-      int aa = a*noccA_+a;
-      A[aa][ndf_] = 1.0;
-      A[aa][ndf_+2] = enuc;
-      for (int ap=0; ap<noccA_; ap++, aap++){
+    for (int a=foccA, aap=0; a<noccA_; a++){
+      for (int ap=foccAp; ap<noccA_; ap++, aap++){
         A[aap][ndf_+1] = vBAA_[a][ap]/(double) NB_;
+        if (a == ap) {
+          A[aap][ndf_] = 1.0;
+          A[aap][ndf_+2] = enuc;
+        }
       }
     }
   }
@@ -1107,22 +1106,21 @@ double** SAPT2::get_diag_AA_ints(const int dress)
   return(A);
 }
 
-double** SAPT2::get_BB_ints(const int dress)
+double** SAPT2::get_BB_ints(const int dress, int foccB, int foccBp)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(noccB_*noccB_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*noccB_*noccB_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+      foccB,noccB_,foccBp,noccB_);
 
   if (dress) {
-    for (int b=0, bbp=0; b<noccB_; b++){
-      int bb = b*noccB_+b;
-      A[bb][ndf_+1] = 1.0;
-      A[bb][ndf_+2] = enuc;
-      for (int bp=0; bp<noccB_; bp++, bbp++){
+    for (int b=foccB, bbp=0; b<noccB_; b++){
+      for (int bp=foccBp; bp<noccB_; bp++, bbp++){
         A[bbp][ndf_] = vABB_[b][bp]/(double) NA_;
+        if (b ==bp) {
+          A[bbp][ndf_+1] = 1.0;
+          A[bbp][ndf_+2] = enuc;
+        }
       }
     }
   }
@@ -1151,18 +1149,16 @@ double** SAPT2::get_diag_BB_ints(const int dress)
   return(A);
 }
 
-double** SAPT2::get_AB_ints(const int dress)
+double** SAPT2::get_AB_ints(const int dress, int foccA, int foccB)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(noccA_*noccB_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*noccA_*noccB_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",
+      foccA,noccA_,foccB,noccB_);
 
   if (dress==1) {
-    for (int a=0, ab=0; a<noccA_; a++){
-      for (int b=0; b<noccB_; b++, ab++){
+    for (int a=foccA, ab=0; a<noccA_; a++){
+      for (int b=foccB; b<noccB_; b++, ab++){
         A[ab][ndf_] = sAB_[a][b];
         A[ab][ndf_+1] = vBAB_[a][b]/(double) NB_;
         A[ab][ndf_+2] = enuc*sAB_[a][b];
@@ -1170,8 +1166,8 @@ double** SAPT2::get_AB_ints(const int dress)
     }
   }
   else if (dress==2) {
-    for (int a=0, ab=0; a<noccA_; a++){
-      for (int b=0; b<noccB_; b++, ab++){
+    for (int a=foccA, ab=0; a<noccA_; a++){
+      for (int b=foccB; b<noccB_; b++, ab++){
         A[ab][ndf_] = vAAB_[a][b]/(double) NA_;
         A[ab][ndf_+1] = sAB_[a][b];
         A[ab][ndf_+2] = enuc*sAB_[a][b];
@@ -1182,17 +1178,15 @@ double** SAPT2::get_AB_ints(const int dress)
   return(A);
 }
 
-double** SAPT2::get_AR_ints(const int dress)
+double** SAPT2::get_AR_ints(const int dress, int foccA)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(noccA_*nvirA_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*noccA_*nvirA_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
+      foccA,noccA_,0,nvirA_);
 
   if (dress) {
-    for (int a=0, ar=0; a<noccA_; a++){
+    for (int a=foccA, ar=0; a<noccA_; a++){
       for (int r=0; r<nvirA_; r++, ar++){
         A[ar][ndf_+1] = vBAA_[a][r+noccA_]/(double) NB_;
       }
@@ -1202,17 +1196,15 @@ double** SAPT2::get_AR_ints(const int dress)
   return(A);
 }
 
-double** SAPT2::get_BS_ints(const int dress)
+double** SAPT2::get_BS_ints(const int dress, int foccB)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(noccB_*nvirB_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*noccB_*nvirB_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
+      foccB,noccB_,0,nvirB_);
 
   if (dress) {
-    for (int b=0, bs=0; b<noccB_; b++){
+    for (int b=foccB, bs=0; b<noccB_; b++){
       for (int s=0; s<nvirB_; s++, bs++){
         A[bs][ndf_] = vABB_[b][s+noccB_]/(double) NA_;
       }
@@ -1268,17 +1260,15 @@ double** SAPT2::get_SS_ints(const int dress)
   return(A);
 }
 
-double** SAPT2::get_AS_ints(const int dress)
+double** SAPT2::get_AS_ints(const int dress, int foccA)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(noccA_*nvirB_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*noccA_*nvirB_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",
+      foccA,noccA_,0,nvirB_);
 
   if (dress==1) {
-    for (int a=0, as=0; a<noccA_; a++){
+    for (int a=foccA, as=0; a<noccA_; a++){
       for (int s=0; s<nvirB_; s++, as++){
         A[as][ndf_] = sAB_[a][s+noccB_];
         A[as][ndf_+1] = vBAB_[a][s+noccB_]/(double) NB_;
@@ -1287,7 +1277,7 @@ double** SAPT2::get_AS_ints(const int dress)
     }
   }
   else if (dress==2) {
-    for (int a=0, as=0; a<noccA_; a++){
+    for (int a=foccA, as=0; a<noccA_; a++){
       for (int s=0; s<nvirB_; s++, as++){
         A[as][ndf_] = vAAB_[a][s+noccB_]/(double) NA_;
         A[as][ndf_+1] = sAB_[a][s+noccB_];
@@ -1299,18 +1289,16 @@ double** SAPT2::get_AS_ints(const int dress)
   return(A);
 }
 
-double** SAPT2::get_RB_ints(const int dress)
+double** SAPT2::get_RB_ints(const int dress, int foccB)
 {
   double enuc = sqrt(enuc_/((double) NA_*NB_));
 
-  double **A = block_matrix(nvirA_*noccB_,ndf_+3);
-
-  psio_->read_entry(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",(char *)
-    &(A[0][0]),sizeof(double)*nvirA_*noccB_*(ndf_+3));
+  double **A = get_DF_ints(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",
+      0,nvirA_,foccB,noccB_);
 
   if (dress==1) {
     for (int r=0, rb=0; r<nvirA_; r++){
-      for (int b=0; b<noccB_; b++, rb++){
+      for (int b=foccB; b<noccB_; b++, rb++){
         A[rb][ndf_] = vAAB_[r+noccA_][b]/(double) NA_;
         A[rb][ndf_+1] = sAB_[r+noccA_][b];
         A[rb][ndf_+2] = enuc*sAB_[r+noccA_][b];
@@ -1319,7 +1307,7 @@ double** SAPT2::get_RB_ints(const int dress)
   }
   else if (dress==2) {
     for (int r=0, rb=0; r<nvirA_; r++){
-      for (int b=0; b<noccB_; b++, rb++){
+      for (int b=foccB; b<noccB_; b++, rb++){
         A[rb][ndf_] = sAB_[r+noccA_][b];
         A[rb][ndf_+1] = vBAB_[r+noccA_][b]/(double) NB_;
         A[rb][ndf_+2] = enuc*sAB_[r+noccA_][b];
@@ -1352,10 +1340,10 @@ double **SAPT2::get_DF_ints(int filenum, const char *label, int startA,
   else {
     psio_address next_PSIF = psio_get_address(PSIO_ZERO,
       sizeof(double)*startA*stopB*(ndf_+3));
-    for (int i=startA; i<stopA; i++) {
+    for (int i=0; i<lengthA; i++) {
       next_PSIF = psio_get_address(next_PSIF,sizeof(double)*startB*(ndf_+3));
-      psio_->read(filenum,label,(char *) A[0],sizeof(double)*lengthB*(ndf_+3),
-        next_PSIF,&next_PSIF);
+      psio_->read(filenum,label,(char *) A[i*lengthB],
+        sizeof(double)*lengthB*(ndf_+3),next_PSIF,&next_PSIF);
     }
   }
 
