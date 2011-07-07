@@ -6,7 +6,7 @@ subdirs = libciomr libchkpt libqt libpsio libiwl libdpd \
           libmints libtrans libparallel libscf_solver libboost_python \
           libboost_regex libboost_thread libdiis libsapt_solver \
           libboost_filesystem libboost_system libplugin \
-          libdfcc_solver libmoinfo
+          libdfcc_solver libmoinfo libsmartptr libyeti
 
 all: default
 
