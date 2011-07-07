@@ -81,6 +81,12 @@ double SAPT2::compute_energy()
   timer_on("Elst12             ");
     elst12();
   timer_off("Elst12             ");
+  timer_on("Exch11             ");
+    exch11();
+  timer_off("Exch11             ");
+  timer_on("Exch12             ");
+    exch12();
+  timer_off("Exch12             ");
 
   print_results();
 
@@ -111,7 +117,7 @@ void SAPT2::print_header()
 void SAPT2::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
-  e_sapt2_ = e_sapt0_ + e_elst12_;
+  e_sapt2_ = e_sapt0_ + e_elst12_ + e_exch11_;
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
 
   fprintf(outfile,"\n    SAPT Results  \n");
@@ -126,6 +132,8 @@ void SAPT2::print_results()
     e_exch10_*1000.0,e_exch10_*627.5095);
   fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
+  fprintf(outfile,"    Exch11(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch11_*1000.0,e_exch11_*627.5095);
   fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
     e_ind20_*1000.0,e_ind20_*627.5095);
   fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -142,7 +150,7 @@ void SAPT2::print_results()
     e_sapt2_*1000.0,e_sapt2_*627.5095);
 
   double tot_elst = e_elst10_ + e_elst12_;
-  double tot_exch = e_exch10_;
+  double tot_exch = e_exch10_ + e_exch11_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF;
   double tot_disp = e_disp20_ + e_exch_disp20_;
 

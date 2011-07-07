@@ -114,26 +114,10 @@ void SAPT2::theta(int ampfile, const char *amplabel, const char trans,
     antisym(tARBS,aoccA,nvirA);
 
   double **B_p_OV; 
-  if (OVlabel == "AR RI Integrals") {
-    B_p_OV = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
-      foccA_,noccA_,0,nvirA_);
-
-    for (int a=foccA_, ar=0; a<noccA_; a++){
-      for (int r=0; r<nvirA_; r++, ar++){
-        B_p_OV[ar][ndf_+1] = vBAA_[a][r+noccA_]/(double) NB_;
-      }
-    }
-  }
-  else if (OVlabel == "BS RI Integrals") {
-    B_p_OV = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
-      foccB_,noccB_,0,nvirB_);
-
-    for (int b=foccB_, bs=0; b<noccB_; b++){
-      for (int s=0; s<nvirB_; s++, bs++){
-        B_p_OV[bs][ndf_] = vABB_[b][s+noccB_]/(double) NA_;
-      }
-    }
-  }
+  if (OVlabel == "AR RI Integrals") 
+    B_p_OV = get_AR_ints(1,foccA_);
+  else if (OVlabel == "BS RI Integrals") 
+    B_p_OV = get_BS_ints(1,foccB_);
   else 
     throw PsiException("Those integrals do not exist",__FILE__,__LINE__);
 
@@ -183,7 +167,7 @@ void SAPT2::Y2(int intfile, const char *AAlabel, const char *ARlabel,
 
   for (int a=0; a<aoccA; a++) {
     for (int r=0; r<nvirA; r++) {
-      tAR[a][r] /= evals[a+foccA] - evals[r];
+      tAR[a][r] /= evals[a+foccA] - evals[r+noccA];
   }}
 
   psio_->write_entry(ampfile,tlabel,(char *) tAR[0],

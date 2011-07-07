@@ -39,6 +39,8 @@ protected:
   double e_elst12_;
   double e_exch10_;
   double e_exch10_s2_;
+  double e_exch11_;
+  double e_exch12_;
   double e_ind20_;
   double e_exch_ind20_;
   double e_disp20_;
@@ -54,17 +56,17 @@ protected:
   double **wABS_;
   double **wASS_;
 
-  double** get_AA_ints(const int);
+  double** get_AA_ints(const int, int=0, int=0);
   double** get_diag_AA_ints(const int);
-  double** get_AR_ints(const int);
+  double** get_AR_ints(const int, int=0);
   double** get_RR_ints(const int);
-  double** get_BB_ints(const int);
+  double** get_BB_ints(const int, int=0, int=0);
   double** get_diag_BB_ints(const int);
-  double** get_BS_ints(const int);
+  double** get_BS_ints(const int, int=0);
   double** get_SS_ints(const int);
-  double** get_AB_ints(const int);
-  double** get_AS_ints(const int);
-  double** get_RB_ints(const int);
+  double** get_AB_ints(const int, int=0, int=0);
+  double** get_AS_ints(const int, int=0);
+  double** get_RB_ints(const int, int=0);
 
   double **get_DF_ints(int, const char *, int, int, int, int);
   void antisym(double **, int, int);
@@ -95,6 +97,12 @@ protected:
   double elst120(double **, double **, double **, int, const char *, 
     const char *, const char *, int, int, int);
 
+  double exch110();
+  double exch101();
+  double exch111();
+  double exch120_k2f();
+  double exch102_k2f();
+
 public:
   SAPT2(Options& options, boost::shared_ptr<PSIO> psio, 
     boost::shared_ptr<Chkpt> chkpt);
@@ -112,6 +120,8 @@ public:
   void disp20();
   void exch_disp20();
   void elst12();
+  void exch11();
+  void exch12();
 
 };
 
