@@ -164,7 +164,7 @@ class IntegralTransform{
         void presort_mo_tpdm_restricted();
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
-                       int *order, bool backtransform = false);
+                       int *order, bool backtransform = false, bool accumulate = false);
         void build_fzc_and_fock(int p, int q, int r, int s, double value,
                           double *aFzcD, double *bFzcD, double *aFzcOp, double *bFzcOp,
                           double *aD, double *bD, double *aFock, double *bFock);
