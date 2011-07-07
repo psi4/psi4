@@ -18,6 +18,7 @@ my $Yeti = shift;
 opendir(DIR, ".") or die "\nI can't open this directory\n";
 foreach my $File (readdir DIR){
     next unless $File =~ /\.(cc|hpp|h)$/;
+    next if $File =~ /psi4_interface/; # Don't remove the interface!
     print "Removing $File...\n";
     unlink($File) or die "\nFailed!\n";
 }
@@ -27,6 +28,7 @@ my $YetiSrc = $Yeti."/src/";
 opendir(YETIDIR, "$YetiSrc") or die "I can't read $YetiSrc\n";
 foreach my $YetiFile (readdir YETIDIR){
     next unless $YetiFile =~ /\.(cc|hpp|h)$/;
+    next if $YetiFile =~ /mpqc/; # Don't add the MPQC interface files!
     print "Copying $YetiSrc$YetiFile to $YetiFile...\n";
     copy($YetiSrc.$YetiFile, $YetiFile) or die "Failed!\n";
 }

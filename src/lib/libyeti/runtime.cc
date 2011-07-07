@@ -18,7 +18,7 @@
 using namespace yeti;
 using namespace std;
 
-static std::map<void*,size_t>* ptrs;
+static std::map<void*,size_t>* ptrs = 0;
 
 #define RUNTIME_BLOCK_MALLOC 0
 
@@ -782,22 +782,24 @@ YetiRuntime::free(void *ptr, size_t size)
     FastMallocTemplate<runtime_data_block_t>::malloc->free(ptr);
     return;
 #else
-    std::map<void*,size_t>::iterator it = ptrs->find(ptr);
-    if (it == ptrs->end())
-    {
-        cerr << "freeing non-malloc'd pointer " << ptr << endl;
-        abort();
+    if(ptrs){
+        std::map<void*,size_t>::iterator it = ptrs->find(ptr);
+        if (it == ptrs->end())
+        {
+            cerr << "freeing non-malloc'd pointer " << ptr << endl;
+            abort();
+        }
+        if (it->second != size)
+        {
+            cerr << "freed sizes don't match" << endl;
+            abort();
+        }
+        YetiRuntime::lock_malloc();
+        ::free(ptr);
+        ptrs->erase(it);
+        amount_mem_allocated_ -= size;
+        YetiRuntime::unlock_malloc();
     }
-    if (it->second != size)
-    {
-        cerr << "freed sizes don't match" << endl;
-        abort();
-    }
-    YetiRuntime::lock_malloc();
-    ::free(ptr);
-    ptrs->erase(it);
-    amount_mem_allocated_ -= size;
-    YetiRuntime::unlock_malloc();
 #endif
 }
 
