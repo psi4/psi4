@@ -113,7 +113,8 @@ void SAPT2::disp20()
   psio_->read_entry(PSIF_SAPT_AMPS,"tARBS Amplitudes",(char *) tARBS[0],
     sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_); 
 
-  e_disp20_ = 4.0*C_DDOT(aoccA_*nvirA_*aoccB_*nvirB_,vARBS[0],1,tARBS[0],1);
+  e_disp20_ = 4.0*C_DDOT((long int) aoccA_*nvirA_*aoccB_*nvirB_,vARBS[0],1,
+    tARBS[0],1);
 
   if (print_) {
     fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);

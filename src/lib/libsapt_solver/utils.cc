@@ -1362,4 +1362,23 @@ double **SAPT2::get_DF_ints(int filenum, const char *label, int startA,
   return(A);
 }
 
+void SAPT2::antisym(double **A, int nocc, int nvir)
+{
+  double *X = init_array(nvir);
+
+  for (int a=0; a<nocc; a++) {
+    for (int ap=0; ap<a; ap++) {
+      for (int r=0; r<nvir; r++) {
+        int ar = a*nvir+r;
+        int apr = ap*nvir+r;
+        C_DCOPY(nvir,&(A[ar][ap*nvir]),1,X,1);
+        C_DSCAL(nvir,2.0,&(A[ar][ap*nvir]),1);
+        C_DAXPY(nvir,-1.0,&(A[apr][a*nvir]),1,&(A[ar][ap*nvir]),1);
+        C_DSCAL(nvir,2.0,&(A[apr][a*nvir]),1);
+        C_DAXPY(nvir,-1.0,X,1,&(A[apr][a*nvir]),1);
+  }}}
+
+  free(X);
+}
+
 }}

@@ -2094,8 +2094,8 @@ void SAPT2::exch_disp20()
   psio_->read_entry(PSIF_SAPT_AMPS,"tARBS Amplitudes",(char *) tARBS[0],
     sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_); 
 
-  e_exch_disp20_ = -2.0*C_DDOT(aoccA_*nvirA_*aoccB_*nvirB_,tARBS[0],1,
-    yARBS[0],1);
+  e_exch_disp20_ = -2.0*C_DDOT((long int) aoccA_*nvirA_*aoccB_*nvirB_,
+    tARBS[0],1,yARBS[0],1);
 
   free_block(tARBS);
   free_block(B_p_AA);
