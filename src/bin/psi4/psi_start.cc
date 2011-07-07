@@ -19,16 +19,6 @@
 
 using namespace std;
 
-// TODO remove these once yeti is restored
-using namespace yeti;
-int Env::initialized_ = 0;
-int Env::me_= -1;
-bool Env::out0Allocated_ = false;
-bool Env::outnAllocated_ = false;
-std::ostream *Env::out0_;
-std::ostream *Env::outn_;
-// End Yeti hacks
-
 namespace psi {
 
 void print_version(FILE *);
