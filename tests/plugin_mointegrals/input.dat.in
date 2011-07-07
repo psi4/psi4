@@ -1,0 +1,13 @@
+molecule {
+   He
+}
+
+set basis cc-pvdz
+set reference uhf
+set ignore_tau true
+set convergence 12
+set max_diis 0
+set algorithm twostep
+scf()
+dcft()
+
