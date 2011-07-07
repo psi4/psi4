@@ -1705,30 +1705,14 @@ void SAPT2::exch_disp20()
 {
   double **yARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
 
-  double **B_p_AA = get_AA_ints(1);
+  double **B_p_AA = get_AA_ints(1,foccA_,0);
   double **B_p_BB = get_BB_ints(1);
-  double **B_p_AB = get_AB_ints(1);
-  double **C_p_AB = get_AB_ints(2);
-  double **X_p_AS = get_AS_ints(1);
-  double **X_p_RB = get_RB_ints(1);
+  double **B_p_AB = get_AB_ints(1,foccA_,0);
+  double **C_p_AB = get_AB_ints(2,0,foccB_);
+  double **B_p_AS = get_AS_ints(1,foccA_);
+  double **B_p_RB = get_RB_ints(1,foccB_);
   double **B_p_AR = get_AR_ints(1);
   double **B_p_BS = get_BS_ints(1);
-
-  double **B_p_RB = block_matrix(nvirA_*aoccB_,ndf_+3);
-  double **B_p_AS = block_matrix(aoccA_*nvirB_,ndf_+3);
-
-  for (int r=0, rb=0; r<nvirA_; r++) {
-    for (int b=0; b<aoccB_; b++, rb++) {
-      C_DCOPY(ndf_+3,X_p_RB[r*noccB_+b+foccB_],1,B_p_RB[rb],1);
-  }}
-
-  for (int a=0, as=0; a<aoccA_; a++) {
-    for (int s=0; s<nvirB_; s++, as++) {
-      C_DCOPY(ndf_+3,X_p_AS[(a+foccA_)*nvirB_+s],1,B_p_AS[as],1);
-  }}
-
-  free_block(X_p_RB);
-  free_block(X_p_AS);
 
   double **X_AA = block_matrix(aoccA_,noccA_);
   double **X_BB = block_matrix(aoccB_,noccB_);
@@ -1750,7 +1734,7 @@ void SAPT2::exch_disp20()
  
   for (int a=0; a<aoccA_; a++) {
     C_DGEMM('N','N',nvirA_,ndf_+3,noccB_,1.0,&(sAB_[noccA_][0]),nmo_,
-      &(B_p_AB[(a+foccA_)*noccB_][0]),ndf_+3,0.0,&(D_p_AR[a*nvirA_][0]),ndf_+3);
+      &(B_p_AB[a*noccB_][0]),ndf_+3,0.0,&(D_p_AR[a*nvirA_][0]),ndf_+3);
   }
 
   C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,2.0,&(D_p_AR[0][0]),
@@ -1764,8 +1748,8 @@ void SAPT2::exch_disp20()
   memset(&(X_AS[0][0]),'\0',sizeof(double)*aoccA_*nvirB_);
 
   for (int b=0; b<noccB_; b++) {
-    C_DGEMM('N','T',aoccA_,nvirB_,ndf_+3,1.0,&(B_p_AB[foccA_*noccB_+b][0]),
-      noccB_*(ndf_+3),&(B_p_BS[b*nvirB_][0]),ndf_+3,1.0,&(X_AS[0][0]),nvirB_);
+    C_DGEMM('N','T',aoccA_,nvirB_,ndf_+3,1.0,&(B_p_AB[b][0]),noccB_*(ndf_+3),
+      &(B_p_BS[b*nvirB_][0]),ndf_+3,1.0,&(X_AS[0][0]),nvirB_);
   }
 
   for (int a=0,ar=0; a<aoccA_; a++) {
@@ -1807,8 +1791,7 @@ void SAPT2::exch_disp20()
 
   for (int b=0; b<aoccB_; b++) {
     C_DGEMM('T','N',nvirB_,ndf_+3,noccA_,1.0,&(sAB_[0][noccB_]),nmo_,
-      &(C_p_AB[b+foccB_][0]),noccB_*(ndf_+3),0.0,&(D_p_BS[b*nvirB_][0]),
-      ndf_+3);
+      &(C_p_AB[b][0]),aoccB_*(ndf_+3),0.0,&(D_p_BS[b*nvirB_][0]),ndf_+3);
   }
 
   C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,2.0,
@@ -1823,7 +1806,7 @@ void SAPT2::exch_disp20()
 
   for (int a=0; a<noccA_; a++) {
     C_DGEMM('N','T',nvirA_,aoccB_,ndf_+3,1.0,&(B_p_AR[a*nvirA_][0]),ndf_+3,
-      &(C_p_AB[a*noccB_+foccB_][0]),ndf_+3,1.0,&(X_RB[0][0]),aoccB_);
+      &(C_p_AB[a*aoccB_][0]),ndf_+3,1.0,&(X_RB[0][0]),aoccB_);
   }
 
   for (int a=0,ar=0; a<aoccA_; a++) {
@@ -1840,8 +1823,7 @@ void SAPT2::exch_disp20()
 
   for (int a=0; a<aoccA_; a++) {
     C_DGEMM('T','N',nvirB_,ndf_+3,noccA_,1.0,&(sAB_[0][noccB_]),nmo_,
-      &(B_p_AA[(a+foccA_)*noccA_][0]),(ndf_+3),0.0,
-      &(D_p_AS[a*nvirB_][0]),(ndf_+3));
+      &(B_p_AA[a*noccA_][0]),(ndf_+3),0.0,&(D_p_AS[a*nvirB_][0]),(ndf_+3));
   }
 
   for (int a=0; a<aoccA_; a++) {
@@ -1934,8 +1916,7 @@ void SAPT2::exch_disp20()
 
   for (int a=0; a<aoccA_; a++) {
     C_DGEMM('T','N',nvirA_,ndf_+3,noccA_,1.0,&(X_AR[0][0]),nvirA_,
-      &(B_p_AA[(a+foccA_)*noccA_][0]),ndf_+3,0.0,
-      &(D_p_AR[a*nvirA_][0]),ndf_+3);
+      &(B_p_AA[a*noccA_][0]),ndf_+3,0.0,&(D_p_AR[a*nvirA_][0]),ndf_+3);
   }
 
   C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,-2.0,&(D_p_AR[0][0]),
@@ -1993,9 +1974,8 @@ void SAPT2::exch_disp20()
   memset(&(X_AS[0][0]),'\0',sizeof(double)*aoccA_*nvirB_);
 
   for (int a=0; a<noccA_; a++) {
-    C_DGEMM('N','T',aoccA_,nvirB_,ndf_+3,1.0,
-      &(B_p_AA[a*noccA_+foccA_][0]),ndf_+3,&(D_p_AS[a*nvirB_][0]),ndf_+3,
-      1.0,&(X_AS[0][0]),nvirB_);
+    C_DGEMM('N','T',aoccA_,nvirB_,ndf_+3,1.0,&(B_p_AA[a][0]),noccA_*(ndf_+3),
+      &(D_p_AS[a*nvirB_][0]),ndf_+3,1.0,&(X_AS[0][0]),nvirB_);
   }
 
   for (int a=0,ar=0; a<aoccA_; a++) {
@@ -2015,8 +1995,7 @@ void SAPT2::exch_disp20()
 
   for (int a=0; a<aoccA_; a++) {
     C_DGEMM('T','N',nvirB_,(ndf_+3),noccA_,1.0,&(sAB_[0][noccB_]),nmo_,
-      &(B_p_AA[(a+foccA_)*noccA_][0]),(ndf_+3),0.0,
-      &(D_p_AS[a*nvirB_][0]),(ndf_+3));
+      &(B_p_AA[a*noccA_][0]),(ndf_+3),0.0,&(D_p_AS[a*nvirB_][0]),(ndf_+3));
   }
 
   C_DGEMM('N','N',nvirA_,aoccB_*(ndf_+3),noccB_,1.0,&(sAB_[noccA_][0]),
@@ -2063,8 +2042,8 @@ void SAPT2::exch_disp20()
   // -2 s_rb s_a's v_aa'b'b'
   // -2 s_rb' s_as v_a'a'bb'
 
-  C_DGEMV('n',aoccA_*noccA_,ndf_+3,1.0,&(B_p_AA[foccA_*noccA_][0]),ndf_+3,
-    diagBB_,1,0.0,&(X_AA[0][0]),1);
+  C_DGEMV('n',aoccA_*noccA_,ndf_+3,1.0,&(B_p_AA[0][0]),ndf_+3,diagBB_,1,
+    0.0,&(X_AA[0][0]),1);
 
   C_DGEMV('n',aoccB_*noccB_,ndf_+3,1.0,&(B_p_BB[foccB_*noccB_][0]),ndf_+3,
     diagAA_,1,0.0,&(X_BB[0][0]),1);
