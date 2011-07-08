@@ -69,6 +69,7 @@ protected:
   double** get_RB_ints(const int, int=0);
 
   double **get_DF_ints(int, const char *, int, int, int, int);
+  void antisym(double *, int, int);
   void antisym(double **, int, int);
 
   void cphf_solver(double**, double **, double *, int, const char *, 
@@ -111,6 +112,16 @@ protected:
   double exch102_k2f();
   double exch120_k11u_1();
   double exch102_k11u_1();
+  double exch120_k11u_2();
+  double exch102_k11u_2();
+  double exch120_k11u_3();
+  double exch102_k11u_3();
+  double exch120_k11u_4();
+  double exch102_k11u_4();
+  double exch120_k11u_5();
+  double exch102_k11u_5();
+  double exch120_k11u_6();
+  double exch102_k11u_6();
 
 public:
   SAPT2(Options& options, boost::shared_ptr<PSIO> psio, 
