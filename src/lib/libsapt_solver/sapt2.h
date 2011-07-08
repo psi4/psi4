@@ -94,14 +94,23 @@ protected:
   void Y2_3(double **, int, const char *, const char *, int, const char *, 
     int, int, int);
 
+  void t2OVOV(int, const char *, const char *, int, const char *, 
+    const char *, const char*, int, int, int, double *, int, const char *);
+
+  void OVOpVp_to_OVpOpV(double *, int, int);
+  void ijkl_to_ikjl(double *, int, int, int, int);
+  void symmetrize(double *, int, int);
+
   double elst120(double **, double **, double **, int, const char *, 
     const char *, const char *, int, int, int);
 
-  double exch110();
-  double exch101();
+  double exch110(int, const char *);
+  double exch101(int, const char *);
   double exch111();
   double exch120_k2f();
   double exch102_k2f();
+  double exch120_k11u_1();
+  double exch102_k11u_1();
 
 public:
   SAPT2(Options& options, boost::shared_ptr<PSIO> psio, 
