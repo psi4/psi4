@@ -38,7 +38,7 @@ void SAPT2::amplitudes()
     "SS RI Integrals",PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix",
     "Theta BS Intermediates",foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,
     "Y2 BS Amplitudes","T2 BS Amplitudes");
-/*
+
   t2OVOV(PSIF_SAPT_AMPS,"tARAR Amplitudes","Theta AR Intermediates",
     PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals","RR RI Integrals",
     foccA_,noccA_,nvirA_,evalsA_,PSIF_SAPT_AMPS,"t2ARAR Amplitudes");
@@ -50,7 +50,6 @@ void SAPT2::amplitudes()
     nvirA_,"AR RI Integrals",PSIF_SAPT_AMPS,"Theta 2 AR Intermediates");
   theta(PSIF_SAPT_AMPS,"t2BSBS Amplitudes",'N',true,aoccB_,nvirB_,aoccB_,
     nvirB_,"BS RI Integrals",PSIF_SAPT_AMPS,"Theta 2 BS Intermediates");
-*/
 }
 
 void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA,
