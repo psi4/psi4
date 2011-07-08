@@ -38,6 +38,19 @@ void SAPT2::amplitudes()
     "SS RI Integrals",PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix",
     "Theta BS Intermediates",foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,
     "Y2 BS Amplitudes","T2 BS Amplitudes");
+/*
+  t2OVOV(PSIF_SAPT_AMPS,"tARAR Amplitudes","Theta AR Intermediates",
+    PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals","RR RI Integrals",
+    foccA_,noccA_,nvirA_,evalsA_,PSIF_SAPT_AMPS,"t2ARAR Amplitudes");
+  t2OVOV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","Theta BS Intermediates",
+    PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals","SS RI Integrals",
+    foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,"t2BSBS Amplitudes");
+
+  theta(PSIF_SAPT_AMPS,"t2ARAR Amplitudes",'N',true,aoccA_,nvirA_,aoccA_,
+    nvirA_,"AR RI Integrals",PSIF_SAPT_AMPS,"Theta 2 AR Intermediates");
+  theta(PSIF_SAPT_AMPS,"t2BSBS Amplitudes",'N',true,aoccB_,nvirB_,aoccB_,
+    nvirB_,"BS RI Integrals",PSIF_SAPT_AMPS,"Theta 2 BS Intermediates");
+*/
 }
 
 void SAPT2::tOVOV(int intfileA, const char *ARlabel, int foccA, int noccA,
@@ -278,6 +291,174 @@ void SAPT2::Y2_3(double **yAR, int intfile, const char *AAlabel,
   free_block(B_p_AA);
   free_block(T_p_AR);
   free_block(B_p_RR);
+}
+
+void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *thetalabel, 
+  int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, 
+  int foccA, int noccA, int nvirA, double *evalsA, int ampout, 
+  const char *t2label)
+{
+  int aoccA = noccA - foccA;
+
+  double *t2ARAR = init_array((long int) aoccA*nvirA*aoccA*nvirA);
+
+  double **vAARR = block_matrix(aoccA*nvirA,aoccA*nvirA);
+  double **B_p_AA = get_DF_ints(intfile,AAlabel,foccA,noccA,foccA,noccA);
+  double **B_p_RR = get_DF_ints(intfile,RRlabel,0,nvirA,0,nvirA);
+
+  for (int a=0, ar=0; a<aoccA; a++) {
+    for (int r=0; r<nvirA; r++, ar++) {
+      C_DGEMM('N','T',aoccA,nvirA,ndf_+3,1.0,B_p_AA[a*aoccA],ndf_+3,
+        B_p_RR[r*nvirA],ndf_+3,0.0,vAARR[ar],nvirA);
+  }}
+
+  free_block(B_p_AA);
+  free_block(B_p_RR);
+
+  double *tARAR = init_array((long int) aoccA*nvirA*aoccA*nvirA);
+  psio_->read_entry(ampfile,tlabel,(char *) tARAR,
+    sizeof(double)*aoccA*nvirA*aoccA*nvirA);
+
+  OVOpVp_to_OVpOpV(tARAR,aoccA,nvirA);
+
+  C_DGEMM('N','T',aoccA*nvirA,aoccA*nvirA,aoccA*nvirA,-1.0,tARAR,aoccA*nvirA,
+    vAARR[0],aoccA*nvirA,0.0,t2ARAR,aoccA*nvirA);
+
+  OVOpVp_to_OVpOpV(tARAR,aoccA,nvirA);
+  OVOpVp_to_OVpOpV(t2ARAR,aoccA,nvirA);
+
+  C_DGEMM('N','T',aoccA*nvirA,aoccA*nvirA,aoccA*nvirA,-1.0,tARAR,aoccA*nvirA,
+    vAARR[0],aoccA*nvirA,1.0,t2ARAR,aoccA*nvirA);
+
+  free_block(vAARR);
+
+  double **B_p_AR = get_DF_ints(intfile,ARlabel,foccA,noccA,0,nvirA);
+  double **T_p_AR = block_matrix(aoccA*nvirA,ndf_+3);
+  psio_->read_entry(ampfile,thetalabel,(char *) T_p_AR[0],
+    sizeof(double)*aoccA*nvirA*(ndf_+3));
+
+  C_DGEMM('N','T',aoccA*nvirA,aoccA*nvirA,ndf_+3,1.0,B_p_AR[0],ndf_+3,
+    T_p_AR[0],ndf_+3,1.0,t2ARAR,aoccA*nvirA);
+
+  free_block(B_p_AR);
+  free_block(T_p_AR);
+
+  ijkl_to_ikjl(tARAR,aoccA,nvirA,aoccA,nvirA);
+  ijkl_to_ikjl(t2ARAR,aoccA,nvirA,aoccA,nvirA);
+
+  double **vAAAA = block_matrix(aoccA*aoccA,aoccA*aoccA);
+  B_p_AA = get_DF_ints(intfile,AAlabel,foccA,noccA,foccA,noccA);
+
+  for (int a=0, aa1=0; a<aoccA; a++) {
+    for (int a1=0; a1<aoccA; a1++, aa1++) {
+      C_DGEMM('N','T',aoccA,aoccA,ndf_+3,1.0,B_p_AA[a*aoccA],ndf_+3,
+        B_p_AA[a1*aoccA],ndf_+3,0.0,vAAAA[aa1],aoccA);
+  }}
+
+  free_block(B_p_AA);
+
+  C_DGEMM('N','N',aoccA*aoccA,nvirA*nvirA,aoccA*aoccA,0.5,vAAAA[0],aoccA*aoccA,
+    tARAR,nvirA*nvirA,1.0,t2ARAR,nvirA*nvirA);
+
+  free_block(vAAAA);
+
+  B_p_RR = get_DF_ints(intfile,RRlabel,0,nvirA,0,nvirA);
+  double **xRRR = block_matrix(nvirA*nvirA,nvirA);
+
+  for (int r=0; r < nvirA; r++) {
+    C_DGEMM('N','T',nvirA,nvirA*nvirA,ndf_+3,1.0,&(B_p_RR[r*nvirA][0]),
+      ndf_+3,&(B_p_RR[0][0]),ndf_+3,0.0,&(xRRR[0][0]),nvirA*nvirA);
+    C_DGEMM('N','T',aoccA*aoccA,nvirA*nvirA,nvirA,0.5,&(tARAR[r*nvirA]),
+      nvirA*nvirA,&(xRRR[0][0]),nvirA,1.0,&(t2ARAR[0]),nvirA*nvirA);
+  }
+
+  free(tARAR);
+  free_block(B_p_RR);
+  free_block(xRRR);
+
+  ijkl_to_ikjl(t2ARAR,aoccA,aoccA,nvirA,nvirA);
+  symmetrize(t2ARAR,aoccA,nvirA);
+
+  for(int a=0; a<aoccA; a++) {
+    for(int r=0; r<nvirA; r++) {
+      for(int a1=0; a1<aoccA; a1++) {
+        for(int r1=0; r1<nvirA; r1++) {
+          long int ar = a*nvirA + r;
+          long int a1r1 = a1*nvirA + r1;
+          long int ara1r1 = ar*aoccA*nvirA + a1r1;
+          t2ARAR[ara1r1] /= evalsA[a+foccA] + evalsA[a1+foccA] 
+            - evalsA[r+noccA] - evalsA[r1+noccA];
+  }}}}
+
+  psio_->write_entry(ampout,t2label,(char *) t2ARAR,sizeof(double)*aoccA*
+    nvirA*aoccA*nvirA);
+
+  free(t2ARAR);
+}
+
+void SAPT2::OVOpVp_to_OVpOpV(double *tARAR, int nocc, int nvir)
+{
+  double *X = init_array((long int) nocc*nvir*nocc*nvir);
+
+  for(int a=0; a<nocc; a++) {
+    for(int r=0; r<nvir; r++) {
+      for(int a1=0; a1<nocc; a1++) {
+        for(int r1=0; r1<nvir; r1++) {
+          long int ar = a*nvir + r;
+          long int a1r1 = a1*nvir + r1;
+          long int a1r = a1*nvir + r;
+          long int ar1 = a*nvir + r1;
+          long int ara1r1 = ar*nocc*nvir + a1r1;
+          long int a1rar1 = a1r*nocc*nvir + ar1;
+          X[a1rar1] = tARAR[ara1r1];
+  }}}}
+
+  C_DCOPY((long int) nocc*nvir*nocc*nvir,X,1,tARAR,1);
+
+  free(X);
+}
+
+void SAPT2::ijkl_to_ikjl(double *tARAR, int ilength, int jlength, int klength,
+  int llength)
+{
+  double *X = init_array((long int) ilength*jlength*klength*llength);
+
+  for(int i=0; i<ilength; i++) {
+    for(int j=0; j<jlength; j++) {
+      for(int k=0; k<klength; k++) {
+        for(int l=0; l<llength; l++) {
+          long int ij = i*jlength + j;
+          long int kl = k*llength + l;
+          long int ik = i*klength + k;
+          long int jl = j*llength + l;
+          long int ijkl = ij*klength*llength + kl;
+          long int ikjl = ik*jlength*llength + jl;
+          X[ikjl] = tARAR[ijkl];
+  }}}}
+
+  C_DCOPY((long int) ilength*jlength*klength*llength,X,1,tARAR,1);
+
+  free(X);
+}
+
+void SAPT2::symmetrize(double *tARAR, int nocc, int nvir)
+{
+  double *X = init_array((long int) nocc*nvir*nocc*nvir);
+
+  for(int a=0; a<nocc; a++) {
+    for(int r=0; r<nvir; r++) {
+      for(int a1=0; a1<nocc; a1++) {
+        for(int r1=0; r1<nvir; r1++) {
+          long int ar = a*nvir + r;
+          long int a1r1 = a1*nvir + r1;
+          long int ara1r1 = ar*nocc*nvir + a1r1;
+          long int a1r1ar = a1r1*nocc*nvir + ar;
+          X[ara1r1] = tARAR[ara1r1] + tARAR[a1r1ar];
+  }}}}
+
+  C_DCOPY((long int) nocc*nvir*nocc*nvir,X,1,tARAR,1);
+
+  free(X);
 }
 
 }}

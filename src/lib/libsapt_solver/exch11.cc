@@ -4,13 +4,13 @@ namespace psi { namespace sapt {
 
 void SAPT2::exch11()
 {
-  double e_exch110 = exch110();
+  double e_exch110 = exch110(PSIF_SAPT_AMPS,"Theta AR Intermediates");
 
   if (debug_) {
     fprintf(outfile,"    Exch110             = %18.12lf H\n",e_exch110);
   }
 
-  double e_exch101 = exch101();
+  double e_exch101 = exch101(PSIF_SAPT_AMPS,"Theta BS Intermediates");
 
   if (debug_) {
     fprintf(outfile,"    Exch101             = %18.12lf H\n\n",e_exch101);
@@ -25,12 +25,12 @@ void SAPT2::exch11()
   }
 }
 
-double SAPT2::exch110()
+double SAPT2::exch110(int ampfile, const char *thetalabel)
 {
   double e1 = 0.0, e2 = 0.0, e3 = 0.0, e4 = 0.0;
 
   double **T_p_AR = block_matrix(aoccA_*nvirA_,ndf_+3);
-  psio_->read_entry(PSIF_SAPT_AMPS,"Theta AR Intermediates",(char *) T_p_AR[0],
+  psio_->read_entry(ampfile,thetalabel,(char *) T_p_AR[0],
      sizeof(double)*aoccA_*nvirA_*(ndf_+3));
 
   double **B_p_AB = get_AB_ints(2,foccA_,0);
@@ -99,12 +99,12 @@ double SAPT2::exch110()
   return(e1+e2+e3+e4);
 }
 
-double SAPT2::exch101()
+double SAPT2::exch101(int ampfile, const char *thetalabel)
 {
   double e1 = 0.0, e2 = 0.0, e3 = 0.0, e4 = 0.0;
 
   double **T_p_BS = block_matrix(aoccB_*nvirB_,ndf_+3);
-  psio_->read_entry(PSIF_SAPT_AMPS,"Theta BS Intermediates",(char *) T_p_BS[0],
+  psio_->read_entry(ampfile,thetalabel,(char *) T_p_BS[0],
      sizeof(double)*aoccB_*nvirB_*(ndf_+3));
 
   double **B_p_AB = get_AB_ints(1,0,foccB_);
