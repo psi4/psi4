@@ -14,6 +14,7 @@ SAPT::SAPT(Options& options, boost::shared_ptr<PSIO> psio,
 #endif
 
   initialize();
+  get_denom();
 }
 
 SAPT::~SAPT()
@@ -249,6 +250,36 @@ void SAPT::initialize()
   free_block(vIJ);
   free_block(vIB);
   free_block(vAJ);
+}
+
+void SAPT::get_denom()
+{
+  boost::shared_ptr<Vector> evals_aoccA(new Vector(aoccA_));
+  boost::shared_ptr<Vector> evals_virA(new Vector(nvirA_));
+  boost::shared_ptr<Vector> evals_aoccB(new Vector(aoccB_));
+  boost::shared_ptr<Vector> evals_virB(new Vector(nvirB_));
+
+  for (int a=0; a<aoccA_; a++)
+    evals_aoccA->set(0,a,evalsA_[a+foccA_]);
+  for (int r=0; r<nvirA_; r++)
+    evals_virA->set(0,r,evalsA_[r+noccA_]);
+  for (int b=0; b<aoccB_; b++)
+    evals_aoccB->set(0,b,evalsB_[b+foccB_]);
+  for (int s=0; s<nvirB_; s++)
+    evals_virB->set(0,s,evalsB_[s+noccB_]);
+
+  denom_ = boost::shared_ptr<SAPTLaplaceDenominator>(
+    new
+SAPTLaplaceDenominator(evals_aoccA,evals_virA,evals_aoccB,evals_virB,
+    options_.get_double("DENOMINATOR_DELTA"),debug_));
+
+  boost::shared_ptr<Matrix> tauAR = denom_->denominatorA();
+  boost::shared_ptr<Matrix> tauBS = denom_->denominatorB();
+
+  dAR_ = tauAR->pointer();
+  dBS_ = tauBS->pointer();
+
+  nvec_ = denom_->nvector();
 }
 
 CPHFDIIS::CPHFDIIS(int length, int maxvec)

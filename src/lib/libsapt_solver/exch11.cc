@@ -8,12 +8,14 @@ void SAPT2::exch11()
 
   if (debug_) {
     fprintf(outfile,"    Exch110             = %18.12lf H\n",e_exch110);
+    fflush(outfile);
   }
 
   double e_exch101 = exch101(PSIF_SAPT_AMPS,"Theta BS Intermediates");
 
   if (debug_) {
     fprintf(outfile,"    Exch101             = %18.12lf H\n\n",e_exch101);
+    fflush(outfile);
   }
 
   e_exch11_ = e_exch110 + e_exch101; 
@@ -94,6 +96,7 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
     fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
     fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
     fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
+    fflush(outfile);
   }
 
   return(e1+e2+e3+e4);
@@ -168,6 +171,7 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
     fprintf(outfile,"    Exch11_2            = %18.12lf H\n",e2);
     fprintf(outfile,"    Exch11_3            = %18.12lf H\n",e3);
     fprintf(outfile,"    Exch11_4            = %18.12lf H\n",e4);
+    fflush(outfile);
   }
 
   return(e1+e2+e3+e4);
