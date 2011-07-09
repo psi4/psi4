@@ -8,30 +8,35 @@ void SAPT2::exch12()
 
   if (debug_) {
     fprintf(outfile,"    Exch111             = %18.12lf H\n",e_exch111);
+    fflush(outfile);
   }
 
   double e_exch120_k2u = exch110(PSIF_SAPT_AMPS,"Theta 2 AR Intermediates");
 
   if (debug_) {
     fprintf(outfile,"    Exch120 K2u         = %18.12lf H\n",e_exch120_k2u);
+    fflush(outfile);
   }
 
   double e_exch102_k2u = exch101(PSIF_SAPT_AMPS,"Theta 2 BS Intermediates");
 
   if (debug_) {
     fprintf(outfile,"    Exch102 K2u         = %18.12lf H\n",e_exch102_k2u);
+    fflush(outfile);
   }
 
   double e_exch120_k2f = exch120_k2f();
 
   if (debug_) {
     fprintf(outfile,"    Exch120 K2f         = %18.12lf H\n",e_exch120_k2f);
+    fflush(outfile);
   }
 
   double e_exch102_k2f = exch102_k2f();
 
   if (debug_) {
     fprintf(outfile,"    Exch102 K2f         = %18.12lf H\n",e_exch102_k2f);
+    fflush(outfile);
   }
 
   double e_exch120_k11u = exch120_k11u_1();
@@ -43,6 +48,7 @@ void SAPT2::exch12()
 
   if (debug_) {
     fprintf(outfile,"    Exch120 K11u        = %18.12lf H\n",e_exch120_k11u);
+    fflush(outfile);
   }
 
   double e_exch102_k11u = exch102_k11u_1();
@@ -54,6 +60,7 @@ void SAPT2::exch12()
 
   if (debug_) {
     fprintf(outfile,"    Exch102 K11u        = %18.12lf H\n\n",e_exch102_k11u);
+    fflush(outfile);
   }
 
   e_exch12_ = e_exch111 + e_exch120_k2f + e_exch102_k2f + e_exch120_k2u +
@@ -117,6 +124,7 @@ double SAPT2::exch111()
   if (debug_) {
     fprintf(outfile,"\n    Exch111_1           = %18.12lf H\n",e1);
     fprintf(outfile,"    Exch111_2           = %18.12lf H\n",e2);
+    fflush(outfile);
 
   }
 
@@ -233,6 +241,7 @@ double SAPT2::exch120_k2f()
     fprintf(outfile,"    Exch12_k2f_5        = %18.12lf H\n",e5);
     fprintf(outfile,"    Exch12_k2f_6        = %18.12lf H\n",e6);
     fprintf(outfile,"    Exch12_k2f_7        = %18.12lf H\n",e7);
+    fflush(outfile);
   }
 
   return(e1+e2+e3+e4+e5+e6+e7);
@@ -355,6 +364,7 @@ double SAPT2::exch102_k2f()
     fprintf(outfile,"    Exch12_k2f_5        = %18.12lf H\n",e5);
     fprintf(outfile,"    Exch12_k2f_6        = %18.12lf H\n",e6);
     fprintf(outfile,"    Exch12_k2f_7        = %18.12lf H\n",e7);
+    fflush(outfile);
   }
 
   return(e1+e2+e3+e4+e5+e6+e7);
@@ -541,6 +551,7 @@ double SAPT2::exch120_k11u_1()
 
   if (debug_) {
     fprintf(outfile,"\n    Exch12_k11u_1       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -723,6 +734,7 @@ double SAPT2::exch102_k11u_1()
 
   if (debug_) {
     fprintf(outfile,"\n    Exch12_k11u_1       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -891,6 +903,7 @@ double SAPT2::exch120_k11u_2()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_2       = %18.12lf H\n",energy);
+    fflush(outfile);
   }
 
   return(energy);
@@ -1071,6 +1084,7 @@ double SAPT2::exch102_k11u_2()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_2       = %18.12lf H\n",energy);
+    fflush(outfile);
   }
 
   return(energy);
@@ -1110,7 +1124,7 @@ double SAPT2::exch120_k11u_3()
 
   double **temp_tARAR = block_matrix(aoccA_*nvirA_,aoccA_*nvirA_);
   psio_->read_entry(PSIF_SAPT_AMPS,"tARAR Amplitudes",
-    (char *) temp_thetaARAR[0],sizeof(double)*aoccA_*nvirA_*aoccA_*nvirA_);
+    (char *) temp_tARAR[0],sizeof(double)*aoccA_*nvirA_*aoccA_*nvirA_);
 
   double **tRRAA = block_matrix(nvirA_*nvirA_,aoccA_*aoccA_);
 
@@ -1201,6 +1215,7 @@ double SAPT2::exch120_k11u_3()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_3       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -1240,7 +1255,7 @@ double SAPT2::exch102_k11u_3()
 
   double **temp_tBSBS = block_matrix(aoccB_*nvirB_,aoccB_*nvirB_);
   psio_->read_entry(PSIF_SAPT_AMPS,"tBSBS Amplitudes",
-    (char *) temp_thetaBSBS[0],sizeof(double)*aoccB_*nvirB_*aoccB_*nvirB_);
+    (char *) temp_tBSBS[0],sizeof(double)*aoccB_*nvirB_*aoccB_*nvirB_);
 
   double **tSSBB = block_matrix(nvirB_*nvirB_,aoccB_*aoccB_);
 
@@ -1342,6 +1357,7 @@ double SAPT2::exch102_k11u_3()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_3       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -1432,6 +1448,7 @@ double SAPT2::exch120_k11u_4()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_4       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -1520,6 +1537,7 @@ double SAPT2::exch102_k11u_4()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_4       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -1607,6 +1625,7 @@ double SAPT2::exch120_k11u_5()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_5       = %18.12lf H\n",-2.0*energy);
+    fflush(outfile);
   }
 
   return(-2.0*energy);
@@ -1694,6 +1713,7 @@ double SAPT2::exch102_k11u_5()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_5       = %18.12lf H\n",-2.0*energy);
+    fflush(outfile);
   }
 
   return(-2.0*energy);
@@ -1825,6 +1845,7 @@ double SAPT2::exch120_k11u_6()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_6       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
@@ -1949,6 +1970,7 @@ double SAPT2::exch102_k11u_6()
 
   if (debug_) {
     fprintf(outfile,"    Exch12_k11u_6       = %18.12lf H\n",-energy);
+    fflush(outfile);
   }
 
   return(-energy);
