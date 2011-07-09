@@ -31,6 +31,7 @@ class SAPT : public Wavefunction {
 
 private:
   void initialize();
+  void get_denom();
 
 protected:
   boost::shared_ptr<BasisSet> ribasis_;
@@ -75,6 +76,13 @@ protected:
   double **vBAA_;
   double **vAAB_;
   double **vBAB_;
+
+  boost::shared_ptr<SAPTLaplaceDenominator> denom_;
+
+  int nvec_;
+
+  double **dAR_;
+  double **dBS_;
 
   void zero_disk(int, const char *, int, int);
 

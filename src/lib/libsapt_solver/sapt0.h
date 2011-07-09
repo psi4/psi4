@@ -101,13 +101,6 @@ private:
   double q14();
 
 protected:
-  boost::shared_ptr<SAPTLaplaceDenominator> denom_;
-
-  int nvec_;
-
-  double **dAR_;
-  double **dBS_;
-
   bool no_response_;
   bool aio_cphf_;
   bool aio_dfints_;
