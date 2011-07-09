@@ -1,4 +1,5 @@
 #include "sapt2.h"
+#include "sapt2p.h"
 
 namespace psi { namespace sapt {
 
@@ -458,6 +459,124 @@ void SAPT2::symmetrize(double *tARAR, int nocc, int nvir)
   C_DCOPY((long int) nocc*nvir*nocc*nvir,X,1,tARAR,1);
 
   free(X);
+}
+
+void SAPT2p::amplitudes()
+{
+  tOVOV(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+    PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+    PSIF_SAPT_AMPS,"tARAR Amplitudes");
+  tOVOV(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",foccB_,noccB_,nvirB_,evalsB_,
+    PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",foccB_,noccB_,nvirB_,evalsB_,
+    PSIF_SAPT_AMPS,"tBSBS Amplitudes");
+
+  tOVOV(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+    PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",foccB_,noccB_,nvirB_,evalsB_,
+    PSIF_SAPT_AMPS,"tARBS Amplitudes");
+
+  pOOpVV(PSIF_SAPT_AMPS,"tARAR Amplitudes","tARAR Amplitudes",aoccA_,nvirA_,
+    PSIF_SAPT_AMPS,"pAA Density Matrix","pRR Density Matrix");
+  pOOpVV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","tBSBS Amplitudes",aoccB_,nvirB_,
+    PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix");
+
+  theta(PSIF_SAPT_AMPS,"tARAR Amplitudes",'N',true,aoccA_,nvirA_,aoccA_,nvirA_,
+    "AR RI Integrals",PSIF_SAPT_AMPS,"Theta AR Intermediates");
+  theta(PSIF_SAPT_AMPS,"tBSBS Amplitudes",'N',true,aoccB_,nvirB_,aoccB_,nvirB_,
+    "BS RI Integrals",PSIF_SAPT_AMPS,"Theta BS Intermediates");
+
+  theta(PSIF_SAPT_AMPS,"tARBS Amplitudes",'N',false,aoccA_,nvirA_,
+    aoccB_,nvirB_,"BS RI Integrals",PSIF_SAPT_AMPS,"T AR Intermediates");
+  theta(PSIF_SAPT_AMPS,"tARBS Amplitudes",'T',false,aoccA_,nvirA_,
+    aoccB_,nvirB_,"AR RI Integrals",PSIF_SAPT_AMPS,"T BS Intermediates");
+
+  Y2(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals",
+    "RR RI Integrals",PSIF_SAPT_AMPS,"pAA Density Matrix","pRR Density Matrix",
+    "Theta AR Intermediates",foccA_,noccA_,nvirA_,evalsA_,PSIF_SAPT_AMPS,
+    "Y2 AR Amplitudes","T2 AR Amplitudes");
+  Y2(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals",
+    "SS RI Integrals",PSIF_SAPT_AMPS,"pBB Density Matrix","pSS Density Matrix",
+    "Theta BS Intermediates",foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,
+    "Y2 BS Amplitudes","T2 BS Amplitudes");
+
+  t2OVOV(PSIF_SAPT_AMPS,"tARAR Amplitudes","Theta AR Intermediates",
+    PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","AR RI Integrals","RR RI Integrals",
+    foccA_,noccA_,nvirA_,evalsA_,PSIF_SAPT_AMPS,"t2ARAR Amplitudes");
+  t2OVOV(PSIF_SAPT_AMPS,"tBSBS Amplitudes","Theta BS Intermediates",
+    PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","BS RI Integrals","SS RI Integrals",
+    foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,"t2BSBS Amplitudes");
+
+  theta(PSIF_SAPT_AMPS,"t2ARAR Amplitudes",'N',true,aoccA_,nvirA_,aoccA_,
+    nvirA_,"AR RI Integrals",PSIF_SAPT_AMPS,"Theta 2 AR Intermediates");
+  theta(PSIF_SAPT_AMPS,"t2BSBS Amplitudes",'N',true,aoccB_,nvirB_,aoccB_,
+    nvirB_,"BS RI Integrals",PSIF_SAPT_AMPS,"Theta 2 BS Intermediates");
+
+  gARARxtARBS(PSIF_SAPT_AMPS,"tARBS Amplitudes",'N',PSIF_SAPT_AA_DF_INTS,
+    "AA RI Integrals","AR RI Integrals","RR RI Integrals",foccA_,noccA_,
+    nvirA_,foccB_,noccB_,nvirB_,PSIF_SAPT_AMPS,"gARAR x tARBS");
+  gARARxtARBS(PSIF_SAPT_AMPS,"tARBS Amplitudes",'T',PSIF_SAPT_BB_DF_INTS,
+    "BB RI Integrals","BS RI Integrals","SS RI Integrals",foccB_,noccB_,
+    nvirB_,foccA_,noccA_,nvirA_,PSIF_SAPT_AMPS,"gBSBS x tARBS");
+}
+
+void SAPT2p::gARARxtARBS(int ampfile, const char *tlabel, const char trans, 
+  int intfile, const char *AAlabel, const char *ARlabel, const char *RRlabel, 
+  int foccA, int noccA, int nvirA, int foccB, int noccB, int nvirB, int ampout,
+  const char *labelout)
+{
+  int aoccA = noccA - foccA;
+  int aoccB = noccB - foccB;
+
+  double **B_p_AR = get_DF_ints(intfile,ARlabel,foccA,noccA,0,nvirA);
+  double **gARAR = block_matrix(aoccA*nvirA,aoccA*nvirA);
+
+  C_DGEMM('N','T',aoccA*nvirA,aoccA*nvirA,ndf_+3,2.0,B_p_AR[0],ndf_+3,
+    B_p_AR[0],ndf_+3,0.0,gARAR[0],aoccA*nvirA);
+
+  free_block(B_p_AR);
+
+  double **B_p_AA = get_DF_ints(intfile,AAlabel,foccA,noccA,foccA,noccA);
+  double **B_p_RR = get_DF_ints(intfile,RRlabel,0,nvirA,0,nvirA);
+
+  for (int a=0, ar=0; a<aoccA; a++){
+    for (int r=0; r<nvirA; r++, ar++){
+      C_DGEMM('N','T',aoccA,nvirA,ndf_+3,-1.0,B_p_AA[a*aoccA],ndf_+3,
+        B_p_RR[r*nvirA],ndf_+3,1.0,gARAR[ar],nvirA);
+  }}
+
+  free_block(B_p_AA);
+  free_block(B_p_RR);
+
+  double **tARBS;
+  double **xARBS;
+
+  if (trans == 'n' || trans == 'N') {
+    tARBS = block_matrix(aoccA*nvirA,aoccB*nvirB);
+    xARBS = block_matrix(aoccA*nvirA,aoccB*nvirB);
+    psio_->read_entry(ampfile,tlabel,(char *) tARBS[0],
+      sizeof(double)*aoccA*nvirA*aoccB*nvirB);
+
+    C_DGEMM('N','N',aoccA*nvirA,aoccB*nvirB,aoccA*nvirA,1.0,gARAR[0],
+      aoccA*nvirA,tARBS[0],aoccB*nvirB,0.0,xARBS[0],aoccB*nvirB);
+  }
+  else if (trans == 't' || trans == 'T') {
+    tARBS = block_matrix(aoccB*nvirB,aoccA*nvirA);
+    xARBS = block_matrix(aoccB*nvirB,aoccA*nvirA);
+    psio_->read_entry(ampfile,tlabel,(char *) tARBS[0],
+      sizeof(double)*aoccA*nvirA*aoccB*nvirB);
+
+    C_DGEMM('N','N',aoccB*nvirB,aoccA*nvirA,aoccA*nvirA,1.0,tARBS[0],
+      aoccA*nvirA,gARAR[0],aoccA*nvirA,0.0,xARBS[0],aoccA*nvirA);
+  }
+  else
+    throw PsiException("You want me to do what to that matrix?",
+       __FILE__,__LINE__);
+
+  psio_->write_entry(ampout,labelout,(char *) xARBS[0],
+    sizeof(double)*aoccA*nvirA*aoccB*nvirB);
+
+  free_block(gARAR);
+  free_block(tARBS);
+  free_block(xARBS);
 }
 
 }}

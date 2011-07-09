@@ -16,17 +16,7 @@ private:
   virtual void print_header();
   virtual void print_results();
 
-  void df_integrals();
-  void w_integrals();
-
 protected:
-  boost::shared_ptr<SAPTLaplaceDenominator> denom_;
-
-  int nvec_;
-
-  double **dAR_;
-  double **dBS_;
-
   int *ioff_;
   int *index2i_;
   int *index2j_;
@@ -42,7 +32,9 @@ protected:
   double e_exch11_;
   double e_exch12_;
   double e_ind20_;
+  double e_ind22_;
   double e_exch_ind20_;
+  double e_exch_ind22_;
   double e_disp20_;
   double e_exch_disp20_;
   double e_sapt0_;
@@ -67,6 +59,9 @@ protected:
   double** get_AB_ints(const int, int=0, int=0);
   double** get_AS_ints(const int, int=0);
   double** get_RB_ints(const int, int=0);
+
+  void df_integrals();
+  void w_integrals();
 
   double **get_DF_ints(int, const char *, int, int, int, int);
   void antisym(double *, int, int);
@@ -123,6 +118,23 @@ protected:
   double exch120_k11u_6();
   double exch102_k11u_6();
 
+  double ind220();
+  double ind202();
+  double ind220_1(int, const char *, const char *, const char *, int, 
+    const char *, double **, double **, double **, int, int, int, double *);
+  double ind220_2(int, const char *, double **, double **, double **, int, 
+    int, int);
+  double ind220_3(int, const char *, const char *, double **, double **, 
+    int, int, int);
+  double ind220_4(int, const char *, int, const char *, double **, int, 
+    int, int);
+  double ind220_5(int, const char *, double **, int, int, int, double *);
+  double ind220_6(int, const char *, const char *, const char *, int, 
+    const char *, double **, int, int, int);
+  double ind220_7(int, const char *, const char *, const char *, int, 
+    const char *, int, const char *, const char *, const char *, double **, 
+    int, int, int, int, int, int);
+
 public:
   SAPT2(Options& options, boost::shared_ptr<PSIO> psio, 
     boost::shared_ptr<Chkpt> chkpt);
@@ -130,7 +142,7 @@ public:
 
   virtual double compute_energy();
 
-  void amplitudes();
+  virtual void amplitudes();
 
   void elst10();
   void exch10_s2();
@@ -142,6 +154,7 @@ public:
   void elst12();
   void exch11();
   void exch12();
+  void ind22();
 
 };
 
