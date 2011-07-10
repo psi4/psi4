@@ -473,7 +473,6 @@ void SO_PQ_Iterator::first()
 
     current.P = ii;
     current.Q = jj;
-    fprintf(outfile, "ii %d jj %d\n", ii, jj);
 }
 
 void SO_PQ_Iterator::next()
@@ -490,7 +489,6 @@ void SO_PQ_Iterator::next()
         }
     }
 
-//    fprintf(outfile, "ii %d jj %d\n", ii, jj);
     current.P = ii;
     current.Q = jj;
 }
