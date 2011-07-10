@@ -58,8 +58,8 @@ void Process::Environment::init(char **envp)
              (Process::environment("COMMUNICATOR") != "MPI") &&
              (Process::environment("COMMUNICATOR") != "LOCAL") )
         {
-            environment_["COMMUNICATOR"] = "MPI";
-            std::cout << "WARNING: COMMUNICATOR was changed to MPI" << std::endl;
+            environment_["COMMUNICATOR"] = "MADNESS";
+            std::cout << "WARNING: COMMUNICATOR was changed to MADNESS" << std::endl;
         }
 #else
         if (Process::environment("COMMUNICATOR") != "LOCAL") {
