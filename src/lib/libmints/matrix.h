@@ -395,6 +395,8 @@ public:
         else
            return 0;}
 
+    size_t size(const int &h=0) const { return colspi_[h] * rowspi_[h]; }
+
     /**
      * Returns a copy of the current matrix.
      *
@@ -1107,5 +1109,101 @@ typedef boost::shared_ptr<Matrix>       SharedMatrix;
 typedef boost::shared_ptr<SimpleMatrix> SharedSimpleMatrix;
 
 }
+
+#if HAVE_MADNESS == 1
+
+namespace madness {  namespace archive {
+
+    /// Serialize a psi Matrix
+    template <class Archive>
+    struct ArchiveStoreImpl< Archive, psi::Matrix > {
+        static void store(const Archive &ar, const psi::Matrix &t) {
+            ar & t.size(0) & t.nirrep() & t.symmetry();
+            for (int i=0; i < t.nirrep(); i++) {
+                ar & t.rowdim(i) & t.coldim(i);
+            }
+            for (int i=0; i < t.nirrep(); i++) {
+                ar & t.size(i);
+                if (t.size(i)) {
+                    ar & wrap( &(t.pointer(i)[0][0]), t.size(i) );
+                }
+            }
+        };
+    };
+
+    /// Deserialize a psi Matrix ... existing psi Matrix is replaced
+    template <class Archive>
+    struct ArchiveLoadImpl< Archive, psi::Matrix > {
+        static void load(const Archive& ar, psi::Matrix& t) {
+            size_t sz;
+            int nir, symm;
+            ar & sz & nir & symm;
+            if (sz) {
+                int *rows = new int[nir];
+                int *cols = new int[nir];
+
+                for (int i=0; i < t.nirrep(); i++) {
+                    ar & rows[i] & cols[i];
+                }
+                t = psi::Matrix(nir, rows, cols, symm);
+                for (int i=0; i < t.nirrep(); i++) {
+                    size_t szi;
+                    ar & szi;
+                    if (szi != t.size(i)) throw psi::PSIEXCEPTION("size mismatch deserializing a psi Matrix");
+                    if (szi) ar & wrap(&(t.pointer(i)[0][0]), t.size(i));
+                }
+                free(rows); free(cols);
+            }
+            else {
+                t = psi::Matrix();
+            }
+        };
+    };
+
+
+    /// Serialize a psi SharedMatrix
+    template <class Archive>
+    struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Matrix> > {
+        static void store(const Archive &ar, const boost::shared_ptr<psi::Matrix> &t) {
+            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name() &
+                 wrap(t->rowspi(), t->nirrep()) &
+                 wrap(t->colspi(), t->nirrep());
+            for (int i=0; i < t->nirrep(); i++) {
+                ar & t->size(i);
+                if (t->size(i)) {
+                    ar & wrap( &(t->pointer(i)[0][0]), t->size(i) );
+                }
+            }
+        };
+    };
+
+    /// Deserialize a psi SharedMatrix ... existing psi SharedMatrix is replaced
+    template <class Archive>
+    struct ArchiveLoadImpl< Archive, boost::shared_ptr<psi::Matrix> > {
+        static void load(const Archive& ar, boost::shared_ptr<psi::Matrix>& t) {
+            size_t sz;
+            int nir, symm;
+            std::string name;
+            ar & sz & nir & symm & name;
+            if (sz) {
+                int rows[nir], cols[nir];
+                ar & wrap(rows, nir) & wrap(cols, nir);
+                t = boost::shared_ptr<psi::Matrix>(new psi::Matrix(name, nir, rows, cols, symm));
+                for (int i=0; i < t->nirrep(); i++) {
+                    size_t szi;
+                    ar & szi;
+                    if (szi != t->size(i)) throw psi::PSIEXCEPTION("size mismatch deserializing a psi Matrix");
+                    if (szi) ar & wrap(&(t->pointer(i)[0][0]), t->size(i));
+                }
+            }
+            else {
+                t = boost::shared_ptr<psi::Matrix>(new psi::Matrix());
+            }
+        };
+    };
+
+
+}}
+#endif // madness
 
 #endif // MATRIX_H
