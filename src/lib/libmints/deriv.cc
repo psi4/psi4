@@ -57,14 +57,11 @@ public:
 
     void finalize() {
         // Do summation over threads
-        result[0]->print();
         for (int i=1; i<nthread; ++i) {
-            result[i]->print();
             result[0]->add(result[i]);
         }
         // Do MPI global summation
         result[0]->sum();
-        result[0]->print();
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -74,8 +71,6 @@ public:
                     int sirrep, int sso,
                     double value)
     {
-        fprintf(outfile, "%5d%5d%5d%5d%5d%20.10lf\n",
-                salc, pabs, qabs, rabs, sabs, value);
         int thread = Communicator::world->thread_id(pthread_self());
 
         // Previously, we applied a factor of 4 after the fact...apply it from the beginning now.
@@ -277,7 +272,6 @@ SharedMatrix Deriv::compute()
             TPDMcont[cd] = TPDMcont_vector->get(cd);
             fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
         }
-        fprintf(outfile, "Processed %lu integrals\n", counter);
         fflush(outfile);
     }
 //    else /* unrestricted */ {

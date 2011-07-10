@@ -35,4 +35,19 @@ extern "C" {
         return status;
     }
 
+    int fprintf(FILE * __restrict __stream, const char * __restrict __format)
+    {
+        int status = 0;
+
+        if ((Communicator::world.get() != NULL) && (Communicator::world->me() == 0)) {
+            status = vfprintf(__stream, __format);
+        }
+        else if (Communicator::world.get() == NULL) {
+            p_fprintf(stderr, "Communicator object does not exist.\n");
+            status = vfprintf(__stream, __format);
+        }
+
+        return status;
+    }
+
 }
