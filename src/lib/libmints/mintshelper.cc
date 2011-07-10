@@ -20,16 +20,19 @@ namespace psi {
 
 void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
+    if (Communicator::world->nproc() > 1)
+        throw PSIEXCEPTION("MintsHelper: You can only use one process with this.");
+
     if (wavefunction)
-        {
-            psio_ = wavefunction->psio();
-            molecule_ = wavefunction->molecule ();
-        }
+    {
+        psio_ = wavefunction->psio();
+        molecule_ = wavefunction->molecule ();
+    }
     else
-        {
-            psio_ = boost::shared_ptr<PSIO>(new PSIO());
-            molecule_ = boost::shared_ptr<Molecule>(Process::environment.molecule());
-        }
+    {
+        psio_ = boost::shared_ptr<PSIO>(new PSIO());
+        molecule_ = boost::shared_ptr<Molecule>(Process::environment.molecule());
+    }
 
     if (molecule_.get() == 0) {
         fprintf(outfile, "  Active molecule not set!");
@@ -45,14 +48,14 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 
     // Read in the basis set
     if(wavefunction)
-        {
-            basisset_ = wavefunction->basisset();
-        }
+    {
+        basisset_ = wavefunction->basisset();
+    }
     else
-        {
-            boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
-            basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
-        }
+    {
+        boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
+        basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
+    }
 
     // Print the basis set
     if (print_)
