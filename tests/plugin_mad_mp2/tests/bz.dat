@@ -1,0 +1,41 @@
+molecule bz2 {
+0 1
+X
+X 1 1.0
+C 2 XC 1 A1
+C 2 XC 1 A1 3 60.0
+C 2 XC 1 A1 4 60.0
+C 2 XC 1 A1 5 60.0
+C 2 XC 1 A1 6 60.0
+C 2 XC 1 A1 7 60.0
+X 3 1.0 2 A1 1 0.0
+H 3 HC 9 A1 2 180.0
+H 4 HC 3 A2 2 180.0
+H 5 HC 4 A2 2 180.0
+H 6 HC 5 A2 2 180.0
+H 7 HC 6 A2 2 180.0
+H 8 HC 7 A2 2 180.0
+
+A1 = 90.0
+A2 = 120.0
+XC = 1.3
+HC = 1.08
+symmetry c1
+}
+
+memory 4.0 GB
+plugin_load("../plugin_mad_mp2.so")
+
+set {
+basis cc-pvtz
+scf_type df
+guess sad
+e_converge 10
+d_converge 10
+print 1
+mp2_algorithm dfmp2j
+}
+
+energy('scf')
+plugin("../plugin_mad_mp2.so")
+
