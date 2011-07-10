@@ -809,13 +809,13 @@ public:
     /// @}
 
     // Serializable pure virtual functions:
-    void send(Communicator* comm);
-    void recv(Communicator* comm);
-    void bcast(Communicator* comm, int broadcaster);
+    void send();
+    void recv();
+    void bcast(int broadcaster);
     /**
      * Performs element-by-element sum of all data from all nodes.
      */
-    void sum(Communicator *comm);
+    void sum();
 
     /// Writes this to the dpdfile2 given
     void write_to_dpdfile2(dpdfile2 *outFile);

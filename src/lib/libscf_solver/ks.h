@@ -41,7 +41,7 @@ protected:
     std::map<std::string, double> quad_values_;
     /// primary basis set (might get fancy later)
     boost::shared_ptr<BasisSet> basisset_;
-    /// primary so basis set 
+    /// primary so basis set
     boost::shared_ptr<SOBasisSet> sobasisset_;
     /// Options object
     Options& options_;

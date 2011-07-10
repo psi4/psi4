@@ -280,7 +280,9 @@ void HF::integrals()
         if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
         boost::shared_ptr<IntegralFactory> integral = boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        boost::shared_ptr<TwoBodyAOInt> aoeri = boost::shared_ptr<TwoBodyAOInt>(integral->eri());
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoeri;
+        for (int i=0; i<Communicator::world->nthread(); ++i)
+             aoeri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral->eri()));
         eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoeri, integral));
     }
 }
