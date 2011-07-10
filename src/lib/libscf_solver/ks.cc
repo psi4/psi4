@@ -76,8 +76,10 @@ void KS::common_init()
             functional_->setOmega(options_.get_double("DFT_OMEGA"));
         }
 
-        boost::shared_ptr<TwoBodyAOInt> ao_erf(fact->erf_eri(functional_->getOmega()));
-        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(ao_erf, fact));
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
+        for (int i=0; i<Communicator::world->nthread(); ++i)
+            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
+        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     }
 
 }
@@ -310,12 +312,12 @@ void RKS::form_G()
     form_V();
     if (functional_->isRangeCorrected()) {
         Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
-        process_omega_tei<Omega_K_Functor>(k_builder);
+        process_omega_tei(k_builder);
     }
     if (!functional_->isHybrid()) {
         // This will build J (stored in G)
         J_Functor j_builder(G_, D_);
-        process_tei<J_Functor>(j_builder);
+        process_tei(j_builder);
         J_->copy(G_);
 
         G_->scale(1.0);
@@ -325,7 +327,7 @@ void RKS::form_G()
     } else {
         // This will build J (stored in G) and K
         J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-        process_tei<J_K_Functor>(jk_builder);
+        process_tei(jk_builder);
         J_->copy(G_);
 
         double alpha = functional_->getExactExchange();

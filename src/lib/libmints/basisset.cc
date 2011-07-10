@@ -475,7 +475,25 @@ void BasisSet::refresh()
         }
     }
 
+    // Create a map that has a key/value pair
+    // The key is the angular momentum function of the shell arranged in decending order
+    // The value is the actual shell number
+    typedef std::pair<int, int> am_to_shell_pair;
+    std::multimap< int, int, std::less<int> > am_to_shell_list;
+    for (int i=0; i < shells_.size(); i++) {
+        am_to_shell_list.insert(am_to_shell_pair(shells_[i]->nfunction(), i));
+    }
+    // This puts the sorted shell values into the sorted_shell_list_ vector
+    // This can be used by the integral iterator to look up the value of the sorted shells
+    std::multimap< int, int, std::less<int> >::iterator it;
+    sorted_ao_shell_list_.clear();
+    for (it=am_to_shell_list.begin(); it != am_to_shell_list.end(); it++) {
+        //std::cout << "sorted shell size = " << it->first <<
+        //        "\t, which belongs to shell number " << it->second << std::endl;
+        sorted_ao_shell_list_.push_back(it->second);
+    }
 }
+
 std::pair<std::vector<std::string>, boost::shared_ptr<BasisSet> > BasisSet::test_basis_set(int max_am)
 {
     int max_centers = 4;

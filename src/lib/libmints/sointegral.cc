@@ -333,43 +333,89 @@ void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result
 ///////////////////////////////////////////////////////////////////////////////
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt> &tb,
-                           const boost::shared_ptr<IntegralFactory>& integral)
-    : tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
+                           const boost::shared_ptr<IntegralFactory>& integral) :
+#if HAVE_MADNESS
+    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+#endif
+    integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
+{
+    tb_.push_back(tb);
+    common_init();
+#if HAVE_MADNESS
+    process_pending();
+#endif
+}
+
+TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &tb,
+                           const boost::shared_ptr<IntegralFactory>& integral) :
+#if HAVE_MADNESS
+    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+#endif
+    tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(0)
 {
     common_init();
+#if HAVE_MADNESS
+    process_pending();
+#endif
 }
 
 TwoBodySOInt::TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& tb,
                            const boost::shared_ptr<IntegralFactory>& integral,
-                           const CdSalcList& cdsalcs)
-    : tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
+                           const CdSalcList& cdsalcs) :
+#if HAVE_MADNESS
+    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+#endif
+    integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
+{
+    tb_.push_back(tb);
+    common_init();
+#if HAVE_MADNESS
+    process_pending();
+#endif
+}
+
+TwoBodySOInt::TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& tb,
+                           const boost::shared_ptr<IntegralFactory>& integral,
+                           const CdSalcList& cdsalcs) :
+#if HAVE_MADNESS
+    madness::WorldObject<TwoBodySOInt>(*Communicator::world->get_madworld()),
+#endif
+    tb_(tb), integral_(integral), only_totally_symmetric_(false), cdsalcs_(&cdsalcs)
 {
     common_init();
+#if HAVE_MADNESS
+    process_pending();
+#endif
 }
 
 void TwoBodySOInt::common_init()
 {
-    deriv_ = 0;
+    // MPI runtime settings (defaults provided for all communicators)
+    nthread_ = Communicator::world->nthread();
+    comm_    = Communicator::world->communicator();
+    nproc_   = Communicator::world->nproc();
+    me_      = Communicator::world->me();
 
     // Try to reduce some work:
-    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_->basis1(), integral_));
+    b1_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis1(), integral_));
 
-    if (tb_->basis1() == tb_->basis2())
+    if (tb_[0]->basis1() == tb_[0]->basis2())
         b2_ = b1_;
     else
-        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_->basis2(), integral_));
+        b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis2(), integral_));
 
-    if (tb_->basis1() == tb_->basis3())
+    if (tb_[0]->basis1() == tb_[0]->basis3())
         b3_ = b1_;
     else
-        b3_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_->basis3(), integral_));
+        b3_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis3(), integral_));
 
-    if (tb_->basis3() == tb_->basis4())
+    if (tb_[0]->basis3() == tb_[0]->basis4())
         b4_ = b3_;
     else
-        b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_->basis4(), integral_));
+        b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis4(), integral_));
 
-    tb_->set_force_cartesian(b1_->petitelist()->include_pure_transform());
+    for (int i=0; i<nthread_; ++i)
+        tb_[i]->set_force_cartesian(b1_->petitelist()->include_pure_transform());
 
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *
@@ -377,15 +423,17 @@ void TwoBodySOInt::common_init()
             b4_->max_nfunction_in_shell();
 
     // Check to make sure things are consistent
-    if (tb_->deriv() > 0 && cdsalcs_ == 0)
+    if (tb_[0]->deriv() > 0 && cdsalcs_ == 0)
         throw PSIEXCEPTION("TwoBodySOInt: AO object configured for gradients but CdSalc object not provided.");
-    if (tb_->deriv() == 0 && cdsalcs_ != 0)
+    if (tb_[0]->deriv() == 0 && cdsalcs_ != 0)
         throw PSIEXCEPTION("TwoBodySOInt: Ao object not configured for gradients but CdSalc was provided.");
 
-    if (tb_->deriv() == 1 && cdsalcs_ != 0)
-        buffer_ = new double[size_ * cdsalcs_->ncd()];
+    if (tb_[0]->deriv() == 1 && cdsalcs_ != 0)
+        for (int i=0; i<nthread_; ++i)
+            buffer_.push_back(new double[size_ * cdsalcs_->ncd()]);
     else
-        buffer_ = new double[size_];
+        for (int i=0; i<nthread_; ++i)
+            buffer_.push_back(new double[size_]);
 
     ::memset(iirrepoff_, 0, sizeof(int) * 8);
     ::memset(jirrepoff_, 0, sizeof(int) * 8);
@@ -405,24 +453,28 @@ void TwoBodySOInt::common_init()
     petite3_ = b3_->petitelist();
     petite4_ = b4_->petitelist();
 
-    pg_ = tb_->basis()->molecule()->point_group();
+    pg_ = tb_[0]->basis()->molecule()->point_group();
 
     dcd_ = boost::shared_ptr<DCD>(new DCD(petite1_->group()));
 
     if (cdsalcs_) {
         int ncd = cdsalcs_->ncd();
-        deriv_ = new double*[ncd];
-        for (int i=0; i<ncd; ++i)
-            deriv_[i] = &(buffer_[i*size_]);
+        for (int n=0; n<nthread_; ++n) {
+            deriv_.push_back(new double*[ncd]);
+            for (int i=0; i<ncd; ++i)
+                deriv_[n][i] = &(buffer_[n][i*size_]);
+        }
     }
 //    dprintf("ncd = %d size_ = %ld\n", ncd, size_);
 }
 
 TwoBodySOInt::~TwoBodySOInt()
 {
-    delete[] buffer_;
-    if (deriv_)
-        delete[] deriv_;
+    for (int i=0; i<nthread_; ++i) {
+        delete[] buffer_[i];
+        if (deriv_.size())
+            delete[] deriv_[i];
+    }
 }
 
 boost::shared_ptr<SOBasisSet> TwoBodySOInt::basis() const

@@ -86,6 +86,13 @@ void Vector::init(int nirreps, int *dimpi)
     alloc();
 }
 
+Vector* Vector::clone()
+{
+    Vector *temp = new Vector(nirrep_, dimpi_);
+    temp->copy(this);
+    return temp;
+}
+
 void Vector::alloc()
 {
     if (vector_)
@@ -258,6 +265,30 @@ void Vector::scale(double sc)
             vector_[h][i] *= sc;
         }
     }
+}
+
+void Vector::send()
+{
+}
+
+void Vector::recv()
+{
+}
+
+void Vector::bcast(int broadcaster)
+{
+    // Assume the user allocated the matrix to the correct size first.
+    for (int h=0; h<nirrep_; ++h) {
+        if (dimpi_[h] > 0)
+            Communicator::world->bcast(vector_[h], dimpi_[h], broadcaster);
+    }
+}
+
+void Vector::sum()
+{
+    for (int h=0; h<nirrep_; ++h)
+        if (dimpi_[h] > 0)
+            Communicator::world->sum(vector_[h], dimpi_[h]);
 }
 
 //

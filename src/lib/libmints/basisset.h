@@ -75,6 +75,9 @@ class BasisSet
     //! Array of gaussian shells
     std::vector<boost::shared_ptr<GaussianShell> > shells_;
 
+    //! vector of shells numbers sorted in acending AM order.
+    std::vector< int > sorted_ao_shell_list_;
+
     //! Molecule object.
     boost::shared_ptr<Molecule> molecule_;
 
@@ -105,7 +108,7 @@ public:
     /** Builder factory method
      * @param molecule the molecule to build the BasisSet around
      * @param shells array of *atom-numbered* GaussianShells to build the BasisSet from
-     * @return BasisSet corresponding to this molecule and set of shells 
+     * @return BasisSet corresponding to this molecule and set of shells
      */
     static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
                                                      std::vector<boost::shared_ptr<GaussianShell> > shells);
@@ -280,6 +283,11 @@ public:
 
     /// Global arrays of x, y, z exponents
     static std::vector<Vector3> exp_ao[];
+
+    //! Returns the value of the sorted shell list.
+    int get_ao_sorted_shell(const int &i) { return sorted_ao_shell_list_[i]; }
+    //! Returns the vector of sorted shell list.
+    std::vector<int> get_ao_sorted_list() { return sorted_ao_shell_list_; }
 };
 
 }

@@ -118,6 +118,9 @@ protected:
     SOTransform *sotrans_;
     AOTransform *aotrans_;
 
+    //! vector of so shells numbers sorted in acending AM order.
+    std::vector< int > sorted_so_shell_list_;
+
     /// Handles initializing SOBasis
     void init();
 
@@ -176,6 +179,11 @@ public:
 
     /// Returns the dimension for each irrep.
     Dimension dimension() const;
+
+    //! Returns the value of the sorted shell list.
+    int get_so_sorted_shell(const int &i) { return sorted_so_shell_list_[i]; }
+    //! Returns the vector of sorted shell list.
+    std::vector<int> get_so_sorted_list() { return sorted_so_shell_list_; }
 
     void print(FILE *out = outfile) const;
 };

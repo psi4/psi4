@@ -3,6 +3,8 @@
 
 #include <stddef.h>
 
+#include <libparallel/parallel.h>
+
 #define MAX_IOFF 30000
 extern size_t ioff[MAX_IOFF];
 
@@ -40,9 +42,13 @@ class SOBasisSet;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-class Wavefunction {
+//#if HAVE_MADNESS
+//class Wavefunction : public madness::WorldObject<Wavefunction>
+//#else
+class Wavefunction
+//#endif
+{
 protected:
-
     /// Primary basis set for AO integrals
     boost::shared_ptr<BasisSet> basisset_;
 

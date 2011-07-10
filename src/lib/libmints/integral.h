@@ -277,6 +277,73 @@ public:
     int end_of_PK() const { return current.end_of_PK; }
 };
 
+class SO_PQ_Iterator
+{
+private:
+    struct PQ_Pair {
+        int P;
+        int Q;
+    };
+
+    PQ_Pair current;
+    int ii, jj;
+
+    bool done;
+
+    boost::shared_ptr<SOBasisSet> bs1_;
+
+public:
+    SO_PQ_Iterator(boost::shared_ptr<SOBasisSet>bs1);
+    SO_PQ_Iterator();
+
+    void first();
+    void next();
+    bool is_done() { return done; }
+
+    int p() const { return current.P; }
+    int q() const { return current.Q; }
+};
+
+class SO_RS_Iterator
+{
+private:
+    struct RS_Pair {
+        int P;
+        int Q;
+        int R;
+        int S;
+    };
+
+    RS_Pair current;
+    int usi_arr[3], usj_arr[3], usk_arr[3], usl_arr[3];
+    int usii, usjj, uskk, usll, upk;
+
+    int num_unique_pk;
+
+    bool done;
+
+    boost::shared_ptr<SOBasisSet> bs1_;
+    boost::shared_ptr<SOBasisSet> bs2_;
+    boost::shared_ptr<SOBasisSet> bs3_;
+    boost::shared_ptr<SOBasisSet> bs4_;
+
+public:
+    SO_RS_Iterator(const int &P, const int &Q,
+                   boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                   boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
+    SO_RS_Iterator();
+
+    void first();
+    void next();
+    bool is_done() { return done; }
+
+    int p() const { return current.P; }
+    int q() const { return current.Q; }
+    int r() const { return current.R; }
+    int s() const { return current.S; }
+};
+
+
 /*! \ingroup MINTS */
 class IntegralFactory
 {

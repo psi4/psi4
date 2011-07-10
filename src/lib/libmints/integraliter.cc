@@ -375,7 +375,6 @@ void SOShellCombinationsIterator::first()
     else{
         current.end_of_PK = false;
     }
-
 }
 
 void SOShellCombinationsIterator::next()
@@ -400,6 +399,8 @@ void SOShellCombinationsIterator::next()
                 }
             }
         }
+//        fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
+
         usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
         if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
             num_unique_pk = 1;
@@ -425,6 +426,8 @@ void SOShellCombinationsIterator::next()
     int usi, usj, usk, usl;
     usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
 
+//    fprintf(outfile, ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
+
     // Sort shells based on AM, save ERI some work doing permutation resorting.
     if (bs1_->am(usi) < bs2_->am(usj)) {
         swap(usi, usj);
@@ -447,4 +450,184 @@ void SOShellCombinationsIterator::next()
     else{
         current.end_of_PK = false;
     }
+}
+
+// ===========================================================================
+//  SO_PQ_Iterator
+// ===========================================================================
+SO_PQ_Iterator::SO_PQ_Iterator(boost::shared_ptr<SOBasisSet>bs1) :
+    bs1_(bs1)
+{
+
+}
+
+SO_PQ_Iterator::SO_PQ_Iterator()
+{
+
+}
+
+void SO_PQ_Iterator::first()
+{
+    ii = jj = bs1_->nshell()-1;
+    done = false;
+
+    current.P = ii;
+    current.Q = jj;
+    fprintf(outfile, "ii %d jj %d\n", ii, jj);
+}
+
+void SO_PQ_Iterator::next()
+{
+    if (jj > 0) {
+        jj--;
+    }
+    else {
+        ii--;
+        jj = ii;
+        if (ii < 0) {
+            done = true;
+            return;
+        }
+    }
+
+//    fprintf(outfile, "ii %d jj %d\n", ii, jj);
+    current.P = ii;
+    current.Q = jj;
+}
+
+// ===========================================================================
+//  SO_RS_Iterator
+// ===========================================================================
+SO_RS_Iterator::SO_RS_Iterator(const int &P, const int &Q,
+                               boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                               boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4) :
+    usii(P), usjj(Q), bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
+{
+}
+
+SO_RS_Iterator::SO_RS_Iterator() : usii(0), usjj(0)
+{
+
+}
+
+void SO_RS_Iterator::first()
+{
+    uskk = usll = upk = 0;
+    done = false;
+
+    int usi, usj, usk, usl;
+
+//    fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
+
+    usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+    if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+        num_unique_pk = 1;
+    else if (usii == uskk || usjj == usll) {
+        num_unique_pk = 2;
+        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+    }
+    else if (usjj == uskk) {
+        num_unique_pk = 2;
+        usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
+    }
+    else if (usii == usjj || uskk == usll) {
+        num_unique_pk = 2;
+        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+    }
+    else {
+        num_unique_pk = 3;
+        usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
+    }
+
+    usi = usii; usj = usjj; usk = uskk; usl = usll;
+
+//    fprintf(outfile, ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
+
+    // Sort shells based on AM, save ERI some work doing permutation resorting.
+    if (bs1_->am(usi) < bs2_->am(usj)) {
+        swap(usi, usj);
+    }
+    if (bs3_->am(usk) < bs4_->am(usl)) {
+        swap(usk, usl);
+    }
+    if (bs1_->am(usi) + bs2_->am(usj) >
+            bs3_->am(usk) + bs4_->am(usl)) {
+        swap(usi, usk);
+        swap(usj, usl);
+    }
+
+    current.P = usi; current.Q = usj; current.R = usk; current.S = usl; //current.end_of_PK = false;
+ }
+
+void SO_RS_Iterator::next()
+{
+    ++upk;
+    if(upk >= num_unique_pk){
+        upk = 0;
+//        if (usii == 0 && usjj == 0) {
+//            done = true;
+//            return;
+//        }
+        ++usll;
+        if (usll > uskk){
+            ++uskk;
+            if ((usll-1) == usjj && (uskk-1) == usjj) {
+                done = true;
+                return;
+            }
+            usll = 0;
+        }
+
+//        fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
+
+        usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
+        if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+            num_unique_pk = 1;
+        else if (usii == uskk || usjj == usll) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        }
+        else if (usjj == uskk) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = usll; usk_arr[1] = usjj; usl_arr[1] = uskk;
+        }
+        else if (usii == usjj || uskk == usll) {
+            num_unique_pk = 2;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+        }
+        else {
+            num_unique_pk = 3;
+            usi_arr[1] = usii; usj_arr[1] = uskk; usk_arr[1] = usjj; usl_arr[1] = usll;
+            usi_arr[2] = usii; usj_arr[2] = usll; usk_arr[2] = usjj; usl_arr[2] = uskk;
+        }
+    }
+
+    int usi, usj, usk, usl;
+    usi = usi_arr[upk]; usj = usj_arr[upk]; usk = usk_arr[upk]; usl = usl_arr[upk];
+
+//    fprintf(outfile, ">si %d usj %d usk %d usl %d\n", usi, usj, usk, usl);
+
+    // Sort shells based on AM, save ERI some work doing permutation resorting.
+    if (bs1_->am(usi) < bs2_->am(usj)) {
+        swap(usi, usj);
+    }
+    if (bs3_->am(usk) < bs4_->am(usl)) {
+        swap(usk, usl);
+    }
+    if (bs1_->am(usi) + bs2_->am(usj) >
+            bs3_->am(usk) + bs4_->am(usl)) {
+        swap(usi, usk);
+        swap(usj, usl);
+    }
+
+    current.P = usi; current.Q = usj; current.R = usk; current.S = usl; //current.end_of_PK = false;
+
+//    if (upk == num_unique_pk - 1) {
+//        // If this is the last unique shell flag it as end of a pk block.
+//        current.end_of_PK = true;
+//    }
+//    else{
+//        current.end_of_PK = false;
+//    }
 }
