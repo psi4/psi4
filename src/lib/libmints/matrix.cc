@@ -2042,28 +2042,28 @@ void Matrix::load(const std::string &filename)
     }
 }
 
-void Matrix::send(Communicator* comm)
+void Matrix::send()
 {
 }
 
-void Matrix::recv(Communicator* comm)
+void Matrix::recv()
 {
 }
 
-void Matrix::bcast(Communicator* comm, int broadcaster)
+void Matrix::bcast(int broadcaster)
 {
     // Assume the user allocated the matrix to the correct size first.
     for (int h=0; h<nirrep_; ++h) {
         if (rowspi_[h] > 0 && colspi_[h] > 0)
-            comm->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
+            Communicator::world->bcast(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_], broadcaster);
     }
 }
 
-void Matrix::sum(Communicator *comm)
+void Matrix::sum()
 {
     for (int h=0; h<nirrep_; ++h)
         if (rowspi_[h] > 0 && colspi_[h] > 0)
-            comm->sum(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_]);
+            Communicator::world->sum(matrix_[h][0], rowspi_[h] * colspi_[h^symmetry_]);
 }
 
 bool Matrix::equal(const Matrix& rhs)

@@ -27,6 +27,7 @@
 #endif
 
 #include <world/world.h>
+#include <world/worldobj.h>
 #include <world/archive.h>
 #include <world/safempi.h>
 

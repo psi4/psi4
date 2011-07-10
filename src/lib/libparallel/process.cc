@@ -51,27 +51,21 @@ void Process::Environment::init(char **envp)
 //        printf("Key: %s Value: %s\n", iter->first.c_str(), iter->second.c_str());
 
 
-    // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
-    // that makes sense. (i.e. MPI or LOCAL)
-#if HAVE_MADNESS == 0
-    #if HAVE_MPI == 1
-        if (Process::environment("COMMUNICATOR") != "MPI") {
+        // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
+        // that makes sense. (i.e. MPI or LOCAL)
+#if (HAVE_MPI == 1) & (HAVE_MADNESS == 1)
+        if ( (Process::environment("COMMUNICATOR") != "MADNESS") &&
+             (Process::environment("COMMUNICATOR") != "MPI") &&
+             (Process::environment("COMMUNICATOR") != "LOCAL") )
+        {
             environment_["COMMUNICATOR"] = "MPI";
-            std::cout << "COMMUNICATOR was changed to MPI" << std::endl;
+            std::cout << "WARNING: COMMUNICATOR was changed to MPI" << std::endl;
         }
-    #else
+#else
         if (Process::environment("COMMUNICATOR") != "LOCAL") {
             environment_["COMMUNICATOR"] = "LOCAL";
-
-            // If I don't have Madness and MPI...just make the communicator local.
-//            std::cout << "COMMUNICATOR was changed to LOCAL" << std::endl;
+    //        std::cout << "WARNING: COMMUNICATOR was changed to LOCAL" << std::endl;
         }
-    #endif
-#else
-    if(Process::environment("COMMUNICATOR") != "MPI" && Process::environment("COMMUNICATOR") != "MADNESS") {
-        environment_["COMMUNICATOR"] = "MPI";
-        std::cout << "COMMUNICATOR was changed to MPI" << std::endl;
-    }
 #endif
 }
 

@@ -115,6 +115,8 @@ class CdSalcList
     std::vector<CdSalcWRTAtom> atom_salcs_;
 
 public:
+    CdSalcList() { throw PSIEXCEPTION("CdSalcList(): U R STOOOPID!!!"); }
+
     /*! Constructor for generating Cartesian displacement symmetry adapted
      *  linear combinations.
      *

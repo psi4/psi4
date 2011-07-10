@@ -12,6 +12,8 @@
 #include "cdsalclist.h"
 #include "dcd.h"
 
+#include <libparallel/parallel.h>
+
 #include <libqt/qt.h>
 #include <vector>
 
@@ -98,10 +100,14 @@ public:
 };
 #endif
 
+#if HAVE_MADNESS
+class TwoBodySOInt : public madness::WorldObject<TwoBodySOInt>
+#else
 class TwoBodySOInt
+#endif
 {
 protected:
-    boost::shared_ptr<TwoBodyAOInt> tb_;
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb_;
     boost::shared_ptr<IntegralFactory> integral_;
 
     boost::shared_ptr<SOBasisSet> b1_;
@@ -110,8 +116,8 @@ protected:
     boost::shared_ptr<SOBasisSet> b4_;
 
     size_t size_;
-    double *buffer_;
-    double **deriv_;
+    std::vector<double *> buffer_;
+    std::vector<double **> deriv_;
 
     int iirrepoff_[8], jirrepoff_[8], kirrepoff_[8], lirrepoff_[8];
 
@@ -125,6 +131,10 @@ protected:
     boost::shared_ptr<DCD> dcd_;
 
     bool only_totally_symmetric_;
+    int nthread_;
+    std::string comm_;
+    int nproc_;
+    int me_;
 
     const CdSalcList* cdsalcs_;
 
@@ -136,11 +146,19 @@ protected:
 
     void common_init();
 public:
+    // Constructor, assuming 1 thread
     TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>&,
                  const boost::shared_ptr<IntegralFactory>&);
+    // Constructor, using vector of AO objects for threading
+    TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> > &tb,
+                 const boost::shared_ptr<IntegralFactory>& integral);
     TwoBodySOInt(const boost::shared_ptr<TwoBodyAOInt>& aoint,
                  const boost::shared_ptr<IntegralFactory>& intfac,
                  const CdSalcList& cdsalcs);
+    TwoBodySOInt(const std::vector<boost::shared_ptr<TwoBodyAOInt> >& tb,
+                 const boost::shared_ptr<IntegralFactory>& integral,
+                 const CdSalcList& cdsalcs);
+
     virtual ~TwoBodySOInt();
 
     bool only_totally_symmetric() const { return only_totally_symmetric_; }
@@ -152,7 +170,7 @@ public:
     boost::shared_ptr<SOBasisSet> basis3() const;
     boost::shared_ptr<SOBasisSet> basis4() const;
 
-    const double *buffer() const { return buffer_; }
+    const double *buffer(int thread=0) const { return buffer_[thread]; }
 
     // Normal integrals
     template<typename TwoBodySOIntFunctor>
@@ -164,7 +182,42 @@ public:
     template<typename TwoBodySOIntFunctor>
     void compute_shell(int, int, int, int, TwoBodySOIntFunctor& body);
 
+    // User provides an iterator object and this function will walk through it.
+    // Assumes serial run (nthread = 1)
+    template<typename ShellIter, typename TwoBodySOIntFunctor>
+    void compute_quartets(ShellIter &shellIter, TwoBodySOIntFunctor &body) {
+        for (shellIter->first(); shellIter->is_done() == false; shellIter->next()) {
+            this->compute_shell(shellIter->p(), shellIter->q(), shellIter->r(), shellIter->s(), body);
+        }
+    }
+
+    // Compute integrals in parallel
+    template<typename TwoBodySOIntFunctor>
+    void compute_integrals(TwoBodySOIntFunctor &functor);
+
+#if HAVE_MADNESS
+    template<typename TwoBodySOIntFunctor>
+    int compute_pq_pair(const int &p, const int &q, const TwoBodySOIntFunctor &body) {
+
+        boost::shared_ptr<SO_RS_Iterator> shellIter(
+                    new SO_RS_Iterator(p, q,
+                                       b1_, b2_, b3_, b4_));
+
+        this->compute_quartets(shellIter, const_cast<TwoBodySOIntFunctor &>(body));
+
+        return 0;
+    }
+#endif
+
     // Derivative integrals
+    // User provides an iterator object and this function will walk through it.
+    template<typename ShellIter, typename TwoBodySOIntFunctor>
+    void compute_quartets_deriv1(ShellIter &shellIter, TwoBodySOIntFunctor &body) {
+        for (shellIter->first(); shellIter->is_done() == false; shellIter->next()) {
+            compute_shell_deriv1(shellIter->p(), shellIter->q(), shellIter->r(), shellIter->s(), body);
+        }
+    }
+
     template<typename TwoBodySOIntFunctor>
     void compute_shell_deriv1(const SOShellCombinationsIterator& shellIter, TwoBodySOIntFunctor& body) {
         compute_shell_deriv1(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s(),
@@ -173,11 +226,32 @@ public:
 
     template<typename TwoBodySOIntFunctor>
     void compute_shell_deriv1(int, int, int, int, TwoBodySOIntFunctor& body);
+
+    // Compute integrals in parallel
+    template<typename TwoBodySOIntFunctor>
+    void compute_integrals_deriv1(TwoBodySOIntFunctor &functor);
+
+#if HAVE_MADNESS
+    template<typename TwoBodySOIntFunctor>
+    int compute_pq_pair_deriv1(const int &p, const int &q, const TwoBodySOIntFunctor &body) {
+
+        boost::shared_ptr<SO_RS_Iterator> shellIter(
+                    new SO_RS_Iterator(p, q,
+                                       b1_, b2_, b3_, b4_));
+
+        compute_quartets_deriv1(shellIter, const_cast<TwoBodySOIntFunctor &>(body));
+
+        return 0;
+    }
+#endif
+
 };
 
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBodySOIntFunctor& body)
 {
+    int thread = Communicator::world->thread_id(pthread_self());
+
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell overall");
 #endif
@@ -186,7 +260,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     timer_on("TwoBodySOInt::compute_shell setup");
 #endif // MINTS_TIMER
 
-    const double *aobuff = tb_->buffer();
+    const double *aobuff = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(uish);
     const SOTransform &t2 = b2_->sotrans(ujsh);
@@ -205,16 +279,16 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     const int nao4 = b4_->naofunction(ulsh);
     const size_t nao = nao1*nao2*nao3*nao4;
 
-    const int iatom = tb_->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-    const int jatom = tb_->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-    const int katom = tb_->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
-    const int latom = tb_->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
+    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
+    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
+    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
+    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
 
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell zero buffer");
 #endif // MINTS_TIMER
 
-    memset(buffer_, 0, nso1*nso2*nso3*nso4*sizeof(double));
+    memset(buffer_[thread], 0, nso1*nso2*nso3*nso4*sizeof(double));
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell zero buffer");
@@ -261,28 +335,26 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     //fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
     int si = petite1_->unique_shell_map(uish, 0);
-    const int siatom = tb_->basis1()->shell(si)->ncenter();
+    const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
-        const int sjatom = tb_->basis2()->shell(sj)->ncenter();
+        const int sjatom = tb_[thread]->basis2()->shell(sj)->ncenter();
 
         for (int ijkl=1; ijkl <= T_size; ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
-            const int skatom = tb_->basis3()->shell(sk)->ncenter();
+            const int skatom = tb_[thread]->basis3()->shell(sk)->ncenter();
 
             for (int kl=1; kl <= S_size; ++kl) {
                 int sl = petite4_->shell_map(llsh, S_list[kl]);
-                const int slatom = tb_->basis4()->shell(sl)->ncenter();
+                const int slatom = tb_[thread]->basis4()->shell(sl)->ncenter();
 
                 // Check AM
-                int total_am = tb_->basis1()->shell(si)->am() +
-                        tb_->basis2()->shell(sj)->am() +
-                        tb_->basis3()->shell(sk)->am() +
-                        tb_->basis4()->shell(sl)->am();
-
-//                fprintf(outfile, "\ttotal_am = %d atoms: %d %d %d %d\n", total_am, siatom, sjatom, skatom, slatom);
+                int total_am = tb_[thread]->basis1()->shell(si)->am() +
+                        tb_[thread]->basis2()->shell(sj)->am() +
+                        tb_[thread]->basis3()->shell(sk)->am() +
+                        tb_[thread]->basis4()->shell(sl)->am();
 
                 if (!(total_am % 2) ||
                         (siatom != sjatom) ||
@@ -295,34 +367,6 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
             }
         }
     }
-
-//    fprintf(outfile, "\tlambda_T: %d\n", lambda_T);
-//    fprintf(outfile, "\tgroup = %d, R_list %d S_list %d T_list %d\n", group, R_list, S_list, T_list);
-//    fprintf(outfile, "\tistablizer: %d\n", istabdense);
-//    fprintf(outfile, "\tjstablizer: %d\n", jstabdense);
-//    fprintf(outfile, "\tkstablizer: %d\n", kstabdense);
-//    fprintf(outfile, "\tlstablizer: %d\n", lstabdense);
-//    fprintf(outfile, "\tijstablizer: %d\n", ijstablizer);
-//    fprintf(outfile, "\tklstablizer: %d\n", klstablizer);
-//    fprintf(outfile, "\tR.size = %d\n", R_size);
-//    for (int i=1; i<=R_size; ++i)
-//        fprintf(outfile, "\t%d\n", R_list[i]);
-//    fprintf(outfile, "\tS.size = %d\n", S_size);
-//    for (int i=1; i<=S_size; ++i)
-//        fprintf(outfile, "\t%d\n", S_list[i]);
-//    fprintf(outfile, "\tT.size = %d\n", T_size);
-//    for (int i=1; i<=T_size; ++i)
-//        fprintf(outfile, "\t%d\n", T_list[i]);
-//    fprintf(outfile, "\tR_list: ");
-//    petite1_->print_group(R_list);
-//    fprintf(outfile, "\tS_list: ");
-//    petite1_->print_group(S_list);
-//    fprintf(outfile, "\tT_list: ");
-//    petite1_->print_group(T_list);
-//    for (int i=0; i<sj_arr.size(); ++i) {
-//        fprintf(outfile, "\t(%d %d | %d %d)\n", si, sj_arr[i], sk_arr[i], sl_arr[i]);
-//    }
-//    fflush(outfile);
 
     // Compute integral using si, sj_arr, sk_arr, sl_arr
     // Loop over unique quartets
@@ -343,7 +387,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         int ns4so = s4.soshell.size();
 
         // Compute this unique AO shell
-        tb_->compute_shell(si, sj, sk, sl);
+        tb_[thread]->compute_shell(si, sj, sk, sl);
 
         for (int itr=0; itr<ns1so; itr++) {
             const AOTransformFunction &ifunc = s1.soshell[itr];
@@ -390,7 +434,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
                         if ((ifunc.irrep ^ jfunc.irrep) == (kfunc.irrep ^ lfunc.irrep)) {
 //                            fprintf(outfile, "\t\tadded\n");
-                            buffer_[lsooff] += lambda_T * lcoef * aobuff[laooff];
+                            buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
                         }
                     }
                 }
@@ -412,11 +456,13 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
 {
+    int thread = Communicator::world->thread_id(pthread_self());
+
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::provide_IJKL overall");
 #endif
 
-    const double *aobuff = tb_->buffer();
+    const double *aobuff = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(ish);
     const SOTransform &t2 = b2_->sotrans(jsh);
@@ -490,7 +536,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                     int kkrel = krel;
                     int llrel = lrel;
 
-                    if (fabs(buffer_[lsooff]) > 1.0e-14) {
+                    if (fabs(buffer_[thread][lsooff]) > 1.0e-14) {
                         if (ish == jsh) {
                             if (iabs < jabs)
                             continue;
@@ -555,7 +601,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                              jjirrep, jjrel,
                              kkirrep, kkrel,
                              llirrep, llrel,
-                             buffer_[lsooff]);
+                             buffer_[thread][lsooff]);
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::provide_IJKL functor");
 #endif
@@ -572,8 +618,10 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, TwoBodySOIntFunctor& body)
 {
+    int thread = Communicator::world->thread_id(pthread_self());
+
     dprintf("usi %d usj %d usk %d usk %d\n", uish, ujsh, uksh, ulsh);
-    const double *aobuffer = tb_->buffer();
+    const double *aobuffer = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(uish);
     const SOTransform &t2 = b2_->sotrans(ujsh);
@@ -592,10 +640,10 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     const int nao4 = b4_->naofunction(ulsh);
     const size_t nao = nao1*nao2*nao3*nao4;
 
-    const int iatom = tb_->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
-    const int jatom = tb_->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
-    const int katom = tb_->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
-    const int latom = tb_->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
+    const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
+    const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
+    const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
+    const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
 
     // These 3 sections are not shell specific so we can just use petite1_
     const unsigned short istablizer = petite1_->stablizer(iatom);
@@ -624,26 +672,26 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
     int si = petite1_->unique_shell_map(uish, 0);
-    const int siatom = tb_->basis1()->shell(si)->ncenter();
+    const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
 
     for (int ij=1; ij <= R_size; ++ij) {
         int sj = petite2_->unique_shell_map(ujsh, R_list[ij]);
-        const int sjatom = tb_->basis2()->shell(sj)->ncenter();
+        const int sjatom = tb_[thread]->basis2()->shell(sj)->ncenter();
 
         for (int ijkl=1; ijkl <= T_size; ++ijkl) {
             int sk = petite3_->unique_shell_map(uksh, T_list[ijkl]);
             int llsh = petite4_->unique_shell_map(ulsh, T_list[ijkl]);
-            const int skatom = tb_->basis3()->shell(sk)->ncenter();
+            const int skatom = tb_[thread]->basis3()->shell(sk)->ncenter();
 
             for (int kl=1; kl <= S_size; ++kl) {
                 int sl = petite4_->shell_map(llsh, S_list[kl]);
-                const int slatom = tb_->basis4()->shell(sl)->ncenter();
+                const int slatom = tb_[thread]->basis4()->shell(sl)->ncenter();
 
                 // Check AM
-                int total_am = tb_->basis1()->shell(si)->am() +
-                        tb_->basis2()->shell(sj)->am() +
-                        tb_->basis3()->shell(sk)->am() +
-                        tb_->basis4()->shell(sl)->am();
+                int total_am = tb_[thread]->basis1()->shell(si)->am() +
+                        tb_[thread]->basis2()->shell(sj)->am() +
+                        tb_[thread]->basis3()->shell(sk)->am() +
+                        tb_[thread]->basis4()->shell(sl)->am();
 
                 if (!(total_am % 2) ||
                         (siatom != sjatom) ||
@@ -669,7 +717,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 
     // Zero out SALC memory
     for (int i=0; i<cdsalcs_->ncd(); ++i)
-        memset(deriv_[i], 0, sizeof(double)*nso);
+        memset(deriv_[thread][i], 0, sizeof(double)*nso);
 
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
@@ -682,9 +730,9 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
         const AOTransform& s3 = b3_->aotrans(sk);
         const AOTransform& s4 = b4_->aotrans(sl);
 
-        const CdSalcWRTAtom& c2 = cdsalcs_->atom_salc(tb_->basis2()->shell(sj)->ncenter());
-        const CdSalcWRTAtom& c3 = cdsalcs_->atom_salc(tb_->basis3()->shell(sk)->ncenter());
-        const CdSalcWRTAtom& c4 = cdsalcs_->atom_salc(tb_->basis4()->shell(sl)->ncenter());
+        const CdSalcWRTAtom& c2 = cdsalcs_->atom_salc(tb_[thread]->basis2()->shell(sj)->ncenter());
+        const CdSalcWRTAtom& c3 = cdsalcs_->atom_salc(tb_[thread]->basis3()->shell(sk)->ncenter());
+        const CdSalcWRTAtom& c4 = cdsalcs_->atom_salc(tb_[thread]->basis4()->shell(sl)->ncenter());
 
         int ns1so = s1.soshell.size();
         int ns2so = s2.soshell.size();
@@ -692,7 +740,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
         int ns4so = s4.soshell.size();
 
         // Compute this unique AO shell
-        tb_->compute_shell_deriv1(si, sj, sk, sl);
+        tb_[thread]->compute_shell_deriv1(si, sj, sk, sl);
 
         // First loop over SO transformation
         for (int itr=0; itr<ns1so; itr++) {
@@ -785,8 +833,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * A[0];
                             dprintf("Ax SALC#%d pfac %lf, A[0] %lf, contr %lf\n", element.salc, element.coef, A[0], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Ay
@@ -795,8 +843,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * A[1];
                             dprintf("Ay SALC#%d pfac %lf, A[1] %lf, contr %lf\n", element.salc, element.coef, A[1], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Az
@@ -805,8 +853,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * A[2];
                             dprintf("Az SALC#%d pfac %lf, A[2] %lf, contr %lf\n", element.salc, element.coef, A[2], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Bx
@@ -815,8 +863,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * B[0];
                             dprintf("Bx SALC#%d pfac %lf, B[0] %lf, contr %lf\n", element.salc, element.coef, B[0], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // By
@@ -825,8 +873,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * B[1];
                             dprintf("By SALC#%d pfac %lf, B[1] %lf, contr %lf\n", element.salc, element.coef, B[1], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Bz
@@ -835,8 +883,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * B[2];
                             dprintf("Bz SALC#%d pfac %lf, B[2] %lf, contr %lf\n", element.salc, element.coef, B[2], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Cx
@@ -845,8 +893,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * C[0];
                             dprintf("Cx SALC#%d pfac %lf, C[0] %lf, contr %lf\n", element.salc, element.coef, C[0], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Cy
@@ -855,8 +903,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * C[1];
                             dprintf("Cy SALC#%d pfac %lf, C[1] %lf, contr %lf\n", element.salc, element.coef, C[1], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Cz
@@ -865,8 +913,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * C[2];
                             dprintf("Cz SALC#%d pfac %lf, C[2] %lf, contr %lf\n", element.salc, element.coef, C[2], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Dx
@@ -875,8 +923,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * D[0];
                             dprintf("Dx SALC#%d pfac %lf, D[0] %lf, contr %lf\n", element.salc, element.coef, D[0], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Dy
@@ -885,8 +933,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * D[1];
                             dprintf("Dy SALC#%d pfac %lf, D[1] %lf, contr %lf\n", element.salc, element.coef, D[1], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         // Dz
@@ -895,8 +943,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                             double temp = element.coef * D[2];
                             dprintf("Dz SALC#%d pfac %lf, D[2] %lf, contr %lf\n", element.salc, element.coef, D[2], temp);
                             if (total_symmetry == element.irrep && fabs(temp) > 1.0e-10)
-                                deriv_[element.salc][lsooff] += temp;
-                            dprintf(" val: %lf\n", deriv_[element.salc][lsooff]);
+                                deriv_[thread][element.salc][lsooff] += temp;
+                            dprintf(" val: %lf\n", deriv_[thread][element.salc][lsooff]);
                         }
 
                         dprintf("\n");
@@ -912,11 +960,13 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBodySOIntFunctor& body)
 {
+    int thread = Communicator::world->thread_id(pthread_self());
+
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::provide_IJKL overall");
 #endif
 
-    const double *aobuff = tb_->buffer();
+    const double *aobuff = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(ish);
     const SOTransform &t2 = b2_->sotrans(jsh);
@@ -1049,13 +1099,13 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
     timer_on("TwoBodySOInt::provide_IJKL functor");
 #endif
                     for (int i=0; i<cdsalcs_->ncd(); ++i) {
-                        if (fabs(deriv_[i][lsooff]) > 1.0e-14)
+                        if (fabs(deriv_[thread][i][lsooff]) > 1.0e-14)
                             body(i, iiabs, jjabs, kkabs, llabs,
                                  iiirrep, iirel,
                                  jjirrep, jjrel,
                                  kkirrep, kkrel,
                                  llirrep, llrel,
-                                 deriv_[i][lsooff]);
+                                 deriv_[thread][i][lsooff]);
                     }
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::provide_IJKL functor");
@@ -1067,6 +1117,80 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::provide_IJKL overall");
 #endif
+}
+
+template<typename TwoBodySOIntFunctor>
+void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
+{
+    if (comm_ == "MADNESS") {
+#if HAVE_MADNESS == 1
+
+        int v=0;
+        boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
+
+        for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
+            if (me_ == v%nproc_) {
+                task(me_, &TwoBodySOInt::compute_pq_pair<TwoBodySOIntFunctor>,
+                     PQIter->p(), PQIter->q(), functor);
+            }
+            v++;
+        }
+
+        Communicator::world->sync();
+#else
+        throw PSIEXCEPTION("PSI4 was not built with MADNESS. "
+                           "Please rebuild PSI4 with MADNESS, or "
+                           "change your COMMUNICATOR "
+                           "environment variable to MPI or LOCAL.\n");
+#endif
+    }
+    else if (comm_ == "LOCAL") {
+        boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
+                            SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
+        this->compute_quartets(shellIter, functor);
+    }
+    else {
+        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
+                           "Please change your COMMUNICATOR "
+                           "environment variable.\n");
+    }
+}
+
+template<typename TwoBodySOIntFunctor>
+void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
+{
+    if (comm_ == "MADNESS") {
+#if HAVE_MADNESS == 1
+
+        int v=0;
+        boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
+
+        for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
+            if (me_ == v%nproc_) {
+                task(me_, &TwoBodySOInt::compute_pq_pair_deriv1<TwoBodySOIntFunctor>,
+                     PQIter->p(), PQIter->q(), functor);
+            }
+            v++;
+        }
+
+        Communicator::world->sync();
+#else
+        throw PSIEXCEPTION("PSI4 was not built with MADNESS. "
+                           "Please rebuild PSI4 with MADNESS, or "
+                           "change your COMMUNICATOR "
+                           "environment variable to MPI or LOCAL.\n");
+#endif
+    }
+    else if (comm_ == "LOCAL") {
+        boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
+                            SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
+        this->compute_quartets_deriv1(shellIter, functor);
+    }
+    else {
+        throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
+                           "Please change your COMMUNICATOR "
+                           "environment variable.\n");
+    }
 }
 
 typedef boost::shared_ptr<OneBodySOInt> SharedOneBodySOInt;

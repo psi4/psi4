@@ -111,7 +111,9 @@ void MintsHelper::integrals()
     fprintf(outfile, " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
 
     // Get ERI object
-    boost::shared_ptr<TwoBodyAOInt> tb(integral_->eri());
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > tb;
+    for (int i=0; i<Communicator::world->nthread(); ++i)
+        tb.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri()));
     boost::shared_ptr<TwoBodySOInt> eri(new TwoBodySOInt(tb, integral_));
 
     // Print out some useful information
@@ -323,13 +325,13 @@ boost::shared_ptr<Matrix> MintsHelper::mo_erf_eri(double omega, boost::shared_pt
 {
     boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_erf_eri(omega), Co, Cv);
     mo_ints->set_name("MO ERF ERI Tensor");
-    return mo_ints; 
+    return mo_ints;
 }
 boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
 {
     boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
     mo_ints->set_name("MO ERI Tensor");
-    return mo_ints; 
+    return mo_ints;
 }
 boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
 {
