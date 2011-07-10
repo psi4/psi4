@@ -24,6 +24,11 @@
 #include <omp.h>
 #endif
 
+#define ORDER_PRINT_START int dummycommvar = 0;if (Communicator::world->me() != 0) { \
+                Communicator::world->recv(&dummycommvar, 1, Communicator::world->me() - 1);}
+#define ORDER_PRINT_END if (Communicator::world->me() != Communicator::world->nproc() - 1) {\
+                Communicator::world->send(&dummycommvar, 1, Communicator::world->me() + 1);}
+
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -218,6 +223,7 @@ void MAD_MP2::parallel_init()
 
     nia_ = naocc_ * (ULI) navir_;
 
+    // Round robin for now
     ULI counter = 0;
     for (ULI ia = 0; ia < nia_; ia++) {
         ia_global_to_local_.push_back(counter);
@@ -230,12 +236,6 @@ void MAD_MP2::parallel_init()
         }
     }
     nia_local_ = ia_local_to_global_.size();
-
-    if (debug_) {
-        printf("Number of processors: %d\n", nproc_);
-        printf("Number of threads:    %d\n", omp_nthread_);
-        printf("Current processors:   %d\n", rank_); 
-    }
 
     std::set<int> unique_i;
     std::set<int> unique_a;
@@ -257,6 +257,49 @@ void MAD_MP2::parallel_init()
 
     std::sort(aocc_local_.begin(), aocc_local_.end());
     std::sort(avir_local_.begin(), avir_local_.end());
+    if (debug_) {
+        ORDER_PRINT_START
+
+        printf("Number of processors: %d\n", nproc_);
+        printf("Number of threads:    %d\n", omp_nthread_);
+        printf("Current processors:   %d\n", rank_);
+        printf("Communicator Type:    %s\n", comm_.c_str());
+
+        printf("IA Owner array: ");
+        for(int ia = 0; ia < nia_; ia++)
+            printf("%d ", ia_owner_[ia]);
+        printf("\n\n");
+
+        std::vector<ULI>::const_iterator global_it = ia_global_to_local_.begin();
+        printf("Global to local array: ");
+        for(; global_it != ia_global_to_local_.end(); ++global_it)
+            printf("%ld ", *global_it);
+        printf("\n\n");
+
+        std::vector<ULI>::const_iterator local_it = ia_local_to_global_.begin();
+        printf("Local to global array: ");
+        for(; local_it != ia_local_to_global_.end(); ++local_it)
+            printf("%ld ", *local_it);
+        printf("\n\n");
+
+        printf("There are %d local occ and %d local vir orbitals, giving %ld local pairs\n",
+              naocc_local_, navir_local_, nia_local_);
+
+        std::vector<int>::const_iterator aocc_it = aocc_local_.begin();
+        printf("aocc_local values: ");
+        for(; aocc_it != aocc_local_.end(); ++aocc_it)
+            printf("%d ", *aocc_it);
+        printf("\n\n");
+
+        std::vector<int>::const_iterator avir_it = avir_local_.begin();
+        printf("avir_local values: ");
+        for(; avir_it != avir_local_.end(); ++avir_it)
+            printf("%d ", *avir_it);
+        printf("\n\n");
+
+        ORDER_PRINT_END
+    }
+
 }
 void MAD_MP2::print_header()
 {
@@ -489,7 +532,7 @@ void MAD_MP2::Aia()
     boost::shared_ptr<Matrix> Ci(new Matrix("C_mi local", nso_, naocc_local_));
     double** Cip = Ci->pointer();
     for (int ind = 0; ind < naocc_local_; ind++) {
-        int i = aocc_local_[i];
+        int i = aocc_local_[ind];
         C_DCOPY(nso_, &Caocc_->pointer(0)[0][i], naocc_, &Cip[0][ind], naocc_local_);
     }
 
@@ -588,9 +631,30 @@ void MAD_MP2::Aia()
         fprintf(outfile, "  ==> After Fitting <==\n\n"); 
         Aia->print(); 
     }
+    Aia_ = Aia;
 }
 void MAD_MP2::I()
 {
+    E_MP2J_ = 0.0;
+    E_MP2K_ = 0.0;
+
+    boost::shared_ptr<Matrix> I(new Matrix("I", naocc_ * navir_, naocc_ * navir_));
+    double** Ip = I->pointer();
+    double** Qiap = Aia_->pointer();
+
+    C_DGEMM('T','N',naocc_*navir_,naocc_*navir_,naux_,1.0,Qiap[0],naocc_*navir_,Qiap[0],naocc_*navir_,0.0,Ip[0],naocc_*navir_);
+    for (int i = 0; i < naocc_; i++)
+        for (int j = 0; j < naocc_; j++)
+            for (int a = 0; a < navir_; a++)
+                for (int b = 0; b < navir_; b++) {
+                    double iajb = Ip[i * navir_ + a][j * navir_ + b];
+                    double ibja = Ip[i * navir_ + b][j * navir_ + a];
+                    double denom = 1.0 / (eps_avir_->get(a) + eps_avir_->get(b) - eps_aocc_->get(i) - eps_aocc_->get(j));
+                    E_MP2J_ -= 2.0 * denom * iajb * iajb;
+                    E_MP2K_ += 1.0 * denom * ibja * iajb;
+                }
+
+#if 0
     E_MP2J_ = 0.0;
     E_MP2K_ = 0.0;
 
@@ -700,6 +764,7 @@ void MAD_MP2::I()
         }
     }
     timer_off("MP2 Energy");
+#endif
 }
 void MAD_MP2::denominator()
 {
@@ -709,6 +774,7 @@ void MAD_MP2::denominator()
 }
 void MAD_MP2::IJ()
 {
+#if 0
     E_MP2J_ = 0.0;
     E_MP2K_ = 0.0;
 
@@ -747,6 +813,7 @@ void MAD_MP2::IJ()
         }
     } 
     timer_off("MP2J Energy");
+#endif
 }
 void MAD_MP2::print_energy()
 {
