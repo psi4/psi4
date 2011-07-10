@@ -17,24 +17,54 @@ using namespace std;
 
 namespace psi {
 
+size_t counter;
+
 class ScfRestrictedFunctor
 {
     boost::shared_ptr<Wavefunction> wavefunction_;
-    Matrix& D_;
+    SharedMatrix D_;
 
-    const CdSalcList& cdsalcs_;
 public:
-    double *result;
-    size_t counter;
+    int nthread;
+    std::vector<SharedVector> result;
 
-    ScfRestrictedFunctor(boost::shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs)
-        : wavefunction_(wave), D_(*wave->Da().get()), cdsalcs_(cdsalcs), counter(0)
+    ScfRestrictedFunctor() {
+        throw PSIEXCEPTION("ScfRestrictedFunctor(): Default constructor called. This shouldn't happen.");
+    }
+
+    // Added for debugging MADNESS.
+//    ScfRestrictedFunctor(const ScfRestrictedFunctor&) {
+//        throw PSIEXCEPTION("ScfRestrictedFunctor(): Copy constructor called.\n");
+//    }
+
+//    ScfRestrictedFunctor& operator=(const ScfRestrictedFunctor&) {
+//        throw PSIEXCEPTION("ScfRestrictedFunctor(): Assignment operator called. This shouldn't happen.");
+//        return *this;
+//    }
+
+    ScfRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave)
+        : wavefunction_(wave), D_(wave->Da())
     {
-        result = new double[cdsalcs_.ncd()];
-        memset(result, 0, sizeof(double)*cdsalcs_.ncd());
+        counter=0;
+        nthread = Communicator::world->nthread();
+        result.push_back(results);
+
+        for (int i=1; i<nthread; ++i)
+            result.push_back(SharedVector(result[0]->clone()));
     }
     ~ScfRestrictedFunctor() {
-        delete[] result;
+    }
+
+    void finalize() {
+        // Do summation over threads
+        result[0]->print();
+        for (int i=1; i<nthread; ++i) {
+            result[i]->print();
+            result[0]->add(result[i]);
+        }
+        // Do MPI global summation
+        result[0]->sum();
+        result[0]->print();
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -44,6 +74,10 @@ public:
                     int sirrep, int sso,
                     double value)
     {
+        fprintf(outfile, "%5d%5d%5d%5d%5d%20.10lf\n",
+                salc, pabs, qabs, rabs, sabs, value);
+        int thread = Communicator::world->thread_id(pthread_self());
+
         // Previously, we applied a factor of 4 after the fact...apply it from the beginning now.
         double prefactor = 4.0;
 
@@ -57,40 +91,60 @@ public:
         double four_index_D = 0.0;
 
         if (pirrep == qirrep && rirrep == sirrep)
-            four_index_D = 4.0 * D_(pirrep, pso, qso) * D_(rirrep, rso, sso);
+            four_index_D = 4.0 * D_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
         if (pirrep == rirrep && qirrep == sirrep)
-            four_index_D -= D_(pirrep, pso, rso) * D_(qirrep, qso, sso);
+            four_index_D -= D_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
         if (pirrep == sirrep && qirrep == rirrep)
-            four_index_D -= D_(pirrep, pso, sso) * D_(qirrep, qso, rso);
+            four_index_D -= D_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
 
         four_index_D *= prefactor;
 
-        result[salc] += four_index_D * value;
+        result[thread]->add(salc, four_index_D * value);
+        counter++;
     }
 };
 
 class ScfUnrestrictedFunctor
 {
     boost::shared_ptr<Wavefunction> wavefunction_;
-    Matrix& Da_;
-    Matrix& Db_;
+    SharedMatrix Da_;
+    SharedMatrix Db_;
 
-    const CdSalcList& cdsalcs_;
 public:
-    double *result;
+    int nthread;
+    int ncd;
+    std::vector<double*> result;
     size_t counter;
 
-    ScfUnrestrictedFunctor(boost::shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs)
+    ScfUnrestrictedFunctor() { throw PSIEXCEPTION("ScfUnrestrictedFunctor(): Oh come on!!!"); }
+
+    ScfUnrestrictedFunctor(boost::shared_ptr<Wavefunction> wave, CdSalcList& cdsalcs)
         : wavefunction_(wave),
-          Da_(*wave->Da().get()),
-          Db_(*wave->Db().get()),
-          cdsalcs_(cdsalcs), counter(0)
+          Da_(wave->Da()),
+          Db_(wave->Db()),
+          counter(0)
     {
-        result = new double[cdsalcs_.ncd()];
-        memset(result, 0, sizeof(double)*cdsalcs_.ncd());
+        nthread = Communicator::world->nthread();
+        ncd = cdsalcs.ncd();
+        for (int i=0; i<nthread; ++i) {
+            result.push_back(new double[cdsalcs.ncd()]);
+            memset(result[i], 0, sizeof(double)*cdsalcs.ncd());
+        }
     }
     ~ScfUnrestrictedFunctor() {
-        delete[] result;
+    }
+
+    void finalize() {
+        for (int i=0; i<nthread; ++i)
+            delete[] result[i];
+    }
+
+    void gather() {
+        for (int i=1; i<nthread; ++i)
+            for (int n=0; n<ncd; ++n)
+                result[0][n] += result[i][n];
+
+        Communicator::world->sum(&result[0][0], ncd);
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -100,6 +154,10 @@ public:
                     int sirrep, int sso,
                     double value)
     {
+        Matrix& Da = *Da_.get();
+        Matrix& Db = *Db_.get();
+
+        int thread = Communicator::world->thread_id(pthread_self());
         double prefactor = 2.0;
 
         if (pabs == qabs)
@@ -112,20 +170,20 @@ public:
         double four_index_D = 0.0;
 
         if (pirrep == qirrep && rirrep == sirrep) {
-            four_index_D = 4.0 * (Da_(pirrep, pso, qso) + Db_(pirrep, pso, qso)) *
-                                 (Da_(rirrep, rso, sso) + Db_(rirrep, rso, sso));
+            four_index_D = 4.0 * (Da(pirrep, pso, qso) + Db(pirrep, pso, qso)) *
+                                 (Da(rirrep, rso, sso) + Db(rirrep, rso, sso));
         }
         if (pirrep == rirrep && qirrep == sirrep) {
-            four_index_D -= 2.0 * (Da_(pirrep, pso, rso) * Da_(qirrep, qso, sso))
-                         -  2.0 * (Db_(pirrep, pso, rso) * Db_(qirrep, qso, sso));
+            four_index_D -= 2.0 * (Da(pirrep, pso, rso) * Da(qirrep, qso, sso))
+                         -  2.0 * (Db(pirrep, pso, rso) * Db(qirrep, qso, sso));
         }
         if (pirrep == sirrep && qirrep == rirrep) {
-            four_index_D -= 2.0 * (Da_(pirrep, pso, sso) * Da_(rirrep, rso, qso))
-                         -  2.0 * (Db_(pirrep, pso, sso) * Db_(rirrep, rso, qso));
+            four_index_D -= 2.0 * (Da(pirrep, pso, sso) * Da(rirrep, rso, qso))
+                         -  2.0 * (Db(pirrep, pso, sso) * Db(rirrep, rso, qso));
         }
         four_index_D *= prefactor;
 
-        result[salc] += four_index_D * value;
+        result[thread][salc] += four_index_D * value;
     }
 };
 
@@ -156,11 +214,10 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
 
 SharedMatrix Deriv::compute()
 {
-    // Initialize an integral iterator for computing two-electron integral derivatives.
-    SOShellCombinationsIterator shells(sobasis_, sobasis_, sobasis_, sobasis_);
-
     // Initialize an ERI object requesting derivatives.
-    boost::shared_ptr<TwoBodyAOInt> ao_eri(integral_->eri(1));
+    std::vector<boost::shared_ptr<TwoBodyAOInt> > ao_eri;
+    for (int i=0; i<Communicator::world->nthread(); ++i)
+        ao_eri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
 
     // A certain optimization can be used if we know we only need totally symmetric
@@ -182,6 +239,9 @@ SharedMatrix Deriv::compute()
     double *Xcont = new double[cdsalcs_.ncd()];
     double *Dcont = new double[cdsalcs_.ncd()];
     double *TPDMcont = new double[cdsalcs_.ncd()];
+
+    int ncd = cdsalcs_.ncd();
+    SharedVector TPDMcont_vector(new Vector(1, &ncd));
 
     if (wavefunction_->restricted()) {
         SharedMatrix D = wavefunction_->Da();
@@ -209,55 +269,59 @@ SharedMatrix Deriv::compute()
 
         fprintf(outfile, "\n");
 
-        ScfRestrictedFunctor functor(wavefunction_, cdsalcs_);
-        for (shells.first(); !shells.is_done(); shells.next())
-            so_eri.compute_shell_deriv1(shells, functor);
-
-        memcpy(TPDMcont, functor.result, sizeof(double)*cdsalcs_.ncd());
-        for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
-            fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
-    }
-    else /* unrestricted */ {
-        fprintf(outfile, "WARNING: Unrestricted derivatives do not work!!!\n"
-                         "         Though UHF is close to working.\n");
-
-        SharedMatrix Da = wavefunction_->Da();
-        SharedMatrix Db = wavefunction_->Db();
-        SharedMatrix X = wavefunction_->X();
-
-        // Check the incoming matrices.
-        if (!Da || !Db)
-            throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
-        if (!X)
-            throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
-
-        X->print();
+        ScfRestrictedFunctor functor(TPDMcont_vector, wavefunction_);
+        so_eri.compute_integrals_deriv1(functor);
+        functor.finalize();
 
         for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-            double temp = Da->vector_dot(h_deriv[cd]);
-            temp       += Db->vector_dot(h_deriv[cd]);
-            Dcont[cd] = temp;
-            fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
-        }
-
-        fprintf(outfile, "\n");
-
-        for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-            double temp = X->vector_dot(s_deriv[cd]);
-            Xcont[cd] = -temp;
-            fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
-        }
-
-        fprintf(outfile, "\n");
-
-        ScfUnrestrictedFunctor functor(wavefunction_, cdsalcs_);
-        for (shells.first(); !shells.is_done(); shells.next())
-            so_eri.compute_shell_deriv1(shells, functor);
-
-        memcpy(TPDMcont, functor.result, sizeof(double)*cdsalcs_.ncd());
-        for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
+            TPDMcont[cd] = TPDMcont_vector->get(cd);
             fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+        }
+        fprintf(outfile, "Processed %lu integrals\n", counter);
+        fflush(outfile);
     }
+//    else /* unrestricted */ {
+//        fprintf(outfile, "WARNING: Unrestricted derivatives do not work!!!\n"
+//                         "         Though UHF is close to working.\n");
+
+//        SharedMatrix Da = wavefunction_->Da();
+//        SharedMatrix Db = wavefunction_->Db();
+//        SharedMatrix X = wavefunction_->X();
+
+//        // Check the incoming matrices.
+//        if (!Da || !Db)
+//            throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
+//        if (!X)
+//            throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
+
+//        X->print();
+
+//        for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+//            double temp = Da->vector_dot(h_deriv[cd]);
+//            temp       += Db->vector_dot(h_deriv[cd]);
+//            Dcont[cd] = temp;
+//            fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
+//        }
+
+//        fprintf(outfile, "\n");
+
+//        for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+//            double temp = X->vector_dot(s_deriv[cd]);
+//            Xcont[cd] = -temp;
+//            fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
+//        }
+
+//        fprintf(outfile, "\n");
+
+//        ScfUnrestrictedFunctor functor(wavefunction_, cdsalcs_);
+//        so_eri.compute_integrals_deriv1(functor);
+//        functor.gather();
+
+//        memcpy(TPDMcont, functor.result[0], sizeof(double)*cdsalcs_.ncd());
+//        for (int cd=0; cd < cdsalcs_.ncd(); ++cd)
+//            fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+//        functor.finalize();
+//    }
 
     // Transform the SALCs back to cartesian space
     SharedMatrix st = cdsalcs_.matrix();
@@ -344,3 +408,35 @@ SharedMatrix Deriv::compute()
 }
 
 }
+
+#if HAVE_MADNESS
+namespace madness {
+namespace archive {
+
+template <class Archive>
+struct ArchiveStoreImpl< Archive, psi::ScfRestrictedFunctor> {
+    static void store(const Archive &ar, const psi::ScfRestrictedFunctor &t) {
+    }
+};
+
+template <class Archive>
+struct ArchiveStoreImpl< Archive, psi::ScfUnrestrictedFunctor> {
+    static void store(const Archive &ar, const psi::ScfUnrestrictedFunctor &t) {
+    }
+};
+
+template <class Archive>
+struct ArchiveLoadImpl< Archive, psi::ScfRestrictedFunctor> {
+    static void load(const Archive &ar, const psi::ScfRestrictedFunctor &t) {
+    }
+};
+
+template <class Archive>
+struct ArchiveLoadImpl< Archive, psi::ScfUnrestrictedFunctor> {
+    static void load(const Archive &ar, const psi::ScfUnrestrictedFunctor &t) {
+    }
+};
+
+}
+}
+#endif // HAVE_MADNESS

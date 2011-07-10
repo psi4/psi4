@@ -5,6 +5,8 @@
 #include <cstdio>
 #include <psi4-dec.h>
 
+#include <libparallel/serialize.h>
+
 namespace boost {
 template<class T> class shared_ptr;
 
@@ -17,7 +19,7 @@ namespace psi {
 class Matrix;
 
 /*! \ingroup MINTS */
-class Vector {
+class Vector : public Serializable {
 protected:
     /// Vector data
     double **vector_;
@@ -55,6 +57,8 @@ public:
 
     void init(int nirrep, int *dimpi);
 
+    Vector* clone();
+
     /// Sets the vector_ to the data in vec
     void set(double *vec);
 
@@ -81,6 +85,31 @@ public:
         vector_[0][m] = val;
     }
 
+    void add(int m, double val) {
+        vector_[0][m] += val;
+    }
+
+    void add(int h, int m, double val) {
+        vector_[h][m] += val;
+    }
+
+    /// Adds other vector to this
+    void add(const boost::shared_ptr<Vector>& other) {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int m=0; m<dimpi_[h]; ++m) {
+                vector_[h][m] += other->vector_[h][m];
+            }
+        }
+    }
+
+    /// Adds other vector to this
+    void add(const Vector& other) {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int m=0; m<dimpi_[h]; ++m) {
+                vector_[h][m] += other.vector_[h][m];
+            }
+        }
+    }
 
     double& operator()(int i) { return vector_[0][i]; }
     const double& operator()(int i) const { return vector_[0][i]; }
@@ -139,6 +168,15 @@ public:
 
     /// Scale the elements of the vector
     void scale(double sc);
+
+    // Serializable pure virtual functions:
+    void send();
+    void recv();
+    void bcast(int broadcaster);
+    /**
+     * Performs element-by-element sum of all data from all nodes.
+     */
+    void sum();
 
     friend class Matrix;
 };

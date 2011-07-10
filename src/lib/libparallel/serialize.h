@@ -15,10 +15,10 @@ namespace psi {
     class Serializable
     {
     public:
-        virtual void send(Communicator* comm)  = 0;
-        virtual void recv(Communicator* comm)  = 0;
-        virtual void bcast(Communicator* comm, int broadcaster) = 0;
-        virtual void sum(Communicator* comm) = 0;
+        virtual void send()  = 0;
+        virtual void recv()  = 0;
+        virtual void bcast(int broadcaster) = 0;
+        virtual void sum() = 0;
     };
 
 }

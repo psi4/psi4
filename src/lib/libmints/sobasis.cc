@@ -293,6 +293,24 @@ void SOBasisSet::init()
             }
         }
     }
+
+    // Create a map that has a key/value pair
+    // The key is the angular momentum function of the SO shell arranged in decending order
+    // The value is the actual shell number
+    typedef std::pair<int, int> am_to_so_shell_pair;
+    std::multimap< int, int, std::less<int> > am_to_so_shell_list;
+    for(int i=0; i < nshell_; i++) {
+        am_to_so_shell_list.insert(am_to_so_shell_pair(naofunction(i), i));
+        //std::cout << "naofunctions(" << i << ") = " << naofunction(i) << std::endl;
+    }
+    // This puts the sorted SO shell values into the sorted_so_shell_list_ vector,
+    // which can be used by the integral iterator to look up the value of the sorted shells
+    std::multimap< int, int, std::less<int> >::iterator it;
+    for (it=am_to_so_shell_list.begin(); it != am_to_so_shell_list.end(); it++) {
+        //std::cout << "sorted shell size = " << it->first <<
+        //        "\t, which belongs to shell number " << it->second << std::endl;
+        sorted_so_shell_list_.push_back(it->second);
+    }
 //    print();
 }
 
