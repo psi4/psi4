@@ -395,25 +395,25 @@ void MAD_MP2::parallel_init()
                 std::vector<int>::const_iterator iter = na_delta_per.begin();
                 printf("na_delta_per: ");
                 for(; iter != na_delta_per.end(); ++iter)
-                    printf("%ld ", *iter);
+                    printf("%d ", *iter);
                 printf("\n\n");
 
                 iter = na_deltac_per.begin();
                 printf("na_deltac_per: ");
                 for(; iter != na_deltac_per.end(); ++iter)
-                    printf("%ld ", *iter);
+                    printf("%d ", *iter);
                 printf("\n\n");
 
                 iter = a_delta_owner.begin();
                 printf("a_delta_owner: ");
                 for(; iter != a_delta_owner.end(); ++iter)
-                    printf("%ld ", *iter);
+                    printf("%d ", *iter);
                 printf("\n\n");
 
                 iter = a_deltac_owner.begin();
                 printf("a_deltac_owner: ");
                 for(; iter != a_deltac_owner.end(); ++iter)
-                    printf("%ld ", *iter);
+                    printf("%d ", *iter);
                 printf("\n\n");
 
                 printf("IA Owner array: ");
