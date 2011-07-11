@@ -11,7 +11,7 @@
   #include <mkl.h>
 #endif
 
-#define INDEX(i,j) ((i>=j) ? (ioff_[i] + j) : (ioff_[j] + i)
+#define INDEX(i,j) ((i>=j) ? (ioff_[i] + j) : (ioff_[j] + i))
 
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
