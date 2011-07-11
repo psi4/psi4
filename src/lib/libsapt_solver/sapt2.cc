@@ -51,12 +51,12 @@ double SAPT2::compute_energy()
   timer_on("DF Integrals       ");
     df_integrals();
   timer_off("DF Integrals       ");
-  timer_on("Amplitudes         "); 
-    amplitudes();
-  timer_off("Amplitudes         "); 
   timer_on("Omega Integrals    ");
     w_integrals();
   timer_off("Omega Integrals    ");
+  timer_on("Amplitudes         "); 
+    amplitudes();
+  timer_off("Amplitudes         "); 
   timer_on("Elst10             ");
     elst10();
   timer_off("Elst10             ");
