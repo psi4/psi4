@@ -8,6 +8,7 @@
 
 #define VALGRIND 0
 
+#ifndef HAVE_PSI
 extern "C" {
 
 extern void dgemm(const char*, const char*, const int*,
@@ -27,6 +28,9 @@ extern void dspsvx(const char* fact, const char* uplo, const int* n, const int* 
                        double* work, int* iwork, int* info);
 
 }
+#else
+#include <libqt/qt.h>
+#endif
 
 using namespace yeti;
 using namespace std;
@@ -169,7 +173,11 @@ yeti::eigenvalues(
     //loss of precision... but what can you do
     int n_ = (int) n;
     int info = 0;
+#ifndef HAVE_PSI
     dsyev("V", "U", &n_, m, &n_, vals, work, &worksize, &info);
+#else
+    info = psi::C_DSYEV('V', 'U', n_, m, n_, vals, work, worksize);
+#endif
     if (info != 0)
     {
         cerr << "Eigenvalue routined failed" << endl;
@@ -242,7 +250,11 @@ yeti::eigenvalues(
     //loss of precision... but what can you do
     int n_ = (int) n;
     int info = 0;
+#ifndef HAVE_PSI
     dgeev("V", "V", &n_, vals, &n_, revals, ievals, levecs, &n_, revecs, &n_, work, &worksize, &info);
+#else
+    info = psi::C_DGEEV('V', 'V', n_, vals, n_, revals, ievals, levecs, n_, revecs, n_, work, worksize);
+#endif
 
     if (info != 0)
     {
@@ -402,7 +414,11 @@ yeti::multiply(
     int ncol_ = (int) ncol;
     int ldl_ = (int) ldl;
     int ldr_ = (int) ldr;
+#ifndef HAVE_PSI
     dgemm(opl, opr, &nrow_, &ncol_, &nlink_, &alpha, ldata, &ldl_, rdata, &ldr_, &beta, prod_data, &nrow_);
+#else
+    psi::C_DGEMM(opl[0], opr[0], nrow_, ncol_, nlink_, alpha, const_cast<double*>(ldata), ldl_, const_cast<double*>(rdata), ldr_, beta, prod_data, nrow_);
+#endif
 #endif
 
     //this is all transposed
