@@ -866,9 +866,11 @@ void SAPT2::ind20r()
 
   e_ind20_ = indA_B + indB_A;
 
-  if (print_) {
+  if (debug_) {
     fprintf(outfile,"\n    Ind20,r (A<-B)      = %18.12lf H\n",indA_B);
     fprintf(outfile,"    Ind20,r (B<-A)      = %18.12lf H\n",indB_A);
+  }
+  if (print_) {
     fprintf(outfile,"    Ind20,r             = %18.12lf H\n",e_ind20_);
     fflush(outfile);
   }

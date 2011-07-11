@@ -76,6 +76,8 @@ double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
   for(int b=0,bs=0; b<aoccB; b++) {
   for(int s=0; s<nvirB; s++,bs++) {
 
+    next_DF_BS = psio_get_address(PSIO_ZERO,
+      sizeof(double)*(b+foccB)*nvirB*(ndf_+3) + sizeof(double)*s*(ndf_+3));
     psio_->read(BBfile,BSlabel,(char *) &(B_p_bs[0]),sizeof(double)*(ndf_+3),
       next_DF_BS,&next_DF_BS);
 
