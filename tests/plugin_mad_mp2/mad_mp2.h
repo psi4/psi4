@@ -3,6 +3,7 @@
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <map>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -46,7 +47,7 @@ protected:
     // Local ia pair assignments
     std::vector<ULI> ia_local_to_global_;
     // Global ia pair assignments  
-    std::vector<ULI> ia_global_to_local_;
+    std::map<ULI, int> ia_global_to_local_;
     // Local number of i
     int naocc_local_;
     // Local number of a
