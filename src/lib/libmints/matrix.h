@@ -397,6 +397,13 @@ public:
 
     size_t size(const int &h=0) const { return colspi_[h] * rowspi_[h]; }
 
+    /// apply_denominators a matrix to this
+    void apply_denominator(const Matrix* const);
+    /// apply_denominators a matrix to this
+    void apply_denominator(const Matrix&);
+    /// apply_denominators a matrix to this
+    void apply_denominator(const boost::shared_ptr<Matrix>&);
+
     /**
      * Returns a copy of the current matrix.
      *

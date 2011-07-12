@@ -102,17 +102,17 @@ void LMP2::setup_ij_kj_ik_maps() {
     }
 }
 #if HAVE_MADNESS == 1
-LMP2::LMP2(Options& options, boost::shared_ptr<PSIO> psio)
-    : Wavefunction(options, psio), madness::WorldObject<LMP2>(*Communicator::world->get_madworld())
+LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
+    : Wavefunction(options, _default_psio_lib_), madness::WorldObject<LMP2>(*Communicator::world->get_madworld())
 #else
-LMP2::LMP2(Options& options, boost::shared_ptr<PSIO> psio)
-    : Wavefunction(options, psio)
+LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
+    : Wavefunction(options, _default_psio_lib_)
 #endif
 {
 
 //    options_ = options;
 //    psio_ = psio;
-
+    set_reference_wavefunction(ref_wfn);
     common_init();
 
 #if HAVE_MADNESS == 1
@@ -126,8 +126,9 @@ void LMP2::common_init() {
     nproc_ = Communicator::world->nproc();
     nthread_ = Communicator::world->nthread();
     comm_ = Communicator::world->communicator();
+    wfn_ = reference_wavefunction_;
 //    molecule_ = Process::environment.molecule();
-    wfn_ = Process::environment.reference_wavefunction();
+//    wfn_ = Process::environment.reference_wavefunction();
 //    basis_ = wfn_->basisset();
 
     // after update remove integral_: we get if from

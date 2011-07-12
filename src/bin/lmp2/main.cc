@@ -38,12 +38,16 @@ PsiReturnType lmp2(Options & options)
     double energy;
 
     if (reference == "RHF") {
-        lmp2 = boost::shared_ptr<Wavefunction>(new LMP2(options, psio));
+        lmp2 = boost::shared_ptr<Wavefunction>(new LMP2(options,
+                                                        Process::environment.reference_wavefunction()));
     }
     else {
         throw InputException("Unknown reference " + reference, "REFERENCE", __FILE__, __LINE__);
         energy = 0.0;
     }
+
+    // Set this early because the callback mechanism uses it.
+    Process::environment.set_reference_wavefunction(lmp2);
 
     energy = lmp2->compute_energy();
 
