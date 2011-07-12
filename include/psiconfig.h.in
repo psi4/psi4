@@ -35,6 +35,7 @@
 #undef HAVE_DECL_SETENV
 #undef HAVE_SETENV
 #undef HAVE_FUNC_ISINF
+#undef HAVE_FUNC_ERF
 
 /* Have dlfcn.h for dlopen and friends */
 #undef HAVE_DLFCN_H
