@@ -4,15 +4,39 @@ namespace psi { namespace sapt {
 
 void SAPT2p3::disp30()
 {
-  double e1 = disp30_1(PSIF_SAPT_AMPS,"tARBS Amplitudes",
-    PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
-    "SS RI Integrals",foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_);
-  double e2 = disp30_2(PSIF_SAPT_AMPS,"tARBS Amplitudes",
-    PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
-    PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",
-    foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_);
-
-  e_disp30_ = e1+e2;
+  if (third_order_) {
+    double **B_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
+      foccA_,noccA_,0,nvirA_);
+    double **B_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
+      foccB_,noccB_,0,nvirB_);
+  
+    double **tARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+    double **vARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+    psio_->read_entry(PSIF_SAPT_AMPS,"Disp30 uARBS Amplitudes",(char *)
+      tARBS[0],sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
+  
+    C_DGEMM('N','T',aoccA_*nvirA_,aoccB_*nvirB_,ndf_+3,1.0,B_p_AR[0],ndf_+3,
+      B_p_BS[0],ndf_+3,0.0,vARBS[0],aoccB_*nvirB_);
+  
+    e_disp30_ = 4.0*C_DDOT((long int) aoccA_*nvirA_*aoccB_*nvirB_,
+      vARBS[0],1,tARBS[0],1);
+  
+    free_block(B_p_AR);
+    free_block(B_p_BS);
+    free_block(vARBS);
+    free_block(tARBS);
+  }
+  else {
+    double e1 = disp30_1(PSIF_SAPT_AMPS,"tARBS Amplitudes",
+      PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
+      "SS RI Integrals",foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_);
+    double e2 = disp30_2(PSIF_SAPT_AMPS,"tARBS Amplitudes",
+      PSIF_SAPT_AA_DF_INTS,"AA RI Integrals","RR RI Integrals",
+      PSIF_SAPT_BB_DF_INTS,"BB RI Integrals","SS RI Integrals",
+      foccA_,noccA_,nvirA_,foccB_,noccB_,nvirB_);
+  
+    e_disp30_ = e1+e2;
+  }
 
   if (print_) {
     fprintf(outfile,"    Disp30              = %18.12lf H\n",e_disp30_);

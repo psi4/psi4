@@ -74,12 +74,21 @@ double SAPT2p3::compute_energy()
     disp30();
   timer_off("Disp30             ");
   if (third_order_) {
+    timer_on("ExchDisp30         ");
+      exch_disp30();
+    timer_off("ExchDisp30         ");
     timer_on("Ind30              ");
       ind30();
     timer_off("Ind30              ");
+    timer_on("Exch-Ind30         ");
+      exch_ind30();
+    timer_off("Exch-Ind30         ");
     timer_on("IndDisp30          ");
       ind_disp30();
     timer_off("IndDisp30          ");
+    timer_on("ExchIndDisp30      ");
+      exch_ind_disp30();
+    timer_off("ExchIndDisp30      ");
   }
 
   print_results();

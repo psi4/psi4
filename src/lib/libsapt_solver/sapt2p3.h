@@ -58,6 +58,20 @@ protected:
   double disp30_2(int, const char *, int, const char *, const char *, int, 
     const char *, const char *, int, int, int, int, int, int);
 
+  void disp30_amps(int, const char *, int, const char *, const char *, 
+    int, const char *, const char *, int, int, int, double *,
+    int, int, int, double *, int, const char *);
+
+  double exch_ind30_1(double **, double **);
+  double exch_ind30_2(double **);
+  double exch_ind30_3(double **);
+
+  double exch_ind_disp30_21(double **);
+  double exch_ind_disp30_12(double **);
+
+  double exch_disp30_20();
+  double exch_disp30_02();
+  double exch_disp30_22();
 
 public:
   SAPT2p3(Options& options, boost::shared_ptr<PSIO> psio, 
@@ -70,8 +84,12 @@ public:
 
   void elst13();
   void ind30();
+  void exch_ind30();
   void ind_disp30();
+  void exch_ind_disp30();
   void disp30();
+  void exch_disp30();
+
 };
 
 }}
