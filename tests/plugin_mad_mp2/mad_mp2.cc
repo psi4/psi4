@@ -24,16 +24,11 @@
 #include <omp.h>
 #endif
 
-//#define ORDER_PRINT_START int dummycommvar = 0;\
-//                MPI::Intracomm dummycomm;\
-//                dummycom->create();\
-//                if (Communicator::world->me() != 0) { \
-//                    dummycomm->send(&dummycommvar, 1, MPI::INT, Communicator::world->me() - 1, 1);\
-//                }
+#define ORDER_PRINT_START for(int dummyproc = 0; dummyproc < nproc_; ++dummyproc){\
+                              Communicator::world->sync();\
+                              if(dummyproc == rank_){
 
-//#define ORDER_PRINT_END if (Communicator::world->me() != Communicator::world->nproc() - 1){\
-//                dummycomm->recv(&dummycommvar, 1, MPI::INT, Communicator::world->me() + 1, 1);}\
-//                }
+#define ORDER_PRINT_END  }}
 
 using namespace std;
 using namespace psi;
@@ -44,6 +39,7 @@ namespace psi{ namespace mad_mp2 {
 MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
     Wavefunction(options, psio), madness::WorldObject<MAD_MP2>(*Communicator::world->get_madworld())
 {
+    sleep(100);
     common_init();
     parallel_init();
     process_pending();
@@ -55,15 +51,6 @@ void MAD_MP2::common_init()
 {
     print_ = options_.get_int("PRINT");
     debug_ = options_.get_int("DEBUG");
-
-//    std::ofstream debug_str;
-//    if(debug_){
-//        char* file = new char[10];
-//        sprintf(file, "debug_%d", Communicator::world->me());
-//        file += itoa(Communicator::world->rank);
-//        debug_str.
-//        delete [] file;
-//    }
 
     omp_nthread_ = 1;
     #ifdef _OPENMP
@@ -196,7 +183,6 @@ void MAD_MP2::common_init()
         auxiliary_automatic_ = true;
         basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_MP2");
     }
-<<<<<<< HEAD
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "RI_BASIS_MP2");
@@ -415,243 +401,80 @@ void MAD_MP2::parallel_init()
     std::sort(aocc_local_.begin(), aocc_local_.end());
     std::sort(avir_local_.begin(), avir_local_.end());
     if (debug_) {
-//        ORDER_PRINT_START
+        ORDER_PRINT_START
 
-        for(int dummyproc = 0; dummyproc < nproc_; ++dummyproc){
-//            Communicator::world->bcast(&dummyproc, 1, rank_);
-            Communicator::world->sync();
-            if(dummyproc == rank_){
-                printf("Number of processors: %d\n", nproc_);
-                printf("Number of threads:    %d\n", omp_nthread_);
-                printf("Current processors:   %d\n", rank_);
-                printf("Communicator Type:    %s\n", comm_.c_str());
-                printf("na_delta:             %d\n", na_delta);
-                printf("na_delta_extra:       %d\n", na_delta_extra);
-                printf("na_deltac:            %d\n", na_deltac);
-                printf("na_deltac_extr        %d\n", na_deltac_extra);
+        printf("Number of processors: %d\n", nproc_);
+        printf("Number of threads:    %d\n", omp_nthread_);
+        printf("Current processors:   %d\n", rank_);
+        printf("Communicator Type:    %s\n", comm_.c_str());
+        printf("na_delta:             %d\n", na_delta);
+        printf("na_delta_extra:       %d\n", na_delta_extra);
+        printf("na_deltac:            %d\n", na_deltac);
+        printf("na_deltac_extr        %d\n", na_deltac_extra);
 
-                std::vector<int>::const_iterator iter = na_delta_per.begin();
-                printf("na_delta_per: ");
-                for(; iter != na_delta_per.end(); ++iter)
-                    printf("%d ", *iter);
-                printf("\n\n");
+        std::vector<int>::const_iterator iter = na_delta_per.begin();
+        printf("na_delta_per: ");
+        for(; iter != na_delta_per.end(); ++iter)
+            printf("%d ", *iter);
+        printf("\n\n");
 
-                iter = na_deltac_per.begin();
-                printf("na_deltac_per: ");
-                for(; iter != na_deltac_per.end(); ++iter)
-                    printf("%d ", *iter);
-                printf("\n\n");
+        iter = na_deltac_per.begin();
+        printf("na_deltac_per: ");
+        for(; iter != na_deltac_per.end(); ++iter)
+            printf("%d ", *iter);
+        printf("\n\n");
 
-                iter = a_delta_owner.begin();
-                printf("a_delta_owner: ");
-                for(; iter != a_delta_owner.end(); ++iter)
-                    printf("%d ", *iter);
-                printf("\n\n");
+        iter = a_delta_owner.begin();
+        printf("a_delta_owner: ");
+        for(; iter != a_delta_owner.end(); ++iter)
+            printf("%d ", *iter);
+        printf("\n\n");
 
-                iter = a_deltac_owner.begin();
-                printf("a_deltac_owner: ");
-                for(; iter != a_deltac_owner.end(); ++iter)
-                    printf("%d ", *iter);
-                printf("\n\n");
+        iter = a_deltac_owner.begin();
+        printf("a_deltac_owner: ");
+        for(; iter != a_deltac_owner.end(); ++iter)
+            printf("%d ", *iter);
+        printf("\n\n");
 
-                printf("IA Owner array: ");
-                for(int ia = 0; ia < nia_; ia++)
-                    printf("%d ", ia_owner_[ia]);
-                printf("\n\n");
+        printf("IA Owner array: ");
+        for(int ia = 0; ia < nia_; ia++)
+            printf("%d ", ia_owner_[ia]);
+        printf("\n\n");
 
-                std::map<ULI, int>::const_iterator global_it = ia_global_to_local_.begin();
-                printf("Global to local array: ");
-                for(; global_it != ia_global_to_local_.end(); ++global_it)
-                    printf("%ld -> %d ", global_it->first, global_it->second);
-                printf("\n\n");
+        std::map<ULI, int>::const_iterator global_it = ia_global_to_local_.begin();
+        printf("Global to local array: ");
+        for(; global_it != ia_global_to_local_.end(); ++global_it)
+            printf("%ld -> %d ", global_it->first, global_it->second);
+        printf("\n\n");
 
-                std::vector<ULI>::const_iterator local_it = ia_local_to_global_.begin();
-                printf("Local to global array: ");
-                for(; local_it != ia_local_to_global_.end(); ++local_it)
-                    printf("%ld ", *local_it);
-                printf("\n\n");
+        std::vector<ULI>::const_iterator local_it = ia_local_to_global_.begin();
+        printf("Local to global array: ");
+        for(; local_it != ia_local_to_global_.end(); ++local_it)
+            printf("%ld ", *local_it);
+        printf("\n\n");
 
-                printf("There are %d local occ and %d local vir orbitals, giving %ld local pairs\n",
-                      naocc_local_, navir_local_, nia_local_);
+        printf("There are %d local occ and %d local vir orbitals, giving %ld local pairs\n",
+              naocc_local_, navir_local_, nia_local_);
 
-                std::vector<int>::const_iterator aocc_it = aocc_local_.begin();
-                printf("aocc_local values: ");
-                for(; aocc_it != aocc_local_.end(); ++aocc_it)
-                    printf("%d ", *aocc_it);
-                printf("\n\n");
+        std::vector<int>::const_iterator aocc_it = aocc_local_.begin();
+        printf("aocc_local values: ");
+        for(; aocc_it != aocc_local_.end(); ++aocc_it)
+            printf("%d ", *aocc_it);
+        printf("\n\n");
 
-                std::vector<int>::const_iterator avir_it = avir_local_.begin();
-                printf("avir_local values: ");
-                for(; avir_it != avir_local_.end(); ++avir_it)
-                    printf("%d ", *avir_it);
-                printf("\n\n");
+        std::vector<int>::const_iterator avir_it = avir_local_.begin();
+        printf("avir_local values: ");
+        for(; avir_it != avir_local_.end(); ++avir_it)
+            printf("%d ", *avir_it);
+        printf("\n\n");
 
-                std::map<int, int>::const_iterator i_global_it = i_global_to_local_.begin();
-                printf("i Global to local array: ");
-                for(; i_global_it != i_global_to_local_.end(); ++i_global_it)
-                    printf("%d -> %d ", i_global_it->first, i_global_it->second);
-                printf("\n\n");
-            }
-=======
+        std::map<int, int>::const_iterator i_global_it = i_global_to_local_.begin();
+        printf("i Global to local array: ");
+        for(; i_global_it != i_global_to_local_.end(); ++i_global_it)
+            printf("%d -> %d ", i_global_it->first, i_global_it->second);
+        printf("\n\n");
 
-    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
-    auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "RI_BASIS_MP2");
-    parser.reset();
-
-    naux_ = auxiliary_->nbf();
-
-    boost::shared_ptr<IntegralFactory> integral2(new IntegralFactory(auxiliary_,auxiliary_,auxiliary_,auxiliary_));
-    boost::shared_ptr<PetiteList> pet2(new PetiteList(auxiliary_, integral2));
-    AO2USO_aux_ = boost::shared_ptr<Matrix>(pet2->aotoso());
-  
-    if (debug_) {
-        AO2USO_aux_->print();
-        fflush(outfile);
-    }
- 
-    Dimension dim = pet2->SO_basisdim();
-    ::memset(static_cast<void*>(nauxpi_), '\0', 8 * sizeof(int));
-    for (int h = 0; h < nirrep_; h++) {
-        nauxpi_[h] = dim[h];
-    } 
-
-    zero_ = BasisSet::zero_ao_basis_set();
-
-    max_nauxpi_ = 0;
-    max_naoccpi_ = 0;
-    max_navirpi_ = 0;
-
-    for (int h = 0; h < nirrep_; h++) {
-        max_nauxpi_ += nauxpi_[h];
-        max_naoccpi_ += naoccpi_[h];
-        max_navirpi_ += navirpi_[h];
-    }
-}
-void MAD_MP2::parallel_init()
-{
-    nproc_   = Communicator::world->nproc();
-    mad_nthread_ = Communicator::world->nthread();
-    rank_    = Communicator::world->me();
-    comm_    = Communicator::world->communicator();
-
-    nia_ = naocc_ * (ULI) navir_;
-
-#if 0
-    // Round robin for now
-    ULI counter = 0;
-    for (ULI ia = 0; ia < nia_; ia++) {
-        ia_global_to_local_.push_back(counter);
-        int node = ia % nproc_;
-        ia_owner_.push_back(node);
-        if (ia % nproc_ == nproc_ - 1)
-            counter++;
-        if (node == rank_) {
-            ia_local_to_global_.push_back(ia);
-        }
-    }
-    nia_local_ = ia_local_to_global_.size();
-#endif
-
-    // Maximum blocks
-    if (nproc_ <= naocc_) {
-        // nproc_ <= naocc_ Case
-        int ni_per_proc = naocc_ / nproc_;
-        int ni_extra = naocc_ % nproc_;
-
-        std::vector<int> ni_per;
-        for (int ind = 0; ind < nproc_; ind++) {
-            if (ind < ni_extra)
-                ni_per.push_back(ni_per_proc + 1);
-            else
-                ni_per.push_back(ni_per_proc);
-        }
-
-        std::vector<int> i_owner;
-        for (int ind = 0; ind < nproc_; ind++) {
-            for (int ind2 = 0; ind2 < ni_per[ind]; ind2++) {
-                i_owner.push_back(ind);
-            }
-        }
-
-        ULI counter = 0;
-        for (ULI ia = 0; ia < nia_; ia++) {
-            int i = ia / navir_;
-            int a = ia % navir_;
-
-            ia_owner_.push_back(i_owner[i]);
-            if (i_owner[i] == rank_) {
-                ia_local_to_global_.push_back(ia);
-                ia_global_to_local_.push_back(counter++);
-            } else {
-                ia_global_to_local_.push_back(0L);
-            }
-        }
-
-    } else {
-        // nproc_ > naocc_ Case
-        int na_per_i = nproc_ / naocc_ + (nproc_ % naocc_ == 0 ? 0 : 1);
-        int ndelta = na_per_i * naocc_ - nproc_;
-
-        int na_delta = navir_ / (na_per_i - 1);
-        int na_delta_extra = navir_ % (na_per_i - 1);
-        int na_deltac = navir_ / (na_per_i);
-        int na_deltac_extra = navir_ % (na_per_i);
-
-        std::vector<int> na_delta_per;
-        for (int ind = 0; ind < na_per_i - 1; ind++) {
-            if (ind < na_delta_extra)
-                na_delta_per.push_back(na_delta + 1);
-            else
-                na_delta_per.push_back(na_delta);
-        }
-        std::vector<int> na_deltac_per;
-        for (int ind = 0; ind < na_per_i; ind++) {
-            if (ind < na_deltac_extra)
-                na_deltac_per.push_back(na_deltac + 1);
-            else
-                na_deltac_per.push_back(na_deltac);
-        }
-
-        std::vector<int> a_delta_owner;
-        for (int ind = 0; ind < na_per_i - 1; ind++) {
-            for (int ind2 = 0; ind2 < na_delta_per[ind]; ind2++) {
-                a_delta_owner.push_back(ind);
-            }
-        }
-
-        std::vector<int> a_deltac_owner;
-        for (int ind = 0; ind < na_per_i; ind++) {
-            for (int ind2 = 0; ind2 < na_deltac_per[ind]; ind2++) {
-                a_deltac_owner.push_back(ind);
-            }
-        }
-
-        ULI counter = 0L;
-        int start_proc = 0;
-        for (int i = 0 ; i < naocc_; i++) {
-            for (int a = 0; a < navir_; a++) {
-                int owner_proc;
-                if (i < na_delta) {
-                    owner_proc = start_proc + a_delta_owner[a];
-                    // In the N - 1 block region
-                } else {
-                    // In the N block region
-                    owner_proc = start_proc + a_deltac_owner[a];
-                }
-
-                ia_owner_.push_back(owner_proc);
-                if (rank_ == owner_proc) {
-                    ia_local_to_global_.push_back(i * navir_ + a);
-                    ia_global_to_local_.push_back(counter++);
-                } else {
-                    ia_global_to_local_.push_back(0L);
-                }
-            }
-            if (i < na_delta) start_proc += na_per_i - 1;
-            else start_proc += na_per_i;
-        }
-
-//        ORDER_PRINT_END
+        ORDER_PRINT_END
     }
 }
 void MAD_MP2::print_header()
