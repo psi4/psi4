@@ -27,11 +27,11 @@ void SAPT2p3::ind30()
   e_ind30_ = indA_B + indB_A;
 
   if (debug_) {
-    fprintf(outfile,"\n    Ind20 (A<-B)        = %18.12lf H\n",indA_B);
-    fprintf(outfile,"    Ind20 (B<-A)        = %18.12lf H\n",indB_A);
+    fprintf(outfile,"\n    Ind30_1             = %18.12lf H\n",indA_B);
+    fprintf(outfile,"    Ind30_2             = %18.12lf H\n",indB_A);
   }
   if (print_) {
-    fprintf(outfile,"    Ind20               = %18.12lf H\n",e_ind30_);
+    fprintf(outfile,"    Ind30               = %18.12lf H\n",e_ind30_);
     fflush(outfile);
   }
 }
