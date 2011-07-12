@@ -7,6 +7,7 @@
 * 09/01/2010
 *
 ***********************************************************/
+#include <psiconfig.h>
 #include <psi4-dec.h>
 #include <string>
 #include <vector>
@@ -14,6 +15,10 @@
 namespace boost {
 template<class T> class shared_ptr;
 }
+
+#ifndef HAVE_FUNC_ERF
+double erf(double x);
+#endif
 
 namespace psi {
 
