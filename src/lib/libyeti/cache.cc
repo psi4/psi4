@@ -12,7 +12,7 @@
 
 #include <algorithm>
 
-using namespace yeti;
+namespace yeti {
 using namespace std;
 
 #ifdef redefine_size_t
@@ -63,8 +63,7 @@ DataCacheEntry::get_owner() const
 void
 DataCacheEntry::print(std::ostream& os) const
 {
-    os << stream_printf("This:%12p Offset:%ld Owner:%12p Data:%12p",
-    this, offset, owner, data);
+    os << stream_printf("This:%12p Offset:%ld Owner:%12p Data:%12p", this, offset, owner, data);
 }
 
 bool
@@ -456,3 +455,6 @@ Cachable::in_destructor() const
 {
     return in_destructor_;
 }
+
+} // end namespace yeti
+
