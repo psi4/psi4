@@ -7,6 +7,10 @@
 #define size_t custom_size_t
 #endif
 
+#ifndef stream_printf
+#define stream_printf(...) std::string()
+#endif
+
 namespace yeti {
 
 class IndentTracker {
