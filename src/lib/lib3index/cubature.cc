@@ -41,6 +41,173 @@ std::map<int,int> SphericalGrid::lebedev_order_to_points_;
 std::map<int, boost::shared_ptr<SphericalGrid> > SphericalGrid::lebedev_grids_;
 std::vector<double> MolecularGrid::BSRadii_;
 
+#if 0
+GridOctree::GridOctree(double* x, double* y, double* z, int N, int Nfloor, double alpha) :
+    x_(x), y_(y), z_(z), N_(N), Nfloor_(Nfloor), alpha_(alpha)
+{
+    buildTree();
+}
+GridOctree::~GridOctree()
+{
+}
+GridOctree::buildTree()
+{
+    double extents[6];
+    extents[0] = extents[1] = x_[0];
+    extents[2] = extents[3] = y_[0];
+    extents[4] = extents[5] = z_[0];
+
+    for (int Q = 0; Q < N_; Q++) {
+        if (extents[0] > x_[Q]) 
+            extents[0] = x_[Q];
+        if (extents[1] < x_[Q]) 
+            extents[1] = x_[Q];
+        if (extents[2] > y_[Q]) 
+            extents[2] = y_[Q];
+        if (extents[3] < y_[Q]) 
+            extents[3] = y_[Q];
+        if (extents[4] > z_[Q]) 
+            extents[4] = z_[Q];
+        if (extents[5] < z_[Q]) 
+            extents[5] = z_[Q];
+    }
+
+    double center[3];
+    center[0] = extents[1] - extents[0];
+    center[1] = extents[3] - extents[2];
+    center[2] = extents[5] - extents[4];
+
+    double widths[3]; 
+    widths[0] = extents[1] - extents[0];
+    widths[1] = extents[3] - extents[2];
+    widths[2] = extents[5] - extents[4];
+
+    double width = (widths[0] > widths[1] ? widths[0] : widths[1]);
+    width = (width > widths[2] ? width : widths[2]);
+
+    boost::shared_ptr<GridOctreeElement> base(new GridOctreeElement(center, width)); 
+    for (int Q = 0; Q < N_; Q++) {
+        base->addresses_.push_back(Q);
+    }
+
+    std::queue<boost::shared_ptr<GridOctreeElement> > level0;
+    level0.push_back(base);
+    tree_.push_back(level0);
+
+    int L = 0;
+    while (true) {
+        L++;
+        std::queue<boost::shared_ptr<GridOctreeElement> > next;
+        std::queue<boost::shared_ptr<GridOctreeElement> > current = tree_[L-1];        
+
+        bool divided = false;
+        for (std::queue<boost::shared_ptr<GridOctreeElement>::iterator it = current.begin(); it != current.end(); it++) {
+            boost::shared_ptr<GridOctreeElement> box = (*it);
+            
+              divided |= subdivide(box, next);
+        }
+
+        if (!divided) 
+            break;
+
+        tree_.push_back(next);
+    } 
+}
+bool GridOctree::subdivide(boost::shared_ptr<GridOctreeElement>& box, std::queue<boost::shared_ptr<GridOctreeElement> >& next)
+{
+    double[3] C;
+    C[0] = box->x();
+    C[1] = box->y();
+    C[2] = box->z();
+    double w = box->w();
+
+    int count[8];
+    ::memset(static_cast<void*>(count), '\0', 8 * sizeof(int));
+
+    for (int Q = 0; Q < box->N(); Q++) {
+        int index = box->addresses_[Q];
+        count[4 * (x_[index] > C[0]) + 2 * (y_[index] > C[1]) + 1 * (z_[index] > C[2])] ++;
+    }
+    
+    bool divide = true;
+    for (int i = 0; i < 8; i++) {
+        divide &= count[i] >= Nfloor_;
+    }
+
+    if (!divide) return false;
+
+    boost::shared_ptr<GridOctreeElement>* kids[8];
+
+    double[3] nC;
+
+    nC[0] = C[0] - w / 2.0;
+    nC[1] = C[1] - w / 2.0;
+    nC[2] = C[2] - w / 2.0;
+    kids[0] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] - w / 2.0;
+    nC[1] = C[1] - w / 2.0;
+    nC[2] = C[2] + w / 2.0;
+    kids[1] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] - w / 2.0;
+    nC[1] = C[1] + w / 2.0;
+    nC[2] = C[2] - w / 2.0;
+    kids[2] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] - w / 2.0;
+    nC[1] = C[1] + w / 2.0;
+    nC[2] = C[2] + w / 2.0;
+    kids[3] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] + w / 2.0;
+    nC[1] = C[1] - w / 2.0;
+    nC[2] = C[2] - w / 2.0;
+    kids[4] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] + w / 2.0;
+    nC[1] = C[1] - w / 2.0;
+    nC[2] = C[2] + w / 2.0;
+    kids[5] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] + w / 2.0;
+    nC[1] = C[1] + w / 2.0;
+    nC[2] = C[2] - w / 2.0;
+    kids[6] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    nC[0] = C[0] + w / 2.0;
+    nC[1] = C[1] + w / 2.0;
+    nC[2] = C[2] + w / 2.0;
+    kids[7] = boost::shared_ptr<GridOctreeElement>(new GridOctreeElement(nC, w / 2.0));
+
+    for (int Q = 0; Q < box->N(); Q++) {
+        int index = box->addresses_[Q];
+        int box_number = 4 * (x_[index] > C[0]) + 2 * (y_[index] > C[1]) + 1 * (z_[index] > C[2]);
+        kids[box_number]->addresses_.push_back(index);
+    } 
+
+    box->descendents_.push_back(kids[0]);
+    box->descendents_.push_back(kids[1]);
+    box->descendents_.push_back(kids[2]);
+    box->descendents_.push_back(kids[3]);
+    box->descendents_.push_back(kids[4]);
+    box->descendents_.push_back(kids[5]);
+    box->descendents_.push_back(kids[6]);
+    box->descendents_.push_back(kids[7]);
+
+    list.push_back(kids[0]);
+    list.push_back(kids[1]);
+    list.push_back(kids[2]);
+    list.push_back(kids[3]);
+    list.push_back(kids[4]);
+    list.push_back(kids[5]);
+    list.push_back(kids[6]);
+    list.push_back(kids[7]);
+
+    return true;
+}
+#endif
+
 PseudospectralGrid::PseudospectralGrid(boost::shared_ptr<Molecule> molecule,
                                        boost::shared_ptr<BasisSet> primary,
                                        boost::shared_ptr<BasisSet> dealias,

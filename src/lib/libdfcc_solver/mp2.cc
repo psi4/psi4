@@ -64,6 +64,8 @@ double MP2::compute_energy()
     test_ps();
   } else if (mp2_algorithm_ == "TEST_PS_OMEGA") {
     test_ps_omega();
+  } else if (mp2_algorithm_ == "TEST_DPS_OMEGA") {
+    test_dps_omega();
   }
 
   energies_["Opposite-Spin Energy"] = 0.5*energies_["MP2J Energy"];
@@ -318,64 +320,12 @@ void MP2::test_ps_omega()
 {
     fprintf(outfile, "  ==> Test PS Omega <==\n\n");
 
-    #if 0
-    boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    boost::shared_ptr<PseudospectralInt> ints(static_cast<PseudospectralInt*>(fact->ao_pseudospectral()));
-    boost::shared_ptr<OneBodyAOInt> Vints(fact->ao_potential());
-    boost::shared_ptr<OneBodyAOInt> Sints(fact->ao_overlap());
-    boost::shared_ptr<Matrix> T(new Matrix("Omega V Ints", basisset_->nbf(), basisset_->nbf()));
-    boost::shared_ptr<Matrix> V(new Matrix("True V Ints", basisset_->nbf(), basisset_->nbf()));
-    boost::shared_ptr<Matrix> S(new Matrix("True S Ints", basisset_->nbf(), basisset_->nbf()));
-
-    //Sints->compute(S);
-    //S->print();
-
-    //Vints->compute(V);
-    //V->print();
-
-    //double omega = options_.get_double("PS_OMEGA");
-    //bool use_omega = options_.get_bool("PS_USE_OMEGA");
-
-    //if (use_omega) 
-    //    ints->set_omega(omega);
-
-    //double x = basisset_->molecule()->x(0);
-    //double y = basisset_->molecule()->y(0);
-    //double z = basisset_->molecule()->z(0);
-  
-    ints->set_point(0.0,0.0,0.0);
-
-    boost::shared_ptr<Matrix> R(new Matrix("Results", 25, 21));
-
-    int n_e = 0;
-    for (double e = -3.0; e <= 3.0; e+= 0.25) {
-        int n_z = 0;
-        for (double z = 0.0; z <= 5.0; z+= 0.25) {
-
-        double omega = pow(10.0, e);
-
-        ints->set_point(0.0,0.0,z);
-        ints->set_omega(omega);
-        T->zero();
-    
-        ints->compute(T);
-   
-        R->set(0, n_e, n_z, T->get(0,0,0));
- 
-        n_z++;
-        }
-        n_e++;
-    }
-
-    R->save("results.dat", false, false); 
-    #endif
-
     double omega = options_.get_double("PS_OMEGA");
     if (!options_.get_bool("PS_USE_OMEGA")) {
         omega = -1.0;
     }
 
-    boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_, omega));
+    boost::shared_ptr<PSTensorII> ps(new PSTensorII(basisset_, C_, nocc_, nvir_, naocc_, navir_, 0L, options_));
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
     boost::shared_ptr<Matrix> I;
     if (omega >= 0.0) {
@@ -385,6 +335,37 @@ void MP2::test_ps_omega()
     }
     boost::shared_ptr<Matrix> Ips = ps->Ipsmo();
     boost::shared_ptr<Matrix> E(new Matrix("Error in PS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+
+    E->copy(Ips);
+    E->subtract(I);
+
+    if (debug_) {
+        I->print();
+        Ips->print();
+        E->print();
+    }
+
+    check_integrals(E);
+}
+void MP2::test_dps_omega()
+{
+    fprintf(outfile, "  ==> Test Double PS Omega <==\n\n");
+
+    double omega = options_.get_double("PS_OMEGA");
+    if (!options_.get_bool("PS_USE_OMEGA")) {
+        omega = -1.0;
+    }
+
+    boost::shared_ptr<PSTensorII> ps(new PSTensorII(basisset_, C_, nocc_, nvir_, naocc_, navir_, 0L, options_));
+    boost::shared_ptr<MintsHelper> mints(new MintsHelper());
+    boost::shared_ptr<Matrix> I;
+    if (omega >= 0.0) {
+        I = mints->mo_erf_eri(omega, C_,C_);   
+    } else {
+        I = mints->mo_eri(C_,C_);   
+    }
+    boost::shared_ptr<Matrix> Ips = ps->Idpsmo();
+    boost::shared_ptr<Matrix> E(new Matrix("Error in DPS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
     E->copy(Ips);
     E->subtract(I);

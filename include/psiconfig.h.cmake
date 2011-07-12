@@ -36,6 +36,7 @@
 #cmakedefine HAVE_CSTRING
 #cmakedefine HAVE_CSTDDEF
 #cmakedefine HAVE_FUNC_ISINF
+#cmakedefine HAVE_FUNC_ERF
 
 /* Have dlfcn.h for dlopen and friends */
 #cmakedefine HAVE_DLFCN_H

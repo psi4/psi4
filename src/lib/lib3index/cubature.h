@@ -261,6 +261,81 @@ public:
 
 };
 
+#if 0
+class DFTGrid : public MolecularGrid {
+
+protected:
+    /// The primary basis
+    boost::shared_ptr<BasisSet> primary_;
+    /// The Options object
+    Options& options_;
+
+    /// Master builder method
+    void buildGridFromOptions();
+
+public:
+
+    /// Constructor for autogeneration
+    DFTGrid(boost::shared_ptr<Molecule> molecule,
+            boost::shared_ptr<BasisSet> primary,
+            Options& options);
+    virtual ~DFTGrid();
+
+};
+
+class GridOctree {
+
+protected:
+    /// The full octree
+    std::vector<std::queue<boost::shared_ptr<GridOctreeElement> > > tree_;
+    /// The x values on the grid, unsorted
+    double *x_;
+    /// The y values on the grid, unsorted
+    double *y_;
+    /// The z values on the grid, unsorted
+    double *z_;   
+    /// The number of points on the grid
+    int N_;
+    /// The absolute minimum number of points in a box
+    int Nfloor_;
+    /// Cost function is \infty * H(Nfloor - N) + \alpha / (N - Nfloor) + NS^2
+    double alpha_;
+
+    void buildTree(); 
+    bool subdivide(boost::shared_ptr<GridOctreeElement>& box, std::queue<boost::shared_ptr<GridOctreeElement> >& next)
+
+public:
+    GridOctree(double *x, double *y, double *z, int N, int Nfloor, double alpha);
+    ~GridOctree();
+
+}; 
+
+/*- PR-type octree -*/
+class GridOctreeElement {
+
+protected:
+    std::queue<int> sig_shells_;
+    int nsig_funs_;
+
+    std::queue<int> addresses_;
+    std::queue<boost::shared_ptr<GridOctreeElement> > descendents_;    
+
+    double center_[3];    
+    double width_;
+
+public:
+   
+    double x() const { return center_[0]; } 
+    double y() const { return center_[1]; } 
+    double z() const { return center_[2]; } 
+    double w() const { return width_; } 
+
+    int N();
+    int S();
+    
+    friend class GridOctree; 
+};
+#endif
 
 }
 #endif
