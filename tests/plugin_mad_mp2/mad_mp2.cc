@@ -39,7 +39,7 @@ namespace psi{ namespace mad_mp2 {
 MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
     Wavefunction(options, psio), madness::WorldObject<MAD_MP2>(*Communicator::world->get_madworld())
 {
-    sleep(100);
+//    sleep(100);
     common_init();
     parallel_init();
     process_pending();
@@ -223,6 +223,10 @@ void MAD_MP2::parallel_init()
     mad_nthread_ = Communicator::world->nthread();
     rank_    = Communicator::world->me();
     comm_    = Communicator::world->communicator();
+#if HAVE_MADNESS == 1
+    madworld_ = Communicator::world->get_madworld();
+#endif
+
 
     nia_ = naocc_ * (ULI) navir_;
 
@@ -820,17 +824,28 @@ madness::Future<std::vector<double> > MAD_MP2::fetch_Qia_block(const int& i, con
     for (int Q = 0; Q < naux_; Q++) {
         for (int a = 0; a < na; a++, index++) {
             block[index] = Qp[Q][i_local * na + a];
+//            if (i == 1 && rank_ == 0) {
+//                std::cout << "block[" << Q << "][" << i << "][" << a <<
+//                             "] = " << block[index] << std::endl;
+//            }
         }
     }
 
+
     return madness::Future<std::vector<double> >(block);
 }
-madness::Void MAD_MP2::unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize)
+madness::Void MAD_MP2::unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize, const int & i)
 {
+//    std::cout << "****** UPACKING ********" << std::endl;
+
     double** Qp = Q->pointer();
     for (int P = 0; P < naux_; P++) {
         for (int a = 0; a < asize; a++) {
             Qp[P][astart + a] = block[P * asize + a];
+//            if (i == 1 && rank_ == 1) {
+//                std::cout << "unpack_block[" << P << "][" << i << "][" << a <<
+//                             "] = " << block[P * asize + a] << std::endl;
+//            }
         }
     }
 
@@ -871,31 +886,39 @@ void MAD_MP2::I()
 
         // build_Qa(ind)
         for (int ind = 0; ind < ablock_owner_[i].size(); ind++) {
-            printf("i = %3d: Must fetch from process %3d, a block of %4d a, starting at a = %4d\n",
-                   i, ablock_owner_[i][ind], ablock_size_[i][ind], ablock_start_[i][ind]);
+            if (debug_)
+                printf("rank = %3d, i = %3d: Must fetch from process %3d, a block of %4d a, starting at a = %4d\n",
+                       rank_, i, ablock_owner_[i][ind], ablock_size_[i][ind], ablock_start_[i][ind]);
 
             int astart = ablock_start_[i][ind];
             int asize  = ablock_size_[i][ind];
             int aowner = ablock_owner_[i][ind];
 
             madness::Future<std::vector<double> > fut = task(aowner,&MAD_MP2::fetch_Qia_block,i,ind);
-            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qa, astart, asize);
+            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qa, astart, asize, i);
         }
 
         // build_Qb
         for (int ind = 0; ind < ablock_owner_[j].size(); ind++) {
-            printf("j = %3d: Must fetch from process %3d, b block of %4d b, starting at b = %4d\n",
-                   j, ablock_owner_[j][ind], ablock_size_[j][ind], ablock_start_[j][ind]);
+            if (debug_)
+                printf("rank = %3d, j = %3d: Must fetch from process %3d, b block of %4d b, starting at b = %4d\n",
+                       rank_, j, ablock_owner_[j][ind], ablock_size_[j][ind], ablock_start_[j][ind]);
 
             int astart = ablock_start_[j][ind];
             int asize  = ablock_size_[j][ind];
             int aowner = ablock_owner_[j][ind];
 
             madness::Future<std::vector<double> > fut = task(aowner,&MAD_MP2::fetch_Qia_block,j,ind);
-            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qb, astart, asize);
+            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qb, astart, asize, j);
         }
 
         Communicator::world->get_madworld()->taskq.fence();
+
+        if (debug_ > 2) {
+            Qa->print();
+            Qb->print();
+        }
+
 
 //        for (int Q = 0; Q < naux_; Q++) {
 //            C_DCOPY(navir_, &Qiap[Q][i * navir_], 1, Qap[Q], 1);
@@ -907,15 +930,17 @@ void MAD_MP2::I()
 
         for (int a = 0; a < navir_; a++) {
             for (int b = 0; b < navir_; b++) {
-                double iajb = Ip[a][b];
-                double ibja = Ip[b][a];
-                double denom = (i == j ? 1.0 : 2.0) /
-                        (eps_avir_->get(a) +
-                         eps_avir_->get(b) -
-                         eps_aocc_->get(i) -
-                         eps_aocc_->get(j));
-                E_MP2J_ -= 2.0 * denom * iajb * iajb;
-                E_MP2K_ += 1.0 * denom * iajb * ibja;
+                E_MP2J_ += task(rank_, &MAD_MP2::energy_j, I, i,j,a, b);
+                E_MP2K_ += task(rank_, &MAD_MP2::energy_k, I, i,j,a, b);
+//                double iajb = Ip[a][b];
+//                double ibja = Ip[b][a];
+//                double denom = (i == j ? 1.0 : 2.0) /
+//                        (eps_avir_->get(a) +
+//                         eps_avir_->get(b) -
+//                         eps_aocc_->get(i) -
+//                         eps_aocc_->get(j));
+//                E_MP2J_ -= 2.0 * denom * iajb * iajb;
+//                E_MP2K_ += 1.0 * denom * iajb * ibja;
             }
         }
     }
@@ -924,6 +949,34 @@ void MAD_MP2::I()
     Communicator::world->sum(&E_MP2J_, 1);
     Communicator::world->sum(&E_MP2K_, 1);
 }
+madness::Future<double> MAD_MP2::energy_j(const SharedMatrix I, const int &i, const int &j,
+                                          const int &a, const int &b) {
+    double e_mp2J=0.0;
+    double iajb = I->get(0,a,b);
+    double denom = (i == j ? 1.0 : 2.0) /
+            (eps_avir_->get(a) +
+             eps_avir_->get(b) -
+             eps_aocc_->get(i) -
+             eps_aocc_->get(j));
+    e_mp2J -= 2.0 * denom * iajb * iajb;
+    return madness::Future<double>(e_mp2J);
+}
+madness::Future<double> MAD_MP2::energy_k(const SharedMatrix I, const int &i, const int &j,
+                                          const int &a, const int &b)
+{
+double e_mp2k=0.0;
+double iajb = I->get(0,a,b);
+double ibja = I->get(0,b,a);
+double denom = (i == j ? 1.0 : 2.0) /
+        (eps_avir_->get(a) +
+         eps_avir_->get(b) -
+         eps_aocc_->get(i) -
+         eps_aocc_->get(j));
+    e_mp2k += 1.0 * denom * iajb * ibja;
+    return madness::Future<double>(e_mp2k);
+}
+
+
 void MAD_MP2::denominator()
 {
     denom_ = boost::shared_ptr<Denominator>(Denominator::buildDenominator(
