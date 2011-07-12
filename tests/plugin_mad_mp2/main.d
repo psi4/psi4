@@ -13,11 +13,13 @@ main.o main.d: main.cc \
   /usr/include/c++/4.2.1/bits/stringfwd.h \
   /usr/include/c++/4.2.1/bits/char_traits.h \
   /usr/include/c++/4.2.1/cstring /usr/include/c++/4.2.1/cstddef \
-  /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stddef.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin10/4.2.1/include/stddef.h \
   /usr/include/string.h /usr/include/c++/4.2.1/bits/stl_algobase.h \
   /usr/include/c++/4.2.1/climits \
-  /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/limits.h \
-  /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/syslimits.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin10/4.2.1/include/limits.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin10/4.2.1/include/syslimits.h \
+  /Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin10/4.2.1/include/limits.h \
+  /Developer/usr/llvm-gcc-4.2/lib/gcc/i686-apple-darwin10/4.2.1/include/syslimits.h \
   /usr/include/limits.h /usr/include/machine/limits.h \
   /usr/include/i386/limits.h /usr/include/i386/_limits.h \
   /usr/include/sys/syslimits.h /usr/include/c++/4.2.1/cstdlib \
@@ -36,7 +38,7 @@ main.o main.d: main.cc \
   /usr/include/c++/4.2.1/clocale /usr/include/locale.h \
   /usr/include/_locale.h /usr/include/c++/4.2.1/cstdio \
   /usr/include/stdio.h /usr/include/c++/4.2.1/cstdarg \
-  /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stdarg.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin10/4.2.1/include/stdarg.h \
   /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/c++io.h \
   /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/gthr.h \
   /usr/include/c++/4.2.1/i686-apple-darwin10/x86_64/bits/gthr-default.h \
@@ -46,7 +48,7 @@ main.o main.d: main.cc \
   /usr/include/runetype.h /usr/include/c++/4.2.1/bits/postypes.h \
   /usr/include/c++/4.2.1/cwchar /usr/include/c++/4.2.1/ctime \
   /usr/include/wchar.h /usr/include/_wctype.h \
-  /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stdint.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin10/4.2.1/include/stdint.h \
   /usr/include/c++/4.2.1/bits/functexcept.h \
   /usr/include/c++/4.2.1/exception_defines.h \
   /usr/include/c++/4.2.1/bits/stl_pair.h \
@@ -298,7 +300,7 @@ main.o main.d: main.cc \
   /Users/b2m/Qt-workspace/psi4-updated/include/boost/limits.hpp \
   /Users/b2m/Qt-workspace/psi4-updated/include/boost/config/no_tr1/cmath.hpp \
   /usr/include/c++/4.2.1/cmath /usr/include/math.h \
-  /usr/include/architecture/i386/math.h /usr/include/AvailabilityMacros.h \
+  /usr/include/architecture/i386/math.h \
   /usr/include/c++/4.2.1/bits/cmath.tcc \
   /Users/b2m/Qt-workspace/psi4-updated/include/boost/date_time/time_duration.hpp \
   /Users/b2m/Qt-workspace/psi4-updated/include/boost/operators.hpp \
@@ -468,45 +470,16 @@ main.o main.d: main.cc \
   /usr/include/c++/4.2.1/bits/deque.tcc \
   /usr/include/c++/4.2.1/bits/stl_queue.h \
   /Users/b2m/Qt-workspace/psi4-updated/src/lib/libparallel/parallel.h \
-  ../../objdir/include/psiconfig.h /usr/include/mpi.h \
-  /usr/include/openmpi/ompi/mpi/cxx/mpicxx.h \
-  /usr/include/openmpi/ompi/mpi/cxx/constants.h \
-  /usr/include/openmpi/ompi/mpi/cxx/functions.h \
-  /usr/include/openmpi/ompi/mpi/cxx/datatype.h \
-  /usr/include/openmpi/ompi/mpi/cxx/exception.h \
-  /usr/include/openmpi/ompi/mpi/cxx/op.h \
-  /usr/include/openmpi/ompi/mpi/cxx/status.h \
-  /usr/include/openmpi/ompi/mpi/cxx/request.h \
-  /usr/include/openmpi/ompi/mpi/cxx/group.h \
-  /usr/include/openmpi/ompi/mpi/cxx/comm.h \
-  /usr/include/openmpi/ompi/mpi/cxx/win.h \
-  /usr/include/openmpi/ompi/mpi/cxx/file.h \
-  /usr/include/openmpi/ompi/mpi/cxx/errhandler.h \
-  /usr/include/openmpi/ompi/mpi/cxx/intracomm.h \
-  /usr/include/openmpi/ompi/mpi/cxx/topology.h \
-  /usr/include/openmpi/ompi/mpi/cxx/intercomm.h \
-  /usr/include/openmpi/ompi/mpi/cxx/info.h \
-  /usr/include/openmpi/ompi/mpi/cxx/datatype_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/functions_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/request_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/comm_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/intracomm_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/topology_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/intercomm_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/group_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/op_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/errhandler_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/status_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/info_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/win_inln.h \
-  /usr/include/openmpi/ompi/mpi/cxx/file_inln.h \
+  ../../objdir/include/psiconfig.h /usr/local/mpich/include/mpi.h \
+  /usr/local/mpich/include/mpio.h /usr/local/mpich/include/mpi.h \
+  /usr/local/mpich/include/mpicxx.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/world.h \
   ../../objdir/madness/include/madness_config.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/worldmpi.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/safempi.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/worldmutex.h \
   /usr/include/libkern/OSAtomic.h \
-  /usr/lib/gcc/i686-apple-darwin10/4.2.1/include/stdbool.h \
+  /usr/llvm-gcc-4.2/bin/../lib/gcc/i686-apple-darwin10/4.2.1/include/stdbool.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/nodefaults.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/worldtime.h \
   /Users/b2m/Qt-workspace/psi4-updated/madness/src/lib/world/atomicint.h \

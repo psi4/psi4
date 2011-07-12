@@ -30,6 +30,10 @@ class MAD_MP2 : public Wavefunction , public madness::WorldObject<MAD_MP2>
 protected:
 
     // => Parallel Variables <= //
+
+#if HAVE_MADNESS == 1
+     SharedMadWorld madworld_;
+#endif
     
     // Number of processors
     int nproc_;
@@ -184,7 +188,13 @@ protected:
     void print_energy();
 
     madness::Future<std::vector<double> > fetch_Qia_block(const int& i, const int& ablock);
-    madness::Void unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize);
+    madness::Void unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q,
+                                   const int& astart, const int& asize,
+                                   const int &i);
+
+    madness::Future<double> energy_j(const SharedMatrix I,const int &i, const int &j,const int &a, const int &b);
+    madness::Future<double> energy_k(const SharedMatrix I,const int &i, const int &j,const int &a, const int &b);
+
 
 public:
     MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio);
