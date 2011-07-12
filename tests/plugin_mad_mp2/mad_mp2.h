@@ -30,7 +30,7 @@ class MAD_MP2 : public Wavefunction , public madness::WorldObject<MAD_MP2>
 protected:
 
     // => Parallel Variables <= //
- 
+    
     // Number of processors
     int nproc_;
     // Number of threads
@@ -153,7 +153,7 @@ protected:
 
     /// J^-1/2
     boost::shared_ptr<Matrix> Jm12_;
-    /// (A|ia)
+    /// (A|ia) 
     boost::shared_ptr<Matrix> Aia_; 
     /// \tau_ia^Q
     boost::shared_ptr<Denominator> denom_;   
