@@ -56,6 +56,8 @@ public:
     ~Vector();
 
     void init(int nirrep, int *dimpi);
+    void init(int nirrep, const int *dimpi, const std::string& name = "");
+
 
     Vector* clone();
 

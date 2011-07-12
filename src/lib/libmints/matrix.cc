@@ -779,6 +779,32 @@ void Matrix::subtract(const boost::shared_ptr<Matrix>& sub)
     subtract(sub.get());
 }
 
+void Matrix::apply_denominator(const Matrix * const plus)
+{
+    double *lhs, *rhs;
+    for (int h=0; h<nirrep_; ++h) {
+        size_t size = rowspi_[h] * colspi_[h^symmetry_];
+        if (size) {
+            lhs = matrix_[h][0];
+            rhs = plus->matrix_[h][0];
+            for (size_t ij=0; ij<size; ++ij) {
+                *lhs /= *rhs;
+                lhs++; rhs++;
+            }
+        }
+    }
+}
+
+void Matrix::apply_denominator(const Matrix& plus)
+{
+    apply_denominator(&plus);
+}
+
+void Matrix::apply_denominator(const boost::shared_ptr<Matrix>& plus)
+{
+    apply_denominator(plus.get());
+}
+
 void Matrix::accumulate_product(const Matrix* const a, const Matrix* const b)
 {
     gemm(false, false, 1.0, a, b, 1.0);

@@ -86,6 +86,16 @@ void Vector::init(int nirreps, int *dimpi)
     alloc();
 }
 
+void Vector::init(int nirreps, const int *dimpi, const std::string& name) {
+    name_ = name;
+    if (dimpi_) delete[] dimpi_;
+    nirrep_ = nirreps;
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
+        dimpi_[h] = dimpi[h];
+    alloc();
+}
+
 Vector* Vector::clone()
 {
     Vector *temp = new Vector(nirrep_, dimpi_);
