@@ -641,6 +641,8 @@ AC_CHECK_LIB(m,isinf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ISINF,1)],[
   ])
 ])
 
+AC_CHECK_LIB(m,erf,[AC_DEFINE_UNQUOTED(HAVE_FUNC_ERF,1)])
+
 # set up cpu specific flags
 AC_MSG_CHECKING([for architecture/compiler specific optimization flags])
 case $target_cpu in
