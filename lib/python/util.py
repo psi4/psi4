@@ -21,6 +21,7 @@ def compare_values(expected, computed, digits, label):
         sys.exit(1)
 
     print "\t%s: matched." % (label)
+    sys.stdout.flush()
 
 def compare_integers(expected, computed, label):
     if (expected != computed):
@@ -28,6 +29,7 @@ def compare_integers(expected, computed, label):
         sys.exit(1)
 
     print "\t%s: matched." % (label)
+    sys.stdout.flush()
 
 def compare_strings(expected, computed, label):
     if(expected != computed):
@@ -35,6 +37,7 @@ def compare_strings(expected, computed, label):
         sys.exit(1)
 
     print "\t%s: matched." % (label)
+    sys.stdout.flush()
 
 def compare_matrices(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
@@ -69,6 +72,7 @@ def compare_matrices(expected, computed, digits, label):
             sys.exit(1)
 
     print "\t%s: matched." % (label)
+    sys.stdout.flush()
 
 def compare_vectors(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
@@ -95,3 +99,4 @@ def compare_vectors(expected, computed, digits, label):
             sys.exit(1)
 
     print "\t%s: matched." % (label)
+    sys.stdout.flush()
