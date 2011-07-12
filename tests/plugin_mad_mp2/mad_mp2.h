@@ -3,6 +3,7 @@
 
 #include <boost/tuple/tuple.hpp>
 #include <boost/tuple/tuple_comparison.hpp>
+#include <libparallel/parallel.h>
 #include <map>
 
 namespace boost {
@@ -23,7 +24,7 @@ class Chkpt;
 
 namespace  mad_mp2 {
 
-class MAD_MP2 : public Wavefunction 
+class MAD_MP2 : public Wavefunction , public madness::WorldObject<MAD_MP2>
 {
 
 protected:
@@ -44,10 +45,18 @@ protected:
     ULI nia_local_;
     // ia pair assignments
     std::vector<int> ia_owner_;
+    // ablock owner for given i
+    std::vector<std::vector<int> > ablock_owner_;
+    // global a ablock starts for given i
+    std::vector<std::vector<int> > ablock_start_;
+    // global a ablock sizes for given i
+    std::vector<std::vector<int> > ablock_size_;
     // Local ia pair assignments
     std::vector<ULI> ia_local_to_global_;
     // Global ia pair assignments  
     std::map<ULI, int> ia_global_to_local_;
+    // Global i assignments
+    std::map<int,int> i_global_to_local_;
     // Local number of i
     int naocc_local_;
     // Local number of a
@@ -173,6 +182,9 @@ protected:
     virtual void IJ();
     /// Print the energies
     void print_energy();
+
+    madness::Future<std::vector<double> > fetch_Qia_block(const int& i, const int& ablock);
+    madness::Void unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize);
 
 public:
     MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio);
