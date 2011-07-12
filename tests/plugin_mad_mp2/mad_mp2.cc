@@ -196,6 +196,7 @@ void MAD_MP2::common_init()
         auxiliary_automatic_ = true;
         basisset_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-RI", "RI_BASIS_MP2");
     }
+<<<<<<< HEAD
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
     auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "RI_BASIS_MP2");
@@ -491,11 +492,167 @@ void MAD_MP2::parallel_init()
                     printf("%d -> %d ", i_global_it->first, i_global_it->second);
                 printf("\n\n");
             }
+=======
+
+    boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+    auxiliary_ = BasisSet::construct(parser, basisset_->molecule(), "RI_BASIS_MP2");
+    parser.reset();
+
+    naux_ = auxiliary_->nbf();
+
+    boost::shared_ptr<IntegralFactory> integral2(new IntegralFactory(auxiliary_,auxiliary_,auxiliary_,auxiliary_));
+    boost::shared_ptr<PetiteList> pet2(new PetiteList(auxiliary_, integral2));
+    AO2USO_aux_ = boost::shared_ptr<Matrix>(pet2->aotoso());
+  
+    if (debug_) {
+        AO2USO_aux_->print();
+        fflush(outfile);
+    }
+ 
+    Dimension dim = pet2->SO_basisdim();
+    ::memset(static_cast<void*>(nauxpi_), '\0', 8 * sizeof(int));
+    for (int h = 0; h < nirrep_; h++) {
+        nauxpi_[h] = dim[h];
+    } 
+
+    zero_ = BasisSet::zero_ao_basis_set();
+
+    max_nauxpi_ = 0;
+    max_naoccpi_ = 0;
+    max_navirpi_ = 0;
+
+    for (int h = 0; h < nirrep_; h++) {
+        max_nauxpi_ += nauxpi_[h];
+        max_naoccpi_ += naoccpi_[h];
+        max_navirpi_ += navirpi_[h];
+    }
+}
+void MAD_MP2::parallel_init()
+{
+    nproc_   = Communicator::world->nproc();
+    mad_nthread_ = Communicator::world->nthread();
+    rank_    = Communicator::world->me();
+    comm_    = Communicator::world->communicator();
+
+    nia_ = naocc_ * (ULI) navir_;
+
+#if 0
+    // Round robin for now
+    ULI counter = 0;
+    for (ULI ia = 0; ia < nia_; ia++) {
+        ia_global_to_local_.push_back(counter);
+        int node = ia % nproc_;
+        ia_owner_.push_back(node);
+        if (ia % nproc_ == nproc_ - 1)
+            counter++;
+        if (node == rank_) {
+            ia_local_to_global_.push_back(ia);
+        }
+    }
+    nia_local_ = ia_local_to_global_.size();
+#endif
+
+    // Maximum blocks
+    if (nproc_ <= naocc_) {
+        // nproc_ <= naocc_ Case
+        int ni_per_proc = naocc_ / nproc_;
+        int ni_extra = naocc_ % nproc_;
+
+        std::vector<int> ni_per;
+        for (int ind = 0; ind < nproc_; ind++) {
+            if (ind < ni_extra)
+                ni_per.push_back(ni_per_proc + 1);
+            else
+                ni_per.push_back(ni_per_proc);
+        }
+
+        std::vector<int> i_owner;
+        for (int ind = 0; ind < nproc_; ind++) {
+            for (int ind2 = 0; ind2 < ni_per[ind]; ind2++) {
+                i_owner.push_back(ind);
+            }
+        }
+
+        ULI counter = 0;
+        for (ULI ia = 0; ia < nia_; ia++) {
+            int i = ia / navir_;
+            int a = ia % navir_;
+
+            ia_owner_.push_back(i_owner[i]);
+            if (i_owner[i] == rank_) {
+                ia_local_to_global_.push_back(ia);
+                ia_global_to_local_.push_back(counter++);
+            } else {
+                ia_global_to_local_.push_back(0L);
+            }
+        }
+
+    } else {
+        // nproc_ > naocc_ Case
+        int na_per_i = nproc_ / naocc_ + (nproc_ % naocc_ == 0 ? 0 : 1);
+        int ndelta = na_per_i * naocc_ - nproc_;
+
+        int na_delta = navir_ / (na_per_i - 1);
+        int na_delta_extra = navir_ % (na_per_i - 1);
+        int na_deltac = navir_ / (na_per_i);
+        int na_deltac_extra = navir_ % (na_per_i);
+
+        std::vector<int> na_delta_per;
+        for (int ind = 0; ind < na_per_i - 1; ind++) {
+            if (ind < na_delta_extra)
+                na_delta_per.push_back(na_delta + 1);
+            else
+                na_delta_per.push_back(na_delta);
+        }
+        std::vector<int> na_deltac_per;
+        for (int ind = 0; ind < na_per_i; ind++) {
+            if (ind < na_deltac_extra)
+                na_deltac_per.push_back(na_deltac + 1);
+            else
+                na_deltac_per.push_back(na_deltac);
+        }
+
+        std::vector<int> a_delta_owner;
+        for (int ind = 0; ind < na_per_i - 1; ind++) {
+            for (int ind2 = 0; ind2 < na_delta_per[ind]; ind2++) {
+                a_delta_owner.push_back(ind);
+            }
+        }
+
+        std::vector<int> a_deltac_owner;
+        for (int ind = 0; ind < na_per_i; ind++) {
+            for (int ind2 = 0; ind2 < na_deltac_per[ind]; ind2++) {
+                a_deltac_owner.push_back(ind);
+            }
+        }
+
+        ULI counter = 0L;
+        int start_proc = 0;
+        for (int i = 0 ; i < naocc_; i++) {
+            for (int a = 0; a < navir_; a++) {
+                int owner_proc;
+                if (i < na_delta) {
+                    owner_proc = start_proc + a_delta_owner[a];
+                    // In the N - 1 block region
+                } else {
+                    // In the N block region
+                    owner_proc = start_proc + a_deltac_owner[a];
+                }
+
+                ia_owner_.push_back(owner_proc);
+                if (rank_ == owner_proc) {
+                    ia_local_to_global_.push_back(i * navir_ + a);
+                    ia_global_to_local_.push_back(counter++);
+                } else {
+                    ia_global_to_local_.push_back(0L);
+                }
+            }
+            if (i < na_delta) start_proc += na_per_i - 1;
+            else start_proc += na_per_i;
         }
 
 //        ORDER_PRINT_END
     }
-
 }
 void MAD_MP2::print_header()
 {
@@ -641,7 +798,6 @@ double MAD_MP2::compute_energy()
     }
 
     check_memory();
-
     J();
     Jm12();
 
@@ -801,7 +957,7 @@ void MAD_MP2::Aia()
     Amn.reset();
     Ami.reset();
     Ci.reset();
-   
+    
     if (debug_ > 1) {
         fprintf(outfile, "  ==> After MO Transform <==\n\n"); 
         Aia->print(); 
