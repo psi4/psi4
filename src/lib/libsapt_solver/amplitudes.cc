@@ -668,6 +668,11 @@ void SAPT2p3::amplitudes()
 
     inddisp30_amps();
 
+    disp30_amps(PSIF_SAPT_AMPS,"tARBS Amplitudes",PSIF_SAPT_AA_DF_INTS,
+      "AA RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
+      "BB RI Integrals","SS RI Integrals",foccA_,noccA_,nvirA_,evalsA_,
+      foccB_,noccB_,nvirB_,evalsB_,PSIF_SAPT_AMPS,"Disp30 uARBS Amplitudes");
+
   }
 }
 
@@ -1174,6 +1179,158 @@ void SAPT2p3::inddisp30_ovov()
     (char *) uARBS[0],sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
 
   free_block(uARBS);
+}
+
+void SAPT2p3::disp30_amps(int ampfile, const char *amplabel, int AAintfile,
+  const char *AAlabel, const char *RRlabel, int BBintfile, 
+  const char *BBlabel, const char *SSlabel, int foccA, int noccA, int nvirA, 
+  double *evalsA, int foccB, int noccB, int nvirB, double *evalsB, 
+  int ampout, const char *tlabel)
+{
+  int aoccA = noccA - foccA;
+  int aoccB = noccB - foccB;
+
+  double **tARBS = block_matrix(aoccA_*nvirA_,aoccB_*nvirB_);
+  double **tABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
+
+  psio_->read_entry(ampfile,amplabel,(char *) tARBS[0],
+    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
+
+    for (int a=0, ar=0; a < aoccA; a++) {
+    for (int r=0; r < nvirA; r++, ar++) {
+      for (int b=0, bs=0; b < aoccB; b++) {
+      for (int s=0; s < nvirB; s++, bs++) {
+        int ab = a*aoccB + b;
+        int rs = r*nvirB + s;
+        tABRS[ab][rs] = tARBS[ar][bs];
+      }}
+    }}
+    
+  free_block(tARBS);
+
+  double **t2ABRS = block_matrix(aoccA*aoccB,nvirA*nvirB);
+    
+  double **B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
+  double **B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
+
+  double **X_RS = block_matrix(nvirA,nvirB*nvirB);
+
+  for (int r=0; r < nvirA; r++) {
+    C_DGEMM('N','T',nvirA,nvirB*nvirB,ndf_+3,1.0,&(B_p_RR[r*nvirA][0]),
+      ndf_+3,&(B_p_SS[0][0]),ndf_+3,0.0,&(X_RS[0][0]),nvirB*nvirB);
+    C_DGEMM('N','T',aoccA*aoccB,nvirA*nvirB,nvirB,1.0,&(tABRS[0][r*nvirB]),
+      nvirA*nvirB,&(X_RS[0][0]),nvirB,1.0,&(t2ABRS[0][0]),nvirA*nvirB);
+  }
+
+  free_block(B_p_RR);
+  free_block(B_p_SS);
+  free_block(X_RS);
+
+  double **B_p_AA = get_DF_ints(AAintfile,AAlabel,foccA,noccA,foccA,noccA);
+  double **B_p_BB = get_DF_ints(BBintfile,BBlabel,foccB,noccB,foccB,noccB);
+
+  double **ABAB = block_matrix(aoccA*aoccB,aoccA*aoccB);
+
+  for (int a=0, ab=0; a < aoccA; a++) {
+    for (int b=0; b < aoccB; b++,ab++) {
+      C_DGEMM('N','T',aoccA,aoccB,ndf_+3,1.0,&(B_p_AA[a*aoccA][0]),
+        ndf_+3,&(B_p_BB[b*aoccB][0]),ndf_+3,0.0,&(ABAB[ab][0]),aoccB);
+  }}
+
+  free_block(B_p_AA);
+  free_block(B_p_BB);
+
+  C_DGEMM('N','N',aoccA*aoccB,nvirA*nvirB,aoccA*aoccB,1.0,&(ABAB[0][0]),
+    aoccA*aoccB,&(tABRS[0][0]),nvirA*nvirB,1.0,&(t2ABRS[0][0]),nvirA*nvirB);
+
+  free_block(ABAB);
+
+  double **tBRAS = block_matrix(aoccB*nvirA,aoccA*nvirB);
+
+    for (int a=0, ab=0; a < aoccA; a++) {
+    for (int b=0; b < aoccB; b++, ab++) {
+      for (int r=0, rs=0; r < nvirA; r++) {
+      for (int s=0; s < nvirB; s++, rs++) {
+        int br = b*nvirA + r;
+        int as = a*nvirB + s;
+        tBRAS[br][as] = tABRS[ab][rs];
+      }}
+    }}
+
+  free_block(tABRS);
+
+  double **t2BRAS = block_matrix(aoccB*nvirA,aoccA*nvirB);
+
+    for (int a=0, ab=0; a < aoccA; a++) {
+    for (int b=0; b < aoccB; b++, ab++) {
+      for (int r=0, rs=0; r < nvirA; r++) {
+      for (int s=0; s < nvirB; s++, rs++) {
+        int br = b*nvirA + r;
+        int as = a*nvirB + s;
+        t2BRAS[br][as] = t2ABRS[ab][rs];
+      }}
+    }}
+
+  free_block(t2ABRS);
+
+  B_p_BB = get_DF_ints(BBintfile,BBlabel,foccB,noccB,foccB,noccB);
+  B_p_RR = get_DF_ints(AAintfile,RRlabel,0,nvirA,0,nvirA);
+
+  double **BRBR = block_matrix(aoccB*nvirA,aoccB*nvirA);
+
+  for (int b=0, br=0; b < aoccB; b++) {
+    for (int r=0; r < nvirA; r++, br++) {
+      C_DGEMM('N','T',aoccB,nvirA,ndf_+3,1.0,&(B_p_BB[b*aoccB][0]),
+        ndf_+3,&(B_p_RR[r*nvirA][0]),ndf_+3,0.0,&(BRBR[br][0]),nvirA);
+  }}
+
+  free_block(B_p_BB);
+  free_block(B_p_RR);
+
+  C_DGEMM('N','N',aoccB*nvirA,aoccA*nvirB,aoccB*nvirA,-1.0,&(BRBR[0][0]),
+    aoccB*nvirA,&(tBRAS[0][0]),aoccA*nvirB,1.0,&(t2BRAS[0][0]),aoccA*nvirB);
+
+  free_block(BRBR);
+
+  B_p_AA = get_DF_ints(AAintfile,AAlabel,foccA,noccA,foccA,noccA);
+  B_p_SS = get_DF_ints(BBintfile,SSlabel,0,nvirB,0,nvirB);
+
+  double **ASAS = block_matrix(aoccA*nvirB,aoccA*nvirB);
+
+  for (int a=0, as=0; a < aoccA; a++) {
+    for (int s=0; s < nvirB; s++, as++) {
+      C_DGEMM('N','T',aoccA,nvirB,ndf_+3,1.0,&(B_p_AA[a*aoccA][0]),
+        ndf_+3,&(B_p_SS[s*nvirB][0]),ndf_+3,0.0,&(ASAS[as][0]),nvirB);
+  }}
+
+  free_block(B_p_AA);
+  free_block(B_p_SS);
+
+  C_DGEMM('N','N',aoccB*nvirA,aoccA*nvirB,aoccA*nvirB,-1.0,&(tBRAS[0][0]),
+    aoccA*nvirB,&(ASAS[0][0]),aoccA*nvirB,1.0,&(t2BRAS[0][0]),aoccA*nvirB);
+
+  free_block(ASAS);
+  free_block(tBRAS);
+
+  tARBS = block_matrix(aoccA*nvirA,aoccB*nvirB);
+
+  for (int a=0,ar=0; a < aoccA; a++) {
+    for (int r=0; r < nvirA; r++,ar++) {
+      for (int b=0,bs=0; b < aoccB; b++) {
+        for (int s=0; s < nvirB; s++,bs++) {
+          int br = b*nvirA + r;
+          int as = a*nvirB + s;
+          double denom = evalsA[a+foccA]+evalsB[b+foccB]-
+                  evalsA[r+noccA]-evalsB[s+noccB];
+          tARBS[ar][bs] = t2BRAS[br][as]/denom;
+  }}}}
+
+  free_block(t2BRAS);
+
+  psio_->write_entry(ampout,tlabel,(char *) tARBS[0],
+    sizeof(double)*aoccA_*nvirA_*aoccB_*nvirB_);
+
+  free_block(tARBS);
 }
 
 }}
