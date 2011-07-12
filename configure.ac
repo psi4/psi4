@@ -866,6 +866,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
           src/lib/libscf_solver/Makefile
+          src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile
           src/lib/libparallel/Makefile
           src/lib/libboost_python/Makefile
@@ -904,6 +905,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
+          src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
           src/bin/df-mp2/Makefile
           src/bin/sapt/Makefile
