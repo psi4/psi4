@@ -1,29 +1,153 @@
-E_MP2J = -0.3097687355952962
-E_MP2K =  0.1028582421031129
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  
+  
 
-molecule {
-0 1
-O
-H 1 1.0
-H 1 1.0 2 104.7
-symmetry c1
-}
+  
 
-plugin_load("../plugin_mad_mp2.so")
 
-set globals {
-basis cc-pvdz
-print 1
-debug 3
-scf_type direct
-mp2_algorithm dfmp2
-}
+  
 
-energy('scf')
-plugin("../plugin_mad_mp2.so")
-
-E_J = get_variable('E_MP2J')
-E_K = get_variable('E_MP2K')
-
-compare_values(E_MP2J, E_J, 6, "E_MP2J") #TEST
-compare_values(E_MP2K, E_K, 6, "E_MP2K") #TEST
+  <head>
+    <title>
+      /trunk/tests/plugin_mad_mp2/tests/input.dat – Psi4
+    </title>
+        <link rel="search" href="/trac/search" />
+        <link rel="help" href="/trac/wiki/TracGuide" />
+        <link rel="alternate" href="/trac/export/1983/trunk/tests/plugin_mad_mp2/tests/input.dat" type="text/plain" title="Original Format" />
+        <link rel="up" href="/trac/browser/trunk/tests/plugin_mad_mp2/tests" title="Parent directory" />
+        <link rel="start" href="/trac/wiki" />
+        <link rel="stylesheet" href="/trac/chrome/common/css/trac.css" type="text/css" /><link rel="stylesheet" href="/trac/chrome/common/css/code.css" type="text/css" /><link rel="stylesheet" href="/trac/pygments/trac.css" type="text/css" /><link rel="stylesheet" href="/trac/chrome/common/css/browser.css" type="text/css" /><link rel="stylesheet" href="/trac/chrome/googlemap/tracgooglemap.css" type="text/css" />
+        <link rel="google-key" href="" class="google-key" title="ABQIAAAAEm-sB5Hq7DJNrZXGU2EXlxTthLP7MnSeoBrJ-Mt6ZcDfmRQM3RTqr4vj7oIAm9RhoGjV8d0hktaebQ" />
+        <link rel="shortcut icon" href="/trac/chrome/site/logo.png" type="image/png" />
+        <link rel="icon" href="/trac/chrome/site/logo.png" type="image/png" />
+      <link type="application/opensearchdescription+xml" rel="search" href="/trac/search/opensearch" title="Search Psi4" />
+    <script type="text/javascript" src="/trac/chrome/common/js/jquery.js"></script><script type="text/javascript" src="/trac/chrome/common/js/trac.js"></script><script type="text/javascript" src="/trac/chrome/common/js/search.js"></script><script type="text/javascript" src="/trac/chrome/googlemap/tracgooglemap.js"></script>
+    <!--[if lt IE 7]>
+    <script type="text/javascript" src="/trac/chrome/common/js/ie_pre7_hacks.js"></script>
+    <![endif]-->
+    <script type="text/javascript">
+      jQuery(document).ready(function($) {
+        $(".trac-toggledeleted").show().click(function() {
+                  $(this).siblings().find(".trac-deleted").toggle();
+                  return false;
+        }).click();
+        $("#jumploc input").hide();
+        $("#jumploc select").change(function () {
+          this.parentNode.parentNode.submit();
+        });
+      });
+    </script>
+  </head>
+  <body>
+    <div id="banner">
+      <div id="header">
+        <a id="logo" href="/trac/wiki"><img src="/trac/chrome/site/PSI4_3.png" alt="Welcome to the Psi4 Trac page" height="120" width="480" /></a>
+      </div>
+      <form id="search" action="/trac/search" method="get">
+        <div>
+          <label for="proj-search">Search:</label>
+          <input type="text" id="proj-search" name="q" size="18" value="" />
+          <input type="submit" value="Search" />
+        </div>
+      </form>
+      <div id="metanav" class="nav">
+    <ul>
+      <li class="first">logged in as rparrish6</li><li><a href="/trac/logout">Logout</a></li><li><a href="/trac/prefs">Preferences</a></li><li><a href="/trac/wiki/TracGuide">Help/Guide</a></li><li class="last"><a href="/trac/about">About Trac</a></li>
+    </ul>
+  </div>
+    </div>
+    <div id="mainnav" class="nav">
+    <ul>
+      <li class="first"><a href="/trac/wiki">Wiki</a></li><li><a href="/trac/timeline">Timeline</a></li><li><a href="/trac/roadmap">Roadmap</a></li><li class="active"><a href="/trac/log/trunk?rev=latest">Browse Source</a></li><li><a href="/trac/report">View Tickets</a></li><li><a href="/trac/newticket">New Ticket</a></li><li><a href="/trac/search">Search</a></li><li><a href="/trac/doxygen">Doxygen</a></li><li><a href="/trac/admin" title="Administration">Admin</a></li><li class="last"><a href="/trac/discussion">Forum</a></li>
+    </ul>
+  </div>
+    <div id="main">
+      <div id="ctxtnav" class="nav">
+        <h2>Context Navigation</h2>
+          <ul>
+              <li class="first"><a href="/trac/changeset/1981/trunk/tests/plugin_mad_mp2/tests/input.dat">Last Change</a></li><li><a href="/trac/browser/trunk/tests/plugin_mad_mp2/tests/input.dat?annotate=blame&amp;rev=1981" title="Annotate each line with the last changed revision (this can be time consuming...)">Annotate</a></li><li class="last"><a href="/trac/log/trunk/tests/plugin_mad_mp2/tests/input.dat">Revision Log</a></li>
+          </ul>
+        <hr />
+      </div>
+    <div id="content" class="browser">
+      <h1>
+    <a class="pathentry first" title="Go to root directory" href="/trac/browser">root</a><span class="pathentry sep">/</span><a class="pathentry" title="View trunk" href="/trac/browser/trunk">trunk</a><span class="pathentry sep">/</span><a class="pathentry" title="View tests" href="/trac/browser/trunk/tests">tests</a><span class="pathentry sep">/</span><a class="pathentry" title="View plugin_mad_mp2" href="/trac/browser/trunk/tests/plugin_mad_mp2">plugin_mad_mp2</a><span class="pathentry sep">/</span><a class="pathentry" title="View tests" href="/trac/browser/trunk/tests/plugin_mad_mp2/tests">tests</a><span class="pathentry sep">/</span><a class="pathentry" title="View input.dat" href="/trac/browser/trunk/tests/plugin_mad_mp2/tests/input.dat">input.dat</a>
+    <br style="clear: both" />
+  </h1>
+      <div id="jumprev">
+        <form action="" method="get">
+          <div>
+            <label for="rev">
+              View revision:</label>
+            <input type="text" id="rev" name="rev" size="6" />
+          </div>
+        </form>
+      </div>
+      <div id="jumploc">
+        <form action="" method="get">
+          <div class="buttons">
+            <label for="preselected">Visit:</label>
+            <select id="preselected" name="preselected">
+              <option selected="selected"></option>
+              <optgroup label="branches">
+                <option value="/trac/browser/trunk">trunk</option><option value="/trac/browser/branches/madpsi4">branches/madpsi4</option><option value="/trac/browser/branches/psi4-alpha-0">branches/psi4-alpha-0</option>
+              </optgroup>
+            </select>
+            <input type="submit" value="Go!" title="Jump to the chosen preselected path" />
+          </div>
+        </form>
+      </div>
+      <table id="info" summary="Revision info">
+        <tr>
+          <th scope="col">
+            Revision <a href="/trac/changeset/1981">1981</a>, <span title="434 bytes">434 bytes</span>
+            (checked in by bmintz, <a class="timeline" href="/trac/timeline?from=2011-07-12T10%3A19%3A50-0400&amp;precision=second" title="2011-07-12T10:19:50-0400 in Timeline">35 minutes</a> ago)
+          </th>
+        </tr>
+        <tr>
+          <td class="message searchable">
+              <p>
+changes made to mad_mp2<br />
+</p>
+          </td>
+        </tr>
+      </table>
+      <div id="preview" class="searchable">
+    <table class="code"><thead><tr><th class="lineno" title="Line numbers">Line</th><th class="content"> </th></tr></thead><tbody><tr><th id="L1"><a href="#L1">1</a></th><td>E_MP2J = -0.3097687355952962</td></tr><tr><th id="L2"><a href="#L2">2</a></th><td>E_MP2K =  0.1028582421031129</td></tr><tr><th id="L3"><a href="#L3">3</a></th><td></td></tr><tr><th id="L4"><a href="#L4">4</a></th><td>molecule {</td></tr><tr><th id="L5"><a href="#L5">5</a></th><td>0 1</td></tr><tr><th id="L6"><a href="#L6">6</a></th><td>O</td></tr><tr><th id="L7"><a href="#L7">7</a></th><td>H 1 1.0</td></tr><tr><th id="L8"><a href="#L8">8</a></th><td>H 1 1.0 2 104.7</td></tr><tr><th id="L9"><a href="#L9">9</a></th><td>symmetry c1</td></tr><tr><th id="L10"><a href="#L10">10</a></th><td>}</td></tr><tr><th id="L11"><a href="#L11">11</a></th><td></td></tr><tr><th id="L12"><a href="#L12">12</a></th><td>plugin_load("../plugin_mad_mp2.so")</td></tr><tr><th id="L13"><a href="#L13">13</a></th><td></td></tr><tr><th id="L14"><a href="#L14">14</a></th><td>set globals {</td></tr><tr><th id="L15"><a href="#L15">15</a></th><td>basis cc-pvdz</td></tr><tr><th id="L16"><a href="#L16">16</a></th><td>print 1</td></tr><tr><th id="L17"><a href="#L17">17</a></th><td>debug 3</td></tr><tr><th id="L18"><a href="#L18">18</a></th><td>scf_type direct</td></tr><tr><th id="L19"><a href="#L19">19</a></th><td>mp2_algorithm dfmp2</td></tr><tr><th id="L20"><a href="#L20">20</a></th><td>}</td></tr><tr><th id="L21"><a href="#L21">21</a></th><td></td></tr><tr><th id="L22"><a href="#L22">22</a></th><td>energy('scf')</td></tr><tr><th id="L23"><a href="#L23">23</a></th><td>plugin("../plugin_mad_mp2.so")</td></tr><tr><th id="L24"><a href="#L24">24</a></th><td></td></tr><tr><th id="L25"><a href="#L25">25</a></th><td>E_J = get_variable('E_MP2J')</td></tr><tr><th id="L26"><a href="#L26">26</a></th><td>E_K = get_variable('E_MP2K')</td></tr><tr><th id="L27"><a href="#L27">27</a></th><td></td></tr><tr><th id="L28"><a href="#L28">28</a></th><td>compare_values(E_MP2J, E_J, 6, "E_MP2J") #TEST</td></tr><tr><th id="L29"><a href="#L29">29</a></th><td>compare_values(E_MP2K, E_K, 6, "E_MP2K") #TEST</td></tr></tbody></table>
+      </div>
+      <div id="help">
+        <strong>Note:</strong> See <a href="/trac/wiki/TracBrowser">TracBrowser</a>
+        for help on using the browser.
+      </div>
+      <div id="anydiff">
+        <form action="/trac/diff" method="get">
+          <div class="buttons">
+            <input type="hidden" name="new_path" value="/trunk/tests/plugin_mad_mp2/tests/input.dat" />
+            <input type="hidden" name="old_path" value="/trunk/tests/plugin_mad_mp2/tests/input.dat" />
+            <input type="hidden" name="new_rev" />
+            <input type="hidden" name="old_rev" />
+            <input type="submit" value="View changes..." title="Select paths and revs for Diff" />
+          </div>
+        </form>
+      </div>
+    </div>
+    <div id="altlinks">
+      <h3>Download in other formats:</h3>
+      <ul>
+        <li class="last first">
+          <a rel="nofollow" href="/trac/export/1983/trunk/tests/plugin_mad_mp2/tests/input.dat">Original Format</a>
+        </li>
+      </ul>
+    </div>
+    </div>
+    <div id="footer" lang="en" xml:lang="en"><hr />
+      <a id="tracpowered" href="http://trac.edgewall.org/"><img src="/trac/chrome/common/trac_logo_mini.png" height="30" width="107" alt="Trac Powered" /></a>
+      <p class="left">
+        Powered by <a href="/trac/about"><strong>Trac 0.11.7</strong></a><br />
+        By <a href="http://www.edgewall.org/">Edgewall Software</a>.
+      </p>
+      <p class="right">www.psicode.org - The home of Psi4 on the internet.</p>
+    </div>
+  </body>
+</html>
