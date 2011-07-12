@@ -3,12 +3,9 @@ E_MP2K =  0.1028582421031129
 
 molecule {
 0 1
-He
-He 1 3.0
-
-#O
-#H 1 1.0
-#H 1 1.0 2 104.7
+O
+H 1 1.0
+H 1 1.0 2 104.7
 symmetry c1
 }
 
@@ -18,7 +15,6 @@ set globals {
 basis cc-pvdz
 print 1
 debug 3
-ri_basis_mp2 cc-pvdz-ri
 scf_type direct
 mp2_algorithm dfmp2
 }

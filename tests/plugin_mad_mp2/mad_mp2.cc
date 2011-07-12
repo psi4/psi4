@@ -42,10 +42,11 @@ using namespace boost;
 namespace psi{ namespace mad_mp2 {
 
 MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
-    Wavefunction(options, psio)
+    Wavefunction(options, psio), madness::WorldObject<MAD_MP2>(*Communicator::world->get_madworld())
 {
     common_init();
     parallel_init();
+    process_pending();
 }
 MAD_MP2::~MAD_MP2()
 {
@@ -238,21 +239,6 @@ void MAD_MP2::parallel_init()
 
     nia_ = naocc_ * (ULI) navir_;
 
-#if 0
-    // Round robin for now
-    ULI counter = 0;
-    for (ULI ia = 0; ia < nia_; ia++) {
-        ia_global_to_local_.push_back(counter);
-        int node = ia % nproc_;
-        ia_owner_.push_back(node);
-        if (ia % nproc_ == nproc_ - 1)
-            counter++;
-        if (node == rank_) {
-            ia_local_to_global_.push_back(ia);
-        }
-    }
-    nia_local_ = ia_local_to_global_.size();
-#endif
     int na_delta;
     int na_delta_extra;
     int na_deltac;
@@ -262,6 +248,9 @@ void MAD_MP2::parallel_init()
     std::vector<int> a_delta_owner;
     std::vector<int> a_deltac_owner;
 
+    // Check for hipsters
+    if (nproc_ > naocc_ * (ULI) navir_)
+        throw PSIEXCEPTION("What are you thinking?");
 
     // Maximum blocks
     if (nproc_ <= naocc_) {
@@ -294,6 +283,24 @@ void MAD_MP2::parallel_init()
                 ia_local_to_global_.push_back(ia);
                 ia_global_to_local_[ia]= counter++;
             }
+        }
+
+        int counter3 = 0;
+        for (int i = 0; i < naocc_; i++) {
+            if (i_owner[i] == rank_)
+                i_global_to_local_[i] = counter3++;
+
+            std::vector<int> blank1;
+            blank1.push_back(i_owner[i]);
+            ablock_owner_.push_back(blank1);
+
+            std::vector<int> blank2;
+            blank2.push_back(0);
+            ablock_start_.push_back(blank2);
+
+            std::vector<int> blank3;
+            blank3.push_back(navir_);
+            ablock_size_.push_back(blank3);
         }
 
     } else {
@@ -344,12 +351,42 @@ void MAD_MP2::parallel_init()
                     owner_proc = start_proc + a_deltac_owner[a];
                 }
 
+                if (owner_proc == rank_)
+                    i_global_to_local_[i] = 0;
+
                 ia_owner_.push_back(owner_proc);
                 if (rank_ == owner_proc) {
                     ia_local_to_global_.push_back(i * navir_ + a);
                     ia_global_to_local_[i * navir_ + a] = counter++;
                 }
             }
+
+            std::vector<int> blank1;
+            std::vector<int> blank2;
+            std::vector<int> blank3;
+
+            if (i < ni_delta) {
+                int counter2 = 0;
+                for (int ind = 0; ind < na_delta_per.size(); ind++) {
+                    blank1.push_back(start_proc + ind);
+                    blank2.push_back(counter2 + na_delta_per[ind]);
+                    blank3.push_back(na_delta_per[ind]);
+                    counter += na_delta_per[ind];
+                }
+            } else {
+                int counter2 = 0;
+                for (int ind = 0; ind < na_deltac_per.size(); ind++) {
+                    blank1.push_back(start_proc + ind);
+                    blank2.push_back(counter2 + na_deltac_per[ind]);
+                    blank3.push_back(na_deltac_per[ind]);
+                    counter += na_deltac_per[ind];
+                }
+            }
+
+            ablock_owner_.push_back(blank1);
+            ablock_start_.push_back(blank2);
+            ablock_size_.push_back(blank3);
+
             if (i < ni_delta) start_proc += na_per_i - 1;
             else start_proc += na_per_i;
         }
@@ -446,6 +483,12 @@ void MAD_MP2::parallel_init()
                 printf("avir_local values: ");
                 for(; avir_it != avir_local_.end(); ++avir_it)
                     printf("%d ", *avir_it);
+                printf("\n\n");
+
+                std::map<int, int>::const_iterator i_global_it = i_global_to_local_.begin();
+                printf("i Global to local array: ");
+                for(; i_global_it != i_global_to_local_.end(); ++i_global_it)
+                    printf("%d -> %d ", i_global_it->first, i_global_it->second);
                 printf("\n\n");
             }
         }
@@ -786,138 +829,121 @@ void MAD_MP2::Aia()
     }
     Aia_ = Aia;
 }
+madness::Future<std::vector<double> > MAD_MP2::fetch_Qia_block(const int& i, const int& ablock)
+{
+    int na = ablock_size_[i][ablock];
+    std::vector<double> block(na * naux_);
+    int i_local = i_global_to_local_[i];
+
+    double** Qp = Aia_->pointer();
+
+    ULI index = 0L;
+    for (int Q = 0; Q < naux_; Q++) {
+        for (int a = 0; a < na; a++, index++) {
+            block[index] = Qp[Q][i_local * na + a];
+        }
+    }
+
+    return madness::Future<std::vector<double> >(block);
+}
+madness::Void MAD_MP2::unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize)
+{
+    double** Qp = Q->pointer();
+    for (int P = 0; P < naux_; P++) {
+        for (int a = 0; a < asize; a++) {
+            Qp[P][astart + a] = block[P * asize + a];
+        }
+    }
+
+    return madness::None;
+}
+
 void MAD_MP2::I()
 {
     E_MP2J_ = 0.0;
     E_MP2K_ = 0.0;
 
-    boost::shared_ptr<Matrix> I(new Matrix("I", naocc_ * navir_, naocc_ * navir_));
+    boost::shared_ptr<Matrix> I(new Matrix("I", navir_, navir_));
     double** Ip = I->pointer();
+    boost::shared_ptr<Matrix> Qa(new Matrix("Qa", naux_, navir_));
+    double** Qap = Qa->pointer();
+    boost::shared_ptr<Matrix> Qb(new Matrix("Qb", naux_, navir_));
+    double** Qbp = Qb->pointer();
+
     double** Qiap = Aia_->pointer();
 
-    C_DGEMM('T','N',naocc_*navir_,naocc_*navir_,naux_,1.0,Qiap[0],naocc_*navir_,Qiap[0],naocc_*navir_,0.0,Ip[0],naocc_*navir_);
-    for (int i = 0; i < naocc_; i++)
-        for (int j = 0; j < naocc_; j++)
-            for (int a = 0; a < navir_; a++)
-                for (int b = 0; b < navir_; b++) {
-                    double iajb = Ip[i * navir_ + a][j * navir_ + b];
-                    double ibja = Ip[i * navir_ + b][j * navir_ + a];
-                    double denom = 1.0 / (eps_avir_->get(a) + eps_avir_->get(b) - eps_aocc_->get(i) - eps_aocc_->get(j));
-                    E_MP2J_ -= 2.0 * denom * iajb * iajb;
-                    E_MP2K_ += 1.0 * denom * ibja * iajb;
-                }
-
-#if 0
-    E_MP2J_ = 0.0;
-    E_MP2K_ = 0.0;
-
-    double* eps_aoccp = eps_aocc_->pointer();
-    double* eps_avirp = eps_avir_->pointer();
-    
-    timer_on("MP2 Energy");
-    for (int hi = 0; hi < nirrep_; hi++) {
-        for (int hj = 0; hj <= hi; hj++) {
-            double perm1 = (hi == hj ? 1.0 : 2.0);
-
-            int ni = naoccpi_[hi];
-            int nj = naoccpi_[hj];
-
-            if (!ni || !nj) continue;
-
-            std::map<int, boost::shared_ptr<Matrix> > *I = new std::map<int, boost::shared_ptr<Matrix> >[omp_nthread_];
-            for (int thread = 0; thread < omp_nthread_; thread++) {
-                for (int hQ = 0; hQ < nirrep_; hQ++) {
-
-                     int ha = hi ^ hQ;
-                     int hb = hj ^ hQ;
-
-                     int nQ = nauxpi_[hQ];
-                     int na = navirpi_[ha]; 
-                     int nb = navirpi_[hb];
-    
-                     if (!nQ || !na || !nb) continue;
-    
-                     boost::shared_ptr<Matrix> IQ(new Matrix("I_ab", na, nb));
-                     I[thread][hQ] = IQ;                
-                }
-            }
-
-            double EJ = 0.0;
-            double EK = 0.0; 
-
-            #pragma omp parallel for reduction(+ : EJ, EK) schedule(dynamic)  
-            for (int i = 0; i < ni; i++) {
-
-                int rank = 0;
-                #ifdef _OPENMP
-                    rank = omp_get_thread_num();
-                #endif
-
-                int maxj = (hi == hj ? i + 1 : nj);
-                for (int j = 0; j < maxj; j++) {
-                    double perm2 = perm1 * ((hi == hj) && (i != j) ? 2.0 : 1.0);
-
-                    // (ia|jb), h_Q = h_i ^ h_a = h_j ^ h_b  
-                    for (int hQ = 0; hQ < nirrep_; hQ++) {
-
-                        int ha = hi ^ hQ;
-                        int hb = hj ^ hQ;
-
-                        int nQ = nauxpi_[hQ];
-                        int na = navirpi_[ha]; 
-                        int nb = navirpi_[hb];
-    
-                        if (!nQ || !na || !nb) continue;
-                   
-                        double** Qiap = Aia_[std::pair<int,int>(hQ,hi)]->pointer();  
-                        double** Qjbp = Aia_[std::pair<int,int>(hQ,hj)]->pointer();
-
-                        double** IQp = I[rank][hQ]->pointer();
-
-                        C_DGEMM('T','N',na,nb,nQ,1.0,&Qiap[0][i*na],na*(ULI)ni,&Qjbp[0][j*nb],nb*(ULI)nj,0.0,IQp[0],nb);
-                    }
-
-                    // Energy Summation
-                    for (int ha = 0; ha < nirrep_; ha++) {
-                        int hb = hi ^ hj ^ ha;
-                        int hQia = hi ^ ha;
-                        int hQib = hi ^ hb;
-
-                        int na = navirpi_[ha]; 
-                        int nb = navirpi_[hb];
-                        int nQia = nauxpi_[hQia]; 
-                        int nQib = nauxpi_[hQib]; 
-
-                        // TODO Check for zero Q irreps
-                        if (!na || !nb) continue;
-
-                        double** IQiap = I[rank][hQia]->pointer();
-                        double** IQibp = I[rank][hQib]->pointer();
-
-                        for (int a = 0; a < na; a++) {
-                            for (int b = 0; b < nb; b++) {
-                                double iajb = IQiap[a][b];
-                                double ibja = IQibp[b][a];
-                                double denom = perm2 / (eps_avirp[a + offset_avir_[ha]] +  
-                                                        eps_avirp[b + offset_avir_[hb]] -  
-                                                        eps_aoccp[i + offset_aocc_[hi]] -  
-                                                        eps_aoccp[j + offset_aocc_[hj]]);
-                                EJ -= 2.0 * denom * iajb * iajb;  
-                                EK += 1.0 * denom * iajb * ibja;  
-                            }
-                        }
-                    }
-                } 
-            }
-    
-            E_MP2J_ += EJ;
-            E_MP2K_ += EK; 
-            
-            delete[] I;
+    std::map<int,int> ij_i_map, ij_j_map;
+    int counter = 0L;
+    for (int i = 0, ij=0 ; i < naocc_; i++) {
+        for (int j = 0; j <= i; j++, ij++) {
+            ij_i_map.insert(std::pair<int,int>(counter, i));
+            ij_j_map.insert(std::pair<int,int>(counter, j));
+            counter++;
         }
     }
-    timer_off("MP2 Energy");
-#endif
+
+    for (int ij = 0; ij < naocc_ * (naocc_ + 1) / 2; ij++) {
+
+        if (ij % nproc_ != rank_) continue;
+
+        int i = ij_i_map[ij];
+        int j = ij - i * (i+1) / 2;
+
+
+        // build_Qa(ind)
+        for (int ind = 0; ind < ablock_owner_[i].size(); ind++) {
+            printf("i = %3d: Must fetch from process %3d, a block of %4d a, starting at a = %4d\n",
+                   i, ablock_owner_[i][ind], ablock_size_[i][ind], ablock_start_[i][ind]);
+
+            int astart = ablock_start_[i][ind];
+            int asize  = ablock_size_[i][ind];
+            int aowner = ablock_owner_[i][ind];
+
+            madness::Future<std::vector<double> > fut = task(aowner,&MAD_MP2::fetch_Qia_block,i,ind);
+            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qa, astart, asize);
+        }
+
+        // build_Qb
+        for (int ind = 0; ind < ablock_owner_[j].size(); ind++) {
+            printf("j = %3d: Must fetch from process %3d, b block of %4d b, starting at b = %4d\n",
+                   j, ablock_owner_[j][ind], ablock_size_[j][ind], ablock_start_[j][ind]);
+
+            int astart = ablock_start_[j][ind];
+            int asize  = ablock_size_[j][ind];
+            int aowner = ablock_owner_[j][ind];
+
+            madness::Future<std::vector<double> > fut = task(aowner,&MAD_MP2::fetch_Qia_block,j,ind);
+            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qb, astart, asize);
+        }
+
+        Communicator::world->get_madworld()->taskq.fence();
+
+//        for (int Q = 0; Q < naux_; Q++) {
+//            C_DCOPY(navir_, &Qiap[Q][i * navir_], 1, Qap[Q], 1);
+//            C_DCOPY(navir_, &Qiap[Q][j * navir_], 1, Qbp[Q], 1);
+//        }
+
+        C_DGEMM('T','N',navir_,navir_,naux_, 1.0, Qap[0], navir_,
+                Qbp[0], navir_, 0.0, Ip[0], navir_);
+
+        for (int a = 0; a < navir_; a++) {
+            for (int b = 0; b < navir_; b++) {
+                double iajb = Ip[a][b];
+                double ibja = Ip[b][a];
+                double denom = (i == j ? 1.0 : 2.0) /
+                        (eps_avir_->get(a) +
+                         eps_avir_->get(b) -
+                         eps_aocc_->get(i) -
+                         eps_aocc_->get(j));
+                E_MP2J_ -= 2.0 * denom * iajb * iajb;
+                E_MP2K_ += 1.0 * denom * iajb * ibja;
+            }
+        }
+    }
+
+    Communicator::world->sync();
+    Communicator::world->sum(&E_MP2J_, 1);
+    Communicator::world->sum(&E_MP2K_, 1);
 }
 void MAD_MP2::denominator()
 {
