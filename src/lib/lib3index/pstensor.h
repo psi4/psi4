@@ -75,6 +75,189 @@ public:
     boost::shared_ptr<BasisSet> dealiasSet() const { return dealias_; }
 };
 
+/*- PSTensorII: Range-Separated Pseudospectral Techniques
+ * This class will eventually be refactored to PSTensor
+ * -*/
+class PSTensorII {
+
+protected:
+    /// Debug level
+    int debug_;
+    /// Print level
+    int print_;
+    /// Memory available to this algorithm, in doubles
+    ULI memory_;
+
+    /// Molecule (for convenience)
+    boost::shared_ptr<Molecule> molecule_;
+    /// Primary basis set
+    boost::shared_ptr<BasisSet> primary_;
+    /// Dealias basis set
+    boost::shared_ptr<BasisSet> dealias_;
+    /// Pseudospectral grid
+    boost::shared_ptr<PseudospectralGrid> grid_;
+    /// options reference
+    Options& options_;
+
+    /// Full C matrix (must provide orthonormal MO basis)
+    boost::shared_ptr<Matrix> C_;
+    /// Active occupied C Matrix (for convenience)
+    boost::shared_ptr<Matrix> Caocc_;
+    /// Active virtual C Matrix (for convenience)
+    boost::shared_ptr<Matrix> Cavir_;
+
+    /// Dealias or not?
+    bool do_dealias_;
+    /// Omega or not?
+    bool do_omega_;
+    /// Renormalize or not? False implies do_dealias_ = false
+    bool do_renormalize_;
+
+    /// Omega value to use. 
+    double omega_;
+    /// Minimum eigenvalue of a function to keep in the dealias basis
+    double min_S_dealias_;
+    /// Alpha value in rotated fitting. 1.0 is conventional
+    double alpha_; 
+
+    /// Build the PseudospectralGrid grid_
+    void buildGrid();
+    /// Build the BasisSet dealias_
+    void buildDealiasSet();
+
+    /// Build using the naive, nondealiased quadrature algorithm 
+    void buildQuadrature();
+    /// Build using the renormalized, nondealiased algorithm
+    void buildRenormalized();
+    /// Build using the renormalized, dealiased algorithm
+    void buildDealiased();
+
+    /// Print header, including algorithms to use
+    void print_header();
+    /// Initialize, build R and Q
+    void common_init();
+
+    /// Build the primary AO collocation matrix
+    void form_Rpao();
+    /// Build the primary MO collocation matrix
+    void form_Rpmo();
+    /// Build the dealias AO collocation matrix
+    void form_Rdao();
+    /// Build the dealias MO collocation matrix
+    void form_Rdmo();
+
+    /// Build the Primary AO x Dealias AO overlap matrix 
+    void form_Spdao();
+    /// Build the Primary MO x Dealias AO overlap matrix 
+    void form_Spdmo();
+    /// Build the Dealias AO x Dealias AO overlap matrix 
+    void form_Sddao();
+    /// Build the Dealias OO x Dealias OO overlap matrix 
+    void form_Sddoo();
+    /// Build the Dealias orthonormalization matrix
+    void form_Cdd();
+
+    /// Build the Q R pair from quadrature
+    void form_Q_quadrature();
+    /// Build the Q R pair from renormalization 
+    void form_Q_renormalized();
+    /// Build the Q R pair from dealiased renormalization 
+    void form_Q_dealiased();
+
+    /// Primary AO functions
+    int nso_;
+    /// Primary MO functions
+    int nmo_;
+    /// Dealias AO functions
+    int ndso_;
+    /// Dealias MO functions
+    int ndmo_;
+
+    /// Number of grid points
+    int naux_;
+    
+    /// Number of frozen occupieds
+    int nfocc_; 
+    /// Total number of occupieds
+    int nocc_; 
+    /// Number of active occupieds
+    int naocc_; 
+    /// Number of frozen virtuals
+    int nfvir_; 
+    /// Total number of virtuals
+    int nvir_; 
+    /// Number of active virtuals
+    int navir_; 
+
+    /// Grid weights (hopefully SPD) 
+    boost::shared_ptr<Vector> w_;
+    /// Primary AO collocation matrix
+    boost::shared_ptr<Matrix> Rpao_;
+    /// Primary MO collocation matrix
+    boost::shared_ptr<Matrix> Rpmo_;
+    /// Dealias AO collocation matrix
+    boost::shared_ptr<Matrix> Rdao_;
+    /// Dealias MO collocation matrix
+    boost::shared_ptr<Matrix> Rdmo_;
+   
+    /// Primary AO x Dealias MO overlap matrix
+    boost::shared_ptr<Matrix> Spdao_;
+    /// Dealias AO x Dealias AO overlap matrix
+    boost::shared_ptr<Matrix> Sddao_;
+    /// Dealias OO x Dealias OO overlap matrix
+    boost::shared_ptr<Matrix> Sddoo_;
+ 
+    /// Primary MO x Dealias AO overlap matrix
+    boost::shared_ptr<Matrix> Spdmo_;
+    /// Dealias Orthogonalization matrix
+    boost::shared_ptr<Matrix> Cdd_;
+
+    /// Target Q tensor (nmo x naux)
+    boost::shared_ptr<Matrix> Qmo_;
+    /// Target R tensor (nmo x naux)
+    boost::shared_ptr<Matrix> Rmo_;
+
+    /// Possible target O tensor (naux x naux)
+    boost::shared_ptr<Matrix> O_;
+
+public:
+    PSTensorII(boost::shared_ptr<BasisSet> primary, 
+             boost::shared_ptr<Matrix> C,
+             int nocc,
+             int nvir,
+             int naocc,
+             int navir,
+             ULI memory,
+             Options& options);
+    ~PSTensorII();
+
+    boost::shared_ptr<Matrix> Q();
+    boost::shared_ptr<Matrix> Qocc();
+    boost::shared_ptr<Matrix> Qvir();
+    boost::shared_ptr<Matrix> Qaocc();
+    boost::shared_ptr<Matrix> Qavir();
+
+    boost::shared_ptr<Matrix> R();
+    boost::shared_ptr<Matrix> Rocc();
+    boost::shared_ptr<Matrix> Rvir();
+    boost::shared_ptr<Matrix> Raocc();
+    boost::shared_ptr<Matrix> Ravir();
+
+    boost::shared_ptr<Matrix> O();
+
+    // Begin naive routines for debugging    
+    boost::shared_ptr<Matrix> Aso();
+    boost::shared_ptr<Matrix> Amo();
+    boost::shared_ptr<Matrix> Aoo();
+    boost::shared_ptr<Matrix> Aov();
+    boost::shared_ptr<Matrix> Avv();
+
+    boost::shared_ptr<Matrix> Imo();
+    boost::shared_ptr<Matrix> Ipsmo();
+    boost::shared_ptr<Matrix> Idpsmo();
+    // End naive routines for debugging
+};
+
 class PSTensor {
 
 protected:
