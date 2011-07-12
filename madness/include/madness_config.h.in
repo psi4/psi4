@@ -1,0 +1,390 @@
+/* include/madness_config.h.in.  Generated from configure.ac by autoheader.  */
+
+/* "Target for tuning mtxmq kernels" */
+#undef AMD_QUADCORE_TUNE
+
+/* Fortran-C linking convention lower case (no underscore) */
+#undef FORTRAN_LINKAGE_LC
+
+/* Fortran-C linking convention lower case with single underscore */
+#undef FORTRAN_LINKAGE_LCU
+
+/* Fortran-C linking convention lower case with double underscore */
+#undef FORTRAN_LINKAGE_LCUU
+
+/* Fortran-C linking convention upper case */
+#undef FORTRAN_LINKAGE_UC
+
+/* Fortran-C linking convention upper case with single underscore */
+#undef FORTRAN_LINKAGE_UCU
+
+/* Define if AMD math library available - ACML */
+#undef HAVE_ACML
+
+/* Define to 1 if you have the <bits/atomicity.h> header file. */
+#undef HAVE_BITS_ATOMICITY_H
+
+/* Defined if we are running on a Cray-XT */
+#undef HAVE_CRAYXT
+
+/* Define to 1 if you have the `execv' function. */
+#undef HAVE_EXECV
+
+/* Define to 1 if you have the <ext/atomicity.h> header file. */
+#undef HAVE_EXT_ATOMICITY_H
+
+/* Define to 1 if you have the `fork' function. */
+#undef HAVE_FORK
+
+/* If set indicates gdb is in path */
+#undef HAVE_GDB
+
+/* Define to 1 if you have the `getenv' function. */
+#undef HAVE_GETENV
+
+/* Define to 1 if you have the `gettimeofday' function. */
+#undef HAVE_GETTIMEOFDAY
+
+/* Defined if we are running on an IBMBGP */
+#undef HAVE_IBMBGP
+
+/* Define to 1 if the system has the type `int32_t'. */
+#undef HAVE_INT32_T
+
+/* Define to 1 if the system has the type `int64_t'. */
+#undef HAVE_INT64_T
+
+/* Define to 1 if you have the <inttypes.h> header file. */
+#undef HAVE_INTTYPES_H
+
+/* Define if have std::labs(long) */
+#undef HAVE_LABS
+
+/* Define to 1 if you have the <limits.h> header file. */
+#undef HAVE_LIMITS_H
+
+/* Define to 1 if you have the `memmove' function. */
+#undef HAVE_MEMMOVE
+
+/* Define to 1 if you have the <memory.h> header file. */
+#undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the `memset' function. */
+#undef HAVE_MEMSET
+
+/* Define if have PAPI */
+#undef HAVE_PAPI
+
+/* Define to 1 if you have the `perror' function. */
+#undef HAVE_PERROR
+
+/* Set if have posix_memalign */
+#undef HAVE_POSIX_MEMALIGN
+
+/* Define to 1 if you have the `pow' function. */
+#undef HAVE_POW
+
+/* Define to 1 if the system has the type `ptrdiff_t'. */
+#undef HAVE_PTRDIFF_T
+
+/* Define to 1 if you have the `random' function. */
+#undef HAVE_RANDOM
+
+/* Define to 1 if you have the `sleep' function. */
+#undef HAVE_SLEEP
+
+/* Define to 1 if you have the `sqrt' function. */
+#undef HAVE_SQRT
+
+/* Define to 1 if stdbool.h conforms to C99. */
+#undef HAVE_STDBOOL_H
+
+/* Define to 1 if you have the <stddef.h> header file. */
+#undef HAVE_STDDEF_H
+
+/* Define to 1 if you have the <stdint.h> header file. */
+#undef HAVE_STDINT_H
+
+/* Define to 1 if you have the <stdlib.h> header file. */
+#undef HAVE_STDLIB_H
+
+/* Define if have std::abs(long) */
+#undef HAVE_STD_ABS_LONG
+
+/* Define to 1 if you have the `strchr' function. */
+#undef HAVE_STRCHR
+
+/* Define to 1 if you have the `strdup' function. */
+#undef HAVE_STRDUP
+
+/* Define to 1 if you have the <strings.h> header file. */
+#undef HAVE_STRINGS_H
+
+/* Define to 1 if you have the <string.h> header file. */
+#undef HAVE_STRING_H
+
+/* Define to 1 if you have the <sys/param.h> header file. */
+#undef HAVE_SYS_PARAM_H
+
+/* Define to 1 if you have the <sys/stat.h> header file. */
+#undef HAVE_SYS_STAT_H
+
+/* Define to 1 if you have the <sys/time.h> header file. */
+#undef HAVE_SYS_TIME_H
+
+/* Define to 1 if you have the <sys/types.h> header file. */
+#undef HAVE_SYS_TYPES_H
+
+/* Define to 1 if the system has the type `uint16_t'. */
+#undef HAVE_UINT16_T
+
+/* Define to 1 if the system has the type `uint32_t'. */
+#undef HAVE_UINT32_T
+
+/* Define to 1 if the system has the type `uint64_t'. */
+#undef HAVE_UINT64_T
+
+/* Define to 1 if the system has the type `uint8_t'. */
+#undef HAVE_UINT8_T
+
+/* Define to 1 if you have the <unistd.h> header file. */
+#undef HAVE_UNISTD_H
+
+/* Set if compiler will instantiate static templates */
+#undef HAVE_UNQUALIFIED_STATIC_DECL
+
+/* Define to 1 if you have the `vfork' function. */
+#undef HAVE_VFORK
+
+/* Define to 1 if you have the <vfork.h> header file. */
+#undef HAVE_VFORK_H
+
+/* Define to 1 if `fork' works. */
+#undef HAVE_WORKING_FORK
+
+/* Define to 1 if `vfork' works. */
+#undef HAVE_WORKING_VFORK
+
+/* If set indicates xterm is in path */
+#undef HAVE_XTERM
+
+/* Define to 1 if the system has the type `_Bool'. */
+#undef HAVE__BOOL
+
+/* Defines the host cpu (x86, x86_64, ...). */
+#undef HOST_CPU
+
+/* Defines the host os (linux-gnu, ...). */
+#undef HOST_SYSTEM
+
+/* define if array has fill member function. */
+#undef MADNESS_ARRAY_HAS_FILL
+
+/* Set if MADNESS assertions abort */
+#undef MADNESS_ASSERTIONS_ABORT
+
+/* Set if MADNESS assertions assert */
+#undef MADNESS_ASSERTIONS_ASSERT
+
+/* Set if MADNESS assertions disabled */
+#undef MADNESS_ASSERTIONS_DISABLE
+
+/* Set if MADNESS assertions throw */
+#undef MADNESS_ASSERTIONS_THROW
+
+/* Configured C++ compiler */
+#undef MADNESS_CONFIGURATION_CXX
+
+/* Configured C++ compiler flags */
+#undef MADNESS_CONFIGURATION_CXXFLAGS
+
+/* Date of configuration */
+#undef MADNESS_CONFIGURATION_DATE
+
+/* Configured on this machine */
+#undef MADNESS_CONFIGURATION_HOST
+
+/* User that configured the code */
+#undef MADNESS_CONFIGURATION_USER
+
+/* Equivalent C type for Fortran integers ... should always be long? */
+#undef MADNESS_FORINT
+
+/* Madness has Boost make_shared and allocate_shared available. */
+#undef MADNESS_HAS_BOOST_MAKE_SHARED
+
+/* Madness will use Boost.TR1 where the compiler lacks support for TR1. */
+#undef MADNESS_HAS_BOOST_TR1
+
+/* Madness will use Eigen3 for linear algebra operations */
+#undef MADNESS_HAS_EIGEN3
+
+/* Define if using Google PerformanceTools */
+#undef MADNESS_HAS_GOOGLE_PERF
+
+/* Define if using Google PerformanceTools without libunwind */
+#undef MADNESS_HAS_GOOGLE_PERF_MINIMAL
+
+/* Define if should use Google unit testing */
+#undef MADNESS_HAS_GOOGLE_TEST
+
+/* Define if should use libunwind for Google performance tools */
+#undef MADNESS_HAS_LIBUNWIND
+
+/* define if std::tr1::array is available. */
+#undef MADNESS_HAS_STD_ARRAY
+
+/* define if std::tr1::hash is available. */
+#undef MADNESS_HAS_STD_HASH
+
+/* define if std::make_shared and std::allocate_shared are available. */
+#undef MADNESS_HAS_STD_MAKE_SHARED
+
+/* define if std::tr1::shared_ptr is available. */
+#undef MADNESS_HAS_STD_SHARED_PTR
+
+/* define if std::tr1::array is available. */
+#undef MADNESS_HAS_STD_TR1_ARRAY
+
+/* define if std::tr1::hash is available. */
+#undef MADNESS_HAS_STD_TR1_HASH
+
+/* define if std::tr1::shared_ptr is available. */
+#undef MADNESS_HAS_STD_TR1_SHARED_PTR
+
+/* define if std::tr1 type traits are available. */
+#undef MADNESS_HAS_STD_TR1_TYPE_TRAITS
+
+/* define if std::tr1 type traits are available. */
+#undef MADNESS_HAS_STD_TYPE_TRAITS
+
+/* define if MADNESS is using <array>. */
+#undef MADNESS_USE_ARRAY
+
+/* define if MADNESS is using <boost/tr1/array.hpp>. */
+#undef MADNESS_USE_BOOST_TR1_ARRAY_HPP
+
+/* define if MADNESS is using <boost/tr1/functional.hpp>. */
+#undef MADNESS_USE_BOOST_TR1_FUNCTIONAL_HPP
+
+/* define if MADNESS is using <boost/tr1/memory.hpp>. */
+#undef MADNESS_USE_BOOST_TR1_MEMORY_HPP
+
+/* define if MADNESS is using <boost/tr1/type_traits.hpp>. */
+#undef MADNESS_USE_BOOST_TR1_TYPE_TRAITS_HPP
+
+/* define if MADNESS is using <functional>. */
+#undef MADNESS_USE_FUNCTIONAL
+
+/* define if MADNESS is using <memory>. */
+#undef MADNESS_USE_MEMORY
+
+/* define if MADNESS is using <tr1/array>. */
+#undef MADNESS_USE_TR1_ARRAY
+
+/* define if MADNESS is using <tr1/functional>. */
+#undef MADNESS_USE_TR1_FUNCTIONAL
+
+/* define if MADNESS is using <tr1/memory>. */
+#undef MADNESS_USE_TR1_MEMORY
+
+/* define if MADNESS is using <tr1/type_traits>. */
+#undef MADNESS_USE_TR1_TYPE_TRAITS
+
+/* define if MADNESS is using <type_traits>. */
+#undef MADNESS_USE_TYPE_TRAITS
+
+/* The default binding for threads */
+#undef MAD_BIND_DEFAULT
+
+/* Set if the posix_memalign prototype is missing */
+#undef MISSING_POSIX_MEMALIGN_PROTO
+
+/* Define if should use never use spinlocks */
+#undef NEVER_SPIN
+
+/* Set if building on a mac */
+#undef ON_A_MAC
+
+/* Name of package */
+#undef PACKAGE
+
+/* Define to the address where bug reports for this package should be sent. */
+#undef PACKAGE_BUGREPORT
+
+/* Define to the full name of this package. */
+#undef PACKAGE_NAME
+
+/* Define to the full name and version of this package. */
+#undef PACKAGE_STRING
+
+/* Define to the one symbol short name of this package. */
+#undef PACKAGE_TARNAME
+
+/* Define to the version of this package. */
+#undef PACKAGE_VERSION
+
+/* Define to 1 if you have the ANSI C header files. */
+#undef STDC_HEADERS
+
+/* Define if should enable bounds checking in tensors */
+#undef TENSOR_BOUNDS_CHECKING
+
+/* Define if should enable instance counting in tensors */
+#undef TENSOR_INSTANCE_COUNT
+
+/* Define to 1 if you can safely include both <sys/time.h> and <time.h>. */
+#undef TIME_WITH_SYS_TIME
+
+/* Define if should use spinlocks */
+#undef USE_SPINLOCKS
+
+/* Version number of package */
+#undef VERSION
+
+/* Interval for warning about possible deadlock */
+#undef WATCHDOG_BARK_INTERVAL
+
+/* Abort if idle for this long */
+#undef WATCHDOG_TIMEOUT
+
+/* Set if MADNESS gathers memory statistics */
+#undef WORLD_GATHER_MEM_STATS
+
+/* Define if should enable profiling */
+#undef WORLD_PROFILE_ENABLE
+
+/* Enables timeout for dead lock detection */
+#undef WORLD_WATCHDOG
+
+/* If set indicates we are using a 32-bit Intel/AMD cpu. */
+#undef X86_32
+
+/* If set indicates we are using a 64-bit Intel/AMD cpu. */
+#undef X86_64
+
+/* Define to empty if `const' does not conform to ANSI C. */
+#undef const
+
+/* Define to `__inline__' or `__inline' if that's what the C compiler
+   calls it, or to nothing if 'inline' is not supported under any name.  */
+#ifndef __cplusplus
+#undef inline
+#endif
+
+/* Define to `int' if <sys/types.h> does not define. */
+#undef pid_t
+
+/* Define to equivalent of C99 restrict keyword, or to nothing if this is not
+   supported. Do not define if restrict is supported directly. */
+#undef restrict
+
+/* Define to `unsigned int' if <sys/types.h> does not define. */
+#undef size_t
+
+/* Define as `fork' if `vfork' does not work. */
+#undef vfork
+
+/* Define to empty if the keyword `volatile' does not work. Warning: valid
+   code using `volatile' can become incorrect without. Disable with care. */
+#undef volatile

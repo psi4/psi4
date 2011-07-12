@@ -232,7 +232,7 @@ void LMP2::build_domains() {
     pairdom_exist_ = std::vector<int>(pairs,0);
 
     /// The molecules xyz coordinates
-    SimpleMatrix geometry = molecule_->geometry();
+    Matrix geometry = molecule_->geometry();
 
     ij_pairs_ = 0;
     for (int i = 0; i < ndocc_; i++) {
@@ -248,9 +248,9 @@ void LMP2::build_domains() {
                                     ij_pairs_++;
                                 }
                                 else {
-                                    xcoord = (geometry.get(n,0) - geometry.get(m,0)) * (geometry.get(n,0) - geometry.get(m,0));
-                                    ycoord = (geometry.get(n,1) - geometry.get(m,1)) * (geometry.get(n,1) - geometry.get(m,1));
-                                    zcoord = (geometry.get(n,2) - geometry.get(m,2)) * (geometry.get(n,2) - geometry.get(m,2));
+                                    xcoord = (geometry.get(0,n,0) - geometry.get(0,m,0)) * (geometry.get(0,n,0) - geometry.get(0,m,0));
+                                    ycoord = (geometry.get(0,n,1) - geometry.get(0,m,1)) * (geometry.get(0,n,1) - geometry.get(0,m,1));
+                                    zcoord = (geometry.get(0,n,2) - geometry.get(0,m,2)) * (geometry.get(0,n,2) - geometry.get(0,m,2));
                                     double dist = sqrt(xcoord + ycoord + zcoord) * _bohr2angstroms;
                                     if (dist < dp_cutoff_) {
                                         pairdom_exist_[ij] = 1;
