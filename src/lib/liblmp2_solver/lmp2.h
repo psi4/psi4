@@ -402,7 +402,7 @@ protected:
     int print_matrix(const SharedMatrix mat, const std::string &str=NULL) const;
 
 public:
-    LMP2(Options& options, boost::shared_ptr<PSIO> psio);
+    LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn);
 
     virtual ~LMP2();
 
