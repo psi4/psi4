@@ -27,7 +27,7 @@ void SAPT2p::disp21()
   e_disp21_ = e_disp210 + e_disp201;
 
   if (print_) {
-    fprintf(outfile,"    Disp21              = %18.12lf H\n\n",e_disp21_);
+    fprintf(outfile,"    Disp21              = %18.12lf H\n",e_disp21_);
     fflush(outfile);
   }
 }

@@ -415,6 +415,10 @@ def run_sapt(name, **kwargs):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
+    elif (name.lower() == 'sapt2+'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+3'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
     PsiMod.print_out("\n")
     banner(name.upper())
     PsiMod.print_out("\n")
