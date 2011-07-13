@@ -14,7 +14,9 @@ plugin_load("../plugin_mad_mp2.so")
 set globals {
 basis cc-pvdz
 print 1
-debug 0
+madmp2_debug 1
+madmp2_sleep 0
+diis off
 scf_type direct
 mp2_algorithm dfmp2
 }

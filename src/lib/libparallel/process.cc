@@ -29,6 +29,7 @@ void Process::Environment::init(char **envp)
 {
     // First set some defaults:
     environment_["PSIDATADIR"] = INSTALLEDPSIDATADIR;
+    environment_["MAD_NUM_THREADS"] = "1";
 
     // Go through user provided environment overwriting defaults if necessary
     int i=0;
