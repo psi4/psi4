@@ -21,7 +21,9 @@ read_options(std::string name, Options &options)
         options.add_int("PRINT", 1);
         /*- The amount of information printed
             to the output file -*/
-        options.add_int("DEBUG", 1);
+        options.add_int("MADMP2_DEBUG", 1);
+        /*- How long to sleep before running -*/
+        options.add_int("MADMP2_SLEEP", 0);
         /*- The schwarz cutoff -*/
         options.add_double("SCHWARZ_CUTOFF", 0.0);
         /*- The same-spin scale factor -*/

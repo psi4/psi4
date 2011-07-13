@@ -19,6 +19,7 @@
 #include <lib3index/3index.h>
 
 #include "mad_mp2.h"
+#include "mpi.h"
 
 #ifdef _OPENMP
 #include <omp.h>
@@ -27,8 +28,11 @@
 #define ORDER_PRINT_START for(int dummyproc = 0; dummyproc < nproc_; ++dummyproc){\
                               Communicator::world->sync();\
                               if(dummyproc == rank_){
+//                              MPI_Barrier(MPI_COMM_WORLD);\
 
-#define ORDER_PRINT_END  }}
+#define ORDER_PRINT_END  }Communicator::world->sync();}
+//#define ORDER_PRINT_START ;
+//#define ORDER_PRINT_END ;
 
 using namespace std;
 using namespace psi;
@@ -39,10 +43,31 @@ namespace psi{ namespace mad_mp2 {
 MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
     Wavefunction(options, psio), madness::WorldObject<MAD_MP2>(*Communicator::world->get_madworld())
 {
-//    sleep(100);
+    nproc_   = Communicator::world->nproc();
+    mad_nthread_ = Communicator::world->nthread();
+    rank_    = Communicator::world->me();
+    comm_    = Communicator::world->communicator();
+#if HAVE_MADNESS == 1
+    madworld_ = Communicator::world->get_madworld();
+#endif
+
+    sleep(options.get_int("MADMP2_SLEEP"));
     common_init();
     parallel_init();
+
+    if (debug_ > 2) {
+        ORDER_PRINT_START
+        printf("Printing C from node %d\n", rank_);
+        Ca_->print();
+        AO2USO_->print();
+        epsilon_a_->print();
+        fflush(outfile);
+        printf("Start of MadMP2\n");
+        ORDER_PRINT_END
+    }
+    Communicator::world->sync();
     process_pending();
+    Communicator::world->sync();
 }
 MAD_MP2::~MAD_MP2()
 {
@@ -50,7 +75,7 @@ MAD_MP2::~MAD_MP2()
 void MAD_MP2::common_init()
 {
     print_ = options_.get_int("PRINT");
-    debug_ = options_.get_int("DEBUG");
+    debug_ = options_.get_int("MADMP2_DEBUG");
 
     omp_nthread_ = 1;
     #ifdef _OPENMP
@@ -75,22 +100,17 @@ void MAD_MP2::common_init()
     AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
 
     // Might be good place for a copy constructor
-    Ca_ = reference_->Ca(); 
-    Cb_ = reference_->Cb();
-
+    Ca_ = SharedMatrix(reference_->Ca()->clone());
+    Cb_ = SharedMatrix(reference_->Cb()->clone());
     epsilon_a_ = reference_->epsilon_a();
     epsilon_b_ = reference_->epsilon_b();
 
-    if (debug_) {
-        Ca_->print();
-        Cb_->print();
-        AO2USO_->print();
-        epsilon_a_->print();
-        epsilon_b_->print();
-        fflush(outfile);
-    }
+    Ca_->bcast(0);
+    Cb_->bcast(0);
+    epsilon_a_->bcast(0);
+    epsilon_b_->bcast(0);
 
-    nirrep_ = reference_->nirrep(); 
+    nirrep_ = reference_->nirrep();
     nso_    = reference_->nso(); 
     nmo_    = reference_->nmo();
 
@@ -166,7 +186,7 @@ void MAD_MP2::common_init()
     }
     AO2USO_.reset();
 
-    if (debug_) {
+    if (debug_ > 2) {
         Caocc_->print();
         Cavir_->print();
         eps_aocc_->print();
@@ -194,7 +214,7 @@ void MAD_MP2::common_init()
     boost::shared_ptr<PetiteList> pet2(new PetiteList(auxiliary_, integral2));
     AO2USO_aux_ = boost::shared_ptr<Matrix>(pet2->aotoso());
  
-    if (debug_) {
+    if (debug_ > 2) {
         AO2USO_aux_->print();
         fflush(outfile);
     }
@@ -219,15 +239,6 @@ void MAD_MP2::common_init()
 }
 void MAD_MP2::parallel_init()
 {
-    nproc_   = Communicator::world->nproc();
-    mad_nthread_ = Communicator::world->nthread();
-    rank_    = Communicator::world->me();
-    comm_    = Communicator::world->communicator();
-#if HAVE_MADNESS == 1
-    madworld_ = Communicator::world->get_madworld();
-#endif
-
-
     nia_ = naocc_ * (ULI) navir_;
 
     int na_delta;
@@ -630,6 +641,12 @@ double MAD_MP2::compute_energy()
 
     Aia();
 
+    printf("About to reach barrier from node %d\n", rank_);
+    Communicator::world->sync();
+//    MPI_Barrier(MPI_COMM_WORLD);
+//    Communicator::world->get_madworld()->mpi.Barrier();
+    printf("Leaving barrier from node %d\n", rank_);
+
     if (options_.get_str("MP2_ALGORITHM") == "DFMP2")
         I();
     else if (options_.get_str("MP2_ALGORITHM") == "DFMP2J")
@@ -668,7 +685,7 @@ void MAD_MP2::J()
     }   
     timer_off("MP2 J AO");
 
-    if (debug_ > 1) {
+    if (debug_ > 2) {
         fprintf(outfile, "  ==> After J Generation <==\n\n");
         J->print();
     } 
@@ -681,7 +698,7 @@ void MAD_MP2::Jm12()
     Jm12_->power(-1.0/2.0);
     timer_off("MP2 J^-1/2");
 
-    if (debug_ > 1) {
+    if (debug_ > 2) {
         fprintf(outfile, "  ==> After J^-1/2 <==\n\n");
         Jm12_->print();
     } 
@@ -715,6 +732,21 @@ void MAD_MP2::Aia()
         C_DCOPY(nso_, &Caocc_->pointer(0)[0][i], naocc_, &Cip[0][ind], naocc_local_);
     }
 
+    boost::shared_ptr<Matrix> Ca(new Matrix("C_na local", nso_, navir_local_));
+    double** Cap = Ca->pointer();
+    for (int ind = 0; ind < navir_local_; ind++) {
+        int a = avir_local_[ind];
+        C_DCOPY(nso_, &Cavir_->pointer(0)[0][a], navir_, &Cap[0][ind], navir_local_);
+    }
+
+    if(debug_ > 1){
+        ORDER_PRINT_START
+        printf("Ci for node %d\n", rank_);
+        Ci->print();
+        printf("Ca for node %d\n", rank_);
+        Ca->print();
+        ORDER_PRINT_END
+    }
     // Schwarz Sieve object
     boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(basisset_, options_.get_double("SCHWARZ_CUTOFF"))); 
     long int* schwarz_shells = schwarz->get_schwarz_shells_reverse();
@@ -766,28 +798,38 @@ void MAD_MP2::Aia()
         C_DGEMM('N','N',nP * (ULI) nso_, naocc_local_, nso_, 1.0, Amnp[0], nso_, Cip[0], naocc_local_, 0.0, Amip[0], naocc_local_);
         timer_off("MP2 (A|mi)");
 
+
         // (A|ia) block
         timer_on("MP2 (A|ia)");
         #pragma omp parallel for
-        for (int index = 0; index < nia_local_ * nP; index++) {
-            int ia_local = index / nP;
-            int op = index % nP;
-            int ia_global = ia_local_to_global_[ia_local];
-            int i = ia_global / navir_;
-            int a = ia_global % navir_;
-
-            Aiap[op + pstart][ia_local] = C_DDOT(nso_, &Amip[op][i], naocc_local_, &Cavir_->pointer(0)[0][a], navir_);
+        for (int op = 0; op < nP; op++) {
+            C_DGEMM('T','N',naocc_local_,navir_local_,nso_,1.0,Amip[op],naocc_local_,Cap[0],navir_local_,0.0,Aiap[op + pstart], navir_local_);
         }
+
+
+//        #pragma omp parallel for
+//        for (int index = 0; index < nia_local_ * nP; index++) {
+//            int ia_local = index / nP;
+//            int op = index % nP;
+//            int ia_global = ia_local_to_global_[ia_local];
+//            int i = ia_global / navir_;
+//            int a = ia_global % navir_;
+
+//            Aiap[op + pstart][ia_local] = C_DDOT(nso_, &Amip[op][i], naocc_local_, &Cavir_->pointer(0)[0][a], navir_);
+//        }
         timer_off("MP2 (A|ia)");
     }
     timer_off("MP2 AO -> MO");
     Amn.reset();
     Ami.reset();
     Ci.reset();
-    
-    if (debug_ > 1) {
-        fprintf(outfile, "  ==> After MO Transform <==\n\n"); 
-        Aia->print(); 
+    Ca.reset();
+
+    if (debug_ > 2) {
+        ORDER_PRINT_START
+        printf("  ==> After MO Transform, node %d <==\n\n", rank_);
+        Aia->print();
+        ORDER_PRINT_END
     }
 
     // => J^-1/2 (A|ia) Fitting <= //
@@ -806,12 +848,16 @@ void MAD_MP2::Aia()
         C_DGEMM('N','N',naux_,nmult,naux_,1.0,Jp[0],naux_,Tp[0],n2,0.0,&Aiap[0][ia],nia_local_);
     }     
 
-    if (debug_ > 1) {
-        fprintf(outfile, "  ==> After Fitting <==\n\n"); 
+    if (debug_ > 2) {
+        ORDER_PRINT_START
+        printf("  ==> After Fitting <==\n\n");
+        printf("A matrix from node %d\n", rank_);
         Aia->print(); 
+        ORDER_PRINT_END
     }
     Aia_ = Aia;
 }
+
 madness::Future<std::vector<double> > MAD_MP2::fetch_Qia_block(const int& i, const int& ablock)
 {
     int na = ablock_size_[i][ablock];
@@ -831,12 +877,21 @@ madness::Future<std::vector<double> > MAD_MP2::fetch_Qia_block(const int& i, con
         }
     }
 
+    if(debug_){
+        printf("Sending i = %d, i_local = %d from node %d\n", i, i_local, rank_);
+        fflush(stdout);
+    }
 
     return madness::Future<std::vector<double> >(block);
 }
 madness::Void MAD_MP2::unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize, const int & i)
 {
-//    std::cout << "****** UPACKING ********" << std::endl;
+    if(debug_){
+        printf("Unpacking i = %d on node %d block size %ld max index %d,"
+               " astart %d asize %d\n",
+               i, rank_, block.size(), naux_*asize -1, astart, asize);
+        fflush(stdout);
+    }
 
     double** Qp = Q->pointer();
     for (int P = 0; P < naux_; P++) {
@@ -886,7 +941,7 @@ void MAD_MP2::I()
 
         // build_Qa(ind)
         for (int ind = 0; ind < ablock_owner_[i].size(); ind++) {
-            if (debug_)
+            if (debug_ > 1)
                 printf("rank = %3d, i = %3d: Must fetch from process %3d, a block of %4d a, starting at a = %4d\n",
                        rank_, i, ablock_owner_[i][ind], ablock_size_[i][ind], ablock_start_[i][ind]);
 
@@ -894,22 +949,36 @@ void MAD_MP2::I()
             int asize  = ablock_size_[i][ind];
             int aowner = ablock_owner_[i][ind];
 
-            madness::Future<std::vector<double> > fut = task(aowner,&MAD_MP2::fetch_Qia_block,i,ind);
-            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qa, astart, asize, i);
+            if(aowner == rank_){
+                int i_local = i_global_to_local_[i];
+                for (int Q = 0; Q < naux_; Q++)
+                    ::memcpy(&(Qap[Q][astart]), &(Qiap[Q][i_local*navir_local_]),
+                             asize * sizeof(double));
+            }else{
+                madness::Future<std::vector<double> > fut = send(aowner,&MAD_MP2::fetch_Qia_block,i,ind);
+                task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qa, astart, asize, i);
+            }
         }
 
         // build_Qb
         for (int ind = 0; ind < ablock_owner_[j].size(); ind++) {
-            if (debug_)
+            if (debug_ > 1)
                 printf("rank = %3d, j = %3d: Must fetch from process %3d, b block of %4d b, starting at b = %4d\n",
                        rank_, j, ablock_owner_[j][ind], ablock_size_[j][ind], ablock_start_[j][ind]);
 
-            int astart = ablock_start_[j][ind];
-            int asize  = ablock_size_[j][ind];
-            int aowner = ablock_owner_[j][ind];
+            int bstart = ablock_start_[j][ind];
+            int bsize  = ablock_size_[j][ind];
+            int bowner = ablock_owner_[j][ind];
 
-            madness::Future<std::vector<double> > fut = task(aowner,&MAD_MP2::fetch_Qia_block,j,ind);
-            task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qb, astart, asize, j);
+            if(bowner == rank_){
+                int j_local = i_global_to_local_[j];
+                for (int Q = 0; Q < naux_; Q++)
+                    ::memcpy(&(Qbp[Q][bstart]), &(Qiap[Q][j_local*navir_local_]),
+                             bsize * sizeof(double));
+            }else{
+                madness::Future<std::vector<double> > fut = send(bowner,&MAD_MP2::fetch_Qia_block,j,ind);
+                task(rank_,&MAD_MP2::unpack_Qia_block, fut, Qb, bstart, bsize, j);
+            }
         }
 
         Communicator::world->get_madworld()->taskq.fence();
@@ -943,9 +1012,16 @@ void MAD_MP2::I()
 //                E_MP2K_ += 1.0 * denom * iajb * ibja;
             }
         }
+        printf("ij val is %d, about to reach fence from node %d", ij, rank_);
+        fflush(stdout);
+        Communicator::world->sync();
+        printf("ij val is %d, about to leave fence from node %d", ij, rank_);
+        fflush(stdout);
     }
 
     Communicator::world->sync();
+//    Communicator::world->get_madworld()->mpi.Barrier();
+//    MPI_Barrier(MPI_COMM_WORLD);
     Communicator::world->sum(&E_MP2J_, 1);
     Communicator::world->sum(&E_MP2K_, 1);
 }
