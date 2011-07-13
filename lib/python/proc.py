@@ -1,4 +1,6 @@
 import PsiMod
+import shutil
+import os
 from driver import *
 from molecule import *
 from text import *
@@ -228,7 +230,20 @@ def run_detci(name, **kwargs):
 
 def run_dfmp2(name, **kwargs):
 
-    run_scf('RHF',**kwargs)
+    if kwargs.has_key('restart_file'):
+        restartfile = kwargs.pop('restart_file')
+        # Rename the checkpoint file to be consistent with psi4's file system
+        psioh      = PsiMod.IOManager.shared_object()
+        psio       = PsiMod.IO.shared_object()
+        filepath   = psioh.get_file_path(32)
+        namespace  = psio.get_default_namespace()
+        pid        = str(os.getpid())
+        prefix     = 'psi'
+        targetfile =  filepath + prefix + '.' + pid + '.' + namespace + ".32"
+        if(PsiMod.me() == 0):
+            shutil.copy(restartfile, targetfile)
+    else:
+        run_scf('RHF',**kwargs)
 
     PsiMod.print_out("\n")
     banner("DFMP2")
