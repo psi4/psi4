@@ -14,7 +14,8 @@
 #include <libqt/qt.h>
 
 #include <libmints/mints.h>
-#include "dfmp2.h"
+//#include "dfmp2.h"
+#include "mad_mp2.h"
 
 #include <psi4-dec.h>
 
@@ -31,10 +32,13 @@ PsiReturnType dfmp2(Options & options)
     boost::shared_ptr<PSIO> psio(new PSIO);
 //    psiopp_ipv1_config(psio);
 
-    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+//    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
-    DFMP2 df(options, psio, chkpt);
-    df.compute_energy();
+    //DFMP2 df(options, psio, chkpt);
+    //df.compute_energy();
+
+    mad_mp2::MAD_MP2 madmp2(options, psio);
+    madmp2.compute_energy();
 
     // Shut down psi.
 

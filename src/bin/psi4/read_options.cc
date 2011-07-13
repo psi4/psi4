@@ -1583,6 +1583,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SCHWARTZ_TOL", 12);
    }
   if(name=="DFMP2"|| options.read_globals()) {
+    options.add_int("MADMP2_SLEEP", 0);
+    options.add_int("MADMP2_DEBUG", 0);
+    options.add_str("MP2_ALGORITHM", "DFMP2");
     //options.add_str("WFN", "RI-MP2");
     /*- RI Basis, needed by Python -*/
     options.add_str("RI_BASIS_MP2","");
