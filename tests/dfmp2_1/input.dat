@@ -2,7 +2,7 @@
 #! using automatic counterpoise correction.  Monomers are specified using Cartesian coordinates.
 
 Enuc = 235.946638332857646 #TEST 
-Ecp  = -0.0223399790       #TEST
+Ecp  = -0.0224119246       #TEST
 
 molecule formic_dim {
    0 1
@@ -24,7 +24,7 @@ molecule formic_dim {
 
 set globals {
    basis cc-pvdz
-   ri_basis_scf cc-pvdz-ri
+   ri_basis_scf cc-pvdz-jkfit
    ri_basis_mp2 cc-pvdz-ri
    scf_type df
    guess sad
