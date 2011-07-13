@@ -39,7 +39,7 @@ int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
   outfile = NULL;
   psi_file_prefix = NULL;
 
-  psi::yetiEnv.free();
+//psi::yetiEnv.free();
 
   return(PSI_RETURN_SUCCESS);
 }
