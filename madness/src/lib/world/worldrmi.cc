@@ -100,7 +100,11 @@ namespace madness {
 
                     if (!is_ordered(attr) || count==recv_counters[src]) {
                         // Unordered and in order messages should be digested as soon as possible.
-                        if (debugging)
+                        if (debugging) {
+                            printf("%d:RMI: invoking from=%d nbyte=%d func = %x ordered=%d count=%d\n",
+                                   rank, src, len, func, is_ordered(attr), count);
+                            fflush(stdout);
+
                             std::cerr << rank
                                       << ":RMI: invoking from=" << src
                                       << " nbyte=" << len
@@ -108,6 +112,7 @@ namespace madness {
                                       << " ordered=" << is_ordered(attr)
                                       << " count=" << count
                                       << std::endl;
+                        }
 
                         if (is_ordered(attr)) ++(recv_counters[src]);
                         func(recv_buf[i], len);
@@ -279,7 +284,11 @@ namespace madness {
             MADNESS_EXCEPTION("RMI::isend --- your buffer is too small to hold the header", static_cast<int>(nbyte));
         }
 
-        if (debugging)
+        if (debugging) {
+            printf("%d:RMI: sending buf=%x nbyte=%d dest=%d func = %x ordered=%d count=%d\n",
+                   instance_ptr->rank, buf, nbyte, dest, func, is_ordered(attr), int(send_counters[dest]));
+            fflush(stdout);
+
             std::cerr << instance_ptr->rank
                       << ":RMI: sending buf=" << buf
                       << " nbyte=" << nbyte
@@ -288,6 +297,8 @@ namespace madness {
                       << " ordered=" << is_ordered(attr)
                       << " count=" << int(send_counters[dest])
                       << std::endl;
+
+        }
 
         // Since most uses are ordered and we need the mutex to accumulate stats
         // we presently always get the lock
