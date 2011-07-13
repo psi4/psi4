@@ -6,6 +6,8 @@
 #include <libparallel/parallel.h>
 #include <map>
 
+#if HAVE_MADNESS
+
 namespace boost {
 template<class T> class shared_ptr;
 }
@@ -209,6 +211,7 @@ public:
 };
 
 }} // Namespaces
+#endif //HAVE_MADNESS
 
 #endif
 
