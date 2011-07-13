@@ -195,6 +195,9 @@ namespace madness {
         /// Returns the thread id of the communicator thread
         pthread_t comm_thread_id() { return RMI::get_comm_id(); }
 
+        /// set debugging
+        void set_debug(const bool &h) { return RMI::set_debug(h); }
+
         /// Add a new local task taking ownership of the pointer
 
         /// The task pointer (t) is assumed to have been created with
