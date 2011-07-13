@@ -8,20 +8,40 @@ void SAPT2p::disp22t()
     fprintf(outfile,"\n");
   }
 
-  double e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
-    "AR RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
-    "BS RI Integrals",PSIF_SAPT_AMPS,"tARAR Amplitudes",foccA_,noccA_,
-    nvirA_,foccB_,noccB_,nvirB_,evalsA_,evalsB_);
+  double e_disp220t;
+
+  if (nat_orbs_) {
+    e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
+      "AR NO RI Integrals","RR NO RI Integrals",PSIF_SAPT_BB_DF_INTS,
+      "BS NO RI Integrals",PSIF_SAPT_AMPS,"tARAR NO Amplitudes",foccA_,
+      noccA_,no_nvirA_,foccB_,noccB_,no_nvirB_,no_evalsA_,no_evalsB_);
+  }
+  else {
+    e_disp220t = disp220t(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",
+      "AR RI Integrals","RR RI Integrals",PSIF_SAPT_BB_DF_INTS,
+      "BS RI Integrals",PSIF_SAPT_AMPS,"tARAR Amplitudes",foccA_,
+      noccA_,nvirA_,foccB_,noccB_,nvirB_,evalsA_,evalsB_);
+  }
 
   if (print_) {
     fprintf(outfile,"\n    Disp220 (T)         = %18.12lf H\n\n",e_disp220t);
     fflush(outfile);
   }
 
-  double e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
-    "BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
-    "AR RI Integrals",PSIF_SAPT_AMPS,"tBSBS Amplitudes",foccB_,noccB_,
-    nvirB_,foccA_,noccA_,nvirA_,evalsB_,evalsA_);
+  double e_disp202t;
+
+  if (nat_orbs_) {
+    e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+      "BS NO RI Integrals","SS NO RI Integrals",PSIF_SAPT_AA_DF_INTS,
+      "AR NO RI Integrals",PSIF_SAPT_AMPS,"tBSBS NO Amplitudes",foccB_,
+      noccB_,no_nvirB_,foccA_,noccA_,no_nvirA_,no_evalsB_,no_evalsA_);
+  }
+  else {
+    e_disp202t = disp220t(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",
+      "BS RI Integrals","SS RI Integrals",PSIF_SAPT_AA_DF_INTS,
+      "AR RI Integrals",PSIF_SAPT_AMPS,"tBSBS Amplitudes",foccB_,
+      noccB_,nvirB_,foccA_,noccA_,nvirA_,evalsB_,evalsA_);
+  }
 
   if (print_) {
     fprintf(outfile,"\n    Disp202 (T)         = %18.12lf H\n\n",e_disp202t);
@@ -35,6 +55,19 @@ void SAPT2p::disp22t()
     fflush(outfile);
   }
 
+  if (nat_orbs_) {
+    double scale = e_disp20_/e_no_disp20_;
+    e_disp220t *= scale;
+    e_disp202t *= scale;
+    e_disp22t_ = e_disp220t + e_disp202t;
+
+    if (print_) {
+      fprintf(outfile,"\n    Est. Disp220 (T)    = %18.12lf H\n",e_disp220t);
+      fprintf(outfile,"    Est. Disp202 (T)    = %18.12lf H\n\n",e_disp202t);
+      fprintf(outfile,"    Est. Disp22 (T)     = %18.12lf H\n",e_disp22t_);
+      fflush(outfile);
+    }
+  }
 }
 
 double SAPT2p::disp220t(int AAfile, const char *AAlabel, const char *ARlabel,
