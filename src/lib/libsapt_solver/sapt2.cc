@@ -14,6 +14,10 @@ SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
   e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
   d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
 
+  nat_orbs_ = options.get_bool("NAT_ORBS");
+  nat_orbs_t2_ = options.get_bool("NAT_ORBS_T2");
+  occ_cutoff_ = options.get_double("OCC_CUTOFF");
+
   ioff_ = (int *) malloc (sizeof(int) * (nso_*(nso_+1)/2));
   index2i_ = (int *) malloc (sizeof(int) * (nso_*(nso_+1)/2));
   index2j_ = (int *) malloc (sizeof(int) * (nso_*(nso_+1)/2));
@@ -714,6 +718,169 @@ void SAPT2::w_integrals()
     &(wASS_[0][0]),1);
 
   free_block(B_p_SS);
+}
+
+void SAPT2::natural_orbitalify(int ampfile, const char *VV_opdm, 
+  double *evals, int foccA, int noccA, int nvirA, const char monomer)
+{
+  double **P = block_matrix(nvirA,nvirA);
+
+  psio_->read_entry(ampfile,VV_opdm,(char *) P[0],
+    sizeof(double)*nvirA*nvirA);
+
+  C_DSCAL(nvirA*nvirA,2.0,P[0],1);
+
+  double *occnum = init_array(nvirA);
+  double **nat_orbs_MO = block_matrix(nvirA,nvirA);
+
+  sq_rsp(nvirA,nvirA,P,occnum,3,nat_orbs_MO,1.0e-14);
+
+  int num_no_vir = 0;
+
+  for (int i=0; i<nvirA; i++) {
+    if (occnum[i] > occ_cutoff_) {
+      num_no_vir++;
+    }
+    else break;
+  }
+
+  if (print_) {
+    fprintf(outfile,"    Monomer %c: %d virtual orbitals dropped\n",monomer,
+          nvirA-num_no_vir);
+    fflush(outfile);
+  }
+
+  double **Fock_MO = block_matrix(nvirA,nvirA);
+
+  for (int i=0; i<nvirA; i++) {
+    Fock_MO[i][i] = evals[i+noccA];
+  }
+
+  double **tempmat = block_matrix(num_no_vir,nvirA);
+  double **Fock_NO = block_matrix(num_no_vir,num_no_vir);
+
+  C_DGEMM('T','N',num_no_vir,nvirA,nvirA,1.0,&(nat_orbs_MO[0][0]),nvirA,
+    &(Fock_MO[0][0]),nvirA,0.0,&(tempmat[0][0]),nvirA);
+  C_DGEMM('N','N',num_no_vir,num_no_vir,nvirA,1.0,&(tempmat[0][0]),nvirA,
+    &(nat_orbs_MO[0][0]),nvirA,0.0,&(Fock_NO[0][0]),num_no_vir);
+
+  double *epsilon = init_array(num_no_vir);
+  double **X = block_matrix(num_no_vir,num_no_vir);
+  sq_rsp(num_no_vir,num_no_vir,Fock_NO,epsilon,1,X,1.0e-14);
+
+  double **MO_MVO = block_matrix(nvirA,num_no_vir);
+
+  C_DGEMM('N','N',nvirA,num_no_vir,num_no_vir,1.0,&(nat_orbs_MO[0][0]),
+    nvirA,&(X[0][0]),num_no_vir,0.0,&(MO_MVO[0][0]),num_no_vir);
+
+  if (monomer == 'A') {
+    no_CA_ = block_matrix(nvirA,num_no_vir);
+    no_evalsA_ = init_array(noccA+num_no_vir);
+    no_nvirA_ = num_no_vir;
+
+    C_DCOPY(nvirA*num_no_vir,&(MO_MVO[0][0]),1,
+      &(no_CA_[0][0]),1);
+    C_DCOPY(noccA,evals,1,no_evalsA_,1);
+    C_DCOPY(num_no_vir,epsilon,1,&(no_evalsA_[noccA]),1);
+  }
+
+  if (monomer == 'B') {
+    no_CB_ = block_matrix(nvirA,num_no_vir);
+    no_evalsB_ = init_array(noccA+num_no_vir);
+    no_nvirB_ = num_no_vir;
+
+    C_DCOPY(nvirA*num_no_vir,&(MO_MVO[0][0]),1,
+      &(no_CB_[0][0]),1);
+    C_DCOPY(noccA,evals,1,no_evalsB_,1);
+    C_DCOPY(num_no_vir,epsilon,1,&(no_evalsB_[noccA]),1);
+  }
+
+  free(epsilon);
+  free(occnum);
+  free_block(P);
+  free_block(nat_orbs_MO);
+  free_block(tempmat);
+  free_block(Fock_MO);
+  free_block(Fock_NO);
+  free_block(X);
+  free_block(MO_MVO);
+}
+
+void SAPT2::natural_orbitalify_df_ints()
+{
+  double **B_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",
+    0,noccA_,0,nvirA_);
+  double **C_p_AR = block_matrix(noccA_*no_nvirA_,ndf_+3);
+
+  for (int a=0; a<noccA_; a++) {
+    C_DGEMM('T','N',no_nvirA_,ndf_+3,nvirA_,1.0,no_CA_[0],no_nvirA_,
+      B_p_AR[a*nvirA_],ndf_+3,0.0,C_p_AR[a*no_nvirA_],ndf_+3);
+  }
+
+  psio_->write_entry(PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals",
+    (char *) C_p_AR[0],sizeof(double)*noccA_*no_nvirA_*(ndf_+3));
+
+  free_block(B_p_AR);
+  free_block(C_p_AR);
+
+  double **B_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",
+    0,noccB_,0,nvirB_);
+  double **C_p_BS = block_matrix(noccB_*no_nvirB_,ndf_+3);
+
+  for (int b=0; b<noccB_; b++) {
+    C_DGEMM('T','N',no_nvirB_,ndf_+3,nvirB_,1.0,no_CB_[0],no_nvirB_,
+      B_p_BS[b*nvirB_],ndf_+3,0.0,C_p_BS[b*no_nvirB_],ndf_+3);
+  }
+
+  psio_->write_entry(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",
+    (char *) C_p_BS[0],sizeof(double)*noccB_*no_nvirB_*(ndf_+3));
+
+  free_block(B_p_BS);
+  free_block(C_p_BS);
+
+  double **B_p_RR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",
+    0,nvirA_,0,nvirA_);
+  double **C_p_RR = block_matrix(no_nvirA_*nvirA_,ndf_+3);
+
+  C_DGEMM('T','N',no_nvirA_,nvirA_*(ndf_+3),nvirA_,1.0,no_CA_[0],no_nvirA_,
+    B_p_RR[0],nvirA_*(ndf_+3),0.0,C_p_RR[0],nvirA_*(ndf_+3));
+
+  free_block(B_p_RR);
+
+  double **D_p_RR = block_matrix(no_nvirA_*no_nvirA_,ndf_+3);
+
+  for (int r=0; r<no_nvirA_; r++) {
+    C_DGEMM('T','N',no_nvirA_,ndf_+3,nvirA_,1.0,no_CA_[0],no_nvirA_,
+      C_p_RR[r*nvirA_],ndf_+3,0.0,D_p_RR[r*no_nvirA_],ndf_+3);
+  }
+
+  psio_->write_entry(PSIF_SAPT_AA_DF_INTS,"RR NO RI Integrals",
+    (char *) D_p_RR[0],sizeof(double)*no_nvirA_*no_nvirA_*(ndf_+3));
+
+  free_block(C_p_RR);
+  free_block(D_p_RR);
+
+  double **B_p_SS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",
+    0,nvirB_,0,nvirB_);
+  double **C_p_SS = block_matrix(no_nvirB_*nvirB_,ndf_+3);
+
+  C_DGEMM('T','N',no_nvirB_,nvirB_*(ndf_+3),nvirB_,1.0,no_CB_[0],no_nvirB_,
+    B_p_SS[0],nvirB_*(ndf_+3),0.0,C_p_SS[0],nvirB_*(ndf_+3));
+
+  free_block(B_p_SS);
+
+  double **D_p_SS = block_matrix(no_nvirB_*no_nvirB_,ndf_+3);
+
+  for (int s=0; s<no_nvirB_; s++) {
+    C_DGEMM('T','N',no_nvirB_,ndf_+3,nvirB_,1.0,no_CB_[0],no_nvirB_,
+      C_p_SS[s*nvirB_],ndf_+3,0.0,D_p_SS[s*no_nvirB_],ndf_+3);
+  }
+
+  psio_->write_entry(PSIF_SAPT_BB_DF_INTS,"SS NO RI Integrals",
+    (char *) D_p_SS[0],sizeof(double)*no_nvirB_*no_nvirB_*(ndf_+3));
+
+  free_block(C_p_SS);
+  free_block(D_p_SS);
 }
 
 }}
