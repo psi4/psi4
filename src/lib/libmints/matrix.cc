@@ -545,41 +545,41 @@ void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) co
     int num_frame_counter = 0;
     //for each frame
     for(num_frame_counter=0;num_frame_counter<num_frames;num_frame_counter++){
-        printf("\n");
+        fprintf(out,"\n");
         for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+1;j++){
-            if(j==print_ncol*num_frame_counter+1){ printf("%18d",j); }
-            else{ printf("        %5d",j); }
+            if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
+            else{ fprintf(out,"        %5d",j); }
         }
-        printf("\n\n");
+        fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<print_ncol*num_frame_counter+print_ncol+2;j++){
-                if(j==print_ncol*num_frame_counter+1){ printf("%5d",k);}
-                else{ printf(" %12.7f",a[k-1][j-2]); }
+                if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k);}
+                else{ fprintf(out," %12.7f",a[k-1][j-2]); }
             }
-            printf("\n");
+            fprintf(out,"\n");
         }
     }
 
     // ALREADY DID THE FULL FRAMES BY THIS POINT
     // NEED TO TAKE CARE OF THE REMAINDER
     if(num_frames_rem != 0){
-        printf("\n");
+        fprintf(out,"\n");
         for(int j=print_ncol*num_frame_counter+1;j<=n;j++){
-            if(j==print_ncol*num_frame_counter+1){ printf("%18d",j); }
-            else{ printf("        %5d",j); }
+            if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%18d",j); }
+            else{ fprintf(out,"        %5d",j); }
         }
-        printf("\n\n");
+        fprintf(out,"\n\n");
 
         for(int k=1; k<=m; ++k){
             for(int j=print_ncol*num_frame_counter+1;j<n+2;j++){
-                if(j==print_ncol*num_frame_counter+1){ printf("%5d",k); }
-                else{ printf(" %12.7f",a[k-1][j-2]); }
+                if(j==print_ncol*num_frame_counter+1){ fprintf(out,"%5d",k); }
+                else{ fprintf(out," %12.7f",a[k-1][j-2]); }
             }
-            printf("\n");
+            fprintf(out,"\n");
         }
     }
-    printf("\n\n");
+    fprintf(out,"\n\n");
     //R.I.P. goto statements - Aug 4th 2010 - MSM
 }
 
