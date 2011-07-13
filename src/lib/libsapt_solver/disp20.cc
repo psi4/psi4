@@ -123,6 +123,38 @@ void SAPT2::disp20()
 
   free_block(tARBS);
   free_block(vARBS);
+
+  if (nat_orbs_) {
+    double **C_p_AR = get_DF_ints(PSIF_SAPT_AA_DF_INTS,"AR NO RI Integrals",
+      foccA_,noccA_,0,no_nvirA_);
+    double **C_p_BS = get_DF_ints(PSIF_SAPT_BB_DF_INTS,"BS NO RI Integrals",
+      foccB_,noccB_,0,no_nvirB_);
+    vARBS = block_matrix(aoccA_*no_nvirA_,aoccB_*no_nvirB_);
+
+    C_DGEMM('N','T',aoccA_*no_nvirA_,aoccB_*no_nvirB_,ndf_,1.0,C_p_AR[0],
+      ndf_+3,C_p_BS[0],ndf_+3,0.0,vARBS[0],aoccB_*no_nvirB_);
+  
+    free_block(C_p_AR);
+    free_block(C_p_BS);
+
+    e_no_disp20_ = 0.0;
+
+    for (int a=0, ar=0; a<aoccA_; a++){
+      for (int r=0; r<no_nvirA_; r++, ar++){
+        for (int b=0, bs=0; b<aoccB_; b++){
+          for (int s=0; s<no_nvirB_; s++, bs++){
+            double tval = vARBS[ar][bs];
+            e_no_disp20_ += 4.0*tval*tval / (no_evalsA_[a+foccA_]
+              +no_evalsB_[b+foccB_]-no_evalsA_[r+noccA_]-no_evalsB_[s+noccB_]);
+    }}}}
+
+    free_block(vARBS);
+
+    if (print_) {
+      fprintf(outfile,"    Disp20 (NO)         = %18.12lf H\n",e_no_disp20_);
+      fflush(outfile);
+    }
+  }
 }
 /*
  * This version is probably worse...unless there isn't much memory available

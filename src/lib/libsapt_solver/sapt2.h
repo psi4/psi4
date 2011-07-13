@@ -17,6 +17,15 @@ private:
   virtual void print_results();
 
 protected:
+  int no_nvirA_;
+  int no_nvirB_;
+
+  double *no_evalsA_;
+  double *no_evalsB_;
+
+  double **no_CA_;
+  double **no_CB_;
+
   int *ioff_;
   int *index2i_;
   int *index2j_;
@@ -24,6 +33,10 @@ protected:
   int maxiter_;
   double e_conv_;
   double d_conv_;
+
+  bool nat_orbs_;
+  bool nat_orbs_t2_;
+  double occ_cutoff_;
 
   double e_elst10_;
   double e_elst12_;
@@ -36,6 +49,7 @@ protected:
   double e_exch_ind20_;
   double e_exch_ind22_;
   double e_disp20_;
+  double e_no_disp20_;
   double e_exch_disp20_;
   double e_sapt0_;
   double e_sapt2_;
@@ -91,11 +105,18 @@ protected:
     int, int, int);
 
   void t2OVOV(int, const char *, const char *, int, const char *, 
-    const char *, const char*, int, int, int, double *, int, const char *);
+    const char *, const char *, int, int, int, double *, int, const char *);
+  void t2OVOV(int, const char *, const char *, const char *, int, 
+    const char *, const char *, const char *, const char *, int, int, int, 
+    int, double *, double **, int, const char *);
 
   void OVOpVp_to_OVpOpV(double *, int, int);
   void ijkl_to_ikjl(double *, int, int, int, int);
   void symmetrize(double *, int, int);
+
+  void natural_orbitalify(int, const char *, double *evals, int, int, int, 
+    const char);
+  void natural_orbitalify_df_ints();
 
   double elst120(double **, double **, double **, int, const char *, 
     const char *, const char *, int, int, int);
