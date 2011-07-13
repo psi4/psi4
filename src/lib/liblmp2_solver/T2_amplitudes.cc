@@ -40,6 +40,7 @@ int LMP2::compute_T2_energy(const int &iter) {
                 task(ij_owner_[ij], &LMP2::store_T2, T2, ij);
             }
         }
+        madworld_->taskq.fence();
         perform_diis(iter);
         for (int ij=0; ij < ij_pairs_; ij++) {
             terms += pair_domain_len_[ij] * pair_domain_len_[ij];
