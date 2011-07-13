@@ -89,41 +89,85 @@ void MAD_MP2::common_init()
     reference_ = Process::environment.reference_wavefunction();
 
     if (!reference_.get()) {
-        throw PSIEXCEPTION("Tell Rob to code the chkpt initializer");
+
+        Eref_ = chkpt_->rd_escf();
+        nirrep_ = chkpt_->rd_nirreps();
+        nso_ = chkpt_->rd_nso();
+        nmo_ = chkpt_->rd_nmo();
+
+        int* doccpi = chkpt_->rd_clsdpi();
+        int* nmopi  = chkpt_->rd_orbspi();
+        int* nsopi  = chkpt_->rd_sopi();
+        int* frzcpi = chkpt_->rd_frzcpi();
+        int* frzvpi = chkpt_->rd_frzvpi();
+
+        for (int h = 0; h < nirrep_; h++) {
+            doccpi_[h] = doccpi[h];
+            soccpi_[h] = 0;
+            nalphapi_[h] = doccpi[h];
+            nbetapi_[h] = doccpi[h];
+            nsopi_[h] = nsopi[h];
+            nmopi_[h] = nmopi[h];
+            frzcpi_[h] = frzcpi[h];
+            frzvpi_[h] = frzvpi[h];
+        }
+
+        free(doccpi);
+        free(nmopi);
+        free(nsopi);
+        free(frzcpi);
+        free(frzvpi);
+
+        Ca_ = boost::shared_ptr<Matrix>(new Matrix("Ca", nirrep_, nsopi_, nmopi_));
+        epsilon_a_ = boost::shared_ptr<Vector>(new Vector("Evals a", nirrep_, nmopi_));
+
+        double **tempmat = chkpt_->rd_scf();
+        Ca_->set(tempmat);
+        free_block(tempmat);
+        double *temparr = chkpt_->rd_evals();
+        epsilon_a_->set(temparr);
+        free(temparr);
+        if (chkpt_->rd_iopen()) {
+            throw PSIEXCEPTION("DFMP2 MADNESS is only closed-shell for now");
+        }
+
+    }else{
+        // Might be good place for a copy constructor
+        Ca_ = SharedMatrix(reference_->Ca()->clone());
+        Cb_ = SharedMatrix(reference_->Cb()->clone());
+        epsilon_a_ = reference_->epsilon_a();
+        epsilon_b_ = reference_->epsilon_b();
+
+        Ca_->bcast(0);
+        Cb_->bcast(0);
+        epsilon_a_->bcast(0);
+        epsilon_b_->bcast(0);
+
+        nirrep_ = reference_->nirrep();
+        nso_    = reference_->nso();
+        nmo_    = reference_->nmo();
+        Eref_   = reference_->reference_energy();
+
+        ::memcpy(static_cast<void*>(doccpi_), static_cast<void*>(reference_->doccpi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(soccpi_), static_cast<void*>(reference_->soccpi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(nsopi_), static_cast<void*>(reference_->nsopi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(nmopi_), static_cast<void*>(reference_->nmopi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(nalphapi_), static_cast<void*>(reference_->nalphapi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(nbetapi_), static_cast<void*>(reference_->nbetapi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(frzcpi_), static_cast<void*>(reference_->frzcpi()), 8 * sizeof(int));
+        ::memcpy(static_cast<void*>(frzvpi_), static_cast<void*>(reference_->frzvpi()), 8 * sizeof(int));
+        // End copy constructor opportunity
+        if (!reference_->restricted()) {
+            throw PSIEXCEPTION("DFMP2 MADNESS is only closed-shell for now");
+        }
     }
 
-    if (!reference_->restricted()) {
-        throw PSIEXCEPTION("DFMP2 MADNESS is only closed-shell for now");
-    }
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
     AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
 
-    // Might be good place for a copy constructor
-    Ca_ = SharedMatrix(reference_->Ca()->clone());
-    Cb_ = SharedMatrix(reference_->Cb()->clone());
-    epsilon_a_ = reference_->epsilon_a();
-    epsilon_b_ = reference_->epsilon_b();
 
-    Ca_->bcast(0);
-    Cb_->bcast(0);
-    epsilon_a_->bcast(0);
-    epsilon_b_->bcast(0);
-
-    nirrep_ = reference_->nirrep();
-    nso_    = reference_->nso(); 
-    nmo_    = reference_->nmo();
-
-    ::memcpy(static_cast<void*>(doccpi_), static_cast<void*>(reference_->doccpi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(soccpi_), static_cast<void*>(reference_->soccpi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(nsopi_), static_cast<void*>(reference_->nsopi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(nmopi_), static_cast<void*>(reference_->nmopi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(nalphapi_), static_cast<void*>(reference_->nalphapi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(nbetapi_), static_cast<void*>(reference_->nbetapi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(frzcpi_), static_cast<void*>(reference_->frzcpi()), 8 * sizeof(int));
-    ::memcpy(static_cast<void*>(frzvpi_), static_cast<void*>(reference_->frzvpi()), 8 * sizeof(int));
-    // End copy constructor opportunity     
 
     nfocc_  = 0;
     nfvir_  = 0;
@@ -196,7 +240,6 @@ void MAD_MP2::common_init()
         irrep_avir_->print(outfile);
     }
 
-    Eref_ = reference_->reference_energy();
 
     // Auxiliary basis information
     auxiliary_automatic_ = false;
