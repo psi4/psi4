@@ -18,12 +18,14 @@
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 
+#if HAVE_MADNESS
+
 #include "mad_mp2.h"
-#include "mpi.h"
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
+
 
 #define ORDER_PRINT_START for(int dummyproc = 0; dummyproc < nproc_; ++dummyproc){\
                               Communicator::world->sync();\
@@ -1237,6 +1239,7 @@ void MAD_MP2::print_energy()
     fflush(outfile);
     
 }
-    
+
 }} // End Namespaces
+#endif // MADNESS
 

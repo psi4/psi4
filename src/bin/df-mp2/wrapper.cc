@@ -36,10 +36,12 @@ PsiReturnType dfmp2(Options & options)
 
     //DFMP2 df(options, psio, chkpt);
     //df.compute_energy();
-
+#if HAVE_MADNESS
     mad_mp2::MAD_MP2 madmp2(options, psio);
     madmp2.compute_energy();
-
+#else
+    throw PSIEXCEPTION("You need to link with MADNESS to use this code\n");
+#endif
     // Shut down psi.
 
     tstop();
