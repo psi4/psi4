@@ -33,6 +33,7 @@ protected:
 
 #if HAVE_MADNESS == 1
      SharedMadWorld madworld_;
+     SharedMutex mutex_;
 #endif
     
     // Number of processors
@@ -191,8 +192,8 @@ protected:
     madness::Void unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q,
                                    const int& astart, const int& asize,
                                    const int &i);
-    madness::Future<SharedMatrix> build_Qa(const int &i);
-    madness::Future<SharedMatrix> build_Qb(const int &j);
+    madness::Future<SharedMatrix> build_Qa(const int &ij, const int &i, const int &j);
+    madness::Future<SharedMatrix> build_Qb(const int &ij, const int &i, const int &j);
     madness::Future<SharedMatrix> build_I(SharedMatrix Qa, SharedMatrix Qb,
                                           const int &ij, const int &i, const int &j);
     madness::Future<double> energy_j(const SharedMatrix I,const int &i, const int &j);
