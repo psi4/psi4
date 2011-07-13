@@ -1,0 +1,220 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis.
+#! This compuation runs in C1 symmetry, which is currently required for RI-SCF.
+
+nucenergy =   8.801466202085710  #TEST
+refenergy = -76.05098621944234   #TEST
+
+molecule h2o {
+    symmetry c1
+    O
+    H 1 1.0
+    H 1 1.0 2 104.5
+}
+
+set globals {
+  basis        cc-pVTZ
+  scf_type     df
+  ri_basis_scf cc-pVTZ-JKFIT
+  e_converge   10
+}
+
+thisenergy = energy('scf')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                             #TEST
+
+clean()
+--------------------------------------------------------------------------
+
+*** tstart() called on hohenstein-laptop
+*** at Wed Jul 13 16:19:25 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.068516219310
+           H          0.000000000000     0.790689573744     0.543701060724
+           H          0.000000000000    -0.790689573744     0.543701060724
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.801466202085710
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DF.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-10
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVTZ <==
+
+  Basis Set
+    Number of shells: 22
+    Number of basis function: 58
+    Number of Cartesian functions: 65
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.9026025875E-03.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -60.32108534205970
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         58      58       5       5       5       0
+   -------------------------------------------------------
+    Total      58      58       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ DFHF: Density-Fitted SCF Algorithms.
+   by Rob Parrish
+
+  ==> Auxiliary Basis: CC-PVTZ-JKFIT <==
+
+  Basis Set
+    Number of shells: 45
+    Number of basis function: 139
+    Number of Cartesian functions: 166
+    Spherical Harmonics?: true
+    Max angular momentum: 4
+
+  Using Core Algorithm.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -61.31470794225068   -9.93623e-01   0.00000e+00  
+   @RHF iter   2:   -66.48315533750394   -5.16845e+00   2.15358e-01 DIIS
+   @RHF iter   3:   -73.60196587972203   -7.11881e+00   2.13461e-01 DIIS
+   @RHF iter   4:   -75.62913038173797   -2.02716e+00   8.77709e-03 DIIS
+   @RHF iter   5:   -76.04754577960844   -4.18415e-01   5.78054e-03 DIIS
+   @RHF iter   6:   -76.05037965506818   -2.83388e-03   8.76867e-04 DIIS
+   @RHF iter   7:   -76.05094917123323   -5.69516e-04   2.13998e-04 DIIS
+   @RHF iter   8:   -76.05098431810994   -3.51469e-05   8.53542e-05 DIIS
+   @RHF iter   9:   -76.05098616253035   -1.84442e-06   2.53764e-05 DIIS
+   @RHF iter  10:   -76.05098621860841   -5.60781e-08   3.95702e-06 DIIS
+   @RHF iter  11:   -76.05098621941045   -8.02032e-10   4.80897e-07 DIIS
+   @RHF iter  12:   -76.05098621944173   -3.12781e-11   7.60334e-08 DIIS
+   @RHF iter  13:   -76.05098621944234   -6.11067e-13   1.83797e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.562138     2A     -1.324719     3A     -0.687037  
+	   4A     -0.569630     5A     -0.501255  
+
+	Virtual:                                                              
+
+	   6A      0.137557     7A      0.199842     8A      0.526492  
+	   9A      0.576831    10A      0.677461    11A      0.785997  
+	  12A      0.793875    13A      0.805787    14A      0.852292  
+	  15A      0.951778    16A      1.165822    17A      1.172443  
+	  18A      1.489228    19A      1.501210    20A      2.019244  
+	  21A      2.048947    22A      2.115800    23A      2.157398  
+	  24A      2.253311    25A      2.570131    26A      2.925729  
+	  27A      3.356690    28A      3.471321    29A      3.552110  
+	  30A      3.599876    31A      3.766354    32A      3.826770  
+	  33A      3.874687    34A      3.936042    35A      4.015354  
+	  36A      4.055492    37A      4.135577    38A      4.246990  
+	  39A      4.323614    40A      4.478353    41A      4.645991  
+	  42A      4.776742    43A      5.012617    44A      5.229074  
+	  45A      5.516784    46A      5.976687    47A      6.414996  
+	  48A      6.772506    49A      6.849685    50A      6.905158  
+	  51A      6.934088    52A      7.012922    53A      7.168713  
+	  54A      7.181120    55A      7.433881    56A      7.697134  
+	  57A      8.106357    58A     12.196040  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.05098621944234
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.8099     Total:     0.8099
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     2.0586     Total:     2.0586
+
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on hohenstein-laptop at Wed Jul 13 16:19:25 2011
+	user time   =       0.77 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** PSI4 exiting successfully, buy a developer a beer!
