@@ -1,1 +1,0 @@
-../configure CC=/usr/local/mpich/bin/mpicc CXX=/usr/local/mpich/bin/mpicxx --with-opt=no --with-debug LIBS="-lblas -llapack" --with-plugins MPICC=/usr/local/mpich/bin/mpicc MPICXX=/usr/local/mpich/bin/mpicxx
