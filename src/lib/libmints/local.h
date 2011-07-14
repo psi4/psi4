@@ -25,8 +25,10 @@ protected:
     boost::shared_ptr<BasisSet> auxiliary_;
     /// AO2USO transformer, computed from basisset
     boost::shared_ptr<Matrix> AO2USO_;
-    /// Inverse square root of the S matrix
+    /// Square root of the S matrix
     boost::shared_ptr<Matrix> X_; 
+    /// S matrix
+    boost::shared_ptr<Matrix> S_; 
 
     /// Reference to externally provided C in USO basis, active part only
     boost::shared_ptr<Matrix> C_USO_;
@@ -48,7 +50,7 @@ protected:
     /// Localize via pivoted-Cholesky
     void localize_cholesky(double conv);
     /// Localize via Pipek-Mezey
-    void localize_pipek_mezey(double conv);
+    void localize_pm(double conv);
     /// Localize via Boys 
     void localize_boys(double conv);
     /// Localize via ER 
@@ -56,6 +58,8 @@ protected:
 
     /// Compute gross Lowdin charges for coef matrix C (nmo x natom)
     boost::shared_ptr<Matrix> lowdin_charges(boost::shared_ptr<Matrix> C);
+    /// Compute gross Mulliken charges for coef matrix C (nmo x natom)
+    boost::shared_ptr<Matrix> mulliken_charges(boost::shared_ptr<Matrix> C);
 
 public: 
     /*!
@@ -81,6 +85,16 @@ public:
     void set_print(int print) { print_ = print; }
     /// Set the debug flag (default 0)
     void set_debug(int debug) { debug_ = debug; }
+
+    /// Print diagnostic information
+    void print(FILE* out = outfile);
+
+    /// Compute the boys metric on the current orbitals
+    double boys_metric();
+    /// Compute the ER metric on the current orbitals
+    double er_metric();
+    /// Compute the PM metric on the current orbitals
+    double pm_metric();
 
     /*!
     * Reference to the USO C matrix 
@@ -117,7 +131,7 @@ public:
     * Localize the current C matrix (nondestructive) storing the result in L_USO (C1)
     * \param algorithm: upper-case string containing algorithm name, which is one of:
     *   CHOLESKY
-    *   PIPEK_MEZEY
+    *   PM
     *   BOYS
     *   ER
     * \param conv: double containing convergence criteria for iterative methods
