@@ -2,6 +2,7 @@
 
 #include "mints.h"
 #include "local.h"
+#include <utility>
 
 using namespace boost;
 using namespace psi;
@@ -30,10 +31,27 @@ void Local::common_init()
     L_AO_ = C_AO_;
 
     int nso = basisset_->nbf();
-    X_ = boost::shared_ptr<Matrix>(new Matrix("S^-1/2",nso,nso));
+    S_ = boost::shared_ptr<Matrix>(new Matrix("S",nso,nso));
+    X_ = boost::shared_ptr<Matrix>(new Matrix("S^+1/2",nso,nso));
     boost::shared_ptr<OneBodyAOInt> Sint(integral->ao_overlap());
-    Sint->compute(X_);
-    X_->power(-1.0/2.0);
+    Sint->compute(S_);
+    X_->copy(S_);
+    X_->power(+1.0/2.0);
+}
+void Local::print(FILE* out)
+{
+}
+double Local::er_metric()
+{
+    return 0.0;
+}
+double Local::pm_metric()
+{
+    return 0.0;
+}
+double Local::boys_metric()
+{
+    return 0.0;
 }
 boost::shared_ptr<Matrix> Local::C_USO()
 {
@@ -78,8 +96,8 @@ void Local::localize(const std::string& algorithm, double conv)
 {
     if (algorithm == "CHOLESKY")
         localize_cholesky(conv);    
-    else if (algorithm == "CHOLESKY")
-        localize_pipek_mezey(conv);    
+    else if (algorithm == "PM")
+        localize_pm(conv);    
     else if (algorithm == "BOYS")
         localize_boys(conv);    
     else if (algorithm == "ER")
@@ -110,9 +128,9 @@ void Local::localize_cholesky(double conv)
         C_DCOPY(nso, &Dp[0][i], nso, &Lp[0][i], nmo);
     }
 }
-void Local::localize_pipek_mezey(double conv) 
+void Local::localize_pm(double conv) 
 {
-    throw FeatureNotImplemented("psi::Local","localize_pipek_mezey",__FILE__,__LINE__);
+    throw FeatureNotImplemented("psi::Local","localize_pm",__FILE__,__LINE__);
     L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
 
 }
@@ -154,6 +172,32 @@ boost::shared_ptr<Matrix> Local::lowdin_charges(boost::shared_ptr<Matrix> C)
 
     return Q;
 }
+boost::shared_ptr<Matrix> Local::mulliken_charges(boost::shared_ptr<Matrix> C)
+{
+    boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
+    int nmo = C->colspi()[0];
+    int nso = C->rowspi()[0];
+    int natom = molecule->natom();
+    boost::shared_ptr<Matrix> Q(new Matrix("Q: Gross Mulliken charges (nmo x natom)", nmo, natom));
+
+    boost::shared_ptr<Matrix> XC(new Matrix("XC", nso, nmo));
+
+    double** Cp  = C->pointer();
+    double** Sp  = S_->pointer();
+    double** XCp = XC->pointer();
+
+    C_DGEMM('N','N',nso,nmo,nso,1.0,Sp[0],nso,Cp[0],nmo,0.0,XCp[0],nmo);
+
+    double** Qp = Q->pointer();
+    for (int i = 0; i < nmo; i++) {
+        for (int m = 0; m < nso; m++) {
+            int atom = basisset_->shell_to_center(basisset_->function_to_shell(m));
+            Qp[i][atom] += XCp[m][i] * Cp[m][i];
+        }
+    }
+
+    return Q;
+}
 void Local::compute_boughton_pulay_domains(double Qcutoff) 
 {
     boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
@@ -161,19 +205,92 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
     int nso = L_AO_->rowspi()[0];
     int natom = molecule->natom();
 
-    // Build Lowdin charges for current local coefficients
-    Q_ = lowdin_charges(L_AO_);
+    // Build Mulliken charges for current local coefficients
+    Q_ = mulliken_charges(L_AO_);
     double** Qp = Q_->pointer();    
 
     // Clear domains
     domains_.clear();
     auxiliary_domains_.clear();
 
+    double** Sp = S_->pointer();
+    double** Lp = L_AO_->pointer();
+
+    // Premultiply SL
+    boost::shared_ptr<Matrix> SL(new Matrix("SL", nso, nmo));
+    double** SLp = SL->pointer();
+    C_DGEMM('N','N',nso,nmo,nso,1.0,Sp[0],nso,Lp[0],nmo,0.0,SLp[0],nmo);
+
     // Build each domain
     for (int i = 0; i < nmo; i++) {
         std::set<int> total_atoms;
 
-        // TODO
+        // Rank atoms in this domain by Lowdin charges 
+        std::vector<std::pair<double, int> > charges;
+        for (int A = 0; A < natom; A++) {
+            charges.push_back(std::make_pair(Qp[i][A], A));
+        }
+        std::sort(charges.begin(), charges.end(), std::greater<std::pair<double, int> >());
+
+        // Add atoms until domain becomes complete enough
+        std::vector<int> atoms_in_domain;
+        std::vector<int> funs_in_domain;
+        for (int A = 0; A < natom; A++) {
+            // Add the current highest-charge atom to the domain
+            int current_atom = charges[A].second;
+            atoms_in_domain.push_back(current_atom);
+
+            // Add the functions from that atom to the funs_in_domain list
+            for (int M = 0; M < basisset_->nshell(); M++) {
+                if (basisset_->shell_to_center(M) != current_atom) continue;
+                int nM = basisset_->shell(M)->nfunction();
+                int mstart = basisset_->shell(M)->function_index();
+                for (int om = 0; om < nM; om++) {
+                    funs_in_domain.push_back(om + mstart);
+                }     
+            }
+            
+            // Figure out how many functions there are           
+            int nfun = funs_in_domain.size(); 
+
+            // Temps
+            boost::shared_ptr<Matrix> Smn(new Matrix("Smn", nfun, nfun));
+            boost::shared_ptr<Vector> A(new Vector("A", nfun));
+            double** Smnp = Smn->pointer();
+            double* Ap = A->pointer();
+    
+            // Place the proper overlap elements
+            for (int m = 0; m < nfun; m++) {
+                for (int n = 0; n < nfun; n++) {
+                    Smnp[m][n] = Sp[funs_in_domain[m]][funs_in_domain[n]];
+                }
+            }            
+           
+            // Place the proper SL elements
+            for (int m = 0; m < nfun; m++) {
+                Ap[m] = SLp[funs_in_domain[m]][i];
+            } 
+ 
+            // Find the A vector  
+            int info1 = C_DPOTRF('L', nfun, Smnp[0], nfun);            
+            if (info1 != 0) {
+                throw PSIEXCEPTION("Local: Boughton Pulay Domains: Cholesky Failed!");
+            } 
+            int info2 = C_DPOTRS('L', nfun, 1, Smnp[0], nfun, Ap, nfun);
+            if (info2 != 0) {
+                throw PSIEXCEPTION("Local: Boughton Pulay Domains: Cholesky Solve Failed!");
+            } 
+ 
+            // Compute the incompleteness metric 
+            double incompleteness = 1.0 - C_DDOT(nfun, Ap, 1, Ap, 1);
+            if (incompleteness < Qcutoff)
+                return;
+        }
+
+        // rebuild a set<int>, which OrbtialDomain expects
+        for (int A = 0; A < atoms_in_domain.size(); A++) {
+            total_atoms.insert(atoms_in_domain[A]);
+        }
 
         domains_.push_back(OrbitalDomain::buildOrbitalDomain(basisset_, total_atoms));
         if (auxiliary_.get() != NULL) 
