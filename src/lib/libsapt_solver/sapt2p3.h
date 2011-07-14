@@ -22,6 +22,8 @@ protected:
   double e_elst13_;
   double e_ind30_;
   double e_exch_ind30_;
+  double e_ind30r_;
+  double e_exch_ind30r_;
   double e_ind_disp30_;
   double e_exch_ind_disp30_;
   double e_disp30_;
@@ -73,6 +75,10 @@ protected:
   double exch_disp30_02();
   double exch_disp30_22();
 
+  double ind30r_1(double **, double **, double **, double **, int, 
+    const char *, const char *, const char *, int, const char *, int,
+    int, int, int);
+
 public:
   SAPT2p3(Options& options, boost::shared_ptr<PSIO> psio, 
     boost::shared_ptr<Chkpt> chkpt);
@@ -84,6 +90,7 @@ public:
 
   void elst13();
   void ind30();
+  void ind30r();
   void exch_ind30();
   void ind_disp30();
   void exch_ind_disp30();
