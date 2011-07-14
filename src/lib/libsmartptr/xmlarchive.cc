@@ -9,7 +9,7 @@
 using namespace smartptr;
 using namespace rapidxml;
 using namespace std;
-
+static Serializable* null_serializable = 0;
 #ifdef redefine_size_t
 #define size_t custom_size_t
 #endif
@@ -59,7 +59,7 @@ XMLArchive::XMLArchive(
         xmlnode* node = objnode_->first_node();
         for  ( ; node; node = node->next_sibling())
         {
-            object_t objnode(0, node);
+            object_t objnode(null_serializable, node);
             object_nodes_.push_back(objnode);
         }
     }
