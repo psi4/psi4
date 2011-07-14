@@ -80,6 +80,9 @@ double SAPT2p3::compute_energy()
     timer_on("Ind30              ");
       ind30();
     timer_off("Ind30              ");
+    timer_on("Ind30,r            ");
+      ind30r();
+    timer_off("Ind30,r            ");
     timer_on("Exch-Ind30         ");
       exch_ind30();
     timer_off("Exch-Ind30         ");
@@ -129,9 +132,12 @@ void SAPT2p3::print_results()
   e_sapt2pp3_ = e_sapt2p_ + e_elst13_ + e_disp30_;
   e_sapt2p3_ = e_sapt2pp3_ + e_exch_disp30_ + e_ind_disp30_ 
     + e_exch_ind_disp30_;
+
+  e_exch_ind30r_ = e_ind30r_ * (e_exch_ind30_/e_ind30_);
+
   double dHF2 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
   double dHF3 = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_
-    + e_ind30_ + e_exch_ind30_);
+    + e_ind30r_ + e_exch_ind30r_);
 
   fprintf(outfile,"\n    SAPT Results  \n");
   fprintf(outfile,"  ------------------------------------------------------------------\n");
@@ -154,15 +160,15 @@ void SAPT2p3::print_results()
   fprintf(outfile,"    Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
     e_ind20_*1000.0,e_ind20_*627.5095);
   if (third_order_)
-    fprintf(outfile,"    Ind30            %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_ind30_*1000.0,e_ind30_*627.5095);
+    fprintf(outfile,"    Ind30,r          %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_ind30r_*1000.0,e_ind30r_*627.5095);
   fprintf(outfile,"    Ind22            %16.8lf mH %16.8lf kcal mol^-1\n",
     e_ind22_*1000.0,e_ind22_*627.5095);
   fprintf(outfile,"    Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
   if (third_order_)
-    fprintf(outfile,"    Exch-Ind30       %16.8lf mH %16.8lf kcal mol^-1\n",
-      e_exch_ind30_*1000.0,e_exch_ind30_*627.5095);
+    fprintf(outfile,"    Exch-Ind30,r     %16.8lf mH %16.8lf kcal mol^-1\n",
+      e_exch_ind30r_*1000.0,e_exch_ind30r_*627.5095);
   fprintf(outfile,"    Exch-Ind22       %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_ind22_*1000.0,e_exch_ind22_*627.5095);
   fprintf(outfile,"    delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -204,7 +210,7 @@ void SAPT2p3::print_results()
   double tot_elst = e_elst10_ + e_elst12_ + e_elst13_;
   double tot_exch = e_exch10_ + e_exch11_ + e_exch12_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF3 + e_ind22_ + e_exch_ind22_
-    + e_ind30_ + e_exch_ind30_;
+    + e_ind30r_ + e_exch_ind30r_;
   double tot_disp = e_disp20_ + e_exch_disp20_ + e_disp21_ + e_disp22sdq_
     + e_disp22t_ + e_disp30_ + e_exch_disp30_;
 
