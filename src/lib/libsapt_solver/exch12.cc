@@ -1029,7 +1029,7 @@ double SAPT2::exch102_k11u_2()
   C_DGEMV('n',noccA_*noccA_,ndf_+3,1.0,A_p_AA[0],ndf_+3,diagBB_,1,0.0,
     xAA[0],1);
 
-  C_DGEMM('N','N',noccA_,aoccB_,noccA_,1.0,xAA[0],noccA_,sAb[0],noccB_,
+  C_DGEMM('N','N',noccA_,aoccB_,noccA_,1.0,xAA[0],noccA_,sAb[0],aoccB_,
     0.0,xAb[0],aoccB_);
 
   C_DGEMM('T','N',aoccB_,aoccB_,noccA_,1.0,xAb[0],aoccB_,sAb[0],aoccB_,

@@ -983,6 +983,7 @@ void SAPT2p3::Y3_1(double **yAR, int intfile, const char *AAlabel,
     gAAAR[0],nvirA,1.0,yAR[0],nvirA);
 
   free(yAAAA);
+  free_block(AAAR);
   free_block(gAAAR);
 }
 
