@@ -200,6 +200,7 @@ double SAPT2p3::exch_ind30_2(double **sAR)
   energy += 4.0*C_DDOT(ndf_+3,X,1,Y,1);
 
   free_block(xBB);
+  free_block(ssRB);
   free(X);
   free(Y);
 
@@ -297,6 +298,7 @@ double SAPT2p3::exch_ind30_3(double **sBS)
   free(X);
   free(Y);
 
+  free_block(ssAS);
   free_block(A_p_AS);
   free_block(A_p_AA);
   free_block(B_p_BS);

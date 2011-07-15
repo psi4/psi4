@@ -23,6 +23,8 @@ void SAPT2p3::exch_disp30()
         tARBS[ar],1);
   }}
 
+  free_block(tARBS);
+
   double ex_2 = exch_disp30_20();
   double ex_3 = exch_disp30_02();
   double ex_4 = exch_disp30_22();
@@ -461,6 +463,8 @@ double SAPT2p3::exch_disp30_22()
   free_block(ABAB);
   free_block(vABRS);
   free_block(xABRS);
+  free_block(tAS_RB);
+  free_block(tRB_AS);
 
   return(2.0*energy);
 }
