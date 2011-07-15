@@ -42,6 +42,23 @@ SAPT2::~SAPT2()
 {
   if (wBAR_ != NULL) free_block(wBAR_);
   if (wABS_ != NULL) free_block(wABS_);
+
+  free_block(wBAA_);
+  free_block(wBRR_);
+  free_block(wABB_);
+  free_block(wASS_);
+
+  if (nat_orbs_) {
+    free(no_evalsA_);
+    free(no_evalsB_);
+    free_block(no_CA_);
+    free_block(no_CB_);
+  }
+
+  free(ioff_); 
+  free(index2i_);
+  free(index2j_);
+
   psio_->close(PSIF_SAPT_AA_DF_INTS,1);
   psio_->close(PSIF_SAPT_BB_DF_INTS,1);
   psio_->close(PSIF_SAPT_AB_DF_INTS,1);
