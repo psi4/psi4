@@ -49,6 +49,9 @@ void SAPT2p3::exch_ind_disp30()
         tARBS[ar],1);
   }}
 
+  free_block(tARBS);
+  free_block(vARBS);
+
   double **sAR = block_matrix(aoccA_,nvirA_);
   double **sBS = block_matrix(aoccB_,nvirB_);
 
@@ -511,10 +514,13 @@ double SAPT2p3::exch_ind_disp30_21(double **sAR)
         &(xBS[0][0]),1);
   }}
 
+  free_block(tRB_AS);
+  free_block(tAS_RB);
   free_block(xAR);
   free_block(xAB);
   free_block(xBS);
   free_block(B_p_AR);
+  free_block(tARBS);
 
   return(2.0*energy);
 }
@@ -986,10 +992,13 @@ double SAPT2p3::exch_ind_disp30_12(double **sBS)
         &(tARBS[ar][0]),1,&(xBS[0][0]),1);
   }}
 
+  free_block(tRB_AS);
+  free_block(tAS_RB);
   free_block(xAR);
   free_block(xAB);
   free_block(xBS);
   free_block(B_p_BS);
+  free_block(tARBS);
 
   return(2.0*energy);
 }
