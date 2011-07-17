@@ -526,13 +526,8 @@ void SAPTLaplaceDenominator::decompose()
     double E_LUMOB = eps_virB_->get(0, 0);
     double E_HUMOB = eps_virB_->get(0, nvirB - 1);
 
-    double E_LOMO = (E_LOMOA < E_LOMOB) ? E_LOMOA : E_LOMOB;
-    double E_HOMO = (E_HOMOA > E_HOMOB) ? E_HOMOA : E_HOMOB;
-    double E_LUMO = (E_LUMOA < E_LUMOB) ? E_LUMOA : E_LUMOB;
-    double E_HUMO = (E_HUMOA > E_HUMOB) ? E_HUMOA : E_HUMOB;
-
-    double A = 2.0*(E_LUMO - E_HOMO);
-    double B = 2.0*(E_HUMO - E_LOMO);
+    double A = (E_LUMOA - E_HOMOA) + (E_LUMOB - E_HOMOB);
+    double B = (E_HUMOA - E_LOMOA) + (E_HUMOB - E_LOMOB);
     double R = B / A;
 
     // Pick appropriate quadrature file and read contents
