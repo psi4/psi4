@@ -101,6 +101,12 @@ public:
       boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double, bool);
     virtual ~SAPTDenominator();
 
+    // Factory method, algorithm should be LAPLACE or CHOLESKY
+    static boost::shared_ptr<SAPTDenominator> buildDenominator(const std::string& algorithm, 
+            boost::shared_ptr<Vector> eps_occA, boost::shared_ptr<Vector> eps_virA, 
+            boost::shared_ptr<Vector> eps_occB, boost::shared_ptr<Vector> eps_virB, 
+            double delta, bool debug = false); 
+
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
     virtual void debug();
@@ -126,7 +132,7 @@ protected:
       boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix>);
 public:
     SAPTLaplaceDenominator(boost::shared_ptr<Vector>, boost::shared_ptr<Vector>,
-      boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double, bool);
+      boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double, bool debug = false);
     ~SAPTLaplaceDenominator();
 
     void debug();
@@ -137,5 +143,15 @@ public:
 
 };
 
-}
+class SAPTCholeskyDenominator : public SAPTDenominator {
+
+protected:
+    void decompose();
+public:
+    SAPTCholeskyDenominator(boost::shared_ptr<Vector>, boost::shared_ptr<Vector>,
+      boost::shared_ptr<Vector>, boost::shared_ptr<Vector>, double, bool debug = false);
+    ~SAPTCholeskyDenominator();
+};
+
+} // Namespace psi
 #endif
