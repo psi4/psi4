@@ -571,6 +571,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("RI_BASIS_ELST", "");
     /*- Maximum denominator error allowed (Max error norm in Delta tensor) -*/
     options.add_double("DENOMINATOR_DELTA", 1.0E-6);
+    /*- Denominator algorithm for PT methods -*/
+    options.add_str("DENOMINATOR_ALGORITHM", "LAPLACE", "LAPLACE CHOLESKY");
     /*- Number of Omega points for Casimir-Polder -*/
     options.add_int("OMEGA_POINTS",8);
     /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/

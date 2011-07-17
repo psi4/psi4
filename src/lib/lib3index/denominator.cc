@@ -455,6 +455,22 @@ SAPTDenominator::SAPTDenominator(boost::shared_ptr<Vector> eps_occA,
 SAPTDenominator::~SAPTDenominator()
 {
 }
+boost::shared_ptr<SAPTDenominator> SAPTDenominator::buildDenominator(const std::string& algorithm,
+    boost::shared_ptr<Vector> eps_occA, boost::shared_ptr<Vector> eps_virA, 
+    boost::shared_ptr<Vector> eps_occB, boost::shared_ptr<Vector> eps_virB, 
+    double delta, bool debug)
+{
+    SAPTDenominator* d;
+    if (algorithm == "LAPLACE") {
+        d = new SAPTLaplaceDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug);
+    } else if (algorithm == "CHOLESKY") {
+        d = new SAPTCholeskyDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug);
+    } else {
+        throw PSIEXCEPTION("Denominator: algorithm is not LAPLACE or CHOLESKY"); 
+    }
+
+    return boost::shared_ptr<SAPTDenominator>(d);
+}
 void SAPTDenominator::debug()
 {
     fprintf(outfile, "\n  ==> Debug Monomer A Denominator <==\n\n");
@@ -763,4 +779,214 @@ void SAPTLaplaceDenominator::check_split(boost::shared_ptr<Vector> eps_occ,
     app_denom->print();
     err_denom->print();
 }
+SAPTCholeskyDenominator::SAPTCholeskyDenominator(boost::shared_ptr<Vector> eps_occA,
+  boost::shared_ptr<Vector> eps_virA, boost::shared_ptr<Vector> eps_occB,
+  boost::shared_ptr<Vector> eps_virB, double delta, bool debug) :
+    SAPTDenominator(eps_occA, eps_virA, eps_occB, eps_virB, delta, debug)
+{
+    decompose();
 }
+SAPTCholeskyDenominator::~SAPTCholeskyDenominator()
+{
+}
+void SAPTCholeskyDenominator::decompose()
+{
+    int noccA = eps_occA_->dimpi()[0];
+    int nvirA = eps_virA_->dimpi()[0];
+    int noccB = eps_occB_->dimpi()[0];
+    int nvirB = eps_virB_->dimpi()[0];
+
+    double* eps_occAp = eps_occA_->pointer(); 
+    double* eps_occBp = eps_occB_->pointer(); 
+    double* eps_virAp = eps_virA_->pointer(); 
+    double* eps_virBp = eps_virB_->pointer(); 
+
+    // Build the schur complement
+    boost::shared_ptr<Vector> schurA(new Vector("Diagonal Complement A", noccA * nvirA));
+    boost::shared_ptr<Vector> schurB(new Vector("Diagonal Complement B", noccB * nvirB));
+    double* schurAp = schurA->pointer();
+    double* schurBp = schurB->pointer();
+    
+    for (int i = 0; i < noccA; i++) {
+        for (int a = 0; a < nvirA; a++) {
+            schurAp[i * nvirA + a] = 1.0 / (2.0 * (eps_virAp[a] - eps_occAp[i]));
+        }
+    }
+
+    for (int j = 0; j < noccB; j++) {
+        for (int b = 0; b < nvirB; b++) {
+            schurBp[j * nvirB + b] = 1.0 / (2.0 * (eps_virBp[b] - eps_occBp[j]));
+        }
+    }
+
+    std::vector<double*> denA;
+    std::vector<double*> denB;
+
+    std::vector<std::pair<bool,int> > w_order; 
+
+    nvector_ = 0;
+    int Q = -1;   
+
+    double max_err = 0.0;
+ 
+    while (nvector_ < noccA * nvirA + noccB * nvirB) {
+        Q++;
+        nvector_++;
+
+        // Locate pivot
+        double maxA = 0.0;
+        int indA = 0;
+        for (int ia = 0; ia < noccA * nvirA; ia++) {
+            if (fabs(maxA) < fabs(schurAp[ia])) {
+                     maxA  = fabs(schurAp[ia]);
+                     indA  = ia;
+            }
+        }
+        double maxB = 0.0;
+        int indB = 0;
+        for (int ia = 0; ia < noccB * nvirB; ia++) {
+            if (fabs(maxA) < fabs(schurBp[ia])) {
+                     maxB  = fabs(schurBp[ia]);
+                     indB  = ia;
+            }
+        }
+
+        if (maxB > maxA) {
+            w_order.push_back(make_pair(true,indB));
+        } else {
+            w_order.push_back(make_pair(false,indA));
+        }
+
+        bool onB = w_order[Q].first;
+        int Q_global = w_order[Q].second; 
+        int i_global = Q_global / (onB ? nvirB : nvirA);
+        int a_global = Q_global % (onB ? nvirB : nvirA);
+        
+        // Build row
+        denA.push_back(new double[noccA * nvirA]);
+        denB.push_back(new double[noccB * nvirB]);
+        std::vector<double> L_PQ;
+        double L_QQ;
+        if (!onB) {
+            L_QQ = sqrt(schurAp[Q_global]);
+
+            for (int i = 0; i < noccA; i++) {
+                for (int a = 0; a < nvirA; a++) {
+                    denA[Q][i * nvirA + a] = 1.0 / (eps_virAp[a_global] - eps_occAp[i_global] + eps_virAp[a] - eps_occAp[i]);
+                }
+            }    
+
+            for (int i = 0; i < noccB; i++) {
+                for (int a = 0; a < nvirB; a++) {
+                    denB[Q][i * nvirB + a] = 1.0 / (eps_virAp[a_global] - eps_occAp[i_global] + eps_virBp[a] - eps_occBp[i]);
+                }
+            }
+
+            for (int P = 0; P < Q; P++) {
+                L_PQ.push_back(denA[P][Q_global]);
+            }    
+    
+        } else {
+            L_QQ = sqrt(schurBp[Q_global]);
+
+            for (int i = 0; i < noccA; i++) {
+                for (int a = 0; a < nvirA; a++) {
+                    denA[Q][i * nvirA + a] = 1.0 / (eps_virBp[a_global] - eps_occBp[i_global] + eps_virAp[a] - eps_occAp[i]);
+                }
+            }    
+
+            for (int i = 0; i < noccB; i++) {
+                for (int a = 0; a < nvirB; a++) {
+                    denB[Q][i * nvirB + a] = 1.0 / (eps_virBp[a_global] - eps_occBp[i_global] + eps_virBp[a] - eps_occBp[i]);
+                }
+            }    
+    
+            for (int P = 0; P < Q; P++) {
+                L_PQ.push_back(denB[P][Q_global]);
+            }    
+        } 
+
+        for (int P = 0; P < Q; P++) {
+            C_DAXPY(noccA * nvirA, -L_PQ[P], denA[P], 1, denA[Q], 1);
+            C_DAXPY(noccB * nvirB, -L_PQ[P], denB[P], 1, denB[Q], 1);
+        }
+
+        C_DSCAL(noccA * nvirA, 1.0 / L_QQ, denA[Q], 1);
+        C_DSCAL(noccB * nvirB, 1.0 / L_QQ, denB[Q], 1);
+
+        for (int P = 0; P < Q; P++) {
+            bool PonB = w_order[P].first;
+            int  Pind = w_order[P].second;
+            if (!PonB) {
+                denA[Q][Pind] = 0.0;    
+            } else {
+                denB[Q][Pind] = 0.0;    
+            }
+        }
+
+        if (!onB) {
+            denA[Q][Q_global] = L_QQ;
+        } else {
+            denB[Q][Q_global] = L_QQ;
+        }
+
+        // Update schur complement diagonal
+        for (int ia = 0; ia < noccA * nvirA; ia++) {
+            schurAp[ia] -= denA[Q][ia] * denA[Q][ia];
+        }       
+ 
+        for (int ia = 0; ia < noccB * nvirB; ia++) {
+            schurBp[ia] -= denB[Q][ia] * denB[Q][ia];
+        }       
+ 
+        for (int P = 0; P <= Q; P++) {
+            bool PonB = w_order[P].first;
+            int  Pind = w_order[P].second;
+            if (!PonB) {
+                schurAp[Pind] = 0.0;    
+            } else {
+                schurBp[Pind] = 0.0;    
+            }
+        }
+
+        // Termination condition (schwarz)
+        maxA = 0.0;
+        for (int ia = 0; ia < noccA * nvirA; ia++) {
+            if (fabs(maxA) < fabs(schurAp[ia]))
+                     maxA  = fabs(schurAp[ia]);
+        }
+        maxB = 0.0;
+        for (int ia = 0; ia < noccB * nvirB; ia++) {
+            if (fabs(maxB) < fabs(schurBp[ia]))
+                     maxB  = fabs(schurBp[ia]);
+        }
+
+        max_err = sqrt(maxA * maxB);
+
+        if (max_err < delta_) {
+            break;    
+        }
+    } 
+
+    // Copy Cholesky vectors into permanent matrices
+    denominatorA_ = boost::shared_ptr<Matrix>(new Matrix("Denominator A", nvector_, noccA * nvirA));
+    denominatorB_ = boost::shared_ptr<Matrix>(new Matrix("Denominator B", nvector_, noccB * nvirB));
+    double** denAp = denominatorA_->pointer();    
+    double** denBp = denominatorB_->pointer();    
+
+    for (int P = 0; P < nvector_; P++) {
+        ::memcpy(static_cast<void*>(denAp[P]), static_cast<void*>(denA[P]), noccA * nvirA * sizeof(double)); 
+        ::memcpy(static_cast<void*>(denBp[P]), static_cast<void*>(denB[P]), noccB * nvirB * sizeof(double)); 
+
+        delete[] denA[P];
+        delete[] denB[P];
+    } 
+
+    if (debug_) {
+        fprintf(outfile, "\n  ==> Cholesky Denominator <==\n\n");
+        fprintf(outfile, "  A %d point partial Cholesky decomposition will be used for the denominator.\n", nvector_);
+        fprintf(outfile, "  The worst-case Chebyshev norm for this quadrature rule is %7.4E.\n\n", max_err);
+    }
+}
+
+} // Namespace psi
