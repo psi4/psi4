@@ -24,6 +24,7 @@ void SAPT2p3::exch_disp30()
   }}
 
   free_block(tARBS);
+  free_block(vARBS);
 
   double ex_2 = exch_disp30_20();
   double ex_3 = exch_disp30_02();
