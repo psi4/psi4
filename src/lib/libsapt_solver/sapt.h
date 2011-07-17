@@ -53,7 +53,7 @@ protected:
   int NB_;
 
   int print_;
-  bool debug_;
+  int debug_;
   bool elst_basis_;
 
   long int mem_;
@@ -77,7 +77,7 @@ protected:
   double **vAAB_;
   double **vBAB_;
 
-  boost::shared_ptr<SAPTLaplaceDenominator> denom_;
+  boost::shared_ptr<SAPTDenominator> denom_;
 
   int nvec_;
 

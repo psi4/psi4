@@ -268,10 +268,13 @@ void SAPT::get_denom()
   for (int s=0; s<nvirB_; s++)
     evals_virB->set(0,s,evalsB_[s+noccB_]);
 
-  denom_ = boost::shared_ptr<SAPTLaplaceDenominator>(
-    new
-SAPTLaplaceDenominator(evals_aoccA,evals_virA,evals_aoccB,evals_virB,
-    options_.get_double("DENOMINATOR_DELTA"),debug_));
+  denom_ = SAPTDenominator::buildDenominator(
+    options_.get_str("DENOMINATOR_ALGORITHM"),
+    evals_aoccA, evals_virA, evals_aoccB, evals_virB, 
+    options_.get_double("DENOMINATOR_DELTA"), debug_);
+
+  if (debug_ > 1)
+    denom_->debug();
 
   boost::shared_ptr<Matrix> tauAR = denom_->denominatorA();
   boost::shared_ptr<Matrix> tauBS = denom_->denominatorB();
