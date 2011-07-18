@@ -105,13 +105,26 @@ chomp ($Nrxn = <>);
 
 
 
+open(LAB_OUT, ">stats.txt");
 open(SPL_OUT, ">temp1.txt");
+open(RPL_OUT, ">temp5.txt");
 open(GPL_OUT, ">temp2.txt");
 open(SPY_OUT, ">temp3.txt");
 open(GPY_OUT, ">temp4.txt");
 
+if ($route == 3) {
+   print SPL_OUT "\nsub load_indices_$set {\n\n   \$settype = \"complex-xyz-parted\";\n\n   \@HSYS = (";
+}
+else {
+   print SPL_OUT "\nsub load_indices_$set {\n\n   \$settype = \"reaction\";\n\n   \@HRXN = (1 .. $Nrxn);\n\n";
+   print SPL_OUT "   \$numberTT = $Nrxn;\n";
+   print SPL_OUT "   \$numberHB = 0;\n";
+   print SPL_OUT "   \$numberMX = 0;\n";
+   print SPL_OUT "   \$numberDD = 0;\n";
+   print SPL_OUT "\n   foreach \$reaction (\@HRXN) { push(\@setindex,\"\$set-\$reaction\"); }\n}";
+   print SPL_OUT "\n\n\n\nsub load_reagents_$set {\n\n   \$settype = \"reaction\";\n\n   \@HSYS = (";
+}
 
-print SPL_OUT "\nsub load_indices_$set {\n\n   \$settype = \"complex-xyz-parted\";\n\n   \@HSYS = (";
 print GPL_OUT "\nsub load_xyz_$set {\n\n";
 
 print GPL_OUT "   \$isHB = \"no\";\n";
@@ -130,6 +143,25 @@ print GPL_OUT "   \$bind = \"NaN\";\n\n";
 foreach $rxn (@HRXN) { $BINDRXN{$rxn} = 0.0; }
 foreach $rxn (@HRXN) { $TAGLRXN{$rxn} = "Reaction $rxn"; }
 
+if ($route != 3) {
+   print RPL_OUT "\nsub load_rxn_$set {\n\n   \%rxnm = ();\n\n";
+   for ($i = 1; $i <= $Nrxn; $i++) {
+   
+      if ($i == 1) { print RPL_OUT "   if (\$reaction eq \"$i\") {\n\n"; }
+      else         { print RPL_OUT "   elsif (\$reaction eq \"$i\") {\n\n"; }
+   
+      print RPL_OUT "      \$bind = NaN;\n\n";
+      print RPL_OUT "      \@HACTIVE = (\"\",\"\",\"\");\n";
+      print RPL_OUT "      \@rxnm{\@HACTIVE} = ();\n\n   }\n";
+      #print RPL_OUT "      \%rxnm = (\n      \"\"            => ,\n      \"\"            =>      );\n\n   }\n";
+   }
+   
+   print RPL_OUT "   else {\n\n      \$tagl = \"NONSENSE\";\n      \$bind = \"NaN\";\n      \%rxnm = ();\n      \@HACTIVE = ();\n\n   }\n\n";
+   print RPL_OUT "foreach my \$component (\@HACTIVE) { \$component = \"\$component-reagent\"; }\n";
+   print RPL_OUT "for my \$key (keys %rxnm) { \$rxnm{\"\$key-reagent\"} = delete \$rxnm{\$key}; }\n\n}\n\n\n";
+
+}
+
 # reagent section
 print GPY_OUT "\n# <<< Molecule Specifications >>>\n";
 if ($route == 3) {
@@ -146,6 +178,8 @@ $count = 0;
 %BINDRGT = ();
 
 foreach $filename (<*.$fext>) {
+
+   $NH = 0;  $NC = 0;  $NN = 0;  $NO = 0;  $NF = 0;  $NSi = 0;  $NP = 0;  $NS = 0;  $NCl = 0;
 
    # ascertain system name and open file
    ($system) = $filename =~ m/(.*).$fext$/;
@@ -185,13 +219,13 @@ foreach $filename (<*.$fext>) {
       if ($count == 0) { print GPL_OUT "   if (\$system eq \"$system\") {\n\n"; }
       else             { print GPL_OUT "   elsif (\$system eq \"$system\") {\n\n"; }
    
-      print GPL_OUT "      \$tagl = \"$system $tagl\";\n\n";
+      print GPL_OUT "      \$tagl = \"$tagl\";\n\n";
       print GPL_OUT "      \%cgmp = (\n";
       print GPL_OUT "      \"CHGsyst\"  => $CHGsyst,\n";
-      print GPL_OUT "      \"CHGmol1\"  => 0,\n";
+      print GPL_OUT "      \"CHGmol1\"  => $CHGsyst,\n";
       print GPL_OUT "      \"CHGmol2\"  => 0,\n";
       print GPL_OUT "      \"MLPsyst\"  => $MLPsyst,\n";
-      print GPL_OUT "      \"MLPmol1\"  => 1,\n";
+      print GPL_OUT "      \"MLPmol1\"  => $MLPsyst,\n";
       print GPL_OUT "      \"MLPmol2\"  => 1  );\n\n";
    
       print GPY_OUT "$set" . "_" . $system . " = input.process_input(\"\"\"\n";
@@ -287,7 +321,7 @@ foreach $filename (<*.$fext>) {
       print GPL_OUT "      \%cgmp = (\n";
       print GPL_OUT "      \"CHGsyst\"  => $CHGsyst,\n";
       print GPL_OUT "      \"MLPsyst\"  => $MLPsyst  );\n\n";
-   
+
       print GPY_OUT "$set" . "_" . $system . " = input.process_input(\"\"\"\n";
       print GPY_OUT "molecule dimer {\n";
       print GPY_OUT "$CHGsyst $MLPsyst\n";
@@ -306,9 +340,7 @@ foreach $filename (<*.$fext>) {
       print "\t\t@atoms1\t\t@atoms2\n";
    
       print GPL_OUT "      \%stat = (\n";
-      print GPL_OUT "      \"Nsyst\"  => $Nsyst,\n";
-      print GPL_OUT "      \"Nmol1\"  => $Nsyst,\n";
-      print GPL_OUT "      \"Nmol2\"  => 0  );\n\n";
+      print GPL_OUT "      \"Nsyst\"  => $Nsyst  );\n\n";
    
       # separate fragments
       print GPL_OUT "      \@geom = ();\n";
@@ -321,6 +353,16 @@ foreach $filename (<*.$fext>) {
          push(@fragment1X,$ltemp[1]);
          push(@fragment1Y,$ltemp[2]);
          push(@fragment1Z,$ltemp[3]);
+
+         if ($ltemp[0] eq "H")  { $NH++;  }
+         if ($ltemp[0] eq "C")  { $NC++;  }
+         if ($ltemp[0] eq "N")  { $NN++;  }
+         if ($ltemp[0] eq "O")  { $NO++;  }
+         if ($ltemp[0] eq "F")  { $NF++;  }
+         if ($ltemp[0] eq "Si") { $NSi++; }
+         if ($ltemp[0] eq "P")  { $NP++;  }
+         if ($ltemp[0] eq "S")  { $NS++;  }
+         if ($ltemp[0] eq "Cl") { $NCl++; }
       }
    
       # print geometry
@@ -329,6 +371,8 @@ foreach $filename (<*.$fext>) {
    
       for($i = 0; $i < $Nmol1; $i++) { printf GPY_OUT "%-3s  % 14.8f % 14.8f % 14.8f\n", $elems1[$i], $fragment1X[$i], $fragment1Y[$i], $fragment1Z[$i]; }
       print GPY_OUT "units angstrom\n}\n\"\"\")\n\n";
+
+      printf LAB_OUT "%-25s\t%d\t%d\t%d\t\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%s\n", $system, $Nsyst, $CHGsyst, $MLPsyst, $NH, $NC, $NN, $NO, $NF, $NSi, $NP, $NS, $NCl, $tagl;
 
    }
 
@@ -351,23 +395,29 @@ print GPL_OUT "      \%stat = ();\n";
 print GPL_OUT "      \@geom = ();\n";
 print GPL_OUT "      \$crat = \"NaN\";\n\n   }\n\n";
       
+if ($route != 3) {
+   print GPL_OUT "   \$stat{\"Nmol1\"} = \$stat{\"Nsyst\"};\n";
+   print GPL_OUT "   \$stat{\"Nmol2\"} = 0;\n";
+}
 print GPL_OUT "   \$stat{\"Msyst\"} = \$stat{\"Nsyst\"};\n";
 print GPL_OUT "   \$stat{\"Mmol1\"} = \$stat{\"Nmol1\"};\n";
 print GPL_OUT "   \$stat{\"Mmol2\"} = \$stat{\"Nmol2\"};\n";
 print GPL_OUT "   \$stat{\"param\"} = 0;\n\n";
 print GPL_OUT "   \$texl = \$tagl;\n\n";
 
-print GPL_OUT "   \@HACTIVEun = (\"\$system-dimer\",\"\$system-monoA-unCP\",\"\$system-monoB-unCP\");\n\n";
-
-print GPL_OUT "   \$rxnmUN{\"\$system-dimer\"}      = +1;\n";
-print GPL_OUT "   \$rxnmUN{\"\$system-monoA-unCP\"} = -1;\n";
-print GPL_OUT "   \$rxnmUN{\"\$system-monoB-unCP\"} = -1;\n\n";
-
-print GPL_OUT "   \@HACTIVEcp = (\"\$system-dimer\",\"\$system-monoA-CP\",\"\$system-monoB-CP\");\n\n";
-
-print GPL_OUT "   \$rxnmCP{\"\$system-dimer\"}      = +1;\n";
-print GPL_OUT "   \$rxnmCP{\"\$system-monoA-CP\"}   = -1;\n";
-print GPL_OUT "   \$rxnmCP{\"\$system-monoB-CP\"}   = -1;\n\n";
+if ($route == 3) {
+   print GPL_OUT "   \@HACTIVEun = (\"\$system-dimer\",\"\$system-monoA-unCP\",\"\$system-monoB-unCP\");\n\n";
+   
+   print GPL_OUT "   \$rxnmUN{\"\$system-dimer\"}      = +1;\n";
+   print GPL_OUT "   \$rxnmUN{\"\$system-monoA-unCP\"} = -1;\n";
+   print GPL_OUT "   \$rxnmUN{\"\$system-monoB-unCP\"} = -1;\n\n";
+   
+   print GPL_OUT "   \@HACTIVEcp = (\"\$system-dimer\",\"\$system-monoA-CP\",\"\$system-monoB-CP\");\n\n";
+   
+   print GPL_OUT "   \$rxnmCP{\"\$system-dimer\"}      = +1;\n";
+   print GPL_OUT "   \$rxnmCP{\"\$system-monoA-CP\"}   = -1;\n";
+   print GPL_OUT "   \$rxnmCP{\"\$system-monoB-CP\"}   = -1;\n\n";
+}
 
 print GPL_OUT "}\n\nreturn 1;\n";
 
@@ -412,7 +462,7 @@ elsif ($route == 2) {
 elsif ($route == 3) { 
 
    print SPY_OUT "ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction\n";
-   print SPY_OUT "ACTV_SA = {}  # order of active reagents for non-supramolecular calculations\n";
+   print SPY_OUT "ACTV_SA = {}  # order of active reagents for non-supermolecular calculations\n";
 
    print SPY_OUT "for rxn in HRXN:\n\n";
 
@@ -443,22 +493,22 @@ print SPY_OUT "\n# <<< Comment Lines >>>\n";
 print SPY_OUT "TAGL = {}\n";
 if    ($route == 1) { 
 
-   foreach $rgt (@HRGT) { print SPY_OUT "TAGL['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", $TAGLRGT{$rgt};
-                          print SPY_OUT "TAGL['%s-%s-reagent'    % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", $TAGLRGT{$rgt};                     }
+   foreach $rgt (@HRGT) { print SPY_OUT "TAGL['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", $TAGLRGT{$rgt};
+                          print SPY_OUT "TAGL['%s-%s-reagent'    % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", $TAGLRGT{$rgt};                     }
 }
 elsif ($route == 2) {
 
-   foreach $rxn (@HRXN) { print SPY_OUT "TAGL['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rxn . "\'", $TAGLRXN{$rxn};                     }
-   foreach $rgt (@HRGT) { print SPY_OUT "TAGL['%s-%s-reagent'    % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", $TAGLRGT{$rgt};                     }
+   foreach $rxn (@HRXN) { print SPY_OUT "TAGL['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rxn . "\'", $TAGLRXN{$rxn};                     }
+   foreach $rgt (@HRGT) { print SPY_OUT "TAGL['%s-%s-reagent'    % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", $TAGLRGT{$rgt};                     }
 }
 elsif ($route == 3) {
 
-   foreach $rgt (@HRGT) { print SPY_OUT "TAGL['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", $TAGLRGT{$rgt};
-                          print SPY_OUT "TAGL['%s-%s-dimer'      % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", "Dimer from " . $TAGLRGT{$rgt};
-                          print SPY_OUT "TAGL['%s-%s-monoA-CP'   % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", "Monomer A from " . $TAGLRGT{$rgt};
-                          print SPY_OUT "TAGL['%s-%s-monoB-CP'   % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", "Monomer B from " . $TAGLRGT{$rgt};
-                          print SPY_OUT "TAGL['%s-%s-monoA-unCP' % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", "Monomer A from " . $TAGLRGT{$rgt};
-                          print SPY_OUT "TAGL['%s-%s-monoB-unCP' % (dbse, '";  printf SPY_OUT "%-22s )] = '%s'\n", $rgt . "\'", "Monomer B from " . $TAGLRGT{$rgt}; }
+   foreach $rgt (@HRGT) { print SPY_OUT "TAGL['%s-%s'            % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", $TAGLRGT{$rgt};
+                          print SPY_OUT "TAGL['%s-%s-dimer'      % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", "Dimer from " . $TAGLRGT{$rgt};
+                          print SPY_OUT "TAGL['%s-%s-monoA-CP'   % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", "Monomer A from " . $TAGLRGT{$rgt};
+                          print SPY_OUT "TAGL['%s-%s-monoB-CP'   % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", "Monomer B from " . $TAGLRGT{$rgt};
+                          print SPY_OUT "TAGL['%s-%s-monoA-unCP' % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", "Monomer A from " . $TAGLRGT{$rgt};
+                          print SPY_OUT "TAGL['%s-%s-monoB-unCP' % (dbse, '";  printf SPY_OUT "%-22s )] = \"\"\"%s \"\"\"\n", $rgt . "\'", "Monomer B from " . $TAGLRGT{$rgt}; }
 }
 
 print GPY_OUT "# <<< Geometry Specification Strings >>>\n";
@@ -482,7 +532,9 @@ elsif ($route == 3) {
 }
 
 
+close(LAB_OUT);
 close(SPL_OUT);
+close(RPL_OUT);
 close(GPL_OUT);
 close(SPY_OUT);
 close(GPY_OUT);
@@ -491,6 +543,7 @@ open(PL_OUT, ">resource_$set.pl");
 open(PY_OUT, ">$set.py");
 
 system("cat temp1.txt >  resource_$set.pl");
+system("cat temp5.txt >> resource_$set.pl");
 system("cat temp2.txt >> resource_$set.pl");
 system("cat temp3.txt >  $set.py");
 system("cat temp4.txt >> $set.py");
@@ -498,5 +551,9 @@ system("cat temp4.txt >> $set.py");
 close(PL_OUT);
 close(PY_OUT);
 
-system("rm -f temp1.txt temp2.txt temp3.txt temp4.txt BFStemp.txt resource_*.pl");
+system("rm -f temp1.txt temp2.txt temp3.txt temp4.txt temp5.txt BFStemp.txt stats.txt");
+@groups = split '\s', $(;
+$dropresource = 1;
+foreach $grp (@groups) { if (getgrgid($grp) eq "sherrill") { $dropresource = 0; } }
+if ($dropresource) { system("rm -f resource_$set.pl"); }
 

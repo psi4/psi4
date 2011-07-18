@@ -2,7 +2,7 @@ import re
 import input
 
 # <<< BAKERJCC93 Database Module >>>
-# Geometries from Baker et al. J. Comput. Chem. 14 1085 (1993), with further corrections.
+# Geometries from Baker J. Comput. Chem. 14 1085 (1993), with further corrections.
 # Reference interaction energies from.
 dbse = 'BAKERJCC93'
 isOS = 'true'
