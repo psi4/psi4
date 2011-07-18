@@ -492,7 +492,7 @@ def database(name, db_name, **kwargs):
             ACTV = database.ACTV_SA
     #   Force open-shell if needed
     openshell_override = 0
-    if user_reference == 'RHF':
+    if (user_reference == 'RHF') or (user_reference == 'RKS'):
         try:
             database.isOS
         except AttributeError:
@@ -503,7 +503,7 @@ def database(name, db_name, **kwargs):
                 PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
 
     # Configuration based upon database keyword options
-    #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2)
+    #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2 & dft)
     db_symm = 'yes'
     if(kwargs.has_key('symm')):
         db_symm = kwargs['symm']
@@ -700,7 +700,10 @@ def database(name, db_name, **kwargs):
             commands += """molecule.update_geometry()\n"""
 
         if (openshell_override) and (molecule.multiplicity() != 1):
-            commands += """PsiMod.set_global_option('REFERENCE', 'UHF')\n"""
+            if user_reference == 'RHF': 
+                commands += """PsiMod.set_global_option('REFERENCE', 'UHF')\n"""
+            elif user_reference == 'RKS': 
+                commands += """PsiMod.set_global_option('REFERENCE', 'UKS')\n"""
 
         # all modes need to step through the reagents but all for different purposes
         # continuous: defines necessary commands, executes energy(method) call, and collects results into dictionary
