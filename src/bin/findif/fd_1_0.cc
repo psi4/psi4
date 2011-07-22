@@ -1,6 +1,6 @@
 /*! \file
     \ingroup OPTKING
-    \brief fd_grad_1_0(): compute gradient using energies and finite-differences
+    \brief fd_1_0(): compute gradient using energies and finite-differences
 */
 
 #include <libmints/mints.h>
@@ -15,7 +15,7 @@ using namespace boost::python;
 namespace psi { namespace findif {
 
 PsiReturnType
-fd_grad_1_0(Options &options, const boost::python::list& E)
+fd_1_0(Options &options, const boost::python::list& E)
 {
   int pts = options.get_int("POINTS");
   double Dx = options.get_double("DISP_SIZE");
@@ -35,7 +35,7 @@ fd_grad_1_0(Options &options, const boost::python::list& E)
   else if (pts == 5)
     Ndisp += 4 * Nsalc;
   else
-      throw PSIEXCEPTION("fd_grad_1_0: Unable to handle requested point formula. 3 or 5-point formula are supported.");
+      throw PSIEXCEPTION("fd_1_0: Unable to handle requested point formula. 3 or 5-point formula are supported.");
 
   if (len(E) != Ndisp)
     throw PsiException("FINDIF: Incorrect number of energies passed in!",__FILE__,__LINE__);
