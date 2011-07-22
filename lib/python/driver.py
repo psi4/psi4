@@ -106,7 +106,7 @@ def gradient(name, **kwargs):
             energies.append(E)
 
         # Obtain the gradient. This function stores the gradient into the reference wavefunction.
-        PsiMod.fd_grad_1_0(energies)
+        PsiMod.fd_1_0(energies)
 
         # The last item in the list is the reference energy, return it
         return energies[-1]
