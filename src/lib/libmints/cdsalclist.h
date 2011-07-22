@@ -147,6 +147,7 @@ public:
     std::string name_of_component(int component);
 
     char needed_irreps() const { return needed_irreps_; }
+    int nirrep(void) const { return nirrep_; }
     bool project_out_translations() const { return project_out_translations_; }
     bool project_out_rotations() const { return project_out_rotations_; }
 
