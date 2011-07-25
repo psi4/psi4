@@ -9,6 +9,15 @@ def bad_option_syntax(line):
     print 'Unsupported syntax:\n\n%s\n\n' % (line)
     exit()
 
+def quotify(string):
+    # This wraps anything that looks like a string in quotes, and removes leading
+    # dollar signs from python variables
+    wordre = re.compile(r'([^$])([A-Za-z]+\w*)')
+    string = wordre.sub(r'\1"\2"', string)
+    return string
+    dollarre = re.compile(r'[$]([A-Za-z]+\w*)')
+    return dollarre.sub(r'\1', string)
+
 def process_option(spaces, module, key, value, line):
     value  = value.strip()
     temp   = ""
@@ -24,7 +33,10 @@ def process_option(spaces, module, key, value, line):
         # If it's really a global, we need slightly different syntax
         command_string = "PsiMod.set_global_option(\"%s\", " % (key)
 
-    if re.match(r'^[-]?\d*\.?\d+$', value) or re.match(r'^\[.*\]$', value):
+    if re.match(r'^\[.*\]$', value):
+        # This is a list, make sure we wrap words in quotes
+        temp ='%s %s)' % (command_string, quotify(value))
+    elif re.match(r'^[-]?\d*\.?\d+$', value):
         # This is a number
         temp ='%s %s)' % (command_string, value)
     elif re.match(r'^\$', value):

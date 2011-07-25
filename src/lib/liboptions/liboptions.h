@@ -780,6 +780,10 @@ public:
         locals_[module][key] = new StringDataType(s);
         locals_[module][key].changed();
     }
+    void set_array(const std::string &module, const std::string& key){
+        locals_[module][key] = Data(new ArrayType);
+        locals_[module][key].changed();
+    }
 
     void set_global_bool(const std::string &key, bool b) {
         get_global(key).assign(b);
@@ -792,6 +796,10 @@ public:
     }
     void set_global_str(const std::string &key, const std::string &s) {
         get_global(key).assign(s);
+    }
+    void set_global_array(const std::string& key){
+        globals_[key] = Data(new ArrayType());
+        globals_[key].changed();
     }
 
     DataType* set_global_array_entry(const std::string& key, DataType* entry, DataType* loc){
@@ -821,8 +829,7 @@ public:
     DataType* set_local_array_entry(const std::string &module, const std::string& key, DataType* entry, DataType* loc){
         if(loc == NULL){
             // This is the first entry to be added
-            locals_[module][key] = Data(entry);
-            locals_[module][key].changed();
+            locals_[module][key].assign(entry);
         }else{
             // We're adding to an existing entry
             ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
