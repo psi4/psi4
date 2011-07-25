@@ -453,34 +453,29 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
 
     string nonconst_key = boost::to_upper_copy(key);
 
-    fprintf(outfile, "Working on option %s\n", nonconst_key.c_str());
     size_t size = len(values);
     for(int n = 0; n < size; ++n){
-        extract<python::list> lval(values[0]);
-        extract<std::string> sval(values[0]);
-        extract<double> fval(values[0]);
-        extract<int> ival(values[0]);
+        extract<python::list> lval(values[n]);
+        extract<std::string> sval(values[n]);
+        extract<double> fval(values[n]);
+        extract<int> ival(values[n]);
         if(lval.check()){
             python::list l = extract<python::list>(values[n]);
             fprintf(outfile, "It's a list\n");
-            entry = Process::environment.options.set_global_array_array(nonconst_key, entry);
+            DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
             // Now we need to recurse, to fill in the data
-            py_psi_set_global_option_array(key, l, entry);
+            py_psi_set_global_option_array(key, l, newentry);
         }else if(sval.check()){
             std::string s = extract<std::string>(values[n]);
-            fprintf(outfile, "It's string %s\n", s.c_str());
             Process::environment.options.set_global_array_string(nonconst_key, s, entry);
         }else if(ival.check()){
             int i = extract<int>(values[n]);
-            fprintf(outfile, "It's an int %d\n", i);
             Process::environment.options.set_global_array_int(nonconst_key, i, entry);
         }else if(fval.check()){
             double f = extract<double>(values[n]);
-            fprintf(outfile, "It's a float %f\n", f);
             Process::environment.options.set_global_array_double(nonconst_key, f, entry);
         }
     }
-    fprintf(outfile, "Done!\n");
     return true;
 }
 

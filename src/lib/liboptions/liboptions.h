@@ -484,6 +484,10 @@ public:
         ptr_->add(key, s, c);
     }
 
+    void assign(DataType *data) {
+        ptr_->assign(data);
+    }
+
     void assign(bool b) {
         ptr_->assign(b);
     }
@@ -827,7 +831,8 @@ public:
     DataType* set_global_array_entry(const std::string& key, DataType* entry, DataType* loc){
         if(loc == NULL){
             // This is the first entry to be added
-            get_global(key).assign(entry);
+            Data &data = get_global(key);
+            data.assign(entry);
         }else{
             // We're adding to an existing entry
             ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
