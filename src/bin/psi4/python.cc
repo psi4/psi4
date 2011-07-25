@@ -392,18 +392,6 @@ bool is_double(T x)
    using boost::python::type_id;
    return type_id<T>() == type_id<double>();
 }
-// Right now this can only handle arrays of integers.
-// Unable to handle strings.
-bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values)
-{
-    string nonconst_key = boost::to_upper_copy(key);
-    std::vector<double> vector;
-    size_t n = len(values);
-    for(int i = 0; i < n; ++i) vector.push_back(extract<double>(values[i]));
-
-    Process::environment.options.set_array(module, nonconst_key, vector);
-    return true;
-}
 
 bool py_psi_set_global_option_string(std::string const & key, std::string const & value)
 {
@@ -446,11 +434,8 @@ bool py_psi_set_global_option_float(std::string const & key, float value)
     return true;
 }
 
-// Right now this can only handle arrays of integers.
-// Unable to handle strings.
-bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
+bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
-
     string nonconst_key = boost::to_upper_copy(key);
 
     size_t size = len(values);
@@ -461,7 +446,35 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
         extract<int> ival(values[n]);
         if(lval.check()){
             python::list l = extract<python::list>(values[n]);
-            fprintf(outfile, "It's a list\n");
+            DataType *newentry = Process::environment.options.set_local_array_array(module, nonconst_key, entry);
+            // Now we need to recurse, to fill in the data
+            py_psi_set_option_array(module, key, l, newentry);
+        }else if(sval.check()){
+            std::string s = extract<std::string>(values[n]);
+            Process::environment.options.set_local_array_string(module, nonconst_key, s, entry);
+        }else if(ival.check()){
+            int i = extract<int>(values[n]);
+            Process::environment.options.set_local_array_int(module, nonconst_key, i, entry);
+        }else if(fval.check()){
+            double f = extract<double>(values[n]);
+            Process::environment.options.set_local_array_double(module, nonconst_key, f, entry);
+        }
+    }
+    return true;
+}
+
+bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+
+    size_t size = len(values);
+    for(int n = 0; n < size; ++n){
+        extract<python::list> lval(values[n]);
+        extract<std::string> sval(values[n]);
+        extract<double> fval(values[n]);
+        extract<int> ival(values[n]);
+        if(lval.check()){
+            python::list l = extract<python::list>(values[n]);
             DataType *newentry = Process::environment.options.set_global_array_array(nonconst_key, entry);
             // Now we need to recurse, to fill in the data
             py_psi_set_global_option_array(key, l, newentry);
@@ -617,7 +630,9 @@ std::string py_psi_top_srcdir()
     return PSI_TOP_SRCDIR;
 }
 
+// Tell python about the default final argument to the array setting functions
 BOOST_PYTHON_FUNCTION_OVERLOADS(set_global_option_overloads, py_psi_set_global_option_array, 2, 3)
+BOOST_PYTHON_FUNCTION_OVERLOADS(set_local_option_overloads, py_psi_set_option_array, 3, 4)
 
 BOOST_PYTHON_MODULE(PsiMod)
 {
@@ -664,7 +679,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_local_option", py_psi_set_option_string);
     def("set_local_option", py_psi_set_option_float);
     def("set_local_option", py_psi_set_option_int);
-    def("set_local_option", py_psi_set_option_array);
+    def("set_local_option", py_psi_set_option_array, set_local_option_overloads());
 
     def("set_global_option", py_psi_set_global_option_string);
     def("set_global_option", py_psi_set_global_option_float);
