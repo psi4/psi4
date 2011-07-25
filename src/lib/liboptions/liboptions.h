@@ -543,18 +543,6 @@ public:
         changed();
         array_.push_back(Data(data));
     }
-    virtual void assign(int i) {
-        array_.push_back(new IntDataType(i));
-    }
-    virtual void assign(bool b) {
-        array_.push_back(new BooleanDataType(b));
-    }
-    virtual void assign(std::string s) {
-        array_.push_back(new StringDataType(s));
-    }
-    virtual void assign(double d) {
-        array_.push_back(new DoubleDataType(d));
-    }
 
     virtual Data& operator[](unsigned int i) {
         if (i >= array_.size())
@@ -792,19 +780,6 @@ public:
         locals_[module][key] = new StringDataType(s);
         locals_[module][key].changed();
     }
-    void set_array(const std::string &module, const std::string &key, const std::vector<double> &values)
-    {
-        if(locals_.count(module) && locals_[module].count(key)){
-            locals_[module][key].reset();
-        }else{
-            locals_[module][key] = new ArrayType();
-        }
-        size_t n = values.size();
-        for (size_t i=0; i < n; ++i) {
-            locals_[module][key].add(values[i]);
-        }
-        locals_[module][key].changed();
-    }
 
     void set_global_bool(const std::string &key, bool b) {
         get_global(key).assign(b);
@@ -818,16 +793,7 @@ public:
     void set_global_str(const std::string &key, const std::string &s) {
         get_global(key).assign(s);
     }
-    void set_global_array(const std::string &key, const std::vector<double> &values)
-    {
-        Data &entry = get_global(key);
-        entry.reset();
-        size_t n = values.size();
-        for (size_t i=0; i < n; ++i) {
-            entry.add(values[i]);
-        }
-        entry.changed();
-    }
+
     DataType* set_global_array_entry(const std::string& key, DataType* entry, DataType* loc){
         if(loc == NULL){
             // This is the first entry to be added
@@ -851,6 +817,30 @@ public:
     }
     DataType* set_global_array_array(std::string key, DataType *entry){
         return set_global_array_entry(key, new ArrayType(), entry);
+    }
+    DataType* set_local_array_entry(const std::string &module, const std::string& key, DataType* entry, DataType* loc){
+        if(loc == NULL){
+            // This is the first entry to be added
+            locals_[module][key] = Data(entry);
+            locals_[module][key].changed();
+        }else{
+            // We're adding to an existing entry
+            ArrayType* arrptr(dynamic_cast<ArrayType*>(loc));
+            arrptr->assign(entry);
+        }
+        return entry;
+    }
+    void set_local_array_double(const std::string &module, const std::string &key, double val, DataType *entry){
+        set_local_array_entry(module, key, new DoubleDataType(val), entry);
+    }
+    void set_local_array_string(const std::string &module, const std::string &key, std::string val, DataType *entry){
+        set_local_array_entry(module, key, new StringDataType(val), entry);
+    }
+    void set_local_array_int(const std::string &module, const std::string &key, int val, DataType *entry){
+        set_local_array_entry(module, key, new IntDataType(val), entry);
+    }
+    DataType* set_local_array_array(const std::string &module, const std::string &key, DataType *entry){
+        return set_local_array_entry(module, key, new ArrayType(), entry);
     }
 
     void clear(void) {
