@@ -235,9 +235,9 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
         // Add atoms until domain becomes complete enough
         std::vector<int> atoms_in_domain;
         std::vector<int> funs_in_domain;
-        for (int A = 0; A < natom; A++) {
+        for (int atom = 0; atom < natom; atom++) {
             // Add the current highest-charge atom to the domain
-            int current_atom = charges[A].second;
+            int current_atom = charges[atom].second;
             atoms_in_domain.push_back(current_atom);
 
             // Add the functions from that atom to the funs_in_domain list

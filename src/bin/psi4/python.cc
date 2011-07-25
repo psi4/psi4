@@ -437,7 +437,9 @@ bool py_psi_set_global_option_float(std::string const & key, float value)
 bool py_psi_set_option_array(std::string const & module, std::string const & key, const python::list &values, DataType *entry = NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
-
+    // Assign a new head entry on the first time around only
+    if(entry == NULL)
+        Process::environment.options.set_array(module, nonconst_key);
     size_t size = len(values);
     for(int n = 0; n < size; ++n){
         extract<python::list> lval(values[n]);
@@ -466,7 +468,9 @@ bool py_psi_set_option_array(std::string const & module, std::string const & key
 bool py_psi_set_global_option_array(std::string const & key, python::list values, DataType *entry=NULL)
 {
     string nonconst_key = boost::to_upper_copy(key);
-
+    // Assign a new head entry on the first time around only
+    if(entry == NULL)
+        Process::environment.options.set_global_array(nonconst_key);
     size_t size = len(values);
     for(int n = 0; n < size; ++n){
         extract<python::list> lval(values[n]);
