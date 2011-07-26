@@ -9,17 +9,30 @@ def bad_option_syntax(line):
     print 'Unsupported syntax:\n\n%s\n\n' % (line)
     exit()
 
+def process_word_quotes(matchobj):
+    if(matchobj.group(2)):
+        # This is a python variable, make sure that it starts with a letter
+        if(re.match(r'[A-Za-z][-*.\w]+', matchobj.group(3))):
+            return matchobj.group(3)
+        else:
+            print "Invalid Python variable: %s" % matchobj.group(3)
+            exit()
+    elif(re.search(r'[*_A-Za-z]', matchobj.group())):
+        # This contains letters/symbols, so we need to wrap it in quotes
+        return "\"%s\"" % matchobj.group(1)
+    else:
+        # This must be a number, don't wrap it in quotes
+        return matchobj.group(1)
+
 def quotify(string):
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'([^$])([A-Za-z]+\w*)')
-    string = wordre.sub(r'\1"\2"', string)
+    wordre = re.compile(r'(([$]?)([-*.\w]+))')
+    string = wordre.sub(process_word_quotes, string)
     return string
-    dollarre = re.compile(r'[$]([A-Za-z]+\w*)')
-    return dollarre.sub(r'\1', string)
 
 def process_option(spaces, module, key, value, line):
-    value  = value.strip()
+    value  = quotify(value.strip())
     temp   = ""
 
     global_options = False
@@ -27,28 +40,12 @@ def process_option(spaces, module, key, value, line):
     if(module == "GLOBALS" or module == "GLOBAL" or module == "" or module.isspace()):
         global_options = True
 
-    # Start by assuming that we're setting a local option
-    command_string = "PsiMod.set_local_option(\"%s\", \"%s\", " % (module, key)
     if(global_options):
         # If it's really a global, we need slightly different syntax
-        command_string = "PsiMod.set_global_option(\"%s\", " % (key)
-
-    if re.match(r'^\[.*\]$', value):
-        # This is a list, make sure we wrap words in quotes
-        temp ='%s %s)' % (command_string, quotify(value))
-    elif re.match(r'^[-]?\d*\.?\d+$', value):
-        # This is a number
-        temp ='%s %s)' % (command_string, value)
-    elif re.match(r'^\$', value):
-        # Assume the user has set the variable in value
-        temp = '%s %s)' % (command_string, value[1:])
+        return spaces + "PsiMod.set_global_option(\"%s\", %s)\n" % (key, value)
     else:
-        # This must contain only alphanumeric (plus -,* for basis sets) or it's bad
-        if re.match(r'^[-*\(\)\w]+$', value):
-            temp = '%s "%s")' % (command_string, value)
-        else:
-            bad_option_syntax(line)
-    return spaces + temp + "\n"
+        # It's a local option, so we need the module name in there too
+        return spaces + "PsiMod.set_local_option(\"%s\", \"%s\", %s)\n" % (module, key, value)
 
 def process_set_command(matchobj):
     result = ""
