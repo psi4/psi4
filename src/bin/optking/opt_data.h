@@ -60,8 +60,8 @@ class STEP_DATA {
     double g_energy(void) const { return energy; }
     double g_DE_predicted(void) const { return DE_predicted; }
     double g_dq_norm(void) const { return dq_norm; }
-    double g_dq_gradient(void) const { return dq_norm; }
-    double g_dq_hessian(void) const { return dq_norm; }
+    double g_dq_gradient(void) const { return dq_gradient; }
+    double g_dq_hessian(void) const { return dq_hessian; }
 };
 
 // data for an optimization
@@ -174,10 +174,12 @@ class OPT_DATA {
 
     void decrement_iteration(void) { --iteration; }
     void increment_consecutive_backsteps(void) { ++consecutive_backsteps; }
+    void reset_consecutive_backsteps(void) { consecutive_backsteps = 0; }
+    int g_consecutive_backsteps(void) { return consecutive_backsteps; }
 
-    void erase_last_step(void) {
-      delete *(steps.end());  // free last step
-      steps.erase(steps.end());
+    void erase_last_step(void) { // free last step
+      delete steps.back();
+      steps.erase(steps.end()-1);
     }
 
 };

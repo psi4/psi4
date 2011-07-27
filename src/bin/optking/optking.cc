@@ -186,6 +186,7 @@ mol1->print_connectivity(outfile);
 
   // print out report on progress
   p_Opt_data->previous_step_report();
+  p_Opt_data->reset_consecutive_backsteps();
 
   // compute forces in internal coordinates from cartesian gradient
   mol1->forces(); // puts forces in p_Opt_data->step[last one]
@@ -311,6 +312,14 @@ mol1->print_connectivity(outfile);
     fprintf(outfile,"\t%s", exc.g_message());
 
     mol1->backstep();
+
+    p_Opt_data->write();
+    delete p_Opt_data;
+    fprintf(outfile,"\tStructure for next step:\n");
+    mol1->print_geom(); // write geometry for next step to output file
+
+    mol1->write_geom(); // write geometry -> chkpt (also output for QChem)
+    print_end();
 
     close_output_dat();
     return OptReturnSuccess;

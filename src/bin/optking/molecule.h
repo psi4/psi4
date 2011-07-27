@@ -240,6 +240,8 @@ class MOLECULE {
   double ** compute_B(void) const;
   double ** compute_derivative_B(int intco_index) const ;
 
+  double ** compute_G(bool use_masses=false) const;
+
   double * g_grad_array(void) const {
     int f, i;
     double *g, *g_frag;
@@ -322,6 +324,15 @@ class MOLECULE {
     for (int I=0; I<interfragments.size(); ++I)
       interfragments[I]->fix_tors_near_180();
   }
+
+/*
+  void check_tors_for_bad_angles(void) {
+    for (int f=0; f<fragments.size(); ++f)
+      fragments[f]->check_tors_for_bad_angles();
+    for (int I=0; I<interfragments.size(); ++I)
+      interfragments[I]->check_tors_for_bad_angles();
+  }
+*/
 
   void test_B(void);
   void test_derivative_B(void);
