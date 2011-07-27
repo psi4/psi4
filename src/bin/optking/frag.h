@@ -101,6 +101,9 @@ class FRAG {
   // check nearness to 180 and save value
   void fix_tors_near_180(void);
 
+  // check if interior angles of torsion are near 0 or linear
+  //bool check_tors_for_bad_angles(void) const;
+
   // return number of intrafragment coordinates
   int g_nintco(void) const { return intcos.size(); };
 
@@ -181,12 +184,34 @@ class FRAG {
   void freeze(void)   { frozen = true; }
   void unfreeze(void) { frozen = false; }
 
-  double **inertia_tensor (GeomType in_geom);
+  /**
+   * Compute center of mass of given geometry
+   */
   double *com(GeomType in_geom);
-  double **inertia_tensor(void) { return (inertia_tensor(geom)); }
+  /**
+   * Compute center of mass of fragment geometry
+   */
   double *com(void) { return (com(geom)); }
-
+  /**
+   * Compute intertia tensor of given geometry
+   */
+  double **inertia_tensor (GeomType in_geom);
+  /**
+   * Compute intertia tensor of fragment geometry
+   */
+  double **inertia_tensor(void) { return (inertia_tensor(geom)); }
+  /**
+   * Compute principal axes of given geometry
+   */
   int principal_axes(GeomType geom, double **axes, double *evals);
+  /**
+   * Compute principal axes of fragment geometry
+   * @param evals are moments returned in ascending order; zero evals (and evects) are removed.
+   * @param axes rows are principal axes.
+   * @returns The number of non-zero principal axes.
+   *
+   * We may have to canonically order the degenerate evals later.
+   */
   int principal_axes(double **axes, double *evals) {
     return (principal_axes(geom, axes, evals));
   }

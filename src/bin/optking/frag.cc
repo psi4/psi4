@@ -491,6 +491,13 @@ void FRAG::fix_tors_near_180(void) {
   }
 }
 
+/*bool FRAG::check_tors_for_bad_angles(void) {
+  for (int i=0; i<intcos.size(); ++i) {
+    if (intcos[i]->g_type() == tors_type)
+      intcos[i]->check_tors_for_bad_angles(geom);
+  }
+}*/
+
 void FRAG::set_geom_array(double * geom_array_in) {
   int xyz, i, cnt = 0;
   for (i=0; i<natom; ++i)
@@ -569,31 +576,7 @@ const bool * const * FRAG::g_connectivity_pointer(void) const {
   return connectivity;
 }
 
-double ** FRAG::inertia_tensor (GeomType in_geom) {
-  double **I = init_matrix(3,3);
-  double *center;
-
-  center = com(in_geom);
-
-  int atom, xyz, xyz2;
-  double tval;
-
-  for (int atom=0; atom<g_natom(); ++atom) {
-    tval = 0.0;
-    for (xyz=0; xyz<3; ++xyz) {
-      for (xyz2=0; xyz2<3; ++xyz2) {
-        if (xyz == xyz2)
-          tval += (in_geom[atom][xyz] - center[xyz]) * (in_geom[atom][xyz] - center[xyz]);
-        tval -=   (in_geom[atom][xyz] - center[xyz]) * (in_geom[atom][xyz2] - center[xyz2]);
-      }
-      I[xyz][xyz2] = tval;
-    }
-  }
-
-  free_array(center);
-  return I;
-}
-
+// compute COM
 double * FRAG::com(GeomType in_geom) {
   double *center = init_array(3);
   double sum = 0.0;
@@ -604,21 +587,41 @@ double * FRAG::com(GeomType in_geom) {
   }
   for (int xyz=0; xyz<3; ++xyz) 
     center[xyz] /= sum;
-
   return center;
 }
 
-// calling program must allocate axes(3,3) and evals(3)
-// evals returned in ascending order (descending rotational constants), but zeroes are removed
-// from evals and evects;
-// axes are rows ; 
-// return number of principal axes
-// may have to order degenerate evals later
+// compute intertia tensor
+double ** FRAG::inertia_tensor (GeomType in_geom) {
+  int atom, xyz, xyz2;
+  double tval;
+  double *center = com(in_geom);
+  double **I = init_matrix(3,3);
+
+  for (int atom=0; atom<g_natom(); ++atom) {
+    tval = 0.0;
+    for (xyz=0; xyz<3; ++xyz) {
+      for (xyz2=0; xyz2<3; ++xyz2) {
+        if (xyz == xyz2)
+          tval += (in_geom[atom][xyz] - center[xyz]) * (in_geom[atom][xyz] - center[xyz]);
+        tval -= (in_geom[atom][xyz] - center[xyz]) * (in_geom[atom][xyz2] - center[xyz2]);
+      }
+      I[xyz][xyz2] = tval;
+    }
+  }
+  free_array(center);
+  return I;
+}
+
+// Compute principal axes.
 int FRAG::principal_axes(GeomType in_geom, double **axes, double *evals) {
 
   double **I = inertia_tensor(in_geom);
   double *I_evals = init_array(3);
+
   opt_symm_matrix_eig(I, 3, I_evals);
+
+  axes = init_matrix(3,3);
+  evals = init_array(3);
 
   int cnt = 0;
   for (int i=0; i<3; ++i) {
@@ -630,6 +633,8 @@ int FRAG::principal_axes(GeomType in_geom, double **axes, double *evals) {
       ++cnt;
     }
   }
+  free_array(I_evals);
+  free_matrix(I);
   return cnt;
 }
 

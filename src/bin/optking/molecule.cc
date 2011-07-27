@@ -111,10 +111,7 @@ void MOLECULE::project_f_and_H(void) {
   int Ncart = 3*g_natom();
 
   // compute G = B B^t
-  double **G = init_matrix(Nintco, Nintco);
-  double **B = compute_B();
-  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
-  free_matrix(B);
+  double **G = compute_G(false);
 
 #if defined (OPTKING_PACKAGE_QCHEM)
   // Put 1's on diagonal for EFP coordinates
@@ -504,6 +501,27 @@ double ** MOLECULE::compute_derivative_B(int intco_index) const {
     free_matrix(dq2dx2_frag);
   }
   return dq2dx2;
+}
+
+double ** MOLECULE::compute_G(bool use_masses) const {
+  int Nintco = g_nintco();
+  int Ncart = 3*g_natom();
+
+  double **B = compute_B();
+  double **G = init_matrix(Nintco, Nintco);
+
+  if (use_masses) {
+    double *u = g_masses();
+
+    for (int i=0; i<Nintco; ++i)
+      for (int a=0; a<g_natom(); ++a)
+        for(int xyz=0; xyz<3; ++xyz)
+          B[i][3*a+xyz] /= sqrt(u[a]);
+  }
+
+  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
+  free_matrix(B);
+  return G;
 }
 
 // print internal coordinates to text file

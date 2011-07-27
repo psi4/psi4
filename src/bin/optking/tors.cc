@@ -64,7 +64,7 @@ double TORS::value(GeomType geom) const {
   double tau;
 
   if (! v3d_tors(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], geom[s_atom[3]], tau) )
-    throw(INTCO_EXCEPT((char *)"TORS::compute_val: bond angles will not permit torsion computation",true));
+    throw(INTCO_EXCEPT((char *)"TORS::compute_val: unable to compute torsion value",true));
 
   // Extend domain of torsion angles by checking past
   // extend domain of torsions so delta(vals) can be calculated
@@ -296,6 +296,24 @@ bool TORS::operator==(const SIMPLE & s2) const {
   else
         return false;
 }
+
+/*bool TORS::check_tors_for_bad_angles(GeomType geom) const {
+  double phi_1=0, phi_2=0;
+
+  v3d_angle(geom[s_atom[0]], geom[s_atom[1]], geom[s_atom[2]], phi_1);
+  v3d_angle(geom[s_atom[1]], geom[s_atom[2]], geom[s_atom[3]], phi_2);
+
+  double lim = Opt_params.tors_angle_lim;
+
+  if (phi_1 < lim || phi_1 > (_pi - lim))
+    return false;
+
+  if (phi_2 < lim || phi_2 > (_pi - lim))
+    return false;
+
+  return true;
+}*/
+
 
 }
 
