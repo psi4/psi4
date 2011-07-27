@@ -13,9 +13,16 @@ namespace opt {
 /*
 INTERFRAG is a set of coordinates between two fragments (A and B).
 Up to 3 reference atoms on each fragment (dA[3] and dB[3]) are defined 
-as linear combinations of the atoms in A and B, using A_weight and B_weight.
-
-The six coordinates in the set are in a canonical order:
+as either
+ If INTERFRAGMENT_MODE == FIXED,
+   linear combinations of the atoms in A and B, using A_weight and B_weight,
+ or if INTERFRAGMENT_MODE == PRINCIPAL_AXES
+   1. the center of mass
+   2. a point a unit distance along the principal axis corresponding to the largest moment.
+   3. a point a unit distance along the principal axis corresponding to the 2nd largest moment.
+ 
+For now, the six coordinates formed from the d_K^{A,B} sets are assumed to be the
+following in this canonical order:
 D[0], RAB     = distance between dA[0] and dB[0]
 D[1], theta_A = angle,   dA[1]-dA[0]-dB[0]
 D[2], theta_B = angle,   dA[0]-dB[0]-dB[1]
@@ -23,10 +30,10 @@ D[3], tau     = dihedral angle, dA[1]-dA[0]-dB[0]-dB[1]
 D[4], phi_A   = dihedral angle, dA[2]-dA[1]-dA[0]-dB[0]
 D[5], phi_B   = dihedral angle, dA[0]-dB[0]-dB[1]-dB[2]
 
-inter_geom[0] = dA[2]; // atoms ordered by connectivity of coordinates
-inter_geom[1] = dA[1]; // for A, this is reverse of order in which weights
-inter_geom[2] = dA[0]; // are provided to the constructor
-inter_geom[3] = dB[0];
+inter_geom[0] = dA[2]; // For simplicity, we sort the atoms in the 'inter_geom'
+inter_geom[1] = dA[1]; // according to the assumed connectivity of the coordinates.
+inter_geom[2] = dA[0]; // For A, this reverses the order in which weights are
+inter_geom[3] = dB[0]; // provided to the constructor.
 inter_geom[4] = dB[1];
 inter_geom[5] = dB[2];
 */
@@ -51,13 +58,19 @@ class INTERFRAG {
   bool D_on[6]; // indicates which coordinates [0-5] are present;
                 // if ndA or ndB <3, then not all 6 coordinates are defined
 
-  //bool use_principal_axes;
+  // whether to use COM, and 2 points on principal axes - instead of fixed weights
+  bool principal_axes;
 
   public:
 
-  // memory provided by calling function
+  // Constructor for fixed, linear-combination reference points.
+  // Memory provided by calling function.
   INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
-      double **weightA_in, double **weightB_in, int ndA_in=3, int ndB_in=3);
+    double **weightA_in, double **weightB_in, int ndA_in=3, int ndB_in=3);
+
+  // Constructor for COM, principal axes defined reference points.
+  INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in, 
+    int ndA_in=3, int ndB_in=3);
 
   ~INTERFRAG() { delete inter_frag; }
 
@@ -134,8 +147,10 @@ class INTERFRAG {
 
   double ** compute_constraints(void) const;
 
-  //void set_principal_axes(bool b) { use_principal_axes = b; }
-  //bool use_principal_axes(void) { return use_principal_axes; }
+  void add_coordinates_of_reference_pts(void);
+
+  //void set_principal_axes(bool b) { principal_axes = b; }
+  //bool use_principal_axes(void) { return principal_axes; }
 
 }; // class INTERFRAG
 

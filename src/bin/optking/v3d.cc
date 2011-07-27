@@ -49,7 +49,7 @@ for (int i=0; i<3; ++i) fprintf(outfile,"%15.10lf", A[i]);
 // returns false if bond angles are too large for good torsion definition
 bool v3d_tors(const double *A, const double *B, const double *C, const double *D,
   double & tau) {
-  double tval, phi_123, phi_234, ulim, llim;
+  double tval, phi_123, phi_234;
   double eAB[3], eBC[3], eCD[3], tmp[3], tmp2[3];
 
   tau = 0.0;
@@ -69,15 +69,6 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   //printf("v3d_tors : phi123 = %15.10lf\n", phi_123);
   //printf("v3d_tors : phi234 = %15.10lf\n", phi_234);
 
-  // check bond angles; don't allow torsions with angles between 1.8 degrees of singularity
-  const double pi = acos(-1);
-  llim = Opt_params.tors_angle_lim * pi;
-  ulim = (1-Opt_params.tors_angle_lim) * pi;
-  if (phi_123 < llim || phi_123 > ulim)
-    return false;
-  else if (phi_234 < llim || phi_234 > ulim)
-    return false;
-
   v3d_cross_product(eAB,eBC,tmp);
   v3d_cross_product(eBC,eCD,tmp2);
   tval = v3d_dot(tmp,tmp2) / (sin(phi_123) * sin(phi_234) );
@@ -85,7 +76,7 @@ bool v3d_tors(const double *A, const double *B, const double *C, const double *D
   if (tval >= 1.0 - Opt_params.tors_cos_tol)
     tau = 0.0;
   else if (tval <= -1.0 + Opt_params.tors_cos_tol)
-    tau = pi;
+    tau = _pi;
   else
     tau = acos(tval);
 

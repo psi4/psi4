@@ -21,31 +21,28 @@ namespace opt {
 
 // Update OPT_DATA to go back one step and try again with a smaller step.
 // The current step data is replaced.
-// For now lets just divide the step size by one half.
+// For now we divide the last step size by 1/2 and displace from old geometry.
 //
 // OPT_DATA contains:
 //  left unchanged : Nintco, Ncart
-//  left unchanged : Hessian (throw bypasses updating)
+//  left unchanged : Hessian (throw bypasses updating of H)
 //  left unchanged : rfo_eigenvector (a unit vector)
 //
-//  decrease by 1 : iteration (iteration if number of stored steps in opt_data
-//                  - at least for now
-//  increase by 1 : consecutive_backsteps
+//  decrease by 1  : iteration (iteration if number of stored steps in opt_data
+//                    - at least for now
+//  increase by 1  : consecutive_backsteps
 //
 //  std::vector<STEP_DATA *> steps;
-//  Modify steps[Nsteps-2]. Then erase steps[Nsteps-1] (current step).
-//  
-//  Last step data unchanged:
-//   f_q
-//   geom
-//   energy
-//   unit_step
-//   dq_gradient
-//   dq_hessian
+//   Last step data unchanged:
+//    f_q
+//    geom
+//    energy
+//    unit_step
+//    dq_gradient
+//    dq_hessian
 //
-//   dq_norm = dq_norm (last) /2
-//   DE_predicted  : call DE_nr_energy or DE_rfo_energy (dq_norm)
-//
+//    dq_norm = dq_norm (last) /2
+//    DE_predicted  : DE_nr_energy or DE_rfo_energy (dq_norm, grad, hessian))
 
 // compute change in energy according to quadratic approximation
 inline double DE_nr_energy(double step, double grad, double hess) {
@@ -59,8 +56,10 @@ inline double DE_rfo_energy(double rfo_t, double rfo_g, double rfo_h) {
 
 void MOLECULE::backstep(void) {
 
-  fprintf(outfile,"\tRe-doing last optimization step - smaller this time.");
+  fprintf(outfile,"\tRe-doing last optimization step - smaller this time.\n");
+  fprintf(outfile,"\tConsecutive backstep number %d.\n", p_Opt_data->g_consecutive_backsteps()+1);
 
+  // Erase data created when opt_data was initialized for this step.
   p_Opt_data->erase_last_step();
 
   p_Opt_data->decrement_iteration();
@@ -69,6 +68,11 @@ void MOLECULE::backstep(void) {
   int Nsteps = p_Opt_data->nsteps();
   int Nintco = g_nintco();
 
+  // Put old cartesian geometry into molecule.
+  double *x = p_Opt_data->g_geom_const_pointer(Nsteps-1);
+  set_geom_array(x);
+
+  // Compute newly desired dq.
   double *dq = p_Opt_data->g_dq_pointer(Nsteps-1);
   for (int i=0; i<Nintco; ++i)
     dq[i] /= 2;
@@ -119,9 +123,7 @@ void MOLECULE::backstep(void) {
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, dq_norm, dq_grad, dq_hess);
 
-  free_array(rfo_u);
   fflush(outfile);
-
 } // end take RFO step
 
 }

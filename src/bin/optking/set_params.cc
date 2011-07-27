@@ -282,11 +282,11 @@ void set_params(void)
   Opt_params.rfo_normalization_min = 1.0e-8;
 
 // how close to pi should a torsion be to assume it may have passed through 180
-  Opt_params.fix_tors_near_pi = 2.618; // ~150 degrees
+  Opt_params.fix_tors_near_pi = _pi / 2;
 
 // torsional angles will not be computed if the contained bond angles are within
-// this fraction of pi from 0 or from pi
-  Opt_params.tors_angle_lim = 0.005;
+// this many radians of zero or 180. (< ~10 and > ~170 degrees)
+  Opt_params.tors_angle_lim = 0.17;
 
 // only used for determining which atoms in a fragment are acceptable for use
 // as reference atoms.  We avoid collinear sets.

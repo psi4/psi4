@@ -40,6 +40,9 @@ class TORS : public SIMPLE {
     bool operator==(const SIMPLE & s2) const;
 
     void fix_tors_near_180(GeomType geom);
+
+    //bool check_tors_for_bad_angles(GeomType geom) const;
+
 };
 
 }

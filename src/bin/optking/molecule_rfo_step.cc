@@ -141,6 +141,20 @@ void MOLECULE::rfo_step(void) {
   DE_projected = DE_rfo_energy(rfo_dqnorm, rfo_g, rfo_h);
   fprintf(outfile,"\tProjected energy change by RFO approximation: %20.10lf\n", DE_projected);
 
+/* Test step sizes
+  double *x_before = g_geom_array();
+  double **G = compute_G(true);
+  double **G_inv = symm_matrix_inv(G, dim, 1);
+  free_matrix(G);
+  double *Gdq = init_array(dim);
+  opt_matrix_mult(G_inv, 0, &dq, 1, &Gdq, 1, dim, dim, 1, 0);
+  free_matrix(G_inv);
+  double N = array_dot(dq, Gdq, dim);
+  N = sqrt(N);
+  free_array(Gdq);
+  fprintf(outfile,"Step-size in mass-weighted internal coordinates: %20.10lf\n", N);
+*/
+
   // do displacements for each fragment separately
   for (f=0; f<fragments.size(); ++f) {
     if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment) {
@@ -170,6 +184,23 @@ void MOLECULE::rfo_step(void) {
 #endif
 
   symmetrize_geom(); // now symmetrize the geometry for next step
+
+/* Test step sizes
+  double *x_after = g_geom_array();
+  double *masses = g_masses();
+
+  double sum = 0.0;
+  for (int i=0; i<g_natom(); ++i)
+    for (int xyz=0; xyz<3; ++xyz)
+      sum += (x_before[3*i+xyz] - x_after[3*i+xyz]) * (x_before[3*i+xyz] - x_after[3*i+xyz])
+               * masses[i];
+
+  sum = sqrt(sum);
+  fprintf(outfile,"Step-size in mass-weighted cartesian coordinates [bohr (amu)^1/2] : %20.10lf\n", sum);
+  free_array(x_after);
+  free_array(x_before);
+  free_array(masses);
+*/
 
   // save values in step data
   p_Opt_data->save_step_info(DE_projected, rfo_u, rfo_dqnorm, rfo_g, rfo_h);
