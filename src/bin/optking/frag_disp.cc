@@ -29,7 +29,6 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
     fprintf(outfile,"\t---------------------------------------------------\n");
   }
 
-  //compute_intco_values(); // lock in orientation of torsions
   fix_tors_near_180(); // subsequent computes will modify torsional values
   double * q_orig = intco_values();
   if (Opt_params.print_lvl >= 3) {
@@ -93,6 +92,8 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
     for (i=0; i< Nints; ++i)
       dq[i] = q_target[i] - new_q[i]; // calculate dq from _target_
     free_array(new_q);
+    //fprintf(outfile,"dq from target\n");
+    //print_array(outfile, dq, Nints);
 
     // save first try in case doesn't converge
     if (bmat_iter_cnt == 0) {
@@ -124,11 +125,19 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
     set_geom_array(first_geom);
   }
 
-  /* Set dq to final, total displacement achieved */
-  //compute_intco_values();
+  // Set dq to final, total displacement ACHIEVED
   new_q = intco_values();
-  for (i=0; i< Nints; ++i)
+  for (i=0; i<Nints; ++i)
     dq[i] = new_q[i] - q_orig[i]; // calculate dq from _target_
+
+  for (i=0; i<Nints; ++i) {
+    if (intcos[i]->g_type() == tors_type) { // passed through 180
+      if (dq[i] > _pi)
+        dq[i] = dq[i] - (2 * _pi);
+      else if (dq[i] < (-2 * _pi)) 
+        dq[i] = dq[i] + (2 * _pi);
+    }
+  }
 
   if (print_disp) {
 

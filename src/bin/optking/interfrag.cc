@@ -15,6 +15,7 @@ namespace opt {
 
 using namespace v3d;
 
+// constructor for given weight linear combination reference points
 INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     double **weightA_in, double **weightB_in, int ndA_in, int ndB_in) {
 
@@ -26,16 +27,47 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   weightB = weightB_in;
   ndA = ndA_in;
   ndB = ndB_in;
-  //use_principal_axes = false; // default, change with set_principal_axes
+  principal_axes = false;
 
   double **inter_geom = init_matrix(6,3); // some rows may be unused
 
-  // create pseudo-fragment with atomic numbers at 6 positions
-  // the atomic numbers may only affect Hessian guess routines
+  // Create pseudo-fragment with atomic numbers at 6 positions.
+  // The atomic numbers may only affect Hessian guess routines.
   double *Z = init_array(6);
-  for (int i=0; i<6; ++i) Z[i] = 6;
+  for (int i=0; i<6; ++i) Z[i] = 6; // assume C for now
   inter_frag = new FRAG(6, Z, inter_geom);
 
+  update_reference_points();
+
+  add_coordinates_of_reference_pts();
+}
+
+// constructor for COM and principal axes reference points
+INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
+    int ndA_in, int ndB_in) {
+  A = A_in;
+  B = B_in;
+  A_index = A_index_in;
+  B_index = B_index_in;
+  weightA = weightB = NULL;
+  ndA = ndA_in;
+  ndB = ndB_in;
+  principal_axes = true; 
+
+  double **inter_geom = init_matrix(6,3); // some rows may be unused
+
+  double *Z = init_array(6);
+  for (int i=0; i<6; ++i) Z[i] = 6; // assume C for now
+  inter_frag = new FRAG(6, Z, inter_geom);
+
+  update_reference_points();
+
+  add_coordinates_of_reference_pts();
+}
+
+// adds the coordinates connecting A2-A1-A0-B0-B1-B2
+// sets D_on to indicate which ones (of the 6) are unusued
+void INTERFRAG::add_coordinates_of_reference_pts(void) {
   STRE *one_stre = NULL;  // RAB
   BEND *one_bend = NULL;  // theta_A
   BEND *one_bend2 = NULL; // theta_B
@@ -43,9 +75,7 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
   TORS *one_tors2 = NULL; // phi_A
   TORS *one_tors3 = NULL; // phi_B
 
-  update_reference_points();
-
-  // turn unusued coordinates off below
+  // turn all coordinates on ; turn off unused ones below
   for (int i=0; i<6; ++i) D_on[i] = true;
  
   if (ndA == 3 && ndB == 3) {
@@ -111,8 +141,6 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     throw(INTCO_EXCEPT("INTERFRAG::INTERFRAG Num. reference points on each fragment must be at least 1."));
   }
 
-  //if (!use_principal_axes) {
-
   // check if stretch is a H-bond or includes something H-bond like (remember stretch is
   // in general between linear combinations of atoms
   double ang;
@@ -163,8 +191,6 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
     }
   }
 
-  //} // !use_principal axes
-
   if (Opt_params.interfragment_distance_inverse) {
     one_stre->make_inverse_stre(); 
     fprintf(outfile,"Using interfragment 1/R distance coordinate.\n");
@@ -183,11 +209,9 @@ INTERFRAG::INTERFRAG(FRAG *A_in, FRAG *B_in, int A_index_in, int B_index_in,
 // update location of reference points using given geometries
 void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B) {
 
-  for (int i=0; i<6; ++i)
-    for (int xyz=0; xyz<3; ++xyz)
-      inter_frag->geom[i][xyz] = 0.0;
+  zero_matrix(inter_frag->geom, 6, 3);
 
-  //if (!use_principal_axes) {
+  if (!principal_axes) { // use fixed weights
     for (int xyz=0; xyz<3; ++xyz) {
       for (int a=0; a<A->g_natom(); ++a) {
         inter_frag->geom[0][xyz] += weightA[2][a] * new_geom_A[a][xyz];
@@ -200,46 +224,48 @@ void INTERFRAG::update_reference_points(GeomType new_geom_A, GeomType new_geom_B
         inter_frag->geom[5][xyz] += weightB[2][b] * new_geom_B[b][xyz];
       }
     }
-  /* } else { // using principal axes
+  } 
+  else { // using principal axes
     int i, xyz;
+    double **axes;
+    double *moi;
+    double *fragment_com;
 
-    double **A_u = init_matrix(3,3);
-    double *A_lambda = init_array(3);
-    i = A->principal_axes(new_geom_A, A_u, A_lambda);
+    // first reference point on each fragment is the COM of each
+    fragment_com = A->com();
+    for (xyz=0; xyz<3; ++xyz)
+      inter_frag->geom[2][xyz] = fragment_com[xyz];
 
-    if (i != ndA) {
-      fprintf(outfile,"Number of unique principal axes for fragment has changed.\n");
+    i = A->principal_axes(new_geom_A, axes, moi);
+
+    if (i != ndA)
       throw(INTCO_EXCEPT("Number of principal axes for fragment has changed.",true));
-    }
 
-    double *A_com = A->com();
+    for (i=0; i<ndA-1; ++i) // i can only be 0 or 1
+      for (xyz=0; xyz<3; ++xyz)
+        inter_frag->geom[1-i][xyz] = fragment_com[xyz] + axes[i][xyz];
 
-    for (int xyz=0; xyz<3; ++xyz)
-      for (int i=0; i<ndA; ++i)
-        inter_frag->geom[2-i][xyz] = A_u[i][xyz] + A_com[xyz];
+    free_array(moi);
+    free_matrix(axes);
+    free_array(fragment_com);
 
-    free_array(A_lambda);
-    free_matrix(A_u);
+    fragment_com = B->com();
+    for (xyz=0; xyz<3; ++xyz)
+      inter_frag->geom[3][xyz] = fragment_com[xyz];
 
-    double **B_u = init_matrix(3,3);
-    double *B_lambda = init_array(3);
-    i = B->principal_axes(new_geom_B, B_u, B_lambda);
+    i = B->principal_axes(new_geom_B, axes, moi);
 
-    if (i != ndB) {
-      fprintf(outfile,"Number of unique principal axes for fragment has changed.\n");
+    if (i != ndB)
       throw(INTCO_EXCEPT("Number of principal axes for fragment has changed.", true));
-    }
 
-    double *B_com = B->com();
+    for (i=0; i<ndB-1; ++i) // i can only be 0 or 1
+      for (xyz=0; xyz<3; ++xyz)
+        inter_frag->geom[4+i][xyz] = fragment_com[xyz] + axes[i][xyz];
 
-    for (int xyz=0; xyz<3; ++xyz)
-      for (int i=0; i<ndB; ++i)
-        inter_frag->geom[3+i][xyz] = B_u[i][xyz] + B_com[xyz];
-
-    free_array(B_lambda);
-    free_matrix(B_u);
+    free_array(moi);
+    free_matrix(axes);
+    free_array(fragment_com);
   }
-  */
 }
 
 int INTERFRAG::g_nintco(void) const {
@@ -263,7 +289,7 @@ void INTERFRAG::freeze(bool *D_freeze) {
 
 // is coordinate J frozen?  J runs over only active coordinates.
 bool INTERFRAG::is_frozen(int J) { 
-  if (J < 0 || J > g_nintco())
+  if (J < 0 || J >= g_nintco())
     throw(INTCO_EXCEPT("INTERFRAG::is_frozen() index J runs only over active coordinates"));
   return inter_frag->intcos[J]->is_frozen();
 }
