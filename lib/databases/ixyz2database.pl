@@ -406,14 +406,16 @@ print GPL_OUT "   \$stat{\"param\"} = 0;\n\n";
 print GPL_OUT "   \$texl = \$tagl;\n\n";
 
 if ($route == 3) {
-   print GPL_OUT "   \@HACTIVEun = (\"\$system-dimer\",\"\$system-monoA-unCP\",\"\$system-monoB-unCP\");\n\n";
-   
+   print GPL_OUT "   if (\$ABun eq \"yes\") { \@HACTIVEun = (\"\$system-dimer\",\"\$system-monoA-unCP\",\"\$system-monoA-unCP\"); }\n";
+   print GPL_OUT "   else                { \@HACTIVEun = (\"\$system-dimer\",\"\$system-monoA-unCP\",\"\$system-monoB-unCP\"); }\n\n";
+
    print GPL_OUT "   \$rxnmUN{\"\$system-dimer\"}      = +1;\n";
    print GPL_OUT "   \$rxnmUN{\"\$system-monoA-unCP\"} = -1;\n";
    print GPL_OUT "   \$rxnmUN{\"\$system-monoB-unCP\"} = -1;\n\n";
    
-   print GPL_OUT "   \@HACTIVEcp = (\"\$system-dimer\",\"\$system-monoA-CP\",\"\$system-monoB-CP\");\n\n";
-   
+   print GPL_OUT "   if (\$ABcp eq \"yes\") { \@HACTIVEcp = (\"\$system-dimer\",\"\$system-monoA-CP\",\"\$system-monoA-CP\"); }\n";
+   print GPL_OUT "   else                { \@HACTIVEcp = (\"\$system-dimer\",\"\$system-monoA-CP\",\"\$system-monoB-CP\"); }\n\n";
+
    print GPL_OUT "   \$rxnmCP{\"\$system-dimer\"}      = +1;\n";
    print GPL_OUT "   \$rxnmCP{\"\$system-monoA-CP\"}   = -1;\n";
    print GPL_OUT "   \$rxnmCP{\"\$system-monoB-CP\"}   = -1;\n\n";
