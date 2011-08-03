@@ -315,8 +315,8 @@ struct calcinfo {
 ** parameters structure: holds run-time parameters
 */
 struct params {
-   std::string dertype;/* derivative level: none, first, etc */
-   std::string wfn;    /* wavefunction type: CI, DETCAS, etc. */
+   char *dertype;    /* derivative level: none, first, etc */
+   char *wfn;        /* wavefunction type: CI, DETCAS, etc. */
    int write_energy; /* flag to write energies to detci_energies.dat */
    int filter_ints;  /* true (1) if some integrals in tei file to be ignored */
    int ex_lvl;       /* excitation level */
