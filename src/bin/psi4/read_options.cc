@@ -36,6 +36,14 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Wavefunction type -*/
   options.add_str("WFN", "SCF");
 
+  // CDS-TODO: We should go through and check that the user hasn't done
+  // something silly like specify frozen_docc in DETCI but not in TRANSQT.
+  // That would create problems.  (This was formerly checked in DETCI
+  // itself, but I don't think DETCI will have the info available to check
+  // this anymore).  This problem has affected users in the past.
+  // Same goes for restricted_docc, restricted_uocc, ras1, ras2, ras3,
+  // frozen_uocc.
+
   if (name == "DETCI" || options.read_globals()) {
     /*- Reference wavefunction -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
