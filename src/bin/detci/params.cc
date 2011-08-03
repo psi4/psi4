@@ -37,85 +37,19 @@ void get_parameters(void)
    char line1[133];
    double junk;
    
-   if (ip_exist(":DETCI:FROZEN_DOCC",0) &&
-      !(ip_exist(":DEFAULT:FROZEN_DOCC",0) || 
-        ip_exist(":PSI:FROZEN_DOCC",0)) ) {
-     fprintf(outfile, "\nDETCI: Error - FROZEN_DOCC needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-     exit(PSI_RETURN_FAILURE);
-   }
-
-   if (ip_exist(":DETCI:FROZEN_UOCC",0) &&
-      !(ip_exist(":DEFAULT:FROZEN_UOCC",0) || 
-        ip_exist(":PSI:FROZEN_UOCC",0)) ) {
-     fprintf(outfile, "\nDETCI: Error - FROZEN_UOCC needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-     exit(PSI_RETURN_FAILURE);
-   }
-
-   if (ip_exist(":DETCI:RAS1",0) &&
-      !(ip_exist(":DEFAULT:RAS1",0) || 
-        ip_exist(":PSI:RAS1",0)) ) {
-     fprintf(outfile, "\nDETCI: Warning - RAS1 needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-   }
-
-   if (ip_exist(":DETCI:RAS2",0) &&
-      !(ip_exist(":DEFAULT:RAS2",0) || 
-        ip_exist(":PSI:RAS2",0)) ) {
-     fprintf(outfile, "\nDETCI: Warning - RAS2 needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-   }
-
-   if (ip_exist(":DETCI:RAS3",0) &&
-      !(ip_exist(":DEFAULT:RAS3",0) || 
-        ip_exist(":PSI:RAS3",0)) ) {
-     fprintf(outfile, "\nDETCI: Warning - RAS3 needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-   }
-
-   if (ip_exist(":DETCI:RESTRICTED_DOCC",0) &&
-      !(ip_exist(":DEFAULT:RESTRICTED_DOCC",0) || 
-        ip_exist(":PSI:RESTRICTED_DOCC",0)) ) {
-     fprintf(outfile,"\nDETCI: Warning-RESTRICTED_DOCC needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-   }
-
-   if (ip_exist(":DETCI:RESTRICTED_UOCC",0) &&
-      !(ip_exist(":DEFAULT:RESTRICTED_UOCC",0) || 
-        ip_exist(":PSI:RESTRICTED_UOCC",0)) ) {
-     fprintf(outfile,"\nDETCI: Warning-RESTRICTED_UOCC needs to be readable\n");
-     fprintf(outfile, "by the transformation program also!  Move it to\n");
-     fprintf(outfile, "the psi: or default: sections of input.\n\n");
-   }
-
-
    /* default value of Ms0 depends on iopen but is modified below 
     * depending on value of opentype
     */
 
+   /*
    chkpt_init(PSIO_OPEN_OLD);
    Parameters.Ms0 = !(chkpt_rd_iopen());
    chkpt_close();
+   */
 
    /* need to figure out wheter to filter tei's */
-*  errcod = ip_string("DERTYPE", &(Parameters.dertype),0); 
-   if(errcod == IPE_KEY_NOT_FOUND) {
-     Parameters.dertype = (char *) malloc(sizeof(char)*5);
-     strcpy(Parameters.dertype, "NONE");
-   }
-
-*  errcod = ip_string("WFN", &(Parameters.wfn),0);
-   if(errcod == IPE_KEY_NOT_FOUND) {
-     Parameters.wfn = (char *) malloc(sizeof(char)*5);
-     strcpy(Parameters.wfn, "NONE");
-   }
+   Parameters.dertype = options.get_str("DERTYPE");
+   Parameters.wfn = options.get_str("WFN");
 
    /*
      Two-electron integrals: filter out what we don't need.  TRANSQT2
@@ -127,113 +61,93 @@ void get_parameters(void)
      computation and should filter them out if they are in the TEI file
    */
 
-  if (strcmp(Parameters.dertype, "NONE")!=0 ||
-      strcmp(Parameters.wfn, "DETCAS")==0    ||
-      strcmp(Parameters.wfn, "CASSCF")==0    ||
-      strcmp(Parameters.wfn, "RASSCF")==0) Parameters.filter_ints = 1;
-  else Parameters.filter_ints = 0;
+  if (Parameters.dertype != "NONE" || Parameters.wfn == "DETCAS" ||
+      Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
+    Parameters.filter_ints = 1;
+  }
+  else {
+    Parameters.filter_ints = 0;
+  }
 
  
-   /* Parameters.print_lvl is set in detci.cc */
-   /* Parameters.have_special_conv is set in detci.cc */
+  // CDS-TODO: Check these
+  /* Parameters.print_lvl is set in detci.cc */
+  /* Parameters.have_special_conv is set in detci.cc */
+
 /* symbol * = put in read_options
  *        I = was internal parameter, not in read_options
  *        X = now it's an internal parameter, not in read_options
  */
 
-*  Parameters.ex_lvl = 2;
-*  Parameters.cc_ex_lvl = 2;
-*  Parameters.val_ex_lvl = 0;
-*  Parameters.cc_val_ex_lvl = 0;
-I  Parameters.cc_a_val_ex_lvl = -1;
-I  Parameters.cc_b_val_ex_lvl = -1;
-*  Parameters.num_roots = 1;
-*  Parameters.istop = 0;
-*  Parameters.print_ciblks = 0;
-*  Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
-*  Parameters.ref_sym = -1;
-X  Parameters.oei_file = PSIF_OEI;  /* always need fzc operator */
-X  Parameters.tei_file = PSIF_MO_TEI;
-*  Parameters.h0blocksize = 400;
-*  Parameters.h0guess_size = 100;
-*  Parameters.h0block_coupling = 0;
-*  Parameters.h0block_coupling_size = 0;
-*  Parameters.nprint = 20;
-*  Parameters.cc_nprint = 10;
-*  Parameters.hd_ave = EVANGELISTI;
-*  Parameters.hd_otf = TRUE;
-*  Parameters.nodfile = 0;
-*  Parameters.fzc = 1;
-   if (strcmp(Parameters.wfn, "CASSCF")==0)
-     Parameters.fci = 1;
-   else
-     Parameters.fci = 0;
-*  Parameters.fci_strings = 0;
-*  Parameters.mixed = 1;
-*  Parameters.mixed4 = 1;
-*  Parameters.r4s = 0;
-*  Parameters.repl_otf = 0;
-*  Parameters.calc_ssq = 0;
-   if (strcmp(Parameters.wfn, "ZAPTN")==0) {
-     Parameters.mpn = 1;
-     Parameters.zaptn = 1;
-   } else {
-     Parameters.mpn = 0;
-     Parameters.zaptn = 0;
-   }
-*  Parameters.save_mpn2 = 0;
-*  Parameters.mpn_schmidt = 0;
-*  Parameters.wigner = 0;
-*  Parameters.perturbation_parameter = 1.0;
-I  Parameters.z_scale_H = 0;
+  Parameters.ex_lvl = options.get_int("EX_LVL");
+  Parameters.cc_ex_lvl = options.get_int("CC_EX_LVL");
+  Parameters.val_ex_lvl = options.get_int("VAL_EX_LVL");
+  Parameters.cc_val_ex_lvl = options.get_int("CC_VAL_EX_LVL");
 
-I  Parameters.ras1_lvl = -1;
-I  Parameters.ras1_min = -1;
-I  Parameters.a_ras1_lvl = -1;
-I  Parameters.a_ras1_min = -1;
-I  Parameters.b_ras1_lvl = -1;
-I  Parameters.b_ras1_min = -1;
-*  Parameters.a_ras3_max = -1;
-*  Parameters.b_ras3_max = -1;
-*  Parameters.cc_a_ras3_max = -1;
-*  Parameters.cc_b_ras3_max = -1;
-I  Parameters.ras3_lvl = -1;
-*  Parameters.ras3_max = -1;
-*  Parameters.cc_ras3_max = -1;
-I  Parameters.ras4_lvl = -1;
-*  Parameters.ras4_max = -1;
-*  Parameters.cc_ras4_max = -1;
-*  Parameters.ras34_max = -1;
-*  Parameters.cc_ras34_max = -1;
+  Parameters.cc_a_val_ex_lvl = -1;
+  Parameters.cc_b_val_ex_lvl = -1;
 
-   if (strcmp(Parameters.wfn, "DETCAS")==0 ||
-       strcmp(Parameters.wfn, "CASSCF")==0 ||
-       strcmp(Parameters.wfn, "RASSCF")==0)
-*    Parameters.guess_vector = PARM_GUESS_VEC_DFILE;
-   else
-     Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+  Parameters.num_roots = options.get_int("NUM_ROOTS");
+ 
+  // CDS-TODO: Correct conversion of boolean to integer?
+  Parameters.istop = options["ISTOP"].to_integer();
+  Parameters.print_ciblks = options["PRINT_CIBLKS"].to_integer();
 
-*  Parameters.icore = 1;
-*  Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
-*  Parameters.precon = PRECON_DAVIDSON;
-*  Parameters.update = UPDATE_DAVIDSON;
-*  Parameters.maxnvect = 0;
-*  Parameters.collapse_size = 1;
-*  Parameters.lse = 0;
-*  Parameters.lse_collapse = 3;
-*  Parameters.lse_tolerance = 3;
-X  Parameters.neg_only = 1;
+  Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
 
-X  Parameters.nunits = 1;
-X  Parameters.first_tmp_unit = 50;
-X  Parameters.first_hd_tmp_unit = 0;
-X  Parameters.num_hd_tmp_units = 0;
-X  Parameters.first_c_tmp_unit = 0;
-X  Parameters.num_c_tmp_units = 0;
-X  Parameters.first_s_tmp_unit = 0;
-X  Parameters.num_s_tmp_units = 0;
-X  Parameters.first_d_tmp_unit = 0;
-X  Parameters.num_d_tmp_units = 0;
+  Parameters.ref_sym = options.get_int("REF_SYM");
+
+  Parameters.oei_file = PSIF_OEI;  /* always need fzc operator */
+  Parameters.tei_file = PSIF_MO_TEI;
+
+  Parameters.hd_ave = EVANGELISTI;
+
+  if (Parameters.wfn == "CASSCF")
+    Parameters.fci = 1;
+  else
+    Parameters.fci = 0;
+
+  Parameters.fci_strings = 0;
+
+  if (Parameters.wfn == "ZAPTN") {
+    Parameters.mpn = 1;
+    Parameters.zaptn = 1;
+  } 
+  else {
+    Parameters.mpn = 0;
+    Parameters.zaptn = 0;
+  }
+
+  Parameters.z_scale_H = 0;
+  Parameters.ras1_lvl = -1;
+  Parameters.ras1_min = -1;
+  Parameters.a_ras1_lvl = -1;
+  Parameters.a_ras1_min = -1;
+  Parameters.b_ras1_lvl = -1;
+  Parameters.b_ras1_min = -1;
+  Parameters.ras3_lvl = -1;
+  Parameters.ras4_lvl = -1;
+
+  if (Parameters.wfn == "DETCAS" ||
+      Parameters.wfn == "CASSCF" ||
+      Parameters.wfn == "RASSCF")
+    Parameters.guess_vector = PARM_GUESS_VEC_DFILE;
+  else
+    Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+
+  Parameters.update = UPDATE_DAVIDSON;
+
+  Parameters.neg_only = 1;
+  Parameters.nunits = 1;
+  Parameters.first_tmp_unit = 50;
+  Parameters.first_hd_tmp_unit = 0;
+  Parameters.num_hd_tmp_units = 0;
+  Parameters.first_c_tmp_unit = 0;
+  Parameters.num_c_tmp_units = 0;
+  Parameters.first_s_tmp_unit = 0;
+  Parameters.num_s_tmp_units = 0;
+  Parameters.first_d_tmp_unit = 0;
+  Parameters.num_d_tmp_units = 0;
    
 *  Parameters.restart = 0;
 *  Parameters.bendazzoli = 0;
@@ -241,10 +155,10 @@ X  Parameters.num_d_tmp_units = 0;
 *  Parameters.cc = 0;
    errcod = ip_boolean("CC",&(Parameters.cc),0);
 
-   if (strcmp(Parameters.dertype, "FIRST")==0 ||
-      strcmp(Parameters.wfn, "DETCAS")==0 ||
-      strcmp(Parameters.wfn, "CASSCF")==0 ||
-      strcmp(Parameters.wfn, "RASSCF")==0)
+   if (Parameters.dertype == "FIRST" ||
+      Parameters.wfn == "DETCAS" ||
+      Parameters.wfn == "CASSCF" ||
+      Parameters.wfn == "RASSCF")
    {
 *    Parameters.convergence = 7;
 *    Parameters.energy_convergence = 8;
@@ -375,7 +289,11 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    errcod = ip_data("NPRINT","%d",&(Parameters.nprint),0);
    errcod = ip_data("CC_NPRINT","%d",&(Parameters.cc_nprint),0);
    errcod = ip_boolean("DETCI_FREEZE_CORE",&(Parameters.fzc),0);
-*  errcod = ip_boolean("FCI",&(Parameters.fci),0);
+
+   //CDS-TODO: Bool to Int
+   if (options["FCI"].has_changed())
+     Parameters.fci = options["FCI"].to_integer();
+
    if (Parameters.fci) Parameters.fci_strings = 1;
    errcod = ip_boolean("FCI_STRINGS",&(Parameters.fci_strings),0);
    errcod = ip_boolean("MIXED",&(Parameters.mixed),0);
@@ -420,70 +338,77 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    errcod = ip_data("CC_RAS4_MAX","%d",&(Parameters.cc_ras4_max),0);
    errcod = ip_data("CC_RAS34_MAX","%d",&(Parameters.cc_ras34_max),0);
 
-   errcod = ip_data("GUESS_VECTOR", "%s", line1, 0);
-   if (errcod == IPE_OK) {
-      if (strcmp(line1, "UNIT")==0) 
-         Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
-      else if (strcmp(line1, "H0_BLOCK")==0) 
-         Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-      else if (strcmp(line1, "DFILE")==0) 
-         Parameters.guess_vector = PARM_GUESS_VEC_DFILE;
-      /* else if (Parameters.mpn) Parameters.guess_vector = PARM_GUESS_VEC_UNIT; */ 
-      else if (strcmp(line1, "IMPORT")==0)
-         Parameters.guess_vector = PARM_GUESS_VEC_IMPORT;
-      else Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
-      }
+   if (options["GUESS_VECTOR"].has_changed()) {
+     std::string line1 = options.get_str("GUESS_VECTOR");
+     if (line1 == "UNIT") 
+       Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
+     else if (line1 == "H0_BLOCK") 
+       Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+     else if (line1 == "DFILE") 
+       Parameters.guess_vector = PARM_GUESS_VEC_DFILE;
+     /* else if (Parameters.mpn) Parameters.guess_vector = PARM_GUESS_VEC_UNIT; */ 
+     else if (line1 == "IMPORT")
+       Parameters.guess_vector = PARM_GUESS_VEC_IMPORT;
+     else Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
+   }
+
    errcod = ip_data("ICORE", "%d", &(Parameters.icore),0);
-   errcod = ip_data("HD_AVE","%s",line1, 0); 
-   if (errcod == IPE_OK) {
-     if (strcmp(line1, "HD_EXACT")==0)    Parameters.hd_ave = HD_EXACT;
-     if (strcmp(line1, "HD_KAVE")==0)     Parameters.hd_ave = HD_KAVE;
-     if (strcmp(line1, "ORB_ENER")==0)    Parameters.hd_ave = ORB_ENER;
-     if (strcmp(line1, "EVANGELISTI")==0) Parameters.hd_ave = EVANGELISTI;
-     if (strcmp(line1, "LEININGER")==0)   Parameters.hd_ave = LEININGER;
-     if (strcmp(line1, "Z_KAVE")==0)      Parameters.hd_ave = Z_HD_KAVE;
+
+   if (options["HD_AVE"].has_changed()) {
+     std::string line1 = options.get_str("HD_AVE");
+     if (line1 == "HD_EXACT")    Parameters.hd_ave = HD_EXACT;
+     if (line1 == "HD_KAVE")     Parameters.hd_ave = HD_KAVE;
+     if (line1 == "ORB_ENER")    Parameters.hd_ave = ORB_ENER;
+     if (line1 == "EVANGELISTI") Parameters.hd_ave = EVANGELISTI;
+     if (line1 == "LEININGER")   Parameters.hd_ave = LEININGER;
+     if (line1 == "Z_KAVE")      Parameters.hd_ave = Z_HD_KAVE;
      /* if (Parameters.mpn) Parameters.hd_ave = ORB_ENER; */ 
-       }
+   }
+
    errcod = ip_boolean("HD_OTF",&(Parameters.hd_otf),0); 
    if (errcod == IPE_OK) Parameters.hd_otf = TRUE;
    errcod = ip_boolean("NODFILE",&(Parameters.nodfile),0); 
    if (Parameters.num_roots > 1) Parameters.nodfile = FALSE;
 
-   errcod = ip_data("DIAG_METHOD","%s",line1, 0);
-   if (errcod == IPE_OK) {
-      if (strcmp(line1, "RSP")==0) Parameters.diag_method = METHOD_RSP;
-      if (strcmp(line1, "OLSEN")==0) Parameters.diag_method = METHOD_OLSEN;
-      if (strcmp(line1, "MITRUSHENKOV")==0) 
-        Parameters.diag_method = METHOD_MITRUSHENKOV;
-      if (strcmp(line1, "DAVIDSON")==0) 
-        Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
-      if (strcmp(line1, "SEM")==0) 
-        Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
-      if (strcmp(line1, "SEMTEST")==0) 
-        Parameters.diag_method = METHOD_RSPTEST_OF_SEM;
-      }
+   Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
+   if (options["DIAG_METHOD"].has_changed()) {
+     std::string line1 = options.get_str("DIAG_METHOD");
+     if (line1 == "RSP") Parameters.diag_method = METHOD_RSP;
+     if (line1 == "OLSEN") Parameters.diag_method = METHOD_OLSEN;
+     if (line1 == "MITRUSHENKOV") 
+       Parameters.diag_method = METHOD_MITRUSHENKOV;
+     if (line1 == "DAVIDSON") 
+       Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
+     if (line1 == "SEM") 
+       Parameters.diag_method = METHOD_DAVIDSON_LIU_SEM;
+     if (line1 == "SEMTEST") 
+       Parameters.diag_method = METHOD_RSPTEST_OF_SEM;
+   }
 
-   errcod = ip_data("PRECONDITIONER","%s",line1, 0);
-   if (errcod == IPE_OK) {
-      if (strcmp(line1, "LANCZOS")==0) Parameters.precon = PRECON_LANCZOS;
-      if (strcmp(line1, "DAVIDSON")==0) Parameters.precon = PRECON_DAVIDSON;
-      if (strcmp(line1, "GEN_DAVIDSON")==0) 
-        Parameters.precon = PRECON_GEN_DAVIDSON;
-      if (strcmp(line1, "H0BLOCK")==0) Parameters.precon = PRECON_GEN_DAVIDSON;
-      if (strcmp(line1, "H0BLOCK_INV")==0) 
-        Parameters.precon = PRECON_H0BLOCK_INVERT;
-      if (strcmp(line1, "ITER_INV")==0) 
-        Parameters.precon = PRECON_H0BLOCK_ITER_INVERT;
-      if (strcmp(line1, "H0BLOCK_COUPLING")==0) 
-        Parameters.precon = PRECON_H0BLOCK_COUPLING;
-      if (strcmp(line1, "EVANGELISTI")==0) 
-        Parameters.precon = PRECON_EVANGELISTI;
-      }
-   errcod = ip_data("UPDATE","%s",line1, 0);
-   if (errcod == IPE_OK) {
-      if (strcmp(line1, "DAVIDSON")==0) Parameters.update = UPDATE_DAVIDSON;
-      if (strcmp(line1, "OLSEN")==0) Parameters.update = UPDATE_OLSEN;
-      }
+   Parameters.precon = PRECON_DAVIDSON;
+   if (options["PRECONDITIONER"].has_changed()) {
+     std::string line1 = options.get_str("PRECONDITIONER");
+     if (line1 == "LANCZOS") Parameters.precon = PRECON_LANCZOS;
+     if (line1 == "DAVIDSON") Parameters.precon = PRECON_DAVIDSON;
+     if (line1 == "GEN_DAVIDSON") 
+       Parameters.precon = PRECON_GEN_DAVIDSON;
+     if (line1 == "H0BLOCK") Parameters.precon = PRECON_GEN_DAVIDSON;
+     if (line1 == "H0BLOCK_INV") 
+       Parameters.precon = PRECON_H0BLOCK_INVERT;
+     if (line1 == "ITER_INV") 
+       Parameters.precon = PRECON_H0BLOCK_ITER_INVERT;
+     if (line1 == "H0BLOCK_COUPLING") 
+       Parameters.precon = PRECON_H0BLOCK_COUPLING;
+     if (line1 == "EVANGELISTI") 
+       Parameters.precon = PRECON_EVANGELISTI;
+   }
+
+   if (options["UPDATE"].has_changed()) {
+     std::string line1 = options.get_str("UPDATE");
+     if (line1 == "DAVIDSON") Parameters.update = UPDATE_DAVIDSON;
+     if (line1 == "OLSEN") Parameters.update = UPDATE_OLSEN;
+   }
+
    if (Parameters.diag_method < METHOD_DAVIDSON_LIU_SEM && 
        Parameters.update==UPDATE_DAVIDSON) {
      fprintf(outfile,"DAVIDSON update not available for OLSEN or MITRUSH"
@@ -502,17 +427,19 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    Parameters.num_init_vecs = Parameters.num_roots;
    errcod = ip_data("NUM_INIT_VECS","%d",&(Parameters.num_init_vecs),0);
 
-   errcod = ip_data("COLLAPSE_SIZE", "%d", &(Parameters.collapse_size),0);
+   Parameters.collapse_size = options.get_int("COLLAPSE_SIZE");
    if (Parameters.collapse_size < 1) Parameters.collapse_size = 1;
 
-   errcod = ip_data("LSE_COLLAPSE", "%d", &(Parameters.lse_collapse),0);
+   // CDS-TODO: Correct conversion of boolean to integer?
+   Parameters.lse = options["LSE"].to_integer();
+
+   Parameters.lse_collapse = options.get_int("LSE_COLLAPSE");
    if (Parameters.lse_collapse < 1) Parameters.lse_collapse = 3;
 
-   errcod = ip_boolean("LSE",&(Parameters.lse),0) ;
+   Parameters.lse_tolerance = options.get_int("LSE_TOLERANCE");
 
-   errcod = ip_data("LSE_TOLERANCE", "%d", &(Parameters.lse_tolerance),0);
+   Parameters.maxnvect = options.get_int("MAXNVECT");
 
-   errcod = ip_data("MAXNVECT", "%d", &(Parameters.maxnvect),0);
    if (Parameters.maxnvect == 0 &&  
        Parameters.diag_method == METHOD_DAVIDSON_LIU_SEM) {
       Parameters.maxnvect = Parameters.maxiter * Parameters.num_roots
@@ -628,9 +555,9 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    /* dipole or transition dipole moment? */
    if (Parameters.opdm) Parameters.dipmom = 1;
    else Parameters.dipmom = 0;
-   if (strcmp(Parameters.wfn, "RASSCF")==0 || 
-       strcmp(Parameters.wfn, "CASSCF")==0 ||
-       strcmp(Parameters.wfn, "DETCAS")==0)
+   if (Parameters.wfn == "RASSCF" || 
+       Parameters.wfn == "CASSCF" ||
+       Parameters.wfn == "DETCAS")
    Parameters.dipmom = 0;
    if (Parameters.transdens) Parameters.dipmom = 1;
 *  errcod = ip_boolean("DIPMOM",&(Parameters.dipmom),0);
@@ -648,9 +575,9 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
 //   errcod = ip_data("TPDM_FILE","%d",&(Parameters.tpdm_file),0);
 
    if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
-       strcmp(Parameters.wfn, "DETCAS")!=0 &&
-       strcmp(Parameters.wfn, "CASSCF")!=0 &&
-       strcmp(Parameters.wfn, "RASSCF")!=0)
+       Parameters.wfn != "DETCAS" &&
+       Parameters.wfn != "CASSCF" &&
+       Parameters.wfn != "RASSCF")
      {
 
       chkpt_init(PSIO_OPEN_OLD);
