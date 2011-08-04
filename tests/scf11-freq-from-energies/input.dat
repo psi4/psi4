@@ -1,0 +1,68 @@
+#! Test frequencies by finite differences of energies for planar C4NH4 TS
+print_stdout(' Frequencies by finite differences of energies for planar C4NH4 TS') #TEST
+
+molecule c4nh4 {
+-1 1
+C    0.0000000000    0.0000000000    1.1128564449
+N    0.0000000000    0.0000000000    2.2897620702
+C    0.0000000000    0.0000000000   -0.2320936320
+C   -0.7635228659    0.0000000000   -1.4661752047
+C    0.7635228659    0.0000000000   -1.4661752047
+H   -1.2637478640   -0.8928403697   -1.8467135486
+H   -1.2637478640    0.8928403697   -1.8467135486
+H    1.2637478640    0.8928403697   -1.8467135486
+H    1.2637478640   -0.8928403697   -1.8467135486 
+units angstrom
+}
+
+set globals {
+  basis sto-3g
+}
+
+set findif {
+  points 5
+}
+
+# initialize global molecule if you haven't done a calculation already
+c4nh4.update_geometry()
+
+displacements = fd_geoms_freq_0()
+ndisp = len(displacements)
+energies = []
+
+for n, displacement in enumerate(displacements):
+  PsiMod.print_out("\n")
+  banner("Loading displacement %d of %d" % (n+1, ndisp))
+  print "    displacment %d" % (n+1)
+  c4nh4.update_geometry()  # needed to clear out file32
+  PsiMod.get_active_molecule().set_geometry(displacement)
+  E = energy('scf')
+  energies.append(E)
+
+fd_freq_0(energies)
+
+# These are the PSI3 analytic frequencies to which we should compare
+# 3619.515 
+# 3608.199 
+# 3502.704
+# 3493.725
+# 2502.451
+# 1901.396
+# 1868.029
+# 1781.077
+# 1398.293
+# 1383.437
+# 1359.955
+# 1296.636
+# 1232.336
+# 1187.559
+# 1117.802
+# 1026.537
+# 784.763 
+# 704.376 
+# 564.095 
+# 246.363 
+# 205.806i
+
+clean()
+
