@@ -28,6 +28,8 @@ PsiReturnType lmp2(Options & options)
 {
     tstart();
 
+#if HAVE_MADNESS == 1
+
     boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
     // Initialize the psi3 timer library.
@@ -57,6 +59,9 @@ PsiReturnType lmp2(Options & options)
 
     // Shut down psi.
     timer_done();
+#else
+    throw PSIEXCEPTION("LMP2 currently only works with the MADNESS parallel runtime.\n");
+#endif
 
     tstop();
 

@@ -22,6 +22,8 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 madness::Future<double> LMP2::T2_rms(const SharedMatrix T2,
                                      const SharedMatrix T2_old,
                                      const int &ij)
@@ -60,8 +62,9 @@ madness::Future<double> LMP2::T2_rms(const SharedMatrix T2,
 }
 
 int LMP2::store_T2(const SharedMatrix T2, const int &ij) {
-    T2_amp_[div_][ij_local_[ij]]->copy(T2);
+    T2_amp_[div_][ij]->copy(T2);
     return 0;
 }
 
+#endif // Have_madness
 }} // End of psi and lmp2 namespaces

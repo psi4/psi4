@@ -44,18 +44,19 @@ namespace opt {
 }
 
 namespace psi {
-    namespace mints     { PsiReturnType mints(Options &); }
-    namespace deriv     { PsiReturnType deriv(Options &); }
+    namespace mints     { PsiReturnType mints(Options &);    }
+    namespace deriv     { PsiReturnType deriv(Options &);    }
     namespace scf       { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
-    namespace dfmp2     { PsiReturnType dfmp2(Options &); }
-    namespace dfcc      { PsiReturnType dfcc(Options &); }
-    namespace sapt      { PsiReturnType sapt(Options &);  }
-    namespace dcft      { PsiReturnType dcft(Options &);  }
-    namespace mcscf     { PsiReturnType mcscf(Options &);  }
+    namespace dfmp2     { PsiReturnType dfmp2(Options &);    }
+    namespace dfcc      { PsiReturnType dfcc(Options &);     }
+    namespace sapt      { PsiReturnType sapt(Options &);     }
+    namespace dcft      { PsiReturnType dcft(Options &);     }
+    namespace mcscf     { PsiReturnType mcscf(Options &);    }
     namespace psimrcc   { PsiReturnType psimrcc(Options &);  }
     namespace transqt   { PsiReturnType transqt(Options &);  }
     namespace transqt2  { PsiReturnType transqt2(Options &); }
     namespace ccsort    { PsiReturnType ccsort(Options&);    }
+    namespace lmp2      { PsiReturnType lmp2(Options&);      }
 //    namespace ccenergy  { PsiReturnType ccenergy(Options&);  }
     namespace cctriples { PsiReturnType cctriples(Options&); }
     namespace cchbar    { PsiReturnType cchbar(Options&);    }
@@ -121,6 +122,16 @@ double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
 {
     py_psi_prepare_options_for_module("SCF");
     if (scf::scf(Process::environment.options, precallback, postcallback) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
+}
+
+double py_psi_lmp2()
+{
+    py_psi_prepare_options_for_module("LMP2");
+    if (lmp2::lmp2(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
@@ -729,6 +740,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("dcft", py_psi_dcft);
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
+    def("lmp2", py_psi_lmp2);
     def("mcscf", py_psi_mcscf);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     def("fd_geoms_2_0", py_psi_fd_geoms_2_0);

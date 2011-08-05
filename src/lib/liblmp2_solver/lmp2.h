@@ -13,6 +13,7 @@
 #include <libdiis/diismanager.h>
 #include <libparallel/parallel.h>
 #include <libqt/qt.h>
+#include "liblmp2_solver/dist_container.h"
 #include "psi4-dec.h"
 
 #if HAVE_MADNESS == 1
@@ -36,6 +37,7 @@ namespace lmp2 {
 
 #if HAVE_MADNESS == 1
 
+#if HAVE_MADNESS == 1
 class LMP2 : public Wavefunction, public madness::WorldObject<LMP2> {
 #else
 class LMP2 : public Wavefunction
@@ -62,9 +64,7 @@ protected:
 #endif
 
     // ****  These are global shared pointers ****
-//    boost::shared_ptr<Molecule> molecule_;
     boost::shared_ptr<Wavefunction> wfn_;
-//    boost::shared_ptr<BasisSet> basisset_;
     boost::shared_ptr<IntegralFactory> integral_;
     std::vector< boost::shared_ptr<TwoElectronInt> > eri_;
 
@@ -164,7 +164,7 @@ protected:
     /// A map of which process owns pair ij
     std::vector<int> ij_owner_;
     /// A map of ij to the local value of ij on a specific process
-    std::vector<int> ij_local_;
+    std::map<int,int> ij_local_;
     /// map of ij to i after distant pair has been removed
     std::map<int,int> ij_i_map_;
     /// map of ij to j after distant pair has been removed
@@ -172,9 +172,11 @@ protected:
     /// map of ij to ij neglecting distant pairs
     std::map<int,int> ij_map_neglect_;
     /// map of ij to kj
-    std::vector< std::vector<int> > ij_kj_map_;
+    std::map<int, std::map<int,int> > ij_kj_map_;
+//    std::vector< std::vector<int> > ij_kj_map_;
     /// map of ij to ik
-    std::vector< std::vector<int> > ij_ik_map_;
+    std::map<int, std::map<int,int> > ij_ik_map_;
+//    std::vector< std::vector<int> > ij_ik_map_;
 
     /// The total number of ij pairs
     int ij_pairs_;
@@ -196,21 +198,29 @@ protected:
     std::multimap< int, std::vector<int>, std::greater<int> > MN_Pairs_;
     std::multimap< int, std::vector<int>, std::greater<int> >::iterator MN_iter_;
     std::vector<int> MN_Owner_;
-    std::vector<int> MN_local_;
+    std::map<int,int> MN_local_;
     int mn_pairs_per_proc_;
     int maxshell_;
 
     /// half transformed integrals, distributed over MN pairs
-    std::vector< SharedMatrix > eri_2_MN_;
+    std::map<int,SharedMatrix> eri_2_MN_;
+//    std::vector< SharedMatrix > eri_2_MN_;
     /// half transformed integrals, distributed over IJ pairs
-    std::vector< SharedMatrix > eri_ij_;
+    std::map<int,SharedMatrix> eri_ij_;
+//    std::vector< SharedMatrix > eri_ij_;
+
+    /// Testing a sparse distributed container
+    distributed_container Integrals_;
 
     /// The lmp2 T2 amplitudes
-    std::vector< std::vector< SharedMatrix > > T2_amp_;
+    std::vector<std::map<int, SharedMatrix> > T2_amp_;
+//    std::vector< std::vector< SharedMatrix > > T2_amp_;
     /// The DIIS extrapolated T2s
-    std::vector< std::vector< SharedMatrix > > T2_ext_;
+    std::vector<std::map<int, SharedMatrix> > T2_ext_;
+//    std::vector< std::vector< SharedMatrix > > T2_ext_;
     /// The DIIS error matrix
-    std::vector< std::vector< SharedMatrix > > error_;
+    std::vector<std::map<int, SharedMatrix> > error_;
+//    std::vector< std::vector< SharedMatrix > > error_;
 
     /// The lmp2 correlation energy for the current iteration
     double Elmp2_;
@@ -345,7 +355,7 @@ protected:
     madness::Future<SharedMatrix> get_old_T2(const int &ij);
 
     /// Builds and returns F_sum to compute the new Residules
-    madness::Future<SharedMatrix> build_F_sum(const int &ij, const int &iter);
+    SharedMatrix build_F_sum(const int &ij, const int &iter);
 
     /// Build Rtilde
     madness::Future<SharedMatrix> build_rtilde(const SharedMatrix F_sum,
@@ -409,6 +419,8 @@ public:
     virtual double compute_energy();
 
 };
+
+#endif // End of if HAVE_MADNESS
 
 }}
 
