@@ -586,6 +586,17 @@ namespace madness {
             return (acc->second.*memfun)(arg1,arg2,arg3,arg4,arg5,arg6,arg7);
         }
 
+        // Used to forward call to item member function
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T, typename arg4T, typename arg5T, typename arg6T, typename arg7T, typename arg8T>
+        MEMFUN_RETURNT(memfunT)
+        itemfun(const keyT& key, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3,
+                                const arg4T& arg4, const arg5T& arg5, const arg6T& arg6, const arg7T& arg7, const arg8T& arg8) {
+            accessor acc;
+            local.insert(acc, key);
+            return (acc->second.*memfun)(arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
+        }
+
+
         // First phase of redistributions changes pmap and makes list of stuff to move
         void redistribute_phase1(const std::shared_ptr< WorldDCPmapInterface<keyT> >& newpmap) {
             pmap = newpmap;
@@ -1056,6 +1067,24 @@ namespace madness {
             return p->send(owner(key), itemfun, key, memfun, arg1, arg2, arg3, arg4, arg5, arg6, arg7);
         }
 
+        /// Sends message "resultT memfun(arg1T,arg2T,arg3T,arg4T,arg5T,arg6T,arg7T)" to item (non-blocking comm if remote)
+
+        /// If item does not exist it is made with the default constructor.
+        ///
+        /// Future arguments must be ready for both local and remote messages.
+        ///
+        /// Returns a future result (Future<void> may be ignored).
+        ///
+        /// The method executes with a write lock on the item.
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T, typename arg4T, typename arg5T, typename arg6T, typename arg7T, typename arg8T>
+        Future< REMFUTURE(MEMFUN_RETURNT(memfunT)) >
+        send(const keyT& key, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3, const arg4T& arg4,
+                     const arg5T& arg5, const arg6T& arg6, const arg7T& arg7, const arg8T& arg8) {
+            check_initialized();
+            MEMFUN_RETURNT(memfunT)(implT::*itemfun)(const keyT&, memfunT, const arg1T&, const arg2T&, const arg3T&, const arg4T&, const arg5T&, const arg6T&, const arg7T&, const arg8T&) = &implT:: template itemfun<memfunT,arg1T,arg2T,arg3T,arg4T,arg5T,arg6T,arg7T,arg8T>;
+            return p->send(owner(key), itemfun, key, memfun, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8);
+        }
+
 
         /// Sends message "resultT memfun() const" to item (non-blocking comm if remote)
 
@@ -1130,6 +1159,16 @@ namespace madness {
         send(const keyT& key, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3,
 			 const arg4T& arg4, const arg5T& arg5, const arg6T& arg6, const arg7T& arg7) const {
             return const_cast<containerT*>(this)->send(key,memfun,arg1,arg2,arg3,arg4,arg5,arg6,arg7);
+        }
+
+        /// Sends message "resultT memfun(arg1T,arg2T,arg3T,arg4T,arg5T,arg6T,arg7T,arg8T) const" to item (non-blocking comm if remote)
+
+        /// The method executes with a write lock on the item.
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T, typename arg4T, typename arg5T, typename arg6T, typename arg7T, typename arg8T>
+        Future< REMFUTURE(MEMFUN_RETURNT(memfunT)) >
+        send(const keyT& key, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3,
+                         const arg4T& arg4, const arg5T& arg5, const arg6T& arg6, const arg7T& arg7, const arg8T& arg8) const {
+            return const_cast<containerT*>(this)->send(key,memfun,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8);
         }
 
 
@@ -1305,6 +1344,33 @@ namespace madness {
             return p->task(owner(key), itemfun, key, memfun, arg1, arg2, arg3, arg4, arg5, arg6, arg7, attr);
         }
 
+        /// Adds task "resultT memfun(arg1T,arg2T,arg3T,arg4T,arg5T,arg6T,arg7T)" in process owning item (non-blocking comm if remote)
+
+        /// If item does not exist it is made with the default constructor.
+        ///
+        /// Future arguments for local tasks can generate dependencies, but for remote
+        /// tasks all futures must be ready.
+        ///
+        /// Returns a future result (Future<void> may be ignored).
+        ///
+        /// The method executes with a write lock on the item.
+        template <typename memfunT, typename arg1T, typename arg2T, typename arg3T, typename arg4T, typename arg5T, typename arg6T, typename arg7T, typename arg8T>
+        Future< REMFUTURE(MEMFUN_RETURNT(memfunT)) >
+        task(const keyT& key, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3, const arg4T& arg4, const arg5T& arg5, const arg6T& arg6, const arg7T& arg7, const arg8T& arg8, const TaskAttributes& attr = TaskAttributes()) {
+            check_initialized();
+            typedef REMFUTURE(arg1T) a1T;
+            typedef REMFUTURE(arg2T) a2T;
+            typedef REMFUTURE(arg3T) a3T;
+            typedef REMFUTURE(arg4T) a4T;
+            typedef REMFUTURE(arg5T) a5T;
+            typedef REMFUTURE(arg6T) a6T;
+            typedef REMFUTURE(arg7T) a7T;
+            typedef REMFUTURE(arg8T) a8T;
+            MEMFUN_RETURNT(memfunT)(implT::*itemfun)(const keyT&, memfunT, const a1T&, const a2T&, const a3T&, const a4T&, const a5T&, const a6T&, const a7T&, const a8T&) = &implT:: template itemfun<memfunT,a1T,a2T,a3T,a4T,a5T,a6T,a7T,a8T>;
+            return p->task(owner(key), itemfun, key, memfun, arg1, arg2, arg3, arg4, arg5, arg6, arg7, arg8, attr);
+        }
+
+
         /// Adds task "resultT memfun() const" in process owning item (non-blocking comm if remote)
 
         /// The method executes with a write lock on the item.
@@ -1376,6 +1442,21 @@ namespace madness {
         task(const keyT& key, memfunT memfun, const arg1T& arg1, const arg2T& arg2, const arg3T& arg3, const arg4T& arg4, const arg5T& arg5, const arg6T& arg6, const arg7T& arg7, const TaskAttributes& attr = TaskAttributes()) const {
             return const_cast<containerT*>(this)->task(key,memfun,arg1,arg2,arg3,arg4,arg5,arg6,arg7,attr);
         }
+
+        /// Adds task "resultT memfun(arg1T,arg2T,arg3T,arg4T,arg5T,arg6T,arg7T,arg8T) const" in process owning item (non-blocking comm if remote)
+
+        /// The method executes with a write lock on the item.
+        template <typename memfunT, typename arg1T, typename arg2T,
+                  typename arg3T, typename arg4T, typename arg5T,
+                  typename arg6T, typename arg7T, typename arg8T>
+        Future< REMFUTURE(MEMFUN_RETURNT(memfunT)) >
+        task(const keyT& key, memfunT memfun, const arg1T& arg1,
+             const arg2T& arg2, const arg3T& arg3, const arg4T& arg4,
+             const arg5T& arg5, const arg6T& arg6, const arg7T& arg7,
+             const arg8T& arg8, const TaskAttributes& attr = TaskAttributes()) const {
+            return const_cast<containerT*>(this)->task(key,memfun,arg1,arg2,arg3,arg4,arg5,arg6,arg7,arg8,attr);
+        }
+
 
 
         /// (de)Serialize --- *Local* data only to/from anything *except* Buffer*Archive and Parallel*Archive

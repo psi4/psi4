@@ -23,6 +23,8 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 
 void LMP2::build_domains() {
 
@@ -334,6 +336,6 @@ void LMP2::print_domains(const std::vector<double> &s){
   }
 }
 
-
+#endif // have_madness
 }}
 

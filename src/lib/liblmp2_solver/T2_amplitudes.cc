@@ -22,67 +22,96 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 int LMP2::compute_T2_energy(const int &iter) {
 #if HAVE_MADNESS == 1
 
     int conv = 0;
     int terms = 0;
 
-    if(iter > 1 & diis_ == 1) {
+    if (iter > 1 && diis_ == 1) {
         for (int ij=0; ij < ij_pairs_; ij++) {
             if (me_ == ij_owner_[ij]) {
-                madness::Future<SharedMatrix> F_sum = task(ij_owner_[ij], &LMP2::build_F_sum, ij, iter);
+//                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
+                SharedMatrix F_sum = build_F_sum(ij, iter);
+                madworld_->taskq.fence();
 
-                madness::Future<SharedMatrix> Rtilde = task(ij_owner_[ij], &LMP2::build_rtilde, F_sum, ij, iter);
+                madness::Future<SharedMatrix> Rtilde = task(me_, &LMP2::build_rtilde, F_sum, ij, iter);
 
-                madness::Future<SharedMatrix> T2 = task(ij_owner_[ij], &LMP2::amplitudes_T2, Rtilde, ij, iter);
+                madness::Future<SharedMatrix> T2 = task(me_, &LMP2::amplitudes_T2, Rtilde, ij, iter);
 
-                task(ij_owner_[ij], &LMP2::store_T2, T2, ij);
+                task(me_, &LMP2::store_T2, T2, ij);
             }
         }
+
         madworld_->taskq.fence();
         perform_diis(iter);
+
         for (int ij=0; ij < ij_pairs_; ij++) {
             terms += pair_domain_len_[ij] * pair_domain_len_[ij];
             if (me_ == ij_owner_[ij]) {
 
+//                if (iter < diis_start_) {
+//                    madness::Future<double> elmp2 = task(me_, &LMP2::energy, T2_amp_[div_][ij], ij, iter);
+//                    task(me_, &LMP2::Elmp2_local_sum, elmp2);
+//                    if (iter > 0) {
+//                        madness::Future<double> drms = task(me_, &LMP2::T2_rms, T2_amp_[div_][ij],
+//                                                            T2_amp_[dmat1_][ij], ij);
+//                        task(me_, &LMP2::Drms_local_sum, drms);
+//                    }
+//                }
+//                else {
+//                    madness::Future<double> elmp2 = task(me_, &LMP2::energy, T2_ext_[nmat_][ij], ij, iter);
+//                    task(me_, &LMP2::Elmp2_local_sum, elmp2);
+//                    if (iter > 0) {
+//                        madness::Future<double> drms = task(me_, &LMP2::T2_rms, T2_ext_[nmat_][ij],
+//                                                            T2_ext_[omat_][ij], ij);
+//                        task(me_, &LMP2::Drms_local_sum, drms);
+//                    }
+
+//                }
+
                 madness::Future<double> elmp2;
                 madness::Future<double> drms;
                 if (iter < diis_start_) {
-                    elmp2 = task(ij_owner_[ij], &LMP2::energy, T2_amp_[div_][ij_local_[ij]], ij, iter);
-                    drms = task(ij_owner_[ij], &LMP2::T2_rms, T2_amp_[div_][ij_local_[ij]],
-                                T2_amp_[dmat1_][ij_local_[ij]], ij);
+                    elmp2 = task(me_, &LMP2::energy, T2_amp_[div_][ij], ij, iter);
+                    drms = task(me_, &LMP2::T2_rms, T2_amp_[div_][ij],
+                                T2_amp_[dmat1_][ij], ij);
                 }
                 else {
-                    elmp2 = task(ij_owner_[ij], &LMP2::energy, T2_ext_[nmat_][ij_local_[ij]], ij, iter);
-                    drms = task(ij_owner_[ij], &LMP2::T2_rms, T2_ext_[nmat_][ij_local_[ij]],
-                                T2_ext_[omat_][ij_local_[ij]], ij);
+                    elmp2 = task(me_, &LMP2::energy, T2_ext_[nmat_][ij], ij, iter);
+                    drms = task(me_, &LMP2::T2_rms, T2_ext_[nmat_][ij],
+                                T2_ext_[omat_][ij], ij);
                 }
 
-                task(ij_owner_[ij], &LMP2::Elmp2_local_sum, elmp2);
-                task(ij_owner_[ij], &LMP2::Drms_local_sum, drms);
+                task(me_, &LMP2::Elmp2_local_sum, elmp2);
+                task(me_, &LMP2::Drms_local_sum, drms);
 
             }
         }
     }
     else {
+        std::cout << "not in diis" << std::endl;
         for (int ij=0; ij < ij_pairs_; ij++) {
             terms += pair_domain_len_[ij] * pair_domain_len_[ij];
             if (me_ == ij_owner_[ij]) {
-                madness::Future<SharedMatrix> F_sum = task(ij_owner_[ij], &LMP2::build_F_sum, ij, iter);
 
-                madness::Future<SharedMatrix> Rtilde = task(ij_owner_[ij], &LMP2::build_rtilde, F_sum, ij, iter);
+                SharedMatrix F_sum = build_F_sum(ij, iter);
+                madworld_->taskq.fence();
 
-                madness::Future<SharedMatrix> T2 = task(ij_owner_[ij], &LMP2::amplitudes_T2, Rtilde, ij, iter);
+                madness::Future<SharedMatrix> Rtilde = task(me_, &LMP2::build_rtilde, F_sum, ij, iter);
 
-                madness::Future<double> elmp2 = task(ij_owner_[ij], &LMP2::energy, T2, ij, iter);
-                task(ij_owner_[ij], &LMP2::Elmp2_local_sum, elmp2);
+                madness::Future<SharedMatrix> T2 = task(me_, &LMP2::amplitudes_T2, Rtilde, ij, iter);
+
+                madness::Future<double> elmp2 = task(me_, &LMP2::energy, T2, ij, iter);
+                task(me_, &LMP2::Elmp2_local_sum, elmp2);
                 if (iter > 0) {
-                    madness::Future<double> drms = task(ij_owner_[ij], &LMP2::T2_rms, T2_amp_[div_][ij_local_[ij]],
-                                                        T2_amp_[dmat1_][ij_local_[ij]], ij);
-                    task(ij_owner_[ij], &LMP2::Drms_local_sum, drms);
+                    madness::Future<double> drms = task(me_, &LMP2::T2_rms, T2_amp_[div_][ij],
+                                                        T2_amp_[dmat1_][ij], ij);
+                    task(me_, &LMP2::Drms_local_sum, drms);
                 }
-                task(ij_owner_[ij], &LMP2::store_T2, T2, ij);
+                task(me_, &LMP2::store_T2, T2, ij);
 
             }
         }
@@ -115,10 +144,16 @@ int LMP2::compute_T2_energy(const int &iter) {
 
 #if HAVE_MADNESS == 1
 madness::Future<SharedMatrix> LMP2::get_old_T2(const int &ij) {
-    return madness::Future<SharedMatrix> (T2_amp_[dmat1_][ij_local_[ij]]);
+    return madness::Future<SharedMatrix> (T2_amp_[dmat1_][ij]);
 }
 
-madness::Future<SharedMatrix> LMP2::build_F_sum(const int &ij, const int &iter) {
+//madness::Void LMP2::print_matrix(SharedMatrix mat)
+//{
+//    mat->print();
+//    return madness::None;
+//}
+
+SharedMatrix LMP2::build_F_sum(const int &ij, const int &iter) {
 
     SharedMatrix F_sum(new Matrix());
 
@@ -132,7 +167,7 @@ madness::Future<SharedMatrix> LMP2::build_F_sum(const int &ij, const int &iter) 
             int kj = ij_map_neglect_[ij_kj_map_[ij][k]];
 
             if (pairdom_exist_[ij_kj_map_[ij][k]]) {
-                madness::Future<SharedMatrix> T2_kj = send(ij_owner_[kj], &LMP2::get_old_T2, kj);;
+                madness::Future<SharedMatrix> T2_kj = send(ij_owner_[kj], &LMP2::get_old_T2, kj);
                 task(ij_owner_[ij], &LMP2::F_sum_add_kj, F_sum, T2_kj, k, ij);
             }
             if (pairdom_exist_[ij_ik_map_[ij][k]]) {
@@ -141,14 +176,20 @@ madness::Future<SharedMatrix> LMP2::build_F_sum(const int &ij, const int &iter) 
             }
         }
     }
+    madworld_->taskq.fence();
 
-    return madness::Future<SharedMatrix>(F_sum);
+    return F_sum;
 }
 
 madness::Void LMP2::F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
                                  const int &k, const int &ij)
 {
     F_mutex_->lock();
+        double **f = F_sum->pointer();
+        double **t = T2_kj->pointer();
+        double **f_lo = F_LO_->pointer();
+    F_mutex_->unlock();
+
 
     int i = ij_i_map_[ij];
     int j = ij_j_map_[ij];
@@ -161,7 +202,8 @@ madness::Void LMP2::F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
                     for (int s=0, M=0; s < natom_; s++) {
                         if (pair_domain_[kj][s]) {
                             for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,M,L)));
+//                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,M,L)));
+                                f[l][m] -= f_lo[i][k] * t[M][L];
                             }
                         }
                     }
@@ -176,7 +218,8 @@ madness::Void LMP2::F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
                     for (int s=0, M=0; s < natom_; s++) {
                         if (pair_domain_[kj][s]) {
                             for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,L,M)));
+//                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,L,M)));
+                                f[l][m] -= f_lo[i][k] * t[L][M];
                             }
                         }
                     }
@@ -184,13 +227,16 @@ madness::Void LMP2::F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
             }
         }
     }
-    F_mutex_->unlock();
     return madness::None;
 }
 madness::Void LMP2::F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
                                  const int &k, const int &ij)
 {
     F_mutex_->lock();
+        double **f = F_sum->pointer();
+        double **t = T2_ik->pointer();
+        double **f_lo = F_LO_->pointer();
+    F_mutex_->unlock();
 
     int i = ij_i_map_[ij];
     int j = ij_j_map_[ij];
@@ -203,7 +249,7 @@ madness::Void LMP2::F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
                     for (int s=0, M=0; s < natom_; s++) {
                         if (pair_domain_[ik][s]) {
                             for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-                                F_sum->add(0, l, m, -(F_LO_->get(0,k,j) * T2_ik->get(0,M,L)));
+                                f[l][m] -= f_lo[k][j] * t[M][L];
                             }
                         }
                     }
@@ -218,7 +264,8 @@ madness::Void LMP2::F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
                     for (int s=0, M=0; s < natom_; s++) {
                         if (pair_domain_[ik][s]) {
                             for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-                                F_sum->add(0, l, m, -(F_LO_->get(0,k,j) * T2_ik->get(0,L,M)));
+//                                F_sum->add(0, l, m, -(F_LO_->get(0,k,j) * T2_ik->get(0,L,M)));
+                                f[l][m] -= f_lo[k][j] * t[L][M];
                             }
                         }
                     }
@@ -226,7 +273,6 @@ madness::Void LMP2::F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
             }
         }
     }
-    F_mutex_->unlock();
     return madness::None;
 }
 
@@ -235,16 +281,16 @@ madness::Future<SharedMatrix> LMP2::build_rtilde(const SharedMatrix F_sum, const
 
     int ij_loc = ij_local_[ij];
     SharedMatrix T2(new Matrix(pair_domain_len_[ij], pair_domain_len_[ij]));
-    T2->copy(eri_ij_[ij_loc]);
+    T2->copy(eri_ij_[ij]);
 
     if(iter > 0) {
 
         SharedMatrix Temp1 = SharedMatrix(T2->clone());
 
-        Temp1->gemm(false, false, 1.0, F_virt_[ij_loc], T2_amp_[dmat1_][ij_loc], 0.0);
+        Temp1->gemm(false, false, 1.0, F_virt_[ij_loc], T2_amp_[dmat1_][ij], 0.0);
         T2->gemm(false, false, 1.0, Temp1, S_virt_[ij_loc], 1.0);
 
-        Temp1->gemm(false, false, 1.0, S_virt_[ij_loc], T2_amp_[dmat1_][ij_loc], 0.0);
+        Temp1->gemm(false, false, 1.0, S_virt_[ij_loc], T2_amp_[dmat1_][ij], 0.0);
         T2->gemm(false, false, 1.0, Temp1, F_virt_[ij_loc], 1.0);
 
         Temp1->zero();
@@ -321,7 +367,7 @@ madness::Future<SharedMatrix> LMP2::amplitudes_T2(const SharedMatrix T2, const i
     T2->back_transform(W_[ij_loc]);
 
     if (iter > 0)
-        T2->add(T2_amp_[dmat1_][ij_loc]);
+        T2->add(T2_amp_[dmat1_][ij]);
 
     if (print_ > 3) {
         T2->set_name("T2 Amplitudes[" + ij_val.str() + "]");
@@ -619,5 +665,6 @@ madness::Future<SharedMatrix> LMP2::amplitudes_T2(const SharedMatrix T2, const i
 
 //}
 
+#endif // have_madnesss
 
 }} // End of psi and lmp2 namespace
