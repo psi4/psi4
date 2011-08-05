@@ -888,7 +888,6 @@ void Python::run(FILE *input)
             str strStartScript(inputfile);
 
             object objectScriptInit = exec( strStartScript, objectDict, objectDict );
-            Communicator::world->sync();
         }
         catch (error_already_set const& e)
         {

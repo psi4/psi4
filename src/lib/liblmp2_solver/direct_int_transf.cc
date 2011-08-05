@@ -36,7 +36,7 @@ void LMP2::integral_direct_transformation() {
         if (comm_ == "MADNESS") {
 #if HAVE_MADNESS == 1
 
-            task(MN_Owner_[MN], &LMP2::first_half_integral_transformation,
+            task(me_, &LMP2::first_half_integral_transformation,
                  MN_iter_->second[0], MN_iter_->second[2],
                  MN_iter_->second[1], MN_iter_->second[3], MN);
 
@@ -72,7 +72,7 @@ void LMP2::integral_direct_transformation() {
     timer_on("Second_Half_Transformation");
     for (int ij=0; ij < ij_pairs_; ij++) {
         if (me_ == ij_owner_[ij]) {
-            task(ij_owner_[ij], &LMP2::second_half_transformation, ij);
+            task(me_, &LMP2::second_half_transformation, ij);
         }
     }
     Communicator::world->sync();
