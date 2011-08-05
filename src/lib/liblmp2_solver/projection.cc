@@ -23,6 +23,8 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 void LMP2::projection()
 {
 
@@ -229,5 +231,6 @@ int LMP2::build_projection_matrix(const int &ij)
 
 }
 
+#endif // have_madness
 
 }}

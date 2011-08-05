@@ -1268,7 +1268,7 @@ namespace madness {
         typedef REMFUTURE(REMCONST(REMREF(arg5_type))) arg5T;
         typedef REMFUTURE(REMCONST(REMREF(arg6_type))) arg6T;
         typedef REMFUTURE(REMCONST(REMREF(arg7_type))) arg7T;
-		typedef REMFUTURE(REMCONST(REMREF(arg8_type))) arg8T;
+        typedef REMFUTURE(REMCONST(REMREF(arg8_type))) arg8T;
         typedef Future<REMFUTURE(resultT)> futureT;
         typedef RemoteReference< FutureImpl<REMFUTURE(resultT)> > refT;
 
@@ -1322,7 +1322,7 @@ namespace madness {
             check_dependency(arg5);
             check_dependency(arg6);
             check_dependency(arg7);
-	    	check_dependency(arg8);
+            check_dependency(arg8);
         }
 
         void run(World& /*world*/) {

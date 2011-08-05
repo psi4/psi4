@@ -6,6 +6,7 @@
  ** \LMP2 evaluation of energy
  */
 
+#include <liblmp2_solver/dist_container.h>
 #include <liblmp2_solver/lmp2.h>
 #include <libqt/qt.h>
 
@@ -23,6 +24,8 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 
 double LMP2::compute_energy()
 {    
@@ -31,6 +34,7 @@ double LMP2::compute_energy()
 //    sleep(90);
     params();
     moinfo();
+
     setup_factories();
     reference();
     overlap();
@@ -38,10 +42,36 @@ double LMP2::compute_energy()
     localize_pipek_mezey();
     transform_fock();
     build_domains();
+
     set_ij_owner_local();
     build_pairdomains();
+
     init_global_mat();
+
     projection();
+
+
+//    madness::WorldContainer<psi::dist_key,psi::dist_container> test_dc(*Communicator::world->get_madworld());
+
+//    for (int ij=0; ij < ij_pairs_; ij++) {
+//        if (me_ == test_dc.owner(dist_key(ij))) {
+//            test_dc.replace(dist_key(ij), SharedMatrix(new Matrix()));
+//            test_dc.find(dist_key(ij)).get()->second.init(wfn_, basisset_, molecule_, eri_, 0.0);
+//            test_dc.replace(dist_key(ij), SharedMatrix(new Matrix(pair_domain_len_[ij], pair_domain_len_[ij])));
+//        }
+//    }
+
+//    Communicator::world->get_madworld()->gop.fence();
+
+//    for (int ij=0; ij < ij_pairs_; ij++) {
+//        if (me_ == 0) {
+//            test_dc.find(dist_key(ij)).get()->second.print();
+//        }
+//    }
+
+
+
+
     integral_direct_transformation();
     allocate_T2_memory();
 
@@ -63,11 +93,12 @@ double LMP2::compute_energy()
         if (comm_ == "MADNESS")
             conv = compute_T2_energy(iter);
 
+
         print_results(iter);
         fflush(outfile);
         iter++;
 
-//        if (iter > 0)
+//        if (iter > 1)
 //            conv = 1;
     }
 
@@ -76,28 +107,35 @@ double LMP2::compute_energy()
 
     print_summary();
 
+
 }
 
 void LMP2::setup_ij_kj_ik_maps() {
     // Set up the ij to kj/ik maps
     for (int ij = 0; ij < ij_pairs_; ij++) {
+        if (me_ == ij_owner_[ij]) {
 
-        ij_kj_map_.push_back(std::vector<int>(ndocc_, 0));
-        ij_ik_map_.push_back(std::vector<int>(ndocc_, 0));
+            ij_kj_map_.insert(std::pair<int, std::map<int,int> >(ij, std::map<int,int>()));
+            ij_ik_map_.insert(std::pair<int, std::map<int,int> >(ij, std::map<int,int>()));
 
-        int i = ij_i_map_[ij];
-        int j = ij_j_map_[ij];
+            int i = ij_i_map_[ij];
+            int j = ij_j_map_[ij];
 
-        for (int k = 0; k < ndocc_; k++) {
-            if (k > j)
-                ij_kj_map_[ij][k] = (k * (k + 1)) / 2 + j;
-            else
-                ij_kj_map_[ij][k] = (j * (j + 1)) / 2 + k;
+            for (int k = 0; k < ndocc_; k++) {
+                int temp;
+                if (k > j)
+                    temp = (k * (k + 1)) / 2 + j;
+                else
+                    temp = (j * (j + 1)) / 2 + k;
+                ij_kj_map_[ij].insert(std::pair<int,int>(k , temp));
 
-            if (i > k)
-                ij_ik_map_[ij][k] = (i * (i + 1)) / 2 + k;
-            else
-                ij_ik_map_[ij][k] = (k * (k + 1)) / 2 + i;
+
+                if (i > k)
+                    temp = (i * (i + 1)) / 2 + k;
+                else
+                    temp = (k * (k + 1)) / 2 + i;
+                ij_ik_map_[ij].insert(std::pair<int,int>(k , temp));
+            }
         }
     }
 }
@@ -175,7 +213,7 @@ void LMP2::print_header() const
 LMP2::~LMP2()
 {
 
-    std::cout << "Finished LMP2" << std::endl;
+ /*   std::cout << "Finished LMP2" << std::endl;
     ao_start_.clear();
     ao_start_.clear();
     eri_.clear();
@@ -230,6 +268,7 @@ LMP2::~LMP2()
         T2_amp_.clear();
     }
     std::cout << "finished lmp2 destructor" << std::endl;
+    */
 
 }
 
@@ -358,12 +397,13 @@ void LMP2::set_ij_maps()
         for (int j = 0; j <= i; j++, ij++) {
             ij_map_neglect_.insert(std::pair<int,int>(counter, ij));
             if (pairdom_exist_[ij]) {
-                ij_i_map_.insert(std::pair<int,int>(counter, i));
-                ij_j_map_.insert(std::pair<int,int>(counter, j));
+                ij_i_map_.insert(std::pair<int,int>(ij, i));
+                ij_j_map_.insert(std::pair<int,int>(ij, j));
                 counter++;
             }
         }
-    }    
+    }
+
 }
 
 void LMP2::set_ij_owner_local()
@@ -371,15 +411,15 @@ void LMP2::set_ij_owner_local()
     ij_pairs_per_proc_ = 0;
     ij_owner_.clear();
     ij_local_.clear();
-    int v = 0, count = 0;
-    for(int ij=0; ij < ij_pairs_; ij++) {
-        ij_local_.push_back(count);
-        ij_owner_.push_back(v % nproc_);
-        if (v%nproc_ == nproc_-1) count++;
+    for(int ij=0, count=0; ij < ij_pairs_; ij++) {
+        ij_owner_.push_back(ij % nproc_);
+
         if (me_ == ij_owner_[ij])
-            ij_pairs_per_proc_++;
-        v++;
+            ij_local_.insert(std::pair<int,int>(ij,count));
+
+        if (ij_owner_[ij] == nproc_-1) count++;
     }
+    ij_pairs_per_proc_ = ij_local_.size();
 }
 
 void LMP2::build_pairdomains()
@@ -411,33 +451,36 @@ void LMP2::allocate_T2_memory() {
     if (diis_ == 1) {
         // Allocate memory for the amplitudes
         for (int i=0; i < max_diis_vectors_; i++) {
-            T2_amp_.push_back( std::vector< SharedMatrix > () );
-            T2_ext_.push_back( std::vector< SharedMatrix > () );
-            error_.push_back( std::vector< SharedMatrix > () );
+            T2_amp_.push_back( std::map<int, SharedMatrix > () );
+            T2_ext_.push_back( std::map<int, SharedMatrix > () );
+            error_.push_back(  std::map<int, SharedMatrix > () );
 
             for (int ij=0; ij < ij_pairs_; ij++) {
                 if (me_ == ij_owner_[ij]) {
-                    T2_amp_[i].push_back( SharedMatrix(new Matrix("T2 Amplitudes", nirreps_,
-                                                              &pair_domain_len_[ij],
-                                                              &pair_domain_len_[ij])) );
-                    T2_ext_[i].push_back( SharedMatrix(new Matrix("T2 Extrapolated Amplitudes", nirreps_,
-                                                                  &pair_domain_len_[ij],
-                                                                  &pair_domain_len_[ij])) );
-                    error_[i].push_back( SharedMatrix(new Matrix("DIIS Error Matrix", nirreps_,
-                                                                 &pair_domain_len_[ij],
-                                                                 &pair_domain_len_[ij])) );
+                    T2_amp_[i].insert(std::pair<int,SharedMatrix>(ij, SharedMatrix(new Matrix("T2[" + to_string(ij) + "] Amplitudes",
+                                                                                              nirreps_,
+                                                                                              &pair_domain_len_[ij],
+                                                                                              &pair_domain_len_[ij]))));
+                    T2_ext_[i].insert(std::pair<int,SharedMatrix>(ij, SharedMatrix(new Matrix("T2[" + to_string(ij) + "] Extrapolated Amplitudes",
+                                                                                              nirreps_,
+                                                                                              &pair_domain_len_[ij],
+                                                                                              &pair_domain_len_[ij]))));
+                    error_[i].insert(std::pair<int,SharedMatrix>(ij, SharedMatrix(new Matrix("DIIS[" + to_string(ij) + "] Error Matrix", nirreps_,
+                                                                                             &pair_domain_len_[ij],
+                                                                                             &pair_domain_len_[ij]))));
                 }
             }
         }
     }
     else {
         for (int i=0; i < 2; i++) {
-            T2_amp_.push_back(std::vector<SharedMatrix> (ij_pairs_per_proc_));
+            T2_amp_.push_back(std::map<int, SharedMatrix > ());
             for (int ij=0; ij < ij_pairs_; ij++) {
                 if (me_ == ij_owner_[ij]) {
-                    T2_amp_[i][ij_local_[ij]] = SharedMatrix(new Matrix("T2 Old Amplitudes", nirreps_,
-                                                                        &pair_domain_len_[ij],
-                                                                        &pair_domain_len_[ij]));
+                    T2_amp_[i].insert(std::pair<int,SharedMatrix>(ij, SharedMatrix(new Matrix("T2[" + to_string(ij) + "] Old Amplitudes",
+                                                                                              nirreps_,
+                                                                                              &pair_domain_len_[ij],
+                                                                                              &pair_domain_len_[ij]))));
                 }
             }
         }
@@ -494,7 +537,7 @@ int LMP2::print_matrix(const SharedMatrix mat, const std::string &str) const {
     return 0;
 }
 
-
+#endif // have_madness
 
 }}
 

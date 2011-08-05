@@ -22,6 +22,8 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 void LMP2::params() {
 
     int errcod, iconv, rconv, fs;
@@ -112,5 +114,7 @@ void LMP2::print_params() const {
     }
 
 }
+
+#endif // have_madness
 
 }}

@@ -22,6 +22,8 @@ class Chkpt;
 
 namespace lmp2 {
 
+#if HAVE_MADNESS == 1
+
 void LMP2::localize_pipek_mezey() {
 
 
@@ -248,5 +250,7 @@ void LMP2::localize_pipek_mezey() {
 
 
 }
+
+#endif // have_madness
 
 }}
