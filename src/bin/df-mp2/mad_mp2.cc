@@ -54,7 +54,7 @@ MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
     mutex_ = Communicator::world->get_mutex();
 #endif
 
-    //sleep(options.get_int("MADMP2_SLEEP"));
+    sleep(options.get_int("MADMP2_SLEEP"));
     common_init();
     parallel_init();
 
@@ -902,7 +902,7 @@ void MAD_MP2::Aia()
 
 madness::Future<std::vector<double> > MAD_MP2::fetch_Qia_block(const int& i, const int& ablock)
 {
-//    mutex_->lock();
+    mutex_->lock();
 
     int i_local = i_global_to_local_[i];
 
@@ -928,13 +928,13 @@ madness::Future<std::vector<double> > MAD_MP2::fetch_Qia_block(const int& i, con
         fflush(stdout);
     }
 
-//    mutex_->unlock();
+    mutex_->unlock();
 
     return madness::Future<std::vector<double> >(block);
 }
 madness::Void MAD_MP2::unpack_Qia_block(const std::vector<double>& block, SharedMatrix Q, const int& astart, const int& asize, const int & i)
 {
-//    mutex_->lock();
+    mutex_->lock();
 
 
     if(debug_){
@@ -951,19 +951,20 @@ madness::Void MAD_MP2::unpack_Qia_block(const std::vector<double>& block, Shared
         }
     }
 
-//    mutex_->lock();
+    mutex_->unlock();
 
     return madness::None;
 }
 
 madness::Future<SharedMatrix> MAD_MP2::build_Qa(const int &i) {
 
-//    mutex_->lock();
+    mutex_->lock();
 
     SharedMatrix Qa(new Matrix("Qa", naux_, navir_));
     double** Qap = Qa->pointer();
     double** Qiap = Aia_->pointer();
 
+    std::vector<madness::Future<std::vector<double> > > fut(ablock_owner_[i].size());
     for (int ind = 0; ind < ablock_owner_[i].size(); ind++) {
         if (debug_)
             printf("rank = %3d, i = %3d: Must fetch from process %3d, a block of %4d a, starting at a = %4d\n",
@@ -979,28 +980,30 @@ madness::Future<SharedMatrix> MAD_MP2::build_Qa(const int &i) {
                 ::memcpy(&(Qap[Q][astart]), &(Qiap[Q][i_local*navir_local_]),
                          asize * sizeof(double));
         }else{
-            madness::Future<std::vector<double> > fut = send(aowner, &MAD_MP2::fetch_Qia_block, i, ind);
-            for (int P = 0; P < naux_; P++) {
-                for (int a = 0; a < asize; a++) {
-                    Qap[P][astart + a] = fut.get()[P * asize + a];
-                }
-            }
+            fut[ind] = send(aowner, &MAD_MP2::fetch_Qia_block, i, ind);
+            task(rank_, &MAD_MP2::unpack_Qia_block, fut[ind], Qa, astart, asize, i);
+//            for (int P = 0; P < naux_; P++) {
+//                for (int a = 0; a < asize; a++) {
+//                    Qap[P][astart + a] = fut.get()[P * asize + a];
+//                }
+//            }
         }
     }
 
-//    mutex_->unlock();
+    mutex_->unlock();
 
     return madness::Future<SharedMatrix> (Qa);
 }
 
 madness::Future<SharedMatrix> MAD_MP2::build_Qb(const int &j) {
 
-//    mutex_->lock();
+    mutex_->lock();
 
     SharedMatrix Qb(new Matrix("Qb", naux_, navir_));
     double** Qbp = Qb->pointer();
     double** Qiap = Aia_->pointer();
 
+    std::vector<madness::Future<std::vector<double> > > fut(ablock_owner_[j].size());
     for (int ind = 0; ind < ablock_owner_[j].size(); ind++) {
         if (debug_)
             printf("rank = %3d, i = %3d: Must fetch from process %3d, a block of %4d a, starting at a = %4d\n",
@@ -1016,29 +1019,30 @@ madness::Future<SharedMatrix> MAD_MP2::build_Qb(const int &j) {
                 ::memcpy(&(Qbp[Q][bstart]), &(Qiap[Q][j_local*navir_local_]),
                          bsize * sizeof(double));
         }else{
-            madness::Future<std::vector<double> > fut = send(bowner,&MAD_MP2::fetch_Qia_block,j,ind);
-            for (int P = 0; P < naux_; P++) {
-                for (int b = 0; b < bsize; b++) {
-                    Qbp[P][bstart + b] = fut.get()[P * bsize + b];
-                }
-            }
+            fut[ind] = send(bowner,&MAD_MP2::fetch_Qia_block,j,ind);
+            task(rank_, &MAD_MP2::unpack_Qia_block,fut[ind], Qb, bstart, bsize, j);
+//            for (int P = 0; P < naux_; P++) {
+//                for (int b = 0; b < bsize; b++) {
+//                    Qbp[P][bstart + b] = fut.get()[P * bsize + b];
+//                }
+//            }
         }
     }
 
-//    mutex_->unlock();
+    mutex_->unlock();
 
     return madness::Future<SharedMatrix> (Qb);
 }
 madness::Future<SharedMatrix> MAD_MP2::build_I(SharedMatrix Qa, SharedMatrix Qb)
 {
-//    mutex_->lock();
+    mutex_->lock();
 
     boost::shared_ptr<Matrix> I(new Matrix("I", navir_, navir_));
 
     C_DGEMM('T','N',navir_,navir_,naux_, 1.0, Qa->pointer()[0], navir_,
             Qb->pointer()[0], navir_, 0.0, I->pointer()[0], navir_);
 
-//    mutex_->unlock();
+    mutex_->unlock();
 
     return madness::Future<SharedMatrix>(I);
 }
@@ -1079,6 +1083,7 @@ void MAD_MP2::I()
             madness::Future<SharedMatrix> Qa_fut = task(rank_, &MAD_MP2::build_Qa, i);
             madness::Future<SharedMatrix> Qb_fut = task(rank_, &MAD_MP2::build_Qb, j);
 
+
             boost::shared_ptr<Matrix> I_fut = task(rank_, &MAD_MP2::build_I, Qa_fut, Qb_fut);
 
             if (debug_ > 2) {
@@ -1101,7 +1106,7 @@ void MAD_MP2::I()
 }
 madness::Future<double> MAD_MP2::energy_j(const SharedMatrix I, const int &i, const int &j) {
 
-//    mutex_->lock();
+    mutex_->lock();
 
     double e_mp2j;
     for (int a = 0; a < navir_; a++) {
@@ -1116,13 +1121,13 @@ madness::Future<double> MAD_MP2::energy_j(const SharedMatrix I, const int &i, co
         }
     }
 
-//    mutex_->unlock();
+    mutex_->unlock();
 
     return madness::Future<double>(e_mp2j);
 }
 madness::Future<double> MAD_MP2::energy_k(const SharedMatrix I, const int &i, const int &j)
 {
-//    mutex_->lock();
+    mutex_->lock();
 
     double e_mp2k=0.0;
     for (int a = 0; a < navir_; a++) {
@@ -1139,7 +1144,7 @@ madness::Future<double> MAD_MP2::energy_k(const SharedMatrix I, const int &i, co
         }
     }
 
-//    mutex_->unlock();
+    mutex_->unlock();
 
     return madness::Future<double>(e_mp2k);
 }
