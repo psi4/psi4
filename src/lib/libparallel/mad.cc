@@ -27,15 +27,16 @@ MadCommunicator::MadCommunicator(const int &argc, char **argv) :
 
     // If we have threads in the thread pool, this gets all of the pthread ids from madness, and
     // creates a map of pthread ids to a unique integer value (i.e. 0, 1, 2, ...)
+    int i = 0;
     if (Process::environment("MAD_NUM_THREADS") != "1" && Process::environment("POOL_NTHREAD") != "0") {
         pthread_t *id = madworld_->taskq.thread_id();
-        for (int i=0; i < nthread_; i++) {
+        for (i=0; i < nthread_; i++) {
             thread_id_.insert( std::pair<pthread_t, int>(id[i], i) );
         }
         free(id);
     }
     // We need to add the master thread because it can perform tasks that are in the task queue
-    thread_id_.insert( std::pair<pthread_t, int>(pthread_self(), nthread_));
+    thread_id_.insert( std::pair<pthread_t, int>(pthread_self(), i));
     // Add one to the total number of threads for the master thread
     nthread_++;
 

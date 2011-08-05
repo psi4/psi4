@@ -22,9 +22,9 @@ class Chkpt;
 
 namespace lmp2 {
 
-madness::Future<double> LMP2::energy(const SharedMatrix T2, const int &ij, const int &iter) {
+#if HAVE_MADNESS == 1
 
-    int ij_loc = ij_local_[ij];
+madness::Future<double> LMP2::energy(const SharedMatrix T2, const int &ij, const int &iter) {
 
     // *** Compute the new MP2 energy ***
 
@@ -36,7 +36,7 @@ madness::Future<double> LMP2::energy(const SharedMatrix T2, const int &ij, const
     if (i != j) {
         for(int a=0; a < pair_domain_len_[ij]; a++) {
             for(int b=0; b < pair_domain_len_[ij]; b++) {
-                double Kab = eri_ij_[ij_loc]->get(0, a, b);
+                double Kab = eri_ij_[ij]->get(0, a, b);
                 if(fabs(Kab) > 1e-14) {
                     double Tab = T2->get(0,a,b);
                     double Tba = T2->get(0,b,a);
@@ -50,7 +50,7 @@ madness::Future<double> LMP2::energy(const SharedMatrix T2, const int &ij, const
     else {
         for(int a=0; a < pair_domain_len_[ij]; a++) {
             for(int b=0; b < pair_domain_len_[ij]; b++) {
-                double Kab = eri_ij_[ij_loc]->get(0, a, b);
+                double Kab = eri_ij_[ij]->get(0, a, b);
                 if(fabs(Kab) > 1e-14) {
                     double Tab = T2->get(0,a,b);
                     double Tba = T2->get(0,b,a);
@@ -103,5 +103,6 @@ void LMP2::print_results(const int &iter) const {
 
 }
 
+#endif // have_madness
 
 }} // End of psi and lmp2 namespaces
