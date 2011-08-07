@@ -128,11 +128,11 @@ void diag_adc(void)
 			amp_write_T1(&B, params.num_amps, outfile);
 			dpd_file2_close(&B);
 			fprintf(outfile, "\n");
-			fprintf(outfile, "\tComponents of squared dipole moment:\n");
-			fprintf(outfile, "\t");
-			for(i = 0;i < 3;i++)
-				fprintf(outfile, "%c: %10.7f ", axis[i], params.mu_sqs[irrep][root][i]);
-			fprintf(outfile, "\n\tOscillator strength is %10.7f.\n\n", params.ocss[irrep][root]);
+//			fprintf(outfile, "\tComponents of squared dipole moment:\n");
+//			fprintf(outfile, "\t");
+//			for(i = 0;i < 3;i++)
+//				fprintf(outfile, "%c: %10.7f ", axis[i], params.mu_sqs[irrep][root][i]);
+//			fprintf(outfile, "\n\tOscillator strength is %10.7f.\n\n", params.ocss[irrep][root]);
 			fflush(outfile);
 		}
 	}

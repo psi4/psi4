@@ -9,9 +9,9 @@ configuration = {
     "CXXOPT"   : "-O2",
     "CXXOTH"   : " -fopenmp",
     "CXXDBG"   : "",
-    "CXXINC"   : " -I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6 -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6",
+    "CXXINC"   : " -I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7",
     "CXXFLAGS" : " -O2   -fopenmp $(CPPFLAGS) $(PSICPPFLAGS)",
-    "LDFLAGS"  : "  /Users/masaaki/lib/libgoto2_penrynp-r1.13.a -L/System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config -ldl -lpython2.6 -lpthread",
+    "LDFLAGS"  : "  /Users/masaaki/lib/libgoto2_penrynp-r1.13.a -L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -ldl -framework CoreFoundation -lpython2.7 -u _PyMac_Error /System/Library/Frameworks/Python.framework/Versions/2.7/Python -lpthread",
     "CPPFLAGS" : "",
     "PSICPPFLAGS" : "-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include"
 }

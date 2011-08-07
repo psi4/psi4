@@ -1,5 +1,5 @@
 # Location of your PSI4 source
-psi_top_srcdir = /Users/masaaki/psi4
+psi_top_srcdir = @top_srcdir@
 # Location of your PSI4 install, by default as listed
 psi_top_objdir = ../..
 
@@ -9,7 +9,7 @@ UNAME := $(shell uname)
 include $(psi_top_objdir)/src/bin/MakeVars
 
 PSITARGET = $(shell basename `pwd`).so
-PSIINCLUDE = -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib
+PSIINCLUDE = -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -I$(psi_top_objdir)/madness/include -I$(psi_top_srcdir)/madness/include -I$(psi_top_srcdir)/madness/src/lib
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
 MADFLAGS = -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include
