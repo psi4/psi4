@@ -1,0 +1,28 @@
+WARNING: COMMUNICATOR was changed to MADNESS
+!! Warning: MPI::Init_thread did not provide requested functionality 2 0
+Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
+ Case Study Test of all SCF algorithms/spin-degeneracies: Singlet-Triplet O2
+   -Nuclear Repulsion:
+	Triplet nuclear repulsion energy: matched.
+	Singlet nuclear repulsion energy: matched.
+   -C1 Algorithms:
+    -Singlet RHF:
+	Singlet PK RHF energy: matched.
+	Singlet Direct RHF energy: matched.
+	Singlet Disk RHF energy: matched.
+	Singlet DF RHF energy: matched.
+    -Singlet UHF:
+	Singlet PK UHF energy: matched.
+	Singlet Direct UHF energy: matched.
+	Singlet Disk UHF energy: matched.
+	Singlet DF UHF energy: matched.
+    -Triplet UHF:
+	Triplet PK UHF energy: matched.
+	Triplet Direct UHF energy: matched.
+	Triplet Disk UHF energy: matched.
+	Triplet DF UHF energy: matched.
+    -Triplet ROHF:
+	Triplet PK ROHF energy: matched.
+	Triplet Direct ROHF energy: matched.
+	Triplet Disk ROHF energy: matched.
+	Triplet DF ROHF energy: matched.

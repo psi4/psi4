@@ -1,0 +1,108 @@
+
+srcdir = /Users/masaaki/psi4/src/lib/libchkpt
+VPATH = /Users/masaaki/psi4/src/lib/libchkpt
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_chkpt.a
+
+TRUECXXSRC = \
+init.cc \
+prefix.cc \
+close.cc \
+iopen.cc \
+ncalcs.cc \
+nmo.cc \
+nsymhf.cc \
+phase_check.cc \
+ref.cc \
+atom_pos.cc \
+us2s.cc \
+orbspi.cc \
+sopi.cc \
+clsdpi.cc \
+openpi.cc \
+irr_labs.cc \
+label.cc \
+zvals.cc \
+ict.cc \
+exps.cc \
+contr_full.cc \
+contr.cc \
+sprim.cc \
+snuc.cc \
+stype.cc \
+snumg.cc \
+sloc.cc \
+shell_transm.cc \
+nallatom.cc \
+felement.cc \
+sym_label.cc \
+usotao.cc \
+usotbf.cc \
+sloc_new.cc \
+ua2a.cc \
+symoper.cc \
+zmat.cc \
+shells_per_am.cc \
+am2canon_shell_order.cc \
+rref.cc \
+fgeom.cc \
+geom.cc \
+enuc.cc \
+num_unique_atom.cc \
+num_unique_shell.cc \
+rottype.cc \
+max_am.cc \
+puream.cc \
+nso.cc \
+nao.cc \
+nshell.cc \
+nirreps.cc \
+nprim.cc \
+natom.cc \
+escf.cc \
+etot.cc \
+evals.cc \
+fock.cc \
+scf.cc \
+lagr.cc \
+ccvecs.cc \
+ecorr.cc \
+eref.cc \
+efzc.cc \
+e_labeled.cc \
+disp.cc \
+cartrep.cc \
+grad.cc \
+atom_dummy.cc \
+keyword.cc \
+nfzc.cc \
+nfzv.cc \
+frzcpi.cc \
+frzvpi.cc \
+disp_irrep.cc \
+cdsalcpi.cc \
+cdsalc2cd.cc \
+exist.cc \
+override_occ.cc \
+statespi.cc \
+eccsd.cc \
+e_t.cc \
+emp2.cc \
+fragment_coeff.cc natom_per_fragment.cc nref_per_fragment.cc \
+nallatom_per_fragment.cc  nfragment.cc rot_symm_num.cc rotconst.cc
+
+DEPENDINCLUDE = chkpt.h chkpt.hpp config.h
+
+LIBOBJ = $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+install_inc:: $(DEPENDINCLUDE)
+	$(MKDIRS) $(incdir)/libchkpt
+	$(INSTALL_INCLUDE) $^ $(incdir)/libchkpt
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif

@@ -47,11 +47,21 @@ namespace psi {
     namespace mints     { PsiReturnType mints(Options &);    }
     namespace deriv     { PsiReturnType deriv(Options &);    }
     namespace scf       { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+<<<<<<< Updated upstream
     namespace dfmp2     { PsiReturnType dfmp2(Options &);    }
     namespace dfcc      { PsiReturnType dfcc(Options &);     }
     namespace sapt      { PsiReturnType sapt(Options &);     }
     namespace dcft      { PsiReturnType dcft(Options &);     }
     namespace mcscf     { PsiReturnType mcscf(Options &);    }
+=======
+    namespace dfmp2     { PsiReturnType dfmp2(Options &); }
+    namespace dfcc      { PsiReturnType dfcc(Options &); }
+		namespace mp2       { PsiReturnType mp2(Options &); }
+		namespace adc       { PsiReturnType adc(Options &); }
+    namespace sapt      { PsiReturnType sapt(Options &);  }
+    namespace dcft      { PsiReturnType dcft(Options &);  }
+    namespace mcscf     { PsiReturnType mcscf(Options &);  }
+>>>>>>> Stashed changes
     namespace psimrcc   { PsiReturnType psimrcc(Options &);  }
     namespace transqt   { PsiReturnType transqt(Options &);  }
     namespace transqt2  { PsiReturnType transqt2(Options &); }
@@ -197,6 +207,27 @@ double py_psi_dcft()
     }
     else
         return 0.0;
+}
+
+double py_psi_mp2()
+{
+  py_psi_prepare_options_for_module("MP2");
+  if (mp2::mp2(Process::environment.options) == Success) {
+    return Process::environment.globals["CURRENT ENERGY"];
+  }
+  else
+    return 0.0;
+}
+
+double py_psi_adc()
+{
+	py_psi_prepare_options_for_module("ADC");
+	if (adc::adc(Process::environment.options) == Success) {
+		return Process::environment.globals["CURRENT ENERGY"];
+	}
+	else {
+		return 0.0;
+	}
 }
 
 double py_psi_dfmp2()
@@ -738,6 +769,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("scf", py_psi_scf_callbacks);
     def("scf", py_psi_scf);
     def("dcft", py_psi_dcft);
+    def("mp2", py_psi_mp2);
+		def("adc", py_psi_adc);
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
     def("lmp2", py_psi_lmp2);

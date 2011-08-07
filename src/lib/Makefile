@@ -1,0 +1,78 @@
+ 
+.PHONY:	default all install depend clean dclean targetclean
+
+subdirs = libciomr libchkpt libqt libpsio libiwl libdpd \
+          libint libderiv libr12 libutil liboptions lib3index libfunctional \
+          libmints libtrans libparallel libscf_solver libboost_python \
+          libboost_regex libboost_thread libdiis libsapt_solver \
+          libboost_filesystem libboost_system libplugin \
+          libdfcc_solver libmoinfo libsmartptr libyeti
+
+all: default
+
+default:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making in $${dir} ...; $(MAKE) default) || exit 1; \
+          done
+
+install:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install) || exit 1; \
+          done
+
+install_inc:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install_inc) || exit 1; \
+          done
+
+install_man:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making install in $${dir} ...; $(MAKE) install_man) || exit 1; \
+          done
+
+depend:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making depend in $${dir} ...; $(MAKE) depend) || exit 1; \
+          done
+
+clean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making clean in $${dir} ...; $(MAKE) clean) || exit 1; \
+          done
+
+dclean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making dclean in $${dir} ...; $(MAKE) dclean) || exit 1; \
+          done
+
+targetclean:
+	for dir in $(subdirs); \
+          do \
+            (cd $${dir}; echo ... Making clean in $${dir} ...; $(MAKE) targetclean) || exit 1; \
+          done
+
+
+#
+# keep the configuration information and makefile up-to-date
+#
+
+top_srcdir = /Users/masaaki/psi4
+srcdir = /Users/masaaki/psi4/src/lib
+top_objdir = ../..
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/lib/Makefile ./config.status
+

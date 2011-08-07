@@ -1,0 +1,27 @@
+srcdir = /Users/masaaki/psi4/src/bin/stable
+VPATH = /Users/masaaki/psi4/src/bin/stable
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_stable.a
+#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
+CXXSRC = \
+build_A_RHF.cc   cache.cc        diag_A_UHF.cc       get_params.cc \
+build_A_ROHF.cc  diag_A_RHF.cc   follow_evec_UHF.cc  print_evals.cc \
+build_A_UHF.cc   diag_A_ROHF.cc  get_moinfo.cc       stable.cc \
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: stable.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1

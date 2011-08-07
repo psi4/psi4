@@ -11,7 +11,12 @@ include $(psi_top_objdir)/src/bin/MakeVars
 PSITARGET = $(shell basename `pwd`).so
 PSIINCLUDE = -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib -I../../madness/src/lib -I../../objdir/madness/include
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
+<<<<<<< Updated upstream
 PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin -L../../objdir/madness/src/lib/world -lMADworld
+=======
+PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
+MADFLAGS = -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include
+>>>>>>> Stashed changes
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -31,11 +36,11 @@ endif
 
 # The object files
 %.o: %.cc
-	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(MADFLAGS) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) -c $< $(OUTPUT_OPTION)
 
 #include $(psi_top_objdir)/src/bin/MakeRules
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
+	$(CXX) $(MADFLAGS) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
 
 # Erase all compiled intermediate files
 clean:
