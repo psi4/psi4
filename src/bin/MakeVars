@@ -5,7 +5,7 @@ SHELL = /bin/sh
 # Initialize variables that have been figured out by configure.
 #
 
-target = i386-apple-darwin10.8.0
+target = i386-apple-darwin11.0.0
 
 prefix = /usr/local/psi4
 exec_prefix = ${prefix}
@@ -42,8 +42,8 @@ PSICPPFLAGS = -I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir
 CPPFLAGS = 
 
 BOOST_CPPFLAGS = @BOOST_CPPFLAGS@
-PYTHON_LDFLAGS = -L/System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config -ldl -lpython2.6
-PYTHON_INCLUDE = -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6 -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6
+PYTHON_LDFLAGS = -L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -ldl -framework CoreFoundation -lpython2.7 -u _PyMac_Error /System/Library/Frameworks/Python.framework/Versions/2.7/Python
+PYTHON_INCLUDE = -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7
 
 CDEF = 
 COPT = -O2
@@ -94,7 +94,7 @@ vpath allocate.o $(top_objdir)/lib:$(libdir)
 
 # Whether we have plugins enabled
 HAVE_PLUGINS=
-TARGET_OS=darwin10.8.0
+TARGET_OS=darwin11.0.0
 # we are mostly compiling C programs here
 LDFLAGS =  -fopenmp
 LDLIBS = $(CLIBS) -lpthread

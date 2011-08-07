@@ -98,7 +98,7 @@
 #define HAVE_SQRT 1
 
 /* Define to 1 if stdbool.h conforms to C99. */
-#define HAVE_STDBOOL_H 1
+/* #undef HAVE_STDBOOL_H */
 
 /* Define to 1 if you have the <stddef.h> header file. */
 #define HAVE_STDDEF_H 1
@@ -176,7 +176,7 @@
 #define HOST_CPU "x86_64"
 
 /* Defines the host os (linux-gnu, ...). */
-#define HOST_SYSTEM "darwin10.8.0"
+#define HOST_SYSTEM "darwin11.0.0"
 
 /* define if array has fill member function. */
 /* #undef MADNESS_ARRAY_HAS_FILL */
@@ -200,7 +200,7 @@
 #define MADNESS_CONFIGURATION_CXXFLAGS " -O3 -Wall -Wno-strict-aliasing -Wno-deprecated"
 
 /* Date of configuration */
-#define MADNESS_CONFIGURATION_DATE "Wed Jul 20 18:56:08 CEST 2011"
+#define MADNESS_CONFIGURATION_DATE "Mon Aug  8 02:39:30 JST 2011"
 
 /* Configured on this machine */
 #define MADNESS_CONFIGURATION_HOST "Osiris.local"
