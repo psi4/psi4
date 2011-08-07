@@ -1,11 +1,13 @@
 use strict;
 use warnings;
 
-die "Usage\n\t\t$0 input_file target\n" unless @ARGV == 2;
+die "Usage\n\t\t$0 input_file logfile\n" unless @ARGV == 2;
 
 my $psi = "../../bin/psi4";
 my $input = shift;
-my $target = shift;
+my $logfile = shift;
+
+open(LOGFILE,">$logfile") or die "I can't write to $logfile\n";
 
 sub backtick(@)
 {
@@ -14,8 +16,8 @@ sub backtick(@)
     if ($pid) {
         my $output;
         while (<KID>) {
-            print STDOUT $_;
-            $output .= $_; # could be improved...
+            print STDOUT;
+            print LOGFILE;
         }
         close(KID);
         return $output;
@@ -25,11 +27,10 @@ sub backtick(@)
 }
 
 my @cmd = ($psi, $input);
-my $output = backtick(@cmd);
+backtick(@cmd);
+
 my $return = $? ? 1 : 0;
-open(TARGET,">$target") or die "I can't write to $target\n";
-print TARGET $output;
-close TARGET;
+close LOGFILE;
 
 exit $return;
 

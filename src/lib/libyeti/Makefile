@@ -8,7 +8,7 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_yeti.a
 
-CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL)
+CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL) -DHAVE_PSI=1
 
 CXXINC += $(PYTHON_INCLUDE)
 

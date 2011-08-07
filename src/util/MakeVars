@@ -5,7 +5,7 @@ SHELL = /bin/sh
 # Initialize variables that have been figured out by configure.
 #
 
-target = i386-apple-darwin10.8.0
+target = i386-apple-darwin11.0.0
 
 prefix = /usr/local/psi4
 exec_prefix = ${prefix}

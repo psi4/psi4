@@ -575,14 +575,14 @@ s,@am__leading_dot@,|#_!!_#|.,g
 s,@AMTAR@,|#_!!_#|${SHELL} /Users/masaaki/psi4/madness/config/missing --run tar,g
 s,@am__tar@,|#_!!_#|${AMTAR} chof - "$$tardir",g
 s,@am__untar@,|#_!!_#|${AMTAR} xf -,g
-s,@build@,|#_!!_#|x86_64-apple-darwin10.8.0,g
+s,@build@,|#_!!_#|x86_64-apple-darwin11.0.0,g
 s,@build_cpu@,|#_!!_#|x86_64,g
 s,@build_vendor@,|#_!!_#|apple,g
-s,@build_os@,|#_!!_#|darwin10.8.0,g
-s,@host@,|#_!!_#|x86_64-apple-darwin10.8.0,g
+s,@build_os@,|#_!!_#|darwin11.0.0,g
+s,@host@,|#_!!_#|x86_64-apple-darwin11.0.0,g
 s,@host_cpu@,|#_!!_#|x86_64,g
 s,@host_vendor@,|#_!!_#|apple,g
-s,@host_os@,|#_!!_#|darwin10.8.0,g
+s,@host_os@,|#_!!_#|darwin11.0.0,g
 s,@USE_X86_64_ASM_TRUE@,|#_!!_#|,g
 s,@USE_X86_64_ASM_FALSE@,|#_!!_#|#,g
 s,@USE_X86_32_ASM_TRUE@,|#_!!_#|#,g
@@ -638,10 +638,10 @@ s,@HAVE_DOXYGEN@,|#_!!_#|NO,g
 s,@DOXYGEN@,|#_!!_#|,g
 s,@HAVE_DOT@,|#_!!_#|NO,g
 s,@DOT@,|#_!!_#|,g
-s,@HAVE_PDFLATEX@,|#_!!_#|YES,g
-s,@PDFLATEX@,|#_!!_#|/usr/texbin/pdflatex,g
-s,@HAVE_LATEX@,|#_!!_#|YES,g
-s,@LATEX@,|#_!!_#|/usr/texbin/latex,g
+s,@HAVE_PDFLATEX@,|#_!!_#|NO,g
+s,@PDFLATEX@,|#_!!_#|,g
+s,@HAVE_LATEX@,|#_!!_#|NO,g
+s,@LATEX@,|#_!!_#|,g
 s,@CAN_BUILD_DOC_TRUE@,|#_!!_#|#,g
 s,@CAN_BUILD_DOC_FALSE@,|#_!!_#|,g
 s,@LIBOBJS@,|#_!!_#| ${LIBOBJDIR}error$U.o,g
@@ -900,7 +900,7 @@ which seems to be undefined.  Please make sure it is defined." >&2;}
   #
     # First, check the format of the line:
     cat >"$tmp/defines.sed" <<\CEOF
-/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*$/b def
+/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*/b def
 /^[	 ]*#[	 ]*define[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[(	 ]/b def
 b
 :def
@@ -915,7 +915,7 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*VERSION\)[	 (].*,\1define\2 "0.9" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*ON_A_MAC\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*MAD_BIND_DEFAULT\)[	 (].*,\1define\2 "-1 -1 -1" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HOST_CPU\)[	 (].*,\1define\2 "x86_64" ,
-s,^\([	 #]*\)[^	 ]*\([	 ]*HOST_SYSTEM\)[	 (].*,\1define\2 "darwin10.8.0" ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HOST_SYSTEM\)[	 (].*,\1define\2 "darwin11.0.0" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*X86_64\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*STDC_HEADERS\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SYS_TYPES_H\)[	 (].*,\1define\2 1 ,
@@ -946,7 +946,6 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SYS_PARAM_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SYS_TIME_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UNISTD_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE__BOOL\)[	 (].*,\1define\2 1 ,
-s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_STDBOOL_H\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*restrict\)[	 (].*,\1define\2 __restrict ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*TIME_WITH_SYS_TIME\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UINT64_T\)[	 (].*,\1define\2 1 ,
@@ -954,15 +953,15 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_INT64_T\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UINT32_T\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_INT32_T\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UINT16_T\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UINT8_T\)[	 (].*,\1define\2 1 ,
 CEOF
     sed -f "$tmp/defines.sed" $ac_file_inputs >"$tmp/out1"
     # First, check the format of the line:
     cat >"$tmp/defines.sed" <<\CEOF
-/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*$/b def
+/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*/b def
 /^[	 ]*#[	 ]*define[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[(	 ]/b def
 b
 :def
-s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_UINT8_T\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_PTRDIFF_T\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SLEEP\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_RANDOM\)[	 (].*,\1define\2 1 ,
@@ -988,7 +987,7 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_XTERM\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_GDB\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_ASSERTIONS_THROW\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_CONFIGURATION_USER\)[	 (].*,\1define\2 "masaaki" ,
-s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_CONFIGURATION_DATE\)[	 (].*,\1define\2 "Wed Jul 20 18:56:08 CEST 2011" ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_CONFIGURATION_DATE\)[	 (].*,\1define\2 "Mon Aug  8 02:39:30 JST 2011" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_CONFIGURATION_CXX\)[	 (].*,\1define\2 "mpicxx" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_CONFIGURATION_CXXFLAGS\)[	 (].*,\1define\2 " -O3 -Wall -Wno-strict-aliasing -Wno-deprecated" ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*MADNESS_CONFIGURATION_HOST\)[	 (].*,\1define\2 "Osiris.local" ,
