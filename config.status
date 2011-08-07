@@ -301,7 +301,7 @@ on `(hostname || uname -n) 2>/dev/null | sed 1q`
 "
 
 # Files that config.status was made for.
-config_files=" include/Makefile Makefile lib/Makefile src/Makefile src/lib/Makefile src/lib/MakeRules src/lib/MakeVars src/util/Makefile src/util/MakeRules src/util/MakeVars src/bin/Makefile src/bin/MakeRules src/bin/MakeVars doc/MakeVars doc/MakeRules doc/Makefile doc/macros.tex doc/progman/svn/svn.eps doc/installation/Makefile doc/progman/Makefile doc/userman/Makefile doc/userman/prsty.bst doc/doxygen/Makefile doc/doxygen/doxygen.cfg src/lib/libdpd/Makefile src/lib/libutil/Makefile src/lib/libiwl/Makefile src/lib/libpsio/Makefile src/lib/libqt/Makefile src/lib/libciomr/Makefile src/lib/libchkpt/Makefile src/lib/libderiv/Makefile src/lib/libderiv/MakeVars src/lib/libderiv/libderiv_config.h src/lib/libdiis/Makefile src/lib/libint/Makefile src/lib/libint/MakeVars src/lib/libint/libint_config.h src/lib/libr12/Makefile src/lib/libr12/MakeVars src/lib/libr12/libr12_config.h src/lib/liboptions/Makefile src/lib/libmoinfo/Makefile src/lib/libmints/Makefile src/lib/libscf_solver/Makefile src/lib/libtrans/Makefile src/lib/libparallel/Makefile src/lib/libboost_python/Makefile src/lib/libboost_regex/Makefile src/lib/libboost_thread/Makefile src/lib/libboost_filesystem/Makefile src/lib/libboost_system/Makefile src/lib/libsapt_solver/Makefile src/lib/libfunctional/Makefile src/lib/libplugin/Makefile src/lib/lib3index/Makefile src/lib/libsmartptr/Makefile src/lib/libyeti/Makefile src/lib/libdfcc_solver/Makefile src/util/tocprint/Makefile src/bin/psi4/Makefile src/bin/response/Makefile src/bin/cusp/Makefile src/bin/dcft/Makefile src/bin/mcscf/Makefile src/bin/transqt2/Makefile src/bin/transqt/Makefile src/bin/mp2/Makefile src/bin/clag/Makefile src/bin/stable/Makefile src/bin/cphf/Makefile src/bin/ccsort/Makefile src/bin/mvo/Makefile src/bin/geom/Makefile src/bin/ccenergy/Makefile src/bin/cctriples/Makefile src/bin/ccresponse/Makefile src/bin/cchbar/Makefile src/bin/cclambda/Makefile src/bin/ccdensity/Makefile src/bin/cis/Makefile src/bin/adc/Makefile src/bin/scf/Makefile src/bin/psimrcc/Makefile src/bin/df-mp2/Makefile src/bin/sapt/Makefile src/bin/mints/Makefile src/bin/deriv/Makefile src/bin/optking/Makefile src/bin/df-cc/Makefile src/bin/findif/Makefile tests/Makefile tests/MakeVars tests/MakeRules tests/runtest.pl tests/dcft1/Makefile tests/dcft2/Makefile tests/dcft3/Makefile tests/scf1/Makefile tests/scf2/Makefile tests/scf3/Makefile tests/scf4/Makefile tests/scf5/Makefile tests/scf6/Makefile tests/opt1/Makefile tests/opt1-fd/Makefile tests/opt2/Makefile tests/opt3/Makefile tests/opt4/Makefile tests/basis_extrap/Makefile tests/sad1/Makefile tests/sapt1/Makefile tests/dfmp2_1/Makefile tests/dfmp2_2/Makefile tests/cc1/Makefile tests/cc2/Makefile tests/cc4/Makefile tests/cc5a/Makefile tests/cc8/Makefile tests/cc8a/Makefile tests/mcscf1/Makefile tests/mcscf2/Makefile tests/mcscf3/Makefile tests/mints1/Makefile tests/mints2/Makefile tests/mints3/Makefile tests/matrix1/Makefile tests/props2/Makefile tests/dft1/Makefile tests/mom/Makefile tests/plugin_aointegrals/Makefile tests/plugin_aointegrals/input.dat tests/plugin_aointegrals/aointegrals.cc tests/plugin_sointegrals/Makefile tests/plugin_sointegrals/input.dat tests/plugin_sointegrals/sointegrals.cc tests/plugin_backtrans/Makefile tests/plugin_backtrans/input.dat tests/plugin_backtrans/backtrans.cc tests/plugin_mp2/Makefile tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc tests/plugin_mp2/plugin_mp2_unrestricted.cc tests/plugin_mad_mp2/Makefile tests/plugin_mointegrals/Makefile tests/plugin_mointegrals/input.dat tests/plugin_mointegrals/mointegrals.cc bin/psi4-config"
+config_files=" include/Makefile Makefile lib/Makefile src/Makefile src/lib/Makefile src/lib/MakeRules src/lib/MakeVars src/util/Makefile src/util/MakeRules src/util/MakeVars src/bin/Makefile src/bin/MakeRules src/bin/MakeVars doc/MakeVars doc/MakeRules doc/Makefile doc/macros.tex doc/progman/svn/svn.eps doc/installation/Makefile doc/progman/Makefile doc/userman/Makefile doc/userman/prsty.bst doc/doxygen/Makefile doc/doxygen/doxygen.cfg src/lib/libdpd/Makefile src/lib/libutil/Makefile src/lib/libiwl/Makefile src/lib/libpsio/Makefile src/lib/libqt/Makefile src/lib/libciomr/Makefile src/lib/libchkpt/Makefile src/lib/libderiv/Makefile src/lib/libderiv/MakeVars src/lib/libderiv/libderiv_config.h src/lib/libdiis/Makefile src/lib/libint/Makefile src/lib/libint/MakeVars src/lib/libint/libint_config.h src/lib/libr12/Makefile src/lib/libr12/MakeVars src/lib/libr12/libr12_config.h src/lib/liboptions/Makefile src/lib/libmoinfo/Makefile src/lib/libmints/Makefile src/lib/libscf_solver/Makefile src/lib/liblmp2_solver/Makefile src/lib/libtrans/Makefile src/lib/libparallel/Makefile src/lib/libboost_python/Makefile src/lib/libboost_regex/Makefile src/lib/libboost_thread/Makefile src/lib/libboost_filesystem/Makefile src/lib/libboost_system/Makefile src/lib/libsapt_solver/Makefile src/lib/libfunctional/Makefile src/lib/libplugin/Makefile src/lib/lib3index/Makefile src/lib/libsmartptr/Makefile src/lib/libyeti/Makefile src/lib/libdfcc_solver/Makefile src/util/tocprint/Makefile src/bin/psi4/Makefile src/bin/response/Makefile src/bin/cusp/Makefile src/bin/dcft/Makefile src/bin/mcscf/Makefile src/bin/transqt2/Makefile src/bin/transqt/Makefile src/bin/mp2/Makefile src/bin/clag/Makefile src/bin/stable/Makefile src/bin/cphf/Makefile src/bin/ccsort/Makefile src/bin/mvo/Makefile src/bin/geom/Makefile src/bin/ccenergy/Makefile src/bin/cctriples/Makefile src/bin/ccresponse/Makefile src/bin/cchbar/Makefile src/bin/cclambda/Makefile src/bin/ccdensity/Makefile src/bin/cis/Makefile src/bin/adc/Makefile src/bin/scf/Makefile src/bin/lmp2/Makefile src/bin/psimrcc/Makefile src/bin/df-mp2/Makefile src/bin/sapt/Makefile src/bin/mints/Makefile src/bin/deriv/Makefile src/bin/optking/Makefile src/bin/df-cc/Makefile src/bin/findif/Makefile tests/Makefile tests/MakeVars tests/MakeRules tests/runtest.pl tests/dcft1/Makefile tests/dcft2/Makefile tests/dcft3/Makefile tests/scf1/Makefile tests/scf2/Makefile tests/scf3/Makefile tests/scf4/Makefile tests/scf5/Makefile tests/scf6/Makefile tests/opt1/Makefile tests/opt1-fd/Makefile tests/opt2/Makefile tests/opt3/Makefile tests/opt4/Makefile tests/basis_extrap/Makefile tests/sad1/Makefile tests/sapt1/Makefile tests/dfmp2_1/Makefile tests/dfmp2_2/Makefile tests/cc1/Makefile tests/cc2/Makefile tests/cc4/Makefile tests/cc5a/Makefile tests/cc8/Makefile tests/cc8a/Makefile tests/mcscf1/Makefile tests/mcscf2/Makefile tests/mcscf3/Makefile tests/mints1/Makefile tests/mints2/Makefile tests/mints3/Makefile tests/matrix1/Makefile tests/props2/Makefile tests/dft1/Makefile tests/mom/Makefile tests/plugin_aointegrals/Makefile tests/plugin_aointegrals/input.dat tests/plugin_aointegrals/aointegrals.cc tests/plugin_sointegrals/Makefile tests/plugin_sointegrals/input.dat tests/plugin_sointegrals/sointegrals.cc tests/plugin_backtrans/Makefile tests/plugin_backtrans/input.dat tests/plugin_backtrans/backtrans.cc tests/plugin_mp2/Makefile tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc tests/plugin_mp2/plugin_mp2_unrestricted.cc tests/plugin_mad_mp2/Makefile tests/plugin_mointegrals/Makefile tests/plugin_mointegrals/input.dat tests/plugin_mointegrals/mointegrals.cc bin/psi4-config"
 config_headers=" include/psiconfig.h"
 config_commands=" psi4-config"
 
@@ -475,6 +475,7 @@ do
     "src/lib/libmoinfo/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/libmoinfo/Makefile" ;;
     "src/lib/libmints/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/libmints/Makefile" ;;
     "src/lib/libscf_solver/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/libscf_solver/Makefile" ;;
+    "src/lib/liblmp2_solver/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/liblmp2_solver/Makefile" ;;
     "src/lib/libtrans/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/libtrans/Makefile" ;;
     "src/lib/libparallel/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/libparallel/Makefile" ;;
     "src/lib/libboost_python/Makefile") CONFIG_FILES="$CONFIG_FILES src/lib/libboost_python/Makefile" ;;
@@ -513,6 +514,7 @@ do
     "src/bin/cis/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/cis/Makefile" ;;
     "src/bin/adc/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/adc/Makefile" ;;
     "src/bin/scf/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/scf/Makefile" ;;
+    "src/bin/lmp2/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/lmp2/Makefile" ;;
     "src/bin/psimrcc/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/psimrcc/Makefile" ;;
     "src/bin/df-mp2/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/df-mp2/Makefile" ;;
     "src/bin/sapt/Makefile") CONFIG_FILES="$CONFIG_FILES src/bin/sapt/Makefile" ;;
@@ -680,18 +682,18 @@ s,@PSI_BUILDID@,|#_!!_#|alpha,g
 s,@PSI_BUGREPORT@,|#_!!_#|psicode@|#_!!_#|users.sourceforge.net,g
 s,@abs_top_srcdir@,|#_!!_#|,g
 s,@abs_top_builddir@,|#_!!_#|,g
-s,@build@,|#_!!_#|i386-apple-darwin10.8.0,g
+s,@build@,|#_!!_#|i386-apple-darwin11.0.0,g
 s,@build_cpu@,|#_!!_#|i386,g
 s,@build_vendor@,|#_!!_#|apple,g
-s,@build_os@,|#_!!_#|darwin10.8.0,g
-s,@host@,|#_!!_#|i386-apple-darwin10.8.0,g
+s,@build_os@,|#_!!_#|darwin11.0.0,g
+s,@host@,|#_!!_#|i386-apple-darwin11.0.0,g
 s,@host_cpu@,|#_!!_#|i386,g
 s,@host_vendor@,|#_!!_#|apple,g
-s,@host_os@,|#_!!_#|darwin10.8.0,g
-s,@target@,|#_!!_#|i386-apple-darwin10.8.0,g
+s,@host_os@,|#_!!_#|darwin11.0.0,g
+s,@target@,|#_!!_#|i386-apple-darwin11.0.0,g
 s,@target_cpu@,|#_!!_#|i386,g
 s,@target_vendor@,|#_!!_#|apple,g
-s,@target_os@,|#_!!_#|darwin10.8.0,g
+s,@target_os@,|#_!!_#|darwin11.0.0,g
 s,@SET_MAKE@,|#_!!_#|,g
 s,@txtdir@,|#_!!_#|$(docdir)/txt,g
 s,@pkgdatadir@,|#_!!_#|$(datadir)/psi,g
@@ -752,14 +754,14 @@ s,@EXTRAINCDIRS@,|#_!!_#|,g
 s,@LDLIBS@,|#_!!_#|-lpthread,g
 s,@PERL@,|#_!!_#|perl,g
 s,@PYTHON@,|#_!!_#|/usr/bin/python,g
-s,@PYTHON_VERSION@,|#_!!_#|2.6,g
-s,@PYTHON_INCLUDE@,|#_!!_#|-I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6 -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6,g
-s,@PYTHON_LDFLAGS@,|#_!!_#|-L/System/Library/Frameworks/Python.framework/Versions/2.6/lib/python2.6/config -ldl -lpython2.6,g
-s,@LATEX@,|#_!!_#|latex,g
+s,@PYTHON_VERSION@,|#_!!_#|2.7,g
+s,@PYTHON_INCLUDE@,|#_!!_#|-I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7,g
+s,@PYTHON_LDFLAGS@,|#_!!_#|-L/System/Library/Frameworks/Python.framework/Versions/2.7/lib/python2.7/config -ldl -framework CoreFoundation -lpython2.7 -u _PyMac_Error /System/Library/Frameworks/Python.framework/Versions/2.7/Python,g
+s,@LATEX@,|#_!!_#|,g
 s,@LATEX2HTML@,|#_!!_#|,g
-s,@DVIPS@,|#_!!_#|dvips,g
+s,@DVIPS@,|#_!!_#|,g
 s,@PS2PDF@,|#_!!_#|ps2pdf,g
-s,@BIBTEX@,|#_!!_#|bibtex,g
+s,@BIBTEX@,|#_!!_#|,g
 s,@DOXYGEN@,|#_!!_#|NO,g
 s,@HAVE_DOT@,|#_!!_#|NO,g
 s,@DOT_PATH@,|#_!!_#|,g
@@ -780,7 +782,7 @@ s,@CLIBS@,|#_!!_#| -lm,g
 s,@CXXLIBS@,|#_!!_#| -lm,g
 s,@PSICPPFLAGS@,|#_!!_#|-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include,g
 s,@top_objdir@,|#_!!_#|,g
-s,@TARGET_OS@,|#_!!_#|darwin10.8.0,g
+s,@TARGET_OS@,|#_!!_#|darwin11.0.0,g
 s,@HAVE_PLUGINS@,|#_!!_#|,g
 s,@subdirs@,|#_!!_#| madness,g
 s,@LIBOBJS@,|#_!!_#|,g
@@ -1024,7 +1026,7 @@ which seems to be undefined.  Please make sure it is defined." >&2;}
   #
     # First, check the format of the line:
     cat >"$tmp/defines.sed" <<\CEOF
-/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*$/b def
+/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*/b def
 /^[	 ]*#[	 ]*define[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[(	 ]/b def
 b
 :def
@@ -1074,18 +1076,19 @@ s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_PUTENV\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_DECL_SETENV\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_SETENV\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_FUNC_ISINF\)[	 (].*,\1define\2 1 ,
+s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_FUNC_ERF\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_BUILTIN_EXPECT\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_BUILTIN_PREFETCH\)[	 (].*,\1define\2 1 ,
 s,^\([	 #]*\)[^	 ]*\([	 ]*HAVE_BUILTIN_CONSTANT_P\)[	 (].*,\1define\2 1 ,
-s/ $//
 CEOF
     sed -f "$tmp/defines.sed" $ac_file_inputs >"$tmp/out1"
     # First, check the format of the line:
     cat >"$tmp/defines.sed" <<\CEOF
-/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*$/b def
+/^[	 ]*#[	 ]*undef[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[	 ]*/b def
 /^[	 ]*#[	 ]*define[	 ][	 ]*[_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ][_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789]*[(	 ]/b def
 b
 :def
+s/ $//
 s,^[	 #]*u.*,/* & */,
 CEOF
     sed -f "$tmp/defines.sed" "$tmp/out1" >"$tmp/out2"

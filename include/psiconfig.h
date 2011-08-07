@@ -36,6 +36,7 @@
 #define HAVE_DECL_SETENV 1
 #define HAVE_SETENV 1
 #define HAVE_FUNC_ISINF 1
+#define HAVE_FUNC_ERF 1
 
 /* Have dlfcn.h for dlopen and friends */
 #define HAVE_DLFCN_H 1

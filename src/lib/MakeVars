@@ -5,7 +5,7 @@ SHELL = /bin/sh
 # Initialize variables that have been figured out by configure.
 #
 
-target = i386-apple-darwin10.8.0
+target = i386-apple-darwin11.0.0
 
 prefix = /usr/local/psi4
 exec_prefix = ${prefix}
@@ -40,7 +40,7 @@ MKDIRS = $(top_srcdir)/bin/mkdirs.sh
 PSICPPFLAGS = -I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include
 CPPFLAGS = 
 
-PYTHON_INCLUDE = -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6 -I/System/Library/Frameworks/Python.framework/Versions/2.6/include/python2.6
+PYTHON_INCLUDE = -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7 -I/System/Library/Frameworks/Python.framework/Versions/2.7/include/python2.7
 
 CDEF = 
 COPT = -O2

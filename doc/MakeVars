@@ -4,7 +4,7 @@ SHELL = /bin/sh
 #
 # Initialize variables that have been figured out by configure.
 #
-target = i386-apple-darwin10.8.0
+target = i386-apple-darwin11.0.0
 prefix = /usr/local/psi4
 docdir = ${datarootdir}/doc/${PACKAGE_TARNAME}
 datarootdir = ${prefix}/share
@@ -18,9 +18,9 @@ top_srcdir = /Users/masaaki/psi4
 top_objdir = ../..
 currdir = $(shell echo `pwd`)
 
-LATEX = latex
-BIBTEX = bibtex
-DVIPS = dvips
+LATEX = 
+BIBTEX = 
+DVIPS = 
 PS2PDF = ps2pdf
 LATEX2HTML = 
 DOXYGEN = NO

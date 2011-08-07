@@ -10,7 +10,9 @@ PSITARGET = $(top_objdir)/lib/libPSI_findif.a
 CXXINC += $(PYTHON_INCLUDE)
 
 CXXSRC = \
-fd_geoms_1_0.cc fd_grad_1_0.cc
+fd_geoms_1_0.cc fd_1_0.cc \
+fd_geoms_2_0.cc fd_2_0.cc \
+fd_geoms_freq_0.cc fd_freq_0.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 
