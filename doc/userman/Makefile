@@ -1,0 +1,21 @@
+
+srcdir = /Users/masaaki/psi4/doc/userman
+
+MAN = userman
+
+include ../MakeVars
+
+TEX = userman.tex
+
+SUBTEX = \
+additional-docs.tex appendix.tex cc.tex detcas.tex detci.tex input.tex \
+introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
+psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex tests.tex \
+tests_descriptions.tex python.tex
+
+DVI = $(TEX:%.tex=%.dvi)
+PS = $(DVI:%.dvi=%.ps)
+PDF = $(PS:%.ps=%.pdf)
+HTML = $(TEX:%.tex=%.html)
+
+include ../MakeRules

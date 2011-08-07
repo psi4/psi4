@@ -1,0 +1,92 @@
+\BOOKMARK [1][-]{section.1}{Introduction}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Overview}{section.1}% 2
+\BOOKMARK [2][-]{subsection.1.2}{Obtaining and Installing PSI4}{section.1}% 3
+\BOOKMARK [2][-]{subsection.1.3}{red Supported Architectures}{section.1}% 4
+\BOOKMARK [2][-]{subsection.1.4}{red Capabilities}{section.1}% 5
+\BOOKMARK [2][-]{subsection.1.5}{Technical Support}{section.1}% 6
+\BOOKMARK [1][-]{section.2}{Python}{}% 7
+\BOOKMARK [2][-]{subsection.2.1}{Preprocessor}{section.2}% 8
+\BOOKMARK [2][-]{subsection.2.2}{Preprocessor Keywords}{section.2}% 9
+\BOOKMARK [1][-]{section.3}{A PSI4 Tutorial}{}% 10
+\BOOKMARK [2][-]{subsection.3.1}{Before Getting Started: A Warning about Scratch Files}{section.3}% 11
+\BOOKMARK [2][-]{subsection.3.2}{Basic Input File Structure}{section.3}% 12
+\BOOKMARK [3][-]{subsubsection.3.2.1}{IPV1-Style Input}{subsection.3.2}% 13
+\BOOKMARK [2][-]{subsection.3.3}{Running a basic SCF calculation}{section.3}% 14
+\BOOKMARK [2][-]{subsection.3.4}{Geometry Optimization and Vibrational Frequency Analysis}{section.3}% 15
+\BOOKMARK [2][-]{subsection.3.5}{More Advanced Input Options}{section.3}% 16
+\BOOKMARK [1][-]{section.4}{PSI3 Input Files}{}% 17
+\BOOKMARK [2][-]{subsection.4.1}{Syntax}{section.4}% 18
+\BOOKMARK [2][-]{subsection.4.2}{Specifying the Type of Computation}{section.4}% 19
+\BOOKMARK [2][-]{subsection.4.3}{Geometry Specification}{section.4}% 20
+\BOOKMARK [2][-]{subsection.4.4}{Molecular Symmetry}{section.4}% 21
+\BOOKMARK [2][-]{subsection.4.5}{Specifying Scratch Disk Usage in PSI3}{section.4}% 22
+\BOOKMARK [2][-]{subsection.4.6}{The .psirc File}{section.4}% 23
+\BOOKMARK [2][-]{subsection.4.7}{Specifying Basis Sets}{section.4}% 24
+\BOOKMARK [3][-]{subsubsection.4.7.1}{Default Basis Sets}{subsection.4.7}% 25
+\BOOKMARK [3][-]{subsubsection.4.7.2}{Custom Basis Sets}{subsection.4.7}% 26
+\BOOKMARK [3][-]{subsubsection.4.7.3}{Automated Conversion of Basis Sets}{subsection.4.7}% 27
+\BOOKMARK [2][-]{subsection.4.8}{Specification of Ghost Atoms}{section.4}% 28
+\BOOKMARK [1][-]{section.5}{Theoretical Methods Available in PSI3}{}% 29
+\BOOKMARK [2][-]{subsection.5.1}{Hartree-Fock Self-Consistent-Field}{section.5}% 30
+\BOOKMARK [2][-]{subsection.5.2}{Second-order M\370ller-Plesset Theory: MP2 and MP2-R12 methods}{section.5}% 31
+\BOOKMARK [3][-]{subsubsection.5.2.1}{Basic Keywords}{subsection.5.2}% 32
+\BOOKMARK [3][-]{subsubsection.5.2.2}{Using the MP2-R12 method}{subsection.5.2}% 33
+\BOOKMARK [3][-]{subsubsection.5.2.3}{Larger Calculations}{subsection.5.2}% 34
+\BOOKMARK [2][-]{subsection.5.3}{Coupled Cluster Methods}{section.5}% 35
+\BOOKMARK [3][-]{subsubsection.5.3.1}{Basic Keywords}{subsection.5.3}% 36
+\BOOKMARK [3][-]{subsubsection.5.3.2}{Larger Calculations}{subsection.5.3}% 37
+\BOOKMARK [3][-]{subsubsection.5.3.3}{Excited State Coupled Cluster Calculations}{subsection.5.3}% 38
+\BOOKMARK [3][-]{subsubsection.5.3.4}{Linear Response \(CCLR\) Calculations}{subsection.5.3}% 39
+\BOOKMARK [2][-]{subsection.5.4}{Configuration Interaction}{section.5}% 40
+\BOOKMARK [3][-]{subsubsection.5.4.1}{Basic Keywords}{subsection.5.4}% 41
+\BOOKMARK [3][-]{subsubsection.5.4.2}{Arbitrary Order Perturbation Theory}{subsection.5.4}% 42
+\BOOKMARK [2][-]{subsection.5.5}{Complete-Active-Space Self-Consistent-Field \(CASSCF\)}{section.5}% 43
+\BOOKMARK [3][-]{subsubsection.5.5.1}{Basic Keywords}{subsection.5.5}% 44
+\BOOKMARK [3][-]{subsubsection.5.5.2}{Examples}{subsection.5.5}% 45
+\BOOKMARK [1][-]{section.6}{Geometry Optimization}{}% 46
+\BOOKMARK [1][-]{section.7}{Vibrational Frequency Computations}{}% 47
+\BOOKMARK [1][-]{section.8}{Evaluation of one-electron properties}{}% 48
+\BOOKMARK [2][-]{subsection.8.1}{Basic Keywords}{section.8}% 49
+\BOOKMARK [2][-]{subsection.8.2}{Evaluation of properties on rectalinear grids}{section.8}% 50
+\BOOKMARK [2][-]{subsection.8.3}{Grid specification mini-tutorial}{section.8}% 51
+\BOOKMARK [2][-]{subsection.8.4}{Plotting grid data}{section.8}% 52
+\BOOKMARK [2][-]{subsection.8.5}{Visualizing Molecular Obitals with gOpenMol}{section.8}% 53
+\BOOKMARK [1][-]{section.9}{PSI3 Driver}{}% 54
+\BOOKMARK [2][-]{subsection.9.1}{Environment Variables}{section.9}% 55
+\BOOKMARK [2][-]{subsection.9.2}{Command-Line Options}{section.9}% 56
+\BOOKMARK [2][-]{subsection.9.3}{Input Format}{section.9}% 57
+\BOOKMARK [2][-]{subsection.9.4}{Loop Control}{section.9}% 58
+\BOOKMARK [1][-]{section.10}{Additional Documentation}{}% 59
+\BOOKMARK [1][-]{appendix.A}{PSI4 Reference}{}% 60
+\BOOKMARK [1][-]{appendix.B}{Keywords Recognized by Each Module}{}% 61
+\BOOKMARK [2][-]{subsection.B.1}{CCDENSITY}{appendix.B}% 62
+\BOOKMARK [2][-]{subsection.B.2}{CCENERGY}{appendix.B}% 63
+\BOOKMARK [2][-]{subsection.B.3}{CCLAMBDA}{appendix.B}% 64
+\BOOKMARK [2][-]{subsection.B.4}{RESPONSE}{appendix.B}% 65
+\BOOKMARK [2][-]{subsection.B.5}{DETCI}{appendix.B}% 66
+\BOOKMARK [2][-]{subsection.B.6}{PSIMRCC}{appendix.B}% 67
+\BOOKMARK [2][-]{subsection.B.7}{STABLE}{appendix.B}% 68
+\BOOKMARK [2][-]{subsection.B.8}{CUSP}{appendix.B}% 69
+\BOOKMARK [2][-]{subsection.B.9}{DFMP2}{appendix.B}% 70
+\BOOKMARK [2][-]{subsection.B.10}{CCSORT}{appendix.B}% 71
+\BOOKMARK [2][-]{subsection.B.11}{SCF}{appendix.B}% 72
+\BOOKMARK [2][-]{subsection.B.12}{CCTRIPLES}{appendix.B}% 73
+\BOOKMARK [2][-]{subsection.B.13}{OEPROP}{appendix.B}% 74
+\BOOKMARK [2][-]{subsection.B.14}{DCFT}{appendix.B}% 75
+\BOOKMARK [2][-]{subsection.B.15}{MCSCF}{appendix.B}% 76
+\BOOKMARK [2][-]{subsection.B.16}{MINTS}{appendix.B}% 77
+\BOOKMARK [2][-]{subsection.B.17}{SAPT}{appendix.B}% 78
+\BOOKMARK [2][-]{subsection.B.18}{OPTKING}{appendix.B}% 79
+\BOOKMARK [2][-]{subsection.B.19}{TRANSQT}{appendix.B}% 80
+\BOOKMARK [2][-]{subsection.B.20}{TRANSQT2}{appendix.B}% 81
+\BOOKMARK [2][-]{subsection.B.21}{CCHBAR}{appendix.B}% 82
+\BOOKMARK [2][-]{subsection.B.22}{LMP2}{appendix.B}% 83
+\BOOKMARK [2][-]{subsection.B.23}{CCRESPONSE}{appendix.B}% 84
+\BOOKMARK [2][-]{subsection.B.24}{MP2}{appendix.B}% 85
+\BOOKMARK [2][-]{subsection.B.25}{CIS}{appendix.B}% 86
+\BOOKMARK [2][-]{subsection.B.26}{MVO}{appendix.B}% 87
+\BOOKMARK [2][-]{subsection.B.27}{CLAG}{appendix.B}% 88
+\BOOKMARK [2][-]{subsection.B.28}{DFCC}{appendix.B}% 89
+\BOOKMARK [1][-]{appendix.C}{Expert Keywords Recognized by Each Module, for Advanced Users}{}% 90
+\BOOKMARK [2][-]{subsection.C.1}{DFMP2}{appendix.C}% 91
+\BOOKMARK [1][-]{appendix.D}{The Test Suite and Sample Inputs}{}% 92

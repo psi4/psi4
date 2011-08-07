@@ -1,0 +1,41 @@
+
+srcdir = /Users/masaaki/psi4/src/lib/libqt
+VPATH = /Users/masaaki/psi4/src/lib/libqt
+
+FC_SYMBOL = 2
+
+include ../MakeVars
+
+CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL)
+
+PSITARGET = $(top_objdir)/lib/libPSI_qt.a
+
+CXXSRC = \
+blas_intfc.cc       blas_intfc23.cc invert.cc     schmidt.cc \
+dirprd_block.cc     mat_in.cc     newmm_rking.cc  reorder_qt.cc    schmidt_add.cc \
+dot_block.cc        mat_print.cc  normalize.cc    \
+eri.cc              pople.cc        solve_pep.cc \
+fill_sym_matrix.cc  probabil.cc     rootfind.cc      timer.cc \
+filter.cc           lapack_intfc.cc  sort.cc      slaterdset.cc   david.cc \
+3d_array.cc  cc_wfn.cc ci_wfn.cc cc_excited.cc  strncpy.cc \
+orient_fragment.cc zmat_point.cc rotate_vecs.cc v_3.cc ras_set.cc
+
+DEPENDINCLUDE = qt.h
+
+LIBOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+# Problems with optimization with gcc-4.X compilers (TDC,5/3/07)
+newmm_rking.o: newmm_rking.cc
+	$(CXX) $(CXXDBG) $(CXXDEF) $(CXXOTH) $(CXXINC) -c $< $(OUTPUT_OPTION)
+
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+install_inc:: qt.h
+	$(MKDIRS) $(DESTDIR)$(incdir)/libqt
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libqt
+

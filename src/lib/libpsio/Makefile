@@ -1,0 +1,37 @@
+
+srcdir = /Users/masaaki/psi4/src/lib/libpsio
+VPATH = /Users/masaaki/psi4/src/lib/libpsio
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_psio.a
+
+TRUECSRC = 
+
+TRUECXXSRC = init.cc \
+close.cc          get_global_address.cc  tocwrite.cc \
+done.cc           get_length.cc          read.cc        toclast.cc \
+volseek.cc        error.cc               get_numvols.cc toclen.cc        write.cc \
+get_address.cc    get_volpath.cc         read_entry.cc  tocprint.cc \
+rw.cc             tocread.cc             write_entry.cc get_filename.cc  open.cc \
+tocclean.cc       tocscan.cc             open_check.cc  filescfg.cc \
+aio_handler.cc    change_namespace.cc    filemanager.cc zero_disk.cc
+
+INC = psio.h psio.hpp config.h
+
+LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+include $(LIBOBJ:%.o=%.d)
+endif
+
+install_inc:: $(INC)
+	$(MKDIRS) $(DESTDIR)$(incdir)/libpsio
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(incdir)/libpsio
+
+install_man:: libpsio.html
+	$(MKDIRS) $(DESTDIR)$(htmldir)
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(htmldir)
+

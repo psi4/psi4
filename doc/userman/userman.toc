@@ -1,0 +1,92 @@
+\contentsline {section}{\numberline {1}Introduction}{6}{section.1}
+\contentsline {subsection}{\numberline {1.1}Overview}{6}{subsection.1.1}
+\contentsline {subsection}{\numberline {1.2}Obtaining and Installing {\tt PSI4}}{6}{subsection.1.2}
+\contentsline {subsection}{\numberline {1.3}{\color {red} Supported Architectures}}{6}{subsection.1.3}
+\contentsline {subsection}{\numberline {1.4}{\color {red} Capabilities}}{7}{subsection.1.4}
+\contentsline {subsection}{\numberline {1.5}Technical Support}{8}{subsection.1.5}
+\contentsline {section}{\numberline {2}Python}{8}{section.2}
+\contentsline {subsection}{\numberline {2.1}Preprocessor}{8}{subsection.2.1}
+\contentsline {subsection}{\numberline {2.2}Preprocessor Keywords}{9}{subsection.2.2}
+\contentsline {section}{\numberline {3}A {\tt PSI4}\ Tutorial}{9}{section.3}
+\contentsline {subsection}{\numberline {3.1}Before Getting Started: A Warning about Scratch Files}{9}{subsection.3.1}
+\contentsline {subsection}{\numberline {3.2}Basic Input File Structure}{9}{subsection.3.2}
+\contentsline {subsubsection}{\numberline {3.2.1}IPV1-Style Input}{10}{subsubsection.3.2.1}
+\contentsline {subsection}{\numberline {3.3}Running a basic SCF calculation}{10}{subsection.3.3}
+\contentsline {subsection}{\numberline {3.4}Geometry Optimization and Vibrational Frequency Analysis}{11}{subsection.3.4}
+\contentsline {subsection}{\numberline {3.5}More Advanced Input Options}{12}{subsection.3.5}
+\contentsline {section}{\numberline {4}{\tt PSI3}\ Input Files}{14}{section.4}
+\contentsline {subsection}{\numberline {4.1}Syntax}{14}{subsection.4.1}
+\contentsline {subsection}{\numberline {4.2}Specifying the Type of Computation}{16}{subsection.4.2}
+\contentsline {subsection}{\numberline {4.3}Geometry Specification}{17}{subsection.4.3}
+\contentsline {subsection}{\numberline {4.4}Molecular Symmetry}{19}{subsection.4.4}
+\contentsline {subsection}{\numberline {4.5}Specifying Scratch Disk Usage in {\tt PSI3}}{20}{subsection.4.5}
+\contentsline {subsection}{\numberline {4.6}The {\tt .psirc} File}{22}{subsection.4.6}
+\contentsline {subsection}{\numberline {4.7}Specifying Basis Sets}{22}{subsection.4.7}
+\contentsline {subsubsection}{\numberline {4.7.1}Default Basis Sets}{23}{subsubsection.4.7.1}
+\contentsline {subsubsection}{\numberline {4.7.2}Custom Basis Sets}{23}{subsubsection.4.7.2}
+\contentsline {subsubsection}{\numberline {4.7.3}Automated Conversion of Basis Sets}{27}{subsubsection.4.7.3}
+\contentsline {subsection}{\numberline {4.8}Specification of Ghost Atoms}{27}{subsection.4.8}
+\contentsline {section}{\numberline {5}Theoretical Methods Available in {\tt PSI3}}{28}{section.5}
+\contentsline {subsection}{\numberline {5.1}Hartree-Fock Self-Consistent-Field}{28}{subsection.5.1}
+\contentsline {subsection}{\numberline {5.2}Second-order M\o ller-Plesset Theory: MP2 and MP2-R12 methods}{29}{subsection.5.2}
+\contentsline {subsubsection}{\numberline {5.2.1}Basic Keywords}{30}{subsubsection.5.2.1}
+\contentsline {subsubsection}{\numberline {5.2.2}Using the MP2-R12 method}{31}{subsubsection.5.2.2}
+\contentsline {subsubsection}{\numberline {5.2.3}Larger Calculations}{31}{subsubsection.5.2.3}
+\contentsline {subsection}{\numberline {5.3}Coupled Cluster Methods}{32}{subsection.5.3}
+\contentsline {subsubsection}{\numberline {5.3.1}Basic Keywords}{32}{subsubsection.5.3.1}
+\contentsline {subsubsection}{\numberline {5.3.2}Larger Calculations}{35}{subsubsection.5.3.2}
+\contentsline {subsubsection}{\numberline {5.3.3}Excited State Coupled Cluster Calculations}{35}{subsubsection.5.3.3}
+\contentsline {subsubsection}{\numberline {5.3.4}Linear Response (CCLR) Calculations}{36}{subsubsection.5.3.4}
+\contentsline {subsection}{\numberline {5.4}Configuration Interaction}{36}{subsection.5.4}
+\contentsline {subsubsection}{\numberline {5.4.1}Basic Keywords}{37}{subsubsection.5.4.1}
+\contentsline {subsubsection}{\numberline {5.4.2}Arbitrary Order Perturbation Theory}{39}{subsubsection.5.4.2}
+\contentsline {subsection}{\numberline {5.5}Complete-Active-Space Self-Consistent-Field (CASSCF)}{40}{subsection.5.5}
+\contentsline {subsubsection}{\numberline {5.5.1}Basic Keywords}{41}{subsubsection.5.5.1}
+\contentsline {subsubsection}{\numberline {5.5.2}Examples}{42}{subsubsection.5.5.2}
+\contentsline {section}{\numberline {6}Geometry Optimization}{43}{section.6}
+\contentsline {section}{\numberline {7}Vibrational Frequency Computations}{46}{section.7}
+\contentsline {section}{\numberline {8}Evaluation of one-electron properties}{46}{section.8}
+\contentsline {subsection}{\numberline {8.1}Basic Keywords}{47}{subsection.8.1}
+\contentsline {subsection}{\numberline {8.2}Evaluation of properties on rectalinear grids}{49}{subsection.8.2}
+\contentsline {subsection}{\numberline {8.3}Grid specification mini-tutorial}{50}{subsection.8.3}
+\contentsline {subsection}{\numberline {8.4}Plotting grid data}{52}{subsection.8.4}
+\contentsline {subsection}{\numberline {8.5}Visualizing Molecular Obitals with gOpenMol}{52}{subsection.8.5}
+\contentsline {section}{\numberline {9}{\tt PSI3}\ Driver}{53}{section.9}
+\contentsline {subsection}{\numberline {9.1}Environment Variables}{53}{subsection.9.1}
+\contentsline {subsection}{\numberline {9.2}Command-Line Options}{53}{subsection.9.2}
+\contentsline {subsection}{\numberline {9.3}Input Format}{54}{subsection.9.3}
+\contentsline {subsection}{\numberline {9.4}Loop Control}{55}{subsection.9.4}
+\contentsline {section}{\numberline {10}Additional Documentation}{55}{section.10}
+\contentsline {section}{\numberline {A}{\tt PSI4}\ Reference}{55}{appendix.A}
+\contentsline {section}{\numberline {B}Keywords Recognized by Each Module}{55}{appendix.B}
+\contentsline {subsection}{\numberline {B.1}CCDENSITY}{55}{subsection.B.1}
+\contentsline {subsection}{\numberline {B.2}CCENERGY}{56}{subsection.B.2}
+\contentsline {subsection}{\numberline {B.3}CCLAMBDA}{59}{subsection.B.3}
+\contentsline {subsection}{\numberline {B.4}RESPONSE}{60}{subsection.B.4}
+\contentsline {subsection}{\numberline {B.5}DETCI}{60}{subsection.B.5}
+\contentsline {subsection}{\numberline {B.6}PSIMRCC}{63}{subsection.B.6}
+\contentsline {subsection}{\numberline {B.7}STABLE}{67}{subsection.B.7}
+\contentsline {subsection}{\numberline {B.8}CUSP}{67}{subsection.B.8}
+\contentsline {subsection}{\numberline {B.9}DFMP2}{67}{subsection.B.9}
+\contentsline {subsection}{\numberline {B.10}CCSORT}{69}{subsection.B.10}
+\contentsline {subsection}{\numberline {B.11}SCF}{70}{subsection.B.11}
+\contentsline {subsection}{\numberline {B.12}CCTRIPLES}{75}{subsection.B.12}
+\contentsline {subsection}{\numberline {B.13}OEPROP}{76}{subsection.B.13}
+\contentsline {subsection}{\numberline {B.14}DCFT}{78}{subsection.B.14}
+\contentsline {subsection}{\numberline {B.15}MCSCF}{80}{subsection.B.15}
+\contentsline {subsection}{\numberline {B.16}MINTS}{82}{subsection.B.16}
+\contentsline {subsection}{\numberline {B.17}SAPT}{82}{subsection.B.17}
+\contentsline {subsection}{\numberline {B.18}OPTKING}{83}{subsection.B.18}
+\contentsline {subsection}{\numberline {B.19}TRANSQT}{85}{subsection.B.19}
+\contentsline {subsection}{\numberline {B.20}TRANSQT2}{89}{subsection.B.20}
+\contentsline {subsection}{\numberline {B.21}CCHBAR}{89}{subsection.B.21}
+\contentsline {subsection}{\numberline {B.22}LMP2}{90}{subsection.B.22}
+\contentsline {subsection}{\numberline {B.23}CCRESPONSE}{91}{subsection.B.23}
+\contentsline {subsection}{\numberline {B.24}MP2}{92}{subsection.B.24}
+\contentsline {subsection}{\numberline {B.25}CIS}{93}{subsection.B.25}
+\contentsline {subsection}{\numberline {B.26}MVO}{94}{subsection.B.26}
+\contentsline {subsection}{\numberline {B.27}CLAG}{95}{subsection.B.27}
+\contentsline {subsection}{\numberline {B.28}DFCC}{96}{subsection.B.28}
+\contentsline {section}{\numberline {C}Expert Keywords Recognized by Each Module, for Advanced Users}{98}{appendix.C}
+\contentsline {subsection}{\numberline {C.1}DFMP2}{98}{subsection.C.1}
+\contentsline {section}{\numberline {D}The Test Suite and Sample Inputs}{98}{appendix.D}

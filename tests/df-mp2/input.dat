@@ -1,0 +1,25 @@
+
+molecule {
+H
+H 1 R
+
+R = .9
+}
+
+globals{
+  basis cc-pVDZ
+}
+
+set scf{
+  scf_type direct
+}
+
+scf()
+
+plugin_load("./df-mp2.so")
+
+set dfmp2 {
+  ri_basis cc-pVDZ-RI
+}
+
+plugin("./df-mp2.so")

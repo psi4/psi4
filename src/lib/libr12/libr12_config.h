@@ -1,0 +1,3 @@
+#define LIBR12_NEW_AM 6
+#define LIBR12_OPT_AM 6
+#define LIBR12_MAX_CLASS_SIZE 300

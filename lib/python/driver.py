@@ -15,6 +15,8 @@ procedures = {
             'sapt2+'        : run_sapt,
             'sapt2+3'       : run_sapt,
             'mp2c'          : run_mp2c,
+            'mp2'           : run_mp2,
+						'adc'           : run_adc,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'detci'         : run_detci

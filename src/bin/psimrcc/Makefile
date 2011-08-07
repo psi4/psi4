@@ -1,0 +1,46 @@
+srcdir = /Users/masaaki/psi4/src/bin/psimrcc
+VPATH = /Users/masaaki/psi4/src/bin/psimrcc
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_psimrcc.a
+
+LDLIBS += $(LAPACK) $(BLAS)
+#PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
+CXXSRC = \
+algebra_interface.cc        idmrpt2_t2_amps.cc      mrcc.cc             operation.cc \
+blas.cc             index.cc            mrcc_Heff.cc            operation_compute.cc \
+blas_algorithms.cc      main.cc             mrcc_add_matrices.cc        operation_contraction.cc \
+blas_compatibile.cc     manybody.cc         operation_sort.cc \
+blas_diis.cc            manybody_denominators.cc    mrcc_compute.cc         psimrcc.cc \
+blas_interface.cc       matrix.cc           mrcc_energy.cc          sort.cc \
+blas_parser.cc          matrix_addressing.cc        mrcc_f_int.cc           sort_in_core.cc \
+blas_resorting.cc       matrix_memory_and_io.cc     mrcc_mkccsd.cc          sort_mrpt2.cc \
+blas_solve.cc           matrixtmp.cc        sort_out_of_core.cc \
+debugging.cc            mp2_ccsd.cc         mrcc_mp3.cc         transform.cc \
+idmrpt2.cc          mp2_ccsd_add_matrices.cc    mrcc_pert_cbs.cc        transform_block.cc \
+idmrpt2_Heff.cc         mp2_ccsd_amps.cc        mrcc_t1_amps.cc         transform_mrpt2.cc \
+idmrpt2_Heff_doubles.cc     mp2_ccsd_f_int.cc       mrcc_t2_amps.cc         transform_presort.cc \
+idmrpt2_Heff_singles.cc     mp2_ccsd_t1_amps.cc     mrcc_t_amps.cc          transform_read_so.cc \
+idmrpt2_add_matrices.cc     mp2_ccsd_t2_amps.cc     mrcc_tau.cc \
+idmrpt2_f_int.cc        mp2_ccsd_w_int.cc       mrcc_w_int.cc \
+idmrpt2_t1_amps.cc      mp2_ccsd_z_int.cc       mrcc_z_int.cc \
+index_iterator.cc special_matrices.cc mrcc_pert_triples.cc \
+mrccsd_t.cc mrccsd_t_compute.cc mrccsd_t_compute_restricted.cc mrccsd_t_setup.cc mrccsd_t_form_matrices.cc \
+mrccsd_t_heff.cc mrccsd_t_heff_ab.cc heff.cc mrccsd_t_heff_a.cc mrccsd_t_heff_b.cc \
+mrccsd_t_heff_restricted.cc mrccsd_t_heff_ab_restricted.cc mrccsd_t_heff_a_restricted.cc mrccsd_t_heff_b_restricted.cc \
+mrccsd_t_compute_spin_adapted.cc \
+updater.cc updater_mk.cc updater_bw.cc  updater_sr.cc \
+heff_diagonalize.cc
+
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
