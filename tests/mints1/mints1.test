@@ -1,0 +1,15 @@
+WARNING: COMMUNICATOR was changed to MADNESS
+!! Warning: MPI::Init_thread did not provide requested functionality 2 0
+Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
+	C2H2 point group: matched.
+	N2H2 point group: matched.
+	CN point group: matched.
+	CH4 point group: matched.
+	CN point group: matched.
+	NH3 point group: matched.
+	Triplet Ethylene point group: matched.
+	Singlet Ethylene point group: matched.
+	Ethylene cation point group: matched.
+	H2O2 point group: matched.
+	C4H4Cl2F2 point group: matched.
+	Li(H20)_4^+ point group: matched.

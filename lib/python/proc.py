@@ -168,6 +168,38 @@ def run_ccsd(name, **kwargs):
     PsiMod.ccsort()
     return PsiMod.ccenergy()
 
+def run_mp2(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.app('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+    run_scf("scf", **kwargs)
+    PsiMod.transqt2()
+    PsiMod.ccsort()
+    return PsiMod.mp2()
+		
+def run_adc(name, **kwargs):
+
+		molecule = PsiMod.get_active_molecule()
+		if (kwargs.has_key('molecule')):
+			molecule = kwargs.app('molecule')
+			
+		if not molecule:
+			raise ValueNotSet("no molecule found")
+			
+		molecule.update_geometry()
+		PsiMod.set_active_molecule(molecule)
+		run_scf("scf", **kwargs)
+		PsiMod.transqt2()
+		PsiMod.ccsort()
+		return PsiMod.adc()
+
 def run_ccsd_t(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()

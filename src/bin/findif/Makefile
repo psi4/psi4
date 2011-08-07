@@ -1,0 +1,23 @@
+srcdir = /Users/masaaki/psi4/src/bin/findif
+VPATH = /Users/masaaki/psi4/src/bin/findif
+
+include ../MakeVars
+
+LDLIBS += $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_findif.a
+
+CXXINC += $(PYTHON_INCLUDE)
+
+CXXSRC = \
+fd_geoms_1_0.cc fd_grad_1_0.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

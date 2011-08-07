@@ -1,0 +1,26 @@
+srcdir = /Users/masaaki/psi4/src/bin/mcscf
+VPATH = /Users/masaaki/psi4/src/bin/mcscf
+
+include ../MakeVars
+
+LDLIBS += $(LAPACK) $(BLAS)
+CDEF += -DUSE_BLAS
+PSITARGET = $(top_objdir)/lib/libPSI_mcscf.a
+
+CXXSRC = \
+algebra_interface.cc  sblock_matrix.cc             scf_density_matrix.cc  scf_initial_guess.cc              scf_save_info.cc \
+block_matrix.cc       sblock_vector.cc             scf_diis.cc            scf_iterate_scf_equations.cc      scf_S_inverse_sqrt.cc \
+block_vector.cc       scf_canonicalize_MO.cc       scf_energy.cc          scf_pairs.cc                      vector_base.cc \
+matrix_base.cc        scf.cc                       scf_F.cc               scf_print_eigenvectors_and_MO.cc \
+mcscf.cc              scf_check_orthonormality.cc  scf_Feff.cc            scf_read_so_oei.cc \
+scf_compute_energy.cc scf_G.cc                     scf_read_so_tei.cc     scf_guess_occupation.cc
+
+LD = ${CXX}
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif

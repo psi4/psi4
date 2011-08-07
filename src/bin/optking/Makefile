@@ -1,0 +1,25 @@
+srcdir = /Users/masaaki/psi4/src/bin/optking
+VPATH = /Users/masaaki/psi4/src/bin/optking
+
+include ../MakeVars
+
+LDLIBS += $(BLAS)
+
+PSITARGET = $(top_objdir)/lib/libPSI_optking.a
+
+CXXSRC = \
+atom_data.cc  frag_H_guess.cc       linear_algebra.cc      molecule_read_intcos.cc  opt_data_io.cc  stre.cc \
+bend.cc       geom_gradients_io.cc  mem.cc                 molecule_backstep.cc        optking.cc      tors.cc \
+frag.cc       interfrag.cc          molecule.cc            molecule_tests.cc        print.cc        v3d.cc \
+frag_disp.cc  interfrag_orient.cc   molecule_fragments.cc  opt_data.cc              set_params.cc   efp_frag.cc \
+molecule_nr_step.cc   molecule_rfo_step.cc   molecule_prfo_step.cc  molecule_irc_step.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+

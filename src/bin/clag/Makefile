@@ -1,0 +1,26 @@
+srcdir = /Users/masaaki/psi4/src/bin/clag
+VPATH = /Users/masaaki/psi4/src/bin/clag
+
+include ../MakeVars
+
+LDLIBS += $(BLAS) $(LAPACK)
+
+PSITARGET = $(top_objdir)/lib/libPSI_clag.a
+#PSILIBS = libPSI_qt.a libPSI_chkpt.a libPSI_iwl.a -lPSI_psio libPSI_ciomr.a libPSI_ipv1.a
+
+CSRC = 
+
+CXXSRC = clag.cc lagcalc.cc ci_energy.cc zorb.cc relax_pdms.cc indpairs.cc
+
+BINOBJ = $(CSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
+install_man:: clag.1
+	$(MKDIRS) $(DESTDIR)$(mandir)/man1
+	$(INSTALL_INCLUDE) $^ $(DESTDIR)$(mandir)/man1
