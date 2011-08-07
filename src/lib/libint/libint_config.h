@@ -1,0 +1,5 @@
+#define LIBINT_NEW_AM 8
+#define LIBINT_OPT_AM 4
+#define LIBINT_MAX_CLASS_SIZE 300
+#define LIBINT_LONG_DOUBLE 0
+

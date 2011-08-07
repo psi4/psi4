@@ -1,0 +1,99 @@
+include ../MakeVars
+include ./MakeVars
+
+ifndef SCRATCH
+   SCRATCH = /tmp/${USER}
+endif
+TEMP_DIR = ${SCRATCH}/libderiv
+
+
+.PHONY: default install all
+.PHONY: clean oclean iclean dclean target_clean
+
+default: $(PSITARGET)
+
+PWD=$(shell pwd)
+top_objdir_path=$(PWD)/$(top_objdir)
+
+$(PSITARGET): $(BUILD_SRC) $(srcdir)/Makefile.libderiv
+	if \
+! [ -e $(SCRATCH) ]; \
+ then \
+  if ! mkdir $(SCRATCH); then \
+   echo Could not mkdir $(SCRATCH); \
+   exit 1; \
+  fi; \
+fi; \
+if \
+ [ -e $(TEMP_DIR) ]; \
+then \
+ echo "Scratch directory $(TEMP_DIR) already exists!";\
+ echo "Specify some other location"; \
+ exit 1; \
+else \
+ if ! mkdir $(TEMP_DIR); then \
+  echo Could not mkdir $(TEMP_DIR); \
+  exit 1; \
+ fi; \
+fi; \
+cp $(srcdir)/Makefile.compiler $(TEMP_DIR); \
+cp libderiv_config.h $(TEMP_DIR); \
+cp $(srcdir)/Makefile.libderiv $(TEMP_DIR); \
+cd $(TEMP_DIR); \
+cp Makefile.compiler Makefile; \
+$(MAKE) top_objdir=$(top_objdir_path); \
+rm -f Makefile; \
+if ! ./$(BUILD_BINARY); then \
+ cd ..; rm -fR $(TEMP_DIR); exit 1; \
+fi; \
+cp Makefile.libderiv Makefile; \
+${MAKE} top_objdir=$(top_objdir_path); \
+cd ..; \
+rm -fR $(TEMP_DIR) 
+
+all: install
+
+default:
+
+clean::
+
+iclean:
+
+oclean:
+
+dclean:
+
+targetclean:
+
+install: $(PSITARGET) $(TARGET_HEADERS)
+	$(MKDIRS) $(libdir)
+	$(INSTALL_DATA) $< $(libdir)
+	$(RANLIB) $(libdir)/`basename $(PSITARGET)`
+	$(MKDIRS) $(incdir)/libderiv
+	$(INSTALL_INCLUDE) $(TARGET_HEADERS) $(incdir)/libderiv
+
+#
+# keep the configuration information and makefiles up-to-date
+#
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/lib/`basename $(srcdir)`/Makefile ./config.status
+
+Makefile.libderiv: $(srcdir)/Makefile.libderiv.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/lib/`basename $(srcdir)`/Makefile.libderiv ./config.status
+
+Makefile.compiler: $(srcdir)/Makefile.compiler.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/lib/`basename $(srcdir)`/Makefile.compiler  ./config.status
+
+../MakeVars: $(top_srcdir)/src/lib/MakeVars.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/lib/MakeVars ./config.status
+
+./MakeVars: $(srcdir)/MakeVars.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=src/lib/`basename $(srcdir)`/MakeVars ./config.status
+

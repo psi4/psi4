@@ -1,0 +1,5 @@
+WARNING: COMMUNICATOR was changed to MADNESS
+!! Warning: MPI::Init_thread did not provide requested functionality 2 0
+Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
+	S22 subset mean absolute deviation: matched.
+	NBC subset mean absolute deviation: matched.

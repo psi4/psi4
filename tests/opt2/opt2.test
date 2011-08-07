@@ -1,0 +1,13 @@
+WARNING: COMMUNICATOR was changed to MADNESS
+!! Warning: MPI::Init_thread did not provide requested functionality 2 0
+Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
+	MAX Force    1.6e-01 : Energy Change   -1.2e+02 : MAX Displacement    3.2e-01
+	MAX Force    2.3e-02 : Energy Change   -7.2e-02 : MAX Displacement    6.2e-02
+	MAX Force    1.9e-02 : Energy Change   -2.6e-03 : MAX Displacement    3.3e-02
+	MAX Force    7.5e-03 : Energy Change   -1.1e-03 : MAX Displacement    5.1e-02
+	MAX Force    6.3e-04 : Energy Change   -5.2e-04 : MAX Displacement    2.1e-03
+	MAX Force    9.5e-05 : Energy Change   -2.1e-06 : MAX Displacement    1.3e-04
+Optimizer: Optimization complete!
+	Cleaning optimization helper files.
+	Nuclear repulsion energy: matched.
+	Reference energy: matched.

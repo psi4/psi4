@@ -1,0 +1,166 @@
+
+.PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
+
+cc_subdirs = cc1 cc2 cc4 cc5a #cc13 cc5 cc8 cc8a these should be restored when fixed
+
+rb_subdirs = 
+
+ci_subdirs = 
+
+dcft_subdirs = dcft1 dcft2 dcft3
+
+mcscf_subdirs = mcscf1 mcscf2 mcscf3
+
+df_subdirs = sapt1 dfmp2_1 dfmp2_2
+
+psimrcc_subdirs = 
+
+mints_subdirs = mints1 mints2 mints3
+
+matrix_subdirs = matrix1
+
+opt_subdirs = opt1 opt1-fd opt2 opt3 opt4
+
+scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 mom props2 dft1
+
+python_test_subdirs = #basis_extrap
+
+plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals
+subdirs = \
+$(mints_subdirs) \
+$(matrix_subdirs) \
+$(scf_subdirs) \
+$(opt_subdirs) \
+$(df_subdirs) \
+$(cc_subdirs) \
+$(python_test_subdirs) \
+${mcscf_subdirs} \
+$(dcft_subdirs)
+
+# Compile the plugins, if we activated them
+HAVE_PLUGINS=
+ifeq ($(HAVE_PLUGINS),yes)
+   subdirs += $(plugin_subdirs)
+endif
+
+ 
+# the bare minimum
+quicktestdirs = 
+
+tests:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+opttests:
+	for dir in $(opt_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+plugins:
+	for dir in $(plugin_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+quicktests:
+	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+cc_tests:
+	for dir in $(cc_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+ci_tests:
+	for dir in $(ci_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+mints_tests:
+	for dir in $(mints_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+matrix_tests:
+	for dir in $(matrix_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+mcscf_tests:
+	for dir in $(mcscf_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+scf_tests:
+	for dir in $(scf_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+df_tests:
+	for dir in $(df_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+dcft_tests:
+	for dir in $(dcft_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+psimrcc_tests:
+	for dir in $(psimrcc_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+python_tests:
+	for dir in $(python_test_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+psirb_tests:
+	for dir in $(rb_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+clean:
+	for dir in $(subdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+quicktestsclean:
+	for dir in $(quicktestdirs); \
+	do \
+	 (cd $${dir} && echo ...Cleaning $${dir}... && $(MAKE) clean) || exit 1; \
+	done
+	rm -f ../test-case-results
+
+top_srcdir = /Users/masaaki/psi4
+srcdir = /Users/masaaki/psi4/tests
+top_objdir = ..
+
+$(top_srcdir)/configure: $(top_srcdir)/configure.ac $(top_srcdir)/aclocal.m4
+	cd $(top_srcdir) && autoconf
+
+$(top_objdir)/config.status: $(top_srcdir)/configure
+	cd $(top_objdir) && ./config.status --recheck
+
+Makefile: $(srcdir)/Makefile.in $(top_objdir)/config.status
+	cd $(top_objdir) && CONFIG_FILES=tests/Makefile ./config.status
+

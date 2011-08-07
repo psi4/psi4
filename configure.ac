@@ -904,6 +904,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
           src/bin/cis/Makefile
+					src/bin/adc/Makefile
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
           src/bin/psimrcc/Makefile
@@ -967,6 +968,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/plugin_mp2/input.dat tests/plugin_mp2/globals.h
           tests/plugin_mp2/plugin_mp2.cc tests/plugin_mp2/plugin_mp2_restricted.cc
           tests/plugin_mp2/plugin_mp2_unrestricted.cc
+					tests/plugin_mad_mp2/Makefile
           tests/plugin_mointegrals/Makefile
           tests/plugin_mointegrals/input.dat
           tests/plugin_mointegrals/mointegrals.cc

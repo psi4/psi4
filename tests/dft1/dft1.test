@@ -1,0 +1,19 @@
+WARNING: COMMUNICATOR was changed to MADNESS
+!! Warning: MPI::Init_thread did not provide requested functionality 2 0
+Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
+	RKS  0 1   B97 Energy: matched.
+	RKS  0 1 B3LYP Energy: matched.
+	RKS  0 1  wB97 Energy: matched.
+	RKS  0 1 wB97X Energy: matched.
+	UKS  0 1   B97 Energy: matched.
+	UKS  0 1 B3LYP Energy: matched.
+	UKS  0 1  wB97 Energy: matched.
+	UKS  0 1 wB97X Energy: matched.
+	UKS  1 2   B97 Energy: matched.
+	UKS  1 2 B3LYP Energy: matched.
+	UKS  1 2  wB97 Energy: matched.
+	UKS  1 2 wB97X Energy: matched.
+	UKS -1 2   B97 Energy: matched.
+	UKS -1 2 B3LYP Energy: matched.
+	UKS -1 2  wB97 Energy: matched.
+	UKS -1 2 wB97X Energy: matched.

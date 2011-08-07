@@ -1,0 +1,42 @@
+
+# These variables substituted by configure
+TRUNK    = /Users/masaaki/psi4/madness
+CXX      = mpicxx
+CXXFLAGS =  -O3 -Wall -Wno-strict-aliasing -Wno-deprecated 
+CPPFLAGS =  -I$(TRUNK)/include -I$(TRUNK)/src/lib -I$(TRUNK)/src/apps
+LDFLAGS  = 
+LIBS     = -llapack -lblas
+
+# Directories holding libraries
+LIBWORLDDIR=$(TRUNK)/src/lib/world
+LIBTENSORDIR=$(TRUNK)/src/lib/tensor
+LIBLINALGDIR=$(TRUNK)/src/lib/linalg
+LIBMISCDIR=$(TRUNK)/src/lib/misc
+LIBMRADIR=$(TRUNK)/src/lib/mra
+LIBTINYXMLDIR=$(TRUNK)/src/lib/tinyxml
+LIBMUPARSERDIR=$(TRUNK)/src/lib/muParser
+
+# Individual libraries
+LIBWORLD=$(LIBWORLDDIR)/libMADworld.a
+LIBTENSOR=$(LIBTENSORDIR)/libMADtensor.a
+LIBLINALG=$(LIBLINALGDIR)/libMADlinalg.a
+LIBMISC=$(LIBMISCDIR)/libMADmisc.a
+LIBMRA=$(LIBMRADIR)/libMADmra.a
+LIBTINYXML=$(LIBTINYXMLDIR)/libMADtinyxml.a
+LIBMUPARSER=$(LIBMUPARSERDIR)/libMADmuparser.a
+
+# Most scientific/numeric applications will link against these libraries
+MRALIBS=$(LIBMRA) $(LIBLINALG) $(LIBTENSOR) $(LIBMISC) $(LIBMUPARSER) \
+        $(LIBTINYXML) $(LIBWORLD) 
+
+# This to enable implicit Gnumake rule for linking from single source
+LDLIBS := $(MRALIBS) $(LIBS)
+
+
+# Define your targets below here ... this is just an example
+
+OBJ = a.o b.o c.o
+
+myprog:   $(OBJ)
+	$(CXX) -o $@ $^ $(LDLIBS)
+
