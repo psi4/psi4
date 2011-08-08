@@ -1,8 +1,0 @@
-WARNING: COMMUNICATOR was changed to MADNESS
-!! Warning: MPI::Init_thread did not provide requested functionality 2 0
-Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
-	Nuclear Repulsion Energy: matched.
-	Ground State SCF Energy: matched.
-	AB 1B1 -> AB 4A1 SCF Energy: matched.
-	AB 3A1 -> AB 4A1 SCF Energy: matched.
-	B 1B1 -> A 4A1 SCF Energy: matched.

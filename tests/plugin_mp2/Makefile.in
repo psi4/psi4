@@ -12,7 +12,6 @@ PSITARGET = $(shell basename `pwd`).so
 PSIINCLUDE = -I$(psi_top_srcdir)/include -I$(psi_top_objdir)/include -I$(psi_top_srcdir)/src/lib -I$(psi_top_objdir)/src/lib
 CXXINC += -DINSTALLEDPSIDATADIR=\"$(pkgdatadir)\" $(PYTHON_INCLUDE)
 PSILIBS = -L$(psi_top_objdir)/lib -lPSI_plugin
-MADFLAGS = -I$(top_srcdir)/madness/include -I$(top_srcdir)/madness/src/lib -I$(top_objdir)/madness/include
 
 CXXSRC = $(notdir $(wildcard *.cc))
 DEPENDINCLUDE = $(notdir $(wildcard *.h))
@@ -32,11 +31,11 @@ endif
 
 # The object files
 %.o: %.cc
-	$(CXX) $(MADFLAGS) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) -c $< $(OUTPUT_OPTION)
+	$(CXX) $(CXXDBG) $(CXXOPT) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) -c $< $(OUTPUT_OPTION)
 
 #include $(psi_top_objdir)/src/bin/MakeRules
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(MADFLAGS) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
 
 # Erase all compiled intermediate files
 clean:

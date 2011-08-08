@@ -1,7 +1,0 @@
-WARNING: COMMUNICATOR was changed to MADNESS
-!! Warning: MPI::Init_thread did not provide requested functionality 2 0
-Runtime initialized with 1 threads in the pool and affinity -1 -1 -1
-	C1  SAD Nuclear Repulsion Energy: matched.
-	C2v SAD Nuclear Repulsion Energy: matched.
-	C1  SAD Iteration N Energy: matched.
-	C2v SAD Iteration N Energy: matched.
