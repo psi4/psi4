@@ -1,0 +1,23 @@
+srcdir = @srcdir@
+VPATH = @srcdir@
+
+include ../MakeVars
+
+PSITARGET = $(top_objdir)/lib/libPSI_adc.a
+
+CXXSRC = \
+adc.cc cache.cc get_moinfo.cc get_params.cc primary_space.cc\
+diag_adc.cc diagonalize.cc make_diag.cc mp2.cc amp_write.cc\
+orbital_relaxation.cc denom.cc init_ints.cc accelerate.cc\
+differential_correlation.cc ccamps.cc ocss.cc sort_pert.cc\
+transpert.cc
+
+BINOBJ = $(CXXSRC:%.cc=%.o)
+
+include ../MakeRules
+
+ifneq ($(DODEPEND),no)
+$(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
+include $(BINOBJ:%.o=%.d)
+endif
+
