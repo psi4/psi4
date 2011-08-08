@@ -1,7 +1,0 @@
-$(TARGET):
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) $(PERL) ../runtest.pl $(SRCDIR)/input.dat  $(TARGET)
-
-clean:
-	@SRCDIR=$(SRCDIR) PSIDATADIR=$(SRC_PSIDATADIR) 
-	/bin/rm -f $(TARGET) $(GARBAGE)
-
