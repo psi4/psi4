@@ -3,15 +3,15 @@
     \brief fd_freq_0(): compute frequencies from energies
 */
 
-#include <vector>
-#include <fstream> // to write out file15
-#include <boost/python.hpp>
-#include <boost/python/list.hpp>
-
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+
 #include <physconst.h>
+#include <vector>
+#include <boost/python.hpp>
+#include <boost/python/list.hpp>
+
 
 using namespace boost::python;
 
