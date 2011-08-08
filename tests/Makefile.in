@@ -1,6 +1,10 @@
 
 .PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
 
+# Tests that depend on madness:
+#  This is probably not the final solution:
+maddness_subdirs = scf6 dfmp2_1 dfmp2_2
+
 cc_subdirs = cc1 cc2 cc4 cc5a #cc13 cc5 cc8 cc8a these should be restored when fixed
 
 rb_subdirs = 
@@ -11,7 +15,7 @@ dcft_subdirs = dcft1 dcft2 dcft3
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 
-df_subdirs = sapt1 dfmp2_1 dfmp2_2
+df_subdirs = sapt1 
 
 psimrcc_subdirs = 
 
@@ -21,7 +25,7 @@ matrix_subdirs = matrix1
 
 opt_subdirs = opt1 opt1-fd opt2 opt3 opt4
 
-scf_subdirs = scf1 scf2 scf3 scf4 scf5 scf6 sad1 mom props2 dft1
+scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 mom props2 dft1
 
 python_test_subdirs = #basis_extrap
 
@@ -37,13 +41,17 @@ $(python_test_subdirs) \
 ${mcscf_subdirs} \
 $(dcft_subdirs)
 
+HAVE_MADNESS=@HAVE_MPI@
+ifeq ($(HAVE_MADNESS),1)
+   subdirs += $(maddness_subdirs)
+endif
+ 
 # Compile the plugins, if we activated them
 HAVE_PLUGINS=@HAVE_PLUGINS@
 ifeq ($(HAVE_PLUGINS),yes)
    subdirs += $(plugin_subdirs)
 endif
 
- 
 # the bare minimum
 quicktestdirs = 
 
