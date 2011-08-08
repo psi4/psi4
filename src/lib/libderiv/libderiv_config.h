@@ -1,4 +1,0 @@
-#define LIBDERIV_NEW_AM1 6
-#define LIBDERIV_NEW_AM2 6
-#define LIBDERIV_NEW_AM12 6
-

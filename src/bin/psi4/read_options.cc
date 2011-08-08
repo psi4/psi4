@@ -1433,7 +1433,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_bool("NEWTRIPS", 1);
     /*- -*/
-    options.add_str("WFN", "NONE", "MP2 CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
+    options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- -*/
     options.add_str("REFERENCE", "RHF");
     /*- -*/
@@ -1540,40 +1540,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_bool("DOMAIN_PRINT", 0);
   }
-	if(name == "ADC"|| options.read_globals()) {
-    /*- -*/
-    options.add_str("WFN", "CIS", "ISR ADC MP2 CIS");
-    /*- -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
-    /*- -*/
-    options.add_int("MAXITER", 500);
-    /*- -*/
-    options.add("STATES_PER_IRREP", new ArrayType());
-		/*- -*/
-    options.add("START", new ArrayType());
-		/*- -*/
-    options.add("FINAL", new ArrayType());
-    /*- -*/
-    options.add_str("DIAG_METHOD", "DAVIDSON", "DAVIDSON EISPACK");
-		/*- -*/
-    options.add_str("CORR_TYPE", "MP2", "MP2 PR CC");
-		/*- -*/
-    options.add_str("QDPT", "INFTY", "INFTY ZERO");
-		/*- -*/
-		options.add_int("ACCELERATE", 1);
-		/*- -*/
-		options.add_int("NUM_AMPS", 5);
-		/*- -*/
-		options.add_int("DIM", 1);
-		/*- -*/
-		options.add_int("WIDTH", 10);	
-		/*- -*/
-		options.add_int("CRITERION", 7);
-		/*- -*/
-		options.add_int("ORDER", 2);
-		/*- -*/
-		options.add_int("SPIN", 0);
-  }	
   if(name == "LMP2"|| options.read_globals()) {
     /*- The wavefunction desired -*/
     options.add_str("RI_BASIS_MP2", "");
