@@ -62,11 +62,11 @@ int py_psi_plugin(std::string fullpathname)
     std::string uc = boost::algorithm::to_upper_copy(pluginPath.stem().string());
     if (plugins.count(uc) == 0) {
         plugins[uc] = plugin_load(fullpathname);
-        plugin_info& tmpinfo = plugins[uc];
-        fprintf(outfile, "Reading options from the %s block\n", tmpinfo.name.c_str());
-        fflush(outfile);
-        tmpinfo.read_options(tmpinfo.name, Process::environment.options);
     }
+    plugin_info& tmpinfo = plugins[uc];
+    fprintf(outfile, "Reading options from the %s block\n", tmpinfo.name.c_str());
+    fflush(outfile);
+    tmpinfo.read_options(tmpinfo.name, Process::environment.options);
 
     plugin_info& info = plugins[uc];
 
