@@ -328,7 +328,6 @@ IntegralTransform::process_eigenvectors()
     // Read the orbitals from the reference wavefunction, in matrix form
     SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
     SharedMatrix matCb = Process::environment.reference_wavefunction()->Cb();
-    // Read the eigenvectors from the checkpoint file
     if(_transformationType == Restricted){
         // Set up for a restricted transformation
         if(_Ca == NULL){

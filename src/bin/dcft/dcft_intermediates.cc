@@ -791,7 +791,7 @@ DCFTSolver::build_intermediates()
                   ID("[O,O]"), ID("[V,V]"), 0, "Temp <OO|VV>");
     dpd_buf4_init(&Laa, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
               ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
-    // Temp_IJAB = -lambda_KJAB X_IK
+    // Temp_IJAB = -lambda_KJAB F_IK
     dpd_file2_init(&F_OO, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
     dpd_contract244(&F_OO, &Laa, &T, 1, 0, 0, -1.0, 0.0);
 
@@ -955,6 +955,7 @@ DCFTSolver::build_intermediates()
     dpd_buf4_close(&D);
     dpd_buf4_close(&L);
     dpd_buf4_close(&A);
+
 
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 }

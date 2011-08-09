@@ -23,14 +23,9 @@ DCFTSolver::mp2_guess()
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-//    _ints = new IntegralTransform(spaces, IntegralTransform::Unrestricted,
-//            IntegralTransform::DPDOnly, IntegralTransform::QTOrder,
-//            IntegralTransform::None,false);
     _ints = new IntegralTransform(chkpt_, spaces, IntegralTransform::Unrestricted);
     _ints->set_keep_iwl_so_ints(true);
     _ints->set_keep_dpd_so_ints(true);
-//    _ints->set_chkpt(_chkpt);
-        // Make sure that we are using the correct DPD structure
     dpd_set_default(_ints->get_dpd_id());
     fprintf(outfile, "\n\n\tComputing MP2 amplitude guess...\n\n"); fflush(outfile);
     transform_integrals();
