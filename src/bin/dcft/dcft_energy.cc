@@ -23,7 +23,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
+                  ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
     eGaa = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 #if !REFACTORED
@@ -56,7 +56,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
+                  ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
     eGab =  dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 
@@ -91,7 +91,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
+                  ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
     eGbb = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 
