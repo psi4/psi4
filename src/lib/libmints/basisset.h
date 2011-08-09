@@ -25,7 +25,6 @@ namespace psi {
     class SphericalTransform;
     class SOTransform;
     class Matrix;
-    class SimpleMatrix;
     class Vector3;
     class SOBasisSet;
     class IntegralFactory;

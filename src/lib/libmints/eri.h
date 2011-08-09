@@ -16,7 +16,6 @@ class GaussianShell;
 class TwoBodyAOInt;
 class IntegralFactory;
 class SphericalTransform;
-class SimpleMatrix;
 class Fjt;
 class AOShellCombinationsIterator;
 class CorrelationFactor;
