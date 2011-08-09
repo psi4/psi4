@@ -22,7 +22,7 @@ molecule formic_dim {
 
 set globals {
    basis cc-pvdz
-   ri_basis_scf cc-pvdz-ri
+   ri_basis_scf cc-pvdz-jkfit
    ri_basis_mp2 cc-pvdz-ri
    scf_type df
    guess sad
