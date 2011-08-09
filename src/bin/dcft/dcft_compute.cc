@@ -178,9 +178,7 @@ DCFTSolver::compute_energy()
             }
             write_orbitals_to_checkpoint();
             scfDone = nSCFCycles == 1;
-            moFa_->print(outfile, "before");
             moFa_->transform(Ca_);
-            moFa_->print(outfile, "after");
             moFb_->transform(Cb_);
             transform_integrals();
         }
@@ -222,6 +220,11 @@ DCFTSolver::compute_energy()
 #if REFACTORED
                 Fa_->add(g_tau_a_);
                 Fb_->add(g_tau_b_);
+                // Copy and transform the Fock matrix, before it's symmetrically orthogonalized
+                moFa_->copy(Fa_);
+                moFb_->copy(Fb_);
+                moFa_->transform(Ca_);
+                moFb_->transform(Cb_);
                 compute_scf_energy();
                 fprintf(outfile, "\n  !SCF ENERGY = %20.15f \n", scf_energy_);
 #else
