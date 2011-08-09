@@ -7,7 +7,6 @@
 namespace psi {
 
 class Molecule;
-class SimpleMatrix;
 class Matrix;
 class BasisSet;
 class Wavefunction;
