@@ -23,7 +23,23 @@ set findif {
   points 5
 }
 
-frequencies("scf")
+# initialize global molecule if you haven't done a calculation already
+c4nh4.update_geometry()
+
+displacements = fd_geoms_freq_0()
+ndisp = len(displacements)
+energies = []
+
+for n, displacement in enumerate(displacements):
+  PsiMod.print_out("\n")
+  banner("Loading displacement %d of %d" % (n+1, ndisp))
+  print "    displacment %d" % (n+1)
+  c4nh4.update_geometry()  # needed to clear out file32
+  PsiMod.get_active_molecule().set_geometry(displacement)
+  E = energy('scf')
+  energies.append(E)
+
+fd_freq_0(energies)
 
 # These are the PSI3 analytic frequencies to which we should compare
 # 3619.515 
