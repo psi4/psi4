@@ -8,8 +8,6 @@
 #define PRINT_ENERGY_COMPONENTS 0
 #define ZERO 1.0E-16
 
-#define REFACTORED 1
-
 #define ID(x) _ints->DPD_ID(x)
 
 #ifndef INDEX
