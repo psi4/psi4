@@ -15,7 +15,6 @@
 #include <omp.h>
 #endif
 
-
 using namespace std;
 using namespace psi;
 using namespace boost;
@@ -42,43 +41,35 @@ void Process::Environment::init(char **envp)
 
     nthread_ = 1;
 
-    #ifdef _OPENMP
-        nthread_ = omp_get_max_threads();
-    #endif
+#ifdef _OPENMP
+    nthread_ = omp_get_max_threads();
+#endif
 
-    // For testing, print out the enviroment:
-//    for (map<string, string>::const_iterator iter = environment_.begin();
-//         iter != environment_.end(); ++iter)
-//        printf("Key: %s Value: %s\n", iter->first.c_str(), iter->second.c_str());
-
-
-        // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
-        // that makes sense. (i.e. MPI or LOCAL)
-#if (HAVE_MPI == 1) & (HAVE_MADNESS == 1)
-        if ( (Process::environment("COMMUNICATOR") != "MADNESS") &&
-             (Process::environment("COMMUNICATOR") != "MPI") &&
-             (Process::environment("COMMUNICATOR") != "LOCAL") )
-        {
-            environment_["COMMUNICATOR"] = "MADNESS";
-            std::cout << "WARNING: COMMUNICATOR was changed to MADNESS" << std::endl;
-        }
+    // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
+    // that makes sense. (i.e. MPI or LOCAL)
+#ifdef HAVE_MADNESS
+    if ( (Process::environment("COMMUNICATOR") != "MADNESS") &&
+         (Process::environment("COMMUNICATOR") != "LOCAL") )
+    {
+        environment_["COMMUNICATOR"] = "MADNESS";
+        std::cout << "WARNING: COMMUNICATOR was changed to MADNESS" << std::endl;
+    }
 #else
-        if (Process::environment("COMMUNICATOR") != "LOCAL") {
-            environment_["COMMUNICATOR"] = "LOCAL";
-    //        std::cout << "WARNING: COMMUNICATOR was changed to LOCAL" << std::endl;
-        }
+    if (Process::environment("COMMUNICATOR") != "LOCAL") {
+        environment_["COMMUNICATOR"] = "LOCAL";
+    }
 #endif
 }
 
 void Process::Environment::set_n_threads(int nthread)
 {
     nthread_ = nthread;
-    #ifdef _OPENMP
-        omp_set_num_threads(nthread_);
-    #endif
-    #ifdef HAVE_MKL
-        mkl_set_num_threads(nthread_);
-    #endif
+#ifdef _OPENMP
+    omp_set_num_threads(nthread_);
+#endif
+#ifdef HAVE_MKL
+    mkl_set_num_threads(nthread_);
+#endif
 }
 
 const string& Process::Environment::operator()(const string& key) const
@@ -86,9 +77,8 @@ const string& Process::Environment::operator()(const string& key) const
     // Search for the key:
     map<string, string>::const_iterator it = environment_.find(key);
 
-    if (it == environment_.end()) {
+    if (it == environment_.end())
         return empty_;      // Not found return empty string.
-    }
     else
         return it->second;  // Found, return the value
 }
@@ -108,37 +98,51 @@ const string& Process::Environment::set(const std::string &key, const std::strin
 {
     const string& old = operator()(key);
     environment_[key] = value;
+
+    // Attempt to set the variable in the system.
+#ifdef HAVE_SETENV
+    setenv(key.c_str(), value.c_str(), 1);
+#elif HAVE_PUTENV
+    size_t len = key.length() + value.length() + 2; // 2 = 1 (equals sign) + 1 (null char)
+    char *str = new char[len];
+    sprintf(str, "%s=%s", key.c_str(), value.c_str());
+    // we give up ownership of the memory allocation
+    putenv(str);
+#else
+#pragma error setenv and putenv not available.
+#endif
+
     return old;
 }
 
 void Process::Environment::set_molecule(const boost::shared_ptr<Molecule>& molecule)
 {
-  molecule_ = molecule;
+    molecule_ = molecule;
 }
 
 boost::shared_ptr<Molecule> Process::Environment::molecule() const
 {
-  return molecule_;
+    return molecule_;
 }
 
 void Process::Environment::set_potential(const boost::shared_ptr<ExternalPotential>& potential)
 {
-  potential_ = potential;
+    potential_ = potential;
 }
 
 boost::shared_ptr<ExternalPotential> Process::Environment::potential() const
 {
-  return potential_;
+    return potential_;
 }
 
 void Process::Environment::set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction)
 {
-  reference_wavefunction_ = reference_wavefunction;
+    reference_wavefunction_ = reference_wavefunction;
 }
 
 boost::shared_ptr<Wavefunction> Process::Environment::reference_wavefunction() const
 {
-  return reference_wavefunction_;
+    return reference_wavefunction_;
 }
 
 void Process::Arguments::init(int argc, char **argv)
