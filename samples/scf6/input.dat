@@ -1,32 +1,20 @@
-#! SCF DZ allene geometry optimzation, with Cartesian input
+#! Database calculation, so no molecule section in input file. Portions of the full
+#! databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
 
-molecule allene {
-  H -2.0  0.0  1.0
-  H -2.0  0.0 -1.0
-  C -1.5  0.0  0.0
-  C  0.0  0.0  0.0
-  C  1.5  0.0  0.0
-  H  2.0  1.0  0.0
-  H  2.0 -1.0  0.0
+set globals {
+    BASIS sto-3g
+    RI_BASIS_SCF  cc-pVDZ-JKFIT
+    RI_BASIS_SAPT cc-pVDZ-RI
+    RI_BASIS_MP2  cc-pVDZ-RI
+    REFERENCE RHF
+    SCF_TYPE DF
+    PRINT 1
+    CONVERGENCE 11
+    JOBTYPE SP
+    GUESS CORE
 }
 
-set global {
-  basis DZ
-  e_converge 10
-  d_converge 10
-}
+S22mad = database('sapt0','S22',subset=[2,8])
+NBCmad = database('dfmp2','NBC10',cp='on',symm='off',subset='small')
 
-# Hack variables
-cycle = 0
-returnValue = 0
-thisenergy = 0.0
-
-while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
-    thisenergy = energy('scf')
-    deriv()
-    returnValue = optking()
-    cycle = cycle + 1
-
-
-clean()

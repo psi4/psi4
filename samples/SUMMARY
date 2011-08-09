@@ -58,6 +58,24 @@ mints2:       A test of the basis specification.  A benzene atom is defined usin
 mints3:       Test individual integral objects for correctness.
 
 
+mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries because the former define absolute positions, while the latter are relative.
+
+
+opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
+
+
+opt1-fd:      SCF STO-3G geometry optimzation, with Z-matrix input, by finite-differences
+
+
+opt2:         SCF DZ allene geometry optimzation, with Cartesian input
+
+
+opt3:         SCF cc-pVDZ geometry optimzation, with Z-matrix input
+
+
+opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
+
+
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
 
 
@@ -73,9 +91,6 @@ sapt1:        SAPT0 cc-pVDZ computation of the ethane-ethyne binding energy, usi
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
 
 
-scf10:        DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
-
-
 scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis. This compuation runs in C1 symmetry, which is currently required for RI-SCF.
 
 
@@ -85,18 +100,9 @@ scf3:         UHF 6-31G** energy of the $^3B_1$ state of CH$_2$, with Z-matrix i
 scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan.
 
 
-scf5:         SCF STO-3G geometry optimzation, with Z-matrix input
+scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
 
-scf6:         SCF DZ allene geometry optimzation, with Cartesian input
-
-
-scf7:         SCF cc-pVDZ geometry optimzation, with Z-matrix input
-
-
-scf8:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
-
-
-scf9:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+scf6:         Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
 
