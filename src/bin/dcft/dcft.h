@@ -144,6 +144,10 @@ protected:
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
     SharedMatrix Fb_;
+    /// The alpha Fock matrix in the MO basis
+    SharedMatrix moFa_;
+    /// The beta Fock matrix in the MO basis
+    SharedMatrix moFb_;
     /// The inverse square root overlap matrix in the SO basis
     SharedMatrix s_half_inv_;
     /// The old full alpha MO coefficients
