@@ -180,72 +180,87 @@ const Vector3& ZMatrixEntry::compute()
 }
 
     if(rto_ == 0 && ato_ == 0 && dto_ == 0){
-        // The first atom
+        /*
+         * The first atom
+         *
+         * Place at the origin
+         */
         coordinates_[0] = 0.0;
         coordinates_[1] = 0.0;
         coordinates_[2] = 0.0;
     }else if(ato_ == 0 && dto_ == 0){
-        // The second atom
+        /*
+         * The second atom
+         *
+         * Place directly above the first atom
+         */
         coordinates_[0] = 0.0;
         coordinates_[1] = 0.0;
         coordinates_[2] = rval_->compute();
     }else if(dto_ == 0){
-        // The third atom
-        double r = rval_->compute();
-        double a = aval_->compute() * M_PI/180.0;
         /*
+         * The third atom
+         *
          * The atom specification is
          *      this       rTo   rVal  aTo  aVal
          *        A         B           C
-         * We arbitrarily chose to put A pointing upwards.
+         * We arbitrarily choose to put A pointing upwards.
          */
-        const Vector3& B = rto_->compute();
-        const Vector3& C = ato_->compute();
-        Vector3 eBC = C - B;
-        eBC.normalize();
-        double theta  = a - acos(eBC[2]); // The angle subtended by eBA and the vertical
-        double rextra = r * sin(theta);   // How far atom A sticks out beyond the end of the CB line
-        double phi = acos(eBC[0]);        // The angle subtended by eCB and the x axis
-        coordinates_[0] = C[0] + rextra * cos(phi);
-        coordinates_[1] = C[1] + rextra * sin(phi);
-        coordinates_[2] = B[2] + r * cos(theta);
-    }else{
-        // The fourth, or subsequent, atom
         double r = rval_->compute();
         double a = aval_->compute() * M_PI/180.0;
-        double d = dval_->compute() * M_PI/180.0;
+        double cosABC = cos(a);
+        double sinABC = sin(a);
+        const Vector3& B = rto_->compute();
+        const Vector3& C = ato_->compute();
 
+        Vector3 eCB = B - C;
+        eCB.normalize();
+        Vector3 eX, eY;
+        if(fabs(1 - fabs(eCB[0])) < 1.0E-5){
+            // CB is collinear with X, start by finding Y
+            eY[1] = 1.0;
+            eX = eY.perp_unit(eCB);
+            eY = eX.perp_unit(eCB);
+        }else{
+            // CB is not collinear with X, we can safely find X first
+            eX[0] = 1.0;
+            eY = eX.perp_unit(eCB);
+            eX = eY.perp_unit(eCB);
+        }
+        for(int xyz = 0; xyz < 3; ++xyz)
+           coordinates_[xyz] = B[xyz] + r * (eY[xyz] * sinABC - eCB[xyz] * cosABC );
+    }else{
         /*
+         * The fourth, or subsequent, atom
+         *
          * The atom specification is
          *      this       rTo   rVal  aTo  aVal   dTo   dVal
          *        A         B           C           D
-         * which allows us to define the vector from B->C (eBC) as the +z axis, and eAB
+         * which allows us to define the vector from C->B (eCB) as the +z axis, and eDC
          * lies in the xz plane.  Then eX, eY and eZ (=eBC) are the x, y, and z axes, respecively.
          */
+        double r = rval_->compute();
+        double a = aval_->compute() * M_PI/180.0;
+        double d = dval_->compute() * M_PI/180.0;
         const Vector3& B = rto_->compute();
         const Vector3& C = ato_->compute();
         const Vector3& D = dto_->compute();
 
-        Vector3 eCD = C - D;
-        Vector3 eBC = B - C;
-        eCD.normalize();
-        eBC.normalize();
-        double cosBCD = cos(a);
-        double sinBCD = sin(a);
+        Vector3 eDC = C - D;
+        Vector3 eCB = B - C;
+        eDC.normalize();
+        eCB.normalize();
+        double cosABC = cos(a);
+        double sinABC = sin(a);
         double cosABCD = cos(d);
         double sinABCD = sin(d);
-//        double cosABC = -eAB.dot(eBC);
-//        double sinABC = sqrt(1.0 - cosABC * cosABC);
-//        if(sinABC < LINEAR_A_TOL || sinBCD < LINEAR_A_TOL)
-//            throw PSIEXCEPTION("Atom defines a dihedral using a linear bond angle");
-        Vector3 eY = eCD.perp_unit(eBC);
-        Vector3 eX = eY.perp_unit(eBC);
+        Vector3 eY = eDC.perp_unit(eCB);
+        Vector3 eX = eY.perp_unit(eCB);
 
         for(int xyz = 0; xyz < 3; ++xyz)
-           coordinates_[xyz] = B[xyz] + r * ( -eBC[xyz] * cosBCD + eX[xyz] * sinBCD * cosABCD + eY[xyz] * sinBCD * sinABCD);
+           coordinates_[xyz] = B[xyz] + r * (eX[xyz] * sinABC * cosABCD + eY[xyz] * sinABC * sinABCD - eCB[xyz] * cosABC );
     }
     computed_ = true;
     return coordinates_;
-
 }
 
