@@ -184,7 +184,7 @@ DCFTSolver::update_lambda_from_residual()
     /*
      * Lambda_ijab += R_ijab / D_ijab
      */
-    // L_IJAB /= D_IJAB
+    // L_IJAB += D_IJAB
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "D <OO|VV>");
     dpd_buf4_init(&R, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
