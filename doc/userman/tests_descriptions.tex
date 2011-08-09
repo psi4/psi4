@@ -19,18 +19,20 @@
 {\bf mints1} &  Symmetry tests for a range of molecules.  This doesn't actually compute any energies, but serves as an example of the many ways to specify geometries in Psi4.\\
 {\bf mints2} &  A test of the basis specification.  A benzene atom is defined using a ZMatrix containing dummy atoms and various basis sets are assigned to different atoms.  The symmetry of the molecule is automatically lowered to account for the different basis sets.\\
 {\bf mints3} &  Test individual integral objects for correctness.\\
+{\bf mints4} &  A demonstration of mixed Cartesian/ZMatrix geometry specification, using variables, for the benzene-hydronium complex.  Atoms can be placed using ZMatrix coordinates, whether they belong to the same fragment or not.  Note that the Cartesian specification must come before the ZMatrix entries because the former define absolute positions, while the latter are relative.\\
+{\bf opt1} &  SCF STO-3G geometry optimzation, with Z-matrix input\\
+{\bf opt1-fd} &  SCF STO-3G geometry optimzation, with Z-matrix input, by finite-differences\\
+{\bf opt2} &  SCF DZ allene geometry optimzation, with Cartesian input\\
+{\bf opt3} &  SCF cc-pVDZ geometry optimzation, with Z-matrix input\\
+{\bf opt4} &  SCF cc-pVTZ geometry optimzation, with Z-matrix input\\
 {\bf props1} &  RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.\\
 {\bf props2} &  DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.\\
 {\bf sad1} &  Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.\\
 {\bf sapt1} &  SAPT0 cc-pVDZ computation of the ethane-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.\\
 {\bf scf1} &  RHF cc-pVQZ energy for the BH molecule, with Cartesian input.\\
-{\bf scf10} &  DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.\\
 {\bf scf2} &  RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis. This compuation runs in C1 symmetry, which is currently required for RI-SCF.\\
 {\bf scf3} &  UHF 6-31G** energy of the $^3B\_1$ state of CH$\_2$, with Z-matrix input. The occupations are specified explicitly.\\
 {\bf scf4} &  RHF cc-pVDZ energy for water, automatically scanning the symmetric stretch and bending coordinates using Python's built-in loop mechanisms.  The geometry is apecified using a Z-matrix with variables that are updated during the potential energy surface scan.\\
-{\bf scf5} &  SCF STO-3G geometry optimzation, with Z-matrix input\\
-{\bf scf6} &  SCF DZ allene geometry optimzation, with Cartesian input\\
-{\bf scf7} &  SCF cc-pVDZ geometry optimzation, with Z-matrix input\\
-{\bf scf8} &  SCF cc-pVTZ geometry optimzation, with Z-matrix input\\
-{\bf scf9} &  Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.\\
+{\bf scf5} &  Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.\\
+{\bf scf6} &  Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.\\
 \end{tabular*}

@@ -580,7 +580,261 @@
 
 \subsection{DETCI}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 AVERAGE\_STATES & Array giving the root numbers of the states to average in a state-averaged procedure such as SA-CASSCF. Root numbering starts from 1. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 AVERAGE\_WEIGHTS & Array giving the weights for each state in a state-averaged procedure \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 A\_RAS3\_MAX & maximum number of alpha electrons in RAS III \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CALC\_SSQ & If TRUE, calculate the value of $<S^2>$ for each root \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC & Do coupled-cluster computation? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_A\_RAS3\_MAX & maximum number of alpha electrons in RAS III, for CC \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_IMPORT & Import a CC vector from disk? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 COLLAPSE\_SIZE & Gives the number of vectors to retain when the Davidson subspace is collapsed (see MAXNVECT below). If greater than one, the collapsed subspace retains the best estimate of the CI vector for the previous n iterations. Defaults to 1. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIPMOM & Compute the dipole moment? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MAXITER & Maximum number of iterations to diagonalize the Hamiltonian. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 12\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 S & The value of the spin quantum number S is given by this option. The default is determined by the value of MULTP. This is used for two things: (1) determining the phase of the redundant half of the CI vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making sure the guess vector has the desired value of $<S^2>$ (if CALC\_SSQ is TRUE and ICORE=1). \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 EX\_LVL & The CI excitation level \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 LSE\_TOLERANCE & Energy must be converged to $10^{-n}$ for least-squares extrapolation to be performed \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_VAL\_EX\_LVL & The CC valence excitation level \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ORBS\_ROOT & Sets the root number for which CI natural orbitals are written to PSIF\_CHKPT. The default value is 1 (lowest root). \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CONVERGENCE & Convergence is achieved when the RMS of the error in the CI vector is less than 10**(-n). The default is 4 for energies and 7 for gradients. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 4\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS\_MIN\_VECS & how many vectors required before do diis? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_RAS3\_MAX & maximum number of electrons in RAS III, for CC \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 OPDM\_PRINT & Print the one-particle density matrix for each root? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RESTART & This option allows the user to resume a DETCI iteration that terminated prematurely. It assumes that the CI and sigma vectors are on disk; the number of vectors specified by RESTART\_VECS is collapsed down to one vector per root. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 WFN & Wavefunction type \\ 
+
+	  & {\bf Possible Values:} DETCI, CI, ZAPTN, DETCAS, CASSCF, RASSCF \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DETCI\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 LSE & Use least-squares extrapolation in iterative solution of CI vector? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 OPDM & Compute one-particle density matrix if not otherwise required? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRECONDITIONER & This specifies the type of preconditioner to use in the selected diagonalization method. The valid options are: DAVIDSON which approximates the Hamiltonian matrix by the diagonal elements; H0BLOCK\_INV which uses an exact Hamiltonian of H0\_BLOCKSIZE and explicitly inverts it; GEN\_DAVIDSON which does a spectral decomposition of H0BLOCK; ITER\_INV using an iterative approach to obtain the correction vector of H0BLOCK. The H0BLOCK\_INV, GEN\_DAVIDSON, and ITER\_INV approaches are all formally equivalent but the ITER\_INV is less computationally expensive. Default is DAVIDSON. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DAVIDSON\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TPDM & Compute two-particle density matrix if not otherwise required? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRINT\_CIBLKS & print a summary of the CI blocks? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_RAS4\_MAX & maximum number of electrons in RAS IV, for CC \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS\_FREQ & how often to do a DIIS exterpolation. 1 means do DIIS every iteration, 2 is every other iteration, etc. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MPN & When this option is TRUE DETCI will compute the MPn series out to kth order where k is determined by maxnvect. For open-shell systems (REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series. GUESS\_VECTOR must be set to UNIT, HD\_OTF must be set to TRUE, and HD\_AVE must be set to orb\_ener; these should happen by default for MPN=TRUE. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NTHREADS & Number of threads  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIAG\_METHOD & This specifies which method is to be used in diagonalizing the Hamiltonian. The valid options are: RSP, to form the entire H matrix and diagonalize using libciomr to obtain all eigenvalues (n.b. requires HUGE memory); OLSEN, to use Olsen's preconditioned inverse subspace method (1990); MITRUSHENKOV, to use a 2x2 Olsen/Davidson method; and DAVIDSON (or SEM) to use Liu's Simultaneous Expansion Method, which is identical to the Davidson method if only one root is to be found. There also exists a SEM debugging mode, SEMTEST. The SEM method is the most robust, but it also requires 2(N*M)+1 CI vectors on disk, where N is the maximum number of iterations and M is the number of roots. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} SEM\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 E\_CONVERGE & -Log10 of the energy convergence criterion \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FCI & Do a full CI (FCI)? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ICORE & Specifies how to handle buffering of CI vectors. A value of 0 makes the program perform I/O one RAS subblock at a time; 1 uses entire CI vectors at a time; and 2 uses one irrep block at a time. Values of 0 or 2 cause some inefficiency in the I/O (requiring multiple reads of the C vector when constructing H in the iterative subspace if DIAG\_METHOD = SEM), but require less core memory. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 WRTNOS & Write the natural orbitals? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRINT & print level \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RAS3\_MAX & maximum number of electrons in RAS III \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} -1\\
@@ -596,59 +850,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MPN\_SCHMIDT & If TRUE, an orthonormal vector space is employed rather than storing the kth order wfn \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WIGNER & Use Wigner formulas in the Empn series? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 HD\_AVE & How to average H diag energies over spin coupling sets. HD\_EXACT uses the exact diagonal energies which results in expansion vectors which break spin symmetry. HD\_KAVE averages the diagonal energies over a spin-coupling set yielding spin pure expansion vectors. ORB\_ENER employs the sum of orbital energy approximation giving spin pure expansion vectors but usually doubles the number of Davidson iterations. EVANGELISTI uses the sums and differences of orbital energies with the SCF reference energy to produce spin pure expansion vectors. LEININGER approximation which subtracts the one-electron contribution from the orbital energies, multiplies by 0.5, and adds the one-electron contribution back in, producing spin pure expansion vectors and developed by Matt Leininger and works as well as EVANGELISTI. \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} EVANGELISTI\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIXED4 & This determines whether `mixed' excitations involving RAS IV are allowed into the CI space. This is useful for placing additional constraints on a RAS CI. \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_VAL\_EX\_LVL & The CC valence excitation level \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 EX\_LVL & The CI excitation level \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NODFILE & If TRUE, use the last vector space in the BVEC file to write scratch DVEC rather than using a separate DVEC file. (Only possible if NUM\_ROOTS = 1). \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 NPRINT & number of important determinants to print out \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 20\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS & Do DIIS? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -659,10 +871,26 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NUM\_ROOTS & number of CI roots to find \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 SAVE\_MPN2 & If TRUE, save MP(2n-1) energy; else, save MPn energy \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 UPDATE & DAVIDSON employs the standard DAVIDSON update or correction vector formula, while OLSEN uses the OLSEN correction vector. Default is DAVIDSON. \\ 
+
+	  & {\bf Possible Values:} DAVIDSON, OLSEN \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DAVIDSON\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -673,6 +901,27 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 EXPORT\_VECTOR & This specifies whether to store converged vector(s) at the end of the run. The vector(s) is(are) stored in a transparent format such that other programs can use it easily. The format is specified in src/lib/libqt/slaterdset.h. The default is false. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NUM\_EXPORT & Number of vectors to export  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 OPDM\_AVE & Flag for whether or not to average the OPDM over several roots in order to obtain a state-average one-particle density matrix. This density matrix can be diagonalized to obtain the CI natural orbitals. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CC\_RAS34\_MAX & maximum number of electrons in RAS III + IV, for CC \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -680,93 +929,28 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_RAS3\_MAX & maximum number of electrons in RAS III, for CC \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FCI\_STRINGS & Store strings specifically for FCI? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 HD\_OTF & If TRUE the diagonal elements of the Hamiltonian matrix are computed on-the-fly, otherwise a diagonal element vector is written to a separate file on disk. \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NUM\_ROOTS & number of CI roots to find \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REF\_SYM & Open-shell type */ options.add\_str("OPENTYPE", "NONE", "NONE HIGHSPIN SINGLET"); /*- irrep for CI vectors; -1 = find automatically \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WFN & Wavefunction type \\ 
-
-	  & {\bf Possible Values:} DETCI, CI, ZAPTN, DETCAS, CASSCF, RASSCF \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H0\_BLOCK\_COUPLING & Use coupling block in preconditioner? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 R4S & Restrict strings with e- in RAS IV: i.e. if an electron is in RAS IV, then the holes in RAS I must equal the particles in RAS III + RAS IV else the string is discarded \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CALC\_SSQ & If TRUE, calculate the value of $<S^2>$ for each root \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_A\_RAS3\_MAX & maximum number of alpha electrons in RAS III, for CC \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H0\_GUESS\_SIZE & size of H0 block for initial guess \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 100\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT\_CIBLKS & print a summary of the CI blocks? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RAS34\_MAX & maximum number of electrons in RAS III + IV \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 LSE\_COLLAPSE & Number of iterations between least-squares extrapolations \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MS0 & If TRUE, use the Ms=0 component of the state. Defaults to TRUE if closed-shell and FALSE otherwise. Related to the S parameter. \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_B\_RAS3\_MAX & maximum number of beta electrons in RAS III, for CC \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} -1\\
@@ -780,10 +964,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H0\_BLOCK\_COUPLING\_SIZE & size of coupling block in preconditioner \\ 
+	 MAXNVECT & Gives the maximum number of Davidson subspace vectors which can be held on disk for the CI coefficient and sigma vectors. (There is one H(diag) vector and the number of D vectors is equal to the number of roots). When the number of vectors on disk reaches the value of MAXNVECT, the Davidson subspace will be collapsed to COLLAPSE\_SIZE vectors for each root. This is very helpful for saving disk space. Defaults to MAXITER * NUM\_ROOTS + NUM\_INIT\_VECS. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS\_MAX\_VECS & how many vectors maximum to hold? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 5\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -794,17 +985,31 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_B\_RAS3\_MAX & maximum number of beta electrons in RAS III, for CC \\ 
+	 TRANSITION\_DENSITY & Compute the transition density? \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H0\_BLOCKSIZE & size of H0 block in preconditioner \\ 
+	 DIIS\_START & how many diis vectors built up before start \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 400\\
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TDM\_WRITE & Write the transition density? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CC\_EXPORT & Export a CC vector to disk? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -815,38 +1020,33 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CC\_RAS4\_MAX & maximum number of electrons in RAS IV, for CC \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIXED & This determines whether `mixed' RAS II/RAS III excitations are allowed into the CI space. This is useful for placing additional constraints on a RAS CI. \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REPL\_OTF & Tells DETCI whether or not to do string replacements on the fly. Can save a gigantic amount of memory (especially for truncated CI's) but is somewhat flaky and hasn't been tested for a while. It may work only works for certain classes of RAS calculations. The current code is very slow with this option turned on. \\ 
+	 ISTOP & If TRUE then DETCI will stop after string information is formed and before integrals are read. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 E\_CONVERGE & E converge value \\ 
+	 ROOT & The root to write out the two-particle density matrix for (the one-particle density matrices are written for all roots). Useful for a state-specific CASSCF or CI optimization on an excited state. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 10\\
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 ISTOP & stop after setting up CI space \\ 
+	 TPDM\_PRINT & Print the two-particle density matrix? (Warning: large tensor) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REFERENCE & Reference wavefunction \\ 
+
+	  & {\bf Possible Values:} RHF, ROHF \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} RHF\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -857,24 +1057,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 D\_CONVERGE & D converge value \\ 
+	 TDM\_PRINT & Print the transition density? \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PERTURBATION\_PARAMETER & z in H = H0 + z * H1 \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RAS3\_MAX & maximum number of electrons in RAS III \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} -1\\
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 
@@ -1798,10 +1984,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 N\_CARTESIAN\_MOS & Number MO indices \\ 
+	 DFT\_OMEGA & The DFT Range-separation parameter (only used if changed by the user) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1818,6 +2004,22 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 5000\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 N\_CARTESIAN\_MOS & Number MO indices \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_SCF\_STORAGE & The storage scheme for the three index tensors in density fitting \\ 
+
+	  & {\bf Possible Values:} DEFAULT, CORE, DISK \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DEFAULT\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1842,12 +2044,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_SCF\_STORAGE & The storage scheme for the three index tensors in density fitting \\ 
-
-	  & {\bf Possible Values:} DEFAULT, CORE, DISK \\ 
+	 RI\_MAX\_COND & Max J basis condition number to be allowed \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} DEFAULT\\
+	   & {\bf Type:} double &  {\bf Default:} 1E8\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1858,10 +2058,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_MAX\_COND & Max J basis condition number to be allowed \\ 
+	 POISSON\_BASIS\_SCF & The name of the poisson basis to be used in RI computations \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1E8\\
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1879,10 +2079,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 POISSON\_BASIS\_SCF & The name of the poisson basis to be used in RI computations \\ 
+	 MOM\_VIR & The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	   & {\bf Type:} array &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1893,10 +2093,12 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MOM\_VIR & The absolute indices of orbitals to excite to in MOM (+/- for alpha/beta) \\ 
+	 RI\_FITTING\_TYPE & SCF Fitting Type \\ 
+
+	  & {\bf Possible Values:} FINISHED, RAW, CHOLESKY \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1935,6 +2137,13 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEBUG & The amount of debugging information to print \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DFT\_BOX\_OVERAGE & The box overage for box-type point grouping \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -1951,21 +2160,21 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_FITTING\_TYPE & SCF Fitting Type \\ 
-
-	  & {\bf Possible Values:} FINISHED, RAW, CHOLESKY \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} FINISHED\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DFT\_VORONOI\_TYPE & The fuzzy Voronoi type for DFT, STRATMANN is best \\ 
 
 	  & {\bf Possible Values:} STRATMANN, BECKE \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} STRATMANN\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_INTS\_IO & IO caching for CP corrections, etc \\ 
+
+	  & {\bf Possible Values:} NONE, SAVE, LOAD \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -1983,19 +2192,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_INTS\_IO & IO caching for CP corrections, etc \\ 
-
-	  & {\bf Possible Values:} NONE, SAVE, LOAD \\ 
+	 DIIS & Whether DIIS extrapolation is used to accelerate convergence \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAD\_CHOL\_CUTOFF & SAD Guess Cholesky Cutoff (for eliminating redundancies) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1E-7\\
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2006,17 +2206,24 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_BASIS\_SCF & The name of the auxiliary basis to be used in RI computations \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 MAX\_DIIS\_VECTORS & The maximum number of error vectors stored for DIIS extrapolation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 10\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAD\_CHOL\_CUTOFF & SAD Guess Cholesky Cutoff (for eliminating redundancies) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1E-7\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_BASIS\_SCF & The name of the auxiliary basis to be used in RI computations \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2027,24 +2234,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DIIS & Whether DIIS extrapolation is used to accelerate convergence \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DEBUG & The amount of debugging information to print \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DFT\_VORONOI\_A1 & The near-field alpha within each cell for Voronoi-type point grouping \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCHWARZ\_CUTOFF & Minimum absolute TEI value for seive \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2057,7 +2257,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCHWARZ\_CUTOFF & Minimum absolute TEI value for seive \\ 
+	 OVERLAP\_CUTOFF & Minimum absolute S matrix value for DF-SCF exchange \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 0\\
@@ -2073,13 +2273,6 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 OVERLAP\_CUTOFF & Minimum absolute S matrix value for DF-SCF exchange \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 GUESS & The guess type to be used in the computation \\ 
 
 	  & {\bf Possible Values:} CORE, GWH, SAD, READ \\ 
@@ -2089,17 +2282,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MOM\_START & The iteration to start MOM on (or 0 for no MOM) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MOM\_START & The iteration to start MOM on (or 0 for no MOM) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2117,6 +2310,13 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SAVE\_CARTESIAN\_GRID & Save a grid or not? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 SAD\_PRINT & The amount of SAD information to print to the output \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -2124,10 +2324,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAVE\_CARTESIAN\_GRID & Save a grid or not? \\ 
+	 THREE\_INDEX\_CUTOFF & Minimum absolute three-index value for DF-SCF seive \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2140,31 +2340,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 THREE\_INDEX\_CUTOFF & Minimum absolute three-index value for DF-SCF seive \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIN\_DIIS\_VECTORS & The minimum number of error vectors stored for DIIS extrapolation \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 PARALLEL & Whether to run in parallel or not \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DFT\_BOX\_DELTA & The box width for box-type point grouping \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 4\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2175,10 +2354,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_INTS\_NUM\_THREADS & Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank \\ 
+	 MIN\_DIIS\_VECTORS & The minimum number of error vectors stored for DIIS extrapolation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DFT\_BOX\_DELTA & The box width for box-type point grouping \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 4\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2198,7 +2384,23 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_INTS\_NUM\_THREADS & Max Number of threads for integrals (may be turned down if memory is an issue). 0 is blank \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 D\_CONVERGE & -Log10 of the density convergence criterion \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 REFERENCE & The reference wavefunction used in the computation \\ 
+
+	  & {\bf Possible Values:} RHF, ROHF, UHF, RKS, UKS \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} RHF\\
@@ -2214,10 +2416,12 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 D\_CONVERGE & -Log10 of the density convergence criterion \\ 
+	 SAD\_C & SAD Occupation Matrix Method \\ 
+
+	  & {\bf Possible Values:} CHOLESKY, ID \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	   & {\bf Type:} string &  {\bf Default:} CHOLESKY\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2225,15 +2429,6 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAD\_C & SAD Occupation Matrix Method \\ 
-
-	  & {\bf Possible Values:} CHOLESKY, ID \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} CHOLESKY\\
 	 & & \\
 \end{tabular*}
 
@@ -2381,7 +2576,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DOCC &  \\ 
+	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -2416,7 +2611,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SOCC &  \\ 
+	 SOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -2634,7 +2829,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
+	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -2718,7 +2913,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
+	 SOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -2941,12 +3136,19 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{MINTS}
+\subsection{FINDIF}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 BASIS & primary basis set \\ 
+	 DISP\_SIZE & Displacement size in au for finite-differences. \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 POINTS & Number of points for finite-differences (3 or 5) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 3\\
 	 & & \\
 \end{tabular*}
 
@@ -2966,6 +3168,22 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DENOMINATOR\_ALGORITHM & Denominator algorithm for PT methods \\ 
+
+	  & {\bf Possible Values:} LAPLACE, CHOLESKY \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} LAPLACE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DENOMINATOR\_DELTA & Maximum denominator error allowed (Max error norm in Delta tensor) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 MAXITER & Max CPHF iterations \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -2980,12 +3198,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SAPT\_LEVEL & The level of theory for SAPT \\ 
-
-	  & {\bf Possible Values:} SAPT0, MP2C \\ 
+	 RI\_BASIS\_ELST & SAPT DF Basis for Elst10 and Exch10 \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} SAPT0\\
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -2996,24 +3212,12 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 AIO\_DFINTS & Use asynchronous I/O in the DF integral formation \\ 
+	 SAPT\_LEVEL & The level of theory for SAPT \\ 
+
+	  & {\bf Possible Values:} SAPT0, SAPT2, SAPT2+, SAPT2+3, MP2C \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DENOMINATOR\_DELTA & Maximum denominator error allowed (Max error norm in Delta tensor) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NAT\_ORBS\_T2 & Use Natural Orbitals for T2's \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} string &  {\bf Default:} SAPT0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3038,17 +3242,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DIISVECS & DIIS vecs \\ 
+	 AIO\_DFINTS & Use asynchronous I/O in the DF integral formation \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 5\\
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 D\_CONVERGE & D converge value \\ 
+	 NAT\_ORBS\_T2 & Use Natural Orbitals for T2's \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3059,6 +3263,20 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_BASIS\_SAPT & SAPT DF Basis \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 D\_CONVERGE & D converge value \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 OMEGA\_POINTS & Number of Omega points for Casimir-Polder \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -3066,10 +3284,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_BASIS\_SAPT & SAPT DF Basis \\ 
+	 DIISVECS & DIIS vecs \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	   & {\bf Type:} integer &  {\bf Default:} 5\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NO\_RESPONSE & Don't solve the CPHF equations \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3087,7 +3312,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NO\_RESPONSE & Don't solve the CPHF equations \\ 
+	 DO\_THIRD\_ORDER & Compute Third-order Corrections \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
@@ -3098,6 +3323,15 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} integer &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+
+\subsection{MINTS}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 BASIS & primary basis set \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 
@@ -3117,49 +3351,12 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CONV\_MAX\_FORCE & QCHEM optimization criteria: maximum force \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 3\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 FRAGMENT\_MODE & Whether to treat multiple molecule fragments as a single bonded molecule; or via interfragment coordinates ; a primary difference is that in MULTI mode, the interfragment coordinates are not redundant. {SINGLE, MULTI} \\ 
 
 	  & {\bf Possible Values:} SINGLE, MULTI \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SINGLE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FREEZE\_INTRAFRAGMENT & Whether to freeze all fragments rigid \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 GENERATE\_INTCOS\_ONLY & Whether to only generate the internal coordinates and then stop {true, false} \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H\_UPDATE & Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} \\ 
-
-	  & {\bf Possible Values:} NONE, BFGS, MS, POWELL, BOFILL \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} BFGS\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H\_UPDATE\_LIMIT\_MAX & If the above is true, changes to the Hessian from the update are limited to the larger of (H\_update\_limit\_scale)*(the previous value) and H\_update\_limit\_max (in au). \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3191,10 +3388,33 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 OPT\_TYPE & Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} \\ 
+
+	  & {\bf Possible Values:} MIN, TS, IRC \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} MIN\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 READ\_CARTESIAN\_H & Read Cartesian Hessian \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 SCALE\_CONNECTIVITY & When determining connectivity, a bond is assigned if interatomic distance is less than (this number) * sum of covalent radii {double} \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 GENERATE\_INTCOS\_ONLY & Whether to only generate the internal coordinates and then stop {true, false} \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3207,24 +3427,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 READ\_CARTESIAN\_H & Read Cartesian Hessian \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 TEST\_B & Whether to test B matrix \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 H\_UPDATE\_LIMIT\_SCALE & If the above is true, changes to the Hessian from the update are limited to the larger of (H\_update\_limit\_scale)*(the previous value) and H\_update\_limit\_max (in au). \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3235,6 +3441,38 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE\_LIMIT\_MAX & If the above is true, changes to the Hessian from the update are limited to the larger of (H\_update\_limit\_scale)*(the previous value) and H\_update\_limit\_max (in au). \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE\_LIMIT\_SCALE & If the above is true, changes to the Hessian from the update are limited to the larger of (H\_update\_limit\_scale)*(the previous value) and H\_update\_limit\_max (in au). \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 STEP\_TYPE & Whether to do a Newton-Raphson step, or an RFO step; allowed values = {NR, RFO} \\ 
+
+	  & {\bf Possible Values:} RFO, NR \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} RFO\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 H\_UPDATE & Choose from supported Hessian updates {NONE, BFGS, MS, POWELL, BOFILL} \\ 
+
+	  & {\bf Possible Values:} NONE, BFGS, MS, POWELL, BOFILL \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} BFGS\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 INTERFRAGMENT\_DISTANCE\_INVERSE & Whether to use 1/R(AB) for stretching coordinate between fragments (or just R(AB)) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
@@ -3242,12 +3480,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 STEP\_TYPE & Whether to do an ordinary Newton-Raphson step or an RFO step; allowed values = {NR, RFO} \\ 
-
-	  & {\bf Possible Values:} RFO, NR \\ 
+	 FREEZE\_INTRAFRAGMENT & Whether to freeze all fragments rigid \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} RFO\\
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3262,6 +3498,13 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CONV\_MAX\_FORCE & QCHEM optimization criteria: maximum force \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 3\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -3457,7 +3700,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DOCC &  \\ 
+	 DOCC & An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -3478,7 +3721,7 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SOCC &  \\ 
+	 SOCC & An array containing the number of singly-occupied orbitals per irrep (in Cotton order) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} array &  {\bf Default:} No Default\\
@@ -3690,66 +3933,6 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{TRANSQT2}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 AO\_BASIS & The algorithm to use for the $\left<VV||VV\right>$ terms \\ 
-
-	  & {\bf Possible Values:} NONE, DISK, DIRECT \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 PRINT\_TEI &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DERTYPE &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WFN &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CACHELEV &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 TOLERANCE &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 14\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DELETE\_TEI &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} true\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REFERENCE &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} RHF\\
-	 & & \\
-\end{tabular*}
-
 \subsection{CCHBAR}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 CACHELEV &  \\ 
@@ -3791,164 +3974,6 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} SCF\\
-	 & & \\
-\end{tabular*}
-
-\subsection{LMP2}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DIISSTART &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 3\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCALE\_OS &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 6\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NEGLECT\_DP &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCS\_N &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DISTANT\_PAIR &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 8\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_LMP2 &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 ENERGY\_CONV &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 7\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MAXITER &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 50\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FSKIP &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 LOCAL\_CUTOFF &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_BASIS\_MP2 & The wavefunction desired \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCS &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MEMORY &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2000\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 NDIIS &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 6\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REFERENCE &  \\ 
-
-	  & {\bf Possible Values:} RHF \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} RHF\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RMS\_CONV &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 5\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCHWARTZ\_TOL &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 12\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCREEN\_INTS &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WFN &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} LMP2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 USE\_DIIS &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCALE\_SS &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCREENING &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 7\\
 	 & & \\
 \end{tabular*}
 
@@ -4122,35 +4147,12 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{MP2}
+\subsection{LMP2}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CACHELEV &  \\ 
+	 DIISSTART &  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 CACHETYPE &  \\ 
-
-	  & {\bf Possible Values:} LRU, LOW \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} LRU\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 REFERENECE &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} RHF\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 JOBTYPE &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} SP\\
+	   & {\bf Type:} integer &  {\bf Default:} 3\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4161,10 +4163,66 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCALE\_SS &  \\ 
+	 NEGLECT\_DP &  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
+	   & {\bf Type:} boolean &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCS\_N &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DISTANT\_PAIR &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_LMP2 &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ENERGY\_CONV &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 7\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MAXITER &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 50\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FSKIP &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 LOCAL\_CUTOFF &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_BASIS\_MP2 & The wavefunction desired \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4175,10 +4233,93 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MEMORY &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2000\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 NDIIS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REFERENCE &  \\ 
+
+	  & {\bf Possible Values:} RHF \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} RHF\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RMS\_CONV &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 5\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCHWARTZ\_TOL &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 12\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCREEN\_INTS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 WFN &  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	   & {\bf Type:} string &  {\bf Default:} LMP2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 USE\_DIIS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCALE\_SS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCREENING &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 7\\
+	 & & \\
+\end{tabular*}
+
+\subsection{TRANSQT2}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 AO\_BASIS & The algorithm to use for the $\left<VV||VV\right>$ terms \\ 
+
+	  & {\bf Possible Values:} NONE, DISK, DIRECT \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PRINT\_TEI &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4189,10 +4330,38 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCS\_N &  \\ 
+	 WFN &  \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CACHELEV &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 TOLERANCE &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 14\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DELETE\_TEI &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REFERENCE &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} RHF\\
 	 & & \\
 \end{tabular*}
 
@@ -4303,6 +4472,110 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+
+\subsection{CLAG}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DERTYPE &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 ROOT &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 WFN &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 WRITE\_CAS\_FILES &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} 0\\
+	 & & \\
+\end{tabular*}
+
+\subsection{MP2}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CACHELEV &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 CACHETYPE &  \\ 
+
+	  & {\bf Possible Values:} LRU, LOW \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} LRU\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 REFERENCE &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} RHF\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 JOBTYPE &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} SP\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCALE\_OS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCALE\_SS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCS &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 WFN &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DERTYPE &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 SCS\_N &  \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
 	 & & \\
 \end{tabular*}
 
@@ -4441,36 +4714,6 @@
 	 & & \\
 \end{tabular*}
 
-\subsection{CLAG}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DERTYPE &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 ROOT &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WFN &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 WRITE\_CAS\_FILES &  \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-
 \subsection{DFCC}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 BASIS & MO basis \\ 
@@ -4480,33 +4723,52 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MAX\_DIIS\_VECS & Maximum DIIS vectors \\ 
+	 PS\_ALPHA & Pseudospectral partition alpha \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 6\\
+	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCALE\_OS & OS Scale \\ 
+	 PS\_MIN\_S\_DEALIAS & Minumum eigenvalue for dealias basis \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 6\\
+	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 T\_CONVERGE & Convergence of cluster amplitudes (RMS change) \\ 
+	 PS\_OMEGA & Pseudospectral range-separation parameter \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FITTING\_TYPE & Fitting metric algorithm \\ 
-
-	  & {\bf Possible Values:} EIG, CHOLESKY, QR \\ 
+	 PS\_PRUNING\_ALPHA & Spread alpha for logarithmic pruning \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} EIG\\
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RPA\_ALPHA & RPA alpha parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_DELTA & Dealias basis delta parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DIIS & Turn on DIIS \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4524,10 +4786,35 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RPA\_ALPHA & RPA alpha parameter \\ 
+	 DENOMINATOR\_ALGORITHM & Denominator algorithm for PT methods \\ 
+
+	  & {\bf Possible Values:} LAPLACE, CHOLESKY \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
+	   & {\bf Type:} string &  {\bf Default:} LAPLACE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_NUCLEAR\_SCHEME & Nuclear Scheme \\ 
+
+	  & {\bf Possible Values:} TREUTLER, BECKE, NAIVE, STRATMANN \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} TREUTLER\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_BASIS\_CC & Dealias basis for PS integrals \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_N\_DIFFUSE & Dealias basis N diffuse parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4538,56 +4825,17 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DIIS & Turn on DIIS \\ 
+	 PS\_USE\_OMEGA & Use range-separation procedure in PS? \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} boolean &  {\bf Default:} true\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MP2\_ALGORITHM & MP2 Algorithm: \begin{tabular}{ccc} Algorithm Keyword & MP2J & MP2K \\ \hline DF & DF & DF \\ SOS & DF & - \\ MOS & DF(Omega) & - \\ PS & DF & PS \\ PS2 & DF & PS/PS \\ PS3 & PS & PS/PS \\ \end{tabular} \\ 
-
-	  & {\bf Possible Values:} DF, SOS, MOS, PS, PS2, PS3 \\ 
+	 SCHWARZ\_CUTOFF & Schwarz cutoff \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} DF\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RPA\_RISKY & Continue RPA even if T's are not numerically SPD? \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} boolean &  {\bf Default:} false\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DENOMINATOR\_ALGORITHM & Denominator algorithm for PT methods \\ 
-
-	  & {\bf Possible Values:} LAPLACE, CHOLESKY \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} LAPLACE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RI\_BASIS\_CC & DF basis for MO integrals \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DEALIAS\_BASIS\_CC & Dealias basis for PS integrals \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} string &  {\bf Default:} NONE\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 DENOMINATOR\_DELTA & Maximum denominator error allowed (Max error norm in Delta tensor) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
+	   & {\bf Type:} double &  {\bf Default:} 0\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4600,31 +4848,10 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 SCHWARZ\_CUTOFF & Schwarz cutoff \\ 
+	 DEALIAS\_N\_L & Dealias basis highest delta l parameter \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 0\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 FITTING\_CONDITION & Desired Fitting condition (inverse of max condition number) \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} double &  {\bf Default:} 1\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 MIN\_DIIS\_VECS & Minimum DIIS vectors \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 2\\
-	 & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 E\_CONVERGE & Convergence of CC energy \\ 
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4632,6 +4859,13 @@
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} string &  {\bf Default:} No Default\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_N\_RADIAL & Number of radial points \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 5\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
@@ -4651,14 +4885,180 @@
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-	 RPA\_DELTA & RPA Cholesky delta  \\ 
+	 SCALE\_OS & OS Scale \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_BETA & Dealias basis beta parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 3\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_N\_CAP & Dealias basis N cap parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_N\_CORE & Dealias basis N core parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DEALIAS\_N\_INTERCALATER & Dealias basis N intercalater parameter \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 DENOMINATOR\_DELTA & Maximum denominator error allowed (Max error norm in Delta tensor) \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\
 	 & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FITTING\_TYPE & Fitting metric algorithm \\ 
+
+	  & {\bf Possible Values:} EIG, CHOLESKY, QR \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} EIG\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MAX\_DIIS\_VECS & Maximum DIIS vectors \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 6\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_MIN\_S\_PRIMARY & Minumum eigenvalue for primary basis \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MP2\_ALGORITHM & MP2 Algorithm: \begin{tabular}{ccc} Algorithm Keyword & MP2J & MP2K \\ \hline MP2 & MP2 & MP2 \\ DF & DF & DF \\ PS & PS & PS \\ PS1 & DF & PS/DF \\ PS2 & DF & PS/PS \\ PS3 & PS & PS/DF \\ PS4 & PS & PS/PS \\ TEST\_DENOM & Test & Test \\ TEST\_PS & Test & Test \\ TEST\_PS\_OMEGA & Test & Test \\ TEST\_DPS\_OMEGA & Test & Test \\ TEST\_DF & Test & Test \\ \end{tabular} \\ 
+
+	  & {\bf Possible Values:} MP2, DF, PS, PS1, PS2, PS3, PS4, TEST\_DENOM, TEST\_PS, TEST\_PS\_OMEGA, TEST\_DPS\_OMEGA, TEST\_DF \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} DF\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_ORDER\_SPHERICAL & Maximum order of spherical grids \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 7\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_RADIAL\_SCHEME & Radial Scheme \\ 
+
+	  & {\bf Possible Values:} TREUTLER, BECKE, MULTIEXP, EM, MURA \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} TREUTLER\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_SPHERICAL\_SCHEME & Spherical Scheme \\ 
+
+	  & {\bf Possible Values:} LEBEDEV \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} LEBEDEV\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 T\_CONVERGE & Convergence of cluster amplitudes (RMS change) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RPA\_RISKY & Continue RPA even if T's are not numerically SPD? \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} boolean &  {\bf Default:} false\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 E\_CONVERGE & Convergence of CC energy \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 8\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 FITTING\_CONDITION & Desired Fitting condition (inverse of max condition number) \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_BS\_RADIUS\_ALPHA & Factor for effective BS radius in radial grid \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RI\_BASIS\_CC & DF basis for MO integrals \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} NONE\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 MIN\_DIIS\_VECS & Minimum DIIS vectors \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} integer &  {\bf Default:} 2\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_FITTING\_ALGORITHM & Fitting algorithm to use for pseudospectral \\ 
+
+	  & {\bf Possible Values:} DEALIASED, RENORMALIZED, QUADRATURE \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} CONDITIONED\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 PS\_PRUNING\_SCHEME & Pruning Scheme \\ 
+
+	  & {\bf Possible Values:} FLAT, P\_GAUSSIAN, D\_GAUSSIAN, P\_SLATER, D\_SLATER, LOG\_GAUSSIAN, LOG\_SLATER \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} string &  {\bf Default:} FLAT\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
 	 RPA\_PLUS\_EPSILON & Continue RPA numerical SPD Tolerance \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+	   & {\bf Type:} double &  {\bf Default:} 1\\
+	 & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+	 RPA\_DELTA & RPA Cholesky delta \\ 
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
 	   & {\bf Type:} double &  {\bf Default:} 1\\

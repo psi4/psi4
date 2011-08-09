@@ -1,35 +1,104 @@
-#! SCF STO-3G geometry optimzation, with Z-matrix input
+#! Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
 
-# These values are from a tightly converged QChem run
+psioh = PsiMod.IOManager.shared_object()
+psioh.set_specific_retention(32,False)
 
-molecule h2o {
-     O
-     H 1 1.0
-     H 1 1.0 2 104.5
-# QChem optimized geometry
-#O           0.000000    0.000000    0.138167
-#H          -0.758081    0.000000   -0.497635
-#H           0.758081    0.000000   -0.497635
+
+molecule singlet_o2 {
+    0 1
+    O
+    O 1 1.2
+    units    angstrom
+    symmetry c1
 }
 
+molecule triplet_o2 {
+    0 3
+    O
+    O 1 1.2
+    units    angstrom
+    symmetry c1
+}
+singlet_o2.update_geometry()
+triplet_o2.update_geometry()
+
+
+
+activate(singlet_o2)
 set globals {
-  diis false
-  basis sto-3g
-  e_converge 10
-  d_converge 10
+    basis cc-pvtz
+    ri_basis_scf cc-pvtz-jkfit
+    guess core
+    print 2
 }
 
-# We need to tighten up the Optking convergence criteria, when this is available
-# Hack variables
-cycle = 0
-returnValue = 0
-thisenergy = 0.0
+set scf reference rhf
 
-while (cycle < 20 and returnValue != PsiReturnType.EndLoop):
-  thisenergy = energy('scf')
-  deriv()
-  returnValue = optking()
-  cycle = cycle + 1
+set scf scf_type pk
+E = energy('scf')
 
+set scf scf_type direct
+E = energy('scf')
+
+set scf scf_type out_of_core 
+E = energy('scf')
+
+set scf scf_type df 
+E = energy('scf')
+
+set scf reference uhf
+
+set scf scf_type pk
+E = energy('scf')
+
+set scf scf_type direct
+E = energy('scf')
+
+set scf scf_type out_of_core 
+E = energy('scf')
+
+set scf scf_type df 
+E = energy('scf')
+
+activate(triplet_o2)
+set globals {
+    basis cc-pvtz
+    ri_basis_scf cc-pvtz-jkfit
+    guess core
+    print 2
+}
+
+set scf reference uhf
+
+set scf scf_type pk
+E = energy('scf')
+
+set scf scf_type direct
+E = energy('scf')
+
+set scf scf_type out_of_core 
+E = energy('scf')
+
+set scf scf_type df 
+E = energy('scf')
+
+clean()
+
+set scf reference rohf
+
+set scf scf_type pk
+E = energy('scf')
+clean()
+
+set scf scf_type direct
+E = energy('scf')
+clean()
+
+set scf scf_type out_of_core 
+E = energy('scf')
+clean()
+
+set scf scf_type df 
+E = energy('scf')
 
 clean()
