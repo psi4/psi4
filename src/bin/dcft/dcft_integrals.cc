@@ -206,12 +206,6 @@ DCFTSolver::build_denominators()
     dpdbuf4 D;
     dpdfile2 F;
 
-    double *aF0 = new double[ntriso_];
-    double *bF0 = new double[ntriso_];
-
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_A_FOCK, aF0, ntriso_, 0, 0, outfile);
-    IWL::read_one(psio_.get(), PSIF_OEI, PSIF_MO_B_FOCK, bF0, ntriso_, 0, 0, outfile);
-
     double *aOccEvals = new double [nalpha_];
     double *bOccEvals = new double [nbeta_];
     double *aVirEvals = new double [navir_];
@@ -220,34 +214,17 @@ DCFTSolver::build_denominators()
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
 
-#if REFACTORED
-    moFa_->print();
-#else
-    int aCount = 0;
-    int bCount = 0;
-#endif
-
     //Diagonal elements of the Fock matrix
     //Alpha spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < naoccpi_[h]; ++i){
-#if !REFACTORED
-            aOccEvals[aOccCount++] = aF0[INDEX(aCount, aCount)];
-            ++aCount;
-#else
             aOccEvals[aOccCount++] = moFa_->get(h, i, i);
-#endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
         }
 
         for(int a = 0; a < navirpi_[h]; ++a){
-#if !REFACTORED
-            aVirEvals[aVirCount++] = aF0[INDEX(aCount, aCount)];
-            ++aCount;
-#else
             aVirEvals[aVirCount++] = moFa_->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
-#endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
         }        
@@ -256,22 +233,14 @@ DCFTSolver::build_denominators()
     //Off-diagonal elements of the Fock matrix
     //Alpha occupied
 
-#if !REFACTORED
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F0 <O|O>");
-#else
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('O'), ID('O'), "F <O|O>");
-#endif
     dpd_file2_mat_init(&F);
     int offset = 0;
     for(int h = 0; h < nirrep_; ++h){
         offset += frzcpi_[h];
         for(int i = 0 ; i < naoccpi_[h]; ++i){
             for(int j = 0 ; j < naoccpi_[h]; ++j){
-#if !REFACTORED
-                F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
-#else
                 F.matrix[h][i][j] = moFa_->get(h, i, j);
-#endif
             }
         }
         offset += nmopi_[h];
@@ -280,11 +249,7 @@ DCFTSolver::build_denominators()
     dpd_file2_close(&F);
 
     //Alpha Virtual
-#if !REFACTORED
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F0 <V|V>");
-#else
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-#endif
 
     dpd_file2_mat_init(&F);
     offset = 0;
@@ -292,11 +257,7 @@ DCFTSolver::build_denominators()
         offset += naoccpi_[h];
         for(int i = 0 ; i < navirpi_[h]; ++i){
             for(int j = 0 ; j < navirpi_[h]; ++j){
-#if !REFACTORED
-                F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
-#else
                 F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
-#endif
             }
         }
         offset += nmopi_[h] - naoccpi_[h];
@@ -309,22 +270,12 @@ DCFTSolver::build_denominators()
     //Beta spin
     for(int h = 0; h < nirrep_; ++h){
         for(int i = 0; i < nboccpi_[h]; ++i){
-#if !REFACTORED
-            bOccEvals[bOccCount++] = bF0[INDEX(bCount, bCount)];
-            ++bCount;
-#else
             bOccEvals[bOccCount++] = moFb_->get(h, i, i);
-#endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 bocc_c_->set(h, mu, i, Cb_->get(h, mu, i));
         }
         for(int a = 0; a < nbvirpi_[h]; ++a){
-#if !REFACTORED
-            bVirEvals[bVirCount++] = bF0[INDEX(bCount, bCount)];
-            ++bCount;
-#else
             bVirEvals[bVirCount++] = moFb_->get(h, nboccpi_[h] + a, nboccpi_[h] + a);
-#endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 bvir_c_->set(h, mu, a, Cb_->get(h, mu, nboccpi_[h] + a));
         }
@@ -332,22 +283,14 @@ DCFTSolver::build_denominators()
 
     //Off-diagonal elements of the Fock matrix
     //Beta Occupied
-#if !REFACTORED
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F0 <o|o>");
-#else
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
-#endif
     dpd_file2_mat_init(&F);
     offset = 0;
     for(int h = 0; h < nirrep_; ++h){
         offset += frzcpi_[h];
         for(int i = 0 ; i < nboccpi_[h]; ++i){
             for(int j = 0 ; j < nboccpi_[h]; ++j){
-#if !REFACTORED
-                F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
-#else
                 F.matrix[h][i][j] = moFb_->get(h, i, j);
-#endif
             }
         }
         offset += nmopi_[h];
@@ -356,31 +299,20 @@ DCFTSolver::build_denominators()
     dpd_file2_close(&F);
 
     //Beta Virtual
-#if !REFACTORED
-    dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F0 <v|v>");
-#else
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('v'), ID('v'), "F <v|v>");
-#endif
     dpd_file2_mat_init(&F);
     offset = 0;
     for(int h = 0; h < nirrep_; ++h){
         offset += nboccpi_[h];
         for(int i = 0 ; i < nbvirpi_[h]; ++i){
             for(int j = 0 ; j < nbvirpi_[h]; ++j){
-#if !REFACTORED
-                F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
-#else
                 F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
-#endif
             }
         }
         offset += nmopi_[h] - nboccpi_[h];
     }
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
-
-    delete [] aF0;
-    delete [] bF0;
 
     ///////////////////////////////
     // The alpha-alpha spin case //
