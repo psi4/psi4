@@ -12,7 +12,6 @@ class GaussianShell;
 class SphericalTransform;
 class BasisSet;
 class Matrix;
-class SimpleMatrix;
 
 /*! \ingroup MINTS
  *  \class QuadrupoleInt
