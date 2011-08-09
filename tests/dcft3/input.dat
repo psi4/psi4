@@ -5,7 +5,7 @@
 refnuc      =  0.66147156125000 #TEST
 refscf      = -5.67136015981290 #TEST
 refmp2      = -5.69435342806244 #TEST
-refdcftscf  = -5.67136015054751 #TEST
+refdcftscf  = -5.63238918298459 #TEST
 refdcft     = -5.70127632317275 #TEST
 
 molecule he2 {
