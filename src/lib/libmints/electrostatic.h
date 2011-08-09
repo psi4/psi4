@@ -13,7 +13,6 @@ class OneBodyAOInt;
 class PotentialInt;
 class IntegralFactory;
 class SphericalTransform;
-class SimpleMatrix;
 class Vector3;
 
 /*! \ingroup MINTS

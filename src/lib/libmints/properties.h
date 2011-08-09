@@ -8,7 +8,6 @@ namespace psi {
 
 class BasisSet;
 class Matrix;
-class SimpleMatrix;
 class Vector3;
 class GridBlock;
 

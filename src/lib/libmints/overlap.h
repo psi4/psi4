@@ -14,7 +14,6 @@ namespace psi {
     class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
-    class SimpleMatrix;
     class Matrix;
 
 /*! \ingroup MINTS

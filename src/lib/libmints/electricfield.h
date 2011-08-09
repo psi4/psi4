@@ -9,7 +9,6 @@ namespace psi {
     class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
-    class SimpleMatrix;
 
 /*! \ingroup MINTS
  *  \class ElectricFieldInt
