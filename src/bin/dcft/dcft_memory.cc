@@ -67,6 +67,8 @@ DCFTSolver::init()
 #endif
     Ca_          = boost::shared_ptr<Matrix>(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     Cb_          = boost::shared_ptr<Matrix>(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
+    moFa_        = boost::shared_ptr<Matrix>(new Matrix("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_));
+    moFb_        = boost::shared_ptr<Matrix>(new Matrix("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_));
     old_ca_      = boost::shared_ptr<Matrix>(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
     old_cb_      = boost::shared_ptr<Matrix>(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
     kappa_a_     = boost::shared_ptr<Matrix>(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
