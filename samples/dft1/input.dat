@@ -1,0 +1,87 @@
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set globals {
+print 2
+basis sto-3g
+guess core
+scf_type direct
+dft_spherical_points 302 
+dft_radial_points 100
+reference rks
+}
+
+set dft_functional b_x
+V11 = energy('scf')
+
+set dft_functional b3lyp
+V12 = energy('scf')
+
+set dft_functional wB97
+V13 = energy('scf')
+
+set dft_functional wB97X 
+V14 = energy('scf')
+
+set reference uks
+set dft_functional b_x
+V21 = energy('scf')
+
+set dft_functional b3lyp
+V22 = energy('scf')
+
+set dft_functional wB97
+V23 = energy('scf')
+
+set dft_functional wB97X 
+V24 = energy('scf')
+
+molecule h2op {
+1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set basis sto-3g
+set dft_functional b_x
+V31 = energy('scf')
+
+set dft_functional b3lyp
+V32 = energy('scf')
+
+set dft_functional wB97
+V33 = energy('scf')
+
+set dft_functional wB97X 
+V34 = energy('scf')
+
+molecule h2om {
+-1 2
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+set basis sto-3g
+set dft_functional b_x
+V41 = energy('scf')
+
+set dft_functional b3lyp
+V42 = energy('scf')
+
+set dft_functional wB97
+V43 = energy('scf')
+
+set dft_functional wB97X 
+V44 = energy('scf')
+
+
