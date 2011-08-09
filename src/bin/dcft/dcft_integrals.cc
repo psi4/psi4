@@ -218,45 +218,42 @@ DCFTSolver::build_denominators()
     double *bVirEvals = new double [nbvir_];
     // Pick out the diagonal elements of the Fock matrix, making sure that they are in the order
     // used by the DPD library, i.e. starting from zero for each space and ordering by irrep
-    int pitzerOffset = 0;
-    int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0, aCount = 0, bCount = 0;
-    double **Ca = chkpt_->rd_alpha_scf();
-    double **Cb = chkpt_->rd_beta_scf();
+    int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
 
 #if REFACTORED
     SharedMatrix FMO (new Matrix ("Alpha MO Fock", nirrep_, nsopi_, nsopi_));
 
     FMO->copy(Fa_);
     FMO->transform(Ca_);
+#else
+    int aCount = 0;
+    int bCount = 0;
 #endif
 
     //Diagonal elements of the Fock matrix
     //Alpha spin
-    for(int h = 0, soOffset = 0; h < nirrep_; ++h){
-        bCount = aCount = pitzerOffset + frzcpi_[h];
-        for(int a = 0; a < naoccpi_[h]; ++a){
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < naoccpi_[h]; ++i){
 #if !REFACTORED
             aOccEvals[aOccCount++] = aF0[INDEX(aCount, aCount)];
+            ++aCount;
 #else
-            aOccEvals[aOccCount++] = FMO->get(h, a, a);
+            aOccEvals[aOccCount++] = FMO->get(h, i, i);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                aocc_c_->set(h, mu, a, Ca[mu+soOffset][aCount]);
-            ++aCount;
+                aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
         }
 
         for(int a = 0; a < navirpi_[h]; ++a){
 #if !REFACTORED
             aVirEvals[aVirCount++] = aF0[INDEX(aCount, aCount)];
+            ++aCount;
 #else
             aVirEvals[aVirCount++] = FMO->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                avir_c_->set(h, mu, a, Ca[mu+soOffset][aCount]);
-            ++aCount;
+                avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
         }        
-        pitzerOffset += nmopi_[h];
-        soOffset     += nsopi_[h];
     }
 
     //Off-diagonal elements of the Fock matrix
@@ -315,38 +312,30 @@ DCFTSolver::build_denominators()
     FMO->transform(Cb_);
 #endif
 
-    pitzerOffset = 0; // We need to zero, because we split the for loop
-    aCount = 0, bCount = 0; ////
-
     //Diagonal elements of the Fock matrix
     //Beta spin
-    for(int h = 0, soOffset = 0; h < nirrep_; ++h){
-        for(int b = 0; b < nboccpi_[h]; ++b){
+    for(int h = 0; h < nirrep_; ++h){
+        for(int i = 0; i < nboccpi_[h]; ++i){
 #if !REFACTORED
             bOccEvals[bOccCount++] = bF0[INDEX(bCount, bCount)];
+            ++bCount;
 #else
-            bOccEvals[bOccCount++] = FMO->get(h, b, b);
+            bOccEvals[bOccCount++] = FMO->get(h, i, i);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                bocc_c_->set(h, mu, b, Cb[mu+soOffset][bCount]);
-            ++bCount;
+                bocc_c_->set(h, mu, i, Cb_->get(h, mu, i));
         }
-        for(int b = 0; b < nbvirpi_[h]; ++b){
+        for(int a = 0; a < nbvirpi_[h]; ++a){
 #if !REFACTORED
             bVirEvals[bVirCount++] = bF0[INDEX(bCount, bCount)];
+            ++bCount;
 #else
-            bVirEvals[bVirCount++] = FMO->get(h, nboccpi_[h] + b, nboccpi_[h] + b);
+            bVirEvals[bVirCount++] = FMO->get(h, nboccpi_[h] + a, nboccpi_[h] + a);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
-                bvir_c_->set(h, mu, b, Cb[mu+soOffset][bCount]);
-            ++bCount;
+                bvir_c_->set(h, mu, a, Cb_->get(h, mu, nboccpi_[h] + a));
         }
-        pitzerOffset += nmopi_[h];
-        soOffset     += nsopi_[h];
     }
-
-    free_block(Ca);
-    free_block(Cb);
 
     //Off-diagonal elements of the Fock matrix
     //Beta Occupied
@@ -399,16 +388,6 @@ DCFTSolver::build_denominators()
 
     delete [] aF0;
     delete [] bF0;
-
-//    fprintf(outfile, "occ a\n\t");
-//    for(int n = 0; n < naocc; ++n) fprintf(outfile, "%6.2f ", occ_a[n]);
-//    fprintf(outfile, "\nocc b\n\t");
-//    for(int n = 0; n < nbocc; ++n) fprintf(outfile, "%6.2f ", occ_b[n]);
-//    fprintf(outfile, "\nvir a\n\t");
-//    for(int n = 0; n < navir; ++n) fprintf(outfile, "%6.2f ", vir_a[n]);
-//    fprintf(outfile, "\nvir b\n\t");
-//    for(int n = 0; n < nbvir; ++n) fprintf(outfile, "%6.2f ", vir_b[n]);
-//    fprintf(outfile, "\n\n");
 
     ///////////////////////////////
     // The alpha-alpha spin case //
