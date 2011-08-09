@@ -115,7 +115,7 @@ protected:
           double CBNorm = eCB.norm();
           Vector3 DCxCB(eDC.cross(eCB));
           Vector3 CBxBA(eCB.cross(eBA));
-          return atan2(CBNorm * eDC.dot(eCB.cross(eBA)), DCxCB.dot(CBxBA));}
+          return -atan2(CBNorm * eDC.dot(eCB.cross(eBA)), DCxCB.dot(CBxBA));}
 public:
     /**
      * The type of CoordEntry specialization
