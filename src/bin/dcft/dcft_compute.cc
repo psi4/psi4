@@ -56,6 +56,8 @@ DCFTSolver::compute_energy()
         dpd_buf4_close(&Lbb);
         old_ca_->copy(Ca_);
         old_cb_->copy(Cb_);
+        // Just so the correct value is printed in the first macro iteration
+        scf_convergence_ = compute_scf_error_vector();
         // The macro-iterations
         while((!scfDone || !lambdaDone) && cycle++ < maxiter_){
             // The lambda iterations
