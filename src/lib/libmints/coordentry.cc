@@ -180,27 +180,37 @@ const Vector3& ZMatrixEntry::compute()
 }
 
     if(rto_ == 0 && ato_ == 0 && dto_ == 0){
+        // The first atom
         coordinates_[0] = 0.0;
         coordinates_[1] = 0.0;
         coordinates_[2] = 0.0;
     }else if(ato_ == 0 && dto_ == 0){
+        // The second atom
         coordinates_[0] = 0.0;
         coordinates_[1] = 0.0;
         coordinates_[2] = rval_->compute();
     }else if(dto_ == 0){
+        // The third atom
         double r = rval_->compute();
         double a = aval_->compute() * M_PI/180.0;
-        if(rto_->entry_number() == 0){
-            coordinates_[0] = r*sin(a);
-            coordinates_[1] = 0.0;
-            coordinates_[2] = r*cos(a);
-        }else{
-            coordinates_[0] = r*sin(a);
-            coordinates_[1] = 0.0;
-            coordinates_[2] = rto_->compute()[2] - r*cos(a);
-        }
-//TODO generalize this, for general orientations of the first two atoms - this is all that's missing for any zmat/cart combination in geometries
+        /*
+         * The atom specification is
+         *      this       rTo   rVal  aTo  aVal
+         *        A         B           C
+         * We arbitrarily chose to put A pointing upwards.
+         */
+        const Vector3& B = rto_->compute();
+        const Vector3& C = ato_->compute();
+        Vector3 eBC = C - B;
+        eBC.normalize();
+        double theta  = a - acos(eBC[2]); // The angle subtended by eBA and the vertical
+        double rextra = r * sin(theta);   // How far atom A sticks out beyond the end of the CB line
+        double phi = acos(eBC[0]);        // The angle subtended by eCB and the x axis
+        coordinates_[0] = C[0] + rextra * cos(phi);
+        coordinates_[1] = C[1] + rextra * sin(phi);
+        coordinates_[2] = B[2] + r * cos(theta);
     }else{
+        // The fourth, or subsequent, atom
         double r = rval_->compute();
         double a = aval_->compute() * M_PI/180.0;
         double d = dval_->compute() * M_PI/180.0;
@@ -212,27 +222,27 @@ const Vector3& ZMatrixEntry::compute()
          * which allows us to define the vector from B->C (eBC) as the +z axis, and eAB
          * lies in the xz plane.  Then eX, eY and eZ (=eBC) are the x, y, and z axes, respecively.
          */
-        const Vector3& rTo = rto_->compute();
-        const Vector3& aTo = ato_->compute();
-        const Vector3& dTo = dto_->compute();
+        const Vector3& B = rto_->compute();
+        const Vector3& C = ato_->compute();
+        const Vector3& D = dto_->compute();
 
-        Vector3 eAB = aTo - dTo;
-        Vector3 eBC = rTo - aTo;
-        eAB.normalize();
+        Vector3 eCD = C - D;
+        Vector3 eBC = B - C;
+        eCD.normalize();
         eBC.normalize();
         double cosBCD = cos(a);
         double sinBCD = sin(a);
         double cosABCD = cos(d);
-        double sinABCD = sin(-d);
+        double sinABCD = sin(d);
 //        double cosABC = -eAB.dot(eBC);
 //        double sinABC = sqrt(1.0 - cosABC * cosABC);
 //        if(sinABC < LINEAR_A_TOL || sinBCD < LINEAR_A_TOL)
 //            throw PSIEXCEPTION("Atom defines a dihedral using a linear bond angle");
-        Vector3 eY = eAB.perp_unit(eBC);
+        Vector3 eY = eCD.perp_unit(eBC);
         Vector3 eX = eY.perp_unit(eBC);
 
         for(int xyz = 0; xyz < 3; ++xyz)
-           coordinates_[xyz] = rTo[xyz] + r * ( -eBC[xyz] * cosBCD + eX[xyz] * sinBCD * cosABCD + eY[xyz] * sinBCD * sinABCD);
+           coordinates_[xyz] = B[xyz] + r * ( -eBC[xyz] * cosBCD + eX[xyz] * sinBCD * cosABCD + eY[xyz] * sinBCD * sinABCD);
     }
     computed_ = true;
     return coordinates_;
