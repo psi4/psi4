@@ -305,6 +305,10 @@ namespace psi{ namespace dcft{
       epsilon_b_->copy(reference_wavefunction_->epsilon_b().get());
       Ca_->copy(reference_wavefunction_->Ca());
       Cb_->copy(reference_wavefunction_->Cb());
+      moFa_->copy(reference_wavefunction_->Fa());
+      moFa_->transform(Ca_);
+      moFb_->copy(reference_wavefunction_->Fb());
+      moFb_->transform(Cb_);
       find_occupation(epsilon_a_);
       update_scf_density();
   }

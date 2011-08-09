@@ -221,10 +221,7 @@ DCFTSolver::build_denominators()
     int aOccCount = 0, bOccCount = 0, aVirCount = 0, bVirCount = 0;
 
 #if REFACTORED
-    SharedMatrix FMO (new Matrix ("Alpha MO Fock", nirrep_, nsopi_, nsopi_));
-
-    FMO->copy(Fa_);
-    FMO->transform(Ca_);
+    moFa_->print();
 #else
     int aCount = 0;
     int bCount = 0;
@@ -238,7 +235,7 @@ DCFTSolver::build_denominators()
             aOccEvals[aOccCount++] = aF0[INDEX(aCount, aCount)];
             ++aCount;
 #else
-            aOccEvals[aOccCount++] = FMO->get(h, i, i);
+            aOccEvals[aOccCount++] = moFa_->get(h, i, i);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 aocc_c_->set(h, mu, i, Ca_->get(h, mu, i));
@@ -249,7 +246,7 @@ DCFTSolver::build_denominators()
             aVirEvals[aVirCount++] = aF0[INDEX(aCount, aCount)];
             ++aCount;
 #else
-            aVirEvals[aVirCount++] = FMO->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
+            aVirEvals[aVirCount++] = moFa_->get(h, naoccpi_[h] + a, naoccpi_[h] + a);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 avir_c_->set(h, mu, a, Ca_->get(h, mu, naoccpi_[h] + a));
@@ -273,7 +270,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = FMO->get(h, i, j);
+                F.matrix[h][i][j] = moFa_->get(h, i, j);
 #endif
             }
         }
@@ -298,7 +295,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : aF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = FMO->get(h, i + naoccpi_[h], j + naoccpi_[h]);
+                F.matrix[h][i][j] = moFa_->get(h, i + naoccpi_[h], j + naoccpi_[h]);
 #endif
             }
         }
@@ -307,10 +304,6 @@ DCFTSolver::build_denominators()
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
 
-#if REFACTORED
-    FMO->copy(Fb_);
-    FMO->transform(Cb_);
-#endif
 
     //Diagonal elements of the Fock matrix
     //Beta spin
@@ -320,7 +313,7 @@ DCFTSolver::build_denominators()
             bOccEvals[bOccCount++] = bF0[INDEX(bCount, bCount)];
             ++bCount;
 #else
-            bOccEvals[bOccCount++] = FMO->get(h, i, i);
+            bOccEvals[bOccCount++] = moFb_->get(h, i, i);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 bocc_c_->set(h, mu, i, Cb_->get(h, mu, i));
@@ -330,7 +323,7 @@ DCFTSolver::build_denominators()
             bVirEvals[bVirCount++] = bF0[INDEX(bCount, bCount)];
             ++bCount;
 #else
-            bVirEvals[bVirCount++] = FMO->get(h, nboccpi_[h] + a, nboccpi_[h] + a);
+            bVirEvals[bVirCount++] = moFb_->get(h, nboccpi_[h] + a, nboccpi_[h] + a);
 #endif
             for(int mu = 0; mu < nsopi_[h]; ++mu)
                 bvir_c_->set(h, mu, a, Cb_->get(h, mu, nboccpi_[h] + a));
@@ -353,7 +346,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = FMO->get(h, i, j);
+                F.matrix[h][i][j] = moFb_->get(h, i, j);
 #endif
             }
         }
@@ -377,7 +370,7 @@ DCFTSolver::build_denominators()
 #if !REFACTORED
                 F.matrix[h][i][j] = (i==j ? 0.0 : bF0[INDEX((i+offset), (j+offset))]);
 #else
-                F.matrix[h][i][j] = FMO->get(h, i + nboccpi_[h], j + nboccpi_[h]);
+                F.matrix[h][i][j] = moFb_->get(h, i + nboccpi_[h], j + nboccpi_[h]);
 #endif
             }
         }
