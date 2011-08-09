@@ -47,7 +47,7 @@ void Process::Environment::init(char **envp)
 
     // If madness and or MPI is not set up, COMMUNICATOR is changed to a value
     // that makes sense. (i.e. MPI or LOCAL)
-#ifdef HAVE_MADNESS
+#if HAVE_MADNESS == 1
     if ( (Process::environment("COMMUNICATOR") != "MADNESS") &&
          (Process::environment("COMMUNICATOR") != "LOCAL") )
     {
