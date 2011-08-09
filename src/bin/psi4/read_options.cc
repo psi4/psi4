@@ -21,15 +21,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 {
 //  options.clear();
 
-  /*- units to use (global) -*/
+  /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
   /*- The molecular charge -*/
   options.add_int("CHARGE", 0);
   /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
-  /*- Use pure angular momentum? -*/
+  /*- Whether to use pure angular momentum basis functions -*/
   options.add_bool("PUREAM", true);
-  /*- Print level -*/
+  /*- The amount of information to print to the output file -*/
   options.add_int("PRINT", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
@@ -55,7 +55,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 6);
 
-
     /*- Derivative level -*/
     options.add_str("DERTYPE", "NONE", "NONE FIRST");
 
@@ -80,7 +79,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- number of CI roots to find -*/
     options.add_int("NUM_ROOTS", 1);
 
-    /*- print level -*/
+    /*- The amount of information to print to the output file -*/
     options.add_int("PRINT", 1);
 
     /*- If TRUE, use the Ms=0 component of the state.  Defaults to TRUE
@@ -541,11 +540,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("SAPT_LEVEL","SAPT0","SAPT0 SAPT2 SAPT2+ SAPT2+3 MP2C");
     /*- The ubiquitous debug flag -*/
     options.add_int("DEBUG",0);
-    /*- The ubiquitous print flag -*/
+    /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-    /*- E converge value -*/
+    /*- How many digits after the decimal to converge the energy to -*/
     options.add_int("E_CONVERGE",10);
-    /*- D converge value -*/
+    /*- How many digits after the decimal to converge the density to -*/
     options.add_int("D_CONVERGE",8);
     /*- Don't solve the CPHF equations -*/
     options.add_bool("NO_RESPONSE",false);
@@ -555,7 +554,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("AIO_DFINTS",false);
     /*- Max CPHF iterations -*/
     options.add_int("MAXITER",50);
-    /*- DIIS vecs -*/
+    /*- The number of DIIS vectors used to extrapolate -*/
     options.add_int("DIISVECS",5);
     /*- Compute Third-order Corrections -*/
     options.add_bool("DO_THIRD_ORDER",false);
@@ -617,11 +616,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("DAMPING_FACTOR", 0);
       /*- Should the tau terms be included? -*/
       options.add_bool("IGNORE_TAU", false);
-      /*- -log10 of the threshold below which an integral is considered to be zero -*/
+      /*- An integral is considered to be zero if it's magnitude is less than $10^{-int_thresh}$ -*/
       options.add_int("INT_THRESH", 14);
-      /*- -log10 of the threshold below the RMS lambda and SCF error must be for DIIS to start -*/
+      /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{diis_start}$ -*/
       options.add_int("DIIS_START", 3);
-      /*- The maximum size of the DIIS subspace -*/
+      /*- The maximum number of vectors used in DIIS extrapolation -*/
       options.add_int("MAX_DIIS", 6);
       /*- The number of DIIS vectors needed for extrapolation to start -*/
       options.add_int("DIIS_NUM_VECS", 3);
@@ -830,25 +829,25 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
-    /*- -*/
+    /*- The wavefunction type -*/
     options.add_str("WFN", "");
-    /*- -*/
+    /*- The reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
-    /*- -*/
+    /*- The type of job being performed -*/
     options.add_str("JOBTYPE", "SP");
-    /*- -*/
+    /*- The order of energy derivatives required -*/
     options.add_str("DERTYPE", "NONE");
-    /*- -*/
+    /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEV", 2);
-    /*- -*/
+    /*- The criterion used to retain/release cached data -*/
     options.add_str("CACHETYPE", "LRU", "LRU LOW");
-    /*- -*/
+    /*- Whether to perform a spin component scaled MP2 computation -*/
     options.add_bool("SCS","false");
-    /*- -*/
+    /*- Whether to perform a spin component scaled (N) MP2 computation -*/
     options.add_bool("SCS_N", "false");
-    /*- -*/
+    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
     options.add_double("SCALE_OS", 6.0/5.0);
-    /*- -*/
+    /*- The scale factor used for same-spin pairs in SCS computations-*/
     options.add_double("SCALE_SS", 1.0/3.0);
   }
   if(name == "TRANSQT2"|| options.read_globals()) {
@@ -1048,42 +1047,41 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("OMEGA", new ArrayType());
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
-    /*- -*/
+    /*- The wavefunction type -*/
     options.add_str("WFN", "");
-    /*- -*/
+    /*- The number of threads to use on multi-core machines -*/
     options.add_int("NTHREADS",1);
-    /*- -*/
+    /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
+    /*- The order of derivative information required -*/
     options.add_str("DERTYPE","NONE");
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
-    /*- -*/
+    /*- The wavefunction type -*/
     options.add_str("WFN", "SCF");
-    /*- -*/
+    /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
+    /*- The order of derivative required -*/
     options.add_str("DERTYPE","NONE");
-    /*- -*/
+    /*- Integrals are neglected if their magnitude is below $10^{-tolerance}$ -*/
     options.add_int("TOLERANCE",14);
-    /*- -*/
+    /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEV",2);
-//#warning CCDensity ao_basis keyword type was changed.
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
-    /*- -*/
+    /*- The approximate excitation level, {\it c.f.} Stanton and Bartlett, JCP, 98, 1993, 7034. !expert -*/
     options.add_bool("AEL",false);
-    /*- -*/
+    /*- The type of gauge to use for properties -*/
     options.add_str("GAUGE","LENGTH");
-    /*- -*/
+    /*- Whether to relax the one-particle density matrix -*/
     options.add_bool("RELAX_OPDM",false);
-    /*- -*/
+    /*- Whether $\bar{H}$ and R must be connected !expert -*/
     options.add_bool("CONNECT_XI",false);
-    /*- -*/
+    /*- The number of electronic states to computed, per irreducible representation -*/
     options.add("STATES_PER_IRREP", new ArrayType());
-    /*- -*/
+    /*- Whether to compute all relaxed excited states -*/
     options.add_bool("PROP_ALL",false);
-    /*- -*/
+    /*- The symmetry of states -*/
     options.add_int("PROP_SYM", 0);
     /*- -*/
     options.add_int("PROP_ROOT", 0);
@@ -1101,7 +1099,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SEKINO",false);
     /*- -*/
     options.add_bool("DIIS",true);
-//#warning CCLambda ao_basis keyword type was changed.
     /*- The algorithm to use for the $\left<VV||VV\right>$ terms -*/
     options.add_str("AO_BASIS", "NONE", "NONE DISK DIRECT");
     /*- -*/
@@ -1769,110 +1766,104 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "PSIMRCC"|| options.read_globals()) {
-    /*- -*/
+    /*- The molecular charge of the target state -*/
     options.add_int("CORR_CHARGE",0);
-    /*- -*/
+    /*- Amount of debugging output to produce !expert -*/
     options.add_int("DEBUG",0);
-    /*- -*/
+    /*- The amount of damping to apply to the amplitude updates.  If this is set to 0, the full update is performed.
+        A value of 1000 retains the amplitudes from the previous iteration always being used.  A value in between these extremes
+        can help in cases where oscillatory convergence is observed -*/
     options.add_int("DAMPING_FACTOR",0);
-    /*- -*/
+    /*- The number of DIIS vectors to use in extrapolations -*/
     options.add_int("MAXDIIS",7);
-    /*- -*/
+    /*- The number of threads to use on multi-core machines -*/
     options.add_int("NUM_THREADS",1);
-    /*- -*/
+    /*- The number of electrons -*/
     options.add_int("NEL",0);
-    /*- -*/
+    /*- Which root of the effective hamiltonian is the target state? -*/
     options.add_int("ROOT",1);
-    /*- -*/
+    /*- The number of digits after the decimal to converge the energy to -*/
     options.add_int("CONVERGENCE",9);
-    /*- -*/
+    /*- The maximum number of iterations allowed to determine the amplitudes -*/
     options.add_int("MAXITER",100);
-    /*- -*/
-    options.add_int("DENOMINATOR_SHIFT",0);
-    /*- -*/
+    /*- The number of DIIS vectors needed before extrapolation is performed -*/
     options.add_int("START_DIIS",2);
-    /*- -*/
+    /*- The shift to apply to the denominators ($\times$ 1000), {\it c.f.} Taube and Bartlett, JCP, 130, 144112 (2009) -*/
     options.add_int("TIKHONOW_OMEGA",0);  // Omega = TIKHONOW_OMEGA / 1000
-    /*- -*/
+    /*- The cycle after which Tikhonow regularization is stopped.  Set to zero to allow regularization in all iterations -*/
     options.add_int("TIKHONOW_MAX",5);
-
-    /*- -*/
+    /*- Whether to perform DIIS extrapolation for iterative triple excitation computations -*/
     options.add_bool("DIIS_TRIPLES",false);
-    /*- -*/
+    /*- Whether to lock onto a singlet root -*/
     options.add_bool("LOCK_SINGLET",false);
-    /*- -*/
+    /*- Whether to start from an MP2 guess -*/
     options.add_bool("MP2_GUESS",true);
-    /*- -*/
+    /*- Whether to use the averaged Fock matrix over all references in (T) computations -*/
     options.add_bool("FAVG_CCSD_T",false);
-    /*- -*/
+    /*- Whether to include the fourth-order contributions to the effective hamiltonian -*/
     options.add_bool("HEFF4",true);
-    /*- -*/
+    /*- Whether to include the off-diagonal corrections in (T) computations -*/
     options.add_bool("OFFDIAGONAL_CCSD_T",true);
-    /*- -*/
+    /*- Whether to include the diagonal corrections in (T) computations -*/
     options.add_bool("DIAGONAL_CCSD_T",true);
-    /*- -*/
+    /*- Whether to diagonalize the effective Hamiltonian -*/
     options.add_bool("DIAGONALIZE_HEFF",false);
-    /*- -*/
-    options.add_bool("ONLY_CLOSED_SHELL",false);
-    /*- -*/
+    /*- Whether to perform DIIS extrapolation -*/
     options.add_bool("USE_DIIS",true);
-    /*- -*/
+    /*- Whether to use symmetry to map equivalent determinants onto each other, for efficiency -*/
     options.add_bool("USE_SPIN_SYMMETRY",true);
-    /*- -*/
+    /*- Whether to zero the internal amplitudes, i.e., those that map reference determinants onto each other -*/
     options.add_bool("ZERO_INTERNAL_AMPS",true);
-    /*- -*/
+    /*- Whether to include the terms that couple the reference determinants -*/
     options.add_bool("COUPLING_TERMS",true);
-    /*- -*/
+    /*- Whether to print the effective Hamiltonian -*/
     options.add_bool("PRINT_HEFF",false);
-    /*- -*/
+    /*- Whether to compute the perturbative corrections for basis set incompleteness !expert -*/
     options.add_bool("PERT_CBS",false);
-    /*- -*/
+    /*- Whether to include the terms that couple different reference determinants in
+        perturbative CBS correction computations !expert -*/
     options.add_bool("PERT_CBS_COUPLING",true);
-    /*- -*/
-    options.add_bool("RESTRICTED_TRIPLES",false);
-    /*- -*/
+    /*- Whether to use Tikhonow regularization in (T) computations !expert -*/
     options.add_bool("TIKHONOW_TRIPLES",false);
-
-    /*- -*/
-    options.add_str("WFN","MRCCSD","MRCCSD");
-    /*- -*/
+    /*- The type of perturbation theory computation to perform -*/
     options.add_str("PT_ENERGY","SECOND_ORDER","SECOND_ORDER SCS_SECOND_ORDER PSEUDO_SECOND_ORDER SCS_PSEUDO_SECOND_ORDER");
-    /*- -*/
+    /*- The type of correlated wavefunction -*/
     options.add_str("CORR_WFN","CCSD","PT2 CCSD MP2-CCSD CCSD_T");
-    /*- -*/
+    /*- The type of CCSD(T) computation to perform -*/
     options.add_str("CORR_CCSD_T","STANDARD","STANDARD PITTNER");
-    /*- -*/
+    /*- The type of reference function used in MRCC computations -*/
     options.add_str("CORR_REFERENCE","GENERAL","RHF ROHF TCSCF MCSCF GENERAL");
-    /*- -*/
+    /*- The ansatz to use for MRCC computations -*/
     options.add_str("CORR_ANSATZ","MK","SR MK BW APBW");
-    /*- -*/
+    /*- The order of coupling terms to include in MRCCSDT computations -*/
     options.add_str("COUPLING","CUBIC","NONE LINEAR QUADRATIC CUBIC");
-    /*- -*/
+    /*- The symmetry of the target wavefunction, specified either by Sch\"onflies symbol,
+        or irrep number (in Cotton ordering) -*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
-    /*- -*/
+    /*- The type of algorithm to use for (T) computations -*/
     options.add_str("TRIPLES_ALGORITHM","RESTRICTED","SPIN_ADAPTED RESTRICTED UNRESTRICTED");
-    /*- -*/
+    /*- How to perform MP2_CCSD computations -*/
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
-    /*- -*/
+    /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
     options.add("CORR_FOCC", new ArrayType());
-    /*- -*/
+    /*- The number of frozen occupied orbitals per irrep (same as CORR_DOCC)-*/
     options.add("FROZEN_DOCC", new ArrayType());
-    /*- -*/
+    /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
     options.add("CORR_DOCC", new ArrayType());
-    /*- -*/
+    /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
-    /*- -*/
+    /*- The number of active orbitals per irrep (same as ACTV) -*/
     options.add("CORR_ACTV", new ArrayType());
-    /*- -*/
+    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTIVE) -*/
     options.add("ACTV", new ArrayType());
-    /*- -*/
+    /*- The number of active orbitals per irrep (same as CORR_ACTV, ACTV) -*/
     options.add("ACTIVE", new ArrayType());
-    /*- -*/
+    /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
     options.add("CORR_FVIR", new ArrayType());
-    /*- -*/
+    /*- The number of frozen virtual orbitals (same as CORR_FVIR) -*/
     options.add("FROZEN_UOCC", new ArrayType());
-    /*- -*/
-    options.add("ACTIVE_DOCC", new ArrayType());
+//    /*- The number of -*/
+//    options.add("ACTIVE_DOCC", new ArrayType());
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
