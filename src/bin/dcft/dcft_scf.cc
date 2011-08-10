@@ -332,6 +332,15 @@ namespace psi{ namespace dcft{
       scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
   }
 
+  void
+  DCFTSolver::compute_energy_tau_squared()
+  {
+      energy_tau_squared_ = 0.0;
+      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(so_h_);
+      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(so_h_);
+      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(Fa_);
+      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(Fb_);
+  }
 
   /**
   * Computes the SCF error vector by transforming the Fock matrices to the
