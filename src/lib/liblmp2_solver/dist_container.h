@@ -111,6 +111,56 @@ public:
 
 typedef madness::WorldContainer<psi::dist_key,psi::dist_container> distributed_container;
 
+class key
+{
+  private:
+    int k;
+
+  public:
+    key() : k(-1) {}
+
+    key(int k) : k(k) {}
+
+    madness::hashT hash() const
+    { return k; }
+
+    template <typename Archive>
+    inline void serialize(const Archive& ar)
+    { ar & k; }
+
+    bool operator==(const key& b) const
+    { return k == b.k; }
+
+};
+
+class value
+{
+  private:
+    double val_;
+
+  public:
+    value() : val_(-1) { }
+
+    value(double k) : val_(k) { }
+
+    double get_value() const
+    {
+        return val_;
+    }
+
+    madness::Void print(const int &me)
+    {
+        std::cout << "owner = " << me << ": value = " << val_ << std::endl;
+    }
+
+    template <typename Archive>
+    inline void serialize(const Archive& ar)
+    {
+        ar & val_;
+    }
+};
+
+typedef madness::WorldContainer<key,value> dc;
 
 //class distributed_container :
 //        public madness::WorldObject<distributed_container>

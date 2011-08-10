@@ -167,11 +167,11 @@ SharedMatrix LMP2::build_F_sum(const int &ij, const int &iter) {
             int kj = ij_map_neglect_[ij_kj_map_[ij][k]];
 
             if (pairdom_exist_[ij_kj_map_[ij][k]]) {
-                madness::Future<SharedMatrix> T2_kj = send(ij_owner_[kj], &LMP2::get_old_T2, kj);
+                madness::Future<SharedMatrix> T2_kj = task(ij_owner_[kj], &LMP2::get_old_T2, kj);
                 task(ij_owner_[ij], &LMP2::F_sum_add_kj, F_sum, T2_kj, k, ij);
             }
             if (pairdom_exist_[ij_ik_map_[ij][k]]) {
-                madness::Future<SharedMatrix> T2_ik = send(ij_owner_[ik], &LMP2::get_old_T2, ik);
+                madness::Future<SharedMatrix> T2_ik = task(ij_owner_[ik], &LMP2::get_old_T2, ik);
                 task(ij_owner_[ij], &LMP2::F_sum_add_ik, F_sum, T2_ik, k, ij);
             }
         }
@@ -436,7 +436,7 @@ madness::Future<SharedMatrix> LMP2::amplitudes_T2(const SharedMatrix T2, const i
 //                        Communicator::World->recv(&(Replicate_kj[lmp2_info.ij_local_[ij]][k][0][0]), lmp2_info.pair_domain_len_[kj] * lmp2_info.pair_domain_len_[kj], lmp2_info.ij_owner_[kj]);
 //                    }
 //                    else if ((lmp2_info.me_ != lmp2_info.ij_owner_[ij]) & (lmp2_info.me_ == lmp2_info.ij_owner_[kj])) {
-//                        Communicator::World->send(&(lmp2_info.T2_[lmp2_info.dmat1_]->pointer(lmp2_info.ij_local_[kj])[0][0]), lmp2_info.pair_domain_len_[kj] * lmp2_info.pair_domain_len_[kj], lmp2_info.ij_owner_[ij]);
+//                        Communicator::World->task(&(lmp2_info.T2_[lmp2_info.dmat1_]->pointer(lmp2_info.ij_local_[kj])[0][0]), lmp2_info.pair_domain_len_[kj] * lmp2_info.pair_domain_len_[kj], lmp2_info.ij_owner_[ij]);
 //                    }
 //                }
 
@@ -453,7 +453,7 @@ madness::Future<SharedMatrix> LMP2::amplitudes_T2(const SharedMatrix T2, const i
 
 //                        }
 //                        else if ((lmp2_info.me_ != lmp2_info.ij_owner_[ij]) & (lmp2_info.me_ == lmp2_info.ij_owner_[ik])) {
-//                            Communicator::World->send(&(lmp2_info.T2_[lmp2_info.dmat1_]->pointer(lmp2_info.ij_local_[ik])[0][0]), lmp2_info.pair_domain_len_[ik] * lmp2_info.pair_domain_len_[ik], lmp2_info.ij_owner_[ij]);
+//                            Communicator::World->task(&(lmp2_info.T2_[lmp2_info.dmat1_]->pointer(lmp2_info.ij_local_[ik])[0][0]), lmp2_info.pair_domain_len_[ik] * lmp2_info.pair_domain_len_[ik], lmp2_info.ij_owner_[ij]);
 //                        }
 //                    }
 //                }

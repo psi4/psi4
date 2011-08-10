@@ -410,7 +410,7 @@ madness::Void LMP2::redist_madness_integrals(const int &MN, const int &ij,
                                              const int &numm, const int &numn,
                                              const int &abs_m, const int &abs_n)
 {
-    send(ij_owner_[ij], &LMP2::redist_integrals, copy_eri_mn(MN, ij, numm, numn), ij, numm, numn, abs_m, abs_n);
+    task(ij_owner_[ij], &LMP2::redist_integrals, copy_eri_mn(MN, ij, numm, numn), ij, numm, numn, abs_m, abs_n);
     return madness::None;
 }
 #endif

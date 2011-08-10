@@ -980,7 +980,7 @@ madness::Future<SharedMatrix> MAD_MP2::build_Qa(const int &i) {
                 ::memcpy(&(Qap[Q][astart]), &(Qiap[Q][i_local*navir_local_]),
                          asize * sizeof(double));
         }else{
-            fut[ind] = send(aowner, &MAD_MP2::fetch_Qia_block, i, ind);
+            fut[ind] = task(aowner, &MAD_MP2::fetch_Qia_block, i, ind);
             task(rank_, &MAD_MP2::unpack_Qia_block, fut[ind], Qa, astart, asize, i);
 //            for (int P = 0; P < naux_; P++) {
 //                for (int a = 0; a < asize; a++) {
@@ -1019,7 +1019,7 @@ madness::Future<SharedMatrix> MAD_MP2::build_Qb(const int &j) {
                 ::memcpy(&(Qbp[Q][bstart]), &(Qiap[Q][j_local*navir_local_]),
                          bsize * sizeof(double));
         }else{
-            fut[ind] = send(bowner,&MAD_MP2::fetch_Qia_block,j,ind);
+            fut[ind] = task(bowner,&MAD_MP2::fetch_Qia_block,j,ind);
             task(rank_, &MAD_MP2::unpack_Qia_block,fut[ind], Qb, bstart, bsize, j);
 //            for (int P = 0; P < naux_; P++) {
 //                for (int b = 0; b < bsize; b++) {
