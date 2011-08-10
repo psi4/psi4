@@ -70,6 +70,43 @@ double LMP2::compute_energy()
 //    }
 
 
+//     dc A(*madworld_);
+//     A.clear();
+
+//     for (int i=0; i < 10; i++) {
+//         if (me_ == A.owner(key(i))) {
+//             A.replace( key(i), value(i) );
+//         }
+//     }
+
+
+//     if (me_ == 0) {
+//         for (int i=0; i < 10; i++) {
+//             std::cout << "A[" << i << "]: " <<
+//                          A.owner(key(i)) << ": value = " <<
+//                          A.find(key(i)).get()->second.get_value() <<
+//                          std::endl;
+//         }
+//     }
+//     madworld_->gop.fence();
+
+
+//     dc::iterator it;
+//     for (it = A.begin(); it != A.end(); it++) {
+//         std::cout << "A[" << it->first.hash() << "]: " << A.owner(it->first.hash()) << ": value = " << it->second.get_value() << std::endl;
+//     }
+
+
+//     for (int i=0; i < 10; i++) {
+//         if (me_ == 0) {
+//            madness::Future<double> a = A.task(key(i), &value::get_value);
+//            std::cout << "A[" << i << "]: " << A.owner(key(i)) << ": value = " << a.get() << std::endl;
+//         }
+//         else {
+//             std::cout << "proc " << me_ << ": i am working here" << std::endl;
+//         }
+//     }
+
 
 
     integral_direct_transformation();
@@ -98,8 +135,6 @@ double LMP2::compute_energy()
         fflush(outfile);
         iter++;
 
-//        if (iter > 1)
-//            conv = 1;
     }
 
     if (me_ == 0)

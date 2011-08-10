@@ -106,4 +106,26 @@ void MadCommunicator::print(FILE *out) const
     }
 }
 
+/*
+void function_put() {   }
+future function_get() {  }
+arg = where and how_much
+
+
+void MadCommunicator::raw_put(const void* data, int nbyte, int owner, int target)
+{
+    if (me_ == owner) {
+        madworld_->am.send(target,function, args)
+    }
+}
+
+void MadCommunicator::raw_get(const void* data, int nbyte, int owner, int target)
+{
+    if (me_ == target) {
+        future = madworld_->am.send(owner,function, args)
+    }
+}
+*/
+
+
 #endif

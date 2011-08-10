@@ -65,6 +65,9 @@ namespace psi {
         virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1) = 0;
         virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1) = 0;
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1) = 0;
+//        virtual void raw_put(const void* data, int nbyte, int target) = 0;
+//        virtual void raw_get(const void* data, int nbyte, int target) = 0;
+
 
     public:
 
@@ -170,6 +173,29 @@ namespace psi {
          */
         virtual void finalize() = 0;
 
+//        /**
+//         * Put an array of data to remote node.
+//         * @param target The node number to send to
+//         * @param data The array of data to send
+//         * @param nelem The size of the array.  This is the number of elements, not the number of bytes.
+//         */
+//        template<typename type>
+//        void put(const type *data, int nelem, int target) {
+//            raw_put(static_cast<const void *>(data), nelem*sizeof(type), target);
+//         }
+
+
+//        /**
+//         * Get array of data to remote node.
+//         * @param target The node number to send to
+//         * @param data The array of data to send
+//         * @param nelem The size of the array.  This is the number of elements, not the number of bytes.
+//         */
+//        template<typename type>
+//        void get(const type *data, int nelem, int target) {
+//            raw_get(static_cast<const void *>(data), nelem*sizeof(type), target);
+//         }
+
 
 #if HAVE_MADNESS == 1
         virtual SharedLock get_spinlock() { };
@@ -202,6 +228,9 @@ namespace psi {
         virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1);
         virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
+//        virtual void raw_put(const void* data, int nbyte, int target) { throw PSIEXCEPTION("don't do that"); }
+//        virtual void raw_get(const void* data, int nbyte, int target) { throw PSIEXCEPTION("don't do that"); }
+
 
     public:
         LocalCommunicator(const int &argc, char **argv);
@@ -249,6 +278,8 @@ namespace psi {
         virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1);
         virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
+//        virtual void raw_put(const void* data, int nbyte, int target) { throw PSIEXCEPTION("don't do that"); }
+//        virtual void raw_get(const void* data, int nbyte, int target) { throw PSIEXCEPTION("don't do that"); }
 
     public:
         MPICommunicator(const int &argc, char **argv);
@@ -297,6 +328,9 @@ namespace psi {
         virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1);
         virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
         virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
+//        virtual void raw_put(const void* data, int nbyte, int target);
+//        virtual void raw_get(const void* data, int nbyte, int target);
+
 
     public:
         MadCommunicator(const int &argc, char **argv);
