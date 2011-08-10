@@ -32,6 +32,8 @@ DCFTSolver::DCFTSolver(boost::shared_ptr<Wavefunction> reference_wavefunction, O
     psio_->open(PSIF_DCFT_DPD, PSIO_OPEN_OLD);
     // Sets up the memory, and orbital info
     init();
+
+    energy_tau_squared_ = 0.0;
 }
 
 /**
