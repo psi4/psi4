@@ -78,10 +78,10 @@ DCFTSolver::init()
 
     a_tau_    = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
     b_tau_    = boost::shared_ptr<Matrix>(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
-#if TAU_IMPROVED
     a_tautau_ = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
     b_tautau_ = boost::shared_ptr<Matrix>(new Matrix("Beta Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
-#endif
+    Fa_copy = boost::shared_ptr<Matrix>(new Matrix("Alpha Fock Copy", nirrep_, nsopi_, nsopi_));
+    Fb_copy = boost::shared_ptr<Matrix>(new Matrix("Beta Fock Copy", nirrep_, nsopi_, nsopi_));
 
     // Store the AO overlap matrix
     double *sArray = new double[ntriso_];
