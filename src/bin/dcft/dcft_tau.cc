@@ -123,13 +123,11 @@ DCFTSolver::build_tau()
     dpd_file2_mat_init(&TT_oo);
     dpd_file2_mat_init(&TT_VV);
     dpd_file2_mat_init(&TT_vv);
-#endif
+
+    // Compute the Tau^2 correction to Tau in the MO basis
 
     for(int h = 0; h < nirrep_; ++h){
         if(nsopi_[h] == 0) continue;
-
-#if TAU_IMPROVED
-        // Compute the Tau^2 correction to Tau in the MO basis
 
         // Alpha occupied
         for(int i = 0 ; i < naoccpi_[h]; ++i){
@@ -155,8 +153,22 @@ DCFTSolver::build_tau()
                 TT_vv.matrix[h][i][j] = T_vv.matrix[h][i][j] * T_vv.matrix[h][i][j];
             }
         }
+    }
+
+    dpd_file2_mat_wrt(&TT_OO);
+    dpd_file2_mat_wrt(&TT_oo);
+    dpd_file2_mat_wrt(&TT_VV);
+    dpd_file2_mat_wrt(&TT_vv);
+
+    dpd_file2_mat_rd(&TT_OO);
+    dpd_file2_mat_rd(&TT_oo);
+    dpd_file2_mat_rd(&TT_VV);
+    dpd_file2_mat_rd(&TT_vv);
+
 #endif
 
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
 
         double **temp = block_matrix(nsopi_[h], nsopi_[h]);
         /*
@@ -251,11 +263,6 @@ DCFTSolver::build_tau()
     dpd_file2_close(&T_vv);
 
 #if TAU_IMPROVED
-    dpd_file2_mat_wrt(&TT_OO);
-    dpd_file2_mat_wrt(&TT_oo);
-    dpd_file2_mat_wrt(&TT_VV);
-    dpd_file2_mat_wrt(&TT_vv);
-
     dpd_file2_close(&TT_OO);
     dpd_file2_close(&TT_oo);
     dpd_file2_close(&TT_VV);

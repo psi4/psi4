@@ -78,13 +78,10 @@ DCFTSolver::init()
 
     a_tau_    = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
     b_tau_    = boost::shared_ptr<Matrix>(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
-//    a_tau_    = new double**[nirrep_];
-//    b_tau_    = new double**[nirrep_];
-//    for(int h = 0; h < nirrep_; ++h){
-//        a_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
-//        b_tau_[h] = block_matrix(nsopi_[h], nsopi_[h]);
-//    }
-    
+#if TAU_IMPROVED
+    a_tautau_ = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
+    b_tautau_ = boost::shared_ptr<Matrix>(new Matrix("Beta Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
+#endif
 
     // Store the AO overlap matrix
     double *sArray = new double[ntriso_];
