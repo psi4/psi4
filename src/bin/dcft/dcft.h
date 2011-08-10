@@ -62,6 +62,8 @@ protected:
     void file2_transform(dpdfile2 *A, dpdfile2 *B, SharedMatrix C, bool backwards);
     void AO_contribute(dpdbuf4 *tau1_AO, dpdbuf4 *tau2_AO, int p, int q,
                        int r, int s, double value, dpdfile2* = NULL, dpdfile2* = NULL, dpdfile2* = NULL);
+    void compute_tau_squared();
+    void compute_energy_tau_squared();
     //void AO_contribute(dpdfile2 *tau1_AO, dpdfile2 *tau2_AO, int p, int q,
     //        int r, int s, double value);
     bool correct_mo_phases(bool dieOnError = true);
@@ -116,6 +118,8 @@ protected:
     double diis_start_thresh_;
     /// The SCF component of the energy
     double scf_energy_;
+    /// The Tau^2 correction to the SCF component of the energy
+    double energy_tau_squared_;
     /// The previous total energy
     double old_total_energy_;
     /// The updated total energy
@@ -146,6 +150,10 @@ protected:
     SharedMatrix Fa_;
     /// The beta Fock matrix in the SO basis
     SharedMatrix Fb_;
+    /// The copy of the alpha Fock matrix in the SO basis before the Lowdin orthogonalization
+    SharedMatrix Fa_copy;
+    /// The copy of the alpha Fock matrix in the SO basis before the Lowdin orthogonalization
+    SharedMatrix Fb_copy;
     /// The alpha Fock matrix in the MO basis
     SharedMatrix moFa_;
     /// The beta Fock matrix in the MO basis
