@@ -5,6 +5,7 @@
 #include <libmints/vector.h>
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
+#include "defines.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -132,10 +133,14 @@ protected:
     SharedMatrix bvir_c_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the alpha Fock matrix
     SharedMatrix a_tau_;
-//    double ***a_tau_;
     /// The Tau matrix in the AO basis, stored by irrep, to perturb the beta Fock matrix
     SharedMatrix b_tau_;
-//    double ***b_tau_;
+#if TAU_IMPROVED
+    /// The Tau^2 correction to the alpha Tau matrix in the AO basis
+    SharedMatrix a_tautau_;
+    /// The Tau^2 correction to the beta Tau matrix in the AO basis
+    SharedMatrix b_tautau_;
+#endif
     /// The overlap matrix in the AO basis
     SharedMatrix ao_s_;
     /// The one-electron integrals in the SO basis
