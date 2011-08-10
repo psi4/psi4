@@ -160,6 +160,7 @@ DCFTSolver::build_tau()
 void
 DCFTSolver::compute_tau_squared()
 {
+
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
     dpdfile2 TT_OO, TT_oo, TT_VV, TT_vv;
 

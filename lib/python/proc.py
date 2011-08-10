@@ -5,7 +5,7 @@ from driver import *
 from molecule import *
 from text import *
 
-def run_dcft(**kwargs):
+def run_dcft(name, **kwargs):
     molecule = PsiMod.get_active_molecule()
     if (kwargs.has_key('molecule')):
       molecule = kwargs.pop('molecule')
