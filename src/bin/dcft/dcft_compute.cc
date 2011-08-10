@@ -152,6 +152,11 @@ DCFTSolver::compute_energy()
                     diisString += "/E";
                     scfDiisManager.extrapolate(2, Fa_.get(), Fb_.get());
                 }
+
+                // Save the Fock matrix before the orthogonalization
+                Fa_copy->copy(Fa_);
+                Fb_copy->copy(Fb_);
+
                 Fa_->transform(s_half_inv_);
                 Fa_->diagonalize(tmp, epsilon_a_);
                 old_ca_->copy(Ca_);
@@ -209,7 +214,6 @@ DCFTSolver::compute_energy()
             Fb_->copy(so_h_);
             // This will build the new Fock matrix from the SO integrals
             process_so_ints();
-            // The SCF energy has to be evaluated before adding Tau and orthonormalizing F
             Fa_->add(g_tau_a_);
             Fb_->add(g_tau_b_);
             // Copy and transform the Fock matrix, before it's symmetrically orthogonalized
@@ -257,6 +261,11 @@ DCFTSolver::compute_energy()
                 dpd_buf4_close(&Lab);
                 dpd_buf4_close(&Lbb);
             }
+
+            // Save the Fock matrix before the orthogonalization
+            Fa_copy->copy(Fa_);
+            Fb_copy->copy(Fb_);
+
             Fa_->transform(s_half_inv_);
             Fa_->diagonalize(tmp, epsilon_a_);
             old_ca_->copy(Ca_);
@@ -298,6 +307,16 @@ DCFTSolver::compute_energy()
     }
 
     print_opdm();
+
+    if(options_.get_bool("TAU_SQUARED")){
+        Fa_->copy(Fa_copy);
+        Fb_->copy(Fb_copy);
+        build_tau();
+        compute_tau_squared();
+        compute_energy_tau_squared();
+        fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction            = %20.15f\n", energy_tau_squared_);
+        fprintf(outfile, "\t*DCFT Total Energy (with Tau^2)         = %20.15f\n", new_total_energy_ + energy_tau_squared_);
+    }
 
     if(options_.get_bool("COMPUTE_TPDM")) dump_density();
     mulliken_charges();

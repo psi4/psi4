@@ -616,6 +616,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("DAMPING_FACTOR", 0);
       /*- Should the tau terms be included? -*/
       options.add_bool("IGNORE_TAU", false);
+      /*- Whether to compute the DCFT energy with the $\tau^{2}$ correction to $\tau$ or not-*/
+      options.add_bool("TAU_SQUARED", false);
       /*- An integral is considered to be zero if it's magnitude is less than $10^{-int_thresh}$ -*/
       options.add_int("INT_THRESH", 14);
       /*- DIIS starts when the  RMS lambda and SCF errors are less than $10^{diis_start}$ -*/

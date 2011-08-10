@@ -10,8 +10,6 @@
 
 #define ID(x) _ints->DPD_ID(x)
 
-#define TAU_IMPROVED 1
-
 #ifndef INDEX
 #define INDEX(i,j) (i > j ? i * (i + 1) / 2 + j : j + (j + 1) / 2 + i)
 #endif
