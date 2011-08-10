@@ -321,20 +321,16 @@ namespace psi{ namespace dcft{
   DCFTSolver::compute_scf_energy()
   {
       scf_energy_ = enuc_;
-//      fprintf(outfile, "\n  !Nuclear repulsion = %20.15f \n", scf_energy_);
       scf_energy_ += 0.5 * kappa_a_->vector_dot(so_h_);
       scf_energy_ += 0.5 * kappa_b_->vector_dot(so_h_);
-//      fprintf(outfile, "\n  !Kappa*H contribution = %20.15f \n", 0.5 * kappa_a_->vector_dot(so_h_) + 0.5 * kappa_b_->vector_dot(so_h_));
       scf_energy_ += 0.5 * kappa_a_->vector_dot(Fa_);
       scf_energy_ += 0.5 * kappa_b_->vector_dot(Fb_);
-//      fprintf(outfile, "\n  !Kappa*F contribution = %20.15f \n", 0.5 * kappa_a_->vector_dot(Fa_) + 0.5 * kappa_b_->vector_dot(Fb_));
 
       scf_energy_ += 0.5 * a_tau_->vector_dot(so_h_);
       scf_energy_ += 0.5 * b_tau_->vector_dot(so_h_);
-//      fprintf(outfile, "\n  !Tau*H contribution = %20.15f \n", 0.5 * a_tau_->vector_dot(so_h_) + 0.5 * b_tau_->vector_dot(so_h_));
       scf_energy_ += 0.5 * a_tau_->vector_dot(Fa_);
       scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
-//      fprintf(outfile, "\n  !Tau*F contribution = %20.15f \n", 0.5 * a_tau_->vector_dot(Fa_) + 0.5 * b_tau_->vector_dot(Fb_));
+
   }
 
 
