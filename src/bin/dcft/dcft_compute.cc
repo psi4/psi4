@@ -294,29 +294,33 @@ DCFTSolver::compute_energy()
         throw ConvergenceError<int>("DCFT", maxiter_, lambda_threshold_,
                                lambda_convergence_, __FILE__, __LINE__);
 
-    Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT ENERGY"] = new_total_energy_;
-    Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
-
     fprintf(outfile, "\t*=================================================================================*\n");
-    fprintf(outfile, "\n\t*DCFT SCF Energy            = %20.15f\n", scf_energy_);
-    fprintf(outfile, "\t*DCFT Total Energy          = %20.15f\n", new_total_energy_);
 
-    if(!options_.get_bool("RELAX_ORBITALS")){
-        fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
-    }
-
-    print_opdm();
-
+    // Computes the Tau^2 correction to Tau and the DCFT energy if requested by the user
     if(options_.get_bool("TAU_SQUARED")){
         Fa_->copy(Fa_copy);
         Fb_->copy(Fb_copy);
         build_tau();
         compute_tau_squared();
         compute_energy_tau_squared();
-        fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction            = %20.15f\n", energy_tau_squared_);
-        fprintf(outfile, "\t*DCFT Total Energy (with Tau^2)         = %20.15f\n", new_total_energy_ + energy_tau_squared_);
+        new_total_energy_ += energy_tau_squared_;
+        fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction          = %20.15f\n", energy_tau_squared_);
     }
+
+    // Tau^2 should probably be added to SCF energy....
+    fprintf(outfile, "\n\t*DCFT SCF Energy                       = %20.15f\n", scf_energy_);
+    fprintf(outfile, "\t*DCFT Total Energy                     = %20.15f\n", new_total_energy_);
+
+    Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
+    Process::environment.globals["DCFT ENERGY"] = new_total_energy_;
+    Process::environment.globals["DCFT TAU SQUARED CORRECTION"] = energy_tau_squared_;
+    Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
+
+    if(!options_.get_bool("RELAX_ORBITALS")){
+        fprintf(outfile, "Warning!  The orbitals were not relaxed\n");
+    }
+
+    print_opdm();
 
     if(options_.get_bool("COMPUTE_TPDM")) dump_density();
     mulliken_charges();
