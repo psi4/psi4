@@ -330,7 +330,6 @@ namespace psi{ namespace dcft{
       scf_energy_ += 0.5 * b_tau_->vector_dot(so_h_);
       scf_energy_ += 0.5 * a_tau_->vector_dot(Fa_);
       scf_energy_ += 0.5 * b_tau_->vector_dot(Fb_);
-
   }
 
 
