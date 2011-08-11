@@ -57,7 +57,7 @@ madness::Future<double> LMP2::energy(const SharedMatrix T2, const int &ij, const
 
                     //                    E_OS_ += 2 * Kab * Tab ;
                     //                    E_SS_ += 2 * Kab * ( Tab - Tba );
-                    Elmp2_ += Kab * (2 * Tab - Tba);
+                    lmp2_energy += Kab * (2 * Tab - Tba);
                 }
             }
         }
