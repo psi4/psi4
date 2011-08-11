@@ -355,17 +355,26 @@ protected:
     madness::Future<SharedMatrix> get_old_T2(const int &ij);
 
     /// Builds and returns F_sum to compute the new Residules
-    SharedMatrix build_F_sum(const int &ij, const int &iter);
+    madness::Future<SharedMatrix> build_F_sum(const int &ij, const int &iter);
+
+    /// Compute the T2 amplitudes
+    madness::Void compute_T2(const SharedMatrix & F_sum, const int &ij, const int &iter);
 
     /// Build Rtilde
     madness::Future<SharedMatrix> build_rtilde(const SharedMatrix F_sum,
                                                const int &ij, const int &iter);
-    /// Adds the the T2_kj amplitudes to F_sum
-    madness::Void F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
-                                     const int &k, const int &ij);
-    /// Adds the the T2_ik amplitudes to F_sum
-    madness::Void F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
-                                     const int &k, const int &ij);
+
+    /// Adds the T2_kj and T2_ik to F_sum
+    SharedMatrix F_sum_add(const std::vector<madness::Future<SharedMatrix> > &T2_kj,
+                                 const std::vector<madness::Future<SharedMatrix> > &T2_ik,
+                                 const int &ij);
+
+        //    /// Adds the the T2_kj amplitudes to F_sum
+//    madness::Void F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
+//                                     const int &k, const int &ij);
+//    /// Adds the the T2_ik amplitudes to F_sum
+//    madness::Void F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
+//                                     const int &k, const int &ij);
 
     madness::Future<int> build_error(const int & ij);
 

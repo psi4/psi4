@@ -33,9 +33,11 @@ int LMP2::compute_T2_energy(const int &iter) {
     if (iter > 1 && diis_ == 1) {
         for (int ij=0; ij < ij_pairs_; ij++) {
             if (me_ == ij_owner_[ij]) {
-//                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
-                SharedMatrix F_sum = build_F_sum(ij, iter);
-                madworld_->taskq.fence();
+////                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
+//                SharedMatrix F_sum = build_F_sum(ij, iter);
+//                madworld_->taskq.fence();
+
+                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
 
                 madness::Future<SharedMatrix> Rtilde = task(me_, &LMP2::build_rtilde, F_sum, ij, iter);
 
@@ -92,13 +94,11 @@ int LMP2::compute_T2_energy(const int &iter) {
         }
     }
     else {
-        std::cout << "not in diis" << std::endl;
         for (int ij=0; ij < ij_pairs_; ij++) {
             terms += pair_domain_len_[ij] * pair_domain_len_[ij];
             if (me_ == ij_owner_[ij]) {
 
-                SharedMatrix F_sum = build_F_sum(ij, iter);
-                madworld_->taskq.fence();
+                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
 
                 madness::Future<SharedMatrix> Rtilde = task(me_, &LMP2::build_rtilde, F_sum, ij, iter);
 
@@ -153,128 +153,214 @@ madness::Future<SharedMatrix> LMP2::get_old_T2(const int &ij) {
 //    return madness::None;
 //}
 
-SharedMatrix LMP2::build_F_sum(const int &ij, const int &iter) {
-
-    SharedMatrix F_sum(new Matrix());
+madness::Future<SharedMatrix> LMP2::build_F_sum(const int &ij, const int &iter) {
 
     if (iter > 0) {
+        madness::TaskAttributes attr;
+        attr.set_highpriority(true);
 
-        F_sum->init(nirreps_, &nso_, &nso_);
+        std::vector< madness::Future<SharedMatrix> > F_sum_kj = madness::future_vector_factory<SharedMatrix>(ndocc_);
+        std::vector< madness::Future<SharedMatrix> > F_sum_ik = madness::future_vector_factory<SharedMatrix>(ndocc_);
 
         for (int k=0; k < ndocc_; k++) {
-
-            int ik = ij_map_neglect_[ij_ik_map_[ij][k]];
             int kj = ij_map_neglect_[ij_kj_map_[ij][k]];
+            int ik = ij_map_neglect_[ij_ik_map_[ij][k]];
 
             if (pairdom_exist_[ij_kj_map_[ij][k]]) {
-                madness::Future<SharedMatrix> T2_kj = task(ij_owner_[kj], &LMP2::get_old_T2, kj);
-                task(ij_owner_[ij], &LMP2::F_sum_add_kj, F_sum, T2_kj, k, ij);
+                F_sum_kj[k] = task(ij_owner_[kj], &LMP2::get_old_T2, kj, attr);
             }
             if (pairdom_exist_[ij_ik_map_[ij][k]]) {
-                madness::Future<SharedMatrix> T2_ik = task(ij_owner_[ik], &LMP2::get_old_T2, ik);
-                task(ij_owner_[ij], &LMP2::F_sum_add_ik, F_sum, T2_ik, k, ij);
+                F_sum_ik[k] = task(ij_owner_[ik], &LMP2::get_old_T2, ik, attr);
+            }
+        }
+
+        return madness::Future<SharedMatrix>( task(me_, &LMP2::F_sum_add, F_sum_kj, F_sum_ik, ij) );
+    }
+    else {
+        return madness::Future<SharedMatrix>( boost::shared_ptr<Matrix>(new Matrix()) );
+    }
+}
+
+SharedMatrix LMP2::F_sum_add(const std::vector<madness::Future<SharedMatrix> > &T2_kj,
+                             const std::vector<madness::Future<SharedMatrix> > &T2_ik,
+                             const int &ij)
+{
+    boost::shared_ptr<Matrix> F_sum(new Matrix(nirreps_, &nso_, &nso_));
+    double **f = F_sum->pointer();
+    double **f_lo = F_LO_->pointer();
+
+    int i = ij_i_map_[ij];
+    int j = ij_j_map_[ij];
+
+    for (int k=0; k < ndocc_; k++) {
+        int kj = ij_map_neglect_[ij_kj_map_[ij][k]];
+        int ik = ij_map_neglect_[ij_ik_map_[ij][k]];
+
+        double **t_kj = T2_kj[k].get()->pointer();
+        double **t_ik = T2_ik[k].get()->pointer();
+
+        if (pairdom_exist_[ij_kj_map_[ij][k]]) {
+            if (k <= j) {
+                for (int r=0, L=0; r < natom_; r++) {
+                    if (pair_domain_[kj][r]) {
+                        for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+                            for (int s=0, M=0; s < natom_; s++) {
+                                if (pair_domain_[kj][s]) {
+                                    for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+                                        f[l][m] -= f_lo[i][k] * t_kj[M][L];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                for (int r=0, L=0; r < natom_; r++) {
+                    if (pair_domain_[kj][r]) {
+                        for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+                            for (int s=0, M=0; s < natom_; s++) {
+                                if (pair_domain_[kj][s]) {
+                                    for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+                                        f[l][m] -= f_lo[i][k] * t_kj[L][M];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (pairdom_exist_[ij_ik_map_[ij][k]]) {
+            if (k >= i) {
+                for (int r=0, L=0; r < natom_; r++) {
+                    if (pair_domain_[ik][r]) {
+                        for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+                            for (int s=0, M=0; s < natom_; s++) {
+                                if (pair_domain_[ik][s]) {
+                                    for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+                                        f[l][m] -= f_lo[k][j] * t_ik[M][L];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                for (int r=0, L=0; r < natom_; r++) {
+                    if (pair_domain_[ik][r]) {
+                        for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+                            for (int s=0, M=0; s < natom_; s++) {
+                                if (pair_domain_[ik][s]) {
+                                    for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+                                        f[l][m] -= f_lo[k][j] * t_ik[L][M];
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-    madworld_->taskq.fence();
 
     return F_sum;
 }
 
-madness::Void LMP2::F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
-                                 const int &k, const int &ij)
-{
-    F_mutex_->lock();
-        double **f = F_sum->pointer();
-        double **t = T2_kj->pointer();
-        double **f_lo = F_LO_->pointer();
-    F_mutex_->unlock();
+//madness::Void LMP2::F_sum_add_kj(SharedMatrix F_sum, const SharedMatrix T2_kj,
+//                                 const int &k, const int &ij)
+//{
+//    F_mutex_->lock();
+//        double **f = F_sum->pointer();
+//        double **t = T2_kj->pointer();
+//        double **f_lo = F_LO_->pointer();
+//    F_mutex_->unlock();
 
 
-    int i = ij_i_map_[ij];
-    int j = ij_j_map_[ij];
-    int kj = ij_map_neglect_[ij_kj_map_[ij][k]];
+//    int i = ij_i_map_[ij];
+//    int j = ij_j_map_[ij];
+//    int kj = ij_map_neglect_[ij_kj_map_[ij][k]];
 
-    if (k <= j) {
-        for (int r=0, L=0; r < natom_; r++) {
-            if (pair_domain_[kj][r]) {
-                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
-                    for (int s=0, M=0; s < natom_; s++) {
-                        if (pair_domain_[kj][s]) {
-                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-//                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,M,L)));
-                                f[l][m] -= f_lo[i][k] * t[M][L];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else {
-        for (int r=0, L=0; r < natom_; r++) {
-            if (pair_domain_[kj][r]) {
-                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
-                    for (int s=0, M=0; s < natom_; s++) {
-                        if (pair_domain_[kj][s]) {
-                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-//                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,L,M)));
-                                f[l][m] -= f_lo[i][k] * t[L][M];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return madness::None;
-}
-madness::Void LMP2::F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
-                                 const int &k, const int &ij)
-{
-    F_mutex_->lock();
-        double **f = F_sum->pointer();
-        double **t = T2_ik->pointer();
-        double **f_lo = F_LO_->pointer();
-    F_mutex_->unlock();
+//    if (k <= j) {
+//        for (int r=0, L=0; r < natom_; r++) {
+//            if (pair_domain_[kj][r]) {
+//                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+//                    for (int s=0, M=0; s < natom_; s++) {
+//                        if (pair_domain_[kj][s]) {
+//                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+//                                f[l][m] -= f_lo[i][k] * t[M][L];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    else {
+//        for (int r=0, L=0; r < natom_; r++) {
+//            if (pair_domain_[kj][r]) {
+//                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+//                    for (int s=0, M=0; s < natom_; s++) {
+//                        if (pair_domain_[kj][s]) {
+//                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+////                                F_sum->add(0, l, m, -(F_LO_->get(0,i,k) * T2_kj->get(0,L,M)));
+//                                f[l][m] -= f_lo[i][k] * t[L][M];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    return madness::None;
+//}
+//madness::Void LMP2::F_sum_add_ik(SharedMatrix F_sum, const SharedMatrix T2_ik,
+//                                 const int &k, const int &ij)
+//{
+//    F_mutex_->lock();
+//        double **f = F_sum->pointer();
+//        double **t = T2_ik->pointer();
+//        double **f_lo = F_LO_->pointer();
+//    F_mutex_->unlock();
 
-    int i = ij_i_map_[ij];
-    int j = ij_j_map_[ij];
-    int ik = ij_map_neglect_[ij_ik_map_[ij][k]];
+//    int i = ij_i_map_[ij];
+//    int j = ij_j_map_[ij];
+//    int ik = ij_map_neglect_[ij_ik_map_[ij][k]];
 
-    if (k >= i) {
-        for (int r=0, L=0; r < natom_; r++) {
-            if (pair_domain_[ik][r]) {
-                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
-                    for (int s=0, M=0; s < natom_; s++) {
-                        if (pair_domain_[ik][s]) {
-                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-                                f[l][m] -= f_lo[k][j] * t[M][L];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    else {
-        for (int r=0, L=0; r < natom_; r++) {
-            if (pair_domain_[ik][r]) {
-                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
-                    for (int s=0, M=0; s < natom_; s++) {
-                        if (pair_domain_[ik][s]) {
-                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
-//                                F_sum->add(0, l, m, -(F_LO_->get(0,k,j) * T2_ik->get(0,L,M)));
-                                f[l][m] -= f_lo[k][j] * t[L][M];
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-    return madness::None;
-}
+//    if (k >= i) {
+//        for (int r=0, L=0; r < natom_; r++) {
+//            if (pair_domain_[ik][r]) {
+//                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+//                    for (int s=0, M=0; s < natom_; s++) {
+//                        if (pair_domain_[ik][s]) {
+//                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+//                                f[l][m] -= f_lo[k][j] * t[M][L];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    else {
+//        for (int r=0, L=0; r < natom_; r++) {
+//            if (pair_domain_[ik][r]) {
+//                for (int l = ao_start_[r]; l < ao_stop_[r]; l++, L++) {
+//                    for (int s=0, M=0; s < natom_; s++) {
+//                        if (pair_domain_[ik][s]) {
+//                            for (int m = ao_start_[s]; m < ao_stop_[s]; m++, M++) {
+////                                F_sum->add(0, l, m, -(F_LO_->get(0,k,j) * T2_ik->get(0,L,M)));
+//                                f[l][m] -= f_lo[k][j] * t[L][M];
+//                            }
+//                        }
+//                    }
+//                }
+//            }
+//        }
+//    }
+//    return madness::None;
+//}
 
 
 madness::Future<SharedMatrix> LMP2::build_rtilde(const SharedMatrix F_sum, const int &ij, const int &iter) {
