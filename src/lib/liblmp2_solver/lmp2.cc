@@ -135,6 +135,8 @@ double LMP2::compute_energy()
         fflush(outfile);
         iter++;
 
+//        if (iter == 2) conv = 1;
+
     }
 
     if (me_ == 0)
