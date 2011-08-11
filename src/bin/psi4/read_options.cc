@@ -35,6 +35,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type -*/
   options.add_str("WFN", "SCF");
+  /*- Derivative level -*/
+  options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -48,7 +50,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Reference wavefunction -*/
     options.add_str("REFERENCE","RHF", "RHF ROHF");
 
-    /*- Convergence is achieved when the RMS of the error in the CI vector is 
+    /*- Convergence is achieved when the RMS of the error in the CI vector is
     less than 10**(-n).  The default is 4 for energies and 7 for gradients. -*/
     options.add_int("CONVERGENCE", 4);
 
@@ -96,10 +98,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Open-shell type */
     options.add_str("OPENTYPE", "NONE", "NONE HIGHSPIN SINGLET");
 
-    /*- Guess vector type.  Accepted values are UNIT for a unit vector 
-    guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use 
+    /*- Guess vector type.  Accepted values are UNIT for a unit vector
+    guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use
     eigenvectors from the H0 BLOCK submatrix (default); DFILE to use
-    NUM_ROOTS previously converged vectors in the D file; IMPORT to 
+    NUM_ROOTS previously converged vectors in the D file; IMPORT to
     import a guess previously exported from a CI computation
     (possibly using a different CI space) !expert -*/
     options.add_str("GUESS_VECTOR", "H0_BLOCK", "UNIT H0_BLOCK DFILE IMPORT");
@@ -156,13 +158,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       vectors. LEININGER approximation which subtracts the one-electron
       contribution from the orbital energies, multiplies by 0.5, and adds
       the one-electron contribution back in, producing spin pure expansion
-      vectors and developed by Matt Leininger and works as well as 
+      vectors and developed by Matt Leininger and works as well as
       EVANGELISTI. !expert -*/
-    options.add_str("HD_AVE", "EVANGELISTI", 
+    options.add_str("HD_AVE", "EVANGELISTI",
       "EVANGELISTI HD_EXACT HD_KAVE ORB_ENER LEININGER Z_KAVE");
 
     /*- If TRUE the diagonal elements of the Hamiltonian matrix are
-      computed on-the-fly, otherwise a diagonal element vector is written 
+      computed on-the-fly, otherwise a diagonal element vector is written
       to a separate file on disk. !expert -*/
     options.add_bool("HD_OTF",true);
 
@@ -175,22 +177,22 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // CDS-TODO: Need to make DETCI compatible with normal FREEZE_CORE
     options.add_bool("DETCI_FREEZE_CORE",true);
 
-    /*- Store strings specifically for FCI? (Default to TRUE for FCI) 
+    /*- Store strings specifically for FCI? (Default to TRUE for FCI)
         !expert -*/
     options.add_bool("FCI_STRINGS",false);
 
     /*- This determines whether `mixed' RAS II/RAS III excitations are
-      allowed into the CI space.  This is useful for placing additional 
+      allowed into the CI space.  This is useful for placing additional
       constraints on a RAS CI. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- This determines whether `mixed' excitations involving RAS IV are
-      allowed into the CI space.  This is useful for placing additional 
+      allowed into the CI space.  This is useful for placing additional
       constraints on a RAS CI. !expert -*/
     options.add_bool("MIXED4",true);
 
-    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in 
-      RAS IV, then the holes in RAS I must equal the particles in RAS III 
+    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in
+      RAS IV, then the holes in RAS I must equal the particles in RAS III
       + RAS IV else the string is discarded !expert -*/
     options.add_bool("R4S",false);
 
@@ -215,7 +217,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
     options.add_bool("SAVE_MPN2",false);
 
-    /*- If TRUE, an orthonormal vector space is employed rather than 
+    /*- If TRUE, an orthonormal vector space is employed rather than
       storing the kth order wfn !expert -*/
     options.add_bool("MPN_SCHMIDT",false);
 
@@ -264,34 +266,34 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     less core memory. -*/
     options.add_int("ICORE", 1);
 
-    /*- This specifies which method is to be used in diagonalizing the 
-    Hamiltonian.  The valid options are: RSP, to form the entire H 
-    matrix and diagonalize using libciomr to obtain all eigenvalues 
-    (n.b. requires HUGE memory); OLSEN, to use Olsen's preconditioned 
-    inverse subspace method (1990); MITRUSHENKOV, to use a 2x2 
-    Olsen/Davidson method; and DAVIDSON (or SEM) to use Liu's 
-    Simultaneous Expansion Method, which is identical to the Davidson method 
-    if only one root is to be found.  There also exists a SEM debugging mode, 
-    SEMTEST.  The SEM method is the most robust, but it also 
-    requires 2(N*M)+1 CI vectors on disk, where N is the maximum number of 
+    /*- This specifies which method is to be used in diagonalizing the
+    Hamiltonian.  The valid options are: RSP, to form the entire H
+    matrix and diagonalize using libciomr to obtain all eigenvalues
+    (n.b. requires HUGE memory); OLSEN, to use Olsen's preconditioned
+    inverse subspace method (1990); MITRUSHENKOV, to use a 2x2
+    Olsen/Davidson method; and DAVIDSON (or SEM) to use Liu's
+    Simultaneous Expansion Method, which is identical to the Davidson method
+    if only one root is to be found.  There also exists a SEM debugging mode,
+    SEMTEST.  The SEM method is the most robust, but it also
+    requires 2(N*M)+1 CI vectors on disk, where N is the maximum number of
     iterations and M is the number of roots. -*/
-    options.add_str("DIAG_METHOD", "SEM", 
+    options.add_str("DIAG_METHOD", "SEM",
       "RSP OLSEN MITRUSHENKOV DAVIDSON SEM SEMTEST");
 
-    /*- This specifies the type of preconditioner to use in the selected 
-    diagonalization method.  The valid options are: DAVIDSON which 
-    approximates the Hamiltonian matrix by the diagonal elements; 
-    H0BLOCK_INV which uses an exact Hamiltonian of H0_BLOCKSIZE and 
-    explicitly inverts it; GEN_DAVIDSON which does a spectral 
-    decomposition of H0BLOCK; ITER_INV using an iterative approach 
+    /*- This specifies the type of preconditioner to use in the selected
+    diagonalization method.  The valid options are: DAVIDSON which
+    approximates the Hamiltonian matrix by the diagonal elements;
+    H0BLOCK_INV which uses an exact Hamiltonian of H0_BLOCKSIZE and
+    explicitly inverts it; GEN_DAVIDSON which does a spectral
+    decomposition of H0BLOCK; ITER_INV using an iterative approach
     to obtain the correction vector of H0BLOCK.  The H0BLOCK_INV, GEN_DAVIDSON,
     and ITER_INV approaches are all formally equivalent but the ITER_INV is
     less computationally expensive.  Default is DAVIDSON. -*/
-    options.add_str("PRECONDITIONER", "DAVIDSON", 
+    options.add_str("PRECONDITIONER", "DAVIDSON",
       "LANCZOS DAVIDSON GEN_DAVIDSON H0BLOCK H0BLOCK_INV ITER_INV H0BLOCK_COUPLING EVANGELISTI");
 
     /*- DAVIDSON employs the standard DAVIDSON update or correction vector
-    formula, while OLSEN uses the OLSEN correction vector.  Default 
+    formula, while OLSEN uses the OLSEN correction vector.  Default
     is DAVIDSON. -*/
     options.add_str("UPDATE", "DAVIDSON", "DAVIDSON OLSEN");
 
@@ -311,10 +313,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     the previous n iterations.   Defaults to 1. -*/
     options.add_int("COLLAPSE_SIZE", 1);
 
-    /*- Use least-squares extrapolation in iterative solution of CI 
+    /*- Use least-squares extrapolation in iterative solution of CI
     vector? -*/
     options.add_bool("LSE",false);
-    
+
     /*- Number of iterations between least-squares extrapolations -*/
     options.add_int("LSE_COLLAPSE", 3);
 
@@ -322,12 +324,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     extrapolation to be performed -*/
     options.add_int("LSE_TOLERANCE", 3);
 
-    /*- This option allows the user to resume a DETCI iteration that 
-    terminated prematurely.  It assumes that the CI and sigma vectors are on 
+    /*- This option allows the user to resume a DETCI iteration that
+    terminated prematurely.  It assumes that the CI and sigma vectors are on
     disk; the number of vectors specified by RESTART_VECS is collapsed
     down to one vector per root. -*/
     options.add_bool("RESTART",false);
-    
+
     /*- Use some routines to calculate sigma based on the papers of Bendazzoli
     et al.  Seems to be slower and not worthwhile; may disappear
     eventually.  Works only for full CI and I don't remember if I could see
@@ -353,7 +355,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("WRTNOS", false);
 
     /*- Flag for whether or not to average the OPDM over several roots in
-    order to obtain a state-average one-particle density matrix.  This 
+    order to obtain a state-average one-particle density matrix.  This
     density matrix can be diagonalized to obtain the CI natural orbitals. -*/
     options.add_bool("OPDM_AVE", false);
 
@@ -373,7 +375,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     Useful for a state-specific CASSCF or CI optimization on an
     excited state. -*/
     options.add_int("ROOT", 1);
-   
+
     /*- Compute the transition density? -*/
     options.add_bool("TRANSITION_DENSITY", false);
 
@@ -386,16 +388,16 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Compute the dipole moment? -*/
     options.add_bool("DIPMOM", false);
 
-    /*- Number of threads -*/ 
+    /*- Number of threads -*/
     options.add_int("NTHREADS", 1);
 
     /*- This specifies whether to store converged vector(s) at the end of
-    the run.  The vector(s) is(are) stored in a transparent format such that 
-    other programs can use it easily. The format is specified in 
+    the run.  The vector(s) is(are) stored in a transparent format such that
+    other programs can use it easily. The format is specified in
     src/lib/libqt/slaterdset.h. The default is false. -*/
     options.add_bool("EXPORT_VECTOR", false);
 
-    /*- Number of vectors to export -*/ 
+    /*- Number of vectors to export -*/
     options.add_int("NUM_EXPORT", 1);
 
     /*- Eliminate determinants not valid for spin-complete spin-flip CI's
@@ -406,15 +408,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SIGMA_OVERLAP", false);
 
     /*- The value of the spin quantum number S is given by this option.
-    The default is determined by the value of MULTP.  This is used for two 
-    things: (1) determining the phase of the redundant half of the CI vector 
+    The default is determined by the value of MULTP.  This is used for two
+    things: (1) determining the phase of the redundant half of the CI vector
     when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making sure
     the guess vector has the desired value of $<S^2>$ (if CALC_SSQ is TRUE
     and ICORE=1). -*/
     options.add_double("S", 0.0);
 
-    /*- An array of length EX_LVL specifying whether each excitation type 
-    (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to 
+    /*- An array of length EX_LVL specifying whether each excitation type
+    (S,D,T, etc.) is allowed (1 is allowed, 0 is disallowed).  Used to
     specify non-standard CI spaces such as CIST.  !expert -*/
     options.add("EX_ALLOW", new ArrayType());
 
@@ -429,7 +431,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     routine (and requires additional keywords). !expert -*/
     options.add_bool("FILTER_GUESS", false);
 
-    /*- The required phase (1 or -1) between the two determinants specified 
+    /*- The required phase (1 or -1) between the two determinants specified
     by FILTER_GUESS_DET1 and FILTER_GUESS_DET2 !expert -*/
     options.add_int("FILTER_GUESS_SIGN", 1);
 
@@ -443,7 +445,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- If present, the code will try to filter out a particular determinant
     by setting its CI coefficient to zero.  FILTER_ZERO_DET = (alphastr
-    betastr) specifies the absolute alpha and beta string numbers of the 
+    betastr) specifies the absolute alpha and beta string numbers of the
     target determinant. This could be useful for trying to exclude states
     that have a nonzero CI coefficient for the given determinant.  However,
     this option was experimental and may not be effective.  !expert -*/
@@ -456,15 +458,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Array giving the weights for each state in a state-averaged
     procedure -*/
-    // CDS:TODO - Does this work for doubles?? 
+    // CDS:TODO - Does this work for doubles??
     options.add("AVERAGE_WEIGHTS", new ArrayType());
 
     /*- In following a particular root (see ROOT keyword), sometimes the
     root number changes.  To follow a root of a particular character,
-    one can specify a list of determinants and their coefficients, 
-    and the code will follow the root with the closest overlap.  The 
-    user specifies arrays containing the absolute alpha string indices, 
-    absolute beta indices, and CI coefficients to form the desired vector. 
+    one can specify a list of determinants and their coefficients,
+    and the code will follow the root with the closest overlap.  The
+    user specifies arrays containing the absolute alpha string indices,
+    absolute beta indices, and CI coefficients to form the desired vector.
     FOLLOW_VECTOR_ALPHAS specifies the alpha string indices. !expert -*/
     options.add("FOLLOW_VECTOR_ALPHAS", new ArrayType());
 
@@ -491,11 +493,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     CC_FIX_EXTERNAL.  Experimental. !expert -*/
     options.add_int("CC_FIX_EXTERNAL_MIN", 1);
 
-    /*- Use variational energy expression in CC computation? 
+    /*- Use variational energy expression in CC computation?
     Experimental.  !expert -*/
     options.add_bool("CC_VARIATIONAL", false);
 
-    /*- ignore block if num holes in RAS I and II is > cc_ex_lvl and if 
+    /*- ignore block if num holes in RAS I and II is > cc_ex_lvl and if
     any indices correspond to RAS I or IV (i.e., include only all-active
     higher excitations) !expert -*/
     options.add_bool("CC_MIXED", true);
@@ -510,7 +512,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     // CDS-TODO: Check difference between DIIS_START AND DIIS_MIN_VECS
     /*- how many diis vectors built up before start -*/
     options.add_int("DIIS_START", 1);
- 
+
     /*- how often to do a DIIS exterpolation.  1 means do DIIS every
     iteration, 2 is every other iteration, etc. -*/
     options.add_int("DIIS_FREQ", 1);
@@ -521,9 +523,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- how many vectors maximum to hold? -*/
     options.add_int("DIIS_MAX_VECS", 5);
 
-    /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV], 
+    /*- CC_MACRO = [ [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
                      [ex_lvl, max_holes_I, max_parts_IV, max_I+IV], ... ]
-    Optional additional restrictions on allowed exictations in 
+    Optional additional restrictions on allowed exictations in
     coupled-cluster computations, based on macroconfiguration selection.
     For each sub-array, [ex_lvl, max_holes_I, max_parts_IV, max_I+IV],
     eliminate cluster amplitudes in which: [the excitation level
@@ -532,7 +534,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     particles in RAS IV, OR there are more than max_I+IV quasiparticles
     in RAS I + RAS IV].  !expert -*/
     options.add("CC_MACRO", new ArrayType());
- 
+
   }
 
   if (name == "SAPT"|| options.read_globals()) {

@@ -537,6 +537,14 @@ object py_psi_get_option(const string& key)
     return object();
 }
 
+bool py_psi_has_option_changed(const string& key)
+{
+    string nonconst_key = key;
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    return data.has_changed();
+}
+
 object py_psi_get_global_option(const string& key)
 {
     string nonconst_key = key;
@@ -706,26 +714,41 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("print_global_options", py_psi_print_global_options);
     def("print_out", py_psi_print_out);
 
+    // Set the different local option types
     def("set_local_option", py_psi_set_option_string);
     def("set_local_option", py_psi_set_option_float);
     def("set_local_option", py_psi_set_option_int);
     def("set_local_option", py_psi_set_option_array, set_local_option_overloads());
 
+    // Set the different global option types
     def("set_global_option", py_psi_set_global_option_string);
     def("set_global_option", py_psi_set_global_option_float);
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
+    // Get the option; letting liboptions decide whether to use global or local
     def("get_option", py_psi_get_option);
+
+    // Returns whether the option has changed.
+    def("has_option_changed", py_psi_has_option_changed);
+
+    // Get the global option
     def("get_global_option", py_psi_get_global_option);
 
+    // These return/set variable value found in Process::environment.globals
     def("get_variable", py_psi_get_variable);
     def("set_variable", py_psi_set_variable);
+
+    // Print the variables found in Process::environment.globals
     def("print_variables", py_psi_print_variable_map);
 
+    // Adds a custom user basis set file.
     def("add_user_basis_file", py_psi_add_user_specified_basis_file);
 
+    // Get the name of the directory where the input file is at
     def("get_input_directory", py_psi_get_input_directory);
+
+    // Returns the location where the Psi4 source is located.
     def("psi_top_srcdir", py_psi_top_srcdir);
 
     // modules
@@ -768,22 +791,10 @@ BOOST_PYTHON_MODULE(PsiMod)
     export_mints();
     export_functional();
 
-    /**
-    class_<DFTensor, boost::shared_ptr<DFTensor> >( "DFTensor", no_init).
-        def("bootstrap", &DFTensor::bootstrap_DFTensor).
-        staticmethod("booststrap").
-        def("form_fitting_metric", &DFTensor::form_fitting_metric).
-        def("form_cholesky_metric", &DFTensor::form_cholesky_metric).
-        def("form_qr_metric", &DFTensor::form_qr_metric).
-        def("finalize", &DFTensor::finalize).
-        def("print_out", &DFTensor::print_python);
-    **/
-
     typedef string (Process::Environment::*environmentStringFunction)(const string&);
 
     class_<Process::Environment>("Environment").
         def("__getitem__", environmentStringFunction(&Process::Environment::operator ()));
-//        def("set", &Process::Environment::set);
 
     typedef string (Process::Arguments::*argumentsStringFunction)(int);
 
@@ -792,8 +803,6 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     class_<Process>("Process").
         add_static_property("environment", Process::get_environment);
-//            def("environment", &Process::environment).
-//            staticmethod("environment");
 }
 
 Python::Python() : Script()
