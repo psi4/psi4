@@ -931,6 +931,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/opt1/Makefile
           tests/opt1-fd/Makefile
           tests/opt2/Makefile
+          tests/opt2-fd/Makefile
           tests/opt3/Makefile
           tests/opt4/Makefile
           tests/basis_extrap/Makefile
