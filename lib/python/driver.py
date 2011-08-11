@@ -31,7 +31,6 @@ procedures = {
         }}
 
 def energy(name, **kwargs):
-
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
     if (kwargs.has_key('bases')):
@@ -45,26 +44,52 @@ def energy(name, **kwargs):
         raise SystemExit('Energy Method %s Not Defined' %(name))
 
 def gradient(name, **kwargs):
-    if (kwargs.has_key('molecule')):
-        activate(kwargs['molecule'])
-    if (kwargs.has_key('bases')):
-        pass
-    if (kwargs.has_key('functional')):
-        pass
+    # Set some defaults
+    func = energy
 
-    dertype = 1
+    # Order of precedence:
+    #    1. Default for wavefunction
+    #    2. Value obtained from liboptions, if user changed it
+    #    3. If user provides a custom 'func' use that
+
+    # 1. set the default to that of the provided name
+    if (procedures['gradient'].has_key(name)):
+        dertype = 1
+    elif (procedures['energy'].has_key(name)):
+        dertype = 0
+
+    # 2. Check if the user set the global option
+    if (PsiMod.has_option_changed('DERTYPE') and dertype != -1):
+        option = PsiMod.get_option('DERTYPE')
+        if (option == 'NONE'):
+            dertype = 0
+        elif (option == 'FIRST'):
+            dertype = 1
+        else:
+            raise SystemExit("Value of DERTYPE option is not NONE or FIRST.")
+
+    # 3. user passes dertype into this function
     if (kwargs.has_key('dertype')):
         dertype = kwargs['dertype']
 
-    # By default, set func to the energy function
-    func = energy
-    func_existed = False
+    # 4. if the user provides a custom function THAT takes precendence
     if (kwargs.has_key('func')):
+        dertype = 0
         func = kwargs['func']
-        func_existed = True
+
+    # Start handling the other options we support
+    if (kwargs.has_key('molecule')):
+        # Make sure the molecule the user provided is the active one
+        activate(kwargs['molecule'])
+
+    # dertype currently holds the type of calculation we need to run
+
+    # First, check the values of dertype
+    if (dertype < 0 and dertype > 1):
+        raise SystemExit("The internal dertype is either less than 0 or greater than 1")
 
     # Does an analytic procedure exist for the requested method?
-    if (procedures['gradient'].has_key(name) and dertype == 1 and func_existed == False):
+    if (dertype == 1):
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
         procedures['gradient'][name](name, **kwargs)
