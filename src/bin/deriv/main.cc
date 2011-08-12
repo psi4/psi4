@@ -18,9 +18,9 @@ PsiReturnType deriv(Options &)
     fprintf(outfile, " DERIV: Derivative code.\n   by Justin Turney\n\n");
 
     Deriv test(Process::environment.reference_wavefunction(),
-               0xF,
+               0x1,
                false,
-               false);
+               true);
     test.compute();
 
     // Shut down psi

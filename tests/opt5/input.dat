@@ -1,0 +1,30 @@
+#! 6-31G** UHF CH2 3B1 optimization
+
+nucenergy = 6.197322440574482    # TEST
+refenergy = -38.925486977153     # TEST
+
+molecule ch2 {
+0 3
+c
+h 1 b1
+h 1 b1 2 a1
+
+b1 =1.0
+a1 =125.0
+}
+
+set {
+  reference uhf
+  dertype first
+  basis 6-31G**
+  docc [2, 0, 0, 1]
+  socc [1, 0, 1, 0]
+}
+
+thisenergy = optimize('scf')
+  
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy") # TEST
+compare_values(refenergy, thisenergy, 3, "Reference energy") # TEST
+
+clean()
+
