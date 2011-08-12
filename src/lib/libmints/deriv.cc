@@ -148,26 +148,33 @@ public:
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if (INDEX2(pabs, qabs) == INDEX2(rabs, sabs))
+        if (pabs == rabs && qabs == sabs || pabs == sabs && qabs == rabs)
             prefactor *= 0.5;
 
         double four_index_D = 0.0;
 
-        if (pirrep == qirrep && rirrep == sirrep) {
-            four_index_D = 4.0 * (Da_->get(pirrep, pso, qso) + Db_->get(pirrep, pso, qso)) *
-                                 (Da_->get(rirrep, rso, sso) + Db_->get(rirrep, rso, sso));
-        }
-        if (pirrep == rirrep && qirrep == sirrep) {
-            four_index_D -= 2.0 * (Da_->get(pirrep, pso, rso) * Da_->get(qirrep, qso, sso))
-                         -  2.0 * (Db_->get(pirrep, pso, rso) * Db_->get(qirrep, qso, sso));
-        }
-        if (pirrep == sirrep && qirrep == rirrep) {
-            four_index_D -= 2.0 * (Da_->get(pirrep, pso, sso) * Da_->get(rirrep, rso, qso))
-                         -  2.0 * (Db_->get(pirrep, pso, sso) * Db_->get(rirrep, rso, qso));
-        }
-        four_index_D *= prefactor;
+//        if (pirrep == qirrep && rirrep == sirrep) {
+//            four_index_D = 4.0 * (Da_->get(pirrep, pso, qso) + Db_->get(pirrep, pso, qso)) *
+//                                 (Da_->get(rirrep, rso, sso) + Db_->get(rirrep, rso, sso));
+//        }
+//        if (pirrep == rirrep && qirrep == sirrep) {
+//            four_index_D -= 2.0 * ((Da_->get(pirrep, pso, rso) * Da_->get(qirrep, qso, sso))
+//                                 + (Db_->get(pirrep, pso, rso) * Db_->get(qirrep, qso, sso)));
+//        }
+//        if (pirrep == sirrep && qirrep == rirrep) {
+            four_index_D -= 2.0 * ((Da_->get(pirrep, pso, sso) * Da_->get(rirrep, rso, qso))
+                                 /*+ (Db_->get(pirrep, pso, sso) * Db_->get(rirrep, rso, qso))*/);
+//        }
+//        four_index_D *= prefactor;
+        value *= prefactor;
+
+        fprintf(outfile, "i %d j %d k %d l %d Da_il %lf Da_kj %lf\n", pso, qso, rso, sso, Da_->get(pirrep, pso, sso), Da_->get(rirrep, rso, qso));
 
         result[thread]->add(salc, four_index_D * value);
+
+        fprintf(outfile, "! #%d %d %d %d %d D %lf I %lf contribution %lf\n",
+                salc, pabs, qabs, rabs, sabs, four_index_D, value,
+                four_index_D * value);
     }
 };
 
@@ -204,9 +211,11 @@ SharedMatrix Deriv::compute()
         ao_eri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
 
+    cdsalcs_.print();
+
     // A certain optimization can be used if we know we only need totally symmetric
     // derivatives.
-    so_eri.set_only_totally_symmetric(true);
+    so_eri.set_only_totally_symmetric(false);
 
     // Compute one-electron derivatives.
     vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'");
