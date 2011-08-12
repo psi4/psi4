@@ -148,23 +148,23 @@ public:
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if (pabs == rabs && qabs == sabs || pabs == sabs && qabs == rabs)
+        if ((pabs == rabs && qabs == sabs) || (pabs == sabs && qabs == rabs))
             prefactor *= 0.5;
 
         double four_index_D = 0.0;
 
-//        if (pirrep == qirrep && rirrep == sirrep) {
-//            four_index_D = 4.0 * (Da_->get(pirrep, pso, qso) + Db_->get(pirrep, pso, qso)) *
-//                                 (Da_->get(rirrep, rso, sso) + Db_->get(rirrep, rso, sso));
-//        }
-//        if (pirrep == rirrep && qirrep == sirrep) {
-//            four_index_D -= 2.0 * ((Da_->get(pirrep, pso, rso) * Da_->get(qirrep, qso, sso))
-//                                 + (Db_->get(pirrep, pso, rso) * Db_->get(qirrep, qso, sso)));
-//        }
-//        if (pirrep == sirrep && qirrep == rirrep) {
+        if (pirrep == qirrep && rirrep == sirrep) {
+            four_index_D = 4.0 * (Da_->get(pirrep, pso, qso) + Db_->get(pirrep, pso, qso)) *
+                                 (Da_->get(rirrep, rso, sso) + Db_->get(rirrep, rso, sso));
+        }
+        if (pirrep == rirrep && qirrep == sirrep) {
+            four_index_D -= 2.0 * ((Da_->get(pirrep, pso, rso) * Da_->get(qirrep, qso, sso))
+                                 + (Db_->get(pirrep, pso, rso) * Db_->get(qirrep, qso, sso)));
+        }
+        if (pirrep == sirrep && qirrep == rirrep) {
             four_index_D -= 2.0 * ((Da_->get(pirrep, pso, sso) * Da_->get(rirrep, rso, qso))
-                                 /*+ (Db_->get(pirrep, pso, sso) * Db_->get(rirrep, rso, qso))*/);
-//        }
+                                 + (Db_->get(pirrep, pso, sso) * Db_->get(rirrep, rso, qso)));
+        }
 //        four_index_D *= prefactor;
         value *= prefactor;
 
@@ -205,13 +205,13 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
 
 SharedMatrix Deriv::compute()
 {
+    molecule_->print_in_bohr();
+
     // Initialize an ERI object requesting derivatives.
     std::vector<boost::shared_ptr<TwoBodyAOInt> > ao_eri;
     for (int i=0; i<Communicator::world->nthread(); ++i)
         ao_eri.push_back(boost::shared_ptr<TwoBodyAOInt>(integral_->eri(1)));
     TwoBodySOInt so_eri(ao_eri, integral_, cdsalcs_);
-
-    cdsalcs_.print();
 
     // A certain optimization can be used if we know we only need totally symmetric
     // derivatives.

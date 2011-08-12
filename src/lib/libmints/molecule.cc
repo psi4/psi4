@@ -1161,6 +1161,32 @@ void Molecule::save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix)
     free_block(fgeom);
 }
 
+void Molecule::print_in_bohr() const
+{
+    // I'm tired of wanting to compare geometries with cints and psi4 will use angstrom
+    // and psi3 using bohr.
+    if (Communicator::world->me() == 0) {
+        if (natom()) {
+            if (pg_) fprintf(outfile,"    Molecular point group: %s\n\n", pg_->symbol());
+            fprintf(outfile,"    Geometry (in %s), charge = %d, multiplicity = %d:\n\n",
+                    "Bohr", molecular_charge_, multiplicity_);
+            fprintf(outfile,"       Center              X                  Y                   Z       \n");
+            fprintf(outfile,"    ------------   -----------------  -----------------  -----------------\n");
+
+            for(int i = 0; i < natom(); ++i){
+                fprintf(outfile, "    %8s%4s ",symbol(i).c_str(),Z(i) ? "" : "(Gh)"); fflush(outfile);
+                for(int j = 0; j < 3; j++)
+                    fprintf(outfile, "  %17.12f", xyz(i, j));
+                fprintf(outfile,"\n");
+            }
+            fprintf(outfile,"\n");
+            fflush(outfile);
+        }
+        else
+            fprintf(outfile, "  No atoms in this molecule.\n");
+    }
+}
+
 void Molecule::print() const
 {
     if (Communicator::world->me() == 0) {

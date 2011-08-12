@@ -346,6 +346,9 @@ public:
     /// Print the molecule
     void print() const;
 
+    /// Print the molecule in Bohr
+    void print_in_bohr() const;
+
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
 
