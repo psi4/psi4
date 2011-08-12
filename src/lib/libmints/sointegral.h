@@ -622,7 +622,6 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 {
     int thread = Communicator::world->thread_id(pthread_self());
 
-    fprintf(outfile, "usi %d usj %d usk %d usk %d\n", uish, ujsh, uksh, ulsh);
     const double *aobuffer = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(uish);
@@ -737,15 +736,10 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 //    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
 //      pfac *= 0.5;
 
-    fprintf(outfile, "for (%d %d | %d %d) need to compute %lu thing(s):\n",
-            uish, ujsh, uksh, ulsh, sj_arr.size());
-
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
-
-        fprintf(outfile, "si %d sj %d sk %d sl %d\n", si, sj, sk, sl);
 
         const AOTransform& s2 = b2_->aotrans(sj);
         const AOTransform& s3 = b3_->aotrans(sk);
@@ -1013,8 +1007,6 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
     int jtr, jtrfunc;
     int ktr, ktrfunc;
     int ltr, ltrfunc;
-
-    fprintf(outfile, "  n1 %d n2 %d n3 %d n4 %d\n", n1, n2, n3, n4);
 
     for (itr=0, itrfunc=0; itr<n1; itr++, itrfunc++) {
 
