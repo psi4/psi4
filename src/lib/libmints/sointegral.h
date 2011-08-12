@@ -17,7 +17,7 @@
 #include <libqt/qt.h>
 #include <vector>
 
-#define DebugPrint 0
+#define DebugPrint 1
 
 #if DebugPrint
 #define dprintf(...) fprintf(outfile, __VA_ARGS__)
@@ -214,6 +214,8 @@ public:
     template<typename ShellIter, typename TwoBodySOIntFunctor>
     void compute_quartets_deriv1(ShellIter &shellIter, TwoBodySOIntFunctor &body) {
         for (shellIter->first(); shellIter->is_done() == false; shellIter->next()) {
+            fprintf(outfile, "usii %d usjj %d uskk %d usll %d\n",
+                    shellIter->p(), shellIter->q(), shellIter->r(), shellIter->s());
             compute_shell_deriv1(shellIter->p(), shellIter->q(), shellIter->r(), shellIter->s(), body);
         }
     }
@@ -620,7 +622,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 {
     int thread = Communicator::world->thread_id(pthread_self());
 
-    dprintf("usi %d usj %d usk %d usk %d\n", uish, ujsh, uksh, ulsh);
+    fprintf(outfile, "usi %d usj %d usk %d usk %d\n", uish, ujsh, uksh, ulsh);
     const double *aobuffer = tb_[thread]->buffer();
 
     const SOTransform &t1 = b1_->sotrans(uish);
@@ -693,14 +695,22 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                         tb_[thread]->basis3()->shell(sk)->am() +
                         tb_[thread]->basis4()->shell(sl)->am();
 
-                if (!(total_am % 2) ||
-                        (siatom != sjatom) ||
-                        (sjatom != skatom) ||
-                        (skatom != slatom)) {
+//                if(!(total_am%2)||
+//                             (BasisSet.shells[si].center!=BasisSet.shells[sj].center)||
+//                             (BasisSet.shells[sj].center!=BasisSet.shells[sk].center)||
+//                             (BasisSet.shells[sk].center!=BasisSet.shells[sl].center)) {
+
+                fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
+                        total_am, siatom, sjatom, skatom, slatom);
+//                if (!(total_am % 2) ||
+//                        (siatom != sjatom) ||
+//                        (sjatom != skatom) ||
+//                        (skatom != slatom)) {
+                    fprintf(outfile, "\tadding\n");
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);
-                }
+//                }
             }
         }
     }
@@ -719,12 +729,20 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
     for (int i=0; i<cdsalcs_->ncd(); ++i)
         memset(deriv_[thread][i], 0, sizeof(double)*nso);
 
+    double pfac = 1.0;
+//    if (uish == ujsh)
+//      pfac *= 0.5;
+//    if (uksh == ulsh)
+//      pfac *= 0.5;
+//    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
+//      pfac *= 0.5;
+
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
         int sl = sl_arr[n];
 
-        dprintf("si %d sj %d sk %d sl %d\n", si, sj, sk, sl);
+        fprintf(outfile, "si %d sj %d sk %d sl %d\n", si, sj, sk, sl);
 
         const AOTransform& s2 = b2_->aotrans(sj);
         const AOTransform& s3 = b3_->aotrans(sk);
@@ -803,18 +821,18 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                         // Use translational invariance to determine B
                         B[0] = -(A[0] + C[0] + D[0]);  B[1] = -(A[1] + C[1] + D[1]);  B[2] = -(A[2] + C[2] + D[2]);
 
-                        A[0] *= lambda_T * lcoef;
-                        A[1] *= lambda_T * lcoef;
-                        A[2] *= lambda_T * lcoef;
-                        B[0] *= lambda_T * lcoef;
-                        B[1] *= lambda_T * lcoef;
-                        B[2] *= lambda_T * lcoef;
-                        C[0] *= lambda_T * lcoef;
-                        C[1] *= lambda_T * lcoef;
-                        C[2] *= lambda_T * lcoef;
-                        D[0] *= lambda_T * lcoef;
-                        D[1] *= lambda_T * lcoef;
-                        D[2] *= lambda_T * lcoef;
+                        A[0] *= lambda_T * pfac * lcoef;
+                        A[1] *= lambda_T * pfac * lcoef;
+                        A[2] *= lambda_T * pfac * lcoef;
+                        B[0] *= lambda_T * pfac * lcoef;
+                        B[1] *= lambda_T * pfac * lcoef;
+                        B[2] *= lambda_T * pfac * lcoef;
+                        C[0] *= lambda_T * pfac * lcoef;
+                        C[1] *= lambda_T * pfac * lcoef;
+                        C[2] *= lambda_T * pfac * lcoef;
+                        D[0] *= lambda_T * pfac * lcoef;
+                        D[1] *= lambda_T * pfac * lcoef;
+                        D[2] *= lambda_T * pfac * lcoef;
 
                         dprintf("so' derivatives: A[0] %+lf A[1] %+lf A[2] %+lf\n"
                                          "                 B[0] %+lf B[1] %+lf B[2] %+lf\n"
