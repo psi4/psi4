@@ -172,9 +172,9 @@ public:
 
         result[thread]->add(salc, four_index_D * value);
 
-        fprintf(outfile, "! #%d %d %d %d %d D %lf I %lf contribution %lf\n",
-                salc, pabs, qabs, rabs, sabs, four_index_D, value,
-                four_index_D * value);
+//        fprintf(outfile, "! #%d %d %d %d %d D %lf I %lf contribution %lf\n",
+//                salc, pabs, qabs, rabs, sabs, four_index_D, value,
+//                four_index_D * value);
     }
 };
 
