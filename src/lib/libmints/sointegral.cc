@@ -454,6 +454,11 @@ void TwoBodySOInt::common_init()
     petite4_ = b4_->petitelist();
 
     pg_ = tb_[0]->basis()->molecule()->point_group();
+    pg_->print();
+    fprintf(outfile, "bits_ = %d\n", pg_->bits());
+    fprintf(outfile, "petite1_->group %d\n", petite1_->group());
+
+    b1_->print();
 
     dcd_ = boost::shared_ptr<DCD>(new DCD(petite1_->group()));
 

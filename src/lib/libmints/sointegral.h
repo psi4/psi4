@@ -17,7 +17,7 @@
 #include <libqt/qt.h>
 #include <vector>
 
-#define DebugPrint 1
+#define DebugPrint 0
 
 #if DebugPrint
 #define dprintf(...) fprintf(outfile, __VA_ARGS__)
@@ -214,8 +214,6 @@ public:
     template<typename ShellIter, typename TwoBodySOIntFunctor>
     void compute_quartets_deriv1(ShellIter &shellIter, TwoBodySOIntFunctor &body) {
         for (shellIter->first(); shellIter->is_done() == false; shellIter->next()) {
-            fprintf(outfile, "usii %d usjj %d uskk %d usll %d\n",
-                    shellIter->p(), shellIter->q(), shellIter->r(), shellIter->s());
             compute_shell_deriv1(shellIter->p(), shellIter->q(), shellIter->r(), shellIter->s(), body);
         }
     }
@@ -335,7 +333,6 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
     std::vector<int> sj_arr, sk_arr, sl_arr;
 
-    //fprintf(outfile, "for (%d %d | %d %d) need to compute:\n", uish, ujsh, uksh, ulsh);
     int si = petite1_->unique_shell_map(uish, 0);
     const int siatom = tb_[thread]->basis1()->shell(si)->ncenter();
 
@@ -373,6 +370,9 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     // Compute integral using si, sj_arr, sk_arr, sl_arr
     // Loop over unique quartets
     const AOTransform& s1 = b1_->aotrans(si);
+
+//    fprintf(outfile, "for (%d %d | %d %d) need to compute %lu4 thing(s):\n",
+//            uish, ujsh, uksh, ulsh, sj_arr.size());
 
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
@@ -700,17 +700,17 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 //                             (BasisSet.shells[sj].center!=BasisSet.shells[sk].center)||
 //                             (BasisSet.shells[sk].center!=BasisSet.shells[sl].center)) {
 
-                fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
-                        total_am, siatom, sjatom, skatom, slatom);
-//                if (!(total_am % 2) ||
-//                        (siatom != sjatom) ||
-//                        (sjatom != skatom) ||
-//                        (skatom != slatom)) {
-                    fprintf(outfile, "\tadding\n");
+//                fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
+//                        total_am, siatom, sjatom, skatom, slatom);
+                if (!(total_am % 2) ||
+                        (siatom != sjatom) ||
+                        (sjatom != skatom) ||
+                        (skatom != slatom)) {
+//                    fprintf(outfile, "\tadding\n");
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);
-//                }
+                }
             }
         }
     }
@@ -736,6 +736,9 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 //      pfac *= 0.5;
 //    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
 //      pfac *= 0.5;
+
+    fprintf(outfile, "for (%d %d | %d %d) need to compute %lu thing(s):\n",
+            uish, ujsh, uksh, ulsh, sj_arr.size());
 
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
@@ -1010,6 +1013,8 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
     int jtr, jtrfunc;
     int ktr, ktrfunc;
     int ltr, ltrfunc;
+
+    fprintf(outfile, "  n1 %d n2 %d n3 %d n4 %d\n", n1, n2, n3, n4);
 
     for (itr=0, itrfunc=0; itr<n1; itr++, itrfunc++) {
 
