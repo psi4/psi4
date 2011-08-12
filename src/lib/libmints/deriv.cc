@@ -19,6 +19,59 @@ namespace psi {
 
 size_t counter;
 
+class CorrelatedRestrictedFunctor
+{
+    shared_ptr<Wavefunction> wavefunction_;
+    const CdSalcList& cdsalcs_;
+
+    dpdbuf4 G_;
+public:
+    double *result;
+
+    CorrelatedRestrictedFunctor(shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs, IntegralTransform& ints_transform)
+        : wavefunction_(wave), cdsalcs_(cdsalcs)
+    {
+        _default_psio_lib_->open(PSIF_TPDM_HALFTRANS, PSIO_OPEN_OLD);
+        dpd_buf4_init(&G_, PSIF_TPDM_HALFTRANS, 0,
+                      ints_transform.DPD_ID("[n,n]"), ints_transform.DPD_ID("[n,n]"),
+                      ints_transform.DPD_ID("[n>=n]+"), ints_transform.DPD_ID("[n>=n]+"),
+                      0, "SO Basis TPDM (nn|nn)");
+        dpd_buf4_mat_irrep_init(&G_, 0);
+        dpd_buf4_mat_irrep_rd(&G_, 0);
+
+        result = new double[cdsalcs_.ncd()];
+        memset(result, 0, sizeof(double)*cdsalcs_.ncd());
+    }
+    ~CorrelatedRestrictedFunctor() {
+        dpd_buf4_mat_irrep_close(&G_, 0);
+        dpd_buf4_close(&G_);
+        _default_psio_lib_->close(PSIF_TPDM_HALFTRANS, 1);
+        delete[] result;
+    }
+
+    void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
+                    int pirrep, int pso,
+                    int qirrep, int qso,
+                    int rirrep, int rso,
+                    int sirrep, int sso,
+                    double value)
+    {
+        double prefactor = 8.0;
+
+        if (pabs == qabs)
+            prefactor *= 0.5;
+        if (rabs == sabs)
+            prefactor *= 0.5;
+        if (INDEX2(pabs, qabs) == INDEX2(rabs, sabs))
+            prefactor *= 0.5;
+
+        int PQ = G_.params->colidx[pabs][qabs];   // pabs, qabs?
+        int RS = G_.params->rowidx[rabs][sabs];   // pabs, qabs?
+
+        result[salc] += prefactor * G_.matrix[0][PQ][RS] * value;
+    }
+};
+
 class ScfRestrictedFunctor
 {
     boost::shared_ptr<Wavefunction> wavefunction_;
