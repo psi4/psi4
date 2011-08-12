@@ -66,7 +66,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_close(&L);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-#if 1|| PRINT_ENERGY_COMPONENTS
+#if PRINT_ENERGY_COMPONENTS
     fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);
     fprintf(outfile, "\tAB G Energy = %20.12f\n", eGab);
     fprintf(outfile, "\tBB G Energy = %20.12f\n", eGbb);
