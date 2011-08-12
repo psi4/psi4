@@ -130,4 +130,4 @@ Returns: & #4
 }
 
 % Convenient macro to give clean formatting of input snippets
-\DefineVerbatimEnvironment{Snippet}{Verbatim}{gobble=2,numbers=left,numbersep=2mm,frame=lines,framerule=0.8mm}
+\DefineVerbatimEnvironment{Snippet}{Verbatim}{numbers=left,numbersep=2mm,frame=lines,framerule=0.8mm}
