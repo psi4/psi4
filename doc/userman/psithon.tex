@@ -1,0 +1,73 @@
+\section{Psithon} \label{psithon} 
+To allow arbitrarily complex computations to be performed, \PSIfour was built
+upon the Python interpreter.  However, to make the input syntax simpler, some
+pre-processing of the input file is performed before it is interpreted,
+resulting in Python syntax that is customized for \PSI, termed Psithon.
+
+\subsection{Molecule Specification}
+
+\PSIfour has a very flexible input parser that allows many different methods of
+molecule specification.  
+
+\subsection{Job Control}
+
+\PSI comprises a number of modules, written in C++, that each perform specific
+tasks and are callable directly from the Python front end.  Each module
+recognizes specific keywords in the input file, detailed in chapter
+\ref{keywords}, which control its function.  For example, consider the
+following The keywords can be made global, or scoped to apply to certain
+subsets of the input file.
+
+\begin{Snippet}
+molecule {
+  o
+  h 1 roh
+  h 1 roh 2 ahoh
+
+  roh = 0.957
+  ahoh = 104.5
+}
+
+set basis cc-pVDZ
+set ccenergy print 3
+set scf print 1
+
+energy('ccsd')
+\end{Snippet}
+
+To perform a CCSD computation, an SCF computation is performed first, before
+the \PSIccenergy module is called to perform the coupled cluster computation;
+the {\tt energy} Python helper function ensures that this is performed
+correctly.  The {\tt set} keyword is one of the custom \PSI keywords and it is
+used to provide job control keywords.  In the above example, the basis keyword
+is set to ``cc-pVDZ'' throughout the code.  The following equivalent statements
+can be used to set ``global'' options, {\it i.e.} those that are applied
+throughout the remainder of the input file.
+
+\begin{Snippet}
+set globals basis cc-pVDZ
+set basis cc-pVDZ
+set globals basis = cc-pVDZ
+set basis = cc-pVDZ
+\end{Snippet}
+
+Notice the lack of quotes, despite
+the value being a string.  The Psithon preprocessor identifies the {\tt set}
+keywords and wraps any strings in quotes automatically.  On lines 11 and 12, we
+demonstrate the scoping of variables.  Line 11 sets the print level for the
+coupled cluster module to 3, while line 12 sets the SCF module's print level to
+1.
+
+The above input file does the exact same thing that the input file provided
+in chapter \ref{tutorial}'s {\em Running a basic SCF calculation}. It provides
+a simple single-point energy computation on water.
+
+Both of these input files are automatically preprocessed to Python for you.
+
+\subsection{Preprocessor Keywords}
+
+\begin{description}
+\item[molecule {\em name } { ... }]\mbox{}\\
+Defines a molecule.
+
+\end{description}

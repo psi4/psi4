@@ -53,8 +53,8 @@ while(<DRIVER>){
 }
 close DRIVER;
 
-print_hash(\%Keywords, "keywords.tex", "Keywords Recognized by Each Module");
-print_hash(\%Expert, "expert_keywords.tex", "Expert Keywords Recognized by Each Module, for Advanced Users");
+print_hash(\%Keywords, "keywords.tex", "Keywords Recognized by Each Module", "keywords");
+print_hash(\%Expert, "expert_keywords.tex", "Expert Keywords Recognized by Each Module, for Advanced Users", "expertkeywords");
 
 
 
@@ -63,8 +63,9 @@ sub print_hash
  my %hash     = %{$_[0]};
  my $filename = $_[1];
  my $title    = $_[2];
+ my $label    = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
- print OUT "\\section{$title}\n";
+ print OUT "\\section{$title}\\label{$label}\n";
  print OUT "{\n \\footnotesize\n";
  foreach my $Module (sort {$a gt $b} keys %hash){
      printf OUT "\n\\subsection{%s}\n",$Module;

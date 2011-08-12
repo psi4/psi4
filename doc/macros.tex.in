@@ -1,36 +1,36 @@
 
-\newcommand{\PSI}{{\tt PSI}}
-\newcommand{\PSItwo}{{\tt PSI2}}
-\newcommand{\PSIthree}{{\tt PSI3}}
-\newcommand{\PSIfour}{{\tt PSI4}}
-\newcommand{\PSIversion}{@PSI_VERSION@}
-\newcommand{\PSImmmversion}{@PSI_VERSION@}
-\newcommand{\PSIemail}{@PSI_BUGREPORT@}
+\newcommand{\PSI}{{\tt PSI}\xspace}
+\newcommand{\PSItwo}{{\tt PSI2}\xspace}
+\newcommand{\PSIthree}{{\tt PSI3}\xspace}
+\newcommand{\PSIfour}{{\tt PSI4}\xspace}
+\newcommand{\PSIversion}{@PSI_VERSION@\xspace}
+\newcommand{\PSImmmversion}{@PSI_VERSION@\xspace}
+\newcommand{\PSIemail}{@PSI_BUGREPORT@\xspace}
 
 %
 % Psi Modules
 %
 \def\module#1{{\tt #1}}
-\newcommand{\libmints}{\module{libmints}}
-\newcommand{\PSIdriver}{\module{psi4}}
-\newcommand{\PSIinput}{\module{input}}
-\newcommand{\PSIcints}{\module{cints}}
-\newcommand{\PSIcderiv}{\module{cints --deriv1}}
-\newcommand{\PSIdetci}{\module{detci}}
-\newcommand{\PSIdetcas}{\module{detcas}}
-\newcommand{\PSIdetcasman}{\module{detcasman}}
-\newcommand{\PSIclag}{\module{clag}}
-\newcommand{\PSIccenergy}{\module{ccenergy}}
-\newcommand{\PSIccsort}{\module{ccsort}}
-\newcommand{\PSIpsi}{\module{psi}}
-\newcommand{\PSIcscf}{\module{cscf}}
-\newcommand{\PSIoptking}{\module{optking}}
-\newcommand{\PSItransqt}{\module{transqt}}
-\newcommand{\PSInormco}{\module{normco}}
-\newcommand{\PSIintder}{\module{intder95}}
-\newcommand{\PSIgeom}{\module{geom}}
-\newcommand{\PSIoeprop}{\module{oeprop}}
-\newcommand{\PSIstable}{\module{stable}}
+\newcommand{\libmints}{\module{libmints}\xspace}
+\newcommand{\PSIdriver}{\module{psi4}\xspace}
+\newcommand{\PSIinput}{\module{input}\xspace}
+\newcommand{\PSIcints}{\module{cints}\xspace}
+\newcommand{\PSIcderiv}{\module{cints --deriv1}\xspace}
+\newcommand{\PSIdetci}{\module{detci}\xspace}
+\newcommand{\PSIdetcas}{\module{detcas}\xspace}
+\newcommand{\PSIdetcasman}{\module{detcasman}\xspace}
+\newcommand{\PSIclag}{\module{clag}\xspace}
+\newcommand{\PSIccenergy}{\module{ccenergy}\xspace}
+\newcommand{\PSIccsort}{\module{ccsort}\xspace}
+\newcommand{\PSIpsi}{\module{psi}\xspace}
+\newcommand{\PSIcscf}{\module{cscf}\xspace}
+\newcommand{\PSIoptking}{\module{optking}\xspace}
+\newcommand{\PSItransqt}{\module{transqt}\xspace}
+\newcommand{\PSInormco}{\module{normco\xspace}}
+\newcommand{\PSIintder}{\module{intder95}\xspace}
+\newcommand{\PSIgeom}{\module{geom}\xspace}
+\newcommand{\PSIoeprop}{\module{oeprop}\xspace}
+\newcommand{\PSIstable}{\module{stable}\xspace}
 
 %
 % Psi Library
@@ -42,16 +42,16 @@
 %
 \def\FILE#1{{\tt file#1}}
 \def\file#1{{\tt #1}}
-\newcommand{\chkptfile}{\file{file32}}
-\newcommand{\inputdat}{\file{input.dat}}
-\newcommand{\outputdat}{\file{output.dat}}
-\newcommand{\fconstdat}{\file{fconst.dat}}
-\newcommand{\intcodat}{\file{intco.dat}}
-\newcommand{\optaux}{\file{opt.aux}}
-\newcommand{\basisdat}{\file{basis.dat}}
-\newcommand{\pbasisdat}{\file{pbasis.dat}}
-\newcommand{\geomdat}{\file{geom.dat}}
-\newcommand{\geomout}{\file{geom.out}}
+\newcommand{\chkptfile}{\file{file32}\xspace}
+\newcommand{\inputdat}{\file{input.dat}\xspace}
+\newcommand{\outputdat}{\file{output.dat}\xspace}
+\newcommand{\fconstdat}{\file{fconst.dat}\xspace}
+\newcommand{\intcodat}{\file{intco.dat}\xspace}
+\newcommand{\optaux}{\file{opt.aux}\xspace}
+\newcommand{\basisdat}{\file{basis.dat}\xspace}
+\newcommand{\pbasisdat}{\file{pbasis.dat}\xspace}
+\newcommand{\geomdat}{\file{geom.dat}\xspace}
+\newcommand{\geomout}{\file{geom.out}\xspace}
 
 %
 % Psi Keywords
@@ -128,3 +128,6 @@ Returns: & #4
    }
    \includesource{#1}{psi}
 }
+
+% Convenient macro to give clean formatting of input snippets
+\DefineVerbatimEnvironment{Snippet}{Verbatim}{gobble=2,numbers=left,numbersep=2mm,frame=lines,framerule=0.8mm}
