@@ -11,7 +11,7 @@ using namespace boost;
 
 namespace psi { namespace deriv {
 
-PsiReturnType deriv(Options & options)
+PsiReturnType deriv(Options &)
 {
     tstart();
 
@@ -19,8 +19,8 @@ PsiReturnType deriv(Options & options)
 
     Deriv test(Process::environment.reference_wavefunction(),
                0x1,
-               false,
-               false);
+               true,
+               true);
     test.compute();
 
     // Shut down psi
