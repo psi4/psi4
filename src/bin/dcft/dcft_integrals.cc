@@ -265,7 +265,6 @@ DCFTSolver::build_denominators()
     dpd_file2_mat_wrt(&F);
     dpd_file2_close(&F);
 
-
     //Diagonal elements of the Fock matrix
     //Beta spin
     for(int h = 0; h < nirrep_; ++h){
