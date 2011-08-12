@@ -126,11 +126,6 @@ DCFTSolver::update_lambda_from_residual()
     dpd_buf4_add(&L, &R, 1.0);
     dpd_buf4_close(&R);
     dpd_buf4_close(&L);
-//delete
-    dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
-    dpd_buf4_print(&L, outfile, 1);
-    dpd_buf4_close(&L);
 
     // L_IJAB += R_IJAB / D_IJAB
     dpd_buf4_init(&D, PSIF_LIBTRANS_DPD, 0, ID("[o,o]"), ID("[v,v]"),
