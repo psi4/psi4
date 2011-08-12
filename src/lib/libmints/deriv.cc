@@ -11,6 +11,9 @@
 
 #include <boost/foreach.hpp>
 
+#include <libtrans/integraltransform.h>
+#include <libdpd/dpd.h>
+
 #include "mints.h"
 
 using namespace std;
@@ -21,14 +24,14 @@ size_t counter;
 
 class CorrelatedRestrictedFunctor
 {
-    shared_ptr<Wavefunction> wavefunction_;
+    boost::shared_ptr<Wavefunction> wavefunction_;
     const CdSalcList& cdsalcs_;
 
     dpdbuf4 G_;
 public:
     double *result;
 
-    CorrelatedRestrictedFunctor(shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs, IntegralTransform& ints_transform)
+    CorrelatedRestrictedFunctor(boost::shared_ptr<Wavefunction> wave, const CdSalcList& cdsalcs, IntegralTransform& ints_transform)
         : wavefunction_(wave), cdsalcs_(cdsalcs)
     {
         _default_psio_lib_->open(PSIF_TPDM_HALFTRANS, PSIO_OPEN_OLD);
@@ -50,10 +53,10 @@ public:
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
-                    int pirrep, int pso,
-                    int qirrep, int qso,
-                    int rirrep, int rso,
-                    int sirrep, int sso,
+                    int /*pirrep*/, int /*pso*/,
+                    int /*qirrep*/, int /*qso*/,
+                    int /*rirrep*/, int /*rso*/,
+                    int /*sirrep*/, int /*sso*/,
                     double value)
     {
         double prefactor = 8.0;
@@ -221,13 +224,13 @@ public:
 //        four_index_D *= prefactor;
         value *= prefactor;
 
-        fprintf(outfile, "i %d j %d k %d l %d Da_il %lf Da_kj %lf\n", pso, qso, rso, sso, Da_->get(pirrep, pso, sso), Da_->get(rirrep, rso, qso));
+//        fprintf(outfile, "i %d j %d k %d l %d Da_il %lf Da_kj %lf\n", pso, qso, rso, sso, Da_->get(pirrep, pso, sso), Da_->get(rirrep, rso, qso));
 
         result[thread]->add(salc, four_index_D * value);
 
-//        fprintf(outfile, "! #%d %d %d %d %d D %lf I %lf contribution %lf\n",
-//                salc, pabs, qabs, rabs, sabs, four_index_D, value,
-//                four_index_D * value);
+        fprintf(outfile, "! #%d %d %d %d %d D %lf I %lf contribution %lf\n",
+                salc, pabs, qabs, rabs, sabs, four_index_D, value,
+                four_index_D * value);
     }
 };
 
