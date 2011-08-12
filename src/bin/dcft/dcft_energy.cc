@@ -23,7 +23,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,O]"), ID("[V,V]"),
-                  ID("[O,O]"), ID("[V,V]"), 0, "G <OO|VV>");
+                  ID("[O,O]"), ID("[V,V]"), 0, "R <OO|VV>");
     eGaa = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
     // E += 1/4 gbar_IJAB L_IJAB
@@ -37,7 +37,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
                   ID("[O,o]"), ID("[V,v]"), 0, "Lambda <Oo|Vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[O,o]"), ID("[V,v]"),
-                  ID("[O,o]"), ID("[V,v]"), 0, "G <Oo|Vv>");
+                  ID("[O,o]"), ID("[V,v]"), 0, "R <Oo|Vv>");
     eGab =  dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 
@@ -52,7 +52,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_init(&L, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
                   ID("[o,o]"), ID("[v,v]"), 0, "Lambda <oo|vv>");
     dpd_buf4_init(&G, PSIF_DCFT_DPD, 0, ID("[o,o]"), ID("[v,v]"),
-                  ID("[o,o]"), ID("[v,v]"), 0, "G <oo|vv>");
+                  ID("[o,o]"), ID("[v,v]"), 0, "R <oo|vv>");
     eGbb = 0.25 * dpd_buf4_dot(&G, &L);
     dpd_buf4_close(&G);
 
@@ -66,7 +66,7 @@ DCFTSolver::compute_dcft_energy()
     dpd_buf4_close(&L);
     psio_->close(PSIF_LIBTRANS_DPD, 1);
 
-#if PRINT_ENERGY_COMPONENTS
+#if 1|| PRINT_ENERGY_COMPONENTS
     fprintf(outfile, "\tAA G Energy = %20.12f\n", eGaa);
     fprintf(outfile, "\tAB G Energy = %20.12f\n", eGab);
     fprintf(outfile, "\tBB G Energy = %20.12f\n", eGbb);
