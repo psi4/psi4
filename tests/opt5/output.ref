@@ -1,0 +1,1663 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! 6-31G** UHF CH2 3B1 optimization
+
+nucenergy = 6.197322440574482    # TEST
+refenergy = -38.925486977153     # TEST
+
+molecule ch2 {
+0 3
+c
+h 1 b1
+h 1 b1 2 a1
+
+b1 =1.0
+a1 =125.0
+}
+
+set {
+  reference uhf
+  dertype first
+  basis 6-31G**
+  docc [2, 0, 0, 1]
+  socc [1, 0, 1, 0]
+}
+
+thisenergy = optimize('scf')
+  
+compare_values(nucenergy, ch2.nuclear_repulsion_energy(), 3, "Nuclear repulsion energy") # TEST
+compare_values(refenergy, thisenergy, 3, "Reference energy") # TEST
+
+clean()
+
+--------------------------------------------------------------------------
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:33 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.066406025951
+           H          0.000000000000    -0.887010833178     0.395342587284
+           H          0.000000000000     0.887010833178     0.395342587284
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    6.648419426607499
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.6982846745E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.43239968587467
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       2       2       1
+     A2         2       2       0       0       0       0
+     B1         4       4       1       0       0       1
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 13617 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -34.69634699230836   -6.26395e+00   0.00000e+00  
+   @UHF iter   2:   -38.38400808361984   -3.68766e+00   6.06379e-01 DIIS
+   @UHF iter   3:   -38.90810877972071   -5.24101e-01   1.60180e-01 DIIS
+   @UHF iter   4:   -38.91540259112927   -7.29381e-03   1.96271e-02 DIIS
+   @UHF iter   5:   -38.91586510672271   -4.62516e-04   5.69674e-03 DIIS
+   @UHF iter   6:   -38.91591302984371   -4.79231e-05   1.58327e-03 DIIS
+   @UHF iter   7:   -38.91591790513335   -4.87529e-06   4.19349e-04 DIIS
+   @UHF iter   8:   -38.91591816637443   -2.61241e-07   2.03697e-05 DIIS
+   @UHF iter   9:   -38.91591817614079   -9.76636e-09   9.08658e-06 DIIS
+   @UHF iter  10:   -38.91591817683251   -6.91720e-10   2.81423e-06 DIIS
+   @UHF iter  11:   -38.91591817686368   -3.11644e-11   4.38756e-07 DIIS
+   @UHF iter  12:   -38.91591817686459   -9.16600e-13   8.11431e-08 DIIS
+   @UHF iter  13:   -38.91591817686465   -5.68434e-14   1.67068e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A1   -11.245692     2A1    -0.971446     1B2    -0.631677  
+	   3A1    -0.465431     1B1    -0.407643  
+
+	Alpha Virtual:                                                        
+
+	   4A1     0.283649     2B2     0.341173     5A1     0.712645  
+	   3B2     0.718465     2B1     0.730653     6A1     0.818492  
+	   7A1     1.212677     4B2     1.222225     1A2     1.673436  
+	   8A1     1.792837     3B1     1.828806     5B2     2.245126  
+	   9A1     2.332763     4B1     2.735856     6B2     2.784534  
+	   2A2     3.005935    10A1     3.134254    11A1     3.953221  
+	   7B2     3.970940    12A1     4.562398  
+
+	Beta Occupied:                                                        
+
+	   1A1   -11.198599     2A1    -0.806384     1B2    -0.595575  
+
+	Beta Virtual:                                                         
+
+	   3A1     0.143352     1B1     0.174805     4A1     0.311393  
+	   2B2     0.374780     3B2     0.751470     5A1     0.816976  
+	   2B1     0.897458     6A1     0.922131     7A1     1.258449  
+	   4B2     1.272080     1A2     1.761098     8A1     1.934957  
+	   3B1     1.994627     5B2     2.265981     9A1     2.414636  
+	   4B1     2.769632     6B2     2.831010     2A2     3.052013  
+	  10A1     3.158050    11A1     3.978254     7B2     3.991182  
+	  12A1     4.633145  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     2,    0,    0,    1 ]
+	SOCC [     1,    0,    1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -38.91591817686465
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.2253     Total:     0.2253
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.5727     Total:     0.5727
+
+
+  @Spin Contamination Metric:  0.01148
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.01148
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:34 2011
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:34 2011
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.125489193038
+           H          0.000000000000    -1.676207423608     0.747089161582
+           H          0.000000000000     1.676207423608     0.747089161582
+
+WARNING: Unrestricted derivatives do not work!!!
+         Though UHF is close to working.
+    SALC #0 One-electron contribution: -3.618792
+    SALC #1 One-electron contribution: -4.883463
+    SALC #2 One-electron contribution: +2.558872
+
+    SALC #0 Lagrangian contribution:   -0.240774
+    SALC #1 Lagrangian contribution:   -0.280436
+    SALC #2 Lagrangian contribution:   +0.170253
+
+    SALC #0 TPDM contribution:         +1.874998
+    SALC #1 TPDM contribution:         +2.461770
+    SALC #2 TPDM contribution:         -1.325824
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.551633595715
+       2        0.000000000000     1.579308581419    -0.775816797858
+       3        0.000000000000    -1.579308581419    -0.775816797858
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -3.618792157150
+       2        0.000000000000    -3.453129896187     1.809396078575
+       3        0.000000000000     3.453129896187     1.809396078575
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.240773766071
+       2        0.000000000000     0.198297993093    -0.120386883035
+       3        0.000000000000    -0.198297993093    -0.120386883035
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.874998279768
+       2        0.000000000000     1.740734350189    -0.937499139884
+       3        0.000000000000    -1.740734350189    -0.937499139884
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.048613484404
+       2        0.000000000000     0.065211028515    -0.024306742202
+       3        0.000000000000    -0.065211028515    -0.024306742202
+
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:34 2011
+	user time   =       0.76 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 C           0.0000000000        0.0000000000       -0.1254891930
+	 H           0.0000000000       -1.6762074236        0.7470891616
+	 H           0.0000000000        1.6762074236        0.7470891616
+	             0.0000000000        0.0000000000        0.0486134844
+	             0.0000000000        0.0652110285       -0.0243067422
+	             0.0000000000       -0.0652110285       -0.0243067422
+
+	Previous optimization step data not found.  Starting new optimization.
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         1.889726	       1.000000
+	 R(1,3)           =         1.889726	       1.000000
+	 B(2,1,3)         =         2.181662	     125.000000
+
+	Current energy   :       -38.9159181769
+
+	Generating empirical Hessian (Fischer & Almlof '92) for each fragment.
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0102054371
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      1.000000     0.569020     0.075186     1.075186
+	 R(1,3)          =      1.000000     0.569020     0.075186     1.075186
+	 B(2,1,3)        =    125.000000     0.001230     2.783013   127.783013
+	 ----------------------------------------------------------------------
+
+	Convergence Check Cycle    1: (using internal coordinates in au)
+	                    Actual        Tolerance     Converged?
+	----------------------------------------------------------
+	MAX Force           6.9e-02        3.0e-04          no
+	Energy Change      -3.9e+01        1.0e-06          no
+	MAX Displacement    1.4e-01        1.2e-03          no
+	----------------------------------------------------------
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    C     0.0000000000   0.0000000000  -0.1285903148
+	    H     0.0000000000  -1.8244857516   0.7655514242
+	    H     0.0000000000   1.8244857516   0.7655514242
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:34 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.068047069016
+           H          0.000000000000    -0.965476350882     0.405112396602
+           H          0.000000000000     0.965476350882     0.405112396602
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    6.180124011144494
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.3958845634E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.57887773668632
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       2       2       1
+     A2         2       2       0       0       0       0
+     B1         4       4       1       0       0       1
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 13617 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -34.61817223242589   -6.03929e+00   0.00000e+00  
+   @UHF iter   2:   -38.25042964462102   -3.63226e+00   6.23334e-01 DIIS
+   @UHF iter   3:   -38.91323800161373   -6.62808e-01   2.08565e-01 DIIS
+   @UHF iter   4:   -38.92420523576386   -1.09672e-02   2.23779e-02 DIIS
+   @UHF iter   5:   -38.92514879339726   -9.43558e-04   7.37076e-03 DIIS
+   @UHF iter   6:   -38.92527745233318   -1.28659e-04   2.39704e-03 DIIS
+   @UHF iter   7:   -38.92529403372789   -1.65814e-05   6.53070e-04 DIIS
+   @UHF iter   8:   -38.92529537518448   -1.34146e-06   4.03979e-05 DIIS
+   @UHF iter   9:   -38.92529542725394   -5.20695e-08   2.24941e-05 DIIS
+   @UHF iter  10:   -38.92529543104745   -3.79351e-09   5.80947e-06 DIIS
+   @UHF iter  11:   -38.92529543120487   -1.57428e-10   1.00004e-06 DIIS
+   @UHF iter  12:   -38.92529543121162   -6.74305e-12   2.19191e-07 DIIS
+   @UHF iter  13:   -38.92529543121200   -3.83693e-13   5.51513e-08 DIIS
+   @UHF iter  14:   -38.92529543121199   1.42109e-14   1.17989e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A1   -11.261502     2A1    -0.947774     1B2    -0.607667  
+	   3A1    -0.457412     1B1    -0.408085  
+
+	Alpha Virtual:                                                        
+
+	   4A1     0.260215     2B2     0.324780     5A1     0.719006  
+	   2B1     0.728902     3B2     0.754752     6A1     0.812703  
+	   7A1     1.143406     4B2     1.165704     1A2     1.668272  
+	   8A1     1.801019     3B1     1.833760     5B2     2.154108  
+	   9A1     2.252915     4B1     2.647522     6B2     2.699272  
+	   2A2     2.914521    10A1     2.948594     7B2     3.732403  
+	  11A1     3.737580    12A1     4.568528  
+
+	Beta Occupied:                                                        
+
+	   1A1   -11.213612     2A1    -0.775735     1B2    -0.573185  
+
+	Beta Virtual:                                                         
+
+	   3A1     0.142193     1B1     0.175141     4A1     0.292426  
+	   2B2     0.361789     3B2     0.787492     5A1     0.821826  
+	   2B1     0.897495     6A1     0.914134     7A1     1.187112  
+	   4B2     1.209786     1A2     1.754335     8A1     1.939301  
+	   3B1     1.997613     5B2     2.181073     9A1     2.338531  
+	   4B1     2.678889     6B2     2.738302     2A2     2.958557  
+	  10A1     2.969642     7B2     3.753006    11A1     3.763907  
+	  12A1     4.639061  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     2,    0,    0,    1 ]
+	SOCC [     1,    0,    1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -38.92529543121199
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.2269     Total:     0.2269
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.5767     Total:     0.5767
+
+
+  @Spin Contamination Metric:  0.01403
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.01403
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:34 2011
+	user time   =       1.06 seconds =       0.02 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:34 2011
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.128590314767
+           H          0.000000000000    -1.824485751621     0.765551424154
+           H          0.000000000000     1.824485751621     0.765551424154
+
+WARNING: Unrestricted derivatives do not work!!!
+         Though UHF is close to working.
+    SALC #0 One-electron contribution: -3.175656
+    SALC #1 One-electron contribution: -4.669768
+    SALC #2 One-electron contribution: +2.245528
+
+    SALC #0 Lagrangian contribution:   -0.214973
+    SALC #1 Lagrangian contribution:   -0.283051
+    SALC #2 Lagrangian contribution:   +0.152009
+
+    SALC #0 TPDM contribution:         +1.674296
+    SALC #1 TPDM contribution:         +2.434270
+    SALC #2 TPDM contribution:         -1.183906
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.279206242004
+       2        0.000000000000     1.380205987634    -0.639603121002
+       3        0.000000000000    -1.380205987634    -0.639603121002
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -3.175656034808
+       2        0.000000000000    -3.302024651985     1.587828017404
+       3        0.000000000000     3.302024651985     1.587828017404
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.214972789272
+       2        0.000000000000     0.200146956358    -0.107486394636
+       3        0.000000000000    -0.200146956358    -0.107486394636
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.674295943722
+       2        0.000000000000     1.721289066857    -0.837147971861
+       3        0.000000000000    -1.721289066857    -0.837147971861
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -0.007181059810
+       2        0.000000000000    -0.000382641135     0.003590529905
+       3        0.000000000000     0.000382641135     0.003590529905
+
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:35 2011
+	user time   =       1.45 seconds =       0.02 minutes
+	system time =       0.16 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 C           0.0000000000        0.0000000000       -0.1285903148
+	 H           0.0000000000       -1.8244857516        0.7655514242
+	 H           0.0000000000        1.8244857516        0.7655514242
+	             0.0000000000        0.0000000000       -0.0071810598
+	             0.0000000000       -0.0003826411        0.0035905299
+	             0.0000000000        0.0003826411        0.0035905299
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         2.031807	       1.075186
+	 R(1,3)           =         2.031807	       1.075186
+	 B(2,1,3)         =         2.230234	     127.783013
+
+	Current energy   :       -38.9252954312
+
+	Energy change for the previous step:
+		Projected    :        -0.0102054371
+		Actual       :        -0.0093772543
+	Energy ratio large: Trust radius increased.
+
+
+	Performing BFGS update with previous 1 gradient(s).
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0000676583
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      1.075186    -0.015849    -0.001650     1.073536
+	 R(1,3)          =      1.075186    -0.015849    -0.001650     1.073536
+	 B(2,1,3)        =    127.783013     0.000472     1.138031   128.921044
+	 ----------------------------------------------------------------------
+
+	Convergence Check Cycle    2: (using internal coordinates in au)
+	                    Actual        Tolerance     Converged?
+	----------------------------------------------------------
+	MAX Force           6.2e-03        3.0e-04          no
+	Energy Change      -9.4e-03        1.0e-06          no
+	MAX Displacement    2.0e-02        1.2e-03          no
+	----------------------------------------------------------
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    C     0.0000000000   0.0000000000  -0.1257848721
+	    H     0.0000000000  -1.8304621518   0.7488494615
+	    H     0.0000000000   1.8304621518   0.7488494615
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:35 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.066562492578
+           H          0.000000000000    -0.968638925887     0.396274097945
+           H          0.000000000000     0.968638925887     0.396274097945
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    6.188306736127466
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.4173662175E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.57663045444107
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       2       2       1
+     A2         2       2       0       0       0       0
+     B1         4       4       1       0       0       1
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 13617 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -34.62004110016962   -6.04341e+00   0.00000e+00  
+   @UHF iter   2:   -38.25430113475897   -3.63426e+00   6.23729e-01 DIIS
+   @UHF iter   3:   -38.91339366184428   -6.59093e-01   2.07478e-01 DIIS
+   @UHF iter   4:   -38.92430219790126   -1.09085e-02   2.24042e-02 DIIS
+   @UHF iter   5:   -38.92525492409241   -9.52726e-04   7.40792e-03 DIIS
+   @UHF iter   6:   -38.92538782786703   -1.32904e-04   2.44281e-03 DIIS
+   @UHF iter   7:   -38.92540481839641   -1.69905e-05   6.66747e-04 DIIS
+   @UHF iter   8:   -38.92540614950493   -1.33111e-06   4.02047e-05 DIIS
+   @UHF iter   9:   -38.92540620013373   -5.06288e-08   2.24267e-05 DIIS
+   @UHF iter  10:   -38.92540620384916   -3.71543e-09   5.80074e-06 DIIS
+   @UHF iter  11:   -38.92540620400599   -1.56831e-10   9.98013e-07 DIIS
+   @UHF iter  12:   -38.92540620401257   -6.57963e-12   2.19658e-07 DIIS
+   @UHF iter  13:   -38.92540620401292   -3.48166e-13   5.39679e-08 DIIS
+   @UHF iter  14:   -38.92540620401297   -4.97380e-14   1.15945e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A1   -11.260777     2A1    -0.947951     1B2    -0.609543  
+	   3A1    -0.455452     1B1    -0.407769  
+
+	Alpha Virtual:                                                        
+
+	   4A1     0.259706     2B2     0.325778     5A1     0.719005  
+	   2B1     0.729161     3B2     0.757885     6A1     0.808295  
+	   7A1     1.142866     4B2     1.169864     1A2     1.666719  
+	   8A1     1.806058     3B1     1.836751     5B2     2.143432  
+	   9A1     2.256390     4B1     2.642048     6B2     2.711878  
+	   2A2     2.922492    10A1     2.939130     7B2     3.730790  
+	  11A1     3.753677    12A1     4.576989  
+
+	Beta Occupied:                                                        
+
+	   1A1   -11.212993     2A1    -0.775564     1B2    -0.575431  
+
+	Beta Virtual:                                                         
+
+	   3A1     0.143619     1B1     0.175166     4A1     0.292156  
+	   2B2     0.362093     3B2     0.790861     5A1     0.818430  
+	   2B1     0.897642     6A1     0.913031     7A1     1.187010  
+	   4B2     1.213604     1A2     1.752634     8A1     1.946008  
+	   3B1     2.001217     5B2     2.170894     9A1     2.340320  
+	   4B1     2.672899     6B2     2.750693    10A1     2.959843  
+	   2A2     2.966290     7B2     3.750944    11A1     3.780316  
+	  12A1     4.647074  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     2,    0,    0,    1 ]
+	SOCC [     1,    0,    1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -38.92540620401297
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.2255     Total:     0.2255
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.5733     Total:     0.5733
+
+
+  @Spin Contamination Metric:  0.01427
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.01427
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:35 2011
+	user time   =       1.74 seconds =       0.03 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:35 2011
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.125784872090
+           H          0.000000000000    -1.830462151798     0.748849461487
+           H          0.000000000000     1.830462151798     0.748849461487
+
+WARNING: Unrestricted derivatives do not work!!!
+         Though UHF is close to working.
+    SALC #0 One-electron contribution: -3.100902
+    SALC #1 One-electron contribution: -4.709650
+    SALC #2 One-electron contribution: +2.192669
+
+    SALC #0 Lagrangian contribution:   -0.209570
+    SALC #1 Lagrangian contribution:   -0.286177
+    SALC #2 Lagrangian contribution:   +0.148188
+
+    SALC #0 TPDM contribution:         +1.629830
+    SALC #1 TPDM contribution:         +2.457666
+    SALC #2 TPDM contribution:         -1.152464
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.257076434506
+       2        0.000000000000     1.390038171939    -0.628538217253
+       3        0.000000000000    -1.390038171939    -0.628538217253
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -3.100901678481
+       2        0.000000000000    -3.330225328843     1.550450839240
+       3        0.000000000000     3.330225328843     1.550450839240
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.209569684379
+       2        0.000000000000     0.202357606277    -0.104784842189
+       3        0.000000000000    -0.202357606277    -0.104784842189
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.629829752600
+       2        0.000000000000     1.737832230991    -0.814914876300
+       3        0.000000000000    -1.737832230991    -0.814914876300
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -0.004425806996
+       2        0.000000000000     0.000002680364     0.002212903498
+       3        0.000000000000    -0.000002680364     0.002212903498
+
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:36 2011
+	user time   =       2.13 seconds =       0.04 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 C           0.0000000000        0.0000000000       -0.1257848721
+	 H           0.0000000000       -1.8304621518        0.7488494615
+	 H           0.0000000000        1.8304621518        0.7488494615
+	             0.0000000000        0.0000000000       -0.0044258070
+	             0.0000000000        0.0000026804        0.0022129035
+	             0.0000000000       -0.0000026804        0.0022129035
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         2.028688	       1.073536
+	 R(1,3)           =         2.028688	       1.073536
+	 B(2,1,3)         =         2.250097	     128.921044
+
+	Current energy   :       -38.9254062040
+
+	Energy change for the previous step:
+		Projected    :        -0.0000676583
+		Actual       :        -0.0001107728
+	Energy ratio large: Trust radius increased.
+
+
+	Performing BFGS update with previous 2 gradient(s).
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0000776269
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      1.073536    -0.007840    -0.002125     1.071411
+	 R(1,3)          =      1.073536    -0.007840    -0.002125     1.071411
+	 B(2,1,3)        =    128.921044     0.000308     2.086732   131.007776
+	 ----------------------------------------------------------------------
+
+	Convergence Check Cycle    3: (using internal coordinates in au)
+	                    Actual        Tolerance     Converged?
+	----------------------------------------------------------
+	MAX Force           4.1e-03        3.0e-04          no
+	Energy Change      -1.1e-04        1.0e-06          no
+	MAX Displacement    3.6e-02        1.2e-03          no
+	----------------------------------------------------------
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    C     0.0000000000   0.0000000000  -0.1207310656
+	    H     0.0000000000  -1.8424308354   0.7187620575
+	    H     0.0000000000   1.8424308354   0.7187620575
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:36 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.063888133167
+           H          0.000000000000    -0.974972480934     0.380352528271
+           H          0.000000000000     0.974972480934     0.380352528271
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    6.198264100015547
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.4630398390E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.57396406591583
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       2       2       1
+     A2         2       2       0       0       0       0
+     B1         4       4       1       0       0       1
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 13617 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -34.62278978419776   -6.04883e+00   0.00000e+00  
+   @UHF iter   2:   -38.25926858178226   -3.63648e+00   6.24685e-01 DIIS
+   @UHF iter   3:   -38.91348477111010   -6.54216e-01   2.06242e-01 DIIS
+   @UHF iter   4:   -38.92434674196019   -1.08620e-02   2.24913e-02 DIIS
+   @UHF iter   5:   -38.92532474283590   -9.78001e-04   7.49845e-03 DIIS
+   @UHF iter   6:   -38.92546726706030   -1.42524e-04   2.53922e-03 DIIS
+   @UHF iter   7:   -38.92548527807991   -1.80110e-05   6.96060e-04 DIIS
+   @UHF iter   8:   -38.92548661544914   -1.33737e-06   4.06237e-05 DIIS
+   @UHF iter   9:   -38.92548666461410   -4.91650e-08   2.24999e-05 DIIS
+   @UHF iter  10:   -38.92548666825829   -3.64420e-09   5.83682e-06 DIIS
+   @UHF iter  11:   -38.92548666841767   -1.59375e-10   1.00624e-06 DIIS
+   @UHF iter  12:   -38.92548666842406   -6.38778e-12   2.24261e-07 DIIS
+   @UHF iter  13:   -38.92548666842441   -3.55271e-13   5.22823e-08 DIIS
+   @UHF iter  14:   -38.92548666842440   7.10543e-15   1.13591e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A1   -11.259650     2A1    -0.948037     1B2    -0.612573  
+	   3A1    -0.451848     1B1    -0.407213  
+
+	Alpha Virtual:                                                        
+
+	   4A1     0.258427     2B2     0.327340     5A1     0.719002  
+	   2B1     0.729599     3B2     0.764412     6A1     0.800709  
+	   7A1     1.141135     4B2     1.176895     1A2     1.664011  
+	   8A1     1.815099     3B1     1.842223     5B2     2.123018  
+	   9A1     2.262100     4B1     2.631306     6B2     2.733706  
+	  10A1     2.919788     2A2     2.935765     7B2     3.725113  
+	  11A1     3.781015    12A1     4.594017  
+
+	Beta Occupied:                                                        
+
+	   1A1   -11.212041     2A1    -0.774938     1B2    -0.579160  
+
+	Beta Virtual:                                                         
+
+	   3A1     0.146133     1B1     0.175220     4A1     0.291400  
+	   2B2     0.362424     3B2     0.797810     5A1     0.812413  
+	   2B1     0.897902     6A1     0.911286     7A1     1.186067  
+	   4B2     1.219894     1A2     1.749653     8A1     1.958057  
+	   3B1     2.007811     5B2     2.151500     9A1     2.342932  
+	   4B1     2.661161     6B2     2.772043    10A1     2.939928  
+	   2A2     2.979087     7B2     3.744459    11A1     3.808259  
+	  12A1     4.663207  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     2,    0,    0,    1 ]
+	SOCC [     1,    0,    1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -38.92548666842440
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.2229     Total:     0.2229
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.5665     Total:     0.5665
+
+
+  @Spin Contamination Metric:  0.01479
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.01479
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:36 2011
+	user time   =       2.43 seconds =       0.04 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:36 2011
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.120731065608
+           H          0.000000000000    -1.842430835370     0.718762057495
+           H          0.000000000000     1.842430835370     0.718762057495
+
+WARNING: Unrestricted derivatives do not work!!!
+         Though UHF is close to working.
+    SALC #0 One-electron contribution: -2.960577
+    SALC #1 One-electron contribution: -4.776898
+    SALC #2 One-electron contribution: +2.093444
+
+    SALC #0 Lagrangian contribution:   -0.199494
+    SALC #1 Lagrangian contribution:   -0.291638
+    SALC #2 Lagrangian contribution:   +0.141064
+
+    SALC #0 TPDM contribution:         +1.547256
+    SALC #1 TPDM contribution:         +2.497784
+    SALC #2 TPDM contribution:         -1.094075
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.213762795523
+       2        0.000000000000     1.405566624447    -0.606881397761
+       3        0.000000000000    -1.405566624447    -0.606881397761
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -2.960576709024
+       2        0.000000000000    -3.377777292252     1.480288354512
+       3        0.000000000000     3.377777292252     1.480288354512
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.199494278608
+       2        0.000000000000     0.206218938381    -0.099747139304
+       3        0.000000000000    -0.206218938381    -0.099747139304
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.547256254394
+       2        0.000000000000     1.766199922438    -0.773628127197
+       3        0.000000000000    -1.766199922438    -0.773628127197
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -0.000063380500
+       2        0.000000000000     0.000208193014     0.000031690250
+       3        0.000000000000    -0.000208193014     0.000031690250
+
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:36 2011
+	user time   =       2.82 seconds =       0.05 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 C           0.0000000000        0.0000000000       -0.1207310656
+	 H           0.0000000000       -1.8424308354        0.7187620575
+	 H           0.0000000000        1.8424308354        0.7187620575
+	             0.0000000000        0.0000000000       -0.0000633805
+	             0.0000000000        0.0002081930        0.0000316902
+	             0.0000000000       -0.0002081930        0.0000316902
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         2.024673	       1.071411
+	 R(1,3)           =         2.024673	       1.071411
+	 B(2,1,3)         =         2.286517	     131.007776
+
+	Current energy   :       -38.9254866684
+
+	Energy change for the previous step:
+		Projected    :        -0.0000776269
+		Actual       :        -0.0000804644
+	Energy ratio large: Trust radius increased.
+
+
+	Performing BFGS update with previous 3 gradient(s).
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0000002814
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      1.071411     0.001453     0.000141     1.071552
+	 R(1,3)          =      1.071411     0.001453     0.000141     1.071552
+	 B(2,1,3)        =    131.007776     0.000018     0.115173   131.122949
+	 ----------------------------------------------------------------------
+
+	Convergence Check Cycle    4: (using internal coordinates in au)
+	                    Actual        Tolerance     Converged?
+	----------------------------------------------------------
+	MAX Force           2.3e-04        3.0e-04         yes
+	Energy Change      -8.0e-05        1.0e-06          no
+	MAX Displacement    2.0e-03        1.2e-03          no
+	----------------------------------------------------------
+	Writing optimization data to binary file.
+	Structure for next step:
+	Cartesian Geometry (au)
+	    C     0.0000000000   0.0000000000  -0.1204805846
+	    H     0.0000000000  -1.8435168284   0.7172708405
+	    H     0.0000000000   1.8435168284   0.7172708405
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:36 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.063755584337
+           H          0.000000000000    -0.975547163718     0.379563410167
+           H          0.000000000000     0.975547163718     0.379563410167
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    6.197322440574482
+
+  Charge       = 0
+  Multiplicity = 3
+  Electrons    = 8
+  Nalpha       = 5
+  Nbeta        = 3
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.4676629194E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:   -28.57427420422952
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       2       2       1
+     A2         2       2       0       0       0       0
+     B1         4       4       1       0       0       1
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       3       3       2
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 13617 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:   -34.62269174501348   -6.04842e+00   0.00000e+00  
+   @UHF iter   2:   -38.25899522887426   -3.63630e+00   6.24805e-01 DIIS
+   @UHF iter   3:   -38.91346647212164   -6.54471e-01   2.06367e-01 DIIS
+   @UHF iter   4:   -38.92434221708491   -1.08757e-02   2.25058e-02 DIIS
+   @UHF iter   5:   -38.92532394315366   -9.81726e-04   7.50977e-03 DIIS
+   @UHF iter   6:   -38.92546744073518   -1.43498e-04   2.54769e-03 DIIS
+   @UHF iter   7:   -38.92548557921837   -1.81385e-05   6.98698e-04 DIIS
+   @UHF iter   8:   -38.92548692394782   -1.34473e-06   4.07720e-05 DIIS
+   @UHF iter   9:   -38.92548697332465   -4.93768e-08   2.25675e-05 DIIS
+   @UHF iter  10:   -38.92548697698610   -3.66146e-09   5.85372e-06 DIIS
+   @UHF iter  11:   -38.92548697714650   -1.60398e-10   1.00965e-06 DIIS
+   @UHF iter  12:   -38.92548697715294   -6.43752e-12   2.25260e-07 DIIS
+   @UHF iter  13:   -38.92548697715330   -3.62377e-13   5.23869e-08 DIIS
+   @UHF iter  14:   -38.92548697715330   0.00000e+00   1.13855e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A1   -11.259644     2A1    -0.947969     1B2    -0.612643  
+	   3A1    -0.451641     1B1    -0.407187  
+
+	Alpha Virtual:                                                        
+
+	   4A1     0.258270     2B2     0.327366     5A1     0.719020  
+	   2B1     0.729615     3B2     0.764887     6A1     0.800334  
+	   7A1     1.140843     4B2     1.177070     1A2     1.663877  
+	   8A1     1.815585     3B1     1.842524     5B2     2.121702  
+	   9A1     2.262143     4B1     2.630506     6B2     2.734520  
+	  10A1     2.918231     2A2     2.936112     7B2     3.724082  
+	  11A1     3.781800    12A1     4.594930  
+
+	Beta Occupied:                                                        
+
+	   1A1   -11.212041     2A1    -0.774810     1B2    -0.579271  
+
+	Beta Virtual:                                                         
+
+	   3A1     0.146256     1B1     0.175225     4A1     0.291287  
+	   2B2     0.362397     3B2     0.798305     5A1     0.812131  
+	   2B1     0.897914     6A1     0.911189     7A1     1.185809  
+	   4B2     1.220008     1A2     1.749501     8A1     1.958686  
+	   3B1     2.008167     5B2     2.150260     9A1     2.342824  
+	   4B1     2.660300     6B2     2.772808    10A1     2.938335  
+	   2A2     2.979403     7B2     3.743388    11A1     3.809080  
+	  12A1     4.664071  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     2,    0,    0,    1 ]
+	SOCC [     1,    0,    1,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:   -38.92548697715330
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.2228     Total:     0.2228
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.5662     Total:     0.5662
+
+
+  @Spin Contamination Metric:  0.01483
+  @S^2 Expected:               2.00000
+  @S^2 Observed:               2.01483
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:37 2011
+	user time   =       3.12 seconds =       0.05 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on justinhpc.nomad.utk.edu
+*** at Thu Aug 11 17:16:37 2011
+
+ DERIV: Derivative code.
+   by Justin Turney
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 3:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.120480584639
+           H          0.000000000000    -1.843516828362     0.717270840505
+           H          0.000000000000     1.843516828362     0.717270840505
+
+WARNING: Unrestricted derivatives do not work!!!
+         Though UHF is close to working.
+    SALC #0 One-electron contribution: -2.952056
+    SALC #1 One-electron contribution: -4.779452
+    SALC #2 One-electron contribution: +2.087419
+
+    SALC #0 Lagrangian contribution:   -0.198899
+    SALC #1 Lagrangian contribution:   -0.291910
+    SALC #2 Lagrangian contribution:   +0.140643
+
+    SALC #0 TPDM contribution:         +1.542412
+    SALC #1 TPDM contribution:         +2.499587
+    SALC #2 TPDM contribution:         -1.090650
+
+  -Nuclear Repulsion Energy 1st Derivatives:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000    -0.000000000000     1.210765350902
+       2        0.000000000000     1.405737653870    -0.605382675451
+       3        0.000000000000    -1.405737653870    -0.605382675451
+
+
+  -One-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000    -2.952056410694
+       2        0.000000000000    -3.379583055529     1.476028205347
+       3        0.000000000000     3.379583055529     1.476028205347
+
+
+  -Lagrangian contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.198898970314
+       2        0.000000000000     0.206411338077    -0.099449485157
+       3        0.000000000000    -0.206411338077    -0.099449485157
+
+
+  -Two-electron contribution to gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     1.542411644587
+       2        0.000000000000     1.767475033615    -0.771205822294
+       3        0.000000000000    -1.767475033615    -0.771205822294
+
+
+  -Total gradient:
+     Atom            X                  Y                   Z
+    ------   -----------------  -----------------  -----------------
+       1        0.000000000000     0.000000000000     0.000019555110
+       2        0.000000000000     0.000040970033    -0.000009777555
+       3        0.000000000000    -0.000040970033    -0.000009777555
+
+
+*** tstop() called on justinhpc.nomad.utk.edu at Thu Aug 11 17:16:37 2011
+	user time   =       3.51 seconds =       0.06 minutes
+	system time =       0.30 seconds =       0.01 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+			----------------------------------
+			 OPTKING: for geometry optimizations  
+			  - R.A. King,  Bethel University   
+			------------------------------------
+
+	Prevous internal coordinate definitions found.
+	---Fragment 1 Geometry and Gradient---
+	 C           0.0000000000        0.0000000000       -0.1204805846
+	 H           0.0000000000       -1.8435168284        0.7172708405
+	 H           0.0000000000        1.8435168284        0.7172708405
+	             0.0000000000        0.0000000000        0.0000195551
+	             0.0000000000        0.0000409700       -0.0000097776
+	             0.0000000000       -0.0000409700       -0.0000097776
+
+	---Fragment 1 Intrafragment Coordinates---
+	 * Coordinate *           * BOHR/RAD *       * ANG/DEG *
+	 R(1,2)           =         2.024940	       1.071552
+	 R(1,3)           =         2.024940	       1.071552
+	 B(2,1,3)         =         2.288527	     131.122949
+
+	Current energy   :       -38.9254869772
+
+	Energy change for the previous step:
+		Projected    :        -0.0000002814
+		Actual       :        -0.0000003087
+	Energy ratio large: Trust radius increased.
+
+
+	Performing BFGS update with previous 4 gradient(s).
+	Following RFO solution 0.
+	Projected energy change by RFO approximation:        -0.0000000048
+
+	Back-transformation to cartesian coordinates...
+	Successfully converged to displaced geometry.
+
+	---Internal Coordinate Step in ANG or DEG, aJ/ANG or AJ/DEG ---
+	 ----------------------------------------------------------------------
+	 Coordinate             Previous        Force       Change         New 
+	 ----------             --------       ------       ------       ------
+	 R(1,2)          =      1.071552     0.000341     0.000047     1.071599
+	 R(1,3)          =      1.071552     0.000341     0.000047     1.071599
+	 B(2,1,3)        =    131.122949     0.000001     0.008154   131.131103
+	 ----------------------------------------------------------------------
+
+	Convergence Check Cycle    5: (using internal coordinates in au)
+	                    Actual        Tolerance     Converged?
+	----------------------------------------------------------
+	MAX Force           4.1e-05        3.0e-04         yes
+	Energy Change      -3.1e-07        1.0e-06         yes
+	MAX Displacement    1.4e-04        1.2e-03         yes
+	----------------------------------------------------------
+
+	 **** Optimization is complete! ****
+
+	            ****  Optimization Summary  ****
+	----------------------------------------------------------------------------
+	 Step         Energy             Delta(E)      MAX force    MAX Delta(q)  
+	----------------------------------------------------------------------------
+	   1    -38.915918176865    -38.915918176865    6.91e-02     6.91e-02
+	   2    -38.925295431212     -0.009377254347    6.21e-03     6.21e-03
+	   3    -38.925406204013     -0.000110772801    4.05e-03     4.05e-03
+	   4    -38.925486668424     -0.000080464411    2.33e-04     2.33e-04
+	   5    -38.925486977153     -0.000000308729    4.13e-05     4.13e-05
+	----------------------------------------------------------------------
+
+	Writing optimization data to binary file.
+	Final energy is    -38.9254869771533
+	Final (previous) structure:
+	Cartesian Geometry (au)
+	    C     0.0000000000   0.0000000000  -0.1204805846
+	    H     0.0000000000  -1.8435168284   0.7172708405
+	    H     0.0000000000   1.8435168284   0.7172708405
+	Saving final (previous) structure.
+			--------------------------
+			 OPTKING Finished Execution 
+			--------------------------
+
+*** PSI4 exiting successfully, buy a developer a beer!

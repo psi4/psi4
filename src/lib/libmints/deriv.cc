@@ -224,13 +224,7 @@ public:
 //        four_index_D *= prefactor;
         value *= prefactor;
 
-//        fprintf(outfile, "i %d j %d k %d l %d Da_il %lf Da_kj %lf\n", pso, qso, rso, sso, Da_->get(pirrep, pso, sso), Da_->get(rirrep, rso, qso));
-
         result[thread]->add(salc, four_index_D * value);
-
-        fprintf(outfile, "! #%d %d %d %d %d D %lf I %lf contribution %lf\n",
-                salc, pabs, qabs, rabs, sabs, four_index_D, value,
-                four_index_D * value);
     }
 };
 
@@ -329,9 +323,6 @@ SharedMatrix Deriv::compute()
         fflush(outfile);
     }
     else /* unrestricted */ {
-        fprintf(outfile, "WARNING: Unrestricted derivatives do not work!!!\n"
-                         "         Though UHF is close to working.\n");
-
         SharedMatrix Da = wavefunction_->Da();
         SharedMatrix Db = wavefunction_->Db();
         SharedMatrix X = wavefunction_->X();
@@ -341,9 +332,6 @@ SharedMatrix Deriv::compute()
             throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
         if (!X)
             throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
-
-        Da->print();
-        Db->print();
 
         for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
             double temp = Da->vector_dot(h_deriv[cd]);
