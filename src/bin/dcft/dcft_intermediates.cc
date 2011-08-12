@@ -377,6 +377,7 @@ DCFTSolver::build_intermediates()
                   ID("[O,O]"), ID("[V,V]"), 0, "Lambda <OO|VV>");
     // Temp_IJAB = lambda_IJCB F_AC
     dpd_file2_init(&F_VV, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
+dpd_file2_print(&F_VV, outfile);
     dpd_contract244(&F_VV, &Laa, &T, 1, 2, 1, 1.0, 0.0);
     dpd_file2_close(&F_VV);
     dpd_buf4_close(&Laa);
