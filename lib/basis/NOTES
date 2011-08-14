@@ -6,7 +6,28 @@ In vi, execute   set tabset=8   to view this document correctly.
 
 Friday, August 12, 2011 -- LAB
 
-[32]   The "months" basis sets systematically define degrees of truncation of the diffuse space as defined in Papajak & Truhlar JCTC 7 10 (2011). The basis aug-cc-pVDZ' is equivalent to jun-cc-pVDZ.
+[32]   The "months" basis sets systematically define degrees of truncation of the diffuse space as defined in Papajak & Truhlar JCTC 7 10 (2011). The basis aug-cc-pVDZ' is equivalent to jun-cc-pVDZ. The basis heavy-aug-cc-pVXZ is equivalent to jul-cc-pVXZ. As defined by Truhlar, the months basis sets deal only with the X+d versions, but since the operations can be performed on plain X or X+d alike, both are defined here for orbitals bases; RI and JKFIT fitting bases already deal only in X+d.
+
+         Basis     AngMom in Diffuse Space      Abbr
+                   Li-Kr !TM    H-He            
+
+   aug-cc-pVDZ     s p d        s p              aDZ
+   jul-cc-pVDZ     s p d                        haDZ
+   jun-cc-pVDZ     s p                          jaDZ
+       cc-pVDZ                                    DZ
+
+   aug-cc-pVTZ     s p d f      s p d            aTZ
+   jul-cc-pVTZ     s p d f                      haTZ
+   jun-cc-pVTZ     s p d                        jaTZ
+   may-cc-pVTZ     s p                          maTZ
+       cc-pVTZ                                    TZ
+
+   aug-cc-pVQZ     s p d f g    s p d f          aQZ
+   jul-cc-pVQZ     s p d f g                    haQZ
+   jun-cc-pVQZ     s p d f                      jaQZ
+   may-cc-pVQZ     s p d                        maQZ
+   apr-cc-pVQZ     s p                          aaQZ
+       cc-pVQZ                                    QZ
 
 
 *******************************************************************************
