@@ -56,23 +56,29 @@ print HTML_OUT "<tr><td><big><b>Ahlrichs/Karlsruhe</b></big></td></tr>\n\n";
 foreach $gbs (@HAHLRICHS) { htmlline($gbs); }
 
 print HTML_OUT "<tr><td><big><b>Dunning D&#950;</b></big></td></tr>\n\n";
-@HDDUNNING = (<cc-*dz*.gbs>,<cc-*dpd*.gbs>,<aug-cc-*dz*.gbs>,<aug-cc-*dpd*.gbs>,<d-aug-cc-*dz*.gbs>,<d-aug-cc-*dpd*.gbs>,<heavy-aug-cc-*dz*.gbs>,<heavy-aug-cc-*dpd*.gbs>);
+@HDDUNNING = (<cc-*dz*.gbs>,<cc-*dpd*.gbs>,<aug-cc-*dz*.gbs>,<aug-cc-*dpd*.gbs>,<d-aug-cc-*dz*.gbs>,<d-aug-cc-*dpd*.gbs>,<heavy-aug-cc-*dz*.gbs>,<heavy-aug-cc-*dpd*.gbs>,
+              <jun-cc-*dz*.gbs>,<jun-cc-*dpd*.gbs>);
 foreach $gbs (@HDDUNNING) { htmlline($gbs); }
 
 print HTML_OUT "<tr><td><big><b>Dunning T&#950;</b></big></td></tr>\n\n";
-@HTDUNNING = (<cc-*tz*.gbs>,<cc-*tpd*.gbs>,<aug-cc-*tz*.gbs>,<aug-cc-*tpd*.gbs>,<d-aug-cc-*tz*.gbs>,<d-aug-cc-*tpd*.gbs>,<heavy-aug-cc-*tz*.gbs>,<heavy-aug-cc-*tpd*.gbs>);
+@HTDUNNING = (<cc-*tz*.gbs>,<cc-*tpd*.gbs>,<aug-cc-*tz*.gbs>,<aug-cc-*tpd*.gbs>,<d-aug-cc-*tz*.gbs>,<d-aug-cc-*tpd*.gbs>,<heavy-aug-cc-*tz*.gbs>,<heavy-aug-cc-*tpd*.gbs>,
+              <jun-cc-*tz*.gbs>,<jun-cc-*tpd*.gbs>,<may-cc-*tz*.gbs>,<may-cc-*tpd*.gbs>);
 foreach $gbs (@HTDUNNING) { htmlline($gbs); }
 
 print HTML_OUT "<tr><td><big><b>Dunning Q&#950;</b></big></td></tr>\n\n";
-@HQDUNNING = (<cc-*qz*.gbs>,<cc-*qpd*.gbs>,<aug-cc-*qz*.gbs>,<aug-cc-*qpd*.gbs>,<d-aug-cc-*qz*.gbs>,<d-aug-cc-*qpd*.gbs>,<heavy-aug-cc-*qz*.gbs>,<heavy-aug-cc-*qpd*.gbs>);
+@HQDUNNING = (<cc-*qz*.gbs>,<cc-*qpd*.gbs>,<aug-cc-*qz*.gbs>,<aug-cc-*qpd*.gbs>,<d-aug-cc-*qz*.gbs>,<d-aug-cc-*qpd*.gbs>,<heavy-aug-cc-*qz*.gbs>,<heavy-aug-cc-*qpd*.gbs>,
+              <jun-cc-*qz*.gbs>,<jun-cc-*qpd*.gbs>,<may-cc-*qz*.gbs>,<may-cc-*qpd*.gbs>,<apr-cc-*qz*.gbs>,<apr-cc-*qpd*.gbs>);
 foreach $gbs (@HQDUNNING) { htmlline($gbs); }
 
 print HTML_OUT "<tr><td><big><b>Dunning 5&#950;</b></big></td></tr>\n\n";
-@H5DUNNING = (<cc-*5z*.gbs>,<cc-*5pd*.gbs>,<aug-cc-*5z*.gbs>,<aug-cc-*5pd*.gbs>,<d-aug-cc-*5z*.gbs>,<d-aug-cc-*5pd*.gbs>,<heavy-aug-cc-*5z*.gbs>,<heavy-aug-cc-*5pd*.gbs>);
+@H5DUNNING = (<cc-*5z*.gbs>,<cc-*5pd*.gbs>,<aug-cc-*5z*.gbs>,<aug-cc-*5pd*.gbs>,<d-aug-cc-*5z*.gbs>,<d-aug-cc-*5pd*.gbs>,<heavy-aug-cc-*5z*.gbs>,<heavy-aug-cc-*5pd*.gbs>,
+              <jun-cc-*5z*.gbs>,<jun-cc-*5pd*.gbs>,<may-cc-*5z*.gbs>,<may-cc-*5pd*.gbs>,<apr-cc-*5z*.gbs>,<apr-cc-*5pd*.gbs>,<mar-cc-*5z*.gbs>,<mar-cc-*5pd*.gbs>);
 foreach $gbs (@H5DUNNING) { htmlline($gbs); }
 
 print HTML_OUT "<tr><td><big><b>Dunning 6&#950;</b></big></td></tr>\n\n";
-@H6DUNNING = (<cc-*6z*.gbs>,<cc-*6pd*.gbs>,<aug-cc-*6z*.gbs>,<aug-cc-*6pd*.gbs>,<d-aug-cc-*6z*.gbs>,<d-aug-cc-*6pd*.gbs>,<heavy-aug-cc-*6z*.gbs>,<heavy-aug-cc-*6pd*.gbs>);
+@H6DUNNING = (<cc-*6z*.gbs>,<cc-*6pd*.gbs>,<aug-cc-*6z*.gbs>,<aug-cc-*6pd*.gbs>,<d-aug-cc-*6z*.gbs>,<d-aug-cc-*6pd*.gbs>,<heavy-aug-cc-*6z*.gbs>,<heavy-aug-cc-*6pd*.gbs>,
+              <jun-cc-*6z*.gbs>,<jun-cc-*6pd*.gbs>,<may-cc-*6z*.gbs>,<may-cc-*6pd*.gbs>,<apr-cc-*6z*.gbs>,<apr-cc-*6pd*.gbs>,<mar-cc-*6z*.gbs>,<mar-cc-*6pd*.gbs>,
+              <feb-cc-*6z*.gbs>,<feb-cc-*6pd*.gbs>);
 foreach $gbs (@H6DUNNING) { htmlline($gbs); }
 
 @HCATBASIS = (@HPOPLE,@HAHLRICHS,@HDDUNNING,@HTDUNNING,@HQDUNNING,@H5DUNNING,@H6DUNNING);
