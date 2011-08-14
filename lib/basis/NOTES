@@ -1,3 +1,14 @@
+In vi, execute   set tabset=8   to view this document correctly.
+
+*******************************************************************************
+*******************************************************************************
+
+
+Friday, August 12, 2011 -- LAB
+
+[32]   The "months" basis sets systematically define degrees of truncation of the diffuse space as defined in Papajak & Truhlar JCTC 7 10 (2011). The basis aug-cc-pVDZ' is equivalent to jun-cc-pVDZ.
+
+
 *******************************************************************************
 *******************************************************************************
 
@@ -186,14 +197,41 @@ specification, the amendments (D) need to be made. Basis sets are available at z
 
 diffuse		=  diffuse-aug-cc-pvxz			DTQ56
 diffuse_xpd 	=  diffuse-aug-cc-pv_xpd_z		DTQ56	only def. for Al-Ar, other elements appended from diffuse-aug-cc-pvxz
+diffuse_ri	=  diffuse-aug-cc-pvxz-ri		DTQ56
+diffuse_jk	=  molpro-diffuse-aug-cc-pvxz-jkfit	DTQ5
+diffuse_dk      =  diffuse-aug-cc-pvxz-dk               DTQ5
+
 d-diffuse	=  diffuse-d-aug-cc-pvxz		DTQ56
 d-diffuse_xpd	=  DNE					-----
-diffuse_ri	=  diffuse-aug-cc-pvxz-ri		DTQ56
 d-diffuse_ri	=  DNE					-----
-diffuse_jk	=  molpro-diffuse-aug-cc-pvxz-jkfit	DTQ5
 d-diffuse_jk	=  DNE					-----
-diffuse_dk      =  diffuse-aug-cc-pvxz-dk               DTQ5
 d-diffuse_dk    =  DNE                                  -----
+
+diffuse_jun     =  diffuse-jun-cc-pvxz                  DTQ56
+diffuse_may     =  diffuse-may-cc-pvxz                  -TQ56
+diffuse_apr     =  diffuse-apr-cc-pvxz                  --Q56
+diffuse_mar     =  diffuse-mar-cc-pvxz                  ---56
+diffuse_feb     =  diffuse-feb-cc-pvxz                  ----6
+diffuse_jun_xpd =  diffuse-jun-cc-pv_xpd_z		DTQ56	only def. for Al-Ar, other elements appended from diffuse-jun-cc-pvxz
+diffuse_may_xpd =  diffuse-may-cc-pv_xpd_z		-TQ56	only def. for Al-Ar, other elements appended from diffuse-may-cc-pvxz
+diffuse_apr_xpd =  diffuse-apr-cc-pv_xpd_z		--Q56	only def. for Al-Ar, other elements appended from diffuse-apr-cc-pvxz
+diffuse_mar_xpd =  diffuse-mar-cc-pv_xpd_z		---56	only def. for Al-Ar, other elements appended from diffuse-mar-cc-pvxz
+diffuse_feb_xpd =  diffuse-feb-cc-pv_xpd_z		----6	only def. for Al-Ar, other elements appended from diffuse-feb-cc-pvxz
+diffuse_jun_ri	=  diffuse-jun-cc-pvxz-ri		DTQ56
+diffuse_may_ri	=  diffuse-may-cc-pvxz-ri		-TQ56
+diffuse_apr_ri	=  diffuse-apr-cc-pvxz-ri		--Q56
+diffuse_mar_ri	=  diffuse-mar-cc-pvxz-ri		---56
+diffuse_feb_ri	=  diffuse-feb-cc-pvxz-ri		----6
+diffuse_jun_jk	=  diffuse-jun-cc-pvxz-jkfit	        DTQ5
+diffuse_may_jk	=  diffuse-may-cc-pvxz-jkfit	        -TQ5
+diffuse_apr_jk	=  diffuse-apr-cc-pvxz-jkfit	        --Q5
+diffuse_mar_jk	=  diffuse-mar-cc-pvxz-jkfit	        ---5
+diffuse_feb_jk	=  diffuse-feb-cc-pvxz-jkfit	        -----
+diffuse_jun_dk  =  DNE                                  -----   
+diffuse_may_dk  =  DNE                                  -----   
+diffuse_apr_dk  =  DNE                                  -----   
+diffuse_mar_dk  =  DNE                                  -----   
+diffuse_feb_dk  =  DNE                                  -----   
 
 core		=  corevalence-cc-pcvxz			DTQ56	blanks-added-for: H,He
 w-core		=  tight-cc-pwcvxz			DTQ5	blanks-added-for: H,He
@@ -205,17 +243,43 @@ core_dk         =  --> corevalence-cc-pcvxz
 w-core_dk       =  DNE
 
 
-detailed description of necessary constructions
-2		=  basis-cc-pvxz.gbs with elements Al-Ar replaced by basis-cc-pv_xpd_z.gbs [net change compared to 1 is (for Al-Ar) new 
-		   exponents for all d-orbitals and one extra d-orbital]
-diffuse_xpd 	=  diffuse-aug-cc-pvxz.gbs with elements Al-Ar replaced by diffuse-aug-cc-pv_xpd_z.gbs [net change compared to diffuse is 
-		   (for Al-Ar) a new exponent for the d-orbital]
-core		=  corevalence-cc-pcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
-w-core		=  tight-cc-pwcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
-w-core_ri	=  tight-cc-pwcvxz-ri.gbs with blank entries added for H and He, which require no supplementary functions to describe core
+detailed description of necessary constructions performed by make_dunning.pl
+2               =  basis-cc-pvxz.gbs with elements Al-Ar replaced by basis-cc-pv_xpd_z.gbs [net change compared to 1 is (for Al-Ar) new
+                   exponents for all d-orbitals and one extra d-orbital]
+diffuse_xpd     =  diffuse-aug-cc-pvxz.gbs with elements Al-Ar replaced by diffuse-aug-cc-pv_xpd_z.gbs [net change compared to diffuse is
+                   (for Al-Ar) a new exponent for the d-orbital]
+core            =  corevalence-cc-pcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
+w-core          =  tight-cc-pwcvxz.gbs with blank entries added for H and He, which require no supplementary functions to describe core
+w-core_ri       =  tight-cc-pwcvxz-ri.gbs with blank entries added for H and He, which require no supplementary functions to describe core
 core_dk         =  same as core
 w-core_dk       =  cc-pwcvxz-dk almost but not quite disentanglable into cc-pvxz-dk + w-core_dk, so cc-pwcvxz-dk must be defined in its
-                   own right and w-core_dk remain undefined 
+                   own right and w-core_dk remain undefined
+
+
+detailed description of necessary constructions performed by hand
+diffuse_jun     =  diffuse-aug-cc-pvxz with elements Sc-Zn removed (if present), elements H-He emptied of basis functions, and
+                   for the remaining elements the highest angmom removed [D for DZ through I for 6Z]
+diffuse_may     =  diffuse-jun-cc-pvxz with the highest angmom removed [D for TZ through H for 6Z]
+diffuse_apr     =  diffuse-may-cc-pvxz with the highest angmom removed [D for QZ through G for 6Z]
+diffuse_mar     =  diffuse-apr-cc-pvxz with the highest angmom removed [D for 5Z through F for 6Z]
+diffuse_feb     =  diffuse-mar-cc-pvxz with the highest angmom removed [D for 6Z]
+diffuse_jun_xpd =  diffuse-aug-cc-pv_xpd_z with the highest angmom removed [D for DZ through I for 6Z]
+diffuse_may_xpd =  diffuse-jun-cc-pv_xpd_z with the highest angmom removed [D for TZ through H for 6Z]
+diffuse_apr_xpd =  diffuse-may-cc-pv_xpd_z with the highest angmom removed [D for QZ through G for 6Z]
+diffuse_mar_xpd =  diffuse-apr-cc-pv_xpd_z with the highest angmom removed [D for 5Z through F for 6Z]
+diffuse_feb_xpd =  diffuse-mar-cc-pv_xpd_z with the highest angmom removed [D for 6Z]
+diffuse_jun_ri  =  diffuse-aug-cc-pvxz-ri with elements H-He emptied of basis functions and
+                   for the remaining elements the highest angmom removed [F for DZ through K for 6Z]
+diffuse_may_ri  =  diffuse-jun-cc-pvxz-ri with the highest angmom removed [F for TZ through I for 6Z]
+diffuse_apr_ri  =  diffuse-may-cc-pvxz-ri with the highest angmom removed [F for QZ through H for 6Z]
+diffuse_mar_ri  =  diffuse-apr-cc-pvxz-ri with the highest angmom removed [F for 5Z through G for 6Z]
+diffuse_feb_ri  =  diffuse-mar-cc-pvxz-ri with the highest angmom removed [F for 6Z]
+diffuse_jun_jk  =  diffuse-aug-cc-pvxz-jkfit with elements H-He emptied of basis functions and
+                   for the remaining elements the highest angmom removed [F for DZ through K for 6Z], for Ga-Kr keep one (larger) when F or G on ax
+diffuse_may_jk  =  diffuse-jun-cc-pvxz-jkfit with the highest angmom removed [F for TZ through I for 6Z], for Ga-Kr keep one (larger) when F or G on ax
+diffuse_apr_jk  =  diffuse-may-cc-pvxz-jkfit with the highest angmom removed [F for QZ through H for 6Z], for Ga-Kr keep one (larger) when F or G on ax
+diffuse_mar_jk  =  diffuse-apr-cc-pvxz-jkfit with the highest angmom removed [F for 5Z through G for 6Z], for Ga-Kr keep one (larger) when F or G on ax
+diffuse_feb_jk  =  diffuse-mar-cc-pvxz-jkfit with the highest angmom removed [F for 6Z through], for Ga-Kr keep one (larger) when F or G on ax
 
 key
 [elem: label]	=  elements in list elem are taken from basis set label
@@ -246,6 +310,41 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  heavy-aug-cc-pwCVXZ		77	=  11 [H-He:  1]		=   1 + w-core + diffuse [H-He:  1]			DTQ5
 !  heavy-aug-cc-pwCV(X+d)Z	78	=  12 [H-He:  1]		=   2 + w-core + diffuse_xpd [H-He:  1]			DTQ5
 
+!  jun-cc-pVXZ                 121      =   1 + diffuse_jun             =   1 + diffuse_jun                                     DTQ56
+!  jun-cc-pV(X+d)Z             122      =   2 + diffuse_jun_xpd         =   2 + diffuse_jun_xpd                                 DTQ56
+!  jun-cc-pCVXZ                123      =   3 + diffuse_jun             =   1 + core + diffuse_jun                              DTQ56
+!  jun-cc-pCV(X+d)Z            124      =   4 + diffuse_jun_xpd         =   2 + core + diffuse_jun_xpd                          DTQ56
+!  jun-cc-pwCVXZ               125      =   5 + diffuse_jun             =   1 + w-core + diffuse_jun                            DTQ5
+!  jun-cc-pwCV(X+d)Z           126      =   6 + diffuse_jun_xpd         =   2 + w-core + diffuse_jun_xpd                        DTQ5
+
+!  may-cc-pVXZ                 127      =   1 + diffuse_may             =   1 + diffuse_may                                     -TQ56
+!  may-cc-pV(X+d)Z             128      =   2 + diffuse_may_xpd         =   2 + diffuse_may_xpd                                 -TQ56
+!  may-cc-pCVXZ                129      =   3 + diffuse_may             =   1 + core + diffuse_may                              -TQ56
+!  may-cc-pCV(X+d)Z            130      =   4 + diffuse_may_xpd         =   2 + core + diffuse_may_xpd                          -TQ56
+!  may-cc-pwCVXZ               131      =   5 + diffuse_may             =   1 + w-core + diffuse_may                            -TQ5
+!  may-cc-pwCV(X+d)Z           132      =   6 + diffuse_may_xpd         =   2 + w-core + diffuse_may_xpd                        -TQ5
+
+!  apr-cc-pVXZ                 133      =   1 + diffuse_apr             =   1 + diffuse_apr                                     --Q56
+!  apr-cc-pV(X+d)Z             134      =   2 + diffuse_apr_xpd         =   2 + diffuse_apr_xpd                                 --Q56
+!  apr-cc-pCVXZ                135      =   3 + diffuse_apr             =   1 + core + diffuse_apr                              --Q56
+!  apr-cc-pCV(X+d)Z            136      =   4 + diffuse_apr_xpd         =   2 + core + diffuse_apr_xpd                          --Q56
+!  apr-cc-pwCVXZ               137      =   5 + diffuse_apr             =   1 + w-core + diffuse_apr                            --Q5
+!  apr-cc-pwCV(X+d)Z           138      =   6 + diffuse_apr_xpd         =   2 + w-core + diffuse_apr_xpd                        --Q5
+
+!  mar-cc-pVXZ                 139      =   1 + diffuse_mar             =   1 + diffuse_mar                                     ---56
+!  mar-cc-pV(X+d)Z             140      =   2 + diffuse_mar_xpd         =   2 + diffuse_mar_xpd                                 ---56
+!  mar-cc-pCVXZ                141      =   3 + diffuse_mar             =   1 + core + diffuse_mar                              ---56
+!  mar-cc-pCV(X+d)Z            142      =   4 + diffuse_mar_xpd         =   2 + core + diffuse_mar_xpd                          ---56
+!  mar-cc-pwCVXZ               143      =   5 + diffuse_mar             =   1 + w-core + diffuse_mar                            ---5
+!  mar-cc-pwCV(X+d)Z           144      =   6 + diffuse_mar_xpd         =   2 + w-core + diffuse_mar_xpd                        ---5
+
+!  feb-cc-pVXZ                 145      =   1 + diffuse_feb             =   1 + diffuse_feb                                     ----6
+!  feb-cc-pV(X+d)Z             146      =   2 + diffuse_feb_xpd         =   2 + diffuse_feb_xpd                                 ----6
+!  feb-cc-pCVXZ                147      =   3 + diffuse_feb             =   1 + core + diffuse_feb                              ----6
+!  feb-cc-pCV(X+d)Z            148      =   4 + diffuse_feb_xpd         =   2 + core + diffuse_feb_xpd                          ----6
+!  feb-cc-pwCVXZ               149      =   5 + diffuse_feb             =   1 + w-core + diffuse_feb                            -----
+!  feb-cc-pwCV(X+d)Z           150      =   6 + diffuse_feb_xpd         =   2 + w-core + diffuse_feb_xpd                        -----
+
 !  d-aug-cc-pVXZ		13	=   7 + d-diffuse		=   1 + diffuse + d-diffuse				DTQ56
 !  d-aug-cc-pV(X+d)Z		14	=   8 + d-diffuse_xpd		=   2 + diffuse_xpd + d-diffuse_xpd			-----
 !  d-aug-cc-pCVXZ		15	=   9 + d-diffuse		=   1 + core + diffuse + d-diffuse			DTQ56
@@ -275,6 +374,41 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  heavy-aug-cc-pwCVXZ-RI	83	=  29 [H-He: 19]		=  19 + w-core_ri + diffuse_ri [H-He: 19]		DTQ5
 !  heavy-aug-cc-pwCV(X+d)Z-RI	84	=  83				=  19 + w-core_ri + diffuse_ri [H-He: 19]		DTQ5
 
+!  jun-cc-pVXZ-RI              151      =  19 + diffuse_jun_ri          =  19 + diffuse_jun_ri                                  DTQ56
+!  jun-cc-pV(X+d)Z-RI          152      = 151                           =  19 + diffuse_jun_ri                                  DTQ56
+!  jun-cc-pCVXZ-RI             153      =  21 + diffuse_jun_ri          =  19 + core_ri + diffuse_jun_ri                        -----
+!  jun-cc-pCV(X+d)Z-RI         154      = 153                           =  19 + cori_ri + diffuse_jun_ri                        -----
+!  jun-cc-pwCVXZ-RI            155      =  23 + diffuse_jun_ri          =  19 + w-core_ri + diffuse_jun_ri                      DTQ5
+!  jun-cc-pwCV(X+d)Z-RI        156      = 155                           =  19 + w-core_ri + diffuse_jun_ri                      DTQ5
+
+!  may-cc-pVXZ-RI              157      =  19 + diffuse_may_ri          =  19 + diffuse_may_ri                                  -TQ56
+!  may-cc-pV(X+d)Z-RI          158      = 157                           =  19 + diffuse_may_ri                                  -TQ56
+!  may-cc-pCVXZ-RI             159      =  21 + diffuse_may_ri          =  19 + core_ri + diffuse_may_ri                        -----
+!  may-cc-pCV(X+d)Z-RI         160      = 159                           =  19 + cori_ri + diffuse_may_ri                        -----
+!  may-cc-pwCVXZ-RI            161      =  23 + diffuse_may_ri          =  19 + w-core_ri + diffuse_may_ri                      -TQ5
+!  may-cc-pwCV(X+d)Z-RI        162      = 161                           =  19 + w-core_ri + diffuse_may_ri                      -TQ5
+
+!  apr-cc-pVXZ-RI              163      =  19 + diffuse_apr_ri          =  19 + diffuse_apr_ri                                  --Q56
+!  apr-cc-pV(X+d)Z-RI          164      = 163                           =  19 + diffuse_apr_ri                                  --Q56
+!  apr-cc-pCVXZ-RI             165      =  21 + diffuse_apr_ri          =  19 + core_ri + diffuse_apr_ri                        -----
+!  apr-cc-pCV(X+d)Z-RI         166      = 165                           =  19 + cori_ri + diffuse_apr_ri                        -----
+!  apr-cc-pwCVXZ-RI            167      =  23 + diffuse_apr_ri          =  19 + w-core_ri + diffuse_apr_ri                      --Q5
+!  apr-cc-pwCV(X+d)Z-RI        168      = 167                           =  19 + w-core_ri + diffuse_apr_ri                      --Q5
+
+!  mar-cc-pVXZ-RI              169      =  19 + diffuse_mar_ri          =  19 + diffuse_mar_ri                                  ---56
+!  mar-cc-pV(X+d)Z-RI          170      = 169                           =  19 + diffuse_mar_ri                                  ---56
+!  mar-cc-pCVXZ-RI             171      =  21 + diffuse_mar_ri          =  19 + core_ri + diffuse_mar_ri                        -----
+!  mar-cc-pCV(X+d)Z-RI         172      = 171                           =  19 + cori_ri + diffuse_mar_ri                        -----
+!  mar-cc-pwCVXZ-RI            173      =  23 + diffuse_mar_ri          =  19 + w-core_ri + diffuse_mar_ri                      ---5
+!  mar-cc-pwCV(X+d)Z-RI        174      = 173                           =  19 + w-core_ri + diffuse_mar_ri                      ---5
+
+!  feb-cc-pVXZ-RI              175      =  19 + diffuse_feb_ri          =  19 + diffuse_feb_ri                                  ----6
+!  feb-cc-pV(X+d)Z-RI          176      = 175                           =  19 + diffuse_feb_ri                                  ----6
+!  feb-cc-pCVXZ-RI             177      =  21 + diffuse_feb_ri          =  19 + core_ri + diffuse_feb_ri                        -----
+!  feb-cc-pCV(X+d)Z-RI         178      = 177                           =  19 + cori_ri + diffuse_feb_ri                        -----
+!  feb-cc-pwCVXZ-RI            179      =  23 + diffuse_feb_ri          =  19 + w-core_ri + diffuse_feb_ri                      -----
+!  feb-cc-pwCV(X+d)Z-RI        180      = 179                           =  19 + w-core_ri + diffuse_feb_ri                      -----
+
 !  d-aug-cc-pVXZ-RI		31	=  25 + d-diffuse_ri		=  19 + diffuse_ri + d-diffuse_ri			-----
 !  d-aug-cc-pV(X+d)Z-RI		32	=  31				=  19 + diffuse_ri + d-diffuse_ri			-----
 !  d-aug-cc-pCVXZ-RI		33	=  27 + d-diffuse_ri		=  19 + core_ri + diffuse_ri + d-diffuse_ri		-----
@@ -303,6 +437,41 @@ basis				label	straightforward_construction	fundamental_construction				availabl
 !  heavy-aug-cc-pCV(X+d)Z-JKFIT	88	=  87				=  37 + core_jk + diffuse_jk [H-He: 37]			-----
 !  heavy-aug-cc-pwCVXZ-JKFIT	89	=  47 [H-He: 37]		=  37 + w-core_jk + diffuse_jk [H-He: 37]		-----
 !  heavy-aug-cc-pwCV(X+d)Z-JKFIT90	=  89				=  37 + w-core_jk + diffuse_jk [H-He: 37]		-----
+
+!  jun-cc-pVXZ-JKFIT           181      =  37 + diffuse_jun_jk          =  37 + diffuse_jun_jk                                  DTQ5
+!  jun-cc-pV(X+d)Z-JKFIT       182      = 181                           =  37 + diffuse_jun_jk                                  DTQ5
+!  jun-cc-pCVXZ-JKFIT          183      =  39 + diffuse_jun_jk          =  37 + core_jk + diffuse_jun_jk                        -----
+!  jun-cc-pCV(X+d)Z-JKFIT      184      = 183                           =  37 + core_jk + diffuse_jun_jk                        -----
+!  jun-cc-pwCVXZ-JKFIT         185      =  41 + diffuse_jun_jk          =  37 + w-core_jk + diffuse_jun_jk                      -----
+!  jun-cc-pwCV(X+d)Z-JKFIT     186      = 185                           =  37 + w-core_jk + diffuse_jun_jk                      -----
+
+!  may-cc-pVXZ-JKFIT           187      =  37 + diffuse_may_jk          =  37 + diffuse_may_jk                                  -TQ5
+!  may-cc-pV(X+d)Z-JKFIT       188      = 187                           =  37 + diffuse_may_jk                                  -TQ5
+!  may-cc-pCVXZ-JKFIT          189      =  39 + diffuse_may_jk          =  37 + core_jk + diffuse_may_jk                        -----
+!  may-cc-pCV(X+d)Z-JKFIT      190      = 189                           =  37 + core_jk + diffuse_may_jk                        -----
+!  may-cc-pwCVXZ-JKFIT         191      =  41 + diffuse_may_jk          =  37 + w-core_jk + diffuse_may_jk                      -----
+!  may-cc-pwCV(X+d)Z-JKFIT     192      = 191                           =  37 + w-core_jk + diffuse_may_jk                      -----
+
+!  apr-cc-pVXZ-JKFIT           193      =  37 + diffuse_apr_jk          =  37 + diffuse_apr_jk                                  --Q5
+!  apr-cc-pV(X+d)Z-JKFIT       194      = 193                           =  37 + diffuse_apr_jk                                  --Q5
+!  apr-cc-pCVXZ-JKFIT          195      =  39 + diffuse_apr_jk          =  37 + core_jk + diffuse_apr_jk                        -----
+!  apr-cc-pCV(X+d)Z-JKFIT      196      = 195                           =  37 + core_jk + diffuse_apr_jk                        -----
+!  apr-cc-pwCVXZ-JKFIT         197      =  41 + diffuse_apr_jk          =  37 + w-core_jk + diffuse_apr_jk                      -----
+!  apr-cc-pwCV(X+d)Z-JKFIT     198      = 197                           =  37 + w-core_jk + diffuse_apr_jk                      -----
+
+!  mar-cc-pVXZ-JKFIT           199      =  37 + diffuse_mar_jk          =  37 + diffuse_mar_jk                                  ---5
+!  mar-cc-pV(X+d)Z-JKFIT       200      = 199                           =  37 + diffuse_mar_jk                                  ---5
+!  mar-cc-pCVXZ-JKFIT          201      =  39 + diffuse_mar_jk          =  37 + core_jk + diffuse_mar_jk                        -----
+!  mar-cc-pCV(X+d)Z-JKFIT      202      = 201                           =  37 + core_jk + diffuse_mar_jk                        -----
+!  mar-cc-pwCVXZ-JKFIT         203      =  41 + diffuse_mar_jk          =  37 + w-core_jk + diffuse_mar_jk                      -----
+!  mar-cc-pwCV(X+d)Z-JKFIT     204      = 203                           =  37 + w-core_jk + diffuse_mar_jk                      -----
+
+!  feb-cc-pVXZ-JKFIT           205      =  37 + diffuse_feb_jk          =  37 + diffuse_feb_jk                                  -----
+!  feb-cc-pV(X+d)Z-JKFIT       206      = 205                           =  37 + diffuse_feb_jk                                  -----
+!  feb-cc-pCVXZ-JKFIT          207      =  39 + diffuse_feb_jk          =  37 + core_jk + diffuse_feb_jk                        -----
+!  feb-cc-pCV(X+d)Z-JKFIT      208      = 207                           =  37 + core_jk + diffuse_feb_jk                        -----
+!  feb-cc-pwCVXZ-JKFIT         209      =  41 + diffuse_feb_jk          =  37 + w-core_jk + diffuse_feb_jk                      -----
+!  feb-cc-pwCV(X+d)Z-JKFIT     210      = 209                           =  37 + w-core_jk + diffuse_feb_jk                      -----
 
 !  d-aug-cc-pVXZ-JKFIT		49	=  43 + d-diffuse_jk		=  37 + diffuse_jk + d-diffuse_jk			-----
 !  d-aug-cc-pV(X+d)Z-JKFIT	50	=  49				=  37 + diffuse_jk + d-diffuse_jk			-----
