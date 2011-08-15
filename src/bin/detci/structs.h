@@ -317,6 +317,9 @@ struct calcinfo {
 struct params {
    std::string dertype;/* derivative level: none, first, etc */
    std::string wfn;    /* wavefunction type: CI, DETCAS, etc. */
+   std::string ref;    /* reference type (RHF, ROHF); ROHF with MULTP=1
+                          is an open-shell singlet */
+   int multp;        /* multiplicity (2S+1) */
    int write_energy; /* flag to write energies to detci_energies.dat */
    int filter_ints;  /* true (1) if some integrals in tei file to be ignored */
    int ex_lvl;       /* excitation level */
