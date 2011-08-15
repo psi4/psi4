@@ -335,10 +335,33 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::compute_energy_tau_squared()
   {
-      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(so_h_);
-      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(so_h_);
-      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(Fa_);
-      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(Fb_);
+
+      SharedMatrix moHa(new Matrix("Core Hamiltonian in the MO basis (Alpha spin)", nirrep_, nmopi_, nmopi_));
+      SharedMatrix moHb(new Matrix("Core Hamiltonian in the MO basis (Beta spin)", nirrep_, nmopi_, nmopi_));
+      moHa->copy(so_h_);
+      moHb->copy(so_h_);
+      moHa->transform(Ca_);
+      moHb->transform(Cb_);
+
+//      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(so_h_);
+//      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(so_h_);
+//      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(Fa_);
+//      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(Fb_);
+
+      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moHa);
+      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moHb);
+      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moFa_);
+      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moFb_);
+
+      fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction (0.5 * H * TT)          = %20.15f\n", 0.5 * a_tautau_->vector_dot(moHa) + 0.5 * b_tautau_->vector_dot(moHb));
+      fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction (0.5 * F * TT)          = %20.15f\n", 0.5 * a_tautau_->vector_dot(moFa_) + 0.5 * b_tautau_->vector_dot(moFb_));
+
+      so_h_->print();
+      Ca_->print();
+      a_tautau_->print();
+      moHa->print();
+      moFa_->print();
+
   }
 
   /**
