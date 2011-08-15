@@ -89,9 +89,19 @@ void get_parameters(void)
 
   Parameters.num_roots = options.get_int("NUM_ROOTS");
  
-  // CDS-TODO: Correct conversion of boolean to integer?
   Parameters.istop = options["ISTOP"].to_integer();
   Parameters.print_ciblks = options["PRINT_CIBLKS"].to_integer();
+
+  // CDS-TODO: We might override the default for PRINT by command line
+  // (or similar mechanism) in CASSCF, etc.
+  if (Parameters.wfn == "DETCAS" ||
+      Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
+    Parameters.print = 0;
+  else
+    Parameters.print = 1;
+  if (options["PRINT"].has_changed()) {
+    Parameters.print = options.get_int("PRINT");
+  }
 
   Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
 
@@ -149,131 +159,80 @@ void get_parameters(void)
   Parameters.first_d_tmp_unit = 0;
   Parameters.num_d_tmp_units = 0;
    
-*  Parameters.restart = 0;
-*  Parameters.bendazzoli = 0;
+  Parameters.cc = options["CC"].to_integer();
 
-*  Parameters.cc = 0;
-   errcod = ip_boolean("CC",&(Parameters.cc),0);
-
-   if (Parameters.dertype == "FIRST" ||
+  if (Parameters.dertype == "FIRST" ||
       Parameters.wfn == "DETCAS" ||
       Parameters.wfn == "CASSCF" ||
       Parameters.wfn == "RASSCF")
-   {
-*    Parameters.convergence = 7;
-*    Parameters.energy_convergence = 8;
-*    Parameters.opdm = 1;
-X    Parameters.opdm_write = 1;
-*    Parameters.tpdm = 1;
-X    Parameters.tpdm_write = 1;
-*    Parameters.maxiter = 12;
-   }
+  {
+     Parameters.convergence = 7;
+     Parameters.energy_convergence = 8;
+     Parameters.opdm = 1;
+     Parameters.opdm_write = 1;
+     Parameters.tpdm = 1;
+     Parameters.tpdm_write = 1;
+     Parameters.maxiter = 12;
+  }
 
-   else {
-     if (Parameters.cc) {
-       Parameters.convergence = 5;
-       Parameters.energy_convergence = 7;
-       Parameters.maxiter = 20;
-     }
-     else {
-       Parameters.convergence = 4;
-       Parameters.energy_convergence = 6;
-       Parameters.maxiter = 12;
-     }
-     Parameters.opdm = 0;
-     Parameters.opdm_write = 0;
-     Parameters.tpdm = 0;
-     Parameters.tpdm_write = 0;
-   }
+  else {
+    if (Parameters.cc) {
+      Parameters.convergence = 5;
+      Parameters.energy_convergence = 7;
+      Parameters.maxiter = 20;
+    }
+    else {
+      Parameters.convergence = 4;
+      Parameters.energy_convergence = 6;
+      Parameters.maxiter = 12;
+    }
+    Parameters.opdm = 0;
+    Parameters.opdm_write = 0;
+    Parameters.tpdm = 0;
+    Parameters.tpdm_write = 0;
+  }
 
-X  Parameters.opdm_file = PSIF_MO_OPDM;
-*  Parameters.opdm_print = 0;
-X  Parameters.opdm_diag = 0;
-*  Parameters.opdm_wrtnos = 0;
-X  Parameters.opdm_orbsfile = 76;
-*  Parameters.opdm_ave = 0;
-*  Parameters.opdm_orbs_root = -1;
-*  Parameters.opdm_ke = 0;
-X  Parameters.tpdm_file = PSIF_MO_TPDM;
-*  Parameters.tpdm_print = 0;
-*  Parameters.root = 1;
+  Parameters.opdm_file = PSIF_MO_OPDM;
+  Parameters.opdm_diag = 0;
+  Parameters.opdm_wrtnos = 0;
+  Parameters.opdm_orbsfile = 76;
+  Parameters.tpdm_file = PSIF_MO_TPDM;
 
-*  Parameters.nthreads = 1;
-*  Parameters.sf_restrict = 0;
-*  Parameters.print_sigma_overlap = 0;
+  if (options["MAXITER"].has_changed()) {
+    Parameters.maxiter = options.get_int("MAXITER");
+  }
+  if (options["CONVERGENCE"].has_changed()) {
+    Parameters.convergence = options.get_int("CONVERGENCE");
+  }
+  if (options["ENERGY_CONVERGENCE"].has_changed()) {
+    Parameters.energy_convergence = options.get_int("ENERGY_CONVERGENCE");
+  }
 
-   tval = 1;
-   if (ip_exist("MULTP",0)) {
-*    errcod = ip_data("MULTP","%d",&tval,0);
-   }
-*  Parameters.S = (((double) tval) - 1.0) / 2.0;
-   errcod = ip_data("S","%lf",&(Parameters.S),0);
+  Parameters.multp = options.get_int("MULTP");
+  Parameters.S = (((double) Parameters.multp) - 1.0) / 2.0;
+  if (options["S"].has_changed())
+    Parameters.S = options.get_double("S");
 
-   errcod = ip_data("EX_LVL","%d",&(Parameters.ex_lvl),0);
-   errcod = ip_data("CC_EX_LVL","%d",&(Parameters.cc_ex_lvl),0);
-   errcod = ip_data("VAL_EX_LVL","%d",&(Parameters.val_ex_lvl),0);
-   errcod = ip_data("CC_VAL_EX_LVL","%d",&(Parameters.cc_val_ex_lvl),0);
-   errcod = ip_data("MAXITER","%d",&(Parameters.maxiter),0);
-   errcod = ip_data("NUM_ROOTS","%d",&(Parameters.num_roots),0);
-   errcod = ip_boolean("ISTOP",&(Parameters.istop),0);
-   errcod = ip_data("PRINT","%d",&(Parameters.print_lvl),0);
-   errcod = ip_boolean("PRINT_CIBLKS",&(Parameters.print_ciblks),0);
-   errcod = ip_data("CONVERGENCE","%d",&(Parameters.convergence),0);
-   errcod = ip_data("ENERGY_CONVERGENCE","%d",
-               &(Parameters.energy_convergence),0);
+  /* specify OPENTYPE (SINGLET if open-shell singlet) */
+  Parameters.ref = options.get_str("REFERENCE");
+  if (Parameters.ref == "RHF") {
+    Parameters.opentype = PARM_OPENTYPE_NONE;
+    Parameters.Ms0 = 1;
+  }
+  else if (Parameters.ref == "ROHF") {
+    if (Parameters.multp == 1) {
+      Parameters.opentype = PARM_OPENTYPE_SINGLET;
+      Parameters.Ms0 = 1;
+    }
+    else {
+      Parameters.opentype = PARM_OPENTYPE_HIGHSPIN;
+      Parameters.Ms0 = 0;
+    }
+  }  /* end ROHF parsing */
+  else Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
 
-   /* this handles backwards compatibility for PSI2 */
-   errcod = ip_data("OPENTYPE","%s",line1,0);
-   if (errcod == IPE_OK) {
-      if (strcmp(line1, "NONE")==0) { 
-         Parameters.opentype = PARM_OPENTYPE_NONE;
-         Parameters.Ms0 = 1;
-         }
-      else if (strcmp(line1, "HIGHSPIN")==0) {
-         Parameters.opentype = PARM_OPENTYPE_HIGHSPIN;
-         Parameters.Ms0 = 0;
-         }
-      else if (strcmp(line1, "SINGLET")==0) {
-         Parameters.opentype = PARM_OPENTYPE_SINGLET;
-         Parameters.Ms0 = 1;
-         }
-      else Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
-      } 
-   else { /* this handles new PSI3 keywords */
-     errcod = ip_data("REFERENCE","%s",line1,0);
-     /* fprintf(outfile, "line1 = "); 
-     for (int ij = 0; ij<3; ij++) fprintf(outfile, "%1c", line1[ij]); 
-     fprintf(outfile,"\n");
-     */
-     if (errcod == IPE_OK) {
-       if (strcmp(line1, "RHF")==0) {
-         Parameters.opentype = PARM_OPENTYPE_NONE;
-         Parameters.Ms0 = 1;
-         }
-       else if (strcmp(line1, "ROHF")==0) {
-         if (ip_data("MULTP","%d",&tval,0) == IPE_OK) {
-           if (tval == 1) {
-             Parameters.opentype = PARM_OPENTYPE_SINGLET;
-             Parameters.Ms0 = 1;
-             }
-           else {
-             Parameters.opentype = PARM_OPENTYPE_HIGHSPIN;
-             Parameters.Ms0 = 0;
-             }
-           }
-         else {
-           fprintf(outfile, "detci: trouble reading MULTP\n");
-           exit(0);
-           }
-         }  /* end ROHF parsing */
-       else {
-         fprintf(outfile, "detci: can only handle RHF or ROHF\n");
-         exit(0);
-         }
-       }
-     else Parameters.opentype = PARM_OPENTYPE_UNKNOWN;
-     } /* end PSI3 parsing */
-
+  // START HERE
+  //
 *  errcod = ip_boolean("MS0",&(Parameters.Ms0),0);
    errcod = ip_data("REF_SYM","%d",&(Parameters.ref_sym),0);
    errcod = ip_data("OEI_FILE","%d",&(Parameters.oei_file),0);
@@ -290,7 +249,6 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    errcod = ip_data("CC_NPRINT","%d",&(Parameters.cc_nprint),0);
    errcod = ip_boolean("DETCI_FREEZE_CORE",&(Parameters.fzc),0);
 
-   //CDS-TODO: Bool to Int
    if (options["FCI"].has_changed())
      Parameters.fci = options["FCI"].to_integer();
 
@@ -430,7 +388,6 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    Parameters.collapse_size = options.get_int("COLLAPSE_SIZE");
    if (Parameters.collapse_size < 1) Parameters.collapse_size = 1;
 
-   // CDS-TODO: Correct conversion of boolean to integer?
    Parameters.lse = options["LSE"].to_integer();
 
    Parameters.lse_collapse = options.get_int("LSE_COLLAPSE");
@@ -498,7 +455,8 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    if (Parameters.num_d_tmp_units == 0) 
      Parameters.num_d_tmp_units = 1;
 
-   errcod = ip_boolean("RESTART",&(Parameters.restart),0);
+   Parameters.restart = options["RESTART"].to_integer();
+
  /* obsolete due to new restart procedure
    errcod = ip_data("RESTART_ITER","%d",&(Parameters.restart_iter),0);
    errcod = ip_data("RESTART_VECS","%d",&(Parameters.restart_vecs),0);
@@ -507,27 +465,31 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
       exit(0);
       }
  */ 
-   errcod = ip_boolean("BENDAZZOLI",&(Parameters.bendazzoli),0) ;
+
+   Parameters.bendazzoli = options["BENDAZZOLI"].to_integer();
    if (Parameters.bendazzoli & !Parameters.fci) Parameters.bendazzoli=0;
 
    /* Parse the OPDM stuff.  It is possible to give incompatible options,
     * but we will try to eliminate some of those.  Parameters_opdm will
     * function as the master switch for all other OPDM parameters.
     */
-   errcod = ip_boolean("OPDM_PRINT",&(Parameters.opdm_print),0);
+   Parameters.opdm_print = options["OPDM_PRINT"].to_integer();
    // Make this an internal parameter
    // errcod = ip_data("OPDM_FILE","%d",&(Parameters.opdm_file),0);
    errcod = ip_boolean("WRTNOS",&(Parameters.opdm_wrtnos),0);
    // Make this an internal parameter, essentially same as WRTNOS
    // errcod = ip_boolean("OPDM_DIAG",&(Parameters.opdm_diag),0);
-   errcod = ip_boolean("OPDM_AVE",&(Parameters.opdm_ave),0);
+   Parameters.opdm_ave = options["OPDM_AVE"].to_integer();
    // Make an internal parameter
    // errcod = ip_data("ORBSFILE","%d",&(Parameters.opdm_orbsfile),0);
-   errcod = ip_data("ORBS_ROOT","%d",&(Parameters.opdm_orbs_root),0);
-   errcod = ip_boolean("OPDM_KE",&(Parameters.opdm_ke),0);
-   
-   if (Parameters.opdm_orbs_root != -1) Parameters.opdm_orbs_root -= 1;
+
+   // User numbering starts from 1, but internal numbering starts from 0
+   Parameters.opdm_orbs_root = options.get_int("ORBS_ROOT");
+   Parameters.opdm_orbs_root -= 1;
    if (Parameters.opdm_orbs_root < 0) Parameters.opdm_orbs_root = 0;
+   
+   Parameters.opdm_ke = options["OPDM_KE"].to_integer();
+   
    if (Parameters.opdm_wrtnos) Parameters.opdm_diag = 1;
    if (Parameters.opdm_print || Parameters.opdm_diag || Parameters.opdm_wrtnos 
        || Parameters.opdm_ave || Parameters.opdm_ke) Parameters.opdm = 1;
@@ -535,7 +497,6 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    if (Parameters.opdm) Parameters.opdm_write = 1;
 //   No reason why the user would need to change this, make internal param
 //   errcod = ip_boolean("OPDM_WRITE",&(Parameters.opdm_write),0);
-   errcod = ip_boolean("OPDM_PRINT",&(Parameters.opdm_print),0);
    errcod = ip_data("OPDM_DIAG","%d",&(Parameters.opdm_diag),0);
 
    /* transition density matrices */
@@ -563,14 +524,17 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
 *  errcod = ip_boolean("DIPMOM",&(Parameters.dipmom),0);
    if (Parameters.dipmom == 1) Parameters.opdm = 1; 
  
-   errcod = ip_data("ROOT","%d",&(Parameters.root),0);
+   Parameters.root = options.get_int("ROOT");
    Parameters.root -= 1;
+   if (Parameters.root < 0) Parameters.root = 0;
 
    errcod = ip_boolean("TPDM",&(Parameters.tpdm),0);
    if (Parameters.tpdm) Parameters.tpdm_write = 1;
 //   Made this an internal parameter
 //   errcod = ip_boolean("TPDM_WRITE",&(Parameters.tpdm_write),0);
-   errcod = ip_boolean("TPDM_PRINT",&(Parameters.tpdm_print),0);
+
+   Parameters.tpdm_print = options["TPDM_PRINT"].to_integer();
+
 //   Made this an internal parameter
 //   errcod = ip_data("TPDM_FILE","%d",&(Parameters.tpdm_file),0);
 
@@ -605,7 +569,7 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
    if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
      Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
-   errcod = ip_data("NTHREADS", "%d", &(Parameters.nthreads),0);
+   Parameters.nthreads = options.get_int("NTHREADS");
    if (Parameters.nthreads < 1) Parameters.nthreads = 1;
 
    Parameters.export_ci_vector = 0;
@@ -622,9 +586,9 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
      }
    } 
    
-   errcod = ip_boolean("SF_RESTRICT",&(Parameters.sf_restrict),0);
-   errcod = ip_boolean("SIGMA_OVERLAP",&(Parameters.print_sigma_overlap),0);
-   
+   Parameters.sf_restrict = options["SF_RESTRICT"].to_integer();
+   Parameters.print_sigma_overlap = options["SIGMA_OVERLAP"].to_integer();
+
    if (Parameters.cc) Parameters.ex_lvl = Parameters.cc_ex_lvl + 2;
 
    Parameters.ex_allow = (int *)malloc(Parameters.ex_lvl*sizeof(int));
@@ -748,9 +712,9 @@ X  Parameters.tpdm_file = PSIF_MO_TPDM;
        }
      }
       
-   if (Parameters.average_num > 1) Parameters.opdm_ave = 1;
+     if (Parameters.average_num > 1) Parameters.opdm_ave = 1;
 
-     if ((!ip_exist("ROOT",0)) && (Parameters.average_num==1)) {
+     if ((!options["ROOT"].has_changed()) && (Parameters.average_num==1)) {
        Parameters.root = Parameters.average_states[0];
      }
    }

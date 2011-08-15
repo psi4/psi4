@@ -1,0 +1,23 @@
+molecule n2 {
+  N
+  N 1 R
+
+  R = 1.11
+}
+
+plugin_load("./plugin_testparse.so")
+
+set {
+  basis cc-pVDZ
+  guess core
+  reference rhf
+  opt2 2
+  testbool false
+}
+
+set plugin_testparse {
+  opt3 3
+}
+
+plugin("plugin_testparse.so")
+
