@@ -1,3 +1,9 @@
+%
+% NOTE: These macros depend on the packages fancyvrb and xspace.
+% Any .tex files including this macro file need to include
+% \usepackage{fancyvrb}
+% \usepackage{xspace}
+%
 
 \newcommand{\PSI}{{\tt PSI}\xspace}
 \newcommand{\PSItwo}{{\tt PSI2}\xspace}
