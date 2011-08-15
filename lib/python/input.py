@@ -32,6 +32,12 @@ def quotify(string):
     return string
 
 def process_option(spaces, module, key, value, line):
+    if re.match('basis', key.lower()):
+        value = re.sub(',', '_', value)
+        value = re.sub('\(', '_', value)
+        value = re.sub('\)', '_', value)
+        value = re.sub('\+', 'p', value)
+        value = re.sub('\*', 's', value)
     value  = quotify(value.strip())
     temp   = ""
 
