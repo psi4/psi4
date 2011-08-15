@@ -974,6 +974,10 @@ AC_CONFIG_FILES([include/Makefile
           tests/plugin_mointegrals/input.dat
           tests/plugin_mointegrals/mointegrals.cc
 
+          tests/plugin_testparse/Makefile
+          tests/plugin_testparse/input.dat
+          tests/plugin_testparse/plugin_testparse.cc
+
           bin/psi4-config
 ])
 

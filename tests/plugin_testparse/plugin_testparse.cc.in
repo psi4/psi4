@@ -1,0 +1,51 @@
+#include "psi4-dec.h"
+#include <liboptions/liboptions.h>
+#include <libplugin/plugin.h>
+
+INIT_PLUGIN
+
+using namespace boost;
+
+namespace psi{ namespace plugin_testparse{
+
+extern "C" int
+read_options(std::string name, Options &options){
+
+    fprintf(outfile, "read_options() is being called with name %s\n", 
+      name.c_str());
+
+    if(name == "PLUGIN_TESTPARSE" || options.read_globals() ) {
+        fprintf(outfile, "I'm inside the code block\n");
+        options.add_int("OPT1", 1);
+        options.add_int("OPT2", 1);
+        options.add_int("OPT3", 1);
+        options.add_str("REFERENCE", "");
+        options.add_bool("TESTBOOL", true);
+    }
+
+    return 1;
+}
+
+
+extern "C" PsiReturnType
+plugin_testparse(Options &options)
+{
+    int opt1 = options.get_int("OPT1");
+    int opt2 = options.get_int("OPT2");
+    int opt3 = options.get_int("OPT3");
+    // This will print out all of the user-provided options for this module
+    options.print();
+    fprintf(outfile, "opt1 (integer) = %d\n", opt1);
+    fprintf(outfile, "opt2 (integer) = %d\n", opt2);
+    fprintf(outfile, "opt3 (integer) = %d\n", opt3);
+    
+    // Test of trying to parse a boolean as an integer (backward
+    // compatibility for some of the old PSI3 modules) 
+    // int testbool = (int) options.get_bool("TESTBOOL");
+    int testbool = options["TESTBOOL"].to_integer();
+    fprintf(outfile, "testbool (integer) = %d\n", testbool);
+
+    return Success;   
+}
+
+}} // End Namespaces
