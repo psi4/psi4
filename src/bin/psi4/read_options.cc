@@ -95,9 +95,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- print a summary of the CI blocks? -*/
     options.add_bool("PRINT_CIBLKS",false);
 
-    /*- Open-shell type */
-    options.add_str("OPENTYPE", "NONE", "NONE HIGHSPIN SINGLET");
-
     /*- Guess vector type.  Accepted values are UNIT for a unit vector
     guess (NUM_ROOTS and NUM_INIT_VECS must both be 1); H0_BLOCK to use
     eigenvectors from the H0 BLOCK submatrix (default); DFILE to use
@@ -361,7 +358,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Sets the root number for which CI natural orbitals are written
     to PSIF_CHKPT.  The default value is 1 (lowest root). -*/
-    options.add_int("ORBS_ROOT", -1);
+    options.add_int("ORBS_ROOT", 1);
 
     /*- Compute the kinetic energy contribution from the correlated part of
     the one-particle density matrix !expert -*/
