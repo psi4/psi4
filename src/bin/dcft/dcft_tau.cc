@@ -103,6 +103,10 @@ DCFTSolver::build_tau()
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
+//  Zero AO tau arrays before copmputing it in the MO basis
+    a_tau_->zero();
+    b_tau_->zero();
+
     for(int h = 0; h < nirrep_; ++h){
         if(nsopi_[h] == 0) continue;
 
@@ -123,14 +127,14 @@ DCFTSolver::build_tau()
             C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h],
                     T_OO.matrix[h][0], naoccpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h],
-                    paOccC[0], naoccpi_[h], 0.0, pa_tau_[0], nsopi_[h]);
+                    paOccC[0], naoccpi_[h], 1.0, pa_tau_[0], nsopi_[h]);
         }
         // Beta occupied
         if(nboccpi_[h] && nsopi_[h]){
             C_DGEMM('n', 'n', nsopi_[h], nboccpi_[h], nboccpi_[h], 1.0, pbOccC[0], nboccpi_[h],
                     T_oo.matrix[h][0], nboccpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], nboccpi_[h], 1.0, temp[0], nsopi_[h],
-                    pbOccC[0], nboccpi_[h], 0.0, pb_tau_[0], nsopi_[h]);
+                    pbOccC[0], nboccpi_[h], 1.0, pb_tau_[0], nsopi_[h]);
         }
         // Alpha virtual
         if(navirpi_[h] && nsopi_[h]){
@@ -226,6 +230,9 @@ DCFTSolver::compute_tau_squared()
         }
     }
 
+    a_tautau_->zero();
+    b_tautau_->zero();
+
     for(int h = 0; h < nirrep_; ++h){
         if(nsopi_[h] == 0) continue;
 
@@ -247,14 +254,14 @@ DCFTSolver::compute_tau_squared()
             C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h],
                     TT_OO.matrix[h][0], naoccpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h],
-                    paOccC[0], naoccpi_[h], 0.0, pa_tautau_[0], nsopi_[h]);
+                    paOccC[0], naoccpi_[h], 1.0, pa_tautau_[0], nsopi_[h]);
         }
         // Beta occupied
         if(nboccpi_[h] && nsopi_[h]){
             C_DGEMM('n', 'n', nsopi_[h], nboccpi_[h], nboccpi_[h], 1.0, pbOccC[0], nboccpi_[h],
                     TT_oo.matrix[h][0], nboccpi_[h], 0.0, temp[0], nsopi_[h]);
             C_DGEMM('n', 't', nsopi_[h], nsopi_[h], nboccpi_[h], 1.0, temp[0], nsopi_[h],
-                    pbOccC[0], nboccpi_[h], 0.0, pb_tautau_[0], nsopi_[h]);
+                    pbOccC[0], nboccpi_[h], 1.0, pb_tautau_[0], nsopi_[h]);
         }
         // Alpha virtual
         if(navirpi_[h] && nsopi_[h]){
