@@ -181,7 +181,13 @@ class OPT_DATA {
       delete steps.back();
       steps.erase(steps.end()-1);
     }
-
+    void erase_step(int i) {
+      delete steps[i];
+      steps.erase(steps.begin() + i);
+    }
+    void reset_iteration_to_size(void) {
+      iteration = steps.size() + 1;
+    }
 };
 
 }

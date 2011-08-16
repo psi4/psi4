@@ -135,6 +135,11 @@ void set_params(void)
 //  Opt_params.maximum_H_bond_distance = 4.3;
     Opt_params.maximum_H_bond_distance = options.get_double("MAXIMUM_H_BOND_DISTANCE");
 
+// User-specified direction for IRC mapping
+    s = options.get_str("IRC_DIRECTION");
+    if (s == "FORWARD")        Opt_params.IRC_direction = OPT_PARAMS::FORWARD;
+    else if (s == "BACKWARD")  Opt_params.IRC_direction = OPT_PARAMS::BACKWARD;
+
 // QCHEM optimization criteria
 //  Opt_params.conv_max_force = 3.0e-4;
 //  Opt_params.conv_max_DE    = 1.0e-6;
@@ -162,6 +167,7 @@ void set_params(void)
   Opt_params.efp_fragments = false;
   Opt_params.efp_fragments_only = false;
 
+  Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
@@ -272,6 +278,8 @@ void set_params(void)
   else {
     Opt_params.efp_fragments_only = false;
   }
+
+//TO DO: initialize IRC_step_size for Q-Chem
 
 #endif
 

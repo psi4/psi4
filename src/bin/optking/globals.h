@@ -49,6 +49,11 @@ namespace opt {
   EXTERN OPT_DATA *p_Opt_data;
 }
 
+#include "IRC_data.h"
+namespace opt {
+  EXTERN IRC_DATA *p_irc_data;
+}
+
 #include "opt_except.h"
 
 #endif

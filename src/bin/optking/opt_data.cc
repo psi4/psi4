@@ -95,6 +95,8 @@ bool OPT_DATA::conv_check(void) const {
        ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
     return true; // structure is optimized!
   }
+  else if(Opt_params.opt_type == OPT_PARAMS::IRC && ((fabs(DE) < Opt_params.conv_max_DE) && (max_disp < Opt_params.conv_max_disp)))
+    return true;
   else 
     return false;
 }
