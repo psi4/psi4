@@ -179,7 +179,6 @@ void get_parameters(void)
     Parameters.tpdm_write = 0;
   }
 
-<<<<<<< Updated upstream
   Parameters.opdm_file = PSIF_MO_OPDM;
   Parameters.opdm_diag = 0;
   Parameters.opdm_wrtnos = 0;
