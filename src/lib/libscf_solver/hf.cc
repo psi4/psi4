@@ -726,7 +726,8 @@ void HF::print_orbitals()
         print_orbitals("Doubly Occupied:", occ);
         print_orbitals("Virtual:", vir);
 
-    }else if((reference == "UHF") || (reference == "UKS")){
+    }else if((reference == "UHF") || (reference == "UKS") || 
+        (reference == "CUHF")){
 
         std::vector<std::pair<double, std::pair<const char*, int> > > occA;
         std::vector<std::pair<double, std::pair<const char*, int> > > virA;
@@ -1043,7 +1044,9 @@ void HF::dump_to_checkpoint()
         if(soccpi_[h]) ++m;
     chkpt_->wt_iopen(m*(m+1)/2);
 
-    if(options_.get_str("REFERENCE") == "UHF"){
+    if(options_.get_str("REFERENCE") == "UHF" || 
+        options_.get_str("REFERENCE") == "CUHF"){
+
         double* values = epsilon_a_->to_block_vector();
         chkpt_->wt_alpha_evals(values);
         delete[] values;
