@@ -120,7 +120,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     using these determinants.  This submatrix is used to accelerate
     convergence of the CI iterations in the BOLSEN and MITRUSHENKOV
     iteration schemes, and also to find a good starting guess for the
-    SEM method if GUESS_VECTOR = H0_BLOCK.  Defaults to 40.
+    SEM method if GUESS_VECTOR = H0_BLOCK.  Defaults to 400.
     Note that the program may change the given size for Ms=0 cases
     (Ms0 = TRUE) if it determines that the H0 block includes only
     one member of a pair of determinants related by time reversal symmetry.
@@ -129,7 +129,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("H0_BLOCKSIZE", 400);
 
     /*- size of H0 block for initial guess !expert -*/
-    options.add_int("H0_GUESS_SIZE", 100);
+    options.add_int("H0_GUESS_SIZE", 400);
 
     /*- Use coupling block in preconditioner? !expert -*/
     options.add_bool("H0_BLOCK_COUPLING",false);
