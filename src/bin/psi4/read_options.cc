@@ -736,7 +736,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The guess type to be used in the computation -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
     /*- The reference wavefunction used in the computation -*/
-    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF RKS UKS");
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- The maximum number of iterations -*/
     options.add_int("MAXITER", 100);
     /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
