@@ -1,6 +1,6 @@
-/*! \file molecule.cc
+/*! \file molecule_irc_step.cc
     \ingroup optking
-    \brief molecule class (really, molecular system class)
+    \Gonzalez Schlegel (1990) Reaction Path Following Algorithm
 */
 
 #include "molecule.h"
@@ -13,28 +13,508 @@
 #include "print.h"
 #include "atom_data.h"
 #include "physconst.h"
+#include "IRC_data.h"
 
 #define EXTERN
 #include "globals.h"
 
 namespace opt {
 
+// compute square root and inverse square root of matrix
+void matrix_root(double **A, int dim, bool inverse);
+// compute normalization factor for step
+double step_N_factor(double **G, double *g, int Nintco);
+// return the lowest eigenvector of the matrix (here, the Hessian)
+double *lowest_evector(double **H, int Nintco);
+
 // compute change in energy according to quadratic approximation
-inline double DE_nr_energy(double step, double grad, double hess) {
+inline double DE_nr_energy(double step, double grad, double hess)
+{
   return (step * grad + 0.5 * step * step * hess);
 }
 
+void IRC_DATA::point_converged(opt::MOLECULE &mol)
+{
+//  p_Opt_data->reset_iteration_to_size();
+  sphere_step = 0;
+  mol.irc_step();
+}
+
 // see molecule_nr_step.cc and molecule_rfo_step.cc for examples from basic step types
-
 // we will assume for now at the IRC implies cartesian coordinates
-
 // Gonzalez and Schlegel JCP 2154 (1989).
+void MOLECULE::irc_step(void)
+{
+  bool at_TS = !(p_irc_data->size());          //are we starting from the transition state?
+  bool at_FS = !(p_irc_data->sphere_step);     //FS for "first step" - are we starting a new
+                                               //constrained optimization?
+fprintf(outfile, "\ncoord,sphere: %i, %i\n", p_irc_data->size(), p_irc_data->sphere_step);
+//Basic Information
+  double s    = Opt_params.IRC_step_size;      //step size
+  double *dq  = p_Opt_data->g_dq_pointer();    //internal coordinate change
+  double *f_q = p_Opt_data->g_forces_pointer();//internal coordinate gradient
+  double **H  = p_Opt_data->g_H_pointer();     //internal coordinate Hessian
 
-void MOLECULE::irc_step(void) {
+//Dimensions
+  int Nintco = g_nintco();
+  int Natom = g_natom();
+  int Ncart = 3 * Natom;
 
-  fprintf(outfile, "Hello World!");
+double *x_initial = g_geom_array();
 
-  double *m = g_masses();
+//The G matrix, its square root, and its inverse square root
+  double **G         = compute_G(1);                           //G = BUB^t
+  double **rootG_reg = matrix_return_copy(G, Nintco, Nintco); //G^1/2
+  double **rootG_inv = matrix_return_copy(G, Nintco, Nintco); //G^-1/2
+  matrix_root(rootG_reg, Nintco, 0);
+  matrix_root(rootG_inv, Nintco, 1);
+/*
+fprintf(outfile, "G matrix:\n");
+print_matrix(outfile, G, Nintco, Nintco);
+fprintf(outfile, "G^1/2   :\n");
+print_matrix(outfile, rootG_reg, Nintco, Nintco);
+fprintf(outfile, "G^-1/2  :\n");
+print_matrix(outfile, rootG_inv, Nintco, Nintco);
+*/
+//mass-weighted Hessian matrix:
+  double **H_m = init_matrix(Nintco, Nintco);
+  double **T = init_matrix(Nintco, Nintco);
+  opt_matrix_mult(H, 0, rootG_reg, 0, T, 0, Nintco, Nintco, Nintco, 0);  // T = HG^1/2
+  opt_matrix_mult(rootG_reg, 0, T, 0, H_m, 0, Nintco, Nintco, Nintco, 0);// H_m = (G^1/2)H(G^1/2) = (G^1/2)T
+  free_matrix(T);
+
+//information to calculate predicted energy change (DE_predicted)
+  double DE_projected;
+  double dq_n;    //step norm
+  double *dq_u;   //unit vector in step direction
+  double dq_g;    //gradient in step direction
+  double dq_h;    //hessian in step direction
+
+//Pivot Point and Initial Working Geometry:
+//step along along normalized, mass-weighted v
+  if(at_FS)
+  {
+    //if starting from TS, follow lowest eigenvalued eigenvalued eigenvector
+    //otherwise, follow the gradient (negative of the force vector)
+    double *v;
+    if (at_TS)
+    {
+      v = lowest_evector(H, Nintco);
+
+      if(Opt_params.IRC_direction == OPT_PARAMS::BACKWARD)
+        for(int i=0; i<Nintco; i++)
+          v[i] *= -1;
+
+fprintf(outfile, "\n v is eigenvector: \n");
+    }
+    else
+    {
+      v = init_array(Nintco);
+      for(int i=0; i<Nintco; i++)
+        v[i] = -f_q[i];
+
+fprintf(outfile, "\n v is gradient: \n");
+    }
+
+    double N = step_N_factor(G, v, Nintco);
+    double *dq_pivot = init_array(Nintco);
+    for(int i=0; i<Nintco; i++)
+    {
+      for(int j=0; j<Nintco; j++)
+        dq[i] -= G[i][j] * v[j] * N * s;
+
+      dq_pivot[i] = dq[i] / 2;
+    }
+
+double **G_inv = symm_matrix_inv(G, Nintco, Nintco);
+double *dq_G_inv = init_array(Nintco);
+for(int i=0; i<Nintco; i++)
+  dq_G_inv[i] = array_dot(G_inv[i], dq, Nintco);
+double dq_norm = sqrt( array_dot(dq_G_inv, dq, Nintco) );
+
+free_array(dq_G_inv);
+free_matrix(G_inv);
+
+fprintf(outfile, "\nvector to follow: \n");
+print_array(outfile, v, Nintco);
+fprintf(outfile, "\npivot: \n");
+print_array(outfile, dq_pivot, Nintco);
+fprintf(outfile, "\nworking geometry: \n");
+print_array(outfile, dq, Nintco);
+fprintf(outfile, "\ndq_norm: %20.10f \n", dq_norm);
+
+    double *q = intco_values();
+    double *q_pivot = init_array(Nintco);
+    for(int i=0; i<Nintco; i++)
+      q_pivot[i] = q[i] + dq_pivot[i];
+    double *x = g_geom_array();
+    double *f_x = g_grad_array();
+
+    p_irc_data->add_irc_point(p_irc_data->g_next_coord_step(), q_pivot, q, x, f_q, f_x, g_energy());
+
+    free_array(dq_pivot);
+
+    //DISPLACEMENTS:
+    // do displacements for each fragment seperately
+    for (int f=0; f<fragments.size(); ++f)
+    {
+      if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment)
+      {
+        fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+        continue;
+      }
+      fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+    }
+    // do displacements for interfragment coordinates
+    double *q_target;
+    for (int I=0; I<interfragments.size(); ++I)
+    {
+      q_target = interfragments[I]->intco_values();
+      for (int i=0; i<interfragments[I]->g_nintco(); ++i)
+        q_target[i] += dq[g_interfragment_intco_offset(I) + i];
+       interfragments[I]->orient_fragment(q_target);
+      free_array(q_target);
+    }
+
+    //step norm
+    dq_n = sqrt( array_dot(dq, dq, Nintco) );
+    //unit vector in step direction
+    dq_u = init_array(Nintco);
+    array_copy(dq, dq_u, Nintco);
+    array_normalize(dq_u, Nintco);
+    //gradient in step direction
+    dq_g = -1 * array_dot(f_q, dq_u, Nintco);
+    //hessian in step direction
+    dq_h = 0;
+    for(int i=0; i<Nintco; i++)
+      dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
+
+    DE_projected = DE_nr_energy(dq_n, dq_g, dq_h);
+
+    p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
+
+    p_irc_data->sphere_step++;
+
+    symmetrize_geom();
+    free_array(v);
+/*
+double *x_final = g_geom_array();
+double *m = g_masses();
+double *x_diff = init_array(Ncart);
+for(int i=0; i<Ncart; i++)
+  x_diff[i] = (x_final[i] - x_initial[i]) * sqrt(m[i/3]);
+
+double step_norm = sqrt(array_dot(x_diff, x_diff, Ncart));
+fprintf(outfile, "\nx_i: \n");
+print_array(outfile, x_initial, Ncart);
+fprintf(outfile, "\nx_f: \n");
+print_array(outfile, x_final, Ncart);
+fprintf(outfile, "\nd_x: \n");
+print_array(outfile, x_diff, Ncart);
+fprintf(outfile, "\nm's: \n");
+print_array(outfile, m, Natom);
+fprintf(outfile, "\ndx_norm %4.4f \n", step_norm);
+
+free_array(x_diff);
+*/
+    return;
+  }
+
+//Constrained Optimization On Hypersphere:
+//step along hypersphere (radius s/2) to find succeeding point with the following properties:
+//  p = dq_k - dq_pivot = 2/s
+//  (instantaneous acceleration vector Gv at dq_k) is parallel to (radial vector p)
+
+//1. diagonalize H_m:
+  double **V = matrix_return_copy(H_m, Nintco, Nintco);
+  double *h = init_array(Nintco);
+  opt_symm_matrix_eig(V, Nintco, h);
+
+for(int i=0; i<Nintco; i++)
+{
+  fprintf(outfile, "eigenvector %i:\n", i);
+  print_array(outfile, V[i], Nintco);
+}
+
+//2. define p_h and g_h - the radial vector and gradient, mass-weighted and in H_m's eigenbasis 
+  double *q = intco_values();
+  double *q_pivot = p_irc_data->steps.back()->g_q_pivot();
+
+fprintf(outfile, "\nsaved pivot: \n");
+print_array(outfile, q_pivot, Nintco);
+
+  double *p = init_array(Nintco);  //vector step from pivot point
+  double *p_m = init_array(Nintco);//mass-weighted
+  double *p_h = init_array(Nintco);//in the basis of H_m
+  for(int i=0; i<Nintco; i++)
+    p[i] = q[i] - q_pivot[i];
+  for(int i=0; i<Nintco; i++)
+    p_m[i] = array_dot(rootG_inv[i], p, Nintco);
+  for(int i=0; i<Nintco; i++)
+    p_h[i] = array_dot(p_m, V[i], Nintco);
+
+  double *g_m = init_array(Nintco);//mass-weighted gradient
+  double *g_h = init_array(Nintco);//in the basis of H_m
+  for(int i=0; i<Nintco; i++)
+    g_m[i] = -array_dot(rootG_reg[i], f_q, Nintco);
+  for(int i=0; i<Nintco; i++)
+    g_h[i] = array_dot(g_m, V[i], Nintco);
+
+fprintf(outfile, "\np:\n");
+print_array(outfile, p, Nintco);
+fprintf(outfile, "\np_m:\n");
+print_array(outfile, p_m, Nintco);
+fprintf(outfile, "\np_h:\n");
+print_array(outfile, p_h, Nintco);
+fprintf(outfile, "\ng_m:\n");
+print_array(outfile, g_m, Nintco);
+fprintf(outfile, "\ng_h:\n");
+print_array(outfile, g_h, Nintco);
+
+//3. solve equation 26 in Gonzalez & Schlegel (1990) for lambda based on current p-vector
+  double df_0;//Lagrangian multiplier constraint function
+  double df_1;//1st derivative
+  double df_2;//2nd derivative
+  double lag_mult = h[0] / 2;//initial guess for multiplier: half the lowest eigenvalue of H_m
+  double lag_min;
+  double constraint_sum;
+  double f_lambda = 1;//value of equation 26 as a function of lambda (lag_mult)
+  int j = 0;
+  double old_f_lambda;
+  while( f_lambda*f_lambda >= 1e-20 )
+  {
+    df_0 = 0;
+    df_1 = 0;
+    df_2 = 0;
+    constraint_sum = 0;
+    for(int i=0; i<Nintco; i++)
+    {
+      df_0 += ( (h[i]*p_h[i] - g_h[i]) * (h[i]*p_h[i] - g_h[i]) ) /
+              ( (h[i] - lag_mult) * (h[i] - lag_mult) );
+      df_1 += df_0 / (h[i] - lag_mult);
+      df_2 += df_1 / (h[i] - lag_mult);
+    }
+
+    df_0 -= (s / 2) * (s / 2);
+    df_1 *= 2;
+    df_2 *= 6;
+
+fprintf(outfile, "\nold lag_mult: %20.10f \n", lag_mult);
+    lag_mult += 2 * (df_0 * df_1) / (df_0 * df_2 - 2 * (df_1 * df_1));
+fprintf(outfile, "\nnew lag_mult: %20.10f \n", lag_mult);
+
+    for(int i=0; i<Nintco; i++)
+      constraint_sum += ( (h[i]*p_h[i] - g_h[i]) * (h[i]*p_h[i] - g_h[i]) ) /
+                        ( (h[i] - lag_mult) * (h[i] - lag_mult) );
+
+old_f_lambda = f_lambda;
+
+    f_lambda = constraint_sum - (s / 2) * (s / 2);
+fprintf(outfile, "\nconstraint_sum: %20.10f \n", constraint_sum);
+fprintf(outfile, "\nf_lambda: %20.10f \n", f_lambda);
+
+    if(f_lambda*f_lambda >= old_f_lambda*old_f_lambda)
+    {
+      j++;
+      if(j >= 50)
+        break;
+    }
+    else
+      lag_min = lag_mult;
+  }
+
+  lag_mult = lag_min;
+
+//4. find dq_m based on equation 24 in Gonzalez & Schlegel (1990)
+  double *dq_m = init_array(Nintco);
+
+  //find (H_m - lambda * I), where lambda is lag_mult
+  //and I is the identity matrix, and invert
+  for(int i=0; i<Nintco; i++)
+    H_m[i][i] -= lag_mult;
+  double **H_m_lag_inv = symm_matrix_inv(H_m, Nintco, 1);
+
+  //find vector (g_m - lambda * p_m) and dot with rows of H_m_lag_inv
+  //to get dq_m (after multiplying by -1)
+  double *g_lag_p = init_array(Nintco);
+  for(int i=0; i<Nintco; i++)
+    g_lag_p[i] = g_m[i] - lag_mult * p_m[i];
+
+  for(int i=0; i<Nintco; i++)
+    dq_m[i] = - array_dot(H_m_lag_inv[i], g_lag_p, Nintco);
+
+//5. find dq ( = (G^1/2)dq_m) and do displacements
+  for(int i=0; i<Nintco; i++)
+    dq[i] = array_dot(rootG_reg[i], dq_m, Nintco);
+
+  //DISPLACEMENTS:
+  // do displacements for each fragment seperately
+  for (int f=0; f<fragments.size(); ++f)
+  {
+    if (fragments[f]->is_frozen() || Opt_params.freeze_intrafragment)
+    {
+      fprintf(outfile,"\tDisplacements for frozen fragment %d skipped.\n", f+1);
+      continue;
+    }
+    fragments[f]->displace(&(dq[g_intco_offset(f)]), true, g_intco_offset(f));
+  }
+  // do displacements for interfragment coordinates
+  double *q_target;
+  for (int I=0; I<interfragments.size(); ++I)
+  {
+    q_target = interfragments[I]->intco_values();
+    for (int i=0; i<interfragments[I]->g_nintco(); ++i)
+      q_target[i] += dq[g_interfragment_intco_offset(I) + i];
+     interfragments[I]->orient_fragment(q_target);
+    free_array(q_target);
+  }
+
+  //step norm
+  dq_n = sqrt( array_dot(dq, dq, Nintco) );
+  //unit vector in step direction
+  dq_u = init_array(Nintco);
+  array_copy(dq, dq_u, Nintco);
+  array_normalize(dq_u, Nintco);
+  //gradient in step direction
+  dq_g = -1 * array_dot(f_q, dq_u, Nintco);
+  //hessian in step direction
+  dq_h = 0;
+  for(int i=0; i<Nintco; i++)
+    dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
+
+  p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
+
+  p_irc_data->sphere_step++;
+
+  symmetrize_geom();
+
+/*
+double **Gnew = init_matrix(Nintco, Nintco);
+opt_matrix_mult(rootG_reg, 0, rootG_reg, 0, Gnew, 0, Nintco, Nintco, Nintco, 0);
+fprintf(outfile, "irc step root squared: \n");
+print_matrix(outfile, Gnew, Nintco, Nintco);
+opt_matrix_mult(rootG_reg, 0, rootG_inv, 0, Gnew, 0, Nintco, Nintco, Nintco, 0);
+fprintf(outfile, "irc step inverse: \n");
+print_matrix(outfile, Gnew, Nintco, Nintco);
+*/
+
+  free_matrix(rootG_reg);
+  free_matrix(rootG_inv);
+  free_matrix(H_m);
+  free_matrix(V);
+  free_array(h);
+  free_array(p);
+  free_array(p_m);
+  free_array(p_h);
+  free_array(g_m);
+  free_array(g_h);
+  free_array(dq_m);
+  free_matrix(H_m_lag_inv);
+  free_array(g_lag_p);
+  free_array(dq_u);
+}
+
+void matrix_root(double **A, int dim, bool inverse)
+{
+  double **V = matrix_return_copy(A, dim, dim);
+  double *A_evals = init_array(dim);
+
+  opt_symm_matrix_eig(V, dim, A_evals);
+for(int i=0; i<dim; i++)
+{
+  fprintf(outfile, "G_evect %i:\n", i);
+  print_array(outfile, V[i], dim);
+}
+fprintf(outfile, "G_evals:\n");
+print_array(outfile, A_evals, dim);
+
+  if(inverse)
+    for(int i=0; i<dim; i++)
+      for(int j=0; j<dim; j++)
+      {
+        A[i][j] = 0;
+
+        for(int k=0; k<dim; k++)
+          if(fabs(A_evals[k]) > Opt_params.redundant_eval_tol)
+            A[i][j] += ( V[k][i] ) * ( V[k][j] ) / sqrt( fabs(A_evals[k]) );
+      }
+  else
+    for(int i=0; i<dim; i++)
+      for(int j=0; j<dim; j++)
+      {
+        A[i][j] = 0;
+
+        for(int k=0; k<dim; k++)
+          A[i][j] += ( V[k][i] ) * ( V[k][j] ) * sqrt( fabs(A_evals[k]) );
+      }
+
+/*
+  double **Adiag = init_matrix(dim, dim);
+  double **T = init_matrix(dim, dim);
+  double **newA = init_matrix(dim, dim);
+  for(int i=0; i<dim; i++)
+    Adiag[i][i] = A_evals[i];
+
+  fprintf(outfile, "\n");
+  print_matrix(outfile, Adiag, dim, dim);
+
+  opt_matrix_mult(V, 0, Adiag, 0, T, 0, dim, dim, dim, 0);
+  opt_matrix_mult(T, 0, V, 1, newA, 0, dim, dim, dim, 0);
+
+  fprintf(outfile, "\n");
+  print_matrix(outfile, V, dim, dim);
+  fprintf(outfile, "\n");
+  print_matrix(outfile, newA, dim, dim);
+*/
+
+  free_matrix(V);
+  free_array(A_evals);
+}
+
+double step_N_factor(double **G, double *g, int Nintco)
+{
+  double N = 0;
+  double Ggsum = 0;
+
+  for(int i=0; i<Nintco; i++)
+  {
+    for(int j = i+1; j<Nintco; j++)
+    {
+      Ggsum += G[i][j] * g[j];
+    }
+
+    N += g[i] * (G[i][i] * g[i] + 2 * Ggsum);
+  }
+
+  N = 1 / sqrt(N);
+  return N;
+}
+
+double *lowest_evector(double **H, int Nintco)
+{
+  double **V = matrix_return_copy(H, Nintco, Nintco);
+  double *V_evals = init_array(Nintco);
+  opt_symm_matrix_eig(V, Nintco, V_evals);
+
+  double *min_evector = init_array(Nintco);
+  double max_element = 0;
+  for(int i=0; i<Nintco; i++)
+  {
+    min_evector[i] = V[0][i];
+    if( fabs(min_evector[i]) > fabs(max_element) )
+      max_element = min_evector[i];
+  }
+
+  for(int i=0; i<Nintco; i++)
+    min_evector[i] *= max_element / fabs(max_element);
+
+  free_matrix(V);
+  free_array(V_evals);
+
+  return min_evector;
+}
+
+}
 
   // Development plan
   // 1. implement Eqn (2) scheme first:  fixed step size s ; step in direction of -1*gradient
@@ -156,7 +636,3 @@ void MOLECULE::irc_step(void) {
   free_array(nr_u);
   fflush(outfile);
 */
-}
-
-}
-
