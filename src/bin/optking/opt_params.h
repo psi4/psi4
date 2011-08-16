@@ -39,6 +39,8 @@ struct OPT_PARAMS {
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
   int H_update_use_last;
 
+  enum IRC_DIRECTION {FORWARD, BACKWARD} IRC_direction;
+
   bool freeze_intrafragment; // freeze all fragments
 
   // related to step taken
@@ -109,6 +111,7 @@ struct OPT_PARAMS {
 
   bool test_B; // whether to test B matrices
   bool test_derivative_B; // whether to test derivative B matrices
+  double IRC_step_size;
 
 };
 
