@@ -12,6 +12,8 @@
 using namespace boost::python;
 using namespace psi;
 
+extern void py_psi_prepare_options_for_module(const std::string &name);
+
 std::map<std::string, plugin_info> plugins;
 
 /**************************************************************************
@@ -64,7 +66,9 @@ int py_psi_plugin(std::string fullpathname)
         plugins[uc] = plugin_load(fullpathname);
     }
     plugin_info& tmpinfo = plugins[uc];
+//    Process::environment.options.set_current_module(name);
     fprintf(outfile, "Reading options from the %s block\n", tmpinfo.name.c_str());
+    py_psi_prepare_options_for_module(tmpinfo.name);
     fflush(outfile);
     tmpinfo.read_options(tmpinfo.name, Process::environment.options);
 
