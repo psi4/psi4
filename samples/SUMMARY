@@ -70,10 +70,16 @@ opt1-fd:      SCF STO-3G geometry optimzation, with Z-matrix input, by finite-di
 opt2:         SCF DZ allene geometry optimzation, with Cartesian input
 
 
+opt2-fd:      SCF DZ allene geometry optimzation, with Cartesian input
+
+
 opt3:         SCF cc-pVDZ geometry optimzation, with Z-matrix input
 
 
 opt4:         SCF cc-pVTZ geometry optimzation, with Z-matrix input
+
+
+opt5:         6-31G** UHF CH2 3B1 optimization
 
 
 props1:       RHF STO-3G dipole moment computation, performed by applying a finite electric field and numerical differentiation.
@@ -89,6 +95,9 @@ sapt1:        SAPT0 cc-pVDZ computation of the ethane-ethyne binding energy, usi
 
 
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.
+
+
+scf11-freq-from-energies:  Test frequencies by finite differences of energies for planar C4NH4 TS
 
 
 scf2:         RI-SCF cc-pVTZ energy of water, with Z-matrix input and cc-pVTZ-RI auxilliary basis. This compuation runs in C1 symmetry, which is currently required for RI-SCF.
