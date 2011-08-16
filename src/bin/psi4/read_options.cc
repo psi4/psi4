@@ -1927,6 +1927,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("TEST_DERIVATIVE_B", false);
       /*- Read Cartesian Hessian -*/
       options.add_bool("READ_CARTESIAN_H", false);
+      /*- Define IRC step size in bohr(amu)^1/2 -*/
+      options.add_double("IRC_STEP_SIZE", 0.2);
+      /*- Define IRC mapping direction {FORWARD, BACKWARD} -*/
+      options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
   }
   if(name == "FINDIF"|| options.read_globals()) {
       /*- Number of points for finite-differences (3 or 5) -*/
