@@ -83,7 +83,7 @@ OptReturnType optking(void) {
 
   if (if_intco.is_open()) { // old internal coordinates are present
 
-    fprintf(outfile,"\n\tPrevous internal coordinate definitions found.\n"); fflush(outfile);
+    fprintf(outfile,"\n\tPrevious internal coordinate definitions found.\n"); fflush(outfile);
     newly_generated_coordinates = false;
 
     mol1 = new MOLECULE(0);    // make an empty molecule
@@ -165,6 +165,8 @@ mol1->print_connectivity(outfile);
 
   // read binary file for previous steps ; history needed to compute EFP values
   p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
+  if (p_Opt_data->g_iteration() == 1)
+    p_irc_data = new IRC_DATA();
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   mol1->update_efp_values(); // EFP values calculated from old opt_data
@@ -206,7 +208,8 @@ mol1->print_connectivity(outfile);
   }
   else { // do Hessian update
     try {
-      p_Opt_data->H_update(*mol1);
+//      if(Opt_params.opt_type != OPT_PARAMS::IRC)
+        p_Opt_data->H_update(*mol1);
     } catch (const char * str) {
       fprintf(stderr, "%s\n", str);
       fprintf(outfile, "H_update failed\n");
@@ -234,33 +237,52 @@ mol1->print_connectivity(outfile);
   rem_write((int) converged, REM_GEOM_OPT_CONVERGED); // tell QChem if converged (return value ignored for now)
   rem_write(p_Opt_data->g_iteration(), REM_GEOM_OPT_CYCLE); // tell QChem current iteration number
 #endif
-
   if ( converged ) {
-    fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
-    p_Opt_data->summary();
-    p_Opt_data->write(); // save data to optimization binary file
+    if (Opt_params.opt_type == OPT_PARAMS::IRC)
+    {
+      //delete all entries but those on reaction path
+      //assuming coord has already been incremented; is >=1
+cout << "Here!\nsize: ";
+cout << p_Opt_data->nsteps();
+cout << "\n";
+//      while(p_Opt_data->nsteps() > 2)
+//        p_Opt_data->erase_step(1);
+cout << "Here!\nsize: ";
+cout << p_Opt_data->nsteps();
+cout << "\n";
+//      p_Opt_data->H_update(*mol1);
+//      p_Opt_data->erase_step(0);
 
-    fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
-
-    if (Opt_params.write_final_step_geometry) {
-      fprintf(outfile,"\tFinal (next step) structure:\n");
-      mol1->print_geom();  // write geometry -> output file
-      fprintf(outfile,"\tSaving final (next step) structure.\n");
+      p_irc_data->point_converged(*mol1);
     }
-    else { // default - get last geometry and write that one
-      double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
-      mol1->set_geom_array(x);
-      fprintf(outfile,"\tFinal (previous) structure:\n");
-      mol1->print_geom();  // write geometry -> output file
-      fprintf(outfile,"\tSaving final (previous) structure.\n");
+    else
+    {
+      fprintf(outfile,"\n\t **** Optimization is complete! ****\n");
+      p_Opt_data->summary();
+      p_Opt_data->write(); // save data to optimization binary file
+
+      fprintf(outfile,"\tFinal energy is %20.13lf\n", p_Opt_data->g_energy());
+
+      if (Opt_params.write_final_step_geometry) {
+        fprintf(outfile,"\tFinal (next step) structure:\n");
+        mol1->print_geom();  // write geometry -> output file
+        fprintf(outfile,"\tSaving final (next step) structure.\n");
+      }
+      else { // default - get last geometry and write that one
+        double *x = p_Opt_data->g_geom_const_pointer(p_Opt_data->nsteps()-1);
+        mol1->set_geom_array(x);
+        fprintf(outfile,"\tFinal (previous) structure:\n");
+        mol1->print_geom();  // write geometry -> output file
+        fprintf(outfile,"\tSaving final (previous) structure.\n");
+      }
+
+      delete p_Opt_data;
+      mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
+      print_end();
+
+      close_output_dat();
+      return OptReturnEndloop;
     }
-
-    delete p_Opt_data;
-    mol1->write_geom();  // write geometry -> chkpt file (also output for QChem)
-    print_end();
-
-    close_output_dat();
-    return OptReturnEndloop;
   }
 
   p_Opt_data->write();
