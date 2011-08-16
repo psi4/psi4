@@ -22,14 +22,30 @@ namespace psi {
         pos->second.to_string().size() > largest_value ? largest_value = pos->second.to_string().size() : 0;
     }
 
-    for (const_iterator pos = keyvals.begin(); pos != keyvals.end(); ++pos) {
+    for (const_iterator local_iter = keyvals.begin(); local_iter != keyvals.end(); ++local_iter) {
       std::stringstream line;
-      std::string second_tmp = pos->second.to_string();
-      if (second_tmp.length() == 0) {
-        second_tmp = "(empty)";
+      std::string value;
+      bool option_specified;
+      const std::string &name = local_iter->first;
+      const_iterator global_iter = globals_.find(name);
+      if(local_iter->second.has_changed()){
+          // Local option was set, use it
+          value = local_iter->second.to_string();
+          option_specified = true;
+      }else if(global_iter->second.has_changed()){
+          // Global option was set, get that
+          value = global_iter->second.to_string();
+          option_specified = true;
+      }else{
+          // Just use the default local value
+          value = local_iter->second.to_string();
+          option_specified = false;
       }
-      line << "  " << std::left << std::setw(largest_key) << pos->first << " => " << std::setw(largest_value) << second_tmp;
-      if (pos->second.has_changed())
+      if (value.length() == 0) {
+        value = "(empty)";
+      }
+      line << "  " << std::left << std::setw(largest_key) << local_iter->first << " => " << std::setw(largest_value) << value;
+      if (option_specified)
         line << " !";
       else
         line << "  ";
