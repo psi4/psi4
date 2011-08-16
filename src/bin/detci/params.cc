@@ -179,6 +179,7 @@ void get_parameters(void)
     Parameters.tpdm_write = 0;
   }
 
+<<<<<<< Updated upstream
   Parameters.opdm_file = PSIF_MO_OPDM;
   Parameters.opdm_diag = 0;
   Parameters.opdm_wrtnos = 0;
@@ -282,7 +283,7 @@ void get_parameters(void)
   Parameters.save_mpn2 = options["SAVE_MPN2"].to_integer();
   Parameters.perturbation_parameter = 
     options.get_double("PERTURBATION_PARAMETER"); 
-   
+
   if (Parameters.perturbation_parameter <= 1.0 && 
       Parameters.perturbation_parameter >= -1.0) Parameters.z_scale_H = 1;
 /*
