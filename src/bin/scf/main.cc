@@ -20,6 +20,7 @@
 #include <libscf_solver/rhf.h>
 #include <libscf_solver/rohf.h>
 #include <libscf_solver/uhf.h>
+#include <libscf_solver/cuhf.h>
 #include <libscf_solver/ks.h>
 
 using namespace boost;
@@ -46,6 +47,9 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     }
     else if (reference == "UHF") {
         scf = boost::shared_ptr<Wavefunction>(new UHF(options, psio));
+    }
+    else if (reference == "CUHF") {
+        scf = boost::shared_ptr<Wavefunction>(new CUHF(options, psio));
     }
     else if (reference == "RKS") {
         scf = boost::shared_ptr<Wavefunction>(new RKS(options, psio));
