@@ -1,9 +1,9 @@
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
-refnuc   =  9.0772388468036    #TEST
-refscf   = -76.0219978763      #TEST
-refccsd  = -0.208990979379477  #TEST
-reftotal = -76.230988855677907 #TEST
+refnuc   =  9.166137300098260  #TEST
+refscf   = -76.02293995043653  #TEST
+refccsd  = -0.208238532935749  #TEST
+reftotal = -76.2311784833722   #TEST
 
 molecule h2o {
     O
@@ -17,13 +17,14 @@ set {
     dertype first
     docc [3, 0, 1, 1]
     basis 6-31G**
+    relax_opdm true     # Currently needed until ccdensity is fixed.
 
     convergence 11
     e_converge 11
     d_converge 11
 }
 
-energy('ccsd')
+thisenergy = optimize('ccsd')
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
 compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")               #TEST
