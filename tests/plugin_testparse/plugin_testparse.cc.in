@@ -21,6 +21,8 @@ read_options(std::string name, Options &options){
         options.add_int("OPT3", 1);
         options.add_str("REFERENCE", "");
         options.add_bool("TESTBOOL", true);
+        options.add("INTARR", new ArrayType());
+        options.add("DBLARR", new ArrayType());
     }
 
     return 1;
@@ -44,6 +46,23 @@ plugin_testparse(Options &options)
     // int testbool = (int) options.get_bool("TESTBOOL");
     int testbool = options["TESTBOOL"].to_integer();
     fprintf(outfile, "testbool (integer) = %d\n", testbool);
+
+    fprintf(outfile, "dblarr = [ ");
+    for (int i=0; i<options["DBLARR"].size(); i++) {
+      fprintf(outfile, "%5.2lf, ", options["DBLARR"][i].to_double());
+    }
+    fprintf(outfile, "]\n");
+    
+    int *intarr;
+    int size = options["INTARR"].size();
+    intarr = (int *) malloc(size*sizeof(int));
+    options.fill_int_array("INTARR", intarr);
+    fprintf(outfile, "intarr = [ ");
+    for (int i=0; i<size; i++) {
+      fprintf(outfile, "%d, ", intarr[i]);
+    }
+    fprintf(outfile, "]\n");
+    free(intarr);
 
     return Success;   
 }
