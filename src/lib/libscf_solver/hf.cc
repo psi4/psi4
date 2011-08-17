@@ -726,7 +726,7 @@ void HF::print_orbitals()
         print_orbitals("Doubly Occupied:", occ);
         print_orbitals("Virtual:", vir);
 
-    }else if((reference == "UHF") || (reference == "UKS") || 
+    }else if((reference == "UHF") || (reference == "UKS") ||
         (reference == "CUHF")){
 
         std::vector<std::pair<double, std::pair<const char*, int> > > occA;
@@ -1044,7 +1044,7 @@ void HF::dump_to_checkpoint()
         if(soccpi_[h]) ++m;
     chkpt_->wt_iopen(m*(m+1)/2);
 
-    if(options_.get_str("REFERENCE") == "UHF" || 
+    if(options_.get_str("REFERENCE") == "UHF" ||
         options_.get_str("REFERENCE") == "CUHF"){
 
         double* values = epsilon_a_->to_block_vector();
@@ -1167,7 +1167,7 @@ double HF::compute_energy()
         else if (MOM_performed_ && diis_performed_) status = "DIIS/MOM";
 
         if (Communicator::world->me() == 0) {
-            fprintf(outfile, "   @%s iter %3d: %20.14f   %-11.5e   %-11.5e %s\n",
+            fprintf(outfile, "   @%s iter %3d: %20.14f   %+11.5e   %+11.5e %s\n",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
         }
