@@ -68,45 +68,72 @@ BasisSetParser::~BasisSetParser()
 
 vector<string> BasisSetParser::load_file(const std::string &filename, const std::string&    basisname)
 {
-    smatch what;
-
     // Load in entire file.
     vector<string> lines;
 
-    // temp variable
-    string text;
+    if (Communicator::world->me() == 0) {
+        smatch what;
 
-    // Stream to use
-    ifstream infile(filename.c_str());
+        // temp variable
+        string text;
 
-    if (!infile)
-        throw BasisSetFileNotFound("BasisSetParser::parse: Unable to open basis set file: " + filename, __FILE__, __LINE__);
+        // Stream to use
+        ifstream infile(filename.c_str());
 
-    bool given_basisname = basisname.empty() ? false : true;
-    bool found_basisname = false;
+        if (!infile)
+            throw BasisSetFileNotFound("BasisSetParser::parse: Unable to open basis set file: " + filename, __FILE__, __LINE__);
 
-    while (infile.good()) {
-        getline(infile, text);
+        bool given_basisname = basisname.empty() ? false : true;
+        bool found_basisname = false;
 
-        // If no basisname was given always save the line.
-        if (given_basisname == false)
-            lines.push_back(text);
+        while (infile.good()) {
+            getline(infile, text);
 
-        if (found_basisname) {
+            // If no basisname was given always save the line.
+            if (given_basisname == false)
+                lines.push_back(text);
 
-            // If we find another [*] we're done.
-            if (regex_match(text, what, basis_separator))
-                break;
+            if (found_basisname) {
 
-            lines.push_back(text);
-            continue;
+                // If we find another [*] we're done.
+                if (regex_match(text, what, basis_separator))
+                    break;
+
+                lines.push_back(text);
+                continue;
+            }
+
+            // If the user gave a basisname AND text matches the basisname we want to trigger to retain
+            if (given_basisname && regex_match(text, what, basis_separator)) {
+                if (boost::iequals(what[1].str(), basisname))
+                    found_basisname = true;
+            }
+        }
+    }
+
+    if (Communicator::world->nproc() > 1) {
+        int me = Communicator::world->me();
+        size_t nlines = lines.size();
+
+        Communicator::world->bcast(&nlines, 1);
+        int *string_length = new int[nlines];
+
+        if (me > 0)
+            lines.resize(nlines);
+
+        for (size_t i=0; i<nlines; ++i)
+            string_length[i] = lines[i].length() + 1;
+
+        Communicator::world->bcast(string_length, nlines);
+
+        if (me > 0) {
+            for (size_t i=0; i<nlines; ++i) {
+                lines[i].resize(string_length[i]);
+            }
         }
 
-        // If the user gave a basisname AND text matches the basisname we want to trigger to retain
-        if (given_basisname && regex_match(text, what, basis_separator)) {
-            if (boost::iequals(what[1].str(), basisname))
-                found_basisname = true;
-        }
+        for (size_t i=0; i<nlines; ++i)
+            Communicator::world->bcast(const_cast<char*>(lines[i].c_str()), string_length[i]);
     }
 
     return lines;
