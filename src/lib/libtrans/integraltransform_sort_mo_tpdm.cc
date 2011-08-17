@@ -18,8 +18,6 @@ using namespace psi;
 void
 IntegralTransform::presort_mo_tpdm_restricted()
 {
-    static bool tpdmAlreadyPresorted = false;
-
     int nDocc = 0;
     for(int h = 0; h < _nirreps; ++h) nDocc += _clsdpi[h];
 
@@ -53,7 +51,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
         pitzerOffset += _mopi[h] - _clsdpi[h];
     }
 
-    if(tpdmAlreadyPresorted){
+    if(_tpdmAlreadyPresorted){
         if(_print>5)
             fprintf(outfile, "\tMO TPDM already sorted, moving on...\n");
             return;
@@ -152,7 +150,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
                 int r = qtToPitzer[(int) lblptr[labelIndex++]];
                 int s = qtToPitzer[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-//                fprintf(outfile, "%d %d %d %d -> %d %d %d %d\n",p,q,r,s,qtToPitzer[p],qtToPitzer[q],qtToPitzer[r],qtToPitzer[s]);
+//                fprintf(outfile, "%d %d %d %d -> %d %d %d %d %lf\n",p,q,r,s,qtToPitzer[p],qtToPitzer[q],qtToPitzer[r],qtToPitzer[s],value);
                 idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
@@ -198,7 +196,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
 
     dpd_set_default(currentActiveDPD);
 
-    tpdmAlreadyPresorted = true;
+    _tpdmAlreadyPresorted = true;
 
     dpd_file4_close(&I);
     _psio->close(PSIF_TPDM_PRESORT, 1);

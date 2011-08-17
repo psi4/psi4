@@ -27,7 +27,8 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
             _frozenOrbitals(frozenOrbitals),
             _psio(_default_psio_lib_),
             _Ca(NULL),
-            _Cb(NULL)
+            _Cb(NULL),
+            _tpdmAlreadyPresorted(false)
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.
