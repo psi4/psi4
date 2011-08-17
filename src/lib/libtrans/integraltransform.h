@@ -292,6 +292,8 @@ class IntegralTransform{
         bool _useIWL;
         // Whether to output the results to a DPD buffer
         bool _useDPD;
+        // Has this object already pre-sorted?
+        bool _tpdmAlreadyPresorted;
 };
 
 } // End namespaces
