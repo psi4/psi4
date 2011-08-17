@@ -39,15 +39,21 @@ public:
                       ints_transform.DPD_ID("[n,n]"), ints_transform.DPD_ID("[n,n]"),
                       ints_transform.DPD_ID("[n>=n]+"), ints_transform.DPD_ID("[n>=n]+"),
                       0, "SO Basis TPDM (nn|nn)");
-        dpd_buf4_mat_irrep_init(&G_, 0);
-        dpd_buf4_mat_irrep_rd(&G_, 0);
+
+        for (int h=0; h<wavefunction_->nirrep(); ++h) {
+            dpd_buf4_mat_irrep_init(&G_, h);
+            dpd_buf4_mat_irrep_rd(&G_, h);
+        }
 
         nthread = Communicator::world->nthread();
+        result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
     }
     void finalize() {
-        dpd_buf4_mat_irrep_close(&G_, 0);
+        for (int h=0; h<wavefunction_->nirrep(); ++h)
+            dpd_buf4_mat_irrep_close(&G_, h);
+
         dpd_buf4_close(&G_);
         _default_psio_lib_->close(PSIF_TPDM_HALFTRANS, 1);
 
@@ -60,15 +66,20 @@ public:
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
-                    int /*pirrep*/, int /*pso*/,
-                    int /*qirrep*/, int /*qso*/,
-                    int /*rirrep*/, int /*rso*/,
-                    int /*sirrep*/, int /*sso*/,
+                    int pirrep, int pso,
+                    int qirrep, int qso,
+                    int rirrep, int rso,
+                    int sirrep, int sso,
                     double value)
     {
         int thread = Communicator::world->thread_id(pthread_self());
 
         double prefactor = 8.0;
+
+        if (pirrep ^ qirrep ^ rirrep ^ sirrep)
+            return;
+
+        int h = pirrep ^ qirrep;
 
         if (pabs == qabs)
             prefactor *= 0.5;
@@ -80,7 +91,7 @@ public:
         int PQ = G_.params->colidx[pabs][qabs];   // pabs, qabs?
         int RS = G_.params->rowidx[rabs][sabs];   // pabs, qabs?
 
-        result[thread]->add(salc, prefactor * G_.matrix[0][PQ][RS] * value);
+        result[thread]->add(salc, prefactor * G_.matrix[h][PQ][RS] * value);
     }
 };
 
@@ -403,7 +414,7 @@ SharedMatrix Deriv::compute()
                 throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = 2.0 * D->vector_dot(h_deriv[cd]);
+                double temp = D->vector_dot(h_deriv[cd]);
                 Dcont[cd] = temp;
                 fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
             }
@@ -411,7 +422,7 @@ SharedMatrix Deriv::compute()
             fprintf(outfile, "\n");
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = -2.0 * X->vector_dot(s_deriv[cd]);
+                double temp = -0.5 * X->vector_dot(s_deriv[cd]);
                 Xcont[cd] = temp;
                 fprintf(outfile, "    SALC #%d Lagrandian contribution:   %+lf\n", cd, temp);
             }
