@@ -553,199 +553,188 @@ void get_parameters(void)
 
   Parameters.tpdm_print = options["TPDM_PRINT"].to_integer();
 
-  // START HERE
-   if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
-       Parameters.wfn != "DETCAS" &&
-       Parameters.wfn != "CASSCF" &&
-       Parameters.wfn != "RASSCF")
-     {
+  if (Parameters.guess_vector == PARM_GUESS_VEC_DFILE &&
+      Parameters.wfn != "DETCAS" &&
+      Parameters.wfn != "CASSCF" &&
+      Parameters.wfn != "RASSCF")
+  {
 
-      chkpt_init(PSIO_OPEN_OLD);
-      i = chkpt_rd_phase_check();
-      chkpt_close();
+    chkpt_init(PSIO_OPEN_OLD);
+    i = chkpt_rd_phase_check();
+    chkpt_close();
 
-      if (!i) {
-         fprintf(outfile, "Can't use d file guess: SCF phase not checked\n");
-         if (Parameters.h0guess_size) {
-            Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-            if (Parameters.precon == PRECON_GEN_DAVIDSON)
-              Parameters.precon = PRECON_H0BLOCK_ITER_INVERT;
-         }
-         else Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
+    if (!i) {
+      fprintf(outfile, "Can't use d file guess: SCF phase not checked\n");
+      if (Parameters.h0guess_size) {
+        Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+        if (Parameters.precon == PRECON_GEN_DAVIDSON)
+          Parameters.precon = PRECON_H0BLOCK_ITER_INVERT;
       }
-     }
-   if (Parameters.num_init_vecs < Parameters.num_roots)
-     Parameters.num_init_vecs = Parameters.num_roots;
-   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT &&
-       Parameters.num_init_vecs > 1) {
-     Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
-     fprintf(outfile,"Warning: Unit vec option not available for more than"
-             " one root\n");
-     }
-   if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
-     Parameters.h0blocksize = Parameters.h0guess_size = 1;
+      else Parameters.guess_vector = PARM_GUESS_VEC_UNIT;
+    }
+  }
 
-   Parameters.nthreads = options.get_int("NTHREADS");
-   if (Parameters.nthreads < 1) Parameters.nthreads = 1;
+  if (Parameters.num_init_vecs < Parameters.num_roots)
+    Parameters.num_init_vecs = Parameters.num_roots;
+  if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT &&
+      Parameters.num_init_vecs > 1) {
+    Parameters.guess_vector = PARM_GUESS_VEC_H0_BLOCK;
+    fprintf(outfile,"Warning: Unit vec option not available for more than"
+            " one root\n");
+  }
+  if (Parameters.guess_vector == PARM_GUESS_VEC_UNIT)
+    Parameters.h0blocksize = Parameters.h0guess_size = 1;
 
-   Parameters.export_ci_vector = 0;
-   errcod = ip_boolean("EXPORT_VECTOR", &(Parameters.export_ci_vector), 0);
 
-   Parameters.num_export = 0;
-   if (Parameters.export_ci_vector) {
-     Parameters.num_export = 1;
-     errcod = ip_data("NUM_EXPORT", "%d", &(Parameters.num_export), 0);
-     if (Parameters.num_export > Parameters.num_roots) {
-       fprintf(outfile, "Warning: can't export %d roots if %d requested\n",
-         Parameters.num_export, Parameters.num_roots);
-       Parameters.num_export = Parameters.num_roots;
-     }
-   } 
+  Parameters.nthreads = options.get_int("NTHREADS");
+  if (Parameters.nthreads < 1) Parameters.nthreads = 1;
+
+  Parameters.export_ci_vector = options["EXPORT_VECTOR"].to_integer();
+
+  Parameters.num_export = 0;
+  if (Parameters.export_ci_vector) {
+    Parameters.num_export = 1;
+    if (options["NUM_EXPORT"].has_changed()) 
+      Parameters.num_export = options.get_int("NUM_EXPORT");
+    if (Parameters.num_export > Parameters.num_roots) {
+      fprintf(outfile, "Warning: can't export %d roots if %d requested\n",
+              Parameters.num_export, Parameters.num_roots);
+      Parameters.num_export = Parameters.num_roots;
+    }
+  } 
    
-   Parameters.sf_restrict = options["SF_RESTRICT"].to_integer();
-   Parameters.print_sigma_overlap = options["SIGMA_OVERLAP"].to_integer();
+  Parameters.sf_restrict = options["SF_RESTRICT"].to_integer();
+  Parameters.print_sigma_overlap = options["SIGMA_OVERLAP"].to_integer();
 
-   if (Parameters.cc) Parameters.ex_lvl = Parameters.cc_ex_lvl + 2;
+  if (Parameters.cc) Parameters.ex_lvl = Parameters.cc_ex_lvl + 2;
 
-   Parameters.ex_allow = (int *)malloc(Parameters.ex_lvl*sizeof(int));
-   if (ip_exist("EX_ALLOW",0)) {
-     ip_count("EX_ALLOW", &i, 0);
-     if (i != Parameters.ex_lvl) {
-       fprintf(outfile,"Dim. of EX_ALLOW must be %d\n", 
-               Parameters.ex_lvl);
-       exit(0);
-     }
-     for (i=0;i<Parameters.ex_lvl;i++) {
-*      errcod = ip_data("EX_ALLOW","%d",&(Parameters.ex_allow[i]),1,i);
-     }
-   }
-   else {
-     for (i=0;i<Parameters.ex_lvl;i++) {
-       Parameters.ex_allow[i] = 1;
-     }
-   }
+  Parameters.ex_allow = (int *)malloc(Parameters.ex_lvl*sizeof(int));
+  if (options["EX_ALLOW"].has_changed()) {
+    i = options["EX_ALLOW"].size(); // CDS-TODO: Check that this really works
+    if (i != Parameters.ex_lvl) {
+      fprintf(outfile,"Dim. of EX_ALLOW must be %d\n", 
+              Parameters.ex_lvl);
+      exit(0);
+    }
+    options.fill_int_array("EX_ALLOW", Parameters.ex_allow);
+  }
+  else {
+    for (i=0;i<Parameters.ex_lvl;i++) {
+      Parameters.ex_allow[i] = 1;
+    }
+  }
 
-   /* The filter_guess options are used to filter out some trial
-      vectors which may not have the appropriate phase convention
-      between two determinants.  This is useful to remove, e.g.,
-      delta states when a sigma state is desired.  The user
-      inputs two determinants (by giving the absolute alpha string
-      number and beta string number for each), and also the
-      desired phase between these two determinants for guesses
-      which are to be kept.
-    */
-   Parameters.filter_guess = 0;
-*  errcod = ip_boolean("FILTER_GUESS",&(Parameters.filter_guess),0);
-   if (errcod == IPE_OK && Parameters.filter_guess == 1) {
-     Parameters.filter_guess_sign = 1;
-*    errcod = ip_data("FILTER_GUESS_SIGN","%d",
-                      &(Parameters.filter_guess_sign),0);
-     if (errcod != IPE_OK || (Parameters.filter_guess_sign != 1 &&
-         Parameters.filter_guess_sign != -1)) {
-       fprintf(outfile, "FILTER_GUESS_SIGN should be 1 or -1 !\n");
-       abort();
-     }
-*    errcod = ip_count("FILTER_GUESS_DET1",&i,0); 
-     if (errcod != IPE_OK || i != 2) {
-       fprintf(outfile, "Need to specify FILTER_GUESS_DET1 = "
+  /* The filter_guess options are used to filter out some trial
+     vectors which may not have the appropriate phase convention
+     between two determinants.  This is useful to remove, e.g.,
+     delta states when a sigma state is desired.  The user
+     inputs two determinants (by giving the absolute alpha string
+     number and beta string number for each), and also the
+     desired phase between these two determinants for guesses
+     which are to be kept.
+   */
+
+  Parameters.filter_guess = options["FILTER_GUESS"].to_integer();
+
+  if (Parameters.filter_guess == 1) {
+    Parameters.filter_guess_sign = options.get_int("FILTER_GUESS_SIGN");
+    if (Parameters.filter_guess_sign != 1 &&
+         Parameters.filter_guess_sign != -1) {
+      fprintf(outfile, "FILTER_GUESS_SIGN should be 1 or -1 !\n");
+      abort();
+    }
+
+    if (options["FILTER_GUESS_DET1"].size() != 2) {
+      fprintf(outfile, "Need to specify FILTER_GUESS_DET1 = "
                         "(alphastr betastr)\n");
-       abort();
-     }
-     else {
-       errcod = ip_data("FILTER_GUESS_DET1","%d",
-                        &(Parameters.filter_guess_Ia),1,0);
-       errcod = ip_data("FILTER_GUESS_DET1","%d",
-                        &(Parameters.filter_guess_Ib),1,1);
-     }
+      abort();
+    }
+    Parameters.filter_guess_Ia = options["FILTER_GUESS_DET1"][0].to_integer();
+    Parameters.filter_guess_Ib = options["FILTER_GUESS_DET1"][1].to_integer();
 
-*    errcod = ip_count("FILTER_GUESS_DET2",&i,0); 
-     if (errcod != IPE_OK || i != 2) {
-       fprintf(outfile, "Need to specify FILTER_GUESS_DET2 = "
+    if (options["FILTER_GUESS_DET2"].size() != 2) {
+      fprintf(outfile, "Need to specify FILTER_GUESS_DET2 = "
                         "(alphastr betastr)\n");
-       abort();
-     }
-     else {
-       errcod = ip_data("FILTER_GUESS_DET2","%d",
-                        &(Parameters.filter_guess_Ja),1,0);
-       errcod = ip_data("FILTER_GUESS_DET2","%d",
-                        &(Parameters.filter_guess_Jb),1,1);
-     }
-   } /* end the filter_guess stuff */
+      abort();
+    }
+    Parameters.filter_guess_Ja = options["FILTER_GUESS_DET2"][0].to_integer();
+    Parameters.filter_guess_Jb = options["FILTER_GUESS_DET2"][1].to_integer();
 
-   /* sometimes the filter guess stuff is not sufficient in that
-      some states come in that we don't want.  We can help exclude
-      them by explicitly zeroing out certain determinants, if that
-      is correct for the desired state.  This stuff will allow the
-      user to select a determinant which should always have a zero
-      coefficient in the desired target state
-    */
+  } /* end the filter_guess stuff */
+
+  /* sometimes the filter guess stuff is not sufficient in that
+     some states come in that we don't want.  We can help exclude
+     them by explicitly zeroing out certain determinants, if that
+     is correct for the desired state.  This stuff will allow the
+     user to select a determinant which should always have a zero
+     coefficient in the desired target state
+   */
    Parameters.filter_zero_det = 0;
-*  if (ip_exist("FILTER_ZERO_DET",0)) {
-     errcod = ip_count("FILTER_ZERO_DET",&i,0); 
-     if (errcod != IPE_OK || i != 2) {
-       fprintf(outfile, "Need to specify FILTER_ZERO_DET = "
-                        "(alphastr betastr)\n");
-       abort();
-     }
-     Parameters.filter_zero_det = 1;
-     errcod = ip_data("FILTER_ZERO_DET","%d",
-                      &(Parameters.filter_zero_det_Ia),1,0);
-     errcod = ip_data("FILTER_ZERO_DET","%d",
-                      &(Parameters.filter_zero_det_Ib),1,1);
-   }
+  if (options["FILTER_ZERO_DET"].has_changed()) {
+    if (options["FILTER_ZERO_DET"].size() != 2) {
+      fprintf(outfile, "Need to specify FILTER_ZERO_DET = "
+                       "(alphastr betastr)\n");
+      abort();
+    }
+    Parameters.filter_zero_det = 1;
+    Parameters.filter_zero_det_Ia = options["FILTER_ZERO_DET"][0].to_integer();
+    Parameters.filter_zero_det_Ib = options["FILTER_ZERO_DET"][1].to_integer();
+  }
+     
+  /* Does the user request a state-averaged calculation? */
+  if (options["AVERAGE_STATES"].has_changed()) {
+    i = options["AVERAGE_STATES"].size();
+    if (i < 1 || i > Parameters.num_roots) {
+      fprintf(outfile,"Invalid number of states to average (%d)\n", i);
+      exit(1);
+    }
 
-   /* Does the user request a state-averaged calculation? */
-*  if (ip_exist("AVERAGE_STATES",0)) {
-     ip_count("AVERAGE_STATES", &i, 0);
-     if (i < 1 || i > Parameters.num_roots) {
-       fprintf(outfile,"Invalid number of states to average (%d)\n", i);
-       exit(1);
-     }
-     Parameters.average_states = init_int_array(i);
-     Parameters.average_weights = init_array(i);
-     Parameters.average_num = i;
-     for (i=0;i<Parameters.average_num;i++) {
-       errcod = ip_data("AVERAGE_STATES","%d",
-         &(Parameters.average_states[i]),1,i);
-       if (Parameters.average_states[i] < 1) {
-         fprintf(outfile,"AVERAGE_STATES start numbering from 1.\n");
-         fprintf(outfile,"Invalid state number %d\n", 
-           Parameters.average_states[i]);
-         exit(1);
-       }
-       Parameters.average_states[i] -= 1; /* number from 1 externally */
-       Parameters.average_weights[i] = 1.0/((double)Parameters.average_num);
-     }
-*    if (ip_exist("AVERAGE_WEIGHTS",0)) {
-       ip_count("AVERAGE_WEIGHTS", &i, 0);
-       if (i != Parameters.average_num) {
-         fprintf(outfile,"Mismatched number of average weights (%d)\n", i);
-         exit(0);
-       }
-       for (i=0; i<Parameters.average_num; i++) {
-         errcod = ip_data("AVERAGE_WEIGHTS","%lf", 
-           &(Parameters.average_weights[i]),1,i);
-       }
-     }
+    Parameters.average_states = init_int_array(i);
+    Parameters.average_weights = init_array(i);
+    Parameters.average_num = i;
+    for (i=0;i<Parameters.average_num;i++) {
+      Parameters.average_states[i] = options["AVERAGE_STATES"][i].to_integer();
+      if (Parameters.average_states[i] < 1) {
+        fprintf(outfile,"AVERAGE_STATES start numbering from 1.\n");
+        fprintf(outfile,"Invalid state number %d\n", 
+          Parameters.average_states[i]);
+        exit(1);
+      }
+      Parameters.average_states[i] -= 1; /* number from 1 externally */
+      Parameters.average_weights[i] = 1.0/((double)Parameters.average_num);
+    }
+
+    if (options["AVERAGE_WEIGHTS"].has_changed()) {
+      if (options["AVERAGE_WEIGHTS"].size() != Parameters.average_num) {
+        fprintf(outfile,"Mismatched number of average weights (%d)\n", i);
+        exit(0);
+      }
+      for (i=0; i<Parameters.average_num; i++) {
+        Parameters.average_weights[i] = 
+          options["AVERAGE_WEIGHTS"][i].to_double();
+      }
+    }
       
-     if (Parameters.average_num > 1) Parameters.opdm_ave = 1;
+    if (Parameters.average_num > 1) Parameters.opdm_ave = 1;
 
-     if ((!options["ROOT"].has_changed()) && (Parameters.average_num==1)) {
-       Parameters.root = Parameters.average_states[0];
-     }
-   }
+    if ((!options["ROOT"].has_changed()) && (Parameters.average_num==1)) {
+      Parameters.root = Parameters.average_states[0];
+    }
+  }
 
-   else {
-     Parameters.average_num = 1;
-     Parameters.average_states = init_int_array(1);
-     Parameters.average_weights = init_array(1);
-     Parameters.average_states[0] = Parameters.root;
-     Parameters.average_weights[0] = 1.0;
-   } /* end state-average parsing */
+  else {
+    Parameters.average_num = 1;
+    Parameters.average_states = init_int_array(1);
+    Parameters.average_weights = init_array(1);
+    Parameters.average_states[0] = Parameters.root;
+    Parameters.average_weights[0] = 1.0;
+  } /* end state-average parsing */
 
-   /* Follow a vector to determine the root number? */
-   Parameters.follow_vec_num = 0;
 
+  // START HERE
+
+  /* Follow a vector to determine the root number? */
+  Parameters.follow_vec_num = 0;
    /* CDS-TODO: I'm going to rearrange this into 
       FOLLOW_VECTOR_ALPHAS, FOLLOW_VECTOR_BETAS, and FOLLOW_VECTOR_COEFS
    */

@@ -955,6 +955,12 @@ public:
         return array;
     }
 
+    void fill_int_array(std::string key, int* empty_array) {
+        for (unsigned int i=0; i<use(key).size(); ++i) {
+            empty_array[i] = use(key)[i].to_integer();
+        }
+    }
+
     std::vector<int> get_int_vector(std::string key) {
         std::vector<int> array;
         for (unsigned int i=0; i<use(key).size(); ++i) {
