@@ -32,12 +32,12 @@ def quotify(string):
     return string
 
 def process_option(spaces, module, key, value, line):
-    if re.match('basis', key.lower()):
-        value = re.sub(',', '_', value)
-        value = re.sub('\(', '_', value)
-        value = re.sub('\)', '_', value)
-        value = re.sub('\+', 'p', value)
-        value = re.sub('\*', 's', value)
+    #if re.match('basis', key.lower()):
+        #value = re.sub(',', '_', value)
+        #value = re.sub('\(', '_', value)
+        #value = re.sub('\)', '_', value)
+        #value = re.sub('\+', 'p', value)
+        #value = re.sub('\*', 's', value)
     value  = quotify(value.strip())
     temp   = ""
 
@@ -143,7 +143,7 @@ def process_memory_command(matchobj):
 def process_basis_file(matchobj):
     spacing   = str(matchobj.group(1))
     basisfile = str(matchobj.group(2)).strip()
-    command   = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile) 
+    command   = "%sPsiMod.add_user_basis_file(\"%s\")" % (spacing, basisfile)
 
     return command
 
@@ -162,16 +162,16 @@ def process_basis_block(matchobj):
         if(m):
             if(basisstring != ""):
                 result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-                result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing) 
+                result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing)
                 result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
                 basisstring = ""
             basisname = PsiMod.BasisSet.make_filename(m.group(1))
         basisstring += line + "\n"
     if(basisstring != ""):
         result += "%spsi4tempbasisfile = psi4tempscratchdir + \"%s\"" % (spacing, basisname)
-        result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing) 
+        result += "%sPsiMod.add_user_basis_file(psi4tempbasisfile)" % (spacing)
         result += "%stemppsioman.write_scratch_file(psi4tempbasisfile, \"\"\"\n%s\"\"\")" % (spacing, basisstring)
-    return result 
+    return result
 
 def process_basis_assign_block(matchobj):
     spacing       = str(matchobj.group(1))
@@ -223,27 +223,27 @@ def process_extern_block(matchobj):
 
     addType = "None"
 
-    NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"  
+    NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
 
     charge_re = re.compile(r'^\s*(charges?)\s*$', re.IGNORECASE)
     dip_re = re.compile(r'^\s*(dipoles?)\s*$', re.IGNORECASE)
     quad_re = re.compile(r'^\s*(quadrupoles?)\s*$', re.IGNORECASE)
     spacer_re = re.compile(r'^\s*\*{4}\s*$')
 
-    c_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$') 
-    d_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$') 
-    q_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$') 
+    c_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
+    d_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
+    q_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*$')
 
     for line in lines:
         if (not line or line.isspace()):
             continue
-        
+
         if spacer_re.match(line):
             continue
         elif charge_re.match(line):
             addType = "Charge"
             continue
-        elif dip_re.match(line): 
+        elif dip_re.match(line):
             addType = "Dipole"
             continue
         elif quad_re.match(line):
@@ -253,22 +253,22 @@ def process_extern_block(matchobj):
             if addType == "None":
                 print "First Line of extern section must be a type of potential (charge, dipole, etc)\n"
                 bad_option_syntax(line)
-           
-            if addType == "Charge": 
+
+            if addType == "Charge":
                 mobj = c_re.match(line)
                 if not mobj:
                     bad_option_syntax(line)
                 extern += "%s%s.addCharge(%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
                      mobj.group(2), mobj.group(3), mobj.group(4))
-                
-            if addType == "Dipole": 
+
+            if addType == "Dipole":
                 mobj = d_re.match(line)
                 if not mobj:
                     bad_option_syntax(line)
                 extern += "%s%s.addDipole(%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
                      mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6))
-                
-            if addType == "Quadrupole": 
+
+            if addType == "Quadrupole":
                 mobj = q_re.match(line)
                 if not mobj:
                     bad_option_syntax(line)
@@ -365,7 +365,7 @@ def process_input(raw_input):
     blank_mol = 'geometry("""\n'
     blank_mol += 'X\n'
     blank_mol += '""","blank_molecule_psi4_yo")\n'
-    
+
     temp = imports + psirc + blank_mol + temp
 
     return temp

@@ -168,6 +168,13 @@ def run_ccsd(name, **kwargs):
     PsiMod.ccsort()
     return PsiMod.ccenergy()
 
+def run_ccsd_gradient(name, **kwargs):
+    run_ccsd(name, **kwargs)
+    PsiMod.cchbar()
+    PsiMod.cclambda()
+    PsiMod.ccdensity()
+    PsiMod.deriv()
+
 def run_ccsd_t(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
