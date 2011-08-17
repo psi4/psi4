@@ -21,7 +21,8 @@ procedures = {
             'detci'         : run_detci
         },
         'gradient' : {
-            'scf'           : run_scf_gradient
+            'scf'           : run_scf_gradient,
+            'ccsd'          : run_ccsd_gradient
         },
         'hessian' : {
         },
