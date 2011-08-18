@@ -19,6 +19,7 @@ set plugin_testparse {
   opt3 3
   intarr = [1, 4, 9]
   dblarr = [2.0, 5.0, 7.0]
+  follow_vector = [ [[1293, 355], 0.8], [[3532, 987], 0.3] ]
 }
 
 plugin("plugin_testparse.so")
