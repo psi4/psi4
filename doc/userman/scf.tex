@@ -9,25 +9,30 @@ approaches.  Molecular properties obtained by Hatree-Fock theory are
 generally at least qualitatively correct, although they can be
 quantitatively poor in many instances.
                                                                                 
-\PSIthree\ solves the Hatree-Fock equations in a basis of Gaussian 
+\PSIfour\ solves the Hatree-Fock equations in a basis of Gaussian 
 functions using an iterative, self-consistent-field (SCF) procedure.  The
 final molecular orbitals are those which minimize the energy, 
 subject to the electron configuration specified by the user (or
-guessed by the program).  The process is continued until the largest
+guessed by the program).  For molecules with symmetry, the 
+electron configuration can be specified in terms of the number of
+doubly- and singly-occupied orbitals per irreducible representation, 
+via the DOCC and SOCC general keywords.
+The SCF process is continued until the largest
 change in an element of the density matrix drops below 10$^{-n}$, where
 $n$ is an integer specified by the \keyword{convergence} keyword.
 
 Of course the efficiency of the iterative procedure depends on the choice of
-initial guess.  The \PSIcscf\ module will attempt to use previously obtained
+initial guess.  The \PSIscf\ module will attempt to use previously obtained
 orbitals as a guess if they are available.  This can be particularly
 advantageous when diffuse functions are present; in that case, it may
 be easiest to run the computation with a smaller basis and project
 those orbitals onto the larger basis by specifying the \keyword{--chkptmos}
 command-line argument or the \keyword{chkpt\_mos=true} keyword in input
 when running the \PSIinput\ program for the larger basis.  If
-old MO's are not available, \PSIcscf\ uses a core Hamiltonian guess
+old MO's are not available, \PSIscf\ uses a core Hamiltonian guess
 by default.  The convergence of the SCF procedure is accelerated by Pulay's 
-direct inversion of the iterative subspace (DIIS) approach, and it is possible
+direct inversion of the iterative subspace (DIIS)
+approach,\cite{Pulay:1980} and it is possible
 to modify the behavior of the DIIS through various keywords, 
 although this is seldom necessary.  
 
@@ -41,30 +46,61 @@ is not usually an issue (typically the lowest minimum consistent with
 the electron configuration is found), it can be a problem sometimes for 
 radicals, diradicals, bond breaking, or unusual bonding situations.  The
 \PSIstable\ module can be used to test for the stability of Hartree-Fock
-wave functions.
+wave functions (note: this module from \PSIthree\ has not yet been adapted
+to work in \PSIfour).
 
 The most commonly used keywords are found below.  More specialized keywords
 are available in the man pages.
 
-\begin{description}
-\item[MAXITER = integer]\mbox{}\\
-This gives the maximum number of iterations.  The default is 40.
-\item[CONVERGENCE = integer]\mbox{}\\
-This specifies how tightly the wavefunction will be converged.
-Convergence is determined by comparing the RMS change in the
-density matrix ("delta P") to the given value.  The convergence
-criterion is 10**(-integer).  The default is 7 if both DERTYPE
-= NONE and WFN = SCF are given and 10 otherwise.
-\item[LEVELSHIFT = real]\mbox{}\\
-This specifies the level shift.  The default is 1.
-\item[DIRECT = boolean]\mbox{}\\
-Specifies whether to do the SCF calculation with an integral-direct
-technique.  The default is false.
-\item[NUM\_THREADS = integer]\mbox{}\\
-Specified the number of threads to be used in the integral-direct
-computation (only valid if {\tt DIRECT} is set to {\tt true}).
-Default is 1.
-\item[PRINT\_MOS = boolean]\mbox{}\\
-Specifies whether to print the molecular orbitals or not.  The default
-is false.
-\end{description}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         SCF\_TYPE & What algorithm to use for the SCF computation \\
+          & {\bf Possible Values:} PK, OUT\_OF\_CORE, DIRECT, DF,
+PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} PK\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MAXITER & The maximum number of iterations \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 100\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         D\_CONVERGE & -Log10 of the density convergence criterion \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 8\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         REFERENCE & The reference wavefunction used in the computation \\
+
+          & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} RHF\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
+doublet, 3 for a triplet, etc. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         GUESS & The type of guess orbitals \\
+
+          & {\bf Possible Values:} CORE, GWH, SAD, READ \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} CORE\\
+         & & \\
+\end{tabular*}
+
+
