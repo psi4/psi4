@@ -29,6 +29,7 @@
 \newcommand{\PSIccenergy}{\module{ccenergy}\xspace}
 \newcommand{\PSIccsort}{\module{ccsort}\xspace}
 \newcommand{\PSIpsi}{\module{psi}\xspace}
+\newcommand{\PSIscf}{\module{scf}\xspace}
 \newcommand{\PSIcscf}{\module{cscf}\xspace}
 \newcommand{\PSIoptking}{\module{optking}\xspace}
 \newcommand{\PSItransqt}{\module{transqt}\xspace}
