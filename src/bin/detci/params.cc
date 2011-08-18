@@ -15,8 +15,6 @@
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
-#include <libipv1/ip_lib.h>
-#include <libipv1/ip_data.gbl>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
@@ -734,152 +732,107 @@ void get_parameters(void)
   // START HERE
 
   /* Follow a vector to determine the root number? */
-  Parameters.follow_vec_num = 0;
-   /* CDS-TODO: I'm going to rearrange this into 
-      FOLLOW_VECTOR_ALPHAS, FOLLOW_VECTOR_BETAS, and FOLLOW_VECTOR_COEFS
-   */
-   if (ip_exist("FOLLOW_VECTOR",0)) {
-     errcod = ip_count("FOLLOW_VECTOR",&i,0); 
-     if (errcod != IPE_OK || (i % 2)!=0) {
        fprintf(outfile, "Need to specify FOLLOW_VECTOR = "
                         "((alphastr_i betastr_i) coeff_i ... )\n");
-       abort();
-     }
-     i = i/2;
-     Parameters.follow_vec_num = i;     
-*    Parameters.follow_vec_coef   = init_array(i);
-*    Parameters.follow_vec_Ia     = init_int_array(i);
-*    Parameters.follow_vec_Ib     = init_int_array(i);
-     Parameters.follow_vec_Iac    = init_int_array(i);
-     Parameters.follow_vec_Ibc    = init_int_array(i);
-     Parameters.follow_vec_Iaridx = init_int_array(i);
-     Parameters.follow_vec_Ibridx = init_int_array(i);
+  Parameters.follow_vec_num = 0;
+  if (options["FOLLOW_VECTOR"].has_changed()) {
+    i = options["FOLLOW_VECTOR"].size();
+    Parameters.follow_vec_num = i;     
+    Parameters.follow_vec_coef   = init_array(i);
+    Parameters.follow_vec_Ia     = init_int_array(i);
+    Parameters.follow_vec_Ib     = init_int_array(i);
+    Parameters.follow_vec_Iac    = init_int_array(i);
+    Parameters.follow_vec_Ibc    = init_int_array(i);
+    Parameters.follow_vec_Iaridx = init_int_array(i);
+    Parameters.follow_vec_Ibridx = init_int_array(i);
 
-     /* now parse each piece */
-     for (i=0; i<Parameters.follow_vec_num; i++) {
-       errcod = ip_data("FOLLOW_VECTOR","%d",
-                        Parameters.follow_vec_Ia+i,2,i*2,0);
-       if (errcod != IPE_OK) {
-         fprintf(outfile, "Trouble parsing FOLLOW_VECTOR\n");
-         abort();
-       }
-       errcod = ip_data("FOLLOW_VECTOR","%d",
-                        Parameters.follow_vec_Ib+i,2,i*2,1);
-       if (errcod != IPE_OK) {
-         fprintf(outfile, "Trouble parsing FOLLOW_VECTOR\n");
-         abort();
-       }
-       errcod = ip_data("FOLLOW_VECTOR","%lf",
-                        Parameters.follow_vec_coef+i,1,i*2+1);
-       if (errcod != IPE_OK) {
-         fprintf(outfile, "Trouble parsing FOLLOW_VECTOR\n");
-         abort();
-       }
-     } /* end loop over parsing */
-   } /* end follow vector stuff */
+    /* now parse each piece */
+    for (i=0; i<Parameters.follow_vec_num; i++) {
 
-   /* make sure SA weights add up to 1.0 */
-   for (i=0,junk=0.0; i<Parameters.average_num; i++) {
-     junk += Parameters.average_weights[i]; 
-   }
-   if (junk <= 0.0) {
-     fprintf(outfile, "Error: AVERAGE WEIGHTS add up to %12.6lf\n", junk);
-     exit(0);
-   }
-   for (i=0; i<Parameters.average_num; i++) {
-     Parameters.average_weights[i] /= junk; 
-   }
+      int isize = options["FOLLOW_VECTOR"][i].size();
+      if (isize != 2) {
+        fprintf(outfile, "Need format FOLLOW_VECTOR = \n");
+        fprintf(outfile, "  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
+        abort();
+      }
 
-  Parameters.cc_export = 0;
-  Parameters.cc_import = 0;
-* errcod = ip_boolean("CC_EXPORT", &(Parameters.cc_export), 0);
-* errcod = ip_boolean("CC_IMPORT", &(Parameters.cc_import), 0);
+      int iisize = options["FOLLOW_VECTOR"][i][0].size();
+      if (iisize != 2) {
+        fprintf(outfile, "Need format FOLLOW_VECTOR = \n");
+        fprintf(outfile, "  [ [[alphastr_i, betastr_i], coeff_i], ... ] \n");
+        abort();
+      }
 
-  Parameters.cc_fix_external = 0;
-* errcod = ip_boolean("CC_FIX_EXTERNAL", &(Parameters.cc_fix_external), 0);
-  Parameters.cc_fix_external_min = 1;
-* errcod = ip_data("CC_FIX_EXTERNAL_MIN", "%d",
-    &(Parameters.cc_fix_external_min),0);
+      Parameters.follow_vec_Ia[i] = 
+        options["FOLLOW_VECTOR"][i][0][0].to_integer();
 
-  Parameters.cc_variational = 0;
-* errcod = ip_boolean("CC_VARIATIONAL", &(Parameters.cc_variational), 0);
+      Parameters.follow_vec_Ib[i] = 
+        options["FOLLOW_VECTOR"][i][0][1].to_integer();
 
-  Parameters.cc_mixed = 1;
-* errcod = ip_boolean("CC_MIXED", &(Parameters.cc_mixed), 0);
+      Parameters.follow_vec_coef[i] = 
+        options["FOLLOW_VECTOR"][i][1].to_double();
 
+    } /* end loop over parsing */
+  } /* end follow vector stuff */
+
+
+  /* make sure SA weights add up to 1.0 */
+  for (i=0,junk=0.0; i<Parameters.average_num; i++) {
+    junk += Parameters.average_weights[i]; 
+  }
+  if (junk <= 0.0) {
+    fprintf(outfile, "Error: AVERAGE WEIGHTS add up to %12.6lf\n", junk);
+    exit(0);
+  }
+  for (i=0; i<Parameters.average_num; i++) {
+    Parameters.average_weights[i] /= junk; 
+  }
+
+  Parameters.cc_export = options["CC_EXPORT"].to_integer();
+  Parameters.cc_import = options["CC_IMPORT"].to_integer();
+  Parameters.cc_fix_external = options["CC_FIX_EXTERNAL"].to_integer();
+  Parameters.cc_fix_external_min = options.get_int("CC_FIX_EXTERNAL_MIN");
+  Parameters.cc_variational = options["CC_VARIATIONAL"].to_integer();
+  Parameters.cc_mixed = options["CC_MIXED"].to_integer();
   /* update using orb eigvals or not? */
-  Parameters.cc_update_eps = 1;
-* errcod = ip_boolean("CC_UPDATE_EPS", &(Parameters.cc_update_eps), 0);
+  Parameters.cc_update_eps = options["CC_UPDATE_EPS"].to_integer();
 
-* Parameters.diis = 1;             /* only kicks in for CC anyway */
-* Parameters.diis_start = 1;       /* iteration to turn on DIIS */
-* Parameters.diis_freq  = 1;       /* how often to do a DIIS extrapolation */
-* Parameters.diis_min_vecs = 2;
-* Parameters.diis_max_vecs = 5;
+  /* DIIS only kicks in for CC anyway, no need to prefix with CC_ */ 
+  Parameters.diis = options["DIIS"].to_integer();
+  /* Iteration to turn on DIIS */
+  Parameters.diis_start = options.get_int("DIIS_START"); 
+  /* Do DIIS every n iterations */
+  Parameters.diis_freq = options.get_int("DIIS_FREQ"); 
+  Parameters.diis_min_vecs = options.get_int("DIIS_MIN_VECS"); 
+  Parameters.diis_max_vecs = options.get_int("DIIS_MAX_VECS"); 
 
-  errcod = ip_boolean("DIIS", &(Parameters.diis), 0);
-  errcod = ip_data("DIIS_START","%d",&(Parameters.diis_start),0);
-  errcod = ip_data("DIIS_FREQ","%d",&(Parameters.diis_freq),0);
-  errcod = ip_data("DIIS_MIN_VECS","%d",&(Parameters.diis_min_vecs),0);
-  errcod = ip_data("DIIS_MAX_VECS","%d",&(Parameters.diis_max_vecs),0);
-   
-  /* parse cc_macro = (
-       (ex_lvl max_holes_I max_parts_IV max_I+IV)
+  /* parse cc_macro = [
+       [ex_lvl, max_holes_I, max_parts_IV, max_I+IV]
        ...
-     )
+     ]
      This says to eliminate T blocks in which: [the excitation level
      (holes in I + II) is equal to ex_lvl] AND [there are more than
      max_holes_I holes in RAS I, there are more than max_parts_IV
      particles in RAS IV, OR there are more than max_I+IV quasiparticles
      in RAS I + RAS IV]
    */
-  // CDS-TODO: Here we need an array of arrays.  This seems like it
-  // should work by analogy to src/bin/cis/local.cc.  Check.
-  // Here's the CIS example:
-  /*
-  if (options["DOMAINS"].size() > 0) {
-    num_entries = options["DOMAINS"].size();
-    for(i=0; i<num_entries; i++) {
-      entry_len = options["DOMAINS"][i].size();
-      orbital = options["DOMAINS"][i][0].to_integer();
-
-      for(j=1; j<entry_len; j++) {
-        atom = options["DOMAINS"][i][j].to_integer();
-        domain[orbital][atom] = 1;
-        domain_len[orbital]++;
-      }
-    }
-  }
-  */
 
   Parameters.cc_macro_on = 0;
-* if (Parameters.cc && ip_exist("CC_MACRO",0)) {
-    errcod = ip_count("CC_MACRO",&i,0);
+  if (Parameters.cc && options["CC_MACRO"].has_changed()) {
+    i = options["CC_MACRO"].size();
     Parameters.cc_macro = init_int_matrix(Parameters.cc_ex_lvl +
       Parameters.cc_val_ex_lvl + 1, 3);
     Parameters.cc_macro_parsed = init_int_array(Parameters.cc_ex_lvl +
       Parameters.cc_val_ex_lvl + 1);
     for (j=0; j<i; j++) {
-      errcod = ip_data("CC_MACRO","%d",&k,2,j,0);
-      if (errcod != IPE_OK) {
-        fprintf(outfile, "Trouble parsing CC_MACRO\n");
-        abort();
-      }
-      errcod = ip_data("CC_MACRO","%d",Parameters.cc_macro[k],2,j,1);
-      if (errcod != IPE_OK) {
-        fprintf(outfile, "Trouble parsing CC_MACRO\n");
-        abort();
-      }
-      errcod = ip_data("CC_MACRO","%d",Parameters.cc_macro[k]+1,2,j,2);
-      if (errcod != IPE_OK) {
-        fprintf(outfile, "Trouble parsing CC_MACRO\n");
-        abort();
-      }
-      errcod = ip_data("CC_MACRO","%d",Parameters.cc_macro[k]+2,2,j,3);
-      if (errcod != IPE_OK) {
-        fprintf(outfile, "Trouble parsing CC_MACRO\n");
-        abort();
-      }
+      // errcod = ip_data("CC_MACRO","%d",&k,2,j,0);
+      k = options["CC_MACRO"][j][0].to_integer();
+      // errcod = ip_data("CC_MACRO","%d",Parameters.cc_macro[k],2,j,1);
+      Parameters.cc_macro[k][0] = options["CC_MACRO"][j][1].to_integer();
+      // errcod = ip_data("CC_MACRO","%d",Parameters.cc_macro[k]+1,2,j,2);
+      Parameters.cc_macro[k][1] = options["CC_MACRO"][j][2].to_integer();
+      // errcod = ip_data("CC_MACRO","%d",Parameters.cc_macro[k]+2,2,j,3);
+      Parameters.cc_macro[k][2] = options["CC_MACRO"][j][3].to_integer();
       Parameters.cc_macro_parsed[k] = 1;
     }
     Parameters.cc_macro_on = 1;
