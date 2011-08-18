@@ -165,8 +165,10 @@ mol1->print_connectivity(outfile);
 
   // read binary file for previous steps ; history needed to compute EFP values
   p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
-  if (p_Opt_data->g_iteration() == 1)
+  if (p_Opt_data->g_iteration() == 1) {
     p_irc_data = new IRC_DATA();
+    fprintf(stdout,"IRC data object created\n");
+  }
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   mol1->update_efp_values(); // EFP values calculated from old opt_data
@@ -220,9 +222,10 @@ mol1->print_connectivity(outfile);
 
   mol1->project_f_and_H();
 
+  // step functions put dq in p_Opt_data->step
   if (Opt_params.opt_type == OPT_PARAMS::IRC)
     mol1->irc_step();
-  else {// puts dq in p_Opt_data->step
+  else {
     if (Opt_params.step_type == OPT_PARAMS::NR)
       mol1->nr_step();
     else if (Opt_params.step_type == OPT_PARAMS::RFO)
@@ -242,14 +245,9 @@ mol1->print_connectivity(outfile);
     {
       //delete all entries but those on reaction path
       //assuming coord has already been incremented; is >=1
-cout << "Here!\nsize: ";
-cout << p_Opt_data->nsteps();
-cout << "\n";
+cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
 //      while(p_Opt_data->nsteps() > 2)
 //        p_Opt_data->erase_step(1);
-cout << "Here!\nsize: ";
-cout << p_Opt_data->nsteps();
-cout << "\n";
 //      p_Opt_data->H_update(*mol1);
 //      p_Opt_data->erase_step(0);
 
