@@ -25,7 +25,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
   /*- The molecular charge -*/
   options.add_int("CHARGE", 0);
-  /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
+  /*- Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
   /*- Whether to use pure angular momentum basis functions -*/
   options.add_bool("PUREAM", true);
@@ -462,19 +462,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     root number changes.  To follow a root of a particular character,
     one can specify a list of determinants and their coefficients,
     and the code will follow the root with the closest overlap.  The
-    user specifies arrays containing the absolute alpha string indices,
-    absolute beta indices, and CI coefficients to form the desired vector.
-    FOLLOW_VECTOR_ALPHAS specifies the alpha string indices. !expert -*/
-    options.add("FOLLOW_VECTOR_ALPHAS", new ArrayType());
-
-    /*- Array giving the absolute beta string indices for vector following
-    (see FOLLOW_VECTOR_ALPHAS) !expert -*/
-    options.add("FOLLOW_VECTOR_BETAS", new ArrayType());
-
-    /*- Array giving the CI coefficients for vector following
-    (see FOLLOW_VECTOR_ALPHAS) !expert -*/
-    // CDS:TODO - needs to work for doubles
-    options.add("FOLLOW_VECTOR_COEFS", new ArrayType());
+    user specifies arrays containing the absolute alpha string indices
+    (A_i below), absolute beta indices (B_i below), and CI coefficients 
+    (C_i below) to form the desired vector.
+    FOLLOW_VECTOR_ALPHAS specifies the alpha string indices. The
+    format is FOLLOW_VECTOR = [ [[A_1, B_1], C_1], [[A_2, B_2], C_2], ...].
+    !expert -*/
+    options.add("FOLLOW_VECTOR", new ArrayType());
 
     /*- Export a CC vector to disk? -*/
     options.add_bool("CC_EXPORT", false);
@@ -715,7 +709,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("R_EXT",3.0);
     /*- Iterations per full Pipek-Mizey Localization -*/
     options.add_int("STEPS_PER_LOCALIZE",1);
-    /*- Tells which way to run SCF -*/
+    /*- What algorithm to use for the SCF computation -*/
     options.add_str("SCF_TYPE","PK","PK OUT_OF_CORE DIRECT DF PSEUDOSPECTRAL POISSON L_DF CD 1C_CD");
     /*- Whether to run in parallel or not -*/
     options.add_bool("PARALLEL", false);
@@ -733,7 +727,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /* The number of virtual orbitals to freeze in correlated computations -*/
     options.add_int("FREEZE_VIRT",0);
 
-    /*- The guess type to be used in the computation -*/
+    /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
     /*- The reference wavefunction used in the computation -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
@@ -1370,7 +1364,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MULTP", 1);
     /*- -*/
     options.add_int("CONVERGENCE",9);
-    /*- -*/
+    /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);

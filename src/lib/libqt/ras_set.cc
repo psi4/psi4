@@ -345,6 +345,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
 
 
   /* replace DOCC and SOCC only if they are in input */
+  /* this fills existing DOCC and SOCC arrays        */
   if (ip_exist("DOCC",0))
     errcod = ip_int_array("DOCC",docc,nirreps);
   if (ip_exist("SOCC",0))
