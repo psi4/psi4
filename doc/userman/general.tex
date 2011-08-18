@@ -1,0 +1,101 @@
+\subsection{General Keywords} \label{general}
+                                                                                
+Several keywords are relevant to many types of computations.  Those are
+described briefly here.
+
+\vspace*{0.2in}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         REFERENCE & The reference wavefunction used in the computation \\
+
+          & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} RHF\\
+         & & \\
+\end{tabular*}
+The ``reference wavefunction'' specified by the REFERENCE keyword is the
+type of Hartree--Fock or Kohn--Sham wavefunction to be evaluated during
+the computation.  The reference wavefuntion may be the goal of the
+computation (if WFN = SCF), or it may serve as a reference (zeroth-order
+solution) for various post-Hartree--Fock computations like CCSD(T) or MP2.
+
+\PSIfour\ may use several types of reference wavefunctions.  For
+closed-shell molecules, the appropriate choice is almost always restricted
+Hartree--Fock (RHF).  For open-shell molecules, one can choose either
+restricted orbitals (restricted open-shell Hartree--Fock, or ROHF), or
+unrestricted orbitals (unrestricted Hartree--Fock, or UHF).  We have also
+implemented the so-called constrained unrestricted Hartree--Fock (CUHF)
+method, which is an alternative approach to ROHF (and should give identical
+results) that may be easier to converge \cite{Tsuchimochi:2010:141102}.  Not
+all post-Hartree--Fock modules in \PSIfour\ can use all possible reference
+types.
+
+For Kohn--Sham density functional theory computations, the possible
+references are restricted Kohn--Sham (RKS, for closed-shell molecules)
+and unrestricted Kohn--Sham (UKS, for open-shell molecules).
+A restricted open-shell Kohn--Sham procedure is not recommended
+\cite{Handy-something} and not implemented.
+
+\vspace*{0.2in}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
+doublet, 3 for a triplet, etc. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1\\
+         & & \\
+\end{tabular*}
+
+The MULTP keyword gives the spin multiplicity of the system.  For
+closed-shell molecules, this will be 1 (singlet state).  Specification of
+the spin state is a universal requirement for quantum chemistry programs.
+Be careful and make sure the correct spin state is computed.  For example, 
+many beginners to computational chemistry forget to specify that the ground
+state of the O$_2$ molecule is a triplet (MULTP=3).
+
+\vspace*{0.2in}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         CHARGE & The molecular charge \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 0\\
+         & & \\
+\end{tabular*}
+
+
+\vspace*{0.2in}
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         DOCC & An array containing the number of doubly-occupied orbitals
+per irrep (in Cotton order) \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} No Default\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         SOCC & An array containing the number of singly-occupied orbitals
+per irrep (in Cotton order) \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} No Default\\
+         & & \\
+\end{tabular*}
+
+DOCC and SOCC specify the electron configuration of interest by indicating
+how many doubly and singly occupied orbitals there are for each irreducible
+representation.  These are arrays of integers, and the ordering is that
+given by Cotton.  SOCC is only relevant for open-shell molecules.  If DOCC
+and SOCC are not given, the program will attempt to guess the orbital
+occupations per irreducible representation automatically. For high-symmetry
+molecules, quantum chemistry programs like \PSIfour\ can frequently guess
+wrong, so having the ability to manually specify the correct configuration
+is useful.  The automatic guess is less likely to be wrong if it is run in
+smaller basis sets (like STO-3G); doing so can be a practical way to get
+the right occupations, which can then be specified manually for
+larger-basis computations.
+
+
