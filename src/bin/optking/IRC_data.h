@@ -43,7 +43,7 @@ class IRC_POINT {
       f_q = f_q_in;
       f_x = f_x_in;
       energy = E_in;
-    }   // allocate memory only
+    }
 
     ~IRC_POINT() {free_array(q_pivot); free_array(q); free_array(x); free_array(f_q); free_array(f_x);} // free memory
 
