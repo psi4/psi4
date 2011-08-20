@@ -15,7 +15,7 @@
 default:: install
 
 # Note that LaTeX should be run three times to resolve references
-$(TARGET_DVI): $(TEX) $(SUBTEX)
+$(TARGET_DVI): $(TEX) $(SUBTEX) $(OTFTEX)
 	echo $(srcdir)
 	TEXINPUTS=$(TEXINPUTS);  export TEXINPUTS; \
 	BIBINPUTS=$(TEXINPUTS);  export BIBINPUTS; \
@@ -27,7 +27,7 @@ $(TARGET_PS): $(DVI)
 $(TARGET_PDF): $(PS)
 	$(PS2PDF) -dEmbedAllFonts=true $<
 
-$(TARGET_HTML): $(TEX) $(SUBTEX)
+$(TARGET_HTML): $(TEX) $(SUBTEX) $(OTFTEX)
 	TEXINPUTS=$(TEXINPUTS); export TEXINPUTS; \
 $(LATEX2HTML) -tmp /tmp -dir $(currdir)/html -external_file $(currdir)/$(<F:%.tex=%) -mkdir -local_icons -split 0 $<; \
 $(LATEX2HTML) -tmp /tmp -dir $(currdir)/html_sectioned -external_file $(currdir)/$(<F:%.tex=%) -mkdir -local_icons $<; \
@@ -69,11 +69,11 @@ endif
 # clean up
 #
 
-realclean:: dviclean psclean htmlclean
+realclean:: dviclean psclean htmlclean otfclean
 	-rm -f *.aux *.log *.toc *.bbl
 	-rm -rf html
 
-clean:: dviclean psclean htmlclean
+clean:: dviclean psclean htmlclean otfclean
 
 dviclean:
 	-rm -f *.dvi
@@ -86,6 +86,9 @@ pdfclean:
 
 htmlclean:
 	-rm -rf $(TARGET_HTML:%.html=%)
+
+otfclean:
+	-rm -f $(OTFTEX)
 
 #
 # keep the configuration information and makefiles up-to-date
