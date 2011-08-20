@@ -1,8 +1,6 @@
 \section{Basis Sets}
 
-Behind every good quantum chemistry package stand many good basis sets.
- 
-Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), of segmented contraction (not general contraction), and of Gaussian94 format (for ease of export from EMSL), all electron [no effective core potentials (ECP)]. Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported, but their mixtures within one basis set (6D/7F) are not, neither their mixtures within a calculation (\textit{e.g.,} cartesian for the orbital basis and spherical for the fitting basis). For built-in basis sets, the correct spherical/cartesian puream is set internally for the orbital basis, but this can be overridden with the puream keyword. 
+Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), all-electron [no effective core potentials (ECP)], of segmented contraction (not general contraction), and of Gaussian94 format (for ease of export from EMSL). Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported, but their mixtures within one basis set (\textit{e.g.}, 6D/7F) are not, neither their mixtures within a calculation (\textit{e.g.}, cartesian for the orbital basis and spherical for the fitting basis). For built-in basis sets, the correct spherical/cartesian puream is set internally for the orbital basis, but this can be overridden with the puream keyword. 
 
 
 \subsection{Built-in Basis Sets}
@@ -13,12 +11,10 @@ In the tables below, columns indicate degrees of augmentation by diffuse functio
 \caption{Summary of Pople-style orbital basis sets available in \PSIfour.} \label{table:basisPopleOrbital}
 \parsep 10pt
 \begin{center}
-%\begin{tabular}{ll|ll|ll}
 \begin{tabular}{llllll}
 \hline\hline
 %\multicolumn{2}{c}{\textbf{no diffuse}} & \multicolumn{2}{c}{\textbf{heavy-augmented}} & \multicolumn{2}{c}{\textbf{augmented}} \\
 \multicolumn{2}{c}{no diffuse} & \multicolumn{2}{c}{heavy-augmented} & \multicolumn{2}{c}{augmented} \\
-%aug & aug alias & heavy-aug & heavy-aug alias & no diffuse & alias \\
 Basis Set & [Alias] & Basis Set & [Alias] & Basis Set & [Alias] \\
 \hline
 STO-3G          &            &                  &             &                   &              \\
@@ -53,7 +49,7 @@ STO-3G          &            &                  &             &                 
 \begin{table}[!htbp]
 \begin{footnotesize}
 \caption{Summary of Dunning orbital basis sets available in \PSIfour.} \label{table:basisDunningOrbital}
-\parsep 5pt
+\parsep 10pt
 \begin{center}
 \begin{tabular}{llllllllll} 
 \hline\hline
@@ -75,7 +71,7 @@ cc-pwCV(X+d)Z        & DTQ5  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}
 \begin{table}[!htbp]
 \begin{footnotesize}
 \caption{Summary of Dunning JK-fitting basis sets available in \PSIfour.} \label{table:basisDunningJKFIT}
-\parsep 5pt
+\parsep 10pt
 \begin{center}
 \begin{tabular}{llllllllll} 
 \hline\hline
@@ -97,7 +93,7 @@ cc-pwCV(X+d)Z-JKFIT              &  &  &  &  &  &  &  &  &  \\
 \begin{table}[!htbp]
 \begin{footnotesize}
 \caption{Summary of Dunning MP2-fitting basis sets available in \PSIfour.} \label{table:basisDunningMP2FIT}
-\parsep 5pt
+\parsep 10pt
 \begin{center}
 \begin{tabular}{llllllllll} 
 \hline\hline
@@ -119,7 +115,7 @@ cc-pwCV(X+d)Z-RI     &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}-
 \begin{table}[!htbp]
 \begin{footnotesize}
 \caption{Summary of Dunning Douglas-Kroll basis sets available in \PSIfour.} \label{table:basisDunningDK}
-\parsep 5pt
+\parsep 10pt
 \begin{center}
 \begin{tabular}{llllllllll}
 \hline\hline
@@ -141,7 +137,7 @@ cc-pwCV(X+d)Z-DK     &  &       &       &  &  &  &  &  &       \\
 \begin{table}[!htbp]
 \begin{footnotesize}
 \caption{Summary of Dunning dual-basis helper basis sets available in \PSIfour.} \label{table:basisDunningDUAL}
-\parsep 5pt
+\parsep 10pt
 \begin{center}
 \begin{tabular}{llllllllll}
 \hline\hline
@@ -159,7 +155,7 @@ cc-pwCV(X+d)Z-DUAL   &  &     &      &  &  &  &  &  &      \\
 \end{footnotesize}
 \end{table}
 
-\subsection{User-specified Basis Sets}
-\subsection{Calling Built-in Basis Sets}
-\subsection{Calling Custom Basis Sets}
+%\subsection{User-specified Basis Sets}
+%\subsection{Calling Built-in Basis Sets}
+%\subsection{Calling Custom Basis Sets}
 
