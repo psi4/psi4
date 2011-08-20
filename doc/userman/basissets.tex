@@ -1,0 +1,165 @@
+\section{Basis Sets}
+
+Behind every good quantum chemistry package stand many good basis sets.
+ 
+Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), of segmented contraction (not general contraction), and of Gaussian94 format (for ease of export from EMSL), all electron [no effective core potentials (ECP)]. Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported, but their mixtures within one basis set (6D/7F) are not, neither their mixtures within a calculation (\textit{e.g.,} cartesian for the orbital basis and spherical for the fitting basis). For built-in basis sets, the correct spherical/cartesian puream is set internally for the orbital basis, but this can be overridden with the puream keyword. 
+
+
+\subsection{Built-in Basis Sets}
+In the tables below, columns indicate degrees of augmentation by diffuse functions and DTQ56 indicate the X$\;=\zeta$ levels available. For availability by element, consult Appendix \ref{basisElement}.
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Pople-style orbital basis sets available in \PSIfour.} \label{table:basisPopleOrbital}
+\parsep 10pt
+\begin{center}
+%\begin{tabular}{ll|ll|ll}
+\begin{tabular}{llllll}
+\hline\hline
+%\multicolumn{2}{c}{\textbf{no diffuse}} & \multicolumn{2}{c}{\textbf{heavy-augmented}} & \multicolumn{2}{c}{\textbf{augmented}} \\
+\multicolumn{2}{c}{no diffuse} & \multicolumn{2}{c}{heavy-augmented} & \multicolumn{2}{c}{augmented} \\
+%aug & aug alias & heavy-aug & heavy-aug alias & no diffuse & alias \\
+Basis Set & [Alias] & Basis Set & [Alias] & Basis Set & [Alias] \\
+\hline
+STO-3G          &            &                  &             &                   &              \\
+3-21G           &            &                  &             &                   &              \\
+%\hline
+6-31G           &            & 6-31+G           &             & 6-31++G           &              \\
+6-31G(d)        & [6-31G*]   & 6-31+G(d)        & [6-31+G*]   & 6-31++G(d)        & [6-31++G*]   \\
+6-31G(d,p)      & [6-31G**]  & 6-31+G(d,p)      & [6-31+G**]  & 6-31++G(d,p)      & [6-31++G**]  \\
+%\hline
+6-311G          &            & 6-311+G          &             & 6-311++G          &              \\
+6-311G(d)       & [6-311G*]  & 6-311+G(d)       & [6-311+G*]  & 6-311++G(d)       & [6-311++G*]  \\
+6-311G(d,p)     & [6-311G**] & 6-311+G(d,p)     & [6-311+G**] & 6-311++G(d,p)     & [6-311++G**] \\
+6-311G(2d)      &            & 6-311+G(2d)      &             & 6-311++G(2d)      &              \\
+6-311G(2d,p)    &            & 6-311+G(2d,p)    &             & 6-311++G(2d,p)    &              \\
+6-311G(2d,2p)   &            & 6-311+G(2d,2p)   &             & 6-311++G(2d,2p)   &              \\
+6-311G(2df)     &            & 6-311+G(2df)     &             & 6-311++G(2df)     &              \\
+6-311G(2df,p)   &            & 6-311+G(2df,p)   &             & 6-311++G(2df,p)   &              \\
+6-311G(2df,2p)  &            & 6-311+G(2df,2p)  &             & 6-311++G(2df,2p)  &              \\
+6-311G(2df,2pd) &            & 6-311+G(2df,2pd) &             & 6-311++G(2df,2pd) &              \\
+6-311G(3df)     &            & 6-311+G(3df)     &             & 6-311++G(3df)     &              \\
+6-311G(3df,p)   &            & 6-311+G(3df,p)   &             & 6-311++G(3df,p)   &              \\
+6-311G(3df,2p)  &            & 6-311+G(3df,2p)  &             & 6-311++G(3df,2p)  &              \\
+6-311G(3df,2pd) &            & 6-311+G(3df,2pd) &             & 6-311++G(3df,2pd) &              \\
+6-311G(3df,3pd) &            & 6-311+G(3df,3pd) &             & 6-311++G(3df,3pd) &              \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning orbital basis sets available in \PSIfour.} \label{table:basisDunningOrbital}
+\parsep 5pt
+\begin{center}
+\begin{tabular}{llllllllll} 
+\hline\hline
+Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+\hline
+cc-pVXZ              & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
+cc-pV(X+d)Z          & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
+cc-pCVXZ             & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
+cc-pCV(X+d)Z         & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
+cc-pwCVXZ            & DTQ5  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
+cc-pwCV(X+d)Z        & DTQ5  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning JK-fitting basis sets available in \PSIfour.} \label{table:basisDunningJKFIT}
+\parsep 5pt
+\begin{center}
+\begin{tabular}{llllllllll} 
+\hline\hline
+Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+\hline
+cc-pVXZ-JKFIT\cite{basisnote2}   &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &  & DTQ5  \\
+cc-pV(X+d)Z-JKFIT                &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &  & DTQ5  \\
+cc-pCVXZ-JKFIT\cite{basisnote2}  &  &  &  &  &  &  &  &  &  \\
+cc-pCV(X+d)Z-JKFIT               &  &  &  &  &  &  &  &  &  \\
+cc-pwCVXZ-JKFIT\cite{basisnote2} &  &  &  &  &  &  &  &  &  \\
+cc-pwCV(X+d)Z-JKFIT              &  &  &  &  &  &  &  &  &  \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning MP2-fitting basis sets available in \PSIfour.} \label{table:basisDunningMP2FIT}
+\parsep 5pt
+\begin{center}
+\begin{tabular}{llllllllll} 
+\hline\hline
+Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+\hline
+cc-pVXZ-RI           &  & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
+cc-pV(X+d)Z-RI       &  & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
+cc-pCVXZ-RI          &  &  &  &  &  &  &  &  &  \\
+cc-pCV(X+d)Z-RI      &  &  &  &  &  &  &  &  &  \\
+cc-pwCVXZ-RI         &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
+cc-pwCV(X+d)Z-RI     &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning Douglas-Kroll basis sets available in \PSIfour.} \label{table:basisDunningDK}
+\parsep 5pt
+\begin{center}
+\begin{tabular}{llllllllll}
+\hline\hline
+Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+\hline
+cc-pVXZ-DK           &  & DTQ5  & DTQ5  &  &  &  &  &  & DTQ5  \\
+cc-pV(X+d)Z-DK       &  &       &       &  &  &  &  &  &       \\
+cc-pCVXZ-DK          &  & DTQ5  & DTQ5  &  &  &  &  &  & DTQ5  \\
+cc-pCV(X+d)Z-DK      &  &       &       &  &  &  &  &  &       \\
+cc-pwCVXZ-DK         &  & --TQ5 & --TQ5 &  &  &  &  &  & --TQ5 \\
+cc-pwCV(X+d)Z-DK     &  &       &       &  &  &  &  &  &       \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning dual-basis helper basis sets available in \PSIfour.} \label{table:basisDunningDUAL}
+\parsep 5pt
+\begin{center}
+\begin{tabular}{llllllllll}
+\hline\hline
+Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+\hline
+cc-pVXZ-DUAL         &  & DTQ & --TQ &  &  &  &  &  & --TQ \\
+cc-pV(X+d)Z-DUAL     &  &     &      &  &  &  &  &  &      \\
+cc-pCVXZ-DUAL        &  &     &      &  &  &  &  &  &      \\
+cc-pCV(X+d)Z-DUAL    &  &     &      &  &  &  &  &  &      \\
+cc-pwCVXZ-DUAL       &  &     &      &  &  &  &  &  &      \\
+cc-pwCV(X+d)Z-DUAL   &  &     &      &  &  &  &  &  &      \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+\subsection{User-specified Basis Sets}
+\subsection{Calling Built-in Basis Sets}
+\subsection{Calling Custom Basis Sets}
+
