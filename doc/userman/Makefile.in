@@ -16,13 +16,14 @@ psithon.tex basissets.tex
 OTFTEX = \
 tests_descriptions.tex keywords.tex expert_keywords.tex psi4bases.tex
 
-$(OTFTEX):
-	@srcdir@/document_options_and_tests.pl @srcdir@
-	@srcdir@/document_bases.pl @srcdir@
-
 DVI = $(TEX:%.tex=%.dvi)
 PS = $(DVI:%.dvi=%.ps)
 PDF = $(PS:%.ps=%.pdf)
 HTML = $(TEX:%.tex=%.html)
 
 include ../MakeRules
+
+$(OTFTEX):
+	@srcdir@/document_options_and_tests.pl @srcdir@
+	@srcdir@/document_bases.pl @srcdir@
+
