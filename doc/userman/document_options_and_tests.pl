@@ -15,7 +15,9 @@ use warnings;
 #
 # First, read the options for each module
 #
-my $DriverFile = "../../src/bin/psi4/read_options.cc";
+my $DriverPath = "";
+if ($#ARGV == 0) { $DriverPath = $ARGV[0] . "/"; }
+my $DriverFile = $DriverPath . "../../src/bin/psi4/read_options.cc";
 
 my $CurrentModule;
 my %Keywords;
@@ -197,8 +199,8 @@ sub determine_keyword_type_and_default
 # Now we raid the test cases looking for tags
 #
 
-my $TestsFolder = "../../tests";
-my $SamplesFolder = "../../samples";
+my $TestsFolder = $DriverPath . "../../tests";
+my $SamplesFolder = $DriverPath . "../../samples";
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
 my $TexSummary = "tests_descriptions.tex";
 # Create a plain-text summary in the samples directory
@@ -206,6 +208,7 @@ my $Summary = $SamplesFolder."/SUMMARY";
 open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
 # Make a LaTeX version for the manual, too
 open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
+printf TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.15\\textwidth}p{0.75\\textwidth}}\n";
 foreach my $Dir(readdir TESTS){
     my $Input = $TestsFolder."/".$Dir."/input.dat";
     # Look for an input file in each subdirectory, or move on
@@ -239,14 +242,13 @@ foreach my $Dir(readdir TESTS){
         $Dir_tex =~ s/_/\\_/g;
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
-        print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n";
-        print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n";
-        print TEXSUMMARY "\\end{tabular*}\n";
+        print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex\\\\\n";
         printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
+print TEXSUMMARY "\\end{tabular*}";
 close TEXSUMMARY;
 close SUMMARY;
 closedir TESTS;
