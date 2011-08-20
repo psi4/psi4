@@ -208,7 +208,6 @@ my $Summary = $SamplesFolder."/SUMMARY";
 open(SUMMARY,">$Summary") or die "I can't write to $Summary\n";
 # Make a LaTeX version for the manual, too
 open(TEXSUMMARY,">$TexSummary") or die "I can't write to $TexSummary\n";
-printf TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.15\\textwidth}p{0.75\\textwidth}}\n";
 foreach my $Dir(readdir TESTS){
     my $Input = $TestsFolder."/".$Dir."/input.dat";
     # Look for an input file in each subdirectory, or move on
@@ -242,13 +241,14 @@ foreach my $Dir(readdir TESTS){
         $Dir_tex =~ s/_/\\_/g;
         my $Description_tex = $Description;
         $Description_tex =~ s/_/\\_/g;
-        print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex\\\\\n";
+        print TEXSUMMARY "\\begin{tabular*}{\\textwidth}[tb]{p{0.2\\textwidth}p{0.8\\textwidth}}\n"; 
+        print TEXSUMMARY "{\\bf $Dir_tex} & $Description_tex \\\\\n\\\\\n"; 
+        print TEXSUMMARY "\\end{tabular*}\n"; 
         printf SUMMARY "%-12s %s\n\n\n", $Dir.":", $Description;
     }else{
         warn "Warning!!! Undocumented input: $Input\n";
     }
 }
-print TEXSUMMARY "\\end{tabular*}";
 close TEXSUMMARY;
 close SUMMARY;
 closedir TESTS;
