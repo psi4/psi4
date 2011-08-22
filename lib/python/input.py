@@ -27,7 +27,7 @@ def process_word_quotes(matchobj):
 def quotify(string):
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-+*.\w]+))')
+    wordre = re.compile(r'(([$]?)([-+,()*.\w]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
@@ -331,7 +331,7 @@ def process_input(raw_input):
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set (module_list) key  {[value_list] or $value or value}"
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-+*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-+,()*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
