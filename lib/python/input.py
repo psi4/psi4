@@ -7,17 +7,17 @@ no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
 
 def bad_option_syntax(line):
     print 'Unsupported syntax:\n\n%s\n\n' % (line)
-    exit()
+    sys.exit(1)
 
 def process_word_quotes(matchobj):
     if(matchobj.group(2)):
         # This is a python variable, make sure that it starts with a letter
-        if(re.match(r'[A-Za-z][-*.\w]+', matchobj.group(3))):
+        if(re.match(r'[A-Za-z][\w]*', matchobj.group(3))):
             return matchobj.group(3)
         else:
             print "Invalid Python variable: %s" % matchobj.group(3)
-            exit()
-    elif(re.search(r'[*_A-Za-z]', matchobj.group())):
+            sys.exit(1)
+    elif(re.search(r'[A-Za-z]', matchobj.group(3))):
         # This contains letters/symbols, so we need to wrap it in quotes
         return "\"%s\"" % matchobj.group(1)
     else:
@@ -27,17 +27,11 @@ def process_word_quotes(matchobj):
 def quotify(string):
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-*.\w]+))')
+    wordre = re.compile(r'(([$]?)([-+*.\w]+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
 def process_option(spaces, module, key, value, line):
-    #if re.match('basis', key.lower()):
-        #value = re.sub(',', '_', value)
-        #value = re.sub('\(', '_', value)
-        #value = re.sub('\)', '_', value)
-        #value = re.sub('\+', 'p', value)
-        #value = re.sub('\*', 's', value)
     value  = quotify(value.strip())
     temp   = ""
 
@@ -289,7 +283,6 @@ def check_parentheses_and_brackets(input_string):
     lparens = set(lrmap.iterkeys())
     rparens = set(lrmap.itervalues())
 
-    '''Check that all parentheses in a string come in matched nested pairs.'''
     parenstack = collections.deque()
     for ch in input_string:
         if ch in lparens:
@@ -338,7 +331,7 @@ def process_input(raw_input):
     temp = re.sub(set_commands, process_set_commands, temp)
 
     # Process all individual "set (module_list) key  {[value_list] or $value or value}"
-    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
+    set_command = re.compile(r'^(\s*?)set\s+(?:([-,\w]+)\s+)?(\w+)[\s=]+((\[.*\])|(\$?[-+*\.\w]+))\s*$', re.MULTILINE | re.IGNORECASE)
     temp = re.sub(set_command, process_set_command, temp)
 
     # Process "molecule name? { ... }"
