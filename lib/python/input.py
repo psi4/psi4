@@ -278,6 +278,38 @@ def process_extern_block(matchobj):
 
     return extern
 
+
+def check_parentheses_and_brackets(input_string):
+    import collections
+    
+    # create left to right parenthesis mappings
+    lrmap = {"(":")", "[":"]", "{":"}"}
+    
+    # derive sets of left and right parentheses
+    lparens = set(lrmap.iterkeys())
+    rparens = set(lrmap.itervalues())
+
+    '''Check that all parentheses in a string come in matched nested pairs.'''
+    parenstack = collections.deque()
+    for ch in input_string:
+        if ch in lparens:
+            parenstack.append(ch)
+        elif ch in rparens:
+            opench = ""
+            try:
+                opench = parenstack.pop()
+            except IndexError:
+                # Run out of opening parens
+                print "Input error: extra %s" % ch
+                sys.exit(1)
+            if lrmap[opench] != ch:
+                # wrong type of parenthesis popped from stack
+                print "Input error: %s closed with a %s" % (opench, ch)
+                sys.exit(1)
+    if(len(parenstack) != 0):
+        print "Input error: Unmatched %s" % parenstack.pop()
+
+
 def process_input(raw_input):
 
     #NOTE: If adding mulitline data to the preprocessor, use ONLY the following syntax:
@@ -293,6 +325,9 @@ def process_input(raw_input):
     # Nuke all comments
     comment = re.compile(r'#.*')
     temp = re.sub(comment, '', raw_input)
+
+    # Check the brackets and parentheses match up
+    check_parentheses_and_brackets(temp)
 
     # First, remove everything from lines containing only spaces
     blankline = re.compile(r'^\s*$')
@@ -381,53 +416,6 @@ R = .9
 
 set basis 6-31G**
 
-#this is a comment
-set globals {
-    RI_BASIS_SCF STO-3G
-}
-
-set scf,ccsd  = {
-    print 1
-    DOCC [3, 0, 1, 1]
-    DIIS on
-}
-
-    set globals freeze_core true
-    set global freeze_core = true
-
-    set global  docc   [2, 0, 1, 1]
-    set  ss  = 3.0
-    set  ss   3.0
-    set scf socc  [23]
-    set scf,ccsd docc  [34,43]
-    set dostuff   1
-    set globals,ccsd do_more_stuff $foo
-
-    set mp2 {
-        print  5
-        print = 5
-    }
-
-basis file ~/basis/sto3g.gbs
-basis file ~/basis sets/cc-pvdz.gbs
-
-basis assign {
- h1 cc-pvdz
- 1 sto-3g
-  dz
-}
-
-basis assign ri_basis_scf {
- h1 cc-pvdz
- 1 sto-3g
-  dz
-}
-
-basis = {
-   name = cc-pvdz
-   cartesian
-   0 1
-}
 """)
 
     print "Result\n=========================="
