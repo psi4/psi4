@@ -320,6 +320,9 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::compute_scf_energy()
   {
+
+      // Escf = eNuc + 0.5 * (H + F) * (kappa + tau)
+
       scf_energy_ = enuc_;
       scf_energy_ += 0.5 * kappa_a_->vector_dot(so_h_);
       scf_energy_ += 0.5 * kappa_b_->vector_dot(so_h_);

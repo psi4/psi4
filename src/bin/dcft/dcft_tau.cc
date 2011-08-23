@@ -11,8 +11,8 @@ using namespace std;
 namespace psi{ namespace dcft{
 
 /**
- * Forms Tau in the MO basis from the Lambda tensors, before transforming back
- * to the AO basis.
+ * Forms Tau in the MO basis from the Lambda tensors and transforms it back
+ * to the SO basis.
  */
 void
 DCFTSolver::build_tau()
@@ -103,7 +103,7 @@ DCFTSolver::build_tau()
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
-//  Zero AO tau arrays before copmputing it in the MO basis
+    // Zero SO tau arrays before computing it in the MO basis
     a_tau_->zero();
     b_tau_->zero();
 
@@ -112,8 +112,8 @@ DCFTSolver::build_tau()
 
         double **temp = block_matrix(nsopi_[h], nsopi_[h]);
         /*
-         * Backtransform the Tau matrices to the AO basis
-         * tauTrans = C moTau Ct
+         * Backtransform the Tau matrices to the AO basis: soTau = C moTau Ct
+         * Attn: the forward MO->AO transformation would be: moTau = Ct S soTau S C
          */
         double **paOccC = aocc_c_->pointer(h);
         double **pbOccC = bocc_c_->pointer(h);
