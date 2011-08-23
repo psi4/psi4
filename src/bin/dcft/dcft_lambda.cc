@@ -8,17 +8,15 @@ namespace psi{ namespace dcft{
 
 /**
  * Computes the residual for the lambda equations
- * R = G + T - A
+ * R = G + F
  * @return RMS residual
  */
 double
 DCFTSolver::compute_lambda_residual()
 {
-    dpdbuf4 R, G, T, A;
-    dpdbuf4 F;
+    dpdbuf4 R, G, F;
     double sumSQ = 0.0;
     size_t nElements = 0;
-
 
     /*
      * R_ijab = G_ijab + F_ijab
