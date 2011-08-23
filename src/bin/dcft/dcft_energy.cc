@@ -13,10 +13,6 @@ DCFTSolver::compute_dcft_energy()
 {
     dpdbuf4 L, G, I;
     double eGaa, eGab, eGbb, eIaa, eIab, eIbb;
-#if !ENERGY_NEW
-    old_total_energy_ = new_total_energy_;
-    new_total_energy_ = scf_energy_;
-#endif
 
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
@@ -78,11 +74,7 @@ DCFTSolver::compute_dcft_energy()
     fprintf(outfile, "\tTotal I Energy = %20.12f\n", eIaa + eIab + eIbb);
 #endif
 
-#if ENERGY_NEW
-    dcft_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;
-#else
-    new_total_energy_ += eGaa + eGab + eGbb + eIaa + eIab + eIbb;
-#endif
+    lambda_energy_ = eGaa + eGab + eGbb + eIaa + eIab + eIbb;
 }
 
 }} // Namespaces

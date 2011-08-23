@@ -18,9 +18,6 @@ DCFTSolver::compute_energy()
     bool lambdaDone = false;
     bool densityConverged = false;
     bool energyConverged = false;
-#if !ENERGY_NEW
-    double oldEnergy;
-#endif
     scf_guess();
     mp2_guess();
 
@@ -68,7 +65,7 @@ DCFTSolver::compute_energy()
                              "\tCumulant Iterations\n",cycle);
             lambdaDone = false;
             // Start density cumulant (lambda) iterations
-            while(!lambdaDone && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
+            while(!lambdaDone && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER") && !energyConverged){
                 std::string diisString;
                 // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                 build_tensors();
@@ -119,56 +116,37 @@ DCFTSolver::compute_energy()
 //                    update_lambda_from_residual();
                 }
                 // Save old DCFT energy
-#if ENERGY_NEW
                 old_total_energy_ = new_total_energy_;
-#else
-                oldEnergy = new_total_energy_;
-#endif
-                // Compute new DCFT energy
+                // Compute new DCFT energy (lambda contribution)
                 compute_dcft_energy();
-#if ENERGY_NEW
-                new_total_energy_ = scf_energy_ + dcft_energy_;
+                new_total_energy_ = scf_energy_ + lambda_energy_;
                 // Check convergence for density cumulant iterations
-                lambdaDone = lambda_convergence_ < lambda_threshold_ &&
-                                fabs(new_total_energy_ - old_total_energy_) < lambda_threshold_;
-#else
-                // Check convergence for density cumulant iterations
-                lambdaDone = lambda_convergence_ < lambda_threshold_ &&
-                                fabs(new_total_energy_ - oldEnergy) < lambda_threshold_;
-#endif
-#if ENERGY_NEW
+                lambdaDone = lambda_convergence_ < lambda_threshold_;
+                energyConverged = fabs(new_total_energy_ - old_total_energy_) < lambda_threshold_;
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                         nLambdaIterations, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                         new_total_energy_, diisString.c_str());
-#else
-                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
-                        nLambdaIterations, scf_convergence_, lambda_convergence_, new_total_energy_ - oldEnergy,
-                        new_total_energy_, diisString.c_str());
-#endif
                 fflush(outfile);
             }
             // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
             // Update the orbitals
             int nSCFCycles = 0;
+            // Reset the booleans that control the convergence
             densityConverged = false;
+            energyConverged = false;
             scfDiisManager.reset_subspace();
             fprintf(outfile, "\tOrbital Updates\n");
-            while((!densityConverged || scf_convergence_ > scf_threshold_)
-                    && nSCFCycles++ < options_.get_int("SCF_MAXITER")){
+            while((!densityConverged || !scfDone) && !energyConverged && nSCFCycles++ < options_.get_int("SCF_MAXITER")){
                 std::string diisString;
                 // Copy core hamiltonian into the Fock matrix array: F = H
                 Fa_->copy(so_h_);
                 Fb_->copy(so_h_);
-                // Build the new Fock matrix from the SO integrals: F += Gbar * kappa
+                // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
                 process_so_ints();
                 // Save old SCF energy
-#if ENERGY_NEW
                 old_total_energy_ = new_total_energy_;
-#else
-                oldEnergy = new_total_energy_;
-#endif
-                // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * tau
+                // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
                 Fa_->add(g_tau_a_);
                 Fb_->add(g_tau_b_);
                 // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
@@ -178,6 +156,7 @@ DCFTSolver::compute_energy()
                 compute_scf_energy();
                 // Check SCF convergence
                 scf_convergence_ = compute_scf_error_vector();
+                scfDone = scf_convergence_ < scf_threshold_;
                 if(scf_convergence_ < diis_start_thresh_){
                     if(scfDiisManager.add_entry(4, scf_error_a_.get(), scf_error_b_.get(), Fa_.get(), Fb_.get()))
                         diisString += "S";
@@ -202,29 +181,25 @@ DCFTSolver::compute_energy()
                 // Make sure that the orbital phase is retained
                 correct_mo_phases(false);
                 if(!lock_occupation_) find_occupation(epsilon_a_);
-                // Update SCF density (kappa)
+                // Update SCF density (Kappa) and check its RMS
                 densityConverged = update_scf_density() < scf_threshold_;
                 // Compute the DCFT energy
-#if ENERGY_NEW
-                new_total_energy_ = scf_energy_ + dcft_energy_;
+                new_total_energy_ = scf_energy_ + lambda_energy_;
+                // Check convergence of the total DCFT energy
+                energyConverged = fabs(new_total_energy_ - old_total_energy_) < lambda_threshold_;
                 fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     nSCFCycles, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                     new_total_energy_, diisString.c_str());
-#else
-                compute_dcft_energy();
-                fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
-                    nSCFCycles, scf_convergence_, lambda_convergence_, new_total_energy_ - oldEnergy,
-                    new_total_energy_, diisString.c_str());
-#endif
                 fflush(outfile);
             }
             // Write orbitals to the checkpoint file
             write_orbitals_to_checkpoint();
             scfDone = nSCFCycles == 1;
+            energyConverged = false;
             // Transform the Fock matrix to the MO basis
             moFa_->transform(Ca_);
             moFb_->transform(Cb_);
-            // Transform one-electron and two-electron integrals to the MO basis using new orbitals
+            // Transform two-electron integrals to the MO basis using new orbitals, build denominators
             transform_integrals();
         }
     }else{
@@ -255,40 +230,45 @@ DCFTSolver::compute_energy()
         while((!scfDone || !lambdaDone || !densityConverged || !energyConverged)
                 && cycle++ < maxiter_){
             std::string diisString;
-#if ENERGY_NEW
+            // Save the old energy
             old_total_energy_ = new_total_energy_;
-#else
-            oldEnergy = new_total_energy_;
-#endif
+            // Build new Tau from the density cumulant in the MO basis and transform it the SO basis
             build_tau();
+            // Copy core hamiltonian into the Fock matrix array: F = H
             Fa_->copy(so_h_);
             Fb_->copy(so_h_);
-            // This will build the new Fock matrix from the SO integrals
+            // Build the new Fock matrix from the SO integrals: F += Gbar * Kappa
             process_so_ints();
+            // Add non-idempotent density contribution (Tau) to the Fock matrix: F += Gbar * Tau
             Fa_->add(g_tau_a_);
             Fb_->add(g_tau_b_);
-            // Copy and transform the Fock matrix, before it's symmetrically orthogonalized
+            // Back up the SO basis Fock before it is symmetrically orthogonalized to transform it to the MO basis
             moFa_->copy(Fa_);
             moFb_->copy(Fb_);
+            // Transform the Fock matrix to the MO basis
             moFa_->transform(Ca_);
             moFb_->transform(Cb_);
+            // Compute new SCF energy
             compute_scf_energy();
-#if ENERGY_NEW
+            // Add SCF energy contribution to the total DCFT energy
             new_total_energy_ = scf_energy_;
-#endif
+            // Check SCF convergence
             scf_convergence_ = compute_scf_error_vector();
             scfDone = scf_convergence_ < scf_threshold_;
+            // Build G and F intermediates needed for the density cumulant residual equations and DCFT energy computation
             build_intermediates();
+            // Compute the residuals for density cumulant equations
             lambda_convergence_ = compute_lambda_residual();
+            // Check convergence for density cumulant iterations
             lambdaDone = lambda_convergence_ < lambda_threshold_;
+            // Update density cumulant tensor
             update_lambda_from_residual();
+            // Compute new DCFT energy (lambda contribution)
             compute_dcft_energy();
-#if ENERGY_NEW
-            new_total_energy_ += dcft_energy_;
-            energyConverged = fabs(old_total_energy_ - new_total_energy_) < lambda_convergence_;
-#else
-            energyConverged = fabs(oldEnergy - new_total_energy_) < lambda_convergence_;
-#endif
+            // Add lambda energy to the DCFT total energy
+            new_total_energy_ += lambda_energy_;
+            // Check convergence of the total DCFT energy
+            energyConverged = fabs(old_total_energy_ - new_total_energy_) < lambda_threshold_;
             if(scf_convergence_ < diis_start_thresh_ && lambda_convergence_ < diis_start_thresh_){
                 //Store the DIIS vectors
                 dpdbuf4 Laa, Lab, Lbb, Raa, Rab, Rbb;
@@ -320,10 +300,11 @@ DCFTSolver::compute_energy()
                 dpd_buf4_close(&Lbb);
             }
 
-            // Save the Fock matrix before the orthogonalization
+            // Save the Fock matrix before the symmetric orthogonalization for Tau^2 correction computation
             Fa_copy->copy(Fa_);
             Fb_copy->copy(Fb_);
-
+            // Transform the Fock matrix to the symmetrically orhogonalized basis set and digonalize it
+            // Obtain new orbitals
             Fa_->transform(s_half_inv_);
             Fa_->diagonalize(tmp, epsilon_a_);
             old_ca_->copy(Ca_);
@@ -332,25 +313,23 @@ DCFTSolver::compute_energy()
             Fb_->diagonalize(tmp, epsilon_b_);
             old_cb_->copy(Cb_);
             Cb_->gemm(false, false, 1.0, s_half_inv_, tmp, 0.0);
+            // Make sure that the orbital phase is retained
             if(!correct_mo_phases(false)){
                 fprintf(outfile,"\t\tThere was a problem correcting the MO phases.\n"
                                 "\t\tIf this does not converge, try ALGORITHM=TWOSTEP\n");
             }
+            // Write orbitals to the checkpoint file
             write_orbitals_to_checkpoint();
+            // Transform two-electron integrals to the MO basis using new orbitals, build denominators
             transform_integrals();
             if(!lock_occupation_) find_occupation(epsilon_a_);
+            // Update SCF density (Kappa) and check its RMS
             densityConverged = update_scf_density() < scf_threshold_;
             // If we've performed enough lambda updates since the last orbitals
             // update, reset the counter so another SCF update is performed
-#if ENERGY_NEW
             fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
                     cycle, scf_convergence_, lambda_convergence_, new_total_energy_ - old_total_energy_,
                     new_total_energy_, diisString.c_str());
-#else
-            fprintf(outfile, "\t* %-3d   %12.3e      %12.3e   %12.3e  %21.15f  %-3s *\n",
-                    cycle, scf_convergence_, lambda_convergence_, new_total_energy_ - oldEnergy,
-                    new_total_energy_, diisString.c_str());
-#endif
             fflush(outfile);
         }
     }
@@ -373,17 +352,13 @@ DCFTSolver::compute_energy()
 
     // Tau^2 should probably be added to SCF energy....
     fprintf(outfile, "\n\t*DCFT SCF Energy                       = %20.15f\n", scf_energy_);
-#if ENERGY_NEW
-    fprintf(outfile, "\t*DCFT Lambda Energy                    = %20.15f\n", dcft_energy_);
-#endif
+    fprintf(outfile, "\t*DCFT Lambda Energy                    = %20.15f\n", lambda_energy_);
     fprintf(outfile, "\t*DCFT Total Energy                     = %20.15f\n", new_total_energy_);
 
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT SCF ENERGY"] = scf_energy_;
-#if ENERGY_NEW
-    Process::environment.globals["DCFT LAMBDA ENERGY"] = dcft_energy_;
-#endif
+    Process::environment.globals["DCFT LAMBDA ENERGY"] = lambda_energy_;
     Process::environment.globals["DCFT TAU SQUARED CORRECTION"] = energy_tau_squared_;
 
     if(!options_.get_bool("RELAX_ORBITALS")){
