@@ -60,23 +60,32 @@ def process_set_commands(matchobj):
     spaces = matchobj.group(1)
     commands = matchobj.group(3)
     command_lines = re.split('\n', commands)
+    # Remove trailing newline from each line
     map(lambda x: x.strip(), command_lines)
     result = ""
     module_string = ""
-    option_line = ""
+    command = ""
     if(matchobj.group(2)):
         module_string = matchobj.group(2)
     for module in module_string.split(","):
         for line in command_lines:
+            # Chomp the trailing newline and accumulate
+            command = command + line
+            if not check_parentheses_and_brackets(command, 0):
+                # If the brackets don't match up, we need to move on to the next line
+                # and keep going, until they do match. Only then do we process the command
+                continue
             # Ignore blank/empty lines
             if (not line or line.isspace()):
                 continue
-            matchobj = re.match(r'^\s*(\w+)[\s=]+(.*?)$', line)
+            matchobj = re.match(r'^\s*(\w+)[\s=]+(.*?)$', command)
             # Is the syntax correct? If so, process the line
             if matchobj:
-                result = result + process_option(spaces, module, matchobj.group(1), matchobj.group(2), line)
+                result = result + process_option(spaces, module, matchobj.group(1), matchobj.group(2), command)
+                # Reset the string
+                command = ""
             else:
-                bad_option_syntax(line)
+                bad_option_syntax(command)
     return result
 
 
