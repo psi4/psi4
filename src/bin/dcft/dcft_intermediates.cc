@@ -13,13 +13,8 @@ DCFTSolver::build_intermediates()
 {
     psio_->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
 
-    dpdfile2 X_OO, X_oo, X_VV, X_vv,
-             T_OO, T_oo, T_VV, T_vv,
-             F_OO, F_oo, F_VV, F_vv, tmp;
-    dpdbuf4 F;
-    dpdbuf4 I, L, G, T, A, D,
-            Taa, Tab, Tbb,
-            Laa, Lab, Lbb;
+    dpdfile2 F_OO, F_oo, F_VV, F_vv;
+    dpdbuf4 I, L, G, T, F, Taa, Tab, Tbb, Laa, Lab, Lbb;
 
     /*
      * G_ijab = <ij||ab>
