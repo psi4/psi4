@@ -118,6 +118,8 @@ protected:
     double diis_start_thresh_;
     /// The SCF component of the energy
     double scf_energy_;
+    /// The Lambda component of the energy
+    double dcft_energy_;
     /// The Tau^2 correction to the SCF component of the energy
     double energy_tau_squared_;
     /// The previous total energy
