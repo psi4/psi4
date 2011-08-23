@@ -3,10 +3,10 @@
 #! Four-virtual integrals are handled in the MO Basis.
 
 refnuc      =  0.66147156125000 #TEST
-refscf      = -5.67136015981290 #TEST
-refmp2      = -5.69435342806244 #TEST
-refdcftscf  = -5.63238918298459 #TEST
-refdcft     = -5.70127632317275 #TEST
+refscf      = -5.71032245823757 #TEST
+refmp2      = -5.76128209224412 #TEST
+refdcftscf  = -5.62714230597787 #TEST
+refdcft     = -5.77531659915098 #TEST
 
 molecule he2 {
     He
@@ -18,7 +18,7 @@ set globals {
     reference   uhf
     ao_basis    none
     algorithm   twostep
-    basis       3-21G
+    basis       6-31G**
 }
 
 energy('dcft')

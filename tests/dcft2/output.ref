@@ -6,248 +6,226 @@
     and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
 
                          Additional Contributions by
-    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremy Wilke
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
     -----------------------------------------------------------------------
 
 
     Using LocalCommunicator (Number of processes = 1)
 
     Memory level set to 256.000 MB
-    Calculation type = DCFT:ENERGY
-    Wavefunction     = DCFT
-    Reference        = RHF
-    Job type         = SP
-    Derivative type  = ENERGY
-    List of tasks to execute:
-    input
-    cints
-    dcft
 
-  Job 0 is INPUT
-  with command-like argument:  INPUT 
+  ==> Input File <==
 
-  Options:
-  ----------------------------------------------------------------------------
-  CHKPT_GEOM                => FALSE      
-  CHKPT_MOS                 => FALSE      
-  EXPERT                    => FALSE      
-  FRAGMENT_DISTANCE_INVERSE => FALSE      
-  FREEZE_CORE               => FALSE      
-  FREEZE_VIRT               => 0          
-  GEOMDAT                   => FALSE      
-  KEEP_CHKPT                => FALSE      
-  KEEP_OUTPUT               => FALSE      
-  KEEP_REF_FRAME            => FALSE      
-  LABEL                     => BLAH      !
-  NFRAGMENTS                => 1          
-  NOPROJECT                 => FALSE      
-  NORMALIZE                 => TRUE       
-  NO_COM_SHIFT              => FALSE      
-  NO_REORIENT               => FALSE      
-  PRINT                     => 1          
-  PUREAM                    => FALSE      
-  SAVE_MOS                  => FALSE      
-  SHOWNORM                  => FALSE      
-  SUBGROUP                  => (empty)    
-  UNIQUE_AXIS               => (empty)    
-  UNITS                     => ANGSTROMS  
-  WFN                       => DCFT      !
+--------------------------------------------------------------------------
+#! DCFT calculation for the He dimer, with the K06 functional. This performs a
+#! two-step update of the orbitals and cumulant, using DIIS extrapolation.
+#! Four-virtual integrals are handled in the MO Basis.
 
+refnuc      =  0.66147156125000 #TEST
+refscf      = -5.71032245823757 #TEST
+refmp2      = -5.76128209224412 #TEST
+refdcftscf  = -5.62714230597787 #TEST
+refdcft     = -5.77531659915098 #TEST
 
-*** PSI4 called tstart() on h70-33-108-250.paws.uga.edu
-*** at Tue Jun 15 12:44:48 2010
+molecule he2 {
+    He
+    He 1 3.2
+}
 
-                                --------------
-                                    INPUT
-                                --------------
+set globals {
+    convergence 11
+    reference   uhf
+    ao_basis    none
+    algorithm   twostep
+    basis       6-31G**
+}
 
-  LABEL       =	BLAH
-  SHOWNORM    =	0
-  PUREAM      =	0
-  PRINT_LVL   =	1
+energy('dcft')
 
-  Parsed basis sets from /Users/andysim/programming/workspace/psi4/lib/pbasis.dat
-Coordinates after reading z-matrices
+compare_values(refnuc, he2.nuclear_repulsion_energy(), 10, "Nuclear Repulsion Energy"); #TEST
+compare_values(refscf, get_variable("SCF ENERGY"), 10, "SCF Energy");                   #TEST
+compare_values(refmp2, get_variable("MP2 ENERGY"), 8, "MP2 Energy");                   #TEST
+compare_values(refdcft, get_variable("DCFT ENERGY"), 8, "DCFT Energy");                #TEST
+compare_values(refdcftscf, get_variable("DCFT SCF ENERGY"), 8, "DCFT SCF Energy");     #TEST
 
-           1           2           3
+clean()
 
-    1   0.0000000   0.0000000   0.0000000
-    2   0.0000000   0.0000000   6.0471232
+--------------------------------------------------------------------------
 
-  -Geometry before Center-of-Mass shift (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    HE        0.000000000000     0.000000000000     0.000000000000
-    HE        0.000000000000     0.000000000000     6.047123163453
+*** tstart() called on Alex-2.local
+*** at Tue Aug 23 14:50:10 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
 
 
-  -Rotational constants (cm-1) :
-    A = **********  B =    0.82259  C =    0.82259
-    It is a linear molecule.
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
 
-  -Geometry after Center-of-Mass shift and reorientation (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    HE        0.000000000000     0.000000000000    -3.023561581726
-    HE        0.000000000000     0.000000000000     3.023561581726
+  ==> Geometry <==
+
+    Molecular point group: d2h
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -1.600000000000
+          HE          0.000000000000     0.000000000000     1.600000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 1 
+
+  Running in d2h symmetry.
+
+  Nuclear repulsion =    0.661471561250000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 4
+  Nalpha       = 2
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 10
+    Number of Cartesian functions: 10
+    Spherical Harmonics?: false
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.6378333028E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UHF energy:    -3.98775523951146
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     Ag         3       3       1       1       1       0
+     B1g        0       0       0       0       0       0
+     B2g        1       1       0       0       0       0
+     B3g        1       1       0       0       0       0
+     Au         0       0       0       0       0       0
+     B1u        3       3       1       1       1       0
+     B2u        1       1       0       0       0       0
+     B3u        1       1       0       0       0       0
+   -------------------------------------------------------
+    Total      10      10       2       2       2       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:               6
+      Number of SO shells:               3
+      Number of primitives:             10
+      Number of atomic orbitals:        10
+      Number of basis functions:        10
+
+      Number of irreps:                  8
+      Number of functions per irrep: [   3    0    1    1    0    3    1    1 ]
+
+      Computing integrals...done
+
+      Computed 292 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UHF iter   1:    -5.48297430028349   -1.49522e+00   +0.00000e+00  
+   @UHF iter   2:    -5.70880666075752   -2.25832e-01   +1.72820e-01 DIIS
+   @UHF iter   3:    -5.71032234126954   -1.51568e-03   +1.47745e-02 DIIS
+   @UHF iter   4:    -5.71032245696631   -1.15697e-07   +1.20708e-04 DIIS
+   @UHF iter   5:    -5.71032245823755   -1.27124e-09   +1.33423e-05 DIIS
+   @UHF iter   6:    -5.71032245823757   -2.30926e-14   +5.73187e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1Ag    -0.915192     1B1u   -0.913062  
+
+	Alpha Virtual:                                                        
+
+	   2Ag     1.385550     2B1u    1.414364     3Ag     2.181995  
+	   1B2u    2.182002     1B3u    2.182002     1B3g    2.182002  
+	   1B2g    2.182002     3B1u    2.182025  
+
+	Beta Occupied:                                                        
+
+	   1Ag    -0.915192     1B1u   -0.913062  
+
+	Beta Virtual:                                                         
+
+	   2Ag     1.385550     2B1u    1.414364     3Ag     2.181995  
+	   1B2u    2.182002     1B3u    2.182002     1B3g    2.182002  
+	   1B2g    2.182002     3B1u    2.182025  
+
+	Final Occupation by Irrep:
+	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
+	DOCC [     1,    0,    0,    0,    0,    1,    0,    0 ]
+	SOCC [     0,    0,    0,    0,    0,    0,    0,    0 ]
+
+  Energy converged.
+
+  @UHF Final Energy:    -5.71032245823757
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
-  -SYMMETRY INFORMATION:
-    Computational point group is D2h 
-    Number of irr. rep.      = 8
-    Number of atoms          = 2
-    Number of unique atoms   = 1
+  @Spin Contamination Metric:  0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:               0.00000
 
+  Saving occupied orbitals to File 100.
 
-  -BASIS SETS:
+*** tstop() called on Alex-2.local at Tue Aug 23 14:50:11 2011
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-   -Basis set on unique center 1:
-      ( (S (    13.62670000     0.17523000)
-           (     1.99935000     0.89348300) )
-        (S (     0.38299300     1.00000000) )
-       )
-
-
-  Primary Basis:
-  -BASIS SET INFORMATION:
-    Total number of shells = 4
-    Number of primitives   = 3
-    Number of AO           = 4
-    Number of SO           = 4
-
-    Irrep    Number of SO
-    -----    ------------
-      1            2
-      2            0
-      3            0
-      4            0
-      5            0
-      6            2
-      7            0
-      8            0
-
-  -Contraction Scheme:
-    Atom     All Primitives // Unique Primitives // Shells
-    ----     ---------------------------------------------
-       1      3s //  3s //  2s
-       2      3s //  3s //  2s
-
-
-  -Unique atoms in the canonical coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    HE        0.000000000000     0.000000000000     3.023561581726
-
-
-  -Geometry in the canonical coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    HE        0.000000000000     0.000000000000    -3.023561581726
-    HE        0.000000000000     0.000000000000     3.023561581726
-
-
-  -Geometry in the canonical coordinate system (Angstrom):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    HE        0.000000000000     0.000000000000    -1.600000000000
-    HE        0.000000000000     0.000000000000     1.600000000000
-
-
-  -Geometry in the reference coordinate system (a.u.):
-   Atom            X                  Y                   Z
-  ------   -----------------  -----------------  -----------------
-    HE        0.000000000000     0.000000000000    -3.023561581726
-    HE        0.000000000000     0.000000000000     3.023561581726
-
-
-  --------------------------------------------------------------------------
-
-    Nuclear Repulsion Energy (a.u.) =       0.661471561250
-
-  -The Interatomic Distances in angstroms:
-
-           1           2
-
-    1   0.0000000
-    2   3.2000000   0.0000000
-
-    Note: To print *all* bond angles, out-of-plane
-          angles, and torsion angles set print = 3
-
-
-
-*** PSI4 called tstop() on h70-33-108-250.paws.uga.edu at Tue Jun 15 12:44:48 2010
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-  Job 1 is CINTS
-  with command-like argument:  CINTS 
-
-  Options:
-  ----------------------------------------------------------------------------
-  CUTOFF               => 15            EMPIRICAL_DISPERSION => FALSE       
-  ERI_FILE             => 33            FINE_STRUCTURE_ALPHA => 0.00729735  
-  MAKE_ERI             => TRUE          NUM_THREADS          => 1           
-  PRINT                => 1             RESTART              => FALSE       
-  RESTART_TASK         => 0             S_FILE               => 35          
-  T_FILE               => 35            V_FILE               => 35          
-  WFN                  => DCFT       !
-
-*** PSI4 called tstart() on h70-33-108-250.paws.uga.edu
-*** at Tue Jun 15 12:44:48 2010
-
-                  --------------------------------------------
-                    CINTS: An integrals program written in C
-                     Justin T. Fermann and Edward F. Valeev
-                  --------------------------------------------
-
-  -OPTIONS:
-    Print level                 = 1
-    Integral tolerance          = 1e-15
-    Max. memory to use          = 2500000 double words
-    Number of threads           = 1
-    LIBINT's real type length   = 64 bit
-
-  -CALCULATION CONSTANTS:
-    Label                       = BLAH
-    Number of atoms             = 2
-    Number of atomic orbitals   = 4
-    Number of symmetry orbitals = 4
-    Maximum AM in the basis     = 0
-    Fine-structure alpha scaling =   0.0073
-
-  -SYMMETRY INFORMATION;
-    Computational point group        = D2h
-    Number of irreps                 = 8
-
-    Wrote 31 two-electron integrals to IWL file 33
-
-
-*** PSI4 called tstop() on h70-33-108-250.paws.uga.edu at Tue Jun 15 12:44:48 2010
-	user time   =       0.10 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-
-  Job 2 is DCFT
-  with command-like argument:  DCFT 
-
-  Options:
-  ----------------------------------------------------------------------------
-  ALGORITHM      => TWOSTEP    AO_BASIS       => NONE     
-  CACHELEV       => 2          CHARGE         => 0        
-  CONVERGENCE    => 11      !  DIIS_NUM_VECS  => 3        
-  DIIS_START     => 3          DOCC           => [  ]     
-  IGNORE_TAU     => FALSE      INT_THRESH     => 14       
-  LAMBDA_MAXITER => 1          MAXITER        => 40      !
-  MAX_DIIS       => 6          MEMORY         => 2000     
-  MULTP          => 0          PRINT          => 1        
-  REGULARIZER    => 0          RELAX_ORBITALS => TRUE     
-  SCF_CONV       => 8          SCF_MAXITER    => 50      !
-  SOCC           => [  ]     
-
-*** PSI4 called tstart() on h70-33-108-250.paws.uga.edu
-*** at Tue Jun 15 12:44:48 2010
+*** tstart() called on Alex-2.local
+*** at Tue Aug 23 14:50:11 2011
 
 
 
@@ -256,60 +234,17 @@ Coordinates after reading z-matrices
 		*  Theory code written by Andy Simmonett  *
 		*******************************************
 
-	There are an even number of electrons - assuming singlet.
-	Specify the multiplicity with the MULTP option in the
-	input if this is incorrect
-
-
-	Computing Hartree-Fock orbital guess...
-
-	*===================================================================*
-	* Cycle   RMS Density Change   delta E            SCF Energy        *
-	*-------------------------------------------------------------------*
-	*  1          1.11e-01        -5.47e+00       -5.4702204734954751  *
-	*  2          7.22e-03        -2.00e-01       -5.6705263522461777  *
-	*  3          4.74e-04        -8.30e-04       -5.6713565736367855  *
-	*  4          3.11e-05        -3.57e-06       -5.6713601443515227  *
-	*  5          2.04e-06        -1.54e-08       -5.6713601597462207  *
-	*  6          1.34e-07        -6.64e-11       -5.6713601598126040  *
-	*  7          8.82e-09        -2.84e-13       -5.6713601598128882  *
-	*===================================================================*
-
-
-	Orbital energies (a.u.):
-		Alpha occupied orbitals
-		   1Ag    -0.904259     1B1u   -0.902884  
-
-		Beta occupied orbitals
-		   1Ag    -0.904259     1B1u   -0.902884  
-
-		Alpha virtual orbitals
-		   2Ag     2.077551     2B1u    2.085867  
-
-		Beta virtual orbitals
-		   2Ag     2.077551     2B1u    2.085867  
-
-
-	Irrep               Ag   B1g  B2g  B3g  Au   B1u  B2u  B3u 
-	-----------------------------------------------------------
-	#Symmetry Orbitals    2    0    0    0    0    2    0    0 
-	#Alpha Occupied       1    0    0    0    0    1    0    0 
-	#Beta Occupied        1    0    0    0    0    1    0    0 
-	#Alpha Virtual        1    0    0    0    0    1    0    0 
-	#Beta Virtual         1    0    0    0    0    1    0    0 
-	-----------------------------------------------------------
-
 
 
 	Computing MP2 amplitude guess...
 
 	Transforming the one-electron integrals and constructing Fock matrices
-	*Total Hartree-Fock energy        =   -5.671360159812888
-	 Alpha - Alpha MP2 energy         =   -0.000000000000013
-	 Alpha - Beta  MP2 energy         =   -0.022993268254846
-	 Beta  - Beta  MP2 energy         =   -0.000000000000013
-	 Total MP2 correlation energy     =   -0.022993268254871
-	*Total MP2 energy                 =   -5.694353428067759
+	*Total Hartree-Fock energy        =   -5.710322458237572
+	 Alpha - Alpha MP2 energy         =   -0.000001349512086
+	 Alpha - Beta  MP2 energy         =   -0.050956934982383
+	 Beta  - Beta  MP2 energy         =   -0.000001349512086
+	 Total MP2 correlation energy     =   -0.050959634006555
+	*Total MP2 energy                 =   -5.761282092244127
 
 
 	*=================================================================================*
@@ -317,137 +252,95 @@ Coordinates after reading z-matrices
 	*---------------------------------------------------------------------------------*
 	                          *** Macro Iteration 1 ***
 	Cumulant Iterations
-	* 1       6.953e-310         1.745e-02     -1.183e-02     -5.706184370591060      *
+	* 1        2.413e-11         9.331e-03     -8.598e-02     -5.847262860750721      *
+	* 2        2.413e-11         2.046e-03     -8.266e-03     -5.855528718731541      *
+	* 3        2.413e-11         4.665e-04     -1.870e-03     -5.857398734534604  S   *
+	* 4        2.413e-11         1.104e-04     -4.256e-04     -5.857824370484480  S   *
+	* 5        2.413e-11         2.689e-05     -1.178e-04     -5.857942171063240  S/E *
+	* 6        2.413e-11         7.851e-09     -1.103e-05     -5.857953197168640  S/E *
+	* 7        2.413e-11         1.004e-09      1.230e-11     -5.857953197156340  S/E *
+	* 8        2.413e-11         3.002e-10      6.688e-13     -5.857953197155672  S/E *
 	Orbital Updates
-	* 1        7.169e-05         1.745e-02      0.000e+00     -5.706184370591060  S   *
-	* 2        4.714e-06         1.745e-02      6.452e-09     -5.706184364139508  S   *
-	* 3        3.099e-07         1.745e-02      8.763e-10     -5.706184363263230  S   *
-	* 4        2.038e-08         1.745e-02      5.957e-11     -5.706184363203659  S/E *
-	* 5        9.062e-13         1.745e-02      4.197e-12     -5.706184363199462  S/E *
+	* 1        8.242e-06         3.002e-10      8.264e-02     -5.775315659129467  S   *
+	* 2        6.180e-07         3.002e-10     -6.991e-10     -5.775315659828598  S   *
+	* 3        4.638e-08         3.002e-10     -3.928e-12     -5.775315659832525  S   *
 	                          *** Macro Iteration 2 ***
 	Cumulant Iterations
-	* 1        9.062e-13         4.149e-03      3.669e-03     -5.702515421374465      *
+	* 1        4.638e-08         1.402e-04     -3.715e-04     -5.775687167012154  S   *
+	* 2        4.638e-08         3.220e-05     -1.297e-04     -5.775816861248734  S   *
+	* 3        4.638e-08         7.668e-06     -3.529e-05     -5.775852154097842  S/E *
+	* 4        4.638e-08         3.463e-09     -3.256e-06     -5.775855410211105  S/E *
+	* 5        4.638e-08         5.310e-10      3.289e-11     -5.775855410178219  S/E *
+	* 6        4.638e-08         1.813e-10      2.588e-12     -5.775855410175631  S/E *
 	Orbital Updates
-	* 1        6.511e-06         4.149e-03      2.665e-15     -5.702515421374462  S   *
-	* 2        4.281e-07         4.149e-03      1.308e-09     -5.702515420066730  S   *
-	* 3        2.815e-08         4.149e-03      8.972e-11     -5.702515419977007  S   *
-	* 4        1.851e-09         4.149e-03      5.913e-12     -5.702515419971093  S/E *
-	* 5        1.755e-16         4.149e-03      4.183e-13     -5.702515419970675  S/E *
+	* 1        4.010e-07         1.813e-10      5.388e-04     -5.775316611497451  S   *
+	* 2        3.042e-08         1.813e-10     -1.648e-12     -5.775316611499099  S   *
 	                          *** Macro Iteration 3 ***
 	Cumulant Iterations
-	* 1        1.755e-16         9.745e-04      9.443e-04     -5.701571137964132  S   *
+	* 1        3.042e-08         9.890e-07     -2.588e-06     -5.775319199761942  S   *
+	* 2        3.042e-08         2.301e-07     -9.147e-07     -5.775320114431728  S   *
+	* 3        3.042e-08         5.540e-08     -2.508e-07     -5.775320365213679  S/E *
+	* 4        3.042e-08         2.799e-11     -2.330e-08     -5.775320388515112  S/E *
+	* 5        3.042e-08         8.243e-12      3.837e-13     -5.775320388514729  S/E *
 	Orbital Updates
-	* 1        1.575e-06         9.745e-04      8.882e-16     -5.701571137964131  S   *
-	* 2        1.036e-07         9.745e-04      3.341e-10     -5.701571137630029  S   *
-	* 3        6.810e-09         9.745e-04      2.219e-11     -5.701571137607841  S   *
-	* 4        4.478e-10         9.745e-04      1.461e-12     -5.701571137606380  S/E *
-	* 5        2.220e-16         9.745e-04      1.030e-13     -5.701571137606277  S/E *
+	* 1        5.242e-09         8.243e-12      3.789e-06     -5.775316599289402  S   *
+	* 2        3.978e-10         8.243e-12      0.000e+00     -5.775316599289402  S   *
 	                          *** Macro Iteration 4 ***
 	Cumulant Iterations
-	* 1        2.220e-16         2.291e-04      2.253e-04     -5.701345844472013  S   *
+	* 1        3.978e-10         7.028e-09     -1.827e-08     -5.775316617559311  S   *
+	* 2        3.978e-10         1.641e-09     -6.496e-09     -5.775316624055145  S   *
+	* 3        3.978e-10         3.964e-10      5.263e-10     -5.775316623528811  S/E *
+	* 4        3.978e-10         7.105e-10     -3.061e-10     -5.775316623834937  S/E *
+	* 5        3.978e-10         5.758e-10     -3.448e-10     -5.775316624179740  S/E *
+	* 6        3.978e-10         4.885e-10     -2.398e-10     -5.775316624419511  S/E *
+	* 7        3.978e-10         4.269e-10     -8.724e-10     -5.775316625291929  S/E *
+	* 8        3.978e-10         1.718e-10     -2.971e-10     -5.775316625589006  S/E *
+	* 9        3.978e-10         1.129e-10     -1.005e-10     -5.775316625689522  S/E *
+	* 10       3.978e-10         8.875e-11     -7.169e-11     -5.775316625761208  S/E *
+	* 11       3.978e-10         6.907e-11     -6.119e-11     -5.775316625822400  S/E *
+	* 12       3.978e-10         5.210e-11     -5.434e-11     -5.775316625876735  S/E *
+	* 13       3.978e-10         3.694e-11     -5.077e-11     -5.775316625927505  S/E *
+	* 14       3.978e-10         2.215e-11     -2.441e-11     -5.775316625951912  S/E *
+	* 15       3.978e-10         1.596e-11     -1.432e-11     -5.775316625966233  S/E *
+	* 16       3.978e-10         1.194e-11     -1.094e-11     -5.775316625977173  S/E *
+	* 17       3.978e-10         8.741e-12     -8.559e-12     -5.775316625985733  S/E *
 	Orbital Updates
-	* 1        3.725e-07         2.291e-04      0.000e+00     -5.701345844472013  S   *
-	* 2        2.449e-08         2.291e-04      8.004e-11     -5.701345844391969  S   *
-	* 3        1.611e-09         2.291e-04      5.274e-12     -5.701345844386695  S   *
-	* 4        1.059e-10         2.291e-04      3.482e-13     -5.701345844386347  S/E *
-	* 5        5.324e-16         2.291e-04      2.309e-14     -5.701345844386323  S/E *
+	* 1        4.970e-11         8.741e-12      2.686e-08     -5.775316599128151  S   *
+	* 2        3.771e-12         8.741e-12     -8.882e-16     -5.775316599128152  S   *
 	                          *** Macro Iteration 5 ***
 	Cumulant Iterations
-	* 1        5.324e-16         5.388e-05      5.316e-05     -5.701292683320431  S   *
+	* 1        3.771e-12         5.554e-11     -1.433e-10     -5.775316599271402  S   *
+	* 2        3.771e-12         1.316e-11     -5.110e-11     -5.775316599322498  S   *
+	* 3        3.771e-12         3.215e-12      4.082e-12     -5.775316599318416  S/E *
 	Orbital Updates
-	* 1        8.772e-08         5.388e-05     -8.882e-16     -5.701292683320432  S   *
-	* 2        5.768e-09         5.388e-05      1.891e-11     -5.701292683301523  S   *
-	* 3        3.793e-10         5.388e-05      1.245e-12     -5.701292683300278  S   *
-	* 4        2.495e-11         5.388e-05      7.905e-14     -5.701292683300199  S/E *
-	* 5        3.925e-16         5.388e-05      6.217e-15     -5.701292683300193  S/E *
-	                          *** Macro Iteration 6 ***
-	Cumulant Iterations
-	* 1        3.925e-16         1.267e-05      1.251e-05     -5.701280171267254  S   *
-	Orbital Updates
-	* 1        2.064e-08         1.267e-05     -8.882e-16     -5.701280171267255  S   *
-	* 2        1.357e-09         1.267e-05      4.452e-12     -5.701280171262803  S   *
-	* 3        8.924e-11         1.267e-05      2.931e-13     -5.701280171262510  S   *
-	* 4        5.869e-12         1.267e-05      1.776e-14     -5.701280171262492  S/E *
-	                          *** Macro Iteration 7 ***
-	Cumulant Iterations
-	* 1        5.869e-12         2.980e-06      2.943e-06     -5.701277228185484  S   *
-	Orbital Updates
-	* 1        4.853e-09         2.980e-06      1.776e-15     -5.701277228185482  S   *
-	* 2        3.192e-10         2.980e-06      1.046e-12     -5.701277228184436  S   *
-	* 3        2.099e-11         2.980e-06      6.928e-14     -5.701277228184367  S   *
-	* 4        1.380e-12         2.980e-06      4.441e-15     -5.701277228184362  S/E *
-	                          *** Macro Iteration 8 ***
-	Cumulant Iterations
-	* 1        1.380e-12         7.008e-07      6.922e-07     -5.701276536012128  S   *
-	Orbital Updates
-	* 1        1.141e-09         7.008e-07      1.776e-15     -5.701276536012126  S   *
-	* 2        7.506e-11         7.008e-07      2.469e-13     -5.701276536011879  S   *
-	* 3        4.936e-12         7.008e-07      1.332e-14     -5.701276536011866  S   *
-	                          *** Macro Iteration 9 ***
-	Cumulant Iterations
-	* 1        4.936e-12         1.648e-07      1.628e-07     -5.701276373227636  S   *
-	Orbital Updates
-	* 1        2.688e-10         1.648e-07      1.776e-15     -5.701276373227635  S   *
-	* 2        1.767e-11         1.648e-07      5.862e-14     -5.701276373227576  S   *
-	* 3        1.163e-12         1.648e-07      1.776e-15     -5.701276373227574  S   *
-	                          *** Macro Iteration 10 ***
-	Cumulant Iterations
-	* 1        1.163e-12         3.876e-08      3.828e-08     -5.701276334944471  S   *
-	Orbital Updates
-	* 1        6.321e-11         3.876e-08      1.776e-15     -5.701276334944470  S   *
-	* 2        4.157e-12         3.876e-08      1.599e-14     -5.701276334944454  S   *
-	                          *** Macro Iteration 11 ***
-	Cumulant Iterations
-	* 1        4.157e-12         9.115e-09      9.003e-09     -5.701276325941168  S   *
-	Orbital Updates
-	* 1        1.512e-11         9.115e-09      8.882e-16     -5.701276325941167  S   *
-	* 2        9.943e-13         9.115e-09      8.882e-16     -5.701276325941167  S   *
-	                          *** Macro Iteration 12 ***
-	Cumulant Iterations
-	* 1        9.943e-13         2.144e-09      2.117e-09     -5.701276323823804  S   *
-	Orbital Updates
-	* 1        3.557e-12         2.144e-09      0.000e+00     -5.701276323823804  S   *
-	                          *** Macro Iteration 13 ***
-	Cumulant Iterations
-	* 1        3.557e-12         5.041e-10      4.980e-10     -5.701276323325852  S   *
-	Orbital Updates
-	* 1        1.055e-12         5.041e-10      8.882e-16     -5.701276323325851  S   *
-	                          *** Macro Iteration 14 ***
-	Cumulant Iterations
-	* 1        1.055e-12         1.186e-10      1.171e-10     -5.701276323208743  S   *
-	Orbital Updates
-	* 1        2.624e-13         1.186e-10      8.882e-16     -5.701276323208742  S   *
-	                          *** Macro Iteration 15 ***
-	Cumulant Iterations
-	* 1        2.624e-13         2.788e-11      2.754e-11     -5.701276323181201  S   *
-	Orbital Updates
-	* 1        6.286e-14         2.788e-11      0.000e+00     -5.701276323181201  S   *
-	                          *** Macro Iteration 16 ***
-	Cumulant Iterations
-	* 1        6.286e-14         6.557e-12      6.477e-12     -5.701276323174724  S   *
-	Orbital Updates
-	* 1        1.516e-14         6.557e-12      0.000e+00     -5.701276323174724  S   *
+	* 1        4.335e-13         3.215e-12      1.897e-10     -5.775316599128722  S   *
 	*=================================================================================*
 
-	*DCFT SCF Energy            =   -5.671360150547487
-	*DCFT Total Energy          =   -5.701276323174724
+	*DCFT SCF Energy                       =   -5.627142305965292
+	*DCFT Lambda Energy                    =   -0.148174293163430
+	*DCFT Total Energy                     =   -5.775316599128722
 
 	Orbital occupations:
 		Alpha occupied orbitals
-		   1Ag       0.9967     1B1u      0.9967  
+		   1Ag       0.9922     1B1u      0.9922  
 
 		Beta occupied orbitals
-		   1Ag       0.9967     1B1u      0.9967  
+		   1Ag       0.9922     1B1u      0.9922  
 
 		Alpha virtual orbitals
-		   2Ag       0.0033     2B1u      0.0033  
+		   2Ag       0.0043     2B1u      0.0043     3Ag       0.0012     3B1u      0.0012  
+		   1B3g      0.0012     1B2g      0.0012     1B3u      0.0012     1B2u      0.0012  
+		
 
 		Beta virtual orbitals
-		   2Ag       0.0033     2B1u      0.0033  
+		   2Ag       0.0043     2B1u      0.0043     3Ag       0.0012     3B1u      0.0012  
+		   1B3g      0.0012     1B2g      0.0012     1B3u      0.0012     1B2u      0.0012  
+		
 
 
-*** PSI4 called tstop() on h70-33-108-250.paws.uga.edu at Tue Jun 15 12:44:49 2010
-	user time   =       0.48 seconds =       0.01 minutes
-	system time =       0.32 seconds =       0.01 minutes
-	total time  =          1 seconds =       0.02 minutes
-psiclean: Cleaning up files.
+*** tstop() called on Alex-2.local at Tue Aug 23 14:50:11 2011
+	user time   =       0.46 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** PSI4 exiting successfully, buy a developer a beer!
