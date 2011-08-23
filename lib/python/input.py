@@ -63,6 +63,7 @@ def process_set_commands(matchobj):
     map(lambda x: x.strip(), command_lines)
     result = ""
     module_string = ""
+    option_line = ""
     if(matchobj.group(2)):
         module_string = matchobj.group(2)
     for module in module_string.split(","):
@@ -273,7 +274,8 @@ def process_extern_block(matchobj):
     return extern
 
 
-def check_parentheses_and_brackets(input_string):
+def check_parentheses_and_brackets(input_string, exit_on_error):
+    # This returns 1 if the string's all matched up, 0 otherwise
     import collections
     
     # create left to right parenthesis mappings
@@ -284,6 +286,7 @@ def check_parentheses_and_brackets(input_string):
     rparens = set(lrmap.itervalues())
 
     parenstack = collections.deque()
+    all_matched = 1
     for ch in input_string:
         if ch in lparens:
             parenstack.append(ch)
@@ -293,15 +296,23 @@ def check_parentheses_and_brackets(input_string):
                 opench = parenstack.pop()
             except IndexError:
                 # Run out of opening parens
-                print "Input error: extra %s" % ch
-                sys.exit(1)
+                all_matched = 0
+                if exit_on_error:
+                    print "Input error: extra %s" % ch
+                    sys.exit(1)
             if lrmap[opench] != ch:
                 # wrong type of parenthesis popped from stack
-                print "Input error: %s closed with a %s" % (opench, ch)
-                sys.exit(1)
+                all_matched = 0
+                if exit_on_error:
+                    print "Input error: %s closed with a %s" % (opench, ch)
+                    sys.exit(1)
     if(len(parenstack) != 0):
-        print "Input error: Unmatched %s" % parenstack.pop()
-
+        all_matched = 0
+        if exit_on_error:
+            print "Input error: Unmatched %s" % parenstack.pop()
+            sys.exit(1)
+        
+    return all_matched
 
 def process_input(raw_input):
 
@@ -320,7 +331,7 @@ def process_input(raw_input):
     temp = re.sub(comment, '', raw_input)
 
     # Check the brackets and parentheses match up
-    check_parentheses_and_brackets(temp)
+    check_parentheses_and_brackets(temp, 1)
 
     # First, remove everything from lines containing only spaces
     blankline = re.compile(r'^\s*$')
