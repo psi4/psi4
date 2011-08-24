@@ -28,6 +28,15 @@ Dimension::~Dimension()
     delete[] blocks_;
 }
 
+int Dimension::sum() const 
+{
+    int s = 0;
+    for (int i = 0; i < n_; i++) {
+        s += blocks_[i];
+    }
+    return s;
+}
+
 void Dimension::print(FILE *out) const
 {
     fprintf(outfile, "  %s (n = %d): ", name_.c_str(), n_);

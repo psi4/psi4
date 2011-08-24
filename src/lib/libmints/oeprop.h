@@ -18,8 +18,6 @@ class Wavefunction;
 class IntegralFactory;
 class MatrixFactory;
 class BasisSet;
-class BasisPoints;
-class GridBlock;
 
 /**
 * The Prop object, base class of OEProp and GridProp objects
@@ -195,7 +193,7 @@ protected:
     /// The grid (grid_["x"] = <double***> x, for instance)
     std::map<std::string, double***> grid_;
     /// The BasisPoints object to evaluate basis functions on the grid
-    boost::shared_ptr<BasisPoints> points_;
+    //boost::shared_ptr<BasisPoints> points_;
 
     /// The number of subintervals
     int n_[3];
@@ -232,29 +230,30 @@ protected:
     /// Print header
     void print_header();
 
-    // Compute routines (these all work on a block of points)
-    /// Compute mo values
-    void compute_mos(boost::shared_ptr<GridBlock> g, unsigned long int offset);
-    /// Compute basis function values
-    void compute_basis_funs(boost::shared_ptr<GridBlock> g, unsigned long int offset);
-    /// Compute total density
-    void compute_rho(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute spin density (rho_a - rho_b)
-    void compute_rho_s(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute rho_a (alpha density)
-    void compute_rho_a(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute rho_b (beta density)
-    void compute_rho_b(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute gamma_aa (\nabla rho_a ^2)
-    void compute_gamma_aa(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute gamma_ab (\nabla rho_a \nabla rho_b)
-    void compute_gamma_ab(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute gamma_bb (\nabla rho_b ^2)
-    void compute_gamma_bb(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute tau_a (KE density)
-    void compute_tau_a(boost::shared_ptr<GridBlock> g, double* results);
-    /// Compute tau_b (KE density)
-    void compute_tau_b(boost::shared_ptr<GridBlock> g, double* results);
+    // Deprecated 
+   // // Compute routines (these all work on a block of points)
+   // /// Compute mo values
+   // void compute_mos(boost::shared_ptr<GridBlock> g, unsigned long int offset);
+   // /// Compute basis function values
+   // void compute_basis_funs(boost::shared_ptr<GridBlock> g, unsigned long int offset);
+   // /// Compute total density
+   // void compute_rho(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute spin density (rho_a - rho_b)
+   // void compute_rho_s(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute rho_a (alpha density)
+   // void compute_rho_a(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute rho_b (beta density)
+   // void compute_rho_b(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute gamma_aa (\nabla rho_a ^2)
+   // void compute_gamma_aa(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute gamma_ab (\nabla rho_a \nabla rho_b)
+   // void compute_gamma_ab(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute gamma_bb (\nabla rho_b ^2)
+   // void compute_gamma_bb(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute tau_a (KE density)
+   // void compute_tau_a(boost::shared_ptr<GridBlock> g, double* results);
+   // /// Compute tau_b (KE density)
+   // void compute_tau_b(boost::shared_ptr<GridBlock> g, double* results);
 
     /// Compute ESP (perhaps more involved, might need a fast Poisson solver)
     void compute_ESP();

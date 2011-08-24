@@ -14,8 +14,8 @@ class TauHCTH0_Functional : public Functional {
 public:
     TauHCTH0_Functional(int npoints, int deriv);
     virtual ~TauHCTH0_Functional();
-    virtual void computeRKSFunctional(boost::shared_ptr<Properties> prop);
-    virtual void computeUKSFunctional(boost::shared_ptr<Properties> prop);
+    virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> prop);
+    virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> prop);
 };
 }}
 #endif

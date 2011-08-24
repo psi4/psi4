@@ -21,24 +21,20 @@ template<class T> class shared_ptr;
 namespace psi {
 
 class Matrix;
-class Integrator;
 class Properties;
 class TwoBodySOInt;
 class ErfERI;
 
 namespace scf{
 
+class RKSPotential; 
+class UKSPotential; 
+
 class KS {
 
 protected:
     /// Superfunctional object
     boost::shared_ptr<functional::SuperFunctional> functional_;
-    /// Properties object
-    boost::shared_ptr<Properties> properties_;
-    /// Integrator object
-    boost::shared_ptr<Integrator> integrator_;
-    /// Values (E_xc, <\rho>, <\rho x>, etc)
-    std::map<std::string, double> quad_values_;
     /// primary basis set (might get fancy later)
     boost::shared_ptr<BasisSet> basisset_;
     /// primary so basis set
@@ -69,6 +65,8 @@ public:
 class RKS : public RHF, public KS {
 
 protected:
+    /// RKS Potential (the heart of the algorithm)
+    boost::shared_ptr<RKSPotential> potential_;
     /// Alpha/Beta spin Kohn-Sham Potential (identical)
     boost::shared_ptr<Matrix> V_;
     /// Omega K
@@ -88,6 +86,8 @@ public:
 class UKS : public UHF, public KS {
 
 protected:
+    /// UKS Potential (the heart of the algorithm)
+    boost::shared_ptr<UKSPotential> potential_;
     /// Alpha spin Kohn-Sham Potential
     boost::shared_ptr<Matrix> Va_;
     /// Beta spin Kohn-Sham Potential

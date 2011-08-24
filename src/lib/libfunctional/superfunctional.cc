@@ -7,7 +7,7 @@
 
 #include "superfunctional.h"
 #include <boost/algorithm/string.hpp>
-#include <libmints/properties.h>
+#include <libmints/points.h>
 #include <libciomr/libciomr.h>
 #include <stdlib.h>
 #include <string>
@@ -20,6 +20,7 @@ using namespace std;
 
 namespace psi { namespace functional {
 
+#if 0
 std::string SuperFunctional::testSuperFunctionals()
 {
     std::vector<std::string> names = SuperFunctional::availableNames();
@@ -28,7 +29,7 @@ std::string SuperFunctional::testSuperFunctionals()
     s << "  Testing SuperFunctionals:" << endl;
 
     boost::shared_ptr<Properties> props = Properties::get_testbed();
-    int npoints = props->getTrueSize();
+    int npoints = props->npoints();
 
     for (int A = 0; A < names.size(); A++ ) { 
         boost::shared_ptr<SuperFunctional> func = SuperFunctional::createSuperFunctional(names[A],npoints,2);
@@ -40,14 +41,14 @@ std::string SuperFunctional::testSuperFunctionals()
 std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> props)
 {
     std::stringstream s;
-    int npoints = props->getTrueSize();
-    const double* rho_a = props->getRhoA();
-    const double* rho_b = props->getRhoB();
-    const double* gamma_aa = props->getGammaAA();
-    const double* gamma_ab = props->getGammaAB();
-    const double* gamma_bb = props->getGammaBB();
-    const double* tau_a = props->getTauA();
-    const double* tau_b = props->getTauB();
+    int npoints = props->npoints();
+    const double* rho_a = props->property_value("RHO_A")->pointer();
+    const double* rho_b = props->property_value("RHO_B")->pointer();
+    const double* gamma_aa = props->property_value("GAMMA_AA")->pointer();
+    const double* gamma_ab = props->property_value("GAMMA_AB")->pointer();
+    const double* gamma_bb = props->property_value("GAMMA_BB")->pointer();
+    const double* tau_a = props->property_value("TAU_A")->pointer();
+    const double* tau_b = props->property_value("TAU_B")->pointer();
 
     double* functional = getFunctionalValue();
 
@@ -339,6 +340,7 @@ std::string SuperFunctional::testSuperFunctional(boost::shared_ptr<Properties> p
     }
     return s.str();
 }
+#endif
 SuperFunctional::SuperFunctional(int npoints, int deriv) : npoints_(npoints), deriv_(deriv),
     exact_exchange_(0.0), pt2_(0.0), dashD_weight_(0.0), omega_(0.0), oldGGA_(false), oldMeta_(false)
 {
@@ -496,6 +498,12 @@ void SuperFunctional::setOmega(double omega)
         functionals_[A].first->setParameter("omega", omega_);
     }
 }
+int SuperFunctional::getLocalAnsatz()
+{
+    if (isMeta()) return 2;
+    else if (isGGA()) return 1;
+    else return 0;
+}
 bool SuperFunctional::isGGA()
 {
     for (int A = 0; A < functionals_.size(); A++)
@@ -512,7 +520,7 @@ bool SuperFunctional::isMeta()
 
     return false;
 }
-void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props) 
+void SuperFunctional::computeRKSFunctional(boost::shared_ptr<RKSFunctions> props) 
 {
     for (int A = 0; A < functionals_.size(); A++) {
         functionals_[A].first->computeRKSFunctional(props);
@@ -520,7 +528,7 @@ void SuperFunctional::computeRKSFunctional(boost::shared_ptr<Properties> props)
     //Add up the results
     collectResults();
 }
-void SuperFunctional::computeUKSFunctional(boost::shared_ptr<Properties> props) 
+void SuperFunctional::computeUKSFunctional(boost::shared_ptr<UKSFunctions> props) 
 {
     for (int A = 0; A < functionals_.size(); A++) {
         functionals_[A].first->computeUKSFunctional(props);

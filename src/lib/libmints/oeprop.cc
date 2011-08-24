@@ -1139,6 +1139,7 @@ void GridProp::allocate_arrays()
 }
 void GridProp::compute()
 {
+#if 0
     reset();
 
     initialized_ = true;
@@ -1229,6 +1230,7 @@ void GridProp::compute()
     else
         write_data_grid();
 
+#endif
 }
 void GridProp::write_data_grid()
 {
@@ -1303,13 +1305,14 @@ void GridProp::reset()
         return;
 
     // Free the points object
-    points_.reset();
+    //points_.reset();
 
     // Free the grids
     for (std::map<std::string, double***>::iterator it = grid_.begin(); it != grid_.end(); ++it) {
         free_grid((*it).second);
     }
 }
+#if 0
 void GridProp::compute_mos(boost::shared_ptr<GridBlock> g, ULI offset)
 {
     throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
@@ -1383,6 +1386,7 @@ void GridProp::compute_tau_b(boost::shared_ptr<GridBlock> g, double* results)
 {
     throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
 }
+#endif
 void GridProp::compute_ESP()
 {
     throw FeatureNotImplemented("GridProp", "This property not implemented", __FILE__, __LINE__);
