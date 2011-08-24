@@ -66,7 +66,7 @@ void export_mints()
             def("get", vector_getitem_2(&Vector::get)).
             def("set", vector_setitem_1(&Vector::set)).
             def("set", vector_setitem_2(&Vector::set)).
-            def("print_out", &Vector::print).
+            def("print_out", &Vector::print_out).
             def("dim", &Vector::dim).
             def("__getitem__", vector_getitem_1(&Vector::pyget)).
             def("__setitem__", vector_setitem_1(&Vector::pyset)).
