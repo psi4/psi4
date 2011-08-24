@@ -32,6 +32,9 @@ public:
     int& operator[](int i) { return blocks_[i]; }
     const int& operator[](int i) const { return blocks_[i]; }
 
+    /// Return the sum of constituent dimensions
+    int sum() const;
+
     int* pointer() const { return blocks_; }
 
     void print(FILE* out=outfile) const;

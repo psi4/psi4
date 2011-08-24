@@ -22,7 +22,8 @@ double erf(double x);
 
 namespace psi {
 
-class Properties;
+class RKSFunctions;
+class UKSFunctions;
 
 namespace functional {
 
@@ -47,7 +48,7 @@ class Functional {
         static boost::shared_ptr<Functional> createFunctional(const std::string & name, int npoints = 5000, int deriv = 1);
         static std::string availableFunctionals();
         static std::vector<std::string> availableNames();
-        static std::string testFunctionals();
+        //static std::string testFunctionals();
 
         Functional(int npoints = 5000, int deriv = 1);
         ~Functional();
@@ -63,7 +64,7 @@ class Functional {
         void setParameters(const std::vector<std::pair<std::string,double> > & params) { params_ = params; }
         void setParameter(const std::string & key, double value);
 
-        std::string testFunctional(boost::shared_ptr<Properties> props);
+        //std::string testFunctional(boost::shared_ptr<Properties> props);
 
         bool isGGA() const { return is_gga_; }
         bool isMeta() const { return is_meta_; }
@@ -76,8 +77,8 @@ class Functional {
         double getDensityCutoff() const { return cutoff_; }
         void setDensityCutoff(double cutoff) {cutoff = cutoff; }
 
-        virtual void computeRKSFunctional(boost::shared_ptr<Properties> props) {};
-        virtual void computeUKSFunctional(boost::shared_ptr<Properties> props) {};
+        virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> props) {}
+        virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> props) {}
 
         double* getFunctional() const { return functional_; }
         double* getV_RhoA() const { return v_rho_a_; }
@@ -132,42 +133,42 @@ class Functional {
 
         double cutoff_;
 
-        double* functional_;
-        double* v_rho_a_;
-        double* v_rho_b_;
-        double* v_rho_a_rho_a_;
-        double* v_rho_a_rho_b_;
-        double* v_rho_b_rho_b_;
-        double* v_gamma_aa_;
-        double* v_gamma_ab_;
-        double* v_gamma_bb_;
-        double* v_rho_a_gamma_aa_;
-        double* v_rho_a_gamma_ab_;
-        double* v_rho_a_gamma_bb_;
-        double* v_rho_b_gamma_aa_;
-        double* v_rho_b_gamma_ab_;
-        double* v_rho_b_gamma_bb_;
-        double* v_gamma_aa_gamma_aa_;
-        double* v_gamma_aa_gamma_ab_;
-        double* v_gamma_aa_gamma_bb_;
-        double* v_gamma_ab_gamma_ab_;
-        double* v_gamma_ab_gamma_bb_;
-        double* v_gamma_bb_gamma_bb_;
-        double* v_tau_a_;
-        double* v_tau_b_;
-        double* v_rho_a_tau_a_;
-        double* v_rho_a_tau_b_;
-        double* v_rho_b_tau_a_;
-        double* v_rho_b_tau_b_;
-        double* v_gamma_aa_tau_a_;
-        double* v_gamma_aa_tau_b_;
-        double* v_gamma_ab_tau_a_;
-        double* v_gamma_ab_tau_b_;
-        double* v_gamma_bb_tau_a_;
-        double* v_gamma_bb_tau_b_;
-        double* v_tau_a_tau_a_;
-        double* v_tau_a_tau_b_;
-        double* v_tau_b_tau_b_;
+        double* restrict functional_;
+        double* restrict v_rho_a_;
+        double* restrict v_rho_b_;
+        double* restrict v_rho_a_rho_a_;
+        double* restrict v_rho_a_rho_b_;
+        double* restrict v_rho_b_rho_b_;
+        double* restrict v_gamma_aa_;
+        double* restrict v_gamma_ab_;
+        double* restrict v_gamma_bb_;
+        double* restrict v_rho_a_gamma_aa_;
+        double* restrict v_rho_a_gamma_ab_;
+        double* restrict v_rho_a_gamma_bb_;
+        double* restrict v_rho_b_gamma_aa_;
+        double* restrict v_rho_b_gamma_ab_;
+        double* restrict v_rho_b_gamma_bb_;
+        double* restrict v_gamma_aa_gamma_aa_;
+        double* restrict v_gamma_aa_gamma_ab_;
+        double* restrict v_gamma_aa_gamma_bb_;
+        double* restrict v_gamma_ab_gamma_ab_;
+        double* restrict v_gamma_ab_gamma_bb_;
+        double* restrict v_gamma_bb_gamma_bb_;
+        double* restrict v_tau_a_;
+        double* restrict v_tau_b_;
+        double* restrict v_rho_a_tau_a_;
+        double* restrict v_rho_a_tau_b_;
+        double* restrict v_rho_b_tau_a_;
+        double* restrict v_rho_b_tau_b_;
+        double* restrict v_gamma_aa_tau_a_;
+        double* restrict v_gamma_aa_tau_b_;
+        double* restrict v_gamma_ab_tau_a_;
+        double* restrict v_gamma_ab_tau_b_;
+        double* restrict v_gamma_bb_tau_a_;
+        double* restrict v_gamma_bb_tau_b_;
+        double* restrict v_tau_a_tau_a_;
+        double* restrict v_tau_a_tau_b_;
+        double* restrict v_tau_b_tau_b_;
 
         int npoints_;
         int deriv_;
