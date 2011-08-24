@@ -1,106 +1,252 @@
-\subsection{Hartree-Fock Self-Consistent-Field} \label{scf}
-                                                                                
-Hartree-Fock molecular orbital theory forms the cornerstone of
-ab initio quantum chemistry.  Until the advances in the accuracy
-of Kohn-Sham density functional theory in the 1990's, Hartree-Fock
-theory was the method of choice for obtaining results for large
-molecules without resorting to standard empirical or semiempirical
-approaches.  Molecular properties obtained by Hatree-Fock theory are
-generally at least qualitatively correct, although they can be
-quantitatively poor in many instances.
-                                                                                
-\PSIfour\ solves the Hatree-Fock equations in a basis of Gaussian 
-functions using an iterative, self-consistent-field (SCF) procedure.  The
-final molecular orbitals are those which minimize the energy, 
-subject to the electron configuration specified by the user (or
-guessed by the program).  For molecules with symmetry, the 
-electron configuration can be specified in terms of the number of
-doubly- and singly-occupied orbitals per irreducible representation, 
-via the DOCC and SOCC general keywords.
-The SCF process is continued until the largest
-change in an element of the density matrix drops below 10$^{-n}$, where
-$n$ is an integer specified by the \keyword{convergence} keyword.
+\subsection{Self-Consistent-Field} \label{scf}
 
-Of course the efficiency of the iterative procedure depends on the choice of
-initial guess.  The \PSIscf\ module will attempt to use previously obtained
-orbitals as a guess if they are available.  This can be particularly
-advantageous when diffuse functions are present; in that case, it may
-be easiest to run the computation with a smaller basis and project
-those orbitals onto the larger basis by specifying the \keyword{--chkptmos}
-command-line argument or the \keyword{chkpt\_mos=true} keyword in input
-when running the \PSIinput\ program for the larger basis.  If
-old MO's are not available, \PSIscf\ uses a core Hamiltonian guess
-by default.  The convergence of the SCF procedure is accelerated by Pulay's 
-direct inversion of the iterative subspace (DIIS)
-approach,\cite{Pulay:1980} and it is possible
-to modify the behavior of the DIIS through various keywords, 
-although this is seldom necessary.  
+Self-Consistent-Field (SCF) theory forms the cornerstone of ab initio quantum
+chemistry. SCF is specialized to either conventional Hartree-Fock (HF) molecular
+orbital theory or the alternative generalized Kohn-Sham Density Functional
+Theory (KS-DFT). 
 
-It is important to point out that the
-SCF approach does not rigorously guarantee that the final orbitals
-actually correspond to a minimum in orbital space; at convergence,
-the only guarantee is that the gradient of the energy with respect 
-to orbital rotations is zero: this could be a global minimum, a local
-minimum, or a saddle point in orbital rotation space.  While this
-is not usually an issue (typically the lowest minimum consistent with 
-the electron configuration is found), it can be a problem sometimes for 
-radicals, diradicals, bond breaking, or unusual bonding situations.  The
-\PSIstable\ module can be used to test for the stability of Hartree-Fock
-wave functions (note: this module from \PSIthree\ has not yet been adapted
-to work in \PSIfour).
+In Hartree-Fock, the goal is to produce an optimized set of occupied molecular
+orbitals which describe the action of the electrons according to a one-particle
+Hamiltonian encapsulating electron-nuclear attraction, electronic kinetic
+energy, and mean-field electron-electron repulsion, all under the requirement of
+wavefunction antisymmetry. Molecular properties obtained by Hatree-Fock theory
+are generally at least qualitatively correct, although they can be
+quantitatively poor in many instances. If, as is usually the case, higher
+accuracy is desired, the occupied and virtual molecular orbitals are used as a
+starting point for the myriad of post-Hartree-Fock methods, all of which attempt
+to recover the exact correlations due to electron-electron repulsion.  
 
-The most commonly used keywords are found below.  More specialized keywords
-are available in the man pages.
+DFT is an alternative approach which attempts to directly compute all
+observables as functionals of the electronic density. The method is tractable
+due to the two Hohenberg-Kohn Theorems. The first Theorem states that two
+electronic systems with the same ground state density are both bound by the same
+potential, to within a constant offset. This implies both that the ground-state
+density is sufficient to describe all ground state observables of the system and
+that the functional corresponding to electronic kinetic energy and
+electron-electron repulsion is universal. The second Theorem states that the
+exact energy functional is variational, obtaining its minimal value when the
+input density corresponds to the ground state density. This allows for a
+self-consistent computational procedure in which the density is varied until the
+energy functional is minimized. In practice, the exact energy functional is
+unknown (and would be as complex as Full-Configuration Interaction if it were
+known), however many good approximations exists. A major problem with
+density-based DFT is that approximations to the kinetic energy functional are
+notoriously poor. This is usually overcome by the Kohn-Sham approach, which
+obtains most of the kinetic energy from a set of non-interacting orbitals
+constructed from the the density. Within this approach, the kinetic energy,
+nuclear attraction energy, and mean-field Coulomb repulsion are treated in the
+same way as in Hartree-Fock, and the remaining exchange, correlation, and
+residual kinetic energy terms are treated via an approximate functional,
+typically built from some semi-local model of the exchange and Coulomb holes. In
+the generalized Kohn-Sham approach, the orbitals used to construct the
+non-interacting kinetic energy are also used to produce an orbital-dependent
+contribution to the exchange energy, either by adding a static fraction of the
+non-interacting exact exchange (the adiabatic connection or ``hybrid''
+approach), or by partitioning the exchange hole into short range components to
+treated by the local exchange functional, and long range components to be
+treated by the long-range noninteracting exact exchange (the range-separated
+approach).
 
-\noindent
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         SCF\_TYPE & What algorithm to use for the SCF computation \\
-          & {\bf Possible Values:} PK, OUT\_OF\_CORE, DIRECT, DF,
-PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} PK\\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MAXITER & The maximum number of iterations \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 100\\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         D\_CONVERGE & -Log10 of the density convergence criterion \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 8\\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         REFERENCE & The reference wavefunction used in the computation \\
+\PSIfour solves the SCF equations in a basis of Gaussian functions using an
+iterative procedure. These equations attempt to determine the occupied molecular
+orbitals, and thereby ground state density, which minimize the Hartree-Fock or
+KS-DFT energy within the user-specified spin specialization and electronic
+configuration. Within Hartree-Fock, the allowed spin-specializations are
+Restricted-Hartree-Fock (RHF), Unrestricted-Hartree-Fock (UHF),
+Restricted-Open-Shell-Hartree-Fock (ROHF), and
+Constrained-Unrestricted-Hartree-Fock (CUHF). Within KS-DFT, the allowed
+spin-specializations are Restricted-Kohn-Sham (RKS) and Unrestricted-Kohn-Sham
+(UKS). Restricted-Open-Shell-Kohn-Sham (ROKS) and
+Constrained-Unrestricted-Kohn-Sham (CUKS) are not implemented, as they always
+predict a ground state with positive definite spin density, which is not
+physical. Spin specialization is specified by the \texttt{REFERENCE} option,
+which defaults to RHF.
+Electronic configuration is specified by the charge/multiplicity field in the
+molecular geometry input. These values may be amended by using the
+\texttt{CHARGE} and \texttt{MULTP} keywords. If spatial symmetry is used, the
+assignment of occupied orbitals to irreps may be specified by the \texttt{DOCC}
+and \texttt{SOCC} integer arrays. If these arrays are not specified by the user,
+the program will assign occupation to irreps according to the lowest orbital
+energies at each SCF iteration.  
 
-          & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} RHF\\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
-doublet, 3 for a triplet, etc. \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} integer &  {\bf Default:} 1\\
-         & & \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         GUESS & The type of guess orbitals \\
+\PSIfour implements Hartree-Fock and KS-DFT within the \texttt{SCF} module.
+Minimal input for a restricted closed-shell Hartree-Fock solution involves
+specifying a molecular geometry field, a Gaussian basis set via the
+option\texttt{BASIS}, and calling the \texttt{energy} procedure. An example is:
+\begin{verbatim}
+molecule {
+0 1              # Charge/Multiplicity line (optional)
+O                # Required molecular geometry (H2O in Z-matrix)
+H 1 1.0
+H 1 1.0 2 104.5
+}
 
-          & {\bf Possible Values:} CORE, GWH, SAD, READ \\
-\end{tabular*}
-\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-           & {\bf Type:} string &  {\bf Default:} CORE\\
-         & & \\
-\end{tabular*}
+set scf {        
+basis sto-3g     # Required basis specification
+reference rhf    # (optional)
+}
+
+energy('scf')    # Calls the energy procedure with a specific type of SCF
+\end{verbatim}
+
+In each step of the SCF procedure, a new Fock or Kohn-Sham potential is built
+according to the previous density, following which the potential is diagonalized
+to produce new molecular orbitals, from which a new density is computed. Ths
+procedure is continued until either convergence is reached or a preset maximum
+number of iterations is exceeded. Convergence is determined by both change in
+energy and root-mean-square change in density matrix values, which must be below
+the user-specified $10^{\mathtt{-E_CONVERGE}}$ and $10^{-\mathtt{D_CONVERGE}}$,
+respectively. The maximum number of iterations is specified by the
+\texttt{MAXITER} option. It should be noted that SCF is a chaotic process, and,
+as such, often requires careful selection of initial orbitals and damping during
+iterations to ensure convergence. This is particularly likely for large systems,
+metallic systems, multireference systems, open-shell systems, anions, and
+systems with diffuse basis sets. For initial orbital selection, several options
+are available. The default guess is a core Hamiltonian which ignores even
+mean-field electronic repulsion. A much more accurate guess is the
+Superposition-of-Atomic-Densities (SAD) guess, which builds the initial
+molecular density as a sum of atomic UHF densities. This guess is currently only
+available in RHF and RKS spin specializations. This guess also produces
+fractionally occupied closed-shell orbitals, as required by the density-fitted
+exchange routines (discussed below). For open-shell systems, the Generalized
+Wolfsberg-Helmholtz (GWH) guess is available, and may be superior to a core
+guess. SAD and GWH may be invoked by the \texttt{GUESS} option. A more involved
+alternative to these approaches is to converge the SCF in a small basis and then
+project the resultant occupied molecular orbitals up into a larger basis. This
+can be done automatically by placing a \texttt{cast_up = 'SMALL_BASIS_NAME'}
+modifier in the \texttt{energy} procedure call. We recommend the 3-21G basis for
+the small basis due to its efficient mix of flexibility and compactness. With
+regard to convergence stabilization, Pulay's Direct Inversion of the Iterative
+Subspace (DIIS) extrapolation and Gill's Maximum Overlap Method (MOM) are both
+implemented. DIIS uses previous iterates of the Fock Matrix together with an
+error criterion based on the orbital gradient to produce an informed estimate of
+the next Fock Matrix. DIIS is almost always neccessary to converge the SCF
+procedure, and is therefore turned on by default. In rare cases, the DIIS
+algorithm may need to be modified or turned off altogether, which may be
+accomplished via the options detailed below. MOM was developed to combat a
+particular class of convergence failure: occupation flipping. In some cases,
+midway though the SCF procedure, a partially converged orbital which should be
+occupied in the fully-optimized SCF solution has a slightly higher orbital
+eigenvalue than some other orbital which should be destined to be a virtual
+orbital. This results in the virtual orbital being spuriously occupied for one
+or more iterations. Sometimes this resolves itself without help, other times the
+occupation flips back and forth between two, four, or more orbitals. This is
+typically visible in the output as a non-converging SCF which eventually settles
+down to steady oscillation between two (or more) different total energies. This
+behavior can be ameliorated by choosing occupied orbitals by ``shape'' instead
+of by orbital eigenvalue, i.e., by choosing the set of new orbitals which looks
+most like some previously known ``good'' set.  The ``good'' set is typically the
+occupied orbitals from an one of the oscillating iterations with the lowest
+total energy. For an oscillating system where the lowest total energy occurs on
+iterations $N,N+2,\ldots$, invoking \texttt{MOM_START N} can often rescue the
+convergence of the SCF. MOM can be used in concert with DIIS, though care should
+be taken to not turn MOM on until the oscillatory behavior begins. 
+
+
+
+%\subsection{Hartree-Fock Self-Consistent-Field} \label{scf}
+%                                                                                
+%Hartree-Fock molecular orbital theory forms the cornerstone of
+%ab initio quantum chemistry.  Until the advances in the accuracy
+%of Kohn-Sham density functional theory in the 1990's, Hartree-Fock
+%theory was the method of choice for obtaining results for large
+%molecules without resorting to standard empirical or semiempirical
+%approaches.  Molecular properties obtained by Hatree-Fock theory are
+%generally at least qualitatively correct, although they can be
+%quantitatively poor in many instances.
+%                                                                                
+%\PSIfour\ solves the Hatree-Fock equations in a basis of Gaussian 
+%functions using an iterative, self-consistent-field (SCF) procedure.  The
+%final molecular orbitals are those which minimize the energy, 
+%subject to the electron configuration specified by the user (or
+%guessed by the program).  For molecules with symmetry, the 
+%electron configuration can be specified in terms of the number of
+%doubly- and singly-occupied orbitals per irreducible representation, 
+%via the DOCC and SOCC general keywords.
+%The SCF process is continued until the largest
+%change in an element of the density matrix drops below 10$^{-n}$, where
+%$n$ is an integer specified by the \keyword{convergence} keyword.
+%
+%Of course the efficiency of the iterative procedure depends on the choice of
+%initial guess.  The \PSIscf\ module will attempt to use previously obtained
+%orbitals as a guess if they are available.  This can be particularly
+%advantageous when diffuse functions are present; in that case, it may
+%be easiest to run the computation with a smaller basis and project
+%those orbitals onto the larger basis by specifying the \keyword{--chkptmos}
+%command-line argument or the \keyword{chkpt\_mos=true} keyword in input
+%when running the \PSIinput\ program for the larger basis.  If
+%old MO's are not available, \PSIscf\ uses a core Hamiltonian guess
+%by default.  The convergence of the SCF procedure is accelerated by Pulay's 
+%direct inversion of the iterative subspace (DIIS)
+%approach,\cite{Pulay:1980} and it is possible
+%to modify the behavior of the DIIS through various keywords, 
+%although this is seldom necessary.  
+%
+%It is important to point out that the
+%SCF approach does not rigorously guarantee that the final orbitals
+%actually correspond to a minimum in orbital space; at convergence,
+%the only guarantee is that the gradient of the energy with respect 
+%to orbital rotations is zero: this could be a global minimum, a local
+%minimum, or a saddle point in orbital rotation space.  While this
+%is not usually an issue (typically the lowest minimum consistent with 
+%the electron configuration is found), it can be a problem sometimes for 
+%radicals, diradicals, bond breaking, or unusual bonding situations.  The
+%\PSIstable\ module can be used to test for the stability of Hartree-Fock
+%wave functions (note: this module from \PSIthree\ has not yet been adapted
+%to work in \PSIfour).
+%
+%The most commonly used keywords are found below.  More specialized keywords
+%are available in the man pages.
+%
+%\noindent
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         SCF\_TYPE & What algorithm to use for the SCF computation \\
+%          & {\bf Possible Values:} PK, OUT\_OF\_CORE, DIRECT, DF,
+%PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} string &  {\bf Default:} PK\\
+%         & & \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         MAXITER & The maximum number of iterations \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} integer &  {\bf Default:} 100\\
+%         & & \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         D\_CONVERGE & -Log10 of the density convergence criterion \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} integer &  {\bf Default:} 8\\
+%         & & \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         REFERENCE & The reference wavefunction used in the computation \\
+%
+%          & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} string &  {\bf Default:} RHF\\
+%         & & \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
+%doublet, 3 for a triplet, etc. \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} integer &  {\bf Default:} 1\\
+%         & & \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+%         GUESS & The type of guess orbitals \\
+%
+%          & {\bf Possible Values:} CORE, GWH, SAD, READ \\
+%\end{tabular*}
+%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+%           & {\bf Type:} string &  {\bf Default:} CORE\\
+%         & & \\
+%\end{tabular*}
 
 
