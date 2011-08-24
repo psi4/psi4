@@ -65,7 +65,7 @@ DCFTSolver::compute_energy()
                              "\tCumulant Iterations\n",cycle);
             lambdaDone = false;
             // Start density cumulant (lambda) iterations
-            while(!lambdaDone && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER") && !energyConverged){
+            while((!lambdaDone || !energyConverged) && nLambdaIterations++ < options_.get_int("LAMBDA_MAXITER")){
                 std::string diisString;
                 // Build SO basis tensors for the <VV||VV>, <vv||vv>, and <Vv|Vv> terms in the G intermediate
                 build_tensors();
@@ -137,7 +137,7 @@ DCFTSolver::compute_energy()
             energyConverged = false;
             scfDiisManager.reset_subspace();
             fprintf(outfile, "\tOrbital Updates\n");
-            while((!densityConverged || !scfDone) && !energyConverged && nSCFCycles++ < options_.get_int("SCF_MAXITER")){
+            while((!densityConverged || !scfDone || !energyConverged) && nSCFCycles++ < options_.get_int("SCF_MAXITER")){
                 std::string diisString;
                 // Copy core hamiltonian into the Fock matrix array: F = H
                 Fa_->copy(so_h_);
