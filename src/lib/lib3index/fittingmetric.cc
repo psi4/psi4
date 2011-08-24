@@ -57,11 +57,15 @@ FittingMetric::FittingMetric()
     force_C1_ = false;
 }
 FittingMetric::FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1) :
-    aux_(aux), is_poisson_(false), is_inverted_(false), force_C1_(force_C1)
+    aux_(aux), is_poisson_(false), is_inverted_(false), force_C1_(force_C1), omega_(0.0)
+{
+}
+FittingMetric::FittingMetric(boost::shared_ptr<BasisSet> aux, double omega, bool force_C1) :
+    aux_(aux), is_poisson_(false), is_inverted_(false), force_C1_(force_C1), omega_(omega)
 {
 }
 FittingMetric::FittingMetric(boost::shared_ptr<BasisSet> aux, boost::shared_ptr<BasisSet> pois, bool force_C1) :
-    aux_(aux), pois_(pois), is_poisson_(true), is_inverted_(false), force_C1_(force_C1)
+    aux_(aux), pois_(pois), is_poisson_(true), is_inverted_(false), force_C1_(force_C1), omega_(0.0)
 {
 }
 
@@ -118,7 +122,11 @@ void FittingMetric::form_fitting_metric()
     const double **Jbuffer = new const double*[nthread];
     boost::shared_ptr<TwoBodyAOInt> *Jint = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        Jint[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory_J.eri());
+        if (omega_ > 0.0) {
+            Jint[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory_J.erf_eri(omega_));
+        } else {
+            Jint[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory_J.eri());
+        }
         Jbuffer[Q] = Jint[Q]->buffer();
     }
 

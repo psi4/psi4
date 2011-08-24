@@ -1,0 +1,519 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule {
+0 2
+B
+symmetry c1
+}
+
+plugin_load("../../plugin_omega.so")
+
+set globals {
+  scf_type direct
+  basis cc-pvdz
+  ri_basis_scf cc-pvdz-ri
+  reference uks
+  dft_functional wB97
+  dft_order_spherical 31 
+  dft_n_radial 50
+  omega_procedure ip
+  d_converge 5
+  e_converge 7
+  #debug 3
+}
+
+
+energy('scf')
+plugin("../../plugin_omega.so")
+--------------------------------------------------------------------------
+../../plugin_omega.so loaded.
+
+*** tstart() called on ender
+*** at Tue Aug  9 12:26:38 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 5
+  Nalpha       = 3
+  Nbeta        = 2
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-07
+  Density threshold  = 1.00e-05
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Selected Functional is wB97.
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 1.7532031485E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -16.73690978785301
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         14      14       3       2       2       1
+   -------------------------------------------------------
+    Total      14      14       3       2       2       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UKS iter   1:   -24.20683959467122   -7.46993e+00   0.00000e+00  
+   @UKS iter   2:   -24.64210832631115   -4.35269e-01   9.67506e-02 DIIS
+   @UKS iter   3:   -24.64915514139410   -7.04682e-03   1.01064e-02 DIIS
+   @UKS iter   4:   -24.64918217837696   -2.70370e-05   3.66803e-04 DIIS
+   @UKS iter   5:   -24.64918473850324   -2.56013e-06   9.72156e-05 DIIS
+   @UKS iter   6:   -24.64918477872363   -4.02204e-08   2.51503e-05 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A     -6.860530     2A     -0.513014     3A     -0.289256  
+
+	Alpha Virtual:                                                        
+
+	   4A      0.015090     5A      0.015090     6A      0.392472  
+	   7A      0.419085     8A      0.419085     9A      0.456336  
+	  10A      0.803821    11A      0.807019    12A      0.807019  
+	  13A      0.821071    14A      0.821072  
+
+	Beta Occupied:                                                        
+
+	   1A     -6.857024     2A     -0.461395  
+
+	Beta Virtual:                                                         
+
+	   3A      0.022272     4A      0.022272     5A      0.042853  
+	   6A      0.431442     7A      0.431442     8A      0.443510  
+	   9A      0.460709    10A      0.823467    11A      0.823467  
+	  12A      0.850271    13A      0.850271    14A      0.861936  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     2 ]
+	SOCC [     1 ]
+
+  Energy converged.
+
+  @UKS Final Energy:   -24.64918477872363
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+ Dipole Moment: (Debye)
+     X:    -0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+
+  @Spin Contamination Metric:  0.00335
+  @S^2 Expected:               0.75000
+  @S^2 Observed:               0.75335
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Tue Aug  9 12:26:41 2011
+	user time   =       3.67 seconds =       0.06 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Calling plugin ../../plugin_omega.so.
+
+*** tstart() called on ender
+*** at Tue Aug  9 12:26:41 2011
+
+
+         ---------------------------------------------------------
+                          Optimized-Omega RC-KS
+                            IP-Only Algorithm                
+                               Rob Parrish
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+ ==> Functional <==
+
+  wB97
+
+ ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           B          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Nuclear repulsion =    0.000000000000000
+
+  Nalpha = 3
+  Nbeta  = 2
+
+  ==> Primary Basis <==
+
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 14
+    Number of Cartesian functions: 15
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Primary Basis <==
+
+  Basis Set
+    Number of shells: 18
+    Number of basis function: 56
+    Number of Cartesian functions: 66
+    Spherical Harmonics?: true
+    Max angular momentum: 3
+
+  ==> Omega Guess: HOMO Size <== 
+
+   HOMO <R>:          2.41321E+00
+   Initial Omega^-1:  2.41321E+00
+   Initial Omega:     4.14386E-01
+
+  Canonical Orthogonalization: 14 of 14 functions retained, 0 projected
+
+  ==> Burn-In Procedure <==
+
+  *** Step    1: Burn-In Step ***
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.64854378098028 -2.46485E+01  1.14548E-04 
+      2   -24.64854459814866 -8.17168E-07  1.82654E-05 DIIS
+      3   -24.64854461972516 -2.15765E-08  2.16018E-07 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.31843154901341 -2.43184E+01  3.12799E-02 
+      2   -24.33807664375278 -1.96451E-02  8.28972E-03 DIIS
+      3   -24.33902648216938 -9.49838E-04  2.12324E-04 DIIS
+      4   -24.33902861215925 -2.12999E-06  2.57880E-05 DIIS
+      5   -24.33902868154991 -6.93907E-08  1.30695E-06 DIIS
+
+  ==> Omega Optimization Procedure <==
+
+  *** Step    2: Bracketing Step ***
+
+    Old Omega:     4.14385890E-01
+    Old kIP:       2.91688053E-01
+    Old IP:        3.09515938E-01
+    Old Delta IP: -1.78278851E-02
+    Multipler:     2.00000000E+00
+    New Omega:     8.28771781E-01
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.62465548714489  2.38891E-02  1.66764E-03 
+      2   -24.62484251067320 -1.87024E-04  3.32432E-04 DIIS
+      3   -24.62485456006021 -1.20494E-05  1.27220E-04 DIIS
+      4   -24.62485513635021 -5.76290E-07  3.20692E-05 DIIS
+      5   -24.62485515809667 -2.17465E-08  2.28586E-06 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.31333475387132  2.56939E-02  7.83938E-04 
+      2   -24.31334902566337 -1.42718E-05  1.87000E-04 DIIS
+      3   -24.31334958397477 -5.58311E-07  4.01874E-05 DIIS
+      4   -24.31334960248372 -1.85090E-08  1.49059E-08 DIIS
+
+  *** Step Results ***
+
+    Omega:     8.28771781E-01
+    kIP:       3.22600968E-01
+    IP:        3.11505556E-01
+    Delta IP:  1.10954127E-02
+
+  *** Omega Bracketed ***
+
+  *** Step    3: Regula Falsi 3 Step ***
+
+    New Omega:     6.69807112E-01
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.62993585569376 -5.08070E-03  3.90255E-04 
+      2   -24.62994175934458 -5.90365E-06  5.90538E-05 DIIS
+      3   -24.62994201967012 -2.60326E-07  2.23187E-05 DIIS
+      4   -24.62994203339223 -1.37221E-08  4.14933E-06 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.31844261579959 -5.09301E-03  2.87336E-04 
+      2   -24.31844422292478 -1.60713E-06  7.48421E-05 DIIS
+      3   -24.31844430585826 -8.29335E-08  1.19109E-05 DIIS
+      4   -24.31844430765558 -1.79732E-09  2.94432E-09 DIIS
+
+  *** Step Results ***
+
+    Omega:     6.69807112E-01
+    kIP:       3.16657459E-01
+    IP:        3.11497726E-01
+    Delta IP:  5.15973312E-03
+
+  *** Step    4: Regula Falsi 3 Step ***
+
+    New Omega:     6.12476016E-01
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.63302323581051 -3.08120E-03  1.22605E-04 
+      2   -24.63302379746193 -5.61651E-07  1.71852E-05 DIIS
+      3   -24.63302381664338 -1.91814E-08  3.59970E-06 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.32167244970783 -3.22814E-03  9.25486E-05 
+      2   -24.32167261646567 -1.66758E-07  2.42229E-05 DIIS
+      3   -24.32167262545582 -8.99016E-09  3.89919E-06 DIIS
+
+  *** Step Results ***
+
+    Omega:     6.12476016E-01
+    kIP:       3.13220751E-01
+    IP:        3.11351191E-01
+    Delta IP:  1.86955952E-03
+
+  *** Step    5: Regula Falsi 3 Step ***
+
+    New Omega:     5.78132694E-01
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.63519281387668 -2.16900E-03  6.02839E-05 
+      2   -24.63519295275384 -1.38877E-07  8.42897E-06 DIIS
+      3   -24.63519295581495 -3.06111E-09  8.88816E-07 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.32398825293279 -2.31563E-03  4.55210E-05 
+      2   -24.32398829413127 -4.11985E-08  1.18386E-05 DIIS
+      3   -24.32398829641366 -2.28239E-09  2.10181E-06 DIIS
+
+  *** Step Results ***
+
+    Omega:     5.78132694E-01
+    kIP:       3.10700390E-01
+    IP:        3.11204659E-01
+    Delta IP: -5.04269878E-04
+
+  *** Step    6: Regula Falsi 3 Step ***
+
+    New Omega:     5.85428207E-01
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.63471221750980  4.80738E-04  3.56993E-06 
+      2   -24.63471221734741  1.62395E-10  1.76796E-06 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.32347212824449  5.16168E-04  1.26905E-06 
+      2   -24.32347212831400 -6.95088E-11  5.39743E-07 DIIS
+
+  *** Step Results ***
+
+    Omega:     5.85428207E-01
+    kIP:       3.11274508E-01
+    IP:        3.11240089E-01
+    Delta IP:  3.44186817E-05
+
+  *** Step    7: Regula Falsi 3 Step ***
+
+    New Omega:     5.84962072E-01
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.63474261421909 -3.03969E-05  2.60126E-06 
+      2   -24.63474261385243  3.66665E-10  4.05144E-06 DIIS
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.32350471574393 -3.25874E-05  1.24235E-07 
+      2   -24.32350471574051  3.42482E-12  5.75932E-07 DIIS
+
+  *** Step Results ***
+
+    Omega:     5.84962072E-01
+    kIP:       3.11233437E-01
+    IP:        3.11237898E-01
+    Delta IP: -4.46094101E-06
+
+  ==> Final Convergence Procedure <==
+
+   => N SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.63474261412876 -2.76330E-10  3.47943E-06 
+
+   UKS N Orbital Energies [a.u.]:
+
+	Alpha Occupied:                                                       
+
+	   1A     -6.949818     2A     -0.539314     3A     -0.311237  
+
+	Alpha Virtual:                                                        
+
+	   4A      0.027192     5A      0.027192     6A      0.402773  
+	   7A      0.442106     8A      0.442106     9A      0.467784  
+	  10A      0.828879    11A      0.836286    12A      0.836286  
+	  13A      0.850295    14A      0.850296  
+
+	Beta Occupied:                                                        
+
+	   1A     -6.945082     2A     -0.476450  
+
+	Beta Virtual:                                                         
+
+	   3A      0.032953     4A      0.032953     5A      0.052567  
+	   6A      0.453143     7A      0.453143     8A      0.466997  
+	   9A      0.469494    10A      0.852015    11A      0.852015  
+	  12A      0.878235    13A      0.878235    14A      0.889724  
+
+  @UKS N Final energy:     -24.6347426141287578
+
+   => N-1 SCF <=
+
+   Iter               Energy      Delta E      Delta D Stat
+      1   -24.32350471575372 -1.32090E-11  4.71193E-07 
+
+   UKS N-1 Orbital Energies [a.u.]:
+
+	Alpha Occupied:                                                       
+
+	   1A     -7.448912     2A     -0.890778  
+
+	Alpha Virtual:                                                        
+
+	   3A     -0.313525     4A     -0.313525     5A     -0.313525  
+	   6A      0.133912     7A      0.133912     8A      0.133912  
+	   9A      0.165134    10A      0.494016    11A      0.494016  
+	  12A      0.494016    13A      0.494016    14A      0.494016  
+
+	Beta Occupied:                                                        
+
+	   1A     -7.448912     2A     -0.890778  
+
+	Beta Virtual:                                                         
+
+	   3A     -0.313525     4A     -0.313525     5A     -0.313525  
+	   6A      0.133912     7A      0.133912     8A      0.133912  
+	   9A      0.165134    10A      0.494016    11A      0.494016  
+	  12A      0.494016    13A      0.494016    14A      0.494016  
+
+  @UKS N-1 Final energy:     -24.3235047157537174
+
+  *** Omega Optimization Profile ***
+
+  Iter        Omega          kIP           IP     Delta IP Step Type
+     1  4.14386E-01  2.91688E-01  3.09516E-01 -1.78279E-02 Initial Guess
+     2  8.28772E-01  3.22601E-01  3.11506E-01  1.10954E-02 Bracket Step
+     3  6.69807E-01  3.16657E-01  3.11498E-01  5.15973E-03 Regula-Falsi3 Step
+     4  6.12476E-01  3.13221E-01  3.11351E-01  1.86956E-03 Regula-Falsi3 Step
+     5  5.78133E-01  3.10700E-01  3.11205E-01 -5.04270E-04 Regula-Falsi3 Step
+     6  5.85428E-01  3.11275E-01  3.11240E-01  3.44187E-05 Regula-Falsi3 Step
+     7  5.84962E-01  3.11233E-01  3.11238E-01 -4.46094E-06 Regula-Falsi3 Step
+
+
+*** tstop() called on ender at Tue Aug  9 12:27:13 2011
+	user time   =      38.06 seconds =       0.63 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         32 seconds =       0.53 minutes
+
+*** PSI4 exiting successfully, buy a developer a beer!

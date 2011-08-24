@@ -25,6 +25,8 @@ protected:
     bool is_poisson_;
     /// Should we force C1?
     bool force_C1_;
+    /// Range separation omega (0.0 if not used)
+    double omega_;
 
     /// The fitting metric or symmetric inverse
     boost::shared_ptr<Matrix> metric_;
@@ -47,6 +49,8 @@ public:
     FittingMetric();
     /// DF Fitting Metric
     FittingMetric(boost::shared_ptr<BasisSet> aux, bool force_C1 = false);
+    /// DF Fitting Metric
+    FittingMetric(boost::shared_ptr<BasisSet> aux, double omega, bool force_C1 = false);
     /// Poisson Fitting Metric
     FittingMetric(boost::shared_ptr<BasisSet> aux, boost::shared_ptr<BasisSet> pois, bool force_C1 = false);
 
