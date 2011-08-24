@@ -96,5 +96,35 @@ public:
     virtual void compute_row(int row, double* target);
 };
 
+class CholeskyDelta : public Cholesky {
+
+protected:
+    boost::shared_ptr<Vector> eps_aocc_;
+    boost::shared_ptr<Vector> eps_avir_;
+public:
+    CholeskyDelta(boost::shared_ptr<Vector> eps_aocc, 
+        boost::shared_ptr<Vector> eps_avir,
+        double delta, unsigned long int memory);
+    ~CholeskyDelta();
+    
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
+class CholeskyLocal : public Cholesky {
+
+protected:
+    boost::shared_ptr<Matrix> C_;
+public:
+    CholeskyLocal(boost::shared_ptr<Matrix> C, 
+        double delta, unsigned long int memory);
+    ~CholeskyLocal();
+    
+    virtual int N();
+    virtual void compute_diagonal(double* target);
+    virtual void compute_row(int row, double* target);
+};
+
 } // Namespace psi
 #endif
