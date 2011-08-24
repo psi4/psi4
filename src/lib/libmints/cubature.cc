@@ -69,6 +69,7 @@ void BasisExtents::computeExtents()
         // Corner case: \delta = 0.0
         if (delta_ == 0.0) {
             Rp[P] = std::numeric_limits<double>::max();
+            maxR_ = std::numeric_limits<double>::max();
             continue;
         }
     
@@ -192,22 +193,22 @@ void BlockOPoints::bound()
     // Initially: mean center and max spread of point cloud 
     double R2 = 0.0;
 
-    x_[0] = x_[1] = x_[2] = R2 = 0.0;
+    xc_[0] = xc_[1] = xc_[2] = R2 = 0.0;
 
     for (int Q = 0; Q < npoints_; Q++) {
-        x_[0] += x_[Q];
-        x_[1] += y_[Q];
-        x_[2] += z_[Q];
+        xc_[0] += x_[Q];
+        xc_[1] += y_[Q];
+        xc_[2] += z_[Q];
     } 
 
-    x_[0] /= (double) npoints_;
-    x_[1] /= (double) npoints_;
-    x_[2] /= (double) npoints_;
+    xc_[0] /= (double) npoints_;
+    xc_[1] /= (double) npoints_;
+    xc_[2] /= (double) npoints_;
 
     for (int Q = 0; Q < npoints_; Q++) {
-        double R2_candidate = (x_[Q] - x_[0]) * (x_[Q] - x_[0]) +
-                              (y_[Q] - x_[1]) * (y_[Q] - x_[1]) +
-                              (z_[Q] - x_[2]) * (z_[Q] - x_[2]);
+        double R2_candidate = (x_[Q] - xc_[0]) * (x_[Q] - xc_[0]) +
+                              (y_[Q] - xc_[1]) * (y_[Q] - xc_[1]) +
+                              (z_[Q] - xc_[2]) * (z_[Q] - xc_[2]);
         if (R2 < R2_candidate)
             R2 = R2_candidate;
     }
@@ -227,9 +228,9 @@ void BlockOPoints::populate()
        
         // First pass: mean center/max spread of point clould 
         Vector3 v = primary->shell(P)->center();
-        double Reff = sqrt((v[0] - x_[0]) * (v[0] - x_[0]) +
-                           (v[1] - x_[1]) * (v[1] - x_[1]) +
-                           (v[2] - x_[2]) * (v[2] - x_[2]));
+        double Reff = sqrt((v[0] - xc_[0]) * (v[0] - xc_[0]) +
+                           (v[1] - xc_[1]) * (v[1] - xc_[1]) +
+                           (v[2] - xc_[2]) * (v[2] - xc_[2]));
         
         
         if (Reff > R_ + Rp[P]) continue;
@@ -262,10 +263,10 @@ void BlockOPoints::print(FILE* out, int print)
     fprintf(out, "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
         x_[0],x_[1],x_[2],R_);
 
-    fprintf(out, "    %6d Significant Shells.\n", shells_local_to_global_.size()); 
-    fprintf(out, "    %6d Significant Functions.\n", functions_local_to_global_.size());
+    fprintf(out, "    %-6d Significant Shells.\n", shells_local_to_global_.size()); 
+    fprintf(out, "    %-6d Significant Functions.\n\n", functions_local_to_global_.size());
 
-    if (print > 1) {
+    if (print > 3) {
         fprintf(out, "    Significant Shells: ");
         for (int i = 0; i < shells_local_to_global_.size(); i++) {
             fprintf(out, "%d ", shells_local_to_global_[i]);
@@ -278,7 +279,7 @@ void BlockOPoints::print(FILE* out, int print)
         fprintf(out, "\n\n");
     }
 
-    if (print > 2) {
+    if (print > 5) {
 
         fprintf(out, "   Quadrature Points:\n\n");
         fprintf(out, "   %4s %14s %14s %14s %14s\n", "N", "X", "Y", "Z", "W");
@@ -954,6 +955,9 @@ void MolecularGrid::remove_zero_points()
 }
 void MolecularGrid::remove_distant_points(double Rmax)
 {
+    if (Rmax == std::numeric_limits<double>::max())
+        return;
+
     int natom = molecule_->natom();
     int npoints2 = npoints_;
     int offset = 0;
@@ -1008,7 +1012,7 @@ boost::shared_ptr<GridBlock> MolecularGrid::fullGrid()
     g->setGrid(x_,y_,z_,w_);
     return g;
 }
-void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> > atoms, const std::string& scheme,
+void MolecularGrid::buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms, const std::string& scheme,
    boost::shared_ptr<BasisExtents> extents, int max_points, int min_points)
 {
     extents_ = extents;
@@ -1258,7 +1262,7 @@ void MolecularGrid::print(FILE* out, int print)
     fprintf(out, "   => Molecular Quadrature: %s Scheme <=\n\n", scheme_.c_str());
     fprintf(out, "      Points: %d\n\n", npoints_);
    
-    if (print > 1) {
+    if (print > 4) {
         for (int A = 0; A < atoms_.size(); A++) {
             fprintf(outfile,"\tAtom %d: %s <%8.5f, %8.5f, %8.5f>, %6d Points\n", A+1, molecule_->label(A).c_str(),
                 molecule_->x(A), molecule_->y(A), molecule_->z(A), atoms_[A]->npoints());
@@ -1274,7 +1278,7 @@ void MolecularGrid::print(FILE* out, int print)
         }
     }
  
-    if (print > 3) {
+    if (print > 5) {
 
         for (int i = 0; i < atoms_.size(); i++) {
             fprintf(out, "   Atomic Quadrature %d:\n\n", i+1);
@@ -1288,6 +1292,10 @@ void MolecularGrid::print(FILE* out, int print)
                 x_[i], y_[i], z_[i], w_[i]); 
         } 
         fprintf(out, "\n\n");
+    }
+
+    if (print > 2) {
+        extents_->print();
     }
 }
 
@@ -1388,7 +1396,7 @@ void AtomicGrid::print(FILE* out)
     fprintf(out, "   Radial Quadrature:\n\n");
     radial_->print(out);
 
-    fprintf(out, "   Total Quadrature:\n\n");
+    fprintf(out, "   Total Atomic Quadrature:\n\n");
     for (int i = 0; i < sphericals_.size(); i++) {
         fprintf(out, "   Spherical Quadrature %d:\n\n", i+1);
         sphericals_[i]->print(out);

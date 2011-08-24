@@ -17,11 +17,18 @@ KSPotential::KSPotential(boost::shared_ptr<functional::SuperFunctional> function
     functional_(functional), molecule_(molecule),
     primary_(primary), options_(options)
 {
-    buildGrid();
-    buildAO2USO();
+    common_init();
 }
 KSPotential::~KSPotential()
 {
+}
+void KSPotential::common_init()
+{
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
+
+    buildGrid();
+    buildAO2USO();
 }
 void KSPotential::buildGrid()
 {
@@ -61,8 +68,8 @@ RKSPotential::~RKSPotential()
 void RKSPotential::buildProperties()
 {
     int max_points = grid_->max_points();
-    int nglobal = primary_->nbf();
-    properties_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points));
+    int max_functions = grid_->max_functions();
+    properties_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->getLocalAnsatz());
 }
 void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Matrix> C_USO, boost::shared_ptr<Dimension> noccpi)
@@ -77,15 +84,16 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
     int ansatz = functional_->getLocalAnsatz();
 
     // How many functions are there (for lda in Vtemp, T)
-    int nglobal = primary_->nbf();
+    int max_functions = grid_->max_functions(); 
+    int max_points = grid_->max_points();
 
     // Local/global V matrices
-    boost::shared_ptr<Matrix> V_local(new Matrix("V Temp", nglobal, nglobal));
+    boost::shared_ptr<Matrix> V_local(new Matrix("V Temp", max_functions, max_functions));
     double** V2p = V_local->pointer();
     double** Vp = V_AO_->pointer();
 
     // Scratch
-    boost::shared_ptr<Matrix> T_local(new Matrix("T Temp", nglobal, nglobal));
+    boost::shared_ptr<Matrix> T_local = properties_->scratch();
     double** Tp = T_local->pointer();
 
     // Traverse the blocks of points
@@ -94,9 +102,10 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
     double rhoaxq      = 0.0;
     double rhoayq      = 0.0;
     double rhoazq      = 0.0;
-    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", grid_->max_points()));
+    boost::shared_ptr<Vector> QT(new Vector("Quadrature Temp", max_points));
     double *restrict QTp = QT->pointer();
-    std::vector<boost::shared_ptr<BlockOPoints> > blocks = grid_->blocks();
+    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
+
     for (int Q = 0; Q < blocks.size(); Q++) {
 
         boost::shared_ptr<BlockOPoints> block = blocks[Q];
@@ -110,6 +119,11 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
 
         properties_->computeProperties(block);
         functional_->computeRKSFunctional(properties_); 
+
+        if (debug_ > 4) {
+            block->print(outfile, debug_);
+            properties_->print(outfile, debug_);
+        }
 
         double** phi = properties_->basis_value("PHI")->pointer();
         double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
@@ -150,7 +164,7 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
         }
 
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],nglobal,Tp[0],nglobal,0.0,V2p[0],nglobal);
+        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tp[0],max_functions,0.0,V2p[0],max_functions);
 
         // Symmetrization (V is Hermitian)
         for (int m = 0; m < nlocal; m++) {
@@ -171,39 +185,54 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
                 ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_a[P] * w[P], phix[P], 1, Tp[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],nglobal,Tp[0],nglobal,1.0,V2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
 
             // \nabla y
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_a[P] * w[P], phiy[P], 1, Tp[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],nglobal,Tp[0],nglobal,1.0,V2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
 
             // \nabla z
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tp[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_a[P] * w[P], phiz[P], 1, Tp[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],nglobal,Tp[0],nglobal,1.0,V2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tp[0],max_functions,1.0,V2p[0],max_functions);
         }       
  
         // => Unpacking <= //
         for (int ml = 0; ml < nlocal; ml++) {
             int mg = function_map[ml];
-            for (int nl = 0; nl <= ml; nl++) {
+            for (int nl = 0; nl < ml; nl++) {
                 int ng = function_map[nl];
-                Vp[mg][ng] = Vp[ng][mg] = V2p[ml][nl];
+                Vp[mg][ng] += V2p[ml][nl];
+                Vp[ng][mg] += V2p[ml][nl];
             }
+            Vp[mg][mg] += V2p[ml][ml];
         }
     } 
    
     quad_values_["FUNCTIONAL"] = functionalq;
-    quad_values_["RHO_A"]      = 2.0 * rhoaq; 
-    quad_values_["RHO_AX"]     = 2.0 * rhoaxq; 
-    quad_values_["RHO_AY"]     = 2.0 * rhoayq; 
-    quad_values_["RHO_AZ"]     = 2.0 * rhoazq; 
+    quad_values_["RHO_A"]      = rhoaq; 
+    quad_values_["RHO_AX"]     = rhoaxq; 
+    quad_values_["RHO_AY"]     = rhoayq; 
+    quad_values_["RHO_AZ"]     = rhoazq; 
+    quad_values_["RHO_B"]      = rhoaq; 
+    quad_values_["RHO_BX"]     = rhoaxq; 
+    quad_values_["RHO_BY"]     = rhoayq; 
+    quad_values_["RHO_BZ"]     = rhoazq; 
  
+    if (debug_) {
+        fprintf(outfile, "   => Numerical Integrals <=\n\n");
+        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+    }
+    
     // V_AO_->V_USO_
     AO2USO();
 }
@@ -239,7 +268,7 @@ void RKSPotential::USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Mat
             double** Tp = T->pointer();
 
             C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,D_USOp[0],nso,0.0,Tp[0],nso);
-            C_DGEMM('N','T',nao,nao,nso,1.0,Tp[0],nso,Up[0],nso,1.0,D_AOp[0],nso);
+            C_DGEMM('N','T',nao,nao,nso,1.0,Tp[0],nso,Up[0],nso,1.0,D_AOp[0],nao);
         }
     }
     
@@ -329,8 +358,8 @@ UKSPotential::~UKSPotential()
 void UKSPotential::buildProperties()
 {
     int max_points = grid_->max_points();
-    int nglobal = primary_->nbf();
-    properties_ = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,max_points));
+    int max_functions = grid_->max_functions(); 
+    properties_ = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->getLocalAnsatz());
 }
 void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Matrix> Ca_USO, boost::shared_ptr<Dimension> napi,
@@ -346,20 +375,21 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
     int ansatz = functional_->getLocalAnsatz();
 
     // How many functions are there (for lda in Vtemp, T)
-    int nglobal = primary_->nbf();
+    int max_functions = grid_->max_functions();
+    int max_points = grid_->max_points();
 
     // Local/global V matrices
-    boost::shared_ptr<Matrix> Va_local(new Matrix("Va Temp", nglobal, nglobal));
+    boost::shared_ptr<Matrix> Va_local(new Matrix("Va Temp", max_functions, max_functions));
     double** Va2p = Va_local->pointer();
     double** Vap = Va_AO_->pointer();
-    boost::shared_ptr<Matrix> Vb_local(new Matrix("Vb Temp", nglobal, nglobal));
+    boost::shared_ptr<Matrix> Vb_local(new Matrix("Vb Temp", max_functions, max_functions));
     double** Vb2p = Vb_local->pointer();
     double** Vbp = Vb_AO_->pointer();
 
     // Scratch
-    boost::shared_ptr<Matrix> Ta_local(new Matrix("Ta Temp", nglobal, nglobal));
+    boost::shared_ptr<Matrix> Ta_local = properties_->scratchA();
     double** Tap = Ta_local->pointer();
-    boost::shared_ptr<Matrix> Tb_local(new Matrix("Tb Temp", nglobal, nglobal));
+    boost::shared_ptr<Matrix> Tb_local = properties_->scratchB();
     double** Tbp = Tb_local->pointer();
 
     // Traverse the blocks of points
@@ -372,11 +402,11 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
     double rhobxq      = 0.0;
     double rhobyq      = 0.0;
     double rhobzq      = 0.0;
-    boost::shared_ptr<Vector> QTa(new Vector("Quadrature Temp", grid_->max_points()));
+    boost::shared_ptr<Vector> QTa(new Vector("Quadrature Temp", max_points));
     double* QTap = QTa->pointer();
-    boost::shared_ptr<Vector> QTb(new Vector("Quadrature Temp", grid_->max_points()));
+    boost::shared_ptr<Vector> QTb(new Vector("Quadrature Temp", max_points));
     double* QTbp = QTb->pointer();
-    std::vector<boost::shared_ptr<BlockOPoints> > blocks = grid_->blocks();
+    const std::vector<boost::shared_ptr<BlockOPoints> >& blocks = grid_->blocks();
     for (int Q = 0; Q < blocks.size(); Q++) {
 
         boost::shared_ptr<BlockOPoints> block = blocks[Q];
@@ -390,6 +420,11 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
 
         properties_->computeProperties(block);
         functional_->computeUKSFunctional(properties_); 
+
+        if (debug_ > 3) {
+            block->print(outfile, debug_);
+            properties_->print(outfile, debug_);
+        }
 
         double** phi = properties_->basis_value("PHI")->pointer();
         double *restrict rho_a = properties_->property_value("RHO_A")->pointer();
@@ -416,6 +451,7 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
         // => LSDA contribution (symmetrized) <= //
         for (int P = 0; P < npoints; P++) {
             ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
+            ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
             C_DAXPY(nlocal,0.5 * v_rho_a[P] * w[P], phi[P], 1, Tap[P], 1); 
             C_DAXPY(nlocal,0.5 * v_rho_b[P] * w[P], phi[P], 1, Tbp[P], 1); 
         }
@@ -446,8 +482,8 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
         }
 
         // Single GEMM slams GGA+LSDA together (man but GEM's hot!)
-        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],nglobal,Tap[0],nglobal,0.0,Va2p[0],nglobal);
-        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],nglobal,Tbp[0],nglobal,0.0,Vb2p[0],nglobal);
+        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tap[0],max_functions,0.0,Va2p[0],max_functions);
+        C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phi[0],max_functions,Tbp[0],max_functions,0.0,Vb2p[0],max_functions);
 
         // Symmetrization (V is Hermitian) 
         for (int m = 0; m < nlocal; m++) {
@@ -471,21 +507,21 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
                 ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_a[P] * w[P], phix[P], 1, Tap[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],nglobal,Tap[0],nglobal,1.0,Va2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
 
             // \nabla y
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_a[P] * w[P], phiy[P], 1, Tap[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],nglobal,Tap[0],nglobal,1.0,Va2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
 
             // \nabla z
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tap[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_a[P] * w[P], phiz[P], 1, Tap[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],nglobal,Tap[0],nglobal,1.0,Va2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tap[0],max_functions,1.0,Va2p[0],max_functions);
            
             // Beta 
             // \nabla x
@@ -493,31 +529,35 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
                 ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_b[P] * w[P], phix[P], 1, Tbp[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],nglobal,Tbp[0],nglobal,1.0,Vb2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phix[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
 
             // \nabla y
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_b[P] * w[P], phiy[P], 1, Tbp[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],nglobal,Tbp[0],nglobal,1.0,Vb2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiy[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
 
             // \nabla z
             for (int P = 0; P < npoints; P++) {
                 ::memset(static_cast<void*>(Tbp[P]),'\0',nlocal*sizeof(double));
                 C_DAXPY(nlocal,v_tau_b[P] * w[P], phiz[P], 1, Tbp[P], 1); 
             }        
-            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],nglobal,Tbp[0],nglobal,1.0,Vb2p[0],nglobal);
+            C_DGEMM('T','N',nlocal,nlocal,npoints,1.0,phiz[0],max_functions,Tbp[0],max_functions,1.0,Vb2p[0],max_functions);
         }       
  
         // => Unpacking <= //
         for (int ml = 0; ml < nlocal; ml++) {
             int mg = function_map[ml];
-            for (int nl = 0; nl <= ml; nl++) {
+            for (int nl = 0; nl < ml; nl++) {
                 int ng = function_map[nl];
-                Vap[mg][ng] = Vap[ng][mg] = Va2p[ml][nl];
-                Vbp[mg][ng] = Vbp[ng][mg] = Vb2p[ml][nl];
+                Vap[mg][ng] += Va2p[ml][nl];
+                Vap[ng][mg] += Va2p[ml][nl];
+                Vbp[mg][ng] += Vb2p[ml][nl];
+                Vbp[ng][mg] += Vb2p[ml][nl];
             }
+            Vap[mg][mg] += Va2p[ml][ml];
+            Vbp[mg][mg] += Vb2p[ml][ml];
         }
     } 
    
@@ -531,6 +571,14 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
     quad_values_["RHO_BY"]     = rhobyq; 
     quad_values_["RHO_BZ"]     = rhobzq; 
  
+    if (debug_) {
+        fprintf(outfile, "   => Numerical Integrals <=\n\n");
+        fprintf(outfile, "    Functional Value:  %24.16E\n",quad_values_["FUNCTIONAL"]);
+        fprintf(outfile, "    <\\rho_a>        :  %24.16E\n",quad_values_["RHO_A"]);
+        fprintf(outfile, "    <\\rho_b>        :  %24.16E\n",quad_values_["RHO_B"]);
+        fprintf(outfile, "    <\\vec r\\rho_a>  : <%24.16E,%24.16E,%24.16E>\n",quad_values_["RHO_AX"],quad_values_["RHO_AY"],quad_values_["RHO_AZ"]);
+        fprintf(outfile, "    <\\vec r\\rho_b>  : <%24.16E,%24.16E,%24.16E>\n\n",quad_values_["RHO_BX"],quad_values_["RHO_BY"],quad_values_["RHO_BZ"]);
+    }
     // V_AO_->V_USO_
     AO2USO();
 }
@@ -571,7 +619,7 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
             double** Tp = T->pointer();
 
             C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,Da_USOp[0],nso,0.0,Tp[0],nso);
-            C_DGEMM('N','T',nao,nao,nso,1.0,Tp[0],nso,Up[0],nso,1.0,Da_AOp[0],nso);
+            C_DGEMM('N','T',nao,nao,nso,1.0,Tp[0],nso,Up[0],nso,1.0,Da_AOp[0],nao);
         }
 
         Db_AO_->zero();
@@ -586,7 +634,7 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
             double** Tp = T->pointer();
 
             C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,Db_USOp[0],nso,0.0,Tp[0],nso);
-            C_DGEMM('N','T',nao,nao,nso,1.0,Tp[0],nso,Up[0],nso,1.0,Db_AOp[0],nso);
+            C_DGEMM('N','T',nao,nao,nso,1.0,Tp[0],nso,Up[0],nso,1.0,Db_AOp[0],nao);
         }
     }
     
