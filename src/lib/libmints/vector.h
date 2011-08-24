@@ -154,6 +154,8 @@ public:
         return name_;
     }
 
+    /// Python compatible printer
+    void print_out() { print(outfile); }
     /**
      * Print the matrix using print_mat
      *
