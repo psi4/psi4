@@ -73,7 +73,9 @@ boost::shared_ptr<Vector> RKSFunctions::property_value(const std::string& key)
 void RKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
 {
     // => Build basis function values <= //
+    timer_on("Points");
     PointFunctions::computePoints(block);
+    timer_off("Points");
 
     // => Global information <= //
     int npoints = block->npoints();
@@ -269,7 +271,9 @@ boost::shared_ptr<Vector> UKSFunctions::property_value(const std::string& key)
 void UKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
 {
     // => Build basis function values <= //
+    timer_on("Points");
     PointFunctions::computePoints(block);
+    timer_off("Points");
 
     // => Global information <= //
     int npoints = block->npoints();
