@@ -75,6 +75,9 @@ private:
 
     // In-core O(N^5) transqt
     boost::shared_ptr<Matrix> mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv);
+    // In-core O(N^5) transqt
+    boost::shared_ptr<Matrix> mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
+                                                                           boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
 
 public:
 
@@ -110,14 +113,20 @@ public:
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_eri();
-    /// MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
+    /// Symmetric MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
+    /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
+    boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2, 
+                                     boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_erf_eri(double omega);
-    /// MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
+    /// Symmetric MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
-    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);;
+    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
+    /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
+    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2, 
+                                                       boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
 
     /// AO Overlap Integrals
     boost::shared_ptr<Matrix> ao_overlap();

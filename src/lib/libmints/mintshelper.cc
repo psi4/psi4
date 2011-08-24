@@ -324,6 +324,20 @@ boost::shared_ptr<Matrix> MintsHelper::ao_eri()
 
     return I;
 }
+boost::shared_ptr<Matrix> MintsHelper::mo_erf_eri(double omega, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
+                                                                boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4)
+{
+    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_erf_eri(omega), C1, C2, C3, C4);
+    mo_ints->set_name("MO ERF ERI Tensor");
+    return mo_ints;
+}
+boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
+                                              boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4)
+{
+    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_eri(), C1, C2, C3, C4);
+    mo_ints->set_name("MO ERI Tensor");
+    return mo_ints;
+}
 boost::shared_ptr<Matrix> MintsHelper::mo_erf_eri(double omega, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
 {
     boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_erf_eri(omega), Co, Cv);
@@ -335,6 +349,74 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boos
     boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
     mo_ints->set_name("MO ERI Tensor");
     return mo_ints;
+}
+boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
+                                                                                    boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4)
+{
+    int nso = basisset_->nbf();
+    int n1 = C1->colspi()[0];
+    int n2 = C2->colspi()[0];
+    int n3 = C3->colspi()[0];
+    int n4 = C4->colspi()[0];
+
+    double** C1p = C1->pointer();
+    double** C2p = C2->pointer();
+    double** C3p = C3->pointer();
+    double** C4p = C4->pointer();
+
+    double** Isop = Iso->pointer();
+    boost::shared_ptr<Matrix> I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
+    double** I2p = I2->pointer();
+
+    C_DGEMM('T','N',n1,nso * (ULI) nso * nso,nso,1.0,C1p[0],n1,Isop[0],nso * (ULI) nso * nso,0.0,I2p[0],nso * (ULI) nso * nso);
+
+    Iso.reset();
+    boost::shared_ptr<Matrix> I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
+    double** I3p = I3->pointer();
+
+    C_DGEMM('N','N',n1 * (ULI) nso * nso,n3,nso,1.0,I2p[0],nso,C3p[0],n3,0.0,I3p[0],n3);
+
+    I2.reset();
+    boost::shared_ptr<Matrix> I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
+    double** I4p = I4->pointer();
+
+    for (int i = 0; i < n1; i++) {
+        for (int j = 0; j < n3; j++) {
+            for (int m = 0; m < nso; m++) {
+                for (int n = 0; n < nso; n++) {
+                    I4p[m * n1 + i][j * nso + n] = I3p[i * nso + m][n * n3 + j];
+                }
+            }
+        }
+    }
+
+    I3.reset();
+    boost::shared_ptr<Matrix> I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
+    double** I5p = I5->pointer();
+
+    C_DGEMM('T','N',n2,n1 * (ULI) n3 * nso, nso,1.0,C2p[0],n2,I4p[0],n1*(ULI)n3*nso,0.0,I5p[0],n1*(ULI)n3*nso);
+
+    I4.reset();
+    boost::shared_ptr<Matrix> I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
+    double** I6p = I6->pointer();
+
+    C_DGEMM('N','N',n2 * (ULI) n1 * n3, n4, nso,1.0,I5p[0],nso,C4p[0],n4,0.0,I6p[0],n4);
+
+    I5.reset();
+    boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", n1 * n2, n3 * n4));
+    double** Imop = Imo->pointer();
+
+    for (int i = 0; i < n1; i++) {
+        for (int j = 0; j < n3; j++) {
+            for (int a = 0; a < n2; a++) {
+                for (int b = 0; b < n4; b++) {
+                    Imop[i * n2 + a][j * n4 + b] = I6p[a * n1 + i][j * n4 + b];
+                }
+            }
+        }
+    }
+
+    return Imo;
 }
 boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
 {
