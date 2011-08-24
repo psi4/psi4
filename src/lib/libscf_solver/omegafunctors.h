@@ -23,6 +23,7 @@ template<class T> class shared_ptr;
  *                   this is called by the out-of-core and direct codes, and will take
  *                   the relative (within irrep) and absolute values of p, q, r and s, along
  *                   with their symmetries, to generate the long-range wK matrices.
+ * void operator()(boost::shared_ptr<DFHF> dfhf) which will set up a DFHF object
  */
 
 
@@ -43,6 +44,8 @@ class Omega_K_Functor
     const int* N_;
     /// The omega for the iteration
     double omega_;
+    /// Dummy matrix for DFHF
+    std::vector<SharedMatrix> J_;
     /// The long-range exchange matrix
     std::vector<SharedMatrix> wK_;
     /// The communicator
@@ -78,7 +81,19 @@ public:
         const boost::shared_ptr<Matrix> C, const int* N)
         : omega_(omega), D_(D), C_(C), N_(N)
     {
+        J_.clear();
+        J_.push_back(SharedMatrix(D->clone()));
         wK_.push_back(wK);
+    }
+
+    void operator()(boost::shared_ptr<DFHF> dfhf) {
+        dfhf->set_restricted(true);
+        dfhf->set_jk(true);
+        dfhf->set_J(J_[0]);
+        dfhf->set_Ka(wK_[0]);
+        dfhf->set_Da(D_);
+        dfhf->set_Ca(C_);
+        dfhf->set_Na(N_);
     }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
@@ -236,6 +251,8 @@ class Omega_Ka_Kb_Functor
     const int* Nb_;
     /// The omega for the iteration
     double omega_;
+    /// Dummy for DFHF
+    std::vector<SharedMatrix> J_;
     /// The alpha exchange matrix
     std::vector<SharedMatrix> wKa_;
     /// The beta exchange matrix
@@ -283,8 +300,24 @@ public:
                boost::shared_ptr<Matrix> wKb, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db, const boost::shared_ptr<Matrix> Ca, const boost::shared_ptr<Matrix> Cb, const int* Na, const int* Nb)
         : omega_(omega), Da_(Da), Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na), Nb_(Nb)
     {
+        J_.clear();
+        J_.push_back(SharedMatrix(Da->clone()));
         wKa_.push_back(wKa);
         wKb_.push_back(wKb);
+    }
+
+    void operator()(boost::shared_ptr<DFHF> dfhf) {
+        dfhf->set_restricted(false);
+        dfhf->set_jk(true);
+        dfhf->set_J(J_[0]);
+        dfhf->set_Da(Da_);
+        dfhf->set_Db(Db_);
+        dfhf->set_Ca(Ca_);
+        dfhf->set_Cb(Cb_);
+        dfhf->set_Na(Na_);
+        dfhf->set_Nb(Nb_);
+        dfhf->set_Ka(wKa_[0]);
+        dfhf->set_Kb(wKb_[0]);
     }
 
     void operator()(int pabs, int qabs, int rabs, int sabs,
@@ -445,6 +478,10 @@ void KS::process_omega_tei(OmegaKFunctor & functor)
         functor.initialize(options_.get_str("SCF_TYPE"));
         omega_eri_->compute_integrals(functor);  // parallelized
         functor.finalize();
+    }else if (options_.get_str("SCF_TYPE") == "DF"){
+        functor.initialize(options_.get_str("SCF_TYPE"));
+        functor(erf_df_);
+        erf_df_->form_JK_DF();
     }else{
         throw PSIEXCEPTION("SCF_TYPE " + options_.get_str("SCF_TYPE") + " is not supported in KS::process_omega_tei");
     }

@@ -68,6 +68,9 @@ class DFHF {
         // memory in doubles
         unsigned long int memory_;
         
+        // Omega (0.0 if not used)
+        double omega_;
+
         // Inverse of fitting metric
         boost::shared_ptr<FittingMetric> Jinv_;
         // The three index tensor (or a chunk if on disk)
@@ -129,6 +132,8 @@ class DFHF {
         boost::shared_ptr<PSIO> psio_;
         // The asynchronous, cyclic disk iterator
         boost::shared_ptr<DFHFDiskIterator> disk_iter_;
+        // The unit number
+        unsigned int unit_;
 
         // Setup
         void common_init();
@@ -152,8 +157,15 @@ class DFHF {
     public:
         // Constructor for generic HF, with J, K, D to be set later
         DFHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<PSIO> psio, Options& opt);
+        // Erf Constructor for generic HF, with J, K, D to be set later
+        DFHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<PSIO> psio, Options& opt, double omega);
         // Destructor
         ~DFHF();
+
+        // Set unit number
+        void set_unit(unsigned int unit); 
+        // Set memory
+        void set_memory(unsigned long int memory);
 
         // Setter methods, to be called from the JK functors
         void set_jk(bool jk) { is_jk_ = jk; }
@@ -186,6 +198,9 @@ class DFHFDiskIterator {
     boost::shared_ptr<PSIO> psio_;
     // The AIOHandler object
     boost::shared_ptr<AIOHandler> aio_;
+
+    // The File
+    unsigned int unit_;
 
     // Buffer A
     boost::shared_ptr<Matrix> A_;
@@ -225,6 +240,9 @@ public:
     DFHFDiskIterator(boost::shared_ptr<PSIO>, int ntri, int naux, int max_rows);
     // Closes disk
     ~DFHFDiskIterator();
+
+    // Set unit number
+    void set_unit(unsigned int unit) { unit_ = unit; }
 
     // Call to get a block/Post theread for the next, if needed 
     double** next_block();

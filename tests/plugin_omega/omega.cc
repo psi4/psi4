@@ -18,6 +18,7 @@
 #include <libmints/mints.h>
 #include <libfunctional/superfunctional.h>
 #include <libscf_solver/ks.h>
+#include <libscf_solver/dft.h>
 #include <libscf_solver/integralfunctors.h>
 #include <libscf_solver/omegafunctors.h>
 
@@ -63,7 +64,7 @@ void OmegaKS::common_init()
     thresh = options_.get_int("D_CONVERGE");
     density_threshold_ = pow(10.0, (double)-thresh);
 
-    block_size_ = options_.get_int("DFT_BLOCK_SIZE");
+    block_size_ = options_.get_int("DFT_MAX_POINTS");
     
     //Build the superfunctional
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size_,1);
@@ -526,26 +527,8 @@ void OmegaIPKS::form_DF()
 }
 void OmegaIPKS::form_KS()
 {
-    boost::shared_ptr<Integrator> integrator = Integrator::build_integrator(molecule_, psio_, options_);
-
-    //Grab the properties object for this basis
-    boost::shared_ptr<Properties> properties = boost::shared_ptr<Properties> (new Properties(basisset_,block_size_));
-    properties->setCutoffEpsilon(options_.get_double("DFT_BASIS_EPSILON"));
-    //Always need rho
-    properties->setToComputeDensity(true);
-    if (functional_->isGGA()) {
-        //Sometimes need gamma
-        properties->setToComputeDensityGradient(true);
-    }
-    if (functional_->isMeta()) {
-        //sometimes need tau
-        properties->setToComputeKEDensity(true);
-    }
-
-    ks_ = boost::shared_ptr<OmegaV>(new OmegaV(psio_, basisset_,
-        functional_, integrator, properties));
-
-    ks_->set_omega(initial_omega_);
+    ks_ = boost::shared_ptr<UKSPotential>(new UKSPotential(functional_, molecule_, basisset_, options_)); 
+    functional_->setOmega(initial_omega_);
 }
 void OmegaIPKS::form_H()
 {
@@ -653,7 +636,7 @@ void OmegaIPKS::omega_step(int iteration)
         double new_omega = old_omega * multiplier;
     
         df_->set_omega(new_omega);
-        ks_->set_omega(new_omega);
+        functional_->setOmega(new_omega);
    
         fprintf(outfile, "  *** Step %4d: Bracketing Step ***\n\n", iteration + 1);
         fprintf(outfile, "    Old Omega:    %15.8E\n", old_omega); 
@@ -775,7 +758,7 @@ void OmegaIPKS::omega_step(int iteration)
 
     // Set the omega
     df_->set_omega(new_omega);
-    ks_->set_omega(new_omega);
+    functional_->setOmega(new_omega);
 
     // Interpolate the guess
     if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {

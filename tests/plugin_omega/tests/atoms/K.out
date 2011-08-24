@@ -1,0 +1,50 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule {
+0 2
+K
+symmetry c1
+}
+
+plugin_load("../../plugin_omega.so")
+
+set globals {
+  scf_type direct
+  basis cc-pvdz
+  ri_basis_scf cc-pvdz-ri
+  reference uks
+  dft_functional wB97
+  dft_order_spherical 31 
+  dft_n_radial 50
+  omega_procedure ip
+  d_converge 5
+  e_converge 7
+  #debug 3
+}
+
+
+energy('scf')
+plugin("../../plugin_omega.so")
+--------------------------------------------------------------------------
+../../plugin_omega.so loaded.
+
+*** tstart() called on ender
+*** at Tue Aug  9 12:44:50 2011
+
