@@ -38,7 +38,7 @@ read_options(std::string name, Options &options)
         options.add_str("OMEGA_GUESS", "HOMO_SIZE" , "HOMO_SIZE DEFAULT");
         /*- a in w_0^-1 = a <R>_HOMO + b
             -*/
-        options.add_double("OMEGA_GUESS_A", 1.0);
+        options.add_double("OMEGA_GUESS_A", 2.0);
         /*- b in w_0^-1 = a <R>_HOMO + b
             -*/
         options.add_double("OMEGA_GUESS_B", 0.0);

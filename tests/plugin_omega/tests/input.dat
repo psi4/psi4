@@ -1,27 +1,29 @@
 molecule {
 0 1
-H
-H 1 0.7
+O
+H 1 1.0
+H 1 1.0 2 104.5
 symmetry c1
 }
 
 plugin_load("../plugin_omega.so")
 
 set globals {
-  scf_type direct
   basis cc-pvdz 
   ri_basis_scf cc-pvdz-ri
   reference uks
   dft_functional wB97
-  dft_spherical_points 110
-  dft_radial_points 50
+  dft_order_spherical 21 
+  dft_n_radial 25 
   omega_procedure ip
-  #omega_guess default
   d_converge 5
   e_converge 7
-  #debug 3
+  scf_type direct
 }
 
 
+#energy('scf')
+set dft_functional s_x
 energy('scf')
-plugin("../plugin_omega.so")
+ 
+#plugin("../plugin_omega.so")

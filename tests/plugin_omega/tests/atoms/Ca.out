@@ -1,0 +1,212 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,
+    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,
+    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)
+
+                         Additional Contributions by
+    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule {
+0 1
+Ca
+symmetry c1
+}
+
+plugin_load("../../plugin_omega.so")
+
+set globals {
+  scf_type direct
+  basis cc-pvdz
+  ri_basis_scf cc-pvdz-ri
+  reference uks
+  dft_functional wB97
+  dft_order_spherical 31 
+  dft_n_radial 50
+  omega_procedure ip
+  d_converge 5
+  e_converge 7
+  #debug 3
+}
+
+
+energy('scf')
+plugin("../../plugin_omega.so")
+--------------------------------------------------------------------------
+../../plugin_omega.so loaded.
+
+*** tstart() called on ender
+*** at Tue Aug  9 12:44:50 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              UKS Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+          CA          0.000000000000     0.000000000000     0.000000000000
+
+    Number of unique atoms: 1
+
+    Atoms equivalency:
+       unique atom 0: 0 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    0.000000000000000
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 20
+  Nalpha       = 10
+  Nbeta        = 10
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-07
+  Density threshold  = 1.00e-05
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 11
+    Number of basis function: 27
+    Number of Cartesian functions: 29
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  Selected Functional is wB97.
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 9.6225580042E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:  -470.58534480459906
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A         27      27      10      10      10       0
+   -------------------------------------------------------
+    Total      27      27      10      10      10       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @UKS iter   1:  -676.63845282182149   -2.06053e+02   0.00000e+00  
+   @UKS iter   2:  -677.36775431637034   -7.29301e-01   1.41705e-01 DIIS
+   @UKS iter   3:  -677.53308314695789   -1.65329e-01   1.00445e-01 DIIS
+   @UKS iter   4:  -677.56365322481713   -3.05701e-02   3.27091e-02 DIIS
+   @UKS iter   5:  -677.56434809460518   -6.94870e-04   3.14648e-03 DIIS
+   @UKS iter   6:  -677.56442316089533   -7.50663e-05   1.59647e-03 DIIS
+   @UKS iter   7:  -677.56442610820363   -2.94731e-06   2.76408e-04 DIIS
+   @UKS iter   8:  -677.56442715543653   -1.04723e-06   9.02476e-05 DIIS
+   @UKS iter   9:  -677.56442722823635   -7.27998e-08   3.49401e-05 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Alpha Occupied:                                                       
+
+	   1A   -144.655054     2A    -15.346457     3A    -12.537273  
+	   4A    -12.537273     5A    -12.537273     6A     -1.957426  
+	   7A     -1.233040     8A     -1.233040     9A     -1.233040  
+	  10A     -0.216909  
+
+	Alpha Virtual:                                                        
+
+	  11A      0.015958    12A      0.015958    13A      0.015958  
+	  14A      0.068711    15A      0.068711    16A      0.068711  
+	  17A      0.068711    18A      0.068712    19A      0.108659  
+	  20A      0.173481    21A      0.173481    22A      0.173482  
+	  23A      0.189229    24A      0.189229    25A      0.189229  
+	  26A      0.189229    27A      0.189230  
+
+	Beta Occupied:                                                        
+
+	   1A   -144.655054     2A    -15.346457     3A    -12.537273  
+	   4A    -12.537273     5A    -12.537273     6A     -1.957426  
+	   7A     -1.233040     8A     -1.233040     9A     -1.233040  
+	  10A     -0.216909  
+
+	Beta Virtual:                                                         
+
+	  11A      0.015958    12A      0.015958    13A      0.015958  
+	  14A      0.068711    15A      0.068711    16A      0.068711  
+	  17A      0.068711    18A      0.068712    19A      0.108659  
+	  20A      0.173481    21A      0.173481    22A      0.173482  
+	  23A      0.189229    24A      0.189229    25A      0.189229  
+	  26A      0.189229    27A      0.189230  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [    10 ]
+	SOCC [     0 ]
+
+  Energy converged.
+
+  @UKS Final Energy:  -677.56442722823635
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+
+  @Spin Contamination Metric:  0.00000
+  @S^2 Expected:               0.00000
+  @S^2 Observed:               0.00000
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Tue Aug  9 12:46:17 2011
+	user time   =      86.21 seconds =       1.44 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         87 seconds =       1.45 minutes
+Calling plugin ../../plugin_omega.so.
+
+*** tstart() called on ender
+*** at Tue Aug  9 12:46:17 2011
+

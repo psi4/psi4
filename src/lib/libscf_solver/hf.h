@@ -198,7 +198,7 @@ protected:
     void print_preiterations();
 
     /// Do any needed integral setup
-    void integrals();
+    virtual void integrals();
 
     /// The amout of information to print
     int print_;
