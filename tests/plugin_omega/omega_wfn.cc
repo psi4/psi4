@@ -18,6 +18,7 @@
 #include <libmints/mints.h>
 #include <libfunctional/superfunctional.h>
 #include <libscf_solver/ks.h>
+#include <libscf_solver/dft.h>
 #include <libscf_solver/integralfunctors.h>
 #include <libscf_solver/omegafunctors.h>
 
@@ -41,7 +42,7 @@ OmegaWavefunction::OmegaWavefunction(Options& options,
                                      boost::shared_ptr<Matrix> Cb, int nb,
                                      boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> X,
                                      boost::shared_ptr<Matrix> H, 
-                                     boost::shared_ptr<OmegaDF> df, boost::shared_ptr<OmegaV> ks)
+                                     boost::shared_ptr<OmegaDF> df, boost::shared_ptr<UKSPotential> ks)
  :  options_(options), psio_(psio), basisset_(basisset), nalpha_(na), nbeta_(nb), S_(S), X_(X), H_(H), df_(df), ks_(ks)
 {
     nso_ = X_->rowspi()[0];
@@ -184,10 +185,16 @@ void OmegaWavefunction::form_G()
 }
 void OmegaWavefunction::form_V()
 {
-    ks_->form_V(Da_, Ca_, nalpha_, Db_, Cb_, nbeta_);
-    Va_ = ks_->Va();
-    Vb_ = ks_->Vb();
-    Exc_ = ks_->Exc();
+    boost::shared_ptr<Dimension> na(new Dimension(1));
+    boost::shared_ptr<Dimension> nb(new Dimension(1));
+
+    (*na)[0] = nalpha_;
+    (*nb)[0] = nbeta_;
+
+    ks_->buildPotential(Da_, Ca_, na, Db_, Cb_, nb);
+    Va_ = ks_->Va_USO();
+    Vb_ = ks_->Vb_USO();
+    Exc_ = ks_->quadrature_value("FUNCTIONAL");
 }
 void OmegaWavefunction::form_F()
 {

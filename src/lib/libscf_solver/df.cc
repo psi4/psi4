@@ -45,7 +45,12 @@ namespace psi { namespace scf {
 // ==> Constructors / Common Init <== //
 
 DFHF::DFHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<PSIO> psio, Options& opt) :
-    primary_(basis), psio_(psio), options_(opt)
+    primary_(basis), psio_(psio), options_(opt), unit_(PSIF_DFSCF_BJ), omega_(0.0)
+{
+    common_init();
+}
+DFHF::DFHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<PSIO> psio, Options& opt, double omega) :
+    primary_(basis), psio_(psio), options_(opt), unit_(PSIF_DFSCF_BJ), omega_(omega)
 {
     common_init();
 }
@@ -60,6 +65,9 @@ void DFHF::common_init()
 
     if (print_) {
         fprintf(outfile, " DFHF: Density-Fitted SCF Algorithms.\n");
+        if (omega_ > 0.0) {
+            fprintf(outfile, "   Long-Range Omega = %11.8E\n",omega_);
+        }
         fprintf(outfile, "   by Rob Parrish\n\n");
     }    
 
@@ -67,8 +75,8 @@ void DFHF::common_init()
     is_disk_initialized_ = false;
     is_jk_ = false;
     restricted_ = false;
-    is_disk_ = false;
 
+    is_disk_ = false;
     memory_ = Process::environment.get_memory() / 8L;
     memory_ = (unsigned long int) (0.7 * memory_);
 
@@ -95,9 +103,33 @@ void DFHF::common_init()
     schwarz_ = boost::shared_ptr<SchwarzSieve>(new SchwarzSieve(primary_, options_.get_double("SCHWARZ_CUTOFF")));
     timer_off("Schwarz");
 
-    Jinv_ = boost::shared_ptr<FittingMetric>(new FittingMetric(auxiliary_, true));
+    if (print_ > 1) {
+        int ntri_shell = schwarz_->get_nshell_pairs();
+        int ntri_shell_naive = primary_->nshell() * (primary_->nshell() + 1) / 2;
+        int ntri_fun = schwarz_->get_nfun_pairs();
+        int ntri_fun_naive = primary_->nbf() * (primary_->nbf() + 1) / 2;
+        
+        double ntri_shell_savings = 1.0 - ntri_shell / (double) ntri_shell_naive;
+        double ntri_fun_savings   = 1.0 - ntri_fun / (double) ntri_fun_naive;
+
+        fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("SCHWARZ_CUTOFF"));
+        fprintf(outfile, "   -Shell Pairs:    %12d of %12d remain, %3.0f%% savings\n", 
+            ntri_shell, ntri_shell_naive, 100.0*ntri_shell_savings);
+        fprintf(outfile, "   -Function Pairs: %12d of %12d remain, %3.0f%% savings\n\n", 
+            ntri_fun, ntri_fun_naive, 100.0*ntri_fun_savings);
+    }
+
+    if (omega_ > 0.0) {
+        Jinv_ = boost::shared_ptr<FittingMetric>(new FittingMetric(auxiliary_, true, omega_));
+    } else {
+        Jinv_ = boost::shared_ptr<FittingMetric>(new FittingMetric(auxiliary_, true));
+    }
 
     // Make a memory decision here
+    is_disk_ = false;
+    memory_ = Process::environment.get_memory() / 8L;
+    memory_ = (unsigned long int) (0.7 * memory_);
+
     int ntri = schwarz_->get_nfun_pairs();
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
@@ -114,35 +146,48 @@ void DFHF::common_init()
         fprintf(outfile, "    ----------------------------------------------\n");
         fprintf(outfile, "     %-6s     %15ld  %15ld\n", "Memory", memory_, (ULI) (memory_*8.0 / 1.0E6));            
         fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|B)", two_memory, (ULI) (two_memory*8.0 / 1.0E6));            
-        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|mn)", three_memory, (ULI) (three_memory*8.0 / 1.0E6));            
+        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|mn)", three_memory, (ULI) (three_memory*8.0 / 1.0E6));
         fprintf(outfile, "    ----------------------------------------------\n\n");
-
-        int ntri_shell = schwarz_->get_nshell_pairs();
-        int ntri_shell_naive = primary_->nshell() * (primary_->nshell() + 1) / 2;
-        int ntri_fun = schwarz_->get_nfun_pairs();
-        int ntri_fun_naive = primary_->nbf() * (primary_->nbf() + 1) / 2;
-        
-        double ntri_shell_savings = 1.0 - ntri_shell / (double) ntri_shell_naive;
-        double ntri_fun_savings   = 1.0 - ntri_fun / (double) ntri_fun_naive;
-
-        fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("SCHWARZ_CUTOFF"));
-        fprintf(outfile, "   -Shell Pairs:    %12d of %12d remain, %3.0f%% savings\n", 
-            ntri_shell, ntri_shell_naive, 100.0*ntri_shell_savings);
-        fprintf(outfile, "   -Function Pairs: %12d of %12d remain, %3.0f%% savings\n\n", 
-            ntri_fun, ntri_fun_naive, 100.0*ntri_fun_savings);
     }
 
     if (print_) {
         if (options_.get_str("RI_INTS_IO") == "LOAD") {
-            fprintf(outfile, "  Will attempt to load (Q|mn) integrals from File 97.\n\n");    
+            fprintf(outfile, "  Will attempt to load (Q|mn) integrals from File %d.\n\n", unit_);    
         } else if (options_.get_str("RI_INTS_IO") == "SAVE") {
-            fprintf(outfile, "  Will save (Q|mn) integrals to File 97.\n\n");    
+            fprintf(outfile, "  Will save (Q|mn) integrals to File %d.\n\n", unit_);    
         }
     }
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
+}
+void DFHF::set_unit(unsigned int unit) 
+{
+    unit_ = unit;
+    if (disk_iter_.get()) {
+        disk_iter_->set_unit(unit);
+    }
+}
+void DFHF::set_memory(unsigned long int memory)
+{
+    memory_ = memory;
+    
+    // Make a memory decision here
+    is_disk_ = false;
+    memory_ = Process::environment.get_memory() / 8L;
+    memory_ = (unsigned long int) (0.7 * memory_);
+
+    int ntri = schwarz_->get_nfun_pairs();
+    ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
+    ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
+
+    // Two is for buffer space in fitting
+    is_disk_ = (three_memory + 2*two_memory < memory_ ? false : true);
+
+    if (print_) {
+        fprintf(outfile, "  Changed my mind. Using %s Algorithm.\n\n", (is_disk_ ? "Disk" : "Core")); 
+    }
 }
 
 // ==> Initialize Integrals (Pre-iterations) <== //
@@ -370,12 +415,12 @@ void DFHF::initialize_JK_disk()
     double** Amnp = Amn->pointer();
 
     // ==> Prestripe/Jinv <== // 
-    psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
+    psio_->open(unit_,PSIO_OPEN_NEW);
     boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     // Dispatch the prestripe
     timer_on("(Q|mn) Prestripe");
-    aio->zero_disk(PSIF_DFSCF_BJ,"(Q|mn) Integrals",naux,ntri);
+    aio->zero_disk(unit_,"(Q|mn) Integrals",naux,ntri);
     
     // Form the J symmetric inverse
     timer_on("(Q|A)^-1/2");
@@ -406,7 +451,11 @@ void DFHF::initialize_JK_disk()
     const double **buffer = new const double*[nthread];
     boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        if (omega_ > 0.0) {
+            eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        } else {
+            eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        }
         buffer[Q] = eri[Q]->buffer();
     }
     
@@ -473,13 +522,13 @@ void DFHF::initialize_JK_disk()
         timer_on("(Q|mn) Write");
         for (int Q = 0; Q < naux; Q++) {
             addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri + mn_start_val)*sizeof(double));
-            psio_->write(PSIF_DFSCF_BJ,"(Q|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
+            psio_->write(unit_,"(Q|mn) Integrals", (char*)Qmnp[Q],mn_col_val*sizeof(double),addr,&addr);
         }
         timer_off("(Q|mn) Write");
     }
 
     // ==> Close out <== //
-    psio_->close(PSIF_DFSCF_BJ,1);
+    psio_->close(unit_,1);
     Qmn_.reset();
     delete[] eri;
 }
@@ -507,9 +556,9 @@ void DFHF::initialize_JK_core()
 
     // Try to load
     if (options_.get_str("RI_INTS_IO") == "LOAD") {
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-        psio_->read_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
-        psio_->close(PSIF_DFSCF_BJ, 1);
+        psio_->open(unit_,PSIO_OPEN_OLD);
+        psio_->read_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(unit_, 1);
         Jinv_.reset();
         return;
     } 
@@ -519,7 +568,11 @@ void DFHF::initialize_JK_core()
     const double **buffer = new const double*[nthread];
     boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        if (omega_ > 0.0) {
+            eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        } else {
+            eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        }
         buffer[Q] = eri[Q]->buffer();
     }
 
@@ -611,9 +664,9 @@ void DFHF::initialize_JK_core()
 
     // Save if needed
     if (options_.get_str("RI_INTS_IO") == "SAVE") {
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
-        psio_->write_entry(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
-        psio_->close(PSIF_DFSCF_BJ, 1);
+        psio_->open(unit_,PSIO_OPEN_NEW);
+        psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(unit_, 1);
     } 
 }
 void DFHF::initialize_J_core()
@@ -643,9 +696,9 @@ void DFHF::initialize_J_core()
 
     // Save if needed
     if (options_.get_str("RI_INTS_IO") == "LOAD") {
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
-        psio_->read_entry(PSIF_DFSCF_BJ, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
-        psio_->close(PSIF_DFSCF_BJ, 1);
+        psio_->open(unit_,PSIO_OPEN_OLD);
+        psio_->read_entry(unit_, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(unit_, 1);
         return;
     } 
     
@@ -654,7 +707,11 @@ void DFHF::initialize_J_core()
     const double **buffer = new const double*[nthread];
     boost::shared_ptr<TwoBodyAOInt> *eri = new boost::shared_ptr<TwoBodyAOInt>[nthread];
     for (int Q = 0; Q<nthread; Q++) {
-        eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        if (omega_ > 0.0) {
+            eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->erf_eri(omega_));
+        } else {
+            eri[Q] = boost::shared_ptr<TwoBodyAOInt>(rifactory->eri());
+        }
         buffer[Q] = eri[Q]->buffer();
     }
 
@@ -702,9 +759,9 @@ void DFHF::initialize_J_core()
 
     // Save if needed
     if (options_.get_str("RI_INTS_IO") == "SAVE") {
-        psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_NEW);
-        psio_->write_entry(PSIF_DFSCF_BJ, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
-        psio_->close(PSIF_DFSCF_BJ, 1);
+        psio_->open(unit_,PSIO_OPEN_NEW);
+        psio_->write_entry(unit_, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
+        psio_->close(unit_, 1);
         return;
     } 
 }
@@ -1086,6 +1143,7 @@ void DFHF::form_JK_DF()
 
             // Build the disk iterator
             disk_iter_ = boost::shared_ptr<DFHFDiskIterator>(new DFHFDiskIterator(psio_, ntri, naux, max_rows)); 
+            disk_iter_->set_unit(unit_);
          } else {
             max_rows = disk_iter_->max_rows();
             nblocks = disk_iter_->nblock();
@@ -1215,19 +1273,19 @@ void DFHF::form_JK_DF()
 }
 
 DFHFDiskIterator::DFHFDiskIterator(boost::shared_ptr<PSIO> psio, int ntri, int naux, int max_rows) :
-    psio_(psio), ntri_(ntri), naux_(naux), max_rows_(max_rows)
+    psio_(psio), ntri_(ntri), naux_(naux), max_rows_(max_rows), unit_(PSIF_DFSCF_BJ)
 {
     common_init();
 }
 DFHFDiskIterator::~DFHFDiskIterator()
 {
     // Close and keep the disk
-    psio_->close(PSIF_DFSCF_BJ,1);
+    psio_->close(unit_,1);
 }
 void DFHFDiskIterator::common_init()
 {
     // Open the disk
-    psio_->open(PSIF_DFSCF_BJ,PSIO_OPEN_OLD);
+    psio_->open(unit_,PSIO_OPEN_OLD);
 
     // Sizing
     nblocks_ =  naux_ / max_rows_;
@@ -1336,8 +1394,8 @@ void DFHFDiskIterator::read(boost::shared_ptr<Matrix> A, int start, int rows)
     psio_address addr = psio_get_address(PSIO_ZERO, sizeof(double)*start*ntri_);
 
     // Post the read
-    psio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
-    //aio_->read(PSIF_DFSCF_BJ, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
+    psio_->read(unit_, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
+    //aio_->read(unit_, "(Q|mn) Integrals", (char*) Ap[0], sizeof(double)*rows*ntri_, addr, &addr);
 }
 void DFHFDiskIterator::synchronize()
 {

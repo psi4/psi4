@@ -13,10 +13,11 @@ namespace psi {
 namespace scf {
 
 class OmegaDF;
-class OmegaV;
 class OmegaWavefunction;
 class OmegaKS;
 class OmegaIPKS;
+class UKSPotential;
+class RKSPotential;
 
 class OmegaWavefunction {
 
@@ -69,7 +70,7 @@ protected:
 
     // Common hooks
     boost::shared_ptr<OmegaDF> df_;
-    boost::shared_ptr<OmegaV> ks_;
+    boost::shared_ptr<UKSPotential> ks_;
 
     boost::shared_ptr<Matrix> S_;
     boost::shared_ptr<Matrix> X_;
@@ -95,7 +96,7 @@ public:
                       boost::shared_ptr<Matrix> Cb, int nb,
                       boost::shared_ptr<Matrix> S,
                       boost::shared_ptr<Matrix> X, boost::shared_ptr<Matrix> H,
-                      boost::shared_ptr<OmegaDF> df, boost::shared_ptr<OmegaV> ks);
+                      boost::shared_ptr<OmegaDF> df, boost::shared_ptr<UKSPotential> ks);
     virtual ~OmegaWavefunction();
     
     // Take an SCF step
@@ -191,7 +192,7 @@ protected:
     // Common interelectronic bits
     boost::shared_ptr<OmegaDF> df_;
     // Common KS bits
-    boost::shared_ptr<OmegaV> ks_;   
+    boost::shared_ptr<UKSPotential> ks_;   
 
     void common_init();
  
@@ -294,43 +295,6 @@ public:
     boost::shared_ptr<Matrix> wK(boost::shared_ptr<Matrix> C, int nocc); 
 };
 
-class OmegaV {
-
-protected:
-    boost::shared_ptr<PSIO> psio_;
-    boost::shared_ptr<BasisSet> primary_;
-    boost::shared_ptr<functional::SuperFunctional> functional_;
-    boost::shared_ptr<Integrator> integrator_;
-    boost::shared_ptr<Properties> properties_;
-    
-    std::map<std::string, double> quad_values_;
-    boost::shared_ptr<Matrix> Va_;
-    boost::shared_ptr<Matrix> Vb_;
-
-    void common_init();
-
-public:
-    OmegaV(boost::shared_ptr<PSIO> psio,
-        boost::shared_ptr<BasisSet> primary,
-        boost::shared_ptr<functional::SuperFunctional> functional,
-        boost::shared_ptr<Integrator> integrator,
-        boost::shared_ptr<Properties> properties);
-    virtual ~OmegaV();    
-
-    // Set the omega value
-    void set_omega(double omega);       
-
-    void form_V(boost::shared_ptr<Matrix> Da, boost::shared_ptr<Matrix> Ca, int na,
-                boost::shared_ptr<Matrix> Db, boost::shared_ptr<Matrix> Cb, int nb); 
-
-    boost::shared_ptr<functional::SuperFunctional> functional() const { return functional_; }
-
-    boost::shared_ptr<Matrix> Va() const { return Va_; }
-    boost::shared_ptr<Matrix> Vb() const { return Vb_; }
-    double Exc();
-    double variable(const std::string& key); 
-
-};
 
 }} // Namespaces
 

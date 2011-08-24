@@ -63,10 +63,6 @@ void KS::common_init()
             functional_->setOmega(options_.get_double("DFT_OMEGA"));
         }
 
-        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
-        for (int i=0; i<Communicator::world->nthread(); ++i)
-            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
-        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
     }
 }
 RKS::RKS(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
@@ -87,6 +83,29 @@ void RKS::common_init()
 RKS::~RKS()
 {
 }
+void RKS::integrals()
+{
+    HF::integrals();
+
+    if (!functional_->isRangeCorrected()) return;
+           
+    if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
+        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
+        for (int i=0; i<Communicator::world->nthread(); ++i)
+            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
+        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
+    } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
+        ULI mem = (ULI) (0.35 * memory_);
+        df_->set_memory(mem);
+        
+        erf_df_ = boost::shared_ptr<DFHF>(new DFHF(HF::basisset_, HF::psio_, HF::options_, functional_->getOmega()));
+        erf_df_->set_memory(mem);
+        erf_df_->set_unit(PSIF_DFSCF_K);
+    } else {
+        throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
+    }
+}
 void RKS::form_V()
 {
     boost::shared_ptr<Dimension> doccpi(new Dimension(nirrep_));
@@ -104,32 +123,29 @@ void RKS::form_G()
         Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
         process_omega_tei(k_builder);
     }
-    if (!functional_->isHybrid()) {
-        // This will build J (stored in G)
-        J_Functor j_builder(G_, D_);
-        process_tei(j_builder);
-        J_->copy(G_);
+    J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
+    process_tei<J_K_Functor>(jk_builder);
+    J_->copy(G_);
 
-        G_->scale(1.0);
-        G_->add(V_);
-        G_->subtract(wK_);
+    G_->add(V_);
 
-    } else {
-        // This will build J (stored in G) and K
-        J_K_Functor jk_builder(G_, K_, D_, Ca_, nalphapi_);
-        process_tei(jk_builder);
-        J_->copy(G_);
+    double alpha = functional_->getExactExchange();
+    double beta = 1.0 - alpha;
 
-        double alpha = functional_->getExactExchange();
-        double beta = 1.0 - alpha;
-        G_->scale(1.0);
+    if (alpha != 0.0) {
         K_->scale(alpha);
         G_->subtract(K_);
         K_->scale(1.0/alpha);
-        G_->add(V_);
+    } else {
+        K_->zero();
+    }
+
+    if (functional_->isRangeCorrected()) {
         wK_->scale(beta);
         G_->subtract(wK_);
         wK_->scale(1.0/beta);
+    } else {
+        wK_->zero();
     }
 
     if (debug_ > 2) {
@@ -199,6 +215,29 @@ void UKS::common_init()
 UKS::~UKS()
 {
 }
+void UKS::integrals()
+{
+    HF::integrals();
+
+    if (!functional_->isRangeCorrected()) return;
+           
+    if (KS::options_.get_str("SCF_TYPE") == "DIRECT") {
+        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(HF::basisset_,HF::basisset_,HF::basisset_,HF::basisset_));
+        std::vector<boost::shared_ptr<TwoBodyAOInt> > aoint;
+        for (int i=0; i<Communicator::world->nthread(); ++i)
+            aoint.push_back(boost::shared_ptr<TwoBodyAOInt>(fact->erf_eri(functional_->getOmega())));
+        omega_eri_ = boost::shared_ptr<TwoBodySOInt>(new TwoBodySOInt(aoint, fact));
+    } else if (KS::options_.get_str("SCF_TYPE") == "DF") {
+        ULI mem = (ULI) (0.35 * memory_);
+        df_->set_memory(mem);
+        
+        erf_df_ = boost::shared_ptr<DFHF>(new DFHF(HF::basisset_, HF::psio_, HF::options_, functional_->getOmega()));
+        erf_df_->set_memory(mem);
+        erf_df_->set_unit(PSIF_DFSCF_K);
+    } else {
+        throw PSIEXCEPTION("SCF_TYPE is not supported by RC functionals");
+    }
+}
 void UKS::form_V()
 {
     boost::shared_ptr<Dimension> napi(new Dimension(nirrep_));
@@ -223,46 +262,40 @@ void UKS::form_G()
         Omega_Ka_Kb_Functor k_builder(functional_->getOmega(),wKa_,wKb_,Da_,Db_,Ca_,Cb_,nalphapi_,nbetapi_);
         process_omega_tei<Omega_Ka_Kb_Functor>(k_builder);
     }
-    if (!functional_->isHybrid()) {
-        // This will build J (stored in G)
-        boost::shared_ptr<Matrix> Dh(factory_->create_matrix("Dh"));
-        Dh->copy(Da_);
-        Dh->add(Db_);
-        Dh->scale(0.5);
+        
+    // This will build J (stored in G) and K
+    J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
+    process_tei<J_Ka_Kb_Functor>(jk_builder);
+    J_->copy(Ga_);
+    Gb_->copy(Ga_);
 
-        J_Functor j_builder(Ga_, Dh);
-        process_tei<J_Functor>(j_builder);
-        J_->copy(Ga_);
+    Ga_->add(Va_);
+    Gb_->add(Vb_);
 
-        Gb_->copy(Ga_);
-        Ga_->add(Va_);
-        Gb_->add(Vb_);
-        Ga_->subtract(wKa_);
-        Gb_->subtract(wKb_);
-
-    } else {
-        // This will build J (stored in G) and K
-        J_Ka_Kb_Functor jk_builder(Ga_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, nalphapi_, nbetapi_);
-        process_tei<J_Ka_Kb_Functor>(jk_builder);
-        J_->copy(Ga_);
-        Gb_->copy(Ga_);
-
-        double alpha = functional_->getExactExchange();
-        double beta = 1.0 - alpha;
+    double alpha = functional_->getExactExchange();
+    double beta = 1.0 - alpha;
+    if (alpha != 0.0) {
         Ka_->scale(alpha);
         Kb_->scale(alpha);
         Ga_->subtract(Ka_);
         Gb_->subtract(Kb_);
         Ka_->scale(1.0/alpha);
         Kb_->scale(1.0/alpha);
-        Ga_->add(Va_);
-        Gb_->add(Vb_);
+    } else {
+        Ka_->zero();
+        Kb_->zero();
+    }
+
+    if (functional_->isRangeCorrected()) {
         wKa_->scale(beta);
         wKb_->scale(beta);
         Ga_->subtract(wKa_);
         Gb_->subtract(wKb_);
         wKa_->scale(1.0/beta);
         wKb_->scale(1.0/beta);
+    } else {
+        wKa_->zero();
+        wKb_->zero();
     }
 
     if (debug_ > 2) {

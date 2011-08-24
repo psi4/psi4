@@ -49,6 +49,9 @@ protected:
     boost::shared_ptr<TwoBodySOInt> omega_eri_;
     /// Factory (for Spherical Harmonics)
     boost::shared_ptr<IntegralFactory> omega_factory_;
+    /// DF object for omega integrals
+    boost::shared_ptr<DFHF> erf_df_;
+    
 
     /// Compute E_xc and the V matrix
     virtual void form_V() = 0;
@@ -75,6 +78,7 @@ protected:
     virtual void form_V();
     virtual void form_G();
     virtual double compute_E();
+    virtual void integrals();
 
     void common_init();
 public:
@@ -100,6 +104,7 @@ protected:
     virtual void form_V();
     virtual void form_G();
     virtual double compute_E();
+    virtual void integrals();
 
     void common_init();
 public:
