@@ -26,6 +26,10 @@ namespace scf {
 class KSPotential {
 
 protected:
+    /// Debug flag
+    int debug_;
+    /// Print flag
+    int print_;
     /// Options object, used to build grid
     Options& options_;
     /// Molecule grid is built around
@@ -41,6 +45,8 @@ protected:
     /// AO2USO matrix (if not C1)
     boost::shared_ptr<Matrix> AO2USO_;
 
+    /// Common setup
+    void common_init();
     /// Setup the integration grid
     void buildGrid();
     /// Setup AO2USO (if not C1)

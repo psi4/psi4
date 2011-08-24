@@ -7,8 +7,8 @@
 
 namespace psi {
 
-RKSFunctions::RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points) :
-    PointFunctions(primary,max_points)
+RKSFunctions::RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+    PointFunctions(primary,max_points,max_functions)
 {
     set_ansatz(0);
 }
@@ -17,14 +17,13 @@ RKSFunctions::~RKSFunctions()
 }
 void RKSFunctions::build_temps()
 {
-    int nso = primary_->nbf();
-    
-    temp_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,nso));
-    D_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",nso,nso));
+    temp_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,max_functions_));
+    D_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",max_functions_,max_functions_));
 
     if (ansatz_ >= 2) {
         int nocc = Cocc_AO_->colspi()[0];
-        C_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",nso,nocc));
+        C_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",max_functions_,nocc));
+        meta_temp_ = boost::shared_ptr<Matrix>(new Matrix("Meta Temp", max_points_,nocc));
     }
 }
 void RKSFunctions::set_ansatz(int ansatz) 
@@ -79,7 +78,7 @@ void RKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
     // => Global information <= //
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
-    int nglobal = primary_->nbf();
+    int nglobal = max_functions_; 
     int nlocal  = function_map.size();
 
     double** Tp = temp_->pointer();
@@ -88,15 +87,15 @@ void RKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
     double** Dp = D_AO_->pointer();
     double** D2p = D_local_->pointer();
 
-    for (int mlocal = 0; mlocal < nlocal; mlocal++) {
-        int mglobal = function_map[mlocal];
-        for (int nlocal = 0; nlocal <= mlocal; nlocal++) {
-            int nglobal = function_map[nlocal];
+    for (int ml = 0; ml < nlocal; ml++) {
+        int mg = function_map[ml];
+        for (int nl = 0; nl <= ml; nl++) {
+            int ng = function_map[nl];
             
-            double Dval = Dp[mglobal][nglobal];
+            double Dval = Dp[mg][ng];
 
-            D2p[mlocal][nlocal] = Dval; 
-            D2p[nlocal][mlocal] = Dval; 
+            D2p[ml][nl] = Dval; 
+            D2p[nl][ml] = Dval; 
         } 
     }
 
@@ -138,6 +137,7 @@ void RKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
         int na = Cocc_AO_->colspi()[0]; 
         double** Cp = Cocc_AO_->pointer();
         double** C2p = C_local_->pointer();
+        double** TCp = meta_temp_->pointer();
 
         for (int mlocal = 0; mlocal < nlocal; mlocal++) {
             int mglobal = function_map[mlocal];
@@ -151,21 +151,21 @@ void RKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
         double* tauap = property_values_["TAU_A"]->pointer();
 
         // \nabla x
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,C2p[0],na,0.0,Tp[0],nglobal);
+        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] = C_DDOT(na,Tp[P],1,Tp[P],1);
+            tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
         }        
 
         // \nabla y
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,C2p[0],na,0.0,Tp[0],nglobal);
+        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,Tp[P],1,Tp[P],1);
+            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }        
 
         // \nabla z
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,C2p[0],na,0.0,Tp[0],nglobal);
+        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,C2p[0],na,0.0,TCp[0],na);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,Tp[P],1,Tp[P],1);
+            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }        
     }
 }
@@ -186,7 +186,7 @@ void RKSFunctions::print(FILE* out, int print) const
     for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = property_values_.begin();
         it != property_values_.end(); it++) {
         fprintf(out, "    %s\n", (*it).first.c_str());
-        if (print > 1) {
+        if (print > 3) {
             (*it).second->print();
         }
     }
@@ -195,8 +195,8 @@ void RKSFunctions::print(FILE* out, int print) const
     PointFunctions::print(out,print);
 }
 
-UKSFunctions::UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points) :
-    PointFunctions(primary,max_points)
+UKSFunctions::UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+    PointFunctions(primary,max_points, max_functions)
 {
     set_ansatz(0);
 }
@@ -205,18 +205,18 @@ UKSFunctions::~UKSFunctions()
 }
 void UKSFunctions::build_temps()
 {
-    int nso = primary_->nbf();
-    
-    tempa_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,nso));
-    Da_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",nso,nso));
-    tempb_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,nso));
-    Db_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",nso,nso));
+    tempa_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,max_functions_));
+    Da_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",max_functions_,max_functions_));
+    tempb_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,max_functions_));
+    Db_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",max_functions_,max_functions_));
 
     if (ansatz_ >= 2) {
         int nocca = Caocc_AO_->colspi()[0];
         int noccb = Cbocc_AO_->colspi()[0];
-        Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",nso,nocca));
-        Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",nso,noccb));
+        int nocc  = (nocca > noccb ? nocca : noccb);
+        Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",max_functions_,nocca));
+        Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",max_functions_,noccb));
+        meta_temp_ = boost::shared_ptr<Matrix>(new Matrix("Meta Temp", max_points_,nocc));
     }
 }
 void UKSFunctions::set_ansatz(int ansatz) 
@@ -274,7 +274,7 @@ void UKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
     // => Global information <= //
     int npoints = block->npoints();
     const std::vector<int>& function_map = block->functions_local_to_global();
-    int nglobal = primary_->nbf();
+    int nglobal = max_functions_;
     int nlocal  = function_map.size();
 
     double** Tap = tempa_->pointer();
@@ -286,18 +286,18 @@ void UKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
     double** Dbp = Db_AO_->pointer();
     double** Db2p = Db_local_->pointer();
 
-    for (int mlocal = 0; mlocal < nlocal; mlocal++) {
-        int mglobal = function_map[mlocal];
-        for (int nlocal = 0; nlocal <= mlocal; nlocal++) {
-            int nglobal = function_map[nlocal];
+    for (int ml = 0; ml < nlocal; ml++) {
+        int mg = function_map[ml];
+        for (int nl = 0; nl <= ml; nl++) {
+            int ng = function_map[nl];
             
-            double Daval = Dap[mglobal][nglobal];
-            double Dbval = Dbp[mglobal][nglobal];
+            double Daval = Dap[mg][ng];
+            double Dbval = Dbp[mg][ng];
 
-            Da2p[mlocal][nlocal] = Daval; 
-            Da2p[nlocal][mlocal] = Daval; 
-            Db2p[mlocal][nlocal] = Dbval; 
-            Db2p[nlocal][mlocal] = Dbval; 
+            Da2p[ml][nl] = Daval; 
+            Da2p[nl][ml] = Daval; 
+            Db2p[ml][nl] = Dbval; 
+            Db2p[nl][ml] = Dbval; 
         } 
     }
 
@@ -357,10 +357,12 @@ void UKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
         // => Build local C matrix <= //
         int na = Caocc_AO_->colspi()[0]; 
         int nb = Cbocc_AO_->colspi()[0]; 
+        int nc = (na > nb ? na : nb);
         double** Cap = Caocc_AO_->pointer();
         double** Cbp = Cbocc_AO_->pointer();
         double** Ca2p = Ca_local_->pointer();
         double** Cb2p = Cb_local_->pointer();
+        double** TCp  = meta_temp_->pointer(); 
 
         for (int mlocal = 0; mlocal < nlocal; mlocal++) {
             int mglobal = function_map[mlocal];
@@ -377,40 +379,40 @@ void UKSFunctions::computeProperties(boost::shared_ptr<BlockOPoints> block)
 
         // Alpha
         // \nabla x
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,Ca2p[0],na,0.0,Tap[0],nglobal);
+        C_DGEMM('T','N',npoints,na,nlocal,1.0,phixp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] = C_DDOT(na,Tap[P],1,Tap[P],1);
+            tauap[P] = C_DDOT(na,TCp[P],1,TCp[P],1);
         }        
 
         // \nabla y
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,Ca2p[0],na,0.0,Tap[0],nglobal);
+        C_DGEMM('T','N',npoints,na,nlocal,1.0,phiyp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,Tap[P],1,Tap[P],1);
+            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }        
 
         // \nabla z
-        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,Ca2p[0],na,0.0,Tap[0],nglobal);
+        C_DGEMM('T','N',npoints,na,nlocal,1.0,phizp[0],nlocal,Ca2p[0],na,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            tauap[P] += C_DDOT(na,Tap[P],1,Tap[P],1);
+            tauap[P] += C_DDOT(na,TCp[P],1,TCp[P],1);
         }        
         
         // Beta 
         // \nabla x
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phixp[0],nlocal,Cb2p[0],nb,0.0,Tbp[0],nglobal);
+        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phixp[0],nlocal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            taubp[P] = C_DDOT(nb,Tbp[P],1,Tbp[P],1);
+            taubp[P] = C_DDOT(nb,TCp[P],1,TCp[P],1);
         }        
 
         // \nabla y
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phiyp[0],nlocal,Cb2p[0],nb,0.0,Tbp[0],nglobal);
+        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phiyp[0],nlocal,Cb2p[0],nb,0.0,TCp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            taubp[P] += C_DDOT(nb,Tbp[P],1,Tbp[P],1);
+            taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
         }        
 
         // \nabla z
-        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phizp[0],nlocal,Cb2p[0],nb,0.0,Tbp[0],nglobal);
+        C_DGEMM('T','N',npoints,nb,nlocal,1.0,phizp[0],nlocal,Cb2p[0],nb,0.0,Tbp[0],nc);
         for (int P = 0; P < npoints; P++) {
-            taubp[P] += C_DDOT(nb,Tbp[P],1,Tbp[P],1);
+            taubp[P] += C_DDOT(nb,TCp[P],1,TCp[P],1);
         }        
     }
 }
@@ -431,7 +433,7 @@ void UKSFunctions::print(FILE* out, int print) const
     for (std::map<std::string, boost::shared_ptr<Vector> >::const_iterator it = property_values_.begin();
         it != property_values_.end(); it++) {
         fprintf(out, "    %s\n", (*it).first.c_str());
-        if (print > 1) {
+        if (print > 3) {
             (*it).second->print();
         }
     }
@@ -440,8 +442,8 @@ void UKSFunctions::print(FILE* out, int print) const
     PointFunctions::print(out,print);
 }
 
-PointFunctions::PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points) :
-    primary_(primary), max_points_(max_points), npoints_(0)
+PointFunctions::PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions) :
+    primary_(primary), max_points_(max_points), max_functions_(max_functions), npoints_(0)
 {
     build_spherical();
     set_derivative(0);
@@ -858,7 +860,7 @@ void PointFunctions::print(FILE* out, int print) const
     for (std::map<std::string, boost::shared_ptr<Matrix> >::const_iterator it = basis_values_.begin();
         it != basis_values_.end(); it++) {
         fprintf(out, "    %s\n", (*it).first.c_str());
-        if (print > 1) {
+        if (print > 3) {
             (*it).second->print();
         }
     }
