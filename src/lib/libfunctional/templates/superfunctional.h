@@ -9,6 +9,7 @@
 ***********************************************************/
 #include "functional.h"
 #include "dispersion.h"
+#include <psiconfig.h>
 #include <psi4-dec.h>
 #include <stdlib.h>
 #include <string>
@@ -16,7 +17,8 @@
 
 namespace psi {
 
-class Properties;
+class RKSFunctions; 
+class UKSFunctions; 
 
 namespace functional {
 
@@ -27,7 +29,7 @@ class SuperFunctional {
         static boost::shared_ptr<SuperFunctional> buildSuperFunctional(const std::string & build, int npoints = 5000, int deriv = 1);
         static std::string availableSuperFunctionals();
         static std::vector<std::string> availableNames();
-        static std::string testSuperFunctionals();
+        //static std::string testSuperFunctionals();
 
         SuperFunctional(int npoints = 5000, int deriv = 1);
         ~SuperFunctional();
@@ -39,10 +41,15 @@ class SuperFunctional {
         void setDescription(const std::string & description) { description_ = description; }
         void setCitation(const std::string & citation) { citation_ = citation; }
 
+        void print(FILE* out = outfile, int level = 2) const {}
+
         std::string getComposition();
 
         bool isGGA();
         bool isMeta();
+
+        /// 0 - LSDA, 1 - GGA, 2 - Meta-GGA
+        int getLocalAnsatz();
 
         bool isHybrid() { return  exact_exchange_ > 0.0; }
         bool isDoubleHybrid() { return pt2_ > 0.0; }
@@ -51,7 +58,7 @@ class SuperFunctional {
 
         void setParameter(const std::string & functional, const std::string & param, double val);
 
-        std::string testSuperFunctional(boost::shared_ptr<Properties> props);
+        //std::string testSuperFunctional(boost::shared_ptr<Properties> props);
 
         double getExactExchange() { return exact_exchange_; }
         void setExactExchange(double exch) {exact_exchange_ = exch; }
@@ -71,8 +78,8 @@ class SuperFunctional {
         int getNPoints() const { return npoints_; }
         int getDeriv() const { return deriv_; }
 
-        void computeRKSFunctional(boost::shared_ptr<Properties> props);
-        void computeUKSFunctional(boost::shared_ptr<Properties> props);
+        void computeRKSFunctional(boost::shared_ptr<RKSFunctions> props);
+        void computeUKSFunctional(boost::shared_ptr<UKSFunctions> props);
         void collectResults();
 
         void addFunctional(const boost::shared_ptr<Functional> & f, double weight);
@@ -137,42 +144,42 @@ class SuperFunctional {
         double dashD_weight_;
         boost::shared_ptr<Dispersion> dashD_;
 
-        double* functional_;
-        double* v_rho_a_;
-        double* v_rho_b_;
-        double* v_rho_a_rho_a_;
-        double* v_rho_a_rho_b_;
-        double* v_rho_b_rho_b_;
-        double* v_gamma_aa_;
-        double* v_gamma_ab_;
-        double* v_gamma_bb_;
-        double* v_rho_a_gamma_aa_;
-        double* v_rho_a_gamma_ab_;
-        double* v_rho_a_gamma_bb_;
-        double* v_rho_b_gamma_aa_;
-        double* v_rho_b_gamma_ab_;
-        double* v_rho_b_gamma_bb_;
-        double* v_gamma_aa_gamma_aa_;
-        double* v_gamma_aa_gamma_ab_;
-        double* v_gamma_aa_gamma_bb_;
-        double* v_gamma_ab_gamma_ab_;
-        double* v_gamma_ab_gamma_bb_;
-        double* v_gamma_bb_gamma_bb_;
-        double* v_tau_a_;
-        double* v_tau_b_;
-        double* v_rho_a_tau_a_;
-        double* v_rho_a_tau_b_;
-        double* v_rho_b_tau_a_;
-        double* v_rho_b_tau_b_;
-        double* v_gamma_aa_tau_a_;
-        double* v_gamma_aa_tau_b_;
-        double* v_gamma_ab_tau_a_;
-        double* v_gamma_ab_tau_b_;
-        double* v_gamma_bb_tau_a_;
-        double* v_gamma_bb_tau_b_;
-        double* v_tau_a_tau_a_;
-        double* v_tau_a_tau_b_;
-        double* v_tau_b_tau_b_;
+        double* restrict functional_;
+        double* restrict v_rho_a_;
+        double* restrict v_rho_b_;
+        double* restrict v_rho_a_rho_a_;
+        double* restrict v_rho_a_rho_b_;
+        double* restrict v_rho_b_rho_b_;
+        double* restrict v_gamma_aa_;
+        double* restrict v_gamma_ab_;
+        double* restrict v_gamma_bb_;
+        double* restrict v_rho_a_gamma_aa_;
+        double* restrict v_rho_a_gamma_ab_;
+        double* restrict v_rho_a_gamma_bb_;
+        double* restrict v_rho_b_gamma_aa_;
+        double* restrict v_rho_b_gamma_ab_;
+        double* restrict v_rho_b_gamma_bb_;
+        double* restrict v_gamma_aa_gamma_aa_;
+        double* restrict v_gamma_aa_gamma_ab_;
+        double* restrict v_gamma_aa_gamma_bb_;
+        double* restrict v_gamma_ab_gamma_ab_;
+        double* restrict v_gamma_ab_gamma_bb_;
+        double* restrict v_gamma_bb_gamma_bb_;
+        double* restrict v_tau_a_;
+        double* restrict v_tau_b_;
+        double* restrict v_rho_a_tau_a_;
+        double* restrict v_rho_a_tau_b_;
+        double* restrict v_rho_b_tau_a_;
+        double* restrict v_rho_b_tau_b_;
+        double* restrict v_gamma_aa_tau_a_;
+        double* restrict v_gamma_aa_tau_b_;
+        double* restrict v_gamma_ab_tau_a_;
+        double* restrict v_gamma_ab_tau_b_;
+        double* restrict v_gamma_bb_tau_a_;
+        double* restrict v_gamma_bb_tau_b_;
+        double* restrict v_tau_a_tau_a_;
+        double* restrict v_tau_a_tau_b_;
+        double* restrict v_tau_b_tau_b_;
 
         int npoints_;
         int deriv_;

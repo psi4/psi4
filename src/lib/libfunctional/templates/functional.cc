@@ -6,7 +6,7 @@
 ***********************************************************/
 
 #include <boost/algorithm/string.hpp> 
-#include <libmints/properties.h>
+#include <libmints/points.h>
 #include <libciomr/libciomr.h>
 #include "functional.h"
 #include <stdlib.h>
@@ -20,6 +20,7 @@ using namespace std;
 
 namespace psi { namespace functional {
 
+#if 0
 std::string Functional::testFunctionals()
 {
     std::vector<std::string> names = Functional::availableNames();
@@ -28,7 +29,7 @@ std::string Functional::testFunctionals()
     s << "  Testing Functionals:" << endl;
 
     boost::shared_ptr<Properties> props = Properties::get_testbed();
-    int npoints = props->getTrueSize();
+    int npoints = props->npoints();
 
     for (int A = 0; A < names.size(); A++ ) { 
         boost::shared_ptr<Functional> func = Functional::createFunctional(names[A],npoints,2);
@@ -41,14 +42,14 @@ std::string Functional::testFunctional(boost::shared_ptr<Properties> props)
 {    
     std::stringstream s;
     
-    int npoints = props->getTrueSize();
-    double* rho_a = props->getRhoA();
-    double* rho_b = props->getRhoB();
-    double* gamma_aa = props->getGammaAA();
-    double* gamma_ab = props->getGammaAB();
-    double* gamma_bb = props->getGammaBB();
-    double* tau_a = props->getTauA();
-    double* tau_b = props->getTauB();
+    int npoints = props->npoints();
+    double* rho_a = props->property_value("RHO_A")->pointer();
+    double* rho_b = props->property_value("RHO_B")->pointer();
+    double* gamma_aa = props->property_value("GAMMA_AA")->pointer();
+    double* gamma_ab = props->property_value("GAMMA_AB")->pointer();
+    double* gamma_bb = props->property_value("GAMMA_BB")->pointer();
+    double* tau_a = props->property_value("TAU_A")->pointer();
+    double* tau_b = props->property_value("TAU_B")->pointer();
 
     double* functional = getFunctional();
 
@@ -340,6 +341,7 @@ std::string Functional::testFunctional(boost::shared_ptr<Properties> props)
     }
     return s.str();
 }
+#endif
 Functional::Functional(int npoints, int deriv) : npoints_(npoints), deriv_(deriv)
 {
     //Default opposite spin density cutoff
