@@ -212,10 +212,14 @@ void Vector::pyset(int key, double value)
     set(h, elem, value);
 }
 
-void Vector::print() const
+void Vector::print(FILE* out, const char* extra) const
 {
     int h;
-    fprintf(outfile, "\n # %s #\n", name_.c_str());
+    if (extra == NULL) {
+        fprintf(outfile, "\n # %s #\n", name_.c_str());
+    } else {
+        fprintf(outfile, "\n # %s %s #\n", name_.c_str(), extra);
+    }
     for (h=0; h<nirrep_; ++h) {
         fprintf(outfile, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)

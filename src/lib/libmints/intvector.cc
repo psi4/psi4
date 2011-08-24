@@ -145,9 +145,13 @@ void IntVector::set(int *vec) {
     }
 }
 
-void IntVector::print(FILE *out) {
+void IntVector::print(FILE *out, const char* extra) const {
     int h;
-    fprintf(out, "\n # %s #\n", name_.c_str());
+    if (extra == NULL) {
+        fprintf(outfile, "\n # %s #\n", name_.c_str());
+    } else {
+        fprintf(outfile, "\n # %s %s #\n", name_.c_str(), extra);
+    }
     for (h=0; h<nirrep_; ++h) {
         fprintf(out, " Irrep: %d\n", h+1);
         for (int i=0; i<dimpi_[h]; ++i)
