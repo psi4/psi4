@@ -95,7 +95,7 @@ to produce new molecular orbitals, from which a new density is computed. Ths
 procedure is continued until either convergence is reached or a preset maximum
 number of iterations is exceeded. Convergence is determined by both change in
 energy and root-mean-square change in density matrix values, which must be below
-the user-specified $10^{\mathtt{-E_CONVERGE}}$ and $10^{-\mathtt{D_CONVERGE}}$,
+the user-specified $10^{\mathtt{-E\_CONVERGE}}$ and $10^{-\mathtt{D\_CONVERGE}}$,
 respectively. The maximum number of iterations is specified by the
 \texttt{MAXITER} option. It should be noted that SCF is a chaotic process, and,
 as such, often requires careful selection of initial orbitals and damping during
@@ -113,7 +113,7 @@ Wolfsberg-Helmholtz (GWH) guess is available, and may be superior to a core
 guess. SAD and GWH may be invoked by the \texttt{GUESS} option. A more involved
 alternative to these approaches is to converge the SCF in a small basis and then
 project the resultant occupied molecular orbitals up into a larger basis. This
-can be done automatically by placing a \texttt{cast_up = 'SMALL_BASIS_NAME'}
+can be done automatically by placing a \texttt{cast\_up = 'SMALL\_BASIS\_NAME'}
 modifier in the \texttt{energy} procedure call. We recommend the 3-21G basis for
 the small basis due to its efficient mix of flexibility and compactness. With
 regard to convergence stabilization, Pulay's Direct Inversion of the Iterative
@@ -138,11 +138,12 @@ of by orbital eigenvalue, i.e., by choosing the set of new orbitals which looks
 most like some previously known ``good'' set.  The ``good'' set is typically the
 occupied orbitals from an one of the oscillating iterations with the lowest
 total energy. For an oscillating system where the lowest total energy occurs on
-iterations $N,N+2,\ldots$, invoking \texttt{MOM_START N} can often rescue the
+iterations $N,N+2,\ldots$, invoking \texttt{MOM\_START N} can often rescue the
 convergence of the SCF. MOM can be used in concert with DIIS, though care should
 be taken to not turn MOM on until the oscillatory behavior begins. 
 
-
+TODO: Integrals, Orthogonalization, OEProp, Wavefunction stuff (maybe Psithon),
+use of DFT, many more examples.
 
 %\subsection{Hartree-Fock Self-Consistent-Field} \label{scf}
 %                                                                                
@@ -194,59 +195,59 @@ be taken to not turn MOM on until the oscillatory behavior begins.
 %\PSIstable\ module can be used to test for the stability of Hartree-Fock
 %wave functions (note: this module from \PSIthree\ has not yet been adapted
 %to work in \PSIfour).
-%
-%The most commonly used keywords are found below.  More specialized keywords
-%are available in the man pages.
-%
-%\noindent
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         SCF\_TYPE & What algorithm to use for the SCF computation \\
-%          & {\bf Possible Values:} PK, OUT\_OF\_CORE, DIRECT, DF,
-%PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} string &  {\bf Default:} PK\\
-%         & & \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         MAXITER & The maximum number of iterations \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} integer &  {\bf Default:} 100\\
-%         & & \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         D\_CONVERGE & -Log10 of the density convergence criterion \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} integer &  {\bf Default:} 8\\
-%         & & \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         REFERENCE & The reference wavefunction used in the computation \\
-%
-%          & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} string &  {\bf Default:} RHF\\
-%         & & \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
-%doublet, 3 for a triplet, etc. \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} integer &  {\bf Default:} 1\\
-%         & & \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-%         GUESS & The type of guess orbitals \\
-%
-%          & {\bf Possible Values:} CORE, GWH, SAD, READ \\
-%\end{tabular*}
-%\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
-%           & {\bf Type:} string &  {\bf Default:} CORE\\
-%         & & \\
-%\end{tabular*}
+
+The most commonly used keywords are found below.  More specialized keywords
+are available in the man pages.
+
+\noindent
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         SCF\_TYPE & What algorithm to use for the SCF computation \\
+          & {\bf Possible Values:} PK, OUT\_OF\_CORE, DIRECT, DF,
+PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} PK\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MAXITER & The maximum number of iterations \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 100\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         D\_CONVERGE & -Log10 of the density convergence criterion \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 8\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         REFERENCE & The reference wavefunction used in the computation \\
+
+          & {\bf Possible Values:} RHF, ROHF, UHF, CUHF, RKS, UKS \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} RHF\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MULTP & Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a
+doublet, 3 for a triplet, etc. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         GUESS & The type of guess orbitals \\
+
+          & {\bf Possible Values:} CORE, GWH, SAD, READ \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} CORE\\
+         & & \\
+\end{tabular*}
 
 
