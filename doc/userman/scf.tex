@@ -1,5 +1,7 @@
 \subsection{Self-Consistent-Field} \label{scf}
 
+\subsubsection{Introduction}
+
 Self-Consistent-Field (SCF) theory forms the cornerstone of ab initio quantum
 chemistry. SCF is specialized to either conventional Hartree-Fock (HF) molecular
 orbital theory or the alternative generalized Kohn-Sham Density Functional
@@ -9,7 +11,7 @@ In Hartree-Fock, the goal is to produce an optimized set of occupied molecular
 orbitals which describe the action of the electrons according to a one-particle
 Hamiltonian encapsulating electron-nuclear attraction, electronic kinetic
 energy, and mean-field electron-electron repulsion, all under the requirement of
-wavefunction antisymmetry. Molecular properties obtained by Hatree-Fock theory
+wavefunction antisymmetry. Molecular properties obtained by Hartree-Fock theory
 are generally at least qualitatively correct, although they can be
 quantitatively poor in many instances. If, as is usually the case, higher
 accuracy is desired, the occupied and virtual molecular orbitals are used as a
@@ -28,12 +30,12 @@ exact energy functional is variational, obtaining its minimal value when the
 input density corresponds to the ground state density. This allows for a
 self-consistent computational procedure in which the density is varied until the
 energy functional is minimized. In practice, the exact energy functional is
-unknown (and would be as complex as Full-Configuration Interaction if it were
+unknown (and would be as complex as Full Configuration Interaction if it were
 known), however many good approximations exists. A major problem with
 density-based DFT is that approximations to the kinetic energy functional are
 notoriously poor. This is usually overcome by the Kohn-Sham approach, which
 obtains most of the kinetic energy from a set of non-interacting orbitals
-constructed from the the density. Within this approach, the kinetic energy,
+constructed from the density. Within this approach, the kinetic energy,
 nuclear attraction energy, and mean-field Coulomb repulsion are treated in the
 same way as in Hartree-Fock, and the remaining exchange, correlation, and
 residual kinetic energy terms are treated via an approximate functional,
@@ -46,6 +48,8 @@ approach), or by partitioning the exchange hole into short range components to
 treated by the local exchange functional, and long range components to be
 treated by the long-range noninteracting exact exchange (the range-separated
 approach).
+
+\subsubsection{Spin/Electronic Configuration Treatment}
 
 \PSIfour solves the SCF equations in a basis of Gaussian functions using an
 iterative procedure. These equations attempt to determine the occupied molecular
@@ -60,20 +64,19 @@ spin-specializations are Restricted-Kohn-Sham (RKS) and Unrestricted-Kohn-Sham
 Constrained-Unrestricted-Kohn-Sham (CUKS) are not implemented, as they always
 predict a ground state with positive definite spin density, which is not
 physical. Spin specialization is specified by the \texttt{REFERENCE} option,
-which defaults to RHF.
-Electronic configuration is specified by the charge/multiplicity field in the
-molecular geometry input. These values may be amended by using the
-\texttt{CHARGE} and \texttt{MULTP} keywords. If spatial symmetry is used, the
-assignment of occupied orbitals to irreps may be specified by the \texttt{DOCC}
-and \texttt{SOCC} integer arrays. If these arrays are not specified by the user,
-the program will assign occupation to irreps according to the lowest orbital
-energies at each SCF iteration.  
+which defaults to \texttt{RHF}.  Electronic configuration is specified by the
+charge/multiplicity field in the molecular geometry input. These values may be
+amended by using the \texttt{CHARGE} and \texttt{MULTP} options. If spatial
+symmetry is used, the assignment of occupied orbitals to irreps may be specified
+by the \texttt{DOCC} and \texttt{SOCC} integer arrays. If these arrays are not
+specified by the user, the program will assign occupation to irreps according to
+the lowest orbital energies at each SCF iteration.  
 
 \PSIfour implements Hartree-Fock and KS-DFT within the \texttt{SCF} module.
 Minimal input for a restricted closed-shell Hartree-Fock solution involves
 specifying a molecular geometry field, a Gaussian basis set via the
 option\texttt{BASIS}, and calling the \texttt{energy} procedure. An example is:
-\begin{verbatim}
+\begin{Snippet}
 molecule {
 0 1              # Charge/Multiplicity line (optional)
 O                # Required molecular geometry (H2O in Z-matrix)
@@ -86,102 +89,166 @@ basis sto-3g     # Required basis specification
 reference rhf    # (optional)
 }
 
-energy('scf')    # Calls the energy procedure with a specific type of SCF
-\end{verbatim}
+energy(`scf')    # Calls the energy procedure with a specific type of SCF
+\end{Snippet}
+
+\subsubsection{Orthogonalization}
+
+One of the first steps in the SCF procedure is the determination of an
+orthogonal basis (known as the OSO basis) from the atomic orbital basis (known
+as the AO basis). The Molecular Orbital basis (MO basis) is then built as a
+particular unitary transformation of the OSO basis. In \PSIfour, the
+determination of the OSO basis is accomplished via either symmetric or
+canonical orthogonalization. Symmetric orthogonalization uses the symmetric
+inverse square root of the overlap matrix for the orthogonalization matrix. Use
+of symmetric orthogonalization always yields the same number of OSO functions
+(and thereby MOs) as AO functions. However, this may lead to numerical problems
+if the overlap matrix has small eigenvalues, which may occur for large systems
+or for systems where diffuse basis sets are used. This problem may be avoided by
+using canonical orthogonalization, in which an asymmetric inverse square root of
+the overlap matrix is formed, with numerical stability enhanced by the
+elimination of eigenvectors corresponding to very small eigenvalues. As a few
+combinations of AO basis functions may be discarded, the number of
+canonical-orthogonalized OSOs and MOs may be slightly smaller than the number of
+AOs. In \PSIfour, symmetric orthogonalization is used by default, unless the
+smallest overlap eigenvalue falls below the user-supplied double option
+\texttt{S\_MIN\_EIGENVALUE}, which defaults to $10^{-7}$. If the smallest
+eigenvalue is below this cutoff, canonical orthogonalization is forced, and all
+eigenvectors corresponding to eigenvalues below the cutoff are eliminated.
+Use of canonical orthogonalization can be forced by setting the
+\texttt{S\_ORTHOGONALIZATION} option to \texttt{CANONICAL}. Note that in
+practice, the MOs and OSOs are built separately within each irrep from the
+symmetry-adapted combinations of AOs known as Unique Symmetry Orbitals (USOs).
+For canonical orthogonalization, this implies that the number of MOs and OSOs
+per irrep may be slightly smaller than the number of USOs per irrep.
+
+A contrived example demonstrating OSOs/MOs vs. AOs with symmetry is shown below:
+\begin{Snippet}
+Input:
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+symmetry c2 # Two irreps is easier to comprehend
+}
+
+set {
+s_min_eigenvalue 0.0001 # Set an unreasonably tight 
+                        # tolerance to force canonical
+basis aug-cc-pv5z       # This diffuse basis will have 
+                        # small-ish eigenvalues for even H2O
+}
+
+energy(`scf')
+
+Output:
+
+  ... Initialization ...
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 1.6888059293E-05.
+  Using Canonical Orthogonalization with cutoff of 1.0000000000E-04.
+  Overall, 3 of 287 possible MOs eliminated. 
+
+  ... Initial Orbital Guess Information ...
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A        145     144       3       3       3       0
+     B        142     140       2       2       2       0
+   -------------------------------------------------------
+    Total     287     284       5       5       5       0
+   -------------------------------------------------------
+
+\end{Snippet}   
+In this example, there are 287 AO basis functions after spherical harmonics are
+applied. These are used to produce 287 symmetry adapted USOs, 145 of which are
+assigned to irrep A, and 142 of which are assigned to irrep B. Within irrep A,
+144 OSOs fall above the eigenvalue cutoff, and within irrep B 140 OSOs fall
+above the eigenvalue cutoff. In total, 284 molecular orbitals are chosen from
+287 AOs/USOs. The table also shows the initial assignment of electrons to
+irreps.  
+
+\subsubsection{Initial Guess/Convergence Stabilization}
 
 In each step of the SCF procedure, a new Fock or Kohn-Sham potential is built
 according to the previous density, following which the potential is diagonalized
-to produce new molecular orbitals, from which a new density is computed. Ths
+to produce new molecular orbitals, from which a new density is computed. This
 procedure is continued until either convergence is reached or a preset maximum
 number of iterations is exceeded. Convergence is determined by both change in
 energy and root-mean-square change in density matrix values, which must be below
-the user-specified $10^{\mathtt{-E\_CONVERGE}}$ and $10^{-\mathtt{D\_CONVERGE}}$,
-respectively. The maximum number of iterations is specified by the
-\texttt{MAXITER} option. It should be noted that SCF is a chaotic process, and,
-as such, often requires careful selection of initial orbitals and damping during
-iterations to ensure convergence. This is particularly likely for large systems,
-metallic systems, multireference systems, open-shell systems, anions, and
-systems with diffuse basis sets. For initial orbital selection, several options
-are available. The default guess is a core Hamiltonian which ignores even
-mean-field electronic repulsion. A much more accurate guess is the
-Superposition-of-Atomic-Densities (SAD) guess, which builds the initial
-molecular density as a sum of atomic UHF densities. This guess is currently only
-available in RHF and RKS spin specializations. This guess also produces
-fractionally occupied closed-shell orbitals, as required by the density-fitted
-exchange routines (discussed below). For open-shell systems, the Generalized
-Wolfsberg-Helmholtz (GWH) guess is available, and may be superior to a core
-guess. SAD and GWH may be invoked by the \texttt{GUESS} option. A more involved
-alternative to these approaches is to converge the SCF in a small basis and then
-project the resultant occupied molecular orbitals up into a larger basis. This
-can be done automatically by placing a \texttt{cast\_up = 'SMALL\_BASIS\_NAME'}
-modifier in the \texttt{energy} procedure call. We recommend the 3-21G basis for
-the small basis due to its efficient mix of flexibility and compactness. With
-regard to convergence stabilization, Pulay's Direct Inversion of the Iterative
-Subspace (DIIS) extrapolation and Gill's Maximum Overlap Method (MOM) are both
-implemented. DIIS uses previous iterates of the Fock Matrix together with an
-error criterion based on the orbital gradient to produce an informed estimate of
-the next Fock Matrix. DIIS is almost always neccessary to converge the SCF
-procedure, and is therefore turned on by default. In rare cases, the DIIS
-algorithm may need to be modified or turned off altogether, which may be
-accomplished via the options detailed below. MOM was developed to combat a
-particular class of convergence failure: occupation flipping. In some cases,
-midway though the SCF procedure, a partially converged orbital which should be
-occupied in the fully-optimized SCF solution has a slightly higher orbital
-eigenvalue than some other orbital which should be destined to be a virtual
-orbital. This results in the virtual orbital being spuriously occupied for one
-or more iterations. Sometimes this resolves itself without help, other times the
-occupation flips back and forth between two, four, or more orbitals. This is
-typically visible in the output as a non-converging SCF which eventually settles
-down to steady oscillation between two (or more) different total energies. This
-behavior can be ameliorated by choosing occupied orbitals by ``shape'' instead
-of by orbital eigenvalue, i.e., by choosing the set of new orbitals which looks
-most like some previously known ``good'' set.  The ``good'' set is typically the
-occupied orbitals from an one of the oscillating iterations with the lowest
-total energy. For an oscillating system where the lowest total energy occurs on
-iterations $N,N+2,\ldots$, invoking \texttt{MOM\_START N} can often rescue the
-convergence of the SCF. MOM can be used in concert with DIIS, though care should
-be taken to not turn MOM on until the oscillatory behavior begins. 
+the user-specified $10^{\mathtt{-E\_CONVERGE}}$ and
+$10^{-\mathtt{D\_CONVERGE}}$, respectively. The maximum number of iterations is
+specified by the \texttt{MAXITER} option. It should be noted that SCF is a
+chaotic process, and, as such, often requires careful selection of initial
+orbitals and damping during iterations to ensure convergence. This is
+particularly likely for large systems, metallic systems, multireference systems,
+open-shell systems, anions, and systems with diffuse basis sets. 
 
-TODO: Integrals, Orthogonalization, OEProp, Wavefunction stuff (maybe Psithon),
-use of DFT, many more examples.
+For initial orbital selection, several options are available. The default guess
+is a core Hamiltonian which ignores even mean-field electronic repulsion. A much
+more accurate guess is the Superposition-of-Atomic-Densities (SAD) guess, which
+builds the initial molecular density as a sum of atomic UHF densities. This
+guess is currently only available in RHF and RKS spin specializations. This
+guess also produces fractionally occupied closed-shell orbitals, as required by
+the density-fitted exchange routines (discussed below). For open-shell systems,
+the Generalized Wolfsberg-Helmholtz (GWH) guess is available, and may be
+superior to a core guess. SAD and GWH may be invoked by the \texttt{GUESS}
+option. A more involved alternative to these approaches is to converge the SCF
+in a small basis and then project the resultant occupied molecular orbitals up
+into a larger basis. This can be done automatically by placing a
+\texttt{cast\_up = `SMALL\_BASIS\_NAME'} modifier in the \texttt{energy}
+procedure call. We recommend the 3-21G basis for the small basis due to its
+efficient mix of flexibility and compactness. An example of performing an RHF
+solution of water by SAD guessing in a 3-21G basis and then casting up to
+cc-pvtz is shown below: 
+\begin{Snippet}
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
 
-%\subsection{Hartree-Fock Self-Consistent-Field} \label{scf}
-%                                                                                
-%Hartree-Fock molecular orbital theory forms the cornerstone of
-%ab initio quantum chemistry.  Until the advances in the accuracy
-%of Kohn-Sham density functional theory in the 1990's, Hartree-Fock
-%theory was the method of choice for obtaining results for large
-%molecules without resorting to standard empirical or semiempirical
-%approaches.  Molecular properties obtained by Hatree-Fock theory are
-%generally at least qualitatively correct, although they can be
-%quantitatively poor in many instances.
-%                                                                                
-%\PSIfour\ solves the Hatree-Fock equations in a basis of Gaussian 
-%functions using an iterative, self-consistent-field (SCF) procedure.  The
-%final molecular orbitals are those which minimize the energy, 
-%subject to the electron configuration specified by the user (or
-%guessed by the program).  For molecules with symmetry, the 
-%electron configuration can be specified in terms of the number of
-%doubly- and singly-occupied orbitals per irreducible representation, 
-%via the DOCC and SOCC general keywords.
-%The SCF process is continued until the largest
-%change in an element of the density matrix drops below 10$^{-n}$, where
-%$n$ is an integer specified by the \keyword{convergence} keyword.
-%
-%Of course the efficiency of the iterative procedure depends on the choice of
-%initial guess.  The \PSIscf\ module will attempt to use previously obtained
-%orbitals as a guess if they are available.  This can be particularly
-%advantageous when diffuse functions are present; in that case, it may
-%be easiest to run the computation with a smaller basis and project
-%those orbitals onto the larger basis by specifying the \keyword{--chkptmos}
-%command-line argument or the \keyword{chkpt\_mos=true} keyword in input
-%when running the \PSIinput\ program for the larger basis.  If
-%old MO's are not available, \PSIscf\ uses a core Hamiltonian guess
-%by default.  The convergence of the SCF procedure is accelerated by Pulay's 
-%direct inversion of the iterative subspace (DIIS)
-%approach,\cite{Pulay:1980} and it is possible
-%to modify the behavior of the DIIS through various keywords, 
-%although this is seldom necessary.  
+set {
+basis cc-pvtz 
+guess sad
+}
+
+energy(`scf', cast_up = `3-21G')
+\end{Snippet}
+
+With regard to convergence stabilization, Pulay's
+Direct Inversion of the Iterative Subspace (DIIS) extrapolation and Gill's
+Maximum Overlap Method (MOM) are both implemented. DIIS uses previous iterates
+of the Fock Matrix together with an error criterion based on the orbital
+gradient to produce an informed estimate of the next Fock Matrix. DIIS is almost
+always necessary to converge the SCF procedure, and is therefore turned on by
+default. In rare cases, the DIIS algorithm may need to be modified or turned off
+altogether, which may be accomplished via the options detailed below. MOM was
+developed to combat a particular class of convergence failure: occupation
+flipping. In some cases, midway though the SCF procedure, a partially converged
+orbital which should be occupied in the fully-optimized SCF solution has a
+slightly higher orbital eigenvalue than some other orbital which should be
+destined to be a virtual orbital. This results in the virtual orbital being
+spuriously occupied for one or more iterations. Sometimes this resolves itself
+without help, other times the occupation flips back and forth between two, four,
+or more orbitals. This is typically visible in the output as a non-converging
+SCF which eventually settles down to steady oscillation between two (or more)
+different total energies. This behavior can be ameliorated by choosing occupied
+orbitals by ``shape'' instead of by orbital eigenvalue, i.e., by choosing the
+set of new orbitals which looks most like some previously known ``good'' set.
+The ``good'' set is typically the occupied orbitals from an one of the
+oscillating iterations with the lowest total energy. For an oscillating system
+where the lowest total energy occurs on iterations $N,N+2,\ldots$, invoking
+\texttt{MOM\_START N} can often rescue the convergence of the SCF. MOM can be
+used in concert with DIIS, though care should be taken to not turn MOM on until
+the oscillatory behavior begins. 
+
 %
 %It is important to point out that the
 %SCF approach does not rigorously guarantee that the final orbitals
