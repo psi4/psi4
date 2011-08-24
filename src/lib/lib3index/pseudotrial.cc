@@ -1,7 +1,7 @@
 #include "3index.h"
-#include "cubature.h"
 #include <psi4-dec.h>
 #include <libmints/mints.h>
+#include <libmints/cubature.h>
 #include <libqt/qt.h>
 
 #include <string>
@@ -453,6 +453,8 @@ void PseudoTrial::form_Rp()
     Rp_ = boost::shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
     double** Rp = Rp_->pointer();
 
+    #if 0
+
     boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
@@ -465,6 +467,8 @@ void PseudoTrial::form_Rp()
         for (int Q = 0; Q < nso_; Q++)
             Rp[Q][i] = bpoints[i][Q];
     }
+
+    #endif
 
     if (debug_)
         Rp_->print();
@@ -482,6 +486,8 @@ void PseudoTrial::form_Rd()
     Rd_ = boost::shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndealias_, naux_));
     double** Rp = Rd_->pointer();
 
+    #if 0
+
     boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
@@ -494,6 +500,8 @@ void PseudoTrial::form_Rd()
         for (int Q = 0; Q < ndealias_; Q++)
             Rp[Q][i] = bpoints[i][Q];
     }
+    
+    #endif
 
     if (debug_)
         Rd_->print();

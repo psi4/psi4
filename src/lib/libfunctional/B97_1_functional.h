@@ -14,8 +14,8 @@ class B97_1_Functional : public Functional {
 public:
     B97_1_Functional(int npoints, int deriv);
     virtual ~B97_1_Functional();
-    virtual void computeRKSFunctional(boost::shared_ptr<Properties> prop);
-    virtual void computeUKSFunctional(boost::shared_ptr<Properties> prop);
+    virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> prop);
+    virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> prop);
 };
 }}
 #endif
