@@ -1,8 +1,9 @@
+#include <utility>
+#include <physconst.h>
 #include <libciomr/libciomr.h>
 
 #include "mints.h"
 #include "local.h"
-#include <utility>
 
 using namespace boost;
 using namespace psi;
@@ -12,10 +13,12 @@ namespace psi {
 Local::Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<Matrix> C_USO) :
     basisset_(basisset), C_USO_(C_USO), print_(0), debug_(0)
 {
+    common_init();
 }
 Local::Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> C_USO) :
     basisset_(basisset), auxiliary_(auxiliary), C_USO_(C_USO), print_(0), debug_(0)
 {
+    common_init();
 }
 Local::~Local()
 {
@@ -24,8 +27,10 @@ void Local::common_init()
 {
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
 
-    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
-    AO2USO_ = pet->aotoso();
+    if (C_USO_->nirrep() > 1) {
+        boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
+        AO2USO_ = pet->aotoso();
+    }
 
     C_AO_ = C_AO();
     L_AO_ = C_AO_;
@@ -40,18 +45,146 @@ void Local::common_init()
 }
 void Local::print(FILE* out)
 {
+    fprintf(out, "  ==> Localization <==\n\n");
+
+    basisset_->print_by_level(out,3);
+    if (auxiliary_.get())
+        auxiliary_->print_by_level(out,3);
+
+    C_USO_->print(out);
+    C_AO_->print(out);
+    L_AO_->print(out);
+
+    fprintf(out, "  => Metrics <=\n\n");
+    fprintf(out, "  Boys:                %11.3E\n", boys_metric());
+    fprintf(out, "  Edmiston-Ruedenberg: %11.3E\n", er_metric());
+    fprintf(out, "  Pipek-Mezey:         %11.3E\n\n", pm_metric());
+
+    if (Q_.get())
+        Q_->print(out);
+
+    if (domains_.size()) {
+        fprintf(out, "  => Primary Domains <=\n\n");
+        for (int i = 0; i < L_AO_->colspi()[0]; i++) {
+            domains_[i]->print(out, i);
+        }
+    }
+
+    if (auxiliary_domains_.size()) {
+        fprintf(out, "  => Auxiliary Domains <=\n\n");
+        for (int i = 0; i < L_AO_->colspi()[0]; i++) {
+            auxiliary_domains_[i]->print(out, i);
+        }
+    }
+
+    fflush(out);
 }
 double Local::er_metric()
 {
-    return 0.0;
+    int nso = L_AO_->rowspi()[0];
+    int nmo = L_AO_->colspi()[0];
+
+    boost::shared_ptr<Vector> iiii(new Vector("(ii|ii)", nmo));
+    double* ip = iiii->pointer();
+
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
+    boost::shared_ptr<TwoBodyAOInt> eri(integral->eri());
+    const double* buffer = eri->buffer();
+    double** Lp = L_AO_->pointer();
+
+    for (int M = 0; M < basisset_->nshell(); M++) {
+        for (int N = 0; N < basisset_->nshell(); N++) {
+            for (int R = 0; R < basisset_->nshell(); R++) {
+                for (int S = 0; S < basisset_->nshell(); S++) {
+
+                int nM = basisset_->shell(M)->nfunction();
+                int nN = basisset_->shell(N)->nfunction();
+                int nR = basisset_->shell(R)->nfunction();
+                int nS = basisset_->shell(S)->nfunction();
+                int mstart = basisset_->shell(M)->function_index();
+                int nstart = basisset_->shell(N)->function_index();
+                int rstart = basisset_->shell(R)->function_index();
+                int sstart = basisset_->shell(S)->function_index();
+
+                eri->compute_shell(M,N,R,S);
+
+                for (int oM = 0, index = 0; oM < nM; oM++) {
+                    for (int oN = 0; oN < nN; oN++) {
+                        for (int oR = 0; oR < nR; oR++) {
+                            for (int oS = 0; oS < nS; oS++, index++) {
+                                for (int i = 0; i < nmo; i++) {
+                                    ip[i] += Lp[oM + mstart][i] * Lp[oN + nstart][i] *
+                                             buffer[index] *  
+                                             Lp[oR + rstart][i] * Lp[oS + sstart][i];
+                                }
+                }}}}
+    }}}} 
+
+    double metric = 0.0;
+
+    for (int i = 0; i < nmo; i++) {
+        metric += ip[i];
+    }
+    
+    return metric;
 }
 double Local::pm_metric()
 {
-    return 0.0;
+    int nso = L_AO_->rowspi()[0];
+    int nmo = L_AO_->colspi()[0];
+    int natom = basisset_->molecule()->natom();
+
+    boost::shared_ptr<Matrix> Q = mulliken_charges(L_AO_);
+
+    double metric = C_DDOT(nmo * (ULI) natom, Q->pointer()[0], 1, Q->pointer()[0], 1);    
+
+    return metric;
 }
 double Local::boys_metric()
 {
-    return 0.0;
+    double metric = 0.0;
+
+    int nso = L_AO_->rowspi()[0];
+    int nmo = L_AO_->colspi()[0];
+
+    // Build dipole integrals
+    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
+    boost::shared_ptr<OneBodyAOInt> Dint(integral->ao_dipole());
+   
+    std::vector<boost::shared_ptr<Matrix> > dipole;
+    dipole.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole X", nso, nso)));
+    dipole.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso)));
+    dipole.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso)));
+
+    Dint->compute(dipole); 
+
+    boost::shared_ptr<Matrix> XC(new Matrix("XC", nso, nmo));
+
+    // X contribution
+    C_DGEMM('N','N',nso,nmo,nso,1.0,dipole[0]->pointer()[0],nso,L_AO_->pointer()[0],nmo,0.0,XC->pointer()[0],nmo);
+
+    for (int i = 0; i < nmo; i++) {
+        double cont = C_DDOT(nso,&L_AO_->pointer()[0][i],nmo,&dipole[0]->pointer()[0][i],nmo);
+        metric += cont * cont;
+    }
+
+    // Y contribution
+    C_DGEMM('N','N',nso,nmo,nso,1.0,dipole[1]->pointer()[0],nso,L_AO_->pointer()[0],nmo,0.0,XC->pointer()[0],nmo);
+
+    for (int i = 0; i < nmo; i++) {
+        double cont = C_DDOT(nso,&L_AO_->pointer()[0][i],nmo,&dipole[1]->pointer()[0][i],nmo);
+        metric += cont * cont;
+    }
+
+    // Z contribution
+    C_DGEMM('N','N',nso,nmo,nso,1.0,dipole[2]->pointer()[0],nso,L_AO_->pointer()[0],nmo,0.0,XC->pointer()[0],nmo);
+
+    for (int i = 0; i < nmo; i++) {
+        double cont = C_DDOT(nso,&L_AO_->pointer()[0][i],nmo,&dipole[2]->pointer()[0][i],nmo);
+        metric += cont * cont;
+    }
+
+    return metric;
 }
 boost::shared_ptr<Matrix> Local::C_USO()
 {
@@ -59,7 +192,7 @@ boost::shared_ptr<Matrix> Local::C_USO()
 }
 boost::shared_ptr<Matrix> Local::C_AO()
 {
-    if (AO2USO_->nirrep() == 1)
+    if (!AO2USO_.get() || AO2USO_->nirrep() == 1)
         return C_USO_;
 
     int nao = AO2USO_->rowspi()[0];
@@ -112,6 +245,7 @@ void Local::localize_cholesky(double conv)
     }
 
     L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_->set_name("L Cholesky (C1 Symmetry)");
 
     int nso = L_AO_->rowspi()[0];
     int nmo = L_AO_->colspi()[0];
@@ -122,28 +256,48 @@ void Local::localize_cholesky(double conv)
     
     C_DGEMM('N','T',nso,nso,nmo,1.0,Lp[0],nmo,Lp[0],nmo,0.0,Dp[0],nso);
 
-    D->partial_cholesky_factorize();
+    if (debug_)
+        D->print();
+
+    boost::shared_ptr<Matrix> L = D->partial_cholesky_factorize();
+
+    if (debug_)
+        L->print();
+
+    int nmo2 = L->colspi()[0];
+    double** Lp2 = L->pointer();
+
+    if (nmo2 < nmo) 
+        throw PSIEXCEPTION("Local: Cholesky factor has smaller numerical rank than nmo!");
 
     for (int i = 0; i < nmo; i++) {
-        C_DCOPY(nso, &Dp[0][i], nso, &Lp[0][i], nmo);
+        C_DCOPY(nso, &Lp2[0][i], nmo2, &Lp[0][i], nmo);
+    }
+
+    if (debug_) {
+        C_DGEMM('N','T',nso,nso,nmo,-1.0,Lp[0],nmo,Lp[0],nmo,1.0,Dp[0],nso);
+        D->print(outfile, "Residual");
     }
 }
 void Local::localize_pm(double conv) 
 {
     throw FeatureNotImplemented("psi::Local","localize_pm",__FILE__,__LINE__);
     L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_->set_name("L Pipek-Mezey (C1 Symmetry)");
 
 }
 void Local::localize_boys(double conv) 
 {
     throw FeatureNotImplemented("psi::Local","localize_boys",__FILE__,__LINE__);
     L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_->set_name("L Boys (C1 Symmetry)");
 
 }
 void Local::localize_er(double conv) 
 {
     throw FeatureNotImplemented("psi::Local","localize_er",__FILE__,__LINE__);
     L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_->set_name("L Edmiston-Ruedenberg (C1 Symmetry)");
 
 }
 boost::shared_ptr<Matrix> Local::lowdin_charges(boost::shared_ptr<Matrix> C)
@@ -283,8 +437,8 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
  
             // Compute the incompleteness metric 
             double incompleteness = 1.0 - C_DDOT(nfun, Ap, 1, Ap, 1);
-            if (incompleteness < Qcutoff)
-                return;
+            if (incompleteness < 1.0 - Qcutoff)
+                break;
         }
 
         // rebuild a set<int>, which OrbtialDomain expects
@@ -330,7 +484,7 @@ void Local::compute_polly_domains(double Qcutoff, double Rext, double Qcheck)
             it != charge_atoms.end(); it++) {
             Vector3 v = molecule->xyz(*it);
             for (int A = 0; A < natom; A++) {
-                if (v.distance(molecule->xyz(A)) < Rext) {
+                if (v.distance(molecule->xyz(A)) < Rext / _bohr2angstroms) {
                     range_atoms.insert(A);
                 }
             }
@@ -457,6 +611,5 @@ boost::shared_ptr<OrbitalDomain> OrbitalDomain::buildOrbitalDomain(boost::shared
     return domain;
 }
 
-
-}
+} // Namespace psi
 
