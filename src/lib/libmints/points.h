@@ -24,6 +24,8 @@ protected:
     int npoints_;
     /// Maximum number of points in a block
     int max_points_;
+    /// Maximum number of functions in a block
+    int max_functions_;
     /// Maximum derivative to compute
     int deriv_;
     /// Map of value names to Matrices containing values
@@ -37,7 +39,7 @@ protected:
     void build_spherical();
 
 public:
-    PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points);
+    PointFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~PointFunctions();
 
     void computePoints(boost::shared_ptr<BlockOPoints> block);
@@ -47,6 +49,7 @@ public:
 
     virtual void print(FILE* out = outfile, int print = 2) const;
 
+    int max_functions() const { return max_functions_; }
     int max_points() const { return max_points_; }
     int npoints() const { return npoints_; }
  
@@ -63,6 +66,8 @@ protected:
     // => Temps <= //
     /// Buffer for half-transform
     boost::shared_ptr<Matrix> temp_;
+    /// Buffer for KE density
+    boost::shared_ptr<Matrix> meta_temp_;
     /// Local D matrix
     boost::shared_ptr<Matrix> D_local_;
     /// Local Cocc matrix
@@ -77,7 +82,7 @@ protected:
     void build_temps();
 
 public:
-    RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points);
+    RKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~RKSFunctions();
 
     /// Set RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
@@ -85,8 +90,10 @@ public:
     /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change) 
     void  reset_pointers(boost::shared_ptr<Matrix> D_AO, boost::shared_ptr<Matrix> Cocc_AO);
 
-    void computeProperties(boost::shared_ptr<BlockOPoints> block);
+    /// Scratch array of size max_points() x max_functions()
+    boost::shared_ptr<Matrix> scratch() const { return temp_; }
 
+    void computeProperties(boost::shared_ptr<BlockOPoints> block);
     boost::shared_ptr<Vector> property_value(const std::string& key);
 
     virtual void print(FILE* out = outfile, int print = 2) const;
@@ -109,6 +116,8 @@ protected:
     boost::shared_ptr<Matrix> tempa_;
     /// Buffer for half-transform
     boost::shared_ptr<Matrix> tempb_;
+    /// Buffer for KE density
+    boost::shared_ptr<Matrix> meta_temp_;
     /// Local D matrix
     boost::shared_ptr<Matrix> Da_local_;
     /// Local Cocc matrix
@@ -127,7 +136,7 @@ protected:
     void build_temps();
 
 public:
-    UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points);
+    UKSFunctions(boost::shared_ptr<BasisSet> primary, int max_points, int max_functions);
     virtual ~UKSFunctions();
 
     /// Set RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
@@ -136,8 +145,12 @@ public:
     void  reset_pointers(boost::shared_ptr<Matrix> Da_AO, boost::shared_ptr<Matrix> Caocc_AO,
                          boost::shared_ptr<Matrix> Db_AO, boost::shared_ptr<Matrix> Cbocc_AO);
 
-    void computeProperties(boost::shared_ptr<BlockOPoints> block);
+    /// Scratch array of size max_points() x max_functions()
+    boost::shared_ptr<Matrix> scratchA() const { return tempa_; }
+    /// Scratch array of size max_points() x max_functions()
+    boost::shared_ptr<Matrix> scratchB() const { return tempb_; }
 
+    void computeProperties(boost::shared_ptr<BlockOPoints> block);
     boost::shared_ptr<Vector> property_value(const std::string& key);
 
     virtual void print(FILE* out = outfile, int print = 2) const;

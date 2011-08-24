@@ -50,11 +50,11 @@ void KS::common_init()
     sobasisset_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(basisset_, fact));
 
     //Build the superfunctional
-    int block_size = options_.get_int("DFT_BLOCK_MAX");
+    int block_size = options_.get_int("DFT_MAX_POINTS");
     functional_ = SuperFunctional::createSuperFunctional(options_.get_str("DFT_FUNCTIONAL"),block_size,1);
 
     // Temporary print, to make sure we're in the right spot
-    fprintf(outfile,"\n  Selected Functional is %s.\n\n",functional_->getName().c_str());
+    fprintf(outfile,"  Selected Functional is %s.\n\n",functional_->getName().c_str());
 
     //Grab the properties object for this basis
     if (functional_->isRangeCorrected()) {
@@ -168,13 +168,14 @@ double RKS::compute_E()
     }
     Etotal += dashD_E;
 
-    if (debug_ > 2) {
-        fprintf(outfile, "Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
-        fprintf(outfile, "One-Electron Energy =      %24.14f\n", one_electron_E);
-        fprintf(outfile, "Coulomb Energy =           %24.14f\n", coulomb_E);
-        fprintf(outfile, "Hybrid Exchange Energy =   %24.14f\n", exchange_E);
-        fprintf(outfile, "XC Functional Energy =     %24.14f\n", XC_E); 
-        fprintf(outfile, "-D Energy =                %24.14f\n", dashD_E);
+    if (debug_) {
+        fprintf(outfile, "   => Energetics <=\n\n");
+        fprintf(outfile, "    Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
+        fprintf(outfile, "    One-Electron Energy =      %24.14f\n", one_electron_E);
+        fprintf(outfile, "    Coulomb Energy =           %24.14f\n", coulomb_E);
+        fprintf(outfile, "    Hybrid Exchange Energy =   %24.14f\n", exchange_E);
+        fprintf(outfile, "    XC Functional Energy =     %24.14f\n", XC_E); 
+        fprintf(outfile, "    -D Energy =                %24.14f\n\n", dashD_E);
     }
 
     return Etotal;
@@ -307,13 +308,14 @@ double UKS::compute_E()
     }
     Etotal += dashD_E;
 
-    if (debug_ > 2) {
-        fprintf(outfile, "Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
-        fprintf(outfile, "One-Electron Energy =      %24.14f\n", one_electron_E);
-        fprintf(outfile, "Coulomb Energy =           %24.14f\n", 0.5 * coulomb_E);
-        fprintf(outfile, "Hybrid Exchange Energy =   %24.14f\n", 0.5 * exchange_E);
-        fprintf(outfile, "XC Functional Energy =     %24.14f\n", XC_E); 
-        fprintf(outfile, "-D Energy =                %24.14f\n", dashD_E);
+    if (debug_) {
+        fprintf(outfile, "   => Energetics <=\n\n");
+        fprintf(outfile, "    Nuclear Repulsion Energy = %24.14f\n", nuclearrep_);
+        fprintf(outfile, "    One-Electron Energy =      %24.14f\n", one_electron_E);
+        fprintf(outfile, "    Coulomb Energy =           %24.14f\n", 0.5 * coulomb_E);
+        fprintf(outfile, "    Hybrid Exchange Energy =   %24.14f\n", 0.5 * exchange_E);
+        fprintf(outfile, "    XC Functional Energy =     %24.14f\n", XC_E); 
+        fprintf(outfile, "    -D Energy =                %24.14f\n", dashD_E);
     }
 
     return Etotal;
