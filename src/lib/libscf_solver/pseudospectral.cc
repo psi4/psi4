@@ -95,6 +95,7 @@ void PseudospectralHF::common_init()
         pot_[thread] = boost::shared_ptr<PseudospectralInt>(static_cast<PseudospectralInt*>(fact2->ao_pseudospectral()));
     }
 
+    #if 0
     // Build the peudospectral grid points and X matrix
     boost::shared_ptr<Integrator> quad = Integrator::build_integrator(primary_->molecule(), psio_, options_);
     quad->buildGrid(5000);
@@ -133,6 +134,7 @@ void PseudospectralHF::common_init()
             counter++;
         }
     }
+    #endif
 }
 void PseudospectralHF::form_G_RHF()
 {

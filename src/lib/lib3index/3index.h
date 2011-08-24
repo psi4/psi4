@@ -3,7 +3,6 @@
 
 #include "dftensor.h"
 #include "pstensor.h"
-#include "cubature.h"
 #include "denominator.h"
 #include "schwarz.h"
 #include "cholesky.h"

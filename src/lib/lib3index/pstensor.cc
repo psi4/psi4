@@ -1,5 +1,6 @@
 #include "3index.h"
-#include "libmints/mints.h"
+#include <libmints/mints.h>
+#include <libmints/cubature.h>
 #include <libqt/qt.h>
 
 #include <string>
@@ -651,6 +652,8 @@ void PSTensorII::form_Rpao()
     Rpao_ = boost::shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
     double** Rp = Rpao_->pointer();
 
+    #if 0
+
     boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
@@ -664,6 +667,8 @@ void PSTensorII::form_Rpao()
             Rp[Q][i] = bpoints[i][Q];
     }
 
+    #endif
+
     if (debug_ > 1)
         Rpao_->print();
 }
@@ -671,6 +676,8 @@ void PSTensorII::form_Rdao()
 {
     Rdao_ = boost::shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndso_, naux_));
     double** Rp = Rdao_->pointer();
+
+    #if 0
 
     boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
@@ -684,6 +691,8 @@ void PSTensorII::form_Rdao()
         for (int Q = 0; Q < ndso_; Q++)
             Rp[Q][i] = bpoints[i][Q];
     }
+
+    #endif
 
     if (debug_ > 1)
         Rdao_->print();
@@ -987,6 +996,8 @@ void PSTensor::form_Rpao()
     Rpao_ = boost::shared_ptr<Matrix>(new Matrix("R (primary x points)", nso_, naux_));
     double** Rp = Rpao_->pointer();
 
+    #if 0
+
     boost::shared_ptr<BasisPoints> points(new BasisPoints(primary_, naux_));
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
@@ -1000,6 +1011,8 @@ void PSTensor::form_Rpao()
             Rp[Q][i] = bpoints[i][Q];
     }
 
+    #endif
+
     if (debug_)
         Rpao_->print();
 }
@@ -1007,6 +1020,8 @@ void PSTensor::form_Rdao()
 {
     Rdao_ = boost::shared_ptr<Matrix>(new Matrix("R (dealias x points)", ndealias_, naux_));
     double** Rp = Rdao_->pointer();
+
+    #if 0
 
     boost::shared_ptr<BasisPoints> points(new BasisPoints(dealias_, naux_));
     points->setToComputePoints(true);
@@ -1020,6 +1035,8 @@ void PSTensor::form_Rdao()
         for (int Q = 0; Q < ndealias_; Q++)
             Rp[Q][i] = bpoints[i][Q];
     }
+
+    #endif
 
     if (debug_)
         Rdao_->print();

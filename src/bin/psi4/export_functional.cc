@@ -16,9 +16,9 @@ void export_functional()
         staticmethod("available_superfunctionals").
         def("available_names", &SuperFunctional::availableNames).
         staticmethod("available_names").
-        def("test_superfunctionals", &SuperFunctional::testSuperFunctionals).
-        staticmethod("test_superfunctionals").
-        def("test_superfunctional", &SuperFunctional::testSuperFunctional).
+        //def("test_superfunctionals", &SuperFunctional::testSuperFunctionals).
+        //staticmethod("test_superfunctionals").
+        //def("test_superfunctional", &SuperFunctional::testSuperFunctional).
 
         def("get_name", &SuperFunctional::getName).
         def("get_description", &SuperFunctional::getDescription).
@@ -65,9 +65,9 @@ void export_functional()
         staticmethod("available_functionals").
         def("available_names", &Functional::availableNames).
         staticmethod("available_names").
-        def("test_functionals", &Functional::testFunctionals).
-        staticmethod("test_functionals").
-        def("test_functional", &Functional::testFunctional).
+        //def("test_functionals", &Functional::testFunctionals).
+        //staticmethod("test_functionals").
+        //def("test_functional", &Functional::testFunctional).
 
         def("get_name", &Functional::getName).
         def("get_description", &Functional::getDescription).

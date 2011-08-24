@@ -14,8 +14,8 @@ class PW91_X_Functional : public Functional {
 public:
     PW91_X_Functional(int npoints, int deriv);
     virtual ~PW91_X_Functional();
-    virtual void computeRKSFunctional(boost::shared_ptr<Properties> prop);
-    virtual void computeUKSFunctional(boost::shared_ptr<Properties> prop);
+    virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> prop);
+    virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> prop);
 };
 }}
 #endif

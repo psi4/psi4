@@ -1,4 +1,3 @@
-#include <libmints/basispoints.h>
 #include <libmints/basisset.h>
 #include <libmints/basisset_parser.h>
 #include <libmints/cartesianiter.h>
@@ -24,7 +23,6 @@
 #include <libmints/overlap.h>
 #include <libmints/petitelist.h>
 #include <libmints/pointgrp.h>
-#include <libmints/properties.h>
 #include <libmints/quadrupole.h>
 #include <libmints/shellrotation.h>
 #include <libmints/sobasis.h>
@@ -35,12 +33,12 @@
 #include <libmints/dimension.h>
 #include <libmints/3coverlap.h>
 #include <libmints/mintshelper.h>
-#include <libmints/integrator.h>
 #include <libmints/multipolesymmetry.h>
 #include <libmints/oeprop.h>
 #include <libmints/nabla.h>
 #include <libmints/angularmomentum.h>
 #include <libmints/tracelessquadrupole.h>
-#include <libmints/extern.h>
-#include <libmints/integralparameters.h>
 #include <libmints/deriv.h>
+#include <libmints/cubature.h>
+#include <libmints/points.h>
+#include <libmints/extern.h>
