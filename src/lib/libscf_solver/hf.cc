@@ -1168,6 +1168,7 @@ double HF::compute_energy()
 
         if (Communicator::world->me() == 0) {
             fprintf(outfile, "   @%s iter %3d: %20.14f   %+11.5e   %+11.5e %s\n",
+            fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
                               reference.c_str(), iteration_, E_, E_ - Eold_, Drms_, status.c_str());
             fflush(outfile);
         }

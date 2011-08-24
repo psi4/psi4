@@ -654,9 +654,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Spread alpha for logarithmic pruning -*/
     options.add_double("DFT_PRUNING_ALPHA",1.0);
     /*- The number of grid points per evaluation block -*/
-    options.add_int("DFT_BLOCK_MAX",5000);
+    options.add_int("DFT_MAX_POINTS",5000);
     /*- The number of grid points per evaluation block -*/
-    options.add_int("DFT_BLOCK_MIN",5000);
+    options.add_int("DFT_MIN_POINTS",0);
     /*- The DFT basis cutoff -*/
     options.add_double("DFT_BASIS_CUTOFF", 0.0);
     /*- The DFT combined functional name (for now) -*/
@@ -1659,9 +1659,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Spread alpha for logarithmic pruning -*/
     options.add_double("PS_PRUNING_ALPHA",1.0);
     /*- The number of grid points per evaluation block -*/
-    options.add_int("PS_BLOCK_MAX",5000);
+    options.add_int("PS_MAX_POINTS",5000);
     /*- The number of grid points per evaluation block -*/
-    options.add_int("PS_BLOCK_MIN",5000);
+    options.add_int("PS_MIN_POINTS",0);
     /*- The DFT basis cutoff -*/
     options.add_double("PS_BASIS_CUTOFF", 0.0);
     /*- Minumum eigenvalue for primary basis -*/

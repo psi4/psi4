@@ -47,35 +47,43 @@ print 2
 basis sto-3g
 guess core
 scf_type direct
-dft_spherical_points 302 
-dft_radial_points 100
+dft_order_spherical 29 
+dft_n_radial 100
 reference rks
 }
 
 set dft_functional b_x
 V11 = energy('scf')
+compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
 
 set dft_functional b3lyp
 V12 = energy('scf')
+compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
 
 set dft_functional wB97
 V13 = energy('scf')
+compare_values(E13,V13, 3, "RKS  0 1  wB97 Energy") #TEST
 
 set dft_functional wB97X 
 V14 = energy('scf')
+compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
 
 set reference uks
 set dft_functional b_x
 V21 = energy('scf')
+compare_values(E21,V21, 3, "UKS  0 1   B97 Energy") #TEST
 
 set dft_functional b3lyp
 V22 = energy('scf')
+compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
 
 set dft_functional wB97
 V23 = energy('scf')
+compare_values(E23,V23, 3, "UKS  0 1  wB97 Energy") #TEST
 
 set dft_functional wB97X 
 V24 = energy('scf')
+compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
 
 molecule h2op {
 1 2
@@ -88,15 +96,19 @@ symmetry c1
 set basis sto-3g
 set dft_functional b_x
 V31 = energy('scf')
+compare_values(E31,V31, 3, "UKS  1 2   B97 Energy") #TEST
 
 set dft_functional b3lyp
 V32 = energy('scf')
+compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
 
 set dft_functional wB97
 V33 = energy('scf')
+compare_values(E33,V33, 3, "UKS  1 2  wB97 Energy") #TEST
 
 set dft_functional wB97X 
 V34 = energy('scf')
+compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
 
 molecule h2om {
 -1 2
@@ -109,37 +121,25 @@ symmetry c1
 set basis sto-3g
 set dft_functional b_x
 V41 = energy('scf')
+compare_values(E41,V41, 3, "UKS -1 2   B97 Energy") #TEST
 
 set dft_functional b3lyp
 V42 = energy('scf')
+compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
 
 set dft_functional wB97
 V43 = energy('scf')
+compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
 
 set dft_functional wB97X 
 V44 = energy('scf')
-
-compare_values(E11,V11, 3, "RKS  0 1   B97 Energy") #TEST
-compare_values(E12,V12, 3, "RKS  0 1 B3LYP Energy") #TEST
-compare_values(E13,V13, 3, "RKS  0 1  wB97 Energy") #TEST
-compare_values(E14,V14, 3, "RKS  0 1 wB97X Energy") #TEST
-compare_values(E21,V21, 3, "UKS  0 1   B97 Energy") #TEST
-compare_values(E22,V22, 3, "UKS  0 1 B3LYP Energy") #TEST
-compare_values(E23,V23, 3, "UKS  0 1  wB97 Energy") #TEST
-compare_values(E24,V24, 3, "UKS  0 1 wB97X Energy") #TEST
-compare_values(E31,V31, 3, "UKS  1 2   B97 Energy") #TEST
-compare_values(E32,V32, 3, "UKS  1 2 B3LYP Energy") #TEST
-compare_values(E33,V33, 3, "UKS  1 2  wB97 Energy") #TEST
-compare_values(E34,V34, 3, "UKS  1 2 wB97X Energy") #TEST
-compare_values(E41,V41, 3, "UKS -1 2   B97 Energy") #TEST
-compare_values(E42,V42, 3, "UKS -1 2 B3LYP Energy") #TEST
-compare_values(E43,V43, 3, "UKS -1 2  wB97 Energy") #TEST
 compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
+
 
 --------------------------------------------------------------------------
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:13:22 2011
+*** at Sun Aug  7 16:52:15 2011
 
 
          ---------------------------------------------------------
@@ -184,7 +184,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -205,13 +205,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is B_X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -220,19 +223,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:   -73.16581109545533   -1.85316e+01    0.00000e+00 
-   @RKS iter   2:   -74.08225054130983   -9.16439e-01    3.22986e-01 DIIS
-   @RKS iter   3:   -74.94822207057689   -8.65972e-01    2.00286e-01 DIIS
-   @RKS iter   4:   -74.94930117945040   -1.07911e-03    9.41987e-03 DIIS
-   @RKS iter   5:   -74.94933708475966   -3.59053e-05    8.08733e-04 DIIS
-   @RKS iter   6:   -74.94934109166476   -4.00691e-06    2.88677e-04 DIIS
-   @RKS iter   7:   -74.94934127389286   -1.82228e-07    8.02024e-05 DIIS
-   @RKS iter   8:   -74.94934127443422   -5.41363e-10    4.12777e-06 DIIS
-   @RKS iter   9:   -74.94934127443409    1.27898e-13    2.05977e-10 DIIS
+   @RKS iter   1:   -73.16580763911828   -1.85315e+01   0.00000e+00  
+   @RKS iter   2:   -74.08224887908347   -9.16441e-01   3.22987e-01 DIIS
+   @RKS iter   3:   -74.94825814940609   -8.66009e-01   2.00293e-01 DIIS
+   @RKS iter   4:   -74.94933515484190   -1.07701e-03   9.41442e-03 DIIS
+   @RKS iter   5:   -74.94937097786814   -3.58230e-05   8.07233e-04 DIIS
+   @RKS iter   6:   -74.94937497761066   -3.99974e-06   2.88300e-04 DIIS
+   @RKS iter   7:   -74.94937515986619   -1.82256e-07   8.01901e-05 DIIS
+   @RKS iter   8:   -74.94937516040727   -5.41078e-10   4.12593e-06 DIIS
 
   ==> Post-Iterations <==
 
@@ -241,12 +247,12 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Doubly Occupied:                                                      
 
-	   1A    -18.450273     2A     -0.782610     3A     -0.334071  
-	   4A     -0.129767     5A     -0.029249  
+	   1A    -18.450318     2A     -0.782593     3A     -0.334067  
+	   4A     -0.129868     5A     -0.029260  
 
 	Virtual:                                                              
 
-	   6A      0.304252     7A      0.410099  
+	   6A      0.304317     7A      0.410060  
 
 	Final Occupation by Irrep:
 	          A 
@@ -254,7 +260,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @RKS Final Energy:   -74.94934127443409
+  @RKS Final Energy:   -74.94937516040727
 
   ==> Properties <==
 
@@ -263,34 +269,36 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.5888     Total:     0.5888
+     X:     0.0000      Y:     0.0000      Z:     0.5888     Total:     0.5888
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.4966     Total:     1.4966
+     X:     0.0000      Y:     0.0000      Z:     1.4965     Total:     1.4965
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.1510     YY:    -4.4803     ZZ:    -5.2766
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:    -6.1511     YY:    -4.4805     ZZ:    -5.2767
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.8484     YY:     0.8224     ZZ:     0.0261
-    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:    -0.8483     YY:     0.8222     ZZ:     0.0261
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.14909  4.14909  0.00000 -0.29819
-       2     H     0.42545  0.42545  0.00000  0.14909
-       3     H     0.42545  0.42545  0.00000  0.14909
+       1     O     4.14905  4.14905  0.00000 -0.29810
+       2     H     0.42547  0.42547  0.00000  0.14905
+       3     H     0.42547  0.42547  0.00000  0.14905
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:13:29 2011
-	user time   =       6.23 seconds =       0.10 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:52:18 2011
+	user time   =       2.84 seconds =       0.05 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          7 seconds =       0.12 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:13:29 2011
+*** at Sun Aug  7 16:52:18 2011
 
 
          ---------------------------------------------------------
@@ -335,7 +343,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -356,13 +364,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is B3LYP.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -371,19 +382,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:   -73.57670119067343   -1.89424e+01    0.00000e+00 
-   @RKS iter   2:   -74.52407242978759   -9.47371e-01    3.18749e-01 DIIS
-   @RKS iter   3:   -75.31683675372004   -7.92764e-01    1.77480e-01 DIIS
-   @RKS iter   4:   -75.31948777587837   -2.65102e-03    7.60172e-03 DIIS
-   @RKS iter   5:   -75.31968359387925   -1.95818e-04    2.12756e-03 DIIS
-   @RKS iter   6:   -75.31969452598962   -1.09321e-05    4.26897e-04 DIIS
-   @RKS iter   7:   -75.31969575544178   -1.22945e-06    2.00061e-04 DIIS
-   @RKS iter   8:   -75.31969575674586   -1.30407e-09    6.49766e-06 DIIS
-   @RKS iter   9:   -75.31969575674576    9.94760e-14    1.24215e-09 DIIS
+   @RKS iter   1:   -73.57669720648647   -1.89424e+01   0.00000e+00  
+   @RKS iter   2:   -74.52406923806890   -9.47372e-01   3.18750e-01 DIIS
+   @RKS iter   3:   -75.31685654535760   -7.92787e-01   1.77486e-01 DIIS
+   @RKS iter   4:   -75.31950625282981   -2.64971e-03   7.60108e-03 DIIS
+   @RKS iter   5:   -75.31970190458605   -1.95652e-04   2.12599e-03 DIIS
+   @RKS iter   6:   -75.31971283302362   -1.09284e-05   4.27014e-04 DIIS
+   @RKS iter   7:   -75.31971405661274   -1.22359e-06   1.99526e-04 DIIS
+   @RKS iter   8:   -75.31971405790681   -1.29407e-09   6.47202e-06 DIIS
 
   ==> Post-Iterations <==
 
@@ -392,12 +406,12 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Doubly Occupied:                                                      
 
-	   1A    -18.840654     2A     -0.916524     3A     -0.427085  
-	   4A     -0.233328     5A     -0.142447  
+	   1A    -18.840683     2A     -0.916512     3A     -0.427084  
+	   4A     -0.233392     5A     -0.142454  
 
 	Virtual:                                                              
 
-	   6A      0.317890     7A      0.427521  
+	   6A      0.317930     7A      0.427495  
 
 	Final Occupation by Irrep:
 	          A 
@@ -405,7 +419,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @RKS Final Energy:   -75.31969575674576
+  @RKS Final Energy:   -75.31971405790681
 
   ==> Properties <==
 
@@ -417,31 +431,33 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
      X:    -0.0000      Y:    -0.0000      Z:     0.6324     Total:     0.6324
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6074     Total:     1.6074
+     X:    -0.0000      Y:    -0.0000      Z:     1.6073     Total:     1.6073
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.1357     YY:    -4.3648     ZZ:    -5.2207
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XX:    -6.1357     YY:    -4.3649     ZZ:    -5.2208
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.8953     YY:     0.8756     ZZ:     0.0197
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XX:    -0.8952     YY:     0.8755     ZZ:     0.0197
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.16495  4.16495  0.00000 -0.32989
-       2     H     0.41753  0.41753  0.00000  0.16495
-       3     H     0.41753  0.41753  0.00000  0.16495
+       1     O     4.16492  4.16492  0.00000 -0.32983
+       2     H     0.41754  0.41754  0.00000  0.16492
+       3     H     0.41754  0.41754  0.00000  0.16492
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:13:40 2011
-	user time   =      17.40 seconds =       0.29 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:52:23 2011
+	user time   =       7.77 seconds =       0.13 minutes
 	system time =       0.04 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:13:40 2011
+*** at Sun Aug  7 16:52:23 2011
 
 
          ---------------------------------------------------------
@@ -486,7 +502,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -507,13 +523,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -522,18 +541,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:   -73.57267022416453   -1.89384e+01    0.00000e+00 
-   @RKS iter   2:   -75.13435335206040   -1.56168e+00    2.84043e-01 DIIS
-   @RKS iter   3:   -75.31784644193966   -1.83493e-01    7.56866e-02 DIIS
-   @RKS iter   4:   -75.31849405319731   -6.47611e-04    6.25359e-03 DIIS
-   @RKS iter   5:   -75.31854507197450   -5.10188e-05    1.96495e-03 DIIS
-   @RKS iter   6:   -75.31854591468763   -8.42713e-07    2.64346e-04 DIIS
-   @RKS iter   7:   -75.31854591600805   -1.32042e-09    5.34168e-06 DIIS
-   @RKS iter   8:   -75.31854591600818   -1.27898e-13    1.30968e-07 DIIS
+   @RKS iter   1:   -73.57266646350577   -1.89384e+01   0.00000e+00  
+   @RKS iter   2:   -75.13432973999335   -1.56166e+00   2.84044e-01 DIIS
+   @RKS iter   3:   -75.31783716664212   -1.83507e-01   7.56850e-02 DIIS
+   @RKS iter   4:   -75.31848386778722   -6.46701e-04   6.25005e-03 DIIS
+   @RKS iter   5:   -75.31853486301141   -5.09952e-05   1.96491e-03 DIIS
+   @RKS iter   6:   -75.31853570262408   -8.39613e-07   2.63835e-04 DIIS
+   @RKS iter   7:   -75.31853570394226   -1.31818e-09   5.33716e-06 DIIS
+   @RKS iter   8:   -75.31853570394244   -1.84741e-13   1.30732e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -542,12 +565,12 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Doubly Occupied:                                                      
 
-	   1A    -18.702723     2A     -1.047204     3A     -0.547587  
-	   4A     -0.349299     5A     -0.256665  
+	   1A    -18.702715     2A     -1.047211     3A     -0.547585  
+	   4A     -0.349276     5A     -0.256665  
 
 	Virtual:                                                              
 
-	   6A      0.445353     7A      0.556386  
+	   6A      0.445347     7A      0.556393  
 
 	Final Occupation by Irrep:
 	          A 
@@ -555,7 +578,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @RKS Final Energy:   -75.31854591600818
+  @RKS Final Energy:   -75.31853570394244
 
   ==> Properties <==
 
@@ -564,34 +587,36 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6338     Total:     0.6338
+     X:     0.0000      Y:     0.0000      Z:     0.6338     Total:     0.6338
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6109     Total:     1.6109
+     X:     0.0000      Y:     0.0000      Z:     1.6108     Total:     1.6108
 
  Quadrupole Moment: (Debye Ang)
     XX:    -6.1387     YY:    -4.3852     ZZ:    -5.2348
-    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
     XX:    -0.8858     YY:     0.8677     ZZ:     0.0181
-    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.15991  4.15991  0.00000 -0.31983
-       2     H     0.42004  0.42004  0.00000  0.15991
-       3     H     0.42004  0.42004  0.00000  0.15991
+       1     O     4.15992  4.15992  0.00000 -0.31985
+       2     H     0.42004  0.42004  0.00000  0.15992
+       3     H     0.42004  0.42004  0.00000  0.15992
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:13:51 2011
-	user time   =      29.10 seconds =       0.49 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:52:31 2011
+	user time   =      15.39 seconds =       0.26 minutes
 	system time =       0.05 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:13:51 2011
+*** at Sun Aug  7 16:52:31 2011
 
 
          ---------------------------------------------------------
@@ -636,7 +661,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -657,13 +682,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -672,18 +700,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @RKS iter   1:   -73.58121020980791   -1.89469e+01    0.00000e+00 
-   @RKS iter   2:   -75.12092177614477   -1.53971e+00    2.84195e-01 DIIS
-   @RKS iter   3:   -75.31202850911356   -1.91107e-01    7.89698e-02 DIIS
-   @RKS iter   4:   -75.31276786865163   -7.39360e-04    6.22818e-03 DIIS
-   @RKS iter   5:   -75.31281717451648   -4.93059e-05    1.94134e-03 DIIS
-   @RKS iter   6:   -75.31281786034083   -6.85824e-07    2.37814e-04 DIIS
-   @RKS iter   7:   -75.31281786104371   -7.02883e-10    3.94080e-06 DIIS
-   @RKS iter   8:   -75.31281786104390   -1.84741e-13    8.08996e-08 DIIS
+   @RKS iter   1:   -73.58121156982835   -1.89470e+01   0.00000e+00  
+   @RKS iter   2:   -75.12092432441088   -1.53971e+00   2.84196e-01 DIIS
+   @RKS iter   3:   -75.31203276349777   -1.91108e-01   7.89682e-02 DIIS
+   @RKS iter   4:   -75.31277155619053   -7.38793e-04   6.22592e-03 DIIS
+   @RKS iter   5:   -75.31282082413830   -4.92679e-05   1.94042e-03 DIIS
+   @RKS iter   6:   -75.31282151028928   -6.86151e-07   2.37873e-04 DIIS
+   @RKS iter   7:   -75.31282151099271   -7.03423e-10   3.94306e-06 DIIS
+   @RKS iter   8:   -75.31282151099288   -1.70530e-13   8.05398e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -692,12 +724,12 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Doubly Occupied:                                                      
 
-	   1A    -18.901908     2A     -1.039656     3A     -0.535887  
-	   4A     -0.342146     5A     -0.251869  
+	   1A    -18.901907     2A     -1.039660     3A     -0.535889  
+	   4A     -0.342151     5A     -0.251870  
 
 	Virtual:                                                              
 
-	   6A      0.432866     7A      0.543502  
+	   6A      0.432876     7A      0.543499  
 
 	Final Occupation by Irrep:
 	          A 
@@ -705,7 +737,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @RKS Final Energy:   -75.31281786104390
+  @RKS Final Energy:   -75.31282151099288
 
   ==> Properties <==
 
@@ -721,11 +753,11 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
  Quadrupole Moment: (Debye Ang)
     XX:    -6.1350     YY:    -4.3589     ZZ:    -5.2202
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
     XX:    -0.8970     YY:     0.8792     ZZ:     0.0178
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
@@ -735,13 +767,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:14:01 2011
-	user time   =      38.53 seconds =       0.64 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:52:38 2011
+	user time   =      23.01 seconds =       0.38 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:14:01 2011
+*** at Sun Aug  7 16:52:38 2011
 
 
          ---------------------------------------------------------
@@ -786,7 +820,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -807,13 +841,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is B_X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -822,19 +859,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.16581109545533   -1.85316e+01    0.00000e+00 
-   @UKS iter   2:   -74.08225054130983   -9.16439e-01    6.45971e-01 DIIS
-   @UKS iter   3:   -74.94822207057683   -8.65972e-01    4.00572e-01 DIIS
-   @UKS iter   4:   -74.94930117945046   -1.07911e-03    1.88397e-02 DIIS
-   @UKS iter   5:   -74.94933708475975   -3.59053e-05    1.61747e-03 DIIS
-   @UKS iter   6:   -74.94934109166482   -4.00691e-06    5.77354e-04 DIIS
-   @UKS iter   7:   -74.94934127389281   -1.82228e-07    1.60405e-04 DIIS
-   @UKS iter   8:   -74.94934127443393   -5.41121e-10    8.25632e-06 DIIS
-   @UKS iter   9:   -74.94934127443400   -7.10543e-14    2.57428e-10 DIIS
+   @UKS iter   1:   -73.16580763911828   -1.85315e+01   0.00000e+00  
+   @UKS iter   2:   -74.08224887908347   -9.16441e-01   6.45975e-01 DIIS
+   @UKS iter   3:   -74.94825814940610   -8.66009e-01   4.00587e-01 DIIS
+   @UKS iter   4:   -74.94933515484188   -1.07701e-03   1.88288e-02 DIIS
+   @UKS iter   5:   -74.94937097786807   -3.58230e-05   1.61447e-03 DIIS
+   @UKS iter   6:   -74.94937497761060   -3.99974e-06   5.76600e-04 DIIS
+   @UKS iter   7:   -74.94937515986607   -1.82255e-07   1.60380e-04 DIIS
+   @UKS iter   8:   -74.94937516040736   -5.41291e-10   8.25121e-06 DIIS
 
   ==> Post-Iterations <==
 
@@ -843,21 +883,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.450273     2A     -0.782610     3A     -0.334071  
-	   4A     -0.129767     5A     -0.029249  
+	   1A    -18.450318     2A     -0.782593     3A     -0.334067  
+	   4A     -0.129868     5A     -0.029260  
 
 	Alpha Virtual:                                                        
 
-	   6A      0.304252     7A      0.410099  
+	   6A      0.304317     7A      0.410060  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.450273     2A     -0.782610     3A     -0.334071  
-	   4A     -0.129767     5A     -0.029249  
+	   1A    -18.450318     2A     -0.782593     3A     -0.334067  
+	   4A     -0.129868     5A     -0.029260  
 
 	Beta Virtual:                                                         
 
-	   6A      0.304252     7A      0.410099  
+	   6A      0.304317     7A      0.410060  
 
 	Final Occupation by Irrep:
 	          A 
@@ -866,7 +906,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.94934127443400
+  @UKS Final Energy:   -74.94937516040736
 
   ==> Properties <==
 
@@ -878,21 +918,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
      X:    -0.0000      Y:     0.0000      Z:     0.5888     Total:     0.5888
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.4966     Total:     1.4966
+     X:    -0.0000      Y:     0.0000      Z:     1.4965     Total:     1.4965
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.1510     YY:    -4.4803     ZZ:    -5.2766
+    XX:    -6.1511     YY:    -4.4805     ZZ:    -5.2767
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.8484     YY:     0.8224     ZZ:     0.0261
+    XX:    -0.8483     YY:     0.8222     ZZ:     0.0261
     XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.14909  4.14909  0.00000 -0.29819
-       2     H     0.42545  0.42545  0.00000  0.14909
-       3     H     0.42545  0.42545  0.00000  0.14909
+       1     O     4.14905  4.14905  0.00000 -0.29810
+       2     H     0.42547  0.42547  0.00000  0.14905
+       3     H     0.42547  0.42547  0.00000  0.14905
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
@@ -900,13 +940,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.00000
   @S^2 Observed:              -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:14:11 2011
-	user time   =      48.61 seconds =       0.81 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:52:43 2011
+	user time   =      27.37 seconds =       0.46 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:14:11 2011
+*** at Sun Aug  7 16:52:43 2011
 
 
          ---------------------------------------------------------
@@ -951,7 +993,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -971,14 +1013,17 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        1     O     6s 3p // 2s 1p 
        2     H     3s // 1s 
        3     H     3s // 1s 
-
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
 
   Selected Functional is B3LYP.
 
+  ==> Pre-Iterations <==
+
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -987,19 +1032,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.57670119067343   -1.89424e+01    0.00000e+00 
-   @UKS iter   2:   -74.52407242978759   -9.47371e-01    6.37498e-01 DIIS
-   @UKS iter   3:   -75.31683675371998   -7.92764e-01    3.54959e-01 DIIS
-   @UKS iter   4:   -75.31948777587844   -2.65102e-03    1.52034e-02 DIIS
-   @UKS iter   5:   -75.31968359387920   -1.95818e-04    4.25513e-03 DIIS
-   @UKS iter   6:   -75.31969452598972   -1.09321e-05    8.53794e-04 DIIS
-   @UKS iter   7:   -75.31969575544190   -1.22945e-06    4.00123e-04 DIIS
-   @UKS iter   8:   -75.31969575674594   -1.30404e-09    1.29953e-05 DIIS
-   @UKS iter   9:   -75.31969575674589    5.68434e-14    2.72919e-09 DIIS
+   @UKS iter   1:   -73.57669720648647   -1.89424e+01   0.00000e+00  
+   @UKS iter   2:   -74.52406923806895   -9.47372e-01   6.37500e-01 DIIS
+   @UKS iter   3:   -75.31685654535762   -7.92787e-01   3.54972e-01 DIIS
+   @UKS iter   4:   -75.31950625282980   -2.64971e-03   1.52022e-02 DIIS
+   @UKS iter   5:   -75.31970190458617   -1.95652e-04   4.25198e-03 DIIS
+   @UKS iter   6:   -75.31971283302363   -1.09284e-05   8.54027e-04 DIIS
+   @UKS iter   7:   -75.31971405661268   -1.22359e-06   3.99051e-04 DIIS
+   @UKS iter   8:   -75.31971405790691   -1.29423e-09   1.29448e-05 DIIS
 
   ==> Post-Iterations <==
 
@@ -1008,21 +1056,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.840654     2A     -0.916524     3A     -0.427085  
-	   4A     -0.233328     5A     -0.142447  
+	   1A    -18.840683     2A     -0.916512     3A     -0.427084  
+	   4A     -0.233392     5A     -0.142454  
 
 	Alpha Virtual:                                                        
 
-	   6A      0.317890     7A      0.427521  
+	   6A      0.317930     7A      0.427495  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.840654     2A     -0.916524     3A     -0.427085  
-	   4A     -0.233328     5A     -0.142447  
+	   1A    -18.840683     2A     -0.916512     3A     -0.427084  
+	   4A     -0.233392     5A     -0.142454  
 
 	Beta Virtual:                                                         
 
-	   6A      0.317890     7A      0.427521  
+	   6A      0.317930     7A      0.427495  
 
 	Final Occupation by Irrep:
 	          A 
@@ -1031,7 +1079,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -75.31969575674589
+  @UKS Final Energy:   -75.31971405790691
 
   ==> Properties <==
 
@@ -1040,24 +1088,24 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:     0.6324     Total:     0.6324
+     X:    -0.0000      Y:    -0.0000      Z:     0.6324     Total:     0.6324
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:     1.6074     Total:     1.6074
+     X:    -0.0000      Y:    -0.0000      Z:     1.6073     Total:     1.6073
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.1357     YY:    -4.3648     ZZ:    -5.2207
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:    -6.1357     YY:    -4.3649     ZZ:    -5.2208
+    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -0.8953     YY:     0.8756     ZZ:     0.0197
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:    -0.8952     YY:     0.8755     ZZ:     0.0197
+    XY:    -0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.16495  4.16495 -0.00000 -0.32989
-       2     H     0.41753  0.41753  0.00000  0.16495
-       3     H     0.41753  0.41753  0.00000  0.16495
+       1     O     4.16492  4.16492  0.00000 -0.32983
+       2     H     0.41754  0.41754 -0.00000  0.16492
+       3     H     0.41754  0.41754  0.00000  0.16492
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
@@ -1065,13 +1113,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.00000
   @S^2 Observed:              -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:14:32 2011
-	user time   =      69.80 seconds =       1.16 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:52:56 2011
+	user time   =      40.76 seconds =       0.68 minutes
 	system time =       0.07 seconds =       0.00 minutes
-	total time  =         21 seconds =       0.35 minutes
+	total time  =         13 seconds =       0.22 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:14:32 2011
+*** at Sun Aug  7 16:52:56 2011
 
 
          ---------------------------------------------------------
@@ -1116,7 +1166,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -1136,14 +1186,17 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        1     O     6s 3p // 2s 1p 
        2     H     3s // 1s 
        3     H     3s // 1s 
-
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
 
   Selected Functional is wB97.
 
+  ==> Pre-Iterations <==
+
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -1152,18 +1205,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.57267022416453   -1.89384e+01    0.00000e+00 
-   @UKS iter   2:   -75.13435335206037   -1.56168e+00    5.68085e-01 DIIS
-   @UKS iter   3:   -75.31784644193954   -1.83493e-01    1.51373e-01 DIIS
-   @UKS iter   4:   -75.31849405319726   -6.47611e-04    1.25072e-02 DIIS
-   @UKS iter   5:   -75.31854507197446   -5.10188e-05    3.92990e-03 DIIS
-   @UKS iter   6:   -75.31854591468760   -8.42713e-07    5.28691e-04 DIIS
-   @UKS iter   7:   -75.31854591600809   -1.32049e-09    1.06834e-05 DIIS
-   @UKS iter   8:   -75.31854591600822   -1.27898e-13    2.62012e-07 DIIS
+   @UKS iter   1:   -73.57266646350577   -1.89384e+01   0.00000e+00  
+   @UKS iter   2:   -75.13432973999332   -1.56166e+00   5.68089e-01 DIIS
+   @UKS iter   3:   -75.31783716664214   -1.83507e-01   1.51370e-01 DIIS
+   @UKS iter   4:   -75.31848386778715   -6.46701e-04   1.25001e-02 DIIS
+   @UKS iter   5:   -75.31853486301138   -5.09952e-05   3.92982e-03 DIIS
+   @UKS iter   6:   -75.31853570262396   -8.39613e-07   5.27669e-04 DIIS
+   @UKS iter   7:   -75.31853570394225   -1.31828e-09   1.06743e-05 DIIS
+   @UKS iter   8:   -75.31853570394250   -2.55795e-13   2.60426e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -1172,21 +1229,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.702723     2A     -1.047204     3A     -0.547587  
-	   4A     -0.349299     5A     -0.256665  
+	   1A    -18.702715     2A     -1.047211     3A     -0.547585  
+	   4A     -0.349276     5A     -0.256665  
 
 	Alpha Virtual:                                                        
 
-	   6A      0.445353     7A      0.556386  
+	   6A      0.445347     7A      0.556393  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.702723     2A     -1.047204     3A     -0.547587  
-	   4A     -0.349299     5A     -0.256665  
+	   1A    -18.702715     2A     -1.047211     3A     -0.547585  
+	   4A     -0.349276     5A     -0.256665  
 
 	Beta Virtual:                                                         
 
-	   6A      0.445353     7A      0.556386  
+	   6A      0.445347     7A      0.556393  
 
 	Final Occupation by Irrep:
 	          A 
@@ -1195,7 +1252,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -75.31854591600822
+  @UKS Final Energy:   -75.31853570394250
 
   ==> Properties <==
 
@@ -1204,24 +1261,24 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     0.6338     Total:     0.6338
+     X:     0.0000      Y:     0.0000      Z:     0.6338     Total:     0.6338
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     1.6109     Total:     1.6109
+     X:     0.0000      Y:     0.0000      Z:     1.6108     Total:     1.6108
 
  Quadrupole Moment: (Debye Ang)
     XX:    -6.1387     YY:    -4.3852     ZZ:    -5.2348
-    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
     XX:    -0.8858     YY:     0.8677     ZZ:     0.0181
-    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.15991  4.15991 -0.00000 -0.31983
-       2     H     0.42004  0.42004 -0.00000  0.15991
-       3     H     0.42004  0.42004  0.00000  0.15991
+       1     O     4.15992  4.15992 -0.00000 -0.31985
+       2     H     0.42004  0.42004 -0.00000  0.15992
+       3     H     0.42004  0.42004  0.00000  0.15992
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
 
@@ -1229,13 +1286,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.00000
   @S^2 Observed:              -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:15:02 2011
-	user time   =      99.80 seconds =       1.66 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =         30 seconds =       0.50 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:53:22 2011
+	user time   =      66.56 seconds =       1.11 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         26 seconds =       0.43 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:15:02 2011
+*** at Sun Aug  7 16:53:22 2011
 
 
          ---------------------------------------------------------
@@ -1280,7 +1339,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -1301,13 +1360,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -54.63426058898573
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -1316,18 +1378,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       5       5       0
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.58121020980791   -1.89469e+01    0.00000e+00 
-   @UKS iter   2:   -75.12092177614474   -1.53971e+00    5.68390e-01 DIIS
-   @UKS iter   3:   -75.31202850911350   -1.91107e-01    1.57940e-01 DIIS
-   @UKS iter   4:   -75.31276786865162   -7.39360e-04    1.24564e-02 DIIS
-   @UKS iter   5:   -75.31281717451650   -4.93059e-05    3.88267e-03 DIIS
-   @UKS iter   6:   -75.31281786034086   -6.85824e-07    4.75629e-04 DIIS
-   @UKS iter   7:   -75.31281786104375   -7.02897e-10    7.88159e-06 DIIS
-   @UKS iter   8:   -75.31281786104375    0.00000e+00    1.62485e-07 DIIS
+   @UKS iter   1:   -73.58121156982835   -1.89470e+01   0.00000e+00  
+   @UKS iter   2:   -75.12092432441081   -1.53971e+00   5.68391e-01 DIIS
+   @UKS iter   3:   -75.31203276349775   -1.91108e-01   1.57936e-01 DIIS
+   @UKS iter   4:   -75.31277155619053   -7.38793e-04   1.24518e-02 DIIS
+   @UKS iter   5:   -75.31282082413833   -4.92679e-05   3.88084e-03 DIIS
+   @UKS iter   6:   -75.31282151028928   -6.86151e-07   4.75746e-04 DIIS
+   @UKS iter   7:   -75.31282151099278   -7.03494e-10   7.88612e-06 DIIS
+   @UKS iter   8:   -75.31282151099288   -9.94760e-14   1.62385e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -1336,21 +1402,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.901908     2A     -1.039656     3A     -0.535887  
-	   4A     -0.342146     5A     -0.251869  
+	   1A    -18.901907     2A     -1.039660     3A     -0.535889  
+	   4A     -0.342151     5A     -0.251870  
 
 	Alpha Virtual:                                                        
 
-	   6A      0.432866     7A      0.543502  
+	   6A      0.432876     7A      0.543499  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.901908     2A     -1.039656     3A     -0.535887  
-	   4A     -0.342146     5A     -0.251869  
+	   1A    -18.901907     2A     -1.039660     3A     -0.535889  
+	   4A     -0.342151     5A     -0.251870  
 
 	Beta Virtual:                                                         
 
-	   6A      0.432866     7A      0.543502  
+	   6A      0.432876     7A      0.543499  
 
 	Final Occupation by Irrep:
 	          A 
@@ -1359,7 +1425,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -75.31281786104375
+  @UKS Final Energy:   -75.31282151099288
 
   ==> Properties <==
 
@@ -1375,16 +1441,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
  Quadrupole Moment: (Debye Ang)
     XX:    -6.1350     YY:    -4.3589     ZZ:    -5.2202
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
     XX:    -0.8970     YY:     0.8792     ZZ:     0.0178
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     4.16448  4.16448 -0.00000 -0.32895
-       2     H     0.41776  0.41776 -0.00000  0.16448
+       2     H     0.41776  0.41776  0.00000  0.16448
        3     H     0.41776  0.41776  0.00000  0.16448
 
    Total alpha =  5.00000, Total beta =  5.00000, Total charge = -0.00000
@@ -1393,13 +1459,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.00000
   @S^2 Observed:              -0.00000
 
-*** tstop() called on ender at Tue Jun 14 16:15:32 2011
-	user time   =     129.10 seconds =       2.15 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =         30 seconds =       0.50 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:53:48 2011
+	user time   =      92.85 seconds =       1.55 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =         26 seconds =       0.43 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:15:32 2011
+*** at Sun Aug  7 16:53:48 2011
 
 
          ---------------------------------------------------------
@@ -1444,7 +1512,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -1464,14 +1532,17 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        1     O     6s 3p // 2s 1p 
        2     H     3s // 1s 
        3     H     3s // 1s 
-
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
 
   Selected Functional is B_X.
 
+  ==> Pre-Iterations <==
+
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -50.92319053700236
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -1480,18 +1551,22 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       4       4       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.44456474860772   -2.25214e+01    0.00000e+00 
-   @UKS iter   2:   -74.06421122939857   -6.19646e-01    5.73451e-01 DIIS
-   @UKS iter   3:   -74.64375487997897   -5.79544e-01    2.78681e-01 DIIS
-   @UKS iter   4:   -74.64485617935694   -1.10130e-03    1.23214e-02 DIIS
-   @UKS iter   5:   -74.64486620658388   -1.00272e-05    4.37489e-04 DIIS
-   @UKS iter   6:   -74.64486694307074   -7.36487e-07    3.92930e-05 DIIS
-   @UKS iter   7:   -74.64486694773798   -4.66724e-09    2.07549e-05 DIIS
-   @UKS iter   8:   -74.64486694776700   -2.90186e-11    1.80389e-06 DIIS
+   @UKS iter   1:   -73.44456549995594   -2.25214e+01   0.00000e+00  
+   @UKS iter   2:   -74.06431396500645   -6.19748e-01   5.73449e-01 DIIS
+   @UKS iter   3:   -74.64378798753606   -5.79474e-01   2.78683e-01 DIIS
+   @UKS iter   4:   -74.64488977748044   -1.10179e-03   1.23275e-02 DIIS
+   @UKS iter   5:   -74.64489985376849   -1.00763e-05   4.37405e-04 DIIS
+   @UKS iter   6:   -74.64490059255219   -7.38784e-07   3.88443e-05 DIIS
+   @UKS iter   7:   -74.64490059718558   -4.63339e-09   2.06824e-05 DIIS
+   @UKS iter   8:   -74.64490059721459   -2.90044e-11   1.79976e-06 DIIS
 
   ==> Post-Iterations <==
 
@@ -1500,21 +1575,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -19.227404     2A     -1.404097     3A     -0.884431  
-	   4A     -0.738197     5A     -0.715771  
+	   1A    -19.227471     2A     -1.404115     3A     -0.884444  
+	   4A     -0.738227     5A     -0.715838  
 
 	Alpha Virtual:                                                        
 
-	   6A     -0.195462     7A     -0.107900  
+	   6A     -0.195437     7A     -0.107922  
 
 	Beta Occupied:                                                        
 
-	   1A    -19.208457     2A     -1.332505     3A     -0.860790  
-	   4A     -0.678547  
+	   1A    -19.208516     2A     -1.332433     3A     -0.860790  
+	   4A     -0.678719  
 
 	Beta Virtual:                                                         
 
-	   5A     -0.561255     6A     -0.178111     7A     -0.096594  
+	   5A     -0.561230     6A     -0.178005     7A     -0.096638  
 
 	Final Occupation by Irrep:
 	          A 
@@ -1523,7 +1598,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.64486694776700
+  @UKS Final Energy:   -74.64490059721459
 
   ==> Properties <==
 
@@ -1532,38 +1607,40 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     1.0098     Total:     1.0098
+     X:     0.0000      Y:     0.0000      Z:     1.0098     Total:     1.0098
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.5667     Total:     2.5667
+     X:     0.0000      Y:     0.0000      Z:     2.5665     Total:     2.5665
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -4.7245     YY:    -2.3727     ZZ:    -3.9605
-    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+    XX:    -4.7245     YY:    -2.3730     ZZ:    -3.9607
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -1.0386     YY:     1.3132     ZZ:    -0.2746
-    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
+    XX:    -1.0385     YY:     1.3131     ZZ:    -0.2746
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46010  3.37670  1.08340  0.16320
-       2     H     0.26995  0.31165 -0.04170  0.41840
-       3     H     0.26995  0.31165 -0.04170  0.41840
+       1     O     4.46013  3.37656  1.08357  0.16331
+       2     H     0.26993  0.31172 -0.04179  0.41835
+       3     H     0.26993  0.31172 -0.04179  0.41835
 
    Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
 
-  @Spin Contamination Metric:  0.00268
+  @Spin Contamination Metric:  0.00269
   @S^2 Expected:               0.75000
-  @S^2 Observed:               0.75268
+  @S^2 Observed:               0.75269
 
-*** tstop() called on ender at Tue Jun 14 16:15:40 2011
-	user time   =     137.77 seconds =       2.30 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          8 seconds =       0.13 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:53:53 2011
+	user time   =      97.25 seconds =       1.62 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:15:40 2011
+*** at Sun Aug  7 16:53:53 2011
 
 
          ---------------------------------------------------------
@@ -1608,7 +1685,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -1629,13 +1706,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is B3LYP.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -50.92319053700236
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -1644,20 +1724,24 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       4       4       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.79428678662821   -2.28711e+01    0.00000e+00 
-   @UKS iter   2:   -74.45541278842335   -6.61126e-01    5.63373e-01 DIIS
-   @UKS iter   3:   -74.96738597939455   -5.11973e-01    2.43539e-01 DIIS
-   @UKS iter   4:   -74.96776239713402   -3.76418e-04    8.83283e-03 DIIS
-   @UKS iter   5:   -74.96776343124745   -1.03411e-06    6.21040e-04 DIIS
-   @UKS iter   6:   -74.96776344924737   -1.79999e-08    4.49948e-05 DIIS
-   @UKS iter   7:   -74.96776344926559   -1.82183e-11    1.41773e-06 DIIS
-   @UKS iter   8:   -74.96776344926883   -3.24007e-12    7.49721e-07 DIIS
-   @UKS iter   9:   -74.96776344926901   -1.84741e-13    1.57431e-07 DIIS
-   @UKS iter  10:   -74.96776344926894    7.10543e-14    1.42909e-08 DIIS
+   @UKS iter   1:   -73.79428571771700   -2.28711e+01   0.00000e+00  
+   @UKS iter   2:   -74.45546638503539   -6.61181e-01   5.63371e-01 DIIS
+   @UKS iter   3:   -74.96740284084528   -5.11936e-01   2.43542e-01 DIIS
+   @UKS iter   4:   -74.96777888370030   -3.76043e-04   8.82585e-03 DIIS
+   @UKS iter   5:   -74.96777991445451   -1.03075e-06   6.19998e-04 DIIS
+   @UKS iter   6:   -74.96777993230769   -1.78532e-08   4.48941e-05 DIIS
+   @UKS iter   7:   -74.96777993232308   -1.53904e-11   1.37226e-06 DIIS
+   @UKS iter   8:   -74.96777993232614   -3.05533e-12   7.09019e-07 DIIS
+   @UKS iter   9:   -74.96777993232615   -1.42109e-14   1.26646e-07 DIIS
+   @UKS iter  10:   -74.96777993232624   -8.52651e-14   1.24048e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1666,21 +1750,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -19.615258     2A     -1.537181     3A     -0.978396  
-	   4A     -0.841090     5A     -0.819210  
+	   1A    -19.615296     2A     -1.537190     3A     -0.978404  
+	   4A     -0.841107     5A     -0.819249  
 
 	Alpha Virtual:                                                        
 
-	   6A     -0.180485     7A     -0.089469  
+	   6A     -0.180471     7A     -0.089484  
 
 	Beta Occupied:                                                        
 
-	   1A    -19.597326     2A     -1.460438     3A     -0.956049  
-	   4A     -0.783735  
+	   1A    -19.597359     2A     -1.460396     3A     -0.956050  
+	   4A     -0.783831  
 
 	Beta Virtual:                                                         
 
-	   5A     -0.553923     6A     -0.163987     7A     -0.078839  
+	   5A     -0.553912     6A     -0.163927     7A     -0.078865  
 
 	Final Occupation by Irrep:
 	          A 
@@ -1689,7 +1773,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.96776344926894
+  @UKS Final Energy:   -74.96777993232624
 
   ==> Properties <==
 
@@ -1698,24 +1782,24 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     1.0519     Total:     1.0519
+     X:    -0.0000      Y:    -0.0000      Z:     1.0518     Total:     1.0518
 
  Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.6736     Total:     2.6736
+     X:    -0.0000      Y:    -0.0000      Z:     2.6735     Total:     2.6735
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -4.7093     YY:    -2.2607     ZZ:    -3.9035
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XX:    -4.7093     YY:    -2.2608     ZZ:    -3.9036
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -1.0848     YY:     1.3638     ZZ:    -0.2790
-    XY:     0.0000     XZ:    -0.0000     YZ:     0.0000
+    XX:    -1.0847     YY:     1.3637     ZZ:    -0.2790
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.47042  3.39933  1.07109  0.13025
-       2     H     0.26479  0.30034 -0.03555  0.43487
-       3     H     0.26479  0.30034 -0.03555  0.43487
+       1     O     4.47043  3.39925  1.07118  0.13032
+       2     H     0.26478  0.30038 -0.03559  0.43484
+       3     H     0.26478  0.30038 -0.03559  0.43484
 
    Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
 
@@ -1723,13 +1807,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.75000
   @S^2 Observed:               0.75199
 
-*** tstop() called on ender at Tue Jun 14 16:16:04 2011
-	user time   =     161.63 seconds =       2.69 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =         24 seconds =       0.40 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:54:12 2011
+	user time   =     116.76 seconds =       1.95 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =         19 seconds =       0.32 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:16:04 2011
+*** at Sun Aug  7 16:54:12 2011
 
 
          ---------------------------------------------------------
@@ -1774,7 +1860,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -1795,13 +1881,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -50.92319053700236
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -1810,21 +1899,25 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       4       4       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.79378392927897   -2.28706e+01    0.00000e+00 
-   @UKS iter   2:   -74.94190403979518   -1.14812e+00    4.68931e-01 DIIS
-   @UKS iter   3:   -74.97041628520559   -2.85122e-02    5.99344e-02 DIIS
-   @UKS iter   4:   -74.97089198623571   -4.75701e-04    6.98574e-03 DIIS
-   @UKS iter   5:   -74.97091909368734   -2.71075e-05    1.49811e-03 DIIS
-   @UKS iter   6:   -74.97092163393687   -2.54025e-06    2.24918e-04 DIIS
-   @UKS iter   7:   -74.97092173596111   -1.02024e-07    1.08206e-04 DIIS
-   @UKS iter   8:   -74.97092173775251   -1.79139e-09    1.43857e-05 DIIS
-   @UKS iter   9:   -74.97092173776072   -8.21387e-12    1.39921e-07 DIIS
-   @UKS iter  10:   -74.97092173776072    0.00000e+00    7.65095e-08 DIIS
-   @UKS iter  11:   -74.97092173776072    0.00000e+00    1.01434e-08 DIIS
+   @UKS iter   1:   -73.79378198085624   -2.28706e+01   0.00000e+00  
+   @UKS iter   2:   -74.94191797167818   -1.14814e+00   4.68930e-01 DIIS
+   @UKS iter   3:   -74.97042616632409   -2.85082e-02   5.99299e-02 DIIS
+   @UKS iter   4:   -74.97090213197417   -4.75966e-04   6.98522e-03 DIIS
+   @UKS iter   5:   -74.97092933019240   -2.71982e-05   1.49808e-03 DIIS
+   @UKS iter   6:   -74.97093188085272   -2.55066e-06   2.24176e-04 DIIS
+   @UKS iter   7:   -74.97093198299837   -1.02146e-07   1.08283e-04 DIIS
+   @UKS iter   8:   -74.97093198478474   -1.78638e-09   1.43884e-05 DIIS
+   @UKS iter   9:   -74.97093198479287   -8.12861e-12   1.48775e-07 DIIS
+   @UKS iter  10:   -74.97093198479291   -4.26326e-14   7.69315e-08 DIIS
+   @UKS iter  11:   -74.97093198479298   -7.10543e-14   1.05618e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1833,21 +1926,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -19.476080     2A     -1.665480     3A     -1.100907  
-	   4A     -0.955369     5A     -0.938364  
+	   1A    -19.476103     2A     -1.665513     3A     -1.100917  
+	   4A     -0.955388     5A     -0.938354  
 
 	Alpha Virtual:                                                        
 
-	   6A     -0.056059     7A      0.036338  
+	   6A     -0.056073     7A      0.036338  
 
 	Beta Occupied:                                                        
 
-	   1A    -19.473040     2A     -1.590593     3A     -1.073828  
-	   4A     -0.900102  
+	   1A    -19.473066     2A     -1.590523     3A     -1.073838  
+	   4A     -0.900179  
 
 	Beta Virtual:                                                         
 
-	   5A     -0.420208     6A     -0.035043     7A      0.053586  
+	   5A     -0.420118     6A     -0.034966     7A      0.053566  
 
 	Final Occupation by Irrep:
 	          A 
@@ -1856,7 +1949,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.97092173776072
+  @UKS Final Energy:   -74.97093198479298
 
   ==> Properties <==
 
@@ -1865,38 +1958,40 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:    -0.0000      Z:     1.0435     Total:     1.0435
+     X:    -0.0000      Y:     0.0000      Z:     1.0435     Total:     1.0435
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:     2.6523     Total:     2.6523
+     X:    -0.0000      Y:     0.0000      Z:     2.6523     Total:     2.6523
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -4.7154     YY:    -2.3023     ZZ:    -3.9280
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XX:    -4.7154     YY:    -2.3024     ZZ:    -3.9280
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -1.0669     YY:     1.3463     ZZ:    -0.2794
-    XY:    -0.0000     XZ:     0.0000     YZ:    -0.0000
+    XX:    -1.0668     YY:     1.3462     ZZ:    -0.2794
+    XY:    -0.0000     XZ:     0.0000     YZ:     0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46757  3.38561  1.08195  0.14682
-       2     H     0.26622  0.30719 -0.04098  0.42659
-       3     H     0.26622  0.30719 -0.04098  0.42659
+       1     O     4.46761  3.38553  1.08209  0.14686
+       2     H     0.26619  0.30724 -0.04104  0.42657
+       3     H     0.26619  0.30724 -0.04104  0.42657
 
    Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
 
-  @Spin Contamination Metric:  0.00259
+  @Spin Contamination Metric:  0.00260
   @S^2 Expected:               0.75000
-  @S^2 Observed:               0.75259
+  @S^2 Observed:               0.75260
 
-*** tstop() called on ender at Tue Jun 14 16:16:43 2011
-	user time   =     200.04 seconds =       3.33 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =         39 seconds =       0.65 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:54:44 2011
+	user time   =     148.81 seconds =       2.48 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =         32 seconds =       0.53 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:16:43 2011
+*** at Sun Aug  7 16:54:44 2011
 
 
          ---------------------------------------------------------
@@ -1941,7 +2036,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -1962,13 +2057,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -50.92319053700236
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -1977,20 +2075,24 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       5       4       4       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.79844706831727   -2.28753e+01    0.00000e+00 
-   @UKS iter   2:   -74.93347996681118   -1.13503e+00    4.67978e-01 DIIS
-   @UKS iter   3:   -74.96268022498414   -2.92003e-02    6.21227e-02 DIIS
-   @UKS iter   4:   -74.96324261446750   -5.62389e-04    7.89563e-03 DIIS
-   @UKS iter   5:   -74.96326329865866   -2.06842e-05    1.50039e-03 DIIS
-   @UKS iter   6:   -74.96326492216869   -1.62351e-06    2.66920e-04 DIIS
-   @UKS iter   7:   -74.96326500229486   -8.01262e-08    8.87037e-05 DIIS
-   @UKS iter   8:   -74.96326500377403   -1.47917e-09    1.11599e-05 DIIS
-   @UKS iter   9:   -74.96326500377906   -5.03064e-12    1.59273e-07 DIIS
-   @UKS iter  10:   -74.96326500377899    7.10543e-14    4.79073e-08 DIIS
+   @UKS iter   1:   -73.79844871768211   -2.28753e+01   0.00000e+00  
+   @UKS iter   2:   -74.93350040898892   -1.13505e+00   4.67975e-01 DIIS
+   @UKS iter   3:   -74.96269168611383   -2.91913e-02   6.21138e-02 DIIS
+   @UKS iter   4:   -74.96325408256536   -5.62396e-04   7.89478e-03 DIIS
+   @UKS iter   5:   -74.96327480205044   -2.07195e-05   1.49967e-03 DIIS
+   @UKS iter   6:   -74.96327643268056   -1.63063e-06   2.66537e-04 DIIS
+   @UKS iter   7:   -74.96327651295297   -8.02724e-08   8.88326e-05 DIIS
+   @UKS iter   8:   -74.96327651442962   -1.47665e-09   1.11755e-05 DIIS
+   @UKS iter   9:   -74.96327651443464   -5.01643e-12   1.64152e-07 DIIS
+   @UKS iter  10:   -74.96327651443467   -2.84217e-14   4.83101e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -1999,21 +2101,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -19.677346     2A     -1.660227     3A     -1.089821  
-	   4A     -0.950414     5A     -0.931035  
+	   1A    -19.677367     2A     -1.660247     3A     -1.089829  
+	   4A     -0.950429     5A     -0.931043  
 
 	Alpha Virtual:                                                        
 
-	   6A     -0.067716     7A      0.023767  
+	   6A     -0.067717     7A      0.023762  
 
 	Beta Occupied:                                                        
 
-	   1A    -19.665565     2A     -1.580684     3A     -1.063410  
-	   4A     -0.892714  
+	   1A    -19.665589     2A     -1.580633     3A     -1.063419  
+	   4A     -0.892779  
 
 	Beta Virtual:                                                         
 
-	   5A     -0.431371     6A     -0.047316     7A      0.039584  
+	   5A     -0.431309     6A     -0.047257     7A      0.039563  
 
 	Final Occupation by Irrep:
 	          A 
@@ -2022,7 +2124,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.96326500377899
+  @UKS Final Energy:   -74.96327651443467
 
   ==> Properties <==
 
@@ -2037,18 +2139,18 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
      X:    -0.0000      Y:    -0.0000      Z:     2.6741     Total:     2.6741
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -4.7111     YY:    -2.2724     ZZ:    -3.9115
+    XX:    -4.7111     YY:    -2.2725     ZZ:    -3.9116
     XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:    -1.0794     YY:     1.3593     ZZ:    -0.2798
+    XX:    -1.0794     YY:     1.3592     ZZ:    -0.2798
     XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.47116  3.39239  1.07877  0.13646
-       2     H     0.26442  0.30381 -0.03938  0.43177
-       3     H     0.26442  0.30381 -0.03938  0.43177
+       1     O     4.47118  3.39233  1.07885  0.13649
+       2     H     0.26441  0.30384 -0.03943  0.43175
+       3     H     0.26441  0.30384 -0.03943  0.43175
 
    Total alpha =  5.00000, Total beta =  4.00000, Total charge =  1.00000
 
@@ -2056,13 +2158,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.75000
   @S^2 Observed:               0.75241
 
-*** tstop() called on ender at Tue Jun 14 16:17:19 2011
-	user time   =     236.90 seconds =       3.95 minutes
-	system time =       0.13 seconds =       0.00 minutes
-	total time  =         36 seconds =       0.60 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:55:15 2011
+	user time   =     179.20 seconds =       2.99 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =         31 seconds =       0.52 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:17:19 2011
+*** at Sun Aug  7 16:55:15 2011
 
 
          ---------------------------------------------------------
@@ -2107,7 +2211,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -2128,13 +2232,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is B_X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -56.71270665495472
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -2143,19 +2250,23 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       6       5       5       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -72.90296794659149   -1.61903e+01    0.00000e+00 
-   @UKS iter   2:   -74.05210795117530   -1.14914e+00    5.74323e-01 DIIS
-   @UKS iter   3:   -74.40990037418089   -3.57792e-01    2.11513e-01 DIIS
-   @UKS iter   4:   -74.41075562190871   -8.55248e-04    6.82695e-03 DIIS
-   @UKS iter   5:   -74.41082247263547   -6.68507e-05    1.55079e-03 DIIS
-   @UKS iter   6:   -74.41082526663075   -2.79400e-06    5.03938e-04 DIIS
-   @UKS iter   7:   -74.41082527218332   -5.55256e-09    2.18867e-05 DIIS
-   @UKS iter   8:   -74.41082527219508   -1.17666e-11    1.05658e-06 DIIS
-   @UKS iter   9:   -74.41082527219507    1.42109e-14    1.60556e-08 DIIS
+   @UKS iter   1:   -72.90296011727517   -1.61903e+01   0.00000e+00  
+   @UKS iter   2:   -74.05214850202347   -1.14919e+00   5.74327e-01 DIIS
+   @UKS iter   3:   -74.40993289321123   -3.57784e-01   2.11512e-01 DIIS
+   @UKS iter   4:   -74.41078882032379   -8.55927e-04   6.83332e-03 DIIS
+   @UKS iter   5:   -74.41085575105316   -6.69307e-05   1.55201e-03 DIIS
+   @UKS iter   6:   -74.41085854609490   -2.79504e-06   5.04090e-04 DIIS
+   @UKS iter   7:   -74.41085855157867   -5.48377e-09   2.17427e-05 DIIS
+   @UKS iter   8:   -74.41085855159048   -1.18092e-11   1.05808e-06 DIIS
+   @UKS iter   9:   -74.41085855159047   1.42109e-14    1.74737e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2164,21 +2275,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -17.777538     2A     -0.258080     3A      0.166078  
-	   4A      0.334626     5A      0.478440     6A      0.783724  
+	   1A    -17.777580     2A     -0.258142     3A      0.166063  
+	   4A      0.334711     5A      0.478423     6A      0.783643  
 
 	Alpha Virtual:                                                        
 
-	   7A      0.894896  
+	   7A      0.894915  
 
 	Beta Occupied:                                                        
 
-	   1A    -17.762334     2A     -0.215602     3A      0.200859  
-	   4A      0.370208     5A      0.502012  
+	   1A    -17.762371     2A     -0.215583     3A      0.200873  
+	   4A      0.370085     5A      0.502015  
 
 	Beta Virtual:                                                         
 
-	   6A      0.882214     7A      0.940995  
+	   6A      0.882327     7A      0.940946  
 
 	Final Occupation by Irrep:
 	          A 
@@ -2187,7 +2298,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.41082527219507
+  @UKS Final Energy:   -74.41085855159047
 
   ==> Properties <==
 
@@ -2199,21 +2310,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
      X:    -0.0000      Y:    -0.0000      Z:    -0.3874     Total:     0.3874
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:    -0.0000      Z:    -0.9847     Total:     0.9847
+     X:    -0.0000      Y:    -0.0000      Z:    -0.9848     Total:     0.9848
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.9796     YY:    -8.3916     ZZ:    -7.7493
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XX:    -6.9796     YY:    -8.3918     ZZ:    -7.7494
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
-    XX:     0.7272     YY:    -0.6848     ZZ:    -0.0425
-    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
+    XX:     0.7273     YY:    -0.6849     ZZ:    -0.0425
+    XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46820  4.00985  0.45835 -0.47804
-       2     H     0.76590  0.49508  0.27083 -0.26098
-       3     H     0.76590  0.49508  0.27083 -0.26098
+       1     O     4.46821  4.00975  0.45846 -0.47797
+       2     H     0.76589  0.49512  0.27077 -0.26102
+       3     H     0.76589  0.49512  0.27077 -0.26102
 
    Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
 
@@ -2221,13 +2332,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.75000
   @S^2 Observed:               0.75094
 
-*** tstop() called on ender at Tue Jun 14 16:17:29 2011
-	user time   =     246.64 seconds =       4.11 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:55:20 2011
+	user time   =     184.14 seconds =       3.07 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          5 seconds =       0.08 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:17:29 2011
+*** at Sun Aug  7 16:55:20 2011
 
 
          ---------------------------------------------------------
@@ -2272,7 +2385,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -2293,13 +2406,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is B3LYP.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -56.71270665495472
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -2308,19 +2424,23 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       6       5       5       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.32248785353823   -1.66098e+01    0.00000e+00 
-   @UKS iter   2:   -74.52689757363854   -1.20441e+00    5.68177e-01 DIIS
-   @UKS iter   3:   -74.81450989275956   -2.87612e-01    1.81634e-01 DIIS
-   @UKS iter   4:   -74.81551276262188   -1.00287e-03    9.97057e-03 DIIS
-   @UKS iter   5:   -74.81558366127958   -7.08987e-05    1.59942e-03 DIIS
-   @UKS iter   6:   -74.81558460444482   -9.43165e-07    2.61752e-04 DIIS
-   @UKS iter   7:   -74.81558460448032   -3.54987e-11    2.25333e-06 DIIS
-   @UKS iter   8:   -74.81558460448154   -1.22213e-12    4.32926e-07 DIIS
-   @UKS iter   9:   -74.81558460448147    7.10543e-14    1.56574e-08 DIIS
+   @UKS iter   1:   -73.32248176667767   -1.66098e+01   0.00000e+00  
+   @UKS iter   2:   -74.52692718073065   -1.20445e+00   5.68179e-01 DIIS
+   @UKS iter   3:   -74.81453221952097   -2.87605e-01   1.81635e-01 DIIS
+   @UKS iter   4:   -74.81553552833746   -1.00331e-03   9.97265e-03 DIIS
+   @UKS iter   5:   -74.81560648129066   -7.09530e-05   1.60018e-03 DIIS
+   @UKS iter   6:   -74.81560742600007   -9.44709e-07   2.61958e-04 DIIS
+   @UKS iter   7:   -74.81560742603710   -3.70335e-11   2.29356e-06 DIIS
+   @UKS iter   8:   -74.81560742603817   -1.06581e-12   4.37591e-07 DIIS
+   @UKS iter   9:   -74.81560742603817   0.00000e+00    1.50211e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -2329,21 +2449,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.178965     2A     -0.404442     3A      0.066419  
-	   4A      0.222328     5A      0.359100     6A      0.697364  
+	   1A    -18.178996     2A     -0.404484     3A      0.066409  
+	   4A      0.222385     5A      0.359089     6A      0.697307  
 
 	Alpha Virtual:                                                        
 
-	   7A      0.901848  
+	   7A      0.901862  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.161679     2A     -0.356036     3A      0.101367  
-	   4A      0.262659     5A      0.382800  
+	   1A    -18.161706     2A     -0.356025     3A      0.101372  
+	   4A      0.262578     5A      0.382800  
 
 	Beta Virtual:                                                         
 
-	   6A      0.887787     7A      0.950964  
+	   6A      0.887859     7A      0.950931  
 
 	Final Occupation by Irrep:
 	          A 
@@ -2352,7 +2472,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.81558460448147
+  @UKS Final Energy:   -74.81560742603817
 
   ==> Properties <==
 
@@ -2361,24 +2481,24 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:    -0.0000      Y:     0.0000      Z:    -0.3655     Total:     0.3655
+     X:     0.0000      Y:    -0.0000      Z:    -0.3655     Total:     0.3655
 
  Dipole Moment: (Debye)
-     X:    -0.0000      Y:     0.0000      Z:    -0.9291     Total:     0.9291
+     X:     0.0000      Y:    -0.0000      Z:    -0.9291     Total:     0.9291
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.9703     YY:    -8.3229     ZZ:    -7.7160
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XX:    -6.9703     YY:    -8.3231     ZZ:    -7.7161
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
     XX:     0.6995     YY:    -0.6532     ZZ:    -0.0463
-    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+    XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46598  4.03147  0.43452 -0.49745
-       2     H     0.76701  0.48427  0.28274 -0.25127
-       3     H     0.76701  0.48427  0.28274 -0.25127
+       1     O     4.46600  4.03140  0.43460 -0.49739
+       2     H     0.76700  0.48430  0.28270 -0.25130
+       3     H     0.76700  0.48430  0.28270 -0.25130
 
    Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
 
@@ -2386,13 +2506,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.75000
   @S^2 Observed:               0.75154
 
-*** tstop() called on ender at Tue Jun 14 16:17:51 2011
-	user time   =     268.07 seconds =       4.47 minutes
-	system time =       0.15 seconds =       0.00 minutes
-	total time  =         22 seconds =       0.37 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:55:32 2011
+	user time   =     197.02 seconds =       3.28 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =         12 seconds =       0.20 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:17:51 2011
+*** at Sun Aug  7 16:55:32 2011
 
 
          ---------------------------------------------------------
@@ -2437,7 +2559,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -2458,13 +2580,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -56.71270665495472
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -2473,19 +2598,23 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       6       5       5       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.28509506168849   -1.65724e+01    0.00000e+00 
-   @UKS iter   2:   -74.71583634712795   -1.43074e+00    5.09777e-01 DIIS
-   @UKS iter   3:   -74.79005717791269   -7.42208e-02    8.09365e-02 DIIS
-   @UKS iter   4:   -74.80014136329213   -1.00842e-02    1.74849e-02 DIIS
-   @UKS iter   5:   -74.80110867331567   -9.67310e-04    6.25955e-03 DIIS
-   @UKS iter   6:   -74.80111666254092   -7.98923e-06    7.80288e-04 DIIS
-   @UKS iter   7:   -74.80111667525884   -1.27179e-08    1.19522e-05 DIIS
-   @UKS iter   8:   -74.80111667560240   -3.43562e-10    8.91305e-06 DIIS
-   @UKS iter   9:   -74.80111667560423   -1.83320e-12    3.31133e-07 DIIS
+   @UKS iter   1:   -73.28508973376513   -1.65724e+01   0.00000e+00  
+   @UKS iter   2:   -74.71581475624917   -1.43073e+00   5.09786e-01 DIIS
+   @UKS iter   3:   -74.79004068876782   -7.42259e-02   8.09426e-02 DIIS
+   @UKS iter   4:   -74.80012267530395   -1.00820e-02   1.74829e-02 DIIS
+   @UKS iter   5:   -74.80109092558556   -9.68250e-04   6.26229e-03 DIIS
+   @UKS iter   6:   -74.80109891001970   -7.98443e-06   7.79749e-04 DIIS
+   @UKS iter   7:   -74.80109892267832   -1.26586e-08   1.19428e-05 DIIS
+   @UKS iter   8:   -74.80109892301944   -3.41117e-10   8.87139e-06 DIIS
+   @UKS iter   9:   -74.80109892302114   -1.70530e-12   3.22197e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -2494,21 +2623,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.035849     2A     -0.526758     3A     -0.057883  
-	   4A      0.108091     5A      0.242945     6A      0.595298  
+	   1A    -18.035840     2A     -0.526757     3A     -0.057875  
+	   4A      0.108089     5A      0.242945     6A      0.595320  
 
 	Alpha Virtual:                                                        
 
-	   7A      1.021913  
+	   7A      1.021910  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.028447     2A     -0.488502     3A     -0.022675  
-	   4A      0.142608     5A      0.267594  
+	   1A    -18.028445     2A     -0.488501     3A     -0.022672  
+	   4A      0.142630     5A      0.267591  
 
 	Beta Virtual:                                                         
 
-	   6A      1.011660     7A      1.075688  
+	   6A      1.011647     7A      1.075699  
 
 	Final Occupation by Irrep:
 	          A 
@@ -2517,7 +2646,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.80111667560423
+  @UKS Final Energy:   -74.80109892302114
 
   ==> Properties <==
 
@@ -2532,7 +2661,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
      X:     0.0000      Y:    -0.0000      Z:    -0.9468     Total:     0.9468
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.9747     YY:    -8.3573     ZZ:    -7.7352
+    XX:    -6.9747     YY:    -8.3573     ZZ:    -7.7351
     XY:     0.0000     XZ:    -0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
@@ -2541,9 +2670,9 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46922  4.01650  0.45272 -0.48572
-       2     H     0.76539  0.49175  0.27364 -0.25714
-       3     H     0.76539  0.49175  0.27364 -0.25714
+       1     O     4.46923  4.01651  0.45272 -0.48574
+       2     H     0.76539  0.49174  0.27364 -0.25713
+       3     H     0.76539  0.49174  0.27364 -0.25713
 
    Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
 
@@ -2551,13 +2680,15 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.75000
   @S^2 Observed:               0.75097
 
-*** tstop() called on ender at Tue Jun 14 16:18:24 2011
-	user time   =     301.53 seconds =       5.03 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =         33 seconds =       0.55 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:56:00 2011
+	user time   =     224.70 seconds =       3.74 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =         28 seconds =       0.47 minutes
 
 *** tstart() called on ender
-*** at Tue Jun 14 16:18:24 2011
+*** at Sun Aug  7 16:56:00 2011
 
 
          ---------------------------------------------------------
@@ -2602,7 +2733,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   DIIS enabled.
   MOM disabled.
   Guess Type is CORE.
-  Energy threshold   = 1.00e-10
+  Energy threshold   = 1.00e-08
   Density threshold  = 1.00e-08
   Integral threshold = 0.00e+00
 
@@ -2623,13 +2754,16 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
        2     H     3s // 1s 
        3     H     3s // 1s 
 
-  4968 out of 90600 grid points eliminated,  5.483% elimination.
-
-
   Selected Functional is wB97X.
+
+  ==> Pre-Iterations <==
 
   Minimum eigenvalue in the overlap matrix is 3.7028395658E-01.
   Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial UKS energy:   -56.71270665495472
+
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
@@ -2638,19 +2772,23 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
     Total       7       7       6       5       5       1
    -------------------------------------------------------
 
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
   ==> Iterations <==
 
-                        Total Energy        Delta E      Density RMS
+                        Total Energy        Delta E     Density RMS
 
-   @UKS iter   1:   -73.29374901565477   -1.65810e+01    0.00000e+00 
-   @UKS iter   2:   -74.68796972775517   -1.39422e+00    5.25852e-01 DIIS
-   @UKS iter   3:   -74.79060718673989   -1.02637e-01    1.00790e-01 DIIS
-   @UKS iter   4:   -74.79694689880711   -6.33971e-03    1.46696e-02 DIIS
-   @UKS iter   5:   -74.79777392894285   -8.27030e-04    5.31020e-03 DIIS
-   @UKS iter   6:   -74.79778340582482   -9.47688e-06    7.73248e-04 DIIS
-   @UKS iter   7:   -74.79778345315580   -4.73310e-08    3.31164e-05 DIIS
-   @UKS iter   8:   -74.79778345522428   -2.06848e-09    1.44379e-05 DIIS
-   @UKS iter   9:   -74.79778345522850   -4.22062e-12    5.38914e-07 DIIS
+   @UKS iter   1:   -73.29374837429053   -1.65810e+01   0.00000e+00  
+   @UKS iter   2:   -74.68798111379601   -1.39423e+00   5.25848e-01 DIIS
+   @UKS iter   3:   -74.79060401294143   -1.02623e-01   1.00782e-01 DIIS
+   @UKS iter   4:   -74.79694441835041   -6.34041e-03   1.46691e-02 DIIS
+   @UKS iter   5:   -74.79777203935230   -8.27621e-04   5.31168e-03 DIIS
+   @UKS iter   6:   -74.79778151039710   -9.47104e-06   7.72975e-04 DIIS
+   @UKS iter   7:   -74.79778155729636   -4.68993e-08   3.28850e-05 DIIS
+   @UKS iter   8:   -74.79778155932433   -2.02797e-09   1.43218e-05 DIIS
+   @UKS iter   9:   -74.79778155932816   -3.82272e-12   5.13381e-07 DIIS
 
   ==> Post-Iterations <==
 
@@ -2659,21 +2797,21 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
 	Alpha Occupied:                                                       
 
-	   1A    -18.241010     2A     -0.526414     3A     -0.046061  
-	   4A      0.112527     5A      0.246818     6A      0.602084  
+	   1A    -18.241003     2A     -0.526427     3A     -0.046059  
+	   4A      0.112543     5A      0.246819     6A      0.602083  
 
 	Alpha Virtual:                                                        
 
-	   7A      1.011374  
+	   7A      1.011376  
 
 	Beta Occupied:                                                        
 
-	   1A    -18.227560     2A     -0.481359     3A     -0.010842  
-	   4A      0.150698     5A      0.271778  
+	   1A    -18.227555     2A     -0.481359     3A     -0.010844  
+	   4A      0.150693     5A      0.271780  
 
 	Beta Virtual:                                                         
 
-	   6A      0.998383     7A      1.062483  
+	   6A      0.998396     7A      1.062480  
 
 	Final Occupation by Irrep:
 	          A 
@@ -2682,7 +2820,7 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
   Energy converged.
 
-  @UKS Final Energy:   -74.79778345522850
+  @UKS Final Energy:   -74.79778155932816
 
   ==> Properties <==
 
@@ -2691,13 +2829,13 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:     0.0000      Y:    -0.0000      Z:    -0.3678     Total:     0.3678
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3677     Total:     0.3677
 
  Dipole Moment: (Debye)
-     X:     0.0000      Y:    -0.0000      Z:    -0.9347     Total:     0.9347
+     X:    -0.0000      Y:    -0.0000      Z:    -0.9347     Total:     0.9347
 
  Quadrupole Moment: (Debye Ang)
-    XX:    -6.9722     YY:    -8.3376     ZZ:    -7.7245
+    XX:    -6.9722     YY:    -8.3376     ZZ:    -7.7244
     XY:     0.0000     XZ:     0.0000     YZ:    -0.0000
 
  Traceless Quadrupole Moment: (Debye Ang)
@@ -2706,9 +2844,9 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
 
  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
-       1     O     4.46883  4.02332  0.44551 -0.49215
-       2     H     0.76559  0.48834  0.27725 -0.25393
-       3     H     0.76559  0.48834  0.27725 -0.25393
+       1     O     4.46884  4.02331  0.44553 -0.49215
+       2     H     0.76558  0.48834  0.27723 -0.25392
+       3     H     0.76558  0.48834  0.27723 -0.25392
 
    Total alpha =  6.00000, Total beta =  5.00000, Total charge = -1.00000
 
@@ -2716,9 +2854,11 @@ compare_values(E44,V44, 3, "UKS -1 2 wB97X Energy") #TEST
   @S^2 Expected:               0.75000
   @S^2 Observed:               0.75113
 
-*** tstop() called on ender at Tue Jun 14 16:18:58 2011
-	user time   =     335.30 seconds =       5.59 minutes
-	system time =       0.17 seconds =       0.00 minutes
-	total time  =         34 seconds =       0.57 minutes
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ender at Sun Aug  7 16:56:31 2011
+	user time   =     255.06 seconds =       4.25 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =         31 seconds =       0.52 minutes
 
 *** PSI4 exiting successfully, buy a developer a beer!
