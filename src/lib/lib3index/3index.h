@@ -6,5 +6,7 @@
 #include "cubature.h"
 #include "denominator.h"
 #include "schwarz.h"
+#include "cholesky.h"
+#include "qr.h"
 
 #endif

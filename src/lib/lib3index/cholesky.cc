@@ -1,7 +1,7 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <math.h>
-#include <limits.h>
+#include <limits>
 #include <vector>
 #include "cholesky.h"
 
@@ -21,8 +21,10 @@ void Cholesky::choleskify()
     Q_ = 0;
 
     // Memory constraint on rows
-    ULI max_rows_ULI = (int) ((memory_ - n) / (2L * n));
-    int max_rows = (max_rows_ULI > INT_MAX ? INT_MAX : max_rows);
+    int max_int = std::numeric_limits<int>::max();
+
+    ULI max_rows_ULI = ((memory_ - n) / (2L * n));
+    int max_rows = (max_rows_ULI > max_int ? max_int : max_rows_ULI);
 
     // Get the diagonal (Q|Q)^(0)
     double* diag = new double[n];
@@ -161,7 +163,7 @@ void CholeskyERI::compute_diagonal(double* target)
 
             for (int om = 0; om < nM; om++) {
                 for (int on = 0; on < nN; on++) {
-                    target[om * basisset_->nbf() + on] = 
+                    target[(om + mstart) * basisset_->nbf() + (on + nstart)] = 
                         buffer[om * nN * nM * nN + on * nM * nN + om * nN + on];
                 }
             } 
@@ -175,7 +177,7 @@ void CholeskyERI::compute_row(int row, double* target)
     int r = row / basisset_->nbf();
     int s = row % basisset_->nbf();
     int R = basisset_->function_to_shell(r);
-    int S = basisset_->function_to_shell(S);
+    int S = basisset_->function_to_shell(s);
 
     int nR = basisset_->shell(R)->nfunction();
     int nS = basisset_->shell(S)->nfunction();
@@ -197,7 +199,7 @@ void CholeskyERI::compute_row(int row, double* target)
 
             for (int om = 0; om < nM; om++) {
                 for (int on = 0; on < nN; on++) {
-                    target[om * basisset_->nbf() + on] = 
+                    target[(om + mstart) * basisset_->nbf() + (on + nstart)] = 
                         buffer[om * nN * nR * nS + on * nR * nS + oR * nS + os];
                 }
             } 
@@ -257,6 +259,89 @@ void CholeskyMP2::compute_row(int row, double* target)
                 (symmetric_ ? sqrt(evp[a] + evp[b] - eop[i] - eop[j]) : (evp[a] + evp[b] - eop[i] - eop[j]));
         }
     }
+}
+
+CholeskyDelta::CholeskyDelta(
+    boost::shared_ptr<Vector> eps_aocc, 
+    boost::shared_ptr<Vector> eps_avir,
+    double delta, unsigned long int memory) :
+    eps_aocc_(eps_aocc), eps_avir_(eps_avir), 
+    Cholesky(delta, memory)
+{
+}
+CholeskyDelta::~CholeskyDelta()
+{
+}
+int CholeskyDelta::N() 
+{
+    return eps_aocc_->dimpi()[0] * eps_avir_->dimpi()[0];
+}
+void CholeskyDelta::compute_diagonal(double* target)
+{
+    int naocc = eps_aocc_->dimpi()[0];
+    int navir = eps_avir_->dimpi()[0];
+
+    double* eop = eps_aocc_->pointer();
+    double* evp = eps_avir_->pointer();
+
+    for (int i = 0, ia = 0; i < naocc; i++) {
+        for (int a = 0; a < navir; a++, ia++) {
+            target[ia] = 1.0 / (2.0 * (evp[a] - eop[i]));
+        }
+    }
+}
+void CholeskyDelta::compute_row(int row, double* target)
+{
+    int naocc = eps_aocc_->dimpi()[0];
+    int navir = eps_avir_->dimpi()[0];
+
+    int j = row / navir;
+    int b = row % navir;
+
+    double* eop = eps_aocc_->pointer();
+    double* evp = eps_avir_->pointer();
+
+    for (int i = 0, ia = 0; i < naocc; i++) {
+        for (int a = 0; a < navir; a++, ia++) {
+            target[ia] = 1.0 / (evp[a] + evp[b] - eop[i] - eop[j]);
+        }
+    }
+}
+
+CholeskyLocal::CholeskyLocal(
+    boost::shared_ptr<Matrix> C, 
+    double delta, unsigned long int memory) :
+    C_(C), Cholesky(delta, memory)
+{
+}
+CholeskyLocal::~CholeskyLocal()
+{
+}
+int CholeskyLocal::N() 
+{
+    return C_->rowspi()[0]; 
+}
+void CholeskyLocal::compute_diagonal(double* target)
+{
+    int n = C_->rowspi()[0];
+    int nocc = C_->colspi()[0];
+
+    double** Cp = C_->pointer();
+
+    for (int m = 0; m < n; m++) {
+        target[m] = C_DDOT(nocc, Cp[m], 1, Cp[m], 1); 
+    } 
+}
+void CholeskyLocal::compute_row(int row, double* target)
+{
+    int n = C_->rowspi()[0];
+    int nocc = C_->colspi()[0];
+
+    double** Cp = C_->pointer();
+
+    for (int m = 0; m < n; m++) {
+        target[m] = C_DDOT(nocc, Cp[m], 1, Cp[row], 1); 
+    } 
 }
 
 } // Namespace psi
