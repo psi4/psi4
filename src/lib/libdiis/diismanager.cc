@@ -176,6 +176,8 @@ DIISManager::add_entry(int numQuantities, ...)
     if(_componentSizes.size() != numQuantities)
         throw SanityCheckError("The number of parameters passed to the set_size routines"
                                " and add_entry are inconsistent", __FILE__, __LINE__);
+
+    timer_on("DIISManager::add_entry");
     dpdfile2 *file2;
     dpdbuf4 *buf4;
     Vector *vector;
@@ -267,6 +269,8 @@ DIISManager::add_entry(int numQuantities, ...)
     for(int i = 0; i < _subspace.size(); ++i)
         if(i != entryID) _subspace[i]->invalidate_dot(entryID);
 
+    timer_off("DIISManager::add_entry");
+
     return true;
 }
 
@@ -316,6 +320,9 @@ bool
 DIISManager::extrapolate(int numQuantities, ...)
 {
     if(!_subspace.size()) return false;
+
+    timer_on("DIISManager::extrapolate");
+
     int dimension = _subspace.size() + 1;
     boost::shared_ptr<Matrix> B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
     double **bMatrix = B->pointer();
@@ -326,6 +333,8 @@ DIISManager::extrapolate(int numQuantities, ...)
     int *pivots = init_int_array(dimension);
     for (int i = 0; i < dimension; i++)
         pivots[i] = i;
+
+    timer_on("DIISManager::extrapolate: bMatrix setup");
 
     for(int i = 0; i < _subspace.size(); ++i){
         coefficients[i] = 0.0;
@@ -352,12 +361,24 @@ DIISManager::extrapolate(int numQuantities, ...)
     force[_subspace.size()] = 1.0;
     bMatrix[_subspace.size()][_subspace.size()] = 0.0;
 
+    timer_off("DIISManager::extrapolate: bMatrix setup");
+    timer_on("DIISManager::extrapolate: bMatrix pseudoinverse");
+
     // Form the pseudoinverse
 //    B->print();
     B->power(-1.0, 1.0E-16);
 //    B->print();
+
+    timer_off("DIISManager::extrapolate: bMatrix pseudoinverse");
+
+    timer_on("DIISManager::extrapolate: matrix-vector mult");
+
     // Multiply pseudoinverse by forcing vector to get coefficients
     C_DGEMV('n',dimension,dimension,1.0,bMatrix[0],dimension,force,1,0.0,coefficients,1);
+
+    timer_off("DIISManager::extrapolate: matrix-vector mult");
+
+    timer_on("DIISManager::extrapolate: form new data");
 
     dpdfile2 *file2;
     dpdbuf4 *buf4;
@@ -449,10 +470,16 @@ DIISManager::extrapolate(int numQuantities, ...)
         if(_storagePolicy == OnDisk) _subspace[n]->free_vector_memory();
         va_end(args);
     }
+
+    timer_off("DIISManager::extrapolate: form new data");
+
     if(print > 2) fprintf(outfile, "\n");
     free(coefficients);
     free(force);
     free(pivots);
+
+    timer_off("DIISManager::extrapolate");
+
     return true;
 }
 
