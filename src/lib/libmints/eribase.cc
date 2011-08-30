@@ -932,7 +932,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // The following two functions time themselves.
 
     // Normalize the integrals for angular momentum
-    normalize_am(s1, s2, s3, s4);
+    //normalize_am(s1, s2, s3, s4);
 
     // Transform the integrals into pure angular momentum
     if (!force_cartesian_)
@@ -1323,7 +1323,7 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 //    int center_l = s4->ncenter();
 
     // Normalize the 12 types of integrals
-    normalize_am(s1, s2, s3, s4, ERI_GRADIENT_NTYPE);
+    //normalize_am(s1, s2, s3, s4, ERI_GRADIENT_NTYPE);
 
 //    for (int z=0; z<size; ++z)
 //        fprintf(outfile, " A%d %20.14lf\n", center_i, source_[z + 0  * size]);
