@@ -20,6 +20,8 @@ void
 IntegralTransform::transform_tei_second_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
                                              const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4)
 {
+    check_initialized();
+
     char *label = new char[100];
 
     // Grab the transformation coefficients

@@ -19,6 +19,8 @@ using namespace boost;
 void
 IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2)
 {
+    check_initialized();
+
     // This can be safely called - it returns immediately if the SO ints are already sorted
     presort_so_tei();
 
