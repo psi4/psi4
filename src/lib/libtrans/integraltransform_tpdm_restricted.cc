@@ -18,6 +18,8 @@ using namespace psi;
 void
 IntegralTransform::backtransform_tpdm_restricted()
 {
+    check_initialized();
+
     // This can be safely called - it returns immediately if the MO TPDM is already sorted
     presort_mo_tpdm_restricted();
 

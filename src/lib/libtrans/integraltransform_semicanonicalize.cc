@@ -17,6 +17,8 @@ using namespace psi;
 void
 IntegralTransform::semicanonicalize()
 {
+    check_initialized();
+
     // C will hold the ROHF eigenvector, which is currently in _Ca
     double ***C = new double**[_nirreps];
 

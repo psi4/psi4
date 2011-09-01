@@ -21,6 +21,7 @@ using namespace psi;
 void
 IntegralTransform::backtransform_density()
 {
+    check_initialized();
     // This limitation can be remedied by accounting for the fact that Pitzer orbital numbering is not
     // dense, so certain quantities must be alloc'd for the full MO space.  It's no limitation, though
     if(_frozenOrbitals != None)

@@ -28,6 +28,8 @@ void
 IntegralTransform::transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
                                  const shared_ptr<MOSpace> s3, const shared_ptr<MOSpace> s4)
 {
+    check_initialized();
+
     /* The only difficulty here is that we have to figure out which integrals are unique,
      * which requires knowing the allowed permutations.  This is easy - it's just a bunch of
      * if statements, checking things like e.g. "if s1==s2" to see if bra indices can be permuted.

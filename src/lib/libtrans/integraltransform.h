@@ -7,7 +7,7 @@
 #include <string>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
-#include "psifiles.h"
+#include <psifiles.h>
 #include "mospace.h"
 
 #ifndef INDEX
@@ -157,6 +157,7 @@ class IntegralTransform{
         void set_psio(boost::shared_ptr<PSIO> psio) {_psio = psio;}
 
     protected:
+        void check_initialized();
         void semicanonicalize();
         void read_moinfo();
         void process_eigenvectors();
@@ -173,6 +174,9 @@ class IntegralTransform{
                                  int &s, double value, bool symmetrize = false);
         void idx_error(const char *message, int p, int q, int r, int s,
                        int pq, int rs, int pq_sym, int rs_sym);
+
+        // Has this instance been initialized yet?
+        bool _initialized;
 
         // Pointer to the PSIO object to use for file I/O
         boost::shared_ptr<PSIO>  _psio;
