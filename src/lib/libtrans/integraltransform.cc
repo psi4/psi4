@@ -18,36 +18,59 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
                                      MOOrdering moOrdering,
                                      FrozenOrbitals frozenOrbitals,
                                      bool init):
+            _initialized(false),
+            _psio(_default_psio_lib_),
             _chkpt(chkpt),
             _transformationType(transformationType),
+            _uniqueSpaces(spaces),
             _moOrdering(moOrdering),
             _outputType(outputType),
-            _uniqueSpaces(spaces),
-            _alreadyPresorted(false),
             _frozenOrbitals(frozenOrbitals),
-            _psio(_default_psio_lib_),
+            _alreadyPresorted(false),
+            _dpdIntFile(PSIF_LIBTRANS_DPD),
+            _aHtIntFile(PSIF_LIBTRANS_A_HT),
+            _bHtIntFile(PSIF_LIBTRANS_B_HT),
+            _nirreps(0),
+            _nmo(0),
+            _nso(0),
+            _nTriSo(0),
+            _nTriMo(0),
+            _nfzc(0),
+            _nfzv(0),
+            _spaces(0),
+            _labels(0),
+            _tolerance(1.0E-16),
+            _memory(250 * 1024 * 1024),
+            _moIntFileAA(0),
+            _moIntFileAB(0),
+            _moIntFileBB(0),
+            _myDPDNum(1),
+            _print(1),
+            _zeros(0),
+            _sopi(0),
+            _sosym(0),
+            _mopi(0),
+            _clsdpi(0),
+            _openpi(0),
+            _frzcpi(0),
+            _frzvpi(0),
+            _cacheFiles(0),
+            _cacheList(0),
             _Ca(NULL),
             _Cb(NULL),
+            _keepIwlSoInts(false),
+            _keepIwlMoTpdm(true),
+            _keepDpdSoInts(false),
+            _keepDpdMoTpdm(true),
+            _keepHtInts(true),
+            _keepHtTpdm(true),
             _tpdmAlreadyPresorted(false)
 {
     // Implement set/get functions to customize any of this stuff.  Delayed initialization
     // is possible in case any of these variables need to be changed before setup.
-    _myDPDNum      = 1;
-    _print         = 1;
-    _memory        = 250 * 1024 * 1024;
-    _tolerance     = 1.0E-16;
-    _keepDpdSoInts = false;
-    _keepIwlSoInts = false;
-    _keepIwlMoTpdm = true;
-    _keepDpdMoTpdm = true;
-    _keepHtInts    = true;
-    _keepHtTpdm    = true;
     _printTei      = _print > 5;
     _useIWL        = _outputType == IWLAndDPD || _outputType == IWLOnly;
     _useDPD        = _outputType == IWLAndDPD || _outputType == DPDOnly;
-    _dpdIntFile    = PSIF_LIBTRANS_DPD;
-    _aHtIntFile    = PSIF_LIBTRANS_A_HT;
-    _bHtIntFile    = PSIF_LIBTRANS_B_HT;
     _iwlAAIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
     _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
@@ -99,6 +122,7 @@ IntegralTransform::initialize()
     // Return DPD control to the user
     dpd_set_default(currentActiveDPD);
 
+    _initialized = true;
 }
 
 
@@ -121,9 +145,17 @@ IntegralTransform::~IntegralTransform()
         delete [] _Cb;
     }
 
-
-    dpd_close(_myDPDNum);
-    free_int_matrix(_cacheList);
-    free(_cacheFiles);
-    free(_zeros);
+    if (_initialized) {
+        dpd_close(_myDPDNum);
+        free_int_matrix(_cacheList);
+        free(_cacheFiles);
+        free(_zeros);
+    }
 }
+
+void IntegralTransform::check_initialized()
+{
+    if (_initialized == false)
+        throw PSIEXCEPTION("IntegralTransform::check_initialized: This instances is not initialized.");
+}
+

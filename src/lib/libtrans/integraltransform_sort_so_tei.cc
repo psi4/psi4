@@ -20,6 +20,8 @@ using namespace psi;
 void
 IntegralTransform::presort_so_tei()
 {
+    check_initialized();
+
     if(_alreadyPresorted){
         if(_print>5)
             fprintf(outfile, "\tSO integrals are already sorted, moving on...\n");

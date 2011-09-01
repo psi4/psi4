@@ -24,6 +24,8 @@ void
 IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace> s2,
                                  const char *label)
 {
+    check_initialized();
+
     double *soInts = init_array(_nTriSo);
     double *moInts = init_array(_nTriMo);
     double *T = init_array(_nTriSo);
