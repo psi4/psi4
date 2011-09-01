@@ -18,6 +18,8 @@ using namespace psi;
 void
 IntegralTransform::presort_mo_tpdm_restricted()
 {
+    check_initialized();
+
     int nDocc = 0;
     for(int h = 0; h < _nirreps; ++h) nDocc += _clsdpi[h];
 
