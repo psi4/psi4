@@ -218,6 +218,9 @@ public:
     /// Destructor, frees memory
     ~SimpleVector();
 
+    /// Other vector initializer
+    void init(int dim);
+
     /// Set vector_ to vec
     void set(double *vec);
     /// Returns a pointer to the vector's contents
