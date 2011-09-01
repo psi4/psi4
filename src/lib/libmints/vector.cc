@@ -330,6 +330,12 @@ SimpleVector::~SimpleVector() {
     release();
 }
 
+void SimpleVector::init(int dim)
+{
+    dim_ = dim;
+    alloc();
+}
+
 void SimpleVector::alloc() {
     if (vector_)
         release();
