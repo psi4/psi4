@@ -76,7 +76,7 @@ void IntVector::init(int nirreps, int *dimpi)
 void IntVector::alloc() {
     if (vector_)
         release();
-    
+
     vector_ = (int**)malloc(sizeof(int*) * nirrep_);
     for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h]) {
@@ -89,7 +89,7 @@ void IntVector::alloc() {
 void IntVector::release() {
     if (!vector_)
         return;
-    
+
     for (int h=0; h<nirrep_; ++h) {
         if (dimpi_[h])
             delete[] (vector_[h]);
@@ -136,7 +136,7 @@ void IntVector::copy(const IntVector &rhs) {
 
 void IntVector::set(int *vec) {
     int h, i, ij;
-    
+
     ij = 0;
     for (h=0; h<nirrep_; ++h) {
         for (i=0; i<dimpi_[h]; ++i) {
@@ -164,7 +164,7 @@ int *IntVector::to_block_vector() {
     size_t size=0;
     for (int h=0; h<nirrep_; ++h)
         size += dimpi_[h];
-    
+
     int *temp = new int[size];
     size_t offset = 0;
     for (int h=0; h<nirrep_; ++h) {
@@ -173,7 +173,7 @@ int *IntVector::to_block_vector() {
         }
         offset += dimpi_[h];
     }
-    
+
     return temp;
 }
 
@@ -202,10 +202,15 @@ SimpleIntVector::~SimpleIntVector() {
     release();
 }
 
+void SimpleIntVector::init(int dim) {
+    dim_ = dim;
+    alloc();
+}
+
 void SimpleIntVector::alloc() {
     if (vector_)
         release();
-    
+
     vector_ = new int[dim_];
     memset(vector_, 0, sizeof(int) * dim_);
 }
@@ -213,7 +218,7 @@ void SimpleIntVector::alloc() {
 void SimpleIntVector::release() {
     if (!vector_)
         return;
-    
+
     delete[] (vector_);
     vector_ = NULL;
 }
@@ -234,7 +239,7 @@ void SimpleIntVector::copy(const SimpleIntVector *rhs) {
 
 void SimpleIntVector::set(int *vec) {
     int i;
-    
+
     for (i=0; i<dim_; ++i) {
         vector_[i] = vec[i];
     }
@@ -251,7 +256,7 @@ int *SimpleIntVector::to_block_vector() {
     for (int i=0; i<dim_; ++i) {
         temp[i] = vector_[i];
     }
-    
+
     return temp;
 }
 
