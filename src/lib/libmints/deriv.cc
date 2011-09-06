@@ -31,6 +31,10 @@ public:
     int nthread;
     std::vector<SharedVector> result;
 
+    CorrelatedRestrictedFunctor() {
+        throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
+    }
+
     CorrelatedRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave, IntegralTransform& ints_transform)
         : wavefunction_(wave)
     {
@@ -547,6 +551,12 @@ struct ArchiveStoreImpl< Archive, psi::ScfUnrestrictedFunctor> {
 };
 
 template <class Archive>
+struct ArchiveStoreImpl< Archive, psi::CorrelatedRestrictedFunctor> {
+    static void store(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
+    }
+};
+
+template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::ScfRestrictedFunctor> {
     static void load(const Archive &ar, const psi::ScfRestrictedFunctor &t) {
     }
@@ -555,6 +565,12 @@ struct ArchiveLoadImpl< Archive, psi::ScfRestrictedFunctor> {
 template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::ScfUnrestrictedFunctor> {
     static void load(const Archive &ar, const psi::ScfUnrestrictedFunctor &t) {
+    }
+};
+
+template <class Archive>
+struct ArchiveLoadImpl< Archive, psi::CorrelatedRestrictedFunctor> {
+    static void load(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
     }
 };
 
