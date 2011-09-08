@@ -88,6 +88,7 @@ class FRAG {
   // compute B matrix (intcos.size x 3*natom)
   double ** compute_B(void) const ;
   void compute_B(double **) const ; // use prevously allocated memory
+  void compute_G(double **, bool use_masses=false) const;
 
   // compute B' matrix for one internal coordinate computed with member geometry
   double ** compute_derivative_B(int intco_index) const;

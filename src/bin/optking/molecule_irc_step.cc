@@ -83,6 +83,9 @@ print_matrix(outfile, rootG_inv, Nintco, Nintco);
   opt_matrix_mult(rootG_reg, 0, T, 0, H_m, 0, Nintco, Nintco, Nintco, 0);
   free_matrix(T);
 
+fprintf(outfile,"Mass-weighted Hessian\n");
+print_matrix(outfile, H_m, Nintco, Nintco);
+
 //information to calculate predicted energy change (DE_predicted)
   double DE_projected;
   double dq_n;    //step norm
@@ -93,7 +96,8 @@ print_matrix(outfile, rootG_inv, Nintco, Nintco);
 //Pivot Point and Initial Working Geometry:
 //step along along normalized, mass-weighted v
   if(at_FS) {
-cout << "first point of constrained optimization\n";
+cout << "First point of constrained optimization.\n";
+    fprintf(outfile, "\tFirst point of constrained optimization.\n");
     //if starting from TS, follow lowest eigenvalued eigenvalued eigenvector
     //otherwise, follow the gradient (negative of the force vector)
     double *v;
@@ -192,6 +196,7 @@ free_matrix(G_inv);
       dq_h += dq_u[i] * array_dot(H[i], dq_u, Nintco);
 
     DE_projected = DE_nr_energy(dq_n, dq_g, dq_h);
+fprintf(outfile,"DE_projected  %20.15lf\n", DE_projected);
 
     p_Opt_data->save_step_info(DE_projected, dq_u, dq_n, dq_g, dq_h);
     free_array(dq_u);
@@ -382,25 +387,25 @@ void matrix_root(double **A, int dim, bool inverse)
   fprintf(outfile, "G_evals:\n");
   print_array(outfile, A_evals, dim); */
 
-  if(inverse)
-    for(int i=0; i<dim; i++) {
-      for(int j=0; j<dim; j++) {
-        A[i][j] = 0;
+  if (inverse) {
+    for(int k=0; k<dim; k++)
+      if(fabs(A_evals[k]) > Opt_params.redundant_eval_tol)
+        A_evals[k] = 1.0/A_evals[k];
+  }
 
-        for(int k=0; k<dim; k++)
-          if(fabs(A_evals[k]) > Opt_params.redundant_eval_tol)
-            A[i][j] += ( V[k][i] ) * ( V[k][j] ) / sqrt( fabs(A_evals[k]) );
-      }
-    }
-  else
-    for(int i=0; i<dim; i++) {
-      for(int j=0; j<dim; j++) {
-        A[i][j] = 0;
+  for(int k=0; k<dim; k++) {
+    if(fabs(A_evals[k]) > 0)
+      A_evals[k] = sqrt(A_evals[k]);
+    else
+      throw("matrix_root() : cannot take square root of negative eigenvalue.\n");
+  }
 
-        for(int k=0; k<dim; k++)
-          A[i][j] += ( V[k][i] ) * ( V[k][j] ) * sqrt( fabs(A_evals[k]) );
-      }
-    }
+  zero_matrix(A, dim, dim);
+
+  for(int i=0; i<dim; i++)
+    for(int j=0; j<dim; j++)
+      for(int k=0; k<dim; k++)
+        A[i][j] += V[k][i] * A_evals[k] * V[k][j];
 
   free_matrix(V);
   free_array(A_evals);
