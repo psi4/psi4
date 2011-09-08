@@ -22,9 +22,9 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 madness::Future<int> LMP2::build_error(const int &ij)
 {

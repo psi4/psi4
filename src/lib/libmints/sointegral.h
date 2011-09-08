@@ -1138,7 +1138,7 @@ template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
 {
     if (comm_ == "MADNESS") {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
         int v=0;
         boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
@@ -1175,7 +1175,7 @@ template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
 {
     if (comm_ == "MADNESS") {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
         int v=0;
         boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));

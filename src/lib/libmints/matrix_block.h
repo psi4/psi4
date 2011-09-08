@@ -79,7 +79,7 @@ protected:
     /// Communicator Type
     std::string comm_;
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     SharedMutex mutex_;
 #endif
 
@@ -107,7 +107,7 @@ public:
         nprocs_ = Communicator::world->nproc();
         nthreads_ = Communicator::world->nthread();
         comm_ = Communicator::world->communicator();
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         mutex_ = Communicator::world->get_mutex();
 #endif
     }
@@ -166,7 +166,7 @@ public:
     /// Return the size of a given sub_block
     int sb_size(const int &sb) { return sb_size_[global_local_sblock_[sb]]; }
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     /// Initialize the block
     madness::Void initialize_block(const int &nrow, const int &ncol,
                                    const std::vector<int> &rsize,
@@ -410,11 +410,8 @@ public:
 //    }
 
 #endif // End of HAVE_MADNESS
-
 };
 
-
 }
-
 
 #endif // MATRIX_BLOCK_H

@@ -13,11 +13,11 @@
 #include <cstdio>
 #include <psi4-dec.h>
 
-#if HAVE_MPI == 1
+#ifdef HAVE_MPI
 #include <mpi.h>
 #endif
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 #ifdef WORLD_INSTANTIATE_STATIC_TEMPLATES
 #undef WORLD_INSTANTIATE_STATIC_TEMPLATES
@@ -40,7 +40,7 @@ namespace psi {
 
     class Serializable;
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     typedef boost::shared_ptr<madness::Spinlock> SharedLock;
     typedef boost::shared_ptr<madness::MutexFair> SharedMutex;
     typedef boost::shared_ptr<madness::World> SharedMadWorld;
@@ -149,6 +149,26 @@ namespace psi {
         }
 
         /**
+         * Broadcast data to all nodes. At the end of the call all nodes have a complete copy of the data sent.
+         * @param data The array of data to be broadcasted.
+         * @param nelem The size of the array. This is the number of elements, not the number of bytes.
+         * @broadcaster The node sending the data.
+         */
+        void bcast(std::string& data, int broadcaster=0) {
+            size_t length = 0;
+
+            if (broadcaster == me_)
+                length = data.size();
+            bcast(&length, 1, broadcaster);
+
+            if (broadcaster != me_)
+                data.resize(length+1);
+
+            char* tdata = const_cast<char*>(data.c_str());
+            bcast(tdata, length+1, broadcaster);
+        }
+
+        /**
          * Performs element-by-element sum of all data from all nodes.  The sum will either appear
          * in a new buffer or will overwrite the original data.
          * @param data The array of data to be summed.  If no receive buffer is given, this is overwritten with summed data.
@@ -197,13 +217,11 @@ namespace psi {
 //         }
 
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         virtual SharedLock get_spinlock() { };
         virtual SharedMutex get_mutex() { };
         virtual SharedMadWorld get_madworld() = 0;
 #endif
-
-
     };
 
     typedef boost::shared_ptr<Communicator> SharedComm;
@@ -211,12 +229,8 @@ namespace psi {
 //    void p_fprintf(FILE * __restrict __stream, const char * __restrict __format, ...);
 
     class LocalCommunicator : public Communicator {
-    private:
-        int me_;
-        int nproc_;
-        int nthread_;
-        std::string communicator_;
-#if HAVE_MADNESS == 1
+    protected:
+#ifdef HAVE_MADNESS
         SharedMadWorld madworld_;
 #endif
 
@@ -252,71 +266,16 @@ namespace psi {
 
         virtual void finalize();
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         virtual SharedMadWorld get_madworld() { return madworld_; }
 #endif
-
     };
 
-#if HAVE_MPI == 1
-    class MPICommunicator : public Communicator {
-        int me_;
-        int nproc_;
-        int nthread_;
-        std::string communicator_;
-        MPI_Comm comm_;
+#ifdef HAVE_MADNESS
 
-#if HAVE_MADNESS == 1
-        SharedMadWorld madworld_;
-#endif
-
-        virtual void raw_send(const void* data, int nbyte, int target);
-        virtual void raw_recv(void* data, int nbyte, int sender);
-        virtual void raw_bcast(void* data, int nbyte, int broadcaster);
-        virtual void raw_sum(double *data, int n, double *receive_buffer=0, int target=-1);
-        virtual void raw_sum(unsigned int *data, int n, unsigned int *receive_buffer=0, int target=-1);
-        virtual void raw_sum(int *data, int n, int *receive_buffer=0, int target=-1);
-        virtual void raw_sum(char *data, int n, char *receive_buffer=0, int target=-1);
-        virtual void raw_sum(long *data, int n, long *receive_buffer=0, int target=-1);
-//        virtual void raw_put(const void* data, int nbyte, int target) { throw PSIEXCEPTION("don't do that"); }
-//        virtual void raw_get(const void* data, int nbyte, int target) { throw PSIEXCEPTION("don't do that"); }
-
-    public:
-        MPICommunicator(const int &argc, char **argv);
-        MPICommunicator(const MPICommunicator &copy);
-        virtual ~MPICommunicator();
-
-        MPICommunicator& operator=(const MPICommunicator& other);
-
-        virtual int me() const { return me_; }
-        virtual int nproc() const { return nproc_; }
-        virtual int nthread() const { return nthread_; }
-        virtual std::string communicator() const {return communicator_;}
-
-        virtual int thread_id(const pthread_t &thread) { return 0; }
-
-        virtual void sync();
-
-        virtual void print(FILE *out=outfile) const;
-
-        virtual void finalize();
-
-#if HAVE_MADNESS == 1
-        virtual SharedMadWorld get_madworld() { return madworld_; }
-#endif
-
-    };
-#endif
-
-#if HAVE_MADNESS == 1
-
-    class MadCommunicator : public Communicator {
-    private:
-        int me_;
-        int nproc_;
-        int nthread_;
-        std::string communicator_;
-
+    class MadCommunicator : public Communicator
+    {
+    protected:
         SharedMadWorld madworld_;
         std::map<pthread_t, int> thread_id_;
 
@@ -338,11 +297,6 @@ namespace psi {
         virtual ~MadCommunicator();
 
         MadCommunicator& operator=(const MadCommunicator& other);
-
-        virtual int me() const { return me_; }
-        virtual int nproc() const { return nproc_; }
-        virtual int nthread() const { return nthread_; }
-        virtual std::string communicator() const {return communicator_;}
 
         virtual int thread_id(const pthread_t &thread) { return thread_id_[thread]; }
 

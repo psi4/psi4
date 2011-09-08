@@ -1034,7 +1034,7 @@ typedef boost::shared_ptr<SimpleMatrix> SharedSimpleMatrix;
 
 }
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 namespace madness {  namespace archive {
 

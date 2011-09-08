@@ -40,7 +40,7 @@ typedef boost::shared_ptr<Matrix> SharedMatrix;
  * This has NOT been interfaced with the matrix factory yet.
  */
 class Distributed_Matrix : public Block
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         , public madness::WorldObject<Distributed_Matrix>
 #endif
 {
@@ -76,7 +76,7 @@ protected:
     /// Communicator Type
     std::string comm_;
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     /// Madness world object
     SharedMadWorld madworld_;
     /// Mutex for printing
@@ -158,7 +158,6 @@ public:
     /// Prints a vector in matrix format
     madness::Void print_mat(const std::vector<double> &a, const int &m,
                             const int &n, const std::string &name) const;
-
     /// Set the name of the matrix
     madness::Void set_name(const std::string &nm) { name_ = nm; }
 
@@ -178,7 +177,6 @@ public:
                       const int &a_row,
                       const int &a_col,
                       const int &b_col);
-
 
 #else
 
@@ -225,7 +223,6 @@ public:
     Distributed_Matrix operator* (const Distributed_Matrix &rhs);
     void zero() { *this = 0.0; }
 #endif
-
 };
 
 } // End of psi namespace

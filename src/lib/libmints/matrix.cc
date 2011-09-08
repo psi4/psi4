@@ -47,11 +47,13 @@ extern double str_to_double(const std::string& s);
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
+namespace {
 string to_string(const int val)
 {
     stringstream strm;
     strm <<  val;
     return strm.str();
+}
 }
 
 Matrix::Matrix()

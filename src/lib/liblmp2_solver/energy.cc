@@ -22,7 +22,7 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 madness::Future<double> LMP2::energy(const SharedMatrix T2, const int &ij, const int &iter) {
 

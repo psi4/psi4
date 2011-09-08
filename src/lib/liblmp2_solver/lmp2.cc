@@ -24,7 +24,7 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 
 double LMP2::compute_energy()
@@ -176,7 +176,7 @@ void LMP2::setup_ij_kj_ik_maps() {
         }
     }
 }
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
     : Wavefunction(options, _default_psio_lib_), madness::WorldObject<LMP2>(*Communicator::world->get_madworld())
 #else
@@ -190,7 +190,7 @@ LMP2::LMP2(Options& options, boost::shared_ptr<Wavefunction> ref_wfn)
     set_reference_wavefunction(ref_wfn);
     common_init();
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     process_pending();
 #endif
 }
@@ -217,7 +217,7 @@ void LMP2::common_init() {
                            static_cast<TwoElectronInt*>(integral_->eri())) );
     }
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     if (comm_ == "MADNESS") {
         madworld_ = Communicator::world->get_madworld();
         print_mutex = Communicator::world->get_mutex();
