@@ -60,11 +60,17 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
     // G = BuBt ; u = unit matrix; G = BBt
     compute_B(B);
     opt_matrix_mult(B, 0, B, 1, G, 0, Nints, Ncarts, Nints, 0);
+    //compute_G(G, true); experimenting with mass-weighting
 
     // u B^t (G_inv dq) = dx
     G_inv = symm_matrix_inv(G, Nints, true);
     opt_matrix_mult(G_inv, 0, &dq, 1, &tmp_v_Nints, 1, Nints, Nints, 1, 0);
     opt_matrix_mult(B, 1, &tmp_v_Nints, 1, &dx, 1, Ncarts, Nints, 1, 0);
+
+    // experimenting with mass-weighting
+    //for (i=0; i<Ncarts; ++i)
+    //  dx[i] /= mass[i/3];
+
     free_matrix(G_inv);
 
     for (i=0; i<Ncarts; ++i)
