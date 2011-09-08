@@ -165,7 +165,7 @@ mol1->print_connectivity(outfile);
 
   // read binary file for previous steps ; history needed to compute EFP values
   p_Opt_data = new OPT_DATA(mol1->g_nintco(), 3*mol1->g_natom());
-  if (p_Opt_data->g_iteration() == 1) {
+  if (p_Opt_data->g_iteration() == 1 && Opt_params.opt_type == OPT_PARAMS::IRC) {
     p_irc_data = new IRC_DATA();
     fprintf(stdout,"IRC data object created\n");
   }
