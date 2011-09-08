@@ -175,7 +175,8 @@ void export_mints()
             def("so_angular_momentum", &MintsHelper::so_angular_momentum).
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum).
             def("ao_eri", &MintsHelper::ao_eri).
-            def("ao_erf_eri", &MintsHelper::ao_erf_eri);
+            def("ao_erf_eri", &MintsHelper::ao_erf_eri).
+            def("play", &MintsHelper::play);
 
     class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric").
             def("get_algorithm", &FittingMetric::get_algorithm).

@@ -6,7 +6,7 @@ using namespace psi;
 using namespace boost;
 
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 MadCommunicator::MadCommunicator(const int &argc, char **argv) :
     Communicator()
@@ -43,8 +43,7 @@ MadCommunicator::MadCommunicator(const int &argc, char **argv) :
 }
 
 MadCommunicator::MadCommunicator(const MadCommunicator &copy) :
-    Communicator(), me_(copy.me_), nproc_(copy.nproc_),
-    nthread_(copy.nthread_), communicator_(copy.communicator_),
+    Communicator(copy),
     madworld_(copy.madworld_), thread_id_(copy.thread_id_)
 { }
 

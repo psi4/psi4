@@ -22,7 +22,7 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 
 void LMP2::integral_direct_transformation() {
@@ -90,7 +90,7 @@ void LMP2::integral_direct_transformation() {
     for (MN_iter_ = MN_Pairs_.begin(); MN_iter_ != MN_Pairs_.end(); MN_iter_++, MN++) {
 
         if (comm_ == "MADNESS") {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
             if (me_ == MN_Owner_[MN]) {
                 task(me_, &LMP2::first_half_integral_transformation,
                      MN_iter_->second[0], MN_iter_->second[2],
@@ -312,7 +312,7 @@ int LMP2::first_half_integral_transformation(const int &M, const int &N,
     } // End of R loop
 
     if (print_ > 6) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->lock();
         }
@@ -322,7 +322,7 @@ int LMP2::first_half_integral_transformation(const int &M, const int &N,
             fprintf(outfile, "eri_1[%d]", i);
             eri_1[i]->print();
         }
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->unlock();
         }
@@ -353,14 +353,14 @@ int LMP2::first_half_integral_transformation(const int &M, const int &N,
     eri_1.clear();
 
     if (print_ > 6) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->lock();
         }
 #endif
         eri_2_MN_[MN]->set_name("ERI_2_MN[" + mn_val.str() + "]");
         eri_2_MN_[MN]->print();
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->unlock();
         }
@@ -397,7 +397,7 @@ std::vector<double> LMP2::copy_eri_mn(const int &MN, const int &ij,
     return temp;
 }
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 madness::Future< std::vector<double> > LMP2::copy_eri_mn_mad(const int &MN, const int &ij,
                                       const int &numm, const int &numn)
 {
@@ -443,7 +443,7 @@ void LMP2::redistribute_integrals()
         int abs_n = basisset_->shell(N)->function_index();
 
         if (comm_ == "MADNESS") {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
             if (me_ == MN_Owner_[MN]) {
                 for (int ij=0; ij < ij_pairs_; ij++) {

@@ -16,7 +16,7 @@
 #include "liblmp2_solver/dist_container.h"
 #include "psi4-dec.h"
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     #include <world/worldobj.h>
 #endif
 
@@ -35,9 +35,9 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 class LMP2 : public Wavefunction, public madness::WorldObject<LMP2> {
 #else
 class LMP2 : public Wavefunction
@@ -59,7 +59,7 @@ protected:
     /// The communicator type
     std::string comm_;
     /// The madness world communicator
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
      SharedMadWorld madworld_;
 #endif
 
@@ -248,7 +248,7 @@ protected:
 
 
     /// Madness mutex
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     SharedMutex print_mutex;
     SharedMutex mutex_;
     SharedMutex F_mutex_;
@@ -337,7 +337,7 @@ protected:
     void setup_diis(const int &iter);
 
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
     /// This copies part of the eri_mn matrix and returns it as a future
     madness::Future< std::vector<double> > copy_eri_mn_mad(const int &MN, const int &ij,

@@ -18,7 +18,7 @@
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 
-#if HAVE_MADNESS
+#ifdef HAVE_MADNESS
 
 #include "mad_mp2.h"
 
@@ -49,7 +49,7 @@ MAD_MP2::MAD_MP2(Options& options, boost::shared_ptr<PSIO> psio) :
     mad_nthread_ = Communicator::world->nthread();
     rank_    = Communicator::world->me();
     comm_    = Communicator::world->communicator();
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     madworld_ = Communicator::world->get_madworld();
     mutex_ = Communicator::world->get_mutex();
 #endif
@@ -201,11 +201,11 @@ void MAD_MP2::common_init()
         offset_avir_[h] = navirpi_[h - 1] + offset_avir_[h - 1];
     }
 
-    if (debug_) {   
+    if (debug_) {
         for (int h = 0; h < nirrep_; h++) {
-            fprintf(outfile, "  h = %1d: naocc = %4d aocc_off = %4d navir = %4d avir_off = %4d\n", 
+            fprintf(outfile, "  h = %1d: naocc = %4d aocc_off = %4d navir = %4d avir_off = %4d\n",
                 h, naoccpi_[h], offset_aocc_[h], navirpi_[h], offset_avir_[h]);
-        }   
+        }
     }
 
     Caocc_ = boost::shared_ptr<Matrix>(new Matrix("Caocc", nso_, naocc_));
@@ -259,17 +259,17 @@ void MAD_MP2::common_init()
     boost::shared_ptr<IntegralFactory> integral2(new IntegralFactory(auxiliary_,auxiliary_,auxiliary_,auxiliary_));
     boost::shared_ptr<PetiteList> pet2(new PetiteList(auxiliary_, integral2));
     AO2USO_aux_ = boost::shared_ptr<Matrix>(pet2->aotoso());
- 
+
     if (debug_ > 2) {
         AO2USO_aux_->print();
         fflush(outfile);
     }
- 
+
     Dimension dim = pet2->SO_basisdim();
     ::memset(static_cast<void*>(nauxpi_), '\0', 8 * sizeof(int));
     for (int h = 0; h < nirrep_; h++) {
         nauxpi_[h] = dim[h];
-    } 
+    }
 
     zero_ = BasisSet::zero_ao_basis_set();
 
@@ -450,13 +450,13 @@ void MAD_MP2::parallel_init()
 
         unique_i.insert(i);
         unique_a.insert(a);
-    } 
+    }
     naocc_local_ = unique_i.size();
     navir_local_ = unique_a.size();
 
-    for (std::set<int>::iterator it = unique_i.begin(); it != unique_i.end(); it++) 
+    for (std::set<int>::iterator it = unique_i.begin(); it != unique_i.end(); it++)
         aocc_local_.push_back(*it);
-    for (std::set<int>::iterator it = unique_a.begin(); it != unique_a.end(); it++) 
+    for (std::set<int>::iterator it = unique_a.begin(); it != unique_a.end(); it++)
         avir_local_.push_back(*it);
 
     std::sort(aocc_local_.begin(), aocc_local_.end());
@@ -546,38 +546,38 @@ void MAD_MP2::print_header()
     fprintf(outfile, "                          %8s Implementation\n", (options_.get_bool("PARALLEL") ? "MADNESS" : "SERIAL"));
     fprintf(outfile, "                              %6s Algorithm\n", options_.get_str("MP2_ALGORITHM").c_str());
     fprintf(outfile, "                        %3d Threads, %6ld MiB Core\n", omp_nthread_, memory_ / 1000000L);
-    fprintf(outfile, "          Ben Mintz, Rob Parrish, Andy Simmonnett, and Justin Turney\n"); 
+    fprintf(outfile, "          Ben Mintz, Rob Parrish, Andy Simmonnett, and Justin Turney\n");
     fprintf(outfile, "         ------------------------------------------------------------\n\n");
 
     fprintf(outfile, " ==> Geometry <==\n\n");
     molecule_->print();
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
-    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_); 
+    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
 
     fprintf(outfile, "  ==> Primary Basis <==\n\n");
     basisset_->print_by_level(outfile, print_);
 
     fprintf(outfile, "  ==> Auxiliary Basis <==\n\n");
     if (auxiliary_automatic_) {
-        fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str()); 
+        fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-RI\n\n", options_.get_str("BASIS").c_str());
     }
     auxiliary_->print_by_level(outfile, print_);
 
     fprintf(outfile, "  ==> Orbital Dimensions <==\n\n");
     CharacterTable ct = molecule_->point_group()->char_table();
     fprintf(outfile, "   ------------------------------------------------------------------\n");
-    fprintf(outfile, "    Irrep    %6s %6s %6s %6s %6s %6s %6s %6s\n", 
+    fprintf(outfile, "    Irrep    %6s %6s %6s %6s %6s %6s %6s %6s\n",
             "Nso", "Nmo", "Nfocc", "Nocc", "Naocc", "Navir", "Nvir", "Nfvir");
     fprintf(outfile, "   ------------------------------------------------------------------\n");
     for (int h= 0; h < nirrep_; h++) {
-        fprintf(outfile, "    %-3s      %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-            ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], frzcpi_[h], doccpi_[h], 
+        fprintf(outfile, "    %-3s      %6d %6d %6d %6d %6d %6d %6d %6d\n",
+            ct.gamma(h).symbol(), nsopi_[h], nmopi_[h], frzcpi_[h], doccpi_[h],
             doccpi_[h] - frzcpi_[h], nmopi_[h] - doccpi_[h] - frzvpi_[h], nmopi_[h] - doccpi_[h],
             frzvpi_[h]);
     }
     fprintf(outfile, "   ------------------------------------------------------------------\n");
-    fprintf(outfile, "    Total    %6d %6d %6d %6d %6d %6d %6d %6d\n", 
-        nso_, nmo_, nfocc_, nfocc_ + naocc_, naocc_, navir_, navir_ + nfvir_, nfvir_); 
+    fprintf(outfile, "    Total    %6d %6d %6d %6d %6d %6d %6d %6d\n",
+        nso_, nmo_, nfocc_, nfocc_ + naocc_, naocc_, navir_, navir_ + nfvir_, nfvir_);
     fprintf(outfile, "   ------------------------------------------------------------------\n\n");
     fflush(outfile);
 }
@@ -617,7 +617,7 @@ void MAD_MP2::check_memory()
                 int hb = hj ^ hQ;
                 trial += navirpi_[ha] * (ULI) navirpi_[hb];
             }
-            I_SO = (I_SO > trial ? I_SO : trial); 
+            I_SO = (I_SO > trial ? I_SO : trial);
         }
     }
 
@@ -625,14 +625,14 @@ void MAD_MP2::check_memory()
     ULI Amn_mem = naux_ * (ULI) (nso_ * (ULI) nso_ +
                                  nso_ * (ULI) naocc_) +
         Qia_mem_AO; // (A|ia)
-    ULI Aia_USO_mem = Qia_mem_SO + Qia_mem_AO + 
+    ULI Aia_USO_mem = Qia_mem_SO + Qia_mem_AO +
         max_naoccpi_ * (ULI) max_navirpi_ * naux_; // (A'|ia)
-    ULI Aia_mem = Qia_mem_SO + J_mem_SO + 
+    ULI Aia_mem = Qia_mem_SO + J_mem_SO +
         max_nauxpi_ * (ULI) max_nauxpi_; // (Q'|ia)
-    ULI J_USO_mem = J_mem_AO + J_mem_SO + 
+    ULI J_USO_mem = J_mem_AO + J_mem_SO +
         naux_ * (ULI) max_nauxpi_ + Qia_mem_SO; // (A'|B')
     ULI I_mem = omp_nthread_ * I_SO + Qia_mem_SO; // Conventional energy
-    if (options_.get_str("MP2_ALGORITHM") == "DFMP2J") 
+    if (options_.get_str("MP2_ALGORITHM") == "DFMP2J")
         I_mem = 2L * Qia_mem_SO + J_mem_SO; // Rough estimate for now
 
     required = (required > Amn_mem ? required : Amn_mem);
@@ -678,7 +678,7 @@ double MAD_MP2::compute_energy()
     print_header();
 
     if (options_.get_str("MP2_ALGORITHM") == "DFMP2J") {
-        denominator(); 
+        denominator();
     }
 
     check_memory();
@@ -723,16 +723,16 @@ void MAD_MP2::J()
                     Jp[Qstart + oq][Pstart + op] = buffer[index];
                 }
             }
-        }   
-    }   
+        }
+    }
     timer_off("MP2 J AO");
 
     if (debug_ > 2) {
         fprintf(outfile, "  ==> After J Generation <==\n\n");
         J->print();
-    } 
-   
-    Jm12_ = J; 
+    }
+
+    Jm12_ = J;
 }
 void MAD_MP2::Jm12()
 {
@@ -743,7 +743,7 @@ void MAD_MP2::Jm12()
     if (debug_ > 2) {
         fprintf(outfile, "  ==> After J^-1/2 <==\n\n");
         Jm12_->print();
-    } 
+    }
 }
 void MAD_MP2::Aia()
 {
@@ -760,7 +760,7 @@ void MAD_MP2::Aia()
         buffer[thread] = eri[thread]->buffer();
     }
 
-    int max_pshell = auxiliary_->max_function_per_shell(); 
+    int max_pshell = auxiliary_->max_function_per_shell();
 
     boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn) Chunk", max_pshell, nso_ * (ULI) nso_));
     double** Amnp = Amn->pointer();
@@ -790,7 +790,7 @@ void MAD_MP2::Aia()
         ORDER_PRINT_END
     }
     // Schwarz Sieve object
-    boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(basisset_, options_.get_double("SCHWARZ_CUTOFF"))); 
+    boost::shared_ptr<SchwarzSieve> schwarz(new SchwarzSieve(basisset_, options_.get_double("SCHWARZ_CUTOFF")));
     long int* schwarz_shells = schwarz->get_schwarz_shells_reverse();
 
     timer_on("MP2 AO -> MO");
@@ -817,10 +817,10 @@ void MAD_MP2::Aia()
             for (int N = 0; N <= M; N++) {
                 int nN = basisset_->shell(N)->nfunction();
                 int nstart = basisset_->shell(N)->function_index();
-             
+
                 // Schwarz
                 if (schwarz_shells[M * (M + 1) / 2 + N] == -1) continue;
-             
+
                 eri[rank]->compute_shell(P,0,M,N);
 
                 for (int op = 0, index = 0; op < nP; op++) {
@@ -834,7 +834,7 @@ void MAD_MP2::Aia()
             }
         }
         timer_off("MP2 (A|mn)");
-   
+
         // (A|mi) block
         timer_on("MP2 (A|mi)");
         C_DGEMM('N','N',nP * (ULI) nso_, naocc_local_, nso_, 1.0, Amnp[0], nso_, Cip[0], naocc_local_, 0.0, Amip[0], naocc_local_);
@@ -881,20 +881,20 @@ void MAD_MP2::Aia()
     double** Tp = T->pointer();
     double** Jp = Jm12_->pointer();
 
-    for (int ia = 0; ia < nia_local_; ia+= n2) 
+    for (int ia = 0; ia < nia_local_; ia+= n2)
     {
         int nmult = (ia + n2 > nia_local_ ? nia_local_ - ia : n2);
         for (int Q = 0; Q < naux_; Q++) {
             ::memcpy(static_cast<void*>(Tp[Q]), static_cast<void*>(&Aiap[Q][ia]), nmult * sizeof(double));
         }
         C_DGEMM('N','N',naux_,nmult,naux_,1.0,Jp[0],naux_,Tp[0],n2,0.0,&Aiap[0][ia],nia_local_);
-    }     
+    }
 
     if (debug_ > 2) {
         ORDER_PRINT_START
         printf("  ==> After Fitting <==\n\n");
         printf("A matrix from node %d\n", rank_);
-        Aia->print(); 
+        Aia->print();
         ORDER_PRINT_END
     }
     Aia_ = Aia;
@@ -1167,7 +1167,7 @@ void MAD_MP2::IJ()
 
     timer_on("MP2J Energy");
     for (int hQ = 0; hQ < nirrep_; hQ++) {
-        for (int hi = 0; hi < nirrep_; hi++) { 
+        for (int hi = 0; hi < nirrep_; hi++) {
             int ha = hi ^ hQ;
 
             int nQ = nauxpi_[hQ];
@@ -1175,7 +1175,7 @@ void MAD_MP2::IJ()
             int na = navirpi_[ha];
 
             if (!nQ || !ni || !na) continue;
-       
+
             double** Qiap = Aia_[std::pair<int,int>(hQ,hi)]->pointer();
             boost::shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w)", nQ, ni * (ULI) na));
             double** Qiawp = Qiaw->pointer();
@@ -1193,7 +1193,7 @@ void MAD_MP2::IJ()
                 }
                 C_DGEMM('N','T',nQ,nQ,ni*(ULI)na,1.0,Qiawp[0],ni*(ULI)na,Qiap[0],ni*(ULI)na,0.0,Zp[0],nQ);
                 E_MP2J_ -= 2.0 * C_DDOT(nQ * (ULI) nQ, Zp[0], 1, Zp[0], 1);
-            }       
+            }
         }
     }
     timer_off("MP2J Energy");
@@ -1212,14 +1212,14 @@ void MAD_MP2::print_energy()
     energies_["SCS Same-Spin Energy"]     = scale_ss_ * (0.5 * E_MP2J_ + E_MP2K_);
     energies_["SCS Opposite-Spin Energy"] = scale_os_ * (0.5 * E_MP2J_);
     energies_["SCS Correlation Energy"]   = energies_["SCS Opposite-Spin Energy"] + energies_["SCS Same-Spin Energy"];
-    energies_["SCS Total Energy"]         = Eref_ + energies_["SCS Correlation Energy"]; 
-    
+    energies_["SCS Total Energy"]         = Eref_ + energies_["SCS Correlation Energy"];
+
     energy_ = energies_["Total Energy"];
-    
+
     Process::environment.globals["CURRENT ENERGY"] = energy_;
     Process::environment.globals["E_MP2J"] = E_MP2J_;
     Process::environment.globals["E_MP2K"] = E_MP2K_;
-    
+
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\t ====================> MP2 Energies <==================== \n");
     fprintf(outfile, "\t----------------------------------------------------------\n");
@@ -1242,7 +1242,7 @@ void MAD_MP2::print_energy()
     fprintf(outfile, "\t----------------------------------------------------------\n");
     fprintf(outfile, "\n");
     fflush(outfile);
-    
+
 }
 
 }} // End Namespaces

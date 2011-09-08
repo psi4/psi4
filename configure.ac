@@ -541,13 +541,16 @@ AC_DEFINE_UNQUOTED(HAVE_DLFCN_H,$HAVE_DLFCN_H)
 AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[HAVE_MPI=1],[HAVE_MPI=0])
 # Check if we can link against mpi
 AC_MSG_CHECKING([if we can link to MPI])
-AC_TRY_LINK([#include <mpi.h>], [ MPI_Finalize(); ], [HAVE_MPI=1
-  AC_MSG_RESULT([yes])],[
+AC_TRY_LINK([#include <mpi.h>], [ MPI_Finalize(); ],
+  [
+    HAVE_MPI=1
+    AC_MSG_RESULT([yes])
+    AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
+    AC_DEFINE_UNQUOTED(HAVE_MADNESS,$HAVE_MPI)
+    AC_SUBST(HAVE_MPI)
+  ],[
   AC_MSG_RESULT([no])]
 )
-AC_DEFINE_UNQUOTED(HAVE_MPI,$HAVE_MPI)
-AC_DEFINE_UNQUOTED(HAVE_MADNESS,$HAVE_MPI)
-AC_SUBST(HAVE_MPI)
 
 /bin/rm -f a.out
 

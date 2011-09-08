@@ -66,9 +66,12 @@ BasisSetParser::~BasisSetParser()
 {
 }
 
-vector<string> BasisSetParser::load_file(const std::string &filename, const std::string&    basisname)
+vector<string> BasisSetParser::load_file(const std::string& filename,
+                                         const std::string& basisname)
 {
-    // Load in entire file.
+    int me = Communicator::world->me();
+
+    // Loads an entire file.
     vector<string> lines;
 
     if (Communicator::world->me() == 0) {
@@ -111,30 +114,22 @@ vector<string> BasisSetParser::load_file(const std::string &filename, const std:
         }
     }
 
+    size_t nlines = lines.size();
     if (Communicator::world->nproc() > 1) {
-        int me = Communicator::world->me();
-        size_t nlines = lines.size();
-
         Communicator::world->bcast(&nlines, 1);
-        int *string_length = new int[nlines];
 
         if (me > 0)
             lines.resize(nlines);
 
         for (size_t i=0; i<nlines; ++i)
-            string_length[i] = lines[i].length() + 1;
-
-        Communicator::world->bcast(string_length, nlines);
-
-        if (me > 0) {
-            for (size_t i=0; i<nlines; ++i) {
-                lines[i].resize(string_length[i]);
-            }
-        }
-
-        for (size_t i=0; i<nlines; ++i)
-            Communicator::world->bcast(const_cast<char*>(lines[i].c_str()), string_length[i]);
+            Communicator::world->bcast(lines[i]);
     }
+
+    // Let each MPI process dump their lines to the disk
+    std::string node_name = to_string(me) + ".proc.out";
+    ofstream of(node_name.c_str());
+    for (size_t i=0; i<nlines; ++i)
+        of << lines[i];
 
     return lines;
 }
