@@ -461,6 +461,7 @@ double ** FRAG::compute_constraints(void) const {
 void FRAG::compute_B(double **B) const {
   double **Bintco;
 
+  zero_matrix(B, intcos.size(), 3*natom);  
   for (int i=0; i<intcos.size(); ++i) {
     Bintco = intcos.at(i)->DqDx(geom);
 
@@ -473,6 +474,21 @@ void FRAG::compute_B(double **B) const {
   return;
 }
 
+//// returns G matrix, mass-weighted or not
+void FRAG::compute_G(double **G, bool use_masses) const {
+  double **B = compute_B();
+
+  if (use_masses) {
+    for (int i=0; i<intcos.size(); ++i)
+      for (int a=0; a<natom; ++a)
+        for(int xyz=0; xyz<3; ++xyz)
+          B[i][3*a+xyz] /= sqrt(mass[a]);
+  }
+
+  opt_matrix_mult(B, 0, B, 1, G, 0, intcos.size(), 3*natom, intcos.size(), 0);
+  free_matrix(B);
+  return;
+}
 
 // computes and print B matrix
 void FRAG::print_B(FILE *fp) const {

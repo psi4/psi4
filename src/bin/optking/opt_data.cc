@@ -473,10 +473,13 @@ bool OPT_DATA::previous_step_report(void) const {
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
+/*
     if (Energy_ratio < 0.0 && consecutive_backsteps < 2) {
       throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
     else if (Energy_ratio < 0.25)
+*/
+    if (Energy_ratio < 0.25)
     {
       Opt_params.intrafragment_step_limit /= 4;
       fprintf(outfile,"\tEnergy ratio small: Trust radius decreased.\n\n");
