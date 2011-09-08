@@ -539,7 +539,7 @@ SharedMatrix Deriv::compute()
 
 }
 
-#if HAVE_MADNESS
+#ifdef HAVE_MADNESS
 namespace madness {
 namespace archive {
 

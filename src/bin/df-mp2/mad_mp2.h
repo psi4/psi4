@@ -33,7 +33,7 @@ protected:
 
     // => Parallel Variables <= //
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
      SharedMadWorld madworld_;
      SharedMutex mutex_;
 #endif

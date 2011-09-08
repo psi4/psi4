@@ -13,7 +13,7 @@
 #include <libqt/qt.h>
 #include "psi4-dec.h"
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     #include <world/worldobj.h>
     #include <world/worlddc.h>
 #endif
@@ -25,7 +25,7 @@ namespace boost {
 
 namespace psi{
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 class dist_key {
 
@@ -206,7 +206,7 @@ typedef madness::WorldContainer<key,value> dc;
 //    /// The communicator type
 //    std::string comm_;
 //    /// The madness world communicator
-//#if HAVE_MADNESS == 1
+//#ifdef HAVE_MADNESS
 //     SharedMadWorld madworld_;
 //#endif
 

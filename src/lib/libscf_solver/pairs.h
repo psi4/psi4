@@ -12,7 +12,7 @@
 #include "rhf.h"
 #include <psi4-dec.h>
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 using namespace madness;
 
