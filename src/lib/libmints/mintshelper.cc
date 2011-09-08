@@ -14,22 +14,22 @@
 
 #include <psi4-dec.h>
 
+#include "matrix_distributed.h"
+
 using namespace boost;
 
 namespace psi {
 
 void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
-    if (Communicator::world->nproc() > 1)
-        throw PSIEXCEPTION("MintsHelper: You can only use one process with this.");
+//    if (Communicator::world->nproc() > 1)
+//        throw PSIEXCEPTION("MintsHelper: You can only use one process with this.");
 
-    if (wavefunction)
-    {
+    if (wavefunction) {
         psio_ = wavefunction->psio();
-        molecule_ = wavefunction->molecule ();
+        molecule_ = wavefunction->molecule();
     }
-    else
-    {
+    else {
         psio_ = boost::shared_ptr<PSIO>(new PSIO());
         molecule_ = boost::shared_ptr<Molecule>(Process::environment.molecule());
     }
@@ -48,11 +48,8 @@ void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 
     // Read in the basis set
     if(wavefunction)
-    {
         basisset_ = wavefunction->basisset();
-    }
-    else
-    {
+    else {
         boost::shared_ptr<BasisSetParser> parser (new Gaussian94BasisSetParser());
         basisset_ = boost::shared_ptr<BasisSet>(BasisSet::construct(parser, molecule_, "BASIS"));
     }
@@ -601,4 +598,12 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_nabla()
     return nabla;
 }
 
+void MintsHelper::play()
+{
+    Distributed_Matrix t("T", 10, 10);
+    t.print_all_blocks();
+
+    Communicator::world->sync();
 }
+
+} // namespace psi

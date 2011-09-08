@@ -44,7 +44,7 @@ extern int str_to_int(const std::string& s);
 extern double str_to_double(const std::string& s);
 }
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 Distributed_Matrix::Distributed_Matrix()
     : Block(), nblocks_(0), nrows_(0), ncols_(0), tsb_(0), telements_(0)
@@ -472,7 +472,6 @@ bool Distributed_Matrix::operator ==(const Distributed_Matrix &rhs)
     else return true;
 }
 
-
 bool Distributed_Matrix::operator !=(const Distributed_Matrix &rhs)
 {
     if (*this == rhs) return false;
@@ -533,16 +532,4 @@ madness::Void Distributed_Matrix::MXM(const int &sb,
 }
 
 #endif // End of HAVE_MADNESS
-
-
-
-
-
-
-
-
-
-
-
-
 

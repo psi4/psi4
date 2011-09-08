@@ -23,7 +23,7 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 void LMP2::projection()
 {
@@ -32,7 +32,7 @@ void LMP2::projection()
     for (int ij=0, v=0; ij < ij_pairs_; ij++, v++) {
         if (me_ == v%nproc_) {
             if (comm_ == "MADNESS") {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
                 task(me_, &LMP2::build_projection_matrix, ij);
 //                madworld_->taskq.add(*this, &LMP2::build_projection_matrix, ij);
 #else
@@ -125,7 +125,7 @@ int LMP2::build_projection_matrix(const int &ij)
     S_virt_[ij_loc]->diagonalize(evec_st, eval, static_cast<Matrix::DiagonalizeOrder>(1) );
 
     if (print_ > 5) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->lock();
         }
@@ -135,7 +135,7 @@ int LMP2::build_projection_matrix(const int &ij)
         F_virt_[ij_loc]->print();
         evec_st->eivprint(eval);
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->unlock();
         }
@@ -168,7 +168,7 @@ int LMP2::build_projection_matrix(const int &ij)
         }
     }
     if (print_ > 5) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->lock();
         }
@@ -176,7 +176,7 @@ int LMP2::build_projection_matrix(const int &ij)
 
         Xt->print();
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->unlock();
         }
@@ -190,7 +190,7 @@ int LMP2::build_projection_matrix(const int &ij)
     F_bar->diagonalize(evec_fbar, evals_[ij_loc]); //, static_cast<Matrix::DiagonalizeOrder>(1));
 
     if (print_ > 5) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->lock();
         }
@@ -200,7 +200,7 @@ int LMP2::build_projection_matrix(const int &ij)
         F_bar->eivprint(evals_[ij_loc]);
         evals_[ij_loc]->print();
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->unlock();
         }
@@ -212,13 +212,13 @@ int LMP2::build_projection_matrix(const int &ij)
     W_[ij_loc]->gemm(false, false, 1.0, Xt, evec_fbar, 0.0);
 
     if (print_ > 4) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->lock();
         }
 #endif
         W_[ij_loc]->print();
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
         if (comm_ == "MADNESS") {
             print_mutex->unlock();
         }

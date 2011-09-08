@@ -154,6 +154,9 @@ public:
     std::vector<boost::shared_ptr<Matrix> > so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals
     std::vector<boost::shared_ptr<Matrix> > so_traceless_quadrupole();
+
+    /// Play function
+    void play();
 };
 
 }
