@@ -2,6 +2,7 @@
     \ingroup DPD
     \brief Enter brief description of file here 
 */
+#include <libpsio/psio.h>
 #include "dpd.h"
 
 namespace psi {

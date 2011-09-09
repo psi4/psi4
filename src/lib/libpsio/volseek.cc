@@ -5,6 +5,7 @@
 
 #include <unistd.h>
 #include <libpsio/psio.h>
+#include <libparallel/parallel.h>
 
 /* This is strictly used to avoid overflow errors on lseek() calls */
 #define PSIO_BIGNUM 10000

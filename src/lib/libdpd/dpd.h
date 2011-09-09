@@ -6,12 +6,13 @@
 #define _psi_src_lib_libdpd_dpd_h
 
 #include <cstdio>
-#include <libpsio/psio.h>
-#include <libciomr/libciomr.h>
-#include <libiwl/iwl.h>
 #include <psifiles.h>
+#include <libpsio/config.h>
+#include <vector>
 
 namespace psi {
+
+struct iwlstruct;
 
 #define T3_TIMER_ON (0)
 
@@ -100,7 +101,7 @@ typedef struct {
   int *qsym;        /* Orbital symmetry for index q */
 } dpdparams2;
 
-typedef struct {
+typedef struct _dpdfile2 {
   int dpdnum;                         /* dpd structure reference */
   char label[PSIO_KEYLEN];
   int filenum;

@@ -1,17 +1,18 @@
 #ifndef _psi_src_lib_libchkpt_chkpt_hpp_
 #define _psi_src_lib_libchkpt_chkpt_hpp_
 
-#include <boost/shared_ptr.hpp>
 #include <libchkpt/config.h>
-#include <cstdlib>
-#include <strings.h>
 #include <string>
-#include <cstring>
+
+namespace boost {
+template <class T>
+class shared_ptr;
+}
 
 namespace psi {
     class PSIO;
+    class Chkpt;
 
-        class Chkpt;
     extern boost::shared_ptr<Chkpt> _default_chkpt_lib_;
 
     /**
@@ -330,7 +331,7 @@ namespace psi {
         double *rd_vib_freqs(void);
         void wt_vib_freqs(double *);
 
-        static boost::shared_ptr<Chkpt> shared_object() { return _default_chkpt_lib_; }
+        static boost::shared_ptr<Chkpt> shared_object();
 
         /// allocate a block matrix -- analogous to libciomr's block_matrix
         template <typename T> static T** matrix(int nrow, int ncol) {

@@ -4,6 +4,7 @@
 #include "matrix.h"
 #include "vector.h"
 
+#include <libparallel/parallel.h>
 #include <boost/python.hpp>
 #include <boost/python/tuple.hpp>
 

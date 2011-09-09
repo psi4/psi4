@@ -8,7 +8,6 @@
 *
 ***********************************************************/
 #include <psiconfig.h>
-#include <psi4-dec.h>
 #include <string>
 #include <vector>
 
@@ -77,8 +76,8 @@ class Functional {
         double getDensityCutoff() const { return cutoff_; }
         void setDensityCutoff(double cutoff) {cutoff = cutoff; }
 
-        virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> props) {}
-        virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> props) {}
+        virtual void computeRKSFunctional(boost::shared_ptr<RKSFunctions> props)=0;
+        virtual void computeUKSFunctional(boost::shared_ptr<UKSFunctions> props)=0;
 
         double* getFunctional() const { return functional_; }
         double* getV_RhoA() const { return v_rho_a_; }

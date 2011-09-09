@@ -15,6 +15,7 @@
 #include <sstream>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <libparallel/parallel.h>
 
 namespace psi {
 
