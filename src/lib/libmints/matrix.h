@@ -3,20 +3,20 @@
 
 #include <cstdio>
 #include <string>
-#include <cstring>
-
 #include <libparallel/serialize.h>
-#include <libdpd/dpd.h>
 
 namespace boost {
 template<class T> class shared_ptr;
 // Forward declarations for boost.python used in the extract_subsets
 
 namespace python{
-       class tuple;
+class tuple;
 }}
 
 namespace psi {
+
+struct _dpdfile2;
+typedef _dpdfile2 dpdfile2;
 
 class PSIO;
 class Matrix;
@@ -181,9 +181,7 @@ public:
     /**
      * Convenient creation function return shared_ptr<Matrix>
      */
-    boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols) {
-        return boost::shared_ptr<Matrix>(new Matrix(name, nirrep, rows, cols));
-    }
+    boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols);
 
     /**
      * @{
@@ -212,9 +210,7 @@ public:
      * @returns true if loaded, false otherwise.
      */
     bool load(psi::PSIO* psio, unsigned int fileno, const std::string& tocentry, int nso);
-    bool load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso) {
-        return load(psio.get(), fileno, tocentry, nso);
-    }
+    bool load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, const std::string& tocentry, int nso);
     /** @} */
 
     /**
@@ -227,9 +223,7 @@ public:
      * @param saveSubBlocks Save information suffixing point group label.
      */
     void load(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle) {
-        load(psio.get(), fileno, savetype);
-    }
+    void load(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -260,9 +254,7 @@ public:
      * @param saveSubBlocks Save information suffixing point group label.
      */
     void save(psi::PSIO* const psio, unsigned int fileno, SaveType savetype=LowerTriangle);
-    void save(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle) {
-        save(psio.get(), fileno, savetype);
-    }
+    void save(boost::shared_ptr<psi::PSIO>& psio, unsigned int fileno, SaveType savetype=LowerTriangle);
     /** @} */
 
     /**
@@ -336,7 +328,7 @@ public:
      * @param n Column
      * @returns value at position (h, m, n)
      */
-    double get(int h, int m, int n) const { return matrix_[h][m][n]; }
+    double get(const int& h, const int& m, const int& n) const { return matrix_[h][m][n]; }
 
     /**
      * Returns a single element of matrix_
@@ -346,7 +338,7 @@ public:
      * @param n Column
      * @returns value at position (h, m, n)
      */
-    double get(int m, int n) const { return matrix_[0][m][n]; }
+    double get(const int& m, const int& n) const { return matrix_[0][m][n]; }
 
     /**
      * Python wrapper for get
@@ -369,8 +361,8 @@ public:
      * @param h Subblock
      * @returns pointer to h-th subblock in block-matrix form
      */
-    double** pointer(int h = 0) const { return matrix_[h]; }
-    const double** const_pointer(int h=0) const { return const_cast<const double**>(matrix_[h]); }
+    double** pointer(const int& h = 0) const { return matrix_[h]; }
+    const double** const_pointer(const int& h=0) const { return const_cast<const double**>(matrix_[h]); }
 
     /**
      * Returns the double* pointer to the h-th irrep block matrix
@@ -384,12 +376,12 @@ public:
      * @param h Subblock
      * @returns pointer to h-th subblock in block-matrix form
      */
-    double* get_pointer(int h = 0) const {
+    double* get_pointer(const int& h = 0) const {
         if(rowspi_[h]*colspi_[h] > 0)
            return &(matrix_[h][0][0]);
         else
            return 0;}
-    const double* get_const_pointer(int h=0) const {
+    const double* get_const_pointer(const int& h=0) const {
         if(rowspi_[h]*colspi_[h] > 0)
            return const_cast<const double*>(&(matrix_[h][0][0]));
         else
@@ -429,16 +421,12 @@ public:
      *
      * @param name New name to use.
      */
-    void set_name(const std::string& name) {
-        name_ = name;
-    }
+    void set_name(const std::string& name) { name_ = name; }
 
     /**
      * Gets the name of the matrix.
      */
-    std::string name() const {
-        return name_;
-    }
+    std::string name() const { return name_; }
 
     /// Python compatible printer
     void print_out() const { print(outfile); }
@@ -467,13 +455,9 @@ public:
     void eivprint(const boost::shared_ptr<Vector>& values, FILE *out = outfile);
 
     /// Returns the rows in irrep h
-    int rowdim(int h = 0) const {
-        return rowspi_[h];
-    }
+    int rowdim(const int& h = 0) const { return rowspi_[h]; }
     /// Returns the cols in irrep h
-    int coldim(int h = 0) const {
-        return colspi_[h];
-    }
+    int coldim(const int& h = 0) const { return colspi_[h]; }
 
     /// Returns the rows per irrep array
     int *rowspi() const {
@@ -1044,73 +1028,6 @@ public:
 
     friend class Matrix;
 };
-
-/*! \ingroup MINTS
- *  \class View
- *  \brief Provides a view to a region of the matrix.
- */
-class View
-{
-protected:
-    /// Matrix we are viewing.
-    boost::shared_ptr<Matrix> matrix_;
-    /// Number of irreps
-    int nirrep_;
-    /// Starting offsets in matrix_;
-    int *row_offset_per_irrep_;
-    int *col_offset_per_irrep_;
-    /// Number of rows we are viewing
-    int *rows_per_irrep_;
-    int *cols_per_irrep_;
-
-private:
-    View();  // No default constructor
-    View(const View& );  // No copy constructor
-
-public:
-    virtual ~View();
-
-    /** Constructor, assumes offsets for each irrep is 0
-     *  @param nirrep Number of irreps
-     *  @param rows How many rows per irrep are we interested in
-     *  @param cols How many cols per irrep are we interested in
-     */
-    View(int nirrep, int *rows, int *cols);
-    /** Constructor, user provides offsets and dimensions.
-     *  @param nirrep Number of irreps
-     *  @param rows How many rows per irrep
-     *  @param cols How many cols per irrep
-     *  @param row_offsets Row offset per irrep
-     *  @param col_offsets Column offset per irrep
-     */
-    View(int nirrep, int *rows, int *cols, int *row_offsets, int *col_offsets);
-    /** Constructor, user provides a Matrix to view and desired row count
-     *  @param matrix Matrix we want to view, View obtains nirrep from it
-     *  @param rows How many rows per irrep
-     *  @param cols How many cols per irrep
-     */
-    View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols);
-    /** Constructor, user provides a Matrix to view and desired row count
-     *  @param matrix Matrix we want to view, View obtains nirrep from it
-     *  @param rows How many rows per irrep
-     *  @param cols How many cols per irrep
-     *  @param row_offsets Row offset per irrep
-     *  @param col_offsets Column offset per irrep
-     */
-    View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols, int *row_offsets, int *col_offsets);
-
-    /** Operator () overload. Creates a new Matrix that only contains the view.
-     *  @return New Matrix containing the view.
-     */
-    boost::shared_ptr<Matrix> operator()();
-
-    /** Set the Matrix that we should be viewing.
-     *  @param matrix Matrix to view.
-     *  @return The old Matrix we were viewing.
-     */
-    boost::shared_ptr<Matrix> view(boost::shared_ptr<Matrix> matrix);
-};
-
 
 typedef boost::shared_ptr<Matrix>       SharedMatrix;
 typedef boost::shared_ptr<SimpleMatrix> SharedSimpleMatrix;

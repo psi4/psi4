@@ -8,7 +8,7 @@
 #include <cstring>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <psi4-dec.h>
+#include <libparallel/parallel.h>
 
 namespace psi {
 

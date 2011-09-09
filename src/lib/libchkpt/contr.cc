@@ -14,6 +14,7 @@ using namespace psi;
 
 double *Chkpt::rd_contr(const char *key2)
 {
+#if 0
 	double *contr;
 	double *temp_contr;
 	int nprim, i, j, ij = 0;
@@ -40,10 +41,13 @@ double *Chkpt::rd_contr(const char *key2)
 	free(temp_contr);
 	free(keyword);
 	return contr;
+#endif
+    return NULL;
 }
 
 void Chkpt::wt_contr(double *contr, const char *key2)
 {
+#if 0
 	int nprim;
 	char *keyword;
 	keyword = build_keyword("Contraction coefficients", key2);
@@ -54,6 +58,7 @@ void Chkpt::wt_contr(double *contr, const char *key2)
 		MAXANGMOM*nprim*sizeof(double));
 
 	free(keyword);
+#endif
 }
 
 extern "C" {

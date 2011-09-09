@@ -1,9 +1,11 @@
 #include "cc.h"
 
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.hpp>
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
+#include <psifiles.h>
 
 using namespace boost;
 using namespace psi;
