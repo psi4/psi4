@@ -5,6 +5,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include <libqt/qt.h>
 #include <libutil/libutil.h>
+#include <libutil/memory_manager.h>
 
 #include "special_matrices.h"
 

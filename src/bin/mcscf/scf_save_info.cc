@@ -8,6 +8,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libmints/molecule.h>
+#include <psifiles.h>
 
 #include "scf.h"
 

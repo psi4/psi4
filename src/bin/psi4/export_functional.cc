@@ -58,7 +58,7 @@ void export_functional()
         def("computeRKSFunctional", &SuperFunctional::computeRKSFunctional).
         def("computeUKSFunctional", &SuperFunctional::computeUKSFunctional);
 
-    class_<Functional, boost::shared_ptr<Functional> >("Functional").
+    class_<Functional, boost::shared_ptr<Functional>, boost::noncopyable >("Functional", no_init).
         def("create_functional", &Functional::createFunctional).
         staticmethod("create_functional").
         def("available_functionals", &Functional::availableFunctionals).

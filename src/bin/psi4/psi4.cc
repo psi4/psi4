@@ -15,6 +15,7 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
+#include <libpsio/psio.h>
 #include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include "script.h"

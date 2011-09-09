@@ -1,6 +1,7 @@
 #include <cmath>
 #include <cstdio>
 #include <libmoinfo/libmoinfo.h>
+#include <libutil/memory_manager.h>
 
 #include "algebra_interface.h"
 #include "heff.h"
