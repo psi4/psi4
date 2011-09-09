@@ -5,7 +5,7 @@
 #include <psi4-dec.h>
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
-#include <libciomr/libciomr.>
+#include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 
 namespace psi { namespace cchbar {
