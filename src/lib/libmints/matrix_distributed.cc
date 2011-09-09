@@ -481,79 +481,55 @@ bool Distributed_Matrix::operator !=(const Distributed_Matrix &rhs)
 
 Distributed_Matrix Distributed_Matrix::operator* (const Distributed_Matrix &rhs)
 {
-    bool symmetric = true;
 
-    // I have assumed a symmetric matrice to start with
-    if (symmetric) {
-        Distributed_Matrix result("multiply", this->nrows(), this->ncols());
-
-
-//        for (int j=0; j < nblocks_; j++) {
-//            if (me_ == owner(j)) {
-//                madness::Future<std::vector<double> > b_block = rhs.task(owner(j), &Distributed_Matrix::get_block);
-//                for (int i=0; i <= j; i++) {
-//                    int sb = i*nblocks_ + j;
-//                    madness::Future<std::vector<double> > a_block = this->task(owner(i), &Distributed_Matrix::get_block);
-
-//                    result.task(owner(sb), &Distributed_Matrix::multiply_block,
-//                                sb, true, false, 1.0, a_block, b_block, 0.0);
-//                }
-//            }
-//        }
-
-//        Communicator::world->sync();
-
-//        this->print_all_blocks();
-//        rhs.print_all_blocks();
-//        result.print_all_blocks();
-
-//        Communicator::world->sync();
-
-//        for (int i=0; i < nblocks_; i++) {
-//            for (int j=0; j > i; j++) {
-//                int ij = i*ncols_ + j;
-//                int ji = j*ncols_ + i;
-//                if ( owner(ji) )
-//                    result.task(owner(ji), &Distributed_Matrix::copy_nonlocal_sblock, ij, ji);
-//            }
-//        }
-//        Communicator::world->sync();
-
-
+    if (this->nrows() == rhs.ncols()) {
+        Distributed_Matrix result(this->nrows(), rhs.ncols());
+        result.zero();
 
         for (int i=0; i < nblocks_; i++) {
-            for (int k=0; k < nblocks_; k++) {
-                int ik = i*nblocks_ + k;
-                if (me_ == owner(ik)) {
-                    for (int j=0; j < nblocks_; j++) {
-                        int ij = i*nblocks_ + j;
+            for (int j=0; j < nblocks_; j++) {
+                int ij = i*nblocks_ + j;
+                madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_sblock, ij);
+                madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::sb_nrows, ij);
+                madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::sb_ncols, ij);
+
+                for (int k=0; k < nblocks_; k++) {
+                    int ik = i*nblocks_ + k;
+                    if (me_ == owner(ik)) {
                         int jk = j*nblocks_ + k;
-                        madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_sblock, ij);
                         madness::Future<std::vector<double> > B = rhs.task(owner(jk), &Distributed_Matrix::get_sblock, jk);
-                        madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::sb_nrows, ij);
-                        madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::sb_ncols, ij);
                         madness::Future<int> b_row = rhs.task(owner(jk), &Distributed_Matrix::sb_nrows, jk);
                         madness::Future<int> b_col = rhs.task(owner(jk), &Distributed_Matrix::sb_ncols, jk);
 
-                        result.task(owner(ik), &Distributed_Matrix::mxm, ik, A, B, a_row, a_col, b_row, b_col);
+                        int c_off = result.sb_offset(ik);
+                        result.task(owner(ik), &Distributed_Matrix::mxm, c_off, A, B, a_row, a_col, b_row, b_col);
                     }
                 }
             }
         }
 
-
         Communicator::world->sync();
-
-        this->print_all_blocks();
-        rhs.print_all_blocks();
-        result.print_all_blocks();
-
 
         return result;
     }
     else {
-        throw PSIEXCEPTION("Only symmetric matrix multiplies currently work.\n");
+        throw PSIEXCEPTION("The columns of A do not match the rows of B.\n");
     }
+}
+
+madness::Void Distributed_Matrix::MXM(const int &sb,
+                                      const std::vector<double> a,
+                                      const std::vector<double> &b,
+                                      const int &a_row,
+                                      const int &a_col,
+                                      const int &b_col)
+{
+    for (int i=0, c_off=this->sb_offset(sb); i < a_row; i++) {
+        for (int j=0; j < b_col; j++, c_off++) {
+            this->task(owner(sb), &Distributed_Matrix::dot, a_col, a, b, i*a_col, j, c_off, 1, b_col);
+        }
+    }
+    return madness::None;
 }
 
 #endif // End of HAVE_MADNESS
