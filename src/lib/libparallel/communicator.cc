@@ -16,3 +16,18 @@ Communicator::Communicator() :
 Communicator::~Communicator()
 { }
 
+void Communicator::bcast(std::string& data, int broadcaster)
+{
+    size_t length = 0;
+
+    if (broadcaster == me_)
+        length = data.size();
+    bcast(&length, 1, broadcaster);
+
+    if (broadcaster != me_)
+        data.resize(length, 0xff);
+
+    char* tdata = const_cast<char*>(data.c_str());
+    bcast(tdata, length, broadcaster);
+    tdata[length] = '\0';
+}

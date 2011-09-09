@@ -121,15 +121,10 @@ vector<string> BasisSetParser::load_file(const std::string& filename,
         if (me > 0)
             lines.resize(nlines);
 
-        for (size_t i=0; i<nlines; ++i)
+        for (size_t i=0; i<nlines; ++i) {
             Communicator::world->bcast(lines[i]);
+        }
     }
-
-    // Let each MPI process dump their lines to the disk
-    std::string node_name = to_string(me) + ".proc.out";
-    ofstream of(node_name.c_str());
-    for (size_t i=0; i<nlines; ++i)
-        of << lines[i];
 
     return lines;
 }
