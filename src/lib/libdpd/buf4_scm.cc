@@ -5,6 +5,7 @@
 #include <cstdio>
 #include "dpd.h"
 #include <libqt/qt.h>
+#include <libpsio/psio.h>
 #define EXTERN
 #include "dpd.gbl"
 

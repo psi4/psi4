@@ -3,6 +3,7 @@
     \brief Enter brief description of file here 
 */
 #include <cstdio>
+#include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include "dpd.h"
 

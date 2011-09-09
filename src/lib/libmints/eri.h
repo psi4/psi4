@@ -3,7 +3,6 @@
 
 #include <libint/libint.h>
 #include <libderiv/libderiv.h>
-#include <psiconfig.h>
 
 namespace boost {
 template<class T> class shared_ptr;

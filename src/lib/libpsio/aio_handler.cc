@@ -18,8 +18,11 @@ namespace psi {
 AIOHandler::AIOHandler(boost::shared_ptr<PSIO> psio)
     : psio_(psio)
 {
+    locked_ = new boost::mutex();
 }
-AIOHandler::~AIOHandler() {
+AIOHandler::~AIOHandler() 
+{
+    delete locked_;
 }
 boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 {
@@ -27,13 +30,13 @@ boost::shared_ptr<boost::thread> AIOHandler::get_thread()
 }
 void AIOHandler::synchronize()
 {
-    unique_lock<mutex> lock(locked_);
+    unique_lock<mutex> lock(*locked_);
     lock.unlock();
     thread_->join();
 }
 void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(1);
   unit_.push(unit);
@@ -50,7 +53,7 @@ void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size
 }
 void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(2);
   unit_.push(unit);
@@ -67,7 +70,7 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
 }
 void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size) 
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(3);
   unit_.push(unit);
@@ -82,7 +85,7 @@ void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, UL
 }
 void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size) 
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(4);
   unit_.push(unit);
@@ -99,7 +102,7 @@ void AIOHandler::read_discont(unsigned int unit, const char *key,
   double **matrix, ULI row_length, ULI col_length, ULI col_skip, 
   psio_address start)
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(5);
   unit_.push(unit);
@@ -119,7 +122,7 @@ void AIOHandler::write_discont(unsigned int unit, const char *key,
   double **matrix, ULI row_length, ULI col_length, ULI col_skip, 
   psio_address start)
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(6);
   unit_.push(unit);
@@ -138,7 +141,7 @@ void AIOHandler::write_discont(unsigned int unit, const char *key,
 void AIOHandler::zero_disk(unsigned int unit, const char *key,
     ULI rows, ULI cols)
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   job_.push(7);
   unit_.push(unit);
@@ -153,7 +156,7 @@ void AIOHandler::zero_disk(unsigned int unit, const char *key,
 }
 void AIOHandler::call_aio()
 {
-  unique_lock<mutex> lock(locked_);
+  unique_lock<mutex> lock(*locked_);
 
   while (job_.size() > 0) {
     int jobtype = job_.front();
