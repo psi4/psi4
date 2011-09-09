@@ -5,6 +5,7 @@
 #include <vector>
 
 #include "vector_base.h"
+#include <libutil/memory_manager.h>
 
 typedef std::vector<int> vecint;
 

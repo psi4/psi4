@@ -157,16 +157,5 @@ boost::shared_ptr<Matrix> View::view(boost::shared_ptr<Matrix> matrix)
     return old;
 }
 
-void SimpleMatrix::swap_rows(int i, int j)
-{
-    C_DSWAP(cols_, &(matrix_[i][0]), 1, &(matrix_[j][0]), 1);
 }
-
-void SimpleMatrix::swap_columns(int i, int j)
-{
-    C_DSWAP(rows_, &(matrix_[0][i]), cols_, &(matrix_[0][j]), cols_);
-}
-
-}
-
 

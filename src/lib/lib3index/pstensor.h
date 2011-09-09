@@ -2,8 +2,11 @@
 #define three_index_ps_H
 
 #include <psi4-dec.h>
-#include <psiconfig.h>
-#include <libmints/vector3.h>
+
+namespace boost {
+template <class T>
+class shared_ptr;
+}
 
 namespace psi {
 
@@ -86,7 +89,7 @@ protected:
     /// Print level
     int print_;
     /// Memory available to this algorithm, in doubles
-    ULI memory_;
+    unsigned long int memory_;
 
     /// Molecule (for convenience)
     boost::shared_ptr<Molecule> molecule_;
@@ -227,7 +230,7 @@ public:
              int nvir,
              int naocc,
              int navir,
-             ULI memory,
+             unsigned long int memory,
              Options& options);
     ~PSTensorII();
 
@@ -599,12 +602,12 @@ public:
     PseudoTrial();
     ~PseudoTrial();
     
-    boost::shared_ptr<Matrix> getI() const { return I_; }    
-    boost::shared_ptr<Matrix> getIPS() const { return Ips_; }    
+    boost::shared_ptr<Matrix> getI() const;
+    boost::shared_ptr<Matrix> getIPS() const;
 
-    boost::shared_ptr<Matrix> getQ() const { return Q_; }    
-    boost::shared_ptr<Matrix> getR() const { return R_; }    
-    boost::shared_ptr<Matrix> getA() const { return A_; }    
+    boost::shared_ptr<Matrix> getQ() const;
+    boost::shared_ptr<Matrix> getR() const;
+    boost::shared_ptr<Matrix> getA() const;
 
 };
 

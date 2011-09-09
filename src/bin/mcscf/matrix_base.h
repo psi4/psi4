@@ -3,6 +3,7 @@
 
 #include <cstring> // for size_t
 
+#include <libutil/memory_manager.h>
 #include "vector_base.h"
 
 namespace psi{ namespace mcscf{

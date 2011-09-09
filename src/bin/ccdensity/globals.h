@@ -4,6 +4,8 @@
 */
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
+#include <libpsio/psio.h>
+#include <libciomr/libciomr.h>
 #include <psi4-dec.h>
 
 namespace psi { namespace ccdensity {

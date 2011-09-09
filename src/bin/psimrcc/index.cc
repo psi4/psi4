@@ -1,4 +1,3 @@
-
 /***************************************************************************
  *  PSIMRCC : Copyright (C) 2007 by Francesco Evangelista and Andrew Simmonett
  *  frank@ccc.uga.edu   andysim@ccc.uga.edu
@@ -10,6 +9,7 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
+#include <libutil/memory_manager.h>
 
 #include "index.h"
 

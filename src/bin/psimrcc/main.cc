@@ -24,6 +24,7 @@
 #include <libmoinfo/libmoinfo.h>
 #include <liboptions/liboptions.h>
 #include <libutil/libutil.h>
+#include <libutil/memory_manager.h>
 #include <libqt/qt.h>
 
 // PSI C++

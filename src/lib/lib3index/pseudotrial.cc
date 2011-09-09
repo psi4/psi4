@@ -734,4 +734,11 @@ void PseudoTrial::verify()
     E->print();
 }
 
+boost::shared_ptr<Matrix> PseudoTrial::getI() const { return I_; }    
+boost::shared_ptr<Matrix> PseudoTrial::getIPS() const { return Ips_; }    
+
+boost::shared_ptr<Matrix> PseudoTrial::getQ() const { return Q_; }    
+boost::shared_ptr<Matrix> PseudoTrial::getR() const { return R_; }    
+boost::shared_ptr<Matrix> PseudoTrial::getA() const { return A_; }    
+
 }

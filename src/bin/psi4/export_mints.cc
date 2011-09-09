@@ -96,8 +96,8 @@ void export_mints()
     typedef void   (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
     typedef void   (Matrix::*matrix_set4)(int, int, int, double);
     typedef void   (Matrix::*matrix_set3)(int, int, double);
-    typedef double (Matrix::*matrix_get3)(int, int, int) const;
-    typedef double (Matrix::*matrix_get2)(int, int) const;
+    typedef double (Matrix::*matrix_get3)(const int&, const int&, const int&) const;
+    typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void   (Matrix::*matrix_load)(const std::string&);
 
     class_<Matrix, boost::shared_ptr<Matrix> >("Matrix").

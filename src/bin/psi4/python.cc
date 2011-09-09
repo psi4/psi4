@@ -7,10 +7,10 @@
 #include <sstream>
 #include <map>
 
-#include <psiconfig.h>
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
+#include <psiconfig.h>
 
 #include <psi4-dec.h>
 #include "script.h"
