@@ -1,3 +1,5 @@
+#include <boost/thread.hpp>
+
 #include "psio.hpp"
 #include "psio.h"
 #include <unistd.h>
@@ -12,6 +14,11 @@ PSIOManager::PSIOManager() : default_path_("/tmp/")
 PSIOManager::~PSIOManager()
 {
 }
+boost::shared_ptr<PSIOManager> PSIOManager::shared_object()
+{
+    return _default_psio_manager_;
+}
+
 void PSIOManager::set_specific_path(int fileno, const std::string& path)
 {
     specific_paths_[fileno] = path;

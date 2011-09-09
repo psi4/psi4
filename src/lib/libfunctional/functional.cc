@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <sstream>
+#include <iomanip>
 
 using namespace psi;
 using namespace boost;

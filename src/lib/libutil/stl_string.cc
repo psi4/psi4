@@ -3,6 +3,7 @@
 #include <iomanip>
 #include <algorithm>
 #include <cstdio>
+#include <sstream>
 
 #include "libutil.h"
 

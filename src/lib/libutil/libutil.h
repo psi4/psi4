@@ -3,13 +3,7 @@
 
 #include <string>
 #include <vector>
-#include <iostream>
-#include <sstream>
 #include <sys/time.h>
-#include <assert.h>
-#include "ref.h"
-
-#include "memory_manager.h"
 
 namespace psi {
 

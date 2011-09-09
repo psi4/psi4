@@ -15,6 +15,7 @@
 
 #include <exception.h>
 #include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
+#include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
 #include <boost/shared_ptr.hpp>
 
 
