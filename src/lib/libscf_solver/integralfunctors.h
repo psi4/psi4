@@ -42,26 +42,33 @@ namespace psi{ namespace scf{
 class J_K_Functor
 {
     /// The density matrix
-    const boost::shared_ptr<Matrix> D_;
+    const SharedMatrix D_;
     /// The occupation matrix
-    const boost::shared_ptr<Matrix> C_;
+    const SharedMatrix C_;
     /// The number of alpha (and beta) electrons
     const int* N_;
     std::vector<SharedMatrix> J_;
     std::vector<SharedMatrix> K_;
     /// The communicator
-    std::string comm;
+    std::string comm_;
     /// The scf type
-    std::string scf_type;
+    std::string scf_type_;
     /// Number of threads
     int nthread_;
 
 public:
+    const SharedMatrix D() const {return D_;}
+    const SharedMatrix C() const {return C_;}
+    std::vector<SharedMatrix > J() const {return J_;}
+    std::vector<SharedMatrix > K() const {return K_;}
+    std::string scf_type() const {return scf_type_;}
+    const int* N() const {return N_;}
+
     bool k_required() const {return true;}
-    void initialize(std::string scf_type_){
-        comm = Communicator::world->communicator();
+    void initialize(std::string scf_type){
+        comm_ = Communicator::world->communicator();
         nthread_ = Communicator::world->nthread();
-        scf_type = scf_type_;
+        scf_type_ = scf_type;
         J_[0]->zero();
         K_[0]->zero();
 
@@ -79,7 +86,7 @@ public:
         }
 
         // Perform MPI global sum
-        if (comm != "LOCAL" && scf_type == "DIRECT") {
+        if (comm_ != "LOCAL" && scf_type_ == "DIRECT") {
             for (int i=0; i < J_[0]->nirrep(); i++)
                 Communicator::world->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
             for (int i=0; i < K_[0]->nirrep(); i++)
@@ -90,27 +97,40 @@ public:
         K_[0]->copy_lower_to_upper();
     }
 
-    J_K_Functor() {
+    J_K_Functor()
+        : D_( SharedMatrix(new Matrix()) ),
+          C_( SharedMatrix(new Matrix()) ),
+          N_(new int[2])
+    {
         throw PSIEXCEPTION("J_K_Functor(): Default constructor called. This shouldn't happen.");
     }
 
-    // This was added for testing.
-//    J_K_Functor(const J_K_Functor&) {
-//        throw PSIEXCEPTION("J_K_Functor(): Copy constructor called.");
-//    }
-//
-//    J_K_Functor& operator=(const J_K_Functor&) {
-//        throw PSIEXCEPTION("J_K_Functor(): Assignment operator called. This shouldn't happen.");
-//        return *this;
-//    }
+    J_K_Functor(std::vector<SharedMatrix > J,
+                std::vector<SharedMatrix > K,
+                const SharedMatrix D,
+                const SharedMatrix C,
+                const int* N,
+                const std::string &scf_type)
+        :  J_(J), K_(K), D_(D), C_(C), N_(N)
+    {
+        comm_ = Communicator::world->communicator();
+        nthread_ = Communicator::world->nthread();
+        scf_type_ = scf_type;
+    }
 
-    J_K_Functor(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K, const boost::shared_ptr<Matrix> D,
-        const boost::shared_ptr<Matrix> C, const int* N)
+    J_K_Functor& operator=(const J_K_Functor&) {
+        return *this;
+    }
+
+
+    J_K_Functor(SharedMatrix J, SharedMatrix K, const SharedMatrix D,
+        const SharedMatrix C, const int* N)
         :  D_(D), C_(C), N_(N)
     {
         J_.push_back(J);
         K_.push_back(K);
     }
+
 
     void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
         dfhf->set_restricted(true);
@@ -316,26 +336,32 @@ public:
 class J_Functor
 {
     /// The alpha density matrix
-    const boost::shared_ptr<Matrix> Da_;
+    const SharedMatrix Da_;
     /// The beta density matrix
-    const boost::shared_ptr<Matrix> Db_;
+    const SharedMatrix Db_;
     /// The Coulomb matrix
     std::vector<SharedMatrix> J_;
     /// Whether this is restricted or not
     bool restricted_;
     /// The communicator
-    std::string comm;
+    std::string comm_;
     int nthread_;
     /// The scf type
-    std::string scf_type;
+    std::string scf_type_;
 
 public:
+    SharedMatrix Da() const {return Da_;}
+    SharedMatrix Db() const {return Db_;}
+    std::vector<SharedMatrix > J() const {return J_;}
+    std::string scf_type() const{return scf_type_;}
+    bool restricted() const {return restricted_;}
+
     bool k_required() const {return false;}
 
-    void initialize(std::string scf_type_){
-        comm = Communicator::world->communicator();
+    void initialize(std::string scf_type){
+        comm_ = Communicator::world->communicator();
         nthread_ = Communicator::world->nthread();
-        scf_type = scf_type_;
+        scf_type_ = scf_type;
         J_[0]->zero();
 
         for (int i=1; i<nthread_; ++i)
@@ -345,7 +371,7 @@ public:
         for (int i=1; i<nthread_; ++i)
             J_[0]->add(J_[i]);
 
-        if (comm != "LOCAL" && scf_type == "DIRECT") {
+        if (comm_ != "LOCAL" && scf_type_ == "DIRECT") {
             for (int i=0; i < J_[0]->nirrep(); i++)
                 Communicator::world->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
         }
@@ -356,19 +382,38 @@ public:
     // NEVER CALL THIS FUNCTION
     J_Functor() { throw PSIEXCEPTION("J_Functor(): This should never have been called, idiot."); }
 
-    J_Functor(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da)
+    J_Functor(SharedMatrix J, const SharedMatrix Da)
         : Da_(Da), Db_(Da)
     {
         J_.push_back(J);
         restricted_ = true;
     }
 
-    J_Functor(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
+    J_Functor(std::vector< SharedMatrix > J,
+              const SharedMatrix Da,
+              const SharedMatrix Db,
+              const std::string &scf_type,
+              const bool &restricted)
+        : J_(J), Da_(Da), Db_(Db),
+          scf_type_(scf_type),
+          restricted_(restricted)
+    {
+        comm_ = Communicator::world->communicator();
+        nthread_ = Communicator::world->nthread();
+    }
+
+    J_Functor& operator=(const J_Functor&) {
+        return *this;
+    }
+
+
+    J_Functor(SharedMatrix J, const SharedMatrix Da, const SharedMatrix Db)
         : Da_(Da), Db_(Db)
     {
         J_.push_back(J);
         restricted_ = false;
     }
+
 
     void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
         // Pseudospectral is exchange only, this does nothing
@@ -469,13 +514,13 @@ public:
 class J_Ka_Kb_Functor
 {
     /// The alpha density matrix
-    const boost::shared_ptr<Matrix> Da_;
+    const SharedMatrix Da_;
     /// The beta density matrix
-    const boost::shared_ptr<Matrix> Db_;
+    const SharedMatrix Db_;
     /// The alpha occupation matrix
-    const boost::shared_ptr<Matrix> Ca_;
+    const SharedMatrix Ca_;
     /// The beta occupation matrix
-    const boost::shared_ptr<Matrix> Cb_;
+    const SharedMatrix Cb_;
     /// The number of alpha electrons
     const int* Na_;
     /// The number of beta electrons
@@ -487,18 +532,30 @@ class J_Ka_Kb_Functor
     /// The beta exchange matrix
     std::vector<SharedMatrix> Kb_;
     /// The communicator
-    std::string comm;
+    std::string comm_;
     int nthread_;
     /// The scf type
-    std::string scf_type;
+    std::string scf_type_;
 
 public:
+
+    SharedMatrix Da() const {return Da_;}
+    SharedMatrix Db() const {return Db_;}
+    SharedMatrix Ca() const {return Ca_;}
+    SharedMatrix Cb() const {return Cb_;}
+    std::vector<SharedMatrix> J() const {return J_;}
+    std::vector<SharedMatrix> Ka() const {return Ka_;}
+    std::vector<SharedMatrix> Kb() const {return Kb_;}
+    const int* Na() const {return Na_;}
+    const int* Nb() const {return Nb_;}
+    std::string scf_type() const {return scf_type_;}
+
     bool k_required() const {return true;}
 
-    void initialize(std::string scf_type_){
-        comm = Communicator::world->communicator();
+    void initialize(std::string scf_type){
+        comm_ = Communicator::world->communicator();
         nthread_ = Communicator::world->nthread();
-        scf_type = scf_type_;
+        scf_type_ = scf_type;
         J_[0]->zero();
         Ka_[0]->zero();
         Kb_[0]->zero();
@@ -516,7 +573,7 @@ public:
             Ka_[0]->add(Ka_[i]);
             Kb_[0]->add(Kb_[i]);
         }
-        if (comm != "LOCAL" && scf_type == "DIRECT") {
+        if (comm_ != "LOCAL" && scf_type_ == "DIRECT") {
             for (int i=0; i < J_[0]->nirrep(); i++)
                 Communicator::world->sum(J_[0]->get_pointer(i), J_[0]->rowdim(i)*J_[0]->coldim(i));
             for (int i=0; i < Ka_[0]->nirrep(); i++)
@@ -533,14 +590,37 @@ public:
     // NEVER CALL THIS FUNCTION
     J_Ka_Kb_Functor() { throw PSIEXCEPTION("J_Ka_Kb_Functor(): This should never have been called, idiot."); }
 
-    J_Ka_Kb_Functor(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Ka,
-               boost::shared_ptr<Matrix> Kb, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db, const boost::shared_ptr<Matrix> Ca, const boost::shared_ptr<Matrix> Cb, const int* Na, const int* Nb)
+    J_Ka_Kb_Functor(SharedMatrix J, SharedMatrix Ka,
+               SharedMatrix Kb, const SharedMatrix Da, const SharedMatrix Db, const SharedMatrix Ca, const SharedMatrix Cb, const int* Na, const int* Nb)
         : Da_(Da), Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na), Nb_(Nb)
     {
         J_.push_back(J);
         Ka_.push_back(Ka);
         Kb_.push_back(Kb);
     }
+
+    J_Ka_Kb_Functor(std::vector<SharedMatrix> J,
+                    std::vector<SharedMatrix> Ka,
+                    std::vector<SharedMatrix> Kb,
+                    const SharedMatrix Da,
+                    const SharedMatrix Db,
+                    const SharedMatrix Ca,
+                    const SharedMatrix Cb,
+                    const int* Na,
+                    const int* Nb,
+                    const std::string &scf_type)
+        : J_(J), Ka_(Ka), Kb_(Kb), Da_(Da),
+          Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na),
+          Nb_(Nb), scf_type_(scf_type)
+    {
+        comm_ = Communicator::world->communicator();
+        nthread_ = Communicator::world->nthread();
+    }
+
+    J_Ka_Kb_Functor& operator=(const J_Ka_Kb_Functor&) {
+        return *this;
+    }
+
 
     void operator()(boost::shared_ptr<DFHF> dfhf, boost::shared_ptr<PseudospectralHF> pshf) {
         pshf->set_restricted(false);
@@ -828,40 +908,88 @@ void HF::process_tei(JKFunctor & functor)
 namespace madness {
 namespace archive {
 
+typedef psi::Matrix PSIMatrix;
+typedef boost::shared_ptr<PSIMatrix> PSISharedMatrix;
+
 template <class Archive>
 struct ArchiveStoreImpl< Archive, psi::scf::J_Functor> {
     static void store(const Archive &ar, const psi::scf::J_Functor &t) {
+        ar & t.Da() & t.Db() & t.J() & t.scf_type() & t.restricted();
     }
 };
 
 template <class Archive>
 struct ArchiveStoreImpl< Archive, psi::scf::J_K_Functor> {
     static void store(const Archive &ar, const psi::scf::J_K_Functor &t) {
+        ar & t.J() & t.K() & t.D() & t.C() &
+                wrap(&(t.N()[0]), 2) &
+                t.scf_type();
     }
 };
 
 template <class Archive>
 struct ArchiveStoreImpl< Archive, psi::scf::J_Ka_Kb_Functor> {
     static void store(const Archive &ar, const psi::scf::J_Ka_Kb_Functor &t) {
+        ar & t.J() &
+             t.Ka() & t.Kb() &
+             t.Da() & t.Db() &
+             t.Ca() & t.Cb() &
+             wrap(&(t.Na()[0]), 2) &
+             wrap(&(t.Nb()[0]), 2) &
+             t.scf_type();
     }
 };
 
 
 template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::scf::J_Functor> {
-    static void load(const Archive &ar, const psi::scf::J_Functor &t) {
+    static void load(const Archive &ar, psi::scf::J_Functor &t) {
+        std::vector< PSISharedMatrix > J;
+        PSISharedMatrix Da, Db;
+        std::string scf_type;
+        bool restricted;
+
+        ar & J & Da & Db & scf_type & restricted;
+
+        t = psi::scf::J_Functor(J, Da, Db, scf_type, restricted);
     }
 };
 
 template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::scf::J_K_Functor> {
-    static void load(const Archive &ar, const psi::scf::J_K_Functor &t) {
+    static void load(const Archive &ar, psi::scf::J_K_Functor &t) {
+        std::vector< PSISharedMatrix > J, K;
+        PSISharedMatrix D, C;
+        int* N = new int[2];
+        std::string scf_type;
+
+        ar & J & K & D & C &
+                wrap(&(N[0]), 2) &
+                scf_type;
+
+        t = psi::scf::J_K_Functor(J, K, D, C, N, scf_type);
+
+        free(N);
     }
 };
 
 template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::scf::J_Ka_Kb_Functor> {
-    static void load(const Archive &ar, const psi::scf::J_Ka_Kb_Functor &t) {
+    static void load(const Archive &ar, psi::scf::J_Ka_Kb_Functor &t) {
+        std::vector< PSISharedMatrix > J, Ka, Kb;
+        PSISharedMatrix Da, Db, Ca, Cb;
+        int *Na = new int[2];
+        int *Nb = new int[2];
+        std::string scf_type;
+
+        ar & J & Ka & Kb & Da & Db & Ca & Cb &
+                wrap(&(Na[0]), 2) &
+                wrap(&(Nb[0]), 2) &
+                scf_type;
+
+        t = psi::scf::J_Ka_Kb_Functor(J, Ka, Kb, Da, Db,
+                                      Ca, Cb, Na, Nb,
+                                      scf_type);
     }
 };
 

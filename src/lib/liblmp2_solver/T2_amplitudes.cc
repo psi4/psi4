@@ -94,13 +94,19 @@ int LMP2::compute_T2_energy(const int &iter) {
         }
     }
     else {
+        std::map<int, madness::Future<SharedMatrix> > F_sum;
         for (int ij=0; ij < ij_pairs_; ij++) {
             terms += pair_domain_len_[ij] * pair_domain_len_[ij];
             if (me_ == ij_owner_[ij]) {
+                F_sum.insert(std::pair<int, madness::Future<SharedMatrix> >(ij, task(me_, &LMP2::build_F_sum, ij, iter)));
+            }
+        }
+        for (int ij=0; ij < ij_pairs_; ij++) {
+            if (me_ == ij_owner_[ij]) {
 
-                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
+//                madness::Future<SharedMatrix> F_sum = task(me_, &LMP2::build_F_sum, ij, iter);
 
-                madness::Future<SharedMatrix> Rtilde = task(me_, &LMP2::build_rtilde, F_sum, ij, iter);
+                madness::Future<SharedMatrix> Rtilde = task(me_, &LMP2::build_rtilde, F_sum[ij], ij, iter);
 
                 madness::Future<SharedMatrix> T2 = task(me_, &LMP2::amplitudes_T2, Rtilde, ij, iter);
 
@@ -143,8 +149,12 @@ int LMP2::compute_T2_energy(const int &iter) {
 }
 
 #if HAVE_MADNESS == 1
-madness::Future<SharedMatrix> LMP2::get_old_T2(const int &ij) {
-    return madness::Future<SharedMatrix> (T2_amp_[dmat1_][ij]);
+//madness::Future<SharedMatrix> LMP2::get_old_T2(const int &ij) {
+//    return madness::Future<SharedMatrix> (T2_amp_[dmat1_][ij]);
+//}
+
+SharedMatrix LMP2::get_old_T2(const int &ij) {
+    return T2_amp_[dmat1_][ij];
 }
 
 //madness::Void LMP2::print_matrix(SharedMatrix mat)
@@ -153,7 +163,7 @@ madness::Future<SharedMatrix> LMP2::get_old_T2(const int &ij) {
 //    return madness::None;
 //}
 
-madness::Future<SharedMatrix> LMP2::build_F_sum(const int &ij, const int &iter) {
+SharedMatrix LMP2::build_F_sum(const int &ij, const int &iter) {
 
     if (iter > 0) {
         madness::TaskAttributes attr;
@@ -174,10 +184,10 @@ madness::Future<SharedMatrix> LMP2::build_F_sum(const int &ij, const int &iter) 
             }
         }
 
-        return madness::Future<SharedMatrix>( task(me_, &LMP2::F_sum_add, F_sum_kj, F_sum_ik, ij) );
+        return task(me_, &LMP2::F_sum_add, F_sum_kj, F_sum_ik, ij);
     }
     else {
-        return madness::Future<SharedMatrix>( boost::shared_ptr<Matrix>(new Matrix()) );
+        return boost::shared_ptr<Matrix>(new Matrix());
     }
 }
 
@@ -363,7 +373,7 @@ SharedMatrix LMP2::F_sum_add(const std::vector<madness::Future<SharedMatrix> > &
 //}
 
 
-madness::Future<SharedMatrix> LMP2::build_rtilde(const SharedMatrix F_sum, const int &ij, const int &iter) {
+SharedMatrix LMP2::build_rtilde(const SharedMatrix F_sum, const int &ij, const int &iter) {
 
     int ij_loc = ij_local_[ij];
     SharedMatrix T2(new Matrix(pair_domain_len_[ij], pair_domain_len_[ij]));
@@ -408,11 +418,11 @@ madness::Future<SharedMatrix> LMP2::build_rtilde(const SharedMatrix F_sum, const
 
     }
 
-    return madness::Future<SharedMatrix>(T2);
+    return T2;
 
 }
 
-madness::Future<SharedMatrix> LMP2::amplitudes_T2(const SharedMatrix T2, const int &ij, const int &iter) {
+SharedMatrix LMP2::amplitudes_T2(const SharedMatrix T2, const int &ij, const int &iter) {
 
     std::stringstream ij_val;
     int ij_loc = ij_local_[ij];
@@ -460,7 +470,7 @@ madness::Future<SharedMatrix> LMP2::amplitudes_T2(const SharedMatrix T2, const i
         T2->print();
     }
 
-    return madness::Future<SharedMatrix>(T2);
+    return T2;
 
 }
 #endif

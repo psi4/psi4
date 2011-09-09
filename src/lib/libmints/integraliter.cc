@@ -503,6 +503,12 @@ SO_RS_Iterator::SO_RS_Iterator(const int &P, const int &Q,
 {
 }
 
+SO_RS_Iterator::SO_RS_Iterator(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                               boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4) :
+     bs1_(bs1), bs2_(bs2), bs3_(bs3), bs4_(bs4)
+{
+}
+
 SO_RS_Iterator::SO_RS_Iterator() : usii(0), usjj(0)
 {
 

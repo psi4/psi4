@@ -349,19 +349,19 @@ protected:
                                            const int &abs_m, const int &abs_n);
 
     /// Compute the T2 amplitudes
-    madness::Future<SharedMatrix> amplitudes_T2(const SharedMatrix T2, const int &ij, const int &iter);
+    SharedMatrix amplitudes_T2(const SharedMatrix T2, const int &ij, const int &iter);
 
     /// Returns the ij'th T2 amplitudes may or may not be local
-    madness::Future<SharedMatrix> get_old_T2(const int &ij);
+    SharedMatrix get_old_T2(const int &ij);
 
     /// Builds and returns F_sum to compute the new Residules
-    madness::Future<SharedMatrix> build_F_sum(const int &ij, const int &iter);
+    SharedMatrix build_F_sum(const int &ij, const int &iter);
 
     /// Compute the T2 amplitudes
     madness::Void compute_T2(const SharedMatrix & F_sum, const int &ij, const int &iter);
 
     /// Build Rtilde
-    madness::Future<SharedMatrix> build_rtilde(const SharedMatrix F_sum,
+    SharedMatrix build_rtilde(const SharedMatrix F_sum,
                                                const int &ij, const int &iter);
 
     /// Adds the T2_kj and T2_ik to F_sum

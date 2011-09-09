@@ -1247,6 +1247,8 @@ double HF::compute_energy()
     if (options_.get_str("SAPT") != "FALSE") //not a bool because it has types
         save_sapt_info();
 
+    Communicator::world->sync();
+
     // Clean memory off, handle diis closeout, etc
     finalize();
 
