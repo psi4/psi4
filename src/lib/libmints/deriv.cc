@@ -50,6 +50,11 @@ public:
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
     }
+
+    CorrelatedRestrictedFunctor() {
+        throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
+    }
+
     void finalize() {
         for (int h=0; h<wavefunction_->nirrep(); ++h)
             dpd_buf4_mat_irrep_close(&G_, h);
@@ -547,6 +552,13 @@ struct ArchiveStoreImpl< Archive, psi::ScfUnrestrictedFunctor> {
 };
 
 template <class Archive>
+struct ArchiveStoreImpl< Archive, psi::CorrelatedRestrictedFunctor> {
+    static void store(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
+    }
+};
+
+
+template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::ScfRestrictedFunctor> {
     static void load(const Archive &ar, const psi::ScfRestrictedFunctor &t) {
     }
@@ -557,6 +569,13 @@ struct ArchiveLoadImpl< Archive, psi::ScfUnrestrictedFunctor> {
     static void load(const Archive &ar, const psi::ScfUnrestrictedFunctor &t) {
     }
 };
+
+template <class Archive>
+struct ArchiveLoadImpl< Archive, psi::CorrelatedRestrictedFunctor> {
+    static void load(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
+    }
+};
+
 
 }
 }
