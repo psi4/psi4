@@ -7,6 +7,7 @@
 
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
+#include <libutil/memory_manager.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>

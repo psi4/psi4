@@ -6,6 +6,7 @@
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+#include <libciomr/libciomr.h>
 
 #include <physconst.h>
 #include <vector>
