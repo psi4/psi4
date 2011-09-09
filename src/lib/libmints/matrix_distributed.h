@@ -171,6 +171,15 @@ public:
     /// This zeros out a distributed matrix
     madness::Void zero() { *this = 0.0; }
 
+    /// Matrix multiply (calls DDOT to add up the elements for C)
+    madness::Void MXM(const int &sb,
+                      const std::vector<double> a,
+                      const std::vector<double> &b,
+                      const int &a_row,
+                      const int &a_col,
+                      const int &b_col);
+
+
 #else
 
 public:
