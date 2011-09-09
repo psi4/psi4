@@ -6,6 +6,8 @@
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
 #include <psi4-dec.h>
+#include <libciomr/libciomr.h>
+#include <libpsio/psio.h>
 
 namespace psi { namespace cctriples {
 

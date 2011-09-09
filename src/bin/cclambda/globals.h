@@ -4,6 +4,9 @@
 */
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
+#include <psi4-dec.h>
+#include <libciomr/libciomr.>
+#include <libpsio/psio.h>
 
 namespace psi { namespace cclambda {
 

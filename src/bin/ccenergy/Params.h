@@ -6,6 +6,8 @@
 #ifndef _psi_src_bin_ccenergy_params_h
 #define _psi_src_bin_ccenergy_params_h
 
+#include <string>
+
 namespace psi { namespace ccenergy {
 
 /* Input parameters */

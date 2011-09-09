@@ -16,6 +16,7 @@
 #include <psifiles.h>
 #include <psiconfig.h>
 #include <libplugin/plugin.h>
+#include <libparallel/parallel.h>
 
 using namespace std;
 
