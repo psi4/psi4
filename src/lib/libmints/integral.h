@@ -331,6 +331,9 @@ public:
     SO_RS_Iterator(const int &P, const int &Q,
                    boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
                    boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
+    SO_RS_Iterator(boost::shared_ptr<SOBasisSet>bs1, boost::shared_ptr<SOBasisSet>bs2,
+                   boost::shared_ptr<SOBasisSet>bs3, boost::shared_ptr<SOBasisSet>bs4);
+
     SO_RS_Iterator();
 
     void first();
