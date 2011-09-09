@@ -8,6 +8,7 @@
 
 #include <liblmp2_solver/lmp2.h>
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 
 namespace boost {
 template<class T> class shared_ptr;
