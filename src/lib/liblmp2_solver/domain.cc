@@ -9,6 +9,7 @@
 #include <liblmp2_solver/lmp2.h>
 #include <libqt/qt.h>
 #include <physconst.h>
+#include <libciomr/libciomr.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -68,7 +69,7 @@ void LMP2::build_domains() {
 
 
         // Rank the atomic contributions to the orbital's charge
-        for (int j = 0; j < natom_; j++) {
+        for (j = 0; j < natom_; j++) {
             rank[j] = 0;
             boolean[j] = false;
         }
@@ -80,10 +81,10 @@ void LMP2::build_domains() {
         rank[0] = max;
         boolean[max] = 1;
 
-        for (int j = 1; j < natom_; j++) {
+        for (j = 1; j < natom_; j++) {
             max = 0;
             while (boolean[max]) max++; // find an unused max
-            for (int k = 0; k < natom_; k++) {
+            for (k = 0; k < natom_; k++) {
                 if ((fabs(charge[k]) >= fabs(charge[max])) && !boolean[k])
                     max = k;
             }
@@ -97,7 +98,7 @@ void LMP2::build_domains() {
 
 
         // Build the orbital's domain starting in order of decreasing charge contribution
-        for (int j = 0; j < nso_; j++) {
+        for (j = 0; j < nso_; j++) {
             SR[j] = C_DDOT(nso_, &(S_->pointer(0)[j][0]), 1, &(C_->pointer(0)[0][i]), nso_);
         }
 
@@ -111,7 +112,7 @@ void LMP2::build_domains() {
             // Completeness check
             for (j = 0, row = 0; j < natom_; j++) {
                 if (domain_[i - nfocc_][j]) {
-                    for (int k = ao_start_[j]; k < ao_stop_[j]; k++, row++) {
+                    for (k = ao_start_[j]; k < ao_stop_[j]; k++, row++) {
 
                         Z[row] = SR[k];
 
@@ -135,7 +136,7 @@ void LMP2::build_domains() {
             fR[i - nfocc_] = 1.0;
             for (j = 0, row = 0; j < natom_; j++) {
                 if (domain_[i - nfocc_][j]) {
-                    for (int k = ao_start_[j]; k < ao_stop_[j]; k++, row++) {
+                    for (k = ao_start_[j]; k < ao_stop_[j]; k++, row++) {
                         for (l = 0; l < nso_; l++)
                             fR[i - nfocc_] -= Z[row] * S_->get(0,k,l) * C_->get(0,l,i);
                     }
@@ -187,16 +188,16 @@ void LMP2::build_domains() {
 ////    }
 
     /* Recheck Completeness */
-    for (int i = 0; i < ndocc_; i++) {
+    for (i = 0; i < ndocc_; i++) {
 
         /* Build the orbital's domain starting in order of decreasing charge contribution */
-        for (int j = 0; j < nso_; j++) {
+        for (j = 0; j < nso_; j++) {
             SR[j] = C_DDOT(nso_, &(S_->pointer(0)[j][0]), 1, &(C_->pointer(0)[0][i]), nso_);
         }
 
         for (j = 0, row = 0; j < natom_; j++) {
             if (domain_[i - nfocc_][j]) {
-                for (int k = ao_start_[j]; k < ao_stop_[j]; k++, row++) {
+                for (k = ao_start_[j]; k < ao_stop_[j]; k++, row++) {
 
                     Z[row] = SR[k];
 
@@ -237,9 +238,9 @@ void LMP2::build_domains() {
     Matrix geometry = molecule_->geometry();
 
     ij_pairs_ = 0;
-    for (int i = 0; i < ndocc_; i++) {
+    for (i = 0; i < ndocc_; i++) {
         for (int m = 0; m < natom_; m++) {
-            for (int j = 0; j <= i; j++) {
+            for (j = 0; j <= i; j++) {
                 int ij = (i * (i + 1)) / 2 + j;
                 for (int n = 0; n < natom_; n++) {
                     if (pairdom_exist_[ij] == 0) {
