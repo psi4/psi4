@@ -20,6 +20,13 @@ namespace python{
 
 namespace psi {
 
+//struct mxm_info {
+//    const int &a_off;
+//    const int &b_off;
+//    const int &c_off;
+//    const int &a_skip;
+//    const int &b_skip;
+//};
 
 class Block
 {
@@ -72,6 +79,10 @@ protected:
     /// Communicator Type
     std::string comm_;
 
+#if HAVE_MADNESS == 1
+    SharedMutex mutex_;
+#endif
+
     template<typename T>
     void free_vector(std::vector<T> &vec)
     {
@@ -96,6 +107,9 @@ public:
         nprocs_ = Communicator::world->nproc();
         nthreads_ = Communicator::world->nthread();
         comm_ = Communicator::world->communicator();
+#if HAVE_MADNESS == 1
+        mutex_ = Communicator::world->get_mutex();
+#endif
     }
 
     ~Block() { Communicator::world->sync(); }
@@ -159,10 +173,12 @@ public:
                                    const std::vector<int> &csize,
                                    const std::vector<int> &roffset)
     {
-        me_ = Communicator::world->me();
-        nprocs_ = Communicator::world->nproc();
-        nthreads_ = Communicator::world->nthread();
-        comm_ = Communicator::world->communicator();
+//        me_ = Communicator::world->me();
+//        nprocs_ = Communicator::world->nproc();
+//        nthreads_ = Communicator::world->nthread();
+//        comm_ = Communicator::world->communicator();
+//        mutex_ = Communicator::world->get_mutex();
+
         if (block_.size()) clear_block();
 
         int tsb = nprocs_ * nprocs_;
@@ -296,50 +312,102 @@ public:
         return madness::None;
     }
 
-    madness::Void mxm(const int &sb, const std::vector<double> a,
+//    madness::Void mxm(const int &sb, const std::vector<double> a,
+//                      const std::vector<double> &b,
+//                      const int &a_row, const int &a_col,
+//                      const int &b_row, const int &b_col)
+//    {
+//        int local = global_local_sblock_[sb];
+//        int offset = sb_offset_[local];
+
+////        if (a_row == b_col) {
+//        for (int i=0, ij=0; i < a_row; i++) {
+//            for (int j=0; j < b_col; j++, ij++) {
+//                block_[offset + ij] += C_DDOT(a_col, const_cast<double*>(&a[i*a_col]), 1,
+//                                              const_cast<double*>(&b[j]), b_col);
+//            }
+//        }
+//        //        }
+////        else throw PSIEXCEPTION("Rows and columns do not line up for matrix multiplication.\n");
+
+//        return madness::None;
+//    }
+
+    madness::Void mxm(const int &c_off,
+                      const std::vector<double> &a,
                       const std::vector<double> &b,
                       const int &a_row, const int &a_col,
                       const int &b_row, const int &b_col)
     {
-        int local = global_local_sblock_[sb];
-        int offset = sb_offset_[local];
+        C_DGEMM('n', 'n', a_row, b_col, a_col, 1.0,
+                const_cast<double*>(&a[0]), a_col,
+                const_cast<double*>(&b[0]), b_col, 1.0,
+                const_cast<double*>(&block_[c_off]), b_col);
 
 //        if (a_row == b_col) {
-        for (int i=0, ij=0; i < a_row; i++) {
-            for (int j=0; j < b_col; j++, ij++) {
-                block_[offset + ij] += C_DDOT(a_col, const_cast<double*>(&a[i*a_col]), 1,
-                                              const_cast<double*>(&b[j]), b_col);
-            }
-        }
+//        for (int i=0, ij=0; i < a_row; i++) {
+//            for (int j=0; j < b_col; j++, ij++) {
+//                block_[c_offset + ij] += C_DDOT(a_col, const_cast<double*>(&a[i*a_col]), 1,
+//                                              const_cast<double*>(&b[j]), b_col);
+//            }
+//        }
         //        }
 //        else throw PSIEXCEPTION("Rows and columns do not line up for matrix multiplication.\n");
 
         return madness::None;
     }
 
-    madness::Void multiply_block(const int &sb,
-                                 bool transa, bool transb, double alpha,
-                                 const std::vector<double> &a,
-                                 const std::vector<double> &b, double beta)
+    // N is the number of element
+    // a is the A vector
+    // b is the B vector
+    // offset is the offset to the C element
+    // a_off is the offset to A
+    // b_off is the offset to B
+    // c_off is the offset to C
+    // a_skip is the number of elements to skip
+    // b_skip is the number of elements to skip
+    madness::Void dot(const int &nelem,
+                      const std::vector<double> &a,
+                      const std::vector<double> &b,
+                      const int &a_off,
+                      const int &b_off,
+                      const int &c_off,
+                      const int &a_skip,
+                      const int &b_skip)
     {
-        int offset = sb_offset_[global_local_sblock_[sb]];
 
-        char ta = transa ? 't' : 'n';
-        char tb = transb ? 't' : 'n';
-
-        int m, n, k, lda, ldb, ldc;
-        m = b_nrows_;
-        n = b_ncols_;
-        k = transa ? b_nrows_ : b_ncols_;
-        lda = transa ? m : k;
-        ldb = transb ? k : n;
-        ldc = n;
-
-        C_DGEMM(ta, tb, m, n, k, alpha, const_cast<double*>(&a[0]), lda,
-                const_cast<double*>(&b[0]), ldb, beta, &block_[offset], ldc);
+        mutex_->lock();
+        block_[c_off] += C_DDOT(nelem, const_cast<double*>(&a[a_off]), a_skip,
+                                const_cast<double*>(&b[b_off]), b_skip);
+        mutex_->unlock();
 
         return madness::None;
     }
+
+
+//    madness::Void multiply_block(const int &sb,
+//                                 bool transa, bool transb, double alpha,
+//                                 const std::vector<double> &a,
+//                                 const std::vector<double> &b, double beta)
+//    {
+//        int offset = sb_offset_[global_local_sblock_[sb]];
+
+//        char ta = transa ? 't' : 'n';
+//        char tb = transb ? 't' : 'n';
+
+//        int m, n, k, lda, ldb, ldc;
+//        m = b_nrows_;
+//        n = b_ncols_;
+//        k = transa ? b_nrows_ : b_ncols_;
+//        lda = transa ? m : k;
+//        ldb = transb ? k : n;
+//        ldc = n;
+
+//        C_DGEMM(ta, tb, m, n, k, alpha, const_cast<double*>(&a[0]), lda,
+//                const_cast<double*>(&b[0]), ldb, beta, &block_[offset], ldc);
+
+//        return madness::None;
+//    }
 
 #endif // End of HAVE_MADNESS
 
