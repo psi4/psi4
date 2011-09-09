@@ -154,19 +154,7 @@ namespace psi {
          * @param nelem The size of the array. This is the number of elements, not the number of bytes.
          * @broadcaster The node sending the data.
          */
-        void bcast(std::string& data, int broadcaster=0) {
-            size_t length = 0;
-
-            if (broadcaster == me_)
-                length = data.size();
-            bcast(&length, 1, broadcaster);
-
-            if (broadcaster != me_)
-                data.resize(length+1);
-
-            char* tdata = const_cast<char*>(data.c_str());
-            bcast(tdata, length+1, broadcaster);
-        }
+        void bcast(std::string& data, int broadcaster=0);
 
         /**
          * Performs element-by-element sum of all data from all nodes.  The sum will either appear
