@@ -13,6 +13,7 @@
 #include <libqt/qt.h>
 
 #include <psi4-dec.h>
+#include <psiconfig.h>
 
 #include "matrix_distributed.h"
 
@@ -600,10 +601,12 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_nabla()
 
 void MintsHelper::play()
 {
+#ifdef HAVE_MADNESS
     Distributed_Matrix t("T", 10, 10);
     t.print_all_blocks();
 
     Communicator::world->sync();
+#endif
 }
 
 } // namespace psi
