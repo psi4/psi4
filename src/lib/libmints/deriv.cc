@@ -55,10 +55,6 @@ public:
             result.push_back(SharedVector(result[0]->clone()));
     }
 
-    CorrelatedRestrictedFunctor() {
-        throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
-    }
-
     void finalize() {
         for (int h=0; h<wavefunction_->nirrep(); ++h)
             dpd_buf4_mat_irrep_close(&G_, h);
