@@ -1,5 +1,6 @@
 #include "psi4-dec.h"
 #include <liboptions/liboptions.h>
+#include <libciomr/libciomr.h>
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
 #include <libtrans/integraltransform.h>
