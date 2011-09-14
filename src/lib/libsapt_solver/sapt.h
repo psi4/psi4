@@ -2,6 +2,7 @@
 #define SAPT_H
 
 #include <psiconfig.h>
+#include <psifiles.h>
 
 #ifdef _OPENMP
   #include <omp.h>

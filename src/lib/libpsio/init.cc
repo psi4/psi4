@@ -88,6 +88,11 @@ PSIO::PSIO()
     pid_ = ss.str();
 }
 
+boost::shared_ptr<PSIO> PSIO::shared_object()
+{
+    return _default_psio_lib_;
+}
+
 int psio_init(void) {
     if (_default_psio_lib_.get() == 0) {
         boost::shared_ptr<PSIO> temp(new PSIO);

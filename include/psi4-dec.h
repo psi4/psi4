@@ -6,9 +6,13 @@
 //#include x<libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include <exception.h>
-#include <boost/shared_ptr.hpp>
-#include <boost/shared_array.hpp>
-#include <libpsio/psio.hpp>
+//#include <boost/shared_ptr.hpp>
+//#include <libpsio/psio.hpp>
+
+namespace boost {
+template <class T>
+class shared_ptr;
+}
 
 namespace psi {
 

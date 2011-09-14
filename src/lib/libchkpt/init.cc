@@ -16,11 +16,6 @@ using namespace psi;
 /* Definition of global data */
 boost::shared_ptr<Chkpt> psi::_default_chkpt_lib_;
 
-//extern "C" {
-/* first definition of chkpt_prefix */
-//char chkpt_prefix[CHKPT_PREFIX_LEN];
-//};
-
 Chkpt::Chkpt(psi::PSIO *psioObject, int status, std::string use_prefix) : psio(psioObject)
 {
     char *prefix;
@@ -87,8 +82,12 @@ Chkpt::Chkpt(boost::shared_ptr<PSIO> psioObject, int status, std::string use_pre
     }
 }
 
-void
-Chkpt::rehash() {
+boost::shared_ptr<Chkpt> Chkpt::shared_object()
+{
+    return _default_chkpt_lib_;
+}
+
+void Chkpt::rehash() {
   psio->rehash(PSIF_CHKPT);
 }
 

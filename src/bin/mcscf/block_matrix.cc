@@ -1,6 +1,7 @@
 #include <libutil/libutil.h>
 #include <cstdio>
 
+#include <libutil/memory_manager.h>
 #include "block_matrix.h"
 #include "matrix_base.h"
 

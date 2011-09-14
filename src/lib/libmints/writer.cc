@@ -1,4 +1,5 @@
 #include "writer.h"
+#include "view.h"
 #include <libmints/mints.h>
 #include <psi4-dec.h>
 

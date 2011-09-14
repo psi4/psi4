@@ -1,15 +1,18 @@
 #ifndef _psi_src_lib_libpsio_psio_hpp_
 #define _psi_src_lib_libpsio_psio_hpp_
 
-#include <boost/shared_ptr.hpp>
 #include <boost/thread/thread.hpp>
 #include <string>
 #include <map>
 #include <set>
 #include <queue>
-#include <libparallel/parallel.h>
 
 #include <libpsio/config.h>
+
+namespace boost {
+template <class T>
+class shared_ptr;
+}
 
 namespace psi {
 
@@ -139,7 +142,7 @@ public:
             **/
     void crashclean();
     /// The one and (should be) only instance of PSIOManager for a PSI4 instance
-    static boost::shared_ptr<PSIOManager> shared_object() { return _default_psio_manager_; }
+    static boost::shared_ptr<PSIOManager> shared_object();
 };
 
 /**
@@ -266,7 +269,7 @@ public:
     static void change_file_namespace(unsigned int fileno, const std::string & ns1, const std::string & ns2);
 
     /// Return the global shared object
-    static boost::shared_ptr<PSIO> shared_object() { return _default_psio_lib_; }
+    static boost::shared_ptr<PSIO> shared_object();
 
     /** Read the length of the TOC for a given unit directly from the file.
        **
@@ -353,7 +356,7 @@ private:
     /// Thread this AIO_Handler is currently running on
     boost::shared_ptr<boost::thread> thread_;
     /// Lock variable
-    boost::mutex locked_;
+    boost::mutex *locked_;
 public:
     /// AIO_Handlers are constructed around a synchronous PSIO object
     AIOHandler(boost::shared_ptr<PSIO> psio);

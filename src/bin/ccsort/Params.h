@@ -3,6 +3,8 @@
     \brief Enter brief description of file here 
 */
 
+#include <string>
+
 namespace psi { namespace ccsort {
 
 struct Params {

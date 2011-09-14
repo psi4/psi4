@@ -14,6 +14,7 @@ using namespace psi;
 
 double **Chkpt::rd_contr_full(const char *key2)
 {
+#if 0
 	double **contr, *temp_contr;
 	int nprim, i, j, ij = 0;
 	char *keyword;
@@ -36,6 +37,8 @@ double **Chkpt::rd_contr_full(const char *key2)
 	free(temp_contr);
 	free(keyword);
 	return contr;
+#endif
+    return NULL;
 }
 
 extern "C" {

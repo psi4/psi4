@@ -28,7 +28,7 @@ PsiReturnType lmp2(Options & options)
 {
     tstart();
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
     boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 

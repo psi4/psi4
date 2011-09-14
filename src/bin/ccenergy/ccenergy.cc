@@ -18,6 +18,7 @@
 #include <libqt/qt.h>
 #include <libint/libint.h>
 #include <libmints/wavefunction.h>
+#include <libpsio/psio.h>
 #include <sys/types.h>
 #include <psifiles.h>
 #include "Params.h"

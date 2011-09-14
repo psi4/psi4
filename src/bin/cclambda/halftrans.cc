@@ -4,6 +4,7 @@
 */
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 
 namespace psi { namespace cclambda {
 

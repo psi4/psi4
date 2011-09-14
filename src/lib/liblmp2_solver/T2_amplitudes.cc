@@ -8,6 +8,7 @@
 
 #include <liblmp2_solver/lmp2.h>
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -22,10 +23,10 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 int LMP2::compute_T2_energy(const int &iter) {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
     int conv = 0;
     int terms = 0;
@@ -148,7 +149,7 @@ int LMP2::compute_T2_energy(const int &iter) {
 #endif
 }
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 //madness::Future<SharedMatrix> LMP2::get_old_T2(const int &ij) {
 //    return madness::Future<SharedMatrix> (T2_amp_[dmat1_][ij]);
 //}
