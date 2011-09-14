@@ -17,6 +17,7 @@
 #include "psi4.h"
 
 #include "../ccenergy/ccwave.h"
+#include "../mp2/mp2wave.h"
 
 using namespace psi;
 using namespace boost;
@@ -57,7 +58,6 @@ namespace psi {
     namespace transqt2  { PsiReturnType transqt2(Options &); }
     namespace ccsort    { PsiReturnType ccsort(Options&);    }
     namespace lmp2      { PsiReturnType lmp2(Options&);      }
-//    namespace ccenergy  { PsiReturnType ccenergy(Options&);  }
     namespace cctriples { PsiReturnType cctriples(Options&); }
     namespace cchbar    { PsiReturnType cchbar(Options&);    }
     namespace cclambda  { PsiReturnType cclambda(Options&);  }
@@ -267,6 +267,19 @@ double py_psi_ccenergy()
 //    }
 //    else
 //        return 0.0;
+}
+
+double py_psi_mp2()
+{
+    py_psi_prepare_options_for_module("MP2");
+    boost::shared_ptr<Wavefunction> mp2wave(new mp2::MP2Wavefunction(
+                                                Process::environment.reference_wavefunction(),
+                                                Process::environment.options)
+                                           );
+    Process::environment.set_reference_wavefunction(mp2wave);
+
+    double energy = mp2wave->compute_energy();
+    return energy;
 }
 
 double py_psi_cctriples()
@@ -764,6 +777,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("dfmp2", py_psi_dfmp2);
     def("dfcc", py_psi_dfcc);
     def("lmp2", py_psi_lmp2);
+    def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
     def("fd_geoms_2_0", py_psi_fd_geoms_2_0);

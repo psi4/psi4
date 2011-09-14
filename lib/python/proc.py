@@ -146,6 +146,24 @@ def scf_helper(name, **kwargs):
 
     return e_scf
 
+def run_mp2(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    run_scf("scf", **kwargs);
+
+    PsiMod.transqt2()
+    PsiMod.ccsort()
+    return PsiMod.mp2()
+
 def run_ccsd(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()

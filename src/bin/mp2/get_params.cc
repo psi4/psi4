@@ -22,7 +22,7 @@ void get_params(Options &options)
   std::string ref;
   
   params.wfn = options.get_str("WFN");
-  ref = options.get_str("REFERENECE"); 
+  ref = options.get_str("REFERENCE");
 
   /* Default reference is RHF */
   params.ref = 0;

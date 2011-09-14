@@ -788,7 +788,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if (name == "MP2"|| options.read_globals()) {
     /*- The wavefunction type -*/
-    options.add_str("WFN", "");
+    options.add_str("WFN", "MP2", "MP2");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF");
     /*- The type of job being performed -*/
