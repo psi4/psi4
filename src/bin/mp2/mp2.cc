@@ -17,6 +17,8 @@
 #include <libiwl/iwl.h>
 #include <physconst.h>
 #include <psifiles.h>
+#include <libmints/wavefunction.h>
+#include "mp2wave.h"
 #include "globals.h"
 
 namespace psi{ namespace mp2{
@@ -49,7 +51,6 @@ void check_energy(int);
 void sort_twopdm(void);
 void cleanup(void);
 void exit_io(void);
-
 
 PsiReturnType
 mp2(Options & options)
@@ -240,4 +241,45 @@ void exit_io(void)
   tstop();
 }
 
+MP2Wavefunction::MP2Wavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction(options, _default_psio_lib_)
+{
+    set_reference_wavefunction(reference_wavefunction);
+    init();
+}
+
+MP2Wavefunction::~MP2Wavefunction()
+{
+
+}
+
+void MP2Wavefunction::init()
+{
+    // Wavefunction creates a chkpt object for your, but we're not going to use it.
+    // Destroy it. Otherwise we will see a "file already open" error.
+    chkpt_.reset();
+
+    nso_        = reference_wavefunction_->nso();
+    nirrep_     = reference_wavefunction_->nirrep();
+    nmo_        = reference_wavefunction_->nmo();
+    for(int h = 0; h < nirrep_; ++h){
+        soccpi_[h] = reference_wavefunction_->soccpi()[h];
+        doccpi_[h] = reference_wavefunction_->doccpi()[h];
+        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
+        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
+        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
+        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
+    }
+}
+
+double MP2Wavefunction::compute_energy()
+{
+    energy_ = 0.0;
+    PsiReturnType mp2_return;
+    if ((mp2_return = psi::mp2::mp2(options_)) == Success) {
+        energy_ = Process::environment.globals["CURRENT ENERGY"];
+    }
+
+    return energy_;
+}
 }} /* End namespaces */

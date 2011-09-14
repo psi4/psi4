@@ -10,6 +10,7 @@ procedures = {
             'dcft'          : run_dcft,
             'dfmp2'         : run_dfmp2,
             'dfcc'          : run_dfcc,
+            'mp2'           : run_mp2,
             'mp2-drpa'      : run_mp2drpa,
             'sapt0'         : run_sapt,
             'sapt2'         : run_sapt,
@@ -40,23 +41,24 @@ def energy(name, **kwargs):
         pass
 
     try:
-        return procedures['energy'][name](name,**kwargs)
+        lowername = name.lower()
+        return procedures['energy'][lowername](lowername,**kwargs)
     except KeyError:
         raise SystemExit('Energy Method %s Not Defined' %(name))
 
 def gradient(name, **kwargs):
     # Set some defaults
     func = energy
-
+    lowername = name.lower()
     # Order of precedence:
     #    1. Default for wavefunction
     #    2. Value obtained from liboptions, if user changed it
     #    3. If user provides a custom 'func' use that
 
     # 1. set the default to that of the provided name
-    if (procedures['gradient'].has_key(name)):
+    if (procedures['gradient'].has_key(lowername)):
         dertype = 1
-    elif (procedures['energy'].has_key(name)):
+    elif (procedures['energy'].has_key(lowername)):
         dertype = 0
 
     # 2. Check if the user set the global option
@@ -93,7 +95,7 @@ def gradient(name, **kwargs):
     if (dertype == 1):
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
-        procedures['gradient'][name](name, **kwargs)
+        procedures['gradient'][lowername](lowername, **kwargs)
 
         return PsiMod.reference_wavefunction().energy()
     else:
@@ -127,7 +129,7 @@ def gradient(name, **kwargs):
             PsiMod.get_active_molecule().set_geometry(displacment)
 
             # Perform the energy calculation
-            E = func(name, **kwargs)
+            E = func(lowername, **kwargs)
 
             # Save the energy
             energies.append(E)
@@ -139,6 +141,7 @@ def gradient(name, **kwargs):
         return energies[-1]
 
 def hessian(name, **kwargs):
+    lowername = name.lower()
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
 
@@ -154,11 +157,11 @@ def hessian(name, **kwargs):
         func_existed = True
 
     # Does an analytic procedure exist for the requested method?
-    if (procedures['hessian'].has_key(name) and dertype == 2 and func_existed == False):
+    if (procedures['hessian'].has_key(lowername) and dertype == 2 and func_existed == False):
         # We have the desired method. Do it.
-        procedures['hessian'][name](name, **kwargs)
+        procedures['hessian'][lowername](lowername, **kwargs)
         return PsiMod.reference_wavefunction().energy()
-    elif (procedures['gradient'].has_key(name) and dertype == 1 and func_existed == False):
+    elif (procedures['gradient'].has_key(lowername) and dertype == 1 and func_existed == False):
         # Ok, we're doing frequencies by gradients
         info = "Performing finite difference by gradient calculations"
         print info
@@ -169,7 +172,7 @@ def hessian(name, **kwargs):
             raise ValueNotSet("no molecule found")
         molecule.update_geometry()
 
-        func = procedures['gradient'][name]
+        func = procedures['gradient'][lowername]
 
         # Obtain list of displacements
         displacements = fd_geoms_freq_1()
@@ -189,7 +192,7 @@ def hessian(name, **kwargs):
             PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the gradient calculation
-            G = func(name, **kwargs)
+            G = func(lowername, **kwargs)
 
             # Save the gradient
             gradients.append(G)
@@ -227,7 +230,7 @@ def hessian(name, **kwargs):
             PsiMod.get_active_molecule().set_geometry(displacment)
 
             # Perform the energy calculation
-            E = func(name, **kwargs)
+            E = func(lowername, **kwargs)
 
             # Save the energy
             energies.append(E)
@@ -241,10 +244,11 @@ def hessian(name, **kwargs):
         return energies[-1]
 
 def response(name, **kwargs):
+    lowername = name.lower()
     try:
-        return procedures['response'][name](name, **kwargs)
+        return procedures['response'][lowername](lowername, **kwargs)
     except KeyError:
-        raise SystemExit('Response Method %s Not Defined' %(name))
+        raise SystemExit('Response Method %s Not Defined' %(lowername))
 
 def optimize(name, **kwargs):
     for n in range(PsiMod.get_option("GEOM_MAXITER")):
