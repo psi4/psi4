@@ -22,7 +22,7 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 madness::Future<double> LMP2::T2_rms(const SharedMatrix T2,
                                      const SharedMatrix T2_old,

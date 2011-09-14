@@ -31,6 +31,10 @@ public:
     int nthread;
     std::vector<SharedVector> result;
 
+    CorrelatedRestrictedFunctor() {
+        throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
+    }
+
     CorrelatedRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave, IntegralTransform& ints_transform)
         : wavefunction_(wave)
     {
@@ -49,10 +53,6 @@ public:
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
-    }
-
-    CorrelatedRestrictedFunctor() {
-        throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
 
     void finalize() {
@@ -535,7 +535,7 @@ SharedMatrix Deriv::compute()
 
 }
 
-#if HAVE_MADNESS
+#ifdef HAVE_MADNESS
 namespace madness {
 namespace archive {
 
@@ -557,7 +557,6 @@ struct ArchiveStoreImpl< Archive, psi::CorrelatedRestrictedFunctor> {
     }
 };
 
-
 template <class Archive>
 struct ArchiveLoadImpl< Archive, psi::ScfRestrictedFunctor> {
     static void load(const Archive &ar, const psi::ScfRestrictedFunctor &t) {
@@ -575,7 +574,6 @@ struct ArchiveLoadImpl< Archive, psi::CorrelatedRestrictedFunctor> {
     static void load(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
     }
 };
-
 
 }
 }

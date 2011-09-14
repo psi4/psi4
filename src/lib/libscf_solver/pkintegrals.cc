@@ -5,6 +5,7 @@
 #include <libmints/matrix.h>
 #include <libpsio/psio.hpp>
 #include <boost/shared_ptr.hpp>
+#include <psifiles.h>
 
 #define INDEX2(i,j) (i < j ? (j)*((j)+1)/2 + i : (i)*((i)+1)/2 + j)
 

@@ -3,6 +3,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
+#include <libciomr/libciomr.h>
 #include <libmints/matrix.h>
 #include <libmints/wavefunction.h>
 #define EXTERN

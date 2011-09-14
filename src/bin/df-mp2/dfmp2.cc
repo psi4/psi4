@@ -1846,7 +1846,7 @@ void DFMP2::evaluate_contributions_core_parallel()
   int rank = 0;
 
     // Ben Seibert, your stuff goes here
-#if HAVE_MPI == 1
+#ifdef HAVE_MPI
   int nprocs;
   MPI_Comm_size(MPI_COMM_WORLD, &nprocs);
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);

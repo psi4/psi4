@@ -263,8 +263,8 @@ void BlockOPoints::print(FILE* out, int print)
     fprintf(out, "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
         x_[0],x_[1],x_[2],R_);
 
-    fprintf(out, "    %-6d Significant Shells.\n", shells_local_to_global_.size()); 
-    fprintf(out, "    %-6d Significant Functions.\n\n", functions_local_to_global_.size());
+    fprintf(out, "    %-6lu Significant Shells.\n", shells_local_to_global_.size()); 
+    fprintf(out, "    %-6lu Significant Functions.\n\n", functions_local_to_global_.size());
 
     if (print > 3) {
         fprintf(out, "    Significant Shells: ");

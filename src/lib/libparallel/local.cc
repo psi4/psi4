@@ -9,7 +9,7 @@ LocalCommunicator::LocalCommunicator(const int &argc, char **argv)
     : Communicator()
 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     putenv("MAD_NUM_THREADS=1");
 
     // Initialize madness and create a madness world communicator
@@ -25,8 +25,7 @@ LocalCommunicator::LocalCommunicator(const int &argc, char **argv)
 }
 
 LocalCommunicator::LocalCommunicator(const LocalCommunicator &copy) :
-    Communicator(), me_(copy.me_), nproc_(copy.nproc_),
-    nthread_(copy.nthread_), communicator_(copy.communicator_)
+    Communicator(copy)
 { }
 
 LocalCommunicator::~LocalCommunicator()
@@ -84,7 +83,7 @@ void LocalCommunicator::print(FILE *out) const
 }
 
 void LocalCommunicator::finalize() {
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
     madness::finalize();
 #endif
 }

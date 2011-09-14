@@ -16,7 +16,7 @@ template<class T> class shared_ptr;
 
 namespace psi{
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 
 typedef std::map<int, std::vector<double> > block;

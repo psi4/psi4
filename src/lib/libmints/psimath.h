@@ -5,7 +5,6 @@
 * A set of wrappers to BLAS and LAPACK for use with Matrix, Vector, and IntVector
 * Rob Parrish 1/25/2010
 **/
-#include <psi4-dec.h>
 
 namespace boost {
 template<class T> class shared_ptr;

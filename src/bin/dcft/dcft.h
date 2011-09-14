@@ -5,6 +5,7 @@
 #include <libmints/vector.h>
 #include <libmints/wavefunction.h>
 #include <libdpd/dpd.h>
+#include <libciomr/libciomr.h>
 
 namespace boost {
 template<class T> class shared_ptr;

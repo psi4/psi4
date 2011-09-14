@@ -6,7 +6,7 @@
 //  Justin Turney
 //  Rollin King
 
-#if HAVE_MPI == 1
+#ifdef HAVE_MPI
 #include <mpi.h>
 #endif
 #include <getopt.h>
@@ -15,6 +15,7 @@
 #include <libciomr/libciomr.h>
 #include <liboptions/liboptions.h>
 #include <libparallel/parallel.h>
+#include <libpsio/psio.h>
 #include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include "script.h"
@@ -53,28 +54,15 @@ int main(int argc, char **argv, char **envp)
 
     std::string communicator = Process::environment("COMMUNICATOR");
 
-#if (HAVE_MPI == 1) && (HAVE_MADNESS == 1)
+#ifdef HAVE_MPI && HAVE_MADNESS
     if (communicator == "MADNESS")
         Communicator::world = SharedComm(new MadCommunicator(argc, argv));
-    else if (communicator == "MPI")
-        Communicator::world = SharedComm(new MPICommunicator(argc, argv));
-    else if (communicator == "LOCAL")
-        Communicator::world = SharedComm(new LocalCommunicator(argc, argv));
-    else
-        throw FeatureNotImplemented(communicator, "Communicator", __FILE__, __LINE__);
-#elif (HAVE_MPI == 1) && (HAVE_MADNESS == 0)
-    if (communicator == "MADNESS")
-        throw FeatureNotImplemented("PSI4 was not built with ", communicator, __FILE__, __LINE__);
-    else if (communicator == "MPI")
-        Communicator::world = SharedComm(new MPICommunicator(argc, argv));
     else if (communicator == "LOCAL")
         Communicator::world = SharedComm(new LocalCommunicator(argc, argv));
     else
         throw FeatureNotImplemented(communicator, "Communicator", __FILE__, __LINE__);
 #else
     if (communicator == "MADNESS")
-        throw FeatureNotImplemented("PSI4 was not built with ", communicator, __FILE__, __LINE__);
-    else if (communicator == "MPI")
         throw FeatureNotImplemented("PSI4 was not built with ", communicator, __FILE__, __LINE__);
     else if (communicator == "LOCAL")
         Communicator::world = SharedComm(new LocalCommunicator(argc, argv));

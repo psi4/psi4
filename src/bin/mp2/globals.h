@@ -6,6 +6,8 @@
 #ifndef _psi_src_bin_mp2_globals_h_
 #define _psi_src_bin_mp2_globals_h_
 
+#include <libpsio/psio.h>
+#include <libciomr/libciomr.h>
 #include <ccfiles.h>
 #include <psi4-dec.h>
 #include "moinfo.h"

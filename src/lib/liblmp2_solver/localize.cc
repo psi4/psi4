@@ -8,6 +8,7 @@
 
 #include <liblmp2_solver/lmp2.h>
 #include <libqt/qt.h>
+#include <libciomr/libciomr.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -22,7 +23,7 @@ class Chkpt;
 
 namespace lmp2 {
 
-#if HAVE_MADNESS == 1
+#ifdef HAVE_MADNESS
 
 void LMP2::localize_pipek_mezey() {
 
