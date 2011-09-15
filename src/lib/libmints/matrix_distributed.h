@@ -83,6 +83,64 @@ protected:
     SharedMutex print_mutex_;
     madness::Void clear();
 
+    madness::Void multiply(const boost::shared_ptr<psi::Distributed_Matrix> lmat,
+                           const boost::shared_ptr<psi::Distributed_Matrix> rmat,
+                           const int &i, const int &k);
+
+    /// Print a give block
+    madness::Void print_block(const int &i, const std::vector<std::vector<double> > &block,
+                              const std::vector<int> &row,
+                              const std::vector<int> &col) const;
+
+    int local_col(const int &col)
+    {
+        int block_col = nprocs_ - 1;
+
+        for (int i=0; i < nprocs_-1; i++) {
+            if (col < block_coffset_[i+1]) {
+                block_col = i;
+                break;
+            }
+        }
+
+        return block_col;
+    }
+    int local_row(const int &row)
+    {
+        int block_row = nprocs_ - 1;
+
+        for (int i=0; i < nprocs_-1; i++) {
+            if (row < block_coffset_[i+1]) {
+                block_row = i;
+                break;
+            }
+        }
+
+        return block_row;
+    }
+
+    int sb_number(const int &row, const int &col)
+    {
+        int block_row = nprocs_ - 1;
+        int block_col = nprocs_ - 1;
+
+        for (int i=0; i < nprocs_-1; i++) {
+            if (col < block_coffset_[i+1]) {
+                block_col = i;
+                break;
+            }
+        }
+        for (int i=0; i < nprocs_-1; i++) {
+            if (row < block_roffset_[i+1]) {
+                block_row = i;
+                break;
+            }
+        }
+
+        return block_row*nblocks_ + block_col;
+    }
+
+
 public:
     /// Default constructor: clears everything out
     Distributed_Matrix();
@@ -109,12 +167,10 @@ public:
     /// Initializes the distributed matrix
     madness::Void common_init(const int &rows, const int &cols);
 
-    /// Print a give block
-    madness::Void print_block(const int &i) const;
     /// Prints all of the blocks (proc 0 does the printing)
     void print_all_blocks() const;
-    /// Prints all of the sub_blocks
-    void print_all_sblocks() const;
+//    /// Prints all of the sub_blocks
+//    void print_all_sblocks() const;
     /// Prints a given sub_block
     madness::Void print_sblock(const int &i) const;
 
@@ -227,6 +283,26 @@ public:
 
 } // End of psi namespace
 
+#ifdef HAVE_MADNESS
+
+namespace madness {  namespace archive {
+
+    /// Serialize a psi Matrix
+    template <class Archive>
+    struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
+        static void store(const Archive &ar, const boost::shared_ptr<psi::Distributed_Matrix> &t) {
+        };
+    };
+
+    /// Deserialize a psi Matrix ... existing psi Matrix is replaced
+    template <class Archive>
+    struct ArchiveLoadImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
+        static void load(const Archive& ar, boost::shared_ptr<psi::Distributed_Matrix> &t) {
+        };
+    };
+
+}}
+#endif // End of HAVE_MADNESS
 
 
 #endif // MATRIX_DISTRIBUTED_H
