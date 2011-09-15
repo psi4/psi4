@@ -32,7 +32,7 @@ class Block
 {
 protected:
     /// This is a block that is further divided into subblocks
-    std::vector<double> block_;
+    std::vector<std::vector<double> > block_;
 
     /// The size of the block;
     int nelements_;
@@ -50,8 +50,8 @@ protected:
     /// The number of columns in the block
     int b_ncols_;
 
-    /// The offset to the sub_blocks;
-    std::vector<int> sb_offset_;
+//    /// The offset to the sub_blocks;
+//    std::vector<int> sb_offset_;
 
     /// The number of rows for each sub_block;
     std::vector<int> sb_nrows_;
@@ -59,8 +59,8 @@ protected:
     /// The number of columns for each sub_block;
     std::vector<int> sb_ncols_;
 
-    /// The size of each sub_block;
-    std::vector<int> sb_size_;
+//    /// The size of each sub_block;
+//    std::vector<int> sb_size_;
 
     /// Maps the global sub_block values to the local sub_block value
     std::map<int, int> global_local_sblock_;
@@ -123,11 +123,13 @@ public:
         g_nrows_ = 0;
         g_ncols_ = 0;
         name_.clear();
+        for (int i=0; i < block_.size(); i++)
+            free_vector(block_[i]);
         free_vector(block_);
-        free_vector(sb_offset_);
+//        free_vector(sb_offset_);
         free_vector(sb_nrows_);
         free_vector(sb_ncols_);
-        free_vector(sb_size_);
+//        free_vector(sb_size_);
         free_vector(local_global_sblock_);
         free_map(global_local_sblock_);
     }
@@ -144,27 +146,27 @@ public:
     int b_nrows() const { return b_nrows_; }
     /// Return the number of columns in the block
     int b_ncols() const { return b_ncols_; }
-    /// Returns the sub_block offset vector
-    std::vector<int> block_sb_offset() const { return sb_offset_; }
+//    /// Returns the sub_block offset vector
+//    std::vector<int> block_sb_offset() const { return sb_offset_; }
     /// Returns the sub_block nrows vector;
     std::vector<int> block_sb_nrows() const { return sb_nrows_; }
     /// Returns the sub_block ncols vector;
     std::vector<int> block_sb_ncols() const { return sb_ncols_; }
-    /// Returns the sub_block size vector;
-    std::vector<int> block_sb_size() const { return sb_size_; }
+//    /// Returns the sub_block size vector;
+//    std::vector<int> block_sb_size() const { return sb_size_; }
     /// Returns the sub_block global_local_sblock map;
     std::map<int, int> global_local_sblock() const { return global_local_sblock_; }
     /// Returns the sub_block local_global_sblock vector;
     std::vector<int> local_global_sblock() const { return local_global_sblock_; }
 
-    /// Returns the sub_block offset in the block
-    int sb_offset(const int &sb) { return sb_offset_[global_local_sblock_[sb]]; }
+//    /// Returns the sub_block offset in the block
+//    int sb_offset(const int &sb) { return sb_offset_[global_local_sblock_[sb]]; }
     /// Return the number of rows in a given sub_block
     int sb_nrows(const int &sb) { return sb_nrows_[global_local_sblock_[sb]]; }
     /// Return the number of columns in a give sub_block
     int sb_ncols(const int &sb) { return sb_ncols_[global_local_sblock_[sb]]; }
-    /// Return the size of a given sub_block
-    int sb_size(const int &sb) { return sb_size_[global_local_sblock_[sb]]; }
+//    /// Return the size of a given sub_block
+//    int sb_size(const int &sb) { return sb_size_[global_local_sblock_[sb]]; }
 
 #ifdef HAVE_MADNESS
     /// Initialize the block
@@ -198,18 +200,21 @@ public:
 
         nelements_ = b_nrows_*b_ncols_;
 
-        sb_offset_.clear();
-        for (int i=0; i < roffset.size(); i++) {
-            sb_offset_.push_back(roffset[i]*sb_ncols_[i]);
+//        sb_offset_.clear();
+//        for (int i=0; i < roffset.size(); i++) {
+//            sb_offset_.push_back(roffset[i]*sb_ncols_[i]);
+//        }
+
+
+//        for (int i=0; i < sb_offset_.size()-1; i++) {
+//            sb_size_.push_back(sb_offset_[i+1]-sb_offset_[i]);
+//        }
+//        sb_size_.push_back(nelements_ - sb_offset_[sb_offset_.size()-1]);
+
+        for (int i=0; i < nsb_; i++) {
+            block_.push_back(std::vector<double>(sb_nrows_[i]*sb_ncols_[i], 0.0));
         }
 
-
-        for (int i=0; i < sb_offset_.size()-1; i++) {
-            sb_size_.push_back(sb_offset_[i+1]-sb_offset_[i]);
-        }
-        sb_size_.push_back(nelements_ - sb_offset_[sb_offset_.size()-1]);
-
-        block_.resize(nelements_, 0.0);
 
         for (int i=0, local=0; i < tsb; i++) {
             if (me_ == owner(i)) {
@@ -224,78 +229,72 @@ public:
 
     inline int owner(const int &sb) { return sb%nprocs_; }
 
-    std::vector<double> get_block() { return block_; }
+    std::vector<std::vector<double> > get_block() { return block_; }
 
     std::vector<double> get_sblock(const int &sb) {
-        int local = global_local_sblock_[sb];
-        std::vector<double> tmp(sb_size_[local], 0.0);
-        memcpy(&tmp[0], &block_[sb_offset_[local]], sb_size_[local]*sizeof(double));
-        return tmp;
+        return block_[ global_local_sblock_[sb] ];
     }
-
 
 
     /// Set the appropriate sub_block of the full block to identity
     madness::Void set_block_identity()
     {
-        memset(&block_[0], 0, block_.size()*sizeof(double));
+        for (int i=0; i < block_.size(); i++)
+            memset(&(block_[i][0]), 0, block_[i].size()*sizeof(double));
 
         std::vector<double> iden(sb_ncols_[me_], 1.0);
-        C_DCOPY(sb_ncols_[me_], &iden[0], 1, &block_[sb_offset_[me_]], sb_ncols_[me_]+1);
+        C_DCOPY(sb_ncols_[me_], &(iden[0]), 1, &(block_[me_][0]), sb_ncols_[me_]+1);
 
         return madness::None;
     }
 
-    double val(const int &i, const int &j)
+    double val(const int &sb, const int &i, const int &j)
     {
-        return block_[i*b_ncols_ + j];
+        int local = global_local_sblock_[sb];
+        int ncol = sb_ncols_[local];
+        return block_[local][i*ncol + j];
     }
 
-    void set(const int &i, const int &j, const double &val)
+    madness::Void set(const int &sb, const int &i, const int &j, const double &val)
     {
-        block_[i*b_ncols_ + j] = val;
+        int local = global_local_sblock_[sb];
+        int ncol = sb_ncols_[local];
+        block_[local][i*ncol + j] = val;
+        return madness::None;
     }
 
     /// set the block
-    madness::Void copy_block(const std::vector<double> &copy)
+    madness::Void copy_block(const std::vector<std::vector<double> > &copy)
     {
         free_vector(block_);
         block_ = copy;
         return madness::None;
     }
+
     /// set the sblock
     madness::Void copy_sblock(const int &sb, const std::vector<double> &copy)
     {
+        memcpy(&block_[ global_local_sblock_[sb] ],
+               &copy[0], copy.size()*sizeof(double));
+        return madness::None;
+    }
+
+
+//    madness::Void sum_block(const Block *blk)
+//    {
+//        for (int i=0; i < block_.size(); i++) {
+//            for (int j=0; j < block_[i].size(); j++) {
+//                block_[i][j] += blk->block_[i][j];
+//            }
+//        }
+//        return madness::None;
+//    }
+
+    madness::Void sum_sblock(const int &sb, const std::vector<double> &sblk)
+    {
         int local = global_local_sblock_[sb];
-        memcpy(&block_[local], &copy[0], copy.size()*sizeof(double));
-        return madness::None;
-    }
-
-
-    madness::Void sum_block(const Block *blk)
-    {
-        for (int i=0; i < block_.size(); i++) {
-            block_[i] += blk->block_[i];
-        }
-        return madness::None;
-    }
-
-    madness::Void sum_sblock(const int &sb, const std::vector<double> &blk)
-    {
-        int local = global_local_sblock_[sb];
-        int offset = sb_offset_[local];
-        int max = sb_size_[local] + offset;
-
-        for (int i=offset; i < max; i++) {
-            block_[i] += blk[i];
-        }
-        return madness::None;
-    }
-
-    madness::Void fill_block(const double &val)
-    {
-        for (int i=0; i < nelements_; i++) {
-            block_[i] = val;
+        for (int i=0; i < sblk.size(); i++) {
+            block_[local][i] += sblk[i];
         }
         return madness::None;
     }
@@ -303,111 +302,28 @@ public:
     madness::Void fill_sblock(const int &sb, const double &val)
     {
         int local = global_local_sblock_[sb];
-        int offset = sb_offset_[local];
-        int max = offset + sb_size_[local];
 
-        for (int i=offset; i < max; i++) {
-            block_[i] = val;
+        for (int i=0; i < block_[local].size(); i++) {
+            block_[local][i] = val;
         }
         return madness::None;
     }
 
-//    madness::Void mxm(const int &sb, const std::vector<double> a,
-//                      const std::vector<double> &b,
-//                      const int &a_row, const int &a_col,
-//                      const int &b_row, const int &b_col)
-//    {
-//        int local = global_local_sblock_[sb];
-//        int offset = sb_offset_[local];
-
-////        if (a_row == b_col) {
-//        for (int i=0, ij=0; i < a_row; i++) {
-//            for (int j=0; j < b_col; j++, ij++) {
-//                block_[offset + ij] += C_DDOT(a_col, const_cast<double*>(&a[i*a_col]), 1,
-//                                              const_cast<double*>(&b[j]), b_col);
-//            }
-//        }
-//        //        }
-////        else throw PSIEXCEPTION("Rows and columns do not line up for matrix multiplication.\n");
-
-//        return madness::None;
-//    }
-
-    madness::Void mxm(const int &c_off,
+    madness::Void mxm(const int &sb,
                       const std::vector<double> &a,
                       const std::vector<double> &b,
-                      const int &a_row, const int &a_col,
-                      const int &b_row, const int &b_col)
+                      const int &a_row,
+                      const int &a_col,
+                      const int &b_col)
     {
+        int c_local = global_local_sblock_[sb];
         C_DGEMM('n', 'n', a_row, b_col, a_col, 1.0,
                 const_cast<double*>(&a[0]), a_col,
                 const_cast<double*>(&b[0]), b_col, 1.0,
-                const_cast<double*>(&block_[c_off]), b_col);
-
-//        if (a_row == b_col) {
-//        for (int i=0, ij=0; i < a_row; i++) {
-//            for (int j=0; j < b_col; j++, ij++) {
-//                block_[c_offset + ij] += C_DDOT(a_col, const_cast<double*>(&a[i*a_col]), 1,
-//                                              const_cast<double*>(&b[j]), b_col);
-//            }
-//        }
-        //        }
-//        else throw PSIEXCEPTION("Rows and columns do not line up for matrix multiplication.\n");
-
+                const_cast<double*>(&block_[c_local][0]), b_col);
         return madness::None;
     }
 
-    // N is the number of element
-    // a is the A vector
-    // b is the B vector
-    // offset is the offset to the C element
-    // a_off is the offset to A
-    // b_off is the offset to B
-    // c_off is the offset to C
-    // a_skip is the number of elements to skip
-    // b_skip is the number of elements to skip
-    madness::Void dot(const int &nelem,
-                      const std::vector<double> &a,
-                      const std::vector<double> &b,
-                      const int &a_off,
-                      const int &b_off,
-                      const int &c_off,
-                      const int &a_skip,
-                      const int &b_skip)
-    {
-
-        mutex_->lock();
-        block_[c_off] += C_DDOT(nelem, const_cast<double*>(&a[a_off]), a_skip,
-                                const_cast<double*>(&b[b_off]), b_skip);
-        mutex_->unlock();
-
-        return madness::None;
-    }
-
-
-//    madness::Void multiply_block(const int &sb,
-//                                 bool transa, bool transb, double alpha,
-//                                 const std::vector<double> &a,
-//                                 const std::vector<double> &b, double beta)
-//    {
-//        int offset = sb_offset_[global_local_sblock_[sb]];
-
-//        char ta = transa ? 't' : 'n';
-//        char tb = transb ? 't' : 'n';
-
-//        int m, n, k, lda, ldb, ldc;
-//        m = b_nrows_;
-//        n = b_ncols_;
-//        k = transa ? b_nrows_ : b_ncols_;
-//        lda = transa ? m : k;
-//        ldb = transb ? k : n;
-//        ldc = n;
-
-//        C_DGEMM(ta, tb, m, n, k, alpha, const_cast<double*>(&a[0]), lda,
-//                const_cast<double*>(&b[0]), ldb, beta, &block_[offset], ldc);
-
-//        return madness::None;
-//    }
 
 #endif // End of HAVE_MADNESS
 };
