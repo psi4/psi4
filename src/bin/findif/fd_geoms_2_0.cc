@@ -19,22 +19,12 @@
       + 1f(0,-2) - 7f(0,-1)  - 7f(0,+1) + 1f(0,+2) + 12f(0,0)]/(12h^2)
 */
 
-#include <sstream>
-#include <libmints/mints.h>
-#include <psi4-dec.h>
+#include "findif.h"
 
 namespace psi { namespace findif {
 
-template <class T>
-inline std::string to_string (const T& t)
-{
-std::stringstream ss;
-ss << t;
-return ss.str();
-}
-
-void displace_cart(boost::shared_ptr<Matrix> geom, int coord, int a, double disp_size);
-void displace_cart(boost::shared_ptr<Matrix> geom, int coord, int a, 
+void displace_simple_cart(boost::shared_ptr<Matrix> geom, int coord, int a, double disp_size);
+void displace_simple_cart(boost::shared_ptr<Matrix> geom, int coord, int a, 
   int coord_2, int b, double disp_size);
 
 std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
@@ -85,11 +75,11 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
     // do all diagonal displacements first
     for (int i=0; i<3*Natom; ++i) {
       boost::shared_ptr<Matrix> geom1(ref_geom->clone());
-      displace_cart(geom1, i, -1, disp_size);
+      displace_simple_cart(geom1, i, -1, disp_size);
       disp_geoms.push_back(geom1);
 
       boost::shared_ptr<Matrix> geom2(ref_geom->clone());
-      displace_cart(geom2, i, +1, disp_size);
+      displace_simple_cart(geom2, i, +1, disp_size);
       disp_geoms.push_back(geom2);
     }
 
@@ -97,11 +87,11 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
     for (int i=0; i<3*Natom; ++i) {
       for (int j=0; j<i; ++j) {
         boost::shared_ptr<Matrix> geom3(ref_geom->clone());
-        displace_cart(geom3, i, j, +1, +1, disp_size);
+        displace_simple_cart(geom3, i, j, +1, +1, disp_size);
         disp_geoms.push_back(geom3);
 
         boost::shared_ptr<Matrix> geom4(ref_geom->clone());
-        displace_cart(geom4, i, j, -1, -1, disp_size);
+        displace_simple_cart(geom4, i, j, -1, -1, disp_size);
         disp_geoms.push_back(geom4);
       }
     }
@@ -112,19 +102,19 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
     // do all diagonal displacements first
     for (int i=0; i<3*Natom; ++i) {
       boost::shared_ptr<Matrix> geom1(ref_geom->clone());
-      displace_cart(geom1, i, -2, disp_size);
+      displace_simple_cart(geom1, i, -2, disp_size);
       disp_geoms.push_back(geom1);
 
       boost::shared_ptr<Matrix> geom2(ref_geom->clone());
-      displace_cart(geom2, i, -1, disp_size);
+      displace_simple_cart(geom2, i, -1, disp_size);
       disp_geoms.push_back(geom2);
 
       boost::shared_ptr<Matrix> geom3(ref_geom->clone());
-      displace_cart(geom3, i, +1, disp_size);
+      displace_simple_cart(geom3, i, +1, disp_size);
       disp_geoms.push_back(geom3);
 
       boost::shared_ptr<Matrix> geom4(ref_geom->clone());
-      displace_cart(geom4, i, +2, disp_size);
+      displace_simple_cart(geom4, i, +2, disp_size);
       disp_geoms.push_back(geom4);
     }
 
@@ -132,35 +122,35 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
     for (int i=0; i<3*Natom; ++i) {
       for (int j=0; j<i; ++j) {
         boost::shared_ptr<Matrix> geom5(ref_geom->clone());
-        displace_cart( geom5, i, j, -1, -2, disp_size);
+        displace_simple_cart( geom5, i, j, -1, -2, disp_size);
         disp_geoms.push_back(geom5);
 
         boost::shared_ptr<Matrix> geom6(ref_geom->clone());
-        displace_cart( geom6, i, j, -2, -1, disp_size);
+        displace_simple_cart( geom6, i, j, -2, -1, disp_size);
         disp_geoms.push_back(geom6);
 
         boost::shared_ptr<Matrix> geom7(ref_geom->clone());
-        displace_cart( geom7, i, j, -1, -1, disp_size);
+        displace_simple_cart( geom7, i, j, -1, -1, disp_size);
         disp_geoms.push_back(geom7);
 
         boost::shared_ptr<Matrix> geom8(ref_geom->clone());
-        displace_cart( geom8, i, j, +1, -1, disp_size);
+        displace_simple_cart( geom8, i, j, +1, -1, disp_size);
         disp_geoms.push_back(geom8);
 
         boost::shared_ptr<Matrix> geom9(ref_geom->clone());
-        displace_cart( geom9, i, j, -1, +1, disp_size);
+        displace_simple_cart( geom9, i, j, -1, +1, disp_size);
         disp_geoms.push_back(geom9);
 
         boost::shared_ptr<Matrix> geom10(ref_geom->clone());
-        displace_cart(geom10, i, j, +1, +1, disp_size);
+        displace_simple_cart(geom10, i, j, +1, +1, disp_size);
         disp_geoms.push_back(geom10);
 
         boost::shared_ptr<Matrix> geom11(ref_geom->clone());
-        displace_cart(geom11, i, j, +2, +1, disp_size);
+        displace_simple_cart(geom11, i, j, +2, +1, disp_size);
         disp_geoms.push_back(geom11);
 
         boost::shared_ptr<Matrix> geom12(ref_geom->clone());
-        displace_cart(geom12, i, j, +1, +2, disp_size);
+        displace_simple_cart(geom12, i, j, +1, +2, disp_size);
         disp_geoms.push_back(geom12);
       }
     }
@@ -175,7 +165,7 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options) {
 
 // displaces from a reference geometry: geom[ii] += disp_i * disp_size
 // fixes the name
-void displace_cart(boost::shared_ptr<Matrix> geom, int ii, int disp_i, double Dx) {
+void displace_simple_cart(boost::shared_ptr<Matrix> geom, int ii, int disp_i, double Dx) {
   geom->set_name("Coord: " + to_string(ii) + ", Disp: " + to_string(disp_i));
 
   int atom = ii / 3;
@@ -190,7 +180,7 @@ void displace_cart(boost::shared_ptr<Matrix> geom, int ii, int disp_i, double Dx
   geom[ii] += disp_i * disp_size
   geom[jj] += disp_j * disp_size
 */
-void displace_cart(boost::shared_ptr<Matrix> geom, int ii, int jj, int disp_i, int disp_j,
+void displace_simple_cart(boost::shared_ptr<Matrix> geom, int ii, int jj, int disp_i, int disp_j,
   double Dx) {
 
   geom->set_name("Coord: " + to_string(ii+1) + ", Disp: " + to_string(disp_i) + " Coord: "

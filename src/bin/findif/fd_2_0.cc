@@ -3,14 +3,12 @@
     \brief fd_grad_1_0(): compute gradient using energies and finite-differences
 */
 
-#include <libmints/mints.h>
-#include <libqt/qt.h>
-#include <psi4-dec.h>
+#include "findif.h"
+
+#include <fstream> // to write out file15
 
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
-#include <fstream> // to write out file15
-
 using namespace boost::python;
 
 namespace psi { namespace findif {

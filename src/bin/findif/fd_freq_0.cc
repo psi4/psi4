@@ -3,44 +3,17 @@
     \brief fd_freq_0(): compute frequencies from energies
 */
 
-#include <libmints/mints.h>
-#include <libqt/qt.h>
-#include <psi4-dec.h>
+#include "findif.h"
 
-#include <physconst.h>
-#include <vector>
 #include <boost/python.hpp>
 #include <boost/python/list.hpp>
-
-
 using namespace boost::python;
+
+#include <physconst.h>
 
 namespace psi { namespace findif {
 
-PsiReturnType fd_freq_0();
-
-class VIBRATION {
-  int irrep;       // irrep
-  double km;    // force constant
-  double *lx;   // normal mode in mass-weighted cartesians
-
-  public:
-    friend PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list);
-    friend bool ascending(const VIBRATION *, const VIBRATION *);
-
-    VIBRATION(int irrep_in, double km_in, double *lx_in) { irrep = irrep_in; km = km_in; lx = lx_in; }
-    ~VIBRATION() { free(lx); }
-};
-
-// for sort routine
-bool ascending(const VIBRATION *vib1, const VIBRATION *vib2) {
-  if (vib1->km < vib2->km)
-    return true;
-  else
-    return false;
-}
-
-int iE(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
+int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
  int irrep, int ii, int jj, int disp_i, int disp_j);
 
 PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
@@ -121,27 +94,27 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
 
       if (h == 0) { // symmetric
         if (pts == 3) {
-          H_irr[i][i] = ( + E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
-                                + E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
+          H_irr[i][i] = ( + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
+                                + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
                                 - 2.0 * energy_ref) / (disp_size*disp_size);
         }
         else if (pts == 5) {
           H_irr[i][i] = (
-            -  1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
-            + 16.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-            + 16.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0,  1, 0)]
-            -  1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0,  2, 0)]
+            -  1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
+            + 16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
+            + 16.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0,  1, 0)]
+            -  1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0,  2, 0)]
             - 30.0 * energy_ref ) / (12.0*disp_size*disp_size);
         }
       }
       else {  // asymmetric
         if (pts == 3)
-          H_irr[i][i] = 2.0 * (E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - energy_ref) /
+          H_irr[i][i] = 2.0 * (E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)] - energy_ref) /
             (disp_size * disp_size);
         else if (pts == 5)
           H_irr[i][i] = (
-            -  2.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
-            + 32.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
+            -  2.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2, 0)]
+            + 32.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
             - 30.0 * energy_ref ) / (12.0 * disp_size * disp_size);
       }
     } // i, salc_i
@@ -153,33 +126,33 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
 
         if (pts == 3) {
           H_irr[i][j] = H_irr[j][i] = (
-            + E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
-            + E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
+            + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
+            + E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
             + 2.0 * energy_ref
-            - E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
-            - E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
-            - E[iE(Ndisp_pi, salcs_pi, pts, h, j, 0, +1, 0)]
-            - E[iE(Ndisp_pi, salcs_pi, pts, h, j, 0, -1, 0)]
+            - E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1, 0)]
+            - E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1, 0)]
+            - E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +1, 0)]
+            - E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -1, 0)]
             ) / (2.0*disp_size*disp_size) ;
         }
         else if (pts == 5) {
           H_irr[i][j] = H_irr[j][i] = (
-            - 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -2)]
-            - 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, -2, -1)]
-            + 9.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
-            - 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, +1, -1)]
-            - 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, -1,  1)]
-            + 9.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
-            - 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, +2, +1)]
-            - 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +2)]
-            + 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -2,  0)]
-            - 7.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, -1,  0)]
-            - 7.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, +1,  0)]
-            + 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, i, 0, +2,  0)]
-            + 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, j, 0, -2,  0)]
-            - 7.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, j, 0, -1,  0)]
-            - 7.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, j, 0, +1,  0)]
-            + 1.0 * E[iE(Ndisp_pi, salcs_pi, pts, h, j, 0, +2,  0)]
+            - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -2)]
+            - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -2, -1)]
+            + 9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1, -1)]
+            - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, -1)]
+            - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, -1,  1)]
+            + 9.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +1)]
+            - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +2, +1)]
+            - 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, j, +1, +2)]
+            + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -2,  0)]
+            - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, -1,  0)]
+            - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +1,  0)]
+            + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, i, 0, +2,  0)]
+            + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -2,  0)]
+            - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, -1,  0)]
+            - 7.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +1,  0)]
+            + 1.0 * E[iE0(Ndisp_pi, salcs_pi, pts, h, j, 0, +2,  0)]
             + 12.0 * energy_ref) / (12.0 * disp_size * disp_size);
         }
       } // j, salc_j
@@ -231,64 +204,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
     free_block(normal_irr);
   }
 
-  // sort modes by evals
-  sort(modes.begin(), modes.end(), ascending);
-
-  /* convert evals from H/(kg bohr^2) to J/(kg m^2) = 1/s^2 */
-  /* v = 1/(2 pi c) sqrt( eval ) */
-  fprintf(outfile, "\n\t  Irrep      Harmonic Frequency   \n");
-  fprintf(outfile,   "\t                  (cm-1)          \n");
-  fprintf(outfile,   "\t-----------------------------------------------\n");
-  const double k_convert = _hartree2J/(_bohr2m * _bohr2m * _amu2kg);
-  const double cm_convert = 1.0/(2.0 * _pi * _c * 100.0);
-
-  for(int i=modes.size()-1; i>=0; --i) { // print descending order
-    if(modes[i]->km < 0.0)
-      fprintf(outfile, "\t  %5s   %15.4fi  \n", irrep_lbls[modes[i]->irrep],
-        cm_convert * sqrt(-k_convert * modes[i]->km));
-    else
-      fprintf(outfile, "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep],
-        cm_convert * sqrt( k_convert * modes[i]->km));
-  }
-  fprintf(outfile,   "\t-----------------------------------------------\n");
-  fflush(outfile);
-
-  double sum = 0.0;
-  for (int a=0; a<Natom; ++a)
-     sum += mol->mass(a);
-
-  // print out normal modes in format that WebMO likes
-  fprintf(outfile, "\n\tNormal Modes (mass-weighted)\n");
-  fprintf(outfile,"\tMolecular mass is %10.5f amu.\n", sum);
-  fprintf(outfile,"\tFrequencies in cm^-1; force constants in au.\n");
-
-  for(int i=modes.size()-1; i>=0; --i) { // print descending order
-    if (fabs(cm_convert * sqrt(k_convert * fabs(modes[i]->km))) < 5.0) continue;
-    fprintf(outfile,"\n");
-    if (modes[i]->km < 0.0)
-      fprintf(outfile, "   Frequency:      %8.2fi\n", cm_convert * sqrt(-k_convert * modes[i]->km));
-    else
-      fprintf(outfile, "   Frequency:      %8.2f\n", cm_convert * sqrt(k_convert * modes[i]->km));
-
-    fprintf(outfile,   "   Force constant: %8.4f\n", modes[i]->km);
-
-    //fprintf(outfile,   "   IR Intensity: %8.2f\n", irint[i]*ir_prefactor);
-
-    fprintf(outfile, "\t     X       Y       Z \t\n");
-    for (int a=0; a<Natom; a++) {
-      fprintf(outfile, "  %s \t", mol->symbol(a).c_str() );
-
-      for (int xyz=0; xyz<3; ++xyz)
-        fprintf(outfile, "%8.3f", modes[i]->lx[3*a+xyz]);
-
-      fprintf(outfile, "\n");
-    }
-  }
-
-  // clear memory
-  for (int i=0; i<Nirrep; ++i)
-    free(irrep_lbls[i]);
-  free(irrep_lbls);
+  print_vibrations(modes);
 
   for (int i=0; i<modes.size(); ++i)
     delete modes[i];
@@ -297,7 +213,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
   return Success;
 }
 
-/* iE() returns index for the energy of a displacement, according to the order
+/* iE0() returns index for the energy of a displacement, according to the order
 generated in fd_geoms_freq_0()
 ii and jj are coordinates, displaced by quantized steps disp_i and disp_j
 disp_i,disp_j are {-1,0,+1} for a three-point formula
@@ -306,7 +222,7 @@ It is assumed that ii >= jj .
 For diagonal displacements disp_j=0 and jj is arbitrary/meaningless.
 */
 
-int iE(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
+int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
   int irrep, int ii, int jj, int disp_i, int disp_j) {
 
   int ndiag_this_irrep;

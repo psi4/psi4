@@ -4,22 +4,11 @@
      computation of gradients from energies; puts undisplaced geometry last in list
 */
 
-#include <sstream>
-#include <libmints/mints.h>
-#include <psi4-dec.h>
+#include "findif.h"
 
 namespace psi { namespace findif {
 
-template <class T>
-inline std::string to_string (const T& t)
-{
-std::stringstream ss;
-ss << t;
-return ss.str();
-}
-
-std::vector< boost::shared_ptr<Matrix> >
-fd_geoms_1_0(Options &options) {
+std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
 
   // Print what we are doing
   fprintf(outfile,"\tUsing finite-differences of energies to determine gradients.\n");
