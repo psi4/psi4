@@ -25,6 +25,8 @@ matrix_subdirs = matrix1
 
 opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5
 
+mp2_subdirs = mp2_1
+
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 mom props2 dft1
 
 python_test_subdirs = #basis_extrap
@@ -36,6 +38,7 @@ $(matrix_subdirs) \
 $(scf_subdirs) \
 $(opt_subdirs) \
 $(df_subdirs) \
+$(mp2_subdirs) \
 $(cc_subdirs) \
 $(python_test_subdirs) \
 ${mcscf_subdirs} \
@@ -93,6 +96,12 @@ ci_tests:
 
 mints_tests:
 	for dir in $(mints_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
+
+mp2_tests:
+	for dir in $(mp2_subdirs); \
 	do \
 	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
 	done
