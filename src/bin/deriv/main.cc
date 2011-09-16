@@ -20,7 +20,7 @@ PsiReturnType deriv(Options &)
     Deriv test(Process::environment.reference_wavefunction(),
                0x1,
                false,
-               true);
+               false);
     test.compute();
 
     // Shut down psi
