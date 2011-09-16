@@ -23,7 +23,8 @@ procedures = {
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
-            'ccsd'          : run_ccsd_gradient
+            'ccsd'          : run_ccsd_gradient,
+            'mp2'           : run_mp2_gradient
         },
         'hessian' : {
         },

@@ -44,54 +44,57 @@ void get_params(Options &options)
   /* Default Dertype */
   params.dertype = options.get_str("DERTYPE");
 
-  if(params.jobtype == "SP") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 0;
-  }
-  else if(params.jobtype == "OEPROP" && params.dertype == "NONE") {
-    params.opdm = 1;
-    params.relax_opdm = 0;
-    params.gradient = 0;
-  }
-  else if(params.jobtype == "OEPROP" && params.dertype == "FIRST") {
-    params.opdm = 1;
-    params.relax_opdm = 1;
-    params.gradient = 0;
-  }
-  else if(params.jobtype == "OPT" && params.dertype == "NONE") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 0;
-  }
-  else if(params.jobtype == "OPT" && params.dertype == "FIRST") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 1;
-  }
-  else if(params.jobtype == "OPT_FC" && params.dertype == "FIRST") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 1;
-  }
-  else if(params.jobtype == "SYMM_FC" && params.dertype == "FIRST") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 1;
-  }
-  else if(params.jobtype == "FREQ" && params.dertype == "NONE") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 0;
-  }
-  else if(params.jobtype == "FREQ" && params.dertype == "FIRST") {
-    params.opdm = 0;
-    params.relax_opdm = 0;
-    params.gradient = 1;
-  }
-  else {
-    throw PsiException("Invalid combination of JOBTYPE and DERTYPE", __FILE__, __LINE__);
-  }
+  params.gradient = options.get_str("DERTYPE") == "FIRST";
+  params.relax_opdm = options.get_bool("RELAX_OPDM");
+  params.opdm = options.get_bool("COMPUTE_OPDM");
+//  if(params.jobtype == "SP") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 0;
+//  }
+//  else if(params.jobtype == "OEPROP" && params.dertype == "NONE") {
+//    params.opdm = 1;
+//    params.relax_opdm = 0;
+//    params.gradient = 0;
+//  }
+//  else if(params.jobtype == "OEPROP" && params.dertype == "FIRST") {
+//    params.opdm = 1;
+//    params.relax_opdm = 1;
+//    params.gradient = 0;
+//  }
+//  else if(params.jobtype == "OPT" && params.dertype == "NONE") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 0;
+//  }
+//  else if(params.jobtype == "OPT" && params.dertype == "FIRST") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 1;
+//  }
+//  else if(params.jobtype == "OPT_FC" && params.dertype == "FIRST") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 1;
+//  }
+//  else if(params.jobtype == "SYMM_FC" && params.dertype == "FIRST") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 1;
+//  }
+//  else if(params.jobtype == "FREQ" && params.dertype == "NONE") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 0;
+//  }
+//  else if(params.jobtype == "FREQ" && params.dertype == "FIRST") {
+//    params.opdm = 0;
+//    params.relax_opdm = 0;
+//    params.gradient = 1;
+//  }
+//  else {
+//    throw PsiException("Invalid combination of JOBTYPE and DERTYPE", __FILE__, __LINE__);
+//  }
 
   if((params.relax_opdm || params.gradient) && 
      (mo.nfzdocc != 0 || mo.nfzvirt != 0)) {

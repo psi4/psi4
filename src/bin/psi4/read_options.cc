@@ -790,11 +790,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The wavefunction type -*/
     options.add_str("WFN", "MP2", "MP2");
     /*- The reference wavefunction type -*/
-    options.add_str("REFERENCE", "RHF");
+    options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
     /*- The type of job being performed -*/
     options.add_str("JOBTYPE", "SP");
     /*- The order of energy derivatives required -*/
     options.add_str("DERTYPE", "NONE");
+    /*- Whether to compute the one particle density matrix, for properties -*/
+    options.add_bool("COMPUTE_OPDM", false);
+    /*- Whether to add relaxation terms to the one particle density matrix, for properties -*/
+    options.add_bool("RELAX_OPDM", false);
     /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEV", 2);
     /*- The criterion used to retain/release cached data -*/

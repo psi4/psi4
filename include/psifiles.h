@@ -102,11 +102,6 @@
 #define PSIF_DFSCF_K           98   /* Exchange tensor for DF-SCF*/
 #define PSIF_DFSCF_BJI         99   /* The three-center integrals for DF-SCF */
 
-#define PSIF_SCF_DB_MOS        100  /* Dual basis set MOs for DB-SCF or Basis-2 Guesses */ 
-
-#define PSIF_DFMP2_AIA         101  /* Unfitted three-index MO ints for DFMP2 */
-#define PSIF_DFMP2_QIA         102  /* Fitted-three index MO ints for DFMP2 */
-
 #define PSIF_SAPT_DIMER        120  /* SAPT Two-Body Dimer */
 #define PSIF_SAPT_MONOMERA     121 /* SAPT Two-Body Mon A */
 #define PSIF_SAPT_MONOMERB     122 /* SAPT Two-Body Mon B */
@@ -118,6 +113,10 @@
 #define PSIF_SAPT_TEMP         127 /* SAPT Temporary worlds fastest code file */
 
 #define PSIF_SAPT_LRINTS         128 /* SAPT0 2-Body linear response LDA integrals */
+
+#define PSIF_SCF_DB_MOS        180  /* Dual basis set MOs for DB-SCF or Basis-2 Guesses */
+#define PSIF_DFMP2_AIA         181  /* Unfitted three-index MO ints for DFMP2 */
+#define PSIF_DFMP2_QIA         182  /* Fitted-three index MO ints for DFMP2 */
 
 #define PSIF_3B_SAPT_TRIMER              220/* SAPT Three-Body Trimer */
 #define PSIF_3B_SAPT_DIMER_AB            221 /* SAPT Three-Body Dimer AB */
@@ -134,17 +133,6 @@
 #define PSIF_SO_D1OEI          199  /* Derivative OEIs are stored in file 199 */
 #define PSIF_SO_D1ERI          200  /* Derivative ERIs are stored in files 200, 201, 202, etc. File 200*/
 
-#define PSIF_MO_AA_R12         210
-#define PSIF_MO_BB_R12         211
-#define PSIF_MO_AB_R12         212
-#define PSIF_MO_AA_R12T1       213
-#define PSIF_MO_BB_R12T1       214
-#define PSIF_MO_AB_R12T1       215
-#define PSIF_MO_BA_R12T1       216
-#define PSIF_MO_AA_R12SQ       217
-#define PSIF_MO_BB_R12SQ       218
-#define PSIF_MO_AB_R12SQ       219
-#define PSIF_MO_R12SQ          220
 
 #define PSIF_3INDEX            16  
 

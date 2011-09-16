@@ -154,15 +154,29 @@ def run_mp2(name, **kwargs):
 
     if not molecule:
         raise ValueNotSet("no molecule found")
-
+    
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
     run_scf("scf", **kwargs);
-
+   
+    if PsiMod.has_option_changed("DERTYPE"):
+        dertype = PsiMod.get_option("DERTYPE")
+    else:
+        dertype = kwargs.get("DERTYPE", "NONE") 
+    PsiMod.set_local_option("TRANSQT2", "DERTYPE", dertype)
+    PsiMod.set_local_option("TRANSQT2", "WFN", "MP2")
     PsiMod.transqt2()
+    PsiMod.set_local_option("CCSORT", "WFN", "MP2")
+    PsiMod.set_local_option("CCSORT", "DERTYPE", dertype)
     PsiMod.ccsort()
+    PsiMod.set_local_option("MP2", "WFN", "MP2")
+    PsiMod.set_local_option("MP2", "DERTYPE", dertype)
     return PsiMod.mp2()
+
+def run_mp2_gradient(name, **kwargs):
+    run_mp2(name, DERTYPE="FIRST",**kwargs)
+    PsiMod.deriv()
 
 def run_ccsd(name, **kwargs):
 
