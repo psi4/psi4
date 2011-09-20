@@ -9,6 +9,8 @@
 namespace psi {
 
 class Options;
+class CdSalcList;
+
 /**
 * IWLWriter functor for use with SO TEIs
 **/
@@ -117,7 +119,7 @@ public:
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
     /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
-    boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2, 
+    boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
                                      boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
     boost::shared_ptr<Matrix> ao_erf_eri(double omega);
@@ -125,7 +127,7 @@ public:
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
     boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
     /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
-    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2, 
+    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
                                                        boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
 
     /// AO Overlap Integrals
@@ -154,6 +156,11 @@ public:
     std::vector<boost::shared_ptr<Matrix> > so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals
     std::vector<boost::shared_ptr<Matrix> > so_traceless_quadrupole();
+
+    /// Returns a CdSalcList object
+    boost::shared_ptr<CdSalcList> cdsalcs(int needed_irreps=0xF,
+                                          bool project_out_translations=true,
+                                          bool project_out_rotations=true);
 
     /// Play function
     void play();

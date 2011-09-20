@@ -1282,21 +1282,31 @@ Matrix* Molecule::inertia_tensor() const
 {
     int i;
     Matrix* tensor = new Matrix("Inertia Tensor", 3, 3);
+    Matrix& temp = *tensor;
 
     for (i = 0; i < natom(); i++) {
         // I(alpha, alpha)
-        tensor->add(0, 0, 0, mass(i) * (pow(y(i), 2) + pow(z(i), 2)));
-        tensor->add(0, 1, 1, mass(i) * (pow(x(i), 2) + pow(z(i), 2)));
-        tensor->add(2, 2, mass(i) * (pow(x(i), 2) + pow(y(i), 2)));
+        temp(0, 0) += mass(i) * (y(i) * y(i) + z(i) * z(i));
+        temp(1, 1) += mass(i) * (x(i) * x(i) + z(i) * z(i));
+        temp(2, 2) += mass(i) * (x(i) * x(i) + y(i) * y(i));
 
         // I(alpha, beta)
-        tensor->add(0, 0, 1, -mass(i) * x(i) * y(i));
-        tensor->add(0, 2, -mass(i) * x(i) * z(i));
-        tensor->add(0, 1, 2, -mass(i) * y(i) * z(i));
-        //    mirror
-        tensor->add(0, 1, 0, -mass(i) * x(i) * y(i));
-        tensor->add(0, 2, 0, -mass(i) * x(i) * z(i));
-        tensor->add(0, 2, 1, -mass(i) * y(i) * z(i));
+        temp(0, 1) -= mass(i) * x(i) * y(i);
+        temp(0, 2) -= mass(i) * x(i) * z(i);
+        temp(1, 2) -= mass(i) * y(i) * z(i);
+    }
+
+    //    mirror
+    temp(1, 0) = temp(0, 1);
+    temp(2, 0) = temp(0, 2);
+    temp(2, 1) = temp(1, 2);
+
+    // Check the elements for zero and make them a hard zero.
+    for (int i=0; i < 3; ++i) {
+        for (int j=0; j<3; ++j) {
+            if (fabs(tensor->get(i, j)) < ZERO)
+                tensor->set(i, j, 0.0);
+        }
     }
 
     return tensor;

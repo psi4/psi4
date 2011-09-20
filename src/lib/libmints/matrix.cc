@@ -338,6 +338,14 @@ void Matrix::copy(const Matrix* cp)
     }
 }
 
+void Matrix::copy_to_row(int h, int row, double const * const data)
+{
+    if (h >= nirrep_ || row >= rowspi_[h])
+        throw PSIEXCEPTION("Matrix::copy_to_row: Out of bounds.");
+
+    memcpy(matrix_[h][row], data, sizeof(double)*colspi_[h]);
+}
+
 void Matrix::copy(const Matrix& cp)
 {
     copy(&cp);
@@ -1052,52 +1060,58 @@ void Matrix::gemm(bool transa, bool transb, double alpha,
     gemm(transa, transb, alpha, &a, &b, beta);
 }
 
-bool Matrix::schmidt_add(int rows, Vector& v) throw()
+bool Matrix::schmidt_add(int h, int rows, Vector& v) throw()
 {
-    if (nirrep_ > 1 || v.nirrep() > 1)
+    if (v.nirrep() > 1)
         throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
 
     double dotval, normval;
     int i, I;
 
     for (i=0; i<rows; ++i) {
-        dotval = C_DDOT(colspi_[0], matrix_[0][i], 1, v.pointer(), 1);
-        for (I=0; I<colspi_[0]; ++I)
-            v(I) -= dotval * matrix_[0][i][I];
+        dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v.pointer(), 1);
+        for (I=0; I<coldim(h); ++I)
+            v(I) -= dotval * matrix_[h][i][I];
     }
 
-    normval = C_DDOT(colspi_[0], v.pointer(), 1, v.pointer(), 1);
+    normval = C_DDOT(coldim(h), v.pointer(), 1, v.pointer(), 1);
     normval = sqrt(normval);
 
     if (normval > 1.0e-5) {
-        for (I=0; I<colspi_[0]; ++I)
-            matrix_[0][rows][I] = v(I) / normval;
+        for (I=0; I<coldim(h); ++I)
+            matrix_[h][rows][I] = v(I) / normval;
         return true;
     }
     else
         return false;
 }
 
-bool Matrix::schmidt_add(int rows, double* v) throw()
+bool Matrix::schmidt_add(int h, int rows, double* v) throw()
 {
-    if (nirrep_ > 1)
-        throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
-
     double dotval, normval;
     int i, I;
 
+    fprintf(outfile, "in schmidt_add\n");
+    for (i=0; i<coldim(h); ++i)
+        fprintf(outfile, "%lf ", v[i]);
+    fprintf(outfile, "\n");
+
     for (i=0; i<rows; ++i) {
-        dotval = C_DDOT(colspi_[0], matrix_[0][i], 1, v, 1);
-        for (I=0; I<colspi_[0]; ++I)
-            v[I] -= dotval * matrix_[0][i][I];
+        dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
+        for (I=0; I<coldim(h); ++I)
+            v[I] -= dotval * matrix_[h][i][I];
     }
 
-    normval = C_DDOT(colspi_[0], v, 1, v, 1);
+    normval = C_DDOT(coldim(h), v, 1, v, 1);
     normval = sqrt(normval);
 
     if (normval > 1.0e-5) {
-        for (I=0; I<colspi_[0]; ++I)
-            matrix_[0][rows][I] = v[I] / normval;
+        for (I=0; I<coldim(h); ++I)
+            matrix_[h][rows][I] = v[I] / normval;
+
+        for (i=0; i<coldim(h); ++i)
+            fprintf(outfile, "%lf ", matrix_[h][rows][i]);
+        fprintf(outfile, "\n");
         return true;
     }
     else
@@ -1110,25 +1124,66 @@ void Matrix::project_out(Matrix &constraints)
     Matrix temp = *this;
     zero();
 
+    fprintf(outfile, "in project_out:\n");
+
+    temp.set_name("temp");
+    temp.print();
+
+    constraints.print();
+
     double *v = new double[coldim()];
-    for (int i=0; i<rowdim(); ++i) {
-        memcpy(v, temp[0][i], sizeof(double)*coldim());
-        for (int j=0; j<constraints.rowdim(); ++j) {
-            double dotval = C_DDOT(coldim(), temp[0][i], 1, constraints[0][j], 1);
-            for (int I=0; I<coldim(); ++I)
-                v[I] -= dotval * constraints[0][j][I];
-        }
+    fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
+    for (int h=0; h<nirrep(); ++h) {
+        for (int i=0; i<rowdim(h); ++i) {
+            fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
+            memcpy(v, temp[h][i], sizeof(double)*coldim(h));
 
-        // At this point all constraints have been projected out of "v"
-        // Normalize it add Schmidt orthogonalize it against this
-        double normval = C_DDOT(coldim(), v, 1, v, 1);
-        if (normval > 1.0E-10) {
-            for (int j=0; j<coldim(); ++j)
-                v[j] /= normval;
+            fprintf(outfile, "temp[%d][] ", h);
+            for(int z=0; z<coldim(h); ++z)
+                fprintf(outfile, "%lf ", temp[h][i][z]);
+            fprintf(outfile, "\n");
 
-            schmidt_add(i, v);
+            fprintf(outfile, "v[] ", h);
+            for(int z=0; z<coldim(h); ++z)
+                fprintf(outfile, "%lf ", v[z]);
+            fprintf(outfile, "\n");
+
+            for (int j=0; j<constraints.rowdim(0); ++j) {
+                // hand rolled ddot
+                double dotval = 0.0;
+                for (int z=0; z<coldim(h); ++z) {
+                    dotval += temp[h][i][z] * constraints[0][j][z];
+                    fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
+                }
+                fprintf(outfile, "\n");
+//                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
+                fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
+                for (int I=0; I<coldim(h); ++I)
+                    v[I] -= dotval * constraints[0][j][I];
+            }
+
+            fprintf(outfile, "after removing constraints v[] ", h);
+            for(int z=0; z<coldim(h); ++z)
+                fprintf(outfile, "%lf ", v[z]);
+            fprintf(outfile, "\n");
+
+            // At this point all constraints have been projected out of "v"
+            // Normalize it add Schmidt orthogonalize it against this
+            double normval = C_DDOT(coldim(h), v, 1, v, 1);
+            if (normval > 1.0E-10) {
+                normval = sqrt(normval);
+                for (int j=0; j<coldim(h); ++j)
+                    v[j] /= normval;
+
+                fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
+                for(int z=0; z<coldim(h); ++z)
+                    fprintf(outfile, "%lf ", v[z]);
+                fprintf(outfile, "\n");
+                schmidt_add(h, i, v);
+            }
         }
     }
+
     delete[] v;
 }
 
@@ -2190,6 +2245,24 @@ void Matrix::pyset(const boost::python::tuple &key, double value)
                boost::python::extract<int>(key[1]),
                boost::python::extract<int>(key[2]),
                value);
+}
+
+void Matrix::set_by_python_list(const boost::python::list& data)
+{
+    size_t rows = boost::python::len(data);
+
+    // Make sure nrows < rows
+    if (nrow() > rows)
+        throw PSIEXCEPTION("Uh, moron!");
+
+    for (size_t i=0; i<rows; ++i) {
+        size_t cols = boost::python::len(data[i]);
+        if (ncol() > cols)
+            throw PSIEXCEPTION("Uh, moron!");
+        for (size_t j=0; j<cols; ++j) {
+            set(i, j, boost::python::extract<double>(data[i][j]));
+        }
+    }
 }
 
 //
