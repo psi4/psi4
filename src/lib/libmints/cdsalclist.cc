@@ -58,7 +58,7 @@ void CdSalcWRTAtom::print() const
 
 CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
                        boost::shared_ptr<MatrixFactory> fact,
-                       char needed_irreps,
+                       int needed_irreps,
                        bool project_out_translations,
                        bool project_out_rotations)
     : molecule_(mol), factory_(fact), needed_irreps_(needed_irreps),
@@ -80,6 +80,10 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     Vector ev(3);
     Matrix X(3, 3);
     pI->diagonalize(X, ev);
+
+    fprintf(outfile, "pI[0][1] = %20.14lf\n", pI->get(0, 1));
+    molecule_->inertia_tensor()->print();
+    X.eivprint(ev);
 
     // Pull out data to local variables to reduce memory lookup
     double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
@@ -122,6 +126,8 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
         }
     }
 
+    constraints.print();
+
     // Remove NULL constraint (if present) and normalize the rest of them
     for (int i=0; i<6; ++i) {
         double normval = C_DDOT(ncd_, constraints[0][i], 1, constraints[0][i], 1);
@@ -131,41 +137,39 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
             constraints.scale_row(0, i, 0.0);
     }
 
-//    constraints.print();
+    constraints.print();
 
     Matrix constraints_ortho("Orthogonalized COM & Rotational constraints", 6, 3*natom);
     // Ensure rotations and translations are exactly orthogonal
     int count = 0;
     for (int i=0; i<6; ++i)
-        count += constraints_ortho.schmidt_add(i, constraints[0][i]);
+        count += constraints_ortho.schmidt_add(0, i, constraints[0][i]);
 
-//    constraints_ortho.print();
+    constraints_ortho.print();
 
     double *salc = new double[ncd_];
-
-    Matrix salcs("Requested SALCs", ncd_, ncd_);
-    int *salcirrep = new int[ncd_];
-
-    // We know how many atom_salcs_ we have.
-    for (int i=0; i<natom; ++i)
-        atom_salcs_.push_back(CdSalcWRTAtom());
 
     // Obtain handy reference to point group.
     PointGroup& pg = *molecule_->point_group().get();
     CharacterTable char_table = pg.char_table();
     nirrep_ = char_table.nirrep();
 
-    salc_symblock_ = new double**[nirrep_];
+    // I don't know up front how many I have per irrep
+    // I'll resize afterwards
+    Dimension dim(nirrep_);
     for (int i=0; i<nirrep_; ++i)
-        salc_symblock_[i] = new double*[ncd_];
+        dim[i] = ncd_;
 
-    cdsalc2cd_ = block_matrix(ncd_, ncd_);
+    Matrix salcs("Requested SALCs", dim, dim);
+    int *salcirrep = new int[ncd_];
 
-    // Clear the counting array
-    memset(cdsalcpi_, 0, sizeof(int) * 8);
+    // We know how many atom_salcs_ we have.
+    for (int i=0; i<natom; ++i)
+        atom_salcs_.push_back(CdSalcWRTAtom());
 
     // Obtain atom mapping of atom * symm op to atom
     int **atom_map = compute_atom_map(molecule_);
+    memset(cdsalcpi_, 0, sizeof(int)*8);
 
     int nsalc = 0;
     for (int uatom=0; uatom < molecule_->nunique(); ++uatom) {
@@ -218,64 +222,40 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
                 // We're only interested in doing the following if there are nonzeros
                 // AND the irrep that we're on is what the user wants.
                 if (nonzero && (1 << irrep) & needed_irreps) {
-
                     // Store the salc so we can project out constraints below
-                    memcpy(salcs[0][nsalc], salc, ncd_*sizeof(double));
+                    salcs.copy_to_row(irrep, cdsalcpi_[irrep], salc);
                     salcirrep[nsalc] = irrep;
+                    ++cdsalcpi_[irrep];
                     nsalc++;
-
-                }
-
-                // TODO: I want to delete this, eventually. It's useful
-                // in debugging against psi3's input.
-                for (int i=0; i<ncd_; ++i) {
-                    if (fabs(salc[i]) > 1e-10) {
-                        salc_symblock_[irrep][cdsalcpi_[irrep]] = new double[ncd_];
-                        memcpy(salc_symblock_[irrep][cdsalcpi_[irrep]],salc,sizeof(double)*ncd_);
-                        ++cdsalcpi_[irrep];
-                        break;
-                    }
                 }
             }
         }
     }
+
+    // Raw - non-projected cartesian displacements
+    salcs.print(outfile, "Raw, Nonprojected Cartesian Displacements");
 
     // Project out any constraints
     salcs.project_out(constraints_ortho);
     salcs.set_name("Resulting SALCs after projections");
 
     // Walk through the new salcs and populate our sparse vectors.
-    for (int i=0; i<nsalc; ++i) {
-        bool added = false;
-        CdSalc new_salc(salcirrep[i]);
-        for (int cd=0; cd < ncd_; ++cd) {
-            if (fabs(salcs(i, cd)) > 1.0e-10) {
-                added = true;
-                new_salc.add(salcs(i, cd), cd/3, cd % 3);
-                atom_salcs_[cd/3].add(cd % 3, salcs(i, cd), salcirrep[i], salcs_.size());
-            }
-        }
-        if (added)
-            salcs_.push_back(new_salc);
-    }
-
-    ncd_ = salcs_.size();
-
-    // TODO: I want to delete this, too. This was used in psi3's input.
-    // In psi4 I'm using a sparse transform object...no need to store
-    // all the zeros that are present.
-    /* copy salc_symblk to cdsalc2cd */
-    {
-        int c = 0;
-        for(int irrep=0; irrep<nirrep_; irrep++) {
-            int num_per_irrep = cdsalcpi_[irrep];
-            for(int i=0; i<num_per_irrep; i++,c++) {
-                for(int j=0; j<ncd_; j++) {
-                    cdsalc2cd_[j][c] = salc_symblock_[irrep][i][j];
+    for (int h=0; h<nirrep_; ++h) {
+        for (int i=0; i<cdsalcpi_[h]; ++i) {
+            bool added = false;
+            CdSalc new_salc(h);
+            for (int cd=0; cd < ncd_; ++cd) {
+                if (fabs(salcs(i, cd)) > 1.0e-10) {
+                    added = true;
+                    new_salc.add(salcs(i, cd), cd/3, cd % 3);
+                    atom_salcs_[cd/3].add(cd % 3, salcs(i, cd), h, salcs_.size());
                 }
             }
+            if (added)
+                salcs_.push_back(new_salc);
         }
     }
+    ncd_ = salcs_.size();
 
 //    fprintf(outfile,"    -Cartesian displacement SALCs per irrep:\n");
 //    fprintf(outfile,"    Irrep  #SALCs\n");
@@ -293,20 +273,6 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
 
 CdSalcList::~CdSalcList()
 {
-    // TODO: I want to delete this. I don't use any of these variables
-    // they're useful in debugging with psi3's input.
-    /* copy salc_symblk to cdsalc2cd */
-    {
-        int c = 0;
-        for(int irrep=0; irrep<nirrep_; irrep++) {
-            int num_per_irrep = cdsalcpi_[irrep];
-            for(int i=0; i<num_per_irrep; i++,c++) {
-                delete[] salc_symblock_[irrep][i];
-            }
-            delete[] salc_symblock_[irrep];
-        }
-        delete[] salc_symblock_;
-    }
 }
 
 std::vector<boost::shared_ptr<Matrix> > CdSalcList::create_matrices(const std::string &basename)
