@@ -2,7 +2,7 @@
     \ingroup ccresponse
     \brief Enter brief description of file here 
 */
-
+#include <string>
 namespace psi { namespace ccresponse {
 
 struct Params {
