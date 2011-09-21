@@ -62,6 +62,7 @@ namespace psi {
     namespace cchbar    { PsiReturnType cchbar(Options&);    }
     namespace cclambda  { PsiReturnType cclambda(Options&);  }
     namespace ccdensity { PsiReturnType ccdensity(Options&); }
+    namespace ccresponse { PsiReturnType ccresponse(Options&); }
     // DETCI: uncomment
     //namespace detci     { PsiReturnType detci(Options&);     }
     namespace findif    {
@@ -327,6 +328,13 @@ double py_psi_ccdensity()
 {
     py_psi_prepare_options_for_module("CCDENSITY");
     ccdensity::ccdensity(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_ccresponse()
+{
+    py_psi_prepare_options_for_module("CCRESPONSE");
+    ccresponse::ccresponse(Process::environment.options);
     return 0.0;
 }
 
@@ -806,6 +814,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cchbar", py_psi_cchbar);
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);
+    def("ccresponse", py_psi_ccresponse);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes

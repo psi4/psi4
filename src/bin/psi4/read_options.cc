@@ -37,6 +37,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("WFN", "SCF");
   /*- Derivative level -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
+  options.add_str("DERTYPE", "NONE", "NONE FIRST RESPONSE");
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -56,9 +57,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- -Log10 of the energy convergence criterion -*/
     options.add_int("E_CONVERGE", 6);
-
-    /*- Derivative level -*/
-    options.add_str("DERTYPE", "NONE", "NONE FIRST");
 
     /*- Wavefunction type -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
@@ -793,8 +791,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     /*- The type of job being performed -*/
     options.add_str("JOBTYPE", "SP");
-    /*- The order of energy derivatives required -*/
-    options.add_str("DERTYPE", "NONE");
     /*- The amount of cacheing of data to perform -*/
     options.add_int("CACHELEV", 2);
     /*- The criterion used to retain/release cached data -*/
@@ -813,8 +809,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "");
     /*- -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
-    options.add_str("DERTYPE", "NONE");
     /*- -*/
     options.add_bool("PRINT_TEI", false);
     /*- -*/
@@ -835,8 +829,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
     /*- -*/
     options.add_str("WFN", "CCSD");
-    /*- -*/
-    options.add_str("DERTYPE", "NONE");
     /*- -*/
     options.add_bool("PSIMRCC", false);
     /*- -*/
@@ -958,8 +950,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("REFERENCE", "RHF");
     /*- -*/
-    options.add_str("DERTYPE", "NONE");
-    /*- -*/
     options.add_str("PROPERTY", "POLARIZABILITY");
     /*- -*/
     options.add_bool("LOCAL", false);
@@ -1003,6 +993,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL", false);
     /*- -*/
     options.add("OMEGA", new ArrayType());
+    /*- -*/
+    options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
     /*- The wavefunction type -*/
@@ -1011,16 +1003,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("NTHREADS",1);
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- The order of derivative information required -*/
-    options.add_str("DERTYPE","NONE");
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
     /*- The wavefunction type -*/
     options.add_str("WFN", "SCF");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
-    /*- The order of derivative required -*/
-    options.add_str("DERTYPE","NONE");
     /*- Integrals are neglected if their magnitude is below $10^{-tolerance}$ -*/
     options.add_int("TOLERANCE",14);
     /*- The amount of cacheing of data to perform -*/
@@ -1064,8 +1052,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("NUM_AMPS",10);
     /*- -*/
-    options.add_str("DERTYPE","NONE");
-    /*- -*/
     options.add_str("JOBTYPE","");
     /*- -*/
     options.add_bool("LOCAL",false);
@@ -1099,8 +1085,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CLAG"|| options.read_globals()) {
     /*- -*/
     options.add_bool("WRITE_CAS_FILES",0);
-    /*- -*/
-    options.add_str("DERTYPE","NONE");
     /*- -*/
     options.add_str("WFN","NONE");
     /*- -*/
@@ -1214,8 +1198,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("WFN", "SCF");
     /*- -*/
-    options.add_str("DERTYPE", "ENERGY");
-    /*- -*/
     options.add_bool("WABEI_LOWDISK", false);
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
@@ -1227,8 +1209,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CACHELEV",2);
     /*- -*/
     options.add_str("REFERENCE","RHF");
-    /*- -*/
-    options.add_str("DERTYPE", "NONE");
     /*- -*/
     options.add_str("GAUGE","LENGTH");
     /*- -*/
@@ -1271,6 +1251,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LINEAR",0);
     /*- -*/
     options.add("OMEGA",new ArrayType());
+    /*- -*/
+    options.add("MU_IRREPS",new ArrayType());
   }
   if(name == "MVO"|| options.read_globals()) {
     /*- -*/
@@ -1393,8 +1375,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF");
     /*- -*/
     options.add_bool("ANALYZE", 0);
-    /*- -*/
-    options.add_str("DERTYPE", "NONE", "NONE FIRST RESPONSE");
     /*- -*/
     options.add_int("MAXITER", 50);
     /*- -*/

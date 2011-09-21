@@ -27,7 +27,6 @@ procedures = {
         'hessian' : {
         },
         'response' : {
-            'scf' : run_scf,
             'ccsd' : run_ccsd_response
         }}
 
