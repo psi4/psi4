@@ -9,6 +9,7 @@
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <libmints/molecule.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -44,9 +45,7 @@ void get_moinfo(void)
   moinfo.orbspi = chkpt_rd_orbspi();
   moinfo.clsdpi = chkpt_rd_clsdpi();
   moinfo.openpi = chkpt_rd_openpi();
-  moinfo.usotao = chkpt_rd_usotao();
-  moinfo.natom = chkpt_rd_natom();
-  moinfo.zvals = chkpt_rd_zvals();
+  moinfo.natom = Process::environment.molecule()->natom();
   chkpt_close();
 
   nirreps = moinfo.nirreps;
@@ -227,7 +226,9 @@ void get_moinfo(void)
   /* Prepare memory for property integrals */
   moinfo.MU = (double ***) malloc(3 * sizeof(double **));
   moinfo.L = (double ***) malloc(3 * sizeof(double **));
+  moinfo.Lcc = (double ***) malloc(3 * sizeof(double **));
   moinfo.P = (double ***) malloc(3 * sizeof(double **));
+  moinfo.Pcc = (double ***) malloc(3 * sizeof(double **));
   moinfo.Q = (double ****) malloc(3 * sizeof(double ***));
   for(i=0; i < 3; i++)
     moinfo.Q[i] = (double ***) malloc(3 * sizeof(double **));
@@ -286,7 +287,6 @@ void cleanup(void)
     free(moinfo.labels[i]);
   free(moinfo.labels);
 
-  free_block(moinfo.usotao);
   free(moinfo.MU);
   free(moinfo.L);
   free(moinfo.P);
@@ -296,7 +296,6 @@ void cleanup(void)
   free(moinfo.pitzer2qt);
   free(moinfo.qt2pitzer);
 
-  free(moinfo.zvals);
   free(moinfo.mu_irreps);
   free(moinfo.l_irreps);
 }

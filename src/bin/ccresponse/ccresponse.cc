@@ -28,11 +28,11 @@ namespace psi { namespace ccresponse {
 #define IOFF_MAX 32641
 
 /* Function prototypes */
-void init_io(int argc, char *argv[]);
+void init_io(void);
 void init_ioff(void);
 void title(void);
 void get_moinfo(void);
-void get_params(void);
+void get_params(Options &);
 void cleanup(void);
 void exit_io(void);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -51,15 +51,17 @@ void polar(void);
 void optrot(void);
 void roa(void);
 
-int ccresponse(Options &options, int argc, char *argv[])
+void preppert(void);
+
+int ccresponse(Options &options)
 {
   int **cachelist, *cachefiles;
 
-  init_io(argc, argv);
+  init_io();
   init_ioff();
   title();
   get_moinfo();
-  get_params();
+  get_params(options);
 
   timer_on("ccresponse");
 
@@ -91,6 +93,8 @@ int ccresponse(Options &options, int argc, char *argv[])
   sort_lamps(); /* should be removed sometime - provided by cclambda */
   if(params.wfn != "CC2") lambda_residuals(); /* don't do this for CC2 */
 
+  preppert();
+
   if(params.prop == "POLARIZABILITY") polar();
   if(params.prop == "ROTATION") optrot();
   if(params.prop == "ROA") roa();
@@ -111,7 +115,7 @@ int ccresponse(Options &options, int argc, char *argv[])
   return 0;
 }
 
-void init_io(int argc, char *argv[])
+void init_io(void)
 {
   int i;
 
