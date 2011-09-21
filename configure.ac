@@ -26,6 +26,12 @@ AC_DEFINE(PSI_BUGREPORT,"psi_bugreport")
 AC_SUBST(abs_top_srcdir)
 AC_SUBST(abs_top_builddir)
 
+if test "$srcdir" = "."; then
+  echo "You are not allowed to compile in the source directory."
+  echo "Create an objdir or something similar as stated in the installation manual."
+  exit 1
+fi
+
 PSI_TOP_SRCDIR=`cd $srcdir && pwd`
 AC_DEFINE_UNQUOTED([PSI_TOP_SRCDIR],["$PSI_TOP_SRCDIR"])
 
