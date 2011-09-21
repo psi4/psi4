@@ -3,14 +3,14 @@
   \brief Gram-Schmidt orthogonalize a set of vectors
   \ingroup QT
 */
- 
+
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
 
 namespace psi {
-	
+
 /* #define STANDALONE */
 
 /*!
@@ -22,13 +22,13 @@ namespace psi {
 ** David Sherrill, Feb 1994
 **
 ** \param A    = matrix to orthogonalize (matrix of doubles)
-** \param rows = rows of A 
+** \param rows = rows of A
 ** \param cols = columns of A
 **
 ** Returns: none
 ** \ingroup QT
 */
-void schmidt(double **A, int rows, int cols, FILE *outfile)
+void schmidt(double **A, int rows, int cols, FILE */*outfile*/)
 {
    double *tmp;
    double normval, dotval;
@@ -37,25 +37,25 @@ void schmidt(double **A, int rows, int cols, FILE *outfile)
 
    /* initialize working array */
    tmp = init_array(cols);
-  
+
    /* always take the first vector (normalized) as given */
    dot_arr(A[0], A[0], cols, &normval) ; /* normval = dot (A0 * A0) */
    normval = sqrt(normval) ;
 
-   for (i=0; i<cols; i++) A[0][i] /= normval; 
+   for (i=0; i<cols; i++) A[0][i] /= normval;
 
    /* now, one at a time, get the new rows */
    for (i=1; i<rows; i++) {
       for (I=0; I<cols; I++) tmp[I] = A[i][I] ;
       for (j=0; j<i; j++) {
-         dot_arr(A[i], A[j], cols, &dotval) ; 
+         dot_arr(A[i], A[j], cols, &dotval) ;
          for (I=0; I<cols; I++) tmp[I] -= dotval * A[j][I];
          }
       dot_arr(tmp, tmp, cols, &normval);
       normval = sqrt(normval);
       /* fprintf(outfile,"\n norm[%d] = %20.15f\n",i, (1.0/normval));
       fflush(outfile); */
-      for (I=0; I<cols; I++) A[i][I] = tmp[I] / normval; 
+      for (I=0; I<cols; I++) A[i][I] = tmp[I] / normval;
       }
 
    free(tmp);
@@ -84,7 +84,7 @@ main()
    schmidt(mat,3,3) ;
    fprintf(outfile, "\nMatrix after Gram-Schmidt process\n") ;
    print_mat(mat,3,3,outfile) ;
- 
+
    fprintf(outfile, "\nTest A * A = \n") ;
 
    mmult(mat, 0, mat, 1, mat_x_mat, 0, 3, 3, 3, 0) ;
@@ -93,7 +93,7 @@ main()
    free_matrix(mat,3) ;
    free_matrix(mat_copy,3) ;
    free_matrix(mat_x_mat,3) ;
-} 
+}
 #endif
 
 }

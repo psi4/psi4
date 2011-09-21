@@ -2,7 +2,7 @@
 ** \file
 ** \brief Initialize a matrix of doubles
 ** \ingroup CIOMR
-*/ 
+*/
 
 #include <psifiles.h>
 #include <cstdio>
@@ -13,18 +13,18 @@
 namespace psi {
 
   /**
-  *  WARNING: Psi 3 init/free_matrix routines deprecated 
+  *  WARNING: Psi 3 init/free_matrix routines deprecated
   *  by Robert Parrish, robparrish@gmail.com
   *
   *  the signature of this method remains the same
-  *  
+  *
   *  June 22, 2010
-  **/  
+  **/
 /*!
 ** init_matrix(): Initialize an nxm matrix of doubles and return a pointer to
-** the first row.  Note that this does not form a matrix which is 
+** the first row.  Note that this does not form a matrix which is
 ** necessarily contiguous in memory.  Use block_matrix() for that.
-** 
+**
 ** \param n = number of rows (unsigned long to allow large matrices)
 ** \param m = number of columns (unsigned long to allow large matrices)
 **
@@ -57,7 +57,7 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
     // bzero is not in the C standard, use memset instead.
     //bzero(B, m*n*(unsigned long int)sizeof(double));
     memset(static_cast<void*>(B), 0, m*n*sizeof(double));
-    
+
     for (i = 0; i < n; i++) {
         A[i] = &(B[i*m]);
     }
@@ -66,8 +66,8 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 //<<<<<<<<<<<<<<<<<<<<<
 // BEGIN DEPRECATED CODE
 //<<<<<<<<<<<<<<<<<<<<<<
-  
-  /**  
+
+  /**
   double **array=NULL;
   unsigned long int i;
 
@@ -93,13 +93,13 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 
 
   /**
-  *  WARNING: Psi 3 init/free_matrix routines deprecated 
+  *  WARNING: Psi 3 init/free_matrix routines deprecated
   *  by Robert Parrish, robparrish@gmail.com
   *
   *  the signature of this method remains the same
-  *  
+  *
   *  June 22, 2010
-  **/  
+  **/
 /*!
 ** free_matrix(): Free a 2D matrix allocated with init_matrix().
 **
@@ -110,7 +110,7 @@ double ** init_matrix(unsigned long int n, unsigned long int m)
 **
 ** \ingroup CIOMR
 */
-void free_matrix(double **array, unsigned long int size)
+void free_matrix(double **array, unsigned long int /*size*/)
 {
     if(array == NULL) return;
     delete [] array[0];
@@ -118,8 +118,8 @@ void free_matrix(double **array, unsigned long int size)
 //<<<<<<<<<<<<<<<<<<<<<
 // BEGIN DEPRECATED CODE
 //<<<<<<<<<<<<<<<<<<<<<<
-  
-  /**  
+
+  /**
   unsigned long int i;
 
   for (i=0; i < size ; i++) {

@@ -12,52 +12,52 @@
 
 using namespace psi;
 
-double *Chkpt::rd_contr(const char *key2)
+double *Chkpt::rd_contr(const char */*key2*/)
 {
 #if 0
-	double *contr;
-	double *temp_contr;
-	int nprim, i, j, ij = 0;
-	char *keyword;
-	keyword = build_keyword("Contraction coefficients", key2);
+        double *contr;
+        double *temp_contr;
+        int nprim, i, j, ij = 0;
+        char *keyword;
+        keyword = build_keyword("Contraction coefficients", key2);
 
-	nprim = rd_nprim(key2);
+        nprim = rd_nprim(key2);
 
-	temp_contr = array<double>(MAXANGMOM*nprim);
-	contr = array<double>(nprim);
+        temp_contr = array<double>(MAXANGMOM*nprim);
+        contr = array<double>(nprim);
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) temp_contr,
-		MAXANGMOM*nprim*sizeof(double));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) temp_contr,
+                MAXANGMOM*nprim*sizeof(double));
 
 /* Picking non-zero coefficients to the "master" array contr */
-	for(i=0; i < MAXANGMOM; i++) 
-		for(j=0; j < nprim; j++)
-	{ 
-		if (temp_contr[ij] != 0)
-			contr[j] = temp_contr[ij];
-		ij++;
-	}
+        for(i=0; i < MAXANGMOM; i++)
+                for(j=0; j < nprim; j++)
+        {
+                if (temp_contr[ij] != 0)
+                        contr[j] = temp_contr[ij];
+                ij++;
+        }
 
-	free(temp_contr);
-	free(keyword);
-	return contr;
+        free(temp_contr);
+        free(keyword);
+        return contr;
 #endif
     return NULL;
 }
 
-void Chkpt::wt_contr(double *contr, const char *key2)
+void Chkpt::wt_contr(double */*contr*/, const char */*key2*/)
 {
 #if 0
-	int nprim;
-	char *keyword;
-	keyword = build_keyword("Contraction coefficients", key2);
+        int nprim;
+        char *keyword;
+        keyword = build_keyword("Contraction coefficients", key2);
 
-	nprim = rd_nprim(key2);
+        nprim = rd_nprim(key2);
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) contr,
-		MAXANGMOM*nprim*sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) contr,
+                MAXANGMOM*nprim*sizeof(double));
 
-	free(keyword);
+        free(keyword);
 #endif
 }
 
@@ -75,12 +75,12 @@ extern "C" {
 ** zero and not returned.
 ** \ingroup CHKPT
 */
-	double *chkpt_rd_contr(void)
-	{
-		double *contr;
-		contr = _default_chkpt_lib_->rd_contr();
-		return contr;
-	}
+        double *chkpt_rd_contr(void)
+        {
+                double *contr;
+                contr = _default_chkpt_lib_->rd_contr();
+                return contr;
+        }
 
 /*!
 ** chkpt_wt_contr(): Write out the normalized contraction coefficients.
@@ -91,9 +91,9 @@ extern "C" {
 ** Returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_contr(double *contr, const char *key2)
-	{
-		_default_chkpt_lib_->wt_contr(contr, key2);
-	}
+        void chkpt_wt_contr(double *contr, const char *key2)
+        {
+                _default_chkpt_lib_->wt_contr(contr, key2);
+        }
 }
 
