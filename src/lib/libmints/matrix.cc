@@ -247,7 +247,6 @@ Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
     dpd_file2_mat_close(inFile);
 }
 
-
 Matrix::~Matrix()
 {
     release();
@@ -255,6 +254,22 @@ Matrix::~Matrix()
         delete[] rowspi_;
     if (colspi_)
         delete[] colspi_;
+}
+
+/// allocate a block matrix -- analogous to libciomr's block_matrix
+double** Matrix::matrix(int nrow, int ncol)
+{
+    double** mat = (double**) malloc(sizeof(double*)*nrow);
+    const size_t size = sizeof(double)*nrow*ncol;
+    mat[0] = (double*) malloc(size);
+    memset((void *)mat[0], 0, size);
+    for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
+    return mat;
+}
+/// free a (block) matrix -- analogous to libciomr's free_block
+void Matrix::free(double** Block)
+{
+    ::free(Block[0]);  ::free(Block);
 }
 
 void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const string& name, int symmetry)
@@ -273,10 +288,10 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
     alloc();
 }
 
-boost::shared_ptr<Matrix> Matrix::create(const std::string& name, 
-                                 int nirrep, 
-                                 int* rows, 
-                                 int *cols) 
+boost::shared_ptr<Matrix> Matrix::create(const std::string& name,
+                                 int nirrep,
+                                 int* rows,
+                                 int *cols)
 {
     return boost::shared_ptr<Matrix>(new Matrix(name, nirrep, rows, cols));
 }
@@ -1865,8 +1880,8 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
     fclose(out);
 }
 
-void Matrix::save(boost::shared_ptr<psi::PSIO>& psio, 
-                  unsigned int fileno, 
+void Matrix::save(boost::shared_ptr<psi::PSIO>& psio,
+                  unsigned int fileno,
                   SaveType savetype)
 {
     save(psio.get(), fileno, savetype);
@@ -1927,10 +1942,10 @@ void Matrix::save(psi::PSIO* const psio, unsigned int fileno, SaveType st)
         psio->close(fileno, 1);     // Close and keep
 }
 
-bool Matrix::load(boost::shared_ptr<psi::PSIO>& psio, 
-                  unsigned int fileno, 
-                  const std::string& tocentry, 
-                  int nso) 
+bool Matrix::load(boost::shared_ptr<psi::PSIO>& psio,
+                  unsigned int fileno,
+                  const std::string& tocentry,
+                  int nso)
 {
     return load(psio.get(), fileno, tocentry, nso);
 }
@@ -2013,8 +2028,8 @@ void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
         psio->close(fileno, 1);     // Close and keep // Idempotent, win!
 }
 
-void Matrix::load(boost::shared_ptr<psi::PSIO>& psio, 
-                  unsigned int fileno, 
+void Matrix::load(boost::shared_ptr<psi::PSIO>& psio,
+                  unsigned int fileno,
                   SaveType savetype)
 {
     load(psio.get(), fileno, savetype);
@@ -2261,6 +2276,22 @@ SimpleMatrix::SimpleMatrix(string& name, const Dimension& rows, const Dimension&
 SimpleMatrix::~SimpleMatrix()
 {
     release();
+}
+
+double** SimpleMatrix::matrix(int nrow, int ncol)
+{
+    double** mat = (double**) malloc(sizeof(double*)*nrow);
+    const size_t size = sizeof(double)*nrow*ncol;
+    mat[0] = (double*) malloc(size);
+    //bzero((void*)mat[0],size);
+    memset((void *)mat[0], '\0', size);
+    for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
+    return mat;
+}
+
+void SimpleMatrix::free(double** Block)
+{
+    ::free(Block[0]);  ::free(Block);
 }
 
 void SimpleMatrix::init(int rowspi, int colspi, string name)
