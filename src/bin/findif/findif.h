@@ -5,6 +5,7 @@
 #include <vector>
 #include <libmints/mints.h>
 #include <psi4-dec.h>
+#include <libciomr/libciomr.h>
 
 namespace psi { namespace findif {
 

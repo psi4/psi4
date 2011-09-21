@@ -1,6 +1,6 @@
 /*!
   \file
-  \brief Obtain the QT orbital reordering array between Pitzer and correlated 
+  \brief Obtain the QT orbital reordering array between Pitzer and correlated
     order
   \ingroup QT
 */
@@ -10,7 +10,7 @@
 #include <libciomr/libciomr.h>
 
 namespace psi {
-	
+
 /*!
 ** reorder_qt()
 **
@@ -18,7 +18,7 @@ namespace psi {
 ** "Quantum Trio" standard ordering, in which the orbitals are divided
 ** into the following sets: frozen core, then doubly occupied, then singly
 ** occupied, then virtuals, then deleted (frozen) virtuals.
-** The reordering array takes a basis function in 
+** The reordering array takes a basis function in
 ** Pitzer ordering (orbitals grouped according to irrep) and gives the
 ** corresponding index in the Quantum Trio numbering scheme.
 **
@@ -37,13 +37,13 @@ namespace psi {
 **
 ** \ingroup QT
 */
-void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in, 
+void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       int *frozen_uocc_in, int *order, int *orbs_per_irrep, int nirreps)
 {
 
    int cnt=0, irrep, point, tmpi;
-   int *used, *offset; 
-   int *docc, *socc, *frozen_docc, *frozen_uocc; 
+   int *used, *offset;
+   int *docc, *socc, *frozen_docc, *frozen_uocc;
    int *uocc;
 
    used = init_int_array(nirreps);
@@ -61,13 +61,13 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       frozen_docc[irrep] = frozen_docc_in[irrep];
       frozen_uocc[irrep] = frozen_uocc_in[irrep];
       }
- 
+
    /* construct the offset array */
    offset[0] = 0;
    for (irrep=1; irrep<nirreps; irrep++) {
       offset[irrep] = offset[irrep-1] + orbs_per_irrep[irrep-1];
       }
-   
+
    /* construct the uocc array */
    for (irrep=0; irrep<nirreps; irrep++) {
       tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
@@ -81,7 +81,7 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
       }
 
    /* do the frozen core */
-   for (irrep=0; irrep<nirreps; irrep++) { 
+   for (irrep=0; irrep<nirreps; irrep++) {
       while (frozen_docc[irrep]) {
          point = used[irrep] + offset[irrep];
          order[point] = cnt++;
@@ -138,7 +138,7 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
          fprintf(stderr, "(reorder_qt): on final check, used more orbitals");
          fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
             used[irrep], orbs_per_irrep[irrep], irrep);
-         } 
+         }
       }
 
    free(used);  free(offset);
@@ -161,13 +161,13 @@ void reorder_qt(int *docc_in, int *socc_in, int *frozen_docc_in,
 **
 ** \ingroup QT
 */
-void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc, 
-		    int *frozen_uocc, int *order_alpha, int *order_beta,
-		    int *orbspi, int nirreps)
+void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
+                    int *frozen_uocc, int *order_alpha, int *order_beta,
+                    int *orbspi, int nirreps)
 {
   int p, nmo;
-  int cnt_alpha, cnt_beta, irrep, point, point_alpha, point_beta, tmpi;
-  int *offset, this_offset; 
+  int cnt_alpha, cnt_beta, irrep, tmpi;
+  int *offset, this_offset;
   int *uocc;
 
   offset = init_int_array(nirreps);
@@ -179,7 +179,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   for (irrep=1; irrep<nirreps; irrep++) {
     offset[irrep] = offset[irrep-1] + orbspi[irrep-1];
   }
-   
+
   /* construct the uocc array */
   nmo = 0;
   for (irrep=0; irrep<nirreps; irrep++) {
@@ -187,7 +187,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
     tmpi = frozen_uocc[irrep] + docc[irrep] + socc[irrep];
     if (tmpi > orbspi[irrep]) {
       fprintf(stderr, "(reorder_qt_uhf): orbitals don't add up for irrep %d\n",
-	      irrep);
+              irrep);
       return;
     }
     else
@@ -197,7 +197,7 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
   cnt_alpha = cnt_beta = 0;
 
   /* do the frozen core */
-  for(irrep=0; irrep<nirreps; irrep++) { 
+  for(irrep=0; irrep<nirreps; irrep++) {
     this_offset = offset[irrep];
     for(p=0; p < frozen_docc[irrep]; p++) {
       order_alpha[this_offset+p] = cnt_alpha++;
@@ -251,13 +251,13 @@ void reorder_qt_uhf(int *docc, int *socc, int *frozen_docc,
     if (cnt_alpha > nmo) {
       fprintf(stderr, "(reorder_qt_uhf): on final check, used more orbitals");
       fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
-	      cnt_alpha, nmo, irrep);
-    } 
+              cnt_alpha, nmo, irrep);
+    }
     if (cnt_beta > nmo) {
       fprintf(stderr, "(reorder_qt_uhf): on final check, used more orbitals");
       fprintf(stderr, "   than were available (%d vs %d) for irrep %d\n",
-	      cnt_beta, nmo, irrep);
-    } 
+              cnt_beta, nmo, irrep);
+    }
   }
 
   free(offset);

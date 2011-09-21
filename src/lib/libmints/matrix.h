@@ -58,18 +58,9 @@ protected:
     void copy_from(double ***);
 
     /// allocate a block matrix -- analogous to libciomr's block_matrix
-    static double** matrix(int nrow, int ncol) {
-        double** mat = (double**) malloc(sizeof(double*)*nrow);
-        const size_t size = sizeof(double)*nrow*ncol;
-        mat[0] = (double*) malloc(size);
-        memset((void *)mat[0], 0, size);
-        for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
-        return mat;
-    }
+    static double** matrix(int nrow, int ncol);
     /// free a (block) matrix -- analogous to libciomr's free_block
-    static void free(double** Block) {
-        ::free(Block[0]);  ::free(Block);
-    }
+    static void free(double** Block);
 
     void print_mat(const double *const *const a, int m, int n, FILE *out) const;
 
@@ -848,19 +839,9 @@ protected:
     void copy_from(double **);
 
     /// allocate a block matrix -- analogous to libciomr's block_matrix
-    static double** matrix(int nrow, int ncol) {
-        double** mat = (double**) malloc(sizeof(double*)*nrow);
-        const size_t size = sizeof(double)*nrow*ncol;
-        mat[0] = (double*) malloc(size);
-        //bzero((void*)mat[0],size);
-        memset((void *)mat[0], '\0', size);
-        for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
-        return mat;
-    }
+    static double** matrix(int nrow, int ncol);
     /// free a (block) matrix -- analogous to libciomr's free_block
-    static void free(double** Block) {
-        ::free(Block[0]);  ::free(Block);
-    }
+    static void free(double** Block);
 
 public:
     /// Default constructor, zeros everything out

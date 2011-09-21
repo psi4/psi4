@@ -86,7 +86,7 @@ void CCTransform::read_tei_so_integrals()
       allocate1(double,tei_so[h],block_size);
       for(size_t i=0;i<block_size;i++)
         tei_so[h][i]=0.0;
-      fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d",moinfo->get_irr_labs(h),block_size);
+      fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
     }
   }
 
@@ -365,7 +365,7 @@ void CCTransform::read_tei_mo_integrals()
       if(!ilsti)
         iwl_buf_fetch(&ERIIN);
     } while(!ilsti);
-  fprintf(outfile,"\n    CCTransform: read %d non-zero integrals", elements);
+  fprintf(outfile,"\n    CCTransform: read %lu non-zero integrals", elements);
   fflush(outfile);
   iwl_buf_close(&ERIIN,1);
 }
@@ -486,11 +486,11 @@ void CCTransform::allocate_tei_mo()
           required_size += sizeof(double) * block_size;
           tei_mo[h] = NULL;
         }
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14d bytes)",moinfo->get_irr_labs(h),block_size,_memory_manager_->get_FreeMemory());
+        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,_memory_manager_->get_FreeMemory());
       }
     }
     if(failed){
-      fprintf(outfile,"\n\tCCTransform: not enough memory! %d bytes extra required",required_size);
+      fprintf(outfile,"\n\tCCTransform: not enough memory! %lu bytes extra required",required_size);
       fflush(outfile);
       exit(EXIT_FAILURE);
     }
@@ -521,7 +521,7 @@ void CCTransform::allocate_tei_so()
           required_size += sizeof(double) * block_size;
           tei_so[h] = NULL;
         }
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14d bytes)",moinfo->get_irr_labs(h),block_size,_memory_manager_->get_FreeMemory());
+        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,_memory_manager_->get_FreeMemory());
       }
     }
     if(failed){
@@ -547,7 +547,7 @@ void CCTransform::allocate_tei_half_transformed()
     for(int h=0;h<moinfo->get_nirreps();h++){
       if(so_indexing->get_pairpi(h)*mo_indexing->get_pairpi(h)>0){
         allocate2(double,tei_half_transformed[h],mo_indexing->get_pairpi(h),so_indexing->get_pairpi(h));
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d*%d",moinfo->get_irr_labs(h),mo_indexing->get_pairpi(h),so_indexing->get_pairpi(h));
+        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu*%lu",moinfo->get_irr_labs(h),mo_indexing->get_pairpi(h),so_indexing->get_pairpi(h));
       }
     }
   }
@@ -567,7 +567,7 @@ void CCTransform::free_tei_mo()
         size_t block_size = INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1;
         matrix_size += block_size;
         release1(tei_mo[h]);
-        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %d",moinfo->get_irr_labs(h),block_size);
+        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
       }
     }
     release1(tei_mo);
@@ -586,7 +586,7 @@ void CCTransform::free_tei_so()
         size_t block_size = INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1;
         matrix_size += block_size;
         release1(tei_so[h]);
-        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %d",moinfo->get_irr_labs(h),block_size);
+        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu",moinfo->get_irr_labs(h),block_size);
       }
     }
     release1(tei_so);
@@ -604,7 +604,7 @@ void CCTransform::free_tei_half_transformed()
       if(rsindx->get_pairpi(h)*ijindx->get_pairpi(h)>0){
         matrix_size += ijindx->get_pairpi(h)*rsindx->get_pairpi(h);
         release2(tei_half_transformed[h]);
-        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %d*%d",moinfo->get_irr_labs(h),ijindx->get_pairpi(h),rsindx->get_pairpi(h));
+        fprintf(outfile,"\n\tCCTransform: deallocated the %s block of size %lu*%lu",moinfo->get_irr_labs(h),ijindx->get_pairpi(h),rsindx->get_pairpi(h));
       }
     }
     release1(tei_half_transformed);
