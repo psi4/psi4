@@ -17,8 +17,6 @@
 
 namespace psi { namespace ccresponse {
 
-void transpert(const char *pert);
-void sort_pert(const char *pert, double **pertints, int irrep);
 void pertbar(const char *pert, int irrep, int anti);
 void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B,
@@ -52,8 +50,6 @@ void polar(void)
 
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "Mu_%1s", cartcomp[alpha]);
-        transpert(pert);
-        sort_pert(pert, moinfo.MU[alpha], moinfo.mu_irreps[alpha]);
         pertbar(pert, moinfo.mu_irreps[alpha], 0);
 	compute_X(pert, moinfo.mu_irreps[alpha], params.omega[i]);
 	if(params.omega[i] != 0.0) compute_X(pert, moinfo.mu_irreps[alpha], -params.omega[i]);
