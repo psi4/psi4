@@ -1,0 +1,26 @@
+molecule h2o2 {
+ O     -0.028962160801    -0.694396279686    -0.049338350190
+ O      0.028962160801     0.694396279686    -0.049338350190
+ H      0.350498145881    -0.910645626300     0.783035421467
+ H     -0.350498145881     0.910645626300     0.783035421467
+noreorient
+#  o
+#  o 1 1.39
+#  h 1 0.94 2 102.3
+#  h 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  wfn ccsd
+  dertype response
+  property rotation
+  freeze_core true
+  omega [589, 355]
+  omega_units nm
+  mu_irreps [1, 1, 0]
+  gauge both
+  basis cc-pVDZ
+}
+
+response('ccsd')
+clean()

@@ -7,7 +7,6 @@
 namespace psi { namespace ccresponse {
 
 struct Local {
-  int natom;
   int nso;
   int nocc;
   int nvir;
