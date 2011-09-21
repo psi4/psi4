@@ -237,14 +237,9 @@ def run_ccsd_response(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
-    run_scf("scf", **kwargs);
-
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    PsiMod.ccenergy()
+    run_ccsd("ccsd", **kwargs);
     PsiMod.cchbar()
     PsiMod.cclambda()
-    # Need oeprop integrals here -- code will fail at present
     PsiMod.ccresponse()
 
 def run_detci(name, **kwargs):

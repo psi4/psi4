@@ -9,6 +9,7 @@
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
 #include <psifiles.h>
+#include <libmints/mints.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -61,42 +62,45 @@ namespace psi { namespace ccresponse {
 ** Updated by TDC 4/09
 */
 
-void transpert(const char *pert)
+void transpert(const char *pert, double **target)
 {
-  int nao, nso, nmo, noei_ao;
-  int alpha;
-  int i, j, ij;
-  double *scratch, **TMP, **X, **target;
+  int nso, nmo;
+  int i, j;
+  double **scratch, **TMP, **X, **target;
   char *name;
-  double prefactor, anti, sign;
+  double prefactor, sign;
 
-  nao = moinfo.nao;
   nso = moinfo.nso;
   nmo = moinfo.nmo;
-  noei_ao = moinfo.noei_ao;
 
   TMP = block_matrix(nao, nao);
   X = block_matrix(nao, nao);
-  scratch = init_array(noei_ao);
+  scratch = block_matrix(nso, nso);
 
   if(pert == "Mu_X" || pert == "Mu_Y" || pert == "Mu_Z") { 
-    prefactor = 1.0; anti = 1.0; sign = 1.0; 
+    prefactor = 1.0; sign = 1.0; 
   }
+
   if(pert == "L_X" || pert == "L_Y" || pert == "L_Z") { 
-    prefactor = -0.5; anti = -1.0; sign = 1.0; 
+    prefactor = -0.5; sign = 1.0; 
   }
+
   if(pert == "L*_X" || pert == "L*_Y" || pert == "L*_Z") { 
-    prefactor = -0.5; anti = -1.0; sign = -1.0; }
+    prefactor = -0.5; sign = -1.0; 
+  }
+
   if(pert == "P_X" || pert == "P_Y" || pert == "P_Z") { 
-    prefactor = 1.0; anti = -1.0; sign = 1.0; 
+    prefactor = 1.0; sign = 1.0; 
   }
+
   if(pert == "P*_X" || pert == "P*_Y" || pert == "P*_Z") { 
-    prefactor = 1.0; anti = -1.0; sign = -1.0; 
+    prefactor = 1.0; sign = -1.0; 
   }
+
   if(pert == "Q_XX" || pert == "Q_XY" || pert == "Q_XZ" || 
      pert == "Q_YX" || pert == "Q_YY" || pert == "Q_YZ" ||
      pert == "Q_ZX" || pert == "Q_ZY" || pert == "Q_ZZ") { 
-    prefactor = 1.0; anti = 1.0; sign = 1.0; 
+    prefactor = 1.0; sign = 1.0; 
   }
 
   target = block_matrix(nmo,nmo);
@@ -135,24 +139,21 @@ void transpert(const char *pert)
   if(pert == "Q_ZY") { name = PSIF_AO_TYZ; moinfo.Q[2][1] = target; }
   if(pert == "Q_ZZ") { name = PSIF_AO_TZZ; moinfo.Q[2][2] = target; }
 
-  iwl_rdone(PSIF_OEI, name, scratch, noei_ao, 0, 0, outfile);
-  for(i=0,ij=0; i < nao; i++)
-    for(j=0; j <= i; j++,ij++) {
+  MintsHelper mints;
+  vector<SharedMatrix> dipole = mints.so_dipole();
+  double **dipole_x = dipole[0]->to_block_matrix();
+
+  for(i=0,ij=0; i < nso; i++)
+    for(j=0; j < nso; j++,ij++) {
       TMP[i][j] = prefactor * sign * scratch[ij];
-      TMP[j][i] = anti * prefactor * sign * scratch[ij];
     }
 
-  C_DGEMM('n','t',nao,nso,nao,1,&(TMP[0][0]),nao,&(moinfo.usotao[0][0]),nao,
-	  0,&(X[0][0]),nao);
-  C_DGEMM('n','n',nso,nso,nao,1,&(moinfo.usotao[0][0]),nao,&(X[0][0]),nao,
-	  0,&(TMP[0][0]),nao);
+  free_block(dipole_x);
 
   C_DGEMM('n','n',nso,nmo,nso,1,&(TMP[0][0]),nao,&(moinfo.scf[0][0]),nmo,
 	  0,&(X[0][0]),nao);
   C_DGEMM('t','n',nmo,nmo,nso,1,&(moinfo.scf[0][0]),nmo,&(X[0][0]),nao,
 	  0,&(target[0][0]),nmo);
-
-  zero_arr(scratch,noei_ao);
 
   free(scratch);
   free_block(TMP);
