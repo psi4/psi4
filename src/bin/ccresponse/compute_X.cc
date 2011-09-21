@@ -8,6 +8,7 @@
 #include <cmath>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.h>
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"

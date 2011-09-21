@@ -9,6 +9,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
+#include <libciomr/libciomr.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

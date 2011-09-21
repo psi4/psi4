@@ -124,12 +124,12 @@ void TracelessQuadrupoleInt::compute_pair(const boost::shared_ptr<GaussianShell>
 
                             double mrr = (1.0 / 3.0) * (mxx + myy + mzz);
                         
-                            buffer_[ao12]        += mxx - mrr;
-                            buffer_[ao12+xydisp] += mxy;
-                            buffer_[ao12+xzdisp] += mxz;
-                            buffer_[ao12+yydisp] += myy - mrr;
-                            buffer_[ao12+yzdisp] += myz;
-                            buffer_[ao12+zzdisp] += mzz - mrr;
+                            buffer_[ao12]        += (3.0/2.0) * (mxx - mrr);
+                            buffer_[ao12+xydisp] += (3.0/2.0) * mxy;
+                            buffer_[ao12+xzdisp] += (3.0/2.0) * mxz;
+                            buffer_[ao12+yydisp] += (3.0/2.0) * (myy - mrr);
+                            buffer_[ao12+yzdisp] += (3.0/2.0) * myz;
+                            buffer_[ao12+zzdisp] += (3.0/2.0) * (mzz - mrr);
 
                             ao12++;
                         }

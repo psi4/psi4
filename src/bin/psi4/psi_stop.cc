@@ -29,7 +29,7 @@ int psi_stop(FILE* infile, FILE* outfile, char* psi_file_prefix)
  
   // Success Flag, so a user can tell via grep that the outfile worked (or at least didn't segfault)
   // With a little PSI4 flavor to it. 
-  fprintf(outfile, "\n*** PSI4 exiting successfully, buy a developer a beer!\n");
+  fprintf(outfile, "\n*** PSI4 exiting successfully. Buy a developer a beer!\n");
 
   fflush(outfile);
   fclose(outfile);
