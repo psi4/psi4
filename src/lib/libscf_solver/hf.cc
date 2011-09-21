@@ -937,7 +937,7 @@ void HF::load_orbitals()
 
     int basislength;
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
-    char basisnamec[basislength];
+    char *basisnamec = new char[basislength];
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char));
 
     std::string basisname(basisnamec);
@@ -1005,6 +1005,7 @@ void HF::load_orbitals()
                 Cb_->set(h,m,i,Cb->get(h,m,i));
 
     psio_->close(PSIF_SCF_DB_MOS,1);
+    delete[] basisnamec;
 }
 
 void HF::dump_to_checkpoint()
@@ -1313,7 +1314,7 @@ boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::sha
 {
     int* nsopi = Cso->rowspi();
     int* nmopi = Cso->colspi();
-    int nvirpi[nirrep_];
+    int* nvirpi = new int[nirrep_];
 
     for (int h = 0; h < nirrep_; h++)
         nvirpi[h] = nmopi[h] - noccpi[h];
@@ -1353,6 +1354,8 @@ boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::sha
     }
 
     //Fia->print();
+
+    delete[] nvirpi;
 
     return Fia;
 }

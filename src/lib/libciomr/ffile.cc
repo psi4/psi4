@@ -1,9 +1,9 @@
 /*!
 ** \file
-** \brief Open PSI ASCII or small local binary (non-libpsio) files for 
+** \brief Open PSI ASCII or small local binary (non-libpsio) files for
 **   reading/writing
 ** \ingroup CIOMR
-*/ 
+*/
 
 #include <cstdio>
 #include <cstdlib>
@@ -24,7 +24,7 @@ namespace psi {
 **
 ** \ingroup CIOMR
 */
-void ffile(FILE **fptr, char *suffix, int code)
+void ffile(FILE **fptr, const char *suffix, int code)
 {
   char name[100];
 
@@ -44,7 +44,7 @@ void ffile(FILE **fptr, char *suffix, int code)
   default:
     fprintf(stderr,"error in ffile: invalid code %d\n",code);
   }
-  if (*fptr == NULL) { 
+  if (*fptr == NULL) {
     fprintf(stderr,"error in ffile: cannot open file %s\n", suffix);
     exit(PSI_RETURN_FAILURE);
   }
@@ -99,7 +99,7 @@ void ffile_noexit(FILE **fptr, char *suffix, int code)
 */
 void ffileb(FILE **fptr, char *suffix, int code)
 {
-  char* name = (char*) malloc( (strlen(psi_file_prefix) + 
+  char* name = (char*) malloc( (strlen(psi_file_prefix) +
     strlen(suffix) + 2)*sizeof(char) );
 
   /* build the standard file name */
@@ -134,14 +134,14 @@ void ffileb(FILE **fptr, char *suffix, int code)
 **
 ** \param suffix = name of the file, not including automatic prefix
 ** \param code = 0 (write), 1 (write/append), 2 (read)
-** 
+**
 ** Returns: none
 **
 ** \ingroup CIOMR
 */
 void ffileb_noexit(FILE **fptr, char *suffix, int code)
 {
-  char* name = (char*) malloc( (strlen(psi_file_prefix) + 
+  char* name = (char*) malloc( (strlen(psi_file_prefix) +
     strlen(suffix) + 2)*sizeof(char) );
 
   /* build the standard file name */

@@ -1270,7 +1270,7 @@ boost::shared_ptr<Matrix> Matrix::partial_cholesky_factorize(double delta, bool 
     boost::shared_ptr<Matrix> K(new Matrix("L Temp", nirrep_, rowspi_, rowspi_));
 
     // Significant Cholesky columns per irrep
-    int sigpi[nirrep_];
+    int *sigpi = new int[nirrep_];
     ::memset(static_cast<void*>(sigpi), '\0', nirrep_*sizeof(int));
 
     for (int h=0; h<nirrep_; ++h) {
@@ -1362,6 +1362,7 @@ boost::shared_ptr<Matrix> Matrix::partial_cholesky_factorize(double delta, bool 
         }
     }
 
+    delete[] sigpi;
     return L;
 }
 
