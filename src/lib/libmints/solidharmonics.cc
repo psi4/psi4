@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
+#include <stdint.h>
 
 #include "matrix.h"
 #include "integral.h"

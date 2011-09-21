@@ -60,12 +60,13 @@ struct MOInfo {
   double **scf;       /* SCF eigenvectors (RHF/ROHF) (active only) */
   double **scf_alpha; /* Alpha SCF eigenvectors (UHF) (active only) */
   double **scf_beta;  /* Beta SCF eigenvectors (UHF) (active only) */
-  double **usotao;    /* SO->AO transformation matrix */
   double ***MU;       /* MO-basis dipole integrals (Pitzer order) */
   int *mu_irreps;     /* irreps of x,y,z dipole components */
   double ***L;        /* MO-basis angular momentum ints (Pitzer order) */
+  double ***Lcc;      /* Complex-conjugate of MO-basis angular momentum ints (Pitzer order) */
   int *l_irreps;      /* irreps of x,y,z angular momentum components */
   double ***P;        /* MO-basis linear momentum ints (Pitzer order) */
+  double ***Pcc;      /* Complex-conjugate of MO-basis linear momentum ints (Pitzer order) */
   double ****Q;       /* MO-basis traceless quadrupole ints (Pitzer order) */
   int natom;          /* number of atoms */
   double *zvals;      /* atomic zvals */

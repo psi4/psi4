@@ -7,6 +7,7 @@
 #include <cmath>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.h>
+#include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "Params.h"
 #include "MOInfo.h"

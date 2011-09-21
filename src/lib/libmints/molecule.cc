@@ -139,19 +139,19 @@ namespace psi {
 } // end explicit psi namespace
 
 Molecule::Molecule():
-    nunique_(0),
-    nequiv_(0),
-    equiv_(0),
-    atom_to_unique_(0),
-    multiplicity_(1),
-    molecular_charge_(0),
-    units_(Angstrom),
-    input_units_to_au_(1.0/_bohr2angstroms),
+    name_("default"),
     fix_orientation_(false),
     move_to_com_(true),
     charge_specified_(false),
     multiplicity_specified_(false),
-    name_("default")
+    molecular_charge_(0),
+    multiplicity_(1),
+    units_(Angstrom),
+    input_units_to_au_(1.0/_bohr2angstroms),
+    nunique_(0),
+    nequiv_(0),
+    equiv_(0),
+    atom_to_unique_(0)
 {
 }
 

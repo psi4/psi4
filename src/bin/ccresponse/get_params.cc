@@ -31,7 +31,7 @@ void get_params(Options &options)
 
   params.print = options.get_int("PRINT");
 
-  params.memory = module.get_memory();
+  params.memory = Process::environment.get_memory();
 
   params.cachelev = options.get_int("CACHELEV");
   params.cachelev = 0;
@@ -67,20 +67,18 @@ void get_params(Options &options)
   }
 
   /* grab the field frequencies from input -- a few different units are converted to E_h */
+  units = options.get_str("OMEGA_UNITS");
   count = options["OMEGA"].size();
-  if(count == 1) { /* assume Hartrees and only one frequency */
+  if(count == 0) {
     params.nomega = 1;
     params.omega = init_array(1);
-    params.omega[0] = options["OMEGA"][0].to_double();
+    params.omega[0] = 0.0;
   }
-  else if(count >= 2) {
-    params.nomega = count-1;
+  else {
+    params.nomega = count;
     params.omega = init_array(params.nomega);
 
-    units = options["OMEGA"][count-1].to_string();
-    to_upper(units);
-
-    for(i=0; i < count-1; i++) {
+    for(i=0; i < count; i++) {
       params.omega[i] = options["OMEGA"][i].to_double();
 
       if(units == "HZ") params.omega[i] *= _h / _hartree2J;
@@ -88,21 +86,14 @@ void get_params(Options &options)
       else if(units == "NM") params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
       else if(units == "EV") params.omega[i] /= _hartree2ev;
       else 
-        throw PsiException("Error in unit for input field frequencies, should be au, hf, nm, or ev", __FILE__,__LINE__);
+        throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__,__LINE__);
     }
   }
-  else {
-    fprintf(outfile, "\n\tError reading input field frequencies.  Please use the format:\n");
-    fprintf(outfile,   "\t  omega = (value1 value2 ... units)\n");
-    fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
-    throw PsiException("Failure in ccsort.", __FILE__, __LINE__);
-  }
-
   
   moinfo.mu_irreps = init_int_array(3);
-  moinfo.mu_irreps[0] = options["MU_IRRPES"][0].to_integer();
-  moinfo.mu_irreps[1] = options["MU_IRRPES"][1].to_integer();
-  moinfo.mu_irreps[2] = options["MU_IRRPES"][2].to_integer();
+  moinfo.mu_irreps[0] = options["MU_IRREPS"][0].to_integer();
+  moinfo.mu_irreps[1] = options["MU_IRREPS"][1].to_integer();
+  moinfo.mu_irreps[2] = options["MU_IRREPS"][2].to_integer();
   
   /* compute the irreps of the angular momentum operator while we're here */
   moinfo.l_irreps = init_int_array(3);
@@ -170,7 +161,7 @@ void get_params(Options &options)
   if(params.prop == "ALL")
     fprintf(outfile, "\tProperty         =    POLARIZABILITY + ROTATION\n");
   else
-    fprintf(outfile, "\tProperty         =    %s\n", params.prop);
+    fprintf(outfile, "\tProperty         =    %s\n", params.prop.c_str());
   fprintf(outfile, "\tReference wfn    =    %5s\n",
 	  (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
   fprintf(outfile, "\tMemory (Mbytes)  =  %5.1f\n",params.memory/1e6);
@@ -182,14 +173,14 @@ void get_params(Options &options)
   fprintf(outfile, "\tDIIS             =     %s\n", params.diis ? "Yes" : "No");
   fprintf(outfile, "\tModel III        =     %s\n", params.sekino ? "Yes" : "No");
   fprintf(outfile, "\tLinear Model     =     %s\n", params.linear ? "Yes" : "No");
-  fprintf(outfile, "\tABCD             =     %s\n", params.abcd);
+  fprintf(outfile, "\tABCD             =     %s\n", params.abcd.c_str());
   fprintf(outfile, "\tIrrep X          =    %3s\n", moinfo.labels[moinfo.mu_irreps[0]]);
   fprintf(outfile, "\tIrrep Y          =    %3s\n", moinfo.labels[moinfo.mu_irreps[1]]);
   fprintf(outfile, "\tIrrep Z          =    %3s\n", moinfo.labels[moinfo.mu_irreps[2]]);
   fprintf(outfile, "\tIrrep RX         =    %3s\n", moinfo.labels[moinfo.l_irreps[0]]);
   fprintf(outfile, "\tIrrep RY         =    %3s\n", moinfo.labels[moinfo.l_irreps[1]]);
   fprintf(outfile, "\tIrrep RZ         =    %3s\n", moinfo.labels[moinfo.l_irreps[2]]);
-  fprintf(outfile, "\tGauge            =    %s\n", params.gauge);
+  fprintf(outfile, "\tGauge            =    %s\n", params.gauge.c_str());
   for(i=0; i < params.nomega; i++) {
     if(params.omega[i] == 0.0) 
       fprintf(outfile, "\tApplied field %2d =  0.000\n", i);
@@ -202,10 +193,10 @@ void get_params(Options &options)
   fprintf(outfile, "\tLocal CC         =    %s\n", params.local ? "Yes" : "No");
   if(params.local) {
     fprintf(outfile, "\tLocal Cutoff      = %3.1e\n", local.cutoff);
-    fprintf(outfile, "\tLocal Method      =    %s\n", local.method);
-    fprintf(outfile, "\tWeak pairs        =    %s\n", local.weakp);
+    fprintf(outfile, "\tLocal Method      =    %s\n", local.method.c_str());
+    fprintf(outfile, "\tWeak pairs        =    %s\n", local.weakp.c_str());
     fprintf(outfile, "\tFilter singles    =    %s\n", local.filter_singles ? "Yes" : "No");
-    fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef);
+    fprintf(outfile, "\tLocal pairs       =    %s\n", local.pairdef.c_str());
     fprintf(outfile, "\tLocal CPHF cutoff =  %3.1e\n", local.cphf_cutoff);
   }
   fprintf(outfile, "\n");

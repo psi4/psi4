@@ -82,7 +82,7 @@ void CCTransform::read_tei_mo_integrals_mrpt2()
       if(!ilsti)
         iwl_buf_fetch(&ERIIN);
     } while(!ilsti);
-  fprintf(outfile,"\n    CCTransform: read %d non-zero integrals (MRPT2)", elements);
+  fprintf(outfile,"\n    CCTransform: read %lu non-zero integrals (MRPT2)", elements);
   fflush(outfile);
   iwl_buf_close(&ERIIN,1);
 }

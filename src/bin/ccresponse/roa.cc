@@ -24,8 +24,6 @@
 
 namespace psi { namespace ccresponse {
 
-void transpert(const char *pert);
-void sort_pert(const char *pert, double **pertints, int irrep);
 void pertbar(const char *pert, int irrep, int anti);
 void compute_X(const char *pert, int irrep, double omega);
 void linresp(double *tensor, double A, double B,
@@ -87,14 +85,10 @@ void roa(void)
     if(!params.restart || !psio_tocscan(CC_INFO, lbl1)) {
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "P_%1s", cartcomp[alpha]);
-        transpert(pert);
-        sort_pert(pert, moinfo.P[alpha], moinfo.mu_irreps[alpha]);
         pertbar(pert, moinfo.mu_irreps[alpha], 1);
         compute_X(pert, moinfo.mu_irreps[alpha], 0);
 
         sprintf(pert, "L_%1s", cartcomp[alpha]);
-        transpert(pert);
-        sort_pert(pert, moinfo.L[alpha], moinfo.l_irreps[alpha]);
         pertbar(pert, moinfo.l_irreps[alpha], 1);
         compute_X(pert, moinfo.l_irreps[alpha], 0);
       }
@@ -159,16 +153,12 @@ void roa(void)
       /* prepare the dipole-length and/or dipole-velocity integrals */
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "Mu_%1s", cartcomp[alpha]);
-        transpert(pert);
-        sort_pert(pert, moinfo.MU[alpha], moinfo.mu_irreps[alpha]);
         pertbar(pert, moinfo.mu_irreps[alpha], 0);
       }
 
       if(compute_pl) {
         for(alpha=0; alpha < 3; alpha++) {
           sprintf(pert, "P_%1s", cartcomp[alpha]);
-	  transpert(pert);
-  	  sort_pert(pert, moinfo.P[alpha], moinfo.mu_irreps[alpha]);
 	  pertbar(pert, moinfo.mu_irreps[alpha], 1);
         }
       }
@@ -176,8 +166,6 @@ void roa(void)
       /* prepare the magnetic-dipole integrals */
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "L_%1s", cartcomp[alpha]);
-        transpert(pert);
-        sort_pert(pert, moinfo.L[alpha], moinfo.l_irreps[alpha]);
         pertbar(pert, moinfo.l_irreps[alpha], 1);
       }
 
@@ -185,9 +173,7 @@ void roa(void)
       for(alpha=0; alpha < 3; alpha++) {
         for(beta=0; beta < 3; beta++) {
           sprintf(pert, "Q_%1s%1s", cartcomp[alpha], cartcomp[beta]);
-          transpert(pert);
           irrep = moinfo.mu_irreps[alpha]^moinfo.mu_irreps[beta];
-          sort_pert(pert, moinfo.Q[alpha][beta], irrep);
           pertbar(pert, irrep, 0);
         }
       }
@@ -319,8 +305,6 @@ void roa(void)
       if(compute_pl) {
         for(alpha=0; alpha < 3; alpha++) {
           sprintf(pert, "P*_%1s", cartcomp[alpha]);
-	  transpert(pert);
-	  sort_pert(pert, moinfo.P[alpha], moinfo.mu_irreps[alpha]);
 	  pertbar(pert, moinfo.mu_irreps[alpha], 1);
         }
       }
@@ -328,8 +312,6 @@ void roa(void)
       /* prepare the complex-conjugate of the magnetic-dipole integrals */
       for(alpha=0; alpha < 3; alpha++) {
         sprintf(pert, "L*_%1s", cartcomp[alpha]);
-        transpert(pert);
-        sort_pert(pert, moinfo.L[alpha], moinfo.l_irreps[alpha]);
         pertbar(pert, moinfo.l_irreps[alpha], 1);
       }
 
@@ -449,7 +431,7 @@ void roa(void)
       fprintf(outfile, "\n                 CCSD Dipole Polarizability [(e^2 a0^2)/E_h]:\n");
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
 
-      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (Inf nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], omega_ev, omega_cm);
+      fprintf(outfile,   "   Evaluated at omega = %8.6f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", params.omega[i], (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i], _hartree2wavenumbers*params.omega[i]);
     fprintf(outfile, "  -------------------------------------------------------------------------\n");
     mat_print(tensor_rr[i], 3, 3, outfile);
 
