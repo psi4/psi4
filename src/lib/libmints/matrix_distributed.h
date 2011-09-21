@@ -39,33 +39,35 @@ typedef boost::shared_ptr<Matrix> SharedMatrix;
  * Using a matrix factory makes creating these a breeze.
  * This has NOT been interfaced with the matrix factory yet.
  */
-class Distributed_Matrix : public Block
+class Distributed_Matrix
 #ifdef HAVE_MADNESS
-        , public madness::WorldObject<Distributed_Matrix>
+        : public madness::WorldObject<Distributed_Matrix>
 #endif
 {
 protected:
 
-    /// The name of the distributed matrix
+    /// A vector containing the tiles
+    std::vector<std::vector<double> > tiles_;
+    /// Name of the distributed matrix
     std::string name_;
-    /// The total number of blocks
-    int nblocks_;
-    /// The number of rows
+    /// The tile size
+    int tile_sz_;
+    /// The total number of tiles
+    int ntiles_;
+    /// The total number of rows in the distributed matrix
     int nrows_;
-    /// The number of columns
+    /// The total number of columns in the distributed matrix
     int ncols_;
-    /// The total number of sub_blocks
-    int tsb_;
-    /// The total number of elements
-    int telements_;
-    /// The offset to the divided row block;
-    std::vector<int> block_roffset_;
-    /// The offset to the divided column block;
-    std::vector<int> block_coffset_;
-    /// The size of each divided row block;
-    std::vector<int> block_csize_;
-    /// The size of each divided column block;
-    std::vector<int> block_rsize_;
+    /// The total number of elements in the distributed matrix
+    int nelements_;
+    /// The size of the rows after they have been split
+    std::vector<int> row_split_;
+    /// The size of the columns after they have been split
+    std::vector<int> col_split_;
+    /// The number of rows in each tile: Each proc only keeps track of what it owns
+    std::vector<int> tile_nrows_;
+    /// The number of columns in each tile: Each proc only keeps track of what it owns
+    std::vector<int> tile_ncols_;
 
     /// Process ID
     int me_;
@@ -76,233 +78,225 @@ protected:
     /// Communicator Type
     std::string comm_;
 
+    // A global to local tile map
+    std::map<int,int> global_local_tile_;
+    // A local to global tile map
+    std::vector<int> local_global_tile_;
+
+
 #ifdef HAVE_MADNESS
     /// Madness world object
     SharedMadWorld madworld_;
     /// Mutex for printing
     SharedMutex print_mutex_;
-    madness::Void clear();
 
-    madness::Void multiply(const boost::shared_ptr<psi::Distributed_Matrix> lmat,
-                           const boost::shared_ptr<psi::Distributed_Matrix> rmat,
-                           const int &i, const int &k);
+    /// Sets a specific tile to the identity
+    madness::Void set_tile_to_identity(const int &t);
+    /// Zeros out a specific tile
+    madness::Void zero_tile(const int &t);
+    /// Return the value from a specific tile
+    madness::Future<double> return_tile_val(const int &t, const int &row, const int &col);
+    /// Set the row,col value in the distributred matrix
+    madness::Void set_tile_value(const int &t, const int &row,
+                                 const int &col, const double &val);
+    /// Copies a give tile
+    madness::Void copy_tile(const int &t, const std::vector<double> &tile);
+    /// Sums the rhs tile and this tile
+    madness::Void sum_tile(const int &t, const std::vector<double> &tile);
+    /// Fills a given tile with the value
+    madness::Void fill_tile(const int &t, const double &val);
 
-    /// Print a give block
-    madness::Void print_block(const int &i, const std::vector<std::vector<double> > &block,
-                              const std::vector<int> &row,
-                              const std::vector<int> &col) const;
-
-    int local_col(const int &col)
-    {
-        int block_col = nprocs_ - 1;
-
-        for (int i=0; i < nprocs_-1; i++) {
-            if (col < block_coffset_[i+1]) {
-                block_col = i;
-                break;
-            }
-        }
-
-        return block_col;
-    }
-    int local_row(const int &row)
-    {
-        int block_row = nprocs_ - 1;
-
-        for (int i=0; i < nprocs_-1; i++) {
-            if (row < block_coffset_[i+1]) {
-                block_row = i;
-                break;
-            }
-        }
-
-        return block_row;
-    }
-
-    int sb_number(const int &row, const int &col)
-    {
-        int block_row = nprocs_ - 1;
-        int block_col = nprocs_ - 1;
-
-        for (int i=0; i < nprocs_-1; i++) {
-            if (col < block_coffset_[i+1]) {
-                block_col = i;
-                break;
-            }
-        }
-        for (int i=0; i < nprocs_-1; i++) {
-            if (row < block_roffset_[i+1]) {
-                block_row = i;
-                break;
-            }
-        }
-
-        return block_row*nblocks_ + block_col;
-    }
-
-
-public:
-    /// Default constructor: clears everything out
-    Distributed_Matrix();
-    /// Constructs a distributed (rows x cols) matrix using the default distribution
-    Distributed_Matrix(const int &rows, const int &cols);
-    /// Constructs a distributed (rows x cols) matrix using the default distribution
-    Distributed_Matrix(const std::string &name, const int &rows, const int &cols);
-    /// copy reference constructor
-    Distributed_Matrix(const Distributed_Matrix &copy);
-    //    /// Explicit shared point copy constructor
-    //    explicit Distributed_Matrix(const boost::shared_ptr<Distributed_Matrix> copy);
-    //    /// Explicit copy pointer constructor
-    //    explicit Distributed_Matrix(const Distributed_Matrix* copy);
-
-    /// Return the number of rows in the distributed matrix
-    int nrows() const {return nrows_;}
-    /// Return the number of columns in the distributed matrix
-    int ncols() const {return ncols_;}
-    /// Return the name of the matrix
-    std::string name() const {return name_;}
-
-    ~Distributed_Matrix() { Communicator::world->sync(); }
-
-    /// Initializes the distributed matrix
-    madness::Void common_init(const int &rows, const int &cols);
-
-    /// Prints all of the blocks (proc 0 does the printing)
-    void print_all_blocks() const;
-//    /// Prints all of the sub_blocks
-//    void print_all_sblocks() const;
-    /// Prints a given sub_block
-    madness::Void print_sblock(const int &i) const;
-
-    /// Set the distributed matrix to the identity
-    madness::Void identity();
-
-    /**
-     * Return the distributed matrix value
-     *
-     * @param row The row where the value is.
-     * @param col The column where the value is.
-     */
-    madness::Future<double> get_val(const int &row, const int &col);
-
-    /**
-     * Set the matrix element (i,j) equal to val
-     *
-     * @param row The row where the value is to be put.
-     * @param col The column where the value is to be put.
-     * @param val The value to set the matrix element.
-     */
-    madness::Void set_val(const int &row, const int &col, const double &val);
-
-    /// Overloaded equal operators
-    Distributed_Matrix& operator= (const Distributed_Matrix &mat);
-    Distributed_Matrix& operator= (const Distributed_Matrix *mat);
-    Distributed_Matrix& operator= (const boost::shared_ptr<Distributed_Matrix> mat);
-    madness::Void operator= (const double &val);
-    /// Overloaded += operator
-    madness::Void operator+= (const Distributed_Matrix &mat);
-    /// Overloaded + operator
-    Distributed_Matrix operator+ (const Distributed_Matrix &rhs);
-    /// Overloaded == operator
-    bool operator ==(const Distributed_Matrix &mat);
-    /// Overloaded != operator
-    bool operator !=(const Distributed_Matrix &mat);    
-
-    /// Return the owner of the block
-    int owner(const int &blk) const { return blk%nprocs_; }
-
-    /// Prints a vector in matrix format
-    madness::Void print_mat(const std::vector<double> &a, const int &m,
-                            const int &n, const std::string &name) const;
-    /// Set the name of the matrix
-    madness::Void set_name(const std::string &nm) { name_ = nm; }
-
-    /// Fill the entire matrix with the given value
-    madness::Void fill(const double &val);
-
-    /// Multiply two matrices
-    Distributed_Matrix operator* (const Distributed_Matrix &rhs);
-
-    /// This zeros out a distributed matrix
-    madness::Void zero() { *this = 0.0; }
-
-    /// Matrix multiply (calls DDOT to add up the elements for C)
-    madness::Void MXM(const int &sb,
-                      const std::vector<double> a,
+    /// Do the matrix-matrix multiplication for the give tiles
+    madness::Void mxm(const int &t,
+                      const std::vector<double> &a,
                       const std::vector<double> &b,
                       const int &a_row,
                       const int &a_col,
                       const int &b_col);
 
-#else
+    template<typename T>
+    void free_vector(std::vector<T> &vec)
+    {
+        std::vector<T> tmp;
+        vec.clear();
+        vec.swap(tmp);
+    }
+    template<typename T1, typename T2>
+    void free_map(std::map<T1,T2> &map)
+    {
+        std::map<T1,T2> tmp;
+        map.clear();
+        map.swap(tmp);
+    }
+
+    void clear_matrix();
 
 public:
+    /// Default constructor: clears everything out
+    Distributed_Matrix();
+    /// Constructs a distributed (rows x cols) matrix using the default distribution
+    Distributed_Matrix(const int &nrows, const int &ncols, const int &tile_sz = 64,
+                       const std::string &name = "");
+
+    /// Initialize the distributed matrix
+    void common_init(const int &nrows, const int &ncols, const int &tile_sz = 64,
+                     const std::string &name = "");
+
+    /// Return the owner of the block
+    int owner(const int &tile) const { return tile%nprocs_; }
+
+    /// Return a tile
+    std::vector<double> get_tile(const int &t) { return tiles_[global_local_tile_[t]]; }
+    /// Return the number of rows in a tile
+    int t_nrow(const int &t) { return tile_nrows_[global_local_tile_[t]]; }
+    /// Return the number of cols in a tile
+    int t_ncol(const int &t) { return tile_ncols_[global_local_tile_[t]]; }
+
+    /// Print all of the tiles
+    madness::Void print_all_tiles() const;
+    /// Print a given tile
+    madness::Void print_tile(const int &t) const;
+
+    /// Print a given tile (only process 0 should call this)
+    madness::Void print_mat(const int &tile, const std::vector<double> &a,
+                            const int &m, const int &n) const;
+
+    /// Set the distributed matrix to the identity
+    madness::Void identity();
+    /// Zero the entire distributed matrix
+    madness::Void zero();
+
+    /// Returns the i,j value from the distributed matrix
+    madness::Future<double> get_val(const int &row, const int &col);
+    /// Set the i,j value in the distributed matrix
+    madness::Void set_val(const int &row, const int &col, const double &val);
+
+    /// Set the name of the distributed matrix
+    void set_name(const std::string &name) { name_ = name; }
+
+    /// Copies the rhs distributed matrix
+    Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
+    Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
+
+    /// Adds the rhs matrix to this distributed matrix
+    madness::Void operator +=(const Distributed_Matrix &rhs);
+    madness::Void operator +=(const Distributed_Matrix *rhs);
+
+    /// Adds two matrices and returns the result
+    Distributed_Matrix operator +(const Distributed_Matrix &rhs);
+    Distributed_Matrix operator +(const Distributed_Matrix *rhs);
+
+
+    /// Fill the distributed matris with a value
+    madness::Void fill(const double &val);
+
+    /// Check to see if the distributed matrices are the same size and tiled the same
+    bool operator ==(const Distributed_Matrix &rhs);
+    bool operator ==(const Distributed_Matrix *rhs);
+
+    /// Check to see if the distributed matrices are not the same size and tiled the same
+    bool operator !=(const Distributed_Matrix &rhs);
+    bool operator !=(const Distributed_Matrix *rhs);
+
+    /// Perform a matrix-matrix multiplication of the distributed matrices and returns the result
+    Distributed_Matrix operator *(const Distributed_Matrix &rhs);
+
+};
+#else
     /// Default constructor: clears everything out
     Distributed_Matrix()
     { throw PSIEXCEPTION("Distributed matrix only works with MADNESS.\n"); }
     /// Constructs a distributed (rows x cols) matrix using the default distribution
-    Distributed_Matrix(const int &rows, const int &cols)
+    Distributed_Matrix(const int &nrows, const int &ncols, const int &tile_sz = 64,
+                       const std::string &name = "")
     { throw PSIEXCEPTION("Distributed matrix only works with MADNESS.\n"); }
-    /// Constructs a distributed (rows x cols) matrix using the default distribution
-    Distributed_Matrix(const std::string &name, const int &rows, const int &cols)
-    { throw PSIEXCEPTION("Distributed matrix only works with MADNESS.\n"); }
-    /// copy reference constructor
-    Distributed_Matrix(const Distributed_Matrix &copy)
-    { throw PSIEXCEPTION("Distributed matrix only works with MADNESS.\n"); }
+    /// Initialize the distributed matrix
+    void common_init(const int &nrows, const int &ncols, const int &tile_sz = 64,
+                     const std::string &name = "");
 
-    ~Distributed_Matrix() { Communicator::world->sync(); }
+    /// Return the owner of the block
+    int owner(const int &tile) const { return tile%nprocs_; }
 
-    int nrows() const {return nrows_;}
-    int ncols() const {return ncols_;}
-    std::string name() const {return name_;}
-    void common_init(const int &rows, const int &cols);
-    void print_block(const int &i);
-    void print_all_blocks();
-    void print_all_sblocks();
-    void print_sblock(const int &i);
+    /// Return a tile
+    std::vector<double> get_tile(const int &t) { return tiles_[global_local_tile_[t]]; }
+    /// Return the number of rows in a tile
+    int t_nrow(const int &t) { return tile_nrows_[global_local_tile_[t]]; }
+    /// Return the number of cols in a tile
+    int t_ncol(const int &t) { return tile_ncols_[global_local_tile_[t]]; }
+
+    /// Print all of the tiles
+    void print_all_tiles() const;
+    /// Print a given tile
+    void print_tile(const int &t) const;
+
+    /// Print a given tile (only process 0 should call this)
+    void print_mat(const int &tile, const std::vector<double> &a,
+                            const int &m, const int &n) const;
+
+    /// Set the distributed matrix to the identity
     void identity();
+    /// Zero the entire distributed matrix
+    void zero();
+
+    /// Returns the i,j value from the distributed matrix
     double get_val(const int &row, const int &col);
+    /// Set the i,j value in the distributed matrix
     void set_val(const int &row, const int &col, const double &val);
-    Distributed_Matrix& operator= (const Distributed_Matrix &mat);
-    Distributed_Matrix& operator= (const Distributed_Matrix *mat);
-    Distributed_Matrix& operator= (const boost::shared_ptr<Distributed_Matrix> mat);
-    void operator= (const double &val);
-    void operator+= (const Distributed_Matrix &mat);
-    Distributed_Matrix operator+ (const Distributed_Matrix &rhs);
-    bool operator ==(const Distributed_Matrix &mat);
-    bool operator !=(const Distributed_Matrix &mat);
-    int owner(const int &blk) { return blk%nprocs_; }
-    void print_mat(const std::vector<double> &a, const int &m,
-                   const int &n, const std::string &name);
-    void set_name(const std::string &nm) { name_ = nm; }
+
+    /// Set the name of the distributed matrix
+    void set_name(const std::string &name) { name_ = name; }
+
+    /// Copies the rhs distributed matrix
+    Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
+    Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
+
+    /// Adds the rhs matrix to this distributed matrix
+    void operator +=(const Distributed_Matrix &rhs);
+    void operator +=(const Distributed_Matrix *rhs);
+
+    /// Adds two matrices and returns the result
+    Distributed_Matrix operator +(const Distributed_Matrix &rhs);
+    Distributed_Matrix operator +(const Distributed_Matrix *rhs);
+
+
+    /// Fill the distributed matris with a value
     void fill(const double &val);
-    Distributed_Matrix operator* (const Distributed_Matrix &rhs);
-    void zero() { *this = 0.0; }
-#endif
+
+    /// Check to see if the distributed matrices are the same size and tiled the same
+    bool operator ==(const Distributed_Matrix &rhs);
+    bool operator ==(const Distributed_Matrix *rhs);
+
+    /// Check to see if the distributed matrices are not the same size and tiled the same
+    bool operator !=(const Distributed_Matrix &rhs);
+    bool operator !=(const Distributed_Matrix *rhs);
+
+    /// Perform a matrix-matrix multiplication of the distributed matrices and returns the result
+    Distributed_Matrix operator *(const Distributed_Matrix &rhs);
 };
+#endif
 
-} // End of psi namespace
+} // End of PSI namespace
 
-#ifdef HAVE_MADNESS
+//#ifdef HAVE_MADNESS
 
-namespace madness {  namespace archive {
+//namespace madness {  namespace archive {
 
-    /// Serialize a psi Matrix
-    template <class Archive>
-    struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
-        static void store(const Archive &ar, const boost::shared_ptr<psi::Distributed_Matrix> &t) {
-        };
-    };
+//    /// Serialize a psi Matrix
+//    template <class Archive>
+//    struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
+//        static void store(const Archive &ar, const boost::shared_ptr<psi::Distributed_Matrix> &t) {
+//        };
+//    };
 
-    /// Deserialize a psi Matrix ... existing psi Matrix is replaced
-    template <class Archive>
-    struct ArchiveLoadImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
-        static void load(const Archive& ar, boost::shared_ptr<psi::Distributed_Matrix> &t) {
-        };
-    };
+//    /// Deserialize a psi Matrix ... existing psi Matrix is replaced
+//    template <class Archive>
+//    struct ArchiveLoadImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
+//        static void load(const Archive& ar, boost::shared_ptr<psi::Distributed_Matrix> &t) {
+//        };
+//    };
 
-}}
-#endif // End of HAVE_MADNESS
+//}}
+//#endif // End of HAVE_MADNESS
 
 
 #endif // MATRIX_DISTRIBUTED_H
