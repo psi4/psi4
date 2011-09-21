@@ -602,10 +602,11 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_nabla()
 void MintsHelper::play()
 {
 #ifdef HAVE_MADNESS
-    Distributed_Matrix t("T", 10, 10);
-    t.print_all_blocks();
-
-    Communicator::world->sync();
+    int M = 10;
+    int N = 10;
+    int tile_size = 3; // This makes the tiles 3 x 3
+    Distributed_Matrix t(M, N, tile_size, "T");
+    t.print_all_tiles();
 #endif
 }
 

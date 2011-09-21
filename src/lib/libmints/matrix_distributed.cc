@@ -46,124 +46,176 @@ extern double str_to_double(const std::string& s);
 
 #ifdef HAVE_MADNESS
 
+void Distributed_Matrix::clear_matrix()
+{
+    int tile_sz_ = 0;
+    int ntiles_ = 0;
+    int nrows_ = 0;
+    int ncols_ = 0;
+    int nelements_ = 0;
+    free_vector(row_split_);
+    free_vector(col_split_);
+    free_vector(tile_nrows_);
+    free_vector(tile_ncols_);
+    free_map(global_local_tile_);
+    free_vector(local_global_tile_);
+    for (int i=0; i < tiles_.size(); i++) {
+        free_vector(tiles_[i]);
+    }
+    free_vector(tiles_);
+}
+
 Distributed_Matrix::Distributed_Matrix()
-    : Block(), nblocks_(0), nrows_(0), ncols_(0), tsb_(0), telements_(0)
-    , madworld_( Communicator::world->get_madworld() ),
-      madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
+    : madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
 {
     me_ = Communicator::world->me();
     nprocs_ = Communicator::world->nproc();
     nthreads_ = Communicator::world->nthread();
     comm_ = Communicator::world->communicator();
     print_mutex_ = Communicator::world->get_mutex();
-    block_roffset_.clear();
-    block_coffset_.clear();
-    block_csize_.clear();
-    block_rsize_.clear();
+    madworld_ = Communicator::world->get_madworld();
+
+    clear_matrix();
 
     process_pending();
 }
 
-
-Distributed_Matrix::Distributed_Matrix(const int &rows, const int &cols)
-    : Block()
-    , madworld_( Communicator::world->get_madworld() ),
-      madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
+Distributed_Matrix::Distributed_Matrix(const int &nrows, const int &ncols,
+                                       const int &tile_sz, const std::string &name)
+    : madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
 {
     me_ = Communicator::world->me();
     nprocs_ = Communicator::world->nproc();
     nthreads_ = Communicator::world->nthread();
     comm_ = Communicator::world->communicator();
     print_mutex_ = Communicator::world->get_mutex();
+    madworld_ = Communicator::world->get_madworld();
 
-    common_init(rows, cols);
+    common_init(nrows, ncols, tile_sz, name);
 
     process_pending();
 }
 
-Distributed_Matrix::Distributed_Matrix(const std::string &name, const int &rows, const int &cols)
-    : Block()
-    , madworld_( Communicator::world->get_madworld() ),
-      madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
+void Distributed_Matrix::common_init(const int &nrows, const int &ncols,
+                                     const int &tile_sz, const std::string &name)
 {
-    me_ = Communicator::world->me();
-    nprocs_ = Communicator::world->nproc();
-    nthreads_ = Communicator::world->nthread();
-    comm_ = Communicator::world->communicator();
-    print_mutex_ = Communicator::world->get_mutex();
+    clear_matrix();
+
+    nrows_ = nrows;
+    ncols_ = ncols;
+    tile_sz_ = tile_sz;
+    nelements_ = nrows_ * ncols_;
     name_ = name;
-    common_init(rows, cols);
 
-    process_pending();
+    if (nrows_%tile_sz_ == 0 && ncols%tile_sz_ == 0)
+        ntiles_ = (nrows_/tile_sz_) * (ncols_/tile_sz_);
+    else if (nrows_%tile_sz_ == 0 && ncols%tile_sz_ != 0)
+        ntiles_ = (nrows_/tile_sz_) * (ncols_/tile_sz_ + 1);
+    else if (nrows_%tile_sz_ != 0 && ncols%tile_sz_ == 0)
+        ntiles_ = (nrows_/tile_sz_ + 1) * (ncols_/tile_sz_);
+    else if (nrows_%tile_sz_ != 0 && ncols%tile_sz_ != 0)
+        ntiles_ = (nrows_/tile_sz_ + 1) * (ncols_/tile_sz_ + 1);
+
+    std::cout << "ntiles = " << ntiles_ << std::endl;
+
+    for (int i=0, local=0; i < ntiles_; i++) {
+        if (me_ == owner(i)) {
+            global_local_tile_.insert(std::pair<int,int>(i,local));
+            local_global_tile_.push_back(i);
+            local++;
+        }
+    }
+
+    // The rows and columns are split according to row_split and col_split
+    for (int i=0; i < nrows_/tile_sz_; i++) {
+        row_split_.push_back(tile_sz_);
+    }
+    for (int i=0; i < ncols/tile_sz_; i++) {
+        col_split_.push_back(tile_sz_);
+    }
+    // This adds the left over rows to the last tile
+    if (nrows_%tile_sz_ != 0) {
+        row_split_.push_back(nrows_%tile_sz_);
+    }
+    // This adds in the left over columns to the last tile
+    if (ncols_%tile_sz_ != 0) {
+        col_split_.push_back(ncols_%tile_sz_);
+    }
+
+//    for (int i=0; i < row_split_.size(); i++) {
+//        std::cout << "row_split[" << i << "] = " << row_split_[i] << std::endl;
+//    }
+//    for (int i=0; i < col_split_.size(); i++) {
+//        std::cout << "col_split[" << i << "] = " << col_split_[i] << std::endl;
+//    }
+
+
+    tile_nrows_.clear();
+    tile_ncols_.clear();
+    for (int i=0, ij=0; i < row_split_.size(); i++) {
+        for (int j=0; j < col_split_.size(); j++, ij++) {
+            if (me_ == owner(ij)) {
+                tile_nrows_.push_back(row_split_[i]);
+                tile_ncols_.push_back(col_split_[j]);
+            }
+        }
+    }
+
+//    for (int ij=0; ij < ntiles_; ij++) {
+//        int local_ij = global_local_tile_[ij];
+//        std::cout << "tile[" << ij << "] = " << tile_nrows_[local_ij] <<
+//                     " x " << tile_ncols_[local_ij] << std::endl;
+//    }
+
+    for (int t=0; t < ntiles_; t++) {
+        if (me_ == owner(t)) {
+            int nrow = tile_nrows_[global_local_tile_[t]];
+            int ncol = tile_ncols_[global_local_tile_[t]];
+            tiles_.push_back( std::vector<double>(nrow*ncol, 0.0) );
+        }
+    }
+
+//    std::map<int,int>::iterator it;
+//    for (it = global_local_tile_.begin();
+//         it != global_local_tile_.end();
+//         it++) {
+//        std::cout << "proc " << me_ << ": global = " << it->first << ": local = " << it->second << std::endl;
+//    }
+
 }
 
-madness::Void Distributed_Matrix::clear()
-{
-    nblocks_ = 0;
-    nrows_ = 0;
-    ncols_ = 0;
-    tsb_ = 0;
-    telements_ = 0;
-    block_roffset_.clear();
-    block_coffset_.clear();
-    block_csize_.clear();
-    block_rsize_.clear();
-    clear_block();
-    return madness::None;
-}
 
-madness::Void Distributed_Matrix::common_init(const int &rows, const int &cols)
-{    
-    nblocks_ = nprocs_;
-    nrows_ = rows;
-    ncols_ = cols;
-    tsb_ = nprocs_*nprocs_;
-    telements_ = nrows_*ncols_;
-
-    block_roffset_.clear();
-    block_coffset_.clear();
-    block_csize_.clear();
-    block_rsize_.clear();
-
-    // Everyone will get at least this many rows and columns
-    for (int i=0; i < nblocks_; i++) {
-        block_rsize_.push_back(nrows_/nblocks_);
-        block_csize_.push_back(ncols_/nblocks_);
-    }
-    // This adds in the left over rows (i.e. rows%nblocks)
-    for (int i=0; i < nrows_%nblocks_; i++) {
-        block_rsize_[i]++;
-    }
-    // This adds in the left over columns (i.e. cols%nblocks)
-    for (int i=0; i < ncols_%nblocks_; i++) {
-        block_csize_[i]++;
-    }
-
-    // Here we determine the offsets for the rows and columns
-    block_roffset_.push_back(0);
-    block_coffset_.push_back(0);
-    for (int i=1; i < nprocs_; i++) {
-        block_roffset_.push_back(block_roffset_[i-1] + block_rsize_[i-1]);
-        block_coffset_.push_back(block_coffset_[i-1] + block_csize_[i-1]);
-    }
-
-    initialize_block(nrows_, ncols_, block_rsize_,
-                     block_csize_, block_roffset_);
-
-    return madness::None;
-}
-
-
-void Distributed_Matrix::print_all_blocks() const
+madness::Void Distributed_Matrix::print_tile(const int &t) const
 {
     if (me_ == 0) {
-        if (nelements() != 0) {
-            for (int i=0; i < nprocs_; i++) {
-                madness::Future<std::vector<std::vector<double> > > block = task(owner(i), &Distributed_Matrix::get_block);
-                madness::Future<std::vector<int> > row = task(owner(i), &Distributed_Matrix::block_sb_nrows);
-                madness::Future<std::vector<int> > col = task(owner(i), &Distributed_Matrix::block_sb_ncols);
+        if (nelements_ != 0) {
+            madness::Future<std::vector<double> > tile = task(owner(t), &Distributed_Matrix::get_tile, t);
+            madness::Future<int> row = task(owner(t), &Distributed_Matrix::t_nrow, t);
+            madness::Future<int> col = task(owner(t), &Distributed_Matrix::t_ncol, t);
 
-                task(me_, &Distributed_Matrix::print_block, i, block, row, col);
+            task(me_, &Distributed_Matrix::print_mat, t, tile, row, col);
+        }
+        else {
+            if (name_.size() != 0)
+                fprintf(outfile, "  ## %s (is empty) ##\n", name_.c_str());
+            else
+                fprintf(outfile, "  ## Distributed Matrix (is empty) ##\n");
+        }
+    }
+    Communicator::world->sync();
+    return madness::None;
+}
+
+madness::Void Distributed_Matrix::print_all_tiles() const
+{
+    if (me_ == 0) {
+        if (nelements_ != 0) {
+            for (int t=0; t < ntiles_; t++) {
+                madness::Future<std::vector<double> > tile = task(owner(t), &Distributed_Matrix::get_tile, t);
+                madness::Future<int> row = task(owner(t), &Distributed_Matrix::t_nrow, t);
+                madness::Future<int> col = task(owner(t), &Distributed_Matrix::t_ncol, t);
+
+                task(me_, &Distributed_Matrix::print_mat, t, tile, row, col);
             }
         }
         else {
@@ -174,80 +226,23 @@ void Distributed_Matrix::print_all_blocks() const
         }
     }
     Communicator::world->sync();
-}
-
-madness::Void Distributed_Matrix::print_block(const int &i, const std::vector<std::vector<double> > &block,
-                                              const std::vector<int> &row,
-                                              const std::vector<int> &col) const
-{
-    if (me_ == 0) {
-        // Get the block and info from the owner
-        int own = owner(i);
-
-        std::string fname;
-        if (name_.size() != 0) fname = name_ + ": Block " + to_string(i);
-        else fname = "Block " + to_string(i);
-
-        // Print the sblocks
-        for (int sb=0; sb < block.size(); sb++) {
-            int sz = block[sb].size();
-            std::string sb_name = fname + ": Sub_Block " + to_string(sb) + ": size = " + to_string(sz);
-            task(me_, &Distributed_Matrix::print_mat, block[sb], row[sb], col[sb], sb_name);
-        }
-    }
-
     return madness::None;
 }
 
-
-//void Distributed_Matrix::print_all_sblocks() const
-//{
-//    if (me_ == 0) {
-//        if (nelements() != 0) {
-//            for (int i=0; i < tsb_; i++)
-//                task(me_, &Distributed_Matrix::print_sblock, i);
-//        }
-//        else {
-//            if (name_.size() != 0)
-//                fprintf(outfile, "  ## %s (is empty) ##\n", name_.c_str());
-//            else
-//                fprintf(outfile, "  ## Distributed Matrix (is empty) ##\n");
-//        }
-//    }
-//    Communicator::world->sync();
-//}
-
-madness::Void Distributed_Matrix::print_sblock(const int &i) const
-{
-    if (me_ == 0) {
-        // Get the block and info from the owner
-        int own = owner(i);
-        madness::Future<std::vector<double> > sblock = task(own, &Distributed_Matrix::get_sblock, i);
-        madness::Future<int> rows = task(own, &Distributed_Matrix::sb_nrows, i);
-        madness::Future<int> cols = task(own, &Distributed_Matrix::sb_ncols, i);
-
-        std::string fname;
-        if (name_.size() != 0) fname = name_ + ": Block " + to_string(own);
-        else fname = "Block " + to_string(own);
-
-        fname += ": Sub_Block " + to_string(i);
-
-        // Print the block
-        task(me_, &Distributed_Matrix::print_mat, sblock, rows, cols, fname);
-    }
-
-    return madness::None;
-}
-
-madness::Void Distributed_Matrix::print_mat(const std::vector<double> &a, const int &m,
-                                            const int &n, const std::string &name) const
+madness::Void Distributed_Matrix::print_mat(const int &tile, const std::vector<double> &a,
+                                            const int &m, const int &n) const
 {
     print_mutex_->lock();
 
-    fprintf(outfile, "\n  ## %s ##\n", name.c_str());
+    std::string fname;
+    if (name_.size() != 0) fname = name_ + ": Owner " + to_string(owner(tile)) +
+            ": Tile " + to_string(tile);
+    else fname = ": Owner " + to_string(owner(tile)) + ": Tile " + to_string(tile);
+
+    fprintf(outfile, "\n  ## %s ##\n", fname.c_str());
 
     if (a.size() == 0) {
-        fprintf(outfile, "\n\t## %s ## (empty)\n", name.c_str());
+        fprintf(outfile, "\n\t## %s ## (empty)\n", fname.c_str());
     }
     else {
         // Should only be called by process 0
@@ -298,34 +293,67 @@ madness::Void Distributed_Matrix::print_mat(const std::vector<double> &a, const 
     return madness::None;
 }
 
-madness::Void Distributed_Matrix::identity()
+madness::Void  Distributed_Matrix::identity()
 {
-    if (nelements() != 0) {
-        if (nrows_ == ncols_) {
-            task(me_, &Distributed_Matrix::set_block_identity);
+    for (int i=0, ij=0; i < row_split_.size(); i++) {
+        for (int j=0; j < col_split_.size(); j++, ij++) {
+            if (me_ == owner(ij)) {
+                if (i == j)
+                    task(owner(ij), &Distributed_Matrix::set_tile_to_identity, ij);
+                else
+                    task(owner(ij), &Distributed_Matrix::zero_tile, ij);
+            }
         }
-        else throw PSIEXCEPTION("The matrix is not square.\n");
-    }
-    else {
-        throw PSIEXCEPTION("You can not set a empty distributed matrix to the identity.\n");
     }
     Communicator::world->sync();
     return madness::None;
 }
 
+madness::Void Distributed_Matrix::set_tile_to_identity(const int &t)
+{
+    int t_local = global_local_tile_[t];
+    int rows = tile_nrows_[t_local];
+    int cols = tile_ncols_[t_local];
+
+    memset(&(tiles_[t_local][0]), 0, tiles_[t_local].size()*sizeof(double));
+
+    for (int i=0; i < rows; i++) {
+        for (int j=0; j < cols; j++) {
+            if (i == j) tiles_[t_local][i*cols + j] = 1.0;
+        }
+    }
+    return madness::None;
+}
+
+madness::Void Distributed_Matrix::zero()
+{
+    for (int t=0; t < ntiles_; t++) {
+        if (me_ == owner(t)) {
+            task(owner(t), &Distributed_Matrix::zero_tile, t);
+        }
+    }
+    Communicator::world->sync();
+    return madness::None;
+}
+
+madness::Void Distributed_Matrix::zero_tile(const int &t)
+{
+    int t_local = global_local_tile_[t];
+    memset(&(tiles_[t_local][0]), 0, tiles_[t_local].size()*sizeof(double));
+    return madness::None;
+}
+
 madness::Future<double> Distributed_Matrix::get_val(const int &row, const int &col)
 {
-    if (nelements() != 0) {
+    if (nelements_ != 0) {
         if (row < nrows_ && col < ncols_) {
-            int sb = sb_number(row, col);
-
-            int own = owner(sb);
+            int tile = row/tile_sz_ * col_split_.size() + col/tile_sz_;
+            int own = owner(tile);
 
             if (me_ == own) {
-                int c = col - block_coffset_[local_col(col)];
-                int r = row - block_roffset_[local_row(row)];
-
-                return madness::Future<double> ( val(sb, r, c) );
+                int r = row%tile_sz_;
+                int c = col%tile_sz_;
+                return task(own, &Distributed_Matrix::return_tile_val, tile, r, c);
             }
             else
                 return task(own, &Distributed_Matrix::get_val, row, col);
@@ -339,53 +367,65 @@ madness::Future<double> Distributed_Matrix::get_val(const int &row, const int &c
     }
 }
 
+madness::Future<double> Distributed_Matrix::return_tile_val(const int &t, const int &row,
+                                                       const int &col)
+{
+    int t_loc = global_local_tile_[t];
+    int ncol = tile_ncols_[t_loc];
+    return madness::Future<double> (tiles_[t_loc][row*ncol + col]);
+}
+
 madness::Void Distributed_Matrix::set_val(const int &row, const int &col, const double &val)
 {
-    // There is no sync here.
-    // Be careful here because this will return
-    // immediately after the tasks have been submitted (not run)
-    if (nelements() != 0) {
+    if (nelements_ != 0) {
         if (row < nrows_ && col < ncols_) {
-            int sb = sb_number(row, col);
-
-            int own = owner(sb);
+            int tile = row/tile_sz_ * col_split_.size() + col/tile_sz_;
+            int own = owner(tile);
 
             if (me_ == own) {
-                int c = col - block_coffset_[local_col(col)];
-                int r = row - block_roffset_[local_row(row)];
+                int r = row%tile_sz_;
+                int c = col%tile_sz_;
 
-                set(sb, r, c, val);
-                return madness::None;
+                set_tile_value(tile, r, c, val);
             }
             else {
                 task(own, &Distributed_Matrix::set_val, row, col, val);
-                return madness::None;
             }
         }
         else
             throw PSIEXCEPTION("The value is out of bounds.\n");
+
     }
     else {
-        throw PSIEXCEPTION("There are no values to get in an empty distributed matrix.\n");
+        throw PSIEXCEPTION("There are no values to set in an empty distributed matrix.\n");
     }
+
+    return madness::None;
+}
+
+madness::Void Distributed_Matrix::set_tile_value(const int &t, const int &row,
+                                                 const int &col, const double &val)
+{
+    int t_loc = global_local_tile_[t];
+    int ncol = tile_ncols_[t_loc];
+    tiles_[t_loc][row*ncol + col] = val;
+
+    return madness::None;
 }
 
 Distributed_Matrix& Distributed_Matrix::operator= (const Distributed_Matrix &rhs)
 {
-    this->clear();
-    int rows = rhs.nrows();
-    int cols = rhs.ncols();
-    if (name_.size() == 0) name_ = rhs.name();
-    common_init(rows, cols);
+    this->clear_matrix();
 
-    for (int i=0; i < nblocks_; i++) {
-        int own = owner(i);
-        if (me_ == own) {
-            madness::Future<std::vector<std::vector<double> > > blk = rhs.task(own, &Distributed_Matrix::get_block);
-            this->task(own, &Distributed_Matrix::copy_block, blk);
+    if (name_.size() == 0) common_init(rhs.nrows_, rhs.ncols_, rhs.tile_sz_, rhs.name_);
+    else common_init(rhs.nrows_, rhs.ncols_, rhs.tile_sz_, name_);
+
+    for (int t=0; t < ntiles_; t++) {
+        if (me_ == owner(t)) {
+            madness::Future<std::vector<double> > tile = rhs.task(owner(t), &Distributed_Matrix::get_tile, t);
+            this->task(owner(t), &Distributed_Matrix::copy_tile, t, tile);
         }
     }
-
     // We need a sync here to make sure that all of the copying is done before moving on
     Communicator::world->sync();
     return *this;
@@ -393,45 +433,35 @@ Distributed_Matrix& Distributed_Matrix::operator= (const Distributed_Matrix &rhs
 
 Distributed_Matrix& Distributed_Matrix::operator= (const Distributed_Matrix *rhs)
 {
-    this->clear();
-    int rows = rhs->nrows();
-    int cols = rhs->ncols();
-    if (name_.size() == 0) name_ = rhs->name();
-    common_init(rows, cols);
+    this->clear_matrix();
 
-    for (int i=0; i < nblocks_; i++) {
-        int own = owner(i);
-        if (me_ == own) {
-            madness::Future<std::vector<std::vector<double> > > blk = rhs->task(own, &Distributed_Matrix::get_block);
-            this->task(own, &Distributed_Matrix::copy_block, blk);
+    if (name_.size() == 0) common_init(rhs->nrows_, rhs->ncols_, rhs->tile_sz_, rhs->name_);
+    else common_init(rhs->nrows_, rhs->ncols_, rhs->tile_sz_, name_);
+
+    for (int t=0; t < ntiles_; t++) {
+        if (me_ == owner(t)) {
+            madness::Future<std::vector<double> > tile = rhs->task(owner(t), &Distributed_Matrix::get_tile, t);
+            this->task(owner(t), &Distributed_Matrix::copy_tile, t, tile);
         }
     }
-
     // We need a sync here to make sure that all of the copying is done before moving on
     Communicator::world->sync();
     return *this;
 }
 
-Distributed_Matrix::Distributed_Matrix(const Distributed_Matrix &copy)
-    : madworld_( Communicator::world->get_madworld() ),
-      madness::WorldObject<Distributed_Matrix>(*Communicator::world->get_madworld())
-{
-    me_ = Communicator::world->me();
-    nprocs_ = Communicator::world->nproc();
-    nthreads_ = Communicator::world->nthread();
-    comm_ = Communicator::world->communicator();
-    print_mutex_ = Communicator::world->get_mutex();
 
-    *this = copy;
+madness::Void Distributed_Matrix::copy_tile(const int &t, const std::vector<double> &tile) {
+    tiles_[global_local_tile_[t]] = tile;
+    return madness::None;
 }
 
 madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix &rhs)
 {
     if (*this == rhs) {
-        for (int sb=0; sb < tsb_; sb++) {
-            if (me_ == owner(sb)) {
-                madness::Future<std::vector<double> > sblock = rhs.task(me_, &Distributed_Matrix::get_sblock, sb);
-                this->task(me_, &Distributed_Matrix::sum_sblock, sb, sblock);
+        for (int t=0; t < ntiles_; t++) {
+            if (me_ == owner(t)) {
+                madness::Future<std::vector<double> > tile = rhs.task(me_, &Distributed_Matrix::get_tile, t);
+                this->task(me_, &Distributed_Matrix::sum_tile, t, tile);
             }
         }
     }
@@ -441,12 +471,59 @@ madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix &rhs)
     return madness::None;
 }
 
+madness::Void Distributed_Matrix::operator +=(const Distributed_Matrix *rhs)
+{
+    if (*this == rhs) {
+        for (int t=0; t < ntiles_; t++) {
+            if (me_ == owner(t)) {
+                madness::Future<std::vector<double> > tile = rhs->task(me_, &Distributed_Matrix::get_tile, t);
+                this->task(me_, &Distributed_Matrix::sum_tile, t, tile);
+            }
+        }
+    }
+    else throw PSIEXCEPTION("The matrices being added are not the same.\n");
+
+    Communicator::world->sync();
+    return madness::None;
+}
+
+
+Distributed_Matrix Distributed_Matrix::operator +(const Distributed_Matrix &rhs)
+{
+    if (*this == rhs) {
+        Distributed_Matrix result = *this;
+        result += rhs;
+        // The += operator has a sync, so we don't need one here
+        return result;
+    }
+    else throw PSIEXCEPTION("The matrices that are being added are not the same.\n");
+}
+
+Distributed_Matrix Distributed_Matrix::operator +(const Distributed_Matrix *rhs)
+{
+    if (*this == rhs) {
+        Distributed_Matrix result = *this;
+        result += rhs;
+        // The += operator has a sync, so we don't need one here
+        return result;
+    }
+    else throw PSIEXCEPTION("The matrices that are being added are not the same.\n");
+}
+
+
+
+madness::Void Distributed_Matrix::sum_tile(const int &t, const std::vector<double> &tile) {
+    for (int i=0; i < tile.size(); i++)
+        tiles_[global_local_tile_[t]][i] += tile[i];
+    return madness::None;
+}
+
 madness::Void Distributed_Matrix::fill(const double &val)
 {
-    if (this->nelements() != 0) {
-        for (int sb=0; sb < tsb_; sb++) {
-            if (me_ == owner(sb))
-                this->task(me_, &Distributed_Matrix::fill_sblock, sb, val);
+    if (this->nelements_ != 0) {
+        for (int t=0; t < ntiles_; t++) {
+            if (me_ == owner(t))
+                this->task(me_, &Distributed_Matrix::fill_tile, t, val);
         }
     }
     else throw PSIEXCEPTION("The matrix you are tryin to fill is empty.\n");
@@ -455,32 +532,41 @@ madness::Void Distributed_Matrix::fill(const double &val)
     return madness::None;
 }
 
-madness::Void Distributed_Matrix::operator =(const double &val)
+madness::Void Distributed_Matrix::fill_tile(const int &t, const double &val)
 {
-    fill(val);
+    int loc_t = global_local_tile_[t];
+
+    for (int i=0; i < tiles_[loc_t].size(); i++)
+        tiles_[loc_t][i] = val;
+
     return madness::None;
-}
-
-
-Distributed_Matrix Distributed_Matrix::operator +(const Distributed_Matrix &rhs)
-{
-    if (*this == rhs) {
-        Distributed_Matrix tmp = *this;
-        tmp += rhs;
-        // The += operator has a sync, so we don't need one here
-        return tmp;
-    }
-    else throw PSIEXCEPTION("The matrices that are being added are not the same.\n");
 }
 
 bool Distributed_Matrix::operator ==(const Distributed_Matrix &rhs)
 {
-    if ( this->g_nrows_ != rhs.g_nrows() ) return false;
-    else if ( this->g_ncols_ != rhs.g_ncols() ) return false;
-    else if ( this->nelements_ != rhs.nelements() ) return false;
-    else if ( this->nsb_ != rhs.nsb() ) return false;
-    else if ( this->sb_nrows_ != rhs.block_sb_nrows() ) return false;
-    else if ( this->sb_ncols_ != rhs.block_sb_ncols() ) return false;
+    if ( this->nrows_ != rhs.nrows_ ) return false;
+    else if ( this->ncols_ != rhs.ncols_ ) return false;
+    else if ( this->tile_sz_ != rhs.tile_sz_ ) return false;
+    else if ( this->nelements_ != rhs.nelements_ ) return false;
+    else if ( this->ntiles_ != rhs.ntiles_ ) return false;
+    else if ( this->row_split_ != rhs.row_split_ ) return false;
+    else if ( this->col_split_ != rhs.col_split_ ) return false;
+    else if ( this->tile_nrows_ != rhs.tile_nrows_ ) return false;
+    else if ( this->tile_ncols_ != rhs.tile_ncols_ ) return false;
+    else return true;
+}
+
+bool Distributed_Matrix::operator ==(const Distributed_Matrix *rhs)
+{
+    if ( this->nrows_ != rhs->nrows_ ) return false;
+    else if ( this->ncols_ != rhs->ncols_ ) return false;
+    else if ( this->tile_sz_ != rhs->tile_sz_ ) return false;
+    else if ( this->nelements_ != rhs->nelements_ ) return false;
+    else if ( this->ntiles_ != rhs->ntiles_ ) return false;
+    else if ( this->row_split_ != rhs->row_split_ ) return false;
+    else if ( this->col_split_ != rhs->col_split_ ) return false;
+    else if ( this->tile_nrows_ != rhs->tile_nrows_ ) return false;
+    else if ( this->tile_ncols_ != rhs->tile_ncols_ ) return false;
     else return true;
 }
 
@@ -490,41 +576,48 @@ bool Distributed_Matrix::operator !=(const Distributed_Matrix &rhs)
     else return true;
 }
 
-void Deleter(Distributed_Matrix *ptr)
-{ // this is a deleter that doesn't do anything.
-  // I pass it to shared_ptr so that the shared_ptr
-  // doesn't delete my Distributed_Matrix.
-  // THIS IS HACK AND NEEDS TO BE FIXED LATER
+bool Distributed_Matrix::operator !=(const Distributed_Matrix *rhs)
+{
+    if (*this == rhs) return false;
+    else return true;
 }
+
 
 Distributed_Matrix Distributed_Matrix::operator* (const Distributed_Matrix &rhs)
 {
 
-    if (this->nrows() == rhs.ncols()) {
+    if (this->nrows_ == rhs.ncols_ && this->tile_sz_ == rhs.tile_sz_) {
         madness::TaskAttributes attr;
         attr.set_highpriority(true);
 
-        Distributed_Matrix result(this->nrows(), rhs.ncols());
+        Distributed_Matrix result(this->nrows_, rhs.ncols_, this->tile_sz_, "Multiply Result");
 
         result.zero();
 
-        for (int i=0; i < nblocks_; i++) {
-            for (int k=0; k < nblocks_; k++) {
-                int ik = i*nblocks_ + k;
-                if (me_ == owner(ik)) {
-                    for (int j=0; j < nblocks_; j++) {
-                        int jk = j*nblocks_ + k;
-                        int ij = i*nblocks_ + j;
+        int lmat_row = this->row_split_.size();
+        int lmat_col = this->col_split_.size();
+        int rmat_col = rhs.col_split_.size();
+        int result_col = result.col_split_.size();
 
-                        madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_sblock, ij, attr);
-                        madness::Future<std::vector<double> > B = rhs.task(owner(jk), &Distributed_Matrix::get_sblock, jk, attr);
-                        madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::sb_nrows, ij, attr);
-                        madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::sb_ncols, ij, attr);
-                        madness::Future<int> b_col = rhs.task(owner(jk), &Distributed_Matrix::sb_ncols, jk, attr);
+        for (int i=0; i < lmat_row; i++) {
+            for (int j=0; j < lmat_col; j++) {
+                int ij = i*lmat_col + j;
+                for (int k=0; k < rmat_col; k++) {
+                    int ik = i*result_col + k;
+
+                    if (me_ == owner(ik)) {
+                        int jk = j*rmat_col + k;
+
+                        madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_tile, ij);
+                        madness::Future<std::vector<double> > B = rhs.task(owner(jk), &Distributed_Matrix::get_tile, jk);
+                        madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::t_nrow, ij);
+                        madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::t_ncol, ij);
+                        madness::Future<int> b_col = rhs.task(owner(jk), &Distributed_Matrix::t_ncol, jk);
 
                         result.task(owner(ik), &Distributed_Matrix::mxm,
                                     ik, A, B, a_row, a_col, b_col);
                     }
+
                 }
             }
         }
@@ -537,6 +630,22 @@ Distributed_Matrix Distributed_Matrix::operator* (const Distributed_Matrix &rhs)
         throw PSIEXCEPTION("The columns of A do not match the rows of B.\n");
     }
 }
+
+madness::Void Distributed_Matrix::mxm(const int &t,
+                                      const std::vector<double> &a,
+                                      const std::vector<double> &b,
+                                      const int &a_row,
+                                      const int &a_col,
+                                      const int &b_col)
+{
+    int c_local = global_local_tile_[t];
+    C_DGEMM('n', 'n', a_row, b_col, a_col, 1.0,
+            const_cast<double*>(&a[0]), a_col,
+            const_cast<double*>(&b[0]), b_col, 1.0,
+            &(tiles_[c_local][0]), b_col);
+    return madness::None;
+}
+
 
 #endif // End of HAVE_MADNESS
 
