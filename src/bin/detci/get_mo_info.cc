@@ -29,7 +29,7 @@ namespace psi { namespace detci {
 **              using for some time).
 **
 */
-void get_mo_info(void)
+void get_mo_info(Options &options)
 {
    int i, j, k, tmp, cnt, irrep, errcod, errbad;
    int size;
@@ -82,7 +82,7 @@ void get_mo_info(void)
                 CalcInfo.orbs_per_irr, CalcInfo.docc, CalcInfo.socc,
                 CalcInfo.frozen_docc, CalcInfo.frozen_uocc,
                 rstr_docc, rstr_uocc,
-                CalcInfo.ras_opi, CalcInfo.reorder, 1, 0))
+                CalcInfo.ras_opi, CalcInfo.reorder, 1, 0, options))
    {
      fprintf(outfile, "Error in ras_set().  Aborting.\n");
      exit(1);
