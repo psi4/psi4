@@ -642,14 +642,42 @@ Distributed_Matrix Distributed_Matrix::operator* (const Distributed_Matrix &rhs)
                         if (me_ == owner(ik)) {
                             int jk = j*rmat_col + k;
 
-                            madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_tile, ij);
-                            madness::Future<std::vector<double> > B = rhs.task(owner(jk), &Distributed_Matrix::get_tile, jk);
-                            madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::t_nrow, ij);
-                            madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::t_ncol, ij);
-                            madness::Future<int> b_col = rhs.task(owner(jk), &Distributed_Matrix::t_ncol, jk);
+                            int local_ij = global_local_tile_[ij];
+                            int local_jk = global_local_tile_[jk];
 
-                            result.task(owner(ik), &Distributed_Matrix::mxm,
-                                        ik, A, B, a_row, a_col, b_col, 1.0);
+                            if (me_ == owner(ij) && me_ == owner(jk)) {
+                                result.task(owner(ik), &Distributed_Matrix::mxm,
+                                            ik, tiles_[local_ij],
+                                            tiles_[local_jk],
+                                            tile_nrows_[local_ij], tile_ncols_[local_ij],
+                                            tile_ncols_[local_jk], 1.0);
+                            }
+                            else if (me_ == owner(ij) && me_ != owner(jk)) {
+                                madness::Future<std::vector<double> > B = rhs.task(owner(jk), &Distributed_Matrix::get_tile, jk);
+                                madness::Future<int> b_col = rhs.task(owner(jk), &Distributed_Matrix::t_ncol, jk);
+
+                                result.task(owner(ik), &Distributed_Matrix::mxm,
+                                            ik, tiles_[local_ij], B, tile_nrows_[local_ij], tile_ncols_[local_ij], b_col, 1.0);
+
+                            }
+                            else if (me_ != owner(ij) && me_ == owner(jk)) {
+                                madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_tile, ij);
+                                madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::t_nrow, ij);
+                                madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::t_ncol, ij);
+
+                                result.task(owner(ik), &Distributed_Matrix::mxm,
+                                            ik, A, tiles_[local_jk], a_row, a_col, tile_ncols_[local_jk], 1.0);
+                            }
+                            else {
+                                madness::Future<std::vector<double> > A = this->task(owner(ij), &Distributed_Matrix::get_tile, ij);
+                                madness::Future<std::vector<double> > B = rhs.task(owner(jk), &Distributed_Matrix::get_tile, jk);
+                                madness::Future<int> a_row = this->task(owner(ij), &Distributed_Matrix::t_nrow, ij);
+                                madness::Future<int> a_col = this->task(owner(ij), &Distributed_Matrix::t_ncol, ij);
+                                madness::Future<int> b_col = rhs.task(owner(jk), &Distributed_Matrix::t_ncol, jk);
+
+                                result.task(owner(ik), &Distributed_Matrix::mxm,
+                                            ik, A, B, a_row, a_col, b_col, 1.0);
+                            }
                         }
 
                     }
