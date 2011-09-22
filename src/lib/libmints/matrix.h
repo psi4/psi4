@@ -11,6 +11,7 @@ template<class T> class shared_ptr;
 
 namespace python{
 class tuple;
+class list;
 }}
 
 namespace psi {
@@ -183,6 +184,9 @@ public:
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
+
+    /// Copies data to the row specified. Assumes data is of correct length.
+    void copy_to_row(int h, int row, double const * const data);
 
     enum SaveType {
         Full,
@@ -765,8 +769,8 @@ public:
      *
      * \returns true if a vector is added, false otherwise
     */
-    bool schmidt_add(int rows, Vector& v) throw();
-    bool schmidt_add(int rows, double* v) throw();
+    bool schmidt_add(int h, int rows, Vector& v) throw();
+    bool schmidt_add(int h, int rows, double* v) throw();
     /// @}
 
     /*!
@@ -812,6 +816,12 @@ public:
     bool equal(const boost::shared_ptr<Matrix>& rhs);
     bool equal(const Matrix* rhs);
     /// @}
+
+    /**
+     * Takes a Python object (assumes that it is a "matrix" array) and
+     * sets the matrix to that.
+     */
+    void set_by_python_list(const boost::python::list& data);
 
     friend class Vector;
 };

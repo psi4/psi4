@@ -142,6 +142,8 @@ void export_mints()
             def("get", matrix_get2(&Matrix::get)).
             def("set", matrix_set3(&Matrix::set)).
             def("set", matrix_set4(&Matrix::set)).
+            def("set", &Matrix::set_by_python_list).
+            def("project_out", &Matrix::project_out).
             def("__getitem__", &Matrix::pyget).
             def("__setitem__", &Matrix::pyset).
             def("save", matrix_save(&Matrix::save)).
@@ -155,6 +157,10 @@ void export_mints()
             staticmethod("shared_object").
             def("create_matrix", create_shared_matrix(&MatrixFactory::create_shared_matrix)).
             def("create_matrix", create_shared_matrix_name(&MatrixFactory::create_shared_matrix));
+
+    class_<CdSalcList, boost::shared_ptr<CdSalcList>, boost::noncopyable>("CdSalcList", no_init).
+            def("print_out", &CdSalcList::print).
+            def("matrix", &CdSalcList::matrix);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper").
             def("basisset", &MintsHelper::basisset).
@@ -176,6 +182,7 @@ void export_mints()
             def("ao_angular_momentum", &MintsHelper::ao_angular_momentum).
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri).
+            def("cdsalcs", &MintsHelper::cdsalcs).
             def("play", &MintsHelper::play);
 
     class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric").

@@ -104,7 +104,6 @@ class CdSalcList
     bool project_out_rotations_;
 
     int ncd_;
-    double ***salc_symblock_;
     int cdsalcpi_[8];
     char *atom_irreps_;
     double **cdsalc2cd_;
@@ -132,7 +131,7 @@ public:
      */
     CdSalcList(boost::shared_ptr<Molecule> mol,
                boost::shared_ptr<MatrixFactory> fact,
-               char needed_irreps=0xF,
+               int needed_irreps=0xF,
                bool project_out_translations=true,
                bool project_out_rotations=true);
     virtual ~CdSalcList();
