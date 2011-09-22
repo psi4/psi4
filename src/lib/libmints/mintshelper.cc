@@ -599,6 +599,16 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_nabla()
     return nabla;
 }
 
+boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
+                                                   bool project_out_translations,
+                                                   bool project_out_rotations)
+{
+    return boost::shared_ptr<CdSalcList>(new CdSalcList(molecule_, factory_,
+                                                        needed_irreps,
+                                                        project_out_translations,
+                                                        project_out_rotations));
+}
+
 void MintsHelper::play()
 {
 #ifdef HAVE_MADNESS
