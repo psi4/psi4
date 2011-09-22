@@ -81,9 +81,9 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     Matrix X(3, 3);
     pI->diagonalize(X, ev);
 
-    fprintf(outfile, "pI[0][1] = %20.14lf\n", pI->get(0, 1));
-    molecule_->inertia_tensor()->print();
-    X.eivprint(ev);
+//    fprintf(outfile, "pI[0][1] = %20.14lf\n", pI->get(0, 1));
+//    molecule_->inertia_tensor()->print();
+//    X.eivprint(ev);
 
     // Pull out data to local variables to reduce memory lookup
     double X00 = X(0, 0), X01 = X(0, 1), X02 = X(0, 2);
@@ -126,7 +126,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
         }
     }
 
-    constraints.print();
+//    constraints.print();
 
     // Remove NULL constraint (if present) and normalize the rest of them
     for (int i=0; i<6; ++i) {
@@ -137,7 +137,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
             constraints.scale_row(0, i, 0.0);
     }
 
-    constraints.print();
+//    constraints.print();
 
     Matrix constraints_ortho("Orthogonalized COM & Rotational constraints", 6, 3*natom);
     // Ensure rotations and translations are exactly orthogonal
@@ -145,7 +145,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     for (int i=0; i<6; ++i)
         count += constraints_ortho.schmidt_add(0, i, constraints[0][i]);
 
-    constraints_ortho.print();
+//    constraints_ortho.print();
 
     double *salc = new double[ncd_];
 
@@ -233,11 +233,11 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     }
 
     // Raw - non-projected cartesian displacements
-    salcs.print(outfile, "Raw, Nonprojected Cartesian Displacements");
+//    salcs.print(outfile, "Raw, Nonprojected Cartesian Displacements");
 
     // Project out any constraints
     salcs.project_out(constraints_ortho);
-    salcs.set_name("Resulting SALCs after projections");
+//    salcs.set_name("Resulting SALCs after projections");
 
     // Walk through the new salcs and populate our sparse vectors.
     for (int h=0; h<nirrep_; ++h) {

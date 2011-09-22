@@ -1091,10 +1091,10 @@ bool Matrix::schmidt_add(int h, int rows, double* v) throw()
     double dotval, normval;
     int i, I;
 
-    fprintf(outfile, "in schmidt_add\n");
-    for (i=0; i<coldim(h); ++i)
-        fprintf(outfile, "%lf ", v[i]);
-    fprintf(outfile, "\n");
+//    fprintf(outfile, "in schmidt_add\n");
+//    for (i=0; i<coldim(h); ++i)
+//        fprintf(outfile, "%lf ", v[i]);
+//    fprintf(outfile, "\n");
 
     for (i=0; i<rows; ++i) {
         dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
@@ -1109,9 +1109,9 @@ bool Matrix::schmidt_add(int h, int rows, double* v) throw()
         for (I=0; I<coldim(h); ++I)
             matrix_[h][rows][I] = v[I] / normval;
 
-        for (i=0; i<coldim(h); ++i)
-            fprintf(outfile, "%lf ", matrix_[h][rows][i]);
-        fprintf(outfile, "\n");
+//        for (i=0; i<coldim(h); ++i)
+//            fprintf(outfile, "%lf ", matrix_[h][rows][i]);
+//        fprintf(outfile, "\n");
         return true;
     }
     else
@@ -1124,48 +1124,48 @@ void Matrix::project_out(Matrix &constraints)
     Matrix temp = *this;
     zero();
 
-    fprintf(outfile, "in project_out:\n");
+//    fprintf(outfile, "in project_out:\n");
 
     temp.set_name("temp");
-    temp.print();
+//    temp.print();
 
-    constraints.print();
+//    constraints.print();
 
     double *v = new double[coldim()];
-    fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
+//    fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
     for (int h=0; h<nirrep(); ++h) {
         for (int i=0; i<rowdim(h); ++i) {
-            fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
+//            fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
             memcpy(v, temp[h][i], sizeof(double)*coldim(h));
 
-            fprintf(outfile, "temp[%d][] ", h);
-            for(int z=0; z<coldim(h); ++z)
-                fprintf(outfile, "%lf ", temp[h][i][z]);
-            fprintf(outfile, "\n");
+//            fprintf(outfile, "temp[%d][] ", h);
+//            for(int z=0; z<coldim(h); ++z)
+//                fprintf(outfile, "%lf ", temp[h][i][z]);
+//            fprintf(outfile, "\n");
 
-            fprintf(outfile, "v[] ", h);
-            for(int z=0; z<coldim(h); ++z)
-                fprintf(outfile, "%lf ", v[z]);
-            fprintf(outfile, "\n");
+//            fprintf(outfile, "v[] ", h);
+//            for(int z=0; z<coldim(h); ++z)
+//                fprintf(outfile, "%lf ", v[z]);
+//            fprintf(outfile, "\n");
 
             for (int j=0; j<constraints.rowdim(0); ++j) {
                 // hand rolled ddot
                 double dotval = 0.0;
                 for (int z=0; z<coldim(h); ++z) {
                     dotval += temp[h][i][z] * constraints[0][j][z];
-                    fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
+//                    fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
                 }
-                fprintf(outfile, "\n");
+//                fprintf(outfile, "\n");
 //                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
-                fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
+//                fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
                 for (int I=0; I<coldim(h); ++I)
                     v[I] -= dotval * constraints[0][j][I];
             }
 
-            fprintf(outfile, "after removing constraints v[] ", h);
-            for(int z=0; z<coldim(h); ++z)
-                fprintf(outfile, "%lf ", v[z]);
-            fprintf(outfile, "\n");
+//            fprintf(outfile, "after removing constraints v[] ", h);
+//            for(int z=0; z<coldim(h); ++z)
+//                fprintf(outfile, "%lf ", v[z]);
+//            fprintf(outfile, "\n");
 
             // At this point all constraints have been projected out of "v"
             // Normalize it add Schmidt orthogonalize it against this
@@ -1175,10 +1175,10 @@ void Matrix::project_out(Matrix &constraints)
                 for (int j=0; j<coldim(h); ++j)
                     v[j] /= normval;
 
-                fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
-                for(int z=0; z<coldim(h); ++z)
-                    fprintf(outfile, "%lf ", v[z]);
-                fprintf(outfile, "\n");
+//                fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
+//                for(int z=0; z<coldim(h); ++z)
+//                    fprintf(outfile, "%lf ", v[z]);
+//                fprintf(outfile, "\n");
                 schmidt_add(h, i, v);
             }
         }
