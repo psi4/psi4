@@ -167,7 +167,7 @@ void print_parameters(void);
 void get_moinfo(Options & options);
 void get_one_electron_integrals(void);
 void exit_io(void);
-void get_reorder_array(void);
+void get_reorder_array(Options& options);
 double *** construct_evects(const char *spin, int nirreps, int *active, int *sopi,
   int *orbspi, int *first_so, int *last_so, int *first, int *last,
   int *fstact, int *lstact, int printflag);
@@ -183,7 +183,7 @@ PsiReturnType transqt(Options & options)
   get_parameters(options);
   print_parameters();
   get_moinfo(options);
-  get_reorder_array();
+  get_reorder_array(options);
 
   get_one_electron_integrals();
 
@@ -711,7 +711,7 @@ void get_moinfo(Options & options)
                  params.del_restr_docc, moinfo.orbspi,
                  moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
                  moinfo.rstrdocc, moinfo.rstruocc, ras_opi, tmpi,
-                 params.ras_type, i)) {
+                 params.ras_type, i, options)) {
       fprintf(outfile, "Error in ras_set().  Aborting.\n");
       abort();
     }
@@ -1108,7 +1108,7 @@ void get_moinfo(Options & options)
 
 
 
-void get_reorder_array(void)
+void get_reorder_array(Options& options)
 {
   int i, errcod;
   int **ras_opi;
@@ -1133,7 +1133,7 @@ void get_reorder_array(void)
                  params.del_restr_docc, moinfo.orbspi,
                  moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
          moinfo.rstrdocc, moinfo.rstruocc, ras_opi, moinfo.order,
-                 params.ras_type, i)) {
+                 params.ras_type, i, options)) {
       fprintf(outfile, "Error in ras_set().  Aborting.\n");
       abort();
     }

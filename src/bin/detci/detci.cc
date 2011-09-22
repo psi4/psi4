@@ -23,13 +23,16 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <sys/types.h>
+#include <unistd.h>
 #include <cstring>
 #include <psifiles.h>
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
+#include <libmints/wavefunction.h>
 #include <libpsio/psio.h>
-#include <libpsio/psio.hpp>
+//#include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
 #include <masses.h>
 #include "structs.h"
@@ -41,6 +44,7 @@
 #include "odometer.h"
 #include "slaterd.h"
 #include "civect.h"
+#include "ciwave.h"
 
 namespace psi { namespace detci {
 
@@ -58,7 +62,7 @@ extern void tf_onel_ints(int printflg, FILE *outfile);
 extern void zapt_shift(double *TEI, int nirreps, int nmo, int *doccpi, 
    int *soccpi, int *orbspi, int *frzdoccpi, int *reorder);
 extern void form_gmat(int printflg, FILE *outfile);
-extern void get_mo_info(void);
+extern void get_mo_info(Options &);
 extern void print_vec(unsigned int nprint, int *Iacode, int *Ibcode, 
    int *Iaidx, int *Ibidx, double *coeff,
    struct olsen_graph *AlphaG, struct olsen_graph *BetaG, 
@@ -96,7 +100,7 @@ void diag_h(struct stringwr **strlista, struct stringwr **strlistb);
 void mpn(struct stringwr **strlista, struct stringwr **strlistb);
 void form_opdm(void);
 void form_tpdm(void);
-extern void get_parameters(void);
+extern void get_parameters(Options &);
 extern void print_parameters(void);
 extern void set_ras_parms(void);
 extern void print_ras_parms(void);
@@ -124,12 +128,69 @@ extern void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 extern void compute_cc(void);
 extern void calc_mrpt(void);
 
+PsiReturnType detci(Options &options);
+
 }} // namespace psi::detci
 
 
 namespace psi { namespace detci {
 
-int detci(Options &options)
+CIWavefunction::CIWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options)
+    : Wavefunction(options, _default_psio_lib_)
+{
+    set_reference_wavefunction(reference_wavefunction);
+    init();
+}
+
+CIWavefunction::~CIWavefunction()
+{
+
+}
+
+void CIWavefunction::init()
+{
+    // TODO-CDS:
+    // The CC codes destroy the checkpoint object created by Wavefunction.
+    // We'd like to be able to do the same here.  Need to convert everything
+    // such that we don't explicitly need checkpoint
+    // Destroy it. Otherwise we will see a "file already open" error.
+    chkpt_.reset();
+
+    // We're copying this stuff over like it's done in ccenergy, but 
+    // these Wavefunction member data are not actually used by the code
+    // yet (Sept 2011 CDS).  Copying these only in case they're needed
+    // by someone else who uses the CIWavefunction and expects them to
+    // be available.
+
+    // CDS-TODO: Note, some of these data should be updated to reflect what
+    // the CI wavefunction is doing, not what the reference wavefunction
+    // is doing, in case these are actually used elsewhere.
+    nso_        = reference_wavefunction_->nso();
+    nirrep_     = reference_wavefunction_->nirrep();
+    nmo_        = reference_wavefunction_->nmo();
+    for(int h = 0; h < nirrep_; ++h){
+        soccpi_[h] = reference_wavefunction_->soccpi()[h];
+        doccpi_[h] = reference_wavefunction_->doccpi()[h];
+        frzcpi_[h] = reference_wavefunction_->frzcpi()[h];
+        frzvpi_[h] = reference_wavefunction_->frzvpi()[h];
+        nmopi_[h]  = reference_wavefunction_->nmopi()[h];
+        nsopi_[h]  = reference_wavefunction_->nsopi()[h];
+    }
+}
+
+double CIWavefunction::compute_energy()
+{
+    energy_ = 0.0;
+    PsiReturnType ci_return;
+    if ((ci_return = psi::detci::detci(options_)) == Success) {
+        // Get the total energy
+        energy_ = Process::environment.globals["CURRENT ENERGY"];
+    }
+
+    return energy_;
+}
+
+PsiReturnType detci(Options &options)
 {
    Parameters.print_lvl = 1;
    Parameters.have_special_conv = 0;
@@ -139,10 +200,10 @@ int detci(Options &options)
    boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
    init_io(argc, argv);         /* parse cmd line and open input and output */
-   get_parameters();            /* get running params (convergence, etc)    */
+   get_parameters(options);     /* get running params (convergence, etc)    */
    init_ioff();                 /* set up the ioff array                    */
    title();                     /* print program identification             */
-   get_mo_info();               /* read DOCC, SOCC, frozen, nmo, etc        */
+   get_mo_info(options);        /* read DOCC, SOCC, frozen, nmo, etc        */
    set_ras_parms();             /* set fermi levels and the like            */ 
    
    if (Parameters.print_lvl) {
