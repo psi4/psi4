@@ -68,24 +68,35 @@ void ROHF::common_init()
 
 void ROHF::finalize()
 {
-    // Form lagrangian
-    // This is WRONG...haven't fixed yet.
+    // Form Lagrangian
+    //
+    // In HF, the Lagrangian is Xpi = Fpi. For RHF and UHF, this reduces 
+    // to Xii = ei. In the AO basis (where we want it), Xmn = Cmi ei Cni. 
+    // For ROHF, the effective Fock matrix is diagonal, not Fa and Fb (as
+    // in UHF). So we need to form the Lagrangian as: Xmn = Cmp Fpi Cni.
+    //
+    // --EGH
+    //
+    // Let's build the MO Lagrangian in Feff_
+    // ...I'm assuming these bitches are square
+    Feff_->zero();
+    moFa_->transform(Fa_, Ca_);
+    moFb_->transform(Fb_, Ca_);
     for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<Lagrangian_->rowdim(h); ++m) {
-            for (int n=0; n<Lagrangian_->coldim(h); ++n) {
-                double asum = 0.0, bsum = 0.0;
-                for (int i=0; i<doccpi_[h]; ++i) {
-                    asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
-                    bsum += epsilon_b_->get(h, i) * Cb_->get(h, m, i) * Cb_->get(h, n, i);
-                }
-                for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i)
-                    asum += epsilon_a_->get(h, i) * Ca_->get(h, m, i) * Ca_->get(h, n, i);
-
-                Lagrangian_->set(h, m, n, asum);
-                Lagrangian_->set(h, m, n, bsum);
+        for (int m=0; m<Feff_->rowdim(h); ++m) {
+            double tval;
+            for (int i=0; i<doccpi_[h]; ++i) {
+                tval = moFa_->get(h, m, i);
+                tval += moFb_->get(h, m, i);
+                Feff_->set(h, m, i, tval);
+            }
+            for (int i=doccpi_[h]; i<doccpi_[h]+soccpi_[h]; ++i) {
+                tval = moFa_->get(h, m, i);
+                Feff_->set(h, m, i, tval);
             }
         }
     }
+    Lagrangian_->back_transform(Feff_, Ca_);
 
     Feff_.reset();
     Ka_.reset();
