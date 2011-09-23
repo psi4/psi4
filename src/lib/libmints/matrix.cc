@@ -338,6 +338,108 @@ void Matrix::copy(const Matrix* cp)
     }
 }
 
+boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Matrix> >& mats)
+{
+    int nirrep = mats[0]->nirrep();
+    for (int a = 0; a < mats.size(); ++a) {
+        if (nirrep != mats[a]->nirrep()) {
+            throw PSIEXCEPTION("Horzcat: Matrices not of same nirrep");
+        }
+    }
+
+    for (int a = 1; a < mats.size(); ++a) {
+        for (int h = 0; h < nirrep; ++h) {
+            if (mats[h]->rowspi()[h] != mats[0]->rowspi()[h]) {
+                throw PSIEXCEPTION("Horzcat: Matrices must all have same row dimension"); 
+            }
+        }
+    } 
+
+    int* colspi = new int[nirrep];
+    ::memset((void*) colspi, '\0', sizeof(int) * nirrep);
+
+    for (int a = 0; a < mats.size(); ++a) {
+        for (int h = 0; h < nirrep; ++h) {
+            colspi[h] += mats[a]->colspi()[h];
+        }
+    }
+
+    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));  
+    
+    for (int h = 0; h < nirrep; ++h) {
+        if (mats[0]->rowspi()[h] == 0 || colspi[h] == 0) continue;
+        double** catp = cat->pointer(h);
+        int offset = 0;
+        int rows = mats[0]->rowspi()[h];
+        for (int a = 0; a < mats.size(); ++a) {
+            int cols = mats[a]->colspi()[h];
+            if (cols == 0) continue;
+
+            double** Ap = mats[a]->pointer();
+
+            for (int col = 0; col < cols; ++col) {
+                C_DCOPY(rows,&Ap[0][col],cols,&catp[0][col + offset],colspi[h]);
+            }
+
+            offset += cols; 
+        }
+    }
+
+    delete[] colspi;
+    return cat;
+}
+
+boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Matrix> >& mats)
+{
+    int nirrep = mats[0]->nirrep();
+    for (int a = 0; a < mats.size(); ++a) {
+        if (nirrep != mats[a]->nirrep()) {
+            throw PSIEXCEPTION("Vertcat: Matrices not of same nirrep");
+        }
+    }
+
+    for (int a = 1; a < mats.size(); ++a) {
+        for (int h = 0; h < nirrep; ++h) {
+            if (mats[h]->colspi()[h] != mats[0]->colspi()[h]) {
+                throw PSIEXCEPTION("Vertcat: Matrices must all have same col dimension"); 
+            }
+        }
+    } 
+
+    int* rowspi = new int[nirrep];
+    ::memset((void*) rowspi, '\0', sizeof(int) * nirrep);
+
+    for (int a = 0; a < mats.size(); ++a) {
+        for (int h = 0; h < nirrep; ++h) {
+            rowspi[h] += mats[a]->rowspi()[h];
+        }
+    }
+
+    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));  
+    
+    for (int h = 0; h < nirrep; ++h) {
+        if (mats[0]->colspi()[h] == 0 || rowspi[h] == 0) continue;
+        double** catp = cat->pointer(h);
+        int offset = 0;
+        int cols = mats[0]->colspi()[h];
+        for (int a = 0; a < mats.size(); ++a) {
+            int rows = mats[a]->rowspi()[h];
+            if (rows == 0) continue;
+
+            double** Ap = mats[a]->pointer();
+
+            for (int row = 0; row < rows; ++row) {
+                ::memcpy((void*) catp[row + offset], (void*) Ap[row], sizeof(double) * cols);
+            }
+
+            offset += rows; 
+        }
+    }
+
+    delete[] rowspi;
+    return cat;
+}
+
 void Matrix::copy_to_row(int h, int row, double const * const data)
 {
     if (h >= nirrep_ || row >= rowspi_[h])
