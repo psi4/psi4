@@ -662,6 +662,38 @@ public:
     /// @}
 
     /// @{
+    /** Raw access to the underlying dgemm call. Saves result to this.
+     * \param transa Transpose the left matrix
+     * \param transb Transpose the right matrix
+     * \param
+     */
+    void gemm(const char& transa, const char& transb,
+              const std::vector<int>& m,
+              const std::vector<int>& n,
+              const std::vector<int>& k,
+              const double& alpha,
+              const boost::shared_ptr<Matrix>& a, const std::vector<int>& lda,
+              const boost::shared_ptr<Matrix>& b, const std::vector<int>& ldb,
+              const double& beta,
+              const std::vector<int>& ldc,
+              const std::vector<unsigned long>& offset_a = std::vector<unsigned long>(),
+              const std::vector<unsigned long>& offset_b = std::vector<unsigned long>(),
+              const std::vector<unsigned long>& offset_c = std::vector<unsigned long>());
+    void gemm(const char& transa, const char& transb,
+              const int& m,
+              const int& n,
+              const int& k,
+              const double& alpha,
+              const boost::shared_ptr<Matrix>& a, const int& lda,
+              const boost::shared_ptr<Matrix>& b, const int& ldb,
+              const double& beta,
+              const int& ldc,
+              const unsigned long& offset_a = 0,
+              const unsigned long& offset_b = 0,
+              const unsigned long& offset_c = 0);
+    /// @}
+
+    /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz = Ascending);
     void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);

@@ -350,10 +350,10 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
     for (int a = 1; a < mats.size(); ++a) {
         for (int h = 0; h < nirrep; ++h) {
             if (mats[h]->rowspi()[h] != mats[0]->rowspi()[h]) {
-                throw PSIEXCEPTION("Horzcat: Matrices must all have same row dimension"); 
+                throw PSIEXCEPTION("Horzcat: Matrices must all have same row dimension");
             }
         }
-    } 
+    }
 
     int* colspi = new int[nirrep];
     ::memset((void*) colspi, '\0', sizeof(int) * nirrep);
@@ -364,8 +364,8 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
         }
     }
 
-    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));  
-    
+    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));
+
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->rowspi()[h] == 0 || colspi[h] == 0) continue;
         double** catp = cat->pointer(h);
@@ -381,7 +381,7 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
                 C_DCOPY(rows,&Ap[0][col],cols,&catp[0][col + offset],colspi[h]);
             }
 
-            offset += cols; 
+            offset += cols;
         }
     }
 
@@ -401,10 +401,10 @@ boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Ma
     for (int a = 1; a < mats.size(); ++a) {
         for (int h = 0; h < nirrep; ++h) {
             if (mats[h]->colspi()[h] != mats[0]->colspi()[h]) {
-                throw PSIEXCEPTION("Vertcat: Matrices must all have same col dimension"); 
+                throw PSIEXCEPTION("Vertcat: Matrices must all have same col dimension");
             }
         }
-    } 
+    }
 
     int* rowspi = new int[nirrep];
     ::memset((void*) rowspi, '\0', sizeof(int) * nirrep);
@@ -415,8 +415,8 @@ boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Ma
         }
     }
 
-    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));  
-    
+    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));
+
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->colspi()[h] == 0 || rowspi[h] == 0) continue;
         double** catp = cat->pointer(h);
@@ -432,7 +432,7 @@ boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Ma
                 ::memcpy((void*) catp[row + offset], (void*) Ap[row], sizeof(double) * cols);
             }
 
-            offset += rows; 
+            offset += rows;
         }
     }
 
@@ -1097,6 +1097,68 @@ void Matrix::back_transform(const Matrix* const transformer)
 void Matrix::back_transform(const boost::shared_ptr<Matrix>& transformer)
 {
     back_transform(transformer.get());
+}
+
+void Matrix::gemm(const char& transa, const char& transb,
+                  const std::vector<int>& m,
+                  const std::vector<int>& n,
+                  const std::vector<int>& k,
+                  const double& alpha,
+                  const boost::shared_ptr<Matrix>& a, const std::vector<int>& lda,
+                  const boost::shared_ptr<Matrix>& b, const std::vector<int>& ldb,
+                  const double& beta,
+                  const std::vector<int>& ldc,
+                  const std::vector<unsigned long>& offset_a,
+                  const std::vector<unsigned long>& offset_b,
+                  const std::vector<unsigned long>& offset_c)
+{
+    // For now only handle symmetric matrices right now
+    if (symmetry_ || a->symmetry_ || b->symmetry_)
+        throw PSIEXCEPTION("Matrix::Advanced GEMM: Can only handle totally symmetric matrices.");
+
+    if (nirrep_ != a->nirrep_ || nirrep_ != b->nirrep_)
+        throw PSIEXCEPTION("Matrix::Advanced GEMM: Number of irreps do not equal.");
+
+    for (int h=0; h<nirrep_; ++h) {
+        int offa, offb, offc;
+
+        offa = offset_a.size() == 0 ? 0 : offset_a[h];
+        offb = offset_b.size() == 0 ? 0 : offset_b[h];
+        offc = offset_c.size() == 0 ? 0 : offset_c[h];
+
+        C_DGEMM(transa, transb, m[h], n[h], k[h],
+                alpha,
+                &a->matrix_[h][0][offa], lda[h],
+                &b->matrix_[h][0][offb], ldb[h],
+                beta,
+                &matrix_[h][0][offc], ldc[h]);
+    }
+}
+
+void Matrix::gemm(const char& transa, const char& transb,
+                  const int& m,
+                  const int& n,
+                  const int& k,
+                  const double& alpha,
+                  const boost::shared_ptr<Matrix>& a, const int& lda,
+                  const boost::shared_ptr<Matrix>& b, const int& ldb,
+                  const double& beta,
+                  const int& ldc,
+                  const unsigned long& offset_a,
+                  const unsigned long& offset_b,
+                  const unsigned long& offset_c)
+{
+#ifdef DEBUG
+    if (nirrep_ > 1)
+        throw PSIEXCEPTION("Matrix::Advanced GEMM: C1 version called on symmetry objects.");
+#endif
+
+    C_DGEMM(transa, transb, m, n, k,
+            alpha,
+            &a->matrix_[0][0][offset_a], lda,
+            &b->matrix_[0][0][offset_b], ldb,
+            beta,
+            &matrix_[0][0][offset_c], ldc);
 }
 
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
