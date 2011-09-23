@@ -3,6 +3,7 @@
 
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <libparallel/serialize.h>
 
 namespace boost {
@@ -184,6 +185,18 @@ public:
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
+
+    /**
+    * Horizontally concatenate matrices
+    * @param mats std::vector of Matrix objects to concatenate
+    */
+    static boost::shared_ptr<Matrix> horzcat(const std::vector<boost::shared_ptr<Matrix> >& mats);
+
+    /**
+    * Vertically concatenate matrices
+    * @param mats std::vector of Matrix objects to concatenate
+    */
+    static boost::shared_ptr<Matrix> vertcat(const std::vector<boost::shared_ptr<Matrix> >& mats);
 
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const * const data);
