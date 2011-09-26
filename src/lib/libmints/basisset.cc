@@ -26,6 +26,7 @@
 #include "wavefunction.h"
 #include "coordentry.h"
 
+#include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
@@ -33,6 +34,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
 
 using namespace std;
 using namespace psi;
@@ -81,6 +83,11 @@ void BasisSet::initialize_singletons()
             }
         }
     }
+}
+
+boost::shared_ptr<Molecule> BasisSet::molecule() const
+{
+    return molecule_;
 }
 
 void BasisSet::print(FILE *out) const

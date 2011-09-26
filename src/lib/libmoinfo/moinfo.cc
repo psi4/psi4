@@ -406,7 +406,7 @@ void MOInfo::print_mo()
  */
 void MOInfo::free_memory()
 {
-  if(scf != NULL);
+  if(scf != NULL)
     free_block(scf);
   for(int i=0;i<nirreps;i++)
     free_block(scf_irrep[i]);
