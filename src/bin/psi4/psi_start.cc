@@ -110,11 +110,13 @@ int psi_start(int argc, char *argv[])
             exit(EXIT_SUCCESS);
             break;
 
+/*
         case 'c': // -c or --check
             check_only = true;
             outfile = stdout;
             append = true;
             break;
+*/
 
         case 'w': // -w or --wipe
             clean_only = true;
