@@ -4,12 +4,15 @@
 #include <cstdio>
 #include <string>
 #include <vector>
-#include <boost/shared_ptr.hpp>
 
 // Need libint for maximum angular momentum
 #include <libint/libint.h>
 
-#include <boost/thread/once.hpp>
+#include <boost/shared_ptr.hpp>
+
+namespace boost {
+class once_flag;
+}
 
 namespace psi {
 
@@ -110,7 +113,7 @@ public:
      * @return BasisSet corresponding to this molecule and set of shells
      */
     static boost::shared_ptr<BasisSet> build(boost::shared_ptr<Molecule> molecule,
-                                                     std::vector<boost::shared_ptr<GaussianShell> > shells);
+                                             std::vector<boost::shared_ptr<GaussianShell> > shells);
 
     /** Initialize singleton values that are shared by all basis set objects. */
     static void initialize_singletons();
@@ -152,7 +155,7 @@ public:
     /** Molecule this basis is for.
      *  @return Shared pointer to the molecule for this basis set.
      */
-    boost::shared_ptr<Molecule> molecule() const         { return molecule_;    }
+    boost::shared_ptr<Molecule> molecule() const;
     /** Given a shell what is its first AO function
      *  @param i Shell number
      *  @return The function number for the first function for the i'th shell.
