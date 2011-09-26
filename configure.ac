@@ -596,6 +596,7 @@ if test "$HAVE_MPI" = "1"; then
 fi
 AC_SUBST(MADLIBS)
 AC_SUBST(MADINC)
+AC_SUBST(BUILD_MADNESS)
 
 /bin/rm -f a.out
 
