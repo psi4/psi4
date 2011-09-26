@@ -892,19 +892,21 @@ void Python::run(FILE *input)
         #endif
 
         // Track down the location of PSI4's python script directory.
-        std::string psiDataDirName = Process::environment("PSIDATADIR") + "/python";
+        std::string psiDataDirName = Process::environment("PSIDATADIR");
+        std::string psiDataDirWithPython = psiDataDirName + "/python";
         boost::filesystem::path bf_path;
-        bf_path = boost::filesystem::system_complete(psiDataDirName);
+        bf_path = boost::filesystem::system_complete(psiDataDirWithPython);
         if(!boost::filesystem::is_directory(bf_path)) {
-            throw PSIEXCEPTION("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
-                               "      Current value of PSIDATADIR is " + Process::environment("PSIDATADIR"));
+            printf("Unable to read the PSI4 Python folder - check the PSIDATADIR environmental variable\n"
+                    "      Current value of PSIDATADIR is %s\n", psiDataDirName.c_str());
+            exit(1);
         }
 
         // Add PSI library python path
         PyObject *path, *sysmod, *str;
         sysmod = PyImport_ImportModule("sys");
         path = PyObject_GetAttrString(sysmod, "path");
-        str = PyString_FromString(psiDataDirName.c_str());
+        str = PyString_FromString(psiDataDirWithPython.c_str());
         PyList_Append(path, str);
         Py_DECREF(str);
         Py_DECREF(path);
