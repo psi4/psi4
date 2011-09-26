@@ -373,7 +373,7 @@ void HF::find_occupation()
     }
     // Always print occ if printing, if changed
     // If print > 2 (diagnostics), print always
-    if((print_ > 2 || print_ && occ_changed) && iteration_ > 0){
+    if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
         if (Communicator::world->me() == 0)
             fprintf(outfile, "\tOccupation by irrep:\n");
         print_occupation();
