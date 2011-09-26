@@ -33,28 +33,16 @@ double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
-//#if HAVE_MADNESS
-//    madness::WorldObject<Wavefunction>(*Communicator::world->get_madworld()),
-//#endif
     options_(options), psio_(psio)
 {
     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
-//#if HAVE_MADNESS
-//    process_pending();
-//#endif
 }
 
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-//#if HAVE_MADNESS
-//    madness::WorldObject<Wavefunction>(*Communicator::world->get_madworld()),
-//#endif
     options_(options), psio_(psio), chkpt_(chkpt)
 {
     common_init();
-//#if HAVE_MADNESS
-//    process_pending();
-//#endif
 }
 
 Wavefunction::~Wavefunction()
