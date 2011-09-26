@@ -3,6 +3,7 @@
 
 #include <string>
 #include <cstdio>
+#include <vector>
 
 namespace psi {
 
@@ -18,6 +19,7 @@ class Dimension
 public:
     Dimension(const Dimension& other);
     Dimension(int n, const std::string& name = "");
+    Dimension(const std::vector<int>& other);
     ~Dimension();
 
     /// Assignment operator
