@@ -565,6 +565,7 @@ AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[
 # library to link with.
 MADLIBS=
 MADINC=
+BUILD_MADNESS=0
 if test "$HAVE_MPI" = "1"; then
   AC_ARG_WITH([madness],
   [  --with-madness          Specifies the location of the MADNESS libraries (default is internal).], [
