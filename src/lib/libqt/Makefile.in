@@ -14,7 +14,7 @@ CXXSRC = \
 blas_intfc.cc       blas_intfc23.cc invert.cc     schmidt.cc \
 dirprd_block.cc     mat_in.cc     newmm_rking.cc  reorder_qt.cc    schmidt_add.cc \
 dot_block.cc        mat_print.cc  normalize.cc    \
-eri.cc              pople.cc        solve_pep.cc \
+pople.cc        solve_pep.cc \
 fill_sym_matrix.cc  probabil.cc     rootfind.cc      timer.cc \
 filter.cc           lapack_intfc.cc  sort.cc      slaterdset.cc   david.cc \
 3d_array.cc  cc_wfn.cc ci_wfn.cc cc_excited.cc  strncpy.cc \
