@@ -5,11 +5,17 @@
 
 using namespace psi;
 
+Dimension::Dimension()
+    : name_("(empty)"), n_(0), blocks_(0)
+{
+
+}
+
 Dimension::Dimension(int n, const std::string &name)
     : name_(name), n_(n)
 {
     blocks_ = new int[n_];
-    memset(blocks_, 0, sizeof(int)*n_);
+    ::memset(blocks_, 0, sizeof(int)*n_);
 }
 
 Dimension::Dimension(const std::vector<int> &v)
