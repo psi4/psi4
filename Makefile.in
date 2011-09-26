@@ -1,6 +1,6 @@
 SHELL = /bin/sh
 
-MAKE_MADNESS=@HAVE_MPI@
+MAKE_MADNESS=@BUILD_MADNESS@
 
 .PHONY:	default all install install_man install_inc depend clean dclean targetclean tests testsclean doc
 
