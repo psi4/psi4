@@ -168,6 +168,8 @@ public:
      */
     void init(int nirrep, const int *rowspi, const int *colspi, const std::string& name = "", int symmetry = 0);
 
+    void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "", int symmetry = 0);
+
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
 

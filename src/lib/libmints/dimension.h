@@ -15,8 +15,8 @@ class Dimension
     int n_;
     int *blocks_;
 
-    Dimension();
 public:
+    Dimension();
     Dimension(const Dimension& other);
     Dimension(int n, const std::string& name = "");
     Dimension(const std::vector<int>& other);

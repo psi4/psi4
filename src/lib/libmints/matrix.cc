@@ -288,6 +288,22 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
     alloc();
 }
 
+void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const string& name, int symmetry)
+{
+    if (rowspi_) delete[] rowspi_;
+    if (colspi_) delete[] colspi_;
+    name_ = name;
+    symmetry_ = symmetry;
+    nirrep_ = l_rowspi.n();
+    rowspi_ = new int[nirrep_];
+    colspi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i) {
+        rowspi_[i] = l_rowspi[i];
+        colspi_[i] = l_colspi[i];
+    }
+    alloc();
+}
+
 boost::shared_ptr<Matrix> Matrix::create(const std::string& name,
                                  int nirrep,
                                  int* rows,

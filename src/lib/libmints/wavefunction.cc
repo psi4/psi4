@@ -76,6 +76,16 @@ void Wavefunction::common_init()
 
     nirrep_ = dimension.n();
 
+    // Initialize array that hold dimensionality information
+    nsopi_    = Dimension(nirrep_, "SOs per irrep");
+    nmopi_    = Dimension(nirrep_, "MOs per irrep");
+    nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
+    nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
+    doccpi_   = Dimension(nirrep_, "Doubly occupied orbitals per irrep");
+    soccpi_   = Dimension(nirrep_, "Singly occupied orbitals per irrep");
+    frzcpi_   = Dimension(nirrep_, "Frozen core orbitals per irrep");
+    frzvpi_   = Dimension(nirrep_, "Frozen virtual orbitals per irrep");
+
     // Obtain memory amount from the environment
     memory_ = Process::environment.get_memory();
 
