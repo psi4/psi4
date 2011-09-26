@@ -12,6 +12,12 @@ Dimension::Dimension(int n, const std::string &name)
     memset(blocks_, 0, sizeof(int)*n_);
 }
 
+Dimension::Dimension(const std::vector<int> &v)
+{
+    blocks_ = new int[v.size()];
+    std::copy( v.begin(), v.end(), blocks_);
+}
+
 Dimension::Dimension(const Dimension &other)
 {
     if (n_ < other.n_) {
@@ -28,7 +34,7 @@ Dimension::~Dimension()
     delete[] blocks_;
 }
 
-int Dimension::sum() const 
+int Dimension::sum() const
 {
     int s = 0;
     for (int i = 0; i < n_; i++) {
