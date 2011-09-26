@@ -2,7 +2,7 @@ SHELL = /bin/sh
 
 MAKE_MADNESS=@HAVE_MPI@
 
-.PHONY:	default all install install_man install_inc install_host depend clean dclean targetclean tests testsclean doc
+.PHONY:	default all install install_man install_inc depend clean dclean targetclean tests testsclean doc
 
 default: all
 
@@ -30,7 +30,7 @@ all:
             (cd $${dir}; echo Making in $${dir}; $(MAKE) all) || exit 1; \
           done
 
-install: install_host
+install:
 	for dir in $(subdirs); \
           do \
             (cd $${dir}; echo Making install in $${dir}; $(MAKE) install) || exit 1; \
