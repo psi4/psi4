@@ -31,8 +31,14 @@ public:
     /// Return the name of the dimension.
     const std::string& name() const { return name_; }
 
+    /// Blocks access
     int& operator[](int i) { return blocks_[i]; }
     const int& operator[](int i) const { return blocks_[i]; }
+
+    /// Casting operator to int*
+    operator int*() const { return blocks_; }
+    /// Casting operator to const int*
+    operator const int*() const { return blocks_; }
 
     /// Return the sum of constituent dimensions
     int sum() const;
