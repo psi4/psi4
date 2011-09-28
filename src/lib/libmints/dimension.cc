@@ -70,3 +70,27 @@ Dimension& Dimension::operator =(const Dimension& other)
 
     return *this;
 }
+
+Dimension& Dimension::operator =(const int* other)
+{
+    for (int i=0; i<n_; ++i)
+        blocks_[i] = other[i];
+
+    return *this;
+}
+
+Dimension& Dimension::operator+=(const Dimension& b)
+{
+    for (int i=0; i<n_; ++i)
+        blocks_[i] += b.blocks_[i];
+
+    return *this;
+}
+
+Dimension& Dimension::operator-=(const Dimension& b)
+{
+    for (int i=0; i<n_; ++i)
+        blocks_[i] -= b.blocks_[i];
+
+    return *this;
+}
