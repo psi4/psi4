@@ -16,6 +16,8 @@
 
 namespace psi{
 
+class Matrix;
+
 typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
 
   /**
@@ -97,6 +99,26 @@ class IntegralTransform{
                           MOOrdering moOrdering = QTOrder,
                           FrozenOrbitals frozenOrbitals = OccAndVir,
                           bool initialize = true);
+
+        IntegralTransform(boost::shared_ptr<Wavefunction> wave,
+                          SpaceVec spaces,
+                          TransformationType transformationType = Restricted,
+                          OutputType outputType = DPDOnly,
+                          MOOrdering moOrdering = QTOrder,
+                          FrozenOrbitals frozenOrbitals = OccAndVir,
+                          bool initialize = true);
+
+        IntegralTransform(boost::shared_ptr<Matrix> c,
+                          boost::shared_ptr<Matrix> i,
+                          boost::shared_ptr<Matrix> a,
+                          boost::shared_ptr<Matrix> v,
+                          SpaceVec spaces,
+                          TransformationType transformationType = Restricted,
+                          OutputType outputType = DPDOnly,
+                          MOOrdering moOrdering = QTOrder,
+                          FrozenOrbitals frozenOrbitals = OccAndVir,
+                          bool initialize = true);
+
         ~IntegralTransform();
 
         void initialize();
@@ -159,7 +181,9 @@ class IntegralTransform{
     protected:
         void check_initialized();
         void semicanonicalize();
-        void read_moinfo();
+        void read_moinfo_reference();
+        void common_moinfo_initialize();
+
         void process_eigenvectors();
         void process_spaces();
         void presort_mo_tpdm_restricted();
