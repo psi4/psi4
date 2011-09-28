@@ -14,7 +14,7 @@ using namespace psi;
  * Gathers MO information
  */
 void
-IntegralTransform::read_moinfo()
+IntegralTransform::read_moinfo_reference()
 {
     _labels  = Process::environment.molecule()->irrep_labels();
     _nirreps = Process::environment.reference_wavefunction()->nirrep();
@@ -26,6 +26,12 @@ IntegralTransform::read_moinfo()
     _openpi  = Process::environment.reference_wavefunction()->soccpi();
     _frzcpi  = Process::environment.reference_wavefunction()->frzcpi();
     _frzvpi  = Process::environment.reference_wavefunction()->frzvpi();
+
+    common_moinfo_initialize();
+}
+
+void IntegralTransform::common_moinfo_initialize()
+{
     _nTriSo  = _nso * (_nso + 1) / 2;
     _nTriMo  = _nmo * (_nmo + 1) / 2;
     _sosym   = init_int_array(_nso);
@@ -49,9 +55,7 @@ IntegralTransform::read_moinfo()
         _nfzc += _frzcpi[h];
         _nfzv += _frzvpi[h];
     }
-
 }
-
 
 /**
  * Sets up the DPD information for the transformation
