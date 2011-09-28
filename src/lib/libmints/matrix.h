@@ -473,9 +473,17 @@ public:
     int *rowspi() const {
         return rowspi_;
     }
+    /// Returns the rows per irrep array
+    int rowspi(const int& h) const {
+        return rowdim(h);
+    }
     /// Returns the columns per irrep array
     int *colspi() const {
         return colspi_;
+    }
+    /// Returns the columns per irrep array
+    int colspi(const int& h) const {
+        return coldim(h);
     }
     /// Returns the number of irreps
     int nirrep() const {
