@@ -154,6 +154,9 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wave,
     _frzcpi  = wave->frzcpi();
     _frzvpi  = wave->frzvpi();
 
+    _mCa     = wave->Ca();
+    _mCb     = wave->Cb();
+
     common_moinfo_initialize();
 
     if(init) initialize();
@@ -224,10 +227,10 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
     _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
 
-    _nirreps = wave->nirrep();
-    _nmo     = wave->nmo();
-    _nso     = wave->nso();
-    _sopi    = wave->nsopi();
+    _nirreps = c->nirrep();
+    _nmo     = c->ncol() + i->ncol() + a->ncol() + v->ncol();
+    _nso     = i->nrow();
+    _sopi    = i->rowspi();wave->nsopi();
     _mopi    = wave->nmopi();
     _clsdpi  = wave->doccpi();
     _openpi  = wave->soccpi();

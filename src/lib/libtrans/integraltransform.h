@@ -17,6 +17,7 @@
 namespace psi{
 
 class Matrix;
+class Dimension;
 
 typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
 
@@ -283,21 +284,24 @@ class IntegralTransform{
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *_zeros;
         // The number of symmetrized orbitals per irrep
-        int *_sopi;
+        Dimension _sopi;
         // The symmetry (irrep number) of each symmetrized atomic orbital
         int *_sosym;
         // The number of molecular orbitals per irrep
-        int *_mopi;
+        Dimension _mopi;
         // The number of doubly-occupied orbitals per irrep
-        int *_clsdpi;
+        Dimension _clsdpi;
         // The number of singly-occupied orbitals per irrep
-        int *_openpi;
+        Dimension _openpi;
         // The number of frozen doubly occupied orbitals per irrep
-        int *_frzcpi;
+        Dimension _frzcpi;
         // The number of frozen virtual orbitals per irrep
-        int *_frzvpi;
+        Dimension _frzvpi;
         // The cache files used by libDPD
         int *_cacheFiles, **_cacheList;
+        // Matrix objects of Ca and Cb (these are copies of _Ca, _Cb below).
+        boost::shared_ptr<Matrix> _mCa;
+        boost::shared_ptr<Matrix> _mCb;
         // The alpha MO coefficients for each irrep
         double ***_Ca;
         // The alpha MO coefficients for each irrep
