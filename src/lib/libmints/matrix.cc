@@ -3,7 +3,6 @@
  *  matrix
  *
  *  Created by Justin Turney on 4/1/08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
  *
  */
 
@@ -47,6 +46,7 @@ extern double str_to_double(const std::string& s);
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
+// anonymous namespace, only visible in this file.
 namespace {
 string to_string(const int val)
 {
@@ -66,117 +66,91 @@ Matrix::Matrix()
 }
 
 Matrix::Matrix(const string& name, int symmetry)
-    : matrix_(0), rowspi_(0), colspi_(0), nirrep_(0),
+    : matrix_(0), nirrep_(0),
       name_(name), symmetry_(symmetry)
 {
 }
 
 Matrix::Matrix(const Matrix& c)
+    : rowspi_(c.rowspi_), colspi_(c.colspi_)
 {
     matrix_ = NULL;
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c.rowspi_[i];
-        colspi_[i] = c.colspi_[i];
-    }
     alloc();
     copy_from(c.matrix_);
 }
 
 Matrix::Matrix(const boost::shared_ptr<Matrix>& c)
+    : rowspi_(c->rowspi_), colspi_(c->colspi_)
 {
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c->rowspi_[i];
-        colspi_[i] = c->colspi_[i];
-    }
     alloc();
     copy_from(c->matrix_);
 }
 
 Matrix::Matrix(const Matrix* c)
+    : rowspi_(c->rowspi_), colspi_(c->colspi_)
 {
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c->rowspi_[i];
-        colspi_[i] = c->colspi_[i];
-    }
     alloc();
     copy_from(c->matrix_);
 }
 
 Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
+    : rowspi_(l_nirreps), colspi_(l_nirreps)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = l_rowspi[i];
-        colspi_[i] = l_colspi[i];
-    }
+    rowspi_ = l_rowspi;
+    colspi_ = l_colspi;
     alloc();
 }
 
-Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry) : name_(name)
+Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
+    : name_(name), rowspi_(l_nirreps), colspi_(l_nirreps)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = l_rowspi[i];
-        colspi_[i] = l_colspi[i];
-    }
+    rowspi_ = l_rowspi;
+    colspi_ = l_colspi;
     alloc();
 }
 
-Matrix::Matrix(const string& name, int rows, int cols) : name_(name)
+Matrix::Matrix(const string& name, int rows, int cols)
+    : name_(name), rowspi_(1), colspi_(1)
 {
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
 }
 
 Matrix::Matrix(int rows, int cols)
+    : rowspi_(1), colspi_(1)
 {
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
 }
 
 Matrix::Matrix(int nirrep, int rows, const int *colspi)
+    : rowspi_(nirrep), colspi_(nirrep)
 {
     matrix_ = NULL;
     symmetry_ = 0;
     nirrep_ = nirrep;
-
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rows;
         colspi_[i] = colspi[i];
@@ -185,14 +159,11 @@ Matrix::Matrix(int nirrep, int rows, const int *colspi)
 }
 
 Matrix::Matrix(int nirrep, const int *rowspi, int cols)
+    : rowspi_(nirrep), colspi_(nirrep)
 {
     matrix_ = NULL;
     symmetry_ = 0;
     nirrep_ = nirrep;
-
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rowspi[i];
         colspi_[i] = cols;
@@ -209,8 +180,8 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
         nirrep_ = cols.n();
-        rowspi_ = new int[nirrep_];
-        colspi_ = new int[nirrep_];
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
         for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = rows[0];
             colspi_[i] = cols[i];
@@ -218,8 +189,8 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     }
     else {
         nirrep_ = rows.n();
-        rowspi_ = new int[nirrep_];
-        colspi_ = new int[nirrep_];
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
         for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = rows[i];
             colspi_[i] = cols[i];
@@ -229,15 +200,14 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     alloc();
 }
 
-Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
+Matrix::Matrix(dpdfile2 *inFile)
+    : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
 {
     dpd_file2_mat_init(inFile);
     dpd_file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
     nirrep_ = inFile->params->nirreps;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = inFile->params->rowtot[i];
         colspi_[i] = inFile->params->coltot[i];
@@ -250,10 +220,6 @@ Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
 Matrix::~Matrix()
 {
     release();
-    if (rowspi_)
-        delete[] rowspi_;
-    if (colspi_)
-        delete[] colspi_;
 }
 
 /// allocate a block matrix -- analogous to libciomr's block_matrix
@@ -274,13 +240,11 @@ void Matrix::free(double** Block)
 
 void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const string& name, int symmetry)
 {
-    if (rowspi_) delete[] rowspi_;
-    if (colspi_) delete[] colspi_;
     name_ = name;
     symmetry_ = symmetry;
     nirrep_ = l_nirreps;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
+    rowspi_ = Dimension(nirrep_);
+    colspi_ = Dimension(nirrep_);
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
@@ -290,13 +254,11 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
 
 void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const string& name, int symmetry)
 {
-    if (rowspi_) delete[] rowspi_;
-    if (colspi_) delete[] colspi_;
     name_ = name;
     symmetry_ = symmetry;
     nirrep_ = l_rowspi.n();
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
+    rowspi_ = Dimension(nirrep_);
+    colspi_ = Dimension(nirrep_);
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
@@ -324,22 +286,18 @@ void Matrix::copy(const Matrix* cp)
     bool same = true;
     if (nirrep_ != cp->nirrep_ || symmetry_ != cp->symmetry_) {
         same = false;
-    } else {
-        for (int h=0; h<nirrep_; ++h)
-            if (colspi_[h] != cp->colspi_[h] || rowspi_[h] != cp->rowspi_[h])
-                same = false;
+    }
+    else {
+        if (colspi_ != cp->colspi_ || rowspi_ != cp->rowspi_)
+            same = false;
     }
 
     if (same == false) {
         release();
-        if (rowspi_)
-            delete[] rowspi_;
-        if (colspi_)
-            delete[] colspi_;
         nirrep_ = cp->nirrep_;
         symmetry_ = cp->symmetry_;
-        rowspi_ = new int[nirrep_];
-        colspi_ = new int[nirrep_];
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
         for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = cp->rowspi_[i];
             colspi_[i] = cp->colspi_[i];
@@ -371,13 +329,10 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
         }
     }
 
-    int* colspi = new int[nirrep];
-    ::memset((void*) colspi, '\0', sizeof(int) * nirrep);
+    Dimension colspi(nirrep);
 
     for (int a = 0; a < mats.size(); ++a) {
-        for (int h = 0; h < nirrep; ++h) {
-            colspi[h] += mats[a]->colspi()[h];
-        }
+        colspi += mats[a]->colspi();
     }
 
     boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));
@@ -401,7 +356,6 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
         }
     }
 
-    delete[] colspi;
     return cat;
 }
 
@@ -422,13 +376,10 @@ boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Ma
         }
     }
 
-    int* rowspi = new int[nirrep];
-    ::memset((void*) rowspi, '\0', sizeof(int) * nirrep);
+    Dimension rowspi(nirrep);
 
     for (int a = 0; a < mats.size(); ++a) {
-        for (int h = 0; h < nirrep; ++h) {
-            rowspi[h] += mats[a]->rowspi()[h];
-        }
+        rowspi += mats[a]->rowspi();
     }
 
     boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));
@@ -452,7 +403,6 @@ boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Ma
         }
     }
 
-    delete[] rowspi;
     return cat;
 }
 
