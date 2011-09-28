@@ -962,18 +962,18 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     am4 = original_bs4_->shell(sh4)->am();
 
     int n1, n2, n3, n4;
-    if (force_cartesian_) {
+//    if (force_cartesian_) {
         n1 = original_bs1_->shell(sh1)->ncartesian();
         n2 = original_bs2_->shell(sh2)->ncartesian();
         n3 = original_bs3_->shell(sh3)->ncartesian();
         n4 = original_bs4_->shell(sh4)->ncartesian();
-    }
-    else {
-        n1 = original_bs1_->shell(sh1)->nfunction();
-        n2 = original_bs2_->shell(sh2)->nfunction();
-        n3 = original_bs3_->shell(sh3)->nfunction();
-        n4 = original_bs4_->shell(sh4)->nfunction();
-    }
+//    }
+//    else {
+//        n1 = original_bs1_->shell(sh1)->nfunction();
+//        n2 = original_bs2_->shell(sh2)->nfunction();
+//        n3 = original_bs3_->shell(sh3)->nfunction();
+//        n4 = original_bs4_->shell(sh4)->nfunction();
+//    }
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
         s1 = sh1;
