@@ -89,6 +89,8 @@ protected:
     SharedMadWorld madworld_;
     /// Mutex for printing
     SharedMutex print_mutex_;
+    /// mutex for addition
+    SharedMutex add_mutex_;
 
     /// Sets a specific tile to the identity
     madness::Void set_tile_to_identity(const int &t);
@@ -118,6 +120,7 @@ protected:
     double vector_dot_tile(const int &t, const Distributed_Matrix &rmat);
 
 
+
     /// Do the matrix-matrix multiplication for the give tiles
     madness::Void mxm(const int &t,
                       const std::vector<double> &a,
@@ -126,6 +129,14 @@ protected:
                       const int &a_col,
                       const int &b_col,
                       const double &c_scale = 0.0);
+
+    std::vector<double> mxm_dns(const int &t,
+                                const std::vector<double> &a,
+                                const std::vector<double> &b,
+                                const int &a_row,
+                                const int &a_col,
+                                const int &b_col,
+                                const double &c_scale);
 
     template<typename T>
     void free_vector(std::vector<T> &vec)
@@ -237,6 +248,9 @@ public:
 
     /// Transform a distributed matrix with the transformer
     Distributed_Matrix transform(Distributed_Matrix &transformer);
+
+    /// Perform a matrix multiplication using the DNS Algorithm
+    madness::Void DNS_MXM(const Distributed_Matrix &lhs, const Distributed_Matrix &rhs);
 
 };
 #else
