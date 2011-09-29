@@ -290,7 +290,7 @@ public:
     void zero();
 
     /// Returns the i,j value from the distributed matrix
-    double get_val(const int &row, const int &col);
+    double get_val(const int &row, const int &col) const;
     /// Set the i,j value in the distributed matrix
     void set_val(const int &row, const int &col, const double &val);
 
@@ -300,6 +300,7 @@ public:
     /// Copies the rhs distributed matrix
     Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
     Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
+    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat);
 
     /// Adds the rhs matrix to this distributed matrix
     void operator +=(const Distributed_Matrix &rhs);
@@ -316,6 +317,7 @@ public:
     /// Check to see if the distributed matrices are the same size and tiled the same
     bool operator ==(const Distributed_Matrix &rhs);
     bool operator ==(const Distributed_Matrix *rhs);
+    bool operator ==(const boost::shared_ptr<Matrix> mat) const;
 
     /// Check to see if the distributed matrices are not the same size and tiled the same
     bool operator !=(const Distributed_Matrix &rhs);
@@ -324,9 +326,8 @@ public:
     /// Perform a matrix-matrix multiplication of the distributed matrices and returns the result
     Distributed_Matrix operator *(const Distributed_Matrix &rhs);
 
+    /// Scale the matrix by the given value
     void scale(const double &val);
-    void scale_tile(const double &val);
-
     /// Set the diagonal of the distributed matrix to zero
     void zero_diagonal();
 
@@ -338,29 +339,17 @@ public:
 
     /// Compute the product of lmat and rmat and add it to this by the c_scale
     void product(const Distributed_Matrix &lmat,
-                 const Distributed_Matrix &rmat,
-                 double c_scale = 1.0);
+                          const Distributed_Matrix &rmat,
+                          double c_scale = 1.0);
 
     /// Return the dot product of this and rmat
     double vector_dot(const Distributed_Matrix &rmat);
 
     /// Transform a distributed matrix with the transformer
-    void transform(const Distributed_Matrix &mat,
-                   Distributed_Matrix &transformer);
-
-    /// Zero the diagonal of a tile
-    void zero_tile_diagonal(const int &t);
-    /// Return the trace of a tile
-    double trace_tile(const int &t);
-    /// copies the inverse of the given tile
-    void copy_invert_tile(const int &t, const std::vector<double> &tile,
-                          const int &stride);
-    /// Returns the dot product of a given tile
-    double vector_dot_tile(const int &t, const Distributed_Matrix &rmat);
     Distributed_Matrix transform(Distributed_Matrix &transformer);
-    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat);
-    bool operator ==(const boost::shared_ptr<Matrix> mat) const;
 
+    /// Perform a matrix multiplication using the DNS Algorithm
+    void DNS_MXM(const Distributed_Matrix &lhs, const Distributed_Matrix &rhs);
 };
 #endif
 
