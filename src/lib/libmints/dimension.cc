@@ -3,7 +3,7 @@
 
 #include <string.h>
 
-using namespace psi;
+namespace psi {
 
 Dimension::Dimension()
     : name_("(empty)"), n_(0), blocks_(0)
@@ -26,11 +26,8 @@ Dimension::Dimension(const std::vector<int> &v)
 
 Dimension::Dimension(const Dimension &other)
 {
-    if (n_ < other.n_) {
-        delete blocks_;
-        blocks_ = new int[other.n_];
-    }
     n_ = other.n_;
+    blocks_ = new int[other.n_];
     for (int i=0; i<n_; ++i)
         blocks_[i] = other.blocks_[i];
 }
@@ -93,4 +90,33 @@ Dimension& Dimension::operator-=(const Dimension& b)
         blocks_[i] -= b.blocks_[i];
 
     return *this;
+}
+
+bool operator==(const Dimension& a, const Dimension& b) {
+    if (a.n() != b.n())
+        return false;
+    for (int i=0; i<a.n(); ++i)
+        if (a[i] != b[i])
+            return false;
+    return true;
+}
+
+bool operator!=(const Dimension& a, const Dimension& b) {
+    return !operator==(a, b);
+}
+
+Dimension operator+(const Dimension& a, const Dimension& b) {
+    Dimension result = a;
+    for (int i=0; i<a.n(); ++i)
+        result[i] += b[i];
+    return result;
+}
+
+Dimension operator-(const Dimension& a, const Dimension& b) {
+    Dimension result = a;
+    for (int i=0; i<a.n(); ++i)
+        result[i] -= b[i];
+    return result;
+}
+
 }

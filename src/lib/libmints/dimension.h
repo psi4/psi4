@@ -54,32 +54,10 @@ public:
     void print(FILE* out=outfile) const;
 };
 
-bool operator==(const Dimension& a, const Dimension& b) {
-    if (a.n() != b.n())
-        return false;
-    for (int i=0; i<a.n(); ++i)
-        if (a[i] != b[i])
-            return false;
-    return true;
-}
-
-bool operator!=(const Dimension& a, const Dimension& b) {
-    return !operator==(a, b);
-}
-
-Dimension operator+(const Dimension& a, const Dimension& b) {
-    Dimension result = a;
-    for (int i=0; i<a.n(); ++i)
-        result[i] += b[i];
-    return result;
-}
-
-Dimension operator-(const Dimension& a, const Dimension& b) {
-    Dimension result = a;
-    for (int i=0; i<a.n(); ++i)
-        result[i] -= b[i];
-    return result;
-}
+bool operator==(const Dimension& a, const Dimension& b);
+bool operator!=(const Dimension& a, const Dimension& b);
+Dimension operator+(const Dimension& a, const Dimension& b);
+Dimension operator-(const Dimension& a, const Dimension& b);
 
 }
 
