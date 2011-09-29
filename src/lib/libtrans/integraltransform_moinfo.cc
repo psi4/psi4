@@ -10,26 +10,6 @@
 using namespace boost;
 using namespace psi;
 
-/**
- * Gathers MO information
- */
-void
-IntegralTransform::read_moinfo_reference()
-{
-    _labels  = Process::environment.molecule()->irrep_labels();
-    _nirreps = Process::environment.reference_wavefunction()->nirrep();
-    _nmo     = Process::environment.reference_wavefunction()->nmo();
-    _nso     = Process::environment.reference_wavefunction()->nso();
-    _sopi    = Process::environment.reference_wavefunction()->nsopi();
-    _mopi    = Process::environment.reference_wavefunction()->nmopi();
-    _clsdpi  = Process::environment.reference_wavefunction()->doccpi();
-    _openpi  = Process::environment.reference_wavefunction()->soccpi();
-    _frzcpi  = Process::environment.reference_wavefunction()->frzcpi();
-    _frzvpi  = Process::environment.reference_wavefunction()->frzvpi();
-
-    common_moinfo_initialize();
-}
-
 void IntegralTransform::common_moinfo_initialize()
 {
     _nTriSo  = _nso * (_nso + 1) / 2;
@@ -330,8 +310,8 @@ IntegralTransform::process_eigenvectors()
     std::vector<shared_ptr<MOSpace> >::const_iterator space;
 
     // Read the orbitals from the reference wavefunction, in matrix form
-    SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
-    SharedMatrix matCb = Process::environment.reference_wavefunction()->Cb();
+    SharedMatrix matCa = _mCa;
+    SharedMatrix matCb = _mCb;
     if(_transformationType == Restricted){
         // Set up for a restricted transformation
         if(_Ca == NULL){

@@ -5,6 +5,7 @@
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libmints/matrix.h>
+#include <libmints/molecule.h>
 #include <libmints/wavefunction.h>
 #define EXTERN
 #include <libdpd/dpd.gbl>
@@ -76,8 +77,23 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
     _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
 
-    // This constructor needs to use information from the reference wavefunction
-    read_moinfo_reference();
+    boost::shared_ptr<Wavefunction> wave = Process::environment.reference_wavefunction();
+
+    _labels  = Process::environment.molecule()->irrep_labels();
+    _nirreps = wave->nirrep();
+    _nmo     = wave->nmo();
+    _nso     = wave->nso();
+    _sopi    = wave->nsopi();
+    _mopi    = wave->nmopi();
+    _clsdpi  = wave->doccpi();
+    _openpi  = wave->soccpi();
+    _frzcpi  = wave->frzcpi();
+    _frzvpi  = wave->frzvpi();
+
+    _mCa     = wave->Ca();
+    _mCb     = wave->Cb();
+
+    common_moinfo_initialize();
 
     if(init) initialize();
 }
@@ -167,11 +183,11 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
                                      boost::shared_ptr<Matrix> a,
                                      boost::shared_ptr<Matrix> v,
                                      SpaceVec spaces,
-                                     TransformationType transformationType = Restricted,
-                                     OutputType outputType = DPDOnly,
-                                     MOOrdering moOrdering = QTOrder,
-                                     FrozenOrbitals frozenOrbitals = OccAndVir,
-                                     bool initialize = true):
+                                     TransformationType transformationType,
+                                     OutputType outputType,
+                                     MOOrdering moOrdering,
+                                     FrozenOrbitals frozenOrbitals,
+                                     bool init):
     _initialized(false),
     _psio(_default_psio_lib_),
     _chkpt(_default_chkpt_lib_),
@@ -230,12 +246,17 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
     _nirreps = c->nirrep();
     _nmo     = c->ncol() + i->ncol() + a->ncol() + v->ncol();
     _nso     = i->nrow();
-    _sopi    = i->rowspi();wave->nsopi();
-    _mopi    = wave->nmopi();
-    _clsdpi  = wave->doccpi();
-    _openpi  = wave->soccpi();
-    _frzcpi  = wave->frzcpi();
-    _frzvpi  = wave->frzvpi();
+    _sopi    = i->rowspi();   // use i for this since there will always be occupied orbitals
+    _mopi    = c->colspi() + i->colspi() + a->colspi() + v->colspi();
+    _clsdpi  = i->colspi();
+    _openpi  = Dimension(_nirreps); // This is the restricted constructor, there are no unpaired electrons
+    _frzcpi  = c->colspi();
+    _frzvpi  = v->colspi();
+
+    // Need to smash together the C's only for them to be ripped apart elsewhere.
+    std::vector<boost::shared_ptr<Matrix> > Cs;
+    Cs.push_back(c); Cs.push_back(i); Cs.push_back(a); Cs.push_back(v);
+    _mCa = Matrix::horzcat(Cs);
 
     common_moinfo_initialize();
 
@@ -262,7 +283,7 @@ IntegralTransform::initialize()
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(_transformationType == SemiCanonical){
-        SharedMatrix matCa = Process::environment.reference_wavefunction()->Ca();
+        SharedMatrix matCa = _mCa;
 
         _Ca = new double**[_nirreps];
         _Cb = _Ca;
