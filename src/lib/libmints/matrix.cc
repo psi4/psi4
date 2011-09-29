@@ -994,7 +994,7 @@ void Matrix::transform(const Matrix* const transformer)
     }
 
     if(square){
-        Matrix temp(this);
+        Matrix temp("", rowspi_, colspi_);
         temp.gemm(false, false, 1.0, this, transformer, 0.0);
         gemm(true, false, 1.0, transformer, &temp, 0.0);
     }
@@ -1047,7 +1047,7 @@ void Matrix::back_transform(const Matrix* const transformer)
     }
 
     if(square){
-        Matrix temp(this);
+        Matrix temp("", rowspi_, colspi_);
         temp.gemm(false, true, 1.0, this, transformer, 0.0);
         gemm(false, false, 1.0, transformer, &temp, 0.0);
     }
