@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "dimension.h"
 #include <libparallel/parallel.h>
 
 #define MAX_IOFF 30000
@@ -85,26 +86,26 @@ protected:
     /// Density convergence threshold
     double density_threshold_;
 
-    /// Total alpha and beta electrons per irrep
+    /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
     /// Number of doubly occupied per irrep
-    int doccpi_[8];
+    Dimension doccpi_;
     /// Number of singly occupied per irrep
-    int soccpi_[8];
+    Dimension soccpi_;
     /// Number of frozen core per irrep
-    int frzcpi_[8];
+    Dimension frzcpi_;
     /// Number of frozen virtuals per irrep
-    int frzvpi_[8];
+    Dimension frzvpi_;
     /// Number of alpha electrons per irrep
-    int nalphapi_[8];
+    Dimension nalphapi_;
     /// Number of beta electrons per irrep
-    int nbetapi_[8];
+    Dimension nbetapi_;
 
     /// Number of so per irrep
-    int nsopi_[8];
+    Dimension nsopi_;
     /// Number of mo per irrep
-    int nmopi_[8];
+    Dimension nmopi_;
 
     /// The energy associated with this wavefunction
     double energy_;
@@ -187,21 +188,21 @@ public:
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array. You DO NOT own this array.
-    int* doccpi() const { return (int*)doccpi_; }
+    const Dimension& doccpi() const { return doccpi_; }
     /// Returns the SOCC per irrep array. You DO NOT own this array.
-    int* soccpi() const { return (int*)soccpi_; }
+    const Dimension& soccpi() const { return soccpi_; }
     /// Returns the number of SOs per irrep array. You DO NOT own this array.
-    int* nsopi() const { return (int*)nsopi_; }
+    const Dimension& nsopi() const { return nsopi_; }
     /// Returns the number of MOs per irrep array. You DO NOT own this array.
-    int* nmopi() const { return (int*)nmopi_; }
+    const Dimension& nmopi() const { return nmopi_; }
     /// Returns the number of alpha electrons per irrep array. You DO NOT own this array.
-    int* nalphapi() const { return (int*)nalphapi_; }
+    const Dimension& nalphapi() const { return nalphapi_; }
     /// Returns the number of beta electrons per irrep array. You DO NOT own this array.
-    int* nbetapi() const { return (int*)nbetapi_; }
+    const Dimension& nbetapi() const { return nbetapi_; }
     /// Returns the frozen core orbitals per irrep array. You DO NOT own this array.
-    int* frzcpi() const { return (int*)frzcpi_; }
+    const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array. You DO NOT own this array.
-    int* frzvpi() const { return (int*)frzvpi_; }
+    const Dimension& frzvpi() const { return frzvpi_; }
     /// Returns the number of SOs
     int nso() const { return nso_; }
     /// Returns the number of MOs

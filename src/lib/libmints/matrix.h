@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <libparallel/serialize.h>
+#include "dimension.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -43,9 +44,9 @@ protected:
     /// Number of irreps
     int nirrep_;
     /// Rows per irrep array
-    int *rowspi_;
+    Dimension rowspi_;
     /// Columns per irrep array
-    int *colspi_;
+    Dimension colspi_;
     /// Name of the matrix
     std::string name_;
     /// Symmetry of this matrix (in most cases this will be 0 [totally symmetric])
@@ -168,13 +169,15 @@ public:
      */
     void init(int nirrep, const int *rowspi, const int *colspi, const std::string& name = "", int symmetry = 0);
 
+    void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "", int symmetry = 0);
+
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
 
     /**
      * Convenient creation function return shared_ptr<Matrix>
      */
-    boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols);
+    static boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols);
 
     /**
      * @{
@@ -468,12 +471,20 @@ public:
     int coldim(const int& h = 0) const { return colspi_[h]; }
 
     /// Returns the rows per irrep array
-    int *rowspi() const {
+    const Dimension& rowspi() const {
         return rowspi_;
     }
+    /// Returns the rows per irrep array
+    int rowspi(const int& h) const {
+        return rowdim(h);
+    }
     /// Returns the columns per irrep array
-    int *colspi() const {
+    const Dimension& colspi() const {
         return colspi_;
+    }
+    /// Returns the columns per irrep array
+    int colspi(const int& h) const {
+        return coldim(h);
     }
     /// Returns the number of irreps
     int nirrep() const {

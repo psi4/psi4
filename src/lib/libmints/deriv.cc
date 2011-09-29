@@ -389,14 +389,13 @@ SharedMatrix Deriv::compute()
     }
     else { /* correlated */
         if (wavefunction_->restricted()) {
-            // Need dummy chkpt object for libtrans
-            boost::shared_ptr<Chkpt> chkpt;
-
             // Define the MO orbital space we need
             vector<boost::shared_ptr<MOSpace> > spaces;
             spaces.push_back(MOSpace::all);
 
-            IntegralTransform ints_transform(chkpt, spaces,
+            // Uses a different constructor of IntegralTransform.
+            IntegralTransform ints_transform(wavefunction_,
+                                             spaces,
                                              IntegralTransform::Restricted, // Transformation type
                                              IntegralTransform::DPDOnly,    // Output buffer
                                              IntegralTransform::QTOrder,    // MO ordering
