@@ -3,18 +3,22 @@
 using namespace boost;
 using namespace psi;
 
-namespace psi {
-template <class T>
-static void swap(T& x, T& y) {
-    T tmp=x; x = y; y = tmp;
-}
-}
-
-/** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
-IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
-                boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4)
+IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1,
+                                 boost::shared_ptr<BasisSet> bs2,
+                                 boost::shared_ptr<BasisSet> bs3,
+                                 boost::shared_ptr<BasisSet> bs4)
 {
     set_basis(bs1, bs2, bs3, bs4);
+}
+
+IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2)
+{
+    set_basis(bs1, bs2, bs1, bs2);
+}
+
+IntegralFactory::IntegralFactory(boost::shared_ptr<BasisSet> bs1)
+{
+    set_basis(bs1, bs1, bs1, bs1);
 }
 
 IntegralFactory::~IntegralFactory()
@@ -209,6 +213,9 @@ TwoBodyAOInt* IntegralFactory::f12_double_commutator(boost::shared_ptr<Correlati
 
 void IntegralFactory::init_spherical_harmonics(int max_am)
 {
+    spherical_transforms_.clear();
+    ispherical_transforms_.clear();
+
     for (int i=0; i<=max_am; ++i) {
         spherical_transforms_.push_back(SphericalTransform(i));
         ispherical_transforms_.push_back(ISphericalTransform(i));
