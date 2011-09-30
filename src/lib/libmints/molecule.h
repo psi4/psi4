@@ -6,7 +6,6 @@
 #include <cstdio>
 #include <map>
 
-#include <boost/regex.hpp>
 #include <boost/shared_ptr.hpp>
 
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
@@ -66,8 +65,6 @@ public:
 protected:
     /// Molecule (or fragment) name
     std::string name_;
-    /// A regex match object to receive captured expressions in regex searches
-    static boost::smatch reMatches_;
     /// Atom info vector (no knowledge of dummy atoms)
     EntryVector atoms_;
     /// Atom info vector (includes dummy atoms)
@@ -127,31 +124,6 @@ protected:
     int **equiv_;
     /// Atom to unique atom mapping array (length natom)
     int *atom_to_unique_;
-
-    /// A regular expression to test if a string looks like a floating point number
-    static boost::regex realNumber_;
-    /// A regular expression to test if a string looks like an integer
-    static boost::regex integerNumber_;
-    /// A regular expression to test if a string looks like an atom symbol
-    static boost::regex atomSymbol_;
-    /// A regular expression to test if a string looks like a variable assignment (e.g. x = 1.9)
-    static boost::regex variableDefinition_;
-    /// A regular expression to test if a string is just a blank line
-    static boost::regex blankLine_;
-    /// A regular expression to test if a string looks like a comment line
-    static boost::regex commentLine_;
-    /// A regular expression to test if a string looks like a command to specify the units
-    static boost::regex unitLabel_;
-    /// A regular expression to test if a string looks like a charge/multiplicty definition (e.g. -1 1)
-    static boost::regex chargeAndMultiplicity_;
-    /// A regular expression to test if a string looks like a fragment marker
-    static boost::regex fragmentMarker_;
-    /// A regular expression to test if a string is a no_?reorient flag
-    static boost::regex orientCommand_;
-    /// A regular expression to test if a string is a no_?com flag
-    static boost::regex comCommand_;
-    /// A regular expression to test if a string is a symmetry %s flag
-    static boost::regex symmetry_;
 
     /// A listing of the variables used to define the geometries
     std::map<std::string, double> geometry_variables_;

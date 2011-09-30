@@ -1,5 +1,5 @@
-#include "integralparameters.h"
 #include <libmints/vector.h>
+#include "integralparameters.h"
 
 using namespace psi;
 using namespace boost;

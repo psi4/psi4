@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <sstream>
 #include <map>
+#include <iomanip>
 
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
