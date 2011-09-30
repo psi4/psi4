@@ -31,7 +31,7 @@ public:
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
-    /// Return the dimension
+    /// Return the rank
     int n() const { return n_; }
 
     /// Return the name of the dimension.

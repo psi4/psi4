@@ -56,140 +56,68 @@ public:
     bool init_with(const boost::shared_ptr<SOBasisSet>& sobasis);
 
     /// Returns number of irreps
-    int nirrep() const {
-        return nirrep_;
-    }
+    int nirrep() const;
 
     /// Returns the rows per irrep array
-    int *rowspi() const {
-        return rowspi_;
-    }
+    int *rowspi() const;
 
     /// Returns the number of rows in irrep h
-    int nrow(int h) const {
-        return rowspi_[h];
-    }
+    int nrow(int h) const;
 
     /// Returns the columns per irrep array
-    int *colspi() const {
-        return colspi_;
-    }
+    int *colspi() const;
 
     /// Returns the number of columns in irrep h
-    int ncol(int h) const {
-        return colspi_[h];
-    }
+    int ncol(int h) const;
 
     /// Returns the number of orbitals
-    int nso() const {
-        return nso_;
-    }
+    int nso() const;
 
     /// Returns a new Matrix object with default dimensions
-    Matrix * create_matrix(int symmetry=0)
-    {
-        return new Matrix(nirrep_, rowspi_, colspi_, symmetry);
-    }
+    Matrix * create_matrix(int symmetry=0);
 
     /// Returns a new Matrix object with default dimensions
-    boost::shared_ptr<Matrix> create_shared_matrix()
-    {
-        return boost::shared_ptr<Matrix>(new Matrix(nirrep_, rowspi_, colspi_));
-    }
+    boost::shared_ptr<Matrix> create_shared_matrix();
 
-    void create_matrix(Matrix& mat, int symmetry=0)
-    {
-        mat.init(nirrep_, rowspi_, colspi_, "", symmetry);
-    }
+    void create_matrix(Matrix& mat, int symmetry=0);
 
     /// Returns a new Matrix object named name with default dimensions
-    Matrix * create_matrix(std::string name, int symmetry=0)
-    {
-        return new Matrix(name, nirrep_, rowspi_, colspi_, symmetry);
-    }
+    Matrix * create_matrix(std::string name, int symmetry=0);
 
-    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name)
-    {
-        return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_));
-    }
+    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name);
 
-    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int symmetry)
-    {
-        return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_, symmetry));
-    }
+    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int symmetry);
 
-    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int rows, int cols)
-    {
-        return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
-    }
+    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int rows, int cols);
 
-    void create_matrix(Matrix& mat, std::string name, int symmetry=0)
-    {
-        mat.init(nirrep_, rowspi_, colspi_, name, symmetry);
-    }
+    void create_matrix(Matrix& mat, std::string name, int symmetry=0);
 
     /// Returns a new Vector object with default dimensions
-    Vector * create_vector()
-    {
-        return new Vector(nirrep_, rowspi_);
-    }
+    Vector * create_vector();
 
-    void create_vector(Vector& vec)
-    {
-        vec.init(nirrep_, rowspi_);
-    }
+    void create_vector(Vector& vec);
 
     /// Returns a new SimpleMatrix object with default dimensions
-    SimpleMatrix * create_simple_matrix()
-    {
-        return new SimpleMatrix(nso_, nso_);
-    }
-    void create_simple_matrix(SimpleMatrix& mat)
-    {
-        mat.init(nso_, nso_);
-    }
+    SimpleMatrix * create_simple_matrix();
+    void create_simple_matrix(SimpleMatrix& mat);
 
     /// Returns a new SimpleMatrix object named name with default dimensions
-    SimpleMatrix * create_simple_matrix(std::string name)
-    {
-        return new SimpleMatrix(name, nso_, nso_);
-    }
-    void create_simple_matrix(SimpleMatrix& mat, std::string name)
-    {
-        mat.init(nso_, nso_, name);
-    }
+    SimpleMatrix * create_simple_matrix(std::string name);
+    void create_simple_matrix(SimpleMatrix& mat, std::string name);
 
     /// Returns a new SimpleMatrix object named name of size m x n
-    SimpleMatrix * create_simple_matrix(std::string name, int m, int n)
-    {
-        return new SimpleMatrix(name, m, n);
-    }
-    void create_simple_matrix(SimpleMatrix& mat, std::string name, int m, int n)
-    {
-        mat.init(m, n, name);
-    }
+    SimpleMatrix * create_simple_matrix(std::string name, int m, int n);
+    void create_simple_matrix(SimpleMatrix& mat, std::string name, int m, int n);
 
     /// Returns a new SimpleMatrix object with size m x n
-    SimpleMatrix * create_simple_matrix(int m, int n)
-    {
-        return new SimpleMatrix(m, n);
-    }
-    void create_simple_matrix(SimpleMatrix& mat, int m, int n)
-    {
-        mat.init(m, n);
-    }
+    SimpleMatrix * create_simple_matrix(int m, int n);
+    void create_simple_matrix(SimpleMatrix& mat, int m, int n);
 
     /// Returns a new SimpleVector object with default dimension
-    SimpleVector * create_simple_vector()
-    {
-        return new SimpleVector(nso_);
-    }
+    SimpleVector * create_simple_vector();
 
     /// Returns a new SimpleVector object with size m
-    SimpleVector * create_simple_vector(int m)
-    {
-        return new SimpleVector(m);
-    }
+    SimpleVector * create_simple_vector(int m);
 };
 
 }
