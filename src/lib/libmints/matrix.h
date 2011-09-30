@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <libparallel/serialize.h>
+#include <libparallel/parallel.h>
 #include "dimension.h"
 
 namespace boost {
@@ -1136,9 +1137,10 @@ namespace madness {  namespace archive {
     template <class Archive>
     struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Matrix> > {
         static void store(const Archive &ar, const boost::shared_ptr<psi::Matrix> &t) {
-            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name() &
-                 wrap(t->rowspi(), t->nirrep()) &
-                 wrap(t->colspi(), t->nirrep());
+            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name();
+            for (int i=0; i < t->nirrep(); i++) {
+                ar & t->rowdim(i) & t->coldim(i);
+            }
             for (int i=0; i < t->nirrep(); i++) {
                 ar & t->size(i);
                 if (t->size(i)) {
@@ -1157,8 +1159,12 @@ namespace madness {  namespace archive {
             std::string name;
             ar & sz & nir & symm & name;
             if (sz) {
-                int rows[nir], cols[nir];
-                ar & wrap(rows, nir) & wrap(cols, nir);
+                int *rows = new int[nir];
+                int *cols = new int[nir];
+
+                for (int i=0; i < t->nirrep(); i++) {
+                    ar & rows[i] & cols[i];
+                }
                 t = boost::shared_ptr<psi::Matrix>(new psi::Matrix(name, nir, rows, cols, symm));
                 for (int i=0; i < t->nirrep(); i++) {
                     size_t szi;
@@ -1166,6 +1172,7 @@ namespace madness {  namespace archive {
                     if (szi != t->size(i)) throw psi::PSIEXCEPTION("size mismatch deserializing a psi Matrix");
                     if (szi) ar & wrap(&(t->pointer(i)[0][0]), t->size(i));
                 }
+                free(rows); free(cols);
             }
             else {
                 t = boost::shared_ptr<psi::Matrix>(new psi::Matrix());

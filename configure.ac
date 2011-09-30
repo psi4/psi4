@@ -563,40 +563,37 @@ AC_CXX_PROCESS_CHECK([mpi.h],[#include <mpi.h>],,[
 # is to use the psi4 internal madness.  The user can also specify
 # not to use madness, or the user can specify a different madness
 # library to link with.
-MADLIBS=
-MADINC=
+HAVE_MADNESS=0
 BUILD_MADNESS=0
 if test "$HAVE_MPI" = "1"; then
   AC_ARG_WITH([madness],
-  [  --with-madness          Specifies the location of the MADNESS libraries (default is internal).], [
+  [  --with-madness          Specifies the location of the MADNESS libraries. You must be able to link to an MPI library. (default is internal).], [
   case $withval in
     yes)
       BUILD_MADNESS=1
+      HAVE_MADNESS=1
       AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      MADLIBS='$(top_srcdir)/madness/src/lib'
-      MADINC='$(top_srcdir)/madness/include $(top_objdir)/madness/include'
+      madlibs='$(top_srcdir)/madness/src/lib'
+      madinc='-I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
       ;;
     no)
-      BUILD_MADNESS=0
-      MADLIBS=''
-      MADINC=''
+      AC_DEFINE_UNQUOTED(HAVE_MADNESS,0)
       ;;
     *)
-      BUILD_MADNESS=0
+      HAVE_MADNESS=1
       AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      MADLIBS="-I$withval/lib"
-      MADINC="-I$withval/include"
+      madlibs="$withval/lib"
+      madinc="-I$withval/include"
       ;;
   esac
   ],[
   BUILD_MADNESS=1
+  HAVE_MADNESS=1
   AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-  MADLIBS='$(top_srcdir)/madness/src/lib'
-  MADINC='$(top_srcdir)/madness/include $(top_objdir)/madness/include'
+  madlibs='$(top_srcdir)/madness/src/lib'
+  madinc='-I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
   ])
 fi
-AC_SUBST(MADLIBS)
-AC_SUBST(MADINC)
 AC_SUBST(BUILD_MADNESS)
 
 /bin/rm -f a.out
@@ -665,14 +662,15 @@ AC_CHECK_LIB(m,exit,CXXLIBS="$CXXLIBS -lm")
 AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
-
-PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
-if test "$BUILD_MADNESS" = "1"; then
-  PSICPPFLAGS='$PSICPPFLAGS -I$(MADLIB) -I$(MADINC)'
+if test "$HAVE_MADNESS" = "1"; then
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(madlibs) $(madinc)'
+  AC_SUBST(PSICPPFLAGS)
+  AC_SUBST(madlibs)
+  AC_SUBST(madinc)
 else
-  PSICPPFLAGS="$PSICPPFLAGS $MADLIB $MADINC"
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib'
+  AC_SUBST(PSICPPFLAGS)
 fi
-AC_SUBST(PSICPPFLAGS)
 AC_SUBST(CPPFLAGS)
 AC_SUBST(top_objdir)
 
@@ -1039,7 +1037,7 @@ AC_CONFIG_COMMANDS([psi4-config], [chmod +x bin/psi4-config])
 
 # If we are using madness, and we are linking the internal madness
 # library then set up the internal madness to be built
-if test "$HAVE_MPI" = "1"; then
+if test "$HAVE_MADNESS" = "1"; then
   if test "$BUILD_MADNESS" = "1"; then
     AC_CONFIG_SUBDIRS([madness])
   fi
