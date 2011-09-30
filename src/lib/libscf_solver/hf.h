@@ -15,6 +15,7 @@
 #include <libmints/basisset.h>
 #include <libmints/vector.h>
 #include <libdiis/diismanager.h>
+#include <libdiis/diisentry.h>
 #include <psi4-dec.h>
 
 namespace boost {

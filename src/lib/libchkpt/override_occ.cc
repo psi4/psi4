@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>

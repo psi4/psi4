@@ -1,3 +1,5 @@
+#include <boost/shared_ptr.hpp>
+#include <libpsio/psio.hpp>
 #include "diismanager.h"
 #include <cstdarg>
 #include <libdpd/dpd.h>
@@ -5,7 +7,6 @@
 #include <libmints/vector.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
-#include <libpsio/psio.hpp>
 #include <psifiles.h>
 
 using namespace psi;
@@ -21,19 +22,23 @@ namespace psi{
  * @param psio: the PSIO object to use for I/O.  Do not specify if DPD is being used.
  */
 DIISManager::DIISManager(int maxSubspaceSize,
-                         std::string label,
+                         const std::string& label,
                          RemovalPolicy removalPolicy,
-                         StoragePolicy storagePolicy,
-                         boost::shared_ptr<PSIO> psio):
+                         StoragePolicy storagePolicy):
             _maxSubspaceSize(maxSubspaceSize),
             _removalPolicy(removalPolicy),
             _storagePolicy(storagePolicy),
             _errorVectorSize(0),
             _vectorSize(0),
-            _psio(psio),
+            _psio(_default_psio_lib_),
             _entryCount(0),
             _label(label)
 {
+}
+
+int DIISManager::subspace_size()
+{
+    return _subspace.size();
 }
 
 /**

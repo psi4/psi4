@@ -70,8 +70,8 @@ void ROHF::finalize()
 {
     // Form Lagrangian
     //
-    // In HF, the Lagrangian is Xpi = Fpi. For RHF and UHF, this reduces 
-    // to Xii = ei. In the AO basis (where we want it), Xmn = Cmi ei Cni. 
+    // In HF, the Lagrangian is Xpi = Fpi. For RHF and UHF, this reduces
+    // to Xii = ei. In the AO basis (where we want it), Xmn = Cmi ei Cni.
     // For ROHF, the effective Fock matrix is diagonal, not Fa and Fb (as
     // in UHF). So we need to form the Lagrangian as: Xmn = Cmp Fpi Cni.
     //
@@ -124,7 +124,7 @@ void ROHF::save_information()
 void ROHF::save_fock()
 {
     if (initialized_diis_manager_ == false) {
-        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
         diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, soFeff_.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, soFeff_.get());
         initialized_diis_manager_ = true;

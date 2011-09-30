@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -13,26 +14,26 @@ using namespace psi;
 
 int Chkpt::rd_disp(void)
 {
-	int disp;
-	char *keyword;
-	keyword = build_keyword("Current displacement");
+        int disp;
+        char *keyword;
+        keyword = build_keyword("Current displacement");
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) &disp,
-		sizeof(int));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) &disp,
+                sizeof(int));
 
-	free(keyword);
-	return disp;
+        free(keyword);
+        return disp;
 }
 
 void Chkpt::wt_disp(int disp)
 {
-	char *keyword;
-	keyword = build_keyword("Current displacement");
+        char *keyword;
+        keyword = build_keyword("Current displacement");
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) &disp,
-		sizeof(int));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) &disp,
+                sizeof(int));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
@@ -46,12 +47,12 @@ extern "C" {
 ** Returns: int disp, the current geometry displacement number
 ** \ingroup CHKPT
 */
-	int chkpt_rd_disp(void)
-	{
-		int disp;
-		disp = _default_chkpt_lib_->rd_disp();
-		return disp;
-	}
+        int chkpt_rd_disp(void)
+        {
+                int disp;
+                disp = _default_chkpt_lib_->rd_disp();
+                return disp;
+        }
 
 
 /*!
@@ -62,9 +63,9 @@ extern "C" {
 ** Returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_disp(int disp)
-	{
-		_default_chkpt_lib_->wt_disp(disp);
-	}
+        void chkpt_wt_disp(int disp)
+        {
+                _default_chkpt_lib_->wt_disp(disp);
+        }
 }
 
