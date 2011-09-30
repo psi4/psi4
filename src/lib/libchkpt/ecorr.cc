@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -14,26 +15,26 @@ using namespace psi;
 
 double Chkpt::rd_ecorr(void)
 {
-	double ecorr;
-	char *keyword;
-	keyword = build_keyword("Correlation energy");
+        double ecorr;
+        char *keyword;
+        keyword = build_keyword("Correlation energy");
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) &ecorr,
-		sizeof(double));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) &ecorr,
+                sizeof(double));
 
-	free(keyword);
-	return ecorr;
+        free(keyword);
+        return ecorr;
 }
 
 void Chkpt::wt_ecorr(double ecorr)
 {
-	char *keyword;
-	keyword = build_keyword("Correlation energy");
+        char *keyword;
+        keyword = build_keyword("Correlation energy");
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) &ecorr,
-		sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) &ecorr,
+                sizeof(double));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
@@ -47,12 +48,12 @@ extern "C" {
 **        used to get this energy, see rd_corr_lab().
 ** \ingroup CHKPT
 */
-	double chkpt_rd_ecorr(void)
-	{
-		double energy;
-		energy = _default_chkpt_lib_->rd_ecorr();
-		return energy;
-	}
+        double chkpt_rd_ecorr(void)
+        {
+                double energy;
+                energy = _default_chkpt_lib_->rd_ecorr();
+                return energy;
+        }
 
 /*!
 ** chkpt_wt_ecorr():  Writes out the correlated energy.
@@ -64,8 +65,8 @@ extern "C" {
 ** returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_ecorr(double ecorr)
-	{
-		_default_chkpt_lib_->wt_ecorr(ecorr);
-	}
+        void chkpt_wt_ecorr(double ecorr)
+        {
+                _default_chkpt_lib_->wt_ecorr(ecorr);
+        }
 }

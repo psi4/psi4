@@ -9,6 +9,7 @@
 #include <boost/thread/thread.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include "aiohandler.h"
 #include <exception.h>
 
 using namespace std;

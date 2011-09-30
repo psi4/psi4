@@ -9,6 +9,8 @@
 #include <psifiles.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/aiohandler.h>
 #include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
@@ -69,7 +71,7 @@ void DFHF::common_init()
             fprintf(outfile, "   Long-Range Omega = %11.8E\n",omega_);
         }
         fprintf(outfile, "   by Rob Parrish\n\n");
-    }    
+    }
 
     is_initialized_ = false;
     is_disk_initialized_ = false;
@@ -82,12 +84,12 @@ void DFHF::common_init()
 
     // Build auxiliary basis from options
     zero_ = BasisSet::zero_ao_basis_set();
-    
+
     // If the user doesn't spec a basis name, pick it yourself
     // TODO: Verify that the basis assign does not messs this up
     if (options_.get_str("RI_BASIS_SCF") == "") {
         primary_->molecule()->set_basis_all_atoms(options_.get_str("BASIS") + "-JKFIT", "RI_BASIS_SCF");
-        fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-JKFIT\n\n", options_.get_str("BASIS").c_str()); 
+        fprintf(outfile, "  No auxiliary basis selected, defaulting to %s-JKFIT\n\n", options_.get_str("BASIS").c_str());
     }
 
     boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
@@ -108,14 +110,14 @@ void DFHF::common_init()
         int ntri_shell_naive = primary_->nshell() * (primary_->nshell() + 1) / 2;
         int ntri_fun = schwarz_->get_nfun_pairs();
         int ntri_fun_naive = primary_->nbf() * (primary_->nbf() + 1) / 2;
-        
+
         double ntri_shell_savings = 1.0 - ntri_shell / (double) ntri_shell_naive;
         double ntri_fun_savings   = 1.0 - ntri_fun / (double) ntri_fun_naive;
 
         fprintf(outfile, "  Schwarz Cutoff is %8.3E\n", options_.get_double("SCHWARZ_CUTOFF"));
-        fprintf(outfile, "   -Shell Pairs:    %12d of %12d remain, %3.0f%% savings\n", 
+        fprintf(outfile, "   -Shell Pairs:    %12d of %12d remain, %3.0f%% savings\n",
             ntri_shell, ntri_shell_naive, 100.0*ntri_shell_savings);
-        fprintf(outfile, "   -Function Pairs: %12d of %12d remain, %3.0f%% savings\n\n", 
+        fprintf(outfile, "   -Function Pairs: %12d of %12d remain, %3.0f%% savings\n\n",
             ntri_fun, ntri_fun_naive, 100.0*ntri_fun_savings);
     }
 
@@ -138,23 +140,23 @@ void DFHF::common_init()
     is_disk_ = (three_memory + 2*two_memory < memory_ ? false : true);
 
     if (print_) {
-        fprintf(outfile, "  Using %s Algorithm.\n\n", (is_disk_ ? "Disk" : "Core")); 
+        fprintf(outfile, "  Using %s Algorithm.\n\n", (is_disk_ ? "Disk" : "Core"));
     }
     if (print_ > 1) {
         fprintf(outfile, "    ----------------------------------------------\n");
         fprintf(outfile, "     Quantity         Doubles              MiB   \n");
         fprintf(outfile, "    ----------------------------------------------\n");
-        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "Memory", memory_, (ULI) (memory_*8.0 / 1.0E6));            
-        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|B)", two_memory, (ULI) (two_memory*8.0 / 1.0E6));            
+        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "Memory", memory_, (ULI) (memory_*8.0 / 1.0E6));
+        fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|B)", two_memory, (ULI) (two_memory*8.0 / 1.0E6));
         fprintf(outfile, "     %-6s     %15ld  %15ld\n", "(A|mn)", three_memory, (ULI) (three_memory*8.0 / 1.0E6));
         fprintf(outfile, "    ----------------------------------------------\n\n");
     }
 
     if (print_) {
         if (options_.get_str("RI_INTS_IO") == "LOAD") {
-            fprintf(outfile, "  Will attempt to load (Q|mn) integrals from File %d.\n\n", unit_);    
+            fprintf(outfile, "  Will attempt to load (Q|mn) integrals from File %d.\n\n", unit_);
         } else if (options_.get_str("RI_INTS_IO") == "SAVE") {
-            fprintf(outfile, "  Will save (Q|mn) integrals to File %d.\n\n", unit_);    
+            fprintf(outfile, "  Will save (Q|mn) integrals to File %d.\n\n", unit_);
         }
     }
 
@@ -162,7 +164,7 @@ void DFHF::common_init()
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
 }
-void DFHF::set_unit(unsigned int unit) 
+void DFHF::set_unit(unsigned int unit)
 {
     unit_ = unit;
     if (disk_iter_.get()) {
@@ -172,7 +174,7 @@ void DFHF::set_unit(unsigned int unit)
 void DFHF::set_memory(unsigned long int memory)
 {
     memory_ = memory;
-    
+
     // Make a memory decision here
     is_disk_ = false;
     memory_ = Process::environment.get_memory() / 8L;
@@ -186,7 +188,7 @@ void DFHF::set_memory(unsigned long int memory)
     is_disk_ = (three_memory + 2*two_memory < memory_ ? false : true);
 
     if (print_) {
-        fprintf(outfile, "  Changed my mind. Using %s Algorithm.\n\n", (is_disk_ ? "Disk" : "Core")); 
+        fprintf(outfile, "  Changed my mind. Using %s Algorithm.\n\n", (is_disk_ ? "Disk" : "Core"));
     }
 }
 
@@ -216,12 +218,12 @@ void DFHF::initialize_JK_disk()
     if (options_.get_str("RI_INTS_IO") == "LOAD") {
         Jinv_.reset();
         return;
-    } 
+    }
 
     int nso = primary_->nbf();
     int nshell = primary_->nshell();
     int naux = auxiliary_->nbf();
-    
+
     // ==> Schwarz Indexing <== //
     int ntri = schwarz_->get_nfun_pairs();
     int nshellpairs = schwarz_->get_nshell_pairs();
@@ -239,12 +241,12 @@ void DFHF::initialize_JK_disk()
 
     //fprintf(outfile,"Schwarz Shell Pairs:\n");
     //for (int MN = 0; MN < nshellpairs; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);   
+    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_shell_pairs[2*MN], schwarz_shell_pairs[2*MN + 1]);
     //}
 
     //fprintf(outfile,"Schwarz Function Pairs:\n");
     //for (int MN = 0; MN < ntri; MN++) {
-    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);   
+    //    fprintf(outfile,"  %3d: (%3d,%3d)\n", MN, schwarz_fun_pairs[2*MN], schwarz_fun_pairs[2*MN + 1]);
     //}
 
     //fprintf(outfile,"Schwarz Reverse Shell Pairs:\n");
@@ -257,23 +259,23 @@ void DFHF::initialize_JK_disk()
     //    fprintf(outfile,"  %3d: %4ld\n", MN, schwarz_fun_pairs_r[MN]);
     //}
 
-    // Find out exactly how much memory per MN shell 
+    // Find out exactly how much memory per MN shell
     boost::shared_ptr<IntVector> MN_mem(new IntVector("Memory per MN pair", nshell * (nshell + 1) / 2));
     int *MN_memp = MN_mem->pointer();
 
-    for (int mn = 0; mn < ntri; mn++) { 
+    for (int mn = 0; mn < ntri; mn++) {
         int m = schwarz_fun_pairs[2*mn];
         int n = schwarz_fun_pairs[2*mn + 1];
 
         int M = primary_->function_to_shell(m);
         int N = primary_->function_to_shell(n);
-        
-        MN_memp[M * (M + 1) / 2 + N] += naux; 
-    } 
-  
+
+        MN_memp[M * (M + 1) / 2 + N] += naux;
+    }
+
     //MN_mem->print(outfile);
- 
-    // Figure out exactly how much memory per M row  
+
+    // Figure out exactly how much memory per M row
     ULI* M_memp = new ULI[nshell];
     memset(static_cast<void*>(M_memp), '\0', nshell*sizeof(ULI));
 
@@ -281,10 +283,10 @@ void DFHF::initialize_JK_disk()
         for (int N = 0; N <= M; N++) {
             M_memp[M] += MN_memp[M * (M + 1) / 2 + N];
         }
-    } 
+    }
 
     //fprintf(outfile,"  # Memory per M row #\n\n");
-    //for (int M = 0; M < nshell; M++) 
+    //for (int M = 0; M < nshell; M++)
     //    fprintf(outfile,"   %3d: %10ld\n", M+1,M_memp[M]);
     //fprintf(outfile,"\n");
 
@@ -298,20 +300,20 @@ void DFHF::initialize_JK_disk()
     if (min_mem > buffer_memory) {
         std::stringstream message;
         message << "SCF::DF: Disk based algorithm requires 2 (A|B) fitting metrics and an (A|mn) chunk on core." << std::endl;
-        message << "         This is 2Q^2 + QNP doubles, where Q is the auxiliary basis size, N is the" << std::endl;       
-        message << "         primary basis size, and P is the maximum number of functions in a primary shell." << std::endl; 
-        message << "         For this problem, that is " << ((8L*(min_mem + 2*two_memory))) << " bytes before taxes,";   
-        message << ((80L*(min_mem + 2*two_memory) / 7L)) << " bytes after taxes. " << std::endl;                         
-    
-        throw PSIEXCEPTION(message.str());           
-    } 
-   
+        message << "         This is 2Q^2 + QNP doubles, where Q is the auxiliary basis size, N is the" << std::endl;
+        message << "         primary basis size, and P is the maximum number of functions in a primary shell." << std::endl;
+        message << "         For this problem, that is " << ((8L*(min_mem + 2*two_memory))) << " bytes before taxes,";
+        message << ((80L*(min_mem + 2*two_memory) / 7L)) << " bytes after taxes. " << std::endl;
+
+        throw PSIEXCEPTION(message.str());
+    }
+
     // ==> Reduced indexing by M <== //
- 
+
     // Figure out the MN start index per M row
     boost::shared_ptr<IntVector> MN_start(new IntVector("MUNU start per M row", nshell));
     int* MN_startp = MN_start->pointer();
-    
+
     MN_startp[0] = schwarz_shell_pairs_r[0];
     int M_index = 1;
     for (int MN = 0; MN < nshellpairs; MN++) {
@@ -324,7 +326,7 @@ void DFHF::initialize_JK_disk()
     // Figure out the mn start index per M row
     boost::shared_ptr<IntVector> mn_start(new IntVector("munu start per M row", nshell));
     int* mn_startp = mn_start->pointer();
-    
+
     mn_startp[0] = schwarz_fun_pairs[0];
     int m_index = 1;
     for (int mn = 0; mn < ntri; mn++) {
@@ -334,21 +336,21 @@ void DFHF::initialize_JK_disk()
         }
     }
 
-    // Figure out the MN columns per M row 
+    // Figure out the MN columns per M row
     boost::shared_ptr<IntVector> MN_col(new IntVector("MUNU cols per M row", nshell));
     int* MN_colp = MN_col->pointer();
-   
+
     for (int M = 1; M < nshell; M++) {
-        MN_colp[M - 1] = MN_startp[M] - MN_startp[M - 1]; 
+        MN_colp[M - 1] = MN_startp[M] - MN_startp[M - 1];
     }
     MN_colp[nshell - 1] = nshellpairs - MN_startp[nshell - 1];
-    
-    // Figure out the mn columns per M row 
+
+    // Figure out the mn columns per M row
     boost::shared_ptr<IntVector> mn_col(new IntVector("munu cols per M row", nshell));
     int* mn_colp = mn_col->pointer();
-   
+
     for (int M = 1; M < nshell; M++) {
-        mn_colp[M - 1] = mn_startp[M] - mn_startp[M - 1]; 
+        mn_colp[M - 1] = mn_startp[M] - mn_startp[M - 1];
     }
     mn_colp[nshell - 1] = ntri - mn_startp[nshell - 1];
 
@@ -356,13 +358,13 @@ void DFHF::initialize_JK_disk()
     //MN_col->print(outfile);
     //mn_start->print(outfile);
     //mn_col->print(outfile);
- 
-    // ==> Block indexing <== // 
-    // Sizing by block 
+
+    // ==> Block indexing <== //
+    // Sizing by block
     std::vector<int> MN_start_b;
     std::vector<int> MN_col_b;
     std::vector<int> mn_start_b;
-    std::vector<int> mn_col_b; 
+    std::vector<int> mn_col_b;
 
     // Determine MN and mn block starts
     // also MN and mn block cols
@@ -384,21 +386,21 @@ void DFHF::initialize_JK_disk()
         MN_col_b[nblock - 1] += MN_colp[M];
         mn_col_b[nblock - 1] += mn_colp[M];
         current_mem += M_memp[M];
-    } 
+    }
 
-    //fprintf(outfile,"Block, MN start, MN cols, mn start, mn cols\n"); 
+    //fprintf(outfile,"Block, MN start, MN cols, mn start, mn cols\n");
     //for (int block = 0; block < nblock; block++) {
-    //    fprintf(outfile,"  %3d: %12d %12d %12d %12d\n", block, MN_start_b[block], MN_col_b[block], mn_start_b[block], mn_col_b[block]);  
+    //    fprintf(outfile,"  %3d: %12d %12d %12d %12d\n", block, MN_start_b[block], MN_col_b[block], mn_start_b[block], mn_col_b[block]);
     //}
     //fflush(outfile);
- 
-    // Full sizing not required any longer 
+
+    // Full sizing not required any longer
     MN_mem.reset();
     MN_start.reset();
-    MN_col.reset(); 
+    MN_col.reset();
     mn_start.reset();
-    mn_col.reset(); 
-    delete[] M_memp;     
+    mn_col.reset();
+    delete[] M_memp;
 
     // ==> Buffer allocation <== //
     int max_cols = 0;
@@ -414,14 +416,14 @@ void DFHF::initialize_JK_disk()
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
-    // ==> Prestripe/Jinv <== // 
+    // ==> Prestripe/Jinv <== //
     psio_->open(unit_,PSIO_OPEN_NEW);
     boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
     // Dispatch the prestripe
     timer_on("(Q|mn) Prestripe");
     aio->zero_disk(unit_,"(Q|mn) Integrals",naux,ntri);
-    
+
     // Form the J symmetric inverse
     timer_on("(Q|A)^-1/2");
     if (options_.get_str("FITTING_TYPE") == "EIG") {
@@ -458,14 +460,14 @@ void DFHF::initialize_JK_disk()
         }
         buffer[Q] = eri[Q]->buffer();
     }
-    
+
     // ==> Main loop <== //
     for (int block = 0; block < nblock; block++) {
-        int MN_start_val = MN_start_b[block]; 
-        int mn_start_val = mn_start_b[block]; 
-        int MN_col_val = MN_col_b[block]; 
-        int mn_col_val = mn_col_b[block]; 
-    
+        int MN_start_val = MN_start_b[block];
+        int mn_start_val = mn_start_b[block];
+        int MN_col_val = MN_col_b[block];
+        int mn_col_val = mn_col_b[block];
+
         // ==> (A|mn) integrals <== //
         timer_on("(A|mn)");
         #pragma omp parallel for schedule(guided) num_threads(nthread)
@@ -561,8 +563,8 @@ void DFHF::initialize_JK_core()
         psio_->close(unit_, 1);
         Jinv_.reset();
         return;
-    } 
-    
+    }
+
     //Get a TEI for each thread
     boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
     const double **buffer = new const double*[nthread];
@@ -667,7 +669,7 @@ void DFHF::initialize_JK_core()
         psio_->open(unit_,PSIO_OPEN_NEW);
         psio_->write_entry(unit_, "(Q|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);
-    } 
+    }
 }
 void DFHF::initialize_J_core()
 {
@@ -700,8 +702,8 @@ void DFHF::initialize_J_core()
         psio_->read_entry(unit_, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);
         return;
-    } 
-    
+    }
+
     //Get a TEI for each thread
     boost::shared_ptr<IntegralFactory> rifactory(new IntegralFactory(auxiliary_, zero_, primary_, primary_));
     const double **buffer = new const double*[nthread];
@@ -763,7 +765,7 @@ void DFHF::initialize_J_core()
         psio_->write_entry(unit_, "(A|mn) Integrals", (char*) Qmnp[0], sizeof(double) * ntri * auxiliary_->nbf());
         psio_->close(unit_, 1);
         return;
-    } 
+    }
 }
 
 // ==> USO/AO Transformations (each iteration) <== //
@@ -783,27 +785,27 @@ void DFHF::USO2AO()
         if (!restricted_)
             nbeta_ = nbetapi_[0];
         return;
-    } 
+    }
 
     timer_on("USO2AO");
-    // Sizing 
+    // Sizing
     nalpha_ = 0;
     nbeta_ = 0;
     for (int h = 0; h < Da_->nirrep(); h++) {
         nalpha_ += nalphapi_[h];
         if (!restricted_)
             nbeta_ += nbetapi_[h];
-    }    
-    
+    }
+
     int nao = primary_->nbf();
     int nmo = 0;
-    if (is_jk_) 
+    if (is_jk_)
         for (int h = 0; h < Ca_->nirrep(); h++) nmo += Ca_->colspi()[h];
-   
-    // Allocation 
+
+    // Allocation
     Da_ao_ = boost::shared_ptr<Matrix>(new Matrix("D Alpha (AO Basis)", nao, nao));
     Ja_ao_ = boost::shared_ptr<Matrix>(new Matrix("J (AO Basis)", nao, nao));
-    if (!restricted_) 
+    if (!restricted_)
         Db_ao_ = boost::shared_ptr<Matrix>(new Matrix("D Beta (AO Basis)", nao, nao));
 
     if (is_jk_) {
@@ -812,7 +814,7 @@ void DFHF::USO2AO()
         if (!restricted_) {
             Cb_ao_ = boost::shared_ptr<Matrix>(new Matrix("C Beta (AO Basis)", nao, nmo));
             Kb_ao_ = boost::shared_ptr<Matrix>(new Matrix("K Beta (AO Basis)", nao, nao));
-        } 
+        }
     }
 
     // Filling
@@ -820,7 +822,7 @@ void DFHF::USO2AO()
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nso = Da_->colspi()[h];
         if (nso == 0) continue;
-    
+
         double** D_so = Da_->pointer(h);
         double** U = AO2USO_->pointer(h);
         double** Temp = block_matrix(nso,nao);
@@ -830,13 +832,13 @@ void DFHF::USO2AO()
 
         free_block(Temp);
     }
-    
+
     if (!restricted_) {
         double** D_ao = Db_ao_->pointer();
         for (int h = 0; h < Da_->nirrep(); h++) {
             int nso = Da_->colspi()[h];
             if (nso == 0) continue;
-        
+
             double** D_so = Db_->pointer(h);
             double** U = AO2USO_->pointer(h);
             double** Temp = block_matrix(nso,nao);
@@ -856,7 +858,7 @@ void DFHF::USO2AO()
             int nmopi = Ca_->colspi()[h];
             int nalpha = nalphapi_[h];
             if (nso == 0 || nmopi == 0 || nalpha == 0) continue;
-        
+
             double** C_so = Ca_->pointer(h);
             double** U = AO2USO_->pointer(h);
 
@@ -872,7 +874,7 @@ void DFHF::USO2AO()
                 int nmopi = Ca_->colspi()[h];
                 int nbeta = nbetapi_[h];
                 if (nso == 0 || nmopi == 0 || nbeta == 0) continue;
-            
+
                 double** C_so = Cb_->pointer(h);
                 double** U = AO2USO_->pointer(h);
 
@@ -895,7 +897,7 @@ void DFHF::AO2USO()
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nso = Da_->colspi()[h];
         if (nso == 0) continue;
-    
+
         double** J_so = Ja_->pointer(h);
         double** U = AO2USO_->pointer(h);
         double** Temp = block_matrix(nso,nao);
@@ -915,7 +917,7 @@ void DFHF::AO2USO()
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nso = Da_->colspi()[h];
         if (nso == 0) continue;
-    
+
         double** K_so = Ka_->pointer(h);
         double** U = AO2USO_->pointer(h);
         double** Temp = block_matrix(nso,nao);
@@ -926,7 +928,7 @@ void DFHF::AO2USO()
         free_block(Temp);
     }
 
-    if (restricted_) { 
+    if (restricted_) {
         timer_off("AO2USO");
         return;
     }
@@ -935,7 +937,7 @@ void DFHF::AO2USO()
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nso = Da_->colspi()[h];
         if (nso == 0) continue;
-    
+
         double** K_so = Kb_->pointer(h);
         double** U = AO2USO_->pointer(h);
         double** Temp = block_matrix(nso,nao);
@@ -969,7 +971,7 @@ void DFHF::compute_JK_block_K(double** Qmnp, int nrows, int max_rows, bool is_al
     else
         nelec = nbeta_;
     int ntri = schwarz_->get_nfun_pairs();
-    
+
     double** Cp;
     double** Kp;
     if (is_alpha) {
@@ -1119,48 +1121,48 @@ void DFHF::form_JK_DF()
     int nblocks;
     if (is_disk_) {
         if (!is_disk_initialized_) {
-            is_disk_initialized_ = true;    
+            is_disk_initialized_ = true;
 
-            // Static disk overhead, CTemp * nthread, Jtri, Dtri, indexing 
+            // Static disk overhead, CTemp * nthread, Jtri, Dtri, indexing
             ULI overhead = nthread*(ULI)nalpha*nbf + nbf*(ULI)nbf + nbf + 2L* (ULI)ntri;
             // Dynamic disk overhead, (A|mn), (A|mi), Q_S * nthread
             ULI per_row = nalpha*(ULI)nbf + nthread*(ULI)nbf + (ULI)ntri;
-  
-            // How many rows at a time, on disk? 
+
+            // How many rows at a time, on disk?
             max_rows = (memory_ - overhead) / per_row;
             if (max_rows > naux)
                 max_rows = naux;
             if (max_rows < 1)
                 max_rows = 1;
-            
+
             // Now split things in two
-            max_rows = max_rows / 2 + (((max_rows % 2) == 0) ? 0 : 1);    
-        
+            max_rows = max_rows / 2 + (((max_rows % 2) == 0) ? 0 : 1);
+
             // Determine number of blocks (gimp shouldn't hurt much, K is fine-grained)
              nblocks = naux / max_rows;
             if (nblocks * max_rows != naux)
                 nblocks++;
 
             // Build the disk iterator
-            disk_iter_ = boost::shared_ptr<DFHFDiskIterator>(new DFHFDiskIterator(psio_, ntri, naux, max_rows)); 
+            disk_iter_ = boost::shared_ptr<DFHFDiskIterator>(new DFHFDiskIterator(psio_, ntri, naux, max_rows));
             disk_iter_->set_unit(unit_);
          } else {
             max_rows = disk_iter_->max_rows();
             nblocks = disk_iter_->nblock();
          }
     } else {
-        // Static core overhead, (A|mn), CTemp * nthread, Jtri, Dtri, indexing 
+        // Static core overhead, (A|mn), CTemp * nthread, Jtri, Dtri, indexing
         ULI overhead = nthread*(ULI)nalpha*nbf + ntri*(ULI)naux + nbf*(ULI)nbf + nbf + 2L * (ULI)ntri;
         // Dynamic core overhead, (A|mi),  Q_S * nthread
         ULI per_row = nalpha*(ULI)nbf + nthread*(ULI)nbf;
-  
-        // How many rows at a time, on core? 
+
+        // How many rows at a time, on core?
         max_rows = (memory_ - overhead) / per_row;
         if (max_rows > naux)
             max_rows = naux;
         if (max_rows < 1)
             max_rows = 1;
-        
+
         // Determine number of blocks (gimp shouldn't hurt much, K is fine-grained)
         nblocks = naux / max_rows;
         if (nblocks * max_rows != naux)
@@ -1296,7 +1298,7 @@ void DFHFDiskIterator::common_init()
 
     block_sizes_.resize(nblocks_);
     block_starts_.resize(nblocks_);
-    
+
     // TODO: ungimp later
     for (int i = 0; i < nblocks_; i++) {
         block_starts_[i] = i * max_rows_;
@@ -1308,7 +1310,7 @@ void DFHFDiskIterator::common_init()
 
     // Initial order in the cyclic structure
     for (int i = 0; i < nblocks_; i++)
-        blocks_.push_back(i);  
+        blocks_.push_back(i);
 
     //fprintf(outfile,"  DFHFDiskIterator::common_init Debug:\n\n");
     //fprintf(outfile,"  Max rows = %d, Naux = %d, nblocks = %d\n\n", max_rows_, naux_, nblocks_);
@@ -1325,10 +1327,10 @@ void DFHFDiskIterator::common_init()
     // Build the blocks
     A_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) Block A", max_rows_, ntri_));
     B_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) Block B", max_rows_, ntri_));
-   
+
     // Build the AIO object
     aio_ = boost::shared_ptr<AIOHandler>(new AIOHandler(psio_));
-     
+
     // Read the first two bits in, so they are ready
     read(A_, block_starts_[0], block_sizes_[0]);
     synchronize();
@@ -1339,7 +1341,7 @@ void DFHFDiskIterator::common_init()
 }
 double** DFHFDiskIterator::next_block()
 {
-    synchronize(); 
+    synchronize();
     //fprintf(outfile, "  DFHFDiskIterator::next_block Debug, Block %d\n", iteration_);
 
     // Synchronize the AIOHandler, if needed
@@ -1351,32 +1353,32 @@ double** DFHFDiskIterator::next_block()
 
     // If not first or last block, there's reading to be done
     if (iteration_ > 0 && iteration_ < nblocks_ - 1) {
-        // The address in the cycle is two greater than the iteration number 
+        // The address in the cycle is two greater than the iteration number
         int index = blocks_[iteration_ + 1];
         if (iteration_ % 2 == 1) {
             // Odd iteration, read into A
-            read(A_, block_starts_[index], block_sizes_[index]); 
+            read(A_, block_starts_[index], block_sizes_[index]);
             //fprintf(outfile,"  Reading index %d, start = %3d, size = %3d into A\n", index, \
-                block_starts_[index], block_sizes_[index]); 
+                block_starts_[index], block_sizes_[index]);
         } else {
             // Even iteration, read into B
-            read(B_, block_starts_[index], block_sizes_[index]); 
+            read(B_, block_starts_[index], block_sizes_[index]);
             //fprintf(outfile,"  Reading index %d, start = %3d, size = %3d into B\n", index, \
-                block_starts_[index], block_sizes_[index]); 
+                block_starts_[index], block_sizes_[index]);
         }
     }
 
     // Determine current rows
     int index = blocks_[iteration_];
     current_rows_ = block_sizes_[index];
-   
+
     boost::shared_ptr<Matrix> val;
- 
+
     //fprintf(outfile, "  Current rows = %d\n", current_rows_);
     fflush(outfile);
     // Return a block
     // Odd iteration, return B
-    if ((iteration_++) % 2 == 1) { 
+    if ((iteration_++) % 2 == 1) {
         return B_->pointer();
         //fprintf(outfile, "  Pointing to B, which is global block %d\n", index);
     // Even iteration, return A
@@ -1389,7 +1391,7 @@ void DFHFDiskIterator::read(boost::shared_ptr<Matrix> A, int start, int rows)
 {
     // Get the block pointer
     double** Ap = A->pointer();
-    
+
     // Get an address
     psio_address addr = psio_get_address(PSIO_ZERO, sizeof(double)*start*ntri_);
 
@@ -1418,14 +1420,14 @@ void DFHFDiskIterator::reset()
     int counter = 0;
     for (int j = k; j < nblocks_; j++) {
         blocks_[counter++] = j;
-    } 
+    }
     for (int j = 0; j < k; j++) {
         blocks_[counter++] = j;
-    } 
+    }
 
     // If odd number of blocks, must switch A and B to have A first in next iteration
     if (nblocks_ % 2 == 1)
-        boost::swap(A_,B_); 
+        boost::swap(A_,B_);
 
     //fprintf(outfile,"  DFHFDiskIterator::reset Debug: Block Order\n");
     //for (int i = 0; i < nblocks_; i++) {

@@ -1,14 +1,17 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISENTRY_H_
 
-#include <libpsio/psio.hpp>
-#include <psifiles.h>
+#include <string>
+#include <map>
 
 namespace boost {
-template<class T> class shared_ptr;
+template<class T>
+class shared_ptr;
 }
 
 namespace psi{
+
+class PSIO;
 
   /**
    * @Brief The DIISManager class is used to manage DIIS quantities and

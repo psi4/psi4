@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -14,25 +15,25 @@ using namespace psi;
 
 double Chkpt::rd_eref(void)
 {
-	double eref;
-	char *keyword;
-	keyword = build_keyword("Reference energy");
+        double eref;
+        char *keyword;
+        keyword = build_keyword("Reference energy");
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) &eref, sizeof(double));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) &eref, sizeof(double));
 
-	free(keyword);
-	return eref;
+        free(keyword);
+        return eref;
 }
 
 void Chkpt::wt_eref(double eref)
 {
-	char *keyword;
-	keyword = build_keyword("Reference energy");
+        char *keyword;
+        keyword = build_keyword("Reference energy");
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) &eref, 
-		sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) &eref,
+                sizeof(double));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
@@ -45,12 +46,12 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	double chkpt_rd_eref(void)
-	{
-		double eref;
-		eref = _default_chkpt_lib_->rd_eref();
-		return eref;
-	}
+        double chkpt_rd_eref(void)
+        {
+                double eref;
+                eref = _default_chkpt_lib_->rd_eref();
+                return eref;
+        }
 
 
 /*!
@@ -62,8 +63,8 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_eref(double eref)
-	{
-		_default_chkpt_lib_->wt_eref(eref);
-	}
+        void chkpt_wt_eref(double eref)
+        {
+                _default_chkpt_lib_->wt_eref(eref);
+        }
 }

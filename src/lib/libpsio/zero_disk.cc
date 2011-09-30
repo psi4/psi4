@@ -3,6 +3,7 @@
  \ingroup PSIO
  */
 
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
