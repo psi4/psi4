@@ -243,6 +243,8 @@ public:
 
     void reset();
 
+    DataType* get() const;
+
     Data& operator[](int i);
     Data& operator[](std::string s);
 };

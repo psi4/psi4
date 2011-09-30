@@ -11,6 +11,7 @@
 #include <libplugin/plugin.h>
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
+#include <liboptions/python.h>
 #include <psiconfig.h>
 
 #include <psi4-dec.h>
@@ -558,6 +559,17 @@ bool py_psi_set_global_option_array(std::string const & key, python::list values
     return true;
 }
 
+void py_psi_set_option_python(const string& key, boost::python::object& obj)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Data& data = Process::environment.options[nonconst_key];
+
+    if (data.type() == "python")
+        dynamic_cast<PythonDataType*>(data.get())->assign(obj);
+    else
+        throw PSIEXCEPTION("Unable to set option to a Python object.");
+}
+
 object py_psi_get_option(const string& key)
 {
     string nonconst_key = key;
@@ -768,6 +780,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_float);
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
+
+    def("set_option_python", py_psi_set_option_python);
 
     // Get the option; letting liboptions decide whether to use global or local
     def("get_option", py_psi_get_option);
