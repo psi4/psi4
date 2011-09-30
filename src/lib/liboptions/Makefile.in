@@ -8,7 +8,7 @@ PSITARGET = $(top_objdir)/lib/libPSI_options.a
 
 TRUECSRC = 
 
-TRUECXXSRC = print.cc
+TRUECXXSRC = liboptions.cc print.cc
 
 INC = liboptions.h
 
