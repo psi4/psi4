@@ -1578,6 +1578,53 @@ void Matrix::invert()
     copy_lower_to_upper();
 }
 
+void Matrix::general_invert()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::invert: Matrix is non-totally symmetric.");
+    }
+
+    int lwork = max_nrow() * max_ncol();
+    double *work = new double[lwork];
+    int *ipiv = new int[max_nrow()];
+
+    for (int h=0; h<nirrep_; ++h) {
+        if (rowspi_[h]) {
+            int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+
+            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+        }
+    }
+    delete[] ipiv;
+    delete[] work;
+}
+
 void Matrix::power(double alpha, double cutoff)
 {
     if (symmetry_) {

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -13,7 +13,9 @@
 #include "globals.h"
 #include "yoshimine.h"
 
-namespace psi { namespace transqt {
+namespace psi {
+extern FILE* outfile;
+namespace transqt {
 
 #define MAXIOFF3 255
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
@@ -111,8 +113,8 @@ void transform_two_mp2r12a_t(void)
     fflush(outfile);
   }
 
-  yosh_init(&YBuffP, ntri, ntri, maxcor, maxcord, max_buckets, 
-	    first_tmp_file, tolerance, outfile);
+  yosh_init(&YBuffP, ntri, ntri, maxcor, maxcord, max_buckets,
+            first_tmp_file, tolerance, outfile);
 
   if (print_lvl > 1) {
     fprintf(outfile, "\tPresort");
@@ -128,19 +130,19 @@ void transform_two_mp2r12a_t(void)
     It is because [r12,T1] integrals are not symmetric with respect to
     a permutation of bra and ket.
    ------------------------------------------------------------------------*/
-  yosh_rdtwo(&YBuffP, params.src_tei_file, params.delete_src_tei, orbspi, nirreps, ioff, 0, 
-	     0, moinfo.fzc_density, 
-	     moinfo.fzc_operator, 0, (print_lvl > 5), outfile);
+  yosh_rdtwo(&YBuffP, params.src_tei_file, params.delete_src_tei, orbspi, nirreps, ioff, 0,
+             0, moinfo.fzc_density,
+             moinfo.fzc_operator, 0, (print_lvl > 5), outfile);
 
   yosh_close_buckets(&YBuffP, 0);
 
-  yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, nso, ntri, 
-	    0, 1, 0, 0, 1, (print_lvl > 5), outfile);
-  
+  yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, nso, ntri,
+            0, 1, 0, 0, 1, (print_lvl > 5), outfile);
+
   yosh_done(&YBuffP);  /* Pre-transform complete */
 
   /* no frozen core here */
-  
+
   ndocc = 0;
   nvirt = 0;
   for(h=0; h < nirreps; h++) {
@@ -196,9 +198,9 @@ void transform_two_mp2r12a_t(void)
                       for(r=rfirst,R=0; r <= rlast; r++,R++) {
                           for(s=sfirst,S=0; s <= slast; s++,S++) {
 
-			      /*------------------------------------
-				(pq|[r12,T1]|rs) = (pq|[r12,T1]|sr)
-			       ------------------------------------*/
+                              /*------------------------------------
+                                (pq|[r12,T1]|rs) = (pq|[r12,T1]|sr)
+                               ------------------------------------*/
                               rs = INDEX(r,s);
                               A[R][S] = P_block[rs];
                             }
@@ -207,11 +209,11 @@ void transform_two_mp2r12a_t(void)
                             orbspi[ssym],0);
                       mmult(Cdocc[rsym],1,B,0,A,0,active_docc[rsym],
                             sopi[rsym],orbspi[ssym],0);
-		      
+
                       yosh_wrt_arr_mp2r12a(&YBuffJ, p, q, pq, pqsym, A,
-					   rsym, focact, locact, first, last,
-					   1, occ, ioff3,
-					   (print_lvl >4), outfile);
+                                           rsym, focact, locact, first, last,
+                                           1, occ, ioff3,
+                                           (print_lvl >4), outfile);
                    }
                 }
             }
@@ -221,14 +223,14 @@ void transform_two_mp2r12a_t(void)
   /*---------------------------------------
     Now the integrals are (kl|[r12,T2]|pq)
    ---------------------------------------*/
-  
+
   fprintf(outfile, "\tSorting half-transformed integrals...\n");
 
   iwl_buf_close(&PBuff, keep_presort);
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ,0);
   yosh_sort(&YBuffJ, jfile, 0, ioff3, ioff, nso, ntri, 0, 1, 1, nmo,
-            0, (print_lvl > 5), outfile); 
+            0, (print_lvl > 5), outfile);
   yosh_done(&YBuffJ);
 
   fprintf(outfile, "\tFinished half-transform...\n");
@@ -250,7 +252,7 @@ void transform_two_mp2r12a_t(void)
               klsym = ksym^lsym;
               for(l=lfirst; l <= llast; l++) {
                   kl = ioff3[k] + l;
-                  
+
                   zero_arr(J_block, ntri);
                   iwl_buf_rd(&JBuff, kl, J_block, ioff3, ioff, 1, 0, outfile);
 
@@ -266,13 +268,13 @@ void transform_two_mp2r12a_t(void)
                       jlast = last[qsym];
                       for(p=pfirst,P=0; p <= plast; p++,P++) {
                           for(q=qfirst,Q=0; q <= qlast; q++,Q++) {
-			      /*-------------------------------------
-				(kl|[r12,T2]|pq) = -(kl|[r12,T2]|qp)
-			       -------------------------------------*/
-			      if (p >= q)
-				A[P][Q] = J_block[ioff[p]+q];
-			      else
-				A[P][Q] = (-1.0)*J_block[ioff[q]+p];
+                              /*-------------------------------------
+                                (kl|[r12,T2]|pq) = -(kl|[r12,T2]|qp)
+                               -------------------------------------*/
+                              if (p >= q)
+                                A[P][Q] = J_block[ioff[p]+q];
+                              else
+                                A[P][Q] = (-1.0)*J_block[ioff[q]+p];
                             }
                         }
                       mmult(A,0,C[qsym],0,B,0,sopi[psym],sopi[qsym],
@@ -280,8 +282,8 @@ void transform_two_mp2r12a_t(void)
                       mmult(Cdocc[psym],1,B,0,A,0,active_docc[psym],
                             sopi[psym],orbspi[qsym],0);
                       iwl_buf_wrt_mp2r12a(&MBuff, k, l, kl, klsym, A, psym,
-					  focact, locact, first, last,
-					  occ, 0, ioff3,print_integrals,outfile);
+                                          focact, locact, first, last,
+                                          occ, 0, ioff3,print_integrals,outfile);
                     }
                 }
             }
@@ -298,7 +300,7 @@ void transform_two_mp2r12a_t(void)
   free_block(B);
   iwl_buf_close(&JBuff, keep_half_tf);
   /* Need to flush last buffer, else it's not written to disk */
-  iwl_buf_flush(&MBuff, 1); 
+  iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
 
   fprintf(outfile, "\n\tTransformation finished.\n");
@@ -377,7 +379,7 @@ void make_arrays(double ****Cdocc,
       (*occ)[i] = -1;
       (*vir)[i] = -1;
     }
-  
+
   offset = 0;
   count=0;
   for(h=0; h < moinfo.nirreps; h++) {
@@ -404,7 +406,7 @@ void make_arrays(double ****Cdocc,
   for(i=0; i < MAXIOFF3; i++) {
       (*ioff3)[i] = i*nmo;
     }
-  
+
   /* Organize MOs for docc set only */
   if(params.print_mos) {
       fprintf(outfile,"\n\tSCF Eigenvectors (Occupied Set):\n");

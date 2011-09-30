@@ -21,7 +21,7 @@ extern double fac[MAX_FAC];
 #define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
 #define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 
-#include "factory.h"
+//#include "factory.h"
 
 #include <vector>
 
@@ -40,6 +40,8 @@ class Vector;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
+class PSIO;
+class Chkpt;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -215,41 +217,25 @@ public:
     double reference_energy () const { return energy_; }
 
     /// Returns the alpha electrons MO coefficients
-    boost::shared_ptr<Matrix> Ca() const {
-        if (!Ca_)
-            if (!reference_wavefunction_)
-                throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
-            else
-                return reference_wavefunction_->Ca();
-
-        return Ca_;
-    }
+    boost::shared_ptr<Matrix> Ca() const;
     /// Returns the beta electrons MO coefficients
-    boost::shared_ptr<Matrix> Cb() const {
-        if (!Cb_)
-            if (!reference_wavefunction_)
-                throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
-            else
-                return reference_wavefunction_->Cb();
-
-        return Cb_;
-    }
+    boost::shared_ptr<Matrix> Cb() const;
     /// Returns the alpha Fock matrix
-    boost::shared_ptr<Matrix> Fa() const { return Fa_; }
+    boost::shared_ptr<Matrix> Fa() const;
     /// Returns the beta Fock matrix
-    boost::shared_ptr<Matrix> Fb() const { return Fb_; }
+    boost::shared_ptr<Matrix> Fb() const;
     /// Returns the alpha orbital energies
-    boost::shared_ptr<Vector> epsilon_a() const { return epsilon_a_; }
+    boost::shared_ptr<Vector> epsilon_a() const;
     /// Returns the beta orbital energies
-    boost::shared_ptr<Vector> epsilon_b() const { return epsilon_b_; }
+    boost::shared_ptr<Vector> epsilon_b() const;
 
     /// Returns the alpha OPDM for the wavefunction
-    boost::shared_ptr<Matrix> Da() const { return Da_; }
+    boost::shared_ptr<Matrix> Da() const;
     /// Returns the beta OPDM for the wavefunction
-    boost::shared_ptr<Matrix> Db() const { return Db_; }
+    boost::shared_ptr<Matrix> Db() const;
 
     /// Returns the Lagrangian in SO basis for the wavefunction
-    boost::shared_ptr<Matrix> X() const { return Lagrangian_; }
+    boost::shared_ptr<Matrix> X() const;
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);
@@ -262,9 +248,9 @@ public:
     void call_postiteration_callbacks();
 
     /// Returns the gradient
-    boost::shared_ptr<Matrix> gradient() const { return gradient_; }
+    boost::shared_ptr<Matrix> gradient() const;
     /// Set the gradient for the wavefunction
-    void set_gradient(boost::shared_ptr<Matrix>& grad) { gradient_ = grad; }
+    void set_gradient(boost::shared_ptr<Matrix>& grad);
 };
 
 }

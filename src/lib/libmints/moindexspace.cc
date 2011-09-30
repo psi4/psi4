@@ -13,6 +13,12 @@ MOIndexSpace::MOIndexSpace(const std::string& name,
 {
 }
 
+MOIndexSpace::MOIndexSpace(const std::string &name, const boost::shared_ptr<Wavefunction> &wave)
+    : nirrep_(wave->nirrep()), name_(name), C_(wave->Ca()), evals_(wave->epsilon_a()),
+      basis_(wave->basisset()), ints_(wave->integral())
+{
+}
+
 int MOIndexSpace::nirrep() const
 {
     return nirrep_;
@@ -50,7 +56,14 @@ const Dimension& MOIndexSpace::dim() const
 
 boost::shared_ptr<Matrix> MOIndexSpace::transform(const MOIndexSpace& space2, const MOIndexSpace& space1)
 {
+    boost::shared_ptr<Matrix> S21 = overlap(space2, space1);
 
+    // Invert S21
+    S21->general_invert();
+
+    S21->set_name("Transformation Matrix between space1 and space2");
+
+    return S21;
 }
 
 boost::shared_ptr<Matrix> MOIndexSpace::overlap(const MOIndexSpace &space2, const MOIndexSpace &space1)
@@ -64,11 +77,11 @@ boost::shared_ptr<Matrix> MOIndexSpace::overlap(const MOIndexSpace &space2, cons
     S->compute(Smat);
     delete S;
 
-    Smat->print();
+    boost::shared_ptr<Matrix> V1 = space1.C();
+    boost::shared_ptr<Matrix> V2 = space2.C();
 
-    boost::shared_ptr<Matrix> result(new Matrix("Transformation space1 to space2",
-                                                space2.C()->colspi(), space1.C()->colspi()));
-    result->transform(space1.C(), Smat, space2.C());
+    boost::shared_ptr<Matrix> result(new Matrix("Overlap between space1 and space2", V1->colspi(), V2->colspi()));
+    result->transform(V1, Smat, V2);
 
     return result;
 }

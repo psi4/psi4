@@ -757,6 +757,12 @@ public:
      */
     void invert();
 
+    /*! Computes the inverse of a matrix using the LU factorization.
+     *  This method inverts U and then computes inv(A) by solving the system
+     *  inv(A)*L = inv(U) for inv(A).
+     */
+    void general_invert();
+
     /*! Computes the pseudo power of a real symmetric matrix
     *   A using eigendecomposition. This operation is uniquely defined
     *   for all symmetric matrices for integral alpha, and for

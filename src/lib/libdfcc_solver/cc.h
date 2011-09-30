@@ -1,6 +1,7 @@
 #ifndef CC_H
 #define CC_H
 
+#include <map>
 #include <libmints/wavefunction.h>
 
 #define DFCC_INT_FILE 56  // temporary
