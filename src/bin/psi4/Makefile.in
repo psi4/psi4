@@ -26,7 +26,7 @@ PSILIBS = \
 -lboost_filesystem -lboost_system
 
 ifeq ($(MAKE_MADNESS),1)
-  PSILIBS += $(top_objdir)/madness/src/lib/world/libMADworld.a
+  PSILIBS += $(madlibs)/libMADworld.a
 endif
 
 # The psilibs need a little extra handling for plugins on linux
