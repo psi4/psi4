@@ -654,6 +654,11 @@ void Data::reset()
     ptr_->reset();
 }
 
+DataType* Data::get() const
+{
+    return ptr_.pointer();
+}
+
 Data& Data::operator[](int i)
 {
     return (*(ptr_.pointer()))[i];

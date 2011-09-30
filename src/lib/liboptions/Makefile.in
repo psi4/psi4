@@ -6,11 +6,10 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_options.a
 
-TRUECSRC = 
-
-TRUECXXSRC = liboptions.cc print.cc
-
+TRUECXXSRC = liboptions.cc print.cc python.cc
 INC = liboptions.h
+
+CXXINC += $(PYTHON_INCLUDE)
 
 LIBOBJ = $(TRUECSRC:%.c=%.o) $(TRUECXXSRC:%.cc=%.o)
 
