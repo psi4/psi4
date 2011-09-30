@@ -46,6 +46,9 @@ public:
                  const boost::shared_ptr<BasisSet>& basis,
                  const boost::shared_ptr<IntegralFactory>& ints);
 
+    MOIndexSpace(const std::string& name,
+                 const boost::shared_ptr<Wavefunction>& wave);
+
     int nirrep() const;
     const std::string& name() const;
     const boost::shared_ptr<Matrix>& C() const;

@@ -19,6 +19,7 @@
 #include <libint/libint.h>
 #include <libmints/wavefunction.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <sys/types.h>
 #include <psifiles.h>
 #include "Params.h"

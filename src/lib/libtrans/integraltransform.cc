@@ -2,6 +2,7 @@
 #include "mospace.h"
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.hpp>
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libmints/matrix.h>

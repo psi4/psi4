@@ -8,12 +8,15 @@ namespace boost {
 template<class T> class shared_ptr;
 }
 
-namespace psi { namespace scf {
+namespace psi {
+class Matrix;
+class Vector;
+namespace scf {
 
 class UHF : public HF {
 protected:
-    SharedMatrix Dt_, Dtold_;
-    SharedMatrix Ga_, Gb_, J_, Ka_, Kb_;
+    boost::shared_ptr<Matrix> Dt_, Dtold_;
+    boost::shared_ptr<Matrix> Ga_, Gb_, J_, Ka_, Kb_;
 
     void form_initialF();
     void form_C();

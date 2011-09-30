@@ -5,6 +5,7 @@
 
 #include <cstdio>
 #include <cstdlib>
+#include <exception.h>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 

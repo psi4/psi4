@@ -9,6 +9,7 @@
 #include <boost/thread/thread.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <exception.h>
 
 using namespace std;
 using namespace boost;
@@ -20,7 +21,7 @@ AIOHandler::AIOHandler(boost::shared_ptr<PSIO> psio)
 {
     locked_ = new boost::mutex();
 }
-AIOHandler::~AIOHandler() 
+AIOHandler::~AIOHandler()
 {
     delete locked_;
 }
@@ -34,7 +35,7 @@ void AIOHandler::synchronize()
     lock.unlock();
     thread_->join();
 }
-void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
+void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
 {
   unique_lock<mutex> lock(*locked_);
 
@@ -51,7 +52,7 @@ void AIOHandler::read(unsigned int unit, const char *key, char *buffer, ULI size
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
-void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end) 
+void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI size, psio_address start, psio_address *end)
 {
   unique_lock<mutex> lock(*locked_);
 
@@ -68,7 +69,7 @@ void AIOHandler::write(unsigned int unit, const char *key, char *buffer, ULI siz
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
-void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size) 
+void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, ULI size)
 {
   unique_lock<mutex> lock(*locked_);
 
@@ -83,7 +84,7 @@ void AIOHandler::read_entry(unsigned int unit, const char *key, char *buffer, UL
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
-void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size) 
+void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, ULI size)
 {
   unique_lock<mutex> lock(*locked_);
 
@@ -98,8 +99,8 @@ void AIOHandler::write_entry(unsigned int unit, const char *key, char *buffer, U
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
-void AIOHandler::read_discont(unsigned int unit, const char *key, 
-  double **matrix, ULI row_length, ULI col_length, ULI col_skip, 
+void AIOHandler::read_discont(unsigned int unit, const char *key,
+  double **matrix, ULI row_length, ULI col_length, ULI col_skip,
   psio_address start)
 {
   unique_lock<mutex> lock(*locked_);
@@ -118,8 +119,8 @@ void AIOHandler::read_discont(unsigned int unit, const char *key,
   //thread start
   thread_ = boost::shared_ptr<boost::thread>(new boost::thread(boost::bind(&AIOHandler::call_aio,this)));
 }
-void AIOHandler::write_discont(unsigned int unit, const char *key, 
-  double **matrix, ULI row_length, ULI col_length, ULI col_skip, 
+void AIOHandler::write_discont(unsigned int unit, const char *key,
+  double **matrix, ULI row_length, ULI col_length, ULI col_skip,
   psio_address start)
 {
   unique_lock<mutex> lock(*locked_);
@@ -162,7 +163,7 @@ void AIOHandler::call_aio()
     int jobtype = job_.front();
     lock.unlock();
 
-    if (jobtype == 1) { 
+    if (jobtype == 1) {
 
       lock.lock();
 
@@ -239,7 +240,7 @@ void AIOHandler::call_aio()
       job_.pop();
       unit_.pop();
       key_.pop();
-      buffer_.pop(); 
+      buffer_.pop();
       size_.pop();
 
       lock.unlock();

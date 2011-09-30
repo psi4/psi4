@@ -13,6 +13,7 @@
 #include <libpsio/psio.hpp>
 #include <libmints/wavefunction.h>
 #include <libmints/basisset.h>
+#include <libmints/vector.h>
 #include <libdiis/diismanager.h>
 #include <psi4-dec.h>
 
@@ -21,6 +22,9 @@ template<class T> class shared_ptr;
 }
 
 namespace psi {
+class Matrix;
+class Vector;
+class SimpleVector;
 class TwoBodySOInt;
 namespace scf {
 
@@ -32,26 +36,26 @@ class HF : public Wavefunction {
 protected:
 
     /// The kinetic energy matrix
-    SharedMatrix T_;
+    boost::shared_ptr<Matrix> T_;
     /// The 1e potential energy matrix
-    SharedMatrix V_;
+    boost::shared_ptr<Matrix> V_;
     /// The core hamiltonian
-    SharedMatrix H_;
+    boost::shared_ptr<Matrix> H_;
     /// The overlap metric
-    SharedMatrix S_;
+    boost::shared_ptr<Matrix> S_;
     /// The orthogonalization matrix (symmetric or canonical)
-    SharedMatrix X_;
+    boost::shared_ptr<Matrix> X_;
     /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_temp_;
+    boost::shared_ptr<Matrix> diag_temp_;
     /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_F_temp_;
+    boost::shared_ptr<Matrix> diag_F_temp_;
     /// Temporary matrix for diagonalize_F
-    SharedMatrix diag_C_temp_;
+    boost::shared_ptr<Matrix> diag_C_temp_;
 
     /// Old C Alpha matrix (if needed for MOM)
-    SharedMatrix Ca_old_;
+    boost::shared_ptr<Matrix> Ca_old_;
     /// Old C Beta matrix (if needed for MOM)
-    SharedMatrix Cb_old_;
+    boost::shared_ptr<Matrix> Cb_old_;
 
     /// Previous iteration's energy and current energy
     double Eold_;
@@ -158,7 +162,7 @@ protected:
     void print_occupation();
 
     /// Perform casting of basis set if desired.
-    boost::shared_ptr<Matrix> dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
+    boost::shared_ptr<Matrix> dualBasisProjection(boost::shared_ptr<Matrix> Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
 
     /// UHF Atomic Density Matrix for SAD
     /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
@@ -185,9 +189,9 @@ protected:
     void compute_fvpi();
 
     /// Prints the orbitals energies and symmetries (helper method)
-    void print_orbitals(const char* header, std::vector<std::pair<double, 
+    void print_orbitals(const char* header, std::vector<std::pair<double,
                         std::pair<const char*, int> > > orbs);
-    
+
     /// Prints the orbitals in arbitrary order (works with MOM)
     void print_orbitals();
 
