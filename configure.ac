@@ -663,7 +663,7 @@ AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(madlibs) $(madinc)'
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(madlibs) $(madinc)'
   AC_SUBST(PSICPPFLAGS)
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
