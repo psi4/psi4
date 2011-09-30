@@ -366,9 +366,13 @@ protected:
     std::vector<ISphericalTransform> ispherical_transforms_;
 
 public:
-    /** Initialize IntegralFactory object given a GaussianBasisSet for each center. */
+    /** Initialize IntegralFactory object given a BasisSet for each center. */
     IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2,
                     boost::shared_ptr<BasisSet> bs3, boost::shared_ptr<BasisSet> bs4);
+    /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs2 | bs1 bs2). */
+    IntegralFactory(boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2);
+    /** Initialize IntegralFactory object given a BasisSet for two centers. Becomes (bs1 bs1 | bs1 bs1). */
+    IntegralFactory(boost::shared_ptr<BasisSet> bs1);
 
     virtual ~IntegralFactory();
 

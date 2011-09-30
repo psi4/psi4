@@ -3,11 +3,10 @@
 
 #include <string>
 #include <list>
-//#include x<libutil/libutil.h>
 #include <liboptions/liboptions.h>
 #include <exception.h>
-//#include <boost/shared_ptr.hpp>
-//#include <libpsio/psio.hpp>
+#include <libmints/molecule.h>
+#include <libmints/wavefunction.h>
 
 namespace boost {
 template <class T>

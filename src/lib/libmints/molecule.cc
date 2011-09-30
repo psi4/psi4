@@ -57,19 +57,19 @@ bool from_string(T& t,
 
 namespace psi {
 
-    boost::regex Molecule::realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::commentLine_("\\s*[#%].*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::unitLabel_("\\s*units?[\\s=]+((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
-    boost::regex Molecule::chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal);
-    boost::regex Molecule::fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
-    boost::regex Molecule::orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
-    boost::regex Molecule::comCommand_("\\s*no_?com\\s*", boost::regbase::normal| boost::regbase::icase);
-    boost::regex Molecule::symmetry_("\\s*symmetry[\\s=]+(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
-    boost::smatch Molecule::reMatches_;
+    boost::regex realNumber_("(-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
+    boost::regex integerNumber_("(-?\\d+)", boost::regbase::normal | boost::regbase::icase);
+    boost::regex atomSymbol_("([A-Z]{1,2})\\d*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex variableDefinition_("\\s*(\\w+)\\s*=\\s*((-?\\d+\\.\\d+)|(-?\\d+\\.)|(-?\\.\\d+)|(-?\\d+)|(tda))\\s*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex blankLine_("[\\s%]*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex commentLine_("\\s*[#%].*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex unitLabel_("\\s*units?[\\s=]+((ang)|(angstrom)|(bohr)|(au)|(a\\.u\\.))\\s*", boost::regbase::normal | boost::regbase::icase);
+    boost::regex chargeAndMultiplicity_("\\s*(-?\\d+)\\s+(\\d+)\\s*", boost::regbase::normal);
+    boost::regex fragmentMarker_("\\s*--\\s*", boost::regbase::normal);
+    boost::regex orientCommand_("\\s*no_?reorient\\s*", boost::regbase::normal| boost::regbase::icase);
+    boost::regex comCommand_("\\s*no_?com\\s*", boost::regbase::normal| boost::regbase::icase);
+    boost::regex symmetry_("\\s*symmetry[\\s=]+(\\w+)\\s*", boost::regbase::normal| boost::regbase::icase);
+    boost::smatch reMatches_;
 
     /**
      * Interprets a string as an integer, throwing if it's unsuccesful.

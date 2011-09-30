@@ -35,6 +35,8 @@ namespace psi {
 class Molecule;
 class BasisSet;
 class IntegralFactory;
+class Matrix;
+class Vector;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
@@ -118,34 +120,34 @@ protected:
     int nirrep_;
 
     /// Alpha MO coefficients
-    SharedMatrix Ca_;
+    boost::shared_ptr<Matrix> Ca_;
     /// Beta MO coefficients
-    SharedMatrix Cb_;
+    boost::shared_ptr<Matrix> Cb_;
 
     /// Alpha density matrix
-    SharedMatrix Da_;
+    boost::shared_ptr<Matrix> Da_;
     /// Beta density matrix
-    SharedMatrix Db_;
+    boost::shared_ptr<Matrix> Db_;
 
     /// Lagrangian matrix
-    SharedMatrix Lagrangian_;
+    boost::shared_ptr<Matrix> Lagrangian_;
 
     /// Alpha Fock matrix
-    SharedMatrix Fa_;
+    boost::shared_ptr<Matrix> Fa_;
     /// Beta Fock matrix
-    SharedMatrix Fb_;
+    boost::shared_ptr<Matrix> Fb_;
 
     /// Alpha orbital eneriges
-    SharedVector epsilon_a_;
+    boost::shared_ptr<Vector> epsilon_a_;
     /// Beta orbital energies
-    SharedVector epsilon_b_;
+    boost::shared_ptr<Vector> epsilon_b_;
 
     // Callback routines to Python
     std::vector<void*> precallbacks_;
     std::vector<void*> postcallbacks_;
 
     /// If a gradient is available it will be here:
-    SharedMatrix gradient_;
+    boost::shared_ptr<Matrix> gradient_;
 
 private:
     // Wavefunction() {}
@@ -213,7 +215,7 @@ public:
     double reference_energy () const { return energy_; }
 
     /// Returns the alpha electrons MO coefficients
-    SharedMatrix Ca() const {
+    boost::shared_ptr<Matrix> Ca() const {
         if (!Ca_)
             if (!reference_wavefunction_)
                 throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
@@ -223,7 +225,7 @@ public:
         return Ca_;
     }
     /// Returns the beta electrons MO coefficients
-    SharedMatrix Cb() const {
+    boost::shared_ptr<Matrix> Cb() const {
         if (!Cb_)
             if (!reference_wavefunction_)
                 throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
@@ -233,21 +235,21 @@ public:
         return Cb_;
     }
     /// Returns the alpha Fock matrix
-    SharedMatrix Fa() const { return Fa_; }
+    boost::shared_ptr<Matrix> Fa() const { return Fa_; }
     /// Returns the beta Fock matrix
-    SharedMatrix Fb() const { return Fb_; }
+    boost::shared_ptr<Matrix> Fb() const { return Fb_; }
     /// Returns the alpha orbital energies
-    SharedVector epsilon_a() const { return epsilon_a_; }
+    boost::shared_ptr<Vector> epsilon_a() const { return epsilon_a_; }
     /// Returns the beta orbital energies
-    SharedVector epsilon_b() const { return epsilon_b_; }
+    boost::shared_ptr<Vector> epsilon_b() const { return epsilon_b_; }
 
     /// Returns the alpha OPDM for the wavefunction
-    SharedMatrix Da() const { return Da_; }
+    boost::shared_ptr<Matrix> Da() const { return Da_; }
     /// Returns the beta OPDM for the wavefunction
-    SharedMatrix Db() const { return Db_; }
+    boost::shared_ptr<Matrix> Db() const { return Db_; }
 
     /// Returns the Lagrangian in SO basis for the wavefunction
-    SharedMatrix X() const { return Lagrangian_; }
+    boost::shared_ptr<Matrix> X() const { return Lagrangian_; }
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);
@@ -260,9 +262,9 @@ public:
     void call_postiteration_callbacks();
 
     /// Returns the gradient
-    SharedMatrix gradient() const { return gradient_; }
+    boost::shared_ptr<Matrix> gradient() const { return gradient_; }
     /// Set the gradient for the wavefunction
-    void set_gradient(SharedMatrix& grad) { gradient_ = grad; }
+    void set_gradient(boost::shared_ptr<Matrix>& grad) { gradient_ = grad; }
 };
 
 }

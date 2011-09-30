@@ -7,11 +7,11 @@
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 #include <liboptions/liboptions.h>
+#include <boost/shared_ptr.hpp>
 #include <libchkpt/chkpt.hpp>
 
 #include "mrcc.h"
 #include "mrccsd_t.h"
-
 
 extern FILE* outfile;
 
@@ -21,7 +21,7 @@ namespace psi{ namespace psimrcc{
 void CCMRCC::compute_perturbative_triples()
 {
   Timer timer;
-  
+
   h_eff.set_eigenvalue(current_energy);
   h_eff.set_matrix(Heff,moinfo->get_nrefs());
   h_eff.set_right_eigenvector(right_eigenvector,moinfo->get_nrefs());
