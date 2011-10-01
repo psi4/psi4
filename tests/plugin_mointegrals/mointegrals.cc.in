@@ -2,6 +2,7 @@
 #include "psi4-dec.h"
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
+#include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.hpp>
 #include <libtrans/integraltransform.h>
 #include <libmints/wavefunction.h>
@@ -34,7 +35,7 @@ plugin_mointegrals(Options &options)
      * possible to generate integrals with labels (IWL) formatted files, but that's not shown here.
      */
     int print = options.get_int("PRINT");
-    
+
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
     boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
     if(!Process::environment.reference_wavefunction())
@@ -86,8 +87,8 @@ plugin_mointegrals(Options &options)
                 fprintf(outfile, "(%2d %2d | %2d %2d) = %16.10f, "
                                  "symmetries = (%1d %1d | %1d %1d), "
                                  "relative indices = (%2d %2d | %2d %2d)\n",
-                                 p, q, r, s, K.matrix[h][pq][rs], 
-                                 psym, qsym, rsym, ssym, 
+                                 p, q, r, s, K.matrix[h][pq][rs],
+                                 psym, qsym, rsym, ssym,
                                  prel, qrel, rrel, srel);
             }
         }
