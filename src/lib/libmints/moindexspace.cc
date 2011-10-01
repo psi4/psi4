@@ -58,10 +58,12 @@ boost::shared_ptr<Matrix> MOIndexSpace::transform(const MOIndexSpace& space2, co
 {
     boost::shared_ptr<Matrix> S21 = overlap(space2, space1);
 
-    // Invert S21
-    S21->general_invert();
+    fprintf(outfile, "MOIndexSpace::transform: This doesn't work.\n");
 
-    S21->set_name("Transformation Matrix between space1 and space2");
+//    // Invert S21
+//    S21->general_invert();
+
+//    S21->set_name("Transformation Matrix between space1 and space2");
 
     return S21;
 }
