@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -10,19 +10,20 @@
 #include <ccfiles.h>
 #include <psifiles.h>
 #include <libdpd/dpd.h>
+#include <psi4-dec.h>
 #define EXTERN
 #include "globals.h"
 
 namespace psi { namespace ccsort {
 
 void idx_permute_multipass(dpdfile4 *File, int this_bucket,
-			   int **bucket_map, unsigned long int **bucket_offset,
-			   int p, int q, int r, int s,
-			   int perm_pr, int perm_qs, int perm_prqs,
-			   double value, FILE *outfile);
+                           int **bucket_map, unsigned long int **bucket_offset,
+                           int p, int q, int r, int s,
+                           int perm_pr, int perm_qs, int perm_prqs,
+                           double value, FILE *outfile);
 
 int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
-			 int perm_pr, int perm_qs, int perm_prqs, int keep)
+                         int perm_pr, int perm_qs, int perm_prqs, int keep)
 {
   struct iwlbuf InBuf;
   int lastbuf;
@@ -51,57 +52,57 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
 
   /* Room for one bucket to begin with */
   bucket_offset = (unsigned long int **) malloc(sizeof(unsigned long int *));
-  bucket_offset[0] = 
+  bucket_offset[0] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
   for(int hh=0; hh < nirreps; hh++) bucket_offset[0][hh] = 0;
 
   bucket_rowdim = (unsigned long int **) malloc(sizeof(unsigned long int *));
-  bucket_rowdim[0] = 
+  bucket_rowdim[0] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
   for(int hh=0; hh < nirreps; hh++) bucket_rowdim[0][hh] = 0;
 
   bucket_size = (unsigned long int **) malloc(sizeof(unsigned long int *));
-  bucket_size[0] = 
+  bucket_size[0] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
   for(int hh=0; hh < nirreps; hh++) bucket_size[0][hh] = 0;
-    
+
   /* Figure out how many passes we need and where each p,q goes */
   for(h=0,core_left=memoryd,nbuckets=1; h < nirreps; h++) {
 
     row_length = (long int) File->params->coltot[h^(File->my_irrep)];
-	       
+
     for(row=0; row < File->params->rowtot[h]; row++) {
 
       if((core_left - row_length) >= 0) {
-	core_left -= row_length;
-	bucket_rowdim[nbuckets-1][h]++;
-	bucket_size[nbuckets-1][h] += row_length; // overflow is possible here
+        core_left -= row_length;
+        bucket_rowdim[nbuckets-1][h]++;
+        bucket_size[nbuckets-1][h] += row_length; // overflow is possible here
       }
       else {
-	nbuckets++;
-	core_left = memoryd - row_length;
+        nbuckets++;
+        core_left = memoryd - row_length;
 
-	/* Make room for another bucket */
-	bucket_offset = (unsigned long int **) realloc((void *) bucket_offset,
-			 nbuckets * sizeof(unsigned long int *));
-	bucket_offset[nbuckets-1] = 
+        /* Make room for another bucket */
+        bucket_offset = (unsigned long int **) realloc((void *) bucket_offset,
+                         nbuckets * sizeof(unsigned long int *));
+        bucket_offset[nbuckets-1] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
         for(int hh=0; hh < nirreps; hh++) bucket_offset[nbuckets-1][hh] = 0;
-	bucket_offset[nbuckets-1][h] = row;
+        bucket_offset[nbuckets-1][h] = row;
 
-	bucket_rowdim = (unsigned long int **) realloc((void *) bucket_rowdim,
-			 nbuckets * sizeof(unsigned long int *));
-	bucket_rowdim[nbuckets-1] = 
+        bucket_rowdim = (unsigned long int **) realloc((void *) bucket_rowdim,
+                         nbuckets * sizeof(unsigned long int *));
+        bucket_rowdim[nbuckets-1] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
         for(int hh=0; hh < nirreps; hh++) bucket_rowdim[nbuckets-1][hh] = 0;
-	bucket_rowdim[nbuckets-1][h] = 1;
+        bucket_rowdim[nbuckets-1][h] = 1;
 
-	bucket_size = (unsigned long int **) realloc((void *) bucket_size,
-			 nbuckets * sizeof(unsigned long int *));
-	bucket_size[nbuckets-1] = 
+        bucket_size = (unsigned long int **) realloc((void *) bucket_size,
+                         nbuckets * sizeof(unsigned long int *));
+        bucket_size[nbuckets-1] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
         for(int hh=0; hh < nirreps; hh++) bucket_size[nbuckets-1][hh] = 0;
-	bucket_size[nbuckets-1][h] = row_length;
+        bucket_size[nbuckets-1][h] = row_length;
       }
 
       p = File->params->roworb[h][row][0];
@@ -136,8 +137,8 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute_multipass(File,n,bucket_map,bucket_offset,
-			    p,q,r,s,perm_pr,perm_qs,
-			    perm_prqs,value,outfile);
+                            p,q,r,s,perm_pr,perm_qs,
+                            perm_prqs,value,outfile);
 
     } /* end loop through current buffer */
 
@@ -147,17 +148,17 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
       lastbuf = InBuf.lastbuf;
 
       for (idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-	p = (int) lblptr[idx++];
-	q = (int) lblptr[idx++];
-	r = (int) lblptr[idx++];
-	s = (int) lblptr[idx++];
+        p = (int) lblptr[idx++];
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
 
-	value = (double) valptr[InBuf.idx];
+        value = (double) valptr[InBuf.idx];
 
-	idx_permute_multipass(File,n,bucket_map,bucket_offset,
-			      p,q,r,s,perm_pr,perm_qs,
-			      perm_prqs,value,outfile);
-      
+        idx_permute_multipass(File,n,bucket_map,bucket_offset,
+                              p,q,r,s,perm_pr,perm_qs,
+                              perm_prqs,value,outfile);
+
       } /* end loop through current buffer */
     } /* end loop over reading buffers */
 
@@ -165,8 +166,8 @@ int file_build_multipass(dpdfile4 *File, int inputfile, double tolerance,
 
     for(h=0; h < nirreps;h++) {
       if(bucket_size[n][h])
-	psio_write(File->filenum, File->label, (char *) File->matrix[h][0],
-		   bucket_size[n][h]*((long int) sizeof(double)), next, &next);
+        psio_write(File->filenum, File->label, (char *) File->matrix[h][0],
+                   bucket_size[n][h]*((long int) sizeof(double)), next, &next);
       free_block(File->matrix[h]);
     }
 

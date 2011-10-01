@@ -13,11 +13,11 @@
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #include "globals.h"
-#include <psi4-dec.h>
 
 namespace psi { namespace cclambda {
 

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +9,7 @@
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
 #include <libchkpt/chkpt.h>
+#include <exception.h>
 #define EXTERN
 #include "globals.h"
 
@@ -28,6 +29,7 @@
 */
 
 namespace psi {
+extern FILE* outfile;
   namespace transqt2 {
 
 void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b);
@@ -50,7 +52,7 @@ void semicanonical_fock(void)
   nmo = moinfo.nmo;
 
   aoccpi = init_int_array(nirreps);
-  boccpi = init_int_array(nirreps);  
+  boccpi = init_int_array(nirreps);
   avirtpi = init_int_array(nirreps);
   bvirtpi = init_int_array(nirreps);
   for(h=0; h < nirreps; h++) {
@@ -59,7 +61,7 @@ void semicanonical_fock(void)
     avirtpi[h] = moinfo.uoccpi[h];
     bvirtpi[h] = moinfo.uoccpi[h] + moinfo.openpi[h];
   }
-  
+
   so_offset = init_int_array(nirreps);
   mo_offset = init_int_array(nirreps);
   for(h=1; h < nirreps; h++) mo_offset[h] = mo_offset[h-1] + moinfo.mopi[h-1];
@@ -76,11 +78,11 @@ void semicanonical_fock(void)
     for(p=so_offset[h]; p < so_offset[h]+moinfo.sopi[h]; p++) {
       for(q=so_offset[h]; q < so_offset[h]+moinfo.sopi[h]; q++) {
 
-	for(i=mo_offset[h]; i < mo_offset[h]+aoccpi[h]; i++)
+        for(i=mo_offset[h]; i < mo_offset[h]+aoccpi[h]; i++)
           D_a[p][q] += C[p][i] * C[q][i];
 
-	for(i=mo_offset[h]; i < mo_offset[h]+boccpi[h]; i++)
-	  D_b[p][q] += C[p][i] * C[q][i];
+        for(i=mo_offset[h]; i < mo_offset[h]+boccpi[h]; i++)
+          D_b[p][q] += C[p][i] * C[q][i];
       }
     }
   }
@@ -90,7 +92,7 @@ void semicanonical_fock(void)
   fock_b = block_matrix(nso, nso);
   uhf_fock_build(fock_a, fock_b, D_a, D_b);
   free_block(D_a); free_block(D_b);
-  
+
   /* transform the fock matrices to the MO bases */
   X = block_matrix(nso,nso);
   C_DGEMM('n','n',nso,nmo,nso,1.0,fock_a[0],nso,C[0],nmo,0.0,X[0],nso);
@@ -106,7 +108,7 @@ void semicanonical_fock(void)
     fprintf(outfile,"Beta Fock matrix (before canonicalization)");
     print_mat(fock_b,nmo,nmo,outfile);
   }
-  
+
   /** alpha Fock semicanonicalization **/
 
   Foo = (double ***) malloc(nirreps * sizeof(double **));
@@ -122,7 +124,7 @@ void semicanonical_fock(void)
 
     for(i=mo_offset[h],I=0; i < mo_offset[h]+aoccpi[h]; i++,I++)
       for(j=mo_offset[h],J=0; j < mo_offset[h]+aoccpi[h]; j++,J++)
-	Foo[h][I][J] = fock_a[i][j];
+        Foo[h][I][J] = fock_a[i][j];
 
     for(a=mo_offset[h]+aoccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
       for(b=mo_offset[h]+aoccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
@@ -140,24 +142,24 @@ void semicanonical_fock(void)
       free(work);
 
       for(i=mo_offset[h],I=0; i < mo_offset[h]+aoccpi[h]; i++,I++)
-	for(j=mo_offset[h],J=0; j < mo_offset[h]+aoccpi[h]; j++,J++)
-	  X[i][j] = Foo[h][J][I];
+        for(j=mo_offset[h],J=0; j < mo_offset[h]+aoccpi[h]; j++,J++)
+          X[i][j] = Foo[h][J][I];
     }
 
     if(avirtpi[h]) {
       evals = init_array(avirtpi[h]);
       work = init_array(3*avirtpi[h]);
       if(stat = C_DSYEV('v','u', avirtpi[h], Fvv[h][0], avirtpi[h], evals, work, avirtpi[h]*3)) {
-	fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
+        fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
         throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
       }
-      for(i=0; i<avirtpi[h]; i++) alpha_evals[cnt++] = evals[i]; 
+      for(i=0; i<avirtpi[h]; i++) alpha_evals[cnt++] = evals[i];
       free(evals);
       free(work);
 
       for(a=mo_offset[h]+aoccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
-	for(b=mo_offset[h]+aoccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-	  X[a][b] = Fvv[h][B][A];
+        for(b=mo_offset[h]+aoccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
+          X[a][b] = Fvv[h][B][A];
     }
 
     free_block(Foo[h]);
@@ -170,7 +172,7 @@ void semicanonical_fock(void)
   C_DGEMM('n','n',nso,nmo,nmo,1.0,C[0],nmo,X[0],nmo,0.0,C_a[0],nmo);
 
   free_block(X);
-  
+
   /** beta Fock semicanonicalization **/
 
   Foo = (double ***) malloc(nirreps * sizeof(double **));
@@ -188,42 +190,42 @@ void semicanonical_fock(void)
 
     for(i=mo_offset[h],I=0; i < mo_offset[h]+boccpi[h]; i++,I++)
       for(j=mo_offset[h],J=0; j < mo_offset[h]+boccpi[h]; j++,J++)
-	Foo[h][I][J] = fock_b[i][j];
+        Foo[h][I][J] = fock_b[i][j];
 
     for(a=mo_offset[h]+boccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
       for(b=mo_offset[h]+boccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-	Fvv[h][A][B] = fock_b[a][b];
+        Fvv[h][A][B] = fock_b[a][b];
 
     if(boccpi[h]) {
       evals = init_array(boccpi[h]);
       work = init_array(3*boccpi[h]);
       if(stat = C_DSYEV('v','u', boccpi[h], Foo[h][0], boccpi[h], evals, work, boccpi[h]*3)) {
-	fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", h, stat);
+        fprintf(outfile, "rotate(): Error in alpha Foo[%1d] diagonalization. stat = %d\n", h, stat);
         throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
       }
-      for(i=0; i<boccpi[h]; i++) beta_evals[cnt++] = evals[i]; 
+      for(i=0; i<boccpi[h]; i++) beta_evals[cnt++] = evals[i];
       free(evals);
       free(work);
 
       for(i=mo_offset[h],I=0; i < mo_offset[h]+boccpi[h]; i++,I++)
-	for(j=mo_offset[h],J=0; j < mo_offset[h]+boccpi[h]; j++,J++)
-	  X[i][j] = Foo[h][J][I];
+        for(j=mo_offset[h],J=0; j < mo_offset[h]+boccpi[h]; j++,J++)
+          X[i][j] = Foo[h][J][I];
     }
 
     if(bvirtpi[h]) {
       evals = init_array(bvirtpi[h]);
       work = init_array(3*bvirtpi[h]);
       if(stat = C_DSYEV('v','u', bvirtpi[h], Fvv[h][0], bvirtpi[h], evals, work, bvirtpi[h]*3)) {
-	fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
+        fprintf(outfile, "rotate(): Error in alpha Fvv[%1d] diagonalization. stat = %d\n", h, stat);
         throw PsiException("transqt2: semicanonicalization error", __FILE__, __LINE__);
       }
-      for(i=0; i<bvirtpi[h]; i++) beta_evals[cnt++] = evals[i]; 
+      for(i=0; i<bvirtpi[h]; i++) beta_evals[cnt++] = evals[i];
       free(evals);
       free(work);
 
       for(a=mo_offset[h]+boccpi[h],A=0; a < mo_offset[h]+moinfo.mopi[h]; a++,A++)
-	for(b=mo_offset[h]+boccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
-	  X[a][b] = Fvv[h][B][A];
+        for(b=mo_offset[h]+boccpi[h],B=0; b < mo_offset[h]+moinfo.mopi[h]; b++,B++)
+          X[a][b] = Fvv[h][B][A];
     }
 
     free_block(Foo[h]);
@@ -232,20 +234,20 @@ void semicanonical_fock(void)
   free(Foo);
   free(Fvv);
   free_block(fock_b);
-  
+
   C_DGEMM('n','n',nso,nmo,nmo,1.0,C[0],nmo,X[0],nmo,0.0,C_b[0],nmo);
 
   free_block(X);
-  
-  /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors 
-     and Eigenvalues to the Checkpoint File */ 
+
+  /* Write Semicanonical Alpha and Beta Fock Matrix Eigenvectors
+     and Eigenvalues to the Checkpoint File */
   chkpt_init(PSIO_OPEN_OLD);
   chkpt_wt_alpha_evals(alpha_evals);
   chkpt_wt_beta_evals(beta_evals);
   chkpt_wt_alpha_scf(C_a);
-  chkpt_wt_beta_scf(C_b); 
+  chkpt_wt_beta_scf(C_b);
   chkpt_close();
- 
+
   if(params.print_lvl > 2) {
     fprintf(outfile, "\nAlpha Eigenvalues\n");
     for (i=0; i<nmo; i++)
@@ -254,13 +256,13 @@ void semicanonical_fock(void)
     for (i=0; i<nmo; i++)
       fprintf(outfile, "%10.7lf\n", beta_evals[i]);
     fflush(outfile);
-    
+
     fprintf(outfile, "\nAlpha Eigenvectors\n");
     print_mat(C_a, nso, nmo, outfile);
     fprintf(outfile, "\nBeta Eigenvectors\n");
     print_mat(C_b, nso, nmo, outfile);
   }
-  
+
   free_block(C_a);
   free_block(C_b);
   free_block(C);
@@ -269,7 +271,7 @@ void semicanonical_fock(void)
   free(mo_offset);
   free(so_offset);
 }
- 
+
 
 void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b)
 {
@@ -340,118 +342,118 @@ void uhf_fock_build(double **fock_a, double **fock_b, double **D_a, double **D_b
 
       if(p!=q && r!=s && pq != rs) {
 
-	/* (pq|sr) */
+        /* (pq|sr) */
         fock_a[p][q] += Dt[s][r] * value;
-	fock_a[p][s] -= D_a[q][r] * value;
+        fock_a[p][s] -= D_a[q][r] * value;
         fock_b[p][q] += Dt[s][r] * value;
-	fock_b[p][s] -= D_b[q][r] * value;
+        fock_b[p][s] -= D_b[q][r] * value;
 
-	/* (qp|rs) */
-	fock_a[q][p] += Dt[r][s] * value;
-	fock_a[q][r] -= D_a[p][s] * value;
-	fock_b[q][p] += Dt[r][s] * value;
-	fock_b[q][r] -= D_b[p][s] * value;
+        /* (qp|rs) */
+        fock_a[q][p] += Dt[r][s] * value;
+        fock_a[q][r] -= D_a[p][s] * value;
+        fock_b[q][p] += Dt[r][s] * value;
+        fock_b[q][r] -= D_b[p][s] * value;
 
-	/* (qp|sr) */
-	fock_a[q][p] += Dt[s][r] * value;
+        /* (qp|sr) */
+        fock_a[q][p] += Dt[s][r] * value;
         fock_a[q][s] -= D_a[p][r] * value;
-	fock_b[q][p] += Dt[s][r] * value;
+        fock_b[q][p] += Dt[s][r] * value;
         fock_b[q][s] -= D_b[p][r] * value;
 
-	/* (rs|pq) */
-	fock_a[r][s] += Dt[p][q] * value;
-	fock_a[r][p] -= D_a[s][q] * value;
-	fock_b[r][s] += Dt[p][q] * value;
-	fock_b[r][p] -= D_b[s][q] * value;
+        /* (rs|pq) */
+        fock_a[r][s] += Dt[p][q] * value;
+        fock_a[r][p] -= D_a[s][q] * value;
+        fock_b[r][s] += Dt[p][q] * value;
+        fock_b[r][p] -= D_b[s][q] * value;
 
-	/* (rs|qp) */
-	fock_a[r][s] += Dt[q][p] * value;
-	fock_a[r][q] -= D_a[s][p] * value;
-	fock_b[r][s] += Dt[q][p] * value;
-	fock_b[r][q] -= D_b[s][p] * value;
+        /* (rs|qp) */
+        fock_a[r][s] += Dt[q][p] * value;
+        fock_a[r][q] -= D_a[s][p] * value;
+        fock_b[r][s] += Dt[q][p] * value;
+        fock_b[r][q] -= D_b[s][p] * value;
 
-	/* (sr|pq) */
-	fock_a[s][r] += Dt[p][q] * value;
-	fock_a[s][p] -= D_a[r][q] * value;
-	fock_b[s][r] += Dt[p][q] * value;
-	fock_b[s][p] -= D_b[r][q] * value;
+        /* (sr|pq) */
+        fock_a[s][r] += Dt[p][q] * value;
+        fock_a[s][p] -= D_a[r][q] * value;
+        fock_b[s][r] += Dt[p][q] * value;
+        fock_b[s][p] -= D_b[r][q] * value;
 
-	/* (sr|qp) */
-	fock_a[s][r] += Dt[q][p] * value;
-	fock_a[s][q] -= D_a[r][p] * value;
-	fock_b[s][r] += Dt[q][p] * value;
-	fock_b[s][q] -= D_b[r][p] * value;
+        /* (sr|qp) */
+        fock_a[s][r] += Dt[q][p] * value;
+        fock_a[s][q] -= D_a[r][p] * value;
+        fock_b[s][r] += Dt[q][p] * value;
+        fock_b[s][q] -= D_b[r][p] * value;
       }
       else if(p!=q && r!=s && pq==rs) {
 
-	/* (pq|sr) */
+        /* (pq|sr) */
         fock_a[p][q] += Dt[s][r] * value;
-	fock_a[p][s] -= D_a[q][r] * value;
+        fock_a[p][s] -= D_a[q][r] * value;
         fock_b[p][q] += Dt[s][r] * value;
-	fock_b[p][s] -= D_b[q][r] * value;
+        fock_b[p][s] -= D_b[q][r] * value;
 
-	/* (qp|rs) */
-	fock_a[q][p] += Dt[r][s] * value;
-	fock_a[q][r] -= D_a[p][s] * value;
-	fock_b[q][p] += Dt[r][s] * value;
-	fock_b[q][r] -= D_b[p][s] * value;
+        /* (qp|rs) */
+        fock_a[q][p] += Dt[r][s] * value;
+        fock_a[q][r] -= D_a[p][s] * value;
+        fock_b[q][p] += Dt[r][s] * value;
+        fock_b[q][r] -= D_b[p][s] * value;
 
-	/* (qp|sr) */
-	fock_a[q][p] += Dt[s][r] * value;
+        /* (qp|sr) */
+        fock_a[q][p] += Dt[s][r] * value;
         fock_a[q][s] -= D_a[p][r] * value;
-	fock_b[q][p] += Dt[s][r] * value;
+        fock_b[q][p] += Dt[s][r] * value;
         fock_b[q][s] -= D_b[p][r] * value;
 
       }
       else if(p!=q && r==s) {
 
-	/* (qp|rs) */
-	fock_a[q][p] += Dt[r][s] * value;
-	fock_a[q][r] -= D_a[p][s] * value;
-	fock_b[q][p] += Dt[r][s] * value;
-	fock_b[q][r] -= D_b[p][s] * value;
+        /* (qp|rs) */
+        fock_a[q][p] += Dt[r][s] * value;
+        fock_a[q][r] -= D_a[p][s] * value;
+        fock_b[q][p] += Dt[r][s] * value;
+        fock_b[q][r] -= D_b[p][s] * value;
 
-	/* (rs|pq) */
-	fock_a[r][s] += Dt[p][q] * value;
-	fock_a[r][p] -= D_a[s][q] * value;
-	fock_b[r][s] += Dt[p][q] * value;
-	fock_b[r][p] -= D_b[s][q] * value;
+        /* (rs|pq) */
+        fock_a[r][s] += Dt[p][q] * value;
+        fock_a[r][p] -= D_a[s][q] * value;
+        fock_b[r][s] += Dt[p][q] * value;
+        fock_b[r][p] -= D_b[s][q] * value;
 
-	/* (rs|qp) */
-	fock_a[r][s] += Dt[q][p] * value;
-	fock_a[r][q] -= D_a[s][p] * value;
-	fock_b[r][s] += Dt[q][p] * value;
-	fock_b[r][q] -= D_b[s][p] * value;
+        /* (rs|qp) */
+        fock_a[r][s] += Dt[q][p] * value;
+        fock_a[r][q] -= D_a[s][p] * value;
+        fock_b[r][s] += Dt[q][p] * value;
+        fock_b[r][q] -= D_b[s][p] * value;
 
       }
       else if(p==q && r!=s) {
 
-	/* (pq|sr) */
+        /* (pq|sr) */
         fock_a[p][q] += Dt[s][r] * value;
-	fock_a[p][s] -= D_a[q][r] * value;
+        fock_a[p][s] -= D_a[q][r] * value;
         fock_b[p][q] += Dt[s][r] * value;
-	fock_b[p][s] -= D_b[q][r] * value;
+        fock_b[p][s] -= D_b[q][r] * value;
 
-	/* (rs|pq) */
-	fock_a[r][s] += Dt[p][q] * value;
-	fock_a[r][p] -= D_a[s][q] * value;
-	fock_b[r][s] += Dt[p][q] * value;
-	fock_b[r][p] -= D_b[s][q] * value;
+        /* (rs|pq) */
+        fock_a[r][s] += Dt[p][q] * value;
+        fock_a[r][p] -= D_a[s][q] * value;
+        fock_b[r][s] += Dt[p][q] * value;
+        fock_b[r][p] -= D_b[s][q] * value;
 
-	/* (sr|pq) */
-	fock_a[s][r] += Dt[p][q] * value;
-	fock_a[s][p] -= D_a[r][q] * value;
-	fock_b[s][r] += Dt[p][q] * value;
-	fock_b[s][p] -= D_b[r][q] * value;
+        /* (sr|pq) */
+        fock_a[s][r] += Dt[p][q] * value;
+        fock_a[s][p] -= D_a[r][q] * value;
+        fock_b[s][r] += Dt[p][q] * value;
+        fock_b[s][p] -= D_b[r][q] * value;
 
       }
       else if(p==q && r==s && pq!=rs) {
 
-	/* (rs|pq) */
-	fock_a[r][s] += Dt[p][q] * value;
-	fock_a[r][p] -= D_a[s][q] * value;
-	fock_b[r][s] += Dt[p][q] * value;
-	fock_b[r][p] -= D_b[s][q] * value;
+        /* (rs|pq) */
+        fock_a[r][s] += Dt[p][q] * value;
+        fock_a[r][p] -= D_a[s][q] * value;
+        fock_b[r][s] += Dt[p][q] * value;
+        fock_b[r][p] -= D_b[s][q] * value;
 
       }
     }

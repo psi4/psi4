@@ -11,11 +11,12 @@
 #include <string>
 #include <ctime>
 #define EXTERN
-#include <psi4-dec.h>
 
 #include <sys/times.h>
 
 namespace psi {
+
+extern FILE *outfile;
 
 time_t time_start, time_end;
 time_t time_start_overall;
@@ -23,9 +24,6 @@ int running = 0;
 double user_start, sys_start;
 double user_start_overall, sys_start_overall;
 double user_stop, sys_stop;
-
-
-
 
 /*!
 ** tstart(): Starts a timer
@@ -56,13 +54,13 @@ void tstart()
      sys_start_overall = ((double) total_tmstime.tms_stime)/clk_tck;
      running = 1;
   }
-  
+
   /// start module timers
   time_start = time(NULL);
   user_start = ((double) total_tmstime.tms_utime)/clk_tck;
   sys_start = ((double) total_tmstime.tms_stime)/clk_tck;
 
-  
+
   fprintf(outfile,"\n*** tstart() called on %s\n", name);
   fprintf(outfile,"*** at %s\n",ctime(&time_start));
 
@@ -99,11 +97,11 @@ void tstop()
   sys_stop = ((double) total_tmstime.tms_stime)/clk_tck;
 
   user_s = user_stop - user_start;
-  sys_s = sys_stop - sys_start;  
+  sys_s = sys_stop - sys_start;
 
-  
+
   fprintf(outfile,"\n*** tstop() called on %s at %s", name, ctime(&time_end));
- 
+
   /// print all module timings
   fprintf(outfile,"Module time:\n");
   fprintf(outfile,"\tuser time   = %10.2f seconds = %10.2f minutes\n",
@@ -124,7 +122,7 @@ void tstop()
           sys_s, sys_s/60.0);
   fprintf(outfile,"\ttotal time  = %10d seconds = %10.2f minutes\n",
           (int)total_time_overall, ((double) total_time_overall)/60.0);
-  
+
 
   free(name);
 

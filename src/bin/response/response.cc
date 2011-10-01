@@ -1,6 +1,6 @@
 /*! \defgroup RESPONSE response: Compute various response properties */
 
-/*! 
+/*!
 ** \file
 ** \ingroup RESPONSE
 ** \brief Module to compute various response properties
@@ -10,7 +10,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <psi4-dec.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
@@ -56,15 +55,15 @@ int response(int argc, char *argv[])
   if(params.ref == 2) { /*** UHF references ***/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, 
-	     NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
-	     moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
-  } 
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist,
+             NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi, moinfo.avir_sym,
+             moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+  }
   else { /*** RHF/ROHF references ***/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
     dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+             2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
   }
 
   if(params.ref == 0) {
@@ -99,7 +98,7 @@ void init_io(int argc, char *argv[])
 void exit_io(void)
 {
   int i;
- 
+
   psio_close(PSIF_MO_HESS,1);
   psio_close(CC_INFO, 1);
   psio_close(CC_OEI, 1);

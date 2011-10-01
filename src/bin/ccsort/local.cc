@@ -13,6 +13,7 @@
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
 #include <libchkpt/chkpt.h>
+#include <liboptions/liboptions.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>

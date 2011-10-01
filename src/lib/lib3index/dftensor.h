@@ -1,9 +1,12 @@
 #ifndef three_index_df_H
 #define three_index_df_H
 
-#include <psi4-dec.h>
-#include <psiconfig.h>
-#include <libmints/vector3.h>
+#include <libmints/mints.h>
+
+namespace boost {
+template<class T>
+class shared_ptr;
+}
 
 namespace psi {
 
@@ -86,7 +89,7 @@ public:
     void form_eig_inverse(double tol = 1.0E-10);
     /// Build the full inverse metric. NOT RECOMMENDED: Numerical stability (calls form_fitting_metric)
     void form_full_inverse();
-    /// Build the full inverse metric. 
+    /// Build the full inverse metric.
     void form_full_eig_inverse(double tol = 1.0E-10);
     /// Build the full metric's Cholesky factor. RECOMMENDED: Numerical stability
     void form_cholesky_factor();
@@ -129,17 +132,17 @@ protected:
     int naux_;
 
     /// Number of frozen occupieds
-    int nfocc_; 
+    int nfocc_;
     /// Total number of occupieds
-    int nocc_; 
+    int nocc_;
     /// Number of active occupieds
-    int naocc_; 
+    int naocc_;
     /// Number of frozen virtuals
-    int nfvir_; 
+    int nfvir_;
     /// Total number of virtuals
-    int nvir_; 
+    int nvir_;
     /// Number of active virtuals
-    int navir_; 
+    int navir_;
 
     void common_init();
     void build_metric();
@@ -147,8 +150,8 @@ protected:
 
 public:
 
-    DFTensor(boost::shared_ptr<BasisSet> primary, 
-             boost::shared_ptr<BasisSet> auxiliary, 
+    DFTensor(boost::shared_ptr<BasisSet> primary,
+             boost::shared_ptr<BasisSet> auxiliary,
              boost::shared_ptr<Matrix> C,
              int nocc,
              int nvir,

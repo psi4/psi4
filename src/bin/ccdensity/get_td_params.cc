@@ -1,11 +1,12 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
 #include <libdpd/dpd.h>
+#include <liboptions/liboptions.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -24,9 +25,9 @@ void get_td_params(Options& options)
   if(options["PROP_SYM"].has_changed() && options["PROP_ROOT"].has_changed()) {
     params.prop_sym = options.get_int("PROP_SYM");
     params.prop_root = options.get_int("PROP_ROOT");
-    /*User input counts from 1*/ 
-    params.prop_sym -= 1;  
-    params.prop_root -= 1; 
+    /*User input counts from 1*/
+    params.prop_sym -= 1;
+    params.prop_root -= 1;
     params.nstates = 1;
   }
   else if(options["STATES_PER_IRREP"].has_changed()) {
@@ -52,7 +53,7 @@ void get_td_params(Options& options)
 
   td_params = (struct TD_Params *)malloc(params.nstates*sizeof(struct TD_Params));
 
-  l=0; 
+  l=0;
   if(options["PROP_SYM"].has_changed() && options["PROP_ROOT"].has_changed()) {
     td_params[0].irrep = params.prop_sym ^ moinfo.sym;
     k = td_params[0].root = params.prop_root;

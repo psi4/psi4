@@ -1,6 +1,6 @@
 /*! \file
     \ingroup RESPONSE
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -12,7 +12,6 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include <psi4-dec.h>
 
 namespace psi { namespace response {
 
@@ -45,15 +44,15 @@ void invert_RPA_RHF(double omega)
       C[h] = block_matrix(2*dim, 2*dim);
 
       for(row=0; row < dim; row++) {
-	for(col=0; col < dim; col++) {
-	  C[h][row][col] = 2 * A.matrix[h][row][col];
-	  C[h][row+dim][col+dim] = 2 *A.matrix[h][row][col];
-	  C[h][row][col+dim] = -2 * B.matrix[h][row][col];
-	  C[h][row+dim][col] = -2 * B.matrix[h][row][col];
-	}
+        for(col=0; col < dim; col++) {
+          C[h][row][col] = 2 * A.matrix[h][row][col];
+          C[h][row+dim][col+dim] = 2 *A.matrix[h][row][col];
+          C[h][row][col+dim] = -2 * B.matrix[h][row][col];
+          C[h][row+dim][col] = -2 * B.matrix[h][row][col];
+        }
 
-	C[h][row][row] += 2 * omega;
-	C[h][row+dim][row+dim] -= 2 * omega;
+        C[h][row][row] += 2 * omega;
+        C[h][row+dim][row+dim] -= 2 * omega;
       }
 
       ipiv = init_int_array(2*dim);
@@ -62,8 +61,8 @@ void invert_RPA_RHF(double omega)
       info = C_DGETRF(2*dim, 2*dim, &(C[h][0][0]), 2*dim, ipiv);
       info = C_DGETRI(2*dim, &(C[h][0][0]), 2*dim, ipiv, work, lwork);
       if(info) {
-	fprintf(outfile, "\n\tDGETRI failed. info = %d. Exiting.\n", info);
-	exit(PSI_RETURN_FAILURE);
+        fprintf(outfile, "\n\tDGETRI failed. info = %d. Exiting.\n", info);
+        exit(PSI_RETURN_FAILURE);
       }
 
       free(ipiv);

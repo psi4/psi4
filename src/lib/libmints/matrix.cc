@@ -1589,7 +1589,7 @@ void Matrix::general_invert()
     int *ipiv = new int[max_nrow()];
 
     for (int h=0; h<nirrep_; ++h) {
-        if (rowspi_[h]) {
+        if (rowspi_[h] && colspi_[h]) {
             int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
             if (err != 0) {
                 if (err < 0) {

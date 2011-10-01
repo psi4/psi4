@@ -9,9 +9,10 @@
 #include <cstdlib>
 #include <cstring>
 #include <psifiles.h>
-#include <psi4-dec.h>
 
 namespace psi {
+
+extern char* psi_file_prefix;
 
 /*!
 ** ffile(): Open a PSI3 ASCII file for reading/writing.  Returns a
