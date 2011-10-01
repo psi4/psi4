@@ -1,13 +1,13 @@
 /*! \file
     \ingroup CCTRIPLES
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
+#include <exception.h>
 #include <ccfiles.h>
 #include <psifiles.h>
-#include <psi4-dec.h>
 
 namespace psi { namespace cctriples {
 
@@ -85,7 +85,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
+  else {
     throw PsiException("CCTRIPLES error", __FILE__, __LINE__);
   }
 }
@@ -150,7 +150,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
+  else {
     throw PsiException("CCTRIPLES error", __FILE__,__LINE__);
   }
 }

@@ -1,11 +1,10 @@
 /*! \file
     \ingroup CPHF
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #ifndef _psi_bin_cphf_globals_h_
 #define _psi_bin_cphf_globals_h_
-#include<psi4-dec.h>
 
 /* Global variables */
 #ifdef EXTERN

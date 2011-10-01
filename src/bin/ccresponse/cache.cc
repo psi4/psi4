@@ -1,14 +1,16 @@
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
+#include <exception.h>
 #include <ccfiles.h>
-#include <psi4-dec.h>
 
-namespace psi { namespace ccresponse {
+namespace psi {
+extern FILE* outfile;
+namespace ccresponse {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);

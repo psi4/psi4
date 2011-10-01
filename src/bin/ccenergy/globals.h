@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #ifndef _psi_src_bin_ccenergy_globals_h
@@ -10,9 +10,10 @@
 #include <psi4-dec.h>
 #include <string>
 #include <libciomr/libciomr.h>
-#include <libpsio/psio.h>
 
-namespace psi { namespace ccenergy {
+namespace psi {
+extern FILE* outfile;
+namespace ccenergy {
 
 /* Global variables */
 #ifdef EXTERN
