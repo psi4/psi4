@@ -54,6 +54,8 @@ public:
     Vector(const std::string& name, int dim);
     /// Constructor, takes Dimension object
     Vector(const Dimension& dimpi);
+    /// Constructor, takes Dimension object
+    Vector(const std::string& name, const Dimension& dimpi);
 
     /// Destructor, frees memory
     ~Vector();
