@@ -158,6 +158,15 @@ public:
      */
     Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Dimension object providing column information.
+     */
+    Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
+
     /// Destructor, frees memory
     ~Matrix();
 
@@ -178,7 +187,9 @@ public:
     /**
      * Convenient creation function return shared_ptr<Matrix>
      */
-    static boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols);
+    static boost::shared_ptr<Matrix> create(const std::string& name,
+                                            const Dimension& rows,
+                                            const Dimension& cols);
 
     /**
      * @{

@@ -200,6 +200,34 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     alloc();
 }
 
+Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
+{
+    matrix_ = NULL;
+    symmetry_ = symmetry;
+
+    // This will happen in PetiteList::aotoso()
+    if (rows.n() == 1) {
+        nirrep_ = cols.n();
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
+        for (int i=0; i<nirrep_; ++i) {
+            rowspi_[i] = rows[0];
+            colspi_[i] = cols[i];
+        }
+    }
+    else {
+        nirrep_ = rows.n();
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
+        for (int i=0; i<nirrep_; ++i) {
+            rowspi_[i] = rows[i];
+            colspi_[i] = cols[i];
+        }
+    }
+
+    alloc();
+}
+
 Matrix::Matrix(dpdfile2 *inFile)
     : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
 {
@@ -267,11 +295,10 @@ void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const st
 }
 
 boost::shared_ptr<Matrix> Matrix::create(const std::string& name,
-                                 int nirrep,
-                                 int* rows,
-                                 int *cols)
+                                         const Dimension& rows,
+                                         const Dimension& cols)
 {
-    return boost::shared_ptr<Matrix>(new Matrix(name, nirrep, rows, cols));
+    return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
 }
 
 Matrix* Matrix::clone() const
@@ -970,7 +997,7 @@ double Matrix::rms()
 
 void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a);
+    Matrix temp(a->rowspi(), transformer->colspi());
 
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, &temp, 0.0);
