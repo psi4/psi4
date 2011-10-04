@@ -764,8 +764,8 @@ AC_MSG_RESULT([C++ preprocessor directives: $CXXDEF])
 AC_ARG_WITH(debug,[  --with-debug            will turn on debugging],[
 case $withval in
   yes)
-        CDBG='-g'
-        CXXDBG='-g'
+        CDBG='-g -DPSIDEBUG'
+        CXXDBG='-g -DPSIDEBUG'
     ;;
   no)
     CDBG=''
