@@ -15,6 +15,7 @@
 #include <libdpd/dpd.h>
 
 #include "mints.h"
+#include "deriv.h"
 
 using namespace std;
 

@@ -38,7 +38,6 @@
 #include <libmints/nabla.h>
 #include <libmints/angularmomentum.h>
 #include <libmints/tracelessquadrupole.h>
-#include <libmints/deriv.h>
 #include <libmints/cubature.h>
 #include <libmints/points.h>
 #include <libmints/extern.h>

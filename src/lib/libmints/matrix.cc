@@ -997,8 +997,14 @@ double Matrix::rms()
 
 void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a->rowspi(), transformer->colspi());
+#ifdef PSIDEBUG
+    // Check dimensions
+    // 'this' should be transformer->colspi by transformer->colspi
+    if (rowspi_ != transformer->colspi() || colspi_ != transformer->colspi())
+        throw PSIEXCEPTION("Matrix::transformer(a, transformer): Target matrix does not have correct dimensions.");
+#endif
 
+    Matrix temp(a->rowspi(), transformer->colspi());
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
@@ -1010,28 +1016,14 @@ void Matrix::transform(const boost::shared_ptr<Matrix>& a, const boost::shared_p
 
 void Matrix::transform(const Matrix* const transformer)
 {
-    bool square = true;
-    int h = 0;
+    Matrix temp(nirrep_, rowspi_, transformer->colspi());
+    temp.gemm(false, false, 1.0, this, transformer, 0.0);
 
-    while(h < nirrep_ && square){
-        if(transformer->rowspi()[h] != transformer->colspi()[h]){
-            square = false;
-        }
-        ++h;
-    }
+    // Might need to resize the target matrix.
+    if (rowspi() != transformer->rowspi() || colspi() != transformer->colspi())
+        init(transformer->colspi(), transformer->colspi(), name_, symmetry_);
 
-    if(square){
-        Matrix temp("", rowspi_, colspi_);
-        temp.gemm(false, false, 1.0, this, transformer, 0.0);
-        gemm(true, false, 1.0, transformer, &temp, 0.0);
-    }
-    else{
-        Matrix temp(nirrep_, rowspi_, transformer->colspi());
-        Matrix result(nirrep_, transformer->colspi(), transformer->colspi());
-        temp.gemm(false, false, 1.0, this, transformer, 0.0);
-        result.gemm(true, false, 1.0, transformer, &temp, 0.0);
-        copy(&result);
-    }
+    gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
 void Matrix::transform(const boost::shared_ptr<Matrix>& transformer)
@@ -1043,6 +1035,13 @@ void Matrix::transform(const boost::shared_ptr<Matrix>& L,
                        const boost::shared_ptr<Matrix>& F,
                        const boost::shared_ptr<Matrix>& R)
 {
+#ifdef PSIDEBUG
+    // Check dimensions
+    // 'this' should be transformer->colspi by transformer->colspi
+    if (rowspi_ != L->colspi() || colspi_ != R->colspi())
+        throw PSIEXCEPTION("Matrix::transformer(L, F, R): Target matrix does not have correct dimensions.");
+#endif
+
     Matrix temp(nirrep_, F->rowspi_, R->colspi_, F->symmetry_ ^ R->symmetry_);
     temp.gemm(false, false, 1.0, F, R, 0.0);
     gemm(true, false, 1.0, L, temp, 0.0);
