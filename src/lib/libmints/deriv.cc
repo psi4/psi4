@@ -160,7 +160,7 @@ public:
         double four_index_D = 0.0;
 
         if (pirrep == qirrep && rirrep == sirrep)
-            four_index_D = P_2_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
+            four_index_D = 4.0 * P_2_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
         if (pirrep == rirrep && qirrep == sirrep)
             four_index_D -= P_2_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
         if (pirrep == sirrep && qirrep == rirrep)
