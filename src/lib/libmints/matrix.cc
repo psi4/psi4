@@ -1813,8 +1813,8 @@ void Matrix::copy_upper_to_lower()
 
 void Matrix::transform(const Matrix& a, const Matrix& transformer)
 {
-    Matrix temp(a);
-
+    // Allocate adaquate size temporary matrix.
+    Matrix temp(a.rowspi(), transformer.colspi());
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
