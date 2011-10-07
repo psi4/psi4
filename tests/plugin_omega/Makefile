@@ -1,13 +1,7 @@
 # Location of your PSI4 source
-psi_top_srcdir = /home/parrish/psi4/
+psi_top_srcdir = /theoryfs2/ds/parrish/psi4
 # Location of your PSI4 install, by default as listed
-psi_top_objdir = /home/parrish/psi4/obj-plugin/
-
-#
-#
-# None of this stuff should need to be modified
-#
-#
+psi_top_objdir = /theoryfs2/ds/parrish/psi4/obj-gcc-O0
 
 # Start by figuring out whether we're on Linux or Mac (sorry, Mr. Gates)
 UNAME := $(shell uname)
@@ -28,12 +22,11 @@ default:: $(PSITARGET)
 
 # Add the flags needed for shared library creation
 ifeq ($(UNAME), Linux)
-    LDFLAGS = -fPIC -shared
-    CXXOTH += -fPIC -g
+    LDFLAGS = -shared
 endif
 ifeq ($(UNAME), Darwin)
-    LDFLAGS = -fPIC -shared -undefined dynamic_lookup
-    CXXOTH += -fPIC -fno-common
+    LDFLAGS = -shared -undefined dynamic_lookup
+    CXXOTH += -fno-common
 endif
 
 # The object files

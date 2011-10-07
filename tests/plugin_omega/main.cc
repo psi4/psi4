@@ -62,8 +62,6 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 plugin_omega(Options &options)
 {
-    tstart();
-
     // Initialize the psi3 timer library.
 //    timer_init();
 
@@ -82,8 +80,6 @@ plugin_omega(Options &options)
 
     // Shut down psi.
 //    timer_done();
-
-    tstop();
 
     return Success;
 }
