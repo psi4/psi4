@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cmath>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
