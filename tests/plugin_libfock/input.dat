@@ -5,9 +5,10 @@ He 1 4.0
 symmetry c1
 }
 
-plugin_load('./libfock_plugin.so')
+plugin_load('./plugin_libfock.so')
 
 set {
+debug 1
 print 1
 scf_type df
 basis cc-pvdz
@@ -19,5 +20,5 @@ ri_basis_scf cc-pvdz-ri
 }
 
 energy('scf')
-plugin('./libfock_plugin.so')
+plugin('./plugin_libfock.so')
 

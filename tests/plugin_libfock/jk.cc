@@ -45,7 +45,7 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
 
         GPUDFJK* jk;
 
-        if (lr_symmetric) {
+        if (!lr_symmetric) {
             std::vector<boost::shared_ptr<Matrix> > C_left;
             std::vector<boost::shared_ptr<Matrix> > C_right;
             jk = new GPUDFJK(C_left, C_right, primary, auxiliary);
@@ -73,7 +73,7 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
 
         DFJK* jk;
 
-        if (lr_symmetric) {
+        if (!lr_symmetric) {
             std::vector<boost::shared_ptr<Matrix> > C_left;
             std::vector<boost::shared_ptr<Matrix> > C_right;
             jk = new DFJK(C_left, C_right, primary, auxiliary);
@@ -99,7 +99,7 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
 
         DirectJK* jk;
 
-        if (lr_symmetric) {
+        if (!lr_symmetric) {
             std::vector<boost::shared_ptr<Matrix> > C_left;
             std::vector<boost::shared_ptr<Matrix> > C_right;
             jk = new DirectJK(C_left, C_right, primary);
@@ -676,7 +676,7 @@ void DFJK::initialize_temps()
     if (lr_symmetric_) 
         E_right_ = E_left_;
     else 
-        E_right_ = boost::shared_ptr<Matrix>(new Matrix("E_left", primary_->nbf(), max_rows_ * max_nocc_));
+        E_right_ = boost::shared_ptr<Matrix>(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
 }
 void DFJK::free_temps()
 {
@@ -722,7 +722,6 @@ void DFJK::initialize_JK_core()
 {
     boost::shared_ptr<PSIO> psio(new PSIO());
         
-
     int ntri = sieve_->function_pairs().size();
     ULI three_memory = ((ULI)auxiliary_->nbf())*ntri;
     ULI two_memory = ((ULI)auxiliary_->nbf())*auxiliary_->nbf();
@@ -888,7 +887,7 @@ void DFJK::block_K(double** Qmnp, int naux)
     unsigned long int num_nm = function_pairs.size();
 
     for (int N = 0; N < K_ao_.size(); N++) {
-    
+
         int nbf = C_left_ao_[N]->rowspi()[0];
         int nocc = C_left_ao_[N]->colspi()[0];
         
@@ -949,7 +948,7 @@ void DFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                 }
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
             }
         }
 
@@ -1047,7 +1046,7 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
     unsigned long int num_nm = function_pairs.size();
 
     for (int N = 0; N < K_ao_.size(); N++) {
-    
+
         int nbf = C_left_ao_[N]->rowspi()[0];
         int nocc = C_left_ao_[N]->colspi()[0];
         
@@ -1108,7 +1107,7 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                 }
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
             }
         }
 
