@@ -216,6 +216,11 @@ protected:
     /// Delete integrals, files, etc
     virtual void postiterations() = 0; 
 
+    // => Helper Routines <= //
+
+    /// Memory (doubles) used to hold J/K/wK/C/D and ao versions, at current moment
+    unsigned long int memory_overhead();
+
 public:
     // => Constructors <= //
 
@@ -490,12 +495,10 @@ protected:
 
     /// Auxiliary basis set
     boost::shared_ptr<BasisSet> auxiliary_;
+    /// PSIO object
+    boost::shared_ptr<PSIO> psio_; 
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_;
-    /// Reload (Q|mn) tensor from disk? 
-    bool load_;
-    /// Save (Q|mn) tensor to disk?
-    bool save_;
     /// File number for (Q|mn) tensor
     unsigned int unit_; 
     /// Core or disk?
@@ -533,6 +536,7 @@ protected:
     void common_init();
 
     bool is_core();
+    unsigned long int memory_temp();
     int max_rows();
     int max_nocc();
     void initialize_temps();
@@ -593,17 +597,6 @@ public:
      *        defaults to 1.0E-12
      */
     void set_condition(double condition) { condition_ = condition; }
-    /**
-     * Attempt to load (Q|mn) integrals from disk?
-     * Will attempt to recompute upon failure
-     * @param load load or not, defaults to false 
-     */
-    void set_load(bool load) { load_ = load; }
-    /**
-     * Save (Q|mn) integrals to disk?
-     * @param save save or not, defaults to false 
-     */
-    void set_save(bool save) { save_ = save; }
     /**
      * Which file number should the (Q|mn) integrals go in
      * @param unit Unit number

@@ -23,7 +23,7 @@ protected:
     int print_;	
     /// Debug flag, defaults to 0
     int debug_;
-    /// Memory available, in doubles, defaults to 256 MB (32 M doubles)
+    /// Memory available, in doubles, defaults to 0 => Unlimited storage 
     unsigned long int memory_;	
 
     /// Convergence criteria, defaults to 1.0E-6
@@ -50,7 +50,7 @@ public:
 
     // => Knobs <= // 
 
-    /// Set maximum vector storage space (defaults to 256 MB)
+    /// Set maximum vector storage space (defaults to 0 MB => Unlimited storage)
     void set_memory(unsigned long int memory) { memory_ = memory; }
     /// Set maximum number of iterations (defaults to 100)
     void set_maxiter(int maxiter) { maxiter_ = maxiter; }
@@ -68,10 +68,12 @@ public:
     /// Did the solver converge?
     bool converged() const { return converged_; }
     /**
-    * Print header information regarding Hamiltonian
+    * Print header information regarding Solver
     * type on output file
     */
     virtual void print_header() const = 0;
+    /// Estimate of maximum memory usage (in doubles)
+    virtual unsigned long int memory_estimate() = 0;
 
     // => Computers <= //
 
@@ -212,6 +214,7 @@ public:
     const std::vector<boost::shared_ptr<Vector> >& x() const { return x_; }  
 
     void print_header() const;
+    unsigned long int memory_estimate();
     void initialize();
     void solve();
     void finalize();
@@ -310,6 +313,7 @@ public:
     // => Required Methods <= //
     
     void print_header() const;
+    unsigned long int memory_estimate();
     void initialize();
     void solve();
     void finalize();
