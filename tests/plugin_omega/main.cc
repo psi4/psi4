@@ -23,7 +23,7 @@ read_options(std::string name, Options &options)
         options.add_int("PRINT", 1);
         /*- The amount of information printed
             to the output file -*/
-        options.add_int("DEBUG", 1);
+        options.add_int("DEBUG", 0);
         /*- The Omega optimization procedure
             -*/
         options.add_str("OMEGA_PROCEDURE", "IP", "IP");
