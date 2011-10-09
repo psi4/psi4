@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <psiconfig.h>
 #include <cstdio>
-#include <psi4-dec.h>
+//#include <psi4-dec.h>
 
 #ifdef HAVE_MPI
 #include <mpi.h>

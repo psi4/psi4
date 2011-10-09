@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +9,8 @@
 #include <string>
 #include <libciomr/libciomr.h>
 #include <libutil/libutil.h>
+#include <liboptions/liboptions.h>
+#include <psi4-dec.h>
 #include <psifiles.h>
 #include <physconst.h>
 #include "Params.h"
@@ -24,11 +26,11 @@ void get_params(Options & options)
   int errcod, tol, count, i;
   int *mu_irreps;
   std::string junk;
-  
+
   params.wfn = options.get_str("WFN");
-  if(params.wfn != "MP2" && params.wfn!="CCSD" && 
-     params.wfn!="CCSD_T" && params.wfn!="EOM_CCSD" && 
-     params.wfn!="LEOM_CCSD" && params.wfn!= "BCCD" && 
+  if(params.wfn != "MP2" && params.wfn!="CCSD" &&
+     params.wfn!="CCSD_T" && params.wfn!="EOM_CCSD" &&
+     params.wfn!="LEOM_CCSD" && params.wfn!= "BCCD" &&
      params.wfn!="BCCD_T" && params.wfn!="SCF" &&
      params.wfn!="CIS" && params.wfn!="RPA" &&
      params.wfn!="CC2" && params.wfn!="CC3" &&
@@ -38,14 +40,14 @@ void get_params(Options & options)
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
-  /* NB: SCF wfns are allowed because, at present, ccsort is needed for 
+  /* NB: SCF wfns are allowed because, at present, ccsort is needed for
      RPA calculations */
-  
+
   params.semicanonical = 0;
   junk = options.get_str("REFERENCE");
   if(junk=="RHF") params.ref = 0;
-  else if(junk=="ROHF" && 
-          (params.wfn=="MP2" || params.wfn=="CCSD_T" || 
+  else if(junk=="ROHF" &&
+          (params.wfn=="MP2" || params.wfn=="CCSD_T" ||
            params.wfn=="CC3" || params.wfn=="EOM_CC3" ||
            params.wfn=="CC2" || params.wfn=="EOM_CC2")) {
     params.ref = 2;
@@ -53,7 +55,7 @@ void get_params(Options & options)
   }
   else if(junk=="ROHF") params.ref = 1;
   else if(junk=="UHF") params.ref = 2;
-  else { 
+  else {
     printf("Invalid value of input keyword REFERENCE: %s\n", junk.c_str());
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
@@ -103,16 +105,16 @@ void get_params(Options & options)
   if(params.local && local.pairdef!="BP") {
     if(params.dertype == 3) {
       if(params.prop=="POLARIZABILITY") {
-	local.domain_polar = 1;
-	local.domain_mag = 0;
+        local.domain_polar = 1;
+        local.domain_mag = 0;
       }
       else if(params.prop=="MAGNETIZABILITY") {
-	local.domain_polar = 0;
-	local.domain_mag = 1;
+        local.domain_polar = 0;
+        local.domain_mag = 1;
       }
       else if(params.prop=="ROTATION") {
-	local.domain_polar = 1;
-	local.domain_mag = 1;
+        local.domain_polar = 1;
+        local.domain_mag = 1;
       }
     }
     else {
@@ -155,7 +157,7 @@ void get_params(Options & options)
   else params.make_aibc = 0;
   junk = options.get_str("EOM_REFERENCE");
   if(junk=="ROHF") params.make_aibc = 1;
-  
+
   params.print_lvl = options.get_int("PRINT");
   params.keep_TEIFile = options.get_bool("KEEP_TEIFILE");
   params.keep_OEIFile = options.get_bool("KEEP_OEIFILE");
@@ -211,21 +213,21 @@ void get_params(Options & options)
   fprintf(outfile, "\t-----------------\n");
   fprintf(outfile, "\tWave function   =\t%s\n", params.wfn.c_str());
   if(params.semicanonical) {
-    fprintf(outfile, "\tReference wfn   =\tROHF changed to UHF for Semicanonical Orbitals\n"); 
+    fprintf(outfile, "\tReference wfn   =\tROHF changed to UHF for Semicanonical Orbitals\n");
   }
   else {
-    fprintf(outfile, "\tReference wfn   =\t%s\n", 
-	    (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
-  }	  
+    fprintf(outfile, "\tReference wfn   =\t%s\n",
+            (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+  }
   if(params.dertype == 0) fprintf(outfile, "\tDerivative      =\tNone\n");
   else if(params.dertype == 1) fprintf(outfile, "\tDerivative      =\tFirst\n");
   else if(params.dertype == 3) fprintf(outfile, "\tDerivative      =\tResponse\n");
   fprintf(outfile, "\tMemory (Mbytes) =\t%.1f\n", params.memory/1e6);
   fprintf(outfile, "\tAO Basis        =\t%s\n", params.aobasis.c_str());
-  fprintf(outfile, "\tMake (ab|cd)    =\t%s\n", 
-	  (params.make_abcd == 1) ? "True" : "False");
-  fprintf(outfile, "\tMake unpacked (ab|cd) =\t%s\n", 
-	  (params.make_unpacked_abcd == 1) ? "True" : "False");
+  fprintf(outfile, "\tMake (ab|cd)    =\t%s\n",
+          (params.make_abcd == 1) ? "True" : "False");
+  fprintf(outfile, "\tMake unpacked (ab|cd) =\t%s\n",
+          (params.make_unpacked_abcd == 1) ? "True" : "False");
   fprintf(outfile, "\tCache Level     =\t%d\n", params.cachelev);
   fprintf(outfile, "\tCache Type      =\t%s\n", "LRU");
   fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");

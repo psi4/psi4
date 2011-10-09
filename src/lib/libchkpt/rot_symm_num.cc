@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -27,7 +28,7 @@ void Chkpt::wt_rot_symm_num(int rot_symm_num)
 {
   char *keyword;
   keyword = build_keyword("Rotational Symmetry Number");
-  
+
   psio->write_entry(PSIF_CHKPT, keyword, (char *) &rot_symm_num, sizeof(int));
 
   free(keyword);
@@ -35,7 +36,7 @@ void Chkpt::wt_rot_symm_num(int rot_symm_num)
 
 extern "C" {
 /*!
-** int chkpt_rd_rot_symm_num()  
+** int chkpt_rd_rot_symm_num()
 ** Reads the rotational symmetry number.
 **
 ** returns: rot_symm_num = rotational symmetry number
@@ -47,7 +48,7 @@ extern "C" {
   }
 
 /*!
-** void chkpt_wt_rot_symm_num(int)  
+** void chkpt_wt_rot_symm_num(int)
 ** Writes the rotational symmetry number.
 **
 ** \param rot_symm_num = rotational symmetry number

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -8,6 +8,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
+#include <liboptions/liboptions.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -190,19 +191,19 @@ void get_rho_params(Options& options)
     if (params.ref == 0) {
       if (i == 0) sprintf(rho_params[i].opdm_lbl, "MO-basis OPDM");
       else sprintf(rho_params[i].opdm_lbl, "MO-basis OPDM Root %d", i);
-    } 
+    }
     else if (params.ref == 1) { /* ROHF */
       if (i == 0) sprintf(rho_params[i].opdm_lbl, "MO-basis OPDM");
       else sprintf(rho_params[i].opdm_lbl, "MO-basis OPDM Root %d", i);
     }
     else if (params.ref == 2) { /* UHF */
       if (i == 0) {
-	sprintf(rho_params[i].opdm_a_lbl, "MO-basis Alpha OPDM");
-	sprintf(rho_params[i].opdm_b_lbl, "MO-basis Beta OPDM");
+        sprintf(rho_params[i].opdm_a_lbl, "MO-basis Alpha OPDM");
+        sprintf(rho_params[i].opdm_b_lbl, "MO-basis Beta OPDM");
       }
       else {
-	sprintf(rho_params[i].opdm_a_lbl, "MO-basis Alpha OPDM Root %d", i);
-	sprintf(rho_params[i].opdm_b_lbl, "MO-basis Beta OPDM Root %d", i);
+        sprintf(rho_params[i].opdm_a_lbl, "MO-basis Alpha OPDM Root %d", i);
+        sprintf(rho_params[i].opdm_b_lbl, "MO-basis Beta OPDM Root %d", i);
       }
     }
   }
@@ -215,22 +216,22 @@ void get_rho_params(Options& options)
   fprintf(outfile,"\n\tGround? L_root L_irr R_root R_irr G_irr     EOM Energy        R0\n");
   for(i=0; i<params.nstates; i++) {
     fprintf(outfile,"\t%5s %6d %7s %4d %7s %4s %15.10lf %12.8lf\n",
-	    (rho_params[i].R_ground ? "Yes":"No"),
-	    rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
-	    rho_params[i].R_root+1, moinfo.labels[rho_params[i].R_irr],
-	    moinfo.labels[rho_params[i].G_irr],
-	    rho_params[i].cceom_energy,
-	    rho_params[i].R0);
+            (rho_params[i].R_ground ? "Yes":"No"),
+            rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
+            rho_params[i].R_root+1, moinfo.labels[rho_params[i].R_irr],
+            moinfo.labels[rho_params[i].G_irr],
+            rho_params[i].cceom_energy,
+            rho_params[i].R0);
   }
   */
 
   fprintf(outfile,"\n\tGround?  State     EOM Energy       R0\n");
   for(i=0; i<params.nstates; i++) {
     fprintf(outfile,"\t%5s     %d%3s %15.10lf %12.8lf\n",
-	    (rho_params[i].R_ground ? "Yes":"No"),
-	    rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
-	    rho_params[i].cceom_energy,
-	    rho_params[i].R0);
+            (rho_params[i].R_ground ? "Yes":"No"),
+            rho_params[i].L_root+1, moinfo.labels[rho_params[i].L_irr],
+            rho_params[i].cceom_energy,
+            rho_params[i].R0);
   }
 
   /* set variables for xi and twopdm code in the old non-state specific structure */

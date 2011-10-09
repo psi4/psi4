@@ -200,6 +200,34 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     alloc();
 }
 
+Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
+{
+    matrix_ = NULL;
+    symmetry_ = symmetry;
+
+    // This will happen in PetiteList::aotoso()
+    if (rows.n() == 1) {
+        nirrep_ = cols.n();
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
+        for (int i=0; i<nirrep_; ++i) {
+            rowspi_[i] = rows[0];
+            colspi_[i] = cols[i];
+        }
+    }
+    else {
+        nirrep_ = rows.n();
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
+        for (int i=0; i<nirrep_; ++i) {
+            rowspi_[i] = rows[i];
+            colspi_[i] = cols[i];
+        }
+    }
+
+    alloc();
+}
+
 Matrix::Matrix(dpdfile2 *inFile)
     : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
 {
@@ -267,11 +295,10 @@ void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const st
 }
 
 boost::shared_ptr<Matrix> Matrix::create(const std::string& name,
-                                 int nirrep,
-                                 int* rows,
-                                 int *cols)
+                                         const Dimension& rows,
+                                         const Dimension& cols)
 {
-    return boost::shared_ptr<Matrix>(new Matrix(name, nirrep, rows, cols));
+    return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
 }
 
 Matrix* Matrix::clone() const
@@ -970,8 +997,14 @@ double Matrix::rms()
 
 void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a);
+#ifdef PSIDEBUG
+    // Check dimensions
+    // 'this' should be transformer->colspi by transformer->colspi
+    if (rowspi_ != transformer->colspi() || colspi_ != transformer->colspi())
+        throw PSIEXCEPTION("Matrix::transformer(a, transformer): Target matrix does not have correct dimensions.");
+#endif
 
+    Matrix temp(a->rowspi(), transformer->colspi());
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
@@ -983,28 +1016,14 @@ void Matrix::transform(const boost::shared_ptr<Matrix>& a, const boost::shared_p
 
 void Matrix::transform(const Matrix* const transformer)
 {
-    bool square = true;
-    int h = 0;
+    Matrix temp(nirrep_, rowspi_, transformer->colspi());
+    temp.gemm(false, false, 1.0, this, transformer, 0.0);
 
-    while(h < nirrep_ && square){
-        if(transformer->rowspi()[h] != transformer->colspi()[h]){
-            square = false;
-        }
-        ++h;
-    }
+    // Might need to resize the target matrix.
+    if (rowspi() != transformer->rowspi() || colspi() != transformer->colspi())
+        init(transformer->colspi(), transformer->colspi(), name_, symmetry_);
 
-    if(square){
-        Matrix temp("", rowspi_, colspi_);
-        temp.gemm(false, false, 1.0, this, transformer, 0.0);
-        gemm(true, false, 1.0, transformer, &temp, 0.0);
-    }
-    else{
-        Matrix temp(nirrep_, rowspi_, transformer->colspi());
-        Matrix result(nirrep_, transformer->colspi(), transformer->colspi());
-        temp.gemm(false, false, 1.0, this, transformer, 0.0);
-        result.gemm(true, false, 1.0, transformer, &temp, 0.0);
-        copy(&result);
-    }
+    gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
 void Matrix::transform(const boost::shared_ptr<Matrix>& transformer)
@@ -1016,6 +1035,13 @@ void Matrix::transform(const boost::shared_ptr<Matrix>& L,
                        const boost::shared_ptr<Matrix>& F,
                        const boost::shared_ptr<Matrix>& R)
 {
+#ifdef PSIDEBUG
+    // Check dimensions
+    // 'this' should be transformer->colspi by transformer->colspi
+    if (rowspi_ != L->colspi() || colspi_ != R->colspi())
+        throw PSIEXCEPTION("Matrix::transformer(L, F, R): Target matrix does not have correct dimensions.");
+#endif
+
     Matrix temp(nirrep_, F->rowspi_, R->colspi_, F->symmetry_ ^ R->symmetry_);
     temp.gemm(false, false, 1.0, F, R, 0.0);
     gemm(true, false, 1.0, L, temp, 0.0);
@@ -1578,6 +1604,53 @@ void Matrix::invert()
     copy_lower_to_upper();
 }
 
+void Matrix::general_invert()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::invert: Matrix is non-totally symmetric.");
+    }
+
+    int lwork = max_nrow() * max_ncol();
+    double *work = new double[lwork];
+    int *ipiv = new int[max_nrow()];
+
+    for (int h=0; h<nirrep_; ++h) {
+        if (rowspi_[h] && colspi_[h]) {
+            int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+
+            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+        }
+    }
+    delete[] ipiv;
+    delete[] work;
+}
+
 void Matrix::power(double alpha, double cutoff)
 {
     if (symmetry_) {
@@ -1740,8 +1813,8 @@ void Matrix::copy_upper_to_lower()
 
 void Matrix::transform(const Matrix& a, const Matrix& transformer)
 {
-    Matrix temp(a);
-
+    // Allocate adaquate size temporary matrix.
+    Matrix temp(a.rowspi(), transformer.colspi());
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }

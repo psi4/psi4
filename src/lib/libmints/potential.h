@@ -49,10 +49,10 @@ public:
     virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result);
 
     /// Set the field of charges
-    void setChargeField(boost::shared_ptr<Matrix> Zxyz) { Zxyz_ = Zxyz; }
+    void set_charge_field(boost::shared_ptr<Matrix> Zxyz) { Zxyz_ = Zxyz; }
 
     /// Get the field of charges
-    boost::shared_ptr<Matrix> chargeField() const { return Zxyz_; }
+    boost::shared_ptr<Matrix> charge_field() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }

@@ -4,6 +4,7 @@
  */
 
 #include <cstdio>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
@@ -13,9 +14,9 @@ namespace psi {
 
 void PSIO::tocprint(unsigned int unit) {
   psio_tocentry *this_entry;
-  
+
   this_entry = psio_unit[unit].toc;
-  
+
   fprintf(outfile, "\nTable of Contents for Unit %5u\n", unit);
   fprintf(
           outfile,
@@ -26,7 +27,7 @@ void PSIO::tocprint(unsigned int unit) {
   fprintf(
           outfile,
           "----------------------------------------------------------------------------\n");
-  
+
   while (this_entry != NULL) {
     fprintf(outfile, "%-32s %10lu %10lu %10lu %10lu\n", this_entry->key,
             this_entry->sadd.page, this_entry->sadd.offset,

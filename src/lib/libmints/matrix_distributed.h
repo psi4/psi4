@@ -254,6 +254,7 @@ public:
 
 };
 #else
+public:
     /// Default constructor: clears everything out
     Distributed_Matrix()
     { throw PSIEXCEPTION("Distributed matrix only works with MADNESS.\n"); }
@@ -276,80 +277,80 @@ public:
     int t_ncol(const int &t) { return tile_ncols_[global_local_tile_[t]]; }
 
     /// Print all of the tiles
-    void print_all_tiles() const;
+    void print_all_tiles() const {}
     /// Print a given tile
-    void print_tile(const int &t) const;
+    void print_tile(const int &t) const {}
 
     /// Print a given tile (only process 0 should call this)
     void print_mat(const int &tile, const std::vector<double> &a,
-                            const int &m, const int &n) const;
+                            const int &m, const int &n) const {}
 
     /// Set the distributed matrix to the identity
-    void identity();
+    void identity() {}
     /// Zero the entire distributed matrix
-    void zero();
+    void zero() {}
 
     /// Returns the i,j value from the distributed matrix
-    double get_val(const int &row, const int &col) const;
+    double get_val(const int &row, const int &col) const {}
     /// Set the i,j value in the distributed matrix
-    void set_val(const int &row, const int &col, const double &val);
+    void set_val(const int &row, const int &col, const double &val) {}
 
     /// Set the name of the distributed matrix
     void set_name(const std::string &name) { name_ = name; }
 
     /// Copies the rhs distributed matrix
-    Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
-    Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
-    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat);
+    Distributed_Matrix& operator =(const Distributed_Matrix &rhs) {}
+    Distributed_Matrix& operator =(const Distributed_Matrix *rhs) {}
+    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat) {}
 
     /// Adds the rhs matrix to this distributed matrix
-    void operator +=(const Distributed_Matrix &rhs);
-    void operator +=(const Distributed_Matrix *rhs);
+    void operator +=(const Distributed_Matrix &rhs) {}
+    void operator +=(const Distributed_Matrix *rhs) {}
 
     /// Adds two matrices and returns the result
-    Distributed_Matrix operator +(const Distributed_Matrix &rhs);
-    Distributed_Matrix operator +(const Distributed_Matrix *rhs);
+    Distributed_Matrix operator +(const Distributed_Matrix &rhs) {}
+    Distributed_Matrix operator +(const Distributed_Matrix *rhs) {}
 
 
     /// Fill the distributed matris with a value
-    void fill(const double &val);
+    void fill(const double &val) {}
 
     /// Check to see if the distributed matrices are the same size and tiled the same
-    bool operator ==(const Distributed_Matrix &rhs);
-    bool operator ==(const Distributed_Matrix *rhs);
-    bool operator ==(const boost::shared_ptr<Matrix> mat) const;
+    bool operator ==(const Distributed_Matrix &rhs) {}
+    bool operator ==(const Distributed_Matrix *rhs) {}
+    bool operator ==(const boost::shared_ptr<Matrix> mat) const {}
 
     /// Check to see if the distributed matrices are not the same size and tiled the same
-    bool operator !=(const Distributed_Matrix &rhs);
-    bool operator !=(const Distributed_Matrix *rhs);
+    bool operator !=(const Distributed_Matrix &rhs) {}
+    bool operator !=(const Distributed_Matrix *rhs) {}
 
     /// Perform a matrix-matrix multiplication of the distributed matrices and returns the result
-    Distributed_Matrix operator *(const Distributed_Matrix &rhs);
+    Distributed_Matrix operator *(const Distributed_Matrix &rhs) {}
 
     /// Scale the matrix by the given value
-    void scale(const double &val);
+    void scale(const double &val) {}
     /// Set the diagonal of the distributed matrix to zero
-    void zero_diagonal();
+    void zero_diagonal() {}
 
     /// Compute the trace of the distributed matrix
-    double trace();
+    double trace() {}
 
     /// Return the transpose of the distributed matrix
-    Distributed_Matrix transpose();
+    Distributed_Matrix transpose() {}
 
     /// Compute the product of lmat and rmat and add it to this by the c_scale
     void product(const Distributed_Matrix &lmat,
                           const Distributed_Matrix &rmat,
-                          double c_scale = 1.0);
+                          double c_scale = 1.0) {}
 
     /// Return the dot product of this and rmat
-    double vector_dot(const Distributed_Matrix &rmat);
+    double vector_dot(const Distributed_Matrix &rmat) {}
 
     /// Transform a distributed matrix with the transformer
-    Distributed_Matrix transform(Distributed_Matrix &transformer);
+    Distributed_Matrix transform(Distributed_Matrix &transformer) {}
 
     /// Perform a matrix multiplication using the DNS Algorithm
-    void DNS_MXM(const Distributed_Matrix &lhs, const Distributed_Matrix &rhs);
+    void DNS_MXM(const Distributed_Matrix &lhs, const Distributed_Matrix &rhs) {}
 };
 #endif
 

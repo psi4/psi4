@@ -6,6 +6,7 @@
 #include "debugging.h"
 #include <libutil/libutil.h>
 
+#include <boost/shared_ptr.hpp>
 #include <libchkpt/chkpt.hpp>
 
 extern FILE* outfile;

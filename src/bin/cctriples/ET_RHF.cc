@@ -1,11 +1,12 @@
 /*! \file \ingroup CCTRIPLES
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
+#include <exception.h>
 #include <libqt/qt.h>
 #include <pthread.h>
 #include "MOInfo.h"
@@ -108,7 +109,7 @@ double ET_RHF(void)
             J = occ_off[Gj] + j;
             for(k=0; k < occpi[Gk]; k++) {
               K = occ_off[Gk] + k;
-              if(I >= J && J >= K) nijk++; 
+              if(I >= J && J >= K) nijk++;
             }
           }
         }
@@ -306,582 +307,582 @@ void* ET_RHF_thread(void* thread_data_in)
           if(fIJ->params->rowtot[Gk])
             dijk += fIJ->matrix[Gk][k][k];
 
-		/* Malloc space for the W intermediate */
+                /* Malloc space for the W intermediate */
 
-		// timer_on("malloc");
-		for(Gab=0; Gab < nirreps; Gab++) {
-		  Gc = Gab ^ Gijk;
+                // timer_on("malloc");
+                for(Gab=0; Gab < nirreps; Gab++) {
+                  Gc = Gab ^ Gijk;
 
-		  W0[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-		  W1[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-		}
-		// timer_off("malloc");
+                  W0[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  W1[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                }
+                // timer_off("malloc");
 
-		// timer_on("N7 Terms");
+                // timer_on("N7 Terms");
 
-		/* +F_idab * t_kjcd */
-		for(Gd=0; Gd < nirreps; Gd++) {
+                /* +F_idab * t_kjcd */
+                for(Gd=0; Gd < nirreps; Gd++) {
 
-		  Gab = Gid = Gi ^ Gd;
-		  Gc = Gkj ^ Gd;
+                  Gab = Gid = Gi ^ Gd;
+                  Gc = Gkj ^ Gd;
 
-		  /* Set up F integrals */
-		  Fints->matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
+                  /* Set up F integrals */
+                  Fints->matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
           pthread_mutex_lock(&mut);
-		  dpd_buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
+                  dpd_buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
-		  /* Set up T2 amplitudes */
-		  cd = T2->col_offset[Gkj][Gc];
+                  /* Set up T2 amplitudes */
+                  cd = T2->col_offset[Gkj][Gc];
 
-		  /* Set up multiplication parameters */
-		  nrows = Fints->params->coltot[Gid];
-		  ncols = virtpi[Gc];
-		  nlinks = virtpi[Gd];
+                  /* Set up multiplication parameters */
+                  nrows = Fints->params->coltot[Gid];
+                  ncols = virtpi[Gc];
+                  nlinks = virtpi[Gd];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
-			    &(Fints->matrix[Gid][0][0]), nrows, 
-			    &(T2->matrix[Gkj][kj][cd]), nlinks, 0.0,
-			    &(W0[Gab][0][0]), ncols);
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                            &(Fints->matrix[Gid][0][0]), nrows,
+                            &(T2->matrix[Gkj][kj][cd]), nlinks, 0.0,
+                            &(W0[Gab][0][0]), ncols);
 
-		  dpd_free_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
-		}
+                  dpd_free_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
+                }
 
-		/* -E_jklc * t_ilab */
-		for(Gl=0; Gl < nirreps; Gl++) {
+                /* -E_jklc * t_ilab */
+                for(Gl=0; Gl < nirreps; Gl++) {
 
-		  Gab = Gil = Gi ^ Gl;
-		  Gc = Gjk ^ Gl;
+                  Gab = Gil = Gi ^ Gl;
+                  Gc = Gjk ^ Gl;
 
-		  /* Set up E integrals */
-		  lc = Eints->col_offset[Gjk][Gl];
+                  /* Set up E integrals */
+                  lc = Eints->col_offset[Gjk][Gl];
 
-		  /* Set up T2 amplitudes */
-		  il = T2->row_offset[Gil][I];
+                  /* Set up T2 amplitudes */
+                  il = T2->row_offset[Gil][I];
 
-		  /* Set up multiplication parameters */
-		  nrows = T2->params->coltot[Gil];
-		  ncols = virtpi[Gc];
-		  nlinks = occpi[Gl];
+                  /* Set up multiplication parameters */
+                  nrows = T2->params->coltot[Gil];
+                  ncols = virtpi[Gc];
+                  nlinks = occpi[Gl];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
-			    &(T2->matrix[Gil][il][0]), nrows,
-			    &(Eints->matrix[Gjk][jk][lc]), ncols, 1.0,
-			    &(W0[Gab][0][0]), ncols);
-		}
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                            &(T2->matrix[Gil][il][0]), nrows,
+                            &(Eints->matrix[Gjk][jk][lc]), ncols, 1.0,
+                            &(W0[Gab][0][0]), ncols);
+                }
 
-		/* Sort W[ab][c] --> W[ac][b] */
-		dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx, 
-		       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym, 
-		       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
+                /* Sort W[ab][c] --> W[ac][b] */
+                dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
+                       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
 
-		/* +F_idac * t_jkbd */
-		for(Gd=0; Gd < nirreps; Gd++) {
+                /* +F_idac * t_jkbd */
+                for(Gd=0; Gd < nirreps; Gd++) {
 
-		  Gac = Gid = Gi ^ Gd;
-		  Gb = Gjk ^ Gd;
+                  Gac = Gid = Gi ^ Gd;
+                  Gb = Gjk ^ Gd;
 
-		  Fints->matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
+                  Fints->matrix[Gid] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gid]);
           pthread_mutex_lock(&mut);
-		  dpd_buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
+                  dpd_buf4_mat_irrep_rd_block(Fints, Gid, Fints->row_offset[Gid][I], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
-		  bd = T2->col_offset[Gjk][Gb];
+                  bd = T2->col_offset[Gjk][Gb];
 
-		  nrows = Fints->params->coltot[Gid];
-		  ncols = virtpi[Gb];
-		  nlinks = virtpi[Gd];
+                  nrows = Fints->params->coltot[Gid];
+                  ncols = virtpi[Gb];
+                  nlinks = virtpi[Gd];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
-			    &(Fints->matrix[Gid][0][0]), nrows, 
-			    &(T2->matrix[Gjk][jk][bd]), nlinks, 1.0,
-			    &(W1[Gac][0][0]), ncols);
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                            &(Fints->matrix[Gid][0][0]), nrows,
+                            &(T2->matrix[Gjk][jk][bd]), nlinks, 1.0,
+                            &(W1[Gac][0][0]), ncols);
 
-		  dpd_free_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
-		}
+                  dpd_free_block(Fints->matrix[Gid], virtpi[Gd], Fints->params->coltot[Gid]);
+                }
 
-		/* -E_kjlb * t_ilac */
-		for(Gl=0; Gl < nirreps; Gl++) {
+                /* -E_kjlb * t_ilac */
+                for(Gl=0; Gl < nirreps; Gl++) {
 
-		  Gac = Gil = Gi ^ Gl;
-		  Gb = Gkj ^ Gl;
+                  Gac = Gil = Gi ^ Gl;
+                  Gb = Gkj ^ Gl;
 
-		  lb = Eints->col_offset[Gkj][Gl];
+                  lb = Eints->col_offset[Gkj][Gl];
 
-		  il = T2->row_offset[Gil][I];
+                  il = T2->row_offset[Gil][I];
 
-		  nrows = T2->params->coltot[Gil];
-		  ncols = virtpi[Gb];
-		  nlinks = occpi[Gl];
+                  nrows = T2->params->coltot[Gil];
+                  ncols = virtpi[Gb];
+                  nlinks = occpi[Gl];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
-			    &(T2->matrix[Gil][il][0]), nrows,
-			    &(Eints->matrix[Gkj][kj][lb]), ncols, 1.0,
-			    &(W1[Gac][0][0]), ncols);
-		}
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                            &(T2->matrix[Gil][il][0]), nrows,
+                            &(Eints->matrix[Gkj][kj][lb]), ncols, 1.0,
+                            &(W1[Gac][0][0]), ncols);
+                }
 
-		/* Sort W[ac][b] --> W[ca][b] */
-		dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx, 
-		       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym, 
-		       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
+                /* Sort W[ac][b] --> W[ca][b] */
+                dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
+                       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
 
-		/* +F_kdca * t_jibd */
-		for(Gd=0; Gd < nirreps; Gd++) {
+                /* +F_kdca * t_jibd */
+                for(Gd=0; Gd < nirreps; Gd++) {
 
-		  Gca = Gkd = Gk ^ Gd;
-		  Gb = Gji ^ Gd;
+                  Gca = Gkd = Gk ^ Gd;
+                  Gb = Gji ^ Gd;
 
-		  Fints->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
+                  Fints->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
           pthread_mutex_lock(&mut);
-		  dpd_buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
+                  dpd_buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
-		  bd = T2->col_offset[Gji][Gb];
+                  bd = T2->col_offset[Gji][Gb];
 
-		  nrows = Fints->params->coltot[Gkd];
-		  ncols = virtpi[Gb];
-		  nlinks = virtpi[Gd];
+                  nrows = Fints->params->coltot[Gkd];
+                  ncols = virtpi[Gb];
+                  nlinks = virtpi[Gd];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
-			    &(Fints->matrix[Gkd][0][0]), nrows, 
-			    &(T2->matrix[Gji][ji][bd]), nlinks, 1.0,
-			    &(W0[Gca][0][0]), ncols);
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                            &(Fints->matrix[Gkd][0][0]), nrows,
+                            &(T2->matrix[Gji][ji][bd]), nlinks, 1.0,
+                            &(W0[Gca][0][0]), ncols);
 
-		  dpd_free_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
-		}
+                  dpd_free_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
+                }
 
-		/* -E_ijlb * t_klca */
-		for(Gl=0; Gl < nirreps; Gl++) {
+                /* -E_ijlb * t_klca */
+                for(Gl=0; Gl < nirreps; Gl++) {
 
-		  Gca = Gkl = Gk ^ Gl;
-		  Gb = Gij ^ Gl;
+                  Gca = Gkl = Gk ^ Gl;
+                  Gb = Gij ^ Gl;
 
-		  lb = Eints->col_offset[Gij][Gl];
+                  lb = Eints->col_offset[Gij][Gl];
 
-		  kl = T2->row_offset[Gkl][K];
+                  kl = T2->row_offset[Gkl][K];
 
-		  nrows = T2->params->coltot[Gkl];
-		  ncols = virtpi[Gb];
-		  nlinks = occpi[Gl];
+                  nrows = T2->params->coltot[Gkl];
+                  ncols = virtpi[Gb];
+                  nlinks = occpi[Gl];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
-			    &(T2->matrix[Gkl][kl][0]), nrows,
-			    &(Eints->matrix[Gij][ij][lb]), ncols, 1.0,
-			    &(W0[Gca][0][0]), ncols);
-		}
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                            &(T2->matrix[Gkl][kl][0]), nrows,
+                            &(Eints->matrix[Gij][ij][lb]), ncols, 1.0,
+                            &(W0[Gca][0][0]), ncols);
+                }
 
-		/* Sort W[ca][b] --> W[cb][a] */
-		dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx, 
-		       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym, 
-		       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
+                /* Sort W[ca][b] --> W[cb][a] */
+                dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
+                       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
 
-		/* +F_kdcb * t_ijad */
-		for(Gd=0; Gd < nirreps; Gd++) {
+                /* +F_kdcb * t_ijad */
+                for(Gd=0; Gd < nirreps; Gd++) {
 
-		  Gcb = Gkd = Gk ^ Gd;
-		  Ga = Gij ^ Gd;
+                  Gcb = Gkd = Gk ^ Gd;
+                  Ga = Gij ^ Gd;
 
-		  Fints->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
+                  Fints->matrix[Gkd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gkd]);
           pthread_mutex_lock(&mut);
-		  dpd_buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
+                  dpd_buf4_mat_irrep_rd_block(Fints, Gkd, Fints->row_offset[Gkd][K], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
-		  ad = T2->col_offset[Gij][Ga];
+                  ad = T2->col_offset[Gij][Ga];
 
-		  nrows = Fints->params->coltot[Gkd];
-		  ncols = virtpi[Ga];
-		  nlinks = virtpi[Gd];
+                  nrows = Fints->params->coltot[Gkd];
+                  ncols = virtpi[Ga];
+                  nlinks = virtpi[Gd];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
-			    &(Fints->matrix[Gkd][0][0]), nrows, 
-			    &(T2->matrix[Gij][ij][ad]), nlinks, 1.0,
-			    &(W1[Gcb][0][0]), ncols);
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                            &(Fints->matrix[Gkd][0][0]), nrows,
+                            &(T2->matrix[Gij][ij][ad]), nlinks, 1.0,
+                            &(W1[Gcb][0][0]), ncols);
 
-		  dpd_free_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
-		}
+                  dpd_free_block(Fints->matrix[Gkd], virtpi[Gd], Fints->params->coltot[Gkd]);
+                }
 
-		/* -E_jila * t_klcb */
-		for(Gl=0; Gl < nirreps; Gl++) {
+                /* -E_jila * t_klcb */
+                for(Gl=0; Gl < nirreps; Gl++) {
 
-		  Gcb = Gkl = Gk ^ Gl;
-		  Ga = Gji ^ Gl;
+                  Gcb = Gkl = Gk ^ Gl;
+                  Ga = Gji ^ Gl;
 
-		  la = Eints->col_offset[Gji][Gl];
+                  la = Eints->col_offset[Gji][Gl];
 
-		  kl = T2->row_offset[Gkl][K];
+                  kl = T2->row_offset[Gkl][K];
 
-		  nrows = T2->params->coltot[Gkl];
-		  ncols = virtpi[Ga];
-		  nlinks = occpi[Gl];
+                  nrows = T2->params->coltot[Gkl];
+                  ncols = virtpi[Ga];
+                  nlinks = occpi[Gl];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
-			    &(T2->matrix[Gkl][kl][0]), nrows,
-			    &(Eints->matrix[Gji][ji][la]), ncols, 1.0,
-			    &(W1[Gcb][0][0]), ncols);
-		}
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                            &(T2->matrix[Gkl][kl][0]), nrows,
+                            &(Eints->matrix[Gji][ji][la]), ncols, 1.0,
+                            &(W1[Gcb][0][0]), ncols);
+                }
 
-		/* Sort W[cb][a] --> W[bc][a] */
-		dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx, 
-		       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym, 
-		       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
+                /* Sort W[cb][a] --> W[bc][a] */
+                dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
+                       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
 
-		/* +F_jdbc * t_ikad */
-		for(Gd=0; Gd < nirreps; Gd++) {
+                /* +F_jdbc * t_ikad */
+                for(Gd=0; Gd < nirreps; Gd++) {
 
-		  Gbc = Gjd = Gj ^ Gd;
-		  Ga = Gik ^ Gd;
+                  Gbc = Gjd = Gj ^ Gd;
+                  Ga = Gik ^ Gd;
 
-		  Fints->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
+                  Fints->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
           pthread_mutex_lock(&mut);
-		  dpd_buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
+                  dpd_buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
-		  ad = T2->col_offset[Gik][Ga];
+                  ad = T2->col_offset[Gik][Ga];
 
-		  nrows = Fints->params->coltot[Gjd];
-		  ncols = virtpi[Ga];
-		  nlinks = virtpi[Gd];
+                  nrows = Fints->params->coltot[Gjd];
+                  ncols = virtpi[Ga];
+                  nlinks = virtpi[Gd];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
-			    &(Fints->matrix[Gjd][0][0]), nrows, 
-			    &(T2->matrix[Gik][ik][ad]), nlinks, 1.0,
-			    &(W0[Gbc][0][0]), ncols);
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                            &(Fints->matrix[Gjd][0][0]), nrows,
+                            &(T2->matrix[Gik][ik][ad]), nlinks, 1.0,
+                            &(W0[Gbc][0][0]), ncols);
 
-		  dpd_free_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
-		}
+                  dpd_free_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
+                }
 
-		/* -E_kila * t_jlbc */
-		for(Gl=0; Gl < nirreps; Gl++) {
+                /* -E_kila * t_jlbc */
+                for(Gl=0; Gl < nirreps; Gl++) {
 
-		  Gbc = Gjl = Gj ^ Gl;
-		  Ga = Gki ^ Gl;
+                  Gbc = Gjl = Gj ^ Gl;
+                  Ga = Gki ^ Gl;
 
-		  la = Eints->col_offset[Gki][Gl];
+                  la = Eints->col_offset[Gki][Gl];
 
-		  jl = T2->row_offset[Gjl][J];
+                  jl = T2->row_offset[Gjl][J];
 
-		  nrows = T2->params->coltot[Gjl];
-		  ncols = virtpi[Ga];
-		  nlinks = occpi[Gl];
+                  nrows = T2->params->coltot[Gjl];
+                  ncols = virtpi[Ga];
+                  nlinks = occpi[Gl];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
-			    &(T2->matrix[Gjl][jl][0]), nrows,
-			    &(Eints->matrix[Gki][ki][la]), ncols, 1.0,
-			    &(W0[Gbc][0][0]), ncols);
-		}
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                            &(T2->matrix[Gjl][jl][0]), nrows,
+                            &(Eints->matrix[Gki][ki][la]), ncols, 1.0,
+                            &(W0[Gbc][0][0]), ncols);
+                }
 
-		/* Sort W[bc][a] --> W[ba][c] */
-		dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx, 
-		       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym, 
-		       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
+                /* Sort W[bc][a] --> W[ba][c] */
+                dpd_3d_sort(W0, W1, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
+                       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, acb, 0);
 
-		/* +F_jdba * t_kicd */
-		for(Gd=0; Gd < nirreps; Gd++) {
+                /* +F_jdba * t_kicd */
+                for(Gd=0; Gd < nirreps; Gd++) {
 
-		  Gba = Gjd = Gj ^ Gd;
-		  Gc = Gki ^ Gd;
+                  Gba = Gjd = Gj ^ Gd;
+                  Gc = Gki ^ Gd;
 
-		  Fints->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
+                  Fints->matrix[Gjd] = dpd_block_matrix(virtpi[Gd], Fints->params->coltot[Gjd]);
           pthread_mutex_lock(&mut);
-		  dpd_buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
+                  dpd_buf4_mat_irrep_rd_block(Fints, Gjd, Fints->row_offset[Gjd][J], virtpi[Gd]);
           pthread_mutex_unlock(&mut);
 
-		  cd = T2->col_offset[Gki][Gc];
+                  cd = T2->col_offset[Gki][Gc];
 
-		  nrows = Fints->params->coltot[Gjd];
-		  ncols = virtpi[Gc];
-		  nlinks = virtpi[Gd];
+                  nrows = Fints->params->coltot[Gjd];
+                  ncols = virtpi[Gc];
+                  nlinks = virtpi[Gd];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
-			    &(Fints->matrix[Gjd][0][0]), nrows, 
-			    &(T2->matrix[Gki][ki][cd]), nlinks, 1.0,
-			    &(W1[Gba][0][0]), ncols);
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 't', nrows, ncols, nlinks, 1.0,
+                            &(Fints->matrix[Gjd][0][0]), nrows,
+                            &(T2->matrix[Gki][ki][cd]), nlinks, 1.0,
+                            &(W1[Gba][0][0]), ncols);
 
-		  dpd_free_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
-		}
+                  dpd_free_block(Fints->matrix[Gjd], virtpi[Gd], Fints->params->coltot[Gjd]);
+                }
 
-		/* -E_iklc * t_jlba */
-		for(Gl=0; Gl < nirreps; Gl++) {
+                /* -E_iklc * t_jlba */
+                for(Gl=0; Gl < nirreps; Gl++) {
 
-		  Gba = Gjl = Gj ^ Gl;
-		  Gc = Gik ^ Gl;
+                  Gba = Gjl = Gj ^ Gl;
+                  Gc = Gik ^ Gl;
 
-		  lc = Eints->col_offset[Gik][Gl];
+                  lc = Eints->col_offset[Gik][Gl];
 
-		  jl = T2->row_offset[Gjl][J];
+                  jl = T2->row_offset[Gjl][J];
 
-		  nrows = T2->params->coltot[Gjl];
-		  ncols = virtpi[Gc];
-		  nlinks = occpi[Gl];
+                  nrows = T2->params->coltot[Gjl];
+                  ncols = virtpi[Gc];
+                  nlinks = occpi[Gl];
 
-		  if(nrows && ncols && nlinks)
-		    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
-			    &(T2->matrix[Gjl][jl][0]), nrows,
-			    &(Eints->matrix[Gik][ik][lc]), ncols, 1.0,
-			    &(W1[Gba][0][0]), ncols);
-		}
+                  if(nrows && ncols && nlinks)
+                    C_DGEMM('t', 'n', nrows, ncols, nlinks, -1.0,
+                            &(T2->matrix[Gjl][jl][0]), nrows,
+                            &(Eints->matrix[Gik][ik][lc]), ncols, 1.0,
+                            &(W1[Gba][0][0]), ncols);
+                }
 
-		/* Sort W[ba][c] --> W[ab][c] */
-		dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx, 
-		       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym, 
-		       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
+                /* Sort W[ba][c] --> W[ab][c] */
+                dpd_3d_sort(W1, W0, nirreps, Gijk, Fints->params->coltot, Fints->params->colidx,
+                       Fints->params->colorb, Fints->params->rsym, Fints->params->ssym,
+                       vir_off, vir_off, virtpi, vir_off, Fints->params->colidx, bac, 0);
 
-		// timer_off("N7 Terms");
+                // timer_off("N7 Terms");
 
-		// timer_on("malloc");
-		for(Gab=0; Gab < nirreps; Gab++) {
-		  Gc = Gab ^ Gijk;
-		  dpd_free_block(W1[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                // timer_on("malloc");
+                for(Gab=0; Gab < nirreps; Gab++) {
+                  Gc = Gab ^ Gijk;
+                  dpd_free_block(W1[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
 
-		  V[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-		}
-		// timer_off("malloc");
+                  V[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                }
+                // timer_off("malloc");
 
-		/* Copy W intermediate into V */
-		for(Gab=0; Gab < nirreps; Gab++) {
-		  Gc = Gab ^ Gijk;
+                /* Copy W intermediate into V */
+                for(Gab=0; Gab < nirreps; Gab++) {
+                  Gc = Gab ^ Gijk;
 
-		  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
-		    for(c=0; c < virtpi[Gc]; c++) {
+                  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
+                    for(c=0; c < virtpi[Gc]; c++) {
 
-		      V[Gab][ab][c] = W0[Gab][ab][c];
-		    }
-		  }
-		}
+                      V[Gab][ab][c] = W0[Gab][ab][c];
+                    }
+                  }
+                }
 
-		// timer_on("EST Terms");
+                // timer_on("EST Terms");
 
-		/* Add EST terms to V */
+                /* Add EST terms to V */
 
-		for(Gab=0; Gab < nirreps; Gab++) {
+                for(Gab=0; Gab < nirreps; Gab++) {
 
-		  Gc = Gab ^ Gijk;
+                  Gc = Gab ^ Gijk;
 
-		  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
+                  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
 
-		    A = Fints->params->colorb[Gab][ab][0];
-		    Ga = Fints->params->rsym[A];
-		    a = A - vir_off[Ga];
-		    B = Fints->params->colorb[Gab][ab][1];
-		    Gb = Fints->params->ssym[B];
-		    b = B - vir_off[Gb];
+                    A = Fints->params->colorb[Gab][ab][0];
+                    Ga = Fints->params->rsym[A];
+                    a = A - vir_off[Ga];
+                    B = Fints->params->colorb[Gab][ab][1];
+                    Gb = Fints->params->ssym[B];
+                    b = B - vir_off[Gb];
 
-		    Gbc = Gb ^ Gc;
-		    Gac = Ga ^ Gc;
+                    Gbc = Gb ^ Gc;
+                    Gac = Ga ^ Gc;
 
-		    for(c=0; c < virtpi[Gc]; c++) {
-		      C = vir_off[Gc] + c;
+                    for(c=0; c < virtpi[Gc]; c++) {
+                      C = vir_off[Gc] + c;
 
-		      bc = Dints->params->colidx[B][C];
-		      ac = Dints->params->colidx[A][C];
+                      bc = Dints->params->colidx[B][C];
+                      ac = Dints->params->colidx[A][C];
 
-		      /* +t_ia * D_jkbc + f_ia * t_jkbc */
-		      if(Gi == Ga && Gjk == Gbc) {
-			t_ia = D_jkbc = 0.0;
+                      /* +t_ia * D_jkbc + f_ia * t_jkbc */
+                      if(Gi == Ga && Gjk == Gbc) {
+                        t_ia = D_jkbc = 0.0;
 
-			if(T1->params->rowtot[Gi] && T1->params->coltot[Gi]) {
-			  t_ia = T1->matrix[Gi][i][a];
-			  f_ia = fIA->matrix[Gi][i][a];
-			}
+                        if(T1->params->rowtot[Gi] && T1->params->coltot[Gi]) {
+                          t_ia = T1->matrix[Gi][i][a];
+                          f_ia = fIA->matrix[Gi][i][a];
+                        }
 
-			if(Dints->params->rowtot[Gjk] && Dints->params->coltot[Gjk]) {
-			  D_jkbc = Dints->matrix[Gjk][jk][bc];
-			  t_jkbc = T2->matrix[Gjk][jk][bc];
-			}
+                        if(Dints->params->rowtot[Gjk] && Dints->params->coltot[Gjk]) {
+                          D_jkbc = Dints->matrix[Gjk][jk][bc];
+                          t_jkbc = T2->matrix[Gjk][jk][bc];
+                        }
 
-			V[Gab][ab][c] += t_ia * D_jkbc + f_ia * t_jkbc;
+                        V[Gab][ab][c] += t_ia * D_jkbc + f_ia * t_jkbc;
 
-		      }
+                      }
 
-		      /* +t_jb * D_ikac */
-		      if(Gj == Gb && Gik == Gac) {
-			t_jb = D_ikac = 0.0;
+                      /* +t_jb * D_ikac */
+                      if(Gj == Gb && Gik == Gac) {
+                        t_jb = D_ikac = 0.0;
 
-			if(T1->params->rowtot[Gj] && T1->params->coltot[Gj]) {
-			  t_jb = T1->matrix[Gj][j][b];
-			  f_jb = fIA->matrix[Gj][j][b];
-			}
+                        if(T1->params->rowtot[Gj] && T1->params->coltot[Gj]) {
+                          t_jb = T1->matrix[Gj][j][b];
+                          f_jb = fIA->matrix[Gj][j][b];
+                        }
 
-			if(Dints->params->rowtot[Gik] && Dints->params->coltot[Gik]) {
-			  D_ikac = Dints->matrix[Gik][ik][ac];
-			  t_ikac = T2->matrix[Gik][ik][ac];
-			}
+                        if(Dints->params->rowtot[Gik] && Dints->params->coltot[Gik]) {
+                          D_ikac = Dints->matrix[Gik][ik][ac];
+                          t_ikac = T2->matrix[Gik][ik][ac];
+                        }
 
-			V[Gab][ab][c] += t_jb * D_ikac + f_jb * t_ikac;
-		      }
+                        V[Gab][ab][c] += t_jb * D_ikac + f_jb * t_ikac;
+                      }
 
-		      /* +t_kc * D_ijab */
-		      if(Gk == Gc && Gij == Gab) {
-			t_kc = D_ijab = 0.0;
+                      /* +t_kc * D_ijab */
+                      if(Gk == Gc && Gij == Gab) {
+                        t_kc = D_ijab = 0.0;
 
-			if(T1->params->rowtot[Gk] && T1->params->coltot[Gk]) {
-			  t_kc = T1->matrix[Gk][k][c];
-			  f_kc = fIA->matrix[Gk][k][c];
-			}
+                        if(T1->params->rowtot[Gk] && T1->params->coltot[Gk]) {
+                          t_kc = T1->matrix[Gk][k][c];
+                          f_kc = fIA->matrix[Gk][k][c];
+                        }
 
-			if(Dints->params->rowtot[Gij] && Dints->params->coltot[Gij]) {
-			  D_ijab = Dints->matrix[Gij][ij][ab];
-			  t_ijab = T2->matrix[Gij][ij][ab];
-			}
+                        if(Dints->params->rowtot[Gij] && Dints->params->coltot[Gij]) {
+                          D_ijab = Dints->matrix[Gij][ij][ab];
+                          t_ijab = T2->matrix[Gij][ij][ab];
+                        }
 
-			V[Gab][ab][c] += t_kc * D_ijab + f_kc * t_ijab;
-		      }
+                        V[Gab][ab][c] += t_kc * D_ijab + f_kc * t_ijab;
+                      }
 
-		      V[Gab][ab][c] /= (1 + (A==B) + (B==C) + (A==C));
-		    }
-		  }
-		}
+                      V[Gab][ab][c] /= (1 + (A==B) + (B==C) + (A==C));
+                    }
+                  }
+                }
 
-		// timer_off("EST Terms");
+                // timer_off("EST Terms");
 
-		// timer_on("malloc");
-		for(Gab=0; Gab < nirreps; Gab++) {
-		  Gc = Gab ^ Gijk;
+                // timer_on("malloc");
+                for(Gab=0; Gab < nirreps; Gab++) {
+                  Gc = Gab ^ Gijk;
 
-		  X[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-		  Y[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-		  Z[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
-		}
-		// timer_off("malloc");
+                  X[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  Y[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                  Z[Gab] = dpd_block_matrix(Fints->params->coltot[Gab],virtpi[Gc]);
+                }
+                // timer_off("malloc");
 
-		// timer_on("XYZ");
-		/* Build X, Y, and Z intermediates */
+                // timer_on("XYZ");
+                /* Build X, Y, and Z intermediates */
 
-		for(Gab=0; Gab < nirreps; Gab++) {
+                for(Gab=0; Gab < nirreps; Gab++) {
 
-		  Gc = Gab ^ Gijk;
+                  Gc = Gab ^ Gijk;
 
-		  Gba = Gab;
+                  Gba = Gab;
 
-		  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
+                  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
 
-		    A = Fints->params->colorb[Gab][ab][0];
-		    Ga = Fints->params->rsym[A];
-		    a = A - vir_off[Ga];
-		    B = Fints->params->colorb[Gab][ab][1];
-		    Gb = Fints->params->ssym[B];
-		    b = B - vir_off[Gb];
+                    A = Fints->params->colorb[Gab][ab][0];
+                    Ga = Fints->params->rsym[A];
+                    a = A - vir_off[Ga];
+                    B = Fints->params->colorb[Gab][ab][1];
+                    Gb = Fints->params->ssym[B];
+                    b = B - vir_off[Gb];
 
-		    Gac = Gca = Ga ^ Gc;
-		    Gbc = Gcb = Gb ^ Gc;
+                    Gac = Gca = Ga ^ Gc;
+                    Gbc = Gcb = Gb ^ Gc;
 
-		    ba = Dints->params->colidx[B][A];
+                    ba = Dints->params->colidx[B][A];
 
-		    for(c=0; c < virtpi[Gc]; c++) {
-		      C = vir_off[Gc] + c;
+                    for(c=0; c < virtpi[Gc]; c++) {
+                      C = vir_off[Gc] + c;
 
-		      ac = Dints->params->colidx[A][C];
-		      ca = Dints->params->colidx[C][A];
-		      bc = Dints->params->colidx[B][C];
-		      cb = Dints->params->colidx[C][B];
+                      ac = Dints->params->colidx[A][C];
+                      ca = Dints->params->colidx[C][A];
+                      bc = Dints->params->colidx[B][C];
+                      cb = Dints->params->colidx[C][B];
 
-		      X[Gab][ab][c] = 
-			W0[Gab][ab][c] * V[Gab][ab][c] + W0[Gac][ac][b] * V[Gac][ac][b] +
-			W0[Gba][ba][c] * V[Gba][ba][c] + W0[Gbc][bc][a] * V[Gbc][bc][a] +
-			W0[Gca][ca][b] * V[Gca][ca][b] + W0[Gcb][cb][a] * V[Gcb][cb][a];
+                      X[Gab][ab][c] =
+                        W0[Gab][ab][c] * V[Gab][ab][c] + W0[Gac][ac][b] * V[Gac][ac][b] +
+                        W0[Gba][ba][c] * V[Gba][ba][c] + W0[Gbc][bc][a] * V[Gbc][bc][a] +
+                        W0[Gca][ca][b] * V[Gca][ca][b] + W0[Gcb][cb][a] * V[Gcb][cb][a];
 
-		      Y[Gab][ab][c] = V[Gab][ab][c] + V[Gbc][bc][a] + V[Gca][ca][b];
+                      Y[Gab][ab][c] = V[Gab][ab][c] + V[Gbc][bc][a] + V[Gca][ca][b];
 
-		      Z[Gab][ab][c] = V[Gac][ac][b] + V[Gba][ba][c] + V[Gcb][cb][a];
+                      Z[Gab][ab][c] = V[Gac][ac][b] + V[Gba][ba][c] + V[Gcb][cb][a];
 
-		    }
-		  }
-		}
-		// timer_off("XYZ");
+                    }
+                  }
+                }
+                // timer_off("XYZ");
 
-		// timer_on("malloc");
-		for(Gab=0; Gab < nirreps; Gab++) {
-		  Gc = Gab ^ Gijk;
+                // timer_on("malloc");
+                for(Gab=0; Gab < nirreps; Gab++) {
+                  Gc = Gab ^ Gijk;
 
-		  dpd_free_block(V[Gab], Fints->params->coltot[Gab], virtpi[Gc]);
-		}
-		// timer_off("malloc");
+                  dpd_free_block(V[Gab], Fints->params->coltot[Gab], virtpi[Gc]);
+                }
+                // timer_off("malloc");
 
-		// timer_on("Energy");
-		for(Gab=0; Gab < nirreps; Gab++) {
+                // timer_on("Energy");
+                for(Gab=0; Gab < nirreps; Gab++) {
 
-		  Gc = Gab ^ Gijk;
-		  Gba = Gab;
+                  Gc = Gab ^ Gijk;
+                  Gba = Gab;
 
-		  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
+                  for(ab=0; ab < Fints->params->coltot[Gab]; ab++) {
 
-		    A = Fints->params->colorb[Gab][ab][0];
-		    Ga = Fints->params->rsym[A];
-		    a = A - vir_off[Ga];
-		    B = Fints->params->colorb[Gab][ab][1];
-		    Gb = Fints->params->ssym[B];
-		    b = B - vir_off[Gb];
+                    A = Fints->params->colorb[Gab][ab][0];
+                    Ga = Fints->params->rsym[A];
+                    a = A - vir_off[Ga];
+                    B = Fints->params->colorb[Gab][ab][1];
+                    Gb = Fints->params->ssym[B];
+                    b = B - vir_off[Gb];
 
-		    if(A >= B) {
+                    if(A >= B) {
 
-		      Gac = Gca = Ga ^ Gc;
-		      Gbc = Gcb = Gb ^ Gc;
+                      Gac = Gca = Ga ^ Gc;
+                      Gbc = Gcb = Gb ^ Gc;
 
-		      ba = Dints->params->colidx[B][A];
+                      ba = Dints->params->colidx[B][A];
 
-		      for(c=0; c < virtpi[Gc]; c++) {
-			C = vir_off[Gc] + c;
+                      for(c=0; c < virtpi[Gc]; c++) {
+                        C = vir_off[Gc] + c;
 
-			if(B >= C) {
+                        if(B >= C) {
 
-			  ac = Dints->params->colidx[A][C];
-			  ca = Dints->params->colidx[C][A];
-			  bc = Dints->params->colidx[B][C];
-			  cb = Dints->params->colidx[C][B];
+                          ac = Dints->params->colidx[A][C];
+                          ca = Dints->params->colidx[C][A];
+                          bc = Dints->params->colidx[B][C];
+                          cb = Dints->params->colidx[C][B];
 
-			  value1 = Y[Gab][ab][c] - 2.0 * Z[Gab][ab][c];
-			  value2 = Z[Gab][ab][c] - 2.0 * Y[Gab][ab][c];
-			  value3 = W0[Gab][ab][c] + W0[Gbc][bc][a] + W0[Gca][ca][b];
-			  value4 = W0[Gac][ac][b] + W0[Gba][ba][c] + W0[Gcb][cb][a];
-			  value5 = 3.0 * X[Gab][ab][c];
-			  value6 = 2 - ((I==J) + (J==K) + (I==K));
+                          value1 = Y[Gab][ab][c] - 2.0 * Z[Gab][ab][c];
+                          value2 = Z[Gab][ab][c] - 2.0 * Y[Gab][ab][c];
+                          value3 = W0[Gab][ab][c] + W0[Gbc][bc][a] + W0[Gca][ca][b];
+                          value4 = W0[Gac][ac][b] + W0[Gba][ba][c] + W0[Gcb][cb][a];
+                          value5 = 3.0 * X[Gab][ab][c];
+                          value6 = 2 - ((I==J) + (J==K) + (I==K));
 
-			  denom = dijk;
-			  if(fAB->params->rowtot[Ga])
-			    denom -= fAB->matrix[Ga][a][a];
-			  if(fAB->params->rowtot[Gb])
-			    denom -= fAB->matrix[Gb][b][b];
-			  if(fAB->params->rowtot[Gc])
-			    denom -= fAB->matrix[Gc][c][c];
+                          denom = dijk;
+                          if(fAB->params->rowtot[Ga])
+                            denom -= fAB->matrix[Ga][a][a];
+                          if(fAB->params->rowtot[Gb])
+                            denom -= fAB->matrix[Gb][b][b];
+                          if(fAB->params->rowtot[Gc])
+                            denom -= fAB->matrix[Gc][c][c];
 
-			  *ET_local += (value1 * value3 + value2 * value4 + value5) * value6/denom;
+                          *ET_local += (value1 * value3 + value2 * value4 + value5) * value6/denom;
 
-			}
+                        }
 
-		      }
+                      }
 
-		    }
-		  }
-		}
-		// timer_off("Energy");
+                    }
+                  }
+                }
+                // timer_off("Energy");
 
-		/* Free the W and V intermediates */
-		// timer_on("malloc");
-		for(Gab=0; Gab < nirreps; Gab++) {
-		  Gc = Gab ^ Gijk;
+                /* Free the W and V intermediates */
+                // timer_on("malloc");
+                for(Gab=0; Gab < nirreps; Gab++) {
+                  Gc = Gab ^ Gijk;
 
-		  dpd_free_block(W0[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-		  dpd_free_block(X[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-		  dpd_free_block(Y[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-		  dpd_free_block(Z[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
-		}
-		// timer_off("malloc");
+                  dpd_free_block(W0[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_free_block(X[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_free_block(Y[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                  dpd_free_block(Z[Gab],Fints->params->coltot[Gab],virtpi[Gc]);
+                }
+                // timer_off("malloc");
 
-	      }
-	    } /* k */
-	  } /* j */
-	} /* i */
+              }
+            } /* k */
+          } /* j */
+        } /* i */
 
   pthread_exit(NULL);
 }

@@ -4,6 +4,7 @@
  */
 
 #include <cstring>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
@@ -11,21 +12,21 @@ namespace psi {
 
 psio_tocentry*PSIO::tocscan(unsigned int unit, const char *key) {
   psio_tocentry *this_entry;
-  
+
   if (key == NULL)
     return (NULL);
-  
+
   if ((strlen(key)+1) > PSIO_KEYLEN)
     psio_error(unit, PSIO_ERROR_KEYLEN);
-  
+
   this_entry = psio_unit[unit].toc;
-  
+
   while (this_entry != NULL) {
     if (!strcmp(this_entry->key, key))
       return (this_entry);
     this_entry = this_entry->next;
   }
-  
+
   return (NULL);
 }
 

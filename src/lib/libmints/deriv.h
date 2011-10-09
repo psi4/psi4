@@ -36,6 +36,10 @@ class Deriv
 
     CdSalcList cdsalcs_;
 
+    boost::shared_ptr<Matrix> P_2_;
+    boost::shared_ptr<Matrix> W_2_;
+    boost::shared_ptr<Matrix> SCF_D_;
+
     int natom_;
 
     std::vector<SharedMatrix> dH_;
@@ -63,6 +67,15 @@ public:
           char needed_irreps=0x1,
           bool project_out_translations=true,
           bool project_out_rotations=true);
+    Deriv(const boost::shared_ptr<BasisSet>& basis,
+                 const boost::shared_ptr<Matrix>& P_2,
+                 const boost::shared_ptr<Matrix>& W_2,
+                 const boost::shared_ptr<Matrix>& SCF_D,
+                 const boost::shared_ptr<MatrixFactory>& factory,
+                 char needed_irreps,
+                 bool project_out_translations,
+                 bool project_out_rotations);
+
 
     SharedMatrix compute();
 

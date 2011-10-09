@@ -1,9 +1,9 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
-**  CCDENSITY: Program to calculate the coupled-cluster one- and 
+**  CCDENSITY: Program to calculate the coupled-cluster one- and
 **             two-particle densities.
 */
 
@@ -14,6 +14,8 @@
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libiwl/iwl.h>
+#include <liboptions/liboptions.h>
+#include <psi4-dec.h>
 #include <cmath>
 #include <psifiles.h>
 #include "MOInfo.h"
@@ -101,7 +103,7 @@ PsiReturnType ccdensity(Options& options)
   struct iwlbuf OutBuf_AA, OutBuf_BB, OutBuf_AB;
   dpdfile2 D;
   double tval;
-  
+
   init_io();
   title();
   /*  get_frozen(); */
@@ -119,16 +121,16 @@ PsiReturnType ccdensity(Options& options)
   if(params.ref == 0 || params.ref == 1) { /** RHF or ROHF **/
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL, 
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
+             2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
 
   }
   else if(params.ref == 2) { /** UHF **/
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, 
-	     cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-	     moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles,
+             cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
+             moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
   }
 
   for (i=0; i<params.nstates; ++i) {
@@ -140,7 +142,7 @@ PsiReturnType ccdensity(Options& options)
     /* Calculate Xi, put Xi in EOM_XI, and quit */
     if ( params.calc_xi ) {
       /* these intermediates go into EOM_TMP and are used to compute Xi;
-	 they may be reused to compute the excited-state density matrix */
+         they may be reused to compute the excited-state density matrix */
       if (params.ref == 0) {
         x_oe_intermediates_rhf(rho_params[i]);
         x_te_intermediates_rhf();
@@ -221,7 +223,7 @@ PsiReturnType ccdensity(Options& options)
       lag(rho_params[i]); /* builds the orbital lagrangian pieces, I */
 
       /* dpd_init(1, moinfo.nirreps, params.memory, 2, frozen.occpi, frozen.occ_sym,
-	 frozen.virtpi, frozen.vir_sym); */
+         frozen.virtpi, frozen.vir_sym); */
 
       /*  if(moinfo.nfzc || moinfo.nfzv) {
           resort_gamma();
@@ -299,7 +301,7 @@ PsiReturnType ccdensity(Options& options)
   }
 
 /*
-  if ( params.ael && (params.nstates > 1) ) 
+  if ( params.ael && (params.nstates > 1) )
     ael(rho_params);
 */
 
@@ -324,7 +326,7 @@ PsiReturnType ccdensity(Options& options)
   else cachedone_rhf(cachelist);
   free(cachefiles);
 
-  cleanup(); 
+  cleanup();
   exit_io();
   return Success;
 }

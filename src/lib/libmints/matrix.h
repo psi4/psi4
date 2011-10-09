@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <libparallel/serialize.h>
+#include <libparallel/parallel.h>
 #include "dimension.h"
 
 namespace boost {
@@ -157,6 +158,15 @@ public:
      */
     Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Dimension object providing column information.
+     */
+    Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
+
     /// Destructor, frees memory
     ~Matrix();
 
@@ -177,7 +187,9 @@ public:
     /**
      * Convenient creation function return shared_ptr<Matrix>
      */
-    static boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols);
+    static boost::shared_ptr<Matrix> create(const std::string& name,
+                                            const Dimension& rows,
+                                            const Dimension& cols);
 
     /**
      * @{
@@ -757,6 +769,12 @@ public:
      */
     void invert();
 
+    /*! Computes the inverse of a matrix using the LU factorization.
+     *  This method inverts U and then computes inv(A) by solving the system
+     *  inv(A)*L = inv(U) for inv(A).
+     */
+    void general_invert();
+
     /*! Computes the pseudo power of a real symmetric matrix
     *   A using eigendecomposition. This operation is uniquely defined
     *   for all symmetric matrices for integral alpha, and for
@@ -1136,9 +1154,10 @@ namespace madness {  namespace archive {
     template <class Archive>
     struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Matrix> > {
         static void store(const Archive &ar, const boost::shared_ptr<psi::Matrix> &t) {
-            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name() &
-                 wrap(t->rowspi(), t->nirrep()) &
-                 wrap(t->colspi(), t->nirrep());
+            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name();
+            for (int i=0; i < t->nirrep(); i++) {
+                ar & t->rowdim(i) & t->coldim(i);
+            }
             for (int i=0; i < t->nirrep(); i++) {
                 ar & t->size(i);
                 if (t->size(i)) {
@@ -1157,8 +1176,12 @@ namespace madness {  namespace archive {
             std::string name;
             ar & sz & nir & symm & name;
             if (sz) {
-                int rows[nir], cols[nir];
-                ar & wrap(rows, nir) & wrap(cols, nir);
+                int *rows = new int[nir];
+                int *cols = new int[nir];
+
+                for (int i=0; i < t->nirrep(); i++) {
+                    ar & rows[i] & cols[i];
+                }
                 t = boost::shared_ptr<psi::Matrix>(new psi::Matrix(name, nir, rows, cols, symm));
                 for (int i=0; i < t->nirrep(); i++) {
                     size_t szi;
@@ -1166,6 +1189,7 @@ namespace madness {  namespace archive {
                     if (szi != t->size(i)) throw psi::PSIEXCEPTION("size mismatch deserializing a psi Matrix");
                     if (szi) ar & wrap(&(t->pointer(i)[0][0]), t->size(i));
                 }
+                free(rows); free(cols);
             }
             else {
                 t = boost::shared_ptr<psi::Matrix>(new psi::Matrix());

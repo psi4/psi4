@@ -40,6 +40,7 @@
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include "globals.h"
 
 namespace psi {

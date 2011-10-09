@@ -1,10 +1,21 @@
+#include <iostream>
 #include <vector>
+#include <map>
+#include <cstddef>
+#include <stdexcept>
+#include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <iomanip>
+#include <sstream>
 #include <algorithm>
-#include <libutil/libutil.h>
-#include "liboptions.h"
+#include <assert.h>
 
+#include <exception.h>
+#include <libutil/libutil.h> // Needed for Ref counting, string splitting, and conversions
+#include <libutil/ref.h> // Needed for Ref counting, string splitting, and conversions
+#include <boost/shared_ptr.hpp>
+
+#include "liboptions.h"
 #include <psi4-dec.h>
 
 namespace psi {

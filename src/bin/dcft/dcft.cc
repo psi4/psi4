@@ -1,6 +1,7 @@
 #include "dcft.h"
 #include "defines.h"
 #include <vector>
+#include <cmath>
 #include <liboptions/liboptions.h>
 #include <libpsio/psio.hpp>
 #include <libtrans/integraltransform.h>

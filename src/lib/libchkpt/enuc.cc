@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -13,24 +14,24 @@ using namespace psi;
 
 double Chkpt::rd_enuc(void)
 {
-	double enuc;
-	char *keyword;
-	keyword = build_keyword("Nuclear rep. energy");
+        double enuc;
+        char *keyword;
+        keyword = build_keyword("Nuclear rep. energy");
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) &enuc, sizeof(double));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) &enuc, sizeof(double));
 
-	free(keyword);
-	return enuc;
+        free(keyword);
+        return enuc;
 }
 
 void Chkpt::wt_enuc(double enuc)
 {
-	char *keyword;
-	keyword = build_keyword("Nuclear rep. energy");
+        char *keyword;
+        keyword = build_keyword("Nuclear rep. energy");
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) &enuc, sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) &enuc, sizeof(double));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
@@ -43,12 +44,12 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	double chkpt_rd_enuc(void)
-	{
-  		double enuc;
-		enuc = _default_chkpt_lib_->rd_enuc();
-  		return enuc;
-	}
+        double chkpt_rd_enuc(void)
+        {
+                double enuc;
+                enuc = _default_chkpt_lib_->rd_enuc();
+                return enuc;
+        }
 
 /*!
 ** chkpt_wt_enuc(): Writes out the nuclear repulsion energy
@@ -58,8 +59,8 @@ extern "C" {
 ** returns: none
 ** \ingroup CHKPT
 */
-	void chkpt_wt_enuc(double enuc)
-	{
-		_default_chkpt_lib_->wt_enuc(enuc);
-	}
+        void chkpt_wt_enuc(double enuc)
+        {
+                _default_chkpt_lib_->wt_enuc(enuc);
+        }
 }

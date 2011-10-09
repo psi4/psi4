@@ -1,6 +1,7 @@
 #include <limits>
 #include <cmath>
 
+#include <boost/shared_ptr.hpp>
 #include <psifiles.h>
 #include <liboptions/liboptions.h>
 #include <libmoinfo/libmoinfo.h>

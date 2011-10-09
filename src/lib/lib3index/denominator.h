@@ -1,9 +1,6 @@
 #ifndef three_index_denominator_H
 #define three_index_denominator_H
 
-#include <psi4-dec.h>
-#include <psiconfig.h>
-
 namespace psi {
 
 class Matrix;
@@ -31,8 +28,8 @@ public:
     virtual ~Denominator();
 
     // Factory method, algorithm should be LAPLACE or CHOLESKY
-    static boost::shared_ptr<Denominator> buildDenominator(const std::string& algorithm, 
-            boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta); 
+    static boost::shared_ptr<Denominator> buildDenominator(const std::string& algorithm,
+            boost::shared_ptr<Vector> eps_occ, boost::shared_ptr<Vector> eps_vir, double delta);
 
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }
@@ -102,10 +99,10 @@ public:
     virtual ~SAPTDenominator();
 
     // Factory method, algorithm should be LAPLACE or CHOLESKY
-    static boost::shared_ptr<SAPTDenominator> buildDenominator(const std::string& algorithm, 
-            boost::shared_ptr<Vector> eps_occA, boost::shared_ptr<Vector> eps_virA, 
-            boost::shared_ptr<Vector> eps_occB, boost::shared_ptr<Vector> eps_virB, 
-            double delta, bool debug = false); 
+    static boost::shared_ptr<SAPTDenominator> buildDenominator(const std::string& algorithm,
+            boost::shared_ptr<Vector> eps_occA, boost::shared_ptr<Vector> eps_virA,
+            boost::shared_ptr<Vector> eps_occB, boost::shared_ptr<Vector> eps_virB,
+            double delta, bool debug = false);
 
     double delta() const { return delta_; }
     int nvector() const { return nvector_; }

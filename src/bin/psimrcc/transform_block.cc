@@ -1,6 +1,7 @@
 #include <cmath>
 #include <algorithm>
 
+#include <boost/shared_ptr.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 

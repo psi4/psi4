@@ -1,14 +1,17 @@
 /*! \file
     \ingroup CCHBAR
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
 #include <psifiles.h>
-#include <psi4-dec.h>
-namespace psi { namespace cchbar {
+#include <exception.h>
+
+namespace psi {
+extern FILE* outfile;
+namespace cchbar {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
@@ -84,7 +87,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
+  else {
     throw PsiException("CCHBAR: invalid cache level!",__FILE__,__LINE__);
     }
   }
@@ -149,7 +152,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
+  else {
      PsiException("CCHBAR: invalid cache level!",__FILE__,__LINE__);
   }
 }

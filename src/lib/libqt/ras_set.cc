@@ -9,9 +9,9 @@
 #include <libciomr/libciomr.h>
 #include "qt.h"
 #include <psifiles.h>
-#include <psi4-dec.h>
 
 namespace psi {
+extern FILE* outfile;
 
 /*!
 ** ras_set(): Deprecated
@@ -354,16 +354,16 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
   /* this fills existing DOCC and SOCC arrays        */
   if (options["DOCC"].has_changed()) {
     if (options["DOCC"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", "DOCC", 
+      throw InputException("ras_set2(): Wrong size of array", "DOCC",
         __FILE__, __LINE__);
-    } 
+    }
     options.fill_int_array("DOCC", docc);
   }
   if (options["SOCC"].has_changed()) {
     if (options["SOCC"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", "SOCC", 
+      throw InputException("ras_set2(): Wrong size of array", "SOCC",
         __FILE__, __LINE__);
-    } 
+    }
     options.fill_int_array("SOCC", socc);
   }
 
@@ -371,34 +371,34 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
   /* only read it if in input (arrays don't have defaults) */
   if (options["RESTRICTED_DOCC"].has_changed()) {
     if (options["RESTRICTED_DOCC"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", 
+      throw InputException("ras_set2(): Wrong size of array",
         "RESTRICTED_DOCC", __FILE__, __LINE__);
-    } 
+    }
     options.fill_int_array("RESTRICTED_DOCC", restrdocc);
   }
 
   do_ras4=1;
   if (options["RAS1"].has_changed()) {
     if (options["RAS1"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", 
+      throw InputException("ras_set2(): Wrong size of array",
         "RAS1", __FILE__, __LINE__);
-    } 
+    }
     options.fill_int_array("RAS1", ras_opi[0]);
     parsed_ras1 = 1;
   }
   if (options["RAS2"].has_changed()) {
     if (options["RAS2"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", 
+      throw InputException("ras_set2(): Wrong size of array",
         "RAS2", __FILE__, __LINE__);
-    } 
+    }
     options.fill_int_array("RAS2", ras_opi[1]);
     parsed_ras2 = 1;
   }
   if (options["RAS3"].has_changed()) {
     if (options["RAS3"].size() != nirreps) {
-      throw InputException("ras_set2(): Wrong size of array", 
+      throw InputException("ras_set2(): Wrong size of array",
         "RAS3", __FILE__, __LINE__);
-    } 
+    }
     options.fill_int_array("RAS3", ras_opi[2]);
   }
   else do_ras4 = 0;
@@ -428,9 +428,9 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
   if (!parsed_ras2) {
     if (options["ACTIVE"].has_changed()) {
       if (options["ACTIVE"].size() != nirreps) {
-        throw InputException("ras_set2(): Wrong size of array", 
+        throw InputException("ras_set2(): Wrong size of array",
           "ACTIVE", __FILE__, __LINE__);
-      } 
+      }
       options.fill_int_array("ACTIVE", ras_opi[1]);
 
       if (parsed_ras1)
@@ -440,7 +440,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
         ras_opi[0][irrep] = 0; /* ACTIVE overrides RAS 1 */
 
       /* default restrict other virs */
-      if (!options["RESTRICTED_UOCC"].has_changed()) { 
+      if (!options["RESTRICTED_UOCC"].has_changed()) {
         for (irrep=0; irrep<nirreps; irrep++) {
           ras_opi[0][irrep] = 0; /* ACTIVE overrides RAS 1 */
           restruocc[irrep] = orbspi[irrep] - frdocc[irrep] -
@@ -470,9 +470,9 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
     // errcod = ip_int_array("RESTRICTED_UOCC",restruocc,nirreps);
     if (options["RESTRICTED_UOCC"].has_changed()) {
       if (options["RESTRICTED_UOCC"].size() != nirreps) {
-        throw InputException("ras_set2(): Wrong size of array", 
+        throw InputException("ras_set2(): Wrong size of array",
           "RESTRICTED_UOCC", __FILE__, __LINE__);
-      } 
+      }
       options.fill_int_array("RESTRICTED_UOCC", restruocc);
     }
   }
@@ -552,7 +552,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
       while (tras[i][irrep]) {
         point = used[irrep] + offset[irrep];
         if (point < 0 || point >= nmo) {
-          throw PsiException("ras_set2(): Invalid point value",  
+          throw PsiException("ras_set2(): Invalid point value",
             __FILE__, __LINE__);
         }
         order[point] = cnt++;

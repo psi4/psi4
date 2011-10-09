@@ -1,11 +1,13 @@
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <ccfiles.h>
-#include <psi4-dec.h>
+#include <cstdio>
 
-namespace psi { namespace ccresponse {
+namespace psi {
+extern FILE* outfile;
+namespace ccresponse {
 
 /* Global variables */
 #ifdef EXTERN

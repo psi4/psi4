@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #ifndef _psi_src_bin_transqt2_globals_h
@@ -8,7 +8,6 @@
 
 #include <psifiles.h>
 #include <ccfiles.h>
-#include <psi4-dec.h>
 
 #include "MOInfo.h"
 #include "Params.h"

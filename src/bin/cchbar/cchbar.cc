@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCHBAR
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 **  CCHBAR: Program to calculate the elements of the CCSD HBAR matrix.
@@ -13,6 +13,7 @@
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "globals.h"
@@ -68,15 +69,15 @@ PsiReturnType cchbar(Options &options)
     cachelist = cacheprep_rhf(params.cachelev, cachefiles);
 
     dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, cachelist, NULL,
-	     2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
+             2, moinfo.occpi, moinfo.occ_sym, moinfo.virtpi, moinfo.vir_sym);
   }
   else if(params.ref == 2) { /** UHF **/
 
     cachelist = cacheprep_uhf(params.cachelev, cachefiles);
 
-    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles, 
-	     cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
-	     moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
+    dpd_init(0, moinfo.nirreps, params.memory, 0, cachefiles,
+             cachelist, NULL, 4, moinfo.aoccpi, moinfo.aocc_sym, moinfo.avirtpi,
+             moinfo.avir_sym, moinfo.boccpi, moinfo.bocc_sym, moinfo.bvirtpi, moinfo.bvir_sym);
   }
 
   sort_amps();
@@ -118,14 +119,14 @@ PsiReturnType cchbar(Options &options)
     if( params.wfn == "CC3" || params.wfn == "EOM_CC3" ) {
       /* switch to ROHF to generate all spin cases of He^T1 elements */
       if((params.dertype == 3 || params.dertype == 1) && params.ref == 0) {
-	params.ref = 1;
-	cc3_HET1(); /* compute remaining Wmbej [H,eT1] */
-	norm_HET1();
-	params.ref = 0; 
+        params.ref = 1;
+        cc3_HET1(); /* compute remaining Wmbej [H,eT1] */
+        norm_HET1();
+        params.ref = 0;
       }
       else {
-	cc3_HET1(); /* compute remaining Wmbej [H,eT1] */
-	norm_HET1();
+        cc3_HET1(); /* compute remaining Wmbej [H,eT1] */
+        norm_HET1();
       }
     }
   }
@@ -137,7 +138,7 @@ PsiReturnType cchbar(Options &options)
   else cachedone_rhf(cachelist);
   free(cachefiles);
 
-  cleanup(); 
+  cleanup();
   exit_io();
   return Success;
 }

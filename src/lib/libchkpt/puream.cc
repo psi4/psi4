@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -13,25 +14,25 @@ using namespace psi;
 
 bool Chkpt::rd_puream(const char *key2)
 {
-	int puream;
-	char *keyword;
-	keyword = build_keyword("Pure Harmonics?", key2);
+        int puream;
+        char *keyword;
+        keyword = build_keyword("Pure Harmonics?", key2);
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) &puream, sizeof(int));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) &puream, sizeof(int));
 
-	free(keyword);
-	return (puream == 1);
+        free(keyword);
+        return (puream == 1);
 }
 
 void Chkpt::wt_puream(bool puream, const char *key2)
 {
-	char *keyword;
-	keyword = build_keyword("Pure Harmonics?", key2);
+        char *keyword;
+        keyword = build_keyword("Pure Harmonics?", key2);
 
-	int p = puream ? 1 : 0;
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) &p, sizeof(int));
+        int p = puream ? 1 : 0;
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) &p, sizeof(int));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
@@ -43,10 +44,10 @@ extern "C" {
 **  returns: 1 (harmonics) or 0 (cartesian)
 **  \ingroup CHKPT
 */
-	int chkpt_rd_puream(void)
-	{
-	        return _default_chkpt_lib_->rd_puream() ? 1 : 0;
-	}
+        int chkpt_rd_puream(void)
+        {
+                return _default_chkpt_lib_->rd_puream() ? 1 : 0;
+        }
 
 /*!
 **  void chkpt_wt_puream(int)
@@ -58,8 +59,8 @@ extern "C" {
 **  returns: none
 **  \ingroup CHKPT
 */
-	void chkpt_wt_puream(int puream, const char *key2)
-	{
-		_default_chkpt_lib_->wt_puream(puream == 1, key2);
-	}
+        void chkpt_wt_puream(int puream, const char *key2)
+        {
+                _default_chkpt_lib_->wt_puream(puream == 1, key2);
+        }
 }
