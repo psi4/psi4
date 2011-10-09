@@ -27,8 +27,8 @@ void Solver::common_init()
 {
     print_ = 1;
     debug_ = 0;
-    // 256 MB default
-    memory_ = 32000000L; 
+    // Unlimited default
+    memory_ = 0L; 
     converged_ = false;
     iteration_ = 0;
     convergence_ = 0.0;
@@ -90,6 +90,15 @@ void CGRSolver::print_header() const
         fprintf(outfile, "   Convergence cutoff = %9.0E\n", criteria_);
         fprintf(outfile, "   Maximum iterations = %9d\n\n", maxiter_); 
     }
+}
+unsigned long int CGRSolver::memory_estimate()
+{
+    unsigned long int dimension = 0L;
+    if (!diag_) diag_ = H_->diagonal();
+    for (int h = 0; h < diag_->nirrep(); h++) {
+        dimension += diag_->dimpi()[h];
+    }
+    return (6L * b_.size()) * dimension;
 }
 void CGRSolver::initialize()
 {
@@ -400,6 +409,15 @@ void DLRSolver::print_header() const
         fprintf(outfile, "   Convergence cutoff      = %9.0E\n", criteria_);
         fprintf(outfile, "   Maximum iterations      = %9d\n\n", maxiter_); 
     }
+}
+unsigned long int DLRSolver::memory_estimate()
+{
+    unsigned long int dimension = 0L;
+    if (!diag_) diag_ = H_->diagonal();
+    for (int h = 0; h < diag_->nirrep(); h++) {
+        dimension += diag_->dimpi()[h];
+    }
+    return (2L * max_subspace_ + 3L * nroot_ + 1L) * dimension;
 }
 void DLRSolver::initialize()
 {
