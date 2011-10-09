@@ -6,6 +6,8 @@
 #include <time.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/aiohandler.h>
 
 using namespace boost;
 using namespace psi;

@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -19,7 +20,7 @@ double *Chkpt::rd_rotconst(void)
 
   rotconst = array<double>(3);
 
-  psio->read_entry(PSIF_CHKPT, keyword, (char *) rotconst, 
+  psio->read_entry(PSIF_CHKPT, keyword, (char *) rotconst,
     3*sizeof(double));
 
   free(keyword);
@@ -31,7 +32,7 @@ void Chkpt::wt_rotconst(double *rotconst)
   char *keyword;
   keyword = build_keyword("Rotational Constants");
 
-  psio->write_entry(PSIF_CHKPT, keyword, (char *) rotconst, 
+  psio->write_entry(PSIF_CHKPT, keyword, (char *) rotconst,
     3*sizeof(double));
 
   free(keyword);
@@ -44,7 +45,7 @@ extern "C" {
 **
 ** arguments: none
 **
-** returns: 
+** returns:
 **   double *rotconst: An array of the rotational constants
 */
   double *chkpt_rd_rotconst(void)

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -15,16 +15,17 @@
 #include "globals.h"
 
 namespace psi {
+extern FILE* outfile;
   namespace transqt2 {
 
 void frozen_core(int,int,int,int,double,double *,double *,double *,
                  double *,int);
 
 void idx_permute_presort(dpdfile4 *,int,int **,int **,int,int,int,int,
-			   double,FILE *);
+                           double,FILE *);
 
-int file_build_presort(dpdfile4 *File, int inputfile, double tolerance, 
-		       long int memoryb, int keep, int fzc, double *D_a, 
+int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
+                       long int memoryb, int keep, int fzc, double *D_a,
                        double *D_b, double *fock_a, double *fock_b, int ref)
 {
   struct iwlbuf InBuf;
@@ -58,38 +59,38 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
   bucket_rowdim[0] = init_int_array(nirreps);
   bucket_size = (int **) malloc(sizeof(int *));
   bucket_size[0] = init_int_array(nirreps);
-    
+
   /* Figure out how many passes we need and where each p,q goes */
   for(h=0,core_left=memoryd,nbuckets=1; h < nirreps; h++) {
 
     row_length = (long int) File->params->coltot[h^(File->my_irrep)];
-	       
+
     for(row=0; row < File->params->rowtot[h]; row++) {
 
       if((core_left - row_length) >= 0) {
-	core_left -= row_length;
-	bucket_rowdim[nbuckets-1][h]++;
-	bucket_size[nbuckets-1][h] += row_length;
+        core_left -= row_length;
+        bucket_rowdim[nbuckets-1][h]++;
+        bucket_size[nbuckets-1][h] += row_length;
       }
       else {
-	nbuckets++;
-	core_left = memoryd - row_length;
+        nbuckets++;
+        core_left = memoryd - row_length;
 
-	/* Make room for another bucket */
-	bucket_offset = (int **) realloc((void *) bucket_offset,
-					 nbuckets * sizeof(int *));
-	bucket_offset[nbuckets-1] = init_int_array(nirreps);
-	bucket_offset[nbuckets-1][h] = row;
+        /* Make room for another bucket */
+        bucket_offset = (int **) realloc((void *) bucket_offset,
+                                         nbuckets * sizeof(int *));
+        bucket_offset[nbuckets-1] = init_int_array(nirreps);
+        bucket_offset[nbuckets-1][h] = row;
 
-	bucket_rowdim = (int **) realloc((void *) bucket_rowdim,
-					 nbuckets * sizeof(int *));
-	bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
-	bucket_rowdim[nbuckets-1][h] = 1;
+        bucket_rowdim = (int **) realloc((void *) bucket_rowdim,
+                                         nbuckets * sizeof(int *));
+        bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
+        bucket_rowdim[nbuckets-1][h] = 1;
 
-	bucket_size = (int **) realloc((void *) bucket_size,
-					    nbuckets * sizeof(int *));
-	bucket_size[nbuckets-1] = init_int_array(nirreps);
-	bucket_size[nbuckets-1][h] = row_length;
+        bucket_size = (int **) realloc((void *) bucket_size,
+                                            nbuckets * sizeof(int *));
+        bucket_size[nbuckets-1] = init_int_array(nirreps);
+        bucket_size[nbuckets-1][h] = row_length;
       }
 
       p = File->params->roworb[h][row][0];
@@ -128,7 +129,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
       idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
 
       if(fzc && !n) /* build frozen-core operator only on first pass*/
-	frozen_core(p,q,r,s,value,D_a,D_b,fock_a,fock_b,ref);
+        frozen_core(p,q,r,s,value,D_a,D_b,fock_a,fock_b,ref);
 
     } /* end loop through current buffer */
 
@@ -138,17 +139,17 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
       lastbuf = InBuf.lastbuf;
 
       for (idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-	p = abs((int) lblptr[idx++]);
-	q = (int) lblptr[idx++];
-	r = (int) lblptr[idx++];
-	s = (int) lblptr[idx++];
+        p = abs((int) lblptr[idx++]);
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
 
-	value = (double) valptr[InBuf.idx];
+        value = (double) valptr[InBuf.idx];
 
-	idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
-      
-	if(fzc && !n) /* build frozen-core operator only on first pass */
-	  frozen_core(p,q,r,s,value,D_a,D_b,fock_a,fock_b,ref);
+        idx_permute_presort(File,n,bucket_map,bucket_offset,p,q,r,s,value,outfile);
+
+        if(fzc && !n) /* build frozen-core operator only on first pass */
+          frozen_core(p,q,r,s,value,D_a,D_b,fock_a,fock_b,ref);
 
       } /* end loop through current buffer */
     } /* end loop over reading buffers */
@@ -157,8 +158,8 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
 
     for(h=0; h < nirreps;h++) {
       if(bucket_size[n][h])
-	psio_write(File->filenum, File->label, (char *) File->matrix[h][0],
-		   bucket_size[n][h]*((long int) sizeof(double)), next, &next);
+        psio_write(File->filenum, File->label, (char *) File->matrix[h][0],
+                   bucket_size[n][h]*((long int) sizeof(double)), next, &next);
       free_block(File->matrix[h]);
     }
 
@@ -183,7 +184,7 @@ int file_build_presort(dpdfile4 *File, int inputfile, double tolerance,
 }
 
 void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *D_b,
-		 double *fock_a, double *fock_b, int ref)
+                 double *fock_a, double *fock_b, int ref)
 {
   int a, b, c, d, ab, cd, ad, bc;
   int dum,found=0;
@@ -330,12 +331,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
 
@@ -351,12 +352,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
 
@@ -372,12 +373,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
 
@@ -393,12 +394,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
 
@@ -414,12 +415,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
 
@@ -435,12 +436,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
 
@@ -456,12 +457,12 @@ void frozen_core(int p, int q, int r, int s, double value, double *D_a, double *
       bc = INDEX(b,c);
       ad = INDEX(a,d);
       if(c>=d) {
-	fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
-	fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_a[cd] += (D_a[ab] + D_b[ab]) * value;
+        fock_b[cd] += (D_a[ab] + D_b[ab]) * value;
       }
       if(b>=c) {
-	fock_a[bc] -= D_a[ad] * value;
-	fock_b[bc] -= D_b[ad] * value;
+        fock_a[bc] -= D_a[ad] * value;
+        fock_b[bc] -= D_b[ad] * value;
       }
     }
   }

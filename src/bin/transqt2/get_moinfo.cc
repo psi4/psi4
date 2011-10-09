@@ -11,6 +11,7 @@
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #define EXTERN
 #include "globals.h"
 

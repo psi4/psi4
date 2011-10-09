@@ -1,15 +1,17 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
+#include <exception.h>
 #include <ccfiles.h>
 #include <psifiles.h>
-#include <psi4-dec.h>
 
-namespace psi { namespace ccdensity {
+namespace psi {
+extern FILE* outfile;
+namespace ccdensity {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
@@ -85,8 +87,8 @@ int **cacheprep_uhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
-    printf("Error: invalid cache level!\n"); 
+  else {
+    printf("Error: invalid cache level!\n");
     throw PsiException("ccdensity: ", __FILE__, __LINE__);
    }
 }
@@ -151,8 +153,8 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
-     printf("Error: invalid cache level!\n"); 
+  else {
+     printf("Error: invalid cache level!\n");
      throw PsiException("ccdensity:  error", __FILE__, __LINE__);
     }
 }

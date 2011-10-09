@@ -1,6 +1,6 @@
 /*! \file
     \ingroup RESPONSE
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -13,7 +13,6 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
-#include <psi4-dec.h>
 
 namespace psi { namespace response {
 
@@ -61,15 +60,15 @@ void polar(void)
     for(h=0; h < moinfo.nirreps; h++) {
       if(dim = moinfo.RPA_dim[h]) {
         for(Ga=0,ai=0; Ga < moinfo.nirreps; Ga++) {
-	  Gi = h^Ga;
-	  for(a=0; a < moinfo.virtpi[Ga]; a++) {
-	    aa = moinfo.qt2pitzer[moinfo.qt_vir[a] + moinfo.vir_off[Ga]];
-	    for(i=0; i < moinfo.occpi[Gi]; i++,ai++) {
-	      ii = moinfo.qt2pitzer[moinfo.qt_occ[i] + moinfo.occ_off[Gi]];
-	      R[alpha][h][ai] = 2 * moinfo.MU[alpha][aa][ii];
-	      R[alpha][h][ai+dim] = - 2 * moinfo.MU[alpha][aa][ii];
-	    }
-  	  }
+          Gi = h^Ga;
+          for(a=0; a < moinfo.virtpi[Ga]; a++) {
+            aa = moinfo.qt2pitzer[moinfo.qt_vir[a] + moinfo.vir_off[Ga]];
+            for(i=0; i < moinfo.occpi[Gi]; i++,ai++) {
+              ii = moinfo.qt2pitzer[moinfo.qt_occ[i] + moinfo.occ_off[Gi]];
+              R[alpha][h][ai] = 2 * moinfo.MU[alpha][aa][ii];
+              R[alpha][h][ai+dim] = - 2 * moinfo.MU[alpha][aa][ii];
+            }
+          }
         }
 
         C_DGEMV('n', 2*dim, 2*dim, 1, &(C[h][0][0]), 2*dim, &(R[alpha][h][0]), 1, 0, &(S[alpha][h][0]), 1);

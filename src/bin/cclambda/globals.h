@@ -1,14 +1,15 @@
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
-#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 
-namespace psi { namespace cclambda {
+namespace psi {
+extern FILE* outfile;
+namespace cclambda {
 
 /* Global variables */
 #ifdef EXTERN

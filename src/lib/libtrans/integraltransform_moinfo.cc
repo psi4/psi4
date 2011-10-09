@@ -2,6 +2,7 @@
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 #include <libmints/molecule.h>
+#include <libmints/matrix.h>
 #include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include <sstream>

@@ -11,6 +11,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include "Params.h"
 #include "MOInfo.h"
 #include "globals.h"

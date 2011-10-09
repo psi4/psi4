@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <unistd.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
@@ -16,15 +17,15 @@ void PSIO::tocwrite(unsigned int unit) {
   psio_tocentry *this_entry;
   ULI entry_size;
   psio_address address;
-  
+
   this_unit = &(psio_unit[unit]);
   entry_size = sizeof(psio_tocentry) - 2*sizeof(psio_tocentry *);
-  
+
   if (!open_check(unit))
     return;
-  
+
   wt_toclen(unit, this_unit->toclen);
-  
+
   this_entry = this_unit->toc;
   address = psio_get_address(PSIO_ZERO, sizeof(ULI));
   for (i=0; i < this_unit->toclen; i++) {

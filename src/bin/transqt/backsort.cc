@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -15,7 +15,9 @@
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define MIN0(a,b) (((a)<(b)) ? (a) : (b))
 
-namespace psi { namespace transqt {
+namespace psi {
+extern FILE* outfile;
+namespace transqt {
 
 int get_p(int i);
 
@@ -38,7 +40,7 @@ int get_p(int i);
 ** backsort_write().
 **
 ** (3) The backsort() routine orders all the density elements within
-** each sorting buffer according to 
+** each sorting buffer according to
 **
 */
 
@@ -86,7 +88,7 @@ void backsort_prep(int uhf)
   bucket_quarts = init_int_array(1);
   bucket_firstpq = init_int_array(1);
   bucket_lastpq = init_int_array(1);
-  
+
   /* Figure out how many buckets we need and where each */
   /* shell-pair (in canonical shell-ordering) goes.     */
   core_left = params.maxcor;
@@ -98,7 +100,7 @@ void backsort_prep(int uhf)
     imin = moinfo.sloc[i] - 1;
     imax = imin + shell_size[i];
     for(ii=imin; ii < imax; ii++) shell[ii] = i;
-      
+
     for(j=0; j <= i; j++,ij++) {
       size_j = shell_size[j];
       size_ij = pair_size[ij];
@@ -108,48 +110,48 @@ void backsort_prep(int uhf)
 
       /* Number of quartets in this pair */
       this_pair_quarts = 0;
-		   
+
       for(k=0; k <= i; k++) {
-	size_k = shell_size[k];
-	lend = (k==i) ? j : k;
-	for(l=0; l <= lend; l++,ijkl++) {
-	  size_l = shell_size[l];
+        size_k = shell_size[k];
+        lend = (k==i) ? j : k;
+        for(l=0; l <= lend; l++,ijkl++) {
+          size_l = shell_size[l];
 
-	  this_pair_size += size_ij * size_k * size_l;
-	  this_pair_quarts++;
+          this_pair_size += size_ij * size_k * size_l;
+          this_pair_quarts++;
 
-	} /* l loop */
+        } /* l loop */
       } /* k loop */
 
       if(uhf) this_pair_size *= 2;
 
       /* Add 4 indices to size and convert to bytes */
       this_pair_sizeb = this_pair_size*(4*sizeof(int) + sizeof(double));
-	  
+
       if((core_left - (long int) this_pair_sizeb) >= 0) {
-	core_left -= (long int) this_pair_sizeb;
-	bucket_quarts[nbuckets-1] += this_pair_quarts;
-	bucket_lastpq[nbuckets-1] = ij;
+        core_left -= (long int) this_pair_sizeb;
+        bucket_quarts[nbuckets-1] += this_pair_quarts;
+        bucket_lastpq[nbuckets-1] = ij;
       }
       else {
-	nbuckets++;
-	core_left = params.maxcor - (long int) this_pair_sizeb;
-	bucket_offset = (int *) realloc((void *) bucket_offset,
-					nbuckets * sizeof(int));
-	bucket_offset[nbuckets-1] = bucket_offset[nbuckets-2] +
-	  bucket_quarts[nbuckets-2];
+        nbuckets++;
+        core_left = params.maxcor - (long int) this_pair_sizeb;
+        bucket_offset = (int *) realloc((void *) bucket_offset,
+                                        nbuckets * sizeof(int));
+        bucket_offset[nbuckets-1] = bucket_offset[nbuckets-2] +
+          bucket_quarts[nbuckets-2];
 
-	bucket_firstpq = (int *) realloc((void *) bucket_firstpq,
-					 nbuckets * sizeof(int));
-	bucket_firstpq[nbuckets-1] = ij;
-	      
-	bucket_lastpq = (int *) realloc((void *) bucket_lastpq,
-					nbuckets * sizeof(int));
-	bucket_lastpq[nbuckets-1] = ij;
-	      
-	bucket_quarts = (int *) realloc((void *) bucket_quarts,
-					nbuckets * sizeof(int));
-	bucket_quarts[nbuckets-1] = this_pair_quarts;
+        bucket_firstpq = (int *) realloc((void *) bucket_firstpq,
+                                         nbuckets * sizeof(int));
+        bucket_firstpq[nbuckets-1] = ij;
+
+        bucket_lastpq = (int *) realloc((void *) bucket_lastpq,
+                                        nbuckets * sizeof(int));
+        bucket_lastpq[nbuckets-1] = ij;
+
+        bucket_quarts = (int *) realloc((void *) bucket_quarts,
+                                        nbuckets * sizeof(int));
+        bucket_quarts[nbuckets-1] = this_pair_quarts;
       }
 
       bucket_map[ij] = nbuckets - 1;
@@ -200,7 +202,7 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
     lastbuf = 0;
 
     nquarts = bucket_quarts[n];
-      
+
     pidx = (int **) malloc(nquarts * sizeof(int *));
     qidx = (int **) malloc(nquarts * sizeof(int *));
     ridx = (int **) malloc(nquarts * sizeof(int *));
@@ -214,29 +216,29 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
       size_pq = pair_size[pq];
 
       for(r=0,rs=0; r < moinfo.nshell; r++) {
-	size_r = shell_size[r];
-	for(s=0; s <= r; s++,rs++) {
-	  size_s = shell_size[s];
+        size_r = shell_size[r];
+        for(s=0; s <= r; s++,rs++) {
+          size_s = shell_size[s];
 
-	  if(rs > pq) break;
+          if(rs > pq) break;
 
-	  quartet_size = size_pq * size_r * size_s;
+          quartet_size = size_pq * size_r * size_s;
 
-	  if(uhf) quartet_size *= 2;
+          if(uhf) quartet_size *= 2;
 
-	  pidx[nquarts] = init_int_array(quartet_size);
-	  qidx[nquarts] = init_int_array(quartet_size);
-	  ridx[nquarts] = init_int_array(quartet_size);
-	  sidx[nquarts] = init_int_array(quartet_size);
-	  gamma[nquarts] = init_array(quartet_size);
-	  nquarts++;
-	}
+          pidx[nquarts] = init_int_array(quartet_size);
+          qidx[nquarts] = init_int_array(quartet_size);
+          ridx[nquarts] = init_int_array(quartet_size);
+          sidx[nquarts] = init_int_array(quartet_size);
+          gamma[nquarts] = init_array(quartet_size);
+          nquarts++;
+        }
       }
     }
 
     if(nquarts != bucket_quarts[n]) {
       printf("Quartet error: nquarts = %d; bucket_quarts[%d] = %d\n",
-	     nquarts, n, bucket_quarts[n]);
+             nquarts, n, bucket_quarts[n]);
       exit(PSI_RETURN_FAILURE);
     }
 
@@ -245,161 +247,161 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
       lastbuf = InBuf.lastbuf;
 
       for(idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-	p = (int) InBuf.labels[idx++];
-	q = (int) InBuf.labels[idx++];
-	r = (int) InBuf.labels[idx++];
-	s = (int) InBuf.labels[idx++];
+        p = (int) InBuf.labels[idx++];
+        q = (int) InBuf.labels[idx++];
+        r = (int) InBuf.labels[idx++];
+        s = (int) InBuf.labels[idx++];
 
-	value = (double) InBuf.values[InBuf.idx];
+        value = (double) InBuf.values[InBuf.idx];
 
-	pshell = shell[p]; qshell = shell[q];
-	rshell = shell[r]; sshell = shell[s];
+        pshell = shell[p]; qshell = shell[q];
+        rshell = shell[r]; sshell = shell[s];
 
-	/* Skip this quartet if on one center */
-	if(snuc[pshell] == snuc[qshell] &&
-	   snuc[pshell] == snuc[rshell] &&
-	   snuc[pshell] == snuc[sshell])
-	  continue;
+        /* Skip this quartet if on one center */
+        if(snuc[pshell] == snuc[qshell] &&
+           snuc[pshell] == snuc[rshell] &&
+           snuc[pshell] == snuc[sshell])
+          continue;
 
-	pqshell = INDEX(pshell,qshell); rsshell = INDEX(rshell,sshell);
-	pqrs = INDEX(pqshell,rsshell);
+        pqshell = INDEX(pshell,qshell); rsshell = INDEX(rshell,sshell);
+        pqrs = INDEX(pqshell,rsshell);
 
-	pq = INDEX(p,q);  rs = INDEX(r,s);
+        pq = INDEX(p,q);  rs = INDEX(r,s);
 
-	this_quartet = pqrs - bucket_offset[n];
-	this_counter = counter[this_quartet];
+        this_quartet = pqrs - bucket_offset[n];
+        this_counter = counter[this_quartet];
 
-	pidx[this_quartet][this_counter] = p;
-	qidx[this_quartet][this_counter] = q;
-	ridx[this_quartet][this_counter] = r;
-	sidx[this_quartet][this_counter] = s;
-	gamma[this_quartet][this_counter] = value;
+        pidx[this_quartet][this_counter] = p;
+        qidx[this_quartet][this_counter] = q;
+        ridx[this_quartet][this_counter] = r;
+        sidx[this_quartet][this_counter] = s;
+        gamma[this_quartet][this_counter] = value;
 
-	counter[this_quartet]++;
+        counter[this_quartet]++;
 
-	/* Now run through the appropriate permutations */
-	if(pqshell != rsshell) {
-	  if(pshell != qshell) {
-	    if(rshell == sshell) {
-	      if(qshell != rshell) { /* (pq|rr) */
-		if(r!=s) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = p;
-		  qidx[this_quartet][this_counter] = q;
-		  ridx[this_quartet][this_counter] = s;
-		  sidx[this_quartet][this_counter] = r;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-	      }
-	      else {  /* (pq|qq) */
-		if(r!=s) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = p;
-		  qidx[this_quartet][this_counter] = q;
-		  ridx[this_quartet][this_counter] = s;
-		  sidx[this_quartet][this_counter] = r;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-	      }
-	    }
-	  }
-	  else {
-	    if(rshell != sshell) {
-	      if(qshell != rshell) { /* (pp|rs) */
-		if(p!=q) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = q;
-		  qidx[this_quartet][this_counter] = p;
-		  ridx[this_quartet][this_counter] = r;
-		  sidx[this_quartet][this_counter] = s;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-	      }
-	      else { /* (pp|ps) */
-		if(p!=q) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = q;
-		  qidx[this_quartet][this_counter] = p;
-		  ridx[this_quartet][this_counter] = r;
-		  sidx[this_quartet][this_counter] = s;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-	      }
-	    }
-	    else {
-	      if(qshell != rshell) { /* (pp|rr) */
-		if(p!=q && r!=s) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = q;
-		  qidx[this_quartet][this_counter] = p;
-		  ridx[this_quartet][this_counter] = r;
-		  sidx[this_quartet][this_counter] = s;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-				  
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = p;
-		  qidx[this_quartet][this_counter] = q;
-		  ridx[this_quartet][this_counter] = s;
-		  sidx[this_quartet][this_counter] = r;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-				  
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = q;
-		  qidx[this_quartet][this_counter] = p;
-		  ridx[this_quartet][this_counter] = s;
-		  sidx[this_quartet][this_counter] = r;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-		else if(p!=q && r==s) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = q;
-		  qidx[this_quartet][this_counter] = p;
-		  ridx[this_quartet][this_counter] = r;
-		  sidx[this_quartet][this_counter] = s;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-		else if(p==q && r!=s) {
-		  this_counter = counter[this_quartet];
-		  pidx[this_quartet][this_counter] = p;
-		  qidx[this_quartet][this_counter] = q;
-		  ridx[this_quartet][this_counter] = s;
-		  sidx[this_quartet][this_counter] = r;
-		  gamma[this_quartet][this_counter] = value;
-		  counter[this_quartet]++;
-		}
-	      }
-	      else {
-		exit(PSI_RETURN_FAILURE);
-	      }
-	    }
-	  }
-	}
-	else { /* pqshell == rsshell */
-	  if(pshell != qshell) { /* (pq|pq) */
-	    if(pq != rs) {
-	      this_counter = counter[this_quartet];
-	      pidx[this_quartet][this_counter] = r;
-	      qidx[this_quartet][this_counter] = s;
-	      ridx[this_quartet][this_counter] = p;
-	      sidx[this_quartet][this_counter] = q;
-	      gamma[this_quartet][this_counter] = value;
-	      counter[this_quartet]++;
-	    }
-	  }
-	  else { /* (pp|pp) */
-	    /* This shouldn't actually occur because of the
-	       snuc[] filter above */
-	    exit(PSI_RETURN_FAILURE);
-	  }
-	}
+        /* Now run through the appropriate permutations */
+        if(pqshell != rsshell) {
+          if(pshell != qshell) {
+            if(rshell == sshell) {
+              if(qshell != rshell) { /* (pq|rr) */
+                if(r!=s) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = p;
+                  qidx[this_quartet][this_counter] = q;
+                  ridx[this_quartet][this_counter] = s;
+                  sidx[this_quartet][this_counter] = r;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+              }
+              else {  /* (pq|qq) */
+                if(r!=s) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = p;
+                  qidx[this_quartet][this_counter] = q;
+                  ridx[this_quartet][this_counter] = s;
+                  sidx[this_quartet][this_counter] = r;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+              }
+            }
+          }
+          else {
+            if(rshell != sshell) {
+              if(qshell != rshell) { /* (pp|rs) */
+                if(p!=q) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = q;
+                  qidx[this_quartet][this_counter] = p;
+                  ridx[this_quartet][this_counter] = r;
+                  sidx[this_quartet][this_counter] = s;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+              }
+              else { /* (pp|ps) */
+                if(p!=q) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = q;
+                  qidx[this_quartet][this_counter] = p;
+                  ridx[this_quartet][this_counter] = r;
+                  sidx[this_quartet][this_counter] = s;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+              }
+            }
+            else {
+              if(qshell != rshell) { /* (pp|rr) */
+                if(p!=q && r!=s) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = q;
+                  qidx[this_quartet][this_counter] = p;
+                  ridx[this_quartet][this_counter] = r;
+                  sidx[this_quartet][this_counter] = s;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = p;
+                  qidx[this_quartet][this_counter] = q;
+                  ridx[this_quartet][this_counter] = s;
+                  sidx[this_quartet][this_counter] = r;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = q;
+                  qidx[this_quartet][this_counter] = p;
+                  ridx[this_quartet][this_counter] = s;
+                  sidx[this_quartet][this_counter] = r;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+                else if(p!=q && r==s) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = q;
+                  qidx[this_quartet][this_counter] = p;
+                  ridx[this_quartet][this_counter] = r;
+                  sidx[this_quartet][this_counter] = s;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+                else if(p==q && r!=s) {
+                  this_counter = counter[this_quartet];
+                  pidx[this_quartet][this_counter] = p;
+                  qidx[this_quartet][this_counter] = q;
+                  ridx[this_quartet][this_counter] = s;
+                  sidx[this_quartet][this_counter] = r;
+                  gamma[this_quartet][this_counter] = value;
+                  counter[this_quartet]++;
+                }
+              }
+              else {
+                exit(PSI_RETURN_FAILURE);
+              }
+            }
+          }
+        }
+        else { /* pqshell == rsshell */
+          if(pshell != qshell) { /* (pq|pq) */
+            if(pq != rs) {
+              this_counter = counter[this_quartet];
+              pidx[this_quartet][this_counter] = r;
+              qidx[this_quartet][this_counter] = s;
+              ridx[this_quartet][this_counter] = p;
+              sidx[this_quartet][this_counter] = q;
+              gamma[this_quartet][this_counter] = value;
+              counter[this_quartet]++;
+            }
+          }
+          else { /* (pp|pp) */
+            /* This shouldn't actually occur because of the
+               snuc[] filter above */
+            exit(PSI_RETURN_FAILURE);
+          }
+        }
       }
     }
 
@@ -413,36 +415,36 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
       q = pq-ioff[p];
 
       for(r=0,rs=0; r < moinfo.nshell; r++) {
-	for(s=0; s <= r; s++,rs++) {
+        for(s=0; s <= r; s++,rs++) {
 
-	  if(rs > pq) break;
+          if(rs > pq) break;
 
-	  iwl_buf_wrt_arr(&OutBuf, gamma[nquarts],
-			  pidx[nquarts], qidx[nquarts],
-			  ridx[nquarts], sidx[nquarts],
-			  counter[nquarts]);
+          iwl_buf_wrt_arr(&OutBuf, gamma[nquarts],
+                          pidx[nquarts], qidx[nquarts],
+                          ridx[nquarts], sidx[nquarts],
+                          counter[nquarts]);
 
-	  /*
-	  fprintf(outfile, "%d %d %d %d  count = %d\n", p, q, r, s, counter[nquarts]);
-	  for(i=0; i < counter[nquarts]; i++) {
-	    fprintf(outfile, "%d %d %d %d gamma = %20.12f\n", 
-		    pidx[nquarts][i], qidx[nquarts][i],
-		    ridx[nquarts][i], sidx[nquarts][i],
-		    gamma[nquarts][i]);
-	  }
-	  */
+          /*
+          fprintf(outfile, "%d %d %d %d  count = %d\n", p, q, r, s, counter[nquarts]);
+          for(i=0; i < counter[nquarts]; i++) {
+            fprintf(outfile, "%d %d %d %d gamma = %20.12f\n",
+                    pidx[nquarts][i], qidx[nquarts][i],
+                    ridx[nquarts][i], sidx[nquarts][i],
+                    gamma[nquarts][i]);
+          }
+          */
 
-	  /* Mark the end of the shell quartet */
-	  if(!(snuc[p] == snuc[q] && snuc[r] == snuc[s] && snuc[p] == snuc[r])) {
-	    value = 9.9999999999;
-	    iwl_buf_wrt_val(&OutBuf, -1, -1, -1, -1, value, 0, outfile, 0);
-	    /*	    fprintf(outfile, "-1 -1 -1 -1 gamma = %20.12f\n", value); */
-	  }
+          /* Mark the end of the shell quartet */
+          if(!(snuc[p] == snuc[q] && snuc[r] == snuc[s] && snuc[p] == snuc[r])) {
+            value = 9.9999999999;
+            iwl_buf_wrt_val(&OutBuf, -1, -1, -1, -1, value, 0, outfile, 0);
+            /*	    fprintf(outfile, "-1 -1 -1 -1 gamma = %20.12f\n", value); */
+          }
 
-	  num_tpdm += counter[nquarts]+1;
+          num_tpdm += counter[nquarts]+1;
 
-	  nquarts++;
-	}
+          nquarts++;
+        }
       }
     }
 
@@ -453,7 +455,7 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
     }
     free(pidx); free(qidx); free(ridx); free(sidx);
     free(gamma); free(counter);
-      
+
   } /* end of bucket loop */
 
   iwl_buf_flush(&OutBuf, 1);
@@ -473,8 +475,8 @@ void backsort(int first_tmp_file, double tolerance, int uhf)
 }
 
 void backsort_write(int i, int j, double **A, int kfirst, int klast,
-		    int lfirst, int llast, int printflag,FILE *outfile,
-		    struct iwlbuf *twopdm_out, int uhf)
+                    int lfirst, int llast, int printflag,FILE *outfile,
+                    struct iwlbuf *twopdm_out, int uhf)
 {
 
   int k,l,K,L,ij,kl;
@@ -498,8 +500,8 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
       else if(kl != ij && uhf) value *= 0.5;
 
       if (printflag) {
-	fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n", 
-		i, j, k, l, ij, kl, value);
+        fprintf(outfile, ">%d %d %d %d [%d] [%d] = %20.10lf\n",
+                i, j, k, l, ij, kl, value);
       }
 
       shell_k = shell[k];
@@ -508,47 +510,47 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
       kl_bucket = bucket_map[shell_kl];
 
       if(shell_ij >= shell_kl) {
-	if(shell_i >= shell_j) {
-	  if(shell_k >= shell_l) {
-	    iwl_buf_wrt_val(&twopdm_out[ij_bucket], i, j, k, l,
-			    value,0,outfile,0);
-	  }
-	  else
-	    iwl_buf_wrt_val(&twopdm_out[ij_bucket], i, j, l, k,
-			    value,0,outfile,0);
-	}
-	else {
-	  if(shell_k >= shell_l) {
-	    iwl_buf_wrt_val(&twopdm_out[ij_bucket], j, i, k, l,
-			    value,0,outfile,0);
-	  }
-	  else {
-	    iwl_buf_wrt_val(&twopdm_out[ij_bucket], j, i, l, k,
-			    value,0,outfile,0);
-	  }
-	}
+        if(shell_i >= shell_j) {
+          if(shell_k >= shell_l) {
+            iwl_buf_wrt_val(&twopdm_out[ij_bucket], i, j, k, l,
+                            value,0,outfile,0);
+          }
+          else
+            iwl_buf_wrt_val(&twopdm_out[ij_bucket], i, j, l, k,
+                            value,0,outfile,0);
+        }
+        else {
+          if(shell_k >= shell_l) {
+            iwl_buf_wrt_val(&twopdm_out[ij_bucket], j, i, k, l,
+                            value,0,outfile,0);
+          }
+          else {
+            iwl_buf_wrt_val(&twopdm_out[ij_bucket], j, i, l, k,
+                            value,0,outfile,0);
+          }
+        }
       }
       else {
-	if(shell_k >= shell_l) {
-	  if(shell_i >= shell_j) {
-	    iwl_buf_wrt_val(&twopdm_out[kl_bucket], k, l, i, j,
-			    value,0,outfile,0);
-	  }
-	  else {
-	    iwl_buf_wrt_val(&twopdm_out[kl_bucket], k, l, j, i,
-			    value,0,outfile,0);
-	  }
-	}
-	else {
-	  if(shell_i >= shell_j) {
-	    iwl_buf_wrt_val(&twopdm_out[kl_bucket], l, k, i, j,
-			    value,0,outfile,0);
-	  }
-	  else {
-	    iwl_buf_wrt_val(&twopdm_out[kl_bucket], l, k, j, i,
-			    value,0,outfile,0);
-	  }
-	}
+        if(shell_k >= shell_l) {
+          if(shell_i >= shell_j) {
+            iwl_buf_wrt_val(&twopdm_out[kl_bucket], k, l, i, j,
+                            value,0,outfile,0);
+          }
+          else {
+            iwl_buf_wrt_val(&twopdm_out[kl_bucket], k, l, j, i,
+                            value,0,outfile,0);
+          }
+        }
+        else {
+          if(shell_i >= shell_j) {
+            iwl_buf_wrt_val(&twopdm_out[kl_bucket], l, k, i, j,
+                            value,0,outfile,0);
+          }
+          else {
+            iwl_buf_wrt_val(&twopdm_out[kl_bucket], l, k, j, i,
+                            value,0,outfile,0);
+          }
+        }
       }
     }
   }
@@ -557,7 +559,7 @@ void backsort_write(int i, int j, double **A, int kfirst, int klast,
 
 /* int get_p(): For a given canonical index pair, pq, computed using
 ** the standard ioff array, compute the first index p of the pair.
-** The second index, q, may be subsequently computed using 
+** The second index, q, may be subsequently computed using
 ** q = pq - ioff[p].
 */
 
@@ -565,7 +567,7 @@ int get_p(int pq)
 {
   int i, p;
 
-  for(i=0; i < 32641; i++) 
+  for(i=0; i < 32641; i++)
     if(ioff[i] > pq) { p = i-1; break; }
 
   return p;
