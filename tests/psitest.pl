@@ -1,17 +1,11 @@
 #!/usr/bin/perl 
 
-# Some general functions useful for parsing PSI4 output files.
-# TDC, 5/03
-
 #
 # Rules of use:
 # 1) environment must define variable $SRCDIR which points to the source 
 #    directory where the input and reference output files are located
-# 2) variable $EXECDIR can be used to specify location of Psi3 executables 
+# 2) variable $EXECDIR can be used to specify location of PSI4 executables 
 #    relative to the directory where testing is performed
-#
-# Escape metacharacters in wavefunction match string for file11
-# to enable wfn=SCF+D --- CDS 3/20/08
 #
 
 #
@@ -29,7 +23,7 @@ else {
   $PSITEST_EXEC_PATH = $EXECDIR;
 }
 $PSITEST_DEFAULT_INPUT = "input.dat";
-$PSITEST_DEFAULT_PREFIX = "psi";
+$PSITEST_DEFAULT_PREFIX = "psi4";
 if ($PSITEST_INPUT eq "") {
   $PSITEST_INPUT = $PSITEST_DEFAULT_INPUT;
 }
@@ -41,15 +35,15 @@ $PSITEST_TEST_SCRIPT = "runtest.pl";
 
 $PSITEST_SUMMARY_FILE = "../../test-case-results";
 
-# definitions that default tester knows about -- should match Psi driver!
-@PSITEST_JOBTYPES = ("SP", "OPT", "DISP", "FREQ", "SYMM_FC", "FC", 
-"OEPROP", "DBOC");
-@PSITEST_WFNS = ("SCF", "MP2", "MP2R12", "DETCI", "DETCAS", "CASSCF",
-"RASSCF", "ZAPTN", "BCCD", "BCCD_T", "CC2", "CCSD", "CCSD_T", "CC3", 
-"EOM_CC2", "LEOM_CC2", "EOM_CCSD", "LEOM_CCSD", "OOCCD", "CIS", "EOM_CC3",
-"SCF_MVD","PSIMRCC","SCF+D","MCSCF","IDMKPT2", "DCFT");
+# definitions that default tester knows about
+# should match lib/python/driver.py
+@PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
+@PSITEST_ENERGIES = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2",
+"mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "ccsd", "ccsd(t)", 
+"detci");
 @PSITEST_REFTYPES = ("RHF", "ROHF", "UHF", "TWOCON");
-@PSITEST_DERTYPES = ("NONE", "ENERGY", "FIRST", "SECOND", "RESPONSE");
+@PSITEST_GRADIENTS = ("scf", "ccsd", "mp2");
+@PSITEST_RESPONSE = ("ccsd");
 
 $PSITEST_DEFAULT_NSTAB = 5;       # number of eigenvalues STABLE prints out
 
@@ -78,12 +72,11 @@ sub do_tests
   my $interrupted;
   ($interrupted) = run_psi_command(@_);
 
-  # Figure out what calculation has been run -- run "psi4 -c" and get the calculation type string
-  my $calctype;
+  # Figure out what calculation has been run
   my $wfn;
   my $dertype;
   my $jobtype;
-  ($calctype, $wfn, $jobtype, $dertype) = get_calctype_string();
+  ($wfn, $jobtype, $dertype) = get_calctype_string();
 
   my $item;
   my $ok = 0;
@@ -3041,35 +3034,20 @@ sub run_psi_command
 
 sub get_calctype_string
 {
-  # It's better to use File::Temp but it doesn't seem to be installed by default
-  # use File::Temp;
-  use POSIX qw(tmpnam);
-
-  my $tempfile = tmpnam();
-  my $psicmd = build_psi_cmd("psi4 -c", 0, $SRC_PATH,  $PSITEST_EXEC_PATH, " 1>$tempfile 2>/dev/null");
-  my $psi_fail = system($psicmd);
-  open(RE, "$tempfile") || die "cannot open $tempfile $!";
-  my $calctype;
   my $wfn;
   my $jobtype;
-  my $dertype;
-  seek(RE,0,0);
+  open(RE, ">$PSITEST_DEFAULT_INPUT") || die "cannot open $PSITEST_DEFAULT_INPUT $!";
   while(<RE>) {
-    if (/Calculation type = /) {
-      @data = split(/ +/, $_);
-      $calctype = $data[4];
-      $calctype =~ s/\n//;
+    if(/energy(/) {
+      $jobtype = sp;
     }
-  }
-  seek(RE,0,0);
-  while(<RE>) {
-    if (/Wavefunction     = /) {
+    else if (/optimize(/) {
       @data = split(/ +/, $_);
+      $jobtype = 
       $wfn = $data[3];
       $wfn =~ s/\n//;
     }
   }
-  seek(RE,0,0);
   while(<RE>) {
     if (/Job type         = /) {
       @data = split(/ +/, $_);
@@ -3077,18 +3055,10 @@ sub get_calctype_string
       $jobtype =~ s/\n//;
     }
   }
-  seek(RE,0,0);
-  while(<RE>) {
-    if (/Derivative type  = /) {
-      @data = split(/ +/, $_);
-      $dertype = $data[4];
-      $dertype =~ s/\n//;
-    }
-  }
   close (RE);
   system("rm -f $tempfile");
 
-  return ($calctype, $wfn, $jobtype, $dertype);
+  return ($wfn, $jobtype);
 }
 
 1;

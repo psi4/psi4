@@ -1,15 +1,17 @@
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
 #include <psifiles.h>
-#include <psi4-dec.h>
+#include <exception.h>
 
-namespace psi { namespace ccenergy {
+namespace psi {
+extern FILE *outfile;
+namespace ccenergy {
 
 void cache_abcd_rhf(int **cachelist);
 void cache_iabc_rhf(int **cachelist);
@@ -86,7 +88,7 @@ int **cacheprep_uhf(int level, int *cachefiles)
       return cachelist;
     }
   else {
-    printf("Error: invalid cache level!\n"); 
+    printf("Error: invalid cache level!\n");
     throw InputException("Invalid cache level!", "CACHELEV", level, __FILE__, __LINE__);
   }
 }
@@ -151,7 +153,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else { 
+  else {
     printf("Error: invalid cache level!\n");
     throw InputException("Invalid cache level!", "CACHELEV", level, __FILE__, __LINE__);
   }

@@ -279,7 +279,7 @@ void AOShellCombinationsIterator::next()
             }
         }
         usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-        if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+        if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
             num_unique_pk = 1;
         else if (usii == uskk || usjj == usll) {
             num_unique_pk = 2;
@@ -402,7 +402,7 @@ void SOShellCombinationsIterator::next()
 //        fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
 
         usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-        if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+        if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
             num_unique_pk = 1;
         else if (usii == uskk || usjj == usll) {
             num_unique_pk = 2;
@@ -524,7 +524,7 @@ void SO_RS_Iterator::first()
 //    fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
 
     usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-    if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+    if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
         num_unique_pk = 1;
     else if (usii == uskk || usjj == usll) {
         num_unique_pk = 2;
@@ -586,7 +586,7 @@ void SO_RS_Iterator::next()
 //        fprintf(outfile, ">usii %d usjj %d uskk %d usll %d\n", usii, usjj, uskk, usll);
 
         usi_arr[0] = usii; usj_arr[0] = usjj; usk_arr[0] = uskk; usl_arr[0] = usll;
-        if (usii == usjj && usii == uskk || usjj == uskk && usjj == usll)
+        if ((usii == usjj && usii == uskk) || (usjj == uskk && usjj == usll))
             num_unique_pk = 1;
         else if (usii == uskk || usjj == usll) {
             num_unique_pk = 2;

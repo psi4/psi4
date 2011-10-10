@@ -106,7 +106,7 @@ void CUHF::save_density_and_energy()
 void CUHF::form_G()
 {
     // This will build J (stored in G) and K
-    J_Ka_Kb_Functor jk_builder(J_, Ka_, Kb_, Da_, Db_, Ca_, Cb_, 
+    J_Ka_Kb_Functor jk_builder(J_, Ka_, Kb_, Da_, Db_, Ca_, Cb_,
         nalphapi_, nbetapi_);
     process_tei<J_Ka_Kb_Functor>(jk_builder);
 }
@@ -189,7 +189,7 @@ void CUHF::form_F()
     // Form (rho_a + rho_b) / 2
     Dp_->copy(Da_);
     Dp_->add(Db_);
-    Dp_->scale(-0.5); // This is a hack to get the eigenvectors in the 
+    Dp_->scale(-0.5); // This is a hack to get the eigenvectors in the
                       // order that I want
     if (debug_) {
       fprintf(outfile, "Charge Density Matrix (SO Basis):\n");
@@ -212,7 +212,7 @@ void CUHF::form_F()
     }
     Cno_->gemm(false, false, 1.0, Ca_, Cno_temp_, 0.0);
 
-    // Now we form the contributions to the Fock matrix from 
+    // Now we form the contributions to the Fock matrix from
     // the charge and spin densities
     Fp_->copy(J_);
     Fp_->scale(2.0);
@@ -222,7 +222,7 @@ void CUHF::form_F()
 
     Fm_->copy(Ka_);
     Fm_->subtract(Kb_);
-    Fm_->scale(-0.5); 
+    Fm_->scale(-0.5);
 
     // Transform the spin density contributions to the NO basis
     Fm_->transform(Cno_);
@@ -332,19 +332,19 @@ void CUHF::save_fock()
 
     if (initialized_diis_manager_ == false) {
         diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(
-            max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, 
-            DIISManager::OnDisk, psio_));
-//        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, 
+            max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError,
+            DIISManager::OnDisk));
+//        diis_manager_->set_error_vector_size(1, DIISEntry::Matrix,
 //            FDSmSDFa.get());
-        diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, 
+        diis_manager_->set_error_vector_size(2, DIISEntry::Matrix,
             FDSmSDFa.get(), DIISEntry::Matrix, FDSmSDFb.get());
-        diis_manager_->set_vector_size(2, DIISEntry::Matrix, 
+        diis_manager_->set_vector_size(2, DIISEntry::Matrix,
             Fa_.get(), DIISEntry::Matrix, Fb_.get());
         initialized_diis_manager_ = true;
     }
 
 //    diis_manager_->add_entry(3, FDSmSDFa.get(), Fa_.get(), Fb_.get());
-    diis_manager_->add_entry(4, FDSmSDFa.get(), FDSmSDFb.get(), Fa_.get(), 
+    diis_manager_->add_entry(4, FDSmSDFa.get(), FDSmSDFb.get(), Fa_.get(),
         Fb_.get());
 }
 

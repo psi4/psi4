@@ -1,6 +1,9 @@
 #include "sapt0.h"
 #include "sapt2.h"
 
+#include <boost/shared_ptr.hpp>
+#include <libpsio/aiohandler.h>
+
 using namespace boost;
 
 namespace psi { namespace sapt {
@@ -170,7 +173,7 @@ void SAPT0::ind20rA_B()
 {
 #pragma omp for private(rank)
       for (int j=0; j<RR_iter.curr_size; j++) {
- 
+
 #ifdef _OPENMP
       rank = omp_get_thread_num();
 #endif
@@ -193,7 +196,7 @@ void SAPT0::ind20rA_B()
     C_p_AA.clear();
     C_p_RR.clear();
 
-    for (int n=0; n<nthreads; n++) 
+    for (int n=0; n<nthreads; n++)
       C_DAXPY(noccA_*nvirA_,1.0,tAR_dump[n],1,tAR_new,1);
 
     C_DAXPY(noccA_*nvirA_,1.0,&(wBAR_[0][0]),1,tAR_new,1);
@@ -237,13 +240,13 @@ void SAPT0::ind20rA_B()
   CHFA_ = block_matrix(noccA_,nvirA_);
   C_DCOPY(noccA_*nvirA_,tAR_new,1,CHFA_[0],1);
 
-  free(tAR_new); 
+  free(tAR_new);
   free(tAR_old);
   free_block(tAR_dump);
-  free(X); 
-  free_block(xAA); 
-  free_block(xAR); 
-  free_block(xRR); 
+  free(X);
+  free_block(xAA);
+  free_block(xAR);
+  free_block(xRR);
 }
 
 void SAPT0::ind20rB_A()
@@ -408,13 +411,13 @@ void SAPT0::ind20rB_A()
   CHFB_ = block_matrix(noccB_,nvirB_);
   C_DCOPY(noccB_*nvirB_,tBS_new,1,CHFB_[0],1);
 
-  free(tBS_new); 
+  free(tBS_new);
   free(tBS_old);
   free_block(tBS_dump);
-  free(X); 
-  free_block(xBB); 
-  free_block(xBS); 
-  free_block(xSS); 
+  free(X);
+  free_block(xBB);
+  free_block(xBS);
+  free_block(xSS);
 }
 
 void SAPT0::ind20rA_B_aio()
@@ -523,10 +526,10 @@ void SAPT0::ind20rA_B_aio()
     next_C_p_AA = PSIO_ZERO;
     next_C_p_RR = PSIO_ZERO;
 
-    psio_->read(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *) 
+    psio_->read(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
       &(C_p_AA[0][0][0]),sizeof(double)*block_length*noccA_*noccA_,
       next_C_p_AA,&next_C_p_AA);
-    psio_->read(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *) 
+    psio_->read(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *)
       &(C_p_RR[0][0][0]),sizeof(double)*block_length*nvirA_*(nvirA_+1)/2,
       next_C_p_RR,&next_C_p_RR);
 
@@ -536,7 +539,7 @@ void SAPT0::ind20rA_B_aio()
         int read_length = block_length;
         if (i == num_blocks-2 && ndf_ % block_length)
           read_length = ndf_ % block_length;
-          aio->read(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *) 
+          aio->read(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
             &(C_p_AA[(i+1)%2][0][0]),sizeof(double)*read_length*noccA_*noccA_,
             next_C_p_AA,&next_C_p_AA);
           aio->read(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *)
@@ -552,7 +555,7 @@ void SAPT0::ind20rA_B_aio()
 {
 #pragma omp for private(rank)
       for (int j=0; j<loopsize; j++) {
- 
+
 #ifdef _OPENMP
       rank = omp_get_thread_num();
 #endif
@@ -570,7 +573,7 @@ void SAPT0::ind20rA_B_aio()
       }
 }
 
-      if (i < num_blocks-1) 
+      if (i < num_blocks-1)
         aio->synchronize();
     }
 
@@ -579,7 +582,7 @@ void SAPT0::ind20rA_B_aio()
     free_block(C_p_RR[0]);
     free_block(C_p_RR[1]);
 
-    for (int n=0; n<nthreads; n++) 
+    for (int n=0; n<nthreads; n++)
       C_DAXPY(noccA_*nvirA_,1.0,tAR_dump[n],1,tAR_new,1);
 
     C_DAXPY(noccA_*nvirA_,1.0,&(wBAR_[0][0]),1,tAR_new,1);
@@ -623,13 +626,13 @@ void SAPT0::ind20rA_B_aio()
   CHFA_ = block_matrix(noccA_,nvirA_);
   C_DCOPY(noccA_*nvirA_,tAR_new,1,CHFA_[0],1);
 
-  free(tAR_new); 
+  free(tAR_new);
   free(tAR_old);
   free_block(tAR_dump);
-  free(X); 
-  free_block(xAA); 
-  free_block(xAR); 
-  free_block(xRR); 
+  free(X);
+  free_block(xAA);
+  free_block(xAR);
+  free_block(xRR);
 }
 
 void SAPT0::ind20rB_A_aio()
@@ -678,15 +681,15 @@ void SAPT0::ind20rB_A_aio()
 
   long int block_length = mem_ / (2L*noccB_*noccB_ + 2L*nvirB_*(nvirB_+1)/2);
   if (block_length > ndf_) block_length = ndf_;
-  
+
   int num_blocks = ndf_ / block_length;
   if (ndf_ % block_length) num_blocks++;
-  
+
   boost::shared_ptr<AIOHandler> aio(new AIOHandler(psio_));
 
   double **C_p_BB[2];
   double **C_p_SS[2];
-  
+
   psio_address next_C_p_BB;
   psio_address next_C_p_SS;
 
@@ -838,13 +841,13 @@ void SAPT0::ind20rB_A_aio()
   CHFB_ = block_matrix(noccB_,nvirB_);
   C_DCOPY(noccB_*nvirB_,tBS_new,1,CHFB_[0],1);
 
-  free(tBS_new); 
+  free(tBS_new);
   free(tBS_old);
   free_block(tBS_dump);
-  free(X); 
-  free_block(xBB); 
-  free_block(xBS); 
-  free_block(xSS); 
+  free(X);
+  free_block(xBB);
+  free_block(xBS);
+  free_block(xSS);
 }
 
 void SAPT2::ind20r()
@@ -876,8 +879,8 @@ void SAPT2::ind20r()
   }
 }
 
-void SAPT2::cphf_solver(double **tAR, double **wBAR, double *evals, 
-  int intfile, const char *AAints, const char *ARints, const char *RRints, 
+void SAPT2::cphf_solver(double **tAR, double **wBAR, double *evals,
+  int intfile, const char *AAints, const char *ARints, const char *RRints,
   int nocc, int nvir)
 {
   time_t start = time(NULL);

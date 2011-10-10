@@ -1,0 +1,24 @@
+molecule {
+0 1
+He
+He 1 4.0 
+symmetry c1
+}
+
+plugin_load('./plugin_libfock.so')
+
+set {
+debug 1
+print 1
+scf_type df
+basis cc-pvdz
+solver_n_root 4
+solver_n_guess 4
+solver_min_subspace 8
+solver_max_subspace 16
+ri_basis_scf cc-pvdz-ri
+}
+
+energy('scf')
+plugin('./plugin_libfock.so')
+

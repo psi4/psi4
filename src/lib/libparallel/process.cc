@@ -166,3 +166,15 @@ string Process::Arguments::operator ()(int argc)
 
     return arguments_[argc];
 }
+
+Process::Environment Process::get_environment()
+{
+    return environment;
+}
+
+unsigned long int Process::Environment::get_memory() const { return memory_; }
+void Process::Environment::set_memory(unsigned long int m)  { memory_ = m; }
+
+int Process::Environment::get_n_threads() const {return nthread_; }
+
+int Process::Arguments::argc() const { return arguments_.size(); }

@@ -13,6 +13,7 @@
 #include <libciomr/libciomr.h>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.h>
+#include <libpsio/psio.hpp>
 #include <libqt/qt.h>
 #include <libiwl/iwl.h>
 #include <physconst.h>

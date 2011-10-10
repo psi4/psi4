@@ -1,6 +1,6 @@
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstring>
@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
+#include <psi4-dec.h>
 #include <psifiles.h>
 #include <physconst.h>
 #include "MOInfo.h"
@@ -41,14 +42,14 @@ void get_params(Options &options)
   if(junk == "RHF") ref = 0;
   else if(junk == "ROHF") ref = 1;
   else if(junk == "UHF") ref = 2;
-  else { 
+  else {
     throw PsiException("Invalid value of input keyword REFERENCE",__FILE__,__LINE__);
   }
 
   /* Make sure the value of ref matches that from CC_INFO */
   if(params.ref != ref) {
-    fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n", 
-	    ref, params.ref);
+    fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n",
+            ref, params.ref);
     fprintf(outfile, "Is this what you want to do?\n");
     params.ref = ref;
   }
@@ -85,16 +86,16 @@ void get_params(Options &options)
       else if(units == "AU") 1; /* do nothing */
       else if(units == "NM") params.omega[i] = (_c*_h*1e9)/(params.omega[i]*_hartree2J);
       else if(units == "EV") params.omega[i] /= _hartree2ev;
-      else 
+      else
         throw PsiException("Error in unit for input field frequencies, should be au, Hz, nm, or eV", __FILE__,__LINE__);
     }
   }
-  
+
   moinfo.mu_irreps = init_int_array(3);
   moinfo.mu_irreps[0] = options["MU_IRREPS"][0].to_integer();
   moinfo.mu_irreps[1] = options["MU_IRREPS"][1].to_integer();
   moinfo.mu_irreps[2] = options["MU_IRREPS"][2].to_integer();
-  
+
   /* compute the irreps of the angular momentum operator while we're here */
   moinfo.l_irreps = init_int_array(3);
   for(i=0; i < 3; i++)
@@ -105,7 +106,7 @@ void get_params(Options &options)
   params.diis = options.get_bool("DIIS");
 
   params.prop = options.get_str("PROPERTY");
-  if(params.prop != "POLARIZABILITY" && params.prop != "ROTATION" 
+  if(params.prop != "POLARIZABILITY" && params.prop != "ROTATION"
      && params.prop != "ROA" && params.prop != "ALL") {
     throw PsiException("Invalid choice of resp. property",__FILE__,__LINE__);
   }
@@ -114,7 +115,7 @@ void get_params(Options &options)
   if(params.abcd != "NEW" && params.abcd != "OLD") {
     throw PsiException("Invalid ABCD algorith",__FILE__,__LINE__);
   }
- 
+
 
   params.restart = options.get_bool("RESTART");
 
@@ -163,7 +164,7 @@ void get_params(Options &options)
   else
     fprintf(outfile, "\tProperty         =    %s\n", params.prop.c_str());
   fprintf(outfile, "\tReference wfn    =    %5s\n",
-	  (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
+          (params.ref == 0) ? "RHF" : ((params.ref == 1) ? "ROHF" : "UHF"));
   fprintf(outfile, "\tMemory (Mbytes)  =  %5.1f\n",params.memory/1e6);
   fprintf(outfile, "\tCache Level      =    %1d\n", params.cachelev);
   fprintf(outfile, "\tPrint Level      =    %1d\n",  params.print);
@@ -182,12 +183,12 @@ void get_params(Options &options)
   fprintf(outfile, "\tIrrep RZ         =    %3s\n", moinfo.labels[moinfo.l_irreps[2]]);
   fprintf(outfile, "\tGauge            =    %s\n", params.gauge.c_str());
   for(i=0; i < params.nomega; i++) {
-    if(params.omega[i] == 0.0) 
+    if(params.omega[i] == 0.0)
       fprintf(outfile, "\tApplied field %2d =  0.000\n", i);
-    else 
+    else
       fprintf(outfile, "\tApplied field %2d =    %5.3f E_h (%6.2f nm, %5.3f eV, %8.2f cm-1)\n", i, params.omega[i],
-	      (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i],
-	      _hartree2wavenumbers*params.omega[i]);
+              (_c*_h*1e9)/(_hartree2J*params.omega[i]), _hartree2ev*params.omega[i],
+              _hartree2wavenumbers*params.omega[i]);
   }
   fprintf(outfile, "\tAnalyze X2 Amps  =    %s\n", params.analyze ? "Yes" : "No");
   fprintf(outfile, "\tLocal CC         =    %s\n", params.local ? "Yes" : "No");

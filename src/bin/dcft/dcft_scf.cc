@@ -1,5 +1,6 @@
 #include <map>
 #include "dcft.h"
+#include <cmath>
 #include <libiwl/iwl.hpp>
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>

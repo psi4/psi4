@@ -14,6 +14,11 @@
 #include <cstdio>
 #include <string>
 
+// I think this is forward-declaring class Options -CDS
+namespace psi {
+class Options;
+}
+
 namespace psi {
 
 int mat_in(FILE *fp, double **array, int width, int max_length, int *stat);
@@ -44,7 +49,7 @@ int ras_set2(int nirreps, int nbfso, int delete_fzdocc,
      int delete_restrdocc, int *orbspi,
      int *docc, int *socc, int *frdocc, int *fruocc,
      int *restrdocc, int *restruocc, int **ras_opi, int *order,
-     int ras_type, int hoffmann);
+     int ras_type, int hoffmann, Options& options);
 void newmm_rking(double **A, int transa, double **B, int transb, double **C,
       int num_rows, int num_links, int num_cols, double alpha, double beta);
 double dot_block(double **A, double **B, int rows, int cols, double alpha);
@@ -52,17 +57,6 @@ void dirprd_block(double **A, double **B, int rows, int cols);
 int pople(double **A, double *x, int dimen, int num_vecs, double tolerance,
            FILE *outfile, int print_lvl);
 void mat_print(double **A, int rows, int cols, FILE *outfile);
-double eri(unsigned int l1, unsigned int m1, unsigned int n1, 
-        double alpha1, double A[3],
-        unsigned int l2, unsigned int m2, unsigned int n2, 
-        double alpha2, double B[3],
-        unsigned int l3, unsigned int m3, unsigned int n3, 
-        double alpha3, double C[3],
-        unsigned int l4, unsigned int m4, unsigned int n4, 
-        double alpha4, double D[3],
-        int norm_flag);
-double norm_const(unsigned int l1, unsigned int m1, unsigned int n1, 
-        double alpha1, double A[3]);
 
 void timer_init(void);
 void timer_done(void);

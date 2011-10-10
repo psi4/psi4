@@ -3,7 +3,6 @@
  *  matrix
  *
  *  Created by Justin Turney on 4/1/08.
- *  Copyright 2008 __MyCompanyName__. All rights reserved.
  *
  */
 
@@ -47,6 +46,7 @@ extern double str_to_double(const std::string& s);
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 #define MAX(x, y) ((x) > (y) ? (x) : (y))
 
+// anonymous namespace, only visible in this file.
 namespace {
 string to_string(const int val)
 {
@@ -66,117 +66,91 @@ Matrix::Matrix()
 }
 
 Matrix::Matrix(const string& name, int symmetry)
-    : matrix_(0), rowspi_(0), colspi_(0), nirrep_(0),
+    : matrix_(0), nirrep_(0),
       name_(name), symmetry_(symmetry)
 {
 }
 
 Matrix::Matrix(const Matrix& c)
+    : rowspi_(c.rowspi_), colspi_(c.colspi_)
 {
     matrix_ = NULL;
     nirrep_ = c.nirrep_;
     symmetry_ = c.symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c.rowspi_[i];
-        colspi_[i] = c.colspi_[i];
-    }
     alloc();
     copy_from(c.matrix_);
 }
 
 Matrix::Matrix(const boost::shared_ptr<Matrix>& c)
+    : rowspi_(c->rowspi_), colspi_(c->colspi_)
 {
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c->rowspi_[i];
-        colspi_[i] = c->colspi_[i];
-    }
     alloc();
     copy_from(c->matrix_);
 }
 
 Matrix::Matrix(const Matrix* c)
+    : rowspi_(c->rowspi_), colspi_(c->colspi_)
 {
     matrix_ = NULL;
     nirrep_ = c->nirrep_;
     symmetry_ = c->symmetry_;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = c->rowspi_[i];
-        colspi_[i] = c->colspi_[i];
-    }
     alloc();
     copy_from(c->matrix_);
 }
 
 Matrix::Matrix(int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
+    : rowspi_(l_nirreps), colspi_(l_nirreps)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = l_rowspi[i];
-        colspi_[i] = l_colspi[i];
-    }
+    rowspi_ = l_rowspi;
+    colspi_ = l_colspi;
     alloc();
 }
 
-Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry) : name_(name)
+Matrix::Matrix(const string& name, int l_nirreps, const int *l_rowspi, const int *l_colspi, int symmetry)
+    : name_(name), rowspi_(l_nirreps), colspi_(l_nirreps)
 {
     matrix_ = NULL;
     nirrep_ = l_nirreps;
     symmetry_ = symmetry;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-    for (int i=0; i<nirrep_; ++i) {
-        rowspi_[i] = l_rowspi[i];
-        colspi_[i] = l_colspi[i];
-    }
+    rowspi_ = l_rowspi;
+    colspi_ = l_colspi;
     alloc();
 }
 
-Matrix::Matrix(const string& name, int rows, int cols) : name_(name)
+Matrix::Matrix(const string& name, int rows, int cols)
+    : name_(name), rowspi_(1), colspi_(1)
 {
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
 }
 
 Matrix::Matrix(int rows, int cols)
+    : rowspi_(1), colspi_(1)
 {
     matrix_ = NULL;
     nirrep_ = 1;
     symmetry_ = 0;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
     rowspi_[0] = rows;
     colspi_[0] = cols;
     alloc();
 }
 
 Matrix::Matrix(int nirrep, int rows, const int *colspi)
+    : rowspi_(nirrep), colspi_(nirrep)
 {
     matrix_ = NULL;
     symmetry_ = 0;
     nirrep_ = nirrep;
-
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rows;
         colspi_[i] = colspi[i];
@@ -185,14 +159,11 @@ Matrix::Matrix(int nirrep, int rows, const int *colspi)
 }
 
 Matrix::Matrix(int nirrep, const int *rowspi, int cols)
+    : rowspi_(nirrep), colspi_(nirrep)
 {
     matrix_ = NULL;
     symmetry_ = 0;
     nirrep_ = nirrep;
-
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
-
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = rowspi[i];
         colspi_[i] = cols;
@@ -209,8 +180,8 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     // This will happen in PetiteList::aotoso()
     if (rows.n() == 1) {
         nirrep_ = cols.n();
-        rowspi_ = new int[nirrep_];
-        colspi_ = new int[nirrep_];
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
         for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = rows[0];
             colspi_[i] = cols[i];
@@ -218,8 +189,8 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     }
     else {
         nirrep_ = rows.n();
-        rowspi_ = new int[nirrep_];
-        colspi_ = new int[nirrep_];
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
         for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = rows[i];
             colspi_[i] = cols[i];
@@ -229,15 +200,42 @@ Matrix::Matrix(const string& name, const Dimension& rows, const Dimension& cols,
     alloc();
 }
 
-Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
+Matrix::Matrix(const Dimension& rows, const Dimension& cols, int symmetry)
+{
+    matrix_ = NULL;
+    symmetry_ = symmetry;
+
+    // This will happen in PetiteList::aotoso()
+    if (rows.n() == 1) {
+        nirrep_ = cols.n();
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
+        for (int i=0; i<nirrep_; ++i) {
+            rowspi_[i] = rows[0];
+            colspi_[i] = cols[i];
+        }
+    }
+    else {
+        nirrep_ = rows.n();
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
+        for (int i=0; i<nirrep_; ++i) {
+            rowspi_[i] = rows[i];
+            colspi_[i] = cols[i];
+        }
+    }
+
+    alloc();
+}
+
+Matrix::Matrix(dpdfile2 *inFile)
+    : name_(inFile->label), rowspi_(inFile->params->nirreps), colspi_(inFile->params->nirreps)
 {
     dpd_file2_mat_init(inFile);
     dpd_file2_mat_rd(inFile);
     matrix_ = NULL;
     symmetry_ = inFile->my_irrep;
     nirrep_ = inFile->params->nirreps;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = inFile->params->rowtot[i];
         colspi_[i] = inFile->params->coltot[i];
@@ -250,10 +248,6 @@ Matrix::Matrix(dpdfile2 *inFile) : name_(inFile->label)
 Matrix::~Matrix()
 {
     release();
-    if (rowspi_)
-        delete[] rowspi_;
-    if (colspi_)
-        delete[] colspi_;
 }
 
 /// allocate a block matrix -- analogous to libciomr's block_matrix
@@ -274,13 +268,25 @@ void Matrix::free(double** Block)
 
 void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const string& name, int symmetry)
 {
-    if (rowspi_) delete[] rowspi_;
-    if (colspi_) delete[] colspi_;
     name_ = name;
     symmetry_ = symmetry;
     nirrep_ = l_nirreps;
-    rowspi_ = new int[nirrep_];
-    colspi_ = new int[nirrep_];
+    rowspi_ = Dimension(nirrep_);
+    colspi_ = Dimension(nirrep_);
+    for (int i=0; i<nirrep_; ++i) {
+        rowspi_[i] = l_rowspi[i];
+        colspi_[i] = l_colspi[i];
+    }
+    alloc();
+}
+
+void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const string& name, int symmetry)
+{
+    name_ = name;
+    symmetry_ = symmetry;
+    nirrep_ = l_rowspi.n();
+    rowspi_ = Dimension(nirrep_);
+    colspi_ = Dimension(nirrep_);
     for (int i=0; i<nirrep_; ++i) {
         rowspi_[i] = l_rowspi[i];
         colspi_[i] = l_colspi[i];
@@ -289,11 +295,10 @@ void Matrix::init(int l_nirreps, const int *l_rowspi, const int *l_colspi, const
 }
 
 boost::shared_ptr<Matrix> Matrix::create(const std::string& name,
-                                 int nirrep,
-                                 int* rows,
-                                 int *cols)
+                                         const Dimension& rows,
+                                         const Dimension& cols)
 {
-    return boost::shared_ptr<Matrix>(new Matrix(name, nirrep, rows, cols));
+    return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
 }
 
 Matrix* Matrix::clone() const
@@ -308,22 +313,18 @@ void Matrix::copy(const Matrix* cp)
     bool same = true;
     if (nirrep_ != cp->nirrep_ || symmetry_ != cp->symmetry_) {
         same = false;
-    } else {
-        for (int h=0; h<nirrep_; ++h)
-            if (colspi_[h] != cp->colspi_[h] || rowspi_[h] != cp->rowspi_[h])
-                same = false;
+    }
+    else {
+        if (colspi_ != cp->colspi_ || rowspi_ != cp->rowspi_)
+            same = false;
     }
 
     if (same == false) {
         release();
-        if (rowspi_)
-            delete[] rowspi_;
-        if (colspi_)
-            delete[] colspi_;
         nirrep_ = cp->nirrep_;
         symmetry_ = cp->symmetry_;
-        rowspi_ = new int[nirrep_];
-        colspi_ = new int[nirrep_];
+        rowspi_ = Dimension(nirrep_);
+        colspi_ = Dimension(nirrep_);
         for (int i=0; i<nirrep_; ++i) {
             rowspi_[i] = cp->rowspi_[i];
             colspi_[i] = cp->colspi_[i];
@@ -336,6 +337,108 @@ void Matrix::copy(const Matrix* cp)
         if (rowspi_[h] != 0 && colspi_[h^symmetry_] != 0)
             memcpy(&(matrix_[h][0][0]), &(cp->matrix_[h][0][0]), rowspi_[h] * colspi_[h^symmetry_] * sizeof(double));
     }
+}
+
+boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Matrix> >& mats)
+{
+    int nirrep = mats[0]->nirrep();
+    for (int a = 0; a < mats.size(); ++a) {
+        if (nirrep != mats[a]->nirrep()) {
+            throw PSIEXCEPTION("Horzcat: Matrices not of same nirrep");
+        }
+    }
+
+    for (int a = 1; a < mats.size(); ++a) {
+        for (int h = 0; h < nirrep; ++h) {
+            if (mats[h]->rowspi()[h] != mats[0]->rowspi()[h]) {
+                throw PSIEXCEPTION("Horzcat: Matrices must all have same row dimension");
+            }
+        }
+    }
+
+    Dimension colspi(nirrep);
+
+    for (int a = 0; a < mats.size(); ++a) {
+        colspi += mats[a]->colspi();
+    }
+
+    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));
+
+    for (int h = 0; h < nirrep; ++h) {
+        if (mats[0]->rowspi()[h] == 0 || colspi[h] == 0) continue;
+        double** catp = cat->pointer(h);
+        int offset = 0;
+        int rows = mats[0]->rowspi()[h];
+        for (int a = 0; a < mats.size(); ++a) {
+            int cols = mats[a]->colspi()[h];
+            if (cols == 0) continue;
+
+            double** Ap = mats[a]->pointer();
+
+            for (int col = 0; col < cols; ++col) {
+                C_DCOPY(rows,&Ap[0][col],cols,&catp[0][col + offset],colspi[h]);
+            }
+
+            offset += cols;
+        }
+    }
+
+    return cat;
+}
+
+boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Matrix> >& mats)
+{
+    int nirrep = mats[0]->nirrep();
+    for (int a = 0; a < mats.size(); ++a) {
+        if (nirrep != mats[a]->nirrep()) {
+            throw PSIEXCEPTION("Vertcat: Matrices not of same nirrep");
+        }
+    }
+
+    for (int a = 1; a < mats.size(); ++a) {
+        for (int h = 0; h < nirrep; ++h) {
+            if (mats[h]->colspi()[h] != mats[0]->colspi()[h]) {
+                throw PSIEXCEPTION("Vertcat: Matrices must all have same col dimension");
+            }
+        }
+    }
+
+    Dimension rowspi(nirrep);
+
+    for (int a = 0; a < mats.size(); ++a) {
+        rowspi += mats[a]->rowspi();
+    }
+
+    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));
+
+    for (int h = 0; h < nirrep; ++h) {
+        if (mats[0]->colspi()[h] == 0 || rowspi[h] == 0) continue;
+        double** catp = cat->pointer(h);
+        int offset = 0;
+        int cols = mats[0]->colspi()[h];
+        for (int a = 0; a < mats.size(); ++a) {
+            int rows = mats[a]->rowspi()[h];
+            if (rows == 0) continue;
+
+            double** Ap = mats[a]->pointer();
+
+            for (int row = 0; row < rows; ++row) {
+                ::memcpy((void*) catp[row + offset], (void*) Ap[row], sizeof(double) * cols);
+            }
+
+            offset += rows;
+        }
+    }
+
+    return cat;
+}
+
+void Matrix::copy_to_row(int h, int row, double const * const data)
+{
+    if (h >= nirrep_ || row >= rowspi_[h])
+        throw PSIEXCEPTION("Matrix::copy_to_row: Out of bounds.");
+
+    memcpy(matrix_[h][row], data, sizeof(double)*colspi_[h]);
 }
 
 void Matrix::copy(const Matrix& cp)
@@ -894,8 +997,14 @@ double Matrix::rms()
 
 void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
 {
-    Matrix temp(a);
+#ifdef PSIDEBUG
+    // Check dimensions
+    // 'this' should be transformer->colspi by transformer->colspi
+    if (rowspi_ != transformer->colspi() || colspi_ != transformer->colspi())
+        throw PSIEXCEPTION("Matrix::transformer(a, transformer): Target matrix does not have correct dimensions.");
+#endif
 
+    Matrix temp(a->rowspi(), transformer->colspi());
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
@@ -907,28 +1016,14 @@ void Matrix::transform(const boost::shared_ptr<Matrix>& a, const boost::shared_p
 
 void Matrix::transform(const Matrix* const transformer)
 {
-    bool square = true;
-    int h = 0;
+    Matrix temp(nirrep_, rowspi_, transformer->colspi());
+    temp.gemm(false, false, 1.0, this, transformer, 0.0);
 
-    while(h < nirrep_ && square){
-        if(transformer->rowspi()[h] != transformer->colspi()[h]){
-            square = false;
-        }
-        ++h;
-    }
+    // Might need to resize the target matrix.
+    if (rowspi() != transformer->rowspi() || colspi() != transformer->colspi())
+        init(transformer->colspi(), transformer->colspi(), name_, symmetry_);
 
-    if(square){
-        Matrix temp(this);
-        temp.gemm(false, false, 1.0, this, transformer, 0.0);
-        gemm(true, false, 1.0, transformer, &temp, 0.0);
-    }
-    else{
-        Matrix temp(nirrep_, rowspi_, transformer->colspi());
-        Matrix result(nirrep_, transformer->colspi(), transformer->colspi());
-        temp.gemm(false, false, 1.0, this, transformer, 0.0);
-        result.gemm(true, false, 1.0, transformer, &temp, 0.0);
-        copy(&result);
-    }
+    gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
 void Matrix::transform(const boost::shared_ptr<Matrix>& transformer)
@@ -940,6 +1035,13 @@ void Matrix::transform(const boost::shared_ptr<Matrix>& L,
                        const boost::shared_ptr<Matrix>& F,
                        const boost::shared_ptr<Matrix>& R)
 {
+#ifdef PSIDEBUG
+    // Check dimensions
+    // 'this' should be transformer->colspi by transformer->colspi
+    if (rowspi_ != L->colspi() || colspi_ != R->colspi())
+        throw PSIEXCEPTION("Matrix::transformer(L, F, R): Target matrix does not have correct dimensions.");
+#endif
+
     Matrix temp(nirrep_, F->rowspi_, R->colspi_, F->symmetry_ ^ R->symmetry_);
     temp.gemm(false, false, 1.0, F, R, 0.0);
     gemm(true, false, 1.0, L, temp, 0.0);
@@ -971,7 +1073,7 @@ void Matrix::back_transform(const Matrix* const transformer)
     }
 
     if(square){
-        Matrix temp(this);
+        Matrix temp("", rowspi_, colspi_);
         temp.gemm(false, true, 1.0, this, transformer, 0.0);
         gemm(false, false, 1.0, transformer, &temp, 0.0);
     }
@@ -987,6 +1089,68 @@ void Matrix::back_transform(const Matrix* const transformer)
 void Matrix::back_transform(const boost::shared_ptr<Matrix>& transformer)
 {
     back_transform(transformer.get());
+}
+
+void Matrix::gemm(const char& transa, const char& transb,
+                  const std::vector<int>& m,
+                  const std::vector<int>& n,
+                  const std::vector<int>& k,
+                  const double& alpha,
+                  const boost::shared_ptr<Matrix>& a, const std::vector<int>& lda,
+                  const boost::shared_ptr<Matrix>& b, const std::vector<int>& ldb,
+                  const double& beta,
+                  const std::vector<int>& ldc,
+                  const std::vector<unsigned long>& offset_a,
+                  const std::vector<unsigned long>& offset_b,
+                  const std::vector<unsigned long>& offset_c)
+{
+    // For now only handle symmetric matrices right now
+    if (symmetry_ || a->symmetry_ || b->symmetry_)
+        throw PSIEXCEPTION("Matrix::Advanced GEMM: Can only handle totally symmetric matrices.");
+
+    if (nirrep_ != a->nirrep_ || nirrep_ != b->nirrep_)
+        throw PSIEXCEPTION("Matrix::Advanced GEMM: Number of irreps do not equal.");
+
+    for (int h=0; h<nirrep_; ++h) {
+        int offa, offb, offc;
+
+        offa = offset_a.size() == 0 ? 0 : offset_a[h];
+        offb = offset_b.size() == 0 ? 0 : offset_b[h];
+        offc = offset_c.size() == 0 ? 0 : offset_c[h];
+
+        C_DGEMM(transa, transb, m[h], n[h], k[h],
+                alpha,
+                &a->matrix_[h][0][offa], lda[h],
+                &b->matrix_[h][0][offb], ldb[h],
+                beta,
+                &matrix_[h][0][offc], ldc[h]);
+    }
+}
+
+void Matrix::gemm(const char& transa, const char& transb,
+                  const int& m,
+                  const int& n,
+                  const int& k,
+                  const double& alpha,
+                  const boost::shared_ptr<Matrix>& a, const int& lda,
+                  const boost::shared_ptr<Matrix>& b, const int& ldb,
+                  const double& beta,
+                  const int& ldc,
+                  const unsigned long& offset_a,
+                  const unsigned long& offset_b,
+                  const unsigned long& offset_c)
+{
+#ifdef DEBUG
+    if (nirrep_ > 1)
+        throw PSIEXCEPTION("Matrix::Advanced GEMM: C1 version called on symmetry objects.");
+#endif
+
+    C_DGEMM(transa, transb, m, n, k,
+            alpha,
+            &a->matrix_[0][0][offset_a], lda,
+            &b->matrix_[0][0][offset_b], ldb,
+            beta,
+            &matrix_[0][0][offset_c], ldc);
 }
 
 void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
@@ -1052,52 +1216,58 @@ void Matrix::gemm(bool transa, bool transb, double alpha,
     gemm(transa, transb, alpha, &a, &b, beta);
 }
 
-bool Matrix::schmidt_add(int rows, Vector& v) throw()
+bool Matrix::schmidt_add(int h, int rows, Vector& v) throw()
 {
-    if (nirrep_ > 1 || v.nirrep() > 1)
+    if (v.nirrep() > 1)
         throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
 
     double dotval, normval;
     int i, I;
 
     for (i=0; i<rows; ++i) {
-        dotval = C_DDOT(colspi_[0], matrix_[0][i], 1, v.pointer(), 1);
-        for (I=0; I<colspi_[0]; ++I)
-            v(I) -= dotval * matrix_[0][i][I];
+        dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v.pointer(), 1);
+        for (I=0; I<coldim(h); ++I)
+            v(I) -= dotval * matrix_[h][i][I];
     }
 
-    normval = C_DDOT(colspi_[0], v.pointer(), 1, v.pointer(), 1);
+    normval = C_DDOT(coldim(h), v.pointer(), 1, v.pointer(), 1);
     normval = sqrt(normval);
 
     if (normval > 1.0e-5) {
-        for (I=0; I<colspi_[0]; ++I)
-            matrix_[0][rows][I] = v(I) / normval;
+        for (I=0; I<coldim(h); ++I)
+            matrix_[h][rows][I] = v(I) / normval;
         return true;
     }
     else
         return false;
 }
 
-bool Matrix::schmidt_add(int rows, double* v) throw()
+bool Matrix::schmidt_add(int h, int rows, double* v) throw()
 {
-    if (nirrep_ > 1)
-        throw PSIEXCEPTION("Matrix::schmidt_add: This function needs to be adapted to handle symmetry blocks.");
-
     double dotval, normval;
     int i, I;
 
+//    fprintf(outfile, "in schmidt_add\n");
+//    for (i=0; i<coldim(h); ++i)
+//        fprintf(outfile, "%lf ", v[i]);
+//    fprintf(outfile, "\n");
+
     for (i=0; i<rows; ++i) {
-        dotval = C_DDOT(colspi_[0], matrix_[0][i], 1, v, 1);
-        for (I=0; I<colspi_[0]; ++I)
-            v[I] -= dotval * matrix_[0][i][I];
+        dotval = C_DDOT(coldim(h), matrix_[h][i], 1, v, 1);
+        for (I=0; I<coldim(h); ++I)
+            v[I] -= dotval * matrix_[h][i][I];
     }
 
-    normval = C_DDOT(colspi_[0], v, 1, v, 1);
+    normval = C_DDOT(coldim(h), v, 1, v, 1);
     normval = sqrt(normval);
 
     if (normval > 1.0e-5) {
-        for (I=0; I<colspi_[0]; ++I)
-            matrix_[0][rows][I] = v[I] / normval;
+        for (I=0; I<coldim(h); ++I)
+            matrix_[h][rows][I] = v[I] / normval;
+
+//        for (i=0; i<coldim(h); ++i)
+//            fprintf(outfile, "%lf ", matrix_[h][rows][i]);
+//        fprintf(outfile, "\n");
         return true;
     }
     else
@@ -1110,25 +1280,66 @@ void Matrix::project_out(Matrix &constraints)
     Matrix temp = *this;
     zero();
 
+//    fprintf(outfile, "in project_out:\n");
+
+    temp.set_name("temp");
+//    temp.print();
+
+//    constraints.print();
+
     double *v = new double[coldim()];
-    for (int i=0; i<rowdim(); ++i) {
-        memcpy(v, temp[0][i], sizeof(double)*coldim());
-        for (int j=0; j<constraints.rowdim(); ++j) {
-            double dotval = C_DDOT(coldim(), temp[0][i], 1, constraints[0][j], 1);
-            for (int I=0; I<coldim(); ++I)
-                v[I] -= dotval * constraints[0][j][I];
-        }
+//    fprintf(outfile, "coldim(): %d\n", coldim()); fflush(outfile);
+    for (int h=0; h<nirrep(); ++h) {
+        for (int i=0; i<rowdim(h); ++i) {
+//            fprintf(outfile, "i=%d, copying %d elements from temp[%d][%d] to v\n", i, coldim(h), h, i); fflush(outfile);
+            memcpy(v, temp[h][i], sizeof(double)*coldim(h));
 
-        // At this point all constraints have been projected out of "v"
-        // Normalize it add Schmidt orthogonalize it against this
-        double normval = C_DDOT(coldim(), v, 1, v, 1);
-        if (normval > 1.0E-10) {
-            for (int j=0; j<coldim(); ++j)
-                v[j] /= normval;
+//            fprintf(outfile, "temp[%d][] ", h);
+//            for(int z=0; z<coldim(h); ++z)
+//                fprintf(outfile, "%lf ", temp[h][i][z]);
+//            fprintf(outfile, "\n");
 
-            schmidt_add(i, v);
+//            fprintf(outfile, "v[] ", h);
+//            for(int z=0; z<coldim(h); ++z)
+//                fprintf(outfile, "%lf ", v[z]);
+//            fprintf(outfile, "\n");
+
+            for (int j=0; j<constraints.rowdim(0); ++j) {
+                // hand rolled ddot
+                double dotval = 0.0;
+                for (int z=0; z<coldim(h); ++z) {
+                    dotval += temp[h][i][z] * constraints[0][j][z];
+//                    fprintf(outfile, " %lf * %lf ", temp[h][i][z], constraints[0][j][z]);
+                }
+//                fprintf(outfile, "\n");
+//                double dotval = C_DDOT(coldim(h), &(temp[h][i][0]), 1, &(constraints[0][j][0]), 1);
+//                fprintf(outfile, "dotval = %lf\n", dotval); fflush(outfile);
+                for (int I=0; I<coldim(h); ++I)
+                    v[I] -= dotval * constraints[0][j][I];
+            }
+
+//            fprintf(outfile, "after removing constraints v[] ", h);
+//            for(int z=0; z<coldim(h); ++z)
+//                fprintf(outfile, "%lf ", v[z]);
+//            fprintf(outfile, "\n");
+
+            // At this point all constraints have been projected out of "v"
+            // Normalize it add Schmidt orthogonalize it against this
+            double normval = C_DDOT(coldim(h), v, 1, v, 1);
+            if (normval > 1.0E-10) {
+                normval = sqrt(normval);
+                for (int j=0; j<coldim(h); ++j)
+                    v[j] /= normval;
+
+//                fprintf(outfile, "calling schmidt_add sending i=%d\n", i);
+//                for(int z=0; z<coldim(h); ++z)
+//                    fprintf(outfile, "%lf ", v[z]);
+//                fprintf(outfile, "\n");
+                schmidt_add(h, i, v);
+            }
         }
     }
+
     delete[] v;
 }
 
@@ -1393,6 +1604,53 @@ void Matrix::invert()
     copy_lower_to_upper();
 }
 
+void Matrix::general_invert()
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::invert: Matrix is non-totally symmetric.");
+    }
+
+    int lwork = max_nrow() * max_ncol();
+    double *work = new double[lwork];
+    int *ipiv = new int[max_nrow()];
+
+    for (int h=0; h<nirrep_; ++h) {
+        if (rowspi_[h] && colspi_[h]) {
+            int err = C_DGETRF(rowspi_[h], colspi_[h], matrix_[h][0], rowspi_[h], ipiv);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "invert: C_DGETRF: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "invert: C_DGETRF: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+
+            err = C_DGETRI(colspi_[h], matrix_[h][0], rowspi_[h], ipiv, work, lwork);
+            if (err != 0) {
+                if (err < 0) {
+                    fprintf(outfile, "invert: C_DGETRI: argument %d has invalid paramter.\n", -err);
+                    fflush(outfile);
+                    abort();
+                }
+                if (err > 1) {
+                    fprintf(outfile, "invert: C_DGETRI: the (%d,%d) element of the factor U or L is "
+                            "zero, and the inverse could not be computed.\n", err, err);
+                    fflush(outfile);
+                    abort();
+                }
+            }
+        }
+    }
+    delete[] ipiv;
+    delete[] work;
+}
+
 void Matrix::power(double alpha, double cutoff)
 {
     if (symmetry_) {
@@ -1555,8 +1813,8 @@ void Matrix::copy_upper_to_lower()
 
 void Matrix::transform(const Matrix& a, const Matrix& transformer)
 {
-    Matrix temp(a);
-
+    // Allocate adaquate size temporary matrix.
+    Matrix temp(a.rowspi(), transformer.colspi());
     temp.gemm(false, false, 1.0, a, transformer, 0.0);
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
@@ -2190,6 +2448,24 @@ void Matrix::pyset(const boost::python::tuple &key, double value)
                boost::python::extract<int>(key[1]),
                boost::python::extract<int>(key[2]),
                value);
+}
+
+void Matrix::set_by_python_list(const boost::python::list& data)
+{
+    size_t rows = boost::python::len(data);
+
+    // Make sure nrows < rows
+    if (nrow() > rows)
+        throw PSIEXCEPTION("Uh, moron!");
+
+    for (size_t i=0; i<rows; ++i) {
+        size_t cols = boost::python::len(data[i]);
+        if (ncol() > cols)
+            throw PSIEXCEPTION("Uh, moron!");
+        for (size_t j=0; j<cols; ++j) {
+            set(i, j, boost::python::extract<double>(data[i][j]));
+        }
+    }
 }
 
 //

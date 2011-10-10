@@ -14,6 +14,8 @@
 #include <string>
 #include <sstream>
 #include <vector>
+#include <iomanip>
+#include <cmath>
 
 using namespace psi;
 using namespace boost;

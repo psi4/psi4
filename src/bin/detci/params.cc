@@ -28,7 +28,7 @@ namespace psi { namespace detci {
 ** get_parameters(): Function gets the program running parameters such
 **   as convergence.  These are stored in the Parameters data structure.
 */
-void get_parameters(void)
+void get_parameters(Options &)
 {
   int i, j, k, errcod;
   int iopen=0, tval;

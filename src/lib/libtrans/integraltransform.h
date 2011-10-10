@@ -7,6 +7,7 @@
 #include <string>
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
+#include <libmints/dimension.h>
 #include <psifiles.h>
 #include "mospace.h"
 
@@ -15,6 +16,9 @@
 #endif
 
 namespace psi{
+
+class Matrix;
+class Dimension;
 
 typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
 
@@ -97,6 +101,26 @@ class IntegralTransform{
                           MOOrdering moOrdering = QTOrder,
                           FrozenOrbitals frozenOrbitals = OccAndVir,
                           bool initialize = true);
+
+        IntegralTransform(boost::shared_ptr<Wavefunction> wave,
+                          SpaceVec spaces,
+                          TransformationType transformationType = Restricted,
+                          OutputType outputType = DPDOnly,
+                          MOOrdering moOrdering = QTOrder,
+                          FrozenOrbitals frozenOrbitals = OccAndVir,
+                          bool initialize = true);
+
+        IntegralTransform(boost::shared_ptr<Matrix> c,
+                          boost::shared_ptr<Matrix> i,
+                          boost::shared_ptr<Matrix> a,
+                          boost::shared_ptr<Matrix> v,
+                          SpaceVec spaces,
+                          TransformationType transformationType = Restricted,
+                          OutputType outputType = DPDOnly,
+                          MOOrdering moOrdering = QTOrder,
+                          FrozenOrbitals frozenOrbitals = OccAndVir,
+                          bool initialize = true);
+
         ~IntegralTransform();
 
         void initialize();
@@ -159,7 +183,8 @@ class IntegralTransform{
     protected:
         void check_initialized();
         void semicanonicalize();
-        void read_moinfo();
+        void common_moinfo_initialize();
+
         void process_eigenvectors();
         void process_spaces();
         void presort_mo_tpdm_restricted();
@@ -259,21 +284,24 @@ class IntegralTransform{
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *_zeros;
         // The number of symmetrized orbitals per irrep
-        int *_sopi;
+        Dimension _sopi;
         // The symmetry (irrep number) of each symmetrized atomic orbital
         int *_sosym;
         // The number of molecular orbitals per irrep
-        int *_mopi;
+        Dimension _mopi;
         // The number of doubly-occupied orbitals per irrep
-        int *_clsdpi;
+        Dimension _clsdpi;
         // The number of singly-occupied orbitals per irrep
-        int *_openpi;
+        Dimension _openpi;
         // The number of frozen doubly occupied orbitals per irrep
-        int *_frzcpi;
+        Dimension _frzcpi;
         // The number of frozen virtual orbitals per irrep
-        int *_frzvpi;
+        Dimension _frzvpi;
         // The cache files used by libDPD
         int *_cacheFiles, **_cacheList;
+        // Matrix objects of Ca and Cb (these are copies of _Ca, _Cb below).
+        boost::shared_ptr<Matrix> _mCa;
+        boost::shared_ptr<Matrix> _mCb;
         // The alpha MO coefficients for each irrep
         double ***_Ca;
         // The alpha MO coefficients for each irrep
