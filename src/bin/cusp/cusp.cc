@@ -8,13 +8,12 @@
 #include <cstdlib>
 #include <cstring>
 #include <cmath>
-#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <psifiles.h>
 #include <libiwl/iwl.h>
 #include <libpsio/psio.h>
-#include <libqt/qt.h> 
+#include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <ccfiles.h>
 #include <physconst.h>
@@ -78,11 +77,11 @@ int cusp(int argc, char *argv[])
   D = block_matrix(nmo,nmo);
   for(h=offset=0; h < nirreps; h++) {
 
-    for(i=0; i < clsdpi[h]; i++) 
+    for(i=0; i < clsdpi[h]; i++)
       D[i+offset][i+offset] = 2.0;
 
-    for(i=clsdpi[h]; i < clsdpi[h] + openpi[h]; i++) 
-      D[i+offset][i+offset] = 1.0; 
+    for(i=clsdpi[h]; i < clsdpi[h] + openpi[h]; i++)
+      D[i+offset][i+offset] = 1.0;
 
     offset += clsdpi[h] + openpi[h];
   }
@@ -108,9 +107,9 @@ int cusp(int argc, char *argv[])
     compute_delta(delta, x, y, z);
 
     dens = 0.0;
-    for(i=0; i < nmo; i++) 
+    for(i=0; i < nmo; i++)
       for(j=0; j < nmo; j++)
-	dens += delta[i][j] * D[i][j];
+        dens += delta[i][j] * D[i][j];
 
     fprintf(outfile,"\n\tdens(%5.3f,%5.3f,%5.3f) = %20.10f\n",x,y,z,dens);
   }
@@ -118,38 +117,38 @@ int cusp(int argc, char *argv[])
   */
 
   psio_read_entry(CC_INFO, "No. of Active Orbitals", (char *) &(nactive),
-		  sizeof(int));
+                  sizeof(int));
   qt_occ = init_int_array(nactive);
   qt_vir = init_int_array(nactive);
   psio_read_entry(CC_INFO, "CC->QT Active Occ Order",
-		  (char *) qt_occ, sizeof(int)*nactive);
+                  (char *) qt_occ, sizeof(int)*nactive);
   psio_read_entry(CC_INFO, "CC->QT Active Virt Order",
-		  (char *) qt_vir, sizeof(int)*nactive);
+                  (char *) qt_vir, sizeof(int)*nactive);
 
   occpi = init_int_array(nirreps);
   virtpi = init_int_array(nirreps);
   psio_read_entry(CC_INFO, "Active Occ Orbs Per Irrep",
-		  (char *) occpi, sizeof(int)*nirreps);
+                  (char *) occpi, sizeof(int)*nirreps);
   psio_read_entry(CC_INFO, "Active Virt Orbs Per Irrep",
-		  (char *) virtpi, sizeof(int)*nirreps);
+                  (char *) virtpi, sizeof(int)*nirreps);
 
   occ_sym = init_int_array(nactive);
   vir_sym = init_int_array(nactive);
   psio_read_entry(CC_INFO, "Active Occ Orb Symmetry",
-		  (char *) occ_sym, sizeof(int)*nactive);
+                  (char *) occ_sym, sizeof(int)*nactive);
   psio_read_entry(CC_INFO, "Active Virt Orb Symmetry",
-		  (char *) vir_sym, sizeof(int)*nactive);
+                  (char *) vir_sym, sizeof(int)*nactive);
 
   occ_off = init_int_array(nirreps);
   vir_off = init_int_array(nirreps);
   psio_read_entry(CC_INFO, "Active Occ Orb Offsets",
-		  (char *) occ_off, sizeof(int)*nirreps);
+                  (char *) occ_off, sizeof(int)*nirreps);
   psio_read_entry(CC_INFO, "Active Virt Orb Offsets",
-		  (char *) vir_off, sizeof(int)*nirreps);
+                  (char *) vir_off, sizeof(int)*nirreps);
 
   socc = init_int_array(nactive);
   psio_read_entry(CC_INFO, "Active Socc Orbital Boolean",
-		  (char *) socc, sizeof(int)*nactive);
+                  (char *) socc, sizeof(int)*nactive);
 
 
   /*** Get the correlated density ***/
@@ -179,9 +178,9 @@ int cusp(int argc, char *argv[])
     compute_delta(delta, x, y, z);
 
     dens = 0.0;
-    for(i=0; i < nactive; i++) 
+    for(i=0; i < nactive; i++)
       for(j=0; j < nactive; j++)
-	dens += delta[i][j] * D[i][j];
+        dens += delta[i][j] * D[i][j];
 
     fprintf(outfile,"\n\tdens(%5.3f,%5.3f,%5.3f) = %20.10f\n",x,y,z,dens);
   }
@@ -226,45 +225,45 @@ int cusp(int argc, char *argv[])
       dpd_buf4_mat_irrep_rd(&A, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	p = G.params->roworb[h][row][0]; P = qt_occ[p];
-	q = G.params->roworb[h][row][1]; Q = qt_occ[q];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  r = G.params->colorb[h][col][0]; R = qt_occ[r];
-	  s = G.params->colorb[h][col][1]; S = qt_occ[s];
+        p = G.params->roworb[h][row][0]; P = qt_occ[p];
+        q = G.params->roworb[h][row][1]; Q = qt_occ[q];
+        for(col=0; col < G.params->coltot[h]; col++) {
+          r = G.params->colorb[h][col][0]; R = qt_occ[r];
+          s = G.params->colorb[h][col][1]; S = qt_occ[s];
 
-	  dens += G.matrix[h][row][col] * delta1[P][R] * delta2[Q][S];
+          dens += G.matrix[h][row][col] * delta1[P][R] * delta2[Q][S];
 
-	  /* Reference contributions to two-electron density */
-	  if(P==R && Q==S) {
-	    if(!socc[P] && !socc[Q]) {
-	      /*	      dens += 2.0 * delta1[P][R] * delta2[Q][S]; */
-	      two_energy += 2.0 * A.matrix[h][row][col];
-	    }
-	    else if(socc[P] && !socc[Q]) {
-	      /*	      dens += 2.0 * delta1[P][R] * delta2[Q][S]; */
-	      two_energy += 2.0 * A.matrix[h][row][col];
-	    }
-	    else if(socc[P] && socc[Q]) {
-	      /*	      dens += 0.5 * delta1[P][R] * delta2[Q][S]; */
-	      two_energy += 0.5 * A.matrix[h][row][col];
-	    }
-	  }
-	  if (P==S && Q==R) {
-	    if(!socc[P] && !socc[Q]) {
-	      /*	      dens -= delta1[P][R] * delta2[Q][S]; */
-	      two_energy -= A.matrix[h][row][col];
-	    }
-	    else if(socc[P] && !socc[Q]) {
-	      /*	      dens -= delta1[P][R] * delta2[Q][S]; */
-	      two_energy -= A.matrix[h][row][col];
-	    }
-	    else if(socc[P] && socc[Q]) {
-	      /*	      dens -= 0.5 * delta1[P][R] * delta2[Q][S]; */
-	      two_energy -= 0.5 * A.matrix[h][row][col];
-	    }
-	  }
+          /* Reference contributions to two-electron density */
+          if(P==R && Q==S) {
+            if(!socc[P] && !socc[Q]) {
+              /*	      dens += 2.0 * delta1[P][R] * delta2[Q][S]; */
+              two_energy += 2.0 * A.matrix[h][row][col];
+            }
+            else if(socc[P] && !socc[Q]) {
+              /*	      dens += 2.0 * delta1[P][R] * delta2[Q][S]; */
+              two_energy += 2.0 * A.matrix[h][row][col];
+            }
+            else if(socc[P] && socc[Q]) {
+              /*	      dens += 0.5 * delta1[P][R] * delta2[Q][S]; */
+              two_energy += 0.5 * A.matrix[h][row][col];
+            }
+          }
+          if (P==S && Q==R) {
+            if(!socc[P] && !socc[Q]) {
+              /*	      dens -= delta1[P][R] * delta2[Q][S]; */
+              two_energy -= A.matrix[h][row][col];
+            }
+            else if(socc[P] && !socc[Q]) {
+              /*	      dens -= delta1[P][R] * delta2[Q][S]; */
+              two_energy -= A.matrix[h][row][col];
+            }
+            else if(socc[P] && socc[Q]) {
+              /*	      dens -= 0.5 * delta1[P][R] * delta2[Q][S]; */
+              two_energy -= 0.5 * A.matrix[h][row][col];
+            }
+          }
 
-	}
+        }
       }
       dpd_buf4_mat_irrep_close(&A, h);
       dpd_buf4_mat_irrep_close(&G, h);
@@ -278,15 +277,15 @@ int cusp(int argc, char *argv[])
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	p = G.params->roworb[h][row][0]; P = qt_vir[p];
-	q = G.params->roworb[h][row][1]; Q = qt_vir[q];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  r = G.params->colorb[h][col][0]; R = qt_vir[r];
-	  s = G.params->colorb[h][col][1]; S = qt_vir[s];
+        p = G.params->roworb[h][row][0]; P = qt_vir[p];
+        q = G.params->roworb[h][row][1]; Q = qt_vir[q];
+        for(col=0; col < G.params->coltot[h]; col++) {
+          r = G.params->colorb[h][col][0]; R = qt_vir[r];
+          s = G.params->colorb[h][col][1]; S = qt_vir[s];
 
-	  dens += G.matrix[h][row][col] * delta1[P][R] * delta2[Q][S];
+          dens += G.matrix[h][row][col] * delta1[P][R] * delta2[Q][S];
 
-	}
+        }
       }
       dpd_buf4_mat_irrep_close(&G, h);
     }
@@ -298,18 +297,18 @@ int cusp(int argc, char *argv[])
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	p = G.params->roworb[h][row][0]; P = qt_occ[p];
-	q = G.params->roworb[h][row][1]; Q = qt_occ[q];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  r = G.params->colorb[h][col][0]; R = qt_occ[r];
-	  s = G.params->colorb[h][col][1]; S = qt_vir[s];
+        p = G.params->roworb[h][row][0]; P = qt_occ[p];
+        q = G.params->roworb[h][row][1]; Q = qt_occ[q];
+        for(col=0; col < G.params->coltot[h]; col++) {
+          r = G.params->colorb[h][col][0]; R = qt_occ[r];
+          s = G.params->colorb[h][col][1]; S = qt_vir[s];
 
-	  average = 0.5 * (delta1[P][R] * delta2[Q][S] +
-			   delta1[Q][S] * delta2[P][R]);
+          average = 0.5 * (delta1[P][R] * delta2[Q][S] +
+                           delta1[Q][S] * delta2[P][R]);
 
-	  dens += 2.0* G.matrix[h][row][col] * average;
+          dens += 2.0* G.matrix[h][row][col] * average;
 
-	}
+        }
       }
       dpd_buf4_mat_irrep_close(&G, h);
     }
@@ -320,17 +319,17 @@ int cusp(int argc, char *argv[])
       dpd_buf4_mat_irrep_init(&G, h);
       dpd_buf4_mat_irrep_rd(&G, h);
       for(row=0; row < G.params->rowtot[h]; row++) {
-	p = G.params->roworb[h][row][0]; P = qt_vir[p];
-	q = G.params->roworb[h][row][1]; Q = qt_occ[q];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  r = G.params->colorb[h][col][0]; R = qt_vir[r];
-	  s = G.params->colorb[h][col][1]; S = qt_vir[s];
+        p = G.params->roworb[h][row][0]; P = qt_vir[p];
+        q = G.params->roworb[h][row][1]; Q = qt_occ[q];
+        for(col=0; col < G.params->coltot[h]; col++) {
+          r = G.params->colorb[h][col][0]; R = qt_vir[r];
+          s = G.params->colorb[h][col][1]; S = qt_vir[s];
 
-	  average = 0.5 * (delta1[P][R] * delta2[Q][S] +
-			   delta1[Q][S] * delta2[P][R]);
+          average = 0.5 * (delta1[P][R] * delta2[Q][S] +
+                           delta1[Q][S] * delta2[P][R]);
 
-	  dens += 2.0* G.matrix[h][row][col] * average;
-	}
+          dens += 2.0* G.matrix[h][row][col] * average;
+        }
       }
       dpd_buf4_mat_irrep_close(&G, h);
     }
@@ -342,17 +341,17 @@ int cusp(int argc, char *argv[])
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	p = G.params->roworb[h][row][0]; P = qt_occ[p];
-	q = G.params->roworb[h][row][1]; Q = qt_occ[q];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  r = G.params->colorb[h][col][0]; R = qt_vir[r];
-	  s = G.params->colorb[h][col][1]; S = qt_vir[s];
+        p = G.params->roworb[h][row][0]; P = qt_occ[p];
+        q = G.params->roworb[h][row][1]; Q = qt_occ[q];
+        for(col=0; col < G.params->coltot[h]; col++) {
+          r = G.params->colorb[h][col][0]; R = qt_vir[r];
+          s = G.params->colorb[h][col][1]; S = qt_vir[s];
 
-	  average = 0.5 * (delta1[P][R] * delta2[Q][S] +
-			   delta1[Q][S] * delta2[P][R]);
+          average = 0.5 * (delta1[P][R] * delta2[Q][S] +
+                           delta1[Q][S] * delta2[P][R]);
 
-	  dens += G.matrix[h][row][col] * delta1[P][R] * delta2[Q][S]; 
-	}
+          dens += G.matrix[h][row][col] * delta1[P][R] * delta2[Q][S];
+        }
       }
       dpd_buf4_mat_irrep_close(&G, h);
     }
@@ -364,17 +363,17 @@ int cusp(int argc, char *argv[])
       dpd_buf4_mat_irrep_rd(&G, h);
 
       for(row=0; row < G.params->rowtot[h]; row++) {
-	p = G.params->roworb[h][row][0]; P = qt_occ[p];
-	q = G.params->roworb[h][row][1]; Q = qt_vir[q];
-	for(col=0; col < G.params->coltot[h]; col++) {
-	  r = G.params->colorb[h][col][0]; R = qt_occ[r];
-	  s = G.params->colorb[h][col][1]; S = qt_vir[s];
+        p = G.params->roworb[h][row][0]; P = qt_occ[p];
+        q = G.params->roworb[h][row][1]; Q = qt_vir[q];
+        for(col=0; col < G.params->coltot[h]; col++) {
+          r = G.params->colorb[h][col][0]; R = qt_occ[r];
+          s = G.params->colorb[h][col][1]; S = qt_vir[s];
 
-	  average = 0.5 * (delta1[P][R] * delta2[Q][S] +
-			   delta1[Q][S] * delta2[P][R]);
+          average = 0.5 * (delta1[P][R] * delta2[Q][S] +
+                           delta1[Q][S] * delta2[P][R]);
 
-	  dens += G.matrix[h][row][col] * average;
-	}
+          dens += G.matrix[h][row][col] * average;
+        }
       }
       dpd_buf4_mat_irrep_close(&G, h);
     }
@@ -393,7 +392,7 @@ int cusp(int argc, char *argv[])
 void init_io(int argc, char *argv[])
 {
   int i;
-  
+
   tstart();
 
   /* Open all dpd data files here */

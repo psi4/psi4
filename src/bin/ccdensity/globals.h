@@ -1,14 +1,15 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
-#include <psi4-dec.h>
 
-namespace psi { namespace ccdensity {
+namespace psi {
+extern FILE* outfile;
+namespace ccdensity {
 
 /* Global variables */
 #ifdef EXTERN

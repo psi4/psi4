@@ -1,9 +1,8 @@
 /*! \file
     \ingroup CIS
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <ccfiles.h>
-#include<psi4-dec.h> 
 
 namespace psi { namespace cis {
 

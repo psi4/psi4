@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cstdio>
@@ -13,6 +13,7 @@
 #include <libiwl/iwl.h>
 #include <libint/libint.h>
 #include <libchkpt/chkpt.h>
+#include <liboptions/liboptions.h>
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>
@@ -24,7 +25,7 @@
 
 namespace psi { namespace ccsort {
 
-/*! 
+/*!
 ** local_init(): Set up parameters of local excitation domains.
 **
 ** The orbital domains constructed here are based on those described
@@ -34,7 +35,7 @@ namespace psi { namespace ccsort {
 ** of single occupied orbital domains.  "Weak pairs", which are
 ** defined as pair domains whose individual occupied orbital domains
 ** have no atoms in common, are identified (cf. int *weak_pairs).
-** 
+**
 ** TDC, Jan-June 2002
 */
 
@@ -160,10 +161,10 @@ void local_init(Options & options)
 
   /* Build the SCF closed-shell density matrix/2 */
   D = block_matrix(nso,nso);
-  for(i=0; i < nso; i++) 
+  for(i=0; i < nso; i++)
     for(j=0; j < nso; j++)
       for(k=0; k < nocc_all; k++)
-	D[i][j] += C[i][k] * C[j][k];
+        D[i][j] += C[i][k] * C[j][k];
 
   /*
     fprintf(outfile, "\n\tAO-basis SCF Density (D):\n");
@@ -222,10 +223,10 @@ void local_init(Options & options)
     for(j=0; j < natom; j++) {
       charge[j] = 0.0;
       for(k=aostart[j]; k <= aostop[j]; k++) {
-	tmp = 0.0;
-	for(l=0; l < nso; l++) tmp += S[k][l] * C[l][i];
-	tmp *= C[k][i];
-	charge[j] += tmp;
+        tmp = 0.0;
+        for(l=0; l < nso; l++) tmp += S[k][l] * C[l][i];
+        tmp *= C[k][i];
+        charge[j] += tmp;
       }
     }
 
@@ -237,8 +238,8 @@ void local_init(Options & options)
     for(j=1; j < natom; j++) {
       max = 0;
       while(boolean[max]) max++; /* find an unused max */
-      for(k=0; k < natom; k++) 
-	if((fabs(charge[k]) >= fabs(charge[max])) && !boolean[k]) max = k;
+      for(k=0; k < natom; k++)
+        if((fabs(charge[k]) >= fabs(charge[max])) && !boolean[k]) max = k;
       rank[j] = max; boolean[max] = 1;
     }
 
@@ -246,7 +247,7 @@ void local_init(Options & options)
     for(j=0; j < nso; j++) {
       SR[j] = 0.0;
       for(k=0; k < nso; k++)
-	SR[j] += S[j][k] * C[k][i]; 
+        SR[j] += S[j][k] * C[k][i];
     }
 
     domain[i-nfzc][rank[0]] = 1; /* at least one atom must be in the domain */
@@ -258,43 +259,43 @@ void local_init(Options & options)
 
       /* Completeness check */
       for(j=0,row=0; j < natom; j++) {
-	if(domain[i-nfzc][j]) { 
-	  for(k=aostart[j]; k <= aostop[j]; k++,row++) {
+        if(domain[i-nfzc][j]) {
+          for(k=aostart[j]; k <= aostop[j]; k++,row++) {
 
-	    Z[row] = SR[k];
+            Z[row] = SR[k];
 
-	    for(l=0,col=0; l < natom; l++) {
-	      if(domain[i-nfzc][l]) {
+            for(l=0,col=0; l < natom; l++) {
+              if(domain[i-nfzc][l]) {
 
-		for(m=aostart[l]; m <= aostop[l]; m++,col++)
-		  X[row][col] = S[k][m];
+                for(m=aostart[l]; m <= aostop[l]; m++,col++)
+                  X[row][col] = S[k][m];
 
-	      }
-	    } /* l */
+              }
+            } /* l */
 
-	  } /* k */
-	}
+          } /* k */
+        }
       } /* j */
 
       errcod = C_DGESV(row, 1, &(X[0][0]), nso, &(ipiv[0]), &(Z[0]), nso);
       if(errcod) {
-	fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
-	exit(PSI_RETURN_FAILURE);
+        fprintf(outfile, "\nError in DGESV return in orbital domain construction.\n");
+        exit(PSI_RETURN_FAILURE);
       }
 
       fR[i-nfzc] = 1.0;
       for(j=0,row=0; j < natom; j++) {
-	if(domain[i-nfzc][j]) {
-	  for(k=aostart[j]; k <= aostop[j]; k++,row++) {
-	    for(l=0; l < nso; l++) fR[i-nfzc] -= Z[row] * S[k][l] * C[l][i];
-	  }
-	}
+        if(domain[i-nfzc][j]) {
+          for(k=aostart[j]; k <= aostop[j]; k++,row++) {
+            for(l=0; l < nso; l++) fR[i-nfzc] -= Z[row] * S[k][l] * C[l][i];
+          }
+        }
       }
 
       /* Augment the domain if necessary */
-      if(fabs(fR[i-nfzc]) > local.cutoff) { 
-	domain[i-nfzc][rank[next_atom++]] = 1;
-	domain_len[i-nfzc]++;
+      if(fabs(fR[i-nfzc]) > local.cutoff) {
+        domain[i-nfzc][rank[next_atom++]] = 1;
+        domain_len[i-nfzc]++;
       }
     } /* cutoff check */
   } /* i */
@@ -314,20 +315,20 @@ void local_init(Options & options)
     fprintf(outfile, "\n");
     for(i=0,ij=0; i < nocc; i++)
       for(j=0; j < nocc; j++,ij++) {
-	weak = 1;
-	for(k=0; k < natom; k++)
-	  if(domain[i][k] && domain[j][k]) weak = 0;
+        weak = 1;
+        for(k=0; k < natom; k++)
+          if(domain[i][k] && domain[j][k]) weak = 0;
 
-	if(weak && local.weakp!="NONE") {
-	  weak_pairs[ij] = 1;
+        if(weak && local.weakp!="NONE") {
+          weak_pairs[ij] = 1;
 
-	  if(local.weakp=="MP2")
-	    fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
-	  else if(local.weakp=="NEGLECT") {
-	    fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
-	  }
-	}
-	else weak_pairs[ij] = 0;
+          if(local.weakp=="MP2")
+            fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
+          else if(local.weakp=="NEGLECT") {
+            fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
+          }
+        }
+        else weak_pairs[ij] = 0;
       }
   }
 
@@ -338,39 +339,39 @@ void local_init(Options & options)
     fflush(outfile);
     transpert("Mu");
     sort_pert("Mu", moinfo.MUX, moinfo.MUY, moinfo.MUZ,
-	      moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
+              moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
 
     if(local.domain_sep) {
       /* Zero omega */
       build_F_RHF(0);
       cphf_F("X");
       local_polar("X", domain, domain_len, natom, aostart, aostop);
-      fprintf(outfile, "\nMu_X (%lf)\n", 0);
+      fprintf(outfile, "\nMu_X (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_F("Y");
       local_polar("Y", domain, domain_len, natom, aostart, aostop);
-      fprintf(outfile, "\nMu_Y (%lf)\n", 0);
+      fprintf(outfile, "\nMu_Y (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_F("Z");
       local_polar("Z", domain, domain_len, natom, aostart, aostop);
-      fprintf(outfile, "\nMu_Z (%lf)\n", 0);
+      fprintf(outfile, "\nMu_Z (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       /* Positive omega */
@@ -380,20 +381,20 @@ void local_init(Options & options)
       fprintf(outfile, "\nMu_X (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_F("Y");
       local_polar("Y", domain, domain_len, natom,
-		  aostart, aostop);
+                  aostart, aostop);
       fprintf(outfile, "\nMu_Y (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_F("Z");
@@ -401,9 +402,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nMu_Z (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       /* Negative omega */
@@ -413,20 +414,20 @@ void local_init(Options & options)
       fprintf(outfile, "\nMu_X (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_F("Y");
       local_polar("Y", domain, domain_len, natom,
-		  aostart, aostop);
+                  aostart, aostop);
       fprintf(outfile, "\nMu_Y (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_F("Z");
@@ -434,9 +435,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nMu_Z (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
     }
     else {
@@ -455,40 +456,40 @@ void local_init(Options & options)
     fflush(outfile);
     transpert("L");
     sort_pert("L", moinfo.LX, moinfo.LY, moinfo.LZ,
-	      moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
+              moinfo.irrep_x, moinfo.irrep_y, moinfo.irrep_z);
 
     if(local.domain_sep) {
       /* Zero omega */
       build_B_RHF(0);
       cphf_B("X");
       local_magnetic("X", domain, domain_len, natom, aostart, aostop);
-      fprintf(outfile, "\nL_X (%lf)\n", 0);
+      fprintf(outfile, "\nL_X (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_B("Y");
       local_magnetic("Y", domain, domain_len, natom,
-		     aostart, aostop);
-      fprintf(outfile, "\nL_Y (%lf)\n", 0);
+                     aostart, aostop);
+      fprintf(outfile, "\nL_Y (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_B("Z");
       local_magnetic("Z", domain, domain_len, natom, aostart, aostop);
-      fprintf(outfile, "\nL_Z (%lf)\n", 0);
+      fprintf(outfile, "\nL_Z (%d)\n", 0);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       /* Positive omega */
@@ -498,9 +499,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nL_X (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_B("Y");
@@ -508,9 +509,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nL_Y (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_B("Z");
@@ -518,9 +519,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nL_Z (%lf)\n", params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       /* Negative omega */
@@ -530,9 +531,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nL_X (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_B("Y");
@@ -540,9 +541,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nL_Y (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
 
       cphf_B("Z");
@@ -550,9 +551,9 @@ void local_init(Options & options)
       fprintf(outfile, "\nL_Z (%lf)\n", -params.omega[0]);
       domain_print(nocc, natom, domain_len, domain, fR);
       for(i=0; i<nocc; i++) {
-	domain_len[i] = domain_len_bp[i];
-	for(k=0; k<natom; k++)
-	  domain[i][k] = domain_bp[i][k];
+        domain_len[i] = domain_len_bp[i];
+        for(k=0; k<natom; k++)
+          domain[i][k] = domain_bp[i][k];
       }
     }
     else {
@@ -590,25 +591,25 @@ void local_init(Options & options)
     for(j=0; j < nso; j++) {
       SR[j] = 0.0;
       for(k=0; k < nso; k++)
-	SR[j] += S[j][k] * C[k][i]; 
+        SR[j] += S[j][k] * C[k][i];
     }
 
     for(j=0,row=0; j < natom; j++) {
-      if(domain[i-nfzc][j]) { 
-	for(k=aostart[j]; k <= aostop[j]; k++,row++) {
+      if(domain[i-nfzc][j]) {
+        for(k=aostart[j]; k <= aostop[j]; k++,row++) {
 
-	  Z[row] = SR[k];
+          Z[row] = SR[k];
 
-	  for(l=0,col=0; l < natom; l++) {
-	    if(domain[i-nfzc][l]) {
+          for(l=0,col=0; l < natom; l++) {
+            if(domain[i-nfzc][l]) {
 
-	      for(m=aostart[l]; m <= aostop[l]; m++,col++)
-		X[row][col] = S[k][m];
+              for(m=aostart[l]; m <= aostop[l]; m++,col++)
+                X[row][col] = S[k][m];
 
-	    }
-	  } /* l */
+            }
+          } /* l */
 
-	} /* k */
+        } /* k */
       }
     } /* j */
 
@@ -621,9 +622,9 @@ void local_init(Options & options)
     fR[i-nfzc] = 1.0;
     for(j=0,row=0; j < natom; j++) {
       if(domain[i-nfzc][j]) {
-	for(k=aostart[j]; k <= aostop[j]; k++,row++) {
-	  for(l=0; l < nso; l++) fR[i-nfzc] -= Z[row] * S[k][l] * C[l][i];
-	}
+        for(k=aostart[j]; k <= aostop[j]; k++,row++) {
+          for(l=0; l < nso; l++) fR[i-nfzc] -= Z[row] * S[k][l] * C[l][i];
+        }
       }
     }
 
@@ -641,10 +642,10 @@ void local_init(Options & options)
   for(i=0,ij=0; i < nocc; i++)
     for(j=0; j < nocc; j++,ij++)
       for(k=0; k < natom; k++) {
-	if(domain[i][k] || domain[j][k]) {
-	  pairdomain[ij][k] = 1;
-	  pairdom_len[ij] += aostop[k] - aostart[k] + 1;
-	}
+        if(domain[i][k] || domain[j][k]) {
+          pairdomain[ij][k] = 1;
+          pairdom_len[ij] += aostop[k] - aostart[k] + 1;
+        }
       }
 
   /* Identify and/or remove weak pairs -- for CPHF "response" domains */
@@ -652,20 +653,20 @@ void local_init(Options & options)
     fprintf(outfile, "\n");
     for(i=0,ij=0; i < nocc; i++)
       for(j=0; j < nocc; j++,ij++) {
-	weak = 1;
-	for(k=0; k < natom; k++)
-	  if(domain[i][k] && domain[j][k]) weak = 0;
+        weak = 1;
+        for(k=0; k < natom; k++)
+          if(domain[i][k] && domain[j][k]) weak = 0;
 
-	if(weak && local.weakp!="NONE") {
-	  weak_pairs[ij] = 1;
+        if(weak && local.weakp!="NONE") {
+          weak_pairs[ij] = 1;
 
-	  if(local.weakp=="MP2")
-	    fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
-	  else if(local.weakp=="NEGLECT") {
-	    fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
-	  }
-	}
-	else weak_pairs[ij] = 0;
+          if(local.weakp=="MP2")
+            fprintf(outfile, "\tPair %d %d [%d] is weak and will be treated with MP2.\n", i, j, ij);
+          else if(local.weakp=="NEGLECT") {
+            fprintf(outfile, "\tPair %d %d = [%d] is weak and will be deleted.\n", i, j, ij);
+          }
+        }
+        else weak_pairs[ij] = 0;
       }
   }
 
@@ -732,7 +733,7 @@ void local_init(Options & options)
   for(i=0; i < nso; i++) Rt_full[i][i] = 1.0;
 
   C_DGEMM('n','n',nso,nso,nso,-1.0,&(D[0][0]),nso,&(S[0][0]),nso,
-	  1.0,&(Rt_full[0][0]),nso);
+          1.0,&(Rt_full[0][0]),nso);
 
   /*
     fprintf(outfile, "\n\tVirtual-Space Projector (R-tilde):\n");
@@ -748,7 +749,7 @@ void local_init(Options & options)
     norm = sqrt(norm);
     if(norm < local.core_cutoff && local.freeze_core!="FALSE") {
       fprintf(outfile, "\tNorm of orbital %4d = %20.12f...deleteing\n", i, norm);
-      for(j=0; j < nso; j++) Rt_full[j][i] = 0.0; 
+      for(j=0; j < nso; j++) Rt_full[j][i] = 0.0;
     }
   }
   fprintf(outfile, "\n");
@@ -760,7 +761,7 @@ void local_init(Options & options)
   dpd_file2_init(&fock, CC_OEI, 0, 0, 0, "fIJ");
   dpd_file2_mat_init(&fock);
   dpd_file2_mat_rd(&fock);
-  for(i=0; i < nocc; i++) 
+  for(i=0; i < nocc; i++)
     for(j=0; j < nocc; j++)
       Fmo[i+nfzc][j+nfzc] = fock.matrix[0][i][j];
   dpd_file2_mat_close(&fock);
@@ -783,9 +784,9 @@ void local_init(Options & options)
   /* Build the AO-basis Fock matrix */
   F = block_matrix(nso,nso);
   C_DGEMM('t','n',nso,nso,nso,1.0,&(Ci[0][0]),nso,&(Fmo[0][0]),nso,
-	  0.0,&(X[0][0]),nso);
+          0.0,&(X[0][0]),nso);
   C_DGEMM('n','n',nso,nso,nso,1.0,&(X[0][0]),nso,&(Ci[0][0]),nso,
-	  0.0,&(F[0][0]),nso);
+          0.0,&(F[0][0]),nso);
 
   /* Build the occupied orbital energy list */
   eps_occ = init_array(nocc);
@@ -818,18 +819,18 @@ void local_init(Options & options)
     /* Build the virtual space projector for this pair */
     for(k=0,L=0; k < natom; k++) {
       if(pairdomain[ij][k]) {
-	for(l=aostart[k]; l <= aostop[k]; l++,L++) {
-	  for(m=0; m < nso; m++) {
-	    Rt[m][L] = Rt_full[m][l];
-	  }
-	}
+        for(l=aostart[k]; l <= aostop[k]; l++,L++) {
+          for(m=0; m < nso; m++) {
+            Rt[m][L] = Rt_full[m][l];
+          }
+        }
       }
     }
 
     /* Compute the MO -> projected virtual transformation matrix */
     V[ij] = block_matrix(nvir,pairdom_len[ij]);
     C_DGEMM('n','n',nvir,pairdom_len[ij],nso,1.0,&(RS[0][0]),nso,&(Rt[0][0]),nso,0.0,
-	    &(V[ij][0][0]),pairdom_len[ij]);
+            &(V[ij][0][0]),pairdom_len[ij]);
 
     /*
       fprintf(outfile, "\nV[%d]:\n", ij);
@@ -840,9 +841,9 @@ void local_init(Options & options)
     /* Virtual space metric */
     St = block_matrix(pairdom_len[ij],pairdom_len[ij]);
     C_DGEMM('n','n',nso,pairdom_len[ij],nso,1.0,&(S[0][0]),nso,&(Rt[0][0]),nso,
-	    0.0,&(X[0][0]),nso);
+            0.0,&(X[0][0]),nso);
     C_DGEMM('t','n',pairdom_len[ij],pairdom_len[ij],nso,1.0,&(Rt[0][0]),nso,&(X[0][0]),nso,
-	    0.0,&(St[0][0]),pairdom_len[ij]);
+            0.0,&(St[0][0]),pairdom_len[ij]);
 
     /*
       fprintf(outfile, "\n\tVirtual-Space Metric (S-tilde) for ij = %d:\n", ij);
@@ -871,9 +872,9 @@ void local_init(Options & options)
     Xt = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
     for(i=0,I=0; i < pairdom_len[ij]; i++) {
       if(evals[i] > 1e-6) {
-	for(j=0; j < pairdom_len[ij]; j++)
-	  Xt[j][I] = evecs[j][i]/sqrt(evals[i]);
-	I++;
+        for(j=0; j < pairdom_len[ij]; j++)
+          Xt[j][I] = evecs[j][i]/sqrt(evals[i]);
+        I++;
       }
       else num_zero++;
     }
@@ -890,16 +891,16 @@ void local_init(Options & options)
     /* Build the projected (redundant) virtual Fock matrix */
     Ft = block_matrix(pairdom_len[ij], pairdom_len[ij]);
     C_DGEMM('t','n',pairdom_len[ij],nso,nso,1.0,&(Rt[0][0]),nso,&(F[0][0]),nso,
-	    0.0,&(X[0][0]),nso);
+            0.0,&(X[0][0]),nso);
     C_DGEMM('n','n',pairdom_len[ij],pairdom_len[ij],nso,1.0,&(X[0][0]),nso,&(Rt[0][0]),nso,
-	    0.0,&(Ft[0][0]),pairdom_len[ij]);
+            0.0,&(Ft[0][0]),pairdom_len[ij]);
 
     /* Project the Fock matrix into the non-redundant virtual space */
     Fbar = block_matrix(pairdom_nrlen[ij],pairdom_nrlen[ij]);
     C_DGEMM('t','n',pairdom_nrlen[ij],pairdom_len[ij],pairdom_len[ij],1.0,
-	    &(Xt[0][0]),pairdom_nrlen[ij],&(Ft[0][0]),pairdom_len[ij],0.0,&(X[0][0]),nso);
+            &(Xt[0][0]),pairdom_nrlen[ij],&(Ft[0][0]),pairdom_len[ij],0.0,&(X[0][0]),nso);
     C_DGEMM('n','n',pairdom_nrlen[ij],pairdom_nrlen[ij],pairdom_len[ij],1.0,
-	    &(X[0][0]),nso,&(Xt[0][0]),pairdom_nrlen[ij],0.0,&(Fbar[0][0]),pairdom_nrlen[ij]);
+            &(X[0][0]),nso,&(Xt[0][0]),pairdom_nrlen[ij],0.0,&(Fbar[0][0]),pairdom_nrlen[ij]);
 
     /*
       fprintf(outfile, "\n\tFbar matrix for ij = %d:\n", ij);
@@ -919,8 +920,8 @@ void local_init(Options & options)
     /* Finally, build the W matrix */
     W[ij] = block_matrix(pairdom_len[ij],pairdom_nrlen[ij]);
     C_DGEMM('n','n',pairdom_len[ij],pairdom_nrlen[ij],pairdom_nrlen[ij],1.0,
-	    &(Xt[0][0]),pairdom_nrlen[ij],&(evecs[0][0]),pairdom_nrlen[ij],
-	    0.0,&(W[ij][0][0]),pairdom_nrlen[ij]);
+            &(Xt[0][0]),pairdom_nrlen[ij],&(evecs[0][0]),pairdom_nrlen[ij],
+            0.0,&(W[ij][0][0]),pairdom_nrlen[ij]);
 
     /*
       fprintf(outfile, "\n\tW Transformation Matrix for ij = %d:\n", ij);
@@ -982,38 +983,38 @@ void local_done(void)
   natom = local.natom;
 
   psio_write_entry(CC_INFO, "Local Cutoff", (char *) &local.cutoff,
-		   sizeof(double));
+                   sizeof(double));
   psio_write_entry(CC_INFO, "Local Domain Length", (char *) local.domain_len,
-		   nocc*sizeof(int));
+                   nocc*sizeof(int));
   psio_write_entry(CC_INFO, "Local Pair Domain Length", (char *) local.pairdom_len,
-		   nocc*nocc*sizeof(int));
+                   nocc*nocc*sizeof(int));
   psio_write_entry(CC_INFO, "Local Pair Domain NR Length", (char *) local.pairdom_nrlen,
-		   nocc*nocc*sizeof(int));
+                   nocc*nocc*sizeof(int));
   psio_write_entry(CC_INFO, "Local Weak Pairs", (char *) local.weak_pairs,
-		   nocc*nocc*sizeof(int));
+                   nocc*nocc*sizeof(int));
   psio_write_entry(CC_INFO, "Local Occupied Orbital Energies", (char *) local.eps_occ,
-		   nocc*sizeof(double));
+                   nocc*sizeof(double));
 
   next = PSIO_ZERO;
   for(i=0; i<nocc; i++)
     psio_write(CC_INFO, "Local Domains", (char *) local.domain[i],
-	       natom*sizeof(int), next, &next);
+               natom*sizeof(int), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij<nocc*nocc; ij++)
     psio_write(CC_INFO, "Local Pair Domains", (char *) local.pairdomain[ij],
-	       natom*sizeof(int), next, &next);
+               natom*sizeof(int), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++)
       psio_write(CC_INFO, "Local Virtual Orbital Energies", (char *) local.eps_vir[ij],
-		 local.pairdom_nrlen[ij]*sizeof(double), next, &next);
+                 local.pairdom_nrlen[ij]*sizeof(double), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++)
       psio_write(CC_INFO, "Local Transformation Matrix (W)", (char *) local.W[ij][0],
-		 local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
+                 local.pairdom_len[ij]*local.pairdom_nrlen[ij]*sizeof(double), next, &next);
   next = PSIO_ZERO;
   for(ij=0; ij < nocc*nocc; ij++)
       psio_write(CC_INFO, "Local Residual Vector (V)", (char *) local.V[ij][0],
-		 nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
+                 nvir*local.pairdom_len[ij]*sizeof(double), next, &next);
 
   if(params.ref == 0 || params.ref == 1) {
     for(h=0; h < moinfo.nirreps; h++)

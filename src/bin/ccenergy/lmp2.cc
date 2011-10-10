@@ -1,11 +1,12 @@
 /*! \file
     \ingroup CCENERGY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
 #include <libdpd/dpd.h>
+#include <libpsio/psio.h>
 #include <psifiles.h>
 #include "Params.h"
 #include "Local.h"
@@ -18,10 +19,10 @@ namespace psi { namespace ccenergy {
 void local_filter_T2(dpdbuf4 *T2);
 
 /* lmp2(): Computes the local-MP2 energy and the local-MP2 weak-pair energy.
-** 
+**
 ** Given a set of non-canonical occupied orbitals and canonical virtual
 ** orbitals, this routine computes the local-MP2 energy as described originally
-** by Saebo and Pulay, J. Chem. Phys. 86, 914 (1987).  
+** by Saebo and Pulay, J. Chem. Phys. 86, 914 (1987).
 **
 ** The primary purpose of this code is actually to compute the
 ** so-called "weak pair" energy for use in a subsequent local-CCSD
@@ -59,7 +60,7 @@ void lmp2(void)
   for(i=0; i<nocc; i++) {
     local.domain[i] = (int *) malloc(local.natom*sizeof(int));
     psio_read(CC_INFO, "Local Domains", (char *) local.domain[i],
-	      natom*sizeof(int), next, &next);
+              natom*sizeof(int), next, &next);
   }
 
   /* First, turn on all weak pairs for the LMP2 */
@@ -161,8 +162,8 @@ void lmp2(void)
     rms = 0.0;
     for(row=0; row < T2.params->rowtot[0]; row++)
       for(col=0; col < T2.params->coltot[0]; col++)
-	rms += (newT2.matrix[0][row][col] - T2.matrix[0][row][col]) *
-	  (newT2.matrix[0][row][col] - T2.matrix[0][row][col]);
+        rms += (newT2.matrix[0][row][col] - T2.matrix[0][row][col]) *
+          (newT2.matrix[0][row][col] - T2.matrix[0][row][col]);
 
     dpd_buf4_mat_irrep_close(&T2, 0);
     dpd_buf4_mat_irrep_close(&newT2, 0);
@@ -214,7 +215,7 @@ void lmp2(void)
   for(ij=0; ij < nocc*nocc; ij++)
     if(local.weak_pairs[ij])
       for(ab=0; ab < nvir*nvir; ab++)
-  	weak_pair_energy += D.matrix[0][ij][ab] * T2.matrix[0][ij][ab];
+        weak_pair_energy += D.matrix[0][ij][ab] * T2.matrix[0][ij][ab];
 
   dpd_buf4_mat_irrep_close(&T2, 0);
   dpd_buf4_close(&T2);

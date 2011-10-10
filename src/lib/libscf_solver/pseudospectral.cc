@@ -6,6 +6,7 @@
 #include <utility>
 
 #include <psifiles.h>
+#include <libmints/mints.h>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
@@ -54,7 +55,7 @@ void PseudospectralHF::common_init()
     print_ = options_.get_int("PRINT");
     fprintf(outfile, " PseudospectalHF: Pseudospectral SCF Algorithms (In Progress).\n");
     fprintf(outfile, "   by Rob Parrish\n\n");
-    
+
     // How many doubles do we have?
     memory_ = Process::environment.get_memory() / 8L;
     memory_ = (unsigned long int) 0.7 * memory_;

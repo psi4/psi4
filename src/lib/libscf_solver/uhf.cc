@@ -266,7 +266,7 @@ void UHF::save_fock()
     boost::shared_ptr<Matrix> FDSmSDFb = form_FDSmSDF(Fb_, Db_);
 
     if (initialized_diis_manager_ == false) {
-        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+        diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
         diis_manager_->set_error_vector_size(2,
                                              DIISEntry::Matrix, FDSmSDFa.get(),
                                              DIISEntry::Matrix, FDSmSDFb.get());

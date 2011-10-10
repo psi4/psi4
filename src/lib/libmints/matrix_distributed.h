@@ -89,6 +89,8 @@ protected:
     SharedMadWorld madworld_;
     /// Mutex for printing
     SharedMutex print_mutex_;
+    /// mutex for addition
+    SharedMutex add_mutex_;
 
     /// Sets a specific tile to the identity
     madness::Void set_tile_to_identity(const int &t);
@@ -105,6 +107,19 @@ protected:
     madness::Void sum_tile(const int &t, const std::vector<double> &tile);
     /// Fills a given tile with the value
     madness::Void fill_tile(const int &t, const double &val);
+    /// Scale the tile by the given value
+    madness::Void scale_tile(const int &t, const double &val);
+    /// Zero the diagonal of a tile
+    madness::Void zero_tile_diagonal(const int &t);
+    /// Return the trace of a tile
+    double trace_tile(const int &t);
+    /// copies the inverse of the given tile
+    madness::Void copy_invert_tile(const int &t, const std::vector<double> &tile,
+                                   const int &stride);
+    /// Returns the dot product of a given tile
+    double vector_dot_tile(const int &t, const Distributed_Matrix &rmat);
+
+
 
     /// Do the matrix-matrix multiplication for the give tiles
     madness::Void mxm(const int &t,
@@ -112,7 +127,16 @@ protected:
                       const std::vector<double> &b,
                       const int &a_row,
                       const int &a_col,
-                      const int &b_col);
+                      const int &b_col,
+                      const double &c_scale = 0.0);
+
+    std::vector<double> mxm_dns(const int &t,
+                                const std::vector<double> &a,
+                                const std::vector<double> &b,
+                                const int &a_row,
+                                const int &a_col,
+                                const int &b_col,
+                                const double &c_scale);
 
     template<typename T>
     void free_vector(std::vector<T> &vec)
@@ -167,7 +191,7 @@ public:
     madness::Void zero();
 
     /// Returns the i,j value from the distributed matrix
-    madness::Future<double> get_val(const int &row, const int &col);
+    madness::Future<double> get_val(const int &row, const int &col) const;
     /// Set the i,j value in the distributed matrix
     madness::Void set_val(const int &row, const int &col, const double &val);
 
@@ -177,6 +201,7 @@ public:
     /// Copies the rhs distributed matrix
     Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
     Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
+    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat);
 
     /// Adds the rhs matrix to this distributed matrix
     madness::Void operator +=(const Distributed_Matrix &rhs);
@@ -193,6 +218,7 @@ public:
     /// Check to see if the distributed matrices are the same size and tiled the same
     bool operator ==(const Distributed_Matrix &rhs);
     bool operator ==(const Distributed_Matrix *rhs);
+    bool operator ==(const boost::shared_ptr<Matrix> mat) const;
 
     /// Check to see if the distributed matrices are not the same size and tiled the same
     bool operator !=(const Distributed_Matrix &rhs);
@@ -201,8 +227,34 @@ public:
     /// Perform a matrix-matrix multiplication of the distributed matrices and returns the result
     Distributed_Matrix operator *(const Distributed_Matrix &rhs);
 
+    /// Scale the matrix by the given value
+    madness::Void scale(const double &val);
+    /// Set the diagonal of the distributed matrix to zero
+    madness::Void zero_diagonal();
+
+    /// Compute the trace of the distributed matrix
+    double trace();
+
+    /// Return the transpose of the distributed matrix
+    Distributed_Matrix transpose();
+
+    /// Compute the product of lmat and rmat and add it to this by the c_scale
+    madness::Void product(const Distributed_Matrix &lmat,
+                          const Distributed_Matrix &rmat,
+                          double c_scale = 1.0);
+
+    /// Return the dot product of this and rmat
+    double vector_dot(const Distributed_Matrix &rmat);
+
+    /// Transform a distributed matrix with the transformer
+    Distributed_Matrix transform(Distributed_Matrix &transformer);
+
+    /// Perform a matrix multiplication using the DNS Algorithm
+    madness::Void DNS_MXM(const Distributed_Matrix &lhs, const Distributed_Matrix &rhs);
+
 };
 #else
+public:
     /// Default constructor: clears everything out
     Distributed_Matrix()
     { throw PSIEXCEPTION("Distributed matrix only works with MADNESS.\n"); }
@@ -225,78 +277,105 @@ public:
     int t_ncol(const int &t) { return tile_ncols_[global_local_tile_[t]]; }
 
     /// Print all of the tiles
-    void print_all_tiles() const;
+    void print_all_tiles() const {}
     /// Print a given tile
-    void print_tile(const int &t) const;
+    void print_tile(const int &t) const {}
 
     /// Print a given tile (only process 0 should call this)
     void print_mat(const int &tile, const std::vector<double> &a,
-                            const int &m, const int &n) const;
+                            const int &m, const int &n) const {}
 
     /// Set the distributed matrix to the identity
-    void identity();
+    void identity() {}
     /// Zero the entire distributed matrix
-    void zero();
+    void zero() {}
 
     /// Returns the i,j value from the distributed matrix
-    double get_val(const int &row, const int &col);
+    double get_val(const int &row, const int &col) const {}
     /// Set the i,j value in the distributed matrix
-    void set_val(const int &row, const int &col, const double &val);
+    void set_val(const int &row, const int &col, const double &val) {}
 
     /// Set the name of the distributed matrix
     void set_name(const std::string &name) { name_ = name; }
 
     /// Copies the rhs distributed matrix
-    Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
-    Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
+    Distributed_Matrix& operator =(const Distributed_Matrix &rhs) {}
+    Distributed_Matrix& operator =(const Distributed_Matrix *rhs) {}
+    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat) {}
 
     /// Adds the rhs matrix to this distributed matrix
-    void operator +=(const Distributed_Matrix &rhs);
-    void operator +=(const Distributed_Matrix *rhs);
+    void operator +=(const Distributed_Matrix &rhs) {}
+    void operator +=(const Distributed_Matrix *rhs) {}
 
     /// Adds two matrices and returns the result
-    Distributed_Matrix operator +(const Distributed_Matrix &rhs);
-    Distributed_Matrix operator +(const Distributed_Matrix *rhs);
+    Distributed_Matrix operator +(const Distributed_Matrix &rhs) {}
+    Distributed_Matrix operator +(const Distributed_Matrix *rhs) {}
 
 
     /// Fill the distributed matris with a value
-    void fill(const double &val);
+    void fill(const double &val) {}
 
     /// Check to see if the distributed matrices are the same size and tiled the same
-    bool operator ==(const Distributed_Matrix &rhs);
-    bool operator ==(const Distributed_Matrix *rhs);
+    bool operator ==(const Distributed_Matrix &rhs) {}
+    bool operator ==(const Distributed_Matrix *rhs) {}
+    bool operator ==(const boost::shared_ptr<Matrix> mat) const {}
 
     /// Check to see if the distributed matrices are not the same size and tiled the same
-    bool operator !=(const Distributed_Matrix &rhs);
-    bool operator !=(const Distributed_Matrix *rhs);
+    bool operator !=(const Distributed_Matrix &rhs) {}
+    bool operator !=(const Distributed_Matrix *rhs) {}
 
     /// Perform a matrix-matrix multiplication of the distributed matrices and returns the result
-    Distributed_Matrix operator *(const Distributed_Matrix &rhs);
+    Distributed_Matrix operator *(const Distributed_Matrix &rhs) {}
+
+    /// Scale the matrix by the given value
+    void scale(const double &val) {}
+    /// Set the diagonal of the distributed matrix to zero
+    void zero_diagonal() {}
+
+    /// Compute the trace of the distributed matrix
+    double trace() {}
+
+    /// Return the transpose of the distributed matrix
+    Distributed_Matrix transpose() {}
+
+    /// Compute the product of lmat and rmat and add it to this by the c_scale
+    void product(const Distributed_Matrix &lmat,
+                          const Distributed_Matrix &rmat,
+                          double c_scale = 1.0) {}
+
+    /// Return the dot product of this and rmat
+    double vector_dot(const Distributed_Matrix &rmat) {}
+
+    /// Transform a distributed matrix with the transformer
+    Distributed_Matrix transform(Distributed_Matrix &transformer) {}
+
+    /// Perform a matrix multiplication using the DNS Algorithm
+    void DNS_MXM(const Distributed_Matrix &lhs, const Distributed_Matrix &rhs) {}
 };
 #endif
 
 } // End of PSI namespace
 
-//#ifdef HAVE_MADNESS
+#ifdef HAVE_MADNESS
 
-//namespace madness {  namespace archive {
+namespace madness {  namespace archive {
 
-//    /// Serialize a psi Matrix
-//    template <class Archive>
-//    struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
-//        static void store(const Archive &ar, const boost::shared_ptr<psi::Distributed_Matrix> &t) {
-//        };
-//    };
+    /// Serialize a psi Matrix
+    template <class Archive>
+    struct ArchiveStoreImpl< Archive, psi::Distributed_Matrix> {
+        static void store(const Archive &ar, const psi::Distributed_Matrix &t) {
+        };
+    };
 
-//    /// Deserialize a psi Matrix ... existing psi Matrix is replaced
-//    template <class Archive>
-//    struct ArchiveLoadImpl< Archive, boost::shared_ptr<psi::Distributed_Matrix> > {
-//        static void load(const Archive& ar, boost::shared_ptr<psi::Distributed_Matrix> &t) {
-//        };
-//    };
+    /// Deserialize a psi Matrix ... existing psi Matrix is replaced
+    template <class Archive>
+    struct ArchiveLoadImpl< Archive, psi::Distributed_Matrix > {
+        static void load(const Archive& ar, psi::Distributed_Matrix &t) {
+        };
+    };
 
-//}}
-//#endif // End of HAVE_MADNESS
+}}
+#endif // End of HAVE_MADNESS
 
 
 #endif // MATRIX_DISTRIBUTED_H

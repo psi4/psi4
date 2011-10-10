@@ -25,9 +25,21 @@ MKDIRS = @MKDIRS@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 
-install: psi.dat
+install:
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)
-	$(INSTALL_DATA) $(srcdir)/psi.dat $(DESTDIR)$(pkgdatadir)
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/basis
+	$(INSTALL_DATA) $(srcdir)/basis/* $(DESTDIR)$(pkgdatadir)/basis
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/databases
+	$(INSTALL_DATA) $(srcdir)/databases/* $(DESTDIR)$(pkgdatadir)/databases
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/grids
+	$(INSTALL_DATA) $(srcdir)/grids/* $(DESTDIR)$(pkgdatadir)/grids
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python
+	$(INSTALL_DATA) $(srcdir)/python/* $(DESTDIR)$(pkgdatadir)/python
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
+	$(INSTALL_DATA) $(srcdir)/quadratures/1_sqrtx/* $(DESTDIR)$(pkgdatadir)/quadratures/1_sqrtx
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures/1_x
+	$(INSTALL_DATA) $(srcdir)/quadratures/1_x/* $(DESTDIR)$(pkgdatadir)/quadratures/1_x
 	for dir in $(subdirs); \
           do \
             (cd $${dir}; echo Making in $${dir}; $(MAKE) install) || exit 1; \

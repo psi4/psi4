@@ -350,8 +350,9 @@ void OmegaWavefunction::reset()
 {
     iteration_ = 0;
     if (diis_enabled_) {
+        if (diis_manager_) diis_manager_.reset();
         diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_,
-        "HF DIIS VECTORS", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+        "HF DIIS VECTORS")); 
     
         boost::shared_ptr<Matrix> FDS = form_FDSmSDF(Fa_, Da_);
         diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, FDS.get(),

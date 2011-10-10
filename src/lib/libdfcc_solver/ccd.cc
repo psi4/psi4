@@ -4,6 +4,8 @@
 #include <libqt/qt.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/aiohandler.h>
 #include <libmints/mints.h>
 
 using namespace boost;

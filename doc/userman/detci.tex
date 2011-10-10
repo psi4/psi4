@@ -1,49 +1,46 @@
 \subsection{Configuration Interaction} \label{detci}
-                                                                                
-Configuration interaction (CI) is one of the most general ways to improve
-upon Hartree-Fock theory by adding a description of the correlations
-between electron motions.  Simply put, a CI wavefunction is a linear
-combination of Slater determinants (or spin-adapted configuration
-state functions), with the linear coefficients being determined 
-variationally via diagonalization of the Hamiltonian in the given
-subspace of determinants.  The simplest standard CI method which improves
-upon Hartree-Fock is a CI which adds all singly and doubly substituted
-determinants (CISD).  The CISD wavefunction
-has fallen out of favor because truncated CI wavefunctions
-short of full configuration interaction
-are not size-extensive, meaning that their
-quality degrades for larger molecules.  MP2 offers a less expensive
-alternative whose quality does not degrade for larger molecules and which 
-gives similar results to CISD for well-behaved molecules.  CCSD is 
-usually a more accurate alternative, at only slightly higher
-cost.
 
-For the reasons stated above, the CI code in \PSIthree\ is not optimized
-for CISD computations.  Instead, emphasis has been placed on developing
-a very efficient program to handle more general CI wavefunctions
-which may be helpful in more challenging cases such as highly strained
-molecules or bond breaking reactions.  The \PSIdetci\ program is a fast,
-determinant-based CI program based upon the string formalism of Handy
-\cite{Handy:1980}.  It can solve for
-restricted active space configuration interaction (RAS CI) wavefunctions
-as described by Olsen, Roos, Jorgensen, and Aa. Jensen \cite{Olsen:1988}.
-Excitation-class selected multi-reference
-CI wavefunctions, such as second-order CI, can be formulated as RAS CI's.
-A RAS CI selects determinants for the model space as those which have no
-more than n holes in the lowest set of orbitals (called RAS I) and no
-more than m electrons in the highest set of orbitals (called RAS III).
-An intermediate set of orbitals, if present (RAS II), has no restrictions
-placed upon it.  All determinants satisfying these rules are included
-in the CI.  
+Configuration interaction (CI) is one of the most general ways to
+improve upon Hartree-Fock theory by adding a description of the
+correlated motions of electrons.  Simply put, a CI wavefunction
+is a linear combination of Slater determinants (or spin-adapted
+configuration state functions), with the linear coefficients being
+determined variationally via diagonalization of the Hamiltonian in the
+given subspace of determinants.  The simplest standard CI method which
+improves upon Hartree-Fock is a CI which adds all singly and doubly
+substituted determinants (CISD).  The CISD wavefunction has fallen out
+of favor because truncated CI wavefunctions are not size-extensive,
+meaning that their quality degrades for larger molecules.  MP2 is a less
+expensive alternative giving results similar to those of CISD for small
+molecules, but the quality of MP2 does not degrade for larger molecules.
+Coupled-cluster singles and doubles (CCSD) is another size-extensive
+alternative; it is only slightly more costly computationally than CISD,
+but it typically provides significantly more accurate results.
 
+The CI code in \PSIfour\ is described in detail in Reference
+\cite{Sherrill:1999:CI}.  For the reasons stated above, the CI code in
+\PSIfour\ is not optimized for CISD computations.  Instead, emphasis
+has been placed on developing a very efficient program to handle more
+general CI wavefunctions which may be helpful in more challenging cases
+such as highly strained molecules or bond breaking reactions.  \PSIdetci\
+is a fast, determinant-based CI module based upon the string formalism
+of Handy \cite{Handy:1980}.  It can solve for restricted active space
+configuration interaction (RAS CI) wavefunctions as described by Olsen,
+Roos, Jorgensen, and Aa. Jensen \cite{Olsen:1988}.  Excitation-class
+selected multi-reference CI wavefunctions, such as second-order CI,
+can be formulated as RAS CI's.  A RAS CI selects determinants for the
+model space as those which have no more than n holes in the lowest set
+of orbitals (called RAS I) and no more than m electrons in the highest
+set of orbitals (called RAS III).  An intermediate set of orbitals, if
+present (RAS II), has no restrictions placed upon it.  All determinants
+satisfying these rules are included in the CI.
 
-The \PSIdetci\ program is also very efficient
-at full configuration interaction wavefunctions, and is used in this
-capacity in the complete-active-space self-consistent-field (CASSCF)
-code.  Use of \PSIdetci\ for CASSCF wavefunctions is described
-in the following section of this manual.
+\PSIdetci\ is also very efficient at computing full configuration interaction
+wavefunctions, and it is used in this capacity in the complete-active-space
+self-consistent-field (CASSCF) code.  Use of \PSIdetci\ for CASSCF
+wavefunctions is described in the following section of this manual.
 
-As just mentioned, the \PSIthree\ program is designed for challenging 
+As just mentioned, the \PSIfour\ program is designed for challenging 
 chemical systems for which simple CISD is not suitable.  Because
 CI wavefunctions which go beyond CISD (such as RAS CI) are fairly complex,
 typically the \PSIdetci\ program will be used in cases where the 
@@ -52,29 +49,27 @@ model space are nontrivial.  Hence, the user is advised to develop
 a good working knowledge of multi-reference and RAS CI methods before
 attempting to use the program for a production-level project.  This user's
 manual will provide only an elementary introduction to the most
-important keywords.  Additional information is available in the 
-man pages for \PSIdetci.
+important keywords.  Additional information is available in the complete
+list of keywords for \PSIdetci\ provided in the Appendix.
 
 The division of the molecular orbitals into various subspaces such as
 RAS spaces, or frozen vs active orbitals, etc, needs to be clear not
-only to the {\tt detci} program, but also at least to the transformation
-program (and in the case of MCSCF, to other programs as well).  Thus,
-orbital subspace keywords such as {\tt RAS1}, {\tt RAS2}, {\tt RAS3},
-{\tt frozen\_docc}, {\tt frozen\_uocc}, {\tt active}, etc., need to be
-in the {\tt psi:()} or {\tt default:()} sections of input so they may
-also be read by other modules.
+only to \PSIdetci\, but also at least to the transformation program
+(and in the case of MCSCF, to other programs as well).  Thus, orbital
+subspace keywords such as {\tt RAS1}, {\tt RAS2}, {\tt RAS3}, {\tt
+frozen\_docc}, {\tt frozen\_uocc}, {\tt active}, etc., should be set
+in the global section of input so they may also be read by other modules.
 
 \subsubsection{Basic Keywords}
 \begin{description}
 \item[WFN = string]\mbox{}\\
-Acceptable values for determinant-based CI computations in \PSIthree\
+Acceptable values for determinant-based CI computations in PSI
 are {\tt detci} and, for CASSCF, {\tt detcas}.
 \item[REFERENCE = string]\mbox{}\\
-Most reference types allowed by \PSIthree\ are allowed by \PSIdetci,
+Most reference types allowed by PSI are allowed by \PSIdetci\,
 except that {\tt uhf} is not supported.
 \item[DERTYPE = string]\mbox{}\\
-Only single-point calculations are allowed for {\tt wfn = detci}.
-For {\tt wfn = detcas}, first derivatives are also available.
+Energies (NONE) and gradients (FIRST) are the allowed options.
 \item[CONVERGENCE = integer]\mbox{}\\
 Convergence desired on the CI vector.  Convergence is achieved when the
 RMS of the error in the CI vector is less than 10**(-n).  The default is 4
@@ -91,35 +86,35 @@ is therefore {\tt EX\_LVL + VAL\_EX\_LVL}.  Defaults to zero.
 Core may be frozen by setting {\tt FREEZE\_CORE}.  To
 manually select how many orbitals per irrep to freeze, use the
 {\tt FROZEN\_DOCC} keyword.
-Should be in {\tt psi:()} or {\tt default:()} sections of input.
+Should be in the global section of input.
 The number of lowest energy doubly occupied orbitals in each irreducible
 representation from which there will be no excitations.
 The Cotton ordering of the irredicible representations is used.
 The default is the zero vector.
 \item[FROZEN\_UOCC = (integer array)]\mbox{}\\
-Should be in {\tt psi:()} or {\tt default:()} sections of input.
+Should be in the global section of input.
 The number of highest energy unoccupied orbitals in each irreducible
 representation into which there will be no excitations.
 The default is the zero vector.
 \item[RAS1 = (integer array)]\mbox{}\\
-Should be in {\tt psi:()} or {\tt default:()} sections of input.
+Should be in the global section of input.
 The number of orbitals for each irrep making up the RAS I space,
 from which a maximum of {\tt EX\_LVL + VAL\_EX\_LVL} excitations
 are allowed.
 This does not include frozen core orbitals.  For a normal
 CI truncated at an excitation level such as CISD, CISDT, etc., it is
 not necessary to specify this or {\tt RAS2} or {\tt RAS3}.
-Note: this keyword must be visible to the \PSItransqt\ program
+Note: this keyword must be visible to the transformation module
 also so that orbitals are ordered correctly (placing it in 
-{\tt default} or {\tt psi} should be adequate).
+the globals section should be adequate).
 \item[RAS2 = (integer array)]\mbox{}\\
-Should be in {\tt psi:()} or {\tt default:()} sections of input.
+Should be in the global section of input.
 As above for {\tt RAS1}, but for the RAS II subspace.  
 No restrictions are placed on the occupancy of RAS II orbitals.
 Typically this will correspond to the conventional idea of
 an ``active space'' in multi-reference CI.
 \item[RAS3 = (integer array)]\mbox{}\\
-Should be in {\tt psi:()} or {\tt default:()} sections of input.
+Should be in the global section of input.
 As above for {\tt RAS3}, but for the RAS III subspace.
 A maximum of {\tt EX\_LVL} electrons are allowed in RAS III.
 \item[MAXITER = integer]\mbox{}\\
@@ -141,11 +136,11 @@ of dipole moments by default.
 If {\tt TRUE}, compute the transition density matrix from the ground
 state to each other state obtained in the computation.  By default,
 this information will be written to disk.  Transition dipole moments
-will be evaluated in {\tt detci}.  Note: only transition densities
-between roots of the same symmetry will be evaluated.  {\tt detci} does not
+will be evaluated in \PSIdetci\.  Note: only transition densities
+between roots of the same symmetry will be evaluated.  \PSIdetci\ does not
 compute states of different irreps within the same computation; to do this,
-lower the symmetry using the {\tt subgroup} keyword in {\tt psi:()}
-or {\tt default:()} (see section \ref{symm-spec}).
+lower the symmetry of the computation.
+% CDS-TODO: Say how to lower the symmetry
 \item[DIPMOM = boolean]\mbox{}\\
 If {\tt TRUE}, evaluate the dipole moment for each root (using the expectation
 value formula; orbital relaxation contributions are neglected).  This is
@@ -162,20 +157,19 @@ controls the maximum order energy computed.  For open-shell systems
 \end{description}
 
 For larger computations, additional keywords may be required, as
-described in the \PSIdetci\ man pages.
+described in the \PSIdetci\ section of the Appendix.
 
 \subsubsection{Arbitrary Order Perturbation Theory}
-\PSIthree\ is capable of computing arbitrary order M{\o}ller-Plesset
- perturbation theory (MPn, closed-shell systems) and 
+\PSIfour\ is capable of computing arbitrary order M{\o}ller-Plesset
+ perturbation theory (MPn, closed-shell systems) and
 Z-averaged perturbation theory (ZAPTn, open-shell systems) energies,
 invoked with MPN = TRUE.  The maximum level of perturbation theory
-computed is controlled by MAXNVECT.
-Higher order energies (2n - 1 and 2n - 2) can be computed at no additional
-computational cost by using WIGNER = TRUE.
-By default, the n{th} order energy is saved, but (2n - 1) or (2n - 2) order 
-energies can be saved using SAVE\_MPN2 = 1 or SAVE\_MPN2 = 2, respectively.
+computed is controlled by MAXNVECT.  Higher order energies (2n -
+1 and 2n - 2) can be computed at no additional computational cost by
+using WIGNER = TRUE.  By default, the n{th} order energy is saved, but
+(2n - 1) or (2n - 2) order energies can be saved using SAVE\_MPN2 =
+1 or SAVE\_MPN2 = 2, respectively.
 
-For open-shell systems, arbitary order ZAPTn energies can be computed using
-WFN = ZAPTN and REF = ROHF.
-All other options are the same as 
+For open-shell systems, arbitary order ZAPTn energies can be computed
+using WFN = ZAPTN and REF = ROHF.  All other options are the same as
 closed-shell MPn.

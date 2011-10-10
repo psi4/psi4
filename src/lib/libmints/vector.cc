@@ -3,6 +3,7 @@
 #include <libqt/qt.h>
 #include "matrix.h"
 #include "vector.h"
+#include "dimension.h"
 
 #include <libparallel/parallel.h>
 #include <boost/python.hpp>
@@ -71,6 +72,28 @@ Vector::Vector(const std::string& name, int dim)
     name_ = name;
 }
 
+Vector::Vector(const Dimension& v)
+{
+    nirrep_ = v.n();
+    vector_ = NULL;
+    dimpi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i)
+        dimpi_[i] = v[i];
+    alloc();
+    name_ = v.name();
+}
+
+Vector::Vector(const std::string& name, const Dimension& v)
+{
+    nirrep_ = v.n();
+    vector_ = NULL;
+    dimpi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i)
+        dimpi_[i] = v[i];
+    alloc();
+    name_ = name;
+}
+
 Vector::~Vector() {
     release();
     if (dimpi_)
@@ -94,6 +117,17 @@ void Vector::init(int nirreps, const int *dimpi, const std::string& name) {
     dimpi_ = new int[nirrep_];
     for (int h=0; h<nirrep_; ++h)
         dimpi_[h] = dimpi[h];
+    alloc();
+}
+
+void Vector::init(const Dimension &v)
+{
+    name_ = v.name();
+    if (dimpi_) delete[] dimpi_;
+    nirrep_ = v.n();
+    dimpi_ = new int[nirrep_];
+    for (int h=0; h<nirrep_; ++h)
+        dimpi_[h] = v[h];
     alloc();
 }
 

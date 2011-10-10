@@ -1,18 +1,19 @@
 #ifndef _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 #define _PSI_SRC_LIB_LIBDIIS_DIISMANAGER_H_
 
-#include <libpsio/psio.hpp>
-#include <vector>
-#include <stdarg.h>
-#include <map>
-#include <psifiles.h>
 #include "diisentry.h"
+#include <vector>
+#include <map>
 
 namespace boost {
-template<class T> class shared_ptr;
+template<class T>
+class shared_ptr;
 }
 
 namespace psi{
+
+class DIISEntry;
+class PSIO;
 
   /**
      @Brief The DIISManager class handles DIIS extrapolations.
@@ -35,10 +36,9 @@ class DIISManager{
          */
         enum RemovalPolicy {LargestError, OldestAdded};
 
-        DIISManager(int maxSubspaceSize, std::string label,
+        DIISManager(int maxSubspaceSize, const std::string& label,
                     RemovalPolicy = LargestError,
-                    StoragePolicy = OnDisk,
-                    boost::shared_ptr<PSIO> psio = _default_psio_lib_);
+                    StoragePolicy = OnDisk);
         DIISManager() {_maxSubspaceSize = 0;}
         ~DIISManager();
 
@@ -50,7 +50,7 @@ class DIISManager{
         void reset_subspace();
         void delete_diis_file();
         /// The number of vectors currently in the subspace
-        int subspace_size() {return _subspace.size();}
+        int subspace_size();
     protected:
         int get_next_entry_id();
 
@@ -83,8 +83,5 @@ class DIISManager{
 };
 
 } // End namespace
-
-// This is here so that files including this have clean(er) syntax
-using namespace psi;
 
 #endif // Header guard

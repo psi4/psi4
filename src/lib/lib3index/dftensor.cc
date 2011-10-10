@@ -158,7 +158,7 @@ boost::shared_ptr<Matrix> DFTensor::Qoo()
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
-        C_DGEMM('T','N',naocc_,naocc_,nso_,1.0,Amip[Q],naocc_,Cop[0],naocc_, 0.0, Aiap[0], naocc_);
+        C_DGEMM('T','N',naocc_,naocc_,nso_,1.0,Amip[Q],naocc_,Cop[0],naocc_, 0.0, Aiap[Q], naocc_);
     }    
 
     if (debug_) {

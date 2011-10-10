@@ -11,6 +11,7 @@
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #define EXTERN
 #include "globals.h"
 
@@ -60,7 +61,7 @@ namespace psi {
 
     void semicanonical_fock(void);
 
-    void get_moinfo(void)
+    void get_moinfo(Options& options)
     {
       int i, j, k, h, p, q, count;
       double escf;
@@ -161,7 +162,7 @@ namespace psi {
               moinfo.mopi, moinfo.clsdpi, moinfo.openpi,
               moinfo.frdocc, moinfo.fruocc,
               rstr_docc, rstr_uocc,
-              ras_opi, moinfo.pitz2corr_one, 1, 0))
+              ras_opi, moinfo.pitz2corr_one, 1, 0, options))
       {
         throw PsiException("Error in ras_set(). Aborting.", __FILE__, __LINE__);
       }

@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -14,389 +15,389 @@ using namespace psi;
 
 double **Chkpt::rd_scf(void)
 {
-	double **scf;
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("MO coefficients");
+        double **scf;
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("MO coefficients");
 
-	if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+        if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
 
-		nmo = rd_nmo();
-		nso = rd_nso();
+                nmo = rd_nmo();
+                nso = rd_nso();
 
-		scf = matrix<double>(nso,nmo);
-		psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-			nso*nmo*sizeof(double));
-	}
-	else {
-		scf = rd_alpha_scf();
-	}
+                scf = matrix<double>(nso,nmo);
+                psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                        nso*nmo*sizeof(double));
+        }
+        else {
+                scf = rd_alpha_scf();
+        }
 
-	free(keyword);
-	return scf;
+        free(keyword);
+        return scf;
 }
 
 double **Chkpt::rd_alpha_scf(void)
 {
-	double **scf;
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("Alpha MO coefficients");
+        double **scf;
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("Alpha MO coefficients");
 
-	if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
-		nmo = rd_nmo();
-		nso = rd_nso();
+        if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+                nmo = rd_nmo();
+                nso = rd_nso();
 
-		scf = matrix<double>(nso,nmo);
-		psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-			nso*nmo*sizeof(double));
-	}
-	else
-		scf = NULL;
+                scf = matrix<double>(nso,nmo);
+                psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                        nso*nmo*sizeof(double));
+        }
+        else
+                scf = NULL;
 
-	free(keyword);
-	return scf;
+        free(keyword);
+        return scf;
 }
 
 double **Chkpt::rd_beta_scf(void)
 {
-	double **scf;
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("Beta MO coefficients");
+        double **scf;
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("Beta MO coefficients");
 
-	if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
-		nmo = rd_nmo();
-		nso = rd_nso();
+        if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+                nmo = rd_nmo();
+                nso = rd_nso();
 
-		scf = matrix<double>(nso,nmo);
-		psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-			nso*nmo*sizeof(double));
-	}
-	else
-		scf = NULL;
+                scf = matrix<double>(nso,nmo);
+                psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                        nso*nmo*sizeof(double));
+        }
+        else
+                scf = NULL;
 
-	free(keyword);
-	return scf;
+        free(keyword);
+        return scf;
 }
 
 void Chkpt::wt_scf(double **scf)
 {
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("MO coefficients");
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("MO coefficients");
 
-	nmo = rd_nmo();
-	nso = rd_nso();
+        nmo = rd_nmo();
+        nso = rd_nso();
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-		nso*nmo*sizeof(double));
-	free(keyword);
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                nso*nmo*sizeof(double));
+        free(keyword);
 }
 
 void Chkpt::wt_alpha_scf(double **scf)
 {
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("Alpha MO coefficients");
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("Alpha MO coefficients");
 
-	nmo = rd_nmo();
-	nso = rd_nso();
+        nmo = rd_nmo();
+        nso = rd_nso();
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-		nso*nmo*sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                nso*nmo*sizeof(double));
 
-	free(keyword);
+        free(keyword);
 }
 
 void Chkpt::wt_beta_scf(double **scf)
 {
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("Beta MO coefficients");
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("Beta MO coefficients");
 
-	nmo = rd_nmo();
-	nso = rd_nso();
+        nmo = rd_nmo();
+        nso = rd_nso();
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-		nso*nmo*sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                nso*nmo*sizeof(double));
 
-	free(keyword);
+        free(keyword);
 }
 
 double **Chkpt::rd_scf_irrep(int irrep)
 {
-	int i, j, row, col;
-	int *sopi, *mopi;
-	double **scf, **scf_full;
+        int i, j, row, col;
+        int *sopi, *mopi;
+        double **scf, **scf_full;
 
-	sopi = rd_sopi();
-	mopi = rd_orbspi();
+        sopi = rd_sopi();
+        mopi = rd_orbspi();
 
-	if (!sopi[irrep] || !mopi[irrep]) {
-		free(sopi);
-		free(mopi);
-		return NULL;
+        if (!sopi[irrep] || !mopi[irrep]) {
+                free(sopi);
+                free(mopi);
+                return NULL;
     }
 
-	scf_full = rd_scf();
-	if (scf_full == NULL) {
-		free(sopi);
-		free(mopi);
-		return NULL;
-	}
+        scf_full = rd_scf();
+        if (scf_full == NULL) {
+                free(sopi);
+                free(mopi);
+                return NULL;
+        }
 
-	scf = matrix<double>(sopi[irrep],mopi[irrep]);
+        scf = matrix<double>(sopi[irrep],mopi[irrep]);
 
 /* compute row and column offsets */
-	for(i=0,row=0,col=0; i < irrep; i++) {
-		row += sopi[i];
-		col += mopi[i];
-	}
+        for(i=0,row=0,col=0; i < irrep; i++) {
+                row += sopi[i];
+                col += mopi[i];
+        }
 
-	for(i=0; i < sopi[irrep]; i++)
-		for(j=0; j < mopi[irrep]; j++)
-		scf[i][j] = scf_full[i+row][j+col];
+        for(i=0; i < sopi[irrep]; i++)
+                for(j=0; j < mopi[irrep]; j++)
+                scf[i][j] = scf_full[i+row][j+col];
 
-	free(scf_full);
-	free(sopi);
-	free(mopi);
+        free(scf_full);
+        free(sopi);
+        free(mopi);
 
-	return scf;
+        return scf;
 }
 
 double **Chkpt::rd_alpha_scf_irrep(int irrep)
 {
-	int i, j, row, col;
-	int nirreps, nso, nmo;
-	int *sopi, *mopi;
-	double **scf, **scf_full;
+        int i, j, row, col;
+        int nirreps, nso, nmo;
+        int *sopi, *mopi;
+        double **scf, **scf_full;
 
-	nirreps = rd_nirreps();
-	sopi = rd_sopi();
-	mopi = rd_orbspi();
-	nso = rd_nso();
-	nmo = rd_nmo();
+        nirreps = rd_nirreps();
+        sopi = rd_sopi();
+        mopi = rd_orbspi();
+        nso = rd_nso();
+        nmo = rd_nmo();
 
-	scf = matrix<double>(sopi[irrep],mopi[irrep]);
-	scf_full = rd_alpha_scf();
-	if (scf_full == NULL) {
-		free(scf);
-		free(sopi);
-		free(mopi);
-		return NULL;
-	}
+        scf = matrix<double>(sopi[irrep],mopi[irrep]);
+        scf_full = rd_alpha_scf();
+        if (scf_full == NULL) {
+                free(scf);
+                free(sopi);
+                free(mopi);
+                return NULL;
+        }
 
 /* compute row and column offsets */
-	for(i=0,row=0,col=0; i < irrep; i++) {
-		row += sopi[i];
-		col += mopi[i];
-	}
+        for(i=0,row=0,col=0; i < irrep; i++) {
+                row += sopi[i];
+                col += mopi[i];
+        }
 
-	for(i=0; i < sopi[irrep]; i++)
-		for(j=0; j < mopi[irrep]; j++)
-		scf[i][j] = scf_full[i+row][j+col];
+        for(i=0; i < sopi[irrep]; i++)
+                for(j=0; j < mopi[irrep]; j++)
+                scf[i][j] = scf_full[i+row][j+col];
 
-	free(scf_full);
-	free(sopi);
-	free(mopi);
+        free(scf_full);
+        free(sopi);
+        free(mopi);
 
-	return scf;
+        return scf;
 }
 
 double **Chkpt::rd_beta_scf_irrep(int irrep)
 {
-	int i, j, row, col;
-	int nirreps, nso, nmo;
-	int *sopi, *mopi;
-	double **scf, **scf_full;
+        int i, j, row, col;
+        int nirreps, nso, nmo;
+        int *sopi, *mopi;
+        double **scf, **scf_full;
 
-	nirreps = rd_nirreps();
-	sopi = rd_sopi();
-	mopi = rd_orbspi();
-	nso = rd_nso();
-	nmo = rd_nmo();
+        nirreps = rd_nirreps();
+        sopi = rd_sopi();
+        mopi = rd_orbspi();
+        nso = rd_nso();
+        nmo = rd_nmo();
 
-	scf = matrix<double>(sopi[irrep],mopi[irrep]);
-	scf_full = rd_beta_scf();
-	if (scf_full == NULL) {
-		free(scf);
-		free(sopi);
-		free(mopi);
-		return NULL;
-	}
+        scf = matrix<double>(sopi[irrep],mopi[irrep]);
+        scf_full = rd_beta_scf();
+        if (scf_full == NULL) {
+                free(scf);
+                free(sopi);
+                free(mopi);
+                return NULL;
+        }
 
 /* compute row and column offsets */
-	for(i=0,row=0,col=0; i < irrep; i++) {
-		row += sopi[i];
-		col += mopi[i];
-	}
+        for(i=0,row=0,col=0; i < irrep; i++) {
+                row += sopi[i];
+                col += mopi[i];
+        }
 
-	for(i=0; i < sopi[irrep]; i++)
-		for(j=0; j < mopi[irrep]; j++)
-		scf[i][j] = scf_full[i+row][j+col];
+        for(i=0; i < sopi[irrep]; i++)
+                for(j=0; j < mopi[irrep]; j++)
+                scf[i][j] = scf_full[i+row][j+col];
 
-	free(scf_full);
-	free(sopi);
-	free(mopi);
+        free(scf_full);
+        free(sopi);
+        free(mopi);
 
-	return scf;
+        return scf;
 }
 
 void Chkpt::wt_scf_irrep(double **scf, int irrep)
 {
-	int i, j, row, col;
-	int nirreps, nso, nmo;
-	int *sopi, *mopi;
-	double **scf_full;
+        int i, j, row, col;
+        int nirreps, nso, nmo;
+        int *sopi, *mopi;
+        double **scf_full;
 
-	nirreps = rd_nirreps();
-	sopi = rd_sopi();
-	mopi = rd_orbspi();
-	nso = rd_nso();
-	nmo = rd_nmo();
+        nirreps = rd_nirreps();
+        sopi = rd_sopi();
+        mopi = rd_orbspi();
+        nso = rd_nso();
+        nmo = rd_nmo();
 
-	scf_full = rd_scf();
+        scf_full = rd_scf();
 
 /* compute row and column offsets */
-	for(i=0,row=0,col=0; i < irrep; i++) {
-		row += sopi[i];
-		col += mopi[i];
-	}
+        for(i=0,row=0,col=0; i < irrep; i++) {
+                row += sopi[i];
+                col += mopi[i];
+        }
 
-	for(i=0; i < sopi[irrep]; i++)
-		for(j=0; j < mopi[irrep]; j++)
-		scf_full[i+row][j+col] = scf[i][j];
+        for(i=0; i < sopi[irrep]; i++)
+                for(j=0; j < mopi[irrep]; j++)
+                scf_full[i+row][j+col] = scf[i][j];
 
-	wt_scf(scf_full);
-	free(scf_full);
-	free(sopi);
-	free(mopi);
+        wt_scf(scf_full);
+        free(scf_full);
+        free(sopi);
+        free(mopi);
 }
 
 void Chkpt::wt_alpha_scf_irrep(double **scf, int irrep)
 {
-	int i, j, row, col;
-	int nirreps, nso, nmo;
-	int *sopi, *mopi;
-	double **scf_full;
+        int i, j, row, col;
+        int nirreps, nso, nmo;
+        int *sopi, *mopi;
+        double **scf_full;
 
-	nirreps = rd_nirreps();
-	sopi = rd_sopi();
-	mopi = rd_orbspi();
-	nso = rd_nso();
-	nmo = rd_nmo();
+        nirreps = rd_nirreps();
+        sopi = rd_sopi();
+        mopi = rd_orbspi();
+        nso = rd_nso();
+        nmo = rd_nmo();
 
-	scf_full = rd_alpha_scf();
+        scf_full = rd_alpha_scf();
 
 /* compute row and column offsets */
-	for(i=0,row=0,col=0; i < irrep; i++) {
-		row += sopi[i];
-		col += mopi[i];
-	}
+        for(i=0,row=0,col=0; i < irrep; i++) {
+                row += sopi[i];
+                col += mopi[i];
+        }
 
-	for(i=0; i < sopi[irrep]; i++)
-		for(j=0; j < mopi[irrep]; j++)
-		scf_full[i+row][j+col] = scf[i][j];
+        for(i=0; i < sopi[irrep]; i++)
+                for(j=0; j < mopi[irrep]; j++)
+                scf_full[i+row][j+col] = scf[i][j];
 
-	wt_alpha_scf(scf_full);
-	free(scf_full);
-	free(sopi);
-	free(mopi);
+        wt_alpha_scf(scf_full);
+        free(scf_full);
+        free(sopi);
+        free(mopi);
 }
 
 void Chkpt::wt_beta_scf_irrep(double **scf, int irrep)
 {
-	int i, j, row, col;
-	int nirreps, nso, nmo;
-	int *sopi, *mopi;
-	double **scf_full;
+        int i, j, row, col;
+        int nirreps, nso, nmo;
+        int *sopi, *mopi;
+        double **scf_full;
 
-	nirreps = rd_nirreps();
-	sopi = rd_sopi();
-	mopi = rd_orbspi();
-	nso = rd_nso();
-	nmo = rd_nmo();
+        nirreps = rd_nirreps();
+        sopi = rd_sopi();
+        mopi = rd_orbspi();
+        nso = rd_nso();
+        nmo = rd_nmo();
 
-	scf_full = rd_beta_scf();
+        scf_full = rd_beta_scf();
 
 /* compute row and column offsets */
-	for(i=0,row=0,col=0; i < irrep; i++) {
-		row += sopi[i];
-		col += mopi[i];
-	}
+        for(i=0,row=0,col=0; i < irrep; i++) {
+                row += sopi[i];
+                col += mopi[i];
+        }
 
-	for(i=0; i < sopi[irrep]; i++)
-		for(j=0; j < mopi[irrep]; j++)
-		scf_full[i+row][j+col] = scf[i][j];
+        for(i=0; i < sopi[irrep]; i++)
+                for(j=0; j < mopi[irrep]; j++)
+                scf_full[i+row][j+col] = scf[i][j];
 
-	wt_beta_scf(scf_full);
-	free(scf_full);
-	free(sopi);
-	free(mopi);
+        wt_beta_scf(scf_full);
+        free(scf_full);
+        free(sopi);
+        free(mopi);
 }
 
 double **Chkpt::set_mo_phases(double **coeff, int nrows, int ncols)
 {
-	int col, row;
+        int col, row;
 
-	for (col=0; col<ncols; col++) {
-		if (coeff[0][col] >= 0.0) continue;
-		for (row=0; row<nrows; row++) {
-			coeff[row][col] = -coeff[row][col];
-		}
-	}
+        for (col=0; col<ncols; col++) {
+                if (coeff[0][col] >= 0.0) continue;
+                for (row=0; row<nrows; row++) {
+                        coeff[row][col] = -coeff[row][col];
+                }
+        }
 
-	wt_phase_check(1);
+        wt_phase_check(1);
         return coeff;
 }
 
 double **Chkpt::rd_local_scf(void)
 {
-	double **scf;
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("Local MO coefficients");
+        double **scf;
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("Local MO coefficients");
 
-	if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
-		nmo = rd_nmo();
-		nso = rd_nso();
+        if (psio->tocscan(PSIF_CHKPT, keyword) != NULL) {
+                nmo = rd_nmo();
+                nso = rd_nso();
 
-		scf = matrix<double>(nso,nmo);
-		psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-			nso*nmo*sizeof(double));
-	}
-	else
-		scf = NULL;
+                scf = matrix<double>(nso,nmo);
+                psio->read_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                        nso*nmo*sizeof(double));
+        }
+        else
+                scf = NULL;
 
-	return scf;
+        return scf;
 }
 
 void Chkpt::wt_local_scf(double **scf)
 {
-	int nmo, nso;
-	char *keyword;
-	keyword = build_keyword("Local MO coefficients");
+        int nmo, nso;
+        char *keyword;
+        keyword = build_keyword("Local MO coefficients");
 
-	nmo = rd_nmo();
-	nso = rd_nso();
+        nmo = rd_nmo();
+        nso = rd_nso();
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0], 
-		nso*nmo*sizeof(double));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) scf[0],
+                nso*nmo*sizeof(double));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
 /*!
 ** chkpt_rd_scf():  Reads in the full SCF eigenvector matrix for RHF/ROHF.
-**  
+**
 **   takes no arguments.
-**  
+**
 **   returns: double **scf = This rectangular matrix has dimensions nso
-**     by nmo (see: rd_nmo()). For STO water, scf_vector would 
+**     by nmo (see: rd_nmo()). For STO water, scf_vector would
 **     come out looking something like the following:
-**        
+**
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
@@ -405,25 +406,25 @@ extern "C" {
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **
-**    where the *** represent the non-zero values, and the 0.0 entries 
+**    where the *** represent the non-zero values, and the 0.0 entries
 **    represent (double)0.
 **
 ** \ingroup CHKPT
 */
-	double **chkpt_rd_scf(void)
-	{
-		return _default_chkpt_lib_->rd_scf();
-	}
+        double **chkpt_rd_scf(void)
+        {
+                return _default_chkpt_lib_->rd_scf();
+        }
 
 /*!
 ** chkpt_rd_alpha_scf(): Reads in the full alpha SCF eigenvector matrix for UHF
-**  
+**
 **   takes no arguments.
-**  
+**
 **   returns: double **scf =  This rectangular matrix has dimensions nso
-**     by nmo (see: rd_nmo()). For STO water, scf_vector would 
+**     by nmo (see: rd_nmo()). For STO water, scf_vector would
 **     come out looking something like the following:
-**        
+**
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
@@ -432,25 +433,25 @@ extern "C" {
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **
-**    where the *** represent the non-zero values, and the 0.0 entries 
+**    where the *** represent the non-zero values, and the 0.0 entries
 **    represent (double)0.
 **
 ** \ingroup CHKPT
 */
-	double **chkpt_rd_alpha_scf(void)
-	{
-		return _default_chkpt_lib_->rd_alpha_scf();
-	}
+        double **chkpt_rd_alpha_scf(void)
+        {
+                return _default_chkpt_lib_->rd_alpha_scf();
+        }
 
 /*!
 ** chkpt_rd_beta_scf():  Reads in the full beta SCF eigenvector matrix for UHF.
-**  
+**
 **   takes no arguments.
-**  
+**
 **   returns: double **scf = This rectangular matrix has dimensions nso
-**     by nmo (see: rd_nmo()). For STO water, scf_vector would 
+**     by nmo (see: rd_nmo()). For STO water, scf_vector would
 **     come out looking something like the following:
-**        
+**
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
@@ -459,23 +460,23 @@ extern "C" {
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **
-**    where the *** represent the non-zero values, and the 0.0 entries 
+**    where the *** represent the non-zero values, and the 0.0 entries
 **    represent (double)0.
 **
 ** \ingroup CHKPT
 */
-	double **chkpt_rd_beta_scf(void)
-	{
-		return _default_chkpt_lib_->rd_beta_scf();
-	}
+        double **chkpt_rd_beta_scf(void)
+        {
+                return _default_chkpt_lib_->rd_beta_scf();
+        }
 
 /*!
 ** chkpt_wt_scf():  Writes the full SCF eigenvector matrix for RHF/ROHF.
-**  
+**
 ** \param scf = This rectangular matrix has dimensions nso
-**     by nmo (see: rd_nmo()). For STO water, scf_vector would 
+**     by nmo (see: rd_nmo()). For STO water, scf_vector would
 **     come out looking something like the following:
-**        
+**
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
@@ -484,7 +485,7 @@ extern "C" {
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **
-**    where the *** represent the non-zero values, and the 0.0 entries 
+**    where the *** represent the non-zero values, and the 0.0 entries
 **    represent (double)0.
 **
 ** returns: none
@@ -495,18 +496,18 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_scf(double **scf)
-	{
-		_default_chkpt_lib_->wt_scf(scf);
-	}
+        void chkpt_wt_scf(double **scf)
+        {
+                _default_chkpt_lib_->wt_scf(scf);
+        }
 
 /*!
 ** chkpt_wt_alpha_scf():  Writes the full alpha SCF eigenvector matrix for UHF.
-**  
+**
 ** \param scf = This rectangular matrix has dimensions nso
-**     by nmo (see: rd_nmo()). For STO water, scf_vector would 
+**     by nmo (see: rd_nmo()). For STO water, scf_vector would
 **     come out looking something like the following:
-**        
+**
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
@@ -515,7 +516,7 @@ extern "C" {
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **
-**    where the *** represent the non-zero values, and the 0.0 entries 
+**    where the *** represent the non-zero values, and the 0.0 entries
 **    represent (double)0.
 **
 ** returns: none
@@ -526,18 +527,18 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_alpha_scf(double **scf)
-	{
-		_default_chkpt_lib_->wt_alpha_scf(scf);
-	}
+        void chkpt_wt_alpha_scf(double **scf)
+        {
+                _default_chkpt_lib_->wt_alpha_scf(scf);
+        }
 
 /*!
 ** chkpt_wt_beta_scf():  Writes the full beta SCF eigenvector matrix for UHF.
-**  
+**
 ** \param scf = This rectangular matrix has dimensions nso
-**     by nmo (see: rd_nmo()). For STO water, scf_vector would 
+**     by nmo (see: rd_nmo()). For STO water, scf_vector would
 **     come out looking something like the following:
-**        
+**
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
 **         *** *** *** *** 0.0 0.0 0.0
@@ -546,7 +547,7 @@ extern "C" {
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **         0.0 0.0 0.0 0.0 0.0 *** ***
 **
-**    where the *** represent the non-zero values, and the 0.0 entries 
+**    where the *** represent the non-zero values, and the 0.0 entries
 **    represent (double)0.
 **
 ** returns: none
@@ -557,13 +558,13 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_beta_scf(double **scf)
-	{
-		_default_chkpt_lib_->wt_beta_scf(scf);
-	}
+        void chkpt_wt_beta_scf(double **scf)
+        {
+                _default_chkpt_lib_->wt_beta_scf(scf);
+        }
 
 /*!
-** chkpt_rd_scf_irrep(): Reads a single irrep of the SCF eigenvectors for 
+** chkpt_rd_scf_irrep(): Reads a single irrep of the SCF eigenvectors for
 ** RHF/ROHF.
 **
 ** \param irrep = The desired irreducible representation.
@@ -572,13 +573,13 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	double **chkpt_rd_scf_irrep(int irrep)
-	{
-		return _default_chkpt_lib_->rd_scf_irrep(irrep);
-	}
+        double **chkpt_rd_scf_irrep(int irrep)
+        {
+                return _default_chkpt_lib_->rd_scf_irrep(irrep);
+        }
 
 /*!
-** chkpt_rd_alpha_scf_irrep(): Reads a single irrep of the alpha SCF 
+** chkpt_rd_alpha_scf_irrep(): Reads a single irrep of the alpha SCF
 ** eigenvectors for UHF.
 **
 ** \param irrep = The desired irreducible representation.
@@ -586,28 +587,28 @@ extern "C" {
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
 ** \ingroup CHKPT
 */
-	double **chkpt_rd_alpha_scf_irrep(int irrep)
-	{
-		return _default_chkpt_lib_->rd_alpha_scf_irrep(irrep);
-	}
+        double **chkpt_rd_alpha_scf_irrep(int irrep)
+        {
+                return _default_chkpt_lib_->rd_alpha_scf_irrep(irrep);
+        }
 
 /*!
-** chkpt_rd_beta_scf_irrep(): Reads a single irrep of the beta SCF 
+** chkpt_rd_beta_scf_irrep(): Reads a single irrep of the beta SCF
 ** eigenvectors for UHF.
 **
 ** \param irrep = The desired irreducible representation.
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
-** 
+**
 ** \ingroup CHKPT
 */
-	double **chkpt_rd_beta_scf_irrep(int irrep)
-	{
-		return _default_chkpt_lib_->rd_beta_scf_irrep(irrep);
-	}
+        double **chkpt_rd_beta_scf_irrep(int irrep)
+        {
+                return _default_chkpt_lib_->rd_beta_scf_irrep(irrep);
+        }
 
 /*!
-** chkpt_wt_scf_irrep(): Writes a single irrep of the SCF eigenvectors for 
+** chkpt_wt_scf_irrep(): Writes a single irrep of the SCF eigenvectors for
 ** RHF/ROHF.
 **
 ** \param irrep = The desired irreducible representation.
@@ -616,13 +617,13 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_scf_irrep(double **scf, int irrep)
-	{
-		_default_chkpt_lib_->wt_scf_irrep(scf, irrep);
-	}
+        void chkpt_wt_scf_irrep(double **scf, int irrep)
+        {
+                _default_chkpt_lib_->wt_scf_irrep(scf, irrep);
+        }
 
 /*!
-** chkpt_wt_alpha_scf_irrep(): Writes a single irrep of the alpha SCF 
+** chkpt_wt_alpha_scf_irrep(): Writes a single irrep of the alpha SCF
 **                             eigenvectors for RHF/ROHF.
 **
 ** \param irrep = The desired irreducible representation.
@@ -631,25 +632,25 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_alpha_scf_irrep(double **scf, int irrep)
-	{
-		_default_chkpt_lib_->wt_alpha_scf_irrep(scf, irrep);
-	}
+        void chkpt_wt_alpha_scf_irrep(double **scf, int irrep)
+        {
+                _default_chkpt_lib_->wt_alpha_scf_irrep(scf, irrep);
+        }
 
 /*!
-** chkpt_wt_beta_scf_irrep(): Writes a single irrep of the beta SCF 
+** chkpt_wt_beta_scf_irrep(): Writes a single irrep of the beta SCF
 **                             eigenvectors for RHF/ROHF.
 **
 ** \param irrep = The desired irreducible representation.
 **
 ** returns: double **scf = A rectangualr sopi[irrep] by orbspi[irrep] matrix.
-** 
+**
 ** \ingroup CHKPT
 */
-	void chkpt_wt_beta_scf_irrep(double **scf, int irrep)
-	{
-		_default_chkpt_lib_->wt_beta_scf_irrep(scf, irrep);
-	}
+        void chkpt_wt_beta_scf_irrep(double **scf, int irrep)
+        {
+                _default_chkpt_lib_->wt_beta_scf_irrep(scf, irrep);
+        }
 
 /*!
 ** chkpt_set_mo_phases(): Set the phase of the MO's according to the standard
@@ -669,32 +670,32 @@ extern "C" {
 **
 ** returns: none
 */
-	double **chkpt_set_mo_phases(double **coeff, int nrows, int ncols)
-	{
-		return _default_chkpt_lib_->set_mo_phases(coeff, nrows, ncols);
-	}
+        double **chkpt_set_mo_phases(double **coeff, int nrows, int ncols)
+        {
+                return _default_chkpt_lib_->set_mo_phases(coeff, nrows, ncols);
+        }
 
 /*!
 ** chkpt_rd_local_scf(): Reads the localized mo coefficents
 **
 ** returns: double **scf = A rectangular nso by nmo matrix.
-** 
+**
 ** Nick J. Russ, December 2003
 */
-	double **chkpt_rd_local_scf(void)
-	{
-		return _default_chkpt_lib_->rd_local_scf();
-	}
+        double **chkpt_rd_local_scf(void)
+        {
+                return _default_chkpt_lib_->rd_local_scf();
+        }
 
 /*!
 ** chkpt_wt_local_scf(): Writes the localized mo coefficents
 **
 ** returns: none
-** 
+**
 ** Nick J. Russ, December 2003
 */
-	void chkpt_wt_local_scf(double **scf)
-	{
-		_default_chkpt_lib_->wt_local_scf(scf);
-	}
+        void chkpt_wt_local_scf(double **scf)
+        {
+                _default_chkpt_lib_->wt_local_scf(scf);
+        }
 }

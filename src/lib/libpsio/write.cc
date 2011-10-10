@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
@@ -17,26 +18,26 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
   psio_address start_toc, start_data, end_data; /* global addresses */
   ULI tocentry_size;
   int dirty = 0;
-  
+
   this_unit = &(psio_unit[unit]);
-  
+
   /* Find the entry in the TOC */
   this_entry = tocscan(unit, key);
-  
+
   tocentry_size = sizeof(psio_tocentry) - 2*sizeof(psio_tocentry *);
-  
+
   if (this_entry == NULL) { /* New TOC entry */
     if (start.page||start.offset)
       psio_error(unit, PSIO_ERROR_BLKSTART);
-    
+
     dirty = 1; /* set flag for writing the TOC header */
-    
+
     this_entry = (psio_tocentry *) malloc(sizeof(psio_tocentry));
     ::strncpy(this_entry->key, key, PSIO_KEYLEN);
     this_entry->key[PSIO_KEYLEN-1] = '\0';
     this_entry->next = NULL;
     this_entry->last = NULL;
-    
+
     /* Compute the global address of the new entry */
     if (!(this_unit->toclen)) { /* First TOC entry */
       this_entry->sadd.page = 0;
@@ -48,36 +49,36 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
       last_entry->next = this_entry;
       this_entry->last = last_entry;
     }
-    
+
     /* compute important global addresses for the entry */
     start_toc = this_entry->sadd;
     start_data = psio_get_address(start_toc, tocentry_size);
     start_data = psio_get_global_address(start_data, start);
     end_data = psio_get_address(start_data, size);
-    
+
     /* Set the end address for this_entry */
     this_entry->eadd = end_data;
-    
+
     /* Update the unit's TOC stats */
     this_unit->toclen++;
     wt_toclen(unit, this_unit->toclen);
-    
+
     /* Update end (an entry-relative address) for the caller */
     *end = psio_get_address(start, size);
   } else { /* Old TOC entry */
-    
+
     /* Compute the global starting page and offset for the block */
     start_toc = this_entry->sadd;
     start_data = psio_get_address(start_toc, tocentry_size);
     start_data = psio_get_global_address(start_data, start);
-    
+
     /* Make sure this block doesn't start past the end of the entry */
     if (start_data.page > this_entry->eadd.page)
       psio_error(unit, PSIO_ERROR_BLKSTART);
     else if ((start_data.page == this_entry->eadd.page) &&(start_data.offset
         > this_entry->eadd.offset))
       psio_error(unit, PSIO_ERROR_BLKSTART);
-    
+
     /* Compute the new global ending address for the entry, if necessary */
     end_data = psio_get_address(start_data, size);
     if (end_data.page > this_entry->eadd.page) {
@@ -96,17 +97,17 @@ void PSIO::write(unsigned int unit, const char *key, char *buffer, ULI size,
       this_entry->eadd = end_data;
       dirty = 1; /* set flag for writing the TOC header */
     }
-    
+
     /* Update end (an entry-relative address) for the caller */
     *end = psio_get_address(start, size);
   }
-  
+
   if (dirty) /* Need to first write/update the TOC header for this record */
     rw(unit, (char *) this_entry, start_toc, tocentry_size, 1);
-  
+
   /* Now write the actual data to the unit */
   rw(unit, buffer, start_data, size, 1);
-  
+
 #ifdef PSIO_STATS
   psio_writlen[unit] += size;
 #endif

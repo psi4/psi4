@@ -15,6 +15,7 @@
 #include <libqt/qt.h>
 #include <liboptions/liboptions.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"

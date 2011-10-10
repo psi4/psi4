@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -16,7 +16,9 @@
 #include "yoshimine.h"
 #include "backsort.h"
 
-namespace psi { namespace transqt {
+namespace psi {
+extern FILE* outfile;
+namespace transqt {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
@@ -125,7 +127,7 @@ void transform_two_backtr_uhf(void)
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
-	    first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffP);
   yosh_rdtwo_backtr_uhf(AA, &YBuffP, PSIF_MO_AA_TPDM, ioff, 1, 1, 1, 0, outfile);
@@ -140,7 +142,7 @@ void transform_two_backtr_uhf(void)
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
-	    first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffP);
   yosh_rdtwo_backtr_uhf(AB, &YBuffP, PSIF_MO_AB_TPDM, ioff, 0, 1, 1, 0, outfile);
@@ -174,9 +176,9 @@ void transform_two_backtr_uhf(void)
       iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, outfile);
 
       for(r=0,rs=0; r < src_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens1[pq][rs] = ab_block[rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens1[pq][rs] = ab_block[rs];
+        }
       }
     }
   }
@@ -197,15 +199,15 @@ void transform_two_backtr_uhf(void)
   iwl_buf_rd_all(&JBuff, ints, ioff, ioff, 0, ioff, 0, outfile);
   iwl_buf_close(&JBuff, 1);
   energy = 0.0;
-  for(p=0; p < src_orbs; p++) 
+  for(p=0; p < src_orbs; p++)
     for(q=0; q < src_orbs ; q++) {
       pq = INDEX(p,q);
       for(r=0; r < src_orbs; r++) {
-	for(s=0; s < src_orbs; s++) {
-	  rs = INDEX(r,s);
-	  pqrs = INDEX(pq,rs);
-	  energy += ab_dens1[pq][rs] * ints[pqrs];
-	}
+        for(s=0; s < src_orbs; s++) {
+          rs = INDEX(r,s);
+          pqrs = INDEX(pq,rs);
+          energy += ab_dens1[pq][rs] * ints[pqrs];
+        }
       }
     }
   fprintf(outfile, "\n\tAA energy from MO-twopdm: %20.14f\n", energy);
@@ -216,22 +218,22 @@ void transform_two_backtr_uhf(void)
     for(q=0; q <= p; q++, pq++) {
 
       for(r=0,rs=0; r < src_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  A_AB[r][s] = A_AB[s][r] = ab_dens1[pq][rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          A_AB[r][s] = A_AB[s][r] = ab_dens1[pq][rs];
+        }
       }
 
       C_DGEMM('n','t', src_orbs, dst_orbs, src_orbs, 1.0, A_AB[0], A_cols,
-	      CA[0][0], src_orbs, 0.0, B[0], B_cols);
+              CA[0][0], src_orbs, 0.0, B[0], B_cols);
       zero_mat(A_AB, A_cols, A_cols);
-      C_DGEMM('n','n', dst_orbs, dst_orbs, src_orbs, 1.0, CA[0][0], src_orbs, 
-	      B[0], B_cols, 0.0, A_AB[0], A_cols);
+      C_DGEMM('n','n', dst_orbs, dst_orbs, src_orbs, 1.0, CA[0][0], src_orbs,
+              B[0], B_cols, 0.0, A_AB[0], A_cols);
 
       for(r=0, rs=0; r < dst_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens1[pq][rs] = A_AB[r][s];
-	  AA_norm += A_AB[r][s] * A_AB[r][s];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens1[pq][rs] = A_AB[r][s];
+          AA_norm += A_AB[r][s] * A_AB[r][s];
+        }
       }
     }
   }
@@ -242,9 +244,9 @@ void transform_two_backtr_uhf(void)
   for(p=0, pq=0; p < src_orbs; p++) {
     for(q=0; q <= p; q++, pq++) {
       for(r=0,rs=0; r < dst_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens2[rs][pq] = ab_dens1[pq][rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens2[rs][pq] = ab_dens1[pq][rs];
+        }
       }
     }
   }
@@ -254,22 +256,22 @@ void transform_two_backtr_uhf(void)
     for(s=0; s <= r; s++,rs++) {
 
       for(p=0, pq=0; p < src_orbs; p++) {
-	for(q=0; q <= p; q++,pq++) {
-	  A_AB[p][q] = A_AB[q][p] = ab_dens2[rs][pq];
-	}
+        for(q=0; q <= p; q++,pq++) {
+          A_AB[p][q] = A_AB[q][p] = ab_dens2[rs][pq];
+        }
       }
 
       C_DGEMM('n','t',src_orbs,dst_orbs,src_orbs,1.0,A_AB[0], A_cols,
-	      CA[0][0], src_orbs, 0.0, B[0], B_cols);
+              CA[0][0], src_orbs, 0.0, B[0], B_cols);
       zero_mat(A_AB, A_cols, A_cols);
       C_DGEMM('n','n',dst_orbs,dst_orbs,src_orbs,1.0, CA[0][0], src_orbs,
-	      B[0], B_cols, 0.0, A_AB[0], A_cols);
+              B[0], B_cols, 0.0, A_AB[0], A_cols);
 
       for(p=0,pq=0; p < dst_orbs; p++) {
-	for(q=0; q <= p; q++,pq++) {
-	  ab_dens2[rs][pq] = A_AB[p][q];
-	  AA_norm += A_AB[p][q] * A_AB[p][q];
-	}
+        for(q=0; q <= p; q++,pq++) {
+          ab_dens2[rs][pq] = A_AB[p][q];
+          AA_norm += A_AB[p][q] * A_AB[p][q];
+        }
       }
 
     }
@@ -292,11 +294,11 @@ void transform_two_backtr_uhf(void)
     for(q=0; q < dst_orbs; q++) {
       pq = INDEX(p,q);
       for(r=0; r < dst_orbs; r++) {
-	for(s=0; s < dst_orbs; s++) {
-	  rs = INDEX(r,s);
-	  pqrs = INDEX(pq,rs);
-	  energy += ab_dens2[pq][rs] * ints[pqrs];
-	}
+        for(s=0; s < dst_orbs; s++) {
+          rs = INDEX(r,s);
+          pqrs = INDEX(pq,rs);
+          energy += ab_dens2[pq][rs] * ints[pqrs];
+        }
       }
     }
   }
@@ -324,9 +326,9 @@ void transform_two_backtr_uhf(void)
       iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, outfile);
 
       for(r=0,rs=0; r < src_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens1[pq][rs] = ab_block[rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens1[pq][rs] = ab_block[rs];
+        }
       }
     }
   }
@@ -351,13 +353,13 @@ void transform_two_backtr_uhf(void)
     for(q=0; q < src_orbs; q++) {
       pq = INDEX(p,q);
       for(r=0; r < src_orbs; r++) {
-	for(s=0; s < src_orbs; s++) {
-	  rs = INDEX(r,s);
+        for(s=0; s < src_orbs; s++) {
+          rs = INDEX(r,s);
 
-	  pqrs = INDEX(pq,rs);
+          pqrs = INDEX(pq,rs);
 
-	  energy += ab_dens1[pq][rs] * ab_ints[pq][rs];
-	}
+          energy += ab_dens1[pq][rs] * ab_ints[pq][rs];
+        }
       }
     }
   }
@@ -369,21 +371,21 @@ void transform_two_backtr_uhf(void)
     for(q=0; q <= p; q++, pq++) {
 
       for(r=0,rs=0; r < src_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  A_AB[r][s] = A_AB[s][r] = ab_dens1[pq][rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          A_AB[r][s] = A_AB[s][r] = ab_dens1[pq][rs];
+        }
       }
 
       C_DGEMM('n','t', src_orbs, dst_orbs, src_orbs, 1.0, A_AB[0], A_cols,
-	      CB[0][0], src_orbs, 0.0, B[0], B_cols);
+              CB[0][0], src_orbs, 0.0, B[0], B_cols);
       zero_mat(A_AB, A_cols, A_cols);
-      C_DGEMM('n','n', dst_orbs, dst_orbs, src_orbs, 1.0, CB[0][0], src_orbs, 
-	      B[0], B_cols, 0.0, A_AB[0], A_cols);
+      C_DGEMM('n','n', dst_orbs, dst_orbs, src_orbs, 1.0, CB[0][0], src_orbs,
+              B[0], B_cols, 0.0, A_AB[0], A_cols);
 
       for(r=0, rs=0; r < dst_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens1[pq][rs] = A_AB[r][s];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens1[pq][rs] = A_AB[r][s];
+        }
       }
     }
   }
@@ -391,9 +393,9 @@ void transform_two_backtr_uhf(void)
   for(p=0, pq=0; p < src_orbs; p++) {
     for(q=0; q <= p; q++, pq++) {
       for(r=0,rs=0; r < dst_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens2[rs][pq] = ab_dens1[pq][rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens2[rs][pq] = ab_dens1[pq][rs];
+        }
       }
     }
   }
@@ -403,21 +405,21 @@ void transform_two_backtr_uhf(void)
     for(s=0; s <= r; s++,rs++) {
 
       for(p=0, pq=0; p < src_orbs; p++) {
-	for(q=0; q <= p; q++,pq++) {
-	  A_AB[p][q] = A_AB[q][p] = ab_dens2[rs][pq];
-	}
+        for(q=0; q <= p; q++,pq++) {
+          A_AB[p][q] = A_AB[q][p] = ab_dens2[rs][pq];
+        }
       }
 
       C_DGEMM('n','t',src_orbs,dst_orbs,src_orbs,1.0,A_AB[0], A_cols,
-	      CA[0][0], src_orbs, 0.0, B[0], B_cols);
+              CA[0][0], src_orbs, 0.0, B[0], B_cols);
       zero_mat(A_AB, A_cols, A_cols);
       C_DGEMM('n','n',dst_orbs,dst_orbs,src_orbs,1.0, CA[0][0], src_orbs,
-	      B[0], B_cols, 0.0, A_AB[0], A_cols);
+              B[0], B_cols, 0.0, A_AB[0], A_cols);
 
       for(p=0,pq=0; p < dst_orbs; p++) {
-	for(q=0; q <= p; q++,pq++) {
-	  ab_dens2[rs][pq] = A_AB[p][q];
-	}
+        for(q=0; q <= p; q++,pq++) {
+          ab_dens2[rs][pq] = A_AB[p][q];
+        }
       }
 
     }
@@ -437,13 +439,13 @@ void transform_two_backtr_uhf(void)
     for(q=0; q < dst_orbs; q++) {
       pq = INDEX(p,q);
       for(r=0; r < dst_orbs; r++) {
-	for(s=0; s < dst_orbs; s++) {
-	  rs = INDEX(r,s);
+        for(s=0; s < dst_orbs; s++) {
+          rs = INDEX(r,s);
 
-	  pqrs = INDEX(pq,rs);
+          pqrs = INDEX(pq,rs);
 
-	  energy += ab_dens2[pq][rs] * ints[pqrs];
-	}
+          energy += ab_dens2[pq][rs] * ints[pqrs];
+        }
       }
     }
   }
@@ -463,8 +465,8 @@ void transform_two_backtr_uhf(void)
   iwl_buf_init(&PAB_Buff, PSIF_AB_PRESORT, tolerance, 1, 1);
 
   J_block = init_array(MAX0(src_ntri,dst_ntri));
-  yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets, 
-	    first_tmp_file, tolerance, outfile);
+  yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
+            first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffJ, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffJ);
 
@@ -473,84 +475,84 @@ void transform_two_backtr_uhf(void)
     plast = src_last[psym];
     for (p=pfirst; p <= plast; p++) {
       for (qsym=0; qsym <= psym; qsym++) {
-	qfirst = src_first[qsym];
-	qlast = src_last[qsym];
-	pqsym = psym^qsym;
-	for (q=qfirst; (q<=qlast) && (q <= p); q++) {
-	  pq = ioff[p] + q;
+        qfirst = src_first[qsym];
+        qlast = src_last[qsym];
+        pqsym = psym^qsym;
+        for (q=qfirst; (q<=qlast) && (q <= p); q++) {
+          pq = ioff[p] + q;
 
-	  zero_arr(PAA_block, src_ntri);	  
-	  zero_arr(PAB_block, src_ntri);
+          zero_arr(PAA_block, src_ntri);
+          zero_arr(PAB_block, src_ntri);
 
-	  iwl_buf_rd(&PAA_Buff, pq, PAA_block, ioff, ioff, 0, 0, outfile);
-	  iwl_buf_rd(&PAB_Buff, pq, PAB_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&PAA_Buff, pq, PAA_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&PAB_Buff, pq, PAB_block, ioff, ioff, 0, 0, outfile);
 
-	  for (rsym=0; rsym < nirreps; rsym++) {
-	    rfirst = src_first[rsym];
-	    rlast = src_last[rsym];
-	    kfirst = dst_first[rsym];
-	    klast = dst_last[rsym];
-	    ssym = pqsym^rsym;
-	    if (ssym <= rsym) {
-	      sfirst = src_first[ssym];
-	      slast = src_last[ssym];
-	      lfirst = dst_first[ssym];
-	      llast = dst_last[ssym];
-	      if(ssym == rsym) {
-		for(r=rfirst,R=0; r <= rlast; r++,R++) {
-		  for(s=sfirst,S=0; (s <= slast) && (s <= r);
-		      s++,S++) {
-		    rs = INDEX(r,s);
-		    A_AA[R][S] = PAA_block[rs];
-		    A_AA[S][R] = PAA_block[rs];
-		    A_AB[R][S] = PAB_block[rs];
-		    A_AB[S][R] = PAB_block[rs];
-		  }
-		}
-	      }
-	      else {
-		for (r=rfirst,R=0; r <= rlast; r++,R++) {
-		  for (s=sfirst,S=0; s <= slast; s++,S++) {
-		    rs = INDEX(r,s);
-		    A_AA[R][S] = PAA_block[rs];
-		    A_AB[R][S] = PAB_block[rs];
-		  }
-		}
-	      }
+          for (rsym=0; rsym < nirreps; rsym++) {
+            rfirst = src_first[rsym];
+            rlast = src_last[rsym];
+            kfirst = dst_first[rsym];
+            klast = dst_last[rsym];
+            ssym = pqsym^rsym;
+            if (ssym <= rsym) {
+              sfirst = src_first[ssym];
+              slast = src_last[ssym];
+              lfirst = dst_first[ssym];
+              llast = dst_last[ssym];
+              if(ssym == rsym) {
+                for(r=rfirst,R=0; r <= rlast; r++,R++) {
+                  for(s=sfirst,S=0; (s <= slast) && (s <= r);
+                      s++,S++) {
+                    rs = INDEX(r,s);
+                    A_AA[R][S] = PAA_block[rs];
+                    A_AA[S][R] = PAA_block[rs];
+                    A_AB[R][S] = PAB_block[rs];
+                    A_AB[S][R] = PAB_block[rs];
+                  }
+                }
+              }
+              else {
+                for (r=rfirst,R=0; r <= rlast; r++,R++) {
+                  for (s=sfirst,S=0; s <= slast; s++,S++) {
+                    rs = INDEX(r,s);
+                    A_AA[R][S] = PAA_block[rs];
+                    A_AB[R][S] = PAB_block[rs];
+                  }
+                }
+              }
 
-	      /** AA half-transform for current pq **/
-	      if(C_colspi[ssym] > 0)
-		C_DGEMM('n','t',src_orbspi[rsym],dst_orbspi[ssym],src_orbspi[ssym],1.0,
-			A_AA[0], A_cols,CA[ssym][0],C_colspi[ssym],0.0,B[0],B_cols);
-	      zero_mat(A_AA, A_cols, A_cols);
-	      if(C_colspi[rsym] > 0)
-		C_DGEMM('n','n',dst_orbspi[rsym],dst_orbspi[ssym],src_orbspi[rsym],1.0,
-			CA[rsym][0],C_colspi[rsym],B[0],B_cols,0.0,A_AA[0],A_cols);
+              /** AA half-transform for current pq **/
+              if(C_colspi[ssym] > 0)
+                C_DGEMM('n','t',src_orbspi[rsym],dst_orbspi[ssym],src_orbspi[ssym],1.0,
+                        A_AA[0], A_cols,CA[ssym][0],C_colspi[ssym],0.0,B[0],B_cols);
+              zero_mat(A_AA, A_cols, A_cols);
+              if(C_colspi[rsym] > 0)
+                C_DGEMM('n','n',dst_orbspi[rsym],dst_orbspi[ssym],src_orbspi[rsym],1.0,
+                        CA[rsym][0],C_colspi[rsym],B[0],B_cols,0.0,A_AA[0],A_cols);
 
-	      /** AB half-transform for current pq **/
-	      if(C_colspi[ssym] > 0)
-		C_DGEMM('n','t',src_orbspi[rsym],dst_orbspi[ssym],src_orbspi[ssym],1.0,
-			A_AB[0], A_cols,CB[ssym][0],C_colspi[ssym],0.0,B[0],B_cols);
-	      zero_mat(A_AB, A_cols, A_cols);
-	      if(C_colspi[rsym] > 0)
-		C_DGEMM('n','n',dst_orbspi[rsym],dst_orbspi[ssym],src_orbspi[rsym],1.0,
-			CB[rsym][0],C_colspi[rsym],B[0],B_cols,0.0,A_AB[0],A_cols);
+              /** AB half-transform for current pq **/
+              if(C_colspi[ssym] > 0)
+                C_DGEMM('n','t',src_orbspi[rsym],dst_orbspi[ssym],src_orbspi[ssym],1.0,
+                        A_AB[0], A_cols,CB[ssym][0],C_colspi[ssym],0.0,B[0],B_cols);
+              zero_mat(A_AB, A_cols, A_cols);
+              if(C_colspi[rsym] > 0)
+                C_DGEMM('n','n',dst_orbspi[rsym],dst_orbspi[ssym],src_orbspi[rsym],1.0,
+                        CB[rsym][0],C_colspi[rsym],B[0],B_cols,0.0,A_AB[0],A_cols);
 
-	      /* collect the results and sum AA and AB contributions into J_block */
-	      zero_arr(J_block, dst_ntri);
-	      for(k=kfirst,K=0; k <= klast; k++,K++) {
-		for (l=lfirst,L=0; (l <= llast) && (l <= k); l++,L++) {
-		  kl = ioff[k] + l;
-		  J_block[kl] = A_AA[K][L] + A_AB[K][L];
-		}
-	      }
+              /* collect the results and sum AA and AB contributions into J_block */
+              zero_arr(J_block, dst_ntri);
+              for(k=kfirst,K=0; k <= klast; k++,K++) {
+                for (l=lfirst,L=0; (l <= llast) && (l <= k); l++,L++) {
+                  kl = ioff[k] + l;
+                  J_block[kl] = A_AA[K][L] + A_AB[K][L];
+                }
+              }
 
-	      yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
-			   moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, outfile);
+              yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
+                           moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, outfile);
 
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
   }
@@ -579,7 +581,7 @@ void transform_two_backtr_uhf(void)
   }
 
   yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
-	    first_tmp_file, tolerance, outfile);
+            first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffP, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffP);
   yosh_rdtwo_backtr_uhf(BB, &YBuffP, PSIF_MO_BB_TPDM, ioff, 1, 1, 1, 0, outfile);
@@ -603,9 +605,9 @@ void transform_two_backtr_uhf(void)
       iwl_buf_rd(&JBuff, pq, ab_block, ioff, ioff, 0, 0, outfile);
 
       for(r=0,rs=0; r < src_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens1[pq][rs] = ab_block[rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens1[pq][rs] = ab_block[rs];
+        }
       }
     }
   }
@@ -630,13 +632,13 @@ void transform_two_backtr_uhf(void)
     for(q=0; q < src_orbs; q++) {
       pq = INDEX(p,q);
       for(r=0; r < src_orbs; r++) {
-	for(s=0; s < src_orbs; s++) {
-	  rs = INDEX(r,s);
+        for(s=0; s < src_orbs; s++) {
+          rs = INDEX(r,s);
 
-	  pqrs = INDEX(pq,rs);
+          pqrs = INDEX(pq,rs);
 
-	  energy += ab_dens1[pq][rs] * ints[pqrs];
-	}
+          energy += ab_dens1[pq][rs] * ints[pqrs];
+        }
       }
     }
   }
@@ -648,22 +650,22 @@ void transform_two_backtr_uhf(void)
     for(q=0; q <= p; q++, pq++) {
 
       for(r=0,rs=0; r < src_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  A_AB[r][s] = A_AB[s][r] = ab_dens1[pq][rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          A_AB[r][s] = A_AB[s][r] = ab_dens1[pq][rs];
+        }
       }
 
       C_DGEMM('n','t', src_orbs, dst_orbs, src_orbs, 1.0, A_AB[0], A_cols,
-	      CB[0][0], src_orbs, 0.0, B[0], B_cols);
+              CB[0][0], src_orbs, 0.0, B[0], B_cols);
       zero_mat(A_AB, A_cols, A_cols);
       C_DGEMM('n','n', dst_orbs, dst_orbs, src_orbs, 1.0, CB[0][0], src_orbs,
-	      B[0], B_cols, 0.0, A_AB[0], A_cols);
+              B[0], B_cols, 0.0, A_AB[0], A_cols);
 
       for(r=0, rs=0; r < dst_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens1[pq][rs] = A_AB[r][s];
-	  BB_norm += A_AB[r][s] * A_AB[r][s];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens1[pq][rs] = A_AB[r][s];
+          BB_norm += A_AB[r][s] * A_AB[r][s];
+        }
       }
     }
   }
@@ -674,9 +676,9 @@ void transform_two_backtr_uhf(void)
   for(p=0, pq=0; p < src_orbs; p++) {
     for(q=0; q <= p; q++, pq++) {
       for(r=0,rs=0; r < dst_orbs; r++) {
-	for(s=0; s <= r; s++,rs++) {
-	  ab_dens2[rs][pq] = ab_dens1[pq][rs];
-	}
+        for(s=0; s <= r; s++,rs++) {
+          ab_dens2[rs][pq] = ab_dens1[pq][rs];
+        }
       }
     }
   }
@@ -686,22 +688,22 @@ void transform_two_backtr_uhf(void)
     for(s=0; s <= r; s++,rs++) {
 
       for(p=0, pq=0; p < src_orbs; p++) {
-	for(q=0; q <= p; q++,pq++) {
-	  A_AB[p][q] = A_AB[q][p] = ab_dens2[rs][pq];
-	}
+        for(q=0; q <= p; q++,pq++) {
+          A_AB[p][q] = A_AB[q][p] = ab_dens2[rs][pq];
+        }
       }
 
       C_DGEMM('n','t',src_orbs,dst_orbs,src_orbs,1.0,A_AB[0], A_cols,
-	      CB[0][0], src_orbs, 0.0, B[0], B_cols);
+              CB[0][0], src_orbs, 0.0, B[0], B_cols);
       zero_mat(A_AB, A_cols, A_cols);
       C_DGEMM('n','n',dst_orbs,dst_orbs,src_orbs,1.0, CB[0][0], src_orbs,
-	      B[0], B_cols, 0.0, A_AB[0], A_cols);
+              B[0], B_cols, 0.0, A_AB[0], A_cols);
 
       for(p=0,pq=0; p < dst_orbs; p++) {
-	for(q=0; q <= p; q++,pq++) {
-	  ab_dens2[rs][pq] = A_AB[p][q];
-	  BB_norm += A_AB[p][q] * A_AB[p][q];
-	}
+        for(q=0; q <= p; q++,pq++) {
+          ab_dens2[rs][pq] = A_AB[p][q];
+          BB_norm += A_AB[p][q] * A_AB[p][q];
+        }
       }
 
     }
@@ -724,13 +726,13 @@ void transform_two_backtr_uhf(void)
     for(q=0; q < dst_orbs; q++) {
       pq = INDEX(p,q);
       for(r=0; r < dst_orbs; r++) {
-	for(s=0; s < dst_orbs; s++) {
-	  rs = INDEX(r,s);
+        for(s=0; s < dst_orbs; s++) {
+          rs = INDEX(r,s);
 
-	  pqrs = INDEX(pq,rs);
+          pqrs = INDEX(pq,rs);
 
-	  energy += ab_dens2[pq][rs] * ints[pqrs];
-	}
+          energy += ab_dens2[pq][rs] * ints[pqrs];
+        }
       }
     }
   }
@@ -740,7 +742,7 @@ void transform_two_backtr_uhf(void)
   free_block(ab_dens1);
   free_block(ab_dens2);
   */
-  
+
   /** BB First-half transformation **/
   fprintf(outfile, "\n\tBeginning BB twopdm transform...\n");
 
@@ -748,8 +750,8 @@ void transform_two_backtr_uhf(void)
   iwl_buf_init(&PBB_Buff, PSIF_BB_PRESORT, tolerance, 1, 1);
 
   J_block = init_array(MAX0(src_ntri,dst_ntri));
-  yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets, 
-	    first_tmp_file, tolerance, outfile);
+  yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
+            first_tmp_file, tolerance, outfile);
   if(print_lvl > 1) { yosh_print(&YBuffJ, outfile); fflush(outfile); }
   yosh_init_buckets(&YBuffJ);
 
@@ -758,70 +760,70 @@ void transform_two_backtr_uhf(void)
     plast = src_last[psym];
     for (p=pfirst; p <= plast; p++) {
       for (qsym=0; qsym <= psym; qsym++) {
-	qfirst = src_first[qsym];
-	qlast = src_last[qsym];
-	pqsym = psym^qsym;
-	for (q=qfirst; (q<=qlast) && (q <= p); q++) {
-	  pq = ioff[p] + q;
+        qfirst = src_first[qsym];
+        qlast = src_last[qsym];
+        pqsym = psym^qsym;
+        for (q=qfirst; (q<=qlast) && (q <= p); q++) {
+          pq = ioff[p] + q;
 
-	  zero_arr(PBB_block, src_ntri);	  
+          zero_arr(PBB_block, src_ntri);
 
-	  iwl_buf_rd(&PBB_Buff, pq, PBB_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&PBB_Buff, pq, PBB_block, ioff, ioff, 0, 0, outfile);
 
-	  for (rsym=0; rsym < nirreps; rsym++) {
-	    rfirst = src_first[rsym];
-	    rlast = src_last[rsym];
-	    kfirst = dst_first[rsym];
-	    klast = dst_last[rsym];
-	    ssym = pqsym^rsym;
-	    if (ssym <= rsym) {
-	      sfirst = src_first[ssym];
-	      slast = src_last[ssym];
-	      lfirst = dst_first[ssym];
-	      llast = dst_last[ssym];
-	      if(ssym == rsym) {
-		for(r=rfirst,R=0; r <= rlast; r++,R++) {
-		  for(s=sfirst,S=0; (s <= slast) && (s <= r);
-		      s++,S++) {
-		    rs = INDEX(r,s);
-		    A_BB[R][S] = PBB_block[rs];
-		    A_BB[S][R] = PBB_block[rs];
-		  }
-		}
-	      }
-	      else {
-		for (r=rfirst,R=0; r <= rlast; r++,R++) {
-		  for (s=sfirst,S=0; s <= slast; s++,S++) {
-		    rs = INDEX(r,s);
-		    A_BB[R][S] = PBB_block[rs];
-		  }
-		}
-	      }
+          for (rsym=0; rsym < nirreps; rsym++) {
+            rfirst = src_first[rsym];
+            rlast = src_last[rsym];
+            kfirst = dst_first[rsym];
+            klast = dst_last[rsym];
+            ssym = pqsym^rsym;
+            if (ssym <= rsym) {
+              sfirst = src_first[ssym];
+              slast = src_last[ssym];
+              lfirst = dst_first[ssym];
+              llast = dst_last[ssym];
+              if(ssym == rsym) {
+                for(r=rfirst,R=0; r <= rlast; r++,R++) {
+                  for(s=sfirst,S=0; (s <= slast) && (s <= r);
+                      s++,S++) {
+                    rs = INDEX(r,s);
+                    A_BB[R][S] = PBB_block[rs];
+                    A_BB[S][R] = PBB_block[rs];
+                  }
+                }
+              }
+              else {
+                for (r=rfirst,R=0; r <= rlast; r++,R++) {
+                  for (s=sfirst,S=0; s <= slast; s++,S++) {
+                    rs = INDEX(r,s);
+                    A_BB[R][S] = PBB_block[rs];
+                  }
+                }
+              }
 
-	      /** BB half-transform for current pq **/
-	      if(C_colspi[ssym] > 0)
-		C_DGEMM('n','t',src_orbspi[rsym],dst_orbspi[ssym],src_orbspi[ssym],1.0,
-			A_BB[0], A_cols,CB[ssym][0],C_colspi[ssym],0.0,B[0],B_cols);
-	      zero_mat(A_BB, A_cols, A_cols);
-	      if(C_colspi[rsym] > 0)
-		C_DGEMM('n','n',dst_orbspi[rsym],dst_orbspi[ssym],src_orbspi[rsym],1.0,
-			CB[rsym][0],C_colspi[rsym],B[0],B_cols,0.0,A_BB[0],A_cols);
+              /** BB half-transform for current pq **/
+              if(C_colspi[ssym] > 0)
+                C_DGEMM('n','t',src_orbspi[rsym],dst_orbspi[ssym],src_orbspi[ssym],1.0,
+                        A_BB[0], A_cols,CB[ssym][0],C_colspi[ssym],0.0,B[0],B_cols);
+              zero_mat(A_BB, A_cols, A_cols);
+              if(C_colspi[rsym] > 0)
+                C_DGEMM('n','n',dst_orbspi[rsym],dst_orbspi[ssym],src_orbspi[rsym],1.0,
+                        CB[rsym][0],C_colspi[rsym],B[0],B_cols,0.0,A_BB[0],A_cols);
 
-	      /* collect the results J_block */
-	      zero_arr(J_block, dst_ntri);
-	      for(k=kfirst,K=0; k <= klast; k++,K++) {
-		for (l=lfirst,L=0; (l <= llast) && (l <= k); l++,L++) {
-		  kl = ioff[k] + l;
-		  J_block[kl] = A_BB[K][L];
-		}
-	      }
+              /* collect the results J_block */
+              zero_arr(J_block, dst_ntri);
+              for(k=kfirst,K=0; k <= klast; k++,K++) {
+                for (l=lfirst,L=0; (l <= llast) && (l <= k); l++,L++) {
+                  kl = ioff[k] + l;
+                  J_block[kl] = A_BB[K][L];
+                }
+              }
 
-	      yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
-			   moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, outfile);
+              yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
+                           moinfo.nao, ioff, dst_orbsym, dst_first, dst_last, 1, 0, outfile);
 
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
   }
@@ -867,71 +869,71 @@ void transform_two_backtr_uhf(void)
     klast = dst_last[ksym];
     for (k=kfirst; k <= klast; k++) {
       for (lsym=0; lsym <= ksym; lsym++) {
-	lfirst = dst_first[lsym];
-	llast = dst_last[lsym];
-	klsym = ksym^lsym;
-	for (l=lfirst; (l <= llast) && (l <= k); l++) {
-	  kl = ioff[k] + l;
+        lfirst = dst_first[lsym];
+        llast = dst_last[lsym];
+        klsym = ksym^lsym;
+        for (l=lfirst; (l <= llast) && (l <= k); l++) {
+          kl = ioff[k] + l;
 
-	  zero_arr(JA_block, dst_ntri);
-	  zero_arr(JB_block, dst_ntri);
-	  iwl_buf_rd(&JA_Buff, kl, JA_block, ioff, ioff, 0, 0, outfile);
-	  iwl_buf_rd(&JB_Buff, kl, JB_block, ioff, ioff, 0, 0, outfile);
-                  
-	  for (psym=0; psym < nirreps; psym++) {
-	    pfirst = src_first[psym];
-	    plast = src_last[psym];
-	    ifirst = dst_first[psym];
-	    ilast = dst_last[psym];
-	    qsym = klsym^psym;
-	    if (qsym <= psym) {
-	      qfirst = src_first[qsym];
-	      qlast = src_last[qsym];
-	      jfirst = dst_first[qsym];
-	      jlast = dst_last[qsym];
-	      for (p=pfirst,P=0; p <= plast; p++,P++) {
-		for (q=qfirst,Q=0; q <= qlast; q++,Q++) {
-		  pq = INDEX(p,q);
-		  A_AA[P][Q] = JA_block[pq];
-		  A_BB[P][Q] = JB_block[pq];
-		}
-	      }
+          zero_arr(JA_block, dst_ntri);
+          zero_arr(JB_block, dst_ntri);
+          iwl_buf_rd(&JA_Buff, kl, JA_block, ioff, ioff, 0, 0, outfile);
+          iwl_buf_rd(&JB_Buff, kl, JB_block, ioff, ioff, 0, 0, outfile);
 
-	      /** AA/AB second-half-transform for current pq **/
-              if (C_colspi[qsym] > 0) 
-                C_DGEMM('n', 't', src_orbspi[psym],dst_orbspi[qsym], src_orbspi[qsym], 1.0, 
+          for (psym=0; psym < nirreps; psym++) {
+            pfirst = src_first[psym];
+            plast = src_last[psym];
+            ifirst = dst_first[psym];
+            ilast = dst_last[psym];
+            qsym = klsym^psym;
+            if (qsym <= psym) {
+              qfirst = src_first[qsym];
+              qlast = src_last[qsym];
+              jfirst = dst_first[qsym];
+              jlast = dst_last[qsym];
+              for (p=pfirst,P=0; p <= plast; p++,P++) {
+                for (q=qfirst,Q=0; q <= qlast; q++,Q++) {
+                  pq = INDEX(p,q);
+                  A_AA[P][Q] = JA_block[pq];
+                  A_BB[P][Q] = JB_block[pq];
+                }
+              }
+
+              /** AA/AB second-half-transform for current pq **/
+              if (C_colspi[qsym] > 0)
+                C_DGEMM('n', 't', src_orbspi[psym],dst_orbspi[qsym], src_orbspi[qsym], 1.0,
                         A_AA[0], A_cols, CA[qsym][0], C_colspi[qsym], 0.0, B[0], B_cols);
-	      zero_mat(A_AA, A_cols, A_cols);
-              if (C_colspi[psym] > 0) 
+              zero_mat(A_AA, A_cols, A_cols);
+              if (C_colspi[psym] > 0)
                 C_DGEMM('n', 'n', dst_orbspi[psym], dst_orbspi[qsym], src_orbspi[psym], 1.0,
                         CA[psym][0], C_colspi[psym], B[0], B_cols, 0.0, A_AA[0], A_cols);
 
-	      /** BB second-half-transform for current pq **/ 
-	      if (C_colspi[qsym] > 0) 
-                C_DGEMM('n', 't', src_orbspi[psym],dst_orbspi[qsym], src_orbspi[qsym], 1.0, 
+              /** BB second-half-transform for current pq **/
+              if (C_colspi[qsym] > 0)
+                C_DGEMM('n', 't', src_orbspi[psym],dst_orbspi[qsym], src_orbspi[qsym], 1.0,
                         A_BB[0], A_cols, CB[qsym][0], C_colspi[qsym], 0.0, B[0], B_cols);
-	      zero_mat(A_BB, A_cols, A_cols);
-              if (C_colspi[psym] > 0) 
+              zero_mat(A_BB, A_cols, A_cols);
+              if (C_colspi[psym] > 0)
                 C_DGEMM('n', 'n', dst_orbspi[psym], dst_orbspi[qsym], src_orbspi[psym], 1.0,
                         CB[psym][0], C_colspi[psym], B[0], B_cols, 0.0, A_BB[0], A_cols);
 
-	      /** combine AA/AB and BB transformed twopdm's for final sort **/
-	      for (i=ifirst,I=0; i <= ilast; i++,I++) {
-		for (j=jfirst,J=0; j <= jlast; j++,J++) {
-		  A_AA[I][J] += A_BB[I][J];
-		}
-	      }
+              /** combine AA/AB and BB transformed twopdm's for final sort **/
+              for (i=ifirst,I=0; i <= ilast; i++,I++) {
+                for (j=jfirst,J=0; j <= jlast; j++,J++) {
+                  A_AA[I][J] += A_BB[I][J];
+                }
+              }
 
-	      /*
-	      iwl_buf_wrt_mat2(&MBuff, k, l, A_AA, ifirst, ilast, jfirst, jlast, reorder, 0, 0, 
-			       ioff, outfile);
-	      */
+              /*
+              iwl_buf_wrt_mat2(&MBuff, k, l, A_AA, ifirst, ilast, jfirst, jlast, reorder, 0, 0,
+                               ioff, outfile);
+              */
 
-	      backsort_write(k, l, A_AA, ifirst, ilast, jfirst, jlast, 0, outfile, twopdm_out, 1);
+              backsort_write(k, l, A_AA, ifirst, ilast, jfirst, jlast, 0, outfile, twopdm_out, 1);
 
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
   }
@@ -987,11 +989,11 @@ void transform_two_backtr_uhf(void)
     for(q=0; q < dst_orbs; q++) {
       pq = INDEX(p,q);
       for(r=0; r < dst_orbs; r++) {
-	for(s=0; s < dst_orbs; s++) {
-	  rs = INDEX(r,s);
-	  pqrs = INDEX(pq,rs);
-	  energy += dens[pq][rs] * ints[pqrs];
-	}
+        for(s=0; s < dst_orbs; s++) {
+          rs = INDEX(r,s);
+          pqrs = INDEX(pq,rs);
+          energy += dens[pq][rs] * ints[pqrs];
+        }
       }
     }
   }

@@ -1,13 +1,14 @@
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <ccfiles.h>
-#include <psi4-dec.h>
 #include <libpsio/psio.h>
 #include <libciomr/libciomr.h>
 
-namespace psi { namespace ccsort {
+namespace psi {
+extern FILE* outfile;
+namespace ccsort {
 
 /* Global variables */
 #ifdef EXTERN
