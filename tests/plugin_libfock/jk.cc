@@ -1,6 +1,7 @@
 #include <libmints/mints.h>
 #include <lib3index/3index.h>
 #include <libpsio/psio.hpp>
+#include <libpsio/aiohandler.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include <psi4-dec.h>
