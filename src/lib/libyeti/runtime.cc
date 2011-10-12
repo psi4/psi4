@@ -149,7 +149,7 @@ YetiRuntime::init_system_environment()
     }
     else
     {
-        memory_ = 1e8;
+        memory_ = 1e9;
     }
 
     amount_mem_allocated_ = 0;
