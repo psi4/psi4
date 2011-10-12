@@ -16,6 +16,7 @@ class tuple;
 
 namespace psi {
 
+class Dimension;
 class Matrix;
 
 /*! \ingroup MINTS */
@@ -51,13 +52,17 @@ public:
     Vector(const std::string& name, int nirrep, int *dimpi);
     /// Constructor, convenience for 1 irrep
     Vector(const std::string& name, int dim);
+    /// Constructor, takes Dimension object
+    Vector(const Dimension& dimpi);
+    /// Constructor, takes Dimension object
+    Vector(const std::string& name, const Dimension& dimpi);
 
     /// Destructor, frees memory
     ~Vector();
 
     void init(int nirrep, int *dimpi);
     void init(int nirrep, const int *dimpi, const std::string& name = "");
-
+    void init(const Dimension& v);
 
     Vector* clone();
 

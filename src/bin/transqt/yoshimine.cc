@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 /*
 ** YOSHIMINE.C: Functions for the Yoshimine Sort Object
@@ -50,7 +50,7 @@ extern struct MOInfo moinfo;
 **    max_buckets    =  the max number of buckets to use (may be limited due
 **                      to the fact that each bucket requires a consecutively
 **                      numbered binary temp file).
-**    first_tmp_file =  the number of the first tmp file used in the 
+**    first_tmp_file =  the number of the first tmp file used in the
 **                      Yoshimine sort (e.g. 80 for file80).
 **    cutoff         =  minimum value to be kept for any value during the sort
 **    outfile        =  the text output file
@@ -60,7 +60,7 @@ extern struct MOInfo moinfo;
 ** Note:  bra_indices and ket_indices replace nbstri in an attempt to somewhat
 ** generalize the sort for four-index quantities which index pairs may or
 ** may not be canonicalizable, e.g. integrals of (ov|ov) type, as may be
-** found in MP2 energy calculations...the first and second (or third and 
+** found in MP2 energy calculations...the first and second (or third and
 ** fourth) indices are not necessarily interchangeable.  Additionally,
 ** this modification has the added benefit that it will work when the
 ** number of left and right basis functions are not equal (e.g., when
@@ -70,11 +70,11 @@ extern struct MOInfo moinfo;
 void yosh_init(struct yoshimine *YBuff, unsigned bra_indices,
                unsigned ket_indices, long maxcor,
                long maxcord, const int max_buckets,
-               unsigned int first_tmp_file, 
+               unsigned int first_tmp_file,
                double cutoff, FILE *outfile)
 {
    unsigned long long int twoel_array_size;              /*--- Although on 32-bit systems one can only allocate 2GB arrays
-							   in 1 process space, one can store much bigger integrals files on disk ---*/
+                                                           in 1 process space, one can store much bigger integrals files on disk ---*/
    unsigned int nbuckets;
    int i, j, pq;
    unsigned long int bytes_per_bucket, free_bytes_per_bucket;
@@ -103,26 +103,26 @@ void yosh_init(struct yoshimine *YBuff, unsigned bra_indices,
    if (nbuckets == 1) {
       bytes_per_bucket = ((unsigned long int) (4*sizeof(int) + sizeof(double))) *
        ((unsigned long int) twoel_array_size) + (unsigned long int) (sizeof(struct iwlbuf)
-       + IWL_INTS_PER_BUF * (4*sizeof(Label) + sizeof(Value))); 
+       + IWL_INTS_PER_BUF * (4*sizeof(Label) + sizeof(Value)));
     if (bytes_per_bucket > (unsigned long int) (maxcor/nbuckets))
       bytes_per_bucket = (unsigned long int) (maxcor / nbuckets);
    }
    else
       bytes_per_bucket = (unsigned long int) (maxcor / nbuckets);
 
-   free_bytes_per_bucket = bytes_per_bucket - 
+   free_bytes_per_bucket = bytes_per_bucket -
      (unsigned long int) (sizeof(struct iwlbuf) + IWL_INTS_PER_BUF * (4*sizeof(Label) + sizeof(Value)));
    YBuff->bucketsize = free_bytes_per_bucket / (4 * sizeof(int) +
-      sizeof(double)); 
+      sizeof(double));
    YBuff->buckets = (struct bucket *) malloc(nbuckets * sizeof(struct bucket));
    YBuff->bucket_for_pq = (int *) malloc (bra_indices * sizeof(int));
    for (i=0,pq=0; i<nbuckets; i++) {
       if (i != (nbuckets - 1)) {
-         for (j=0; j<YBuff->pq_per_bucket; j++) 
+         for (j=0; j<YBuff->pq_per_bucket; j++)
             YBuff->bucket_for_pq[pq++] = i;
             }
       else for (pq=pq; pq<bra_indices; pq++) YBuff->bucket_for_pq[pq] = i;
-      } 
+      }
 
    for (i=0,j=0; i<(nbuckets-1); i++) {
       YBuff->buckets[i].in_bucket = 0;
@@ -155,7 +155,7 @@ void yosh_done(struct yoshimine *YBuff)
 void yosh_init_buckets(struct yoshimine *YBuff)
 {
   int i;
-  
+
    for (i=0; i<(YBuff->nbuckets); i++) {
       YBuff->buckets[i].p = init_int_array(YBuff->bucketsize);
       YBuff->buckets[i].q = init_int_array(YBuff->bucketsize);
@@ -163,7 +163,7 @@ void yosh_init_buckets(struct yoshimine *YBuff)
       YBuff->buckets[i].s = init_int_array(YBuff->bucketsize);
       YBuff->buckets[i].val = init_array(YBuff->bucketsize);
       iwl_buf_init(&(YBuff->buckets[i].IWLBuf),YBuff->first_tmp_file+i,
-		   YBuff->cutoff,0, 0);
+                   YBuff->cutoff,0, 0);
       }
 }
 
@@ -171,12 +171,12 @@ void yosh_init_buckets(struct yoshimine *YBuff)
 ** YOSH_PRINT(): Print out the Yoshimine structure
 **
 */
-void yosh_print(struct yoshimine *YBuff, FILE *outfile) 
+void yosh_print(struct yoshimine *YBuff, FILE *outfile)
 {
    fprintf(outfile, " Yoshimine structure:\n");
    fprintf(outfile, "\tbra_indices  = %10d\n", YBuff->bra_indices);
    fprintf(outfile, "\tket_indices  = %10d\n", YBuff->ket_indices);
-   fprintf(outfile, "\tbin size   = %10d\n", YBuff->bucketsize) ;
+   fprintf(outfile, "\tbin size   = %10lu\n", YBuff->bucketsize) ;
    fprintf(outfile, "\tbins       = %10d\n", YBuff->nbuckets) ;
    fprintf(outfile, "\tcore loads = %10d\n", YBuff->core_loads) ;
    fprintf(outfile, "\tpq/bin     = %10d\n", YBuff->pq_per_bucket) ;
@@ -217,7 +217,7 @@ void yosh_close_buckets(struct yoshimine *YBuff, int erase)
 **    file33 (in IWL format) and prepare them for Yoshimine sorting.
 **
 ** Adapted from Ed Seidl's CSCF rdtwo.c routine
-** David Sherrill 
+** David Sherrill
 ** Center for Computational Quantum Chemistry, UGA
 **
 ** Created 1993
@@ -242,7 +242,7 @@ void yosh_close_buckets(struct yoshimine *YBuff, int erase)
 void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num_so,
       int nirreps, int *ioff, int elbert, int fzcflag, double *P, double *Hc,
       int matrix, int printflag, FILE *outfile)
-{ 
+{
   int ilsti, nbuf;
   int i, ij, kl, ijkl;
   int ior, ism, jor, jsm;
@@ -288,7 +288,7 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
       labs = ERIIN.labels[fi+3];
       value = ERIIN.values[i];
       fi += 4;
-	 
+
       /* calculate ijkl lexical index */
       ij = ioff[iabs] + jabs;
       kl = ioff[kabs] + labs;
@@ -296,135 +296,135 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
 
       /* newly added March 1995: construct the frozen core operator */
       if (fzcflag) {
-	a = al[0] = iabs;
-	b = bl[0] = jabs;
-	c = cl[0] = kabs;
-	d = dl[0] = labs;
-	ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	Hc[cd] += 2.0 * P[ab] * value;
-	if (b >= c) Hc[bc] -= P[ad] * value;
+        a = al[0] = iabs;
+        b = bl[0] = jabs;
+        c = cl[0] = kabs;
+        d = dl[0] = labs;
+        ab = ioff[MAX0(a,b)] + MIN0(a,b);
+        cd = ioff[MAX0(c,d)] + MIN0(c,d);
+        bc = ioff[MAX0(b,c)] + MIN0(b,c);
+        ad = ioff[MAX0(a,d)] + MIN0(a,d);
+        Hc[cd] += 2.0 * P[ab] * value;
+        if (b >= c) Hc[bc] -= P[ad] * value;
 
-	a = al[1] = jabs;
-	b = bl[1] = iabs;
-	c = cl[1] = kabs;
-	d = dl[1] = labs;
-	if (!(a == al[0] && b == bl[0] && c == cl[0] && d == dl[0])) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	} 
+        a = al[1] = jabs;
+        b = bl[1] = iabs;
+        c = cl[1] = kabs;
+        d = dl[1] = labs;
+        if (!(a == al[0] && b == bl[0] && c == cl[0] && d == dl[0])) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
 
-	a = al[2] = iabs;
-	b = bl[2] = jabs;
-	c = cl[2] = labs;
-	d = dl[2] = kabs;
-	for (dum=0, found=0; dum < 2 && !found; dum++) {
-	  if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	}
+        a = al[2] = iabs;
+        b = bl[2] = jabs;
+        c = cl[2] = labs;
+        d = dl[2] = kabs;
+        for (dum=0, found=0; dum < 2 && !found; dum++) {
+          if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
 
-	a = al[3] = jabs;
-	b = bl[3] = iabs;
-	c = cl[3] = labs;
-	d = dl[3] = kabs;
-	for (dum=0, found=0; dum < 3 && !found; dum++) {
-	  if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	}
+        a = al[3] = jabs;
+        b = bl[3] = iabs;
+        c = cl[3] = labs;
+        d = dl[3] = kabs;
+        for (dum=0, found=0; dum < 3 && !found; dum++) {
+          if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
 
-	a = al[4] = kabs;
-	b = bl[4] = labs;
-	c = cl[4] = iabs;
-	d = dl[4] = jabs;
-	for (dum=0, found=0; dum < 4 && !found; dum++) {
-	  if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	}
+        a = al[4] = kabs;
+        b = bl[4] = labs;
+        c = cl[4] = iabs;
+        d = dl[4] = jabs;
+        for (dum=0, found=0; dum < 4 && !found; dum++) {
+          if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
 
-	a = al[5] = kabs;
-	b = bl[5] = labs;
-	c = cl[5] = jabs;
-	d = dl[5] = iabs;
-	for (dum=0, found=0; dum < 5 && !found; dum++) {
-	  if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	}
+        a = al[5] = kabs;
+        b = bl[5] = labs;
+        c = cl[5] = jabs;
+        d = dl[5] = iabs;
+        for (dum=0, found=0; dum < 5 && !found; dum++) {
+          if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
 
-	a = al[6] = labs;
-	b = bl[6] = kabs;
-	c = cl[6] = iabs;
-	d = dl[6] = jabs;
-	for (dum=0, found=0; dum < 6 && !found; dum++) {
-	  if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	}
+        a = al[6] = labs;
+        b = bl[6] = kabs;
+        c = cl[6] = iabs;
+        d = dl[6] = jabs;
+        for (dum=0, found=0; dum < 6 && !found; dum++) {
+          if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
 
-	a = al[7] = labs;
-	b = bl[7] = kabs;
-	c = cl[7] = jabs;
-	d = dl[7] = iabs;
-	for (dum=0, found=0; dum < 7 && !found; dum++) {
-	  if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
-	  if (b >= c) Hc[bc] -= P[ad] * value;
-	}
+        a = al[7] = labs;
+        b = bl[7] = kabs;
+        c = cl[7] = jabs;
+        d = dl[7] = iabs;
+        for (dum=0, found=0; dum < 7 && !found; dum++) {
+          if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) Hc[cd] += 2.0 * P[ab] * value;
+          if (b >= c) Hc[bc] -= P[ad] * value;
+        }
       } /* end construction of frozen core operator */
 
-      /* figure out what bucket to put it in, and do so 
+      /* figure out what bucket to put it in, and do so
        *
-       * Elbert wants us to sort by the lower index (kl) 
-       * i.e. for us, ij > kl (guaranteed in 33), but for them kl > ij 
+       * Elbert wants us to sort by the lower index (kl)
+       * i.e. for us, ij > kl (guaranteed in 33), but for them kl > ij
        *
        */
 
-      if (elbert) whichbucket = YBuff->bucket_for_pq[kl] ; 
+      if (elbert) whichbucket = YBuff->bucket_for_pq[kl] ;
       else whichbucket = YBuff->bucket_for_pq[ij] ;
 
       bptr = YBuff->buckets+whichbucket ;
@@ -432,43 +432,43 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
 
       /* switch things around here for Elbert (k->p, l->q, i->r, j->s) */
       if (elbert) {
-	bptr->p[tmpi] = kabs;
-	bptr->q[tmpi] = labs;
-	bptr->r[tmpi] = iabs;
-	bptr->s[tmpi] = jabs;
+        bptr->p[tmpi] = kabs;
+        bptr->q[tmpi] = labs;
+        bptr->r[tmpi] = iabs;
+        bptr->s[tmpi] = jabs;
       }
       else {
-	bptr->p[tmpi] = iabs;
-	bptr->q[tmpi] = jabs;
-	bptr->r[tmpi] = kabs;
-	bptr->s[tmpi] = labs;
+        bptr->p[tmpi] = iabs;
+        bptr->q[tmpi] = jabs;
+        bptr->r[tmpi] = kabs;
+        bptr->s[tmpi] = labs;
       }
 
       bptr->val[tmpi] = value;
 
       if (printflag)
-	fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n", 
-		iabs, jabs, kabs, labs, ijkl, value) ;
+        fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+                iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
-	flush_bucket(bptr, 0);
-	bptr->in_bucket = 0;
+        flush_bucket(bptr, 0);
+        bptr->in_bucket = 0;
       }
 
       if(matrix && ij != kl) {
-	whichbucket = YBuff->bucket_for_pq[kl] ;
-	bptr = YBuff->buckets+whichbucket ;
-	tmpi = (bptr->in_bucket)++; 
-	bptr->p[tmpi] = kabs;
-	bptr->q[tmpi] = labs;
-	bptr->r[tmpi] = iabs;
-	bptr->s[tmpi] = jabs;
-	bptr->val[tmpi] = value;
-	if ((tmpi+1) == YBuff->bucketsize) {
-	  flush_bucket(bptr, 0);
-	  bptr->in_bucket = 0;
-	}
+        whichbucket = YBuff->bucket_for_pq[kl] ;
+        bptr = YBuff->buckets+whichbucket ;
+        tmpi = (bptr->in_bucket)++;
+        bptr->p[tmpi] = kabs;
+        bptr->q[tmpi] = labs;
+        bptr->r[tmpi] = iabs;
+        bptr->s[tmpi] = jabs;
+        bptr->val[tmpi] = value;
+        if ((tmpi+1) == YBuff->bucketsize) {
+          flush_bucket(bptr, 0);
+          bptr->in_bucket = 0;
+        }
       }
-         
+
     }
     if (!ilsti)
       iwl_buf_fetch(&ERIIN);
@@ -484,9 +484,9 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
    * This should not actually cause a problem, the way the iwl buf reads
    * currently work.  Make sure to be careful if rewriting iwl routines!
    */
-  for (i=0; i<YBuff->nbuckets; i++) { 
+  for (i=0; i<YBuff->nbuckets; i++) {
     flush_bucket((YBuff->buckets)+i, 1);
-  }      
+  }
 
   free(nsoff);
 
@@ -515,9 +515,9 @@ void yosh_rdtwo(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num
 **   outfile      = file to print integrals to (if printflag is set)
 */
 void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int *num_so,
-		    int nirreps, int *ioff, int elbert, int fzcflag, double *Pa, double *Pb, 
-		    double *Hca, double *Hcb, int matrix, int printflag, FILE *outfile)
-{ 
+                    int nirreps, int *ioff, int elbert, int fzcflag, double *Pa, double *Pb,
+                    double *Hca, double *Hcb, int matrix, int printflag, FILE *outfile)
+{
   int ilsti, nbuf;
   int i, ij, kl, ijkl;
   int ior, ism, jor, jsm;
@@ -563,7 +563,7 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
       labs = ERIIN.labels[fi+3];
       value = ERIIN.values[i];
       fi += 4;
-	 
+
       /* calculate ijkl lexical index */
       ij = ioff[iabs] + jabs;
       kl = ioff[kabs] + labs;
@@ -571,181 +571,181 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
 
       /* construct the UHF frozen core operator */
       if (fzcflag) {
-	a = al[0] = iabs;
-	b = bl[0] = jabs;
-	c = cl[0] = kabs;
-	d = dl[0] = labs;
-	ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	if (b >= c) {
-	  Hca[bc] -= Pa[ad] * value;
-	  Hcb[bc] -= Pb[ad] * value;
-	}
+        a = al[0] = iabs;
+        b = bl[0] = jabs;
+        c = cl[0] = kabs;
+        d = dl[0] = labs;
+        ab = ioff[MAX0(a,b)] + MIN0(a,b);
+        cd = ioff[MAX0(c,d)] + MIN0(c,d);
+        bc = ioff[MAX0(b,c)] + MIN0(b,c);
+        ad = ioff[MAX0(a,d)] + MIN0(a,d);
+        Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+        Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+        if (b >= c) {
+          Hca[bc] -= Pa[ad] * value;
+          Hcb[bc] -= Pb[ad] * value;
+        }
 
-	a = al[1] = jabs;
-	b = bl[1] = iabs;
-	c = cl[1] = kabs;
-	d = dl[1] = labs;
-	if (!(a == al[0] && b == bl[0] && c == cl[0] && d == dl[0])) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[1] = jabs;
+        b = bl[1] = iabs;
+        c = cl[1] = kabs;
+        d = dl[1] = labs;
+        if (!(a == al[0] && b == bl[0] && c == cl[0] && d == dl[0])) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
 
-	a = al[2] = iabs;
-	b = bl[2] = jabs;
-	c = cl[2] = labs;
-	d = dl[2] = kabs;
-	for (dum=0, found=0; dum < 2 && !found; dum++) {
-	  if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[2] = iabs;
+        b = bl[2] = jabs;
+        c = cl[2] = labs;
+        d = dl[2] = kabs;
+        for (dum=0, found=0; dum < 2 && !found; dum++) {
+          if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
 
-	a = al[3] = jabs;
-	b = bl[3] = iabs;
-	c = cl[3] = labs;
-	d = dl[3] = kabs;
-	for (dum=0, found=0; dum < 3 && !found; dum++) {
-	  if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[3] = jabs;
+        b = bl[3] = iabs;
+        c = cl[3] = labs;
+        d = dl[3] = kabs;
+        for (dum=0, found=0; dum < 3 && !found; dum++) {
+          if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
 
-	a = al[4] = kabs;
-	b = bl[4] = labs;
-	c = cl[4] = iabs;
-	d = dl[4] = jabs;
-	for (dum=0, found=0; dum < 4 && !found; dum++) {
-	  if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[4] = kabs;
+        b = bl[4] = labs;
+        c = cl[4] = iabs;
+        d = dl[4] = jabs;
+        for (dum=0, found=0; dum < 4 && !found; dum++) {
+          if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
 
-	a = al[5] = kabs;
-	b = bl[5] = labs;
-	c = cl[5] = jabs;
-	d = dl[5] = iabs;
-	for (dum=0, found=0; dum < 5 && !found; dum++) {
-	  if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[5] = kabs;
+        b = bl[5] = labs;
+        c = cl[5] = jabs;
+        d = dl[5] = iabs;
+        for (dum=0, found=0; dum < 5 && !found; dum++) {
+          if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
 
-	a = al[6] = labs;
-	b = bl[6] = kabs;
-	c = cl[6] = iabs;
-	d = dl[6] = jabs;
-	for (dum=0, found=0; dum < 6 && !found; dum++) {
-	  if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[6] = labs;
+        b = bl[6] = kabs;
+        c = cl[6] = iabs;
+        d = dl[6] = jabs;
+        for (dum=0, found=0; dum < 6 && !found; dum++) {
+          if (a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
 
-	a = al[7] = labs;
-	b = bl[7] = kabs;
-	c = cl[7] = jabs;
-	d = dl[7] = iabs;
-	for (dum=0, found=0; dum < 7 && !found; dum++) {
-	  if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-	}
-	if (!found) {
-	  ab = ioff[MAX0(a,b)] + MIN0(a,b);
-	  cd = ioff[MAX0(c,d)] + MIN0(c,d);
-	  bc = ioff[MAX0(b,c)] + MIN0(b,c);
-	  ad = ioff[MAX0(a,d)] + MIN0(a,d);
-	  if (c >= d) {
-	    Hca[cd] += (Pa[ab] + Pb[ab]) * value;
-	    Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
-	  }
-	  if (b >= c) {
-	    Hca[bc] -= Pa[ad] * value;
-	    Hcb[bc] -= Pb[ad] * value;
-	  } 
-	}
+        a = al[7] = labs;
+        b = bl[7] = kabs;
+        c = cl[7] = jabs;
+        d = dl[7] = iabs;
+        for (dum=0, found=0; dum < 7 && !found; dum++) {
+          if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
+        }
+        if (!found) {
+          ab = ioff[MAX0(a,b)] + MIN0(a,b);
+          cd = ioff[MAX0(c,d)] + MIN0(c,d);
+          bc = ioff[MAX0(b,c)] + MIN0(b,c);
+          ad = ioff[MAX0(a,d)] + MIN0(a,d);
+          if (c >= d) {
+            Hca[cd] += (Pa[ab] + Pb[ab]) * value;
+            Hcb[cd] += (Pa[ab] + Pb[ab]) * value;
+          }
+          if (b >= c) {
+            Hca[bc] -= Pa[ad] * value;
+            Hcb[bc] -= Pb[ad] * value;
+          }
+        }
       } /* end construction of frozen core operator */
 
-      /* figure out what bucket to put it in, and do so 
+      /* figure out what bucket to put it in, and do so
        *
-       * Elbert wants us to sort by the lower index (kl) 
-       * i.e. for us, ij > kl (guaranteed in 33), but for them kl > ij 
+       * Elbert wants us to sort by the lower index (kl)
+       * i.e. for us, ij > kl (guaranteed in 33), but for them kl > ij
        *
        */
 
-      if (elbert) whichbucket = YBuff->bucket_for_pq[kl] ; 
+      if (elbert) whichbucket = YBuff->bucket_for_pq[kl] ;
       else whichbucket = YBuff->bucket_for_pq[ij] ;
 
       bptr = YBuff->buckets+whichbucket ;
@@ -753,43 +753,43 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
 
       /* switch things around here for Elbert (k->p, l->q, i->r, j->s) */
       if (elbert) {
-	bptr->p[tmpi] = kabs;
-	bptr->q[tmpi] = labs;
-	bptr->r[tmpi] = iabs;
-	bptr->s[tmpi] = jabs;
+        bptr->p[tmpi] = kabs;
+        bptr->q[tmpi] = labs;
+        bptr->r[tmpi] = iabs;
+        bptr->s[tmpi] = jabs;
       }
       else {
-	bptr->p[tmpi] = iabs;
-	bptr->q[tmpi] = jabs;
-	bptr->r[tmpi] = kabs;
-	bptr->s[tmpi] = labs;
+        bptr->p[tmpi] = iabs;
+        bptr->q[tmpi] = jabs;
+        bptr->r[tmpi] = kabs;
+        bptr->s[tmpi] = labs;
       }
 
       bptr->val[tmpi] = value;
 
       if (printflag)
-	fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n", 
-		iabs, jabs, kabs, labs, ijkl, value) ;
+        fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+                iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
-	flush_bucket(bptr, 0);
-	bptr->in_bucket = 0;
+        flush_bucket(bptr, 0);
+        bptr->in_bucket = 0;
       }
 
       if(matrix && ij != kl) {
-	whichbucket = YBuff->bucket_for_pq[kl] ;
-	bptr = YBuff->buckets+whichbucket ;
-	tmpi = (bptr->in_bucket)++; 
-	bptr->p[tmpi] = kabs;
-	bptr->q[tmpi] = labs;
-	bptr->r[tmpi] = iabs;
-	bptr->s[tmpi] = jabs;
-	bptr->val[tmpi] = value;
-	if ((tmpi+1) == YBuff->bucketsize) {
-	  flush_bucket(bptr, 0);
-	  bptr->in_bucket = 0;
-	}
+        whichbucket = YBuff->bucket_for_pq[kl] ;
+        bptr = YBuff->buckets+whichbucket ;
+        tmpi = (bptr->in_bucket)++;
+        bptr->p[tmpi] = kabs;
+        bptr->q[tmpi] = labs;
+        bptr->r[tmpi] = iabs;
+        bptr->s[tmpi] = jabs;
+        bptr->val[tmpi] = value;
+        if ((tmpi+1) == YBuff->bucketsize) {
+          flush_bucket(bptr, 0);
+          bptr->in_bucket = 0;
+        }
       }
-         
+
     }
     if (!ilsti)
       iwl_buf_fetch(&ERIIN);
@@ -805,16 +805,16 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
    * This should not actually cause a problem, the way the iwl buf reads
    * currently work.  Make sure to be careful if rewriting iwl routines!
    */
-  for (i=0; i<YBuff->nbuckets; i++) { 
+  for (i=0; i<YBuff->nbuckets; i++) {
     flush_bucket((YBuff->buckets)+i, 1);
-  }      
+  }
 
   free(nsoff);
   iwl_buf_close(&ERIIN, !del_tei_file);
 }
 
 /*
-** YOSH_RDTWO_BACKTR() : Read two-electron integrals from an IWL file and 
+** YOSH_RDTWO_BACKTR() : Read two-electron integrals from an IWL file and
 **    prepare them for Yoshimine sorting.   We have removed support for
 **    Elbert loops and frozen core, since the former is not currently
 **    being used and the latter should not apply to backtransforms.
@@ -828,26 +828,26 @@ void yosh_rdtwo_uhf(struct yoshimine *YBuff, int itapERI, int del_tei_file, int 
 **    the tpdm on disk has only unique (pq|rs) pairs, and so for our
 **    purposes we need to generate (rs|pq) just like we do when reading
 **    the AO integrals in the regular forwards transform.
-**  
+**
 ** Based on the YOSH_RDTWO34() function
-** C. David Sherrill 
+** C. David Sherrill
 ** Created August 1997
 **
 ** Arguments:
 **   YBuff        = Yoshimine object pointer
 **   tei_file     = unit number for two-electron integrals
 **   ioff         = standard lexical index array
-**   symmetrize   = symmetrize the incoming 2pdm 
+**   symmetrize   = symmetrize the incoming 2pdm
 **   add_ref_pt   = Add the factors arising from a reference determinant
 **                  (n.b. assumes lowest MO's occupied)
 **   del_tei_file = 1 to delete the tei file, 0 otherwise
 **   printflag    = 1 for printing (for debugging only!) else 0
 **   outfile      = file to print integrals to (if printflag is set)
 */
-void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff, 
-                       int symmetrize, int add_ref_pt, int del_tei_file, 
+void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
+                       int symmetrize, int add_ref_pt, int del_tei_file,
                        int printflag, FILE *outfile)
-{ 
+{
   int i, ij, kl, ijkl;
   int iabs, jabs, kabs, labs;
   double value;
@@ -875,16 +875,16 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
       jabs = (int) lblptr[idx++];
       kabs = (int) lblptr[idx++];
       labs = (int) lblptr[idx++];
-       
+
       iabs = moinfo.corr2pitz_nofzv[iabs];
       jabs = moinfo.corr2pitz_nofzv[jabs];
       kabs = moinfo.corr2pitz_nofzv[kabs];
       labs = moinfo.corr2pitz_nofzv[labs];
-       
+
       value = valptr[Inbuf.idx];
       if (symmetrize) {
-	if (iabs != jabs) value *= 0.5;
-	if (kabs != labs) value *= 0.5;
+        if (iabs != jabs) value *= 0.5;
+        if (kabs != labs) value *= 0.5;
       }
 
       /* calculate ijkl lexical index (make no i>=j assumptions for now) */
@@ -893,7 +893,7 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
       ijkl = INDEX(ij,kl);  /* ijkl needed only in the print routine */
 
       /* figure out what bucket to put it in, and do so */
-       
+
       whichbucket = YBuff->bucket_for_pq[ij];
       bptr = YBuff->buckets+whichbucket;
       tmpi = (bptr->in_bucket)++;
@@ -902,49 +902,49 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
       bptr->r[tmpi] = kabs;
       bptr->s[tmpi] = labs;
       bptr->val[tmpi] = value;
-       
+
       if (printflag)
-	fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n", 
-		iabs, jabs, kabs, labs, ijkl, value) ;
+        fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+                iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
-	flush_bucket(bptr, 0);
-	bptr->in_bucket = 0;
+        flush_bucket(bptr, 0);
+        bptr->in_bucket = 0;
       }
 
-       
+
       /* this generates (kl|ij) from (ij|kl) if necessary and puts it out */
       /* anaglogous to the "matrix" option in yosh_rdtwo()              */
       if (iabs != kabs || jabs != labs) {
-	whichbucket = YBuff->bucket_for_pq[kl];
-	bptr = YBuff->buckets+whichbucket;
-	tmpi = (bptr->in_bucket)++; 
-	bptr->p[tmpi] = kabs;
-	bptr->q[tmpi] = labs;
-	bptr->r[tmpi] = iabs;
-	bptr->s[tmpi] = jabs;
-	bptr->val[tmpi] = value;
-	if (printflag)
-	  fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n", 
-		  kabs, labs, iabs, jabs, ijkl, value) ;
-	if ((tmpi+1) == YBuff->bucketsize) {
-	  flush_bucket(bptr, 0);
-	  bptr->in_bucket = 0;
-	}
+        whichbucket = YBuff->bucket_for_pq[kl];
+        bptr = YBuff->buckets+whichbucket;
+        tmpi = (bptr->in_bucket)++;
+        bptr->p[tmpi] = kabs;
+        bptr->q[tmpi] = labs;
+        bptr->r[tmpi] = iabs;
+        bptr->s[tmpi] = jabs;
+        bptr->val[tmpi] = value;
+        if (printflag)
+          fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+                  kabs, labs, iabs, jabs, ijkl, value) ;
+        if ((tmpi+1) == YBuff->bucketsize) {
+          flush_bucket(bptr, 0);
+          bptr->in_bucket = 0;
+        }
       }
 
     }
-     
+
   } while(!lastbuf);
 
   /* now add in contributions from the reference determinant if requested */
   if (add_ref_pt) add_2pdm_ref_pt(YBuff, ioff, printflag, outfile);
 
   /* flush partially filled buckets */
-  for (i=0; i<YBuff->nbuckets; i++) { 
+  for (i=0; i<YBuff->nbuckets; i++) {
     flush_bucket((YBuff->buckets)+i, 1);
-  }      
-   
-  iwl_buf_close(&Inbuf, !del_tei_file); 
+  }
+
+  iwl_buf_close(&Inbuf, !del_tei_file);
 }
 
 /*
@@ -978,9 +978,9 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
 ** converts them automatically to Pitzer.
 **
 ** TDC, 1/03
-**  
+**
 ** Based on the YOSH_RDTWO_BACKTR() function above by
-** C. David Sherrill 
+** C. David Sherrill
 **
 ** Arguments:
 **   YBuff        = Yoshimine object pointer
@@ -992,10 +992,10 @@ void yosh_rdtwo_backtr(struct yoshimine *YBuff, int tei_file, int *ioff,
 **   printflag    = 1 for printing (for debugging only!) else 0
 **   outfile      = file to print integrals to (if printflag is set)
 */
-void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_file, int *ioff, 
-			   int swap_bk, int symm_pq, int del_tei_file,
-			   int printflag, FILE *outfile)
-{ 
+void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_file, int *ioff,
+                           int swap_bk, int symm_pq, int del_tei_file,
+                           int printflag, FILE *outfile)
+{
   int i, ij, kl, ijkl;
   int iabs, jabs, kabs, labs;
   double value;
@@ -1052,12 +1052,12 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
       jabs = jorder[jabs];
       kabs = korder[kabs];
       labs = lorder[labs];
-       
+
       value = valptr[Inbuf.idx];
 
       if (symm_pq) {
-	if (iabs != jabs) value *= 0.5;
-	if (kabs != labs) value *= 0.5;
+        if (iabs != jabs) value *= 0.5;
+        if (kabs != labs) value *= 0.5;
       }
 
       /* calculate ijkl lexical index (make no i>=j assumptions for now) */
@@ -1066,7 +1066,7 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
       ijkl = INDEX(ij,kl);  /* ijkl needed only in the print routine */
 
       /* figure out what bucket to put it in, and do so */
-       
+
       whichbucket = YBuff->bucket_for_pq[ij];
       bptr = YBuff->buckets+whichbucket;
       tmpi = (bptr->in_bucket)++;
@@ -1075,45 +1075,45 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
       bptr->r[tmpi] = kabs;
       bptr->s[tmpi] = labs;
       bptr->val[tmpi] = value;
-       
+
       if (printflag)
-	fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n", 
-		iabs, jabs, kabs, labs, ijkl, value) ;
+        fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+                iabs, jabs, kabs, labs, ijkl, value) ;
       if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
-	flush_bucket(bptr, 0);
-	bptr->in_bucket = 0;
+        flush_bucket(bptr, 0);
+        bptr->in_bucket = 0;
       }
 
       /* this generates (kl|ij) from (ij|kl) if necessary and puts it out */
       /* anaglogous to the "matrix" option in yosh_rdtwo()              */
       if (swap_bk && (iabs != kabs || jabs != labs)) {
-	whichbucket = YBuff->bucket_for_pq[kl];
-	bptr = YBuff->buckets+whichbucket;
-	tmpi = (bptr->in_bucket)++; 
-	bptr->p[tmpi] = kabs;
-	bptr->q[tmpi] = labs;
-	bptr->r[tmpi] = iabs;
-	bptr->s[tmpi] = jabs;
-	bptr->val[tmpi] = value;
-	if (printflag)
-	  fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n", 
-		  kabs, labs, iabs, jabs, ijkl, value) ;
-	if ((tmpi+1) == YBuff->bucketsize) {
-	  flush_bucket(bptr, 0);
-	  bptr->in_bucket = 0;
-	}
+        whichbucket = YBuff->bucket_for_pq[kl];
+        bptr = YBuff->buckets+whichbucket;
+        tmpi = (bptr->in_bucket)++;
+        bptr->p[tmpi] = kabs;
+        bptr->q[tmpi] = labs;
+        bptr->r[tmpi] = iabs;
+        bptr->s[tmpi] = jabs;
+        bptr->val[tmpi] = value;
+        if (printflag)
+          fprintf(outfile, "%4d %4d %4d %4d  %4d   %10.6lf\n",
+                  kabs, labs, iabs, jabs, ijkl, value) ;
+        if ((tmpi+1) == YBuff->bucketsize) {
+          flush_bucket(bptr, 0);
+          bptr->in_bucket = 0;
+        }
       }
 
     }
-     
+
   } while(!lastbuf);
 
   /* flush partially filled buckets */
-  for (i=0; i<YBuff->nbuckets; i++) { 
+  for (i=0; i<YBuff->nbuckets; i++) {
     flush_bucket((YBuff->buckets)+i, 1);
-  }      
-   
-  iwl_buf_close(&Inbuf, !del_tei_file); 
+  }
+
+  iwl_buf_close(&Inbuf, !del_tei_file);
 }
 
 /*
@@ -1129,7 +1129,7 @@ void yosh_rdtwo_backtr_uhf(std::string spin, struct yoshimine *YBuff, int tei_fi
 **
 ** David Sherrill, Feb 1998
 */
-void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg, 
+void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
                      FILE *outfile)
 {
    int i, j, ii, jj, ij;
@@ -1146,7 +1146,7 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
      for (j=0; j<i; j++) {
        jabs = moinfo.corr2pitz_nofzv[j];
        jj = ioff[jabs] + jabs;
-       ij = ioff[iabs] + jabs; 
+       ij = ioff[iabs] + jabs;
 
        yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 2.0,pflg,outfile);
        yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 2.0,pflg,outfile);
@@ -1157,9 +1157,9 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
 
      jabs = moinfo.corr2pitz_nofzv[j];
      jj = ioff[jabs] + jabs;
-     ij = ioff[iabs] + jabs; 
+     ij = ioff[iabs] + jabs;
      yosh_buff_put_val(YBuff,ioff,ii,iabs,iabs,jabs,jabs, 1.0,pflg,outfile);
-  
+
    }
 
 
@@ -1177,7 +1177,7 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
        yosh_buff_put_val(YBuff,ioff,jj,jabs,jabs,iabs,iabs, 1.0,pflg,outfile);
        yosh_buff_put_val(YBuff,ioff,ij,iabs,jabs,jabs,iabs,-0.125,pflg,outfile);
        yosh_buff_put_val(YBuff,ioff,ij,jabs,iabs,iabs,jabs,-0.125,pflg,outfile);
-     } 
+     }
 
      for (j=ndocc; j<i; j++) {
        jabs = moinfo.corr2pitz_nofzv[j];
@@ -1202,7 +1202,7 @@ void add_2pdm_ref_pt(struct yoshimine *YBuff, int *ioff, int pflg,
 ** This function puts a value and its associated indices to a yoshimine
 ** sorting buffer.
 */
-void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq, 
+void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
                        int p, int q, int r, int s, double value, int prtflg,
                        FILE *outfile)
 {
@@ -1212,7 +1212,7 @@ void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
 
    whichbucket = YBuff->bucket_for_pq[pq];
    bptr = YBuff->buckets+whichbucket;
-   tmpi = (bptr->in_bucket)++; 
+   tmpi = (bptr->in_bucket)++;
    bptr->p[tmpi] = p;
    bptr->q[tmpi] = q;
    bptr->r[tmpi] = r;
@@ -1221,7 +1221,7 @@ void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
 
    if (prtflg)
      fprintf(outfile, "%4d %4d %4d %4d         %10.6lf\n", p, q, r, s,
-             value); 
+             value);
 
    if ((tmpi+1) == YBuff->bucketsize) { /* need to flush bucket to disk */
      flush_bucket(bptr, 0);
@@ -1235,48 +1235,48 @@ void yosh_buff_put_val(struct yoshimine *YBuff, int *ioff, int pq,
 
 /*
 ** YOSH_SORT(): Sort all the buckets in the Yoshimine sorting algorithm.
-**    The call to sortbuf() will cause the intermediate files to be 
+**    The call to sortbuf() will cause the intermediate files to be
 **    deleted unless keep_bins is set to 1.
 **
 ** Arguments:
 **    YBuff        =  pointer to Yoshimine object
-**    out_tape     =  number for binary output file 
+**    out_tape     =  number for binary output file
 **    keep_bins    =  keep the intermediate tmp files
-**    ioff         =  the usual offset array unless no_pq_perm, in which 
-**                    case it is appropriate for the left indices, i.e., 
+**    ioff         =  the usual offset array unless no_pq_perm, in which
+**                    case it is appropriate for the left indices, i.e.,
 **                    pq = ioff[p] + q
 **    ioff2        =  the Elbert ioff2 array if elbert=true.  If no_pq_perm,
-**                    then this is the usual ioff array, appropriate 
+**                    then this is the usual ioff array, appropriate
 **                    for the right indices
 **    nbfso        =  number of basis fns in symmetry orbitals
-**    ket_indices  =  number of ket indices (usually ntri) 
+**    ket_indices  =  number of ket indices (usually ntri)
 **    elbert       =  are inputs in Elbert ordering? p>=q, r>=s, rs>=pq
 **    intermediate =  1 if sorting an intermediate in the transformation
 **                    (argument to sortbuf()).  This implies that the full
 **                    set of rs are available for a given pq.
 **    no_pq_perm   =  if p and q are not interchangeable (e.g., one is
-**                    occupied and one is virtual, as in MP2) 
-**    qdim         =  the number of possible values for index q 
-**    add          =  do additions of integrals during the sort? 
+**                    occupied and one is virtual, as in MP2)
+**    qdim         =  the number of possible values for index q
+**    add          =  do additions of integrals during the sort?
 **    print_lvl    =  verbosity level (how much to print)
 **    outfile      =  text output file
 **
 ** Returns: none
 */
 void yosh_sort(struct yoshimine *YBuff, int out_tape, int keep_bins,
-      int *ioff, int *ioff2, int nbfso, int ket_indices, int elbert, 
-      int intermediate, int no_pq_perm, int qdim, int add, int print_lvl, 
-      FILE *outfile) 
+      int *ioff, int *ioff2, int nbfso, int ket_indices, int elbert,
+      int intermediate, int no_pq_perm, int qdim, int add, int print_lvl,
+      FILE *outfile)
 {
    double *twoel_ints;
    int i, max_pq;
    struct iwlbuf inbuf, outbuf;
-   
+
    /* may be slightly more than pq_per_bucket pq's in each bucket
     * if the pq's didn't divide evenly among the buckets.  The remainder
     * will go to the last bucket.
     */
-   max_pq = YBuff->buckets[YBuff->core_loads-1].hi - 
+   max_pq = YBuff->buckets[YBuff->core_loads-1].hi -
             YBuff->buckets[YBuff->core_loads-1].lo
             + 1;
 
@@ -1286,7 +1286,7 @@ void yosh_sort(struct yoshimine *YBuff, int out_tape, int keep_bins,
    for (i=0; i<YBuff->core_loads-1; i++) {
       if (print_lvl > 1) fprintf(outfile, "Sorting bin %d\n", i+1);
       iwl_buf_init(&inbuf, YBuff->first_tmp_file+i, YBuff->cutoff, 1, 0);
-      sortbuf(&inbuf, &outbuf, twoel_ints, (YBuff->buckets)[i].lo, 
+      sortbuf(&inbuf, &outbuf, twoel_ints, (YBuff->buckets)[i].lo,
               (YBuff->buckets)[i].hi, ioff, ioff2, nbfso, elbert,
                intermediate, no_pq_perm, qdim, add, (print_lvl > 4), outfile);
       zero_arr(twoel_ints, max_pq * ket_indices);
@@ -1297,13 +1297,13 @@ void yosh_sort(struct yoshimine *YBuff, int out_tape, int keep_bins,
 
    if (print_lvl > 1) fprintf(outfile, "Sorting bin %d\n", i+1) ;
    iwl_buf_init(&inbuf, YBuff->first_tmp_file+i, YBuff->cutoff, 1, 0);
-   sortbuf(&inbuf, &outbuf, twoel_ints, (YBuff->buckets)[i].lo, 
-           (YBuff->buckets)[i].hi, ioff, ioff2, nbfso, elbert, 
+   sortbuf(&inbuf, &outbuf, twoel_ints, (YBuff->buckets)[i].lo,
+           (YBuff->buckets)[i].hi, ioff, ioff2, nbfso, elbert,
            intermediate, no_pq_perm, qdim, add, (print_lvl > 4), outfile);
    iwl_buf_close(&inbuf, keep_bins);
-   
+
    if (print_lvl > 1) fprintf(outfile, "Done sorting.\n");
-   
+
    iwl_buf_flush(&outbuf, 1);
    iwl_buf_close(&outbuf, 1);
    free(twoel_ints);
@@ -1345,7 +1345,7 @@ void yosh_flush(struct yoshimine *YBuff)
 void flush_bucket(struct bucket *bptr, int lastbuf)
 {
 
-   iwl_buf_wrt_arr(&(bptr->IWLBuf), bptr->val, bptr->p, bptr->q, 
+   iwl_buf_wrt_arr(&(bptr->IWLBuf), bptr->val, bptr->p, bptr->q,
      bptr->r, bptr->s, bptr->in_bucket);
    iwl_buf_flush(&(bptr->IWLBuf), lastbuf);
 }
@@ -1353,7 +1353,7 @@ void flush_bucket(struct bucket *bptr, int lastbuf)
 
 /*
 ** YOSH_WRT_ARR(): Write an array to a Yoshimine object...useful for writing
-**    intermediates to disk from a transformation program.  Write only 
+**    intermediates to disk from a transformation program.  Write only
 **    nonzero elements so that less disk space is required, and so that
 **    zeroes for i,j,k,l and value for the first element in a buffer can
 **    indicate an empty buffer.  (Eventually I should probably use
@@ -1376,7 +1376,7 @@ void flush_bucket(struct bucket *bptr, int lastbuf)
 **    pq        =  compound index determined from p and q
 **    pqsym     =  the direct product of the symmetries of p and q
 **    arr       =  the array containing the data for a given pq
-**    rmax      =  the maximum value of the third index 
+**    rmax      =  the maximum value of the third index
 **    ioff      =  the standard offset array
 **    orbsym    =  the irrep for each orbital
 **    firsti    =  the first orbital for each irrep
@@ -1384,10 +1384,10 @@ void flush_bucket(struct bucket *bptr, int lastbuf)
 **    sortby_rs =  described above
 **    printflag =  verbosity level for printing
 **    outfile   =  text output file
-**    
+**
 */
 void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
-   double *arr, int rmax, int *ioff, int *orbsym, int *firsti, 
+   double *arr, int rmax, int *ioff, int *orbsym, int *firsti,
    int *lasti, int sortby_rs, int printflag, FILE *outfile)
 {
    int r, s, rs, rsym, ssym, smax;
@@ -1418,19 +1418,19 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
             /* figure out which bucket the integral should go in */
             if (sortby_rs) whichbucket = YBuff->bucket_for_pq[rs];
             else whichbucket = YBuff->bucket_for_pq[pq];
- 
+
             bptr = YBuff->buckets+whichbucket ;
             tmpi = (bptr->in_bucket)++ ;
 
             /* sortbuf wants to sort by the first index.  If we want to
-             * sort by rs, we need to map r->p, s->q, p->r, q->s 
+             * sort by rs, we need to map r->p, s->q, p->r, q->s
              */
             if (sortby_rs) {
                bptr->p[tmpi] = r;
                bptr->q[tmpi] = s;
                bptr->r[tmpi] = p;
                bptr->s[tmpi] = q;
-               } 
+               }
             else {
                bptr->p[tmpi] = p;
                bptr->q[tmpi] = q;
@@ -1441,24 +1441,24 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
             bptr->val[tmpi] = value;
 
             if (printflag)
-               fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n", 
+               fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
                   p, q, r, s, arr[rs]);
 
             /* if we need to flush bucket to disk */
-            if ((tmpi+1) == YBuff->bucketsize) { 
+            if ((tmpi+1) == YBuff->bucketsize) {
                flush_bucket(bptr, lastflag);
                bptr->in_bucket = 0 ;
                }
 
-            /* 
+            /*
              * What if this was the last buffer, and we didn't set the lastbuf
-             * flag?  Must write a buffer of zeroes using the yosh_flush() 
+             * flag?  Must write a buffer of zeroes using the yosh_flush()
              * routine.  Must be careful to always have the last buffer
              * set the lastbuf flag (to avoid read error) and must also be
              * sure that an exactly-filled buffer is written out.  Carelessness
              * might cause a failure to write the last buffer if it has
              * exactly 'bucketsize' elements. ---CDS
-             */ 
+             */
 
             } /* end if (fabs(arr[rs])) ... */
 
@@ -1467,14 +1467,14 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
       }  /* end loop over r */
 
    if (printflag) fflush(outfile);
-  
+
 }
 
 
 /*
 ** YOSH_WRT_ARR2(): Write an array to a Yoshimine object (nonzero
 **    elements only).  The values of the integrals are in array 'arr',
-**    and the indices are input as follows:  all integrals have the 
+**    and the indices are input as follows:  all integrals have the
 **    common indices 'p' and 'q'.  The remaining indices are input
 **    in arrays 'rlist' and 'slist'.  The number of integrals in the
 **    current block is given by the parameter 'size'.  As currently
@@ -1493,9 +1493,9 @@ void yosh_wrt_arr(struct yoshimine *YBuff, int p, int q, int pq, int pqsym,
 **    ioff      =  the standard offset array
 **    printflag =  verbosity level for printing
 **    outfile   =  text output file
-**    
+**
 */
-void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr, 
+void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr,
    int p, int q, int *rlist, int *slist, int *ioff, int printflag,
    FILE *outfile)
 {
@@ -1516,11 +1516,11 @@ void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr,
    ij1 = ioff[i1] + j1;
 
    for (x=0; x<size; x++) {
-      
+
       value = *arr++;
       ktmp = *rlist++;
       ltmp = *slist++;
-      
+
       if (fabs(value) < YBuff->cutoff) continue;
 
       k1 = MAX0(ktmp,ltmp);
@@ -1555,11 +1555,11 @@ void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr,
 
    bptr->val[tmpi] = value;
 
-   if (printflag) fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n", 
+   if (printflag) fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
          i2, j2, k2, l2, value);
 
    /* if we need to flush bucket to disk */
-      if ((tmpi+1) == YBuff->bucketsize) { 
+      if ((tmpi+1) == YBuff->bucketsize) {
          flush_bucket(bptr, lastflag);
          bptr->in_bucket = 0;
          }
@@ -1606,7 +1606,7 @@ void yosh_wrt_arr2(struct yoshimine *YBuff, int size, double *arr,
 **    ioff3     =  offset array for ndocc*nvirt arrays
 **    printflag =  verbosity level for printing
 **    outfile   =  text output file
-**    
+**
 */
 void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
                       int pqsym, double **arr, int rsym, int *firstr,
@@ -1636,7 +1636,7 @@ void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
             /* figure out which bucket the integral should go in */
             if (sortby_rs) whichbucket = YBuff->bucket_for_pq[rs];
             else whichbucket = YBuff->bucket_for_pq[pq];
- 
+
             bptr = YBuff->buckets+whichbucket ;
             tmpi = (bptr->in_bucket)++ ;
 
@@ -1650,7 +1650,7 @@ void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
                bptr->q[tmpi] = snew;
                bptr->r[tmpi] = p;
                bptr->s[tmpi] = q;
-               } 
+               }
             else {
                bptr->p[tmpi] = p;
                bptr->q[tmpi] = q;
@@ -1661,11 +1661,11 @@ void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
             bptr->val[tmpi] = value;
 
             if (printflag)
-               fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n", 
+               fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
                   p, q, r, s, value);
 
             /* if we need to flush bucket to disk */
-            if ((tmpi+1) == YBuff->bucketsize) { 
+            if ((tmpi+1) == YBuff->bucketsize) {
                flush_bucket(bptr, lastflag);
                bptr->in_bucket = 0;
                }
@@ -1715,13 +1715,13 @@ void yosh_wrt_arr_mp2(struct yoshimine *YBuff, int p, int q, int pq,
 **    ioff3     =  offset array for ndocc*nmo arrays
 **    printflag =  verbosity level for printing
 **    outfile   =  text output file
-**    
+**
 */
 void yosh_wrt_arr_mp2r12a(struct yoshimine *YBuff, int p, int q, int pq,
-			  int pqsym, double **arr, int rsym, int *firstr,
-			  int *lastr, int *firsts, int *lasts, int sortby_rs,
-			  int *occ, int *ioff3,
-			  int printflag, FILE *outfile)
+                          int pqsym, double **arr, int rsym, int *firstr,
+                          int *lastr, int *firsts, int *lasts, int sortby_rs,
+                          int *occ, int *ioff3,
+                          int printflag, FILE *outfile)
 {
    int r, s, rs, ssym;
    int rnew,snew;
@@ -1745,7 +1745,7 @@ void yosh_wrt_arr_mp2r12a(struct yoshimine *YBuff, int p, int q, int pq,
             /* figure out which bucket the integral should go in */
             if (sortby_rs) whichbucket = YBuff->bucket_for_pq[rs];
             else whichbucket = YBuff->bucket_for_pq[pq];
- 
+
             bptr = YBuff->buckets+whichbucket ;
             tmpi = (bptr->in_bucket)++ ;
 
@@ -1759,7 +1759,7 @@ void yosh_wrt_arr_mp2r12a(struct yoshimine *YBuff, int p, int q, int pq,
                bptr->q[tmpi] = snew;
                bptr->r[tmpi] = p;
                bptr->s[tmpi] = q;
-               } 
+               }
             else {
                bptr->p[tmpi] = p;
                bptr->q[tmpi] = q;
@@ -1770,11 +1770,11 @@ void yosh_wrt_arr_mp2r12a(struct yoshimine *YBuff, int p, int q, int pq,
             bptr->val[tmpi] = value;
 
             if (printflag)
-               fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n", 
+               fprintf(outfile, "%4d %4d %4d %4d  %10.6lf\n",
                   p, q, r, s, value);
 
             /* if we need to flush bucket to disk */
-            if ((tmpi+1) == YBuff->bucketsize) { 
+            if ((tmpi+1) == YBuff->bucketsize) {
                flush_bucket(bptr, lastflag);
                bptr->in_bucket = 0;
                }

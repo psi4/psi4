@@ -45,6 +45,7 @@ clean:
 %.d: %.cc
 	$(CXXDEPEND) $(CXXDEPENDFLAGS) $(CXXDEF) $(CXXOTH) $(PSIINCLUDE) $< | sed 's/^$*.o/$*.o $*.d/g' > $(@F)
 
+ifneq ($(DODEPEND),no)
 $(BINOBJ:%.o=%.d): $(DEPENDINCLUDE)
-
 include $(BINOBJ:%.o=%.d)
+endif

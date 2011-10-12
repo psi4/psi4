@@ -1,11 +1,12 @@
 /*! \file
     \ingroup TRANSQT2
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
+#include <exception.h>
 #include <psifiles.h>
 #define EXTERN
 #include "globals.h"
@@ -151,7 +152,7 @@ int **cacheprep_rhf(int level, int *cachefiles)
 
       return cachelist;
     }
-  else 
+  else
     throw PsiException("Error: invalid cache level!", __FILE__, __LINE__);
 }
 

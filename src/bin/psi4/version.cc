@@ -8,13 +8,16 @@ void print_version(FILE *myout)
 {
   fprintf(myout, "    -----------------------------------------------------------------------\n");
   fprintf(myout, "          PSI4: An Open-Source Ab Initio Electronic Structure Package\n");
-  fprintf(myout, "                              PSI %s Driver\n", PSI_VERSION);
-  fprintf(myout, "    T. D. Crawford, C. D. Sherrill, E. F. Valeev, J. T. Fermann, R. A. King,\n");
-  fprintf(myout, "    M. L. Leininger, S. T. Brown, C. L. Janssen, E. T. Seidl, J. P. Kenny,\n");
-  fprintf(myout, "    and W. D. Allen, J. Comput. Chem. 28, 1610-1616 (2007)\n");
-  fprintf(myout, "\n");
+  fprintf(myout, "                              PSI %s Driver\n\n", PSI_VERSION);
+
+  fprintf(myout, "    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,\n");
+  fprintf(myout, "    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,\n");
+  fprintf(myout, "    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,\n");
+  fprintf(myout, "    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,\n");
+  fprintf(myout, "    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)\n");
+
   fprintf(myout, "                         Additional Contributions by\n");
-  fprintf(myout, "    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke\n");
+//  fprintf(myout, "    Francesco Evangelista, Andrew Simmonett, Justin Turney, Jeremiah Wilke\n");
   fprintf(myout, "    -----------------------------------------------------------------------\n\n");
   Communicator::world->print(myout);
 }

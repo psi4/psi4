@@ -1,3 +1,4 @@
+#include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include <libqt/qt.h>
 #include "mints.h"

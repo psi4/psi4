@@ -1,3 +1,4 @@
+#include <boost/shared_ptr.hpp>
 #include <stdexcept>
 #include <libciomr/libciomr.h>
 

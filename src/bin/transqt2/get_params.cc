@@ -8,6 +8,7 @@
 #include <cmath>
 #include <string>
 #include <libciomr/libciomr.h>
+#include <liboptions/liboptions.h>
 #include <psifiles.h>
 #define EXTERN
 #include "globals.h"

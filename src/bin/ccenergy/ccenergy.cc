@@ -19,6 +19,7 @@
 #include <libint/libint.h>
 #include <libmints/wavefunction.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
 #include <sys/types.h>
 #include <psifiles.h>
 #include "Params.h"
@@ -122,7 +123,7 @@ CCEnergyWavefunction::~CCEnergyWavefunction()
 
 void CCEnergyWavefunction::init()
 {
-    // Wavefunction creates a chkpt object for your, but we're not going to use it.
+    // Wavefunction creates a chkpt object for you, but we're not going to use it.
     // Destroy it. Otherwise we will see a "file already open" error.
     chkpt_.reset();
 
@@ -367,8 +368,7 @@ PsiReturnType ccenergy(Options &options)
       fflush(outfile);
       fprintf(outfile, "\n");
       amp_write();
-      if (params.analyze != 0)
-    analyze();
+      if (params.analyze != 0) analyze();
       break;
     }
     if(params.diis) diis(moinfo.iter);

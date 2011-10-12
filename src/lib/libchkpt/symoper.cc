@@ -5,6 +5,7 @@
 
 #include <cstdlib>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -13,31 +14,31 @@ using namespace psi;
 
 int *Chkpt::rd_symoper(void)
 {
-	int *symoper;
-	int nirreps;
-	char *keyword;
-	keyword = build_keyword("Cotton -> local map");
+        int *symoper;
+        int nirreps;
+        char *keyword;
+        keyword = build_keyword("Cotton -> local map");
 
-	nirreps = rd_nirreps();
-	symoper = array<int>(nirreps);
+        nirreps = rd_nirreps();
+        symoper = array<int>(nirreps);
 
-	psio->read_entry(PSIF_CHKPT, keyword, (char *) symoper, nirreps*sizeof(int));
+        psio->read_entry(PSIF_CHKPT, keyword, (char *) symoper, nirreps*sizeof(int));
 
-	free(keyword);
-	return symoper;
+        free(keyword);
+        return symoper;
 }
 
 void Chkpt::wt_symoper(int *symoper)
 {
-	int nirreps;
-	char *keyword;
-	keyword = build_keyword("Cotton -> local map");
+        int nirreps;
+        char *keyword;
+        keyword = build_keyword("Cotton -> local map");
 
-	nirreps = rd_nirreps();
+        nirreps = rd_nirreps();
 
-	psio->write_entry(PSIF_CHKPT, keyword, (char *) symoper, nirreps*sizeof(int));
+        psio->write_entry(PSIF_CHKPT, keyword, (char *) symoper, nirreps*sizeof(int));
 
-	free(keyword);
+        free(keyword);
 }
 
 extern "C" {
@@ -50,10 +51,10 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	int *chkpt_rd_symoper(void)
-	{
-		return _default_chkpt_lib_->rd_symoper();
-	}
+        int *chkpt_rd_symoper(void)
+        {
+                return _default_chkpt_lib_->rd_symoper();
+        }
 
 /*!
 ** void chkpt_wt_symoper(int *)
@@ -66,8 +67,8 @@ extern "C" {
 **
 ** \ingroup CHKPT
 */
-	void chkpt_wt_symoper(int *symoper)
-	{
-		_default_chkpt_lib_->wt_symoper(symoper);
-	}
+        void chkpt_wt_symoper(int *symoper)
+        {
+                _default_chkpt_lib_->wt_symoper(symoper);
+        }
 }

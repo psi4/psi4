@@ -21,6 +21,8 @@ datadir = @datadir@
 datarootdir = @datarootdir@
 pkgdatadir=@pkgdatadir@
 top_srcdir = @top_srcdir@
+madlibs = @madlibs@
+madinc = @madinc@
 # this file is used by the subdirectories, so top_objdir is relative to those
 top_objdir = ../../..
 

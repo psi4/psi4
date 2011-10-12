@@ -3,6 +3,7 @@
 
 #include <libchkpt/config.h>
 #include <string>
+#include <string.h>
 
 namespace boost {
 template <class T>
@@ -339,7 +340,7 @@ namespace psi {
             T** mat = new T*[nrow];
             const size_t size = nrow*ncol;
             mat[0] = new T[size];
-                        memset((void*)mat[0], '\0', size*sizeof(T));
+                        ::memset((void*)mat[0], '\0', size*sizeof(T));
             for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
             return mat;
         }

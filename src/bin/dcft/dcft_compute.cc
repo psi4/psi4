@@ -1,7 +1,9 @@
 #include "dcft.h"
+#include <cmath>
 #include <libdpd/dpd.h>
 #include <libtrans/integraltransform.h>
 #include <libdiis/diismanager.h>
+#include <libpsio/psio.hpp>
 #include "defines.h"
 
 using namespace boost;

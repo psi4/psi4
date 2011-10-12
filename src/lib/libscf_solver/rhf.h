@@ -24,16 +24,18 @@ namespace psi {
 class TwoBodySOInt;
 class PSIO;
 class Chkpt;
+class Matrix;
+class Vector;
 
 namespace scf {
 
 class RHF : public HF {
 protected:
-    SharedMatrix D_;
-    SharedMatrix Dold_;
-    SharedMatrix G_;
-    SharedMatrix J_;
-    SharedMatrix K_;
+    boost::shared_ptr<Matrix> D_;
+    boost::shared_ptr<Matrix> Dold_;
+    boost::shared_ptr<Matrix> G_;
+    boost::shared_ptr<Matrix> J_;
+    boost::shared_ptr<Matrix> K_;
 
 
     void form_C();
@@ -83,7 +85,7 @@ public:
     virtual ~RHF();
 
 
-    virtual SharedMatrix Da() const;
+    virtual boost::shared_ptr<Matrix> Da() const;
 
     virtual bool restricted() const { return true; }
 };

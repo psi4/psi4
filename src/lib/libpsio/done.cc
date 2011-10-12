@@ -4,11 +4,12 @@
  */
 
 #include <cstdlib>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
 
 #ifdef PSIO_STATS
-#include <<ctime>>
+#include <ctime>
 #endif
 
 namespace psi {
@@ -42,7 +43,7 @@ PSIO::~PSIO() {
   free(psio_readlen);
   free(psio_writlen);
 #endif
-  
+
   free(psio_unit);
   state_ = 0;
   files_keywords_.clear();

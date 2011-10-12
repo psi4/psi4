@@ -3,15 +3,17 @@
  \ingroup PSIO
  */
 
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
+#include <string.h>
 
 namespace psi {
 
 void PSIO::zero_disk(unsigned int unit, const char *key, ULI rows, ULI cols) {
 
       double* buf = new double[cols];
-      memset(static_cast<void*>(buf),'\0',cols*sizeof(double));
+      ::memset(static_cast<void*>(buf),'\0',cols*sizeof(double));
 
       psio_address next_psio = PSIO_ZERO;
       for (int i=0; i<rows; i++) {

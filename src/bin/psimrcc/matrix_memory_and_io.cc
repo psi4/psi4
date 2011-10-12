@@ -10,6 +10,7 @@
 #include <algorithm>
 
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libmoinfo/libmoinfo.h>
 #include <libutil/libutil.h>
 #include <libpsio/psio.hpp>

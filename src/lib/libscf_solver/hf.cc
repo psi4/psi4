@@ -65,24 +65,19 @@ HF::~HF()
 
 void HF::common_init()
 {
+    // This quantity is needed fairly soon
+    nirrep_ = factory_->nirrep();
+
     integral_threshold_ = 0.0;
-    //integral_threshold_ = 1.0E-14;
 
     scf_type_ = options_.get_str("SCF_TYPE");
 
     H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
     S_.reset(factory_->create_matrix("S"));
     X_.reset(factory_->create_matrix("X"));
-    //Sphalf_.reset(factory_->create_matrix("S^+1/2"));
-
-    memset((void*) nsopi_,    '\0', 8*sizeof(int));
-    memset((void*) nmopi_,    '\0', 8*sizeof(int));
-    memset((void*) nalphapi_, '\0', 8*sizeof(int));
-    memset((void*) nbetapi_,  '\0', 8*sizeof(int));
 
     nmo_ = 0;
     nso_ = 0;
-    nirrep_ = factory_->nirrep();
     int* dimpi = factory_->colspi();
     for (int h = 0; h< factory_->nirrep(); h++){
         nsopi_[h] = dimpi[h];
@@ -104,7 +99,6 @@ void HF::common_init()
         }
         offset += nsopi_[h];
     }
-
 
     Eold_    = 0.0;
     E_       = 0.0;
@@ -373,7 +367,7 @@ void HF::find_occupation()
     }
     // Always print occ if printing, if changed
     // If print > 2 (diagnostics), print always
-    if((print_ > 2 || print_ && occ_changed) && iteration_ > 0){
+    if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
         if (Communicator::world->me() == 0)
             fprintf(outfile, "\tOccupation by irrep:\n");
         print_occupation();
@@ -626,9 +620,9 @@ void HF::form_Shalf()
             fprintf(outfile,"  Overall, %d of %d possible MOs eliminated.\n\n",delta_mos,nso_);
 
         // Refreshes twice in RHF, no big deal
-        epsilon_a_->init(nirrep_, nmopi_);
+        epsilon_a_->init(nmopi_);
         Ca_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
-        epsilon_b_->init(eigvec->nirrep(), nmopi_);
+        epsilon_b_->init(nmopi_);
         Cb_->init(nirrep_,nsopi_,nmopi_,"MO coefficients");
     }
 
@@ -904,9 +898,9 @@ void HF::save_orbitals()
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) &(nsopi_),8*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
-    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) &(nsopi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+    psio_->write_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
     char *basisname = strdup(options_.get_str("BASIS").c_str());
     int basislength = strlen(options_.get_str("BASIS").c_str()) + 1;
@@ -937,7 +931,7 @@ void HF::load_orbitals()
 
     int basislength;
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
-    char basisnamec[basislength];
+    char *basisnamec = new char[basislength];
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisnamec,basislength*sizeof(char));
 
     std::string basisname(basisnamec);
@@ -970,8 +964,8 @@ void HF::load_orbitals()
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),8*sizeof(int));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) (nalphapi_),8*sizeof(int));
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) (nbetapi_),8*sizeof(int));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
     for (int h = 0; h < nirrep_; h++) {
         doccpi_[h] = nbetapi_[h];
@@ -1005,6 +999,7 @@ void HF::load_orbitals()
                 Cb_->set(h,m,i,Cb->get(h,m,i));
 
     psio_->close(PSIF_SCF_DB_MOS,1);
+    delete[] basisnamec;
 }
 
 void HF::dump_to_checkpoint()
@@ -1313,7 +1308,7 @@ boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::sha
 {
     int* nsopi = Cso->rowspi();
     int* nmopi = Cso->colspi();
-    int nvirpi[nirrep_];
+    int* nvirpi = new int[nirrep_];
 
     for (int h = 0; h < nirrep_; h++)
         nvirpi[h] = nmopi[h] - noccpi[h];
@@ -1353,6 +1348,8 @@ boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::sha
     }
 
     //Fia->print();
+
+    delete[] nvirpi;
 
     return Fia;
 }

@@ -26,6 +26,7 @@
 #include "wavefunction.h"
 #include "coordentry.h"
 
+#include <boost/shared_ptr.hpp>
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
 #include <boost/xpressive/regex_actions.hpp>
@@ -33,6 +34,7 @@
 #include <boost/algorithm/string/trim.hpp>
 #include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
+#include <boost/thread.hpp>
 
 using namespace std;
 using namespace psi;
@@ -83,6 +85,11 @@ void BasisSet::initialize_singletons()
     }
 }
 
+boost::shared_ptr<Molecule> BasisSet::molecule() const
+{
+    return molecule_;
+}
+
 void BasisSet::print(FILE *out) const
 {
     if (Communicator::world->me() == 0) {
@@ -128,10 +135,10 @@ void BasisSet::print_summary(FILE* out) const
         fprintf(out, "   ------ ------ --------------------------\n");
     }
 
-    int nprims[max_am_ + 1];
-    int nunique[max_am_ + 1];
-    int nshells[max_am_ + 1];
-    char amtypes[max_am_ + 1];
+    int *nprims = new int[max_am_ + 1];
+    int *nunique = new int[max_am_ + 1];
+    int *nshells = new int[max_am_ + 1];
+    char *amtypes = new char[max_am_ + 1];
 
     for (int A = 0; A < molecule_->natom(); A++) {
 
@@ -177,6 +184,11 @@ void BasisSet::print_summary(FILE* out) const
     }
     if (Communicator::world->me() == 0)
         fprintf(out, "\n");
+
+    delete[] nprims;
+    delete[] nunique;
+    delete[] nshells;
+    delete[] amtypes;
 }
 
 void BasisSet::print_detail(FILE* out) const

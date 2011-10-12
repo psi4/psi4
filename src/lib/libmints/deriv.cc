@@ -15,6 +15,7 @@
 #include <libdpd/dpd.h>
 
 #include "mints.h"
+#include "deriv.h"
 
 using namespace std;
 
@@ -100,9 +101,80 @@ public:
     }
 };
 
+class DFMP2RestrictedFunctor
+{
+    SharedMatrix P_2_;
+    SharedMatrix D_;
+
+public:
+    int nthread;
+    std::vector<SharedVector> result;
+
+    DFMP2RestrictedFunctor() {
+        throw PSIEXCEPTION("DFMP2RestrictedFunctor(): Default constructor called. This shouldn't happen.");
+    }
+
+    DFMP2RestrictedFunctor(SharedVector results,
+                           boost::shared_ptr<Matrix> P_2,
+                           boost::shared_ptr<Matrix> D)
+        : P_2_(P_2), D_(D)
+    {
+        counter=0;
+        nthread = Communicator::world->nthread();
+        result.push_back(results);
+
+        for (int i=1; i<nthread; ++i)
+            result.push_back(SharedVector(result[0]->clone()));
+    }
+    ~DFMP2RestrictedFunctor() {
+    }
+
+    void finalize() {
+        // Do summation over threads
+        for (int i=1; i<nthread; ++i) {
+            result[0]->add(result[i]);
+        }
+        // Do MPI global summation
+        result[0]->sum();
+    }
+
+    void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
+                    int pirrep, int pso,
+                    int qirrep, int qso,
+                    int rirrep, int rso,
+                    int sirrep, int sso,
+                    double value)
+    {
+        int thread = Communicator::world->thread_id(pthread_self());
+
+        // Previously, we applied a factor of 4 after the fact...apply it from the beginning now.
+        double prefactor = 4.0;
+
+        if (pabs == qabs)
+            prefactor *= 0.5;
+        if (rabs == sabs)
+            prefactor *= 0.5;
+        if (INDEX2(pabs, qabs) == INDEX2(rabs, sabs))
+            prefactor *= 0.5;
+
+        double four_index_D = 0.0;
+
+        if (pirrep == qirrep && rirrep == sirrep)
+            four_index_D = 4.0 * P_2_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
+        if (pirrep == rirrep && qirrep == sirrep)
+            four_index_D -= P_2_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
+        if (pirrep == sirrep && qirrep == rirrep)
+            four_index_D -= P_2_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
+
+        four_index_D *= prefactor;
+
+        result[thread]->add(salc, four_index_D * value);
+        counter++;
+    }
+};
+
 class ScfRestrictedFunctor
 {
-    boost::shared_ptr<Wavefunction> wavefunction_;
     SharedMatrix D_;
 
 public:
@@ -123,8 +195,8 @@ public:
 //        return *this;
 //    }
 
-    ScfRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave)
-        : wavefunction_(wave), D_(wave->Da())
+    ScfRestrictedFunctor(SharedVector results, boost::shared_ptr<Matrix> D)
+        : D_(D)
     {
         counter=0;
         nthread = Communicator::world->nthread();
@@ -278,6 +350,37 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
     gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
 }
 
+Deriv::Deriv(const boost::shared_ptr<BasisSet>& basis,
+             const boost::shared_ptr<Matrix>& P_2,
+             const boost::shared_ptr<Matrix>& W_2,
+             const boost::shared_ptr<Matrix>& SCF_D,
+             const boost::shared_ptr<MatrixFactory>& factory,
+             char needed_irreps,
+             bool project_out_translations,
+             bool project_out_rotations)
+    : basis_(basis),
+      cdsalcs_(basis->molecule(),
+          factory,
+          needed_irreps,
+          project_out_translations,
+          project_out_rotations),
+      P_2_(P_2),
+      W_2_(W_2),
+      SCF_D_(SCF_D),
+      factory_(factory)
+{
+    integral_ = boost::shared_ptr<IntegralFactory> (new IntegralFactory(basis,basis,basis,basis));
+    sobasis_  = boost::shared_ptr<SOBasisSet> (new SOBasisSet(basis,integral_));
+    molecule_ = basis->molecule();
+    natom_    = molecule_->natom();
+
+    // Results go here.
+    opdm_contr_ = factory_->create_shared_matrix("One-electron contribution to gradient", natom_, 3);
+    x_contr_    = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
+    tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
+    gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
+}
+
 SharedMatrix Deriv::compute()
 {
     molecule_->print_in_bohr();
@@ -311,10 +414,10 @@ SharedMatrix Deriv::compute()
     int ncd = cdsalcs_.ncd();
     SharedVector TPDMcont_vector(new Vector(1, &ncd));
 
-    if (!wavefunction_->reference_wavefunction()) {
-        if (wavefunction_->restricted()) {
-            SharedMatrix D = wavefunction_->Da();
-            SharedMatrix X = wavefunction_->X();
+    if (!wavefunction_ || (wavefunction_ && !wavefunction_->reference_wavefunction())) {
+        if (P_2_ || (wavefunction_ && wavefunction_->restricted())) {
+            SharedMatrix D = wavefunction_ ? wavefunction_->Da() : P_2_;
+            SharedMatrix X = wavefunction_ ? wavefunction_->X() : W_2_;
 
             // Check the incoming matrices.
             if (!D)
@@ -338,9 +441,16 @@ SharedMatrix Deriv::compute()
 
             fprintf(outfile, "\n");
 
-            ScfRestrictedFunctor functor(TPDMcont_vector, wavefunction_);
-            so_eri.compute_integrals_deriv1(functor);
-            functor.finalize();
+            if (wavefunction_) {
+                ScfRestrictedFunctor functor(TPDMcont_vector, D);
+                so_eri.compute_integrals_deriv1(functor);
+                functor.finalize();
+            }
+            else {
+                DFMP2RestrictedFunctor functor(TPDMcont_vector, D, SCF_D_);
+                so_eri.compute_integrals_deriv1(functor);
+                functor.finalize();
+            }
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
@@ -389,14 +499,13 @@ SharedMatrix Deriv::compute()
     }
     else { /* correlated */
         if (wavefunction_->restricted()) {
-            // Need dummy chkpt object for libtrans
-            boost::shared_ptr<Chkpt> chkpt;
-
             // Define the MO orbital space we need
             vector<boost::shared_ptr<MOSpace> > spaces;
             spaces.push_back(MOSpace::all);
 
-            IntegralTransform ints_transform(chkpt, spaces,
+            // Uses a different constructor of IntegralTransform.
+            IntegralTransform ints_transform(wavefunction_,
+                                             spaces,
                                              IntegralTransform::Restricted, // Transformation type
                                              IntegralTransform::DPDOnly,    // Output buffer
                                              IntegralTransform::QTOrder,    // MO ordering
@@ -528,7 +637,7 @@ SharedMatrix Deriv::compute()
     gradient_->print_atom_vector();
 
     // Save the gradient to the wavefunction so that optking can optimize with it
-    wavefunction_->set_gradient(gradient_);
+    if (wavefunction_) wavefunction_->set_gradient(gradient_);
 
     return gradient_;
 }

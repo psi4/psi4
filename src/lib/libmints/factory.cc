@@ -97,3 +97,139 @@ bool MatrixFactory::init_with(const boost::shared_ptr<SOBasisSet>& sobasis)
 {
     return init_with(sobasis->dimension(), sobasis->dimension());
 }
+
+/// Returns number of irreps
+int MatrixFactory::nirrep() const {
+    return nirrep_;
+}
+
+/// Returns the rows per irrep array
+int *MatrixFactory::rowspi() const {
+    return rowspi_;
+}
+
+/// Returns the number of rows in irrep h
+int MatrixFactory::nrow(int h) const {
+    return rowspi_[h];
+}
+
+/// Returns the columns per irrep array
+int *MatrixFactory::colspi() const {
+    return colspi_;
+}
+
+/// Returns the number of columns in irrep h
+int MatrixFactory::ncol(int h) const {
+    return colspi_[h];
+}
+
+/// Returns the number of orbitals
+int MatrixFactory::nso() const {
+    return nso_;
+}
+
+/// Returns a new Matrix object with default dimensions
+Matrix * MatrixFactory::create_matrix(int symmetry)
+{
+    return new Matrix(nirrep_, rowspi_, colspi_, symmetry);
+}
+
+/// Returns a new Matrix object with default dimensions
+boost::shared_ptr<Matrix> MatrixFactory::create_shared_matrix()
+{
+    return boost::shared_ptr<Matrix>(new Matrix(nirrep_, rowspi_, colspi_));
+}
+
+void MatrixFactory::create_matrix(Matrix& mat, int symmetry)
+{
+    mat.init(nirrep_, rowspi_, colspi_, "", symmetry);
+}
+
+/// Returns a new Matrix object named name with default dimensions
+Matrix * MatrixFactory::create_matrix(std::string name, int symmetry)
+{
+    return new Matrix(name, nirrep_, rowspi_, colspi_, symmetry);
+}
+
+boost::shared_ptr<Matrix> MatrixFactory::create_shared_matrix(const std::string& name)
+{
+    return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_));
+}
+
+boost::shared_ptr<Matrix> MatrixFactory::create_shared_matrix(const std::string& name, int symmetry)
+{
+    return boost::shared_ptr<Matrix>(new Matrix(name, nirrep_, rowspi_, colspi_, symmetry));
+}
+
+boost::shared_ptr<Matrix> MatrixFactory::create_shared_matrix(const std::string& name, int rows, int cols)
+{
+    return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
+}
+
+void MatrixFactory::create_matrix(Matrix& mat, std::string name, int symmetry)
+{
+    mat.init(nirrep_, rowspi_, colspi_, name, symmetry);
+}
+
+/// Returns a new Vector object with default dimensions
+Vector * MatrixFactory::create_vector()
+{
+    return new Vector(nirrep_, rowspi_);
+}
+
+void MatrixFactory::create_vector(Vector& vec)
+{
+    vec.init(nirrep_, rowspi_);
+}
+
+/// Returns a new SimpleMatrix object with default dimensions
+SimpleMatrix * MatrixFactory::create_simple_matrix()
+{
+    return new SimpleMatrix(nso_, nso_);
+}
+void MatrixFactory::create_simple_matrix(SimpleMatrix& mat)
+{
+    mat.init(nso_, nso_);
+}
+
+/// Returns a new SimpleMatrix object named name with default dimensions
+SimpleMatrix * MatrixFactory::create_simple_matrix(std::string name)
+{
+    return new SimpleMatrix(name, nso_, nso_);
+}
+void MatrixFactory::create_simple_matrix(SimpleMatrix& mat, std::string name)
+{
+    mat.init(nso_, nso_, name);
+}
+
+/// Returns a new SimpleMatrix object named name of size m x n
+SimpleMatrix * MatrixFactory::create_simple_matrix(std::string name, int m, int n)
+{
+    return new SimpleMatrix(name, m, n);
+}
+void MatrixFactory::create_simple_matrix(SimpleMatrix& mat, std::string name, int m, int n)
+{
+    mat.init(m, n, name);
+}
+
+/// Returns a new SimpleMatrix object with size m x n
+SimpleMatrix * MatrixFactory::create_simple_matrix(int m, int n)
+{
+    return new SimpleMatrix(m, n);
+}
+void MatrixFactory::create_simple_matrix(SimpleMatrix& mat, int m, int n)
+{
+    mat.init(m, n);
+}
+
+/// Returns a new SimpleVector object with default dimension
+SimpleVector * MatrixFactory::create_simple_vector()
+{
+    return new SimpleVector(nso_);
+}
+
+/// Returns a new SimpleVector object with size m
+SimpleVector * MatrixFactory::create_simple_vector(int m)
+{
+    return new SimpleVector(m);
+}

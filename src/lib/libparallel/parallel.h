@@ -11,7 +11,7 @@
 #include <boost/shared_ptr.hpp>
 #include <psiconfig.h>
 #include <cstdio>
-#include <psi4-dec.h>
+//#include <psi4-dec.h>
 
 #ifdef HAVE_MPI
 #include <mpi.h>
@@ -123,7 +123,7 @@ namespace psi {
         template<typename type>
         void send(const type *data, int nelem, int target) {
             raw_send(static_cast<const void *>(data), nelem*sizeof(type), target);
-        };
+        }
 
         /**
          * Receive array of data from remote node. You must allocate memory before calling this function.

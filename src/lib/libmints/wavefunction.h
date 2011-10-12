@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "dimension.h"
 #include <libparallel/parallel.h>
 
 #define MAX_IOFF 30000
@@ -20,7 +21,7 @@ extern double fac[MAX_FAC];
 #define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
 #define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 
-#include "factory.h"
+//#include "factory.h"
 
 #include <vector>
 
@@ -34,9 +35,13 @@ namespace psi {
 class Molecule;
 class BasisSet;
 class IntegralFactory;
+class Matrix;
+class Vector;
 class MatrixFactory;
 class Options;
 class SOBasisSet;
+class PSIO;
+class Chkpt;
 
 /*! \ingroup MINTS
  *  \class Wavefunction
@@ -85,26 +90,26 @@ protected:
     /// Density convergence threshold
     double density_threshold_;
 
-    /// Total alpha and beta electrons per irrep
+    /// Total alpha and beta electrons
     int nalpha_, nbeta_;
 
     /// Number of doubly occupied per irrep
-    int doccpi_[8];
+    Dimension doccpi_;
     /// Number of singly occupied per irrep
-    int soccpi_[8];
+    Dimension soccpi_;
     /// Number of frozen core per irrep
-    int frzcpi_[8];
+    Dimension frzcpi_;
     /// Number of frozen virtuals per irrep
-    int frzvpi_[8];
+    Dimension frzvpi_;
     /// Number of alpha electrons per irrep
-    int nalphapi_[8];
+    Dimension nalphapi_;
     /// Number of beta electrons per irrep
-    int nbetapi_[8];
+    Dimension nbetapi_;
 
     /// Number of so per irrep
-    int nsopi_[8];
+    Dimension nsopi_;
     /// Number of mo per irrep
-    int nmopi_[8];
+    Dimension nmopi_;
 
     /// The energy associated with this wavefunction
     double energy_;
@@ -117,34 +122,34 @@ protected:
     int nirrep_;
 
     /// Alpha MO coefficients
-    SharedMatrix Ca_;
+    boost::shared_ptr<Matrix> Ca_;
     /// Beta MO coefficients
-    SharedMatrix Cb_;
+    boost::shared_ptr<Matrix> Cb_;
 
     /// Alpha density matrix
-    SharedMatrix Da_;
+    boost::shared_ptr<Matrix> Da_;
     /// Beta density matrix
-    SharedMatrix Db_;
+    boost::shared_ptr<Matrix> Db_;
 
     /// Lagrangian matrix
-    SharedMatrix Lagrangian_;
+    boost::shared_ptr<Matrix> Lagrangian_;
 
     /// Alpha Fock matrix
-    SharedMatrix Fa_;
+    boost::shared_ptr<Matrix> Fa_;
     /// Beta Fock matrix
-    SharedMatrix Fb_;
+    boost::shared_ptr<Matrix> Fb_;
 
     /// Alpha orbital eneriges
-    SharedVector epsilon_a_;
+    boost::shared_ptr<Vector> epsilon_a_;
     /// Beta orbital energies
-    SharedVector epsilon_b_;
+    boost::shared_ptr<Vector> epsilon_b_;
 
     // Callback routines to Python
     std::vector<void*> precallbacks_;
     std::vector<void*> postcallbacks_;
 
     /// If a gradient is available it will be here:
-    SharedMatrix gradient_;
+    boost::shared_ptr<Matrix> gradient_;
 
 private:
     // Wavefunction() {}
@@ -187,21 +192,21 @@ public:
     static void initialize_singletons();
 
     /// Returns the DOCC per irrep array. You DO NOT own this array.
-    int* doccpi() const { return (int*)doccpi_; }
+    const Dimension& doccpi() const { return doccpi_; }
     /// Returns the SOCC per irrep array. You DO NOT own this array.
-    int* soccpi() const { return (int*)soccpi_; }
+    const Dimension& soccpi() const { return soccpi_; }
     /// Returns the number of SOs per irrep array. You DO NOT own this array.
-    int* nsopi() const { return (int*)nsopi_; }
+    const Dimension& nsopi() const { return nsopi_; }
     /// Returns the number of MOs per irrep array. You DO NOT own this array.
-    int* nmopi() const { return (int*)nmopi_; }
+    const Dimension& nmopi() const { return nmopi_; }
     /// Returns the number of alpha electrons per irrep array. You DO NOT own this array.
-    int* nalphapi() const { return (int*)nalphapi_; }
+    const Dimension& nalphapi() const { return nalphapi_; }
     /// Returns the number of beta electrons per irrep array. You DO NOT own this array.
-    int* nbetapi() const { return (int*)nbetapi_; }
+    const Dimension& nbetapi() const { return nbetapi_; }
     /// Returns the frozen core orbitals per irrep array. You DO NOT own this array.
-    int* frzcpi() const { return (int*)frzcpi_; }
+    const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array. You DO NOT own this array.
-    int* frzvpi() const { return (int*)frzvpi_; }
+    const Dimension& frzvpi() const { return frzvpi_; }
     /// Returns the number of SOs
     int nso() const { return nso_; }
     /// Returns the number of MOs
@@ -212,41 +217,25 @@ public:
     double reference_energy () const { return energy_; }
 
     /// Returns the alpha electrons MO coefficients
-    SharedMatrix Ca() const {
-        if (!Ca_)
-            if (!reference_wavefunction_)
-                throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
-            else
-                return reference_wavefunction_->Ca();
-
-        return Ca_;
-    }
+    boost::shared_ptr<Matrix> Ca() const;
     /// Returns the beta electrons MO coefficients
-    SharedMatrix Cb() const {
-        if (!Cb_)
-            if (!reference_wavefunction_)
-                throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
-            else
-                return reference_wavefunction_->Cb();
-
-        return Cb_;
-    }
+    boost::shared_ptr<Matrix> Cb() const;
     /// Returns the alpha Fock matrix
-    SharedMatrix Fa() const { return Fa_; }
+    boost::shared_ptr<Matrix> Fa() const;
     /// Returns the beta Fock matrix
-    SharedMatrix Fb() const { return Fb_; }
+    boost::shared_ptr<Matrix> Fb() const;
     /// Returns the alpha orbital energies
-    SharedVector epsilon_a() const { return epsilon_a_; }
+    boost::shared_ptr<Vector> epsilon_a() const;
     /// Returns the beta orbital energies
-    SharedVector epsilon_b() const { return epsilon_b_; }
+    boost::shared_ptr<Vector> epsilon_b() const;
 
     /// Returns the alpha OPDM for the wavefunction
-    SharedMatrix Da() const { return Da_; }
+    boost::shared_ptr<Matrix> Da() const;
     /// Returns the beta OPDM for the wavefunction
-    SharedMatrix Db() const { return Db_; }
+    boost::shared_ptr<Matrix> Db() const;
 
     /// Returns the Lagrangian in SO basis for the wavefunction
-    SharedMatrix X() const { return Lagrangian_; }
+    boost::shared_ptr<Matrix> X() const;
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);
@@ -259,9 +248,9 @@ public:
     void call_postiteration_callbacks();
 
     /// Returns the gradient
-    SharedMatrix gradient() const { return gradient_; }
+    boost::shared_ptr<Matrix> gradient() const;
     /// Set the gradient for the wavefunction
-    void set_gradient(SharedMatrix& grad) { gradient_ = grad; }
+    void set_gradient(boost::shared_ptr<Matrix>& grad);
 };
 
 }

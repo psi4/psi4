@@ -3,7 +3,10 @@
 
 #include <cstdio>
 #include <string>
+#include <vector>
 #include <libparallel/serialize.h>
+#include <libparallel/parallel.h>
+#include "dimension.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -11,6 +14,7 @@ template<class T> class shared_ptr;
 
 namespace python{
 class tuple;
+class list;
 }}
 
 namespace psi {
@@ -41,9 +45,9 @@ protected:
     /// Number of irreps
     int nirrep_;
     /// Rows per irrep array
-    int *rowspi_;
+    Dimension rowspi_;
     /// Columns per irrep array
-    int *colspi_;
+    Dimension colspi_;
     /// Name of the matrix
     std::string name_;
     /// Symmetry of this matrix (in most cases this will be 0 [totally symmetric])
@@ -58,18 +62,9 @@ protected:
     void copy_from(double ***);
 
     /// allocate a block matrix -- analogous to libciomr's block_matrix
-    static double** matrix(int nrow, int ncol) {
-        double** mat = (double**) malloc(sizeof(double*)*nrow);
-        const size_t size = sizeof(double)*nrow*ncol;
-        mat[0] = (double*) malloc(size);
-        memset((void *)mat[0], 0, size);
-        for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
-        return mat;
-    }
+    static double** matrix(int nrow, int ncol);
     /// free a (block) matrix -- analogous to libciomr's free_block
-    static void free(double** Block) {
-        ::free(Block[0]);  ::free(Block);
-    }
+    static void free(double** Block);
 
     void print_mat(const double *const *const a, int m, int n, FILE *out) const;
 
@@ -163,6 +158,15 @@ public:
      */
     Matrix(const std::string& name, const Dimension& rows, const Dimension& cols, int symmetry = 0);
 
+    /**
+     * Constructor using Dimension objects to define order and dimensionality.
+     *
+     * @param name Name of the matrix.
+     * @param rows Dimension object providing row information.
+     * @param cols Dimension object providing column information.
+     */
+    Matrix(const Dimension& rows, const Dimension& cols, int symmetry = 0);
+
     /// Destructor, frees memory
     ~Matrix();
 
@@ -175,13 +179,17 @@ public:
      */
     void init(int nirrep, const int *rowspi, const int *colspi, const std::string& name = "", int symmetry = 0);
 
+    void init(const Dimension& rowspi, const Dimension& colspi, const std::string& name = "", int symmetry = 0);
+
     /// Creates an exact copy of the matrix and returns it.
     Matrix* clone() const;
 
     /**
      * Convenient creation function return shared_ptr<Matrix>
      */
-    boost::shared_ptr<Matrix> create(const std::string& name, int nirrep, int* rows, int *cols);
+    static boost::shared_ptr<Matrix> create(const std::string& name,
+                                            const Dimension& rows,
+                                            const Dimension& cols);
 
     /**
      * @{
@@ -192,6 +200,21 @@ public:
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
+
+    /**
+    * Horizontally concatenate matrices
+    * @param mats std::vector of Matrix objects to concatenate
+    */
+    static boost::shared_ptr<Matrix> horzcat(const std::vector<boost::shared_ptr<Matrix> >& mats);
+
+    /**
+    * Vertically concatenate matrices
+    * @param mats std::vector of Matrix objects to concatenate
+    */
+    static boost::shared_ptr<Matrix> vertcat(const std::vector<boost::shared_ptr<Matrix> >& mats);
+
+    /// Copies data to the row specified. Assumes data is of correct length.
+    void copy_to_row(int h, int row, double const * const data);
 
     enum SaveType {
         Full,
@@ -460,12 +483,20 @@ public:
     int coldim(const int& h = 0) const { return colspi_[h]; }
 
     /// Returns the rows per irrep array
-    int *rowspi() const {
+    const Dimension& rowspi() const {
         return rowspi_;
     }
+    /// Returns the rows per irrep array
+    int rowspi(const int& h) const {
+        return rowdim(h);
+    }
     /// Returns the columns per irrep array
-    int *colspi() const {
+    const Dimension& colspi() const {
         return colspi_;
+    }
+    /// Returns the columns per irrep array
+    int colspi(const int& h) const {
+        return coldim(h);
     }
     /// Returns the number of irreps
     int nirrep() const {
@@ -654,6 +685,38 @@ public:
     /// @}
 
     /// @{
+    /** Raw access to the underlying dgemm call. Saves result to this.
+     * \param transa Transpose the left matrix
+     * \param transb Transpose the right matrix
+     * \param
+     */
+    void gemm(const char& transa, const char& transb,
+              const std::vector<int>& m,
+              const std::vector<int>& n,
+              const std::vector<int>& k,
+              const double& alpha,
+              const boost::shared_ptr<Matrix>& a, const std::vector<int>& lda,
+              const boost::shared_ptr<Matrix>& b, const std::vector<int>& ldb,
+              const double& beta,
+              const std::vector<int>& ldc,
+              const std::vector<unsigned long>& offset_a = std::vector<unsigned long>(),
+              const std::vector<unsigned long>& offset_b = std::vector<unsigned long>(),
+              const std::vector<unsigned long>& offset_c = std::vector<unsigned long>());
+    void gemm(const char& transa, const char& transb,
+              const int& m,
+              const int& n,
+              const int& k,
+              const double& alpha,
+              const boost::shared_ptr<Matrix>& a, const int& lda,
+              const boost::shared_ptr<Matrix>& b, const int& ldb,
+              const double& beta,
+              const int& ldc,
+              const unsigned long& offset_a = 0,
+              const unsigned long& offset_b = 0,
+              const unsigned long& offset_c = 0);
+    /// @}
+
+    /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz = Ascending);
     void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
@@ -705,6 +768,12 @@ public:
      *  computed by cholesky_factorize().
      */
     void invert();
+
+    /*! Computes the inverse of a matrix using the LU factorization.
+     *  This method inverts U and then computes inv(A) by solving the system
+     *  inv(A)*L = inv(U) for inv(A).
+     */
+    void general_invert();
 
     /*! Computes the pseudo power of a real symmetric matrix
     *   A using eigendecomposition. This operation is uniquely defined
@@ -774,8 +843,8 @@ public:
      *
      * \returns true if a vector is added, false otherwise
     */
-    bool schmidt_add(int rows, Vector& v) throw();
-    bool schmidt_add(int rows, double* v) throw();
+    bool schmidt_add(int h, int rows, Vector& v) throw();
+    bool schmidt_add(int h, int rows, double* v) throw();
     /// @}
 
     /*!
@@ -822,6 +891,12 @@ public:
     bool equal(const Matrix* rhs);
     /// @}
 
+    /**
+     * Takes a Python object (assumes that it is a "matrix" array) and
+     * sets the matrix to that.
+     */
+    void set_by_python_list(const boost::python::list& data);
+
     friend class Vector;
 };
 
@@ -848,19 +923,9 @@ protected:
     void copy_from(double **);
 
     /// allocate a block matrix -- analogous to libciomr's block_matrix
-    static double** matrix(int nrow, int ncol) {
-        double** mat = (double**) malloc(sizeof(double*)*nrow);
-        const size_t size = sizeof(double)*nrow*ncol;
-        mat[0] = (double*) malloc(size);
-        //bzero((void*)mat[0],size);
-        memset((void *)mat[0], '\0', size);
-        for(int r=1; r<nrow; ++r) mat[r] = mat[r-1] + ncol;
-        return mat;
-    }
+    static double** matrix(int nrow, int ncol);
     /// free a (block) matrix -- analogous to libciomr's free_block
-    static void free(double** Block) {
-        ::free(Block[0]);  ::free(Block);
-    }
+    static void free(double** Block);
 
 public:
     /// Default constructor, zeros everything out
@@ -1089,9 +1154,10 @@ namespace madness {  namespace archive {
     template <class Archive>
     struct ArchiveStoreImpl< Archive, boost::shared_ptr<psi::Matrix> > {
         static void store(const Archive &ar, const boost::shared_ptr<psi::Matrix> &t) {
-            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name() &
-                 wrap(t->rowspi(), t->nirrep()) &
-                 wrap(t->colspi(), t->nirrep());
+            ar & t->size(0) & t->nirrep() & t->symmetry() & t->name();
+            for (int i=0; i < t->nirrep(); i++) {
+                ar & t->rowdim(i) & t->coldim(i);
+            }
             for (int i=0; i < t->nirrep(); i++) {
                 ar & t->size(i);
                 if (t->size(i)) {
@@ -1110,8 +1176,12 @@ namespace madness {  namespace archive {
             std::string name;
             ar & sz & nir & symm & name;
             if (sz) {
-                int rows[nir], cols[nir];
-                ar & wrap(rows, nir) & wrap(cols, nir);
+                int *rows = new int[nir];
+                int *cols = new int[nir];
+
+                for (int i=0; i < t->nirrep(); i++) {
+                    ar & rows[i] & cols[i];
+                }
                 t = boost::shared_ptr<psi::Matrix>(new psi::Matrix(name, nir, rows, cols, symm));
                 for (int i=0; i < t->nirrep(); i++) {
                     size_t szi;
@@ -1119,6 +1189,7 @@ namespace madness {  namespace archive {
                     if (szi != t->size(i)) throw psi::PSIEXCEPTION("size mismatch deserializing a psi Matrix");
                     if (szi) ar & wrap(&(t->pointer(i)[0][0]), t->size(i));
                 }
+                free(rows); free(cols);
             }
             else {
                 t = boost::shared_ptr<psi::Matrix>(new psi::Matrix());

@@ -599,13 +599,24 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_nabla()
     return nabla;
 }
 
+boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
+                                                   bool project_out_translations,
+                                                   bool project_out_rotations)
+{
+    return boost::shared_ptr<CdSalcList>(new CdSalcList(molecule_, factory_,
+                                                        needed_irreps,
+                                                        project_out_translations,
+                                                        project_out_rotations));
+}
+
 void MintsHelper::play()
 {
 #ifdef HAVE_MADNESS
-    Distributed_Matrix t("T", 10, 10);
-    t.print_all_blocks();
-
-    Communicator::world->sync();
+    int M = 10;
+    int N = 10;
+    int tile_size = 3; // This makes the tiles 3 x 3
+    Distributed_Matrix t(M, N, tile_size, "T");
+    t.print_all_tiles();
 #endif
 }
 

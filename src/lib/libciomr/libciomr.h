@@ -1,4 +1,4 @@
-/* 
+/*
 ** Declarations for functions found in libciomr.a
 **
 ** C. David Sherrill and T. Daniel Crawford
@@ -19,7 +19,7 @@ char* psi_ifname();
 char* psi_ofname();
 char* psi_fprefix();
 
-void ffile(FILE **fptr, char *suffix, int code);
+void ffile(FILE **fptr, const char *suffix, int code);
 void ffile_noexit(FILE **fptr, char *suffix, int code);
 void ffileb(FILE **fptr, char *suffix, int code);
 void ffileb_noexit(FILE **fptr, char *suffix, int code);
@@ -59,7 +59,7 @@ void print_mat(double **a, int rows, int cols, FILE *out) ;
 
 void rsp(int nm, int n, int nv, double *array, double *evals, int matz,
          double **evecs, double toler) ;
-void sq_rsp(int nm, int n, double **array, double *evals, int matz, 
+void sq_rsp(int nm, int n, double **array, double *evals, int matz,
             double **evecs, double toler) ;
 void sq_to_tri(double **bmat,double *amat,int size);
 

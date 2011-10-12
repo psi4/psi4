@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +9,7 @@
 #include <libiwl/iwl.h>
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
+#include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Frozen.h"
@@ -18,12 +19,12 @@
 namespace psi { namespace ccdensity {
 
 void idx_permute(dpdfile4 *File, struct iwlbuf *OutBuf,
-		 int **bucket_map, int p, int q, int r, int s,
-		 int perm_pr, int perm_qs, int perm_prqs,
-		 double value, FILE *outfile);
+                 int **bucket_map, int p, int q, int r, int s,
+                 int perm_pr, int perm_qs, int perm_prqs,
+                 double value, FILE *outfile);
 
 int file_build(dpdfile4 *File, int inputfile, double tolerance,
-	       int perm_pr, int perm_qs, int perm_prqs, int keep)
+               int perm_pr, int perm_qs, int perm_prqs, int keep)
 {
   struct iwlbuf InBuf;
   int lastbuf;
@@ -57,48 +58,48 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
   bucket_rowdim[0] = init_int_array(nirreps);
   bucket_size = (int **) malloc(sizeof(int *));
   bucket_size[0] = init_int_array(nirreps);
-    
+
   /* Figure out how many buckets we need and where each p,q goes */
   for(h=0,core_left=memoryd,nbuckets=1; h < nirreps; h++) {
 
       row_length = File->params->coltot[h^(File->my_irrep)];
-	       
+
       for(row=0; row < File->params->rowtot[h]; row++) {
 
-	  if((core_left - row_length) >= 0) {
-	      core_left -= row_length;
-	      bucket_rowdim[nbuckets-1][h]++;
-	      bucket_size[nbuckets-1][h] += row_length;
-	    }
-	  else {
-	      nbuckets++;
-	      core_left = memoryd - row_length;
+          if((core_left - row_length) >= 0) {
+              core_left -= row_length;
+              bucket_rowdim[nbuckets-1][h]++;
+              bucket_size[nbuckets-1][h] += row_length;
+            }
+          else {
+              nbuckets++;
+              core_left = memoryd - row_length;
 
-	      /* Make room for another bucket */
-	      bucket_offset = (int **) realloc((void *) bucket_offset,
-					       nbuckets * sizeof(int *));
-	      bucket_offset[nbuckets-1] = init_int_array(nirreps);
-	      bucket_offset[nbuckets-1][h] = row;
+              /* Make room for another bucket */
+              bucket_offset = (int **) realloc((void *) bucket_offset,
+                                               nbuckets * sizeof(int *));
+              bucket_offset[nbuckets-1] = init_int_array(nirreps);
+              bucket_offset[nbuckets-1][h] = row;
 
-	      bucket_rowdim = (int **) realloc((void *) bucket_rowdim,
-					       nbuckets * sizeof(int *));
-	      bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
-	      bucket_rowdim[nbuckets-1][h] = 1;
+              bucket_rowdim = (int **) realloc((void *) bucket_rowdim,
+                                               nbuckets * sizeof(int *));
+              bucket_rowdim[nbuckets-1] = init_int_array(nirreps);
+              bucket_rowdim[nbuckets-1][h] = 1;
 
-	      bucket_size = (int **) realloc((void *) bucket_size,
-					     nbuckets * sizeof(int *));
-	      bucket_size[nbuckets-1] = init_int_array(nirreps);
-	      bucket_size[nbuckets-1][h] = row_length;
-	    }
+              bucket_size = (int **) realloc((void *) bucket_size,
+                                             nbuckets * sizeof(int *));
+              bucket_size[nbuckets-1] = init_int_array(nirreps);
+              bucket_size[nbuckets-1][h] = row_length;
+            }
 
-	  p = File->params->roworb[h][row][0];
-	  q = File->params->roworb[h][row][1];
-	  bucket_map[p][q] = nbuckets - 1;
-	}
+          p = File->params->roworb[h][row][0];
+          q = File->params->roworb[h][row][1];
+          bucket_map[p][q] = nbuckets - 1;
+        }
     }
 
   fprintf(outfile, "\tSorting File: %s nbuckets = %d\n",
-	  File->label, nbuckets);
+          File->label, nbuckets);
 
   /* Set up IWL buffers for sorting */
   SortBuf = (struct iwlbuf *) malloc(nbuckets * sizeof(struct iwlbuf));
@@ -120,7 +121,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute(File,SortBuf,bucket_map,p,q,r,s,
-		  perm_pr,perm_qs,perm_prqs,value,outfile);
+                  perm_pr,perm_qs,perm_prqs,value,outfile);
 
           } /* end loop through current buffer */
 
@@ -138,8 +139,8 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       value = (double) valptr[InBuf.idx];
 
       idx_permute(File,SortBuf,bucket_map,p,q,r,s,
-		  perm_pr,perm_qs,perm_prqs,value,outfile);
-      
+                  perm_pr,perm_qs,perm_prqs,value,outfile);
+
       } /* end loop through current buffer */
     } /* end loop over reading buffers */
 
@@ -159,41 +160,41 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
       lastbuf = 0;
 
       for(h=0; h < nirreps; h++) {
-	  File->matrix[h] = block_matrix(bucket_rowdim[n][h],
-					 File->params->coltot[h]);
-	}
+          File->matrix[h] = block_matrix(bucket_rowdim[n][h],
+                                         File->params->coltot[h]);
+        }
 
       while(!lastbuf) {
-	  iwl_buf_fetch(&SortBuf[n]);
-	  lastbuf = SortBuf[n].lastbuf;
+          iwl_buf_fetch(&SortBuf[n]);
+          lastbuf = SortBuf[n].lastbuf;
 
-	  for(idx=4*SortBuf[n].idx; SortBuf[n].idx < SortBuf[n].inbuf;
-	      SortBuf[n].idx++) {
-	      p = (int) SortBuf[n].labels[idx++];
-	      q = (int) SortBuf[n].labels[idx++];
-	      r = (int) SortBuf[n].labels[idx++];
-	      s = (int) SortBuf[n].labels[idx++];
+          for(idx=4*SortBuf[n].idx; SortBuf[n].idx < SortBuf[n].inbuf;
+              SortBuf[n].idx++) {
+              p = (int) SortBuf[n].labels[idx++];
+              q = (int) SortBuf[n].labels[idx++];
+              r = (int) SortBuf[n].labels[idx++];
+              s = (int) SortBuf[n].labels[idx++];
 
-	      value = (double) SortBuf[n].values[SortBuf[n].idx];
+              value = (double) SortBuf[n].values[SortBuf[n].idx];
 
-	      h = File->params->psym[p] ^ File->params->qsym[q];
+              h = File->params->psym[p] ^ File->params->qsym[q];
 
-	      row = File->params->rowidx[p][q];
-	      col = File->params->colidx[r][s];
+              row = File->params->rowidx[p][q];
+              col = File->params->colidx[r][s];
 
-	      offset = bucket_offset[n][h];
+              offset = bucket_offset[n][h];
 
-	      File->matrix[h][row-offset][col] = value;
-	    }
-	}
+              File->matrix[h][row-offset][col] = value;
+            }
+        }
 
 
       for(h=0; h < nirreps;h++) {
-	  if(bucket_size[n][h])
-	     psio_write(File->filenum, File->label, (char *) File->matrix[h][0],
-			bucket_size[n][h]*sizeof(double), next, &next);
-	  free_block(File->matrix[h]);
-	}
+          if(bucket_size[n][h])
+             psio_write(File->filenum, File->label, (char *) File->matrix[h][0],
+                        bucket_size[n][h]*sizeof(double), next, &next);
+          free_block(File->matrix[h]);
+        }
 
       iwl_buf_close(&SortBuf[n], 0);
     }
@@ -206,7 +207,7 @@ int file_build(dpdfile4 *File, int inputfile, double tolerance,
   free(bucket_rowdim);
 
   free(SortBuf);
-  
+
   return 0;
 }
 

@@ -16,6 +16,8 @@
 
 #include <libmints/mints.h>
 #include <libpsio/psio.h>
+#include <libpsio/psio.hpp>
+#include <libpsio/aiohandler.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <lib3index/3index.h>
@@ -88,7 +90,7 @@ protected:
   void zero_disk(int, const char *, int, int);
 
 public:
-  SAPT(Options& options, boost::shared_ptr<PSIO> psio, 
+  SAPT(Options& options, boost::shared_ptr<PSIO> psio,
     boost::shared_ptr<Chkpt> chkpt);
   virtual ~SAPT();
 

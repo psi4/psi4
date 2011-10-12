@@ -6,6 +6,7 @@
 #include <cmath>
 #include <cstdlib>
 
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libiwl/iwl.h>
 #include <libmoinfo/libmoinfo.h>

@@ -171,9 +171,9 @@ void RHF::save_fock()
 
     if (initialized_diis_manager_ == false) {
         if (scf_type_ == "direct")
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore, psio_));
+            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::InCore));
         else
-            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk, psio_));
+            diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));
         diis_manager_->set_error_vector_size(1, DIISEntry::Matrix, FDSmSDF.get());
         diis_manager_->set_vector_size(1, DIISEntry::Matrix, Fa_.get());
         initialized_diis_manager_ = true;

@@ -1,3 +1,4 @@
+#include <boost/shared_ptr.hpp>
 #include <libmints/mints.h>
 #include <libqt/qt.h>
 #include <math.h>
@@ -26,16 +27,16 @@ void QR::form_QR()
     int n = A_->rowspi()[0];
 
     if (debug_) {
-     
+
         boost::shared_ptr<Matrix> R2(new Matrix("R",n,n));
         R2->copy(A_);
         double** R2p = R2->pointer();
-    
+
         boost::shared_ptr<Vector> T2(new Vector("T",n));
-        double* T2p = T2->pointer(); 
+        double* T2p = T2->pointer();
 
         boost::shared_ptr<IntVector> P2(new IntVector("Pivots",n));
-        int* P2p = P2->pointer(); 
+        int* P2p = P2->pointer();
 
         double work_val2 = 0;
 
@@ -61,16 +62,16 @@ void QR::form_QR()
 
     // Pivot values of reflector generators
     boost::shared_ptr<Vector> T(new Vector("T",n));
-    double* Tp = T->pointer(); 
+    double* Tp = T->pointer();
 
-    // Initial pivots   
+    // Initial pivots
     for (int l = 0; l < n; l++) {
         pivots_.push_back(l);
     }
 
-    // Temp for pivoting columns 
+    // Temp for pivoting columns
     double* temp = new double[n];
-    // Temp for Householder vector 
+    // Temp for Householder vector
     double* v = new double[n];
     // Temp for Householder cumulant
     double* q = new double[n];
@@ -86,30 +87,30 @@ void QR::form_QR()
         int n2 = n - l;
 
         // Determine pivot by column of residual with max l2 norm
-        int pivot = l; 
+        int pivot = l;
         double max_pivot = 0.0;
         for (int m = l; m < n; m++) {
             double l2 = C_DNRM2(n2,&Rp[l][m],n);
             if (max_pivot <= l2) {
-                max_pivot = l2;   
+                max_pivot = l2;
                 pivot = m;
-            }     
+            }
         }
 
         if (debug_) {
-            fprintf(outfile, "Step l = %d: pivoting to column %d\n\n", l, pivot); 
+            fprintf(outfile, "Step l = %d: pivoting to column %d\n\n", l, pivot);
         }
 
-        // Perform pivot 
+        // Perform pivot
         C_DCOPY(n,&Rp[0][pivot],n,temp,1);
         C_DCOPY(n,&Rp[0][l],n,&Rp[0][pivot],n);
         C_DCOPY(n,temp,1,&Rp[0][l],n);
-    
-        int temp_pivot = pivots_[pivot];
-        pivots_[pivot] = pivots_[l]; 
-        pivots_[l] = temp_pivot; 
 
-        // Termination based on l2 norm of pivot residual, not 
+        int temp_pivot = pivots_[pivot];
+        pivots_[pivot] = pivots_[l];
+        pivots_[l] = temp_pivot;
+
+        // Termination based on l2 norm of pivot residual, not
         // pivot itself
         if (max_pivot < delta_)
             break;
@@ -118,24 +119,24 @@ void QR::form_QR()
         nQ++;
 
         // Last column is a void reflector
-        if (l == n - 1) 
-            break; 
+        if (l == n - 1)
+            break;
 
         // Alpha takes the opposite sign as the pivot, for stability
-        double alpha = (Rp[l][l] < 0.0 ? -max_pivot : max_pivot); 
+        double alpha = (Rp[l][l] < 0.0 ? -max_pivot : max_pivot);
 
         // Build the Householder vector
         C_DCOPY(n2,&Rp[l][l],n,v,1);
         v[0] += alpha;
         C_DSCAL(n2,1.0/C_DNRM2(n2,v,1),v,1);
-        
+
         // Apply the Householder reflection to the rest of R
         C_DGEMV('T',n2,n2-1,1.0,&Rp[l][l+1],n,v,1,0.0,q,1);
         C_DGER(n2,n2-1,-2.0,v,1,&q[0],1,&Rp[l][l+1],n);
 
         // Explicitly reflect the l-th column
         Rp[l][l] = -alpha;
-       
+
         // Save the Householder reflector generator for later use
         // The body of the reflector goes in the lower triangle of R,
         // the value of the pivot of the reflector goes in T
@@ -146,7 +147,7 @@ void QR::form_QR()
         if (debug_) {
             Rtemp->print();
             T->print();
-        } 
+        }
     }
 
     // ==> Q <== //
@@ -158,7 +159,7 @@ void QR::form_QR()
         Qp[i][i] = 1.0;
 
         // No elements below this point (null reflector)
-        if (i == n - 1) 
+        if (i == n - 1)
             break;
 
         // How many elements remain to be copied?
@@ -179,7 +180,7 @@ void QR::form_QR()
     double* work = new double[lwork];
 
     C_DORGQR(n,nQ,nQ,Qp[0],n,Tp,work,lwork);
- 
+
     delete[] work;
 
     // Repackage R
@@ -214,22 +215,22 @@ void QR::form_PN()
     double** Vp = V->pointer();
     double*  dp = d->pointer();
 
-    // Transform to reduced basis 
-    C_DGEMM('N','N',nQ,n,n,1.0,Qp[0],n,Ap[0],n,0.0,Tp[0],n); 
-    C_DGEMM('N','T',nQ,nQ,n,1.0,Tp[0],n,Qp[0],n,0.0,Dp[0],nQ); 
+    // Transform to reduced basis
+    C_DGEMM('N','N',nQ,n,n,1.0,Qp[0],n,Ap[0],n,0.0,Tp[0],n);
+    C_DGEMM('N','T',nQ,nQ,n,1.0,Tp[0],n,Qp[0],n,0.0,Dp[0],nQ);
 
     T.reset();
 
-    // Eigendecompose in the reduced basis  
+    // Eigendecompose in the reduced basis
     D->diagonalize(V,d);
-    
+
     // Determine the number of negative/positive roots
     int nN = 0;
     int nP = 0;
     for (int i = 0; i < nQ; i++) {
         if (dp[i] < 0)
             nN++;
-        else 
+        else
             nP++;
     }
 
