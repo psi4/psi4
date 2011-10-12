@@ -120,7 +120,7 @@ public:
 class MatrixRHamiltonian : public RHamiltonian {
 
 protected:
-
+    
     boost::shared_ptr<Matrix> M_;
 
 public:
@@ -177,7 +177,11 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
+    /// Unpack solver eigenvector to symmetry blocked t1
+    virtual std::vector<boost::shared_ptr<Matrix> > unpack(boost::shared_ptr<Vector> eigenvector);
+
     void set_singlet(bool singlet) { singlet_ = singlet; }
+
 };
 
 class CPHFRHamiltonian : public RHamiltonian {
@@ -202,6 +206,8 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
+    /// Unpack solver x to symmetry blocked t1
+    virtual std::vector<boost::shared_ptr<Matrix> > unpack(boost::shared_ptr<Vector> x);
 };
 
 }
