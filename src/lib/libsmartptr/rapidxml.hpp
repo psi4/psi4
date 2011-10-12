@@ -1390,6 +1390,7 @@ namespace rapidxml
         template<int Flags>
         void parse(Ch *text)
         {
+            Ch* start = text;
             assert(text);
             
             // Remove current contents
@@ -1415,7 +1416,9 @@ namespace rapidxml
                         this->append_node(node);
                 }
                 else
+                {
                     RAPIDXML_PARSE_ERROR("expected <", text);
+                }
             }
 
         }

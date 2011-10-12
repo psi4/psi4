@@ -50,8 +50,6 @@ struct DataCacheEntry :
 {
 
     public:
-        uli offset;
-
         char* data;
 
         /** This holds a pointer to the data location */
@@ -59,12 +57,18 @@ struct DataCacheEntry :
 
         bool pulled;
 
+        DataCacheEntry* next;
+
+        DataCacheEntry* prev;
+
+        uli threadnum;
+
     public:
         /**
             Create a data cache entry pointing at the given memory location
             @param d The memory location
         */
-        DataCacheEntry(char* d, uli offset);
+        DataCacheEntry(char* d);
 
         ~DataCacheEntry();
 
@@ -102,31 +106,22 @@ class DataCache :
 
         size_t storage_;
 
-        DataCacheEntry* entries_[NCACHE_ENTRIES_MAX];
+        DataCacheEntry* free_entries_start_;
 
-        DataCacheEntry* all_entries_[NCACHE_ENTRIES_MAX];
+        DataCacheEntry* used_entries_start_;
+
+        DataCacheEntry* used_entries_end_;
 
         uli blocksize_;
 
         uli nentries_;
         
-        uli* offsets_;
-
-        uli* starts_;
-
-        uli* stops_;
-
         /**
             Start looking for an open cache entry at the offset
         */
-        DataCacheEntry* find_entry(uli offset, uli stop, bool check_occupied);
+        DataCacheEntry* find_free_entry();
 
-        void process_entry(DataCacheEntry* entry, CachedStorageBlock* block, uli threadnum);
-
-        DataCacheEntry* pull_unused(uli threadnum);
-
-        DataCacheEntry* pull_any(uli threadnum);
-
+        DataCacheEntry* find_used_entry();
 
     public:
         /**
@@ -140,28 +135,20 @@ class DataCache :
             size_t blocksize
         );
 
-        DataCache(size_t blocksize);
-
         ~DataCache();
 
         /**
-            This method is not thread-safe and assumes
-            the cache entry has been locked.
             @param entry
         */
+        void free(DataCacheEntry* entry);
+
         void insert(DataCacheEntry* entry);
 
         /**
-            This method is not thread-safe and assumes
-            the cache entry has been locked.
+            This method is thread-safe and returns a locked cache entry
             @param entry
         */
-        void pull(DataCacheEntry* entry);
-
-        void append(
-            char* data,
-            size_t blocksize
-        );
+        bool pull(DataCacheEntry* entry);
 
         /**
             Pull a new data cache entry and assign the given data block
@@ -170,16 +157,7 @@ class DataCache :
             @param block The block to assign as owner to the new cache entry
             @return A new data cache entry
         */
-        DataCacheEntry* pull(CachedStorageBlock* block);
-
-        void print_details(std::ostream& os = std::cout);
-
-        void flush();
-
-        /**
-            @return The number of available blocks in cache
-        */
-        uli ncache() const;
+        DataCacheEntry* pull(Cachable* owner);
 
         /**
             @return The number of blocks with no linked data

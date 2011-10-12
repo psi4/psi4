@@ -1,5 +1,6 @@
 #include "threadimpl.h"
 #include "exception.h"
+#include "tensorblock.h"
 
 #include <errno.h>
 
@@ -9,6 +10,8 @@ using namespace std;
 #ifdef redefine_size_t
 #define size_t custom_size_t
 #endif
+
+
 
 DECLARE_PARENT_MALLOC(ThreadLock);
 DECLARE_SUB_MALLOC(ThreadLock,NullThreadLock);
@@ -21,6 +24,10 @@ void*
 pthread_run(void* thrptr)
 {
     Thread* thr = static_cast<Thread*>(thrptr);
+#if USE_DEFAULT_THREAD_STACK
+    int x; void* ptr = &x;
+    YetiRuntime::set_thread_stack(thr->get_thread_number(), ptr);
+#endif
     thr->run();
     return 0;
 }
@@ -122,7 +129,11 @@ pThreadLock::trylock()
 void
 pThreadLock::unlock()
 {
-    pthread_mutex_unlock(&mutex_);
+    int signal = pthread_mutex_unlock(&mutex_);
+    if (signal != 0)
+    {
+        raise(SanityCheckError, "unlocking mutex that I don't own");
+    }
 }
 
 pthread_mutex_t*
@@ -169,7 +180,7 @@ pThreadGroup::pThreadGroup(uli nthread)
 {
     ::memset(threads_, 0, nthread * sizeof(void*));
     ::memset(pthreads_, 0, nthread * sizeof(void*));
-    for (uli i=0; i < nthread; ++i)
+    for (uli i=1; i < nthread; ++i)
     {
         int status = pthread_attr_init(&attrs_[i]);
         if (status != 0)
@@ -185,14 +196,20 @@ pThreadGroup::pThreadGroup(uli nthread)
         //pthread_attr_setaffinity_np(&attrs_[i], sizeof(cpu_set_t), &cpuset);
 
 
+#if USE_DEFAULT_THREAD_STACK
+#else
         size_t stack_size = YetiRuntime::get_thread_stack_size();
         void* stack_start = YetiRuntime::get_thread_stack(i);
         status = pthread_attr_setstack(&attrs_[i], stack_start, stack_size);
         if (status != 0)
         {
-            cerr << "unable to set stack address" << endl;
+            cerr << "unable to set stack address " << stack_start 
+                << " stack size " << stack_size
+                << " on thread " << i << " with error "
+                << status << endl;
             abort();
         }
+#endif
     }
 }
 
@@ -227,13 +244,9 @@ pThreadGroup::add(Thread* thr)
 void
 pThreadGroup::run()
 {
-    if (nthread_ > 1)
-        YetiRuntime::set_threaded_runtime(true);
-
+    YetiRuntime::set_threaded_compute(true);
     for (uli t=1; t < nthread_; ++t)
     {
-        void* stackaddr;
-        pthread_attr_getstackaddr(&attrs_[t], &stackaddr);
         int status = pthread_create(&pthreads_[t], &attrs_[t],
                 pthread_run, reinterpret_cast<void*>(threads_[t]));
         if (status != 0)
@@ -241,14 +254,16 @@ pThreadGroup::run()
             cerr << "thread " << t << " not created properly" << endl;
             abort();
         }
+        //void* retval;
+        //status = pthread_join(pthreads_[t], &retval);
     }
-
     threads_[0]->run();
 }
 
 void
 pThreadGroup::wait()
 {
+    //return;
     void* retval;
     for (uli t=1; t < nthread_; ++t)
     {
@@ -265,9 +280,7 @@ pThreadGroup::wait()
             abort();
         }
     }
-
-
-    YetiRuntime::set_threaded_runtime(false);
+    YetiRuntime::set_threaded_compute(false);
 }
 
 
@@ -275,10 +288,16 @@ ThreadLock*
 pThreadGroup::get_lock()
 {
     ThreadLock* lock;
-    if (nthread_max_ > 1)
+    /** If we have multiple compute threads or we have a communication thread */
+    if (nthread_max_ > 1 || YetiRuntime::nproc() > 1)
+    {
         lock = new pThreadLock;
+    }
     else
-        lock = new NullThreadLock;
+    {
+        lock = new pThreadLock;
+        //lock = new NullThreadLock;
+    }
 
     return lock;
 }
@@ -297,6 +316,7 @@ NullThreadLock::unlock()
 bool
 NullThreadLock::trylock()
 {
+    heisenfxn(NullThreadLock::trylock);
     return true; //always free
 }
 
@@ -309,6 +329,12 @@ NullThreadLock::print(std::ostream &os) const
 Thread::Thread(uli threadnum)
     : threadnum_(threadnum)
 {
+}
+
+uli
+Thread::get_thread_number() const
+{
+    return threadnum_;
 }
 
 Thread::~Thread()
