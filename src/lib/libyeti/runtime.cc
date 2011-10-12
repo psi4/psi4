@@ -6,10 +6,24 @@
 #include "node.h"
 #include "tensorblock.h"
 #include "taskqueue.h"
+#include "aobasis.h"
+#include "env.h"
+#include "messenger.h"
+#include "exception.h"
 
 #include <libsmartptr/strop.h>
 #include "data.h"
 #include "sort.h"
+
+#include <psiconfig.h>
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
+#if HAVE_MPQC
+#include <util/group/message.h>
+#include <chemistry/qc/zaptr12/matrixkits.h>
+#endif
 
 #ifdef redefine_size_t
 #define size_t custom_size_t
@@ -18,14 +32,11 @@
 using namespace yeti;
 using namespace std;
 
-static std::map<void*,size_t>* ptrs = 0;
+#define NTHREAD_COMM 2
 
-#define RUNTIME_BLOCK_MALLOC 0
 
-#if RUNTIME_BLOCK_MALLOC
-#define NBLOCKS_RUNTIME_DATA 20000
-typedef char runtime_data_block_t[200000];
-DECLARE_MALLOC(runtime_data_block_t);
+#if USE_DEFAULT_THREAD_STACK
+static void* thread_stacks[10];
 #endif
 
 YetiOStream YetiRuntime::yetiout;
@@ -34,7 +45,8 @@ std::map<IndexRange*, std::map<IndexRange*, int> > YetiRuntime::valid_subranges_
 uli* YetiRuntime::max_range_sizes_ = 0;
 uli* YetiRuntime::max_block_sizes_ = 0;
 usi YetiRuntime::max_depth_ = 0;
-usi YetiRuntime::max_nindex_ = 0;
+uli YetiRuntime::nthread_compute_ = 0;
+uli YetiRuntime::nthread_comm_ = 0;
 uli YetiRuntime::nthread_ = 0;
 uli YetiRuntime::nproc_ = 0;
 uli YetiRuntime::me_ = 0;
@@ -47,11 +59,16 @@ float YetiRuntime::print_cutoff = -6;
 ThreadGroup* YetiRuntime::threadgrp_ = 0;
 ThreadLock* YetiRuntime::printlock_ = 0;
 ThreadLock* YetiRuntime::malloc_lock_ = 0;
-bool YetiRuntime::threaded_runtime_ = false;
+bool YetiRuntime::threaded_compute_ = false;
 char* YetiRuntime::thread_stack_ = 0;
 size_t YetiRuntime::thread_stack_size_ = 0;
 bool YetiRuntime::print_cxn = false;
 uli YetiRuntime::descr_id_count_ = DEFAULT_INDEX_DESCR_ID;
+uli YetiRuntime::nblocks_to_allocate_ = 0;
+std::map<std::string, AOBasisPtr> YetiRuntime::basis_sets_;
+YetiRuntime::runtime_parallel_type_t YetiRuntime::parallel_type_;
+YetiMPIMessenger* YetiRuntime::mpi_messenger_ = 0;
+YetiMessenger* YetiRuntime::messenger_ = 0;
 
 static FastMalloc matrix_generator_set_malloc("matrix generator set");
 static FastMalloc matrix_generator_malloc("matrix generator");
@@ -91,27 +108,88 @@ YetiRuntime::get_range(const std::string& id)
 }
 
 void
-YetiRuntime::init(
-    uli me,
-    uli nproc,
-    usi nindex,
-    uli nthread,
-    size_t memory,
-    size_t cache
-)
+YetiRuntime::init_system_environment()
 {
-    ptrs = new std::map<void*,size_t>;
+    const char* env = getenv("MPICH_MAX_SHORT_MSG_SIZE");
+    if (env)
+        cout << env << endl;
+    setenv("MPICH_MAX_SHORT_MSG_SIZE","0",1);
+    setenv("OMP_NUM_THREAD","1",1);
+    const char* nthread_str = getenv("YETI_NUM_THREAD");
+    if (nthread_str)
+    {
+        nthread_compute_ = atol(nthread_str);
+        if (nthread_compute_ == 0)
+        {
+            cerr << "invalid thread specification " << nthread_str << endl;
+            abort();
+        }
+    }
+    else
+    {
+        nthread_compute_ = 1;
+    }
 
-    setenv("OMP_NUM_THREADS","1",1);
 
-    //the maximum number of indices to be allocated
-    max_nindex_ = nindex;
-    nproc_ = nproc;
-    me_ = me;
-    memory_ = memory;
+    const char* memory_str = getenv("YETI_MEM");
+    memory_ = 0;
+    if (memory_str)
+    {
+        double memdbl = atof(memory_str);
+        memory_ = memdbl;
+        if (memory_ == 0) //formatted as an integer
+        {
+            memory_ = atol(memory_str);
+        }
+        if (memory_ == 0)
+        {
+            cerr << "invalid memory specification " << memory_str << endl;
+            abort();
+        }
+    }
+    else
+    {
+        memory_ = 1e8;
+    }
+
     amount_mem_allocated_ = 0;
-    nthread_ = nthread;
 
+#include <psiconfig.h>
+#if HAVE_MPI
+    parallel_type_ = YetiRuntime::MPI;
+    init_mpi();
+#else
+    parallel_type_ = YetiRuntime::Local;
+#endif
+
+    nthread_ = nthread_compute_ + nthread_comm_;
+
+    init_malloc();
+
+    init_threads();
+
+    if (parallel_type_ == MPI)
+        init_mpi_messenger();
+    else
+        init_local_messenger();
+
+    GlobalQueue::init();
+
+    TensorBlock::init_statics();
+}
+
+void
+YetiRuntime::init_local_messenger()
+{
+    me_ = 0;
+    nproc_ = 1;
+    messenger_ = new YetiLocalMessenger;
+    nthread_comm_ = 0;
+}
+
+void
+YetiRuntime::init_molecule_environment()
+{
     //validate that we have index ranges to work with
     if (descrs_.size() == 0)
     {
@@ -149,10 +227,8 @@ YetiRuntime::init(
         YetiRuntime::register_index_descr("dotproduct", dotprod_descr);
     }
 
+
     init_sizes();
-    init_malloc();
-    init_threads(nthread);
-    GlobalQueue::init();
 }
 
 void
@@ -198,7 +274,7 @@ YetiRuntime::init_sizes()
     {
         uli max_block_size = 1;
         uli max_range_size = max_range_sizes_[depth];
-        for (usi idx=0; idx < max_nindex_; ++idx)
+        for (usi idx=0; idx < NINDEX; ++idx)
         {
             max_block_size *= max_range_size;
         }
@@ -209,42 +285,32 @@ YetiRuntime::init_sizes()
 void
 YetiRuntime::init_malloc()
 {
-    indexset_malloc.init(indexset_size, nindexset);
+    /** Give up 1% of memory to allocate tensor blocks */
+    uli block_mem_allocation = memory_ / 100;
+    nblocks_to_allocate_ = block_mem_allocation / sizeof(TensorBlock);
 
-    StorageBlock::init_malloc(NMALLOC_BLOCKS_DEBUG);
-    DataStorageNode::init_malloc(NMALLOC_BLOCKS_DEBUG);
-    TensorBlock::init_malloc(NMALLOC_BLOCKS_DEBUG / 5);
-    TensorController::init_malloc(NMALLOC_BLOCKS_DEBUG * 4 / 5);
-    MemoryPool::init_malloc(NMALLOC_BLOCKS_DEBUG / 5);
+    StorageBlock::init_malloc(nblocks_to_allocate_ * 5);
+    DataStorageNode::init_malloc(nblocks_to_allocate_ * 5);
+    TensorBlock::init_malloc(nblocks_to_allocate_);
+    TensorController::init_malloc(nblocks_to_allocate_ * 4);
+    MemoryPool::init_malloc(nblocks_to_allocate_);
 
-#if RUNTIME_BLOCK_MALLOC
-    FastMallocTemplate<runtime_data_block_t>::init(NBLOCKS_RUNTIME_DATA);
-#endif
 
-    Tensor::init_malloc(1000);
-    DataCache::init_malloc(1000);
+    uli ntensors = 1000;
+    Tensor::init_malloc(ntensors);
+    DataCache::init_malloc(ntensors);
 
-    #define NCXN_TASKS_MALLOC 10000000
-    Task::init_malloc(NCXN_TASKS_MALLOC);
+    uli ntasks = 1e5;
+    Task::init_malloc(ntasks);
 
-    #define NSORT_OBJECTS 12
-    Sort::init_malloc(NSORT_OBJECTS);
+    uli nsort_objects = (nthread_compute_ + 1) * 3;
+    Sort::init_malloc(nsort_objects);
 
-    #define NTHREAD_BLOCKS_MALLOC 10000000
-    ThreadLock::init_malloc(NTHREAD_BLOCKS_MALLOC);
+    uli nthread_locks =  nblocks_to_allocate_ * 2;
+    ThreadLock::init_malloc(nthread_locks);
 
-    #define NCACHE_BLOCKS_MALLOC 1000000
-    DataCacheEntry::init_malloc(NCACHE_BLOCKS_MALLOC);
-
-    #define PERMSET_SIZE 40
-    #define NPERMSETS 100000
-    matrix_generator_set_malloc.init(PERMSET_SIZE, NPERMSETS);
-
-    #define NMATRIX_GENERATORS 10000000
-    matrix_generator_malloc.init(sizeof(void*), NMATRIX_GENERATORS);
-
-    #define NTILE_LOCATIONS 1000
-    tile_location_malloc.init(sizeof(uli) * MAX_DEPTH * max_nindex_, NTILE_LOCATIONS);
+    uli ncache_blocks = 1e6;
+    DataCacheEntry::init_malloc(ncache_blocks);
 
     //make sure all mallocs have been configured
 #if USE_MALLOC_CLASS
@@ -252,39 +318,9 @@ YetiRuntime::init_malloc()
 #endif
 }
 
-bool
-YetiRuntime::is_threaded_runtime()
-{
-    return threaded_runtime_;
-}
-
 void
-YetiRuntime::set_threaded_runtime(bool flag)
+YetiRuntime::init_threads()
 {
-    threaded_runtime_ = flag;
-}
-
-void
-YetiRuntime::init_threads(uli nthread)
-{
-    if (threadgrp_) //overwriting previous thread initialization
-    {
-        ThreadEnvironment::deallocate();
-        /**
-        These were not allocated from the custom allocator classes
-        so calling delete in the middle of runtime is not defined.
-        Just leak the memory for now.
-        delete printlock_;
-        delete malloc_lock_;
-        delete threadgrp_;
-        */
-    }
-    else
-    {
-        printlock_ = new (use_heap) pThreadLock;
-        malloc_lock_ = new (use_heap) pThreadLock;
-    }
-
     pthread_attr_t attr;
     pthread_attr_init(&attr);
     int status = pthread_attr_getstacksize(&attr, &thread_stack_size_);
@@ -293,12 +329,26 @@ YetiRuntime::init_threads(uli nthread)
         cerr << "unable to get thread stack size" << endl;
         abort();
     }
+
+    if (thread_stack_size_ == 0)
+    {
+        cerr << "Default thread stack size is zero.  Go find a posix programmer and strangle him." << endl;
+        abort();
+    }
+
     pthread_attr_destroy(&attr);
 
-    thread_stack_ = YetiRuntime::malloc(thread_stack_size_ * nthread);
+#if USE_DEFAULT_THREAD_STACK
+    thread_stack_ = 0;
+    for (uli t=0; t < nthread_; ++t)
+        thread_stacks[t] = 0;
+#else
+    thread_stack_ = YetiRuntime::malloc(thread_stack_size_ * nthread_);
+#endif
+    threadgrp_ = new pThreadGroup(nthread_compute_);
+    printlock_ = new (use_heap) pThreadLock;
+    malloc_lock_ = new (use_heap) pThreadLock;
 
-    threadgrp_ = new pThreadGroup(nthread);
-    nthread_ = nthread;
 
     ThreadEnvironment::allocate();
 }
@@ -307,12 +357,6 @@ usi
 YetiRuntime::max_depth()
 {
     return max_depth_;
-}
-
-usi
-YetiRuntime::max_nindex()
-{
-    return max_nindex_;
 }
 
 const uli*
@@ -337,6 +381,24 @@ uli
 YetiRuntime::nproc()
 {
     return nproc_;
+}
+
+size_t
+YetiRuntime::memory()
+{
+    return memory_;
+}
+
+uli
+YetiRuntime::nthread_compute()
+{
+    return nthread_compute_;
+}
+
+uli
+YetiRuntime::nthread_comm()
+{
+    return nthread_comm_;
 }
 
 uli
@@ -387,6 +449,18 @@ YetiRuntime::register_index_range(
         id1, id2, id3, id4, id5, id6,
         id7, id8, id9, id10, id11, id12
     );
+}
+
+void
+YetiRuntime::register_index_range(
+    const IndexRangePtr& range,
+    const std::string& name,
+    const std::string& id
+
+)
+{
+    IndexDescrPtr descr = new IndexDescr(name, range);
+    register_index_descr(id, descr);
 }
 
 void
@@ -454,94 +528,6 @@ YetiRuntime::unlock_malloc()
 }
 
 
-template <class data_t>
-void
-array_allocate(data_t* dst, data_t i, data_t j)
-{
-    dst[0] = i;
-    dst[1] = j;
-}
-
-usi*
-yeti::usi_allocate(usi i, usi j)
-{
-    usi* dst = yeti_malloc_perm();
-    array_allocate<usi>(dst, i,j);
-    return dst;
-}
-
-uli*
-yeti::yeti_malloc_indexset(uli threadnum)
-{
-    return reinterpret_cast<uli*>(indexset_malloc.malloc(threadnum));
-}
-
-void
-yeti::yeti_free_indexset(const uli* ptr)
-{
-    indexset_malloc.free(ptr);
-}
-
-void*
-yeti::yeti_malloc_indexptr(uli threadnum)
-{
-    return indexset_malloc.malloc(threadnum);
-}
-
-void
-yeti::yeti_free_indexptr(void *ptr)
-{
-    indexset_malloc.free(ptr);
-}
-
-usi*
-yeti::yeti_malloc_perm(uli threadnum)
-{
-    return reinterpret_cast<usi*>(indexset_malloc.malloc(threadnum));
-}
-
-void
-yeti::yeti_free_perm(usi* ptr)
-{
-    indexset_malloc.free(ptr);
-}
-
-void*
-yeti::yeti_malloc_matrix_generator(uli threadnum)
-{
-    return matrix_generator_malloc.malloc(threadnum);
-}
-
-void
-yeti::yeti_free_matrix_generator(void *ptr)
-{
-    matrix_generator_malloc.free(ptr);
-}
-
-void*
-yeti::yeti_malloc_matrix_generator_set(uli threadnum)
-{
-    return matrix_generator_set_malloc.malloc(threadnum);
-}
-
-void
-yeti::yeti_free_matrix_generator_set(void* ptr)
-{
-    matrix_generator_set_malloc.free(ptr);
-}
-
-uli*
-yeti::yeti_malloc_tile_location(uli threadnum)
-{
-    return reinterpret_cast<uli*>(tile_location_malloc.malloc(threadnum));
-}
-
-void
-yeti::yeti_free_tile_location(void* ptr)
-{
-    tile_location_malloc.free(ptr);
-}
-
 size_t
 YetiRuntime::get_thread_stack_size()
 {
@@ -554,6 +540,20 @@ YetiRuntime::get_thread_number()
     if (nthread_ == 1)
         return 0;
 
+#if USE_DEFAULT_THREAD_STACK
+    int x; 
+    void* ptr = &x;
+    size_t offset = (size_t) ptr;
+    for (uli t=0; t < nthread_; ++t)
+    {
+        size_t stack = (size_t) thread_stacks[t];
+        if (stack && offset < stack && (stack - offset) <= thread_stack_size_)
+        {
+            return t;
+        }
+    }
+    return 0;
+#else
     int x; void* ptr = &x;
 
     if (ptr < thread_stack_)
@@ -562,10 +562,11 @@ YetiRuntime::get_thread_number()
     size_t distance = (size_t) ptr - (size_t) thread_stack_;
     uli threadnum = distance / thread_stack_size_;
 
-    if (threadnum >= nthread_)
+    if (threadnum >= nthread_ + NTHREAD_COMM)
         return 0;
 
     return threadnum;
+#endif
 }
 
 void*
@@ -574,10 +575,50 @@ YetiRuntime::get_thread_stack(uli threadnum)
     return thread_stack_ + threadnum * thread_stack_size_;
 }
 
+#if USE_DEFAULT_THREAD_STACK
+void
+YetiRuntime::set_thread_stack(uli threadnum, void* stack)
+{
+    thread_stacks[threadnum] = stack;
+}
+#endif
+
 
 void
 YetiRuntime::finalize()
 {
+    TensorBlock::delete_statics();
+
+    if (parallel_type_ == MPI)
+    {
+#include <psiconfig.h>
+#if HAVE_MPI
+        mpi_messenger_->wait_barrier();
+        mpi_messenger_->stop();
+        sc::MatrixKits::defaultkit = 0;
+        sc::MatrixKits::blockkit = 0;
+        sc::MessageGrp::set_default_messagegrp(0);
+
+        int finalized;
+        int err = MPI_Finalized(&finalized);
+        if (err != MPI_SUCCESS)
+        {
+            cerr << "MPI Finalized call failed on node " << YetiRuntime::me() << endl;
+            abort();
+        }
+        if (!finalized)
+            MPI_Finalize();
+
+        delete mpi_messenger_;
+        mpi_messenger_ = 0;
+#endif
+    }
+    else
+    {
+        delete messenger_;
+        messenger_ = 0;
+    }
+
     GlobalQueue::finalize();
 
     if (thread_stack_)
@@ -761,7 +802,6 @@ YetiRuntime::malloc(size_t size)
         cerr << stream_printf("Total memory: %ld GB %ld MB", ngb, nmb) << endl;
         abort();
     }
-    (*ptrs)[data] = size;
     YetiRuntime::unlock_malloc();
     return data;
 #endif
@@ -782,31 +822,41 @@ YetiRuntime::free(void *ptr, size_t size)
     FastMallocTemplate<runtime_data_block_t>::malloc->free(ptr);
     return;
 #else
-    if(ptrs){
-        std::map<void*,size_t>::iterator it = ptrs->find(ptr);
-        if (it == ptrs->end())
-        {
-            cerr << "freeing non-malloc'd pointer " << ptr << endl;
-            abort();
-        }
-        if (it->second != size)
-        {
-            cerr << "freed sizes don't match" << endl;
-            abort();
-        }
-        YetiRuntime::lock_malloc();
-        ::free(ptr);
-        ptrs->erase(it);
-        amount_mem_allocated_ -= size;
-        YetiRuntime::unlock_malloc();
-    }
+    YetiRuntime::lock_malloc();
+    ::free(ptr);
+    amount_mem_allocated_ -= size;
+    YetiRuntime::unlock_malloc();
 #endif
+}
+
+bool
+YetiRuntime::is_threaded_compute()
+{
+    return threaded_compute_;
+}
+
+void
+YetiRuntime::set_threaded_compute(bool flag)
+{
+    threaded_compute_ = flag;
+}
+
+void
+YetiRuntime::register_basis_set(const AOBasisPtr& basis)
+{
+    basis_sets_[basis->name()] = basis;
+}
+
+const AOBasisPtr&
+YetiRuntime::get_basis(const std::string& id)
+{
+    return basis_sets_[id];
 }
 
 YetiOStream&
 yeti::operator<<(YetiOStream& os, const std::string& str)
 {
-    os.print(str);
+    os.print<std::string>(str);
     return os;
 }
 
@@ -820,7 +870,65 @@ yeti::operator<<(YetiOStream& os, std::ostream& (*pf)(std::ostream&))
 YetiOStream&
 yeti::operator<<(YetiOStream& os, void* ptr)
 {
-    os.print(ptr);
+    os.print<void*>(ptr);
     return os;
 }
 
+YetiMessenger*
+YetiRuntime::get_messenger()
+{
+    return messenger_;
+}
+
+void
+YetiRuntime::init_mpi()
+{
+#include <psiconfig.h>
+#if HAVE_MPI
+    int argc = 0;
+    char** argv = new char*[argc + 1];
+    int err = MPI_Init(&argc, &argv);
+    if (err != MPI_SUCCESS)
+    {
+        Env::err0() << "MPI failed to init properly with error " << err << endl;
+        abort();
+    }
+
+    int me, nproc;
+
+    MPI_Comm_rank(MPI_COMM_WORLD, &me);
+    MPI_Comm_size(MPI_COMM_WORLD, &nproc);
+
+    me_ = me;
+    nproc_ = nproc;
+
+    if (nproc_ > 1)
+        nthread_comm_ = 2;
+    else
+        nthread_comm_ = 0;
+
+    delete[] argv;
+#endif
+}
+
+void
+YetiRuntime::init_mpi_messenger()
+{
+#include <psiconfig.h>
+#if HAVE_MPI
+    if (nproc_ == 1) //mpi started with only 1 process
+    {
+        parallel_type_ = YetiRuntime::Local;
+        MPI_Finalize();
+        init_local_messenger();
+    }
+    else
+    {
+        mpi_messenger_ = new YetiMPIMessenger;
+        messenger_ = mpi_messenger_;
+        mpi_messenger_->start();
+    }
+#else
+    raise(SanityCheckError, "calling init mpi but YETI not compiled for mpi");
+#endif
+}

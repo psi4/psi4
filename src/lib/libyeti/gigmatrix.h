@@ -97,6 +97,8 @@ class Matrix :
         */
         void print(const std::string& title, std::ostream& os = std::cout) const;
 
+        void print(std::ostream& os = std::cout) const;
+
         /**
             Add the values from the parameter matrix into the current values
             and return a new matrix
@@ -257,6 +259,8 @@ class Vector :
         void assign(double s);
 
         void print(const std::string& title, std::ostream& os = std::cout) const;
+
+        void print(std::ostream& os = std::cout) const;
 
         void printValues(std::ostream& os = std::cout) const;
 

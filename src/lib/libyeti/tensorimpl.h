@@ -7,6 +7,7 @@ namespace yeti {
 
 template <
     class ValidatePolicy,
+    class BranchRenewPolicy,
     class MempoolRetrievePolicy,
     class MetaDataBranchRetrievePolicy,
     class TensorDataControllerRetrievePolicy,
@@ -18,12 +19,15 @@ template <
     class DataStorageFlushPolicy,
     class ObsoletePolicy,
     class SyncPolicy,
-    class DataClearPolicy
+    class DataClearPolicy,
+    class OutOfCorePrefetchPolicy,
+    class InCorePrefetchPolicy
 >
 class TensorControllerTemplate :
     public TensorController,
     /** Policies */
     public ValidatePolicy,
+    public BranchRenewPolicy,
     public MempoolRetrievePolicy,
     public MetaDataBranchRetrievePolicy,
     public TensorDataControllerRetrievePolicy,
@@ -35,54 +39,72 @@ class TensorControllerTemplate :
     public DataStorageFlushPolicy,
     public ObsoletePolicy,
     public SyncPolicy,
-    public DataClearPolicy
+    public DataClearPolicy,
+    public OutOfCorePrefetchPolicy,
+    public InCorePrefetchPolicy
 {
 
     public:
-        TensorControllerTemplate(TensorBlock* block)
-            : TensorController(block)
+        TensorControllerTemplate()
+            : TensorController()
         {
         }
 
-        void clear()
+        void clear(TensorBlock* block)
         {
-            DataClearPolicy::clear(parent_block_);
+            DataClearPolicy::clear(block);
         }
 
-        void validate()
+        void validate(TensorBlock* block)
         {
-            ValidatePolicy::validate(parent_block_);
+            ValidatePolicy::validate(block);
         }
 
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         )
         {
-            branch->set_parent(parent_block_);
+            TensorBranch* branch = block->get_branch();
+            branch->set_parent(block);
             MempoolRetrievePolicy
-                ::retrieve(branch);
+                ::retrieve(block);
             MetaDataBranchRetrievePolicy
-                ::retrieve(branch);
+                ::retrieve(block);
             TensorDataControllerRetrievePolicy
-                ::retrieve(branch);
+                ::retrieve(block);
             DataBranchRetrievePolicy
-                ::retrieve(branch);
+                ::retrieve(block);
+        }
+
+        void renew(
+            TensorBlock* block
+        )
+        {
+            BranchRenewPolicy::renew(block);
         }
 
         void flush(
-            TensorBranch* branch
+            TensorBlock* block
         )
         {
             BranchFlushPolicy
-                ::flush(branch);
+                ::flush(block);
         }
         
+        void preflush(
+            TensorBlock* block
+        )
+        {
+            BranchFlushPolicy
+                ::preflush(block);
+        }
+
         void release(
-            TensorBranch* branch
+            TensorBlock* block
         )
         {
             BranchReleasePolicy
-                ::release(branch);
+                ::release(block);
         }
 
         void retrieve(MetaDataNode* mdnode)
@@ -106,23 +128,32 @@ class TensorControllerTemplate :
                 ::retrieve(dnode, parent, indices);
         }
 
-        void flush_data()
+        void flush_data(TensorBlock* block)
         {
             DataStorageFlushPolicy
-                ::flush(parent_block_);
+                ::flush(block);
         }
 
-        void obsolete()
+        void obsolete(TensorBlock* block)
         {
             ObsoletePolicy
-                ::obsolete(parent_block_);
+                ::obsolete(block);
         }
 
-        void sync()
+        void sync(TensorBlock* block)
         {
-            SyncPolicy::sync(parent_block_);
+            SyncPolicy::sync(block);
         }
 
+        void out_of_core_prefetch(TensorBlock* block)
+        {
+            OutOfCorePrefetchPolicy::prefetch(block);
+        }
+
+        void in_core_prefetch(TensorBlock* current_block, TensorBlock* prev_block)
+        {
+            InCorePrefetchPolicy::prefetch(current_block, prev_block);
+        }
 
 };
 

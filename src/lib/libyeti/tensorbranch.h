@@ -42,8 +42,12 @@ class TensorBranch :
         size_t element_size_;
 
         TensorBlock* parent_block_;
+
+        uli parent_malloc_number_;
         
         TensorElementComputer* filler_;
+
+        TensorBranch* last_branch_location_;
 
         MetaDataNode* mdnode_;
 
@@ -55,11 +59,9 @@ class TensorBranch :
 
         void allocate_data_controller();
 
-        /**
-          The overall tensor can be sorted without sorting some of the individual tensor blocks.
-          This permutation applied to the block would sort the block to the regular tensor structure.
-        */
-        Permutation* tensor_sort_perm_;
+        TensorIndexDescr* descr_;
+
+        uli ncontrollers_;
 
     public:
         TensorBranch(
@@ -72,6 +74,8 @@ class TensorBranch :
 
         void set_parent(TensorBlock* parent);
         
+        void allocate_data_controller(StorageBlock* block);
+
         void set_element_computer(TensorElementComputer* filler);
 
         TensorController* get_tensor_controller() const;
@@ -79,8 +83,12 @@ class TensorBranch :
         TensorDataController* first_data_controller() const;
 
         TensorIndexDescr* get_descr() const;
+
+        void set_descr(TensorIndexDescr* descr);
         
         TensorElementComputer* get_element_computer() const;
+
+        TensorBranch* get_last_branch_location() const;
 
         TensorBlock* get_parent_block() const;
 
@@ -88,11 +96,15 @@ class TensorBranch :
 
         MetaDataNode* get_node() const;
 
+        uli get_parent_malloc_number() const;
+
         void load_metadata(long offset);
 
         void allocate(DataNode* node);
 
         void set_element_type(TemplateInfo::type_t type);
+
+        uli ncontrollers() const;
 
         size_t size_data_wasted();
 
@@ -137,7 +149,7 @@ class TensorDataController :
 
         size_t remaining_;
 
-        size_t size_;
+        size_t total_size_;
 
         char* data_;
 
@@ -152,7 +164,9 @@ class TensorDataController :
 
         char* get_data() const;
 
-        size_t get_size() const;
+        size_t get_total_size() const;
+
+        size_t get_data_size() const;
 
         size_t get_remaining() const;
 
