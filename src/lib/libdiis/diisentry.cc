@@ -1,7 +1,8 @@
+#include <boost/shared_ptr.hpp>
+#include <libpsio/psio.hpp>
 #include "diisentry.h"
 #include <math.h>
 #include <libqt/qt.h>
-#include <libpsio/psio.hpp>
 #include <psifiles.h>
 #include <sstream>
 

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -13,7 +13,9 @@
 #include "globals.h"
 #include "yoshimine.h"
 
-namespace psi { namespace transqt {
+namespace psi {
+extern FILE* outfile;
+namespace transqt {
 
 #define MAXIOFF3 255
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
@@ -105,8 +107,8 @@ void transform_two_mp2(void)
     fflush(outfile);
   }
 
-  yosh_init(&YBuffP, ntri, ntri, maxcor, maxcord, max_buckets, 
-	    first_tmp_file, tolerance, outfile);
+  yosh_init(&YBuffP, ntri, ntri, maxcor, maxcord, max_buckets,
+            first_tmp_file, tolerance, outfile);
 
   if (print_lvl > 1) {
     fprintf(outfile, "\tPresort");
@@ -118,19 +120,19 @@ void transform_two_mp2(void)
   yosh_init_buckets(&YBuffP);
 
   yosh_rdtwo(&YBuffP, params.src_tei_file, params.delete_src_tei,
-	     sopi, nirreps, ioff, 0, 
-	     params.fzc && moinfo.nfzc, moinfo.fzc_density, 
-	     moinfo.fzc_operator, 1, (print_lvl > 5), outfile);
+             sopi, nirreps, ioff, 0,
+             params.fzc && moinfo.nfzc, moinfo.fzc_density,
+             moinfo.fzc_operator, 1, (print_lvl > 5), outfile);
 
   yosh_close_buckets(&YBuffP, 0);
 
-  yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, nso, ntri, 
-	    0, 1, 0, 0, 1, (print_lvl > 5), outfile);
-  
+  yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, nso, ntri,
+            0, 1, 0, 0, 1, (print_lvl > 5), outfile);
+
   yosh_done(&YBuffP);  /* Pre-transform complete */
 
   /* no the frozen core here */
-  
+
   ndocc = 0;
   nvirt = 0;
   for(h=0; h < nirreps; h++) {
@@ -209,7 +211,7 @@ void transform_two_mp2(void)
   yosh_flush(&YBuffJ);
   yosh_close_buckets(&YBuffJ,0);
   yosh_sort(&YBuffJ, jfile, 0, ioff3, ioff, nso, ntri, 0, 1, 1, nvirt,
-            0, (print_lvl > 5), outfile); 
+            0, (print_lvl > 5), outfile);
   yosh_done(&YBuffJ);
 
   fprintf(outfile, "\tFinished half-transform...\n");
@@ -231,7 +233,7 @@ void transform_two_mp2(void)
               klsym = ksym^lsym;
               for(l=lfirst; l <= llast; l++) {
                   kl = ioff3[k] + l;
-                  
+
                   zero_arr(J_block, ntri);
                   iwl_buf_rd(&JBuff, kl, J_block, ioff3, ioff, 1, 0, outfile);
 
@@ -269,7 +271,7 @@ void transform_two_mp2(void)
   free_block(B);
   iwl_buf_close(&JBuff, keep_half_tf);
   /* Need to flush last buffer, else it's not written to disk */
-  iwl_buf_flush(&MBuff, 1); 
+  iwl_buf_flush(&MBuff, 1);
   iwl_buf_close(&MBuff, 1);
 
   fprintf(outfile, "\n\tTransformation finished.\n");
@@ -348,7 +350,7 @@ void make_arrays(double ****Cdocc, double ****Cvirt,
       (*occ)[i] = -1;
       (*vir)[i] = -1;
     }
-  
+
   offset = 0;
   count=0;
   for(h=0; h < moinfo.nirreps; h++) {
@@ -375,7 +377,7 @@ void make_arrays(double ****Cdocc, double ****Cvirt,
   for(i=0; i < MAXIOFF3; i++) {
       (*ioff3)[i] = i*nvirt;
     }
-  
+
   /* Organize MOs for docc and virt sets only */
   if(params.print_mos) {
       fprintf(outfile,"\n\tSCF Eigenvectors (Occupied and Virtual Sets):\n");
@@ -423,4 +425,4 @@ void make_arrays(double ****Cdocc, double ****Cvirt,
 }
 
 }} // end namespace psi::transqt
- 
+

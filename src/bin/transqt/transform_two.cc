@@ -1,6 +1,6 @@
 /*! \file
     \ingroup TRANSQT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -15,7 +15,9 @@
 #include "yoshimine.h"
 #include "backsort.h"
 
-namespace psi { namespace transqt {
+namespace psi {
+extern FILE* outfile;
+namespace transqt {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
 #define MAX0(a,b) (((a)>(b)) ? (a) : (b))
@@ -91,7 +93,7 @@ void transform_two(void)
     src_last = moinfo.last_so;
     src_orbspi = moinfo.sopi;
     src_orbsym = moinfo.sosym;
-    dst_first = (params.fzc && !params.do_all_tei)? 
+    dst_first = (params.fzc && !params.do_all_tei)?
                 moinfo.fstact : moinfo.first;
     dst_last = (params.do_all_tei) ? moinfo.last : moinfo.lstact;
     dst_orbspi = (params.do_all_tei) ? moinfo.orbspi : moinfo.active;
@@ -102,7 +104,7 @@ void transform_two(void)
     else dst_orbs = moinfo.nmo - moinfo.nfzv - moinfo.nfzc;
     C_cols = dst_orbspi;
   }
- 
+
   print_integrals = params.print_te_ints;
   labels = moinfo.labels;
   C = moinfo.evects;
@@ -125,7 +127,7 @@ void transform_two(void)
    */
   if (!params.backtr) {
     src_ntri = src_orbs * (src_orbs+1) / 2;
-    dst_ntri = moinfo.nmo*(moinfo.nmo+1)/2;  
+    dst_ntri = moinfo.nmo*(moinfo.nmo+1)/2;
   }
   else {
     src_ntri = src_orbs * (src_orbs+1) / 2;
@@ -139,8 +141,8 @@ void transform_two(void)
     fflush(outfile);
   }
 
-  yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets, 
-	    first_tmp_file, tolerance, outfile);
+  yosh_init(&YBuffP, src_ntri, src_ntri, maxcor, maxcord, max_buckets,
+            first_tmp_file, tolerance, outfile);
 
   if (print_lvl > 1) {
     fprintf(outfile, "\tPresort");
@@ -153,30 +155,30 @@ void transform_two(void)
 
   if (!params.backtr) {
     yosh_rdtwo(&YBuffP, params.src_tei_file,
-	       params.delete_src_tei, src_orbspi, nirreps, ioff, 0, 
-	       params.fzc && moinfo.nfzc, moinfo.fzc_density, 
-	       moinfo.fzc_operator, 1, (print_lvl > 5), outfile);
-    
+               params.delete_src_tei, src_orbspi, nirreps, ioff, 0,
+               params.fzc && moinfo.nfzc, moinfo.fzc_density,
+               moinfo.fzc_operator, 1, (print_lvl > 5), outfile);
+
   }
   else {
-    yosh_rdtwo_backtr(&YBuffP, params.src_tei_file, ioff, 1, 
-                 params.tpdm_add_ref, params.delete_src_tei, 
+    yosh_rdtwo_backtr(&YBuffP, params.src_tei_file, ioff, 1,
+                 params.tpdm_add_ref, params.delete_src_tei,
                  (print_lvl > 4), outfile);
   }
 
   yosh_close_buckets(&YBuffP, 0);
 
-  yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, src_orbs, src_ntri, 
-	    0, 1, 0, 0, 1, (print_lvl > 5), outfile);
-  
+  yosh_sort(&YBuffP, presort_file, 0, ioff, NULL, src_orbs, src_ntri,
+            0, 1, 0, 0, 1, (print_lvl > 5), outfile);
+
   yosh_done(&YBuffP);  /* Pre-transform complete */
 
   /* get the frozen core energy */
   moinfo.efzc = 0.0;
   if (params.fzc && moinfo.nfzc) {
-    moinfo.efzc = fzc_energy(moinfo.nso, moinfo.sosym, moinfo.fzc_density, 
-			     moinfo.fzc_operator, moinfo.oe_ints,
-			     moinfo.first_so, ioff);
+    moinfo.efzc = fzc_energy(moinfo.nso, moinfo.sosym, moinfo.fzc_density,
+                             moinfo.fzc_operator, moinfo.oe_ints,
+                             moinfo.first_so, ioff);
     free(moinfo.fzc_density);
   }
 
@@ -185,27 +187,27 @@ void transform_two(void)
   chkpt_wt_efzc(moinfo.efzc);
   chkpt_close();
 
-  if (params.print_lvl) 
+  if (params.print_lvl)
     fprintf(outfile, "\n\tFrozen core energy = %20.15lf\n", moinfo.efzc);
 
   if (params.print_lvl) {
     fprintf(outfile, "\tTransforming two-electron ints...\n\n");
     fflush(outfile);
   }
-  
+
   iwl_buf_init(&PBuff, presort_file, tolerance, 1, 1);
-  yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets, 
-	    first_tmp_file, tolerance, outfile);
+  yosh_init(&YBuffJ, dst_ntri, src_ntri, maxcor, maxcord, max_buckets,
+            first_tmp_file, tolerance, outfile);
 
   yosh_init_buckets(&YBuffJ);
-  
+
   if (print_lvl > 1) {
     fprintf(outfile, "\tHalf-transform");
     yosh_print(&YBuffJ, outfile);
     fprintf(outfile, "\n");
     fflush(outfile);
   }
-  
+
   A_cols = MAX0(src_orbs,dst_orbs);
   A = block_matrix(A_cols, A_cols);
   B = block_matrix(src_orbs,dst_orbs);
@@ -219,84 +221,84 @@ void transform_two(void)
     plast = src_last[psym];
     for (p=pfirst; p <= plast; p++) {
       for (qsym=0; qsym <= psym; qsym++) {
-	qfirst = src_first[qsym];
-	qlast = src_last[qsym];
-	pqsym = psym^qsym;
-	for (q=qfirst; (q<=qlast) && (q <= p); q++) {
-	  pq = ioff[p] + q;
-	  
-	  zero_arr(P_block,src_ntri);
-	  iwl_buf_rd(&PBuff, pq, P_block, ioff, ioff, 0, (params.print_lvl > 4),
+        qfirst = src_first[qsym];
+        qlast = src_last[qsym];
+        pqsym = psym^qsym;
+        for (q=qfirst; (q<=qlast) && (q <= p); q++) {
+          pq = ioff[p] + q;
+
+          zero_arr(P_block,src_ntri);
+          iwl_buf_rd(&PBuff, pq, P_block, ioff, ioff, 0, (params.print_lvl > 4),
                      outfile);
-	  
-	  for (rsym=0; rsym < nirreps; rsym++) {
-	    rfirst = src_first[rsym];
-	    rlast = src_last[rsym];
-	    kfirst = dst_first[rsym];
-	    klast = dst_last[rsym];
-	    ssym = pqsym^rsym;
-	    if (ssym <= rsym) {
-	      sfirst = src_first[ssym];
-	      slast = src_last[ssym];
-	      lfirst = dst_first[ssym];
-	      llast = dst_last[ssym];
-	      if(ssym == rsym) {
-		for(r=rfirst,R=0; r <= rlast; r++,R++) {
-		  for(s=sfirst,S=0; (s <= slast) && (s <= r);
-		      s++,S++) {
-		    rs = INDEX(r,s);
-		    A[R][S] = P_block[rs];
-		    A[S][R] = P_block[rs];
-		  }
-		}
-	      }
-	      else {
-		for (r=rfirst,R=0; r <= rlast; r++,R++) {
-		  for (s=sfirst,S=0; s <= slast; s++,S++) {
-		    rs = INDEX(r,s);
-		    A[R][S] = P_block[rs];
-		  }
-		}
-	      }
+
+          for (rsym=0; rsym < nirreps; rsym++) {
+            rfirst = src_first[rsym];
+            rlast = src_last[rsym];
+            kfirst = dst_first[rsym];
+            klast = dst_last[rsym];
+            ssym = pqsym^rsym;
+            if (ssym <= rsym) {
+              sfirst = src_first[ssym];
+              slast = src_last[ssym];
+              lfirst = dst_first[ssym];
+              llast = dst_last[ssym];
+              if(ssym == rsym) {
+                for(r=rfirst,R=0; r <= rlast; r++,R++) {
+                  for(s=sfirst,S=0; (s <= slast) && (s <= r);
+                      s++,S++) {
+                    rs = INDEX(r,s);
+                    A[R][S] = P_block[rs];
+                    A[S][R] = P_block[rs];
+                  }
+                }
+              }
+              else {
+                for (r=rfirst,R=0; r <= rlast; r++,R++) {
+                  for (s=sfirst,S=0; s <= slast; s++,S++) {
+                    rs = INDEX(r,s);
+                    A[R][S] = P_block[rs];
+                  }
+                }
+              }
 
 #ifdef USE_BLAS
-              if (C_cols[ssym] > 0) 
+              if (C_cols[ssym] > 0)
                 C_DGEMM('n', params.backtr ? 't' : 'n', src_orbspi[rsym],
-                        dst_orbspi[ssym], src_orbspi[ssym], 1.0, 
+                        dst_orbspi[ssym], src_orbspi[ssym], 1.0,
                         A[0], A_cols, C[ssym][0], C_cols[ssym], 0.0,
-                        B[0], B_cols); 
+                        B[0], B_cols);
               if (C_cols[rsym] > 0)
                 C_DGEMM(params.backtr ? 'n' : 't', 'n', dst_orbspi[rsym],
                         dst_orbspi[ssym], src_orbspi[rsym], 1.0,
                         C[rsym][0], C_cols[rsym], B[0], B_cols, 0.0,
                         A[0], A_cols);
 #else
-	      mmult(A, 0, C[ssym], params.backtr ? 1 : 0, B, 0,
-		    src_orbspi[rsym], src_orbspi[ssym], dst_orbspi[ssym], 0);
-	      mmult(C[rsym], params.backtr ? 0 : 1, B, 0, A, 0,
-		    dst_orbspi[rsym], src_orbspi[rsym], dst_orbspi[ssym], 0);
+              mmult(A, 0, C[ssym], params.backtr ? 1 : 0, B, 0,
+                    src_orbspi[rsym], src_orbspi[ssym], dst_orbspi[ssym], 0);
+              mmult(C[rsym], params.backtr ? 0 : 1, B, 0, A, 0,
+                    dst_orbspi[rsym], src_orbspi[rsym], dst_orbspi[ssym], 0);
 #endif
-              
-	      zero_arr(J_block, dst_ntri);
-	      for (k=kfirst,K=0; k <= klast; k++,K++) {
-		for (l=lfirst,L=0; (l <= llast) && (l <= k); l++,L++) {
-		  kl = ioff[k] + l;
-		  J_block[kl] = A[K][L];
-		}
-	      }
-	      yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
-			   params.backtr ? moinfo.nao : nmo, ioff, dst_orbsym,  
+
+              zero_arr(J_block, dst_ntri);
+              for (k=kfirst,K=0; k <= klast; k++,K++) {
+                for (l=lfirst,L=0; (l <= llast) && (l <= k); l++,L++) {
+                  kl = ioff[k] + l;
+                  J_block[kl] = A[K][L];
+                }
+              }
+              yosh_wrt_arr(&YBuffJ, p, q, pq, pqsym, J_block,
+                           params.backtr ? moinfo.nao : nmo, ioff, dst_orbsym,
                            dst_first, dst_last, 1, (print_lvl > 4), outfile);
-	    }
-	  }
-	}
+            }
+          }
+        }
       }
     }
   }
 
-  if (params.print_lvl) 
+  if (params.print_lvl)
     fprintf(outfile, "\tSorting half-transformed integrals...\n");
-  
+
   iwl_buf_close(&PBuff, keep_presort);
   free(P_block);
   yosh_flush(&YBuffJ);
@@ -304,13 +306,13 @@ void transform_two(void)
   yosh_sort(&YBuffJ, jfile, 0, ioff, NULL, src_orbs, src_ntri, 0, 1, 0, 0,
             1, (print_lvl > 5), outfile);
   yosh_done(&YBuffJ);
-  
+
   if (params.print_lvl) {
     fprintf(outfile, "\tFinished half-transform...\n");
     fprintf(outfile, "\tWorking on second half...\n");
     fflush(outfile);
   }
-  
+
   /** Second half of transformation **/
 
   iwl_buf_init(&JBuff, jfile, tolerance, 1, 1);
@@ -319,7 +321,7 @@ void transform_two(void)
     backsort_prep(0);
     twopdm_out = (struct iwlbuf *) malloc(nbuckets * sizeof(struct iwlbuf));
     for(p=0; p < nbuckets; p++)
-	iwl_buf_init(&twopdm_out[p], first_tmp_file+p, tolerance, 0, 0);
+        iwl_buf_init(&twopdm_out[p], first_tmp_file+p, tolerance, 0, 0);
   }
 
   for (ksym=0; ksym < nirreps; ksym++) {
@@ -327,71 +329,71 @@ void transform_two(void)
     klast = dst_last[ksym];
     for (k=kfirst; k <= klast; k++) {
       for (lsym=0; lsym <= ksym; lsym++) {
-	lfirst = dst_first[lsym];
-	llast = dst_last[lsym];
-	klsym = ksym^lsym;
-	for (l=lfirst; (l <= llast) && (l <= k); l++) {
-	  kl = ioff[k] + l;
+        lfirst = dst_first[lsym];
+        llast = dst_last[lsym];
+        klsym = ksym^lsym;
+        for (l=lfirst; (l <= llast) && (l <= k); l++) {
+          kl = ioff[k] + l;
           if (!params.backtr) {
-	    ktr = reorder[k] - fzc_offset;
-	    ltr = reorder[l] - fzc_offset;
+            ktr = reorder[k] - fzc_offset;
+            ltr = reorder[l] - fzc_offset;
           }
-	  
-	  zero_arr(J_block, src_ntri);
-	  iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, outfile);
-                  
-	  for (psym=0; psym < nirreps; psym++) {
-	    pfirst = src_first[psym];
-	    plast = src_last[psym];
-	    ifirst = dst_first[psym];
-	    ilast = dst_last[psym];
-	    qsym = klsym^psym;
-	    if (qsym <= psym) {
-	      qfirst = src_first[qsym];
-	      qlast = src_last[qsym];
-	      jfirst = dst_first[qsym];
-	      jlast = dst_last[qsym];
-	      for (p=pfirst,P=0; p <= plast; p++,P++) {
-		for (q=qfirst,Q=0; q <= qlast; q++,Q++) {
-		  pq = INDEX(p,q);
-		  A[P][Q] = J_block[pq];
-		}
-	      }
+
+          zero_arr(J_block, src_ntri);
+          iwl_buf_rd(&JBuff, kl, J_block, ioff, ioff, 0, 0, outfile);
+
+          for (psym=0; psym < nirreps; psym++) {
+            pfirst = src_first[psym];
+            plast = src_last[psym];
+            ifirst = dst_first[psym];
+            ilast = dst_last[psym];
+            qsym = klsym^psym;
+            if (qsym <= psym) {
+              qfirst = src_first[qsym];
+              qlast = src_last[qsym];
+              jfirst = dst_first[qsym];
+              jlast = dst_last[qsym];
+              for (p=pfirst,P=0; p <= plast; p++,P++) {
+                for (q=qfirst,Q=0; q <= qlast; q++,Q++) {
+                  pq = INDEX(p,q);
+                  A[P][Q] = J_block[pq];
+                }
+              }
 
 #ifdef USE_BLAS
-              if (C_cols[qsym] > 0) 
+              if (C_cols[qsym] > 0)
                 C_DGEMM('n', params.backtr ? 't' : 'n', src_orbspi[psym],
-                        dst_orbspi[qsym], src_orbspi[qsym], 1.0, 
+                        dst_orbspi[qsym], src_orbspi[qsym], 1.0,
                         A[0], A_cols, C[qsym][0], C_cols[qsym], 0.0,
                         B[0], B_cols);
-              if (C_cols[psym] > 0) 
+              if (C_cols[psym] > 0)
                 C_DGEMM(params.backtr ? 'n' : 't', 'n', dst_orbspi[psym],
                         dst_orbspi[qsym], src_orbspi[psym], 1.0,
                         C[psym][0], C_cols[psym], B[0], B_cols, 0.0,
                         A[0], A_cols);
 #else
-	      mmult(A, 0, C[qsym], params.backtr ? 1 : 0, B, 0,
-		    src_orbspi[psym], src_orbspi[qsym], dst_orbspi[qsym], 0);
-	      mmult(C[psym], params.backtr ? 0 : 1, B, 0, A, 0,
-		    dst_orbspi[psym], src_orbspi[psym], dst_orbspi[qsym], 0);
+              mmult(A, 0, C[qsym], params.backtr ? 1 : 0, B, 0,
+                    src_orbspi[psym], src_orbspi[qsym], dst_orbspi[qsym], 0);
+              mmult(C[psym], params.backtr ? 0 : 1, B, 0, A, 0,
+                    dst_orbspi[psym], src_orbspi[psym], dst_orbspi[qsym], 0);
 #endif
 
-              if (!params.backtr) 
-		iwl_buf_wrt_mat(&MBuff, ktr, ltr, A,
-				ifirst, ilast, jfirst, jlast,
-				reorder, fzc_offset, print_integrals, 
-				ioff, outfile);
-	      
-	      else 
-		backsort_write(k, l, A, ifirst, ilast, jfirst, jlast,
-			       print_integrals, outfile, twopdm_out, 0);
-	    }
-	  }
-	}
+              if (!params.backtr)
+                iwl_buf_wrt_mat(&MBuff, ktr, ltr, A,
+                                ifirst, ilast, jfirst, jlast,
+                                reorder, fzc_offset, print_integrals,
+                                ioff, outfile);
+
+              else
+                backsort_write(k, l, A, ifirst, ilast, jfirst, jlast,
+                               print_integrals, outfile, twopdm_out, 0);
+            }
+          }
+        }
       }
     }
   }
-  
+
   free(J_block);
   free_block(A);
   free_block(B);
@@ -399,13 +401,13 @@ void transform_two(void)
 
   /* Need to flush last buffer, else it's not written to disk */
   if (!params.backtr) {
-    iwl_buf_flush(&MBuff, 1); 
+    iwl_buf_flush(&MBuff, 1);
     iwl_buf_close(&MBuff, 1);
   }
   else {
     for(p=0; p < nbuckets; p++) {
-	iwl_buf_flush(&twopdm_out[p], 1);
-	iwl_buf_close(&twopdm_out[p], 1);
+        iwl_buf_flush(&twopdm_out[p], 1);
+        iwl_buf_close(&twopdm_out[p], 1);
       }
     free(twopdm_out);
     backsort(first_tmp_file, tolerance, 0);
@@ -416,7 +418,7 @@ void transform_two(void)
     fprintf(outfile, "\tTwo-electron integrals written to file%d.\n",mfile);
     fflush(outfile);
   }
-  
+
 }
 
 }} // end namespace psi::transqt

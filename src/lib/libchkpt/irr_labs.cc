@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cctype>
 #include <psifiles.h>
+#include <boost/shared_ptr.hpp>
 #include <libpsio/psio.hpp>
 #include <libchkpt/chkpt.h>
 #include <libchkpt/chkpt.hpp>
@@ -27,7 +28,7 @@ char **Chkpt::rd_irr_labs(void)
   irr_labs = (char **)malloc(sizeof(char *)*nirreps);
   for(i=0;i<nirreps;i++) {
     irr_labs[i] = (char *) malloc(4*sizeof(char));
-    psio->read(PSIF_CHKPT, keyword, (char *) irr_labs[i],  
+    psio->read(PSIF_CHKPT, keyword, (char *) irr_labs[i],
       4*sizeof(char), ptr, &ptr);
       irr_labs[i][3] = '\0';
     }
@@ -47,7 +48,7 @@ void Chkpt::wt_irr_labs(char **irr_labs)
 
   ptr = PSIO_ZERO;
   for(i=0;i<nirreps;i++) {
-    psio->write(PSIF_CHKPT, keyword, (char *) irr_labs[i], 
+    psio->write(PSIF_CHKPT, keyword, (char *) irr_labs[i],
       4*sizeof(char), ptr, &ptr);
   }
 
@@ -83,40 +84,40 @@ char **Chkpt::rd_irr_labs_lowercase(void)
 
 extern "C" {
 /*!
-** chkpt_rd_irr_labs(): Read in the symmetry labels for all irreps in the 
+** chkpt_rd_irr_labs(): Read in the symmetry labels for all irreps in the
 **   point group in which the molecule is considered.
 **
 **   takes no arguments.
 **
 **   returns: irr_labs =  an array of labels (strings) which denote
 **      the irreps for the point group	in which the molecule is considered,
-**      _regardless_ of whether there exist any symmetry orbitals which 
-**      transform as that irrep.  
+**      _regardless_ of whether there exist any symmetry orbitals which
+**      transform as that irrep.
 ** \ingroup CHKPT
 */
-	char **chkpt_rd_irr_labs(void)
-	{
-		return _default_chkpt_lib_->rd_irr_labs();
-	}
-	char **chkpt_rd_irr_labs_lowercase(void)
-	{
-		return _default_chkpt_lib_->rd_irr_labs_lowercase();
-	}
+        char **chkpt_rd_irr_labs(void)
+        {
+                return _default_chkpt_lib_->rd_irr_labs();
+        }
+        char **chkpt_rd_irr_labs_lowercase(void)
+        {
+                return _default_chkpt_lib_->rd_irr_labs_lowercase();
+        }
 
 /*!
-** chkpt_wt_irr_labs(): Write out the symmetry labels for all irreps in the 
+** chkpt_wt_irr_labs(): Write out the symmetry labels for all irreps in the
 **   point group in which the molecule is considered.
 **
-**  arguments: 
+**  arguments:
 **  \param irr_labs = an array of labels (strings) which denote
 **      the irreps for the point group	in which the molecule is considered,
-**      _regardless_ of whether there exist any symmetry orbitals which 
-**      transform as that irrep.  
+**      _regardless_ of whether there exist any symmetry orbitals which
+**      transform as that irrep.
 ** \ingroup CHKPT
 */
-	void chkpt_wt_irr_labs(char **irr_labs)
-	{
-		_default_chkpt_lib_->wt_irr_labs(irr_labs);
-	}
+        void chkpt_wt_irr_labs(char **irr_labs)
+        {
+                _default_chkpt_lib_->wt_irr_labs(irr_labs);
+        }
 }
 

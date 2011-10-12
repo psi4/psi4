@@ -1,12 +1,11 @@
 /*! \file
     \ingroup RESPONSE
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
-#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <physconst.h>
@@ -26,13 +25,13 @@ void get_params()
   params.print = options["PRINT"].to_integer();
 
   params.memory = module.get_memory();
-  
+
   /*  Clearly, this isn't doing anything right now
   params.cachelev = 2;
   errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
   */
   params.cachelev = 0;
-    
+
 
   /* if no reference is given, assume rhf */
   ref = 0;
@@ -40,14 +39,14 @@ void get_params()
   if(junk == "RHF") ref = 0;
   else if(junk == "ROHF") ref = 1;
   else if(junk == "UHF") ref = 2;
-  else { 
-      throw PsiException("Invalid value of the keyword REFERENCE", __FILE__, __LINE__); 
+  else {
+      throw PsiException("Invalid value of the keyword REFERENCE", __FILE__, __LINE__);
   }
 
   /* Make sure the value of ref matches that from CC_INFO */
   if(params.ref != ref) {
-    fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n", 
-	   ref, params.ref);
+    fprintf(outfile, "Value of REFERENCE from input.dat (%1d) and CC_INFO (%1d) do not match!\n",
+           ref, params.ref);
     fprintf(outfile, "Is this what you want to do?\n");
     params.ref = ref;
   }
@@ -84,7 +83,7 @@ void get_params()
     fprintf(outfile,   "\twhere units = hartrees, hz, nm, or ev.\n");
     throw PsiException("Failure in response involving the OMEGA option.", __FILE__, __LINE__);
   }
-  
+
   if(options["PROPERTY"].has_changed()) {
     params.prop = options.get_str("PROPERTY");
     if(!(params.prop == "POLARIZABILITY") && !(params.prop == "ROTATION")

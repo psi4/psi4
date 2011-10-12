@@ -1,15 +1,14 @@
 /*! \file
   \ingroup CUSP
-  \brief Enter brief description of file here 
+  \brief Enter brief description of file here
   */
-/* 
+/*
  ** delta(): Compute the MO-basis delta-function for a given point.
  ** TDC, June 2001
  */
 
 #include <cstdio>
 #include <cstdlib>
-#include <psi4-dec.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
 #include <libqt/qt.h>
@@ -84,7 +83,7 @@ namespace psi { namespace cusp {
         fruocc = options.get_int_array("FROZEN_UOCC");
 
         nfzc = nfzv = 0;
-        for(i=0; i < nirreps; i++) { 
+        for(i=0; i < nirreps; i++) {
             nfzc += frdocc[i];
             nfzv += fruocc[i];
         }

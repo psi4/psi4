@@ -1,6 +1,6 @@
 /*! \file
     \ingroup ccresponse
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +9,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libpsio/psio.h>
+#include <exception.h>
 #include <psifiles.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -78,19 +79,19 @@ void compute_X(const char *pert, int irrep, double omega)
       done = 1;
       save_X(pert, irrep, omega);
       if (params.wfn == "CC2")
-	cc2_sort_X(pert, irrep, omega);
+        cc2_sort_X(pert, irrep, omega);
       else
-	sort_X(pert, irrep, omega);
+        sort_X(pert, irrep, omega);
       fprintf(outfile, "\t-----------------------------------------\n");
       fprintf(outfile, "\tConverged %s-Perturbed Wfn to %4.3e\n", pert, rms);
       if(params.print & 2) {
-	sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
-	dpd_buf4_init(&X2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
-	X2_norm = dpd_buf4_dot_self(&X2);
-	dpd_buf4_close(&X2);
-	X2_norm = sqrt(X2_norm);
-	fprintf(outfile, "\tNorm of the converged X2 amplitudes %20.15f\n", X2_norm);
-	amp_write(pert, irrep, omega);
+        sprintf(lbl, "X_%s_IjAb (%5.3f)", pert, omega);
+        dpd_buf4_init(&X2, CC_LR, irrep, 0, 5, 0, 5, 0, lbl);
+        X2_norm = dpd_buf4_dot_self(&X2);
+        dpd_buf4_close(&X2);
+        X2_norm = sqrt(X2_norm);
+        fprintf(outfile, "\tNorm of the converged X2 amplitudes %20.15f\n", X2_norm);
+        amp_write(pert, irrep, omega);
       }
       fflush(outfile);
       break;

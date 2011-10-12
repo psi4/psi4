@@ -7,12 +7,12 @@
 namespace psi {
 
 /*
-** NEWMM():  A general matrix multiplication routine with nearly ideal 
+** NEWMM():  A general matrix multiplication routine with nearly ideal
 ** memory access patterns and low overhead.  In the near future, loops will
 ** need to be unrolled in each of the four algorithms below before this
 ** code can be used for production.
 **
-** Perform C = alpha A * B + beta C 
+** Perform C = alpha A * B + beta C
 **
 ** T. Daniel Crawford
 ** November, 1996
@@ -42,16 +42,16 @@ namespace psi {
 */
 
 void newmm_rking(double **A, int transa, double **B, int transb, double **C,
-	   int num_rows, int num_links, int num_cols, 
+           int num_rows, int num_links, int num_cols,
            double alpha, double beta)
 {
-  int i,j,k,ileft,jleft,kleft;
+  int i,j,k;
   double sum11,sum12,sum13,sum21,sum22,sum23,sum31,sum32,sum33;
-  double tmp11,tmp12,tmp13,tmp14,tmp21,tmp22,tmp23,tmp31,tmp32,tmp33;
+  double tmp11,tmp12,tmp13,tmp21,tmp22,tmp23,tmp31,tmp32,tmp33;
   double *tmpA1,*tmpA2,*tmpA3;
   double *tmpB1,*tmpB2,*tmpB3,*tmpB4,*tmpB5;
   double *tmpC1,*tmpC2,*tmpC3;
-  double tmp,tmp1,tmp2,tmp3,tmp4,tmp5,tmp6,tmp7,tmp8,tmp9;
+  double tmp1,tmp2,tmp3,tmp4;
 
   if(!num_rows || !num_links || !num_cols) return;
 
@@ -72,7 +72,7 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
             A[i][k] *= alpha;
       }
       if(!transb) {
-	  /* C = alpha A * B + beta C */
+          /* C = alpha A * B + beta C */
           for(i=0; i < (num_rows-2); i += 3) {
               tmpC1 = C[i];
               tmpC2 = C[i+1];
@@ -99,7 +99,7 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
                     sum13 = tmp11 * *(tmpB1+j+2);
                     sum21 = tmp21 * *(tmpB1+j);
                     sum22 = tmp21 * *(tmpB1+j+1);
-                    sum23 = tmp21 * *(tmpB1+j+2); 
+                    sum23 = tmp21 * *(tmpB1+j+2);
                     sum31 = tmp31 * *(tmpB1+j);
                     sum32 = tmp31 * *(tmpB1+j+1);
                     sum33 = tmp31 * *(tmpB1+j+2);
@@ -189,7 +189,7 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
                     *(tmpC3+j)   += sum31;
                   }
               }
-          } 
+          }
           /* getting rest of i rows */
           for ( ; i<num_rows;++i) {
               tmpC1 = C[i];
@@ -445,7 +445,7 @@ void newmm_rking(double **A, int transa, double **B, int transb, double **C,
                   }
                }
             } /* end rest of i rows */
-	}
+        }
 
         else {   /* if At and Bt */
             for(i=0;i<(num_rows-2);i+=3) {

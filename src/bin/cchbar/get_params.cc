@@ -1,13 +1,15 @@
 /*! \file
     \ingroup CCHBAR
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <cmath>
+#include <liboptions/liboptions.h>
 #include <libciomr/libciomr.h>
+#include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
 #define EXTERN
@@ -26,7 +28,7 @@ void get_params(Options &options)
 
 //  params.cachelev = 2;
 //  errcod = ip_data("CACHELEV", "%d", &(params.cachelev),0);
-  params.cachelev = options.get_int("CACHELEV"); 
+  params.cachelev = options.get_int("CACHELEV");
 
 //  params.print = 0;
 //  errcod = ip_data("PRINT", "%d", &(params.print),0);
@@ -42,10 +44,10 @@ void get_params(Options &options)
   else if(junk == "RESPONSE") params.dertype = 3; /* linear response */
   else {
 //    printf("Invalid value of input keyword DERTYPE: %s\n", junk);
-//    return PSI_RETURN_FAILURE; 
+//    return PSI_RETURN_FAILURE;
       throw PsiException("CCHBAR: Invalid value of input keyword DERTYPE",__FILE__,__LINE__);
   }
- 
+
   /* Should we use the minimal-disk algorithm for Wabei?  It's VERY slow! */
 //  params.wabei_lowdisk = 0;
 //  errcod = ip_boolean("WABEI_LOWDISK", &params.wabei_lowdisk, 0);

@@ -33,28 +33,16 @@ double bc[MAX_BC][MAX_BC];
 double fac[MAX_FAC];
 
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio) :
-//#if HAVE_MADNESS
-//    madness::WorldObject<Wavefunction>(*Communicator::world->get_madworld()),
-//#endif
     options_(options), psio_(psio)
 {
     chkpt_ = boost::shared_ptr<Chkpt>(new Chkpt(psio.get(), PSIO_OPEN_OLD));
     common_init();
-//#if HAVE_MADNESS
-//    process_pending();
-//#endif
 }
 
 Wavefunction::Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt) :
-//#if HAVE_MADNESS
-//    madness::WorldObject<Wavefunction>(*Communicator::world->get_madworld()),
-//#endif
     options_(options), psio_(psio), chkpt_(chkpt)
 {
     common_init();
-//#if HAVE_MADNESS
-//    process_pending();
-//#endif
 }
 
 Wavefunction::~Wavefunction()
@@ -87,6 +75,16 @@ void Wavefunction::common_init()
     factory_->init_with(dimension, dimension);
 
     nirrep_ = dimension.n();
+
+    // Initialize array that hold dimensionality information
+    nsopi_    = Dimension(nirrep_, "SOs per irrep");
+    nmopi_    = Dimension(nirrep_, "MOs per irrep");
+    nalphapi_ = Dimension(nirrep_, "Alpha electrons per irrep");
+    nbetapi_  = Dimension(nirrep_, "Beta electrons per irrep");
+    doccpi_   = Dimension(nirrep_, "Doubly occupied orbitals per irrep");
+    soccpi_   = Dimension(nirrep_, "Singly occupied orbitals per irrep");
+    frzcpi_   = Dimension(nirrep_, "Frozen core orbitals per irrep");
+    frzvpi_   = Dimension(nirrep_, "Frozen virtual orbitals per irrep");
 
     // Obtain memory amount from the environment
     memory_ = Process::environment.get_memory();
@@ -221,4 +219,69 @@ void Wavefunction::call_postiteration_callbacks()
         if ((PyObject*)*iter != Py_None)
             boost::python::call<void>((PyObject*)*iter, Process::environment.reference_wavefunction());
     }
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Ca() const {
+    if (!Ca_)
+        if (!reference_wavefunction_)
+            throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
+        else
+            return reference_wavefunction_->Ca();
+
+    return Ca_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Cb() const {
+    if (!Cb_)
+        if (!reference_wavefunction_)
+            throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
+        else
+            return reference_wavefunction_->Cb();
+
+    return Cb_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Fa() const
+{
+    return Fa_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Fb() const
+{
+    return Fb_;
+}
+
+boost::shared_ptr<Vector> Wavefunction::epsilon_a() const
+{
+    return epsilon_a_;
+}
+
+boost::shared_ptr<Vector> Wavefunction::epsilon_b() const
+{
+    return epsilon_b_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Da() const
+{
+    return Da_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Db() const
+{
+    return Db_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::X() const
+{
+    return Lagrangian_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::gradient() const
+{
+    return gradient_;
+}
+
+void Wavefunction::set_gradient(boost::shared_ptr<Matrix>& grad)
+{
+    gradient_ = grad;
 }

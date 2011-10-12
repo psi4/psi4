@@ -40,6 +40,7 @@
 #include <libqt/qt.h>
 #include <libdpd/dpd.h>
 #include <psifiles.h>
+#include <psi4-dec.h>
 #include "globals.h"
 
 namespace psi {
@@ -48,7 +49,7 @@ namespace psi {
 void init_io();
 void title(void);
 void get_params(Options & options);
-void get_moinfo(void);
+void get_moinfo(Options& options);
 void cleanup(void);
 void exit_io(void);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -75,7 +76,7 @@ PsiReturnType transqt2(Options & options)
   init_io();
   title();
   get_params(options);
-  get_moinfo();
+  get_moinfo(options);
 
   nso = moinfo.nso;
   nmo = moinfo.nmo;

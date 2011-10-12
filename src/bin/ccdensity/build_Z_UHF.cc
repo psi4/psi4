@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCDENSITY
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -9,6 +9,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <psifiles.h>
+#include <exception.h>
 #include <cmath>
 #include "MOInfo.h"
 #include "Params.h"
@@ -24,7 +25,7 @@ namespace psi { namespace ccdensity {
 **
 ** where A(AI,EM) is the orbital Hessian computed in build_A(), X(A,I)
 ** is the orbital rotation gradient computed in build_X(), and
-** D(orb)(E,M) is the final Z-vector we want. 
+** D(orb)(E,M) is the final Z-vector we want.
 **
 */
 
@@ -59,8 +60,8 @@ void build_Z_UHF(void)
   dpd_file2_mat_rd(&X);
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < X.params->rowtot[h]; a++)
-      for(i=0; i < X.params->coltot[h]; i++) 
-	Z[count++] = -X.matrix[h][a][i];
+      for(i=0; i < X.params->coltot[h]; i++)
+        Z[count++] = -X.matrix[h][a][i];
   dpd_file2_mat_close(&X);
   dpd_file2_close(&X);
 
@@ -69,8 +70,8 @@ void build_Z_UHF(void)
   dpd_file2_mat_rd(&X);
   for(h=0; h < nirreps; h++)
     for(a=0; a < X.params->rowtot[h]; a++)
-      for(i=0; i < X.params->coltot[h]; i++) 
-	Z[count++] = -X.matrix[h][a][i];
+      for(i=0; i < X.params->coltot[h]; i++)
+        Z[count++] = -X.matrix[h][a][i];
   dpd_file2_mat_close(&X);
   dpd_file2_close(&X);
 
@@ -85,7 +86,7 @@ void build_Z_UHF(void)
 
   if(num_ai != dim_A + dim_B) { /* error */
     fprintf(outfile, "Problem: num_ai(%d) != dim_A + dim_b (%d)\n", num_ai,
-	    dim_A + dim_B);
+            dim_A + dim_B);
     throw PsiException("ccenergy: error", __FILE__, __LINE__);
   }
 
@@ -139,9 +140,9 @@ void build_Z_UHF(void)
   for(h=0,count=0; h < nirreps; h++)
     for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) {
-	if(fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
+        if(fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
         else D.matrix[h][a][i] = Z[count];
-	count++;
+        count++;
       }
   dpd_file2_mat_wrt(&D);
   dpd_file2_mat_close(&D);
@@ -151,11 +152,11 @@ void build_Z_UHF(void)
   dpd_file2_scm(&D, 0.0);
   dpd_file2_mat_init(&D);
   for(h=0; h < nirreps; h++)
-    for(a=0; a < D.params->rowtot[h]; a++) 
+    for(a=0; a < D.params->rowtot[h]; a++)
       for(i=0; i < D.params->coltot[h]; i++) {
-	if(fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
-	else D.matrix[h][a][i] = Z[count];
-	count++;
+        if(fabs(Z[count]) > 1e3) D.matrix[h][a][i] = 0.0;
+        else D.matrix[h][a][i] = Z[count];
+        count++;
       }
   dpd_file2_mat_wrt(&D);
   dpd_file2_mat_close(&D);

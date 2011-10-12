@@ -3,11 +3,11 @@
  \ingroup PSIO
  */
 
+#include <boost/shared_ptr.hpp>
 #include <cstdio>
 #include <cstdlib>
 #include <libpsio/psio.h>
 #include <libpsio/psio.hpp>
-#include <psi4-dec.h>
 
 namespace psi {
 

@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCSORT
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -15,14 +15,15 @@
 #include "Params.h"
 #define EXTERN
 #include "globals.h"
+#include <psi4-dec.h>
 
 namespace psi { namespace ccsort {
 
 void idx_permute_multipass(dpdfile4 *File, int this_bucket,
-			   int **bucket_map, unsigned long int **bucket_offset,
-			   int p, int q, int r, int s,
-			   int perm_pr, int perm_qs, int perm_prqs,
-			   double value, FILE *outfile);
+                           int **bucket_map, unsigned long int **bucket_offset,
+                           int p, int q, int r, int s,
+                           int perm_pr, int perm_qs, int perm_prqs,
+                           double value, FILE *outfile);
 
 int build_abcd_packed(int inputfile, double tolerance, int keep)
 {
@@ -30,7 +31,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   int lastbuf;
   long int memoryb, memoryd, core_left, row_length;
   unsigned int h, nirreps, n, row, nump, numq, nbuckets;
-  int **bucket_map; 
+  int **bucket_map;
   unsigned long **bucket_offset, **bucket_rowdim, **bucket_size;
   Value *valptr;
   Label *lblptr;
@@ -81,24 +82,24 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
   bucket_size[0] =
              (unsigned long int *) malloc(sizeof(unsigned long int)*nirreps);
   for(int hh=0; hh < nirreps; hh++) bucket_size[0][hh] = 0;
-    
+
   /* Figure out how many passes we need and where each p,q goes */
   for(h=0,core_left=memoryd,nbuckets=1; h < nirreps; h++) {
 
     row_length = (long int) B.params->coltot[h^(B.my_irrep)];
-	       
+
     for(row=0; row < B.params->rowtot[h]; row++) {
 
       if((core_left - row_length) >= 0) {
-	core_left -= row_length;
-	bucket_rowdim[nbuckets-1][h]++;
-	bucket_size[nbuckets-1][h] += row_length;
+        core_left -= row_length;
+        bucket_rowdim[nbuckets-1][h]++;
+        bucket_size[nbuckets-1][h] += row_length;
       }
       else {
-	nbuckets++;
-	core_left = memoryd - row_length;
+        nbuckets++;
+        core_left = memoryd - row_length;
 
-	/* Make room for another bucket */
+        /* Make room for another bucket */
         bucket_offset = (unsigned long int **) realloc((void *) bucket_offset,
                          nbuckets * sizeof(unsigned long int *));
         bucket_offset[nbuckets-1] =
@@ -153,7 +154,7 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
       value = (double) valptr[InBuf.idx];
 
       idx_permute_multipass(&B,n,bucket_map,bucket_offset,
-			    p,q,r,s,1,1,1,value,outfile);
+                            p,q,r,s,1,1,1,value,outfile);
 
     } /* end loop through current buffer */
 
@@ -163,16 +164,16 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
       lastbuf = InBuf.lastbuf;
 
       for (idx=4*InBuf.idx; InBuf.idx < InBuf.inbuf; InBuf.idx++) {
-	p = (int) lblptr[idx++];
-	q = (int) lblptr[idx++];
-	r = (int) lblptr[idx++];
-	s = (int) lblptr[idx++];
+        p = (int) lblptr[idx++];
+        q = (int) lblptr[idx++];
+        r = (int) lblptr[idx++];
+        s = (int) lblptr[idx++];
 
-	value = (double) valptr[InBuf.idx];
+        value = (double) valptr[InBuf.idx];
 
-	idx_permute_multipass(&B,n,bucket_map,bucket_offset,
-			      p,q,r,s,1,1,1,value,outfile);
-      
+        idx_permute_multipass(&B,n,bucket_map,bucket_offset,
+                              p,q,r,s,1,1,1,value,outfile);
+
       } /* end loop through current buffer */
     } /* end loop over reading buffers */
 
@@ -184,24 +185,24 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
 /* 	psio_write(B.filenum, B.label, (char *) B.matrix[h][0], */
 /* 		   bucket_size[n][h]*((long int) sizeof(double)), next, &next); */
 
-	dpd_buf4_mat_irrep_row_init(&B_s, h);
-	dpd_buf4_mat_irrep_row_init(&B_a, h);
-	for(ab=0; ab < bucket_rowdim[n][h]; ab++) {
-	  for(cd=0; cd < B_s.params->coltot[h]; cd++) {
-	    c = B_s.params->colorb[h][cd][0];
-	    d = B_s.params->colorb[h][cd][1];
-	    CD = B.params->colidx[c][d];
-	    DC = B.params->colidx[d][c];
-	    abcd = B.matrix[h][ab][CD];
-	    abdc = B.matrix[h][ab][DC];
-	    B_s.matrix[h][0][cd] = abcd + abdc;
-	    B_a.matrix[h][0][cd] = abcd - abdc;
-	  }
-	  dpd_buf4_mat_irrep_row_wrt(&B_s, h, ab+bucket_offset[n][h]);
-	  dpd_buf4_mat_irrep_row_wrt(&B_a, h, ab+bucket_offset[n][h]);
-	}
-	dpd_buf4_mat_irrep_row_close(&B_s, h);
-	dpd_buf4_mat_irrep_row_close(&B_a, h);
+        dpd_buf4_mat_irrep_row_init(&B_s, h);
+        dpd_buf4_mat_irrep_row_init(&B_a, h);
+        for(ab=0; ab < bucket_rowdim[n][h]; ab++) {
+          for(cd=0; cd < B_s.params->coltot[h]; cd++) {
+            c = B_s.params->colorb[h][cd][0];
+            d = B_s.params->colorb[h][cd][1];
+            CD = B.params->colidx[c][d];
+            DC = B.params->colidx[d][c];
+            abcd = B.matrix[h][ab][CD];
+            abdc = B.matrix[h][ab][DC];
+            B_s.matrix[h][0][cd] = abcd + abdc;
+            B_a.matrix[h][0][cd] = abcd - abdc;
+          }
+          dpd_buf4_mat_irrep_row_wrt(&B_s, h, ab+bucket_offset[n][h]);
+          dpd_buf4_mat_irrep_row_wrt(&B_a, h, ab+bucket_offset[n][h]);
+        }
+        dpd_buf4_mat_irrep_row_close(&B_s, h);
+        dpd_buf4_mat_irrep_row_close(&B_a, h);
       }
       free_block(B.matrix[h]);
     }
@@ -245,11 +246,11 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
     dpd_buf4_mat_irrep_rd_block(&B_s, 0, row_start, rows_per_bucket);
     for(ab=0; ab < rows_per_bucket; ab++)
       for(Gc=0; Gc < moinfo.nirreps; Gc++)
-	for(C=0; C < moinfo.virtpi[Gc]; C++) {
-	  c = moinfo.vir_off[Gc] + C;
-	  cc = B_s.params->colidx[c][c];
-	  B_diag[ab][c] = B_s.matrix[0][ab][cc];
-	}
+        for(C=0; C < moinfo.virtpi[Gc]; C++) {
+          c = moinfo.vir_off[Gc] + C;
+          cc = B_s.params->colidx[c][c];
+          B_diag[ab][c] = B_s.matrix[0][ab][cc];
+        }
     psio_write(CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_per_bucket*nvirt*sizeof(double), next, &next);
   }
   if(rows_left) {
@@ -257,11 +258,11 @@ int build_abcd_packed(int inputfile, double tolerance, int keep)
     dpd_buf4_mat_irrep_rd_block(&B_s, 0, row_start, rows_left);
     for(ab=0; ab < rows_left; ab++)
       for(Gc=0; Gc < moinfo.nirreps; Gc++)
-	for(C=0; C < moinfo.virtpi[Gc]; C++) {
-	  c = moinfo.vir_off[Gc] + C;
-	  cc = B_s.params->colidx[c][c];
-	  B_diag[ab][c] = B_s.matrix[0][ab][cc];
-	}
+        for(C=0; C < moinfo.virtpi[Gc]; C++) {
+          c = moinfo.vir_off[Gc] + C;
+          cc = B_s.params->colidx[c][c];
+          B_diag[ab][c] = B_s.matrix[0][ab][cc];
+        }
     psio_write(CC_BINTS, "B(+) <ab|cc>", (char *) B_diag[0], rows_left*nvirt*sizeof(double), next, &next);
   }
   dpd_free_block(B_diag, rows_per_bucket, nvirt);

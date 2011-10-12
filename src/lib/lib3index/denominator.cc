@@ -140,7 +140,7 @@ void LaplaceDenominator::decompose()
     if (!err_table_file)
         throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate error property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/error.bin)");
     if (!R_avail_file)
-        throw PSIEXCEPTION("LapalceQuadrature: Cannot locate R property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/R_avail.bin)");
+        throw PSIEXCEPTION("LaplaceQuadrature: Cannot locate R property file for quadrature rules (should be PSIDATADIR/quadratures/1_x/R_avail.bin)");
 
     int nk = 53;
     int nR = 99;

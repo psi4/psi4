@@ -1,6 +1,6 @@
 /*! \file
     \ingroup CCLAMBDA
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
@@ -10,7 +10,9 @@
 #include <libciomr/libciomr.h>
 #include <psifiles.h>
 #include <libqt/qt.h>
+#include <liboptions/liboptions.h>
 #include <libchkpt/chkpt.h>
+#include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -22,7 +24,7 @@ namespace psi { namespace cclambda {
 void get_params(Options& options)
 {
   int errcod, iconv,i,j,k,l,prop_sym,prop_root, excited_method=0;
-	int *states_per_irrep, prop_all, lambda_and_Ls = 0;
+        int *states_per_irrep, prop_all, lambda_and_Ls = 0;
   char lbl[32];
   std::string junk;
 
@@ -101,7 +103,7 @@ void get_params(Options& options)
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
   }
-	else { /* DERTYPE is absent, assume 1 if jobtype=opt; 0 if jobtype=oeprop */
+        else { /* DERTYPE is absent, assume 1 if jobtype=opt; 0 if jobtype=oeprop */
     junk = options.get_str("JOBTYPE");
     if(junk == "OEPROP") params.dertype = 0;
     else if(junk == "OPT") params.dertype = 1;
@@ -109,7 +111,7 @@ void get_params(Options& options)
       printf("Don't know what to do with DERTYPE missing and jobtype: %s\n", junk.c_str());
       throw PsiException("cclambda: error", __FILE__, __LINE__);
     }
-	}
+        }
 
   /* begin local parameters */
   params.local = 0;
@@ -137,7 +139,7 @@ void get_params(Options& options)
   else if(params.local) {
     local.weakp = "NONE";
   }
-  
+
   if(params.dertype == 3)
     local.filter_singles = 0;
   else
@@ -163,26 +165,26 @@ void get_params(Options& options)
   else if(params.local)
     local.pairdef = "BP";
 
-	/* Now setup the structure which determines what will be solved */ 
-	/* if --zeta, use Xi and solve for Zeta */
-	/* if (DERTYPE == FIRST) determine ground vs. excited from wfn.
-	    if ground, do only lambda.
-			if excited, compute only one L chosen as described below.
-			*/
-	/* if (DERTYPE == RESPONSE), determine ground vs. excited from wfn.
-	    Compute lambda.
-			if excited, also do L(s) chosen as described below */
-	/* if (DERTYPE == NONE) determine ground vs. excited from wfn.
-	    Compute lambda.
-			if excited, also do L(s) chosen as described below */
+        /* Now setup the structure which determines what will be solved */
+        /* if --zeta, use Xi and solve for Zeta */
+        /* if (DERTYPE == FIRST) determine ground vs. excited from wfn.
+            if ground, do only lambda.
+                        if excited, compute only one L chosen as described below.
+                        */
+        /* if (DERTYPE == RESPONSE), determine ground vs. excited from wfn.
+            Compute lambda.
+                        if excited, also do L(s) chosen as described below */
+        /* if (DERTYPE == NONE) determine ground vs. excited from wfn.
+            Compute lambda.
+                        if excited, also do L(s) chosen as described below */
 /* To determine which L(s) to compute for multiple L(s):
-	  Check PROP_ALL in input
-		 - If (PROP_ALL == true), compute L for all excited states.
-		 - If false, check PROP_SYM for irrep desired, and PROP_ROOT
-			     for root desired, as in cceom. */
-/* To determine which L(s) to compute for single L(s) 
-		 - Check PROP_SYM for irrep desired, and PROP_ROOT
-			     for root desired, as in cceom. */
+          Check PROP_ALL in input
+                 - If (PROP_ALL == true), compute L for all excited states.
+                 - If false, check PROP_SYM for irrep desired, and PROP_ROOT
+                             for root desired, as in cceom. */
+/* To determine which L(s) to compute for single L(s)
+                 - Check PROP_SYM for irrep desired, and PROP_ROOT
+                             for root desired, as in cceom. */
 
   /* setup property variables for excited states */
   if (cc_excited(params.wfn)) {
@@ -191,40 +193,40 @@ void get_params(Options& options)
       states_per_irrep = chkpt_rd_statespi();
     }
     else {
-	    states_per_irrep = options.get_int_array("STATES_PER_IRREP");
+            states_per_irrep = options.get_int_array("STATES_PER_IRREP");
     }
     chkpt_close();
 
-	  prop_all = 0;
-	  prop_all = options.get_bool("PROP_ALL");
-		/* command-line overrides this keyword (at least for now) */
-		if (params.all) prop_all = 1;
+          prop_all = 0;
+          prop_all = options.get_bool("PROP_ALL");
+                /* command-line overrides this keyword (at least for now) */
+                if (params.all) prop_all = 1;
 
-	  if (options["PROP_SYM"].has_changed()) {  /* read symmetry of state for properties */
+          if (options["PROP_SYM"].has_changed()) {  /* read symmetry of state for properties */
       prop_sym = options.get_int("PROP_SYM");
       prop_sym -= 1;
       prop_sym = moinfo.sym^prop_sym;
-	  }
+          }
     else { /* just use last irrep of states requested for symmetry of states */
       for (i=0;i<moinfo.nirreps;++i) {
-		    if (states_per_irrep[i] > 0)
+                    if (states_per_irrep[i] > 0)
           prop_sym = i^moinfo.sym;
-		  }
+                  }
     }
 
     if (options["PROP_ROOT"].has_changed()) { /* read prop_root */
       prop_root = options.get_int("PROP_ROOT");
       prop_root -= 1;
-	  }
-	  else { /* just use highest root, if you need only one of them */
-	    prop_root = states_per_irrep[prop_sym^moinfo.sym];
-			prop_root -= 1;
-	  }
-	}
-	
+          }
+          else { /* just use highest root, if you need only one of them */
+            prop_root = states_per_irrep[prop_sym^moinfo.sym];
+                        prop_root -= 1;
+          }
+        }
+
 
   if (params.zeta) { /* only use Xi to solve for Zeta */
-	  params.nstates = 1;
+          params.nstates = 1;
     pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
     psio_read_entry(CC_INFO, "XI Irrep", (char *) &i,sizeof(int));
     fprintf(outfile,"\tIrrep of Zeta       (CC_INFO) = %d\n", i);
@@ -240,9 +242,9 @@ void get_params(Options& options)
     sprintf(pL_params[0].L2AB_lbl,"ZIjAb");
     sprintf(pL_params[0].L2RHF_lbl,"2ZIjAb - ZIjbA");
   }
-	else if (params.dertype == 1) { /* analytic gradient, ignore prop_all */
-	  if (!cc_excited(params.wfn)) { /* do only lambda for ground state */
-	    params.nstates = 1;
+        else if (params.dertype == 1) { /* analytic gradient, ignore prop_all */
+          if (!cc_excited(params.wfn)) { /* do only lambda for ground state */
+            params.nstates = 1;
       pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
       pL_params[0].irrep = 0;
       pL_params[0].root = -1;
@@ -255,9 +257,9 @@ void get_params(Options& options)
       sprintf(pL_params[0].L2BB_lbl,"Lijab %d %d",0, -1);
       sprintf(pL_params[0].L2AB_lbl,"LIjAb %d %d",0, -1);
       sprintf(pL_params[0].L2RHF_lbl,"2LIjAb - LIjbA %d %d",0, -1);
-		}
-		else { /* do only one L for excited state */
-		  params.nstates = 1;
+                }
+                else { /* do only one L for excited state */
+                  params.nstates = 1;
       pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
       pL_params[0].irrep = prop_sym;
       pL_params[0].root = prop_root;
@@ -286,11 +288,11 @@ void get_params(Options& options)
       sprintf(pL_params[0].L2BB_lbl,"Lijab %d %d",prop_sym, prop_root);
       sprintf(pL_params[0].L2AB_lbl,"LIjAb %d %d",prop_sym, prop_root);
       sprintf(pL_params[0].L2RHF_lbl,"2LIjAb - LIjbA %d %d",prop_sym, prop_root);
-		}
+                }
   }
-	else if (params.dertype == 3) { /* response calculation */
-	  if (!cc_excited(params.wfn)) { /* ground state */
-	    params.nstates = 1;
+        else if (params.dertype == 3) { /* response calculation */
+          if (!cc_excited(params.wfn)) { /* ground state */
+            params.nstates = 1;
       pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
       pL_params[0].irrep = 0;
       pL_params[0].root = -1;
@@ -303,14 +305,14 @@ void get_params(Options& options)
       sprintf(pL_params[0].L2BB_lbl,"Lijab %d %d",0, -1);
       sprintf(pL_params[0].L2AB_lbl,"LIjAb %d %d",0, -1);
       sprintf(pL_params[0].L2RHF_lbl,"2LIjAb - LIjbA %d %d",0, -1);
-		}
-		else { /* excited state */
-		  lambda_and_Ls = 1; /* code is below */
-		}
-	}
-	else if (params.dertype == 0) {
-	  if (!cc_excited(params.wfn)) { /* ground state */
-	    params.nstates = 1;
+                }
+                else { /* excited state */
+                  lambda_and_Ls = 1; /* code is below */
+                }
+        }
+        else if (params.dertype == 0) {
+          if (!cc_excited(params.wfn)) { /* ground state */
+            params.nstates = 1;
       pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
       pL_params[0].irrep = 0;
       pL_params[0].root = -1;
@@ -323,28 +325,28 @@ void get_params(Options& options)
       sprintf(pL_params[0].L2BB_lbl,"Lijab %d %d",0, -1);
       sprintf(pL_params[0].L2AB_lbl,"LIjAb %d %d",0, -1);
       sprintf(pL_params[0].L2RHF_lbl,"2LIjAb - LIjbA %d %d",0, -1);
-		}
-		else { /* excited state */
-		  lambda_and_Ls = 1; /* code is below */
-		}
-	}
+                }
+                else { /* excited state */
+                  lambda_and_Ls = 1; /* code is below */
+                }
+        }
 
 
   /* do lambda for ground state AND do L(s) for excited states */
   if (lambda_and_Ls) {
     /* determine number of states to converge */
-	  params.nstates = 1; /* for ground state */
-		if (prop_all) {
-		  for (i=0; i<moinfo.nirreps; ++i) 
-			  params.nstates += states_per_irrep[i]; /* do all L(s) */
-		}
-		else {
-		  params.nstates += 1; /* do only one L */
-		}
+          params.nstates = 1; /* for ground state */
+                if (prop_all) {
+                  for (i=0; i<moinfo.nirreps; ++i)
+                          params.nstates += states_per_irrep[i]; /* do all L(s) */
+                }
+                else {
+                  params.nstates += 1; /* do only one L */
+                }
 
     pL_params = (struct L_Params *) malloc(params.nstates * sizeof(struct L_Params));
 
-		/* ground state */
+                /* ground state */
     pL_params[0].irrep = 0;
     pL_params[0].root = -1;
     pL_params[0].ground = 1;
@@ -357,10 +359,10 @@ void get_params(Options& options)
     sprintf(pL_params[0].L2AB_lbl,"LIjAb %d %d",0, -1);
     sprintf(pL_params[0].L2RHF_lbl,"2LIjAb - LIjbA %d %d",0, -1);
 
-		if (prop_all) { /* do all L(s) */
-		  k=1;
-		    for (i=0; i<moinfo.nirreps; ++i)  { /* look over irrep of L(s) */
-				  for (j=0; j < states_per_irrep[i^moinfo.sym]; ++j) {
+                if (prop_all) { /* do all L(s) */
+                  k=1;
+                    for (i=0; i<moinfo.nirreps; ++i)  { /* look over irrep of L(s) */
+                                  for (j=0; j < states_per_irrep[i^moinfo.sym]; ++j) {
             pL_params[k].irrep = i;
             pL_params[k].root = j;
             pL_params[k].ground = 0;
@@ -390,11 +392,11 @@ void get_params(Options& options)
             sprintf(pL_params[k].L2BB_lbl,"Lijab %d %d",i, j);
             sprintf(pL_params[k].L2AB_lbl,"LIjAb %d %d",i, j);
             sprintf(pL_params[k].L2RHF_lbl,"2LIjAb - LIjbA %d %d",i, j);
-						k++;
-					}
-			  }
-		}
-		else { /* use prop_sym and prop_root determined above from input or inferrence */
+                                                k++;
+                                        }
+                          }
+                }
+                else { /* use prop_sym and prop_root determined above from input or inferrence */
       pL_params[1].irrep = prop_sym;
       pL_params[1].root = prop_root;
       pL_params[1].ground = 0;
@@ -424,7 +426,7 @@ void get_params(Options& options)
       sprintf(pL_params[1].L2BB_lbl,"Lijab %d %d", prop_sym, prop_root);
       sprintf(pL_params[1].L2AB_lbl,"LIjAb %d %d", prop_sym, prop_root);
       sprintf(pL_params[1].L2RHF_lbl,"2LIjAb - LIjbA %d %d", prop_sym, prop_root);
-		}
+                }
   }
 
 
@@ -439,7 +441,7 @@ void get_params(Options& options)
   fprintf(outfile, "\tCache Level   =     %1d\n", params.cachelev);
   fprintf(outfile, "\tModel III     =     %s\n", params.sekino ? "Yes" : "No");
   fprintf(outfile, "\tDIIS          =     %s\n", params.diis ? "Yes" : "No");
-  fprintf(outfile, "\tAO Basis      =     %s\n", 
+  fprintf(outfile, "\tAO Basis      =     %s\n",
           params.aobasis ? "Yes" : "No");
   fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
   fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
@@ -456,13 +458,13 @@ void get_params(Options& options)
   fprintf(outfile,"\t    Irr   Root  Ground-State?    EOM energy        R0\n");
   for (i=0; i<params.nstates; ++i) {
     fprintf(outfile,"\t%3d %3d %5d %10s %18.10lf %14.10lf\n", i+1, pL_params[i].irrep, pL_params[i].root+1,
-	    (pL_params[i].ground ? "Yes":"No"), pL_params[i].cceom_energy, pL_params[i].R0);
+            (pL_params[i].ground ? "Yes":"No"), pL_params[i].cceom_energy, pL_params[i].R0);
   }
 
   for (i=0; i<params.nstates; ++i) {
     fprintf(outfile,"\tLabels for eigenvector %d:\n\t%s, %s, %s, %s, %s, %s\n",
-	    i+1,pL_params[i].L1A_lbl,pL_params[i].L1B_lbl,pL_params[i].L2AA_lbl,pL_params[i].L2BB_lbl,
-	    pL_params[i].L2AB_lbl, pL_params[i].L2RHF_lbl);
+            i+1,pL_params[i].L1A_lbl,pL_params[i].L1B_lbl,pL_params[i].L2AA_lbl,pL_params[i].L2BB_lbl,
+            pL_params[i].L2AB_lbl, pL_params[i].L2RHF_lbl);
   }
 
   fflush(outfile);
