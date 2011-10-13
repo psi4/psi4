@@ -9,6 +9,8 @@
 #include "thread.hpp"
 #include "data.hpp"
 #include "cache.hpp"
+#include "aobasis.hpp"
+#include "messenger.hpp"
 
 #ifdef redefine_size_t
 #define size_t custom_size_t
@@ -25,28 +27,37 @@ class YetiOStream {
 
 };
 
+
 class TensorTest;
 class YetiRuntime {
 
-    private:
+    public:
+        typedef enum {Local, MPI} runtime_parallel_type_t;
 
+    private:
         static std::map<std::string, IndexDescrPtr> descrs_;
 
         static std::map<IndexRange*, std::map<IndexRange*, int> > valid_subranges_;
+
+        static std::map<std::string, AOBasisPtr> basis_sets_;
 
         static uli descr_id_count_;
 
         static uli* max_range_sizes_;
 
         static uli* max_block_sizes_;
-        
-        static usi max_nindex_;
 
         static usi max_depth_;
+
+        static uli nthread_compute_;
+
+        static uli nthread_comm_;
 
         static uli nthread_;
 
         static uli nproc_;
+
+        static uli nblocks_to_allocate_;
 
         static size_t memory_;
 
@@ -56,7 +67,7 @@ class YetiRuntime {
 
         static Thread** threads_;
 
-        static bool threaded_runtime_;
+        static bool threaded_compute_;
 
         static ThreadGroup* threadgrp_;
 
@@ -74,9 +85,17 @@ class YetiRuntime {
 
         static size_t thread_stack_size_;
 
+        static void init_local_messenger();
 
+        static void init_mpi_messenger();
 
+        static void init_mpi();
 
+        static runtime_parallel_type_t parallel_type_;
+
+        static YetiMPIMessenger* mpi_messenger_;
+
+        static YetiMessenger* messenger_;
 
     public:
 
@@ -84,26 +103,29 @@ class YetiRuntime {
 
         static IndexDescr* get_descr(const std::string& id);
 
-        static void init(
-            uli me,
-            uli nproc,
-            usi nindex,
-            uli nthread,
-            size_t memory,
-            size_t cache
-        );
+        /**
+          Configure system-dependent variables like the number
+          of threads, total available memory, MPI environment
+          @param me The processor number
+          @param
+        */
+        static void init_system_environment();
+
+        /**
+          Configure molecule-dependent variables like max block size
+          and scratch space which depend on particular molecule
+        */
+        static void init_molecule_environment();
 
         static void finalize();
 
-        static void init_threads(uli nthread);
+        static void init_threads();
 
         static void reconfigure(uli me, uli nproc);
 
         static const uli* max_block_sizes();
 
         static usi max_depth();
-
-        static usi max_nindex();
 
         static const uli* max_range_sizes();
 
@@ -122,6 +144,10 @@ class YetiRuntime {
         static uli nproc();
 
         static uli get_thread_number();
+
+#if USE_DEFAULT_THREAD_STACK
+        static void set_thread_stack(uli threadnum, void* addr);
+#endif
 
         static void register_index_range(
             IndexRange *range,
@@ -161,6 +187,17 @@ class YetiRuntime {
             const IndexDescrPtr& descr
         );
 
+        static void register_index_range(
+            const IndexRangePtr& range,
+            const std::string& name,
+            const std::string& id
+
+        );
+
+        static uli nthread_compute();
+        
+        static uli nthread_comm();
+
         static uli nthread();
 
         static void add_thread(Thread* thr);
@@ -175,10 +212,6 @@ class YetiRuntime {
 
         static void unlock_malloc();
 
-        static void set_threaded_runtime(bool flag);
-
-        static bool is_threaded_runtime();
-
         static usi print_depth();
 
         static void set_print_depth(usi depth);
@@ -187,6 +220,10 @@ class YetiRuntime {
 
         static void* get_thread_stack(uli threadnum);
         
+        static void register_basis_set(const AOBasisPtr& basis);
+
+        static const AOBasisPtr& get_basis(const std::string& id);
+
         static void register_subranges(
             IndexRange* parent,
             IndexRange* subrange1,
@@ -223,6 +260,10 @@ class YetiRuntime {
             IndexRange* subrange
         );
 
+        static bool is_threaded_compute();
+
+        static void set_threaded_compute(bool flag);
+
         static char* malloc(size_t size);
 
         static void free(void* ptr, size_t size);
@@ -232,24 +273,13 @@ class YetiRuntime {
         static bool print_cxn;
 
         static YetiOStream yetiout;
+
+        static YetiRuntime::runtime_parallel_type_t get_parallel_type();
+
+        static YetiMPIMessenger* get_mpi_messenger();
+
+        static YetiMessenger* get_messenger();
 };
-
-usi* usi_allocate(usi i, usi j);
-
-uli* yeti_malloc_tile_location(uli threadnum = 0);
-uli* yeti_malloc_indexset(uli threadnum = 0);
-usi* yeti_malloc_perm(uli threadnum = 0);
-void* yeti_malloc_indexptr(uli threadnum = 0);
-void* yeti_malloc_matrix_generator(uli threadnum = 0);
-void* yeti_malloc_matrix_generator_set(uli threadnum = 0);
-
-void yeti_free_indexset(const uli* ptr);
-void yeti_free_perm(usi* ptr);
-void yeti_free_indexptr(void* ptr);
-void yeti_free_tile_location(void* ptr);
-
-void yeti_free_matrix_generator(void* ptr);
-void yeti_free_matrix_generator_set(void* ptr);
 
 IndexRange* index_range(const std::string& str);
 
@@ -279,6 +309,8 @@ operator<<(YetiOStream& os, std::ostream& (*pf)(std::ostream&));
 
 YetiOStream&
 operator<<(YetiOStream& os, void* ptr);
+
+
 
 
 }

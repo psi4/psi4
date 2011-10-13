@@ -88,9 +88,15 @@ DiaOp::DiaOp(
 }
 
 void
-DiaOp::set_mode(TensorBlock* block) const
+DiaOp::retrieve(TensorBlock* block) const
 {
-    block->set_verbatim_mode();
+    block->retrieve_verbatim();
+}
+
+void
+DiaOp::release(TensorBlock* block) const
+{
+    block->release_verbatim();
 }
 
 void
@@ -142,9 +148,15 @@ DijabOp::DijabOp(
 }
 
 void
-DijabOp::set_mode(TensorBlock* block) const
+DijabOp::retrieve(TensorBlock* block) const
 {
-    block->set_verbatim_mode();
+    block->retrieve_verbatim();
+}
+
+void
+DijabOp::release(TensorBlock* block) const
+{
+    block->release_verbatim();
 }
 
 void
@@ -252,9 +264,15 @@ ScaleOp::element_op(
 }
 
 void
-ScaleOp::set_mode(TensorBlock* block) const
+ScaleOp::retrieve(TensorBlock* block) const
 {
-    block->set_verbatim_mode();
+    block->retrieve_verbatim();
+}
+
+void
+ScaleOp::release(TensorBlock* block) const
+{
+    block->release_verbatim();
 }
 
 NormElementOp::NormElementOp()
@@ -295,9 +313,15 @@ NormElementOp::element_op(
 }
 
 void
-NormElementOp::set_mode(TensorBlock* block) const
+NormElementOp::retrieve(TensorBlock* block) const
 {
-    block->set_read_mode();
+    block->retrieve_read();
+}
+
+void
+NormElementOp::release(TensorBlock* block) const
+{
+    block->release_read();
 }
 
 double
@@ -362,9 +386,15 @@ ZeroOp::element_op(
 }
 
 void
-ZeroOp::set_mode(TensorBlock* block) const
+ZeroOp::retrieve(TensorBlock* block) const
 {
-    block->set_write_mode();
+    block->retrieve_write();
+}
+
+void
+ZeroOp::release(TensorBlock* block) const
+{
+    block->release_write();
 }
 
 bool
@@ -374,9 +404,15 @@ ZeroOp::do_update_after() const
 }
 
 void
-Diagonalize_IJIJ_Op::set_mode(TensorBlock* block) const
+Diagonalize_IJIJ_Op::retrieve(TensorBlock* block) const
 {
-    block->set_verbatim_mode();
+    block->retrieve_verbatim();
+}
+
+void
+Diagonalize_IJIJ_Op::release(TensorBlock* block) const
+{
+    block->release_verbatim();
 }
 
 void
@@ -460,16 +496,16 @@ UpperTriangleGetOp::element_op(
 void
 UpperTriangleGetOp::configure(Tensor* tensor)
 {
-    offset_p_ = tensor->get_descr()->get(0)->data_index_start();
-    offset_p_ = tensor->get_descr()->get(1)->data_index_start();
-    nindex_ = tensor->get_descr()->get(0)->nelements_data();
+    offset_p_ = tensor->get_block_descr()->get(0)->data_index_start();
+    offset_p_ = tensor->get_block_descr()->get(1)->data_index_start();
+    nindex_ = tensor->get_block_descr()->get(0)->nelements_data();
     uli ntri = nindex_*(nindex_+1)/2;
     utri_ = new double[ntri];
-    if (tensor->get_descr()->nindex() != 2)
+    if (tensor->get_block_descr()->nindex() != 2)
     {
         raise(SanityCheckError, "can only get upper triangle of two-index tensor");
     }
-    if (tensor->get_descr()->get(0) != tensor->get_descr()->get(1))
+    if (tensor->get_block_descr()->get(0) != tensor->get_block_descr()->get(1))
     {
         raise(SanityCheckError, "can only get upper triangle of symmetric matrices");
     }
@@ -477,9 +513,15 @@ UpperTriangleGetOp::configure(Tensor* tensor)
 }
 
 void
-UpperTriangleGetOp::set_mode(TensorBlock* block) const
+UpperTriangleGetOp::retrieve(TensorBlock* block) const
 {
-    block->set_read_mode();
+    block->retrieve_read();
+}
+
+void
+UpperTriangleGetOp::release(TensorBlock* block) const
+{
+    block->release_read();
 }
 
 const double*
@@ -538,7 +580,7 @@ DoubleArrayGetOp::element_op(
 void
 DoubleArrayGetOp::configure(Tensor* tensor)
 {
-    descr_ = tensor->get_descr();
+    descr_ = tensor->get_block_descr();
     size_t size = tensor->get_totalsize();
     data_ = new double[size];
     dataptr_ = data_;
@@ -552,9 +594,14 @@ DoubleArrayGetOp::configure(Tensor* tensor)
 }
 
 void
-DoubleArrayGetOp::set_mode(TensorBlock* block) const
+DoubleArrayGetOp::retrieve(TensorBlock* block) const
 {
-    block->set_read_mode();
+    block->retrieve_read();
+}
+void
+DoubleArrayGetOp::release(TensorBlock* block) const
+{
+    block->release_read();
 }
 
 void

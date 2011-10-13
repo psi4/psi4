@@ -35,12 +35,8 @@ class StorageBlock :
 
         size_t size_;
 
+
     public:
-        typedef enum {
-            in_core,
-            in_cache,
-            on_disk
-        } storage_type_t;
 
         StorageBlock(size_t size);
 
@@ -50,13 +46,17 @@ class StorageBlock :
 
         size_t size() const;
 
-        virtual void clear(Cachable* owner) = 0;
+        virtual void clear() = 0;
 
         virtual bool retrieve() = 0;
 
         virtual void release() = 0;
 
         virtual void commit() = 0;
+
+        virtual bool is_cached() const = 0;
+
+        virtual bool is_retrieved() const = 0;
 
         virtual void obsolete(Cachable* item) = 0;
 
@@ -75,15 +75,20 @@ class InCoreBlock :
     public:
         InCoreBlock(char* data, size_t size);
 
+        void commit();
+
+        void clear();
+
+        void obsolete(Cachable* item);
+
         bool retrieve();
+
+        bool is_cached() const;
+
+        bool is_retrieved() const;
 
         void release();
 
-        void commit();
-
-        void clear(Cachable* owner);
-
-        void obsolete(Cachable* item);
 
 };
 
@@ -113,7 +118,8 @@ class CachedStorageBlock :
 
         Cachable* cache_item_;
 
-        virtual void fetch_data();
+        bool retrieved_;
+
 
     public:
         CachedStorageBlock(
@@ -127,19 +133,21 @@ class CachedStorageBlock :
 
         Cachable* get_cache_item() const;
 
+        bool is_cached() const;
+
         bool retrieve();
 
         void release();
 
-        void clear(Cachable* owner);
-
-        void free_cache_entry();
+        void clear();
 
         void obsolete(Cachable* item);
 
         DataCacheEntry* get_entry() const;
 
         virtual void commit();
+
+        bool is_retrieved() const;
 
 };
 
@@ -183,9 +191,6 @@ class LocalDiskBlock :
 
         size_t offset_;
 
-    protected:
-        void fetch_data();
-
     public:
         LocalDiskBlock(
             Cachable* parent,
@@ -194,6 +199,8 @@ class LocalDiskBlock :
         );
 
         void commit();
+
+        void fetch_data();
 
 };
 

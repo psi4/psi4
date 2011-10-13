@@ -23,11 +23,25 @@ class YetiRuntimeObject {
     protected:
         uli runtime_count_;
 
+        bool initialized_;
+
+        bool finalized_;
+
+        virtual void _initialize();
+
         virtual void _release();
 
         virtual void _retrieve();
 
         virtual void _obsolete();
+
+        virtual void _renew();
+
+        void finalize();
+
+        void set_initialized(bool flag);
+
+        void set_finalized(bool flag);
 
     public:
         typedef enum {thread_safe, not_thread_safe} thread_safety_flag_t;
@@ -40,6 +54,8 @@ class YetiRuntimeObject {
             @return Whether the class is currently retrieved by a thread
         */
         bool is_retrieved() const;
+
+        bool is_initialized() const;
 
         /**
             Perform the retrieval operation if necessary
@@ -55,6 +71,8 @@ class YetiRuntimeObject {
         */
         virtual void release();
 
+        virtual void initialize();
+
 };
 
 class YetiThreadedRuntimeObject :
@@ -64,6 +82,8 @@ class YetiThreadedRuntimeObject :
     protected:
         ThreadLock* lock_;
 
+        bool locked_;
+
     public:
         YetiThreadedRuntimeObject();
 
@@ -71,11 +91,15 @@ class YetiThreadedRuntimeObject :
 
         virtual ~YetiThreadedRuntimeObject();
 
+        void initialize();
+
         uli retrieve();
 
         uli retrieve_lock();
 
         uli retrieve_nolock();
+
+        bool is_locked() const;
 
         void release();
 

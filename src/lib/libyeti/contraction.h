@@ -64,6 +64,14 @@ class ContractionTask :
         */
         void run(uli threadnum);
 
+        void out_of_core_prefetch();
+
+        void in_core_prefetch(Task* prev_task);
+
+        void finalize_task_subset();
+
+
+
 };
 
 class ContractionConfiguration
@@ -85,12 +93,22 @@ class ContractionConfiguration
 
         bool transpose_left_;
 
+        Tensor* product_tensor_;
+
+        TensorBlock* tmp_block_;
+
     public:
         ContractionConfiguration(
             const MatrixConfigurationPtr& lconfig,
             const MatrixConfigurationPtr& rconfig,
             const MatrixConfigurationPtr& pconfig
         );
+
+        ~ContractionConfiguration();
+
+        void clone_product_tensor_for_threads(Tensor* tensor);
+        
+        Tensor* get_product_tensor();
 
         void configure_left_block(const uli* sizes, usi depth);
 
@@ -110,6 +128,10 @@ class ContractionConfiguration
 
         void configure_product_block(Tensor* tensor);
 
+        void set_tmp_accumulate_block(TensorBlock* pblock);
+
+        TensorBlock* get_product_block(TensorBlock* pblock);
+
         TensorBlock* get_left_block(Tensor*, uli r, uli c) const;
 
         TileNode* get_left_node(MetaDataNode* node, uli r, uli c, uli& idx) const;
@@ -126,13 +148,9 @@ class ContractionConfiguration
 
         uli ncxn_rows_right() const;
 
-        //uli ncxn_rows_product() const;
-
         uli ncxn_cols_left() const;
 
         uli ncxn_cols_right() const;
-
-        //uli ncxn_cols_product() const;
 
         uli nrows_left(const uli* sizes) const;
 
@@ -155,6 +173,7 @@ class ContractionConfiguration
         MatrixConfiguration* get_right_config() const;
 
         MatrixConfiguration* get_product_config() const;
+
 };
 
 /**
@@ -167,9 +186,9 @@ class Contraction :
 
     public:
         typedef enum {
-            left_tensor,
-            right_tensor,
-            product_tensor
+            left_tensor = 0,
+            right_tensor = 1,
+            product_tensor = 2
         } tensor_position_t;
 
     private:    
@@ -235,13 +254,25 @@ class Contraction :
 
         Tensor* ptensor_;
 
+        Tensor* alpha_tensor_;
+
+        Tensor* beta_tensor_;
+
+        Tensor* gamma_tensor_;
+
         double scale_;
 
-        tensor_position_t alphatype_;
+        tensor_position_t distribution_type_;
 
-        tensor_position_t betatype_;
+        tensor_position_t alpha_type_;
 
-        tensor_position_t gammatype_;
+        tensor_position_t beta_type_;
+
+        tensor_position_t gamma_type_;
+
+        bool use_thread_replicated_product_;
+
+        bool flush_product_on_finalize_;
 
         /**
             Depending on how the matrices are to be interpreted, the contraction
@@ -250,6 +281,13 @@ class Contraction :
             L * R, L^T * R, L * R^T, L^T * R^T.
         */
         ContractionEngine* engine_;
+
+
+        bool do_task(
+            TensorBlock* lblock,
+            TensorBlock* rblock,
+            TensorBlock* pblock
+        );
 
         void build_l_r_p();
 
@@ -270,7 +308,6 @@ class Contraction :
         void init_cxn();
 
         void init_cxn_grp();
-
 
     public:
         /**
@@ -318,7 +355,6 @@ class Contraction :
         */
         PermutationGroup* get_required_grp() const;
 
-
         double scale_factor() const;
 
         /**
@@ -344,6 +380,10 @@ class Contraction :
         Tensor* get_right_tensor() const;
 
         Tensor* get_product_tensor() const;
+
+        bool is_thread_replicated_product() const;
+
+        bool flush_product_on_finalize() const;
         
         /**
             Run all jobs on the contraction queue
@@ -369,6 +409,8 @@ class Contraction :
         ContractionEngine* get_engine() const;
 
         ContractionConfiguration* get_configuration(uli threadnum) const;
+
+        tensor_position_t get_alpha_type() const;
 
 };
 

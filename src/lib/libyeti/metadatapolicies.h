@@ -7,7 +7,7 @@ namespace yeti {
 
 class DoNothingMetaDataRetrieve {
     public:
-        static void retrieve(
+        void retrieve(
             MetaDataNode* mdnode
         );
 };
