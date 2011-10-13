@@ -38,6 +38,19 @@ MOLECULE::MOLECULE(int num_atoms) {
   return;
 }
 
+// return vector of reciprocal masses of dimension = num of cartesians
+double * MOLECULE::g_u_vector(void) const {
+  double *m = g_masses();
+  int Natom = g_natom();
+
+  double *u = init_array(3*Natom);
+  for (int a=0; a<Natom; ++a) {
+    u[3*a+0] = 1.0 / m[a];
+    u[3*a+1] = 1.0 / m[a];
+    u[3*a+2] = 1.0 / m[a];
+  }
+  return u;
+}
 
 // compute forces in internal coordinates in au
 // forces in internal coordinates, f_q = G_inv B u f_x
@@ -47,21 +60,31 @@ void MOLECULE::forces(void) {
   int Ncart = 3*g_natom();
   int Nintco = g_nintco();
 
+  // f_x
+  f_x = g_grad_array(); // Hartree / bohr
+  array_scm(f_x, -1, Ncart); // switch gradient -> forces
+
+  // u f_x
+  double *u = g_u_vector();
+  for (int i=0; i<Ncart; ++i)
+    f_x[i] *= u[i];
+
+  // B (u f_x)
   B = compute_B();
   if (Opt_params.print_lvl >= 2) {
     fprintf(outfile, "B matrix\n");
     print_matrix(outfile, B, Nintco, Ncart);
   }
-
-  f_x = g_grad_array(); // Hartree / bohr
-  array_scm(f_x, -1, Ncart); // switch gradient -> forces
-
   temp_arr = init_array(Nintco);
   opt_matrix_mult(B, 0, &f_x, 1, &temp_arr, 1, Nintco, Ncart, 1, 0);
   free_array(f_x);
 
+  // G^-1 = (BuBt)^-1
   G = init_matrix(Nintco, Nintco);
-  opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
+  for (int i=0; i<Nintco; ++i)
+    for (int k=0; k<Ncart; ++k)
+      for (int j=0; j<Nintco; ++j)
+        G[i][j] += B[i][k] * u[k] * B[j][k];
   free_matrix(B);
 
   G_inv = symm_matrix_inv(G, Nintco, 1);
@@ -73,7 +96,7 @@ void MOLECULE::forces(void) {
   free_array(temp_arr);
 
 #if defined(OPTKING_PACKAGE_QCHEM)
-  // append exernally determiend efp forces
+  // append exernally determined efp forces
   double * efp_force;
   for (int f=0; f<efp_fragments.size(); ++f) {
     efp_force = efp_fragments[f]->get_forces_pointer();
@@ -111,7 +134,7 @@ void MOLECULE::project_f_and_H(void) {
   int Ncart = 3*g_natom();
 
   // compute G = B B^t
-  double **G = compute_G(false);
+  double **G = compute_G(true);
 
 #if defined (OPTKING_PACKAGE_QCHEM)
   // Put 1's on diagonal for EFP coordinates
@@ -517,10 +540,16 @@ double ** MOLECULE::compute_G(bool use_masses) const {
       for (int a=0; a<g_natom(); ++a)
         for(int xyz=0; xyz<3; ++xyz)
           B[i][3*a+xyz] /= sqrt(u[a]);
+
+    free_array(u);
   }
 
   opt_matrix_mult(B, 0, B, 1, G, 0, Nintco, Ncart, Nintco, 0);
   free_matrix(B);
+
+  //fprintf(outfile,"G matrix\n");
+  //print_matrix(outfile, G, g_nintco(), g_nintco());
+
   return G;
 }
 

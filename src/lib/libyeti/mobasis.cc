@@ -15,10 +15,11 @@ using namespace std;
 #endif
 
 MOBasisRangeBuilder::MOBasisRangeBuilder(
-    usi build_depth,
-    uli nblocks_top,
-    uli nocc_tile,
-    uli nvir_tile,
+    usi nlayers_extra,
+    uli nidx_node_layer,
+    uli nidx_thread_layer,
+    uli nidx_occ_data_layer,
+    uli nidx_vir_data_layer,
     uli ncore,
     uli ndocc,
     uli nsocc,
@@ -27,15 +28,16 @@ MOBasisRangeBuilder::MOBasisRangeBuilder(
 )
     :
     spin_orbital_debug_(false),
-    build_depth_(build_depth),
-    nblocks_top_layer_(nblocks_top),
+    nlayers_extra_(nlayers_extra),
+    nidx_per_tile_node_layer_(nidx_node_layer),
+    nidx_per_tile_thread_layer_(nidx_thread_layer),
+    nidx_per_tile_occ_data_layer_(nidx_occ_data_layer),
+    nidx_per_tile_vir_data_layer_(nidx_vir_data_layer),
     ncore_pi_(new uli[1]),
     ndocc_pi_(new uli[1]),
     nsocc_pi_(new uli[1]),
     nvir_pi_(new uli[1]),
     ncabs_pi_(new uli[1]),
-        nocc_tile_(nocc_tile),
-        nvir_tile_(nvir_tile),
         core_(0),
         act_docc_(0),
         docc_(0),
@@ -67,60 +69,11 @@ MOBasisRangeBuilder::MOBasisRangeBuilder(
 }
 
 MOBasisRangeBuilder::MOBasisRangeBuilder(
-    usi build_depth,
-    uli nblocks_top,
-    uli nocc_tile,
-    uli nvir_tile,
-    uli ndocc,
-    uli nvir
-)
-    :
-    spin_orbital_debug_(true),
-    build_depth_(build_depth),
-    nblocks_top_layer_(nblocks_top),
-    ncore_pi_(new uli[1]),
-    ndocc_pi_(new uli[1]),
-    nsocc_pi_(new uli[1]),
-    nvir_pi_(new uli[1]),
-    ncabs_pi_(new uli[1]),
-        nocc_tile_(nocc_tile),
-        nvir_tile_(nvir_tile),
-        core_(0),
-        act_docc_(0),
-        docc_(0),
-        socc_(0),
-        occ_(0),
-        core_a_(0),
-        act_docc_a_(0),
-        vir_a_(0),
-        cabs_a_(0),
-        orb_a_(0),
-        ri_a_(0),
-        core_b_(0),
-        act_docc_b_(0),
-        vir_b_(0),
-        cabs_b_(0),
-        orb_b_(0),
-        ri_b_(0),
-        orb_(0),
-        vir_(0),
-        cabs_(0),
-        ri_(0),
-        nirrep_(1)
-{
-    ncore_pi_[0] = 0;
-    ndocc_pi_[0] = ndocc;
-    nsocc_pi_[0] = 0;
-    nvir_pi_[0] = nvir;
-    ncabs_pi_[0] = 0;
-}
-
-
-MOBasisRangeBuilder::MOBasisRangeBuilder(
-    usi build_depth,
-    uli nblocks_top,
-    uli nocc_tile,
-    uli nvir_tile,
+    usi nlayers_extra,
+    uli nidx_node_layer,
+    uli nidx_thread_layer,
+    uli nidx_occ_data_layer,
+    uli nidx_vir_data_layer,
     usi nirrep,
     const uli* ncore_pi,
     const uli* ndocc_pi,
@@ -129,16 +82,17 @@ MOBasisRangeBuilder::MOBasisRangeBuilder(
     const uli* ncabs_pi
 )
     :
-    spin_orbital_debug_(false),
-    build_depth_(build_depth),
-    nblocks_top_layer_(nblocks_top),
+      spin_orbital_debug_(false),
+      nlayers_extra_(nlayers_extra),
+      nidx_per_tile_node_layer_(nidx_node_layer),
+      nidx_per_tile_thread_layer_(nidx_thread_layer),
+      nidx_per_tile_occ_data_layer_(nidx_occ_data_layer),
+      nidx_per_tile_vir_data_layer_(nidx_vir_data_layer),
     ncore_pi_(new uli[nirrep]),
     ndocc_pi_(new uli[nirrep]),
     nsocc_pi_(new uli[nirrep]),
     nvir_pi_(new uli[nirrep]),
     ncabs_pi_(new uli[nirrep]),
-        nocc_tile_(nocc_tile),
-        nvir_tile_(nvir_tile),
         core_(0),
         act_docc_(0),
         docc_(0),
@@ -284,17 +238,19 @@ MOBasisRangeBuilder::build()
     nri_ = norb_ + ncabs_;
 
     uli topoffset = 0;
-    build(topoffset, nocc_tile_, ncore_pi_, core_);
-    build(topoffset, nocc_tile_, ndocc_pi_, act_docc_);
-    build(topoffset, nocc_tile_, nsocc_pi_, socc_);
-    build(topoffset, nvir_tile_, nvir_pi_, vir_);
-    build(topoffset, nvir_tile_, ncabs_pi_, cabs_);
+    build(topoffset, nidx_per_tile_occ_data_layer_, ncore_pi_, core_);
+    build(topoffset, nidx_per_tile_occ_data_layer_, ndocc_pi_, act_docc_);
+    build(topoffset, nidx_per_tile_occ_data_layer_, nsocc_pi_, socc_);
+    build(topoffset, nidx_per_tile_vir_data_layer_, nvir_pi_, vir_);
+    build(topoffset, nidx_per_tile_vir_data_layer_, ncabs_pi_, cabs_);
 
 
 
 
-    build(docc_, core_, act_docc_);
-    build(occ_, core_, act_docc_, socc_);
+    if (core_ || act_docc_)
+        build(docc_, core_, act_docc_);
+    if (core_ || act_docc_ || socc_)
+        build(occ_, core_, act_docc_, socc_);
     build(orb_, core_, act_docc_, socc_, vir_);
     build(ri_, core_, act_docc_, socc_, vir_, cabs_);
 
@@ -318,16 +274,16 @@ MOBasisRangeBuilder::build()
     if (spin_orbital_debug_)
     {
         topoffset = 0;
-        build(topoffset, nocc_tile_, ncore_pi_, core_a_);
-        build(topoffset, nocc_tile_, ncore_pi_, core_b_);
-        build(topoffset, nocc_tile_, ndocc_pi_, act_docc_a_);
-        build(topoffset, nocc_tile_, ndocc_pi_, act_docc_b_);
-        build(topoffset, nocc_tile_, nsocc_pi_, socc_a_);
-        build(topoffset, nocc_tile_, nsocc_pi_, socc_b_);
-        build(topoffset, nvir_tile_, nvir_pi_, vir_a_);
-        build(topoffset, nvir_tile_, nvir_pi_, vir_b_);
-        build(topoffset, nvir_tile_, ncabs_pi_, cabs_a_);
-        build(topoffset, nvir_tile_, ncabs_pi_, cabs_b_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ncore_pi_, core_a_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ncore_pi_, core_b_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ndocc_pi_, act_docc_a_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ndocc_pi_, act_docc_b_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, nsocc_pi_, socc_a_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, nsocc_pi_, socc_b_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, nvir_pi_, vir_a_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, nvir_pi_, vir_b_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, ncabs_pi_, cabs_a_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, ncabs_pi_, cabs_b_);
 
         if (core_a_ || core_b_)
             build(spin_orb_core_, core_a_, core_b_);
@@ -392,25 +348,29 @@ MOBasisRangeBuilder::build()
     else
     {
         topoffset = 0;
-        build(topoffset, nocc_tile_, ncore_pi_, core_a_);
-        build(topoffset, nocc_tile_, ndocc_pi_, act_docc_a_);
-        build(topoffset, nocc_tile_, nsocc_pi_, socc_a_);
-        build(topoffset, nvir_tile_, nvir_pi_, vir_a_);
-        build(topoffset, nvir_tile_, ncabs_pi_, cabs_a_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ncore_pi_, core_a_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ndocc_pi_, act_docc_a_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, nsocc_pi_, socc_a_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, nvir_pi_, vir_a_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, ncabs_pi_, cabs_a_);
 
-        build(topoffset, nocc_tile_, ncore_pi_, core_b_);
-        build(topoffset, nocc_tile_, ndocc_pi_, act_docc_b_);
-        build(topoffset, nocc_tile_, nsocc_pi_, socc_b_);
-        build(topoffset, nvir_tile_, nvir_pi_, vir_b_);
-        build(topoffset, nvir_tile_, ncabs_pi_, cabs_b_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ncore_pi_, core_b_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, ndocc_pi_, act_docc_b_);
+        build(topoffset, nidx_per_tile_occ_data_layer_, nsocc_pi_, socc_b_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, nvir_pi_, vir_b_);
+        build(topoffset, nidx_per_tile_vir_data_layer_, ncabs_pi_, cabs_b_);
 
-        build(docc_a_, core_a_, act_docc_a_);
-        build(occ_a_, core_a_, act_docc_a_, socc_a_);
+        if (core_a_ || act_docc_a_)
+            build(docc_a_, core_a_, act_docc_a_);
+        if (core_a_ || act_docc_a_ || socc_a_)
+            build(occ_a_, core_a_, act_docc_a_, socc_a_);
         build(orb_a_, core_a_, act_docc_a_, socc_a_, vir_a_);
         build(ri_a_, core_a_, act_docc_a_, socc_a_, vir_a_, cabs_a_);
 
-        build(docc_b_, core_b_, act_docc_b_);
-        build(occ_b_, core_b_, act_docc_b_, socc_b_);
+        if (core_b_ || act_docc_b_)
+            build(docc_b_, core_b_, act_docc_b_);
+        if (core_b_ || act_docc_b_ || socc_b_)
+            build(occ_b_, core_b_, act_docc_b_, socc_b_);
         build(orb_b_, core_b_, act_docc_b_, socc_b_, vir_b_);
         build(ri_b_, core_b_, act_docc_b_, socc_b_, vir_b_, cabs_b_);
 
@@ -473,15 +433,15 @@ MOBasisRangeBuilder::build()
 void
 MOBasisRangeBuilder::build(
     uli& topoffset,
-    uli nper,
-    uli* n_per_irrep,
+    uli nidx_per_tile_data_layer,
+    uli* norbs_per_irrep,
     IndexRangePtr& space
 )
 {
     uli ntot = 0;
     for (usi h=0; h < nirrep_; ++h)
     {
-        ntot += n_per_irrep[h];
+        ntot += norbs_per_irrep[h];
     }
     if (ntot == 0)
     {
@@ -493,12 +453,13 @@ MOBasisRangeBuilder::build(
     uli nsubranges = 0;
     for (usi h=0; h < nirrep_; ++h)
     {
-        uli nirrep = n_per_irrep[h];
+        uli norbs_in_irrep = norbs_per_irrep[h];
         MORangeBuilder morange(
-            build_depth_,
-            nblocks_top_layer_,
-            nper,
-            nirrep,
+            nlayers_extra_,
+            nidx_per_tile_node_layer_,
+            nidx_per_tile_thread_layer_,
+            nidx_per_tile_data_layer,
+            norbs_in_irrep,
             h
         );
         IndexRangePtr irrep_range = morange.get();
@@ -708,16 +669,18 @@ MOBasisRangeBuilder::set_debug(bool flag)
 }
 
 MORangeBuilder::MORangeBuilder(
-    usi build_depth,
-    uli nblocks_top,
-    uli nper,
+    usi nlayers_extra,
+    uli nidx_node_layer,
+    uli nidx_thread_layer,
+    uli nidx_data_layer,
     uli ntot,
     usi irrep
 )
     :
-   build_depth_(build_depth),
-   nblocks_top_layer_(nblocks_top),
-   nper_(nper),
+   nlayers_extra_(nlayers_extra),
+   nidx_per_tile_node_layer_(nidx_node_layer),
+   nidx_per_tile_thread_layer_(nidx_thread_layer),
+   nidx_per_tile_data_layer_(nidx_data_layer),
    ntot_(ntot),
    irrep_(irrep)
 {
@@ -727,39 +690,22 @@ IndexRangePtr
 MORangeBuilder::get()
 {
     //create the first index range
-    uli start = 0;
-    IndexRange* range = 0;
-    if (ntot_ == 0)
-    {
-        //null range
+
+    if (ntot_ == 0) //null range
         return 0;
 
-        SubindexTuplePtr tuple = new SubindexTuple(1);
-        IndexRange* null_range = new IndexRange(start, 0);
-        null_range->set_irrep(irrep_);
-        tuple->set(0, null_range);
+    uli start = 0;
+    uli nranges_data = ntot_ / nidx_per_tile_data_layer_;
+    if (nranges_data == 0) ++nranges_data;
 
-        range = new IndexRange(start, tuple);
-        range->set_irrep(irrep_);
-    }
-    else
+    IndexRange* range = new IndexRange(start, ntot_, nidx_per_tile_data_layer_);
+    SubindexTuplePtr tuple = range->get_subranges();
+    if (!tuple) //no subranges
     {
-        range = new IndexRange(start, ntot_, nper_);
-        SubindexTuplePtr tuple = range->get_subranges();
-        if (!tuple) //no subranges
-        {
-            raise(SanityCheckError, "mo range must have subranges!");
-        }
-        range->set_irrep(irrep_);
-
-        for (uli i=0; i < tuple->size(); ++i)
-        {
-            tuple->get(i)->set_irrep(irrep_);
-        }
+        raise(SanityCheckError, "mo range must have subranges!");
     }
 
-    usi nextra_layers = build_depth_ - 2;
-    for (usi d=0; d < nextra_layers; ++d)
+    for (usi d=0; d < nlayers_extra_; ++d)
     {
         SubindexTuplePtr subranges = range->get_subranges();
         for (usi idx=0; idx < range->nelements(); ++idx)
@@ -768,23 +714,14 @@ MORangeBuilder::get()
             IndexRange* metarange = new IndexRange(idx, metatuple);
             metatuple->set(0, subranges->get(idx));
             subranges->set(idx, metarange);
-            metarange->set_irrep(irrep_);
         }
         range = new IndexRange(subranges);
-        range->set_irrep(irrep_);
     }
 
-    uli nindices = range->nelements() / nblocks_top_layer_;
-    uli nindices_per_top_block = nindices;
-    if (range->nelements() % nblocks_top_layer_)
-        ++nindices_per_top_block;
+    IndexRangePtr thread_range = new IndexRange(0, range->get_subranges(), nidx_per_tile_thread_layer_);
 
-    IndexRangePtr toprange = new IndexRange(
-                                0,
-                                range->get_subranges(),
-                                nindices_per_top_block
-                             );
-    toprange->set_irrep(irrep_);
+    IndexRangePtr node_range = new IndexRange(0, thread_range->get_subranges(), nidx_per_tile_node_layer_);
+    node_range->set_irrep(irrep_);
 
-    return toprange;
+    return node_range;
 }

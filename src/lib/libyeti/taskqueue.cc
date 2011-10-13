@@ -19,6 +19,8 @@ using namespace std;
 DECLARE_PARENT_MALLOC(Task);
 DECLARE_SUB_MALLOC(Task,ContractionTask);
 
+#define wtf //if (Malloc<TensorBlock>::get_object(43)->is_locked()) raise(SanityCheckError,"")
+
 TaskQueue* GlobalQueue::queue_ = 0;
 
 static GlobalQueue global_queue;
@@ -67,23 +69,13 @@ TaskQueue::configure()
     Task** tasks = workspace_->tasks;
     void* sorted = workspace_->sorted;
 
-#if RANDOMIZE_QUEUE
-    /* initialize random seed: */
-    srand ( time(NULL) );
-    for (uli i=0; i < ntasks; ++i)
-        sorted_indices[i] = i;
-    random_shuffle(sorted_indices, sorted_indices + ntasks, myrandom);
-#elif SORT_QUEUE
+
     yeti::quicksort<uli>(
         workspace_->owner_numbers,
         sorted_indices,
         ntasks
     );
-#else
-    //just run through tasks without any sorting
-    for (uli i=0; i < ntasks; ++i)
-        sorted_indices[i] = i;
-#endif
+
 
     TaskOwner** sorted_owners = reinterpret_cast<TaskOwner**>(sorted);
     for (uli i=0; i < ntasks; ++i)
@@ -91,12 +83,12 @@ TaskQueue::configure()
     for (uli i=0; i < ntasks; ++i)
         task_owners[i] = sorted_owners[i];
 
+
     Task** sorted_tasks = reinterpret_cast<Task**>(sorted);
     for (uli i=0; i < ntasks; ++i)
         sorted_tasks[i] = tasks[sorted_indices[i]];
     for (uli i=0; i < ntasks; ++i)
         tasks[i] = sorted_tasks[i];
-
 
     int last = -1;
     int owner = -1; //I actually mean to do this
@@ -140,7 +132,7 @@ TaskQueue::run()
 
     ThreadGroup* thrgrp = YetiRuntime::get_thread_grp();
 
-    for (uli i=0; i < YetiRuntime::nthread(); ++i)
+    for (uli i=0; i < YetiRuntime::nthread_compute(); ++i)
     {
         Thread* thr = new TaskThread(i, this);
         thrgrp->add(thr);
@@ -149,11 +141,6 @@ TaskQueue::run()
     thrgrp->run();
     thrgrp->wait();
     thrgrp->clear();
-
-
-    //Task** tasks = reinterpret_cast<Task**>(workspace_->sorted);
-    //for (uli i=0; i < workspace_->ntasks; ++i)
-    //    tasks[i]->run();
 
     clear();
 }
@@ -228,7 +215,7 @@ TaskQueue::add(TaskOwner* owner, Task* task)
 }
 
 void
-TaskQueue::add(const TaskParentPtr &parent)
+TaskQueue::add(const TaskParentPtr& parent)
 {
     parents_.push_back(parent);
 }
@@ -434,27 +421,49 @@ TaskThread::run()
     uli nowners = queue_->nowners();
     const uli* task_offsets = queue_->task_offsets();
     const uli* ntasks_per_owner = queue_->ntasks_per_owner();
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
+    uli taskstop = nowners < nthread ? 0 : nowners - nthread;
 
-    for (uli i=0; i < nowners; ++i)
+    if (nowners <= threadnum_ || ntasks_tot == 0) //no work for this thread to do
+        return;
+
+    /** Fetch the very first task */
+    Task** first_task_subset = tasks + task_offsets[threadnum_];
+    Task* first_initial_task = first_task_subset[0];
+    first_initial_task->out_of_core_prefetch();
+
+    uli taskidx = threadnum_;
+    for ( ; taskidx < taskstop; taskidx += nthread)
     {
-        //if (INVALID_THREAD_TASK(i, threadnum_, nthread))
-        if (threadnum_ != 0)
-            continue;
+        Task** current_task_subset = tasks + task_offsets[taskidx];
+        Task* current_initial_task = current_task_subset[0];
 
-        uli ntasks = ntasks_per_owner[i];
-        Task** taskptr = tasks + task_offsets[i];
-        TaskOwner** ownerptr = owners + task_offsets[i];
-        for (uli i=0; i < ntasks; ++i, ++taskptr, ++ownerptr)
-        {
-            Task* task = *taskptr;
-            TaskOwner* owner = *ownerptr;
-            TensorBlock* block = static_cast<TensorBlock*>(owner);
-            task->run(threadnum_);
-        }
+        Task** next_task_subset = tasks + task_offsets[taskidx + nthread];
+        Task* next_initial_task = next_task_subset[0];
+        next_initial_task->out_of_core_prefetch();
+
+        run_task_subset(current_task_subset, ntasks_per_owner[taskidx], threadnum_);
     }
 
+    Task** last_task_subset = tasks + task_offsets[taskidx];
+
+    run_task_subset(last_task_subset, ntasks_per_owner[taskidx], threadnum_);
+
 #endif
+}
+
+void
+TaskThread::run_task_subset(Task** tasks, uli ntasks, uli threadnum)
+{
+    Task* prev_task = 0;
+    for (uli taskidx=0; taskidx < ntasks; ++taskidx)
+    {
+        Task* current_task = tasks[taskidx];
+        current_task->in_core_prefetch(prev_task);
+        current_task->run(threadnum);
+        prev_task = current_task;
+    }
+    tasks[0]->finalize_task_subset();
 }
 
 

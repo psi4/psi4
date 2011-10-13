@@ -220,7 +220,7 @@ mol1->print_connectivity(outfile);
     }
   }
 
-  mol1->project_f_and_H();
+//mol1->project_f_and_H();
 
   // step functions put dq in p_Opt_data->step
   if (Opt_params.opt_type == OPT_PARAMS::IRC)
@@ -234,7 +234,7 @@ mol1->print_connectivity(outfile);
       mol1->prfo_step();
   }
 
-  bool converged = p_Opt_data->conv_check();
+  bool converged = p_Opt_data->conv_check(*mol1);
 
 #if defined(OPTKING_PACKAGE_QCHEM)
   rem_write((int) converged, REM_GEOM_OPT_CONVERGED); // tell QChem if converged (return value ignored for now)
@@ -243,9 +243,10 @@ mol1->print_connectivity(outfile);
   if ( converged ) {
     if (Opt_params.opt_type == OPT_PARAMS::IRC)
     {
+cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
+//   TODO : could delete old opt_data entries
       //delete all entries but those on reaction path
       //assuming coord has already been incremented; is >=1
-cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n";
 //      while(p_Opt_data->nsteps() > 2)
 //        p_Opt_data->erase_step(1);
 //      p_Opt_data->H_update(*mol1);

@@ -27,6 +27,23 @@ class Indexer {
 
     public:
         Indexer(
+            const uli* sizes,
+            const uli* offsets,
+            usi nindex
+        ) : nindex_(nindex),
+            depth_(0),
+            size_(1)
+        {
+            for (usi i=0; i < nindex_; ++i)
+            {
+                sizes_[i] = sizes[i];
+                offsets_[i] = offsets[i];
+            }
+
+            init_sizes();
+        }
+
+        Indexer(
             TensorIndexDescr* tuple,
             const uli* indices = 0,
             usi depth = 0

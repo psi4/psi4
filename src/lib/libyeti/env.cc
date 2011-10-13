@@ -77,12 +77,12 @@ void
 Env::init(int me, ostream *stream){
     if(initialized_) return;
     me_ = me;
-    out0_ = stream;
+    outn_ = stream;
     if(me){
-        outn_ = new ofstream("/dev/null");
+        out0_ = new ofstream("/dev/null");
         outnAllocated_ = true;
     }else{
-        outn_ = out0_;
+        out0_ = outn_;
     }
     initialized_ = 1;
 }

@@ -36,7 +36,12 @@
 #define NINDEX 6
 
 #undef heisenbug
-#define heisenbug std::cout << __FILE__ << " " << __LINE__ << std::endl
+#define heisenbug std::cout << __FILE__ << " " << __LINE__ << " on node " << YetiRuntime::me() << std::endl
+
+#define heisenfxn(x) std::cout << stream_printf("%s  %s  %d on %p node %d thread %d\n", #x, \
+    __FILE__, __LINE__, this, YetiRuntime::me(), YetiRuntime::get_thread_number()); std::cout.flush()
+
+//#define heisenfxn(x) 
 
 #define findbug(x) std::cout << __FILE__ << " " << x << std::endl
 
@@ -44,9 +49,9 @@
 
 #define YETI_SANITY_CHECK 1
 
-#define NMALLOC_BLOCKS_DEBUG 1000000
+#define YETI_THREAD_SANITY_CHECK 1
 
-#define YETI_DEBUG_MALLOC 0
+#define F_DEBUG_MALLOC 0
 
 #define NOT_THREADED 0
 

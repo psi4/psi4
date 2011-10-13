@@ -44,8 +44,13 @@ TensorBranch::TensorBranch(
     element_size_(sizeof(double)),
     first_controller_(0),
     last_controller_(0),
-    mempool_(parent->get_metadata_mempool())
+    mempool_(parent->get_metadata_mempool()),
+    parent_malloc_number_(parent->get_malloc_number()),
+    last_branch_location_(0),
+    descr_(parent->get_descr()),
+    ncontrollers_(0)
 {
+    last_branch_location_ = this;
     mdnode_ = new (mempool_)
         MetaDataNode(indexset, depth, this);
 
@@ -56,10 +61,24 @@ TensorBranch::~TensorBranch()
     delete mdnode_;
 }
 
+uli
+TensorBranch::ncontrollers() const
+{
+    return ncontrollers_;
+}
+
 void
 TensorBranch::allocate_data_controller()
 {
     StorageBlock* block = parent_block_->allocate_data_storage_block();
+    allocate_data_controller(block);
+}
+
+void
+TensorBranch::allocate_data_controller(StorageBlock* block)
+{
+    ++ncontrollers_;
+
     TensorDataController* controller
         = new (mempool_)
         TensorDataController(
@@ -149,10 +168,22 @@ TensorBranch::size_data_wasted()
     return wasted;
 }
 
+TensorBranch*
+TensorBranch::get_last_branch_location() const
+{
+    return last_branch_location_;
+}
+
+void
+TensorBranch::set_descr(TensorIndexDescr* descr)
+{
+    descr_ = descr;
+}
+
 TensorIndexDescr*
 TensorBranch::get_descr() const
 {
-    return parent_block_->descr_;
+    return descr_;
 }
 
 TensorElementComputer*
@@ -211,6 +242,7 @@ TensorBranch::realign_memory_pool(
 
     mdnode_->realign_memory_pool(old_branch, new_branch);
 
+    last_branch_location_ = new_branch;
 }
 
 void
@@ -229,6 +261,7 @@ void
 TensorBranch::set_parent(TensorBlock* parent)
 {
     parent_block_ = parent;
+    parent_malloc_number_ = parent->get_malloc_number();
 }
 
 void
@@ -251,23 +284,10 @@ TensorBranch::sort_data_into(
     TensorBranch* new_branch
 )
 {
-    Permutation* descr_perm = 0;
-    Permutation* block_perm = this->get_parent_block()->get_block_permutation();
-    Permutation* unsort_perm = new_branch->get_parent_block()->get_parent_tensor()->get_unsort_permutation();
-    Permutation* fetch_perm = new_branch->get_parent_block()->get_fetch_permutation();
-    Permutation* resort_perm = new_branch->get_parent_block()->get_resort_permutation();
-#if 1
-    if (!block_perm->is_inverse(unsort_perm))
-    {
-        descr_perm = block_perm->product(unsort_perm);
-    }
-#else
-    if (!fetch_perm->is_inverse(resort_perm))
-    {
-        descr_perm = resort_perm->inverse();
-    }
-#endif
-    mdnode_->sort_data_into(sort, this, new_branch, descr_perm);
+    mdnode_->sort_data_into(sort, this, new_branch);
+    if (get_parent_block()->get_block_permutation() !=
+        new_branch->get_parent_block()->get_block_permutation())
+        raise(SanityCheckError, "currently cannot sort mis-sorted parent block");
 }
 
 void
