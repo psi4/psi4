@@ -11,8 +11,12 @@
 #include "thread.h"
 
 #include <algorithm>
+#include <time.h>
+#include <sys/time.h>
+#include <stdio.h>
+#include <stdlib.h>
 
-namespace yeti {
+using namespace yeti;
 using namespace std;
 
 #ifdef redefine_size_t
@@ -25,15 +29,18 @@ DECLARE_MALLOC(DataCacheEntry);
 DECLARE_MALLOC(DataCache);
 
 DataCacheEntry::DataCacheEntry(
-    char* d,
-    uli posoffset
+    char* d
 )
     :
     data(d),
     owner(0),
-    offset(posoffset),
-    pulled(false)
+    pulled(false),
+    next(0),
+    prev(0),
+    threadnum(0)
 {
+    if (!lock_)
+        abort();
 }
 
 DataCacheEntry::~DataCacheEntry()
@@ -43,6 +50,10 @@ DataCacheEntry::~DataCacheEntry()
 void
 DataCacheEntry::assign(Cachable* new_owner)
 {
+#if YETI_SANITY_CHECK
+    if (!is_locked())
+        raise(SanityCheckError, "cannot assign to an unlocked cache entry");
+#endif
     owner = new_owner;
 }
 
@@ -63,7 +74,8 @@ DataCacheEntry::get_owner() const
 void
 DataCacheEntry::print(std::ostream& os) const
 {
-    os << stream_printf("This:%12p Offset:%ld Owner:%12p Data:%12p", this, offset, owner, data);
+    os << stream_printf("This:%12p Owner:%12p Data:%12p",
+                            this, owner, data);
 }
 
 bool
@@ -79,308 +91,196 @@ DataCache::DataCache(
     nentries_(0),
     blocksize_(blocksize),
     data_(0),
-    storage_(0),
-    offsets_(new uli[YetiRuntime::nthread()]),
-    starts_(new uli[YetiRuntime::nthread()]),
-    stops_(new uli[YetiRuntime::nthread()])
+    storage_(storage),
+    free_entries_start_(0),
+    used_entries_start_(0),
+    used_entries_end_(0)
 {
     data_ = YetiRuntime::malloc(storage);
 
-    append(data_, storage);
-}
+    char* ptr = data_;
 
-DataCache::DataCache(size_t blocksize)
-    :
-    nentries_(0),
-    blocksize_(blocksize),
-    data_(0),
-    storage_(0),
-  offsets_(new uli[YetiRuntime::nthread()]),
-  starts_(new uli[YetiRuntime::nthread()]),
-  stops_(new uli[YetiRuntime::nthread()])
-{
+    nentries_ = storage / blocksize_;
+
+    free_entries_start_ = new DataCacheEntry(ptr);
+    DataCacheEntry* entry = free_entries_start_;
+    ptr += blocksize_;
+    for (uli i=1; i < nentries_; ++i, ptr += blocksize_)
+    {
+        DataCacheEntry* new_entry = new DataCacheEntry(ptr);
+        entry->next = new_entry;
+        new_entry->prev = entry;
+        entry = new_entry;
+    }
+    used_entries_start_ = 0;
+    used_entries_end_ = 0;
 }
 
 DataCache::~DataCache()
 {
-    for (uli i=0; i < nentries_; ++i)
+    DataCacheEntry* entry = free_entries_start_;
+    while(entry)
     {
-        delete entries_[i];
+        DataCacheEntry* old = entry;
+        entry = entry->next;
+        if (entry == free_entries_start_)
+            raise(SanityCheckError, "deleting start again!");
+        delete old;
     }
-    delete[] offsets_;
-    delete[] starts_;
-    delete[] stops_;
+
+    entry = used_entries_start_;
+    while (entry)
+    {
+        if (entry->owner)
+        {
+            entry->owner->lock();
+            entry->owner->flush_from_cache();
+            entry->owner->lock();
+        }
+        DataCacheEntry* old = entry;
+        entry = entry->next;
+        delete old;
+    }
 
     YetiRuntime::free(data_, storage_);
 }
 
-void
-DataCache::append(
-    char *data,
-    size_t storage
-)
+DataCacheEntry*
+DataCache::find_free_entry()
 {
-    if (data != data_)
+    DataCacheEntry* entry = free_entries_start_;
+    if (!entry) //no free entries
     {
-        raise(SanityCheckError, "cache not configured for multiple appends");
+        return 0;
     }
 
-    char* ptr = data;
-
-    uli nentries_new = storage / blocksize_;
-
-    uli index_start = nentries_;
-    uli index_stop = nentries_ + nentries_new;
-
-    if (index_stop > NCACHE_ENTRIES_MAX)
-    {
-        cerr << "Insufficient storage space in cache for all the cache blocks." << endl;
-        cerr << "Need space for " << index_stop << " Have " << NCACHE_ENTRIES_MAX << endl;
-        abort();
-    }
-
-    for (uli i=index_start; i < index_stop; ++i, ptr += blocksize_)
-    {
-        uli offset = i;
-        DataCacheEntry* entry = new DataCacheEntry(ptr, offset);
-        entries_[i] = entry;
-        all_entries_[i] = entry;
-        ++nentries_;
-    }
-
-    uli nthread = YetiRuntime::nthread();
-    for (uli i=0; i < nthread; ++i)
-    {
-        uli start = (nentries_ * i) / nthread;
-        uli stop = (nentries_ * (i + 1)) / nthread;
-        offsets_[i] = start;
-        starts_[i] = start;
-        stops_[i] = stop;
-    }
-
-    storage_ += storage;
-}
-
-
-void
-DataCache::flush()
-{
-    for (uli i=0; i < nentries_; ++i)
-    {
-        entries_[i]->flush();
-    }
+    free_entries_start_ = entry->next;
+    if (free_entries_start_)
+        free_entries_start_->prev = 0;
+    entry->lock();
+    return entry;
 }
 
 DataCacheEntry*
-DataCache::find_entry(uli offset, uli stop, bool check_occupied)
+DataCache::find_used_entry()
 {
-    stop = stop > nentries_ ? nentries_ : stop;
-    for (uli i=offset; i < stop; ++i)
+    DataCacheEntry* entry = used_entries_start_;
+    if (!entry)
+        return 0;
+
+    while (entry)
     {
-        DataCacheEntry* entry = entries_[i];
-        if (entry)
+        if (entry->owner->trylock())
         {
-#if DEBUG_CACHE_USAGE
-            dout << "checking cache entry " << entry->offset << endl;
+#if YETI_SANITY_CHECK
+            if (entry->owner->is_retrieved())
+                raise(SanityCheckError, "owner is retrieved but still resides in cache");
 #endif
-            Cachable* owner = entry->get_owner();
-            if (!owner)
+            entry->lock();
+            entry->owner->flush_from_cache();
+            entry->owner->unlock();
+            if (entry->next)
             {
-                if (entry->trylock())
-                    return entry;
+                entry->next->prev = entry->prev;
             }
             else
             {
-                if (check_occupied && owner->trylock())
-                {
-                    if (owner->is_retrieved())
-                    {
-                        owner->unlock();
-                        continue;
-                    }
-                    else if (owner->in_destructor())
-                    {
-                        cerr << "owner in destructor!" << endl;
-                        abort();
-                    }
-
-                    bool got_lock = entry->trylock();
-                    if (!got_lock)
-                    {
-                        raise(SanityCheckError, "cache locked owner but not entry");
-                    }
-                    return entry;
-                }
+                used_entries_end_ = entry->prev;
             }
+
+            if (entry->prev)
+            {
+                entry->prev->next = entry->next;
+            }
+            else
+            {
+                used_entries_start_ = entry->next;
+            }
+
+#if YETI_SANITY_CHECK
+            if (used_entries_end_ && used_entries_end_->next)
+            {
+                raise(SanityCheckError, "cache alignment fail");
+            }
+            if (used_entries_start_ && used_entries_start_->prev)
+            {
+                raise(SanityCheckError, "cache alignment fail");
+            }
+#endif
+
+            return entry;
         }
+        entry = entry->next;
     }
     return 0;
 }
 
-DataCacheEntry*
-DataCache::pull_unused(uli threadnum)
-{    
-    DataCacheEntry* entry = find_entry(offsets_[threadnum], stops_[threadnum], false);
-    if (!entry)
-        entry = find_entry(starts_[threadnum], offsets_[threadnum], false);
-
-    return entry;
-}
-
-DataCacheEntry*
-DataCache::pull_any(uli threadnum)
+bool
+DataCache::pull(DataCacheEntry* entry)
 {
-    DataCacheEntry* entry = find_entry(offsets_[threadnum], stops_[threadnum], true);
-    if (!entry)
-        entry = find_entry(starts_[threadnum], offsets_[threadnum], true);
-    return entry;
-}
+    bool test = entry->trylock();
+    if (!test) //no dice... cache entry is no good
+        return false;
 
-void
-DataCache::print_details(std::ostream& os)
-{
-    for (uli i=0; i < nentries_; ++i)
+    lock();
+    if (entry->prev)
     {
-        DataCacheEntry* entry = all_entries_[i];
-        os << "Cache entry " << i
-             << " at pointer " << (void*) entry;
-        if (!entry->is_pulled())
-        {
-            os << " is not pulled" << endl;
-        }
-        else
-        {
-            TensorBlock* block = dynamic_cast<TensorBlock*>(entry->get_owner());
-            if (block)
-            {
-                 os << " pulled by block "
-                    << block->get_index_string() << " on tensor "
-                    << block->get_parent_tensor()->get_name() << endl;
-            }
-            else
-               os << " pulled by something" << endl;
-        }
+        entry->prev->next = entry->next;
     }
-}
-
-void
-DataCache::process_entry(
-    DataCacheEntry* entry,
-    CachedStorageBlock* block,
-    uli threadnum
-)
-{
-    if (!entry)
+    else //beginning
     {
-        uli nretrieved = 0;
-        uli npulled = 0;
-        uli nfree = 0;
-        uli threadnum = YetiRuntime::get_thread_number();
-        uli start = starts_[threadnum];
-        uli stop = stops_[threadnum];
-        for (uli i=start; i < stop; ++i)
-        {
-            DataCacheEntry* entry = entries_[i];
-            if (!entry)
-            {
-                ++npulled;
-            }
-            else if (entry->trylock())
-            {
-                ++nfree;
-                entry->unlock();
-            }
-            else
-            {
-                Cachable* owner = entry->owner;
-                if (owner && owner->is_retrieved())
-                    ++nretrieved;
-            }
-        }
-
-        //loop the entire cache and see how many blocks are retrieve
-        print_details(cerr);
-
-        uli nblocks = stop - start;
-
-        std::string errmsg = stream_printf(
-            "Too many active cache blocks for thread %d!\n"
-            "Total cache size is %d bytes.\n"
-            "Cache block size is %d bytes.\n"
-            "Total number of cache entries for thread is %d.\n"
-            "Number of pulled cache entries is %d.\n"
-            "Number of free cache entries is %d.\n"
-            "Number of retrieved cache entries is %d.",
-            threadnum,
-            storage_, blocksize_,
-            nblocks,
-            npulled,
-            nfree,
-            nretrieved
-        );
-        raise(SanityCheckError, errmsg);
+        used_entries_start_ = entry->next;
     }
 
-    //if the entry has an existing cache entry, it will be locked
-    Cachable* old_owner = entry->get_owner();
-
-#if DEBUG_CACHE_USAGE
-    TensorBlock* tblock = dynamic_cast<TensorBlock*>(old_owner);
-    if (tblock)
+    if (entry->next)
     {
-        dout << "flushing cache entry " << entry->offset
-           << " on old owner " << tblock->get_index_string()
-           << " at location " << (void*) tblock
-           << endl;
+        entry->next->prev = entry->prev;
+    }
+    else //end
+    {
+        used_entries_end_ = entry->prev;
+    }
+
+#if YETI_SANITY_CHECK
+    if (used_entries_end_ && used_entries_end_->next)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+    if (used_entries_start_ && used_entries_start_->prev)
+    {
+        raise(SanityCheckError, "cache alignment fail");
     }
 #endif
 
-    if (old_owner)
-    {
-        old_owner->flush_from_cache();
-        old_owner->unlock();
-    }
+    unlock();
 
-    Cachable* new_owner = block->get_cache_item();
-    entry->assign(new_owner);
-    entries_[entry->offset] = 0;
-    block->assign_location(entry->data);
+    entry->pulled = true;
 
-    offsets_[threadnum] = entry->offset + 1;
+    return true;
 }
 
 DataCacheEntry*
-DataCache::pull(CachedStorageBlock* block)
+DataCache::pull(Cachable* owner)
 {
-    if (block->size() > blocksize_)
-    {
-        raise(SanityCheckError,"Requested block size is too large!");
-    }
 
-    uli threadnum = YetiRuntime::get_thread_number();
+    lock();
+    DataCacheEntry* entry = find_free_entry();
+    if (!entry) entry = find_used_entry();
 
-    //look for unoccupied entries
-    DataCacheEntry* entry = pull_unused(threadnum);
+    unlock();
+
     if (!entry)
-        entry = pull_any(threadnum);
+        raise(SanityCheckError, "too many cache blocks allocated");
 
-    process_entry(entry, block, threadnum);
+#if YETI_SANITY_CHECK
+    if (!entry->is_locked())
+        raise(SanityCheckError, "how exactly did you manage to return an unlocked cache entry");
+#endif
+
+    entry->assign(owner);
     entry->pulled = true;
+
     return entry;
-}
-
-uli
-DataCache::ncache() const
-{
-    uli ntot = 0;
-    for (uli i=0; i < nentries_; ++i)
-    {
-        DataCacheEntry* entry = entries_[i];
-        if (entry)
-            ++ntot;
-
-    }
-    return ntot;
 }
 
 uli
@@ -398,46 +298,114 @@ DataCache::ntotal() const
 uli
 DataCache::nfree() const
 {
-    uli ntot = 0;
-    for (uli i=0; i < nentries_; ++i)
-    {
-        DataCacheEntry* entry = entries_[i];
-        if (entry && entry->owner == 0)
-            ++ntot;
-    }
-    return ntot;
+    cerr << "not implemented" << endl;
+    abort();
 }
 
 void
 DataCache::insert(DataCacheEntry* entry)
 {
-    if (!entry->owner)
+    lock();
+
+    entry->pulled  = false;
+    DataCacheEntry* last = used_entries_end_;
+    if (last == 0)
     {
-        raise(SanityCheckError, "cache entry is getting inserted without an owner!");
+        used_entries_start_ = entry;
+        used_entries_end_ = entry;
+        entry->prev = 0;
+        entry->next = 0;
     }
-    entries_[entry->offset] = entry;
-    entry->pulled = false;
+    else
+    {
+        last->next = entry;
+        entry->prev = last;
+        entry->next = 0;
+        used_entries_end_ = entry;
+    }
+    entry->unlock();
+
+#if YETI_SANITY_CHECK
+    if (used_entries_end_->next)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+    if (used_entries_start_->prev)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+#endif
+
+    unlock();
 }
 
-
 void
-DataCache::pull(DataCacheEntry* entry)
+DataCache::free(DataCacheEntry* entry)
 {
-    entries_[entry->offset] = 0;
-    entry->pulled = true;
+#if YETI_SANITY_CHECK
+    if (!entry->owner->is_locked())
+        raise(SanityCheckError, "cannot free cache entry of unlocked owner");
+#endif
+
+    lock();
+
+    /** yank out of the used entries */
+    if (entry->prev)
+        entry->prev->next = entry->next;
+    else //beginning
+        used_entries_start_ = entry->next;
+
+    if (entry->next)
+        entry->next->prev = entry->prev;
+    else //end
+        used_entries_end_ = entry->prev;
+
+#if YETI_SANITY_CHECK
+    if (used_entries_end_ && used_entries_end_->next)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+    if (used_entries_start_ && used_entries_start_->prev)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+#endif
+
+    /** put into the free entries */
+    DataCacheEntry* second = free_entries_start_;
+    if (second == 0)
+    {
+        entry->next = 0;
+        entry->prev = 0;
+    }
+    else
+    {
+        entry->next = second;
+        second->prev = entry;
+        entry->prev = 0;
+    }
+    entry->pulled  = false;
+    entry->owner = 0;
+    free_entries_start_ = entry;
+
+#if YETI_SANITY_CHECK
+    if (used_entries_end_ && used_entries_end_->next)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+    if (used_entries_start_ && used_entries_start_->prev)
+    {
+        raise(SanityCheckError, "cache alignment fail");
+    }
+#endif
+
+    unlock();
 }
 
 void
 DataCache::print(std::ostream &os) const
 {
-    os << Env::indent << "Data Cache "
-        << nentries_ << " blocks of size " << blocksize_;
-    for (uli i=0; i < nentries_; ++i)
-    {
-        DataCacheEntry* entry = entries_[i];
-        os << endl << Env::indent;
-        entry->print(os);
-    }
+    os << Env::indent << "Data Cache " << endl;
 }
 
 Cachable::Cachable()
@@ -455,6 +423,3 @@ Cachable::in_destructor() const
 {
     return in_destructor_;
 }
-
-} // end namespace yeti
-

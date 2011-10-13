@@ -4,6 +4,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libmints/mints.h>
+#include <libmints/deriv.h>
 
 #include <psi4-dec.h>
 

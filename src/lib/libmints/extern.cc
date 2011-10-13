@@ -33,20 +33,20 @@ void ExternalPotential::addQuadrupole(double qxx, double qxy, double qxz, double
 void ExternalPotential::print(FILE* out) const
 {
     fprintf(out, "  ==> External Potential Field: %s <==\n\n", name_.c_str());
-    
+
     // Charges
     fprintf(out, "   => Charges [a.u.] <=\n\n");
     fprintf(out, "    %8s %8s %8s %8s\n","Z","x","y","z");
     fprintf(out, "    ---------------------------------------------\n");
     for (int i = 0 ; i < charges_.size(); i++) {
-        fprintf(out, "   %8.5f %8.5f %8.5f %8.5f\n", 
+        fprintf(out, "   %8.5f %8.5f %8.5f %8.5f\n",
             get<0>(charges_[i]), get<1>(charges_[i]), get<2>(charges_[i]), get<3>(charges_[i]));
     }
     fprintf(out,"\n");
-   
-    // Dipoles 
+
+    // Dipoles
     //TODO
-    
+
     // Quadrupoles
     // TODO
 
@@ -78,59 +78,59 @@ void ExternalPotential::rotate(shared_ptr<Matrix> R)
 double ExternalPotential::computePotentialPoint(double x, double y, double z)
 {
     double V = 0.0;
-   
-    // Charges 
+
+    // Charges
     for (int i = 0; i < charges_.size(); i++) {
-        double Z = get<0>(charges_[i]);    
+        double Z = get<0>(charges_[i]);
 
         double dx = x - get<1>(charges_[i]);
         double dy = y - get<2>(charges_[i]);
         double dz = z - get<3>(charges_[i]);
 
-        double R  = sqrt(dx*dx + dy*dy + dz*dz); 
-      
-        V -= Z / R;  
+        double R  = sqrt(dx*dx + dy*dy + dz*dz);
+
+        V -= Z / R;
     }
 
     // Dipoles
     for (int i = 0; i < dipoles_.size(); i++) {
-   
-        double mx = get<0>(dipoles_[i]); 
-        double my = get<1>(dipoles_[i]); 
-        double mz = get<2>(dipoles_[i]); 
+
+        double mx = get<0>(dipoles_[i]);
+        double my = get<1>(dipoles_[i]);
+        double mz = get<2>(dipoles_[i]);
 
         double dx = x - get<3>(dipoles_[i]);
         double dy = y - get<4>(dipoles_[i]);
         double dz = z - get<5>(dipoles_[i]);
 
-        double R  = sqrt(dx*dx + dy*dy + dz*dz); 
+        double R  = sqrt(dx*dx + dy*dy + dz*dz);
 
-        V -= (mx*dx + my*dy + mz*dz) / (R*R*R); 
+        V -= (mx*dx + my*dy + mz*dz) / (R*R*R);
     }
 
     // Quadrupoles
     for (int i = 0; i < dipoles_.size(); i++) {
-   
-        double qxx = get<0>(quadrupoles_[i]); 
-        double qxy = get<1>(quadrupoles_[i]); 
-        double qxz = get<2>(quadrupoles_[i]); 
-        double qyy = get<3>(quadrupoles_[i]); 
-        double qyz = get<4>(quadrupoles_[i]); 
-        double qzz = get<5>(quadrupoles_[i]); 
+
+        double qxx = get<0>(quadrupoles_[i]);
+        double qxy = get<1>(quadrupoles_[i]);
+        double qxz = get<2>(quadrupoles_[i]);
+        double qyy = get<3>(quadrupoles_[i]);
+        double qyz = get<4>(quadrupoles_[i]);
+        double qzz = get<5>(quadrupoles_[i]);
 
         double dx = x - get<6>(quadrupoles_[i]);
         double dy = y - get<7>(quadrupoles_[i]);
         double dz = z - get<8>(quadrupoles_[i]);
 
-        double R  = sqrt(dx*dx + dy*dy + dz*dz); 
-      
-        V -= (0.5 * qxx * dx * dx 
-            + 0.5 * qyy * dy * dy 
-            + 0.5 * qzz * dz * dz 
-                  + qxy * dx * dy 
+        double R  = sqrt(dx*dx + dy*dy + dz*dz);
+
+        V -= (0.5 * qxx * dx * dx
+            + 0.5 * qyy * dy * dy
+            + 0.5 * qzz * dz * dz
+                  + qxy * dx * dy
                   + qxz * dx * dz
-                  + qyz * dy * dz) 
-            / (R*R*R*R*R); 
+                  + qyz * dy * dz)
+            / (R*R*R*R*R);
     }
 
     return V;
@@ -141,7 +141,7 @@ shared_ptr<Matrix> ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet
     shared_ptr<Matrix> V(new Matrix("External Potential",n,n));
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis,basis,basis,basis));
 
-    // Monopoles 
+    // Monopoles
     shared_ptr<Matrix> V_charge(new Matrix("External Potential (Charges)", n, n));
 
     shared_ptr<Matrix> Zxyz(new Matrix("Charges (Z,x,y,z)", charges_.size(), 4));
@@ -154,24 +154,24 @@ shared_ptr<Matrix> ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet
     }
 
     shared_ptr<PotentialInt> pot(static_cast<PotentialInt*>(fact->ao_potential()));
-    pot->setChargeField(Zxyz);    
-    pot->compute(V_charge); 
- 
+    pot->set_charge_field(Zxyz);
+    pot->compute(V_charge);
+
     V->add(V_charge);
     V_charge.reset();
     pot.reset();
 
     // Dipoles
     // TODO
-    if (dipoles_.size()) 
+    if (dipoles_.size())
         throw FeatureNotImplemented("psi::ExternalPotential::computePotentialMatrix","Dipole integrals not implemented",__FILE__,__LINE__);
-    
+
     // Quadrupoles
     // TODO
-    if (quadrupoles_.size()) 
+    if (quadrupoles_.size())
         throw FeatureNotImplemented("psi::ExternalPotential::computePotentialMatrix","Quadrupole integrals not implemented",__FILE__,__LINE__);
 
-    return V;  
+    return V;
 }
 
 

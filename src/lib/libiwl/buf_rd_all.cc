@@ -4,6 +4,7 @@
 */
 #include <cstdio>
 #include <cmath>
+#include <cstdlib>
 #include <libciomr/libciomr.h>
 #include "iwl.h"
 #include "iwl.hpp"
@@ -28,7 +29,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
     lastbuf = lastbuf_;
 
     for (idx=4*idx_; idx_ < inbuf_; idx_++) {
-        p = abs(lblptr[idx++]);
+        p = std::abs(lblptr[idx++]);
         q = (int) lblptr[idx++];
         r = (int) lblptr[idx++];
         s = (int) lblptr[idx++];
@@ -58,7 +59,7 @@ int IWL::read_all(double *ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
         lastbuf = lastbuf_;
 
         for (idx=4*idx_; idx_ < inbuf_; idx_++) {
-            p = abs(lblptr[idx++]);
+            p = std::abs(lblptr[idx++]);
             q = (int) lblptr[idx++];
             r = (int) lblptr[idx++];
             s = (int) lblptr[idx++];
@@ -101,7 +102,7 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
     lastbuf = lastbuf_;
 
     for (idx=4*idx_; idx_ < inbuf_; idx_++) {
-        p = abs(lblptr[idx++]);
+        p = std::abs(lblptr[idx++]);
         q = (int) lblptr[idx++];
         r = (int) lblptr[idx++];
         s = (int) lblptr[idx++];
@@ -129,7 +130,7 @@ int IWL::read_all2(double **ints, int *ioff_lt, int *ioff_rt, int no_pq_perm,
         lastbuf = lastbuf_;
 
         for (idx=4*idx_; idx_ < inbuf_; idx_++) {
-            p = abs(lblptr[idx++]);
+            p = std::abs(lblptr[idx++]);
             q = (int) lblptr[idx++];
             r = (int) lblptr[idx++];
             s = (int) lblptr[idx++];
@@ -191,7 +192,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
   lastbuf = Buf->lastbuf;
   
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-    p = abs(lblptr[idx++]);
+    p = std::abs(lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -221,7 +222,7 @@ int iwl_buf_rd_all(struct iwlbuf *Buf, double *ints,
     lastbuf = Buf->lastbuf;
     
     for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-      p = abs(lblptr[idx++]);
+      p = std::abs(lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];
@@ -279,7 +280,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
   lastbuf = Buf->lastbuf;
   
   for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-    p = abs(lblptr[idx++]);
+    p = std::abs(lblptr[idx++]);
     q = (int) lblptr[idx++];
     r = (int) lblptr[idx++];
     s = (int) lblptr[idx++];
@@ -307,7 +308,7 @@ int iwl_buf_rd_all2(struct iwlbuf *Buf, double **ints,
     lastbuf = Buf->lastbuf;
     
     for (idx=4*Buf->idx; Buf->idx<Buf->inbuf; Buf->idx++) {
-      p = abs(lblptr[idx++]);
+      p = std::abs(lblptr[idx++]);
       q = (int) lblptr[idx++];
       r = (int) lblptr[idx++];
       s = (int) lblptr[idx++];

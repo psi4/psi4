@@ -178,6 +178,8 @@ class DoubleArrayElementComputer :
         const double* dataptr_;
 
     public:
+        using TensorElementComputer::compute;
+
         DoubleArrayElementComputer(const double* data);
 
         TensorElementComputer* copy() const;
@@ -206,6 +208,8 @@ class YetiMatrixElementComputer :
         int ncol_;
 
     public:
+        using TensorElementComputer::compute;
+
         YetiMatrixElementComputer(const MatrixPtr& m);
 
         TensorElementComputer* copy() const;
@@ -241,6 +245,8 @@ class DiagonalMatrixElementComputer :
         TensorValueEstimaterPtr diagonal_matrix_estimater_;
 
     public:
+        using TensorElementComputer::compute;
+
         DiagonalMatrixElementComputer(
             const double* vals,
             uli nvals
@@ -298,6 +304,8 @@ class DenominatorElementComputer :
         double* evals_;
 
     public:
+       using TensorElementComputer::compute;
+
        DenominatorElementComputer(
            double* evals
        );
@@ -328,6 +336,8 @@ class Diagonal_IJIJ_ElementComputer :
         Diagonal_IJIJ_ValueEstimater* estimater_;
 
     public:
+       using TensorElementComputer::compute;
+
        Diagonal_IJIJ_ElementComputer(
            double iiii,
            double ijij,
@@ -354,6 +364,7 @@ class UnitElementComputer :
 {
 
     public:
+       using TensorElementComputer::compute;
 
        yeti::TemplateInfo::type_t
        element_type(const uli* indices, usi depth){

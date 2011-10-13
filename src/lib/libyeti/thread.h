@@ -13,9 +13,7 @@
 #define size_t custom_size_t
 #endif
 
-#define INVALID_THREAD_TASK(tasknum, threadnum, nthread) tasknum % nthread != threadnum
-//#define INVALID_THREAD_TASK(tasknum, threadnum, nthread) threadnum != 0
-
+#define USE_DEFAULT_THREAD_STACK 1
 
 namespace yeti {
 
@@ -112,6 +110,8 @@ class Thread {
         virtual ~Thread();
 
         virtual void run() = 0;
+
+        uli get_thread_number() const;
 
 
 };
