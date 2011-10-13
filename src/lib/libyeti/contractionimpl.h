@@ -80,7 +80,7 @@ struct __Contraction_tn {
                         {
                             if ( fabs(*lptr) > 1e-4 && fabs(*rptr) > 1e-4)
                             {
-                                std::cout << stream_printf(
+                                std::cout << std::stream_printf(
                                  "%18.12f += %8.4f * %18.12f * %18.12f",
                                 *pptr, *lptr, *rptr
                                 ) << std::endl;
