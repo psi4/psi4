@@ -40,7 +40,6 @@ MetaDataNode::MetaDataNode(
     depth_(depth),
     parent_branch_(parent),
     nindex_(parent->get_descr()->nindex()),
-    descr_(parent->get_descr()),
     mempool_(parent->get_metadata_mempool()),
     nodes_(0)
 {
@@ -129,8 +128,6 @@ MetaDataNode::_accumulate(
             (*dstdata) += scale * (*srcdata);
         }
     }
-
-    dst->compute_max_log<data_t>();
 }
 
 template <typename data_t>
@@ -356,7 +353,7 @@ MetaDataNode::init_tile_map()
     {
         nodes_ = new (mempool_) NodeMap<TileNode>(
                         mempool_,
-                        descr_,
+                        parent_branch_->get_descr(),
                         indices_,
                         depth_
                      );
@@ -392,6 +389,8 @@ MetaDataNode::internal_contraction(
         cerr << "Internal contraction has different data types" << endl;
         abort();
     }
+
+    TensorIndexDescr* descr = parent_branch_->get_descr();
 
     uli idx = 0;
     for (uli r=0; r < nr; ++r)
@@ -438,7 +437,7 @@ MetaDataNode::internal_contraction(
                 DataNode* node_dst = static_cast<DataNode*>(dst_node);
                 DataNode* node_src = static_cast<DataNode*>(src_node);
                 src_map->indices(idx, src_indices);
-                descr_->get_nelements(src_indices, nelements);
+                descr->get_nelements(src_indices, nelements);
                 config->configure_block(nelements, 0);
                 uli ndata_rows = config->nrows();
                 uli ndata_cols = config->ncols();
@@ -500,7 +499,6 @@ MetaDataNode::accumulate(
     Sort* sort
 )
 {
-
     //nothing here to accumulate
     if (src_parent->is_empty())
         return;
@@ -537,8 +535,6 @@ MetaDataNode::accumulate(
         stop = buffer + (stop - itsrc);
         itsrc = buffer;
     }
-
-    this->set_max_log(LOG_UNITIALIZED);
 
     bool need_recompute_dst = dst_controller->need_recompute_data();
     if (need_recompute_dst)
@@ -622,37 +618,36 @@ MetaDataNode::accumulate(
                 abort();
             }
 
-if (sort)
-{
-    if (src_dnode->nelements() != sort->nelements())
-    {
-        cerr << idx << " indexed as " << indexstr(nindex_, src_indices) << endl;
-        cerr << "sort not configured properly for source node" << endl;
-        cerr << "sort has " << sort->nelements() << " elements" << endl;
-        cerr << "node has " << src_dnode->nelements() << " elements" << endl;
-        cerr << "lengths: " << indexstr(sort->nindex(), sort->lengths()) << endl;
-        cerr << "nstrides: " << indexstr(sort->nindex(), sort->nstrides()) << endl;
-        cerr << "src sizes: " << indexstr(nindex_, src_map->sizes()) << endl;
-        cerr << "src offsets: " << indexstr(nindex_, src_map->offsets()) << endl;
-        cerr << "dst sizes: " << indexstr(nindex_, nodes_->sizes()) << endl;
-        cerr << "dst offsets: " << indexstr(nindex_, nodes_->offsets()) << endl;
-        sort->get_permutation()->print(cerr); cerr << endl;
-        cerr << indexstr(nindex_, indexset) << " is accumulating " << indexstr(nindex_, src_indices) << endl;
-        abort();
-    }
-    else if ((src_dnode->nelements() - 1) != sort->total_stride())
-    {
-        cerr << "sort not configured properly for source node" << endl;
-        cerr << "sort has total stride " << sort->total_stride() << endl;
-        cerr << "node has " << src_dnode->nelements() << " elements" << endl;
-        cerr << "lengths: " << indexstr(sort->nindex(), sort->lengths()) << endl;
-        cerr << "nstrides: " << indexstr(sort->nindex(), sort->nstrides()) << endl;
-        sort->get_permutation()->print(cerr); cerr << endl;
-        abort();
-    }
-}
+            if (sort)
+            {
+                if (src_dnode->nelements() != sort->nelements())
+                {
+                    cerr << idx << " indexed as " << indexstr(nindex_, src_indices) << endl;
+                    cerr << "sort not configured properly for source node" << endl;
+                    cerr << "sort has " << sort->nelements() << " elements" << endl;
+                    cerr << "node has " << src_dnode->nelements() << " elements" << endl;
+                    cerr << "lengths: " << indexstr(sort->nindex(), sort->lengths()) << endl;
+                    cerr << "nstrides: " << indexstr(sort->nindex(), sort->nstrides()) << endl;
+                    cerr << "src sizes: " << indexstr(nindex_, src_map->sizes()) << endl;
+                    cerr << "src offsets: " << indexstr(nindex_, src_map->offsets()) << endl;
+                    cerr << "dst sizes: " << indexstr(nindex_, nodes_->sizes()) << endl;
+                    cerr << "dst offsets: " << indexstr(nindex_, nodes_->offsets()) << endl;
+                    sort->get_permutation()->print(cerr); cerr << endl;
+                    cerr << indexstr(nindex_, indexset) << " is accumulating " << indexstr(nindex_, src_indices) << endl;
+                    abort();
+                }
+                else if ((src_dnode->nelements() - 1) != sort->total_stride())
+                {
+                    cerr << "sort not configured properly for source node" << endl;
+                    cerr << "sort has total stride " << sort->total_stride() << endl;
+                    cerr << "node has " << src_dnode->nelements() << " elements" << endl;
+                    cerr << "lengths: " << indexstr(sort->nindex(), sort->lengths()) << endl;
+                    cerr << "nstrides: " << indexstr(sort->nindex(), sort->nstrides()) << endl;
+                    sort->get_permutation()->print(cerr); cerr << endl;
+                    abort();
+                }
+            }
 #endif
-
 
 
             data_type_switch(
@@ -681,7 +676,6 @@ if (sort)
             dst_mdnode->accumulate(src_mdnode, scale, sort);
             dstnode = dst_mdnode;
         }
-        this->update_max_log(dstnode->get_max_log());
     }
 }
 
@@ -725,6 +719,9 @@ MetaDataNode::equals(MetaDataNode* mdnode)
     bool need_recompute_me = controller_me->need_recompute_data();
     bool need_recompute_other = controller_other->need_recompute_data();
     uli indexset[NINDEX];
+
+
+    TensorIndexDescr* descr = parent_branch_->get_descr();
 
     uli idx = 0;
     for ( ; it_me != stop; ++it_me, ++it_other, ++idx)
@@ -777,7 +774,7 @@ MetaDataNode::equals(MetaDataNode* mdnode)
                 uli indexset[NINDEX];
                 nodes_->indices(idx, indexset);
                 cout << ClassOutput<const uli*>::str(
-                    descr_->nindex(),
+                    descr->nindex(),
                     indexset
                 ) << endl;
                 data_type_switch(
@@ -791,7 +788,7 @@ MetaDataNode::equals(MetaDataNode* mdnode)
 
                 mdnode->get_node_map()->indices(idx, indexset);
                 cout << ClassOutput<const uli*>::str(
-                    descr_->nindex(),
+                    descr->nindex(),
                     indexset
                 ) << endl;
                 data_type_switch(
@@ -928,10 +925,6 @@ MetaDataNode::convert_data(
             matrix_offset += index_starts[i] * strides[i];
         descr->get_nelements(indices, nelements);
 
-        //cout << "indices:   " << indexstr(nindex_, indices) << endl
-        //     << "nelements: " << indexstr(nindex_, nelements) << endl
-        //     << "strides:   " << indexstr(nindex_, strides) << endl
-        //     << "offset:    " << matrix_offset << endl << endl;
 
         data_type_switch(
             elem_type,
@@ -1192,8 +1185,7 @@ void
 MetaDataNode::sort_data_into(
     Sort* sort,
     TensorBranch* old_branch,
-    TensorBranch* new_branch,
-    Permutation* descr_perm
+    TensorBranch* new_branch
 )
 {
     if (nodes_ == 0)
@@ -1204,7 +1196,9 @@ MetaDataNode::sort_data_into(
 
     TileMap::iterator it(nodes_->begin());
     TileMap::iterator stop(nodes_->end());
-\
+
+    TensorIndexDescr* descr = parent_branch_->get_descr();
+
     size_t element_size = old_branch->element_size();
     uli src_indices[NINDEX];
     TileMap* src_map = this->get_node_map();
@@ -1220,15 +1214,13 @@ MetaDataNode::sort_data_into(
                 continue;
 
             src_map->indices(idx, src_indices);
-            if (descr_perm)
-                descr_->get_nelements(src_indices, nelements, descr_perm);
-            else
-                descr_->get_nelements(src_indices, nelements);
+            descr->get_nelements(src_indices, nelements);
             sort->configure(nelements);
             DataNode* dstnode = get_realigned_pointer(
                                   srcnode, old_branch, new_branch
                                 );
 
+#if YETI_SANITY_CHECK
             if (srcnode->nelements() != sort->nelements())
             {
                 cerr << "sort not configured properly for source node "
@@ -1236,19 +1228,11 @@ MetaDataNode::sort_data_into(
                      << " on tensor "
                   << parent_branch_->get_parent_block()->get_parent_tensor()->get_name()
                      << endl;
+                cerr << "node " << indexstr(nindex_, src_indices) << endl;
                 cerr << "sort permutation: ";
                 sort->get_permutation()->print(cerr); cerr << endl;
-                if (descr_perm)
-                {
-                    cerr << "descr permutation: ";
-                    descr_perm->print(cerr); cerr << endl;
-                }
                 cerr << "fetch permutation: ";
                 new_branch->get_parent_block()->get_fetch_permutation()->print(cerr);
-                cerr << endl;
-
-                cerr << "tensor sort permutation: ";
-                new_branch->get_parent_block()->get_parent_tensor()->get_sort_permutation()->print(cerr);
                 cerr << endl;
 
                 cerr << "block permutation: ";
@@ -1258,12 +1242,16 @@ MetaDataNode::sort_data_into(
 
                 cerr << "sort has " << sort->nelements() << " elements" << endl;
                 cerr << "node has " << srcnode->nelements() << " elements" << endl;
+                cerr << "parent node " << indexstr(nindex_, indices_) << endl;
                 cerr << "map offsets: " << indexstr(nindex_, src_map->offsets()) << endl;
                 cerr << "map sizes: " << indexstr(nindex_, src_map->sizes()) << endl;
                 cerr << "sizes: " << indexstr(nindex_, nelements) << endl;
                 cerr << "lengths: " << indexstr(sort->nindex(), sort->lengths()) << endl;
                 cerr << "nstrides: " << indexstr(sort->nindex(), sort->nstrides()) << endl;
-                descr_->print(cerr); cerr << endl;
+                descr->print(cerr); cerr << endl;
+
+                get_parent_branch()->get_parent_block()->print(cerr);
+                cerr << endl;
                 abort();
             }
             else if ((srcnode->nelements() - 1) != sort->total_stride())
@@ -1276,7 +1264,7 @@ MetaDataNode::sort_data_into(
                 cerr << "nstrides: " << indexstr(sort->nindex(), sort->nstrides()) << endl;
                 abort();
             }
-
+#endif
 
             data_type_switch(
                 elemtype,
@@ -1296,7 +1284,7 @@ MetaDataNode::sort_data_into(
             MetaDataNode* node = static_cast<MetaDataNode*>(*it);
             if (!node)
                 continue;
-            node->sort_data_into(sort, old_branch, new_branch, descr_perm);
+            node->sort_data_into(sort, old_branch, new_branch);
         }
     }
 }
@@ -1336,6 +1324,7 @@ MetaDataNode::sort_metadata_into(
     TileMap* newmap = get_realigned_pointer<TileMap>(
         nodes_, old_branch, new_branch
     );
+
     newmap->init_sizes();
 
     if (depth_ == 1)
@@ -1471,13 +1460,13 @@ void
 MetaDataNode::get_nelements(uli* nelements) const
 {
     //currently an off-by-1 error I simply can't be bothered to fix
-    descr_->get_nelements(depth_ + 1, indices_, nelements);
+    parent_branch_->get_descr()->get_nelements(depth_ + 1, indices_, nelements);
 }
 
 TensorIndexDescr*
 MetaDataNode::get_descr() const
 {
-    return descr_;
+    return parent_branch_->get_descr();
 }
 
 usi
@@ -1535,8 +1524,8 @@ MetaDataNode::print_data(std::ostream& os)
     for ( ; it != stop; ++it, ++idx)
     {
         DataNode* node = static_cast<DataNode*>(*it);
-        if (!node || node->get_max_log() < YetiRuntime::print_cutoff)
-            continue;
+        //if (!node || node->get_max_log() < YetiRuntime::print_cutoff)
+        //    continue;
 
         nodes_->indices(idx, indexset);
 
@@ -1576,8 +1565,8 @@ MetaDataNode::print_metadata(std::ostream &os)
     for ( ; it != stop; ++it, ++idx)
     {
         MetaDataNode* node = static_cast<MetaDataNode*>(*it);
-        if (!node || node->get_max_log() < YetiRuntime::print_cutoff)
-            continue;
+        //if (!node || node->get_max_log() < YetiRuntime::print_cutoff)
+        //    continue;
 
         nodes_->indices(idx, indexset);
         os << Env::indent << "MetaDataNode " << (void*) this << " "
@@ -1787,7 +1776,7 @@ MetaDataNode::accumulate(
 
                     r_mdnode->get_node_map()->indices(ridx, indices);
                     if (need_recompute_right && r_subnode->data() == 0)
-                        lcontroller->retrieve(r_subnode, r_mdnode, indices);
+                        rcontroller->retrieve(r_subnode, r_mdnode, indices);
 
                     rdescr->get_nelements(indices, nelements);
                     uli ncols_data = cxn_config->ncols_right(nelements);
@@ -1836,4 +1825,3 @@ DataNode::compute_max_log()
     else
         maxlog_ = log10(max);
 }
-

@@ -9,72 +9,116 @@ namespace yeti {
 class DoNothingMempool {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class ResetMempool {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
+        );
+};
+
+class FlushOldBranchRenew {
+    public:
+        void renew(
+            TensorBlock* block
+        );
+};
+
+class ZeroBranchRenew {
+    public:
+        void renew(
+            TensorBlock* block
+        );
+};
+
+
+class RemoteAccumulateRenew :
+    public ZeroBranchRenew
+{
+    public:
+        void renew(
+            TensorBlock* block
+        );
+};
+
+class DoNothingBranchRenew {
+    public:
+        void renew(
+            TensorBlock* block
         );
 };
 
 class RealignMemoryPoolBranchRetrieve {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class NewBranchRetrieve {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class ActionBranchRetrieve {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class SortedBranchRetrieve
 {
-    protected:
+    public:
         void retrieve(
+            TensorBlock* block
+        );
+
+        static void retrieve(
             TensorBlock* block,
             TensorBlock* unique_block
         );
-    public:
-        void retrieve(
-            TensorBranch* branch
+
+        static void retrieve(
+            TensorBlock* block,
+            TensorBlock* unique_block,
+            Permutation* perm
         );
 };
 
 class ConfigureElementComputerBranchRetrieve {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
-class ResortAndConfigureElementComputerBranchRetrieve :
-    public ConfigureElementComputerBranchRetrieve,
-    public SortedBranchRetrieve
+class ConfigureElementComputerAndSortBranchRetrieve :
+    ConfigureElementComputerBranchRetrieve,
+    SortedBranchRetrieve
 {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class DoNothingBranchRetrieve {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
+        );
+};
+
+class RemoteBlockBranchRetrieve {
+    public:
+        void retrieve(
+            TensorBlock* block
         );
 };
 
@@ -113,39 +157,95 @@ class AbortVerbatimBranchValidation {
         );
 };
 
-
 class DoNothingBranchRelease {
     public:
         void release(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
-class DoNothingBranchFlush {
+class ThreadAccumulateBranchRelease {
     public:
-        void flush(
-            TensorBranch* branch
+        void release(
+            TensorBlock* block
         );
 };
 
-class ClearBranchFlush {
+class SetFinalizedBranchRelease {
     public:
-        void flush(
-            TensorBranch* branch
+        void release(
+            TensorBlock* block
         );
 };
 
-class CommitBranchFlush {
+class CacheBranchRelease {
     public:
-        void flush(
-            TensorBranch* branch
+        void release(
+            TensorBlock* block
         );
 };
 
-class SortedAccumulateBranchFlush {
+class RemoteAccumulateBranchRelease {
+    public:
+        void release(
+            TensorBlock* block
+        );
+};
+
+class DoNothingPreflush {
+    public:
+        void preflush(
+            TensorBlock* block
+        );
+};
+
+
+class DoNothingBranchFlush :
+    public DoNothingPreflush
+{
     public:
         void flush(
-            TensorBranch* branch
+            TensorBlock* block
+        );
+};
+
+class ClearBranchFlush :
+    public DoNothingPreflush
+{
+    public:
+        void flush(
+            TensorBlock* block
+        );
+};
+
+class RemoteAccumulateFlush :
+    public ClearBranchFlush
+{
+    public:
+        void flush(
+            TensorBlock* block
+        );
+
+        void preflush(
+            TensorBlock* block
+        );
+};
+
+class CommitBranchFlush :
+    public DoNothingPreflush
+{
+    public:
+        void flush(
+            TensorBlock* block
+        );
+};
+
+class SortedAccumulateBranchFlush :
+    public DoNothingPreflush
+{
+    public:
+        void flush(
+            TensorBlock* block
         );
 };
 
@@ -156,50 +256,56 @@ class ReuseDataControllers {
 
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class ResetDataControllers {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class ReallocateDataControllers {
     public:
-        void retrieve(
-            TensorBranch* branch
+        static void retrieve(
+            TensorBlock* block
         );
 };
 
 class DoNothingDataControllerRetrieve {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class MemsetDataControllers {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
 class SortDataControllers
 {
     public:
-        void retrieve(
-            TensorBranch* branch
+        static void retrieve(
+            TensorBlock* block,
+            TensorBlock* unique_block,
+            Permutation* perm
+        );
+
+        static void retrieve(
+            TensorBlock* block
         );
 };
 
 class DoNothingDataControllerInit {
     public:
         void retrieve(
-            TensorBranch* branch
+            TensorBlock* block
         );
 };
 
@@ -217,6 +323,13 @@ class ClearMetaDataOnObsolete {
         );
 };
 
+class AbortOnSync {
+    public:
+        void sync(
+            TensorBlock* block
+        );
+};
+
 class DoNothingSync {
     public:
         void sync(
@@ -225,6 +338,13 @@ class DoNothingSync {
 };
 
 class FlushOnSync {
+    public:
+        void sync(
+            TensorBlock* block
+        );
+};
+
+class RemoteAccumulateSync {
     public:
         void sync(
             TensorBlock* block
@@ -244,6 +364,42 @@ class UpdateMaxLog {
             TensorBlock* block
         );
 };
+
+class DoNothingOutOfCorePrefetch {
+    public:
+        void prefetch(TensorBlock* block);
+
+};
+
+class ParentBlockReadPrefetch {
+    public:
+        void prefetch(TensorBlock* block);
+};
+
+class RemoteBlockPrefetch {
+    public:
+        void prefetch(TensorBlock* block);
+
+};
+
+class DoNothingInCorePrefetch {
+    public:
+        void prefetch(
+            TensorBlock* current_block,
+            TensorBlock* prev_block
+        );
+};
+
+class ResortInCorePrefetch
+{
+
+    public:
+        void prefetch(
+            TensorBlock* current_block,
+            TensorBlock* prev_block
+        );
+};
+
 
 }
 

@@ -1,6 +1,7 @@
 #include "malloc.h"
 #include "thread.h"
 #include "runtime.h"
+#include "exception.h"
 
 #include <iostream>
 
@@ -13,9 +14,16 @@ using namespace std;
 
 std::map<std::string, int>* FastMalloc::registration_queue_ = 0;
 
+
 DECLARE_MALLOC(MemoryPool);
 
 #define MALLOC_FAST_MALLOC 0
+
+#if MALLOC_FAST_MALLOC
+static std::map<void*, uli> malloc_numbers_;
+static std::map<size_t, std::map<uli, void*> > malloc_objects_;
+static std::map<size_t, uli> malloc_counts_;
+#endif
 
 FastMalloc::FastMalloc(
     uli size,
@@ -26,10 +34,8 @@ FastMalloc::FastMalloc(
     data_(0),
     size_(0),
     n_(0),
-    name_(name),
-    thread_offsets_(0),
-    thread_starts_(0),
-    thread_stops_(0)
+    offset_(0),
+    name_(name)
 {
 
     init(size, n);
@@ -44,9 +50,8 @@ FastMalloc::FastMalloc(
     n_(0),
     name_(name),
     refcount_(0),
-    thread_offsets_(0),
-    thread_starts_(0),
-    thread_stops_(0)
+    offset_(0),
+    lock_(0)
 {
 }
 
@@ -66,29 +71,21 @@ FastMalloc::init(uli size, uli n)
     MallocOverride o;
     lock_ = new (o) pThreadLock;
 
+#if MALLOC_FAST_MALLOC
+    return;
+#endif
+
     data_ = YetiRuntime::malloc(size_ * n_);
     mallocd_ = YetiRuntime::malloc(n_ + 1);
     memset(mallocd_, 0, n + 1);
     offset_ = 0;
-
-    uli nthread = YetiRuntime::nthread();
-    thread_offsets_ = new uli[nthread];
-    thread_starts_ = new uli[nthread];
-    thread_stops_ = new uli[nthread];
-
-    uli increment = n / nthread;
-    uli offset = 0;
-    for (uli i=0; i < nthread; ++i)
-    {
-        thread_offsets_[i] = offset;
-        thread_starts_[i] = offset;
-        offset += increment;
-        thread_stops_[i] = offset;
-    }
 }
 
 FastMalloc::~FastMalloc()
 {
+#if MALLOC_FAST_MALLOC
+    return;
+#endif
     char* mallocptr = mallocd_;
     uli nmalloc = 0;
     for (uli i=0; i < n_; ++i, ++mallocptr)
@@ -110,16 +107,22 @@ FastMalloc::~FastMalloc()
     {
         YetiRuntime::free(data_, size_ * n_);
         YetiRuntime::free(mallocd_, n_ + 1);
-
-        if (thread_offsets_)
-            delete[] thread_offsets_;
-        if (thread_starts_)
-            delete[] thread_starts_;
-        if (thread_stops_)
-            delete[] thread_stops_;
     }
 
 
+}
+
+uli
+FastMalloc::nfree() const
+{
+    char* ptr = mallocd_;
+    uli nblocks_free = 0;
+    for (uli i=0; i < n_; ++i, ++ptr)
+    {
+        if (*ptr)
+            ++nblocks_free;
+    }
+    return nblocks_free;
 }
 
 uli
@@ -135,43 +138,8 @@ FastMalloc::search(
 }
 
 void*
-FastMalloc::malloc(uli threadnum)
-{
-#if MALLOC_FAST_MALLOC
-    YetiRuntime::lock_malloc();
-    void* ptr = ::malloc(size_);
-    YetiRuntime::unlock_malloc();
-    return ptr;
-#else
-    uli offset = thread_offsets_[threadnum];
-    uli stop = thread_stops_[threadnum];
-    //maybe an empty spot
-    uli index = search(offset, stop);
-    if (index == stop) //try again
-    {
-        offset = thread_starts_[threadnum];
-        index = search(offset, stop);
-        if (index == stop)
-        {
-            //everything must be allocated...
-            cerr << "Exceeded the " << n_ << " entries in malloc for class " << name_ << endl;
-            abort();
-        }
-    }
-
-    thread_offsets_[threadnum] = index + 1;
-    mallocd_[index] = 1;
-    char* ptr = data_ + index * size_;
-    return ptr;
-#endif
-}
-
-void*
 FastMalloc::malloc()
 {
-    if (YetiRuntime::is_threaded_runtime())
-        return malloc(YetiRuntime::get_thread_number());
-
 #if MALLOC_FAST_MALLOC
     YetiRuntime::lock_malloc();
     void* ptr = ::malloc(size_);
@@ -180,13 +148,17 @@ FastMalloc::malloc()
         cerr << "malloc failed to allocate block of size " << size_ << endl;
         abort();
     }
+
+    uli malloc_number = malloc_counts_[size_] + 1;
+    malloc_counts_[size_] = malloc_number;
+    malloc_numbers_[ptr] = malloc_number;
+    malloc_objects_[size_][malloc_number] = ptr;
+
+
     YetiRuntime::unlock_malloc();
     return ptr;
 #else
-    if (YetiRuntime::is_threaded_runtime())
-    {
-        lock_->lock();
-    }
+    lock_->lock();
 
     //maybe an empty spot
     uli index = search(offset_, n_);
@@ -206,8 +178,7 @@ FastMalloc::malloc()
     mallocd_[index] = 1;
     char* ptr = data_ + index * size_;
 
-    if (YetiRuntime::is_threaded_runtime())
-        lock_->unlock();
+    lock_->unlock();
 
 
     return ptr;
@@ -267,12 +238,48 @@ FastMalloc::check_queue()
     }
 }
 
+uli
+FastMalloc::get_malloc_number(void* obj)
+{
+#if MALLOC_FAST_MALLOC
+    return malloc_numbers_[obj];
+#else
+    size_t diff = (size_t) obj - (size_t) data_;
+    uli n = diff / size_;
+    if (n >= n_)
+    {
+	cerr << "get malloc number " << n << " is not valid for "
+             << name_ << " since there are only " << n_ << " entries" << endl;
+        raise(SanityCheckError, "malloc number exceeds size");
+    }
+    return n;
+#endif
+}
+
+void*
+FastMalloc::get_object(uli malloc_number)
+{
+#if MALLOC_FAST_MALLOC
+    return malloc_objects_[size_][malloc_number];
+#else
+#if YETI_SANITY_CHECK
+    if (malloc_number >= n_)
+    {
+	cerr << "get object " << malloc_number << " is not valid for "
+             << name_ << " since there are only " << n_ << " entries" << endl;
+        raise(SanityCheckError, "malloc number exceeds size");
+    }
+#endif
+    return data_ + malloc_number * size_;
+#endif
+}
+
 MemoryPool::MemoryPool(
     size_t size,
     char* data
 )
     : data_(data),
-        size_(size),
+        total_size_(size),
         remaining_(size),
         ptr_(data),
         mallocd_(false)
@@ -282,7 +289,7 @@ MemoryPool::MemoryPool(
 
 MemoryPool::MemoryPool(size_t size)
     : data_(0),
-        size_(size),
+        total_size_(size),
         remaining_(size),
         ptr_(data_),
         mallocd_(true)
@@ -292,7 +299,7 @@ MemoryPool::MemoryPool(size_t size)
 
 MemoryPool::~MemoryPool()
 {
-    if (mallocd_) YetiRuntime::free(data_, size_);
+    if (mallocd_) YetiRuntime::free(data_, total_size_);
 }
 
 char*
@@ -302,7 +309,7 @@ MemoryPool::get(uli size)
     {
         cerr << "Insufficient memory in pool. Need " << size << " bytes"
                 " but only have " << remaining_ << " bytes out of total "
-            << size_ << endl;
+            << total_size_ << endl;
         abort();
     }
 
@@ -333,48 +340,61 @@ MemoryPool::remaining() const
 }
 
 size_t
-MemoryPool::size() const
+MemoryPool::total_size() const
 {
-    return size_;
+    return total_size_;
+}
+
+size_t
+MemoryPool::data_size() const
+{
+    return total_size_ - remaining_;
 }
 
 void
 MemoryPool::memset()
 {
-    ::memset(data_, 0, size_);
+    ::memset(data_, 0, total_size_);
 }
 
 void
 MemoryPool::memcpy(MemoryPool* pool)
 {
-    size_t cpysize = pool->size_ - pool->remaining_;
-    if (cpysize > size_)
+    size_t cpysize = pool->total_size_ - pool->remaining_;
+    if (cpysize > total_size_)
     {
         cerr << "Memory pool is too large for memcpy!" << endl;
-        cerr << "Parent pool is copying " << cpysize << " of " << pool->size_
+        cerr << "Parent pool is copying " << cpysize << " of " << pool->total_size_
              << " bytes, but destination only has "
-             << size_ << " bytes"
+             << total_size_ << " bytes"
              << endl;
         abort();
     }
 
     ::memcpy(data_, pool->data_, cpysize);
 
-    remaining_ = size_ - cpysize;
+    remaining_ = total_size_ - cpysize;
+}
+
+void
+MemoryPool::set_data_size(size_t size)
+{
+    ptr_ = data_ + size;
+    remaining_ = total_size_ - size;
 }
 
 void
 MemoryPool::set(char* data)
 {
     data_ = data;
-    ptr_ = data_ + size_ - remaining_;
+    ptr_ = data_ + total_size_ - remaining_;
 }
 
 void
 MemoryPool::reset()
 {
     ptr_ = data_;
-    remaining_ = size_;
+    remaining_ = total_size_;
 }
 
 void

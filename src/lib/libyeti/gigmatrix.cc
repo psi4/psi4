@@ -8,29 +8,33 @@
 
 #define VALGRIND 0
 
-#ifndef HAVE_PSI
+#include "blas.h"
 extern "C" {
 
-extern void dgemm(const char*, const char*, const int*,
+extern void F_DGEMM(const char*, const char*, const int*,
   const int*, const int*, const double*, const double*, const int*,
   const double*, const int*, const double*, double*, const int*);
 
-extern void dgeev(const char*, const char*, const int*, const double*,
+extern void F_DGEEV(const char*, const char*, const int*, const double*,
   const int*, const double*, const double*, const double*, const int*,
   const double*, const int*, const double*, const int*, const int*);
 
-extern void dsyev(const char*, const char*, const int*, const double*,
+extern void F_DSYEV(const char*, const char*, const int*, const double*,
   const int*, const double*, const double*, const int*, const int*);
 
-extern void dspsvx(const char* fact, const char* uplo, const int* n, const int* nrhs,
-                       const double* AP, double* AFP, int* ipiv, const double* BB, const int* nb,
-                       double* XX, const int* nx, double* rcond, double* ferr, double* berr,
-                       double* work, int* iwork, int* info);
 
+#if NEED_MPQC_DGEEV_WRAPPER
+void dgeev(const char* a, const char* b, const int* c, const double* d,
+  const int* e, const double* f, const double* g, const double* h, const int* i,
+  const double* j, const int* k, const double* l, const int* m, const int* n)
+{
+    F_DGEEV(
+        a,b,c,d,e,f,g,h,i,j,k,l,m,n
+    );
 }
-#else
-#include <libqt/qt.h>
 #endif
+
+}//EndExternC
 
 using namespace yeti;
 using namespace std;
@@ -173,11 +177,7 @@ yeti::eigenvalues(
     //loss of precision... but what can you do
     int n_ = (int) n;
     int info = 0;
-#ifndef HAVE_PSI
-    dsyev("V", "U", &n_, m, &n_, vals, work, &worksize, &info);
-#else
-    info = psi::C_DSYEV('V', 'U', n_, m, n_, vals, work, worksize);
-#endif
+    F_DSYEV("V", "U", &n_, m, &n_, vals, work, &worksize, &info);
     if (info != 0)
     {
         cerr << "Eigenvalue routined failed" << endl;
@@ -250,11 +250,7 @@ yeti::eigenvalues(
     //loss of precision... but what can you do
     int n_ = (int) n;
     int info = 0;
-#ifndef HAVE_PSI
-    dgeev("V", "V", &n_, vals, &n_, revals, ievals, levecs, &n_, revecs, &n_, work, &worksize, &info);
-#else
-    info = psi::C_DGEEV('V', 'V', n_, vals, n_, revals, ievals, levecs, n_, revecs, n_, work, worksize);
-#endif
+    F_DGEEV("V", "V", &n_, vals, &n_, revals, ievals, levecs, &n_, revecs, &n_, work, &worksize, &info);
 
     if (info != 0)
     {
@@ -414,11 +410,7 @@ yeti::multiply(
     int ncol_ = (int) ncol;
     int ldl_ = (int) ldl;
     int ldr_ = (int) ldr;
-#ifndef HAVE_PSI
-    dgemm(opl, opr, &nrow_, &ncol_, &nlink_, &alpha, ldata, &ldl_, rdata, &ldr_, &beta, prod_data, &nrow_);
-#else
-    psi::C_DGEMM(opl[0], opr[0], nrow_, ncol_, nlink_, alpha, const_cast<double*>(ldata), ldl_, const_cast<double*>(rdata), ldr_, beta, prod_data, nrow_);
-#endif
+    F_DGEMM(opl, opr, &nrow_, &ncol_, &nlink_, &alpha, ldata, &ldl_, rdata, &ldr_, &beta, prod_data, &nrow_);
 #endif
 
     //this is all transposed
@@ -605,7 +597,7 @@ Matrix::canonicalize()
     for (uli col=0; col < ncol_; ++col)
     {
         uli maxrow = 0;
-        double maxabs = 0;
+        double maxabs = -1;
         double maxval = 0;
         //figure out the maximum element in the column
         for (uli row=0; row < nrow_; ++row)
@@ -620,6 +612,12 @@ Matrix::canonicalize()
             }
         }
 
+        if (maxabs == -1)
+        {
+            cerr << "Eigenvector switch. Cannot proceed!" << endl;
+            abort();
+        }
+
         double scale = maxval < 0 ? -1 : 1;
 
         uli idx = 0;
@@ -627,7 +625,7 @@ Matrix::canonicalize()
         {
             newdata[row * ncol_ + maxrow] = data_[row * ncol_ + col] * scale;
         }
-        //cols_taken[maxrow] = 1;
+        cols_taken[maxrow] = 1;
     }
     delete[] data_;
     delete[] cols_taken;
@@ -711,7 +709,11 @@ Matrix::printValues(std::ostream& os) const
             os << "  ";
             for (uli col=colstart; col < colstop; ++col)
             {
-                os << stream_printf("  %16.10f", get_element(row, col));
+                double val = get_element(row,col);
+                if (fabs(val) > 100)
+                    os << stream_printf("  %16.8e", val);
+                else
+                    os << stream_printf("  %16.10f", val);
             }
             os << endl;
         }
@@ -723,6 +725,12 @@ Matrix::print(const std::string& title, std::ostream& os) const
 {
     os << stream_printf("%d x %d Matrix %s", nrow_, ncol_, title.data()) << endl;
     printValues(os);
+}
+
+void
+Matrix::print(std::ostream& os) const
+{
+    print("no title", os);
 }
 
 Vector::Vector(uli n) :
@@ -910,6 +918,12 @@ Vector::printValues(std::ostream& os) const
         os << stream_printf("  %16.10f", get_element(i));
         os << endl;
     }
+}
+
+void
+Vector::print(std::ostream& os) const
+{
+    print("no title", os);
 }
 
 void

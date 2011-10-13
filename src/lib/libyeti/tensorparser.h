@@ -249,6 +249,8 @@ class YetiTensor :
 
         bool equals(const void* vals);
 
+        void distribute(const std::string& str);
+
         void sort(const std::string& str);
 
         void sort(
@@ -268,11 +270,15 @@ class YetiTensor :
 
         bool is_null() const;
 
+        bool is_nonnull() const;
+
         void element_op(ElementOp* op);
         
         void print(std::ostream& os = std::cout);
 
         void operator=(const YetiTensorPtr& yt);
+
+        void operator=(const YetiTensor& yt);
 
         YetiTensorPtr copy() const;
 

@@ -15,17 +15,14 @@
 #define NO_DGEMM 0
 #define DGEMM_CUTOFF 100
 
-#ifndef HAVE_PSI
+#include "blas.h"
 extern "C" {
 
-extern void dgemm(const char*, const char*, const int*,
+extern void F_DGEMM(const char*, const char*, const int*,
   const int*, const int*, const double*, const double*, const int*,
   const double*, const int*, const double*, double*, const int*);
 
-}
-#else
-#include <libqt/qt.h>
-#endif
+}//EndExternC
 
 namespace yeti {
 
@@ -83,7 +80,7 @@ struct __Contraction_tn {
                         {
                             if ( fabs(*lptr) > 1e-4 && fabs(*rptr) > 1e-4)
                             {
-                                std::cout << stream_printf(
+                                std::cout << std::stream_printf(
                                  "%18.12f += %8.4f * %18.12f * %18.12f",
                                 *pptr, *lptr, *rptr
                                 ) << std::endl;
@@ -295,13 +292,9 @@ struct Contraction_nn<double> {
             int ncol_ =  (int) nrows;
             int nlink_ = (int) nlink;
             double beta = 1.0;
-#ifndef HAVE_PSI
-            dgemm(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nrow_, ldata,
+            F_DGEMM(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nrow_, ldata,
                   &nlink_, &beta, pdata, &nrow_);
-#else
-            psi::C_DGEMM(opl[0], opr[0], nrow_, ncol_, nlink_, scale, rdata, nrow_, ldata,
-                  nlink_, beta, pdata, nrow_);
-#endif
+
         }
         else
         {
@@ -338,13 +331,8 @@ struct Contraction_nt<double> {
             int ncol_ =  (int) nrows;
             int nlink_ = (int) nlink;
             double beta = 1.0;
-#ifndef HAVE_PSI
-            dgemm(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nlink_, ldata,
+            F_DGEMM(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nlink_, ldata,
                   &nlink_, &beta, pdata, &nrow_);
-#else
-            psi::C_DGEMM(opl[0], opr[0], nrow_, ncol_, nlink_, scale, rdata, nlink_, ldata,
-                  nlink_, beta, pdata, nrow_);
-#endif
 
         }
         else
@@ -379,13 +367,8 @@ struct Contraction_tn<double> {
             int ncol_ =  (int) nrows;
             int nlink_ = (int) nlink;
             double beta = 1.0;
-#ifndef HAVE_PSI
-            dgemm(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nrow_, ldata,
+            F_DGEMM(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nrow_, ldata,
                   &ncol_, &beta, pdata, &nrow_);
-#else
-            psi::C_DGEMM(opl[0], opr[0], nrow_, ncol_, nlink_, scale, rdata, nrow_, ldata,
-                  ncol_, beta, pdata, nrow_);
-#endif
 
         }
         else
@@ -420,13 +403,9 @@ struct Contraction_tt<double> {
             int ncol_ =  (int) nrows;
             int nlink_ = (int) nlink;
             double beta = 1.0;
-#ifndef HAVE_PSI
-            dgemm(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nlink_, ldata,
+            F_DGEMM(opl, opr, &nrow_, &ncol_, &nlink_, &scale, rdata, &nlink_, ldata,
                   &ncol_, &beta, pdata, &nrow_);
-#else
-            psi::C_DGEMM(opl[0], opr[0], nrow_, ncol_, nlink_, scale, rdata, nlink_, ldata,
-                  ncol_, beta, pdata, nrow_);
-#endif
+
         }
         else
         {

@@ -52,7 +52,9 @@ class ElementOp :
             quad* data
         );
 
-        virtual void set_mode(TensorBlock* block) const = 0;
+        virtual void retrieve(TensorBlock* block) const = 0;
+
+        virtual void release(TensorBlock* block) const = 0;
 
         virtual bool do_update_after() const;
 
@@ -72,6 +74,8 @@ class DiaOp :
         uli astop_;
 
     public:
+        using ElementOp::element_op;
+
         DiaOp(
             const double* ei,
             const double* ea
@@ -84,7 +88,9 @@ class DiaOp :
             double* data
         );
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 
 
 };
@@ -104,6 +110,8 @@ class DijabOp :
         double cb_;
 
     public:
+        using ElementOp::element_op;
+
         DijabOp(
             const double* ei,
             const double* ej,
@@ -122,7 +130,9 @@ class DijabOp :
             double* data
         );
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 
 
 };
@@ -139,6 +149,7 @@ class ZeroOp :
         );
 
     public:
+        using ElementOp::element_op;
 
         void element_op(
             uli nblock,
@@ -168,7 +179,9 @@ class ZeroOp :
             quad* data
         );
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 
         bool do_update_after() const;
 
@@ -188,6 +201,8 @@ class ScaleOp :
         );
 
     public:
+        using ElementOp::element_op;
+
         ScaleOp(double scale);
 
         void element_op(
@@ -218,7 +233,9 @@ class ScaleOp :
             quad* data
         );
 
-        void set_mode(TensorBlock *block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 
 
 };
@@ -231,6 +248,8 @@ class NormElementOp :
 
 
     public:
+        using ElementOp::element_op;
+
         NormElementOp();
 
         void element_op(
@@ -249,7 +268,9 @@ class NormElementOp :
 
         double norm() const;
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 };
 
 class Diagonalize_IJIJ_Op :
@@ -257,6 +278,7 @@ class Diagonalize_IJIJ_Op :
 {
 
     public:
+        using ElementOp::element_op;
 
         void element_op(
             uli nblock,
@@ -265,7 +287,9 @@ class Diagonalize_IJIJ_Op :
             double* data
         );
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 };
 
 class UpperTriangleGetOp :
@@ -282,6 +306,8 @@ class UpperTriangleGetOp :
         uli offset_q_;
 
     public:
+        using ElementOp::element_op;
+
         UpperTriangleGetOp();
 
         ~UpperTriangleGetOp();
@@ -293,7 +319,9 @@ class UpperTriangleGetOp :
             double* data
         );
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 
         void configure(Tensor* tensor);
 
@@ -325,6 +353,7 @@ class DoubleArrayGetOp :
         uli nr_;
     
     public:
+        using ElementOp::element_op;
         
         DoubleArrayGetOp();
 
@@ -341,7 +370,9 @@ class DoubleArrayGetOp :
 
         void configure(Tensor* tensor);
 
-        void set_mode(TensorBlock* block) const;
+        void retrieve(TensorBlock* block) const;
+
+        void release(TensorBlock* block) const;
 
         const double* data() const;
 
