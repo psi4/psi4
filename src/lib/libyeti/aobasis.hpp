@@ -4,14 +4,16 @@
 namespace yeti {
 
 class AOBasis;
-class AtomBasis;
-class ShellBasis;
-class AtomShell;
+class Atom;
+class Shell;
 
 typedef boost::intrusive_ptr<AOBasis> AOBasisPtr;
-typedef boost::intrusive_ptr<AtomBasis> AtomBasisPtr;
-typedef boost::intrusive_ptr<ShellBasis> ShellBasisPtr;
-typedef boost::intrusive_ptr<AtomShell> AtomShellPtr;
+typedef boost::intrusive_ptr<Atom> AtomPtr;
+typedef boost::intrusive_ptr<Shell> ShellPtr;
+
+class MultiShellMap;
+
+typedef boost::intrusive_ptr<MultiShellMap> MultiShellMapPtr;
 
 }
 

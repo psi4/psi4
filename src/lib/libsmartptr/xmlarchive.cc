@@ -9,7 +9,7 @@
 using namespace smartptr;
 using namespace rapidxml;
 using namespace std;
-static Serializable* null_serializable = 0;
+
 #ifdef redefine_size_t
 #define size_t custom_size_t
 #endif
@@ -35,10 +35,11 @@ XMLArchive::XMLArchive(
     }
 
     size_t size = file.tellg();
-    buffer_ = new char[size];
+    buffer_ = new char[size + 1];
     file.seekg (0, ios::beg);
     file.read (buffer_, size);
     file.close();
+    *(buffer_ + size) = '\0';
 
     std::string binfilename = filename + ".bin";
     ifstream* fbinstream = new ifstream(binfilename.data(), ios::in | ios::binary);
@@ -59,7 +60,7 @@ XMLArchive::XMLArchive(
         xmlnode* node = objnode_->first_node();
         for  ( ; node; node = node->next_sibling())
         {
-            object_t objnode(null_serializable, node);
+            object_t objnode(0, node);
             object_nodes_.push_back(objnode);
         }
     }
@@ -632,7 +633,7 @@ XMLArchive::setValue(void* val, const std::string& name)
 }
 
 void 
-XMLArchive::setBinary(void* vals, size_t size, const std::string& name)
+XMLArchive::_setBinary(void* vals, size_t size, const std::string& name)
 {
     data_size_ += size;
 
@@ -654,7 +655,7 @@ XMLArchive::setBinary(void* vals, size_t size, const std::string& name)
 }
 
 void 
-XMLArchive::getBinary(void*& vals, size_t& size, const std::string& name)
+XMLArchive::_getBinary(void*& vals, size_t& size, const std::string& name)
 {
     if (!binstream_)
     {

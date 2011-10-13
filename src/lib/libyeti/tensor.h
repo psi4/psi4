@@ -4,6 +4,8 @@
 #include "class.h"
 #include "mapimpl.h"
 #include "mallocimpl.h"
+#include "messenger.h"
+#include "contraction.h"
 
 #include "data.hpp"
 #include "index.hpp"
@@ -34,10 +36,10 @@
 
 namespace yeti {
 
-
+#define NMAX_TENSORS 1000
 class Tensor :
-    public YetiRuntimeCountable,
-    public Malloc<Tensor>
+    public Malloc<Tensor>,
+    public YetiRuntimeCountable
 {
 
     public:
@@ -50,31 +52,25 @@ class Tensor :
         } tensor_storage_t;
 
         typedef enum {
-            replicated = 0,
-            distributed = 1
-        } tensor_distribution_t;
-
-        typedef enum {
             gamma_tensor = 0,
             beta_tensor = 1,
             alpha_tensor = 2
         } tensor_priority_t;
 
-        typedef enum {
-            keep_zero_blocks = 0,
-            delete_zero_blocks = 1
-        } tensor_erase_policy_t;
-
     private:
+        static Tensor* tensors_[NMAX_TENSORS];
+
+        uli sort_weight_;
+
+        uli tensor_number_;
+
         std::string name_;
 
-        BlockMap<TensorBlock>* blocks_;
+        TensorBlockMap* tensor_blocks_;
 
         Indexer* main_indexer_;
 
         std::list<TensorElementFilterPtr> filters_;
-
-        DiskBufferPtr disk_buffer_;
 
         PermutationGroupPtr tensor_grp_;
 
@@ -86,7 +82,11 @@ class Tensor :
 
         PermutationSetPtr tensor_grp_generator_set_;
 
-        TensorIndexDescrPtr descr_;
+        TensorIndexDescrPtr block_descr_;
+
+        Indexer* distr_indexer_;
+
+        uli* full_index_to_distribution_index_;
 
         usi depth_;
         
@@ -94,23 +94,23 @@ class Tensor :
         
         uli index_start_[NINDEX];
 
+        usi* distribution_indices_;
+
+        usi nindex_distr_;
+
         tensor_storage_t storage_type_;
-
-        tensor_distribution_t distribution_type_;
-
-        tensor_erase_policy_t erase_type_;
 
         tensor_priority_t priority_;
         
         Tensor* parent_tensor_;
 
-        Permutation* sort_perm_;
-
-        Permutation* unsort_perm_;
-
         size_t data_block_size_;
 
         size_t metadata_block_size_;
+
+        uli malloc_number_;
+
+        Contraction::tensor_position_t cxn_position_;
 
         void accumulate(
             TensorBlock* srcblock,
@@ -127,20 +127,20 @@ class Tensor :
 
         void init_symmetry_filter();
 
-        void erase_zero_blocks();
-
-        void erase_if_null(TensorBlock* block, uli idx);
+        void print_block(TensorBlock* block, std::ostream& os) const;
         
         ThreadedTensorElementComputerPtr filler_;
 
         void accumulate_post_process();
 
-        void fill_blocks(Tensor::tensor_storage_t);
+        void fill_blocks();
 
         TensorBlock* get_first_nonnull_block() const;
 
+        uli* block_to_node_indexmap_;
+
     public:
-        typedef NodeMap<TensorBlock>::iterator iterator;
+        typedef TensorBlockMap::iterator iterator;
 
         Tensor(
             const std::string& name,
@@ -154,10 +154,6 @@ class Tensor :
         );
 
         ~Tensor();
-
-        static bool in_destructor;
-        
-        static bool in_sync;
 
         void accumulate(
             uli threadnum,
@@ -191,13 +187,13 @@ class Tensor :
 
         void configure(tensor_storage_t storage_type);
 
-        void configure(tensor_distribution_t dist_type);
-
-        void configure(tensor_erase_policy_t erase_type);
-
         void configure_degeneracy(const PermutationGroupPtr& pgrp);
 
+        void distribute(const usi* indices, usi nindex);
+
         TensorConfiguration* config() const;
+
+        void recompute_permutation();
 
         void get_matrix(RectMatrixPtr& matrix, MatrixConfiguration* config);
 
@@ -214,6 +210,8 @@ class Tensor :
         void accumulate(const RectMatrixPtr& matrix, MatrixConfiguration* config);
 
         void accumulate(Matrix* matrix, MatrixConfiguration* config);
+
+        void assign(Tensor* tensor);
 
         void fill(const double* data);
 
@@ -243,11 +241,7 @@ class Tensor :
 
         void fill(const TensorElementComputerPtr& val = 0);
 
-        DiskBuffer* get_disk_buffer() const;
-
-        Permutation* get_unsort_permutation() const;
-
-        Permutation* get_sort_permutation() const;
+        void global_sum();
 
         PermutationGroup* get_tensor_grp() const;
 
@@ -263,9 +257,9 @@ class Tensor :
 
         tensor_storage_t get_storage_type() const;
 
-        tensor_distribution_t get_distribution_type() const;
+        bool is_distributed() const;
 
-        tensor_erase_policy_t get_erase_type() const;
+        bool is_replicated() const;
 
         TensorBlockMap* get_block_map() const;
 
@@ -280,7 +274,7 @@ class Tensor :
             uli index
         ) const;
 
-        TensorIndexDescr* get_descr() const;
+        TensorIndexDescr* get_block_descr() const;
 
         usi get_depth() const;
 
@@ -291,6 +285,8 @@ class Tensor :
             Permutation* fetch_perm
         ) const;
 
+        Contraction::tensor_position_t get_tensor_position() const;
+
         Tensor::tensor_priority_t get_priority() const;
 
         ulli get_totalsize() const;
@@ -298,8 +294,6 @@ class Tensor :
         TensorBlock* get_make_block(uli idx);
 
         void insert_new_block(TensorBlock* block);
-
-        void insert_new_block(uli idx, TensorBlock* block);
 
         bool is_closed_tensor() const;
 
@@ -317,10 +311,7 @@ class Tensor :
 
         uli nblocks_retrieved() const;
 
-
         bool nonzero() const;
-
-        bool unique_nonzero() const;
 
         bool is_parent_block(TensorBlock* block) const;
 
@@ -330,21 +321,33 @@ class Tensor :
 
         void scale(double scale);
 
+        void set_tensor_position(Contraction::tensor_position_t position);
+
         void set_priority(Tensor::tensor_priority_t priority);
 
-        void set_read_mode();
+        void set_sort_size_weight(uli weight);
 
-        void set_write_mode();
-
-        void set_accumulate_mode();
+        uli get_sort_size_weight() const;
 
         void sort(uli threadnum, const SortPtr& sort);
 
         void sort(Permutation* p);
 
         void sync();
+
+        void flush();
         
-        void sync_to_subtensor();
+        /**
+            If updates have been performed on a subtensor portion of the given
+            subtensor, some blocks which have permutational symmetry may not be
+            synced when the subtensor is synced.  This ensures that all permutationally
+            related blocks are sync when the subtensor is synced.
+        */
+        void update_remote_blocks();
+
+        void remote_wait();
+
+        void update_from_subtensor();
 
         void update();
 
@@ -358,8 +361,6 @@ class Tensor :
 
         Permutation* get_fetch_permutation(const uli* indices) const;
 
-        bool is_unique(const uli* indices) const;
-
         void zero();
 
         size_t data_block_size() const;
@@ -368,6 +369,9 @@ class Tensor :
 
         Tensor* copy();
 
+        Tensor* clone();
+
+        uli get_node_number(uli block_number) const;
 };
 
 

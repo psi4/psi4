@@ -51,26 +51,37 @@ public:
 
     int nirrep() const;
     const std::string& name() const;
+
+    /// C - transformation matrix (AO x MO)
     const boost::shared_ptr<Matrix>& C() const;
+
+    /// "Eigenvalues" of the C matrix
     const boost::shared_ptr<Vector>& evals() const;
+
+    /// The AO basis set used to create C
     const boost::shared_ptr<BasisSet>& basis() const;
+
+    /// Integral factory used to create C
     const boost::shared_ptr<IntegralFactory>& integral() const;
+
+    /// MO dimensionality
     const Dimension& dim() const;
 
-    /** Returns the matrix that transforms space1 to space2. Throws if unable to.
-        The transform can only be constructed if the overlap of space1.basis()
-        and space2.basis() is nonzero.
-
-        The returned matrix has dimensions of space2.C().coldim() and space1.C().coldim().
+    /** Creates an MOIndexSpace from 'from' to the given basis set 'to'
       */
-    static boost::shared_ptr<Matrix> transform(const MOIndexSpace& space2, const MOIndexSpace& space1);
+    static MOIndexSpace transform(const MOIndexSpace& from, const boost::shared_ptr<BasisSet>& to);
 
-    /** Returns the overlap matrix between space2 and space1.
+    /** Returns the overlap matrix between space1 and space2.
         The matrix has dimensions of space2.C().coldim() and
         space1.C().coldim().
         Throws if the overlap cannot be computed.
       */
-    static boost::shared_ptr<Matrix> overlap(const MOIndexSpace& space2, const MOIndexSpace& space1);
+    static boost::shared_ptr<Matrix> overlap(const MOIndexSpace& space1, const MOIndexSpace& space2);
+    /** Returns the overlap matrix between basis1 and basis2.
+        Throws if the overlap cannot be computed.
+      */
+    static boost::shared_ptr<Matrix> overlap(const boost::shared_ptr<BasisSet>& basis1,
+                                             const boost::shared_ptr<BasisSet>& basis2);
 };
 
 }

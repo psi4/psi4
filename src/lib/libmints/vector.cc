@@ -83,6 +83,17 @@ Vector::Vector(const Dimension& v)
     name_ = v.name();
 }
 
+Vector::Vector(const std::string& name, const Dimension& v)
+{
+    nirrep_ = v.n();
+    vector_ = NULL;
+    dimpi_ = new int[nirrep_];
+    for (int i=0; i<nirrep_; ++i)
+        dimpi_[i] = v[i];
+    alloc();
+    name_ = name;
+}
+
 Vector::~Vector() {
     release();
     if (dimpi_)

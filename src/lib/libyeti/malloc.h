@@ -41,12 +41,6 @@ class FastMalloc {
 
         std::string name_;
 
-        uli* thread_starts_;
-
-        uli* thread_stops_;
-
-        uli* thread_offsets_;
-
         uli offset_;
 
         uli
@@ -89,7 +83,11 @@ class FastMalloc {
         */
         void* malloc();
 
-        void* malloc(uli threadnum);
+        void* get_object(uli malloc_number);
+
+        uli get_malloc_number(void* obj);
+
+        uli nfree() const;
 
         /**
             Remove lock on the given block of memory, allowing

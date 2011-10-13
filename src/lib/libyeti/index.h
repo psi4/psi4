@@ -64,6 +64,8 @@ class IndexDescr :
         
         IndexRangePtr parent_range_;
 
+        IndexDescrPtr subdescr_;
+
         usi* index_to_irrep_;
 
         size_t* total_data_sizes_;
@@ -90,6 +92,8 @@ class IndexDescr :
         IndexRange* get_range(usi depth) const;
         
         IndexRange* get_parent_range() const;
+
+        IndexDescr* get_subdescr() const;
 
         std::string descr() const;
 
@@ -154,6 +158,8 @@ class TensorIndexDescr :
         void set(usi index, const IndexDescrPtr& descr);
 
         usi depth() const;
+
+        TensorIndexDescr* get_subdescr() const;
 
         IndexDescr* get(usi index) const;
 
@@ -271,6 +277,8 @@ class IndexRange :
 
         bool _subrange_index_location(IndexRange* range, uli* indices) const;
 
+        IndexRange* _squeeze_together_bottom_ranges(uli nper, uli* start_offsets);
+
     public:
 
         /**
@@ -377,6 +385,8 @@ class IndexRange :
 
         virtual ~IndexRange();
 
+        void acquire_subranges(const SubindexTuplePtr& tuple);
+
         void increment_offsets();
 
         void increment_offsets(IndexRange* range);
@@ -405,8 +415,6 @@ class IndexRange :
             @return The depth the given subrange exists at
         */
         usi get_subdepth_alignment(IndexRange* range);
-
-        static uli* get_zero_set();
 
         static IndexRange* get_merged_range(IndexRange* r1, IndexRange* r2);
 
