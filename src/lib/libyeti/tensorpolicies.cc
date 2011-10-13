@@ -25,14 +25,14 @@ using namespace yeti;
 using namespace std;
 
 void
-DoNothingMempool::retrieve(TensorBranch* branch)
+DoNothingMempool::retrieve(TensorBlock* block)
 {
 }
 
 void
-ResetMempool::retrieve(TensorBranch* branch)
+ResetMempool::retrieve(TensorBlock* block)
 {
-    TensorBlock* block = branch->get_parent_block();
+    TensorBranch* branch = block->get_branch();
     MemoryPool* mempool = branch->get_metadata_mempool();
     mempool->reset();
     TensorBranch* newbranch = new (mempool) TensorBranch(
@@ -48,24 +48,70 @@ ResetMempool::retrieve(TensorBranch* branch)
 }
 
 void
-ActionBranchRetrieve::retrieve(TensorBranch* branch)
+FlushOldBranchRenew::renew(TensorBlock* block)
 {
-    TensorBlock* parent_block = branch->get_parent_block();
-    TensorRetrieveAction* action = parent_block->get_retrieve_action();
+    block->flush_from_cache();
+    block->_initialize();
+    block->set_initialized(true);
+    block->set_finalized(false);
+    block->_retrieve();
+}
+
+void
+RemoteAccumulateRenew::renew(TensorBlock* block)
+{
+    block->wait_on_send(); //wait on any previous sends
+    ZeroBranchRenew::renew(block);
+}
+
+void
+ZeroBranchRenew::renew(TensorBlock* block)
+{
+    TensorBranch* branch = block->get_branch();
+
+    MemoryPool* mempool = branch->get_metadata_mempool();
+    mempool->reset();
+
+    /** reinitialize an empty branch */
+    TensorBranch* newbranch = new (mempool) TensorBranch(
+                            block->get_indices(),
+                            block->get_depth(),
+                            block
+                           );
+
+    /** Allocate new controllers for each of the already existing storage blocks */
+    DataStorageNode* node = block->first_data_node();
+    while(node)
+    {
+        StorageBlock* data_block = node->block;
+        branch->allocate_data_controller(data_block);
+        node = node->next;
+    }
+}
+
+void
+DoNothingBranchRenew::renew(TensorBlock* block)
+{
+}
+
+void
+ActionBranchRetrieve::retrieve(TensorBlock* block)
+{
+    TensorRetrieveAction* action = block->get_retrieve_action();
     if (!action)
     {
         cerr << "Action tensor has null action" << endl;
         abort();
     }
 
-    action->accumulate_to(parent_block);
+    action->accumulate_to(block);
 }
 
 void
-ConfigureElementComputerBranchRetrieve::retrieve(TensorBranch* branch)
+ConfigureElementComputerBranchRetrieve::retrieve(TensorBlock* block)
 {
     ThreadedTensorElementComputer* threaded_filler =
-        branch->get_parent_block()->get_parent_tensor()->get_element_computer();
+        block->get_parent_tensor()->get_element_computer();
 
     if (!threaded_filler)
     {
@@ -75,47 +121,18 @@ ConfigureElementComputerBranchRetrieve::retrieve(TensorBranch* branch)
     
     uli threadnum = YetiRuntime::get_thread_number();
     TensorElementComputer* filler = threaded_filler->get_computer(threadnum);
-    branch->set_element_computer(filler);
+    block->get_branch()->set_element_computer(filler);
 }
 
 void
-ResortAndConfigureElementComputerBranchRetrieve::retrieve(TensorBranch* branch)
+ConfigureElementComputerAndSortBranchRetrieve::retrieve(TensorBlock* block)
 {
-    ConfigureElementComputerBranchRetrieve::retrieve(branch);
-
-    //loop through the permutation group and try to find
-    //an already existing tensor block
-    TensorBlock* block = branch->get_parent_block();
-    Tensor* tensor = block->get_parent_tensor();
-    PermutationGroupPtr tensor_grp = tensor->get_tensor_grp();
-    PermutationGroup::iterator it(tensor_grp->begin());
-    PermutationGroup::iterator stop(tensor_grp->end());
-    uli indices[NINDEX];
-    
-    TensorBlock* unique_block = 0;
-    for ( ; it != stop; ++it)
-    {
-        Permutation* p(*it);
-        if (p->is_identity())
-            continue;
-        
-        p->permute(block->get_indices(), indices);
-        TensorBlock* test_block = tensor->get_block(indices);
-        if (test_block->is_retrieved())
-        {
-            test_block->retrieve(); //increment retrieve count
-            unique_block = test_block;
-            break;
-        }
-    }
-    
-    //sort what you can into the already existing block
-    if (unique_block)
-        SortedBranchRetrieve::retrieve(block, unique_block);
+    ConfigureElementComputerBranchRetrieve::retrieve(block);
+    SortedBranchRetrieve::retrieve(block);
 }
 
 void
-DoNothingBranchRetrieve::retrieve(TensorBranch* branch)
+DoNothingBranchRetrieve::retrieve(TensorBlock* block)
 {
 }
 
@@ -162,13 +179,12 @@ AbortVerbatimBranchValidation::validate(TensorBlock* block)
 
 void
 RealignMemoryPoolBranchRetrieve::retrieve(
-    TensorBranch* branch
+    TensorBlock* block
 )
 {
-    TensorBlock* block = branch->get_parent_block();
-    //this is the location of the old branch in memory
-    TensorBranch* old_branch = block->get_obsolete_branch();
-    TensorBranch* new_branch = block->get_branch();
+    TensorBranch* branch = block->get_branch();
+    TensorBranch* old_branch = branch->get_last_branch_location();
+    TensorBranch* new_branch = branch;
 
     if (!old_branch)
     {
@@ -178,7 +194,7 @@ RealignMemoryPoolBranchRetrieve::retrieve(
 }
 
 void
-NewBranchRetrieve::retrieve(TensorBranch* branch)
+NewBranchRetrieve::retrieve(TensorBlock* block)
 {
     /** This should have been reinitialized by memory pool reset */
 
@@ -187,42 +203,53 @@ NewBranchRetrieve::retrieve(TensorBranch* branch)
 }
 
 void
+RemoteBlockBranchRetrieve::retrieve(TensorBlock* block)
+{
+    block->set_waiting(true);
+    YetiRuntime::get_messenger()->send_data_request(
+        Message::TensorBranch,
+        block->get_node_number(),
+        block->get_malloc_number()
+    );
+    block->wait_on_send();
+}
+
+void
 SortedBranchRetrieve::retrieve(
-    TensorBranch* branch
+    TensorBlock* block
 )
 {
-    TensorBlock* block = branch->get_parent_block();
     TensorBlock* unique_block = block->get_symmetry_unique_block();
-
     retrieve(block, unique_block);
 }
 
 void
 SortedBranchRetrieve::retrieve(
     TensorBlock* block,
-    TensorBlock* unique_block
+    TensorBlock* unique_block,
+    Permutation* perm
 )
 {
-    TensorBranch* branch = block->get_branch();
     if (!unique_block)
     {
         ResetMempool reset;
-        reset.retrieve(branch);
+        reset.retrieve(block);
         return;
     }
 
+    cout << "sorting " << unique_block->get_index_string()
+        << " into " << block->get_index_string() << endl;
+
+    TensorBranch* branch = block->get_branch();
     MemoryPool* mempool = branch->get_metadata_mempool();
 
-
-
-    unique_block->set_read_mode();
-    unique_block->retrieve();
+    unique_block->retrieve_read();
     mempool->memcpy(unique_block->get_metadata_mempool());
     //reset the parent - gets messed up by memcpy
     branch->set_parent(block);
     branch->set_metadata_mempool(mempool);
 
-    Sort* sort = new Sort(block->get_resort_permutation());
+    Sort* sort = new Sort(perm);
     unique_block->get_branch()
         ->sort_metadata_into(sort, branch);
 
@@ -233,14 +260,23 @@ SortedBranchRetrieve::retrieve(
         branch
     );
 
-    unique_block->release();
+    unique_block->release_read();
     delete sort;
+}
+
+void
+SortedBranchRetrieve::retrieve(
+    TensorBlock* block,
+    TensorBlock* unique_block
+)
+{
+    retrieve(block, unique_block, block->get_resort_permutation());
 }
 
 
 void
 DoNothingDataControllerRetrieve::retrieve(
-    TensorBranch* branch
+    TensorBlock* block
 )
 {
 }
@@ -260,11 +296,11 @@ ReuseDataControllers::retrieve(TensorDataController* controller)
 
 void
 ReuseDataControllers::retrieve(
-    TensorBranch* branch
+    TensorBlock* block
 )
 {
-    TensorDataController* controller = branch->first_data_controller();
-    DataStorageNode* node = branch->get_parent_block()->first_data_node(); 
+    TensorDataController* controller = block->get_branch()->first_data_controller();
+    DataStorageNode* node = block->first_data_node();
     while(controller)
     {
         StorageBlock* block = node->block;
@@ -278,11 +314,11 @@ ReuseDataControllers::retrieve(
 
 void
 MemsetDataControllers::retrieve(
-    TensorBranch* branch
+    TensorBlock* block
 )
 {
-    TensorDataController* controller = branch->first_data_controller();
-    DataStorageNode* node = branch->get_parent_block()->first_data_node(); 
+    TensorDataController* controller = block->get_branch()->first_data_controller();
+    DataStorageNode* node = block->first_data_node();
     while(controller)
     {
         StorageBlock* block = node->block;
@@ -294,89 +330,191 @@ MemsetDataControllers::retrieve(
 
 void
 SortDataControllers::retrieve(
-    TensorBranch* branch
+    TensorBlock* block,
+    TensorBlock* unique_block,
+    Permutation* perm
 )
 {
-    TensorBlock* block = branch->get_parent_block();
-    TensorBlock* unique_block = block->get_symmetry_unique_block();
-    if (!unique_block)
-        return;
-
-    unique_block->set_read_mode();
-    unique_block->retrieve();
-    Sort* sort = new Sort(block->get_resort_permutation());
-    unique_block->get_branch()->sort_data_into(sort, branch);
-    unique_block->release();
+    unique_block->retrieve_read();
+    Sort* sort = new Sort(perm);
+    unique_block->get_branch()->sort_data_into(sort, block->get_branch());
+    unique_block->release_read();
 
     delete sort;
 }
 
 void
-ReallocateDataControllers::retrieve(
-    TensorBranch* branch
+SortDataControllers::retrieve(
+    TensorBlock* block
 )
 {
-    TensorBlock* block = branch->get_parent_block();
-    TensorDataController* controller = branch->first_data_controller();
+    TensorBlock* unique_block = block->get_symmetry_unique_block();
+    if (!unique_block)
+        return;
 
+    retrieve(block, unique_block, block->get_resort_permutation());
+}
+
+void
+ReallocateDataControllers::retrieve(
+    TensorBlock* block
+)
+{
+    TensorDataController* controller = block->get_branch()->first_data_controller();
     block->clear_storage();
     while(controller)
     {
-        StorageBlock* storage_block = branch->get_parent_block()
-                                ->allocate_data_storage_block();
+        StorageBlock* storage_block = block->allocate_data_storage_block();
         controller->set_data(storage_block->data());
         controller = controller->next;
     }
 }
 
 void
-DoNothingDataControllerInit::retrieve(TensorBranch* branch)
+DoNothingDataControllerInit::retrieve(TensorBlock* block)
 {
 }
 
 void
-DoNothingBranchFlush::flush(TensorBranch* branch)
+DoNothingBranchFlush::flush(TensorBlock* block)
 {
 }
 
 void
-ClearBranchFlush::flush(TensorBranch* branch)
+DoNothingPreflush::preflush(TensorBlock* block)
 {
-    TensorBlock* tensor_block = branch->get_parent_block();
-    StorageBlock* block = tensor_block->get_metadata_storage_block();
-    block->clear(tensor_block);
+    //do nothing
 }
 
 void
-SortedAccumulateBranchFlush::flush(TensorBranch* branch)
+ClearBranchFlush::flush(TensorBlock* block)
+{
+    StorageBlock* storage_block = block->get_metadata_storage_block();
+    storage_block->clear();
+}
+
+void
+RemoteAccumulateFlush::preflush(TensorBlock* block)
+{
+    YetiRuntime::get_messenger()->queue_send_request(
+        Message::TensorBranch,
+        Message::Accumulate,
+        block->get_node_number(),
+        block
+    );
+}
+
+void
+RemoteAccumulateFlush::flush(TensorBlock* block)
+{
+    if (!block->has_send_status()) //I need to do the flushing
+    {
+        SendStatus* status = block->send_data(
+            YetiRuntime::get_messenger(),
+            Message::TensorBranch,
+            Message::Accumulate,
+            block->get_node_number()
+        );
+
+        status->wait();
+
+        block->reset_send_status();
+    }
+    else //if there was a previously exisiting send, we have already waited on it
+    {
+    }
+    ClearBranchFlush::flush(block);
+}
+
+void
+SortedAccumulateBranchFlush::flush(TensorBlock* block)
 {   
-    TensorBlock* block = branch->get_parent_block();
     if (block->in_destructor())
         return;
 
     TensorBlock* unique_block = block->get_symmetry_unique_block();
     Permutation* unsort_perm = block->get_resort_permutation()->inverse();
     Sort* sort = new Sort(unsort_perm);
-    unique_block->set_accumulate_mode();
-    unique_block->retrieve();
+    unique_block->retrieve_accumulate();
     unique_block->accumulate(block, 1.0, sort);
-    unique_block->release();
+    unique_block->release_accumulate();
     delete sort;
 }
 
 void
-CommitBranchFlush::flush(TensorBranch* branch)
+CommitBranchFlush::flush(TensorBlock* block)
 {
-    TensorBlock* tensor_block = branch->get_parent_block();
-    tensor_block->set_obsolete_branch(branch);
-    StorageBlock* block = tensor_block->get_metadata_storage_block();
-    block->commit();
-    block->clear(tensor_block);
+    StorageBlock* storage_block = block->get_metadata_storage_block();
+    storage_block->commit();
+    storage_block->clear();
 }
 
 void
-DoNothingBranchRelease::release(TensorBranch* branch)
+DoNothingBranchRelease::release(TensorBlock* block)
 {
+}
+
+void
+SetFinalizedBranchRelease::release(TensorBlock* block)
+{
+    block->finalize();
+}
+
+void
+CacheBranchRelease::release(TensorBlock* block)
+{
+    block->get_metadata_storage_block()->release();
+    DataStorageNode* node = block->first_data_node();
+    while(node)
+    {
+        StorageBlock* data_block = node->block;
+        data_block->release();
+        node = node->next;
+    }
+}
+
+void
+ThreadAccumulateBranchRelease::release(TensorBlock* block)
+{
+    TensorBlock* parent = block->get_parent_tensor()
+                               ->get_block(block->get_block_number());
+    Sort* no_sort = 0;
+    parent->retrieve_accumulate();
+    parent->accumulate(block, 1.0, no_sort);
+    parent->release_accumulate();
+}
+
+void
+RemoteAccumulateBranchRelease::release(TensorBlock* block)
+{
+    YetiRuntime::get_messenger()
+            ->queue_send_request(
+                Message::TensorBranch,
+                Message::Accumulate,
+                block->get_node_number(),
+                block,
+                &TensorBlock::release_callback
+            );
+
+#if 0
+    SendStatus* status = block->send_data(
+        YetiRuntime::get_messenger(),
+        Message::TensorBranch,
+        Message::Accumulate,
+        block->get_node_number()
+    );
+    block->set_send_status(status);
+    status->wait(); //leave the status so the flush knows we sent our data already
+
+    block->get_metadata_storage_block()->release();
+    DataStorageNode* node = block->first_data_node();
+    while(node)
+    {
+        StorageBlock* data_block = node->block;
+        data_block->release();
+        node = node->next;
+    }
+#endif
 }
 
 void
@@ -479,7 +617,7 @@ CommitAllDataStorageFlush::flush(TensorBlock* block)
     {
         StorageBlock* data_block = node->block;
         data_block->commit();
-        data_block->clear(block);
+        data_block->clear();
         node = node->next;
     }
 }
@@ -493,7 +631,7 @@ ClearAllDataStorageFlush::flush(TensorBlock* block)
     while(node)
     {
         StorageBlock* data_block = node->block;
-        data_block->clear(block);
+        data_block->clear();
         node = node->next;
     }
 }
@@ -529,12 +667,26 @@ DoNothingSync::sync(TensorBlock* block)
 }
 
 void
+RemoteAccumulateSync::sync(TensorBlock* block)
+{
+    /** just wait until the block has finished its send */
+    block->wait_on_send();
+}
+
+void
+AbortOnSync::sync(TensorBlock* block)
+{
+    cerr << "block should never be synced" << endl;
+    abort();
+}
+
+void
 FlushOnSync::sync(TensorBlock* block)
 {
-    if (block->in_cache())
+    if (block->is_cached())
     {
         block->lock();
-        if (!block->in_cache()) //race condition!
+        if (!block->is_cached()) //race condition!
         {
             //block got flushed in the meanwhile
             block->unlock();
@@ -580,7 +732,75 @@ ObsoleteAllDataClear::clear(
     }
 }
 
+void
+DoNothingOutOfCorePrefetch::prefetch(TensorBlock* block)
+{
+}
+
+void
+ParentBlockReadPrefetch::prefetch(TensorBlock* block)
+{
+    cout << "parent block prefetch" << endl;
+    block->get_symmetry_unique_block()->prefetch_read();
+}
+
+void
+DoNothingInCorePrefetch::prefetch(
+    TensorBlock* current_block,
+    TensorBlock* prev_block
+)
+{
+
+}
+
+void
+ResortInCorePrefetch::prefetch(
+    TensorBlock* current_block,
+    TensorBlock* prev_block
+)
+{
+    //check to see if blocks are related by symmetry
+    if      (current_block->get_task_owner_number() != prev_block->get_task_owner_number())
+        return;
+    else if (current_block->get_block_number() == prev_block->get_block_number())
+        return; //previous block is the same!
+
+    //go ahead and do all the sorting work
+    current_block->retrieve();
+    prev_block->retrieve();
+
+
+    if (current_block->get_num_data_storage_blocks() > 0)
+    { //this is still in corejust use what we have
+        prev_block->release();
+        current_block->release();
+        return;
+    }
+
+    Permutation* sort_perm = current_block->get_resort_permutation()
+                                ->product(prev_block->get_resort_permutation()->inverse());
+
+    SortedBranchRetrieve::retrieve(current_block, prev_block, sort_perm);
+    ReallocateDataControllers::retrieve(current_block);
+    SortDataControllers::retrieve(current_block, prev_block, sort_perm);
+
+    prev_block->release();
+    current_block->release();
+}
+
+void
+RemoteBlockPrefetch::prefetch(TensorBlock* block)
+{
+    block->set_waiting(true);
+    block->YetiRuntimeObject::initialize();
+    YetiRuntime::get_messenger()->send_data_request(
+        Message::TensorBranch,
+        block->get_node_number(),
+        block->get_malloc_number()
+    );
+}
+
+
 #ifdef redefine_size_t
 #define size_t custom_size_t
 #endif
-

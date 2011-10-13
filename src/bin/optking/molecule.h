@@ -257,6 +257,7 @@ class MOLECULE {
   }
 
   double * g_masses(void) const;
+  double * g_u_vector(void) const; // reciprocal masses in vector
 
   double * g_geom_array(void) {
     double *g, *g_frag;
