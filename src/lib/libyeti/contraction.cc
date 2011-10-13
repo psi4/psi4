@@ -14,6 +14,7 @@
 #include "malloc.h"
 #include "runtime.h"
 #include "threadimpl.h"
+#include <libsmartptr/printstream.h>
 #include <algorithm>
 
 using namespace yeti;
