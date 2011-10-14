@@ -978,7 +978,6 @@ AC_CONFIG_FILES([include/Makefile
           tests/scf3/Makefile
           tests/scf4/Makefile
           tests/scf5/Makefile
-          tests/scf6/Makefile
           tests/opt1/Makefile
           tests/opt1-fd/Makefile
           tests/opt2/Makefile
@@ -991,6 +990,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/sapt1/Makefile
           tests/dfmp2_1/Makefile
           tests/dfmp2_2/Makefile
+          tests/pywrap_db1/Makefile
+          tests/pywrap_db2/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
