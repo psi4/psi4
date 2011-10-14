@@ -2,7 +2,11 @@ import input
 
 # <<< S22 Database Module >>>
 # Geometries from Jurecka et al. PCCP 8 1985 (2006).
-# Reference interaction energies from Takatani et al. JCP 132 144104 (2010).
+# Reference interaction energies from the following articles:
+#   S220: Jurecka et al. PCCP 8 1985 (2006).
+#   S22A: Takatani et al. JCP 132 144104 (2010).
+#   S22B: Marshall et al. JCP xxx xxxxxx (2011).  *** DEFAULT ***
+
 dbse = 'S22'
 
 # <<< Database Members >>>
@@ -35,28 +39,80 @@ for rxn in HRXN:
 
 # <<< Reference Values >>>
 BIND = {}
-BIND['%s-%s' % (dbse,  1)] =  -3.15
-BIND['%s-%s' % (dbse,  2)] =  -5.07
-BIND['%s-%s' % (dbse,  3)] = -18.81
-BIND['%s-%s' % (dbse,  4)] = -16.11
-BIND['%s-%s' % (dbse,  5)] = -20.69
-BIND['%s-%s' % (dbse,  6)] = -17.00
-BIND['%s-%s' % (dbse,  7)] = -16.74
-BIND['%s-%s' % (dbse,  8)] =  -0.53
-BIND['%s-%s' % (dbse,  9)] =  -1.48
-BIND['%s-%s' % (dbse, 10)] =  -1.45
-BIND['%s-%s' % (dbse, 11)] =  -2.62
-BIND['%s-%s' % (dbse, 12)] =  -4.20
-BIND['%s-%s' % (dbse, 13)] =  -9.74
-BIND['%s-%s' % (dbse, 14)] =  -4.59
-BIND['%s-%s' % (dbse, 15)] = -11.66
-BIND['%s-%s' % (dbse, 16)] =  -1.50
-BIND['%s-%s' % (dbse, 17)] =  -3.29
-BIND['%s-%s' % (dbse, 18)] =  -2.32
-BIND['%s-%s' % (dbse, 19)] =  -4.55
-BIND['%s-%s' % (dbse, 20)] =  -2.71
-BIND['%s-%s' % (dbse, 21)] =  -5.62
-BIND['%s-%s' % (dbse, 22)] =  -7.09
+# Original publication
+BIND_S220 = {}
+BIND_S220['%s-%s' % (dbse,  1)] =  -3.17
+BIND_S220['%s-%s' % (dbse,  2)] =  -5.02
+BIND_S220['%s-%s' % (dbse,  3)] = -18.61
+BIND_S220['%s-%s' % (dbse,  4)] = -15.96
+BIND_S220['%s-%s' % (dbse,  5)] = -20.65
+BIND_S220['%s-%s' % (dbse,  6)] = -16.71
+BIND_S220['%s-%s' % (dbse,  7)] = -16.37
+BIND_S220['%s-%s' % (dbse,  8)] =  -0.53
+BIND_S220['%s-%s' % (dbse,  9)] =  -1.51
+BIND_S220['%s-%s' % (dbse, 10)] =  -1.50
+BIND_S220['%s-%s' % (dbse, 11)] =  -2.73
+BIND_S220['%s-%s' % (dbse, 12)] =  -4.42
+BIND_S220['%s-%s' % (dbse, 13)] = -10.12
+BIND_S220['%s-%s' % (dbse, 14)] =  -5.22
+BIND_S220['%s-%s' % (dbse, 15)] = -12.23
+BIND_S220['%s-%s' % (dbse, 16)] =  -1.53
+BIND_S220['%s-%s' % (dbse, 17)] =  -3.28
+BIND_S220['%s-%s' % (dbse, 18)] =  -2.35
+BIND_S220['%s-%s' % (dbse, 19)] =  -4.46
+BIND_S220['%s-%s' % (dbse, 20)] =  -2.74
+BIND_S220['%s-%s' % (dbse, 21)] =  -5.73
+BIND_S220['%s-%s' % (dbse, 22)] =  -7.05
+# Revision
+BIND_S22A = {}
+BIND_S22A['%s-%s' % (dbse,  1)] =  -3.15
+BIND_S22A['%s-%s' % (dbse,  2)] =  -5.07
+BIND_S22A['%s-%s' % (dbse,  3)] = -18.81
+BIND_S22A['%s-%s' % (dbse,  4)] = -16.11
+BIND_S22A['%s-%s' % (dbse,  5)] = -20.69
+BIND_S22A['%s-%s' % (dbse,  6)] = -17.00
+BIND_S22A['%s-%s' % (dbse,  7)] = -16.74
+BIND_S22A['%s-%s' % (dbse,  8)] =  -0.53
+BIND_S22A['%s-%s' % (dbse,  9)] =  -1.48
+BIND_S22A['%s-%s' % (dbse, 10)] =  -1.45
+BIND_S22A['%s-%s' % (dbse, 11)] =  -2.62
+BIND_S22A['%s-%s' % (dbse, 12)] =  -4.20
+BIND_S22A['%s-%s' % (dbse, 13)] =  -9.74
+BIND_S22A['%s-%s' % (dbse, 14)] =  -4.59
+BIND_S22A['%s-%s' % (dbse, 15)] = -11.66
+BIND_S22A['%s-%s' % (dbse, 16)] =  -1.50
+BIND_S22A['%s-%s' % (dbse, 17)] =  -3.29
+BIND_S22A['%s-%s' % (dbse, 18)] =  -2.32
+BIND_S22A['%s-%s' % (dbse, 19)] =  -4.55
+BIND_S22A['%s-%s' % (dbse, 20)] =  -2.71
+BIND_S22A['%s-%s' % (dbse, 21)] =  -5.62
+BIND_S22A['%s-%s' % (dbse, 22)] =  -7.09
+# Current revision
+BIND_S22B = {}
+BIND_S22B['%s-%s' % (dbse,  1)] =  -3.133
+BIND_S22B['%s-%s' % (dbse,  2)] =  -4.989
+BIND_S22B['%s-%s' % (dbse,  3)] = -18.753
+BIND_S22B['%s-%s' % (dbse,  4)] = -16.062
+BIND_S22B['%s-%s' % (dbse,  5)] = -20.641
+BIND_S22B['%s-%s' % (dbse,  6)] = -16.934
+BIND_S22B['%s-%s' % (dbse,  7)] = -16.660
+BIND_S22B['%s-%s' % (dbse,  8)] =  -0.527
+BIND_S22B['%s-%s' % (dbse,  9)] =  -1.472
+BIND_S22B['%s-%s' % (dbse, 10)] =  -1.448
+BIND_S22B['%s-%s' % (dbse, 11)] =  -2.654
+BIND_S22B['%s-%s' % (dbse, 12)] =  -4.255
+BIND_S22B['%s-%s' % (dbse, 13)] =  -9.805
+BIND_S22B['%s-%s' % (dbse, 14)] =  -4.524
+BIND_S22B['%s-%s' % (dbse, 15)] = -11.730
+BIND_S22B['%s-%s' % (dbse, 16)] =  -1.496
+BIND_S22B['%s-%s' % (dbse, 17)] =  -3.275
+BIND_S22B['%s-%s' % (dbse, 18)] =  -2.312
+BIND_S22B['%s-%s' % (dbse, 19)] =  -4.541
+BIND_S22B['%s-%s' % (dbse, 20)] =  -2.717
+BIND_S22B['%s-%s' % (dbse, 21)] =  -5.627
+BIND_S22B['%s-%s' % (dbse, 22)] =  -7.097
+# Set default
+BIND = BIND_S22B
 
 # <<< Comment Lines >>>
 TAGL = {}
