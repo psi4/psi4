@@ -158,7 +158,7 @@ class OPT_DATA {
     bool previous_step_report(void) const;
 
     // check convergence of current step
-    bool conv_check(void) const;
+    bool conv_check(opt::MOLECULE &) const;
 
     // summarize optimization up til now
     void summary(void) const;

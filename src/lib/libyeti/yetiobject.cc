@@ -15,7 +15,9 @@ using namespace std;
 
 YetiRuntimeObject::YetiRuntimeObject()
     :
-   runtime_count_(0)
+   runtime_count_(0),
+   initialized_(false),
+   finalized_(true)
 {
 }
 
@@ -36,12 +38,30 @@ YetiRuntimeObject::_obsolete()
 uli
 YetiRuntimeObject::retrieve()
 {
-    ++runtime_count_;
-    if (runtime_count_ == 1)
+    if (!initialized_)
+    {
+        if (runtime_count_ != 0)
+            raise(SanityCheckError, "retrieved object was not initialized");
+        YetiRuntimeObject::initialize();
+    }
+
+    if (finalized_)
     {
         _retrieve();
+        finalized_ = false;
     }
+    else
+    {
+        _renew();
+    }
+
+    ++runtime_count_;
     return runtime_count_ - 1;
+}
+
+void
+YetiRuntimeObject::_renew()
+{
 }
 
 void
@@ -65,6 +85,48 @@ YetiRuntimeObject::release()
     --runtime_count_;
 }
 
+void
+YetiRuntimeObject::_initialize()
+{
+}
+
+void
+YetiRuntimeObject::initialize()
+{
+    if (initialized_)
+        return;
+
+    _initialize();
+    initialized_ = true;
+}
+
+
+void
+YetiRuntimeObject::finalize()
+{
+    initialized_ = false;
+    finalized_ = true;
+}
+
+
+bool
+YetiRuntimeObject::is_initialized() const
+{
+    return initialized_;
+}
+
+void
+YetiRuntimeObject::set_initialized(bool flag)
+{
+    initialized_ = flag;
+}
+
+void
+YetiRuntimeObject::set_finalized(bool flag)
+{
+    finalized_ = flag;
+}
+
 bool
 YetiRuntimeObject::is_retrieved() const
 {
@@ -73,7 +135,8 @@ YetiRuntimeObject::is_retrieved() const
 
 YetiThreadedRuntimeObject::YetiThreadedRuntimeObject()
     :
-   lock_(0)
+   lock_(0),
+   locked_(false)
 {
     lock_ = YetiRuntime::get_thread_grp()->get_lock();
 }
@@ -82,21 +145,30 @@ YetiThreadedRuntimeObject::YetiThreadedRuntimeObject(
     YetiRuntimeObject::thread_safety_flag_t flag
 )
     :
-   lock_(0)
+   lock_(0),
+   locked_(false)
 {
     if (flag == YetiRuntimeObject::thread_safe)
+    {
         lock_ = new NullThreadLock;
+    }
     else
+    {
         lock_ = YetiRuntime::get_thread_grp()->get_lock();
+    }
 }
 
 
 YetiThreadedRuntimeObject::~YetiThreadedRuntimeObject()
 {
-    if (YetiRuntime::is_threaded_runtime())
-        lock_->unlock();
-
-
+#if YETI_SANITY_CHECK
+    if (is_retrieved())
+    {
+        raise(SanityCheckError, "cannot delete retrieved object");
+    }
+#endif
+    
+    lock_->unlock();
     delete lock_;
 }
 
@@ -110,33 +182,53 @@ YetiThreadedRuntimeObject::set_lock(ThreadLock* lock)
 void
 YetiThreadedRuntimeObject::lock()
 {
-    if (YetiRuntime::is_threaded_runtime())
-    {
-        lock_->lock();
-    }
+    lock_->lock();
+    locked_ = true;
 }
 
 void
 YetiThreadedRuntimeObject::unlock()
 {
-    if (YetiRuntime::is_threaded_runtime())
-    {
-        lock_->unlock();
-    }
+#if YETI_SANITY_CHECK
+    if (!locked_)
+        raise(SanityCheckError, "you unlocked a mutex that isn't locked");
+#endif
+    locked_ = false;
+    lock_->unlock();
+}
+
+bool
+YetiThreadedRuntimeObject::is_locked() const
+{
+    return locked_;
 }
 
 bool
 YetiThreadedRuntimeObject::trylock()
 {
-    if (YetiRuntime::is_threaded_runtime())
+    //if (locked_)
+    //{
+    //    cout << "failed lock on " << this << endl;
+    //    return false;
+    //}
+
+    bool trylock = lock_->trylock();
+    if (trylock) 
     {
-        return lock_->trylock();
+        locked_ = true;
     }
-    else
-    {
-        return true;
-    }
+
+    return trylock;
 }
+
+void
+YetiThreadedRuntimeObject::initialize()
+{
+    lock();
+    YetiRuntimeObject::initialize();
+    unlock();
+}
+
 
 void
 YetiThreadedRuntimeObject::obsolete()
@@ -163,7 +255,8 @@ YetiThreadedRuntimeObject::retrieve()
 uli
 YetiThreadedRuntimeObject::retrieve_lock()
 {
-   if (YetiRuntime::nthread() > 1)
+    /** multiple compute threads OR multiple processors */
+   if (YetiRuntime::nthread() > 1 || YetiRuntime::nproc() > 1)
    {
        pThreadLock* test = dynamic_cast<pThreadLock*>(lock_);
        if (!test)
@@ -196,7 +289,6 @@ YetiThreadedRuntimeObject::release()
 void
 YetiThreadedRuntimeObject::release_lock()
 {
-
     YetiRuntimeObject::release();
     unlock();
 }
@@ -211,37 +303,22 @@ template <class T>
 void
 intrusive_ptr_incref(T* obj)
 {
-    if (YetiRuntime::is_threaded_runtime())
-    {
-        obj->lock();
-        obj->incref();
-        obj->unlock();
-    }
-    else
-    {
-        obj->incref();
-    }
+    obj->lock();
+    obj->incref();
+    obj->unlock();
 }
 
 template <class T>
 void
 intrusive_ptr_decref(T* obj)
 {
-    if (YetiRuntime::is_threaded_runtime())
-    {
-        obj->lock();
-        //there is no need to "unlock" as the obj is getting deleted anyway
-        if (obj->decref() == 0)
-            delete obj;
-        else
-            obj->unlock();
-    }
+    obj->lock();
+    //there is no need to "unlock" as the obj is getting deleted 
+    //it's destructor will handle the unlock
+    if (obj->decref() == 0)
+        delete obj;
     else
-    {
-        //there is no need to "unlock" as the obj is getting deleted anyway
-        if (obj->decref() == 0)
-            delete obj;
-    }
+        obj->unlock();
 }
 
 void
