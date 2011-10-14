@@ -875,7 +875,7 @@ def database(name, db_name, **kwargs):
         tables += """%23s   %17s %8.4f\n""" % ('RMS Dev', '', sqrt(RMSDerror/float(count_rxn)))
         tables += """   %s\n""" % (table_delimit)
 
-        print tables
+        #print tables
         PsiMod.print_out(tables)
         return MADerror/float(count_rxn)
 
