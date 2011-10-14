@@ -683,16 +683,13 @@ def database(name, db_name, **kwargs):
                    % (rgt, RXNM[db_rxn][rgt], db_rxn)
         actives += """PsiMod.print_out('\\n')\n\n"""
 
-        # build string of commands for options from the input file NYI
+        # build string of commands for options from the input file  TODO: handle local options too
         commands = '\n'
-        LABTEMP = ['conVERgenCe', 'wfn', 'PRINT', 'scf_type']
-        for chgdopt in LABTEMP:
+        for chgdopt in PsiMod.get_global_option_list():
             if PsiMod.has_option_changed(chgdopt):
-                 #commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
-                 commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_option(chgdopt))
+                 commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
 
         # build string of molecule and commands that are dependent on the database
-        #commands = '\n'
         commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
         if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
@@ -727,10 +724,10 @@ def database(name, db_name, **kwargs):
             exec banners
             exec GEOS[rgt]
             exec commands
-            print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
-                molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
+            #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
+            #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
             ERGT[rgt] = assemble_function2call(**kwargs)
-            print ERGT[rgt]
+            #print ERGT[rgt]
             PsiMod.print_variables()
             exec actives
             PsiMod.set_global_option("REFERENCE", user_reference)
@@ -742,21 +739,6 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-
-            PsiMod.print_options()
-            PsiMod.print_global_options()
-            #PsiMod.get_option_list()
-            #a = PsiMod.has_option_changed("conVERgenCe")
-            #b = PsiMod.has_option_changed("wfn")
-            #c = PsiMod.has_option_changed("PRINT")
-            #print 'has changed %d %d %d' % (a, b, c)
-        #    LABTEMP = ['conVERgenCe', 'wfn', 'PRINT']
-        #    for labopt in LABTEMP:
-        #       if PsiMod.has_option_changed(labopt):
-        #          print 'PsiMod.set_global_option(%s, %s)' % (labopt, PsiMod.get_global_option(labopt))
-
-
-
             # non-pickle route
             lesserkwargs = kwargs.copy() 
             del lesserkwargs['func'] 
