@@ -1204,8 +1204,16 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                     // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                     double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
                     double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd * prefactor;
-                    for (int i=0; i<=am+DERIV_LVL; ++i)
+//                    for (int i=0; i<=am+DERIV_LVL; ++i)
+//                        libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
+                    fprintf(outfile, "val = %16.10f Sab = %16.10f Scd = %16.10f \nc1 = %e c2 = %e c3 = %e c4 = %e\n", val, Sab, Scd, c1, c2, c3, c4);
+                    fprintf(outfile, "a1 = %e a2 = %e a3 = %e a4 = %e\n", a1, a2, a3, a4);
+                    fprintf(outfile, "ooz = %16.10f oon = %16.10f\n", ooz, oon);
+
+                    for (int i=0; i<=am+DERIV_LVL; ++i) {
                         libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
+                        fprintf(outfile, "F[%d] = %16.10f\n", i, F[i]);
+                    }
 
                     nprim++;
                 }
@@ -1240,6 +1248,19 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     //   B_x = -(A_x + C_x + D_x)
     //   B_y = -(A_y + C_y + D_y)
     //   B_z = -(A_z + C_z + D_z)
+
+    fprintf(outfile, "P Q R S: %d %d %d %d\n", sh1, sh2, sh3, sh4);
+    for (int p = 0; p < size; ++p) {
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s1->ncenter() + 0), libderiv_.ABCD[0][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s1->ncenter() + 1), libderiv_.ABCD[1][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s1->ncenter() + 2), libderiv_.ABCD[2][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s3->ncenter() + 0), libderiv_.ABCD[6][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s3->ncenter() + 1), libderiv_.ABCD[7][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s3->ncenter() + 2), libderiv_.ABCD[8][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s4->ncenter() + 0), libderiv_.ABCD[9][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s4->ncenter() + 1), libderiv_.ABCD[10][p]);
+    fprintf(outfile, "Salc %d = %16.10f\n", (3 * s4->ncenter() + 2), libderiv_.ABCD[11][p]);
+}
     memcpy(source_+ 0*size, libderiv_.ABCD[0],  sizeof(double) * size);
     memcpy(source_+ 1*size, libderiv_.ABCD[1],  sizeof(double) * size);
     memcpy(source_+ 2*size, libderiv_.ABCD[2],  sizeof(double) * size);

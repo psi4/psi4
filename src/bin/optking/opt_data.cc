@@ -60,17 +60,58 @@ OPT_DATA::~OPT_DATA() {
 // Check convergence criteria and print status to output file
 // return true, if geometry is optimized
 // Checks maximum force && (Delta(E) || maximum disp)
-bool OPT_DATA::conv_check(void) const {
-  // get this step info
-  double *f =  g_forces_pointer();
-  double max_force = array_abs_max(f, Nintco);
-
+bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double *dq =  g_dq_pointer();
   double max_disp = array_abs_max(dq, Nintco);
 
   double DE;
   if (g_iteration() > 1) DE = g_energy() - g_last_energy();
   else DE = g_energy();
+
+  double *f =  g_forces_pointer();
+
+  // for IRC only consider forces tangent to the hypersphere search surface
+  double *f_backup;
+  if (Opt_params.opt_type == OPT_PARAMS::IRC) {
+    // save forces and put back in below
+    f_backup = init_array(Nintco);
+    array_copy(f, f_backup, Nintco);
+
+    double **G = mol.compute_G(1);
+    double **Ginv = symm_matrix_inv(G, Nintco, Nintco); 
+    free_matrix(G);
+
+    // compute p_m, mass-weighted hypersphere vector
+    const double *q_pivot = p_irc_data->g_q_pivot();
+    double *q = mol.intco_values();
+    double *p = init_array(Nintco);
+    for (int i=0; i<Nintco; ++i)
+      p[i] = q[i] - q_pivot[i];
+    free_array(q);
+
+    // gradient perpendicular to p and tangent to hypersphere is:
+    // g_m' = g_m - (g_m^t p_m / p_m^t p_m) p_m, or
+    // g'   = g   - (g^t p / (p^t G^-1 p)) G^-1 p
+    double *Ginv_p = init_array(Nintco);
+    for(int i=0; i<Nintco; i++)
+      Ginv_p[i] = array_dot(Ginv[i], p, Nintco);
+    free_matrix(Ginv);
+
+    double overlap = array_dot(f, p, Nintco) / array_dot(p, Ginv_p, Nintco);
+
+    for (int i=0; i<Nintco; ++i)
+      f[i] -= overlap * Ginv_p[i];
+    free_array(Ginv_p);
+
+    if (Opt_params.print_lvl >= 1) {
+      fprintf(outfile,"\tForces perpendicular to hypersphere.\n");
+      print_array(outfile, f, Nintco);
+    }
+
+    fprintf(outfile,"\tFor IRC computations, the forces perpendicular to the rxnpath are tested.\n");
+  }
+
+  double max_force = array_abs_max(f, Nintco);
 
   fprintf(outfile, "\n\tConvergence Check Cycle %4d: (using internal coordinates in au)\n", iteration);
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
@@ -91,12 +132,17 @@ bool OPT_DATA::conv_check(void) const {
   fprintf(outfile, "\t----------------------------------------------------------\n");
   printf("\tMAX Force %10.1e : Energy Change %10.1e : MAX Displacement %10.1e\n", max_force, DE, max_disp);
 
+  // return all forces to canonical place
+  if (Opt_params.opt_type == OPT_PARAMS::IRC) {
+    array_copy(f_backup, f, Nintco);
+    free_array(f_backup);
+  }
+
+  // convergence test is forces and either energy change or displacement
   if ((max_force < Opt_params.conv_max_force) &&
-       ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
+      ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
     return true; // structure is optimized!
   }
-  else if(Opt_params.opt_type == OPT_PARAMS::IRC && ((fabs(DE) < Opt_params.conv_max_DE) && (max_disp < Opt_params.conv_max_disp)))
-    return true;
   else 
     return false;
 }

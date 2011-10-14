@@ -11,7 +11,7 @@ rb_subdirs =
 
 ci_subdirs = 
 
-dcft_subdirs = dcft1 dcft2 dcft3 dcft4 dcft5
+dcft_subdirs = dcft1 dcft2 dcft3 dcft4 #dcft5
 
 mcscf_subdirs = mcscf1 mcscf2 mcscf3
 

@@ -8,8 +8,8 @@ symmetry c1
 plugin_load('./plugin_libfock.so')
 
 set {
-debug 1
-print 1
+#debug 1
+print 2
 scf_type df
 basis cc-pvdz
 solver_n_root 4
@@ -20,5 +20,6 @@ ri_basis_scf cc-pvdz-ri
 }
 
 energy('scf')
+set scf_type gpudf
 plugin('./plugin_libfock.so')
 
