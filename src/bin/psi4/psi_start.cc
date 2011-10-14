@@ -45,6 +45,11 @@ int psi_start(int argc, char *argv[])
     std::string ifname;
     std::string ofname;
     std::string fprefix;
+    #ifdef PSIDEBUG
+        bool debug          = true;
+    #else
+        bool debug          = false;
+    #endif
     bool append         = false;
     check_only          = false;
     clean_only          = false;
@@ -59,6 +64,7 @@ int psi_start(int argc, char *argv[])
         { "version", 0, NULL, 'V' },
         { "check",   0, NULL, 'c' },
         { "nthread", 0, NULL, 'n' },
+        { "debug",   0, NULL, 'd' },
         { "wipe",    0, NULL, 'w' },
         { "output",  1, NULL, 'o' },
         { "prefix",  1, NULL, 'p' },
@@ -78,6 +84,10 @@ int psi_start(int argc, char *argv[])
 
         case 'n': // -n or --nthread
             Process::environment.set_n_threads(atoi(optarg));
+            break;
+
+        case 'd': // -d or --debug
+            debug = true;
             break;
 
         case 'h': // -h or --help
@@ -193,6 +203,10 @@ int psi_start(int argc, char *argv[])
     if(outfile == NULL) {
         fprintf(stderr, "Error: could not open output file %s\n",ofname.c_str());
         return(PSI_RETURN_FAILURE);
+    }
+
+    if(debug) {
+        setbuf(outfile,NULL);
     }
 
     // Initialize Yeti's env
