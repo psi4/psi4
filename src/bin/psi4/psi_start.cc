@@ -244,6 +244,7 @@ void print_usage(void)
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
     printf(" -v  --verbose            Print a lot of information.\n");
+    printf(" -d  --debug              Flush the outfile at every fprintf. Default: true iff --with-debug.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
 
