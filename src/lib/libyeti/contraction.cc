@@ -14,6 +14,7 @@
 #include "malloc.h"
 #include "runtime.h"
 #include "threadimpl.h"
+#include <libsmartptr/printstream.h>
 #include <algorithm>
 
 using namespace yeti;
@@ -26,6 +27,8 @@ using namespace std;
 #ifdef redefine_size_t
 #define size_t custom_size_t
 #endif
+
+#define wtf // if (Malloc<TensorBlock>::get_object(43)->is_locked()) raise(SanityCheckError,"")
 
 ContractionTask::ContractionTask(
     TensorBlock* lblock,
@@ -63,61 +66,76 @@ ContractionTask::print(ostream& os) const
 }
 
 void
+ContractionTask::out_of_core_prefetch()
+{
+    lblock_->prefetch_read();
+    rblock_->prefetch_read();
+    pblock_->prefetch_accumulate();
+}
+
+void
+ContractionTask::in_core_prefetch(Task* prev_task)
+{
+    if (prev_task == 0)
+        return;
+
+    ContractionTask* prev_cxn_task = static_cast<ContractionTask*>(prev_task);
+    lblock_->prefetch_read(prev_cxn_task->lblock_);
+    rblock_->prefetch_read(prev_cxn_task->rblock_);
+    pblock_->prefetch_accumulate(prev_cxn_task->pblock_);
+}
+
+void
 ContractionTask::run(uli threadnum)
 {
 #if DEBUG_CXN
-                dout << "Accumulating contraction task "
-            << ClassOutput<const uli*>::str(pblock_->get_descr()->nindex(), pblock_->get_indices()) << " = "
-            << ClassOutput<const uli*>::str(lblock_->get_descr()->nindex(), lblock_->get_indices()) << " * "
-            << ClassOutput<const uli*>::str(rblock_->get_descr()->nindex(), rblock_->get_indices())
+    YetiRuntime::lock_print();
+                cout << "Accumulating contraction task "
+            << pblock_->get_parent_tensor()->get_name() << " : "
+            << pblock_->get_index_string() << " = "
+            << lblock_->get_index_string() << " * "
+            << rblock_->get_index_string()
+            << " on node " << YetiRuntime::me()
+            << " on thread " << threadnum
+            << stream_printf(" - [%d]=[%d] [%d]",
+                        pblock_->get_node_number(),
+                        lblock_->get_node_number(),
+                        rblock_->get_node_number())
             << endl;
+    YetiRuntime::unlock_print();
 #endif
-
     uli threadtest = YetiRuntime::get_thread_number();
     if (threadtest != threadnum)
     {
-        cerr << "thread number wrong" << endl;
+        YetiRuntime::lock_print();
+        cerr << "thread number " << threadtest << " returned is wrong for thread " << threadnum << endl;
+        YetiRuntime::unlock_print();
+        abort();
     }
 
+    lblock_->retrieve_read();
+    rblock_->retrieve_read();
 
+    TensorBlock*  my_pblock = cxn_->get_configuration(threadnum)->get_product_block(pblock_);
 
-    lblock_->set_read_mode();
-    rblock_->set_read_mode();
+    my_pblock->retrieve_accumulate_no_lock();
+    my_pblock->accumulate(lblock_, rblock_, cxn_);
+    my_pblock->release_accumulate();
+    
+    lblock_->release_read();
+    rblock_->release_read();
 
-    lblock_->retrieve();
-    rblock_->retrieve();
+}
 
-
-    bool has_lock = pblock_->trylock();
-    if (!has_lock)
+void
+ContractionTask::finalize_task_subset()
+{
+    if (cxn_->flush_product_on_finalize() && pblock_->is_remote_block())
     {
-        TensorBlock* tmpblock = new TensorBlock(pblock_);
-        tmpblock->set_accumulate_mode();
-        tmpblock->retrieve();
-        tmpblock->accumulate(lblock_, rblock_, cxn_);
         pblock_->lock();
-        pblock_->set_accumulate_mode();
-        pblock_->retrieve_nolock();
-        pblock_->accumulate(tmpblock, 1.0, 0);
-        pblock_->release_lock();
-        tmpblock->release();
-        delete tmpblock;
-
-    }
-    else
-    {
-        pblock_->set_accumulate_mode();
-        pblock_->retrieve_nolock();
-        pblock_->accumulate(lblock_, rblock_, cxn_);
-        pblock_->release_nolock();
+        pblock_->preflush();
         pblock_->unlock();
     }
-
-    lblock_->release();
-    rblock_->release();
-
-
-
 }
 
 
@@ -143,11 +161,16 @@ Contraction::Contraction(
     ltensor_(ltensor),
     rtensor_(rtensor),
     ptensor_(ptensor),
-    alphatype_(Contraction::left_tensor),
+    alpha_type_(Contraction::left_tensor),
     engine_(0),
     scale_(scale),
-    cxn_configs_(new ContractionConfiguration*[YetiRuntime::nthread()])
+    cxn_configs_(new ContractionConfiguration*[YetiRuntime::nthread_compute()]),
+    use_thread_replicated_product_(false),
+    flush_product_on_finalize_(false)
 {
+    ltensor->set_tensor_position(Contraction::left_tensor);
+    rtensor->set_tensor_position(Contraction::right_tensor);
+    ptensor->set_tensor_position(Contraction::product_tensor);
 
     //if rows are the back indices, matrix is "transposed"
     transpose_left_ = lindex_->is_transpose();
@@ -171,38 +194,85 @@ Contraction::Contraction(
     tensors[0] = ltensor_;
     tensors[1] = rtensor_;
     tensors[2] = ptensor_;
+
+    /** the tensors can have a size weighting in the sort */
+    ltensor_->set_sort_size_weight(1);
+    rtensor_->set_sort_size_weight(1);
+    ptensor_->set_sort_size_weight(5);
+
     std::sort(tensors.begin(), tensors.end(), tensor_less);
 
-    Tensor*  atensor(tensors[2]);
-    if (atensor == ltensor_)
-        this->alphatype_ = left_tensor;
-    else if (atensor == rtensor_)
-        this->alphatype_ = right_tensor;
-    else if (atensor == ptensor_)
-        this->alphatype_ = product_tensor;
+    alpha_tensor_ = tensors[2];
+    beta_tensor_ = tensors[1];
+    gamma_tensor_ = tensors[0];
+
+    if      (alpha_tensor_->is_replicated() && YetiRuntime::nproc() > 1)
+        raise(SanityCheckError, "cannot do replicated alpha tensor yet");
+    else if (alpha_tensor_ == ptensor_)
+        distribution_type_ = product_tensor;
+    else if (alpha_tensor_ == ltensor_)
+        distribution_type_ = left_tensor;
+    else if (alpha_tensor_ == rtensor_)
+        distribution_type_ = right_tensor;
+
+
+    bool alpha_tensor_downgradable
+        = alpha_tensor_->is_distributed() && alpha_tensor_->get_storage_type() == Tensor::in_core;
+    bool beta_tensor_upgradable
+        = beta_tensor_->get_storage_type() != Tensor::in_core || beta_tensor_->is_distributed();
+    bool gamma_tensor_upgradable
+        = gamma_tensor_->get_storage_type() != Tensor::in_core || gamma_tensor_->is_distributed();
+
+    if (alpha_tensor_downgradable && beta_tensor_upgradable)
+    {
+        Tensor* tmp = alpha_tensor_;
+        alpha_tensor_ = beta_tensor_;
+        beta_tensor_ = tmp;
+        if (gamma_tensor_upgradable)
+        {
+            tmp = gamma_tensor_;
+            gamma_tensor_ = beta_tensor_;
+            beta_tensor_ = tmp;
+        }
+    }
+
+
+    if (alpha_tensor_ == ltensor_)
+        alpha_type_ = left_tensor;
+    else if (alpha_tensor_ == rtensor_)
+        alpha_type_ = right_tensor;
+    else if (alpha_tensor_ == ptensor_)
+        alpha_type_ = product_tensor;
     else
         raise(SanityCheckError, "no tensor is the alpha tensor");
 
-    Tensor* btensor(tensors[1]);
-    if (btensor == ltensor_)
-        this->betatype_ = left_tensor;
-    else if (btensor == rtensor_)
-        this->betatype_ = right_tensor;
-    else if (btensor == ptensor_)
-        this->betatype_ = product_tensor;
+    if (beta_tensor_ == ltensor_)
+        this->beta_type_ = left_tensor;
+    else if (beta_tensor_ == rtensor_)
+        this->beta_type_ = right_tensor;
+    else if (beta_tensor_ == ptensor_)
+        this->beta_type_ = product_tensor;
     else
         raise(SanityCheckError, "no tensor is the beta tensor");
 
-    Tensor* gtensor(tensors[0]);
-    if (gtensor == ltensor_)
-        this->gammatype_ = left_tensor;
-    else if (gtensor == rtensor_)
-        this->gammatype_ = right_tensor;
-    else if (gtensor == ptensor_)
-        this->gammatype_ = product_tensor;
+    if (gamma_tensor_ == ltensor_)
+        this->gamma_type_ = left_tensor;
+    else if (gamma_tensor_ == rtensor_)
+        this->gamma_type_ = right_tensor;
+    else if (gamma_tensor_ == ptensor_)
+        this->gamma_type_ = product_tensor;
     else
         raise(SanityCheckError, "no tensor is the gamma tensor");
 
+    alpha_tensor_->set_priority(Tensor::alpha_tensor);
+    beta_tensor_->set_priority(Tensor::beta_tensor);
+    gamma_tensor_->set_priority(Tensor::gamma_tensor);
+
+    use_thread_replicated_product_ = alpha_type_ != product_tensor && ptensor_->is_replicated();
+
+    flush_product_on_finalize_ =    alpha_type_ == product_tensor
+                                &&  ptensor_->is_distributed()
+                                &&  distribution_type_ != product_tensor;
 
 
     if (transpose_left_ && transpose_right_)
@@ -247,22 +317,85 @@ Contraction::Contraction(
     if (ltensor_ != rtensor_)
         rtensor_->configure_degeneracy(rconfig_->get_cxn_permutation_grp());
 
-    uli nthread = YetiRuntime::nthread();
+
+
+    uli nthread = YetiRuntime::nthread_compute();
+    bool product_thread_clash = nthread > 1 && alpha_type_ != product_tensor;
+    bool need_tmp_product_block = product_thread_clash;
     for (uli i=0; i < nthread; ++i)
     {
         cxn_configs_[i] = new ContractionConfiguration(lconfig_, rconfig_, pconfig_);
+
+        if (i > 0 && use_thread_replicated_product_)
+            cxn_configs_[i]->clone_product_tensor_for_threads(ptensor_);
+
+        if (need_tmp_product_block)
+        {
+            TensorBlock* tmpblock = new TensorBlock(ptensor_);
+            cxn_configs_[i]->set_tmp_accumulate_block(tmpblock);
+        }
     }
+
+#if 1
+    Env::out0() << endl
+                << "Product:      " << ptensor_->get_name() << endl
+                << "Left:         " << ltensor_->get_name() << endl
+                << "Right:        " << rtensor_->get_name() << endl
+                << "Alpha:        " << alpha_tensor_->get_name() << endl
+                << "Beta:         " << beta_tensor_->get_name() << endl
+                << "Gamma:        " << gamma_tensor_->get_name() << endl
+                << "Distr:        " << distribution_type_ << endl
+                << "Repl Prod:    " << use_thread_replicated_product_ << endl
+                << "Tmp Prod:     " << need_tmp_product_block << endl
+                << "Flush Subset: " << flush_product_on_finalize_ << endl
+                << endl;
+#endif
 }
 
 Contraction::~Contraction()
 {
     delete engine_;
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     for (uli i=0; i < nthread; ++i)
     {
         delete cxn_configs_[i];
     }
     delete[] cxn_configs_;
+}
+
+bool
+Contraction::do_task(
+    TensorBlock* lblock,
+    TensorBlock* rblock,
+    TensorBlock* pblock
+)
+{
+    if      (YetiRuntime::nproc() == 1)
+        return true;
+    else if (distribution_type_ == product_tensor)
+    {
+        return pblock->get_node_number() == YetiRuntime::me();
+    }
+    else if (distribution_type_ == left_tensor)
+    {
+        return lblock->get_node_number() == YetiRuntime::me();
+    }
+    else if (distribution_type_ == right_tensor)
+    {
+        return rblock->get_node_number() == YetiRuntime::me();
+    }
+}
+
+bool
+Contraction::flush_product_on_finalize() const
+{
+    return flush_product_on_finalize_;
+}
+
+Contraction::tensor_position_t
+Contraction::get_alpha_type() const
+{
+    return alpha_type_;
 }
 
 void
@@ -446,23 +579,23 @@ Contraction::build()
     cxn_config->configure_right_block(rtensor_);
     //configure_product_block(ptensor_);
 
-    if  (alphatype_ == left_tensor)
+    if  (alpha_type_ == left_tensor)
     {
-        if (betatype_ == right_tensor)
+        if (beta_type_ == right_tensor)
             build_l_r_p();
         else
             build_l_p_r();
     }
-    else if (alphatype_ == right_tensor)
+    else if (alpha_type_ == right_tensor)
     {
-        if (betatype_ == left_tensor)
+        if (beta_type_ == left_tensor)
             build_r_l_p();
         else
             build_r_p_l();
     }
-    else if (alphatype_ == product_tensor)
+    else if (alpha_type_ == product_tensor)
     {
-        if (betatype_ == left_tensor)
+        if (beta_type_ == left_tensor)
             build_p_l_r();
         else
             build_p_r_l();
@@ -475,14 +608,23 @@ void
 Contraction::finalize()
 {
     ptensor_->sync();
+    if (use_thread_replicated_product_) //no syncing needs to be done
+    {
+        for (uli t=1; t < YetiRuntime::nthread_compute(); ++t)
+        {
+            ptensor_->accumulate(cxn_configs_[t]->get_product_tensor(), 1.0);
+        }
+    }
+    if (ptensor_->is_replicated())
+        ptensor_->global_sum();
     ptensor_->update();
 
     ltensor_->reset_degeneracy();
     rtensor_->reset_degeneracy();
 
-    //cout << ltensor_->nblocks_retrieved() << " blocks retrieved on left tensor" << endl;
-    //cout << rtensor_->nblocks_retrieved() << " blocks retrieved on right tensor" << endl;
-    //cout << ptensor_->nblocks_retrieved() << " blocks retrieved on product tensor" << endl;
+    ptensor_->set_priority(Tensor::gamma_tensor);
+    ltensor_->set_priority(Tensor::gamma_tensor);
+    rtensor_->set_priority(Tensor::gamma_tensor);
 }
 
 void
@@ -811,14 +953,11 @@ Contraction::build_l_r_p()
                     continue;
                 }
 
-#if USE_SCREENING
-                if (lblock->get_max_log() + rblock->get_max_log() 
-                    < YetiRuntime::matrix_multiply_cutoff)
-                    continue;
-#endif
-
                 TensorBlock* pblock = cxn_config->get_product_block(ptensor_, row, col);
                 if (!pblock) //might be rigorously zero
+                    continue;
+
+                if (lblock->get_node_number() != YetiRuntime::me())
                     continue;
 
                 if (!ptensor_->is_parent_block(pblock))
@@ -826,13 +965,16 @@ Contraction::build_l_r_p()
                     continue;
                 }
 
-                ContractionTask* task =
-                    new ContractionTask(lblock, rblock, pblock, this);
+                if (do_task(lblock, rblock, pblock))
+                {
+                    ContractionTask* task =
+                        new ContractionTask(lblock, rblock, pblock, this);
 
-                //the cxn priority we get here may not be the same as
-                //the cxn priority set above as previous contractions may
-                //have already configured contraction priorities
-                GlobalTileQueue::add(lblock, task);
+                    //the cxn priority we get here may not be the same as
+                    //the cxn priority set above as previous contractions may
+                    //have already configured contraction priorities
+                    GlobalTileQueue::add(lblock, task);
+                }
             }
         }
     }
@@ -862,20 +1004,12 @@ Contraction::build_l_p_r()
             TensorBlock* lblock = cxn_config->get_left_block(ltensor_, row, link);
             if (!lblock || lblock->get_degeneracy() == 0)
                 continue;
-                
+
             for (uli col=0; col < ncols; ++col)
             { 
                 TensorBlock* rblock = cxn_config->get_right_block(rtensor_, link, col);
                 if (!rblock || rblock->get_degeneracy() == 0)
                     continue;
-
-#if USE_SCREENING
-                if (lblock->get_max_log() + rblock->get_max_log() 
-                    < YetiRuntime::matrix_multiply_cutoff)
-                {
-                    continue;
-                }
-#endif
 
                 TensorBlock* pblock = cxn_config->get_product_block(ptensor_, row, col);
                 if (!pblock) //might be rigorously zero
@@ -886,13 +1020,16 @@ Contraction::build_l_p_r()
                     continue;
                 }
 
-                ContractionTask* task =
-                    new ContractionTask(lblock, rblock, pblock, this);
+                if (do_task(lblock, rblock, pblock))
+                {
+                    ContractionTask* task =
+                        new ContractionTask(lblock, rblock, pblock, this);
 
-                //the cxn priority we get here may not be the same as
-                //the cxn priority set above as previous contractions may
-                //have already configured contraction priorities
-                GlobalTileQueue::add(lblock, task);
+                    //the cxn priority we get here may not be the same as
+                    //the cxn priority set above as previous contractions may
+                    //have already configured contraction priorities
+                    GlobalTileQueue::add(lblock, task);
+                }
             }
         }
     }
@@ -925,7 +1062,7 @@ Contraction::build_r_l_p()
             {
                 continue;
             }
-                
+
             for (uli row=0; row < nrows; ++row)
             {
                 TensorBlock* lblock = cxn_config->get_left_block(ltensor_, row, link);
@@ -934,31 +1071,23 @@ Contraction::build_r_l_p()
                     continue;
                 }
 
-#if USE_SCREENING
-                if (lblock->get_max_log() + rblock->get_max_log() 
-                    < YetiRuntime::matrix_multiply_cutoff)
-                    continue;
-#endif
-
                 TensorBlock* pblock = cxn_config->get_product_block(ptensor_, row, col);
                 if (!pblock) //might be rigorously zero
                     continue;
 
-
                 if (!ptensor_->is_parent_block(pblock))
                     continue;
 
-                ContractionTask* task =
-                    new ContractionTask(lblock, rblock, pblock, this);
+                if (do_task(lblock, rblock, pblock))
+                {
+                    ContractionTask* task =
+                        new ContractionTask(lblock, rblock, pblock, this);
 
-                //the cxn priority we get here may not be the same as
-                //the cxn priority set above as previous contractions may
-                //have already configured contraction priorities
-                GlobalTileQueue::add(rblock, task);
-
-
-
-
+                    //the cxn priority we get here may not be the same as
+                    //the cxn priority set above as previous contractions may
+                    //have already configured contraction priorities
+                    GlobalTileQueue::add(rblock, task);
+                }
             }
         }
     }
@@ -996,11 +1125,6 @@ Contraction::build_r_p_l()
                 TensorBlock* lblock = cxn_config->get_left_block(ltensor_, row, link);
                 if (!lblock || lblock->get_degeneracy() == 0)
                     continue;
-#if USE_SCREENING
-                if (lblock->get_max_log() + rblock->get_max_log() 
-                    < YetiRuntime::matrix_multiply_cutoff)
-                    continue;
-#endif
 
                 TensorBlock* pblock = cxn_config->get_product_block(ptensor_, row, col);
                 if (!pblock) //might be rigorously zero
@@ -1009,13 +1133,16 @@ Contraction::build_r_p_l()
                 if (!ptensor_->is_parent_block(pblock))
                     continue;
 
-                ContractionTask* task =
-                    new ContractionTask(lblock, rblock, pblock, this);
+                if (do_task(lblock, rblock, pblock))
+                {
+                    ContractionTask* task =
+                        new ContractionTask(lblock, rblock, pblock, this);
 
-                //the cxn priority we get here may not be the same as
-                //the cxn priority set above as previous contractions may
-                //have already configured contraction priorities
-                GlobalTileQueue::add(rblock, task);
+                    //the cxn priority we get here may not be the same as
+                    //the cxn priority set above as previous contractions may
+                    //have already configured contraction priorities
+                    GlobalTileQueue::add(rblock, task);
+                }
             }
         }
     }
@@ -1052,14 +1179,6 @@ Contraction::build_p_r_l()
                 if (!lblock || lblock->get_degeneracy() == 0)
                     continue;
 
-#if USE_SCREENING
-                if (lblock->get_max_log() + rblock->get_max_log() 
-                    < YetiRuntime::matrix_multiply_cutoff)
-                {
-                    continue;
-                }
-#endif
-
                 TensorBlock* pblock = cxn_config->get_product_block(ptensor_, row, col);
                 if (!pblock) //might be rigorously zero
                 {
@@ -1071,13 +1190,16 @@ Contraction::build_p_r_l()
                     continue;
                 }
 
-                ContractionTask* task =
+                if (do_task(lblock, rblock, pblock))
+                {
+                    ContractionTask* task =
                         new ContractionTask(lblock, rblock, pblock, this);
 
-                //the cxn priority we get here may not be the same as
-                //the cxn priority set above as previous contractions may
-                //have already configured contraction priorities
-                GlobalTileQueue::add(pblock, task);
+                    //the cxn priority we get here may not be the same as
+                    //the cxn priority set above as previous contractions may
+                    //have already configured contraction priorities
+                    GlobalTileQueue::add(pblock, task);
+                }
             }
         }
     }
@@ -1120,15 +1242,6 @@ Contraction:: build_p_l_r()
                     continue;
                 }
 
-#if USE_SCREENING
-                if (lblock->get_max_log() + rblock->get_max_log() 
-                    < YetiRuntime::matrix_multiply_cutoff)
-                {
-
-                    continue;
-                }
-#endif
-
                 TensorBlock* pblock = cxn_config->get_product_block(ptensor_, row, col);
                 if (!pblock) //might be rigorously zero
                 {
@@ -1140,13 +1253,16 @@ Contraction:: build_p_l_r()
                      continue;
                 }
 
-                ContractionTask* task =
+                if (do_task(lblock, rblock, pblock))
+                {
+                    ContractionTask* task =
                         new ContractionTask(lblock, rblock, pblock, this);
 
-                //the cxn priority we get here may not be the same as
-                //the cxn priority set above as previous contractions may
-                //have already configured contraction priorities
-                GlobalTileQueue::add(pblock, task);
+                    //the cxn priority we get here may not be the same as
+                    //the cxn priority set above as previous contractions may
+                    //have already configured contraction priorities
+                    GlobalTileQueue::add(pblock, task);
+                }
 
             }
         }
@@ -1165,7 +1281,71 @@ ContractionConfiguration::ContractionConfiguration(
     rindex_(rconfig->get_index()),
     pindex_(pconfig->get_index()),
     transpose_left_(lconfig->get_index()->is_transpose()),
-    transpose_right_(rconfig->get_index()->is_transpose())
+    transpose_right_(rconfig->get_index()->is_transpose()),
+    product_tensor_(0),
+    tmp_block_(0)
 {
 }
 
+ContractionConfiguration::~ContractionConfiguration()
+{
+    if (product_tensor_)
+        delete product_tensor_;
+
+    if (tmp_block_)
+    {
+        tmp_block_->lock(); //destructor expects lock
+        delete tmp_block_;
+    }
+}
+
+void
+ContractionConfiguration::clone_product_tensor_for_threads(Tensor* tensor)
+{
+    product_tensor_ = tensor->clone();
+}
+
+Tensor*
+ContractionConfiguration::get_product_tensor()
+{
+    return product_tensor_;
+}
+
+void
+ContractionConfiguration::set_tmp_accumulate_block(TensorBlock* pblock)
+{
+#if YETI_SANITY_CHECK
+    if (tmp_block_)
+        raise(SanityCheckError, "cannot reset tmp accumulate block");
+#endif
+    tmp_block_ = pblock;
+}
+
+TensorBlock*
+ContractionConfiguration::get_product_block(TensorBlock* block)
+{
+    if (product_tensor_)
+    {
+        TensorBlock* new_block = product_tensor_->get_block(block->get_block_number());
+        new_block->lock();
+        return new_block;
+    }
+
+    if (block->is_remote_block() && tmp_block_) //maybe a remote accumulate
+    {
+        tmp_block_->configure_tmp_block(block);
+        tmp_block_->lock();
+        return tmp_block_;
+    }
+
+    if (!block->trylock())
+    {
+        tmp_block_->configure_tmp_block(block);
+        tmp_block_->lock();
+        return tmp_block_;
+    }
+    else
+    {
+        return block;
+    }
+}

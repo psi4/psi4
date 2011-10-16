@@ -2,8 +2,8 @@
 #! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
 #! Four-virtual integrals are handled in the MO Basis.
 
-refuhf      = -126.95798478422313 #TEST
-refmp2      = -127.03669514810636 #TEST
+refuhf      = -127.09539051427785 #TEST
+refmp2      = -127.17613462119119 #TEST
 refdcftscf  = -127.00494667865641 #TEST
 refdcft     = -127.18032524447956 #TEST
 

@@ -28,6 +28,12 @@ class Task :
 
         virtual void print(std::ostream& os = std::cout) const = 0;
 
+        virtual void out_of_core_prefetch() = 0;
+
+        virtual void in_core_prefetch(Task* prev_task) = 0;
+
+        virtual void finalize_task_subset() = 0;
+
 };
 
 class TaskParent :
@@ -266,6 +272,9 @@ class TaskThread :
 
     protected:
         TaskQueuePtr queue_;
+
+    private:
+        void run_task_subset(Task** tasks, uli ntasks, uli threadnum);
 
     public:
         /**

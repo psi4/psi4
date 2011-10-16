@@ -93,8 +93,6 @@ class MetaDataNode :
     private:
         NodeMap<TileNode>* nodes_;
 
-        TensorIndexDescr* descr_;
-
         TensorBranch* parent_branch_;
 
         MemoryPool* mempool_;
@@ -150,6 +148,13 @@ class MetaDataNode :
             DataNode* dst,
             double scale,
             Sort* sort
+        );
+
+        template <typename data_t>
+        void
+        _assign(
+            DataNode* src,
+            DataNode* dst
         );
 
         template <typename data_t>
@@ -307,6 +312,8 @@ class MetaDataNode :
             TensorIndexDescr* descr
         );
 
+        void assign(MetaDataNode* node);
+
         iterator begin() const;
 
         iterator end() const;
@@ -364,8 +371,7 @@ class MetaDataNode :
         void sort_data_into(
             Sort* sort,
             TensorBranch* old_branch,
-            TensorBranch* new_branch,
-            Permutation* descr_perm
+            TensorBranch* new_branch
         );
 
         void update();

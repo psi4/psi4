@@ -183,6 +183,10 @@ void array_normalize(double *v1, int n) {
   array_scm(v1, 1/norm, n);
 }
 
+double array_norm(double *v1, int n) {
+  return sqrt(array_dot(v1, v1, n));
+}
+
 void array_scm(double *v1, double a, int n) {
   for (int i=0; i<n; ++i)
     v1[i] *= a;
@@ -199,6 +203,37 @@ double array_rms(double *v1, int n) {
   double rms = array_dot(v1, v1, n);
   rms = rms / ((double) n);
   return sqrt(rms);
+}
+
+// Compute matrix ^1/2 or ^-1/2 if inverse=true
+void matrix_root(double **A, int dim, bool inverse) {
+  double **V = matrix_return_copy(A, dim, dim);
+  double *A_evals = init_array(dim);
+
+  opt_symm_matrix_eig(V, dim, A_evals);
+
+  if (inverse) {
+    for(int k=0; k<dim; k++)
+      if(fabs(A_evals[k]) > Opt_params.redundant_eval_tol)
+        A_evals[k] = 1.0/A_evals[k];
+  }
+
+  for(int k=0; k<dim; k++) {
+    if(fabs(A_evals[k]) > 0)
+      A_evals[k] = sqrt(A_evals[k]);
+    else
+      throw("matrix_root() : cannot take square root of negative eigenvalue.\n");
+  }
+
+  zero_matrix(A, dim, dim);
+
+  for(int i=0; i<dim; i++)
+    for(int j=0; j<dim; j++)
+      for(int k=0; k<dim; k++)
+        A[i][j] += V[k][i] * A_evals[k] * V[k][j];
+
+  free_matrix(V);
+  free_array(A_evals);
 }
 
 } // namespace:: opt

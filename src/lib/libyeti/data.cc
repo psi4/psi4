@@ -17,6 +17,7 @@
 #include <sys/stat.h>
 #include <cerrno>
 #include <errno.h>
+#include <cstdio>
 
 using namespace yeti;
 using namespace std;
@@ -68,6 +69,12 @@ InCoreBlock::release()
 }
 
 bool
+InCoreBlock::is_cached() const
+{
+    return false;
+}
+
+bool
 InCoreBlock::retrieve()
 {
 #if MALLOC_CACHE_BLOCK
@@ -88,7 +95,7 @@ InCoreBlock::commit()
 }
 
 void
-InCoreBlock::clear(Cachable* owner)
+InCoreBlock::clear()
 {
 #if MALLOC_CACHE_BLOCK
     if (data_)
@@ -99,6 +106,12 @@ InCoreBlock::clear(Cachable* owner)
 #else
     raise(SanityCheckError, "in core block should never be cleared");
 #endif
+}
+
+bool
+InCoreBlock::is_retrieved() const
+{
+    return true;
 }
 
 void
@@ -119,14 +132,17 @@ CachedStorageBlock::CachedStorageBlock(
     StorageBlock(cache->blocksize()),
     cache_item_(cache_item),
     cache_(cache),
-    cache_entry_(0)
+    cache_entry_(0),
+    retrieved_(false)
 {
     data_ = 0;
+    if (size_ > cache_->blocksize())
+        raise(SanityCheckError, "cache is not large enough to hold block");
 }
 
 CachedStorageBlock::~CachedStorageBlock()
 {
-    clear(cache_item_);
+    clear();
 }
 
 DataCacheEntry*
@@ -138,53 +154,76 @@ CachedStorageBlock::get_entry() const
 bool
 CachedStorageBlock::retrieve()
 {
-    if (data_) //yay! we are in cache
+    if (retrieved_)
+        return true;
+
+#if YETI_SANITY_CHECK
+    if (!cache_item_->is_locked() && !cache_item_->is_initialized())
+        raise(SanityCheckError, "cache item is not locked in retrieve");
+#endif
+
+    if (data_) //we might be in cache...
     {
-        bool test = cache_entry_->trylock();
-        if (test && data_)
+        bool success = cache_->pull(cache_entry_);
+        if (success) //we successfully retrieved the cache block
         {
-            cache_->pull(cache_entry_);
+            retrieved_ = true;
             return true;
         }
     }
 
     //this returns a locked cache entry
-    cache_entry_ = cache_->pull(this);
-    fetch_data();
-    return false;
+    cache_entry_ = cache_->pull(cache_item_);
+    data_ = cache_entry_->data;
 
+    retrieved_ = true;
+#if YETI_SANITY_CHECK
+    if (!cache_entry_->is_locked()) 
+        raise(SanityCheckError, "cache entry is not locked in retrieve");
+#endif
+    return false;
 }
 
 void
 CachedStorageBlock::release()
 {
+    if (!retrieved_)
+        return;
+
+    if (!cache_entry_->pulled)
+        raise(SanityCheckError, "cannot insert unpulled cache entry");
+
     cache_->insert(cache_entry_);
-    cache_entry_->unlock();
+    retrieved_ = false;
+}
+
+bool
+CachedStorageBlock::is_cached() const
+{
+    return data_;
+}
+
+bool
+CachedStorageBlock::is_retrieved() const
+{
+    return retrieved_;
 }
 
 void
-CachedStorageBlock::clear(Cachable* owner)
+CachedStorageBlock::clear()
 {
-    if (cache_entry_ && cache_entry_->trylock())
-    {
-#if DEBUG_CACHE_USAGE
-        TensorBlock* tblock = dynamic_cast<TensorBlock*>(cache_entry_->owner);
-        if (tblock)
-        {
-            dout << "clearing cache entry " << cache_entry_->offset
-                    << " on block " << tblock->get_index_string()
-                    << " on tensor " << tblock->get_parent_tensor()->get_name()
-                    << " at location " << (void*) tblock
-                    << endl;
-        }
+#if YETI_SANITY_CHECK
+    if (!cache_item_->is_locked())
+        raise(SanityCheckError, "storage block is neither locked nor retrieved in clear");
+    if (cache_item_->is_retrieved())
+        raise(SanityCheckError, "cannot clear retrieved item");
 #endif
-
-        if (cache_entry_->owner == owner)
-            cache_entry_->owner = 0;
-
+    if (cache_entry_ && cache_entry_->trylock()) //I am responsible for clearing this
+    {
+        cache_->free(cache_entry_);
         cache_entry_->unlock();
     }
-
+    cache_entry_ = 0;
     data_ = 0;
 }
 
@@ -200,18 +239,6 @@ CachedStorageBlock::commit()
     raise(SanityCheckError, "generic cached block should never be committed");
 }
 
-void
-CachedStorageBlock::fetch_data()
-{
-}
-
-void
-CachedStorageBlock::free_cache_entry()
-{
-    cache_entry_->owner = 0;
-    release();
-}
-
 Cachable*
 CachedStorageBlock::get_cache_item() const
 {
@@ -221,8 +248,11 @@ CachedStorageBlock::get_cache_item() const
 void
 CachedStorageBlock::obsolete(Cachable* item)
 {
-    clear(item);
-    data_ = 0;
+#if YETI_SANITY_CHECK
+    if (!item->is_locked())
+        raise(SanityCheckError, "storage block is neither locked nor retrieved in obsolete");
+#endif
+    clear();
 }
 
 LocalDiskBlock::LocalDiskBlock(
@@ -292,6 +322,7 @@ DiskBuffer::DiskBuffer(const std::string &filename)
 DiskBuffer::~DiskBuffer()
 {
     close(fileno_);
+    ::remove(filename_.c_str());
 }
 
 uli

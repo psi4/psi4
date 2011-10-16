@@ -21,13 +21,17 @@ class MOBasisRangeBuilder :
     private:
         bool spin_orbital_debug_;
 
-        usi build_depth_;
+        usi nlayers_extra_;
 
-        uli nblocks_top_layer_;
+        uli nidx_per_tile_node_layer_;
+
+        uli nidx_per_tile_thread_layer_;
+
+        uli nidx_per_tile_occ_data_layer_;
+
+        uli nidx_per_tile_vir_data_layer_;
 
         usi nirrep_;
-
-        usi symmdepth_;
 
         uli ncore_;
 
@@ -54,10 +58,6 @@ class MOBasisRangeBuilder :
         uli* nvir_pi_;
 
         uli* ncabs_pi_;
-
-        uli nocc_tile_;
-
-        uli nvir_tile_;
 
         IndexRangePtr cabs_;
 
@@ -127,10 +127,16 @@ class MOBasisRangeBuilder :
 
         void build();
 
+        /**
+            @param topoffset Reference return of the index offset for the top (node layer) index offset
+            @param nidx_per_tile_data_layer
+            @param norbs_per_irrep
+            @param space Reference return of the index range corresponding to the given subspace
+        */
         void build(
             uli& topoffset,
-            uli nper,
-            uli* n_per_irrep,
+            uli nidx_per_tile_data_layer,
+            uli* norbs_per_irrep,
             IndexRangePtr& space
         );
 
@@ -160,20 +166,22 @@ class MOBasisRangeBuilder :
 
     public:
         /**
-            @param build_depth See MORangeBuilder
-            @param nblocks_top See MORangeBuilder
-            @param nocc_tile  The number of occupied orbitals per tile
-            @param nvir_tile  The number of virtual orbitals per tile
+            @param nlayers_extra See MORangeBuilder
+            @param nidx_node_layer  See MORangeBuilder
+            @param nidx_thread_layer  See MORangeBuilder
+            @param nidx_occ_data_layer  The number of occupied orbitals per tile
+            @param nidx_vir_data_layer  The number of virtual orbitals per tile
             @param ncore
             @param ndocc
             @param nsocc
             @param nvir
         */
         MOBasisRangeBuilder(
-            usi build_depth,
-            uli nblocks_top,
-            uli nocc_tile,
-            uli nvir_tile,
+            usi nlayers_extra,
+            uli nidx_node_layer,
+            uli nidx_thread_layer,
+            uli nidx_occ_data_layer,
+            uli nidx_vir_data_layer,
             uli ncore,
             uli ndocc,
             uli nsocc,
@@ -181,30 +189,13 @@ class MOBasisRangeBuilder :
             uli ncabs = 0
         );
 
-        /**
-            @param build_depth See MORangeBuilder
-            @param nblocks_top See MORangeBuilder
-            @param nocc_tile  The number of occupied orbitals per tile
-            @param nvir_tile  The number of virtual orbitals per tile
-            @param ncore
-            @param ndocc
-            @param nsocc
-            @param nvir
-        */
-        MOBasisRangeBuilder(
-            usi build_depth,
-            uli nblocks_top,
-            uli nocc_tile,
-            uli nvir_tile,
-            uli ndocc,
-            uli nvir
-        );
 
         MOBasisRangeBuilder(
-            usi build_depth,
-            uli nblocks_top,
-            uli nocc_tile,
-            uli nvir_tile,
+            usi nlayers_extra,
+            uli nidx_node_layer,
+            uli nidx_thread_layer,
+            uli nidx_occ_data_layer,
+            uli nidx_vir_data_layer,
             usi nirrep,
             const uli* ncore_pi,
             const uli* ndocc_pi,
@@ -273,14 +264,18 @@ class MOBasisRangeBuilder :
 
 };
 
-class MORangeBuilder : public smartptr::Countable {
+class MORangeBuilder :
+        public smartptr::Countable
+{
 
     private:
-        usi build_depth_;
+        uli nlayers_extra_;
 
-        uli nblocks_top_layer_;
+        uli nidx_per_tile_node_layer_;
 
-        uli nper_;
+        uli nidx_per_tile_thread_layer_;
+
+        uli nidx_per_tile_data_layer_;
 
         uli ntot_;
 
@@ -288,19 +283,24 @@ class MORangeBuilder : public smartptr::Countable {
 
     public:
         /**
-            @param build_depth The number of metadata layers to build. At minimum
-                    two metadata layers are required - a "top" and "bottom" layer...
-                    bottom being the data layer.  Extra metadata layers can be
-                    inserted between the top and bottom levels.  Build depth is
-                    equal to 2 plus the number of extra metadata layers.
-            @param The number of index subranges to have per tile in the top layer
-            @param The number of indices to have tiled on the bottom layer
-            @param The total number of indices
+            @param  nlayers_extra
+                    At minimum three metadata layers are required.  The ''node'' layer creates
+                    a grid for distribution of tensor blocks across nodes.  The ''thread'' layer
+                    distributes tasks for threads within a given node.  The final layer or
+                    ''day'' layer generates a grid for each individual data block.  Extra
+                    metadata layers can be inserted between the bottom ''data'' layer and
+                    the ''thread'' layer.
+            @param nidx_node_layer   The number of indices per tile in the node layer
+            @param nidx_thread_layer The number of indices per tile in the thread layer
+            @param nidx_data_layer   The number of indices per tile in the data layer
+            @param ntot              The total number of indices
+            @param irrep             The irrep number for the given range
         */
         MORangeBuilder(
-            usi build_depth,
-            uli ntop,
-            uli nbottom,
+            usi nlayers_extra,
+            uli nidx_node_layer,
+            uli nidx_thread_layer,
+            uli nidx_data_layer,
             uli ntot,
             usi irrep
         );
