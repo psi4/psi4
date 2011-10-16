@@ -555,10 +555,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NAT_ORBS_T2",false);
     /*- Natural Orbital Occupation Cutoff -*/
     options.add_double("OCC_CUTOFF",1.0E-6);
-    /*- Frozen Occupieds of Monomer A -*/
-    options.add_int("NFRZ_A",0);
-    /*- Frozen Occupieds of Monomer B -*/
-    options.add_int("NFRZ_B",0);
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);
     /*- Memory safety -*/
