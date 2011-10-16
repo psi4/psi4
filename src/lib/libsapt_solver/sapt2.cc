@@ -126,7 +126,15 @@ void SAPT2::print_header()
   fprintf(outfile,"      Orbital Information\n");
   fprintf(outfile,"  --------------------------\n");
   fprintf(outfile,"    NSO        = %9d\n",nso_);
+  if (nsoA_ != nsoB_) {
+    fprintf(outfile,"    NSO A      = %9d\n",nsoA_);
+    fprintf(outfile,"    NSO B      = %9d\n",nsoB_);
+  }
   fprintf(outfile,"    NMO        = %9d\n",nmo_);
+  if (nmoA_ != nmoB_) {
+    fprintf(outfile,"    NMO A      = %9d\n",nmoA_);
+    fprintf(outfile,"    NMO B      = %9d\n",nmoB_);
+  }
   fprintf(outfile,"    NRI        = %9d\n",ndf_);
   fprintf(outfile,"    NOCC A     = %9d\n",noccA_);
   fprintf(outfile,"    NOCC B     = %9d\n",noccB_);
@@ -183,11 +191,13 @@ void SAPT2::print_results()
   double tot_elst = e_elst10_ + e_elst12_;
   double tot_exch = e_exch10_ + e_exch11_ + e_exch12_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF + e_ind22_ + e_exch_ind22_;
+  double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_;
   double tot_disp = e_disp20_ + e_exch_disp20_;
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
   Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+  Process::environment.globals["SAPT CT ENERGY"] = tot_ct;
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
@@ -279,8 +289,8 @@ void SAPT2::df_integrals()
   psio_->open(PSIF_SAPT_TEMP,0);
 
   double** AO_RI = block_matrix(maxPshell,nso_*nso_);
-  double* halftrans = init_array(nmo_*nso_);
-  double** MO_RI = block_matrix(maxPshell,nmo_*nmo_);
+  double* halftrans = init_array(nmoA_*nso_);
+  double** MO_RI = block_matrix(maxPshell,nmoA_*nmoA_);
 
   psio_address next_DF_MO = PSIO_ZERO;
   psio_address next_bare_AR = PSIO_ZERO;
@@ -321,18 +331,19 @@ void SAPT2::df_integrals()
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, CA_[0], nmo_, AO_RI[P], nso_, 
+      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, AO_RI[P], nso_, 
         0.0, halftrans, nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, halftrans, nso_, CA_[0], nmo_, 
-        0.0, MO_RI[P], nmo_);
+      C_DGEMM('N', 'N', nmoA_, nmoA_, nso_, 1.0, halftrans, nso_, CA_[0], 
+        nmoA_, 0.0, MO_RI[P], nmoA_);
     }
 
-    psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
-      sizeof(double)*numPshell*nmo_*nmo_,next_DF_MO,&next_DF_MO);
+    psio_->write(PSIF_SAPT_TEMP,"MO AA RI Integrals",(char *) &(MO_RI[0][0]),
+      sizeof(double)*numPshell*nmoA_*nmoA_,next_DF_MO,&next_DF_MO);
 
   }
 
   free_block(AO_RI);
+  free(halftrans);
   free_block(MO_RI);
 
   zero_disk(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",noccA_*noccA_,ndf_+3);
@@ -342,8 +353,8 @@ void SAPT2::df_integrals()
   long int numP;
   long int temp_size = mem_ / (2*ndf_);
 
-  if (temp_size > nmo_*nmo_)
-    temp_size = nmo_*nmo_;
+  if (temp_size > nmoA_*nmoA_)
+    temp_size = nmoA_*nmoA_;
 
   double** temp;
   double** temp_J;
@@ -352,17 +363,18 @@ void SAPT2::df_integrals()
   psio_address next_DF_AR = PSIO_ZERO;
   psio_address next_DF_RR = PSIO_ZERO;
 
-  for (int i=0,oP=0; oP < nmo_*nmo_; ++i, oP += numP) {
-    if ((i+1)*temp_size < nmo_*nmo_) numP = temp_size;
-    else numP = nmo_*nmo_ - oP;
+  for (int i=0,oP=0; oP < nmoA_*nmoA_; ++i, oP += numP) {
+    if ((i+1)*temp_size < nmoA_*nmoA_) numP = temp_size;
+    else numP = nmoA_*nmoA_ - oP;
 
     temp = block_matrix(ndf_,numP);
 
     next_DF_MO = psio_get_address(PSIO_ZERO,sizeof(double)*oP);
     for (int P=0; P < ndf_; ++P) {
-      psio_->read(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(temp[P][0]),
+      psio_->read(PSIF_SAPT_TEMP,"MO AA RI Integrals",(char *) &(temp[P][0]),
         sizeof(double)*numP,next_DF_MO,&next_DF_MO);
-      next_DF_MO = psio_get_address(next_DF_MO,sizeof(double)*(nmo_*nmo_-numP));
+      next_DF_MO = psio_get_address(next_DF_MO,sizeof(double)*
+        (nmoA_*nmoA_-numP));
     }
 
     temp_J = block_matrix(numP,ndf_+3);
@@ -373,8 +385,8 @@ void SAPT2::df_integrals()
     free_block(temp);
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoA_;
+      int j = (ij+oP)%nmoA_;
       if (i < noccA_ && j < noccA_) {
         psio_->write(PSIF_SAPT_AA_DF_INTS,"AA RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_AA,&next_DF_AA);
@@ -382,8 +394,8 @@ void SAPT2::df_integrals()
     }
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoA_;
+      int j = (ij+oP)%nmoA_;
       if (i < noccA_ && j >= noccA_) {
         psio_->write(PSIF_SAPT_AA_DF_INTS,"AR RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_AR,&next_DF_AR);
@@ -391,8 +403,8 @@ void SAPT2::df_integrals()
     }
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoA_;
+      int j = (ij+oP)%nmoA_;
       if (i >= noccA_ && j >= noccA_) {
         psio_->write(PSIF_SAPT_AA_DF_INTS,"RR RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_RR,&next_DF_RR);
@@ -403,7 +415,8 @@ void SAPT2::df_integrals()
   }
 
   AO_RI = block_matrix(maxPshell,nso_*nso_);
-  MO_RI = block_matrix(maxPshell,nmo_*nmo_);
+  halftrans = init_array(nmoB_*nso_);
+  MO_RI = block_matrix(maxPshell,nmoB_*nmoB_);
 
   next_DF_MO = PSIO_ZERO;
   psio_address next_bare_BS = PSIO_ZERO;
@@ -442,39 +455,43 @@ void SAPT2::df_integrals()
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, CB_[0], nmo_, AO_RI[P], nso_, 
+      C_DGEMM('T', 'N', nmoB_, nso_, nso_, 1.0, CB_[0], nmoB_, AO_RI[P], nso_, 
         0.0, halftrans, nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, halftrans, nso_, CB_[0], nmo_, 
-        0.0, MO_RI[P], nmo_);
+      C_DGEMM('N', 'N', nmoB_, nmoB_, nso_, 1.0, halftrans, nso_, CB_[0], 
+        nmoB_, 0.0, MO_RI[P], nmoB_);
     }
 
-    psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
-      sizeof(double)*numPshell*nmo_*nmo_,next_DF_MO,&next_DF_MO);
+    psio_->write(PSIF_SAPT_TEMP,"MO BB RI Integrals",(char *) &(MO_RI[0][0]),
+      sizeof(double)*numPshell*nmoB_*nmoB_,next_DF_MO,&next_DF_MO);
 
   }
 
   free_block(AO_RI);
+  free(halftrans);
   free_block(MO_RI);
 
   zero_disk(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",noccB_*noccB_,ndf_+3);
   zero_disk(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",noccB_*nvirB_,ndf_+3);
   zero_disk(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",nvirB_*nvirB_,ndf_+3);
 
+  if (temp_size > nmoB_*nmoB_)
+    temp_size = nmoB_*nmoB_;
+
   psio_address next_DF_BB = PSIO_ZERO;
   psio_address next_DF_BS = PSIO_ZERO;
   psio_address next_DF_SS = PSIO_ZERO;
 
-  for (int i=0,oP=0; oP < nmo_*nmo_; ++i, oP += numP) {
-    if ((i+1)*temp_size < nmo_*nmo_) numP = temp_size;
-    else numP = nmo_*nmo_ - oP;
+  for (int i=0,oP=0; oP < nmoB_*nmoB_; ++i, oP += numP) {
+    if ((i+1)*temp_size < nmoB_*nmoB_) numP = temp_size;
+    else numP = nmoB_*nmoB_ - oP;
 
     temp = block_matrix(ndf_,numP);
 
     next_DF_MO = psio_get_address(PSIO_ZERO,sizeof(double)*oP);
     for (int P=0; P < ndf_; ++P) {
-      psio_->read(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(temp[P][0]),
+      psio_->read(PSIF_SAPT_TEMP,"MO BB RI Integrals",(char *) &(temp[P][0]),
         sizeof(double)*numP,next_DF_MO,&next_DF_MO);
-      next_DF_MO = psio_get_address(next_DF_MO,sizeof(double)*(nmo_*nmo_
+      next_DF_MO = psio_get_address(next_DF_MO,sizeof(double)*(nmoB_*nmoB_
         -numP));
     }
 
@@ -486,8 +503,8 @@ void SAPT2::df_integrals()
     free_block(temp);
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoB_;
+      int j = (ij+oP)%nmoB_;
       if (i < noccB_ && j < noccB_) {
         psio_->write(PSIF_SAPT_BB_DF_INTS,"BB RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_BB,&next_DF_BB);
@@ -495,8 +512,8 @@ void SAPT2::df_integrals()
     }
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoB_;
+      int j = (ij+oP)%nmoB_;
       if (i < noccB_ && j >= noccB_) {
         psio_->write(PSIF_SAPT_BB_DF_INTS,"BS RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_BS,&next_DF_BS);
@@ -504,8 +521,8 @@ void SAPT2::df_integrals()
     }
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoB_;
+      int j = (ij+oP)%nmoB_;
       if (i >= noccB_ && j >= noccB_) {
         psio_->write(PSIF_SAPT_BB_DF_INTS,"SS RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_SS,&next_DF_SS);
@@ -516,7 +533,8 @@ void SAPT2::df_integrals()
   }
 
   AO_RI = block_matrix(maxPshell,nso_*nso_);
-  MO_RI = block_matrix(maxPshell,nmo_*nmo_);
+  halftrans = init_array(nmoA_*nso_);
+  MO_RI = block_matrix(maxPshell,nmoA_*nmoB_);
 
   next_DF_MO = PSIO_ZERO;
 
@@ -554,14 +572,14 @@ void SAPT2::df_integrals()
     } // end loop over MU,NU shells
 
     for (int P=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, CA_[0], nmo_, AO_RI[P], nso_, 
+      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, CA_[0], nmoA_, AO_RI[P], nso_, 
         0.0, halftrans, nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, halftrans, nso_, CB_[0], nmo_, 
-        0.0, MO_RI[P], nmo_);
+      C_DGEMM('N', 'N', nmoA_, nmoB_, nso_, 1.0, halftrans, nso_, CB_[0], 
+        nmoB_, 0.0, MO_RI[P], nmoB_);
     }
 
-    psio_->write(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(MO_RI[0][0]),
-      sizeof(double)*numPshell*nmo_*nmo_,next_DF_MO,&next_DF_MO);
+    psio_->write(PSIF_SAPT_TEMP,"MO AB RI Integrals",(char *) &(MO_RI[0][0]),
+      sizeof(double)*numPshell*nmoA_*nmoB_,next_DF_MO,&next_DF_MO);
 
   }
 
@@ -572,21 +590,24 @@ void SAPT2::df_integrals()
   zero_disk(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",noccA_*nvirB_,ndf_+3);
   zero_disk(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",nvirA_*noccB_,ndf_+3);
 
+  if (temp_size > nmoA_*nmoB_)
+    temp_size = nmoA_*nmoB_;
+
   psio_address next_DF_AB = PSIO_ZERO;
   psio_address next_DF_AS = PSIO_ZERO;
   psio_address next_DF_RB = PSIO_ZERO;
 
-  for (int i=0,oP=0; oP < nmo_*nmo_; ++i, oP += numP) {
-    if ((i+1)*temp_size < nmo_*nmo_) numP = temp_size;
-    else numP = nmo_*nmo_ - oP;
+  for (int i=0,oP=0; oP < nmoA_*nmoB_; ++i, oP += numP) {
+    if ((i+1)*temp_size < nmoA_*nmoB_) numP = temp_size;
+    else numP = nmoA_*nmoB_ - oP;
 
     temp = block_matrix(ndf_,numP);
 
     next_DF_MO = psio_get_address(PSIO_ZERO,sizeof(double)*oP);
     for (int P=0; P < ndf_; ++P) {
-      psio_->read(PSIF_SAPT_TEMP,"MO RI Integrals",(char *) &(temp[P][0]),
+      psio_->read(PSIF_SAPT_TEMP,"MO AB RI Integrals",(char *) &(temp[P][0]),
         sizeof(double)*numP,next_DF_MO,&next_DF_MO);
-      next_DF_MO = psio_get_address(next_DF_MO,sizeof(double)*(nmo_*nmo_
+      next_DF_MO = psio_get_address(next_DF_MO,sizeof(double)*(nmoA_*nmoB_
         -numP));
     }
 
@@ -598,8 +619,8 @@ void SAPT2::df_integrals()
     free_block(temp);
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoB_;
+      int j = (ij+oP)%nmoB_;
       if (i < noccA_ && j < noccB_) {
         psio_->write(PSIF_SAPT_AB_DF_INTS,"AB RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_AB,&next_DF_AB);
@@ -607,8 +628,8 @@ void SAPT2::df_integrals()
     }
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoB_;
+      int j = (ij+oP)%nmoB_;
       if (i < noccA_ && j >= noccB_) {
         psio_->write(PSIF_SAPT_AB_DF_INTS,"AS RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_AS,&next_DF_AS);
@@ -616,8 +637,8 @@ void SAPT2::df_integrals()
     }
 
     for (int ij=0; ij<numP; ij++) {
-      int i = (ij+oP)/nmo_;
-      int j = (ij+oP)%nmo_;
+      int i = (ij+oP)/nmoB_;
+      int j = (ij+oP)%nmoB_;
       if (i >= noccA_ && j < noccB_) {
         psio_->write(PSIF_SAPT_AB_DF_INTS,"RB RI Integrals",(char *)
           &(temp_J[ij][0]),sizeof(double)*(ndf_+3),next_DF_RB,&next_DF_RB);
