@@ -14,6 +14,7 @@
 #include "filler.h"
 #include "contraction.h"
 
+#include "blas.h"
 extern "C" {
 
 extern void dspsvx(const char* fact, const char* uplo, const int* n, const int* nrhs,
@@ -32,7 +33,7 @@ extern void dsptrs_(const char* uplo, const int* n, const int* nrhs,
 extern void dsptrs(const char* uplo, const int* n, const int* nrhs,
                        const double* AP, int* ipiv, double* BB, const int* nb,
                        int* info);
-}
+}//EndExternC
 
 #include <vector>
 
@@ -321,6 +322,7 @@ YetiTensor::init(
     if (p5) add(p5);
     decref();
     grp->close();
+    tensor_->recompute_permutation();
 #endif
 
 #if 0
@@ -362,7 +364,7 @@ YetiTensor::YetiTensor(
 {
     tokenize(", ");
     bool subtensor = false;
-    usi nindex = tensor->get_descr()->nindex();
+    usi nindex = tensor->get_block_descr()->nindex();
     TensorIndexDescrPtr indexdescr = new TensorIndexDescr(nindex);
 
     if (nentries() != nindex)
@@ -376,7 +378,7 @@ YetiTensor::YetiTensor(
     {
         const std::string& label = substr(i);
         IndexDescr* descr = YetiRuntime::get_descr(label);
-        IndexDescr* mydescr = tensor->get_descr()->get(i);
+        IndexDescr* mydescr = tensor->get_block_descr()->get(i);
         if (mydescr != descr)
         {
             subtensor = true;
@@ -464,6 +466,22 @@ YetiTensor::print(std::ostream& os)
 }
 
 void
+YetiTensor::distribute(const std::string& str)
+{
+    StringParser parser(str);
+    parser.tokenize(",");
+    usi distr_indices[NINDEX];
+    usi nindex_distr = parser.nentries();
+    for (usi i=0; i < nindex_distr; ++i)
+    {
+        const std::string& substr = parser.substr(i);
+        distr_indices[i] = index(substr);
+    }
+
+    tensor_->distribute(distr_indices, nindex_distr);
+}
+
+void
 YetiTensor::accumulate(
     const YetiTensorPtr& parser,
     double scale
@@ -510,7 +528,7 @@ YetiTensor::accumulate(
         product_presort = StringParser::get_permutation(product_perm_parser);
     }
 
-    TensorIndexDescr* descr = ptensor->get_descr();
+    TensorIndexDescr* descr = ptensor->get_block_descr();
     if (ncxn_entries == 0)
     {
         //make sure dot product
@@ -618,8 +636,8 @@ YetiTensor::accumulate(
     }
     else
     {
-        PermutationGroup* grp = new PermutationGroup(ptensor->get_descr()->nindex());
-        acc_tensor = new Tensor("temporary", ptensor->get_descr(), grp);
+        PermutationGroup* grp = new PermutationGroup(ptensor->get_block_descr()->nindex());
+        acc_tensor = new Tensor("temporary", ptensor->get_block_descr(), grp);
     }
 
     ContractionPtr cxn = new Contraction(
@@ -639,11 +657,6 @@ YetiTensor::accumulate(
         acc_tensor->get_tensor_grp()->close();
     }
 
-
-    //ltensor->print(dout); dout << endl;
-    //rtensor->print(dout); dout << endl;
-    //cxn->get_contraction_grp()->print(dout); dout << endl;
-
     for (usi i=0; i < ncxn_entries; ++i)
     {
 
@@ -661,7 +674,6 @@ YetiTensor::accumulate(
 
     cxn->build();
     cxn->run();
-
 
     if (symmetrization_set->order() != 0)
     {
@@ -754,6 +766,12 @@ YetiTensor::is_null() const
     return !nonnull;
 }
 
+bool
+YetiTensor::is_nonnull() const
+{
+    return tensor_;
+}
+
 double
 YetiTensor::norm()
 {
@@ -797,7 +815,7 @@ YetiTensor::nonzero() const
 bool
 YetiTensor::unique_nonzero() const
 {
-    return tensor_ && tensor_->unique_nonzero();
+    return tensor_ && tensor_->nonzero();
 }
 
 YetiTensorPtr
@@ -963,6 +981,16 @@ YetiTensor::operator=(const YetiTensorPtr& yt)
     tokenize(",");
 }
 
+void
+YetiTensor::operator=(const YetiTensor& yt)
+{
+    tensor_ = yt.get_tensor();
+    scale_ = yt.get_scale();
+    perm_ = yt.get_permutation();
+    str_ = yt.str();
+    tokenize(",");
+}
+
 YetiTensorPtr::YetiTensorPtr()
     : boost::intrusive_ptr<YetiTensor>(0)
 {
@@ -1014,6 +1042,7 @@ YetiTensorPtr::operator+=(const PermutationRuntimeParserPtr& perm)
 
     grp->add(p);
     grp->close();
+    get()->get_tensor()->recompute_permutation();
 #endif
 }
 
@@ -1079,8 +1108,8 @@ YetiTensorPtr::operator<<=(const YetiTensorPtr& yt)
     //ensure the indices are the same between tensors
     for (usi i=0; i < ntarget_idx; ++i)
     {
-        IndexDescr* dst_descr = dst->get_descr()->get(i);
-        IndexDescr* src_descr = src->get_descr()->get(i);
+        IndexDescr* dst_descr = dst->get_block_descr()->get(i);
+        IndexDescr* src_descr = src->get_block_descr()->get(i);
         if (dst_descr != src_descr)
         {
             cerr << "Invalid internal contraction" << endl;
@@ -1088,11 +1117,11 @@ YetiTensorPtr::operator<<=(const YetiTensorPtr& yt)
         }
     }
 
-    IndexDescr* cxn_descr = src->get_descr()->get(ntarget_idx);
+    IndexDescr* cxn_descr = src->get_block_descr()->get(ntarget_idx);
     const std::string& cxn_idx_str = src.substr(ntarget_idx);
     for (usi i=ntarget_idx; i < nidx; ++i)
     {
-        IndexDescr* descr = src->get_descr()->get(i);
+        IndexDescr* descr = src->get_block_descr()->get(i);
         if (descr != cxn_descr)
         {
             cerr << "Invalid internal contraction" << endl;
@@ -1157,7 +1186,7 @@ YetiContractionPtr::operator=(const YetiTensorPtr& tensor)
     UpperTriangleGetOp* Aop = new UpperTriangleGetOp;
     Atensor->element_op(Aop);
 
-    int n = Atensor->get_descr()->get(0)->nelements_data();
+    int n = Atensor->get_block_descr()->get(0)->nelements_data();
     int nelements_B = Btensor->get_totalsize();
     int nrhs = nelements_B / n;
     int ntri = n*(n+1)/2;
@@ -1258,8 +1287,10 @@ YetiContractionPtr::dot_product() const
     //build a tensor with the dot product index descr
     //this builds only a single element!
     YetiTensor dotprod("dot product tensor", "dotproduct");
-    dotprod->configure(Tensor::replicated);
     dotprod->configure(Tensor::in_core);
+
+
+
 
     //create an empty tensor
     get()->incref();
@@ -1680,7 +1711,7 @@ YetiMatrix::YetiMatrix(
                     tensor_->get_tensor()->get_tensor_grp()
               );
 
-    TensorIndexDescr* tensor_descr = tensor_->get_tensor()->get_descr();
+    TensorIndexDescr* tensor_descr = tensor_->get_tensor()->get_block_descr();
     for (usi i=0; i < nrows; ++i)
     {
         IndexDescr* mydescr = YetiRuntime::get_descr(rowparser_.substr(i));

@@ -385,16 +385,6 @@ def database(name, db_name, **kwargs):
     * name (or unlabeled first argument) indicates the computational method to be applied to the database.
     * db_name (or unlabeled second argument) is a string of the requested database name. This name matches the
         python file in psi4/lib/databases , wherein literature citations for the database are also documented.
-        * Interaction Energy Databases
-            'BZC'   215 geometries in 10 dissociation curves for Bz and 1st/2nd-row hydrides
-            'HBC6'  118 geometries in 6 dissociation curves for small hydrogen-bonded bimolecular complexes
-            'HSG'   21 pairwise fragments from the a protein-drug docking site
-            'JSCH'  124 nucleobase pairs divided by geometric configuration
-            'NBC10' 184 geometries in 10 dissociation curves for dispersion-dominated bimolecular complexes
-            'RGC10' 180 geometries in 10 dissociation curves for [He, Ne, Ar, Kr] biatomic complexes
-            'S22'   22 noncovalent bimolecular complexes divided by interaction type
-        * Reaction Barrier Height Databases
-            'NHTBH' 34 forward-and-reverse non hydrogen-transfer reactions
 
     Optional Arguments:  --> 'default_option' <-- 
     ------------------
@@ -414,6 +404,9 @@ def database(name, db_name, **kwargs):
         Indicates whether zero-point-energy corrections are appended to single-point energy values. Option
         valid only for certain thermochemical databases.
         Disabled until Hessians ready.
+    * benchmark = --> 'default' <-- | etc.
+        Indicates whether a non-default set of reference energies, if available, are employed for the 
+        calculation of error statistics.
     * subset
         Indicates a subset of the full database to run. This is a very flexible option and can used in
         three distinct ways, outlined below. Note that two take a string and the last takes a list.
@@ -436,7 +429,7 @@ def database(name, db_name, **kwargs):
     """
 
     import input
-    import pickle
+    #import pickle
     #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
@@ -473,11 +466,8 @@ def database(name, db_name, **kwargs):
     user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
     user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
+    user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
     user_reference = PsiMod.get_option('REFERENCE')
-
-    # Temporary alarms until more things are working
-    if re.match(r'^mp2c$', name, re.IGNORECASE):
-        raise Exception('Databases not yet compatible with SAPT or MP2C calculations (supermolecular vs sapt structure).')
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -500,7 +490,7 @@ def database(name, db_name, **kwargs):
         else:
             if input.yes.match(str(database.isOS)):
                 openshell_override = 1
-                PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
+                PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF/UKS as needed.\n' % (db_name))
 
     # Configuration based upon database keyword options
     #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2 & dft)
@@ -561,6 +551,21 @@ def database(name, db_name, **kwargs):
     else:
         raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
 
+    #   Option benchmark- whether error statistics computed wrt alternate reference energies
+    db_benchmark = 'default'
+    if(kwargs.has_key('benchmark')):
+        db_benchmark = kwargs['benchmark']
+
+        if re.match(r'^default$', db_benchmark, re.IGNORECASE):
+            pass
+        else:
+            try:
+                getattr(database, 'BIND_' + db_benchmark)
+            except AttributeError:
+                raise Exception('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
+            else:
+                BIND = getattr(database, 'BIND_' + db_benchmark)
+
     #   Option subset- whether all of the database or just a portion is run
     db_subset = HRXN
     if(kwargs.has_key('subset')):
@@ -617,38 +622,38 @@ def database(name, db_name, **kwargs):
     #   write index of calcs to output file
     if re.match('continuous', db_mode.lower()):
         instructions  = """\n    The database single-job procedure has been selected through mode='continuous'.\n"""
-        instructions += """    Calculations for the reagents will proceed in the order below and will be followed\n"""
-        instructions += """    by summary results for the database.\n\n"""
+        instructions +=   """    Calculations for the reagents will proceed in the order below and will be followed\n"""
+        instructions +=   """    by summary results for the database.\n\n"""
         for rgt in HSYS:
             instructions += """                    %-s\n""" % (rgt)
         instructions += """\n    Alternatively, a farming-out of the database calculations may be accessed through\n"""
-        instructions += """    the database wrapper option mode='sow'/'reap'.\n\n"""
+        instructions +=   """    the database wrapper option mode='sow'/'reap'.\n\n"""
         PsiMod.print_out(instructions)
 
     #   write sow/reap instructions and index of calcs to output file and reap input file
     if re.match('sow', db_mode.lower()):
         instructions  = """\n    The database sow/reap procedure has been selected through mode='sow'. In addition\n"""
-        instructions += """    to this output file (which contains no quantum chemical calculations), this job\n"""
-        instructions += """    has produced a number of input files (%s-*.in) for individual database members\n""" % (dbse)
-        instructions += """    and a single input file (%s-master.in) with a database(mode='reap') command.\n""" % (dbse)
-        instructions += """    The former may look peculiar since processed python rather than raw imput\n"""
-        instructions += """    is written. Follow the instructions below to continue.\n\n"""
-        instructions += """    (1)  Run all of the %s-*.in input files on any variety of computer architecture.\n""" % (dbse)
-        instructions += """       The output file names must be as given below.\n\n"""
+        instructions +=   """    to this output file (which contains no quantum chemical calculations), this job\n"""
+        instructions +=   """    has produced a number of input files (%s-*.in) for individual database members\n""" % (dbse)
+        instructions +=   """    and a single input file (%s-master.in) with a database(mode='reap') command.\n""" % (dbse)
+        instructions +=   """    The former may look very peculiar since processed and pickled python rather than\n"""
+        instructions +=   """    raw input is written. Follow the instructions below to continue.\n\n"""
+        instructions +=   """    (1)  Run all of the %s-*.in input files on any variety of computer architecture.\n""" % (dbse)
+        instructions +=   """       The output file names must be as given below.\n\n"""
         for rgt in HSYS:
             instructions += """             psi4 -i %-27s -o %-27s\n""" % (rgt + '.in', rgt + '.out')
         instructions += """\n    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-        instructions += """         %s-master.in into that directory and run it. The job will be trivial in\n""" % (dbse)
-        instructions += """         length and give summary results for the database in its output file.\n\n"""
-        instructions += """             psi4 -i %-27s -o %-27s\n\n""" % (dbse + '-master.in', dbse + '-master.out')
-        instructions += """    Alternatively, a single-job execution of the database may be accessed through\n"""
-        instructions += """    the database wrapper option mode='continuous'.\n\n"""
+        instructions +=   """         %s-master.in into that directory and run it. The job will be trivial in\n""" % (dbse)
+        instructions +=   """         length and give summary results for the database in its output file.\n\n"""
+        instructions +=   """             psi4 -i %-27s -o %-27s\n\n""" % (dbse + '-master.in', dbse + '-master.out')
+        instructions +=   """    Alternatively, a single-job execution of the database may be accessed through\n"""
+        instructions +=   """    the database wrapper option mode='continuous'.\n\n"""
         PsiMod.print_out(instructions)
 
         fmaster = open('%s-master.in' % (dbse), 'w')
         fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
-        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', linkage=%d, subset=%s)\n\n" %
-            (name, db_name, db_cp, db_zpe, os.getpid(), HRXN))
+        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s)\n\n" %
+            (name, db_name, db_cp, db_zpe, db_benchmark, os.getpid(), HRXN))
         fmaster.close()
 
     #   Loop through chemical systems
@@ -678,10 +683,14 @@ def database(name, db_name, **kwargs):
                    % (rgt, RXNM[db_rxn][rgt], db_rxn)
         actives += """PsiMod.print_out('\\n')\n\n"""
 
-        # build string of commands for options from the input file NYI
+        # build string of commands for options from the input file  TODO: handle local options too
+        commands = '\n'
+        for chgdopt in PsiMod.get_global_option_list():
+            if PsiMod.has_option_changed(chgdopt):
+                 commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
 
         # build string of molecule and commands that are dependent on the database
-        commands = '\n'
+        commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
         if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
@@ -691,6 +700,8 @@ def database(name, db_name, **kwargs):
             commands += """PsiMod.set_global_option('RI_BASIS_CC', '%s')\n""" % (user_ri_basis_cc)
         if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SAPT', '%s')\n""" % (user_ri_basis_sapt)
+        if not((user_ri_basis_elst == "") or (user_ri_basis_elst == 'NONE')):
+            commands += """PsiMod.set_global_option('RI_BASIS_ELST', '%s')\n""" % (user_ri_basis_elst)
         commands += """molecule = PsiMod.get_active_molecule()\n"""
         commands += """molecule.update_geometry()\n"""
 
@@ -728,10 +739,16 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-            freagent.write('''\npickle_kw = ("""''')
-            pickle.dump(kwargs, freagent)
-            freagent.write('''""")\n''')
-            freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+            # non-pickle route
+            lesserkwargs = kwargs.copy() 
+            del lesserkwargs['func'] 
+            freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
+            # pickle route (conflics w/Andy's parenthesis matching)
+            #freagent.write('''\npickle_kw = ("""''')
+            #pickle.dump(kwargs, freagent)
+            #freagent.write('''""")\n''')
+            #freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+            # end routes
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['func'].__name__))
             freagent.write("""PsiMod.print_variables()\n""")
             freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: energy computation %d for reagent %s """

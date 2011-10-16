@@ -312,7 +312,11 @@ class Permutation :
 
         void* operator new(size_t size, permutation_malloc_flag_t flag);
 
+        void operator delete(void* ptr, permutation_malloc_flag_t flag);
+
         void* operator new(size_t size);
+
+        void operator delete(void* ptr);
 };
 
 /** @class PermutationGroup

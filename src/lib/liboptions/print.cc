@@ -124,4 +124,15 @@ namespace psi {
     fprintf(outfile, "%s\n", list.c_str());
   }
 
+  std::vector<std::string> Options::list_globals() {
+    std::vector<std::string> glist(globals_.size());
+    int ii = 0;
+
+    for (const_iterator pos = globals_.begin(); pos != globals_.end(); ++pos) {
+      glist[ii] = pos->first;
+      ii++;
+    }
+    return glist;
+  }
+
 }

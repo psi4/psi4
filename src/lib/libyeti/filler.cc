@@ -21,10 +21,10 @@ UnitEstimaterPtr TensorValueEstimater::unit_ = new UnitEstimater;
 ThreadedTensorElementComputer::ThreadedTensorElementComputer(const TensorElementComputerPtr& comp)
     :
     mindepth_(0),
-    fillers_(YetiRuntime::nthread(), 0) //create empty vector
+    fillers_(YetiRuntime::nthread_compute(), 0) //create empty vector
 {
     fillers_[0] = comp;
-    for (uli i=1; i < YetiRuntime::nthread(); ++i)
+    for (uli i=1; i < YetiRuntime::nthread_compute(); ++i)
         fillers_[i] = comp->copy();
 }
 

@@ -34,9 +34,6 @@ DECLARE_MALLOC(Tensor);
 #define size_t custom_size_t
 #endif
 
-bool Tensor::in_destructor = false;
-bool Tensor::in_sync = false;
-
 bool
 yeti::tensor_less(Tensor* l, Tensor* r)
 {
@@ -46,10 +43,12 @@ yeti::tensor_less(Tensor* l, Tensor* r)
         return lpriority < rpriority;
 
 
-    Tensor::tensor_distribution_t l_dist_type = l->get_distribution_type();
-    Tensor::tensor_distribution_t r_dist_type = r->get_distribution_type();
+    bool l_dist_type = l->is_distributed();
+    bool r_dist_type = r->is_distributed();
     if (l_dist_type != r_dist_type)
-        return l_dist_type < r_dist_type;
+        return r_dist_type;
+    //if true, r is distributed and l is not so l < r
+    //if false, l is distributed and r is not so r > l
 
     //in core is always faster than recomputing which is probably faster than going to disk
     Tensor::tensor_storage_t l_store_type = l->get_storage_type();
@@ -58,8 +57,8 @@ yeti::tensor_less(Tensor* l, Tensor* r)
         return l_store_type < r_store_type;
 
     //everything is the same now, select based on size
-    ulli lsize = l->get_totalsize();
-    uli rsize = r->get_totalsize();
+    ulli lsize = l->get_totalsize() * l->get_sort_size_weight();
+    uli rsize = r->get_totalsize() * r->get_sort_size_weight();
     if (lsize != rsize)
         return lsize < rsize;
 
@@ -237,56 +236,61 @@ class SortThread :
 
 #define DEFAULT_TENSOR_CACHE_SIZE 10000000 //10 MB
 //#define MAX_TENSOR_METADATA_BLOCK_SIZE 200000
+#define MAX_TENSOR_CACHE_BLOCKS 50
+//#define MAX_TENSOR_CACHE_BLOCKS NCACHE_ENTRIES_MAX
 Tensor::Tensor(
     const std::string& name,
     const TensorIndexDescrPtr& descr,
     const PermutationGroupPtr& pgrp
 ) :
     name_(name),
+    sort_weight_(1),
     tensor_grp_(pgrp),
     original_grp_(pgrp),
-    blocks_(0),
-    descr_(descr),
+    tensor_blocks_(0),
+    block_descr_(descr),
     depth_(descr->depth()),
     storage_type_(Tensor::in_core),
-    distribution_type_(Tensor::replicated),
-    erase_type_(Tensor::delete_zero_blocks),
-    disk_buffer_(0),
+    distribution_indices_(0),
     priority_(Tensor::gamma_tensor),
     filler_(0),
     parent_tensor_(0),
-    sort_perm_(0),
     data_cache_(0),
     metadata_cache_(0),
     metadata_block_size_(0),
     data_block_size_(0),
-    main_indexer_(new Indexer(descr.get()))
+    main_indexer_(new Indexer(descr.get())),
+    block_to_node_indexmap_(0),
+    distr_indexer_(0),
+    full_index_to_distribution_index_(0),
+    malloc_number_(0),
+    cxn_position_(Contraction::product_tensor)
 {
-    blocks_ = new BlockMap<TensorBlock>(descr.get());
-    
-    for (usi i=0; i < descr_->nindex(); ++i)
+    tensor_blocks_ = new TensorBlockMap(block_descr_.get());
+
+
+    malloc_number_ = Malloc<Tensor>::get_malloc_number(this);
+
+    for (usi i=0; i < block_descr_->nindex(); ++i)
     {
-        IndexRange* range = descr_->get(i)->get_top_range();
+        IndexRange* range = block_descr_->get(i)->get_top_range();
         index_start_[i] = range->start();
         index_end_[i] = range->start() + range->nelements();
     }
 
-    if (descr_->has_symmetry())
+    if (block_descr_->has_symmetry())
         init_symmetry_filter();
 
-    sort_perm_ = pgrp->get_identity();
-    unsort_perm_ = sort_perm_;
-
     usi overflow = 2;
-    size_t max_nblocks_data = descr_->max_nblocks_data();
+    size_t max_nblocks_data = block_descr_->max_nblocks_data();
     if (max_nblocks_data < 4)
         max_nblocks_data = 4;
 
 
     usi md_depth = 2;
-    size_t nblocks_tot_metadata = descr_->nblocks_tot_at_depth(md_depth);
+    size_t nblocks_tot_metadata = block_descr_->nblocks_tot_at_depth(md_depth);
     usi d_depth = 1;
-    size_t nblocks_tot_data = descr_->nblocks_tot_at_depth(d_depth);
+    size_t nblocks_tot_data = block_descr_->nblocks_tot_at_depth(d_depth);
     size_t max_nblocks_metadata = max_nblocks_data * nblocks_tot_metadata / nblocks_tot_data;
 
     //bad things can happen with really small tile sizes
@@ -303,16 +307,16 @@ Tensor::Tensor(
 #endif
     size_t nblocks_metadata = DEFAULT_TENSOR_CACHE_SIZE / metadata_block_size_;
     size_t total_metadata_cache_size = DEFAULT_TENSOR_CACHE_SIZE;
-    if (nblocks_metadata > NCACHE_ENTRIES_MAX)
-        total_metadata_cache_size = metadata_block_size_ * NCACHE_ENTRIES_MAX;
+    if (nblocks_metadata > MAX_TENSOR_CACHE_BLOCKS)
+        total_metadata_cache_size = metadata_block_size_ * MAX_TENSOR_CACHE_BLOCKS;
     else if (nblocks_metadata < 5)
         total_metadata_cache_size = 10 * metadata_block_size_;
     metadata_cache_ = new DataCache(total_metadata_cache_size, metadata_block_size_);
 
-    size_t average_ndata = descr_->average_nelements_data();
-    size_t max_ndata = descr_->max_nelements_data();
-    size_t average_nmetadata = descr_->average_nelements_metadata();
-    size_t max_nmetadata = descr_->max_nelements_metadata();
+    size_t average_ndata = block_descr_->average_nelements_data();
+    size_t max_ndata = block_descr_->max_nelements_data();
+    size_t average_nmetadata = block_descr_->average_nelements_metadata();
+    size_t max_nmetadata = block_descr_->max_nelements_metadata();
     size_t data_block_nelements = average_nmetadata * average_ndata < max_ndata ? 
                                     max_ndata : average_nmetadata * average_ndata;
 
@@ -322,11 +326,13 @@ Tensor::Tensor(
     size_t ndata_blocks = DEFAULT_TENSOR_CACHE_SIZE / data_block_size_;
     //scale cache size down to get to 10000 entries
     size_t total_data_cache_size = DEFAULT_TENSOR_CACHE_SIZE;
-    if (ndata_blocks > NCACHE_ENTRIES_MAX)
-        total_data_cache_size = data_block_size_ * NCACHE_ENTRIES_MAX;
+    if (ndata_blocks > MAX_TENSOR_CACHE_BLOCKS)
+        total_data_cache_size = data_block_size_ * MAX_TENSOR_CACHE_BLOCKS;
     else if (ndata_blocks < 10)
-        total_data_cache_size = 50 * data_block_size_;
+        total_data_cache_size = 25 * data_block_size_;
     data_cache_ = new DataCache(total_data_cache_size, data_block_size_);
+
+    fill_blocks();
 
 #if 0
     dout << "Tensor " << name_ << " metadata block size  " << metadata_block_size_ << endl;
@@ -347,71 +353,70 @@ Tensor::Tensor(
     name_(parent_tensor->get_name()),
     tensor_grp_(parent_tensor->get_tensor_grp()),
     original_grp_(parent_tensor->get_original_grp()),
-    blocks_(0),
-    descr_(descr),
+    tensor_blocks_(0),
+    block_descr_(descr),
     depth_(descr->depth()),
+    sort_weight_(1),
     storage_type_(parent_tensor->get_storage_type()),
-    distribution_type_(parent_tensor->get_distribution_type()),
-    erase_type_(parent_tensor->get_erase_type()),
-    disk_buffer_(parent_tensor->get_disk_buffer()),
+    distribution_indices_(parent_tensor->distribution_indices_),
     priority_(parent_tensor->get_priority()),
     filler_(parent_tensor->get_element_computer()),
     parent_tensor_(parent_tensor),
     tensor_grp_generator_set_(0),
-    sort_perm_(parent_tensor->get_sort_permutation()),
-    unsort_perm_(parent_tensor_->get_unsort_permutation()),
     metadata_block_size_(parent_tensor->metadata_block_size()),
     data_block_size_(parent_tensor->data_block_size()),
     data_cache_(parent_tensor->get_data_cache()),
     metadata_cache_(parent_tensor->get_metadata_cache()),
-    main_indexer_(0)
+    main_indexer_(0),
+    block_to_node_indexmap_(0),
+    full_index_to_distribution_index_(0),
+    malloc_number_(0),
+    cxn_position_(parent_tensor->cxn_position_)
 {
+    malloc_number_ = Malloc<Tensor>::get_malloc_number(this);
+
     parent_tensor_->incref();
-    blocks_ = new BlockMap<TensorBlock>(descr.get());
-    
-    for (usi i=0; i < descr_->nindex(); ++i)
+
+    tensor_blocks_ = new BlockMap<TensorBlock>(descr.get());
+
+    for (usi i=0; i < block_descr_->nindex(); ++i)
     {
-        IndexRange* range = descr_->get(i)->get_top_range();
+        IndexRange* range = block_descr_->get(i)->get_top_range();
         index_start_[i] = range->start();
         index_end_[i] = range->start() + range->nelements();
     }
 
-    TensorBlockMap::iterator it(blocks_->begin());
-    TensorBlockMap::iterator stop(blocks_->end());
+
+    TensorBlockMap::iterator it(tensor_blocks_->begin());
+    TensorBlockMap::iterator stop(tensor_blocks_->end());
     //loop all of the blocks and attempt to fetch a block from the parent tensor
     uli idx = 0;
     uli indices[NINDEX];
     for ( ; it != stop; ++it, ++idx)
     {
-        blocks_->indices(idx, indices);
+        tensor_blocks_->indices(idx, indices);
         TensorBlock* block = parent_tensor->get_block(indices);
         if (block)
         {
-            blocks_->set(idx, block);
+            tensor_blocks_->set(idx, block);
             block->set_subblock(true);
         }
     }
 
     tensor_grp_generator_set_ = tensor_grp_->get_generator_set();
 
-    if (descr_->has_symmetry())
+    if (block_descr_->has_symmetry())
         init_symmetry_filter();
 }
 
 Tensor::~Tensor()
 {
-    if (YetiRuntime::is_threaded_runtime())
-    {
-        cerr << "threaded runtime in tensor destructor!" << endl;
-        abort();
-    }
+    remote_wait();
 
-    in_destructor = true;
-    size_t wasted = 0;
     if (!parent_tensor_)
     {
-        TensorBlock** it = blocks_->begin();
-        TensorBlock** stop = blocks_->end();
+        TensorBlock** it = tensor_blocks_->begin();
+        TensorBlock** stop = tensor_blocks_->end();
         for ( ; it != stop; ++it)
         {
             TensorBlock* block = *it;
@@ -421,19 +426,34 @@ Tensor::~Tensor()
             if (!block->is_permutationally_unique())
                 block->obsolete();
 
-            //if (block->is_permutationally_unique())
-            //    wasted += block->get_branch()->size_data_wasted();
-
             block->set_subblock(false);
         }
-        size_t total = sizeof(double) * get_totalsize();
-        //dout << stream_printf("wasted %ld bytes on tensor %s out of %ld", 
-        //    wasted, name_.c_str(), total) << endl;
+
+        if (distribution_indices_)
+            delete[] distribution_indices_;
+
+        if (full_index_to_distribution_index_)
+            delete[] full_index_to_distribution_index_;
+
     }
+
+    //make sure all tensor blocks are released
+    TensorBlock** it = tensor_blocks_->begin();
+    TensorBlock** stop = tensor_blocks_->end();
+    for ( ; it != stop; ++it)
+    {
+        TensorBlock* block = *it;
+        if (!block)
+            continue;
+
+        //sleep until the block is retrieved
+        while (block->is_retrieved())
+            usleep(1);
+    }
+
     uli idx = 0;
-    delete blocks_;
-    blocks_ = 0;
-    in_destructor = false;
+    delete tensor_blocks_;
+    tensor_blocks_ = 0;
     data_cache_ = 0;
     metadata_cache_ = 0;
 
@@ -444,8 +464,9 @@ Tensor::~Tensor()
 void
 Tensor::init_symmetry_filter()
 {
+    return;
     TensorElementFilterPtr filter = new TensorSymmetryFilter;
-    filter->set_index_descr(descr_.get());
+    filter->set_index_descr(block_descr_.get());
     filters_.push_back(filter);
 }
 
@@ -458,8 +479,8 @@ Tensor::reset()
         abort();
     }
 
-    TensorBlock** it = blocks_->begin();
-    TensorBlock** stop = blocks_->end();
+    TensorBlock** it = tensor_blocks_->begin();
+    TensorBlock** stop = tensor_blocks_->end();
     for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
@@ -479,15 +500,10 @@ Tensor::insert_new_block(
     TensorBlock* block
 )
 {
-    uli idx = blocks_->index(block->get_indices());
-    insert_new_block(idx, block);
-}
-
-void
-Tensor::insert_new_block(uli idx, TensorBlock* block)
-{
+    const uli* block_indices = block->get_indices();
+    uli idx = tensor_blocks_->index(block_indices);
 #if YETI_SANITY_CHECK
-    TensorBlock* old_block = blocks_->get(idx);
+    TensorBlock* old_block = tensor_blocks_->get(idx);
     if (old_block)
     {
         cerr << "old block " << old_block->get_index_string()
@@ -498,9 +514,9 @@ Tensor::insert_new_block(uli idx, TensorBlock* block)
         abort();
     }
 #endif
-
-    blocks_->set(idx, block);
+    tensor_blocks_->set(idx, block);
 }
+
 
 
 
@@ -510,7 +526,7 @@ Tensor::make_block(
     Tensor::tensor_storage_t store_type
 )
 {
-    size_t size = descr_->total_data_size(indexset);
+    size_t size = block_descr_->total_data_size(indexset);
     if (size == 0)
     {
         //nothing here!
@@ -545,6 +561,7 @@ Tensor::make_block(
         this->insert_new_block(block);
     }
 
+#if 0
     PermutationGroup::iterator it(tensor_grp_->begin());
     PermutationGroup::iterator stop(tensor_grp_->end());
     uli block_indices[NINDEX];
@@ -575,7 +592,10 @@ Tensor::make_block(
         }
         else
         {
-            TensorBlock* nonunique_block = blocks_->get(block_indices);
+            if (!this->contains(block_indices))
+                continue;
+
+            TensorBlock* nonunique_block = tensor_blocks_->get(block_indices);
             if (nonunique_block) //already exists
                 continue;
 
@@ -584,21 +604,6 @@ Tensor::make_block(
             insert_new_block(nonunique_block);
         }
 
-    }
-
-#if YETI_SANITY_CHECK
-    //now do a sanity check
-    if (!block->is_permutationally_unique())
-    {
-        block->get_fetch_permutation()->permute(block->get_indices(), block_indices);
-        if (!this->contains(block_indices) &&
-             (parent_tensor_ && !parent_tensor_->contains(block_indices)))
-        {
-            cerr << "created block " << block->get_index_string()
-                 << " " << block->get_fetch_permutation()
-                 << " but unique parent block does not exist!"
-                 << endl;
-        }
     }
 #endif
 
@@ -613,8 +618,7 @@ Tensor::accumulate(
     const SortPtr& sort
 )
 {
-    uli idx = 0;
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     NodeMap<TensorBlock>::iterator stop(tensor->end());
     TensorBlock** itsrc = 0;
     if (sort)
@@ -630,49 +634,74 @@ Tensor::accumulate(
         itsrc = tensor->begin();
     }
 
-    TensorBlockMap::iterator itdst(blocks_->begin());
+    TensorBlockMap::iterator itdst(tensor_blocks_->begin());
     uli indices[NINDEX];
-    for ( ; itsrc != stop; ++itsrc, ++itdst, ++idx)
+    uli permuted_indices[NINDEX];
+    uli tasknum = 0;
+    for ( ; itsrc != stop; ++itsrc, ++itdst)
     {
-        if (INVALID_THREAD_TASK(idx, threadnum, nthread))
-            continue;
 
         TensorBlock* srcblock = *itsrc;
         if (!srcblock) //we don't need to accumulate anything
+        {
             continue;
+        }
 
         TensorBlock* dstblock = *itdst;
         if (!dstblock)
         {
-            blocks_->indices(idx, indices);
-            if (tensor_grp_->improves_sort(indices)) //only permutationally unique!
-                continue;
-
-            dstblock = make_block(indices);
+            raise(SanityCheckError, "all destination blocks should already exist");
         }
 
         /** Only accumulate to permutationally unique blocks */
         if (dstblock->is_permutationally_unique())
         {
-            //set the owner thread for the given task
-            bool test = dstblock->set_accumulate_mode();
-            if (!test)
+            if (tasknum % nthread != threadnum)
             {
-                cerr << stream_printf("set accumulate failed %d %s", __LINE__, __FILE__) << endl;
-                abort();
+                ++tasknum;
+                continue;
             }
-            srcblock->set_read_mode();
+
             //retrieve the block in case it needs to be fetched from
             //disk or recomputed
-            srcblock->retrieve();
-            dstblock->retrieve();
+            srcblock->retrieve_read();
+            dstblock->retrieve_accumulate();
             //fill the block with values
             dstblock->accumulate(srcblock, scale, sort.get());
             dstblock->update();
             //release the block back to disk or wherever it needs to go
-            dstblock->release();
-            srcblock->release();
+            dstblock->release_accumulate();
+            srcblock->release_read();
+
+            ++tasknum;
         }
+        else if (is_parent_block(dstblock))
+        {
+            if (tasknum % nthread != threadnum)
+            {
+                ++tasknum;
+                continue;
+            }
+
+            //not permutationally unique, but should still be accumualted
+            TensorBlock* accblock = dstblock->get_symmetry_unique_block();
+            if (!accblock->is_up_to_date())
+            {
+                continue; //parent block stuff is tricky... hacky fix
+            }
+
+            Permutation* sort_perm = sort->get_permutation();
+            Permutation* composite_perm = dstblock->get_fetch_permutation()->product(sort_perm);
+            sort->configure(composite_perm);
+            accblock->retrieve_accumulate();
+            srcblock->retrieve_read();
+            accblock->accumulate(srcblock, scale, sort.get());
+            accblock->update();
+            accblock->release_accumulate();
+            srcblock->release_read();
+            sort->configure(sort_perm);
+        }
+
     }
 
 }
@@ -680,22 +709,29 @@ Tensor::accumulate(
 void
 Tensor::accumulate_post_process()
 {
-    TensorBlock** it = blocks_->begin();
-    TensorBlock** stop = blocks_->end();
-    uli idx = 0;
-    uli nthread = YetiRuntime::nthread();
-    for ( ; it != stop; ++it, ++idx)
+    TensorBlock** it = tensor_blocks_->begin();
+    TensorBlock** stop = tensor_blocks_->end();
+    for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
-        if (!block)
-            continue;
-
-        if (block->is_permutationally_unique())
-            continue;
-
-        block->sync_max_log();
-        block->obsolete();
+        if (block && block->is_permutationally_unique())
+            block->update();
     }
+
+    it = tensor_blocks_->begin();
+    for ( ; it != stop; ++it)
+    {
+        TensorBlock* block = *it;
+        if (block && !block->is_permutationally_unique())
+        {
+            block->lock();
+            block->update();
+            block->obsolete();
+            block->unlock();
+        }
+    }
+
+    remote_wait();
 }
 
 
@@ -706,9 +742,9 @@ Tensor::accumulate(
     Permutation* p
 )
 {
+    heisenfxn(Tensor::accumulate);
 
-
-    if (tensor->get_block_map()->size() != blocks_->size())
+    if (tensor->get_block_map()->size() != tensor_blocks_->size())
     {
         cerr << "Cannot accumulate tensor.  Block map sizes do not match." << endl;
         abort();
@@ -719,7 +755,7 @@ Tensor::accumulate(
     else pacc = tensor->get_tensor_grp()->get_identity();
 
     ThreadGroup* grp = YetiRuntime::get_thread_grp();
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     for (uli i=0; i < nthread; ++i)
     {
         Thread* thr = new AccumulateThread(i, tensor, this, scale, pacc);
@@ -734,14 +770,19 @@ Tensor::accumulate(
     else
         accumulate_post_process();
 
-#if 0//YETI_SANITY_CHECK
-    if (!is_closed_tensor())
-    {
-        cerr << "Cannot accumulate to a tensor with a symmetry non-unique block "
-             << " without a matching parent tensor block " << endl;
-        abort();
-    }
-#endif
+    heisenfxn(Tensor::accumulate);
+}
+
+bool
+Tensor::is_distributed() const
+{
+    return distribution_indices_;
+}
+
+bool
+Tensor::is_replicated() const
+{
+    return !is_distributed();
 }
 
 bool
@@ -750,103 +791,58 @@ Tensor::is_subtensor() const
     return parent_tensor_;
 }
 
-bool
-Tensor::is_unique(const uli* indices) const
-{
-    if (parent_tensor_)
-        return parent_tensor_->is_unique(indices);
-
-    uli tmpspace[NINDEX];
-    unsort_perm_->permute(indices, tmpspace);
-
-    Permutation* p = original_grp_->get_lowest_permutation(tmpspace);
-    if (p->is_identity())
-        return true;
-
-    uli tmp2[NINDEX];
-    p->permute(tmpspace, tmp2);
-    sort_perm_->permute(tmp2, tmpspace);
-    bool unique_parent = this->contains(tmpspace);
-
-    return !unique_parent;
-}
-
 uli
 Tensor::get_unique_id(const uli* indices, Permutation* fetch_perm) const
 {
     if (parent_tensor_)
         return parent_tensor_->get_unique_id(indices, fetch_perm);
 
-    if (unsort_perm_->is_identity())
+
+    if (!fetch_perm || fetch_perm->is_identity())
     {
-        if (!fetch_perm || fetch_perm->is_identity())
-        {
-            return main_indexer_->index(indices);
-        }
-        else
-        {
-            uli unique_indices[NINDEX];
-            fetch_perm->permute(indices, unique_indices);
-            return main_indexer_->index(unique_indices);
-        }
+        return main_indexer_->index(indices);
     }
     else
     {
-        uli unsorted_unique_indices[NINDEX];
-        if (!fetch_perm || fetch_perm->is_identity())
-        {
-            unsort_perm_->permute(indices, unsorted_unique_indices);
-        }
-        else
-        {
-            uli unique_indices[NINDEX];
-            fetch_perm->permute(indices, unique_indices);
-            unsort_perm_->permute(unique_indices, unsorted_unique_indices);
-        }
-        return main_indexer_->index(unsorted_unique_indices);
+        uli unique_indices[NINDEX];
+        fetch_perm->permute(indices, unique_indices);
+        return main_indexer_->index(unique_indices);
     }
 }
 
 Permutation*
 Tensor::get_fetch_permutation(const uli* indices) const
 {
-   Permutation* p = 0;
+
     if (parent_tensor_)
-    {
-        p = parent_tensor_->get_fetch_permutation(indices);
-    }
-    else if (unsort_perm_->is_identity())
-    {
-        p = original_grp_->get_lowest_permutation(indices);
-    }
-    else
-    {
-        uli tmpspace[NINDEX];
-        unsort_perm_->permute(indices, const_cast<uli*>(tmpspace));
-       Permutation* q = original_grp_->get_lowest_permutation(tmpspace);
-        p = sort_perm_->product(q->product(unsort_perm_));
-    }
+        return parent_tensor_->get_fetch_permutation(indices);
+
+    Permutation* p = original_grp_->get_lowest_permutation(indices);
     return p;
+}
+
+uli
+Tensor::get_sort_size_weight() const
+{
+    return sort_weight_;
+}
+
+void
+Tensor::set_sort_size_weight(uli weight)
+{
+    sort_weight_ = weight;
 }
 
 bool
 Tensor::is_closed_tensor() const
 {
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
         if (!block)
             continue;
-
-        if (block->get_max_log() < YetiRuntime::nonnull_cutoff)
-            continue;
-
-        if (block->is_permutationally_unique())
-        {
-            //continue;
-        }
 
         TensorBlock* unique_block = block->get_symmetry_unique_block();
         if (!unique_block)
@@ -868,8 +864,9 @@ Tensor::sort(
     Permutation* p
 )
 {
+    heisenfxn(Tensor::sort);
     ThreadGroup* grp = YetiRuntime::get_thread_grp();
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     SortThread* main_thread = new SortThread(0, this, p);
     grp->add(main_thread);
     for (uli i=1; i < nthread; ++i)
@@ -883,39 +880,45 @@ Tensor::sort(
 
     metadata_sort(main_thread->get_sort());
 
+    TensorBlockMap::iterator it = tensor_blocks_->begin();
+    TensorBlockMap::iterator stop = tensor_blocks_->end();
+    for (  ; it != stop; ++it)
+    {
+        TensorBlock* block = *it;
+        if (!block)
+            continue;
+
+        if (!block->is_permutationally_unique() || block->is_remote_block())
+        {
+            //we don't need to sort... but we do need to declare it obsolete
+            block->obsolete();
+            continue;
+        }
+    }
+
     grp->clear();
 
-
+    remote_wait();
+    heisenfxn(Tensor::sort);
 }
 
 void
 Tensor::metadata_sort(const SortPtr& sort)
 {
     //sort the tensor blocks
-    blocks_->sort(sort);
+    tensor_blocks_->sort(sort);
 
     Permutation* p = sort->get_permutation();
-    descr_->permute(p);
+    block_descr_->permute(p);
+
     if (parent_tensor_)
     {
-        /** Subtensors if resorted must be immediately resorted back
-            to original form. Any other permutation is invalid. */
-        bool subtensor_resort = !sort_perm_->is_identity();
-
         parent_tensor_->metadata_sort(sort);
         tensor_grp_ = parent_tensor_->get_tensor_grp();
-        sort_perm_ = parent_tensor_->get_sort_permutation();
-        unsort_perm_ = parent_tensor_->get_unsort_permutation();
-
-        if (subtensor_resort && !sort_perm_->is_identity())
-        {
-        }
     }
     else
     {
         tensor_grp_ = tensor_grp_->conjugate(p);
-        sort_perm_ = p->product(sort_perm_);
-        unsort_perm_ = sort_perm_->inverse();
         iterator it = begin();
         iterator stop = end();
         for ( ; it != stop; ++it)
@@ -930,7 +933,7 @@ Tensor::metadata_sort(const SortPtr& sort)
 
     uli tmp[NINDEX];
 
-    usi nindex = descr_->nindex();
+    usi nindex = block_descr_->nindex();
     size_t cpysize = nindex * sizeof(uli);
     p->permute(index_start_, tmp);
     ::memcpy(index_start_, tmp, cpysize);
@@ -956,14 +959,6 @@ Tensor::metadata_sort(const SortPtr& sort)
                 block->sort_resort_permutation(sort->get_permutation());
             }
 
-#if YETI_SANITY_CHECK
-            Permutation* ptest = block->get_fetch_permutation()->product(block->get_resort_permutation());
-            if (sort_perm_->is_identity() && !ptest->is_identity())
-            {
-                cerr << "nonunique subblock does not have sort realigned to parent block" << endl;
-                abort();
-            }
-#endif
 
         }
     }
@@ -976,52 +971,48 @@ Tensor::sort(
 )
 {
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    uli nthread = YetiRuntime::nthread();
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
+    uli nthread = YetiRuntime::nthread_compute();
+    uli tasknum = 0;
     for ( ; it != stop; ++it, ++idx)
     {
-        if (INVALID_THREAD_TASK(idx, threadnum, nthread))
-            continue;
-
         TensorBlock* block = *it;
         if (!block) //we don't need to create another node
             continue;
 
-
-        if (!block->is_permutationally_unique())
-        {
-            //we don't need to sort... but we do need to declare it obsolete
-            block->obsolete();
+        if (!block->is_permutationally_unique() || block->is_remote_block())
             continue;
-        }
 
-        block->set_write_mode();
-        //retrieve the block in case it needs to be fetched from
-        //disk or recomputed
-        block->retrieve();
-        block->data_sort(sort.get());
-        //release the block back to disk or wherever it needs to go
-        block->release();
+        if (tasknum % nthread == threadnum)
+        {
+            //retrieve the block in case it needs to be fetched from
+            //disk or recomputed
+            block->retrieve_write();
+            block->data_sort(sort.get());
+            //release the block back to disk or wherever it needs to go
+            block->release_write();
+        }
+        ++tasknum;
     }
 }
 
 Tensor::iterator
 Tensor::begin() const
 {
-    return blocks_->begin();
+    return tensor_blocks_->begin();
 }
 
 Tensor::iterator
 Tensor::end() const
 {
-    return blocks_->end();
+    return tensor_blocks_->end();
 }
 
 bool
 Tensor::contains(const uli* indices) const
 {
-    usi nindex = descr_->nindex();
+    usi nindex = block_descr_->nindex();
     for (usi i=0; i < nindex; ++i)
     {
         uli idx = indices[i];
@@ -1035,24 +1026,29 @@ void
 Tensor::configure(Tensor::tensor_storage_t storage_type)
 {
     storage_type_ = storage_type;
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     if (storage_type == Tensor::on_disk)
     {
         std::string name = this->name_ + ".tensor";
-        disk_buffer_ = new DiskBuffer(name);
+        DiskBufferPtr disk_buffer = new DiskBuffer(name);
+        for ( ; it != stop; ++it)
+        {
+            TensorBlock* block = *it;
+            if (block)
+                block->configure(disk_buffer);
+        }
+
     }
-    
-}
-
-void
-Tensor::configure(tensor_erase_policy_t erase_type)
-{
-    erase_type_ = erase_type;
-}
-
-void
-Tensor::configure(tensor_distribution_t dist_type)
-{
-    distribution_type_ = dist_type;
+    else
+    {
+        for ( ; it != stop; ++it)
+        {
+            TensorBlock* block = *it;
+            if (block)
+                block->configure(storage_type);
+        }
+    }
 }
 
 void
@@ -1061,22 +1057,22 @@ Tensor::configure(BlockRetrieveAction* block_action)
     TensorBlock* block = get_first_nonnull_block();
     if (!block)
     {
-        fill_blocks(Tensor::action);
-        block = get_first_nonnull_block();
+        raise(SanityCheckError, "how did you create a tensor with no blocks?");
     }
+
+    configure(Tensor::action);
 
     if (!block->get_retrieve_action())
     {
         TensorRetrieveActionPtr action = new TensorRetrieveAction(this);
         action->add(block_action);
-        NodeMap<TensorBlock>::iterator it(blocks_->begin());
-        NodeMap<TensorBlock>::iterator stop(blocks_->end());
+        NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+        NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
         for ( ; it != stop; ++it)
         {
             TensorBlock* block = *it;
             if (!block)
                 continue;
-
             block->configure(action);
         }
     }
@@ -1090,46 +1086,17 @@ Tensor::configure(BlockRetrieveAction* block_action)
 void
 Tensor::configure(const TensorElementComputerPtr& filler)
 {
-    filler->set_index_descr(descr_.get());
+    filler->set_index_descr(block_descr_.get());
     filler_ = new ThreadedTensorElementComputer(filler);
     storage_type_ = Tensor::recomputed;
-
-    uli idx = 0;
-    uli indexset[NINDEX];
-    TensorValueEstimater* estimater = filler->get_estimater(depth_);
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    for ( ; it != stop; ++it, ++idx)
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
+    for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
-        if (block)
-        {
-            if (block->is_permutationally_unique())
-            {
-                raise(SanityCheckError, "cannot re-fill tensor in configure filler");
-            }
-            else
-            {
-                block->sync_max_log();
-                continue;
-            }
-        }
-        
-        blocks_->indices(idx, indexset);
-
-        float maxlog = LOG_NONZERO;
-        if (estimater)
-            maxlog = estimater->max_log(indexset);
-        
-        if (maxlog < YetiRuntime::nonnull_cutoff)
+        if (!block)
             continue;
- 
-        //if we have gotten here we actually need to create a new node
-        block = make_block(indexset);       
-        if (!block) //rigorously zero
-            continue;
-
-        block->set_max_log(maxlog);  
+        block->configure(Tensor::recomputed);
     }
 }
 
@@ -1140,8 +1107,8 @@ Tensor::configure_degeneracy(const PermutationGroupPtr& grp)
 
 
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     uli tmpspace[NINDEX];
     uli indices_used[100];
     for ( ; it != stop; ++it, ++idx)
@@ -1152,7 +1119,7 @@ Tensor::configure_degeneracy(const PermutationGroupPtr& grp)
             
         const uli* block_indices = block->get_indices();
 
-        uli idx = blocks_->index(block_indices);
+        uli idx = tensor_blocks_->index(block_indices);
         indices_used[0] = idx;
         usi nperms = 1;
         PermutationSet::iterator it = grp->begin();
@@ -1182,7 +1149,7 @@ Tensor::configure_degeneracy(const PermutationGroupPtr& grp)
 
 
             //ensure not a repeat
-            idx = blocks_->index(tmpspace);
+            idx = tensor_blocks_->index(tmpspace);
 
             bool repeat = false;
             for (usi i=0; i < nperms; ++i)
@@ -1223,7 +1190,7 @@ Tensor::get_matrix(
     if (!matrix)
     {
         uli nelements[NINDEX];
-        descr_->get_nelements_data(nelements);
+        block_descr_->get_nelements_data(nelements);
         uli nrows = config->get_index()->nrows(nelements);
         uli ncols = config->get_index()->ncols(nelements);
         matrix = new Matrix(nrows,ncols);
@@ -1242,7 +1209,7 @@ Tensor::get_matrix(
     if (!matrix)
     {
         uli nelements[NINDEX];
-        descr_->get_nelements_data(nelements);
+        block_descr_->get_nelements_data(nelements);
         uli nrows = config->get_index()->nrows(nelements);
         uli ncols = config->get_index()->ncols(nelements);
         if (nrows != ncols)
@@ -1262,7 +1229,16 @@ Tensor::get_matrix(
 Tensor*
 Tensor::copy()
 {
-    PermutationGroup* grp = new PermutationGroup(descr_->nindex());
+
+    Tensor* newtensor = clone();
+    newtensor->accumulate(this, 1.0);
+    return newtensor;
+}
+
+Tensor*
+Tensor::clone()
+{
+    PermutationGroup* grp = new PermutationGroup(block_descr_->nindex());
     PermutationGroup::iterator it = grp->begin();
     PermutationGroup::iterator stop = grp->end();
     for ( ; it != stop; ++it)
@@ -1271,13 +1247,16 @@ Tensor::copy()
     }
     grp->set_closed();
 
-    usi nindex = descr_->nindex();
-    TensorIndexDescr* newdescr = new TensorIndexDescr(nindex);
+    usi nindex = block_descr_->nindex();
+    TensorIndexDescr* new_descr = new TensorIndexDescr(nindex);
     for (usi i=0; i < nindex; ++i)
-        newdescr->set(i, descr_->get(i));
+    {
+        new_descr->set(i, block_descr_->get(i));
+    }
 
-    Tensor* newtensor = new Tensor(name_, newdescr, grp);
-    newtensor->accumulate(this, 1.0);
+    Tensor* newtensor = new Tensor(name_, new_descr, grp);
+    newtensor->configure(storage_type_);
+
     return newtensor;
 }
 
@@ -1288,18 +1267,17 @@ Tensor::convert(
 )
 {
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     for ( ; it != stop; ++it, ++idx)
     {
         TensorBlock* block = *it;
         if (!block) //we don't need to create another node
             continue;
 
-        block->set_read_mode();
-        block->retrieve();
-        block->convert(matrix, config, descr_.get());
-        block->release();
+        block->retrieve_read();
+        block->convert(matrix, config, block_descr_.get());
+        block->release_read();
     }
 }
 
@@ -1329,27 +1307,20 @@ Tensor::accumulate(
 {
     uli idx = 0;
     uli indexset[NINDEX];
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     for ( ; it != stop; ++it, ++idx)
     {
         TensorBlock* block = *it;
-        if (!block)
-        {
-            blocks_->indices(idx, indexset);
-            block = make_block(indexset);
-        }
-
         if (!block)
             continue; //null
 
         if (!block->is_permutationally_unique())
             continue;
 
-        block->set_write_mode();
-        block->retrieve();
-        block->accumulate(matrix, config, descr_.get());
-        block->release();
+        block->retrieve_write();
+        block->accumulate(matrix, config, block_descr_.get());
+        block->release_write();
     }
 
     update();
@@ -1369,7 +1340,7 @@ Tensor::element_op(ElementOp* op)
     op->configure(this);
 
     ThreadGroup* grp = YetiRuntime::get_thread_grp();
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     for (uli i=0; i < nthread; ++i)
     {
         Thread* thr = new ElementOpThread(i, this, op);
@@ -1381,11 +1352,10 @@ Tensor::element_op(ElementOp* op)
 
     if (op->do_update_after())
     {
-        erase_zero_blocks();
+        update();
         if (parent_tensor_)
         {
             parent_tensor_->update_to_subtensor();
-            parent_tensor_->erase_zero_blocks();
         }
     }
 }
@@ -1397,28 +1367,25 @@ Tensor::element_op(
 )
 {
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    uli nthread = YetiRuntime::nthread();
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
+    uli nthread = YetiRuntime::nthread_compute();
     bool read_mode = false;
     uli indexset[NINDEX];
+    uli tasknum = 0;
     for ( ; it != stop; ++it, ++idx)
     {
-        //if (INVALID_THREAD_TASK(idx, threadnum, nthread))
-        if (threadnum != 0)
+        if (tasknum % nthread != threadnum)
             continue;
 
         TensorBlock* block = *it;
         if (!block) //we don't need to create another node
         {
-            blocks_->indices(idx, indexset);
             continue;
         }
 
         if (!block->is_permutationally_unique())
         {
-            block->sync_max_log();
-            block->obsolete();
             continue;
         }
 
@@ -1426,7 +1393,7 @@ Tensor::element_op(
             Depending on the type of element operation,
             you might need different modes - e.g.
         */
-        op->set_mode(block);
+        op->retrieve(block);
 
         //retrieve the block in case it needs to be fetched from
         //disk or recomputed
@@ -1439,7 +1406,9 @@ Tensor::element_op(
             block->update();
             block->sync(); //make sure we are synced with parent storage
         }
-        block->release();
+        op->release(block);
+
+        ++tasknum;
     }
 
 }
@@ -1450,13 +1419,10 @@ Tensor::fill(
     const ThreadedTensorElementComputerPtr& filler
 )
 {
-    if (!unsort_perm_->is_identity())
-    {
-        raise(SanityCheckError, "Cannot fill a tensor not in its original permutation state");
-    }
+    timer::Timer::start("fill");
 
     ThreadGroup* grp = YetiRuntime::get_thread_grp();
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     for (uli i=0; i < nthread; ++i)
     {
         Thread* thr = new TensorFillThread(i, this, filler);
@@ -1466,18 +1432,11 @@ Tensor::fill(
     grp->wait();
     grp->clear();
 
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    for ( ; it != stop; ++it)
-    {
-        TensorBlock* block = *it;
-        if (block && !block->is_permutationally_unique())
-        {
-            block->sync_max_log();
-        }
-    }
 
-    erase_zero_blocks();
+    remote_wait();
+
+    timer::Timer::stop("fill");
+
 }
 
 bool
@@ -1486,8 +1445,8 @@ Tensor::equals(
 )
 {
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     
     const void* dataptr = data;
     
@@ -1497,20 +1456,18 @@ Tensor::equals(
         if (!block || !block->is_permutationally_unique())
             continue;
 
-        block->set_read_mode();
-
-        block->retrieve();
+        block->retrieve_read();
 
         //dataptr gets incremented
         bool check = block->equals(&dataptr);
         
         if (!check)
         {
-            block->release();
+            block->release_read();
             return false;
         }
         
-        block->release();
+        block->release_read();
     }
     
     return true;
@@ -1519,12 +1476,12 @@ Tensor::equals(
 bool
 Tensor::equals(Tensor* tensor)
 {
-    if (tensor->get_block_map()->size() != blocks_->size())
+    if (tensor->get_block_map()->size() != tensor_blocks_->size())
         return false;
 
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it_me(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it_me(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     NodeMap<TensorBlock>::iterator 
         it_other(tensor->get_block_map()->begin());
     
@@ -1533,8 +1490,8 @@ Tensor::equals(Tensor* tensor)
         TensorBlock* block_me = *it_me;
         TensorBlock* block_other = *it_other;
         
-        bool null_me = block_me ? block_me->get_max_log() < YetiRuntime::nonnull_cutoff : true;
-        bool null_other = block_other ?  block_other->get_max_log() < YetiRuntime::nonnull_cutoff : true;
+        bool null_me = block_me;
+        bool null_other = block_other;
 
         if (null_me && !null_other)
             return false;
@@ -1547,14 +1504,11 @@ Tensor::equals(Tensor* tensor)
             && !block_other->is_permutationally_unique())
             continue;
         
-        block_me->set_read_mode();
-        block_other->set_read_mode();
-        
-        block_me->retrieve();
-        block_other->retrieve();
+        block_me->retrieve_read();
+        block_other->retrieve_read();
         bool check = block_me->equals(block_other);
-        block_me->release();
-        block_other->release();
+        block_me->release_read();
+        block_other->release_read();
         
         if (!check)
             return false;
@@ -1564,12 +1518,12 @@ Tensor::equals(Tensor* tensor)
 }
 
 void
-Tensor::fill_blocks(Tensor::tensor_storage_t store_type)
+Tensor::fill_blocks()
 {
     uli idx = 0;
     uli indexset[NINDEX];
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     for ( ; it != stop; ++it, ++idx)
     {
         TensorBlock* block = *it;
@@ -1581,85 +1535,126 @@ Tensor::fill_blocks(Tensor::tensor_storage_t store_type)
             }
         } //we don't need to create another node
 
-        blocks_->indices(idx, indexset);
-        /** Only do permutationally unique blocks! This is very important for threads! */
+        tensor_blocks_->indices(idx, indexset);
+        /** Only do permutationally unique blocks! */
         if (tensor_grp_->improves_sort(indexset))
             continue;
 
         //do not initialize the blocks on a fill
-        block = make_block(indexset, store_type);
-        if (block)
-            block->set_max_log(1);
+        block = make_block(indexset, storage_type_);
     }
+    remote_wait();
+}
+
+void
+Tensor::global_sum()
+{
+    heisenfxn(Tensor::global_sum);
+    if (is_distributed())
+        raise(SanityCheckError, "cannot global sum a distributed tensor");
+
+    if (YetiRuntime::nproc() == 1)
+        return;
+
+    YetiMessenger* messenger = YetiRuntime::get_messenger();
+
+    TensorBlockMap::iterator it = tensor_blocks_->begin();
+    TensorBlockMap::iterator stop = tensor_blocks_->end();
+    for ( ; it != stop; ++it)
+    {
+        TensorBlock* block = *it;
+        if (!block)
+            continue;
+
+        if (messenger->nchildren() == 0) //I am the bottom node in the binary tree
+        {
+            block->retrieve_read();
+            /** It is very important first to retrieve the block
+                and then reset the retrieve flag.  The retrieve
+                will block if the received flag is set to false
+            */
+            block->reset_parent_signal();
+
+            SendStatus* status = block->send_data(
+                    messenger,
+                    Message::TensorBranch,
+                    Message::GlobalSum,
+                    messenger->parent()
+            );
+            status->wait();
+
+            block->release_read();
+        }
+        else
+        {
+            while (block->nchild_signals() < messenger->nchildren())
+            {
+                usleep(1);
+            }
+            block->reset_child_signal();
+        }
+    }
+
+    it = tensor_blocks_->begin();
+    for ( ; it != stop; ++it)
+    {
+        TensorBlock* block = *it;
+        if (!block)
+            continue;
+
+        while (!block->received_parent_signal())
+            usleep(1);
+
+    }
+
+    remote_wait();
+    heisenfxn(Tensor::global_sum);
 }
 
 void
 Tensor::fill(
     uli threadnum,
-    const ThreadedTensorElementComputerPtr& new_filler
+    const ThreadedTensorElementComputerPtr& threaded_filler
 )
 {
-    uli idx = 0;
-    uli nthread = YetiRuntime::nthread();
-    uli indexset[NINDEX];
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    TensorElementComputer* filler = new_filler->get_computer(threadnum);
-    TensorValueEstimater* estimater = filler->get_estimater(depth_);
-    for ( ; it != stop; ++it, ++idx)
+    uli tasknum = 0;
+    uli nthread = YetiRuntime::nthread_compute();
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
+    TensorElementComputer* filler = threaded_filler->get_computer(threadnum);
+    TensorValueEstimater* estimater = filler->get_estimater(depth_); 
+    for ( ; it != stop; ++it)
     {
-        if (INVALID_THREAD_TASK(idx, threadnum, nthread))
+        TensorBlock* block = *it;  //some blocks can be determined rigorously zero ahead of time
+        if (!block)
+            continue;
+        else if (!block->is_permutationally_unique())
+            continue;
+        else if (block->is_remote_block())
             continue;
 
-        TensorBlock* block = *it;
-        if (block)
-        {
-            if (block->is_permutationally_unique())
-            {
-                raise(SanityCheckError, "cannot re-fill tensor");
-            }
-            else //this block was created by a non-permutationally unique block
-            {
-                block->sync_max_log();
-                continue;    
-            }
-        } //we don't need to create another node
-
-        blocks_->indices(idx, indexset);
-        /** Only do permutationally unique blocks! This is very important for threads! */
-        if (tensor_grp_->improves_sort(indexset))
-            continue;
-
-        float maxlog = estimater ? estimater->max_log(indexset) : LOG_NONZERO;
+        float maxlog = estimater ? estimater->max_log(block->get_indices()) : LOG_NONZERO;
         if (maxlog < YetiRuntime::nonnull_cutoff) //this contribution can be skipped
             continue;
 
-
-
-        //if we have gotten here we actually need to create
-        //a new node
-        block = make_block(indexset);
-        if (!block) //some blocks can be determined rigorously zero ahead of time
-            continue;
-
-        if (!block->is_permutationally_unique())
+        if (tasknum % nthread == threadnum)
         {
-            raise(SanityCheckError, "should not have reached here in fill");
+            //retrieve the block in case it needs to be fetched from
+            //disk or recomputed
+            block->retrieve_write();
+            //fill the block with values
+            block->fill(filler);
+
+            //after the fill, we are done with the block
+            //so we need to ensure that it is synced with the
+            //parent storage area
+            block->sync();
+
+            //release the block back to disk or wherever it needs to go
+            block->release_write();
         }
-        block->set_write_mode();
-        //retrieve the block in case it needs to be fetched from
-        //disk or recomputed
-        block->retrieve();
-        //fill the block with values
-        block->fill(filler);
 
-        //after the fill, we are done with the block
-        //so we need to ensure that it is synced with the
-        //parent storage area
-        block->sync();
-
-        //release the block back to disk or wherever it needs to go
-        block->release();
+        ++tasknum;
    }
 
 
@@ -1678,14 +1673,14 @@ Tensor::fill(const TensorElementComputerPtr& val)
 {
     if (val)
     {
-        val->set_index_descr(descr_.get());
+        val->set_index_descr(block_descr_.get());
         fill(new ThreadedTensorElementComputer(val));
     }
     else
     {
         TensorElementComputerPtr filler
             = new MemsetElementComputer(TemplateInfo::double_type);
-        filler->set_index_descr(descr_.get());
+        filler->set_index_descr(block_descr_.get());
         fill(new ThreadedTensorElementComputer(filler));
     }
 }
@@ -1693,7 +1688,7 @@ Tensor::fill(const TensorElementComputerPtr& val)
 TensorBlock*
 Tensor::get_block(uli index) const
 {
-    return blocks_->get(index);
+    return tensor_blocks_->get(index);
 }
 
 TensorBlock*
@@ -1706,18 +1701,18 @@ Tensor::get_block(const uli* indices, Permutation* p) const
     {
         uli permuted_indices[NINDEX];
         p->permute(indices, permuted_indices);
-        return blocks_->get(permuted_indices);
+        return tensor_blocks_->get(permuted_indices);
     }
     else
     {
-        return blocks_->get(indices);
+        return tensor_blocks_->get(indices);
     }
 }
 
 TensorBlockMap*
 Tensor::get_block_map() const
 {
-    return blocks_;
+    return tensor_blocks_;
 }
 
 DataCache*
@@ -1733,21 +1728,15 @@ Tensor::get_metadata_cache() const
 }
 
 TensorIndexDescr*
-Tensor::get_descr() const
+Tensor::get_block_descr() const
 {
-    return descr_.get();
+    return block_descr_.get();
 }
 
 usi
 Tensor::get_depth() const
 {
     return depth_;
-}
-
-DiskBuffer*
-Tensor::get_disk_buffer() const
-{
-    return disk_buffer_.get();
 }
 
 ThreadedTensorElementComputer*
@@ -1759,8 +1748,8 @@ Tensor::get_element_computer() const
 TensorBlock*
 Tensor::get_first_nonnull_block() const
 {
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
@@ -1772,27 +1761,27 @@ Tensor::get_first_nonnull_block() const
 }
 
 uli
+Tensor::get_node_number(uli block_number) const
+{
+    if (is_distributed())
+    {
+        uli subidx = full_index_to_distribution_index_[block_number];
+        return subidx % YetiRuntime::nproc();
+    }
+    else
+        return 0;
+}
+
+uli
 Tensor::get_index(const uli *indices) const
 {
-    return blocks_->index(indices);
+    return tensor_blocks_->index(indices);
 }
 
 const std::string&
 Tensor::get_name() const
 {
     return name_;
-}
-
-Tensor::tensor_distribution_t
-Tensor::get_distribution_type() const
-{
-    return distribution_type_;
-}
-
-Tensor::tensor_erase_policy_t
-Tensor::get_erase_type() const
-{
-    return erase_type_;
 }
 
 Tensor::tensor_priority_t
@@ -1818,22 +1807,10 @@ Tensor::get_original_grp() const
     return original_grp_.get();
 }
 
-Permutation*
-Tensor::get_sort_permutation() const
-{
-    return sort_perm_;
-}
-
-Permutation*
-Tensor::get_unsort_permutation() const
-{
-    return unsort_perm_;
-}
-
 ulli
 Tensor::get_totalsize() const
 {
-    return descr_->totalsize();
+    return block_descr_->totalsize();
 }
 
 size_t
@@ -1848,10 +1825,68 @@ Tensor::data_block_size() const
     return data_block_size_;
 }
 
+void
+Tensor::distribute(const usi* indices, usi nindex_distr)
+{
+    if (YetiRuntime::nproc() == 1)
+        return;
+
+    if (distribution_indices_)
+    {
+        raise(SanityCheckError, "cannot redestribute tensor");
+    }
+
+    distribution_indices_ = new usi[nindex_distr];
+    nindex_distr_ = nindex_distr;
+    for (usi i=0; i < nindex_distr; ++i)
+        distribution_indices_[i] = indices[i];
+
+    uli sizes[NINDEX];
+    uli offsets[NINDEX];
+    for (usi i=0; i < nindex_distr; ++i)
+    {
+        sizes[i] = tensor_blocks_->sizes()[distribution_indices_[i]];
+        offsets[i] = tensor_blocks_->offsets()[distribution_indices_[i]];
+    }
+
+    distr_indexer_ = new Indexer(sizes, offsets, nindex_distr);
+    uli nblocks = tensor_blocks_->size();
+    full_index_to_distribution_index_ = new uli[nblocks];
+
+    uli distr_indexset[NINDEX];
+    uli full_indexset[NINDEX];
+    uli permuted_indexset[NINDEX];
+    for (uli idx=0; idx < nblocks; ++idx)
+    {
+        tensor_blocks_->indices(idx, full_indexset);
+        Permutation* p = tensor_grp_->get_lowest_permutation(full_indexset);
+        p->permute(full_indexset, permuted_indexset);
+
+        for (usi i=0; i < nindex_distr; ++i)
+        {
+            distr_indexset[i] = permuted_indexset[distribution_indices_[i]];
+        }
+
+        uli subset_idx = distr_indexer_->index(distr_indexset);
+
+        full_index_to_distribution_index_[idx] = subset_idx;
+
+        TensorBlock* block = tensor_blocks_->get(idx);
+        if (block)
+        {
+            uli node_assignment = subset_idx % YetiRuntime::nproc();
+            block->set_node_number(node_assignment);
+        }
+
+    }
+
+    remote_wait();
+}
+
 TensorBlock*
 Tensor::get_make_block(uli index)
 {
-    if (index >= blocks_->size())
+    if (index >= tensor_blocks_->size())
     {
         std::string err = stream_printf(
             "invalid block index %d passed to tensor %s",
@@ -1860,13 +1895,13 @@ Tensor::get_make_block(uli index)
         raise(SanityCheckError, err);
     }
 
-    TensorBlock* block = blocks_->get(index);
+    TensorBlock* block = tensor_blocks_->get(index);
     if (block)
         return block;
 
     uli indices[NINDEX];
     //doesn't exist yet... build it        
-    blocks_->indices(index, indices);
+    tensor_blocks_->indices(index, indices);
     block = make_block(indices);
 
     return block;
@@ -1894,7 +1929,7 @@ Tensor::internal_contraction(
 )
 {
     config->configure_block(
-        blocks_->sizes(),
+        tensor_blocks_->sizes(),
         get_depth()
     );
     uli nr = config->nrows();
@@ -1922,22 +1957,14 @@ Tensor::internal_contraction(
             if (!dst_block)
                 continue; //filtered out
 
-            bool test = dst_block->set_accumulate_mode();
-            if (!test)
-            {
-                cerr << stream_printf("set accumulate failed %d %s", __LINE__, __FILE__) << endl;
-                abort();
-            }
-            src_block->set_read_mode();
-
-            src_block->retrieve();
-            dst_block->retrieve();
+            src_block->retrieve_read();
+            dst_block->retrieve_accumulate();
             src_block->internal_contraction(
                 dst_block,
                 config
             );
-            src_block->release();
-            dst_block->release();
+            src_block->release_read();
+            dst_block->release_accumulate();
         }
     }
 
@@ -1947,34 +1974,20 @@ Tensor::internal_contraction(
 bool
 Tensor::nonzero() const
 {
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     uli idx = 0;
     for ( ; it != stop; ++it, ++idx)
     {
         TensorBlock* block = *it;
-        if (block && block->get_max_log() > YetiRuntime::nonnull_cutoff)
-        {
-            return true;
-        }
-    }
-    return false;
-}
+        if (!block)
+            continue;
 
-bool
-Tensor::unique_nonzero() const
-{
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    uli idx = 0;
-    for ( ; it != stop; ++it, ++idx)
-    {
-        TensorBlock* block = *it;
-        if (block
-           && block->get_max_log() > YetiRuntime::nonnull_cutoff
-           &&  block->is_permutationally_unique()
-                //this->is_parent_block(block)
-        )
+        block->retrieve();
+        float maxlog = block->get_branch()->get_node()->get_max_log();
+        block->release();
+
+        if (maxlog > YetiRuntime::nonnull_cutoff)
         {
             return true;
         }
@@ -1986,11 +1999,12 @@ bool
 Tensor::is_parent_block(TensorBlock* block) const
 {
     if (block->is_permutationally_unique())
+    {
         return true;
+    }
 
     uli indices[NINDEX];
     block->get_fetch_permutation()->permute(block->get_indices(), indices);
-
     bool contains_parent = this->contains(indices);
 
     return !contains_parent;
@@ -2007,14 +2021,14 @@ Tensor::norm()
 ulli
 Tensor::nelements() const
 {
-    return descr_->totalsize();
+    return block_descr_->totalsize();
 }
 
 uli
 Tensor::nblocks_retrieved() const
 {
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     uli nretrieved = 0;
     for ( ; it != stop; ++it)
     {
@@ -2028,60 +2042,68 @@ Tensor::nblocks_retrieved() const
 ulli
 Tensor::nelements_unique() const
 {
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     uli idx = 0;
     uli indexset[NINDEX];
     ulli n = 0;
     for ( ; it != stop; ++it, ++idx)
     {
-        blocks_->indices(idx, indexset);
+        tensor_blocks_->indices(idx, indexset);
         if (tensor_grp_->improves_sort(indexset))
             continue;
 
-        n += descr_->get_nelements_data(depth_, indexset);
+        n += block_descr_->get_nelements_data(depth_, indexset);
     }
     return n;
 }
 
 void
+Tensor::print_block(TensorBlock* block, std::ostream& os) const
+{
+    const uli* indexset = block->get_indices();
+    os << endl << "Tensor Block " << block->get_index_string()
+       << " on node " << block->get_node_number() << endl;
+    os << "irreps:";
+    for (usi i=0; i < block_descr_->nindex(); ++i)
+        os << " " << block_descr_->get(i)->irrep(indexset[i]);
+    os << endl;
+    os << "Fetch permutation:  ";
+    block->get_fetch_permutation()->print(os); os << endl;
+    os << "Resort permutation: ";
+    block->get_resort_permutation()->print(os); os << endl;
+    ++Env::indent;
+    block->retrieve_read();
+    block->print(os);
+    block->release_read();
+    --Env::indent;
+}
+
+void
 Tensor::print(std::ostream& os)
 {
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
 
-    os << "Tensor " << name_ << endl;
-    os << tensor_grp_ << endl;
-    uli idx = 0;
-    uli indexset[NINDEX];
-    for ( ; it != stop; ++it, ++idx)
+    if (YetiRuntime::me() == 0)
+    {
+        os << "Tensor " << name_ << endl;
+        os << "Permutation Group" << endl;
+        os << tensor_grp_ << endl;
+        os << "Original Group" << endl;
+        os << original_grp_ << endl;
+    }
+
+    for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
         if (!block)
             continue;
 
-        if (block->get_max_log() < YetiRuntime::print_cutoff)
-            continue;
-
-        blocks_->indices(idx, indexset);
-        os << endl << "Tensor Block "
-            << ClassOutput<const uli*>::str(descr_->nindex(), indexset)
-            << endl;
-        os << "irreps:";
-        for (usi i=0; i < descr_->nindex(); ++i)
-            os << " " << descr_->get(i)->irrep(indexset[i]);
-        os << endl;
-        os << "Fetch permutation:  ";
-        block->get_fetch_permutation()->print(os); os << endl;
-        os << "Resort permutation: ";
-        block->get_resort_permutation()->print(os); os << endl;
-        ++Env::indent;
-        block->set_read_mode();
-        block->retrieve();
-        block->print(os);
-        block->release();
-        --Env::indent;
+        if (!is_distributed() || YetiRuntime::me() == block->get_node_number())
+            print_block(block, os);
     }
+
 }
 
 void
@@ -2102,37 +2124,46 @@ Tensor::zero()
 }
 
 void
+Tensor::set_tensor_position(Contraction::tensor_position_t position)
+{
+    cxn_position_ = position;
+}
+
+Contraction::tensor_position_t 
+Tensor::get_tensor_position() const
+{
+    return cxn_position_;
+}
+
+void
 Tensor::set_priority(Tensor::tensor_priority_t priority)
 {
     priority_ = priority;
+    if (parent_tensor_)
+        parent_tensor_->set_priority(priority);
 }
 
 void
-Tensor::set_read_mode()
+Tensor::remote_wait()
 {
-    foreach_nonnull(block, blocks_, TensorBlock,
-        block->set_read_mode();
-    )
+    heisenfxn(Tensor::remote_wait);
+    if (YetiRuntime::nproc() > 1)
+    {
+        heisenfxn(Tensor::remote_wait);
+        timer::Timer::start("tensor barrier");
+        YetiRuntime::get_messenger()->wait_barrier();
+        timer::Timer::stop("tensor barrier");
+    }
+    heisenfxn(Tensor::remote_wait);
 }
 
 void
-Tensor::set_write_mode()
+Tensor::update_remote_blocks()
 {
-    foreach_nonnull(block, blocks_, TensorBlock,
-        block->set_write_mode();
-    )
 }
 
 void
-Tensor::set_accumulate_mode()
-{
-    foreach_nonnull(block, blocks_, TensorBlock,
-        block->set_accumulate_mode();
-    )
-}
-
-void
-Tensor::sync_to_subtensor()
+Tensor::update_from_subtensor()
 {
     if (parent_tensor_)
     {
@@ -2140,8 +2171,8 @@ Tensor::sync_to_subtensor()
         abort();
     }
 
-    iterator it = blocks_->begin();
-    iterator stop = blocks_->end();
+    iterator it = tensor_blocks_->begin();
+    iterator stop = tensor_blocks_->end();
     for ( ; it != stop; ++it)
     {
         TensorBlock* block = *it;
@@ -2152,7 +2183,6 @@ Tensor::sync_to_subtensor()
         //that was changed in the course of some operation
         if (!block->is_subblock() && !block->is_permutationally_unique())
         {
-            block->sync_max_log();
             block->obsolete();
         }
     }
@@ -2168,46 +2198,31 @@ Tensor::update_to_subtensor()
         abort();
     }
 
-    iterator it = blocks_->begin();
-    iterator stop = blocks_->end();
-    for ( ; it != stop; ++it)
-    {
-        TensorBlock* block = *it;
-        if (!block)
-            continue;
-
-        //this is parent of parent tensor but maps onto a block
-        //that was changed in the course of some operation
-        if (!block->is_subblock() && !block->is_permutationally_unique())
-        {
-            block->sync_max_log();
-        }
-    }
-
-    erase_zero_blocks();
 }
 
+void
+Tensor::flush()
+{
+    foreach_nonnull(block, tensor_blocks_, TensorBlock,
+        block->flush_from_cache();
+    )
+}
 
 void
 Tensor::sync()
 {
-    if (parent_tensor_)
-        parent_tensor_->sync_to_subtensor();
-
-    in_sync = true;
-
-    foreach_nonnull(block, blocks_, TensorBlock,
+    foreach_nonnull(block, tensor_blocks_, TensorBlock,
         block->sync();
     )
 
-    in_sync = false;
+    remote_wait();
 }
 
 
 void
 Tensor::reset_degeneracy()
 {
-    foreach_nonnull(block, blocks_, TensorBlock,
+    foreach_nonnull(block, tensor_blocks_, TensorBlock,
         block->reset_degeneracy();
     )
 }
@@ -2216,26 +2231,45 @@ void
 Tensor::update(uli threadnum)
 {
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-    uli nthread = YetiRuntime::nthread();
-
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
+    uli nthread = YetiRuntime::nthread_compute();
+    uli tasknum = 0;
     for ( ; it != stop; ++it, ++idx)
     {
-        if (INVALID_THREAD_TASK(idx, threadnum, nthread))
+        if (tasknum % nthread != threadnum)
             continue;
 
         TensorBlock* block = *it;
         if (!block)
             continue;
+        
+        if (is_distributed() && block->get_node_number() != YetiRuntime::me())
+            continue;
 
         if (block->is_permutationally_unique())
         {
-            block->set_read_mode();
-            block->retrieve();
+            block->retrieve_read();
             block->update();
-            block->release();
+            block->release_read();
         }
+
+        ++tasknum;
+    }
+}
+
+void
+Tensor::recompute_permutation()
+{
+    
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
+    for ( ; it != stop; ++it)
+    {
+        TensorBlock* block = *it;
+        if (!block)
+            continue;
+        block->recompute_permutation();
     }
 }
 
@@ -2243,9 +2277,10 @@ void
 Tensor::update()
 {    
     ThreadGroup* grp = YetiRuntime::get_thread_grp();
-    uli nthread = YetiRuntime::nthread();
+    uli nthread = YetiRuntime::nthread_compute();
     for (uli i=0; i < nthread; ++i)
     {
+        /** These threads will update the symmetry unique blocks */
         Thread* thr = new TensorUpdateThread(i, this);
         grp->add(thr);
     }
@@ -2253,9 +2288,11 @@ Tensor::update()
     grp->wait();
     grp->clear();
 
+
+    /** Now go through and work on the symmetry non-unique blocks */
     uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
+    NodeMap<TensorBlock>::iterator it(tensor_blocks_->begin());
+    NodeMap<TensorBlock>::iterator stop(tensor_blocks_->end());
     for ( ; it != stop; ++it, ++idx)
     {
         TensorBlock* block = *it;
@@ -2264,77 +2301,24 @@ Tensor::update()
 
         if (!block->is_permutationally_unique())
         {
-            block->sync_max_log();
             block->reset_degeneracy();
+            block->obsolete();
         }
-
-#if YETI_SANITY_CHECK
-            Permutation* ptest = block->get_fetch_permutation()->product(block->get_resort_permutation());
-            if (sort_perm_->is_identity() && !ptest->is_identity())
-            {
-                cerr << "nonunique subblock does not have sort realigned to parent block" << endl;
-                abort();
-            }
-#endif
     }
 
-
-    erase_zero_blocks();
     if (parent_tensor_)
-        parent_tensor_->update_to_subtensor();
-}
+        parent_tensor_->update_from_subtensor();
 
-
-void
-Tensor::erase_zero_blocks()
-{
-    return;
-    if (erase_type_ == Tensor::keep_zero_blocks)
-        return;
-
-    uli idx = 0;
-    NodeMap<TensorBlock>::iterator it(blocks_->begin());
-    NodeMap<TensorBlock>::iterator stop(blocks_->end());
-
-    for ( ; it != stop; ++it, ++idx)
-    {
-        TensorBlock* block = *it;
-        if (!block)
-            continue;
-
-        try{
-            erase_if_null(block, idx);
-        }
-        catch(int e)
-        {
-            cerr << stream_printf("Caught at %d %s", __LINE__, __FILE__) << endl;
-            abort();
-        }
-
-    }
-}
-
-void
-Tensor::erase_if_null(
-    TensorBlock* block,
-    uli idx
-)
-{
-    if (block->get_max_log() < YetiRuntime::nonnull_cutoff)
-    {
-        blocks_->erase(idx);
-    }
+    remote_wait();
 }
 
 
 bool
 Tensor::is_cache_coherent() const
 {
-    foreach_nonnull(block, blocks_, TensorBlock,
+    foreach_nonnull(block, tensor_blocks_, TensorBlock,
         if (!block->is_cache_coherent())
             return false;
     )
     return true;
 }
-
-
