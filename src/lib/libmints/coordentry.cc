@@ -14,13 +14,13 @@ VariableValue::compute()
     return negate_ ? -geometryVariables_[name_] : geometryVariables_[name_];
 }
 
-CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label)
+CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label)
     : entry_number_(entry_number), computed_(false), Z_(Z),
       charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false)
 {
 }
 
-CoordEntry::CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol,
+CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol,
            const std::string& label, const std::map<std::string, std::string>& basis)
     : entry_number_(entry_number), computed_(false), Z_(Z),
       charge_(charge), mass_(mass), symbol_(symbol), label_(label), ghosted_(false),
@@ -70,13 +70,13 @@ const std::string& CoordEntry::basisset(const std::string& type) const
 }
 
 
-CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                                boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label), x_(x), y_(y), z_(z)
 {
 }
 
-CartesianEntry::CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+CartesianEntry::CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z,
                const std::map<std::string, std::string>& basis)
     : CoordEntry(entry_number, Z, charge, mass, symbol, label, basis), x_(x), y_(y), z_(z)
@@ -109,7 +109,7 @@ CartesianEntry::set_coordinates(double x, double y, double z)
     computed_ = true;
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                            boost::shared_ptr<CoordEntry> rto, boost::shared_ptr<CoordValue> rval,
                            boost::shared_ptr<CoordEntry> ato, boost::shared_ptr<CoordValue> aval,
                            boost::shared_ptr<CoordEntry> dto, boost::shared_ptr<CoordValue> dval)
@@ -120,7 +120,7 @@ ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, 
 {
 }
 
-ZMatrixEntry::ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+ZMatrixEntry::ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
              const std::map<std::string, std::string>& basis,
              boost::shared_ptr<CoordEntry> rto,
              boost::shared_ptr<CoordValue> rval,
@@ -177,7 +177,7 @@ const Vector3& ZMatrixEntry::compute()
 {
     if (computed_){
         return coordinates_;
-}
+    }
 
     if(rto_ == 0 && ato_ == 0 && dto_ == 0){
         /*

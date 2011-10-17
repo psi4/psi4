@@ -257,7 +257,10 @@ double Molecule::mass(int atom) const
     if (atoms_[atom]->mass() != 0.0)
         return atoms_[atom]->mass();
 
-    return an2masses[atoms_[atom]->Z()];
+    if (fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
+        fprintf(outfile, "WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n");
+
+    return an2masses[static_cast<int>(atoms_[atom]->Z())];
 }
 
 std::string Molecule::symbol(int atom) const
@@ -2075,12 +2078,12 @@ double Molecule::xyz(int atom, int _xyz) const
     return input_units_to_au_ * atoms_[atom]->compute()[_xyz];
 }
 
-int Molecule::Z(int atom) const
+double Molecule::Z(int atom) const
 {
     return atoms_[atom]->Z();
 }
 
-int Molecule::fZ(int atom) const
+double Molecule::fZ(int atom) const
 {
     return full_atoms_[atom]->Z();
 }
