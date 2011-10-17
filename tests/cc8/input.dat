@@ -2,9 +2,9 @@
 
 refnuc   =  18.9152718791489    #TEST
 refscf   = -92.2127769533       #TEST
-refccsd  =  -0.264053215584695  #TEST
-ref_t    =  -0.012461246651850  #TEST
-reftotal = -92.489291415513478  #TEST
+refccsd  =  -0.264053207415604  #TEST
+ref_t    =  -0.012461245705807  #TEST
+reftotal = -92.489291406400682  #TEST
 
 molecule CN {
   0 2

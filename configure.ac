@@ -998,6 +998,13 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc5a/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
+          tests/cc18/Makefile
+          tests/cc19/Makefile
+          tests/cc28/Makefile
+          tests/cc29/Makefile
+          tests/cc30/Makefile
+          tests/cc31/Makefile
+          tests/cc52/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile
           tests/mcscf3/Makefile

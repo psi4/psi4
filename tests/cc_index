@@ -1,0 +1,36 @@
+cc1: RHF-CCSD/6-31G** H2O geometry optimization via analytic gradients
+  (all electron, MO-basis <ab|cd>)
+
+cc2: RHF-CCSD/6-31G** H2O geometry optimization via finite differences
+  (all electron, MO-basis <ab|cd>)
+
+cc4: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>)
+
+cc5: RHF-CCSD(T)/aug-cc-pVTZ planar (C2v) C4NH4 single-point energy
+  (fzc, MO-basis <ab|cd>)  Note: one file exceeds 17 GB in this case.
+
+cc8: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
+<ab|cd>)
+
+cc8a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
+<ab|cd>)
+
+cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
+
+cc19: RHF-CCSD-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
+
+cc28: RHF-CCSD-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
+(589 355 nm)
+
+cc29: RHF-CCSD-LR/cc-pVDZ optical rotation of H2O2.  gauge = both (length
+and velocity), omega = (589 355 nm)
+
+cc30: RHF-CCSD-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
+length, omega = (633 355 nm)
+
+cc31: RHF-CCSD-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
+both (length and velocity), omega = (633 355 nm)
+
+cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
+and dipole-quadrupole tensors) at 589 nm.
+

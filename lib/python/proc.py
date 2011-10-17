@@ -414,11 +414,23 @@ def run_sapt(name, **kwargs):
     if not molecule:
         raise ValueNotSet("no molecule found")
 
-    molecule.update_geometry()
-    monomerA = molecule.extract_subsets(1,2)
-    monomerA.set_name("monomerA")
-    monomerB = molecule.extract_subsets(2,1)
-    monomerB.set_name("monomerB")
+    sapt_basis = "dimer";
+    if (kwargs.has_key('sapt_basis')):
+        sapt_basis = kwargs.pop('sapt_basis')
+    sapt_basis = sapt_basis.lower()
+
+    if (sapt_basis == "dimer"):
+        molecule.update_geometry()
+        monomerA = molecule.extract_subsets(1,2)
+        monomerA.set_name("monomerA")
+        monomerB = molecule.extract_subsets(2,1)
+        monomerB.set_name("monomerB")
+    elif (sapt_basis == "monomer"): 
+        molecule.update_geometry()
+        monomerA = molecule.extract_subsets(1)
+        monomerA.set_name("monomerA")
+        monomerB = molecule.extract_subsets(2)
+        monomerB.set_name("monomerB")
 
     ri = PsiMod.get_option('SCF_TYPE')
     ri_ints_io = PsiMod.get_option('RI_INTS_IO')
@@ -428,12 +440,14 @@ def run_sapt(name, **kwargs):
     PsiMod.print_out("\n")
     banner('Dimer HF')
     PsiMod.print_out("\n")
-    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    if (sapt_basis == "dimer"):
+        PsiMod.set_global_option('RI_INTS_IO','SAVE')
     e_dimer = scf_helper('RHF',**kwargs)
-    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+    if (sapt_basis == "dimer"):
+        PsiMod.set_global_option('RI_INTS_IO','LOAD')
 
     activate(monomerA)
-    if (ri == "DF"):
+    if (ri == "DF" and sapt_basis == "dimer"):
         PsiMod.IO.change_file_namespace(97,"dimer","monomerA")
     PsiMod.IO.set_default_namespace("monomerA")
     PsiMod.set_local_option("SCF","SAPT","2-monomer_A")
@@ -443,7 +457,7 @@ def run_sapt(name, **kwargs):
     e_monomerA = scf_helper('RHF',**kwargs)
 
     activate(monomerB)
-    if (ri == "DF"):
+    if (ri == "DF" and sapt_basis == "dimer"):
         PsiMod.IO.change_file_namespace(97,"monomerA","monomerB")
     PsiMod.IO.set_default_namespace("monomerB")
     PsiMod.set_local_option("SCF","SAPT","2-monomer_B")
@@ -473,4 +487,118 @@ def run_sapt(name, **kwargs):
     PsiMod.print_out("\n")
     e_sapt = PsiMod.sapt()
     return e_sapt
+
+def run_sapt_ct(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    monomerA = molecule.extract_subsets(1,2)
+    monomerA.set_name("monomerA")
+    monomerB = molecule.extract_subsets(2,1)
+    monomerB.set_name("monomerB")
+    molecule.update_geometry()
+    monomerAm = molecule.extract_subsets(1)
+    monomerAm.set_name("monomerAm")
+    monomerBm = molecule.extract_subsets(2)
+    monomerBm.set_name("monomerBm")
+
+    ri = PsiMod.get_option('SCF_TYPE')
+    ri_ints_io = PsiMod.get_option('RI_INTS_IO')
+
+    PsiMod.IO.set_default_namespace("dimer")
+    PsiMod.set_local_option("SCF","SAPT","2-dimer")
+    PsiMod.print_out("\n")
+    banner('Dimer HF')
+    PsiMod.print_out("\n")
+    PsiMod.set_global_option('RI_INTS_IO','SAVE')
+    e_dimer = scf_helper('RHF',**kwargs)
+    PsiMod.set_global_option('RI_INTS_IO','LOAD')
+
+    activate(monomerA)
+    if (ri == "DF"):
+        PsiMod.IO.change_file_namespace(97,"dimer","monomerA")
+    PsiMod.IO.set_default_namespace("monomerA")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_A")
+    PsiMod.print_out("\n")
+    banner('Monomer A HF (Dimer Basis)')
+    PsiMod.print_out("\n")
+    e_monomerA = scf_helper('RHF',**kwargs)
+
+    activate(monomerB)
+    if (ri == "DF"):
+        PsiMod.IO.change_file_namespace(97,"monomerA","monomerB")
+    PsiMod.IO.set_default_namespace("monomerB")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_B")
+    PsiMod.print_out("\n")
+    banner('Monomer B HF (Dimer Basis)')
+    PsiMod.print_out("\n")
+    e_monomerB = scf_helper('RHF',**kwargs)
+    PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
+
+    activate(monomerAm)
+    PsiMod.IO.set_default_namespace("monomerAm")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_A")
+    PsiMod.print_out("\n")
+    banner('Monomer A HF (Monomer Basis)')
+    PsiMod.print_out("\n")
+    e_monomerA = scf_helper('RHF',**kwargs)
+
+    activate(monomerBm)
+    PsiMod.IO.set_default_namespace("monomerBm")
+    PsiMod.set_local_option("SCF","SAPT","2-monomer_B")
+    PsiMod.print_out("\n")
+    banner('Monomer B HF (Monomer Basis)')
+    PsiMod.print_out("\n")
+    e_monomerB = scf_helper('RHF',**kwargs)
+
+    activate(molecule)
+    PsiMod.IO.set_default_namespace("dimer")
+    PsiMod.set_local_option("SAPT","E_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","D_CONVERGE",10)
+    if (name.lower() == 'sapt0-ct'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
+    elif (name.lower() == 'sapt2-ct'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2")
+    elif (name.lower() == 'sapt2+-ct'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+")
+    elif (name.lower() == 'sapt2+3-ct'):
+        PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT2+3")
+    PsiMod.print_out("\n")
+    banner('SAPT Charge Transfer')
+    PsiMod.print_out("\n")
+
+    PsiMod.print_out("\n")
+    banner('Dimer Basis SAPT')
+    PsiMod.print_out("\n")
+    PsiMod.IO.change_file_namespace(121,"monomerA","dimer")
+    PsiMod.IO.change_file_namespace(122,"monomerB","dimer")
+    e_sapt = PsiMod.sapt()
+    CTd = PsiMod.get_variable("SAPT CT ENERGY")
+
+    PsiMod.print_out("\n")
+    banner('Monomer Basis SAPT')
+    PsiMod.print_out("\n")
+    PsiMod.IO.change_file_namespace(121,"monomerAm","dimer")
+    PsiMod.IO.change_file_namespace(122,"monomerBm","dimer")
+    e_sapt = PsiMod.sapt()
+    CTm = PsiMod.get_variable("SAPT CT ENERGY")
+    CT = CTd - CTm
+
+    PsiMod.print_out("\n\n")
+    PsiMod.print_out("    SAPT Charge Transfer Analysis\n")
+    PsiMod.print_out("  -----------------------------------------------------------------------------\n")
+    line1 = "    SAPT Induction (Dimer Basis)      %10.4lf mH    %10.4lf kcal mol^-1\n" % (CTd*1000.0,CTd*627.5095)
+    line2 = "    SAPT Induction (Monomer Basis)    %10.4lf mH    %10.4lf kcal mol^-1\n" % (CTm*1000.0,CTm*627.5095)
+    line3 = "    SAPT Charge Transfer              %10.4lf mH    %10.4lf kcal mol^-1\n\n" % (CT*1000.0,CT*627.5095)
+    PsiMod.print_out(line1)
+    PsiMod.print_out(line2)
+    PsiMod.print_out(line3)
+
+    return CT
 
