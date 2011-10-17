@@ -34,10 +34,10 @@ set globals {
 
 energy('ccsd(t)')
 
-compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") #TEST
-compare_values(refscf,   get_variable("SCF energy"),        9, "SCF energy")               #TEST
-compare_values(refccsd,  get_variable("CCSD energy"),       9, "CCSD contribution")        #TEST
-compare_values(ref_t,    get_variable("(T) energy"),        9, "(T) contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"),    9, "Total energy")             #TEST
+compare_values(refnuc,   C4NH4.nuclear_repulsion_energy(),        9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF energy"),              9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
 
 clean()
