@@ -7,6 +7,10 @@ from driver import *
 from molecule import *
 from text import *
 
+###################
+##  Start of cp  ##
+###################
+
 def cp(name, **kwargs):
 
     check_bsse = False
@@ -109,20 +113,20 @@ def cp(name, **kwargs):
     PsiMod.print_out(str(cp_table))
     return e_full
 
-#############
-# End of cp #
-#############
-
-## Aliases ##
-# Easily remembered longhand
+##  Aliases  ##
 counterpoise_correct = cp
 counterpoise_correction = cp
 
+#################
+##  End of cp  ##
+#################
 
 
 
+######################################
+##  Start of basis_set_extrapolate  ##
+######################################
 
-# Basis Set Extrapolation
 def basis_set_extrapolate(basis_name, **kwargs):
     """ Performs a basis set extrapolation substituting the tag [X] in 
         the basis name for letters given in an array by the optional 'labels' keyword.  The indices in
@@ -346,32 +350,15 @@ def basis_set_extrapolate(basis_name, **kwargs):
     else:
         return ahf
 
-################################
-# End of basis_set_extrapolate #
-################################
-
-## Aliases ##
-# Helpful shorthand
+##  Aliases  ##
 bse = basis_set_extrapolate
-# Easily mistyped long-hand
 basis_set_extrapolation = basis_set_extrapolate
 
-#################
-# Start of Temp #
-#################
+####################################
+##  End of basis_set_extrapolate  ##
+####################################
 
-#def fakewrapper(**kwargs):
 
-#    fw_addend = 0.0
-#    if(kwargs.has_key('add')):
-#        fw_addend = kwargs['add']
-
-#    electronic_energy = energy(kwargs['name'])
-#    return (electronic_energy + fw_addend)   
-
-###############
-# End of Temp #
-###############
 
 #########################
 ##  Start of Database  ##
@@ -873,7 +860,7 @@ def assemble_function2call(**kwargs):
     function2call = kwargs['func']
     return function2call(**kwargs)
 
-## Aliases  ##
+##  Aliases  ##
 db = database
 
 #######################
@@ -882,47 +869,228 @@ db = database
 
 
 
-
 ###################################
 ##  Start of Complete Basis Set  ##
 ###################################
 
-#def complete_basis_set(e_name, db_name, **kwargs):
-#
-#    # Back up global options that may be changed
-#    backup_basis = PsiMod.get_global_option("BASIS")
-#    backup_wfn = PsiMod.get_global_option("WFN")
-#
-#    molecule = PsiMod.get_active_molecule()
-#    if (kwargs.has_key('molecule')):
-#        molecule = kwargs.pop('molecule')    
-#    if not molecule:
-#        raise ValueNotSet("no molecule found")
-#    activate(molecule) 
-#    molecule.update_geometry()
-#
-#    PsiMod.print_out("\n")
-#    banner(" Complete Basis Set ")
-#    PsiMod.print_out("\n")
-#
-#
-#    #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2)
-#    cbs_scf_scheme = 'Helgaker_scf_3'
-#    if(kwargs.has_key('scf_scheme')):
-#        cbs_scf_scheme = kwargs['scf_scheme'].lower()
-#
-#    if re.match(r'^helgaker_scf_3$', cbs_scf_scheme):
-#        pass
-#    elif re.match(r'^helgaker_scf_2$', cbs_scf_scheme):
-#        pass
-#    else:
-#        raise Exception('SCF extrapolation mode \'%s\' not valid.' % (cbs_scf_scheme))
-#
-#
-#
-#
-### Aliases  ##
-#cbs = complete_basis_set
+def complete_basis_set(name, **kwargs):
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name
+    if not('func' in kwargs):
+        kwargs['func'] = energy
+
+    ZETA = ['d', 't', 'q', '5', '6']
+    domax_scf = 1
+    domax_xtpl = 0
+    domax_delta = 0
+    domax_delta2 = 0
+
+    # Establish method for correlation energy
+    cbs_corl_wfn = 'none'
+    if(kwargs.has_key('name')):
+        cbs_corl_wfn = kwargs['name'].lower()
+        if re.match(r'^scf$', cbs_corl_wfn.lower()):
+            cbs_corl_wfn = 'none'
+        else:
+            domax_scf = 0
+            domax_xtpl = 1
+    if(kwargs.has_key('corl_wfn')):
+        cbs_corl_wfn = kwargs['corl_wfn'].lower()
+        domax_scf = 0
+        domax_xtpl = 1
+
+    # Establish list of valid basis sets for correlation energy
+    BSTC = []
+    ZETC = []
+    if(kwargs.has_key('corl_basis')):
+        cbs_corl_basis = kwargs['corl_basis'].lower()
+
+        if re.match(r'.*cc-.*\[.*\]z$', cbs_corl_basis, flags=re.IGNORECASE):
+            basispattern = re.compile(r'^(.*)\[(.*)\](.*)$')
+            basisname = basispattern.match(cbs_corl_basis)
+            for b in basisname.group(2):
+                if b not in ZETA:
+                    raise Exception('CORL basis set zeta level \'%s\' not valid.' % (b))
+                if len(ZETC) != 0:
+                    if (int(ZETC[len(ZETC)-1]) - ZETA.index(b)) != 1:
+                        raise Exception('CORL basis set zeta level \'%s\' out of order.' % (b))
+                BSTC.append(basisname.group(1) + b + basisname.group(3))
+                if b == 'd': b = '2'
+                if b == 't': b = '3'
+                if b == 'q': b = '4'
+                ZETC.append(b)
+        else:
+            raise Exception('CORL basis set \'%s\' not valid.' % (cbs_corl_basis))
+    else:
+        if not domax_scf:
+            raise Exception('CORL basis sets through variable \'%s\' are required.' % ('corl_basis'))
+
+    # Establish list of valid basis sets for scf energy
+    BSTR = []
+    ZETR = []
+    if(kwargs.has_key('scf_basis')):
+        cbs_scf_basis = kwargs['scf_basis'].lower()
+
+        if re.match(r'.*cc-.*\[.*\]z$', cbs_scf_basis, flags=re.IGNORECASE):
+            basispattern = re.compile(r'^(.*)\[(.*)\](.*)$')
+            basisname = basispattern.match(cbs_scf_basis)
+            for b in basisname.group(2):
+                if b not in ZETA:
+                    raise Exception('SCF basis set zeta level \'%s\' not valid.' % (b))
+                if len(ZETR) != 0:
+                    if (int(ZETR[len(ZETR)-1]) - ZETA.index(b)) != 1:
+                        raise Exception('SCF basis set zeta level \'%s\' out of order.' % (b))
+                BSTR.append(basisname.group(1) + b + basisname.group(3))
+                if b == 'd': b = '2'
+                if b == 't': b = '3'
+                if b == 'q': b = '4'
+                ZETR.append(b)
+        else:
+            raise Exception('SCF basis set \'%s\' not valid.' % (cbs_corl_basis))
+    else:
+        if domax_scf:
+            raise Exception('SCF basis sets through variable \'%s\' are required.' % ('scf_basis'))
+        else:
+            if(kwargs.has_key('corl_basis')):
+                BSTR = BSTC[:]
+                ZETR = ZETC[:]
+
+    print BSTC
+    print ZETC
+    print BSTR
+    print ZETR
+
+
+    # Establish treatment for scf energy
+    cbs_scf_scheme = scf_highest_1
+    if(kwargs.has_key('scf_scheme')):
+        cbs_scf_scheme = kwargs['scf_scheme']
+
+    if cbs_scf_scheme:
+        pass
+    else:
+        raise Exception('SCF extrapolation mode \'%s\' not valid.' % (cbs_scf_scheme))
+
+    # Establish treatment for correlation energy
+    cbs_corl_scheme = corl_highest_1
+    if(kwargs.has_key('corl_scheme')):
+        cbs_corl_scheme = kwargs['corl_scheme']
+
+    print "cbs_corl_scheme %s" % (cbs_corl_scheme)
+    if cbs_corl_scheme:
+        pass
+    else:
+        raise Exception('CORL extrapolation mode \'%s\' not valid.' % (cbs_corl_scheme))
+
+    # build string of title banner
+    cbsbanners = ''
+    cbsbanners += """PsiMod.print_out('\\n')\n"""
+    #cbsbanners += """banner(' CBS %s Computation: Reagent %s \\n   %s')\n""" % (db_name, rgt, TAGL[rgt])
+    cbsbanners += """banner(' CBS %s Computation: Reagent %s \\n   %s')\n""" % ('temp', 'temp', 'temp')
+    cbsbanners += """PsiMod.print_out('\\n')\n\n"""
+    exec cbsbanners
+
+    NEED = {}
+    if (cbs_scf_scheme != 'none'):
+        assemble_function2call(func=cbs_scf_scheme, 
+            mode='requisition', needarray = NEED, basisname=BSTR, basiszeta=ZETR, wfnname='scf')
+    if (cbs_corl_scheme != 'none'):
+        assemble_function2call(func=cbs_corl_scheme, 
+            mode='requisition', needarray = NEED, basisname=BSTC, basiszeta=ZETC, wfnname=cbs_corl_wfn)
+    print NEED
+
+
+
+
+    finalenergy = energy(name)
+    print finalenergy
+
+
+    VARH = {}
+    VARH['scf']     = {'SCFtot'    : 'SCF ENERGY'                }
+    VARH['mp2']     = {'SCFtot'    : 'SCF ENERGY',
+                       'MP2corl'   : 'MP2 CORRELATION ENERGY'    }
+    VARH['ccsd(t)'] = {'SCFtot'    : 'SCF ENERGY',
+                       'MP2corl'   : 'MP2 CORRELATION ENERGY',
+                       'CCSDcorl'  : 'CCSD CORRELATION ENERGY',
+                       'CCSDTcorl' : 'CCSD(T) CORRELATION ENERGY'}
+
+
+    return finalenergy
+
+
+# Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$ 
+def scf_highest_1(**largs):
+
+    print largs
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+
+    return energypiece
+
+   
+# Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$ 
+def corl_highest_1(**largs):
+
+    print largs
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+
+    return energypiece
+
+   
+# Defining equation in LaTeX:  $E_{corl}(\ell_{max}) = E_{corl}^{\text{CBS}} + A/\ell^3_{max}$
+def corl_xtpl_helgaker_2(**largs):
+
+    print largs
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+
+    mode = 'requisition'
+    if(largs.has_key('mode')):
+        mode = largs['mode']
+
+    ZETA = []
+    if(largs.has_key('basiszeta')):
+        ZETA = largs['basiszeta']
+
+    BSET = []
+    if(largs.has_key('basisname')):
+        BSET = largs['basisname']
+
+    if(largs.has_key('wfnname')):
+        wfnname = largs['wfnname']
+    else:
+        raise Exception('CORL extrapolation call to \'%s\' not valid without method.' % (functionname))
+
+    NEED = largs['needarray']
+
+    if re.match(r'^requisition$', mode.lower()):
+        if (len(ZETA) != 2):
+            raise Exception('CORL extrapolation call to \'%s\' not valid with \'%s\' basis sets.' % 
+                (functionname, len(ZETA)))
+
+        NEED[functionname] = {'HI' : dict(zip(fields, [wfnname, 'corl', BSET[1], ZETA[1], 0.0])),
+                              'LO' : dict(zip(fields, [wfnname, 'corl', BSET[0], ZETA[0], 0.0])) }
+
+    elif re.match(r'^compute$', mode.lower()):
+        energypiece = (eHI * zHI**3 - eLO * zLO**3) / (zHI**3 - zLO**3) 
+
+    else:
+        raise Exception('Evaluation mode \'%s\' not valid.' % (mode))
+
+    return energypiece
+
+
+
+
+##  Aliases  ##
+cbs = complete_basis_set
 
 #################################
 ##  End of Complete Basis Set  ##
