@@ -73,34 +73,35 @@ void SAPT::initialize()
   zero_ = boost::shared_ptr<BasisSet>(BasisSet::zero_ao_basis_set());
   parser.reset();
 
-
   print_ = options_.get_int("PRINT");
   debug_ = options_.get_int("DEBUG");
   schwarz_ = options_.get_double("SCHWARZ_CUTOFF");
   mem_ = (long int) ((double) memory_*options_.get_double("SAPT_MEM_SAFETY"));
   mem_ /= 8L;
 
-  if (options_["NFRZ_A"].has_changed() || options_["NFRZ_B"].has_changed()) {
-    foccA_ = options_.get_int("NFRZ_A");
-    foccB_ = options_.get_int("NFRZ_B");
-  }
-  else {
-    std::vector<int> realsA;
-    realsA.push_back(0);
-    std::vector<int> ghostsA;
-    ghostsA.push_back(1);
-    boost::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
-      ghostsA);
-    foccA_ = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
+  std::vector<int> realsA;
+  realsA.push_back(0);
+  std::vector<int> ghostsA;
+  ghostsA.push_back(1);
+  boost::shared_ptr<Molecule> monomerA = molecule_->extract_subsets(realsA,
+    ghostsA);
+  foccA_ = monomerA->nfrozen_core(options_.get_str("FREEZE_CORE"));
 
-    std::vector<int> realsB;
-    realsB.push_back(1);
-    std::vector<int> ghostsB;
-    ghostsB.push_back(0);
-    boost::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
-      ghostsB);
-    foccB_ = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
-  }
+  std::vector<int> realsB;
+  realsB.push_back(1);
+  std::vector<int> ghostsB;
+  ghostsB.push_back(0);
+  boost::shared_ptr<Molecule> monomerB = molecule_->extract_subsets(realsB,
+    ghostsB);
+  foccB_ = monomerB->nfrozen_core(options_.get_str("FREEZE_CORE"));
+
+  natomsA_ = 0;
+  natomsB_ = 0;
+
+  for (int n=0; n<monomerA->natom(); n++)
+    if (monomerA->Z(n)) natomsA_++;
+  for (int n=0; n<monomerB->natom(); n++)
+    if (monomerB->Z(n)) natomsB_++;
 
   ndf_ = ribasis_->nbf();
 
@@ -118,16 +119,9 @@ void SAPT::initialize()
   psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Nuclear Repulsion Energy",(char *)
     &enucD, sizeof(double));
 
-  int nsotri = nso_*(nso_+1)/2;
-  double *S = init_array(nsotri);
-  psio_->read_entry(PSIF_SAPT_DIMER,"Dimer Overlap Integrals",(char *) &S[0], 
-    sizeof(double)*nsotri);
-
-  int nsoA, nmoA;
-
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NSO",(char *) &nsoA, 
+  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NSO",(char *) &nsoA_, 
     sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NMO",(char *) &nmoA, 
+  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NMO",(char *) &nmoA_, 
     sizeof(int));
   psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer NOCC",(char *) &noccA_, 
     sizeof(int));
@@ -142,18 +136,9 @@ void SAPT::initialize()
 
   aoccA_ = noccA_ - foccA_;
 
-  if (nsoA != nso_) 
-    throw PsiException("Number of orbitals do not match", __FILE__,
-      __LINE__);
-  if (nmoA != nmo_)
-    throw PsiException("Number of orbitals do not match", __FILE__,
-      __LINE__);
-
-  int nsoB, nmoB;
-
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NSO",(char *) &nsoB, 
+  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NSO",(char *) &nsoB_, 
     sizeof(int));
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NMO",(char *) &nmoB, 
+  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NMO",(char *) &nmoB_, 
     sizeof(int));
   psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer NOCC",(char *) &noccB_, 
     sizeof(int));
@@ -168,86 +153,138 @@ void SAPT::initialize()
 
   aoccB_ = noccB_ - foccB_;
 
-  if (nsoB != nso_)
-    throw PsiException("Number of orbitals do not match", __FILE__,
-      __LINE__);
-  if (nmoB != nmo_)
-    throw PsiException("Number of orbitals do not match", __FILE__,
-      __LINE__);
-
   enuc_ = enucD - enucA - enucB;
   eHF_ =  eHFD - eHFA - eHFB;
 
-  evalsA_ = init_array(nmo_);
+  evalsA_ = init_array(nmoA_);
   psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Eigenvalues",(char *)
-    &(evalsA_[0]), sizeof(double)*nmo_);
+    &(evalsA_[0]), sizeof(double)*nmoA_);
 
-  double *VA = init_array(nsotri);
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer Nuclear Attraction Integrals",
-    (char *) &(VA[0]), sizeof(double)*nsotri);
-
-  CA_ = block_matrix(nso_,nmo_);
-  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *)
-    &(CA_[0][0]), sizeof(double)*nmo_*nso_);
-
-  evalsB_ = init_array(nmo_);
+  evalsB_ = init_array(nmoB_);
   psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Eigenvalues",(char *)
-    &(evalsB_[0]), sizeof(double)*nmo_);
+    &(evalsB_[0]), sizeof(double)*nmoB_);
 
-  double *VB = init_array(nsotri);
-  psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer Nuclear Attraction Integrals",
-    (char *) &(VB[0]), sizeof(double)*nsotri);
+  CA_ = block_matrix(nso_,nmoA_);
+  double **tempA = block_matrix(nsoA_,nmoA_);
+  psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *)
+    &(tempA[0][0]), sizeof(double)*nmoA_*nsoA_);
+  if (nsoA_ != nsoB_) {
+    for (int n=0; n<nsoA_; n++)
+      C_DCOPY(nmoA_,tempA[n],1,CA_[n],1);
+  }
+  else
+    C_DCOPY(nso_*nmoA_,tempA[0],1,CA_[0],1);
+  free_block(tempA);
 
-  CB_ = block_matrix(nso_,nmo_);
+  CB_ = block_matrix(nso_,nmoB_);
+  double **tempB = block_matrix(nsoB_,nmoB_);
   psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Coefficients",(char *)
-    &(CB_[0][0]), sizeof(double)*nmo_*nso_);
+    &(tempB[0][0]), sizeof(double)*nmoB_*nsoB_);
+  if (nsoA_ != nsoB_) {
+    for (int n=0; n<nsoB_; n++)
+      C_DCOPY(nmoB_,tempB[n],1,CB_[n+nsoA_],1);
+  }
+  else
+    C_DCOPY(nso_*nmoB_,tempB[0],1,CB_[0],1);
+  free_block(tempB);
 
   psio_->close(PSIF_SAPT_DIMER,1);
   psio_->close(PSIF_SAPT_MONOMERA,1);
   psio_->close(PSIF_SAPT_MONOMERB,1);
 
-  double **sIJ = block_matrix(nso_,nso_);
-  double **sAJ = block_matrix(nmo_,nso_);
-  sAB_ = block_matrix(nmo_,nmo_);
+  int nbf[8];
+  nbf[0] = nso_;
+  boost::shared_ptr<MatrixFactory> fact = 
+    boost::shared_ptr<MatrixFactory>(new MatrixFactory);
+  fact->init_with(1, nbf, nbf);
 
-  tri_to_sq(S,sIJ,nso_);
+  boost::shared_ptr<IntegralFactory> intfact = 
+    boost::shared_ptr<IntegralFactory>(new IntegralFactory(basisset_, 
+    basisset_, basisset_, basisset_));
 
-  C_DGEMM('T','N',nmo_,nso_,nso_,1.0,CA_[0],nmo_,sIJ[0],nso_,0.0,sAJ[0],nso_);
-  C_DGEMM('N','N',nmo_,nmo_,nso_,1.0,sAJ[0],nso_,CB_[0],nmo_,0.0,sAB_[0],nmo_);
+  boost::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
+  boost::shared_ptr<Matrix> Smat = boost::shared_ptr<Matrix> 
+    (fact->create_matrix("Overlap"));
+  Sint->compute(Smat);
 
-  free(S);
-  free_block(sIJ);
+  double **sIJ = Smat->pointer();
+  double **sAJ = block_matrix(nmoA_,nso_);
+  sAB_ = block_matrix(nmoA_,nmoB_);
+
+  C_DGEMM('T','N',nmoA_,nso_,nso_,1.0,CA_[0],nmoA_,sIJ[0],nso_,
+      0.0,sAJ[0],nso_);
+  C_DGEMM('N','N',nmoA_,nmoB_,nso_,1.0,sAJ[0],nso_,CB_[0],nmoB_,
+      0.0,sAB_[0],nmoB_);
+
   free_block(sAJ);
 
-  double **vIJ = block_matrix(nso_,nso_);
-  double **vIB = block_matrix(nso_,nmo_);
-  double **vAJ = block_matrix(nmo_,nso_);
-  vAAB_ = block_matrix(nmo_,nmo_);
-  vABB_ = block_matrix(nmo_,nmo_);
-  vBAA_ = block_matrix(nmo_,nmo_);
-  vBAB_ = block_matrix(nmo_,nmo_);
+  boost::shared_ptr<PotentialInt> potA(static_cast<PotentialInt*>(
+    intfact->ao_potential()));
+  boost::shared_ptr<Matrix> ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
+  for (int n=0, p=0; n<monomerA->natom(); n++) {
+    if (monomerA->Z(n)) {
+      double Z = (double) monomerA->Z(n);
+      double x = monomerA->x(n);
+      double y = monomerA->y(n);
+      double z = monomerA->z(n);
+      ZxyzA->set(0, p, 0, Z);
+      ZxyzA->set(0, p, 1, x);
+      ZxyzA->set(0, p, 2, y);
+      ZxyzA->set(0, p, 3, z);
+      p++;
+    } 
+  }
+  potA->set_charge_field(ZxyzA);
+  boost::shared_ptr<Matrix> VAmat = boost::shared_ptr<Matrix>
+    (fact->create_matrix("Nuclear Attraction (Monomer A)"));
+  potA->compute(VAmat);
 
-  tri_to_sq(VA,vIJ,nso_);
+  boost::shared_ptr<PotentialInt> potB(static_cast<PotentialInt*>(
+    intfact->ao_potential()));
+  boost::shared_ptr<Matrix> ZxyzB(new Matrix("Charges B (Z,x,y,z)", natomsB_, 4));
+  for (int n=0, p=0; n<monomerB->natom(); n++) {
+    if (monomerB->Z(n)) {
+      double Z = (double) monomerB->Z(n);
+      double x = monomerB->x(n);
+      double y = monomerB->y(n);
+      double z = monomerB->z(n);
+      ZxyzB->set(0, p, 0, Z);
+      ZxyzB->set(0, p, 1, x);
+      ZxyzB->set(0, p, 2, y);
+      ZxyzB->set(0, p, 3, z);
+      p++;
+    } 
+  }
+  potB->set_charge_field(ZxyzB);
+  boost::shared_ptr<Matrix> VBmat = boost::shared_ptr<Matrix>
+    (fact->create_matrix("Nuclear Attraction (Monomer B)"));
+  potB->compute(VBmat);
 
-  C_DGEMM('N','N',nso_,nmo_,nso_,1.0,vIJ[0],nso_,CB_[0],nmo_,0.0,
-    vIB[0],nmo_);
-  C_DGEMM('T','N',nmo_,nmo_,nso_,1.0,CA_[0],nmo_,vIB[0],nmo_,0.0,
-    vAAB_[0],nmo_);
-  C_DGEMM('T','N',nmo_,nmo_,nso_,1.0,CB_[0],nmo_,vIB[0],nmo_,0.0,
-    vABB_[0],nmo_);
+  double **vIB = block_matrix(nso_,nmoB_);
+  double **vAJ = block_matrix(nmoA_,nso_);
+  vAAB_ = block_matrix(nmoA_,nmoB_);
+  vABB_ = block_matrix(nmoB_,nmoB_);
+  vBAA_ = block_matrix(nmoA_,nmoA_);
+  vBAB_ = block_matrix(nmoA_,nmoB_);
 
-  tri_to_sq(VB,vIJ,nso_);
+  double **vIJ = VAmat->pointer();
 
-  C_DGEMM('T','N',nmo_,nso_,nso_,1.0,CA_[0],nmo_,vIJ[0],nso_,0.0,
+  C_DGEMM('N','N',nso_,nmoB_,nso_,1.0,vIJ[0],nso_,CB_[0],nmoB_,0.0,
+    vIB[0],nmoB_);
+  C_DGEMM('T','N',nmoA_,nmoB_,nso_,1.0,CA_[0],nmoA_,vIB[0],nmoB_,0.0,
+    vAAB_[0],nmoB_);
+  C_DGEMM('T','N',nmoB_,nmoB_,nso_,1.0,CB_[0],nmoB_,vIB[0],nmoB_,0.0,
+    vABB_[0],nmoB_);
+
+  vIJ = VBmat->pointer();
+
+  C_DGEMM('T','N',nmoA_,nso_,nso_,1.0,CA_[0],nmoA_,vIJ[0],nso_,0.0,
     vAJ[0],nso_);
-  C_DGEMM('N','N',nmo_,nmo_,nso_,1.0,vAJ[0],nso_,CA_[0],nmo_,0.0,
-    vBAA_[0],nmo_);
-  C_DGEMM('N','N',nmo_,nmo_,nso_,1.0,vAJ[0],nso_,CB_[0],nmo_,0.0,
-    vBAB_[0],nmo_);
+  C_DGEMM('N','N',nmoA_,nmoA_,nso_,1.0,vAJ[0],nso_,CA_[0],nmoA_,0.0,
+    vBAA_[0],nmoA_);
+  C_DGEMM('N','N',nmoA_,nmoB_,nso_,1.0,vAJ[0],nso_,CB_[0],nmoB_,0.0,
+    vBAB_[0],nmoB_);
 
-  free(VA);
-  free(VB);
-  free_block(vIJ);
   free_block(vIB);
   free_block(vAJ);
 }
