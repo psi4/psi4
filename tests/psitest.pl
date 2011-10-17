@@ -104,7 +104,10 @@ sub do_tests
         
           if ($wfn eq "CCSD" || $wfn eq "ccsd")     { $fail |= compare_ccsd_energy(); last SWITCH2; }
           if ($wfn eq "CC2" || $wfn eq "cc2")      { $fail |= compare_cc2_energy(); last SWITCH2; }
-	  if ($wfn eq "CCSD_T" || $wfn eq "ccsd_t")   { $fail |= compare_ccsd_t_energy(); last SWITCH2; }
+	  if ($wfn eq "CCSD_T" || 
+              $wfn eq "CCSD(T)" ||
+              $wfn eq "ccsd_t" ||
+              $wfn eq "ccsd(t)")   { $fail |= compare_ccsd_t_energy(); last SWITCH2; }
           if ($wfn eq "CC3" || $wfn eq "cc3")      { $fail |= compare_cc3_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC2" || $wfn eq "eom_cc2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CCSD" || $wfn eq "eom_ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
