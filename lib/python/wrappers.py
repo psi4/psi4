@@ -713,7 +713,9 @@ def database(name, db_name, **kwargs):
             exec commands
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            ERGT[rgt] = assemble_function2call(**kwargs)
+            lesserkwargs = kwargs.copy() 
+            del lesserkwargs['func'] 
+            ERGT[rgt] = assemble_function2call_dropfunc(kwargs['func'], **lesserkwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
             exec actives
@@ -858,6 +860,10 @@ def drop_duplicates(seq):
 
 def assemble_function2call(**kwargs):
     function2call = kwargs['func']
+    return function2call(**kwargs)
+
+def assemble_function2call_dropfunc(funcarg, **kwargs):
+    function2call = funcarg
     return function2call(**kwargs)
 
 ##  Aliases  ##
