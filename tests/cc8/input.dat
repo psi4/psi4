@@ -2,9 +2,9 @@
 
 refnuc   =  18.9152718791489    #TEST
 refscf   = -92.2127769533       #TEST
-refccsd  =  -0.264053215584695  #TEST
-ref_t    =  -0.012461246651850  #TEST
-reftotal = -92.489291415513478  #TEST
+refccsd  =  -0.264053207415604  #TEST
+ref_t    =  -0.012461245705807  #TEST
+reftotal = -92.489291406400682  #TEST
 
 molecule CN {
   0 2
@@ -29,10 +29,10 @@ set {
 
 energy('ccsd(t)')
 
-compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") #TEST
-compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")               #TEST
-compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")        #TEST
-compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")             #TEST
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF energy"),              9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
 
 clean()

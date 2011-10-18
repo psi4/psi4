@@ -111,7 +111,15 @@ void SAPT2p3::print_header()
   fprintf(outfile,"      Orbital Information\n");
   fprintf(outfile,"  --------------------------\n");
   fprintf(outfile,"    NSO        = %9d\n",nso_);
+  if (nsoA_ != nsoB_) {
+    fprintf(outfile,"    NSO A      = %9d\n",nsoA_);
+    fprintf(outfile,"    NSO B      = %9d\n",nsoB_);
+  }
   fprintf(outfile,"    NMO        = %9d\n",nmo_);
+  if (nmoA_ != nmoB_) {
+    fprintf(outfile,"    NMO A      = %9d\n",nmoA_);
+    fprintf(outfile,"    NMO B      = %9d\n",nmoB_);
+  }
   fprintf(outfile,"    NRI        = %9d\n",ndf_);
   fprintf(outfile,"    NOCC A     = %9d\n",noccA_);
   fprintf(outfile,"    NOCC B     = %9d\n",noccB_);
@@ -211,12 +219,15 @@ void SAPT2p3::print_results()
   double tot_exch = e_exch10_ + e_exch11_ + e_exch12_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF3 + e_ind22_ + e_exch_ind22_
     + e_ind30r_ + e_exch_ind30r_;
+  double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_
+    + e_ind30r_ + e_exch_ind30r_;
   double tot_disp = e_disp20_ + e_exch_disp20_ + e_disp21_ + e_disp22sdq_
     + e_disp22t_ + e_disp30_ + e_exch_disp30_;
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
   Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+  Process::environment.globals["SAPT CT ENERGY"] = tot_ct;
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
