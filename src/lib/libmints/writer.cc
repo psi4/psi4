@@ -66,7 +66,7 @@ void MoldenWriter::write(const std::string &filename)
     for (atom=0; atom<mol.natom(); ++atom) {
         Vector3 coord = mol.xyz(atom);
         fprintf(molden, "%-2s  %2d  %3d   %20.12f %20.12f %20.12f\n",
-                mol.symbol(atom).c_str(), atom+1, mol.Z(atom), coord[0], coord[1], coord[2]);
+                mol.symbol(atom).c_str(), atom+1, static_cast<int>(mol.Z(atom)), coord[0], coord[1], coord[2]);
     }
 
     // Dump the basis set using code adapted from psi2molden
@@ -278,7 +278,9 @@ void NBOWriter::write(const std::string &filename)
     for( int i =0; i< mol.natom(); i++)
     {
         //the second mol.Z() should be modified when pseudopotentials are implemented
-        fprintf(file47, "%2d  %2d  %20.12f %20.12f %20.12f\n", mol.Z(i), mol.Z(i), mol.x(i), mol.y(i), mol.z(i));
+        fprintf(file47, "%2d  %2d  %20.12f %20.12f %20.12f\n",
+                static_cast<int>(mol.Z(i)), static_cast<int>(mol.Z(i)),
+                mol.x(i), mol.y(i), mol.z(i));
     }
     fprintf(file47, "$END\n");
 
