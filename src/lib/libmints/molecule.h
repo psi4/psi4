@@ -196,9 +196,9 @@ public:
     /// Number of all atoms (includes dummies)
     int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
-    int Z(int atom) const;
+    double Z(int atom) const;
     /// Nuclear charge of atom
-    int fZ(int atom) const;
+    double fZ(int atom) const;
     /// x position of atom
     double x(int atom) const;
     /// y position of atom
