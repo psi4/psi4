@@ -923,6 +923,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libboost_thread/Makefile
           src/lib/libboost_filesystem/Makefile
           src/lib/libboost_system/Makefile
+          src/lib/libboost_serialization/Makefile
           src/lib/libsapt_solver/Makefile
           src/lib/libfunctional/Makefile
           src/lib/libplugin/Makefile
