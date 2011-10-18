@@ -3,9 +3,9 @@
 
 # Tests that depend on madness:
 #  This is probably not the final solution:
-maddness_subdirs = scf6 dfmp2_1 dfmp2_2
+maddness_subdirs = dfmp2_1 dfmp2_2
 
-cc_subdirs = cc1 cc2 cc4 cc5a #cc13 cc5 cc8 cc8a these should be restored when fixed
+cc_subdirs = cc1 cc2 cc4 cc5a cc8 cc8a cc18 cc19 cc28 cc29 cc30 cc31 cc52 #cc13 cc5 these should be restored when fixed
 
 rb_subdirs = 
 
@@ -29,7 +29,7 @@ mp2_subdirs = mp2_1
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 mom props2 dft1
 
-python_test_subdirs = #basis_extrap
+python_test_subdirs = pywrap_db1 pywrap_db2 #basis_extrap
 
 plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals plugin_testparse
 subdirs = \

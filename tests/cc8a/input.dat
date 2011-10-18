@@ -7,6 +7,7 @@ ref_t    =  -0.013974091470867  #TEST
 reftotal = -92.490873565295587  #TEST
 
 molecule CN {
+  units bohr
   C  0.000000000000      0.000000000000      1.195736583480
   N  0.000000000000      0.000000000000     -1.024692078304
 }
@@ -17,7 +18,7 @@ set globals {
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]
-  freeze_core TRUE
+  freeze_core true
   
   convergence 10
   e_converge 10
@@ -26,10 +27,10 @@ set globals {
 
 energy('ccsd(t)')
 
-compare_values(refnuc,   CN.nuclear_repulsion_energy(),  9, "Nuclear repulsion energy") #TEST
-compare_values(refscf,   get_variable("SCF energy"),     9, "SCF energy")               #TEST
-compare_values(refccsd,  get_variable("CCSD energy"),    9, "CCSD contribution")        #TEST
-compare_values(ref_t,    get_variable("(T) energy"),     9, "(T) contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"), 9, "Total energy")             #TEST
+compare_values(refnuc,   CN.nuclear_repulsion_energy(),           9, "Nuclear repulsion energy") #TEST
+compare_values(refscf,   get_variable("SCF energy"),              9, "SCF energy")               #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 9, "CCSD contribution")        #TEST
+compare_values(ref_t,    get_variable("(T) correction energy"),   9, "(T) contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          9, "Total energy")             #TEST
 
 clean()

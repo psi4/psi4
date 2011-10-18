@@ -90,7 +90,15 @@ void SAPT0::print_header()
   fprintf(outfile,"      Orbital Information\n");
   fprintf(outfile,"  --------------------------\n");
   fprintf(outfile,"    NSO        = %9d\n",nso_);
+  if (nsoA_ != nsoB_) {
+    fprintf(outfile,"    NSO A      = %9d\n",nsoA_);
+    fprintf(outfile,"    NSO B      = %9d\n",nsoB_);
+  }
   fprintf(outfile,"    NMO        = %9d\n",nmo_);
+  if (nmoA_ != nmoB_) {
+    fprintf(outfile,"    NMO A      = %9d\n",nmoA_);
+    fprintf(outfile,"    NMO B      = %9d\n",nmoB_);
+  }
   if (elst_basis_) {
     fprintf(outfile,"    NRI        = %9d\n",ribasis_->nbf());
     fprintf(outfile,"    NRI (Elst) = %9d\n",elstbasis_->nbf());
@@ -153,6 +161,7 @@ void SAPT0::print_results()
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
   Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
+  Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
@@ -628,46 +637,46 @@ void SAPT0::df_integrals()
         }
       }
   
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, &(CA_[0][0]), nmo_,
+      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, &(CA_[0][0]), nmoA_,
         munu_temp[rank], nso_, 0.0, Inu_temp[rank], nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
-        &(CA_[0][0]), nmo_, 0.0, IJ_temp[rank], nmo_);
+      C_DGEMM('N', 'N', nmoA_, nmoA_, nso_, 1.0, Inu_temp[rank], nso_,
+        &(CA_[0][0]), nmoA_, 0.0, IJ_temp[rank], nmoA_);
   
       for (int a=0; a<noccA_; a++) {
-        C_DCOPY(noccA_,&(IJ_temp[rank][a*nmo_]),1,&(B_p_AA[Prel][a*noccA_]),1);
-        C_DCOPY(nvirA_,&(IJ_temp[rank][a*nmo_+noccA_]),1,
+        C_DCOPY(noccA_,&(IJ_temp[rank][a*nmoA_]),1,&(B_p_AA[Prel][a*noccA_]),1);
+        C_DCOPY(nvirA_,&(IJ_temp[rank][a*nmoA_+noccA_]),1,
           &(B_p_AR[Prel][a*nvirA_]),1);
       }
       for (int r=0; r<nvirA_; r++) {
-        C_DCOPY(r+1,&(IJ_temp[rank][(r+noccA_)*nmo_+noccA_]),1,
+        C_DCOPY(r+1,&(IJ_temp[rank][(r+noccA_)*nmoA_+noccA_]),1,
           &(B_p_RR[Prel][r*(r+1)/2]),1);
       }
   
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
-        &(CB_[0][0]), nmo_, 0.0, IJ_temp[rank], nmo_);
+      C_DGEMM('N', 'N', nmoA_, nmoB_, nso_, 1.0, Inu_temp[rank], nso_,
+        &(CB_[0][0]), nmoB_, 0.0, IJ_temp[rank], nmoB_);
   
       for (int a=0; a<noccA_; a++) {
-        C_DCOPY(noccB_,&(IJ_temp[rank][a*nmo_]),1,&(B_p_AB[Prel][a*noccB_]),1);
-        C_DCOPY(nvirB_,&(IJ_temp[rank][a*nmo_+noccB_]),1,
+        C_DCOPY(noccB_,&(IJ_temp[rank][a*nmoB_]),1,&(B_p_AB[Prel][a*noccB_]),1);
+        C_DCOPY(nvirB_,&(IJ_temp[rank][a*nmoB_+noccB_]),1,
           &(B_p_AS[Prel][a*nvirB_]),1);
       }
       for (int r=0; r<nvirA_; r++) {
-        C_DCOPY(noccB_,&(IJ_temp[rank][(r+noccA_)*nmo_]),1,
+        C_DCOPY(noccB_,&(IJ_temp[rank][(r+noccA_)*nmoB_]),1,
           &(B_p_RB[Prel][r*noccB_]),1);
       } 
   
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, &(CB_[0][0]), nmo_,
+      C_DGEMM('T', 'N', nmoB_, nso_, nso_, 1.0, &(CB_[0][0]), nmoB_,
         munu_temp[rank], nso_, 0.0, Inu_temp[rank], nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
-        &(CB_[0][0]), nmo_, 0.0, IJ_temp[rank], nmo_);
+      C_DGEMM('N', 'N', nmoB_, nmoB_, nso_, 1.0, Inu_temp[rank], nso_,
+        &(CB_[0][0]), nmoB_, 0.0, IJ_temp[rank], nmoB_);
   
       for (int b=0; b<noccB_; b++) {
-        C_DCOPY(noccB_,&(IJ_temp[rank][b*nmo_]),1,&(B_p_BB[Prel][b*noccB_]),1);
-        C_DCOPY(nvirB_,&(IJ_temp[rank][b*nmo_+noccB_]),1,
+        C_DCOPY(noccB_,&(IJ_temp[rank][b*nmoB_]),1,&(B_p_BB[Prel][b*noccB_]),1);
+        C_DCOPY(nvirB_,&(IJ_temp[rank][b*nmoB_+noccB_]),1,
           &(B_p_BS[Prel][b*nvirB_]),1);
       }
       for (int s=0; s<nvirB_; s++) {
-        C_DCOPY(s+1,&(IJ_temp[rank][(s+noccB_)*nmo_+noccB_]),1,
+        C_DCOPY(s+1,&(IJ_temp[rank][(s+noccB_)*nmoB_+noccB_]),1,
           &(B_p_SS[Prel][s*(s+1)/2]),1);
       } 
  
@@ -1191,49 +1200,49 @@ void SAPT0::df_integrals_aio()
         }
       }
   
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, &(CA_[0][0]), nmo_,
+      C_DGEMM('T', 'N', nmoA_, nso_, nso_, 1.0, &(CA_[0][0]), nmoA_,
         munu_temp[rank], nso_, 0.0, Inu_temp[rank], nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
-        &(CA_[0][0]), nmo_, 0.0, IJ_temp[rank], nmo_);
+      C_DGEMM('N', 'N', nmoA_, nmoA_, nso_, 1.0, Inu_temp[rank], nso_,
+        &(CA_[0][0]), nmoA_, 0.0, IJ_temp[rank], nmoA_);
   
       for (int a=0; a<noccA_; a++) {
-        C_DCOPY(noccA_,&(IJ_temp[rank][a*nmo_]),1,
+        C_DCOPY(noccA_,&(IJ_temp[rank][a*nmoA_]),1,
           &(B_p_AA[Pbl%2][Prel][a*noccA_]),1);
-        C_DCOPY(nvirA_,&(IJ_temp[rank][a*nmo_+noccA_]),1,
+        C_DCOPY(nvirA_,&(IJ_temp[rank][a*nmoA_+noccA_]),1,
           &(B_p_AR[Pbl%2][Prel][a*nvirA_]),1);
       }
       for (int r=0; r<nvirA_; r++) {
-        C_DCOPY(r+1,&(IJ_temp[rank][(r+noccA_)*nmo_+noccA_]),1,
+        C_DCOPY(r+1,&(IJ_temp[rank][(r+noccA_)*nmoA_+noccA_]),1,
           &(B_p_RR[Pbl%2][Prel][r*(r+1)/2]),1);
       }
   
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
-        &(CB_[0][0]), nmo_, 0.0, IJ_temp[rank], nmo_);
+      C_DGEMM('N', 'N', nmoA_, nmoB_, nso_, 1.0, Inu_temp[rank], nso_,
+        &(CB_[0][0]), nmoB_, 0.0, IJ_temp[rank], nmoB_);
   
       for (int a=0; a<noccA_; a++) {
-        C_DCOPY(noccB_,&(IJ_temp[rank][a*nmo_]),1,
+        C_DCOPY(noccB_,&(IJ_temp[rank][a*nmoB_]),1,
           &(B_p_AB[Pbl%2][Prel][a*noccB_]),1);
-        C_DCOPY(nvirB_,&(IJ_temp[rank][a*nmo_+noccB_]),1,
+        C_DCOPY(nvirB_,&(IJ_temp[rank][a*nmoB_+noccB_]),1,
           &(B_p_AS[Pbl%2][Prel][a*nvirB_]),1);
       }
       for (int r=0; r<nvirA_; r++) {
-        C_DCOPY(noccB_,&(IJ_temp[rank][(r+noccA_)*nmo_]),1,
+        C_DCOPY(noccB_,&(IJ_temp[rank][(r+noccA_)*nmoB_]),1,
           &(B_p_RB[Pbl%2][Prel][r*noccB_]),1);
       } 
   
-      C_DGEMM('T', 'N', nmo_, nso_, nso_, 1.0, &(CB_[0][0]), nmo_,
+      C_DGEMM('T', 'N', nmoB_, nso_, nso_, 1.0, &(CB_[0][0]), nmoB_,
         munu_temp[rank], nso_, 0.0, Inu_temp[rank], nso_);
-      C_DGEMM('N', 'N', nmo_, nmo_, nso_, 1.0, Inu_temp[rank], nso_,
-        &(CB_[0][0]), nmo_, 0.0, IJ_temp[rank], nmo_);
+      C_DGEMM('N', 'N', nmoB_, nmoB_, nso_, 1.0, Inu_temp[rank], nso_,
+        &(CB_[0][0]), nmoB_, 0.0, IJ_temp[rank], nmoB_);
   
       for (int b=0; b<noccB_; b++) {
-        C_DCOPY(noccB_,&(IJ_temp[rank][b*nmo_]),1,
+        C_DCOPY(noccB_,&(IJ_temp[rank][b*nmoB_]),1,
           &(B_p_BB[Pbl%2][Prel][b*noccB_]),1);
-        C_DCOPY(nvirB_,&(IJ_temp[rank][b*nmo_+noccB_]),1,
+        C_DCOPY(nvirB_,&(IJ_temp[rank][b*nmoB_+noccB_]),1,
           &(B_p_BS[Pbl%2][Prel][b*nvirB_]),1);
       }
       for (int s=0; s<nvirB_; s++) {
-        C_DCOPY(s+1,&(IJ_temp[rank][(s+noccB_)*nmo_+noccB_]),1,
+        C_DCOPY(s+1,&(IJ_temp[rank][(s+noccB_)*nmoB_+noccB_]),1,
           &(B_p_SS[Pbl%2][Prel][s*(s+1)/2]),1);
       } 
  
@@ -1536,16 +1545,16 @@ void SAPT0::oo_df_integrals()
     }
 }
     for (int P=0, index=0; P < numPshell; ++P) {
-      C_DGEMM('T', 'N', noccA_, nso_, nso_, 1.0, &(CA_[0][0]), nmo_,
+      C_DGEMM('T', 'N', noccA_, nso_, nso_, 1.0, &(CA_[0][0]), nmoA_,
         temp[P], nso_, 0.0, tempA, nso_);
       C_DGEMM('N', 'N', noccA_, noccA_, nso_, 1.0, tempA, nso_,
-        &(CA_[0][0]), nmo_, 0.0, B_p_AA[P], noccA_);
+        &(CA_[0][0]), nmoA_, 0.0, B_p_AA[P], noccA_);
       C_DGEMM('N', 'N', noccA_, noccB_, nso_, 1.0, tempA, nso_,
-        &(CB_[0][0]), nmo_, 0.0, B_p_AB[P], noccB_);
-      C_DGEMM('T', 'N', noccB_, nso_, nso_, 1.0, &(CB_[0][0]), nmo_,
+        &(CB_[0][0]), nmoB_, 0.0, B_p_AB[P], noccB_);
+      C_DGEMM('T', 'N', noccB_, nso_, nso_, 1.0, &(CB_[0][0]), nmoB_,
         temp[P], nso_, 0.0, tempB, nso_);
       C_DGEMM('N', 'N', noccB_, noccB_, nso_, 1.0, tempB, nso_,
-        &(CB_[0][0]), nmo_, 0.0, B_p_BB[P], noccB_);
+        &(CB_[0][0]), nmoB_, 0.0, B_p_BB[P], noccB_);
     }
 
     psio_->write(PSIF_SAPT_TEMP,"AA RI Integrals",(char *)

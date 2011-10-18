@@ -98,11 +98,17 @@ mp2(Options & options)
   fprintf(outfile,"      * MP2 total energy                  = %20.15f\n\n",mo.Escf + mo.Emp2);
   fflush(outfile);
 
-  Process::environment.globals["CURRENT ENERGY"] = mo.Escf + mo.Emp2;
+  Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = mo.escsmp2_ss;
+  Process::environment.globals["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = mo.escsmp2_os;
   Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = mo.escsmp2_os+mo.escsmp2_ss;
-  Process::environment.globals["SAME SPIN MP2 CORRELATION ENERGY"] = mo.escsmp2_ss;
-  Process::environment.globals["OPPOSITE SPIN MP2 CORRELATION ENERGY"] = mo.escsmp2_os;
-  Process::environment.globals["MP2 CORRELATION ENERGY"] = mo.Escf + mo.Emp2;
+  Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = mo.Escf+mo.escsmp2_os+mo.escsmp2_ss;
+
+  Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = mo.emp2_ss;
+  Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = mo.emp2_os;
+  Process::environment.globals["MP2 CORRELATION ENERGY"] = mo.Emp2;
+  Process::environment.globals["MP2 TOTAL ENERGY"] = mo.Escf + mo.Emp2;
+
+  Process::environment.globals["CURRENT ENERGY"] = mo.Escf + mo.Emp2;
 
   chkpt_init(PSIO_OPEN_OLD);
   // Save MP2 contribution to Chkpt
