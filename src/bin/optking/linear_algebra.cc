@@ -219,10 +219,12 @@ void matrix_root(double **A, int dim, bool inverse) {
   }
 
   for(int k=0; k<dim; k++) {
-    if(fabs(A_evals[k]) > 0)
-      A_evals[k] = sqrt(A_evals[k]);
+    if(A_evals[k] > 0)
+      A_evals[k] = sqrt(  A_evals[k]);
     else
-      throw("matrix_root() : cannot take square root of negative eigenvalue.\n");
+    {
+      A_evals[k] = 0;
+    }
   }
 
   zero_matrix(A, dim, dim);
