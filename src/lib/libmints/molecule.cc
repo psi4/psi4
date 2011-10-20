@@ -2078,7 +2078,7 @@ double Molecule::xyz(int atom, int _xyz) const
     return input_units_to_au_ * atoms_[atom]->compute()[_xyz];
 }
 
-double Molecule::Z(int atom) const
+const double& Molecule::Z(int atom) const
 {
     return atoms_[atom]->Z();
 }
