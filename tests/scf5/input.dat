@@ -17,7 +17,6 @@ molecule singlet_o2 {
     O
     O 1 1.2
     units    angstrom
-    symmetry c1
 }
 
 molecule triplet_o2 {
@@ -25,7 +24,6 @@ molecule triplet_o2 {
     O
     O 1 1.2
     units    angstrom
-    symmetry c1
 }
 singlet_o2.update_geometry()
 triplet_o2.update_geometry()
@@ -33,8 +31,6 @@ triplet_o2.update_geometry()
 print_stdout('   -Nuclear Repulsion:') #TEST
 compare_values(Eref_nuc, triplet_o2.nuclear_repulsion_energy(), 9, "Triplet nuclear repulsion energy")  #TEST
 compare_values(Eref_nuc, singlet_o2.nuclear_repulsion_energy(), 9, "Singlet nuclear repulsion energy")  #TEST
-
-print_stdout('   -C1 Algorithms:') #TEST
 
 activate(singlet_o2)
 set globals {

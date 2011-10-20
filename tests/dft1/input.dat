@@ -70,7 +70,6 @@ molecule h2op {
 O
 H 1 1.0
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set basis sto-3g
@@ -95,7 +94,6 @@ molecule h2om {
 O
 H 1 1.0
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set basis sto-3g

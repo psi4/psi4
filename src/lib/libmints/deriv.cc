@@ -246,6 +246,7 @@ public:
             four_index_D -= D_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
 
         four_index_D *= prefactor;
+//        fprintf(outfile, "Salc %d (%d %d | %d %d) = %16.10f\n", salc, pabs, qabs, rabs, sabs, value);
 
         result[thread]->add(salc, four_index_D * value);
         counter++;

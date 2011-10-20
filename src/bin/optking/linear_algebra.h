@@ -30,10 +30,13 @@ void matrix_copy(double **from, double **to, int nr, int nc);
 
 void array_copy(double *from, double *to, int n);
 double array_dot(double *v1, double *v2, int n);
+double array_norm(double *v1, int n);
 void array_normalize(double *v1, int n);
 void array_scm(double *v1, double a, int n);
 double array_abs_max(double *v1, int n);
 double array_rms(double *v1, int n);
+// Compute matrix ^1/2 or ^-1/2 if inverse=true
+void matrix_root(double **A, int dim, bool inverse);
 
 }
 

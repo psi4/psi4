@@ -3,6 +3,7 @@
 
 #include "malloc.h"
 
+
 namespace yeti {
 
 /**
@@ -62,6 +63,7 @@ class FastMallocTemplate {
             return blocksize_;
         }
 
+
 };
 
 /**
@@ -78,6 +80,8 @@ class Malloc {
 
     private:
         static bool initialized_;
+
+        size_t malloc_number_;
 
     public:
 
@@ -132,6 +136,21 @@ class Malloc {
             initialized_ = false;
         }
 
+        size_t get_malloc_number() const
+        {
+            return malloc_number_;
+        }
+
+        static T* get_object(uli malloc_number)
+        {
+            return static_cast<T*>(FastMallocTemplate<T>::malloc->get_object(malloc_number));
+        }
+
+        static uli get_malloc_number(T* object)
+        {
+            return FastMallocTemplate<T>::malloc->get_malloc_number(object);
+        }
+
 };
 
 
@@ -145,7 +164,7 @@ class MemoryPool :
 {
 
     private:
-        size_t size_;
+        size_t total_size_;
 
         size_t remaining_;
 
@@ -175,13 +194,17 @@ class MemoryPool :
 
         void set(char* data);
 
+        void set_data_size(size_t size);
+
         void reset();
 
         void memcpy(MemoryPool* pool);
 
         char* data() const;
 
-        size_t size() const;
+        size_t total_size() const;
+
+        size_t data_size() const;
 
         size_t remaining() const;
 

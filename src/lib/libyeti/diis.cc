@@ -1,16 +1,13 @@
 #include "diis.h"
 #include "gigmatrix.h"
 
-#ifndef HAVE_PSI
+#include "blas.h"
 extern "C" {
-extern void dspsvx(const char* fact, const char* uplo, const int* n, const int* nrhs,
+extern void F_DSPSVX(const char* fact, const char* uplo, const int* n, const int* nrhs,
                        const double* AP, double* AFP, int* ipiv, const double* BB, const int* nb,
                        double* XX, const int* nx, double* rcond, double* ferr, double* berr,
                        double* work, int* iwork, int* info);
-}
-#else
-#include <libqt/qt.h>
-#endif
+}//EndExternC
 
 using namespace yeti;
 using namespace std;
@@ -185,11 +182,7 @@ DiisExtrapolation::_extrapolate()
     double rcond = 0.0;
     int info = 0;
 
-#ifndef HAVE_PSI
-    dspsvx(&fact, &uplo, &n, &nrhs, A, AP, ipiv, B, &n, X, &n, &rcond, ferr, berr, work, iwork, &info);
-#else
-    psi::C_DSPSVX(fact, uplo, n, nrhs, A, AP, ipiv, B, n, X, n, &rcond);
-#endif
+    F_DSPSVX(&fact, &uplo, &n, &nrhs, A, AP, ipiv, B, &n, X, &n, &rcond, ferr, berr, work, iwork, &info);
 }
 
 bool

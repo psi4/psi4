@@ -1,11 +1,12 @@
 use strict;
 use warnings;
 
-die "Usage\n\t\t$0 input_file logfile\n" unless @ARGV == 2;
+die "Usage\n\t\t$0 input_file logfile\n" unless @ARGV == 3;
 
 my $psi = "../../bin/psi4";
-my $input = shift;
-my $logfile = shift;
+my $input = $ARGV[0];
+my $logfile = $ARGV[1];
+my $psiautotest = $ARGV[2];
 
 open(LOGFILE,">$logfile") or die "I can't write to $logfile\n";
 
@@ -31,6 +32,11 @@ backtick(@cmd);
 
 my $return = $? ? 1 : 0;
 close LOGFILE;
+
+if ($psiautotest eq "true") {
+  require("@top_srcdir@/tests/psitest.pl");
+  do_tests(@ARGV);
+}
 
 exit $return;
 

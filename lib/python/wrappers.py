@@ -7,6 +7,10 @@ from driver import *
 from molecule import *
 from text import *
 
+###################
+##  Start of cp  ##
+###################
+
 def cp(name, **kwargs):
 
     check_bsse = False
@@ -109,20 +113,20 @@ def cp(name, **kwargs):
     PsiMod.print_out(str(cp_table))
     return e_full
 
-#############
-# End of cp #
-#############
-
-## Aliases ##
-# Easily remembered longhand
+##  Aliases  ##
 counterpoise_correct = cp
 counterpoise_correction = cp
 
+#################
+##  End of cp  ##
+#################
 
 
 
+######################################
+##  Start of basis_set_extrapolate  ##
+######################################
 
-# Basis Set Extrapolation
 def basis_set_extrapolate(basis_name, **kwargs):
     """ Performs a basis set extrapolation substituting the tag [X] in 
         the basis name for letters given in an array by the optional 'labels' keyword.  The indices in
@@ -346,32 +350,15 @@ def basis_set_extrapolate(basis_name, **kwargs):
     else:
         return ahf
 
-################################
-# End of basis_set_extrapolate #
-################################
-
-## Aliases ##
-# Helpful shorthand
+##  Aliases  ##
 bse = basis_set_extrapolate
-# Easily mistyped long-hand
 basis_set_extrapolation = basis_set_extrapolate
 
-#################
-# Start of Temp #
-#################
+####################################
+##  End of basis_set_extrapolate  ##
+####################################
 
-#def fakewrapper(**kwargs):
 
-#    fw_addend = 0.0
-#    if(kwargs.has_key('add')):
-#        fw_addend = kwargs['add']
-
-#    electronic_energy = energy(kwargs['name'])
-#    return (electronic_energy + fw_addend)   
-
-###############
-# End of Temp #
-###############
 
 #########################
 ##  Start of Database  ##
@@ -385,16 +372,6 @@ def database(name, db_name, **kwargs):
     * name (or unlabeled first argument) indicates the computational method to be applied to the database.
     * db_name (or unlabeled second argument) is a string of the requested database name. This name matches the
         python file in psi4/lib/databases , wherein literature citations for the database are also documented.
-        * Interaction Energy Databases
-            'BZC'   215 geometries in 10 dissociation curves for Bz and 1st/2nd-row hydrides
-            'HBC6'  118 geometries in 6 dissociation curves for small hydrogen-bonded bimolecular complexes
-            'HSG'   21 pairwise fragments from the a protein-drug docking site
-            'JSCH'  124 nucleobase pairs divided by geometric configuration
-            'NBC10' 184 geometries in 10 dissociation curves for dispersion-dominated bimolecular complexes
-            'RGC10' 180 geometries in 10 dissociation curves for [He, Ne, Ar, Kr] biatomic complexes
-            'S22'   22 noncovalent bimolecular complexes divided by interaction type
-        * Reaction Barrier Height Databases
-            'NHTBH' 34 forward-and-reverse non hydrogen-transfer reactions
 
     Optional Arguments:  --> 'default_option' <-- 
     ------------------
@@ -414,6 +391,11 @@ def database(name, db_name, **kwargs):
         Indicates whether zero-point-energy corrections are appended to single-point energy values. Option
         valid only for certain thermochemical databases.
         Disabled until Hessians ready.
+    * benchmark = --> 'default' <-- | etc.
+        Indicates whether a non-default set of reference energies, if available, are employed for the 
+        calculation of error statistics.
+    * tabulate = --> [] <-- | etc.
+        Indicates whether to form tables of variables other than the primary requested energy
     * subset
         Indicates a subset of the full database to run. This is a very flexible option and can used in
         three distinct ways, outlined below. Note that two take a string and the last takes a list.
@@ -436,7 +418,8 @@ def database(name, db_name, **kwargs):
     """
 
     import input
-    import pickle
+    #import pickle
+    from collections import defaultdict
     #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
@@ -473,11 +456,8 @@ def database(name, db_name, **kwargs):
     user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
     user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
+    user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
     user_reference = PsiMod.get_option('REFERENCE')
-
-    # Temporary alarms until more things are working
-    if re.match(r'^mp2c$', name, re.IGNORECASE):
-        raise Exception('Databases not yet compatible with SAPT or MP2C calculations (supermolecular vs sapt structure).')
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -500,7 +480,7 @@ def database(name, db_name, **kwargs):
         else:
             if input.yes.match(str(database.isOS)):
                 openshell_override = 1
-                PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF as needed.\n' % (db_name))
+                PsiMod.print_out('\nSome reagents in database %s require an open-shell reference; will be reset to UHF/UKS as needed.\n' % (db_name))
 
     # Configuration based upon database keyword options
     #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2 & dft)
@@ -561,6 +541,26 @@ def database(name, db_name, **kwargs):
     else:
         raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
 
+    #   Option benchmark- whether error statistics computed wrt alternate reference energies
+    db_benchmark = 'default'
+    if(kwargs.has_key('benchmark')):
+        db_benchmark = kwargs['benchmark']
+
+        if re.match(r'^default$', db_benchmark, re.IGNORECASE):
+            pass
+        else:
+            try:
+                getattr(database, 'BIND_' + db_benchmark)
+            except AttributeError:
+                raise Exception('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
+            else:
+                BIND = getattr(database, 'BIND_' + db_benchmark)
+
+    #   Option tabulate- whether tables of variables other than primary energy method are formed
+    db_tabulate = []
+    if(kwargs.has_key('tabulate')):
+        db_tabulate = kwargs['tabulate']
+
     #   Option subset- whether all of the database or just a portion is run
     db_subset = HRXN
     if(kwargs.has_key('subset')):
@@ -617,44 +617,47 @@ def database(name, db_name, **kwargs):
     #   write index of calcs to output file
     if re.match('continuous', db_mode.lower()):
         instructions  = """\n    The database single-job procedure has been selected through mode='continuous'.\n"""
-        instructions += """    Calculations for the reagents will proceed in the order below and will be followed\n"""
-        instructions += """    by summary results for the database.\n\n"""
+        instructions +=   """    Calculations for the reagents will proceed in the order below and will be followed\n"""
+        instructions +=   """    by summary results for the database.\n\n"""
         for rgt in HSYS:
             instructions += """                    %-s\n""" % (rgt)
         instructions += """\n    Alternatively, a farming-out of the database calculations may be accessed through\n"""
-        instructions += """    the database wrapper option mode='sow'/'reap'.\n\n"""
+        instructions +=   """    the database wrapper option mode='sow'/'reap'.\n\n"""
         PsiMod.print_out(instructions)
 
     #   write sow/reap instructions and index of calcs to output file and reap input file
     if re.match('sow', db_mode.lower()):
         instructions  = """\n    The database sow/reap procedure has been selected through mode='sow'. In addition\n"""
-        instructions += """    to this output file (which contains no quantum chemical calculations), this job\n"""
-        instructions += """    has produced a number of input files (%s-*.in) for individual database members\n""" % (dbse)
-        instructions += """    and a single input file (%s-master.in) with a database(mode='reap') command.\n""" % (dbse)
-        instructions += """    The former may look peculiar since processed python rather than raw imput\n"""
-        instructions += """    is written. Follow the instructions below to continue.\n\n"""
-        instructions += """    (1)  Run all of the %s-*.in input files on any variety of computer architecture.\n""" % (dbse)
-        instructions += """       The output file names must be as given below.\n\n"""
+        instructions +=   """    to this output file (which contains no quantum chemical calculations), this job\n"""
+        instructions +=   """    has produced a number of input files (%s-*.in) for individual database members\n""" % (dbse)
+        instructions +=   """    and a single input file (%s-master.in) with a database(mode='reap') command.\n""" % (dbse)
+        instructions +=   """    The former may look very peculiar since processed and pickled python rather than\n"""
+        instructions +=   """    raw input is written. Follow the instructions below to continue.\n\n"""
+        instructions +=   """    (1)  Run all of the %s-*.in input files on any variety of computer architecture.\n""" % (dbse)
+        instructions +=   """       The output file names must be as given below.\n\n"""
         for rgt in HSYS:
             instructions += """             psi4 -i %-27s -o %-27s\n""" % (rgt + '.in', rgt + '.out')
         instructions += """\n    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-        instructions += """         %s-master.in into that directory and run it. The job will be trivial in\n""" % (dbse)
-        instructions += """         length and give summary results for the database in its output file.\n\n"""
-        instructions += """             psi4 -i %-27s -o %-27s\n\n""" % (dbse + '-master.in', dbse + '-master.out')
-        instructions += """    Alternatively, a single-job execution of the database may be accessed through\n"""
-        instructions += """    the database wrapper option mode='continuous'.\n\n"""
+        instructions +=   """         %s-master.in into that directory and run it. The job will be trivial in\n""" % (dbse)
+        instructions +=   """         length and give summary results for the database in its output file.\n\n"""
+        instructions +=   """             psi4 -i %-27s -o %-27s\n\n""" % (dbse + '-master.in', dbse + '-master.out')
+        instructions +=   """    Alternatively, a single-job execution of the database may be accessed through\n"""
+        instructions +=   """    the database wrapper option mode='continuous'.\n\n"""
         PsiMod.print_out(instructions)
 
         fmaster = open('%s-master.in' % (dbse), 'w')
         fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
-        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', linkage=%d, subset=%s)\n\n" %
-            (name, db_name, db_cp, db_zpe, os.getpid(), HRXN))
+        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s, tabulate=%s)\n\n" %
+            (name, db_name, db_cp, db_zpe, db_benchmark, os.getpid(), HRXN, db_tabulate))
         fmaster.close()
 
     #   Loop through chemical systems
     ERGT = {}
     ERXN = {}
+    VRGT = {}
+    VRXN = {}
     for rgt in HSYS:
+        VRGT[rgt] = {}
 
         # extra definition of molecule so that logic in building commands string has something to act on
         exec GEOS[rgt]
@@ -678,10 +681,14 @@ def database(name, db_name, **kwargs):
                    % (rgt, RXNM[db_rxn][rgt], db_rxn)
         actives += """PsiMod.print_out('\\n')\n\n"""
 
-        # build string of commands for options from the input file NYI
+        # build string of commands for options from the input file  TODO: handle local options too
+        commands = '\n'
+        for chgdopt in PsiMod.get_global_option_list():
+            if PsiMod.has_option_changed(chgdopt):
+                 commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
 
         # build string of molecule and commands that are dependent on the database
-        commands = '\n'
+        commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
         if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
@@ -691,6 +698,8 @@ def database(name, db_name, **kwargs):
             commands += """PsiMod.set_global_option('RI_BASIS_CC', '%s')\n""" % (user_ri_basis_cc)
         if not((user_ri_basis_sapt == "") or (user_ri_basis_sapt == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SAPT', '%s')\n""" % (user_ri_basis_sapt)
+        if not((user_ri_basis_elst == "") or (user_ri_basis_elst == 'NONE')):
+            commands += """PsiMod.set_global_option('RI_BASIS_ELST', '%s')\n""" % (user_ri_basis_elst)
         commands += """molecule = PsiMod.get_active_molecule()\n"""
         commands += """molecule.update_geometry()\n"""
 
@@ -715,10 +724,14 @@ def database(name, db_name, **kwargs):
             exec commands
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            ERGT[rgt] = assemble_function2call(**kwargs)
+            lesserkwargs = kwargs.copy() 
+            del lesserkwargs['func'] 
+            ERGT[rgt] = assemble_function2call_dropfunc(kwargs['func'], **lesserkwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
             exec actives
+            for envv in db_tabulate:
+               VRGT[rgt][envv] = PsiMod.get_variable(envv)
             PsiMod.set_global_option("REFERENCE", user_reference)
             PsiMod.clean()
             
@@ -728,19 +741,32 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-            freagent.write('''\npickle_kw = ("""''')
-            pickle.dump(kwargs, freagent)
-            freagent.write('''""")\n''')
-            freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+            # non-pickle route
+            lesserkwargs = kwargs.copy() 
+            del lesserkwargs['func'] 
+            freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
+            # pickle route (conflics w/Andy's parenthesis matching)
+            #freagent.write('''\npickle_kw = ("""''')
+            #pickle.dump(kwargs, freagent)
+            #freagent.write('''""")\n''')
+            #freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+            # end routes
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['func'].__name__))
             freagent.write("""PsiMod.print_variables()\n""")
-            freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: energy computation %d for reagent %s """
+            freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
                 % (os.getpid(), rgt))
             freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+            for envv in db_tabulate:
+                freagent.write("""PsiMod.print_out('DATABASE RESULT: computation %d for reagent %s """
+                    % (os.getpid(), rgt))
+                freagent.write("""yields variable value    %20.12f for variable %s\\n' % (PsiMod.get_variable(""")
+                freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
             freagent.close()
 
         elif re.match('reap', db_mode.lower()):
             ERGT[rgt] = 0.0
+            for envv in db_tabulate:
+               VRGT[rgt][envv] = 0.0
             exec banners
             exec actives
             try:
@@ -757,15 +783,21 @@ def database(name, db_name, **kwargs):
                            PsiMod.print_out('         Database summary will have 0.0 and **** in its place.\n')
                         break
                     s = line.split()
-                    if (len(s) != 0) and (s[0:4] == ['DATABASE', 'RESULT:', 'energy', 'computation']):
-                        if int(s[4]) != db_linkage:
+                    if (len(s) != 0) and (s[0:3] == ['DATABASE', 'RESULT:', 'computation']):
+                        if int(s[3]) != db_linkage:
                            raise Exception('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' 
-                               % (rgt, str(s[4]), str(db_linkage)))
-                        if s[7] != rgt:
+                               % (rgt, str(s[3]), str(db_linkage)))
+                        if s[6] != rgt:
                            raise Exception('Output file \'%s.out\' has nominal affiliation %s incompatible with reagent %s.' 
-                               % (rgt, s[7], rgt))
-                        ERGT[rgt] = float(s[11])
-                        PsiMod.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
+                               % (rgt, s[6], rgt))
+                        if (s[8:10] == ['electronic', 'energy']):
+                            ERGT[rgt] = float(s[10])
+                            PsiMod.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
+                        elif (s[8:10] == ['variable', 'value']):
+                            for envv in db_tabulate:
+                                if (s[13:] == envv.upper().split()):
+                                    VRGT[rgt][envv] = float(s[10])
+                                    PsiMod.print_out('DATABASE RESULT: variable value    = %20.12f\n' % (VRGT[rgt][envv]))
                 freagent.close()
 
     #   end sow after writing files 
@@ -784,31 +816,52 @@ def database(name, db_name, **kwargs):
     table_delimit = '-' * (52+20*maxrgt)
     tables = ''
 
+    #   find any reactions that are incomplete
+    FAIL = defaultdict(int)
+    for rxn in HRXN:
+        db_rxn = dbse + '-' + str(rxn)
+        for i in range(len(ACTV[db_rxn])):
+            if abs(ERGT[ACTV[db_rxn][i]]) < 1.0e-12:
+                FAIL[rxn] = 1
+
+    #   tabulate requested process::environment variables
+    for envv in db_tabulate:
+        tables += """\n\n   %s""" % (envv.upper())
+        tables += tblhead(maxrgt, table_delimit, 2)
+
+        for rxn in HRXN:
+            db_rxn = dbse + '-' + str(rxn)
+            VRXN[db_rxn] = {}
+    
+            if FAIL[rxn]:
+                tables += """\n%23s   %8.4f %8s %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
+                for i in range(len(ACTV[db_rxn])):
+                    tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
+    
+            else:
+                VRXN[db_rxn][envv] = 0.0
+                for i in range(len(ACTV[db_rxn])):
+                    VRXN[db_rxn][envv] += VRGT[ACTV[db_rxn][i]][envv] * RXNM[db_rxn][ACTV[db_rxn][i]]
+            
+                tables += """\n%23s            %8.4f         """ % (db_rxn, VRXN[db_rxn][envv])
+                for i in range(len(ACTV[db_rxn])):
+                    tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
+        tables += """\n   %s\n""" % (table_delimit)
+
+    #   tabulate primary requested energy variable with statistics
+    count_rxn = 0
     minDerror = 10000.0
     maxDerror = 0.0
     MSDerror  = 0.0
     MADerror  = 0.0
     RMSDerror = 0.0
 
-    tables += """\n   %s""" % (table_delimit)
-    tables += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Energy', 'Error')
-    for i in range(maxrgt):
-        tables += """%20s""" % ('Reagent '+str(i+1))
-    tables += """\n%23s %10s %17s""" % ('', 'Ref', '[kcal/mol]')
-    for i in range(maxrgt):
-        tables += """%20s""" % ('[H] Wt')
-    tables += """\n   %s""" % (table_delimit)
-
-    count_rxn = 0
+    tables += """\n\n   %s""" % ("REQUESTED ENERGY")
+    tables += tblhead(maxrgt, table_delimit, 1)
     for rxn in HRXN:
-
         db_rxn = dbse + '-' + str(rxn)
-        fail_rxn = 0
-        for i in range(len(ACTV[db_rxn])):
-            if abs(ERGT[ACTV[db_rxn][i]]) < 1.0e-12:
-                fail_rxn = 1
 
-        if fail_rxn:
+        if FAIL[rxn]:
             tables += """\n%23s   %8.4f %8s %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
@@ -829,7 +882,6 @@ def database(name, db_name, **kwargs):
             MADerror += abs(error)
             RMSDerror += error*error
             count_rxn += 1
-
     tables += """\n   %s\n""" % (table_delimit)
 
     if count_rxn:
@@ -856,7 +908,26 @@ def assemble_function2call(**kwargs):
     function2call = kwargs['func']
     return function2call(**kwargs)
 
-## Aliases  ##
+def assemble_function2call_dropfunc(funcarg, **kwargs):
+    function2call = funcarg
+    return function2call(**kwargs)
+
+def tblhead(tbl_maxrgt, tbl_delimit, ttype):
+    tbl_str = ''
+    tbl_str += """\n   %s""" % (tbl_delimit)
+    if   ttype == 1: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Energy', 'Error')
+    elif ttype == 2: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Value', '')
+    for i in range(tbl_maxrgt):
+        tbl_str += """%20s""" % ('Reagent '+str(i+1))
+    if   ttype == 1: tbl_str += """\n%23s %10s %17s""" % ('', 'Ref', '[kcal/mol]')
+    elif ttype == 2: tbl_str += """\n%23s %10s %17s""" % ('', '', '')
+    for i in range(tbl_maxrgt):
+        if   ttype == 1: tbl_str += """%20s""" % ('[H] Wt')
+        elif ttype == 2: tbl_str += """%20s""" % ('Value Wt')
+    tbl_str += """\n   %s""" % (tbl_delimit)
+    return tbl_str
+
+##  Aliases  ##
 db = database
 
 #######################
@@ -865,47 +936,228 @@ db = database
 
 
 
-
 ###################################
 ##  Start of Complete Basis Set  ##
 ###################################
 
-#def complete_basis_set(e_name, db_name, **kwargs):
-#
-#    # Back up global options that may be changed
-#    backup_basis = PsiMod.get_global_option("BASIS")
-#    backup_wfn = PsiMod.get_global_option("WFN")
-#
-#    molecule = PsiMod.get_active_molecule()
-#    if (kwargs.has_key('molecule')):
-#        molecule = kwargs.pop('molecule')    
-#    if not molecule:
-#        raise ValueNotSet("no molecule found")
-#    activate(molecule) 
-#    molecule.update_geometry()
-#
-#    PsiMod.print_out("\n")
-#    banner(" Complete Basis Set ")
-#    PsiMod.print_out("\n")
-#
-#
-#    #   Option symmetry- whether symmetry treated normally or turned off (currently req'd for dfmp2)
-#    cbs_scf_scheme = 'Helgaker_scf_3'
-#    if(kwargs.has_key('scf_scheme')):
-#        cbs_scf_scheme = kwargs['scf_scheme'].lower()
-#
-#    if re.match(r'^helgaker_scf_3$', cbs_scf_scheme):
-#        pass
-#    elif re.match(r'^helgaker_scf_2$', cbs_scf_scheme):
-#        pass
-#    else:
-#        raise Exception('SCF extrapolation mode \'%s\' not valid.' % (cbs_scf_scheme))
-#
-#
-#
-#
-### Aliases  ##
-#cbs = complete_basis_set
+def complete_basis_set(name, **kwargs):
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name
+    if not('func' in kwargs):
+        kwargs['func'] = energy
+
+    ZETA = ['d', 't', 'q', '5', '6']
+    domax_scf = 1
+    domax_xtpl = 0
+    domax_delta = 0
+    domax_delta2 = 0
+
+    # Establish method for correlation energy
+    cbs_corl_wfn = 'none'
+    if(kwargs.has_key('name')):
+        cbs_corl_wfn = kwargs['name'].lower()
+        if re.match(r'^scf$', cbs_corl_wfn.lower()):
+            cbs_corl_wfn = 'none'
+        else:
+            domax_scf = 0
+            domax_xtpl = 1
+    if(kwargs.has_key('corl_wfn')):
+        cbs_corl_wfn = kwargs['corl_wfn'].lower()
+        domax_scf = 0
+        domax_xtpl = 1
+
+    # Establish list of valid basis sets for correlation energy
+    BSTC = []
+    ZETC = []
+    if(kwargs.has_key('corl_basis')):
+        cbs_corl_basis = kwargs['corl_basis'].lower()
+
+        if re.match(r'.*cc-.*\[.*\]z$', cbs_corl_basis, flags=re.IGNORECASE):
+            basispattern = re.compile(r'^(.*)\[(.*)\](.*)$')
+            basisname = basispattern.match(cbs_corl_basis)
+            for b in basisname.group(2):
+                if b not in ZETA:
+                    raise Exception('CORL basis set zeta level \'%s\' not valid.' % (b))
+                if len(ZETC) != 0:
+                    if (int(ZETC[len(ZETC)-1]) - ZETA.index(b)) != 1:
+                        raise Exception('CORL basis set zeta level \'%s\' out of order.' % (b))
+                BSTC.append(basisname.group(1) + b + basisname.group(3))
+                if b == 'd': b = '2'
+                if b == 't': b = '3'
+                if b == 'q': b = '4'
+                ZETC.append(b)
+        else:
+            raise Exception('CORL basis set \'%s\' not valid.' % (cbs_corl_basis))
+    else:
+        if not domax_scf:
+            raise Exception('CORL basis sets through variable \'%s\' are required.' % ('corl_basis'))
+
+    # Establish list of valid basis sets for scf energy
+    BSTR = []
+    ZETR = []
+    if(kwargs.has_key('scf_basis')):
+        cbs_scf_basis = kwargs['scf_basis'].lower()
+
+        if re.match(r'.*cc-.*\[.*\]z$', cbs_scf_basis, flags=re.IGNORECASE):
+            basispattern = re.compile(r'^(.*)\[(.*)\](.*)$')
+            basisname = basispattern.match(cbs_scf_basis)
+            for b in basisname.group(2):
+                if b not in ZETA:
+                    raise Exception('SCF basis set zeta level \'%s\' not valid.' % (b))
+                if len(ZETR) != 0:
+                    if (int(ZETR[len(ZETR)-1]) - ZETA.index(b)) != 1:
+                        raise Exception('SCF basis set zeta level \'%s\' out of order.' % (b))
+                BSTR.append(basisname.group(1) + b + basisname.group(3))
+                if b == 'd': b = '2'
+                if b == 't': b = '3'
+                if b == 'q': b = '4'
+                ZETR.append(b)
+        else:
+            raise Exception('SCF basis set \'%s\' not valid.' % (cbs_corl_basis))
+    else:
+        if domax_scf:
+            raise Exception('SCF basis sets through variable \'%s\' are required.' % ('scf_basis'))
+        else:
+            if(kwargs.has_key('corl_basis')):
+                BSTR = BSTC[:]
+                ZETR = ZETC[:]
+
+    print BSTC
+    print ZETC
+    print BSTR
+    print ZETR
+
+
+    # Establish treatment for scf energy
+    cbs_scf_scheme = scf_highest_1
+    if(kwargs.has_key('scf_scheme')):
+        cbs_scf_scheme = kwargs['scf_scheme']
+
+    if cbs_scf_scheme:
+        pass
+    else:
+        raise Exception('SCF extrapolation mode \'%s\' not valid.' % (cbs_scf_scheme))
+
+    # Establish treatment for correlation energy
+    cbs_corl_scheme = corl_highest_1
+    if(kwargs.has_key('corl_scheme')):
+        cbs_corl_scheme = kwargs['corl_scheme']
+
+    print "cbs_corl_scheme %s" % (cbs_corl_scheme)
+    if cbs_corl_scheme:
+        pass
+    else:
+        raise Exception('CORL extrapolation mode \'%s\' not valid.' % (cbs_corl_scheme))
+
+    # build string of title banner
+    cbsbanners = ''
+    cbsbanners += """PsiMod.print_out('\\n')\n"""
+    #cbsbanners += """banner(' CBS %s Computation: Reagent %s \\n   %s')\n""" % (db_name, rgt, TAGL[rgt])
+    cbsbanners += """banner(' CBS %s Computation: Reagent %s \\n   %s')\n""" % ('temp', 'temp', 'temp')
+    cbsbanners += """PsiMod.print_out('\\n')\n\n"""
+    exec cbsbanners
+
+    NEED = {}
+    if (cbs_scf_scheme != 'none'):
+        assemble_function2call(func=cbs_scf_scheme, 
+            mode='requisition', needarray = NEED, basisname=BSTR, basiszeta=ZETR, wfnname='scf')
+    if (cbs_corl_scheme != 'none'):
+        assemble_function2call(func=cbs_corl_scheme, 
+            mode='requisition', needarray = NEED, basisname=BSTC, basiszeta=ZETC, wfnname=cbs_corl_wfn)
+    print NEED
+
+
+
+
+    finalenergy = energy(name)
+    print finalenergy
+
+
+    VARH = {}
+    VARH['scf']     = {'SCFtot'    : 'SCF ENERGY'                }
+    VARH['mp2']     = {'SCFtot'    : 'SCF ENERGY',
+                       'MP2corl'   : 'MP2 CORRELATION ENERGY'    }
+    VARH['ccsd(t)'] = {'SCFtot'    : 'SCF ENERGY',
+                       'MP2corl'   : 'MP2 CORRELATION ENERGY',
+                       'CCSDcorl'  : 'CCSD CORRELATION ENERGY',
+                       'CCSDTcorl' : 'CCSD(T) CORRELATION ENERGY'}
+
+
+    return finalenergy
+
+
+# Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$ 
+def scf_highest_1(**largs):
+
+    print largs
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+
+    return energypiece
+
+   
+# Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$ 
+def corl_highest_1(**largs):
+
+    print largs
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+
+    return energypiece
+
+   
+# Defining equation in LaTeX:  $E_{corl}(\ell_{max}) = E_{corl}^{\text{CBS}} + A/\ell^3_{max}$
+def corl_xtpl_helgaker_2(**largs):
+
+    print largs
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+
+    mode = 'requisition'
+    if(largs.has_key('mode')):
+        mode = largs['mode']
+
+    ZETA = []
+    if(largs.has_key('basiszeta')):
+        ZETA = largs['basiszeta']
+
+    BSET = []
+    if(largs.has_key('basisname')):
+        BSET = largs['basisname']
+
+    if(largs.has_key('wfnname')):
+        wfnname = largs['wfnname']
+    else:
+        raise Exception('CORL extrapolation call to \'%s\' not valid without method.' % (functionname))
+
+    NEED = largs['needarray']
+
+    if re.match(r'^requisition$', mode.lower()):
+        if (len(ZETA) != 2):
+            raise Exception('CORL extrapolation call to \'%s\' not valid with \'%s\' basis sets.' % 
+                (functionname, len(ZETA)))
+
+        NEED[functionname] = {'HI' : dict(zip(fields, [wfnname, 'corl', BSET[1], ZETA[1], 0.0])),
+                              'LO' : dict(zip(fields, [wfnname, 'corl', BSET[0], ZETA[0], 0.0])) }
+
+    elif re.match(r'^compute$', mode.lower()):
+        energypiece = (eHI * zHI**3 - eLO * zLO**3) / (zHI**3 - zLO**3) 
+
+    else:
+        raise Exception('Evaluation mode \'%s\' not valid.' % (mode))
+
+    return energypiece
+
+
+
+
+##  Aliases  ##
+cbs = complete_basis_set
 
 #################################
 ##  End of Complete Basis Set  ##

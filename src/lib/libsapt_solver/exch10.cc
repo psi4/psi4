@@ -47,7 +47,7 @@ void SAPT0::exch10_s2()
 #endif 
 
       C_DGEMM('N','T',noccA_,noccA_,noccB_,1.0,B_p_AB.B_p_[j],noccB_,
-        sAB_[0],nmo_,0.0,X_AA[rank],noccA_);
+        sAB_[0],nmoB_,0.0,X_AA[rank],noccA_);
       ex2 -= C_DDOT(noccA_*noccA_,X_AA[rank],1,A_p_AA.B_p_[j],1);
       for (int a=0,aa=0; a<noccA_; a++, aa += noccA_+1) {
         Ap_diag[j+off] += X_AA[rank][aa];
@@ -83,7 +83,7 @@ void SAPT0::exch10_s2()
 #endif
 
       C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,A_p_AB.B_p_[j],noccB_,
-        sAB_[0],nmo_,0.0,X_BB[rank],noccB_);
+        sAB_[0],nmoB_,0.0,X_BB[rank],noccB_);
       ex3 -= C_DDOT(noccB_*noccB_,X_BB[rank],1,B_p_BB.B_p_[j],1);
       for (int b=0,bb=0; b<noccB_; b++, bb += noccB_+1) {
         Bp_diag[j+off] += X_BB[rank][bb];
@@ -103,13 +103,13 @@ void SAPT0::exch10_s2()
 
   double **S_AA = block_matrix(noccA_,noccA_);
 
-  C_DGEMM('N','T',noccA_,noccA_,noccB_,1.0,&(sAB_[0][0]),nmo_,&(sAB_[0][0]),
-    nmo_,0.0,&(S_AA[0][0]),noccA_);
+  C_DGEMM('N','T',noccA_,noccA_,noccB_,1.0,&(sAB_[0][0]),nmoB_,&(sAB_[0][0]),
+    nmoB_,0.0,&(S_AA[0][0]),noccA_);
 
   double **S_BB = block_matrix(noccB_,noccB_);
 
-  C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,&(sAB_[0][0]),nmo_,&(sAB_[0][0]),
-    nmo_,0.0,&(S_BB[0][0]),noccB_);
+  C_DGEMM('T','N',noccB_,noccB_,noccA_,1.0,&(sAB_[0][0]),nmoB_,&(sAB_[0][0]),
+    nmoB_,0.0,&(S_BB[0][0]),noccB_);
 
   double **A_AB = block_matrix(nthreads,noccA_*noccB_);
   double **B_AB = block_matrix(nthreads,noccA_*noccB_);
@@ -135,8 +135,8 @@ void SAPT0::exch10_s2()
 #endif
 
       C_DGEMM('N','N',noccA_,noccB_,noccA_,1.0,A_p_AA.B_p_[j],noccA_,
-        sAB_[0],nmo_,0.0,A_AB[rank],noccB_);
-      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,sAB_[0],nmo_,
+        sAB_[0],nmoB_,0.0,A_AB[rank],noccB_);
+      C_DGEMM('N','N',noccA_,noccB_,noccB_,1.0,sAB_[0],nmoB_,
         B_p_BB.B_p_[j],noccB_,0.0,B_AB[rank],noccB_);
       ex6 += C_DDOT(noccA_*noccB_,A_AB[rank],1,B_AB[rank],1);
     }

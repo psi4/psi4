@@ -255,6 +255,31 @@ IndexRange::~IndexRange()
 #endif
 }
 
+void
+IndexRange::acquire_subranges(const SubindexTuplePtr& subtuple)
+{
+    if (!subranges_)
+    {
+        raise(SanityCheckError, "no subranges in acquire_subranges");
+    }
+
+    uli start = 0;
+    uli compidx = 0;
+    for (uli i=0; i < subranges_->size(); ++i)
+    {
+        IndexRange* subrange = subranges_->get(i);
+        SubindexTuplePtr new_subtuple = new SubindexTuple(subrange->nelements());
+        for (uli j=0; j < subrange->nelements(); ++j, ++compidx)
+        {
+            IndexRange* subsubrange = subtuple->get(compidx);
+            new_subtuple->set(j,subsubrange);
+        }
+        IndexRange* new_subrange = new IndexRange(start, new_subtuple);
+        subranges_->set(i, new_subrange);
+        start += new_subrange->nelements();
+    }
+}
+
 bool
 IndexRange::is_contiguous() const
 {
@@ -347,6 +372,84 @@ IndexRange::equals(IndexRange* idx) const
     }
 
     return true;
+}
+
+IndexRange*
+IndexRange::_squeeze_together_bottom_ranges(
+    uli nper,
+    uli* start_offsets
+)
+{
+    usi mydepth = depth();
+    if (mydepth > 1)
+    {
+        SubindexTuplePtr subtuple = new SubindexTuple(subranges_->size());
+        SubindexTuple::iterator it(subranges_->begin());
+        SubindexTuple::iterator stop(subranges_->end());
+        uli idx = 0;
+        uli start = start_offsets[mydepth];
+        for ( ; it != stop; ++it, ++idx)
+        {
+            IndexRange* subrange = *it;
+            IndexRange* new_subrange = subrange->_squeeze_together_bottom_ranges(nper, start_offsets);
+            subtuple->set(idx, new_subrange);
+            start_offsets[mydepth] += subrange->nelements();
+        }
+        return new IndexRange(start, subtuple);
+    }
+
+    uli size = subranges_->size();
+    uli nsubranges = 0;
+    uli idx = 0;
+    while (idx < size)
+    {
+        uli nelements = 0;
+        while (idx < size && nelements < nper)
+        {
+            nelements += subranges_->get(idx)->nelements();
+            ++idx;
+        }
+        ++nsubranges;
+    }
+
+    SubindexTuplePtr subtuple = new SubindexTuple(nsubranges);
+    uli data_start = start_offsets[0];
+    uli isub = 0;
+    idx = 0;
+    while (idx < size)
+    {
+        uli nelements = 0;
+        while (idx < size && nelements < nper)
+        {
+            nelements += subranges_->get(idx)->nelements();
+            ++idx;
+        }
+        IndexRange* subrange = new IndexRange(data_start, nelements);
+        subtuple->set(isub, subrange);
+        data_start += nelements;
+        ++isub;
+    }
+
+    start_offsets[0] = data_start;
+
+    uli metadata_start = start_offsets[1];
+    IndexRange* newrange = new IndexRange(metadata_start, subtuple);
+    metadata_start += subtuple->size();
+    start_offsets[1] = metadata_start;
+
+    return newrange;
+}
+
+IndexRange*
+IndexRange::squeeze_together_bottom_ranges(
+    uli nper
+)
+{
+    uli offsets[MAX_DEPTH];
+    for (usi i=0; i < MAX_DEPTH; ++i)
+        offsets[i] = 0;
+
+    return _squeeze_together_bottom_ranges(nper, offsets);
 }
 
 uli
@@ -567,14 +670,6 @@ IndexRange::get_merged_range(IndexRange *r1, IndexRange *r2)
 
     IndexRange* merged = new IndexRange(r1->start(), merged_tuple);
     return merged;
-}
-
-uli*
-IndexRange::get_zero_set()
-{
-    uli* indices = yeti_malloc_indexset();
-    ::memset(indices, 0, YetiRuntime::max_nindex() * sizeof(uli));
-    return indices;
 }
 
 bool
@@ -817,6 +912,17 @@ IndexRange::set_irrep(usi irrep)
 {
     irrep_ = irrep;
     has_symmetry_ = true;
+
+    if (subranges_)
+    {
+        SubindexTuple::iterator it = subranges_->begin();
+        SubindexTuple::iterator stop = subranges_->end();
+        for ( ; it != stop; ++it)
+        {
+            IndexRange* subrange = *it;
+            subrange->set_irrep(irrep);
+        }
+    }
 }
 
 
@@ -1050,8 +1156,11 @@ IndexDescr::IndexDescr(
     max_nelements_metadata_(0),
     average_nelements_metadata_(0),
     nranges_data_(0),
+    subdescr_(0),
     descr_id_(DEFAULT_INDEX_DESCR_ID)
 {
+
+
     if (!range->is_contiguous())
     {
         cerr << "Cannot build index descr from non-contiguous index range" << endl;
@@ -1109,6 +1218,13 @@ IndexDescr::IndexDescr(
     average_nelements_data_ = total_data_size_ / nelements(data_depth);
     average_nelements_metadata_ = total_metadata_size_ / nelements(metadata_depth);
     nranges_data_ = lowest_metadata_range->nelements();
+
+    if (depth_ > 2)
+    {
+        IndexRange* subrange = range_list_->get(depth_ - 1);
+        std::string subdescr_str = "subdescr " + descr_;
+        subdescr_ = new IndexDescr(subdescr_str, subrange);
+    }
 }
 
 IndexDescr::~IndexDescr()
@@ -1118,6 +1234,12 @@ IndexDescr::~IndexDescr()
     delete[] index_to_irrep_;
     delete[] total_data_sizes_;
     range_list_ = 0;
+}
+
+IndexDescr*
+IndexDescr::get_subdescr() const
+{
+    return subdescr_.get();
 }
 
 uli
@@ -1572,6 +1694,17 @@ TensorIndexDescr::print(std::ostream &os) const
     {
         os << "Index " << i << ": " << get(i)->descr() << endl;
     }
+}
+
+TensorIndexDescr*
+TensorIndexDescr::get_subdescr() const
+{
+    TensorIndexDescr* newdescr = new TensorIndexDescr(nindex_);
+    for (usi i=0; i < nindex_; ++i)
+    {
+        newdescr->set(i, get(i)->get_subdescr());
+    }
+    return newdescr;
 }
 
 ulli

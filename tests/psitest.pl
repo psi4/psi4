@@ -38,16 +38,13 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 # definitions that default tester knows about
 # should match lib/python/driver.py
 @PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
-@PSITEST_ENERGIES = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2",
+@PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2",
 "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "ccsd", "ccsd(t)", 
 "detci");
-@PSITEST_REFTYPES = ("RHF", "ROHF", "UHF", "TWOCON");
 @PSITEST_GRADIENTS = ("scf", "ccsd", "mp2");
 @PSITEST_RESPONSE = ("ccsd");
 
-$PSITEST_DEFAULT_NSTAB = 5;       # number of eigenvalues STABLE prints out
-
-$PSITEST_ETOL = 10**-8;           # Default test criterion for energies
+$PSITEST_ETOL = 10**-7;           # Default test criterion for energies
 $PSITEST_ENUCTOL = 10**-13;       # Check nuclear repulsion energy tighter than other energies
 $PSITEST_EEOMTOL = 10**-5;        # Less stringent test for EOM-CC energies
 $PSITEST_GEOMTOL = 10**-6;        # Default test criterion for Cartesian geometries
@@ -69,33 +66,18 @@ $PSIMRCCTEST_ETOL = 10**-10;      # Default test criterion for PSIMRCC energies
 sub do_tests
 {
   test_started();
-  my $interrupted;
-  ($interrupted) = run_psi_command(@_);
+# The runtest.pl script handles this now
+#  my $interrupted;
+#  ($interrupted) = run_psi_command(@_);
 
   # Figure out what calculation has been run
+  my $input = $ARGV[0];
   my $wfn;
-  my $dertype;
   my $jobtype;
-  ($wfn, $jobtype, $dertype) = get_calctype_string();
+  ($wfn, $jobtype) = get_calctype_string($input);
 
-  my $item;
-  my $ok = 0;
-  foreach $item (@PSITEST_JOBTYPES) {
-    if ($item eq $jobtype) {$ok = 1;}
-  }
-  if ($ok != 1) {
-    fail_test("Default Psi tester do_tests does not recognize jobtype $jobtype");
-    test_finished(1,$interrupted);
-  }
-
-  $ok = 0;
-  foreach $item (@PSITEST_DERTYPES) {
-    if ($item eq $dertype) {$ok = 1;}
-  }
-  if ($ok != 1) {
-    fail_test("Default Psi tester do_tests does not recognize dertype $dertype");
-    test_finished(1,$interrupted);
-  }
+  printf "Wfn = $wfn\n";
+  printf "Jobtype = $jobtype\n";
 
   $ok = 0;
   foreach $item (@PSITEST_WFNS) {
@@ -107,44 +89,29 @@ sub do_tests
   }
 
   my $fail = 0;
-    
+
   SWITCH1: {
 
-    if ($jobtype eq "OPT") {
-      
-      if ($dertype eq "NONE" || $dertype eq "ENERGY" || $dertype eq "FIRST") {
-        $fail |= compare_energy_file11($wfn);
-        $fail |= compare_geom_file11($wfn);
-        $fail |= compare_grad_file11($wfn);
-      }
-
-      last SWITCH1;
-    }
-
-    # I'll lump all single-point computations together
-    if ( $jobtype eq "SP" || $jobtype eq "FREQ" || $jobtype eq "SYMM_FC" || $jobtype eq "OEPROP" ||
-         $jobtype eq "DBOC" || $jobtype eq "RESPONSE" || $jobtype eq "FC" ) {
+    if ($jobtype eq "energy" || 
+        $jobtype eq "gradient" || 
+        $jobtype eq "hessian" || 
+        $jobtype eq "response") {
       
       $fail |= compare_nuc();
-
-      # DBOC is special, because it does not compute the wave function -- only check DBOC and break
-      if ($jobtype eq "DBOC") {
-        $fail |= compare_dboc();
-	last SWITCH1;
-      }
-      
-      # All computations in Psi4 start with an SCF run
-      $fail |= compare_scf_energy();
+      $fail |= compare_scf_energy();  # We always have SCF energies?
 
       SWITCH2: {
         
-          if ($wfn eq "CCSD")     { $fail |= compare_ccsd_energy(); last SWITCH2; }
-          if ($wfn eq "CC2")      { $fail |= compare_cc2_energy(); last SWITCH2; }
-	  if ($wfn eq "CCSD_T")   { $fail |= compare_ccsd_t_energy(); last SWITCH2; }
-          if ($wfn eq "CC3")      { $fail |= compare_cc3_energy(); last SWITCH2; }
-          if ($wfn eq "EOM_CC2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
-          if ($wfn eq "EOM_CCSD") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
-          if ($wfn eq "EOM_CC3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
+          if ($wfn eq "CCSD" || $wfn eq "ccsd")     { $fail |= compare_ccsd_energy(); last SWITCH2; }
+          if ($wfn eq "CC2" || $wfn eq "cc2")      { $fail |= compare_cc2_energy(); last SWITCH2; }
+	  if ($wfn eq "CCSD_T" || 
+              $wfn eq "CCSD(T)" ||
+              $wfn eq "ccsd_t" ||
+              $wfn eq "ccsd(t)")   { $fail |= compare_ccsd_t_energy(); last SWITCH2; }
+          if ($wfn eq "CC3" || $wfn eq "cc3")      { $fail |= compare_cc3_energy(); last SWITCH2; }
+          if ($wfn eq "EOM_CC2" || $wfn eq "eom_cc2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
+          if ($wfn eq "EOM_CCSD" || $wfn eq "eom_ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
+          if ($wfn eq "EOM_CC3" || $wfn eq "eom_cc3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
           if ($wfn eq "DCFT")     { $fail |= compare_dcft_energy(); last SWITCH2; }
           if ($wfn eq "BCCD")     { $fail |= compare_bccd_energy(); last SWITCH2; }
           if ($wfn eq "BCCD_T")   { $fail |= compare_bccd_t_energy(); last SWITCH2; }
@@ -162,62 +129,14 @@ sub do_tests
           if ($wfn eq "IDMKPT2")  { $fail |= compare_psimrcc_energy(); last SWITCH2; }
           if ($wfn eq "SCF+D")  { $fail |= compare_scf_d_energy(); last SWITCH2; }
       }
-      
-      if ($jobtype eq "SP" && $dertype eq "FIRST") {
-        $fail |= compare_energy_file11($wfn);
-        $fail |= compare_geom_file11($wfn);
-        $fail |= compare_grad_file11($wfn);
-      }
-      
-      if ( ($jobtype eq "FREQ" || $dertype eq "SP") && $dertype eq "SECOND") {
-        $fail |= compare_harm_freq($wfn);
-        $fail |= compare_harm_intensities($wfn);
-      }
 
-      if ($jobtype eq "FREQ" && $dertype eq "FIRST") {
-        $fail |= compare_findif_freq($wfn);
-      }
-
-      if ($jobtype eq "FREQ" && ($dertype eq "NONE" || $dertype eq "ENERGY")) {
-        $fail |= compare_findif_freq($wfn);
-      }
-
-      if ($jobtype eq "SYMM_FC" && $dertype eq "FIRST") {
-        $fail |= compare_findif_symm_freq($wfn);
-      }
-      if ($jobtype eq "FC" && $dertype eq "FIRST") {
-        $fail |= compare_findif_freq($wfn);
-      }
-
-      if ($jobtype eq "OEPROP") {
-        $fail |= compare_mulliken_orb_pops();
-        $fail |= compare_mulliken_ab_pops();
-        $fail |= compare_mulliken_ga_pops();
-        $fail |= compare_electric_dipole();
-        $fail |= compare_elec_angmom();
-        $fail |= compare_epef();
-        $fail |= compare_edens();
-        $fail |= compare_mvd();
-      }
-     
-      if ($jobtype eq "SP" && $dertype eq "RESPONSE") {
-        if ($wfn eq "CC2") {
+     if ($jobtype eq "response") {
+       if ($wfn eq "CCSD" || $wfn eq "ccsd") {
           $fail |= compare_cclambda_overlap($wfn);
           $fail |= compare_cc_response($wfn);
-        }
-        if ($wfn eq "CCSD") {
-          $fail |= compare_cclambda_overlap($wfn);
-          $fail |= compare_cc_response($wfn);
-        }
-        if ($wfn eq "SCF") {
-          $fail |= compare_scf_polar();
-        }
-      }
-
-      if ($jobtype eq "OEPROP" && ($wfn eq "EOM_CC2" || $wfn eq "EOM_CCSD")) {
-        $fail |= compare_eomcc_oeprop();
-      }
-
+       }
+     }
+      
       last SWITCH1;
     }
 
@@ -1485,9 +1404,9 @@ sub seek_nuc
   open(OUT, "$_[0]") || die "cannot open $_[0] $!";
   seek(OUT,0,0);
   while(<OUT>) {
-    if (/Nuclear Repulsion Energy \(a.u.\) =/) {
+    if (/Nuclear repulsion =/) {
       @data = split(/ +/, $_);
-      $nuc = $data[6];
+      $nuc = $data[3];
       return $nuc;
     }
   }
@@ -3034,29 +2953,43 @@ sub run_psi_command
 
 sub get_calctype_string
 {
-  my $wfn;
-  my $jobtype;
-  open(RE, ">$PSITEST_DEFAULT_INPUT") || die "cannot open $PSITEST_DEFAULT_INPUT $!";
-  while(<RE>) {
-    if(/energy(/) {
-      $jobtype = sp;
+  open(IN, $_[0]) || die "fail";
+  @datafile = <IN>;
+  close(IN);
+
+  my $linenumber = 0;
+  foreach $line (@datafile) {
+    $linenumber++;
+    if ($line =~ m/energy\(\'/) {
+      $jobtype = "energy";
+      @data = split(/\'/, $line);
+      $wfn = $data[1];
     }
-    else if (/optimize(/) {
-      @data = split(/ +/, $_);
-      $jobtype = 
-      $wfn = $data[3];
-      $wfn =~ s/\n//;
+    elsif ($line =~ m/scf\(/) {
+      $jobtype = "energy";
+      $wfn = "scf";
+    }
+    elsif ($line =~ m/optimize\(/) {
+      $jobtype = "optimize";
+      @data = split(/\'/, $line);
+      $wfn = $data[1];
+    }
+    elsif ($line =~ m/gradient\(/) {
+      $jobtype = "gradient";
+      @data = split(/\'/, $line);
+      $wfn = $data[1];
+    }
+    elsif ($line =~ m/hessian\(/) {
+      $jobtype = "hessian";
+      @data = split(/\'/, $line);
+      $wfn = $data[1];
+    }
+    elsif ($line =~ m/response\(/) {
+      $jobtype = "response";
+      @data = split(/\'/, $line);
+      $wfn = $data[1];
     }
   }
-  while(<RE>) {
-    if (/Job type         = /) {
-      @data = split(/ +/, $_);
-      $jobtype = $data[4];
-      $jobtype =~ s/\n//;
-    }
-  }
-  close (RE);
-  system("rm -f $tempfile");
 
   return ($wfn, $jobtype);
 }

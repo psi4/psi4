@@ -405,6 +405,7 @@ public:
 
     void print();
     void print_globals();
+    std::vector<std::string> list_globals();
 };
 
 }
