@@ -2127,6 +2127,10 @@ double Molecule::fcharge(int atom) const
 
 void Molecule::set_basis_all_atoms(const std::string& name, const std::string& type)
 {
+    std::string uc = boost::to_upper_copy(name);
+    // These aren't really basis set specifications, just return.
+    if(uc == "SPECIAL" || uc == "GENERAL" || uc == "CUSTOM") return;
+
     BOOST_FOREACH(boost::shared_ptr<CoordEntry> atom, full_atoms_) {
         atom->set_basisset(name, type);
     }
