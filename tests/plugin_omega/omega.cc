@@ -563,6 +563,8 @@ void OmegaIPKS::finalize()
     }
     fprintf(outfile, "\n");
 
+    Process::environment.globals["OPTIMIZED OMEGA"] = get<0>(omega_trace_[omega_trace_.size()-1]);
+
     S_.reset();
     X_.reset();
     H_.reset();

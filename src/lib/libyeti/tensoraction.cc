@@ -93,9 +93,9 @@ ContractionBlockRetrieveAction::ContractionBlockRetrieveAction(
         yeticxn_->rtensor->get_permutation()
     );
 
-    block_indexer_ = new Indexer(ptensor->get_descr());
+    block_indexer_ = new Indexer(ptensor->get_block_descr());
 
-    for (uli i=0; i < YetiRuntime::nthread(); ++i)
+    for (uli i=0; i < YetiRuntime::nthread_compute(); ++i)
     {
         cxn_->get_configuration(i)->configure_left_block(yeticxn_->ltensor->get_tensor());
         cxn_->get_configuration(i)->configure_right_block(yeticxn_->rtensor->get_tensor());
@@ -144,22 +144,16 @@ ContractionBlockRetrieveAction::accumulate_to(TensorBlock* block)
             continue;
         }
 
-        if (lblock->get_max_log() + rblock->get_max_log() 
-            < YetiRuntime::matrix_multiply_cutoff)
-            continue;
-
         if (!block->is_permutationally_unique())
         {
             raise(SanityCheckError, "contraction task accumulating to non-unique block");
         }
 
-        lblock->set_read_mode();
-        lblock->retrieve();
-        rblock->set_read_mode();
-        rblock->retrieve();
+        lblock->retrieve_read();
+        rblock->retrieve_read();
         block->accumulate(lblock, rblock, cxn_.get());
-        lblock->release();
-        rblock->release();
+        lblock->release_read();
+        rblock->release_read();
     }
 }
 
@@ -192,11 +186,10 @@ AccumulateBlockRetrieveAction::accumulate_to(TensorBlock* block)
             return;
     }
 
-    src_block->set_read_mode();
-    src_block->retrieve();
+    src_block->retrieve_read();
     block->accumulate(src_block, coef, sort);
 
-    src_block->release();
+    src_block->release_read();
 
     if (p)
     {   

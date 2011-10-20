@@ -16,7 +16,7 @@
 
 namespace yeti {
 
-#define SORT_BUFFER_SIZE 10000000 //1 MB
+#define SORT_BUFFER_SIZE 5000000 //5 MB
 class Sort :
     public smartptr::Countable,
     public Malloc<Sort>

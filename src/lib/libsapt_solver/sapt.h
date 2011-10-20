@@ -43,6 +43,10 @@ protected:
 
   int nso_;
   int nmo_;
+  int nsoA_;
+  int nmoA_;
+  int nsoB_;
+  int nmoB_;
   int ndf_;
   int noccA_;
   int foccA_;
@@ -54,6 +58,8 @@ protected:
   int nvirB_;
   int NA_;
   int NB_;
+  int natomsA_;
+  int natomsB_;
 
   int print_;
   int debug_;

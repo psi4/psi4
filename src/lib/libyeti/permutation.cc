@@ -778,7 +778,7 @@ tmpl_lowest_image(iterator it, iterator stop, const uli *src, uli *dst, usi nind
 {
     uli size = nindex * sizeof(uli);
 
-    uli* workspace = yeti_malloc_indexset();
+    uli workspace[NINDEX];
 
     element lowest = *it;
     (*it)->permute(src, dst);
@@ -793,9 +793,6 @@ tmpl_lowest_image(iterator it, iterator stop, const uli *src, uli *dst, usi nind
             lowest = *it;
         }
     }
-
-    yeti_free_indexset(workspace);
-
     return lowest;
 }
 
@@ -1431,4 +1428,16 @@ void*
 Permutation::operator new(size_t size, Permutation::permutation_malloc_flag_t flag)
 {
     return ::malloc(size);
+}
+
+void
+Permutation::operator delete(void* ptr, Permutation::permutation_malloc_flag_t flag)
+{
+    ::free(ptr);
+}
+
+void
+Permutation::operator delete(void* ptr)
+{
+    ::free(ptr);
 }

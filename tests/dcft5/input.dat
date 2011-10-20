@@ -13,8 +13,6 @@ molecule ne {
 }
 
 set globals {
-    docc [     2,    0,    0,    0,    0,    1,    1,    0 ]
-    socc [     0,    0,    0,    0,    0,    0,    0,    1 ]
     convergence 11
     reference   uhf
     ao_basis    none

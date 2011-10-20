@@ -1,17 +1,13 @@
 #ifndef smartptr_xmlarchive_h
 #define smartptr_xmlarchive_h
 
+#include "ref.h"
+#include "rapidxml.hpp"
+#include "serialabstract.h"
+
 #include <list>
 #include <map>
 #include <vector>
-
-#include "rapidxml.hpp"
-#include "ref.h"
-#include "serialabstract.h"
-
-#ifdef redefine_size_t
-#define size_t custom_size_t
-#endif
 
 #define SerialMapPtr boost::intrusive_ptr<smartptr::SerialMap>
 #define XMLArchivePtr boost::intrusive_ptr<smartptr::XMLArchive>
@@ -43,9 +39,7 @@ struct binary_node_t {
     @class BinaryMap
     Class for registering blocks of binary data in an archive.
 */
-class BinaryMap :
-    public smartptr::Countable
-{
+class BinaryMap : public smartptr::Countable {
 
     private:
         std::map<void*, binary_node_t*> ptrmap_;
@@ -195,6 +189,10 @@ class XMLArchive : public smartptr::Countable {
 
         void _setValue(bool val, xmlbase* node);
 
+        void _setBinary(void* vals, size_t size, const std::string& name);
+
+        void _getBinary(void*& vals, size_t& size, const std::string& name);
+
     public:
 
         void appendAndStepIn(const std::string& tagname);
@@ -236,7 +234,7 @@ class XMLArchive : public smartptr::Countable {
 
         void getAttribute(long& val, const std::string& attrname);
 
-        void getAttribute(unsigned long& val, const std::string& attrname);
+        void getAttribute(size_t& val, const std::string& attrname);
 
         void getAttribute(double& val, const std::string& attrname);
 
@@ -250,7 +248,7 @@ class XMLArchive : public smartptr::Countable {
 
         void setAttribute(long val, const std::string& attrname);
 
-        void setAttribute(unsigned long val, const std::string& attrname);
+        void setAttribute(size_t val, const std::string& attrname);
 
         void setAttribute(double val, const std::string& attrname);
 
@@ -292,54 +290,51 @@ class XMLArchive : public smartptr::Countable {
 
         void setValue(const std::string& value);
 
-        void getValue(void*& val, const std::string& name);
+        void getValue(void*& val, const std::string& tagname);
 
-        void getValue(int& val, const std::string& name);
+        void getValue(int& val, const std::string& tagname);
 
-        void getValue(long& val, const std::string& name);
+        void getValue(long& val, const std::string& tagname);
 
-        void getValue(unsigned int& val, const std::string& name);
+        void getValue(unsigned int& val, const std::string& tagname);
 
-        void getValue(unsigned long& val, const std::string& name);
+        void getValue(unsigned long& val, const std::string& tagname);
 
-        void getValue(double& val, const std::string& name);
+        void getValue(double& val, const std::string& tagname);
 
-        void getValue(bool& val, const std::string& name);
+        void getValue(bool& val, const std::string& tagname);
 
-        void getValue(std::string& value, const std::string& name);
+        void getValue(std::string& value, const std::string& tagname);
 
-        void setValue(void* val, const std::string& name);
+        void setValue(void* val, const std::string& tagname);
 
         void setValue(int val, const std::string& name);
 
         void setValue(long val, const std::string& name);
 
-        void setValue(unsigned int val, const std::string& name);
+        void setValue(unsigned int val, const std::string& tagname);
 
-        void setValue(unsigned long val, const std::string& name);
+        void setValue(unsigned long val, const std::string& tagname);
 
         void setValue(double val, const std::string& name);
 
-        void setValue(bool val, const std::string& name);
+        void setValue(bool val, const std::string& tagname);
 
         void setValue(const std::string& val, const std::string& name);
 
-        void setBinary(void* vals, size_t size, const std::string& name);
-
-        void getBinary(void*& vals, size_t& size, const std::string& name);
 
         template <class T>
         void setBinary(const T* vals, size_t size, const std::string& name)
         {
             void* ptr = reinterpret_cast<void*>(const_cast<T*>(vals));
-            setBinary(ptr, size * sizeof(double), name);
+            _setBinary(ptr, size * sizeof(double), name);
         }
 
         template <class T>
         void getBinary(T*& vals, size_t& size, const std::string& name)
         {
             void* ptr;
-            getBinary(ptr, size, name);
+            _getBinary(ptr, size, name);
             size /= sizeof(T); //divide the size
             vals = reinterpret_cast<T*>(ptr);
         }
@@ -385,7 +380,7 @@ class XMLArchive : public smartptr::Countable {
             else
             {
                 SerializablePtr tmp(getObject(id));
-                obj = boost::dynamic_pointer_cast<T, Serializable>(tmp);
+                obj = boost::static_pointer_cast<T, Serializable>(tmp);
                 if (!obj)
                 {
                     std::cerr << "failed to cast object in serialize" << std::endl;
@@ -451,10 +446,6 @@ class XMLArchive : public smartptr::Countable {
 
 
 };
-
-#ifdef redefine_size_t
-#undef size_t
-#endif
 
 }
 
