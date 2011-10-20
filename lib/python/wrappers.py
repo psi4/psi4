@@ -825,6 +825,9 @@ def database(name, db_name, **kwargs):
                 FAIL[rxn] = 1
 
     #   tabulate requested process::environment variables
+    tables += """   For each VARIABLE requested by tabulate, a 'Reaction Value' will be formed from\n"""
+    tables += """   'Reagent' values according to weightings 'Wt', as for the REQUESTED ENERGY below.\n"""
+    tables += """   Depending on the nature of the variable, this may or may not make any physical sense.\n"""
     for envv in db_tabulate:
         tables += """\n\n   %s""" % (envv.upper())
         tables += tblhead(maxrgt, table_delimit, 2)
@@ -843,14 +846,14 @@ def database(name, db_name, **kwargs):
                 for i in range(len(ACTV[db_rxn])):
                     VRXN[db_rxn][envv] += VRGT[ACTV[db_rxn][i]][envv] * RXNM[db_rxn][ACTV[db_rxn][i]]
             
-                tables += """\n%23s            %8.4f         """ % (db_rxn, VRXN[db_rxn][envv])
+                tables += """\n%23s        %16.8f     """ % (db_rxn, VRXN[db_rxn][envv])
                 for i in range(len(ACTV[db_rxn])):
                     tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
         tables += """\n   %s\n""" % (table_delimit)
 
     #   tabulate primary requested energy variable with statistics
     count_rxn = 0
-    minDerror = 10000.0
+    minDerror = 100000.0
     maxDerror = 0.0
     MSDerror  = 0.0
     MADerror  = 0.0
@@ -916,7 +919,7 @@ def tblhead(tbl_maxrgt, tbl_delimit, ttype):
     tbl_str = ''
     tbl_str += """\n   %s""" % (tbl_delimit)
     if   ttype == 1: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Energy', 'Error')
-    elif ttype == 2: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Value', '')
+    elif ttype == 2: tbl_str += """\n%23s     %19s %4s""" % ('Reaction', 'Reaction Value', '')
     for i in range(tbl_maxrgt):
         tbl_str += """%20s""" % ('Reagent '+str(i+1))
     if   ttype == 1: tbl_str += """\n%23s %10s %17s""" % ('', 'Ref', '[kcal/mol]')
