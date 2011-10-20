@@ -449,7 +449,7 @@ public:
     /**
      * Gets the name of the matrix.
      */
-    std::string name() const { return name_; }
+    const std::string& name() const { return name_; }
 
     /// Python compatible printer
     void print_out() const { print(outfile); }
@@ -499,7 +499,7 @@ public:
         return coldim(h);
     }
     /// Returns the number of irreps
-    int nirrep() const {
+    const int& nirrep() const {
         return nirrep_;
     }
 
@@ -542,7 +542,7 @@ public:
      * For a totally-symmetric matrix this will be 0.
      * The value returned is compatible with bitwise XOR (^) math.
      */
-    int symmetry() const {
+    const int& symmetry() const {
         return symmetry_;
     }
 
