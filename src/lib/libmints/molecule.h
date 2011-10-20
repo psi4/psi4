@@ -192,11 +192,11 @@ public:
     /// Set molecule name
     void set_name(const std::string &_name) { name_ = _name; }
     /// Number of atoms
-    int natom() const { return atoms_.size(); }
+    const int natom() const { return atoms_.size(); }
     /// Number of all atoms (includes dummies)
-    int nallatom() const { return full_atoms_.size(); }
+    const int nallatom() const { return full_atoms_.size(); }
     /// Nuclear charge of atom
-    double Z(int atom) const;
+    const double& Z(int atom) const;
     /// Nuclear charge of atom
     double fZ(int atom) const;
     /// x position of atom
