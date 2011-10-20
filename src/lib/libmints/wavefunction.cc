@@ -261,7 +261,7 @@ boost::shared_ptr<Vector> Wavefunction::epsilon_b() const
     return epsilon_b_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Da() const
+const boost::shared_ptr<Matrix> Wavefunction::Da() const
 {
     return Da_;
 }
@@ -284,4 +284,8 @@ boost::shared_ptr<Matrix> Wavefunction::gradient() const
 void Wavefunction::set_gradient(boost::shared_ptr<Matrix>& grad)
 {
     gradient_ = grad;
+}
+
+void Wavefunction::save() const
+{
 }

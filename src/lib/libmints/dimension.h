@@ -31,8 +31,11 @@ public:
     Dimension& operator+=(const Dimension& b);
     Dimension& operator-=(const Dimension& b);
 
+    /// Re-initializes the object.
+    void init(const std::string&, int n);
+
     /// Return the rank
-    int n() const { return n_; }
+    const int& n() const { return n_; }
 
     /// Return the name of the dimension.
     const std::string& name() const { return name_; }
