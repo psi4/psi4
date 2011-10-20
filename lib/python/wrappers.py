@@ -394,6 +394,8 @@ def database(name, db_name, **kwargs):
     * benchmark = --> 'default' <-- | etc.
         Indicates whether a non-default set of reference energies, if available, are employed for the 
         calculation of error statistics.
+    * tabulate = --> [] <-- | etc.
+        Indicates whether to form tables of variables other than the primary requested energy
     * subset
         Indicates a subset of the full database to run. This is a very flexible option and can used in
         three distinct ways, outlined below. Note that two take a string and the last takes a list.
@@ -417,6 +419,7 @@ def database(name, db_name, **kwargs):
 
     import input
     #import pickle
+    from collections import defaultdict
     #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
@@ -553,6 +556,11 @@ def database(name, db_name, **kwargs):
             else:
                 BIND = getattr(database, 'BIND_' + db_benchmark)
 
+    #   Option tabulate- whether tables of variables other than primary energy method are formed
+    db_tabulate = []
+    if(kwargs.has_key('tabulate')):
+        db_tabulate = kwargs['tabulate']
+
     #   Option subset- whether all of the database or just a portion is run
     db_subset = HRXN
     if(kwargs.has_key('subset')):
@@ -639,14 +647,17 @@ def database(name, db_name, **kwargs):
 
         fmaster = open('%s-master.in' % (dbse), 'w')
         fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
-        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s)\n\n" %
-            (name, db_name, db_cp, db_zpe, db_benchmark, os.getpid(), HRXN))
+        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s, tabulate=%s)\n\n" %
+            (name, db_name, db_cp, db_zpe, db_benchmark, os.getpid(), HRXN, db_tabulate))
         fmaster.close()
 
     #   Loop through chemical systems
     ERGT = {}
     ERXN = {}
+    VRGT = {}
+    VRXN = {}
     for rgt in HSYS:
+        VRGT[rgt] = {}
 
         # extra definition of molecule so that logic in building commands string has something to act on
         exec GEOS[rgt]
@@ -719,6 +730,8 @@ def database(name, db_name, **kwargs):
             #print ERGT[rgt]
             PsiMod.print_variables()
             exec actives
+            for envv in db_tabulate:
+               VRGT[rgt][envv] = PsiMod.get_variable(envv)
             PsiMod.set_global_option("REFERENCE", user_reference)
             PsiMod.clean()
             
@@ -740,13 +753,20 @@ def database(name, db_name, **kwargs):
             # end routes
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['func'].__name__))
             freagent.write("""PsiMod.print_variables()\n""")
-            freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: energy computation %d for reagent %s """
+            freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
                 % (os.getpid(), rgt))
             freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+            for envv in db_tabulate:
+                freagent.write("""PsiMod.print_out('DATABASE RESULT: computation %d for reagent %s """
+                    % (os.getpid(), rgt))
+                freagent.write("""yields variable value    %20.12f for variable %s\\n' % (PsiMod.get_variable(""")
+                freagent.write("""'%s'), '%s'))\n""" % (envv.upper(), envv.upper()))
             freagent.close()
 
         elif re.match('reap', db_mode.lower()):
             ERGT[rgt] = 0.0
+            for envv in db_tabulate:
+               VRGT[rgt][envv] = 0.0
             exec banners
             exec actives
             try:
@@ -763,15 +783,21 @@ def database(name, db_name, **kwargs):
                            PsiMod.print_out('         Database summary will have 0.0 and **** in its place.\n')
                         break
                     s = line.split()
-                    if (len(s) != 0) and (s[0:4] == ['DATABASE', 'RESULT:', 'energy', 'computation']):
-                        if int(s[4]) != db_linkage:
+                    if (len(s) != 0) and (s[0:3] == ['DATABASE', 'RESULT:', 'computation']):
+                        if int(s[3]) != db_linkage:
                            raise Exception('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' 
-                               % (rgt, str(s[4]), str(db_linkage)))
-                        if s[7] != rgt:
+                               % (rgt, str(s[3]), str(db_linkage)))
+                        if s[6] != rgt:
                            raise Exception('Output file \'%s.out\' has nominal affiliation %s incompatible with reagent %s.' 
-                               % (rgt, s[7], rgt))
-                        ERGT[rgt] = float(s[11])
-                        PsiMod.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
+                               % (rgt, s[6], rgt))
+                        if (s[8:10] == ['electronic', 'energy']):
+                            ERGT[rgt] = float(s[10])
+                            PsiMod.print_out('DATABASE RESULT: electronic energy = %20.12f\n' % (ERGT[rgt]))
+                        elif (s[8:10] == ['variable', 'value']):
+                            for envv in db_tabulate:
+                                if (s[13:] == envv.upper().split()):
+                                    VRGT[rgt][envv] = float(s[10])
+                                    PsiMod.print_out('DATABASE RESULT: variable value    = %20.12f\n' % (VRGT[rgt][envv]))
                 freagent.close()
 
     #   end sow after writing files 
@@ -790,31 +816,52 @@ def database(name, db_name, **kwargs):
     table_delimit = '-' * (52+20*maxrgt)
     tables = ''
 
+    #   find any reactions that are incomplete
+    FAIL = defaultdict(int)
+    for rxn in HRXN:
+        db_rxn = dbse + '-' + str(rxn)
+        for i in range(len(ACTV[db_rxn])):
+            if abs(ERGT[ACTV[db_rxn][i]]) < 1.0e-12:
+                FAIL[rxn] = 1
+
+    #   tabulate requested process::environment variables
+    for envv in db_tabulate:
+        tables += """\n\n   %s""" % (envv.upper())
+        tables += tblhead(maxrgt, table_delimit, 2)
+
+        for rxn in HRXN:
+            db_rxn = dbse + '-' + str(rxn)
+            VRXN[db_rxn] = {}
+    
+            if FAIL[rxn]:
+                tables += """\n%23s   %8.4f %8s %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
+                for i in range(len(ACTV[db_rxn])):
+                    tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
+    
+            else:
+                VRXN[db_rxn][envv] = 0.0
+                for i in range(len(ACTV[db_rxn])):
+                    VRXN[db_rxn][envv] += VRGT[ACTV[db_rxn][i]][envv] * RXNM[db_rxn][ACTV[db_rxn][i]]
+            
+                tables += """\n%23s            %8.4f         """ % (db_rxn, VRXN[db_rxn][envv])
+                for i in range(len(ACTV[db_rxn])):
+                    tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
+        tables += """\n   %s\n""" % (table_delimit)
+
+    #   tabulate primary requested energy variable with statistics
+    count_rxn = 0
     minDerror = 10000.0
     maxDerror = 0.0
     MSDerror  = 0.0
     MADerror  = 0.0
     RMSDerror = 0.0
 
-    tables += """\n   %s""" % (table_delimit)
-    tables += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Energy', 'Error')
-    for i in range(maxrgt):
-        tables += """%20s""" % ('Reagent '+str(i+1))
-    tables += """\n%23s %10s %17s""" % ('', 'Ref', '[kcal/mol]')
-    for i in range(maxrgt):
-        tables += """%20s""" % ('[H] Wt')
-    tables += """\n   %s""" % (table_delimit)
-
-    count_rxn = 0
+    tables += """\n\n   %s""" % ("REQUESTED ENERGY")
+    tables += tblhead(maxrgt, table_delimit, 1)
     for rxn in HRXN:
-
         db_rxn = dbse + '-' + str(rxn)
-        fail_rxn = 0
-        for i in range(len(ACTV[db_rxn])):
-            if abs(ERGT[ACTV[db_rxn][i]]) < 1.0e-12:
-                fail_rxn = 1
 
-        if fail_rxn:
+        if FAIL[rxn]:
             tables += """\n%23s   %8.4f %8s %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
@@ -835,7 +882,6 @@ def database(name, db_name, **kwargs):
             MADerror += abs(error)
             RMSDerror += error*error
             count_rxn += 1
-
     tables += """\n   %s\n""" % (table_delimit)
 
     if count_rxn:
@@ -865,6 +911,21 @@ def assemble_function2call(**kwargs):
 def assemble_function2call_dropfunc(funcarg, **kwargs):
     function2call = funcarg
     return function2call(**kwargs)
+
+def tblhead(tbl_maxrgt, tbl_delimit, ttype):
+    tbl_str = ''
+    tbl_str += """\n   %s""" % (tbl_delimit)
+    if   ttype == 1: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Energy', 'Error')
+    elif ttype == 2: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Value', '')
+    for i in range(tbl_maxrgt):
+        tbl_str += """%20s""" % ('Reagent '+str(i+1))
+    if   ttype == 1: tbl_str += """\n%23s %10s %17s""" % ('', 'Ref', '[kcal/mol]')
+    elif ttype == 2: tbl_str += """\n%23s %10s %17s""" % ('', '', '')
+    for i in range(tbl_maxrgt):
+        if   ttype == 1: tbl_str += """%20s""" % ('[H] Wt')
+        elif ttype == 2: tbl_str += """%20s""" % ('Value Wt')
+    tbl_str += """\n   %s""" % (tbl_delimit)
+    return tbl_str
 
 ##  Aliases  ##
 db = database
