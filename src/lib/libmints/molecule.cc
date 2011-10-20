@@ -332,7 +332,10 @@ double Molecule::nuclear_repulsion_energy() const
 
     for (int i=1; i<natom(); ++i) {
         for (int j=0; j<i; ++j) {
-            e += Z(i) * Z(j) / (xyz(i).distance(xyz(j)));
+            double Zi = Z(i);
+            double Zj = Z(j);
+            double distance = xyz(i).distance(xyz(j));
+            e += Zi * Zj / distance;
         }
     }
 
