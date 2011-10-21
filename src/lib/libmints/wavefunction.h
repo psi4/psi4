@@ -21,8 +21,6 @@ extern double fac[MAX_FAC];
 #define INDEX2(i, j) ( (i) >= (j) ? ioff[(i)] + (j) : ioff[(j)] + (i) )
 #define INDEX4(i, j, k, l) ( INDEX2( INDEX2((i), (j)), INDEX2((k), (l)) ) )
 
-//#include "factory.h"
-
 #include <vector>
 
 #ifndef PyObject_HEAD
@@ -47,13 +45,12 @@ class Chkpt;
  *  \class Wavefunction
  *  \brief Simple wavefunction base class.
  */
-//#if HAVE_MADNESS
-//class Wavefunction : public madness::WorldObject<Wavefunction>
-//#else
 class Wavefunction
-//#endif
 {
 protected:
+    /// Name of the wavefunction
+    std::string name_;
+
     /// Primary basis set for AO integrals
     boost::shared_ptr<BasisSet> basisset_;
 
@@ -230,7 +227,7 @@ public:
     boost::shared_ptr<Vector> epsilon_b() const;
 
     /// Returns the alpha OPDM for the wavefunction
-    boost::shared_ptr<Matrix> Da() const;
+    const boost::shared_ptr<Matrix> Da() const;
     /// Returns the beta OPDM for the wavefunction
     boost::shared_ptr<Matrix> Db() const;
 
@@ -251,6 +248,15 @@ public:
     boost::shared_ptr<Matrix> gradient() const;
     /// Set the gradient for the wavefunction
     void set_gradient(boost::shared_ptr<Matrix>& grad);
+
+    /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
+    void set_name(const std::string& name) { name_ = name; }
+
+    /// Returns the wavefunction name
+    const std::string& name() const { return name_; }
+
+    /// Save the wavefunction to checkpoint
+    virtual void save() const;
 };
 
 }
