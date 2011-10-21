@@ -1,0 +1,24 @@
+#! Test of SAD/Cast-up (mainly not dying due to file weirdness)
+
+nucenergy =   8.80146620208571 #TEST
+refenergy = -76.02141846024263 #TEST
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+basis cc-pvdz
+reference rhf
+guess sad
+}
+
+thisenergy = energy('scf',cast_up='3-21G')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST
+compare_values(refenergy, thisenergy, 9, "Reference energy")                            #TEST
+
+clean()
