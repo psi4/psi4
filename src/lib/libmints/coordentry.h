@@ -83,13 +83,18 @@ public:
 
 class CoordEntry
 {
+    template<class Archive>
+    friend void save(Archive & ar, const psi::Vector3 & t, unsigned int /*version*/);
+    template<class Archive>
+    friend void load(Archive & ar, psi::Vector3 & t, unsigned int /*version*/);
+
 protected:
     int entry_number_;
     bool computed_;
     Vector3 coordinates_;
 
     /// Atomic number of the atom
-    int Z_;
+    double Z_;
     double charge_;
     double mass_;
 
@@ -123,8 +128,8 @@ public:
      * ZMatrixEntry: ZMatrix storage.
      */
     enum CoordEntryType {CartesianCoord, ZMatrixCoord};
-    CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label="");
-    CoordEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label, const std::map<std::string, std::string>& basis);
+    CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label="");
+    CoordEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label, const std::map<std::string, std::string>& basis);
     virtual ~CoordEntry();
 
     /// Computes the values of the coordinates (in whichever units were inputted), returning them in a Vector.
@@ -144,22 +149,22 @@ public:
     virtual boost::shared_ptr<CoordEntry> clone( std::vector<boost::shared_ptr<CoordEntry> > &atoms, std::map<std::string, double>& map) =0;
 
     /// Whether the current atom is ghosted or not.
-    bool is_ghosted() const { return ghosted_; }
+    const bool& is_ghosted() const { return ghosted_; }
     /// Flag the atom as either ghost or real.
     void set_ghosted(bool ghosted) { ghosted_ = ghosted; }
 
     /// The nuclear charge of the current atom (0 if ghosted).
-    int Z() const { return ghosted_ ? 0 : Z_; }
+    const double& Z() const { return ghosted_ ? 0.0 : Z_; }
     /// The "atomic charge" of the current atom (for SAD purposes).
-    double charge() const { return charge_; }
+    const double& charge() const { return charge_; }
     /// The atomic mass of the current atom.
-    double mass() const { return mass_; }
+    const double& mass() const { return mass_; }
     /// The atomic symbol.
     const std::string& symbol() const { return symbol_; }
     /// The atom label.
     const std::string& label() const { return label_; }
     /// The order in which this appears in the full atom list.
-    int entry_number() const { return entry_number_; }
+    const int& entry_number() const { return entry_number_; }
 
     /** Set the basis for this atom
      * @param type Keyword from input file, basis, ri_basis, etc.
@@ -179,9 +184,9 @@ class CartesianEntry : public CoordEntry{
     boost::shared_ptr<CoordValue> y_;
     boost::shared_ptr<CoordValue> z_;
 public:
-    CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                    boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z);
-    CartesianEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    CartesianEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                    boost::shared_ptr<CoordValue> x, boost::shared_ptr<CoordValue> y, boost::shared_ptr<CoordValue> z, const std::map<std::string, std::string>& basis);
 
     const Vector3& compute();
@@ -204,14 +209,14 @@ class ZMatrixEntry : public CoordEntry
     boost::shared_ptr<CoordValue> dval_;
 
 public:
-    ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                  boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> ato=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> aval=boost::shared_ptr<CoordValue>(),
                  boost::shared_ptr<CoordEntry> dto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> dval=boost::shared_ptr<CoordValue>());
-    ZMatrixEntry(int entry_number, int Z, double charge, double mass, const std::string& symbol, const std::string& label,
+    ZMatrixEntry(int entry_number, double Z, double charge, double mass, const std::string& symbol, const std::string& label,
                  const std::map<std::string, std::string>& basis,
                  boost::shared_ptr<CoordEntry> rto=boost::shared_ptr<CoordEntry>(),
                  boost::shared_ptr<CoordValue> rval=boost::shared_ptr<CoordValue>(),

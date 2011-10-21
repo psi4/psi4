@@ -144,7 +144,7 @@ Gaussian94BasisSetParser::parse(const string& symbol, const std::vector<std::str
     regex cartesian("^\\s*cartesian\\s*", regbase::icase);
     regex spherical("^\\s*spherical\\s*", regbase::icase);
     regex comment("^\\s*\\!.*");                                       // line starts with !
-    regex separator("^\\*\\*\\*\\*");                                  // line starts with ****
+    regex separator("^\\s*\\*\\*\\*\\*");                                  // line starts with ****
     regex atom_array("^\\s*([A-Za-z]+)\\s+0.*");                       // array of atomic symbols terminated by 0
     regex shell("^\\s*(\\w+)\\s*(\\d+)\\s*(-?\\d+\\.\\d+)");           // Match beginning of contraction
 

@@ -103,12 +103,12 @@ void export_mints()
     class_<Matrix, boost::shared_ptr<Matrix> >("Matrix").
             def(init<int, int>()).
             def("set_name", &Matrix::set_name).
-            def("name", &Matrix::name).
+            def("name", &Matrix::name, return_value_policy<copy_const_reference>()).
             def("print_out", &Matrix::print_out).
             def("rows", &Matrix::rowdim).
             def("cols", &Matrix::coldim).
-            def("nirrep", &Matrix::nirrep).
-            def("symmetry", &Matrix::symmetry).
+            def("nirrep", &Matrix::nirrep, return_value_policy<copy_const_reference>()).
+            def("symmetry", &Matrix::symmetry, return_value_policy<copy_const_reference>()).
             def("identity", &Matrix::identity).
             def("copy_lower_to_upper", &Matrix::copy_lower_to_upper).
             def("copy_upper_to_lower", &Matrix::copy_upper_to_lower).
@@ -268,7 +268,7 @@ void export_mints()
             def("print_out", &Molecule::print).
             def("save_xyz", &Molecule::save_xyz).
             def("update_geometry", &Molecule::update_geometry).
-            def("Z", &Molecule::Z).
+            def("Z", &Molecule::Z, return_value_policy<copy_const_reference>()).
             def("x", &Molecule::x).
             def("y", &Molecule::y).
             def("z", &Molecule::z).
