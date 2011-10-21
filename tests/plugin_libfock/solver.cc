@@ -611,6 +611,30 @@ void DLRSolver::subspaceDiagonalization()
    
     G2->diagonalize(a_,l_); 
 
+    // Resort to remove false zeros for cases with too small of irreps 
+    for (int h = 0; h < nirrep; h++) {
+
+        int dim = diag_->dimpi()[h];
+
+        int nfalse = n - dim;
+
+        if (nfalse <= 0) continue;
+
+        double** ap = a_->pointer(h);    
+        double*  lp = l_->pointer(h);        
+
+        for (int m = 0; m < n - nfalse; m++) {
+            lp[m] = lp[m + nfalse];
+            C_DCOPY(n,&ap[0][m + nfalse], n, &ap[0][m], n);
+        }
+
+        for (int m = 0; m < nfalse; m++) {
+            lp[n - m - 1] = 0;
+            C_DSCAL(n,0.0,&ap[0][n - m - 1], n);
+        }
+
+    }
+
     if (debug_) { 
         fprintf(outfile, "   > SubspaceDiagonalize <\n\n");
         a_->print();
@@ -793,8 +817,13 @@ void DLRSolver::correctors()
                 norm = sqrt(C_DDOT(dimension, dp, 1, dp, 1));
             } 
 
+            double scale = 1.0 / norm;
+            if (scale != scale || isinf(scale)) {
+                scale = 0.0;
+            }
+
             // Normalize the correctors
-            C_DSCAL(dimension, 1.0 / norm, dp, 1); 
+            C_DSCAL(dimension, scale, dp, 1); 
         }
 
         d_.push_back(d);
