@@ -141,6 +141,13 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   // convergence test is forces and either energy change or displacement
   if ((max_force < Opt_params.conv_max_force) &&
       ((fabs(DE) < Opt_params.conv_max_DE) || (max_disp < Opt_params.conv_max_disp)))  {
+
+#if defined(OPTKING_PACKAGE_PSI)
+    // This environment variable will store the number of iterations required 
+    // for convergence; it allows the db() python utilities to collect this information
+    psi::Process::environment.globals["OPTIMIZATION ITERATIONS"] = g_iteration();
+#endif
+
     return true; // structure is optimized!
   }
   else 
