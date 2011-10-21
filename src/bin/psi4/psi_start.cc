@@ -56,7 +56,7 @@ int psi_start(int argc, char *argv[])
     verbose             = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVcwo:p:i:sm";
+    const char* const short_options = "ahvVdcwo:p:i:sm";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
