@@ -220,7 +220,7 @@ void matrix_root(double **A, int dim, bool inverse) {
 
   for(int k=0; k<dim; k++) {
     if(A_evals[k] > 0)
-      A_evals[k] = sqrt(  A_evals[k]);
+      A_evals[k] = sqrt(A_evals[k]);
     else
     {
       A_evals[k] = 0;
