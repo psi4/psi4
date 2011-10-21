@@ -120,7 +120,7 @@ def scf_helper(name, **kwargs):
         PsiMod.scf()
 
         # Move files to proper namespace
-        PsiMod.IO.change_file_namespace(100,(namespace + ".guess"),namespace)
+        PsiMod.IO.change_file_namespace(180,(namespace + ".guess"),namespace)
         PsiMod.IO.set_default_namespace(namespace)
 
         # Set to read and project, and reset bases
