@@ -906,7 +906,7 @@ void HF::save_orbitals()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
     if (print_ && (Communicator::world->me() == 0))
-        fprintf(outfile,"\n  Saving occupied orbitals to File 100.\n");
+        fprintf(outfile,"\n  Saving occupied orbitals to File %ld.\n", PSIF_SCF_DB_MOS);
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
@@ -975,7 +975,7 @@ void HF::load_orbitals()
     if (old_nirrep != nirrep_)
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),8*sizeof(int));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 
