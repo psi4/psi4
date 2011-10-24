@@ -84,6 +84,11 @@ public:
     virtual void  product(const std::vector<boost::shared_ptr<Vector> >& x,
                                 std::vector<boost::shared_ptr<Vector> >& b) = 0; 
 
+    /**
+    * Form the explicit hamiltonian for debugging purposes
+    */
+    boost::shared_ptr<Matrix> explicit_hamiltonian();
+
 };
 
 class UHamiltonian : public Hamiltonian {
@@ -113,6 +118,10 @@ public:
     */
     virtual void product(const std::vector<std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > >& x,
                                std::vector<std::pair<boost::shared_ptr<Vector>, boost::shared_ptr<Vector> > >& b) = 0; 
+    /**
+    * Form the explicit hamiltonian for debugging purposes
+    */
+    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > explicit_hamiltonian();
 };
 
 // => APPLIED CLASSES <= //
