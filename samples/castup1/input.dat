@@ -1,0 +1,20 @@
+#! Test of SAD/Cast-up (mainly not dying due to file weirdness)
+
+
+molecule h2o {
+0 1
+O
+H 1 1.0
+H 1 1.0 2 104.5
+}
+
+set globals {
+basis cc-pvdz
+reference rhf
+guess sad
+}
+
+thisenergy = energy('scf',cast_up='3-21G')
+
+
+clean()
