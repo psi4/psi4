@@ -257,7 +257,10 @@ double Molecule::mass(int atom) const
     if (atoms_[atom]->mass() != 0.0)
         return atoms_[atom]->mass();
 
-    return an2masses[atoms_[atom]->Z()];
+    if (fabs(atoms_[atom]->Z() - static_cast<int>(atoms_[atom]->Z())) > 0.0)
+        fprintf(outfile, "WARNING: Obtaining masses from atom with fractional charge...may be incorrect!!!\n");
+
+    return an2masses[static_cast<int>(atoms_[atom]->Z())];
 }
 
 std::string Molecule::symbol(int atom) const
@@ -329,7 +332,10 @@ double Molecule::nuclear_repulsion_energy() const
 
     for (int i=1; i<natom(); ++i) {
         for (int j=0; j<i; ++j) {
-            e += Z(i) * Z(j) / (xyz(i).distance(xyz(j)));
+            double Zi = Z(i);
+            double Zj = Z(j);
+            double distance = xyz(i).distance(xyz(j));
+            e += Zi * Zj / distance;
         }
     }
 
@@ -344,9 +350,11 @@ Matrix Molecule::nuclear_repulsion_energy_deriv1() const
         for (int j=0; j<natom(); ++j) {
             if (i != j) {
                 double temp = pow((xyz(i).distance(xyz(j))), 3.0);
-                de(i, 0) -= (x(i) - x(j)) * Z(i) * Z(j) / temp;
-                de(i, 1) -= (y(i) - y(j)) * Z(i) * Z(j) / temp;
-                de(i, 2) -= (z(i) - z(j)) * Z(i) * Z(j) / temp;
+                double Zi = Z(i);
+                double Zj = Z(j);
+                de(i, 0) -= (x(i) - x(j)) * Zi * Zj / temp;
+                de(i, 1) -= (y(i) - y(j)) * Zi * Zj / temp;
+                de(i, 2) -= (z(i) - z(j)) * Zi * Zj / temp;
             }
         }
     }
@@ -2075,12 +2083,12 @@ double Molecule::xyz(int atom, int _xyz) const
     return input_units_to_au_ * atoms_[atom]->compute()[_xyz];
 }
 
-int Molecule::Z(int atom) const
+const double& Molecule::Z(int atom) const
 {
     return atoms_[atom]->Z();
 }
 
-int Molecule::fZ(int atom) const
+double Molecule::fZ(int atom) const
 {
     return full_atoms_[atom]->Z();
 }

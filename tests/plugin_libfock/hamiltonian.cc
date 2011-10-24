@@ -30,6 +30,30 @@ RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk) :
 RHamiltonian::~RHamiltonian()
 {
 }
+boost::shared_ptr<Matrix> RHamiltonian::explicit_hamiltonian()
+{
+    boost::shared_ptr<Vector> diag = diagonal();
+
+    boost::shared_ptr<Matrix> H(new Matrix("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi()));
+
+    boost::shared_ptr<Vector> b(diag->clone());
+    boost::shared_ptr<Vector> s(diag->clone());
+    std::vector<boost::shared_ptr<Vector> > bb;
+    std::vector<boost::shared_ptr<Vector> > ss;
+    bb.push_back(b);
+    ss.push_back(s);
+    for (int h = 0; h < diag->nirrep(); h++) {
+        for (int n = 0; n < diag->dimpi()[h]; n++) {
+            b->zero();
+            s->zero();
+            b->set(h,n,1.0);
+            product(bb,ss); 
+            C_DCOPY(diag->dimpi()[h],s->pointer(h),1,H->pointer(h)[n],1);
+        }
+    }
+
+    return H;
+}
 
 UHamiltonian::UHamiltonian(boost::shared_ptr<JK> jk) :
     Hamiltonian(jk)
@@ -159,7 +183,7 @@ boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
         }
     }
 
-    boost::shared_ptr<Vector> diag(new Vector("CPHF Diagonal", nirrep, nov));
+    boost::shared_ptr<Vector> diag(new Vector("CIS Diagonal", nirrep, nov));
 
     for (int symm = 0; symm < nirrep; ++symm) {
         long int offset = 0L;
@@ -225,7 +249,7 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
             C_right.push_back(Cr); 
         }
     }
-    
+
     jk_->compute();
 
     const std::vector<boost::shared_ptr<Matrix> >& J = jk_->J();
@@ -253,19 +277,25 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                 double** Cvp = Cavir_->pointer(h^symm);
                 double*  eop  = eps_aocc_->pointer(h);
                 double*  evp  = eps_avir_->pointer(h^symm);
-                double** Jp  = J[N]->pointer(h);
-                double** Kp  = K[N]->pointer(h);
+
+                // TODO
+                double** Jp  = J[symm * x.size() + N]->pointer(h);
+                double** Kp  = K[symm * x.size() + N]->pointer(h);
     
-                // -(ij|ab)P_jb = C_im K_mn C_ra
+                // -(ij|ab)P_jb = C_im K_mn C_na
                 C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Kp[0],nsovir,0.0,Tp,nsovir);
-                C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
+                C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
     
+                //b[N]->print();
+
                 if (singlet_) {
                     // 2(ia|jb)P_jb = C_im J_mn C_na
                     C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Jp[0],nsovir,0.0,Tp,nsovir);
-                    C_DGEMM('N','N',nocc,nvir,nsovir,2.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
+                    C_DGEMM('N','N',nocc,nvir,nsovir,2.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
                 }
             
+                //b[N]->print();
+                
                 for (int i = 0; i < nocc; ++i) {
                     for (int a = 0; a < nvir; ++a) {
                         bp[i * nvir + a + offset] += (evp[a] - eop[i]) * xp[i * nvir + a + offset];        
@@ -278,6 +308,14 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
     }
 
     delete[] Tp;
+
+    if (debug_) {
+        for (int N = 0; N < x.size(); N++) {
+            x[N]->print();
+            b[N]->print();
+        }
+    }
+    
 }
 std::vector<boost::shared_ptr<Matrix> > CISRHamiltonian::unpack(boost::shared_ptr<Vector> eig)
 {

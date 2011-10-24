@@ -261,20 +261,21 @@ void JK::USO2AO()
 	J_ao_.clear();    
 	K_ao_.clear();    
 	wK_ao_.clear();    
+
     	for (int N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
 	    s << "J " << N << " (AO)";
-            J_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), AO2USO_->rowspi())));
+            J_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     	for (int N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
 	    s << "K " << N << " (AO)";
-            K_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), AO2USO_->rowspi())));
+            K_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     	for (int N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
 	    s << "wK " << N << " (AO)";
-            wK_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), AO2USO_->rowspi())));
+            wK_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     }	    
 
@@ -295,21 +296,21 @@ void JK::USO2AO()
     	for (int N = 0; N < D_.size(); ++N) {
             std::stringstream s;
 	    s << "D " << N << " (AO)";
-            D_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), AO2USO_->rowspi())));
+            D_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     	for (int N = 0; N < D_.size(); ++N) {
             std::stringstream s;
 	    s << "C Left " << N << " (AO)";
 	    int ncol = 0;
 	    for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
-            C_left_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), ncol)));
+            C_left_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
     	}
     	for (int N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
             std::stringstream s;
 	    s << "C Right " << N << " (AO)";
 	    int ncol = 0;
 	    for (int h = 0; h < C_right_[N]->nirrep(); ++h) ncol += C_right_[N]->colspi()[h];
-            C_right_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), ncol)));
+            C_right_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
     	}
     }	    
 
@@ -321,11 +322,11 @@ void JK::USO2AO()
 	if (ncol != ncol_old) {
             std::stringstream s;
 	    s << "C Left " << N << " (AO)";
-            C_left_ao_[N] = boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi(), ncol));
+            C_left_ao_[N] = boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol));
 	    if (!lr_symmetric_) {
                 std::stringstream s2;
 	        s2 << "C Right " << N << " (AO)";
-                C_right_ao_[N] = boost::shared_ptr<Matrix>(new Matrix(s2.str(),AO2USO_->rowspi(), ncol));
+                C_right_ao_[N] = boost::shared_ptr<Matrix>(new Matrix(s2.str(),AO2USO_->rowspi()[0], ncol));
 			
             }
 	}
@@ -347,7 +348,7 @@ void JK::USO2AO()
 	    double** DAOp = D_ao_[N]->pointer();
 	    double** DSOp = D_[N]->pointer(h);
 	    C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
-	    C_DGEMM('N','N',nao,nao,nsol,1.0,Urp[0],nsor,temp,nao,1.0,DAOp[0],nao);
+	    C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
 	}
     }	    
     delete[] temp;	    
@@ -375,9 +376,9 @@ void JK::USO2AO()
             int nao = AO2USO_->rowspi()[0];
             int nso = AO2USO_->colspi()[h^symm];
 	    int ncol = C_right_ao_[N]->colspi()[0];
-	    int ncolspi = C_right_[N]->colspi()[h^symm];
+	    int ncolspi = C_right_[N]->colspi()[h];
 	    if (nso == 0 || ncolspi == 0) continue;
-	    double** Up = AO2USO_->pointer(h);
+	    double** Up = AO2USO_->pointer(h^symm);
 	    double** CAOp = C_right_ao_[N]->pointer();
 	    double** CSOp = C_right_[N]->pointer(h^symm);
 	    C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
@@ -435,19 +436,19 @@ void JK::AO2USO()
 	        double** JAOp = J_ao_[N]->pointer();
 	        double** JSOp = J_[N]->pointer(h);
 	        C_DGEMM('N','N',nao,nsor,nao,1.0,JAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-	        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsor,temp,nsor,0.0,JSOp[0],nsor);
+	        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,JSOp[0],nsor);
             }
             if (do_K_) {
 	        double** KAOp = K_ao_[N]->pointer();
 	        double** KSOp = K_[N]->pointer(h);
 	        C_DGEMM('N','N',nao,nsor,nao,1.0,KAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-	        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsor,temp,nsor,0.0,KSOp[0],nsor);
+	        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,KSOp[0],nsor);
             }
             if (do_wK_) {
 	        double** wKAOp = wK_ao_[N]->pointer();
 	        double** wKSOp = wK_[N]->pointer(h);
 	        C_DGEMM('N','N',nao,nsor,nao,1.0,wKAOp[0],nao,Urp[0],nsor,0.0,temp,nsor);
-	        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsor,temp,nsor,0.0,wKSOp[0],nsor);
+	        C_DGEMM('T','N',nsol,nsor,nao,1.0,Ulp[0],nsol,temp,nsor,0.0,wKSOp[0],nsor);
             }
 	}
     }
@@ -1166,7 +1167,7 @@ void DFJK::initialize_JK_disk()
             #endif
 
             int MU = schwarz_shell_pairs[MUNU + 0].first;
-            int NU = schwarz_shell_pairs[MUNU + 1].second;
+            int NU = schwarz_shell_pairs[MUNU + 0].second;
             int nummu = primary_->shell(MU)->nfunction();
             int numnu = primary_->shell(NU)->nfunction();
             int mu = primary_->shell(MU)->function_index();
@@ -1311,7 +1312,7 @@ void DFJK::block_K(double** Qmnp, int naux)
 
         }
 
-        if (!lr_symmetric_ && (N == 0 || C_right_ao_[N].get() != C_right_ao_[N-1].get())) {
+        if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
             
             #pragma omp parallel for schedule (dynamic)
             for (int m = 0; m < nbf; m++) {
@@ -1470,7 +1471,7 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
 
         }
 
-        if (!lr_symmetric_ && (N == 0 || C_right_ao_[N].get() != C_right_ao_[N-1].get())) {
+        if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
             
             #pragma omp parallel for schedule (dynamic)
             for (int m = 0; m < nbf; m++) {

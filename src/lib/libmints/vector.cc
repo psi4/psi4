@@ -217,6 +217,13 @@ void Vector::set(double *vec)
     }
 }
 
+void Vector::zero()
+{
+    for (int h = 0; h < nirrep_; ++h) {
+        ::memset((void*) vector_[h], '\0', sizeof(double)*dimpi_[h]);
+    }
+}
+
 double Vector::pyget(const boost::python::tuple &key)
 {
     int h = 0, elem = 0;

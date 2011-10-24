@@ -109,6 +109,9 @@ public:
         }
     }
 
+    /// Zeros the vector out
+    void zero();
+
     /// Adds other vector to this
     void add(const Vector& other) {
         for (int h=0; h<nirrep_; ++h) {

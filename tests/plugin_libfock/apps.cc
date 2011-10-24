@@ -293,7 +293,7 @@ boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1)
 {
     boost::shared_ptr<Matrix> D = TDso(T1);
 
-    boost::shared_ptr<Matrix> D2(new Matrix("TDao", AO2USO_->nrow(), AO2USO_->nrow()));
+    boost::shared_ptr<Matrix> D2(new Matrix("TDao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
 
     double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
 
@@ -317,7 +317,6 @@ boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1)
 
     delete[] temp;
 
-    return D2;
     return D2;
 }
 boost::shared_ptr<Matrix> RCIS::Dmo(boost::shared_ptr<Matrix> T1, bool diff)
@@ -398,7 +397,7 @@ boost::shared_ptr<Matrix> RCIS::Dso(boost::shared_ptr<Matrix> T1, bool diff)
 boost::shared_ptr<Matrix> RCIS::Dao(boost::shared_ptr<Matrix> T1, bool diff)
 {
     boost::shared_ptr<Matrix> D = Dso(T1,diff);
-    boost::shared_ptr<Matrix> D2(new Matrix("Dao", AO2USO_->nrow(), AO2USO_->nrow()));
+    boost::shared_ptr<Matrix> D2(new Matrix("Dao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
 
     double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
 
@@ -529,41 +528,72 @@ double RCIS::compute_energy()
         fprintf(outfile, "  ==> Singlets <==\n\n");
     }
 
-    solver->solve();
+    //if (debug_) {
+        boost::shared_ptr<Matrix> A2 = H->explicit_hamiltonian();
+        for (int h = 0; h < A2->nirrep(); h++) {
+            double** A2p = A2->pointer(h);
+            for (int m = 0; m < A2->rowspi()[h]; m++) {
+                for (int n = 0; n < m; n++) {
+                    A2p[m][n] = A2p[n][m] = 0.5 * (A2p[m][n] + A2p[n][m]); 
+                }
+            }
+        }
 
-    const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
-    const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();    
+        A2->print();
+
+    boost::shared_ptr<MatrixRHamiltonian> H2(new MatrixRHamiltonian(A2));
+    boost::shared_ptr<DLRSolver> solver2 = DLRSolver::build_solver(options_,H2);
+    solver2->initialize();
+    solver2->print_header();
+    H2->print_header();
+    solver2->solve();
+
+    //}
+
+    //solver->solve();
+
+    const std::vector<boost::shared_ptr<Vector> > singlets = solver2->eigenvectors();    
+    const std::vector<std::vector<double> > E_singlets = solver2->eigenvalues();    
     singlets_.clear();
     E_singlets_.clear();
     for (int N = 0; N < singlets.size(); ++N) {
         std::vector<boost::shared_ptr<Matrix> > t = H->unpack(singlets[N]);
         for (int h = 0; h < Caocc_->nirrep(); h++) {
+            // Spurious zero eigenvalue due to not enough states
+            if (N >= singlets[N]->dimpi()[h]) continue; 
             singlets_.push_back(t[h]);
             E_singlets_.push_back(E_singlets[N][h]);
         }
     }
     
-    // Triplets
-    solver->initialize();
-    H->set_singlet(false);
+    //// Triplets
+    //solver->initialize();
+    //H->set_singlet(false);
+    //
+    //if (print_) {
+    //    fprintf(outfile, "  ==> Triplets <==\n\n");
+    //}
 
-    if (print_) {
-        fprintf(outfile, "  ==> Triplets <==\n\n");
-    }
+    ////if (debug_) {
+    //    boost::shared_ptr<Matrix> A = H->explicit_hamiltonian();
+    //    A->print();
+    ////}
 
-    solver->solve();
-    
-    const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
-    const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
-    triplets_.clear();
-    E_triplets_.clear();
-    for (int N = 0; N < triplets.size(); ++N) {
-        std::vector<boost::shared_ptr<Matrix> > t = H->unpack(triplets[N]);
-        for (int h = 0; h < Caocc_->nirrep(); h++) {
-            triplets_.push_back(t[h]);
-            E_triplets_.push_back(E_triplets[N][h]);
-        }
-    }
+    //solver->solve();
+    //
+    //const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
+    //const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
+    //triplets_.clear();
+    //E_triplets_.clear();
+    //for (int N = 0; N < triplets.size(); ++N) {
+    //    std::vector<boost::shared_ptr<Matrix> > t = H->unpack(triplets[N]);
+    //    for (int h = 0; h < Caocc_->nirrep(); h++) {
+    //        // Spurious zero eigenvalue due to not enough states
+    //        if (N >= triplets[N]->dimpi()[h]) continue; 
+    //        triplets_.push_back(t[h]);
+    //        E_triplets_.push_back(E_triplets[N][h]);
+    //    }
+    //}
     
     solver->finalize();
     jk->finalize();
