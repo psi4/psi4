@@ -128,6 +128,8 @@ void FRAG::displace(double *dq, bool print_disp, int atom_offset) {
   else {
     fprintf(outfile,"\tCould not converge backtransformation.\n");
     fprintf(outfile,"\tUsing first guess instead.\n");
+    if (Opt_params.opt_type == OPT_PARAMS::IRC)
+      throw(INTCO_EXCEPT("Could not take constrained step in an IRC computation."));
     set_geom_array(first_geom);
   }
 

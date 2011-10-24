@@ -159,7 +159,7 @@ void BlockMatrix::print()
 {
   fprintf(outfile,"\n\n  ## %s ##\n",label_.c_str());
   for(int h = 0; h < nirreps_; ++h){
-    fprintf(outfile,"\n[%d*%d]\n",rows_size_[h],cols_size_[h]);
+    fprintf(outfile,"\n[%zu*%zu]\n",rows_size_[h],cols_size_[h]);
     matrix_base_[h]->print();
   }
   fflush(outfile);

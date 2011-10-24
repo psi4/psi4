@@ -2,6 +2,7 @@
 
 #include <boost/algorithm/string.hpp>
 #include <boost/python.hpp>
+#include <boost/foreach.hpp>
 #include <boost/filesystem.hpp>
 #include <cstdio>
 #include <sstream>
@@ -378,6 +379,16 @@ void py_psi_print_options()
 void py_psi_print_global_options()
 {
     Process::environment.options.print_globals();
+}
+
+boost::python::list py_psi_get_global_option_list()
+{
+    std::vector<std::string> options_list = Process::environment.options.list_globals();
+
+    boost::python::list options_list_py;
+    BOOST_FOREACH(const string& s, options_list) options_list_py.append(s);
+
+    return options_list_py;
 }
 
 void py_psi_print_out(std::string s)
@@ -782,6 +793,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 
     def("set_option_python", py_psi_set_option_python);
+    def("get_global_option_list", py_psi_get_global_option_list);
 
     // Get the option; letting liboptions decide whether to use global or local
     def("get_option", py_psi_get_option);

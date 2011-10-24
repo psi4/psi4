@@ -45,13 +45,18 @@ int psi_start(int argc, char *argv[])
     std::string ifname;
     std::string ofname;
     std::string fprefix;
+    #ifdef PSIDEBUG
+        bool debug          = true;
+    #else
+        bool debug          = false;
+    #endif
     bool append         = false;
     check_only          = false;
     clean_only          = false;
     verbose             = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVcwo:p:i:sm";
+    const char* const short_options = "ahvVdcwo:p:i:sm";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
@@ -59,6 +64,7 @@ int psi_start(int argc, char *argv[])
         { "version", 0, NULL, 'V' },
         { "check",   0, NULL, 'c' },
         { "nthread", 0, NULL, 'n' },
+        { "debug",   0, NULL, 'd' },
         { "wipe",    0, NULL, 'w' },
         { "output",  1, NULL, 'o' },
         { "prefix",  1, NULL, 'p' },
@@ -78,6 +84,10 @@ int psi_start(int argc, char *argv[])
 
         case 'n': // -n or --nthread
             Process::environment.set_n_threads(atoi(optarg));
+            break;
+
+        case 'd': // -d or --debug
+            debug = true;
             break;
 
         case 'h': // -h or --help
@@ -195,6 +205,10 @@ int psi_start(int argc, char *argv[])
         return(PSI_RETURN_FAILURE);
     }
 
+    if(debug) {
+        setbuf(outfile,NULL);
+    }
+
     // Initialize Yeti's env
   yetiEnv.init(Communicator::world->me(), ofname.c_str());
     // This seems a bit daft, but it's necessary to make sure the compiler doesn't
@@ -230,6 +244,7 @@ void print_usage(void)
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
     printf(" -v  --verbose            Print a lot of information.\n");
+    printf(" -d  --debug              Flush the outfile at every fprintf. Default: true iff --with-debug.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
 

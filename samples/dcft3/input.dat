@@ -13,7 +13,7 @@ set globals {
     reference   uhf
     ao_basis    disk
     algorithm   simultaneous
-    basis       3-21G
+    basis       6-31G**
 }
 
 energy('dcft')

@@ -25,8 +25,8 @@ Dimension::Dimension(const std::vector<int> &v)
 }
 
 Dimension::Dimension(const Dimension &other)
+    : name_(other.name_), n_(other.n_)
 {
-    n_ = other.n_;
     blocks_ = new int[other.n_];
     for (int i=0; i<n_; ++i)
         blocks_[i] = other.blocks_[i];
@@ -35,6 +35,15 @@ Dimension::Dimension(const Dimension &other)
 Dimension::~Dimension()
 {
     delete[] blocks_;
+}
+
+void Dimension::init(const std::string& name, int n)
+{
+    name_ = name;
+    n_ = n;
+    delete[] blocks_;
+    blocks_ = new int[n_];
+    ::memset(blocks_, 0, sizeof(int)*n_);
 }
 
 int Dimension::sum() const
@@ -57,6 +66,8 @@ void Dimension::print(FILE *out) const
 
 Dimension& Dimension::operator =(const Dimension& other)
 {
+    name_ = other.name_;
+
     if (n_ < other.n_) {
         delete blocks_;
         blocks_ = new int[other.n_];
