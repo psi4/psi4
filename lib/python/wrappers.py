@@ -459,6 +459,8 @@ def database(name, db_name, **kwargs):
     user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
     user_reference = PsiMod.get_option('REFERENCE')
 
+    user_memory = PsiMod.get_memory()
+
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
     symmetry_override = 0
@@ -682,7 +684,8 @@ def database(name, db_name, **kwargs):
         actives += """PsiMod.print_out('\\n')\n\n"""
 
         # build string of commands for options from the input file  TODO: handle local options too
-        commands = '\n'
+        commands  = ''
+        commands += """\nPsiMod.set_memory(%s)\n\n""" % (user_memory)
         for chgdopt in PsiMod.get_global_option_list():
             if PsiMod.has_option_changed(chgdopt):
                  commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
@@ -744,12 +747,12 @@ def database(name, db_name, **kwargs):
             lesserkwargs = kwargs.copy() 
             del lesserkwargs['func'] 
             # non-pickle route
-            freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
+            #freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
             # pickle route (conflics w/Andy's parenthesis matching)
-            #freagent.write('''\npickle_kw = ("""''')
-            #pickle.dump(lesserkwargs, freagent)
-            #freagent.write('''""")\n''')
-            #freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
+            freagent.write('''\npickle_kw = ("""''')
+            pickle.dump(lesserkwargs, freagent)
+            freagent.write('''""")\n''')
+            freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
             # end routes
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['func'].__name__))
             freagent.write("""PsiMod.print_variables()\n""")
