@@ -1,0 +1,20 @@
+#! All-electron MP2 6-31G** geometry optimization of water
+
+
+molecule h2o {
+  O
+  H 1 1.0
+  H 1 1.0 2 106.0
+}
+
+set {
+  basis 6-31G**
+  reference rhf
+  d_converge 9
+  e_converge 9
+}
+
+optimized_energy = optimize('mp2')
+
+
+clean()
