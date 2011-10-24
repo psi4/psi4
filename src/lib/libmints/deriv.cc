@@ -91,7 +91,7 @@ public:
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if ((pabs == rabs && qabs == sabs) || (pabs == sabs && qabs == rabs))
+        if (pabs == rabs && qabs == sabs)
             prefactor *= 0.5;
 
         int PQ = G_.params->colidx[pabs][qabs];   // pabs, qabs?
@@ -147,24 +147,34 @@ public:
     {
         int thread = Communicator::world->thread_id(pthread_self());
 
-        // Previously, we applied a factor of 4 after the fact...apply it from the beginning now.
         double prefactor = 4.0;
+
+        bool braket = false;
 
         if (pabs == qabs)
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if (INDEX2(pabs, qabs) == INDEX2(rabs, sabs))
-            prefactor *= 0.5;
+        if (!(pabs == rabs && qabs == sabs))
+            braket = true;
 
         double four_index_D = 0.0;
 
-        if (pirrep == qirrep && rirrep == sirrep)
+        if (pirrep == qirrep && rirrep == sirrep) {
             four_index_D = 4.0 * P_2_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
-        if (pirrep == rirrep && qirrep == sirrep)
+            if (braket)
+                four_index_D += 4.0 * D_->get(pirrep, pso, qso) * P_2_->get(rirrep, rso, sso);
+        }
+        if (pirrep == rirrep && qirrep == sirrep) {
             four_index_D -= P_2_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
-        if (pirrep == sirrep && qirrep == rirrep)
+            if (braket)
+                four_index_D -= D_->get(pirrep, pso, rso) * P_2_->get(qirrep, qso, sso);
+        }
+        if (pirrep == sirrep && qirrep == rirrep) {
             four_index_D -= P_2_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
+            if (braket)
+                four_index_D -= D_->get(pirrep, pso, sso) * P_2_->get(qirrep, qso, rso);
+        }
 
         four_index_D *= prefactor;
 
@@ -233,7 +243,7 @@ public:
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if (INDEX2(pabs, qabs) == INDEX2(rabs, sabs))
+        if (pabs == rabs && qabs == sabs)
             prefactor *= 0.5;
 
         double four_index_D = 0.0;
@@ -302,7 +312,7 @@ public:
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if ((pabs == rabs && qabs == sabs) || (pabs == sabs && qabs == rabs))
+        if (pabs == rabs && qabs == sabs)
             prefactor *= 0.5;
 
         double four_index_D = 0.0;
@@ -380,6 +390,8 @@ Deriv::Deriv(const boost::shared_ptr<BasisSet>& basis,
     x_contr_    = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
     gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
+
+    P_2_->add(SCF_D_);
 }
 
 SharedMatrix Deriv::compute()

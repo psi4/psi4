@@ -1,0 +1,231 @@
+                  Welcome to Q-Chem
+     A Quantum Leap Into The Future Of Chemistry
+
+ Y. Shao, L. Fusti-Molnar, Y. Jung, J. Kussmann, C. Ochsenfeld,
+ S. T. Brown, A. T. B. Gilbert, L. V. Slipchenko,S. V. Levchenko,
+ D. P. O'Neill, R. A. DiStasio Jr., R. C. Lochan, T. Wang,
+ G. J. O. Beran, N. A. Besley, J. M. Herbert, C. Y. Lin,
+ T. Van Voorhis, S. H. Chien, A. Sodt, R. P. Steele, 
+ V. A. Rassolov, P. E. Maslen, P. P. Korambath, R. D. Adamson,
+ B. Austin, J. Baker, E. F. C. Byrd, H. Dachsel, R. J. Doerksen,
+ A. Dreuw, B. D. Dunietz, A. D. Dutoi, T. R. Furlani,
+ S. R. Gwaltney, A. Heyden, S. Hirata, C.-P. Hsu, G. Kedziora,
+ R. Z. Khaliullin, P. Klunzinger, A. M. Lee, M. S. Lee, W. Liang,
+ I. Lotan, N. Nair, B. Peters, E. I. Proynov, P. A. Pieniazek, 
+ Y. M. Rhee, J. Ritchie, E. Rosta, C. D. Sherrill, 
+ A. C. Simmonett, J. E. Subotnik, H. L. Woodcock III,
+ W. Zhang, A. T. Bell, A. K. Chakraborty, D. M. Chipman,
+ F. J. Keil, A. Warshel, W. J. Hehre, H. F. Schaefer III,
+ J. Kong, A. I. Krylov, P. M. W. Gill, M. Head-Gordon,
+ Q-Chem, Version 3.1, Q-Chem, Inc., Pittsburgh, PA (2007).
+
+ Additional authors for Version 3.1: 
+ Z. Gan, Y. Zhao, N. E. Schultz, D. Truhlar, E. Epifanovsky and M. Oana.
+
+ Additional authors for Version 3.2: 
+ R. Baer, B. R. Brooks, D. Casanova, J.-D. Chai, C.-L. Cheng, 
+ C. Cramer, D. Crittenden, A. Ghysels, G. Hawkins, E. G. Hohenstein, 
+ C. Kelley, W. Kurlancheek, D. Liotard, E. Livshits, P. Manohar, 
+ A. Marenich, D. Neuhauser, R. Olson, M. A. Rohrdanz, K. S. Thanthiriwatte, 
+ A. J. W. Thom, V. Vanovschi, C. F. Williams, Q. Wu and Z.-Q. You. 
+
+
+ Intel X86 Linux Version
+
+ Q-chem begins on Wed Oct 19 10:53:23 2011  
+
+
+theFileMan(): MAXOPENFILES=974 MAX_SUB_FILE_NUM=16
+Maximum size of a physical file is 2.0 GB, maximum size of a tmp-file is 32.0 GB
+
+
+--------------------------------------------------------------
+User input:
+--------------------------------------------------------------
+$molecule
+0 1
+O
+H 1 1.0
+H 1 1.05 2 104.5
+$end
+
+$rem
+basis sto-3g
+exchange hf
+cis_n_roots 2
+sym_ignore true
+$end
+--------------------------------------------------------------
+ Writing REM_CC_EA            3
+ ----------------------------------------------------
+       Standard Nuclear Orientation (Angstroms)
+    I     Atom         X            Y            Z
+ ----------------------------------------------------
+    1      O       0.000000     0.000000     0.000000
+    2      H       0.000000     0.000000     1.000000
+    3      H       1.016555     0.000000    -0.262899
+ ----------------------------------------------------
+ Nuclear Repulsion Energy =     8.5916543358 hartrees
+ There are        5 alpha and        5 beta electrons
+ Requested basis set is STO-3G
+ There are 4 shells and 7 basis functions
+
+Total QAlloc Memory Limit   2000 MB
+Mega-Array Size        61 MB
+MEM_STATIC part        62 MB
+
+                       Distance Matrix (Angstroms)
+             O (  1)   H (  2)
+   H (  2)  1.000000
+   H (  3)  1.050000  1.621203
+ 
+ A cutoff of  1.0D-11 yielded     10 shell pairs
+ There are     34 function pairs
+Evaluating contribution to one-electron hamiltonian from nuclear
+ Smallest overlap matrix eigenvalue = 3.83E-01
+ Multipole matrices computed through 2nd order
+
+  Scale SEOQF with 1.000000e+00/1.000000e+00/1.000000e+00
+
+ Standard Electronic Orientation quadrupole field applied
+ Nucleus-field energy     =    -0.0000000008 hartrees
+ Guess from superposition of atomic densities
+ Warning:  Energy on first SCF cycle will be non-variational
+ A restricted Hartree-Fock SCF calculation will be
+ performed using Pulay DIIS extrapolation
+ SCF converges when DIIS error is below 1.0E-08
+ ---------------------------------------
+  Cycle       Energy         DIIS Error
+ ---------------------------------------
+    1     -74.5202378597      3.69E-01
+    2     -74.9158951779      6.87E-02
+    3     -74.9601070906      9.38E-03
+    4     -74.9607424873      1.61E-03
+    5     -74.9607666249      8.17E-06
+    6     -74.9607666259      3.11E-06
+    7     -74.9607666261      2.67E-07
+    8     -74.9607666261      4.81E-08
+    9     -74.9607666261      6.94E-09 Convergence criterion met
+ ---------------------------------------
+ SCF time:  CPU 0.05 s  wall 0.09 s
+ Direct RCIS calculation will be performed
+ Triplet excitation energies requested
+ Singlet excitation energies requested
+ CIS energy converged when residual is below 10e- 6
+ ---------------------------------------------------
+ Iter    Rts Conv    Rts Left    Ttl Dev     Max Dev
+ ---------------------------------------------------
+   1         0           2      0.018641    0.017782
+   2         1           1      0.011553    0.011553
+   3         1           1      0.008351    0.008351
+   4         1           1      0.007696    0.007696
+   5         1           1      0.000620    0.000620
+   6         1           1      0.000186    0.000186
+   7         1           1      0.000010    0.000010
+   8         2           0      0.000000    0.000000    Roots Converged
+ ---------------------------------------------------
+ Triplets done: starting singlet calculation
+ ---------------------------------------------------
+ Iter    Rts Conv    Rts Left    Ttl Dev     Max Dev
+ ---------------------------------------------------
+   9         0           2      0.033812    0.031869
+  10         2           0      0.000000    0.000000    Roots Converged
+ ---------------------------------------------------
+ 
+ 
+ ---------------------------------------------------
+               CIS Excitation Energies              
+ ---------------------------------------------------
+
+ Excited state   1: excitation energy (eV) =    9.2825
+    Total energy for state   1:    -74.619640568490
+    Multiplicity: Triplet 
+    Trans. Mom.:  0.0000 X   0.0000 Y   0.0000 Z
+    Strength   :  0.0000
+    D(  5) --> V(  1) amplitude =  0.9993
+
+ Excited state   2: excitation energy (eV) =   11.1285
+    Total energy for state   2:    -74.551800559681
+    Multiplicity: Triplet 
+    Trans. Mom.:  0.0000 X   0.0000 Y   0.0000 Z
+    Strength   :  0.0000
+    D(  3) --> V(  2) amplitude =  0.2177
+    D(  4) --> V(  1) amplitude =  0.9416
+
+ Excited state   3: excitation energy (eV) =   11.2259
+    Total energy for state   3:    -74.548221219075
+    Multiplicity: Singlet 
+    Trans. Mom.:  0.0000 X  -0.0987 Y   0.0000 Z
+    Strength   :  0.0027
+    D(  5) --> V(  1) amplitude =  0.9940
+
+ Excited state   4: excitation energy (eV) =   13.4046
+    Total energy for state   4:    -74.468156488347
+    Multiplicity: Singlet 
+    Trans. Mom.:  0.0000 X   0.0300 Y   0.0000 Z
+    Strength   :  0.0003
+    D(  5) --> V(  2) amplitude = -0.9940
+ 
+ ---------------------------------------------------
+  Total time for CIS      0.28s
+  Total time for CIS      0.00s
+  Total time for CIS      0.09s
+ Analysis of SCF Wavefunction
+ 
+ --------------------------------------------------------------
+                    Orbital Energies (a.u.)
+ --------------------------------------------------------------
+ 
+ Alpha MOs
+ -- Occupied --
+-20.251  -1.238  -0.584  -0.445  -0.388
+ -- Virtual --
+  0.537   0.671
+ --------------------------------------------------------------
+ 
+          Ground-State Mulliken Net Atomic Charges
+
+     Atom                 Charge (a.u.)
+  ----------------------------------------
+      1 O                    -0.308506
+      2 H                     0.163098
+      3 H                     0.145409
+  ----------------------------------------
+  Sum of atomic charges =     0.000000
+
+ -----------------------------------------------------------------
+                    Cartesian Multipole Moments
+ -----------------------------------------------------------------
+    Charge (ESU x 10^10)
+                 0.0000
+    Dipole Moment (Debye)
+         X       1.2750      Y       0.0000      Z       1.0252
+       Tot       1.6360
+    Quadrupole Moments (Debye-Ang)
+        XX      -4.7098     XY       0.0000     YY      -6.1509
+        XZ      -0.3271     YZ       0.0000     ZZ      -4.6058
+    Octapole Moments (Debye-Ang^2)
+       XXX      -0.8854    XXY       0.0000    XYY      -0.6626
+       YYY       0.0000    XXZ      -0.7211    XYZ       0.0000
+       YYZ      -0.4619    XZZ      -0.5774    YZZ       0.0000
+       ZZZ      -0.3290
+    Hexadecapole Moments (Debye-Ang^3)
+      XXXX      -5.7968   XXXY       0.0000   XXYY      -1.7426
+      XYYY       0.0000   YYYY      -3.2946   XXXZ       0.2084
+      XXYZ       0.0000   XYYZ       0.1818   YYYZ       0.0000
+      XXZZ      -2.3031   XYZZ       0.0000   YYZZ      -1.7579
+      XZZZ       0.5274   YZZZ       0.0000   ZZZZ      -5.9199
+ -----------------------------------------------------------------
+Archival summary:
+1\1\ds7\SP\HF\STO-3G\O1H2\parrish\19Oct2011\0\\#,HF,STO-3G,\\0,1\O\H,1,1\H,1,1.05,2,104.5\\HF=-74.9607666\\@
+
+ Total job time:  0.59s(wall), 0.68s(cpu) 
+ Wed Oct 19 10:53:24 2011
+
+        *************************************************************
+        *                                                           *
+        *  Thank you very much for using Q-Chem.  Have a nice day.  *
+        *                                                           *
+        *************************************************************
+
+
