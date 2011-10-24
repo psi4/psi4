@@ -4,7 +4,6 @@ molecule h2o {
 O
 H 1 1.0
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set globals {
@@ -12,8 +11,8 @@ print 2
 basis sto-3g
 guess core
 scf_type direct
-dft_spherical_points 302 
-dft_radial_points 100
+dft_order_spherical 29 
+dft_n_radial 100
 reference rks
 }
 
@@ -47,7 +46,6 @@ molecule h2op {
 O
 H 1 1.0
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set basis sto-3g
@@ -68,7 +66,6 @@ molecule h2om {
 O
 H 1 1.0
 H 1 1.0 2 104.5
-symmetry c1
 }
 
 set basis sto-3g
