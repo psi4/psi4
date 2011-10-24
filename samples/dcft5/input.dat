@@ -1,0 +1,27 @@
+#! DCFT calculation for the Ne+ ion (doublet ground state). This performs both
+#! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
+#! Four-virtual integrals are handled in the MO Basis.
+
+
+molecule ne {
+    1 2
+    Ne
+}
+
+set globals {
+    convergence 11
+    reference   uhf
+    ao_basis    none
+    algorithm   twostep
+    basis       3-21G
+}
+
+energy('dcft')
+
+
+set algorithm simultaneous
+energy('dcft')
+
+
+clean()
+

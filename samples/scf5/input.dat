@@ -9,7 +9,6 @@ molecule singlet_o2 {
     O
     O 1 1.2
     units    angstrom
-    symmetry c1
 }
 
 molecule triplet_o2 {
@@ -17,11 +16,9 @@ molecule triplet_o2 {
     O
     O 1 1.2
     units    angstrom
-    symmetry c1
 }
 singlet_o2.update_geometry()
 triplet_o2.update_geometry()
-
 
 
 activate(singlet_o2)

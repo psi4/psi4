@@ -2,6 +2,7 @@
 
 
 molecule CN {
+  units bohr
   C  0.000000000000      0.000000000000      1.195736583480
   N  0.000000000000      0.000000000000     -1.024692078304
 }
@@ -12,7 +13,7 @@ set globals {
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]
-  freeze_core TRUE
+  freeze_core true
   
   convergence 10
   e_converge 10
