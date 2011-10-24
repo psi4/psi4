@@ -138,6 +138,13 @@ void HF::common_init()
             soccpi_[i] = 0;
     }
 
+    if (input_socc_ || input_docc_) {
+        for (int h = 0; h < nirrep_; h++) {
+            nalphapi_[h] = doccpi_[h] + soccpi_[h];
+            nbetapi_[h]  = doccpi_[h]; 
+        }
+    }
+
     // Read information from checkpoint
     nuclearrep_ = molecule_->nuclear_repulsion_energy();
 
@@ -327,14 +334,30 @@ void HF::find_occupation()
         return;
     }
 
-    std::vector<std::pair<double, int> > pairs;
+    std::vector<std::pair<double, int> > pairs_a;
+    std::vector<std::pair<double, int> > pairs_b;
     for (int h=0; h<epsilon_a_->nirrep(); ++h) {
         for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+            pairs_a.push_back(make_pair(epsilon_a_->get(h, i), h));
     }
-    sort(pairs.begin(),pairs.end());
+    for (int h=0; h<epsilon_b_->nirrep(); ++h) {
+        for (int i=0; i<epsilon_b_->dimpi()[h]; ++i)
+            pairs_b.push_back(make_pair(epsilon_b_->get(h, i), h));
+    }
+    sort(pairs_a.begin(),pairs_a.end());
+    sort(pairs_b.begin(),pairs_b.end());
 
-    // Store the current occupation
+    if(!input_docc_ && !input_socc_){
+        memset(nalphapi_, 0, sizeof(int) * epsilon_a_->nirrep());
+        for (int i=0; i<nalpha_; ++i)
+            nalphapi_[pairs_a[i].second]++;
+    }
+    if(!input_docc_ && !input_socc_){
+        memset(nbetapi_, 0, sizeof(int) * epsilon_b_->nirrep());
+        for (int i=0; i<nbeta_; ++i)
+            nbetapi_[pairs_b[i].second]++;
+    }
+    
     int old_socc[8];
     int old_docc[8];
     for(int h = 0; h < nirrep_; ++h){
@@ -342,20 +365,9 @@ void HF::find_occupation()
         old_docc[h] = doccpi_[h];
     }
 
-    if(!input_docc_){
-        memset(doccpi_, 0, sizeof(int) * epsilon_a_->nirrep());
-        for (int i=0; i<nbeta_; ++i)
-            doccpi_[pairs[i].second]++;
-    }
-    if(!input_socc_){
-        memset(soccpi_, 0, sizeof(int) * epsilon_a_->nirrep());
-        for (int i=nbeta_; i<nalpha_; ++i)
-            soccpi_[pairs[i].second]++;
-    }
-
-    for (int i=0; i<epsilon_a_->nirrep(); ++i) {
-        nalphapi_[i] = doccpi_[i] + soccpi_[i];
-        nbetapi_[i]  = doccpi_[i];
+    for (int h = 0; h < nirrep_; ++h) {
+        soccpi_[h] = std::abs(nalphapi_[h] - nbetapi_[h]);
+        doccpi_[h] = std::min(nalphapi_[h] , nbetapi_[h]);
     }
 
     bool occ_changed = false;
@@ -365,7 +377,7 @@ void HF::find_occupation()
             break;
         }
     }
-    // Always print occ if printing, if changed
+
     // If print > 2 (diagnostics), print always
     if((print_ > 2 || (print_ && occ_changed)) && iteration_ > 0){
         if (Communicator::world->me() == 0)
@@ -894,7 +906,7 @@ void HF::save_orbitals()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
     if (print_ && (Communicator::world->me() == 0))
-        fprintf(outfile,"\n  Saving occupied orbitals to File 100.\n");
+        fprintf(outfile,"\n  Saving occupied orbitals to File %ld.\n", PSIF_SCF_DB_MOS);
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
@@ -963,7 +975,7 @@ void HF::load_orbitals()
     if (old_nirrep != nirrep_)
         throw PSIEXCEPTION("SCF::load_orbitals: Projection of orbitals between different symmetries is not currently supported");
 
-    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),8*sizeof(int));
+    psio_->read_entry(PSIF_SCF_DB_MOS,"DB NSOPI",(char *) (old_nsopi),nirrep_*sizeof(int));
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NALPHAPI",(char *) &(nalphapi_[0]),nirrep_*sizeof(int));
     psio_->read_entry(PSIF_SCF_DB_MOS,"DB NBETAPI",(char *) &(nbetapi_[0]),nirrep_*sizeof(int));
 

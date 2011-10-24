@@ -157,9 +157,12 @@ void set_params(void)
 //  Opt_params.print_lvl = 1;
     Opt_params.print_lvl = options.get_int("PRINT");
 
-// read cartesian Hessian
-//  Opt_params.read_cartesian_H = 0;
-    Opt_params.read_cartesian_H = options.get_bool("READ_CARTESIAN_H");
+// Read cartesian Hessian.  Make reading the default for IRC.
+    if ((Opt_params.opt_type == OPT_PARAMS::IRC) &&
+        (options["READ_CARTESIAN_H"].has_changed() == 0))
+      Opt_params.read_cartesian_H = true;
+    else
+      Opt_params.read_cartesian_H = options.get_bool("READ_CARTESIAN_H");
 
 // only treating "dummy fragments"
     // These are not found in psi4/read_options.cc
@@ -315,6 +318,8 @@ void set_params(void)
   Opt_params.bt_max_iter = 25;
   Opt_params.bt_dx_conv = 1.0e-6;
   Opt_params.bt_dx_conv_rms_change = 1.0e-12;
+  //Opt_params.bt_dx_conv = 1.0e-10;
+  //Opt_params.bt_dx_conv_rms_change = 1.0e-14;
 
 // Hessian update is avoided if the denominators (Dq*Dq) or (Dq*Dg) are smaller than this
   Opt_params.H_update_den_tol = 1e-7;

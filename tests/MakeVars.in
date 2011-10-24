@@ -9,5 +9,8 @@ PERL = @PERL@
 TESTFLAGS = -q
 TEST_SCRIPT = ../runtest.pl
 
+# boolean for running the psitest.pl script automagically
+PSIAUTOTEST = false
+
 GARBAGE = output.dat psi.* timer.dat file14.dat *dboc.findif.out
 

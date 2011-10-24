@@ -307,7 +307,8 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         const string& basisname = mol->atom_entry(atom)->basisset(type);
 
         if (basisname.empty())
-            throw PSIEXCEPTION("BasisSet::construct: No basis set specified for " +symbol+ " and " +type+" type.");
+            throw PSIEXCEPTION("BasisSet::construct: No basis set specified for "
+                               +symbol+ " and " +type+" type.");
 
         // Add basisname, symbol to the list by clearing the vector.
         basis_atom_shell[basisname][symbol].clear();
@@ -315,31 +316,38 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
 
     BOOST_FOREACH(map_ssv::value_type& basis, basis_atom_shell)
     {
-        bool not_found = true;
+//fprintf(outfile, "Working on basis %s\n", basis.first.c_str());
+         bool not_found = true;
 
         BOOST_FOREACH(string user_file, user_list)
         {
             boost::filesystem::path bf_path;
             bf_path = boost::filesystem::system_complete(user_file);
-
+//fprintf(outfile, "Working on file %s\n", user_file.c_str());
             // Load in the basis set and remove it from atomsymbol_to_basisname
             vector<string> file = parser->load_file(bf_path.string(), basis.first);
 
             BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
+//fprintf(outfile, "Working on atom %s\n", atom.first.c_str());
                 string symbol = atom.first;
+
+                // Don't even look, if this has already been found
+                if(!basis_atom_shell[basis.first][symbol].empty()) continue;
 
                 try {
                     // Need to wrap this is a try catch block
                     basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
 
                     if (Communicator::world->me() == 0)
-                        fprintf(outfile, "  Basis set %s for %s read from %s\n", basis.first.c_str(), symbol.c_str(), user_file.c_str());
+                        fprintf(outfile, "  Basis set %s for %s read from %s\n",
+                                basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = false;
                 }
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
                     if (Communicator::world->me() == 0)
-                        fprintf(outfile, "  Unable to find %s for %s in %s will try next level.\n", basis.first.c_str(), symbol.c_str(), user_file.c_str());
+                        fprintf(outfile, "  Unable to find %s for %s in %s will try next level.\n",
+                                basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = true;
                 }
             }
@@ -350,18 +358,20 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         vector<string> file;
 
         try {
-            if (not_found) {
-                file = parser->load_file(path + "/basis/" + filename);
-                BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
-                    string symbol = atom.first;
-                    if (atom.second.empty())
-                        // If not found this will throw...let it.
-                        basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
+            // Don't even look, if this has already been found
+            BOOST_FOREACH(map_sv::value_type& atom, basis.second) {
+                string symbol = atom.first;
+                // Don't bother looking if we've already found this
+                if (atom.second.empty()){
+                    if(file.empty()) file = parser->load_file(path + "/basis/" + filename);
+                    // If not found this will throw...let it.
+                    basis_atom_shell[basis.first][symbol] = parser->parse(symbol, file);
                 }
             }
         }
         catch (BasisSetFileNotFound& e) {
-        throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
+            fprintf(outfile, " Unable to load %s from the default Psi4 basis set library.\n", filename.c_str());
+            throw PSIEXCEPTION("  Unable to load "+ filename + " from the default Psi4 basis set library.");
         }
     }
 

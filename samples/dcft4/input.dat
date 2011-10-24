@@ -1,0 +1,27 @@
+#! DCFT calculation for the Ne atom, with the K06 functional. This performs both
+#! two-step and simultaneous update of the orbitals and cumulant using DIIS extrapolation.
+#! Four-virtual integrals are handled in the MO Basis.
+#! The reference DCFT energy is taken from the JCP 133 174122 (2010) paper
+
+
+molecule ne {
+    Ne
+}
+
+set globals {
+    convergence 11
+    reference   uhf
+    ao_basis    none
+    algorithm   twostep
+    basis       cc-pvdz
+}
+
+energy('dcft')
+
+
+#set algorithm simultaneous
+#energy('dcft')
+
+
+clean()
+

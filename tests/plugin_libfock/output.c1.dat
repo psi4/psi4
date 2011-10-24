@@ -1,0 +1,379 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+                         Additional Contributions by
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule {
+0 1
+O   0.000000000000  -0.143225816552   0.000000000000
+H   1.638036840407   1.136548822547  -0.000000000000
+H  -1.638036840407   1.136548822547  -0.000000000000
+units bohr
+symmetry c1
+}
+
+plugin_load('./plugin_libfock.so')
+
+set {
+#debug 1
+print 2
+scf_type direct
+basis sto-3g 
+solver_n_root 2
+solver_n_guess 2
+solver_min_subspace 8
+solver_max_subspace 16
+}
+
+energy('scf')
+plugin('./plugin_libfock.so')
+
+--------------------------------------------------------------------------
+./plugin_libfock.so loaded.
+
+*** tstart() called on ds7
+*** at Wed Oct 19 16:18:21 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonnett
+                              RHF Reference
+                        4 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.143225816552
+           H          1.638036840407     0.000000000000     1.136548822547
+           H         -1.638036840407     0.000000000000     1.136548822547
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Running in c1 symmetry.
+
+  Nuclear repulsion =    8.002367061810771
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is DIRECT.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: STO-3G <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 4.3422214642E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -54.91867165703879
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A          7       7       5       5       5       0
+   -------------------------------------------------------
+    Total       7       7       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+  Building Direct Integral Objects...
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -73.28579642110019   -1.83671e+01   0.00000e+00  
+   @RHF iter   2:   -74.82812537974451   -1.54233e+00   2.60953e-01 DIIS
+   @RHF iter   3:   -74.93872134517268   -1.10596e-01   5.75937e-02 DIIS
+   @RHF iter   4:   -74.94185070094947   -3.12936e-03   1.33057e-02 DIIS
+   @RHF iter   5:   -74.94205432492207   -2.03624e-04   2.75011e-03 DIIS
+   @RHF iter   6:   -74.94207980023640   -2.54753e-05   1.28318e-03 DIIS
+   @RHF iter   7:   -74.94207992818707   -1.27951e-07   9.50838e-05 DIIS
+   @RHF iter   8:   -74.94207992819220   -5.13012e-12   5.74497e-07 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A    -20.262892     2A     -1.209697     3A     -0.547965  
+	   4A     -0.436527     5A     -0.387587  
+
+	Virtual:                                                              
+
+	   6A      0.477619     7A      0.588139  
+
+	Final Occupation by Irrep:
+	          A 
+	DOCC [     5 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -74.94207992819220
+
+  ==> Properties <==
+
+ OEPROP: One-electron properties/analyses.
+  by Rob Parrish and Justin Turney.
+  built on LIBMINTS.
+
+ Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     0.6035     Total:     0.6035
+
+ Dipole Moment: (Debye)
+     X:     0.0000      Y:    -0.0000      Z:     1.5340     Total:     1.5340
+
+ Quadrupole Moment: (Debye Ang)
+    XX:    -4.3168     YY:    -6.2076     ZZ:    -5.2054
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Traceless Quadrupole Moment: (Debye Ang)
+    XX:     0.9265     YY:    -0.9643     ZZ:     0.0378
+    XY:    -0.0000     XZ:    -0.0000     YZ:    -0.0000
+
+ Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.12657  4.12657  0.00000 -0.25315
+       2     H     0.43671  0.43671  0.00000  0.12657
+       3     H     0.43671  0.43671  0.00000  0.12657
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
+
+  Saving occupied orbitals to File 100.
+
+*** tstop() called on ds7 at Wed Oct 19 16:18:21 2011
+Module time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Reading options from the PLUGIN_LIBFOCK block
+Calling plugin ./plugin_libfock.so.
+
+         ------------------------------------------------------------
+                                      CIS                           
+                                  Rob Parrish                       
+         ------------------------------------------------------------
+
+ ==> Geometry <==
+
+    Molecular point group: c1
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.143225816552
+           H          1.638036840407     0.000000000000     1.136548822547
+           H         -1.638036840407     0.000000000000     1.136548822547
+
+    Number of unique atoms: 3
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+       unique atom 2: 2 
+
+  Nuclear repulsion =    8.002367061810771
+  Reference energy  =  -74.942079928192200
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 5
+    Number of primitives   = 15
+    Number of AO           = 7
+    Number of SO           = 7
+    Maximum AM             = 1
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     6s 3p // 2s 1p 
+       2     H     3s // 1s 
+       3     H     3s // 1s 
+
+  ==> DLRSolver (by Rob Parrish) <== 
+
+   Number of roots         =         2
+   Number of guess vectors =         2
+   Maximum subspace size   =        16
+   Minimum subspace size   =         8
+   Subspace expansion norm =     1E-06
+   Convergence cutoff      =     1E-06
+   Maximum iterations      =       100
+
+  ==> CISRHamiltonian (by Rob Parrish) <== 
+
+  ==> DirectJK: Integral-Direct J/K Matrices <==
+                  by Rob Parrish
+
+  ==> Singlets <==
+
+  ## Explicit Hamiltonian (Symmetry 0) ##
+  Irrep: 1
+
+                 1            2            3            4            5
+
+    1   20.0108972    0.0000000   -0.0270664    0.0000000   -0.0000000
+    2    0.0000000   20.0503776    0.0000000   -0.0471272    0.0015840
+    3   -0.0270664    0.0000000    1.2834848    0.0000000    0.0000000
+    4    0.0000000   -0.0471272    0.0000000    1.3244734   -0.0262007
+    5   -0.0000000    0.0015840    0.0000000   -0.0262007    0.6257548
+    6    0.0192010   -0.0000000    0.0510498    0.0000000   -0.0000000
+    7    0.0215503    0.0000000    0.0719668    0.0000000   -0.0000000
+    8    0.0000000    0.0262356    0.0000000   -0.0160485    0.0467487
+    9   -0.0000000    0.0000000   -0.0000000   -0.0000000    0.0000000
+   10    0.0000000   -0.0000000    0.0000000   -0.0000000   -0.0000000
+
+                 6            7            8            9           10
+
+    1    0.0192010    0.0215503   -0.0000000   -0.0000000    0.0000000
+    2   -0.0000000    0.0000000    0.0262356    0.0000000   -0.0000000
+    3    0.0510498    0.0719668    0.0000000   -0.0000000    0.0000000
+    4    0.0000000    0.0000000   -0.0160485   -0.0000000   -0.0000000
+    5   -0.0000000   -0.0000000    0.0467487    0.0000000   -0.0000000
+    6    0.8716646    0.1382612    0.0000000   -0.0000000    0.0000000
+    7    0.1382612    0.5614679    0.0000000   -0.0000000    0.0000000
+    8   -0.0000000    0.0000000    0.5861985    0.0000000   -0.0000000
+    9   -0.0000000   -0.0000000    0.0000000    0.3564617    0.0000000
+   10    0.0000000    0.0000000   -0.0000000    0.0000000    0.4160717
+
+
+
+  => Iterations <=
+
+   Iter  NConverged   NSubspace     Residual
+      1           1           2    1.574E-01
+      2           1           3    2.183E-02
+      3           1           4    5.859E-03
+      4           2           5    4.721E-16
+
+    DLRSolver converged.
+
+  ==> Triplets <==
+
+  ## Explicit Hamiltonian (Symmetry 0) ##
+  Irrep: 1
+
+                 1            2            3            4            5
+
+    1   19.9585038    0.0000000   -0.0074145   -0.0000000   -0.0000000
+    2    0.0000000   20.0113340   -0.0000000   -0.0089205    0.0076611
+    3   -0.0074145   -0.0000000    1.0931793   -0.0000000    0.0000000
+    4   -0.0000000   -0.0089205   -0.0000000    1.1888404   -0.0867137
+    5   -0.0000000    0.0076611    0.0000000   -0.0867137    0.4757743
+    6    0.0076611   -0.0000000   -0.0867137   -0.0000000    0.0000000
+    7    0.0180084    0.0000000   -0.0485372   -0.0000000    0.0000000
+    8    0.0000000    0.0037402   -0.0000000    0.0183287   -0.0615255
+    9   -0.0000000    0.0000000    0.0000000   -0.0000000   -0.0000000
+   10    0.0000000   -0.0000000   -0.0000000   -0.0000000    0.0000000
+
+                 6            7            8            9           10
+
+    1    0.0076611    0.0180084    0.0000000   -0.0000000    0.0000000
+    2   -0.0000000    0.0000000    0.0037402    0.0000000   -0.0000000
+    3   -0.0867137   -0.0485372   -0.0000000    0.0000000   -0.0000000
+    4   -0.0000000   -0.0000000    0.0183287   -0.0000000   -0.0000000
+    5    0.0000000    0.0000000   -0.0615255   -0.0000000    0.0000000
+    6    0.5527668   -0.0615255   -0.0000000    0.0000000   -0.0000000
+    7   -0.0615255    0.3703281    0.0000000   -0.0000000   -0.0000000
+    8   -0.0000000    0.0000000    0.4442931   -0.0000000   -0.0000000
+    9    0.0000000   -0.0000000   -0.0000000    0.2872555    0.0000000
+   10   -0.0000000   -0.0000000   -0.0000000    0.0000000    0.3659890
+
+
+
+  => Iterations <=
+
+   Iter  NConverged   NSubspace     Residual
+      1           1           2    8.041E-02
+      2           1           3    5.023E-02
+      3           1           4    2.572E-02
+      4           2           5    3.198E-16
+
+    DLRSolver converged.
+
+  ==> Excitation Energies <==
+
+  -----------------------------------------------
+  State Description         dE (H)        dE (eV)
+  -----------------------------------------------
+  1     T1    (  A)   2.872555E-01   7.816622E+00
+  2     T2    (  A)   3.444250E-01   9.372285E+00
+  3     S1    (  A)   3.564617E-01   9.699821E+00
+  4     S2    (  A)   5.056283E-01   1.375885E+01
+  -----------------------------------------------
+
+  ==> GS->XS Oscillator Strengths <==
+
+  --------------------------------------------------------------------
+  State Description        mu_x        mu_y        mu_z              f
+  --------------------------------------------------------------------
+  1     T1    (  A)   2.193E-15  -7.019E-02  -8.939E-15   9.433603E-04
+  2     T2    (  A)   2.109E-15   8.098E-16  -7.886E-01   1.427900E-01
+  3     S1    (  A)   2.193E-15  -7.019E-02  -1.711E-15   1.170637E-03
+  4     S2    (  A)  -1.166E-15   3.743E-16  -3.103E-01   3.246314E-02
+  --------------------------------------------------------------------
+
+
+*** PSI4 exiting successfully. Buy a developer a beer!

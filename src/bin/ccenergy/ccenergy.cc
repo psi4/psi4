@@ -243,6 +243,8 @@ PsiReturnType ccenergy(Options &options)
   if(params.ref == 0 || params.ref == 2) {
     moinfo.emp2 = mp2_energy();
     psio_write_entry(CC_INFO, "MP2 Energy", (char *) &(moinfo.emp2),sizeof(double));
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo.emp2;
+    Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo.emp2 + moinfo.eref;
   }
 
   if(params.print_mp2_amps) amp_write();
@@ -398,55 +400,101 @@ PsiReturnType ccenergy(Options &options)
 
   fprintf(outfile, "\tSCF energy       (chkpt)              = %20.15f\n", moinfo.escf);
   fprintf(outfile, "\tReference energy (file100)            = %20.15f\n", moinfo.eref);
+
+  //Process::environment.globals["SCF TOTAL ENERGY (CHKPT)"] = moinfo.escf;
+  //Process::environment.globals["SCF TOTAL ENERGY"] = moinfo.eref;
+
   if(params.ref == 0 || params.ref == 2) {
     if (params.scs) {
-    fprintf(outfile, "\n\tOS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os);
-    fprintf(outfile, "\tSS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*params.scsmp2_scale_ss);
-    fprintf(outfile, "\tSCS-MP2 correlation energy            = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os
-          + moinfo.emp2_ss*params.scsmp2_scale_ss);
-    fprintf(outfile, "      * SCS-MP2 total energy                  = %20.15f\n", moinfo.eref
-          + moinfo.emp2_os*params.scsmp2_scale_os + moinfo.emp2_ss*params.scsmp2_scale_ss);
+      fprintf(outfile, "\n\tOS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os);
+      fprintf(outfile, "\tSS SCS-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*params.scsmp2_scale_ss);
+      fprintf(outfile, "\tSCS-MP2 correlation energy            = %20.15f\n", moinfo.emp2_os*params.scsmp2_scale_os
+            + moinfo.emp2_ss*params.scsmp2_scale_ss);
+      fprintf(outfile, "      * SCS-MP2 total energy                  = %20.15f\n", moinfo.eref
+            + moinfo.emp2_os*params.scsmp2_scale_os + moinfo.emp2_ss*params.scsmp2_scale_ss);
+
+      Process::environment.globals["SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo.emp2_os*params.scsmp2_scale_os;
+      Process::environment.globals["SCS-MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo.emp2_ss*params.scsmp2_scale_ss;
+      Process::environment.globals["SCS-MP2 CORRELATION ENERGY"] = moinfo.emp2_os*params.scsmp2_scale_os +
+            moinfo.emp2_ss*params.scsmp2_scale_ss;
+      Process::environment.globals["SCS-MP2 TOTAL ENERGY"] = moinfo.eref +
+            moinfo.emp2_os*params.scsmp2_scale_os + moinfo.emp2_ss*params.scsmp2_scale_ss;
     }
     if (params.scsn) {
-    fprintf(outfile, "\n\tOS SCSN-MP2 correlation energy      = %20.15f\n", 0.0);
-    fprintf(outfile, "\tSS SCSN-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*1.76);
-    fprintf(outfile, "\tSCSN-MP2 correlation energy            = %20.15f\n", moinfo.emp2_ss*1.76);
-    fprintf(outfile, "      * SCSN-MP2 total energy                  = %20.15f\n", moinfo.eref + moinfo.emp2_ss*1.76);
+      fprintf(outfile, "\n\tOS SCSN-MP2 correlation energy      = %20.15f\n", 0.0);
+      fprintf(outfile, "\tSS SCSN-MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss*1.76);
+      fprintf(outfile, "\tSCSN-MP2 correlation energy            = %20.15f\n", moinfo.emp2_ss*1.76);
+      fprintf(outfile, "      * SCSN-MP2 total energy                  = %20.15f\n", moinfo.eref + moinfo.emp2_ss*1.76);
+
+      Process::environment.globals["SCSN-MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = 0.0;
+      Process::environment.globals["SCSN-MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo.emp2_ss*1.76;
+      Process::environment.globals["SCSN-MP2 CORRELATION ENERGY"] = moinfo.emp2_ss*1.76;
+      Process::environment.globals["SCSN-MP2 TOTAL ENERGY"] = moinfo.eref + moinfo.emp2_ss*1.76;
     }
 
     fprintf(outfile, "\n\tOpposite-spin MP2 correlation energy  = %20.15f\n", moinfo.emp2_os);
     fprintf(outfile, "\tSame-spin MP2 correlation energy      = %20.15f\n", moinfo.emp2_ss);
     fprintf(outfile, "\tMP2 correlation energy                = %20.15f\n", moinfo.emp2);
     fprintf(outfile, "      * MP2 total energy                      = %20.15f\n", moinfo.eref + moinfo.emp2);
+
+    Process::environment.globals["MP2 OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo.emp2_os;
+    Process::environment.globals["MP2 SAME-SPIN CORRELATION ENERGY"] = moinfo.emp2_ss;
+    Process::environment.globals["MP2 CORRELATION ENERGY"] = moinfo.emp2;
+    Process::environment.globals["MP2 TOTAL ENERGY"] = moinfo.eref + moinfo.emp2;
   }
   if( params.wfn == "CC3"  || params.wfn == "EOM_CC3" ) {
     fprintf(outfile, "\tCC3 correlation energy     = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CC3 total energy           = %20.15f\n", moinfo.eref + moinfo.ecc);
+
+    Process::environment.globals["CC3 CORRELATION ENERGY"] = moinfo.ecc;
+    Process::environment.globals["CC3 TOTAL ENERGY"] = moinfo.eref + moinfo.ecc;
   }
   else if( params.wfn == "CC2" || params.wfn == "EOM_CC2" )  {
     fprintf(outfile, "\tCC2 correlation energy     = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CC2 total energy           = %20.15f\n", moinfo.eref + moinfo.ecc);
+
+    Process::environment.globals["CC2 CORRELATION ENERGY"] = moinfo.ecc;
+    Process::environment.globals["CC2 TOTAL ENERGY"] = moinfo.eref + moinfo.ecc;
+
     if(params.local && local.weakp == "MP2" )
       fprintf(outfile, "      * LCC2 (+LMP2) total energy  = %20.15f\n",
           moinfo.eref + moinfo.ecc + local.weak_pair_energy);
+      Process::environment.globals["LCC2 (+LMP2) TOTAL ENERGY"] = 
+          moinfo.eref + moinfo.ecc + local.weak_pair_energy;
   }
   else {
     if (params.scscc) {
-    fprintf(outfile, "\n\tOS SCS-CCSD correlation energy      = %20.15f\n", moinfo.ecc_os*params.scscc_scale_os);
-    fprintf(outfile, "\tSS SCS-CCSD correlation energy      = %20.15f\n", moinfo.ecc_ss*params.scscc_scale_ss);
-    fprintf(outfile, "\tSCS-CCSD correlation energy            = %20.15f\n", moinfo.ecc_os*params.scscc_scale_os
-          + moinfo.ecc_ss*params.scscc_scale_ss);
-    fprintf(outfile, "      * SCS-CCSD total energy                  = %20.15f\n", moinfo.eref
-          + moinfo.ecc_os*params.scscc_scale_os + moinfo.ecc_ss*params.scscc_scale_ss);
+      fprintf(outfile, "\n\tOS SCS-CCSD correlation energy      = %20.15f\n", moinfo.ecc_os*params.scscc_scale_os);
+      fprintf(outfile, "\tSS SCS-CCSD correlation energy      = %20.15f\n", moinfo.ecc_ss*params.scscc_scale_ss);
+      fprintf(outfile, "\tSCS-CCSD correlation energy            = %20.15f\n", moinfo.ecc_os*params.scscc_scale_os
+            + moinfo.ecc_ss*params.scscc_scale_ss);
+      fprintf(outfile, "      * SCS-CCSD total energy                  = %20.15f\n", moinfo.eref
+            + moinfo.ecc_os*params.scscc_scale_os + moinfo.ecc_ss*params.scscc_scale_ss);
+
+      // LAB TODO  reconsider variable names for ss/os cc
+      Process::environment.globals["SCS-CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os;
+      Process::environment.globals["SCS-CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo.ecc_ss*params.scscc_scale_ss;
+      Process::environment.globals["SCS-CCSD CORRELATION ENERGY"] = moinfo.ecc_os*params.scscc_scale_os + 
+            moinfo.ecc_ss*params.scscc_scale_ss;
+      Process::environment.globals["SCS-CCSD TOTAL ENERGY"] = moinfo.eref +
+            moinfo.ecc_os*params.scscc_scale_os + moinfo.ecc_ss*params.scscc_scale_ss;
     }
 
     fprintf(outfile, "\n\tOpposite-spin CCSD correlation energy = %20.15f\n", moinfo.ecc_os);
     fprintf(outfile, "\tSame-spin CCSD correlation energy     = %20.15f\n", moinfo.ecc_ss);
     fprintf(outfile, "\tCCSD correlation energy               = %20.15f\n", moinfo.ecc);
     fprintf(outfile, "      * CCSD total energy                     = %20.15f\n", moinfo.eref + moinfo.ecc);
+
+    Process::environment.globals["CCSD OPPOSITE-SPIN CORRELATION ENERGY"] = moinfo.ecc_os;
+    Process::environment.globals["CCSD SAME-SPIN CORRELATION ENERGY"] = moinfo.ecc_ss;
+    Process::environment.globals["CCSD CORRELATION ENERGY"] = moinfo.ecc;
+    Process::environment.globals["CCSD TOTAL ENERGY"] = moinfo.ecc + moinfo.eref;
+
     if(params.local && local.weakp == "MP2" )
       fprintf(outfile, "      * LCCSD (+LMP2) total energy = %20.15f\n",
           moinfo.eref + moinfo.ecc + local.weak_pair_energy);
+      Process::environment.globals["LCCSD (+LMP2) TOTAL ENERGY"] = 
+          moinfo.eref + moinfo.ecc + local.weak_pair_energy;
   }
   fprintf(outfile, "\n");
 
@@ -520,7 +568,6 @@ PsiReturnType ccenergy(Options &options)
   timer_off("CCEnergy");
 #endif
 
-  Process::environment.globals["CCSD ENERGY"] = moinfo.ecc;
   Process::environment.globals["CURRENT ENERGY"] = moinfo.ecc+moinfo.eref;
 
   exit_io();

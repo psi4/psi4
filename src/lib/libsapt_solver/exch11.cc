@@ -39,7 +39,7 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
   double **C_p_AB = block_matrix(aoccA_*noccB_,ndf_+3);
 
   for (int a=0; a<aoccA_; a++) {
-    C_DGEMM('T','N',noccB_,ndf_+3,nvirA_,1.0,&(sAB_[noccA_][0]),nmo_,
+    C_DGEMM('T','N',noccB_,ndf_+3,nvirA_,1.0,&(sAB_[noccA_][0]),nmoB_,
       T_p_AR[a*nvirA_],ndf_+3,0.0,C_p_AB[a*noccB_],ndf_+3);
   } 
 
@@ -50,7 +50,7 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
 
   double **C_p_BB = block_matrix(noccB_*noccB_,ndf_+3);
 
-  C_DGEMM('T','N',noccB_,noccB_*(ndf_+3),aoccA_,1.0,&(sAB_[foccA_][0]),nmo_,
+  C_DGEMM('T','N',noccB_,noccB_*(ndf_+3),aoccA_,1.0,&(sAB_[foccA_][0]),nmoB_,
     C_p_AB[0],noccB_*(ndf_+3),0.0,C_p_BB[0],noccB_*(ndf_+3));
 
   free_block(C_p_AB);
@@ -67,7 +67,7 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
   double **C_p_AR = block_matrix(aoccA_*nvirA_,ndf_+3);
 
   for (int r=0; r<nvirA_; r++) {
-    C_DGEMM('N','N',aoccA_,ndf_+3,noccB_,1.0,&(sAB_[foccA_][0]),nmo_,
+    C_DGEMM('N','N',aoccA_,ndf_+3,noccB_,1.0,&(sAB_[foccA_][0]),nmoB_,
       B_p_RB[r*noccB_],ndf_+3,0.0,C_p_AR[r],nvirA_*(ndf_+3));
   }
 
@@ -79,8 +79,8 @@ double SAPT2::exch110(int ampfile, const char *thetalabel)
   double **xAR = block_matrix(aoccA_,nvirA_);
   double **yAR = block_matrix(aoccA_,nvirA_);
 
-  C_DGEMM('N','T',aoccA_,nvirA_,noccB_,1.0,&(sAB_[foccA_][0]),nmo_,
-    &(sAB_[noccA_][0]),nmo_,0.0,xAR[0],nvirA_);
+  C_DGEMM('N','T',aoccA_,nvirA_,noccB_,1.0,&(sAB_[foccA_][0]),nmoB_,
+    &(sAB_[noccA_][0]),nmoB_,0.0,xAR[0],nvirA_);
 
   C_DGEMV('n',aoccA_*nvirA_,ndf_+3,1.0,T_p_AR[0],ndf_+3,diagBB_,1,0.0,
     yAR[0],1);
@@ -114,7 +114,7 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
   double **C_p_AB = block_matrix(noccA_*aoccB_,ndf_+3);
 
   for (int b=0; b<aoccB_; b++) {
-    C_DGEMM('N','N',noccA_,ndf_+3,nvirB_,1.0,&(sAB_[0][noccB_]),nmo_,
+    C_DGEMM('N','N',noccA_,ndf_+3,nvirB_,1.0,&(sAB_[0][noccB_]),nmoB_,
       T_p_BS[b*nvirB_],ndf_+3,0.0,C_p_AB[b],aoccB_*(ndf_+3));
   } 
 
@@ -126,7 +126,7 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
   double **C_p_AA = block_matrix(noccA_*noccA_,ndf_+3);
 
   for (int a=0; a<noccA_; a++) {
-    C_DGEMM('N','N',noccA_,ndf_+3,aoccB_,1.0,&(sAB_[0][foccB_]),nmo_,
+    C_DGEMM('N','N',noccA_,ndf_+3,aoccB_,1.0,&(sAB_[0][foccB_]),nmoB_,
       C_p_AB[a*aoccB_],ndf_+3,0.0,C_p_AA[a*noccA_],ndf_+3);
   }
 
@@ -143,7 +143,7 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
   double **B_p_AS = get_AS_ints(1);
   double **C_p_BS = block_matrix(aoccB_*nvirB_,ndf_+3);
 
-  C_DGEMM('T','N',aoccB_,nvirB_*(ndf_+3),noccA_,1.0,&(sAB_[0][foccB_]),nmo_,
+  C_DGEMM('T','N',aoccB_,nvirB_*(ndf_+3),noccA_,1.0,&(sAB_[0][foccB_]),nmoB_,
     B_p_AS[0],nvirB_*(ndf_+3),0.0,C_p_BS[0],nvirB_*(ndf_+3));
 
   e3 -= 2.0*C_DDOT(aoccB_*nvirB_*(ndf_+3),T_p_BS[0],1,C_p_BS[0],1);
@@ -154,8 +154,8 @@ double SAPT2::exch101(int ampfile, const char *thetalabel)
   double **xBS = block_matrix(aoccB_,nvirB_);
   double **yBS = block_matrix(aoccB_,nvirB_);
 
-  C_DGEMM('T','N',aoccB_,nvirB_,noccA_,1.0,&(sAB_[0][foccB_]),nmo_,
-    &(sAB_[0][noccB_]),nmo_,0.0,xBS[0],nvirB_);
+  C_DGEMM('T','N',aoccB_,nvirB_,noccA_,1.0,&(sAB_[0][foccB_]),nmoB_,
+    &(sAB_[0][noccB_]),nmoB_,0.0,xBS[0],nvirB_);
 
   C_DGEMV('n',aoccB_*nvirB_,ndf_+3,1.0,T_p_BS[0],ndf_+3,diagAA_,1,0.0,
     yBS[0],1);

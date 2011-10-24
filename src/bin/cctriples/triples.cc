@@ -111,6 +111,10 @@ PsiReturnType cctriples(Options &options)
     fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
 
+    Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
+    Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
+    Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
+
     /* Compute triples contributions to the gradient */
     if(params.dertype == 1){
       T3_grad_RHF();
@@ -132,6 +136,14 @@ PsiReturnType cctriples(Options &options)
     fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
     fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
+
+    Process::environment.globals["AAA (T) CORRECTION ENERGY"] = ETAAA;
+    Process::environment.globals["AAB (T) CORRECTION ENERGY"] = ETAAB;
+    Process::environment.globals["ABB (T) CORRECTION ENERGY"] = ETABB;
+    Process::environment.globals["BBB (T) CORRECTION ENERGY"] = ETBBB;
+    Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
+    Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
+    Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
   }
   else if(params.ref == 2) { /** UHF **/
     ETAAA = ET_UHF_AAA();
@@ -154,6 +166,14 @@ PsiReturnType cctriples(Options &options)
     fprintf(outfile, "\t(T) energy                    = %20.15f\n", ET);
     fprintf(outfile, "      * CCSD(T) total energy          = %20.15f\n",
         ET + moinfo.ecc + moinfo.eref);
+
+    Process::environment.globals["AAA (T) CORRECTION ENERGY"] = ETAAA;
+    Process::environment.globals["AAB (T) CORRECTION ENERGY"] = ETAAB;
+    Process::environment.globals["ABB (T) CORRECTION ENERGY"] = ETABB;
+    Process::environment.globals["BBB (T) CORRECTION ENERGY"] = ETBBB;
+    Process::environment.globals["(T) CORRECTION ENERGY"] = ET;
+    Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET + moinfo.ecc;
+    Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET + moinfo.ecc + moinfo.eref;
 
     if(params.dertype==1) {
 
@@ -217,7 +237,7 @@ PsiReturnType cctriples(Options &options)
   /* Dump triples energy to CC_INFO */
   psio_write_entry(CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
 
-  Process::environment.globals["(T) ENERGY"] = ET;
+  Process::environment.globals["(T) ENERGY"] = ET; // LAB TODO  now duplicate so probably drop
   Process::environment.globals["CURRENT ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
 
   dpd_close(0);

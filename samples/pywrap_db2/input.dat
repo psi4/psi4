@@ -1,0 +1,61 @@
+#! Database calculation with psi4-generated input. Should not be used as a model
+#! input file but as a canary to avoid breaking database/input parser dependencies.
+
+
+# This is a psi4 input file auto-generated from the database() wrapper.
+
+PsiMod.print_out('\n')
+banner(' Database BASIC Computation: Reagent BASIC-ch4-reagent \n   methane')
+PsiMod.print_out('\n')
+
+from PsiMod import *
+from molecule import *
+from driver import *
+from text import *
+from inpsight import *
+from wrappers import *
+from psiexceptions import *
+from util import *
+import pickle
+geometry("""
+X
+""","blank_molecule_psi4_yo")
+
+dimer = geometry("""
+0 1
+C        0.00000000    -0.00014000     1.85916100
+H       -0.88855100     0.51306000     1.49468500
+H        0.88855100     0.51306000     1.49468500
+H        0.00000000    -1.02633900     1.49486800
+H        0.00000000     0.00008900     2.94828400
+units angstrom
+""","dimer")
+PsiMod.IO.set_default_namespace("dimer")
+
+PsiMod.set_global_option('BASIS', '6-31+G*')
+PsiMod.set_global_option('CONVERGENCE', '11')
+PsiMod.set_global_option('GUESS', 'CORE')
+PsiMod.set_global_option('JOBTYPE', 'SP')
+PsiMod.set_global_option('PRINT', '1')
+PsiMod.set_global_option('REFERENCE', 'RHF')
+PsiMod.set_global_option('RI_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('RI_BASIS_SAPT', 'CC-PVDZ-RI')
+PsiMod.set_global_option('RI_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('SCF_TYPE', 'DF')
+
+PsiMod.set_global_option('BASIS', '6-31+G*')
+PsiMod.set_global_option('RI_BASIS_SCF', 'CC-PVDZ-JKFIT')
+PsiMod.set_global_option('RI_BASIS_MP2', 'CC-PVDZ-RI')
+PsiMod.set_global_option('RI_BASIS_SAPT', 'CC-PVDZ-RI')
+molecule = PsiMod.get_active_molecule()
+molecule.update_geometry()
+
+kwargs = {'subset': ['ch4'], 'db_name': 'BASIC', 'mode': 'sow', 'name': 'scf'}
+electronic_energy = optimize(**kwargs)
+
+PsiMod.print_variables()
+PsiMod.print_out('\nDATABASE RESULT: energy computation 49149 for reagent BASIC-ch4-reagent yields electronic energy %20.12f\n' % (electronic_energy))
+
+
+clean()
+
