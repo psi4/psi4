@@ -56,7 +56,7 @@ int psi_start(int argc, char *argv[])
     verbose             = false;
 
     // A string listing of valid short option letters
-    const char* const short_options = "ahvVcwo:p:i:sm";
+    const char* const short_options = "ahvVdcwo:p:i:sm";
     const struct option long_options[] = {
         { "append",  0, NULL, 'a' },
         { "help",    0, NULL, 'h' },
@@ -244,6 +244,7 @@ void print_usage(void)
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
     printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
     printf(" -v  --verbose            Print a lot of information.\n");
+    printf(" -d  --debug              Flush the outfile at every fprintf. Default: true iff --with-debug.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
 
