@@ -367,7 +367,8 @@ void export_mints()
             def("add_postiteration_callback", &Wavefunction::add_postiteration_callback).
             def("basisset", &Wavefunction::basisset).
             def("sobasisset", &Wavefunction::sobasisset).
-            def("energy", &Wavefunction::reference_energy);
+            def("energy", &Wavefunction::reference_energy).
+            def("gradient", &Wavefunction::gradient);
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", no_init);
