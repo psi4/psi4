@@ -1236,6 +1236,9 @@ void Molecule::print() const
 }
 void Molecule::save_xyz(const std::string& filename) const
 {
+
+    double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
+
     if (Communicator::world->me() == 0) {
         FILE* fh = fopen(filename.c_str(), "w");
 
@@ -1243,7 +1246,7 @@ void Molecule::save_xyz(const std::string& filename) const
 
         for (int i = 0; i < natom(); i++) {
             Vector3 geom = atoms_[i]->compute();
-            fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), geom[0], geom[1], geom[2]);
+            fprintf(fh, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
         }
 
         fclose(fh);

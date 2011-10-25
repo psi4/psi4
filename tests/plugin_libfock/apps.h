@@ -63,6 +63,7 @@ protected:
 
     virtual void print_header();
     virtual void print_wavefunctions();
+    virtual void print_amplitudes();
     virtual void print_transitions();
 
     virtual boost::shared_ptr<Matrix> TDmo(boost::shared_ptr<Matrix> T1);
