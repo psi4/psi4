@@ -1000,6 +1000,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc5a/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
+          tests/cc9/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc28/Makefile
