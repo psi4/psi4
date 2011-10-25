@@ -401,13 +401,13 @@ void DLRSolver::print_header() const
 {
     if (print_) {
         fprintf(outfile, "  ==> DLRSolver (by Rob Parrish) <== \n\n");
-        fprintf(outfile, "   Number of roots         = %9d\n", nroot_);
-        fprintf(outfile, "   Number of guess vectors = %9d\n", nguess_);
-        fprintf(outfile, "   Maximum subspace size   = %9d\n", max_subspace_);
-        fprintf(outfile, "   Minimum subspace size   = %9d\n", min_subspace_);
-        fprintf(outfile, "   Subspace expansion norm = %9.0E\n", norm_);
-        fprintf(outfile, "   Convergence cutoff      = %9.0E\n", criteria_);
-        fprintf(outfile, "   Maximum iterations      = %9d\n\n", maxiter_); 
+        fprintf(outfile, "   Number of roots         = %11d\n", nroot_);
+        fprintf(outfile, "   Number of guess vectors = %11d\n", nguess_);
+        fprintf(outfile, "   Maximum subspace size   = %11d\n", max_subspace_);
+        fprintf(outfile, "   Minimum subspace size   = %11d\n", min_subspace_);
+        fprintf(outfile, "   Subspace expansion norm = %11.0E\n", norm_);
+        fprintf(outfile, "   Convergence cutoff      = %11.0E\n", criteria_);
+        fprintf(outfile, "   Maximum iterations      = %11d\n\n", maxiter_); 
     }
 }
 unsigned long int DLRSolver::memory_estimate()
@@ -921,12 +921,12 @@ void DLRSolver::subspaceCollapse()
             if (!dimension) continue;
             
             double** ap = a_->pointer(h);
-            double*  bp = b_[k]->pointer(h);
-            double*  sp = s_[k]->pointer(h);
             double*  b2p = b2[k]->pointer(h);
             double*  s2p = s2[k]->pointer(h);
 
             for (int i = 0; i < n; ++i) {
+                double*  bp = b_[i]->pointer(h);
+                double*  sp = s_[i]->pointer(h);
                 C_DAXPY(dimension,ap[i][k],sp,1,s2p,1);
                 C_DAXPY(dimension,ap[i][k],bp,1,b2p,1);
             }
