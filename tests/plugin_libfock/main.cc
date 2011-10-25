@@ -2,7 +2,8 @@
 #include <libmints/mints.h>
 #include <liboptions/liboptions.h>
 #include <libplugin/plugin.h>
-#include "libchkpt/chkpt.h"
+#include <libchkpt/chkpt.h>
+#include <libciomr/libciomr.h>
 #include "apps.h"
 
 INIT_PLUGIN
@@ -19,6 +20,19 @@ read_options(std::string name, Options &options){
         /*- The amount of debug information printed
             to the output file -*/
         options.add_int("DEBUG", 0);
+        /*- Do singlet states? Default true
+         -*/
+        options.add_bool("DO_SINGLETS", true);
+        /*- Do triplet states? Default true
+         -*/
+        options.add_bool("DO_TRIPLETS", true);
+        /*- Minimum singles amplitude to print in 
+            CIS analysis
+         -*/
+        options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
+        /*- Memory safety factor for allocating JK
+        -*/
+        options.add_double("CIS_MEM_SAFETY_FACTOR",0.75);
     } 
     if(name == "JK" || options.read_globals()) {
         /*- The amount of information printed
@@ -77,9 +91,12 @@ read_options(std::string name, Options &options){
 extern "C" PsiReturnType
 plugin_libfock(Options &options)
 {
+    tstart();
 
     boost::shared_ptr<RCIS> cis (new RCIS());
     cis->compute_energy();
+
+    tstop();
 
     return Success;
 }

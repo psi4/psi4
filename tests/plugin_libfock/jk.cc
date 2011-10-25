@@ -518,6 +518,13 @@ void DirectJK::print_header() const
     if (print_) {
     	fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n");
 	fprintf(outfile, "                  by Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
 void DirectJK::preiterations()
@@ -695,6 +702,18 @@ void DFJK::print_header() const
     if (print_) {
     	fprintf(outfile, "  ==> DFJK: Density-Fitted J/K Matrices <==\n");
 	fprintf(outfile, "             by Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk")); 
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+
+        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level(outfile, print_);
     }
 }
 bool DFJK::is_core()
@@ -1369,6 +1388,18 @@ void GPUDFJK::print_header() const
     if (print_) {
     	fprintf(outfile, "  ==> GPUDFJK: Density-Fitted J/K Matrices <==\n");
 	fprintf(outfile, "       by Eugene DePrince and Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk")); 
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+
+        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level(outfile, print_);
     }
 }
 void GPUDFJK::block_J(double** Qmnp, int naux)
