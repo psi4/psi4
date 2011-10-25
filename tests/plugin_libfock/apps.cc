@@ -120,13 +120,12 @@ void RCIS::print_header()
     fprintf(outfile, "                                  Rob Parrish                       \n"); 
     fprintf(outfile, "         ------------------------------------------------------------\n\n");
 
-    fprintf(outfile, " ==> Geometry <==\n\n");
+    fprintf(outfile, "  ==> Geometry <==\n\n");
     molecule_->print();
     fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
     fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
 
-
-
+    fprintf(outfile, "  ==> Basis Set <==\n\n");
     basisset_->print_by_level(outfile, print_);
 
     if (debug_ > 1) {
@@ -168,6 +167,7 @@ void RCIS::print_wavefunctions()
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 
 
+    print_amplitudes();
     print_transitions();
 
     if (debug_ > 1) {
@@ -192,6 +192,83 @@ void RCIS::print_wavefunctions()
             }
     }
 }
+void RCIS::print_amplitudes()
+{
+    if (!print_) return;
+
+    double cutoff = options_.get_double("CIS_AMPLITUDE_CUTOFF");
+
+    std::vector<boost::tuple<double, int, int, int> > states;
+    for (int n = 0; n < E_singlets_.size(); ++n) {
+        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
+    }
+    for (int n = 0; n < E_triplets_.size(); ++n) {
+        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
+    }
+
+    std::sort(states.begin(), states.end());
+
+    fprintf(outfile, "  ==> Significant Amplitudes <==\n\n");
+
+    fprintf(outfile,"  --------------------------------------------------\n");
+    fprintf(outfile,"  %5s %11s %20s %11s\n",
+        "State", "Description", "Excitation", "Amplitude");
+    fprintf(outfile,"  --------------------------------------------------\n");
+    char** labels = basisset_->molecule()->irrep_labels();
+    for (int i = 0; i < states.size(); i++) {
+        double E = get<0>(states[i]);
+        int    j = get<1>(states[i]);
+        int    m = get<2>(states[i]);
+        int    h = get<3>(states[i]);
+
+        boost::shared_ptr<Matrix> T = ((m == 1 ? singlets_[j] : triplets_[j]));
+        int symm = T->symmetry();
+    
+        std::vector<boost::tuple<double,int,int,int,int> > amps;
+        for (int h2 = 0; h2 < T->nirrep(); h2++) {
+    
+            int naocc = T->rowspi()[h2];
+            int navir = T->colspi()[h2^symm];
+
+            if (!naocc || !navir) continue;
+
+            double** Tp = T->pointer();
+
+            for (int i2 = 0; i2 < naocc; i2++) {
+                for (int a2 = 0; a2 < navir; a2++) {
+                    if (fabs(Tp[i2][a2]) > cutoff) { 
+                        int ival = i2 + Cfocc_->colspi()[h2];
+                        int aval = a2 + Cfocc_->colspi()[h2^symm] + Caocc_->colspi()[h2^symm];
+                        amps.push_back(boost::tuple<double,int,int,int,int>(Tp[i2][a2],ival,h2,aval,h2^symm)); 
+                    } 
+                }
+            }
+        }
+
+        if (amps.size()) {
+            std::sort(amps.begin(), amps.end());
+            std::reverse(amps.begin(), amps.end());
+            fprintf(outfile,"  %-5d %1s%-5d(%3s) %5d%-3s -> %5d%-3s %11.3E\n",
+                i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], 
+                get<1>(amps[0]) + 1, labels[get<2>(amps[0])],
+                get<3>(amps[0]) + 1, labels[get<4>(amps[0])], 
+                get<0>(amps[0]));
+            for (int index = 1; index < amps.size(); index++) {
+                fprintf(outfile,"                    %5d%-3s -> %5d%-3s %11.3E\n",
+                    get<1>(amps[index]) + 1, labels[get<2>(amps[index])],
+                    get<3>(amps[index]) + 1, labels[get<4>(amps[index])], 
+                    get<0>(amps[index]));
+            }
+        } else {
+            fprintf(outfile,"  %-5d %1s%-5d(%3s) %s\n",
+                i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], "No Significant Amplitudes");
+        }
+
+        fprintf(outfile,"  --------------------------------------------------\n");
+    }
+    fprintf(outfile, "\n");
+    for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
+}
 void RCIS::print_transitions()
 {
     if (!print_) return;
@@ -206,12 +283,6 @@ void RCIS::print_transitions()
     dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso))); 
     dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso))); 
     dipole->compute(dipole_ints);
-
-    if (debug_) {
-        for (int i = 0; i < dipole_ints.size(); i++) {
-            dipole_ints[i]->print();
-        }
-    }
 
     std::vector<boost::tuple<double, int, int, int> > states;
     for (int n = 0; n < E_singlets_.size(); ++n) {
@@ -504,100 +575,89 @@ std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nao(boost
 }
 double RCIS::compute_energy()
 {
+    // Main CIS Header
     print_header(); 
     
+    // Construct components
     boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
     boost::shared_ptr<CISRHamiltonian> H(new CISRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
     boost::shared_ptr<DLRSolver> solver = DLRSolver::build_solver(options_,H);
 
-    // Knobs
+    // Extra Knobs
     H->set_print(print_);
     H->set_debug(debug_);
 
-    jk->initialize();
+    // Initialization/Memory
     solver->initialize();
+    unsigned long int solver_memory = solver->memory_estimate();
+    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
+    unsigned long int effective_memory = (unsigned long int)(options_.get_double("CIS_MEM_SAFETY_FACTOR") * remaining_memory);
+    jk->set_memory(effective_memory);
+    jk->initialize();
 
+    // Component Headers
     solver->print_header();
     H->print_header();
     jk->print_header();
 
     // Singlets
-    H->set_singlet(true);
+    if (options_.get_bool("DO_SINGLETS")) {
 
-    if (print_) {
-        fprintf(outfile, "  ==> Singlets <==\n\n");
-    }
+        H->set_singlet(true);
 
-    //if (debug_) {
-        boost::shared_ptr<Matrix> A2 = H->explicit_hamiltonian();
-        for (int h = 0; h < A2->nirrep(); h++) {
-            double** A2p = A2->pointer(h);
-            for (int m = 0; m < A2->rowspi()[h]; m++) {
-                for (int n = 0; n < m; n++) {
-                    A2p[m][n] = A2p[n][m] = 0.5 * (A2p[m][n] + A2p[n][m]); 
-                }
+        if (print_) {
+            fprintf(outfile, "  ==> Singlets <==\n\n");
+        }
+
+        solver->solve();
+
+        const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
+        const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();    
+        singlets_.clear();
+        E_singlets_.clear();
+        for (int N = 0; N < singlets.size(); ++N) {
+            std::vector<boost::shared_ptr<Matrix> > t = H->unpack(singlets[N]);
+            for (int h = 0; h < Caocc_->nirrep(); h++) {
+                // Spurious zero eigenvalue due to not enough states
+                if (N >= singlets[N]->dimpi()[h]) continue; 
+                singlets_.push_back(t[h]);
+                E_singlets_.push_back(E_singlets[N][h]);
             }
         }
+    }
+    
+    // Triplets
+    if (options_.get_bool("DO_TRIPLETS")) {
+        // Triplets
+        solver->initialize();
+        H->set_singlet(false);
+        
+        if (print_) {
+            fprintf(outfile, "  ==> Triplets <==\n\n");
+        }
 
-        A2->print();
-
-    boost::shared_ptr<MatrixRHamiltonian> H2(new MatrixRHamiltonian(A2));
-    boost::shared_ptr<DLRSolver> solver2 = DLRSolver::build_solver(options_,H2);
-    solver2->initialize();
-    solver2->print_header();
-    H2->print_header();
-    solver2->solve();
-
-    //}
-
-    //solver->solve();
-
-    const std::vector<boost::shared_ptr<Vector> > singlets = solver2->eigenvectors();    
-    const std::vector<std::vector<double> > E_singlets = solver2->eigenvalues();    
-    singlets_.clear();
-    E_singlets_.clear();
-    for (int N = 0; N < singlets.size(); ++N) {
-        std::vector<boost::shared_ptr<Matrix> > t = H->unpack(singlets[N]);
-        for (int h = 0; h < Caocc_->nirrep(); h++) {
-            // Spurious zero eigenvalue due to not enough states
-            if (N >= singlets[N]->dimpi()[h]) continue; 
-            singlets_.push_back(t[h]);
-            E_singlets_.push_back(E_singlets[N][h]);
+        solver->solve();
+        
+        const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
+        const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
+        triplets_.clear();
+        E_triplets_.clear();
+        for (int N = 0; N < triplets.size(); ++N) {
+            std::vector<boost::shared_ptr<Matrix> > t = H->unpack(triplets[N]);
+            for (int h = 0; h < Caocc_->nirrep(); h++) {
+                // Spurious zero eigenvalue due to not enough states
+                if (N >= triplets[N]->dimpi()[h]) continue; 
+                triplets_.push_back(t[h]);
+                E_triplets_.push_back(E_triplets[N][h]);
+            }
         }
     }
     
-    //// Triplets
-    //solver->initialize();
-    //H->set_singlet(false);
-    //
-    //if (print_) {
-    //    fprintf(outfile, "  ==> Triplets <==\n\n");
-    //}
-
-    ////if (debug_) {
-    //    boost::shared_ptr<Matrix> A = H->explicit_hamiltonian();
-    //    A->print();
-    ////}
-
-    //solver->solve();
-    //
-    //const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
-    //const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
-    //triplets_.clear();
-    //E_triplets_.clear();
-    //for (int N = 0; N < triplets.size(); ++N) {
-    //    std::vector<boost::shared_ptr<Matrix> > t = H->unpack(triplets[N]);
-    //    for (int h = 0; h < Caocc_->nirrep(); h++) {
-    //        // Spurious zero eigenvalue due to not enough states
-    //        if (N >= triplets[N]->dimpi()[h]) continue; 
-    //        triplets_.push_back(t[h]);
-    //        E_triplets_.push_back(E_triplets[N][h]);
-    //    }
-    //}
-    
+    // Finalize solver/JK memory
     solver->finalize();
     jk->finalize();
 
+    // Print wavefunctions and properties
     print_wavefunctions();
 
     return 0.0; 
