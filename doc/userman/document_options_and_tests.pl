@@ -2,6 +2,7 @@
 
 use strict;
 use warnings;
+use File::Path qw(remove_tree);
 
 # This script does two things: a) reads the driver's options setup to provide a list of 
 # keywords expected by each module; b) looks for comments in each test case to identify
@@ -199,8 +200,15 @@ sub determine_keyword_type_and_default
 # Now we raid the test cases looking for tags
 #
 
-my $TestsFolder = $DriverPath . "../../tests";
 my $SamplesFolder = $DriverPath . "../../samples";
+opendir(SAMPLES, $SamplesFolder) or die "I can't read $SamplesFolder\n";
+foreach my $File(readdir SAMPLES){
+    next unless $File =~ /\w+/; # Make sure we don't nuke .. or . !
+    next if $File =~ /example_psi4rc_file/; # Keep the example psi4rc file
+    remove_tree("$SamplesFolder/$File");
+}
+
+my $TestsFolder = $DriverPath . "../../tests";
 opendir(TESTS, $TestsFolder) or die "I can't read $TestsFolder\n";
 my $TexSummary = "tests_descriptions.tex";
 # Create a plain-text summary in the samples directory
