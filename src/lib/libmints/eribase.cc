@@ -1191,7 +1191,7 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                     libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                     double T = rho * PQ2;
-                    double *F = fjt_->values(am+DERIV_LVL, T);
+                    double *F = fjt_->values(am+1, T);
 
                     // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                     double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
