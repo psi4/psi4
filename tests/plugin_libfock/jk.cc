@@ -8,6 +8,7 @@
 #include <psifiles.h>
 #include "sieve.h"
 #include "jk.h"
+#include"gpudfjkhelper.h"
 
 #include <sstream>
 
@@ -518,6 +519,13 @@ void DirectJK::print_header() const
     if (print_) {
     	fprintf(outfile, "  ==> DirectJK: Integral-Direct J/K Matrices <==\n");
 	fprintf(outfile, "                  by Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
     }
 }
 void DirectJK::preiterations()
@@ -695,6 +703,18 @@ void DFJK::print_header() const
     if (print_) {
     	fprintf(outfile, "  ==> DFJK: Density-Fitted J/K Matrices <==\n");
 	fprintf(outfile, "             by Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk")); 
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+
+        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level(outfile, print_);
     }
 }
 bool DFJK::is_core()
@@ -1364,11 +1384,35 @@ GPUDFJK::~GPUDFJK()
 void GPUDFJK::common_init()
 {
 }
+void GPUDFJK::preiterations()
+{
+    DFJK::preiterations();
+    helper_ = boost::shared_ptr<GPUDFJKHelper>(new GPUDFJKHelper);
+    helper_->Initialize(max_rows(),max_nocc(),primary_->nbf());
+}
+void GPUDFJK::postiterations()
+{
+    DFJK::postiterations();
+    helper_->Finalize();
+}
+
 void GPUDFJK::print_header() const
 {
     if (print_) {
     	fprintf(outfile, "  ==> GPUDFJK: Density-Fitted J/K Matrices <==\n");
 	fprintf(outfile, "       by Eugene DePrince and Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        fprintf(outfile, "    Algorithm:         %11s\n",  (is_core_ ? "Core" : "Disk")); 
+        fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n", cutoff_);
+        fprintf(outfile, "    Fitting Condition: %11.0E\n\n", condition_);
+
+        fprintf(outfile, "   => Auxiliary Basis Set <=\n\n");
+        auxiliary_->print_by_level(outfile, print_);
     }
 }
 void GPUDFJK::block_J(double** Qmnp, int naux)
@@ -1466,7 +1510,8 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
                 }
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                helper_->GPU_DGEMM_2DTile('T','N',naux,nocc,rows,1.0,QSp[0],nbf,Ctp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux,thread);
+
             }
 
         }
@@ -1494,11 +1539,13 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                 }
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                helper_->GPU_DGEMM_2DTile('T','N',naux,nocc,rows,1.0,QSp[0],nbf,Ctp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux,thread);
+
             }
         }
 
-        C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,Kp[0],nbf);        
+        helper_->GPU_DGEMM_2DTile('T','N',nbf,nbf,naux*nocc,1.0,Erp[0],naux*nocc,Elp[0],naux*nocc,1.0,Kp[0],nbf,0);
+
     } 
 }
 

@@ -63,11 +63,12 @@ protected:
 
     virtual void print_header();
     virtual void print_wavefunctions();
+    virtual void print_amplitudes();
     virtual void print_transitions();
 
-    virtual boost::shared_ptr<Matrix> TDmo(boost::shared_ptr<Matrix> T1);
-    virtual boost::shared_ptr<Matrix> TDso(boost::shared_ptr<Matrix> T1);
-    virtual boost::shared_ptr<Matrix> TDao(boost::shared_ptr<Matrix> T1);
+    virtual boost::shared_ptr<Matrix> TDmo(boost::shared_ptr<Matrix> T1, bool singlet = true);
+    virtual boost::shared_ptr<Matrix> TDso(boost::shared_ptr<Matrix> T1, bool singlet = true);
+    virtual boost::shared_ptr<Matrix> TDao(boost::shared_ptr<Matrix> T1, bool singlet = true);
 
     virtual boost::shared_ptr<Matrix> Dmo(boost::shared_ptr<Matrix> T1, bool diff = false);
     virtual boost::shared_ptr<Matrix> Dso(boost::shared_ptr<Matrix> T1, bool diff = false);

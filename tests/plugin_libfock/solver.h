@@ -219,7 +219,7 @@ public:
     void solve();
     void finalize();
 
-    bool set_precondition(bool precondition) { precondition_ = precondition; }
+    void set_precondition(bool precondition) { precondition_ = precondition; }
     void set_b(std::vector<boost::shared_ptr<Vector> >& b) { b_ = b; } 
     std::vector<boost::shared_ptr<Vector> >& b() const { return b_; }
 
