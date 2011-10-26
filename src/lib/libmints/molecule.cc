@@ -339,7 +339,6 @@ double Molecule::nuclear_repulsion_energy() const
             double Zi = Z(i);
             double Zj = Z(j);
             double distance = xyz(i).distance(xyz(j));
-            fprintf(outfile, "Zi %lf Zj %lf\n", Zi, Zj);
             e += Zi * Zj / distance;
         }
     }
