@@ -969,6 +969,7 @@ def complete_basis_set(name, **kwargs):
                        'mp2corl'     : 'MP2 CORRELATION ENERGY',
                        'ccsdcorl'    : 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl' : 'CCSD(T) CORRELATION ENERGY'}
+
     domax_scf = 1
     domax_xtpl = 0
     domax_delta = 0
@@ -1213,6 +1214,7 @@ def complete_basis_set(name, **kwargs):
 
     # Run necessary computations
     for mc in JOBS:
+        kwargs['name'] = mc['f_wfn']
 
         # build string of title banner
         cbsbanners = ''
@@ -1375,12 +1377,15 @@ def corl_xtpl_helgaker_2(**largs):
 
     elif (mode == 'evaluate'):
 
+        # Extract required energies and zeta integers from array
         eHI = NEED['HI']['f_energy']
         zHI = NEED['HI']['f_zeta']
         eLO = NEED['LO']['f_energy']
         zLO = NEED['LO']['f_zeta']
 
+        # Return extrapolated energy
         energypiece = (eHI * zHI**3 - eLO * zLO**3) / (zHI**3 - zLO**3) 
+
         return energypiece
 
 
