@@ -302,19 +302,26 @@ void RCIS::print_transitions()
     fprintf(outfile,"  --------------------------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (int i = 0; i < states.size(); i++) {
+
         double E = get<0>(states[i]);
         int    j = get<1>(states[i]);
         int    m = get<2>(states[i]);
         int    h = get<3>(states[i]);
 
-        boost::shared_ptr<Matrix> TD = TDao((m == 1 ? singlets_[j] : triplets_[j]));
-
         double mu[3];
+        ::memset((void*) mu, '\0', 3*sizeof(double));
 
-        // Transition dipole elements
-        mu[0] = TD->vector_dot(dipole_ints[0]);
-        mu[1] = TD->vector_dot(dipole_ints[1]);
-        mu[2] = TD->vector_dot(dipole_ints[2]);
+        // Only singlets have nonzero transition density, triplets are zero due to t_ia = - t_ia_bar
+        if (m == 1) {
+
+            boost::shared_ptr<Matrix> TD = TDao(singlets_[j]);
+
+            // Transition dipole elements
+            mu[0] = TD->vector_dot(dipole_ints[0]);
+            mu[1] = TD->vector_dot(dipole_ints[1]);
+            mu[2] = TD->vector_dot(dipole_ints[2]);
+
+        }
 
         // Oscillator strength
         double f = 2.0 / 3.0 * E * (mu[0] * mu[0] + mu[1] * mu[1] + mu[2] * mu[2]);
@@ -326,14 +333,22 @@ void RCIS::print_transitions()
     fprintf(outfile, "\n");
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
-boost::shared_ptr<Matrix> RCIS::TDmo(boost::shared_ptr<Matrix> T1)
+boost::shared_ptr<Matrix> RCIS::TDmo(boost::shared_ptr<Matrix> T1, bool singlet)
 {
-    return T1; // you idiot
+    boost::shared_ptr<Matrix> TD(T1->clone());
+        
+    TD->scale((singlet ? sqrt(2.0) : 0.0));
+    TD->set_name("TDmo"); 
+
+    return T1; 
 }
-boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1)
+boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1, bool singlet)
 {
     boost::shared_ptr<Matrix> D(new Matrix("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry()));
 
+    // Triplets are zero
+    if (!singlet) return D;
+    
     double* temp = new double[C_->max_nrow() * (ULI) T1->max_nrow()];
     
     int symm = T1->symmetry();
@@ -352,7 +367,7 @@ boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1)
         double** Cvp = Cavir_->pointer(h^symm);
 
         C_DGEMM('N','T',nocc,nsovir,nvir,1.0,Tp[0],nvir,Cvp[0],nvir,0.0,temp,nsovir);
-        C_DGEMM('N','N',nsoocc,nsovir,nocc,1.0,Cop[0],nocc,temp,nsovir,0.0,Dp[0],nsovir);       
+        C_DGEMM('N','N',nsoocc,nsovir,nocc,sqrt(2.0),Cop[0],nocc,temp,nsovir,0.0,Dp[0],nsovir);       
  
     }
 
@@ -360,9 +375,9 @@ boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1)
 
     return D;
 }
-boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1)
+boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1, bool singlet)
 {
-    boost::shared_ptr<Matrix> D = TDso(T1);
+    boost::shared_ptr<Matrix> D = TDso(T1, singlet);
 
     boost::shared_ptr<Matrix> D2(new Matrix("TDao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
 
