@@ -6,6 +6,10 @@
 
 using namespace psi;
 
+namespace {
+  double dzero = 0.0;
+}
+
 double
 VariableValue::compute()
 {
@@ -32,6 +36,14 @@ CoordEntry::CoordEntry(int entry_number, double Z, double charge, double mass, c
 CoordEntry::~CoordEntry()
 {
 
+}
+
+const double& CoordEntry::Z() const 
+{
+    if (ghosted_)
+        return dzero;
+    else
+        return Z_;
 }
 
 /**
