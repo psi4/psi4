@@ -154,7 +154,7 @@ public:
     void set_ghosted(bool ghosted) { ghosted_ = ghosted; }
 
     /// The nuclear charge of the current atom (0 if ghosted).
-    const double& Z() const { return ghosted_ ? 0.0 : Z_; }
+    const double& Z() const;
     /// The "atomic charge" of the current atom (for SAD purposes).
     const double& charge() const { return charge_; }
     /// The atomic mass of the current atom.
