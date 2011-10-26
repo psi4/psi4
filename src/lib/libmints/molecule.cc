@@ -40,6 +40,10 @@ using namespace boost;
 #include <sstream>
 #include <iostream>
 
+namespace {
+    const double dzero = 0.0;
+}
+
 // the third parameter of from_string() should be
 // one of std::hex, std::dec or std::oct
 template <class T>
@@ -335,6 +339,7 @@ double Molecule::nuclear_repulsion_energy() const
             double Zi = Z(i);
             double Zj = Z(j);
             double distance = xyz(i).distance(xyz(j));
+            fprintf(outfile, "Zi %lf Zj %lf\n", Zi, Zj);
             e += Zi * Zj / distance;
         }
     }
@@ -881,13 +886,13 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             boost::shared_ptr<CoordValue> xval(mol->get_coord_value(splitLine[1]));
             boost::shared_ptr<CoordValue> yval(mol->get_coord_value(splitLine[2]));
             boost::shared_ptr<CoordValue> zval(mol->get_coord_value(splitLine[3]));
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new CartesianEntry(currentAtom, zVals[atomSym], zVals[atomSym],
                                                                                  an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                  xval, yval, zval)));
         }
         else if(numEntries == 1) {
             // This is the first line of a Z-Matrix
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], zVals[atomSym],
                                                                                    an2masses[(int)zVals[atomSym]], atomSym, atomLabel)));
         }
         else if(numEntries == 3) {
@@ -897,7 +902,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 throw PSIEXCEPTION("Error on geometry input line " + *line + "\nAtom "
                                    + splitLine[1] + " has not been defined yet.");
             boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], 0,
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], 0,
                                                                                an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval)));
         }
@@ -915,7 +920,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
                 throw PSIEXCEPTION("Atom used multiple times on line " + *line);
             boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], zVals[atomSym],
                                                                                an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo], aval)));
         }
@@ -940,7 +945,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             boost::shared_ptr<CoordValue> rval(mol->get_coord_value(splitLine[2]));
             boost::shared_ptr<CoordValue> aval(mol->get_coord_value(splitLine[4]));
             boost::shared_ptr<CoordValue> dval(mol->get_coord_value(splitLine[6]));
-            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, (int)zVals[atomSym], zVals[atomSym],
+            mol->full_atoms_.push_back(boost::shared_ptr<CoordEntry>(new ZMatrixEntry(currentAtom, zVals[atomSym], zVals[atomSym],
                                                                                an2masses[(int)zVals[atomSym]], atomSym, atomLabel,
                                                                                mol->full_atoms_[rTo], rval, mol->full_atoms_[aTo],
                                                                                aval, mol->full_atoms_[dTo], dval)));
