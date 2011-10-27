@@ -624,6 +624,10 @@ double RCIS::compute_energy()
             fprintf(outfile, "  ==> Singlets <==\n\n");
         }
 
+        //boost::shared_ptr<Matrix> H2 = H->explicit_hamiltonian();
+        //H2->print();
+        //exit(1);
+
         solver->solve();
 
         const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    

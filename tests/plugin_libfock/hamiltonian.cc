@@ -278,7 +278,6 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                 double*  eop  = eps_aocc_->pointer(h);
                 double*  evp  = eps_avir_->pointer(h^symm);
 
-                // TODO
                 double** Jp  = J[symm * x.size() + N]->pointer(h);
                 double** Kp  = K[symm * x.size() + N]->pointer(h);
     
@@ -286,16 +285,12 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                 C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Kp[0],nsovir,0.0,Tp,nsovir);
                 C_DGEMM('N','N',nocc,nvir,nsovir,-1.0,Tp,nsovir,Cvp[0],nvir,0.0,&bp[offset],nvir);
     
-                //b[N]->print();
-
                 if (singlet_) {
                     // 2(ia|jb)P_jb = C_im J_mn C_na
                     C_DGEMM('T','N',nocc,nsovir,nsoocc,1.0,Cop[0],nocc,Jp[0],nsovir,0.0,Tp,nsovir);
                     C_DGEMM('N','N',nocc,nvir,nsovir,2.0,Tp,nsovir,Cvp[0],nvir,1.0,&bp[offset],nvir);
                 }
             
-                //b[N]->print();
-                
                 for (int i = 0; i < nocc; ++i) {
                     for (int a = 0; a < nvir; ++a) {
                         bp[i * nvir + a + offset] += (evp[a] - eop[i]) * xp[i * nvir + a + offset];        
