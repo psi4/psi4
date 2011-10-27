@@ -43,6 +43,10 @@ protected:
     int deriv_;
     /// Whether to force integrals to be generated in the Cartesian (AO) basis;
     bool force_cartesian_;
+    //! The order of the derivative integral buffers, after permuting shells
+    int *buffer_offsets_;
+    //! The number of cartesian functions in this shell quartet
+    size_t ncart_;
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);
@@ -92,6 +96,8 @@ public:
 
     /// Compute the integrals
     virtual void compute_shell(int, int, int, int) = 0;
+
+    virtual double get_derivative_integral(int center, int xyz, size_t index);
 
     ///Is the shell zero?
     virtual int shell_is_zero(int,int,int,int) { return 0; }
