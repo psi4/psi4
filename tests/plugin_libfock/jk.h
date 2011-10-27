@@ -7,6 +7,7 @@ template<class T> class shared_ptr;
 
 namespace psi {
 
+class GPUDFJKHelper;
 class BasisSet;
 class Matrix;
 class IntegralFactory;
@@ -625,6 +626,10 @@ protected:
     virtual void block_J(double** Qmnp, int naux);
     virtual void block_K(double** Qmnp, int naux);
     void common_init();
+    /// Setup integrals, files, etc
+    virtual void preiterations(); 
+    /// Delete integrals, files, etc
+    virtual void postiterations(); 
 
 public:
 
@@ -662,6 +667,11 @@ public:
        boost::shared_ptr<BasisSet> auxiliary);
     /// Destructor
     virtual ~GPUDFJK();
+
+    /**
+     * helper class definied in gpudfjkhelper.h
+     */
+    boost::shared_ptr<GPUDFJKHelper> helper_;
 
     /**
     * Print header information regarding JK
