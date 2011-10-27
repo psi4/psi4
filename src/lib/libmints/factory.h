@@ -71,7 +71,7 @@ public:
     int ncol(int h) const;
 
     /// Returns the number of orbitals
-    int nso() const;
+    int norb() const;
 
     /// Returns a new Matrix object with default dimensions
     Matrix * create_matrix(int symmetry=0);
