@@ -48,10 +48,16 @@ class Deriv
     // Results go here.
     /// One-electron contribution to the gradient
     SharedMatrix opdm_contr_;
+    /// Reference one-electron contribution to the gradient
+    SharedMatrix opdm_ref_contr_;
     /// Overlap contribution to the gradient
     SharedMatrix x_contr_;
+    /// Reference overlap contribution to the gradient
+    SharedMatrix x_ref_contr_;
     /// Two-electron contribution to the gradient
     SharedMatrix tpdm_contr_;
+    /// Reference two-electron contribution to the gradient
+    SharedMatrix tpdm_ref_contr_;
     /// Final gradient
     SharedMatrix gradient_;
 public:
@@ -67,15 +73,6 @@ public:
           char needed_irreps=0x1,
           bool project_out_translations=true,
           bool project_out_rotations=true);
-    Deriv(const boost::shared_ptr<BasisSet>& basis,
-                 const SharedMatrix& P_2,
-                 const SharedMatrix& W_2,
-                 const SharedMatrix& SCF_D,
-                 const boost::shared_ptr<MatrixFactory>& factory,
-                 char needed_irreps,
-                 bool project_out_translations,
-                 bool project_out_rotations);
-
 
     SharedMatrix compute();
 

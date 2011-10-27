@@ -275,8 +275,10 @@ void HF::integrals()
             throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         pseudospectral_ = boost::shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
+        density_fitted_ = true;
     }else if (scf_type_ == "DF"){
         df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
+        density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
         if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");

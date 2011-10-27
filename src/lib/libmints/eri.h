@@ -99,6 +99,7 @@ protected:
     //! Were the indices permuted?
     bool p13p24_, p12_, p34_;
 
+
 public:
     //! Constructor. Use an IntegralFactory to create this object.
     TwoElectronInt(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);
@@ -116,6 +117,9 @@ public:
 
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
     virtual void compute_shell_deriv1(int, int, int, int);
+
+    /// Get a derivative integral from the buffer
+    virtual double get_derivative_integral(int center, int xyz, size_t index);
 
     //! Determine if a shell is zero based on schwarz sieve
     //Case No Sieve: false
