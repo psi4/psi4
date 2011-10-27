@@ -34,17 +34,17 @@ class PseudospectralHF {
         // Inverse of fitting metric (Coulomb side)
         boost::shared_ptr<FittingMetric> Jinv_;
         // X pseudospectral matrix
-        boost::shared_ptr<Matrix> X_;
+        SharedMatrix X_;
         // Shared pointer to alpha density matrix
-        boost::shared_ptr<Matrix> Da_;
+        SharedMatrix Da_;
         // Shared pointer to beta density matrix
-        boost::shared_ptr<Matrix> Db_;
+        SharedMatrix Db_;
         // Shared pointer to total Coulomb matrix
-        boost::shared_ptr<Matrix> Ja_;
+        SharedMatrix Ja_;
         // Shared pointer to alpha Exchange matrix
-        boost::shared_ptr<Matrix> Ka_;
+        SharedMatrix Ka_;
         // Shared pointer to beta Exchange matrix
-        boost::shared_ptr<Matrix> Kb_;
+        SharedMatrix Kb_;
         // Constant reference to the options object
         Options& options_;
         // Primary basis set
@@ -52,7 +52,7 @@ class PseudospectralHF {
         // Auxiliary basis set (coulomb)
         boost::shared_ptr<BasisSet> auxiliary_;
         // Quadrature Points (P x 3)
-        boost::shared_ptr<Matrix> points_;
+        SharedMatrix points_;
         // Schwarz Sieve object
         boost::shared_ptr<SchwarzSieve> schwarz_;
 
@@ -69,8 +69,8 @@ class PseudospectralHF {
 
     public:
         // Constructor for RHF/RKS
-        PseudospectralHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<Matrix> Da,
-        boost::shared_ptr<Matrix> Ja, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<PSIO> psio, Options& opt);
+        PseudospectralHF(boost::shared_ptr<BasisSet> basis, SharedMatrix Da,
+        SharedMatrix Ja, SharedMatrix Ka, boost::shared_ptr<PSIO> psio, Options& opt);
         // Constructor for generic HF, with J, K, D to be set later
         PseudospectralHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<PSIO> psio, Options& opt);
         // Destructor
@@ -80,11 +80,11 @@ class PseudospectralHF {
 
         // Setter methods, to be called from the JK functors
         void set_restricted(bool y_n) { restricted_ = y_n; }
-        void set_J(boost::shared_ptr<Matrix> Ja) {Ja_ = Ja;}
-        void set_Ka(boost::shared_ptr<Matrix> Ka) {Ka_ = Ka;}
-        void set_Kb(boost::shared_ptr<Matrix> Kb) {Kb_ = Kb;}
-        void set_Da(boost::shared_ptr<Matrix> Da) {Da_ = Da;}
-        void set_Db(boost::shared_ptr<Matrix> Db) {Db_ = Db;}
+        void set_J(SharedMatrix Ja) {Ja_ = Ja;}
+        void set_Ka(SharedMatrix Ka) {Ka_ = Ka;}
+        void set_Kb(SharedMatrix Kb) {Kb_ = Kb;}
+        void set_Da(SharedMatrix Da) {Da_ = Da;}
+        void set_Db(SharedMatrix Db) {Db_ = Db;}
         // form J and K
         void form_J_DF() { restricted_ ? form_J_DF_RHF() : form_J_DF_UHF(); }
         void form_K_PS() { restricted_ ? form_K_PS_RHF() : form_K_PS_UHF(); }

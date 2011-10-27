@@ -58,7 +58,7 @@ void  DFMP2::setup()
   timer_on("Setup");
 
   boost::shared_ptr<Wavefunction> ref = Process::environment.reference_wavefunction();
-  boost::shared_ptr<Matrix> C;
+  SharedMatrix C;
   boost::shared_ptr<Vector> epsilon;
 
   if (ref.get() != NULL) {
@@ -168,7 +168,7 @@ void  DFMP2::setup()
       C = ref->Ca();
       epsilon = ref->epsilon_a();
   } else {
-      C = boost::shared_ptr<Matrix>(new Matrix("C Matrix", nso_, nmo_));
+      C = SharedMatrix(new Matrix("C Matrix", nso_, nmo_));
       epsilon = boost::shared_ptr<Vector>(new Vector(nmo_));
 
 //      if (Communicator::world->me() == 0) {

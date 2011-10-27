@@ -260,9 +260,9 @@ protected:
     /// Sigma vectors (nsubspace)
     std::vector<boost::shared_ptr<Vector> > s_;
     /// G_ij Subspace Hamiltonian (nsubspace x nsubspace)
-    boost::shared_ptr<Matrix> G_;
+    SharedMatrix G_;
     /// Subspace eigenvectors (nsubspace x nsubspace)
-    boost::shared_ptr<Matrix> a_;
+    SharedMatrix a_;
     /// Subspace eigenvalues (nsubspace)   
     boost::shared_ptr<Vector> l_; 
     /// Residual vectors (nroots)

@@ -221,7 +221,7 @@ void Wavefunction::call_postiteration_callbacks()
     }
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Ca() const {
+SharedMatrix Wavefunction::Ca() const {
     if (!Ca_)
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
@@ -231,7 +231,7 @@ boost::shared_ptr<Matrix> Wavefunction::Ca() const {
     return Ca_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Cb() const {
+SharedMatrix Wavefunction::Cb() const {
     if (!Cb_)
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
@@ -241,12 +241,12 @@ boost::shared_ptr<Matrix> Wavefunction::Cb() const {
     return Cb_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Fa() const
+SharedMatrix Wavefunction::Fa() const
 {
     return Fa_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Fb() const
+SharedMatrix Wavefunction::Fb() const
 {
     return Fb_;
 }
@@ -261,27 +261,27 @@ boost::shared_ptr<Vector> Wavefunction::epsilon_b() const
     return epsilon_b_;
 }
 
-const boost::shared_ptr<Matrix> Wavefunction::Da() const
+const SharedMatrix Wavefunction::Da() const
 {
     return Da_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Db() const
+SharedMatrix Wavefunction::Db() const
 {
     return Db_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::X() const
+SharedMatrix Wavefunction::X() const
 {
     return Lagrangian_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::gradient() const
+SharedMatrix Wavefunction::gradient() const
 {
     return gradient_;
 }
 
-void Wavefunction::set_gradient(boost::shared_ptr<Matrix>& grad)
+void Wavefunction::set_gradient(SharedMatrix& grad)
 {
     gradient_ = grad;
 }

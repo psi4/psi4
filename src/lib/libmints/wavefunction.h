@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "typedefs.h"
 #include "dimension.h"
 #include <libparallel/parallel.h>
 
@@ -119,22 +120,22 @@ protected:
     int nirrep_;
 
     /// Alpha MO coefficients
-    boost::shared_ptr<Matrix> Ca_;
+    SharedMatrix Ca_;
     /// Beta MO coefficients
-    boost::shared_ptr<Matrix> Cb_;
+    SharedMatrix Cb_;
 
     /// Alpha density matrix
-    boost::shared_ptr<Matrix> Da_;
+    SharedMatrix Da_;
     /// Beta density matrix
-    boost::shared_ptr<Matrix> Db_;
+    SharedMatrix Db_;
 
     /// Lagrangian matrix
-    boost::shared_ptr<Matrix> Lagrangian_;
+    SharedMatrix Lagrangian_;
 
     /// Alpha Fock matrix
-    boost::shared_ptr<Matrix> Fa_;
+    SharedMatrix Fa_;
     /// Beta Fock matrix
-    boost::shared_ptr<Matrix> Fb_;
+    SharedMatrix Fb_;
 
     /// Alpha orbital eneriges
     boost::shared_ptr<Vector> epsilon_a_;
@@ -146,7 +147,7 @@ protected:
     std::vector<void*> postcallbacks_;
 
     /// If a gradient is available it will be here:
-    boost::shared_ptr<Matrix> gradient_;
+    SharedMatrix gradient_;
 
 private:
     // Wavefunction() {}
@@ -214,25 +215,25 @@ public:
     double reference_energy () const { return energy_; }
 
     /// Returns the alpha electrons MO coefficients
-    boost::shared_ptr<Matrix> Ca() const;
+    SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
-    boost::shared_ptr<Matrix> Cb() const;
+    SharedMatrix Cb() const;
     /// Returns the alpha Fock matrix
-    boost::shared_ptr<Matrix> Fa() const;
+    SharedMatrix Fa() const;
     /// Returns the beta Fock matrix
-    boost::shared_ptr<Matrix> Fb() const;
+    SharedMatrix Fb() const;
     /// Returns the alpha orbital energies
     boost::shared_ptr<Vector> epsilon_a() const;
     /// Returns the beta orbital energies
     boost::shared_ptr<Vector> epsilon_b() const;
 
     /// Returns the alpha OPDM for the wavefunction
-    const boost::shared_ptr<Matrix> Da() const;
+    const SharedMatrix Da() const;
     /// Returns the beta OPDM for the wavefunction
-    boost::shared_ptr<Matrix> Db() const;
+    SharedMatrix Db() const;
 
     /// Returns the Lagrangian in SO basis for the wavefunction
-    boost::shared_ptr<Matrix> X() const;
+    SharedMatrix X() const;
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);
@@ -245,9 +246,9 @@ public:
     void call_postiteration_callbacks();
 
     /// Returns the gradient
-    boost::shared_ptr<Matrix> gradient() const;
+    SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
-    void set_gradient(boost::shared_ptr<Matrix>& grad);
+    void set_gradient(SharedMatrix& grad);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

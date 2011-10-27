@@ -7,6 +7,7 @@
 #include <libparallel/serialize.h>
 #include <libparallel/parallel.h>
 #include "dimension.h"
+#include "typedefs.h"
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -86,7 +87,7 @@ public:
     /// copy reference constructor
     Matrix(const Matrix& copy);
     /// Explicit shared point copy constructor
-    explicit Matrix(const boost::shared_ptr<Matrix>& copy);
+    explicit Matrix(const SharedMatrix& copy);
     /// copy pointer constructor
     explicit Matrix(const Matrix* copy);
     /**
@@ -185,9 +186,9 @@ public:
     Matrix* clone() const;
 
     /**
-     * Convenient creation function return shared_ptr<Matrix>
+     * Convenient creation function return SharedMatrix
      */
-    static boost::shared_ptr<Matrix> create(const std::string& name,
+    static SharedMatrix create(const std::string& name,
                                             const Dimension& rows,
                                             const Dimension& cols);
 
@@ -196,7 +197,7 @@ public:
      * Copies data onto this
      * @param cp Object to copy from.
      */
-    void copy(const boost::shared_ptr<Matrix>& cp);
+    void copy(const SharedMatrix& cp);
     void copy(const Matrix& cp);
     void copy(const Matrix* cp);
     /** @} */
@@ -205,13 +206,13 @@ public:
     * Horizontally concatenate matrices
     * @param mats std::vector of Matrix objects to concatenate
     */
-    static boost::shared_ptr<Matrix> horzcat(const std::vector<boost::shared_ptr<Matrix> >& mats);
+    static SharedMatrix horzcat(const std::vector<SharedMatrix >& mats);
 
     /**
     * Vertically concatenate matrices
     * @param mats std::vector of Matrix objects to concatenate
     */
-    static boost::shared_ptr<Matrix> vertcat(const std::vector<boost::shared_ptr<Matrix> >& mats);
+    static SharedMatrix vertcat(const std::vector<SharedMatrix >& mats);
 
     /// Copies data to the row specified. Assumes data is of correct length.
     void copy_to_row(int h, int row, double const * const data);
@@ -417,7 +418,7 @@ public:
     /// apply_denominators a matrix to this
     void apply_denominator(const Matrix&);
     /// apply_denominators a matrix to this
-    void apply_denominator(const boost::shared_ptr<Matrix>&);
+    void apply_denominator(const SharedMatrix&);
 
     /**
      * Returns a copy of the current matrix.
@@ -564,15 +565,15 @@ public:
     /// Adds a matrix to this
     void add(const Matrix&);
     /// Adds a matrix to this
-    void add(const boost::shared_ptr<Matrix>&);
+    void add(const SharedMatrix&);
 
     /// Subtracts a matrix from this
     void subtract(const Matrix* const);
     /// Subtracts a matrix from this
-    void subtract(const boost::shared_ptr<Matrix>&);
+    void subtract(const SharedMatrix&);
     /// Multiplies the two arguments and adds their result to this
     void accumulate_product(const Matrix* const, const Matrix* const);
-    void accumulate_product(const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&);
+    void accumulate_product(const SharedMatrix&, const SharedMatrix&);
     /// Scales this matrix
     void scale(double);
     /// Returns the sum of the squares of this
@@ -621,7 +622,7 @@ public:
      *  \param a SimpleMatrix to transform
      *  \param transformer The matrix returned by PetiteList::aotoso() that acts as the transformer
      */
-    void apply_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+    void apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
 
     /** Special function to transform a SimpleMatrix (no symmetry) into
      *  a symmetry matrix.
@@ -629,44 +630,44 @@ public:
      *  \param a SimpleMatrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
      */
-    void remove_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
     /** Performs a the transformation L^ F R. Result goes to this.
      *
      * \param L left transformation matrix (will be transposed)
      * \param F matrix to apply transformation to
      * \param R right transformation matrix (will not be transposed)
      */
-    void transform(const boost::shared_ptr<Matrix>& L,
-                   const boost::shared_ptr<Matrix>& F,
-                   const boost::shared_ptr<Matrix>& R);
+    void transform(const SharedMatrix& L,
+                   const SharedMatrix& F,
+                   const SharedMatrix& R);
 
     /// @{
     /// Transform a by transformer save result to this
     void transform(const Matrix* const a, const Matrix* const transformer);
-    void transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+    void transform(const SharedMatrix& a, const SharedMatrix& transformer);
     /// @}
 
     /// @{
     /// Transform this by transformer
     void transform(const Matrix* const transformer);
-    void transform(const boost::shared_ptr<Matrix>& transformer);
+    void transform(const SharedMatrix& transformer);
     /// @}
 
     /// @{
     /// Back transform a by transformer save result to this
     void back_transform(const Matrix* const a, const Matrix* const transformer);
-    void back_transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer);
+    void back_transform(const SharedMatrix& a, const SharedMatrix& transformer);
     /// @}
 
     /// @{
     /// Back transform this by transformer
     void back_transform(const Matrix* const transformer);
-    void back_transform(const boost::shared_ptr<Matrix>& transformer);
+    void back_transform(const SharedMatrix& transformer);
     /// @}
 
     /// Returns the vector dot product of this by rhs
     double vector_dot(const Matrix* const rhs);
-    double vector_dot(const boost::shared_ptr<Matrix>& rhs);
+    double vector_dot(const SharedMatrix& rhs);
     double vector_dot(const Matrix& rhs);
 
     /// @{
@@ -679,9 +680,9 @@ public:
      * \param beta Prefactor for the resulting matrix
      */
     void gemm(bool transa, bool transb, double alpha, const Matrix* const a, const Matrix* const b, double beta);
-    void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& b, double beta);
-    void gemm(bool transa, bool transb, double alpha, const boost::shared_ptr<Matrix>& a, const Matrix& b, double beta);
-    void gemm(bool transa, bool transb, double alpha, const Matrix& a, const boost::shared_ptr<Matrix>& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const SharedMatrix& a, const SharedMatrix& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const SharedMatrix& a, const Matrix& b, double beta);
+    void gemm(bool transa, bool transb, double alpha, const Matrix& a, const SharedMatrix& b, double beta);
     /// @}
 
     /// @{
@@ -695,8 +696,8 @@ public:
               const std::vector<int>& n,
               const std::vector<int>& k,
               const double& alpha,
-              const boost::shared_ptr<Matrix>& a, const std::vector<int>& lda,
-              const boost::shared_ptr<Matrix>& b, const std::vector<int>& ldb,
+              const SharedMatrix& a, const std::vector<int>& lda,
+              const SharedMatrix& b, const std::vector<int>& ldb,
               const double& beta,
               const std::vector<int>& ldc,
               const std::vector<unsigned long>& offset_a = std::vector<unsigned long>(),
@@ -707,8 +708,8 @@ public:
               const int& n,
               const int& k,
               const double& alpha,
-              const boost::shared_ptr<Matrix>& a, const int& lda,
-              const boost::shared_ptr<Matrix>& b, const int& ldb,
+              const SharedMatrix& a, const int& lda,
+              const SharedMatrix& b, const int& ldb,
               const double& beta,
               const int& ldc,
               const unsigned long& offset_a = 0,
@@ -719,13 +720,13 @@ public:
     /// @{
     /// Diagonalizes this, eigvectors and eigvalues must be created by caller.
     void diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder nMatz = Ascending);
-    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
-    void diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz = Ascending);
     /// @}
 
     /// @{
     /// Diagonalizes this, applying supplied metric, eigvectors and eigvalues must be created by caller.
-    void diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
+    void diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz = Ascending);
     /// @}
 
     /*! Computes the Cholesky factorization of a real symmetric
@@ -758,10 +759,10 @@ public:
      * occurs on the diagonal. Defaults to 0.0, in which case the numerically
      * exact factor is returned.
      * \param throw_if_negative, bool, throw if pivot <= 0.0 is detected?
-     * \return L, shared_ptr<Matrix>, with rows of dimension dimpi and columns of
+     * \return L, SharedMatrix, with rows of dimension dimpi and columns of
      * dimension sigpi
      */
-     boost::shared_ptr<Matrix> partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
+     SharedMatrix partial_cholesky_factorize(double delta = 0.0, bool throw_if_negative = false);
 
     /*! Computes the inverse of a real symmetric positive definite
      *  matrix A using the Cholesky factorization A = L*L**T
@@ -887,7 +888,7 @@ public:
     /// @param rhs Matrix to compare to.
     /// @returns true if equal, otherwise false.
     bool equal(const Matrix& rhs);
-    bool equal(const boost::shared_ptr<Matrix>& rhs);
+    bool equal(const SharedMatrix& rhs);
     bool equal(const Matrix* rhs);
     /// @}
 
@@ -1093,9 +1094,6 @@ public:
 
     friend class Matrix;
 };
-
-typedef boost::shared_ptr<Matrix>       SharedMatrix;
-typedef boost::shared_ptr<SimpleMatrix> SharedSimpleMatrix;
 
 }
 

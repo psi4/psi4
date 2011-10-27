@@ -30,11 +30,11 @@ RHamiltonian::RHamiltonian(boost::shared_ptr<JK> jk) :
 RHamiltonian::~RHamiltonian()
 {
 }
-boost::shared_ptr<Matrix> RHamiltonian::explicit_hamiltonian()
+SharedMatrix RHamiltonian::explicit_hamiltonian()
 {
     boost::shared_ptr<Vector> diag = diagonal();
 
-    boost::shared_ptr<Matrix> H(new Matrix("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi()));
+    SharedMatrix H(new Matrix("Explicit Hamiltonian", diag->nirrep(), diag->dimpi(), diag->dimpi()));
 
     boost::shared_ptr<Vector> b(diag->clone());
     boost::shared_ptr<Vector> s(diag->clone());
@@ -63,7 +63,7 @@ UHamiltonian::~UHamiltonian()
 {
 }
 
-MatrixRHamiltonian::MatrixRHamiltonian(boost::shared_ptr<Matrix> M) :
+MatrixRHamiltonian::MatrixRHamiltonian(SharedMatrix M) :
     RHamiltonian(boost::shared_ptr<JK>()), M_(M)
 {
 }
@@ -105,7 +105,7 @@ void MatrixRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& 
     }
 }
 
-MatrixUHamiltonian::MatrixUHamiltonian(std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > M) :
+MatrixUHamiltonian::MatrixUHamiltonian(std::pair<SharedMatrix, SharedMatrix > M) :
     UHamiltonian(boost::shared_ptr<JK>()), M_(M)
 {
 }
@@ -156,8 +156,8 @@ void MatrixUHamiltonian::product(const std::vector<std::pair<boost::shared_ptr<V
 }
 
 CISRHamiltonian::CISRHamiltonian(boost::shared_ptr<JK> jk, 
-                                 boost::shared_ptr<Matrix> Caocc, 
-                                 boost::shared_ptr<Matrix> Cavir, 
+                                 SharedMatrix Caocc, 
+                                 SharedMatrix Cavir, 
                                  boost::shared_ptr<Vector> eps_aocc,
                                  boost::shared_ptr<Vector> eps_avir) : 
     RHamiltonian(jk), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir), singlet_(true) 
@@ -212,8 +212,8 @@ boost::shared_ptr<Vector> CISRHamiltonian::diagonal()
 void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                                     std::vector<boost::shared_ptr<Vector> >& b)
 {
-    std::vector<boost::shared_ptr<Matrix> >& C_left = jk_->C_left();
-    std::vector<boost::shared_ptr<Matrix> >& C_right = jk_->C_right();
+    std::vector<SharedMatrix >& C_left = jk_->C_left();
+    std::vector<SharedMatrix >& C_right = jk_->C_right();
 
     C_left.clear();
     C_right.clear();
@@ -227,7 +227,7 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right, h = " << symm << ", N = " << N;
-            boost::shared_ptr<Matrix> Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
             
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -252,8 +252,8 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     jk_->compute();
 
-    const std::vector<boost::shared_ptr<Matrix> >& J = jk_->J();
-    const std::vector<boost::shared_ptr<Matrix> >& K = jk_->K();
+    const std::vector<SharedMatrix >& J = jk_->J();
+    const std::vector<SharedMatrix >& K = jk_->K();
 
     double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
@@ -317,12 +317,12 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
     }
     
 }
-std::vector<boost::shared_ptr<Matrix> > CISRHamiltonian::unpack(boost::shared_ptr<Vector> eig)
+std::vector<SharedMatrix > CISRHamiltonian::unpack(boost::shared_ptr<Vector> eig)
 {
     int nirrep = eig->nirrep();
-    std::vector<boost::shared_ptr<Matrix> > t1;
+    std::vector<SharedMatrix > t1;
     for (int symm = 0; symm < nirrep; ++symm) {
-        boost::shared_ptr<Matrix> t(new Matrix("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm)); 
+        SharedMatrix t(new Matrix("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm)); 
         long int offset = 0L;
         for (int h = 0; h < nirrep; ++h) {
             int nocc = Caocc_->colspi()[h];
@@ -341,8 +341,8 @@ std::vector<boost::shared_ptr<Matrix> > CISRHamiltonian::unpack(boost::shared_pt
     return t1;
 }
 CPHFRHamiltonian::CPHFRHamiltonian(boost::shared_ptr<JK> jk, 
-                                   boost::shared_ptr<Matrix> Caocc, 
-                                   boost::shared_ptr<Matrix> Cavir, 
+                                   SharedMatrix Caocc, 
+                                   SharedMatrix Cavir, 
                                    boost::shared_ptr<Vector> eps_aocc,
                                    boost::shared_ptr<Vector> eps_avir) : 
     RHamiltonian(jk), Caocc_(Caocc), Cavir_(Cavir), eps_aocc_(eps_aocc), eps_avir_(eps_avir)
@@ -397,8 +397,8 @@ boost::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
 void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                                      std::vector<boost::shared_ptr<Vector> >& b)
 {
-    std::vector<boost::shared_ptr<Matrix> >& C_left = jk_->C_left();
-    std::vector<boost::shared_ptr<Matrix> >& C_right = jk_->C_right();
+    std::vector<SharedMatrix >& C_left = jk_->C_left();
+    std::vector<SharedMatrix >& C_right = jk_->C_right();
 
     C_left.clear();
     C_right.clear();
@@ -412,7 +412,7 @@ void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
             std::stringstream ss;
             ss << "C_right, h = " << symm << ", N = " << N;
-            boost::shared_ptr<Matrix> Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
+            SharedMatrix Cr(new Matrix(ss.str(), Caocc_->nirrep(), Caocc_->rowspi(), Caocc_->colspi(), symm));
             
             long int offset = 0L;
             for (int h = 0; h < Caocc_->nirrep(); ++h) {
@@ -437,8 +437,8 @@ void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
     
     jk_->compute();
 
-    const std::vector<boost::shared_ptr<Matrix> >& J = jk_->J();
-    const std::vector<boost::shared_ptr<Matrix> >& K = jk_->K();
+    const std::vector<SharedMatrix >& J = jk_->J();
+    const std::vector<SharedMatrix >& K = jk_->K();
 
     double* Tp = new double[Caocc_->max_nrow() * Caocc_->max_ncol()];
 
@@ -491,12 +491,12 @@ void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     delete[] Tp;
 }
-std::vector<boost::shared_ptr<Matrix> > CPHFRHamiltonian::unpack(boost::shared_ptr<Vector> eig)
+std::vector<SharedMatrix > CPHFRHamiltonian::unpack(boost::shared_ptr<Vector> eig)
 {
     int nirrep = eig->nirrep();
-    std::vector<boost::shared_ptr<Matrix> > t1;
+    std::vector<SharedMatrix > t1;
     for (int symm = 0; symm < nirrep; ++symm) {
-        boost::shared_ptr<Matrix> t(new Matrix("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm)); 
+        SharedMatrix t(new Matrix("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm)); 
         long int offset = 0L;
         for (int h = 0; h < nirrep; ++h) {
             int nocc = Caocc_->colspi()[h];

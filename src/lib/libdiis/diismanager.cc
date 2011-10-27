@@ -329,7 +329,7 @@ DIISManager::extrapolate(int numQuantities, ...)
     timer_on("DIISManager::extrapolate");
 
     int dimension = _subspace.size() + 1;
-    boost::shared_ptr<Matrix> B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
+    SharedMatrix B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
     double **bMatrix = B->pointer();
     double *coefficients = init_array(dimension);
     double *force = init_array(dimension);

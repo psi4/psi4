@@ -81,7 +81,7 @@ double MP2::compute_energy()
   print_energies();
   return energies_["Total Energy"];
 }
-void MP2::check_integrals(boost::shared_ptr<Matrix> E)
+void MP2::check_integrals(SharedMatrix E)
 {
     fprintf(outfile, "  => Complete MO ERI Analysis <=\n\n");
     fprintf(outfile, "   -o : Active Occupied\n");   
@@ -327,14 +327,14 @@ void MP2::test_ps_omega()
 
     boost::shared_ptr<PSTensorII> ps(new PSTensorII(basisset_, C_, nocc_, nvir_, naocc_, navir_, 0L, options_));
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
-    boost::shared_ptr<Matrix> I;
+    SharedMatrix I;
     if (omega >= 0.0) {
         I = mints->mo_erf_eri(omega, C_,C_);   
     } else {
         I = mints->mo_eri(C_,C_);   
     }
-    boost::shared_ptr<Matrix> Ips = ps->Ipsmo();
-    boost::shared_ptr<Matrix> E(new Matrix("Error in PS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+    SharedMatrix Ips = ps->Ipsmo();
+    SharedMatrix E(new Matrix("Error in PS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
     E->copy(Ips);
     E->subtract(I);
@@ -358,14 +358,14 @@ void MP2::test_dps_omega()
 
     boost::shared_ptr<PSTensorII> ps(new PSTensorII(basisset_, C_, nocc_, nvir_, naocc_, navir_, 0L, options_));
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
-    boost::shared_ptr<Matrix> I;
+    SharedMatrix I;
     if (omega >= 0.0) {
         I = mints->mo_erf_eri(omega, C_,C_);   
     } else {
         I = mints->mo_eri(C_,C_);   
     }
-    boost::shared_ptr<Matrix> Ips = ps->Idpsmo();
-    boost::shared_ptr<Matrix> E(new Matrix("Error in DPS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+    SharedMatrix Ips = ps->Idpsmo();
+    SharedMatrix E(new Matrix("Error in DPS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
     E->copy(Ips);
     E->subtract(I);
@@ -383,9 +383,9 @@ void MP2::test_ps()
     fprintf(outfile, "  ==> Test PS <==\n\n");
 
     boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> I = ps->Imo();
-    boost::shared_ptr<Matrix> Ips = ps->Ipsmo();
-    boost::shared_ptr<Matrix> E(new Matrix("Error in PS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+    SharedMatrix I = ps->Imo();
+    SharedMatrix Ips = ps->Ipsmo();
+    SharedMatrix E(new Matrix("Error in PS MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
     E->copy(Ips);
     E->subtract(I);
@@ -403,9 +403,9 @@ void MP2::test_df()
     fprintf(outfile, "  ==> Test DF <==\n\n");
 
     boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> I = df->Imo();
-    boost::shared_ptr<Matrix> Idf = df->Idfmo();
-    boost::shared_ptr<Matrix> E(new Matrix("Error in DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+    SharedMatrix I = df->Imo();
+    SharedMatrix Idf = df->Idfmo();
+    SharedMatrix E(new Matrix("Error in DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
 
     E->copy(Idf);
     E->subtract(I);
@@ -423,7 +423,7 @@ void MP2::compute_MP2()
     fprintf(outfile, "  ==> Conventional MP2 <==\n\n");
     
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
-    boost::shared_ptr<Matrix> I = mints->mo_eri(C_aocc_, C_avir_);
+    SharedMatrix I = mints->mo_eri(C_aocc_, C_avir_);
 
     double** Ip = I->pointer();
 
@@ -453,11 +453,11 @@ void MP2::compute_DF_MP2()
     fprintf(outfile, "  ==> DF-MP2 <==\n\n");
 
     boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> Qia = df->Qov();
+    SharedMatrix Qia = df->Qov();
     double** Qiap = Qia->pointer();
     int nQ = ribasis_->nbf();
 
-    boost::shared_ptr<Matrix> I(new Matrix("DF (ia|jb)", naocc_ * navir_ , naocc_ * navir_));
+    SharedMatrix I(new Matrix("DF (ia|jb)", naocc_ * navir_ , naocc_ * navir_));
     double** Ip = I->pointer();
 
     C_DGEMM('T','N', naocc_ * navir_, naocc_ * navir_, nQ, 1.0, Qiap[0], naocc_ * navir_,
@@ -489,15 +489,15 @@ void MP2::compute_PS_MP2()
     fprintf(outfile, "  ==> PS-MP2 <==\n\n");
 
     boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> Pia = ps->Aov();
-    boost::shared_ptr<Matrix> Qi = ps->Qaocc();
-    boost::shared_ptr<Matrix> Ra = ps->Ravir();
+    SharedMatrix Pia = ps->Aov();
+    SharedMatrix Qi = ps->Qaocc();
+    SharedMatrix Ra = ps->Ravir();
     double** Piap = Pia->pointer();
     double** Rap = Ra->pointer();
     double** Qip = Qi->pointer();
     int nP = Pia->rowspi()[0];
 
-    boost::shared_ptr<Matrix> QRia(new Matrix("QR", nP, naocc_ * navir_));
+    SharedMatrix QRia(new Matrix("QR", nP, naocc_ * navir_));
     double** QRiap = QRia->pointer();
 
     for (int i = 0; i < naocc_; i++) {
@@ -508,7 +508,7 @@ void MP2::compute_PS_MP2()
         }
     }
 
-    boost::shared_ptr<Matrix> I(new Matrix("PS (ia|jb)", naocc_ * navir_ , naocc_ * navir_));
+    SharedMatrix I(new Matrix("PS (ia|jb)", naocc_ * navir_ , naocc_ * navir_));
     double** Ip = I->pointer();
 
     C_DGEMM('T','N', naocc_ * navir_, naocc_ * navir_, nP, 1.0, Piap[0], naocc_ * navir_,
@@ -542,19 +542,19 @@ void MP2::compute_DF_MP2J()
     boost::shared_ptr<Denominator> denom(Denominator::buildDenominator(
         options_.get_str("DENOMINATOR_ALGORITHM"), evals_aocc_, evals_avir_,
         options_.get_double("DENOMINATOR_DELTA")));
-    shared_ptr<Matrix> tau = denom->denominator();
+    SharedMatrix tau = denom->denominator();
     double** taup = tau->pointer();
     int nW = denom->nvector();    
 
     boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> Qia = df->Qov();
+    SharedMatrix Qia = df->Qov();
     double** Qiap = Qia->pointer();
     int nQ = ribasis_->nbf();
 
-    boost::shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w", nQ, naocc_*navir_));  
+    SharedMatrix Qiaw(new Matrix("(Q|ia)^w", nQ, naocc_*navir_));  
     double** Qiawp = Qiaw->pointer();
 
-    boost::shared_ptr<Matrix> Z(new Matrix("Z^QQw", nQ, nQ));  
+    SharedMatrix Z(new Matrix("Z^QQw", nQ, nQ));  
     double** Zp = Z->pointer();
 
     double E_MP2J = 0.0;
@@ -577,21 +577,21 @@ void MP2::compute_PS_MP2J()
     boost::shared_ptr<Denominator> denom(Denominator::buildDenominator(
         options_.get_str("DENOMINATOR_ALGORITHM"), evals_aocc_, evals_avir_,
         options_.get_double("DENOMINATOR_DELTA")));
-    shared_ptr<Matrix> tau = denom->denominator();
+    SharedMatrix tau = denom->denominator();
     double** taup = tau->pointer();
     int nW = denom->nvector();    
 
     boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> Pia = ps->Aov();
-    boost::shared_ptr<Matrix> Qi = ps->Qaocc();
-    boost::shared_ptr<Matrix> Ra = ps->Ravir();
+    SharedMatrix Pia = ps->Aov();
+    SharedMatrix Qi = ps->Qaocc();
+    SharedMatrix Ra = ps->Ravir();
     double** Piap = Pia->pointer();
     double** Rap = Ra->pointer();
     double** Qip = Qi->pointer();
     int nP = Pia->rowspi()[0];
 
-    boost::shared_ptr<Matrix> X(new Matrix("X", nP, naocc_ * navir_));
-    boost::shared_ptr<Matrix> Z(new Matrix("Z", nP, nP));
+    SharedMatrix X(new Matrix("X", nP, naocc_ * navir_));
+    SharedMatrix Z(new Matrix("Z", nP, nP));
     
     double** Xp = X->pointer();
     double** Zp = Z->pointer();
@@ -628,7 +628,7 @@ void MP2::compute_PS_DF_MP2K()
     boost::shared_ptr<Denominator> denom(Denominator::buildDenominator(
         options_.get_str("DENOMINATOR_ALGORITHM"), evals_aocc_, evals_avir_,
         options_.get_double("DENOMINATOR_DELTA")));
-    shared_ptr<Matrix> tau = denom->denominator();
+    SharedMatrix tau = denom->denominator();
     double** taup = tau->pointer();
     int nW = denom->nvector();    
 
@@ -637,33 +637,33 @@ void MP2::compute_PS_DF_MP2K()
     }
 
     boost::shared_ptr<DFTensor> df(new DFTensor(basisset_, ribasis_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> Qia = df->Qov();
+    SharedMatrix Qia = df->Qov();
     double** Qiap = Qia->pointer();
     int nQ = ribasis_->nbf();
 
     boost::shared_ptr<PSTensor> ps(new PSTensor(basisset_, C_, nocc_, nvir_, naocc_, navir_, options_));
-    boost::shared_ptr<Matrix> Pia = ps->Aov();
-    boost::shared_ptr<Matrix> Qi = ps->Qaocc();
-    boost::shared_ptr<Matrix> Ra = ps->Ravir();
+    SharedMatrix Pia = ps->Aov();
+    SharedMatrix Qi = ps->Qaocc();
+    SharedMatrix Ra = ps->Ravir();
     double** Piap = Pia->pointer();
     double** Rap = Ra->pointer();
     double** Qip = Qi->pointer();
     int nP = Pia->rowspi()[0];
 
-    boost::shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w", nQ, naocc_*navir_));  
+    SharedMatrix Qiaw(new Matrix("(Q|ia)^w", nQ, naocc_*navir_));  
     double** Qiawp = Qiaw->pointer();
 
-    boost::shared_ptr<Matrix> X(new Matrix("X", nP, navir_ * nQ));
-    boost::shared_ptr<Matrix> Y(new Matrix("Y", nP, naocc_ * nQ));
-    boost::shared_ptr<Matrix> Z(new Matrix("Z", nP, naocc_ * navir_));
+    SharedMatrix X(new Matrix("X", nP, navir_ * nQ));
+    SharedMatrix Y(new Matrix("Y", nP, naocc_ * nQ));
+    SharedMatrix Z(new Matrix("Z", nP, naocc_ * navir_));
     
     double** Xp = X->pointer();
     double** Yp = Y->pointer();
     double** Zp = Z->pointer();
 
-    boost::shared_ptr<Matrix> Temp(new Matrix("Transpose Temp", nQ, naocc_));
+    SharedMatrix Temp(new Matrix("Transpose Temp", nQ, naocc_));
     double** Tempp = Temp->pointer();
-    boost::shared_ptr<Matrix> Temp2(new Matrix("Transpose Temp", nP, navir_));
+    SharedMatrix Temp2(new Matrix("Transpose Temp", nP, navir_));
     double** Temp2p = Temp2->pointer();
 
     double E_MP2K = 0.0;

@@ -53,36 +53,36 @@ DCFTSolver::init()
         for(int n = 0; n < nbvirpi_[h]; ++n) ++nbvir_;
     }
 
-    aocc_c_      = boost::shared_ptr<Matrix>(new Matrix("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_));
-    bocc_c_      = boost::shared_ptr<Matrix>(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_));
-    avir_c_      = boost::shared_ptr<Matrix>(new Matrix("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_));
-    bvir_c_      = boost::shared_ptr<Matrix>(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
-    scf_error_a_ = boost::shared_ptr<Matrix>(new Matrix("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_));
-    scf_error_b_ = boost::shared_ptr<Matrix>(new Matrix("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_));
-    Fa_          = boost::shared_ptr<Matrix>(reference_wavefunction_->Fa());
-    Fb_          = boost::shared_ptr<Matrix>(reference_wavefunction_->Fb());
-    Ca_          = boost::shared_ptr<Matrix>(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
-    Cb_          = boost::shared_ptr<Matrix>(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    moFa_        = boost::shared_ptr<Matrix>(new Matrix("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_));
-    moFb_        = boost::shared_ptr<Matrix>(new Matrix("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_));
-    old_ca_      = boost::shared_ptr<Matrix>(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
-    old_cb_      = boost::shared_ptr<Matrix>(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
-    kappa_a_     = boost::shared_ptr<Matrix>(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    kappa_b_     = boost::shared_ptr<Matrix>(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
-    g_tau_a_     = boost::shared_ptr<Matrix>(new Matrix("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_));
-    g_tau_b_     = boost::shared_ptr<Matrix>(new Matrix("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_));
-    ao_s_        = boost::shared_ptr<Matrix>(new Matrix("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_));
-    so_h_        = boost::shared_ptr<Matrix>(new Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_));
-    s_half_inv_  = boost::shared_ptr<Matrix>(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
+    aocc_c_      = SharedMatrix(new Matrix("Alpha Occupied MO Coefficients", nirrep_, nsopi_, naoccpi_));
+    bocc_c_      = SharedMatrix(new Matrix("Beta Occupied MO Coefficients", nirrep_, nsopi_, nboccpi_));
+    avir_c_      = SharedMatrix(new Matrix("Alpha Virtual MO Coefficients", nirrep_, nsopi_, navirpi_));
+    bvir_c_      = SharedMatrix(new Matrix("Beta Virtual MO Coefficients", nirrep_, nsopi_, nbvirpi_));
+    scf_error_a_ = SharedMatrix(new Matrix("Alpha SCF Error Vector", nirrep_, nsopi_, nsopi_));
+    scf_error_b_ = SharedMatrix(new Matrix("Beta SCF Error Vector", nirrep_, nsopi_, nsopi_));
+    Fa_          = SharedMatrix(reference_wavefunction_->Fa());
+    Fb_          = SharedMatrix(reference_wavefunction_->Fb());
+    Ca_          = SharedMatrix(new Matrix("Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
+    Cb_          = SharedMatrix(new Matrix("Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
+    moFa_        = SharedMatrix(new Matrix("Alpha MO Fock Matrix", nirrep_, nmopi_, nmopi_));
+    moFb_        = SharedMatrix(new Matrix("Beta MO Fock Matrix", nirrep_, nmopi_, nmopi_));
+    old_ca_      = SharedMatrix(new Matrix("Old Alpha MO Coefficients", nirrep_, nsopi_, nsopi_));
+    old_cb_      = SharedMatrix(new Matrix("Old Beta MO Coefficients", nirrep_, nsopi_, nsopi_));
+    kappa_a_     = SharedMatrix(new Matrix("Alpha Kappa Matrix", nirrep_, nsopi_, nsopi_));
+    kappa_b_     = SharedMatrix(new Matrix("Beta Kappa Matrix", nirrep_, nsopi_, nsopi_));
+    g_tau_a_     = SharedMatrix(new Matrix("Alpha External Potential Matrix", nirrep_, nsopi_, nsopi_));
+    g_tau_b_     = SharedMatrix(new Matrix("Beta External Potential Matrix", nirrep_, nsopi_, nsopi_));
+    ao_s_        = SharedMatrix(new Matrix("SO Basis Overlap Integrals", nirrep_, nsopi_, nsopi_));
+    so_h_        = SharedMatrix(new Matrix("SO basis one-electron integrals", nirrep_, nsopi_, nsopi_));
+    s_half_inv_  = SharedMatrix(new Matrix("SO Basis Inverse Square Root Overlap Matrix", nirrep_, nsopi_, nsopi_));
     epsilon_a_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
     epsilon_b_   = boost::shared_ptr<Vector>(new Vector(nirrep_, nsopi_));
 
-    a_tau_    = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
-    b_tau_    = boost::shared_ptr<Matrix>(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
-    a_tautau_ = boost::shared_ptr<Matrix>(new Matrix("Alpha Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
-    b_tautau_ = boost::shared_ptr<Matrix>(new Matrix("Beta Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
-    Fa_copy = boost::shared_ptr<Matrix>(new Matrix("Alpha Fock Copy", nirrep_, nsopi_, nsopi_));
-    Fb_copy = boost::shared_ptr<Matrix>(new Matrix("Beta Fock Copy", nirrep_, nsopi_, nsopi_));
+    a_tau_    = SharedMatrix(new Matrix("Alpha Tau Matrix", nirrep_, nsopi_, nsopi_));
+    b_tau_    = SharedMatrix(new Matrix("Beta Tau Matrix", nirrep_, nsopi_, nsopi_));
+    a_tautau_ = SharedMatrix(new Matrix("Alpha Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
+    b_tautau_ = SharedMatrix(new Matrix("Beta Tau^2 Matrix", nirrep_, nsopi_, nsopi_));
+    Fa_copy = SharedMatrix(new Matrix("Alpha Fock Copy", nirrep_, nsopi_, nsopi_));
+    Fb_copy = SharedMatrix(new Matrix("Beta Fock Copy", nirrep_, nsopi_, nsopi_));
 
     // Store the AO overlap matrix
     double *sArray = new double[ntriso_];

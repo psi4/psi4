@@ -21,14 +21,14 @@ using namespace psi;
 
 namespace psi {
 
-JK::JK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-   std::vector<boost::shared_ptr<Matrix> >& C_right,
+JK::JK(std::vector<SharedMatrix >& C_left, 
+   std::vector<SharedMatrix >& C_right,
    boost::shared_ptr<BasisSet> primary) : 
    C_left_(C_left), C_right_(C_right), lr_symmetric_(false), primary_(primary)
 {
     common_init();
 }
-JK::JK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+JK::JK(std::vector<SharedMatrix >& C_symm,
    boost::shared_ptr<BasisSet> primary) :
    C_left_(C_symm), C_right_(C_symm), lr_symmetric_(true), primary_(primary)
 {
@@ -49,11 +49,11 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
         GPUDFJK* jk;
 
         if (!lr_symmetric) {
-            std::vector<boost::shared_ptr<Matrix> > C_left;
-            std::vector<boost::shared_ptr<Matrix> > C_right;
+            std::vector<SharedMatrix > C_left;
+            std::vector<SharedMatrix > C_right;
             jk = new GPUDFJK(C_left, C_right, primary, auxiliary);
         } else {
-            std::vector<boost::shared_ptr<Matrix> > C_left;
+            std::vector<SharedMatrix > C_left;
             jk = new GPUDFJK(C_left, primary, auxiliary);
         } 
              
@@ -77,11 +77,11 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
         DFJK* jk;
 
         if (!lr_symmetric) {
-            std::vector<boost::shared_ptr<Matrix> > C_left;
-            std::vector<boost::shared_ptr<Matrix> > C_right;
+            std::vector<SharedMatrix > C_left;
+            std::vector<SharedMatrix > C_right;
             jk = new DFJK(C_left, C_right, primary, auxiliary);
         } else {
-            std::vector<boost::shared_ptr<Matrix> > C_left;
+            std::vector<SharedMatrix > C_left;
             jk = new DFJK(C_left, primary, auxiliary);
         } 
              
@@ -103,11 +103,11 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
         DirectJK* jk;
 
         if (!lr_symmetric) {
-            std::vector<boost::shared_ptr<Matrix> > C_left;
-            std::vector<boost::shared_ptr<Matrix> > C_right;
+            std::vector<SharedMatrix > C_left;
+            std::vector<SharedMatrix > C_right;
             jk = new DirectJK(C_left, C_right, primary);
         } else {
-            std::vector<boost::shared_ptr<Matrix> > C_left;
+            std::vector<SharedMatrix > C_left;
             jk = new DirectJK(C_left, primary);
         } 
              
@@ -144,7 +144,7 @@ void JK::common_init()
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
-    AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
+    AO2USO_ = SharedMatrix(pet->aotoso());
 }
 unsigned long int JK::memory_overhead()
 {
@@ -193,7 +193,7 @@ void JK::compute_D()
 	for (int N = 0; N < C_left_.size(); ++N) {
             std::stringstream s;
 	    s << "D " << N << " (SO)";
-            D_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),C_left_[N]->nirrep(), C_left_[N]->rowspi(), C_right_[N]->rowspi(), C_left_[N]->symmetry() ^ C_right_[N]->symmetry())));
+            D_.push_back(SharedMatrix(new Matrix(s.str(),C_left_[N]->nirrep(), C_left_[N]->rowspi(), C_right_[N]->rowspi(), C_left_[N]->symmetry() ^ C_right_[N]->symmetry())));
 	}
     }
 
@@ -227,17 +227,17 @@ void JK::allocate_JK()
     	for (int N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
 	    s << "J " << N << " (SO)";
-            J_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
+            J_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
     	}
     	for (int N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
 	    s << "K " << N << " (SO)";
-            K_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
+            K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
     	}
     	for (int N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
 	    s << "wK " << N << " (SO)";
-            wK_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
+            wK_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
     	}
     }
     
@@ -266,17 +266,17 @@ void JK::USO2AO()
     	for (int N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
 	    s << "J " << N << " (AO)";
-            J_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
+            J_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     	for (int N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
 	    s << "K " << N << " (AO)";
-            K_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
+            K_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     	for (int N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
 	    s << "wK " << N << " (AO)";
-            wK_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
+            wK_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     }	    
 
@@ -297,21 +297,21 @@ void JK::USO2AO()
     	for (int N = 0; N < D_.size(); ++N) {
             std::stringstream s;
 	    s << "D " << N << " (AO)";
-            D_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
+            D_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], AO2USO_->rowspi()[0])));
     	}
     	for (int N = 0; N < D_.size(); ++N) {
             std::stringstream s;
 	    s << "C Left " << N << " (AO)";
 	    int ncol = 0;
 	    for (int h = 0; h < C_left_[N]->nirrep(); ++h) ncol += C_left_[N]->colspi()[h];
-            C_left_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
+            C_left_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
     	}
     	for (int N = 0; (N < D_.size()) && (!lr_symmetric_); ++N) {
             std::stringstream s;
 	    s << "C Right " << N << " (AO)";
 	    int ncol = 0;
 	    for (int h = 0; h < C_right_[N]->nirrep(); ++h) ncol += C_right_[N]->colspi()[h];
-            C_right_ao_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
+            C_right_ao_.push_back(SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol)));
     	}
     }	    
 
@@ -323,11 +323,11 @@ void JK::USO2AO()
 	if (ncol != ncol_old) {
             std::stringstream s;
 	    s << "C Left " << N << " (AO)";
-            C_left_ao_[N] = boost::shared_ptr<Matrix>(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol));
+            C_left_ao_[N] = SharedMatrix(new Matrix(s.str(),AO2USO_->rowspi()[0], ncol));
 	    if (!lr_symmetric_) {
                 std::stringstream s2;
 	        s2 << "C Right " << N << " (AO)";
-                C_right_ao_[N] = boost::shared_ptr<Matrix>(new Matrix(s2.str(),AO2USO_->rowspi()[0], ncol));
+                C_right_ao_[N] = SharedMatrix(new Matrix(s2.str(),AO2USO_->rowspi()[0], ncol));
 			
             }
 	}
@@ -405,17 +405,17 @@ void JK::AO2USO()
     	for (int N = 0; N < D_.size() && do_J_; ++N) {
             std::stringstream s;
 	    s << "J " << N << " (SO)";
-            J_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
+            J_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
     	}
     	for (int N = 0; N < D_.size() && do_K_; ++N) {
             std::stringstream s;
 	    s << "K " << N << " (SO)";
-            K_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
+            K_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
     	}
     	for (int N = 0; N < D_.size() && do_wK_; ++N) {
             std::stringstream s;
 	    s << "wK " << N << " (SO)";
-            wK_.push_back(boost::shared_ptr<Matrix>(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
+            wK_.push_back(SharedMatrix(new Matrix(s.str(),D_[N]->nirrep(), D_[N]->rowspi(), D_[N]->rowspi(), D_[N]->symmetry())));
     	}
     }
 
@@ -495,14 +495,14 @@ void JK::finalize()
     postiterations();
 }
 
-DirectJK::DirectJK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-   std::vector<boost::shared_ptr<Matrix> >& C_right,
+DirectJK::DirectJK(std::vector<SharedMatrix >& C_left, 
+   std::vector<SharedMatrix >& C_right,
    boost::shared_ptr<BasisSet> primary) : 
    JK(C_left,C_right,primary)	
 {
     common_init();
 }
-DirectJK::DirectJK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+DirectJK::DirectJK(std::vector<SharedMatrix >& C_symm,
    boost::shared_ptr<BasisSet> primary) :
    JK(C_symm,primary)
 {
@@ -673,15 +673,15 @@ void DirectJK::postiterations()
     eri_.clear();
 }
 
-DFJK::DFJK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-   std::vector<boost::shared_ptr<Matrix> >& C_right,
+DFJK::DFJK(std::vector<SharedMatrix >& C_left, 
+   std::vector<SharedMatrix >& C_right,
    boost::shared_ptr<BasisSet> primary, 
    boost::shared_ptr<BasisSet> auxiliary) :
    JK(C_left,C_right,primary), auxiliary_(auxiliary)	
 {
     common_init();
 }
-DFJK::DFJK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+DFJK::DFJK(std::vector<SharedMatrix >& C_symm,
    boost::shared_ptr<BasisSet> primary,
    boost::shared_ptr<BasisSet> auxiliary) :
    JK(C_symm,primary), auxiliary_(auxiliary)	
@@ -777,15 +777,15 @@ void DFJK::initialize_temps()
     d_temp_ = boost::shared_ptr<Vector>(new Vector("dtemp", max_rows_)); 
     
     for (int thread = 0; thread < omp_nthread_; thread++) {
-        C_temp_.push_back(boost::shared_ptr<Matrix>(new Matrix("Ctemp", max_nocc_, primary_->nbf())));
-        Q_temp_.push_back(boost::shared_ptr<Matrix>(new Matrix("Qtemp", max_rows_, primary_->nbf())));
+        C_temp_.push_back(SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf())));
+        Q_temp_.push_back(SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf())));
     } 
 
-    E_left_ = boost::shared_ptr<Matrix>(new Matrix("E_left", primary_->nbf(), max_rows_ * max_nocc_));
+    E_left_ = SharedMatrix(new Matrix("E_left", primary_->nbf(), max_rows_ * max_nocc_));
     if (lr_symmetric_) 
         E_right_ = E_left_;
     else 
-        E_right_ = boost::shared_ptr<Matrix>(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
+        E_right_ = SharedMatrix(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
 }
 void DFJK::free_temps()
 {
@@ -840,7 +840,7 @@ void DFJK::initialize_JK_core()
     #endif
     int rank = 0;
 
-    Qmn_ = boost::shared_ptr<Matrix>(new Matrix("Qmn (Fitted Integrals)",
+    Qmn_ = SharedMatrix(new Matrix("Qmn (Fitted Integrals)",
         auxiliary_->nbf(), ntri));
     double** Qmnp = Qmn_->pointer();
 
@@ -908,7 +908,7 @@ void DFJK::initialize_JK_core()
         max_cols = 1;
     if (max_cols > ntri)
         max_cols = ntri;
-    boost::shared_ptr<Matrix> temp(new Matrix("Qmn buffer", auxiliary_->nbf(), max_cols));
+    SharedMatrix temp(new Matrix("Qmn buffer", auxiliary_->nbf(), max_cols));
     double** tempp = temp->pointer();
 
     int nblocks = ntri / max_cols;
@@ -1133,9 +1133,9 @@ void DFJK::initialize_JK_disk()
     }
 
     // Primary buffer
-    Qmn_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) (Disk Chunk)", naux, max_cols));
+    Qmn_ = SharedMatrix(new Matrix("(Q|mn) (Disk Chunk)", naux, max_cols));
     // Fitting buffer
-    boost::shared_ptr<Matrix>Amn (new Matrix("(Q|mn) (Buffer)",naux,naux));
+    SharedMatrixAmn (new Matrix("(Q|mn) (Buffer)",naux,naux));
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
@@ -1248,7 +1248,7 @@ void DFJK::manage_JK_disk()
 {
     // TODO AIO 
     int ntri = sieve_->function_pairs().size();
-    Qmn_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) Block", max_rows_, ntri));
+    Qmn_ = SharedMatrix(new Matrix("(Q|mn) Block", max_rows_, ntri));
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
         psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
@@ -1363,15 +1363,15 @@ void DFJK::block_K(double** Qmnp, int naux)
     } 
 }
 
-GPUDFJK::GPUDFJK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-   std::vector<boost::shared_ptr<Matrix> >& C_right,
+GPUDFJK::GPUDFJK(std::vector<SharedMatrix >& C_left, 
+   std::vector<SharedMatrix >& C_right,
    boost::shared_ptr<BasisSet> primary, 
    boost::shared_ptr<BasisSet> auxiliary) :
    DFJK(C_left, C_right, primary, auxiliary)
 {
     common_init();
 }
-GPUDFJK::GPUDFJK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+GPUDFJK::GPUDFJK(std::vector<SharedMatrix >& C_symm,
    boost::shared_ptr<BasisSet> primary,
    boost::shared_ptr<BasisSet> auxiliary) :
    DFJK(C_symm, primary, auxiliary)

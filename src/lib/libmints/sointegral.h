@@ -71,14 +71,14 @@ public:
      *
      * \param result Where the integrals are going.
      */
-    virtual void compute(boost::shared_ptr<Matrix> result);
+    virtual void compute(SharedMatrix result);
 
     /**
      * Computes one-electron integral matrices. Should be able to handle multipole operators
      *
      * \param results Where the integrals are going.
      */
-    virtual void compute(std::vector<boost::shared_ptr<Matrix> > results);
+    virtual void compute(std::vector<SharedMatrix > results);
 
     /**
      * Computes one-electron integral derivative matrices.
@@ -86,7 +86,7 @@ public:
      * \param result Where the integral derivatives are going.
      * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
      */
-    virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+    virtual void compute_deriv1(std::vector<SharedMatrix > result,
                                 const CdSalcList& cdsalcs);
 };
 

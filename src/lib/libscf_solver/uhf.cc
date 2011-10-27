@@ -112,7 +112,7 @@ void UHF::save_information()
 
 void UHF::compute_spin_contamination()
 {
-    boost::shared_ptr<Matrix> S = boost::shared_ptr<Matrix>(factory_->create_matrix("S (Overlap)"));
+    SharedMatrix S = SharedMatrix(factory_->create_matrix("S (Overlap)"));
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_,basisset_, basisset_,basisset_));
     boost::shared_ptr<OneBodySOInt> so_overlap(fact->so_overlap());
     so_overlap->compute(S);
@@ -127,8 +127,8 @@ void UHF::compute_spin_contamination()
         if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
             continue;
 
-        boost::shared_ptr<Matrix> Ht (new Matrix("H Temp", nbf, nb));
-        boost::shared_ptr<Matrix> Ft (new Matrix("F Temp", na, nb));
+        SharedMatrix Ht (new Matrix("H Temp", nbf, nb));
+        SharedMatrix Ft (new Matrix("F Temp", na, nb));
 
         double** Sp = S->pointer(h);
         double** Cap = Ca_->pointer(h);
@@ -262,8 +262,8 @@ double UHF::compute_E()
 
 void UHF::save_fock()
 {
-    boost::shared_ptr<Matrix> FDSmSDFa = form_FDSmSDF(Fa_, Da_);
-    boost::shared_ptr<Matrix> FDSmSDFb = form_FDSmSDF(Fb_, Db_);
+    SharedMatrix FDSmSDFa = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix FDSmSDFb = form_FDSmSDF(Fb_, Db_);
 
     if (initialized_diis_manager_ == false) {
         diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_, "HF DIIS vector", DIISManager::LargestError, DIISManager::OnDisk));

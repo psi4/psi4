@@ -302,7 +302,7 @@ DFTGrid::~DFTGrid()
 }
 void DFTGrid::buildGridFromOptions()
 {
-    boost::shared_ptr<Matrix> rotation = standard_orientation(molecule_);
+    SharedMatrix rotation = standard_orientation(molecule_);
 
     std::vector<boost::shared_ptr<AtomicGrid> > atoms;
 
@@ -706,7 +706,7 @@ void PseudospectralGrid::buildGridFromFile()
 }
 void PseudospectralGrid::buildGridFromOptions()
 {
-    boost::shared_ptr<Matrix> rotation = standard_orientation(molecule_);
+    SharedMatrix rotation = standard_orientation(molecule_);
 
     std::vector<boost::shared_ptr<AtomicGrid> > atoms;
 
@@ -988,9 +988,9 @@ void MolecularGrid::remove_distant_points(double Rmax)
     }
     npoints_ = npoints2;
 }
-boost::shared_ptr<Matrix> MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol) 
+SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol) 
 {
-    boost::shared_ptr<Matrix> R(new Matrix("Standard Orientation", 3, 3));
+    SharedMatrix R(new Matrix("Standard Orientation", 3, 3));
     R->identity(); // For now
     double** Rp = R->pointer();
 
@@ -1124,7 +1124,7 @@ void MolecularGrid::getBSRadii()
         BSRadii_.push_back(1.881);     
     }
 }
-void MolecularGrid::applyStandardWeights(boost::shared_ptr<Matrix> chi_values)
+void MolecularGrid::applyStandardWeights(SharedMatrix chi_values)
 {
     double** chip = chi_values->pointer();
     int natom = molecule_->natom();
@@ -1199,7 +1199,7 @@ void MolecularGrid::applyNaiveWeights()
 
     int natom = molecule_->natom();
 
-    boost::shared_ptr<Matrix> chi(new Matrix("Chi values", natom, natom));
+    SharedMatrix chi(new Matrix("Chi values", natom, natom));
     double** chip = chi->pointer();
 
     MolecularGrid::getBSRadii();
@@ -1219,7 +1219,7 @@ void MolecularGrid::applyBeckeWeights()
 
     int natom = molecule_->natom();
 
-    boost::shared_ptr<Matrix> chi(new Matrix("Chi values", natom, natom));
+    SharedMatrix chi(new Matrix("Chi values", natom, natom));
     double** chip = chi->pointer();
 
     MolecularGrid::getBSRadii();
@@ -1239,7 +1239,7 @@ void MolecularGrid::applyTreutlerWeights()
 
     int natom = molecule_->natom();
 
-    boost::shared_ptr<Matrix> chi(new Matrix("Chi values", natom, natom));
+    SharedMatrix chi(new Matrix("Chi values", natom, natom));
     double** chip = chi->pointer();
 
     MolecularGrid::getBSRadii();
@@ -1312,7 +1312,7 @@ AtomicGrid::~AtomicGrid()
     }
 }
 void AtomicGrid::buildGrid(const Vector3& center,
-                      boost::shared_ptr<Matrix> rotation,
+                      SharedMatrix rotation,
                       boost::shared_ptr<RadialGrid> radial,
                       std::vector<boost::shared_ptr<SphericalGrid> > sphericals)  
 {
