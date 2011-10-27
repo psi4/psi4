@@ -8,6 +8,7 @@
 #include <psifiles.h>
 #include "sieve.h"
 #include "jk.h"
+#include"gpudfjkhelper.h"
 
 #include <sstream>
 
@@ -1383,6 +1384,18 @@ GPUDFJK::~GPUDFJK()
 void GPUDFJK::common_init()
 {
 }
+void GPUDFJK::preiterations()
+{
+    DFJK::preiterations();
+    helper_ = boost::shared_ptr<GPUDFJKHelper>(new GPUDFJKHelper);
+    helper_->Initialize(max_rows(),max_nocc(),primary_->nbf());
+}
+void GPUDFJK::postiterations()
+{
+    DFJK::postiterations();
+    helper_->Finalize();
+}
+
 void GPUDFJK::print_header() const
 {
     if (print_) {
@@ -1497,7 +1510,8 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
                 }
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                helper_->GPU_DGEMM_2DTile('T','N',naux,nocc,rows,1.0,QSp[0],nbf,Ctp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux,thread);
+
             }
 
         }
@@ -1525,11 +1539,13 @@ void GPUDFJK::block_K(double** Qmnp, int naux)
                     C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
                 }
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                helper_->GPU_DGEMM_2DTile('T','N',naux,nocc,rows,1.0,QSp[0],nbf,Ctp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux,thread);
+
             }
         }
 
-        C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,Kp[0],nbf);        
+        helper_->GPU_DGEMM_2DTile('T','N',nbf,nbf,naux*nocc,1.0,Erp[0],naux*nocc,Elp[0],naux*nocc,1.0,Kp[0],nbf,0);
+
     } 
 }
 
