@@ -9,15 +9,21 @@ symmetry c1
 plugin_load('./plugin_libfock.so')
 
 set {
+#debug 1
 print 2
-scf_type direct
+scf_type df
 basis sto-3g 
 ri_basis_scf aug-cc-pvdz-jkfit
-solver_n_root 5
-solver_n_guess 10
+do_triplets false
+fitting_algorithm 1
+solver_n_root 4
+solver_n_guess 4 
 solver_min_subspace 20
 solver_max_subspace 25 
 }
 
 energy('scf')
+set fitting_algorithm 0
+plugin('./plugin_libfock.so')
+set fitting_algorithm 1
 plugin('./plugin_libfock.so')

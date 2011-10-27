@@ -498,6 +498,8 @@ protected:
     boost::shared_ptr<BasisSet> auxiliary_;
     /// PSIO object
     boost::shared_ptr<PSIO> psio_; 
+    /// Algorithm number
+    int algorithm_;
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_;
     /// File number for (Q|mn) tensor
@@ -514,9 +516,13 @@ protected:
     // => Temps (built/destroyed in compute_JK) <= //
 
     SharedMatrix Qmn_;
+    SharedMatrix Qmn2_;
+    
     boost::shared_ptr<Vector> J_temp_; 
     boost::shared_ptr<Vector> D_temp_; 
     boost::shared_ptr<Vector> d_temp_; 
+    
+    boost::shared_ptr<Vector> sort_;
     SharedMatrix E_left_; 
     SharedMatrix E_right_; 
     std::vector<SharedMatrix > C_temp_; 
@@ -547,6 +553,7 @@ protected:
     virtual void initialize_JK_disk();
     virtual void manage_JK_core();
     virtual void manage_JK_disk();
+    virtual void unpack_Qmn(double** Qmnp, int naux);
     virtual void block_J(double** Qmnp, int naux);
     virtual void block_K(double** Qmnp, int naux);
 
@@ -603,6 +610,12 @@ public:
      * @param unit Unit number
      */
     void set_unit(unsigned int unit) { unit_ = unit; }
+    /**
+     * Which algorithm number to use for DF (0 for old algorithm, 1 for new algorithm)
+     * @param algorithm number
+     */
+    void set_algorithm(int algorithm) { algorithm_ = algorithm; }
+    
     
     // => Accessors <= //
 

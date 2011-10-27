@@ -67,6 +67,8 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
             jk->set_debug(options.get_int("DEBUG"));
         if (options["FITTING_CONDITION"].has_changed())
             jk->set_condition(options.get_double("FITTING_CONDITION"));
+        if (options["FITTING_ALGORITHM"].has_changed())
+            jk->set_algorithm(options.get_int("FITTING_ALGORITHM"));
 
         return boost::shared_ptr<JK>(jk);
 
@@ -95,6 +97,8 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
             jk->set_debug(options.get_int("DEBUG"));
         if (options["FITTING_CONDITION"].has_changed())
             jk->set_condition(options.get_double("FITTING_CONDITION"));
+        if (options["FITTING_ALGORITHM"].has_changed())
+            jk->set_algorithm(options.get_int("FITTING_ALGORITHM"));
 
         return boost::shared_ptr<JK>(jk);
 
@@ -199,19 +203,17 @@ void JK::compute_D()
 
     for (int N = 0; N < D_.size(); ++N) {
         int symm = D_[N]->symmetry();
-        int symml = C_left_[N]->symmetry();
-        int symmr = C_right_[N]->symmetry();
         for (int h = 0; h < D_[N]->nirrep(); ++h) {
 
             int nsol = C_left_[N]->rowspi()[h];
-            int nocc = C_left_[N]->colspi()[h^symml];
-            int nsor = C_right_[N]->rowspi()[h^symmr];
+            int nocc = C_left_[N]->colspi()[h];
+            int nsor = C_right_[N]->rowspi()[h^symm];
 
             if (!nsol || !nsor || !nocc) continue;
 
             double** Dp = D_[N]->pointer(h^symm);
             double** Clp = C_left_[N]->pointer(h);
-            double** Crp = C_right_[N]->pointer(h^symmr);
+            double** Crp = C_right_[N]->pointer(h^symm);
 
             C_DGEMM('N','T', nsol, nsor, nocc, 1.0, Clp[0], nocc, Crp[0], nocc, 0.0, Dp[0], nsor);
         }
@@ -375,11 +377,11 @@ void JK::USO2AO()
         int symm = D_[N]->symmetry();
 	for (int h = 0; h < AO2USO_->nirrep(); ++h) {
             int nao = AO2USO_->rowspi()[0];
-            int nso = AO2USO_->colspi()[h^symm];
+            int nso = AO2USO_->colspi()[h];
 	    int ncol = C_right_ao_[N]->colspi()[0];
-	    int ncolspi = C_right_[N]->colspi()[h];
+	    int ncolspi = C_right_[N]->colspi()[h^symm];
 	    if (nso == 0 || ncolspi == 0) continue;
-	    double** Up = AO2USO_->pointer(h^symm);
+	    double** Up = AO2USO_->pointer(h);
 	    double** CAOp = C_right_ao_[N]->pointer();
 	    double** CSOp = C_right_[N]->pointer(h^symm);
 	    C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
@@ -470,22 +472,16 @@ void JK::compute()
     if (debug_) {
         fprintf(outfile, "   > JK <\n\n");
         for (int N = 0; N < C_left_.size(); N++) {
+            C_left_ao_[N]->print(outfile);
             C_left_[N]->print(outfile);
-        }
-        for (int N = 0; N < C_right_.size(); N++) {
+            C_right_ao_[N]->print(outfile);
             C_right_[N]->print(outfile);
-        }
-        for (int N = 0; N < D_.size(); N++) {
+            D_ao_[N]->print(outfile);
             D_[N]->print(outfile);
-        }
-        for (int N = 0; N < J_.size(); N++) {
+            J_ao_[N]->print(outfile);
             J_[N]->print(outfile);
-        }
-        for (int N = 0; N < K_.size(); N++) {
+            K_ao_[N]->print(outfile);
             K_[N]->print(outfile);
-        }
-        for (int N = 0; N < wK_.size(); N++) {
-            wK_[N]->print(outfile);
         }
         fflush(outfile);
     }
@@ -693,6 +689,7 @@ DFJK::~DFJK()
 }
 void DFJK::common_init()
 {
+    algorithm_ = 0;
     condition_ = 1.0E-12;
     unit_ = PSIF_DFSCF_BJ;
     is_core_ = true;
@@ -735,6 +732,9 @@ unsigned long int DFJK::memory_temp()
     // K Overhead (C_temp, Q_temp)
     mem += omp_nthread_ * (unsigned long int) primary_->nbf() * (auxiliary_->nbf() + max_nocc());
 
+    // Sort temp in K
+    mem += (algorithm_ == 1 ? 1L : 0L) * primary_->nbf() * (ULI) primary_->nbf(); 
+
     return mem;  
 } 
 int DFJK::max_rows()
@@ -750,8 +750,10 @@ int DFJK::max_rows()
     unsigned long int row_cost = 0L;
     // Copies of E tensor
     row_cost += (lr_symmetric_ ? 1L : 2L) * max_nocc() * primary_->nbf();
-    // Slices of Qmn tensor, including AIO buffer
-    row_cost += (is_core_ ? 1L : 2L) * sieve_->function_pairs().size(); 
+    // Slices of Qmn tensor, including AIO buffer (NOTE: AIO not implemented yet)
+    row_cost += (is_core_ ? 1L : 1L) * sieve_->function_pairs().size(); 
+    // Slices of unpacked Qmn tensor if algorithm2
+    row_cost += (algorithm_ == 1 ? 1L : 0L) * primary_->nbf() * (ULI) primary_->nbf(); 
     
     unsigned long int max_rows = mem / row_cost;
 
@@ -785,7 +787,12 @@ void DFJK::initialize_temps()
     if (lr_symmetric_) 
         E_right_ = E_left_;
     else 
-        E_right_ = SharedMatrix(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
+        E_right_ = boost::shared_ptr<Matrix>(new Matrix("E_right", primary_->nbf(), max_rows_ * max_nocc_));
+
+    if (algorithm_ == 1) {
+        Qmn2_ = boost::shared_ptr<Matrix>(new Matrix("Qmn2", max_rows_, primary_->nbf() * (ULI) primary_->nbf()));
+        sort_ = boost::shared_ptr<Vector>(new Vector("Sort", primary_->nbf() * (ULI) primary_->nbf()));
+    }
 }
 void DFJK::free_temps()
 {
@@ -796,6 +803,8 @@ void DFJK::free_temps()
     E_right_.reset(); 
     C_temp_.clear(); 
     Q_temp_.clear(); 
+    Qmn2_.reset();
+    sort_.reset();
 }
 void DFJK::preiterations()
 {
@@ -1135,7 +1144,7 @@ void DFJK::initialize_JK_disk()
     // Primary buffer
     Qmn_ = SharedMatrix(new Matrix("(Q|mn) (Disk Chunk)", naux, max_cols));
     // Fitting buffer
-    SharedMatrixAmn (new Matrix("(Q|mn) (Buffer)",naux,naux));
+    SharedMatrix Amn (new Matrix("(Q|mn) (Buffer)",naux,naux));
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
@@ -1236,10 +1245,39 @@ void DFJK::initialize_JK_disk()
     Qmn_.reset();
     delete[] eri;
 }
+void DFJK::unpack_Qmn(double **Qmnp, int naux)
+{
+     double* temp = new double[naux];
+
+     double** Qmn2p = Qmn2_->pointer();
+     int nbf = primary_->nbf();
+     const std::vector<std::pair<int,int> >& pairs = sieve_->function_pairs();
+     ULI nbf2 = primary_->nbf() * (ULI) primary_->nbf();
+     ULI ntri = pairs.size(); 
+     ::memset((void*) Qmn2p[0], '\0', sizeof(double)*naux*nbf2);
+     for (ULI mn = 0; mn < pairs.size(); mn++) {
+
+         int m = pairs[mn].first;
+         int n = pairs[mn].second;
+
+         if (m != n) {
+             C_DCOPY(naux, &Qmnp[0][mn], ntri,  &Qmn2p[0][m*(ULI)nbf + n], nbf2);
+             C_DCOPY(naux, &Qmnp[0][mn], ntri,  &Qmn2p[0][n*(ULI)nbf + m], nbf2);
+         } else {
+             C_DCOPY(naux, &Qmnp[0][mn], ntri,  &Qmn2p[0][m*(ULI)nbf + n], nbf2);
+         }
+         
+    }
+    
+    delete[] temp;
+}
 void DFJK::manage_JK_core()
 {
     for (int Q = 0 ; Q < auxiliary_->nbf(); Q += max_rows_) {
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
+
+        if (algorithm_ == 1) unpack_Qmn(&Qmn_->pointer()[Q],naux);
+
         block_J(&Qmn_->pointer()[Q],naux);
         block_K(&Qmn_->pointer()[Q],naux);
     } 
@@ -1253,6 +1291,9 @@ void DFJK::manage_JK_disk()
         int naux = (auxiliary_->nbf() - Q <= max_rows_ ? auxiliary_->nbf() - Q : max_rows_);
         psio_address addr = psio_get_address(PSIO_ZERO, (Q*(ULI) ntri) * sizeof(double));
         psio_->read(unit_,"(Q|mn) Integrals", (char*)(Qmn_->pointer()[0]),sizeof(double)*naux*ntri,addr,&addr);
+
+        if (algorithm_ == 1) unpack_Qmn(&Qmn_->pointer()[0],naux);
+
         block_J(&Qmn_->pointer()[0],naux);
         block_K(&Qmn_->pointer()[0],naux);
     } 
@@ -1293,74 +1334,124 @@ void DFJK::block_K(double** Qmnp, int naux)
     const std::vector<long int>& function_pairs_reverse = sieve_->function_pairs_reverse();
     unsigned long int num_nm = function_pairs.size();
 
-    for (int N = 0; N < K_ao_.size(); N++) {
+    if (algorithm_ == 0) {
 
-        int nbf = C_left_ao_[N]->rowspi()[0];
-        int nocc = C_left_ao_[N]->colspi()[0];
-        
-        double** Clp  = C_left_ao_[N]->pointer();
-        double** Crp  = C_right_ao_[N]->pointer();
-        double** Elp  = E_left_->pointer();
-        double** Erp  = E_right_->pointer();
-        double** Kp   = K_ao_[N]->pointer();
+        for (int N = 0; N < K_ao_.size(); N++) {
 
-        if (N == 0 || C_left_ao_[N].get() != C_left_ao_[N-1].get()) {
+            int nbf = C_left_ao_[N]->rowspi()[0];
+            int nocc = C_left_ao_[N]->colspi()[0];
             
-            #pragma omp parallel for schedule (dynamic)
-            for (int m = 0; m < nbf; m++) {
+            double** Clp  = C_left_ao_[N]->pointer();
+            double** Crp  = C_right_ao_[N]->pointer();
+            double** Elp  = E_left_->pointer();
+            double** Erp  = E_right_->pointer();
+            double** Kp   = K_ao_[N]->pointer();
 
-                int thread = 0;
-                #ifdef _OPENMP
-                    thread = omp_get_thread_num();
-                #endif
-
-                double** Ctp = C_temp_[thread]->pointer();
-                double** QSp = Q_temp_[thread]->pointer();
-
-                const std::vector<int>& pairs = sieve_->function_to_function()[m];
-                int rows = pairs.size();
-
-                for (int i = 0; i < rows; i++) {
-                    int n = pairs[i];
-                    long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
-                    C_DCOPY(naux,&Qmnp[0][ij],num_nm,&QSp[0][i],nbf);
-                    C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
-                }
+            if (N == 0 || C_left_[N].get() != C_left_[N-1].get()) {
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                #pragma omp parallel for schedule (dynamic)
+                for (int m = 0; m < nbf; m++) {
+
+                    int thread = 0;
+                    #ifdef _OPENMP
+                        thread = omp_get_thread_num();
+                    #endif
+
+                    double** Ctp = C_temp_[thread]->pointer();
+                    double** QSp = Q_temp_[thread]->pointer();
+
+                    const std::vector<int>& pairs = sieve_->function_to_function()[m];
+                    int rows = pairs.size();
+
+                    for (int i = 0; i < rows; i++) {
+                        int n = pairs[i];
+                        long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                        C_DCOPY(naux,&Qmnp[0][ij],num_nm,&QSp[0][i],nbf);
+                        C_DCOPY(nocc,Clp[n],1,&Ctp[0][i],nbf);
+                    }
+                    
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Elp[0][m*(ULI)nocc*naux],naux);
+                }
+
             }
 
-        }
-
-        if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
-            
-            #pragma omp parallel for schedule (dynamic)
-            for (int m = 0; m < nbf; m++) {
-
-                int thread = 0;
-                #ifdef _OPENMP
-                    thread = omp_get_thread_num();
-                #endif
-
-                double** Ctp = C_temp_[thread]->pointer();
-                double** QSp = Q_temp_[thread]->pointer();
-
-                const std::vector<int>& pairs = sieve_->function_to_function()[m];
-                int rows = pairs.size();
-
-                for (int i = 0; i < rows; i++) {
-                    int n = pairs[i];
-                    long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
-                    C_DCOPY(naux,&Qmnp[0][ij],num_nm,&QSp[0][i],nbf);
-                    C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
-                }
+            if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
                 
-                C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
-            }
-        }
+                #pragma omp parallel for schedule (dynamic)
+                for (int m = 0; m < nbf; m++) {
 
-        C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,Kp[0],nbf);        
-    } 
+                    int thread = 0;
+                    #ifdef _OPENMP
+                        thread = omp_get_thread_num();
+                    #endif
+
+                    double** Ctp = C_temp_[thread]->pointer();
+                    double** QSp = Q_temp_[thread]->pointer();
+
+                    const std::vector<int>& pairs = sieve_->function_to_function()[m];
+                    int rows = pairs.size();
+
+                    for (int i = 0; i < rows; i++) {
+                        int n = pairs[i];
+                        long int ij = function_pairs_reverse[(m >= n ? (m * (m + 1L) >> 1) + n : (n * (n + 1L) >> 1) + m)];
+                        C_DCOPY(naux,&Qmnp[0][ij],num_nm,&QSp[0][i],nbf);
+                        C_DCOPY(nocc,Crp[n],1,&Ctp[0][i],nbf);
+                    }
+                    
+                    C_DGEMM('N','T',nocc,naux,rows,1.0,Ctp[0],nbf,QSp[0],nbf,0.0,&Erp[0][m*(ULI)nocc*naux],naux);
+                }
+            }
+
+            C_DGEMM('N','T',nbf,nbf,naux*nocc,1.0,Elp[0],naux*nocc,Erp[0],naux*nocc,1.0,Kp[0],nbf);        
+        } 
+
+    } else {
+
+        for (int N = 0; N < K_ao_.size(); N++) {
+
+            int nbf = C_left_ao_[N]->rowspi()[0];
+            int nbf2 = nbf * (ULI) nbf; 
+            int nocc = C_left_ao_[N]->colspi()[0];
+            
+            double*  sortp  = sort_->pointer();
+            double** Qmn2p  = Qmn2_->pointer();
+            double** Clp  = C_left_ao_[N]->pointer();
+            double** Crp  = C_right_ao_[N]->pointer();
+            double** Elp  = E_left_->pointer();
+            double** Erp  = E_right_->pointer();
+            double** Kp   = K_ao_[N]->pointer();
+
+            if (N == 0 || C_left_[N].get() != C_left_[N-1].get()) {
+
+                C_DGEMM('N','N', naux*(ULI) nbf, nocc, nbf, 1.0, Qmn2p[0], nbf, Clp[0], nocc, 0.0, Elp[0], nocc);
+
+                for (int Q = 0; Q < naux; Q++) {    
+                    ::memcpy((void*) sortp, (void*) &Elp[0][Q*(ULI)nocc*nbf], sizeof(double) * nocc * nbf);                   
+                    for (int m = 0; m < nbf; m++) {
+                        C_DCOPY(nocc,&sortp[m*nocc],1,&Elp[0][Q*(ULI)nocc*nbf + m], nbf);
+                    }                    
+                } 
+
+            }
+
+            if (!lr_symmetric_ && (N == 0 || C_right_[N].get() != C_right_[N-1].get())) {
+
+                C_DGEMM('N','N', naux*(ULI) nbf, nocc, nbf, 1.0, Qmn2p[0], nbf, Crp[0], nocc, 0.0, Erp[0], nocc);
+
+                for (int Q = 0; Q < naux; Q++) {    
+                    ::memcpy((void*) sortp, (void*) &Erp[0][Q*(ULI)nocc*nbf], sizeof(double) * nocc * nbf);                   
+                    for (int m = 0; m < nbf; m++) {
+                        C_DCOPY(nocc,&sortp[m*nocc],1,&Erp[0][Q*(ULI)nocc*nbf + m], nbf);
+                    }                    
+                } 
+    
+            }
+
+            C_DGEMM('T','N',nbf,nbf,naux*nocc,1.0,Elp[0],nbf,Erp[0],nbf,1.0,Kp[0],nbf);        
+
+        }
+    
+    }
 }
 
 GPUDFJK::GPUDFJK(std::vector<SharedMatrix >& C_left, 
