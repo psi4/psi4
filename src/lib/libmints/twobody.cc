@@ -27,17 +27,10 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
     tformbuf_ = 0;
     source_ = 0;
     natom_ = original_bs1_->molecule()->natom();  // This assumes the 4 bases come from the same molecule.
-    buffer_offsets_ = new int[4];
 }
 
 TwoBodyAOInt::~TwoBodyAOInt()
 {
-    delete [] buffer_offsets_;
-}
-
-double TwoBodyAOInt::get_derivative_integral(int center, int xyz, size_t index){
-    throw PSIEXCEPTION("get derivative integral is not implemented for this type of integral\n");
-    return 0.0;
 }
 
 boost::shared_ptr<BasisSet> TwoBodyAOInt::basis()

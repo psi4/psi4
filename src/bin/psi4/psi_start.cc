@@ -249,6 +249,7 @@ void print_usage(void)
     printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
+    printf("     --new-plugin name    Creates a new directory with files for writing a new plugin.\n");
     printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
     printf(" -v  --verbose            Print a lot of information.\n");
     printf(" -d  --debug              Flush the outfile at every fprintf. Default: true iff --with-debug.\n");
