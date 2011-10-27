@@ -141,7 +141,7 @@ void HF::common_init()
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
             nalphapi_[h] = doccpi_[h] + soccpi_[h];
-            nbetapi_[h]  = doccpi_[h]; 
+            nbetapi_[h]  = doccpi_[h];
         }
     }
 
@@ -357,7 +357,7 @@ void HF::find_occupation()
         for (int i=0; i<nbeta_; ++i)
             nbetapi_[pairs_b[i].second]++;
     }
-    
+
     int old_socc[8];
     int old_docc[8];
     for(int h = 0; h < nirrep_; ++h){
@@ -906,7 +906,7 @@ void HF::save_orbitals()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
     if (print_ && (Communicator::world->me() == 0))
-        fprintf(outfile,"\n  Saving occupied orbitals to File %ld.\n", PSIF_SCF_DB_MOS);
+        fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_DB_MOS);
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));

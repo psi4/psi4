@@ -124,7 +124,7 @@ int MatrixFactory::ncol(int h) const {
 }
 
 /// Returns the number of orbitals
-int MatrixFactory::nso() const {
+int MatrixFactory::norb() const {
     return nso_;
 }
 
