@@ -118,9 +118,6 @@ public:
     /// Compute ERI derivatives between 4 shells. Result is stored in buffer.
     virtual void compute_shell_deriv1(int, int, int, int);
 
-    /// Get a derivative integral from the buffer
-    virtual double get_derivative_integral(int center, int xyz, size_t index);
-
     //! Determine if a shell is zero based on schwarz sieve
     //Case No Sieve: false
     //Case Sieve, non-negligible integrals: false
