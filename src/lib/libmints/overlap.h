@@ -1,10 +1,8 @@
 #ifndef _psi_src_lib_libmints_overlap_h_
 #define _psi_src_lib_libmints_overlap_h_
 
-#include <boost/shared_ptr.hpp>
 #include <vector>
-
-#include <libmints/onebody.h>
+#include <libmints/onebody.h> // needed because we derive from OneBodyAOInt
 
 namespace psi {
 

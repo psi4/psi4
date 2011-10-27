@@ -22,6 +22,7 @@ using namespace std;
 
 namespace psi {
 
+void create_new_plugin(const std::string& plugin_name);
 void print_version(FILE *);
 void print_usage();
 
@@ -70,6 +71,7 @@ int psi_start(int argc, char *argv[])
         { "prefix",  1, NULL, 'p' },
         { "input",   1, NULL, 'i' },
         { "messy",   0, NULL, 'm' },
+        { "new-plugin", 1, NULL, 1 },
         { NULL,      0, NULL,  0  }
     };
 
@@ -78,6 +80,11 @@ int psi_start(int argc, char *argv[])
         next_option = getopt_long(argc, argv, short_options, long_options, NULL);
 
         switch (next_option) {
+        case 1: // --new-plugin
+            create_new_plugin(optarg);
+            exit(EXIT_SUCCESS);
+            break;
+
         case 'a': // -a or --append
             append = true;
             break;
