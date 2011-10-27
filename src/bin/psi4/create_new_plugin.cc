@@ -59,25 +59,29 @@ std::string make_filename(const std::string& name)
     return filename;
 }
 
-void create_new_plugin(const std::string& name)
+void create_new_plugin(const std::string& name, const std::string& templ)
 {
+    // Start == check to make sure the plugin name is valid
     string plugin_name = make_filename(name);
-
     smatch results;
     regex check_name("^[A-Za-z].*");
-
     if (!regex_match(plugin_name, results, check_name)) {
         printf("Plugin name must begin with a letter.\n");
         exit(1);
     }
+    // End == check to make sure the plugin name is valid
 
     FILE* fp = 0;
+
+    string template_name = templ;
+    if (template_name.empty())
+        template_name = "plugin";
 
     std::string psiDataDirName = Process::environment("PSIDATADIR");
     std::string psiDataDirWithPlugin = psiDataDirName + "/plugin";
     std::string fileMakefile = psiDataDirWithPlugin + "/Makefile.template";
     std::string fileInput    = psiDataDirWithPlugin + "/input.dat.template";
-    std::string fileSource   = psiDataDirWithPlugin + "/plugin.cc.template";
+    std::string fileSource   = psiDataDirWithPlugin + "/" + template_name + ".cc.template";
 
     boost::filesystem::path bf_path;
     bf_path = boost::filesystem::system_complete(psiDataDirWithPlugin);
@@ -89,9 +93,10 @@ void create_new_plugin(const std::string& name)
 
     // Load in Makefile.template
     fp = fopen(fileMakefile.c_str(), "r");
-    if (fp == NULL)
-        throw PSIEXCEPTION("create_new_plugin: Unable to open Makefile template.");
-
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open Makefile template.\n");
+        exit(1);
+    }
     // Stupid way to read in entire file.
     char line[256];
     std::stringstream file;
@@ -103,8 +108,10 @@ void create_new_plugin(const std::string& name)
 
     // Load in input.dat.template
     fp = fopen(fileInput.c_str(), "r");
-    if (fp == NULL)
-        throw PSIEXCEPTION("create_new_plugin: Unable to open input.dat template.");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open input.dat template.\n");
+        exit(1);
+    }
 
     // Stupid way to read in entire file.
     std::stringstream file2;
@@ -116,8 +123,10 @@ void create_new_plugin(const std::string& name)
 
     // Load in plugin.cc.template
     fp = fopen(fileSource.c_str(), "r");
-    if (fp == NULL)
-        throw PSIEXCEPTION("create_new_plugin: Unable to open plugin.cc template.");
+    if (fp == NULL) {
+        printf("create_new_plugin: Unable to open %s.cc template.\n", template_name.c_str());
+        exit(1);
+    }
 
     // Stupid way to read in entire file.
     std::stringstream file3;
@@ -163,6 +172,7 @@ void create_new_plugin(const std::string& name)
 
     fp = fopen((plugin_name + "/Makefile").c_str(), "w");
     if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
         printf("Unable to create new Makefile.\n");
         exit(1);
     }
@@ -171,6 +181,7 @@ void create_new_plugin(const std::string& name)
 
     fp = fopen((plugin_name + "/input.dat").c_str(), "w");
     if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
         printf("Unable to create new input.dat.\n");
         exit(1);
     }
@@ -179,13 +190,14 @@ void create_new_plugin(const std::string& name)
 
     fp = fopen((plugin_name + "/" + plugin_name + ".cc").c_str(), "w");
     if (fp == 0) {
+        boost::filesystem::remove_all(plugin_name);
         printf("Unable to create new %s.cc\n", plugin_name.c_str());
         exit(1);
     }
     fputs(source.c_str(), fp);
     fclose(fp);
 
-    printf("Created new plugin directory: %s\n", plugin_name.c_str());
+    printf("Created new plugin directory, %s, using '%s' template.\n", plugin_name.c_str(),  template_name.c_str());
     printf("\tcreated: Makefile\n\tcreated: input.dat\n\tcreated: %s.cc\n", plugin_name.c_str());
 }
 
