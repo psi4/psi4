@@ -115,8 +115,8 @@ public:
     }
 
     DFMP2RestrictedFunctor(SharedVector results,
-                           boost::shared_ptr<Matrix> P_2,
-                           boost::shared_ptr<Matrix> D)
+                           SharedMatrix P_2,
+                           SharedMatrix D)
         : P_2_(P_2), D_(D)
     {
         counter=0;
@@ -205,7 +205,7 @@ public:
 //        return *this;
 //    }
 
-    ScfRestrictedFunctor(SharedVector results, boost::shared_ptr<Matrix> D)
+    ScfRestrictedFunctor(SharedVector results, SharedMatrix D)
         : D_(D)
     {
         counter=0;
@@ -362,9 +362,9 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
 }
 
 Deriv::Deriv(const boost::shared_ptr<BasisSet>& basis,
-             const boost::shared_ptr<Matrix>& P_2,
-             const boost::shared_ptr<Matrix>& W_2,
-             const boost::shared_ptr<Matrix>& SCF_D,
+             const SharedMatrix& P_2,
+             const SharedMatrix& W_2,
+             const SharedMatrix& SCF_D,
              const boost::shared_ptr<MatrixFactory>& factory,
              char needed_irreps,
              bool project_out_translations,

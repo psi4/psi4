@@ -51,9 +51,9 @@ void HF::MOM_start()
     MOM_performed_ = true; // Gets printed next iteration   
     //
     // Build Ca_old_ matrices
-    Ca_old_ = boost::shared_ptr<Matrix>(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
+    Ca_old_ = SharedMatrix(new Matrix("C Alpha Old (SO Basis)", nirrep_, nsopi_, nmopi_));
     if (!restricted()) {
-        Cb_old_ = boost::shared_ptr<Matrix>(new Matrix("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_));
+        Cb_old_ = SharedMatrix(new Matrix("C Beta Old (SO Basis)", nirrep_, nsopi_, nmopi_));
     } else {
         Cb_old_ = Ca_old_;
     }

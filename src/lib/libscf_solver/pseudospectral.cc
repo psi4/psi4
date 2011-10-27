@@ -34,8 +34,8 @@ using namespace boost;
 
 namespace psi { namespace scf {
 
-PseudospectralHF::PseudospectralHF(boost::shared_ptr<BasisSet> basis, boost::shared_ptr<Matrix> Da,
-boost::shared_ptr<Matrix> Ja, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<PSIO> psio, Options& opt) :
+PseudospectralHF::PseudospectralHF(boost::shared_ptr<BasisSet> basis, SharedMatrix Da,
+SharedMatrix Ja, SharedMatrix Ka, boost::shared_ptr<PSIO> psio, Options& opt) :
     primary_(basis), Da_(Da), Ja_(Ja), Ka_(Ka), psio_(psio), options_(opt), restricted_(true)
 {
     common_init();
@@ -106,10 +106,10 @@ void PseudospectralHF::common_init()
     points->setToComputePoints(true);
     double** bpoints = points->getPoints();
 
-    points_ = boost::shared_ptr<Matrix>(new Matrix("Pseudospectral Points", P_, 3));
+    points_ = SharedMatrix(new Matrix("Pseudospectral Points", P_, 3));
     double** rp = points_->pointer(0);
 
-    X_ = boost::shared_ptr<Matrix>(new Matrix("Pseudospectral X", P_, primary_->nbf()));
+    X_ = SharedMatrix(new Matrix("Pseudospectral X", P_, primary_->nbf()));
     double** Xp = X_->pointer(0);
 
     unsigned long int counter = 0L;
@@ -315,7 +315,7 @@ void PseudospectralHF::form_K_PS_RHF()
 {
     // Cheesy N^3 approach for now
     // We can exploit sparsity like crazy
-    boost::shared_ptr<Matrix> Q(new Matrix("Q", P_, primary_->nbf()));
+    SharedMatrix Q(new Matrix("Q", P_, primary_->nbf()));
 
     C_DGEMM('N', 'N', P_, primary_->nbf(), primary_->nbf(), 1.0, X_->pointer()[0], primary_->nbf(),
         Da_->pointer()[0], primary_->nbf(), 0.0, Q->pointer()[0], primary_->nbf());
@@ -325,8 +325,8 @@ void PseudospectralHF::form_K_PS_RHF()
         nthread = omp_get_max_threads();
     #endif
 
-    boost::shared_ptr<Matrix> Z(new Matrix("Z", P_, primary_->nbf()));
-    std::vector<boost::shared_ptr<Matrix> > A;
+    SharedMatrix Z(new Matrix("Z", P_, primary_->nbf()));
+    std::vector<SharedMatrix > A;
     A.resize(nthread);
 
     #pragma omp parallel
@@ -335,7 +335,7 @@ void PseudospectralHF::form_K_PS_RHF()
         #ifdef _OMP
             thread = omp_thread_num();
         #endif
-        A[thread] = boost::shared_ptr<Matrix>(new Matrix("A", primary_->nbf(), primary_->nbf()));
+        A[thread] = SharedMatrix(new Matrix("A", primary_->nbf(), primary_->nbf()));
     }
 
     #ifdef HAVE_MKL

@@ -179,10 +179,10 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wave,
     if(init) initialize();
 }
 
-IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
-                                     boost::shared_ptr<Matrix> i,
-                                     boost::shared_ptr<Matrix> a,
-                                     boost::shared_ptr<Matrix> v,
+IntegralTransform::IntegralTransform(SharedMatrix c,
+                                     SharedMatrix i,
+                                     SharedMatrix a,
+                                     SharedMatrix v,
                                      SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
@@ -255,7 +255,7 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
     _frzvpi  = v->colspi();
 
     // Need to smash together the C's only for them to be ripped apart elsewhere.
-    std::vector<boost::shared_ptr<Matrix> > Cs;
+    std::vector<SharedMatrix > Cs;
     Cs.push_back(c); Cs.push_back(i); Cs.push_back(a); Cs.push_back(v);
     _mCa = Matrix::horzcat(Cs);
 

@@ -74,7 +74,7 @@ View::View(int nirrep, int *rows, int *cols, int *row_offsets, int *col_offsets)
     }
 }
 
-View::View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols)
+View::View(SharedMatrix matrix, int *rows, int *cols)
     : matrix_(matrix), nirrep_(0),
       row_offset_per_irrep_(0), col_offset_per_irrep_(0),
       rows_per_irrep_(0), cols_per_irrep_(0)
@@ -100,7 +100,7 @@ View::View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols)
     }
 }
 
-View::View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols, int *row_offsets, int *col_offsets)
+View::View(SharedMatrix matrix, int *rows, int *cols, int *row_offsets, int *col_offsets)
     : matrix_(matrix), nirrep_(0),
       row_offset_per_irrep_(0), col_offset_per_irrep_(0),
       rows_per_irrep_(0), cols_per_irrep_(0)
@@ -130,10 +130,10 @@ View::View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols, int *row_offs
     }
 }
 
-boost::shared_ptr<Matrix> View::operator ()()
+SharedMatrix View::operator ()()
 {
     // Create a new matrix with needed size
-    boost::shared_ptr<Matrix> matrix = boost::shared_ptr<Matrix>(new Matrix(nirrep_, rows_per_irrep_, cols_per_irrep_));
+    SharedMatrix matrix = SharedMatrix(new Matrix(nirrep_, rows_per_irrep_, cols_per_irrep_));
 
     // Copy over the data
     for (int h=0; h<nirrep_; ++h) {
@@ -150,9 +150,9 @@ boost::shared_ptr<Matrix> View::operator ()()
     return matrix;
 }
 
-boost::shared_ptr<Matrix> View::view(boost::shared_ptr<Matrix> matrix)
+SharedMatrix View::view(SharedMatrix matrix)
 {
-    boost::shared_ptr<Matrix> old = matrix_;
+    SharedMatrix old = matrix_;
     matrix_ = matrix;
     return old;
 }

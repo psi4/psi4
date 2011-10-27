@@ -179,8 +179,8 @@ void SAPT0::disp20()
     SAPTLaplaceDenominator(evals_aoccA,evals_virA,evals_aoccB,evals_virB,
     options_.get_double("DENOMINATOR_DELTA"),debug_));
 
-  boost::shared_ptr<Matrix> tauAR = denom_->denominatorA();
-  boost::shared_ptr<Matrix> tauBS = denom_->denominatorB();
+  SharedMatrix tauAR = denom_->denominatorA();
+  SharedMatrix tauBS = denom_->denominatorB();
 
   dAR_ = tauAR->pointer();
   dBS_ = tauBS->pointer();

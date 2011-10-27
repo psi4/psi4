@@ -222,7 +222,7 @@ void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
         pure_transform(s1, s2, nchunk_);
 }
 
-void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
+void OneBodyAOInt::compute(SharedMatrix& result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -290,7 +290,7 @@ void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
     }
 }
 
-void OneBodyAOInt::compute(std::vector<boost::shared_ptr<Matrix> > &result)
+void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -377,7 +377,7 @@ void OneBodyAOInt::compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result
     }
 }
 
-void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result)
+void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
 {
     if (deriv_ < 1)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);

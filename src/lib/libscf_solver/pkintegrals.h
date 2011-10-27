@@ -2,6 +2,7 @@
 #define PKINTEGRALS_H
 
 #include <cstddef>
+#include <libmints/typedefs.h>
 #include <boost/shared_ptr.hpp>
 
 namespace psi{
@@ -22,10 +23,10 @@ public:
     PKIntegrals(size_t memory, boost::shared_ptr<PSIO> psio, Options& opt,
                 int nirreps, const int* sopi, const int *so2index, const int *so2symblk);
     ~PKIntegrals();
-    void setup(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db);
-    void setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db);
-    void setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<Matrix> Kb,
-               const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db);
+    void setup(SharedMatrix J, const SharedMatrix Da, const SharedMatrix Db);
+    void setup(SharedMatrix J, SharedMatrix K, const SharedMatrix Da, const SharedMatrix Db);
+    void setup(SharedMatrix J, SharedMatrix Ka, SharedMatrix Kb,
+               const SharedMatrix Da, const SharedMatrix Db);
     void compute_J();
     void compute_J_and_K();
     void finalize();
@@ -57,15 +58,15 @@ private:
     /// The block of Coulomb-like integrals
     double *p_j_;
     /// The alpha density
-    boost::shared_ptr<Matrix> Da_;
+    SharedMatrix Da_;
     /// The beta density
-    boost::shared_ptr<Matrix> Db_;
+    SharedMatrix Db_;
     /// The J matrix
-    boost::shared_ptr<Matrix> J_;
+    SharedMatrix J_;
     /// The alpha K matrix
-    boost::shared_ptr<Matrix> Ka_;
+    SharedMatrix Ka_;
     /// The beta K matrix
-    boost::shared_ptr<Matrix> Kb_;
+    SharedMatrix Kb_;
     /// The number of irreps
     int nirreps_;
     /// The number of SOs per irrep

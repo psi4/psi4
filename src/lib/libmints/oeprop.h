@@ -6,6 +6,8 @@
 #include <map>
 #include <string>
 
+#include "typedefs.h"
+
 namespace boost {
 template<class T> class shared_ptr;
 // Forward declarations for boost.python used in the extract_subsets
@@ -61,30 +63,30 @@ protected:
     **/
 
     /// The AO to USO matrix
-    boost::shared_ptr<Matrix> AO2USO_;
+    SharedMatrix AO2USO_;
 
     /// The alpha density matrix in the SO basis
-    boost::shared_ptr<Matrix> Da_so_;
+    SharedMatrix Da_so_;
     /// The beta density matrix in the SO basis
-    boost::shared_ptr<Matrix> Db_so_;
+    SharedMatrix Db_so_;
     /// The alpha C matrix in the SO basis
-    boost::shared_ptr<Matrix> Ca_so_;
+    SharedMatrix Ca_so_;
     /// The beta C matrix in the SO basis
-    boost::shared_ptr<Matrix> Cb_so_;
+    SharedMatrix Cb_so_;
 
     /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Da_ao();
+    SharedMatrix Da_ao();
     /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Db_ao();
+    SharedMatrix Db_ao();
     /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Ca_ao();
+    SharedMatrix Ca_ao();
     /// The beta C matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Cb_ao();
+    SharedMatrix Cb_ao();
 
     /// The alpha density matrix in the MO basis
-    boost::shared_ptr<Matrix> Da_mo();
+    SharedMatrix Da_mo();
     /// The beta density matrix in the MO basis
-    boost::shared_ptr<Matrix> Db_mo();
+    SharedMatrix Db_mo();
 
     /// Common initialization
     void common_init();
@@ -101,16 +103,16 @@ public:
     * Calling set on a beta matrix routine will throw if
     * this wavefunction is restricted
     **/
-    void set_Da_so(boost::shared_ptr<Matrix> Da);
-    void set_Db_so(boost::shared_ptr<Matrix> Db);
-    void set_Ca_so(boost::shared_ptr<Matrix> Ca);
-    void set_Cb_so(boost::shared_ptr<Matrix> Cb);
-    void set_Da_ao(boost::shared_ptr<Matrix> Da);
-    void set_Db_ao(boost::shared_ptr<Matrix> Db);
-    void set_Ca_ao(boost::shared_ptr<Matrix> Ca);
-    void set_Cb_ao(boost::shared_ptr<Matrix> Cb);
-    void set_Da_mo(boost::shared_ptr<Matrix> Da);
-    void set_Db_mo(boost::shared_ptr<Matrix> Db);
+    void set_Da_so(SharedMatrix Da);
+    void set_Db_so(SharedMatrix Db);
+    void set_Ca_so(SharedMatrix Ca);
+    void set_Cb_so(SharedMatrix Cb);
+    void set_Da_ao(SharedMatrix Da);
+    void set_Db_ao(SharedMatrix Db);
+    void set_Ca_ao(SharedMatrix Ca);
+    void set_Cb_ao(SharedMatrix Cb);
+    void set_Da_mo(SharedMatrix Da);
+    void set_Db_mo(SharedMatrix Db);
 
     /// Add a single task to the queue
     void add(const std::string& task);
@@ -210,10 +212,10 @@ protected:
     double** temp_tens_;
 
     /// AO basis matrices (everything on grids is AO)
-    boost::shared_ptr<Matrix> Da_ao_;
-    boost::shared_ptr<Matrix> Db_ao_;
-    boost::shared_ptr<Matrix> Ca_ao_;
-    boost::shared_ptr<Matrix> Cb_ao_;
+    SharedMatrix Da_ao_;
+    SharedMatrix Db_ao_;
+    SharedMatrix Ca_ao_;
+    SharedMatrix Cb_ao_;
     /// irrep offsets (for orbitals)
     int irrep_offsets_[8];
 
@@ -230,7 +232,7 @@ protected:
     /// Print header
     void print_header();
 
-    // Deprecated 
+    // Deprecated
    // // Compute routines (these all work on a block of points)
    // /// Compute mo values
    // void compute_mos(boost::shared_ptr<GridBlock> g, unsigned long int offset);
