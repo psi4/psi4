@@ -22,7 +22,7 @@ using namespace std;
 
 namespace psi {
 
-void create_new_plugin(const std::string& plugin_name);
+void create_new_plugin(const std::string& plugin_name, const std::string& template_name);
 void print_version(FILE *);
 void print_usage();
 
@@ -46,6 +46,8 @@ int psi_start(int argc, char *argv[])
     std::string ifname;
     std::string ofname;
     std::string fprefix;
+    std::string templatename;
+    std::string pluginname;
     #ifdef PSIDEBUG
         bool debug          = true;
     #else
@@ -71,7 +73,7 @@ int psi_start(int argc, char *argv[])
         { "prefix",  1, NULL, 'p' },
         { "input",   1, NULL, 'i' },
         { "messy",   0, NULL, 'm' },
-        { "new-plugin", 1, NULL, 1 },
+        { "new-plugin", 1, NULL, 1 },  // requires 1 argument
         { NULL,      0, NULL,  0  }
     };
 
@@ -81,7 +83,17 @@ int psi_start(int argc, char *argv[])
 
         switch (next_option) {
         case 1: // --new-plugin
-            create_new_plugin(optarg);
+            // Let's check the next arugument to see if the user specified a +templatename
+            pluginname = optarg;
+            if (optind < argc) {
+                // check to see if the next arguments starts with + and that the user gave more
+                if (argv[optind][0] == '+' && strlen(argv[optind]) > 1) {
+                    // yes, take it, skipping the +
+                    templatename = &(argv[optind][1]);
+                    optind++;
+                }
+            }
+            create_new_plugin(pluginname, templatename);
             exit(EXIT_SUCCESS);
             break;
 
