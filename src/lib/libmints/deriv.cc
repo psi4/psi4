@@ -35,14 +35,14 @@ public:
     CorrelatedRestrictedFunctor() {
         throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
-
-    CorrelatedRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave, IntegralTransform& ints_transform)
+//TODO make this take an already-opened DPD buffer instead`
+    CorrelatedRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave, boost::shared_ptr<IntegralTransform> ints_transform)
         : wavefunction_(wave)
     {
         _default_psio_lib_->open(PSIF_TPDM_HALFTRANS, PSIO_OPEN_OLD);
         dpd_buf4_init(&G_, PSIF_TPDM_HALFTRANS, 0,
-                      ints_transform.DPD_ID("[n,n]"), ints_transform.DPD_ID("[n,n]"),
-                      ints_transform.DPD_ID("[n>=n]+"), ints_transform.DPD_ID("[n>=n]+"),
+                      ints_transform->DPD_ID("[n,n]"), ints_transform->DPD_ID("[n,n]"),
+                      ints_transform->DPD_ID("[n>=n]+"), ints_transform->DPD_ID("[n>=n]+"),
                       0, "SO Basis TPDM (nn|nn)");
 
         for (int h=0; h<wavefunction_->nirrep(); ++h) {
@@ -101,88 +101,6 @@ public:
     }
 };
 
-class DFMP2RestrictedFunctor
-{
-    SharedMatrix P_2_;
-    SharedMatrix D_;
-
-public:
-    int nthread;
-    std::vector<SharedVector> result;
-
-    DFMP2RestrictedFunctor() {
-        throw PSIEXCEPTION("DFMP2RestrictedFunctor(): Default constructor called. This shouldn't happen.");
-    }
-
-    DFMP2RestrictedFunctor(SharedVector results,
-                           SharedMatrix P_2,
-                           SharedMatrix D)
-        : P_2_(P_2), D_(D)
-    {
-        counter=0;
-        nthread = Communicator::world->nthread();
-        result.push_back(results);
-
-        for (int i=1; i<nthread; ++i)
-            result.push_back(SharedVector(result[0]->clone()));
-    }
-    ~DFMP2RestrictedFunctor() {
-    }
-
-    void finalize() {
-        // Do summation over threads
-        for (int i=1; i<nthread; ++i) {
-            result[0]->add(result[i]);
-        }
-        // Do MPI global summation
-        result[0]->sum();
-    }
-
-    void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
-                    int pirrep, int pso,
-                    int qirrep, int qso,
-                    int rirrep, int rso,
-                    int sirrep, int sso,
-                    double value)
-    {
-        int thread = Communicator::world->thread_id(pthread_self());
-
-        double prefactor = 4.0;
-
-        bool braket = false;
-
-        if (pabs == qabs)
-            prefactor *= 0.5;
-        if (rabs == sabs)
-            prefactor *= 0.5;
-        if (!(pabs == rabs && qabs == sabs))
-            braket = true;
-
-        double four_index_D = 0.0;
-
-        if (pirrep == qirrep && rirrep == sirrep) {
-            four_index_D = 4.0 * P_2_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
-            if (braket)
-                four_index_D += 4.0 * D_->get(pirrep, pso, qso) * P_2_->get(rirrep, rso, sso);
-        }
-        if (pirrep == rirrep && qirrep == sirrep) {
-            four_index_D -= P_2_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
-            if (braket)
-                four_index_D -= D_->get(pirrep, pso, rso) * P_2_->get(qirrep, qso, sso);
-        }
-        if (pirrep == sirrep && qirrep == rirrep) {
-            four_index_D -= P_2_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
-            if (braket)
-                four_index_D -= D_->get(pirrep, pso, sso) * P_2_->get(qirrep, qso, rso);
-        }
-
-        four_index_D *= prefactor;
-
-        result[thread]->add(salc, four_index_D * value);
-        counter++;
-    }
-};
-
 class ScfRestrictedFunctor
 {
     SharedMatrix D_;
@@ -205,7 +123,7 @@ public:
 //        return *this;
 //    }
 
-    ScfRestrictedFunctor(SharedVector results, SharedMatrix D)
+    ScfRestrictedFunctor(SharedVector results, boost::shared_ptr<Matrix> D)
         : D_(D)
     {
         counter=0;
@@ -262,6 +180,98 @@ public:
         counter++;
     }
 };
+
+class ScfAndDfCorrelationRestrictedFunctor
+{
+    SharedMatrix D_ref_;
+    SharedMatrix D_;
+    ScfRestrictedFunctor& scf_functor_;
+    std::vector<SharedVector> result_vec_;
+    SharedVector results_;
+
+public:
+    int nthread;
+
+//    ScfAndDfCorrelationRestrictedFunctor() {
+//        throw PSIEXCEPTION("SCFAndDFCorrelationRestrictedFunctor(): Default constructor called. This shouldn't happen.");
+//    }
+
+    ScfAndDfCorrelationRestrictedFunctor(SharedVector results,
+                                         ScfRestrictedFunctor& scf_functor,
+                                         boost::shared_ptr<Matrix> D,
+                                         boost::shared_ptr<Matrix> D_ref)
+        : D_ref_(D_ref), D_(D), scf_functor_(scf_functor), results_(results)
+    {
+        counter=0;
+        nthread = Communicator::world->nthread();
+        result_vec_.push_back(results);
+
+        for (int i=1; i<nthread; ++i)
+            result_vec_.push_back(SharedVector(results->clone()));
+    }
+    ~ScfAndDfCorrelationRestrictedFunctor() {
+    }
+
+    void finalize() {
+        // Make sure the SCF code is done
+        scf_functor_.finalize();
+        // Do summation over threads
+        for (int i=1; i<nthread; ++i) {
+            result_vec_[0]->add(result_vec_[i]);
+        }
+        // Do MPI global summation
+        result_vec_[0]->sum();
+    }
+
+    void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
+                    int pirrep, int pso,
+                    int qirrep, int qso,
+                    int rirrep, int rso,
+                    int sirrep, int sso,
+                    double value)
+    {
+        int thread = Communicator::world->thread_id(pthread_self());
+
+        double prefactor = 2.0;
+
+        bool braket = false;
+
+        if (pabs == qabs)
+            prefactor *= 0.5;
+        if (rabs == sabs)
+            prefactor *= 0.5;
+        if (!(pabs == rabs && qabs == sabs))
+            braket = true;
+
+        double four_index_D = 0.0;
+
+        if (pirrep == qirrep && rirrep == sirrep) {
+            four_index_D = 4.0 * D_->get(pirrep, pso, qso) * D_ref_->get(rirrep, rso, sso);
+            if (braket)
+                four_index_D += 4.0 * D_ref_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
+        }
+        if (pirrep == rirrep && qirrep == sirrep) {
+            four_index_D -= D_->get(pirrep, pso, rso) * D_ref_->get(qirrep, qso, sso);
+            if (braket)
+                four_index_D -= D_ref_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
+        }
+        if (pirrep == sirrep && qirrep == rirrep) {
+            four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            if (braket)
+                four_index_D -= D_ref_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
+        }
+
+        four_index_D *= prefactor;
+
+        result_vec_[thread]->add(salc, four_index_D * value);
+
+        // Make sure the SCF contribution is computed.
+        scf_functor_(salc, pabs, qabs, rabs, sabs,  pirrep, pso, qirrep, qso,
+                     rirrep, rso, sirrep, sso, value);
+        counter++;
+    }
+};
+
 
 class ScfUnrestrictedFunctor
 {
@@ -361,39 +371,6 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
     gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
 }
 
-Deriv::Deriv(const boost::shared_ptr<BasisSet>& basis,
-             const SharedMatrix& P_2,
-             const SharedMatrix& W_2,
-             const SharedMatrix& SCF_D,
-             const boost::shared_ptr<MatrixFactory>& factory,
-             char needed_irreps,
-             bool project_out_translations,
-             bool project_out_rotations)
-    : basis_(basis),
-      cdsalcs_(basis->molecule(),
-          factory,
-          needed_irreps,
-          project_out_translations,
-          project_out_rotations),
-      P_2_(P_2),
-      W_2_(W_2),
-      SCF_D_(SCF_D),
-      factory_(factory)
-{
-    integral_ = boost::shared_ptr<IntegralFactory> (new IntegralFactory(basis,basis,basis,basis));
-    sobasis_  = boost::shared_ptr<SOBasisSet> (new SOBasisSet(basis,integral_));
-    molecule_ = basis->molecule();
-    natom_    = molecule_->natom();
-
-    // Results go here.
-    opdm_contr_ = factory_->create_shared_matrix("One-electron contribution to gradient", natom_, 3);
-    x_contr_    = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
-    tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
-    gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
-
-    P_2_->add(SCF_D_);
-}
-
 SharedMatrix Deriv::compute()
 {
     molecule_->print_in_bohr();
@@ -420,17 +397,33 @@ SharedMatrix Deriv::compute()
     t_int->compute_deriv1(h_deriv, cdsalcs_);
     v_int->compute_deriv1(h_deriv, cdsalcs_);
 
-    double *Xcont = new double[cdsalcs_.ncd()];
-    double *Dcont = new double[cdsalcs_.ncd()];
-    double *TPDMcont = new double[cdsalcs_.ncd()];
-
     int ncd = cdsalcs_.ncd();
     SharedVector TPDMcont_vector(new Vector(1, &ncd));
+    SharedVector Xcont_vector(new Vector(1, &ncd));
+    SharedVector Dcont_vector(new Vector(1, &ncd));
+    SharedVector TPDM_ref_cont_vector;
+    SharedVector X_ref_cont_vector;
+    SharedVector D_ref_cont_vector;
+    double *Dcont           = Dcont_vector->pointer();
+    double *Xcont           = Xcont_vector->pointer();
+    double *TPDMcont        = TPDMcont_vector->pointer();
+    double *TPDM_ref_cont   = 0;
+    double *X_ref_cont      = 0;
+    double *D_ref_cont      = 0;
 
-    if (!wavefunction_ || (wavefunction_ && !wavefunction_->reference_wavefunction())) {
-        if (P_2_ || (wavefunction_ && wavefunction_->restricted())) {
-            SharedMatrix D = wavefunction_ ? wavefunction_->Da() : P_2_;
-            SharedMatrix X = wavefunction_ ? wavefunction_->X() : W_2_;
+    boost::shared_ptr<IntegralTransform> ints_transform;
+    if(!wavefunction_)
+        throw("In Deriv: The wavefunction passed in is empty!");
+
+    // Whether the SCF contribution is separate from the correlated terms
+    bool reference_separate = false;
+
+    if(!wavefunction_->reference_wavefunction()){
+        // If wavefunction doesn't have a reference wavefunction
+        // itself, we assume that we're dealing with SCF.
+        if (wavefunction_->restricted()){
+            SharedMatrix D = wavefunction_->Da();
+            SharedMatrix X = wavefunction_->X();
 
             // Check the incoming matrices.
             if (!D)
@@ -449,21 +442,14 @@ SharedMatrix Deriv::compute()
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -2.0 * X->vector_dot(s_deriv[cd]);
                 Xcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d Lagrandian contribution:   %+lf\n", cd, temp);
+                fprintf(outfile, "    SALC #%d lagrangian contribution:   %+lf\n", cd, temp);
             }
 
             fprintf(outfile, "\n");
 
-            if (wavefunction_) {
-                ScfRestrictedFunctor functor(TPDMcont_vector, D);
-                so_eri.compute_integrals_deriv1(functor);
-                functor.finalize();
-            }
-            else {
-                DFMP2RestrictedFunctor functor(TPDMcont_vector, D, SCF_D_);
-                so_eri.compute_integrals_deriv1(functor);
-                functor.finalize();
-            }
+            ScfRestrictedFunctor functor(TPDMcont_vector, D);
+            so_eri.compute_integrals_deriv1(functor);
+            functor.finalize();
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
@@ -511,34 +497,97 @@ SharedMatrix Deriv::compute()
         }
     }
     else { /* correlated */
+        /* For correlated calculations, we have two different types.  The older CI/CC codes dump the
+           Lagrangian to disk and density matrices to disk, and these both include the reference
+           contributions.  The newer codes hold these quantities as member variables, but these contain only
+           the correlated part.  The reference contributions must be harvested from the reference_wavefunction
+           member.  If density fitting was used, we don't want to compute two electron contributions here*/
         if (wavefunction_->restricted()) {
-            // Define the MO orbital space we need
-            vector<boost::shared_ptr<MOSpace> > spaces;
-            spaces.push_back(MOSpace::all);
+            if(!wavefunction_->density_fitted()){
+                // We only need to transform the TPDM if conventional integrals were used
+                // Define the MO orbital space we need
+                vector<boost::shared_ptr<MOSpace> > spaces;
+                spaces.push_back(MOSpace::all);
+                // Uses a different constructor of IntegralTransform.
+                ints_transform = boost::shared_ptr<IntegralTransform>( new IntegralTransform(wavefunction_,
+                                                 spaces,
+                                                 IntegralTransform::Restricted, // Transformation type
+                                                 IntegralTransform::DPDOnly,    // Output buffer
+                                                 IntegralTransform::QTOrder,    // MO ordering
+                                                 IntegralTransform::None));      // Frozen orbitals?
+                dpd_set_default(ints_transform->get_dpd_id());
+                ints_transform->backtransform_density();
+            }
 
-            // Uses a different constructor of IntegralTransform.
-            IntegralTransform ints_transform(wavefunction_,
-                                             spaces,
-                                             IntegralTransform::Restricted, // Transformation type
-                                             IntegralTransform::DPDOnly,    // Output buffer
-                                             IntegralTransform::QTOrder,    // MO ordering
-                                             IntegralTransform::None);      // Frozen orbitals?
+            SharedMatrix D;
+            SharedMatrix D_ref;
+            bool have_D = false;
+            bool have_X = false;
+            if(wavefunction_->Da()){
+                have_D = true;
+                D = wavefunction_->Da();
+            }else{
+                D = factory_->create_shared_matrix("SO-basis OPDM");
+                D->load(_default_psio_lib_, PSIF_AO_OPDM);
+            }
 
-            dpd_set_default(ints_transform.get_dpd_id());
+            SharedMatrix X;
+            SharedMatrix X_ref;
+            if(wavefunction_->Lagrangian()){
+                have_X = true;
+                X = wavefunction_->Lagrangian();
+                X->print();
+            }else{
+                X = factory_->create_shared_matrix("SO-basis Lagrangian");
+                X->load(_default_psio_lib_, PSIF_AO_OPDM);
+            }
 
-            ints_transform.backtransform_density();
-
-            SharedMatrix D = factory_->create_shared_matrix("SO-basis OPDM");
-            D->load(_default_psio_lib_, PSIF_AO_OPDM);
-
-            SharedMatrix X = factory_->create_shared_matrix("SO-basis Lagrangian");
-            X->load(_default_psio_lib_, PSIF_AO_OPDM);
+            // Right now, if X and D are defined by wavefunction, it means that the reference
+            // and correlated terms are separate.
+            reference_separate = have_D && have_X;
 
             // Check the incoming matrices.
             if (!D)
                 throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
             if (!X)
                 throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
+
+            if(reference_separate){
+                X_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
+                D_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
+                TPDM_ref_cont_vector = SharedVector(new Vector(1, &ncd));
+                X_ref_cont           = X_ref_cont_vector->pointer();
+                D_ref_cont           = D_ref_cont_vector->pointer();
+                TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();
+                x_ref_contr_         = factory_->create_shared_matrix("Reference Lagrangian contribution to gradient", natom_, 3);
+                opdm_ref_contr_      = factory_->create_shared_matrix("Reference one-electron contribution to gradient", natom_, 3);
+                tpdm_ref_contr_      = factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
+
+                // Here we need to extract the reference contributions
+                X_ref = wavefunction_->reference_wavefunction()->Lagrangian();
+                D_ref = wavefunction_->reference_wavefunction()->Da();
+                if (!D_ref)
+                    throw PSIEXCEPTION("Deriv::compute: Unable to access reference OPDM.");
+                if (!X_ref)
+                    throw PSIEXCEPTION("Deriv::compute: Unable to access reference Lagrangian.");
+
+                for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+                    double temp = 2.0 * D_ref->vector_dot(h_deriv[cd]);
+                    D_ref_cont[cd] = temp;
+                    fprintf(outfile, "    SALC #%d Reference One-electron contribution: %+lf\n", cd, temp);
+                }
+
+                fprintf(outfile, "\n");
+
+                for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+                    double temp = -2.0 * X_ref->vector_dot(s_deriv[cd]);
+                    X_ref_cont[cd] = temp;
+                    fprintf(outfile, "    SALC #%d Reference Lagrangian contribution:   %+lf\n", cd, temp);
+                }
+
+                fprintf(outfile, "\n");
+            }
+
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = D->vector_dot(h_deriv[cd]);
@@ -551,22 +600,29 @@ SharedMatrix Deriv::compute()
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -0.5 * X->vector_dot(s_deriv[cd]);
                 Xcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d Lagrandian contribution:   %+lf\n", cd, temp);
+                fprintf(outfile, "    SALC #%d lagrangian contribution:   %+lf\n", cd, temp);
             }
 
             fprintf(outfile, "\n");
 
-            CorrelatedRestrictedFunctor functor(TPDMcont_vector, wavefunction_, ints_transform);
-            so_eri.compute_integrals_deriv1(functor);
-            functor.finalize();
+            if(reference_separate){
+                ScfRestrictedFunctor scf_functor(TPDM_ref_cont_vector, D_ref);
+                ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, D, D_ref);
+                so_eri.compute_integrals_deriv1(functor);
+                functor.finalize();
+                tpdm_contr_ = wavefunction_->tpdm_gradient_contribution();
+            }else{
+                CorrelatedRestrictedFunctor functor(Dcont_vector, wavefunction_, ints_transform);
+                so_eri.compute_integrals_deriv1(functor);
+                functor.finalize();
 
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                TPDMcont[cd] = TPDMcont_vector->get(cd);
-                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+                for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+                    TPDMcont[cd] = TPDMcont_vector->get(cd);
+                    fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+                }
+                fflush(outfile);
             }
-            fflush(outfile);
-        }
-        else {
+        } else {
             throw PSIEXCEPTION("Unrestricted correlated gradients not implemented.");
         }
     }
@@ -585,6 +641,37 @@ SharedMatrix Deriv::compute()
         for (int xyz=0; xyz<3; ++xyz)
             opdm_contr_->set(a, xyz, cart[3*a+xyz]);
 
+    if(D_ref_cont){
+        // B^t g_q^t = g_x^t -> g_q B = g_x
+        C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
+                1.0, D_ref_cont, cdsalcs_.ncd(), B[0],
+                3*natom_, 0.0, cart, 3*natom_);
+
+        for (int a=0; a<natom_; ++a)
+            for (int xyz=0; xyz<3; ++xyz)
+                opdm_ref_contr_->set(a, xyz, cart[3*a+xyz]);
+    }
+
+    if(TPDM_ref_cont){
+        // B^t g_q^t = g_x^t -> g_q B = g_x
+        C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
+                1.0, TPDM_ref_cont, cdsalcs_.ncd(), B[0],
+                3*natom_, 0.0, cart, 3*natom_);
+
+        for (int a=0; a<natom_; ++a)
+            for (int xyz=0; xyz<3; ++xyz)
+                tpdm_ref_contr_->set(a, xyz, cart[3*a+xyz]);
+    }else{
+        // B^t g_q^t = g_x^t -> g_q B = g_x
+        C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
+                1.0, TPDMcont, cdsalcs_.ncd(), B[0],
+                3*natom_, 0.0, cart, 3*natom_);
+
+        for (int a=0; a<natom_; ++a)
+            for (int xyz=0; xyz<3; ++xyz)
+                tpdm_contr_->set(a, xyz, cart[3*a+xyz]);
+    }
+
     // B^t g_q^t = g_x^t -> g_q B = g_x
     C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
             1.0, Xcont, cdsalcs_.ncd(), B[0],
@@ -594,18 +681,17 @@ SharedMatrix Deriv::compute()
         for (int xyz=0; xyz<3; ++xyz)
             x_contr_->set(a, xyz, cart[3*a+xyz]);
 
-    // B^t g_q^t = g_x^t -> g_q B = g_x
-    C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
-            1.0, TPDMcont, cdsalcs_.ncd(), B[0],
-            3*natom_, 0.0, cart, 3*natom_);
+    if(X_ref_cont){
+        // B^t g_q^t = g_x^t -> g_q B = g_x
+        C_DGEMM('n', 'n', 1, 3*natom_, cdsalcs_.ncd(),
+                1.0, X_ref_cont, cdsalcs_.ncd(), B[0],
+                3*natom_, 0.0, cart, 3*natom_);
 
-    for (int a=0; a<natom_; ++a)
-        for (int xyz=0; xyz<3; ++xyz)
-            tpdm_contr_->set(a, xyz, cart[3*a+xyz]);
+        for (int a=0; a<natom_; ++a)
+            for (int xyz=0; xyz<3; ++xyz)
+                x_ref_contr_->set(a, xyz, cart[3*a+xyz]);
+    }
 
-    delete[] Dcont;
-    delete[] Xcont;
-    delete[] TPDMcont;
 
     // Obtain nuclear repulsion contribution from the wavefunction
     Matrix enuc = molecule_->nuclear_repulsion_energy_deriv1();
@@ -615,13 +701,30 @@ SharedMatrix Deriv::compute()
     opdm_contr_->print_atom_vector();
     x_contr_->print_atom_vector();
     tpdm_contr_->print_atom_vector();
+    if(x_ref_contr_){
+        x_ref_contr_->print_atom_vector();
+    }
+    if(opdm_ref_contr_){
+        opdm_ref_contr_->print_atom_vector();
+    }
+    if(tpdm_ref_contr_){
+        tpdm_ref_contr_->print_atom_vector();
+    }
 
     // Add everything up into a temp.
-    Matrix temp("Temp SCF gradient", molecule_->natom(), 3);
+    Matrix temp("Temp gradient", molecule_->natom(), 3);
+    Matrix corr("Correlation contribution to gradient", molecule_->natom(), 3);
     temp.add(&enuc);
-    temp.add(opdm_contr_);
-    temp.add(x_contr_);
-    temp.add(tpdm_contr_);
+    corr.add(opdm_contr_);
+    corr.add(x_contr_);
+    corr.add(tpdm_contr_);
+    if(reference_separate){
+        temp.add(x_ref_contr_);
+        temp.add(opdm_ref_contr_);
+        temp.add(tpdm_ref_contr_);
+        corr.print_atom_vector();
+    }
+    temp.add(corr);
 
     // Symmetrize the gradients to remove any noise:
     CharacterTable ct = molecule_->point_group()->char_table();

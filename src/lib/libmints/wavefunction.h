@@ -82,6 +82,9 @@ protected:
     /// Debug flag
     unsigned int debug_;
 
+    /// Whether this wavefunction was obtained using density fitting
+    bool density_fitted_;
+
     /// Energy convergence threshold
     double energy_threshold_;
 
@@ -149,6 +152,9 @@ protected:
     /// If a gradient is available it will be here:
     SharedMatrix gradient_;
 
+    /// The TPDM contribution to the gradient
+    boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -184,8 +190,11 @@ public:
     boost::shared_ptr<MatrixFactory> matrix_factory() const;
     /// Returns the reference wavefunction
     boost::shared_ptr<Wavefunction> reference_wavefunction() const;
-    /// Returns the reference wavefunction
+    /// Sets the reference wavefunction
     void set_reference_wavefunction(const boost::shared_ptr<Wavefunction> wfn);
+
+    /// Returns whether this wavefunction was obtained using density fitting or not
+    bool density_fitted() const { return density_fitted_; }
 
     static void initialize_singletons();
 
@@ -226,6 +235,10 @@ public:
     boost::shared_ptr<Vector> epsilon_a() const;
     /// Returns the beta orbital energies
     boost::shared_ptr<Vector> epsilon_b() const;
+    /// Returns the SO basis Lagrangian
+    boost::shared_ptr<Matrix> Lagrangian() const;
+    /// The two particle density matrix contribution to the gradient
+    virtual boost::shared_ptr<Matrix> tpdm_gradient_contribution() const;
 
     /// Returns the alpha OPDM for the wavefunction
     const SharedMatrix Da() const;
