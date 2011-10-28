@@ -513,6 +513,11 @@ DIISManager::delete_diis_file()
 
 DIISManager::~DIISManager()
 {
+    for (int i=0; i<_subspace.size(); ++i) {
+        DIISEntry* temp = _subspace[i];
+        delete temp;
+    }
+    _subspace.clear();
     if (_psio->open_check(PSIF_LIBDIIS))
         _psio->close(PSIF_LIBDIIS, 1);
 }
