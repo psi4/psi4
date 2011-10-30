@@ -17,4 +17,6 @@ set @plugin@ {
   print 1
 }
 
+energy('scf')
+
 plugin("./@plugin@.so")

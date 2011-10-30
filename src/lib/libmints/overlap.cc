@@ -358,9 +358,3 @@ void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost:
         }
     }
 }
-
-void OverlapInt::compute_shell_deriv2(int sh1, int sh2)
-{
-    compute_pair_deriv2(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-

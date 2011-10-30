@@ -1,0 +1,82 @@
+#include <libplugin/plugin.h>
+#include <psi4-dec.h>
+#include <libparallel/parallel.h>
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.hpp>
+
+INIT_PLUGIN
+
+using namespace boost;
+
+namespace psi{ namespace @plugin@ {
+
+class @Plugin@ : public Wavefunction
+{
+public:
+    @Plugin@(boost::shared_ptr<Wavefunction> reference_wavefunction, Options& options);
+    virtual ~@Plugin@();
+
+    double compute_energy();
+
+private:
+    Dimension nvirtpi_;
+    void common_init();
+};
+
+@Plugin@::@Plugin@(
+        boost::shared_ptr<Wavefunction> reference_wavefunction,
+        Options& options)
+    : Wavefunction(options, _default_psio_lib_)
+{
+    set_reference_wavefunction(reference_wavefunction);
+    common_init();
+}
+
+@Plugin@::~@Plugin@()
+{
+}
+
+void @Plugin@::common_init()
+{
+    nso_     = reference_wavefunction_->nso();
+    nirrep_  = reference_wavefunction_->nirrep();
+    nmo_     = reference_wavefunction_->nmo();
+    soccpi_  = reference_wavefunction_->soccpi();
+    doccpi_  = reference_wavefunction_->doccpi();
+    frzcpi_  = reference_wavefunction_->frzcpi();
+    frzvpi_  = reference_wavefunction_->frzvpi();
+    nmopi_   = reference_wavefunction_->nmopi();
+    nsopi_   = reference_wavefunction_->nsopi();
+    nvirtpi_ = nsopi_ - frzcpi_ - frzvpi_ - doccpi_;
+}
+
+double @Plugin@::compute_energy()
+{
+    /* Your code goes here. */
+
+    return 0.0;
+}
+
+extern "C"
+int read_options(std::string name, Options& options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+        /*- The amount of information printed to the output file -*/
+        options.add_int("PRINT", 1);
+    }
+
+    return true;
+}
+
+extern "C"
+PsiReturnType @plugin@(Options& options)
+{
+    @Plugin@ wave(Process::environment.reference_wavefunction(), options);
+    wave.compute_energy();
+
+    return Success;
+}
+
+}} // End namespaces
+

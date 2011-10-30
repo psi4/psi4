@@ -22,7 +22,7 @@ using namespace std;
 
 namespace psi {
 
-void create_new_plugin(const std::string& plugin_name, const std::string& template_name);
+void create_new_plugin(std::string plugin_name, const std::string& template_name);
 void print_version(FILE *);
 void print_usage();
 

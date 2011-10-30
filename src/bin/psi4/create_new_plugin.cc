@@ -18,15 +18,11 @@ using namespace std;
 using namespace psi;
 using namespace boost;
 
-namespace psi {
-
+namespace {
 std::string make_filename(const std::string& name)
 {
     // Modify the name of the basis set to generate a filename: STO-3G -> sto-3g
     string filename = name;
-
-    // First make it lower case
-    transform(filename.begin(), filename.end(), filename.begin(), ::tolower);
 
     string format_underscore("_"); // empty string
     // Replace all '(' with '_'
@@ -58,9 +54,15 @@ std::string make_filename(const std::string& name)
 
     return filename;
 }
+}
 
-void create_new_plugin(const std::string& name, const std::string& templ)
+namespace psi {
+
+void create_new_plugin(std::string name, const std::string& templ)
 {
+    // First make it lower case
+    transform(name.begin(), name.end(), name.begin(), ::tolower);
+
     // Start == check to make sure the plugin name is valid
     string plugin_name = make_filename(name);
     smatch results;
@@ -70,6 +72,10 @@ void create_new_plugin(const std::string& name, const std::string& templ)
         exit(1);
     }
     // End == check to make sure the plugin name is valid
+
+    // Make a faux camel-case of the name
+    string Name = name;
+    Name[0] = ::toupper(Name[0]);
 
     FILE* fp = 0;
 
@@ -158,6 +164,11 @@ void create_new_plugin(const std::string& name, const std::string& templ)
     makefile = xpressive::regex_replace(makefile, match_format, format_plugin);
     input    = xpressive::regex_replace(input,    match_format, format_plugin);
     source   = xpressive::regex_replace(source,   match_format, format_plugin);
+
+    match_format = boost::xpressive::as_xpr("@Plugin@");
+    makefile = xpressive::regex_replace(makefile, match_format, Name);
+    input    = xpressive::regex_replace(input,    match_format, Name);
+    source   = xpressive::regex_replace(source,   match_format, Name);
 
     match_format = boost::xpressive::as_xpr("@PLUGIN@");
     makefile = xpressive::regex_replace(makefile, match_format, format_PLUGIN);
