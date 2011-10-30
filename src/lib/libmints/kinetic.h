@@ -29,6 +29,7 @@ class KineticInt : public OneBodyAOInt
     void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
     //! Computes the kinetic derivatve between two gaussian shells.
     void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
+    void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
 
 public:
     //! Constructor. Do not call directly, use an IntegralFactory.
@@ -38,6 +39,9 @@ public:
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
+
+    /// Does the method provide first derivatives?
+    bool has_deriv2() { return true; }
 };
 
 }

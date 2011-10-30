@@ -37,7 +37,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("WFN", "SCF");
   /*- Derivative level -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
-  options.add_str("DERTYPE", "NONE", "NONE FIRST RESPONSE");
+  /*- Number of columns to print in calls to Matrix::print_mat -*/
+  options.add_int("PRINT_MAT_NCOLUMN", 5);
 
   // CDS-TODO: We should go through and check that the user hasn't done
   // something silly like specify frozen_docc in DETCI but not in TRANSQT.
@@ -461,7 +462,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     one can specify a list of determinants and their coefficients,
     and the code will follow the root with the closest overlap.  The
     user specifies arrays containing the absolute alpha string indices
-    (A_i below), absolute beta indices (B_i below), and CI coefficients 
+    (A_i below), absolute beta indices (B_i below), and CI coefficients
     (C_i below) to form the desired vector.
     FOLLOW_VECTOR_ALPHAS specifies the alpha string indices. The
     format is FOLLOW_VECTOR = [ [[A_1, B_1], C_1], [[A_2, B_2], C_2], ...].

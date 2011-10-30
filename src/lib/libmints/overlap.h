@@ -34,11 +34,6 @@ public:
     OverlapInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     virtual ~OverlapInt();
 
-    /// Compute overlap between 2 shells. Result is stored in buffer.
-//    void compute_shell(int, int);
-//    void compute_shell_deriv1(int, int);
-    void compute_shell_deriv2(int, int);
-
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
     /// Does the method provide second derivatives?

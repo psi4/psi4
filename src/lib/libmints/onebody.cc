@@ -206,6 +206,12 @@ void OneBodyAOInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
 
+void OneBodyAOInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+{
+    throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
+}
+
+
 void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
 {
     const boost::shared_ptr<GaussianShell> s1 = bs1_->shell(sh1);
@@ -515,8 +521,8 @@ void OneBodyAOInt::compute_deriv2(std::vector<boost::shared_ptr<SimpleMatrix> > 
     }
 }
 
-void OneBodyAOInt::compute_shell_deriv2(int, int)
+void OneBodyAOInt::compute_shell_deriv2(int i, int j)
 {
-    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv2(Array)", __FILE__, __LINE__);
+    compute_pair_deriv2(bs1_->shell(i), bs2_->shell(j));
 }
 

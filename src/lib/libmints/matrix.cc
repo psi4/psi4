@@ -667,7 +667,7 @@ SimpleMatrix *Matrix::to_simple_matrix() const
 
 void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) const
 {
-    const int print_ncol = 5;
+    const int print_ncol = Process::environment.options.get_int("PRINT_MAT_NCOLUMN");
     int num_frames = int(n/print_ncol);
     int num_frames_rem = n%print_ncol; //adding one for changing 0->1 start
     int num_frame_counter = 0;

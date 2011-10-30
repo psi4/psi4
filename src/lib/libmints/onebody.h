@@ -45,6 +45,7 @@ protected:
 
     virtual void compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2) = 0;
     virtual void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
+    virtual void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int=1);
