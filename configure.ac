@@ -942,6 +942,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
+          src/bin/detci/Makefile
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile

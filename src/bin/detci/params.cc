@@ -18,6 +18,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
+#include <libpsio/psio.h>
 #include <psifiles.h>
 #include "structs.h"
 #include "globals.h"
@@ -28,7 +29,7 @@ namespace psi { namespace detci {
 ** get_parameters(): Function gets the program running parameters such
 **   as convergence.  These are stored in the Parameters data structure.
 */
-void get_parameters(Options &)
+void get_parameters(Options &options)
 {
   int i, j, k, errcod;
   int iopen=0, tval;
@@ -84,11 +85,12 @@ void get_parameters(Options &)
   // (or similar mechanism) in CASSCF, etc.
   if (Parameters.wfn == "DETCAS" ||
       Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
-    Parameters.print = 0;
+    Parameters.print_lvl = 0;
+  }
   else
-    Parameters.print = 1;
+    Parameters.print_lvl = 1;
   if (options["PRINT"].has_changed()) {
-    Parameters.print = options.get_int("PRINT");
+    Parameters.print_lvl = options.get_int("PRINT");
   }
 
   Parameters.opentype = PARM_OPENTYPE_UNKNOWN;

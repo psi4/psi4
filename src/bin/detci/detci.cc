@@ -19,7 +19,7 @@
    
 */
 
-#include <sstring>
+//#include <sstring>
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
@@ -32,7 +32,7 @@
 #include <libchkpt/chkpt.h>
 #include <libmints/wavefunction.h>
 #include <libpsio/psio.h>
-//#include <libpsio/psio.hpp>
+#include <libpsio/psio.hpp>
 #include <libqt/slaterdset.h>
 #include <masses.h>
 #include "structs.h"
@@ -91,7 +91,7 @@ extern void sem_test(double **A, int N, int M, int L, double **evecs,
 extern void form_ov(struct stringwr **alplist);
 extern void write_energy(int nroots, double *evals, double offset);
 
-void init_io(int argc, char *argv[]);
+void init_io(void);
 void close_io(void);
 void title(void);
 void quote(void);
@@ -199,7 +199,7 @@ PsiReturnType detci(Options &options)
 
    boost::shared_ptr<PSIO> psio = PSIO::shared_object();
 
-   init_io(argc, argv);         /* parse cmd line and open input and output */
+   init_io();                   /* parse cmd line and open input and output */
    get_parameters(options);     /* get running params (convergence, etc)    */
    init_ioff();                 /* set up the ioff array                    */
    title();                     /* print program identification             */
@@ -265,7 +265,8 @@ PsiReturnType detci(Options &options)
 ** input and output files.
 **
 */
-void init_io(int argc, char *argv[])
+//void init_io(int argc, char *argv[])
+void init_io(void)
 {
    /*
    int i, num_unparsed;
@@ -308,7 +309,7 @@ void init_io(int argc, char *argv[])
    
     // errcod = psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed,argv_unparsed,0);
 
-   if (Parameters.print_lvl) tstart(outfile);
+   if (Parameters.print_lvl) tstart();
 
    /*
     * this stuff is now inside psi_start
@@ -350,10 +351,9 @@ void init_ioff(void)
 */
 void close_io(void)
 {
-   int errcod;
-   psio_done();
-   if (Parameters.print_lvl) tstop(outfile);
-   errcod = psi_stop(infile,outfile,psi_file_prefix);
+   // psio_done();
+   if (Parameters.print_lvl) tstop();
+   //errcod = psi_stop(infile,outfile,psi_file_prefix);
 }
 
 

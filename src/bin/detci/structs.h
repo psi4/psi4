@@ -14,6 +14,8 @@
 #ifndef _psi_src_bin_detci_structs_h
 #define _psi_src_bin_detci_structs_h
 
+#include <string>
+
 namespace psi { namespace detci {
 
 /*** INCLUDES ***/
