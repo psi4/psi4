@@ -30,6 +30,7 @@ class SimpleVector;
 class MatrixFactory;
 class SimpleMatrix;
 class Dimension;
+class Molecule;
 
 extern FILE *outfile;
 
@@ -546,6 +547,11 @@ public:
     const int& symmetry() const {
         return symmetry_;
     }
+
+    /**
+     * Symmetrizes the matrix using information from the given Molecule.
+     */
+    void symmetrize(boost::shared_ptr<Molecule> mol);
 
     /// Set this to identity
     void identity();

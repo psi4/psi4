@@ -17,6 +17,9 @@
 #include "factory.h"
 #include "wavefunction.h"
 #include "dimension.h"
+#include "molecule.h"
+#include "pointgrp.h"
+#include "petitelist.h"
 
 #include <cmath>
 #include <cstdio>
@@ -779,6 +782,34 @@ void Matrix::eivprint(const Vector& values, FILE *out)
 void Matrix::eivprint(const boost::shared_ptr<Vector>& values, FILE *out)
 {
     eivprint(values.get(), out);
+}
+
+void Matrix::symmetrize(boost::shared_ptr<Molecule> molecule)
+{
+    if (nirrep_ > 1 || rowspi_[0] != molecule->natom() || colspi_[0] != 3)
+        throw PSIEXCEPTION("Molecule::symmetrize: Matrix cannot be symmetrized.");
+
+    // Symmetrize the gradients to remove any noise:
+    CharacterTable ct = molecule->point_group()->char_table();
+
+    // Obtain atom mapping of atom * symm op to atom
+    int **atom_map = compute_atom_map(molecule);
+
+    Matrix temp = *this;
+
+    // Symmetrize the gradients to remove any noise
+    for (int atom=0; atom<molecule->natom(); ++atom) {
+        for (int g=0; g<ct.order(); ++g) {
+
+            int Gatom = atom_map[atom][g];
+
+            SymmetryOperation so = ct.symm_operation(g);
+
+            add(atom, 0, so(0, 0) * temp(Gatom, 0) / ct.order());
+            add(atom, 1, so(1, 1) * temp(Gatom, 1) / ct.order());
+            add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
+        }
+    }
 }
 
 void Matrix::identity()
