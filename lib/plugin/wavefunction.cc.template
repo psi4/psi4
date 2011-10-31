@@ -24,9 +24,7 @@ private:
     void common_init();
 };
 
-@Plugin@::@Plugin@(
-        boost::shared_ptr<Wavefunction> reference_wavefunction,
-        Options& options)
+@Plugin@::@Plugin@(boost::shared_ptr<Wavefunction> reference_wavefunction, Options& options)
     : Wavefunction(options, _default_psio_lib_)
 {
     set_reference_wavefunction(reference_wavefunction);
