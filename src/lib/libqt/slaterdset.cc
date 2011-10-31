@@ -148,7 +148,7 @@ void stringset_reindex(StringSet* sset, short int* mo_map)
 ** Returns: none
 ** \ingroup QT
 */
-void stringset_write(ULI unit, char *prefix, StringSet *sset)
+void stringset_write(ULI unit, const char *prefix, StringSet *sset)
 {
   int i, size, nact;
   int need_to_init_psio = 0;
@@ -210,7 +210,7 @@ PSIO_DONE
 ** Returns: none
 ** \ingroup QT
 */
-void stringset_read(ULI unit, char *prefix, StringSet **stringset)
+void stringset_read(ULI unit, const char *prefix, StringSet **stringset)
 {
   int i, size, nelec, nfzc, nact;
   int need_to_init_psio = 0;
@@ -382,7 +382,7 @@ void slaterdetset_add(SlaterDetSet *sdset, int index, int alphastring,
 ** Returns: none
 ** \ingroup QT
 */
-void slaterdetset_write(ULI unit, char *prefix, SlaterDetSet *sdset)
+void slaterdetset_write(ULI unit, const char *prefix, SlaterDetSet *sdset)
 {
   int i;
   int need_to_init_psio = 0;
@@ -434,7 +434,7 @@ PSIO_DONE
 ** Returns: none
 ** \ingroup QT
 */
-void slaterdetset_read(ULI unit, char *prefix, SlaterDetSet **slaterdetset)
+void slaterdetset_read(ULI unit, const char *prefix, SlaterDetSet **slaterdetset)
 {
   int i, size;
   int need_to_init_psio = 0;
@@ -604,7 +604,7 @@ void slaterdetvector_set(SlaterDetVector *sdvector, double *coeffs)
 ** Returns: none
 ** \ingroup QT
 */
-void slaterdetvector_write(ULI unit, char *prefix, SlaterDetVector *vector)
+void slaterdetvector_write(ULI unit, const char *prefix, SlaterDetVector *vector)
 {
   int need_to_init_psio = 0;
   int unit_opened = 1;
@@ -644,7 +644,7 @@ PSIO_DONE
 ** CDS 8/03
 ** \ingroup QT
 */
-void slaterdetset_write_vect(ULI unit, char *prefix,
+void slaterdetset_write_vect(ULI unit, const char *prefix,
   double *coeffs, int size, int vectnum)
 {
   int need_to_init_psio = 0;
@@ -687,7 +687,7 @@ PSIO_DONE
 ** Returns: none
 ** \ingroup QT
 */
-void slaterdetvector_read(ULI unit, char *prefix, SlaterDetVector **sdvector)
+void slaterdetvector_read(ULI unit, const char *prefix, SlaterDetVector **sdvector)
 {
   int need_to_init_psio = 0;
   int unit_opened = 1;
@@ -730,7 +730,7 @@ PSIO_DONE
 ** CDS 8/03
 ** \ingroup QT
 */
-void slaterdetset_read_vect(ULI unit, char *prefix, double *coeffs,
+void slaterdetset_read_vect(ULI unit, const char *prefix, double *coeffs,
   int size, int vectnum)
 {
   int need_to_init_psio = 0;
