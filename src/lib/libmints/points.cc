@@ -457,6 +457,13 @@ PointFunctions::~PointFunctions()
 }
 void PointFunctions::build_spherical()
 {
+    if (!primary_->has_puream()) {
+        puream_ = false;
+        return;
+    }
+
+    puream_ = true;
+
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
 
     for (int L = 0; L <= primary_->max_am(); L++) {
@@ -596,12 +603,18 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
             }    
 
             // Spherical transform
-            for (int index = 0; index < transform.size(); index++) {
-                int pureindex = boost::get<0>(transform[index]);
-                int cartindex = boost::get<1>(transform[index]);
-                double coef   = boost::get<2>(transform[index]);
-                
-                C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+            if (puream_) {
+                for (int index = 0; index < transform.size(); index++) {
+                    int pureindex = boost::get<0>(transform[index]);
+                    int cartindex = boost::get<1>(transform[index]);
+                    double coef   = boost::get<2>(transform[index]);
+                    
+                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+                }
+            } else {
+                for (int q = 0; q < nQ; q++) {
+                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
+                }
             }
 
             function_offset += nQ;
@@ -691,15 +704,24 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
             }    
 
             // Spherical transform
-            for (int index = 0; index < transform.size(); index++) {
-                int pureindex = boost::get<0>(transform[index]);
-                int cartindex = boost::get<1>(transform[index]);
-                double coef   = boost::get<2>(transform[index]);
-                
-                C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+            if (puream_) {
+                for (int index = 0; index < transform.size(); index++) {
+                    int pureindex = boost::get<0>(transform[index]);
+                    int cartindex = boost::get<1>(transform[index]);
+                    double coef   = boost::get<2>(transform[index]);
+                    
+                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+                }
+            } else {
+                for (int q = 0; q < nQ; q++) {
+                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxp[0][q],max_cart,&purexp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyp[0][q],max_cart,&pureyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartzp[0][q],max_cart,&purezp[0][q + function_offset],nso);
+                }
             }
 
             function_offset += nQ;
@@ -831,21 +853,36 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
             }    
 
             // Spherical transform
-            for (int index = 0; index < transform.size(); index++) {
-                int pureindex = boost::get<0>(transform[index]);
-                int cartindex = boost::get<1>(transform[index]);
-                double coef   = boost::get<2>(transform[index]);
-                
-                C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxxp[0][cartindex],max_cart,&purexxp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxyp[0][cartindex],max_cart,&purexyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxzp[0][cartindex],max_cart,&purexzp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyyp[0][cartindex],max_cart,&pureyyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyzp[0][cartindex],max_cart,&pureyzp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartzzp[0][cartindex],max_cart,&purezzp[0][pureindex + function_offset],nso);
+            if (puream_) {
+                for (int index = 0; index < transform.size(); index++) {
+                    int pureindex = boost::get<0>(transform[index]);
+                    int cartindex = boost::get<1>(transform[index]);
+                    double coef   = boost::get<2>(transform[index]);
+                    
+                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxxp[0][cartindex],max_cart,&purexxp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxyp[0][cartindex],max_cart,&purexyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxzp[0][cartindex],max_cart,&purexzp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyyp[0][cartindex],max_cart,&pureyyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyzp[0][cartindex],max_cart,&pureyzp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartzzp[0][cartindex],max_cart,&purezzp[0][pureindex + function_offset],nso);
+                }
+            } else {
+                for (int q = 0; q < nQ; q++) {
+                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxp[0][q],max_cart,&purexp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyp[0][q],max_cart,&pureyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartzp[0][q],max_cart,&purezp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxxp[0][q],max_cart,&purexxp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxyp[0][q],max_cart,&purexyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxzp[0][q],max_cart,&purexzp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyyp[0][q],max_cart,&pureyyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyzp[0][q],max_cart,&pureyzp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartzzp[0][q],max_cart,&purezzp[0][q + function_offset],nso);
+                }
             }
 
             function_offset += nQ;
