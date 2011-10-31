@@ -452,6 +452,7 @@ def database(name, db_name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
+    user_puream = PsiMod.get_option('PUREAM')
     user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
     user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
@@ -688,11 +689,16 @@ def database(name, db_name, **kwargs):
         commands += """\nPsiMod.set_memory(%s)\n\n""" % (user_memory)
         for chgdopt in PsiMod.get_global_option_list():
             if PsiMod.has_option_changed(chgdopt):
-                 commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
+                if chgdopt != 'PUREAM':
+                    commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
+        if input.yes.match(str(user_puream)):
+            commands += """PsiMod.set_global_option('PUREAM', 1)\n""" 
+        elif input.no.match(str(user_puream)):
+            commands += """PsiMod.set_global_option('PUREAM', 0)\n""" 
         if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
         if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
@@ -982,6 +988,7 @@ def complete_basis_set(name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
+    #user_puream = PsiMod.get_option('PUREAM')
     #user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
     #user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
@@ -1355,7 +1362,9 @@ def highest_1(**largs):
         return energypiece
 
    
-# Defining equation in LaTeX:  $E_{corl}(\ell_{max}) = E_{corl}^{\text{CBS}} + A/\ell^3_{max}$
+# Defining equation in LaTeX:  $E_{corl}^{X} = E_{corl}^{\infty} + \beta X^{-3}$
+# Solution equation in LaTeX:  $E_{corl}^{\infty} = \frac{E_{corl}^{X} X^3 - E_{corl}^{X-1} (X-1)^3}{X^3 - (X-1)^3}$
+# Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
 def corl_xtpl_helgaker_2(**largs):
 
     energypiece = 0.0
@@ -1385,6 +1394,84 @@ def corl_xtpl_helgaker_2(**largs):
 
         # Return extrapolated energy
         energypiece = (eHI * zHI**3 - eLO * zLO**3) / (zHI**3 - zLO**3) 
+        beta = (eHI - eLO) / (zHI**(-3) - zLO**(-3))
+
+        cbsscheme  = ''
+        cbsscheme += """   %s\n""" % (functionname)
+        cbsscheme += """   Energy Piece: %16.8f\n""" % (energypiece)
+        cbsscheme += """   Beta:         %16.8f\n""" % (beta)
+        cbsscheme += """\n"""
+        PsiMod.print_out(cbsscheme)
+
+        return energypiece
+
+
+# Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$
+def scf_xtpl_helgaker_3(**largs):
+
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+    [mode, NEED, wfnname, BSET, ZSET] = validate_scheme_args(functionname, **largs)
+
+    if (mode == 'requisition'):
+
+        # Impose restrictions on zeta sequence
+        if (len(ZSET) != 3):
+            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+
+        # Return array that logs the requisite jobs
+        NEED = {'HI' : dict(zip(f_fields, [wfnname, 'tot', BSET[2], ZSET[2], 0.0])),
+                'MD' : dict(zip(f_fields, [wfnname, 'tot', BSET[1], ZSET[1], 0.0])),
+                'LO' : dict(zip(f_fields, [wfnname, 'tot', BSET[0], ZSET[0], 0.0])) }
+
+        return NEED
+
+    elif (mode == 'evaluate'):
+
+        # Extract required energies and zeta integers from array
+        eHI = NEED['HI']['f_energy']
+        eMD = NEED['MD']['f_energy']
+        eLO = NEED['LO']['f_energy']
+
+        # Return extrapolated energy
+        energypiece = (eHI * eLO - eMD * eMD) / (eHI + eLO - 2 * eMD)
+
+        return energypiece
+
+
+# Defining equation in LaTeX:  $E_{scf}(\ell_{max}) = E_{scf}^{\text{CBS}} + Ae^{b\ell_{max}}$
+def scf_xtpl_helgaker_2(**largs):
+
+    energypiece = 0.0
+    functionname = sys._getframe().f_code.co_name
+    f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
+    [mode, NEED, wfnname, BSET, ZSET] = validate_scheme_args(functionname, **largs)
+
+    if (mode == 'requisition'):
+
+        # Impose restrictions on zeta sequence
+        if (len(ZSET) != 2):
+            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+
+        # Return array that logs the requisite jobs
+        NEED = {'HI' : dict(zip(f_fields, [wfnname, 'tot', BSET[1], ZSET[1], 0.0])),
+                'LO' : dict(zip(f_fields, [wfnname, 'tot', BSET[0], ZSET[0], 0.0])) }
+
+        return NEED
+
+    elif (mode == 'evaluate'):
+
+        # Extract required energies and zeta integers from array
+        eHI = NEED['HI']['f_energy']
+        eLO = NEED['LO']['f_energy']
+
+        alpha = 1.63
+        if(largs.has_key('parameter')):
+            alpha = largs['parameter']
+
+        # Return extrapolated energy
+        energypiece = (eHI - eLO * math.exp(-alpha)) / (1 - math.exp(-alpha))
 
         return energypiece
 
