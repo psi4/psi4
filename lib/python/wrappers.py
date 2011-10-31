@@ -452,7 +452,6 @@ def database(name, db_name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
-    user_puream = PsiMod.get_option('PUREAM')
     user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
     user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
@@ -689,16 +688,17 @@ def database(name, db_name, **kwargs):
         commands += """\nPsiMod.set_memory(%s)\n\n""" % (user_memory)
         for chgdopt in PsiMod.get_global_option_list():
             if PsiMod.has_option_changed(chgdopt):
-                if chgdopt != 'PUREAM':
-                    commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, PsiMod.get_global_option(chgdopt))
+                chgdoptval = PsiMod.get_global_option(chgdopt)
+                if isinstance(chgdoptval, basestring):
+                    commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
+                elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
+                    commands += """PsiMod.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
+                else:
+                    raise Exception('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
         commands += """PsiMod.set_global_option('BASIS', '%s')\n""" % (user_basis)
-        if input.yes.match(str(user_puream)):
-            commands += """PsiMod.set_global_option('PUREAM', 1)\n""" 
-        elif input.no.match(str(user_puream)):
-            commands += """PsiMod.set_global_option('PUREAM', 0)\n""" 
         if not((user_ri_basis_scf == "") or (user_ri_basis_scf == 'NONE')):
             commands += """PsiMod.set_global_option('RI_BASIS_SCF', '%s')\n""" % (user_ri_basis_scf)
         if not((user_ri_basis_mp2 == "") or (user_ri_basis_mp2 == 'NONE')):
@@ -988,7 +988,6 @@ def complete_basis_set(name, **kwargs):
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
     user_basis = PsiMod.get_option('BASIS')
-    #user_puream = PsiMod.get_option('PUREAM')
     #user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
     #user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
