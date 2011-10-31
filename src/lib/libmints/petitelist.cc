@@ -951,17 +951,17 @@ PetiteList::compute_aotoso_info()
     return SOs;
 }
 
-boost::shared_ptr<Matrix> PetiteList::sotoao()
+SharedMatrix PetiteList::sotoao()
 {
-    return boost::shared_ptr<Matrix>(aotoso()->transpose());
+    return SharedMatrix(aotoso()->transpose());
 }
 
-boost::shared_ptr<Matrix> PetiteList::aotoso()
+SharedMatrix PetiteList::aotoso()
 {
     Dimension aodim = AO_basisdim();
     Dimension sodim = SO_basisdim();
 
-    boost::shared_ptr<Matrix> aoso(new Matrix("AO->SO matrix", aodim, sodim));
+    SharedMatrix aoso(new Matrix("AO->SO matrix", aodim, sodim));
 
 //    if (c1_) {
 //        aoso->identity();

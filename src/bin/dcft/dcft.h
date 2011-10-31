@@ -19,8 +19,6 @@ class Chkpt;
 class Matrix;
 class Vector;
 class IntegralTransform;
-typedef boost::shared_ptr<Matrix> SharedMatrix;
-typedef boost::shared_ptr<Vector> SharedVector;
 
 namespace dcft{
 

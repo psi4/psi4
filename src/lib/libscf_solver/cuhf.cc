@@ -128,8 +128,8 @@ void CUHF::compute_spin_contamination()
         if (na == 0 || nb == 0 || nbf == 0 || nmo == 0)
             continue;
 
-        boost::shared_ptr<Matrix> Ht (new Matrix("H Temp", nbf, nb));
-        boost::shared_ptr<Matrix> Ft (new Matrix("F Temp", na, nb));
+        SharedMatrix Ht (new Matrix("H Temp", nbf, nb));
+        SharedMatrix Ft (new Matrix("F Temp", na, nb));
 
         double** Sp = S_->pointer(h);
         double** Cap = Ca_->pointer(h);
@@ -326,8 +326,8 @@ double CUHF::compute_E()
 
 void CUHF::save_fock()
 {
-    boost::shared_ptr<Matrix> FDSmSDFa = form_FDSmSDF(Fa_, Da_);
-    boost::shared_ptr<Matrix> FDSmSDFb = form_FDSmSDF(Fb_, Db_);
+    SharedMatrix FDSmSDFa = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix FDSmSDFb = form_FDSmSDF(Fb_, Db_);
 //    FDSmSDFa->add(FDSmSDFb);
 
     if (initialized_diis_manager_ == false) {

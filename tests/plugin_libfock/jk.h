@@ -7,6 +7,7 @@ template<class T> class shared_ptr;
 
 namespace psi {
 
+class GPUDFJKHelper;
 class BasisSet;
 class Matrix;
 class IntegralFactory;
@@ -73,8 +74,8 @@ class PSIO;
  * 
  *      // These do not even need to be filled yet, 
  *      // jk just needs the reference
- *      std::vector<boost::shared_ptr<Matrix> > C_left;
- *      std::vector<boost::shared_ptr<Matrix> > C_right;
+ *      std::vector<SharedMatrix > C_left;
+ *      std::vector<SharedMatrix > C_right;
  *
  *      // Nonymmetric constructor, Algorithm corresponds 
  *      // to Type 
@@ -113,13 +114,13 @@ class PSIO;
  *      // C_left/C_right, I ask that you renew your reference
  *      // to the results J/K/D here. I only malloc where needed,
  *      // but if anything at all happens to C_left/C_right, last
- *      // iteration's boost::shared_ptr<Matrix> values might not
+ *      // iteration's SharedMatrix values might not
  *      // be valid. The std::vector<boost::shard_ptr<Matrix> >
  *      // for J/K/D will still be valid, but the pointers in the
  *      // entries may change.
  *
- *      boost::shared_ptr<Matrix> Jnew = jk->J()[0];
- *      boost::shared_ptr<Matrix> Knew = jk->K()[0];
+ *      SharedMatrix Jnew = jk->J()[0];
+ *      SharedMatrix Knew = jk->K()[0];
  *
  *      // After iterations:
  *
@@ -161,36 +162,36 @@ protected:
     /// C_left_ = C_right_?
     bool lr_symmetric_;
     /// Pseudo-occupied C matrices, left side
-    std::vector<boost::shared_ptr<Matrix> > C_left_;
+    std::vector<SharedMatrix > C_left_;
     /// Pseudo-occupied C matrices, right side 
-    std::vector<boost::shared_ptr<Matrix> > C_right_;
+    std::vector<SharedMatrix > C_right_;
     /// Pseudo-density matrices D_ls =  C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > D_;
+    std::vector<SharedMatrix > D_;
     /// J matrices: J_mn = (mn|ls) C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > J_;
+    std::vector<SharedMatrix > J_;
     /// K matrices: K_mn = (ml|ns) C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > K_;
+    std::vector<SharedMatrix > K_;
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > wK_;
+    std::vector<SharedMatrix > wK_;
 
     // => Microarchitecture-Level State Variables (No Spatial Symmetry) <= // 
 
     /// Primary basis set
     boost::shared_ptr<BasisSet> primary_;
     /// AO2USO transformation matrix
-    boost::shared_ptr<Matrix> AO2USO_;
+    SharedMatrix AO2USO_;
     /// Pseudo-occupied C matrices, left side
-    std::vector<boost::shared_ptr<Matrix> > C_left_ao_;
+    std::vector<SharedMatrix > C_left_ao_;
     /// Pseudo-occupied C matrices, right side 
-    std::vector<boost::shared_ptr<Matrix> > C_right_ao_;
+    std::vector<SharedMatrix > C_right_ao_;
     /// Pseudo-density matrices
-    std::vector<boost::shared_ptr<Matrix> > D_ao_;
+    std::vector<SharedMatrix > D_ao_;
     /// J matrices: J_mn = (mn|ls) C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > J_ao_;
+    std::vector<SharedMatrix > J_ao_;
     /// K matrices: K_mn = (ml|ns) C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > K_ao_;
+    std::vector<SharedMatrix > K_ao_;
     /// wK matrices: wK_mn = (ml|w|ns) C_li^left C_si^right
-    std::vector<boost::shared_ptr<Matrix> > wK_ao_;
+    std::vector<SharedMatrix > wK_ao_;
 
     // => Per-Iteration Setup/Finalize Routines <= //
 
@@ -236,8 +237,8 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    JK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-       std::vector<boost::shared_ptr<Matrix> >& C_right,
+    JK(std::vector<SharedMatrix >& C_left, 
+       std::vector<SharedMatrix >& C_right,
        boost::shared_ptr<BasisSet> primary);
 
     /**
@@ -250,7 +251,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    JK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+    JK(std::vector<SharedMatrix >& C_symm,
        boost::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~JK();
@@ -349,50 +350,50 @@ public:
      * Reference to C_left queue. It is YOUR job to
      * allocate and fill this object out 
      */
-    std::vector<boost::shared_ptr<Matrix> >& C_left() { return C_left_; } 
+    std::vector<SharedMatrix >& C_left() { return C_left_; } 
     /**
      * Reference to C_right queue. It is YOUR job to
      * allocate and fill this object out. Only fill
      * C_left if symmetric. 
      */
-    std::vector<boost::shared_ptr<Matrix> >& C_right() { return C_right_; } 
+    std::vector<SharedMatrix >& C_right() { return C_right_; } 
 
     /**
      * Reference to J results. The reference to the 
-     * std::vector<boost::shared_ptr<Matrix> > is valid
+     * std::vector<SharedMatrix > is valid
      * throughout the life of the object. However, the 
-     * entries (actual boost::shared_ptr<Matrix> pointers)
+     * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return J vector of J matrices
      */
-    const std::vector<boost::shared_ptr<Matrix> >& J() const { return J_; }
+    const std::vector<SharedMatrix >& J() const { return J_; }
     /**
      * Reference to K results. The reference to the 
-     * std::vector<boost::shared_ptr<Matrix> > is valid
+     * std::vector<SharedMatrix > is valid
      * throughout the life of the object. However, the 
-     * entries (actual boost::shared_ptr<Matrix> pointers)
+     * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return K vector of K matrices
      */
-    const std::vector<boost::shared_ptr<Matrix> >& K() const { return K_; }
+    const std::vector<SharedMatrix >& K() const { return K_; }
     /**
      * Reference to wK results. The reference to the 
-     * std::vector<boost::shared_ptr<Matrix> > is valid
+     * std::vector<SharedMatrix > is valid
      * throughout the life of the object. However, the 
-     * entries (actual boost::shared_ptr<Matrix> pointers)
+     * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return wK vector of wK matrices
      */
-    const std::vector<boost::shared_ptr<Matrix> >& wK() const { return wK_; }
+    const std::vector<SharedMatrix >& wK() const { return wK_; }
     /**
      * Reference to D results. The reference to the 
-     * std::vector<boost::shared_ptr<Matrix> > is valid
+     * std::vector<SharedMatrix > is valid
      * throughout the life of the object. However, the 
-     * entries (actual boost::shared_ptr<Matrix> pointers)
+     * entries (actual SharedMatrix pointers)
      * may be changed in each call of compute();
      * @return D vector of D matrices
      */
-    const std::vector<boost::shared_ptr<Matrix> >& D() const { return D_; }
+    const std::vector<SharedMatrix >& D() const { return D_; }
 
     /**
     * Print header information regarding JK
@@ -454,8 +455,8 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-       std::vector<boost::shared_ptr<Matrix> >& C_right,
+    DirectJK(std::vector<SharedMatrix >& C_left, 
+       std::vector<SharedMatrix >& C_right,
        boost::shared_ptr<BasisSet> primary);
     /**
      * Symmetric Constructor
@@ -467,7 +468,7 @@ public:
      *        C matrices must have the same spatial symmetry
      *        structure as this molecule
      */
-    DirectJK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+    DirectJK(std::vector<SharedMatrix >& C_symm,
        boost::shared_ptr<BasisSet> primary);
     /// Destructor
     virtual ~DirectJK();
@@ -497,6 +498,8 @@ protected:
     boost::shared_ptr<BasisSet> auxiliary_;
     /// PSIO object
     boost::shared_ptr<PSIO> psio_; 
+    /// Algorithm number
+    int algorithm_;
     /// Condition cutoff in fitting metric, defaults to 1.0E-12
     double condition_;
     /// File number for (Q|mn) tensor
@@ -512,14 +515,18 @@ protected:
     
     // => Temps (built/destroyed in compute_JK) <= //
 
-    boost::shared_ptr<Matrix> Qmn_;
+    SharedMatrix Qmn_;
+    SharedMatrix Qmn2_;
+    
     boost::shared_ptr<Vector> J_temp_; 
     boost::shared_ptr<Vector> D_temp_; 
     boost::shared_ptr<Vector> d_temp_; 
-    boost::shared_ptr<Matrix> E_left_; 
-    boost::shared_ptr<Matrix> E_right_; 
-    std::vector<boost::shared_ptr<Matrix> > C_temp_; 
-    std::vector<boost::shared_ptr<Matrix> > Q_temp_; 
+    
+    boost::shared_ptr<Vector> sort_;
+    SharedMatrix E_left_; 
+    SharedMatrix E_right_; 
+    std::vector<SharedMatrix > C_temp_; 
+    std::vector<SharedMatrix > Q_temp_; 
 
     // => Required Algorithm-Specific Methods <= //
 
@@ -546,6 +553,7 @@ protected:
     virtual void initialize_JK_disk();
     virtual void manage_JK_core();
     virtual void manage_JK_disk();
+    virtual void unpack_Qmn(double** Qmnp, int naux);
     virtual void block_J(double** Qmnp, int naux);
     virtual void block_K(double** Qmnp, int naux);
 
@@ -565,8 +573,8 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-       std::vector<boost::shared_ptr<Matrix> >& C_right,
+    DFJK(std::vector<SharedMatrix >& C_left, 
+       std::vector<SharedMatrix >& C_right,
        boost::shared_ptr<BasisSet> primary,
        boost::shared_ptr<BasisSet> auxiliary);
 
@@ -581,7 +589,7 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    DFJK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+    DFJK(std::vector<SharedMatrix >& C_symm,
        boost::shared_ptr<BasisSet> primary,
        boost::shared_ptr<BasisSet> auxiliary);
     /// Destructor
@@ -602,6 +610,12 @@ public:
      * @param unit Unit number
      */
     void set_unit(unsigned int unit) { unit_ = unit; }
+    /**
+     * Which algorithm number to use for DF (0 for old algorithm, 1 for new algorithm)
+     * @param algorithm number
+     */
+    void set_algorithm(int algorithm) { algorithm_ = algorithm; }
+    
     
     // => Accessors <= //
 
@@ -625,6 +639,10 @@ protected:
     virtual void block_J(double** Qmnp, int naux);
     virtual void block_K(double** Qmnp, int naux);
     void common_init();
+    /// Setup integrals, files, etc
+    virtual void preiterations(); 
+    /// Delete integrals, files, etc
+    virtual void postiterations(); 
 
 public:
 
@@ -641,8 +659,8 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    GPUDFJK(std::vector<boost::shared_ptr<Matrix> >& C_left, 
-       std::vector<boost::shared_ptr<Matrix> >& C_right,
+    GPUDFJK(std::vector<SharedMatrix >& C_left, 
+       std::vector<SharedMatrix >& C_right,
        boost::shared_ptr<BasisSet> primary,
        boost::shared_ptr<BasisSet> auxiliary);
 
@@ -657,11 +675,16 @@ public:
      *        structure as this molecule
      * @param auxiliary auxiliary basis set for this system.
      */
-    GPUDFJK(std::vector<boost::shared_ptr<Matrix> >& C_symm,
+    GPUDFJK(std::vector<SharedMatrix >& C_symm,
        boost::shared_ptr<BasisSet> primary,
        boost::shared_ptr<BasisSet> auxiliary);
     /// Destructor
     virtual ~GPUDFJK();
+
+    /**
+     * helper class definied in gpudfjkhelper.h
+     */
+    boost::shared_ptr<GPUDFJKHelper> helper_;
 
     /**
     * Print header information regarding JK

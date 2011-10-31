@@ -167,7 +167,7 @@ void RHF::save_information()
 void RHF::save_fock()
 {
     // Conventional DIIS (X'[FDS - SDF]X, where X levels things out)
-    boost::shared_ptr<Matrix> FDSmSDF = form_FDSmSDF(Fa_, Da_);
+    SharedMatrix FDSmSDF = form_FDSmSDF(Fa_, Da_);
 
     if (initialized_diis_manager_ == false) {
         if (scf_type_ == "direct")

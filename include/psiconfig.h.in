@@ -12,6 +12,7 @@
 
 /* Top source code directory */
 #define PSI_TOP_SRCDIR @top_srcdir@
+#define PSI_TOP_OBJDIR @top_objdir@
 
 /* MPI? */
 #undef HAVE_MPI

@@ -504,7 +504,7 @@ void HF::compute_SAD_guess()
 
     timer_on("AO2USO SAD");
     //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
-    boost::shared_ptr<Matrix> DAO = boost::shared_ptr<Matrix>(new Matrix("D_SAD (AO)", nso_, nso_));
+    SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", nso_, nso_));
     for (int A = 0, offset = 0; A < mol->natom(); A++) {
         int norbs = atomic_bases[A]->nbf();
         int back_index = unique_indices[A];
@@ -536,7 +536,7 @@ void HF::compute_SAD_guess()
 
         boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
         boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, fact));
-        boost::shared_ptr<Matrix> AO2USO(pet->aotoso());
+        SharedMatrix AO2USO(pet->aotoso());
         Dimension dim = pet->SO_basisdim();
         int nao = nso_;
 
@@ -568,7 +568,7 @@ void HF::compute_SAD_guess()
         fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
     }
     int* dim = Da_->colspi();
-    boost::shared_ptr<Matrix> D2(factory_->create_matrix("D2"));
+    SharedMatrix D2(factory_->create_matrix("D2"));
     D2->copy(Da_);
     Ca_->zero();
     for (int h = 0; h < Da_->nirrep(); h++) {
@@ -705,10 +705,10 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, boost::share
     boost::shared_ptr<OneBodySOInt> intAB(hybfactory->so_overlap());
 
     boost::shared_ptr<PetiteList> pet(new PetiteList(new_basis, newfactory));
-    boost::shared_ptr<Matrix> AO2USO(pet->aotoso());
+    SharedMatrix AO2USO(pet->aotoso());
 
-    boost::shared_ptr<Matrix> SAB(new Matrix("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi()));
-    boost::shared_ptr<Matrix> SBB(new Matrix("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi()));
+    SharedMatrix SAB(new Matrix("S_AB", C_A->nirrep(), C_A->rowspi(), AO2USO->colspi()));
+    SharedMatrix SBB(new Matrix("S_BB", C_A->nirrep(), AO2USO->colspi(), AO2USO->colspi()));
 
     intAB->compute(SAB);
     intBB->compute(SBB);
@@ -723,7 +723,7 @@ SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, boost::share
     pet.reset();
 
     // Constrained to the same symmetry at the moment, we can relax this soon
-    boost::shared_ptr<Matrix> C_B(new Matrix("C_B", C_A->nirrep(),AO2USO->colspi(), noccpi));
+    SharedMatrix C_B(new Matrix("C_B", C_A->nirrep(),AO2USO->colspi(), noccpi));
 
     // Block over irreps (soon united irreps)
     for (int h = 0; h < C_A->nirrep(); h++) {

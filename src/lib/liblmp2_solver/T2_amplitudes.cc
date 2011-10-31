@@ -188,7 +188,7 @@ SharedMatrix LMP2::build_F_sum(const int &ij, const int &iter) {
         return task(me_, &LMP2::F_sum_add, F_sum_kj, F_sum_ik, ij);
     }
     else {
-        return boost::shared_ptr<Matrix>(new Matrix());
+        return SharedMatrix(new Matrix());
     }
 }
 
@@ -196,7 +196,7 @@ SharedMatrix LMP2::F_sum_add(const std::vector<madness::Future<SharedMatrix> > &
                              const std::vector<madness::Future<SharedMatrix> > &T2_ik,
                              const int &ij)
 {
-    boost::shared_ptr<Matrix> F_sum(new Matrix(nirreps_, &nso_, &nso_));
+    SharedMatrix F_sum(new Matrix(nirreps_, &nso_, &nso_));
     double **f = F_sum->pointer();
     double **f_lo = F_LO_->pointer();
 
@@ -483,7 +483,7 @@ SharedMatrix LMP2::amplitudes_T2(const SharedMatrix T2, const int &ij, const int
 
 //    double ****Replicate_kj = (double ****) malloc(lmp2_info.ij_pairs_per_proc_ * sizeof (double ***));
 //    double ****Replicate_ik = (double ****) malloc(lmp2_info.ij_pairs_per_proc_ * sizeof (double ***));
-//    SharedMatrix Denominator = boost::shared_ptr<Matrix>(new Matrix("Denominator"));
+//    SharedMatrix Denominator = SharedMatrix(new Matrix("Denominator"));
 
 //    // Set up the ij to kj/ik maps
 //    for (int ij = 0; ij < lmp2_info.ij_pairs_; ij++) {
@@ -589,7 +589,7 @@ SharedMatrix LMP2::amplitudes_T2(const SharedMatrix T2, const int &ij, const int
 //    lmp2_info.T2_[lmp2_info.div_]->copy(lmp2_info.Ktilde_);
 //    if (iter > 0) {
 
-//        SharedMatrix Temp1 = boost::shared_ptr<Matrix> (lmp2_info.T2_[lmp2_info.div_]->clone());
+//        SharedMatrix Temp1 = SharedMatrix (lmp2_info.T2_[lmp2_info.div_]->clone());
 
 //        Temp1->gemm(false, false, 1.0, lmp2_info.F_virt_, lmp2_info.T2_[lmp2_info.dmat1_], 0.0);
 //        lmp2_info.T2_[lmp2_info.div_]->gemm(false, false, 1.0, Temp1, lmp2_info.S_virt_, 1.0);

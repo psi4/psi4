@@ -476,7 +476,7 @@ void PSMP3::term_1()
 
   BpIA = dfints_->get_ov_iterator(mem_-(long int) naocc_*navir_*naux);
 
-  shared_ptr<Matrix> BpIA_chunk = BpIA->chunk();
+  SharedMatrix BpIA_chunk = BpIA->chunk();
 
   double **B_p_OV = BpIA_chunk->pointer();
   double *T_p_OV = init_array(naocc_*navir_*naux);
@@ -523,7 +523,7 @@ void PSMP3::term_3()
 
   BpIA = dfints_->get_ov_iterator(mem_-(long int) naocc_*navir_*naux);
 
-  shared_ptr<Matrix> BpIA_chunk = BpIA->chunk();
+  SharedMatrix BpIA_chunk = BpIA->chunk();
 
   double **B_p_OV = BpIA_chunk->pointer();
   double *S_p_OV = init_array(naocc_*navir_*naux);

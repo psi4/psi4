@@ -75,7 +75,7 @@ void CC::get_params()
   evals_ = shared_ptr<Vector>(new Vector("Epsilon (full)",nmo_));
   evalsp_ = evals_->pointer();
   memcpy(static_cast<void*> (evalsp_), static_cast<void*> (evals_t), nmo_*sizeof(double));
-  C_ = shared_ptr<Matrix>(new Matrix("C (full)", nso_, nmo_));
+  C_ = SharedMatrix(new Matrix("C (full)", nso_, nmo_));
   Cp_ = C_->pointer();
   memcpy(static_cast<void*> (Cp_[0]), static_cast<void*> (C_t[0]), nmo_*nso_*sizeof(double));
 
@@ -87,9 +87,9 @@ void CC::get_params()
   evals_avir_ = shared_ptr<Vector>(new Vector("Epsilon (Active Virtual)",navir_));
   evals_avirp_ = evals_avir_->pointer();
 
-  C_aocc_ = shared_ptr<Matrix>(new Matrix("C (Active Occupied)", nso_, naocc_));
+  C_aocc_ = SharedMatrix(new Matrix("C (Active Occupied)", nso_, naocc_));
   C_aoccp_ = C_aocc_->pointer();
-  C_avir_ = shared_ptr<Matrix>(new Matrix("C (Active Virtual)", nso_, navir_));
+  C_avir_ = SharedMatrix(new Matrix("C (Active Virtual)", nso_, navir_));
   C_avirp_ = C_avir_->pointer();
 
   memcpy(static_cast<void*> (evals_aoccp_), static_cast<void*> (&evals_t[nfocc_]), naocc_*sizeof(double));

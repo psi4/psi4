@@ -37,9 +37,9 @@ namespace psi{ namespace scf{
 class Omega_K_Functor
 {
     /// The density matrix
-    const boost::shared_ptr<Matrix> D_;
+    const SharedMatrix D_;
     /// The occupation matrix
-    const boost::shared_ptr<Matrix> C_;
+    const SharedMatrix C_;
     /// The number of alpha (and beta) electrons
     const int* N_;
     /// The omega for the iteration
@@ -77,8 +77,8 @@ public:
 
     Omega_K_Functor() { throw PSIEXCEPTION("Omega_K_Functor(): Don't call me, idiot."); }
 
-    Omega_K_Functor(double omega, boost::shared_ptr<Matrix> wK, const boost::shared_ptr<Matrix> D,
-        const boost::shared_ptr<Matrix> C, const int* N)
+    Omega_K_Functor(double omega, SharedMatrix wK, const SharedMatrix D,
+        const SharedMatrix C, const int* N)
         : omega_(omega), D_(D), C_(C), N_(N)
     {
         J_.clear();
@@ -238,13 +238,13 @@ public:
 class Omega_Ka_Kb_Functor
 {
     /// The alpha density matrix
-    const boost::shared_ptr<Matrix> Da_;
+    const SharedMatrix Da_;
     /// The beta density matrix
-    const boost::shared_ptr<Matrix> Db_;
+    const SharedMatrix Db_;
     /// The alpha occupation matrix
-    const boost::shared_ptr<Matrix> Ca_;
+    const SharedMatrix Ca_;
     /// The beta occupation matrix
-    const boost::shared_ptr<Matrix> Cb_;
+    const SharedMatrix Cb_;
     /// The number of alpha electrons
     const int* Na_;
     /// The number of beta electrons
@@ -296,8 +296,8 @@ public:
 
     Omega_Ka_Kb_Functor() { throw PSIEXCEPTION("Omega_Ka_Kb_Functor(): Really? You want to do this?"); }
 
-    Omega_Ka_Kb_Functor(double omega, boost::shared_ptr<Matrix> wKa,
-               boost::shared_ptr<Matrix> wKb, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db, const boost::shared_ptr<Matrix> Ca, const boost::shared_ptr<Matrix> Cb, const int* Na, const int* Nb)
+    Omega_Ka_Kb_Functor(double omega, SharedMatrix wKa,
+               SharedMatrix wKb, const SharedMatrix Da, const SharedMatrix Db, const SharedMatrix Ca, const SharedMatrix Cb, const int* Na, const int* Nb)
         : omega_(omega), Da_(Da), Db_(Db), Ca_(Ca), Cb_(Cb), Na_(Na), Nb_(Nb)
     {
         J_.clear();

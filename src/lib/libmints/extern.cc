@@ -70,7 +70,7 @@ void ExternalPotential::translate(double dx, double dy, double dz)
         get<8> (quadrupoles_[i]) += dz;
     }
 }
-void ExternalPotential::rotate(shared_ptr<Matrix> R)
+void ExternalPotential::rotate(SharedMatrix R)
 {
     //TODO
     throw FeatureNotImplemented("psi::ExternalPotential::rotate", "Rotation of multipoles not yet implemented", __FILE__,__LINE__);
@@ -135,16 +135,16 @@ double ExternalPotential::computePotentialPoint(double x, double y, double z)
 
     return V;
 }
-shared_ptr<Matrix> ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basis)
+SharedMatrix ExternalPotential::computePotentialMatrix(shared_ptr<BasisSet> basis)
 {
     int n = basis->nbf();
-    shared_ptr<Matrix> V(new Matrix("External Potential",n,n));
+    SharedMatrix V(new Matrix("External Potential",n,n));
     shared_ptr<IntegralFactory> fact(new IntegralFactory(basis,basis,basis,basis));
 
     // Monopoles
-    shared_ptr<Matrix> V_charge(new Matrix("External Potential (Charges)", n, n));
+    SharedMatrix V_charge(new Matrix("External Potential (Charges)", n, n));
 
-    shared_ptr<Matrix> Zxyz(new Matrix("Charges (Z,x,y,z)", charges_.size(), 4));
+    SharedMatrix Zxyz(new Matrix("Charges (Z,x,y,z)", charges_.size(), 4));
     double** Zxyzp = Zxyz->pointer();
     for (int i = 0; i < charges_.size(); i++) {
         Zxyzp[i][0] = get<0>(charges_[i]);

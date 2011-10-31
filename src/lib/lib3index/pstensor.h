@@ -103,11 +103,11 @@ protected:
     Options& options_;
 
     /// Full C matrix (must provide orthonormal MO basis)
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
     /// Active occupied C Matrix (for convenience)
-    boost::shared_ptr<Matrix> Caocc_;
+    SharedMatrix Caocc_;
     /// Active virtual C Matrix (for convenience)
-    boost::shared_ptr<Matrix> Cavir_;
+    SharedMatrix Cavir_;
 
     /// Dealias or not?
     bool do_dealias_;
@@ -195,37 +195,37 @@ protected:
     /// Grid weights (hopefully SPD) 
     boost::shared_ptr<Vector> w_;
     /// Primary AO collocation matrix
-    boost::shared_ptr<Matrix> Rpao_;
+    SharedMatrix Rpao_;
     /// Primary MO collocation matrix
-    boost::shared_ptr<Matrix> Rpmo_;
+    SharedMatrix Rpmo_;
     /// Dealias AO collocation matrix
-    boost::shared_ptr<Matrix> Rdao_;
+    SharedMatrix Rdao_;
     /// Dealias MO collocation matrix
-    boost::shared_ptr<Matrix> Rdmo_;
+    SharedMatrix Rdmo_;
    
     /// Primary AO x Dealias MO overlap matrix
-    boost::shared_ptr<Matrix> Spdao_;
+    SharedMatrix Spdao_;
     /// Dealias AO x Dealias AO overlap matrix
-    boost::shared_ptr<Matrix> Sddao_;
+    SharedMatrix Sddao_;
     /// Dealias OO x Dealias OO overlap matrix
-    boost::shared_ptr<Matrix> Sddoo_;
+    SharedMatrix Sddoo_;
  
     /// Primary MO x Dealias AO overlap matrix
-    boost::shared_ptr<Matrix> Spdmo_;
+    SharedMatrix Spdmo_;
     /// Dealias Orthogonalization matrix
-    boost::shared_ptr<Matrix> Cdd_;
+    SharedMatrix Cdd_;
 
     /// Target Q tensor (nmo x naux)
-    boost::shared_ptr<Matrix> Qmo_;
+    SharedMatrix Qmo_;
     /// Target R tensor (nmo x naux)
-    boost::shared_ptr<Matrix> Rmo_;
+    SharedMatrix Rmo_;
 
     /// Possible target O tensor (naux x naux)
-    boost::shared_ptr<Matrix> O_;
+    SharedMatrix O_;
 
 public:
     PSTensorII(boost::shared_ptr<BasisSet> primary, 
-             boost::shared_ptr<Matrix> C,
+             SharedMatrix C,
              int nocc,
              int nvir,
              int naocc,
@@ -234,30 +234,30 @@ public:
              Options& options);
     ~PSTensorII();
 
-    boost::shared_ptr<Matrix> Q();
-    boost::shared_ptr<Matrix> Qocc();
-    boost::shared_ptr<Matrix> Qvir();
-    boost::shared_ptr<Matrix> Qaocc();
-    boost::shared_ptr<Matrix> Qavir();
+    SharedMatrix Q();
+    SharedMatrix Qocc();
+    SharedMatrix Qvir();
+    SharedMatrix Qaocc();
+    SharedMatrix Qavir();
 
-    boost::shared_ptr<Matrix> R();
-    boost::shared_ptr<Matrix> Rocc();
-    boost::shared_ptr<Matrix> Rvir();
-    boost::shared_ptr<Matrix> Raocc();
-    boost::shared_ptr<Matrix> Ravir();
+    SharedMatrix R();
+    SharedMatrix Rocc();
+    SharedMatrix Rvir();
+    SharedMatrix Raocc();
+    SharedMatrix Ravir();
 
-    boost::shared_ptr<Matrix> O();
+    SharedMatrix O();
 
     // Begin naive routines for debugging    
-    boost::shared_ptr<Matrix> Aso();
-    boost::shared_ptr<Matrix> Amo();
-    boost::shared_ptr<Matrix> Aoo();
-    boost::shared_ptr<Matrix> Aov();
-    boost::shared_ptr<Matrix> Avv();
+    SharedMatrix Aso();
+    SharedMatrix Amo();
+    SharedMatrix Aoo();
+    SharedMatrix Aov();
+    SharedMatrix Avv();
 
-    boost::shared_ptr<Matrix> Imo();
-    boost::shared_ptr<Matrix> Ipsmo();
-    boost::shared_ptr<Matrix> Idpsmo();
+    SharedMatrix Imo();
+    SharedMatrix Ipsmo();
+    SharedMatrix Idpsmo();
     // End naive routines for debugging
 };
 
@@ -282,11 +282,11 @@ protected:
     Options& options_;
 
     /// Full C matrix (must provide orthonormal MO basis)
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
     /// Active occupied C Matrix (for convenience)
-    boost::shared_ptr<Matrix> Caocc_;
+    SharedMatrix Caocc_;
     /// Active virtual C Matrix (for convenience)
-    boost::shared_ptr<Matrix> Cavir_;
+    SharedMatrix Cavir_;
 
     /// Minimum eigenvalue to keep in the primary basis
     double min_S_primary_;
@@ -361,39 +361,39 @@ protected:
     boost::shared_ptr<Vector> w_;
 
     /// Target Q tensor (nmo x naux)
-    boost::shared_ptr<Matrix> Qmo_;
+    SharedMatrix Qmo_;
     /// Target R tensor (nmo x naux)
-    boost::shared_ptr<Matrix> Rmo_;
+    SharedMatrix Rmo_;
 
     /// AO-basis overlap (nso x dealias)
-    boost::shared_ptr<Matrix> Spdao_;
+    SharedMatrix Spdao_;
     /// Overlap matrix (nmo x dealias)
-    boost::shared_ptr<Matrix> Spdmo_;
+    SharedMatrix Spdmo_;
 
     /// AO primary collocation matrix (primary x naux)
-    boost::shared_ptr<Matrix> Rpao_;
+    SharedMatrix Rpao_;
     /// AO dealias collocation matrix (dealias x naux)
-    boost::shared_ptr<Matrix> Rdao_;
+    SharedMatrix Rdao_;
     /// MO primary collocation matrix (primary' x naux)
-    boost::shared_ptr<Matrix> Rpmo_;
+    SharedMatrix Rpmo_;
     /// MO dealias collocation matrix (dealias x naux)
-    boost::shared_ptr<Matrix> Rdmo_;
+    SharedMatrix Rdmo_;
     /// Finished augmented collocation matrix (naug x naux)
-    boost::shared_ptr<Matrix> Ra_;
+    SharedMatrix Ra_;
 
-    boost::shared_ptr<Matrix> Cpp_;
-    boost::shared_ptr<Matrix> Cpd_;
-    boost::shared_ptr<Matrix> Cdd_;
+    SharedMatrix Cpp_;
+    SharedMatrix Cpd_;
+    SharedMatrix Cdd_;
 
-    boost::shared_ptr<Matrix> U_;
-    boost::shared_ptr<Matrix> V_;
-    boost::shared_ptr<Matrix> W_;
-    boost::shared_ptr<Matrix> X_;
+    SharedMatrix U_;
+    SharedMatrix V_;
+    SharedMatrix W_;
+    SharedMatrix X_;
 
 public:
 
     PSTensor(boost::shared_ptr<BasisSet> primary, 
-             boost::shared_ptr<Matrix> C,
+             SharedMatrix C,
              int nocc,
              int nvir,
              int naocc,
@@ -402,26 +402,26 @@ public:
              double omega = -1.0);
     ~PSTensor();
 
-    boost::shared_ptr<Matrix> Q();
-    boost::shared_ptr<Matrix> Qocc();
-    boost::shared_ptr<Matrix> Qvir();
-    boost::shared_ptr<Matrix> Qaocc();
-    boost::shared_ptr<Matrix> Qavir();
+    SharedMatrix Q();
+    SharedMatrix Qocc();
+    SharedMatrix Qvir();
+    SharedMatrix Qaocc();
+    SharedMatrix Qavir();
 
-    boost::shared_ptr<Matrix> R();
-    boost::shared_ptr<Matrix> Rocc();
-    boost::shared_ptr<Matrix> Rvir();
-    boost::shared_ptr<Matrix> Raocc();
-    boost::shared_ptr<Matrix> Ravir();
+    SharedMatrix R();
+    SharedMatrix Rocc();
+    SharedMatrix Rvir();
+    SharedMatrix Raocc();
+    SharedMatrix Ravir();
     
-    boost::shared_ptr<Matrix> Aso();
-    boost::shared_ptr<Matrix> Amo();
-    boost::shared_ptr<Matrix> Aoo();
-    boost::shared_ptr<Matrix> Aov();
-    boost::shared_ptr<Matrix> Avv();
+    SharedMatrix Aso();
+    SharedMatrix Amo();
+    SharedMatrix Aoo();
+    SharedMatrix Aov();
+    SharedMatrix Avv();
 
-    boost::shared_ptr<Matrix> Imo();
-    boost::shared_ptr<Matrix> Ipsmo();
+    SharedMatrix Imo();
+    SharedMatrix Ipsmo();
 };
 
 
@@ -479,83 +479,83 @@ protected:
     // Raw S matrices
     
     // Overlap matrix (primary x primary)
-    boost::shared_ptr<Matrix> Spp_;
+    SharedMatrix Spp_;
     // Overlap matrix (primary x dealias)
-    boost::shared_ptr<Matrix> Spd_;
+    SharedMatrix Spd_;
     // Overlap matrix (dealias x dealias)
-    boost::shared_ptr<Matrix> Sdd_;
+    SharedMatrix Sdd_;
     // Augmented Overlap matrix (aug x aug)
-    boost::shared_ptr<Matrix> Sa_;
+    SharedMatrix Sa_;
 
     // Orthonormal primary
     
     // Overlap matrix (primary x dealias)
-    boost::shared_ptr<Matrix> Spd3_;
+    SharedMatrix Spd3_;
     // Augmented Overlap matrix (aug x aug)
-    boost::shared_ptr<Matrix> Sa3_;
+    SharedMatrix Sa3_;
 
     // Orthogonal primary - dealias
 
     // Overlap matrix (dealias x dealias)
-    boost::shared_ptr<Matrix> Sdd4_;
+    SharedMatrix Sdd4_;
     // Augmented Overlap matrix (aug x aug) (finished)
-    boost::shared_ptr<Matrix> Sa4_;
+    SharedMatrix Sa4_;
 
     // Orthonormal primary - dealias
     
     // Augmented Overlap matrix (aug' x aug') (finished)
-    boost::shared_ptr<Matrix> Sa2_;    
+    SharedMatrix Sa2_;    
 
     // X matrix, primary (primary x primary')
-    boost::shared_ptr<Matrix> Xpp_;
+    SharedMatrix Xpp_;
     // X matrix, dealias (dealias x dealias')
-    boost::shared_ptr<Matrix> Xdd_;
+    SharedMatrix Xdd_;
     // Orthogonalization matrix (dealias x primary')
-    boost::shared_ptr<Matrix> Cdp_;
+    SharedMatrix Cdp_;
 
     // Collocation matrix (primary)
-    boost::shared_ptr<Matrix> Rp_;
+    SharedMatrix Rp_;
     // Collocation matrix (dealias)
-    boost::shared_ptr<Matrix> Rd_;
+    SharedMatrix Rd_;
     // Collocation matrix (primary')
-    boost::shared_ptr<Matrix> Rp2_;
+    SharedMatrix Rp2_;
     // Collocation matrix (dealias')
-    boost::shared_ptr<Matrix> Rd2_;
+    SharedMatrix Rd2_;
     // Collocation matrix (augmented')
-    boost::shared_ptr<Matrix> Ra_;
+    SharedMatrix Ra_;
 
     // Weight Vector 
     boost::shared_ptr<Vector> w_;
     // C matrix
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
     // Cinv matrix
-    boost::shared_ptr<Matrix> Cinv_;
+    SharedMatrix Cinv_;
     // Full Q matrix
-    boost::shared_ptr<Matrix> Qfull_;
+    SharedMatrix Qfull_;
     // Full Q matrix
-    boost::shared_ptr<Matrix> Qmo_;
+    SharedMatrix Qmo_;
     // Projector matrix 
-    boost::shared_ptr<Matrix> P_;
+    SharedMatrix P_;
     // Transformer matrix
-    boost::shared_ptr<Matrix> SX_;
+    SharedMatrix SX_;
 
     // => Targets <= //
 
     // Q_m^P
-    boost::shared_ptr<Matrix> Q_;
+    SharedMatrix Q_;
     // R_n^P
-    boost::shared_ptr<Matrix> R_;
+    SharedMatrix R_;
     // A_ls^P
-    boost::shared_ptr<Matrix> A_;
+    SharedMatrix A_;
     // QR_mn^P 
-    boost::shared_ptr<Matrix> T_;
+    SharedMatrix T_;
 
     // => Final Targets <= //  
 
     // AO basis (mn|ls) tensor (exact)
-    boost::shared_ptr<Matrix> I_; 
+    SharedMatrix I_; 
     // AO basis (mn|ls) tensor (PS)
-    boost::shared_ptr<Matrix> Ips_; 
+    SharedMatrix Ips_; 
 
     // => Helpers <= //
     
@@ -602,12 +602,12 @@ public:
     PseudoTrial();
     ~PseudoTrial();
     
-    boost::shared_ptr<Matrix> getI() const;
-    boost::shared_ptr<Matrix> getIPS() const;
+    SharedMatrix getI() const;
+    SharedMatrix getIPS() const;
 
-    boost::shared_ptr<Matrix> getQ() const;
-    boost::shared_ptr<Matrix> getR() const;
-    boost::shared_ptr<Matrix> getA() const;
+    SharedMatrix getQ() const;
+    SharedMatrix getR() const;
+    SharedMatrix getA() const;
 
 };
 

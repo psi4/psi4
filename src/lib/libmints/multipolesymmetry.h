@@ -72,7 +72,7 @@ public:
     std::string name_of_component(int i);
     int component_symmetry(int i) const { return component_symmetry_[i]; }
 
-    std::vector<boost::shared_ptr<Matrix> > create_matrices(const std::string& basename);
+    std::vector<SharedMatrix > create_matrices(const std::string& basename);
 };
 
 }

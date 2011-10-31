@@ -99,6 +99,7 @@ protected:
     //! Were the indices permuted?
     bool p13p24_, p12_, p34_;
 
+
 public:
     //! Constructor. Use an IntegralFactory to create this object.
     TwoElectronInt(const IntegralFactory* integral, int deriv=0, double schwarz = 0.0);

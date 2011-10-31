@@ -34,7 +34,7 @@ PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_pt
     buffer_ = new double[maxnao1*maxnao2];
 
     // Setup the initial field of partial charges
-    Zxyz_ = shared_ptr<Matrix> (new Matrix("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4));
+    Zxyz_ = SharedMatrix (new Matrix("Partial Charge Field (Z,x,y,z)", bs1_->molecule()->natom(), 4));
     double** Zxyzp = Zxyz_->pointer();
 
     for (int A = 0; A < bs1_->molecule()->natom(); A++) {
@@ -354,7 +354,7 @@ void PotentialInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > 
     }
 }
 
-void PotentialInt::compute_deriv1(std::vector<shared_ptr<Matrix> > &result)
+void PotentialInt::compute_deriv1(std::vector<SharedMatrix > &result)
 {
     if (deriv_ < 1)
         throw SanityCheckError("PotentialInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
@@ -407,7 +407,7 @@ PotentialSOInt::PotentialSOInt(const boost::shared_ptr<OneBodyAOInt> &aoint, con
     natom_ = ob_->basis1()->molecule()->natom();
 }
 
-void PotentialSOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+void PotentialSOInt::compute_deriv1(std::vector<SharedMatrix > result,
                                     const CdSalcList &cdsalcs)
 {
     // Do not worry about zeroing out result.

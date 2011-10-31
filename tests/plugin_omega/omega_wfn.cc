@@ -38,18 +38,18 @@ namespace psi{ namespace scf {
 OmegaWavefunction::OmegaWavefunction(Options& options,
                                      boost::shared_ptr<PSIO> psio,
                                      boost::shared_ptr<BasisSet> basisset,
-                                     boost::shared_ptr<Matrix> Ca, int na,
-                                     boost::shared_ptr<Matrix> Cb, int nb,
-                                     boost::shared_ptr<Matrix> S, boost::shared_ptr<Matrix> X,
-                                     boost::shared_ptr<Matrix> H, 
+                                     SharedMatrix Ca, int na,
+                                     SharedMatrix Cb, int nb,
+                                     SharedMatrix S, SharedMatrix X,
+                                     SharedMatrix H, 
                                      boost::shared_ptr<OmegaDF> df, boost::shared_ptr<UKSPotential> ks)
  :  options_(options), psio_(psio), basisset_(basisset), nalpha_(na), nbeta_(nb), S_(S), X_(X), H_(H), df_(df), ks_(ks)
 {
     nso_ = X_->rowspi()[0];
     nmo_ = X_->colspi()[0];
 
-    Ca_ = boost::shared_ptr<Matrix>(new Matrix("Ca", nso_, nmo_));
-    Cb_ = boost::shared_ptr<Matrix>(new Matrix("Cb", nso_, nmo_));
+    Ca_ = SharedMatrix(new Matrix("Ca", nso_, nmo_));
+    Cb_ = SharedMatrix(new Matrix("Cb", nso_, nmo_));
 
     double** Car = Ca->pointer();
     double** Cbr = Cb->pointer();
@@ -91,22 +91,22 @@ void OmegaWavefunction::common_init()
     epsilon_a_ = boost::shared_ptr<Vector>(new Vector("Epsilon A", nmo_));    
     epsilon_b_ = boost::shared_ptr<Vector>(new Vector("Epsilon B", nmo_));    
 
-    Da_ = boost::shared_ptr<Matrix>(new Matrix("Da", nso_, nso_));    
-    Db_ = boost::shared_ptr<Matrix>(new Matrix("Db", nso_, nso_));    
-    Dt_ = boost::shared_ptr<Matrix>(new Matrix("Dt", nso_, nso_));    
-    Dtold_ = boost::shared_ptr<Matrix>(new Matrix("Dtold", nso_, nso_));    
+    Da_ = SharedMatrix(new Matrix("Da", nso_, nso_));    
+    Db_ = SharedMatrix(new Matrix("Db", nso_, nso_));    
+    Dt_ = SharedMatrix(new Matrix("Dt", nso_, nso_));    
+    Dtold_ = SharedMatrix(new Matrix("Dtold", nso_, nso_));    
 
-    J_ = boost::shared_ptr<Matrix>(new Matrix("J", nso_, nso_));    
-    Ka_ = boost::shared_ptr<Matrix>(new Matrix("Ka", nso_, nso_));    
-    Kb_ = boost::shared_ptr<Matrix>(new Matrix("Kb", nso_, nso_));    
-    wKa_ = boost::shared_ptr<Matrix>(new Matrix("wKa", nso_, nso_));    
-    wKb_ = boost::shared_ptr<Matrix>(new Matrix("wKb", nso_, nso_));    
-    Va_ = boost::shared_ptr<Matrix>(new Matrix("Va", nso_, nso_));    
-    Vb_ = boost::shared_ptr<Matrix>(new Matrix("Vb", nso_, nso_));    
-    Ga_ = boost::shared_ptr<Matrix>(new Matrix("Ga", nso_, nso_));    
-    Gb_ = boost::shared_ptr<Matrix>(new Matrix("Gb", nso_, nso_));    
-    Fa_ = boost::shared_ptr<Matrix>(new Matrix("Fa", nso_, nso_));    
-    Fb_ = boost::shared_ptr<Matrix>(new Matrix("Fb", nso_, nso_));    
+    J_ = SharedMatrix(new Matrix("J", nso_, nso_));    
+    Ka_ = SharedMatrix(new Matrix("Ka", nso_, nso_));    
+    Kb_ = SharedMatrix(new Matrix("Kb", nso_, nso_));    
+    wKa_ = SharedMatrix(new Matrix("wKa", nso_, nso_));    
+    wKb_ = SharedMatrix(new Matrix("wKb", nso_, nso_));    
+    Va_ = SharedMatrix(new Matrix("Va", nso_, nso_));    
+    Vb_ = SharedMatrix(new Matrix("Vb", nso_, nso_));    
+    Ga_ = SharedMatrix(new Matrix("Ga", nso_, nso_));    
+    Gb_ = SharedMatrix(new Matrix("Gb", nso_, nso_));    
+    Fa_ = SharedMatrix(new Matrix("Fa", nso_, nso_));    
+    Fb_ = SharedMatrix(new Matrix("Fb", nso_, nso_));    
 
     form_D();
 
@@ -154,7 +154,7 @@ std::string OmegaWavefunction::step()
 
     return status;
 }
-void OmegaWavefunction::guess(boost::shared_ptr<Matrix> Fa, boost::shared_ptr<Matrix> Fb)
+void OmegaWavefunction::guess(SharedMatrix Fa, SharedMatrix Fb)
 {
     Fa_->copy(Fa);
     Fb_->copy(Fb);
@@ -267,8 +267,8 @@ bool OmegaWavefunction::diis()
     iteration_++;
 
     if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ ) {
-        boost::shared_ptr<Matrix> FDSa = form_FDSmSDF(Fa_, Da_);
-        boost::shared_ptr<Matrix> FDSb = form_FDSmSDF(Fb_, Db_);
+        SharedMatrix FDSa = form_FDSmSDF(Fa_, Da_);
+        SharedMatrix FDSb = form_FDSmSDF(Fb_, Db_);
         diis_manager_->add_entry(4, FDSa.get(), FDSb.get(), Fa_.get(), Fb_.get());
     }
 
@@ -282,9 +282,9 @@ bool OmegaWavefunction::diis()
 }
 void OmegaWavefunction::form_C()
 {
-    boost::shared_ptr<Matrix> T(new Matrix("T1", nso_, nmo_));
-    boost::shared_ptr<Matrix> Fp(new Matrix("Fp", nmo_, nmo_));
-    boost::shared_ptr<Matrix> Cp(new Matrix("Cp", nmo_, nmo_));
+    SharedMatrix T(new Matrix("T1", nso_, nmo_));
+    SharedMatrix Fp(new Matrix("Fp", nmo_, nmo_));
+    SharedMatrix Cp(new Matrix("Cp", nmo_, nmo_));
 
     double** Tp = T->pointer();
     double** Fpp = Fp->pointer();
@@ -354,7 +354,7 @@ void OmegaWavefunction::reset()
         diis_manager_ = boost::shared_ptr<DIISManager>(new DIISManager(max_diis_vectors_,
         "HF DIIS VECTORS")); 
     
-        boost::shared_ptr<Matrix> FDS = form_FDSmSDF(Fa_, Da_);
+        SharedMatrix FDS = form_FDSmSDF(Fa_, Da_);
         diis_manager_->set_error_vector_size(2, DIISEntry::Matrix, FDS.get(),
                                                 DIISEntry::Matrix, FDS.get()); 
         diis_manager_->set_vector_size(2, DIISEntry::Matrix, Fa_.get(),
@@ -366,22 +366,22 @@ void OmegaWavefunction::clear()
     iteration_ = 0;
     diis_manager_.reset();
 }
-boost::shared_ptr<Matrix> OmegaWavefunction::form_FDSmSDF(boost::shared_ptr<Matrix> F, boost::shared_ptr<Matrix> D)
+SharedMatrix OmegaWavefunction::form_FDSmSDF(SharedMatrix F, SharedMatrix D)
 {
-    boost::shared_ptr<Matrix> FDSmSDF(new Matrix("FDS-SDF", nso_, nso_));
-    boost::shared_ptr<Matrix> DS(new Matrix("DS", nso_, nso_));
+    SharedMatrix FDSmSDF(new Matrix("FDS-SDF", nso_, nso_));
+    SharedMatrix DS(new Matrix("DS", nso_, nso_));
 
     DS->gemm(false,false,1.0,D,S_,0.0);
     FDSmSDF->gemm(false,false,1.0,F,DS,0.0);
 
-    boost::shared_ptr<Matrix> SDF(FDSmSDF->transpose());
+    SharedMatrix SDF(FDSmSDF->transpose());
     FDSmSDF->subtract(SDF);
 
     DS.reset();
     SDF.reset();
 
-    boost::shared_ptr<Matrix> XP(new Matrix("X'(FDS - SDF)", nmo_, nso_));
-    boost::shared_ptr<Matrix> XPX(new Matrix("X'(FDS - SDF)X", nmo_, nmo_));
+    SharedMatrix XP(new Matrix("X'(FDS - SDF)", nmo_, nso_));
+    SharedMatrix XPX(new Matrix("X'(FDS - SDF)X", nmo_, nmo_));
     XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
     XPX->gemm(false,false,1.0,XP,X_,0.0);
 

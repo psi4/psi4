@@ -329,7 +329,7 @@ DIISManager::extrapolate(int numQuantities, ...)
     timer_on("DIISManager::extrapolate");
 
     int dimension = _subspace.size() + 1;
-    boost::shared_ptr<Matrix> B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
+    SharedMatrix B(new Matrix("B (DIIS Connectivity Matrix", dimension, dimension));
     double **bMatrix = B->pointer();
     double *coefficients = init_array(dimension);
     double *force = init_array(dimension);
@@ -513,6 +513,11 @@ DIISManager::delete_diis_file()
 
 DIISManager::~DIISManager()
 {
+    for (int i=0; i<_subspace.size(); ++i) {
+        DIISEntry* temp = _subspace[i];
+        delete temp;
+    }
+    _subspace.clear();
     if (_psio->open_check(PSIF_LIBDIIS))
         _psio->close(PSIF_LIBDIIS, 1);
 }

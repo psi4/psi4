@@ -69,10 +69,10 @@ namespace psi {
     // DETCI: uncomment
     //namespace detci     { PsiReturnType detci(Options&);     }
     namespace findif    {
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &);
+      std::vector< SharedMatrix > fd_geoms_1_0(Options &);
+      std::vector< SharedMatrix > fd_geoms_2_0(Options &);
+      std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
+      std::vector< SharedMatrix > fd_geoms_freq_1(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       PsiReturnType fd_2_0(Options &, const boost::python::list&);
@@ -154,25 +154,25 @@ double py_psi_mcscf()
         return 0.0;
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_1_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_2_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_2_0(Process::environment.options);
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_freq_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_freq_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_0(Process::environment.options);
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_freq_1()
+std::vector< SharedMatrix > py_psi_fd_geoms_freq_1()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_1(Process::environment.options);
@@ -629,7 +629,7 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
-boost::shared_ptr<Matrix> py_psi_get_gradient()
+SharedMatrix py_psi_get_gradient()
 {
     boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
     return wf->gradient();

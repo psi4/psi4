@@ -125,7 +125,7 @@ protected:
     /// The vector of spherical grids (unit spheres)  
     std::vector<boost::shared_ptr<SphericalGrid> > sphericals_;
     /// The rotation matrix to bring this grid to standard orientation
-    boost::shared_ptr<Matrix> rotation_;
+    SharedMatrix rotation_;
     /// The center of this atom
     Vector3 center_;
 
@@ -145,7 +145,7 @@ public:
     virtual ~AtomicGrid();   
 
     void buildGrid(const Vector3& center,
-              boost::shared_ptr<Matrix> rotation,
+              SharedMatrix rotation,
               boost::shared_ptr<RadialGrid> radial,          
               std::vector<boost::shared_ptr<SphericalGrid> > spheres); 
     
@@ -214,7 +214,7 @@ protected:
     void applyStratmannWeights();
 
     /// Helper for the first three types
-    void applyStandardWeights(boost::shared_ptr<Matrix> chi);
+    void applyStandardWeights(SharedMatrix chi);
 
     /// Sieve and block
     void sieve();    
@@ -227,7 +227,7 @@ public:
     virtual ~MolecularGrid();   
 
     /// Helper function to produce standard grid orientation for molecule mol
-    boost::shared_ptr<Matrix> standard_orientation(boost::shared_ptr<Molecule> mol);
+    SharedMatrix standard_orientation(boost::shared_ptr<Molecule> mol);
     /// Build the grid 
     void buildGrid(std::vector<boost::shared_ptr<AtomicGrid> >& atoms, const std::string& nuclear_scheme, 
         boost::shared_ptr<BasisExtents> extents, int max_points, int min_points);

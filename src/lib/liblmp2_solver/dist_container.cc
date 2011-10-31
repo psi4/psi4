@@ -122,7 +122,7 @@ madness::Void dist_container::first_half_transformation(const int &M, const int 
             // **** First Quarter Integral Transformation **** //
             for (int j=0; j < ndocc_; j++) {
                 // We need some screening here
-                eri_1.insert(std::pair<int,SharedMatrix>(j,boost::shared_ptr<Matrix>(new Matrix(nirreps, &mn_size, &nso))));
+                eri_1.insert(std::pair<int,SharedMatrix>(j,SharedMatrix(new Matrix(nirreps, &mn_size, &nso))));
             }
 
             std::map<int,SharedMatrix>::iterator it;
