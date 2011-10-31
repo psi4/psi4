@@ -1023,48 +1023,53 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         p13p24 = true;
     }
 
+    // Libderiv offsets
+    // A -> 0
+    // B -> 3
+    // C -> 6
+    // D -> 9
     if(p12){
         if(p34){
             if(p13p24){
                 // (AB|CD) -> (DC|BA)
-                buffer_offsets_[0] = 6;  buffer_offsets_[1] = 3;
-                buffer_offsets_[2] = -1; buffer_offsets_[3] = 0;
+                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
             }else{
                 // (AB|CD) -> (BA|DC)
-                buffer_offsets_[0] = -1; buffer_offsets_[1] = 0;
-                buffer_offsets_[2] = 6;  buffer_offsets_[3] = 3;
+                buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
+                buffer_offsets_[2] = 9; buffer_offsets_[3] = 6;
             }
         }else{
             if(p13p24){
                 // (AB|CD) -> (CD|BA)
-                buffer_offsets_[0] = 6;  buffer_offsets_[1] = 3;
-                buffer_offsets_[2] = 0;  buffer_offsets_[3] = -1;
+                buffer_offsets_[0] = 9; buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
             }else{
                 // (AB|CD) -> (BA|CD)
-                buffer_offsets_[0] = -1; buffer_offsets_[1] = 0;
-                buffer_offsets_[2] = 3;  buffer_offsets_[3] = 6;
+                buffer_offsets_[0] = 3; buffer_offsets_[1] = 0;
+                buffer_offsets_[2] = 6; buffer_offsets_[3] = 9;
             }
         }
     }else{
         if(p34){
             if(p13p24){
                 // (AB|CD) -> (DC|AB)
-                buffer_offsets_[0] = 3;  buffer_offsets_[1] = 6;
-                buffer_offsets_[2] = -1; buffer_offsets_[3] = 0;
+                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 0;
             }else{
                 // (AB|CD) -> (AB|DC)
-                buffer_offsets_[0] = 0;  buffer_offsets_[1] = -1;
-                buffer_offsets_[2] = 6;  buffer_offsets_[3] = 3;
+                buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
+                buffer_offsets_[2] = 9; buffer_offsets_[3] = 6;
             }
         }else{
             if(p13p24){
                 // (AB|CD) -> (CD|AB)
-                buffer_offsets_[0] = 3;  buffer_offsets_[1] = 6;
-                buffer_offsets_[2] = 0;  buffer_offsets_[3] = -1;
+                buffer_offsets_[0] = 6; buffer_offsets_[1] = 9;
+                buffer_offsets_[2] = 0; buffer_offsets_[3] = 3;
             }else{
                 // (AB|CD) -> (AB|CD)
-                buffer_offsets_[0] = 0; buffer_offsets_[1] = -1;
-                buffer_offsets_[2] = 3; buffer_offsets_[3] = 6;
+                buffer_offsets_[0] = 0; buffer_offsets_[1] = 3;
+                buffer_offsets_[2] = 6; buffer_offsets_[3] = 9;
             }
         }
     }
@@ -1279,7 +1284,7 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     //   B_z = -(A_z + C_z + D_z)
 
     // A
-    if (buffer_offsets_[0] == -1) {
+    if (buffer_offsets_[0] == 3) {
         // Ax
         C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_, 1);
         C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_, 1);
@@ -1296,13 +1301,13 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
         C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+2*size, 1);
     }
     else {
-        memcpy(source_+ buffer_offsets_[0]*size, libderiv_.ABCD[0],  sizeof(double) * size);
-        memcpy(source_+ (buffer_offsets_[0]+1)*size, libderiv_.ABCD[1],  sizeof(double) * size);
-        memcpy(source_+ (buffer_offsets_[0]+2)*size, libderiv_.ABCD[2],  sizeof(double) * size);
+        memcpy(source_,        libderiv_.ABCD[buffer_offsets_[0]],    sizeof(double) * size);
+        memcpy(source_+size,   libderiv_.ABCD[buffer_offsets_[0]+1],  sizeof(double) * size);
+        memcpy(source_+2*size, libderiv_.ABCD[buffer_offsets_[0]+2],  sizeof(double) * size);
     }
 
     // C
-    if (buffer_offsets_[2] == -1) {
+    if (buffer_offsets_[2] == 3) {
         // Cx
         C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+3*size, 1);
         C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+3*size, 1);
@@ -1319,13 +1324,13 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
         C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+5*size, 1);
     }
     else {
-        memcpy(source_+ buffer_offsets_[2]*size, libderiv_.ABCD[6],  sizeof(double) * size);
-        memcpy(source_+ (buffer_offsets_[2]+1)*size, libderiv_.ABCD[7],  sizeof(double) * size);
-        memcpy(source_+ (buffer_offsets_[2]+2)*size, libderiv_.ABCD[8],  sizeof(double) * size);
+        memcpy(source_+3*size, libderiv_.ABCD[buffer_offsets_[2]],    sizeof(double) * size);
+        memcpy(source_+4*size, libderiv_.ABCD[buffer_offsets_[2]+1],  sizeof(double) * size);
+        memcpy(source_+5*size, libderiv_.ABCD[buffer_offsets_[2]+2],  sizeof(double) * size);
     }
 
     // D
-    if (buffer_offsets_[3] == -1) {
+    if (buffer_offsets_[3] == 3) {
         // Dx
         C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+6*size, 1);
         C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+6*size, 1);
@@ -1342,9 +1347,9 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
         C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+8*size, 1);
     }
     else {
-        memcpy(source_+ (buffer_offsets_[3])*size, libderiv_.ABCD[9],  sizeof(double) * size);
-        memcpy(source_+ (buffer_offsets_[3]+1)*size, libderiv_.ABCD[10], sizeof(double) * size);
-        memcpy(source_+ (buffer_offsets_[3]+2)*size, libderiv_.ABCD[11], sizeof(double) * size);
+        memcpy(source_+6*size, libderiv_.ABCD[buffer_offsets_[3]],    sizeof(double) * size);
+        memcpy(source_+7*size, libderiv_.ABCD[buffer_offsets_[3]+1],  sizeof(double) * size);
+        memcpy(source_+8*size, libderiv_.ABCD[buffer_offsets_[3]+2],  sizeof(double) * size);
     }
 
     // Transform the integrals to the spherical basis

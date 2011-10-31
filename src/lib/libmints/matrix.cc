@@ -723,7 +723,7 @@ void Matrix::print(FILE *out, const char *extra) const
     }
 
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, "  Irrep: %d\n", h+1);
+        fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h]);
         if (rowspi_[h] == 0 || colspi_[h^symmetry_] == 0)
             fprintf(out, "\n\t(empty)\n");
         else
