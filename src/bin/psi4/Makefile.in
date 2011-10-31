@@ -44,7 +44,7 @@ psi_start.cc psi_stop.cc version.cc \
 script.cc python.cc export_benchmarks.cc \
 export_blas_lapack.cc export_plugins.cc \
 export_psio.cc export_chkpt.cc export_mints.cc \
-export_functional.cc export_oeprop.cc
+export_functional.cc export_oeprop.cc create_new_plugin.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

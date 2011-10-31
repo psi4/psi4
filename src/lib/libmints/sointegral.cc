@@ -61,7 +61,7 @@ boost::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
     return b2_;
 }
 
-void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
+void OneBodySOInt::compute(SharedMatrix result)
 {
     // Do not worry about zeroing out result
     int ns1 = b1_->nshell();
@@ -120,7 +120,7 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
     }
 }
 
-void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
+void OneBodySOInt::compute(std::vector<SharedMatrix > results)
 {
     // Do not worry about zeroing out result
     int nchunk = ob_->nchunk();
@@ -191,7 +191,7 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
     }
 }
 
-void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
                                   const CdSalcList &cdsalcs)
 {
     // Do not worry about zeroing out result.

@@ -50,6 +50,9 @@ read_options(std::string name, Options &options){
         /*- The maximum reciprocal condition allowed in the fitting metric 
          -*/
         options.add_double("FITTING_CONDITION", 1.0E-12);
+        /*- Fitting algorithm (0 for old, 1 for new)
+         -*/
+        options.add_int("FITTING_ALGORITHM", 0);
         /*- SCF Type 
          -*/
         options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF GPUDF");

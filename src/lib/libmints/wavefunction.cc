@@ -112,6 +112,8 @@ void Wavefunction::common_init()
     // Read in density convergence threshold
     thresh = options_.get_int("D_CONVERGE");
     density_threshold_ = pow(10.0, (double)-thresh);
+
+    density_fitted_ = false;
 }
 
 double Wavefunction::compute_energy()
@@ -221,7 +223,7 @@ void Wavefunction::call_postiteration_callbacks()
     }
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Ca() const {
+SharedMatrix Wavefunction::Ca() const {
     if (!Ca_)
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Ca: Unable to obtain MO coefficients.");
@@ -231,7 +233,7 @@ boost::shared_ptr<Matrix> Wavefunction::Ca() const {
     return Ca_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Cb() const {
+SharedMatrix Wavefunction::Cb() const {
     if (!Cb_)
         if (!reference_wavefunction_)
             throw PSIEXCEPTION("Wavefunction::Cb: Unable to obtain MO coefficients.");
@@ -241,14 +243,24 @@ boost::shared_ptr<Matrix> Wavefunction::Cb() const {
     return Cb_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Fa() const
+SharedMatrix Wavefunction::Fa() const
 {
     return Fa_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Fb() const
+SharedMatrix Wavefunction::Fb() const
 {
     return Fb_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::Lagrangian() const
+{
+    return Lagrangian_;
+}
+
+boost::shared_ptr<Matrix> Wavefunction::tpdm_gradient_contribution() const
+{
+    throw PSIEXCEPTION("This type of wavefunction has not defined a TPDM gradient contribution!");
 }
 
 boost::shared_ptr<Vector> Wavefunction::epsilon_a() const
@@ -261,27 +273,27 @@ boost::shared_ptr<Vector> Wavefunction::epsilon_b() const
     return epsilon_b_;
 }
 
-const boost::shared_ptr<Matrix> Wavefunction::Da() const
+const SharedMatrix Wavefunction::Da() const
 {
     return Da_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::Db() const
+SharedMatrix Wavefunction::Db() const
 {
     return Db_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::X() const
+SharedMatrix Wavefunction::X() const
 {
     return Lagrangian_;
 }
 
-boost::shared_ptr<Matrix> Wavefunction::gradient() const
+SharedMatrix Wavefunction::gradient() const
 {
     return gradient_;
 }
 
-void Wavefunction::set_gradient(boost::shared_ptr<Matrix>& grad)
+void Wavefunction::set_gradient(SharedMatrix& grad)
 {
     gradient_ = grad;
 }

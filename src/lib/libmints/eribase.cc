@@ -941,6 +941,7 @@ void TwoElectronInt::compute_quartet(int sh1, int sh2, int sh3, int sh4)
     // Results are in source_
 }
 
+
 void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     if (deriv_ < 1) {
@@ -966,6 +967,7 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
     n2 = original_bs2_->shell(sh2)->ncartesian();
     n3 = original_bs3_->shell(sh3)->ncartesian();
     n4 = original_bs4_->shell(sh4)->ncartesian();
+
     // l(a) >= l(b), l(c) >= l(d), and l(c) + l(d) >= l(a) + l(b).
     if (am1 >= am2) {
         s1 = sh1;
@@ -1021,6 +1023,52 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
         p13p24 = true;
     }
 
+    if(p12){
+        if(p34){
+            if(p13p24){
+                // (AB|CD) -> (DC|BA)
+                buffer_offsets_[0] = 6;  buffer_offsets_[1] = 3;
+                buffer_offsets_[2] = -1; buffer_offsets_[3] = 0;
+            }else{
+                // (AB|CD) -> (BA|DC)
+                buffer_offsets_[0] = -1; buffer_offsets_[1] = 0;
+                buffer_offsets_[2] = 6;  buffer_offsets_[3] = 3;
+            }
+        }else{
+            if(p13p24){
+                // (AB|CD) -> (CD|BA)
+                buffer_offsets_[0] = 6;  buffer_offsets_[1] = 3;
+                buffer_offsets_[2] = 0;  buffer_offsets_[3] = -1;
+            }else{
+                // (AB|CD) -> (BA|CD)
+                buffer_offsets_[0] = -1; buffer_offsets_[1] = 0;
+                buffer_offsets_[2] = 3;  buffer_offsets_[3] = 6;
+            }
+        }
+    }else{
+        if(p34){
+            if(p13p24){
+                // (AB|CD) -> (DC|AB)
+                buffer_offsets_[0] = 3;  buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = -1; buffer_offsets_[3] = 0;
+            }else{
+                // (AB|CD) -> (AB|DC)
+                buffer_offsets_[0] = 0;  buffer_offsets_[1] = -1;
+                buffer_offsets_[2] = 6;  buffer_offsets_[3] = 3;
+            }
+        }else{
+            if(p13p24){
+                // (AB|CD) -> (CD|AB)
+                buffer_offsets_[0] = 3;  buffer_offsets_[1] = 6;
+                buffer_offsets_[2] = 0;  buffer_offsets_[3] = -1;
+            }else{
+                // (AB|CD) -> (AB|CD)
+                buffer_offsets_[0] = 0; buffer_offsets_[1] = -1;
+                buffer_offsets_[2] = 3; buffer_offsets_[3] = 6;
+            }
+        }
+    }
+
     // s1, s2, s3, s4 contain the shells to do in libderiv order
     compute_quartet_deriv1(s1, s2, s3, s4);    // compute 9 sets of integral derivatives
 
@@ -1041,8 +1089,6 @@ void TwoElectronInt::compute_shell_deriv1(int sh1, int sh2, int sh3, int sh4)
 void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 {
     shared_ptr<GaussianShell> s1, s2, s3, s4;
-
-//    fprintf(outfile, "sh1 = %d sh2 = %d sh3 = %d sh4 = %d\n", sh1, sh2, sh3, sh4);
 
     s1 = bs1_->shell(sh1);
     s2 = bs2_->shell(sh2);
@@ -1191,20 +1237,14 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
                     libderiv_.PrimQuartet[nprim].twozeta_d = 2.0 * a4;
 
                     double T = rho * PQ2;
-                    double *F = fjt_->values(am+DERIV_LVL, T);
+                    double *F = fjt_->values(am+1, T);
 
                     // Modify F to include overlap of ab and cd, eqs 14, 15, 16 of libint manual
                     double Scd = pow(M_PI*oon, 3.0/2.0) * exp(-a3*a4*oon*CD2) * c3 * c4;
                     double val = 2.0 * sqrt(rho * M_1_PI) * Sab * Scd * prefactor;
-//                    for (int i=0; i<=am+DERIV_LVL; ++i)
-//                        libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
-//                    fprintf(outfile, "val = %16.10f Sab = %16.10f Scd = %16.10f \nc1 = %e c2 = %e c3 = %e c4 = %e\n", val, Sab, Scd, c1, c2, c3, c4);
-//                    fprintf(outfile, "a1 = %e a2 = %e a3 = %e a4 = %e\n", a1, a2, a3, a4);
-//                    fprintf(outfile, "ooz = %16.10f oon = %16.10f\n", ooz, oon);
 
                     for (int i=0; i<=am+DERIV_LVL; ++i) {
                         libderiv_.PrimQuartet[nprim].F[i] = F[i] * val;
-//                        fprintf(outfile, "F[%d] = %16.10f\n", i, F[i]);
                     }
 
                     nprim++;
@@ -1215,9 +1255,6 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
 
     // How many are there?
     size_t size = INT_NCART(am1) * INT_NCART(am2) * INT_NCART(am3) * INT_NCART(am4);
-
-//    fprintf(outfile, "orig_am[0] = %d orig_am[1] = %d orig_am[2] = %d orig_am[3] = %d nprim = %d\n",
-//            am1, am2, am3, am4, nprim);
 
     // Compute the integral
     build_deriv1_eri[am1][am2][am3][am4](&libderiv_, nprim);
@@ -1241,27 +1278,74 @@ void TwoElectronInt::compute_quartet_deriv1(int sh1, int sh2, int sh3, int sh4)
     //   B_y = -(A_y + C_y + D_y)
     //   B_z = -(A_z + C_z + D_z)
 
-//    fprintf(outfile, "P Q R S: %d %d %d %d\n", sh1, sh2, sh3, sh4);
-//    for (int p = 0; p < size; ++p) {
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s1->ncenter() + 0), libderiv_.ABCD[0][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s1->ncenter() + 1), libderiv_.ABCD[1][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s1->ncenter() + 2), libderiv_.ABCD[2][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s3->ncenter() + 0), libderiv_.ABCD[6][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s3->ncenter() + 1), libderiv_.ABCD[7][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s3->ncenter() + 2), libderiv_.ABCD[8][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s4->ncenter() + 0), libderiv_.ABCD[9][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s4->ncenter() + 1), libderiv_.ABCD[10][p]);
-//        fprintf(outfile, "Salc %d = %16.10f\n", (3 * s4->ncenter() + 2), libderiv_.ABCD[11][p]);
-//    }
-    memcpy(source_+ 0*size, libderiv_.ABCD[0],  sizeof(double) * size);
-    memcpy(source_+ 1*size, libderiv_.ABCD[1],  sizeof(double) * size);
-    memcpy(source_+ 2*size, libderiv_.ABCD[2],  sizeof(double) * size);
-    memcpy(source_+ 3*size, libderiv_.ABCD[6],  sizeof(double) * size);
-    memcpy(source_+ 4*size, libderiv_.ABCD[7],  sizeof(double) * size);
-    memcpy(source_+ 5*size, libderiv_.ABCD[8],  sizeof(double) * size);
-    memcpy(source_+ 6*size, libderiv_.ABCD[9],  sizeof(double) * size);
-    memcpy(source_+ 7*size, libderiv_.ABCD[10], sizeof(double) * size);
-    memcpy(source_+ 8*size, libderiv_.ABCD[11], sizeof(double) * size);
+    // A
+    if (buffer_offsets_[0] == -1) {
+        // Ax
+        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_, 1);
+
+        // Ay
+        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+size, 1);
+
+        // Az
+        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+2*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+2*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+2*size, 1);
+    }
+    else {
+        memcpy(source_+ buffer_offsets_[0]*size, libderiv_.ABCD[0],  sizeof(double) * size);
+        memcpy(source_+ (buffer_offsets_[0]+1)*size, libderiv_.ABCD[1],  sizeof(double) * size);
+        memcpy(source_+ (buffer_offsets_[0]+2)*size, libderiv_.ABCD[2],  sizeof(double) * size);
+    }
+
+    // C
+    if (buffer_offsets_[2] == -1) {
+        // Cx
+        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+3*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+3*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_+3*size, 1);
+
+        // Cy
+        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+4*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+4*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+4*size, 1);
+
+        // Cz
+        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+5*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+5*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+5*size, 1);
+    }
+    else {
+        memcpy(source_+ buffer_offsets_[2]*size, libderiv_.ABCD[6],  sizeof(double) * size);
+        memcpy(source_+ (buffer_offsets_[2]+1)*size, libderiv_.ABCD[7],  sizeof(double) * size);
+        memcpy(source_+ (buffer_offsets_[2]+2)*size, libderiv_.ABCD[8],  sizeof(double) * size);
+    }
+
+    // D
+    if (buffer_offsets_[3] == -1) {
+        // Dx
+        C_DAXPY(size, -1.0, libderiv_.ABCD[0], 1, source_+6*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[6], 1, source_+6*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[9], 1, source_+6*size, 1);
+
+        // Dy
+        C_DAXPY(size, -1.0, libderiv_.ABCD[1], 1, source_+7*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[7], 1, source_+7*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[10], 1, source_+7*size, 1);
+
+        // Dz
+        C_DAXPY(size, -1.0, libderiv_.ABCD[2], 1, source_+8*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[8], 1, source_+8*size, 1);
+        C_DAXPY(size, -1.0, libderiv_.ABCD[11], 1, source_+8*size, 1);
+    }
+    else {
+        memcpy(source_+ (buffer_offsets_[3])*size, libderiv_.ABCD[9],  sizeof(double) * size);
+        memcpy(source_+ (buffer_offsets_[3]+1)*size, libderiv_.ABCD[10], sizeof(double) * size);
+        memcpy(source_+ (buffer_offsets_[3]+2)*size, libderiv_.ABCD[11], sizeof(double) * size);
+    }
 
     // Transform the integrals to the spherical basis
     if (!force_cartesian_)

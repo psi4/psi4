@@ -25,7 +25,7 @@ class MOIndexSpace
     std::string name_;
 
     /// AO->MO transformation matrix (ao x mo)
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
 
     /// MO "eigenvalues"
     boost::shared_ptr<Vector> evals_;
@@ -41,7 +41,7 @@ class MOIndexSpace
     MOIndexSpace();
 public:
     MOIndexSpace(const std::string& name,
-                 const boost::shared_ptr<Matrix>& full_C,   // Should this be 4 C's instead?
+                 const SharedMatrix& full_C,   // Should this be 4 C's instead?
                  const boost::shared_ptr<Vector>& evals,
                  const boost::shared_ptr<BasisSet>& basis,
                  const boost::shared_ptr<IntegralFactory>& ints);
@@ -53,7 +53,7 @@ public:
     const std::string& name() const;
 
     /// C - transformation matrix (AO x MO)
-    const boost::shared_ptr<Matrix>& C() const;
+    const SharedMatrix& C() const;
 
     /// "Eigenvalues" of the C matrix
     const boost::shared_ptr<Vector>& evals() const;
@@ -76,11 +76,11 @@ public:
         space1.C().coldim().
         Throws if the overlap cannot be computed.
       */
-    static boost::shared_ptr<Matrix> overlap(const MOIndexSpace& space1, const MOIndexSpace& space2);
+    static SharedMatrix overlap(const MOIndexSpace& space1, const MOIndexSpace& space2);
     /** Returns the overlap matrix between basis1 and basis2.
         Throws if the overlap cannot be computed.
       */
-    static boost::shared_ptr<Matrix> overlap(const boost::shared_ptr<BasisSet>& basis1,
+    static SharedMatrix overlap(const boost::shared_ptr<BasisSet>& basis1,
                                              const boost::shared_ptr<BasisSet>& basis2);
 };
 

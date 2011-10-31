@@ -206,6 +206,12 @@ void OneBodyAOInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s
     throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
 }
 
+void OneBodyAOInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
+{
+    throw PSIEXCEPTION("OneBodyAOInt::compute_pair_deriv1: Not implemented.");
+}
+
+
 void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
 {
     const boost::shared_ptr<GaussianShell> s1 = bs1_->shell(sh1);
@@ -222,7 +228,7 @@ void OneBodyAOInt::compute_shell_deriv1(int sh1, int sh2)
         pure_transform(s1, s2, nchunk_);
 }
 
-void OneBodyAOInt::compute(boost::shared_ptr<Matrix>& result)
+void OneBodyAOInt::compute(SharedMatrix& result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -290,7 +296,7 @@ void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
     }
 }
 
-void OneBodyAOInt::compute(std::vector<boost::shared_ptr<Matrix> > &result)
+void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
 {
     // Do not worry about zeroing out result
     int ns1 = bs1_->nshell();
@@ -377,7 +383,7 @@ void OneBodyAOInt::compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result
     }
 }
 
-void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result)
+void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
 {
     if (deriv_ < 1)
         throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
@@ -515,8 +521,8 @@ void OneBodyAOInt::compute_deriv2(std::vector<boost::shared_ptr<SimpleMatrix> > 
     }
 }
 
-void OneBodyAOInt::compute_shell_deriv2(int, int)
+void OneBodyAOInt::compute_shell_deriv2(int i, int j)
 {
-    throw FeatureNotImplemented("libmints", "OneBodyInt::compute_shell_deriv2(Array)", __FILE__, __LINE__);
+    compute_pair_deriv2(bs1_->shell(i), bs2_->shell(j));
 }
 

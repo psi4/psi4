@@ -70,9 +70,9 @@ void OmegaDF::build_static()
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
 
-    Cmn_ = boost::shared_ptr<Matrix>(new Matrix("Cmn", naux, nso * (ULI) nso)); 
-    Amn_ = boost::shared_ptr<Matrix>(new Matrix("Amn", naux, nso * (ULI) nso)); 
-    Wmn_ = boost::shared_ptr<Matrix>(new Matrix("Wmn", naux, nso * (ULI) nso)); 
+    Cmn_ = SharedMatrix(new Matrix("Cmn", naux, nso * (ULI) nso)); 
+    Amn_ = SharedMatrix(new Matrix("Amn", naux, nso * (ULI) nso)); 
+    Wmn_ = SharedMatrix(new Matrix("Wmn", naux, nso * (ULI) nso)); 
     double** Cmnp = Cmn_->pointer();
     double** Wmnp = Wmn_->pointer();
     double** Amnp = Amn_->pointer();
@@ -121,7 +121,7 @@ void OmegaDF::build_static()
 
     boost::shared_ptr<FittingMetric> fit(new FittingMetric(auxiliary_));
     fit->form_full_eig_inverse();
-    boost::shared_ptr<Matrix> J = fit->get_metric();
+    SharedMatrix J = fit->get_metric();
     double** Jp = J->pointer();
 
     C_DGEMM('N','N',naux, nso * (ULI) nso, naux, 1.0, Jp[0], naux, Amnp[0], nso * (ULI) nso, 0.0,
@@ -163,12 +163,12 @@ void OmegaDF::build_dynamic()
         }
     }
 }
-boost::shared_ptr<Matrix> OmegaDF::J(boost::shared_ptr<Matrix> D)
+SharedMatrix OmegaDF::J(SharedMatrix D)
 {
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
     
-    boost::shared_ptr<Matrix> J(new Matrix("J",nso,nso));
+    SharedMatrix J(new Matrix("J",nso,nso));
     double* d = new double[naux];
 
     double** Jp = J->pointer();
@@ -182,19 +182,19 @@ boost::shared_ptr<Matrix> OmegaDF::J(boost::shared_ptr<Matrix> D)
 
     return J;
 } 
-boost::shared_ptr<Matrix> OmegaDF::K(boost::shared_ptr<Matrix> C, int nocc)
+SharedMatrix OmegaDF::K(SharedMatrix C, int nocc)
 {
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
     int nmo = C->colspi()[0];   
  
-    boost::shared_ptr<Matrix> K(new Matrix("K",nso,nso));
+    SharedMatrix K(new Matrix("K",nso,nso));
 
     if (nocc == 0) return K;
 
-    boost::shared_ptr<Matrix> W(new Matrix("W",naux, nocc * (ULI) nso));
-    boost::shared_ptr<Matrix> Q(new Matrix("Q",naux, nocc * (ULI) nso));
-    boost::shared_ptr<Matrix> T(new Matrix("T",nso, nocc));
+    SharedMatrix W(new Matrix("W",naux, nocc * (ULI) nso));
+    SharedMatrix Q(new Matrix("Q",naux, nocc * (ULI) nso));
+    SharedMatrix T(new Matrix("T",nso, nocc));
 
     double** Wmnp = Amn_->pointer(); 
     double** Cmnp = Cmn_->pointer(); 
@@ -222,19 +222,19 @@ boost::shared_ptr<Matrix> OmegaDF::K(boost::shared_ptr<Matrix> C, int nocc)
 
     return K; 
 }
-boost::shared_ptr<Matrix> OmegaDF::wK(boost::shared_ptr<Matrix> C, int nocc)
+SharedMatrix OmegaDF::wK(SharedMatrix C, int nocc)
 {
     int nso = primary_->nbf();
     int naux = auxiliary_->nbf();
     int nmo = C->colspi()[0];   
  
-    boost::shared_ptr<Matrix> K(new Matrix("wK",nso,nso));
+    SharedMatrix K(new Matrix("wK",nso,nso));
 
     if (nocc == 0) return K;
 
-    boost::shared_ptr<Matrix> W(new Matrix("W",naux, nocc * (ULI) nso));
-    boost::shared_ptr<Matrix> Q(new Matrix("Q",naux, nocc * (ULI) nso));
-    boost::shared_ptr<Matrix> T(new Matrix("T",nso, nocc));
+    SharedMatrix W(new Matrix("W",naux, nocc * (ULI) nso));
+    SharedMatrix Q(new Matrix("Q",naux, nocc * (ULI) nso));
+    SharedMatrix T(new Matrix("T",nso, nocc));
 
     double** Wmnp = Wmn_->pointer(); 
     double** Cmnp = Cmn_->pointer(); 

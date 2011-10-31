@@ -31,11 +31,11 @@ namespace scf {
 
 class RHF : public HF {
 protected:
-    boost::shared_ptr<Matrix> D_;
-    boost::shared_ptr<Matrix> Dold_;
-    boost::shared_ptr<Matrix> G_;
-    boost::shared_ptr<Matrix> J_;
-    boost::shared_ptr<Matrix> K_;
+    SharedMatrix D_;
+    SharedMatrix Dold_;
+    SharedMatrix G_;
+    SharedMatrix J_;
+    SharedMatrix K_;
 
 
     void form_C();
@@ -85,7 +85,7 @@ public:
     virtual ~RHF();
 
 
-    virtual boost::shared_ptr<Matrix> Da() const;
+    virtual SharedMatrix Da() const;
 
     virtual bool restricted() const { return true; }
 };

@@ -2,8 +2,9 @@
 #define _psi_src_lib_libmints_onebody_h_
 
 #include <vector>
+#include "typedefs.h"
 #include "vector3.h"
-#include <boost/shared_ptr.hpp>
+//#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
@@ -44,6 +45,7 @@ protected:
 
     virtual void compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2) = 0;
     virtual void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
+    virtual void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2);
 
     void set_chunks(int nchunk) { nchunk_ = nchunk; }
     void pure_transform(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&, int=1);
@@ -84,11 +86,11 @@ public:
      * Computes all integrals and stores them in result
      * @param result Shared matrix object that will hold the results.
      */
-    void compute(boost::shared_ptr<Matrix>& result);
+    void compute(SharedMatrix& result);
     /*! @} */
 
     /// Computes all integrals and stores them in result by default this method throws
-    virtual void compute(std::vector<boost::shared_ptr<Matrix> > &result);
+    virtual void compute(std::vector<SharedMatrix > &result);
     /// Computes all integrals and stores them in result by default this method throws
     virtual void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result) __attribute__((deprecated));
 
@@ -102,7 +104,7 @@ public:
     int deriv() const { return deriv_; }
 
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result);
+    virtual void compute_deriv1(std::vector<SharedMatrix > &result);
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result) __attribute__((deprecated));
     /// Computes the second derivatives and stores them in result

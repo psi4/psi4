@@ -50,7 +50,7 @@ void RBase::common_init()
     
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
-    AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
+    AO2USO_ = SharedMatrix(pet->aotoso());
 
     Ca_ = reference_wavefunction_->Ca();
     epsilon_a_ = reference_wavefunction_->epsilon_a();
@@ -65,10 +65,10 @@ void RBase::common_init()
         navirpi[h] = reference_wavefunction_->nmopi()[h] - reference_wavefunction_->doccpi()[h] - reference_wavefunction_->frzvpi()[h];
     }
 
-    Cfocc_ = boost::shared_ptr<Matrix>(new Matrix("Cfocc", reference_wavefunction_->nsopi(), reference_wavefunction_->frzcpi()));
-    Cfvir_ = boost::shared_ptr<Matrix>(new Matrix("Cfvir", reference_wavefunction_->nsopi(), reference_wavefunction_->frzvpi()));
-    Caocc_ = boost::shared_ptr<Matrix>(new Matrix("Caocc", reference_wavefunction_->nsopi(), naoccpi));
-    Cavir_ = boost::shared_ptr<Matrix>(new Matrix("Cavir", reference_wavefunction_->nsopi(), navirpi));
+    Cfocc_ = SharedMatrix(new Matrix("Cfocc", reference_wavefunction_->nsopi(), reference_wavefunction_->frzcpi()));
+    Cfvir_ = SharedMatrix(new Matrix("Cfvir", reference_wavefunction_->nsopi(), reference_wavefunction_->frzvpi()));
+    Caocc_ = SharedMatrix(new Matrix("Caocc", reference_wavefunction_->nsopi(), naoccpi));
+    Cavir_ = SharedMatrix(new Matrix("Cavir", reference_wavefunction_->nsopi(), navirpi));
 
     eps_focc_ = boost::shared_ptr<Vector>(new Vector("eps_focc", reference_wavefunction_->frzcpi()));
     eps_fvir_ = boost::shared_ptr<Vector>(new Vector("eps_fvir", reference_wavefunction_->frzvpi()));
@@ -176,7 +176,7 @@ void RCIS::print_wavefunctions()
             for (int n = 0; n < singlets_.size(); n++) {
                 singlets_[n]->print();
                 Dmo(singlets_[n])->print();
-                std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > N = Nmo(singlets_[n]);
+                std::pair<SharedMatrix, boost::shared_ptr<Vector> > N = Nmo(singlets_[n]);
                 N.first->print();
                 N.second->print();
             }
@@ -186,7 +186,7 @@ void RCIS::print_wavefunctions()
             for (int n = 0; n < triplets_.size(); n++) {
                 triplets_[n]->print();
                 Dmo(triplets_[n])->print();
-                std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > N = Nmo(triplets_[n]);
+                std::pair<SharedMatrix, boost::shared_ptr<Vector> > N = Nmo(triplets_[n]);
                 N.first->print();
                 N.second->print();
             }
@@ -221,7 +221,7 @@ void RCIS::print_amplitudes()
         int    m = get<2>(states[i]);
         int    h = get<3>(states[i]);
 
-        boost::shared_ptr<Matrix> T = ((m == 1 ? singlets_[j] : triplets_[j]));
+        SharedMatrix T = ((m == 1 ? singlets_[j] : triplets_[j]));
         int symm = T->symmetry();
     
         std::vector<boost::tuple<double,int,int,int,int> > amps;
@@ -277,11 +277,11 @@ void RCIS::print_transitions()
     boost::shared_ptr<OneBodyAOInt> dipole(fact->ao_dipole());
 
     // Get dipole integrals
-    std::vector<boost::shared_ptr<Matrix> > dipole_ints;
+    std::vector<SharedMatrix > dipole_ints;
     int nso = basisset_->nbf();
-    dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole X", nso, nso))); 
-    dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso))); 
-    dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso))); 
+    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole X", nso, nso))); 
+    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Y", nso, nso))); 
+    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso))); 
     dipole->compute(dipole_ints);
 
     std::vector<boost::tuple<double, int, int, int> > states;
@@ -302,19 +302,26 @@ void RCIS::print_transitions()
     fprintf(outfile,"  --------------------------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
     for (int i = 0; i < states.size(); i++) {
+
         double E = get<0>(states[i]);
         int    j = get<1>(states[i]);
         int    m = get<2>(states[i]);
         int    h = get<3>(states[i]);
 
-        boost::shared_ptr<Matrix> TD = TDao((m == 1 ? singlets_[j] : triplets_[j]));
-
         double mu[3];
+        ::memset((void*) mu, '\0', 3*sizeof(double));
 
-        // Transition dipole elements
-        mu[0] = TD->vector_dot(dipole_ints[0]);
-        mu[1] = TD->vector_dot(dipole_ints[1]);
-        mu[2] = TD->vector_dot(dipole_ints[2]);
+        // Only singlets have nonzero transition density, triplets are zero due to t_ia = - t_ia_bar
+        if (m == 1) {
+
+            SharedMatrix TD = TDao(singlets_[j]);
+
+            // Transition dipole elements
+            mu[0] = TD->vector_dot(dipole_ints[0]);
+            mu[1] = TD->vector_dot(dipole_ints[1]);
+            mu[2] = TD->vector_dot(dipole_ints[2]);
+
+        }
 
         // Oscillator strength
         double f = 2.0 / 3.0 * E * (mu[0] * mu[0] + mu[1] * mu[1] + mu[2] * mu[2]);
@@ -326,14 +333,22 @@ void RCIS::print_transitions()
     fprintf(outfile, "\n");
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
-boost::shared_ptr<Matrix> RCIS::TDmo(boost::shared_ptr<Matrix> T1)
+SharedMatrix RCIS::TDmo(SharedMatrix T1, bool singlet)
 {
-    return T1; // you idiot
-}
-boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1)
-{
-    boost::shared_ptr<Matrix> D(new Matrix("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry()));
+    SharedMatrix TD(T1->clone());
+        
+    TD->scale((singlet ? sqrt(2.0) : 0.0));
+    TD->set_name("TDmo"); 
 
+    return T1; 
+}
+SharedMatrix RCIS::TDso(SharedMatrix T1, bool singlet)
+{
+    SharedMatrix D(new Matrix("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry()));
+
+    // Triplets are zero
+    if (!singlet) return D;
+    
     double* temp = new double[C_->max_nrow() * (ULI) T1->max_nrow()];
     
     int symm = T1->symmetry();
@@ -352,7 +367,7 @@ boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1)
         double** Cvp = Cavir_->pointer(h^symm);
 
         C_DGEMM('N','T',nocc,nsovir,nvir,1.0,Tp[0],nvir,Cvp[0],nvir,0.0,temp,nsovir);
-        C_DGEMM('N','N',nsoocc,nsovir,nocc,1.0,Cop[0],nocc,temp,nsovir,0.0,Dp[0],nsovir);       
+        C_DGEMM('N','N',nsoocc,nsovir,nocc,sqrt(2.0),Cop[0],nocc,temp,nsovir,0.0,Dp[0],nsovir);       
  
     }
 
@@ -360,11 +375,11 @@ boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1)
 
     return D;
 }
-boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1)
+SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 {
-    boost::shared_ptr<Matrix> D = TDso(T1);
+    SharedMatrix D = TDso(T1, singlet);
 
-    boost::shared_ptr<Matrix> D2(new Matrix("TDao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
+    SharedMatrix D2(new Matrix("TDao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
 
     double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
 
@@ -390,9 +405,9 @@ boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1)
 
     return D2;
 }
-boost::shared_ptr<Matrix> RCIS::Dmo(boost::shared_ptr<Matrix> T1, bool diff)
+SharedMatrix RCIS::Dmo(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D(new Matrix("Dmo", T1->nirrep(), reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
+    SharedMatrix D(new Matrix("Dmo", T1->nirrep(), reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
 
     int symm = T1->symmetry();
 
@@ -438,10 +453,10 @@ boost::shared_ptr<Matrix> RCIS::Dmo(boost::shared_ptr<Matrix> T1, bool diff)
     
     return D;
 }
-boost::shared_ptr<Matrix> RCIS::Dso(boost::shared_ptr<Matrix> T1, bool diff)
+SharedMatrix RCIS::Dso(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D = Dmo(T1,diff);
-    boost::shared_ptr<Matrix> D2(new Matrix("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi()));
+    SharedMatrix D = Dmo(T1,diff);
+    SharedMatrix D2(new Matrix("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi()));
 
     double* temp = new double[C_->max_nrow() * C_->max_ncol()];
 
@@ -465,10 +480,10 @@ boost::shared_ptr<Matrix> RCIS::Dso(boost::shared_ptr<Matrix> T1, bool diff)
 
     return D2;
 }
-boost::shared_ptr<Matrix> RCIS::Dao(boost::shared_ptr<Matrix> T1, bool diff)
+SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D = Dso(T1,diff);
-    boost::shared_ptr<Matrix> D2(new Matrix("Dao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
+    SharedMatrix D = Dso(T1,diff);
+    SharedMatrix D2(new Matrix("Dao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
 
     double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
 
@@ -491,23 +506,23 @@ boost::shared_ptr<Matrix> RCIS::Dao(boost::shared_ptr<Matrix> T1, bool diff)
 
     return D2;
 }
-std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nmo(boost::shared_ptr<Matrix> T1, bool diff)
+std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D = Dmo(T1, diff);
-    boost::shared_ptr<Matrix> C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
+    SharedMatrix D = Dmo(T1, diff);
+    SharedMatrix C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Occupation", D->nirrep(), D->rowspi()));
     
     D->diagonalize(C,O,Matrix::Descending);
 
     return make_pair(C,O);
 }
-std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nso(boost::shared_ptr<Matrix> T1, bool diff)
+std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nso(SharedMatrix T1, bool diff)
 {
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > pair = Nmo(T1,diff);
-    boost::shared_ptr<Matrix> N = pair.first;
+    std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nmo(T1,diff);
+    SharedMatrix N = pair.first;
     boost::shared_ptr<Vector> O = pair.second;
 
-    boost::shared_ptr<Matrix> N2(new Matrix("Nso", C_->nirrep(), C_->rowspi(), C_->colspi()));
+    SharedMatrix N2(new Matrix("Nso", C_->nirrep(), C_->rowspi(), C_->colspi()));
 
     for (int h = 0; h < N->nirrep(); h++) {
 
@@ -524,14 +539,14 @@ std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nso(boost
     }
     return make_pair(N2,O);
 }
-std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nao(boost::shared_ptr<Matrix> T1, bool diff)
+std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, bool diff)
 {
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > pair = Nso(T1,diff);
-    boost::shared_ptr<Matrix> N = pair.first;
+    std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nso(T1,diff);
+    SharedMatrix N = pair.first;
     boost::shared_ptr<Vector> O = pair.second;
 
-    boost::shared_ptr<Matrix> N2(new Matrix("Nso", C_->nrow(), C_->ncol()));
-    boost::shared_ptr<Matrix> N3(new Matrix("Nso", C_->nrow(), C_->ncol()));
+    SharedMatrix N2(new Matrix("Nso", C_->nrow(), C_->ncol()));
+    SharedMatrix N3(new Matrix("Nso", C_->nrow(), C_->ncol()));
     boost::shared_ptr<Vector> O2(new Vector("Occupation", C_->ncol()));
 
     int offset = 0;
@@ -609,6 +624,10 @@ double RCIS::compute_energy()
             fprintf(outfile, "  ==> Singlets <==\n\n");
         }
 
+        //boost::shared_ptr<Matrix> H2 = H->explicit_hamiltonian();
+        //H2->print();
+        //exit(1);
+
         solver->solve();
 
         const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
@@ -616,7 +635,7 @@ double RCIS::compute_energy()
         singlets_.clear();
         E_singlets_.clear();
         for (int N = 0; N < singlets.size(); ++N) {
-            std::vector<boost::shared_ptr<Matrix> > t = H->unpack(singlets[N]);
+            std::vector<SharedMatrix > t = H->unpack(singlets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= singlets[N]->dimpi()[h]) continue; 
@@ -643,7 +662,7 @@ double RCIS::compute_energy()
         triplets_.clear();
         E_triplets_.clear();
         for (int N = 0; N < triplets.size(); ++N) {
-            std::vector<boost::shared_ptr<Matrix> > t = H->unpack(triplets[N]);
+            std::vector<SharedMatrix > t = H->unpack(triplets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= triplets[N]->dimpi()[h]) continue; 

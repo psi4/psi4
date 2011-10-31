@@ -63,10 +63,10 @@ void Prop::add(std::vector<std::string> props)
         tasks_.insert(props[i]);
     }
 }
-boost::shared_ptr<Matrix> Prop::Da_ao()
+SharedMatrix Prop::Da_ao()
 {
     int nao = basisset_->nbf();
-    boost::shared_ptr<Matrix> D = boost::shared_ptr<Matrix>(new Matrix("Da (AO basis)", basisset_->nbf(), basisset_->nbf()));
+    SharedMatrix D = SharedMatrix(new Matrix("Da (AO basis)", basisset_->nbf(), basisset_->nbf()));
     double** Dp = D->pointer();
     for (int h = 0; h < AO2USO_->nirrep(); h++) {
         int nso = AO2USO_->colspi()[h];
@@ -80,13 +80,13 @@ boost::shared_ptr<Matrix> Prop::Da_ao()
     }
     return D;
 }
-boost::shared_ptr<Matrix> Prop::Db_ao()
+SharedMatrix Prop::Db_ao()
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     int nao = basisset_->nbf();
-    boost::shared_ptr<Matrix> D = boost::shared_ptr<Matrix>(new Matrix("Db (AO basis)", basisset_->nbf(), basisset_->nbf()));
+    SharedMatrix D = SharedMatrix(new Matrix("Db (AO basis)", basisset_->nbf(), basisset_->nbf()));
     double** Dp = D->pointer();
     for (int h = 0; h < AO2USO_->nirrep(); h++) {
         int nso = AO2USO_->colspi()[h];
@@ -100,11 +100,11 @@ boost::shared_ptr<Matrix> Prop::Db_ao()
     }
     return D;
 }
-boost::shared_ptr<Matrix> Prop::Ca_ao()
+SharedMatrix Prop::Ca_ao()
 {
     // TODO reorder by eigenvalue
     int nao = basisset_->nbf();
-    boost::shared_ptr<Matrix> C = boost::shared_ptr<Matrix>(new Matrix("Ca (AO basis)", basisset_->nbf(), basisset_->nbf()));
+    SharedMatrix C = SharedMatrix(new Matrix("Ca (AO basis)", basisset_->nbf(), basisset_->nbf()));
     double** Cp = C->pointer();
     int counter = 0;
     for (int h = 0; h < AO2USO_->nirrep(); h++) {
@@ -120,14 +120,14 @@ boost::shared_ptr<Matrix> Prop::Ca_ao()
     }
     return C;
 }
-boost::shared_ptr<Matrix> Prop::Cb_ao()
+SharedMatrix Prop::Cb_ao()
 {
     // TODO reorder by eigenvalue
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Cb makes no sense");
 
     int nao = basisset_->nbf();
-    boost::shared_ptr<Matrix> C = boost::shared_ptr<Matrix>(new Matrix("Cb (AO basis)", basisset_->nbf(), basisset_->nbf()));
+    SharedMatrix C = SharedMatrix(new Matrix("Cb (AO basis)", basisset_->nbf(), basisset_->nbf()));
     double** Cp = C->pointer();
     int counter = 0;
     for (int h = 0; h < AO2USO_->nirrep(); h++) {
@@ -143,10 +143,10 @@ boost::shared_ptr<Matrix> Prop::Cb_ao()
     }
     return C;
 }
-boost::shared_ptr<Matrix> Prop::Da_mo()
+SharedMatrix Prop::Da_mo()
 {
     // MO D are nso x nso, zeros padding if nmo < nso
-    boost::shared_ptr<Matrix> D = factory_->create_shared_matrix("Da (MO Basis)");
+    SharedMatrix D = factory_->create_shared_matrix("Da (MO Basis)");
     for (int h = 0; h < D->nirrep(); h++) {
         int nso = D->colspi()[h];
         int nmo = Ca_so_->colspi()[h];
@@ -163,13 +163,13 @@ boost::shared_ptr<Matrix> Prop::Da_mo()
     }
     return D;
 }
-boost::shared_ptr<Matrix> Prop::Db_mo()
+SharedMatrix Prop::Db_mo()
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, asking for Db makes no sense");
 
     // MO D are nso x nso, zeros padding if nmo < nso
-    boost::shared_ptr<Matrix> D = factory_->create_shared_matrix("Db (MO Basis)");
+    SharedMatrix D = factory_->create_shared_matrix("Db (MO Basis)");
     for (int h = 0; h < D->nirrep(); h++) {
         int nso = D->colspi()[h];
         int nmo = Ca_so_->colspi()[h];
@@ -186,55 +186,55 @@ boost::shared_ptr<Matrix> Prop::Db_mo()
     }
     return D;
 }
-void Prop::set_Da_so(boost::shared_ptr<Matrix> D)
+void Prop::set_Da_so(SharedMatrix D)
 {
     Da_so_ = D;
 }
-void Prop::set_Db_so(boost::shared_ptr<Matrix> D)
+void Prop::set_Db_so(SharedMatrix D)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     Db_so_ = D;
 }
-void Prop::set_Ca_so(boost::shared_ptr<Matrix> C)
+void Prop::set_Ca_so(SharedMatrix C)
 {
     Ca_so_ = C;
 }
-void Prop::set_Cb_so(boost::shared_ptr<Matrix> C)
+void Prop::set_Cb_so(SharedMatrix C)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
 
     Cb_so_ = C;
 }
-void Prop::set_Da_ao(boost::shared_ptr<Matrix> D)
+void Prop::set_Da_ao(SharedMatrix D)
 {
     throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Db_ao(boost::shared_ptr<Matrix> D)
+void Prop::set_Db_ao(SharedMatrix D)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
 
     throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Ca_ao(boost::shared_ptr<Matrix> C)
+void Prop::set_Ca_ao(SharedMatrix C)
 {
     throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Cb_ao(boost::shared_ptr<Matrix> C)
+void Prop::set_Cb_ao(SharedMatrix C)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Cb makes no sense");
 
     throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Da_mo(boost::shared_ptr<Matrix> D)
+void Prop::set_Da_mo(SharedMatrix D)
 {
     throw FeatureNotImplemented("Prop", "Advanced set methods not implemented", __FILE__, __LINE__);
 }
-void Prop::set_Db_mo(boost::shared_ptr<Matrix> D)
+void Prop::set_Db_mo(SharedMatrix D)
 {
     if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting Db makes no sense");
@@ -333,8 +333,8 @@ void OEProp::compute_dipole()
 void OEProp::compute_quadrupole()
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-    boost::shared_ptr<Matrix> Da;
-    boost::shared_ptr<Matrix> Db;
+    SharedMatrix Da;
+    SharedMatrix Db;
 
     if (restricted_) {
         Da = Da_so_;
@@ -429,8 +429,8 @@ void OEProp::compute_mo_extents()
     fprintf(outfile, " MO Extents (<r^2>) [a.u.]:\n\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
-    boost::shared_ptr<Matrix> Ca;
-    boost::shared_ptr<Matrix> Cb;
+    SharedMatrix Ca;
+    SharedMatrix Cb;
 
     if (restricted_) {
         Ca = Ca_so_;
@@ -466,49 +466,49 @@ void OEProp::compute_mo_extents()
     //so_Qpole[3]->print();
     //so_Qpole[5]->print();
 
-    boost::shared_ptr<Matrix> temp = factory_->create_shared_matrix("Temporary Matrix");
+    SharedMatrix temp = factory_->create_shared_matrix("Temporary Matrix");
 
     // Compute directional expectation values for dipole contributions by molecular orbital
-    //boost::shared_ptr<Matrix> CDCax = factory_->create_shared_matrix("CDxC alpha");
+    //SharedMatrix CDCax = factory_->create_shared_matrix("CDxC alpha");
     //temp->gemm(false, false, 1.0, so_Dpole[0], Ca, 0.0);
     //CDCax->gemm(true, false, 1.0, Ca, temp, 0.0);
-    //boost::shared_ptr<Matrix> CDCbx = factory_->create_shared_matrix("CDxC beta");
+    //SharedMatrix CDCbx = factory_->create_shared_matrix("CDxC beta");
     //temp->gemm(false, false, 1.0, so_Dpole[0], Cb, 0.0);
     //CDCbx->gemm(true, false, 1.0, Cb, temp, 0.0);
 
-    //boost::shared_ptr<Matrix> CDCay = factory_->create_shared_matrix("CDyC alpha");
+    //SharedMatrix CDCay = factory_->create_shared_matrix("CDyC alpha");
     //temp->gemm(false, false, 1.0, so_Dpole[1], Ca, 0.0);
     //CDCay->gemm(true, false, 1.0, Ca, temp, 0.0);
-    //boost::shared_ptr<Matrix> CDCby = factory_->create_shared_matrix("CDyC beta");
+    //SharedMatrix CDCby = factory_->create_shared_matrix("CDyC beta");
     //temp->gemm(false, false, 1.0, so_Dpole[1], Cb, 0.0);
     //CDCby->gemm(true, false, 1.0, Cb, temp, 0.0);
 
-    boost::shared_ptr<Matrix> CDCaz = factory_->create_shared_matrix("CDzC alpha");
+    SharedMatrix CDCaz = factory_->create_shared_matrix("CDzC alpha");
     temp->gemm(false, false, 1.0, so_Dpole[2], Ca, 0.0);
     CDCaz->gemm(true, false, 1.0, Ca, temp, 0.0);
-    boost::shared_ptr<Matrix> CDCbz = factory_->create_shared_matrix("CDzC beta");
+    SharedMatrix CDCbz = factory_->create_shared_matrix("CDzC beta");
     temp->gemm(false, false, 1.0, so_Dpole[2], Cb, 0.0);
     CDCbz->gemm(true, false, 1.0, Cb, temp, 0.0);
 
     // Compute directional expectation values for quadrupole contributions by molecular orbital
-    boost::shared_ptr<Matrix> CQCaxx = factory_->create_shared_matrix("CQxxC alpha");
+    SharedMatrix CQCaxx = factory_->create_shared_matrix("CQxxC alpha");
     temp->gemm(false, false, 1.0, so_Qpole[0], Ca, 0.0);
     CQCaxx->gemm(true, false, 1.0, Ca, temp, 0.0);
-    boost::shared_ptr<Matrix> CQCbxx = factory_->create_shared_matrix("CQxxC beta");
+    SharedMatrix CQCbxx = factory_->create_shared_matrix("CQxxC beta");
     temp->gemm(false, false, 1.0, so_Qpole[0], Cb, 0.0);
     CQCbxx->gemm(true, false, 1.0, Cb, temp, 0.0);
 
-    boost::shared_ptr<Matrix> CQCayy = factory_->create_shared_matrix("CQyyC alpha");
+    SharedMatrix CQCayy = factory_->create_shared_matrix("CQyyC alpha");
     temp->gemm(false, false, 1.0, so_Qpole[3], Ca, 0.0);
     CQCayy->gemm(true, false, 1.0, Ca, temp, 0.0);
-    boost::shared_ptr<Matrix> CQCbyy = factory_->create_shared_matrix("CQyyC beta");
+    SharedMatrix CQCbyy = factory_->create_shared_matrix("CQyyC beta");
     temp->gemm(false, false, 1.0, so_Qpole[3], Cb, 0.0);
     CQCbyy->gemm(true, false, 1.0, Cb, temp, 0.0);
 
-    boost::shared_ptr<Matrix> CQCazz = factory_->create_shared_matrix("CQzzC alpha");
+    SharedMatrix CQCazz = factory_->create_shared_matrix("CQzzC alpha");
     temp->gemm(false, false,  1.0, so_Qpole[5], Ca, 0.0);
     CQCazz->gemm(true, false, 1.0, Ca, temp, 0.0);
-    boost::shared_ptr<Matrix> CQCbzz = factory_->create_shared_matrix("CQzzC beta");
+    SharedMatrix CQCbzz = factory_->create_shared_matrix("CQzzC beta");
     temp->gemm(false, false,  1.0, so_Qpole[5], Cb, 0.0);
     CQCbzz->gemm(true, false, 1.0, Cb, temp, 0.0);
 
@@ -567,8 +567,8 @@ void OEProp::compute_mulliken_charges()
     ::memset(Qa, '\0', mol->natom()*sizeof(double));
     ::memset(Qb, '\0', mol->natom()*sizeof(double));
 
-    boost::shared_ptr<Matrix> Da;
-    boost::shared_ptr<Matrix> Db;
+    SharedMatrix Da;
+    SharedMatrix Db;
 
 //    Get the Density Matrices for alpha and beta spins
 
@@ -583,14 +583,14 @@ void OEProp::compute_mulliken_charges()
 //    Compute the overlap matrix
 
     boost::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    boost::shared_ptr<Matrix> S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
     overlap->compute(S);
 
 //    Form the idempotent D*S matrix
 
-    boost::shared_ptr<Matrix> PSam(new Matrix("PSa",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix PSam(new Matrix("PSa",basisset_->nbf(),basisset_->nbf()));
     PSam->gemm(false,false,1.0,Da,S,0.0);
-    boost::shared_ptr<Matrix> PSbm(new Matrix("PSb",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix PSbm(new Matrix("PSb",basisset_->nbf(),basisset_->nbf()));
     PSbm->gemm(false,false,1.0,Db,S,0.0);
 
 //     Accumulate registers
@@ -647,12 +647,12 @@ void OEProp::compute_lowdin_charges()
     ::memset(Qa, '\0', mol->natom()*sizeof(double));
     ::memset(Qb, '\0', mol->natom()*sizeof(double));
 
-    boost::shared_ptr<Matrix> Da;
-    boost::shared_ptr<Matrix> Db;
-    boost::shared_ptr<Matrix> evecs(new Matrix("Eigenvectors of S matrix",basisset_->nbf(),basisset_->nbf()));
-    boost::shared_ptr<Matrix> temp(new Matrix("Temporary matrix",basisset_->nbf(),basisset_->nbf()));
-    boost::shared_ptr<Matrix> SDSa(new Matrix("S_12 * D * S_12 alpha matrix",basisset_->nbf(),basisset_->nbf()));
-    boost::shared_ptr<Matrix> SDSb(new Matrix("S_12 * D * S_12 beta matrix",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix Da;
+    SharedMatrix Db;
+    SharedMatrix evecs(new Matrix("Eigenvectors of S matrix",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix temp(new Matrix("Temporary matrix",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix SDSa(new Matrix("S_12 * D * S_12 alpha matrix",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix SDSb(new Matrix("S_12 * D * S_12 beta matrix",basisset_->nbf(),basisset_->nbf()));
     boost::shared_ptr<Vector> evals(new Vector(basisset_->nbf()));
 
 //    Get the Density Matrices for alpha and beta spins
@@ -668,7 +668,7 @@ void OEProp::compute_lowdin_charges()
 //    Compute the overlap matrix
 
     boost::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    boost::shared_ptr<Matrix> S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
     overlap->compute(S);
 
 //    Form the S^(1/2) matrix
@@ -723,11 +723,11 @@ void OEProp::compute_mayer_indices()
 
     int nbf = basisset_->nbf();
 
-    boost::shared_ptr<Matrix> Da;      // Density matrix for alpha spin
-    boost::shared_ptr<Matrix> Db;      // Density matrix for beta spin
+    SharedMatrix Da;      // Density matrix for alpha spin
+    SharedMatrix Db;      // Density matrix for beta spin
 
-    boost::shared_ptr<Matrix> DSa(new Matrix("D * S alpha matrix",nbf,nbf));
-    boost::shared_ptr<Matrix> DSb(new Matrix("D * S beta matrix",nbf,nbf));
+    SharedMatrix DSa(new Matrix("D * S alpha matrix",nbf,nbf));
+    SharedMatrix DSb(new Matrix("D * S beta matrix",nbf,nbf));
 
 //    Get the Density Matrices for alpha and beta spins
 
@@ -742,7 +742,7 @@ void OEProp::compute_mayer_indices()
 //    Compute the overlap matrix
 
     boost::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    boost::shared_ptr<Matrix> S(new Matrix("S matrix",nbf,nbf));
+    SharedMatrix S(new Matrix("S matrix",nbf,nbf));
     overlap->compute(S);
 
 //    Form the idempotent D*S matrix
@@ -754,13 +754,13 @@ void OEProp::compute_mayer_indices()
 
     int natom = mol->natom();
 
-    boost::shared_ptr<Matrix> MBI_total(new Matrix(natom,natom));
-    boost::shared_ptr<Matrix> MBI_alpha;
-    boost::shared_ptr<Matrix> MBI_beta;
+    SharedMatrix MBI_total(new Matrix(natom,natom));
+    SharedMatrix MBI_alpha;
+    SharedMatrix MBI_beta;
 
     if (!restricted_) {
-        MBI_alpha = boost::shared_ptr<Matrix> (new Matrix(natom,natom));
-        MBI_beta = boost::shared_ptr<Matrix> (new Matrix(natom,natom));
+        MBI_alpha = SharedMatrix (new Matrix(natom,natom));
+        MBI_beta = SharedMatrix (new Matrix(natom,natom));
     }
 
     for (int mu = 0; mu < nbf; mu++) {
@@ -835,12 +835,12 @@ void OEProp::compute_wiberg_lowdin_indices()
 
     int nbf = basisset_->nbf();
 
-    boost::shared_ptr<Matrix> Da;
-    boost::shared_ptr<Matrix> Db;
-    boost::shared_ptr<Matrix> evecs(new Matrix("Eigenvectors of S matrix",nbf,nbf));
-    boost::shared_ptr<Matrix> temp(new Matrix("Temporary matrix",nbf,nbf));
-    boost::shared_ptr<Matrix> SDSa(new Matrix("S_12 * D * S_12 alpha matrix",nbf,nbf));
-    boost::shared_ptr<Matrix> SDSb(new Matrix("S_12 * D * S_12 beta matrix",nbf,nbf));
+    SharedMatrix Da;
+    SharedMatrix Db;
+    SharedMatrix evecs(new Matrix("Eigenvectors of S matrix",nbf,nbf));
+    SharedMatrix temp(new Matrix("Temporary matrix",nbf,nbf));
+    SharedMatrix SDSa(new Matrix("S_12 * D * S_12 alpha matrix",nbf,nbf));
+    SharedMatrix SDSb(new Matrix("S_12 * D * S_12 beta matrix",nbf,nbf));
     boost::shared_ptr<Vector> evals(new Vector(nbf));
 
 //    Get the Density Matrices for alpha and beta spins
@@ -856,7 +856,7 @@ void OEProp::compute_wiberg_lowdin_indices()
 //    Compute the overlap matrix
 
     boost::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    boost::shared_ptr<Matrix> S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
+    SharedMatrix S(new Matrix("S",basisset_->nbf(),basisset_->nbf()));
     overlap->compute(S);
 
 //    Form the S^(1/2) matrix
@@ -877,13 +877,13 @@ void OEProp::compute_wiberg_lowdin_indices()
 
     int natom = mol->natom();
 
-    boost::shared_ptr<Matrix> WBI_total(new Matrix(natom,natom));
-    boost::shared_ptr<Matrix> WBI_alpha;
-    boost::shared_ptr<Matrix> WBI_beta;
+    SharedMatrix WBI_total(new Matrix(natom,natom));
+    SharedMatrix WBI_alpha;
+    SharedMatrix WBI_beta;
 
     if (!restricted_) {
-        WBI_alpha = boost::shared_ptr<Matrix> (new Matrix(natom,natom));
-        WBI_beta = boost::shared_ptr<Matrix> (new Matrix(natom,natom));
+        WBI_alpha = SharedMatrix (new Matrix(natom,natom));
+        WBI_beta = SharedMatrix (new Matrix(natom,natom));
     }
 
     for (int mu = 0; mu < nbf; mu++) {

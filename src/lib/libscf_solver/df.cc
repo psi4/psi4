@@ -162,7 +162,7 @@ void DFHF::common_init()
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
-    AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
+    AO2USO_ = SharedMatrix(pet->aotoso());
 }
 void DFHF::set_unit(unsigned int unit)
 {
@@ -410,9 +410,9 @@ void DFHF::initialize_JK_disk()
     }
 
     // Primary buffer
-    Qmn_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) (Disk Chunk)", naux, max_cols));
+    Qmn_ = SharedMatrix(new Matrix("(Q|mn) (Disk Chunk)", naux, max_cols));
     // Fitting buffer
-    boost::shared_ptr<Matrix>Amn (new Matrix("(Q|mn) (Buffer)",naux,naux));
+    SharedMatrix Amn (new Matrix("(Q|mn) (Buffer)",naux,naux));
     double** Qmnp = Qmn_->pointer();
     double** Amnp = Amn->pointer();
 
@@ -552,7 +552,7 @@ void DFHF::initialize_JK_core()
     #endif
     int rank = 0;
 
-    Qmn_ = boost::shared_ptr<Matrix>(new Matrix("Qmn (Fitted Integrals)",
+    Qmn_ = SharedMatrix(new Matrix("Qmn (Fitted Integrals)",
         auxiliary_->nbf(), ntri));
     double** Qmnp = Qmn_->pointer();
 
@@ -634,7 +634,7 @@ void DFHF::initialize_JK_core()
         max_cols = 1;
     if (max_cols > ntri)
         max_cols = ntri;
-    boost::shared_ptr<Matrix> temp(new Matrix("Qmn buffer", auxiliary_->nbf(), max_cols));
+    SharedMatrix temp(new Matrix("Qmn buffer", auxiliary_->nbf(), max_cols));
     double** tempp = temp->pointer();
 
     int nblocks = ntri / max_cols;
@@ -692,7 +692,7 @@ void DFHF::initialize_J_core()
     #endif
     int rank = 0;
 
-    Qmn_ = boost::shared_ptr<Matrix>(new Matrix("Qmn (Fitted Integrals)",
+    Qmn_ = SharedMatrix(new Matrix("Qmn (Fitted Integrals)",
         auxiliary_->nbf(), ntri));
     double** Qmnp = Qmn_->pointer();
 
@@ -803,17 +803,17 @@ void DFHF::USO2AO()
         for (int h = 0; h < Ca_->nirrep(); h++) nmo += Ca_->colspi()[h];
 
     // Allocation
-    Da_ao_ = boost::shared_ptr<Matrix>(new Matrix("D Alpha (AO Basis)", nao, nao));
-    Ja_ao_ = boost::shared_ptr<Matrix>(new Matrix("J (AO Basis)", nao, nao));
+    Da_ao_ = SharedMatrix(new Matrix("D Alpha (AO Basis)", nao, nao));
+    Ja_ao_ = SharedMatrix(new Matrix("J (AO Basis)", nao, nao));
     if (!restricted_)
-        Db_ao_ = boost::shared_ptr<Matrix>(new Matrix("D Beta (AO Basis)", nao, nao));
+        Db_ao_ = SharedMatrix(new Matrix("D Beta (AO Basis)", nao, nao));
 
     if (is_jk_) {
-        Ca_ao_ = boost::shared_ptr<Matrix>(new Matrix("C Alpha (AO Basis)", nao, nmo));
-        Ka_ao_ = boost::shared_ptr<Matrix>(new Matrix("K Alpha (AO Basis)", nao, nao));
+        Ca_ao_ = SharedMatrix(new Matrix("C Alpha (AO Basis)", nao, nmo));
+        Ka_ao_ = SharedMatrix(new Matrix("K Alpha (AO Basis)", nao, nao));
         if (!restricted_) {
-            Cb_ao_ = boost::shared_ptr<Matrix>(new Matrix("C Beta (AO Basis)", nao, nmo));
-            Kb_ao_ = boost::shared_ptr<Matrix>(new Matrix("K Beta (AO Basis)", nao, nao));
+            Cb_ao_ = SharedMatrix(new Matrix("C Beta (AO Basis)", nao, nmo));
+            Kb_ao_ = SharedMatrix(new Matrix("K Beta (AO Basis)", nao, nao));
         }
     }
 
@@ -1038,7 +1038,7 @@ void DFHF::compute_J_core()
 
     double** Qmnp = Qmn_->pointer();
 
-    boost::shared_ptr<Matrix> Dt(new Matrix("D Total",nbf,nbf));
+    SharedMatrix Dt(new Matrix("D Total",nbf,nbf));
     double** Dtp = Dt->pointer();
     Dt->copy(Da_ao_);
     Dt->add(Db_ao_);
@@ -1085,7 +1085,7 @@ void DFHF::form_J_DF()
     if (is_disk_) {
         // TODO
         //do {
-        //    boost::shared_ptr<Matrix> Q = disk_iter_->next_block();
+        //    SharedMatrix Q = disk_iter_->next_block();
         //    int current_rows = disk_iter_->current_rows();
         //    double** Qmnp = Q->pointer();
         //    compute_JK_block_J(Qmnp, current_rows, max_rows);
@@ -1325,8 +1325,8 @@ void DFHFDiskIterator::common_init()
     //fflush(outfile);
 
     // Build the blocks
-    A_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) Block A", max_rows_, ntri_));
-    B_ = boost::shared_ptr<Matrix>(new Matrix("(Q|mn) Block B", max_rows_, ntri_));
+    A_ = SharedMatrix(new Matrix("(Q|mn) Block A", max_rows_, ntri_));
+    B_ = SharedMatrix(new Matrix("(Q|mn) Block B", max_rows_, ntri_));
 
     // Build the AIO object
     aio_ = boost::shared_ptr<AIOHandler>(new AIOHandler(psio_));
@@ -1372,7 +1372,7 @@ double** DFHFDiskIterator::next_block()
     int index = blocks_[iteration_];
     current_rows_ = block_sizes_[index];
 
-    boost::shared_ptr<Matrix> val;
+    SharedMatrix val;
 
     //fprintf(outfile, "  Current rows = %d\n", current_rows_);
     fflush(outfile);
@@ -1387,7 +1387,7 @@ double** DFHFDiskIterator::next_block()
         //fprintf(outfile, "  Pointing to A, which is global block %d\n", index);
     }
 }
-void DFHFDiskIterator::read(boost::shared_ptr<Matrix> A, int start, int rows)
+void DFHFDiskIterator::read(SharedMatrix A, int start, int rows)
 {
     // Get the block pointer
     double** Ap = A->pointer();

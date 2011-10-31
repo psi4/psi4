@@ -1,0 +1,103 @@
+#include <libplugin/plugin.h>
+#include <psi4-dec.h>
+#include <libparallel/parallel.h>
+#include <liboptions/liboptions.h>
+#include <libpsio/psio.hpp>
+#include <libchkpt/chkpt.hpp>
+#include <libtrans/integraltransform.h>
+#include <libmints/wavefunction.h>
+
+// This allows us to be lazy in getting the spaces in DPD calls
+#define ID(x) ints.DPD_ID(x)
+
+INIT_PLUGIN
+
+namespace psi{ namespace @plugin@ {
+
+extern "C"
+int read_options(std::string name, Options &options)
+{
+    if (name == "@PLUGIN@"|| options.read_globals()) {
+        /*- The amount of information printed
+            to the output file -*/
+        options.add_int("PRINT", 1);
+    }
+
+    return true;
+}
+
+
+extern "C" 
+PsiReturnType @plugin@(Options &options)
+{
+    /*
+     * This plugin shows a simple way of obtaining MO basis integrals, directly from a DPD buffer.  It is also
+     * possible to generate integrals with labels (IWL) formatted files, but that's not shown here.
+     */
+    int print = options.get_int("PRINT");
+
+    boost::shared_ptr<PSIO> psio(_default_psio_lib_);
+    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
+    if(!Process::environment.reference_wavefunction())
+        throw PSIEXCEPTION("SCF has not been run yet!");
+
+    // Quickly check that there are no open shell orbitals here...
+    int nirrep  = Process::environment.reference_wavefunction()->nirrep();
+    int *soccpi = Process::environment.reference_wavefunction()->soccpi();
+    int nopen   = 0;
+    for(int h = 0; h < nirrep; ++h) nopen += soccpi[h];
+    if(nopen) throw PSIEXCEPTION("This code is for closed shell molecules only!");
+
+    // For nww, we'll just transform for closed shells and generate all integrals.  For more elaborate use of the
+    // LibTrans object, check out the plugin_mp2 example in the test suite.
+    std::vector<boost::shared_ptr<MOSpace> > spaces;
+    spaces.push_back(MOSpace::all);
+    IntegralTransform ints(chkpt, spaces, IntegralTransform::Restricted);
+    ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+    // Use the IntegralTransform object's DPD instance, for convenience
+    dpd_set_default(ints.get_dpd_id());
+
+    /*
+     * Now, loop over the DPD buffer, printing the integrals
+     */
+    dpdbuf4 K;
+    psio->open(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+    // To only process the permutationally unique integrals, change the ID("[A,A]") to ID("[A>=A]+")
+    dpd_buf4_init(&K, PSIF_LIBTRANS_DPD, 0, ID("[A,A]"), ID("[A,A]"),
+                  ID("[A>=A]+"), ID("[A>=A]+"), 0, "MO Ints (AA|AA)");
+    for(int h = 0; h < nirrep; ++h){
+        dpd_buf4_mat_irrep_init(&K, h);
+        dpd_buf4_mat_irrep_rd(&K, h);
+        for(int pq = 0; pq < K.params->rowtot[h]; ++pq){
+            int p = K.params->roworb[h][pq][0];
+            int q = K.params->roworb[h][pq][1];
+            int psym = K.params->psym[p];
+            int qsym = K.params->qsym[q];
+            int prel = p - K.params->poff[psym];
+            int qrel = q - K.params->qoff[qsym];
+            for(int rs = 0; rs < K.params->coltot[h]; ++rs){
+                int r = K.params->colorb[h][rs][0];
+                int s = K.params->colorb[h][rs][1];
+                int rsym = K.params->rsym[r];
+                int ssym = K.params->ssym[s];
+                int rrel = r - K.params->roff[rsym];
+                int srel = s - K.params->soff[ssym];
+                // Print out the absolute orbital numbers, the relative (within irrep)
+                // numbers, the symmetries, and the integral itself
+                fprintf(outfile, "(%2d %2d | %2d %2d) = %16.10f, "
+                                 "symmetries = (%1d %1d | %1d %1d), "
+                                 "relative indices = (%2d %2d | %2d %2d)\n",
+                                 p, q, r, s, K.matrix[h][pq][rs],
+                                 psym, qsym, rsym, ssym,
+                                 prel, qrel, rrel, srel);
+            }
+        }
+        dpd_buf4_mat_irrep_close(&K, h);
+    }
+    dpd_buf4_close(&K);
+    psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
+
+    return Success;
+}
+
+}} // End Namespaces

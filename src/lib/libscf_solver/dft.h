@@ -43,7 +43,7 @@ protected:
     /// Quadrature values obtained during integration 
     std::map<std::string, double> quad_values_;
     /// AO2USO matrix (if not C1)
-    boost::shared_ptr<Matrix> AO2USO_;
+    SharedMatrix AO2USO_;
 
     /// Common setup
     void common_init();
@@ -75,19 +75,19 @@ protected:
     boost::shared_ptr<RKSFunctions> properties_;
    
     /// AO D matrix (built or assigned internally)
-    boost::shared_ptr<Matrix> D_AO_;
+    SharedMatrix D_AO_;
     /// AO C matrix (built or assigned internally)
-    boost::shared_ptr<Matrix> C_AO_;
+    SharedMatrix C_AO_;
  
     /// Target V matrix, AO
-    boost::shared_ptr<Matrix> V_AO_;
+    SharedMatrix V_AO_;
     /// Target V matrix, USO
-    boost::shared_ptr<Matrix> V_USO_;
+    SharedMatrix V_USO_;
 
     /// Setup properties
     void buildProperties();
     /// Build D_AO_, C_AO_, allocate V_AO_ if need be
-    void USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Matrix> C_USO,
+    void USO2AO(SharedMatrix D_USO, SharedMatrix C_USO,
         boost::shared_ptr<Dimension> noccpi);
     /// V_AO_->V_USO_
     void AO2USO();
@@ -99,11 +99,11 @@ public:
         Options& options);
     virtual ~RKSPotential();
 
-    void buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Matrix> C_USO,
+    void buildPotential(SharedMatrix D_USO, SharedMatrix C_USO,
         boost::shared_ptr<Dimension> noccpi);
 
-    boost::shared_ptr<Matrix> V_AO() const { return V_AO_; }
-    boost::shared_ptr<Matrix> V_USO() const { return V_USO_; }
+    SharedMatrix V_AO() const { return V_AO_; }
+    SharedMatrix V_USO() const { return V_USO_; }
 
     virtual void print(FILE* out = outfile, int print = 2);
 };
@@ -115,28 +115,28 @@ protected:
     boost::shared_ptr<UKSFunctions> properties_;
    
     /// AO D matrix (built or assigned internally)
-    boost::shared_ptr<Matrix> Da_AO_;
+    SharedMatrix Da_AO_;
     /// AO C matrix (built or assigned internally)
-    boost::shared_ptr<Matrix> Ca_AO_;
+    SharedMatrix Ca_AO_;
     /// AO D matrix (built or assigned internally)
-    boost::shared_ptr<Matrix> Db_AO_;
+    SharedMatrix Db_AO_;
     /// AO C matrix (built or assigned internally)
-    boost::shared_ptr<Matrix> Cb_AO_;
+    SharedMatrix Cb_AO_;
  
     /// Target V matrix, AO
-    boost::shared_ptr<Matrix> Va_AO_;
+    SharedMatrix Va_AO_;
     /// Target V matrix, USO
-    boost::shared_ptr<Matrix> Va_USO_;
+    SharedMatrix Va_USO_;
     /// Target V matrix, AO
-    boost::shared_ptr<Matrix> Vb_AO_;
+    SharedMatrix Vb_AO_;
     /// Target V matrix, USO
-    boost::shared_ptr<Matrix> Vb_USO_;
+    SharedMatrix Vb_USO_;
 
     /// Setup properties
     void buildProperties();
     /// Build D_AO_, C_AO_, allocate V_AO_ if need be
-    void USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Matrix> Ca_USO, boost::shared_ptr<Dimension> napi,
-                boost::shared_ptr<Matrix> Db_USO, boost::shared_ptr<Matrix> Cb_USO, boost::shared_ptr<Dimension> nbpi);
+    void USO2AO(SharedMatrix Da_USO, SharedMatrix Ca_USO, boost::shared_ptr<Dimension> napi,
+                SharedMatrix Db_USO, SharedMatrix Cb_USO, boost::shared_ptr<Dimension> nbpi);
     /// V_AO_->V_USO_
     void AO2USO();
 
@@ -147,13 +147,13 @@ public:
         Options& options);
     virtual ~UKSPotential();
 
-    void buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Matrix> Ca_USO, boost::shared_ptr<Dimension> napi,
-                        boost::shared_ptr<Matrix> Db_USO, boost::shared_ptr<Matrix> Cb_USO, boost::shared_ptr<Dimension> nbpi);
+    void buildPotential(SharedMatrix Da_USO, SharedMatrix Ca_USO, boost::shared_ptr<Dimension> napi,
+                        SharedMatrix Db_USO, SharedMatrix Cb_USO, boost::shared_ptr<Dimension> nbpi);
 
-    boost::shared_ptr<Matrix> Va_AO() const { return Va_AO_; }
-    boost::shared_ptr<Matrix> Va_USO() const { return Va_USO_; }
-    boost::shared_ptr<Matrix> Vb_AO() const { return Vb_AO_; }
-    boost::shared_ptr<Matrix> Vb_USO() const { return Vb_USO_; }
+    SharedMatrix Va_AO() const { return Va_AO_; }
+    SharedMatrix Va_USO() const { return Va_USO_; }
+    SharedMatrix Vb_AO() const { return Vb_AO_; }
+    SharedMatrix Vb_USO() const { return Vb_USO_; }
 
     virtual void print(FILE* out = outfile, int print = 2);
 };

@@ -49,7 +49,7 @@ PKIntegrals::~PKIntegrals()
  * @param Db a shared pointer to a beta density matrix
  */
 void
-PKIntegrals::setup(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
+PKIntegrals::setup(SharedMatrix J, const SharedMatrix Da, const SharedMatrix Db)
 {
     J_  = J;
     Da_ = Da;
@@ -65,7 +65,7 @@ PKIntegrals::setup(boost::shared_ptr<Matrix> J, const boost::shared_ptr<Matrix> 
  * @param D a shared pointer to the density matrix
  */
 void
-PKIntegrals::setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K,  const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
+PKIntegrals::setup(SharedMatrix J, SharedMatrix K,  const SharedMatrix Da, const SharedMatrix Db)
 {
     J_  = J;
     Ka_ = K;
@@ -84,8 +84,8 @@ PKIntegrals::setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> K,  co
  * @param Db a shared pointer to a beta density matrix
  */
 void
-PKIntegrals::setup(boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Ka, boost::shared_ptr<Matrix> Kb,
-                   const boost::shared_ptr<Matrix> Da, const boost::shared_ptr<Matrix> Db)
+PKIntegrals::setup(SharedMatrix J, SharedMatrix Ka, SharedMatrix Kb,
+                   const SharedMatrix Da, const SharedMatrix Db)
 {
     J_  = J;
     Ka_ = Ka;

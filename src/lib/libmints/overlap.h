@@ -1,10 +1,8 @@
 #ifndef _psi_src_lib_libmints_overlap_h_
 #define _psi_src_lib_libmints_overlap_h_
 
-#include <boost/shared_ptr.hpp>
 #include <vector>
-
-#include <libmints/onebody.h>
+#include <libmints/onebody.h> // needed because we derive from OneBodyAOInt
 
 namespace psi {
 
@@ -35,11 +33,6 @@ public:
     /// Constructor, it assumes you are not computing derivatives by default
     OverlapInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     virtual ~OverlapInt();
-
-    /// Compute overlap between 2 shells. Result is stored in buffer.
-//    void compute_shell(int, int);
-//    void compute_shell_deriv1(int, int);
-    void compute_shell_deriv2(int, int);
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }

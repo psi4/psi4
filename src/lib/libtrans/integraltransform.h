@@ -110,10 +110,10 @@ class IntegralTransform{
                           FrozenOrbitals frozenOrbitals = OccAndVir,
                           bool initialize = true);
 
-        IntegralTransform(boost::shared_ptr<Matrix> c,
-                          boost::shared_ptr<Matrix> i,
-                          boost::shared_ptr<Matrix> a,
-                          boost::shared_ptr<Matrix> v,
+        IntegralTransform(SharedMatrix c,
+                          SharedMatrix i,
+                          SharedMatrix a,
+                          SharedMatrix v,
                           SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
@@ -300,8 +300,8 @@ class IntegralTransform{
         // The cache files used by libDPD
         int *_cacheFiles, **_cacheList;
         // Matrix objects of Ca and Cb (these are copies of _Ca, _Cb below).
-        boost::shared_ptr<Matrix> _mCa;
-        boost::shared_ptr<Matrix> _mCb;
+        SharedMatrix _mCa;
+        SharedMatrix _mCb;
         // The alpha MO coefficients for each irrep
         double ***_Ca;
         // The alpha MO coefficients for each irrep

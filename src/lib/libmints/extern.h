@@ -49,11 +49,11 @@ public:
     /// Translate the origin by (dx,dy,dz)
     void translate(double dx, double dy, double dz);   
     /// Rotate about the origin by the rotation matrix R
-    void rotate(boost::shared_ptr<Matrix> R); 
+    void rotate(SharedMatrix R); 
 
     /// Compute the external potential matrix in the given basis set
     /// C1 for now!
-    boost::shared_ptr<Matrix> computePotentialMatrix(boost::shared_ptr<BasisSet> basis);
+    SharedMatrix computePotentialMatrix(boost::shared_ptr<BasisSet> basis);
     /// Compute the external potential at a single point
     double computePotentialPoint(double x, double y, double z);
 

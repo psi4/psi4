@@ -26,23 +26,23 @@ protected:
     /// Termination condition 
     double delta_;
     /// Original matrix (untouched) 
-    boost::shared_ptr<Matrix> A_; 
+    SharedMatrix A_; 
     /// Q factor, partial 
-    boost::shared_ptr<Matrix> Q_;
+    SharedMatrix Q_;
     /// R factor, full
-    boost::shared_ptr<Matrix> R_;
+    SharedMatrix R_;
     /// Pivots
     std::vector<int> pivots_; 
     /// P factor, partial
-    boost::shared_ptr<Matrix> P_; 
+    SharedMatrix P_; 
     /// N factor, partial 
-    boost::shared_ptr<Matrix> N_; 
+    SharedMatrix N_; 
 
     void form_QR();
     void form_PN();
 
 public:
-    QR(boost::shared_ptr<Matrix> A, double delta);
+    QR(SharedMatrix A, double delta);
     ~QR();
 
     void decompose();
@@ -50,11 +50,11 @@ public:
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
 
-    boost::shared_ptr<Matrix> A() const { return A_; }
-    boost::shared_ptr<Matrix> Q() const { return Q_; }
-    boost::shared_ptr<Matrix> R() const { return R_; }
-    boost::shared_ptr<Matrix> P() const { return P_; }
-    boost::shared_ptr<Matrix> N() const { return N_; }
+    SharedMatrix A() const { return A_; }
+    SharedMatrix Q() const { return Q_; }
+    SharedMatrix R() const { return R_; }
+    SharedMatrix P() const { return P_; }
+    SharedMatrix N() const { return N_; }
     const std::vector<int>& pivots() const { return  pivots_; }
 
 };

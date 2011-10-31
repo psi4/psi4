@@ -572,7 +572,7 @@ void DLRSolver::subspaceHamiltonian()
         npi[h] = n;
     }
 
-    G_ = boost::shared_ptr<Matrix> (new Matrix("Subspace Hamiltonian",nirrep,npi,npi));
+    G_ = SharedMatrix (new Matrix("Subspace Hamiltonian",nirrep,npi,npi));
     delete[] npi;
 
     for (int h = 0; h < nirrep; ++h) {
@@ -604,8 +604,8 @@ void DLRSolver::subspaceDiagonalization()
         npi[h] = n;
     }
 
-    boost::shared_ptr<Matrix> G2(G_->clone());
-    a_ = boost::shared_ptr<Matrix> (new Matrix("Subspace Eigenvectors",nirrep,npi,npi));
+    SharedMatrix G2(G_->clone());
+    a_ = SharedMatrix (new Matrix("Subspace Eigenvectors",nirrep,npi,npi));
     l_ = boost::shared_ptr<Vector> (new Vector("Subspace Eigenvalues",nirrep,npi));
     delete[] npi;
    
