@@ -20,6 +20,8 @@ class PointFunctions {
 protected:
     /// Basis set for this PointFunctions
     boost::shared_ptr<BasisSet> primary_;
+    /// Pure AM or not
+    bool puream_;
     /// Current number of points
     int npoints_;
     /// Maximum number of points in a block
