@@ -83,6 +83,51 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT", 1);
 
+    /*- An array containing the number of doubly-occupied orbitals per irrep 
+    (in Cotton order) -*/
+    options.add("DOCC", new ArrayType());
+
+    /*- An array containing the number of singly-occupied orbitals per irrep 
+    (in Cotton order) -*/
+    options.add("SOCC", new ArrayType());
+
+    /*- An array containing the number of frozen doubly-occupied orbitals per 
+    irrep (these are not excited in a CI, nor can they be optimized in 
+    MCSCF -*/
+    options.add("FROZEN_DOCC", new ArrayType());
+
+    /*- An array containing the number of frozen unoccupied orbitals per 
+    irrep (these are not populated in a CI, nor can they be optimized in 
+    MCSCF -*/
+    options.add("FROZEN_UOCC", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+    options.add("RAS1", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+    options.add("RAS2", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+    options.add("RAS3", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+    options.add("RAS4", new ArrayType());
+
+    /*- An array giving the number of restricted doubly-occupied orbitals per 
+    irrep (not excited in CI wavefunctions, but orbitals can be optimized
+    in MCSCF) -*/
+    options.add("RESTRICTED_DOCC", new ArrayType());
+
+    /*- An array giving the number of restricted unoccupied orbitals per 
+    irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+    in MCSCF) -*/
+    options.add("RESTRICTED_UOCC", new ArrayType());
+
+    /*- An array giving the number of active orbitals (occupied plus 
+    unoccupied) per irrep (shorthand to make MCSCF easier to specify than
+    using RAS keywords) -*/
+    options.add("ACTIVE", new ArrayType());
+
     /*- If TRUE, use the Ms=0 component of the state.  Defaults to TRUE
     if closed-shell and FALSE otherwise.  Related to the S parameter. -*/
     options.add_bool("MS0",false);
@@ -939,6 +984,38 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("DOCC", new ArrayType());
     /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
     options.add("SOCC", new ArrayType());
+
+    /*- An array containing the number of frozen doubly-occupied orbitals per 
+    irrep (these are not excited in a CI, nor can they be optimized in 
+    MCSCF -*/
+    options.add("FROZEN_DOCC", new ArrayType());
+
+    /*- An array containing the number of frozen unoccupied orbitals per 
+    irrep (these are not populated in a CI, nor can they be optimized in 
+    MCSCF -*/
+    options.add("FROZEN_UOCC", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
+    options.add("RAS1", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS2 !expert -*/
+    options.add("RAS2", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS3 !expert -*/
+    options.add("RAS3", new ArrayType());
+
+    /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
+    options.add("RAS4", new ArrayType());
+
+    /*- An array giving the number of restricted doubly-occupied orbitals per 
+    irrep (not excited in CI wavefunctions, but orbitals can be optimized
+    in MCSCF) -*/
+    options.add("RESTRICTED_DOCC", new ArrayType());
+
+    /*- An array giving the number of restricted unoccupied orbitals per 
+    irrep (not occupied in CI wavefunctions, but orbitals can be optimized
+    in MCSCF) -*/
+    options.add("RESTRICTED_UOCC", new ArrayType());
 
   }
   if(name == "CUSP"|| options.read_globals()){
