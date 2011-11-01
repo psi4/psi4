@@ -18,7 +18,6 @@
 #include <cstdlib>
 #include <cmath>
 #include <psifiles.h>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libqt/slaterdset.h>
