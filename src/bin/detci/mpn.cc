@@ -21,6 +21,7 @@
 #include <libchkpt/chkpt.h>
 #include "structs.h"
 #include "ci_tol.h"
+#include <libpsio/psio.h>
 #define EXTERN
 #include "globals.h"
 #include "civect.h"
