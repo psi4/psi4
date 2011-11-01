@@ -1016,6 +1016,38 @@ void HF::load_orbitals()
     delete[] basisnamec;
 }
 
+
+void HF::check_phases()
+{
+    for (int h=0; h<nirrep_; ++h) {
+        for (int p = 0; p < Ca_->colspi(h); ++p) {
+            for (int mu = 0; mu < Ca_->rowspi(h); ++mu) {
+                if (fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
+                    if (Ca_->get(h, mu, p) < 1.0E-3) {
+                        Ca_->scale_column(h, p, -1.0);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    if (Ca_ != Cb_) {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int p = 0; p < Cb_->colspi(h); ++p) {
+                for (int mu = 0; mu < Cb_->rowspi(h); ++mu) {
+                    if (fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
+                        if (Cb_->get(h, mu, p) < 1.0E-3) {
+                            Cb_->scale_column(h, p, -1.0);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
+}
+
 void HF::dump_to_checkpoint()
 {
     if(!psio_->open_check(PSIF_CHKPT))
@@ -1206,6 +1238,8 @@ double HF::compute_energy()
 
     if (Communicator::world->me() == 0)
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
+
+    check_phases();
 
     if (converged) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
