@@ -997,6 +997,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/dfmp2_2/Makefile
           tests/pywrap_db1/Makefile
           tests/pywrap_db2/Makefile
+          tests/cisd-sp/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile

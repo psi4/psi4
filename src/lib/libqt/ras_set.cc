@@ -310,7 +310,7 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
              int ras_type, int hoffmann, Options& options)
 {
   int i, irrep, point, tmpi, cnt=0;
-  int errcod, errbad, parsed_ras1=0, parsed_ras2=0, do_ras4;
+  int errcod, errbad=0, parsed_ras1=0, parsed_ras2=0, do_ras4;
   int parsed_restr_uocc=0;
   int *used, *offset, **tras;
   int *tmp_frdocc, *tmp_fruocc;
