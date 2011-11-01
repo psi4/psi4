@@ -236,7 +236,7 @@ void OverlapInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1,
     }
 }
 
-void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2)
+void OverlapInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
