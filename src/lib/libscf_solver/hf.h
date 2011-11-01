@@ -226,6 +226,9 @@ protected:
     /// Save the current density and energy.
     virtual void save_density_and_energy() = 0;
 
+    /// Check MO phases
+    void check_phases();
+
     /// SAD Guess and propagation
     void compute_SAD_guess();
 
