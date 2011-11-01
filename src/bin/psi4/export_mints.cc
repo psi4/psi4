@@ -342,13 +342,9 @@ void export_mints()
     class_<ExternalPotential, boost::shared_ptr<ExternalPotential>, boost::noncopyable>("ExternalPotential").
             def("setName", &ExternalPotential::setName).
             def("addCharge", &ExternalPotential::addCharge).
-            def("addDipole", &ExternalPotential::addDipole).
-            def("addQuadrupole", &ExternalPotential::addQuadrupole).
-            def("translate", &ExternalPotential::translate).
-            def("rotate", &ExternalPotential::rotate).
+            def("addBasis", &ExternalPotential::addBasis).
             def("clear", &ExternalPotential::clear).
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix).
-            def("computePotentialPoint", &ExternalPotential::computePotentialPoint).
             def("print_out", &ExternalPotential::py_print);
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).
