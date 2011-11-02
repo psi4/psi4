@@ -402,7 +402,7 @@ void HF::print_header()
         fprintf(outfile, "\n");
         fprintf(outfile, "         ---------------------------------------------------------\n");
         fprintf(outfile, "                                   SCF\n");
-        fprintf(outfile, "            by Justin Turney, Rob Parrish, and Andy Simmonnett\n");
+        fprintf(outfile, "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
         fprintf(outfile, "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
         fprintf(outfile, "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
         fprintf(outfile, "         ---------------------------------------------------------\n");
