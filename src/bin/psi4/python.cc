@@ -899,7 +899,7 @@ void Python::finalize()
 void Python::run(FILE *input)
 {
     using namespace boost::python;
-    char *s;
+    char *s = 0;
     if (input == NULL)
         return;
 
@@ -996,6 +996,7 @@ void Python::run(FILE *input)
         return;
     }
 
-    free(s);
+    if (s)
+        free(s);
     py_psi_plugin_close_all();
 }
