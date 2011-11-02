@@ -222,7 +222,8 @@ PsiReturnType detci(Options &options)
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
-     Process::environment.globals["CI ENERGY"] = 0.0;
+     Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
+     Process::environment.globals["CI CORRELATION ENERGY"] = 0.0;
      return Success;
    }
 
@@ -1021,7 +1022,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    tval = evals[Parameters.root]+efzc+nucrep;
    chkpt_wt_etot(tval);
    Process::environment.globals["CURRENT ENERGY"] = tval;
-   Process::environment.globals["CI ENERGY"] = tval;
+   Process::environment.globals["CI TOTAL ENERGY"] = tval;
+   Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo.eref;
 
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
@@ -1029,9 +1031,13 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
      chkpt_wt_e_labeled(e_label, tval);
 
      std::stringstream s;
-     s << "CI ROOT " << i << " ENERGY";
+     s << "CI ROOT " << i << " TOTAL ENERGY";
      
      Process::environment.globals[s.str()] = tval;
+
+     std::stringstream s2;
+     s2 << "CI ROOT " << i << " CORRELATION ENERGY";
+     Process::environment.globals[s2.str()] = tval - CalcInfo.eref;
    }
 
    if (Parameters.average_num > 1) {
@@ -1040,7 +1046,9 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
        tval += Parameters.average_weights[i] * 
                (efzc+nucrep+evals[Parameters.average_states[i]]);
      chkpt_wt_e_labeled("State averaged energy",tval);
-     Process::environment.globals["CI STATE AVERAGED ENERGY"] = tval;
+     Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
+     Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
+       tval - CalcInfo.eref;
    }
  
    chkpt_close();

@@ -712,8 +712,9 @@ void get_moinfo(Options & options)
                  moinfo.clsdpi, moinfo.openpi, moinfo.frdocc, moinfo.fruocc,
                  moinfo.rstrdocc, moinfo.rstruocc, ras_opi, tmpi,
                  params.ras_type, i, options)) {
-      fprintf(outfile, "Error in ras_set().  Aborting.\n");
-      abort();
+      //fprintf(outfile, "Error in ras_set().  Aborting.\n");
+      //abort();
+      throw PSIEXCEPTION("ras_set2() returned error code");
     }
 
     free_int_matrix(ras_opi);
