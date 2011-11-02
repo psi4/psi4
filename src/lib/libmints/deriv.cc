@@ -232,36 +232,76 @@ public:
     {
         int thread = Communicator::world->thread_id(pthread_self());
 
-        double prefactor = 2.0;
-
-        bool braket = false;
-
-        if (pabs == qabs)
-            prefactor *= 0.5;
-        if (rabs == sabs)
-            prefactor *= 0.5;
-        if (!(pabs == rabs && qabs == sabs))
-            braket = true;
+        bool braket = pabs!=rabs || qabs!=sabs;
+        bool bra    = pabs!=qabs;
+        bool ket    = rabs!=sabs;
 
         double four_index_D = 0.0;
 
-        if (pirrep == qirrep && rirrep == sirrep) {
-            four_index_D = 4.0 * D_->get(pirrep, pso, qso) * D_ref_->get(rirrep, rso, sso);
-            if (braket)
-                four_index_D += 4.0 * D_ref_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
+        double Coulomb1  = 0.0;
+        double Coulomb2  = 0.0;
+        double Exchange1 = 0.0;
+        if (pirrep == qirrep && rirrep == sirrep){
+            Coulomb1 = 2.0 * D_->get(pirrep, pso, qso) * D_ref_->get(rirrep, rso, sso);
+            Coulomb2 = 2.0 * D_->get(rirrep, rso, sso) * D_ref_->get(pirrep, pso, qso);
         }
-        if (pirrep == rirrep && qirrep == sirrep) {
-            four_index_D -= D_->get(pirrep, pso, rso) * D_ref_->get(qirrep, qso, sso);
-            if (braket)
-                four_index_D -= D_ref_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
-        }
-        if (pirrep == sirrep && qirrep == rirrep) {
-            four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
-            if (braket)
-                four_index_D -= D_ref_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
-        }
+        if (pirrep == rirrep && qirrep == sirrep)
+            Exchange1 = D_->get(pirrep, pso, rso) * D_ref_->get(qirrep, qso, sso);
+        // (pq|rs)
+        four_index_D = Coulomb1 - Exchange1;
 
-        four_index_D *= prefactor;
+        if(bra && ket && braket){
+            four_index_D += 3 * Coulomb1;
+            four_index_D += 4 * Coulomb2;
+            // (qp|rs) and (rs|qp)
+            if (qirrep == rirrep && pirrep == sirrep)
+                four_index_D -= 2.0 * D_->get(qirrep, qso, rso) * D_ref_->get(pirrep, pso, sso);
+            // (pq|sr) and (sr|pq)
+            if (pirrep == sirrep && qirrep == rirrep)
+                four_index_D -= 2.0 * D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            // (qp|sr) and (sr|qp)
+            if (qirrep == sirrep && pirrep == rirrep)
+                four_index_D -= 2.0 * D_->get(qirrep, qso, sso) * D_ref_->get(pirrep, pso, rso);
+            // (rs|pq)
+            four_index_D -= Exchange1;
+        }else if(bra && ket){
+            four_index_D += 3 * Coulomb1;
+            // (qp|rs)
+            if (qirrep == rirrep && pirrep == sirrep)
+                four_index_D -= D_->get(qirrep, qso, rso) * D_ref_->get(pirrep, pso, sso);
+            // (pq|sr)
+            if (pirrep == sirrep && qirrep == rirrep)
+                four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            // (qp|sr)
+            if (qirrep == sirrep && pirrep == rirrep)
+                four_index_D -= D_->get(qirrep, qso, sso) * D_ref_->get(pirrep, pso, rso);
+        }else if(bra){
+            four_index_D += Coulomb1;
+            four_index_D += 2 * Coulomb2;
+            // (qp|rs)
+            if (qirrep == rirrep && pirrep == sirrep)
+                four_index_D -= D_->get(qirrep, qso, rso) * D_ref_->get(pirrep, pso, sso);
+            // (rs|pq)
+            four_index_D -= Exchange1;
+            // (rs|qp)
+            if (rirrep == qirrep && sirrep == pirrep)
+                four_index_D -= D_->get(rirrep, rso, qso) * D_ref_->get(sirrep, sso, pso);
+        }else if(ket){
+            four_index_D += Coulomb1;
+            four_index_D += 2 * Coulomb2;
+            // (pq|sr)
+            if (pirrep == sirrep && qirrep == rirrep)
+                four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            // (rs|pq)
+            four_index_D -= Exchange1;
+            // (sr|qp)
+            if (sirrep == qirrep && rirrep == pirrep)
+                four_index_D -= D_->get(sirrep, sso, qso) * D_ref_->get(rirrep, rso, pso);
+        }else if(braket){
+            four_index_D += Coulomb2;
+            // (rs|pq)
+            four_index_D -= Exchange1;
+        }
 
         result_vec_[thread]->add(salc, four_index_D * value);
 
