@@ -262,13 +262,13 @@ def run_detci(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
-    # For a CCSD energy, we need SCF to be run.
+    # For a CI energy, we need SCF to be run.
     # Could we somehow do a check to see if SCF was run?
     # This would be useful of the user had to do something special with SCF to get
     # it to converge.
     run_scf("scf", **kwargs);
     PsiMod.transqt()
-    PsiMod.detci()
+    return PsiMod.detci()
 
 def run_dfmp2(name, **kwargs):
 
