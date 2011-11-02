@@ -893,6 +893,7 @@ void Python::initialize()
 
 void Python::finalize()
 {
+    Py_Finalize();
 }
 
 void Python::run(FILE *input)
@@ -995,5 +996,6 @@ void Python::run(FILE *input)
         return;
     }
 
+    free(s);
     py_psi_plugin_close_all();
 }
