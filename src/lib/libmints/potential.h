@@ -11,6 +11,7 @@ namespace psi {
     class GaussianShell;
     class ObaraSaikaTwoCenterVIRecursion;
     class ObaraSaikaTwoCenterVIDerivRecursion;
+    class ObaraSaikaTwoCenterVIDeriv2Recursion;
     class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
@@ -28,12 +29,11 @@ class PotentialInt : public OneBodyAOInt
     void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
     /// Computes integrals between two shell objects.
     void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
+    void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
 
 protected:
     /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion potential_recur_;
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
+    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
 
     /// Matrix of coordinates/charges of partial charges
     SharedMatrix Zxyz_;
