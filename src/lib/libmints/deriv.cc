@@ -651,7 +651,7 @@ SharedMatrix Deriv::compute()
                 functor.finalize();
                 tpdm_contr_ = wavefunction_->tpdm_gradient_contribution();
             }else{
-                CorrelatedRestrictedFunctor functor(Dcont_vector, wavefunction_, ints_transform);
+                CorrelatedRestrictedFunctor functor(TPDMcont_vector, wavefunction_, ints_transform);
                 so_eri.compute_integrals_deriv1(functor);
                 functor.finalize();
 
@@ -757,8 +757,9 @@ SharedMatrix Deriv::compute()
         gradient_->add(x_ref_contr_);
         gradient_->add(opdm_ref_contr_);
         gradient_->add(tpdm_ref_contr_);
-        gradient_->print_atom_vector();
         SharedMatrix scf_gradient(gradient_->clone());
+        scf_gradient->set_name("Reference Gradient");
+        scf_gradient->print();
         wavefunction_->reference_wavefunction()->set_gradient(scf_gradient);
         corr->print_atom_vector();
     }
