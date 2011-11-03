@@ -733,41 +733,53 @@ SharedMatrix Deriv::compute()
 
 
     // Obtain nuclear repulsion contribution from the wavefunction
-    Matrix enuc = molecule_->nuclear_repulsion_energy_deriv1();
+    SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1()));
 
-    // Print things out
-    enuc.print_atom_vector();
-    opdm_contr_->print_atom_vector();
-    x_contr_->print_atom_vector();
-    tpdm_contr_->print_atom_vector();
-    if(x_ref_contr_){
-        x_ref_contr_->print_atom_vector();
-    }
-    if(opdm_ref_contr_){
-        opdm_ref_contr_->print_atom_vector();
-    }
-    if(tpdm_ref_contr_){
-        tpdm_ref_contr_->print_atom_vector();
-    }
+    // Print things out, after making sure that each component is properly symmetrized
+    symmetrize_gradient(enuc)->print_atom_vector();
+    symmetrize_gradient(opdm_contr_)->print_atom_vector();
+    symmetrize_gradient(x_contr_)->print_atom_vector();
+    symmetrize_gradient(tpdm_contr_)->print_atom_vector();
+    if(x_ref_contr_)
+        symmetrize_gradient(x_ref_contr_)->print_atom_vector();
+    if(opdm_ref_contr_)
+        symmetrize_gradient(opdm_ref_contr_)->print_atom_vector();
+    if(tpdm_ref_contr_)
+        symmetrize_gradient(tpdm_ref_contr_)->print_atom_vector();
 
     // Add everything up into a temp.
-    SharedMatrix temp(new Matrix("Gradient", molecule_->natom(), 3));
-    Matrix corr("Correlation contribution to gradient", molecule_->natom(), 3);
-    temp->add(&enuc);
-    corr.add(opdm_contr_);
-    corr.add(x_contr_);
-    corr.add(tpdm_contr_);
+    SharedMatrix corr(new Matrix("Correlation contribution to gradient", molecule_->natom(), 3));
+    gradient_->add(enuc);
+    corr->add(opdm_contr_);
+    corr->add(x_contr_);
+    corr->add(tpdm_contr_);
     if(reference_separate){
-        temp->add(x_ref_contr_);
-        temp->add(opdm_ref_contr_);
-        temp->add(tpdm_ref_contr_);
-        temp->print_atom_vector();
-        wavefunction_->reference_wavefunction()->set_gradient(temp);
-        corr.print_atom_vector();
+        gradient_->add(x_ref_contr_);
+        gradient_->add(opdm_ref_contr_);
+        gradient_->add(tpdm_ref_contr_);
+        gradient_->print_atom_vector();
+        SharedMatrix scf_gradient(gradient_->clone());
+        wavefunction_->reference_wavefunction()->set_gradient(scf_gradient);
+        corr->print_atom_vector();
     }
-    temp->add(corr);
+    gradient_->add(corr);
 
-    // Symmetrize the gradients to remove any noise:
+    // Print the atom vector
+    gradient_->print_atom_vector();
+
+    // Save the gradient to the wavefunction so that optking can optimize with it
+    wavefunction_->set_gradient(gradient_);
+
+    return gradient_;
+}
+
+SharedMatrix
+Deriv::symmetrize_gradient(SharedMatrix grad)
+{
+    // Make a temporary storage object
+    SharedMatrix temp(grad->clone());
+    temp->zero();
+
     CharacterTable ct = molecule_->point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
@@ -781,23 +793,18 @@ SharedMatrix Deriv::compute()
 
             SymmetryOperation so = ct.symm_operation(g);
 
-            gradient_->add(atom, 0, so(0, 0) * temp->get(Gatom, 0) / ct.order());
-            gradient_->add(atom, 1, so(1, 1) * temp->get(Gatom, 1) / ct.order());
-            gradient_->add(atom, 2, so(2, 2) * temp->get(Gatom, 2) / ct.order());
+            temp->add(atom, 0, so(0, 0) * grad->get(Gatom, 0) / ct.order());
+            temp->add(atom, 1, so(1, 1) * grad->get(Gatom, 1) / ct.order());
+            temp->add(atom, 2, so(2, 2) * grad->get(Gatom, 2) / ct.order());
         }
     }
-
     // Delete the atom map.
     delete_atom_map(atom_map, molecule_);
 
-    // Print the atom vector
-    gradient_->print_atom_vector();
-
-    // Save the gradient to the wavefunction so that optking can optimize with it
-    wavefunction_->set_gradient(gradient_);
-
-    return gradient_;
+    grad->copy(temp);
+    return grad;
 }
+
 
 }
 
