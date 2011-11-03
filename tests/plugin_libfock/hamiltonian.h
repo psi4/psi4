@@ -186,11 +186,36 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
-    /// Unpack solver eigenvector to symmetry blocked t1
-    virtual std::vector<SharedMatrix > unpack(boost::shared_ptr<Vector> eigenvector);
+    virtual std::vector<SharedMatrix > unpack(const boost::shared_ptr<Vector>& x);
 
     void set_singlet(bool singlet) { singlet_ = singlet; }
 
+};
+
+class TDHFRHamiltonian : public RHamiltonian {
+
+protected:
+
+    bool singlet_;
+    SharedMatrix Caocc_;
+    SharedMatrix Cavir_;
+    boost::shared_ptr<Vector> eps_aocc_;
+    boost::shared_ptr<Vector> eps_avir_;
+
+public:
+    TDHFRHamiltonian(boost::shared_ptr<JK> jk, 
+                    SharedMatrix Caocc, 
+                    SharedMatrix Cavir, 
+                    boost::shared_ptr<Vector> eps_aocc,
+                    boost::shared_ptr<Vector> eps_avir);
+    virtual ~TDHFRHamiltonian();
+
+    virtual void print_header() const;
+    virtual boost::shared_ptr<Vector> diagonal();
+    virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
+                               std::vector<boost::shared_ptr<Vector> >& b);
+
+    void set_singlet(bool singlet) { singlet_ = singlet; }
 };
 
 class CPHFRHamiltonian : public RHamiltonian {
@@ -215,8 +240,8 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
-    /// Unpack solver x to symmetry blocked t1
-    virtual std::vector<SharedMatrix > unpack(boost::shared_ptr<Vector> x);
+    //virtual std::vector<SharedVector > pack(const boost::shared_ptr<Matrix>& b);
+    //virtual std::vector<SharedMatrix > unpack(const boost::shared_ptr<Vector>& x);
 };
 
 }

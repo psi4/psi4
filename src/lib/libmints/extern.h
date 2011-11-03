@@ -2,7 +2,7 @@
 #define _psi_src_lib_libmints_extern_potential_h_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {
@@ -17,14 +17,18 @@ class BasisSet;
  */
 class ExternalPotential {
 protected:
+
+    /// Debug flag
+    int debug_;
+    /// Print flag
+    int print_;
+
     /// Name of potential
     std::string name_;
     /// <Z,x,y,z> array of charges
     std::vector<boost::tuple<double,double,double,double> > charges_;
-    /// <mx,my,mz,x,y,z> array of dipoles
-    std::vector<boost::tuple<double,double,double,double,double,double> > dipoles_;
-    /// <qxx,qxy,qxz,qyy,qyz,qzz,x,y,z> array of quadrupoles
-    std::vector<boost::tuple<double,double,double,double,double,double,double,double,double> > quadrupoles_;
+    /// Auxiliary basis sets (with accompanying molecules and coefs) of diffuse charges
+    std::vector<std::pair<boost::shared_ptr<BasisSet>, SharedVector> > bases_;
 
 public:
     /// Constructur, does nothing
@@ -37,31 +41,26 @@ public:
 
     /// Add a charge Z at (x,y,z)
     void addCharge(double Z,double x, double y, double z);
-    /// Add a dipole (mx,my,mz) at (x,y,z)
-    void addDipole(double mx, double my, double mz, double x, double y, double z);
-    /// Add a quadrupole (qxx,qxy,qxz,qyy,qyz,qzz) at (x,y,z)
-    void addQuadrupole(double qxx, double qxy, double qxz, double qyy, double qyz,
-         double qzz, double x, double y, double z);
+    /// Add a basis of S auxiliary functions with DF coefficients
+    void addBasis(boost::shared_ptr<BasisSet> basis, SharedVector coefs);
 
     /// Reset the field to zero (eliminates all entries) 
     void clear();
     
-    /// Translate the origin by (dx,dy,dz)
-    void translate(double dx, double dy, double dz);   
-    /// Rotate about the origin by the rotation matrix R
-    void rotate(SharedMatrix R); 
-
     /// Compute the external potential matrix in the given basis set
     /// C1 for now!
     SharedMatrix computePotentialMatrix(boost::shared_ptr<BasisSet> basis);
-    /// Compute the external potential at a single point
-    double computePotentialPoint(double x, double y, double z);
 
     /// Print a trace of the external potential
     void print(FILE* out = outfile) const;
 
     /// Python print helper
     void py_print() const { print(outfile); }
+
+    /// Print flag 
+    void set_print(int print) { print_ = print; } 
+    /// Debug flag          
+    void set_debug(int debug) { debug_ = debug; } 
 
 };
 

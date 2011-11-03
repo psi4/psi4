@@ -60,6 +60,10 @@ class Deriv
     SharedMatrix tpdm_ref_contr_;
     /// Final gradient
     SharedMatrix gradient_;
+
+    // Applies all symmetry operations to symmetrize the gradient and returns
+    // the shared pointer to the input matrix, for convenient printing
+    SharedMatrix symmetrize_gradient(SharedMatrix grad);
 public:
     /*!
      * Constructor for derivative object.
