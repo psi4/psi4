@@ -232,36 +232,76 @@ public:
     {
         int thread = Communicator::world->thread_id(pthread_self());
 
-        double prefactor = 2.0;
-
-        bool braket = false;
-
-        if (pabs == qabs)
-            prefactor *= 0.5;
-        if (rabs == sabs)
-            prefactor *= 0.5;
-        if (!(pabs == rabs && qabs == sabs))
-            braket = true;
+        bool braket = pabs!=rabs || qabs!=sabs;
+        bool bra    = pabs!=qabs;
+        bool ket    = rabs!=sabs;
 
         double four_index_D = 0.0;
 
-        if (pirrep == qirrep && rirrep == sirrep) {
-            four_index_D = 4.0 * D_->get(pirrep, pso, qso) * D_ref_->get(rirrep, rso, sso);
-            if (braket)
-                four_index_D += 4.0 * D_ref_->get(pirrep, pso, qso) * D_->get(rirrep, rso, sso);
+        double Coulomb1  = 0.0;
+        double Coulomb2  = 0.0;
+        double Exchange1 = 0.0;
+        if (pirrep == qirrep && rirrep == sirrep){
+            Coulomb1 = 2.0 * D_->get(pirrep, pso, qso) * D_ref_->get(rirrep, rso, sso);
+            Coulomb2 = 2.0 * D_->get(rirrep, rso, sso) * D_ref_->get(pirrep, pso, qso);
         }
-        if (pirrep == rirrep && qirrep == sirrep) {
-            four_index_D -= D_->get(pirrep, pso, rso) * D_ref_->get(qirrep, qso, sso);
-            if (braket)
-                four_index_D -= D_ref_->get(pirrep, pso, rso) * D_->get(qirrep, qso, sso);
-        }
-        if (pirrep == sirrep && qirrep == rirrep) {
-            four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
-            if (braket)
-                four_index_D -= D_ref_->get(pirrep, pso, sso) * D_->get(qirrep, qso, rso);
-        }
+        if (pirrep == rirrep && qirrep == sirrep)
+            Exchange1 = D_->get(pirrep, pso, rso) * D_ref_->get(qirrep, qso, sso);
+        // (pq|rs)
+        four_index_D = Coulomb1 - Exchange1;
 
-        four_index_D *= prefactor;
+        if(bra && ket && braket){
+            four_index_D += 3 * Coulomb1;
+            four_index_D += 4 * Coulomb2;
+            // (qp|rs) and (rs|qp)
+            if (qirrep == rirrep && pirrep == sirrep)
+                four_index_D -= 2.0 * D_->get(qirrep, qso, rso) * D_ref_->get(pirrep, pso, sso);
+            // (pq|sr) and (sr|pq)
+            if (pirrep == sirrep && qirrep == rirrep)
+                four_index_D -= 2.0 * D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            // (qp|sr) and (sr|qp)
+            if (qirrep == sirrep && pirrep == rirrep)
+                four_index_D -= 2.0 * D_->get(qirrep, qso, sso) * D_ref_->get(pirrep, pso, rso);
+            // (rs|pq)
+            four_index_D -= Exchange1;
+        }else if(bra && ket){
+            four_index_D += 3 * Coulomb1;
+            // (qp|rs)
+            if (qirrep == rirrep && pirrep == sirrep)
+                four_index_D -= D_->get(qirrep, qso, rso) * D_ref_->get(pirrep, pso, sso);
+            // (pq|sr)
+            if (pirrep == sirrep && qirrep == rirrep)
+                four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            // (qp|sr)
+            if (qirrep == sirrep && pirrep == rirrep)
+                four_index_D -= D_->get(qirrep, qso, sso) * D_ref_->get(pirrep, pso, rso);
+        }else if(bra){
+            four_index_D += Coulomb1;
+            four_index_D += 2 * Coulomb2;
+            // (qp|rs)
+            if (qirrep == rirrep && pirrep == sirrep)
+                four_index_D -= D_->get(qirrep, qso, rso) * D_ref_->get(pirrep, pso, sso);
+            // (rs|pq)
+            four_index_D -= Exchange1;
+            // (rs|qp)
+            if (rirrep == qirrep && sirrep == pirrep)
+                four_index_D -= D_->get(rirrep, rso, qso) * D_ref_->get(sirrep, sso, pso);
+        }else if(ket){
+            four_index_D += Coulomb1;
+            four_index_D += 2 * Coulomb2;
+            // (pq|sr)
+            if (pirrep == sirrep && qirrep == rirrep)
+                four_index_D -= D_->get(pirrep, pso, sso) * D_ref_->get(qirrep, qso, rso);
+            // (rs|pq)
+            four_index_D -= Exchange1;
+            // (sr|qp)
+            if (sirrep == qirrep && rirrep == pirrep)
+                four_index_D -= D_->get(sirrep, sso, qso) * D_ref_->get(rirrep, rso, pso);
+        }else if(braket){
+            four_index_D += Coulomb2;
+            // (rs|pq)
+            four_index_D -= Exchange1;
+        }
 
         result_vec_[thread]->add(salc, four_index_D * value);
 
@@ -536,7 +576,6 @@ SharedMatrix Deriv::compute()
             if(wavefunction_->Lagrangian()){
                 have_X = true;
                 X = wavefunction_->Lagrangian();
-                X->print();
             }else{
                 X = factory_->create_shared_matrix("SO-basis Lagrangian");
                 X->load(_default_psio_lib_, PSIF_AO_OPDM);
@@ -612,7 +651,7 @@ SharedMatrix Deriv::compute()
                 functor.finalize();
                 tpdm_contr_ = wavefunction_->tpdm_gradient_contribution();
             }else{
-                CorrelatedRestrictedFunctor functor(Dcont_vector, wavefunction_, ints_transform);
+                CorrelatedRestrictedFunctor functor(TPDMcont_vector, wavefunction_, ints_transform);
                 so_eri.compute_integrals_deriv1(functor);
                 functor.finalize();
 
@@ -694,39 +733,54 @@ SharedMatrix Deriv::compute()
 
 
     // Obtain nuclear repulsion contribution from the wavefunction
-    Matrix enuc = molecule_->nuclear_repulsion_energy_deriv1();
+    SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1()));
 
-    // Print things out
-    enuc.print_atom_vector();
-    opdm_contr_->print_atom_vector();
-    x_contr_->print_atom_vector();
-    tpdm_contr_->print_atom_vector();
-    if(x_ref_contr_){
-        x_ref_contr_->print_atom_vector();
-    }
-    if(opdm_ref_contr_){
-        opdm_ref_contr_->print_atom_vector();
-    }
-    if(tpdm_ref_contr_){
-        tpdm_ref_contr_->print_atom_vector();
-    }
+    // Print things out, after making sure that each component is properly symmetrized
+    symmetrize_gradient(enuc)->print_atom_vector();
+    symmetrize_gradient(opdm_contr_)->print_atom_vector();
+    symmetrize_gradient(x_contr_)->print_atom_vector();
+    symmetrize_gradient(tpdm_contr_)->print_atom_vector();
+    if(x_ref_contr_)
+        symmetrize_gradient(x_ref_contr_)->print_atom_vector();
+    if(opdm_ref_contr_)
+        symmetrize_gradient(opdm_ref_contr_)->print_atom_vector();
+    if(tpdm_ref_contr_)
+        symmetrize_gradient(tpdm_ref_contr_)->print_atom_vector();
 
     // Add everything up into a temp.
-    Matrix temp("Temp gradient", molecule_->natom(), 3);
-    Matrix corr("Correlation contribution to gradient", molecule_->natom(), 3);
-    temp.add(&enuc);
-    corr.add(opdm_contr_);
-    corr.add(x_contr_);
-    corr.add(tpdm_contr_);
+    SharedMatrix corr(new Matrix("Correlation contribution to gradient", molecule_->natom(), 3));
+    gradient_->add(enuc);
+    corr->add(opdm_contr_);
+    corr->add(x_contr_);
+    corr->add(tpdm_contr_);
     if(reference_separate){
-        temp.add(x_ref_contr_);
-        temp.add(opdm_ref_contr_);
-        temp.add(tpdm_ref_contr_);
-        corr.print_atom_vector();
+        gradient_->add(x_ref_contr_);
+        gradient_->add(opdm_ref_contr_);
+        gradient_->add(tpdm_ref_contr_);
+        SharedMatrix scf_gradient(gradient_->clone());
+        scf_gradient->set_name("Reference Gradient");
+        scf_gradient->print_atom_vector();
+        wavefunction_->reference_wavefunction()->set_gradient(scf_gradient);
+        corr->print_atom_vector();
     }
-    temp.add(corr);
+    gradient_->add(corr);
 
-    // Symmetrize the gradients to remove any noise:
+    // Print the atom vector
+    gradient_->print_atom_vector();
+
+    // Save the gradient to the wavefunction so that optking can optimize with it
+    wavefunction_->set_gradient(gradient_);
+
+    return gradient_;
+}
+
+SharedMatrix
+Deriv::symmetrize_gradient(SharedMatrix grad)
+{
+    // Make a temporary storage object
+    SharedMatrix temp(grad->clone());
+    temp->zero();
+
     CharacterTable ct = molecule_->point_group()->char_table();
 
     // Obtain atom mapping of atom * symm op to atom
@@ -740,23 +794,18 @@ SharedMatrix Deriv::compute()
 
             SymmetryOperation so = ct.symm_operation(g);
 
-            gradient_->add(atom, 0, so(0, 0) * temp(Gatom, 0) / ct.order());
-            gradient_->add(atom, 1, so(1, 1) * temp(Gatom, 1) / ct.order());
-            gradient_->add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
+            temp->add(atom, 0, so(0, 0) * grad->get(Gatom, 0) / ct.order());
+            temp->add(atom, 1, so(1, 1) * grad->get(Gatom, 1) / ct.order());
+            temp->add(atom, 2, so(2, 2) * grad->get(Gatom, 2) / ct.order());
         }
     }
-
     // Delete the atom map.
     delete_atom_map(atom_map, molecule_);
 
-    // Print the atom vector
-    gradient_->print_atom_vector();
-
-    // Save the gradient to the wavefunction so that optking can optimize with it
-    if (wavefunction_) wavefunction_->set_gradient(gradient_);
-
-    return gradient_;
+    grad->copy(temp);
+    return grad;
 }
+
 
 }
 
