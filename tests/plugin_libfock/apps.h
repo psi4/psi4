@@ -65,6 +65,7 @@ protected:
     virtual void print_wavefunctions();
     virtual void print_amplitudes();
     virtual void print_transitions();
+    virtual void print_densities();
 
     virtual SharedMatrix TDmo(SharedMatrix T1, bool singlet = true);
     virtual SharedMatrix TDso(SharedMatrix T1, bool singlet = true);
@@ -86,6 +87,52 @@ public:
 
 };
 
+class RTDHF : public RBase {
+
+protected:
+
+    std::vector<SharedMatrix > singlets_X_;  
+    std::vector<SharedMatrix > triplets_X_;  
+    std::vector<SharedMatrix > singlets_Y_;  
+    std::vector<SharedMatrix > triplets_Y_;  
+    std::vector<double> E_singlets_;  
+    std::vector<double> E_triplets_;  
+
+    virtual void print_header();
+
+public:
+    RTDHF();
+    virtual ~RTDHF();
+
+    virtual double compute_energy();
+
+};
+
+
+class RCPHF : public RBase {
+
+protected:
+
+    // OV-Rotations
+    std::vector<SharedMatrix> x_;  
+    // OV-Perturbations
+    std::vector<SharedMatrix> b_;  
+
+    virtual void print_header();
+
+public:
+    RCPHF();
+    virtual ~RCPHF();
+
+    /// Solve for all perturbations currently in b 
+    virtual double compute_energy();
+
+    /// Perturbation vector queue, shove tasks onto this guy before compute_energy
+    std::vector<SharedMatrix>& b() { return b_; }
+    /// Resultant solution vectors, available after compute_energy is called
+    std::vector<SharedMatrix>& x() { return x_; }
+
+};
 
 }
 #endif

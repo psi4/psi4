@@ -20,6 +20,9 @@ read_options(std::string name, Options &options){
         /*- The amount of debug information printed
             to the output file -*/
         options.add_int("DEBUG", 0);
+        /*- What app to test?
+          -*/
+        options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF");
         /*- Do singlet states? Default true
          -*/
         options.add_bool("DO_SINGLETS", true);
@@ -32,7 +35,38 @@ read_options(std::string name, Options &options){
         options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
         /*- Memory safety factor for allocating JK
         -*/
+        options.add_double("TDHF_MEM_SAFETY_FACTOR",0.75);
+        /*- Memory safety factor for allocating JK
+        -*/
         options.add_double("CIS_MEM_SAFETY_FACTOR",0.75);
+        /*- Memory safety factor for allocating JK
+        -*/
+        options.add_double("CPHF_MEM_SAFETY_FACTOR",0.75);
+        /*- Which states to save AO OPDMs for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_OPDM_STATES", new ArrayType());
+        /*- Which states to save AO transition OPDMs for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_TOPDM_STATES", new ArrayType());
+        /*- Which states to save AO difference OPDMs for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_DOPDM_STATES", new ArrayType());
+        /*- Which states to save AO Natural Orbitals for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_NO_STATES", new ArrayType());
+        /*- Which states to save AD Matrices for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_AD_STATES", new ArrayType());
     } 
     if(name == "JK" || options.read_globals()) {
         /*- The amount of information printed
@@ -88,6 +122,9 @@ read_options(std::string name, Options &options){
         /*- DL Solver minimum corrector norm to add to subspace
          -*/
         options.add_double("SOLVER_NORM",1.0E-6);
+        /*- CG Solver Jacobi precondition?
+         -*/
+        options.add_bool("SOLVER_PRECONDITION",true);
     } 
 }
 
@@ -96,8 +133,16 @@ plugin_libfock(Options &options)
 {
     tstart();
 
-    boost::shared_ptr<RCIS> cis (new RCIS());
-    cis->compute_energy();
+    if (options.get_str("MODULE") == "RCIS") {
+        boost::shared_ptr<RCIS> cis (new RCIS());
+        cis->compute_energy();
+    } else if (options.get_str("MODULE") == "RTDHF") {
+        boost::shared_ptr<RTDHF> cis (new RTDHF());
+        cis->compute_energy();
+    } else if (options.get_str("MODULE") == "RCPHF") {
+        boost::shared_ptr<RCPHF> cphf(new RCPHF());
+        cphf->compute_energy();
+    }
 
     tstop();
 
