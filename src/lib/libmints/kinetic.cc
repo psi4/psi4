@@ -342,50 +342,50 @@ void KineticInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell> &s1,
                             int m2 = kk - ll;
                             int n2 = ll;
 
-                            // S_{\mu\nu}^{a_x a_x}
-                            buffer_[(0*size)+ao12] += (4.0*a1*a1*x[l1+2][l2]*y[m1][m2]*z[n1][n2] -
-                                                      2.0*a1*(2*l1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
+                            // T_{\mu\nu}^{a_x a_x}
+                            buffer_[(0*size)+ao12] += (4.0*a1*a1*ke_int(x, y, z, a1, l1+2, m1, n1, a2, l2, m2, n2) -
+                                                      2.0*a1*(2*l1+1)*ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2, n2)) * over_pf;
                             if (l1 > 1)
-                                buffer_[(0*size)+ao12] += over_pf*l1*(l1-1)*x[l1-2][l2]*y[m1][m1]*z[n1][n2];
+                                buffer_[(0*size)+ao12] += over_pf*l1*(l1-1)*ke_int(x, y, z, a1, l1-2, m1, n1, a2, l2, m2, n2);
 
-                            // S_{\mu\nu}^{a_x a_y}
-                            buffer_[(1*size)+ao12] += over_pf*4.0*a1*a1*x[l1+1][l2]*y[m1+1][m2]*z[n1][n2];
+                            // T_{\mu\nu}^{a_x a_y}
+                            buffer_[(1*size)+ao12] += over_pf*4.0*a1*a1*ke_int(x, y, z, a1, l1+1, m1+1, n1, a2, l2, m2, n2);
                             if (l1)
-                                buffer_[(1*size)+ao12] -= over_pf*2.0*l1*a1*x[l1-1][l2]*y[m1+1][m2]*z[n1][n2];
+                                buffer_[(1*size)+ao12] -= over_pf*2.0*l1*a1*ke_int(x, y, z, a1, l1-1, m1+1, n1, a2, l2, m2, n2);
                             if (m1)
-                                buffer_[(1*size)+ao12] -= over_pf*2.0*m1*a1*x[l1+1][l2]*y[m1-1][m2]*z[n1][n2];
+                                buffer_[(1*size)+ao12] -= over_pf*2.0*m1*a1*ke_int(x, y, z, a1, l1+1, m1-1, n1, a2, l2, m2, n2);
                             if (l1 && m1)
-                                buffer_[(1*size)+ao12] += over_pf*l1*m1*x[l1-1][l2]*y[m1-1][m2]*z[n1][n2];
+                                buffer_[(1*size)+ao12] += over_pf*l1*m1*ke_int(x, y, z, a1, l1-1, m1-1, n1, a2, l2, m2, n2);
 
-                            // S_{\mu\nu}^{a_x a_z}
-                            buffer_[(2*size)+ao12] += over_pf*4.0*a1*a1*x[l1+1][l2]*y[m1][m2]*z[n1+1][n2];
+                            // T_{\mu\nu}^{a_x a_z}
+                            buffer_[(2*size)+ao12] += over_pf*4.0*a1*a1*ke_int(x, y, z, a1, l1+1, m1, n1+1, a2, l2, m2, n2);
                             if (l1)
-                                buffer_[(2*size)+ao12] -= over_pf*2.0*l1*a1*x[l1-1][l2]*y[m1][m2]*z[n1+1][n2];
+                                buffer_[(2*size)+ao12] -= over_pf*2.0*l1*a1*ke_int(x, y, z, a1, l1-1, m1, n1+1, a2, l2, m2, n2);
                             if (n1)
-                                buffer_[(2*size)+ao12] -= over_pf*2.0*n1*a1*x[l1+1][l2]*y[m1][m2]*z[n1-1][n2];
+                                buffer_[(2*size)+ao12] -= over_pf*2.0*n1*a1*ke_int(x, y, z, a1, l1+1, m1, n1-1, a2, l2, m2, n2);
                             if (l1 && n1)
-                                buffer_[(2*size)+ao12] += over_pf*l1*n1*x[l1-1][l2]*y[m1][m2]*z[n1-1][n2];
+                                buffer_[(2*size)+ao12] += over_pf*l1*n1*ke_int(x, y, z, a1, l1-1, m1, n1-1, a2, l2, m2, n2);
 
-                            // S_{\mu\nu}^{a_y a_y}
-                            buffer_[(3*size)+ao12] += (4.0*a1*a1*over_pf*x[l1][l2]*y[m1+2][m2]*z[n1][n2] -
-                                                      2.0*a1*(2*m1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
+                            // T_{\mu\nu}^{a_y a_y}
+                            buffer_[(3*size)+ao12] += (4.0*a1*a1*over_pf*ke_int(x, y, z, a1, l1, m1+2, n1, a2, l2, m2, n2) -
+                                                      2.0*a1*(2*m1+1)*ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2, n2)) * over_pf;
                             if (m1 > 1)
-                                buffer_[(3*size)+ao12] += over_pf*m1*(m1-1)*x[l1][l2]*y[m1-2][m1]*z[n1][n2];
+                                buffer_[(3*size)+ao12] += over_pf*m1*(m1-1)*ke_int(x, y, z, a1, l1, m1-2, n1, a2, l2, m2, n2);
 
-                            // S_{\mu\nu}^{a_y a_z}
-                            buffer_[(4*size)+ao12] += over_pf*4.0*a1*a1*x[l1][l2]*y[m1+1][m2]*z[n1+1][n2];
+                            // T_{\mu\nu}^{a_y a_z}
+                            buffer_[(4*size)+ao12] += over_pf*4.0*a1*a1*ke_int(x, y, z, a1, l1, m1+1, n1+1, a2, l2, m2, n2);
                             if (m1)
-                                buffer_[(4*size)+ao12] -= over_pf*2.0*m1*a1*x[l1][l2]*y[m1-1][m2]*z[n1+1][n2];
+                                buffer_[(4*size)+ao12] -= over_pf*2.0*m1*a1*ke_int(x, y, z, a1, l1, m1-1, n1+1, a2, l2, m2, n2);
                             if (n1)
-                                buffer_[(4*size)+ao12] -= over_pf*2.0*n1*a1*x[l1][l2]*y[m1+1][m2]*z[n1-1][n2];
+                                buffer_[(4*size)+ao12] -= over_pf*2.0*n1*a1*ke_int(x, y, z, a1, l1, m1+1, n1-1, a2, l2, m2, n2);
                             if (m1 && n1)
-                                buffer_[(4*size)+ao12] += over_pf*m1*n1*x[l1][l2]*y[m1-1][m2]*z[n1-1][n2];
+                                buffer_[(4*size)+ao12] += over_pf*m1*n1*ke_int(x, y, z, a1, l1, m1-1, n1-1, a2, l2, m2, n2);
 
-                            // S_{\mu\nu}^{a_z a_z}
-                            buffer_[(5*size)+ao12] += (4.0*a1*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+2][n2] -
-                                                      2.0*a1*(2*n1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
+                            // T_{\mu\nu}^{a_z a_z}
+                            buffer_[(5*size)+ao12] += (4.0*a1*a1*over_pf*ke_int(x, y, z, a1, l1, m1, n1+2, a2, l2, m2, n2) -
+                                                      2.0*a1*(2*n1+1)*ke_int(x, y, z, a1, l1, m1, n1, a2, l2, m2, n2)) * over_pf;
                             if (n1 > 1)
-                                buffer_[(5*size)+ao12] += over_pf*n1*(n1-1)*x[l1][l2]*y[m1][m1]*z[n1-2][n2];
+                                buffer_[(5*size)+ao12] += over_pf*n1*(n1-1)*ke_int(x, y, z, a1, l1, m1, n1-2, a2, l2, m2, n2);
 
                             ao12++;
                         }

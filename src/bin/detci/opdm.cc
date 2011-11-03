@@ -199,7 +199,9 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     overlap = chkpt_rd_e_labeled(opdm_key);
     chkpt_wt_etot(overlap);
     Process::environment.globals["CURRENT ENERGY"] = overlap;
-    Process::environment.globals["CI ENERGY"] = overlap;
+    Process::environment.globals["CI TOTAL ENERGY"] = overlap;
+    Process::environment.globals["CI CORRELATION ENERGY"] = overlap - 
+      CalcInfo.eref;
     chkpt_close();
   
   }

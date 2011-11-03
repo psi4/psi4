@@ -14,7 +14,7 @@ psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
 psithon.tex basissets.tex
 
 OTFTEX = \
-tests_descriptions.tex keywords.tex expert_keywords.tex psi4bases.tex
+tests_descriptions.tex keywords.tex expert_keywords.tex psi4bases.tex variables_list.tex
 
 DVI = $(TEX:%.tex=%.dvi)
 PS = $(DVI:%.dvi=%.ps)

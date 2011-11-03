@@ -191,8 +191,8 @@ void get_parameters(Options &options)
   if (options["CONVERGENCE"].has_changed()) {
     Parameters.convergence = options.get_int("CONVERGENCE");
   }
-  if (options["ENERGY_CONVERGENCE"].has_changed()) {
-    Parameters.energy_convergence = options.get_int("ENERGY_CONVERGENCE");
+  if (options["E_CONVERGE"].has_changed()) {
+    Parameters.energy_convergence = options.get_int("E_CONVERGE");
   }
 
   Parameters.multp = options.get_int("MULTP");
@@ -878,7 +878,7 @@ void print_parameters(void)
       Parameters.energy_convergence, Parameters.mixed4 ? "yes" : "no");
    fprintf(outfile, "   OEI FILE      =   %6d      R4S          =   %6s\n", 
       Parameters.oei_file, Parameters.r4s ? "yes" : "no");
-   fprintf(outfile, "   REPL OTF     =   %6s\n",  
+   fprintf(outfile, "   REPL OTF      =   %6s\n",  
       Parameters.repl_otf ? "yes" : "no");
    fprintf(outfile, "   TEI FILE      =   %6d      DIAG METHOD  =   ", 
       Parameters.tei_file);
@@ -945,9 +945,9 @@ void print_parameters(void)
        break;
       }
 
-   fprintf(outfile, "   S             =   %6lf     Ms0          =   %6s\n",
+   fprintf(outfile, "   S             =   %.4lf      Ms0          =   %6s\n",
       Parameters.S, Parameters.Ms0 ? "yes" : "no");           
-   fprintf(outfile, "   MAXNVECT     =   %6d\n", Parameters.maxnvect);
+   fprintf(outfile, "   MAXNVECT      =   %6d\n", Parameters.maxnvect);
    fprintf(outfile, "   RESTART       =   %6s\n",
       Parameters.restart ? "yes" : "no");
    fprintf(outfile, "   GUESS VECTOR  =  ");
@@ -984,9 +984,9 @@ void print_parameters(void)
          break;
       }
    if (Parameters.ref_sym == -1)
-      fprintf(outfile, "      REF SYM      =   %6s\n", "auto");
+      fprintf(outfile, "   REF SYM       =   %6s\n", "auto");
    else
-      fprintf(outfile, "      REF SYM      =   %6d\n", Parameters.ref_sym);
+      fprintf(outfile, "   REF SYM       =   %6d\n", Parameters.ref_sym);
 
    fprintf(outfile, "   COLLAPSE SIZE =   %6d", Parameters.collapse_size);
    fprintf(outfile, "      HD AVE       =");
@@ -1017,11 +1017,11 @@ void print_parameters(void)
            Parameters.hd_otf ? "yes" : "no", Parameters.nodfile ? "yes":"no");
    fprintf(outfile, "   MPN           =   %6s      MPN SCHMIDT  =   %6s\n",
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
-   fprintf(outfile, " ZAPTN           =   %6s      WIGNER       =   %6s\n",
+   fprintf(outfile, "   ZAPTN         =   %6s      WIGNER       =   %6s\n",
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
    fprintf(outfile, "   PERT Z        =   %1.4f      ROOT         =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
-   fprintf(outfile, "   NTHREADS     =   %6d\n",
+   fprintf(outfile, "   NTHREADS      =   %6d\n",
            Parameters.nthreads);
    fprintf(outfile, "   EXPORT VECTOR =   %6s      NUM EXPORT   =   %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
