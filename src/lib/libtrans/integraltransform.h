@@ -188,6 +188,8 @@ class IntegralTransform{
         void process_eigenvectors();
         void process_spaces();
         void presort_mo_tpdm_restricted();
+        void presort_mo_tpdm_unrestricted();
+        void setup_backtrans_reordering();
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
                        int *order, bool backtransform = false, bool accumulate = false);
@@ -283,6 +285,10 @@ class IntegralTransform{
         int _print;
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *_zeros;
+        // The alpha correlated to Pitzer ordering arrays, used in backtransforms
+        int *_aCorrToPitzer;
+        // The beta correlated to Pitzer ordering arrays, used in backtransforms
+        int *_bCorrToPitzer;
         // The number of symmetrized orbitals per irrep
         Dimension _sopi;
         // The symmetry (irrep number) of each symmetrized atomic orbital

@@ -52,44 +52,11 @@ IntegralTransform::backtransform_density()
         /*
          * Start by transforming the OPDM to the SO basis
          */
-        // Before we start, we need to build a mapping array from correlated (no frozen virtuals)
-        // to Pitzer, so that the density is ordered consistently with the MO coefficients
-        int *toPitzer = new int[nActive];
-        size_t corrCount = 0;
-        size_t pitzerOffset = 0;
-        // Frozen DOCC
-        for(int h = 0; h < _nirreps; ++h){
-            for(int n = 0; n < _frzcpi[h]; ++n){
-                toPitzer[corrCount++] = pitzerOffset + n;
-            }
-            pitzerOffset += _mopi[h];
-        }
-        // Active DOCC
-        pitzerOffset = 0;
-        for(int h = 0; h < _nirreps; ++h){
-            for(int n = _frzcpi[h]; n < _clsdpi[h]; ++n){
-                toPitzer[corrCount++] = pitzerOffset + n;
-            }
-            pitzerOffset += _mopi[h];
-        }
-        // Active VIRT
-        pitzerOffset = 0;
-        for(int h = 0; h < _nirreps; ++h){
-            for(int n = _clsdpi[h]; n < _mopi[h] - _frzvpi[h]; ++n){
-                toPitzer[corrCount++] = pitzerOffset + n;
-            }
-            pitzerOffset += _mopi[h];
-        }
-
-
-        /*
-         * The OPDM
-         */
         _psio->read_entry(PSIF_MO_OPDM, "MO-basis OPDM", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
-              int P = toPitzer[p];
-              int Q = toPitzer[q];
+              int P = _aCorrToPitzer[p];
+              int Q = _aCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -116,8 +83,8 @@ IntegralTransform::backtransform_density()
         _psio->read_entry(PSIF_MO_LAG, "MO-basis Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
-              int P = toPitzer[p];
-              int Q = toPitzer[q];
+              int P = _aCorrToPitzer[p];
+              int Q = _aCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -137,7 +104,6 @@ IntegralTransform::backtransform_density()
             print_array(tempSo, _nso, outfile);
         }
         _psio->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *) tempSo, sizeof(double)*_nTriSo);
-        delete [] toPitzer;
 
         /*
          * Now, work on the TPDM
@@ -147,54 +113,11 @@ IntegralTransform::backtransform_density()
         /*
          * Start by transforming the OPDM to the SO basis
          */
-        // Before we start, we need to build a mapping array from correlated (no frozen virtuals)
-        // to Pitzer, so that the density is ordered consistently with the MO coefficients
-        int *aToPitzer = new int[nActive];
-        int *bToPitzer = new int[nActive];
-        size_t aCorrCount = 0;
-        size_t bCorrCount = 0;
-        size_t pitzerOffset = 0;
-
-        // Frozen DOCC
-        for(int h = 0; h < _nirreps; ++h){
-            for(int n = 0; n < _frzcpi[h]; ++n){
-                aToPitzer[aCorrCount++] = pitzerOffset + n;
-                bToPitzer[bCorrCount++] = pitzerOffset + n;
-            }
-            pitzerOffset += _mopi[h];
-        }
-        // Active OCC
-        pitzerOffset = 0;
-        for(int h = 0; h < _nirreps; ++h){
-            for(int n = _frzcpi[h]; n < _clsdpi[h] + _openpi[h]; ++n){
-                aToPitzer[aCorrCount++] = pitzerOffset + n;
-            }
-            for(int n = _frzcpi[h]; n < _clsdpi[h]; ++n){
-                bToPitzer[bCorrCount++] = pitzerOffset + n;
-            }
-            pitzerOffset += _mopi[h];
-        }
-        // Active VIR
-        pitzerOffset = 0;
-        for(int h = 0; h < _nirreps; ++h){
-            for(int n = _clsdpi[h] + _openpi[h]; n < _mopi[h] - _frzvpi[h]; ++n){
-                aToPitzer[aCorrCount++] = pitzerOffset + n;
-            }
-            for(int n = _clsdpi[h]; n < _mopi[h] - _frzvpi[h]; ++n){
-                bToPitzer[bCorrCount++] = pitzerOffset + n;
-            }
-            pitzerOffset += _mopi[h];
-        }
-
-
-        /*
-         * The OPDM
-         */
         _psio->read_entry(PSIF_MO_OPDM, "MO-basis Alpha OPDM", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
-              int P = aToPitzer[p];
-              int Q = aToPitzer[q];
+              int P = _aCorrToPitzer[p];
+              int Q = _bCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -212,8 +135,8 @@ IntegralTransform::backtransform_density()
         _psio->read_entry(PSIF_MO_OPDM, "MO-basis Beta OPDM", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
-              int P = bToPitzer[p];
-              int Q = bToPitzer[q];
+              int P = _bCorrToPitzer[p];
+              int Q = _bCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -240,8 +163,8 @@ IntegralTransform::backtransform_density()
         _psio->read_entry(PSIF_MO_LAG, "MO-basis Alpha Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
-              int P = aToPitzer[p];
-              int Q = aToPitzer[q];
+              int P = _aCorrToPitzer[p];
+              int Q = _aCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -253,8 +176,8 @@ IntegralTransform::backtransform_density()
         _psio->read_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
-              int P = aToPitzer[p];
-              int Q = aToPitzer[q];
+              int P = _bCorrToPitzer[p];
+              int Q = _bCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -275,11 +198,11 @@ IntegralTransform::backtransform_density()
         }
         _psio->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *) tempSo, sizeof(double)*_nTriSo);
 
-        delete [] aToPitzer;
 
         /*
          * Now, work on the TPDM
          */
+        backtransform_tpdm_unrestricted();
     }
 
     free(order);
