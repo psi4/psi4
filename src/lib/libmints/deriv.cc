@@ -576,7 +576,6 @@ SharedMatrix Deriv::compute()
             if(wavefunction_->Lagrangian()){
                 have_X = true;
                 X = wavefunction_->Lagrangian();
-                X->print();
             }else{
                 X = factory_->create_shared_matrix("SO-basis Lagrangian");
                 X->load(_default_psio_lib_, PSIF_AO_OPDM);
@@ -752,19 +751,21 @@ SharedMatrix Deriv::compute()
     }
 
     // Add everything up into a temp.
-    Matrix temp("Temp gradient", molecule_->natom(), 3);
+    SharedMatrix temp(new Matrix("Gradient", molecule_->natom(), 3));
     Matrix corr("Correlation contribution to gradient", molecule_->natom(), 3);
-    temp.add(&enuc);
+    temp->add(&enuc);
     corr.add(opdm_contr_);
     corr.add(x_contr_);
     corr.add(tpdm_contr_);
     if(reference_separate){
-        temp.add(x_ref_contr_);
-        temp.add(opdm_ref_contr_);
-        temp.add(tpdm_ref_contr_);
+        temp->add(x_ref_contr_);
+        temp->add(opdm_ref_contr_);
+        temp->add(tpdm_ref_contr_);
+        temp->print_atom_vector();
+        wavefunction_->reference_wavefunction()->set_gradient(temp);
         corr.print_atom_vector();
     }
-    temp.add(corr);
+    temp->add(corr);
 
     // Symmetrize the gradients to remove any noise:
     CharacterTable ct = molecule_->point_group()->char_table();
@@ -780,9 +781,9 @@ SharedMatrix Deriv::compute()
 
             SymmetryOperation so = ct.symm_operation(g);
 
-            gradient_->add(atom, 0, so(0, 0) * temp(Gatom, 0) / ct.order());
-            gradient_->add(atom, 1, so(1, 1) * temp(Gatom, 1) / ct.order());
-            gradient_->add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
+            gradient_->add(atom, 0, so(0, 0) * temp->get(Gatom, 0) / ct.order());
+            gradient_->add(atom, 1, so(1, 1) * temp->get(Gatom, 1) / ct.order());
+            gradient_->add(atom, 2, so(2, 2) * temp->get(Gatom, 2) / ct.order());
         }
     }
 
@@ -793,7 +794,7 @@ SharedMatrix Deriv::compute()
     gradient_->print_atom_vector();
 
     // Save the gradient to the wavefunction so that optking can optimize with it
-    if (wavefunction_) wavefunction_->set_gradient(gradient_);
+    wavefunction_->set_gradient(gradient_);
 
     return gradient_;
 }
