@@ -168,7 +168,7 @@ void SAPT::initialize()
   double **tempA = block_matrix(nsoA_,nmoA_);
   psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *)
     &(tempA[0][0]), sizeof(double)*nmoA_*nsoA_);
-  if (nsoA_ != nsoB_) {
+  if (nsoA_ != nso_) {
     for (int n=0; n<nsoA_; n++)
       C_DCOPY(nmoA_,tempA[n],1,CA_[n],1);
   }
@@ -180,7 +180,7 @@ void SAPT::initialize()
   double **tempB = block_matrix(nsoB_,nmoB_);
   psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Coefficients",(char *)
     &(tempB[0][0]), sizeof(double)*nmoB_*nsoB_);
-  if (nsoA_ != nsoB_) {
+  if (nsoB_ != nso_) {
     for (int n=0; n<nsoB_; n++)
       C_DCOPY(nmoB_,tempB[n],1,CB_[n+nsoA_],1);
   }
