@@ -106,6 +106,103 @@ void RBase::common_init()
     }
 }
 
+RCPHF::RCPHF()
+{
+}
+RCPHF::~RCPHF()
+{
+}
+void RCPHF::print_header()
+{
+    fprintf(outfile, "\n");
+    fprintf(outfile, "         ------------------------------------------------------------\n");
+    fprintf(outfile, "                                     CPHF                           \n"); 
+    fprintf(outfile, "                                  Rob Parrish                       \n"); 
+    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+
+    fprintf(outfile, "  ==> Geometry <==\n\n");
+    molecule_->print();
+    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+
+    fprintf(outfile, "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level(outfile, print_);
+
+    if (debug_ > 1) {
+        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        eps_aocc_->print();
+        eps_avir_->print();
+    }
+}
+double RCPHF::compute_energy()
+{
+    // Main CPHF Header
+    print_header(); 
+    
+    // Construct components
+    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
+    boost::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
+
+    // Extra Knobs
+    H->set_print(print_);
+    H->set_debug(debug_);
+
+    // Initialization/Memory
+    solver->initialize();
+    unsigned long int solver_memory = solver->memory_estimate();
+    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
+    unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * remaining_memory);
+    jk->set_memory(effective_memory);
+    jk->initialize();
+
+    // Component Headers
+    solver->print_header();
+    H->print_header();
+    jk->print_header();
+
+    if (print_) {
+        fprintf(outfile, "  ==> CPHF Iterations <==\n\n");
+    }
+
+    if (debug_) {
+        SharedMatrix A = H->explicit_hamiltonian();
+        A->print();
+    }
+
+    if (debug_) {
+        for (int Q = 0; Q < b_.size(); Q++) {
+            b_[Q]->print();
+        }
+    }
+
+    //std::vector<SharedVector>& b = solver->b();
+    //std::vector<SharedVector> b1 = H->pack(b_);
+    //for (int Q = 0; Q < b1.size(); Q++) {
+    //    b.push_back(b1[Q]); 
+    //}
+
+    solver->solve();
+
+    //std::vector<SharedVector>& x = solver->x();
+    //std::vector<SharedMatrix> x1 = H->unpack(x);
+    //for (int Q = 0; Q < x1.size(); Q++) {
+    //    x_.push_back(x1[Q]); 
+    //}
+
+    if (debug_) {
+        for (int Q = 0; Q < x_.size(); Q++) {
+            x_[Q]->print();
+        }
+    }
+
+    // Finalize solver/JK memory
+    solver->finalize();
+    jk->finalize();
+
+    return 0.0; 
+}
+
 RCIS::RCIS()
 {
 }
@@ -166,9 +263,6 @@ void RCIS::print_wavefunctions()
 
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 
-
-    print_amplitudes();
-    print_transitions();
 
     if (debug_ > 1) {
         if (singlets_.size())
@@ -332,6 +426,76 @@ void RCIS::print_transitions()
     fprintf(outfile,"  --------------------------------------------------------------------\n");
     fprintf(outfile, "\n");
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
+}
+void RCIS::print_densities()
+{
+    for (int i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
+        int state = options_["CIS_OPDM_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
+
+        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state] : triplets_[state]), false);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_D.dat";
+
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
+    for (int i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
+        int state = options_["CIS_DOPDM_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
+
+        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state] : triplets_[state]), true);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_dD.dat";
+
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
+    for (int i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
+        int state = options_["CIS_TOPDM_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
+
+        boost::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state] : triplets_[state]), singlet);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_TD.dat";
+
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
+    //for (int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
+    //    int state = options_["CIS_NO_STATES"][i].to_integer();
+    //    bool singlet = (state > 0);
+    //    state = abs(state);
+
+    //    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > stuff = Nso(state,singlet);
+    //    std::stringstream s;
+    //    s << (singlet ? "S" : "T") << state << "_N.dat";
+
+    //    FILE* fh = fopen(s.str().c_str(),"w");
+    //    fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nmo_,fh);
+    //    fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
+    //    fclose(fh);        
+    //}
+    //for (int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
+    //    int state = options_["CIS_AD_STATES"][i].to_integer();
+    //    bool singlet = (state > 0);
+    //    state = abs(state);
+
+    //    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > stuff = ADso(state,singlet);
+    //    std::stringstream s;
+    //    s << (singlet ? "S" : "T") << state << "_AD.dat";
+
+    //    FILE* fh = fopen(s.str().c_str(),"w");
+    //    fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nso_,fh);
+    //    fwrite((void*)stuff.second->pointer()[0],sizeof(double),nso_ * nso_,fh);
+    //    fclose(fh);        
+    //}
 }
 SharedMatrix RCIS::TDmo(SharedMatrix T1, bool singlet)
 {
@@ -624,10 +788,6 @@ double RCIS::compute_energy()
             fprintf(outfile, "  ==> Singlets <==\n\n");
         }
 
-        //boost::shared_ptr<Matrix> H2 = H->explicit_hamiltonian();
-        //H2->print();
-        //exit(1);
-
         solver->solve();
 
         const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
@@ -678,10 +838,135 @@ double RCIS::compute_energy()
 
     // Print wavefunctions and properties
     print_wavefunctions();
+    print_amplitudes();
+    print_transitions();
+    print_densities();
 
     return 0.0; 
 }
 
+RTDHF::RTDHF()
+{
+}
+RTDHF::~RTDHF()
+{
+}
+void RTDHF::print_header()
+{
+    fprintf(outfile, "\n");
+    fprintf(outfile, "         ------------------------------------------------------------\n");
+    fprintf(outfile, "                                      TDHF                           \n"); 
+    fprintf(outfile, "                                  Rob Parrish                       \n"); 
+    fprintf(outfile, "         ------------------------------------------------------------\n\n");
 
+    fprintf(outfile, "  ==> Geometry <==\n\n");
+    molecule_->print();
+    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+
+    fprintf(outfile, "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level(outfile, print_);
+
+    if (debug_ > 1) {
+        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        eps_aocc_->print();
+        eps_avir_->print();
+    }
+}
+double RTDHF::compute_energy()
+{
+    // Main TDHF Header
+    print_header(); 
+    
+    // Construct components
+    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
+    boost::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
+
+    // Extra Knobs
+    H->set_print(print_);
+    H->set_debug(debug_);
+
+    // Initialization/Memory
+    solver->initialize();
+    unsigned long int solver_memory = solver->memory_estimate();
+    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
+    unsigned long int effective_memory = (unsigned long int)(options_.get_double("TDHF_MEM_SAFETY_FACTOR") * remaining_memory);
+    jk->set_memory(effective_memory);
+    jk->initialize();
+
+    // Component Headers
+    solver->print_header();
+    H->print_header();
+    jk->print_header();
+
+    // Singlets
+    if (options_.get_bool("DO_SINGLETS")) {
+
+        H->set_singlet(true);
+
+        if (print_) {
+            fprintf(outfile, "  ==> Singlets <==\n\n");
+        }
+
+        solver->solve();
+
+        // TODO Unpack
+        //const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
+        //const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();    
+        //singlets_.clear();
+        //E_singlets_.clear();
+        //for (int N = 0; N < singlets.size(); ++N) {
+        //    std::vector<SharedMatrix > t = H->unpack(singlets[N]);
+        //    for (int h = 0; h < Caocc_->nirrep(); h++) {
+        //        // Spurious zero eigenvalue due to not enough states
+        //        if (N >= singlets[N]->dimpi()[h]) continue; 
+        //        singlets_.push_back(t[h]);
+        //        E_singlets_.push_back(E_singlets[N][h]);
+        //    }
+        //}
+    }
+    
+    // Triplets
+    if (options_.get_bool("DO_TRIPLETS")) {
+        // Triplets
+        solver->initialize();
+        H->set_singlet(false);
+        
+        if (print_) {
+            fprintf(outfile, "  ==> Triplets <==\n\n");
+        }
+
+        solver->solve();
+        
+        // TODO Unpack
+        //const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
+        //const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
+        //triplets_.clear();
+        //E_triplets_.clear();
+        //for (int N = 0; N < triplets.size(); ++N) {
+        //    std::vector<SharedMatrix > t = H->unpack(triplets[N]);
+        //    for (int h = 0; h < Caocc_->nirrep(); h++) {
+        //        // Spurious zero eigenvalue due to not enough states
+        //        if (N >= triplets[N]->dimpi()[h]) continue; 
+        //        triplets_.push_back(t[h]);
+        //        E_triplets_.push_back(E_triplets[N][h]);
+        //    }
+        //}
+    }
+    
+    // Finalize solver/JK memory
+    solver->finalize();
+    jk->finalize();
+
+    // TODO
+    // Print wavefunctions and properties
+    //print_wavefunctions();
+    //print_amplitudes();
+    //print_transitions();
+    //print_densities();
+
+    return 0.0; 
+}
 
 }
