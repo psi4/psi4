@@ -759,7 +759,7 @@ SharedMatrix Deriv::compute()
         gradient_->add(tpdm_ref_contr_);
         SharedMatrix scf_gradient(gradient_->clone());
         scf_gradient->set_name("Reference Gradient");
-        scf_gradient->print();
+        scf_gradient->print_atom_vector();
         wavefunction_->reference_wavefunction()->set_gradient(scf_gradient);
         corr->print_atom_vector();
     }
