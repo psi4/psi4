@@ -11,15 +11,14 @@ using namespace psi;
 
 // Initialize potential_recur_ to +1 basis set angular momentum
 PotentialInt::PotentialInt(std::vector<SphericalTransform>& st, boost::shared_ptr<BasisSet> bs1, boost::shared_ptr<BasisSet> bs2, int deriv) :
-    OneBodyAOInt(st, bs1, bs2, deriv), potential_recur_(bs1->max_am()+1, bs2->max_am()+1),
-    potential_deriv_recur_(bs1->max_am()+2, bs2->max_am()+2)
+    OneBodyAOInt(st, bs1, bs2, deriv)
 {
     if (deriv == 0)
-        potential_recur_ = ObaraSaikaTwoCenterVIRecursion(bs1->max_am()+1, bs2->max_am()+1);
+        potential_recur_ = new ObaraSaikaTwoCenterVIRecursion(bs1->max_am()+1, bs2->max_am()+1);
     else if (deriv == 1)
-        potential_recur_ = ObaraSaikaTwoCenterVIDerivRecursion(bs1->max_am()+2, bs2->max_am()+2);
+        potential_recur_ = new ObaraSaikaTwoCenterVIDerivRecursion(bs1->max_am()+2, bs2->max_am()+2);
     else if (deriv == 2)
-        potential_recur_ = ObaraSaikaTwoCenterVIDeriv2Recursion(bs1->max_am()+3, bs2->max_am()+3);
+        potential_recur_ = new ObaraSaikaTwoCenterVIDeriv2Recursion(bs1->max_am()+3, bs2->max_am()+3);
     else
         throw PSIEXCEPTION("PotentialInt: deriv > 2 is not supported.");
 
