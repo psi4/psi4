@@ -151,6 +151,8 @@ public:
     /** Returns the maximum number of functions in a shell (summed over all
         irreps) */
     int max_nfunction_in_shell() const;
+    int *function_offset_within_shell(int shell) const { return funcoff_[shell]; }
+
     /** Normally, SO shell numbering starts at zero within each irrep.
         This returns an offset to make SO shell numbers unique within the
         shell. */
