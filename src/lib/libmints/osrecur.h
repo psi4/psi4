@@ -99,6 +99,17 @@ public:
     /// Returns the potential integral 3D matrix
     double ***vi() const { return vi_; }
 
+    virtual double ***vx() const { return 0; }
+    virtual double ***vy() const { return 0; }
+    virtual double ***vz() const { return 0; }
+
+    virtual double ***vxx() const { return 0; }
+    virtual double ***vxy() const { return 0; }
+    virtual double ***vxz() const { return 0; }
+    virtual double ***vyy() const { return 0; }
+    virtual double ***vyz() const { return 0; }
+    virtual double ***vzz() const { return 0; }
+
     /// Computes the potential integral 3D matrix using the data provided.
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
     /// Computes the Ewald potential integral with modified zeta -> zetam 3D matrix using the data provided.
@@ -129,6 +140,40 @@ public:
     double ***vx() const { return vx_; }
     double ***vy() const { return vy_; }
     double ***vz() const { return vz_; }
+
+    virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
+};
+
+/*! \ingroup MINTS
+ *  \class ObaraSaikaTwoCenterVIDerivRecursion
+ *  \brief Obara and Saika recursion object for computing potential derivatives.
+ */
+class ObaraSaikaTwoCenterVIDeriv2Recursion : public ObaraSaikaTwoCenterVIDerivRecursion
+{
+protected:
+    double ***vxx_;
+    double ***vxy_;
+    double ***vxz_;
+    double ***vyy_;
+    double ***vyz_;
+    double ***vzz_;
+
+private:
+    // No default constructor();
+    ObaraSaikaTwoCenterVIDeriv2Recursion();
+    // No assignment operator
+    ObaraSaikaTwoCenterVIDeriv2Recursion& operator=(const ObaraSaikaTwoCenterVIDeriv2Recursion&);
+
+public:
+    ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2);
+    virtual ~ObaraSaikaTwoCenterVIDeriv2Recursion();
+
+    double ***vxx() const { return vxx_; }
+    double ***vxy() const { return vxy_; }
+    double ***vxz() const { return vxz_; }
+    double ***vyy() const { return vyy_; }
+    double ***vyz() const { return vyz_; }
+    double ***vzz() const { return vzz_; }
 
     virtual void compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2);
 };
