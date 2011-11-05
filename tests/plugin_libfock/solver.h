@@ -375,9 +375,7 @@ protected:
     /// Subspace eigenvectors (nsubspace x nsubspace)
     SharedMatrix a_;
     /// Subspace eigenvalues (nsubspace)   
-    boost::shared_ptr<Vector> l_real_; 
-    /// Subspace eigenvalues (nsubspace)   
-    boost::shared_ptr<Vector> l_imag_; 
+    boost::shared_ptr<Vector> l_; 
     /// Residual vectors (nroots)
     std::vector<boost::shared_ptr<Vector> > r_;
     /// Residual vector 2-norms (nroots)
