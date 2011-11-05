@@ -613,14 +613,10 @@ void Matrix::set_diagonal(const boost::shared_ptr<Vector>& vec)
 
 double *Matrix::to_lower_triangle() const
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
-
     int sizer=0, sizec=0;
     for (int h=0; h<nirrep_; ++h) {
         sizer += rowspi_[h];
-        sizec += colspi_[h];
+        sizec += colspi_[h^symmetry_];
     }
     if (sizer != sizec)
         return NULL;
@@ -2179,9 +2175,6 @@ void Matrix::save(boost::shared_ptr<psi::PSIO>& psio,
 
 void Matrix::save(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 {
-    if (symmetry_ && st == LowerTriangle)
-        throw PSIEXCEPTION("Matrix::save: Unable to save triangle of non-totally symmetric matrix.");
-
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) {
