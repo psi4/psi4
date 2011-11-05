@@ -69,8 +69,13 @@ void get_mo_info(Options &options)
       Parameters.ref_sym = 0;
       }
 
-   CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
-   CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
+   //CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
+   //CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
+   CalcInfo.frozen_docc = 
+     Process::environment.reference_wavefunction()->frzcpi();
+   CalcInfo.frozen_uocc = 
+     Process::environment.reference_wavefunction()->frzvpi();
+
    rstr_docc = init_int_array(CalcInfo.nirreps);
    rstr_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.explicit_core = init_int_array(CalcInfo.nirreps);

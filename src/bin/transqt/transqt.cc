@@ -470,7 +470,14 @@ void get_parameters(Options & options)
     params.treat_cor_as_fzc = 0;
 
 
-  params.fzc = options.get_bool("FREEZE_CORE");
+  // params.fzc = options.get_bool("FREEZE_CORE");
+  // The old FREEZE_CORE option just specified whether the program should
+  // freeze core if a frozen_docc array was specified; we almost always
+  // want this to be true unless it has to be overridden.  Don't really
+  // need to parse it, it should always be true unless an override 
+  // condition exists (which is checked below)  --CDS 11/5/2011
+  //
+  params.fzc = 1;
   if (params.backtr) params.fzc = 0; /* can't freeze core for backtr */
 
   /* Mark Hoffmann's code can't handle deleted core orbitals because

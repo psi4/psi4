@@ -1023,7 +1023,9 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    chkpt_wt_etot(tval);
    Process::environment.globals["CURRENT ENERGY"] = tval;
    Process::environment.globals["CI TOTAL ENERGY"] = tval;
-   Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo.eref;
+   // eref seems wrong for open shells so replace it with escf below
+   // until I fix it ---CDS 11/5/11
+   Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo.escf;
 
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
@@ -1037,7 +1039,9 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
      std::stringstream s2;
      s2 << "CI ROOT " << i << " CORRELATION ENERGY";
-     Process::environment.globals[s2.str()] = tval - CalcInfo.eref;
+     // eref seems wrong for open shells so replace it with escf below
+     // until I fix it ---CDS 11/5/11
+     Process::environment.globals[s2.str()] = tval - CalcInfo.escf;
    }
 
    if (Parameters.average_num > 1) {
@@ -1047,8 +1051,10 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
                (efzc+nucrep+evals[Parameters.average_states[i]]);
      chkpt_wt_e_labeled("State averaged energy",tval);
      Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
+     // eref seems wrong for open shells so replace it with escf below
+     // until I fix it ---CDS 11/5/11
      Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
-       tval - CalcInfo.eref;
+       tval - CalcInfo.escf;
    }
  
    chkpt_close();
