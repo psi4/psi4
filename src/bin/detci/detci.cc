@@ -369,7 +369,7 @@ void title(void)
    fprintf(outfile,"                       D E T C I  \n");
    fprintf(outfile,"\n");
    fprintf(outfile,"                   C. David Sherrill\n") ;
-   fprintf(outfile,"                  Matt L. Leininger\n") ;
+   fprintf(outfile,"                   Matt L. Leininger\n") ;
    fprintf(outfile,"                     18 June 1999\n") ;
    fprintf(outfile,"*******************************************************\n");
    fprintf(outfile,"\n\n\n");
