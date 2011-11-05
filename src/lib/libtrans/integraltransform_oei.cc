@@ -134,7 +134,6 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
         }
     }
 
-    unsigned long int pq = 0;
     for(int p = 0; p < n; ++p){
         for(int q = 0; q <= p; ++q) {
             size_t P = order[p];

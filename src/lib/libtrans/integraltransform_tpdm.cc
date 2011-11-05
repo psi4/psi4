@@ -65,9 +65,10 @@ IntegralTransform::backtransform_density()
             fprintf(outfile, "The MO basis OPDM");
             print_array(tempMo, _nmo, outfile);
         }
-        for(int n = 0; n < _nTriSo; ++n) tempSo[n] = 0.0;
+
+        ::memset((void*)tempSo, '\0', sizeof(double)*_nTriSo);
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), false);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -93,9 +94,10 @@ IntegralTransform::backtransform_density()
             fprintf(outfile, "The MO basis Lagrangian\n");
             print_array(tempMo, _nmo, outfile);
         }
-        for(int n = 0; n < _nTriSo; ++n) tempSo[n] = 0.0;
+
+        ::memset((void*)tempSo, '\0', sizeof(double)*_nTriSo);
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), false);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -117,7 +119,7 @@ IntegralTransform::backtransform_density()
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
               int P = _aCorrToPitzer[p];
-              int Q = _bCorrToPitzer[q];
+              int Q = _aCorrToPitzer[q];
               size_t PQ = INDEX(P,Q);
               tempMo[PQ] = 0.5 * (tempOPDM[p][q] + tempOPDM[q][p]);
           }
@@ -126,9 +128,9 @@ IntegralTransform::backtransform_density()
             fprintf(outfile, "The MO basis Alpha OPDM");
             print_array(tempMo, _nmo, outfile);
         }
-        for(int n = 0; n < _nTriSo; ++n) tempSo[n] = 0.0;
+
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), false);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -173,6 +175,11 @@ IntegralTransform::backtransform_density()
             fprintf(outfile, "The MO basis Alpha Lagrangian\n");
             print_array(tempMo, _nmo, outfile);
         }
+        for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true, false);
+            soOffset += _sopi[h];
+            moOffset += _mopi[h];
+        }
         _psio->read_entry(PSIF_MO_LAG, "MO-basis Beta Lagrangian", (char *) tempOPDM[0], sizeof(double)*nActive*nActive);
         for(int p = 0; p < nActive; ++p){
           for(int q = 0; q <= p; ++q){
@@ -188,7 +195,7 @@ IntegralTransform::backtransform_density()
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true, true);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Cb[h], moOffset, &(order[soOffset]), true, true);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -197,7 +204,6 @@ IntegralTransform::backtransform_density()
             print_array(tempSo, _nso, outfile);
         }
         _psio->write_entry(PSIF_AO_OPDM, "SO-basis Lagrangian", (char *) tempSo, sizeof(double)*_nTriSo);
-
 
         /*
          * Now, work on the TPDM
