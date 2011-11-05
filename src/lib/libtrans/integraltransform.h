@@ -135,6 +135,7 @@ class IntegralTransform{
                                        const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
         void backtransform_density();
         void backtransform_tpdm_restricted();
+        void backtransform_tpdm_unrestricted();
         void print_dpd_lookup();
 
         int DPD_ID(const char c);
@@ -179,6 +180,11 @@ class IntegralTransform{
         boost::shared_ptr<PSIO> get_psio() const {return _psio;}
         /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
         void set_psio(boost::shared_ptr<PSIO> psio) {_psio = psio;}
+
+        // Get the alpha correlated to Pitzer ordering array, used in backtransforms
+        const int *alpha_corr_to_pitzer() const { return _aCorrToPitzer; }
+        // Get the beta correlated to Pitzer ordering array, used in backtransforms
+        const int *beta_corr_to_pitzer() const { return _bCorrToPitzer; }
 
     protected:
         void check_initialized();
