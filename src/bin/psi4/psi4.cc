@@ -9,6 +9,9 @@
 #ifdef HAVE_MPI
 #include <mpi.h>
 #endif
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 #include <getopt.h>
 #include <stdio.h>
 #include <psiconfig.h>
@@ -21,7 +24,6 @@
 #include "script.h"
 #include <physconst.h>
 #include <psifiles.h>
-//#include <molecular_system.h>
 
 #include <psi4-def.h>
 #define MAIN
@@ -47,6 +49,11 @@ int main(int argc, char **argv, char **envp)
     // Setup the environment
     Process::arguments.init(argc, argv);
     Process::environment.init(envp);
+
+#ifdef _OPENMP
+    // Disable nested threads in OpenMP
+    omp_set_nested(0);
+#endif
 
     // If no OMP thread variable is set, set nthreads to default to 1
     if (Process::environment("OMP_NUM_THREADS") == "")
