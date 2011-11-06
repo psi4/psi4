@@ -1,0 +1,34 @@
+#! 6-31G** H2O+ Test CISD Energy Point
+
+refnuc   =   8.8046872909987  #TEST
+refscf   = -75.621342248017  #TEST
+refci    = -75.7850672033928    #TEST
+refcorr  = refci - refscf  #TEST
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set globals {
+  wfn detci
+  charge 1
+  multp 2
+  reference rohf
+  basis 6-31G**
+  freeze_core true
+}
+
+set detci {
+  icore 2
+}
+
+thisenergy = energy('detci')
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+# Odd .. PSI4 SCF energy doesn't match PSI3 SCF energy to 8 digits.... #TEST
+compare_values(refscf, get_variable("SCF energy"),     7, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
