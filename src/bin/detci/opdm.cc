@@ -200,8 +200,10 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     chkpt_wt_etot(overlap);
     Process::environment.globals["CURRENT ENERGY"] = overlap;
     Process::environment.globals["CI TOTAL ENERGY"] = overlap;
+    // eref is wrong for open-shells so replace it with escf until
+    // I fix it, CDS 11/5/11
     Process::environment.globals["CI CORRELATION ENERGY"] = overlap - 
-      CalcInfo.eref;
+      CalcInfo.escf;
     chkpt_close();
   
   }
