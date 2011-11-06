@@ -14,7 +14,7 @@ set {
   basis       cc-pVDZ
   docc        [4, 0, 1, 1]
   socc        [1, 0, 0, 0]
-  freeze_core true
+  freeze_docc true
   ao_basis disk
   delete_tei false
 

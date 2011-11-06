@@ -15,7 +15,7 @@ set {
   wfn ccsd
   dertype response
   property roa
-  freeze_core false
+  freeze_docc false
   omega [589]
   omega_units nm
   mu_irreps [1, 1, 0]
