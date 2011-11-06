@@ -26,6 +26,8 @@ const std::string empty_;
 // Need to split each entry by the first '=', left side is key, right the value
 void Process::Environment::init(char **envp)
 {
+    string psi4datadir;
+
     // First set some defaults:
     environment_["PSIDATADIR"] = INSTALLEDPSIDATADIR;
     environment_["MAD_NUM_THREADS"] = "1";
@@ -36,8 +38,17 @@ void Process::Environment::init(char **envp)
         std::vector<std::string> strs;
         boost::split(strs, envp[i], boost::is_any_of("="));
         environment_[strs[0]] = strs[1];
+
+        // I'm tired of having to (re)set PSIDATADIR for PSI3/4
+        // If PSI4DATADIR is set it overrides PSIDATADIR
+        if (strs[0] == "PSI4DATADIR")
+            psi4datadir = strs[1];
+
         ++i;
     }
+
+    if (psi4datadir.empty() == false)
+        environment_["PSIDATADIR"] = psi4datadir;
 
     nthread_ = 1;
 
