@@ -116,22 +116,22 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
             TMP0[p][q] = TMP0[q][p] = input[pq];
         }
     }
-
+    int nc;
     if(backtransform){
-        int nc  = m;
+        nc  = m;
         if(m && n) {
             C_DGEMM('n', 't', m, n, m, 1.0, TMP0[0], dim, C[0], nc, 0.0, TMP1[0], dim);
             C_DGEMM('n', 'n', n, n, m, 1.0, C[0], nc, TMP1[0], dim, 0.0, TMP0[0], dim);
         }
     }else{
-        int nc  = n;
+        nc  = n;
         if(m && n) {
             C_DGEMM('n', 'n', m, n, m, 1.0, TMP0[0], dim, C[0], nc, 0.0, TMP1[0], dim);
             C_DGEMM('t', 'n', n, n, m, 1.0, C[0], nc, TMP1[0], dim, 0.0, TMP0[0], dim);
         }
     }
 
-    for(int p = 0; p < n; ++p){
+    for(int p = 0; p < nc; ++p){
         for(int q = 0; q <= p; ++q) {
             size_t P = order[p];
             size_t Q = order[q];
