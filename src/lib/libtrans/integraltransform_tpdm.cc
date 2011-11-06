@@ -38,6 +38,7 @@ IntegralTransform::backtransform_density()
     int nActive = _nmo - _nfzv;
     double *tempSo = new double[_nTriSo];
     double *tempMo = new double[_nTriMo];
+    ::memset((void*)tempSo, '\0', _nTriSo*sizeof(double));
     double **tempOPDM = block_matrix(_nmo, _nmo);
     int *order = init_int_array(_nmo);
     // We want to keep Pitzer ordering, so this is just an identity mapping
@@ -95,7 +96,7 @@ IntegralTransform::backtransform_density()
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]));
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }

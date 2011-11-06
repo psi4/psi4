@@ -39,8 +39,8 @@ public:
     CorrelatedRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave, boost::shared_ptr<IntegralTransform> ints_transform)
         : wavefunction_(wave)
     {
-        _default_psio_lib_->open(PSIF_TPDM_HALFTRANS, PSIO_OPEN_OLD);
-        dpd_buf4_init(&G_, PSIF_TPDM_HALFTRANS, 0,
+        _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
+        dpd_buf4_init(&G_, PSIF_AO_TPDM, 0,
                       ints_transform->DPD_ID("[n,n]"), ints_transform->DPD_ID("[n,n]"),
                       ints_transform->DPD_ID("[n>=n]+"), ints_transform->DPD_ID("[n>=n]+"),
                       0, "SO Basis TPDM (nn|nn)");
@@ -61,7 +61,7 @@ public:
             dpd_buf4_mat_irrep_close(&G_, h);
 
         dpd_buf4_close(&G_);
-        _default_psio_lib_->close(PSIF_TPDM_HALFTRANS, 1);
+        _default_psio_lib_->close(PSIF_AO_TPDM, 1);
 
         // Do summation over threads
         for (int i=1; i<nthread; ++i) {
