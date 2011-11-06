@@ -15,6 +15,8 @@
 #include <psi4-dec.h>
 #include <psiconfig.h>
 
+#include <boost/foreach.hpp>
+
 #include "matrix_distributed.h"
 
 using namespace boost;
@@ -135,23 +137,30 @@ void MintsHelper::integrals()
     // Compute and dump one-electron SO integrals.
 
     // Overlap
-    boost::shared_ptr<OneBodySOInt> overlap(integral_->so_overlap());
-    SharedMatrix       overlap_mat(factory_->create_matrix(PSIF_SO_S));
-    overlap->compute(overlap_mat);
+    SharedMatrix overlap_mat = so_overlap();
     overlap_mat->save(psio_, PSIF_OEI);
 
     // Kinetic
-    boost::shared_ptr<OneBodySOInt> kinetic(integral_->so_kinetic());
-    SharedMatrix       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
-    kinetic->compute(kinetic_mat);
+    SharedMatrix kinetic_mat = so_kinetic();
     kinetic_mat->save(psio_, PSIF_OEI);
 
     // Potential
-    boost::shared_ptr<OneBodySOInt> potential(integral_->so_potential());
-    SharedMatrix       potential_mat(factory_->create_matrix(PSIF_SO_V));
-    potential->compute(potential_mat);
+    SharedMatrix potential_mat = so_potential();
     potential_mat->save(psio_, PSIF_OEI);
 
+    /*
+    // Dipoles
+    std::vector<SharedMatrix> dipole_mats = so_dipole();
+    BOOST_FOREACH(SharedMatrix m, dipole_mats) {
+        m->save(psio_, PSIF_OEI);
+    }
+
+    // Quadrupoles
+    std::vector<SharedMatrix> quadrupole_mats = so_quadrupole();
+    BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
+        m->save(psio_, PSIF_OEI);
+    }
+    */
     if (Process::environment.options.get_int("PRINT") > 3) {
         overlap_mat->print();
         kinetic_mat->print();

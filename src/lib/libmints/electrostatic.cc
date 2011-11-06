@@ -53,7 +53,7 @@ void ElectrostaticInt::compute_pair(boost::shared_ptr<GaussianShell> s1, boost::
 
     memset(buffer_, 0, s1->ncartesian() * s2->ncartesian() * sizeof(double));
 
-    double ***vi = potential_recur_.vi();
+    double ***vi = potential_recur_->vi();
 
     for (int p1=0; p1<nprim1; ++p1) {
         double a1 = s1->exp(p1);
@@ -88,7 +88,7 @@ void ElectrostaticInt::compute_pair(boost::shared_ptr<GaussianShell> s1, boost::
             PC[2] = P[2] - C[2];
 
             // Do recursion
-            potential_recur_.compute(PA, PB, PC, gamma, am1, am2);
+            potential_recur_->compute(PA, PB, PC, gamma, am1, am2);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
@@ -108,8 +108,6 @@ void ElectrostaticInt::compute_pair(boost::shared_ptr<GaussianShell> s1, boost::
                             int jind = l2 * jxm + m2 * jym + n2 * jzm;
 
                             buffer_[ao12++] += -vi[iind][jind][0] * over_pf;
-
-//                              fprintf(outfile, "ao12=%d, vi[%d][%d][0] = %20.14f, over_pf = %20.14f, Z = %f\n", ao12-1, iind, jind, vi[iind][jind][0], over_pf, Z);
                         }
                     }
                 }
