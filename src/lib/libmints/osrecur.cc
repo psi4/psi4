@@ -197,7 +197,7 @@ void ObaraSaikaTwoCenterRecursion::compute(double PA[3], double PB[3], double ga
         z_[0][j+1] += j*pp*z_[0][j-1];
     }
 
-  /* Upward recursion in i for all j's */
+    /* Upward recursion in i for all j's */
     if (lmaxi > 0) {
         x_[1][0] = PA[0];
         y_[1][0] = PA[1];
@@ -255,42 +255,42 @@ ObaraSaikaTwoCenterVIRecursion::~ObaraSaikaTwoCenterVIRecursion()
 
 void ObaraSaikaTwoCenterVIRecursion::calculate_f(double *F, int n, double t)
 {
-  int i, m, k;
-  int m2;
-  double t2;
-  double num;
-  double sum;
-  double term1, term2;
-  static double K = 1.0/M_2_SQRTPI;
-  double et;
+    int i, m, k;
+    int m2;
+    double t2;
+    double num;
+    double sum;
+    double term1, term2;
+    static double K = 1.0/M_2_SQRTPI;
+    double et;
 
 
-  if (t>20.0){
-    t2 = 2*t;
-    et = exp(-t);
-    t = sqrt(t);
-    F[0] = K*erf(t)/t;
-    for(m=0; m<=n-1; m++){
-      F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
-      }
+    if (t>20.0){
+        t2 = 2*t;
+        et = exp(-t);
+        t = sqrt(t);
+        F[0] = K*erf(t)/t;
+        for(m=0; m<=n-1; m++){
+            F[m+1] = ((2*m + 1)*F[m] - et)/(t2);
+        }
     }
-  else {
-    et = exp(-t);
-    t2 = 2*t;
-    m2 = 2*n;
-    num = df[m2];
-    i=0;
-    sum = 1.0/(m2+1);
-    do{
-      i++;
-      num = num*t2;
-      term1 = num/df[m2+2*i+2];
-      sum += term1;
-      } while (fabs(term1) > EPS && i < MAX_FAC);
-    F[n] = sum*et;
-    for(m=n-1;m>=0;m--){
-      F[m] = (t2*F[m+1] + et)/(2*m+1);
-      }
+    else {
+        et = exp(-t);
+        t2 = 2*t;
+        m2 = 2*n;
+        num = df[m2];
+        i=0;
+        sum = 1.0/(m2+1);
+        do{
+            i++;
+            num = num*t2;
+            term1 = num/df[m2+2*i+2];
+            sum += term1;
+        } while (fabs(term1) > EPS && i < MAX_FAC);
+        F[n] = sum*et;
+        for(m=n-1;m>=0;m--){
+            F[m] = (t2*F[m+1] + et)/(2*m+1);
+        }
     }
 }
 
@@ -842,6 +842,386 @@ void ObaraSaikaTwoCenterVIDerivRecursion::compute(double PA[3], double PB[3], do
     delete[] F;
 }
 
+ObaraSaikaTwoCenterVIDeriv2Recursion::ObaraSaikaTwoCenterVIDeriv2Recursion(int max_am1, int max_am2)
+    : ObaraSaikaTwoCenterVIDerivRecursion(max_am1+1, max_am2+1)
+{
+    vxx_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    vxy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    vxz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    vyy_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    vyz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+    vzz_ = init_box(size_, size_, max_am1_ + max_am2_ + 1);
+}
+
+ObaraSaikaTwoCenterVIDeriv2Recursion::~ObaraSaikaTwoCenterVIDeriv2Recursion()
+{
+    free_box(vxx_, size_, size_);
+    free_box(vxy_, size_, size_);
+    free_box(vxz_, size_, size_);
+    free_box(vyy_, size_, size_);
+    free_box(vyz_, size_, size_);
+    free_box(vzz_, size_, size_);
+}
+
+void ObaraSaikaTwoCenterVIDeriv2Recursion::compute(double PA[3], double PB[3], double PC[3], double zeta, int am1, int am2)
+{
+    int a, b, m;
+    int azm = 1;
+    int aym = am1 + 1;
+    int axm = aym * aym;
+    int bzm = 1;
+    int bym = am2 + 1;
+    int bxm = bym * bym;
+    int ax, ay, az, bx, by, bz;
+    int aind, bind;
+    double ooz = 1.0/(2.0 * zeta);
+    int mmax = am1 + am2;
+
+    // Prefactor from A20
+    double tmp = sqrt(zeta) * M_2_SQRTPI;
+    // U from A21
+    double u = zeta * (PC[0] * PC[0] + PC[1] * PC[1] + PC[2] * PC[2]);
+    double *F = new double[mmax+1];
+
+    // Zero out F
+    memset(F, 0, sizeof(double) * (mmax+1));
+
+    // Form Fm(U) from A20
+    calculate_f(F, mmax, u);
+
+    // Perform recursion in m for (a|A(0)|s) using A20
+    for (m=0; m<=mmax; ++m) {
+        vi_[0][0][m] = tmp * F[m];
+    }
+    for (m=0; m<=mmax-1; ++m) {
+        vx_[0][0][m] = 2.0*zeta*PC[0]*vi_[0][0][m+1];
+        vy_[0][0][m] = 2.0*zeta*PC[1]*vi_[0][0][m+1];
+        vz_[0][0][m] = 2.0*zeta*PC[2]*vi_[0][0][m+1];
+    }
+    for (m=0; m<=mmax-2; ++m) {
+        vxx_[0][0][m] = 4*zeta*zeta*PC[0]*PC[0]*vi_[0][0][m+2] - 2.0*zeta*vi_[0][0][m+1];
+        vyy_[0][0][m] = 4*zeta*zeta*PC[1]*PC[1]*vi_[0][0][m+2] - 2.0*zeta*vi_[0][0][m+1];
+        vzz_[0][0][m] = 4*zeta*zeta*PC[2]*PC[2]*vi_[0][0][m+2] - 2.0*zeta*vi_[0][0][m+1];
+        vxy_[0][0][m] = 4*zeta*zeta*PC[0]*PC[1]*vi_[0][0][m+2];
+        vxz_[0][0][m] = 4*zeta*zeta*PC[0]*PC[2]*vi_[0][0][m+2];
+        vyz_[0][0][m] = 4*zeta*zeta*PC[1]*PC[2]*vi_[0][0][m+2];
+    }
+
+    // Perform recursion in b with a=0
+    //  subset of A19
+    for (b=1; b<=am2; ++b) {
+        for (bx=0; bx<=b; ++bx) {
+            for (by=0; by<=b-bx; ++by) {
+                bz = b-bx-by;
+
+                // Compute the index into VI for bx,by,bz
+                bind = bx*bxm + by*bym + bz*bzm;
+
+                // Compute each x, y, z contribution
+                if (bz > 0) {
+                    for (m=0; m<=mmax-b; ++m) { /* Electrostatic potential integrals */
+                        vi_[0][bind][m] = PB[2] * vi_[0][bind-bzm][m] - PC[2] * vi_[0][bind-bzm][m+1];
+                    }
+                    for (m=0; m<=mmax-b-1; ++m) { /* Electric field integrals */
+                        vx_[0][bind][m] = PB[2] * vx_[0][bind-bzm][m] - PC[2] * vx_[0][bind-bzm][m+1];
+                        vy_[0][bind][m] = PB[2] * vy_[0][bind-bzm][m] - PC[2] * vy_[0][bind-bzm][m+1];
+                        vz_[0][bind][m] = PB[2] * vz_[0][bind-bzm][m] - PC[2] * vz_[0][bind-bzm][m+1] + vi_[0][bind-bzm][m+1];
+                    }
+                    for (m=0; m<=mmax-b-2; ++m) { /* Gradients of the electric field */
+                        vxx_[0][bind][m] = PB[2]*vxx_[0][bind-bzm][m] - PC[2]*vxx_[0][bind-bzm][m+1];
+                        vyy_[0][bind][m] = PB[2]*vyy_[0][bind-bzm][m] - PC[2]*vyy_[0][bind-bzm][m+1];
+                        vzz_[0][bind][m] = PB[2]*vzz_[0][bind-bzm][m] - PC[2]*vzz_[0][bind-bzm][m+1] + 2*vz_[0][bind-bzm][m+1];
+                        vxy_[0][bind][m] = PB[2]*vxy_[0][bind-bzm][m] - PC[2]*vxy_[0][bind-bzm][m+1];
+                        vxz_[0][bind][m] = PB[2]*vxz_[0][bind-bzm][m] - PC[2]*vxz_[0][bind-bzm][m+1] + vx_[0][bind-bzm][m+1];
+                        vyz_[0][bind][m] = PB[2]*vyz_[0][bind-bzm][m] - PC[2]*vyz_[0][bind-bzm][m+1] + vy_[0][bind-bzm][m+1];
+                    }
+                    if (bz > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            vi_[0][bind][m] += ooz * (bz-1) * (vi_[0][bind-2*bzm][m] - vi_[0][bind-2*bzm][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-1; ++m) {
+                            vx_[0][bind][m] += ooz * (bz-1) * (vx_[0][bind-2*bzm][m] - vx_[0][bind-2*bzm][m+1]);
+                            vy_[0][bind][m] += ooz * (bz-1) * (vy_[0][bind-2*bzm][m] - vy_[0][bind-2*bzm][m+1]);
+                            vz_[0][bind][m] += ooz * (bz-1) * (vz_[0][bind-2*bzm][m] - vz_[0][bind-2*bzm][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-2; m++) {
+                            vxx_[0][bind][m] += ooz*(bz-1)*(vxx_[0][bind-2*bzm][m] - vxx_[0][bind-2*bzm][m+1]);
+                            vyy_[0][bind][m] += ooz*(bz-1)*(vyy_[0][bind-2*bzm][m] - vyy_[0][bind-2*bzm][m+1]);
+                            vzz_[0][bind][m] += ooz*(bz-1)*(vzz_[0][bind-2*bzm][m] - vzz_[0][bind-2*bzm][m+1]);
+                            vxy_[0][bind][m] += ooz*(bz-1)*(vxy_[0][bind-2*bzm][m] - vxy_[0][bind-2*bzm][m+1]);
+                            vxz_[0][bind][m] += ooz*(bz-1)*(vxz_[0][bind-2*bzm][m] - vxz_[0][bind-2*bzm][m+1]);
+                            vyz_[0][bind][m] += ooz*(bz-1)*(vyz_[0][bind-2*bzm][m] - vyz_[0][bind-2*bzm][m+1]);
+                        }
+                    }
+                }
+                else if (by > 0) {
+                    for (m=0; m<=mmax-b; ++m) {
+                        vi_[0][bind][m] = PB[1] * vi_[0][bind-bym][m] - PC[1] * vi_[0][bind-bym][m+1];
+                    }
+                    for (m=0; m<=mmax-b-1; ++m) {
+                        vx_[0][bind][m] = PB[1] * vx_[0][bind-bym][m] - PC[1] * vx_[0][bind-bym][m+1];
+                        vy_[0][bind][m] = PB[1] * vy_[0][bind-bym][m] - PC[1] * vy_[0][bind-bym][m+1] + vi_[0][bind-bym][m+1];
+                        vz_[0][bind][m] = PB[1] * vz_[0][bind-bym][m] - PC[1] * vz_[0][bind-bym][m+1];
+                    }
+                    for(m=0;m<=mmax-b-2;m++) {
+                        vxx_[0][bind][m] = PB[1]*vxx_[0][bind-bym][m] - PC[1]*vxx_[0][bind-bym][m+1];
+                        vyy_[0][bind][m] = PB[1]*vyy_[0][bind-bym][m] - PC[1]*vyy_[0][bind-bym][m+1] + 2*vy_[0][bind-bym][m+1];
+                        vzz_[0][bind][m] = PB[1]*vzz_[0][bind-bym][m] - PC[1]*vzz_[0][bind-bym][m+1];
+                        vxy_[0][bind][m] = PB[1]*vxy_[0][bind-bym][m] - PC[1]*vxy_[0][bind-bym][m+1] + vx_[0][bind-bym][m+1];
+                        vxz_[0][bind][m] = PB[1]*vxz_[0][bind-bym][m] - PC[1]*vxz_[0][bind-bym][m+1];
+                        vyz_[0][bind][m] = PB[1]*vyz_[0][bind-bym][m] - PC[1]*vyz_[0][bind-bym][m+1] + vz_[0][bind-bym][m+1];
+                    }
+
+                    if (by > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            vi_[0][bind][m] += ooz * (by-1) * (vi_[0][bind-2*bym][m] - vi_[0][bind-2*bym][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-1; ++m) {
+                            vx_[0][bind][m] += ooz * (by-1) * (vx_[0][bind-2*bym][m] - vx_[0][bind-2*bym][m+1]);
+                            vy_[0][bind][m] += ooz * (by-1) * (vy_[0][bind-2*bym][m] - vy_[0][bind-2*bym][m+1]);
+                            vz_[0][bind][m] += ooz * (by-1) * (vz_[0][bind-2*bym][m] - vz_[0][bind-2*bym][m+1]);
+                        }
+                        for(m=0;m<=mmax-b-2;m++) {
+                            vxx_[0][bind][m] += ooz*(by-1)*(vxx_[0][bind-2*bym][m] - vxx_[0][bind-2*bym][m+1]);
+                            vyy_[0][bind][m] += ooz*(by-1)*(vyy_[0][bind-2*bym][m] - vyy_[0][bind-2*bym][m+1]);
+                            vzz_[0][bind][m] += ooz*(by-1)*(vzz_[0][bind-2*bym][m] - vzz_[0][bind-2*bym][m+1]);
+                            vxy_[0][bind][m] += ooz*(by-1)*(vxy_[0][bind-2*bym][m] - vxy_[0][bind-2*bym][m+1]);
+                            vxz_[0][bind][m] += ooz*(by-1)*(vxz_[0][bind-2*bym][m] - vxz_[0][bind-2*bym][m+1]);
+                            vyz_[0][bind][m] += ooz*(by-1)*(vyz_[0][bind-2*bym][m] - vyz_[0][bind-2*bym][m+1]);
+                        }
+                    }
+                }
+                else if (bx > 0) {
+                    for (m=0; m<=mmax-b; ++m) {
+                        vi_[0][bind][m] = PB[0] * vi_[0][bind-bxm][m] - PC[0] * vi_[0][bind-bxm][m+1];
+                    }
+                    for (m=0; m<=mmax-b-1; ++m) {
+                        vx_[0][bind][m] = PB[0] * vx_[0][bind-bxm][m] - PC[0] * vx_[0][bind-bxm][m+1] + vi_[0][bind-bxm][m+1];
+                        vy_[0][bind][m] = PB[0] * vy_[0][bind-bxm][m] - PC[0] * vy_[0][bind-bxm][m+1];
+                        vz_[0][bind][m] = PB[0] * vz_[0][bind-bxm][m] - PC[0] * vz_[0][bind-bxm][m+1];
+                    }
+                    for(m=0;m<=mmax-b-2;m++) {
+                        vxx_[0][bind][m] = PB[0]*vxx_[0][bind-bxm][m] - PC[0]*vxx_[0][bind-bxm][m+1] + 2*vx_[0][bind-bxm][m+1];
+                        vyy_[0][bind][m] = PB[0]*vyy_[0][bind-bxm][m] - PC[0]*vyy_[0][bind-bxm][m+1];
+                        vzz_[0][bind][m] = PB[0]*vzz_[0][bind-bxm][m] - PC[0]*vzz_[0][bind-bxm][m+1];
+                        vxy_[0][bind][m] = PB[0]*vxy_[0][bind-bxm][m] - PC[0]*vxy_[0][bind-bxm][m+1] + vy_[0][bind-bxm][m+1];
+                        vxz_[0][bind][m] = PB[0]*vxz_[0][bind-bxm][m] - PC[0]*vxz_[0][bind-bxm][m+1] + vz_[0][bind-bxm][m+1];
+                        vyz_[0][bind][m] = PB[0]*vyz_[0][bind-bxm][m] - PC[0]*vyz_[0][bind-bxm][m+1];
+                    }
+
+                    if (bx > 1) {
+                        for (m=0; m<=mmax-b; ++m) {
+                            vi_[0][bind][m] += ooz * (bx-1) * (vi_[0][bind-2*bxm][m] - vi_[0][bind-2*bxm][m+1]);
+                        }
+                        for (m=0; m<=mmax-b-1; ++m) {
+                            vx_[0][bind][m] += ooz * (bx-1) * (vx_[0][bind-2*bxm][m] - vx_[0][bind-2*bxm][m+1]);
+                            vy_[0][bind][m] += ooz * (bx-1) * (vy_[0][bind-2*bxm][m] - vy_[0][bind-2*bxm][m+1]);
+                            vz_[0][bind][m] += ooz * (bx-1) * (vz_[0][bind-2*bxm][m] - vz_[0][bind-2*bxm][m+1]);
+                        }
+                        for(m=0;m<=mmax-b-2;m++) {
+                            vxx_[0][bind][m] += ooz*(bx-1)*(vxx_[0][bind-2*bxm][m] - vxx_[0][bind-2*bxm][m+1]);
+                            vyy_[0][bind][m] += ooz*(bx-1)*(vyy_[0][bind-2*bxm][m] - vyy_[0][bind-2*bxm][m+1]);
+                            vzz_[0][bind][m] += ooz*(bx-1)*(vzz_[0][bind-2*bxm][m] - vzz_[0][bind-2*bxm][m+1]);
+                            vxy_[0][bind][m] += ooz*(bx-1)*(vxy_[0][bind-2*bxm][m] - vxy_[0][bind-2*bxm][m+1]);
+                            vxz_[0][bind][m] += ooz*(bx-1)*(vxz_[0][bind-2*bxm][m] - vxz_[0][bind-2*bxm][m+1]);
+                            vyz_[0][bind][m] += ooz*(bx-1)*(vyz_[0][bind-2*bxm][m] - vyz_[0][bind-2*bxm][m+1]);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Perform upward recursion in a with all b's
+    for (b=0; b<=am2; b++) {
+        for (bx=0; bx<=b; bx++) {
+            for (by=0; by<=b-bx;by++) {
+                bz = b-bx-by;
+                bind = bx*bxm + by*bym + bz*bzm;
+
+                for (a=1; a<=am1; a++) {
+                    // This next for loop was for (ax=0; ax<=b; ax++)
+                    // this could explain why dx2 was not being computed.
+                    // change for for(ax=0; ax<a; ax++) on 2005-09-15 4:11pm
+                    for (ax=0; ax<=a; ax++) {
+                        for (ay=0; ay<=a-ax; ay++) {
+                            az = a-ax-ay;
+                            aind = ax*axm + ay*aym + az*azm;
+
+                            if (az > 0) {
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    vi_[aind][bind][m] = PA[2] * vi_[aind-azm][bind][m] - PC[2] * vi_[aind-azm][bind][m+1];
+                                }
+                                for (m=0; m<=mmax-a-b-1; ++m) {
+                                    vx_[aind][bind][m] = PA[2] * vx_[aind-azm][bind][m] - PC[2] * vx_[aind-azm][bind][m+1];
+                                    vy_[aind][bind][m] = PA[2] * vy_[aind-azm][bind][m] - PC[2] * vy_[aind-azm][bind][m+1];
+                                    vz_[aind][bind][m] = PA[2] * vz_[aind-azm][bind][m] - PC[2] * vz_[aind-azm][bind][m+1] + vi_[aind-azm][bind][m+1];
+                                }
+                                for(m=0;m<=mmax-a-b-2;m++) {  /* Gradients of the electric field */
+                                    vxx_[aind][bind][m] = PA[2]*vxx_[aind-azm][bind][m] - PC[2]*vxx_[aind-azm][bind][m+1];
+                                    vyy_[aind][bind][m] = PA[2]*vyy_[aind-azm][bind][m] - PC[2]*vyy_[aind-azm][bind][m+1];
+                                    vzz_[aind][bind][m] = PA[2]*vzz_[aind-azm][bind][m] - PC[2]*vzz_[aind-azm][bind][m+1] + 2*vz_[aind-azm][bind][m+1];
+                                    vxy_[aind][bind][m] = PA[2]*vxy_[aind-azm][bind][m] - PC[2]*vxy_[aind-azm][bind][m+1];
+                                    vxz_[aind][bind][m] = PA[2]*vxz_[aind-azm][bind][m] - PC[2]*vxz_[aind-azm][bind][m+1] + vx_[aind-azm][bind][m+1];
+                                    vyz_[aind][bind][m] = PA[2]*vyz_[aind-azm][bind][m] - PC[2]*vyz_[aind-azm][bind][m+1] + vy_[aind-azm][bind][m+1];
+                                }
+
+                                if (az > 1) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * (az-1) * (vi_[aind-2*azm][bind][m] - vi_[aind-2*azm][bind][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        vx_[aind][bind][m] += ooz * (az-1) * (vx_[aind-2*azm][bind][m] - vx_[aind-2*azm][bind][m+1]);
+                                        vy_[aind][bind][m] += ooz * (az-1) * (vy_[aind-2*azm][bind][m] - vy_[aind-2*azm][bind][m+1]);
+                                        vz_[aind][bind][m] += ooz * (az-1) * (vz_[aind-2*azm][bind][m] - vz_[aind-2*azm][bind][m+1]);
+                                    }
+                                    for(m=0;m<=mmax-a-b-2;m++) {
+                                        vxx_[aind][bind][m] += ooz*(az-1)*(vxx_[aind-2*azm][bind][m] - vxx_[aind-2*azm][bind][m+1]);
+                                        vyy_[aind][bind][m] += ooz*(az-1)*(vyy_[aind-2*azm][bind][m] - vyy_[aind-2*azm][bind][m+1]);
+                                        vzz_[aind][bind][m] += ooz*(az-1)*(vzz_[aind-2*azm][bind][m] - vzz_[aind-2*azm][bind][m+1]);
+                                        vxy_[aind][bind][m] += ooz*(az-1)*(vxy_[aind-2*azm][bind][m] - vxy_[aind-2*azm][bind][m+1]);
+                                        vxz_[aind][bind][m] += ooz*(az-1)*(vxz_[aind-2*azm][bind][m] - vxz_[aind-2*azm][bind][m+1]);
+                                        vyz_[aind][bind][m] += ooz*(az-1)*(vyz_[aind-2*azm][bind][m] - vyz_[aind-2*azm][bind][m+1]);
+                                    }
+                                }
+                                if (bz > 0) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * bz * (vi_[aind-azm][bind-bzm][m] - vi_[aind-azm][bind-bzm][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        vx_[aind][bind][m] += ooz * bz * (vx_[aind-azm][bind-bzm][m] - vx_[aind-azm][bind-bzm][m+1]);
+                                        vy_[aind][bind][m] += ooz * bz * (vy_[aind-azm][bind-bzm][m] - vy_[aind-azm][bind-bzm][m+1]);
+                                        vz_[aind][bind][m] += ooz * bz * (vz_[aind-azm][bind-bzm][m] - vz_[aind-azm][bind-bzm][m+1]);
+                                    }
+                                    for(m=0;m<=mmax-a-b-2;m++) {
+                                        vxx_[aind][bind][m] += ooz*bz*(vxx_[aind-azm][bind-bzm][m] - vxx_[aind-azm][bind-bzm][m+1]);
+                                        vyy_[aind][bind][m] += ooz*bz*(vyy_[aind-azm][bind-bzm][m] - vyy_[aind-azm][bind-bzm][m+1]);
+                                        vzz_[aind][bind][m] += ooz*bz*(vzz_[aind-azm][bind-bzm][m] - vzz_[aind-azm][bind-bzm][m+1]);
+                                        vxy_[aind][bind][m] += ooz*bz*(vxy_[aind-azm][bind-bzm][m] - vxy_[aind-azm][bind-bzm][m+1]);
+                                        vxz_[aind][bind][m] += ooz*bz*(vxz_[aind-azm][bind-bzm][m] - vxz_[aind-azm][bind-bzm][m+1]);
+                                        vyz_[aind][bind][m] += ooz*bz*(vyz_[aind-azm][bind-bzm][m] - vyz_[aind-azm][bind-bzm][m+1]);
+                                    }
+                                }
+                            }
+                            else if (ay > 0) {
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    vi_[aind][bind][m] = PA[1] * vi_[aind-aym][bind][m] - PC[1] * vi_[aind-aym][bind][m+1];
+                                }
+                                for (m=0; m<=mmax-a-b-1; ++m) {
+                                    vx_[aind][bind][m] = PA[1] * vx_[aind-aym][bind][m] - PC[1] * vx_[aind-aym][bind][m+1];
+                                    vy_[aind][bind][m] = PA[1] * vy_[aind-aym][bind][m] - PC[1] * vy_[aind-aym][bind][m+1] + vi_[aind-aym][bind][m+1];
+                                    vz_[aind][bind][m] = PA[1] * vz_[aind-aym][bind][m] - PC[1] * vz_[aind-aym][bind][m+1];
+                                }
+                                for(m=0;m<=mmax-a-b-2;m++) {
+                                    vxx_[aind][bind][m] = PA[1]*vxx_[aind-aym][bind][m] - PC[1]*vxx_[aind-aym][bind][m+1];
+                                    vyy_[aind][bind][m] = PA[1]*vyy_[aind-aym][bind][m] - PC[1]*vyy_[aind-aym][bind][m+1] + 2*vy_[aind-aym][bind][m+1];
+                                    vzz_[aind][bind][m] = PA[1]*vzz_[aind-aym][bind][m] - PC[1]*vzz_[aind-aym][bind][m+1];
+                                    vxy_[aind][bind][m] = PA[1]*vxy_[aind-aym][bind][m] - PC[1]*vxy_[aind-aym][bind][m+1] + vx_[aind-aym][bind][m+1];
+                                    vxz_[aind][bind][m] = PA[1]*vxz_[aind-aym][bind][m] - PC[1]*vxz_[aind-aym][bind][m+1];
+                                    vyz_[aind][bind][m] = PA[1]*vyz_[aind-aym][bind][m] - PC[1]*vyz_[aind-aym][bind][m+1] + vz_[aind-aym][bind][m+1];
+                                }
+                                if (ay > 1) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * (ay-1) * (vi_[aind-2*aym][bind][m] - vi_[aind-2*aym][bind][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        vx_[aind][bind][m] += ooz * (ay-1) * (vx_[aind-2*aym][bind][m] - vx_[aind-2*aym][bind][m+1]);
+                                        vy_[aind][bind][m] += ooz * (ay-1) * (vy_[aind-2*aym][bind][m] - vy_[aind-2*aym][bind][m+1]);
+                                        vz_[aind][bind][m] += ooz * (ay-1) * (vz_[aind-2*aym][bind][m] - vz_[aind-2*aym][bind][m+1]);
+                                    }
+                                    for(m=0;m<=mmax-a-b-2;m++) {
+                                        vxx_[aind][bind][m] += ooz*(ay-1)*(vxx_[aind-2*aym][bind][m] - vxx_[aind-2*aym][bind][m+1]);
+                                        vyy_[aind][bind][m] += ooz*(ay-1)*(vyy_[aind-2*aym][bind][m] - vyy_[aind-2*aym][bind][m+1]);
+                                        vzz_[aind][bind][m] += ooz*(ay-1)*(vzz_[aind-2*aym][bind][m] - vzz_[aind-2*aym][bind][m+1]);
+                                        vxy_[aind][bind][m] += ooz*(ay-1)*(vxy_[aind-2*aym][bind][m] - vxy_[aind-2*aym][bind][m+1]);
+                                        vxz_[aind][bind][m] += ooz*(ay-1)*(vxz_[aind-2*aym][bind][m] - vxz_[aind-2*aym][bind][m+1]);
+                                        vyz_[aind][bind][m] += ooz*(ay-1)*(vyz_[aind-2*aym][bind][m] - vyz_[aind-2*aym][bind][m+1]);
+                                    }
+                                }
+                                if (by > 0) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * by * (vi_[aind-aym][bind-bym][m] - vi_[aind-aym][bind-bym][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        vx_[aind][bind][m] += ooz * by * (vx_[aind-aym][bind-bym][m] - vx_[aind-aym][bind-bym][m+1]);
+                                        vy_[aind][bind][m] += ooz * by * (vy_[aind-aym][bind-bym][m] - vy_[aind-aym][bind-bym][m+1]);
+                                        vz_[aind][bind][m] += ooz * by * (vz_[aind-aym][bind-bym][m] - vz_[aind-aym][bind-bym][m+1]);
+                                    }
+                                    for(m=0;m<=mmax-a-b-2;m++) {
+                                        vxx_[aind][bind][m] += ooz*by*(vxx_[aind-aym][bind-bym][m] - vxx_[aind-aym][bind-bym][m+1]);
+                                        vyy_[aind][bind][m] += ooz*by*(vyy_[aind-aym][bind-bym][m] - vyy_[aind-aym][bind-bym][m+1]);
+                                        vzz_[aind][bind][m] += ooz*by*(vzz_[aind-aym][bind-bym][m] - vzz_[aind-aym][bind-bym][m+1]);
+                                        vxy_[aind][bind][m] += ooz*by*(vxy_[aind-aym][bind-bym][m] - vxy_[aind-aym][bind-bym][m+1]);
+                                        vxz_[aind][bind][m] += ooz*by*(vxz_[aind-aym][bind-bym][m] - vxz_[aind-aym][bind-bym][m+1]);
+                                        vyz_[aind][bind][m] += ooz*by*(vyz_[aind-aym][bind-bym][m] - vyz_[aind-aym][bind-bym][m+1]);
+                                    }
+                                }
+                            }
+                            else if (ax > 0) {
+                                for (m=0; m<=mmax-a-b; m++) {
+                                    vi_[aind][bind][m] = PA[0] * vi_[aind-axm][bind][m] - PC[0] * vi_[aind-axm][bind][m+1];
+                                }
+                                for (m=0; m<=mmax-a-b-1; ++m) {
+                                    vx_[aind][bind][m] = PA[0] * vx_[aind-axm][bind][m] - PC[0] * vx_[aind-axm][bind][m+1] + vi_[aind-axm][bind][m+1];
+                                    vy_[aind][bind][m] = PA[0] * vy_[aind-axm][bind][m] - PC[0] * vy_[aind-axm][bind][m+1];
+                                    vz_[aind][bind][m] = PA[0] * vz_[aind-axm][bind][m] - PC[0] * vz_[aind-axm][bind][m+1];
+                                }
+                                for(m=0;m<=mmax-a-b-2;m++) {  /* Gradients of the electric field */
+                                    vxx_[aind][bind][m] = PA[0]*vxx_[aind-axm][bind][m] - PC[0]*vxx_[aind-axm][bind][m+1] + 2*vx_[aind-axm][bind][m+1];
+                                    vyy_[aind][bind][m] = PA[0]*vyy_[aind-axm][bind][m] - PC[0]*vyy_[aind-axm][bind][m+1];
+                                    vzz_[aind][bind][m] = PA[0]*vzz_[aind-axm][bind][m] - PC[0]*vzz_[aind-axm][bind][m+1];
+                                    vxy_[aind][bind][m] = PA[0]*vxy_[aind-axm][bind][m] - PC[0]*vxy_[aind-axm][bind][m+1] + vy_[aind-axm][bind][m+1];
+                                    vxz_[aind][bind][m] = PA[0]*vxz_[aind-axm][bind][m] - PC[0]*vxz_[aind-axm][bind][m+1] + vz_[aind-axm][bind][m+1];
+                                    vyz_[aind][bind][m] = PA[0]*vyz_[aind-axm][bind][m] - PC[0]*vyz_[aind-axm][bind][m+1];
+                                }
+
+
+                                if (ax > 1) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * (ax-1) * (vi_[aind-2*axm][bind][m] - vi_[aind-2*axm][bind][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        vx_[aind][bind][m] += ooz * (ax-1) * (vx_[aind-2*axm][bind][m] - vx_[aind-2*axm][bind][m+1]);
+                                        vy_[aind][bind][m] += ooz * (ax-1) * (vy_[aind-2*axm][bind][m] - vy_[aind-2*axm][bind][m+1]);
+                                        vz_[aind][bind][m] += ooz * (ax-1) * (vz_[aind-2*axm][bind][m] - vz_[aind-2*axm][bind][m+1]);
+                                    }
+                                    for(m=0;m<=mmax-a-b-2;m++) {
+                                        vxx_[aind][bind][m] += ooz*(ax-1)*(vxx_[aind-2*axm][bind][m] - vxx_[aind-2*axm][bind][m+1]);
+                                        vyy_[aind][bind][m] += ooz*(ax-1)*(vyy_[aind-2*axm][bind][m] - vyy_[aind-2*axm][bind][m+1]);
+                                        vzz_[aind][bind][m] += ooz*(ax-1)*(vzz_[aind-2*axm][bind][m] - vzz_[aind-2*axm][bind][m+1]);
+                                        vxy_[aind][bind][m] += ooz*(ax-1)*(vxy_[aind-2*axm][bind][m] - vxy_[aind-2*axm][bind][m+1]);
+                                        vxz_[aind][bind][m] += ooz*(ax-1)*(vxz_[aind-2*axm][bind][m] - vxz_[aind-2*axm][bind][m+1]);
+                                        vyz_[aind][bind][m] += ooz*(ax-1)*(vyz_[aind-2*axm][bind][m] - vyz_[aind-2*axm][bind][m+1]);
+                                    }
+                                }
+                                if (bx > 0) {
+                                    for (m=0; m<= mmax-a-b; m++) {
+                                        vi_[aind][bind][m] += ooz * bx * (vi_[aind-axm][bind-bxm][m] - vi_[aind-axm][bind-bxm][m+1]);
+                                    }
+                                    for (m=0; m<=mmax-a-b-1; ++m) {
+                                        vx_[aind][bind][m] += ooz * bx * (vx_[aind-axm][bind-bxm][m] - vx_[aind-axm][bind-bxm][m+1]);
+                                        vy_[aind][bind][m] += ooz * bx * (vy_[aind-axm][bind-bxm][m] - vy_[aind-axm][bind-bxm][m+1]);
+                                        vz_[aind][bind][m] += ooz * bx * (vz_[aind-axm][bind-bxm][m] - vz_[aind-axm][bind-bxm][m+1]);
+                                    }
+                                    for(m=0;m<=mmax-a-b-2;m++) {
+                                        vxx_[aind][bind][m] += ooz*bx*(vxx_[aind-axm][bind-bxm][m] - vxx_[aind-axm][bind-bxm][m+1]);
+                                        vyy_[aind][bind][m] += ooz*bx*(vyy_[aind-axm][bind-bxm][m] - vyy_[aind-axm][bind-bxm][m+1]);
+                                        vzz_[aind][bind][m] += ooz*bx*(vzz_[aind-axm][bind-bxm][m] - vzz_[aind-axm][bind-bxm][m+1]);
+                                        vxy_[aind][bind][m] += ooz*bx*(vxy_[aind-axm][bind-bxm][m] - vxy_[aind-axm][bind-bxm][m+1]);
+                                        vxz_[aind][bind][m] += ooz*bx*(vxz_[aind-axm][bind-bxm][m] - vxz_[aind-axm][bind-bxm][m+1]);
+                                        vyz_[aind][bind][m] += ooz*bx*(vyz_[aind-axm][bind-bxm][m] - vyz_[aind-axm][bind-bxm][m+1]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    delete[] F;
+}
+
 ObaraSaikaTwoCenterElectricField::ObaraSaikaTwoCenterElectricField(int max_am1, int max_am2)
     : ObaraSaikaTwoCenterVIRecursion(max_am1+2, max_am2+2)
 {
@@ -969,9 +1349,9 @@ void ObaraSaikaTwoCenterElectricField::compute(double PA[3], double PB[3], doubl
 
                             if (az > 0) {
                                 for (m=0; m<=mmax-a-b; ++m) {
-//                                    AIX[iind][jind][m] = paz*AIX[iind-izm][jind][m] - pcz*AIX[iind-izm][jind][m+1];
-//                                    AIY[iind][jind][m] = paz*AIY[iind-izm][jind][m] - pcz*AIY[iind-izm][jind][m+1];
-//                                    AIZ[iind][jind][m] = paz*AIZ[iind-izm][jind][m] - pcz*AIZ[iind-izm][jind][m+1] + AI0[iind-izm][jind][m+1];
+                                    //                                    AIX[iind][jind][m] = paz*AIX[iind-izm][jind][m] - pcz*AIX[iind-izm][jind][m+1];
+                                    //                                    AIY[iind][jind][m] = paz*AIY[iind-izm][jind][m] - pcz*AIY[iind-izm][jind][m+1];
+                                    //                                    AIZ[iind][jind][m] = paz*AIZ[iind-izm][jind][m] - pcz*AIZ[iind-izm][jind][m+1] + AI0[iind-izm][jind][m+1];
 
                                     ex_[aind][bind][m] = PA[2] * ex_[aind-azm][bind][m] - PC[2] * ex_[aind-azm][bind][m+1];
                                     ey_[aind][bind][m] = PA[2] * ey_[aind-azm][bind][m] - PC[2] * ey_[aind-azm][bind][m+1];

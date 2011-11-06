@@ -731,11 +731,6 @@ void get_parameters(Options &options)
   } /* end state-average parsing */
 
 
-  // START HERE
-
-  /* Follow a vector to determine the root number? */
-       fprintf(outfile, "Need to specify FOLLOW_VECTOR = "
-                        "((alphastr_i betastr_i) coeff_i ... )\n");
   Parameters.follow_vec_num = 0;
   if (options["FOLLOW_VECTOR"].has_changed()) {
     i = options["FOLLOW_VECTOR"].size();

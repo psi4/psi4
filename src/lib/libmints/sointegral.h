@@ -374,6 +374,11 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 //    fprintf(outfile, "for (%d %d | %d %d) need to compute %lu4 thing(s):\n",
 //            uish, ujsh, uksh, ulsh, sj_arr.size());
 
+    int *fo1 = b1_->function_offset_within_shell(uish);
+    int *fo2 = b1_->function_offset_within_shell(ujsh);
+    int *fo3 = b1_->function_offset_within_shell(uksh);
+    int *fo4 = b1_->function_offset_within_shell(ulsh);
+
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
         int sk = sk_arr[n];
@@ -391,13 +396,15 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         // Compute this unique AO shell
         tb_[thread]->compute_shell(si, sj, sk, sl);
 
+#ifdef MINTS_TIMER
+        timer_on("TwoBodySOInt::compute_shell actual transform");
+#endif // MINTS_TIMER
+
         for (int itr=0; itr<ns1so; itr++) {
             const AOTransformFunction &ifunc = s1.soshell[itr];
             double icoef = ifunc.coef;
             int iaofunc = ifunc.aofunc;
-            int isofunc = b1_->function_offset_within_shell(uish,
-                                                            ifunc.irrep)
-                    + ifunc.sofunc;
+            int isofunc = fo1[ifunc.irrep] + ifunc.sofunc;
             int iaooff = iaofunc;
             int isooff = isofunc;
 
@@ -405,9 +412,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                 const AOTransformFunction &jfunc = s2.soshell[jtr];
                 double jcoef = jfunc.coef * icoef;
                 int jaofunc = jfunc.aofunc;
-                int jsofunc = b2_->function_offset_within_shell(ujsh,
-                                                                jfunc.irrep)
-                        + jfunc.sofunc;
+                int jsofunc = fo2[jfunc.irrep] + jfunc.sofunc;
                 int jaooff = iaooff*nao2 + jaofunc;
                 int jsooff = isooff*nso2 + jsofunc;
 
@@ -415,9 +420,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                     const AOTransformFunction &kfunc = s3.soshell[ktr];
                     double kcoef = kfunc.coef * jcoef;
                     int kaofunc = kfunc.aofunc;
-                    int ksofunc = b3_->function_offset_within_shell(uksh,
-                                                                    kfunc.irrep)
-                            + kfunc.sofunc;
+                    int ksofunc = fo3[kfunc.irrep] + kfunc.sofunc;
                     int kaooff = jaooff*nao3 + kaofunc;
                     int ksooff = jsooff*nso3 + ksofunc;
 
@@ -425,9 +428,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                         const AOTransformFunction &lfunc = s4.soshell[ltr];
                         double lcoef = lfunc.coef * kcoef;
                         int laofunc = lfunc.aofunc;
-                        int lsofunc = b4_->function_offset_within_shell(ulsh,
-                                                                        lfunc.irrep)
-                                + lfunc.sofunc;
+                        int lsofunc = fo4[lfunc.irrep] + lfunc.sofunc;
                         int laooff = kaooff*nao4 + laofunc;
                         int lsooff = ksooff*nso4 + lsofunc;
                         // If you're doing the two-stage SO integral uncomment the next line
@@ -442,6 +443,10 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                 }
             }
         }
+
+#ifdef MINTS_TIMER
+    timer_off("TwoBodySOInt::compute_shell actual transform");
+#endif // MINTS_TIMER
     }
 
 #ifdef MINTS_TIMER

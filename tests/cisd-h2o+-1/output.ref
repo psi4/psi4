@@ -18,11 +18,11 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
-#! 6-31G** H2O Test CISD Energy Point
+#! 6-31G** H2O+ Test CISD Energy Point
 
-refnuc   =   8.8046872910  #TEST
-refscf   = -76.0172965718  #TEST
-refci    = -76.21984746    #TEST
+refnuc   =   8.8046872909987  #TEST
+refscf   = -75.621342248017  #TEST
+refci    = -75.7850672033928    #TEST
 refcorr  = refci - refscf  #TEST
 
 molecule h2o {
@@ -33,34 +33,35 @@ molecule h2o {
 
 set globals {
   wfn detci
+  charge 1
+  multp 2
+  reference rohf
   basis 6-31G**
-}
-
-set detci {
-  hd_ave hd_kave
+  freeze_core true
 }
 
 thisenergy = energy('detci')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF energy"),     9, "SCF energy") #TEST
+# Odd .. PSI4 SCF energy doesn't match PSI3 SCF energy to 8 digits.... #TEST
+compare_values(refscf, get_variable("SCF energy"),     7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
 --------------------------------------------------------------------------
 
 *** tstart() called on ds9
-*** at Tue Nov  1 17:51:34 2011
+*** at Sat Nov  5 15:20:08 2011
 
-	There are an even number of electrons - assuming singlet.
+	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
 	input if this is incorrect
 
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
-                              RHF Reference
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
@@ -68,7 +69,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
     Molecular point group: c2v
 
-    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
 
        Center              X                  Y                   Z       
     ------------   -----------------  -----------------  -----------------
@@ -86,11 +87,11 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
   Nuclear repulsion =    8.804687290998672
 
-  Charge       = 0
-  Multiplicity = 1
-  Electrons    = 10
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 9
   Nalpha       = 5
-  Nbeta        = 5
+  Nbeta        = 4
 
   ==> Algorithm <==
 
@@ -117,17 +118,17 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.75934033118257
+  Initial ROHF energy:   -56.70322791927451
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
    -------------------------------------------------------
      A1        12      12       3       3       3       0
      A2         2       2       0       0       0       0
-     B1         4       4       1       1       1       0
+     B1         4       4       1       0       0       1
      B2         7       7       1       1       1       0
    -------------------------------------------------------
-    Total      25      25       5       5       5       0
+    Total      25      25       5       4       4       1
    -------------------------------------------------------
 
   ==> Integral Setup <==
@@ -154,24 +155,26 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.35488443461821   -9.59554e+00   0.00000e+00  
+   @ROHF iter   1:   -70.18004963153233   -1.34768e+01   0.00000e+00  
 	Occupation by irrep:
 	         A1    A2    B1    B2 
-	DOCC [     4,    0,    0,    1 ]
-   @RHF iter   2:   -71.39794024417724   -3.04306e+00   5.03598e-01 DIIS
+	DOCC [     3,    0,    0,    1 ]
+	SOCC [     1,    0,    0,    0 ]
+   @ROHF iter   2:   -72.69315119802241   -2.51310e+00   5.93326e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
-	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.77170401143009   -4.37376e+00   4.76874e-01 DIIS
-   @RHF iter   4:   -76.00006703142691   -2.28363e-01   1.67735e-02 DIIS
-   @RHF iter   5:   -76.01682092540251   -1.67539e-02   7.81375e-03 DIIS
-   @RHF iter   6:   -76.01724894131669   -4.28016e-04   1.27860e-03 DIIS
-   @RHF iter   7:   -76.01729489704316   -4.59557e-05   5.67962e-04 DIIS
-   @RHF iter   8:   -76.01729646695615   -1.56991e-06   9.33668e-05 DIIS
-   @RHF iter   9:   -76.01729656842251   -1.01466e-07   2.90504e-05 DIIS
-   @RHF iter  10:   -76.01729657097100   -2.54849e-09   4.41619e-06 DIIS
-   @RHF iter  11:   -76.01729657098959   -1.85878e-11   2.99617e-07 DIIS
-   @RHF iter  12:   -76.01729657099034   -7.53175e-13   5.49673e-08 DIIS
+	DOCC [     3,    0,    0,    1 ]
+	SOCC [     0,    0,    1,    0 ]
+   @ROHF iter   3:   -75.51378954138833   -2.82064e+00   5.14934e-01 DIIS
+   @ROHF iter   4:   -75.61155329071428   -9.77637e-02   2.18789e-02 DIIS
+   @ROHF iter   5:   -75.62122688666513   -9.67360e-03   8.13069e-03 DIIS
+   @ROHF iter   6:   -75.62133169673575   -1.04810e-04   8.97695e-04 DIIS
+   @ROHF iter   7:   -75.62134171593001   -1.00192e-05   3.17822e-04 DIIS
+   @ROHF iter   8:   -75.62134219223159   -4.76302e-07   7.80409e-05 DIIS
+   @ROHF iter   9:   -75.62134222964059   -3.74090e-08   2.68586e-05 DIIS
+   @ROHF iter  10:   -75.62134223068320   -1.04261e-09   4.90019e-06 DIIS
+   @ROHF iter  11:   -75.62134223068625   -3.05533e-12   2.19277e-07 DIIS
+   @ROHF iter  12:   -75.62134223068651   -2.55795e-13   5.74524e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -180,26 +183,31 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
 	Doubly Occupied:                                                      
 
-	   1A1   -20.569000     2A1    -1.320609     1B2    -0.678724  
-	   3A1    -0.563930     1B1    -0.495004  
+	   1A1   -21.122454     2A1    -1.807728     1B2    -1.168198  
+	   3A1    -1.059038  
+
+	Singly Occupied:                                                      
+
+	   1B1    -0.690806  
 
 	Virtual:                                                              
 
-	   4A1     0.202466     2B2     0.292719     3B2     0.981164  
-	   5A1     1.056318     6A1     1.129179     2B1     1.168639  
-	   4B2     1.294985     7A1     1.413596     1A2     1.802875  
-	   8A1     1.806916     3B1     1.918871     9A1     2.513249  
-	   5B2     2.537822     6B2     2.713577     2A2     2.921065  
-	   4B1     2.947486    10A1     3.291755    11A1     3.620730  
-	   7B2     3.874917    12A1     4.077740  
+	   4A1    -0.131097     2B2    -0.048500     3B2     0.586122  
+	   5A1     0.641232     6A1     0.720655     2B1     0.727665  
+	   4B2     0.870547     7A1     0.987059     1A2     1.346739  
+	   8A1     1.356305     3B1     1.458174     9A1     2.046744  
+	   5B2     2.120283     6B2     2.262511     2A2     2.470165  
+	   4B1     2.502866    10A1     2.856186    11A1     3.171210  
+	   7B2     3.431043    12A1     3.610004  
 
 	Final Occupation by Irrep:
 	         A1    A2    B1    B2 
-	DOCC [     3,    0,    1,    1 ]
+	DOCC [     3,    0,    0,    1 ]
+	SOCC [     0,    0,    1,    0 ]
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01729657099034
+  @ROHF Final Energy:   -75.62134223068651
 
   ==> Properties <==
 
@@ -208,26 +216,26 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
   built on LIBMINTS.
 
  Dipole Moment: (a.u.)
-     X:     0.0000      Y:     0.0000      Z:     0.8819     Total:     0.8819
+     X:     0.0000      Y:     0.0000      Z:     1.1007     Total:     1.1007
 
  Dipole Moment: (Debye)
-     X:     0.0000      Y:     0.0000      Z:     2.2415     Total:     2.2415
+     X:     0.0000      Y:     0.0000      Z:     2.7976     Total:     2.7976
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds9 at Tue Nov  1 17:51:35 2011
+*** tstop() called on ds9 at Sat Nov  5 15:20:08 2011
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds9
-*** at Tue Nov  1 17:51:35 2011
+*** at Sat Nov  5 15:20:08 2011
 
 
 	**************************************************
@@ -241,10 +249,10 @@ Total time:
 	Input Parameters:
 	-----------------
 	Wavefunction           =  DETCI
-	Reference orbitals     =  RHF
+	Reference orbitals     =  ROHF
 	Backtrans              =  No
 	Print MOs              =  No
-	Freeze Core            =  No
+	Freeze Core            =  Yes
 	Delete Restricted Docc =  Yes
 	Do All TEI             =  No
 	Memory (Mbytes)        =  256.0
@@ -286,20 +294,20 @@ Total time:
 
 	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
 	-----	-----	-----	------	------	------	------	------
-	 A1	   12	   12	    0	    3	    0	    9	    0
+	 A1	   12	   12	    1	    3	    0	    9	    0
 	 A2	   2	   2	    0	    0	    0	    2	    0
-	 B1	   4	   4	    0	    1	    0	    3	    0
+	 B1	   4	   4	    0	    0	    1	    3	    0
 	 B2	   7	   7	    0	    1	    0	    6	    0
 
 	Nuclear Repulsion Energy    =         8.8046872910
-	Total SCF Energy            =       -76.0172965710
+	Total SCF Energy            =       -75.6213422307
 
 	Reading one-electron integrals...done.
 
 	Pre-sorting two-electron ints...
 
 
-	Frozen core energy =    0.000000000000000
+	Frozen core energy =  -61.217651317031866
 	Transforming two-electron ints...
 
 	Sorting half-transformed integrals...
@@ -312,25 +320,25 @@ Total time:
 	Transforming one-electron integrals...
 	Frozen-core operator written to file 35.
 
-*** tstop() called on ds9 at Tue Nov  1 17:51:35 2011
+*** tstop() called on ds9 at Sat Nov  5 15:20:08 2011
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on ds9
-*** at Tue Nov  1 17:51:35 2011
+*** at Sat Nov  5 15:20:08 2011
 
 
 *******************************************************
                        D E T C I  
 
                    C. David Sherrill
-                  Matt L. Leininger
+                   Matt L. Leininger
                      18 June 1999
 *******************************************************
 
@@ -351,12 +359,12 @@ PARAMETERS:
    REPL OTF      =       no
    TEI FILE      =       72      DIAG METHOD  =      SEM
    PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
-   S             =   0.0000      Ms0          =      yes
+   S             =   0.5000      Ms0          =       no
    MAXNVECT      =       13
    RESTART       =       no
-   GUESS VECTOR  =  H0BLOCK      OPENTYPE     =     NONE
+   GUESS VECTOR  =  H0BLOCK      OPENTYPE     = HIGHSPIN
    REF SYM       =     auto
-   COLLAPSE SIZE =        1      HD AVE       =     HD_KAVE
+   COLLAPSE SIZE =        1      HD AVE       = EVANGELISTI
    LSE           =       no      LSE ITER     =        0
    HD OTF        =      yes      NO DFILE     =       no
    MPN           =       no      MPN SCHMIDT  =       no
@@ -375,102 +383,103 @@ PARAMETERS:
 
 ORBITALS:
    NMO          =       25      NUM ALP      =        5
-   ORBS IN CI   =       25      NUM ALP EXPL =        5
-   FROZEN CORE  =        0      NUM BET      =        5
-   RESTR CORE   =        0      NUM BET EXPL =        5
-   IOPEN        =       no
-   RAS1 LVL     =        4      A RAS3 MAX   =        2
-   RAS1 MIN     =        8      B RAS3 MAX   =        2
-   A RAS1 LVL   =        4      RAS4 LVL     =       25
+   ORBS IN CI   =       24      NUM ALP EXPL =        4
+   FROZEN CORE  =        1      NUM BET      =        4
+   RESTR CORE   =        0      NUM BET EXPL =        3
+   IOPEN        =      yes
+   RAS1 LVL     =        3      A RAS3 MAX   =        2
+   RAS1 MIN     =        7      B RAS3 MAX   =        2
+   A RAS1 LVL   =        3      RAS4 LVL     =       24
    A RAS1 MIN   =        3      A RAS4 MAX   =        0
    A RAS1 MAX   =        5      B RAS4 MAX   =        0
-   B RAS1 LVL   =        4      RAS4 MAX     =        0
-   B RAS1 MIN   =        3      A RAS34 MAX  =        2
-   B RAS1 MAX   =        5      B RAS34 MAX  =        2
-   RAS3 LVL     =        5      RAS34 MAX    =        2
+   B RAS1 LVL   =        3      RAS4 MAX     =        0
+   B RAS1 MIN   =        2      A RAS34 MAX  =        2
+   B RAS1 MAX   =        4      B RAS34 MAX  =        2
+   RAS3 LVL     =        4      RAS34 MAX    =        2
    RAS3 MAX     =        2
 
-   DOCC         =  3  0  1  1 
-   SOCC         =  0  0  0  0 
-   FROZEN DOCC  =  0  0  0  0 
+   DOCC         =  3  0  0  1 
+   SOCC         =  0  0  1  0 
+   FROZEN DOCC  =  1  0  0  0 
    FROZEN UOCC  =  0  0  0  0 
-   RAS 1        =  3  0  1  1 
+   RAS 1        =  2  0  1  1 
    RAS 2        =  0  0  0  0 
    RAS 3        =  9  2  3  6 
    RAS 4        =  0  0  0  0 
 *******************************************************
 
 
-There are 2001 alpha strings
-There are 2001 beta strings
-CI space contains    9 blocks
+There are 1221 alpha strings
+There are 884 beta strings
+CI space contains   13 blocks
 
-CI space requires 3831 determinants
+CI space requires 3857 determinants
 
 Check SCF Energy from 1- and 2-electron integrals
 
-SCF Energy (ref):            -76.0172965710
+SCF Energy (ref):            -75.6213422307
 Nuclear repulsion energy:      8.8046872910
-One-electron energy:        -122.3894327209
-Two-electron energy:          37.5674488589
-Frozen core energy:            0.0000000000
-Total electronic energy:     -84.8219838620
-Total SCF energy:            -76.0172965710
+One-electron energy:         -32.0199322298
+Two-electron energy:           9.9231724700
+Frozen core energy:          -61.2176513170
+Total electronic energy:     -83.3144110768
+Total SCF energy:            -74.5097237858
 
- CI vector/subblock length = 3831
+*** Calculated Energy Differs from SCF Energy in CHKPT ! ***
 
-*** H0 Block Eigenvalue = -76.12850889
+ CI vector/subblock length = 3857
+
+*** H0 Block Eigenvalue = -75.70469195
 
 Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
 Energy convergence = 1e-06
 RMS CI vector convergence = 0.0001
 
 Using 1 initial trial vectors
-Iter  0  Root  1 = -76.128508886   Delta_E -8.493E+01   Delta_C  7.276E-01  
-Iter  1  Root  1 = -76.218576896   Delta_E -9.007E-02   Delta_C  6.509E-02  
-Iter  2  Root  1 = -76.219737482   Delta_E -1.161E-03   Delta_C  1.521E-02  
-Iter  3  Root  1 = -76.219833947   Delta_E -9.647E-05   Delta_C  5.359E-03  
-Iter  4  Root  1 = -76.219846279   Delta_E -1.233E-05   Delta_C  1.677E-03  
-Iter  5  Root  1 = -76.219847322   Delta_E -1.043E-06   Delta_C  5.125E-04  
-Iter  6  Root  1 = -76.219847448   Delta_E -1.263E-07   Delta_C  1.835E-04  
-Iter  7  Root  1 = -76.219847460   Delta_E -1.146E-08   Delta_C  4.692E-05 c
+Iter  0  Root  1 = -75.704691952   Delta_E -2.329E+01   Delta_C  6.333E-01  
+Iter  1  Root  1 = -75.783963985   Delta_E -7.927E-02   Delta_C  6.266E-02  
+Iter  2  Root  1 = -75.784975383   Delta_E -1.011E-03   Delta_C  1.703E-02  
+Iter  3  Root  1 = -75.785060956   Delta_E -8.557E-05   Delta_C  4.425E-03  
+Iter  4  Root  1 = -75.785066791   Delta_E -5.835E-06   Delta_C  1.017E-03  
+Iter  5  Root  1 = -75.785067164   Delta_E -3.736E-07   Delta_C  2.587E-04  
+Iter  6  Root  1 = -75.785067187   Delta_E -2.241E-08   Delta_C  6.476E-05 c
 
-* ROOT 1 CI total energy = -76.2198474598175
+* ROOT 1 CI total energy = -75.7850671866021
 
 
 The 20 most important determinants
 
-    1    0.973607  (  475,  475)  1A1X  2A1X  3A1X  1B1X  1B2X  
-    2   -0.047867  (  503,  503)  1A1X  2A1X  3A1X  1B2X  2B1X  
-    3   -0.038778  (  506,  506)  1A1X  2A1X  3A1X  1B1X  2B2X  
-    4   -0.031727  (  482,  482)  1A1X  2A1X  1B1X  1B2X  6A1X  
-    5   -0.027069  (  507,  507)  1A1X  2A1X  3A1X  1B1X  3B2X  
-    6   -0.025589  (  482,  503)  1A1X  2A1X  3A1B  1B1A  1B2X  6A1A  2B1B  
-    7   -0.025589  (  503,  482)  1A1X  2A1X  3A1A  1B1B  1B2X  6A1B  2B1A  
-    8    0.022976  (  503,  508)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
-    9    0.022976  (  508,  503)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  4B2A  
-   10    0.022863  (  503,  506)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
-   11    0.022863  (  506,  503)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
-   12   -0.022766  ( 1011, 1011)  1A1X  2A1X  3A1X  1B1X  5A1X  
-*  13   -0.022680  (  508,  508)  1A1X  2A1X  3A1X  1B1X  4B2X  
-   14   -0.022587  (  476,  476)  1A1X  2A1X  1B1X  1B2X  4A1X  
-   15   -0.021959  (  506,  508)  1A1X  2A1X  3A1X  1B1X  2B2A  4B2B  
-   16   -0.021959  (  508,  506)  1A1X  2A1X  3A1X  1B1X  2B2B  4B2A  
-   17    0.021324  (  476,  506)  1A1X  2A1X  3A1B  1B1X  1B2A  4A1A  2B2B  
-   18    0.021324  (  506,  476)  1A1X  2A1X  3A1A  1B1X  1B2B  4A1B  2B2A  
-   19   -0.020580  ( 1024, 1024)  1A1X  2A1X  1B1X  1B2X  3B2X  
-   20   -0.018749  ( 1010, 1010)  1A1X  2A1X  3A1X  1B1X  4A1X  
+    1    0.977151  (  302,  641)  2A1X  3A1X  1B1A  1B2X  
+    2   -0.037409  (  324,  667)  2A1X  3A1X  1B1A  2B2X  
+    3    0.024331  (  307,  646)  2A1X  1B1A  1B2X  6A1X  
+    4   -0.024282  (  936,  239)  2A1A  3A1B  1B1X  1B2X  3B1A  
+    5   -0.024185  (  923,  239)  2A1A  3A1X  1B1B  1B2X  4A1A  
+    6   -0.024039  (  932,  239)  2A1A  3A1X  1B1X  1B2B  1A2A  
+*   7   -0.023658  (  326,  669)  2A1X  3A1X  1B1A  4B2X  
+    8    0.023298  (  321,  667)  2A1X  3A1X  1B2A  2B1A  2B2B  
+    9   -0.023250  (  326,  667)  2A1X  3A1X  1B1A  2B2B  4B2A  
+   10   -0.023146  (  325,  668)  2A1X  3A1X  1B1A  3B2X  
+   11    0.022949  (  321,  669)  2A1X  3A1X  1B2A  2B1A  4B2B  
+   12    0.022588  (    7,  440)  2A1X  3A1X  1B1B  1B2A  2B2A  
+   13   -0.022379  (  324,  669)  2A1X  3A1X  1B1A  2B2A  4B2B  
+*  14    0.022277  (  928,  239)  2A1A  3A1X  1B1B  1B2X  9A1A  
+   15    0.021797  (  305,  644)  2A1X  1B1A  1B2X  5A1X  
+   16    0.021693  (  321,  646)  2A1X  3A1A  1B2X  6A1B  2B1A  
+   17   -0.020706  (  924,  239)  2A1A  3A1X  1B1B  1B2X  5A1A  
+   18    0.020347  (  305,  667)  2A1X  3A1B  1B1A  1B2A  5A1A  2B2B  
+*  19    0.019749  (  311,  650)  2A1X  1B1A  1B2X  8A1X  
+   20   -0.019717  (  324,  644)  2A1X  3A1A  1B1A  1B2B  5A1B  2B2A  
 
 
 
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.003135
- Write     0.002575
- Sigma1    0.000543
- Sigma2    0.147197
- Sigma3    0.141920
+ Read      0.002314
+ Write     0.002147
+ Sigma1    0.055808
+ Sigma2    0.147932
+ Sigma3    0.195784
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -484,14 +493,14 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds9 at Tue Nov  1 17:51:36 2011
+*** tstop() called on ds9 at Sat Nov  5 15:20:09 2011
 Module time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.78 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.93 seconds =       0.02 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
