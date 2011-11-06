@@ -43,7 +43,6 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
     for(int n = 0; n < _nmo; ++n) order[n] = n;
 
     if(_transformationType == Restricted){
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], soInts, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -55,7 +54,6 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
     }else{
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], soInts, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -67,7 +65,6 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], soInts, moInts, _Cb[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -100,12 +97,12 @@ IntegralTransform::transform_oei(const shared_ptr<MOSpace> s1, const shared_ptr<
 *                 orbital in the current irrep.
 * @param order - a reordering array to change the order of the output
 * @param backtransform - whether this is a forward or backwards transformation
-* @param accumulate - whether to add the integrals to the existing output buffer
+* @param scale - the amount of the existing output buffer to mix into the result
 */
 
 void
 IntegralTransform::trans_one(int m, int n, double *input, double *output,
-                             double **C, int offset, int* order, bool backtransform, bool accumulate)
+                             double **C, int offset, int* order, bool backtransform, double scale)
 {
     // TODO the order argument is actually not used right now.  I don't know that anybody will need it
     // so I haven't bothered so far...
@@ -139,10 +136,7 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
             size_t P = order[p];
             size_t Q = order[q];
             size_t PQ = INDEX(P,Q);
-            if(accumulate)
-                output[PQ] += TMP0[p][q];
-            else
-                output[PQ] = TMP0[p][q];
+            output[PQ] = scale * output[PQ] + TMP0[p][q];
         }
     }
 
@@ -262,7 +256,6 @@ IntegralTransform::generate_oei()
     if(_print)
         fprintf(outfile, "\tTransforming the one-electron integrals and constructing Fock matrices\n");
     if(_transformationType == Restricted){
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aoH, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -274,7 +267,6 @@ IntegralTransform::generate_oei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -286,7 +278,6 @@ IntegralTransform::generate_oei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -299,7 +290,6 @@ IntegralTransform::generate_oei()
 
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
     }else{
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aoH, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -311,7 +301,6 @@ IntegralTransform::generate_oei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aoH, moInts, _Cb[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -323,7 +312,6 @@ IntegralTransform::generate_oei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -335,7 +323,6 @@ IntegralTransform::generate_oei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], bFzcOp, moInts, _Cb[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -345,8 +332,6 @@ IntegralTransform::generate_oei()
             fprintf(outfile, "The MO basis beta frozen core operator\n");
             print_array(moInts, _nmo, outfile);
         }
-        IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
@@ -358,7 +343,6 @@ IntegralTransform::generate_oei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
 
-        for(int n = 0; n < _nTriMo; ++n) moInts[n] = 0.0;
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             trans_one(_sopi[h], _mopi[h], bFock, moInts, _Cb[h], soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
