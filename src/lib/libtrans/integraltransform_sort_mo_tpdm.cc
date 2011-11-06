@@ -342,7 +342,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
                 int r = _bCorrToPitzer[(int) lblptr[labelIndex++]];
                 int s = _bCorrToPitzer[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
+                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true, false);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
