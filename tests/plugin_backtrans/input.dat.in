@@ -8,20 +8,18 @@ molecule {
 plugin_load("./plugin_backtrans.so")
 
 set  {
-   basis       sto-3g
+   basis       DZ
    print       1
+   charge      1
    wfn         ccsd
    dertype     first
    delete_tei  false
    convergence 10
    jobtype     sp
    relax_opdm  true
+   reference   uhf
 }
 
-set scf {
-    guess core
-    reference rhf
-}
 
 scf()
 transqt2()
@@ -31,4 +29,5 @@ cchbar()
 cclambda()
 ccdensity()
 
-plugin("plugin_backtrans.so")
+
+plugin("./plugin_backtrans.so")
