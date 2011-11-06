@@ -94,7 +94,7 @@ void get_params(Options & options)
     throw PsiException("ccsort failure", __FILE__, __LINE__);
   }
 
-  local.freeze_core = options.get_str("FREEZE_CORE");
+  local.freeze_core = options.get_str("FREEZE_DOCC");
 
   local.pairdef = options.get_str("LOCAL_PAIRDEF");
   if(local.pairdef!="BP" && local.pairdef!="RESPONSE") {

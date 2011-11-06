@@ -27,10 +27,37 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("CHARGE", 0);
   /*- Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
+
+  /*- An array containing the number of doubly-occupied orbitals per irrep 
+  (in Cotton order) -*/
+  options.add("DOCC", new ArrayType());
+
+  /*- An array containing the number of singly-occupied orbitals per irrep 
+  (in Cotton order) -*/
+  options.add("SOCC", new ArrayType());
+
+  /*- An array containing the number of frozen doubly-occupied orbitals per 
+  irrep (these are not excited in a CI, nor can they be optimized in 
+  MCSCF -*/
+  options.add("FROZEN_DOCC", new ArrayType());
+  /*- An array containing the number of frozen unoccupied orbitals per 
+  irrep (these are not populated in a CI, nor can they be optimized in 
+  MCSCF -*/
+  options.add("FROZEN_UOCC", new ArrayType());
+  /*- The scope of core orbitals to freeze in later correlated computations
+      FROZEN_DOCC trumps this option  -*/
+  options.add_str("FREEZE_DOCC","FALSE", \
+    "FALSE TRUE SMALL LARGE");
+  /*- The scope of virtual orbitals to freeze in later correlated computations
+      FROZEN_UOCC trumps this option -*/
+  options.add_int("FREEZE_UOCC", 0);
+
   /*- Whether to use pure angular momentum basis functions -*/
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file -*/
-  options.add_int("PRINT", 0);
+  options.add_int("PRINT", 1);
+  /*- The amount of information to print to the output file -*/
+  options.add_int("DEBUG", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type -*/
@@ -82,24 +109,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT", 1);
-
-    /*- An array containing the number of doubly-occupied orbitals per irrep 
-    (in Cotton order) -*/
-    options.add("DOCC", new ArrayType());
-
-    /*- An array containing the number of singly-occupied orbitals per irrep 
-    (in Cotton order) -*/
-    options.add("SOCC", new ArrayType());
-
-    /*- An array containing the number of frozen doubly-occupied orbitals per 
-    irrep (these are not excited in a CI, nor can they be optimized in 
-    MCSCF -*/
-    options.add("FROZEN_DOCC", new ArrayType());
-
-    /*- An array containing the number of frozen unoccupied orbitals per 
-    irrep (these are not populated in a CI, nor can they be optimized in 
-    MCSCF -*/
-    options.add("FROZEN_UOCC", new ArrayType());
 
     /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
     options.add("RAS1", new ArrayType());
@@ -622,10 +631,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
-      /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
-      options.add("SOCC", new ArrayType());
-      /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
-      options.add("DOCC", new ArrayType());
       /*- The amount of memory available (in Mb) -*/
       options.add_int("MEMORY", 2000);
       /*- The shift applied to the denominator -*/
@@ -725,11 +730,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- primary basis set -*/
     options.add_str("BASIS","");
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
-    /* The number of virtual orbitals to freeze in correlated computations -*/
-    options.add_int("FREEZE_VIRT",0);
 
     /*- The type of guess orbitals -*/
     options.add_str("GUESS", "CORE", "CORE GWH SAD READ");
@@ -737,10 +737,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- The maximum number of iterations -*/
     options.add_int("MAXITER", 100);
-    /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
-    options.add("DOCC", new ArrayType());
-    /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
-    options.add("SOCC", new ArrayType());
 
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
@@ -959,11 +955,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DO_ALL_TEI", false);
     /*- -*/
     options.add_bool("TPDM_ADD_REF", false);
-//    options.add_bool("FREEZE_CORE", true);
-//#warning TransQT freeze_core keyword type was changed.
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
     /*- -*/
     options.add_bool("DELETE_RESTR_DOCC", true);
     /*- -*/
@@ -980,20 +971,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("IVO", false);
     /*- -*/
     options.add("MOORDER", new ArrayType());
-    /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
-    options.add("DOCC", new ArrayType());
-    /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
-    options.add("SOCC", new ArrayType());
-
-    /*- An array containing the number of frozen doubly-occupied orbitals per 
-    irrep (these are not excited in a CI, nor can they be optimized in 
-    MCSCF -*/
-    options.add("FROZEN_DOCC", new ArrayType());
-
-    /*- An array containing the number of frozen unoccupied orbitals per 
-    irrep (these are not populated in a CI, nor can they be optimized in 
-    MCSCF -*/
-    options.add("FROZEN_UOCC", new ArrayType());
 
     /*- An array giving the number of orbitals per irrep for RAS1 !expert -*/
     options.add("RAS1", new ArrayType());
@@ -1019,10 +996,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   }
   if(name == "CUSP"|| options.read_globals()){
-    /*- -*/
-    options.add("FROZEN_DOCC", new ArrayType());
-    /*- -*/
-    options.add("FROZEN_UOCC", new ArrayType());
   }
   if(name == "CCSORT"|| options.read_globals()) {
     /*- -*/
@@ -1043,10 +1016,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_METHOD","WERNER");
     /*- -*/
     options.add_str("LOCAL_WEAKP","NONE");
-//#warning CCSort freeze_core keyword type was changed.
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
     /*- -*/
     options.add_str("LOCAL_PAIRDEF","BP");
     /*- -*/
@@ -1145,10 +1114,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL_FILTER_SINGLES",true);
     /*- -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-//#warning CCLambda freeze_core keyword type was changed.
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
     /*- -*/
     options.add_str("LOCAL_PAIRDEF","");
     /*- -*/
@@ -1261,14 +1226,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
     /*- -*/
     options.add_bool("QED_DARWIN", false);
-//#warning OEProp freeze_core keyword type was changed.
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
-    /*- An array containing the number of doubly-occupied orbitals per irrep (in Cotton order) -*/
-    options.add("DOCC", new ArrayType());
-    /*- An array containing the number of singly-occupied orbitals per irrep (in Cotton order) -*/
-    options.add("SOCC", new ArrayType());
   }
   if(name == "CCHBAR"|| options.read_globals()) {
     /*- -*/
@@ -1315,10 +1272,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("LOCAL_FILER_SINGLES", false);
     /*- -*/
     options.add_double("LOCAL_CPHF_CUTOFF",0.10);
-//#warning CCREsponse freeze_core keyword type was changed.
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
     /*- -*/
     options.add_str("LOCAL_PAIRDEF","NONE");
     /*- -*/
@@ -1360,17 +1313,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
    options.add_bool("CANONICAL",false);
     /*- -*/
-   options.add("FROZEN_DOCC", new ArrayType());
-    /*- -*/
-   options.add("FROZEN_UOCC", new ArrayType());
-    /*- -*/
    options.add("RESTRICTED_DOCC", new ArrayType());
     /*- -*/
    options.add("RESTRICTED_UOCC", new ArrayType());
-    /*- -*/
-   options.add("DOCC", new ArrayType());
-    /*- -*/
-   options.add("SOCC", new ArrayType());
     /*- -*/
    options.add("DOCC_VIRT", new ArrayType());
   }
@@ -1431,10 +1376,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("INTERNAL_ROTATIONS",true);
     /*- -*/
     options.add_bool("FORCE_TWOCON",false);
-    /*- The number of doubly occupied orbitals, per irrep -*/
-    options.add("DOCC", new ArrayType());
-    /*- The number of singly occupied orbitals, per irrep -*/
-    options.add("SOCC", new ArrayType());
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
     /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
@@ -1492,10 +1433,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("LOCAL_WEAKP", "NONE", "NONE NEGLECT MP2");
     //options.add_int("LOCAL_FILTER_SINGLES", 1);
     options.add_double("LOCAL_CPHF_CUTOFF", 0.10);
-//#warning CCEnergy freeze_core keyword type was changed.
-    /*- The scope of core orbitals to freeze in later correlated computations -*/
-    options.add_str("FREEZE_CORE","FALSE", \
-      "FALSE TRUE SMALL LARGE");
     /*- -*/
     options.add_str("LOCAL_PAIRDEF", "BP", "BP RESPONSE");
     /*- -*/
@@ -1870,8 +1807,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("MP2_CCSD_METHOD","II","I IA II");
     /*- The number of frozen occupied orbitals per irrep (same as FROZEN_DOCC)-*/
     options.add("CORR_FOCC", new ArrayType());
-    /*- The number of frozen occupied orbitals per irrep (same as CORR_DOCC)-*/
-    options.add("FROZEN_DOCC", new ArrayType());
     /*- The number of doubly occupied orbitals per irrep (same as RESTRICTED_DOCC)-*/
     options.add("CORR_DOCC", new ArrayType());
     /*- The number of doubly occupied orbitals per irrep (same as CORR_DOCC) -*/
@@ -1884,8 +1819,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTIVE", new ArrayType());
     /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
     options.add("CORR_FVIR", new ArrayType());
-    /*- The number of frozen virtual orbitals (same as CORR_FVIR) -*/
-    options.add("FROZEN_UOCC", new ArrayType());
 //    /*- The number of -*/
 //    options.add("ACTIVE_DOCC", new ArrayType());
   }

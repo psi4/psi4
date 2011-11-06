@@ -139,7 +139,7 @@ void get_params(Options &options)
   local.filter_singles = options.get_bool("LOCAL_FILER_SINGLES");
 
   local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
-  local.freeze_core = options.get_str("FREEZE_CORE");
+  local.freeze_core = options.get_str("FREEZE_DOCC");
 
   if(options["LOCAL_PAIRDEF"].has_changed()){
     local.pairdef = options.get_str("LOCAL_PAIRDEF");
