@@ -1,0 +1,240 @@
+\newcommand{\hiddensubsubsection}[1]{
+\stepcounter{subsubsection}
+\subsubsection*{\arabic{section}.\arabic{subsection}.\arabic{subsubsection}\hspace{1em}{#1}}}
+
+\section{Python Wrappers\label{pywrappers}}
+
+The Python foundations of the \PSIfour driver and Psithon syntax permit
+many commonly performed post-processing procedures to be integrated into
+the \PSIfour suite.
+The wrappers below can be called in combination according to Table \ref{table:wrapintercalls}
+below, so that \texttt{db(opt(cbs(energy()))} is permitted while
+\texttt{db(cp(energy()))} is not.
+Note that the options documented for these wrappers are placed in the command 
+that calls the wrapper, not in the set globals or set locals options section.
+Table not yet validated for calls with cp().
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Permitted intercalls between python wrappers.} \label{table:wrapintercalls}
+\parsep 10pt
+\begin{center}
+\begin{tabular}{lccccc}
+\hline\hline
+Caller & \multicolumn{5}{c}{Callee} \\
+\cline{2-6}
+& \texttt{cp} & \texttt{db} & \texttt{opt} & \texttt{cbs} & \texttt{energy} \\
+\hline
+\texttt{cp}     &    & -- & Y  & Y  & Y \\
+\texttt{db}     & -- &    & Y  & Y  & Y \\
+\texttt{opt}    & -- & -- &    & Y  & Y \\
+\texttt{cbs}    & -- & -- & -- &    & Y \\
+\texttt{energy} & -- & -- & -- & -- &   \\
+\hline\hline
+\end{tabular}
+\end{center}
+\end{footnotesize}
+\end{table}
+
+%\subsection{\texttt{counterpoise\_correct}\label{wrapcp}}
+%\subsection{\texttt{database}\label{wrapdb}}
+\subsection{\texttt{complete\_basis\_set}\label{wrapcbs}}
+
+The \texttt{complete\_basis\_set()} or \texttt{cbs()} wrapper defines a
+multistage energy method from combinations of basis set extrapolations 
+and delta corrections and condenses the components into a minimum
+number of calculations.
+
+As represented in the equation below, a CBS energy method is defined in 
+four sequential stages (scf, corl, delta, delta2) covering treatment of 
+the reference total energy, the correlation energy, a delta 
+correction to the correlation energy, and a second delta correction. 
+Each is activated by a stage\_wfn keyword and is only allowed if all 
+preceding stages are already active.
+
+At present, \texttt{WFN} and \texttt{BASIS} options in the global and 
+local options sections are not considered by this wrapper.
+
+%$E_{tot}^{\infty} = E_{\text{tot}}^{\text{SCF}/\infty} + E_{\text{tot}}^{\text{SCF}}\rvert_{\infty} + E_{\text{corl}}^{corl\_wfn/\infty} + 
+%\underbrace{\delta_{delta\_wfn\_lesser}^{delta\_wfn}}_{E_{\text{corl}}^{delta\_wfn} - E_{\text{corl}}^{delta\_wfn\_lesser}}$
+%
+%$E_{tot}^{\text{CBS}} = 
+%   E_{\text{tot}}^{\text{SCF}}\rvert_{scf\_basis} + 
+%   E_{\text{corl}}^{corl\_wfn}\rvert_{corl\_basis} + 
+%   \underbrace{\delta_{delta\_wfn\_lesser}^{delta\_wfn}\rvert_{delta\_basis}}_{E_{\text{corl}}^{delta\_wfn}\rvert_{delta\_basis} - 
+%       E_{\text{corl}}^{delta\_wfn\_lesser}\rvert_{delta\_basis}} +
+%   \underbrace{\delta2_{delta2\_wfn\_lesser}^{delta2\_wfn}\rvert_{delta2\_basis}}_{E_{\text{corl}}^{delta2\_wfn}\rvert_{delta2\_basis} - 
+%       E_{\text{corl}}^{delta2\_wfn\_lesser}\rvert_{delta2\_basis}}$
+
+%\begin{align*}
+%E_{\text{tot}}^{\text{CBS}} = & \; E_{\text{tot}}^{\text{SCF}}\rvert_{scf\_basis} \; + \\
+%    & E_{\text{corl}}^{corl\_wfn}\rvert_{corl\_basis} \; + \\
+%    & \left. \delta_{delta\_wfn\_lesser}^{delta\_wfn}\rvert_{delta\_basis} \; + 
+%        \qquad \right \} E_{\text{corl}}^{delta\_wfn}\rvert_{delta\_basis} - E_{\text{corl}}^{delta\_wfn\_lesser}\rvert_{delta\_basis} \\
+%    & \left. \delta_{delta2\_wfn\_lesser}^{delta2\_wfn}\rvert_{delta2\_basis} 
+%        \qquad \right \} E_{\text{corl}}^{delta2\_wfn}\rvert_{delta2\_basis} - E_{\text{corl}}^{delta2\_wfn\_lesser}\rvert_{delta2\_basis}
+%\end{align*}
+
+%\begin{align*}
+%E_{\text{tot}}^{\text{CBS}} = \;
+%    & \mathcal{F}_{scf\_scheme} \left(E_{\text{tot}}^{\text{SCF}}\rvert_{scf\_basis}\right) \; + \\
+%    & \mathcal{F}_{corl\_scheme} \left(E_{\text{corl}}^{corl\_wfn}\rvert_{corl\_basis}\right) \; + \\
+%    & \left. \delta_{delta\_wfn\_lesser}^{delta\_wfn} \; + 
+%        \qquad \right \} \mathcal{F}_{delta\_scheme} \left(E_{\text{corl}}^{delta\_wfn}\rvert_{delta\_basis}\right) - 
+%        \mathcal{F}_{delta\_scheme} \left(E_{\text{corl}}^{delta\_wfn\_lesser}\rvert_{delta\_basis}\right) \\
+%    & \left. \delta_{delta2\_wfn\_lesser}^{delta2\_wfn}
+%        \qquad \right \} \mathcal{F}_{delta2\_scheme} \left(E_{\text{corl}}^{delta2\_wfn}\rvert_{delta2\_basis}\right) - 
+%        \mathcal{F}_{delta2\_scheme} \left(E_{\text{corl}}^{delta2\_wfn\_lesser}\rvert_{delta2\_basis}\right)
+%\end{align*}
+
+%\begin{align*}
+%E_{total}^{\text{CBS}} = \;
+%    & \mathcal{F}_{\texttt{SCF\_SCHEME}} \left(E_{total}^{\text{SCF}}\rvert_{\texttt{SCF\_BASIS}}\right) \; + \\
+%    & \mathcal{F}_{\texttt{CORL\_SCHEME}} \left(E_{corl}^{\texttt{CORL\_WFN}}\rvert_{\texttt{CORL\_BASIS}}\right) \; + \\
+%    & \left. \delta_{\texttt{DELTA\_WFN\_LESSER}}^{\texttt{DELTA\_WFN}} \; + 
+%        \qquad \right \} \mathcal{F}_{\texttt{DELTA\_SCHEME}} \left(E_{corl}^{\texttt{DELTA\_WFN}}\rvert_{\texttt{DELTA\_BASIS}}\right) - 
+%        \mathcal{F}_{\texttt{DELTA\_SCHEME}} \left(E_{corl}^{\texttt{DELTA\_WFN\_LESSER}}\rvert_{\texttt{DELTA\_BASIS}}\right) \\
+%    & \left. \delta_{\texttt{DELTA2\_WFN\_LESSER}}^{\texttt{DELTA2\_WFN}}
+%        \qquad \right \} \mathcal{F}_{\texttt{DELTA2\_SCHEME}} \left(E_{corl}^{\texttt{DELTA2\_WFN}}\rvert_{\texttt{DELTA2\_BASIS}}\right) - 
+%        \mathcal{F}_{\texttt{DELTA2\_SCHEME}} \left(E_{corl}^{\texttt{DELTA2\_WFN\_LESSER}}\rvert_{\texttt{DELTA2\_BASIS}}\right)
+%\end{align*}
+
+\begin{align*}
+E_{total}^{\text{CBS}} = \;
+    & \mathcal{F}_{\texttt{SCF\_SCHEME}} \left(E_{total,\; \text{SCF}}^{\texttt{SCF\_BASIS}}\right) \; + \\
+    & \mathcal{F}_{\texttt{CORL\_SCHEME}} \left(E_{corl,\; \texttt{CORL\_WFN}}^{\texttt{CORL\_BASIS}}\right) \; + \\
+    & \left. \delta_{\texttt{DELTA\_WFN\_LESSER}}^{\texttt{DELTA\_WFN}} \; + 
+        \qquad \right \} \mathcal{F}_{\texttt{DELTA\_SCHEME}} \left(E_{corl,\; \texttt{DELTA\_WFN}}^{\texttt{DELTA\_BASIS}}\right) - 
+        \mathcal{F}_{\texttt{DELTA\_SCHEME}} \left(E_{corl,\; \texttt{DELTA\_WFN\_LESSER}}^{\texttt{DELTA\_BASIS}}\right) \\
+    & \left. \delta_{\texttt{DELTA2\_WFN\_LESSER}}^{\texttt{DELTA2\_WFN}}
+        \qquad \right \} \mathcal{F}_{\texttt{DELTA2\_SCHEME}} \left(E_{corl,\; \texttt{DELTA2\_WFN}}^{\texttt{DELTA2\_BASIS}}\right) - 
+        \mathcal{F}_{\texttt{DELTA2\_SCHEME}} \left(E_{corl,\; \texttt{DELTA2\_WFN\_LESSER}}^{\texttt{DELTA2\_BASIS}}\right)
+\end{align*}
+
+\hiddensubsubsection{Required Arguments}
+
+The \texttt{cbs()} wrapper has no particular required arguments. 
+However, at a minimum, the SCF basis (for a SCF wavefunction) or the wavefunction 
+and basis (for a correlated wavefunction) must be specified. 
+The following keyword combinations will launch some basic calculations.
+\begin{Snippet}
+cbs(name='mp2', corl_basis='cc-pVDZ')
+cbs(scf_basis='cc-pVDZ')
+cbs(corl_wfn='mp2', corl_basis='cc-pVDZ')
+cbs(corl_wfn='mp2', corl_basis='cc-pV[DT]Z', corl_scheme=corl_xtpl_helgaker_2)
+cbs(scf_basis='cc-pV[DTQ]Z', scf_scheme=scf_xtpl_helgaker_3)
+\end{Snippet}
+
+\hiddensubsubsection{Optional Arguments}
+
+Default values for keywords are indicated by italics.
+
+\begin{itemize}
+\item Energy Methods
+
+The presence of a stage\_wfn keyword is the indicator to incorporate (and check for 
+stage\_basis and stage\_scheme keywords) and compute that stage in defining the CBS energy.
+\begin{itemize}
+\item[] \texttt{CORL\_WFN} = \texttt{`mp2'} \textbar\; \texttt{`ccsd(t)'} \textbar\; etc. \\
+Indicates the energy method for which the correlation energy is to be obtained. Can also be specified with `name'.
+\item[] \texttt{DELTA\_WFN} = \texttt{`ccsd'} \textbar\; \texttt{`ccsd(t)'} \textbar\; etc. \\
+Indicates the (superior) energy method for which a delta correction to the correlation energy is to be obtained.
+\item[] \texttt{DELTA\_WFN\_LESSER} = \texttt{\textit{`mp2'}} \textbar\; \texttt{`ccsd'} \textbar\; etc. \\
+Indicates the inferior energy method for which a delta correction to the correlation energy is to be obtained.
+\item[] \texttt{DELTA2\_WFN} = \texttt{`ccsd'} \textbar\; \texttt{`ccsd(t)'} \textbar\; etc. \\
+Indicates the (superior) energy method for which a second delta correction to the correlation energy is to be obtained.
+\item[] \texttt{DELTA2\_WFN\_LESSER} = \texttt{\textit{`mp2'}} \textbar\; \texttt{`ccsd'} \textbar\; etc. \\
+Indicates the inferior energy method for which a second delta correction to the correlation energy is to be obtained.
+\end{itemize}
+
+\item Basis Sets
+
+Currently, the basis sets set in set globals have no influence in a cbs() calculation.
+\begin{itemize}
+\item[] \texttt{SCF\_BASIS} = \texttt{\textit{CORL\_BASIS}} \textbar\; \texttt{`cc-pV[TQ]Z'} \textbar\; \texttt{`jun-cc-pv[tq5]z'} \textbar\; \texttt{`6-31G'} \textbar\; etc. \\
+Indicates the sequence of basis sets employed for the reference energy. If any correlation method is specified, 'scf\_basis' can default to 'corl\_basis'.
+\item[] \texttt{CORL\_BASIS} = \texttt{`cc-pV[TQ]Z'} \textbar\; \texttt{`jun-cc-pv[tq5]z'} \textbar\; \texttt{`6-31G'} \textbar\; etc. \\
+Indicates the sequence of basis sets employed for the correlation energy.
+\item[] \texttt{DELTA\_BASIS} = \texttt{`cc-pV[TQ]Z'} \textbar\; \texttt{`jun-cc-pv[tq5]z'} \textbar\; \texttt{`6-31G'} \textbar\; etc. \\
+Indicates the sequence of basis sets employed for the delta correction to the correlation energy.
+\item[] \texttt{DELTA2\_BASIS} = \texttt{`cc-pV[TQ]Z'} \textbar\; \texttt{`jun-cc-pv[tq5]z'} \textbar\; \texttt{`6-31G'} \textbar\; etc. \\
+Indicates the sequence of basis sets employed for second delta correction to the correlation energy.
+\end{itemize}
+
+\item Schemes
+
+Transformations of the energy through basis set extrapolation for each stage of the CBS definition. 
+A complaint is generated if number of basis sets in stage\_basis does not exactly satisfy 
+requirements of stage\_scheme. 
+An exception is the default, \texttt{`highest\_1'}, which uses the best basis set available without error.
+\begin{itemize}
+\item[] \texttt{SCF\_SCHEME} = \texttt{\textit{`highest\_1'}} \textbar\; \texttt{`scf\_xtpl\_helgaker\_3'} \\
+Indicates the basis set extrapolation scheme to be applied to the reference energy.
+\item[] \texttt{CORL\_SCHEME} = \texttt{\textit{`highest\_1'}} \textbar\; \texttt{`corl\_xtpl\_helgaker\_2'} \\
+Indicates the basis set extrapolation scheme to be applied to the correlation energy.
+\item[] \texttt{DELTA\_SCHEME} = \texttt{\textit{`highest\_1'}} \textbar\; \texttt{`corl\_xtpl\_helgaker\_2'} \\
+Indicates the basis set extrapolation scheme to be applied to the delta correction to the correlation energy.
+\item[] \texttt{DELTA2\_SCHEME} = \texttt{\textit{`highest\_1'}} \textbar\; \texttt{`corl\_xtpl\_helgaker\_2'} \\
+Indicates the basis set extrapolation scheme to be applied to the second delta correction to the correlation energy.
+\end{itemize}
+\end{itemize}
+
+\hiddensubsubsection{Examples}
+
+\begin{Snippet}
+# DT extrapolated mp2 correlation energy atop a T reference 
+cbs(corl_wfn='mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2) 
+
+# a DT extrapolated coupled-cluster correction atop a TQ extrapolated mp2 correlation energy atop a Q reference 
+cbs(corl_wfn='mp2',corl_basis='aug-cc-pv[tq]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='aug-cc-pv[dt]z',delta_scheme=corl_xtpl_helgaker_2) 
+
+# cbs() coupled with database() 
+database('mp2','BASIC',subset=['h2o','nh3'],symm='on',func=cbs,corl_basis='cc-pV[tq]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='sto-3g')
+\end{Snippet}
+
+\hiddensubsubsection{Extrapolation Schemes}
+
+\begin{itemize}
+
+\item \texttt{corl\_xtpl\_helgaker\_2}\cite{Halkier:1998:CBS}
+
+   \begin{itemize}
+   \item[] Suitable Methods: correlated
+   \item[] Suitable Basis Sets: two adjacent $\zeta$-level bases
+   \item[] Governing Equation: $E_{corl}^{X} = E_{corl}^{\infty} + \beta X^{-3}$
+   %# Solution equation in LaTeX:  $E_{corl}^{\infty} = \frac{E_{corl}^{X} X^3 - E_{corl}^{X-1} (X-1)^3}{X^3 - (X-1)^3}$
+   %# Solution equation in LaTeX:  $\beta = \frac{E_{corl}^{X} - E_{corl}^{X-1}}{X^{-3} - (X-1)^{-3}}$
+   \item[] Optional Arguments: none
+   \end{itemize}
+
+\item \texttt{scf\_xtpl\_helgaker\_2}
+
+   \begin{itemize}
+   \item[] Suitable Methods:
+   \item[] Suitable Basis Sets:
+   \item[] Governing Equation:
+   \item[] Optional Arguments:
+   \end{itemize}
+
+\item \texttt{highest\_1}
+
+   \begin{itemize}
+   \item[] Suitable Methods: all
+   \item[] Suitable Basis Sets: single basis or highest $\zeta$ among array of bases
+   \item[] Governing Equation: $E_{total}^{X} = E_{total}^{X}$
+   \item[] Optional Arguments: none
+   \end{itemize}
+
+\end{itemize}
+
+%\item \texttt{scf\_xtpl\_helgaker\_2}
+%
+%   \begin{itemize}
+%   \item[] Suitable Methods:
+%   \item[] Suitable Basis Sets:
+%   \item[] Governing Equation:
+%   \item[] Optional Arguments:
+%   \end{itemize}
+
+
+
