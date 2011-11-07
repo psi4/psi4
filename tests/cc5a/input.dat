@@ -24,7 +24,7 @@ set globals {
   wfn         ccsd_t
   docc        [10, 1, 4, 3]
   basis       STO-3G
-  freeze_docc true
+  freeze_core true
   convergence 10
   e_converge  10
   d_converge  10
