@@ -18,6 +18,7 @@ class CCEnergyWavefunction : public Wavefunction
 public:
     CCEnergyWavefunction(boost::shared_ptr<Wavefunction> reference_wavefunction, Options &options);
     virtual ~CCEnergyWavefunction();
+    virtual bool restricted() const { return reference_wavefunction_->restricted(); }
 
     double compute_energy();
 
