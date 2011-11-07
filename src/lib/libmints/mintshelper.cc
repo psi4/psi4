@@ -593,6 +593,21 @@ std::vector<SharedMatrix > MintsHelper::ao_angular_momentum()
     return angmom;
 }
 
+std::vector<SharedMatrix > MintsHelper::ao_dipole()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> dipole;
+
+    dipole.push_back(SharedMatrix(new Matrix("AO Mux", basisset_->nbf(), basisset_->nbf())));
+    dipole.push_back(SharedMatrix(new Matrix("AO Muy", basisset_->nbf(), basisset_->nbf())));
+    dipole.push_back(SharedMatrix(new Matrix("AO Muz", basisset_->nbf(), basisset_->nbf())));
+
+    boost::shared_ptr<OneBodyAOInt> ints(integral_->ao_dipole());
+    ints->compute(dipole);
+
+    return dipole;
+}
+
 std::vector<SharedMatrix > MintsHelper::ao_nabla()
 {
     // Create a vector of matrices with the proper symmetry
