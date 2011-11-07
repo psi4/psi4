@@ -17,7 +17,7 @@ set globals {
   multp 2
   reference rohf
   basis 6-31G**
-  freeze_core true
+  freeze_docc true
 }
 
 set detci {
