@@ -654,7 +654,7 @@ void HF::form_Shalf()
 
 void HF::compute_fcpi()
 {
-    // FROZEN_DOCC takes precedence, FREEZE_DOCC directive has second priority
+    // FROZEN_DOCC takes precedence, FREEZE_CORE directive has second priority
     if (options_["FROZEN_DOCC"].has_changed()) {
         if (options_["FROZEN_DOCC"].size() != epsilon_a_->nirrep()) {
             throw PSIEXCEPTION("The FROZEN_DOCC array has the wrong dimensions");
@@ -664,7 +664,7 @@ void HF::compute_fcpi()
         }
     } else {
         
-        int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_DOCC"));
+        int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;
         for (int h=0; h<epsilon_a_->nirrep(); ++h) {

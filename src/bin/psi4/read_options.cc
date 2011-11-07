@@ -46,7 +46,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The scope of core orbitals to freeze in later correlated computations
       FROZEN_DOCC trumps this option  -*/
-  options.add_str("FREEZE_DOCC","FALSE", \
+  options.add_str("FREEZE_CORE","FALSE", \
     "FALSE TRUE SMALL LARGE");
   /*- The scope of virtual orbitals to freeze in later correlated computations
       FROZEN_UOCC trumps this option -*/
