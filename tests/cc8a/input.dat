@@ -18,7 +18,7 @@ set globals {
   basis cc-pVDZ
   docc [4, 0, 1, 1]
   socc [1, 0, 0, 0]
-  freeze_docc true
+  freeze_core true
   
   convergence 10
   e_converge 10

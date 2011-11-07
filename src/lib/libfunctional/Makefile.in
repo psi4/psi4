@@ -22,3 +22,8 @@ ifneq ($(DODEPEND),no)
 include $(LIBOBJ:%.o=%.d)
 endif
 
+wB97_functional.o:
+	$(CXX) $(CXXDBG) -O0 $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)
+
+wB97X_functional.o:
+	$(CXX) $(CXXDBG) -O0 $(CXXDEF) $(CXXOTH) $(PSICPPFLAGS) -c $< $(OUTPUT_OPTION)

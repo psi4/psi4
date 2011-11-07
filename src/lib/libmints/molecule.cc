@@ -528,7 +528,7 @@ int Molecule::nfrozen_core(const std::string& depth)
 {
     string local = depth;
     if (depth.empty())
-        local = Process::environment.options.get_str("FREEZE_DOCC");
+        local = Process::environment.options.get_str("FREEZE_CORE");
 
     if (local == "FALSE") {
         return 0;

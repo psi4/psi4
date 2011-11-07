@@ -101,7 +101,7 @@ void get_params(Options &options)
   //if(params.dertype == 3) local.filter_singles = 0;
 
   local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
-  std::string freeze_docc = options.get_str("FREEZE_DOCC");
+  std::string freeze_docc = options.get_str("FREEZE_CORE");
   local.freeze_core = (freeze_docc != "FALSE");
 
   local.pairdef = options.get_str("LOCAL_PAIRDEF");
