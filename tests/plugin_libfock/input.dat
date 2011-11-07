@@ -3,8 +3,6 @@ molecule h2o {
 O    0.000000000000    0.000000000000   -0.075791843589
 H    0.866811828967    0.000000000000    0.601435779270
 H   -0.866811828967    0.000000000000    0.601435779270
-no_reorient
-no_com
 symmetry c1
 }
 
@@ -15,9 +13,9 @@ set {
 print 2
 scf_type direct
 basis sto-3g 
-do_triplets false
+#explicit_hamiltonian true
 solver_n_root 10 
-solver_n_guess 10 
+solver_n_guess 10
 solver_min_subspace 10 
 solver_max_subspace 20 
 solver_maxiter 2
@@ -26,5 +24,18 @@ solver_maxiter 2
 energy('scf')
 set module rcis
 plugin('./plugin_libfock.so')
-set module rtdhf
+
+clean()
+
+molecule h2o {
+0 1
+O    0.000000000000    0.000000000000   -0.075791843589
+H    0.866811828967    0.000000000000    0.601435779270
+H   -0.866811828967    0.000000000000    0.601435779270
+}
+
+set basis sto-3g 
+energy('scf')
+set module rcis
 plugin('./plugin_libfock.so')
+

@@ -875,7 +875,7 @@ void DLRSolver::subspaceExpansion()
         }
     }
 
-    // Add signinficant vectors
+    // Add significant vectors
     for (int i = 0; i < d_.size(); ++i) {
         if (sig[i]) {
             b_.push_back(d_[i]);
@@ -1265,6 +1265,7 @@ void DLRXSolver::subspaceDiagonalization()
         std::sort(pass1.begin(), pass1.end());
         
         // Maybe we need a more advanced algorithm to resolve degeneracies?
+        // Methinks we should explicitly lock the - subspace coefs based on the + subspace coefs
         std::vector<int> pass2;
         for (int i = 0; i < n; i++) {
             if (lrp[pass1[2*i].second] < lrp[pass1[2*i+1].second]) {
@@ -1549,24 +1550,42 @@ void DLRXSolver::subspaceExpansion()
             } 
         }
 
-        // TODO
-        // Remove the self-projection of d on d from d
+        // Remove low-norm vectors
+        std::vector<int> sigfigs;
         for (int i = 0; i < d_.size(); ++i) {
             double* dip = d_[i]->pointer(h);
-            double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
+            double r_ii = sqrt(C_DDOT(2L*dimension,dip,1,dip,1));
             C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
-            for (int j = i + 1; j < d_.size(); ++j) {
-                double* djp = d_[j]->pointer(h);
-                double r_ij = C_DDOT(dimension,djp,1,dip,1);
-                C_DAXPY(dimension,-r_ij,dip,1,djp,1);
-            }  
             if (r_ii > norm_) {
                 sig[i] = sig[i] | true;    
+                sigfigs.push_back(i);
             } 
         }
+
+        int neff = sigfigs.size();
+        SharedMatrix S(new Matrix("Overlap", 2*neff,2*neff));
+
+        // TODO build S
+
+        S->power(-1.0/2.0,0.0);
+
+        std::vector<SharedVector> dtemp;
+        for (int i = 0; i < neff; i++) {
+            dtemp.push_back(SharedVector(new Vector("d temp", 2L*dimension)));
+        }
+
+        // TODO build contributions to d2
+        for (int i = 0; i < neff; i++) {
+                
+        }
+        
+        for (int i = 0; i < neff; i++) {
+            ::memcpy((void*) d_[sigfigs[i]]->pointer(h), (void*) dtemp[i]->pointer(), sizeof(double)*2L*dimension); 
+        }
+
     }
 
-    // Add signinficant vectors
+    // Add significant vectors
     for (int i = 0; i < d_.size(); ++i) {
         if (sig[i]) {
             b_.push_back(d_[i]);

@@ -2,6 +2,7 @@
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
+#include <physconst.h>
 #include "apps.h"
 #include "jk.h"
 #include "hamiltonian.h"
@@ -103,6 +104,7 @@ void RBase::common_init()
         eps_aocc_->print();
         eps_avir_->print();
         eps_fvir_->print();
+        AO2USO_->print();
     }
 }
 
@@ -256,7 +258,7 @@ void RCIS::print_wavefunctions()
         int    m = get<2>(states[i]);
         int    h = get<3>(states[i]);
         fprintf(outfile,"  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
-            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, 27.211396132 * E);
+            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, _hartree2ev * E);
     }
     fprintf(outfile,"  -----------------------------------------------\n");
     fprintf(outfile, "\n");
@@ -326,7 +328,7 @@ void RCIS::print_amplitudes()
 
             if (!naocc || !navir) continue;
 
-            double** Tp = T->pointer();
+            double** Tp = T->pointer(h2);
 
             for (int i2 = 0; i2 < naocc; i2++) {
                 for (int a2 = 0; a2 < navir; a2++) {
@@ -786,6 +788,15 @@ double RCIS::compute_energy()
 
         if (print_) {
             fprintf(outfile, "  ==> Singlets <==\n\n");
+        }
+
+        if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
+            SharedMatrix H1 = H->explicit_hamiltonian();
+            H1->print();
+            H->set_singlet(false);
+            SharedMatrix H3 = H->explicit_hamiltonian();
+            H3->print();
+            return 0.0;
         }
 
         solver->solve();
