@@ -151,7 +151,7 @@ void get_params(Options& options)
   local.cphf_cutoff = options.get_double("LOCAL_CPHF_CUTOFF");
 
   local.freeze_core = "FALSE";
-  local.freeze_core = options.get_str("FREEZE_DOCC");
+  local.freeze_core = options.get_str("FREEZE_CORE");
 
   if(options["LOCAL_PAIRDEF"].has_changed()){
     local.pairdef = options.get_str("LOCAL_PAIRDEF");

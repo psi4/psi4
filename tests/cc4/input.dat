@@ -16,7 +16,7 @@ set {
    wfn ccsd_t
    docc [3, 0, 0, 0]
    basis cc-pvqz
-   freeze_docc true
+   freeze_core true
    dertype none
    convergence 10
    e_converge 10
