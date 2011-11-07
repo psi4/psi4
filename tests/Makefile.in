@@ -9,7 +9,7 @@ cc_subdirs = cc1 cc2 cc4 cc5a cc8 cc8a cc9 cc18 cc19 cc28 cc29 cc30 cc31 cc52 #c
 
 rb_subdirs = 
 
-ci_subdirs = cisd-sp fci-h2o
+ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2
 
 dcft_subdirs = dcft1 dcft2 dcft3 dcft4 #dcft5
 
