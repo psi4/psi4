@@ -325,7 +325,6 @@ Total time:
 *** tstart() called on ds9
 *** at Tue Nov  1 17:51:35 2011
 
-Need to specify FOLLOW_VECTOR = ((alphastr_i betastr_i) coeff_i ... )
 
 *******************************************************
                        D E T C I  

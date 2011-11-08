@@ -23,33 +23,19 @@ namespace psi {
 
 size_t counter;
 
-class CorrelatedRestrictedFunctor
+class CorrelatedFunctor
 {
-    boost::shared_ptr<Wavefunction> wavefunction_;
-
-    dpdbuf4 G_;
+    dpdbuf4 *G_;
 public:
     int nthread;
     std::vector<SharedVector> result;
 
-    CorrelatedRestrictedFunctor() {
+    CorrelatedFunctor() {
         throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
-//TODO make this take an already-opened DPD buffer instead`
-    CorrelatedRestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave, boost::shared_ptr<IntegralTransform> ints_transform)
-        : wavefunction_(wave)
+    CorrelatedFunctor(SharedVector results, dpdbuf4 *G)
+        : G_(G)
     {
-        _default_psio_lib_->open(PSIF_TPDM_HALFTRANS, PSIO_OPEN_OLD);
-        dpd_buf4_init(&G_, PSIF_TPDM_HALFTRANS, 0,
-                      ints_transform->DPD_ID("[n,n]"), ints_transform->DPD_ID("[n,n]"),
-                      ints_transform->DPD_ID("[n>=n]+"), ints_transform->DPD_ID("[n>=n]+"),
-                      0, "SO Basis TPDM (nn|nn)");
-
-        for (int h=0; h<wavefunction_->nirrep(); ++h) {
-            dpd_buf4_mat_irrep_init(&G_, h);
-            dpd_buf4_mat_irrep_rd(&G_, h);
-        }
-
         nthread = Communicator::world->nthread();
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
@@ -57,12 +43,6 @@ public:
     }
 
     void finalize() {
-        for (int h=0; h<wavefunction_->nirrep(); ++h)
-            dpd_buf4_mat_irrep_close(&G_, h);
-
-        dpd_buf4_close(&G_);
-        _default_psio_lib_->close(PSIF_TPDM_HALFTRANS, 1);
-
         // Do summation over threads
         for (int i=1; i<nthread; ++i) {
             result[0]->add(result[i]);
@@ -94,10 +74,10 @@ public:
         if (pabs == rabs && qabs == sabs)
             prefactor *= 0.5;
 
-        int PQ = G_.params->colidx[pabs][qabs];   // pabs, qabs?
-        int RS = G_.params->rowidx[rabs][sabs];   // pabs, qabs?
+        int PQ = G_->params->colidx[pabs][qabs];   // pabs, qabs?
+        int RS = G_->params->rowidx[rabs][sabs];   // pabs, qabs?
 
-        result[thread]->add(salc, prefactor * G_.matrix[h][PQ][RS] * value);
+        result[thread]->add(salc, prefactor * G_->matrix[h][PQ][RS] * value);
     }
 };
 
@@ -315,7 +295,6 @@ public:
 
 class ScfUnrestrictedFunctor
 {
-    boost::shared_ptr<Wavefunction> wavefunction_;
     SharedMatrix Da_;
     SharedMatrix Db_;
 
@@ -325,10 +304,9 @@ public:
 
     ScfUnrestrictedFunctor() { throw PSIEXCEPTION("ScfUnrestrictedFunctor(): Oh come on!!!"); }
 
-    ScfUnrestrictedFunctor(SharedVector results, boost::shared_ptr<Wavefunction> wave)
-        : wavefunction_(wave),
-          Da_(wave->Da()),
-          Db_(wave->Db())
+    ScfUnrestrictedFunctor(SharedVector results, boost::shared_ptr<Matrix> Da, boost::shared_ptr<Matrix> Db)
+        : Da_(Da),
+          Db_(Db)
     {
         nthread = Communicator::world->nthread();
         result.push_back(results);
@@ -390,7 +368,7 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
              char needed_irreps,
              bool project_out_translations,
              bool project_out_rotations)
-    : wavefunction_(wave),
+    : wfn_(wave),
       cdsalcs_(wave->molecule(),
           wave->matrix_factory(),
           needed_irreps,
@@ -451,220 +429,168 @@ SharedMatrix Deriv::compute()
     double *X_ref_cont      = 0;
     double *D_ref_cont      = 0;
 
-    boost::shared_ptr<IntegralTransform> ints_transform;
-    if(!wavefunction_)
+    if(!wfn_)
         throw("In Deriv: The wavefunction passed in is empty!");
 
-    // Whether the SCF contribution is separate from the correlated terms
-    bool reference_separate = false;
+    // Try and grab the OPDM and lagrangian from the wavefunction
+    SharedMatrix Da = wfn_->Da();
+    SharedMatrix Db = wfn_->Db();
+    SharedMatrix X = wfn_->X();
 
-    if(!wavefunction_->reference_wavefunction()){
+    // The current wavefunction's reference wavefunction, NULL for SCF/DFT
+    boost::shared_ptr<Wavefunction> ref_wfn = wfn_->reference_wavefunction();
+    // Whether the SCF contribution is separate from the correlated terms
+    bool reference_separate = (Da || Db || X) && ref_wfn;
+
+    if(!ref_wfn){
         // If wavefunction doesn't have a reference wavefunction
         // itself, we assume that we're dealing with SCF.
-        if (wavefunction_->restricted()){
-            SharedMatrix D = wavefunction_->Da();
-            SharedMatrix X = wavefunction_->X();
+        if (!Da || !Db)
+            throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
+        if (!X)
+            throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
 
-            // Check the incoming matrices.
-            if (!D)
-                throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
-            if (!X)
-                throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
-
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = 2.0 * D->vector_dot(h_deriv[cd]);
-                Dcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
-            }
-
-            fprintf(outfile, "\n");
-
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = -2.0 * X->vector_dot(s_deriv[cd]);
-                Xcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d lagrangian contribution:   %+lf\n", cd, temp);
-            }
-
-            fprintf(outfile, "\n");
-
-            ScfRestrictedFunctor functor(TPDMcont_vector, D);
+        if(wfn_->restricted()){
+            // We need to account for spin integration
+            X->scale(2.0);
+            ScfRestrictedFunctor functor(TPDMcont_vector, Da);
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
-
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                TPDMcont[cd] = TPDMcont_vector->get(cd);
-                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
-            }
-            fflush(outfile);
-        }
-        else /* unrestricted */ {
-            SharedMatrix Da = wavefunction_->Da();
-            SharedMatrix Db = wavefunction_->Db();
-            SharedMatrix X = wavefunction_->X();
-
-            // Check the incoming matrices.
-            if (!Da || !Db)
-                throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
-            if (!X)
-                throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
-
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = Da->vector_dot(h_deriv[cd]);
-                temp       += Db->vector_dot(h_deriv[cd]);
-                Dcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
-            }
-
-            fprintf(outfile, "\n");
-
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = X->vector_dot(s_deriv[cd]);
-                Xcont[cd] = -temp;
-                fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
-            }
-
-            fprintf(outfile, "\n");
-
-            ScfUnrestrictedFunctor functor(TPDMcont_vector, wavefunction_);
+        }else{
+            ScfUnrestrictedFunctor functor(TPDMcont_vector, Da, Db);
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
-
-            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                TPDMcont[cd] = TPDMcont_vector->get(cd);
-                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
-            }
-            fflush(outfile);
         }
-    }
-    else { /* correlated */
+        for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+            TPDMcont[cd] = TPDMcont_vector->get(cd);
+            fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+        }
+        fflush(outfile);
+    } else {
         /* For correlated calculations, we have two different types.  The older CI/CC codes dump the
            Lagrangian to disk and density matrices to disk, and these both include the reference
            contributions.  The newer codes hold these quantities as member variables, but these contain only
            the correlated part.  The reference contributions must be harvested from the reference_wavefunction
            member.  If density fitting was used, we don't want to compute two electron contributions here*/
-        if (wavefunction_->restricted()) {
-            if(!wavefunction_->density_fitted()){
-                // We only need to transform the TPDM if conventional integrals were used
-                // Define the MO orbital space we need
-                vector<boost::shared_ptr<MOSpace> > spaces;
-                spaces.push_back(MOSpace::all);
-                // Uses a different constructor of IntegralTransform.
-                ints_transform = boost::shared_ptr<IntegralTransform>( new IntegralTransform(wavefunction_,
-                                                 spaces,
-                                                 IntegralTransform::Restricted, // Transformation type
-                                                 IntegralTransform::DPDOnly,    // Output buffer
-                                                 IntegralTransform::QTOrder,    // MO ordering
-                                                 IntegralTransform::None));      // Frozen orbitals?
-                dpd_set_default(ints_transform->get_dpd_id());
-                ints_transform->backtransform_density();
-            }
+        if(wfn_->density_fitted()){
+            X_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
+            D_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
+            TPDM_ref_cont_vector = SharedVector(new Vector(1, &ncd));
+            X_ref_cont           = X_ref_cont_vector->pointer();
+            D_ref_cont           = D_ref_cont_vector->pointer();
+            TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();
+            x_ref_contr_         = factory_->create_shared_matrix("Reference Lagrangian contribution to gradient", natom_, 3);
+            opdm_ref_contr_      = factory_->create_shared_matrix("Reference one-electron contribution to gradient", natom_, 3);
+            tpdm_ref_contr_      = factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
 
-            SharedMatrix D;
-            SharedMatrix D_ref;
-            bool have_D = false;
-            bool have_X = false;
-            if(wavefunction_->Da()){
-                have_D = true;
-                D = wavefunction_->Da();
-            }else{
-                D = factory_->create_shared_matrix("SO-basis OPDM");
-                D->load(_default_psio_lib_, PSIF_AO_OPDM);
-            }
-
-            SharedMatrix X;
-            SharedMatrix X_ref;
-            if(wavefunction_->Lagrangian()){
-                have_X = true;
-                X = wavefunction_->Lagrangian();
-            }else{
-                X = factory_->create_shared_matrix("SO-basis Lagrangian");
-                X->load(_default_psio_lib_, PSIF_AO_OPDM);
-            }
-
-            // Right now, if X and D are defined by wavefunction, it means that the reference
-            // and correlated terms are separate.
-            reference_separate = have_D && have_X;
-
-            // Check the incoming matrices.
-            if (!D)
-                throw PSIEXCEPTION("Deriv::compute: Unable to access OPDM.");
-            if (!X)
-                throw PSIEXCEPTION("Deriv::compute: Unable to access Lagrangian.");
-
-            if(reference_separate){
-                X_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
-                D_ref_cont_vector    = SharedVector(new Vector(1, &ncd));
-                TPDM_ref_cont_vector = SharedVector(new Vector(1, &ncd));
-                X_ref_cont           = X_ref_cont_vector->pointer();
-                D_ref_cont           = D_ref_cont_vector->pointer();
-                TPDM_ref_cont        = TPDM_ref_cont_vector->pointer();
-                x_ref_contr_         = factory_->create_shared_matrix("Reference Lagrangian contribution to gradient", natom_, 3);
-                opdm_ref_contr_      = factory_->create_shared_matrix("Reference one-electron contribution to gradient", natom_, 3);
-                tpdm_ref_contr_      = factory_->create_shared_matrix("Reference two-electron contribution to gradient", natom_, 3);
-
-                // Here we need to extract the reference contributions
-                X_ref = wavefunction_->reference_wavefunction()->Lagrangian();
-                D_ref = wavefunction_->reference_wavefunction()->Da();
-                if (!D_ref)
-                    throw PSIEXCEPTION("Deriv::compute: Unable to access reference OPDM.");
-                if (!X_ref)
-                    throw PSIEXCEPTION("Deriv::compute: Unable to access reference Lagrangian.");
-
-                for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                    double temp = 2.0 * D_ref->vector_dot(h_deriv[cd]);
-                    D_ref_cont[cd] = temp;
-                    fprintf(outfile, "    SALC #%d Reference One-electron contribution: %+lf\n", cd, temp);
-                }
-
-                fprintf(outfile, "\n");
-
-                for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                    double temp = -2.0 * X_ref->vector_dot(s_deriv[cd]);
-                    X_ref_cont[cd] = temp;
-                    fprintf(outfile, "    SALC #%d Reference Lagrangian contribution:   %+lf\n", cd, temp);
-                }
-
-                fprintf(outfile, "\n");
-            }
-
+            // Here we need to extract the reference contributions
+            SharedMatrix X_ref  = ref_wfn->Lagrangian();
+            SharedMatrix Da_ref = ref_wfn->Da();
+            SharedMatrix Db_ref = ref_wfn->Db();
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = D->vector_dot(h_deriv[cd]);
-                Dcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
+                double temp = Da_ref->vector_dot(h_deriv[cd]);
+                temp += Db_ref->vector_dot(h_deriv[cd]);
+                D_ref_cont[cd] = temp;
+                fprintf(outfile, "    SALC #%d Reference One-electron contribution: %+lf\n", cd, temp);
             }
-
             fprintf(outfile, "\n");
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                double temp = -0.5 * X->vector_dot(s_deriv[cd]);
-                Xcont[cd] = temp;
-                fprintf(outfile, "    SALC #%d lagrangian contribution:   %+lf\n", cd, temp);
+                double temp = -X_ref->vector_dot(s_deriv[cd]);
+                X_ref_cont[cd] = temp;
+                fprintf(outfile, "    SALC #%d Reference Lagrangian contribution:   %+lf\n", cd, temp);
             }
-
             fprintf(outfile, "\n");
 
-            if(reference_separate){
-                ScfRestrictedFunctor scf_functor(TPDM_ref_cont_vector, D_ref);
-                ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, D, D_ref);
+            if(wfn_->restricted()){
+                // In the restricted case, the alpha D is really the total D.  Undefine the beta one, so
+                // that the one-electron contribution, computed below, is correct.
+                Db = factory_->create_shared_matrix("NULL");
+                ScfRestrictedFunctor scf_functor(TPDM_ref_cont_vector, Da_ref);
+                ScfAndDfCorrelationRestrictedFunctor functor(Dcont_vector, scf_functor, Da, Da_ref);
                 so_eri.compute_integrals_deriv1(functor);
                 functor.finalize();
-                tpdm_contr_ = wavefunction_->tpdm_gradient_contribution();
+                tpdm_contr_ = wfn_->tpdm_gradient_contribution();
             }else{
-                CorrelatedRestrictedFunctor functor(TPDMcont_vector, wavefunction_, ints_transform);
-                so_eri.compute_integrals_deriv1(functor);
-                functor.finalize();
-
-                for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
-                    TPDMcont[cd] = TPDMcont_vector->get(cd);
-                    fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
-                }
-                fflush(outfile);
+                throw PSIEXCEPTION("Unrestricted DF gradient not implemented yet.");
             }
-        } else {
-            throw PSIEXCEPTION("Unrestricted correlated gradients not implemented.");
+        }else{
+            /* This is the part of the code reached from CI/CC.  In this case, the total (alpha+beta) density
+               matrices are backtransformed to the SO basis and dumped to disk.  The one particle terms are
+               just combined into the alpha density (with the beta OPDM set to zero, so that the one-particle
+               terms below are computed correctly.  The two-particle terms are computed the same in both cases
+               as all spin cases have been collapsed into the a single SO TPDM. */
+
+            // Dial up an integral tranformation object to backtransform the OPDM, TPDM and Lagrangian
+            vector<boost::shared_ptr<MOSpace> > spaces;
+            spaces.push_back(MOSpace::all);
+            boost::shared_ptr<IntegralTransform> ints_transform = boost::shared_ptr<IntegralTransform>(
+                        new IntegralTransform(wfn_,
+                                              spaces,
+                                              wfn_->restricted() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
+                                              IntegralTransform::DPDOnly,    // Output buffer
+                                              IntegralTransform::QTOrder,    // MO ordering
+                                              IntegralTransform::None));      // Frozen orbitals?
+            dpd_set_default(ints_transform->get_dpd_id());
+            ints_transform->backtransform_density();
+
+            Da = factory_->create_shared_matrix("SO-basis OPDM");
+            Db = factory_->create_shared_matrix("NULL");
+            Da->load(_default_psio_lib_, PSIF_AO_OPDM);
+            X = factory_->create_shared_matrix("SO-basis Lagrangian");
+            X->load(_default_psio_lib_, PSIF_AO_OPDM);
+            // The CC lagrangian is defined with a different prefactor to SCF / MP2, so we account for it here
+            X->scale(0.5);
+
+            _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
+            dpdbuf4 G;
+            dpd_buf4_init(&G, PSIF_AO_TPDM, 0,
+                          ints_transform->DPD_ID("[n,n]"), ints_transform->DPD_ID("[n,n]"),
+                          ints_transform->DPD_ID("[n>=n]+"), ints_transform->DPD_ID("[n>=n]+"),
+                          0, "SO Basis TPDM (nn|nn)");
+            for (int h=0; h<wfn_->nirrep(); ++h) {
+                dpd_buf4_mat_irrep_init(&G, h);
+                dpd_buf4_mat_irrep_rd(&G, h);
+            }
+            CorrelatedFunctor functor(TPDMcont_vector, &G);
+            so_eri.compute_integrals_deriv1(functor);
+            functor.finalize();
+            for (int h=0; h<wfn_->nirrep(); ++h)
+                dpd_buf4_mat_irrep_close(&G, h);
+            dpd_buf4_close(&G);
+            _default_psio_lib_->close(PSIF_AO_TPDM, 1);
+
+            for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+                TPDMcont[cd] = TPDMcont_vector->get(cd);
+                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+            }
+            fflush(outfile);
         }
+
+        fprintf(outfile, "\n");
     }
+
+    // Now, compute the one electron terms
+    for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+        double temp = Dcont[cd]; // In the df case, the HxP2 terms are already in here
+        temp += Da->vector_dot(h_deriv[cd]);
+        temp += Db->vector_dot(h_deriv[cd]);
+        Dcont[cd] = temp;
+        fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
+    }
+    fprintf(outfile, "\n");
+
+    for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
+        double temp = X->vector_dot(s_deriv[cd]);
+        Xcont[cd] = -temp;
+        fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
+    }
+    fprintf(outfile, "\n");
+
+
+
+
 
     // Transform the SALCs back to cartesian space
     SharedMatrix st = cdsalcs_.matrix();
@@ -760,7 +686,7 @@ SharedMatrix Deriv::compute()
         SharedMatrix scf_gradient(gradient_->clone());
         scf_gradient->set_name("Reference Gradient");
         scf_gradient->print_atom_vector();
-        wavefunction_->reference_wavefunction()->set_gradient(scf_gradient);
+        wfn_->reference_wavefunction()->set_gradient(scf_gradient);
         corr->print_atom_vector();
     }
     gradient_->add(corr);
@@ -769,7 +695,7 @@ SharedMatrix Deriv::compute()
     gradient_->print_atom_vector();
 
     // Save the gradient to the wavefunction so that optking can optimize with it
-    wavefunction_->set_gradient(gradient_);
+    wfn_->set_gradient(gradient_);
 
     return gradient_;
 }

@@ -29,6 +29,8 @@ read_options(std::string name, Options &options){
         /*- Do triplet states? Default true
          -*/
         options.add_bool("DO_TRIPLETS", true);
+        /*- Do explicit hamiltonian only? -*/
+        options.add_bool("EXPLICIT_HAMILTONIAN", false);
         /*- Minimum singles amplitude to print in 
             CIS analysis
          -*/

@@ -2,6 +2,7 @@
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
+#include <physconst.h>
 #include "apps.h"
 #include "jk.h"
 #include "hamiltonian.h"
@@ -103,6 +104,7 @@ void RBase::common_init()
         eps_aocc_->print();
         eps_avir_->print();
         eps_fvir_->print();
+        AO2USO_->print();
     }
 }
 
@@ -256,7 +258,7 @@ void RCIS::print_wavefunctions()
         int    m = get<2>(states[i]);
         int    h = get<3>(states[i]);
         fprintf(outfile,"  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
-            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, 27.211396132 * E);
+            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, _hartree2ev * E);
     }
     fprintf(outfile,"  -----------------------------------------------\n");
     fprintf(outfile, "\n");
@@ -326,7 +328,7 @@ void RCIS::print_amplitudes()
 
             if (!naocc || !navir) continue;
 
-            double** Tp = T->pointer();
+            double** Tp = T->pointer(h2);
 
             for (int i2 = 0; i2 < naocc; i2++) {
                 for (int a2 = 0; a2 < navir; a2++) {
@@ -788,20 +790,43 @@ double RCIS::compute_energy()
             fprintf(outfile, "  ==> Singlets <==\n\n");
         }
 
-        solver->solve();
+        if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
+            SharedMatrix H1 = H->explicit_hamiltonian();
+            H1->print();
+            H->set_singlet(false);
+            SharedMatrix H3 = H->explicit_hamiltonian();
+            H3->print();
+            return 0.0;
+        }
 
+        solver->solve();
+        
+        // Unpack 
         const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
         const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();    
-        singlets_.clear();
-        E_singlets_.clear();
-        for (int N = 0; N < singlets.size(); ++N) {
+
+        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::pair<double, int> > eval_temp;
+
+        for (int N = 0, index = 0; N < singlets.size(); ++N) {
             std::vector<SharedMatrix > t = H->unpack(singlets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= singlets[N]->dimpi()[h]) continue; 
-                singlets_.push_back(t[h]);
-                E_singlets_.push_back(E_singlets[N][h]);
+                evec_temp.push_back(t[h]);
+                eval_temp.push_back(make_pair(E_singlets[N][h], index));
+                index++;
             }
+        }
+
+        std::sort(eval_temp.begin(), eval_temp.end());
+
+        singlets_.clear();
+        E_singlets_.clear();
+
+        for (int i = 0; i < eval_temp.size(); i++) {
+            E_singlets_.push_back(eval_temp[i].first);
+            singlets_.push_back(evec_temp[eval_temp[i].second]);
         }
     }
     
@@ -819,17 +844,31 @@ double RCIS::compute_energy()
         
         const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
         const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
-        triplets_.clear();
-        E_triplets_.clear();
-        for (int N = 0; N < triplets.size(); ++N) {
+
+        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::pair<double, int> > eval_temp;
+
+        for (int N = 0, index = 0; N < triplets.size(); ++N) {
             std::vector<SharedMatrix > t = H->unpack(triplets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= triplets[N]->dimpi()[h]) continue; 
-                triplets_.push_back(t[h]);
-                E_triplets_.push_back(E_triplets[N][h]);
+                evec_temp.push_back(t[h]);
+                eval_temp.push_back(make_pair(E_triplets[N][h], index));
+                index++;
             }
         }
+
+        std::sort(eval_temp.begin(), eval_temp.end());
+
+        triplets_.clear();
+        E_triplets_.clear();
+
+        for (int i = 0; i < eval_temp.size(); i++) {
+            E_triplets_.push_back(eval_temp[i].first);
+            triplets_.push_back(evec_temp[eval_temp[i].second]);
+        }
+
     }
     
     // Finalize solver/JK memory

@@ -11,19 +11,31 @@ plugin_load('./plugin_libfock.so')
 set {
 #debug 1
 print 2
-scf_type df
+scf_type direct
 basis sto-3g 
-ri_basis_scf aug-cc-pvdz-jkfit
-do_triplets false
-fitting_algorithm 1
-solver_n_root 4
-solver_n_guess 4 
-solver_min_subspace 20
-solver_max_subspace 25 
+#explicit_hamiltonian true
+solver_n_root 10 
+solver_n_guess 10
+solver_min_subspace 10 
+solver_max_subspace 20 
+solver_maxiter 2
 }
 
 energy('scf')
-set fitting_algorithm 0
+set module rcis
 plugin('./plugin_libfock.so')
-set fitting_algorithm 1
+
+clean()
+
+molecule h2o {
+0 1
+O    0.000000000000    0.000000000000   -0.075791843589
+H    0.866811828967    0.000000000000    0.601435779270
+H   -0.866811828967    0.000000000000    0.601435779270
+}
+
+set basis sto-3g 
+energy('scf')
+set module rcis
 plugin('./plugin_libfock.so')
+

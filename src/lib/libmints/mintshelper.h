@@ -136,6 +136,8 @@ public:
     SharedMatrix ao_kinetic();
     /// AO Potential Integrals
     SharedMatrix ao_potential();
+    /// Vector AO Dipole Integrals
+    std::vector<SharedMatrix> ao_dipole();
     /// Vector AO Angular Momentum Integrals
     std::vector<SharedMatrix > ao_angular_momentum();
     /// Vector AO Nabla Integrals
