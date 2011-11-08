@@ -27,7 +27,7 @@ thisenergy = energy('detci')
 
 # 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF energy"),     8, "SCF energy") #TEST
+compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
