@@ -654,34 +654,60 @@ void HF::form_Shalf()
 
 void HF::compute_fcpi()
 {
-    int nfzc = molecule_->nfrozen_core();
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-        frzcpi_[h] = 0;
-    }
-    sort(pairs.begin(),pairs.end());
+    // FROZEN_DOCC takes precedence, FREEZE_CORE directive has second priority
+    if (options_["FROZEN_DOCC"].has_changed()) {
+        if (options_["FROZEN_DOCC"].size() != epsilon_a_->nirrep()) {
+            throw PSIEXCEPTION("The FROZEN_DOCC array has the wrong dimensions");
+        } 
+        for (int h = 0; h < epsilon_a_->nirrep(); h++) {
+            frzcpi_[h] = options_["FROZEN_DOCC"][h].to_integer();
+        }
+    } else {
+        
+        int nfzc = 0;
+        if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
+            nfzc = options_.get_int("NUM_FROZEN_DOCC"); 
+        } else {
+            nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
+        }
+        // Print out orbital energies.
+        std::vector<std::pair<double, int> > pairs;
+        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+                pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+            frzcpi_[h] = 0;
+        }
+        sort(pairs.begin(),pairs.end());
 
-    for (int i=0; i<nfzc; ++i)
-        frzcpi_[pairs[i].second]++;
+        for (int i=0; i<nfzc; ++i)
+            frzcpi_[pairs[i].second]++;
+    }
 }
 
 void HF::compute_fvpi()
 {
-    int nfzv = options_.get_int("FREEZE_VIRT");
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-        frzvpi_[h] = 0;
-    }
-    sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
+    // FROZEN_UOCC takes precedence, FREEZE_UOCC directive has second priority
+    if (options_["FROZEN_UOCC"].has_changed()) {
+        if (options_["FROZEN_UOCC"].size() != epsilon_a_->nirrep()) {
+            throw PSIEXCEPTION("The FROZEN_UOCC array has the wrong dimensions");
+        } 
+        for (int h = 0; h < epsilon_a_->nirrep(); h++) {
+            frzvpi_[h] = options_["FROZEN_UOCC"][h].to_integer();
+        }
+    } else {
+        int nfzv = options_.get_int("NUM_FROZEN_UOCC");
+        // Print out orbital energies.
+        std::vector<std::pair<double, int> > pairs;
+        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+                pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+            frzvpi_[h] = 0;
+        }
+        sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
 
-    for (int i=0; i<nfzv; ++i)
-        frzvpi_[pairs[i].second]++;
+        for (int i=0; i<nfzv; ++i)
+            frzvpi_[pairs[i].second]++;
+    }
 }
 
 void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
@@ -1071,9 +1097,13 @@ void HF::dump_to_checkpoint()
     chkpt_->wt_openpi(soccpi_);
     chkpt_->wt_phase_check(0);
     chkpt_->wt_sopi(nsopi_);
-    // Figure out frozen core orbitals
-    int nfzc = molecule_->nfrozen_core();
-    int nfzv = options_.get_int("FREEZE_VIRT");
+    // Figure out total number of frozen docc/uocc orbitals
+    int nfzc = 0;
+    int nfzv = 0;
+    for (int h = 0; h < nirrep_; h++) {
+        nfzc += frzcpi_[h];
+        nfzv += frzvpi_[h];
+    }
     chkpt_->wt_nfzc(nfzc);
     chkpt_->wt_nfzv(nfzv);
     // These were computed by HF::finalize()

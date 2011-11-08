@@ -348,8 +348,8 @@ void JK::USO2AO()
 	    if (!nsol || !nsor) continue;
 	    double** Ulp = AO2USO_->pointer(h);
 	    double** Urp = AO2USO_->pointer(h^symm);
+	    double** DSOp = D_[N]->pointer(h^symm);
 	    double** DAOp = D_ao_[N]->pointer();
-	    double** DSOp = D_[N]->pointer(h);
 	    C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
 	    C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
 	}
@@ -383,7 +383,7 @@ void JK::USO2AO()
 	    if (nso == 0 || ncolspi == 0) continue;
 	    double** Up = AO2USO_->pointer(h);
 	    double** CAOp = C_right_ao_[N]->pointer();
-	    double** CSOp = C_right_[N]->pointer(h^symm);
+	    double** CSOp = C_right_[N]->pointer(h);
 	    C_DGEMM('N','N',nao,ncolspi,nso,1.0,Up[0],nso,CSOp[0],ncolspi,0.0,&CAOp[0][offset],ncol);
 	    offset += ncolspi;
 	}

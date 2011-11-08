@@ -369,7 +369,7 @@ void title(void)
    fprintf(outfile,"                       D E T C I  \n");
    fprintf(outfile,"\n");
    fprintf(outfile,"                   C. David Sherrill\n") ;
-   fprintf(outfile,"                  Matt L. Leininger\n") ;
+   fprintf(outfile,"                   Matt L. Leininger\n") ;
    fprintf(outfile,"                     18 June 1999\n") ;
    fprintf(outfile,"*******************************************************\n");
    fprintf(outfile,"\n\n\n");
@@ -1023,7 +1023,9 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    chkpt_wt_etot(tval);
    Process::environment.globals["CURRENT ENERGY"] = tval;
    Process::environment.globals["CI TOTAL ENERGY"] = tval;
-   Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo.eref;
+   // eref seems wrong for open shells so replace it with escf below
+   // until I fix it ---CDS 11/5/11
+   Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo.escf;
 
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
@@ -1037,7 +1039,9 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
      std::stringstream s2;
      s2 << "CI ROOT " << i << " CORRELATION ENERGY";
-     Process::environment.globals[s2.str()] = tval - CalcInfo.eref;
+     // eref seems wrong for open shells so replace it with escf below
+     // until I fix it ---CDS 11/5/11
+     Process::environment.globals[s2.str()] = tval - CalcInfo.escf;
    }
 
    if (Parameters.average_num > 1) {
@@ -1047,8 +1051,10 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
                (efzc+nucrep+evals[Parameters.average_states[i]]);
      chkpt_wt_e_labeled("State averaged energy",tval);
      Process::environment.globals["CI STATE-AVERAGED TOTAL ENERGY"] = tval;
+     // eref seems wrong for open shells so replace it with escf below
+     // until I fix it ---CDS 11/5/11
      Process::environment.globals["CI STATE-AVERAGED CORRELATION ENERGY"] =
-       tval - CalcInfo.eref;
+       tval - CalcInfo.escf;
    }
  
    chkpt_close();
@@ -1145,31 +1151,33 @@ void form_opdm(void)
   int i, j, natom;
   double *zvals, **geom;
 
-  if (Parameters.dipmom) {
-    chkpt_init(PSIO_OPEN_OLD);
-    natom = chkpt_rd_natom();
-    zvals = chkpt_rd_zvals();
-    geom = chkpt_rd_geom();
-    chkpt_close();
+  Process::environment.molecule()->print();
 
-    fprintf(outfile, "   Cartesian Coordinates of Nuclear Centers (a.u.)\n\n");
-    fprintf(outfile,
-       "   Center           X                   Y                    Z\n");
-    fprintf(outfile,
-       "   ------   -----------------   -----------------   -----------------\n");
+  //if (Parameters.dipmom) {
+  //  chkpt_init(PSIO_OPEN_OLD);
+  //  natom = chkpt_rd_natom();
+  //  zvals = chkpt_rd_zvals();
+  //  geom = chkpt_rd_geom();
+  //  chkpt_close();
 
-    for(i=0;i<natom;i++){
-      fprintf(outfile,"   %4s ",atomic_labels[(int) zvals[i]]); 
-      for(j=0;j<3;j++)
-        fprintf(outfile,"   %17.12lf",geom[i][j]);
-      fprintf(outfile,"\n");
-    }
-    fprintf(outfile,"\n");
-    fflush(outfile);
+  //  fprintf(outfile, "   Cartesian Coordinates of Nuclear Centers (a.u.)\n\n");
+  //  fprintf(outfile,
+  //     "   Center           X                   Y                    Z\n");
+  //  fprintf(outfile,
+  //     "   ------   -----------------   -----------------   -----------------\n");
 
-    free(zvals);
-    free_block(geom);
-  }
+  //  for(i=0;i<natom;i++){
+  //    fprintf(outfile,"   %4s ",atomic_labels[(int) zvals[i]]); 
+  //    for(j=0;j<3;j++)
+  //      fprintf(outfile,"   %17.12lf",geom[i][j]);
+  //    fprintf(outfile,"\n");
+  //  }
+  //  fprintf(outfile,"\n");
+  //  fflush(outfile);
+
+  //  free(zvals);
+  //  free_block(geom);
+  //}
 
   /* don't need Parameters.root since it writes all opdm's */
   if (Parameters.transdens) {

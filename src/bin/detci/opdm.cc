@@ -10,6 +10,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <libmints/mints.h>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libchkpt/chkpt.h>
@@ -200,13 +201,16 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     chkpt_wt_etot(overlap);
     Process::environment.globals["CURRENT ENERGY"] = overlap;
     Process::environment.globals["CI TOTAL ENERGY"] = overlap;
+    // eref is wrong for open-shells so replace it with escf until
+    // I fix it, CDS 11/5/11
     Process::environment.globals["CI CORRELATION ENERGY"] = overlap - 
-      CalcInfo.eref;
+      CalcInfo.escf;
     chkpt_close();
   
   }
     
   /* if getting (transition) moments, need to read in the AO dip mom ints */
+  /*
   if (dipmom) {
     mux_mo = block_matrix(CalcInfo.nmo, CalcInfo.nmo);
     muy_mo = block_matrix(CalcInfo.nmo, CalcInfo.nmo);
@@ -214,6 +218,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     get_mo_dipmom_ints(mux_mo, muy_mo, muz_mo);
     get_dipmom_nuc(&mux_n, &muy_n, &muz_n);
   } 
+  */
 
   for (; Jroot<Parameters.num_roots; Jroot++) {
    
@@ -489,9 +494,10 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     }
 
     /* get the (transition) dipole moment */
+    /*
     if (dipmom) {
       mu_x = 0.0; mu_y = 0.0; mu_z = 0.0; 
-      /* should I be including nuclear contributions to TM's ??? */
+      // should I be including nuclear contributions to TM's
       for (i=0; i<populated_orbs; i++) {
         for (j=0; j<populated_orbs; j++) {
           mu_x += mux_mo[i][j] * onepdm[i][j];
@@ -525,7 +531,55 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
        
       if (Jroot + 1 == Parameters.num_roots) fprintf(outfile, "\n");
     }
+    */
 
+    /* Call OEProp here for each root opdm */
+    boost::shared_ptr<OEProp> oe(new OEProp());
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction(); 
+    boost::shared_ptr<Matrix> Ca = wfn->Ca(); 
+    oe->set_Ca_so(Ca);
+    std::stringstream ss;
+    ss << "CI " << (transdens ? "TDM" : "OPDM");
+    if (transdens) {
+        ss << " Root " << (Iroot+1) << " -> Root " << (Jroot+1); 
+    } else {
+        ss << " Root " << (Iroot+1); 
+    }
+    SharedMatrix opdm(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
+
+    int mo_offset = 0;
+    for (int h = 0; h < Ca->nirrep(); h++) {
+        int nmo = CalcInfo.orbs_per_irr[irrep];
+        int nfv = CalcInfo.frozen_uocc[irrep];
+        int nmor = nmo - nfv;
+        //int nmo = Ca->colspi()[h];
+        //int nmor = nmo - ref->frzvpi()[h];
+        if (!nmo || !nmor) continue;
+        double** opdmp = opdm->pointer(h);
+        
+        for (int i=0; i<CalcInfo.orbs_per_irr[h]-
+                    CalcInfo.frozen_uocc[h]; i++) {
+          for (int j=0; j<CalcInfo.orbs_per_irr[h]-
+                    CalcInfo.frozen_uocc[h]; j++) {
+            int i_ci = CalcInfo.reorder[i+mo_offset];
+            int j_ci = CalcInfo.reorder[j+mo_offset]; 
+            opdmp[i][j] = onepdm[i_ci][j_ci];
+          } 
+        }
+        mo_offset += CalcInfo.orbs_per_irr[h];
+    }
+
+    //Ca->print();
+    //opdm->print();
+    
+    // Scale by 0.5 for Rob
+    opdm->scale(0.5);
+
+    oe->set_Da_mo(opdm);
+    oe->add("DIPOLE");
+    oe->add("QUADRUPOLE");
+    oe->add("MULLIKEN_CHARGES");
+    oe->compute();
 
     fflush(outfile);
     if (!transdens) Iroot++;
@@ -546,11 +600,13 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
   free(buffer1);
   free(buffer2);
 
+  /*
   if (dipmom) {
     free_block(mux_mo);
     free_block(muy_mo);
     free_block(muz_mo);
   }
+  */
 
   if (transdens) {
     fflush(outfile);

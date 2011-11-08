@@ -133,11 +133,12 @@ IntegralTransform::backtransform_tpdm_restricted()
         fflush(outfile);
     }
 
+    _psio->open(PSIF_AO_TPDM, PSIO_OPEN_NEW);
 
     dpd_buf4_init(&J, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[n>=n]+"), DPD_ID("[A,A]"),
                   DPD_ID("[n>=n]+"), DPD_ID("[A>=A]+"), 0, "Half-Transformed TPDM (nn|AA)");
 
-    dpd_buf4_init(&K, PSIF_TPDM_HALFTRANS, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
+    dpd_buf4_init(&K, PSIF_AO_TPDM, 0, DPD_ID("[n>=n]+"), DPD_ID("[n,n]"),
                   DPD_ID("[n>=n]+"), DPD_ID("[n>=n]+"), 0, "SO Basis TPDM (nn|nn)");
 
     for(int h=0; h < _nirreps; h++) {
@@ -206,6 +207,7 @@ IntegralTransform::backtransform_tpdm_restricted()
     free_block(TMP);
 
     _psio->close(PSIF_TPDM_HALFTRANS, _keepHtTpdm);
+    _psio->close(PSIF_AO_TPDM, 1);
 
     // Hand DPD control back to the user
     dpd_set_default(currentActiveDPD);

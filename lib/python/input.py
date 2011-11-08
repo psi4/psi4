@@ -247,12 +247,6 @@ def process_extern_block(matchobj):
         elif charge_re.match(line):
             addType = "Charge"
             continue
-        elif dip_re.match(line):
-            addType = "Dipole"
-            continue
-        elif quad_re.match(line):
-            addType = "Quadrupole"
-            continue
         else:
             if addType == "None":
                 print "First Line of extern section must be a type of potential (charge, dipole, etc)\n"
@@ -264,21 +258,6 @@ def process_extern_block(matchobj):
                     bad_option_syntax(line)
                 extern += "%s%s.addCharge(%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
                      mobj.group(2), mobj.group(3), mobj.group(4))
-
-            if addType == "Dipole":
-                mobj = d_re.match(line)
-                if not mobj:
-                    bad_option_syntax(line)
-                extern += "%s%s.addDipole(%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
-                     mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6))
-
-            if addType == "Quadrupole":
-                mobj = q_re.match(line)
-                if not mobj:
-                    bad_option_syntax(line)
-                extern += "%s%s.addQuadrupole(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
-                     mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6), mobj.group(7),\
-                     mobj.group(8),mobj.group(9))
 
     return extern
 

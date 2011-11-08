@@ -5,12 +5,16 @@
 #include "hamiltonian.h"
 #include "jk.h"
 
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
+
 #include <sstream>
 
 #ifdef _OPENMP
 #include <omp.h>
 #endif
 
+using namespace boost;
 using namespace std;
 using namespace psi;
 
@@ -685,18 +689,8 @@ void DLRSolver::eigenvals()
     E_.resize(nroot_);
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
-        double** ap = a_->pointer(h);
-        double** Gp = G_->pointer(h);
-
         for (int k = 0; k < nroot_; k++) {
-            double E = 0.0;
-            for (int i = 0; i < b_.size(); i++) {
-                for (int j = 0; j < nsubspace_; j++) {
-                    E += ap[i][k] * ap[j][k] * Gp[i][j];    
-                }
-            }
-            E_[k].push_back(E);
+            E_[k].push_back(l_->get(h,k));
         }
     }
 
@@ -738,15 +732,15 @@ void DLRSolver::residuals()
             double** ap = a_->pointer(h);
             double*  lp = l_->pointer(h);
             double*  rp = r_[k]->pointer(h);
+            double*  cp = c_[k]->pointer(h);
 
             ::memset((void*)rp, '\0', dimension*sizeof(double));
 
             for (int i = 0; i < b_.size(); i++) {
-                double* bp = b_[i]->pointer(h);
                 double* sp = s_[i]->pointer(h);
                 C_DAXPY(dimension,ap[i][k],sp,1,rp,1);
-                C_DAXPY(dimension,-lp[k]*ap[i][k],bp,1,rp,1);
             }       
+            C_DAXPY(dimension,-lp[k],cp,1,rp,1);
 
             R2 += C_DDOT(dimension,rp,1,rp,1);
 
@@ -881,7 +875,7 @@ void DLRSolver::subspaceExpansion()
         }
     }
 
-    // Add signinficant vectors
+    // Add significant vectors
     for (int i = 0; i < d_.size(); ++i) {
         if (sig[i]) {
             b_.push_back(d_[i]);
@@ -1095,8 +1089,7 @@ void DLRXSolver::finalize()
     s_.clear();
     G_.reset();
     a_.reset();
-    l_real_.reset();
-    l_imag_.reset();
+    l_.reset();
     r_.clear();
     n_.clear();
     d_.clear();
@@ -1218,18 +1211,29 @@ void DLRXSolver::subspaceDiagonalization()
         npi[h] = 2*n;
     }
 
+    // Reals
     a_ = SharedMatrix (new Matrix("Subspace Right Eigenvectors",nirrep,npi,npi));
-    l_real_ = boost::shared_ptr<Vector> (new Vector("Real Subspace Eigenvalues",nirrep,npi));
-    l_imag_ = boost::shared_ptr<Vector> (new Vector("Imaginary Subspace Eigenvalues",nirrep,npi));
+    l_ = boost::shared_ptr<Vector> (new Vector("Real Subspace Eigenvalues",nirrep,npi));
     delete[] npi;
+
+    // Temps
+    SharedMatrix G2(G_->clone());
+    SharedMatrix atemp(new Matrix("Right Eigenvectors Temp", 2*n, 2*n)); 
+    SharedVector lrtemp(new Vector("Real Eigenvalue Temp", 2*n)); 
+    SharedVector litemp(new Vector("Imaginary Eigenvalue Temp", 2*n)); 
 
     // Diagonalize
     for (int h = 0; h < nirrep; h++) {
         
-        double** gp = G_->pointer(h);        
-        double** ap = a_->pointer(h);        
-        double* lrp = l_real_->pointer(h);        
-        double* lip = l_imag_->pointer(h);        
+        // Temp pointers
+        double** gp = G2->pointer(h);        
+        double** ap = atemp->pointer();        
+        double* lrp = lrtemp->pointer();        
+        double* lip = litemp->pointer();        
+
+        // Real pointers
+        double** evecp = a_->pointer(h);
+        double*  evalp = l_->pointer(h);
 
         // Workspace (never throws)
         int info;
@@ -1240,6 +1244,10 @@ void DLRXSolver::subspaceDiagonalization()
         info = C_DGEEV('V','N', 2*n, gp[0], 2*n, lrp, lip, ap[0], 2*n, NULL, 1, work, lwork);
         delete[] work;
 
+        if (info != 0) {
+            throw PSIEXCEPTION("DLXSolver: Subspace DGEEV failed");
+        }
+        
         // Check for imaginary eigenvalues
         for (int i = 0; i < 2*n; i++) {
             if (lip[i] != 0.0) {
@@ -1248,43 +1256,61 @@ void DLRXSolver::subspaceDiagonalization()
             }
         }
 
-        // TODO. Transpose eigenvectors to columns, sort eigenvectors and eigenvalues
+        // Sort to order as -/+, -/+, ....
+        std::vector<std::pair<double, int> > pass1;
+        for (int i = 0; i < 2*n; i++) {
+            pass1.push_back(make_pair(fabs(lrp[i]), i));
+        }
 
-        if (info != 0) {
-            throw PSIEXCEPTION("DLXSolver: Subspace DGEEV failed");
+        std::sort(pass1.begin(), pass1.end());
+        
+        // Maybe we need a more advanced algorithm to resolve degeneracies?
+        // Methinks we should explicitly lock the - subspace coefs based on the + subspace coefs
+        std::vector<int> pass2;
+        for (int i = 0; i < n; i++) {
+            if (lrp[pass1[2*i].second] < lrp[pass1[2*i+1].second]) {
+                pass2.push_back(pass1[2*i].second);
+                pass2.push_back(pass1[2*i+1].second);
+            }  else {  
+                pass2.push_back(pass1[2*i+1].second);
+                pass2.push_back(pass1[2*i].second);
+            }    
+        }
+
+        for (int i = 0; i < 2*n; i++) {
+            int index = pass2[i]; 
+            evalp[i] = lrp[index];
+            C_DCOPY(2*n, ap[index], 1, &evecp[0][i], 2*n);
         }
     }
    
-    // TODO
     //// Resort to remove false zeros for cases with too small of irreps 
-    //for (int h = 0; h < nirrep; h++) {
+    for (int h = 0; h < nirrep; h++) {
 
-    //    int dim = diag_->dimpi()[h] / 2;
+        int dim = diag_->dimpi()[h] / 2;
 
-    //    int nfalse = n - dim;
+        int nfalse = n - dim;
 
-    //    if (nfalse <= 0) continue;
+        if (nfalse <= 0) continue;
 
-    //    double** ap = a_->pointer(h);    
-    //    double*  lp = l_->pointer(h);        
+        double** ap = a_->pointer(h);    
+        double*  lp = l_->pointer(h);        
 
-    //    for (int m = 0; m < n - nfalse; m++) {
-    //        lp[m] = lp[m + nfalse];
-    //        C_DCOPY(n,&ap[0][m + nfalse], n, &ap[0][m], n);
-    //    }
+        for (int m = 0; m < 2*(n - nfalse); m++) {
+            lp[m] = lp[m + 2*nfalse];
+            C_DCOPY(n,&ap[0][m + 2*nfalse], n, &ap[0][m], n);
+        }
 
-    //    for (int m = 0; m < nfalse; m++) {
-    //        lp[n - m - 1] = 0;
-    //        C_DSCAL(n,0.0,&ap[0][n - m - 1], n);
-    //    }
-
-    //}
+        for (int m = 0; m < 2*nfalse; m++) {
+            lp[n - m - 1] = 0;
+            C_DSCAL(n,0.0,&ap[0][n - m - 1], n);
+        }
+    }
 
     if (debug_) { 
         fprintf(outfile, "   > SubspaceDiagonalize <\n\n");
         a_->print();
-        l_real_->print();
-        l_imag_->print();
+        l_->print();
         fflush(outfile);
     }
 }
@@ -1302,18 +1328,23 @@ void DLRXSolver::eigenvecs()
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
 
-        int dimension = diag_->dimpi()[h];
+        int dimension = diag_->dimpi()[h] / 2;
         
         if (!dimension) continue;
 
         double** ap = a_->pointer(h);
         for (int m = 0; m < nroot_; m++) {
             double* cp = c_[m]->pointer(h);
-            ::memset((void*) cp, '\0', dimension*sizeof(double));
+            ::memset((void*) cp, '\0', 2L*dimension*sizeof(double));
+
             for (int i = 0; i < b_.size(); i++) {
                 double* bp = b_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][m],bp,1,cp,1);
+                C_DAXPY(dimension,ap[i][2*m+1],&bp[0],1,&cp[0],1);
+                C_DAXPY(dimension,ap[i][2*m+1],&bp[dimension],1,&cp[dimension],1);
+                C_DAXPY(dimension,ap[i+b_.size()][2*m+1],&bp[dimension],1,&cp[0],1);
+                C_DAXPY(dimension,ap[i+b_.size()][2*m+1],&bp[0],1,&cp[dimension],1);
             }       
+
         } 
     }
 
@@ -1331,18 +1362,8 @@ void DLRXSolver::eigenvals()
     E_.resize(nroot_);
 
     for (int h = 0; h < diag_->nirrep(); ++h) {
-
-        double** ap = a_->pointer(h);
-        double** Gp = G_->pointer(h);
-
         for (int k = 0; k < nroot_; k++) {
-            double E = 0.0;
-            for (int i = 0; i < b_.size(); i++) {
-                for (int j = 0; j < nsubspace_; j++) {
-                    E += ap[i][k] * ap[j][k] * Gp[i][j];    
-                }
-            }
-            E_[k].push_back(E);
+            E_[k].push_back(l_->get(h,2*k+1));
         }
     }
 
@@ -1378,23 +1399,27 @@ void DLRXSolver::residuals()
 
         for (int h = 0; h < diag_->nirrep(); ++h) {
         
-        int dimension = diag_->dimpi()[h];
+        int dimension = diag_->dimpi()[h]/2;
         if (!dimension) continue;
     
             double** ap = a_->pointer(h);
-            double*  lp = l_real_->pointer(h);
+            double*  lp = l_->pointer(h);
             double*  rp = r_[k]->pointer(h);
+            double*  cp = c_[k]->pointer(h);
 
-            ::memset((void*)rp, '\0', dimension*sizeof(double));
+            ::memset((void*)rp, '\0', 2L*dimension*sizeof(double));
 
             for (int i = 0; i < b_.size(); i++) {
-                double* bp = b_[i]->pointer(h);
                 double* sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][k],sp,1,rp,1);
-                C_DAXPY(dimension,-lp[k]*ap[i][k],bp,1,rp,1);
+                C_DAXPY(dimension,ap[i][2*k+1],&sp[0],1,&rp[0],1);
+                C_DAXPY(dimension,ap[i][2*k+1],&sp[dimension],1,&rp[dimension],1);
+                C_DAXPY(dimension,-ap[i+b_.size()][2*k+1],&sp[dimension],1,&rp[0],1);
+                C_DAXPY(dimension,-ap[i+b_.size()][2*k+1],&sp[0],1,&rp[dimension],1);
             }       
 
-            R2 += C_DDOT(dimension,rp,1,rp,1);
+            C_DAXPY(dimension*2L,-lp[2*k+1],cp,1,rp,1);
+
+            R2 += C_DDOT(dimension*2L,rp,1,rp,1);
 
         }
 
@@ -1452,8 +1477,11 @@ void DLRXSolver::correctors()
             double* dp = d->pointer(h);
             double* rp = r_[k]->pointer(h);
 
-            for (int m = 0; m < dimension; m++) {
+            for (int m = 0; m < dimension/2; m++) {
                 dp[m] = rp[m] / (lambda - hp[m]);
+            }
+            for (int m = dimension/2+1; m < dimension; m++) {
+                dp[m] = rp[m] / (lambda + hp[m]);
             }
 
             // Substitute r for this vector, if norm is bad
@@ -1497,37 +1525,67 @@ void DLRXSolver::subspaceExpansion()
     // Orthonormalize d_ via Modified Gram-Schmidt
     for (int h = 0; h < diag_->nirrep(); ++h) {
 
-        int dimension = diag_->dimpi()[h];
+        int dimension = diag_->dimpi()[h]/2;
         if (!dimension) continue;
 
-        // Remove the projection of d on b from b
+        // Remove the projection of d+ on b+ from d+
         for (int i = 0; i < d_.size(); ++i) {
             for (int j = 0; j < b_.size(); ++j) {
                 double* dp = d_[i]->pointer(h);
                 double* bp = b_[j]->pointer(h);
                 
-                double r_ji = C_DDOT(dimension,dp,1,bp,1);
-                C_DAXPY(dimension,-r_ji,bp,1,dp,1);
+                double r_ji = C_DDOT(2*dimension,dp,1,bp,1);
+                C_DAXPY(2*dimension,-r_ji,bp,1,dp,1);
+            } 
+        }
+        // Remove the projection of d+ on b- from d+
+        for (int i = 0; i < d_.size(); ++i) {
+            for (int j = 0; j < b_.size(); ++j) {
+                double* dp = d_[i]->pointer(h);
+                double* bp = b_[j]->pointer(h);
+                
+                double r_ji = C_DDOT(dimension,dp,1,&bp[dimension],1)+C_DDOT(dimension,&dp[dimension],1,bp,1);
+                C_DAXPY(dimension,-r_ji,&bp[dimension],1,dp,1);
+                C_DAXPY(dimension,-r_ji,bp,1,&dp[dimension],1);
             } 
         }
 
-        // Remove the self-projection of d on d from d
+        // Remove low-norm vectors
+        std::vector<int> sigfigs;
         for (int i = 0; i < d_.size(); ++i) {
             double* dip = d_[i]->pointer(h);
-            double r_ii = sqrt(C_DDOT(dimension,dip,1,dip,1));
+            double r_ii = sqrt(C_DDOT(2L*dimension,dip,1,dip,1));
             C_DSCAL(dimension,(r_ii > norm_ ? 1.0 / r_ii : 0.0), dip,1);
-            for (int j = i + 1; j < d_.size(); ++j) {
-                double* djp = d_[j]->pointer(h);
-                double r_ij = C_DDOT(dimension,djp,1,dip,1);
-                C_DAXPY(dimension,-r_ij,dip,1,djp,1);
-            }  
             if (r_ii > norm_) {
                 sig[i] = sig[i] | true;    
+                sigfigs.push_back(i);
             } 
         }
+
+        int neff = sigfigs.size();
+        SharedMatrix S(new Matrix("Overlap", 2*neff,2*neff));
+
+        // TODO build S
+
+        S->power(-1.0/2.0,0.0);
+
+        std::vector<SharedVector> dtemp;
+        for (int i = 0; i < neff; i++) {
+            dtemp.push_back(SharedVector(new Vector("d temp", 2L*dimension)));
+        }
+
+        // TODO build contributions to d2
+        for (int i = 0; i < neff; i++) {
+                
+        }
+        
+        for (int i = 0; i < neff; i++) {
+            ::memcpy((void*) d_[sigfigs[i]]->pointer(h), (void*) dtemp[i]->pointer(), sizeof(double)*2L*dimension); 
+        }
+
     }
 
-    // Add signinficant vectors
+    // Add significant vectors
     for (int i = 0; i < d_.size(); ++i) {
         if (sig[i]) {
             b_.push_back(d_[i]);
@@ -1560,10 +1618,10 @@ void DLRXSolver::subspaceCollapse()
         s2.push_back(boost::shared_ptr<Vector>(new Vector(ss.str(), diag_->nirrep(), diag_->dimpi())));
     }
 
-    int n = a_->rowspi()[0];
+    int n = a_->rowspi()[0]/2;
     for (int k = 0; k < min_subspace_; ++k) {
         for (int h = 0; h < diag_->nirrep(); ++h) {
-            int dimension = diag_->dimpi()[h];
+            int dimension = diag_->dimpi()[h]/2;
             if (!dimension) continue;
             
             double** ap = a_->pointer(h);
@@ -1573,8 +1631,17 @@ void DLRXSolver::subspaceCollapse()
             for (int i = 0; i < n; ++i) {
                 double*  bp = b_[i]->pointer(h);
                 double*  sp = s_[i]->pointer(h);
-                C_DAXPY(dimension,ap[i][k],sp,1,s2p,1);
-                C_DAXPY(dimension,ap[i][k],bp,1,b2p,1);
+                
+                // This is cumulative. Han Solo would say "She'll hold together"
+                C_DAXPY(dimension,ap[i][2*k+1],&sp[0],1,&s2p[0],1);
+                C_DAXPY(dimension,ap[i][2*k+1],&sp[dimension],1,&s2p[dimension],1);
+                C_DAXPY(dimension,-ap[i+n][2*k+1],&sp[dimension],1,&s2p[0],1);
+                C_DAXPY(dimension,-ap[i+n][2*k+1],&sp[0],1,&s2p[dimension],1);
+
+                C_DAXPY(dimension,ap[i][2*k+1],&bp[0],1,&b2p[0],1);
+                C_DAXPY(dimension,ap[i][2*k+1],&bp[dimension],1,&b2p[dimension],1);
+                C_DAXPY(dimension,ap[i+n][2*k+1],&bp[dimension],1,&b2p[0],1);
+                C_DAXPY(dimension,ap[i+n][2*k+1],&bp[0],1,&b2p[dimension],1);
             }
         }        
     }

@@ -27,7 +27,7 @@ class CdSalcList;
 
 class Deriv
 {
-    const boost::shared_ptr<Wavefunction> wavefunction_;
+    const boost::shared_ptr<Wavefunction> wfn_;
     boost::shared_ptr<IntegralFactory> integral_;
     boost::shared_ptr<BasisSet> basis_;
     boost::shared_ptr<SOBasisSet> sobasis_;
