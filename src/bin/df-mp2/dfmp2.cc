@@ -62,7 +62,7 @@ void  DFMP2::setup()
   boost::shared_ptr<Vector> epsilon;
 
   if (ref.get() != NULL) {
-      E_scf_ = Process::environment.globals["SCF ENERGY"];
+      E_scf_ = Process::environment.globals["SCF TOTAL ENERGY"];
       nirrep_ = ref->nirrep();
       nso_ = ref->nso();
       clsdpi_ = ref->doccpi();
