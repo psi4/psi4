@@ -24,7 +24,7 @@ set globals {
 optimize('ccsd')
 
 compare_values(refnuc,   ch2.nuclear_repulsion_energy(),          9, "Nuclear repulsion energy")  #TEST
-compare_values(refscf,   get_variable("SCF energy"),              9, "SCF energy")                #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        9, "SCF energy")                #TEST
 compare_values(refccsd,  get_variable("CCSD correlation energy"), 7, "CCSD contribution")         #TEST
 compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")              #TEST
 
