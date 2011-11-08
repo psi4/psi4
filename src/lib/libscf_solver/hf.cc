@@ -664,7 +664,12 @@ void HF::compute_fcpi()
         }
     } else {
         
-        int nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
+        int nfzc = 0;
+        if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
+            nfzc = options_.get_int("NUM_FROZEN_DOCC"); 
+        } else {
+            nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
+        }
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;
         for (int h=0; h<epsilon_a_->nirrep(); ++h) {
@@ -690,7 +695,7 @@ void HF::compute_fvpi()
             frzvpi_[h] = options_["FROZEN_UOCC"][h].to_integer();
         }
     } else {
-        int nfzv = options_.get_int("FREEZE_UOCC");
+        int nfzv = options_.get_int("NUM_FROZEN_UOCC");
         // Print out orbital energies.
         std::vector<std::pair<double, int> > pairs;
         for (int h=0; h<epsilon_a_->nirrep(); ++h) {

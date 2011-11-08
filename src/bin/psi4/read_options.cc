@@ -45,12 +45,15 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   MCSCF -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The scope of core orbitals to freeze in later correlated computations
-      FROZEN_DOCC trumps this option  -*/
-  options.add_str("FREEZE_CORE","FALSE", \
-    "FALSE TRUE SMALL LARGE");
+      FROZEN_DOCC trumps this option -*/
+  options.add_int("NUM_FROZEN_DOCC", 0);
   /*- The scope of virtual orbitals to freeze in later correlated computations
       FROZEN_UOCC trumps this option -*/
-  options.add_int("FREEZE_UOCC", 0);
+  options.add_int("NUM_FROZEN_UOCC", 0);
+  /*- The scope of core orbitals to freeze in later correlated computations
+      FROZEN_DOCC or NUM_FROZEN_DOCC trumps this option  -*/
+  options.add_str("FREEZE_CORE","FALSE", \
+    "FALSE TRUE SMALL LARGE");
 
   /*- Whether to use pure angular momentum basis functions -*/
   options.add_bool("PUREAM", true);
