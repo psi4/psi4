@@ -401,44 +401,77 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 #endif // MINTS_TIMER
 
         for (int itr=0; itr<ns1so; itr++) {
+#ifdef MINTS_TIMER
+            timer_on("itr");
+#endif // MINTS_TIMER
             const AOTransformFunction &ifunc = s1.soshell[itr];
             double icoef = ifunc.coef;
             int iaofunc = ifunc.aofunc;
             int isofunc = fo1[ifunc.irrep] + ifunc.sofunc;
             int iaooff = iaofunc;
             int isooff = isofunc;
+#ifdef MINTS_TIMER
+            timer_off("itr");
+#endif // MINTS_TIMER
 
             for (int jtr=0; jtr<ns2so; jtr++) {
+#ifdef MINTS_TIMER
+                timer_on("jtr");
+#endif // MINTS_TIMER
                 const AOTransformFunction &jfunc = s2.soshell[jtr];
                 double jcoef = jfunc.coef * icoef;
                 int jaofunc = jfunc.aofunc;
                 int jsofunc = fo2[jfunc.irrep] + jfunc.sofunc;
                 int jaooff = iaooff*nao2 + jaofunc;
                 int jsooff = isooff*nso2 + jsofunc;
+#ifdef MINTS_TIMER
+                timer_off("jtr");
+#endif // MINTS_TIMER
 
                 for (int ktr=0; ktr<ns3so; ktr++) {
+#ifdef MINTS_TIMER
+                    timer_on("ktr");
+#endif // MINTS_TIMER
+
                     const AOTransformFunction &kfunc = s3.soshell[ktr];
                     double kcoef = kfunc.coef * jcoef;
                     int kaofunc = kfunc.aofunc;
                     int ksofunc = fo3[kfunc.irrep] + kfunc.sofunc;
                     int kaooff = jaooff*nao3 + kaofunc;
                     int ksooff = jsooff*nso3 + ksofunc;
+#ifdef MINTS_TIMER
+                    timer_off("ktr");
+#endif // MINTS_TIMER
 
                     for (int ltr=0; ltr<ns4so; ltr++) {
+#ifdef MINTS_TIMER
+                        timer_on("ltr");
+#endif // MINTS_TIMER
+
                         const AOTransformFunction &lfunc = s4.soshell[ltr];
                         double lcoef = lfunc.coef * kcoef;
                         int laofunc = lfunc.aofunc;
                         int lsofunc = fo4[lfunc.irrep] + lfunc.sofunc;
                         int laooff = kaooff*nao4 + laofunc;
                         int lsooff = ksooff*nso4 + lsofunc;
+#ifdef MINTS_TIMER
+                        timer_off("ltr");
+#endif // MINTS_TIMER
+
                         // If you're doing the two-stage SO integral uncomment the next line
 //                        fprintf(outfile, "\t\tbuffer_[%d] += %d * %f * %f symms: %d %d %d %d\n", lsooff, lambda_T, lcoef, aobuff[laooff],
 //                                ifunc.irrep, jfunc.irrep, kfunc.irrep, lfunc.irrep);
 
+#ifdef MINTS_TIMER
+                        timer_on("transform");
+#endif
                         if ((ifunc.irrep ^ jfunc.irrep) == (kfunc.irrep ^ lfunc.irrep)) {
 //                            fprintf(outfile, "\t\tadded\n");
                             buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
                         }
+#ifdef MINTS_TIMER
+                        timer_off("transform");
+#endif // MINTS_TIMER
                     }
                 }
             }
