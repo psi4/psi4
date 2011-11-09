@@ -56,6 +56,8 @@ void SOTransform::add_transform(int aoshellnum, int irrep,
 
 AOTransform::AOTransform()
 {
+    for (int h=0; h<8; h++)
+        nfuncpi[h] = 0;
 }
 
 AOTransform::~AOTransform()
@@ -66,6 +68,8 @@ void AOTransform::add_transform(int irrep,
                                 double coef, int aofunc, int sofunc)
 {
     soshell.push_back(AOTransformFunction(coef, aofunc, sofunc, irrep));
+    soshellpi[irrep].push_back(AOTransformFunction(coef, aofunc, sofunc, irrep));
+    nfuncpi[irrep]++;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

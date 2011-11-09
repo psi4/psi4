@@ -86,6 +86,8 @@ public:
 class AOTransform {
 public:
     std::vector<AOTransformFunction> soshell;
+    std::vector<AOTransformFunction> soshellpi[8];
+    unsigned short nfuncpi[8];
 
     AOTransform();
     ~AOTransform();
