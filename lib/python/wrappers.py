@@ -7,11 +7,33 @@ from driver import *
 from molecule import *
 from text import *
 
+# Function to make calls among wrappers(), energy(), optimize(), etc.
+def call_function_in_1st_argument(funcarg, **kwargs):
+    function2call = funcarg
+    return function2call(**kwargs)
+
 ###################
 ##  Start of cp  ##
 ###################
 
 def cp(name, **kwargs):
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name.lower()
+
+    # Establish function to call
+    if not('cp_func' in kwargs):
+        if ('func' in kwargs):
+            kwargs['cp_func'] = kwargs['func']
+            del kwargs['func'] 
+        else:
+            kwargs['cp_func'] = energy
+    func = kwargs['cp_func']
+    if not func:
+        raise Exception('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
+    if (func is db):
+        raise Exception('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
 
     check_bsse = False
     if (kwargs.has_key('check_bsse')):
@@ -32,10 +54,11 @@ def cp(name, **kwargs):
     PsiMod.print_out("\n")
     banner("CP Computation: Complex.\nFull Basis Set.")
     PsiMod.print_out("\n")
-    e_dimer = energy(name, **kwargs)
+    e_dimer = call_function_in_1st_argument(func, **kwargs)
+    #e_dimer = energy(name, **kwargs)
     PsiMod.set_global_option('RI_INTS_IO','LOAD')
 
-    #All monomers with ghosts
+    # All monomers with ghosts
     monomers = extract_clusters(molecule, True, 1)
     e_monomer_full = []
     
@@ -45,13 +68,14 @@ def cp(name, **kwargs):
         PsiMod.print_out("\n")
         banner(("CP Computation: Monomer %d.\n Full Basis Set." % (cluster_n + 1)))
         PsiMod.print_out("\n")
-        e_monomer_full.append(energy(name,**kwargs))
+        e_monomer_full.append(call_function_in_1st_argument(func, **kwargs))
+        #e_monomer_full.append(energy(name,**kwargs))
         cluster_n = cluster_n + 1
         
 
     PsiMod.set_global_option('RI_INTS_IO','NONE')
     if (check_bsse): 
-        #All monomers without ghosts
+        # All monomers without ghosts
         monomers = extract_clusters(molecule, False, 1)
         e_monomer_bsse = []
    
@@ -62,7 +86,8 @@ def cp(name, **kwargs):
             #cluster.print_to_output()
             banner(("CP Computation: Monomer %d.\n Monomer Set." % (cluster_n + 1)))
             PsiMod.print_out("\n")
-            e_monomer_bsse.append(energy(name,**kwargs))
+            e_monomer_bsse.append(call_function_in_1st_argument(func, **kwargs))
+            #e_monomer_bsse.append(energy(name,**kwargs))
             cluster_n = cluster_n + 1
 
     PsiMod.set_global_option('RI_INTS_IO',ri_ints_io)
@@ -239,7 +264,7 @@ def basis_set_extrapolate(basis_name, **kwargs):
             PsiMod.set_global_option("BASIS", basis)
             PsiMod.set_global_option("WFN", wavefunction)  # Can't set local option since we don't know which module will be run necessarily
             energy(wavefunction.lower())
-            ret_val = PsiMod.get_variable("SCF ENERGY")
+            ret_val = PsiMod.get_variable("SCF TOTAL ENERGY")
             cor_val = PsiMod.get_variable("CURRENT ENERGY") 
             PsiMod.clean()
             return ret_val, cor_val
@@ -425,11 +450,22 @@ def database(name, db_name, **kwargs):
 
     # Wrap any positional arguments into kwargs (for intercalls among wrappers)
     if not('name' in kwargs) and name:
-        kwargs['name'] = name
+        kwargs['name'] = name.lower()
     if not('db_name' in kwargs) and db_name:
         kwargs['db_name'] = db_name
-    if not('func' in kwargs):
-        kwargs['func'] = energy
+
+    # Establish function to call
+    if not('db_func' in kwargs):
+        if ('func' in kwargs):
+            kwargs['db_func'] = kwargs['func']
+            del kwargs['func'] 
+        else:
+            kwargs['db_func'] = energy
+    func = kwargs['db_func']
+    if not func:
+        raise Exception('Function \'%s\' does not exist to be called by wrapper database.' % (func.__name__))
+    if (func is cp):
+        raise Exception('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
 
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
@@ -457,9 +493,14 @@ def database(name, db_name, **kwargs):
     user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
     user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
     user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
-    user_reference = PsiMod.get_option('REFERENCE')
 
+    user_reference = PsiMod.get_option('REFERENCE')
     user_memory = PsiMod.get_memory()
+    user_dertype = PsiMod.get_option('DERTYPE')
+
+    user_molecule = PsiMod.get_active_molecule()
+    if not user_molecule:
+        raise ValueNotSet("No molecule found.")
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -733,9 +774,11 @@ def database(name, db_name, **kwargs):
             exec commands
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            lesserkwargs = kwargs.copy() 
-            del lesserkwargs['func'] 
-            ERGT[rgt] = assemble_function2call_dropfunc(kwargs['func'], **lesserkwargs)
+            #lesserkwargs = kwargs.copy() 
+            #del lesserkwargs['db_func'] 
+            #ERGT[rgt] = call_function_in_1st_argument(kwargs['db_func'], **lesserkwargs)
+            #ERGT[rgt] = call_function_in_1st_argument(kwargs['db_func'], **kwargs)
+            ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
             exec actives
@@ -750,17 +793,19 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-            lesserkwargs = kwargs.copy() 
-            del lesserkwargs['func'] 
+            #lesserkwargs = kwargs.copy() 
+            #del lesserkwargs['db_func'] 
             # non-pickle route
             #freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
             # pickle route (conflics w/Andy's parenthesis matching)
             freagent.write('''\npickle_kw = ("""''')
-            pickle.dump(lesserkwargs, freagent)
+            #pickle.dump(lesserkwargs, freagent)
+            pickle.dump(kwargs, freagent)
             freagent.write('''""")\n''')
             freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
             # end routes
-            freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['func'].__name__))
+            #freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['db_func'].__name__))
+            freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))
             freagent.write("""PsiMod.print_variables()\n""")
             freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
                 % (os.getpid(), rgt))
@@ -822,7 +867,7 @@ def database(name, db_name, **kwargs):
     for rxn in HRXN:
         maxactv.append(len(ACTV[dbse+'-'+str(rxn)]))
     maxrgt = max(maxactv) 
-    table_delimit = '-' * (52+20*maxrgt)
+    table_delimit = '-' * (54+20*maxrgt)
     tables = ''
 
     #   find any reactions that are incomplete
@@ -838,7 +883,7 @@ def database(name, db_name, **kwargs):
     tables += """   'Reagent' values according to weightings 'Wt', as for the REQUESTED ENERGY below.\n"""
     tables += """   Depending on the nature of the variable, this may or may not make any physical sense.\n"""
     for envv in db_tabulate:
-        tables += """\n\n   %s""" % (envv.upper())
+        tables += """\n   ==> %s <==\n\n""" % (envv.title())
         tables += tblhead(maxrgt, table_delimit, 2)
 
         for rxn in HRXN:
@@ -846,7 +891,7 @@ def database(name, db_name, **kwargs):
             VRXN[db_rxn] = {}
     
             if FAIL[rxn]:
-                tables += """\n%23s   %8.4f %8s %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
+                tables += """\n%23s   %8.4f %8s   %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
                 for i in range(len(ACTV[db_rxn])):
                     tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
     
@@ -855,7 +900,7 @@ def database(name, db_name, **kwargs):
                 for i in range(len(ACTV[db_rxn])):
                     VRXN[db_rxn][envv] += VRGT[ACTV[db_rxn][i]][envv] * RXNM[db_rxn][ACTV[db_rxn][i]]
             
-                tables += """\n%23s        %16.8f     """ % (db_rxn, VRXN[db_rxn][envv])
+                tables += """\n%23s        %16.8f       """ % (db_rxn, VRXN[db_rxn][envv])
                 for i in range(len(ACTV[db_rxn])):
                     tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
         tables += """\n   %s\n""" % (table_delimit)
@@ -868,13 +913,13 @@ def database(name, db_name, **kwargs):
     MADerror  = 0.0
     RMSDerror = 0.0
 
-    tables += """\n\n   %s""" % ("REQUESTED ENERGY")
+    tables += """\n   ==> %s <==\n\n""" % ('Requested Energy')
     tables += tblhead(maxrgt, table_delimit, 1)
     for rxn in HRXN:
         db_rxn = dbse + '-' + str(rxn)
 
         if FAIL[rxn]:
-            tables += """\n%23s   %8.4f %8s %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
+            tables += """\n%23s   %8.4f %8s   %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -884,7 +929,7 @@ def database(name, db_name, **kwargs):
                 ERXN[db_rxn] += ERGT[ACTV[db_rxn][i]] * RXNM[db_rxn][ACTV[db_rxn][i]]
             error = hartree2kcalmol * ERXN[db_rxn] - BIND[db_rxn]
         
-            tables += """\n%23s   %8.4f %8.4f %8.4f""" % (db_rxn, BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn], error)
+            tables += """\n%23s   %8.4f %8.4f   %8.4f""" % (db_rxn, BIND[db_rxn], hartree2kcalmol*ERXN[db_rxn], error)
             for i in range(len(ACTV[db_rxn])):
                 tables += """ %16.8f %2.0f""" % (ERGT[ACTV[db_rxn][i]], RXNM[db_rxn][ACTV[db_rxn][i]])
 
@@ -897,42 +942,52 @@ def database(name, db_name, **kwargs):
     tables += """\n   %s\n""" % (table_delimit)
 
     if count_rxn:
-        tables += """%23s   %17s %8.4f\n""" % ('Minimal Dev', '', minDerror)
-        tables += """%23s   %17s %8.4f\n""" % ('Maximal Dev', '', maxDerror)
-        tables += """%23s   %17s %8.4f\n""" % ('Mean Signed Dev', '', MSDerror/float(count_rxn))
-        tables += """%23s   %17s %8.4f\n""" % ('Mean Absolute Dev', '', MADerror/float(count_rxn))
-        tables += """%23s   %17s %8.4f\n""" % ('RMS Dev', '', sqrt(RMSDerror/float(count_rxn)))
+
+        MSDerror  /= float(count_rxn)
+        MADerror  /= float(count_rxn)
+        RMSDerror  = sqrt(RMSDerror/float(count_rxn))
+
+        tables += """%23s   %19s %8.4f\n""" % ('Minimal Dev', '', minDerror)
+        tables += """%23s   %19s %8.4f\n""" % ('Maximal Dev', '', maxDerror)
+        tables += """%23s   %19s %8.4f\n""" % ('Mean Signed Dev', '', MSDerror)
+        tables += """%23s   %19s %8.4f\n""" % ('Mean Absolute Dev', '', MADerror)
+        tables += """%23s   %19s %8.4f\n""" % ('RMS Dev', '', RMSDerror)
         tables += """   %s\n""" % (table_delimit)
+
+        PsiMod.set_variable('%s DATABASE MEAN SIGNED DEVIATION' % (db_name), MSDerror)
+        PsiMod.set_variable('%s DATABASE MEAN ABSOLUTE DEVIATION' % (db_name), MADerror)
+        PsiMod.set_variable('%s DATABASE ROOT-MEAN-SQUARE DEVIATION' % (db_name), RMSDerror)
 
         #print tables
         PsiMod.print_out(tables)
-        return MADerror/float(count_rxn)
+        finalenergy = MADerror
 
     else:
-        return 0.0
+        finalenergy = 0.0
+
+    # restore molecule and options
+    activate(user_molecule) 
+    user_molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", user_basis)
+    PsiMod.set_global_option("REFERENCE", user_reference)
+    PsiMod.set_global_option("DERTYPE", user_dertype)
+
+    return finalenergy
 
 def drop_duplicates(seq): 
     noDupes = []
     [noDupes.append(i) for i in seq if not noDupes.count(i)]
     return noDupes
 
-def assemble_function2call(**kwargs):
-    function2call = kwargs['func']
-    return function2call(**kwargs)
-
-def assemble_function2call_dropfunc(funcarg, **kwargs):
-    function2call = funcarg
-    return function2call(**kwargs)
-
 def tblhead(tbl_maxrgt, tbl_delimit, ttype):
     tbl_str = ''
-    tbl_str += """\n   %s""" % (tbl_delimit)
-    if   ttype == 1: tbl_str += """\n%23s %19s %8s""" % ('Reaction', 'Reaction Energy', 'Error')
-    elif ttype == 2: tbl_str += """\n%23s     %19s %4s""" % ('Reaction', 'Reaction Value', '')
+    tbl_str += """   %s""" % (tbl_delimit)
+    if   ttype == 1: tbl_str += """\n%23s %19s   %8s""" % ('Reaction', 'Reaction Energy', 'Error')
+    elif ttype == 2: tbl_str += """\n%23s     %19s %6s""" % ('Reaction', 'Reaction Value', '')
     for i in range(tbl_maxrgt):
         tbl_str += """%20s""" % ('Reagent '+str(i+1))
-    if   ttype == 1: tbl_str += """\n%23s %10s %17s""" % ('', 'Ref', '[kcal/mol]')
-    elif ttype == 2: tbl_str += """\n%23s %10s %17s""" % ('', '', '')
+    if   ttype == 1: tbl_str += """\n%23s   %8s %8s %8s""" % ('', 'Ref', 'Calc', '[kcal/mol]')
+    elif ttype == 2: tbl_str += """\n%54s""" % ('')
     for i in range(tbl_maxrgt):
         if   ttype == 1: tbl_str += """%20s""" % ('[H] Wt')
         elif ttype == 2: tbl_str += """%20s""" % ('Value Wt')
@@ -952,37 +1007,42 @@ db = database
 ##  Start of Complete Basis Set  ##
 ###################################
 
-def complete_basis_set(name, **kwargs):
+#def complete_basis_set(name, **kwargs):
+def complete_basis_set(**kwargs):
 
-    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
-    if not('name' in kwargs) and name:
-        kwargs['name'] = name
+    ## Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    #if not('name' in kwargs) and name:
+    #    kwargs['name'] = name.lower()
+
+    # Establish function to call (only energy makes sense for cbs)
     if not('cbs_func' in kwargs):
         if ('func' in kwargs):
             kwargs['cbs_func'] = kwargs['func']
+            del kwargs['func'] 
         else:
             kwargs['cbs_func'] = energy
+    func = kwargs['cbs_func']
+    if not func:
+        raise Exception('Function \'%s\' does not exist to be called by wrapper complete_basis_set.' % (func.__name__))
+    if not(func is energy):
+        raise Exception('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
     VARH = {}
-    VARH['scf']     = {'scftot'      : 'SCF ENERGY'                }
-    VARH['mp2']     = {'scftot'      : 'SCF ENERGY',
+    VARH['scf']     = {'scftot'      : 'SCF TOTAL ENERGY'          }
+    VARH['mp2']     = {'scftot'      : 'SCF TOTAL ENERGY',
                        'mp2corl'     : 'MP2 CORRELATION ENERGY'    }
-    VARH['ccsd']    = {'scftot'      : 'SCF ENERGY',
+    VARH['ccsd']    = {'scftot'      : 'SCF TOTAL ENERGY',
                        'mp2corl'     : 'MP2 CORRELATION ENERGY',
                        'ccsdcorl'    : 'CCSD CORRELATION ENERGY'   }
-    VARH['ccsd(t)'] = {'scftot'      : 'SCF ENERGY',
+    VARH['ccsd(t)'] = {'scftot'      : 'SCF TOTAL ENERGY',
                        'mp2corl'     : 'MP2 CORRELATION ENERGY',
                        'ccsdcorl'    : 'CCSD CORRELATION ENERGY',
                        'ccsd(t)corl' : 'CCSD(T) CORRELATION ENERGY'}
 
-    domax_scf = 1
-    domax_xtpl = 0
-    domax_delta = 0
-    domax_delta2 = 0
     finalenergy = 0.0
     do_scf = 1
-    do_xtpl = 0
+    do_corl = 0
     do_delta = 0
     do_delta2 = 0
 
@@ -993,40 +1053,44 @@ def complete_basis_set(name, **kwargs):
     #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
     #user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
     #user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
-    #user_reference = PsiMod.get_option('REFERENCE')
+    user_reference = PsiMod.get_option('REFERENCE')
+    user_wfn = PsiMod.get_option('WFN')
+    user_molecule = PsiMod.get_active_molecule()
+    if not user_molecule:
+        raise ValueNotSet("No molecule found.")
 
     # Establish method for correlation energy
-    #cbs_corl_wfn = 'none'
-    if(kwargs.has_key('name')):
-        cbs_corl_wfn = kwargs['name'].lower()
-        if re.match(r'^scf$', cbs_corl_wfn.lower()):
+    #if(kwargs.has_key('name')):
+    #    cbs_corl_wfn = kwargs['name'].lower()
+    #    if re.match(r'^scf$', cbs_corl_wfn.lower()):
+    #        pass
+    #    else:
+    #        domax_scf = 0
+    #        domax_corl = 1
+    #        do_corl = 1
+
+    # Establish method for correlation energy
+    if (kwargs.has_key('name')):
+        if re.match(r'^scf$', kwargs['name'].lower()):
             pass
-            #cbs_corl_wfn = 'none'
         else:
-            domax_scf = 0
-            domax_xtpl = 1
-            do_xtpl = 1
-    if(kwargs.has_key('corl_wfn')):
+            do_corl = 1
+            cbs_corl_wfn = kwargs['name'].lower()
+    if (kwargs.has_key('corl_wfn')):
+        do_corl = 1
         cbs_corl_wfn = kwargs['corl_wfn'].lower()
-        domax_scf = 0
-        domax_xtpl = 1
-        do_xtpl = 1
-    if domax_xtpl:
+    if do_corl:
         if not (cbs_corl_wfn in VARH.keys()):
             raise Exception('Requested CORL method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_corl_wfn))
 
     # Establish method for delta correction energy
-    #cbs_delta_wfn = 'none'
-    if(kwargs.has_key('delta_wfn')):
-        cbs_delta_wfn = kwargs['delta_wfn'].lower()
-        domax_xtpl = 0
-        domax_delta = 1
+    if (kwargs.has_key('delta_wfn')):
         do_delta = 1
-    if domax_delta:
+        cbs_delta_wfn = kwargs['delta_wfn'].lower()
         if not (cbs_delta_wfn in VARH.keys()):
             raise Exception('Requested DELTA method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn))
 
-        if(kwargs.has_key('delta_wfn_lesser')):
+        if (kwargs.has_key('delta_wfn_lesser')):
             cbs_delta_wfn_lesser = kwargs['delta_wfn_lesser'].lower()
         else:
             cbs_delta_wfn_lesser = 'mp2'
@@ -1034,94 +1098,83 @@ def complete_basis_set(name, **kwargs):
             raise Exception('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
 
     # Establish method for second delta correction energy
-    if(kwargs.has_key('delta2_wfn')):
-        cbs_delta2_wfn = kwargs['delta2_wfn'].lower()
-        domax_delta = 0
-        domax_delta2 = 1
+    if (kwargs.has_key('delta2_wfn')):
         do_delta2 = 1
-    if domax_delta2:
+        cbs_delta2_wfn = kwargs['delta2_wfn'].lower()
         if not (cbs_delta2_wfn in VARH.keys()):
             raise Exception('Requested DELTA2 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn))
 
-        if(kwargs.has_key('delta2_wfn_lesser')):
+        if (kwargs.has_key('delta2_wfn_lesser')):
             cbs_delta2_wfn_lesser = kwargs['delta2_wfn_lesser'].lower()
         else:
             cbs_delta2_wfn_lesser = 'mp2'
         if not (cbs_delta2_wfn_lesser in VARH.keys()):
             raise Exception('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
 
-    # Establish list of valid basis sets for correlation energy
-    if(kwargs.has_key('corl_basis')):
-        BSTC, ZETC = validate_bracketed_basis(kwargs['corl_basis'].lower())
+    # Check that user isn't skipping steps in scf + corl + delta + delta2 sequence
+    if do_scf and not do_corl and not do_delta and not do_delta2:
+        pass
+    elif do_scf and do_corl and not do_delta and not do_delta2:
+        pass
+    elif do_scf and do_corl and do_delta and not do_delta2:
+        pass
+    elif do_scf and do_corl and do_delta and do_delta2:
+        pass
     else:
-        if not domax_scf:
+        raise Exception('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) not valid. These steps are cummulative.' %
+            (do_scf, do_corl, do_delta, do_delta2))
+
+    # Establish list of valid basis sets for correlation energy
+    if do_corl:
+        if(kwargs.has_key('corl_basis')):
+            BSTC, ZETC = validate_bracketed_basis(kwargs['corl_basis'].lower())
+        else:
             raise Exception('CORL basis sets through keyword \'%s\' are required.' % ('corl_basis'))
 
     # Establish list of valid basis sets for scf energy
     if(kwargs.has_key('scf_basis')):
         BSTR, ZETR = validate_bracketed_basis(kwargs['scf_basis'].lower())
     else:
-        if domax_scf:
-            raise Exception('SCF basis sets through keyword \'%s\' are required.' % ('scf_basis'))
+        if do_corl:
+            BSTR = BSTC[:]
+            ZETR = ZETC[:]
         else:
-            if(kwargs.has_key('corl_basis')):
-                BSTR = BSTC[:]
-                ZETR = ZETC[:]
+            raise Exception('SCF basis sets through keyword \'%s\' are required. Or perhaps you forgot the \'%s\'.' % ('scf_basis', 'corl_wfn'))
 
     # Establish list of valid basis sets for delta correction energy
-    if domax_delta or domax_delta2:
+    if do_delta:
         if(kwargs.has_key('delta_basis')):
             BSTD, ZETD = validate_bracketed_basis(kwargs['delta_basis'].lower())
         else:
             raise Exception('DELTA basis sets through keyword \'%s\' are required.' % ('delta_basis'))
 
     # Establish list of valid basis sets for second delta correction energy
-    if domax_delta2:
+    if do_delta2:
         if(kwargs.has_key('delta2_basis')):
             BSTD2, ZETD2 = validate_bracketed_basis(kwargs['delta2_basis'].lower())
         else:
             raise Exception('DELTA2 basis sets through keyword \'%s\' are required.' % ('delta2_basis'))
 
-    # Establish treatment for scf energy
+    # Establish treatment for scf energy (validity check useless since python will catch it long before here)
     cbs_scf_scheme = highest_1
     if(kwargs.has_key('scf_scheme')):
         cbs_scf_scheme = kwargs['scf_scheme']
-
-    if cbs_scf_scheme:
-        pass
-    else:
-        raise Exception('SCF extrapolation mode \'%s\' not valid.' % (cbs_scf_scheme))
 
     # Establish treatment for correlation energy
     cbs_corl_scheme = highest_1
     if(kwargs.has_key('corl_scheme')):
         cbs_corl_scheme = kwargs['corl_scheme']
 
-    if cbs_corl_scheme:
-        pass
-    else:
-        raise Exception('CORL extrapolation mode \'%s\' not valid.' % (cbs_corl_scheme))
-  
     # Establish treatment for delta correction energy
     cbs_delta_scheme = highest_1
     if(kwargs.has_key('delta_scheme')):
         cbs_delta_scheme = kwargs['delta_scheme']
 
-    if cbs_delta_scheme:
-        pass
-    else:
-        raise Exception('DELTA extrapolation mode \'%s\' not valid.' % (cbs_delta_scheme))
-  
     # Establish treatment for delta2 correction energy
     cbs_delta2_scheme = highest_1
     if(kwargs.has_key('delta2_scheme')):
         cbs_delta2_scheme = kwargs['delta2_scheme']
 
-    if cbs_delta2_scheme:
-        pass
-    else:
-        raise Exception('DELTA2 extrapolation mode \'%s\' not valid.' % (cbs_delta2_scheme))
-  
     # build string of title banner
     cbsbanners = ''
     cbsbanners += """PsiMod.print_out('\\n')\n"""
@@ -1129,44 +1182,38 @@ def complete_basis_set(name, **kwargs):
     cbsbanners += """PsiMod.print_out('\\n')\n\n"""
     exec cbsbanners
 
-    #print '\n'
-    #if do_scf:    print 'SCF:    ', cbs_scf_scheme, ZETR, BSTR
-    #if do_xtpl:   print 'CORL:   ', cbs_corl_scheme, ZETC, BSTC
-    #if do_delta:  print 'DELTA:  ', cbs_delta_scheme, ZETD, BSTD
-    #if do_delta2: print 'DELTA2: ', cbs_delta2_scheme, ZETD2, BSTD2
-    #print '\n'
-
-    d_fields = ['d_stage', 'd_scheme', 'd_need', 'd_coef', 'd_energy']
+    d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy']
     f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
     GRAND_NEED = []
     MODELCHEM = []
+    bstring = ''
     if do_scf:
-        NEED = assemble_function2call_dropfunc(cbs_scf_scheme, 
+        NEED = call_function_in_1st_argument(cbs_scf_scheme, 
             mode='requisition', basisname=BSTR, basiszeta=ZETR, wfnname='scf')
-        GRAND_NEED.append(dict(zip(d_fields, ['scf', cbs_scf_scheme, NEED, +1, 0.0])))
+        GRAND_NEED.append(dict(zip(d_fields, ['scf', cbs_scf_scheme, reconstitute_bracketed_basis(NEED), 'scf', NEED, +1, 0.0])))
 
-    if do_xtpl:
-        NEED = assemble_function2call_dropfunc(cbs_corl_scheme, 
+    if do_corl:
+        NEED = call_function_in_1st_argument(cbs_corl_scheme, 
             mode='requisition', basisname=BSTC, basiszeta=ZETC, wfnname=cbs_corl_wfn)
-        GRAND_NEED.append(dict(zip(d_fields, ['corl', cbs_corl_scheme, NEED, +1, 0.0])))
+        GRAND_NEED.append(dict(zip(d_fields, ['corl', cbs_corl_scheme, reconstitute_bracketed_basis(NEED), cbs_corl_wfn, NEED, +1, 0.0])))
 
     if do_delta:
-        NEED = assemble_function2call_dropfunc(cbs_delta_scheme, 
+        NEED = call_function_in_1st_argument(cbs_delta_scheme, 
             mode='requisition', basisname=BSTD, basiszeta=ZETD, wfnname=cbs_delta_wfn)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme, NEED, +1, 0.0])))
+        GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme, reconstitute_bracketed_basis(NEED), cbs_delta_wfn, NEED, +1, 0.0])))
 
-        NEED = assemble_function2call_dropfunc(cbs_delta_scheme, 
+        NEED = call_function_in_1st_argument(cbs_delta_scheme, 
             mode='requisition', basisname=BSTD, basiszeta=ZETD, wfnname=cbs_delta_wfn_lesser)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme, NEED, -1, 0.0])))
+        GRAND_NEED.append(dict(zip(d_fields, ['delta', cbs_delta_scheme, reconstitute_bracketed_basis(NEED), cbs_delta_wfn_lesser, NEED, -1, 0.0])))
 
     if do_delta2:
-        NEED = assemble_function2call_dropfunc(cbs_delta2_scheme, 
+        NEED = call_function_in_1st_argument(cbs_delta2_scheme, 
             mode='requisition', basisname=BSTD2, basiszeta=ZETD2, wfnname=cbs_delta2_wfn)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme, NEED, +1, 0.0])))
+        GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme, reconstitute_bracketed_basis(NEED), cbs_delta2_wfn, NEED, +1, 0.0])))
 
-        NEED = assemble_function2call_dropfunc(cbs_delta2_scheme, 
+        NEED = call_function_in_1st_argument(cbs_delta2_scheme, 
             mode='requisition', basisname=BSTD2, basiszeta=ZETD2, wfnname=cbs_delta2_wfn_lesser)
-        GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme, NEED, -1, 0.0])))
+        GRAND_NEED.append(dict(zip(d_fields, ['delta2', cbs_delta2_scheme, reconstitute_bracketed_basis(NEED), cbs_delta2_wfn_lesser, NEED, -1, 0.0])))
 
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].iteritems():
@@ -1211,10 +1258,9 @@ def complete_basis_set(name, **kwargs):
             temp_wfn, temp_portion = split_menial(menial)
             JOBS_EXT.append(dict(zip(f_fields, [temp_wfn, temp_portion, job['f_basis'], job['f_zeta'], 0.0])))
 
-    instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
-    for mc in JOBS_EXT:
-        instructions += """   %12s / %-24s for  %s\n""" % (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']+mc['f_portion']])
-    #print instructions
+    #instructions += """\n    Full listing of computations to be obtained (required and bonus).\n"""
+    #for mc in JOBS_EXT:
+    #    instructions += """   %12s / %-24s for  %s\n""" % (mc['f_wfn'], mc['f_basis'], VARH[mc['f_wfn']][mc['f_wfn']+mc['f_portion']])
     PsiMod.print_out(instructions)
 
 
@@ -1235,9 +1281,10 @@ def complete_basis_set(name, **kwargs):
         exec commands
 
         # make energy() call
-        lesserkwargs = kwargs.copy()
-        del lesserkwargs['cbs_func']
-        mc['f_energy'] = assemble_function2call_dropfunc(kwargs['cbs_func'], **lesserkwargs)
+        #lesserkwargs = kwargs.copy()
+        #del lesserkwargs['cbs_func']
+        #mc['f_energy'] = call_function_in_1st_argument(func, **lesserkwargs)
+        mc['f_energy'] = call_function_in_1st_argument(func, **kwargs)
 
         # fill in energies for subsumed methods
         for menial in VARH[mc['f_wfn']]:
@@ -1247,6 +1294,13 @@ def complete_basis_set(name, **kwargs):
                     job['f_energy'] = PsiMod.get_variable(VARH[temp_wfn][menial])
 
         PsiMod.clean()
+
+    # build string of title banner
+    cbsbanners = ''
+    cbsbanners += """PsiMod.print_out('\\n')\n"""
+    cbsbanners += """banner(' CBS Results ')\n"""
+    cbsbanners += """PsiMod.print_out('\\n')\n\n"""
+    exec cbsbanners
 
     # Insert obtained energies into the array that stores the cbs stages
     for stage in GRAND_NEED:
@@ -1259,7 +1313,7 @@ def complete_basis_set(name, **kwargs):
                     lvl[1]['f_energy'] = job['f_energy']
 
     for stage in GRAND_NEED:
-        stage['d_energy'] = assemble_function2call_dropfunc(stage['d_scheme'], needname = stage['d_need'], mode = 'evaluate')
+        stage['d_energy'] = call_function_in_1st_argument(stage['d_scheme'], needname = stage['d_need'], mode = 'evaluate')
         finalenergy += stage['d_energy'] * stage['d_coef']
 
     #print '\nJOBS', JOBS
@@ -1267,42 +1321,62 @@ def complete_basis_set(name, **kwargs):
     #print '\nGRAND_NEED', GRAND_NEED
     #print '\nMODELCHEM', MODELCHEM
 
-    # build string of title banner
-    cbsbanners = ''
-    cbsbanners += """PsiMod.print_out('\\n')\n"""
-    cbsbanners += """banner(' CBS Results ')\n"""
-    cbsbanners += """PsiMod.print_out('\\n')\n\n"""
-    exec cbsbanners
-
     # build string of results table
-    table_delimit = '  ' + '-' * 90 + '\n'
+    table_delimit = '  ' + '-' * 105 + '\n'
     tables  = ''
+    tables += """\n   ==> %s <==\n\n""" % ('Components')
     tables += table_delimit
-    tables += """   %12s   %-18s %8s %16s  %-s\n""" % ('Method/Stage', 'Basis', 'Wt/Rqd', 'Energy [H]', 'Variable/Scheme')
+    tables += """     %6s %20s %1s %-26s %3s %16s   %-s\n""" % ('', 'Method', '/', 'Basis', 'Rqd', 'Energy [H]', 'Variable')
     tables += table_delimit
-    tables += """   Components\n"""
     for job in JOBS_EXT:
         star = ''
         for mc in MODELCHEM:
             if (job['f_wfn'] == mc['f_wfn']) and (job['f_basis'] == mc['f_basis']):
                 star = '*'
-        tables += """   %12s / %-24s %2s %16.8f  %s\n""" % (job['f_wfn'], job['f_basis'], star,
-                  job['f_energy'], VARH[job['f_wfn']][job['f_wfn']+job['f_portion']])
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('', job['f_wfn'], 
+                  '/', job['f_basis'], star, job['f_energy'], VARH[job['f_wfn']][job['f_wfn']+job['f_portion']]) 
     tables += table_delimit
-    tables += """   Stages\n"""
+
+    tables += """\n   ==> %s <==\n\n""" % ('Stages')
+    tables += table_delimit
+    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', 'Wt', 'Energy [H]', 'Scheme')
+    tables += table_delimit
     for stage in GRAND_NEED:
-        tables += """   %12s   %24s %2d %16.8f  %-24s\n""" % (stage['d_stage'], '', stage['d_coef'], stage['d_energy'], stage['d_scheme'].__name__)
+        tables += """     %6s %20s %1s %-27s %2d %16.8f   %-s\n""" % (stage['d_stage'], stage['d_wfn'], 
+                  '/', stage['d_basis'], stage['d_coef'], stage['d_energy'], stage['d_scheme'].__name__) 
     tables += table_delimit
-    tables += """   CBS\n"""
-    tables += """   %42s %16.8f\n""" % ('', finalenergy)
+
+    tables += """\n   ==> %s <==\n\n""" % ('CBS')
+    tables += table_delimit
+    tables += """     %6s %20s %1s %-27s %2s %16s   %-s\n""" % ('Stage', 'Method', '/', 'Basis', '', 'Energy [H]', 'Scheme')
+    tables += table_delimit
+    if do_scf:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[0]['d_stage'], GRAND_NEED[0]['d_wfn'], 
+                  '/', GRAND_NEED[0]['d_basis'], '', GRAND_NEED[0]['d_energy'], GRAND_NEED[0]['d_scheme'].__name__) 
+    if do_corl:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[1]['d_stage'], GRAND_NEED[1]['d_wfn'], 
+                  '/', GRAND_NEED[1]['d_basis'], '', GRAND_NEED[1]['d_energy'], GRAND_NEED[1]['d_scheme'].__name__) 
+    if do_delta:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[2]['d_stage'], GRAND_NEED[2]['d_wfn'] + ' - ' + GRAND_NEED[3]['d_wfn'],
+                  '/', GRAND_NEED[2]['d_basis'], '', GRAND_NEED[2]['d_energy'] - GRAND_NEED[3]['d_energy'], GRAND_NEED[2]['d_scheme'].__name__) 
+    if do_delta2:
+        tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % (GRAND_NEED[4]['d_stage'], GRAND_NEED[4]['d_wfn'] + ' - ' + GRAND_NEED[5]['d_wfn'],
+                  '/', GRAND_NEED[4]['d_basis'], '', GRAND_NEED[4]['d_energy'] - GRAND_NEED[5]['d_energy'], GRAND_NEED[4]['d_scheme'].__name__) 
+    tables += """     %6s %20s %1s %-27s %2s %16.8f   %-s\n""" % ('total', 'CBS', '', '', '', finalenergy, '')
     tables += table_delimit
      
     #print tables
     PsiMod.print_out(tables)
 
-    # Restore global options that may be changed
-    PsiMod.set_global_option('BASIS', user_basis)
+    # restore molecule and options
+    activate(user_molecule) 
+    user_molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", user_basis)
+    PsiMod.set_local_option('SCF', "WFN", user_wfn)    # TODO refuses to set global option WFN - rejects SCF as option
+    PsiMod.set_global_option("REFERENCE", user_reference)
 
+    PsiMod.set_variable('CBS TOTAL ENERGY', finalenergy)
+    PsiMod.set_variable('CURRENT ENERGY', finalenergy)
     return finalenergy
 
 
@@ -1312,7 +1386,7 @@ def validate_bracketed_basis(basisstring):
     ZETA = ['d', 't', 'q', '5', '6']
     BSET = []
     ZSET = []
-    if re.match(r'.*cc-.*\[.*\]z$', basisstring, flags=re.IGNORECASE):
+    if re.match(r'.*cc-.*\[.*\].*z$', basisstring, flags=re.IGNORECASE):
         basispattern = re.compile(r'^(.*)\[(.*)\](.*)$')
         basisname = basispattern.match(basisstring)
         for b in basisname.group(2):
@@ -1326,10 +1400,41 @@ def validate_bracketed_basis(basisstring):
             if b == 't': b = '3'
             if b == 'q': b = '4'
             ZSET.append(int(b))
+    elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
+        raise Exception('Basis set surrounding series indicator [] in \'%s\' is invalid.'  % (basisstring))
     else:
-        raise Exception('Basis set \'%s\' not valid.' % (basisstring))
+        BSET.append(basisstring)
+        ZSET.append(0)
 
     return [BSET, ZSET]
+
+
+# Reform string basis set descriptor from basis set strings, 'cc-pv[q5]z' from [cc-pvqz, cc-pv5z]
+def reconstitute_bracketed_basis(needarray):
+
+    ZETA = {'d': 2, 't': 3, 'q': 4, '5': 5, '6': 6}
+    ZSET = ['']*len(ZETA)
+    BSET = []
+
+    for lvl in needarray.iteritems():
+        BSET.append(lvl[1]['f_basis'])
+
+    if (len(BSET) == 1):
+        basisstring = BSET[0]
+    else:
+        indx = 0
+        while indx < len(BSET[0]):
+            if (BSET[0][indx] != BSET[1][indx]):
+                zetaindx = indx
+            indx += 1
+        for basis in BSET:
+            ZSET[ZETA[basis[zetaindx]]-2] = basis[zetaindx]
+
+        pre = BSET[0][:zetaindx]
+        post = BSET[0][zetaindx+1:]
+        basisstring = pre + '[' + ''.join(ZSET) + ']' + post
+
+    return basisstring
 
 
 # Defining equation in LaTeX:  $E_{total}(\ell_{max}) =$ 
@@ -1357,7 +1462,19 @@ def highest_1(**largs):
 
     elif (mode == 'evaluate'):
 
+        # Extract required energies and zeta integers from array
+        # Compute extrapolated energy
         energypiece = NEED['HI']['f_energy']
+
+        # Output string with extrapolation parameters
+        cbsscheme  = ''
+        cbsscheme += """\n   ==> %s <==\n\n""" % (functionname)
+        if (NEED['HI']['f_wfn'] == 'scf'):
+            cbsscheme += """   HI-zeta (%s) Total Energy:        %16.8f\n""" % (str(NEED['HI']['f_zeta']), energypiece)
+        else:
+            cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(NEED['HI']['f_zeta']), energypiece)
+        PsiMod.print_out(cbsscheme)
+
         return energypiece
 
    
@@ -1391,15 +1508,17 @@ def corl_xtpl_helgaker_2(**largs):
         eLO = NEED['LO']['f_energy']
         zLO = NEED['LO']['f_zeta']
 
-        # Return extrapolated energy
+        # Compute extrapolated energy
         energypiece = (eHI * zHI**3 - eLO * zLO**3) / (zHI**3 - zLO**3) 
         beta = (eHI - eLO) / (zHI**(-3) - zLO**(-3))
 
+        # Output string with extrapolation parameters
         cbsscheme  = ''
-        cbsscheme += """   %s\n""" % (functionname)
-        cbsscheme += """   Energy Piece: %16.8f\n""" % (energypiece)
-        cbsscheme += """   Beta:         %16.8f\n""" % (beta)
-        cbsscheme += """\n"""
+        cbsscheme += """\n   ==> %s <==\n\n""" % (functionname)
+        cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), eLO)
+        cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), eHI)
+        cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (energypiece)
+        cbsscheme += """   Beta Value:                      %16.8f\n""" % (beta)
         PsiMod.print_out(cbsscheme)
 
         return energypiece
@@ -1432,6 +1551,26 @@ def scf_xtpl_helgaker_3(**largs):
         eHI = NEED['HI']['f_energy']
         eMD = NEED['MD']['f_energy']
         eLO = NEED['LO']['f_energy']
+        zHI = NEED['HI']['f_zeta']
+        zMD = NEED['MD']['f_zeta']
+        zLO = NEED['LO']['f_zeta']
+
+        # Compute extrapolated energy
+        energypiece = (eHI * eLO - eMD * eMD) / (eHI + eLO - 2 * eMD)
+        etothenegativealpha = math.sqrt(eHI - energypiece) * math.sqrt(eLO - energypiece)
+        beta = (eHI - eMD) / (etothenegativealpha * (math.exp(zHI) - math.exp(zMD)))
+        alpha = -1 * math.log(etothenegativealpha)
+
+        # Output string with extrapolation parameters
+        cbsscheme  = ''
+        cbsscheme += """\n   ==> %s <==\n\n""" % (functionname)
+        cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), eLO)
+        cbsscheme += """   MD-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zMD), eMD)
+        cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), eHI)
+        cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (energypiece)
+        #cbsscheme += """   Alpha Value:                     %16.8f\n""" % (alpha)
+        #cbsscheme += """   Beta Value:                      %16.8f\n""" % (beta)
+        PsiMod.print_out(cbsscheme)
 
         # Return extrapolated energy
         energypiece = (eHI * eLO - eMD * eMD) / (eHI + eLO - 2 * eMD)
@@ -1491,6 +1630,11 @@ def validate_scheme_args(functionname, **largs):
             wfnname = largs['wfnname']
         else:
             raise Exception('Call to \'%s\' has keyword \'wfnname\' missing.' % (functionname))
+
+        if re.match(r'scf_.*$', functionname) and (wfnname != 'scf'):
+            raise Exception('Call to \'%s\' is intended for scf portion of calculation.' % (functionname))
+        if re.match(r'corl_.*$', functionname) and (wfnname == 'scf'):
+            raise Exception('Call to \'%s\' is not intended for scf portion of calculation.' % (functionname))
 
         if(largs.has_key('basisname')):
             BSET = largs['basisname']
