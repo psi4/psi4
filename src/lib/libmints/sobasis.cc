@@ -251,7 +251,8 @@ void SOBasisSet::init()
 //                fprintf(outfile, "add_transform(...): aoshell = %d irrep = %d coef = %lf aoshellfunc = %d sofunc = %d\n",
 //                       aoshell,irrep, coef,aoshellfunc,sofunc);
                 sotrans_[soshell].add_transform(aoshell, irrep, coef, aoshellfunc, sofunc);
-                aotrans_[aoshell].add_transform(irrep, coef, aoshellfunc, sofunc);
+                aotrans_[aoshell].add_transform(irrep, coef, aoshellfunc,
+                                                sofunc);
             }
         }
     }
@@ -262,9 +263,6 @@ void SOBasisSet::init()
         throw PSIEXCEPTION("SOBasis::SOBasis: miscounted number of functions");
     }
 
-    delete[] aoshell_to_soshell;
-    delete[] soblocks;
-
     for (i=0; i<nshell_; i++) {
         funcoff_[i][0] = 0;
         for (j=1; j<nirrep_; j++) {
@@ -272,6 +270,14 @@ void SOBasisSet::init()
 //            fprintf(outfile, "funcoff_[%d][%d] = %d\n", i, j, funcoff_[i][j]);
         }
     }
+
+    for(int i=0; i < basis_->nshell(); ++i){
+        int usoshell = aoshell_to_soshell[i];
+        aotrans_[i].add_offsets(nirrep_, funcoff_[usoshell]);
+    }
+
+    delete[] aoshell_to_soshell;
+    delete[] soblocks;
 
     func_ = new int[nshell_];
     irrep_ = new int[basis_->nbf()];
@@ -440,6 +446,11 @@ void SOBasisSet::print(FILE *out) const
                     aotrans_[i].soshell[j].coef);
         }
     }
+}
+
+boost::shared_ptr<BasisSet> SOBasisSet::basis() const
+{
+    return basis_;
 }
 
 Dimension SOBasisSet::dimension() const

@@ -417,10 +417,21 @@ void TwoBodySOInt::common_init()
     for (int i=0; i<nthread_; ++i)
         tb_[i]->set_force_cartesian(b1_->petitelist()->include_pure_transform());
 
+    size_t aQRS = b1_->max_nfunction_in_shell() * b2_->basis()->max_function_per_shell() *
+                  b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
+    size_t PQRd = b1_->basis()->max_function_per_shell() * b2_->basis()->max_function_per_shell() *
+                  b3_->basis()->max_function_per_shell() * b4_->max_nfunction_in_shell();
+    size_t abRS = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
+                  b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
+
+    size_t max_size = std::max(aQRS, PQRd);
+
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *
             b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();
+
+    fprintf(outfile, "aQRS %zu, PQRd %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, PQRd, abRS, max_size, size_);
 
     // Check to make sure things are consistent
     if (tb_[0]->deriv() > 0 && cdsalcs_ == 0)
@@ -431,9 +442,13 @@ void TwoBodySOInt::common_init()
     if (tb_[0]->deriv() == 1 && cdsalcs_ != 0)
         for (int i=0; i<nthread_; ++i)
             buffer_.push_back(new double[size_ * cdsalcs_->ncd()]);
-    else
-        for (int i=0; i<nthread_; ++i)
+    else {
+        for (int i=0; i<nthread_; ++i) {
             buffer_.push_back(new double[size_]);
+            temp_.push_back(new double[max_size]);
+            temp2_.push_back(new double[abRS]);
+        }
+    }
 
     ::memset(iirrepoff_, 0, sizeof(int) * 8);
     ::memset(jirrepoff_, 0, sizeof(int) * 8);
@@ -472,6 +487,10 @@ TwoBodySOInt::~TwoBodySOInt()
 {
     for (int i=0; i<nthread_; ++i) {
         delete[] buffer_[i];
+        if (tb_[0]->deriv() == 0) { // 'if' statement to be removed
+            delete[] temp_[i];
+            delete[] temp2_[i];
+        }
         if (deriv_.size())
             delete[] deriv_[i];
     }
