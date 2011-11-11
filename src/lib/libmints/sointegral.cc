@@ -431,7 +431,7 @@ void TwoBodySOInt::common_init()
             b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();
 
-    fprintf(outfile, "aQRS %zu, abcD %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, abcD, abRS, max_size, size_);
+//    fprintf(outfile, "aQRS %zu, abcD %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, abcD, abRS, max_size, size_);
 
     // Check to make sure things are consistent
     if (tb_[0]->deriv() > 0 && cdsalcs_ == 0)
@@ -445,8 +445,8 @@ void TwoBodySOInt::common_init()
     else {
         for (int i=0; i<nthread_; ++i) {
             buffer_.push_back(new double[size_]);
-            temp_.push_back(new double[max_size]);
-            temp2_.push_back(new double[abRS]);
+//            temp_.push_back(new double[max_size]);
+//            temp2_.push_back(new double[abRS]);
         }
     }
 
@@ -487,10 +487,10 @@ TwoBodySOInt::~TwoBodySOInt()
 {
     for (int i=0; i<nthread_; ++i) {
         delete[] buffer_[i];
-        if (tb_[0]->deriv() == 0) { // 'if' statement to be removed
-            delete[] temp_[i];
-            delete[] temp2_[i];
-        }
+//        if (tb_[0]->deriv() == 0) { // 'if' statement to be removed
+//            delete[] temp_[i];
+//            delete[] temp2_[i];
+//        }
         if (deriv_.size())
             delete[] deriv_[i];
     }

@@ -248,11 +248,8 @@ void SOBasisSet::init()
                     throw PSIEXCEPTION("SOBasis::SOBasis: shell changed");
                 }
 
-//                fprintf(outfile, "add_transform(...): aoshell = %d irrep = %d coef = %lf aoshellfunc = %d sofunc = %d\n",
-//                       aoshell,irrep, coef,aoshellfunc,sofunc);
                 sotrans_[soshell].add_transform(aoshell, irrep, coef, aoshellfunc, sofunc);
-                aotrans_[aoshell].add_transform(irrep, coef, aoshellfunc,
-                                                sofunc);
+                aotrans_[aoshell].add_transform(irrep, coef, aoshellfunc, sofunc);
             }
         }
     }
