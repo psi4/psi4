@@ -87,21 +87,6 @@ protected:
     * If restricted, Db_so_.get() == Da_so_.get(), and same for C
     **/
 
-    /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
-    SharedMatrix Ca_ao();
-    /// The beta C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
-    SharedMatrix Cb_ao();
-
-    /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
-    SharedMatrix Da_ao();
-    /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
-    SharedMatrix Db_ao();
-
-    /// The alpha density matrix in the MO basis
-    SharedMatrix Da_mo();
-    /// The beta density matrix in the MO basis
-    SharedMatrix Db_mo();
-
     /// Common initialization
     void common_init();
 
@@ -132,10 +117,54 @@ public:
 
     // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
 
+    void set_Da_ao(SharedMatrix Da, int symmetry = 0);
+    void set_Db_ao(SharedMatrix Db, int symmetry = 0);
     void set_Da_so(SharedMatrix Da);
     void set_Db_so(SharedMatrix Db);
     void set_Da_mo(SharedMatrix Da);
     void set_Db_mo(SharedMatrix Db);
+
+    // => Get routines (useful to quickly change bases) <= //
+
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_a() const { return epsilon_a_; }
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_b() const { return epsilon_b_; }
+
+    /// The alpha C matrix in the SO basis
+    SharedMatrix Ca_so() const { return Ca_so_; }
+    /// The beta C matrix in the SO basis
+    SharedMatrix Cb_so() const { return Cb_so_; }
+    /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
+    SharedMatrix Ca_ao();
+    /// The beta C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
+    SharedMatrix Cb_ao();
+
+    /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
+    SharedMatrix Da_ao();
+    /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
+    SharedMatrix Db_ao();
+    /// The alpha density matrix in the SO basis
+    SharedMatrix Da_so() const { return Da_so_; }
+    /// The beta density matrix in the SO basis
+    SharedMatrix Db_so() const { return Db_so_; }
+    /// The alpha density matrix in the MO basis
+    SharedMatrix Da_mo();
+    /// The beta density matrix in the MO basis
+    SharedMatrix Db_mo();
+
+    /// The alpha natural orbital occupations and orbitals in the MO basis
+    std::pair<SharedMatrix, SharedVector> Na_mo();
+    /// The beta natural orbital occupations and orbitals in the MO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_mo();
+    /// The alpha natural orbital occupations and orbitals in the SO basis
+    std::pair<SharedMatrix, SharedVector> Na_so();
+    /// The beta natural orbital occupations and orbitals in the SO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_so();
+    /// The alpha natural orbital occupations and orbitals in the AO basis
+    std::pair<SharedMatrix, SharedVector> Na_ao();
+    /// The beta natural orbital occupations and orbitals in the AO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_ao();
 
     // => Queue/Compute Routines <= //
 
