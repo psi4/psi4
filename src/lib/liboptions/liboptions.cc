@@ -37,6 +37,11 @@ void DataType::changed()
     changed_ = true;
 }
 
+void DataType::dechanged()
+{
+    changed_ = false;
+}
+
 void DataType::to_upper(std::string& str)
 {
     std::transform(str.begin(), str.end(), str.begin(), ::toupper);
@@ -562,6 +567,11 @@ bool Data::has_changed() const
 void Data::changed()
 {
     ptr_->changed();
+}
+
+void Data::dechanged()
+{
+    ptr_->dechanged();
 }
 
 void Data::add_choices(std::string str)
