@@ -102,9 +102,9 @@ public:
 
 #if HAVE_MADNESS
 class TwoBodySOInt : public madness::WorldObject<TwoBodySOInt>
-#else
+        #else
 class TwoBodySOInt
-#endif
+        #endif
 {
 protected:
     std::vector<boost::shared_ptr<TwoBodyAOInt> > tb_;
@@ -117,6 +117,8 @@ protected:
 
     size_t size_;
     std::vector<double *> buffer_;
+    std::vector<double *> temp_;
+    std::vector<double *> temp2_;
     std::vector<double **> deriv_;
 
     int iirrepoff_[8], jirrepoff_[8], kirrepoff_[8], lirrepoff_[8];
@@ -221,7 +223,7 @@ public:
     template<typename TwoBodySOIntFunctor>
     void compute_shell_deriv1(const SOShellCombinationsIterator& shellIter, TwoBodySOIntFunctor& body) {
         compute_shell_deriv1(shellIter.p(), shellIter.q(), shellIter.r(), shellIter.s(),
-                      body);
+                             body);
     }
 
     template<typename TwoBodySOIntFunctor>
@@ -244,7 +246,6 @@ public:
         return 0;
     }
 #endif
-
 };
 
 template<typename TwoBodySOIntFunctor>
@@ -271,24 +272,30 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     const int nso2 = b2_->nfunction(ujsh);
     const int nso3 = b3_->nfunction(uksh);
     const int nso4 = b4_->nfunction(ulsh);
+    const size_t nso12 = nso1*nso2;
+    const size_t nso123 = nso1*nso2*nso3;
     const size_t nso = nso1*nso2*nso3*nso4;
 
     const int nao1 = b1_->naofunction(uish);
     const int nao2 = b2_->naofunction(ujsh);
     const int nao3 = b3_->naofunction(uksh);
     const int nao4 = b4_->naofunction(ulsh);
-    const size_t nao = nao1*nao2*nao3*nao4;
+
+    const size_t aQRS = nso1 * nao2 * nao3 * nao4;
+    const size_t abcD = nso1 * nso2 * nso3 * nao4;
 
     const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
     const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
     const int katom = tb_[thread]->basis3()->shell(t3.aoshell[0].aoshell)->ncenter();
     const int latom = tb_[thread]->basis4()->shell(t4.aoshell[0].aoshell)->ncenter();
 
+    int nirrep = b1_->nirrep();
+
 #ifdef MINTS_TIMER
     timer_on("TwoBodySOInt::compute_shell zero buffer");
 #endif // MINTS_TIMER
 
-    memset(buffer_[thread], 0, nso1*nso2*nso3*nso4*sizeof(double));
+    ::memset(buffer_[thread], 0, nso*sizeof(double));
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell zero buffer");
@@ -351,14 +358,14 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
 
                 // Check AM
                 int total_am = tb_[thread]->basis1()->shell(si)->am() +
-                        tb_[thread]->basis2()->shell(sj)->am() +
-                        tb_[thread]->basis3()->shell(sk)->am() +
-                        tb_[thread]->basis4()->shell(sl)->am();
+                               tb_[thread]->basis2()->shell(sj)->am() +
+                               tb_[thread]->basis3()->shell(sk)->am() +
+                               tb_[thread]->basis4()->shell(sl)->am();
 
                 if (!(total_am % 2) ||
-                        (siatom != sjatom) ||
-                        (sjatom != skatom) ||
-                        (skatom != slatom)) {
+                    (siatom != sjatom) ||
+                    (sjatom != skatom) ||
+                    (skatom != slatom)) {
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);
@@ -371,13 +378,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     // Loop over unique quartets
     const AOTransform& s1 = b1_->aotrans(si);
 
-//    fprintf(outfile, "for (%d %d | %d %d) need to compute %lu4 thing(s):\n",
-//            uish, ujsh, uksh, ulsh, sj_arr.size());
-
-    int *fo1 = b1_->function_offset_within_shell(uish);
-    int *fo2 = b1_->function_offset_within_shell(ujsh);
-    int *fo3 = b1_->function_offset_within_shell(uksh);
-    int *fo4 = b1_->function_offset_within_shell(ulsh);
+    const unsigned short *ifuncpi = s1.nfuncpi;
 
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
@@ -388,10 +389,9 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         const AOTransform& s3 = b3_->aotrans(sk);
         const AOTransform& s4 = b4_->aotrans(sl);
 
-        int ns1so = s1.soshell.size();
-        int ns2so = s2.soshell.size();
-        int ns3so = s3.soshell.size();
-        int ns4so = s4.soshell.size();
+        const unsigned short *jfuncpi = s2.nfuncpi;
+        const unsigned short *kfuncpi = s3.nfuncpi;
+        const unsigned short *lfuncpi = s4.nfuncpi;
 
         // Compute this unique AO shell
         tb_[thread]->compute_shell(si, sj, sk, sl);
@@ -400,44 +400,78 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         timer_on("TwoBodySOInt::compute_shell actual transform");
 #endif // MINTS_TIMER
 
-        for (int itr=0; itr<ns1so; itr++) {
-            const AOTransformFunction &ifunc = s1.soshell[itr];
-            double icoef = ifunc.coef;
-            int iaofunc = ifunc.aofunc;
-            int isofunc = fo1[ifunc.irrep] + ifunc.sofunc;
-            int iaooff = iaofunc;
-            int isooff = isofunc;
+        for (int isym=0; isym<nirrep; ++isym) {
+            unsigned short nifunc = ifuncpi[isym];
+            for (int itr=0; itr<nifunc; itr++) {
+#ifdef MINTS_TIMER
+                timer_on("itr");
+#endif // MINTS_TIMER
+                const AOTransformFunction &ifunc = s1.soshellpi[isym][itr];
+                double icoef = ifunc.coef;
+                int iaofunc = ifunc.aofunc;
+                int isofunc = ifunc.sofunc;
+                int iaooff = iaofunc;
+                int isooff = isofunc;
+#ifdef MINTS_TIMER
+                timer_off("itr");
+#endif // MINTS_TIMER
 
-            for (int jtr=0; jtr<ns2so; jtr++) {
-                const AOTransformFunction &jfunc = s2.soshell[jtr];
-                double jcoef = jfunc.coef * icoef;
-                int jaofunc = jfunc.aofunc;
-                int jsofunc = fo2[jfunc.irrep] + jfunc.sofunc;
-                int jaooff = iaooff*nao2 + jaofunc;
-                int jsooff = isooff*nso2 + jsofunc;
+                for (int jsym=0; jsym<nirrep; ++jsym) {
+                    unsigned short njfunc = jfuncpi[jsym];
+                    for (int jtr=0; jtr<njfunc; jtr++) {
+#ifdef MINTS_TIMER
+                        timer_on("jtr");
+#endif // MINTS_TIMER
+                        const AOTransformFunction &jfunc = s2.soshellpi[jsym][jtr];
+                        double jcoef = jfunc.coef * icoef;
+                        int jaofunc = jfunc.aofunc;
+                        int jsofunc = jfunc.sofunc;
+                        int jaooff = iaooff*nao2 + jaofunc;
+                        int jsooff = isooff*nso2 + jsofunc;
+#ifdef MINTS_TIMER
+                        timer_off("jtr");
+#endif // MINTS_TIMER
 
-                for (int ktr=0; ktr<ns3so; ktr++) {
-                    const AOTransformFunction &kfunc = s3.soshell[ktr];
-                    double kcoef = kfunc.coef * jcoef;
-                    int kaofunc = kfunc.aofunc;
-                    int ksofunc = fo3[kfunc.irrep] + kfunc.sofunc;
-                    int kaooff = jaooff*nao3 + kaofunc;
-                    int ksooff = jsooff*nso3 + ksofunc;
+                        for (int ksym=0; ksym<nirrep; ++ksym) {
+                            unsigned short nkfunc = kfuncpi[ksym];
+                            for (int ktr=0; ktr<nkfunc; ktr++) {
+#ifdef MINTS_TIMER
+                                timer_on("ktr");
+#endif // MINTS_TIMER
 
-                    for (int ltr=0; ltr<ns4so; ltr++) {
-                        const AOTransformFunction &lfunc = s4.soshell[ltr];
-                        double lcoef = lfunc.coef * kcoef;
-                        int laofunc = lfunc.aofunc;
-                        int lsofunc = fo4[lfunc.irrep] + lfunc.sofunc;
-                        int laooff = kaooff*nao4 + laofunc;
-                        int lsooff = ksooff*nso4 + lsofunc;
-                        // If you're doing the two-stage SO integral uncomment the next line
-//                        fprintf(outfile, "\t\tbuffer_[%d] += %d * %f * %f symms: %d %d %d %d\n", lsooff, lambda_T, lcoef, aobuff[laooff],
-//                                ifunc.irrep, jfunc.irrep, kfunc.irrep, lfunc.irrep);
+                                const AOTransformFunction &kfunc = s3.soshellpi[ksym][ktr];
+                                double kcoef = kfunc.coef * jcoef;
+                                int kaofunc = kfunc.aofunc;
+                                int ksofunc = kfunc.sofunc;
+                                int kaooff = jaooff*nao3 + kaofunc;
+                                int ksooff = jsooff*nso3 + ksofunc;
+#ifdef MINTS_TIMER
+                                timer_off("ktr");
+#endif // MINTS_TIMER
 
-                        if ((ifunc.irrep ^ jfunc.irrep) == (kfunc.irrep ^ lfunc.irrep)) {
-//                            fprintf(outfile, "\t\tadded\n");
-                            buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
+                                int lsym = isym ^ jsym ^ ksym;
+                                unsigned short nlfunc = lfuncpi[lsym];
+                                for (int ltr=0; ltr<nlfunc; ltr++) {
+#ifdef MINTS_TIMER
+                                    timer_on("ltr");
+#endif // MINTS_TIMER
+
+                                    const AOTransformFunction &lfunc = s4.soshellpi[lsym][ltr];
+                                    double lcoef = lfunc.coef * kcoef;
+                                    int laofunc = lfunc.aofunc;
+                                    int lsofunc = lfunc.sofunc;
+                                    int laooff = kaooff*nao4 + laofunc;
+                                    int lsooff = ksooff*nso4 + lsofunc;
+#ifdef MINTS_TIMER
+                                    timer_off("ltr");
+                                    timer_on("transform");
+#endif
+                                    buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
+#ifdef MINTS_TIMER
+                                    timer_off("transform");
+#endif // MINTS_TIMER
+                                }
+                            }
                         }
                     }
                 }
@@ -445,7 +479,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         }
 
 #ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::compute_shell actual transform");
+        timer_off("TwoBodySOInt::compute_shell actual transform");
 #endif // MINTS_TIMER
     }
 
@@ -546,14 +580,14 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                     if (fabs(buffer_[thread][lsooff]) > 1.0e-14) {
                         if (ish == jsh) {
                             if (iabs < jabs)
-                            continue;
+                                continue;
 
                             if (ksh == lsh) {
                                 if (kabs < labs)
-                                continue;
+                                    continue;
                                 if (INDEX2(iabs, jabs) < INDEX2(kabs, labs)) {
                                     if (ish == ksh)   // IIII case
-                                    continue;
+                                        continue;
                                     else {            // IIJJ case
                                         SWAP_INDEX(ii, kk);
                                         SWAP_INDEX(jj, ll);
@@ -573,7 +607,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                         else {
                             if (ksh == lsh) {         // IJKK case
                                 if (kabs < labs)
-                                continue;
+                                    continue;
                                 if (iabs < jabs) {
                                     SWAP_INDEX(ii, jj);
                                 }
@@ -584,7 +618,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                             }
                             else {                   // IJIJ case
                                 if (ish == ksh && jsh == lsh && INDEX2(iabs, jabs) < INDEX2(kabs, labs))
-                                continue;
+                                    continue;
                                 // IJKL case
                                 if (iabs < jabs) {
                                     SWAP_INDEX(ii, jj);
@@ -600,7 +634,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                         }
 
 #ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::provide_IJKL functor");
+                        timer_on("TwoBodySOInt::provide_IJKL functor");
 #endif
                         // func off/on
                         body(iiabs, jjabs, kkabs, llabs,
@@ -610,7 +644,7 @@ void TwoBodySOInt::provide_IJKL(int ish, int jsh, int ksh, int lsh, TwoBodySOInt
                              llirrep, llrel,
                              buffer_[thread][lsooff]);
 #ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::provide_IJKL functor");
+                        timer_off("TwoBodySOInt::provide_IJKL functor");
 #endif
                     }
                 }
@@ -695,22 +729,22 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 
                 // Check AM
                 int total_am = tb_[thread]->basis1()->shell(si)->am() +
-                        tb_[thread]->basis2()->shell(sj)->am() +
-                        tb_[thread]->basis3()->shell(sk)->am() +
-                        tb_[thread]->basis4()->shell(sl)->am();
+                               tb_[thread]->basis2()->shell(sj)->am() +
+                               tb_[thread]->basis3()->shell(sk)->am() +
+                               tb_[thread]->basis4()->shell(sl)->am();
 
-//                if(!(total_am%2)||
-//                             (BasisSet.shells[si].center!=BasisSet.shells[sj].center)||
-//                             (BasisSet.shells[sj].center!=BasisSet.shells[sk].center)||
-//                             (BasisSet.shells[sk].center!=BasisSet.shells[sl].center)) {
+                //                if(!(total_am%2)||
+                //                             (BasisSet.shells[si].center!=BasisSet.shells[sj].center)||
+                //                             (BasisSet.shells[sj].center!=BasisSet.shells[sk].center)||
+                //                             (BasisSet.shells[sk].center!=BasisSet.shells[sl].center)) {
 
-//                fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
-//                        total_am, siatom, sjatom, skatom, slatom);
+                //                fprintf(outfile, "total_am %d siatom %d sjatom %d skatom %d slatom %d\n",
+                //                        total_am, siatom, sjatom, skatom, slatom);
                 if (!(total_am % 2) ||
-                        (siatom != sjatom) ||
-                        (sjatom != skatom) ||
-                        (skatom != slatom)) {
-//                    fprintf(outfile, "\tadding\n");
+                    (siatom != sjatom) ||
+                    (sjatom != skatom) ||
+                    (skatom != slatom)) {
+                    //                    fprintf(outfile, "\tadding\n");
                     sj_arr.push_back(sj);
                     sk_arr.push_back(sk);
                     sl_arr.push_back(sl);
@@ -731,15 +765,15 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
 
     // Zero out SALC memory
     for (int i=0; i<cdsalcs_->ncd(); ++i)
-        memset(deriv_[thread][i], 0, sizeof(double)*nso);
+        ::memset(deriv_[thread][i], 0, sizeof(double)*nso);
 
     double pfac = 1.0;
-//    if (uish == ujsh)
-//      pfac *= 0.5;
-//    if (uksh == ulsh)
-//      pfac *= 0.5;
-//    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
-//      pfac *= 0.5;
+    //    if (uish == ujsh)
+    //      pfac *= 0.5;
+    //    if (uksh == ulsh)
+    //      pfac *= 0.5;
+    //    if (uish == uksh && ujsh == ulsh || uish == ulsh && ujsh == uksh)
+    //      pfac *= 0.5;
 
     for (int n=0; n<sj_arr.size(); ++n) {
         int sj = sj_arr[n];
@@ -767,9 +801,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
             const AOTransformFunction &ifunc = s1.soshell[itr];
             double icoef = ifunc.coef;
             int iaofunc = ifunc.aofunc;
-            int isofunc = b1_->function_offset_within_shell(uish,
-                                                            ifunc.irrep)
-                    + ifunc.sofunc;
+            int isofunc = ifunc.sofunc;
             int iaooff = iaofunc;
             int isooff = isofunc;
 
@@ -777,9 +809,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                 const AOTransformFunction &jfunc = s2.soshell[jtr];
                 double jcoef = jfunc.coef * icoef;
                 int jaofunc = jfunc.aofunc;
-                int jsofunc = b2_->function_offset_within_shell(ujsh,
-                                                                jfunc.irrep)
-                        + jfunc.sofunc;
+                int jsofunc = jfunc.sofunc;
                 int jaooff = iaooff*nao2 + jaofunc;
                 int jsooff = isooff*nso2 + jsofunc;
 
@@ -787,9 +817,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                     const AOTransformFunction &kfunc = s3.soshell[ktr];
                     double kcoef = kfunc.coef * jcoef;
                     int kaofunc = kfunc.aofunc;
-                    int ksofunc = b3_->function_offset_within_shell(uksh,
-                                                                    kfunc.irrep)
-                            + kfunc.sofunc;
+                    int ksofunc = kfunc.sofunc;
                     int kaooff = jaooff*nao3 + kaofunc;
                     int ksooff = jsooff*nso3 + ksofunc;
 
@@ -797,9 +825,7 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                         const AOTransformFunction &lfunc = s4.soshell[ltr];
                         double lcoef = lfunc.coef * kcoef;
                         int laofunc = lfunc.aofunc;
-                        int lsofunc = b4_->function_offset_within_shell(ulsh,
-                                                                        lfunc.irrep)
-                                + lfunc.sofunc;
+                        int lsofunc = lfunc.sofunc;
                         int laooff = kaooff*nao4 + laofunc;
                         int lsooff = ksooff*nso4 + lsofunc;
 
@@ -837,11 +863,11 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
                         D[2] *= lambda_T * pfac * lcoef;
 
                         dprintf("so' derivatives: A[0] %+lf A[1] %+lf A[2] %+lf\n"
-                                         "                 B[0] %+lf B[1] %+lf B[2] %+lf\n"
-                                         "                 C[0] %+lf C[1] %+lf C[2] %+lf\n"
-                                         "                 D[0] %+lf D[1] %+lf D[2] %+lf\n"
-                                         "lsooff: %d\n"
-                                         "iirrep: %d jirrep: %d kirrep: %d lirrep: %d combined: %d\n",
+                                "                 B[0] %+lf B[1] %+lf B[2] %+lf\n"
+                                "                 C[0] %+lf C[1] %+lf C[2] %+lf\n"
+                                "                 D[0] %+lf D[1] %+lf D[2] %+lf\n"
+                                "lsooff: %d\n"
+                                "iirrep: %d jirrep: %d kirrep: %d lirrep: %d combined: %d\n",
                                 A[0], A[1], A[2], B[0], B[1], B[2], C[0], C[1], C[2], D[0], D[1], D[2], lsooff,
                                 ifunc.irrep, jfunc.irrep, kfunc.irrep, lfunc.irrep,
                                 ifunc.irrep ^ jfunc.irrep ^ kfunc.irrep ^ lfunc.irrep);
@@ -1116,7 +1142,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                     }
 
 #ifdef MINTS_TIMER
-    timer_on("TwoBodySOInt::provide_IJKL functor");
+                    timer_on("TwoBodySOInt::provide_IJKL functor");
 #endif
                     for (int i=0; i<cdsalcs_->ncd(); ++i) {
                         if (fabs(deriv_[thread][i][lsooff]) > 1.0e-14)
@@ -1128,7 +1154,7 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                                  deriv_[thread][i][lsooff]);
                     }
 #ifdef MINTS_TIMER
-    timer_off("TwoBodySOInt::provide_IJKL functor");
+                    timer_off("TwoBodySOInt::provide_IJKL functor");
 #endif
                 }
             }
@@ -1166,7 +1192,7 @@ void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
     }
     else if (comm_ == "LOCAL") {
         boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
-                            SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
+                                                                 SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
         this->compute_quartets(shellIter, functor);
     }
     else {
@@ -1203,7 +1229,7 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
     }
     else if (comm_ == "LOCAL") {
         boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
-                            SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
+                                                                 SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
         this->compute_quartets_deriv1(shellIter, functor);
     }
     else {

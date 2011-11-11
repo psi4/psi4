@@ -70,4 +70,5 @@ h2.update_geometry()
 optimize('mp2')
 compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[9] Wrapper optimize (analytic E) calling energy")  #TEST
 
+clean()
 
