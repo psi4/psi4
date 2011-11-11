@@ -544,17 +544,17 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     } else {
         ss << " Root " << (Iroot+1); 
     }
-    SharedMatrix opdm(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
 
+    SharedMatrix opdm_a(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
     int mo_offset = 0;
     for (int h = 0; h < Ca->nirrep(); h++) {
-        int nmo = CalcInfo.orbs_per_irr[irrep];
-        int nfv = CalcInfo.frozen_uocc[irrep];
+        int nmo = CalcInfo.orbs_per_irr[h];
+        int nfv = CalcInfo.frozen_uocc[h];
         int nmor = nmo - nfv;
         //int nmo = Ca->colspi()[h];
         //int nmor = nmo - ref->frzvpi()[h];
         if (!nmo || !nmor) continue;
-        double** opdmp = opdm->pointer(h);
+        double** opdmap = opdm_a->pointer(h);
         
         for (int i=0; i<CalcInfo.orbs_per_irr[h]-
                     CalcInfo.frozen_uocc[h]; i++) {
@@ -562,23 +562,50 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
                     CalcInfo.frozen_uocc[h]; j++) {
             int i_ci = CalcInfo.reorder[i+mo_offset];
             int j_ci = CalcInfo.reorder[j+mo_offset]; 
-            opdmp[i][j] = onepdm[i_ci][j_ci];
+            opdmap[i][j] = onepdm_a[i_ci][j_ci];
           } 
         }
         mo_offset += CalcInfo.orbs_per_irr[h];
     }
+    oe->set_Da_mo(opdm_a);
 
-    //Ca->print();
-    //opdm->print();
-    
-    // Scale by 0.5 for Rob
-    opdm->scale(0.5);
+    if (Parameters.ref == "ROHF") {
+        SharedMatrix opdm_b(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
+        mo_offset = 0;
+        for (int h = 0; h < Ca->nirrep(); h++) {
+            int nmo = CalcInfo.orbs_per_irr[h];
+            int nfv = CalcInfo.frozen_uocc[h];
+            int nmor = nmo - nfv;
+            //int nmo = Ca->colspi()[h];
+            //int nmor = nmo - ref->frzvpi()[h];
+            if (!nmo || !nmor) continue;
+            double** opdmbp = opdm_b->pointer(h);
+            
+            for (int i=0; i<CalcInfo.orbs_per_irr[h]-
+                        CalcInfo.frozen_uocc[h]; i++) {
+              for (int j=0; j<CalcInfo.orbs_per_irr[h]-
+                        CalcInfo.frozen_uocc[h]; j++) {
+                int i_ci = CalcInfo.reorder[i+mo_offset];
+                int j_ci = CalcInfo.reorder[j+mo_offset]; 
+                opdmbp[i][j] = onepdm_b[i_ci][j_ci];
+              } 
+            }
+            mo_offset += CalcInfo.orbs_per_irr[h];
+        }
+        oe->set_Db_mo(opdm_b);
+    }
 
-    oe->set_Da_mo(opdm);
     oe->add("DIPOLE");
-    oe->add("QUADRUPOLE");
     oe->add("MULLIKEN_CHARGES");
+    oe->add("NO_OCCUPATIONS");
+    if (Parameters.print_lvl > 1) { 
+        oe->add("QUADRUPOLE");
+    }
+    
+    fprintf(outfile, "  OEProp Analysis %s\n", ss.str().c_str());
     oe->compute();
+
+    std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
 
     fflush(outfile);
     if (!transdens) Iroot++;
