@@ -1,0 +1,30 @@
+#! 6-31G H2O Test FCI Energy Point
+
+refnuc   =   9.1622538847319 #TEST
+refscf   = -75.983675617214  #TEST
+refci    = -76.1209179506153 #TEST
+refcorr  = refci - refscf    #TEST
+
+molecule h2o {
+    O   0.0000000000   0.0000000000  -0.1252739752
+    H   0.0000000000   1.4294907237   0.9940944482
+    H   0.0000000000  -1.4294907237   0.9940944482
+units bohr
+}
+
+set globals {
+  wfn detci
+  fci true
+  basis 6-31G
+  dipmom true
+}
+
+thisenergy = energy('detci')
+
+# 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
+
