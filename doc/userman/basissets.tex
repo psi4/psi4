@@ -268,16 +268,49 @@ Copy the new basis set file into \texttt{\$PSIDATADIR/basis}.
 \item Use new basis set file in arbitrary location.
 
 Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
+As the first line of the file, add the basis set name in brackets.
 As the second line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
 whether the basis set will run in (5D/7F) or (6D/10F). 
-As the first line of the file, add the basis set name in brackets.
-Multiple basis sets can be specified in the same file by adding additional sections with [ basis name ], 
-\texttt{PUREAM} value, and element basis set definitions.
+The combination of [ basis name ], \texttt{PUREAM} value, and element basis set specifications 
+forms a section, like the one shown below.
+Multiple basis sets can be specified in the same file by adding additional sections to the file.
 Specify the location of the new basis set file in a \PSIfour input file with the command 
 \texttt{basis file path/to/basis.file}, where the path can be either relative or absolute.
+\begin{Snippet}
+[ sto-3g ]
+cartesian
+****
+H     0 
+S   3   1.00
+      3.42525091             0.15432897       
+      0.62391373             0.53532814       
+      0.16885540             0.44463454       
+****
+O     0 
+S   3   1.00
+    130.7093200              0.15432897       
+     23.8088610              0.53532814       
+      6.4436083              0.44463454       
+SP   3   1.00
+      5.0331513             -0.09996723             0.15591627       
+      1.1695961              0.39951283             0.60768372       
+      0.3803890              0.70011547             0.39195739       
+****
+\end{Snippet}
 
 \item Include new basis set in input file.
 
+Construct for a basis set a section like the one above that includes [ basis name ], \texttt{PUREAM}
+value, and element basis set specifications. Hash signs denote comments.
+Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\}}, 
+as shown below.
+Multiple basis sets can be specified by adding additional sections within the surrounding brackets.
+\begin{Snippet}
+basis {
+# basis set section like in snippet above goes here
+# additional basis set sections follow
+}
+\end{Snippet}
 \end{itemize}
 
 

@@ -41,6 +41,11 @@ class BasisSet;
 class Prop {
 
 protected:
+    /// Print flag
+    int print_;
+    /// Debug flag
+    int debug_;
+
     /// The set of tasks to complete
     std::set<std::string> tasks_;
 
@@ -55,16 +60,17 @@ protected:
     /// The matrix factory for this wavefunction's basisset (SO)
     boost::shared_ptr<MatrixFactory> factory_;
 
-    /**
-    * The Density/Occupation matrices and transformers
-    * Calling get on a beta matrix routine will throw if
-    * this wavefunction is restricted
-    * If restricted, Db_so_.get() == Da_so_.get(), and same for C
-    **/
-
     /// The AO to USO matrix
     SharedMatrix AO2USO_;
 
+    /**
+    * Internally, data is held in the SO basis in Pitzer order
+    */
+
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_a_;
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_b_;
     /// The alpha density matrix in the SO basis
     SharedMatrix Da_so_;
     /// The beta density matrix in the SO basis
@@ -74,19 +80,12 @@ protected:
     /// The beta C matrix in the SO basis
     SharedMatrix Cb_so_;
 
-    /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
-    SharedMatrix Da_ao();
-    /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
-    SharedMatrix Db_ao();
-    /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis
-    SharedMatrix Ca_ao();
-    /// The beta C matrix in the AO (Spherical Harmonics, C1) basis
-    SharedMatrix Cb_ao();
-
-    /// The alpha density matrix in the MO basis
-    SharedMatrix Da_mo();
-    /// The beta density matrix in the MO basis
-    SharedMatrix Db_mo();
+    /**
+    * The Density/Occupation matrices and transformers
+    * Calling get on a beta matrix routine will throw if
+    * this wavefunction is restricted
+    * If restricted, Db_so_.get() == Da_so_.get(), and same for C
+    **/
 
     /// Common initialization
     void common_init();
@@ -95,32 +94,95 @@ protected:
     virtual void print_header() = 0;
 
 public:
+
+    /// Build a Prop object with C, epsilon, and restricted buit from wfn
     Prop(boost::shared_ptr<Wavefunction> wfn);
+    /// Virtual destructor
     virtual ~Prop();
 
-    /**
-    * The Density/Occupation matrix updaters
-    * Calling set on a beta matrix routine will throw if
-    * this wavefunction is restricted
-    **/
+    // => Wavefunction Modifiers (rarely called, C is usually fixed at HF) <= //
+    
+    // Change restricted flag. Resets C/D/epsilon matrices from wfn
+    void set_wavefunction(boost::shared_ptr<Wavefunction> wfn);
+    // Change restricted flag. Resets C/D/epsilon matrices from wfn
+    void set_restricted(bool restricted);
+    // Set alpha eigenvalues, MO pitzer order basis
+    void set_epsilon_a(SharedVector epsilon_a);
+    // Set beta eigenvalues, MO pitzer order basis. Throws if restricted
+    void set_epsilon_b(SharedVector epsilon_a);
+    // Set alpha C matrix, SO/MO pitzer order basis. 
+    void set_Ca(SharedMatrix Ca);
+    // Set beta C matrix, SO/MO pitzer order basis. Throws if restricted
+    void set_Cb(SharedMatrix Cb);
+
+    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
+
+    void set_Da_ao(SharedMatrix Da, int symmetry = 0);
+    void set_Db_ao(SharedMatrix Db, int symmetry = 0);
     void set_Da_so(SharedMatrix Da);
     void set_Db_so(SharedMatrix Db);
-    void set_Ca_so(SharedMatrix Ca);
-    void set_Cb_so(SharedMatrix Cb);
-    void set_Da_ao(SharedMatrix Da);
-    void set_Db_ao(SharedMatrix Db);
-    void set_Ca_ao(SharedMatrix Ca);
-    void set_Cb_ao(SharedMatrix Cb);
     void set_Da_mo(SharedMatrix Da);
     void set_Db_mo(SharedMatrix Db);
+
+    // => Get routines (useful to quickly change bases) <= //
+
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_a() const { return epsilon_a_; }
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_b() const { return epsilon_b_; }
+
+    /// The alpha C matrix in the SO basis
+    SharedMatrix Ca_so() const { return Ca_so_; }
+    /// The beta C matrix in the SO basis
+    SharedMatrix Cb_so() const { return Cb_so_; }
+    /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
+    SharedMatrix Ca_ao();
+    /// The beta C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
+    SharedMatrix Cb_ao();
+
+    /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
+    SharedMatrix Da_ao();
+    /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
+    SharedMatrix Db_ao();
+    /// The alpha density matrix in the SO basis
+    SharedMatrix Da_so() const { return Da_so_; }
+    /// The beta density matrix in the SO basis
+    SharedMatrix Db_so() const { return Db_so_; }
+    /// The alpha density matrix in the MO basis
+    SharedMatrix Da_mo();
+    /// The beta density matrix in the MO basis
+    SharedMatrix Db_mo();
+
+    /// The alpha natural orbital occupations and orbitals in the MO basis
+    std::pair<SharedMatrix, SharedVector> Na_mo();
+    /// The beta natural orbital occupations and orbitals in the MO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_mo();
+    /// The alpha natural orbital occupations and orbitals in the SO basis
+    std::pair<SharedMatrix, SharedVector> Na_so();
+    /// The beta natural orbital occupations and orbitals in the SO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_so();
+    /// The alpha natural orbital occupations and orbitals in the AO basis
+    std::pair<SharedMatrix, SharedVector> Na_ao();
+    /// The beta natural orbital occupations and orbitals in the AO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_ao();
+
+    // => Queue/Compute Routines <= //
 
     /// Add a single task to the queue
     void add(const std::string& task);
     /// Add a set of tasks to the queue
     void add(std::vector<std::string> tasks);
+    /// Clear task queue
+    void clear();
 
     /// Compute properties
     virtual void compute() = 0;
+
+    // => Utility Routines <= //
+
+    void set_print(int print) { print_; }    
+    void set_debug(int debug) { debug_; }    
+
 };
 
 
