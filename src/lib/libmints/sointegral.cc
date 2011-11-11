@@ -419,19 +419,19 @@ void TwoBodySOInt::common_init()
 
     size_t aQRS = b1_->max_nfunction_in_shell() * b2_->basis()->max_function_per_shell() *
                   b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
-    size_t PQRd = b1_->basis()->max_function_per_shell() * b2_->basis()->max_function_per_shell() *
-                  b3_->basis()->max_function_per_shell() * b4_->max_nfunction_in_shell();
+    size_t abcD = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
+                  b3_->max_nfunction_in_shell() * b4_->basis()->max_function_per_shell();
     size_t abRS = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
                   b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
 
-    size_t max_size = std::max(aQRS, PQRd);
+    size_t max_size = std::max(aQRS, abcD);
 
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *
             b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();
 
-    fprintf(outfile, "aQRS %zu, PQRd %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, PQRd, abRS, max_size, size_);
+    fprintf(outfile, "aQRS %zu, abcD %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, abcD, abRS, max_size, size_);
 
     // Check to make sure things are consistent
     if (tb_[0]->deriv() > 0 && cdsalcs_ == 0)
