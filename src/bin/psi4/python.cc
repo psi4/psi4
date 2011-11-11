@@ -603,9 +603,64 @@ bool py_psi_has_option_changed(const string& key)
     return data.has_changed();
 }
 
-object py_psi_get_global_option(const string& key)
+bool py_psi_has_global_option_changed(std::string const & key)
 {
     string nonconst_key = key;
+    Data& data = Process::environment.options.get_global(nonconst_key);
+
+    return data.has_changed();
+}
+
+bool py_psi_has_local_option_changed(std::string const & module, std::string const & key)
+{
+    string nonconst_key = key;
+    Process::environment.options.set_current_module(module);
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    return data.has_changed();
+}
+
+void py_psi_revoke_option_changed(std::string const & key)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Data& data = Process::environment.options.use(nonconst_key);
+    data.dechanged();
+}
+
+void py_psi_revoke_global_option_changed(std::string const & key)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Data& data = Process::environment.options.get_global(nonconst_key);
+    data.dechanged();
+}
+
+void py_psi_revoke_local_option_changed(std::string const & module, std::string const & key)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_current_module(module);
+    Data& data = Process::environment.options.use(nonconst_key);
+    data.dechanged();
+}
+
+object py_psi_get_global_option(std::string const & key)
+{
+    string nonconst_key = key;
+    Data& data = Process::environment.options.get_global(nonconst_key);
+
+    if (data.type() == "string")
+        return str(data.to_string());
+    else if (data.type() == "boolean" || data.type() == "int")
+        return object(data.to_integer());
+    else if (data.type() == "double")
+        return object(data.to_double());
+
+    return object();
+}
+
+object py_psi_get_local_option(std::string const & module, std::string const & key)
+{
+    string nonconst_key = key;
+    Process::environment.options.set_current_module(module);
     Data& data = Process::environment.options.use(nonconst_key);
 
     if (data.type() == "string")
@@ -797,11 +852,17 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Get the option; letting liboptions decide whether to use global or local
     def("get_option", py_psi_get_option);
 
-    // Returns whether the option has changed.
-    def("has_option_changed", py_psi_has_option_changed);
-
-    // Get the global option
+    // Get the option; specify whether to use global or local
     def("get_global_option", py_psi_get_global_option);
+    def("get_local_option", py_psi_get_local_option);
+
+    // Returns whether the option has changed/revoke has changed for silent resets
+    def("has_option_changed", py_psi_has_option_changed);
+    def("has_global_option_changed", py_psi_has_global_option_changed);
+    def("has_local_option_changed", py_psi_has_local_option_changed);
+    def("revoke_option_changed", py_psi_revoke_option_changed);
+    def("revoke_global_option_changed", py_psi_revoke_global_option_changed);
+    def("revoke_local_option_changed", py_psi_revoke_local_option_changed);
 
     // These return/set variable value found in Process::environment.globals
     def("get_variable", py_psi_get_variable);
