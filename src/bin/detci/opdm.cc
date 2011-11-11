@@ -537,7 +537,6 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     boost::shared_ptr<OEProp> oe(new OEProp());
     boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction(); 
     boost::shared_ptr<Matrix> Ca = wfn->Ca(); 
-    oe->set_Ca_so(Ca);
     std::stringstream ss;
     ss << "CI " << (transdens ? "TDM" : "OPDM");
     if (transdens) {
