@@ -33,10 +33,10 @@ class BasisSet;
 *  for transition dipoles.
 *
 *  Therefore, the Prop object explicitly stores a mutable set of D/C
-*   matrices in the SO basis, and knows how to transform between them at will
-*   Additionally, while these are initially ripped from the constructor's
-*   wavefunction, substitutions may be made later, to use different orbitals
-*   or densities.
+*  matrices in the SO basis, and knows how to transform between them at will
+*  Additionally, while these are initially ripped from the constructor's
+*  wavefunction, substitutions may be made later, to use different orbitals
+*  or densities.
 */
 class Prop {
 
@@ -45,6 +45,9 @@ protected:
     int print_;
     /// Debug flag
     int debug_;
+
+    /// The title of this Prop object, for use in saving info
+    std::string title_;
 
     /// The set of tasks to complete
     std::set<std::string> tasks_;
@@ -79,13 +82,6 @@ protected:
     SharedMatrix Ca_so_;
     /// The beta C matrix in the SO basis
     SharedMatrix Cb_so_;
-
-    /**
-    * The Density/Occupation matrices and transformers
-    * Calling get on a beta matrix routine will throw if
-    * this wavefunction is restricted
-    * If restricted, Db_so_.get() == Da_so_.get(), and same for C
-    **/
 
     /// Common initialization
     void common_init();
@@ -174,6 +170,9 @@ public:
     void add(std::vector<std::string> tasks);
     /// Clear task queue
     void clear();
+
+    /// Set title for use in saving information
+    void set_title(const std::string& title) { title_ = title; }
 
     /// Compute properties
     virtual void compute() = 0;
