@@ -135,4 +135,5 @@ compare_matrices(luRef, A, 6, "LU Decomposition")               #TEST
 A.set_name('Hilbert Matrix LU Decomposition (T)')
 A.print_out()
 
+clean()
 
