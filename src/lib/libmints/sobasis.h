@@ -95,6 +95,9 @@ public:
                 soshellpi[h][n].sofunc += offsets[h];
             }
         }
+        for(int z=0; z<soshell.size(); ++z) {
+            soshell[z].sofunc += offsets[soshell[z].irrep];
+        }
     }
 
     AOTransform();

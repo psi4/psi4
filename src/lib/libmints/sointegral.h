@@ -276,22 +276,13 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     const size_t nso123 = nso1*nso2*nso3;
     const size_t nso = nso1*nso2*nso3*nso4;
 
-    fprintf(outfile, "nso1 %d, nso2 %d, nso3 %d, nso4 %d\n", nso1, nso2, nso3, nso4);
-
     const int nao1 = b1_->naofunction(uish);
     const int nao2 = b2_->naofunction(ujsh);
     const int nao3 = b3_->naofunction(uksh);
     const int nao4 = b4_->naofunction(ulsh);
-    const size_t nao234 = nao2*nao3*nao4;
-    const size_t nao34  = nao3*nao4;
-    const size_t nao = nao1*nao2*nao3*nao4;
-
-    fprintf(outfile, "nao1 %d, nao2 %d, nao3 %d, nao4 %d\n", nao1, nao2, nao3, nao4);
 
     const size_t aQRS = nso1 * nao2 * nao3 * nao4;
     const size_t abcD = nso1 * nso2 * nso3 * nao4;
-    const size_t abRS = nso1 * nso2 * nao3 * nao4;
-    const size_t max_aQRS_PQRd = std::max(aQRS, abcD);
 
     const int iatom = tb_[thread]->basis1()->shell(t1.aoshell[0].aoshell)->ncenter();
     const int jatom = tb_[thread]->basis2()->shell(t2.aoshell[0].aoshell)->ncenter();
@@ -304,13 +295,7 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     timer_on("TwoBodySOInt::compute_shell zero buffer");
 #endif // MINTS_TIMER
 
-    fprintf(outfile, "(%d %d | %d %d):\n", uish, ujsh, uksh, ulsh);
     ::memset(buffer_[thread], 0, nso*sizeof(double));
-    ::memset(temp_[thread],   0, max_aQRS_PQRd*sizeof(double));
-    ::memset(temp2_[thread],  0, abRS*sizeof(double));
-    fprintf(outfile, "buffer_ zeroed %zu\n", nso);
-    fprintf(outfile, "temp_ zeroed %zu\n", max_aQRS_PQRd);
-    fprintf(outfile, "temp2_ zeroed %zu\n", abRS);
 
 #ifdef MINTS_TIMER
     timer_off("TwoBodySOInt::compute_shell zero buffer");
@@ -393,14 +378,6 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
     // Loop over unique quartets
     const AOTransform& s1 = b1_->aotrans(si);
 
-    //    fprintf(outfile, "for (%d %d | %d %d) need to compute %lu4 thing(s):\n",
-    //            uish, ujsh, uksh, ulsh, sj_arr.size());
-
-//    int *fo1 = b1_->function_offset_within_shell(uish);
-//    int *fo2 = b1_->function_offset_within_shell(ujsh);
-//    int *fo3 = b1_->function_offset_within_shell(uksh);
-//    int *fo4 = b1_->function_offset_within_shell(ulsh);
-
     const unsigned short *ifuncpi = s1.nfuncpi;
 
     for (int n=0; n<sj_arr.size(); ++n) {
@@ -419,13 +396,10 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
         // Compute this unique AO shell
         tb_[thread]->compute_shell(si, sj, sk, sl);
 
-        fprintf(outfile, " working on PL(%d %d | %d %d)\n", si, sj, sk, sl);
-
 #ifdef MINTS_TIMER
         timer_on("TwoBodySOInt::compute_shell actual transform");
 #endif // MINTS_TIMER
 
-        fprintf(outfile, "i: goes to temp_\n");
         for (int isym=0; isym<nirrep; ++isym) {
             unsigned short nifunc = ifuncpi[isym];
             for (int itr=0; itr<nifunc; itr++) {
@@ -433,157 +407,69 @@ void TwoBodySOInt::compute_shell(int uish, int ujsh, int uksh, int ulsh, TwoBody
                 timer_on("itr");
 #endif // MINTS_TIMER
                 const AOTransformFunction &ifunc = s1.soshellpi[isym][itr];
-                double icoef = ifunc.coef * lambda_T;
+                double icoef = ifunc.coef;
                 int iaofunc = ifunc.aofunc;
                 int isofunc = ifunc.sofunc;
-
+                int iaooff = iaofunc;
+                int isooff = isofunc;
 #ifdef MINTS_TIMER
                 timer_off("itr");
 #endif // MINTS_TIMER
 
-                // goes to temp
-                fprintf(outfile, "i: iaofunc %d, nao234 %zu, iaofunc*nao234 %zu\n", iaofunc, nao234, iaofunc*nao234);
-                fprintf(outfile, "i: isofunc %d,           isofunc*nao234 %zu\n", isofunc, isofunc*nao234);
-                fprintf(outfile, "i: s starts at iaofunc * nao234\n");
-                fprintf(outfile, "i: t starts at isofunc * nao234\n");
-                // transform i
-                const double *s = aobuff + iaofunc * nao234;
-                double *t = temp_[thread] + isofunc * nao234;
-                for (int QRS=0; QRS < nao234; ++QRS)
-                    *(t++) += icoef * *(s++);
-            }
-        }
-
-        fprintf(outfile, "j: goes to temp2_\n");
-        for (int so1=0; so1<nso1; ++so1) {
-            const double* source = temp_[thread] + so1*nao; // nao === nao1*nao2*nao3*nao4
-            double* target = temp2_[thread] + (so1*nso2)*nao;
-
-            fprintf(outfile, "j: source + %zu\n", so1*nao);
-            fprintf(outfile, "j: target + %d\n", so1*nso2*nao3*nao4);
-
-            for (int jsym=0; jsym<nirrep; ++jsym) {
-                unsigned short njfunc = jfuncpi[jsym];
-                for (int jtr=0; jtr<njfunc; jtr++) {
-
+                for (int jsym=0; jsym<nirrep; ++jsym) {
+                    unsigned short njfunc = jfuncpi[jsym];
+                    for (int jtr=0; jtr<njfunc; jtr++) {
 #ifdef MINTS_TIMER
-                    timer_on("jtr");
+                        timer_on("jtr");
 #endif // MINTS_TIMER
-                    const AOTransformFunction &jfunc = s2.soshellpi[jsym][jtr];
-                    double jcoef = jfunc.coef * lambda_T;
-                    int jaofunc = jfunc.aofunc;
-                    int jsofunc = jfunc.sofunc;  // contains offset into resultant buffer
+                        const AOTransformFunction &jfunc = s2.soshellpi[jsym][jtr];
+                        double jcoef = jfunc.coef * icoef;
+                        int jaofunc = jfunc.aofunc;
+                        int jsofunc = jfunc.sofunc;
+                        int jaooff = iaooff*nao2 + jaofunc;
+                        int jsooff = isooff*nso2 + jsofunc;
 #ifdef MINTS_TIMER
-                    timer_off("jtr");
+                        timer_off("jtr");
 #endif // MINTS_TIMER
 
-                    // comes from temp to temp2
-
-                    // transform j
-                    const int sjkl = nao234;
-                    const int tjkl = nso2*nao34;
-
-                    fprintf(outfile, "j: jaofunc %d, sjkl %d, nao34 %zu jaofun*nao34 %zu\n", jaofunc, sjkl, nao34, jaofunc*nao34);
-                    fprintf(outfile, "j: jsofunc %d, tjkl %d,         jsofunc*nao34 %zu\n", jsofunc, tjkl, jsofunc*nao34);
-                    fprintf(outfile, "j: s starts at jaofunc * nao34\n");
-                    fprintf(outfile, "j: t starts at jsofunc * nao34\n");
-
-                    const double *s = source + jaofunc * nao34;
-                    double *t = target + jsofunc * nao34;
-                    for (int RS=0; RS < nao34; ++RS)
-                        *(t++) += jcoef * *(s++);
-                }
-            }
-        }
-
-        // Since we're adding back into temp_[thread] we need to clear it out.
-        fprintf(outfile, "k: from temp2 to temp\n");
-        ::memset(temp_[thread], 0, max_aQRS_PQRd*sizeof(double));
-        for (int so1=0; so1<nso1; ++so1) {
-            for (int so2=0; so2<nso2; ++so2) {
-                const double* source = temp2_[thread] + (so1*nso2+so2)*nao; // nao === nao1*nao2*nao3*nao4
-                double* target = temp_[thread] + ((so1*nso2+so2)*nso3)*nao;
-
-                fprintf(outfile, "k: source + %zu, so1 %d, so2 %d\n", (so1*nso2+so2)*nao, so1, so2);
-                fprintf(outfile, "k: target + %zu\n", ((so1*nso2+so2)*nso3)*nao);
-
-                for (int ksym=0; ksym<nirrep; ++ksym) {
-                    unsigned short nkfunc = kfuncpi[ksym];
-                    for (int ktr=0; ktr<nkfunc; ktr++) {
+                        for (int ksym=0; ksym<nirrep; ++ksym) {
+                            unsigned short nkfunc = kfuncpi[ksym];
+                            for (int ktr=0; ktr<nkfunc; ktr++) {
 #ifdef MINTS_TIMER
-                        timer_on("ktr");
-#endif // MINTS_TIMER
-                        const AOTransformFunction &kfunc = s3.soshellpi[ksym][ktr];
-                        double kcoef = kfunc.coef * lambda_T;
-                        int kaofunc = kfunc.aofunc;
-                        int ksofunc = kfunc.sofunc;
-#ifdef MINTS_TIMER
-                        timer_off("ktr");
+                                timer_on("ktr");
 #endif // MINTS_TIMER
 
-                        // transform k
-                        const int skl = nao34;
-                        const int tkl = nso3*nao4;
-
-                        const double *s = source + kaofunc * nao4;
-                        double *t = target + ksofunc * nao4;
-                        for (int R=0; R < nao4; ++R)
-                            *(t++) += kcoef * *(s++);
-                    }
-                }
-            }
-        }
-
-        for (int isym = 0; isym < nirrep; ++isym) {
-            for (int jsym = 0; jsym < nirrep; ++jsym) {
-                for (int ksym = 0; ksym < nirrep; ++ksym) {
-                    int lsym = isym ^ jsym ^ ksym;
-
-                    fprintf(outfile, "isym %d, jsym %d, ksym %d, lsym %d\n", isym, jsym, ksym, lsym);
-
-                    unsigned short nlfunc = lfuncpi[lsym];
-                    if (nlfunc) {
-                        for (int so1=0; so1<ifuncpi[isym]; ++so1) {
-                            for (int so2=0; so2<jfuncpi[jsym]; ++so2) {
-                                for (int so3=0; so3<kfuncpi[ksym]; ++so3) {
-
-                                    const double* source = temp_[thread] + ((so1*nso2+so2)*nso3+so3)*nao;
-                                    double* target = buffer_[thread] + ((so1*nso2+so2)*nso3+so3)*nso4*nao;
-
-                                    fprintf(outfile, "l: %d %d %d\n", so1, so2, so3);
-                                    fprintf(outfile, "l: source + %d\n", ((so1*nso2+so2)*nso3+so3));
-                                    fprintf(outfile, "l: target + %d\n", ((so1*nso2+so2)*nso3+so3)*nso4); fflush(outfile);
-
-                                    for (int ltr=0; ltr<nlfunc; ltr++) {
+                                const AOTransformFunction &kfunc = s3.soshellpi[ksym][ktr];
+                                double kcoef = kfunc.coef * jcoef;
+                                int kaofunc = kfunc.aofunc;
+                                int ksofunc = kfunc.sofunc;
+                                int kaooff = jaooff*nao3 + kaofunc;
+                                int ksooff = jsooff*nso3 + ksofunc;
 #ifdef MINTS_TIMER
-                                        timer_on("ltr");
+                                timer_off("ktr");
 #endif // MINTS_TIMER
 
-                                        const AOTransformFunction &lfunc = s4.soshellpi[lsym][ltr];
-                                        double lcoef = lfunc.coef * lambda_T;
-                                        int laofunc = lfunc.aofunc;
-                                        int lsofunc = lfunc.sofunc;
+                                int lsym = isym ^ jsym ^ ksym;
+                                unsigned short nlfunc = lfuncpi[lsym];
+                                for (int ltr=0; ltr<nlfunc; ltr++) {
 #ifdef MINTS_TIMER
-                                        timer_off("ltr");
+                                    timer_on("ltr");
 #endif // MINTS_TIMER
 
+                                    const AOTransformFunction &lfunc = s4.soshellpi[lsym][ltr];
+                                    double lcoef = lfunc.coef * kcoef;
+                                    int laofunc = lfunc.aofunc;
+                                    int lsofunc = lfunc.sofunc;
+                                    int laooff = kaooff*nao4 + laofunc;
+                                    int lsooff = ksooff*nso4 + lsofunc;
 #ifdef MINTS_TIMER
-                                        timer_on("transform");
+                                    timer_off("ltr");
+                                    timer_on("transform");
 #endif
-                                        // transform l
-                                        const int sl = nao4;
-                                        const int tl = nso4;
-
-                                        const double *s = source + laofunc;
-                                        double *t = target + lsofunc;
-                                        for (int ijk=0; ijk<nso123; ijk++, s += sl, t += tl) {
-                                            *(t++) += lcoef * *(s++);
-                                        }
-
+                                    buffer_[thread][lsooff] += lambda_T * lcoef * aobuff[laooff];
 #ifdef MINTS_TIMER
-                                        timer_off("transform");
+                                    timer_off("transform");
 #endif // MINTS_TIMER
-                                    }
                                 }
                             }
                         }
