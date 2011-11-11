@@ -48,14 +48,14 @@ thisenergy = energy('detci')
 
 compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
 # Odd .. PSI4 SCF energy doesn't match PSI3 SCF energy to 8 digits.... #TEST
-compare_values(refscf, get_variable("SCF energy"),     7, "SCF energy") #TEST
+compare_values(refscf, get_variable("SCF total energy"),     7, "SCF energy") #TEST
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
 --------------------------------------------------------------------------
 
-*** tstart() called on ds9
-*** at Sun Nov  6 15:44:18 2011
+*** tstart() called on lawn-143-215-100-134.lawn.gatech.edu
+*** at Tue Nov  8 17:34:26 2011
 
 	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
@@ -122,7 +122,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial ROHF energy:   -56.70322791927451
+  Initial ROHF energy:   -56.70322791927440
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -159,26 +159,26 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
                         Total Energy        Delta E     Density RMS
 
-   @ROHF iter   1:   -70.18004963153233   -1.34768e+01   1.70458e-312  
+   @ROHF iter   1:   -70.18004963153230   -1.34768e+01   5.64121e-307  
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    1 ]
 	SOCC [     1,    0,    0,    0 ]
-   @ROHF iter   2:   -72.69315119802241   -2.51310e+00   5.93326e-01 DIIS
+   @ROHF iter   2:   -72.69315119802231   -2.51310e+00   5.93326e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    1 ]
 	SOCC [     0,    0,    1,    0 ]
-   @ROHF iter   3:   -75.51378954138833   -2.82064e+00   5.14934e-01 DIIS
-   @ROHF iter   4:   -75.61155329071428   -9.77637e-02   2.18789e-02 DIIS
-   @ROHF iter   5:   -75.62122688666513   -9.67360e-03   8.13069e-03 DIIS
-   @ROHF iter   6:   -75.62133169673575   -1.04810e-04   8.97695e-04 DIIS
-   @ROHF iter   7:   -75.62134171593001   -1.00192e-05   3.17822e-04 DIIS
-   @ROHF iter   8:   -75.62134219223159   -4.76302e-07   7.80409e-05 DIIS
-   @ROHF iter   9:   -75.62134222964059   -3.74090e-08   2.68586e-05 DIIS
-   @ROHF iter  10:   -75.62134223068320   -1.04261e-09   4.90019e-06 DIIS
-   @ROHF iter  11:   -75.62134223068625   -3.05533e-12   2.19277e-07 DIIS
-   @ROHF iter  12:   -75.62134223068651   -2.55795e-13   5.74524e-08 DIIS
+   @ROHF iter   3:   -75.51378954138822   -2.82064e+00   5.14934e-01 DIIS
+   @ROHF iter   4:   -75.61155329071427   -9.77637e-02   2.18789e-02 DIIS
+   @ROHF iter   5:   -75.62122688666508   -9.67360e-03   8.13069e-03 DIIS
+   @ROHF iter   6:   -75.62133169673572   -1.04810e-04   8.97695e-04 DIIS
+   @ROHF iter   7:   -75.62134171592999   -1.00192e-05   3.17822e-04 DIIS
+   @ROHF iter   8:   -75.62134219223145   -4.76301e-07   7.80409e-05 DIIS
+   @ROHF iter   9:   -75.62134222964053   -3.74091e-08   2.68586e-05 DIIS
+   @ROHF iter  10:   -75.62134223068325   -1.04272e-09   4.90019e-06 DIIS
+   @ROHF iter  11:   -75.62134223068625   -2.99849e-12   2.19275e-07 DIIS
+   @ROHF iter  12:   -75.62134223068642   -1.70530e-13   5.75494e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -211,7 +211,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
   Energy converged.
 
-  @ROHF Final Energy:   -75.62134223068651
+  @ROHF Final Energy:   -75.62134223068642
 
   ==> Properties <==
 
@@ -228,18 +228,18 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds9 at Sun Nov  6 15:44:18 2011
+*** tstop() called on lawn-143-215-100-134.lawn.gatech.edu at Tue Nov  8 17:34:26 2011
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.13 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Sun Nov  6 15:44:18 2011
+*** tstart() called on lawn-143-215-100-134.lawn.gatech.edu
+*** at Tue Nov  8 17:34:26 2011
 
 
 	**************************************************
@@ -311,7 +311,7 @@ Total time:
 	Pre-sorting two-electron ints...
 
 
-	Frozen core energy =  -61.217651317031866
+	Frozen core energy =  -61.217651317031752
 	Transforming two-electron ints...
 
 	Sorting half-transformed integrals...
@@ -324,18 +324,18 @@ Total time:
 	Transforming one-electron integrals...
 	Frozen-core operator written to file 35.
 
-*** tstop() called on ds9 at Sun Nov  6 15:44:18 2011
+*** tstop() called on lawn-143-215-100-134.lawn.gatech.edu at Tue Nov  8 17:34:26 2011
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Sun Nov  6 15:44:18 2011
+*** tstart() called on lawn-143-215-100-134.lawn.gatech.edu
+*** at Tue Nov  8 17:34:26 2011
 
 
 *******************************************************
@@ -448,42 +448,42 @@ Iter  4  Root  1 = -75.785066791   Delta_E -5.835E-06   Delta_C  1.017E-03
 Iter  5  Root  1 = -75.785067164   Delta_E -3.736E-07   Delta_C  2.587E-04  
 Iter  6  Root  1 = -75.785067187   Delta_E -2.241E-08   Delta_C  6.476E-05 c
 
-* ROOT 1 CI total energy = -75.7850671866021
+* ROOT 1 CI total energy = -75.7850671866020
 
 
 The 20 most important determinants
 
-    1    0.977151  (  302,  641)  2A1X  3A1X  1B1A  1B2X  
-    2   -0.037409  (  324,  667)  2A1X  3A1X  1B1A  2B2X  
-    3    0.024331  (  307,  646)  2A1X  1B1A  1B2X  6A1X  
-    4   -0.024282  (  936,  239)  2A1A  3A1B  1B1X  1B2X  3B1A  
-    5   -0.024185  (  923,  239)  2A1A  3A1X  1B1B  1B2X  4A1A  
-    6   -0.024039  (  932,  239)  2A1A  3A1X  1B1X  1B2B  1A2A  
-*   7   -0.023658  (  326,  669)  2A1X  3A1X  1B1A  4B2X  
-    8    0.023298  (  321,  667)  2A1X  3A1X  1B2A  2B1A  2B2B  
-    9   -0.023250  (  326,  667)  2A1X  3A1X  1B1A  2B2B  4B2A  
-   10   -0.023146  (  325,  668)  2A1X  3A1X  1B1A  3B2X  
-   11    0.022949  (  321,  669)  2A1X  3A1X  1B2A  2B1A  4B2B  
-   12    0.022588  (    7,  440)  2A1X  3A1X  1B1B  1B2A  2B2A  
-   13   -0.022379  (  324,  669)  2A1X  3A1X  1B1A  2B2A  4B2B  
-*  14    0.022277  (  928,  239)  2A1A  3A1X  1B1B  1B2X  9A1A  
-   15    0.021797  (  305,  644)  2A1X  1B1A  1B2X  5A1X  
-   16    0.021693  (  321,  646)  2A1X  3A1A  1B2X  6A1B  2B1A  
-   17   -0.020706  (  924,  239)  2A1A  3A1X  1B1B  1B2X  5A1A  
-   18    0.020347  (  305,  667)  2A1X  3A1B  1B1A  1B2A  5A1A  2B2B  
-*  19    0.019749  (  311,  650)  2A1X  1B1A  1B2X  8A1X  
-   20   -0.019717  (  324,  644)  2A1X  3A1A  1B1A  1B2B  5A1B  2B2A  
+    1   -0.977151  (  302,  641)  2A1X  3A1X  1B1A  1B2X  
+    2    0.037409  (  324,  667)  2A1X  3A1X  1B1A  2B2X  
+    3   -0.024331  (  307,  646)  2A1X  1B1A  1B2X  6A1X  
+    4    0.024282  (  936,  239)  2A1A  3A1B  1B1X  1B2X  3B1A  
+    5    0.024185  (  923,  239)  2A1A  3A1X  1B1B  1B2X  4A1A  
+    6    0.024039  (  932,  239)  2A1A  3A1X  1B1X  1B2B  1A2A  
+*   7    0.023658  (  326,  669)  2A1X  3A1X  1B1A  4B2X  
+    8   -0.023298  (  321,  667)  2A1X  3A1X  1B2A  2B1A  2B2B  
+    9    0.023250  (  326,  667)  2A1X  3A1X  1B1A  2B2B  4B2A  
+   10    0.023146  (  325,  668)  2A1X  3A1X  1B1A  3B2X  
+   11   -0.022949  (  321,  669)  2A1X  3A1X  1B2A  2B1A  4B2B  
+   12   -0.022588  (    7,  440)  2A1X  3A1X  1B1B  1B2A  2B2A  
+   13    0.022379  (  324,  669)  2A1X  3A1X  1B1A  2B2A  4B2B  
+*  14   -0.022277  (  928,  239)  2A1A  3A1X  1B1B  1B2X  9A1A  
+   15   -0.021797  (  305,  644)  2A1X  1B1A  1B2X  5A1X  
+   16   -0.021693  (  321,  646)  2A1X  3A1A  1B2X  6A1B  2B1A  
+   17    0.020706  (  924,  239)  2A1A  3A1X  1B1B  1B2X  5A1A  
+   18   -0.020347  (  305,  667)  2A1X  3A1B  1B1A  1B2A  5A1A  2B2B  
+*  19   -0.019749  (  311,  650)  2A1X  1B1A  1B2X  8A1X  
+   20    0.019717  (  324,  644)  2A1X  3A1A  1B1A  1B2B  5A1B  2B2A  
 
 
 
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.013348
- Write     0.006622
- Sigma1    0.069939
- Sigma2    0.179288
- Sigma3    0.203993
+ Read      0.018497
+ Write     0.007555
+ Sigma1    0.057996
+ Sigma2    0.156058
+ Sigma3    0.224387
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -497,13 +497,13 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds9 at Sun Nov  6 15:44:19 2011
+*** tstop() called on lawn-143-215-100-134.lawn.gatech.edu at Tue Nov  8 17:34:27 2011
 Module time:
-	user time   =       0.89 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.88 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.05 seconds =       0.02 minutes
+	user time   =       1.08 seconds =       0.02 minutes
 	system time =       0.05 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 

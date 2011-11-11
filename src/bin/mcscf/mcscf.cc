@@ -70,7 +70,7 @@ PsiReturnType mcscf(Options& options)
       moinfo_scf      = new psi::MOInfoSCF(options);
       wfn->compute_energy();
       Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();
-      Process::environment.globals["SCF ENERGY"] = wfn->reference_energy();
+      Process::environment.globals["SCF TOTAL ENERGY"] = wfn->reference_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
       fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");
       fflush(outfile);
