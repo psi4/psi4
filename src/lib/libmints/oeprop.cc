@@ -33,6 +33,7 @@ Prop::~Prop()
 }
 void Prop::common_init()
 {
+    title_ = "";
     print_ = 1;
     debug_ = 0;
     tasks_.clear();
