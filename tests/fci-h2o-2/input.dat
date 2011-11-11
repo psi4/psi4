@@ -30,3 +30,5 @@ compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #T
 compare_values(refci, thisenergy,                      7, "CI energy") #TEST
 compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
 
+clean()
+

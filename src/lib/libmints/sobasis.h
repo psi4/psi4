@@ -86,6 +86,19 @@ public:
 class AOTransform {
 public:
     std::vector<AOTransformFunction> soshell;
+    std::vector<AOTransformFunction> soshellpi[8];
+    unsigned short nfuncpi[8];
+
+    void add_offsets(int nirreps, int *offsets){
+        for(int h=0; h<nirreps; ++h){
+            for(int n=0; n<nfuncpi[h]; ++n){
+                soshellpi[h][n].sofunc += offsets[h];
+            }
+        }
+        for(int z=0; z<soshell.size(); ++z) {
+            soshell[z].sofunc += offsets[soshell[z].irrep];
+        }
+    }
 
     AOTransform();
     ~AOTransform();
@@ -129,6 +142,8 @@ public:
     SOBasisSet(const boost::shared_ptr<BasisSet>&, const boost::shared_ptr<IntegralFactory>&);
     SOBasisSet(const boost::shared_ptr<BasisSet>&, const IntegralFactory*);
     ~SOBasisSet();
+
+    boost::shared_ptr<BasisSet> basis() const;
 
     /// Return the number of shells.
     int nshell() const { return nshell_; }
