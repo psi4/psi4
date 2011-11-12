@@ -164,6 +164,7 @@ def run_mp2(name, **kwargs):
         dertype = PsiMod.get_option("DERTYPE")
     else:
         dertype = kwargs.get("DERTYPE", "NONE") 
+
     PsiMod.set_local_option("TRANSQT2", "DERTYPE", dertype)
     PsiMod.set_local_option("TRANSQT2", "WFN", "MP2")
     PsiMod.transqt2()
@@ -172,7 +173,23 @@ def run_mp2(name, **kwargs):
     PsiMod.ccsort()
     PsiMod.set_local_option("MP2", "WFN", "MP2")
     PsiMod.set_local_option("MP2", "DERTYPE", dertype)
-    return PsiMod.mp2()
+
+    returnvalue = PsiMod.mp2()
+
+    PsiMod.set_local_option('TRANSQT2', 'DERTYPE', 'NONE')
+    PsiMod.revoke_local_option_changed('TRANSQT2', 'DERTYPE')
+    PsiMod.set_local_option('TRANSQT2', 'WFN', 'SCF')
+    PsiMod.revoke_local_option_changed('TRANSQT2', 'WFN')
+    PsiMod.set_local_option('CCSORT', 'DERTYPE', 'NONE')
+    PsiMod.revoke_local_option_changed('CCSORT', 'DERTYPE')
+    PsiMod.set_local_option('CCSORT', 'WFN', 'SCF')
+    PsiMod.revoke_local_option_changed('CCSORT', 'WFN')
+    PsiMod.set_local_option('MP2', 'DERTYPE', 'NONE')
+    PsiMod.revoke_local_option_changed('MP2', 'DERTYPE')
+    PsiMod.set_local_option('MP2', 'WFN', 'SCF')
+    PsiMod.revoke_local_option_changed('MP2', 'WFN')
+
+    return returnvalue
 
 def run_mp2_gradient(name, **kwargs):
     run_mp2(name, DERTYPE="FIRST",**kwargs)
@@ -190,7 +207,7 @@ def run_ccsd(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
-    if not (name.upper() == 'CCSD(T)'):
+    if not (name.lower() == 'ccsd(t)'):
         PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
         PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD')
         PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD')
@@ -203,7 +220,16 @@ def run_ccsd(name, **kwargs):
 
     PsiMod.transqt2()
     PsiMod.ccsort()
-    return PsiMod.ccenergy()
+    returnvalue = PsiMod.ccenergy()
+
+    PsiMod.set_local_option('TRANSQT2', 'WFN', 'SCF')
+    PsiMod.revoke_local_option_changed('TRANSQT2', 'WFN')
+    PsiMod.set_local_option('CCSORT', 'WFN', 'SCF')
+    PsiMod.revoke_local_option_changed('CCSORT', 'WFN')
+    PsiMod.set_local_option('CCENERGY', 'WFN', 'SCF')
+    PsiMod.revoke_local_option_changed('CCENERGY', 'WFN')
+
+    return returnvalue
 
 def run_ccsd_gradient(name, **kwargs):
     run_ccsd(name, **kwargs)
