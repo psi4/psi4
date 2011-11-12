@@ -39,7 +39,7 @@ void Prop::common_init()
     tasks_.clear();
     set_wavefunction(wfn_);
 }
-void Prop::set_wavefunction(boost::shared_ptr<Wavefunction> wfn) 
+void Prop::set_wavefunction(boost::shared_ptr<Wavefunction> wfn)
 {
     wfn_ = wfn;
 
@@ -57,7 +57,7 @@ void Prop::set_wavefunction(boost::shared_ptr<Wavefunction> wfn)
     Da_so_ = wfn_->Da();
 
     if (restricted_) {
-        epsilon_b_ = epsilon_a_; 
+        epsilon_b_ = epsilon_a_;
         Cb_so_ = Ca_so_;
         Db_so_ = Da_so_;
     } else {
@@ -66,7 +66,7 @@ void Prop::set_wavefunction(boost::shared_ptr<Wavefunction> wfn)
         Db_so_ = wfn_->Db();
     }
 }
-void Prop::set_restricted(bool restricted) 
+void Prop::set_restricted(bool restricted)
 {
     if (restricted == restricted_) return;
 
@@ -77,7 +77,7 @@ void Prop::set_restricted(bool restricted)
     Da_so_ = wfn_->Da();
 
     if (restricted_) {
-        epsilon_b_ = epsilon_a_; 
+        epsilon_b_ = epsilon_a_;
         Cb_so_ = Ca_so_;
         Db_so_ = Da_so_;
     } else {
@@ -95,7 +95,7 @@ void Prop::set_epsilon_a(SharedVector epsilon_a)
 }
 void Prop::set_epsilon_b(SharedVector epsilon_b)
 {
-    if (restricted_) 
+    if (restricted_)
         throw PSIEXCEPTION("Wavefunction is restricted, setting epsilon_b makes no sense");
     epsilon_b_ = epsilon_b;
 }
@@ -118,13 +118,13 @@ void Prop::set_Da_ao(SharedMatrix D, int symm)
     Da_so_ = SharedMatrix(new Matrix("Da_so", Ca_so_->rowspi(),Ca_so_->rowspi(),symm));
 
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {    
+    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
         int nsor = AO2USO_->colspi()[h^symm];
-    
+
         if (!nsol || !nsor) continue;
-    
+
         double** Ulp = AO2USO_->pointer(h);
         double** Urp = AO2USO_->pointer(h^symm);
         double** DAOp = D->pointer();
@@ -146,13 +146,13 @@ void Prop::set_Db_ao(SharedMatrix D, int symm)
     Db_so_ = SharedMatrix(new Matrix("Db_so", Cb_so_->rowspi(),Cb_so_->rowspi(),symm));
 
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {    
+    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
         int nsor = AO2USO_->colspi()[h^symm];
-    
+
         if (!nsol || !nsor) continue;
-    
+
         double** Ulp = AO2USO_->pointer(h);
         double** Urp = AO2USO_->pointer(h^symm);
         double** DAOp = D->pointer();
@@ -182,7 +182,7 @@ void Prop::set_Da_mo(SharedMatrix D)
 
     int symm = D->symmetry();
     int nirrep = D->nirrep();
-    
+
     double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
@@ -212,7 +212,7 @@ void Prop::set_Db_mo(SharedMatrix D)
 
     int symm = D->symmetry();
     int nirrep = D->nirrep();
-    
+
     double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
@@ -256,7 +256,7 @@ SharedMatrix Prop::Da_ao()
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
     SharedMatrix D = SharedMatrix(new Matrix("Da (AO basis)", basisset_->nbf(), basisset_->nbf()));
     int symm = Da_so_->symmetry();
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {    
+    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
         int nsor = AO2USO_->colspi()[h^symm];
@@ -268,7 +268,7 @@ SharedMatrix Prop::Da_ao()
         C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
         C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
     }
-    delete[] temp;	    
+    delete[] temp;
     return D;
 }
 SharedMatrix Prop::Db_ao()
@@ -279,7 +279,7 @@ SharedMatrix Prop::Db_ao()
     double* temp = new double[AO2USO_->max_ncol() * AO2USO_->max_nrow()];
     SharedMatrix D = SharedMatrix(new Matrix("Db (AO basis)", basisset_->nbf(), basisset_->nbf()));
     int symm = Db_so_->symmetry();
-    for (int h = 0; h < AO2USO_->nirrep(); ++h) {    
+    for (int h = 0; h < AO2USO_->nirrep(); ++h) {
         int nao = AO2USO_->rowspi()[0];
         int nsol = AO2USO_->colspi()[h];
         int nsor = AO2USO_->colspi()[h^symm];
@@ -291,7 +291,7 @@ SharedMatrix Prop::Db_ao()
         C_DGEMM('N','T',nsol,nao,nsor,1.0,DSOp[0],nsor,Urp[0],nsor,0.0,temp,nao);
         C_DGEMM('N','N',nao,nao,nsol,1.0,Ulp[0],nsol,temp,nao,1.0,DAOp[0],nao);
     }
-    delete[] temp;	    
+    delete[] temp;
     return D;
 }
 SharedMatrix Prop::Ca_so()
@@ -309,7 +309,7 @@ SharedMatrix Prop::Ca_ao()
     SharedMatrix C = SharedMatrix(new Matrix("Ca (AO basis)", nao, nmo));
     double** Cp = C->pointer();
     int counter = 0;
-    
+
     std::vector<std::pair<double,int> > metric;
     for (int h = 0; h < AO2USO_->nirrep(); h++) {
         int nso = AO2USO_->colspi()[h];
@@ -328,12 +328,12 @@ SharedMatrix Prop::Ca_ao()
     }
 
     SharedMatrix C2(C->clone());
-    std::sort(metric.begin(),metric.end()); 
+    std::sort(metric.begin(),metric.end());
 
     double** C2p = C2->pointer();
     for (int i = 0; i < nmo; i++) {
         C_DCOPY(nao,&Cp[0][metric[i].second],nmo,&C2p[0][i],nmo);
-    } 
+    }
 
     return C2;
 }
@@ -344,7 +344,7 @@ SharedMatrix Prop::Cb_ao()
     SharedMatrix C = SharedMatrix(new Matrix("Cb (AO basis)", nao, nmo));
     double** Cp = C->pointer();
     int counter = 0;
-    
+
     std::vector<std::pair<double,int> > metric;
     for (int h = 0; h < AO2USO_->nirrep(); h++) {
         int nso = AO2USO_->colspi()[h];
@@ -368,7 +368,7 @@ SharedMatrix Prop::Cb_ao()
     double** C2p = C2->pointer();
     for (int i = 0; i < nmo; i++) {
         C_DCOPY(nao,&Cp[0][metric[i].second],nmo,&C2p[0][i],nmo);
-    } 
+    }
 
     return C2;
 }
@@ -386,7 +386,7 @@ SharedMatrix Prop::Da_mo()
 
     int symm = D->symmetry();
     int nirrep = D->nirrep();
-    
+
     double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
@@ -413,7 +413,7 @@ SharedMatrix Prop::Db_mo()
 
     int symm = D->symmetry();
     int nirrep = D->nirrep();
-    
+
     double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
@@ -479,7 +479,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_mo()
     SharedMatrix D = Da_mo();
     SharedMatrix C(new Matrix("Na_mo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Alpha Occupation", D->nirrep(), D->rowspi()));
-    
+
     D->diagonalize(C,O,Matrix::Descending);
 
     return make_pair(C,O);
@@ -492,7 +492,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_mo()
     SharedMatrix D = Db_mo();
     SharedMatrix C(new Matrix("Nb_mo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Beta Occupation", D->nirrep(), D->rowspi()));
-    
+
     D->diagonalize(C,O,Matrix::Descending);
 
     return make_pair(C,O);
@@ -516,7 +516,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_so()
         double** Cp = Ca_so_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo); 
+        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
     }
     return make_pair(N2,O);
 }
@@ -542,7 +542,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_so()
         double** Cp = Cb_so_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo); 
+        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
     }
     return make_pair(N2,O);
 }
@@ -575,15 +575,15 @@ std::pair<SharedMatrix, SharedVector> Prop::Na_ao()
         double** Up = AO2USO_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol); 
+        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol);
 
         offset += nmo;
     }
 
     std::sort(index.begin(), index.end(), std::greater<std::pair<double,int> >());
-    
+
     int nmo = N2->colspi()[0];
-    int nao = N2->rowspi()[0]; 
+    int nao = N2->rowspi()[0];
 
     for (int i = 0; i < nmo; i++) {
         double occ = index[i].first;
@@ -627,15 +627,15 @@ std::pair<SharedMatrix, SharedVector> Prop::Nb_ao()
         double** Up = AO2USO_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol); 
+        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol);
 
         offset += nmo;
     }
 
     std::sort(index.begin(), index.end(), std::greater<std::pair<double,int> >());
-    
+
     int nmo = N2->colspi()[0];
-    int nao = N2->rowspi()[0]; 
+    int nao = N2->rowspi()[0];
 
     for (int i = 0; i < nmo; i++) {
         double occ = index[i].first;
@@ -652,7 +652,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_mo()
     SharedMatrix D = Dt_mo();
     SharedMatrix C(new Matrix("Nt_mo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Total Occupation", D->nirrep(), D->rowspi()));
-    
+
     D->diagonalize(C,O,Matrix::Descending);
 
     return make_pair(C,O);
@@ -676,7 +676,7 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_so()
         double** Cp = Cb_so_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo); 
+        C_DGEMM('N','N',nso,nmo,nmo,1.0,Cp[0],nmo,Np[0],nmo,0.0,N2p[0],nmo);
     }
     return make_pair(N2,O);
 }
@@ -709,15 +709,15 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_ao()
         double** Up = AO2USO_->pointer(h);
         double** N2p = N2->pointer(h);
 
-        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol); 
+        C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol);
 
         offset += nmo;
     }
 
     std::sort(index.begin(), index.end(), std::greater<std::pair<double,int> >());
-    
+
     int nmo = N2->colspi()[0];
-    int nao = N2->rowspi()[0]; 
+    int nao = N2->rowspi()[0];
 
     for (int i = 0; i < nmo; i++) {
         double occ = index[i].first;
@@ -798,18 +798,28 @@ void OEProp::compute_dipole()
     de[2] = Da->vector_dot(so_dipole[2]) + Db->vector_dot(so_dipole[2]);
 
     SharedVector ndip = mol->nuclear_dipole_contribution();
+
+    fprintf(outfile, " Nuclear Dipole Moment: (a.u.)\n");
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+            ndip->get(0), ndip->get(1), ndip->get(2));
+    fprintf(outfile, "\n");
+    fprintf(outfile, " Electronic Dipole Moment: (a.u.)\n");
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+            de[0], de[1], de[2]);
+    fprintf(outfile, "\n");
+
     de[0] += ndip->get(0, 0);
     de[1] += ndip->get(0, 1);
     de[2] += ndip->get(0, 2);
 
     fprintf(outfile," Dipole Moment: (a.u.)\n");
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", \
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0], de[1], de[2], de.norm());
     fprintf(outfile, "\n");
 
     double dfac = _dipmom_au2debye;
     fprintf(outfile," Dipole Moment: (Debye)\n");
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n", \
+    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
     fprintf(outfile, "\n");
 
@@ -965,7 +975,7 @@ void OEProp::compute_mo_extents()
     quadrupole.push_back(SharedVector(new Vector("Orbital Quadrupole ZZ", Ca->ncol())));
 
     SharedMatrix temp(new Matrix("Temp", Ca->nrow(), Ca->ncol()));
-    
+
     int nao = Ca->nrow();
     int nmo = Ca->ncol();
 
@@ -1004,15 +1014,15 @@ void OEProp::compute_mo_extents()
         for (int i = 0; i < epsilon_a_->dimpi()[h]; i++) {
             metric.push_back(boost::tuple<double,int,int>(epsilon_a_->get(h,i),i,h));
         }
-    } 
+    }
     std::sort(metric.begin(),metric.end());
 
     for (int i = 0; i < nmo; i++) {
         int n = boost::get<1>(metric[i]);
         int h = boost::get<2>(metric[i]);
-    
+
         // TODO: Print polarity <\vec x> and extents <\vec x^2> - <\vec x>^2
-    }    
+    }
 
     fprintf(outfile, "\n");
     for(int h = 0; h < epsilon_a_->nirrep(); h++) free(labels[h]); free(labels);
@@ -1435,7 +1445,7 @@ void OEProp::compute_no_occupations(int max_num)
             metric_a.push_back(boost::tuple<double,int,int>(Oa->get(h,i), i ,h));
         }
     }
-    
+
     std::sort(metric_a.begin(), metric_a.end(), std::greater<boost::tuple<double,int,int> >());
 
     std::vector<boost::tuple<double, int, int> > metric_b;
@@ -1444,49 +1454,49 @@ void OEProp::compute_no_occupations(int max_num)
             metric_b.push_back(boost::tuple<double,int,int>(Ob->get(h,i), i ,h));
         }
     }
-    
+
     std::sort(metric_b.begin(), metric_b.end(), std::greater<boost::tuple<double,int,int> >());
 
     char** labels = basisset_->molecule()->irrep_labels();
 
     fprintf(outfile, "  Natural Orbital Occupations:\n\n");
-    
+
     int offset_a = wfn_->nalpha();
     int offset_b = wfn_->nbeta();
 
-    int start_occ_a = offset_a - max_num; 
-    int start_occ_b = offset_b - max_num; 
+    int start_occ_a = offset_a - max_num;
+    int start_occ_b = offset_b - max_num;
     start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
     start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
 
-    int stop_vir_a = offset_a + max_num + 1; 
-    int stop_vir_b = offset_b + max_num + 1; 
+    int stop_vir_a = offset_a + max_num + 1;
+    int stop_vir_b = offset_b + max_num + 1;
     stop_vir_a = (stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
     stop_vir_b = (stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
 
     fprintf(outfile, "  Alpha Occupations:\n");
     for (int index = start_occ_a; index < stop_vir_a; index++) {
         if (index < offset_a) {
-            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index, 
-            boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])], 
+            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index,
+            boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
             boost::get<0>(metric_a[index]));
         } else {
             fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
-            boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])], 
+            boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
             boost::get<0>(metric_a[index]));
         }
     }
     fprintf(outfile, "\n");
-    
+
     fprintf(outfile, "  Beta Occupations:\n");
     for (int index = start_occ_b; index < stop_vir_b; index++) {
         if (index < offset_b) {
-            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index, 
-            boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])], 
+            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index,
+            boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
             boost::get<0>(metric_b[index]));
         } else {
             fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
-            boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])], 
+            boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
             boost::get<0>(metric_b[index]));
         }
     }
