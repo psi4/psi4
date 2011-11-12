@@ -494,9 +494,9 @@ def database(name, db_name, **kwargs):
     user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
     user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
 
+    b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
     user_reference = PsiMod.get_option('REFERENCE')
     user_memory = PsiMod.get_memory()
-    user_dertype = PsiMod.get_option('DERTYPE')
 
     user_molecule = PsiMod.get_active_molecule()
     if not user_molecule:
@@ -730,6 +730,7 @@ def database(name, db_name, **kwargs):
         for chgdopt in PsiMod.get_global_option_list():
             if PsiMod.has_option_changed(chgdopt):
                 chgdoptval = PsiMod.get_global_option(chgdopt)
+                #chgdoptval = PsiMod.get_option(chgdopt)
                 if isinstance(chgdoptval, basestring):
                     commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
@@ -774,10 +775,6 @@ def database(name, db_name, **kwargs):
             exec commands
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            #lesserkwargs = kwargs.copy() 
-            #del lesserkwargs['db_func'] 
-            #ERGT[rgt] = call_function_in_1st_argument(kwargs['db_func'], **lesserkwargs)
-            #ERGT[rgt] = call_function_in_1st_argument(kwargs['db_func'], **kwargs)
             ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
@@ -793,18 +790,10 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-            #lesserkwargs = kwargs.copy() 
-            #del lesserkwargs['db_func'] 
-            # non-pickle route
-            #freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
-            # pickle route (conflics w/Andy's parenthesis matching)
             freagent.write('''\npickle_kw = ("""''')
-            #pickle.dump(lesserkwargs, freagent)
             pickle.dump(kwargs, freagent)
             freagent.write('''""")\n''')
             freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
-            # end routes
-            #freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['db_func'].__name__))
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))
             freagent.write("""PsiMod.print_variables()\n""")
             freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
@@ -970,7 +959,8 @@ def database(name, db_name, **kwargs):
     user_molecule.update_geometry()
     PsiMod.set_global_option("BASIS", user_basis)
     PsiMod.set_global_option("REFERENCE", user_reference)
-    PsiMod.set_global_option("DERTYPE", user_dertype)
+    if not b_user_reference:
+        PsiMod.revoke_global_option_changed('REFERENCE')
 
     return finalenergy
 
