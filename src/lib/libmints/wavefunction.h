@@ -214,6 +214,10 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array. You DO NOT own this array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Return the number of alpha electrons
+    int nalpha() const { return nalpha_; }
+    /// Return the number of beta electrons
+    int nbeta() const { return nbeta_; }
     /// Returns the number of SOs
     int nso() const { return nso_; }
     /// Returns the number of MOs
