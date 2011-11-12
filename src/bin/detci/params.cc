@@ -195,7 +195,7 @@ void get_parameters(Options &options)
     Parameters.energy_convergence = options.get_int("E_CONVERGE");
   }
 
-  Parameters.multp = options.get_int("MULTP");
+  Parameters.multp = Process::environment.molecule()->multiplicity(); 
   Parameters.S = (((double) Parameters.multp) - 1.0) / 2.0;
   if (options["S"].has_changed())
     Parameters.S = options.get_double("S");

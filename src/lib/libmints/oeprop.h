@@ -113,6 +113,7 @@ public:
 
     // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
 
+    // TODO Add symmetry is irrep number
     void set_Da_ao(SharedMatrix Da, int symmetry = 0);
     void set_Db_ao(SharedMatrix Db, int symmetry = 0);
     void set_Da_so(SharedMatrix Da);
@@ -123,14 +124,14 @@ public:
     // => Get routines (useful to quickly change bases) <= //
 
     /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
-    SharedVector epsilon_a() const { return epsilon_a_; }
+    SharedVector epsilon_a();
     /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
-    SharedVector epsilon_b() const { return epsilon_b_; }
+    SharedVector epsilon_b();
 
     /// The alpha C matrix in the SO basis
-    SharedMatrix Ca_so() const { return Ca_so_; }
+    SharedMatrix Ca_so();
     /// The beta C matrix in the SO basis
-    SharedMatrix Cb_so() const { return Cb_so_; }
+    SharedMatrix Cb_so();
     /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
     SharedMatrix Ca_ao();
     /// The beta C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
@@ -141,26 +142,39 @@ public:
     /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
     SharedMatrix Db_ao();
     /// The alpha density matrix in the SO basis
-    SharedMatrix Da_so() const { return Da_so_; }
+    SharedMatrix Da_so();
     /// The beta density matrix in the SO basis
-    SharedMatrix Db_so() const { return Db_so_; }
+    SharedMatrix Db_so();
     /// The alpha density matrix in the MO basis
     SharedMatrix Da_mo();
     /// The beta density matrix in the MO basis
     SharedMatrix Db_mo();
 
+    /// The total/spin density matrix in the ao basis, depending on if true or false
+    SharedMatrix Dt_ao(bool total = true);
+    /// The total/spin density matrix in the ao basis, depending on if true or false
+    SharedMatrix Dt_so(bool total = true);
+    /// The total/spin density matrix in the ao basis, depending on if true or false
+    SharedMatrix Dt_mo(bool total = true);
+
     /// The alpha natural orbital occupations and orbitals in the MO basis
     std::pair<SharedMatrix, SharedVector> Na_mo();
     /// The beta natural orbital occupations and orbitals in the MO basis. Throws if restricted
     std::pair<SharedMatrix, SharedVector> Nb_mo();
+    /// The total natural orbital occupations and orbitals in the MO basis
+    std::pair<SharedMatrix, SharedVector> Nt_mo();
     /// The alpha natural orbital occupations and orbitals in the SO basis
     std::pair<SharedMatrix, SharedVector> Na_so();
     /// The beta natural orbital occupations and orbitals in the SO basis. Throws if restricted
     std::pair<SharedMatrix, SharedVector> Nb_so();
+    /// The total natural orbital occupations and orbitals in the SO basis
+    std::pair<SharedMatrix, SharedVector> Nt_so();
     /// The alpha natural orbital occupations and orbitals in the AO basis
     std::pair<SharedMatrix, SharedVector> Na_ao();
     /// The beta natural orbital occupations and orbitals in the AO basis. Throws if restricted
     std::pair<SharedMatrix, SharedVector> Nb_ao();
+    /// The total natural orbital occupations and orbitals in the AO basis
+    std::pair<SharedMatrix, SharedVector> Nt_ao();
 
     // => Queue/Compute Routines <= //
 
@@ -216,6 +230,10 @@ protected:
     void compute_mayer_indices();
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
     void compute_wiberg_lowdin_indices();
+    /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
+
+    void compute_no_occupations(int max_num = 3);
+
 public:
     /// Constructor, uses globals
     OEProp(boost::shared_ptr<Wavefunction> wfn);
