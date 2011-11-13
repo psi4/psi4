@@ -62,6 +62,33 @@ SharedMatrix ElectricFieldInt::nuclear_contribution(boost::shared_ptr<Molecule> 
     return result;
 }
 
+SharedMatrix ElectricFieldInt::nuclear_contribution_to_gradient(boost::shared_ptr<Molecule> mol)
+{
+    int natom = mol->natom();
+    SharedMatrix result(new Matrix("Nuclear contribution to electric field gradient", mol->natom(), 6));
+
+    for (int i=0; i<natom; ++i) {
+        for (int j=0; j<natom; ++j) {
+            if (i != j) {
+                double x = mol->x(i) - mol->x(j);
+                double y = mol->y(i) - mol->y(j);
+                double z = mol->z(i) - mol->z(j);
+                double r2 = x*x + y*y + z*z;
+                double r = sqrt(r2);
+
+                result->add(i, 0, -mol->Z(j) * (3*x*x-r2) / (r*r2*r2));
+                result->add(i, 1, -mol->Z(j) * 3*x*y / (r*r2*r2));
+                result->add(i, 2, -mol->Z(j) * 3*x*z / (r*r2*r2));
+                result->add(i, 3, -mol->Z(j) * (3*y*y-r2) / (r*r2*r2));
+                result->add(i, 4, -mol->Z(j) * 3*y*z / (r*r2*r2));
+                result->add(i, 5, -mol->Z(j) * (3*z*z-r2) / (r*r2*r2));
+            }
+        }
+    }
+
+    return result;
+}
+
 void ElectricFieldInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
                                     const boost::shared_ptr<GaussianShell>& s2)
 {

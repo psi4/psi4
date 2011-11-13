@@ -36,6 +36,7 @@ public:
     bool has_deriv1() { return true; }
 
     static SharedMatrix nuclear_contribution(boost::shared_ptr<Molecule> mol);
+    static SharedMatrix nuclear_contribution_to_gradient(boost::shared_ptr<Molecule> mol);
 };
 
 }
