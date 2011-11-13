@@ -37,8 +37,8 @@ optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2
 compare_values(ref_OPT_CBS_E_0, get_variable('CBS TOTAL ENERGY'), 7, "[1] Wrapper optimize (findif G) calling complete_basis_set calling energy")  #TEST
 
 # database(energy())
-db('mp2','RGC10',subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy'])
-compare_values(ref_DB_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 7, "[2] Wrapper database calling energy")  #TEST
+db('mp2','RGC10',cast_up='sto-3g',subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy'])
+compare_values(ref_DB_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 7, "[2] Wrapper database calling energy incl castup")  #TEST
 
 # database(cbs(energy()))
 db('mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy','current energy'],corl_basis='cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='3-21g')

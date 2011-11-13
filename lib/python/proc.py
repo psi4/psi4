@@ -166,29 +166,17 @@ def run_mp2(name, **kwargs):
     else:
         dertype = kwargs.get("DERTYPE", "NONE") 
 
-    PsiMod.set_local_option("TRANSQT2", "DERTYPE", dertype)
-    PsiMod.set_local_option("TRANSQT2", "WFN", "MP2")
-    PsiMod.transqt2()
-    PsiMod.set_local_option("CCSORT", "WFN", "MP2")
-    PsiMod.set_local_option("CCSORT", "DERTYPE", dertype)
-    PsiMod.ccsort()
-    PsiMod.set_local_option("MP2", "WFN", "MP2")
-    PsiMod.set_local_option("MP2", "DERTYPE", dertype)
+    PsiMod.set_global_option('DERTYPE', dertype)
+    PsiMod.set_global_option('WFN', 'MP2')
 
+    PsiMod.transqt2()
+    PsiMod.ccsort()
     returnvalue = PsiMod.mp2()
 
-    PsiMod.set_local_option('TRANSQT2', 'DERTYPE', 'NONE')
-    PsiMod.revoke_local_option_changed('TRANSQT2', 'DERTYPE')
-    PsiMod.set_local_option('TRANSQT2', 'WFN', 'SCF')
-    PsiMod.revoke_local_option_changed('TRANSQT2', 'WFN')
-    PsiMod.set_local_option('CCSORT', 'DERTYPE', 'NONE')
-    PsiMod.revoke_local_option_changed('CCSORT', 'DERTYPE')
-    PsiMod.set_local_option('CCSORT', 'WFN', 'SCF')
-    PsiMod.revoke_local_option_changed('CCSORT', 'WFN')
-    PsiMod.set_local_option('MP2', 'DERTYPE', 'NONE')
-    PsiMod.revoke_local_option_changed('MP2', 'DERTYPE')
-    PsiMod.set_local_option('MP2', 'WFN', 'SCF')
-    PsiMod.revoke_local_option_changed('MP2', 'WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
 
     return returnvalue
 
@@ -209,9 +197,7 @@ def run_ccsd(name, **kwargs):
     PsiMod.set_active_molecule(molecule)
 
     if not (name.lower() == 'ccsd(t)'):
-        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-        PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD')
-        PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD')
+        PsiMod.set_global_option('WFN', 'CCSD')
 
     # For a CCSD energy, we need SCF to be run.
     # Could we somehow do a check to see if SCF was run?
@@ -223,12 +209,8 @@ def run_ccsd(name, **kwargs):
     PsiMod.ccsort()
     returnvalue = PsiMod.ccenergy()
 
-    PsiMod.set_local_option('TRANSQT2', 'WFN', 'SCF')
-    PsiMod.revoke_local_option_changed('TRANSQT2', 'WFN')
-    PsiMod.set_local_option('CCSORT', 'WFN', 'SCF')
-    PsiMod.revoke_local_option_changed('CCSORT', 'WFN')
-    PsiMod.set_local_option('CCENERGY', 'WFN', 'SCF')
-    PsiMod.revoke_local_option_changed('CCENERGY', 'WFN')
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
 
     return returnvalue
 
@@ -252,9 +234,7 @@ def run_ccsd_t(name, **kwargs):
     PsiMod.set_active_molecule(molecule)
 
     # Should probably do a check on the user's options to ensure wfn = ccsd_t
-    PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
-    PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD_T')
-    PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
+    PsiMod.set_global_option('WFN', 'CCSD_T')
 
     # The new CCEnergyWavefunction object that is used to wrap ccenergy
     # automatically handles cctriples.
@@ -273,9 +253,15 @@ def run_ccsd_response(name, **kwargs):
     PsiMod.set_active_molecule(molecule)
 
     run_ccsd("ccsd", **kwargs);
+
+    PsiMod.set_global_option('WFN', 'CCSD')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
 
 def run_detci(name, **kwargs):
 
