@@ -1880,6 +1880,18 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
     return pg;
 }
 
+boost::shared_ptr<PointGroup> Molecule::point_group() const
+{
+    return pg_;
+}
+
+void Molecule::set_point_group(boost::shared_ptr<PointGroup> pg)
+{
+    pg_ = pg;
+    // Call this here, the programmer will forget to call it, as I have many times.
+    form_symmetry_information();
+}
+
 bool Molecule::has_symmetry_element(Vector3& op, double tol) const
 {
     for (int i=0; i<natom(); ++i) {

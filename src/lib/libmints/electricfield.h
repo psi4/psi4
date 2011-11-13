@@ -1,14 +1,10 @@
 #ifndef _psi_src_lib_libmints_electricfield_h_
 #define _psi_src_lib_libmints_electricfield_h_
 
-namespace psi {
+#include <vector>
+#include "typedefs.h"
 
-    class BasisSet;
-    class GaussianShell;
-    class ObaraSaikaTwoCenterVIDeriv2Recursion;
-    class OneBodyAOInt;
-    class IntegralFactory;
-    class SphericalTransform;
+namespace psi {
 
 /*! \ingroup MINTS
  *  \class ElectricFieldInt
@@ -38,6 +34,8 @@ public:
 
     //! Does the method provide first derivatives?
     bool has_deriv1() { return true; }
+
+    static SharedMatrix nuclear_contribution(boost::shared_ptr<Molecule> mol);
 };
 
 }
