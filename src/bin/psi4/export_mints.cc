@@ -296,7 +296,6 @@ void export_mints()
             def("atom_at_position", &Molecule::atom_at_position1).
             def("print_out", &Molecule::print).
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
-            def("nuclear_dipole_contribution", &Molecule::nuclear_dipole_contribution).
             def("find_point_group", &Molecule::find_point_group).
             def("reset_point_group", &Molecule::reset_point_group).
             def("set_point_group", &Molecule::set_point_group).
