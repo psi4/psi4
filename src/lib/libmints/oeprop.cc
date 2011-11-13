@@ -797,7 +797,7 @@ void OEProp::compute_dipole()
     de[1] = Da->vector_dot(so_dipole[1]) + Db->vector_dot(so_dipole[1]);
     de[2] = Da->vector_dot(so_dipole[2]) + Db->vector_dot(so_dipole[2]);
 
-    SharedVector ndip = mol->nuclear_dipole_contribution();
+    SharedVector ndip = DipoleInt::nuclear_contribution(mol);
 
     fprintf(outfile, " Nuclear Dipole Moment: (a.u.)\n");
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
@@ -867,7 +867,7 @@ void OEProp::compute_quadrupole()
     qe[5] = Da->vector_dot(so_Qpole[5]) + Db->vector_dot(so_Qpole[5]);
 
     // Add in nuclear contribution
-    SharedVector nquad = mol->nuclear_quadrupole_contribution();
+    SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol);
     qe[0] += nquad->get(0, 0);
     qe[1] += nquad->get(0, 1);
     qe[2] += nquad->get(0, 2);

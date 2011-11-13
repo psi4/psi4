@@ -18,6 +18,7 @@ class GaussianShell;
 class IntegralFactory;
 class Matrix;
 class Molecule;
+class ObaraSaikaTwoCenterRecursion;
 class ObaraSaikaTwoCenterVIDeriv2Recursion;
 class OneBodyAOInt;
 class PointGroup;

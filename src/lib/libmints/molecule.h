@@ -277,11 +277,6 @@ public:
     /// Computes nuclear repulsion energy second derivatives.
     Matrix nuclear_repulsion_energy_deriv2() const;
 
-    /// Returns the nuclear contribution to the dipole moment
-    SharedVector nuclear_dipole_contribution();
-    /// Returns the nuclear contribution to the quadrupole moment
-    SharedVector nuclear_quadrupole_contribution();
-
     /// Translates molecule by r
     void translate(const Vector3& r);
     /// Moves molecule to center of mass
