@@ -1467,7 +1467,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "CIS"|| options.read_globals()) {
     /*- -*/
-    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
+    options.add_str("WFN", "CIS", "SCF CCSD CCSD_T EOM_CCSD CIS");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/

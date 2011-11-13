@@ -1,6 +1,7 @@
 import PsiMod
 import shutil
 import os
+import input
 from driver import *
 from molecule import *
 from text import *
@@ -80,7 +81,7 @@ def scf_helper(name, **kwargs):
 
     if (cast):
 
-        if (cast == True):
+        if input.yes.match(str(cast)):
             custom = 'Default'
             guessbasis = '3-21G'
         else:
