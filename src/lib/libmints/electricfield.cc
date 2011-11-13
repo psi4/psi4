@@ -38,6 +38,30 @@ ElectricFieldInt::~ElectricFieldInt()
     delete[] buffer_;
 }
 
+SharedMatrix ElectricFieldInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+{
+    int natom = mol->natom();
+    SharedMatrix result(new Matrix("Nuclear contribution to electric field", mol->natom(), 3));
+
+    for (int i=0; i<natom; ++i) {
+        for (int j=0; j<natom; ++j) {
+            if (i != j) {
+                double x = mol->x(i) - mol->x(j);
+                double y = mol->y(i) - mol->y(j);
+                double z = mol->z(i) - mol->z(j);
+                double r2 = x*x + y*y + z*z;
+                double r = sqrt(r2);
+
+                result->add(i, 0, mol->Z(j) * x / (r*r2));
+                result->add(i, 1, mol->Z(j) * y / (r*r2));
+                result->add(i, 2, mol->Z(j) * z / (r*r2));
+            }
+        }
+    }
+
+    return result;
+}
+
 void ElectricFieldInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
                                     const boost::shared_ptr<GaussianShell>& s2)
 {

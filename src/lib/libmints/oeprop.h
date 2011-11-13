@@ -97,7 +97,7 @@ public:
     virtual ~Prop();
 
     // => Wavefunction Modifiers (rarely called, C is usually fixed at HF) <= //
-    
+
     // Change restricted flag. Resets C/D/epsilon matrices from wfn
     void set_wavefunction(boost::shared_ptr<Wavefunction> wfn);
     // Change restricted flag. Resets C/D/epsilon matrices from wfn
@@ -106,7 +106,7 @@ public:
     void set_epsilon_a(SharedVector epsilon_a);
     // Set beta eigenvalues, MO pitzer order basis. Throws if restricted
     void set_epsilon_b(SharedVector epsilon_a);
-    // Set alpha C matrix, SO/MO pitzer order basis. 
+    // Set alpha C matrix, SO/MO pitzer order basis.
     void set_Ca(SharedMatrix Ca);
     // Set beta C matrix, SO/MO pitzer order basis. Throws if restricted
     void set_Cb(SharedMatrix Cb);
@@ -193,8 +193,8 @@ public:
 
     // => Utility Routines <= //
 
-    void set_print(int print) { print_; }    
-    void set_debug(int debug) { debug_; }    
+    void set_print(int print) { print_; }
+    void set_debug(int debug) { debug_; }
 
 };
 
@@ -231,8 +231,9 @@ protected:
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
     void compute_wiberg_lowdin_indices();
     /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
-
     void compute_no_occupations(int max_num = 3);
+    /// Compute electric field and electric field gradients
+    void compute_electric_field_and_gradients();
 
 public:
     /// Constructor, uses globals

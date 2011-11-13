@@ -8,6 +8,7 @@
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
 #include <libmints/dimension.h>
+#include <libmints/typedefs.h>
 #include <psifiles.h>
 #include "mospace.h"
 
