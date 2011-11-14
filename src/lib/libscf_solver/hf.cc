@@ -1292,6 +1292,7 @@ double HF::compute_energy()
         // Properties
         if (print_) {
             boost::shared_ptr<OEProp> oe(new OEProp());
+            oe->set_title("SCF");
             oe->add("DIPOLE");
 
             if (print_ >= 2) {

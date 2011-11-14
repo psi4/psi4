@@ -246,6 +246,7 @@ public:
     /// Python issue
     void oepy_add(const std::string& task) { add(task); }
     void oepy_compute() { compute(); }
+    void oepy_set_title(const std::string& title) { set_title(title); }
 
     /// Compute and print/save the properties
     void compute();

@@ -824,9 +824,15 @@ void OEProp::compute_dipole()
     fprintf(outfile, "\n");
 
     // Dipole components in Debye
-    Process::environment.globals["DIPOLE X"] = de[0]*dfac;
-    Process::environment.globals["DIPOLE Y"] = de[1]*dfac;
-    Process::environment.globals["DIPOLE Z"] = de[2]*dfac;
+    std::stringstream s;
+    s << title_ << " DIPOLE X";
+    Process::environment.globals[s.str()] = de[0]*dfac;
+    s.str(std::string());
+    s << title_ << " DIPOLE Y";
+    Process::environment.globals[s.str()] = de[1]*dfac;
+    s.str(std::string());
+    s << title_ << " DIPOLE Z";
+    Process::environment.globals[s.str()] = de[2]*dfac;
 
     fflush(outfile);
 }
@@ -893,12 +899,24 @@ void OEProp::compute_quadrupole()
     fprintf(outfile, "\n");
 
     // Quadrupole components in Debye Ang
-    Process::environment.globals["QUADRUPOLE XX"] = qe[0]*dfac;
-    Process::environment.globals["QUADRUPOLE YY"] = qe[3]*dfac;
-    Process::environment.globals["QUADRUPOLE ZZ"] = qe[5]*dfac;
-    Process::environment.globals["QUADRUPOLE XY"] = qe[1]*dfac;
-    Process::environment.globals["QUADRUPOLE XZ"] = qe[2]*dfac;
-    Process::environment.globals["QUADRUPOLE YZ"] = qe[4]*dfac;
+    std::stringstream s;
+    s << title_ << " QUADRUPOLE XX";
+    Process::environment.globals[s.str()] = qe[0]*dfac;
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE YY";
+    Process::environment.globals[s.str()] = qe[3]*dfac;
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE ZZ";
+    Process::environment.globals[s.str()] = qe[5]*dfac;
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE XY";
+    Process::environment.globals[s.str()] = qe[1]*dfac;
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE XZ";
+    Process::environment.globals[s.str()] = qe[2]*dfac;
+    s.str(std::string());
+    s << title_ << " QUADRUPOLE YZ";
+    Process::environment.globals[s.str()] = qe[4]*dfac;
 
     fflush(outfile);
 }
