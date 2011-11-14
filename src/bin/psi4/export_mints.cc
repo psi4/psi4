@@ -163,6 +163,8 @@ void export_mints()
             def("matrix", &CdSalcList::matrix);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper").
+            def("integrals", &MintsHelper::integrals).
+            def("one_electron_integrals", &MintsHelper::one_electron_integrals).
             def("basisset", &MintsHelper::basisset).
             def("sobasisset", &MintsHelper::sobasisset).
             def("factory", &MintsHelper::factory).
