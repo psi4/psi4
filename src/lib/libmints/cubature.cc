@@ -1065,6 +1065,103 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
         // Case 1 Icosohedral
         // Case 2 Octohedral
         // Case 3 Tetrahedral
+        // Hack TODO Temporary
+
+        // Find a significant atom
+        double v1[3];
+        int index = -1;
+        for (int A = 0; A < natom; A++) {
+            v1[0] = mol->x(A) - Xp[0];
+            v1[1] = mol->y(A) - Xp[1];
+            v1[2] = mol->z(A) - Xp[2];
+
+            double norm = sqrt(v1[0] * v1[0] + v1[1] * v1[1] + v1[2] * v1[2]);
+        
+            if (norm > jitter) {
+                v1[0] /= norm;
+                v1[1] /= norm;
+                v1[2] /= norm;
+                index = A;
+                break;
+            }
+        }
+        if (!index) throw PSIEXCEPTION("No relevant atom found in tetrahedral or higher symmetry");
+
+        // And another
+        double v2[3];
+        int index2 = -1;
+        for (int A = index+1; A < natom; A++) {
+            v2[0] = mol->x(A) - Xp[0];
+            v2[1] = mol->y(A) - Xp[1];
+            v2[2] = mol->z(A) - Xp[2];
+
+            double norm = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2]);
+        
+            if (norm > jitter) {
+                v2[0] /= norm;
+                v2[1] /= norm;
+                v2[2] /= norm;
+
+                // Check for collinearity
+                if (fabs(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]) < 1.0-jitter) {
+                    index2 = A;
+                    break;
+                }
+            }
+        }
+        if (!index2) throw PSIEXCEPTION("No relevant atom found in tetrahedral or higher symmetry");
+        
+        // Householder to place significant atom 1 in Z or -Z (choice is arbitrary, but more stable)
+        double** Rp = R->pointer();
+
+        double alpha = (v1[2] > 0.0 ? -1.0 : 1.0);
+        double V[3];
+        V[0] = v1[0];
+        V[1] = v1[1];
+        V[2] = v1[2] + alpha;
+        double norm2 = V[0] * V[0] + V[1] * V[1] + V[2] * V[2]; 
+        
+        R->identity();    
+        Rp[0][0] -= 2.0/norm2 * V[0] * V[0];
+        Rp[0][1] -= 2.0/norm2 * V[0] * V[1];
+        Rp[0][2] -= 2.0/norm2 * V[0] * V[2];
+        Rp[1][0] -= 2.0/norm2 * V[1] * V[0];
+        Rp[1][1] -= 2.0/norm2 * V[1] * V[1];
+        Rp[1][2] -= 2.0/norm2 * V[1] * V[2];
+        Rp[2][0] -= 2.0/norm2 * V[2] * V[0];
+        Rp[2][1] -= 2.0/norm2 * V[2] * V[1];
+        Rp[2][2] -= 2.0/norm2 * V[2] * V[2];
+
+        // Givens rotation in X and Y to place atom 2 in X
+        double v3[3];
+        v3[0] = Rp[0][0] * v2[0] + Rp[0][1] * v2[1] + Rp[0][2] * v2[2];  
+        v3[1] = Rp[1][0] * v2[0] + Rp[1][1] * v2[1] + Rp[1][2] * v2[2];  
+        v3[2] = Rp[2][0] * v2[0] + Rp[2][1] * v2[1] + Rp[2][2] * v2[2];  
+
+        double norm = sqrt(v3[0] * v3[0] + v3[1] * v3[1]);
+        v3[0] /= norm;
+        v3[1] /= norm;
+        v3[2] /= norm;
+        
+        double c = v3[0]; 
+        double s = v3[1];
+
+        double xc, yc;
+        xc =  c * Rp[0][0] + s * Rp[1][0];
+        yc = -s * Rp[0][0] + c * Rp[1][0];
+        Rp[0][0] = xc;
+        Rp[1][0] = yc;
+
+        xc =  c * Rp[0][1] + s * Rp[1][1];
+        yc = -s * Rp[0][1] + c * Rp[1][1];
+        Rp[0][1] = xc;
+        Rp[1][1] = yc;
+
+        xc =  c * Rp[0][2] + s * Rp[1][2];
+        yc = -s * Rp[0][2] + c * Rp[1][2];
+        Rp[0][2] = xc;
+        Rp[1][2] = yc;
+
     } else if (fabs(Dp[0] - Dp[1]) < jitter || fabs(Dp[1] - Dp[2]) < jitter) {
         // Symmetric top, nonlinear
         fprintf(outfile, "    Symmetric top, nonlinear\n\n");
@@ -1102,8 +1199,8 @@ SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol
             Rp[A] = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2] - Zp[A] * Zp[A]);
         }
 
-        Zproj->print();
-        Rproj->print();
+        //Zproj->print();
+        //Rproj->print();
 
         // Eliminate non-significant digits (below jitter) in Z and R to prevent false sorting
         for (int A = 0; A < natom; A++) {
