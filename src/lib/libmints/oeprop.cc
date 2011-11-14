@@ -387,6 +387,9 @@ SharedMatrix Prop::Da_mo()
     int symm = D->symmetry();
     int nirrep = D->nirrep();
 
+    SharedMatrix S = overlap_so();
+
+    double* SC = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
     double* temp = new double[Ca_so_->max_ncol() * Ca_so_->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Ca_so_->colspi()[h];
@@ -394,14 +397,20 @@ SharedMatrix Prop::Da_mo()
         int nsol = Ca_so_->rowspi()[h];
         int nsor = Ca_so_->rowspi()[h^symm];
         if (!nmol || !nmor || !nsol || !nsor) continue;
+        double** Slp = S->pointer(h);
+        double** Srp = S->pointer(h^symm);
         double** Clp = Ca_so_->pointer(h);
         double** Crp = Ca_so_->pointer(h^symm);
         double** Dmop = D->pointer(h);
         double** Dsop = Da_so_->pointer(h);
-        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dmop[0],nsor,Crp[0],nmor,0.0,temp,nmor);
-        C_DGEMM('T','N',nmol,nmor,nsol,1.0,Clp[0],nmol,temp,nmor,0.0,Dsop[0],nmor);
+
+        C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
+        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
+        C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
+        C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
     }
     delete[] temp;
+    delete[] SC;
     return D;
 }
 SharedMatrix Prop::Db_mo()
@@ -414,6 +423,9 @@ SharedMatrix Prop::Db_mo()
     int symm = D->symmetry();
     int nirrep = D->nirrep();
 
+    SharedMatrix S = overlap_so();
+
+    double* SC = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
     double* temp = new double[Cb_so_->max_ncol() * Cb_so_->max_nrow()];
     for (int h = 0; h < nirrep; h++) {
         int nmol = Cb_so_->colspi()[h];
@@ -421,14 +433,20 @@ SharedMatrix Prop::Db_mo()
         int nsol = Cb_so_->rowspi()[h];
         int nsor = Cb_so_->rowspi()[h^symm];
         if (!nmol || !nmor || !nsol || !nsor) continue;
+        double** Slp = S->pointer(h);
+        double** Srp = S->pointer(h^symm);
         double** Clp = Cb_so_->pointer(h);
         double** Crp = Cb_so_->pointer(h^symm);
         double** Dmop = D->pointer(h);
         double** Dsop = Db_so_->pointer(h);
-        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dmop[0],nsor,Crp[0],nmor,0.0,temp,nmor);
-        C_DGEMM('T','N',nmol,nmor,nsol,1.0,Clp[0],nmol,temp,nmor,0.0,Dsop[0],nmor);
+
+        C_DGEMM('N','N',nsor,nmor,nsor,1.0,Srp[0],nsor,Crp[0],nmor,0.0,SC,nmor);
+        C_DGEMM('N','N',nsol,nmor,nsor,1.0,Dsop[0],nsor,SC,nmor,0.0,temp,nmor);
+        C_DGEMM('N','N',nsol,nmol,nsol,1.0,Slp[0],nsol,Clp[0],nmol,0.0,SC,nmol);
+        C_DGEMM('T','N',nmol,nmor,nsol,1.0,SC,nmol,temp,nmor,0.0,Dmop[0],nmor);
     }
     delete[] temp;
+    delete[] SC;
     return D;
 }
 SharedMatrix Prop::Dt_ao(bool total)
@@ -728,6 +746,13 @@ std::pair<SharedMatrix, SharedVector> Prop::Nt_ao()
     }
 
     return make_pair(N3,O2);
+}
+SharedMatrix Prop::overlap_so()
+{
+    SharedMatrix S(new Matrix("S",Ca_so_->rowspi(),Ca_so_->rowspi()));
+    boost::shared_ptr<OneBodySOInt> Sint(integral_->so_overlap());
+    Sint->compute(S);
+    return S;
 }
 
 OEProp::OEProp(boost::shared_ptr<Wavefunction> wfn) : Prop(wfn_)
@@ -1429,78 +1454,112 @@ void OEProp::compute_wiberg_lowdin_indices()
 }
 void OEProp::compute_no_occupations(int max_num)
 {
-    SharedVector Oa;
-    SharedVector Ob;
-    if (restricted_) {
-        std::pair<SharedMatrix,SharedVector> vals = Na_mo();
-        Oa = vals.second;
-        Ob = vals.second;
-    } else {
-        std::pair<SharedMatrix,SharedVector> vals = Na_mo();
-        Oa = vals.second;
-        std::pair<SharedMatrix,SharedVector> vals2 = Nb_mo();
-        Ob = vals2.second;
-    }
-
-    std::vector<boost::tuple<double, int, int> > metric_a;
-    for (int h = 0; h < Oa->nirrep(); h++) {
-        for (int i = 0; i < Oa->dimpi()[h]; i++) {
-            metric_a.push_back(boost::tuple<double,int,int>(Oa->get(h,i), i ,h));
-        }
-    }
-
-    std::sort(metric_a.begin(), metric_a.end(), std::greater<boost::tuple<double,int,int> >());
-
-    std::vector<boost::tuple<double, int, int> > metric_b;
-    for (int h = 0; h < Ob->nirrep(); h++) {
-        for (int i = 0; i < Ob->dimpi()[h]; i++) {
-            metric_b.push_back(boost::tuple<double,int,int>(Ob->get(h,i), i ,h));
-        }
-    }
-
-    std::sort(metric_b.begin(), metric_b.end(), std::greater<boost::tuple<double,int,int> >());
 
     char** labels = basisset_->molecule()->irrep_labels();
 
     fprintf(outfile, "  Natural Orbital Occupations:\n\n");
 
-    int offset_a = wfn_->nalpha();
-    int offset_b = wfn_->nbeta();
+    if (!restricted_) {
 
-    int start_occ_a = offset_a - max_num;
-    int start_occ_b = offset_b - max_num;
-    start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
-    start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
-
-    int stop_vir_a = offset_a + max_num + 1;
-    int stop_vir_b = offset_b + max_num + 1;
-    stop_vir_a = (stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
-    stop_vir_b = (stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
-
-    fprintf(outfile, "  Alpha Occupations:\n");
-    for (int index = start_occ_a; index < stop_vir_a; index++) {
-        if (index < offset_a) {
-            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index,
-            boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
-            boost::get<0>(metric_a[index]));
+        SharedVector Oa;
+        SharedVector Ob;
+        if (restricted_) {
+            std::pair<SharedMatrix,SharedVector> vals = Na_mo();
+            Oa = vals.second;
+            Ob = vals.second;
         } else {
-            fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
-            boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
-            boost::get<0>(metric_a[index]));
+            std::pair<SharedMatrix,SharedVector> vals = Na_mo();
+            Oa = vals.second;
+            std::pair<SharedMatrix,SharedVector> vals2 = Nb_mo();
+            Ob = vals2.second;
+        }
+        std::vector<boost::tuple<double, int, int> > metric_a;
+        for (int h = 0; h < Oa->nirrep(); h++) {
+            for (int i = 0; i < Oa->dimpi()[h]; i++) {
+                metric_a.push_back(boost::tuple<double,int,int>(Oa->get(h,i), i ,h));
+            }
+        }
+
+        std::sort(metric_a.begin(), metric_a.end(), std::greater<boost::tuple<double,int,int> >());
+        int offset_a = wfn_->nalpha();
+        int start_occ_a = offset_a - max_num;
+        start_occ_a = (start_occ_a < 0 ? 0 : start_occ_a);
+        int stop_vir_a = offset_a + max_num + 1;
+        stop_vir_a = (stop_vir_a >= metric_a.size() ? metric_a.size()  : stop_vir_a);
+
+        fprintf(outfile, "  Alpha Occupations:\n");
+        for (int index = start_occ_a; index < stop_vir_a; index++) {
+            if (index < offset_a) {
+                fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_a - index - 1,
+                boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
+                boost::get<0>(metric_a[index]));
+            } else {
+                fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_a,
+                boost::get<1>(metric_a[index])+1,labels[boost::get<2>(metric_a[index])],
+                boost::get<0>(metric_a[index]));
+            }
+        }
+        fprintf(outfile, "\n");
+
+        std::vector<boost::tuple<double, int, int> > metric_b;
+        for (int h = 0; h < Ob->nirrep(); h++) {
+            for (int i = 0; i < Ob->dimpi()[h]; i++) {
+                metric_b.push_back(boost::tuple<double,int,int>(Ob->get(h,i), i ,h));
+            }
+        }
+
+        std::sort(metric_b.begin(), metric_b.end(), std::greater<boost::tuple<double,int,int> >());
+
+        int offset_b = wfn_->nbeta();
+        int start_occ_b = offset_b - max_num;
+        start_occ_b = (start_occ_b < 0 ? 0 : start_occ_b);
+        int stop_vir_b = offset_b + max_num + 1;
+        stop_vir_b = (stop_vir_b >= metric_b.size() ? metric_b.size()  : stop_vir_b);
+
+        fprintf(outfile, "  Beta Occupations:\n");
+        for (int index = start_occ_b; index < stop_vir_b; index++) {
+            if (index < offset_b) {
+                fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index - 1,
+                boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
+                boost::get<0>(metric_b[index]));
+            } else {
+                fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
+                boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
+                boost::get<0>(metric_b[index]));
+            }
+        }
+        fprintf(outfile, "\n");
+
+    }
+
+    std::pair<SharedMatrix,SharedVector> vals = Nt_mo();
+    SharedVector Ot = vals.second;
+
+    std::vector<boost::tuple<double, int, int> > metric;
+    for (int h = 0; h < Ot->nirrep(); h++) {
+        for (int i = 0; i < Ot->dimpi()[h]; i++) {
+            metric.push_back(boost::tuple<double,int,int>(Ot->get(h,i), i ,h));
         }
     }
-    fprintf(outfile, "\n");
 
-    fprintf(outfile, "  Beta Occupations:\n");
-    for (int index = start_occ_b; index < stop_vir_b; index++) {
-        if (index < offset_b) {
-            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset_b - index,
-            boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
-            boost::get<0>(metric_b[index]));
+    std::sort(metric.begin(), metric.end(), std::greater<boost::tuple<double,int,int> >());
+
+    int offset = wfn_->nbeta();
+    int start_occ = offset - max_num;
+    start_occ = (start_occ < 0 ? 0 : start_occ);
+    int stop_vir = offset + max_num + 1;
+    stop_vir = (stop_vir >= metric.size() ? metric.size()  : stop_vir);
+
+    fprintf(outfile, "  Total Occupations:\n");
+    for (int index = start_occ; index < stop_vir; index++) {
+        if (index < offset) {
+            fprintf(outfile, "  HONO-%-2d: %4d%3s %8.3f\n", offset - index - 1,
+            boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
+            boost::get<0>(metric[index]));
         } else {
-            fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset_b,
-            boost::get<1>(metric_b[index])+1,labels[boost::get<2>(metric_b[index])],
-            boost::get<0>(metric_b[index]));
+            fprintf(outfile, "  LUNO+%-2d: %4d%3s %8.3f\n", index - offset,
+            boost::get<1>(metric[index])+1,labels[boost::get<2>(metric[index])],
+            boost::get<0>(metric[index]));
         }
     }
     fprintf(outfile, "\n");
