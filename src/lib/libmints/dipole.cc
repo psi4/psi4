@@ -37,6 +37,21 @@ DipoleInt::~DipoleInt()
     delete[] buffer_;
 }
 
+SharedVector DipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+{
+    boost::shared_ptr<Vector> sret(new Vector(3));
+    double *ret = sret->pointer();
+
+    for(int i=0; i<mol->natom(); ++i) {
+        Vector3 geom = mol->xyz(i);
+        ret[0] += mol->Z(i) * geom[0];
+        ret[1] += mol->Z(i) * geom[1];
+        ret[2] += mol->Z(i) * geom[2];
+    }
+
+    return sret;
+}
+
 // The engine only supports segmented basis sets
 void DipoleInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {

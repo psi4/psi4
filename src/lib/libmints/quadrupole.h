@@ -2,7 +2,7 @@
 #define _psi_src_lib_libmints_quadrupole_h_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 
 namespace psi {
 
@@ -27,6 +27,9 @@ class QuadrupoleInt : public OneBodyAOInt
 public:
     QuadrupoleInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>);
     virtual ~QuadrupoleInt();
+
+    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol);
+
 };
 
 }

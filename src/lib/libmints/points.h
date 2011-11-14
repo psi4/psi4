@@ -1,8 +1,10 @@
 #ifndef libmints_points_H
 #define libmints_points_H
 
-#include <psi4-dec.h>
-#include <psiconfig.h>
+#include <cstdio>
+#include <map>
+
+#include "typedefs.h"
 #include <boost/tuple/tuple.hpp>
 
 namespace psi {
@@ -14,6 +16,8 @@ class Vector;
 class IntVector;
 class Vector3;
 class BlockOPoints;
+
+extern FILE* outfile;
 
 class PointFunctions {
 
@@ -54,7 +58,7 @@ public:
     int max_functions() const { return max_functions_; }
     int max_points() const { return max_points_; }
     int npoints() const { return npoints_; }
- 
+
 };
 
 class RKSFunctions : public PointFunctions {
@@ -62,7 +66,7 @@ class RKSFunctions : public PointFunctions {
 protected:
     /// Density matrix, AO
     SharedMatrix D_AO_;
-    /// Occupied C matrix, AO 
+    /// Occupied C matrix, AO
     SharedMatrix Cocc_AO_;
 
     // => Temps <= //
@@ -76,7 +80,7 @@ protected:
     SharedMatrix C_local_;
 
     /// RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
-    int ansatz_; 
+    int ansatz_;
     /// Map of value names to Vectors containing values
     std::map<std::string, boost::shared_ptr<Vector> > property_values_;
 
@@ -89,7 +93,7 @@ public:
 
     /// Set RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
     void set_ansatz(int ansatz);
-    /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change) 
+    /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change)
     void  reset_pointers(SharedMatrix D_AO, SharedMatrix Cocc_AO);
 
     /// Scratch array of size max_points() x max_functions()
@@ -99,18 +103,18 @@ public:
     boost::shared_ptr<Vector> property_value(const std::string& key);
 
     virtual void print(FILE* out = outfile, int print = 2) const;
-}; 
+};
 
 class UKSFunctions : public PointFunctions {
 
 protected:
     /// Density matrix, AO
     SharedMatrix Da_AO_;
-    /// Occupied C matrix, AO 
+    /// Occupied C matrix, AO
     SharedMatrix Caocc_AO_;
     /// Density matrix, AO
     SharedMatrix Db_AO_;
-    /// Occupied C matrix, AO 
+    /// Occupied C matrix, AO
     SharedMatrix Cbocc_AO_;
 
     // => Temps <= //
@@ -130,7 +134,7 @@ protected:
     SharedMatrix Cb_local_;
 
     /// RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
-    int ansatz_; 
+    int ansatz_;
     /// Map of value names to Vectors containing values
     std::map<std::string, boost::shared_ptr<Vector> > property_values_;
 
@@ -143,7 +147,7 @@ public:
 
     /// Set RKS Ansatz (0 - LSDA, 1 - GGA, 2 - Meta-GGA)
     void set_ansatz(int ansatz);
-    /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change) 
+    /// Reset pointers, in case the D/Cocc matrices change (nocc *may* change)
     void  reset_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
                          SharedMatrix Db_AO, SharedMatrix Cbocc_AO);
 
@@ -156,7 +160,7 @@ public:
     boost::shared_ptr<Vector> property_value(const std::string& key);
 
     virtual void print(FILE* out = outfile, int print = 2) const;
-}; 
+};
 
 
 }

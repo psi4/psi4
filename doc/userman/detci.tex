@@ -29,8 +29,8 @@ configuration interaction (RAS CI) wavefunctions as described by Olsen,
 Roos, Jorgensen, and Aa. Jensen \cite{Olsen:1988}.  Excitation-class
 selected multi-reference CI wavefunctions, such as second-order CI,
 can be formulated as RAS CI's.  A RAS CI selects determinants for the
-model space as those which have no more than n holes in the lowest set
-of orbitals (called RAS I) and no more than m electrons in the highest
+model space as those which have no more than $n$ holes in the lowest set
+of orbitals (called RAS I) and no more than $m$ electrons in the highest
 set of orbitals (called RAS III).  An intermediate set of orbitals, if
 present (RAS II), has no restrictions placed upon it.  All determinants
 satisfying these rules are included in the CI.
@@ -38,9 +38,9 @@ satisfying these rules are included in the CI.
 \PSIdetci\ is also very efficient at computing full configuration interaction
 wavefunctions, and it is used in this capacity in the complete-active-space
 self-consistent-field (CASSCF) code.  Use of \PSIdetci\ for CASSCF
-wavefunctions is described in the following section of this manual.
+wavefunctions is described in another section of this manual.
 
-As just mentioned, the \PSIfour\ program is designed for challenging 
+As just mentioned, the \PSIdetci\ module is designed for challenging 
 chemical systems for which simple CISD is not suitable.  Because
 CI wavefunctions which go beyond CISD (such as RAS CI) are fairly complex,
 typically the \PSIdetci\ program will be used in cases where the 
@@ -61,106 +61,138 @@ frozen\_docc}, {\tt frozen\_uocc}, {\tt active}, etc., should be set
 in the global section of input so they may also be read by other modules.
 
 \subsubsection{Basic Keywords}
-\begin{description}
-\item[WFN = string]\mbox{}\\
-Acceptable values for determinant-based CI computations in PSI
-are {\tt detci} and, for CASSCF, {\tt detcas}.
-\item[REFERENCE = string]\mbox{}\\
-Most reference types allowed by PSI are allowed by \PSIdetci\,
-except that {\tt uhf} is not supported.
-\item[DERTYPE = string]\mbox{}\\
-Energies (NONE) and gradients (FIRST) are the allowed options.
-\item[CONVERGENCE = integer]\mbox{}\\
-Convergence desired on the CI vector.  Convergence is achieved when the
-RMS of the error in the CI vector is less than 10**(-n).  The default is 4
-for energies and 7 for gradients.
-\item[EX\_LVL = integer]\mbox{}\\
-Excitation level for excitations into virtual
-orbitals (default 2, i.e. CISD).  In a RAS CI, this is the number
-of electrons allowed in RAS III.
-\item[VAL\_EX\_LVL = integer]\mbox{}\\
-In a RAS CI, this is the additional excitation level for allowing
-electrons out of RAS I into RAS II.  The maximum number of holes in RAS I
-is therefore {\tt EX\_LVL + VAL\_EX\_LVL}.  Defaults to zero.
-\item[FROZEN\_DOCC = (integer array)]\mbox{}\\
-Core may be frozen by setting {\tt FREEZE\_CORE}.  To
-manually select how many orbitals per irrep to freeze, use the
-{\tt FROZEN\_DOCC} keyword.
-Should be in the global section of input.
-The number of lowest energy doubly occupied orbitals in each irreducible
-representation from which there will be no excitations.
-The Cotton ordering of the irredicible representations is used.
-The default is the zero vector.
-\item[FROZEN\_UOCC = (integer array)]\mbox{}\\
-Should be in the global section of input.
-The number of highest energy unoccupied orbitals in each irreducible
-representation into which there will be no excitations.
-The default is the zero vector.
-\item[RAS1 = (integer array)]\mbox{}\\
-Should be in the global section of input.
-The number of orbitals for each irrep making up the RAS I space,
-from which a maximum of {\tt EX\_LVL + VAL\_EX\_LVL} excitations
-are allowed.
-This does not include frozen core orbitals.  For a normal
-CI truncated at an excitation level such as CISD, CISDT, etc., it is
-not necessary to specify this or {\tt RAS2} or {\tt RAS3}.
-Note: this keyword must be visible to the transformation module
-also so that orbitals are ordered correctly (placing it in 
-the globals section should be adequate).
-\item[RAS2 = (integer array)]\mbox{}\\
-Should be in the global section of input.
-As above for {\tt RAS1}, but for the RAS II subspace.  
-No restrictions are placed on the occupancy of RAS II orbitals.
-Typically this will correspond to the conventional idea of
-an ``active space'' in multi-reference CI.
-\item[RAS3 = (integer array)]\mbox{}\\
-Should be in the global section of input.
-As above for {\tt RAS3}, but for the RAS III subspace.
-A maximum of {\tt EX\_LVL} electrons are allowed in RAS III.
-\item[MAXITER = integer]\mbox{}\\
-Maximum number of iterations to diagonalize the Hamiltonian.
-Defaults to 12.
-\item[NUM\_ROOTS = integer]\mbox{}\\
-This value gives the number of roots which are to be obtained from
-the secular equations.  The default is one.  If more than one root
-is required, set {\tt DIAG\_METHOD} to {\tt SEM} (or, for very small cases,
-{\tt RSP} or {\tt SEMTEST}).  Note that only roots of the same
-irrep as the reference will be computed.  To compute roots of a different
-irrep, one can use the {\tt REF\_SYM} keyword (for full CI only).
-\item[OPDM = boolean]\mbox{}\\
-If {\tt TRUE}, compute the one-particle density matrix for each root.  
-By default, it will be written to disk.  Except for 
-MCSCF computations (e.g., CASSCF, RASSCF), this will also turn on computation
-of dipole moments by default.
-\item[TRANSITION\_DENSITY = boolean]\mbox{}\\
-If {\tt TRUE}, compute the transition density matrix from the ground
-state to each other state obtained in the computation.  By default,
-this information will be written to disk.  Transition dipole moments
-will be evaluated in \PSIdetci\.  Note: only transition densities
-between roots of the same symmetry will be evaluated.  \PSIdetci\ does not
-compute states of different irreps within the same computation; to do this,
-lower the symmetry of the computation.
-% CDS-TODO: Say how to lower the symmetry
-\item[DIPMOM = boolean]\mbox{}\\
-If {\tt TRUE}, evaluate the dipole moment for each root (using the expectation
-value formula; orbital relaxation contributions are neglected).  This is
-an alternative to evaluation using the {\tt oeprop} module, which has
-more features.
-\item[REF\_SYM = integer]\mbox{}\\
-This option allows the user to look for CI vectors of a different irrep
-than the reference.  This probably only makes sense for Full CI,
-and it is not supported for unit vector guesses.
-\item[MPN = boolean]\mbox{}\\
-If {\tt TRUE}, compute MPn energies up to nth order, where MAXNVECT = n
-controls the maximum order energy computed.  For open-shell systems
-(REF = ROHF, WFN = ZAPTN), ZAPTn energies are computed.
-\end{description}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         WFN & Wavefunction type \\
+
+          & {\bf Possible Values:} DETCI, CI, ZAPTN, DETCAS, CASSCF, RASSCF
+\\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} DETCI\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         REFERENCE & Reference wavefunction \\
+
+          & {\bf Possible Values:} RHF, ROHF \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} string &  {\bf Default:} RHF\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         CONVERGENCE & Convergence is achieved when the RMS of the error in
+the CI vector is less than 10**(-n). The default is 4 for energies and 7
+for gradients. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 4\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         EX\_LVL & The CI excitation level \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 2\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         FCI & Do a full CI (FCI)? \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         FROZEN\_DOCC & The number of frozen (doubly) occupied orbitals
+         per irrep \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} The zero vector\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         FROZEN\_UOCC & The number of frozen unoccupied orbitals 
+         per irrep \\ 
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} array &  {\bf Default:} The zero vector\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MAXITER & Maximum number of iterations to diagonalize the
+Hamiltonian. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 12\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         NUM\_ROOTS & number of CI roots to find \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         ICORE & Specifies how to handle buffering of CI vectors. A value
+of 0 makes the program perform I/O one RAS subblock at a time; 1 uses
+entire CI vectors at a time; and 2 uses one irrep block at a time. Values
+of 0 or 2 cause some inefficiency in the I/O (requiring multiple reads of
+the C vector when constructing H in the iterative subspace if DIAG\_METHOD
+= SEM), but require less core memory. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} integer &  {\bf Default:} 1\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         OPDM & Compute one-particle density matrix if not otherwise
+required? \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         TRANSITION\_DENSITY & Compute the transition density? Note: 
+         only transition densities
+         between roots of the same symmetry will be evaluated.  \PSIdetci\ 
+         does not compute states of different irreps within the same 
+         computation; to do this, lower the symmetry of the computation. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         DIPMOM & Compute the dipole moment? \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
+         MPN & When this option is TRUE DETCI will compute the MPn series
+out to kth order where k is determined by maxnvect. For open-shell systems
+(REF=ROHF, WFN = ZAPTN), DETCI will compute the ZAPTn series. GUESS\_VECTOR
+must be set to UNIT, HD\_OTF must be set to TRUE, and HD\_AVE must be set
+to orb\_ener; these should happen by default for MPN=TRUE. \\
+\end{tabular*}
+\begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
+           & {\bf Type:} boolean &  {\bf Default:} false\\
+         & & \\
+\end{tabular*}
 
 For larger computations, additional keywords may be required, as
 described in the \PSIdetci\ section of the Appendix.
 
 \subsubsection{Arbitrary Order Perturbation Theory}
-\PSIfour\ is capable of computing arbitrary order M{\o}ller-Plesset
+The \PSIdetci\ module is capable of computing arbitrary order M{\o}ller-Plesset
  perturbation theory (MPn, closed-shell systems) and
 Z-averaged perturbation theory (ZAPTn, open-shell systems) energies,
 invoked with MPN = TRUE.  The maximum level of perturbation theory
@@ -173,3 +205,24 @@ using WIGNER = TRUE.  By default, the n{th} order energy is saved, but
 For open-shell systems, arbitary order ZAPTn energies can be computed
 using WFN = ZAPTN and REF = ROHF.  All other options are the same as
 closed-shell MPn.
+
+\subsubsection{Arbitrary Order Coupled-Cluster Theory} The
+\PSIdetci\ module is also capable of computing arbitrary-order
+coupled-cluster energies, using an approach similar to that of Hirata
+and Bartlett \cite{Hirata:2000:216}, or of Olsen \cite{Olsen:2000:7140}.
+Notably, the approach in \PSIdetci\ also allows arbitrary-order {\em
+active space} coupled-cluster procedures.  The general algorithm
+for doing this in \PSIdetci\ is inefficient compared to optimized
+lower-order coupled-cluster codes and should not be used for CCSD,
+where the \PSIccenergy\ module is much more efficient.  It is also very
+memory-intensive.  However, it allows for testing of, for example,
+CCSDTQ, or its active-space CCSDtq analog \cite{Piecuch:1999:6103},
+on very small systems.
+
+To perform arbitrary-order coupled-cluster, set the \PSIdetci\ option
+CC to TRUE, and set CC\_EX\_LVL (note: not EX\_LVL) to the desired
+coupled-cluster excitation level.  Various other \PSIdetci\ options have a
+similar option for coupled-cluster, usually named beginning with CC.  The
+full list of options is given in the Appendix.
+
+
