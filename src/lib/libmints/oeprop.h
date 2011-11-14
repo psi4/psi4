@@ -213,13 +213,9 @@ protected:
 
     // Compute routines
     /// Compute dipole
-    void compute_dipole();
+    void compute_dipole(bool transition = false);
     /// Compute quadrupole
-    void compute_quadrupole();
-    /// Compute octupole
-    void compute_octupole();
-    /// Compute hexadecapole
-    void compute_hexadecapole();
+    void compute_quadrupole(bool transition = false);
     /// Compute mo extents
     void compute_mo_extents();
     /// Compute Mulliken Charges
