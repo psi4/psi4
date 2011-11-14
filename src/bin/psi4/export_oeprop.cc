@@ -8,7 +8,8 @@ void export_oeprop()
 {
     class_<OEProp, boost::shared_ptr<OEProp> >("OEProp").
         def("add", &OEProp::oepy_add).
-        def("compute", &OEProp::oepy_compute);
+        def("compute", &OEProp::oepy_compute).
+        def("set_title", &OEProp::oepy_set_title);
 
     class_<GridProp, boost::shared_ptr<GridProp> >("GridProp").
         def("add", &GridProp::gridpy_add).

@@ -494,9 +494,9 @@ def database(name, db_name, **kwargs):
     user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
     user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
 
+    b_user_reference = PsiMod.has_global_option_changed('REFERENCE')
     user_reference = PsiMod.get_option('REFERENCE')
     user_memory = PsiMod.get_memory()
-    user_dertype = PsiMod.get_option('DERTYPE')
 
     user_molecule = PsiMod.get_active_molecule()
     if not user_molecule:
@@ -730,6 +730,7 @@ def database(name, db_name, **kwargs):
         for chgdopt in PsiMod.get_global_option_list():
             if PsiMod.has_option_changed(chgdopt):
                 chgdoptval = PsiMod.get_global_option(chgdopt)
+                #chgdoptval = PsiMod.get_option(chgdopt)
                 if isinstance(chgdoptval, basestring):
                     commands += """PsiMod.set_global_option('%s', '%s')\n""" % (chgdopt, chgdoptval)
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
@@ -774,10 +775,6 @@ def database(name, db_name, **kwargs):
             exec commands
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
-            #lesserkwargs = kwargs.copy() 
-            #del lesserkwargs['db_func'] 
-            #ERGT[rgt] = call_function_in_1st_argument(kwargs['db_func'], **lesserkwargs)
-            #ERGT[rgt] = call_function_in_1st_argument(kwargs['db_func'], **kwargs)
             ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
@@ -793,18 +790,10 @@ def database(name, db_name, **kwargs):
             freagent.write(banners)
             freagent.write(GEOS[rgt])
             freagent.write(commands)
-            #lesserkwargs = kwargs.copy() 
-            #del lesserkwargs['db_func'] 
-            # non-pickle route
-            #freagent.write("""\nkwargs = %s\n""" % (lesserkwargs)) 
-            # pickle route (conflics w/Andy's parenthesis matching)
             freagent.write('''\npickle_kw = ("""''')
-            #pickle.dump(lesserkwargs, freagent)
             pickle.dump(kwargs, freagent)
             freagent.write('''""")\n''')
             freagent.write("""\nkwargs = pickle.loads(pickle_kw)\n""")
-            # end routes
-            #freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (kwargs['db_func'].__name__))
             freagent.write("""electronic_energy = %s(**kwargs)\n\n""" % (func.__name__))
             freagent.write("""PsiMod.print_variables()\n""")
             freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
@@ -970,7 +959,8 @@ def database(name, db_name, **kwargs):
     user_molecule.update_geometry()
     PsiMod.set_global_option("BASIS", user_basis)
     PsiMod.set_global_option("REFERENCE", user_reference)
-    PsiMod.set_global_option("DERTYPE", user_dertype)
+    if not b_user_reference:
+        PsiMod.revoke_global_option_changed('REFERENCE')
 
     return finalenergy
 
@@ -1007,12 +997,7 @@ db = database
 ##  Start of Complete Basis Set  ##
 ###################################
 
-#def complete_basis_set(name, **kwargs):
 def complete_basis_set(**kwargs):
-
-    ## Wrap any positional arguments into kwargs (for intercalls among wrappers)
-    #if not('name' in kwargs) and name:
-    #    kwargs['name'] = name.lower()
 
     # Establish function to call (only energy makes sense for cbs)
     if not('cbs_func' in kwargs):
@@ -1047,27 +1032,22 @@ def complete_basis_set(**kwargs):
     do_delta2 = 0
 
     # Must collect (here) and set (below) basis sets after every new molecule activation
+    b_user_basis = PsiMod.has_global_option_changed('BASIS')
     user_basis = PsiMod.get_option('BASIS')
     #user_ri_basis_scf = PsiMod.get_option('RI_BASIS_SCF')
     #user_ri_basis_mp2 = PsiMod.get_option('RI_BASIS_MP2')
     #user_ri_basis_cc = PsiMod.get_option('RI_BASIS_CC')
     #user_ri_basis_sapt = PsiMod.get_option('RI_BASIS_SAPT')
     #user_ri_basis_elst = PsiMod.get_option('RI_BASIS_ELST')
-    user_reference = PsiMod.get_option('REFERENCE')
+    b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_option('WFN')
-    user_molecule = PsiMod.get_active_molecule()
-    if not user_molecule:
-        raise ValueNotSet("No molecule found.")
 
-    # Establish method for correlation energy
-    #if(kwargs.has_key('name')):
-    #    cbs_corl_wfn = kwargs['name'].lower()
-    #    if re.match(r'^scf$', cbs_corl_wfn.lower()):
-    #        pass
-    #    else:
-    #        domax_scf = 0
-    #        domax_corl = 1
-    #        do_corl = 1
+    molecule = PsiMod.get_active_molecule() 
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')    
+ 
+    if not molecule:
+        raise ValueNotSet("no molecule found")
 
     # Establish method for correlation energy
     if (kwargs.has_key('name')):
@@ -1175,13 +1155,14 @@ def complete_basis_set(**kwargs):
     if(kwargs.has_key('delta2_scheme')):
         cbs_delta2_scheme = kwargs['delta2_scheme']
 
-    # build string of title banner
+    # Build string of title banner
     cbsbanners = ''
     cbsbanners += """PsiMod.print_out('\\n')\n"""
     cbsbanners += """banner(' CBS Setup ')\n"""
     cbsbanners += """PsiMod.print_out('\\n')\n\n"""
     exec cbsbanners
 
+    # Call schemes for each portion of total energy to 'place orders' for calculations needed
     d_fields = ['d_stage', 'd_scheme', 'd_basis', 'd_wfn', 'd_need', 'd_coef', 'd_energy']
     f_fields = ['f_wfn', 'f_portion', 'f_basis', 'f_zeta', 'f_energy']
     GRAND_NEED = []
@@ -1218,10 +1199,6 @@ def complete_basis_set(**kwargs):
     for stage in GRAND_NEED:
         for lvl in stage['d_need'].iteritems():
             MODELCHEM.append(lvl[1])
-
-    #print '\nGRAND_NEED', GRAND_NEED
-    #print '\nMODELCHEM', MODELCHEM
-
 
     # Apply chemical reasoning to choose the minimum computations to run
     JOBS = MODELCHEM[:]
@@ -1268,25 +1245,22 @@ def complete_basis_set(**kwargs):
     for mc in JOBS:
         kwargs['name'] = mc['f_wfn']
 
-        # build string of title banner
+        # Build string of title banner
         cbsbanners = ''
         cbsbanners += """PsiMod.print_out('\\n')\n"""
         cbsbanners += """banner(' CBS Computation: %s / %s ')\n""" % (mc['f_wfn'].upper(), mc['f_basis'].upper())
         cbsbanners += """PsiMod.print_out('\\n')\n\n"""
         exec cbsbanners
 
-        # build string of molecule and commands that are dependent on the database
+        # Build string of molecule and commands that are dependent on the database
         commands  = '\n'
         commands += """\nPsiMod.set_global_option('BASIS', '%s')\n""" % (mc['f_basis'])
         exec commands
 
-        # make energy() call
-        #lesserkwargs = kwargs.copy()
-        #del lesserkwargs['cbs_func']
-        #mc['f_energy'] = call_function_in_1st_argument(func, **lesserkwargs)
+        # Make energy() call
         mc['f_energy'] = call_function_in_1st_argument(func, **kwargs)
 
-        # fill in energies for subsumed methods
+        # Fill in energies for subsumed methods
         for menial in VARH[mc['f_wfn']]:
             temp_wfn, temp_portion = split_menial(menial)
             for job in JOBS_EXT:
@@ -1295,7 +1269,7 @@ def complete_basis_set(**kwargs):
 
         PsiMod.clean()
 
-    # build string of title banner
+    # Build string of title banner
     cbsbanners = ''
     cbsbanners += """PsiMod.print_out('\\n')\n"""
     cbsbanners += """banner(' CBS Results ')\n"""
@@ -1316,12 +1290,7 @@ def complete_basis_set(**kwargs):
         stage['d_energy'] = call_function_in_1st_argument(stage['d_scheme'], needname = stage['d_need'], mode = 'evaluate')
         finalenergy += stage['d_energy'] * stage['d_coef']
 
-    #print '\nJOBS', JOBS
-    #print '\nJOBS_EXT', JOBS_EXT
-    #print '\nGRAND_NEED', GRAND_NEED
-    #print '\nMODELCHEM', MODELCHEM
-
-    # build string of results table
+    # Build string of results table
     table_delimit = '  ' + '-' * 105 + '\n'
     tables  = ''
     tables += """\n   ==> %s <==\n\n""" % ('Components')
@@ -1368,12 +1337,13 @@ def complete_basis_set(**kwargs):
     #print tables
     PsiMod.print_out(tables)
 
-    # restore molecule and options
-    activate(user_molecule) 
-    user_molecule.update_geometry()
-    PsiMod.set_global_option("BASIS", user_basis)
-    PsiMod.set_local_option('SCF', "WFN", user_wfn)    # TODO refuses to set global option WFN - rejects SCF as option
-    PsiMod.set_global_option("REFERENCE", user_reference)
+    # Restore molecule and options
+    #PsiMod.set_local_option('SCF', "WFN", user_wfn)    # TODO refuses to set global option WFN - rejects SCF as option
+    PsiMod.set_global_option('BASIS', user_basis)
+
+    PsiMod.set_global_option('WFN', user_wfn)
+    if not b_user_wfn:
+        PsiMod.revoke_global_option_changed('WFN')
 
     PsiMod.set_variable('CBS TOTAL ENERGY', finalenergy)
     PsiMod.set_variable('CURRENT ENERGY', finalenergy)

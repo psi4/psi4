@@ -1,16 +1,10 @@
 #ifndef _psi_src_lib_libmints_dipole_h_
 #define _psi_src_lib_libmints_dipole_h_
 
-#include <boost/shared_ptr.hpp>
+#include <vector>
+#include "typedefs.h"
 
 namespace psi {
-
-    class BasisSet;
-    class GaussianShell;
-    class ObaraSaikaTwoCenterRecursion;
-    class OneBodyAOInt;
-    class IntegralFactory;
-    class SphericalTransform;
 
 /*! \ingroup MINTS
  *  \class DipoleInt
@@ -35,6 +29,9 @@ public:
 
     //! Does the method provide first derivatives?
     bool has_deriv1() { return true; }
+
+    /// Returns the nuclear contribution to the dipole moment
+    static SharedVector nuclear_contribution(boost::shared_ptr<Molecule> mol);
 };
 
 }

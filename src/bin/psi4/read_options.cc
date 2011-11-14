@@ -92,7 +92,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Wavefunction type -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
-    /*- Do a full CI (FCI)? -*/
+    /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LVL -*/
     options.add_bool("FCI",false);
 
     /*- The CI excitation level -*/
@@ -101,7 +101,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The CC excitation level -*/
     options.add_int("CC_EX_LVL", 2);
 
-    /*- The valence excitation level -*/
+    /*- In a RAS CI, this is the additional excitation level for allowing
+    electrons out of RAS I into RAS II.  The maximum number of holes in 
+    RAS I is therefore EX_LVL + VAL_EX_LVL. -*/
     options.add_int("VAL_EX_LVL", 0);
 
     /*- The CC valence excitation level -*/
@@ -429,7 +431,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     excited state. -*/
     options.add_int("ROOT", 1);
 
-    /*- Compute the transition density? -*/
+    /*- Compute the transition density?  Note: only transition densities
+    between roots of the same symmetry will be evaluated.  DETCI
+    does not compute states of different irreps within the same 
+    computation; to do this, lower the symmetry of the computation.-*/
     options.add_bool("TRANSITION_DENSITY", false);
 
     /*- Write the transition density? -*/
@@ -481,7 +486,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     number and beta string number for each), and also the
     desired phase between these two determinants for guesses
     which are to be kept.  FILTER_GUESS = TRUE turns on the filtering
-    routine (and requires additional keywords). !expert -*/
+    routine.  Requires additional keywords FILTER_GUESS_DET1, 
+    FILTER_GUESS_DET2, and FILTER_GUESS_SIGN. !expert -*/
     options.add_bool("FILTER_GUESS", false);
 
     /*- The required phase (1 or -1) between the two determinants specified
@@ -489,11 +495,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FILTER_GUESS_SIGN", 1);
 
     /*- Array specifying the absolute alpha string number and beta string
-    number for the first determinant in the filter procedure. !expert -*/
+    number for the first determinant in the filter procedure. 
+    (See FILTER_GUESS).  !expert -*/
     options.add("FILTER_GUESS_DET1", new ArrayType());
 
     /*- Array specifying the absolute alpha string number and beta string
-    number for the second determinant in the filter procedure. !expert -*/
+    number for the second determinant in the filter procedure. 
+    (See FILTER_GUESS).  !expert -*/
     options.add("FILTER_GUESS_DET2", new ArrayType());
 
     /*- If present, the code will try to filter out a particular determinant
@@ -1467,7 +1475,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "CIS"|| options.read_globals()) {
     /*- -*/
-    options.add_str("WFN", "CIS", "CCSD CCSD_T EOM_CCSD CIS");
+    options.add_str("WFN", "CIS", "SCF CCSD CCSD_T EOM_CCSD CIS");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
     /*- -*/

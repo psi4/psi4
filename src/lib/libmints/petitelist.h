@@ -1,7 +1,7 @@
 #ifndef _psi_src_lib_libmints_petitelist_h_
 #define _psi_src_lib_libmints_petitelist_h_
 
-#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 
 #include <map>
 #include <cstdio>
@@ -181,7 +181,7 @@ public:
     /// The integral factory used to create this petite list
     const IntegralFactory* integral() { return integral_; }
     /// Create a clone of this petite list
-    boost::shared_ptr<PetiteList> clone() { return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_)); }
+    boost::shared_ptr<PetiteList> clone();
 
     /// Number of irreps
     int nirrep() const { return nirrep_; }

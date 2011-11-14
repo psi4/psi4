@@ -446,6 +446,11 @@ PetiteList::~PetiteList()
     nbf_in_ir_=0;
 }
 
+boost::shared_ptr<PetiteList> PetiteList::clone()
+{
+    return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+}
+
 int PetiteList::nfunction(int i) const
 {
     return (c1_) ? basis_->nbf() : nbf_in_ir_[i];

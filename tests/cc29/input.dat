@@ -20,6 +20,7 @@ set {
   mu_irreps [1, 1, 0]
   gauge both
   basis cc-pVDZ
+  convergence 10
 }
 
 response('ccsd')

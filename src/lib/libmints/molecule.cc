@@ -1257,42 +1257,6 @@ void Molecule::save_xyz(const std::string& filename) const
     }
 }
 
-boost::shared_ptr<Vector> Molecule::nuclear_dipole_contribution()
-{
-    boost::shared_ptr<Vector> sret(new Vector(3));
-    double *ret = sret->pointer();
-
-    for(int i=0; i<natom(); ++i) {
-        Vector3 geom = xyz(i);
-        ret[0] += Z(i) * geom[0];
-        ret[1] += Z(i) * geom[1];
-        ret[2] += Z(i) * geom[2];
-    }
-
-    return sret;
-}
-
-boost::shared_ptr<Vector> Molecule::nuclear_quadrupole_contribution()
-{
-    boost::shared_ptr<Vector> sret(new Vector(6));
-    double *ret = sret->pointer();
-    double xx, xy, xz, yy, yz, zz;
-
-    xx = xy = xz = yy = yz = zz = 0.0;
-
-    for (int i=0; i<natom(); ++i) {
-        Vector3 geom = xyz(i);
-        ret[0] += Z(i) * geom[0] * geom[0]; // xx
-        ret[1] += Z(i) * geom[0] * geom[1]; // xy
-        ret[2] += Z(i) * geom[0] * geom[2]; // xz
-        ret[3] += Z(i) * geom[1] * geom[1]; // yy
-        ret[4] += Z(i) * geom[1] * geom[2]; // yz
-        ret[5] += Z(i) * geom[2] * geom[2]; // zz
-    }
-
-    return sret;
-}
-
 Matrix* Molecule::inertia_tensor() const
 {
     int i;
@@ -1878,6 +1842,18 @@ boost::shared_ptr<PointGroup> Molecule::find_point_group(double tol) const
     }
 
     return pg;
+}
+
+boost::shared_ptr<PointGroup> Molecule::point_group() const
+{
+    return pg_;
+}
+
+void Molecule::set_point_group(boost::shared_ptr<PointGroup> pg)
+{
+    pg_ = pg;
+    // Call this here, the programmer will forget to call it, as I have many times.
+    form_symmetry_information();
 }
 
 bool Molecule::has_symmetry_element(Vector3& op, double tol) const

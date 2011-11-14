@@ -595,6 +595,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         oe->set_Db_mo(opdm_b);
     }
 
+    oe->set_title("CI");
     oe->add("DIPOLE");
     oe->add("MULLIKEN_CHARGES");
     oe->add("NO_OCCUPATIONS");
