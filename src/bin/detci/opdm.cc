@@ -487,6 +487,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             transdens ? "TDM" : "OPDM");
 
       }
+      fprintf(outfile, "\n");
     }
 
     /* Get the kinetic energy if requested */
@@ -548,7 +549,10 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       ss << " Root " << (Iroot+1); 
     }
 
-    SharedMatrix opdm_a(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
+    std::stringstream ss_a;
+    ss_a << ss.str() << " alpha";
+
+    SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi())); 
     int mo_offset = 0;
     for (int h = 0; h < Ca->nirrep(); h++) {
       int nmo = CalcInfo.orbs_per_irr[h];
@@ -572,7 +576,9 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     oe->set_Da_mo(opdm_a);
 
     if (Parameters.ref == "ROHF") {
-      SharedMatrix opdm_b(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
+      std::stringstream ss_b;
+      ss_b << ss.str() << " beta";
+      SharedMatrix opdm_b(new Matrix(ss_b.str(), Ca->colspi(), Ca->colspi())); 
       mo_offset = 0;
       for (int h = 0; h < Ca->nirrep(); h++) {
         int nmo = CalcInfo.orbs_per_irr[h];
@@ -596,7 +602,14 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
       oe->set_Db_mo(opdm_b);
     }
 
-    oe->set_title(ss.str());
+    std::stringstream oeprop_label;
+    if (transdens) {
+      oeprop_label << "CI ROOT " << (Iroot+1) << " -> ROOT " << (Jroot+1); 
+    } 
+    else {
+      oeprop_label << "CI ROOT " << (Iroot+1); 
+    }
+    oe->set_title(oeprop_label.str());
     if (!transdens) {
         oe->add("DIPOLE");
         oe->add("MULLIKEN_CHARGES");
@@ -612,10 +625,54 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         }
     }
     
-    fprintf(outfile, "  OEProp Analysis %s\n", ss.str().c_str());
+    fprintf(outfile, "  ==> Properties %s <==\n", ss.str().c_str());
     oe->compute();
 
-    std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
+    // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
+
+    // if this is the "special" root, then copy over OEProp 
+    // Process::environment variables from the current root into
+    // more general locations
+    if (Iroot == Parameters.root) {
+      std::stringstream ss2;
+      ss2 << oeprop_label.str() << " DIPOLE X"; 
+      Process::environment.globals["CI DIPOLE X"] = 
+        Process::environment.globals[ss2.str()]; 
+      ss2.str(std::string());
+      ss2 << oeprop_label.str() << " DIPOLE Y"; 
+      Process::environment.globals["CI DIPOLE Y"] = 
+        Process::environment.globals[ss2.str()]; 
+      ss2.str(std::string());
+      ss2 << oeprop_label.str() << " DIPOLE Z"; 
+      Process::environment.globals["CI DIPOLE Z"] = 
+        Process::environment.globals[ss2.str()]; 
+      if (Parameters.print_lvl > 1) { 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE XX"; 
+         Process::environment.globals["CI QUADRUPOLE XX"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE YY"; 
+         Process::environment.globals["CI QUADRUPOLE YY"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE ZZ"; 
+         Process::environment.globals["CI QUADRUPOLE ZZ"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE XY"; 
+         Process::environment.globals["CI QUADRUPOLE XY"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE XZ"; 
+         Process::environment.globals["CI QUADRUPOLE XZ"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE YZ"; 
+         Process::environment.globals["CI QUADRUPOLE YZ"] = 
+           Process::environment.globals[ss2.str()]; 
+      }
+    }
 
     fflush(outfile);
     if (!transdens) Iroot++;
