@@ -1,0 +1,44 @@
+#! He2+ FCI/cc-pVDZ Transition Dipole Moment
+
+refnuc   =   0.705569665333 #TEST
+refscf   =  -4.8166031048   #TEST
+refci1   =  -4.8832620866354 #TEST
+refcorr1 = refci1 - refscf    #TEST
+refci2   =  -4.8794917722784 #TEST
+refcorr2 = refci2 - refscf    #TEST
+refDipHF =   2.642427192188  #TEST
+
+refDipCI1=   2.525376088619  #TEST
+refDipCI2=   2.525376088619  #TEST
+
+molecule he2p {
+1 2
+He 
+He 1 3.0
+symmetry c2v
+}
+
+set {
+wfn detci
+reference rohf
+fci true
+basis cc-pVDZ 
+docc [1,0,0,0]
+socc [1,0,0,0]
+dipmom true
+fci true
+ex_lvl 3
+num_roots 2
+}
+
+thisenergy = energy('detci')
+print_variables()
+
+compare_values(refnuc, he2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
+#compare_values(refDipCI, get_variable("CI DIPOLE Z"), 5, "CI Z Component of dipole")        #TEST
+
+clean()
