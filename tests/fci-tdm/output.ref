@@ -43,15 +43,15 @@ thisenergy = energy('detci')
 clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on ds7
-*** at Fri Nov 11 17:35:47 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 14:04:56 2011
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -179,32 +179,33 @@ clean()
   @ROHF Final Energy:    -4.81660310481694
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Fri Nov 11 17:35:48 2011
+*** tstop() called on ds9 at Mon Nov 14 14:04:56 2011
 Module time:
 	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Fri Nov 11 17:35:48 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 14:04:56 2011
 
 
 	**************************************************
@@ -289,18 +290,18 @@ Total time:
 	Transforming one-electron integrals...
 	Frozen-core operator written to file 35.
 
-*** tstop() called on ds7 at Fri Nov 11 17:35:50 2011
+*** tstop() called on ds9 at Mon Nov 14 14:04:56 2011
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
+	user time   =       0.00 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Fri Nov 11 17:35:50 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 14:04:56 2011
 
 
 *******************************************************
@@ -500,54 +501,32 @@ Wrote MO-basis Alpha TDM 2 to disk
 
 Wrote MO-basis Beta TDM 2 to disk
   OEProp Analysis CI TDM Root 1 -> Root 2
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     2.8250
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     2.8250     Total:     2.8250
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     7.1804     Total:     7.1804
 
- Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1    HE    -0.00002  0.49879 -0.49881  1.50123
-       2    HE     0.00002 -0.49879  0.49881  2.49877
-
-   Total alpha = -0.00000, Total beta = -0.00000, Total charge =  4.00000
-
-  Natural Orbital Occupations:
-
-  Alpha Occupations:
-  HONO-2 :    6 A1    0.000
-  HONO-1 :    5 A1    0.000
-  LUNO+0 :    4 A1    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    2 B1    0.000
-
-  Beta Occupations:
-  HONO-1 :    6 A1    0.000
-  LUNO+0 :    5 A1    0.000
-  LUNO+1 :    4 A1    0.000
-  LUNO+2 :    3 A1    0.000
-  LUNO+3 :    2 B2    0.000
-
   OEProp Analysis CI OPDM Root 1
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
- Mulliken Charges: (a.u.)
+  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1    HE     1.00000  0.50000  0.50000  0.50000
        2    HE     1.00000  0.50000  0.50000  0.50000
@@ -572,18 +551,19 @@ Wrote MO-basis Beta TDM 2 to disk
   LUNO+3 :    2 B2    0.000
 
   OEProp Analysis CI OPDM Root 2
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Mulliken Charges: (a.u.)
+  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1    HE     1.00000  0.50000  0.50000  0.50000
        2    HE     1.00000  0.50000  0.50000  0.50000
@@ -610,11 +590,11 @@ Wrote MO-basis Beta TDM 2 to disk
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.001259
- Write     0.000586
- Sigma1    0.000209
- Sigma2    0.001257
- Sigma3    0.002676
+ Read      0.001204
+ Write     0.000548
+ Sigma1    0.000178
+ Sigma2    0.001140
+ Sigma3    0.002371
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -628,14 +608,14 @@ Wrote MO-basis Beta TDM 2 to disk
 			 - Edward Valeev
 
 
-*** tstop() called on ds7 at Fri Nov 11 17:35:51 2011
+*** tstop() called on ds9 at Mon Nov 14 14:04:56 2011
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

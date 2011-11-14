@@ -1034,12 +1034,12 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
      chkpt_wt_e_labeled(e_label, tval);
 
      std::stringstream s;
-     s << "CI ROOT " << i << " TOTAL ENERGY";
+     s << "CI ROOT " << (i+1) << " TOTAL ENERGY";
 
      Process::environment.globals[s.str()] = tval;
 
      std::stringstream s2;
-     s2 << "CI ROOT " << i << " CORRELATION ENERGY";
+     s2 << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
      // eref seems wrong for open shells so replace it with escf below
      // until I fix it ---CDS 11/5/11
      Process::environment.globals[s2.str()] = tval - CalcInfo.escf;
