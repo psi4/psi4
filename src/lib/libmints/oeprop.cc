@@ -754,13 +754,13 @@ void OEProp::compute()
 {
     print_header();
     if (tasks_.count("DIPOLE"))
-        compute_dipole();
+        compute_dipole(false);
     if (tasks_.count("QUADRUPOLE"))
-        compute_quadrupole();
-    if (tasks_.count("OCTUPOLE"))
-        compute_octupole();
-    if (tasks_.count("HEXADECAPOLE"))
-        compute_hexadecapole();
+        compute_quadrupole(false);
+    if (tasks_.count("TRANSITION_DIPOLE"))
+        compute_dipole(true);
+    if (tasks_.count("TRANSITION_QUADRUPOLE"))
+        compute_quadrupole(true);
     if (tasks_.count("MO_EXTENTS"))
         compute_mo_extents();
     if (tasks_.count("MULLIKEN_CHARGES"))
@@ -774,7 +774,7 @@ void OEProp::compute()
     if (tasks_.count("NO_OCCUPATIONS"))
         compute_no_occupations();
 }
-void OEProp::compute_dipole()
+void OEProp::compute_dipole(bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
     OperatorSymmetry dipsymm (1, mol, integral_, factory_);
@@ -799,26 +799,29 @@ void OEProp::compute_dipole()
 
     SharedVector ndip = DipoleInt::nuclear_contribution(mol);
 
-    fprintf(outfile, " Nuclear Dipole Moment: (a.u.)\n");
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
-            ndip->get(0), ndip->get(1), ndip->get(2));
-    fprintf(outfile, "\n");
-    fprintf(outfile, " Electronic Dipole Moment: (a.u.)\n");
-    fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
-            de[0], de[1], de[2]);
-    fprintf(outfile, "\n");
+    if (!transition) {
 
-    de[0] += ndip->get(0, 0);
-    de[1] += ndip->get(0, 1);
-    de[2] += ndip->get(0, 2);
+        fprintf(outfile, " Nuclear Dipole Moment: (a.u.)\n");
+        fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+                ndip->get(0), ndip->get(1), ndip->get(2));
+        fprintf(outfile, "\n");
+        fprintf(outfile, " Electronic Dipole Moment: (a.u.)\n");
+        fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
+                de[0], de[1], de[2]);
+        fprintf(outfile, "\n");
 
-    fprintf(outfile," Dipole Moment: (a.u.)\n");
+        de[0] += ndip->get(0, 0);
+        de[1] += ndip->get(0, 1);
+        de[2] += ndip->get(0, 2);
+    }
+    
+    fprintf(outfile," %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0], de[1], de[2], de.norm());
     fprintf(outfile, "\n");
 
     double dfac = _dipmom_au2debye;
-    fprintf(outfile," Dipole Moment: (Debye)\n");
+    fprintf(outfile," %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
     fprintf(outfile, "\n");
@@ -836,7 +839,7 @@ void OEProp::compute_dipole()
 
     fflush(outfile);
 }
-void OEProp::compute_quadrupole()
+void OEProp::compute_quadrupole(bool transition)
 {
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Da;
@@ -873,17 +876,19 @@ void OEProp::compute_quadrupole()
     qe[5] = Da->vector_dot(so_Qpole[5]) + Db->vector_dot(so_Qpole[5]);
 
     // Add in nuclear contribution
-    SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol);
-    qe[0] += nquad->get(0, 0);
-    qe[1] += nquad->get(0, 1);
-    qe[2] += nquad->get(0, 2);
-    qe[3] += nquad->get(0, 3);
-    qe[4] += nquad->get(0, 4);
-    qe[5] += nquad->get(0, 5);
-
+    if (!transition) {
+        SharedVector nquad = QuadrupoleInt::nuclear_contribution(mol);
+        qe[0] += nquad->get(0, 0);
+        qe[1] += nquad->get(0, 1);
+        qe[2] += nquad->get(0, 2);
+        qe[3] += nquad->get(0, 3);
+        qe[4] += nquad->get(0, 4);
+        qe[5] += nquad->get(0, 5);
+    }
+    
     // Print multipole components
     double dfac = _dipmom_au2debye * _bohr2angstroms;
-    fprintf(outfile, " Quadrupole Moment: (Debye Ang)\n");
+    fprintf(outfile, " %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
     fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
     fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
@@ -891,7 +896,7 @@ void OEProp::compute_quadrupole()
     fprintf(outfile, "\n");
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    fprintf(outfile, " Traceless Quadrupole Moment: (Debye Ang)\n");
+    fprintf(outfile, " Traceless %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
     fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
     fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
@@ -917,26 +922,6 @@ void OEProp::compute_quadrupole()
     s.str(std::string());
     s << title_ << " QUADRUPOLE YZ";
     Process::environment.globals[s.str()] = qe[4]*dfac;
-
-    fflush(outfile);
-}
-void OEProp::compute_octupole()
-{
-    throw FeatureNotImplemented("OEProp::compute_octupole", "Octupole expectation value not implemented", __FILE__, __LINE__);
-
-    fprintf(outfile, " OCTUPOLE ANALYSIS [a.u.]:\n\n");
-
-    // Awesome code goes here.
-
-    fflush(outfile);
-}
-void OEProp::compute_hexadecapole()
-{
-    throw FeatureNotImplemented("OEProp::compute_hexadecapole", "Hexadecapole expectation value not implemented", __FILE__, __LINE__);
-
-    fprintf(outfile, " HEXADECAPOLE ANALYSIS [a.u.]:\n\n");
-
-    // Awesome code goes here.
 
     fflush(outfile);
 }

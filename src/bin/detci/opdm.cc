@@ -595,12 +595,19 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
         oe->set_Db_mo(opdm_b);
     }
 
-    oe->set_title("CI");
-    oe->add("DIPOLE");
-    oe->add("MULLIKEN_CHARGES");
-    oe->add("NO_OCCUPATIONS");
-    if (Parameters.print_lvl > 1) { 
-        oe->add("QUADRUPOLE");
+    oe->set_title(ss.str());
+    if (!transdens) {
+        oe->add("DIPOLE");
+        oe->add("MULLIKEN_CHARGES");
+        oe->add("NO_OCCUPATIONS");
+        if (Parameters.print_lvl > 1) { 
+            oe->add("QUADRUPOLE");
+        }
+    } else {
+        oe->add("TRANSITION_DIPOLE");
+        if (Parameters.print_lvl > 1) { 
+            oe->add("TRANSITION_QUADRUPOLE");
+        }
     }
     
     fprintf(outfile, "  OEProp Analysis %s\n", ss.str().c_str());
