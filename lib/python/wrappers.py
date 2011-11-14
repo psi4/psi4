@@ -775,6 +775,7 @@ def database(name, db_name, **kwargs):
             exec commands
             #print 'MOLECULE LIVES %23s %8s %4d %4d %4s' % (rgt, PsiMod.get_option('REFERENCE'),
             #    molecule.molecular_charge(), molecule.multiplicity(), molecule.schoenflies_symbol())
+            PsiMod.set_variable('NATOM', molecule.natom())
             ERGT[rgt] = call_function_in_1st_argument(func, **kwargs)
             #print ERGT[rgt]
             PsiMod.print_variables()
@@ -799,6 +800,7 @@ def database(name, db_name, **kwargs):
             freagent.write("""PsiMod.print_out('\\nDATABASE RESULT: computation %d for reagent %s """
                 % (os.getpid(), rgt))
             freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+            freagent.write("""PsiMod.set_variable('NATOM', molecule.natom())\n""")
             for envv in db_tabulate:
                 freagent.write("""PsiMod.print_out('DATABASE RESULT: computation %d for reagent %s """
                     % (os.getpid(), rgt))
@@ -840,7 +842,7 @@ def database(name, db_name, **kwargs):
                             for envv in db_tabulate:
                                 if (s[13:] == envv.upper().split()):
                                     VRGT[rgt][envv] = float(s[10])
-                                    PsiMod.print_out('DATABASE RESULT: variable value    = %20.12f\n' % (VRGT[rgt][envv]))
+                                    PsiMod.print_out('DATABASE RESULT: variable %s value    = %20.12f\n' % (envv.upper(), VRGT[rgt][envv]))
                 freagent.close()
 
     #   end sow after writing files 
@@ -880,7 +882,7 @@ def database(name, db_name, **kwargs):
             VRXN[db_rxn] = {}
     
             if FAIL[rxn]:
-                tables += """\n%23s   %8.4f %8s   %8s""" % (db_rxn, BIND[db_rxn], '****', '****')
+                tables += """\n%23s   %8s %8s   %8s""" % (db_rxn, '', '****', '')
                 for i in range(len(ACTV[db_rxn])):
                     tables += """ %16.8f %2.0f""" % (VRGT[ACTV[db_rxn][i]][envv], RXNM[db_rxn][ACTV[db_rxn][i]])
     
