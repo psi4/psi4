@@ -176,6 +176,9 @@ public:
     /// The total natural orbital occupations and orbitals in the AO basis
     std::pair<SharedMatrix, SharedVector> Nt_ao();
 
+    // => Some integral helpers <= //
+    SharedMatrix overlap_so();
+
     // => Queue/Compute Routines <= //
 
     /// Add a single task to the queue
