@@ -274,6 +274,7 @@ def optimize(name, **kwargs):
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print "Optimizer: Optimization complete!"
             PsiMod.opt_clean()
+            PsiMod.clean()
             return thisenergy
 
     PsiMod.print_out("\tOptimizer: Did not converge!")

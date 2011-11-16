@@ -36,8 +36,8 @@ void opdm_block(struct stringwr **alplist, struct stringwr **betlist,
 		int Jb_list, int Jnas, int Jnbs, int Ia_list, int Ib_list, 
 		int Inas, int Inbs);
 void opdm_ke(double **onepdm);
-void get_mo_dipmom_ints(double **mux_mo, double **muy_mo, double **muz_mo);
-void get_dipmom_nuc(double *mu_x_n, double *mu_y_n, double *mu_z_n);
+// void get_mo_dipmom_ints(double **mux_mo, double **muy_mo, double **muz_mo);
+// void get_dipmom_nuc(double *mu_x_n, double *mu_y_n, double *mu_z_n);
 
 
 /*
@@ -69,7 +69,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
   double **tmp_mat, **opdmso;
   double overlap, max_overlap;
   char opdm_key[80]; /* libpsio TOC entry name for OPDM for each root */
-  double **mux_mo, **muy_mo, **muz_mo, mu_x, mu_y, mu_z, mu_tot;
+  // double **mux_mo, **muy_mo, **muz_mo;
+  // double mu_x, mu_y, mu_z, mu_tot;
   double mux_n, muy_n, muz_n; /* nuclear parts of dipole moments */
 
   if (!transdens) Iroot = 0;
@@ -486,6 +487,7 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
             transdens ? "TDM" : "OPDM");
 
       }
+      fprintf(outfile, "\n");
     }
 
     /* Get the kinetic energy if requested */
@@ -535,78 +537,142 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
 
     /* Call OEProp here for each root opdm */
     boost::shared_ptr<OEProp> oe(new OEProp());
-    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction(); 
+    boost::shared_ptr<Wavefunction> wfn = 
+      Process::environment.reference_wavefunction(); 
     boost::shared_ptr<Matrix> Ca = wfn->Ca(); 
     std::stringstream ss;
     ss << "CI " << (transdens ? "TDM" : "OPDM");
     if (transdens) {
-        ss << " Root " << (Iroot+1) << " -> Root " << (Jroot+1); 
-    } else {
-        ss << " Root " << (Iroot+1); 
+      ss << " Root " << (Iroot+1) << " -> Root " << (Jroot+1); 
+    } 
+    else {
+      ss << " Root " << (Iroot+1); 
     }
 
-    SharedMatrix opdm_a(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
+    std::stringstream ss_a;
+    ss_a << ss.str() << " alpha";
+
+    SharedMatrix opdm_a(new Matrix(ss_a.str(), Ca->colspi(), Ca->colspi())); 
     int mo_offset = 0;
     for (int h = 0; h < Ca->nirrep(); h++) {
+      int nmo = CalcInfo.orbs_per_irr[h];
+      int nfv = CalcInfo.frozen_uocc[h];
+      int nmor = nmo - nfv;
+      //int nmo = Ca->colspi()[h];
+      //int nmor = nmo - ref->frzvpi()[h];
+      if (!nmo || !nmor) continue;
+      double** opdmap = opdm_a->pointer(h);
+        
+      for (int i=0; i<CalcInfo.orbs_per_irr[h]- CalcInfo.frozen_uocc[h]; i++) {
+        for (int j=0; j<CalcInfo.orbs_per_irr[h]-
+          CalcInfo.frozen_uocc[h]; j++) {
+          int i_ci = CalcInfo.reorder[i+mo_offset];
+          int j_ci = CalcInfo.reorder[j+mo_offset]; 
+          opdmap[i][j] = onepdm_a[i_ci][j_ci];
+        } 
+      }
+      mo_offset += CalcInfo.orbs_per_irr[h];
+    }
+    oe->set_Da_mo(opdm_a);
+
+    if (Parameters.ref == "ROHF") {
+      std::stringstream ss_b;
+      ss_b << ss.str() << " beta";
+      SharedMatrix opdm_b(new Matrix(ss_b.str(), Ca->colspi(), Ca->colspi())); 
+      mo_offset = 0;
+      for (int h = 0; h < Ca->nirrep(); h++) {
         int nmo = CalcInfo.orbs_per_irr[h];
         int nfv = CalcInfo.frozen_uocc[h];
         int nmor = nmo - nfv;
         //int nmo = Ca->colspi()[h];
         //int nmor = nmo - ref->frzvpi()[h];
         if (!nmo || !nmor) continue;
-        double** opdmap = opdm_a->pointer(h);
-        
-        for (int i=0; i<CalcInfo.orbs_per_irr[h]-
-                    CalcInfo.frozen_uocc[h]; i++) {
+        double** opdmbp = opdm_b->pointer(h);
+            
+        for (int i=0; i<CalcInfo.orbs_per_irr[h]-CalcInfo.frozen_uocc[h]; i++) {
           for (int j=0; j<CalcInfo.orbs_per_irr[h]-
-                    CalcInfo.frozen_uocc[h]; j++) {
+            CalcInfo.frozen_uocc[h]; j++) {
             int i_ci = CalcInfo.reorder[i+mo_offset];
             int j_ci = CalcInfo.reorder[j+mo_offset]; 
-            opdmap[i][j] = onepdm_a[i_ci][j_ci];
+            opdmbp[i][j] = onepdm_b[i_ci][j_ci];
           } 
         }
         mo_offset += CalcInfo.orbs_per_irr[h];
+      }
+      oe->set_Db_mo(opdm_b);
     }
-    oe->set_Da_mo(opdm_a);
 
-    if (Parameters.ref == "ROHF") {
-        SharedMatrix opdm_b(new Matrix(ss.str(), Ca->colspi(), Ca->colspi())); 
-        mo_offset = 0;
-        for (int h = 0; h < Ca->nirrep(); h++) {
-            int nmo = CalcInfo.orbs_per_irr[h];
-            int nfv = CalcInfo.frozen_uocc[h];
-            int nmor = nmo - nfv;
-            //int nmo = Ca->colspi()[h];
-            //int nmor = nmo - ref->frzvpi()[h];
-            if (!nmo || !nmor) continue;
-            double** opdmbp = opdm_b->pointer(h);
-            
-            for (int i=0; i<CalcInfo.orbs_per_irr[h]-
-                        CalcInfo.frozen_uocc[h]; i++) {
-              for (int j=0; j<CalcInfo.orbs_per_irr[h]-
-                        CalcInfo.frozen_uocc[h]; j++) {
-                int i_ci = CalcInfo.reorder[i+mo_offset];
-                int j_ci = CalcInfo.reorder[j+mo_offset]; 
-                opdmbp[i][j] = onepdm_b[i_ci][j_ci];
-              } 
-            }
-            mo_offset += CalcInfo.orbs_per_irr[h];
+    std::stringstream oeprop_label;
+    if (transdens) {
+      oeprop_label << "CI ROOT " << (Iroot+1) << " -> ROOT " << (Jroot+1); 
+    } 
+    else {
+      oeprop_label << "CI ROOT " << (Iroot+1); 
+    }
+    oe->set_title(oeprop_label.str());
+    if (!transdens) {
+        oe->add("DIPOLE");
+        oe->add("MULLIKEN_CHARGES");
+        oe->add("NO_OCCUPATIONS");
+        if (Parameters.print_lvl > 1) { 
+            oe->add("QUADRUPOLE");
         }
-        oe->set_Db_mo(opdm_b);
-    }
-
-    oe->set_title("CI");
-    oe->add("DIPOLE");
-    oe->add("MULLIKEN_CHARGES");
-    oe->add("NO_OCCUPATIONS");
-    if (Parameters.print_lvl > 1) { 
-        oe->add("QUADRUPOLE");
+    } 
+    else {
+        oe->add("TRANSITION_DIPOLE");
+        if (Parameters.print_lvl > 1) { 
+            oe->add("TRANSITION_QUADRUPOLE");
+        }
     }
     
-    fprintf(outfile, "  OEProp Analysis %s\n", ss.str().c_str());
+    fprintf(outfile, "  ==> Properties %s <==\n", ss.str().c_str());
     oe->compute();
 
-    std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
+    // std::pair<SharedMatrix,SharedVector> nos = oe->Na_mo();
+
+    // if this is the "special" root, then copy over OEProp 
+    // Process::environment variables from the current root into
+    // more general locations
+    if (Iroot == Parameters.root) {
+      std::stringstream ss2;
+      ss2 << oeprop_label.str() << " DIPOLE X"; 
+      Process::environment.globals["CI DIPOLE X"] = 
+        Process::environment.globals[ss2.str()]; 
+      ss2.str(std::string());
+      ss2 << oeprop_label.str() << " DIPOLE Y"; 
+      Process::environment.globals["CI DIPOLE Y"] = 
+        Process::environment.globals[ss2.str()]; 
+      ss2.str(std::string());
+      ss2 << oeprop_label.str() << " DIPOLE Z"; 
+      Process::environment.globals["CI DIPOLE Z"] = 
+        Process::environment.globals[ss2.str()]; 
+      if (Parameters.print_lvl > 1) { 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE XX"; 
+         Process::environment.globals["CI QUADRUPOLE XX"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE YY"; 
+         Process::environment.globals["CI QUADRUPOLE YY"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE ZZ"; 
+         Process::environment.globals["CI QUADRUPOLE ZZ"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE XY"; 
+         Process::environment.globals["CI QUADRUPOLE XY"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE XZ"; 
+         Process::environment.globals["CI QUADRUPOLE XZ"] = 
+           Process::environment.globals[ss2.str()]; 
+         ss2.str(std::string());
+         ss2 << oeprop_label.str() << " QUADRUPOLE YZ"; 
+         Process::environment.globals["CI QUADRUPOLE YZ"] = 
+           Process::environment.globals[ss2.str()]; 
+      }
+    }
 
     fflush(outfile);
     if (!transdens) Iroot++;
@@ -1077,11 +1143,17 @@ void opdm_ke(double **onepdm)
 }
 
 /*
+**
+** Note: This function is deprecated (and will no longer work in PSI4).
+** 
+** Its functionality is now provided directly by PSI4
+**
 ** This function will read in the dipole moment integrals from AO basis
 ** off disk (obtained from cints --oeprop) and transform them to the MO
 ** basis (CI ordering) for subsequent contraction with the density or
 ** transition density matrices.  Some code adapted from ccdensity/dipole.c
 */
+/*
 void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
 {
   int nao, nso, nmo, noei;
@@ -1092,11 +1164,11 @@ void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
   double **MUX_SO, **MUY_SO, **MUZ_SO;
   double **X;
 
-  /* Run dip mom ints if needed */
+  // Run dip mom ints if needed 
   stat = 0;
   psio_open(PSIF_OEI, PSIO_OPEN_OLD);
   if (psio_tocscan(PSIF_OEI, PSIF_AO_MX) == NULL) 
-    stat = 1; /* not on disk yet */
+    stat = 1; // not on disk yet 
   psio_close(PSIF_OEI, 1);  
 
   if (stat && system("cints --oeprop")) {
@@ -1112,17 +1184,17 @@ void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
   scf_pitzer = chkpt_rd_scf();                                                         
   chkpt_close();
 
-  /* reorder SCF eigenvectors to MO (correlated CI) ordering */
+  // reorder SCF eigenvectors to MO (correlated CI) ordering
   scf_mo = block_matrix(nso, nmo);
   for (i=0; i<nmo; i++) {
-    I = CalcInfo.reorder[i]; /* Pitzer -> MO ordering */
+    I = CalcInfo.reorder[i]; // Pitzer -> MO ordering
     for (j=0; j<nso; j++) {
       scf_mo[j][I] = scf_pitzer[j][i];
     }
   }
   free_block(scf_pitzer);
 
-  /* Read in dipole moment integrals in the AO basis */
+  // Read in dipole moment integrals in the AO basis 
   noei = nao * (nao + 1)/2;
                                                                                 
   mu_x_ints = init_array(noei);
@@ -1148,8 +1220,8 @@ void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
     }
   }
 
-  /*** Transform the AO dipole integrals to the SO basis ***/
-  X = block_matrix(nso,nao); /* just a temporary matrix */
+  // Transform the AO dipole integrals to the SO basis 
+  X = block_matrix(nso,nao); // just a temporary matrix
                                                                                 
   C_DGEMM('n','n',nso,nao,nao,1.0,&(usotao[0][0]),nao,&(MUX_AO[0][0]),nao,
           0,&(X[0][0]),nao);
@@ -1171,9 +1243,9 @@ void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
   free_block(X);
 
 
-  /*** Transform the SO dipole integrals to the MO basis ***/
+  // Transform the SO dipole integrals to the MO basis 
                                                                                 
-  X = block_matrix(nmo,nso); /* just a temporary matrix */
+  X = block_matrix(nmo,nso); // just a temporary matrix
                                                                                 
   C_DGEMM('t','n',nmo,nso,nso,1.0,&(scf_mo[0][0]),nmo,&(MUX_SO[0][0]),nso,
           0,&(X[0][0]),nso);
@@ -1196,11 +1268,15 @@ void get_mo_dipmom_ints(double **MUX_MO, double **MUY_MO, double **MUZ_MO)
 
   return;
 }
-
+*/
 
 /*
+** Note: This function is deprecated (and may no longer work in PSI4).
+** 
+** Its functionality is now provided directly by PSI4
 ** get the nuclear part of the dipole moment 
 */
+/*
 void get_dipmom_nuc(double *mu_x_n, double *mu_y_n, double *mu_z_n)
 {
   int i, natom;
@@ -1224,6 +1300,7 @@ void get_dipmom_nuc(double *mu_x_n, double *mu_y_n, double *mu_z_n)
   free_block(geom);
 
 }  
+*/
 
 }} // namespace psi::detci
 

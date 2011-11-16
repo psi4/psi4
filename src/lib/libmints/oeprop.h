@@ -176,6 +176,9 @@ public:
     /// The total natural orbital occupations and orbitals in the AO basis
     std::pair<SharedMatrix, SharedVector> Nt_ao();
 
+    // => Some integral helpers <= //
+    SharedMatrix overlap_so();
+
     // => Queue/Compute Routines <= //
 
     /// Add a single task to the queue
@@ -213,13 +216,9 @@ protected:
 
     // Compute routines
     /// Compute dipole
-    void compute_dipole();
+    void compute_dipole(bool transition = false);
     /// Compute quadrupole
-    void compute_quadrupole();
-    /// Compute octupole
-    void compute_octupole();
-    /// Compute hexadecapole
-    void compute_hexadecapole();
+    void compute_quadrupole(bool transition = false);
     /// Compute mo extents
     void compute_mo_extents();
     /// Compute Mulliken Charges
