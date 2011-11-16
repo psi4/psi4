@@ -49,9 +49,7 @@ void RBase::common_init()
 
     Eref_ = reference_wavefunction_->reference_energy();
     
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
-    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
-    AO2USO_ = SharedMatrix(pet->aotoso());
+    AO2USO_ = reference_wavefunction_->aotoso(); 
 
     Ca_ = reference_wavefunction_->Ca();
     epsilon_a_ = reference_wavefunction_->epsilon_a();
