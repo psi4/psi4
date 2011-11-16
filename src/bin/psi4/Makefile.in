@@ -26,7 +26,7 @@ PSILIBS = \
 -lboost_python -lboost_regex -lboost_thread -lboost_filesystem -lboost_system -lboost_serialization
 
 ifeq ($(MAKE_MADNESS),1)
-  PSILIBS += $(madlibs)/libMADworld.a
+  PSILIBS += $(madlibs)/world/libMADworld.a
 endif
 
 # The psilibs need a little extra handling for plugins on linux

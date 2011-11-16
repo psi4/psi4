@@ -189,6 +189,11 @@ public:
         for (int i=1; i<nthread; ++i)
             result_vec_.push_back(SharedVector(results->clone()));
     }
+
+    ScfAndDfCorrelationRestrictedFunctor() : scf_functor_(){
+        throw PSIEXCEPTION("ScfAndDfCorrelationRestrictedFunctor(): Default constructor called. This shouldn't happen.");
+    }
+
     ~ScfAndDfCorrelationRestrictedFunctor() {
     }
 
@@ -752,8 +757,14 @@ struct ArchiveStoreImpl< Archive, psi::ScfUnrestrictedFunctor> {
 };
 
 template <class Archive>
-struct ArchiveStoreImpl< Archive, psi::CorrelatedRestrictedFunctor> {
-    static void store(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
+struct ArchiveStoreImpl< Archive, psi::CorrelatedFunctor> {
+    static void store(const Archive &ar, const psi::CorrelatedFunctor &t) {
+    }
+};
+
+template <class Archive>
+struct ArchiveStoreImpl< Archive, psi::ScfAndDfCorrelationRestrictedFunctor> {
+    static void store(const Archive &ar, const psi::ScfAndDfCorrelationRestrictedFunctor &t) {
     }
 };
 
@@ -770,8 +781,14 @@ struct ArchiveLoadImpl< Archive, psi::ScfUnrestrictedFunctor> {
 };
 
 template <class Archive>
-struct ArchiveLoadImpl< Archive, psi::CorrelatedRestrictedFunctor> {
-    static void load(const Archive &ar, const psi::CorrelatedRestrictedFunctor &t) {
+struct ArchiveLoadImpl< Archive, psi::CorrelatedFunctor> {
+    static void load(const Archive &ar, const psi::CorrelatedFunctor &t) {
+    }
+};
+
+template <class Archive>
+struct ArchiveLoadImpl< Archive, psi::ScfAndDfCorrelationRestrictedFunctor> {
+    static void load(const Archive &ar, const psi::ScfAndDfCorrelationRestrictedFunctor &t) {
     }
 };
 

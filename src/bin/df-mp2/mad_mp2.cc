@@ -150,14 +150,15 @@ void MAD_MP2::common_init()
         nmo_    = reference_->nmo();
         Eref_   = reference_->reference_energy();
 
-        ::memcpy(static_cast<void*>(doccpi_), static_cast<void*>(reference_->doccpi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(soccpi_), static_cast<void*>(reference_->soccpi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nsopi_), static_cast<void*>(reference_->nsopi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nmopi_), static_cast<void*>(reference_->nmopi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nalphapi_), static_cast<void*>(reference_->nalphapi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nbetapi_), static_cast<void*>(reference_->nbetapi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(frzcpi_), static_cast<void*>(reference_->frzcpi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(frzvpi_), static_cast<void*>(reference_->frzvpi()), 8 * sizeof(int));
+        doccpi_   = reference_->doccpi();
+        soccpi_   = reference_->soccpi();
+        nsopi_    = reference_->nsopi();
+        nmopi_    = reference_->nmopi();
+        nalphapi_ = reference_->nalphapi();
+        nbetapi_  = reference_->nbetapi();
+        frzcpi_   = reference_->frzcpi();
+        frzvpi_   = reference_->frzvpi();
+
         // End copy constructor opportunity
         if (!reference_->restricted()) {
             throw PSIEXCEPTION("DFMP2 MADNESS is only closed-shell for now");
@@ -1217,6 +1218,8 @@ void MAD_MP2::print_energy()
     energy_ = energies_["Total Energy"];
 
     Process::environment.globals["CURRENT ENERGY"] = energy_;
+    Process::environment.globals["DF-MP2 TOTAL ENERGY"] = energy_;
+    Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];
     Process::environment.globals["E_MP2J"] = E_MP2J_;
     Process::environment.globals["E_MP2K"] = E_MP2K_;
 
