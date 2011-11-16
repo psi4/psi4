@@ -2,6 +2,8 @@
 #include <cstring>
 #include <pthread.h>
 
+#include <psi4-dec.h>
+
 #ifdef _OPENMP
 #include <omp.h>
 #endif
