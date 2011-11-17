@@ -34,9 +34,6 @@ RBase::~RBase()
 }
 void RBase::common_init()
 {
-    print_ = options_.get_int("PRINT");
-    debug_ = options_.get_int("DEBUG");
-
     reference_wavefunction_ = Process::environment.reference_wavefunction();
     
     if (!reference_wavefunction_) {
@@ -46,55 +43,22 @@ void RBase::common_init()
     if (!reference_wavefunction_->restricted()) {
         throw PSIEXCEPTION("RBase: Reference is not restricted");
     }
-
+    
+    copy(reference_wavefunction_);
+    
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
     Eref_ = reference_wavefunction_->reference_energy();
-    
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
-    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
-    AO2USO_ = SharedMatrix(pet->aotoso());
 
-    Ca_ = reference_wavefunction_->Ca();
-    epsilon_a_ = reference_wavefunction_->epsilon_a();
+    Cfocc_ = Ca_subset("SO","FROZEN_OCC");
+    Caocc_ = Ca_subset("SO","ACTIVE_OCC");
+    Cavir_ = Ca_subset("SO","ACTIVE_VIR");
+    Cfvir_ = Ca_subset("SO","FROZEN_VIR");
+    eps_focc_ = epsilon_a_subset("SO","FROZEN_OCC");
+    eps_aocc_ = epsilon_a_subset("SO","ACTIVE_OCC");
+    eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
+    eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
 
-    C_ = Ca_;
-
-    Dimension naoccpi(Ca_->nirrep());
-    Dimension navirpi(Ca_->nirrep());
-
-    for (int h = 0; h < Ca_->nirrep(); ++h) {   
-        naoccpi[h] = reference_wavefunction_->doccpi()[h] - reference_wavefunction_->frzcpi()[h];
-        navirpi[h] = reference_wavefunction_->nmopi()[h] - reference_wavefunction_->doccpi()[h] - reference_wavefunction_->frzvpi()[h];
-    }
-
-    Cfocc_ = SharedMatrix(new Matrix("Cfocc", reference_wavefunction_->nsopi(), reference_wavefunction_->frzcpi()));
-    Cfvir_ = SharedMatrix(new Matrix("Cfvir", reference_wavefunction_->nsopi(), reference_wavefunction_->frzvpi()));
-    Caocc_ = SharedMatrix(new Matrix("Caocc", reference_wavefunction_->nsopi(), naoccpi));
-    Cavir_ = SharedMatrix(new Matrix("Cavir", reference_wavefunction_->nsopi(), navirpi));
-
-    eps_focc_ = boost::shared_ptr<Vector>(new Vector("eps_focc", reference_wavefunction_->frzcpi()));
-    eps_fvir_ = boost::shared_ptr<Vector>(new Vector("eps_fvir", reference_wavefunction_->frzvpi()));
-    eps_aocc_ = boost::shared_ptr<Vector>(new Vector("eps_aocc", naoccpi));
-    eps_avir_ = boost::shared_ptr<Vector>(new Vector("eps_avir", navirpi));
-    
-    for (int h = 0; h < Ca_->nirrep(); ++h) {
-        for (int i = 0; i < reference_wavefunction_->frzcpi()[h]; ++i) {
-            eps_focc_->set(h,i,epsilon_a_->get(h,i));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i], Ca_->colspi()[h], &Cfocc_->pointer(h)[0][i], Cfocc_->colspi()[h]);
-        }
-        for (int i = 0; i < naoccpi[h]; ++i) {
-            eps_aocc_->set(h,i,epsilon_a_->get(h,i + reference_wavefunction_->frzcpi()[h]));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i + reference_wavefunction_->frzcpi()[h]], Ca_->colspi()[h], &Caocc_->pointer(h)[0][i], Caocc_->colspi()[h]);
-        }
-        for (int i = 0; i < navirpi[h]; ++i) {
-            eps_avir_->set(h,i,epsilon_a_->get(h,i + reference_wavefunction_->doccpi()[h]));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i + reference_wavefunction_->doccpi()[h]], Ca_->colspi()[h], &Cavir_->pointer(h)[0][i], Cavir_->colspi()[h]);
-        }
-        for (int i = 0; i < reference_wavefunction_->frzvpi()[h]; ++i) {
-            eps_fvir_->set(h,i,epsilon_a_->get(h,i + reference_wavefunction_->doccpi()[h] + navirpi[h]));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i + reference_wavefunction_->doccpi()[h] + navirpi[h]], Ca_->colspi()[h], &Cfvir_->pointer(h)[0][i], Cfvir_->colspi()[h]);
-        }
-    } 
-    
     if (debug_) {
         Cfocc_->print();
         Caocc_->print();
@@ -104,7 +68,6 @@ void RBase::common_init()
         eps_aocc_->print();
         eps_avir_->print();
         eps_fvir_->print();
-        AO2USO_->print();
     }
 }
 
@@ -545,22 +508,22 @@ SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 {
     SharedMatrix D = TDso(T1, singlet);
 
-    SharedMatrix D2(new Matrix("TDao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
+    SharedMatrix D2(new Matrix("TDao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]));
 
-    double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
+    double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
     int symm = D->symmetry();
     for (int h = 0; h < D->nirrep(); h++) {
 
-        int nsol = AO2USO_->colspi()[h];
-        int nsor = AO2USO_->colspi()[h^symm];
-        int nao = AO2USO_->rowspi()[h];
+        int nsol = AO2SO_->colspi()[h];
+        int nsor = AO2SO_->colspi()[h^symm];
+        int nao = AO2SO_->rowspi()[h];
 
         if (!nao || !nsol || !nsor) continue;
 
         double** Dp = D->pointer(h);
-        double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
+        double** Ulp = AO2SO_->pointer(h);
+        double** Urp = AO2SO_->pointer(h^symm);
         double** D2p = D2->pointer();
 
         C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor); 
@@ -649,19 +612,19 @@ SharedMatrix RCIS::Dso(SharedMatrix T1, bool diff)
 SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
 {
     SharedMatrix D = Dso(T1,diff);
-    SharedMatrix D2(new Matrix("Dao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
+    SharedMatrix D2(new Matrix("Dao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]));
 
-    double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
+    double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
     for (int h = 0; h < D->nirrep(); h++) {
 
-        int nso = AO2USO_->colspi()[h];
-        int nao = AO2USO_->rowspi()[h];
+        int nso = AO2SO_->colspi()[h];
+        int nao = AO2SO_->rowspi()[h];
 
         if (!nao || !nso) continue;
 
         double** Dp = D->pointer(h);
-        double** Up = AO2USO_->pointer(h);
+        double** Up = AO2SO_->pointer(h);
         double** D2p = D2->pointer();
 
         C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,Dp[0],nso,0.0,temp,nso); 
@@ -721,8 +684,8 @@ std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, b
 
         int ncol = C_->ncol();
         int nmo = C_->colspi()[h];
-        int nso = AO2USO_->colspi()[h];
-        int nao = AO2USO_->rowspi()[h];
+        int nso = AO2SO_->colspi()[h];
+        int nao = AO2SO_->rowspi()[h];
 
         if (!nmo || !nso || !nao) continue;
 
@@ -731,7 +694,7 @@ std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, b
         }
 
         double** Np = N->pointer(h);
-        double** Up = AO2USO_->pointer(h);
+        double** Up = AO2SO_->pointer(h);
         double** N2p = N2->pointer(h);
 
         C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol); 
