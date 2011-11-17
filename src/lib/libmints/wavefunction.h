@@ -166,7 +166,7 @@ protected:
     SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
-    
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -176,7 +176,7 @@ public:
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
     /**
-    * Copy the contents of another Wavefunction into this one. 
+    * Copy the contents of another Wavefunction into this one.
     * Useful at the beginning of correlated wavefunction computations.
     * -Does not set options or callbacks
     * -reference_wavefunction_ is set to other
@@ -281,8 +281,8 @@ public:
     * @param basis the symmetry basis to use
     *  AO, SO
     * @param subset the subset of orbitals to return
-    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR 
-    * @return the matrix in Pitzer order in the desired basis 
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    * @return the matrix in Pitzer order in the desired basis
     **/
     SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
 
@@ -291,24 +291,24 @@ public:
     * @param basis the symmetry basis to use
     *  AO, SO
     * @param subset the subset of orbitals to return
-    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR 
-    * @return the matrix in Pitzer order in the desired basis 
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    * @return the matrix in Pitzer order in the desired basis
     **/
     SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
 
     /**
-    * Return the Da matrix in the desired basis 
+    * Return the Da matrix in the desired basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO
-    * @return the matrix in the desired basis 
+    * @return the matrix in the desired basis
     **/
     SharedMatrix Da_subset(const std::string& basis = "SO");
 
     /**
-    * Return the Db matrix in the desired basis 
+    * Return the Db matrix in the desired basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO
-    * @return the matrix in the desired basis 
+    * @return the matrix in the desired basis
     **/
     SharedMatrix Db_subset(const std::string& basis = "SO");
 
@@ -317,18 +317,18 @@ public:
     * @param basis the symmetry basis to use
     *  AO, SO, MO (SO and MO return the same thing)
     * @param subset the subset of orbitals to return
-    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR 
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     */
-    SharedVector epsilon_a_subset(const std::string& basis = "SO", const std::string& subset = "AL");
+    SharedVector epsilon_a_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
 
     /**
     * Return the beta orbital eigenvalues in the desired basis
     * @param basis the symmetry basis to use
     *  AO, SO, MO (SO and MO return the same thing)
     * @param subset the subset of orbitals to return
-    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR 
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
     */
-    SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "AL");
+    SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
 
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
