@@ -190,9 +190,11 @@ public:
             result_vec_.push_back(SharedVector(results->clone()));
     }
 
+#ifdef HAVE_MADNESS
     ScfAndDfCorrelationRestrictedFunctor() : scf_functor_(){
         throw PSIEXCEPTION("ScfAndDfCorrelationRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
+#endif
 
     ~ScfAndDfCorrelationRestrictedFunctor() {
     }
