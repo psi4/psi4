@@ -325,7 +325,7 @@ std::vector<SharedMatrix > CISRHamiltonian::unpack(const boost::shared_ptr<Vecto
             
             if (!nocc || !nvir) continue;
 
-            ::memcpy((void*)(t->pointer(h)[0]), (void*)(&eig->pointer(h)[offset]), sizeof(double) * nocc * nvir);    
+            ::memcpy((void*)(t->pointer(h)[0]), (void*)(&eig->pointer(symm)[offset]), sizeof(double) * nocc * nvir);    
         
             offset += nocc * nvir;
         }    
