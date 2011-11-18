@@ -59,6 +59,13 @@ void RBase::common_init()
     eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
     eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
 
+    std::vector<SharedMatrix> Cs;
+    Cs.push_back(Cfocc_);
+    Cs.push_back(Caocc_);
+    Cs.push_back(Cavir_);
+    Cs.push_back(Cfvir_);
+    C_ = Matrix::horzcat(Cs);
+
     if (debug_) {
         Cfocc_->print();
         Caocc_->print();
