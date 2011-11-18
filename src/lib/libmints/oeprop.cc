@@ -777,7 +777,7 @@ void OEProp::print_header()
 }
 void OEProp::compute()
 {
-    print_header();
+    // print_header();  // Not by default, happens too often -CDS
     if (tasks_.count("DIPOLE"))
         compute_dipole(false);
     if (tasks_.count("QUADRUPOLE"))
@@ -826,11 +826,11 @@ void OEProp::compute_dipole(bool transition)
 
     if (!transition) {
 
-        fprintf(outfile, " Nuclear Dipole Moment: (a.u.)\n");
+        fprintf(outfile, "  Nuclear Dipole Moment: (a.u.)\n");
         fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
                 ndip->get(0), ndip->get(1), ndip->get(2));
         fprintf(outfile, "\n");
-        fprintf(outfile, " Electronic Dipole Moment: (a.u.)\n");
+        fprintf(outfile, "  Electronic Dipole Moment: (a.u.)\n");
         fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf\n",
                 de[0], de[1], de[2]);
         fprintf(outfile, "\n");
@@ -840,13 +840,13 @@ void OEProp::compute_dipole(bool transition)
         de[2] += ndip->get(0, 2);
     }
     
-    fprintf(outfile," %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
+    fprintf(outfile,"  %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0], de[1], de[2], de.norm());
     fprintf(outfile, "\n");
 
     double dfac = _dipmom_au2debye;
-    fprintf(outfile," %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
+    fprintf(outfile,"  %sDipole Moment: (Debye)\n", (transition ? "Transition " : ""));
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0]*dfac, de[1]*dfac, de[2]*dfac, de.norm()*dfac);
     fprintf(outfile, "\n");
@@ -913,7 +913,7 @@ void OEProp::compute_quadrupole(bool transition)
     
     // Print multipole components
     double dfac = _dipmom_au2debye * _bohr2angstroms;
-    fprintf(outfile, " %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
+    fprintf(outfile, "  %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
     fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        qe[0]*dfac, qe[3]*dfac, qe[5]*dfac);
     fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
@@ -921,7 +921,7 @@ void OEProp::compute_quadrupole(bool transition)
     fprintf(outfile, "\n");
 
     double dtrace = (1.0 / 3.0) * (qe[0] + qe[3] + qe[5]);
-    fprintf(outfile, " Traceless %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
+    fprintf(outfile, "  Traceless %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));
     fprintf(outfile, "    XX: %10.4lf     YY: %10.4lf     ZZ: %10.4lf\n", \
        (qe[0]-dtrace)*dfac, (qe[3]-dtrace)*dfac, (qe[5]-dtrace)*dfac);
     fprintf(outfile, "    XY: %10.4lf     XZ: %10.4lf     YZ: %10.4lf\n", \
@@ -952,7 +952,7 @@ void OEProp::compute_quadrupole(bool transition)
 }
 void OEProp::compute_mo_extents()
 {
-    fprintf(outfile, " MO Extents (<r^2>) [a.u.]:\n\n");
+    fprintf(outfile, "  MO Extents (<r^2>) [a.u.]:\n\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
     SharedMatrix Ca;
@@ -1064,7 +1064,7 @@ void OEProp::compute_mo_extents()
 }
 void OEProp::compute_mulliken_charges()
 {
-    fprintf(outfile, " Mulliken Charges: (a.u.)\n");
+    fprintf(outfile, "  Mulliken Charges: (a.u.)\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1146,7 +1146,7 @@ void OEProp::compute_mulliken_charges()
 }
 void OEProp::compute_lowdin_charges()
 {
-    fprintf(outfile, "\n\n Lowdin Charges [a.u.]:\n\n");
+    fprintf(outfile, "\n\n  Lowdin Charges [a.u.]:\n\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1229,7 +1229,7 @@ void OEProp::compute_lowdin_charges()
 }
 void OEProp::compute_mayer_indices()
 {
-    fprintf(outfile, "\n\n Mayer Bond Indices:\n\n");
+    fprintf(outfile, "\n\n  Mayer Bond Indices:\n\n");
 
     boost::shared_ptr<Molecule> mol = basisset_->molecule();
 
@@ -1339,7 +1339,7 @@ void OEProp::compute_mayer_indices()
 }
 void OEProp::compute_wiberg_lowdin_indices()
 {
-    fprintf(outfile, "\n\n Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
+    fprintf(outfile, "\n\n  Wiberg Bond Indices using Orthogonal Lowdin Orbitals:\n\n");
 
 //    We may wanna get rid of these if we have NAOs...
 

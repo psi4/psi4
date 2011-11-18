@@ -42,8 +42,6 @@ protected:
     SharedMatrix V_;
     /// The core hamiltonian
     SharedMatrix H_;
-    /// The overlap metric
-    SharedMatrix S_;
     /// The orthogonalization matrix (symmetric or canonical)
     SharedMatrix X_;
     /// Temporary matrix for diagonalize_F

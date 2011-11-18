@@ -26,6 +26,7 @@ refci    = -76.1209179506153 #TEST
 refcorr  = refci - refscf    #TEST
 refDipHF =   2.642427192188  #TEST
 refDipCI =   2.525376088619  #TEST
+refQdpCI =  -5.964331694455  #TEST
 
 molecule h2o {
     O   0.0000000000   0.0000000000  -0.1252739752
@@ -39,24 +40,26 @@ set globals {
   fci true
   basis 6-31G
   dipmom true
+  print 2
 }
 
 thisenergy = energy('detci')
 
 # 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
-compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
-compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")               #TEST
-compare_values(refci, thisenergy,                      7, "CI energy")                      #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy")  #TEST
-compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
-compare_values(refDipCI, get_variable("CI DIPOLE Z"), 5, "CI Z Component of dipole")        #TEST
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")                  #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy")                          #TEST
+compare_values(refci, thisenergy,                      7, "CI energy")                                 #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy")             #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")                 #TEST
+compare_values(refDipCI, get_variable("CI DIPOLE Z"), 5, "CI Z Component of dipole")                   #TEST
+compare_values(refQdpCI, get_variable("CI ROOT 1 QUADRUPOLE ZZ"), 5, "CI ZZ Component of quadrupole")  #TEST
 
 clean()
 
 --------------------------------------------------------------------------
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:33:57 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 18:57:18 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -110,12 +113,20 @@ clean()
 
   ==> Primary Basis: 6-31G <==
 
-  Basis Set
-    Number of shells: 9
-    Number of basis function: 13
-    Number of Cartesian functions: 13
-    Spherical Harmonics?: false
-    Max angular momentum: 1
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 9
+    Number of primitives   = 22
+    Number of AO           = 13
+    Number of SO           = 13
+    Maximum AM             = 1
+    Spherical Harmonics    = FALSE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     O     10s 4p // 3s 2p 
+       2     H     4s // 2s 
+       3     H     4s // 2s 
 
   ==> Pre-Iterations <==
 
@@ -123,7 +134,7 @@ clean()
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.35253451323833
+  Initial RHF energy:   -58.35253451323826
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -160,24 +171,25 @@ clean()
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -69.61769885511924   -1.12652e+01   0.00000e+00  
+  Forming PK and K matrices.
+   @RHF iter   1:   -69.61769885511922   -1.12652e+01   0.00000e+00  
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    0,    2 ]
-   @RHF iter   2:   -70.82045996715713   -1.20276e+00   9.83658e-01 DIIS
+   @RHF iter   2:   -70.82045996715706   -1.20276e+00   9.83658e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.87190116194883   -5.05144e+00   9.27304e-01 DIIS
-   @RHF iter   4:   -75.97769315927610   -1.05792e-01   2.50298e-02 DIIS
-   @RHF iter   5:   -75.98346691554494   -5.77376e-03   9.87349e-03 DIIS
-   @RHF iter   6:   -75.98365436092041   -1.87445e-04   1.90935e-03 DIIS
-   @RHF iter   7:   -75.98367437105178   -2.00101e-05   7.27724e-04 DIIS
-   @RHF iter   8:   -75.98367560095203   -1.22990e-06   1.11345e-04 DIIS
-   @RHF iter   9:   -75.98367562334242   -2.23904e-08   2.11661e-05 DIIS
-   @RHF iter  10:   -75.98367562418856   -8.46143e-10   4.01498e-06 DIIS
-   @RHF iter  11:   -75.98367562420358   -1.50209e-11   7.81141e-07 DIIS
-   @RHF iter  12:   -75.98367562420408   -4.97380e-13   8.93668e-08 DIIS
+   @RHF iter   3:   -75.87190116194876   -5.05144e+00   9.27304e-01 DIIS
+   @RHF iter   4:   -75.97769315927604   -1.05792e-01   2.50298e-02 DIIS
+   @RHF iter   5:   -75.98346691554488   -5.77376e-03   9.87349e-03 DIIS
+   @RHF iter   6:   -75.98365436092040   -1.87445e-04   1.90935e-03 DIIS
+   @RHF iter   7:   -75.98367437105183   -2.00101e-05   7.27724e-04 DIIS
+   @RHF iter   8:   -75.98367560095197   -1.22990e-06   1.11345e-04 DIIS
+   @RHF iter   9:   -75.98367562334242   -2.23905e-08   2.11661e-05 DIIS
+   @RHF iter  10:   -75.98367562418851   -8.46086e-10   4.01497e-06 DIIS
+   @RHF iter  11:   -75.98367562420363   -1.51203e-11   7.81153e-07 DIIS
+   @RHF iter  12:   -75.98367562420410   -4.68958e-13   8.93645e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -201,41 +213,52 @@ clean()
 
   Energy converged.
 
-  @RHF Final Energy:   -75.98367562420408
+  @RHF Final Energy:   -75.98367562420410
 
   ==> Properties <==
-
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
+  Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.9860
 
- Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0536
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     1.0396     Total:     1.0396
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.6424     Total:     2.6424
+
+  Quadrupole Moment: (Debye Ang)
+    XX:    -7.2132     YY:    -4.2341     ZZ:    -5.8536
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.4463     YY:     1.5329     ZZ:    -0.0866
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     O     4.39533  4.39533  0.00000 -0.79066
+       2     H     0.30234  0.30234  0.00000  0.39533
+       3     H     0.30234  0.30234  0.00000  0.39533
+
+   Total alpha =  5.00000, Total beta =  5.00000, Total charge =  0.00000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Sun Nov 13 20:33:58 2011
+*** tstop() called on ds9 at Mon Nov 14 18:57:18 2011
 Module time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:33:58 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 18:57:18 2011
 
 
 	**************************************************
@@ -320,18 +343,18 @@ Total time:
 	Transforming one-electron integrals...
 	Frozen-core operator written to file 35.
 
-*** tstop() called on localhost at Sun Nov 13 20:33:58 2011
+*** tstop() called on ds9 at Mon Nov 14 18:57:18 2011
 Module time:
-	user time   =       0.00 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.09 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.08 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on localhost
-*** at Sun Nov 13 20:33:58 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 18:57:18 2011
 
 
 *******************************************************
@@ -355,7 +378,7 @@ PARAMETERS:
    NPRINT        =       20
    MAXITER       =       12      FREEZE CORE  =      yes
    NUM ROOTS     =        1      ICORE        =        1
-   PRINT         =        1      FCI          =      yes
+   PRINT         =        2      FCI          =      yes
    CONV          =        4      MIXED        =      yes
    E CONV        =        6      MIXED4       =      yes
    OEI FILE      =       35      R4S          =       no
@@ -427,8 +450,15 @@ Two-electron energy:          37.7724680637
 Frozen core energy:            0.0000000000
 Total electronic energy:     -85.1459295089
 Total SCF energy:            -75.9836756242
+Total H0block size (including coupling): 400
 
  CI vector/subblock length = 414441
+
+Forming diagonal elements of H
+
+Forming H0 block
+H0block size reduced by 4 to ensure completion of spin-coupling sets
+H0block guess size reduced by 4 to ensure completion of spin-coupling sets
 
 *** H0 Block Eigenvalue = -76.08322077
 
@@ -447,7 +477,7 @@ Iter  6  Root  1 = -76.120917941   Delta_E -2.255E-07   Delta_C  3.551E-04
 Iter  7  Root  1 = -76.120917960   Delta_E -1.917E-08   Delta_C  1.148E-04  
 Iter  8  Root  1 = -76.120917962   Delta_E -2.000E-09   Delta_C  3.719E-05 c
 
-* ROOT 1 CI total energy = -76.1209179622457
+* ROOT 1 CI total energy = -76.1209179622454
 
 
 The 20 most important determinants
@@ -491,25 +521,28 @@ The 20 most important determinants
        unique atom 0: 0 
        unique atom 1: 1 2 
 
-  OEProp Analysis CI OPDM Root 1
-
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Nuclear Dipole Moment: (a.u.)
+  ==> Properties CI OPDM Root 1 <==
+  Nuclear Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.9860
 
- Electronic Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0076
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.9936     Total:     0.9936
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.5254     Total:     2.5254
 
- Mulliken Charges: (a.u.)
+  Quadrupole Moment: (Debye Ang)
+    XX:    -7.2855     YY:    -4.3955     ZZ:    -5.9643
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -1.4037     YY:     1.4863     ZZ:    -0.0826
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1     O     4.36391  4.36391  0.00000 -0.72781
        2     H     0.31805  0.31805  0.00000  0.36391
@@ -519,32 +552,23 @@ The 20 most important determinants
 
   Natural Orbital Occupations:
 
-  Alpha Occupations:
-  HONO-3 :    5 A1    0.000
-  HONO-2 :    4 B2    0.000
-  HONO-1 :    4 A1    0.000
-  LUNO+0 :    3 B2    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    2 B1    0.000
-
-  Beta Occupations:
-  HONO-3 :    5 A1    0.000
-  HONO-2 :    4 B2    0.000
-  HONO-1 :    4 A1    0.000
-  LUNO+0 :    3 B2    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    2 B1    0.000
+  Total Occupations:
+  HONO-2 :    1 B1    1.981
+  HONO-1 :    3 A1    1.971
+  HONO-0 :    1 B2    1.968
+  LUNO+0 :    2 B2    0.028
+  LUNO+1 :    4 A1    0.027
+  LUNO+2 :    2 B1    0.018
+  LUNO+3 :    5 A1    0.012
 
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      1.029763
- Write     0.260781
+ Read      1.120058
+ Write     0.351472
  Sigma1    0.000000
- Sigma2    2.305348
- Sigma3    11.315303
+ Sigma2    2.130671
+ Sigma3    10.382016
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -558,14 +582,14 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on localhost at Sun Nov 13 20:34:16 2011
+*** tstop() called on ds9 at Mon Nov 14 18:57:34 2011
 Module time:
-	user time   =      14.00 seconds =       0.23 minutes
-	system time =       1.26 seconds =       0.02 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =      14.19 seconds =       0.24 minutes
+	system time =       1.44 seconds =       0.02 minutes
+	total time  =         16 seconds =       0.27 minutes
 Total time:
-	user time   =      14.09 seconds =       0.23 minutes
-	system time =       1.28 seconds =       0.02 minutes
-	total time  =         19 seconds =       0.32 minutes
+	user time   =      14.27 seconds =       0.24 minutes
+	system time =       1.45 seconds =       0.02 minutes
+	total time  =         16 seconds =       0.27 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!

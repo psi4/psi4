@@ -28,10 +28,6 @@ set globals {
     GUESS CORE
 }
 
-# database(opt(energy()))
-db('mp2','BASIC',db_func=optimize,tabulate=['mp2 total energy','current energy'])
-compare_values(ref_DB_OPT_E_BASIC, get_variable('BASIC DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[7] Wrapper database BASIC calling optimize (analytic G) calling energy")  #TEST
-
 # optimize(cbs(energy()))
 optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g')
 compare_values(ref_OPT_CBS_E_0, get_variable('CBS TOTAL ENERGY'), 7, "[1] Wrapper optimize (findif G) calling complete_basis_set calling energy")  #TEST
@@ -55,20 +51,15 @@ optimize('mp2',dertype='none')
 compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[5] Wrapper optimize (findif G) calling energy")  #TEST
 optimize('scf')
 compare_values(ref_OPT_E_1, get_variable('CURRENT ENERGY'), 7, "[6] Wrapper optimize (analytic G) calling energy")  #TEST
-
-# database(opt(energy()))
-#db('mp2','BASIC',db_func=optimize,tabulate=['mp2 total energy','current energy'])
-#compare_values(ref_DB_OPT_E_BASIC, get_variable('BASIC DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[7] Wrapper database BASIC calling optimize (analytic G) calling energy")  #TEST
-#db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
-#compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
-
-
-# opt(energy())
 h2.reset_point_group('c1')
 h2.fix_orientation(1)
 h2.update_geometry()
 optimize('mp2')
-compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[9] Wrapper optimize (analytic G) calling energy")  #TEST
+compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[7] Wrapper optimize (analytic G) calling energy")  #TEST
+
+# database(opt(energy()))
+db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
+compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
 
 clean()
 

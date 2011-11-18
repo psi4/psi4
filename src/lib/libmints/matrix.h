@@ -1105,6 +1105,8 @@ public:
 
 #ifdef HAVE_MADNESS
 
+#include <exception.h>
+
 namespace madness {  namespace archive {
 
     /// Serialize a psi Matrix

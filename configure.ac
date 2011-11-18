@@ -575,8 +575,8 @@ if test "$HAVE_MPI" = "1"; then
       BUILD_MADNESS=1
       HAVE_MADNESS=1
       AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      madlibs='$(top_srcdir)/madness/src/lib'
-      madinc='-I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
+      madlibs='$(top_objdir)/madness/src/lib'
+      madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
       ;;
     no)
       AC_DEFINE_UNQUOTED(HAVE_MADNESS,0)
@@ -592,8 +592,8 @@ if test "$HAVE_MPI" = "1"; then
   BUILD_MADNESS=1
   HAVE_MADNESS=1
   AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-  madlibs='$(top_srcdir)/madness/src/lib'
-  madinc='-I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
+  madlibs='$(top_objdir)/madness/src/lib'
+  madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
   ])
 fi
 AC_SUBST(BUILD_MADNESS)
@@ -665,7 +665,7 @@ AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(madlibs) $(madinc)'
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
   AC_SUBST(PSICPPFLAGS)
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
@@ -1008,6 +1008,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/fci-h2o/Makefile
           tests/fci-h2o-2/Makefile
           tests/fci-dipole/Makefile
+          tests/fci-tdm/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile

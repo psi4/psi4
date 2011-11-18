@@ -216,10 +216,16 @@ def run_ccsd(name, **kwargs):
 
 def run_ccsd_gradient(name, **kwargs):
     run_ccsd(name, **kwargs)
+
+    PsiMod.set_global_option('WFN', 'CCSD')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccdensity()
     PsiMod.deriv()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
 
 def run_ccsd_t(name, **kwargs):
 

@@ -1,6 +1,8 @@
 #include <exception.h>
 #include <sstream>
 
+#include <cstring>
+
 using namespace std;
 
 namespace psi {
@@ -26,8 +28,8 @@ PsiException::rewrite_msg(string msg) throw()
 {
     msg_ = msg;
 }
-    
-const char* 
+
+const char*
 PsiException::what() const throw()
 {
     stringstream sstr;
@@ -36,13 +38,13 @@ PsiException::what() const throw()
     return sstr.str().c_str();
 }
 
-const char* 
+const char*
 PsiException::file() const throw()
 {
     return file_;
 }
 
-int 
+int
 PsiException::line() const throw()
 {
     return line_;
@@ -65,7 +67,7 @@ SanityCheckError::SanityCheckError(
     string message,
     const char* _file,
     int _line
-    ) throw() 
+    ) throw()
   : PsiException(message, _file, _line)
 {
     stringstream sstr;
@@ -74,6 +76,20 @@ SanityCheckError::SanityCheckError(
 }
 
 SanityCheckError::~SanityCheckError() throw() {}
+
+SystemError::SystemError(
+    int eno,
+    const char* _file,
+    int _line
+    ) throw()
+    : PsiException("", _file, _line)
+{
+    stringstream sstr;
+    sstr << "SystemError:  " << strerror(eno);
+    rewrite_msg(sstr.str());
+}
+
+SystemError::~SystemError() throw() {}
 
 InputException::InputException(
     string msg,
@@ -181,11 +197,11 @@ template<class T>
 ConvergenceError<T>::~ConvergenceError() throw() {}
 
 template<class T>
-double 
+double
 ConvergenceError<T>::desired_accuracy() const throw() {return desired_acc_;}
 
 template<class T>
-double 
+double
 ConvergenceError<T>::actual_accuracy() const throw() {return actual_acc_;}
 
 template<>
@@ -234,7 +250,7 @@ FeatureNotImplemented::FeatureNotImplemented(
     string feature_name,
     const char* _file,
     int _line
-) throw() 
+) throw()
  : PsiException("psi exception", _file, _line)
 {
     stringstream sstr;
