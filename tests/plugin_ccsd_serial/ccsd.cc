@@ -121,22 +121,38 @@ void CoupledCluster::Initialize(Options &options){
   // get paramters from input 
   conv    = pow(10.,-options.get_int("CONVERGENCE"));
   maxiter = options.get_int("MAXITER");
-  memory  = options.get_int("MEMORY");
   maxdiis = options.get_int("MAX_DIIS_VECS");
 
-  // total memory (in bytes) minus some extra in case i've screwed something up.
-  // after cuda is initialized, this number is adjusted for cpu memory needed
-  // by the gpu helper class
-  memory *= (ULI)1024*1024;
+  // memory is from process::environment, but can override that
+  memory = Process::environment.get_memory();
+  if (options["MEMORY"].has_changed()){
+     memory  = options.get_int("MEMORY");
+     memory *= (ULI)1024*1024;
+  }
+  // minus some extra in case i've miscounted...
   memory -= (ULI)200*1024*1024;
 
+  // initialize gpu helper class
+  helper_ = boost::shared_ptr<GPUHelper>(new GPUHelper);
+
+  // get device parameters, allocate gpu memory and pinned cpu memory
+  helper_->ndoccact = ndoccact;
+  helper_->nvirt    = nvirt;
+  helper_->nmo      = nmo;
+  helper_->CudaInit(options);
+
+  // reduce available memory by the amount required by the helper class
+  memory -= helper_->max_mapped_memory;
+
+  // quit if max_mapped_memory exceeds available memory
+  if ((double)memory<0){
+     throw PsiException("max_mapped_memory must be less than available memory",__FILE__,__LINE__);
+  }
+
+  // quit if number of virtuals is less than number of doubly occupied
   if (nvirt<ndoccact){
      throw PsiException("ndocc must be larger than nvirt",__FILE__,__LINE__);
   }
-
-  boost::shared_ptr<Matrix> Ca = ref->Ca();
-  nmotemp = Ca->colspi()[0];
-  ULI nsotemp = Ca->rowspi()[0];
 
   // so->mo tei transformation
   struct tms total_tmstime;
@@ -347,15 +363,17 @@ void CoupledCluster::DefineTilingCPU(){
   long int ov = o*v;
   long int o2 = o*o;
 
+  // number of doubles in total memory
   long int ndoubles = memory/8.;
-  ndoubles -= 3*o*o*v*v+5*o*v+v*v;
+  // minus storage for other necessary buffers 
+  ndoubles -= 3*o*o*v*v+5*o*v+v*v+(o+v);
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Define tiling:\n");
   fprintf(outfile,"\n");
 
   if (ndoubles<0){
-     throw PsiException("not enough system memory",__FILE__,__LINE__);
+     throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
   }
 
   ntiles = -999;
@@ -375,17 +393,18 @@ void CoupledCluster::DefineTilingCPU(){
          }
      }
      if (ntiles==-999){
-        throw PsiException("not enough system memory",__FILE__,__LINE__);
+        throw PsiException("out of memory: (ab,cd)",__FILE__,__LINE__);
      }
   }
   lasttile = v*(v+1)/2 - (ntiles-1)*tilesize;
 
-  if (tilesize*v*(v+1)/2<o*o*v*v){
-     throw PsiException("not enough system memory",__FILE__,__LINE__);
-  }
   fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3i blocks.\n",ntiles); 
   fflush(outfile);
 
+  // ov^3 type 1:
+  if (v>ndoubles){
+     throw PsiException("out of memory: (ab,ci)",__FILE__,__LINE__);
+  }
   nov2tiles=1;
   ov2tilesize=ov2/1;
   if (nov2tiles*ov2tilesize<ov2) ov2tilesize++;
@@ -399,6 +418,10 @@ void CoupledCluster::DefineTilingCPU(){
   fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3i blocks over ov2.\n",nov2tiles); 
   fflush(outfile);
 
+  // ov^3 type 2:
+  if (v*v>ndoubles){
+     throw PsiException("out of memory: (ab,ci)",__FILE__,__LINE__);
+  }
   novtiles=1;
   ovtilesize=ov/1;
   if (novtiles*ovtilesize<ov) ovtilesize++;
@@ -411,7 +434,7 @@ void CoupledCluster::DefineTilingCPU(){
   fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3i blocks over ov.\n",novtiles); 
   fflush(outfile);
 
-  // tiling of I2iabj diagram:
+  // tiling of I2iabj diagram:  does nothing for the serial version...
   niabjtiles=1;
   iabjtilesize = ov/niabjtiles;
   if (niabjtiles*iabjtilesize<ov) iabjtilesize++;
@@ -432,20 +455,7 @@ void CoupledCluster::AllocateMemory(Options&options){
 
   ULI i,o=ndoccact;
   ULI v=nvirt;
-  ULI dim = v*(v+1)/2; 
-  dim = dim*dim;
-
-  // initialize gpu helper class
-  helper_ = boost::shared_ptr<GPUHelper>(new GPUHelper);
-
-  // get device parameters, allocate gpu memory and pinned cpu memory
-  helper_->ndoccact = ndoccact;
-  helper_->nvirt    = nvirt;
-  helper_->nmo      = nmo;
-  helper_->CudaInit(options);
-
-  // reduce available memory by the amount required by the helper class
-  memory -= helper_->max_mapped_memory;
+  ULI dim;
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
@@ -454,6 +464,10 @@ void CoupledCluster::AllocateMemory(Options&options){
   if (tilesize*v*(v+1)/2 > dim) dim = tilesize*v*(v+1)/2;
   if (ovtilesize*v*v > dim)     dim = ovtilesize*v*v;
   if (ov2tilesize*v > dim)      dim = ov2tilesize*v;
+
+  if (dim<o*o*v*v){
+     throw PsiException("out of memory: general buffer cannot accomodate t2",__FILE__,__LINE__);
+  }
 
   double total_memory = 1.*dim+2.*(o*o*v*v+o*v)+1.*o*o*v*v+2.*o*v+2.*v*v;
   total_memory *= 8./1024./1024.;
@@ -1430,14 +1444,12 @@ void CoupledCluster::Vabcd1_tiled(CCTaskParams params){
   for (i=0; i<o; i++){
       for (j=i; j<o; j++){
           for (a=0; a<v; a++){
-              for (b=a; b<v; b++){
-                  if (a!=b) 
-                     tempv[Position(a,b)*o*(o+1)/2+Position(i,j)] =
-                        tempt[a*o*o*v+b*o*o+i*o+j]+tempt[b*o*o*v+a*o*o+i*o+j];
-                  else
-                     tempv[Position(a,b)*o*(o+1)/2+Position(i,j)] =
-                        tempt[a*o*o*v+b*o*o+i*o+j];
+              for (b=a+1; b<v; b++){
+                  tempv[Position(a,b)*o*(o+1)/2+Position(i,j)] =
+                     tempt[a*o*o*v+b*o*o+i*o+j]+tempt[b*o*o*v+a*o*o+i*o+j];
               }
+              tempv[Position(a,b)*o*(o+1)/2+Position(i,j)] =
+                 tempt[a*o*o*v+a*o*o+i*o+j];
           }
       }
   }
