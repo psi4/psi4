@@ -272,9 +272,7 @@ void RCIS::print_wavefunctions()
             for (int n = 0; n < singlets_.size(); n++) {
                 singlets_[n]->print();
                 Dmo(singlets_[n])->print();
-                std::pair<SharedMatrix, boost::shared_ptr<Vector> > N = Nmo(singlets_[n]);
-                N.first->print();
-                N.second->print();
+                Dao(singlets_[n])->print();
             }
 
         if (triplets_.size())
@@ -282,9 +280,7 @@ void RCIS::print_wavefunctions()
             for (int n = 0; n < triplets_.size(); n++) {
                 triplets_[n]->print();
                 Dmo(triplets_[n])->print();
-                std::pair<SharedMatrix, boost::shared_ptr<Vector> > N = Nmo(triplets_[n]);
-                N.first->print();
-                N.second->print();
+                Dao(triplets_[n])->print();
             }
     }
 }
