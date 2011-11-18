@@ -18,6 +18,20 @@
   ==> Input File <==
 
 --------------------------------------------------------------------------
+#! He2+ FCI/cc-pVDZ Transition Dipole Moment
+
+refnuc   =   0.705569665333  #TEST
+refscf   =  -4.816603104817  #TEST
+refci1   =  -4.883262086636  #TEST
+refcorr1 =  refci1 - refscf  #TEST
+refci2   =  -4.879491772279  #TEST
+refcorr2 =  refci2 - refscf  #TEST
+refDipHF =   0.00000000      #TEST
+
+refDipCI1=   0.000000000000  #TEST
+refDipCI2=   0.000000000000  #TEST
+refTDM   =   7.180360421465  #TEST
+
 molecule he2p {
 1 2
 He 
@@ -40,18 +54,29 @@ num_roots 2
 
 thisenergy = energy('detci')
 
+compare_values(refnuc, he2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
+compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
+compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI root 2 correlation energy")  #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
+compare_values(refTDM, get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z"), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
+
 clean()
 --------------------------------------------------------------------------
 
-*** tstart() called on ds7
-*** at Fri Nov 11 17:35:47 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 18:58:11 2011
 
 
          ---------------------------------------------------------
                                    SCF
             by Justin Turney, Rob Parrish, and Andy Simmonett
                              ROHF Reference
-                        4 Threads,    256 MiB Core
+                        1 Threads,    256 MiB Core
          ---------------------------------------------------------
 
   ==> Geometry <==
@@ -179,32 +204,33 @@ clean()
   @ROHF Final Energy:    -4.81660310481694
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds7 at Fri Nov 11 17:35:48 2011
+*** tstop() called on ds9 at Mon Nov 14 18:58:11 2011
 Module time:
 	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.05 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Fri Nov 11 17:35:48 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 18:58:11 2011
 
 
 	**************************************************
@@ -289,18 +315,18 @@ Total time:
 	Transforming one-electron integrals...
 	Frozen-core operator written to file 35.
 
-*** tstop() called on ds7 at Fri Nov 11 17:35:50 2011
+*** tstop() called on ds9 at Mon Nov 14 18:58:11 2011
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds7
-*** at Fri Nov 11 17:35:50 2011
+*** tstart() called on ds9
+*** at Mon Nov 14 18:58:11 2011
 
 
 *******************************************************
@@ -499,55 +525,28 @@ Wrote MO-basis TDM 2 to disk
 Wrote MO-basis Alpha TDM 2 to disk
 
 Wrote MO-basis Beta TDM 2 to disk
-  OEProp Analysis CI TDM Root 1 -> Root 2
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Dipole Moment: (a.u.)
+  ==> Properties CI TDM Root 1 -> Root 2 <==
+  Transition Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     2.8250     Total:     2.8250
 
- Dipole Moment: (Debye)
+  Transition Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     7.1804     Total:     7.1804
 
- Mulliken Charges: (a.u.)
-   Center  Symbol    Alpha    Beta     Spin     Total
-       1    HE    -0.00002  0.49879 -0.49881  1.50123
-       2    HE     0.00002 -0.49879  0.49881  2.49877
+  ==> Properties CI OPDM Root 1 <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
-   Total alpha = -0.00000, Total beta = -0.00000, Total charge =  4.00000
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
 
-  Natural Orbital Occupations:
-
-  Alpha Occupations:
-  HONO-2 :    6 A1    0.000
-  HONO-1 :    5 A1    0.000
-  LUNO+0 :    4 A1    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    2 B1    0.000
-
-  Beta Occupations:
-  HONO-1 :    6 A1    0.000
-  LUNO+0 :    5 A1    0.000
-  LUNO+1 :    4 A1    0.000
-  LUNO+2 :    3 A1    0.000
-  LUNO+3 :    2 B2    0.000
-
-  OEProp Analysis CI OPDM Root 1
-
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
-
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
 
- Mulliken Charges: (a.u.)
+  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1    HE     1.00000  0.50000  0.50000  0.50000
        2    HE     1.00000  0.50000  0.50000  0.50000
@@ -557,33 +556,41 @@ Wrote MO-basis Beta TDM 2 to disk
   Natural Orbital Occupations:
 
   Alpha Occupations:
-  HONO-2 :    6 A1    0.000
-  HONO-1 :    5 A1    0.000
-  LUNO+0 :    4 A1    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    2 B1    0.000
+  HONO-1 :    1 A1    0.990
+  HONO-0 :    2 A1    0.989
+  LUNO+0 :    3 A1    0.009
+  LUNO+1 :    4 A1    0.008
+  LUNO+2 :    5 A1    0.001
+  LUNO+3 :    6 A1    0.001
 
   Beta Occupations:
-  HONO-1 :    6 A1    0.000
-  LUNO+0 :    5 A1    0.000
-  LUNO+1 :    4 A1    0.000
-  LUNO+2 :    3 A1    0.000
-  LUNO+3 :    2 B2    0.000
+  HONO-0 :    1 A1    0.979
+  LUNO+0 :    2 A1    0.015
+  LUNO+1 :    3 A1    0.002
+  LUNO+2 :    4 A1    0.001
+  LUNO+3 :    1 B2    0.001
 
-  OEProp Analysis CI OPDM Root 2
+  Total Occupations:
+  HONO-0 :    1 A1    1.965
+  LUNO+0 :    2 A1    1.004
+  LUNO+1 :    3 A1    0.015
+  LUNO+2 :    4 A1    0.010
+  LUNO+3 :    5 A1    0.001
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  ==> Properties CI OPDM Root 2 <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Mulliken Charges: (a.u.)
+  Mulliken Charges: (a.u.)
    Center  Symbol    Alpha    Beta     Spin     Total
        1    HE     1.00000  0.50000  0.50000  0.50000
        2    HE     1.00000  0.50000  0.50000  0.50000
@@ -593,28 +600,35 @@ Wrote MO-basis Beta TDM 2 to disk
   Natural Orbital Occupations:
 
   Alpha Occupations:
-  HONO-2 :    6 A1    0.000
-  HONO-1 :    5 A1    0.000
-  LUNO+0 :    4 A1    0.000
-  LUNO+1 :    3 A1    0.000
-  LUNO+2 :    2 B2    0.000
-  LUNO+3 :    2 B1    0.000
+  HONO-1 :    1 A1    0.990
+  HONO-0 :    2 A1    0.989
+  LUNO+0 :    3 A1    0.009
+  LUNO+1 :    4 A1    0.009
+  LUNO+2 :    5 A1    0.001
+  LUNO+3 :    6 A1    0.001
 
   Beta Occupations:
-  HONO-1 :    6 A1    0.000
-  LUNO+0 :    5 A1    0.000
-  LUNO+1 :    4 A1    0.000
-  LUNO+2 :    3 A1    0.000
-  LUNO+3 :    2 B2    0.000
+  HONO-0 :    1 A1    0.979
+  LUNO+0 :    2 A1    0.016
+  LUNO+1 :    3 A1    0.002
+  LUNO+2 :    4 A1    0.001
+  LUNO+3 :    1 B2    0.001
+
+  Total Occupations:
+  HONO-0 :    1 A1    1.965
+  LUNO+0 :    2 A1    1.004
+  LUNO+1 :    3 A1    0.014
+  LUNO+2 :    4 A1    0.011
+  LUNO+3 :    5 A1    0.001
 
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.001259
- Write     0.000586
- Sigma1    0.000209
- Sigma2    0.001257
- Sigma3    0.002676
+ Read      0.001153
+ Write     0.000551
+ Sigma1    0.000173
+ Sigma2    0.001139
+ Sigma3    0.002333
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -628,14 +642,14 @@ Wrote MO-basis Beta TDM 2 to disk
 			 - Edward Valeev
 
 
-*** tstop() called on ds7 at Fri Nov 11 17:35:51 2011
+*** tstop() called on ds9 at Mon Nov 14 18:58:11 2011
 Module time:
-	user time   =       0.02 seconds =       0.00 minutes
+	user time   =       0.01 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
-	total time  =          4 seconds =       0.07 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
