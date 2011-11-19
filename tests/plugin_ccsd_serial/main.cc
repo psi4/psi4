@@ -35,7 +35,7 @@ read_options(std::string name, Options &options)
       /*- default number of DIIS iterations */
       options.add_int("MAX_DIIS_VECS", 8);
       /*- default number of DIIS iterations */
-      options.add_int("MAX_MAPPED_MEMORY", 2000);
+      options.add_int("MAX_MAPPED_MEMORY", 1000);
   }
   return true;
 }
@@ -44,7 +44,6 @@ extern "C" PsiReturnType
 plugin_ccsd_serial(Options &options)
 {  
   RunCoupledCluster(options);
-
   return  Success;
 } // end plugin_ccsd
 
