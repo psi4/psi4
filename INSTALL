@@ -98,6 +98,7 @@ Either
    * make tests
    * make install [if tests pass]
    * make doc [optional]
+   * [do user configuration, see below]
 
 or, in the top-level psi4 directory,
 
@@ -110,6 +111,7 @@ or, in the top-level psi4 directory,
    * make tests
    * make install [if tests pass]
    * make doc [optional]
+   * [do user configuration, see below]
 
 That's it!  The details about configuration are given below.  If something
 goes wrong, check section VI about common compilation problems.
