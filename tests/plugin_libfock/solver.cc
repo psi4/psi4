@@ -210,18 +210,40 @@ void CGRSolver::guess()
             }
         }
     }
+
+    if (debug_) {
+        diag_->print();   
+        for (int N = 0; N < b_.size(); N++) {
+            x_[N]->print();   
+            b_[N]->print();   
+        }
+    }
 }
 void CGRSolver::residual()
 {
     for (int N = 0; N < b_.size(); ++N) {
-        x_[N]->copy(b_[N].get());
-        x_[N]->scale(-1.0);
-        x_[N]->add(Ap_[N]);
+        r_[N]->copy(Ap_[N].get());
+        r_[N]->scale(-1.0);
+        r_[N]->add(b_[N]);
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  > Residuals x <\n\n");
+        for (int N = 0; N < r_.size(); N++) {
+            r_[N]->print();
+        }
     }
 }
 void CGRSolver::products_x()
 {
     H_->product(x_,Ap_);
+
+    if (debug_) {
+        fprintf(outfile, "  > Products x <\n\n");
+        for (int N = 0; N < Ap_.size(); N++) {
+            Ap_[N]->print();
+        }
+    }
 }
 void CGRSolver::products_p()
 {
@@ -235,6 +257,13 @@ void CGRSolver::products_p()
     }
 
     H_->product(p,Ap);
+
+    if (debug_) {
+        fprintf(outfile, "  > Products p <\n\n");
+        for (int N = 0; N < Ap_.size(); N++) {
+            Ap_[N]->print();
+        }
+    }
 }
 void CGRSolver::alpha()
 {
@@ -245,14 +274,21 @@ void CGRSolver::alpha()
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
-            double* rp = r_[N]->pointer();
-            double* zp = z_[N]->pointer();
-            double* pp = p_[N]->pointer();
-            double* App = Ap_[N]->pointer();
+            double* rp = r_[N]->pointer(h);
+            double* zp = z_[N]->pointer(h);
+            double* pp = p_[N]->pointer(h);
+            double* App = Ap_[N]->pointer(h);
             z_r_[N] += C_DDOT(n,rp,1,zp,1);
             p_Ap += C_DDOT(n,pp,1,App,1);
         }
         alpha_[N] = z_r_[N] / p_Ap;
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  > Alpha <\n\n");
+        for (int N = 0; N < alpha_.size(); N++) {
+            fprintf(outfile, "Alpha %d = %24.16E\n", N+1, alpha_[N]);
+        }
     }
 }
 void CGRSolver::update_x()
@@ -262,9 +298,16 @@ void CGRSolver::update_x()
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
-            double* xp = x_[N]->pointer();
-            double* pp = p_[N]->pointer();
+            double* xp = x_[N]->pointer(h);
+            double* pp = p_[N]->pointer(h);
             C_DAXPY(n,alpha_[N],pp,1,xp,1);
+        }
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  > Update x <\n\n");
+        for (int N = 0; N < x_.size(); N++) {
+            x_[N]->print();
         }
     }
 }
@@ -275,9 +318,16 @@ void CGRSolver::update_r()
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
-            double* rp = r_[N]->pointer();
-            double* App = Ap_[N]->pointer();
+            double* rp = r_[N]->pointer(h);
+            double* App = Ap_[N]->pointer(h);
             C_DAXPY(n,-alpha_[N],App,1,rp,1);
+        }
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  > Update r <\n\n");
+        for (int N = 0; N < r_.size(); N++) {
+            r_[N]->print();
         }
     }
 }
@@ -290,7 +340,7 @@ void CGRSolver::check_convergence()
         for (int h = 0; h < b_[N]->nirrep(); ++h) {
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
-            double* rp = r_[N]->pointer();
+            double* rp = r_[N]->pointer(h);
             r_nrm2_[N] += C_DDOT(n,rp,1,rp,1);
         }
         sqrt(r_nrm2_[N]);
@@ -314,17 +364,24 @@ void CGRSolver::update_z()
             int n = b_[N]->dimpi()[h];
             if (!n) continue;
             double* zp = z_[N]->pointer();
-            double* xp = x_[N]->pointer();
+            double* rp = r_[N]->pointer();
             double* dp = diag_->pointer();
             if (precondition_) {
                 for (int i = 0; i < n; ++i) {
-                    zp[i] = xp[i] / dp[i];
+                    zp[i] = rp[i] / dp[i];
                 }
             } else { 
                 for (int i = 0; i < n; ++i) {
-                    zp[i] = xp[i];
+                    zp[i] = rp[i];
                 }
             }
+        }
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  > Update z <\n\n");
+        for (int N = 0; N < z_.size(); N++) {
+            z_[N]->print();
         }
     }
 }
@@ -342,6 +399,13 @@ void CGRSolver::beta()
         }
         beta_[N] = zr / z_r_[N];
     }
+
+    if (debug_) {
+        fprintf(outfile, "  > Beta <\n\n");
+        for (int N = 0; N < beta_.size(); N++) {
+            fprintf(outfile, "Beta %d = %24.16E\n", N+1, beta_[N]);
+        }
+    }
 }
 void CGRSolver::update_p()
 {
@@ -349,6 +413,13 @@ void CGRSolver::update_p()
         if (r_converged_[N]) continue;
         p_[N]->scale(beta_[N]);
         p_[N]->add(z_[N]);
+    }
+
+    if (debug_) {
+        fprintf(outfile, "  > Update p <\n\n");
+        for (int N = 0; N < p_.size(); N++) {
+            p_[N]->print();
+        }
     }
 }
 
