@@ -67,6 +67,7 @@ void RBase::common_init()
     C_ = Matrix::horzcat(Cs);
 
     if (debug_) {
+        AO2SO_->print();
         Cfocc_->print();
         Caocc_->print();
         Cavir_->print();
@@ -100,16 +101,111 @@ void RCPHF::print_header()
     fprintf(outfile, "  ==> Basis Set <==\n\n");
     basisset_->print_by_level(outfile, print_);
 
+    if (tasks_.size()) {
+        fprintf(outfile, "  ==> Named Tasks <==\n\n");
+        for (std::set<std::string>::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
+            fprintf(outfile, "    %s\n", (*it).c_str());
+        }
+        fprintf(outfile, "\n");
+    }
+
     if (debug_ > 1) {
         fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
         eps_aocc_->print();
         eps_avir_->print();
     }
 }
+void RCPHF::add_task(const std::string& task)
+{
+    tasks_.insert(task);
+}
+void RCPHF::add_named_tasks()
+{
+    if (tasks_.count("POLARIZABILITY")) {
+        add_polarizability();
+    }
+}
+void RCPHF::analyze_named_tasks()
+{
+    if (tasks_.count("POLARIZABILITY")) {
+        analyze_polarizability();
+    }
+}
+void RCPHF::add_polarizability()
+{
+    OperatorSymmetry msymm(1, molecule_, integral_, factory_);
+    std::vector<SharedMatrix> dipole = msymm.create_matrices("SO Dipole");
+    boost::shared_ptr<OneBodySOInt> ints(integral_->so_dipole());
+    ints->compute(dipole);
+    
+    for (int i = 0; i < dipole.size(); i++) {
+        std::stringstream ss;
+        ss << "Dipole Perturbation " << (i == 0 ? "X" : (i == 1 ? "Y" : "Z"));
+        SharedMatrix B(new Matrix(ss.str(), Caocc_->colspi(), Cavir_->colspi(), dipole[i]->symmetry()));
+        
+        int symm = dipole[i]->symmetry();
+        double* temp = new double[dipole[i]->max_nrow() * Cavir_->max_ncol()];
+
+        for (int h = 0; h < B->nirrep(); h++) {
+            int nsol = dipole[i]->rowspi()[h];
+            int nsor = dipole[i]->colspi()[h^symm];
+            int noccl = Caocc_->colspi()[h];
+            int nvirr = Cavir_->colspi()[h^symm];
+
+            if (!nsol || !nsor || !noccl || !nvirr) continue;
+
+            double** dp = dipole[i]->pointer(h);
+            double** bp = B->pointer(h);
+            double** Clp = Caocc_->pointer(h);
+            double** Crp = Cavir_->pointer(h^symm);
+            
+            C_DGEMM('N','N',nsol,nvirr,nsor,1.0,dp[0],nsor,Crp[0],nvirr,0.0,temp,nvirr);
+            C_DGEMM('T','N',noccl,nvirr,nsol,1.0,Clp[0],noccl,temp,nvirr,0.0,bp[0],nvirr);
+        }
+
+        delete[] temp;
+    
+        b_.push_back(B); 
+    }    
+}
+void RCPHF::analyze_polarizability()
+{
+    std::vector<SharedMatrix> u;
+    std::vector<SharedMatrix> d;
+
+    d.push_back(b_[b_.size() - 3]);
+    d.push_back(b_[b_.size() - 2]);
+    d.push_back(b_[b_.size() - 1]);
+
+    u.push_back(x_[x_.size() - 3]);
+    u.push_back(x_[x_.size() - 2]);
+    u.push_back(x_[x_.size() - 1]);
+
+    x_.pop_back();
+    x_.pop_back();
+    x_.pop_back();
+
+    b_.pop_back();
+    b_.pop_back();
+    b_.pop_back();
+
+    // Analysis
+    SharedMatrix polarizability(new Matrix("CPHF Polarizability", 3, 3));
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            polarizability->set(0,i,j,-4.0 * (d[i]->symmetry() == u[j]->symmetry() ? d[i]->vector_dot(u[j]) : 0.0));
+        }
+    }
+
+    polarizability->print();
+}
 double RCPHF::compute_energy()
 {
     // Main CPHF Header
     print_header(); 
+
+    // Add named tasks to the force vector list
+    add_named_tasks();
     
     // Construct components
     boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
@@ -120,8 +216,16 @@ double RCPHF::compute_energy()
     H->set_print(print_);
     H->set_debug(debug_);
 
+    // Addition of force vectors
+    std::vector<SharedVector>& bref = solver->b();
+    std::vector<SharedVector> b = H->pack(b_);
+    for (int i = 0; i < b.size(); i++) {
+        bref.push_back(b[i]);
+    }
+
     // Initialization/Memory
     solver->initialize();
+
     unsigned long int solver_memory = solver->memory_estimate();
     unsigned long int remaining_memory = memory_ / 8L - solver_memory;
     unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * remaining_memory);
@@ -137,7 +241,7 @@ double RCPHF::compute_energy()
         fprintf(outfile, "  ==> CPHF Iterations <==\n\n");
     }
 
-    if (debug_) {
+    if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
         SharedMatrix A = H->explicit_hamiltonian();
         A->print();
     }
@@ -148,25 +252,20 @@ double RCPHF::compute_energy()
         }
     }
 
-    //std::vector<SharedVector>& b = solver->b();
-    //std::vector<SharedVector> b1 = H->pack(b_);
-    //for (int Q = 0; Q < b1.size(); Q++) {
-    //    b.push_back(b1[Q]); 
-    //}
-
     solver->solve();
 
-    //std::vector<SharedVector>& x = solver->x();
-    //std::vector<SharedMatrix> x1 = H->unpack(x);
-    //for (int Q = 0; Q < x1.size(); Q++) {
-    //    x_.push_back(x1[Q]); 
-    //}
+    std::vector<SharedMatrix> x1 = H->unpack(solver->x());
+    for (int Q = 0; Q < x1.size(); Q++) {
+        x_.push_back(x1[Q]); 
+    }
 
     if (debug_) {
         for (int Q = 0; Q < x_.size(); Q++) {
             x_[Q]->print();
         }
     }
+
+    analyze_named_tasks();
 
     // Finalize solver/JK memory
     solver->finalize();
@@ -203,18 +302,19 @@ void RCIS::print_header()
         eps_avir_->print();
     }
 }
-void RCIS::print_wavefunctions()
+void RCIS::sort_states()
 {
-    std::vector<boost::tuple<double, int, int, int> > states;
     for (int n = 0; n < E_singlets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
+        states_.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
     }
     for (int n = 0; n < E_triplets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
+        states_.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
     }
 
-    std::sort(states.begin(), states.end());
-
+    std::sort(states_.begin(), states_.end());
+}
+void RCIS::print_wavefunctions()
+{
     fprintf(outfile, "  ==> Excitation Energies <==\n\n");
 
     fprintf(outfile,"  -----------------------------------------------\n");
@@ -222,11 +322,11 @@ void RCIS::print_wavefunctions()
         "State", "Description", "dE (H)", "dE (eV)");
     fprintf(outfile,"  -----------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states.size(); i++) {
-        double E = get<0>(states[i]);
-        int    j = get<1>(states[i]);
-        int    m = get<2>(states[i]);
-        int    h = get<3>(states[i]);
+    for (int i = 0; i < states_.size(); i++) {
+        double E = get<0>(states_[i]);
+        int    j = get<1>(states_[i]);
+        int    m = get<2>(states_[i]);
+        int    h = get<3>(states_[i]);
         fprintf(outfile,"  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
             i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, _hartree2ev * E);
     }
@@ -237,21 +337,23 @@ void RCIS::print_wavefunctions()
 
 
     if (debug_ > 1) {
-        if (singlets_.size())
+        if (singlets_.size()) { 
             fprintf(outfile, "  ==> Singlet States <==\n\n");
             for (int n = 0; n < singlets_.size(); n++) {
                 singlets_[n]->print();
                 Dmo(singlets_[n])->print();
                 Dao(singlets_[n])->print();
             }
+        }
 
-        if (triplets_.size())
+        if (triplets_.size()) {
             fprintf(outfile, "  ==> Triplet States <==\n\n");
             for (int n = 0; n < triplets_.size(); n++) {
                 triplets_[n]->print();
                 Dmo(triplets_[n])->print();
                 Dao(triplets_[n])->print();
             }
+        }
     }
 }
 void RCIS::print_amplitudes()
@@ -260,16 +362,6 @@ void RCIS::print_amplitudes()
 
     double cutoff = options_.get_double("CIS_AMPLITUDE_CUTOFF");
 
-    std::vector<boost::tuple<double, int, int, int> > states;
-    for (int n = 0; n < E_singlets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
-    }
-    for (int n = 0; n < E_triplets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
-    }
-
-    std::sort(states.begin(), states.end());
-
     fprintf(outfile, "  ==> Significant Amplitudes <==\n\n");
 
     fprintf(outfile,"  --------------------------------------------------\n");
@@ -277,11 +369,11 @@ void RCIS::print_amplitudes()
         "State", "Description", "Excitation", "Amplitude");
     fprintf(outfile,"  --------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states.size(); i++) {
-        double E = get<0>(states[i]);
-        int    j = get<1>(states[i]);
-        int    m = get<2>(states[i]);
-        int    h = get<3>(states[i]);
+    for (int i = 0; i < states_.size(); i++) {
+        double E = get<0>(states_[i]);
+        int    j = get<1>(states_[i]);
+        int    m = get<2>(states_[i]);
+        int    h = get<3>(states_[i]);
 
         SharedMatrix T = ((m == 1 ? singlets_[j] : triplets_[j]));
         int symm = T->symmetry();
@@ -346,16 +438,6 @@ void RCIS::print_transitions()
     dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso))); 
     dipole->compute(dipole_ints);
 
-    std::vector<boost::tuple<double, int, int, int> > states;
-    for (int n = 0; n < E_singlets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
-    }
-    for (int n = 0; n < E_triplets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
-    }
-
-    std::sort(states.begin(), states.end());
-
     fprintf(outfile, "  ==> GS->XS Oscillator Strengths <==\n\n");
 
     fprintf(outfile,"  --------------------------------------------------------------------\n");
@@ -363,12 +445,12 @@ void RCIS::print_transitions()
         "State", "Description", "mu_x", "mu_y", "mu_z", "f");
     fprintf(outfile,"  --------------------------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states.size(); i++) {
+    for (int i = 0; i < states_.size(); i++) {
 
-        double E = get<0>(states[i]);
-        int    j = get<1>(states[i]);
-        int    m = get<2>(states[i]);
-        int    h = get<3>(states[i]);
+        double E = get<0>(states_[i]);
+        int    j = get<1>(states_[i]);
+        int    m = get<2>(states_[i]);
+        int    h = get<3>(states_[i]);
 
         double mu[3];
         ::memset((void*) mu, '\0', 3*sizeof(double));
@@ -842,6 +924,7 @@ double RCIS::compute_energy()
     jk->finalize();
 
     // Print wavefunctions and properties
+    sort_states();
     print_wavefunctions();
     print_amplitudes();
     print_transitions();
