@@ -205,7 +205,7 @@ class IntegralTransform{
                           double *aD, double *bD, double *aFock, double *bFock);
         void idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
                                  int **&bucketOffset, int &p, int &q, int &r,
-                                 int &s, double value, bool symmetrize = false, bool braket=true);
+                                 int &s, double value, bool symmetrize = false, bool have_bra_ket_sym=true);
         void idx_error(const char *message, int p, int q, int r, int s,
                        int pq, int rs, int pq_sym, int rs_sym);
 
@@ -344,7 +344,7 @@ class IntegralTransform{
 inline void
 IntegralTransform::idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
                                        int **&bucketOffset, int &p, int &q, int &r,
-                                       int &s, double value, bool symmetrize, bool braket)
+                                       int &s, double value, bool symmetrize, bool have_bra_ket_sym)
 {
     dpdparams4 *Params = File->params;
 
@@ -353,6 +353,8 @@ IntegralTransform::idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&b
         if(p!=q) value *= 0.5;
         if(r!=s) value *= 0.5;
     }
+
+    bool bra_ket_different = !(p==r && q==s);
 
     /* Get the orbital symmetries */
     int p_sym = Params->psym[p];
@@ -379,7 +381,7 @@ IntegralTransform::idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&b
      * We don't do this if the quantity does not have bra-ket symmetry, like
      * in the Alpha-Beta TPDM.
      */
-    if(bucketMap[r][s] == thisBucket && (p!=r || q!=s) && braket) {
+    if(bucketMap[r][s] == thisBucket && bra_ket_different && have_bra_ket_sym) {
         int rs = Params->rowidx[r][s];
         int pq = Params->colidx[p][q];
         int offset = bucketOffset[thisBucket][rs_sym];

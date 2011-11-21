@@ -60,7 +60,7 @@ public:
     {
         int thread = Communicator::world->thread_id(pthread_self());
 
-        double prefactor = 8.0;
+        double prefactor = 4.0;
 
         if (pirrep ^ qirrep ^ rirrep ^ sirrep)
             return;
@@ -71,13 +71,15 @@ public:
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-        if (pabs == rabs && qabs == sabs)
-            prefactor *= 0.5;
+//        if (pabs == rabs && qabs == sabs)
+//            prefactor *= 0.5;
 
         int PQ = G_->params->colidx[pabs][qabs];   // pabs, qabs?
         int RS = G_->params->rowidx[rabs][sabs];   // pabs, qabs?
 
         result[thread]->add(salc, prefactor * G_->matrix[h][PQ][RS] * value);
+        if(PQ != RS)
+            result[thread]->add(salc, prefactor * G_->matrix[h][RS][PQ] * value);
     }
 };
 
