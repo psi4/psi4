@@ -167,7 +167,7 @@ class ScfAndDfCorrelationRestrictedFunctor
 {
     SharedMatrix D_ref_;
     SharedMatrix D_;
-    ScfRestrictedFunctor& scf_functor_;
+    ScfRestrictedFunctor scf_functor_;
     std::vector<SharedVector> result_vec_;
     SharedVector results_;
 
@@ -192,7 +192,7 @@ public:
             result_vec_.push_back(SharedVector(results->clone()));
     }
 
-    ScfAndDfCorrelationRestrictedFunctor() : scf_functor_(){
+    ScfAndDfCorrelationRestrictedFunctor() {
         throw PSIEXCEPTION("ScfAndDfCorrelationRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
 

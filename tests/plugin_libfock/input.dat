@@ -9,33 +9,16 @@ symmetry c1
 plugin_load('./plugin_libfock.so')
 
 set {
-#debug 1
 print 2
 scf_type direct
+solver_maxiter 4
 basis sto-3g 
-#explicit_hamiltonian true
-solver_n_root 10 
-solver_n_guess 10
-solver_min_subspace 10 
-solver_max_subspace 20 
-solver_maxiter 2
+solver_precondition false
+cphf_tasks [Polarizability]
 }
 
 energy('scf')
-set module rcis
+set module rcphf
 plugin('./plugin_libfock.so')
 
 clean()
-
-molecule h2o {
-0 1
-O    0.000000000000    0.000000000000   -0.075791843589
-H    0.866811828967    0.000000000000    0.601435779270
-H   -0.866811828967    0.000000000000    0.601435779270
-}
-
-set basis sto-3g 
-energy('scf')
-set module rcis
-plugin('./plugin_libfock.so')
-

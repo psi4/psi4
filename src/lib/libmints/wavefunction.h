@@ -58,6 +58,9 @@ protected:
     /// Primary basis set for SO integrals
     boost::shared_ptr<SOBasisSet> sobasisset_;
 
+    /// AO2SO conversion matrix (AO in rows, SO in cols)
+    SharedMatrix AO2SO_;
+
     /// Molecule that this wavefunction is run on
     boost::shared_ptr<Molecule> molecule_;
 
@@ -122,6 +125,9 @@ protected:
     /// Number of irreps
     int nirrep_;
 
+    /// Overlap matrix
+    SharedMatrix S_;
+
     /// Alpha MO coefficients
     SharedMatrix Ca_;
     /// Beta MO coefficients
@@ -155,6 +161,12 @@ protected:
     /// The TPDM contribution to the gradient
     boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
 
+    /// Helpers for C/D/epsilon transformers
+    SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
+    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
+    SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
+    std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -163,6 +175,16 @@ public:
     /// Set the PSIO object.
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    /**
+    * Copy the contents of another Wavefunction into this one.
+    * Useful at the beginning of correlated wavefunction computations.
+    * -Does not set options or callbacks
+    * -reference_wavefunction_ is set to other
+    * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are copied by reference,
+    *  so if you change these, you must reallocate to avoid compromising the
+    *  reference wavefunction's data.
+    **/
+    void copy(boost::shared_ptr<Wavefunction> other);
 
     virtual ~Wavefunction();
 
@@ -227,6 +249,9 @@ public:
     /// Returns the reference energy
     double reference_energy () const { return energy_; }
 
+    /// Returns the overlap matrix
+    SharedMatrix S() const { return S_; }
+
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
@@ -244,10 +269,66 @@ public:
     /// The two particle density matrix contribution to the gradient
     virtual boost::shared_ptr<Matrix> tpdm_gradient_contribution() const;
 
+    SharedMatrix aotoso() const { return AO2SO_; }
+
     /// Returns the alpha OPDM for the wavefunction
     const SharedMatrix Da() const;
     /// Returns the beta OPDM for the wavefunction
     SharedMatrix Db() const;
+
+    /**
+    * Return a subset of the Ca matrix in a desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    * @return the matrix in Pitzer order in the desired basis
+    **/
+    SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+    * Return a subset of the Cb matrix in a desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    * @return the matrix in Pitzer order in the desired basis
+    **/
+    SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+    * Return the Da matrix in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO
+    * @return the matrix in the desired basis
+    **/
+    SharedMatrix Da_subset(const std::string& basis = "SO");
+
+    /**
+    * Return the Db matrix in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO
+    * @return the matrix in the desired basis
+    **/
+    SharedMatrix Db_subset(const std::string& basis = "SO");
+
+    /**
+    * Return the alpha orbital eigenvalues in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO (SO and MO return the same thing)
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    */
+    SharedVector epsilon_a_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+    * Return the beta orbital eigenvalues in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO (SO and MO return the same thing)
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    */
+    SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
 
     /// Returns the Lagrangian in SO basis for the wavefunction
     SharedMatrix X() const;
