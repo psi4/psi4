@@ -1012,6 +1012,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/fci-h2o-fzcv/Makefile
           tests/fci-dipole/Makefile
           tests/fci-tdm/Makefile
+          tests/fci-tdm-2/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
