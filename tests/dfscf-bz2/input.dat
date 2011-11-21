@@ -1,7 +1,7 @@
-#! Benzene Dimer Out-of-Core HF/cc-pVDZ
+#! Benzene Dimer DF-HF/cc-pVDZ
 
 refnuc = 618.289690301440714 #TEST
-refscf = -461.44029760966623 #TEST
+refscf = -461.43943376943662 #TEST
 
 molecule bz2 {
     X
@@ -44,19 +44,21 @@ molecule bz2 {
 
 }
 
-memory 500 mb
+thisenergy = energy('dfmp2')
 
 set globals {
   basis cc-pVDZ
+  ri_basis_scf cc-pVDZ-jkfit
+  ri_basis_mp2 cc-pVDZ-RI
+  scf_type df
   guess sad
-  scf_type out_of_core
-  print 2
 }
 
 thisenergy = energy('scf')
 
 compare_values(refnuc, bz2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refmp2, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
 
 clean()
 
