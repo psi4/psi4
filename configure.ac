@@ -1015,6 +1015,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
+          tests/cc4a/Makefile
           tests/cc5a/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
