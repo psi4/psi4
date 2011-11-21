@@ -16,7 +16,7 @@ class Vector;
 class Dimension;
 class BasisSet;
 
-class MOIndexSpace
+class OrbitalSpace
 {
     /// Number of irreps.
     int nirrep_;
@@ -38,15 +38,15 @@ class MOIndexSpace
     /// MO Dimensionality
     Dimension dim_; // dim_.n() better equal nirrep_
 
-    MOIndexSpace();
+    OrbitalSpace();
 public:
-    MOIndexSpace(const std::string& name,
+    OrbitalSpace(const std::string& name,
                  const SharedMatrix& full_C,   // Should this be 4 C's instead?
                  const boost::shared_ptr<Vector>& evals,
                  const boost::shared_ptr<BasisSet>& basis,
                  const boost::shared_ptr<IntegralFactory>& ints);
 
-    MOIndexSpace(const std::string& name,
+    OrbitalSpace(const std::string& name,
                  const boost::shared_ptr<Wavefunction>& wave);
 
     int nirrep() const;
@@ -67,21 +67,21 @@ public:
     /// MO dimensionality
     const Dimension& dim() const;
 
-    /** Creates an MOIndexSpace from 'from' to the given basis set 'to'
+    /** Creates an OrbitalSpace from 'from' to the given basis set 'to'
       */
-    static MOIndexSpace transform(const MOIndexSpace& from, const boost::shared_ptr<BasisSet>& to);
+    static OrbitalSpace transform(const OrbitalSpace& from, const boost::shared_ptr<BasisSet>& to);
 
     /** Returns the overlap matrix between space1 and space2.
         The matrix has dimensions of space2.C().coldim() and
         space1.C().coldim().
         Throws if the overlap cannot be computed.
       */
-    static SharedMatrix overlap(const MOIndexSpace& space1, const MOIndexSpace& space2);
+    static SharedMatrix overlap(const OrbitalSpace& space1, const OrbitalSpace& space2);
     /** Returns the overlap matrix between basis1 and basis2.
         Throws if the overlap cannot be computed.
       */
     static SharedMatrix overlap(const boost::shared_ptr<BasisSet>& basis1,
-                                             const boost::shared_ptr<BasisSet>& basis2);
+                                const boost::shared_ptr<BasisSet>& basis2);
 };
 
 }
