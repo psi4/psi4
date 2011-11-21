@@ -240,8 +240,8 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
-    //virtual std::vector<SharedVector > pack(const boost::shared_ptr<Matrix>& b);
-    //virtual std::vector<SharedMatrix > unpack(const boost::shared_ptr<Vector>& x);
+    virtual std::vector<SharedVector > pack(const std::vector<boost::shared_ptr<Matrix> >& b);
+    virtual std::vector<SharedMatrix > unpack(const std::vector<boost::shared_ptr<Vector> >& x);
 };
 
 }

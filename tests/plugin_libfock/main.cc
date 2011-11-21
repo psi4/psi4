@@ -69,6 +69,12 @@ read_options(std::string name, Options &options){
          *   Negative - Triplets
          * -*/
         options.add("CIS_AD_STATES", new ArrayType());
+        /*- Which tasks to run CPHF For
+         *  Valid choices:
+         *  -Polarizability
+         * -*/
+        options.add("CPHF_TASKS", new ArrayType());
+
     } 
     if(name == "JK" || options.read_globals()) {
         /*- The amount of information printed
@@ -143,6 +149,9 @@ plugin_libfock(Options &options)
         cis->compute_energy();
     } else if (options.get_str("MODULE") == "RCPHF") {
         boost::shared_ptr<RCPHF> cphf(new RCPHF());
+        for (int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+            cphf->add_task(options["CPHF_TASKS"][i].to_string());
+        }
         cphf->compute_energy();
     }
 

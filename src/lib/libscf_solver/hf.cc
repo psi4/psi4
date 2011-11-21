@@ -73,7 +73,6 @@ void HF::common_init()
     scf_type_ = options_.get_str("SCF_TYPE");
 
     H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
-    S_.reset(factory_->create_matrix("S"));
     X_.reset(factory_->create_matrix("X"));
 
     nmo_ = 0;
@@ -313,7 +312,6 @@ void HF::finalize()
 
     dump_to_checkpoint();
 
-    S_.reset();
     //Sphalf_.reset();
     X_.reset();
     H_.reset();
@@ -541,9 +539,7 @@ void HF::form_Shalf()
 {
     // ==> SYMMETRIC ORTHOGONALIZATION <== //
 
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    boost::shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
-    so_overlap->compute(S_);
+    // S_ is computed by wavefunction
 
     SharedMatrix eigvec= factory_->create_shared_matrix("L");
     SharedMatrix eigtemp= factory_->create_shared_matrix("Temp");
