@@ -1,38 +1,43 @@
-#! He2+ FCI/cc-pVDZ Transition Dipole Moment
+#! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
 
-refnuc   =   0.705569665333  #TEST
-refscf   =  -4.816603104817  #TEST
-refci1   =  -4.883262086636  #TEST
-refcorr1 =  refci1 - refscf  #TEST
-refci2   =  -4.879491772279  #TEST
-refcorr2 =  refci2 - refscf  #TEST
-refDipHF =   0.00000000      #TEST
+refnuc   =   4.919538563221   #TEST
+refscf   = -25.943614320921   #TEST
+refci1   = -26.0272269234496  #TEST
+refcorr1 =  refci1 - refscf   #TEST
+refci2   = -25.8061525481186  #TEST
+refcorr2 =  refci2 - refscf   #TEST
+refDipHF =  -2.038258349512   #TEST
 
-refDipCI1=   0.000000000000  #TEST
-refDipCI2=   0.000000000000  #TEST
-refTDM   =   7.180360421465  #TEST
+refDipCI1=   -2.110788533423  #TEST
+refDipCI2=    9.416367429315  #TEST
+refTDM   =    1.604595654372  #TEST
 
-molecule he2p {
+molecule bh_h2p {
 1 2
-He 
-He 1 3.0
-symmetry c2v
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
 }
 
 set {
-wfn detci
-reference rohf
-fci true
-basis cc-pVDZ 
-docc [1,0,0,0]
-socc [1,0,0,0]
-dipmom true
-num_roots 2
+  wfn detci
+  reference rohf
+  fci true
+  basis cc-pVDZ 
+  docc [3,0,0,0]
+  socc [1,0,0,0]
+  freeze_core true
+  dipmom true
+  num_roots 2
 }
+
+set scf d_converge 10
+set detci e_converge 8
 
 thisenergy = energy('detci')
 
-compare_values(refnuc, he2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
 compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
 compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
 compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
