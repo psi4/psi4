@@ -23,35 +23,35 @@ IntegralTransform::presort_mo_tpdm_restricted()
     int nDocc = 0;
     for(int h = 0; h < _nirreps; ++h) nDocc += _clsdpi[h];
 
-    // The IWL TPDM comes in QT-ordered, but we're effectively using Pitzer order in the DPD structures
-    int *qtToPitzer = new int[_nmo];
-    int qtCount = 0;
-    // The frozen core orbitals
-    int pitzerOffset = 0;
-    for(int h = 0; h < _nirreps; ++h){
-        for(int pitzer = 0; pitzer < _frzcpi[h]; ++pitzer){
-            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
-        }
-        pitzerOffset += _mopi[h];
-    }
-    // The doubly occupied orbitals
-    pitzerOffset = 0;
-    for(int h = 0; h < _nirreps; ++h){
-        pitzerOffset += _frzcpi[h];
-        for(int pitzer = 0; pitzer < _clsdpi[h] - _frzcpi[h]; ++pitzer){
-            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
-        }
-        pitzerOffset += _mopi[h] - _frzcpi[h];
-    }
-    // The active virtuals
-    pitzerOffset = 0;
-    for(int h = 0; h < _nirreps; ++h){
-        pitzerOffset += _clsdpi[h];
-        for(int pitzer = 0; pitzer < _mopi[h] - _clsdpi[h] - _frzvpi[h]; ++pitzer){
-            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
-        }
-        pitzerOffset += _mopi[h] - _clsdpi[h];
-    }
+//    // The IWL TPDM comes in QT-ordered, but we're effectively using Pitzer order in the DPD structures
+//    int *qtToPitzer = new int[_nmo];
+//    int qtCount = 0;
+//    // The frozen core orbitals
+//    int pitzerOffset = 0;
+//    for(int h = 0; h < _nirreps; ++h){
+//        for(int pitzer = 0; pitzer < _frzcpi[h]; ++pitzer){
+//            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
+//        }
+//        pitzerOffset += _mopi[h];
+//    }
+//    // The doubly occupied orbitals
+//    pitzerOffset = 0;
+//    for(int h = 0; h < _nirreps; ++h){
+//        pitzerOffset += _frzcpi[h];
+//        for(int pitzer = 0; pitzer < _clsdpi[h] - _frzcpi[h]; ++pitzer){
+//            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
+//        }
+//        pitzerOffset += _mopi[h] - _frzcpi[h];
+//    }
+//    // The active virtuals
+//    pitzerOffset = 0;
+//    for(int h = 0; h < _nirreps; ++h){
+//        pitzerOffset += _clsdpi[h];
+//        for(int pitzer = 0; pitzer < _mopi[h] - _clsdpi[h] - _frzvpi[h]; ++pitzer){
+//            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
+//        }
+//        pitzerOffset += _mopi[h] - _clsdpi[h];
+//    }
 
     if(_tpdmAlreadyPresorted){
         if(_print>5)
@@ -147,10 +147,10 @@ IntegralTransform::presort_mo_tpdm_restricted()
             lastbuf = iwl->last_buffer();
             for(int index = 0; index < iwl->buffer_count(); ++index){
                 int labelIndex = 4*index;
-                int p = qtToPitzer[abs((int) lblptr[labelIndex++])];
-                int q = qtToPitzer[(int) lblptr[labelIndex++]];
-                int r = qtToPitzer[(int) lblptr[labelIndex++]];
-                int s = qtToPitzer[(int) lblptr[labelIndex++]];
+                int p = _aCorrToPitzer[abs((int) lblptr[labelIndex++])];
+                int q = _aCorrToPitzer[(int) lblptr[labelIndex++]];
+                int r = _aCorrToPitzer[(int) lblptr[labelIndex++]];
+                int s = _aCorrToPitzer[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
 //                fprintf(outfile, "%d %d %d %d -> %d %d %d %d %lf\n",p,q,r,s,qtToPitzer[p],qtToPitzer[q],qtToPitzer[r],qtToPitzer[s],value);
                 idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
@@ -171,7 +171,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     _psio->open(PSIF_MO_TPDM, PSIO_OPEN_OLD);
     _psio->close(PSIF_MO_TPDM, _keepIwlMoTpdm);
 
-    delete [] qtToPitzer;
+//    delete [] qtToPitzer;
     free_int_matrix(bucketMap);
 
     for(int n=0; n < nBuckets; ++n) {
@@ -296,7 +296,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
                 int r = _aCorrToPitzer[(int) lblptr[labelIndex++]];
                 int s = _aCorrToPitzer[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
+                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true, true);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
@@ -388,7 +388,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
                 int r = _bCorrToPitzer[(int) lblptr[labelIndex++]];
                 int s = _bCorrToPitzer[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
+                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true, true);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);

@@ -284,6 +284,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             else
                 thisBucketRows = (n < nBuckets-1) ? rowsPerBucket : rowsLeft;
 
+
             dpd_buf4_mat_irrep_init_block(&J1, h, rowsPerBucket);
             dpd_buf4_mat_irrep_rd_block(&J1, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
@@ -313,6 +314,7 @@ IntegralTransform::backtransform_tpdm_unrestricted()
             dpd_buf4_mat_irrep_init_block(&J2, h, rowsPerBucket);
             dpd_buf4_mat_irrep_rd_block(&J2, h, n*rowsPerBucket, thisBucketRows);
             for(int pq=0; pq < thisBucketRows; pq++) {
+                int PQ = n * rowsPerBucket + pq; // The absolute pq value
                 for(int Gr=0; Gr < _nirreps; Gr++) {
                     // Transform ( n n | a a ) -> ( n n | a n )
                     int Gs = h^Gr;
@@ -334,12 +336,11 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                                 TMP[0], _nso, 1.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
             dpd_buf4_mat_irrep_close_block(&J2, h, rowsPerBucket);
+            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
         dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
     }
-//    dpd_buf4_print(&K,outfile, 1);
     dpd_buf4_close(&K);
     dpd_buf4_close(&J1);
     dpd_buf4_close(&J2);
