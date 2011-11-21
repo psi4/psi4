@@ -1009,6 +1009,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cisd-sp-2/Makefile
           tests/fci-h2o/Makefile
           tests/fci-h2o-2/Makefile
+          tests/fci-h2o-fzcv/Makefile
           tests/fci-dipole/Makefile
           tests/fci-tdm/Makefile
           tests/cc1/Makefile
