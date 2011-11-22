@@ -29,7 +29,8 @@ struct OPT_PARAMS {
   double rfo_normalization_min; // small threshold for rfo normalization
 
   enum OPT_TYPE {MIN, TS, IRC} opt_type;
-  enum STEP_TYPE {NR, RFO, P_RFO} step_type; // Newton-Raphson (NR) or RFO step
+  // Newton-Raphson (NR), rational function optimization step, steepest descent step
+  enum STEP_TYPE {NR, RFO, P_RFO, SD} step_type;
 
   // Hessian guess
 
@@ -67,6 +68,8 @@ struct OPT_PARAMS {
 
   bool efp_fragments;
   bool efp_fragments_only;
+
+  int consecutive_backsteps_allowed;
 
 // ** Unlikely to need modified **
 

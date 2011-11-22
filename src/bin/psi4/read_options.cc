@@ -1815,7 +1815,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Whether to do a Newton-Raphson step, or an RFO step; allowed values = {NR, RFO} -*/
-      options.add_str("STEP_TYPE", "RFO", "RFO NR");
+      options.add_str("STEP_TYPE", "RFO", "RFO NR SD");
       /*- Maximum step size in bohr or radian along an internal coordinate {double} -*/
       options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
       /*- Whether to 'follow' the initial RFO vector after the first step {true, false} -*/
@@ -1876,6 +1876,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- Define IRC mapping direction {FORWARD, BACKWARD} -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
+      /*- Set number of consecutive backward steps allowed in optimization -*/
+      options.add_int("CONSECUTIVE_BACKSTEPS", 1);
   }
   if(name == "FINDIF"|| options.read_globals()) {
       /*- Number of points for finite-differences (3 or 5) -*/
