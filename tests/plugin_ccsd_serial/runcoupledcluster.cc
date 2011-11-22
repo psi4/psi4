@@ -40,8 +40,9 @@ namespace psi { namespace ccenergy {
   int **cacheprep_rhf(int level, int *cachefiles);
 }}
 
-// wrapper to crawford's triples code
+// wrapper to crawford's triples code and my triples code
 namespace psi{
+  PsiReturnType tdc_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
 }
 
@@ -61,15 +62,21 @@ void RunCoupledCluster(Options &options){
   status = ccsd->CCSDIterations();
   tstop();
 
-  if (options.get_str("WFN")=="CCSD_T"){
+  if (options.get_bool("COMPUTE_TRIPLES")){
      free(ccsd->tempt);
      free(ccsd->tempv);
      free(ccsd->integrals);
+     free(ccsd->w1);
+     free(ccsd->I1);
+     free(ccsd->I1p);
+     free(ccsd->diisvec);
+     tstart();
      status = psi::triples(ccsd,options);
      if (status == Failure){
         throw PsiException( 
            "Whoops, the (T) correction died.",__FILE__,__LINE__);
      }
+     tstop();
   }
 
   ccsd.reset();
