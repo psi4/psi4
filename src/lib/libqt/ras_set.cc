@@ -9,6 +9,7 @@
 #include <libciomr/libciomr.h>
 #include "qt.h"
 #include <psifiles.h>
+#include <liboptions/liboptions.h>
 
 namespace psi {
 extern FILE* outfile;
@@ -308,9 +309,8 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
              int *restrdocc, int *restruocc, int **ras_opi, int *order,
              int ras_type, int hoffmann, Options& options)
 {
-#if 0
   int i, irrep, point, tmpi, cnt=0;
-  int errcod, errbad, parsed_ras1=0, parsed_ras2=0, do_ras4;
+  int errcod, errbad=0, parsed_ras1=0, parsed_ras2=0, do_ras4;
   int parsed_restr_uocc=0;
   int *used, *offset, **tras;
   int *tmp_frdocc, *tmp_fruocc;
@@ -589,7 +589,6 @@ int ras_set2(int nirreps, int nmo, int delete_fzdocc,
   free_int_matrix(tras);
 
   return(!errbad);
-#endif
 }
 
 }

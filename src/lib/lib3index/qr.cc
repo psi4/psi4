@@ -6,7 +6,7 @@
 
 namespace psi {
 
-QR::QR(boost::shared_ptr<Matrix> A, double delta) :
+QR::QR(SharedMatrix A, double delta) :
     A_(A), delta_(delta), print_(0), debug_(0)
 {
     if (A_->nirrep() != 1)
@@ -28,7 +28,7 @@ void QR::form_QR()
 
     if (debug_) {
 
-        boost::shared_ptr<Matrix> R2(new Matrix("R",n,n));
+        SharedMatrix R2(new Matrix("R",n,n));
         R2->copy(A_);
         double** R2p = R2->pointer();
 
@@ -56,7 +56,7 @@ void QR::form_QR()
     }
 
     // Combination of R and reflector generators
-    boost::shared_ptr<Matrix> Rtemp(new Matrix("R",n,n));
+    SharedMatrix Rtemp(new Matrix("R",n,n));
     Rtemp->copy(A_);
     double** Rp = Rtemp->pointer();
 
@@ -151,7 +151,7 @@ void QR::form_QR()
     }
 
     // ==> Q <== //
-    Q_ = boost::shared_ptr<Matrix>(new Matrix("Q",nQ,n));
+    Q_ = SharedMatrix(new Matrix("Q",nQ,n));
     double** Qp = Q_->pointer();
 
     for (int i = 0; i < nQ; i++) {
@@ -185,7 +185,7 @@ void QR::form_QR()
 
     // Repackage R
 
-    R_ = boost::shared_ptr<Matrix>(new Matrix("R",nQ,n));
+    R_ = SharedMatrix(new Matrix("R",nQ,n));
     double** R3p = R_->pointer();
 
     for (int i = 0; i < nQ; i++) {
@@ -203,9 +203,9 @@ void QR::form_PN()
     int nQ = Q_->rowspi()[0];
     int n = Q_->colspi()[0];
 
-    boost::shared_ptr<Matrix> T(new Matrix("T",nQ,n));
-    boost::shared_ptr<Matrix> D(new Matrix("D",nQ,nQ));
-    boost::shared_ptr<Matrix> V(new Matrix("V",nQ,nQ));
+    SharedMatrix T(new Matrix("T",nQ,n));
+    SharedMatrix D(new Matrix("D",nQ,nQ));
+    SharedMatrix V(new Matrix("V",nQ,nQ));
     boost::shared_ptr<Vector> d(new Vector("d",nQ));
 
     double** Ap = A_->pointer();
@@ -235,7 +235,7 @@ void QR::form_PN()
     }
 
     // Build the P/N vectors
-    N_ = boost::shared_ptr<Matrix>(new Matrix("N",nN,n));
+    N_ = SharedMatrix(new Matrix("N",nN,n));
     if (nN > 0) {
         double** Np = N_->pointer();
         for (int i = 0; i < nN; i++) {
@@ -244,7 +244,7 @@ void QR::form_PN()
         C_DGEMM('T','N',nN,n,nQ,1.0,&Vp[0][0],nQ,Qp[0],n,0.0,Np[0],n);
     }
 
-    P_ = boost::shared_ptr<Matrix>(new Matrix("P",nP,n));
+    P_ = SharedMatrix(new Matrix("P",nP,n));
     if (nP > 0) {
         double** Pp = P_->pointer();
         for (int i = nN; i < nQ; i++) {

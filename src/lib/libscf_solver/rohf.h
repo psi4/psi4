@@ -13,17 +13,17 @@ namespace psi { namespace scf {
 
 class ROHF : public HF {
 protected:
-    boost::shared_ptr<Matrix> Feff_;
-    boost::shared_ptr<Matrix> soFeff_;
-    boost::shared_ptr<Matrix> Dt_old_;
-    boost::shared_ptr<Matrix> Dt_;
-    boost::shared_ptr<Matrix> Ct_;
-    boost::shared_ptr<Matrix> Ga_;
-    boost::shared_ptr<Matrix> Gb_;
-    boost::shared_ptr<Matrix> Ka_;
-    boost::shared_ptr<Matrix> Kb_;
-    boost::shared_ptr<Matrix> moFa_;
-    boost::shared_ptr<Matrix> moFb_;
+    SharedMatrix Feff_;
+    SharedMatrix soFeff_;
+    SharedMatrix Dt_old_;
+    SharedMatrix Dt_;
+    SharedMatrix Ct_;
+    SharedMatrix Ga_;
+    SharedMatrix Gb_;
+    SharedMatrix Ka_;
+    SharedMatrix Kb_;
+    SharedMatrix moFa_;
+    SharedMatrix moFb_;
 
     void form_initialF();
     void form_initial_C();

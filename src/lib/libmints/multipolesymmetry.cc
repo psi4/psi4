@@ -110,9 +110,9 @@ string OperatorSymmetry::name_of_component(int i)
     return form_suffix(components[0], components[1], components[2]);
 }
 
-vector<boost::shared_ptr<Matrix> > OperatorSymmetry::create_matrices(const std::string &basename)
+vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basename)
 {
-    vector<boost::shared_ptr<Matrix> > matrices;
+    vector<SharedMatrix > matrices;
     string name;
 
     for (int i=0; i<INT_NCART(order_); ++i) {

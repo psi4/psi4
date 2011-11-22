@@ -6,6 +6,8 @@
 #include <map>
 #include <string>
 
+#include "typedefs.h"
+
 namespace boost {
 template<class T> class shared_ptr;
 // Forward declarations for boost.python used in the extract_subsets
@@ -31,14 +33,22 @@ class BasisSet;
 *  for transition dipoles.
 *
 *  Therefore, the Prop object explicitly stores a mutable set of D/C
-*   matrices in the SO basis, and knows how to transform between them at will
-*   Additionally, while these are initially ripped from the constructor's
-*   wavefunction, substitutions may be made later, to use different orbitals
-*   or densities.
+*  matrices in the SO basis, and knows how to transform between them at will
+*  Additionally, while these are initially ripped from the constructor's
+*  wavefunction, substitutions may be made later, to use different orbitals
+*  or densities.
 */
 class Prop {
 
 protected:
+    /// Print flag
+    int print_;
+    /// Debug flag
+    int debug_;
+
+    /// The title of this Prop object, for use in saving info
+    std::string title_;
+
     /// The set of tasks to complete
     std::set<std::string> tasks_;
 
@@ -53,38 +63,25 @@ protected:
     /// The matrix factory for this wavefunction's basisset (SO)
     boost::shared_ptr<MatrixFactory> factory_;
 
-    /**
-    * The Density/Occupation matrices and transformers
-    * Calling get on a beta matrix routine will throw if
-    * this wavefunction is restricted
-    * If restricted, Db_so_.get() == Da_so_.get(), and same for C
-    **/
-
     /// The AO to USO matrix
-    boost::shared_ptr<Matrix> AO2USO_;
+    SharedMatrix AO2USO_;
 
+    /**
+    * Internally, data is held in the SO basis in Pitzer order
+    */
+
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_a_;
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_b_;
     /// The alpha density matrix in the SO basis
-    boost::shared_ptr<Matrix> Da_so_;
+    SharedMatrix Da_so_;
     /// The beta density matrix in the SO basis
-    boost::shared_ptr<Matrix> Db_so_;
+    SharedMatrix Db_so_;
     /// The alpha C matrix in the SO basis
-    boost::shared_ptr<Matrix> Ca_so_;
+    SharedMatrix Ca_so_;
     /// The beta C matrix in the SO basis
-    boost::shared_ptr<Matrix> Cb_so_;
-
-    /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Da_ao();
-    /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Db_ao();
-    /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Ca_ao();
-    /// The beta C matrix in the AO (Spherical Harmonics, C1) basis
-    boost::shared_ptr<Matrix> Cb_ao();
-
-    /// The alpha density matrix in the MO basis
-    boost::shared_ptr<Matrix> Da_mo();
-    /// The beta density matrix in the MO basis
-    boost::shared_ptr<Matrix> Db_mo();
+    SharedMatrix Cb_so_;
 
     /// Common initialization
     void common_init();
@@ -93,32 +90,115 @@ protected:
     virtual void print_header() = 0;
 
 public:
+
+    /// Build a Prop object with C, epsilon, and restricted buit from wfn
     Prop(boost::shared_ptr<Wavefunction> wfn);
+    /// Virtual destructor
     virtual ~Prop();
 
-    /**
-    * The Density/Occupation matrix updaters
-    * Calling set on a beta matrix routine will throw if
-    * this wavefunction is restricted
-    **/
-    void set_Da_so(boost::shared_ptr<Matrix> Da);
-    void set_Db_so(boost::shared_ptr<Matrix> Db);
-    void set_Ca_so(boost::shared_ptr<Matrix> Ca);
-    void set_Cb_so(boost::shared_ptr<Matrix> Cb);
-    void set_Da_ao(boost::shared_ptr<Matrix> Da);
-    void set_Db_ao(boost::shared_ptr<Matrix> Db);
-    void set_Ca_ao(boost::shared_ptr<Matrix> Ca);
-    void set_Cb_ao(boost::shared_ptr<Matrix> Cb);
-    void set_Da_mo(boost::shared_ptr<Matrix> Da);
-    void set_Db_mo(boost::shared_ptr<Matrix> Db);
+    // => Wavefunction Modifiers (rarely called, C is usually fixed at HF) <= //
+
+    // Change restricted flag. Resets C/D/epsilon matrices from wfn
+    void set_wavefunction(boost::shared_ptr<Wavefunction> wfn);
+    // Change restricted flag. Resets C/D/epsilon matrices from wfn
+    void set_restricted(bool restricted);
+    // Set alpha eigenvalues, MO pitzer order basis
+    void set_epsilon_a(SharedVector epsilon_a);
+    // Set beta eigenvalues, MO pitzer order basis. Throws if restricted
+    void set_epsilon_b(SharedVector epsilon_a);
+    // Set alpha C matrix, SO/MO pitzer order basis.
+    void set_Ca(SharedMatrix Ca);
+    // Set beta C matrix, SO/MO pitzer order basis. Throws if restricted
+    void set_Cb(SharedMatrix Cb);
+
+    // => Set OPDM/TDM/DDM (often called). These need not be totally symmetric. Note, you are setting Da and/or Db, I do the adding to Dt  <= //
+
+    // TODO Add symmetry is irrep number
+    void set_Da_ao(SharedMatrix Da, int symmetry = 0);
+    void set_Db_ao(SharedMatrix Db, int symmetry = 0);
+    void set_Da_so(SharedMatrix Da);
+    void set_Db_so(SharedMatrix Db);
+    void set_Da_mo(SharedMatrix Da);
+    void set_Db_mo(SharedMatrix Db);
+
+    // => Get routines (useful to quickly change bases) <= //
+
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_a();
+    /// The alpha eigenvalues in the MO basis (used to form Pitzer ordering)
+    SharedVector epsilon_b();
+
+    /// The alpha C matrix in the SO basis
+    SharedMatrix Ca_so();
+    /// The beta C matrix in the SO basis
+    SharedMatrix Cb_so();
+    /// The alpha C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
+    SharedMatrix Ca_ao();
+    /// The beta C matrix in the AO (Spherical Harmonics, C1) basis. Ordered by eigenvalue
+    SharedMatrix Cb_ao();
+
+    /// The alpha density matrix in the AO (Spherical Harmonics, C1) basis
+    SharedMatrix Da_ao();
+    /// The beta density matrix in the AO (Spherical Harmonics, C1) basis
+    SharedMatrix Db_ao();
+    /// The alpha density matrix in the SO basis
+    SharedMatrix Da_so();
+    /// The beta density matrix in the SO basis
+    SharedMatrix Db_so();
+    /// The alpha density matrix in the MO basis
+    SharedMatrix Da_mo();
+    /// The beta density matrix in the MO basis
+    SharedMatrix Db_mo();
+
+    /// The total/spin density matrix in the ao basis, depending on if true or false
+    SharedMatrix Dt_ao(bool total = true);
+    /// The total/spin density matrix in the ao basis, depending on if true or false
+    SharedMatrix Dt_so(bool total = true);
+    /// The total/spin density matrix in the ao basis, depending on if true or false
+    SharedMatrix Dt_mo(bool total = true);
+
+    /// The alpha natural orbital occupations and orbitals in the MO basis
+    std::pair<SharedMatrix, SharedVector> Na_mo();
+    /// The beta natural orbital occupations and orbitals in the MO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_mo();
+    /// The total natural orbital occupations and orbitals in the MO basis
+    std::pair<SharedMatrix, SharedVector> Nt_mo();
+    /// The alpha natural orbital occupations and orbitals in the SO basis
+    std::pair<SharedMatrix, SharedVector> Na_so();
+    /// The beta natural orbital occupations and orbitals in the SO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_so();
+    /// The total natural orbital occupations and orbitals in the SO basis
+    std::pair<SharedMatrix, SharedVector> Nt_so();
+    /// The alpha natural orbital occupations and orbitals in the AO basis
+    std::pair<SharedMatrix, SharedVector> Na_ao();
+    /// The beta natural orbital occupations and orbitals in the AO basis. Throws if restricted
+    std::pair<SharedMatrix, SharedVector> Nb_ao();
+    /// The total natural orbital occupations and orbitals in the AO basis
+    std::pair<SharedMatrix, SharedVector> Nt_ao();
+
+    // => Some integral helpers <= //
+    SharedMatrix overlap_so();
+
+    // => Queue/Compute Routines <= //
 
     /// Add a single task to the queue
     void add(const std::string& task);
     /// Add a set of tasks to the queue
     void add(std::vector<std::string> tasks);
+    /// Clear task queue
+    void clear();
+
+    /// Set title for use in saving information
+    void set_title(const std::string& title) { title_ = title; }
 
     /// Compute properties
     virtual void compute() = 0;
+
+    // => Utility Routines <= //
+
+    void set_print(int print) { print_; }
+    void set_debug(int debug) { debug_; }
+
 };
 
 
@@ -136,13 +216,9 @@ protected:
 
     // Compute routines
     /// Compute dipole
-    void compute_dipole();
+    void compute_dipole(bool transition = false);
     /// Compute quadrupole
-    void compute_quadrupole();
-    /// Compute octupole
-    void compute_octupole();
-    /// Compute hexadecapole
-    void compute_hexadecapole();
+    void compute_quadrupole(bool transition = false);
     /// Compute mo extents
     void compute_mo_extents();
     /// Compute Mulliken Charges
@@ -153,6 +229,11 @@ protected:
     void compute_mayer_indices();
     /// Compute Wiberg Bond Indices using Lowdin Orbitals (symmetrically orthogonal basis)
     void compute_wiberg_lowdin_indices();
+    /// Compute/display natural orbital occupations around the bandgap. Displays max_num above and below the bandgap
+    void compute_no_occupations(int max_num = 3);
+    /// Compute electric field and electric field gradients
+    void compute_electric_field_and_gradients();
+
 public:
     /// Constructor, uses globals
     OEProp(boost::shared_ptr<Wavefunction> wfn);
@@ -164,6 +245,7 @@ public:
     /// Python issue
     void oepy_add(const std::string& task) { add(task); }
     void oepy_compute() { compute(); }
+    void oepy_set_title(const std::string& title) { set_title(title); }
 
     /// Compute and print/save the properties
     void compute();
@@ -210,10 +292,10 @@ protected:
     double** temp_tens_;
 
     /// AO basis matrices (everything on grids is AO)
-    boost::shared_ptr<Matrix> Da_ao_;
-    boost::shared_ptr<Matrix> Db_ao_;
-    boost::shared_ptr<Matrix> Ca_ao_;
-    boost::shared_ptr<Matrix> Cb_ao_;
+    SharedMatrix Da_ao_;
+    SharedMatrix Db_ao_;
+    SharedMatrix Ca_ao_;
+    SharedMatrix Cb_ao_;
     /// irrep offsets (for orbitals)
     int irrep_offsets_[8];
 
@@ -230,7 +312,7 @@ protected:
     /// Print header
     void print_header();
 
-    // Deprecated 
+    // Deprecated
    // // Compute routines (these all work on a block of points)
    // /// Compute mo values
    // void compute_mos(boost::shared_ptr<GridBlock> g, unsigned long int offset);

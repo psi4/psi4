@@ -15,6 +15,8 @@
 #include <psi4-dec.h>
 #include <psiconfig.h>
 
+#include <boost/foreach.hpp>
+
 #include "matrix_distributed.h"
 
 using namespace boost;
@@ -135,23 +137,30 @@ void MintsHelper::integrals()
     // Compute and dump one-electron SO integrals.
 
     // Overlap
-    boost::shared_ptr<OneBodySOInt> overlap(integral_->so_overlap());
-    boost::shared_ptr<Matrix>       overlap_mat(factory_->create_matrix(PSIF_SO_S));
-    overlap->compute(overlap_mat);
+    SharedMatrix overlap_mat = so_overlap();
     overlap_mat->save(psio_, PSIF_OEI);
 
     // Kinetic
-    boost::shared_ptr<OneBodySOInt> kinetic(integral_->so_kinetic());
-    boost::shared_ptr<Matrix>       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
-    kinetic->compute(kinetic_mat);
+    SharedMatrix kinetic_mat = so_kinetic();
     kinetic_mat->save(psio_, PSIF_OEI);
 
     // Potential
-    boost::shared_ptr<OneBodySOInt> potential(integral_->so_potential());
-    boost::shared_ptr<Matrix>       potential_mat(factory_->create_matrix(PSIF_SO_V));
-    potential->compute(potential_mat);
+    SharedMatrix potential_mat = so_potential();
     potential_mat->save(psio_, PSIF_OEI);
 
+    /*
+    // Dipoles
+    std::vector<SharedMatrix> dipole_mats = so_dipole();
+    BOOST_FOREACH(SharedMatrix m, dipole_mats) {
+        m->save(psio_, PSIF_OEI);
+    }
+
+    // Quadrupoles
+    std::vector<SharedMatrix> quadrupole_mats = so_quadrupole();
+    BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
+        m->save(psio_, PSIF_OEI);
+    }
+    */
     if (Process::environment.options.get_int("PRINT") > 3) {
         overlap_mat->print();
         kinetic_mat->print();
@@ -204,19 +213,19 @@ void MintsHelper::one_electron_integrals()
 
     // Overlap
     boost::shared_ptr<OneBodySOInt> overlap(integral_->so_overlap());
-    boost::shared_ptr<Matrix>       overlap_mat(factory_->create_matrix(PSIF_SO_S));
+    SharedMatrix       overlap_mat(factory_->create_matrix(PSIF_SO_S));
     overlap->compute(overlap_mat);
     overlap_mat->save(psio_, PSIF_OEI);
 
     // Kinetic
     boost::shared_ptr<OneBodySOInt> kinetic(integral_->so_kinetic());
-    boost::shared_ptr<Matrix>       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
+    SharedMatrix       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
     kinetic->compute(kinetic_mat);
     kinetic_mat->save(psio_, PSIF_OEI);
 
     // Potential
     boost::shared_ptr<OneBodySOInt> potential(integral_->so_potential());
-    boost::shared_ptr<Matrix>       potential_mat(factory_->create_matrix(PSIF_SO_V));
+    SharedMatrix       potential_mat(factory_->create_matrix(PSIF_SO_V));
     potential->compute(potential_mat);
     potential_mat->save(psio_, PSIF_OEI);
 }
@@ -231,36 +240,36 @@ void MintsHelper::integral_hessians()
     throw FeatureNotImplemented("libmints", "MintsHelper::integral_hessians", __FILE__, __LINE__);
 }
 
-boost::shared_ptr<Matrix> MintsHelper::ao_overlap()
+SharedMatrix MintsHelper::ao_overlap()
 {
     // Overlap
     boost::shared_ptr<OneBodyAOInt> overlap(integral_->ao_overlap());
-    boost::shared_ptr<Matrix>       overlap_mat(new Matrix(PSIF_AO_S, basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       overlap_mat(new Matrix(PSIF_AO_S, basisset_->nbf (), basisset_->nbf ()));
     overlap->compute(overlap_mat);
     overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::ao_kinetic()
+SharedMatrix MintsHelper::ao_kinetic()
 {
     boost::shared_ptr<OneBodyAOInt> T(integral_->ao_kinetic());
-    boost::shared_ptr<Matrix>       kinetic_mat(new Matrix( basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       kinetic_mat(new Matrix( basisset_->nbf (), basisset_->nbf ()));
     T->compute(kinetic_mat);
     return kinetic_mat;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::ao_potential()
+SharedMatrix MintsHelper::ao_potential()
 {
     boost::shared_ptr<OneBodyAOInt> V(integral_->ao_potential());
-    boost::shared_ptr<Matrix>       potential_mat(new Matrix(basisset_->nbf (), basisset_->nbf ()));
+    SharedMatrix       potential_mat(new Matrix(basisset_->nbf (), basisset_->nbf ()));
     V->compute(potential_mat);
     return potential_mat;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega)
+SharedMatrix MintsHelper::ao_erf_eri(double omega)
 {
     int nbf = basisset_->nbf();
-    boost::shared_ptr<Matrix> I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
+    SharedMatrix I(new Matrix("AO ERF ERI Integrals", nbf*nbf, nbf*nbf));
 
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->erf_eri(omega));
     double** Ip = I->pointer();
@@ -290,10 +299,10 @@ boost::shared_ptr<Matrix> MintsHelper::ao_erf_eri(double omega)
     return I;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::ao_eri()
+SharedMatrix MintsHelper::ao_eri()
 {
     int nbf = basisset_->nbf();
-    boost::shared_ptr<Matrix> I(new Matrix("AO ERI Tensor", nbf*nbf, nbf*nbf));
+    SharedMatrix I(new Matrix("AO ERI Tensor", nbf*nbf, nbf*nbf));
 
     boost::shared_ptr<TwoBodyAOInt> ints(integral_->eri());
     double** Ip = I->pointer();
@@ -322,34 +331,34 @@ boost::shared_ptr<Matrix> MintsHelper::ao_eri()
 
     return I;
 }
-boost::shared_ptr<Matrix> MintsHelper::mo_erf_eri(double omega, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
-                                                                boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4)
+SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2,
+                                                                SharedMatrix C3, SharedMatrix C4)
 {
-    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_erf_eri(omega), C1, C2, C3, C4);
+    SharedMatrix mo_ints = mo_eri_helper(ao_erf_eri(omega), C1, C2, C3, C4);
     mo_ints->set_name("MO ERF ERI Tensor");
     return mo_ints;
 }
-boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
-                                              boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4)
+SharedMatrix MintsHelper::mo_eri(SharedMatrix C1, SharedMatrix C2,
+                                              SharedMatrix C3, SharedMatrix C4)
 {
-    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_eri(), C1, C2, C3, C4);
+    SharedMatrix mo_ints = mo_eri_helper(ao_eri(), C1, C2, C3, C4);
     mo_ints->set_name("MO ERI Tensor");
     return mo_ints;
 }
-boost::shared_ptr<Matrix> MintsHelper::mo_erf_eri(double omega, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
+SharedMatrix MintsHelper::mo_erf_eri(double omega, SharedMatrix Co, SharedMatrix Cv)
 {
-    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_erf_eri(omega), Co, Cv);
+    SharedMatrix mo_ints = mo_eri_helper(ao_erf_eri(omega), Co, Cv);
     mo_ints->set_name("MO ERF ERI Tensor");
     return mo_ints;
 }
-boost::shared_ptr<Matrix> MintsHelper::mo_eri(boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
+SharedMatrix MintsHelper::mo_eri(SharedMatrix Co, SharedMatrix Cv)
 {
-    boost::shared_ptr<Matrix> mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
+    SharedMatrix mo_ints = mo_eri_helper(ao_eri(), Co, Cv);
     mo_ints->set_name("MO ERI Tensor");
     return mo_ints;
 }
-boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
-                                                                                    boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4)
+SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                                                                    SharedMatrix C3, SharedMatrix C4)
 {
     int nso = basisset_->nbf();
     int n1 = C1->colspi()[0];
@@ -363,19 +372,19 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> I
     double** C4p = C4->pointer();
 
     double** Isop = Iso->pointer();
-    boost::shared_ptr<Matrix> I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
+    SharedMatrix I2(new Matrix("MO ERI Tensor", n1 * nso, nso * nso));
     double** I2p = I2->pointer();
 
     C_DGEMM('T','N',n1,nso * (ULI) nso * nso,nso,1.0,C1p[0],n1,Isop[0],nso * (ULI) nso * nso,0.0,I2p[0],nso * (ULI) nso * nso);
 
     Iso.reset();
-    boost::shared_ptr<Matrix> I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
+    SharedMatrix I3(new Matrix("MO ERI Tensor", n1 * nso, nso * n3));
     double** I3p = I3->pointer();
 
     C_DGEMM('N','N',n1 * (ULI) nso * nso,n3,nso,1.0,I2p[0],nso,C3p[0],n3,0.0,I3p[0],n3);
 
     I2.reset();
-    boost::shared_ptr<Matrix> I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
+    SharedMatrix I4(new Matrix("MO ERI Tensor", nso * n1, n3 * nso));
     double** I4p = I4->pointer();
 
     for (int i = 0; i < n1; i++) {
@@ -389,19 +398,19 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> I
     }
 
     I3.reset();
-    boost::shared_ptr<Matrix> I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
+    SharedMatrix I5(new Matrix("MO ERI Tensor", n2 * n1, n3 * nso));
     double** I5p = I5->pointer();
 
     C_DGEMM('T','N',n2,n1 * (ULI) n3 * nso, nso,1.0,C2p[0],n2,I4p[0],n1*(ULI)n3*nso,0.0,I5p[0],n1*(ULI)n3*nso);
 
     I4.reset();
-    boost::shared_ptr<Matrix> I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
+    SharedMatrix I6(new Matrix("MO ERI Tensor", n2 * n1, n3 * n4));
     double** I6p = I6->pointer();
 
     C_DGEMM('N','N',n2 * (ULI) n1 * n3, n4, nso,1.0,I5p[0],nso,C4p[0],n4,0.0,I6p[0],n4);
 
     I5.reset();
-    boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", n1 * n2, n3 * n4));
+    SharedMatrix Imo(new Matrix("MO ERI Tensor", n1 * n2, n3 * n4));
     double** Imop = Imo->pointer();
 
     for (int i = 0; i < n1; i++) {
@@ -416,7 +425,7 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> I
 
     return Imo;
 }
-boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv)
+SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv)
 {
     int nso = basisset_->nbf();
     int nocc = Co->colspi()[0];
@@ -426,19 +435,19 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> I
     double** Cvp = Cv->pointer();
 
     double** Isop = Iso->pointer();
-    boost::shared_ptr<Matrix> I2(new Matrix("MO ERI Tensor", nocc * nso, nso * nso));
+    SharedMatrix I2(new Matrix("MO ERI Tensor", nocc * nso, nso * nso));
     double** I2p = I2->pointer();
 
     C_DGEMM('T','N',nocc,nso * (ULI) nso * nso,nso,1.0,Cop[0],nocc,Isop[0],nso * (ULI) nso * nso,0.0,I2p[0],nso * (ULI) nso * nso);
 
     Iso.reset();
-    boost::shared_ptr<Matrix> I3(new Matrix("MO ERI Tensor", nocc * nso, nso * nocc));
+    SharedMatrix I3(new Matrix("MO ERI Tensor", nocc * nso, nso * nocc));
     double** I3p = I3->pointer();
 
     C_DGEMM('N','N',nocc * (ULI) nso * nso,nocc,nso,1.0,I2p[0],nso,Cop[0],nocc,0.0,I3p[0],nocc);
 
     I2.reset();
-    boost::shared_ptr<Matrix> I4(new Matrix("MO ERI Tensor", nso * nocc, nocc * nso));
+    SharedMatrix I4(new Matrix("MO ERI Tensor", nso * nocc, nocc * nso));
     double** I4p = I4->pointer();
 
     for (int i = 0; i < nocc; i++) {
@@ -452,19 +461,19 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> I
     }
 
     I3.reset();
-    boost::shared_ptr<Matrix> I5(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nso));
+    SharedMatrix I5(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nso));
     double** I5p = I5->pointer();
 
     C_DGEMM('T','N',nvir,nocc * (ULI) nocc * nso, nso,1.0,Cvp[0],nvir,I4p[0],nocc*(ULI)nocc*nso,0.0,I5p[0],nocc*(ULI)nocc*nso);
 
     I4.reset();
-    boost::shared_ptr<Matrix> I6(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nvir));
+    SharedMatrix I6(new Matrix("MO ERI Tensor", nvir * nocc, nocc * nvir));
     double** I6p = I6->pointer();
 
     C_DGEMM('N','N',nvir * (ULI) nocc * nocc, nvir, nso,1.0,I5p[0],nso,Cvp[0],nvir,0.0,I6p[0],nvir);
 
     I5.reset();
-    boost::shared_ptr<Matrix> Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
+    SharedMatrix Imo(new Matrix("MO ERI Tensor", nocc * nvir, nocc * nvir));
     double** Imop = Imo->pointer();
 
     for (int i = 0; i < nocc; i++) {
@@ -479,34 +488,34 @@ boost::shared_ptr<Matrix> MintsHelper::mo_eri_helper(boost::shared_ptr<Matrix> I
 
     return Imo;
 }
-boost::shared_ptr<Matrix> MintsHelper::so_overlap()
+SharedMatrix MintsHelper::so_overlap()
 {
     boost::shared_ptr<OneBodySOInt> S(integral_->so_overlap());
-    boost::shared_ptr<Matrix>       overlap_mat(factory_->create_matrix(PSIF_SO_S));
+    SharedMatrix       overlap_mat(factory_->create_matrix(PSIF_SO_S));
     S->compute(overlap_mat);
     overlap_mat->save(psio_, PSIF_OEI);
     return overlap_mat;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::so_kinetic()
+SharedMatrix MintsHelper::so_kinetic()
 {
     boost::shared_ptr<OneBodySOInt> T(integral_->so_kinetic());
-    boost::shared_ptr<Matrix>       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
+    SharedMatrix       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
     T->compute(kinetic_mat);
     kinetic_mat->save(psio_, PSIF_OEI);
     return kinetic_mat;
 }
 
-boost::shared_ptr<Matrix> MintsHelper::so_potential()
+SharedMatrix MintsHelper::so_potential()
 {
     boost::shared_ptr<OneBodySOInt> V(integral_->so_potential());
-    boost::shared_ptr<Matrix>       potential_mat(factory_->create_matrix(PSIF_SO_V));
+    SharedMatrix       potential_mat(factory_->create_matrix(PSIF_SO_V));
     V->compute(potential_mat);
     potential_mat->save(psio_, PSIF_OEI);
     return potential_mat;
 }
 
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_dipole()
+std::vector<SharedMatrix > MintsHelper::so_dipole()
 {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(1, molecule_, integral_, factory_);
@@ -518,7 +527,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_dipole()
 
     return dipole;
 }
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_quadrupole()
+std::vector<SharedMatrix > MintsHelper::so_quadrupole()
 {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(2, molecule_, integral_, factory_);
@@ -530,7 +539,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_quadrupole()
 
     return quadrupole;
 }
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_traceless_quadrupole()
+std::vector<SharedMatrix > MintsHelper::so_traceless_quadrupole()
 {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(2, molecule_, integral_, factory_);
@@ -543,7 +552,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_traceless_quadrupole()
     return quadrupole;
 }
 
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_nabla()
+std::vector<SharedMatrix > MintsHelper::so_nabla()
 {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(OperatorSymmetry::P, molecule_, integral_, factory_);
@@ -556,7 +565,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_nabla()
     return nabla;
 }
 
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_angular_momentum()
+std::vector<SharedMatrix > MintsHelper::so_angular_momentum()
 {
     // The matrix factory can create matrices of the correct dimensions...
     OperatorSymmetry msymm(OperatorSymmetry::L, molecule_, integral_, factory_);
@@ -569,7 +578,7 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::so_angular_momentum()
     return am;
 }
 
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_angular_momentum()
+std::vector<SharedMatrix > MintsHelper::ao_angular_momentum()
 {
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> angmom;
@@ -584,7 +593,22 @@ std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_angular_momentum()
     return angmom;
 }
 
-std::vector<boost::shared_ptr<Matrix> > MintsHelper::ao_nabla()
+std::vector<SharedMatrix > MintsHelper::ao_dipole()
+{
+    // Create a vector of matrices with the proper symmetry
+    std::vector<SharedMatrix> dipole;
+
+    dipole.push_back(SharedMatrix(new Matrix("AO Mux", basisset_->nbf(), basisset_->nbf())));
+    dipole.push_back(SharedMatrix(new Matrix("AO Muy", basisset_->nbf(), basisset_->nbf())));
+    dipole.push_back(SharedMatrix(new Matrix("AO Muz", basisset_->nbf(), basisset_->nbf())));
+
+    boost::shared_ptr<OneBodyAOInt> ints(integral_->ao_dipole());
+    ints->compute(dipole);
+
+    return dipole;
+}
+
+std::vector<SharedMatrix > MintsHelper::ao_nabla()
 {
     // Create a vector of matrices with the proper symmetry
     std::vector<SharedMatrix> nabla;

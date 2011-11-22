@@ -1,6 +1,5 @@
 #include "python.h"
 
-#include <libmints/mints.h>
 #include <boost/python.hpp>
 
 namespace psi {

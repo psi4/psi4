@@ -19,17 +19,17 @@ protected:
     boost::shared_ptr<Quadrature> quad_;
   
     /// The metric
-    boost::shared_ptr<Matrix> J_; 
+    SharedMatrix J_; 
     /// The inverse of the metric
-    boost::shared_ptr<Matrix> Jinv_; 
+    SharedMatrix Jinv_; 
     /// The coupling matrix for monomer A
-    boost::shared_ptr<Matrix> W_A_;
+    SharedMatrix W_A_;
     /// The coupling matrix for monomer B
-    boost::shared_ptr<Matrix> W_B_;
+    SharedMatrix W_B_;
     /// The vector of X matrices for monomer A
-    std::vector<boost::shared_ptr<Matrix> > X_A_;
+    std::vector<SharedMatrix > X_A_;
     /// The vector of X matrices for monomer B
-    std::vector<boost::shared_ptr<Matrix> > X_B_;
+    std::vector<SharedMatrix > X_B_;
     
     /// Print the header
     virtual void print_header(); 

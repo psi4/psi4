@@ -6,30 +6,19 @@
 #include <cstdio>
 #include <map>
 
-#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 
 #define LINEAR_A_TOL 1.0E-2 //When sin(a) is below this, we consider the angle to be linear
 
+#include <boost/shared_ptr.hpp>  // something is going on requiring this header
+
 // Forward declarations for boost.python used in the extract_subsets
-namespace boost{ namespace python{
+namespace boost{
+namespace python{
        class list;
 }}
 
 namespace psi {
-
-// Forward declarations.
-class PSIO;
-class Chkpt;
-class PointGroup;
-class Matrix;
-class Vector;
-class SimpleVector;
-class Vector3;
-
-// From coordentry.h
-class CoordEntry;
-class CoordValue;
-
 extern FILE *outfile;
 
 /*! \ingroup MINTS
@@ -239,7 +228,7 @@ public:
     void set_basis_by_label(const std::string& label, const std::string& name, const std::string& type="BASIS");
 
     /// Number of frozen core for molecule given freezing state
-    int nfrozen_core(const std::string& depth="");
+    int nfrozen_core(const std::string& depth = "");
 
     /// @{
     /// Tests to see of an atom is at the passed position with a given tolerance
@@ -287,11 +276,6 @@ public:
     Matrix nuclear_repulsion_energy_deriv1() const;
     /// Computes nuclear repulsion energy second derivatives.
     Matrix nuclear_repulsion_energy_deriv2() const;
-
-    /// Returns the nuclear contribution to the dipole moment
-    boost::shared_ptr<Vector> nuclear_dipole_contribution();
-    /// Returns the nuclear contribution to the quadrupole moment
-    boost::shared_ptr<Vector> nuclear_quadrupole_contribution();
 
     /// Translates molecule by r
     void translate(const Vector3& r);
@@ -353,12 +337,8 @@ public:
     /// Symmetry
     /// @{
     bool has_symmetry_element(Vector3& op, double tol) const;
-    boost::shared_ptr<PointGroup> point_group() const { return pg_; }
-    void set_point_group(boost::shared_ptr<PointGroup> pg) {
-        pg_ = pg;
-        // Call this here, the programmer will forget to call it, as I have many times.
-        form_symmetry_information();
-    }
+    boost::shared_ptr<PointGroup> point_group() const;
+    void set_point_group(boost::shared_ptr<PointGroup> pg);
     /// Does the molecule have an inversion center at origin
     bool has_inversion(Vector3& origin, double tol = 0.05) const;
     /// Is a plane?

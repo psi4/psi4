@@ -168,7 +168,7 @@ void SAPT::initialize()
   double **tempA = block_matrix(nsoA_,nmoA_);
   psio_->read_entry(PSIF_SAPT_MONOMERA,"Monomer HF Coefficients",(char *)
     &(tempA[0][0]), sizeof(double)*nmoA_*nsoA_);
-  if (nsoA_ != nsoB_) {
+  if (nsoA_ != nso_) {
     for (int n=0; n<nsoA_; n++)
       C_DCOPY(nmoA_,tempA[n],1,CA_[n],1);
   }
@@ -180,7 +180,7 @@ void SAPT::initialize()
   double **tempB = block_matrix(nsoB_,nmoB_);
   psio_->read_entry(PSIF_SAPT_MONOMERB,"Monomer HF Coefficients",(char *)
     &(tempB[0][0]), sizeof(double)*nmoB_*nsoB_);
-  if (nsoA_ != nsoB_) {
+  if (nsoB_ != nso_) {
     for (int n=0; n<nsoB_; n++)
       C_DCOPY(nmoB_,tempB[n],1,CB_[n+nsoA_],1);
   }
@@ -203,7 +203,7 @@ void SAPT::initialize()
     basisset_, basisset_, basisset_));
 
   boost::shared_ptr<OneBodyAOInt> Sint(intfact->ao_overlap());
-  boost::shared_ptr<Matrix> Smat = boost::shared_ptr<Matrix> 
+  SharedMatrix Smat = SharedMatrix 
     (fact->create_matrix("Overlap"));
   Sint->compute(Smat);
 
@@ -220,7 +220,7 @@ void SAPT::initialize()
 
   boost::shared_ptr<PotentialInt> potA(static_cast<PotentialInt*>(
     intfact->ao_potential()));
-  boost::shared_ptr<Matrix> ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
+  SharedMatrix ZxyzA(new Matrix("Charges A (Z,x,y,z)", natomsA_, 4));
   for (int n=0, p=0; n<monomerA->natom(); n++) {
     if (monomerA->Z(n)) {
       double Z = (double) monomerA->Z(n);
@@ -235,13 +235,13 @@ void SAPT::initialize()
     } 
   }
   potA->set_charge_field(ZxyzA);
-  boost::shared_ptr<Matrix> VAmat = boost::shared_ptr<Matrix>
+  SharedMatrix VAmat = SharedMatrix
     (fact->create_matrix("Nuclear Attraction (Monomer A)"));
   potA->compute(VAmat);
 
   boost::shared_ptr<PotentialInt> potB(static_cast<PotentialInt*>(
     intfact->ao_potential()));
-  boost::shared_ptr<Matrix> ZxyzB(new Matrix("Charges B (Z,x,y,z)", natomsB_, 4));
+  SharedMatrix ZxyzB(new Matrix("Charges B (Z,x,y,z)", natomsB_, 4));
   for (int n=0, p=0; n<monomerB->natom(); n++) {
     if (monomerB->Z(n)) {
       double Z = (double) monomerB->Z(n);
@@ -256,7 +256,7 @@ void SAPT::initialize()
     } 
   }
   potB->set_charge_field(ZxyzB);
-  boost::shared_ptr<Matrix> VBmat = boost::shared_ptr<Matrix>
+  SharedMatrix VBmat = SharedMatrix
     (fact->create_matrix("Nuclear Attraction (Monomer B)"));
   potB->compute(VBmat);
 
@@ -313,8 +313,8 @@ void SAPT::get_denom()
   if (debug_ > 1)
     denom_->debug();
 
-  boost::shared_ptr<Matrix> tauAR = denom_->denominatorA();
-  boost::shared_ptr<Matrix> tauBS = denom_->denominatorB();
+  SharedMatrix tauAR = denom_->denominatorA();
+  SharedMatrix tauBS = denom_->denominatorB();
 
   dAR_ = tauAR->pointer();
   dBS_ = tauBS->pointer();

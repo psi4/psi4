@@ -71,24 +71,24 @@ public:
     int ncol(int h) const;
 
     /// Returns the number of orbitals
-    int nso() const;
+    int norb() const;
 
     /// Returns a new Matrix object with default dimensions
     Matrix * create_matrix(int symmetry=0);
 
     /// Returns a new Matrix object with default dimensions
-    boost::shared_ptr<Matrix> create_shared_matrix();
+    SharedMatrix create_shared_matrix();
 
     void create_matrix(Matrix& mat, int symmetry=0);
 
     /// Returns a new Matrix object named name with default dimensions
     Matrix * create_matrix(std::string name, int symmetry=0);
 
-    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name);
+    SharedMatrix create_shared_matrix(const std::string& name);
 
-    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int symmetry);
+    SharedMatrix create_shared_matrix(const std::string& name, int symmetry);
 
-    boost::shared_ptr<Matrix> create_shared_matrix(const std::string& name, int rows, int cols);
+    SharedMatrix create_shared_matrix(const std::string& name, int rows, int cols);
 
     void create_matrix(Matrix& mat, std::string name, int symmetry=0);
 

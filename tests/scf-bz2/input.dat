@@ -1,0 +1,62 @@
+#! Benzene Dimer Out-of-Core HF/cc-pVDZ
+
+refnuc = 618.289690301440714 #TEST
+refscf = -461.44029760966623 #TEST
+
+molecule bz2 {
+    X
+    X   1  RXX
+    X   2  RXX  1  90.0
+    C   3  RCC  2  90.0  1   0.0
+    C   3  RCC  2  90.0  1  60.0
+    C   3  RCC  2  90.0  1 120.0
+    C   3  RCC  2  90.0  1 180.0
+    C   3  RCC  2  90.0  1 240.0
+    C   3  RCC  2  90.0  1 300.0
+    H   3  RCH  2  90.0  1   0.0
+    H   3  RCH  2  90.0  1  60.0
+    H   3  RCH  2  90.0  1 120.0
+    H   3  RCH  2  90.0  1 180.0
+    H   3  RCH  2  90.0  1 240.0
+    H   3  RCH  2  90.0  1 300.0
+    X   3  RXX  2  90.0  1   0.0
+    X   3  D   16  90.0  2 180.0
+    X   3  DRXX 16 90.0  2 180.0
+    X  18  RXX 17  90.0 16   0.0
+    C  17  RCC 18  90.0 19   0.0
+    C  17  RCC 18  90.0 19  60.0
+    C  17  RCC 18  90.0 19 120.0
+    C  17  RCC 18  90.0 19 180.0
+    C  17  RCC 18  90.0 19 240.0
+    C  17  RCC 18  90.0 19 300.0
+    H  17  RCH 18  90.0 19   0.0
+    H  17  RCH 18  90.0 19  60.0
+    H  17  RCH 18  90.0 19 120.0
+    H  17  RCH 18  90.0 19 180.0
+    H  17  RCH 18  90.0 19 240.0
+    H  17  RCH 18  90.0 19 300.0
+
+    RCC  = 1.3915
+    RCH  = 2.4715
+    RXX  = 1.00
+    D    = 3.9 
+    DRXX = 4.90
+
+}
+
+memory 500 mb
+
+set globals {
+  basis cc-pVDZ
+  guess sad
+  scf_type out_of_core
+  print 2
+}
+
+thisenergy = energy('scf')
+
+compare_values(refnuc, bz2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+
+clean()
+

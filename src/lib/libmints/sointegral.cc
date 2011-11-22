@@ -61,7 +61,7 @@ boost::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
     return b2_;
 }
 
-void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
+void OneBodySOInt::compute(SharedMatrix result)
 {
     // Do not worry about zeroing out result
     int ns1 = b1_->nshell();
@@ -120,7 +120,7 @@ void OneBodySOInt::compute(boost::shared_ptr<Matrix> result)
     }
 }
 
-void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
+void OneBodySOInt::compute(std::vector<SharedMatrix > results)
 {
     // Do not worry about zeroing out result
     int nchunk = ob_->nchunk();
@@ -191,7 +191,7 @@ void OneBodySOInt::compute(std::vector<boost::shared_ptr<Matrix> > results)
     }
 }
 
-void OneBodySOInt::compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+void OneBodySOInt::compute_deriv1(std::vector<SharedMatrix > result,
                                   const CdSalcList &cdsalcs)
 {
     // Do not worry about zeroing out result.
@@ -417,10 +417,21 @@ void TwoBodySOInt::common_init()
     for (int i=0; i<nthread_; ++i)
         tb_[i]->set_force_cartesian(b1_->petitelist()->include_pure_transform());
 
+    size_t aQRS = b1_->max_nfunction_in_shell() * b2_->basis()->max_function_per_shell() *
+                  b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
+    size_t abcD = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
+                  b3_->max_nfunction_in_shell() * b4_->basis()->max_function_per_shell();
+    size_t abRS = b1_->max_nfunction_in_shell() * b2_->max_nfunction_in_shell() *
+                  b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
+
+    size_t max_size = std::max(aQRS, abcD);
+
     size_ = b1_->max_nfunction_in_shell() *
             b2_->max_nfunction_in_shell() *
             b3_->max_nfunction_in_shell() *
             b4_->max_nfunction_in_shell();
+
+//    fprintf(outfile, "aQRS %zu, abcD %zu, abRS %zu, max_size %zu, size %zu\n", aQRS, abcD, abRS, max_size, size_);
 
     // Check to make sure things are consistent
     if (tb_[0]->deriv() > 0 && cdsalcs_ == 0)
@@ -431,9 +442,13 @@ void TwoBodySOInt::common_init()
     if (tb_[0]->deriv() == 1 && cdsalcs_ != 0)
         for (int i=0; i<nthread_; ++i)
             buffer_.push_back(new double[size_ * cdsalcs_->ncd()]);
-    else
-        for (int i=0; i<nthread_; ++i)
+    else {
+        for (int i=0; i<nthread_; ++i) {
             buffer_.push_back(new double[size_]);
+//            temp_.push_back(new double[max_size]);
+//            temp2_.push_back(new double[abRS]);
+        }
+    }
 
     ::memset(iirrepoff_, 0, sizeof(int) * 8);
     ::memset(jirrepoff_, 0, sizeof(int) * 8);
@@ -472,6 +487,10 @@ TwoBodySOInt::~TwoBodySOInt()
 {
     for (int i=0; i<nthread_; ++i) {
         delete[] buffer_[i];
+//        if (tb_[0]->deriv() == 0) { // 'if' statement to be removed
+//            delete[] temp_[i];
+//            delete[] temp2_[i];
+//        }
         if (deriv_.size())
             delete[] deriv_[i];
     }

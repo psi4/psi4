@@ -105,7 +105,7 @@ void FittingMetric::form_fitting_metric()
     Dimension ngauspi = auxpet->SO_basisdim();
 
     // Build the full DF/Poisson matrix in the AO basis first
-    boost::shared_ptr<Matrix> AOmetric(new Matrix("AO Basis DF Metric", naux, naux));
+    SharedMatrix AOmetric(new Matrix("AO Basis DF Metric", naux, naux));
     double** W = AOmetric->pointer(0);
     boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
@@ -256,17 +256,17 @@ void FittingMetric::form_fitting_metric()
     }
 
     // Get the similarity transform objects
-    boost::shared_ptr<Matrix> auxAO2USO(auxpet->sotoao());
+    SharedMatrix auxAO2USO(auxpet->sotoao());
     //auxAO2USO->print();
-    boost::shared_ptr<Matrix> poisAO2USO;
+    SharedMatrix poisAO2USO;
     if (is_poisson_) {
-        poisAO2USO = boost::shared_ptr<Matrix>(poispet->sotoao());
+        poisAO2USO = SharedMatrix(poispet->sotoao());
         //poisAO2USO->print();
     }
 
     // Allocate the fitting metric
-    metric_ = boost::shared_ptr<Matrix>(new Matrix("SO Basis Fitting Metric", nauxpi, nauxpi));
-    boost::shared_ptr<Matrix> Temp;
+    metric_ = SharedMatrix(new Matrix("SO Basis Fitting Metric", nauxpi, nauxpi));
+    SharedMatrix Temp;
     double** Temp1;
 
     // Transform AO to SO
@@ -277,7 +277,7 @@ void FittingMetric::form_fitting_metric()
         double** auxU = auxAO2USO->pointer(h);
 
         if (ngauspi[h] != 0) {
-            Temp = boost::shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], ngaussian));
+            Temp = SharedMatrix(new Matrix("Temp", ngauspi[h], ngaussian));
             Temp1 = Temp->pointer();
             C_DGEMM('N', 'N', ngauspi[h], ngaussian, ngaussian, 1.0, auxU[0], ngaussian, W[0], naux, 0.0, Temp1[0], ngaussian);
             C_DGEMM('N', 'T', ngauspi[h], ngauspi[h], ngaussian, 1.0, Temp1[0], ngaussian, auxU[0], ngaussian, 0.0, J[0], nauxpi[h]);
@@ -290,7 +290,7 @@ void FittingMetric::form_fitting_metric()
 
             // Gaussian-Poisson part
             if (ngauspi[h] != 0) {
-                Temp = boost::shared_ptr<Matrix>(new Matrix("Temp", ngauspi[h], npoisson));
+                Temp = SharedMatrix(new Matrix("Temp", ngauspi[h], npoisson));
                 Temp1 = Temp->pointer();
                 C_DGEMM('N', 'N', ngauspi[h], npoisson, ngaussian, 1.0, auxU[0], ngaussian, &W[0][ngaussian], naux, 0.0, Temp1[0], npoisson);
                 C_DGEMM('N', 'T', ngauspi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][ngauspi[h]], nauxpi[h]);
@@ -303,7 +303,7 @@ void FittingMetric::form_fitting_metric()
             // Poisson-Poisson part
             unsigned long int AOoffset = ngaussian*(unsigned long int)naux + (unsigned long int) ngaussian;
             unsigned long int SOoffset = ngauspi[h]*(unsigned long int)nauxpi[h] + (unsigned long int) ngauspi[h];
-            Temp = boost::shared_ptr<Matrix>(new Matrix("Temp", npoispi[h], npoisson));
+            Temp = SharedMatrix(new Matrix("Temp", npoispi[h], npoisson));
             Temp1 = Temp->pointer();
             C_DGEMM('N', 'N', npoispi[h], npoisson, npoisson, 1.0, poisU[0], npoisson, &W[0][AOoffset], naux, 0.0, Temp1[0], npoisson);
             C_DGEMM('N', 'T', npoispi[h], npoispi[h], npoisson, 1.0, Temp1[0], npoisson, poisU[0], npoisson, 0.0, &J[0][SOoffset], nauxpi[h]);
@@ -365,7 +365,7 @@ void FittingMetric::form_QR_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy the J matrix to R (actually R')
-        boost::shared_ptr<Matrix> R(new Matrix("R", n, n));
+        SharedMatrix R(new Matrix("R", n, n));
         double** Rp = R->pointer();
         C_DCOPY(n*(unsigned long int)n, J[0], 1, Rp[0], 1);
 
@@ -383,7 +383,7 @@ void FittingMetric::form_QR_inverse(double tol)
         delete[] work;
 
         // Copy Jcopy to Q (actually Q')
-        boost::shared_ptr<Matrix> Q(new Matrix("Q", n, n));
+        SharedMatrix Q(new Matrix("Q", n, n));
         double** Qp = Q->pointer();
         C_DCOPY(n*(unsigned long int)n, Rp[0], 1, Qp[0], 1);
 
@@ -452,7 +452,7 @@ void FittingMetric::form_eig_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy J to W
-        boost::shared_ptr<Matrix> W(new Matrix("W", n, n));
+        SharedMatrix W(new Matrix("W", n, n));
         double** Wp = W->pointer();
         C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
 
@@ -462,7 +462,7 @@ void FittingMetric::form_eig_inverse(double tol)
         int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
         delete[] work;
 
-        boost::shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
+        SharedMatrix Jcopy(new Matrix("Jcopy", n, n));
         double** Jcopyp = Jcopy->pointer();
 
         C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);
@@ -507,7 +507,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         int n = metric_->colspi()[h];
 
         // Copy J to W
-        boost::shared_ptr<Matrix> W(new Matrix("W", n, n));
+        SharedMatrix W(new Matrix("W", n, n));
         double** Wp = W->pointer();
         C_DCOPY(n*(unsigned long int)n,J[0],1,Wp[0],1);
 
@@ -517,7 +517,7 @@ void FittingMetric::form_full_eig_inverse(double tol)
         int stat = C_DSYEV('v','u',n,Wp[0],n,eigval,work,lwork);
         delete[] work;
 
-        boost::shared_ptr<Matrix> Jcopy(new Matrix("Jcopy", n, n));
+        SharedMatrix Jcopy(new Matrix("Jcopy", n, n));
         double** Jcopyp = Jcopy->pointer();
 
         C_DCOPY(n*(unsigned long int)n,Wp[0],1,Jcopyp[0],1);

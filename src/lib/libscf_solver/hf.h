@@ -37,26 +37,24 @@ class HF : public Wavefunction {
 protected:
 
     /// The kinetic energy matrix
-    boost::shared_ptr<Matrix> T_;
+    SharedMatrix T_;
     /// The 1e potential energy matrix
-    boost::shared_ptr<Matrix> V_;
+    SharedMatrix V_;
     /// The core hamiltonian
-    boost::shared_ptr<Matrix> H_;
-    /// The overlap metric
-    boost::shared_ptr<Matrix> S_;
+    SharedMatrix H_;
     /// The orthogonalization matrix (symmetric or canonical)
-    boost::shared_ptr<Matrix> X_;
+    SharedMatrix X_;
     /// Temporary matrix for diagonalize_F
-    boost::shared_ptr<Matrix> diag_temp_;
+    SharedMatrix diag_temp_;
     /// Temporary matrix for diagonalize_F
-    boost::shared_ptr<Matrix> diag_F_temp_;
+    SharedMatrix diag_F_temp_;
     /// Temporary matrix for diagonalize_F
-    boost::shared_ptr<Matrix> diag_C_temp_;
+    SharedMatrix diag_C_temp_;
 
     /// Old C Alpha matrix (if needed for MOM)
-    boost::shared_ptr<Matrix> Ca_old_;
+    SharedMatrix Ca_old_;
     /// Old C Beta matrix (if needed for MOM)
-    boost::shared_ptr<Matrix> Cb_old_;
+    SharedMatrix Cb_old_;
 
     /// Previous iteration's energy and current energy
     double Eold_;
@@ -163,7 +161,7 @@ protected:
     void print_occupation();
 
     /// Perform casting of basis set if desired.
-    boost::shared_ptr<Matrix> dualBasisProjection(boost::shared_ptr<Matrix> Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
+    SharedMatrix dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
 
     /// UHF Atomic Density Matrix for SAD
     /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
@@ -226,6 +224,9 @@ protected:
     /// Save the current density and energy.
     virtual void save_density_and_energy() = 0;
 
+    /// Check MO phases
+    void check_phases();
+
     /// SAD Guess and propagation
     void compute_SAD_guess();
 
@@ -242,7 +243,7 @@ protected:
     virtual void form_C() =0;
 
     /** Transformation, diagonalization, and backtransform of Fock matrix */
-    virtual void diagonalize_F(const boost::shared_ptr<Matrix>& F, boost::shared_ptr<Matrix>& C, boost::shared_ptr<Vector>& eps);
+    virtual void diagonalize_F(const SharedMatrix& F, SharedMatrix& C, boost::shared_ptr<Vector>& eps);
 
     /** Computes the Fock matrix */
     virtual void form_F() =0;
@@ -272,10 +273,10 @@ protected:
     virtual bool diis() { return false; }
 
     /** Form Fia (for DIIS) **/
-    virtual boost::shared_ptr<Matrix> form_Fia(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Cso, int* noccpi);
+    virtual SharedMatrix form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi);
 
     /** Form X'(FDS - SDF)X (for DIIS) **/
-    virtual boost::shared_ptr<Matrix> form_FDSmSDF(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Dso);
+    virtual SharedMatrix form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso);
 
     /** Save orbitals to File 100 **/
     virtual void save_orbitals();

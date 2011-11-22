@@ -66,13 +66,12 @@ namespace psi {
     namespace cclambda  { PsiReturnType cclambda(Options&);  }
     namespace ccdensity { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
-    // DETCI: uncomment
-    //namespace detci     { PsiReturnType detci(Options&);     }
+    namespace detci     { PsiReturnType detci(Options&);     }
     namespace findif    {
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &);
+      std::vector< SharedMatrix > fd_geoms_1_0(Options &);
+      std::vector< SharedMatrix > fd_geoms_2_0(Options &);
+      std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
+      std::vector< SharedMatrix > fd_geoms_freq_1(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       PsiReturnType fd_2_0(Options &, const boost::python::list&);
@@ -154,25 +153,25 @@ double py_psi_mcscf()
         return 0.0;
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_1_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_2_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_2_0(Process::environment.options);
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_freq_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_freq_0()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_0(Process::environment.options);
 }
 
-std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_freq_1()
+std::vector< SharedMatrix > py_psi_fd_geoms_freq_1()
 {
     py_psi_prepare_options_for_module("FINDIF");
     return findif::fd_geoms_freq_1(Process::environment.options);
@@ -315,11 +314,11 @@ double py_psi_detci()
     py_psi_prepare_options_for_module("DETCI");
 
     // DETCI: Uncomment
-    //if (detci::detci(Process::environment.options) == Success) {
-    //    return Process::environment.globals["CURRENT ENERGY"];
-    //}
-    //else
-    //    return 0.0;
+    if (detci::detci(Process::environment.options) == Success) {
+        return Process::environment.globals["CURRENT ENERGY"];
+    }
+    else
+        return 0.0;
     fprintf(outfile,"\n\nWorld's slowest quantum method goes here.\n\n");
     fflush(outfile);
 
@@ -604,9 +603,64 @@ bool py_psi_has_option_changed(const string& key)
     return data.has_changed();
 }
 
-object py_psi_get_global_option(const string& key)
+bool py_psi_has_global_option_changed(std::string const & key)
 {
     string nonconst_key = key;
+    Data& data = Process::environment.options.get_global(nonconst_key);
+
+    return data.has_changed();
+}
+
+bool py_psi_has_local_option_changed(std::string const & module, std::string const & key)
+{
+    string nonconst_key = key;
+    Process::environment.options.set_current_module(module);
+    Data& data = Process::environment.options.use(nonconst_key);
+
+    return data.has_changed();
+}
+
+void py_psi_revoke_option_changed(std::string const & key)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Data& data = Process::environment.options.use(nonconst_key);
+    data.dechanged();
+}
+
+void py_psi_revoke_global_option_changed(std::string const & key)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Data& data = Process::environment.options.get_global(nonconst_key);
+    data.dechanged();
+}
+
+void py_psi_revoke_local_option_changed(std::string const & module, std::string const & key)
+{
+    string nonconst_key = boost::to_upper_copy(key);
+    Process::environment.options.set_current_module(module);
+    Data& data = Process::environment.options.use(nonconst_key);
+    data.dechanged();
+}
+
+object py_psi_get_global_option(std::string const & key)
+{
+    string nonconst_key = key;
+    Data& data = Process::environment.options.get_global(nonconst_key);
+
+    if (data.type() == "string")
+        return str(data.to_string());
+    else if (data.type() == "boolean" || data.type() == "int")
+        return object(data.to_integer());
+    else if (data.type() == "double")
+        return object(data.to_double());
+
+    return object();
+}
+
+object py_psi_get_local_option(std::string const & module, std::string const & key)
+{
+    string nonconst_key = key;
+    Process::environment.options.set_current_module(module);
     Data& data = Process::environment.options.use(nonconst_key);
 
     if (data.type() == "string")
@@ -629,7 +683,7 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
-boost::shared_ptr<Matrix> py_psi_get_gradient()
+SharedMatrix py_psi_get_gradient()
 {
     boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
     return wf->gradient();
@@ -798,11 +852,17 @@ BOOST_PYTHON_MODULE(PsiMod)
     // Get the option; letting liboptions decide whether to use global or local
     def("get_option", py_psi_get_option);
 
-    // Returns whether the option has changed.
-    def("has_option_changed", py_psi_has_option_changed);
-
-    // Get the global option
+    // Get the option; specify whether to use global or local
     def("get_global_option", py_psi_get_global_option);
+    def("get_local_option", py_psi_get_local_option);
+
+    // Returns whether the option has changed/revoke has changed for silent resets
+    def("has_option_changed", py_psi_has_option_changed);
+    def("has_global_option_changed", py_psi_has_global_option_changed);
+    def("has_local_option_changed", py_psi_has_local_option_changed);
+    def("revoke_option_changed", py_psi_revoke_option_changed);
+    def("revoke_global_option_changed", py_psi_revoke_global_option_changed);
+    def("revoke_local_option_changed", py_psi_revoke_local_option_changed);
 
     // These return/set variable value found in Process::environment.globals
     def("get_variable", py_psi_get_variable);
@@ -894,12 +954,13 @@ void Python::initialize()
 
 void Python::finalize()
 {
+    Py_Finalize();
 }
 
 void Python::run(FILE *input)
 {
     using namespace boost::python;
-    char *s;
+    char *s = 0;
     if (input == NULL)
         return;
 
@@ -996,5 +1057,7 @@ void Python::run(FILE *input)
         return;
     }
 
+    if (s)
+        free(s);
     py_psi_plugin_close_all();
 }

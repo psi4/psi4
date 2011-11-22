@@ -2,6 +2,7 @@
 #include <libqt/qt.h>
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
+#include <physconst.h>
 #include "apps.h"
 #include "jk.h"
 #include "hamiltonian.h"
@@ -33,9 +34,6 @@ RBase::~RBase()
 }
 void RBase::common_init()
 {
-    print_ = options_.get_int("PRINT");
-    debug_ = options_.get_int("DEBUG");
-
     reference_wavefunction_ = Process::environment.reference_wavefunction();
     
     if (!reference_wavefunction_) {
@@ -45,56 +43,31 @@ void RBase::common_init()
     if (!reference_wavefunction_->restricted()) {
         throw PSIEXCEPTION("RBase: Reference is not restricted");
     }
-
+    
+    copy(reference_wavefunction_);
+    
+    print_ = options_.get_int("PRINT");
+    debug_ = options_.get_int("DEBUG");
     Eref_ = reference_wavefunction_->reference_energy();
-    
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
-    boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
-    AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
 
-    Ca_ = reference_wavefunction_->Ca();
-    epsilon_a_ = reference_wavefunction_->epsilon_a();
+    Cfocc_ = Ca_subset("SO","FROZEN_OCC");
+    Caocc_ = Ca_subset("SO","ACTIVE_OCC");
+    Cavir_ = Ca_subset("SO","ACTIVE_VIR");
+    Cfvir_ = Ca_subset("SO","FROZEN_VIR");
+    eps_focc_ = epsilon_a_subset("SO","FROZEN_OCC");
+    eps_aocc_ = epsilon_a_subset("SO","ACTIVE_OCC");
+    eps_avir_ = epsilon_a_subset("SO","ACTIVE_VIR");
+    eps_fvir_ = epsilon_a_subset("SO","FROZEN_VIR");
 
-    C_ = Ca_;
+    std::vector<SharedMatrix> Cs;
+    Cs.push_back(Cfocc_);
+    Cs.push_back(Caocc_);
+    Cs.push_back(Cavir_);
+    Cs.push_back(Cfvir_);
+    C_ = Matrix::horzcat(Cs);
 
-    Dimension naoccpi(Ca_->nirrep());
-    Dimension navirpi(Ca_->nirrep());
-
-    for (int h = 0; h < Ca_->nirrep(); ++h) {   
-        naoccpi[h] = reference_wavefunction_->doccpi()[h] - reference_wavefunction_->frzcpi()[h];
-        navirpi[h] = reference_wavefunction_->nmopi()[h] - reference_wavefunction_->doccpi()[h] - reference_wavefunction_->frzvpi()[h];
-    }
-
-    Cfocc_ = boost::shared_ptr<Matrix>(new Matrix("Cfocc", reference_wavefunction_->nsopi(), reference_wavefunction_->frzcpi()));
-    Cfvir_ = boost::shared_ptr<Matrix>(new Matrix("Cfvir", reference_wavefunction_->nsopi(), reference_wavefunction_->frzvpi()));
-    Caocc_ = boost::shared_ptr<Matrix>(new Matrix("Caocc", reference_wavefunction_->nsopi(), naoccpi));
-    Cavir_ = boost::shared_ptr<Matrix>(new Matrix("Cavir", reference_wavefunction_->nsopi(), navirpi));
-
-    eps_focc_ = boost::shared_ptr<Vector>(new Vector("eps_focc", reference_wavefunction_->frzcpi()));
-    eps_fvir_ = boost::shared_ptr<Vector>(new Vector("eps_fvir", reference_wavefunction_->frzvpi()));
-    eps_aocc_ = boost::shared_ptr<Vector>(new Vector("eps_aocc", naoccpi));
-    eps_avir_ = boost::shared_ptr<Vector>(new Vector("eps_avir", navirpi));
-    
-    for (int h = 0; h < Ca_->nirrep(); ++h) {
-        for (int i = 0; i < reference_wavefunction_->frzcpi()[h]; ++i) {
-            eps_focc_->set(h,i,epsilon_a_->get(h,i));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i], Ca_->colspi()[h], &Cfocc_->pointer(h)[0][i], Cfocc_->colspi()[h]);
-        }
-        for (int i = 0; i < naoccpi[h]; ++i) {
-            eps_aocc_->set(h,i,epsilon_a_->get(h,i + reference_wavefunction_->frzcpi()[h]));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i + reference_wavefunction_->frzcpi()[h]], Ca_->colspi()[h], &Caocc_->pointer(h)[0][i], Caocc_->colspi()[h]);
-        }
-        for (int i = 0; i < navirpi[h]; ++i) {
-            eps_avir_->set(h,i,epsilon_a_->get(h,i + reference_wavefunction_->doccpi()[h]));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i + reference_wavefunction_->doccpi()[h]], Ca_->colspi()[h], &Cavir_->pointer(h)[0][i], Cavir_->colspi()[h]);
-        }
-        for (int i = 0; i < reference_wavefunction_->frzvpi()[h]; ++i) {
-            eps_fvir_->set(h,i,epsilon_a_->get(h,i + reference_wavefunction_->doccpi()[h] + navirpi[h]));
-            C_DCOPY(Ca_->rowspi()[h],&Ca_->pointer(h)[0][i + reference_wavefunction_->doccpi()[h] + navirpi[h]], Ca_->colspi()[h], &Cfvir_->pointer(h)[0][i], Cfvir_->colspi()[h]);
-        }
-    } 
-    
     if (debug_) {
+        AO2SO_->print();
         Cfocc_->print();
         Caocc_->print();
         Cavir_->print();
@@ -104,6 +77,201 @@ void RBase::common_init()
         eps_avir_->print();
         eps_fvir_->print();
     }
+}
+
+RCPHF::RCPHF()
+{
+}
+RCPHF::~RCPHF()
+{
+}
+void RCPHF::print_header()
+{
+    fprintf(outfile, "\n");
+    fprintf(outfile, "         ------------------------------------------------------------\n");
+    fprintf(outfile, "                                     CPHF                           \n"); 
+    fprintf(outfile, "                                  Rob Parrish                       \n"); 
+    fprintf(outfile, "         ------------------------------------------------------------\n\n");
+
+    fprintf(outfile, "  ==> Geometry <==\n\n");
+    molecule_->print();
+    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+
+    fprintf(outfile, "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level(outfile, print_);
+
+    if (tasks_.size()) {
+        fprintf(outfile, "  ==> Named Tasks <==\n\n");
+        for (std::set<std::string>::const_iterator it = tasks_.begin(); it != tasks_.end(); ++it) {
+            fprintf(outfile, "    %s\n", (*it).c_str());
+        }
+        fprintf(outfile, "\n");
+    }
+
+    if (debug_ > 1) {
+        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        eps_aocc_->print();
+        eps_avir_->print();
+    }
+}
+void RCPHF::add_task(const std::string& task)
+{
+    tasks_.insert(task);
+}
+void RCPHF::add_named_tasks()
+{
+    if (tasks_.count("POLARIZABILITY")) {
+        add_polarizability();
+    }
+}
+void RCPHF::analyze_named_tasks()
+{
+    if (tasks_.count("POLARIZABILITY")) {
+        analyze_polarizability();
+    }
+}
+void RCPHF::add_polarizability()
+{
+    OperatorSymmetry msymm(1, molecule_, integral_, factory_);
+    std::vector<SharedMatrix> dipole = msymm.create_matrices("SO Dipole");
+    boost::shared_ptr<OneBodySOInt> ints(integral_->so_dipole());
+    ints->compute(dipole);
+    
+    for (int i = 0; i < dipole.size(); i++) {
+        std::stringstream ss;
+        ss << "Dipole Perturbation " << (i == 0 ? "X" : (i == 1 ? "Y" : "Z"));
+        SharedMatrix B(new Matrix(ss.str(), Caocc_->colspi(), Cavir_->colspi(), dipole[i]->symmetry()));
+        
+        int symm = dipole[i]->symmetry();
+        double* temp = new double[dipole[i]->max_nrow() * Cavir_->max_ncol()];
+
+        for (int h = 0; h < B->nirrep(); h++) {
+            int nsol = dipole[i]->rowspi()[h];
+            int nsor = dipole[i]->colspi()[h^symm];
+            int noccl = Caocc_->colspi()[h];
+            int nvirr = Cavir_->colspi()[h^symm];
+
+            if (!nsol || !nsor || !noccl || !nvirr) continue;
+
+            double** dp = dipole[i]->pointer(h);
+            double** bp = B->pointer(h);
+            double** Clp = Caocc_->pointer(h);
+            double** Crp = Cavir_->pointer(h^symm);
+            
+            C_DGEMM('N','N',nsol,nvirr,nsor,1.0,dp[0],nsor,Crp[0],nvirr,0.0,temp,nvirr);
+            C_DGEMM('T','N',noccl,nvirr,nsol,1.0,Clp[0],noccl,temp,nvirr,0.0,bp[0],nvirr);
+        }
+
+        delete[] temp;
+    
+        b_.push_back(B); 
+    }    
+}
+void RCPHF::analyze_polarizability()
+{
+    std::vector<SharedMatrix> u;
+    std::vector<SharedMatrix> d;
+
+    d.push_back(b_[b_.size() - 3]);
+    d.push_back(b_[b_.size() - 2]);
+    d.push_back(b_[b_.size() - 1]);
+
+    u.push_back(x_[x_.size() - 3]);
+    u.push_back(x_[x_.size() - 2]);
+    u.push_back(x_[x_.size() - 1]);
+
+    x_.pop_back();
+    x_.pop_back();
+    x_.pop_back();
+
+    b_.pop_back();
+    b_.pop_back();
+    b_.pop_back();
+
+    // Analysis
+    SharedMatrix polarizability(new Matrix("CPHF Polarizability", 3, 3));
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            polarizability->set(0,i,j,-4.0 * (d[i]->symmetry() == u[j]->symmetry() ? d[i]->vector_dot(u[j]) : 0.0));
+        }
+    }
+
+    polarizability->print();
+}
+double RCPHF::compute_energy()
+{
+    // Main CPHF Header
+    print_header(); 
+
+    // Add named tasks to the force vector list
+    add_named_tasks();
+    
+    // Construct components
+    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
+    boost::shared_ptr<CPHFRHamiltonian> H(new CPHFRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<CGRSolver> solver = CGRSolver::build_solver(options_,H);
+
+    // Extra Knobs
+    H->set_print(print_);
+    H->set_debug(debug_);
+
+    // Addition of force vectors
+    std::vector<SharedVector>& bref = solver->b();
+    std::vector<SharedVector> b = H->pack(b_);
+    for (int i = 0; i < b.size(); i++) {
+        bref.push_back(b[i]);
+    }
+
+    // Initialization/Memory
+    solver->initialize();
+
+    unsigned long int solver_memory = solver->memory_estimate();
+    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
+    unsigned long int effective_memory = (unsigned long int)(options_.get_double("CPHF_MEM_SAFETY_FACTOR") * remaining_memory);
+    jk->set_memory(effective_memory);
+    jk->initialize();
+
+    // Component Headers
+    solver->print_header();
+    H->print_header();
+    jk->print_header();
+
+    if (print_) {
+        fprintf(outfile, "  ==> CPHF Iterations <==\n\n");
+    }
+
+    if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
+        SharedMatrix A = H->explicit_hamiltonian();
+        A->print();
+    }
+
+    if (debug_) {
+        for (int Q = 0; Q < b_.size(); Q++) {
+            b_[Q]->print();
+        }
+    }
+
+    solver->solve();
+
+    std::vector<SharedMatrix> x1 = H->unpack(solver->x());
+    for (int Q = 0; Q < x1.size(); Q++) {
+        x_.push_back(x1[Q]); 
+    }
+
+    if (debug_) {
+        for (int Q = 0; Q < x_.size(); Q++) {
+            x_[Q]->print();
+        }
+    }
+
+    analyze_named_tasks();
+
+    // Finalize solver/JK memory
+    solver->finalize();
+    jk->finalize();
+
+    return 0.0; 
 }
 
 RCIS::RCIS()
@@ -134,18 +302,19 @@ void RCIS::print_header()
         eps_avir_->print();
     }
 }
-void RCIS::print_wavefunctions()
+void RCIS::sort_states()
 {
-    std::vector<boost::tuple<double, int, int, int> > states;
     for (int n = 0; n < E_singlets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
+        states_.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
     }
     for (int n = 0; n < E_triplets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
+        states_.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
     }
 
-    std::sort(states.begin(), states.end());
-
+    std::sort(states_.begin(), states_.end());
+}
+void RCIS::print_wavefunctions()
+{
     fprintf(outfile, "  ==> Excitation Energies <==\n\n");
 
     fprintf(outfile,"  -----------------------------------------------\n");
@@ -153,13 +322,13 @@ void RCIS::print_wavefunctions()
         "State", "Description", "dE (H)", "dE (eV)");
     fprintf(outfile,"  -----------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states.size(); i++) {
-        double E = get<0>(states[i]);
-        int    j = get<1>(states[i]);
-        int    m = get<2>(states[i]);
-        int    h = get<3>(states[i]);
+    for (int i = 0; i < states_.size(); i++) {
+        double E = get<0>(states_[i]);
+        int    j = get<1>(states_[i]);
+        int    m = get<2>(states_[i]);
+        int    h = get<3>(states_[i]);
         fprintf(outfile,"  %-5d %1s%-5d(%3s) %14.6E %14.6E\n",
-            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, 27.211396132 * E);
+            i + 1, (m == 1 ? "S" : "T"), j + 1, labels[h], E, _hartree2ev * E);
     }
     fprintf(outfile,"  -----------------------------------------------\n");
     fprintf(outfile, "\n");
@@ -167,29 +336,24 @@ void RCIS::print_wavefunctions()
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 
 
-    print_amplitudes();
-    print_transitions();
-
     if (debug_ > 1) {
-        if (singlets_.size())
+        if (singlets_.size()) { 
             fprintf(outfile, "  ==> Singlet States <==\n\n");
             for (int n = 0; n < singlets_.size(); n++) {
                 singlets_[n]->print();
                 Dmo(singlets_[n])->print();
-                std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > N = Nmo(singlets_[n]);
-                N.first->print();
-                N.second->print();
+                Dao(singlets_[n])->print();
             }
+        }
 
-        if (triplets_.size())
+        if (triplets_.size()) {
             fprintf(outfile, "  ==> Triplet States <==\n\n");
             for (int n = 0; n < triplets_.size(); n++) {
                 triplets_[n]->print();
                 Dmo(triplets_[n])->print();
-                std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > N = Nmo(triplets_[n]);
-                N.first->print();
-                N.second->print();
+                Dao(triplets_[n])->print();
             }
+        }
     }
 }
 void RCIS::print_amplitudes()
@@ -198,16 +362,6 @@ void RCIS::print_amplitudes()
 
     double cutoff = options_.get_double("CIS_AMPLITUDE_CUTOFF");
 
-    std::vector<boost::tuple<double, int, int, int> > states;
-    for (int n = 0; n < E_singlets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
-    }
-    for (int n = 0; n < E_triplets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
-    }
-
-    std::sort(states.begin(), states.end());
-
     fprintf(outfile, "  ==> Significant Amplitudes <==\n\n");
 
     fprintf(outfile,"  --------------------------------------------------\n");
@@ -215,13 +369,13 @@ void RCIS::print_amplitudes()
         "State", "Description", "Excitation", "Amplitude");
     fprintf(outfile,"  --------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states.size(); i++) {
-        double E = get<0>(states[i]);
-        int    j = get<1>(states[i]);
-        int    m = get<2>(states[i]);
-        int    h = get<3>(states[i]);
+    for (int i = 0; i < states_.size(); i++) {
+        double E = get<0>(states_[i]);
+        int    j = get<1>(states_[i]);
+        int    m = get<2>(states_[i]);
+        int    h = get<3>(states_[i]);
 
-        boost::shared_ptr<Matrix> T = ((m == 1 ? singlets_[j] : triplets_[j]));
+        SharedMatrix T = ((m == 1 ? singlets_[j] : triplets_[j]));
         int symm = T->symmetry();
     
         std::vector<boost::tuple<double,int,int,int,int> > amps;
@@ -232,7 +386,7 @@ void RCIS::print_amplitudes()
 
             if (!naocc || !navir) continue;
 
-            double** Tp = T->pointer();
+            double** Tp = T->pointer(h2);
 
             for (int i2 = 0; i2 < naocc; i2++) {
                 for (int a2 = 0; a2 < navir; a2++) {
@@ -277,22 +431,12 @@ void RCIS::print_transitions()
     boost::shared_ptr<OneBodyAOInt> dipole(fact->ao_dipole());
 
     // Get dipole integrals
-    std::vector<boost::shared_ptr<Matrix> > dipole_ints;
+    std::vector<SharedMatrix > dipole_ints;
     int nso = basisset_->nbf();
-    dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole X", nso, nso))); 
-    dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso))); 
-    dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso))); 
+    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole X", nso, nso))); 
+    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Y", nso, nso))); 
+    dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso))); 
     dipole->compute(dipole_ints);
-
-    std::vector<boost::tuple<double, int, int, int> > states;
-    for (int n = 0; n < E_singlets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_singlets_[n],n,1,singlets_[n]->symmetry()));
-    }
-    for (int n = 0; n < E_triplets_.size(); ++n) {
-        states.push_back(boost::tuple<double,int,int,int>(E_triplets_[n],n,3,triplets_[n]->symmetry()));
-    }
-
-    std::sort(states.begin(), states.end());
 
     fprintf(outfile, "  ==> GS->XS Oscillator Strengths <==\n\n");
 
@@ -301,12 +445,12 @@ void RCIS::print_transitions()
         "State", "Description", "mu_x", "mu_y", "mu_z", "f");
     fprintf(outfile,"  --------------------------------------------------------------------\n");
     char** labels = basisset_->molecule()->irrep_labels();
-    for (int i = 0; i < states.size(); i++) {
+    for (int i = 0; i < states_.size(); i++) {
 
-        double E = get<0>(states[i]);
-        int    j = get<1>(states[i]);
-        int    m = get<2>(states[i]);
-        int    h = get<3>(states[i]);
+        double E = get<0>(states_[i]);
+        int    j = get<1>(states_[i]);
+        int    m = get<2>(states_[i]);
+        int    h = get<3>(states_[i]);
 
         double mu[3];
         ::memset((void*) mu, '\0', 3*sizeof(double));
@@ -314,7 +458,7 @@ void RCIS::print_transitions()
         // Only singlets have nonzero transition density, triplets are zero due to t_ia = - t_ia_bar
         if (m == 1) {
 
-            boost::shared_ptr<Matrix> TD = TDao(singlets_[j]);
+            SharedMatrix TD = TDao(singlets_[j]);
 
             // Transition dipole elements
             mu[0] = TD->vector_dot(dipole_ints[0]);
@@ -333,18 +477,88 @@ void RCIS::print_transitions()
     fprintf(outfile, "\n");
     for(int h = 0; h < Caocc_->nirrep(); ++h) free(labels[h]); free(labels);
 }
-boost::shared_ptr<Matrix> RCIS::TDmo(boost::shared_ptr<Matrix> T1, bool singlet)
+void RCIS::print_densities()
 {
-    boost::shared_ptr<Matrix> TD(T1->clone());
+    for (int i = 0; i < options_["CIS_OPDM_STATES"].size(); i++) {
+        int state = options_["CIS_OPDM_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
+
+        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state] : triplets_[state]), false);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_D.dat";
+
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
+    for (int i = 0; i < options_["CIS_DOPDM_STATES"].size(); i++) {
+        int state = options_["CIS_DOPDM_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
+
+        boost::shared_ptr<Matrix> D = Dao((singlet ? singlets_[state] : triplets_[state]), true);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_dD.dat";
+
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
+    for (int i = 0; i < options_["CIS_TOPDM_STATES"].size(); i++) {
+        int state = options_["CIS_TOPDM_STATES"][i].to_integer();
+        bool singlet = (state > 0);
+        state = abs(state);
+
+        boost::shared_ptr<Matrix> D = TDao((singlet ? singlets_[state] : triplets_[state]), singlet);
+        std::stringstream s;
+        s << (singlet ? "S" : "T") << state << "_TD.dat";
+
+        FILE* fh = fopen(s.str().c_str(),"w");
+        fwrite((void*)D->pointer()[0],sizeof(double),nso_ * nso_,fh);
+        fclose(fh);        
+    }
+    //for (int i = 0; i < options_["CIS_NO_STATES"].size(); i++) {
+    //    int state = options_["CIS_NO_STATES"][i].to_integer();
+    //    bool singlet = (state > 0);
+    //    state = abs(state);
+
+    //    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > stuff = Nso(state,singlet);
+    //    std::stringstream s;
+    //    s << (singlet ? "S" : "T") << state << "_N.dat";
+
+    //    FILE* fh = fopen(s.str().c_str(),"w");
+    //    fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nmo_,fh);
+    //    fwrite((void*)stuff.second->pointer(),sizeof(double),nmo_,fh);
+    //    fclose(fh);        
+    //}
+    //for (int i = 0; i < options_["CIS_AD_STATES"].size(); i++) {
+    //    int state = options_["CIS_AD_STATES"][i].to_integer();
+    //    bool singlet = (state > 0);
+    //    state = abs(state);
+
+    //    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > stuff = ADso(state,singlet);
+    //    std::stringstream s;
+    //    s << (singlet ? "S" : "T") << state << "_AD.dat";
+
+    //    FILE* fh = fopen(s.str().c_str(),"w");
+    //    fwrite((void*)stuff.first->pointer()[0],sizeof(double),nso_ * nso_,fh);
+    //    fwrite((void*)stuff.second->pointer()[0],sizeof(double),nso_ * nso_,fh);
+    //    fclose(fh);        
+    //}
+}
+SharedMatrix RCIS::TDmo(SharedMatrix T1, bool singlet)
+{
+    SharedMatrix TD(T1->clone());
         
     TD->scale((singlet ? sqrt(2.0) : 0.0));
     TD->set_name("TDmo"); 
 
     return T1; 
 }
-boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1, bool singlet)
+SharedMatrix RCIS::TDso(SharedMatrix T1, bool singlet)
 {
-    boost::shared_ptr<Matrix> D(new Matrix("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry()));
+    SharedMatrix D(new Matrix("TDso", T1->nirrep(), C_->rowspi(), C_->rowspi(), T1->symmetry()));
 
     // Triplets are zero
     if (!singlet) return D;
@@ -375,26 +589,26 @@ boost::shared_ptr<Matrix> RCIS::TDso(boost::shared_ptr<Matrix> T1, bool singlet)
 
     return D;
 }
-boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1, bool singlet)
+SharedMatrix RCIS::TDao(SharedMatrix T1, bool singlet)
 {
-    boost::shared_ptr<Matrix> D = TDso(T1, singlet);
+    SharedMatrix D = TDso(T1, singlet);
 
-    boost::shared_ptr<Matrix> D2(new Matrix("TDao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
+    SharedMatrix D2(new Matrix("TDao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]));
 
-    double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
+    double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
     int symm = D->symmetry();
     for (int h = 0; h < D->nirrep(); h++) {
 
-        int nsol = AO2USO_->colspi()[h];
-        int nsor = AO2USO_->colspi()[h^symm];
-        int nao = AO2USO_->rowspi()[h];
+        int nsol = AO2SO_->colspi()[h];
+        int nsor = AO2SO_->colspi()[h^symm];
+        int nao = AO2SO_->rowspi()[h];
 
         if (!nao || !nsol || !nsor) continue;
 
         double** Dp = D->pointer(h);
-        double** Ulp = AO2USO_->pointer(h);
-        double** Urp = AO2USO_->pointer(h^symm);
+        double** Ulp = AO2SO_->pointer(h);
+        double** Urp = AO2SO_->pointer(h^symm);
         double** D2p = D2->pointer();
 
         C_DGEMM('N','N',nao,nsor,nsol,1.0,Ulp[0],nsol,Dp[0],nsor,0.0,temp,nsor); 
@@ -405,9 +619,9 @@ boost::shared_ptr<Matrix> RCIS::TDao(boost::shared_ptr<Matrix> T1, bool singlet)
 
     return D2;
 }
-boost::shared_ptr<Matrix> RCIS::Dmo(boost::shared_ptr<Matrix> T1, bool diff)
+SharedMatrix RCIS::Dmo(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D(new Matrix("Dmo", T1->nirrep(), reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
+    SharedMatrix D(new Matrix("Dmo", T1->nirrep(), reference_wavefunction_->nmopi(), reference_wavefunction_->nmopi()));
 
     int symm = T1->symmetry();
 
@@ -453,10 +667,10 @@ boost::shared_ptr<Matrix> RCIS::Dmo(boost::shared_ptr<Matrix> T1, bool diff)
     
     return D;
 }
-boost::shared_ptr<Matrix> RCIS::Dso(boost::shared_ptr<Matrix> T1, bool diff)
+SharedMatrix RCIS::Dso(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D = Dmo(T1,diff);
-    boost::shared_ptr<Matrix> D2(new Matrix("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi()));
+    SharedMatrix D = Dmo(T1,diff);
+    SharedMatrix D2(new Matrix("Dso", C_->nirrep(), C_->rowspi(), C_->rowspi()));
 
     double* temp = new double[C_->max_nrow() * C_->max_ncol()];
 
@@ -480,22 +694,22 @@ boost::shared_ptr<Matrix> RCIS::Dso(boost::shared_ptr<Matrix> T1, bool diff)
 
     return D2;
 }
-boost::shared_ptr<Matrix> RCIS::Dao(boost::shared_ptr<Matrix> T1, bool diff)
+SharedMatrix RCIS::Dao(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D = Dso(T1,diff);
-    boost::shared_ptr<Matrix> D2(new Matrix("Dao", AO2USO_->rowspi()[0], AO2USO_->rowspi()[0]));
+    SharedMatrix D = Dso(T1,diff);
+    SharedMatrix D2(new Matrix("Dao", AO2SO_->rowspi()[0], AO2SO_->rowspi()[0]));
 
-    double* temp = new double[AO2USO_->max_nrow() * AO2USO_->max_ncol()];
+    double* temp = new double[AO2SO_->max_nrow() * AO2SO_->max_ncol()];
 
     for (int h = 0; h < D->nirrep(); h++) {
 
-        int nso = AO2USO_->colspi()[h];
-        int nao = AO2USO_->rowspi()[h];
+        int nso = AO2SO_->colspi()[h];
+        int nao = AO2SO_->rowspi()[h];
 
         if (!nao || !nso) continue;
 
         double** Dp = D->pointer(h);
-        double** Up = AO2USO_->pointer(h);
+        double** Up = AO2SO_->pointer(h);
         double** D2p = D2->pointer();
 
         C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,Dp[0],nso,0.0,temp,nso); 
@@ -506,23 +720,23 @@ boost::shared_ptr<Matrix> RCIS::Dao(boost::shared_ptr<Matrix> T1, bool diff)
 
     return D2;
 }
-std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nmo(boost::shared_ptr<Matrix> T1, bool diff)
+std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nmo(SharedMatrix T1, bool diff)
 {
-    boost::shared_ptr<Matrix> D = Dmo(T1, diff);
-    boost::shared_ptr<Matrix> C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
+    SharedMatrix D = Dmo(T1, diff);
+    SharedMatrix C(new Matrix("Nmo", D->nirrep(), D->rowspi(), D->rowspi()));
     boost::shared_ptr<Vector> O(new Vector("Occupation", D->nirrep(), D->rowspi()));
     
     D->diagonalize(C,O,Matrix::Descending);
 
     return make_pair(C,O);
 }
-std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nso(boost::shared_ptr<Matrix> T1, bool diff)
+std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nso(SharedMatrix T1, bool diff)
 {
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > pair = Nmo(T1,diff);
-    boost::shared_ptr<Matrix> N = pair.first;
+    std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nmo(T1,diff);
+    SharedMatrix N = pair.first;
     boost::shared_ptr<Vector> O = pair.second;
 
-    boost::shared_ptr<Matrix> N2(new Matrix("Nso", C_->nirrep(), C_->rowspi(), C_->colspi()));
+    SharedMatrix N2(new Matrix("Nso", C_->nirrep(), C_->rowspi(), C_->colspi()));
 
     for (int h = 0; h < N->nirrep(); h++) {
 
@@ -539,14 +753,14 @@ std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nso(boost
     }
     return make_pair(N2,O);
 }
-std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nao(boost::shared_ptr<Matrix> T1, bool diff)
+std::pair<SharedMatrix, boost::shared_ptr<Vector> > RCIS::Nao(SharedMatrix T1, bool diff)
 {
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > pair = Nso(T1,diff);
-    boost::shared_ptr<Matrix> N = pair.first;
+    std::pair<SharedMatrix, boost::shared_ptr<Vector> > pair = Nso(T1,diff);
+    SharedMatrix N = pair.first;
     boost::shared_ptr<Vector> O = pair.second;
 
-    boost::shared_ptr<Matrix> N2(new Matrix("Nso", C_->nrow(), C_->ncol()));
-    boost::shared_ptr<Matrix> N3(new Matrix("Nso", C_->nrow(), C_->ncol()));
+    SharedMatrix N2(new Matrix("Nso", C_->nrow(), C_->ncol()));
+    SharedMatrix N3(new Matrix("Nso", C_->nrow(), C_->ncol()));
     boost::shared_ptr<Vector> O2(new Vector("Occupation", C_->ncol()));
 
     int offset = 0;
@@ -555,8 +769,8 @@ std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nao(boost
 
         int ncol = C_->ncol();
         int nmo = C_->colspi()[h];
-        int nso = AO2USO_->colspi()[h];
-        int nao = AO2USO_->rowspi()[h];
+        int nso = AO2SO_->colspi()[h];
+        int nao = AO2SO_->rowspi()[h];
 
         if (!nmo || !nso || !nao) continue;
 
@@ -565,7 +779,7 @@ std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Vector> > RCIS::Nao(boost
         }
 
         double** Np = N->pointer(h);
-        double** Up = AO2USO_->pointer(h);
+        double** Up = AO2SO_->pointer(h);
         double** N2p = N2->pointer(h);
 
         C_DGEMM('N','N',nao,nmo,nso,1.0,Up[0],nso,Np[0],nmo,0.0,&N2p[0][offset],ncol); 
@@ -624,20 +838,43 @@ double RCIS::compute_energy()
             fprintf(outfile, "  ==> Singlets <==\n\n");
         }
 
-        solver->solve();
+        if (options_.get_bool("EXPLICIT_HAMILTONIAN")) {
+            SharedMatrix H1 = H->explicit_hamiltonian();
+            H1->print();
+            H->set_singlet(false);
+            SharedMatrix H3 = H->explicit_hamiltonian();
+            H3->print();
+            return 0.0;
+        }
 
+        solver->solve();
+        
+        // Unpack 
         const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
         const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();    
-        singlets_.clear();
-        E_singlets_.clear();
-        for (int N = 0; N < singlets.size(); ++N) {
-            std::vector<boost::shared_ptr<Matrix> > t = H->unpack(singlets[N]);
+
+        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::pair<double, int> > eval_temp;
+
+        for (int N = 0, index = 0; N < singlets.size(); ++N) {
+            std::vector<SharedMatrix > t = H->unpack(singlets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= singlets[N]->dimpi()[h]) continue; 
-                singlets_.push_back(t[h]);
-                E_singlets_.push_back(E_singlets[N][h]);
+                evec_temp.push_back(t[h]);
+                eval_temp.push_back(make_pair(E_singlets[N][h], index));
+                index++;
             }
+        }
+
+        std::sort(eval_temp.begin(), eval_temp.end());
+
+        singlets_.clear();
+        E_singlets_.clear();
+
+        for (int i = 0; i < eval_temp.size(); i++) {
+            E_singlets_.push_back(eval_temp[i].first);
+            singlets_.push_back(evec_temp[eval_temp[i].second]);
         }
     }
     
@@ -655,17 +892,31 @@ double RCIS::compute_energy()
         
         const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
         const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
-        triplets_.clear();
-        E_triplets_.clear();
-        for (int N = 0; N < triplets.size(); ++N) {
-            std::vector<boost::shared_ptr<Matrix> > t = H->unpack(triplets[N]);
+
+        std::vector<boost::shared_ptr<Matrix> > evec_temp;
+        std::vector<std::pair<double, int> > eval_temp;
+
+        for (int N = 0, index = 0; N < triplets.size(); ++N) {
+            std::vector<SharedMatrix > t = H->unpack(triplets[N]);
             for (int h = 0; h < Caocc_->nirrep(); h++) {
                 // Spurious zero eigenvalue due to not enough states
                 if (N >= triplets[N]->dimpi()[h]) continue; 
-                triplets_.push_back(t[h]);
-                E_triplets_.push_back(E_triplets[N][h]);
+                evec_temp.push_back(t[h]);
+                eval_temp.push_back(make_pair(E_triplets[N][h], index));
+                index++;
             }
         }
+
+        std::sort(eval_temp.begin(), eval_temp.end());
+
+        triplets_.clear();
+        E_triplets_.clear();
+
+        for (int i = 0; i < eval_temp.size(); i++) {
+            E_triplets_.push_back(eval_temp[i].first);
+            triplets_.push_back(evec_temp[eval_temp[i].second]);
+        }
+
     }
     
     // Finalize solver/JK memory
@@ -673,11 +924,137 @@ double RCIS::compute_energy()
     jk->finalize();
 
     // Print wavefunctions and properties
+    sort_states();
     print_wavefunctions();
+    print_amplitudes();
+    print_transitions();
+    print_densities();
 
     return 0.0; 
 }
 
+RTDHF::RTDHF()
+{
+}
+RTDHF::~RTDHF()
+{
+}
+void RTDHF::print_header()
+{
+    fprintf(outfile, "\n");
+    fprintf(outfile, "         ------------------------------------------------------------\n");
+    fprintf(outfile, "                                      TDHF                           \n"); 
+    fprintf(outfile, "                                  Rob Parrish                       \n"); 
+    fprintf(outfile, "         ------------------------------------------------------------\n\n");
 
+    fprintf(outfile, "  ==> Geometry <==\n\n");
+    molecule_->print();
+    fprintf(outfile, "  Nuclear repulsion = %20.15f\n", basisset_->molecule()->nuclear_repulsion_energy());
+    fprintf(outfile, "  Reference energy  = %20.15f\n\n", Eref_);
+
+    fprintf(outfile, "  ==> Basis Set <==\n\n");
+    basisset_->print_by_level(outfile, print_);
+
+    if (debug_ > 1) {
+        fprintf(outfile, "  ==> Fock Matrix (MO Basis) <==\n\n");
+        eps_aocc_->print();
+        eps_avir_->print();
+    }
+}
+double RTDHF::compute_energy()
+{
+    // Main TDHF Header
+    print_header(); 
+    
+    // Construct components
+    boost::shared_ptr<JK> jk = JK::build_JK(options_, false);
+    boost::shared_ptr<TDHFRHamiltonian> H(new TDHFRHamiltonian(jk, Caocc_,Cavir_,eps_aocc_,eps_avir_));
+    boost::shared_ptr<DLRXSolver> solver = DLRXSolver::build_solver(options_,H);
+
+    // Extra Knobs
+    H->set_print(print_);
+    H->set_debug(debug_);
+
+    // Initialization/Memory
+    solver->initialize();
+    unsigned long int solver_memory = solver->memory_estimate();
+    unsigned long int remaining_memory = memory_ / 8L - solver_memory;
+    unsigned long int effective_memory = (unsigned long int)(options_.get_double("TDHF_MEM_SAFETY_FACTOR") * remaining_memory);
+    jk->set_memory(effective_memory);
+    jk->initialize();
+
+    // Component Headers
+    solver->print_header();
+    H->print_header();
+    jk->print_header();
+
+    // Singlets
+    if (options_.get_bool("DO_SINGLETS")) {
+
+        H->set_singlet(true);
+
+        if (print_) {
+            fprintf(outfile, "  ==> Singlets <==\n\n");
+        }
+
+        solver->solve();
+
+        // TODO Unpack
+        //const std::vector<boost::shared_ptr<Vector> > singlets = solver->eigenvectors();    
+        //const std::vector<std::vector<double> > E_singlets = solver->eigenvalues();    
+        //singlets_.clear();
+        //E_singlets_.clear();
+        //for (int N = 0; N < singlets.size(); ++N) {
+        //    std::vector<SharedMatrix > t = H->unpack(singlets[N]);
+        //    for (int h = 0; h < Caocc_->nirrep(); h++) {
+        //        // Spurious zero eigenvalue due to not enough states
+        //        if (N >= singlets[N]->dimpi()[h]) continue; 
+        //        singlets_.push_back(t[h]);
+        //        E_singlets_.push_back(E_singlets[N][h]);
+        //    }
+        //}
+    }
+    
+    // Triplets
+    if (options_.get_bool("DO_TRIPLETS")) {
+        // Triplets
+        solver->initialize();
+        H->set_singlet(false);
+        
+        if (print_) {
+            fprintf(outfile, "  ==> Triplets <==\n\n");
+        }
+
+        solver->solve();
+        
+        // TODO Unpack
+        //const std::vector<boost::shared_ptr<Vector> > triplets = solver->eigenvectors();    
+        //const std::vector<std::vector<double> > E_triplets = solver->eigenvalues();    
+        //triplets_.clear();
+        //E_triplets_.clear();
+        //for (int N = 0; N < triplets.size(); ++N) {
+        //    std::vector<SharedMatrix > t = H->unpack(triplets[N]);
+        //    for (int h = 0; h < Caocc_->nirrep(); h++) {
+        //        // Spurious zero eigenvalue due to not enough states
+        //        if (N >= triplets[N]->dimpi()[h]) continue; 
+        //        triplets_.push_back(t[h]);
+        //        E_triplets_.push_back(E_triplets[N][h]);
+        //    }
+        //}
+    }
+    
+    // Finalize solver/JK memory
+    solver->finalize();
+    jk->finalize();
+
+    // TODO
+    // Print wavefunctions and properties
+    //print_wavefunctions();
+    //print_amplitudes();
+    //print_transitions();
+    //print_densities();
+
+    return 0.0; 
+}
 
 }

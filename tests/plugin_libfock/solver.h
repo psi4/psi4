@@ -160,7 +160,7 @@ class CGRSolver : public RSolver {
 protected:
 
     /// Force vectors
-    std::vector<boost::shared_ptr<Vector> > & b_;    
+    std::vector<boost::shared_ptr<Vector> > b_;    
     /// Solution vectors
     std::vector<boost::shared_ptr<Vector> > x_;    
     /// Product vectors
@@ -203,15 +203,15 @@ protected:
 
 public:
 
-    CGRSolver(boost::shared_ptr<RHamiltonian> H,
-              std::vector<boost::shared_ptr<Vector> >& b);
+    CGRSolver(boost::shared_ptr<RHamiltonian> H);
     virtual ~CGRSolver();
     
     /// Static constructor, uses Options object
     static boost::shared_ptr<CGRSolver> build_solver(Options& options,
         boost::shared_ptr<RHamiltonian> H);
 
-    const std::vector<boost::shared_ptr<Vector> >& x() const { return x_; }  
+    std::vector<boost::shared_ptr<Vector> >& x() { return x_; }  
+    std::vector<boost::shared_ptr<Vector> >& b() { return b_; }  
 
     void print_header() const;
     unsigned long int memory_estimate();
@@ -220,9 +220,6 @@ public:
     void finalize();
 
     void set_precondition(bool precondition) { precondition_ = precondition; }
-    void set_b(std::vector<boost::shared_ptr<Vector> >& b) { b_ = b; } 
-    std::vector<boost::shared_ptr<Vector> >& b() const { return b_; }
-
 };
 
 class DLRSolver : public RSolver {
@@ -260,9 +257,9 @@ protected:
     /// Sigma vectors (nsubspace)
     std::vector<boost::shared_ptr<Vector> > s_;
     /// G_ij Subspace Hamiltonian (nsubspace x nsubspace)
-    boost::shared_ptr<Matrix> G_;
+    SharedMatrix G_;
     /// Subspace eigenvectors (nsubspace x nsubspace)
-    boost::shared_ptr<Matrix> a_;
+    SharedMatrix a_;
     /// Subspace eigenvalues (nsubspace)   
     boost::shared_ptr<Vector> l_; 
     /// Residual vectors (nroots)
@@ -308,6 +305,120 @@ public:
 
     /// Static constructor, uses Options object
     static boost::shared_ptr<DLRSolver> build_solver(Options& options,
+        boost::shared_ptr<RHamiltonian> H);
+
+    // => Required Methods <= //
+    
+    void print_header() const;
+    unsigned long int memory_estimate();
+    void initialize();
+    void solve();
+    void finalize();
+    
+    // => Accessors <= //
+    
+    /// Eigenvectors, by state
+    const std::vector<boost::shared_ptr<Vector> >& eigenvectors() const { return c_; }
+    /// Eigenvalues, by state/irrep
+    const std::vector<std::vector<double> >& eigenvalues() const { return E_; }
+
+    // => Knobs <= //
+
+    /// Set number of roots (defaults to 1)
+    void set_nroot(int nroot) { nroot_ = nroot; }
+    /// Set maximum subspace size (defaults to 6)
+    void set_max_subspace(double max_subspace) { max_subspace_ = max_subspace; }
+    /// Set minimum subspace size, for collapse (defaults to 2)
+    void set_min_subspace(double min_subspace) { min_subspace_ = min_subspace; }
+    /// Set number of guesses (defaults to 1)
+    void set_nguess(int nguess) { nguess_ = nguess; }
+    /// Set norm critera for adding vectors to subspace (defaults to 1.0E-6) 
+    void set_norm(double norm) { norm_ = norm; }
+};
+
+class DLRXSolver : public RSolver {
+
+protected:
+    
+    // => Control parameters <= //
+
+    /// Number of desired roots
+    int nroot_;
+    /// Required norm for subspace expansion
+    double norm_;
+    /// Maximum allowed subspace size 
+    int max_subspace_; 
+    /// Minimum allowed subspace size (after collapse)
+    int min_subspace_; 
+    /// Number of guess vectors to build
+    int nguess_;    
+
+    // => Iteration values <= //
+
+    /// The current subspace size
+    int nsubspace_;
+    /// The number of converged roots
+    int nconverged_;
+
+    // => State values <= //
+ 
+    /// Current eigenvectors (nroots)
+    std::vector<boost::shared_ptr<Vector> > c_;
+    /// Current eigenvalues (nroots)
+    std::vector<std::vector<double> > E_;     
+    /// B vectors (nsubspace)
+    std::vector<boost::shared_ptr<Vector> > b_;
+    /// Sigma vectors (nsubspace)
+    std::vector<boost::shared_ptr<Vector> > s_;
+    /// G_ij Subspace Hamiltonian (nsubspace x nsubspace)
+    SharedMatrix G_;
+    /// Subspace eigenvectors (nsubspace x nsubspace)
+    SharedMatrix a_;
+    /// Subspace eigenvalues (nsubspace)   
+    boost::shared_ptr<Vector> l_; 
+    /// Residual vectors (nroots)
+    std::vector<boost::shared_ptr<Vector> > r_;
+    /// Residual vector 2-norms (nroots)
+    std::vector<double> n_;
+    /// Correction vectors (nroots)
+    std::vector<boost::shared_ptr<Vector> > d_;
+    /// Diagonal of Hamiltonian 
+    boost::shared_ptr<Vector> diag_;
+
+    // => Run routines <= // 
+ 
+    // Guess, based on diagonal
+    void guess();
+    // Compute sigma vectors
+    void sigma();
+    // Compute subspace Hamiltonian
+    void subspaceHamiltonian();
+    // Diagonalize subspace Hamiltonian
+    void subspaceDiagonalization();
+    // Find eigenvectors 
+    void eigenvecs();
+    // Find eigenvalues
+    void eigenvals();   
+    // Find residuals, update convergence 
+    void residuals();
+    // Find correctors 
+    void correctors();
+    // Orthogonalize/add significant correctors 
+    void subspaceExpansion();
+    // Collapse subspace if needed
+    void subspaceCollapse();
+
+public:
+
+    // => Constructors <= //
+
+    /// Constructor
+    DLRXSolver(boost::shared_ptr<RHamiltonian> H);  
+    /// Destructor
+    virtual ~DLRXSolver();
+
+    /// Static constructor, uses Options object
+    static boost::shared_ptr<DLRXSolver> build_solver(Options& options,
         boost::shared_ptr<RHamiltonian> H);
 
     // => Required Methods <= //
