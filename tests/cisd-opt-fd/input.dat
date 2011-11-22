@@ -1,9 +1,8 @@
 #! H2O CISD/6-31G** Optimize Geometry by Energies
 
-# These values below are from PSI3 tightly converged geom #TEST
-refnuc   =   9.1957306425  #TEST
-refscf   = -76.0231743780  #TEST
-refci    = -76.2231144353442    #TEST
+refnuc   =   9.1938886876  #TEST
+refscf   = -76.0231440654  #TEST
+refci    = -76.2231165692153    #TEST
 refcorr  = refci - refscf  #TEST
 
 molecule h2o {
@@ -15,8 +14,8 @@ molecule h2o {
 set globals {
   wfn detci
   basis 6-31G**
-  conv_max_force 1.0E-6
-  conv_max_disp  1.0E-4
+  conv_max_force 0.000001
+  conv_max_disp  0.0001
 }
 
 thisenergy = optimize('detci', dertype = 0)

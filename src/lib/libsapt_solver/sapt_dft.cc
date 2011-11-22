@@ -83,6 +83,7 @@ double MP2C::compute_energy()
     Process::environment.globals["MP2C DELTA MP2C ENERGY"] = E_DeltaMP2C; 
     Process::environment.globals["MP2C MP2 ENERGY"] = E_MP2_int; 
     Process::environment.globals["MP2C MP2C ENERGY"] = E_MP2C_int; 
+    Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["MP2C MP2C ENERGY"];
  
     return E_MP2C_int; 
 }
