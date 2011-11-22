@@ -201,7 +201,9 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   psio->close(PSIF_KLCD,1);
 
   double *etrip = (double*)malloc(nthreads*sizeof(double));
+  double *renorm = (double*)malloc(nthreads*sizeof(double));
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
+  for (int i=0; i<nthreads; i++) renorm[i] = 0.0;
   fprintf(outfile,"        Computing (T) correction... \n");
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
@@ -304,6 +306,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                           X[thread][abc]  = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
                                           + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
                                           + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
+
                           Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
 
                           Z3[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
@@ -332,21 +335,78 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                       }
                   }
               }
+              // for denominator for R-CCSD(T)
+              for (int a=0; a<v; a++){
+                  for (int b=0; b<v; b++){
+                      for (int c=0; c<v; c++){
+                          long int abc = a*v*v+b*v+c;
+
+                          X[thread][abc] = t1[a*o+i]*t1[b*o+j]*t1[c*o+k]
+                                         + t1[a*o+i]*tempt[j*o*v*v+k*v*v+b*v+c]
+                                         + t1[b*o+j]*tempt[i*o*v*v+k*v*v+a*v+c]
+                                         + t1[c*o+k]*tempt[i*o*v*v+j*v*v+a*v+b];
+                      }
+                  }
+              }
+              for (int a=0; a<v; a++){
+                  double dijka = dijk-F[a+o];
+                  for (int b=0; b<=a; b++){
+                      double dijkab = dijka-F[b+o];
+                      for (int c=0; c<=b; c++){
+                          long int abc = a*v*v+b*v+c;
+                          long int bca = b*v*v+c*v+a;
+                          long int cab = c*v*v+a*v+b;
+                          long int acb = a*v*v+c*v+b;
+                          long int bac = b*v*v+a*v+c;
+                          long int cba = c*v*v+b*v+a;
+
+                          double dum      = X[thread][abc]*Z2[thread][abc] + X[thread][acb]*Z2[thread][acb]
+                                          + X[thread][bac]*Z2[thread][bac] + X[thread][bca]*Z2[thread][bca]
+                                          + X[thread][cab]*Z2[thread][cab] + X[thread][cba]*Z2[thread][cba];
+
+                          dum            = (Y[thread][abc] - 2.0*Z3[thread][abc])
+                                         * (X[thread][abc] + X[thread][bca] + X[thread][cab])
+                                         + (Z3[thread][abc] - 2.0*Y[thread][abc])
+                                         * (X[thread][acb] + X[thread][bac] + X[thread][cba])
+                                         + 3.0*dum;
+
+                          double denom = dijkab-F[c+o];
+                          renorm[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                      }
+                  }
+              }
 
           }
       }
   }
 
+
   double et = 0.0;
   for (int i=0; i<nthreads; i++) et += etrip[i];
 
+  // for denominator for R-CCSD(T)
+  double dt = 1.0+2.0*F_DDOT(o*v,t1,1,t1,1);
+  for (long int i=0; i<o; i++){
+      for (long int j=0; j<o; j++){
+          for (long int a=0; a<v; a++){
+              for (long int b=0; b<v; b++){
+                  dt += (2.0*tempt[i*o*v*v+j*v*v+a*v+b]-tempt[j*o*v*v+i*v*v+a*v+b])
+                      * (tempt[i*o*v*v+j*v*v+a*v+b]+t1[a*o+i]*t1[b*o+j]);
+              }
+          }
+      }
+  }
+  for (int i=0; i<nthreads; i++) dt += renorm[i];
+
   psio->close(PSIF_ABCI,1);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        (T) energy                 %20.12lf\n",et);
+  fprintf(outfile,"        (T) energy                   %20.12lf\n",et);
+  fprintf(outfile,"        R-CCSD(T) denominator        %20.12lf\n",dt);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        MP2 correlation energy     %20.12lf\n",ccsd->emp2);
-  fprintf(outfile,"        CCSD correlation energy    %20.12lf\n",ccsd->eccsd);
-  fprintf(outfile,"        CCSD(T) correlation energy %20.12lf\n",ccsd->eccsd+et);
+  fprintf(outfile,"        MP2 correlation energy       %20.12lf\n",ccsd->emp2);
+  fprintf(outfile,"        CCSD correlation energy      %20.12lf\n",ccsd->eccsd);
+  fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf\n",ccsd->eccsd+et);
+  fprintf(outfile,"        R-CCSD(T) correlation energy %20.12lf\n",ccsd->eccsd+et/dt);
   fflush(outfile);
 
   // free memory:
@@ -365,6 +425,8 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   free(Z2);
   free(Z3);
   free(E2abci);
+  free(etrip);
+  free(renorm);
             
   return Success;
 }
