@@ -286,7 +286,7 @@ def run_detci(name, **kwargs):
     # This would be useful of the user had to do something special with SCF to get
     # it to converge.
     run_scf("scf", **kwargs);
-    PsiMod.transqt()
+    PsiMod.transqt2()
     return PsiMod.detci()
 
 def run_dfmp2(name, **kwargs):
