@@ -13,9 +13,9 @@ namespace psi{ namespace mcscf{
 
 void SCF::iterate_scf_equations()
 {
-  fprintf(outfile,"\n\n  ===========================================================================");
-  fprintf(outfile,"\n         Cycle          Energy               D(Energy)            DIIS");
-  fprintf(outfile,"\n  ===========================================================================");
+  fprintf(outfile,"\n\n  =========================================================================================");
+  fprintf(outfile,"\n         Cycle          Energy               D(Energy)            D(Density)            DIIS");
+  fprintf(outfile,"\n  ===========================================================================================");
 
 
   bool   converged  = false;
@@ -25,6 +25,13 @@ void SCF::iterate_scf_equations()
   while(!converged){
     C_T = C;
     C_T.transpose();
+    
+    //Save the odl matrix
+    Dc_old = Dc;
+    if(reference == tcscf){
+      for(int I = 0 ; I < nci; ++I)
+        Dtc_old[I] = Dtc[I];
+    }
 
     // Guess the occupation
     guess_occupation();
@@ -69,11 +76,23 @@ void SCF::iterate_scf_equations()
       T.multiply(false,false,C,C_t);
       C = T;
     }
+    // Compute the change of the density matrix 
+    Dc_old -= Dc;
+    double delta_dens = dot(Dc_old,Dc_old);
+    if(reference == tcscf){
+      for(int I = 0 ; I < nci; ++I){
+        Dtc_old[I] -= Dtc[I];
+         delta_dens += dot(Dtc_old[I],Dtc_old[I]);
+    }}
 
+    double rms_dens = fabs(log10(fabs(delta_dens)));
+    //Print SCF energy,energy difference and RMS density change
+     fprintf(outfile,"\n  @SCF %4d  %20.12f %20.12f  %20.12f %20.12f %20.12f",cycle,total_energy,total_energy-old_energy, delta_dens, rms_dens);
 
     if( fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE") ){
       if(reference == tcscf){
-        if(2.0 * fabs(log10(norm_ci_grad)) > options_.get_int("CONVERGENCE") )
+        if(2.0 * fabs(log10(norm_ci_grad)) > options_.get_int("CONVERGENCE") && 
+          rms_dens > options_.get_int("D_CONVERGENCE") )
           converged = true;
       }else{
         converged = true;
@@ -90,7 +109,7 @@ void SCF::iterate_scf_equations()
     cycle++;
   }
 
-  fprintf(outfile,"\n  ===========================================================================");
+  fprintf(outfile,"\n  =========================================================================================");
 
   fprintf(outfile,"\n\n%6c* SCF total energy   = %20.12f\n",' ',new_energy);
 

@@ -602,7 +602,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- How many digits after the decimal to converge the energy to -*/
     options.add_int("E_CONVERGE",10);
     /*- How many digits after the decimal to converge the density to -*/
-    options.add_int("D_CONVERGE",8);
+    options.add_int("D_CONVERGE",7);
     /*- Don't solve the CPHF equations -*/
     options.add_bool("NO_RESPONSE",false);
     /*- Use asynchronous I/O in the CPHF solver -*/
@@ -1343,8 +1343,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
     options.add_int("MULTP", 1);
-    /*- -*/
+    /*- Convergence criteria for the MCSCF Energy and the Ci gradient-*/
     options.add_int("CONVERGENCE",9);
+    /*- Convergence criteria for the RMS Density-*/
+    options.add_int("D_CONVERGENCE",8);
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
