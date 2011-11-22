@@ -26,7 +26,7 @@ using namespace boost;
 
 
 // position in a symmetric packed matrix
-ULI Position(ULI i,ULI j){
+long int Position(long int i,long int j){
   if (i<j){
     return ((j*(j+1))>>1)+i;
   }
@@ -41,9 +41,9 @@ namespace psi{
    ** \ingroup PSIO
    */
 
-  psio_address psio_get_address(psio_address start, ULI shift) {
+  psio_address psio_get_address(psio_address start, long int shift) {
     psio_address address;
-    ULI bytes_left;
+    long int bytes_left;
 
     bytes_left = PSIO_PAGELEN - start.offset; /* Bytes remaining on fpage */
 
@@ -105,8 +105,8 @@ void CoupledCluster::Initialize(Options &options){
      throw PsiException("plugin_ccsd requires symmetry c1",__FILE__,__LINE__);
   }
   nso = nmo = ndocc = nvirt = nfzc = nfzv = 0;
-  ULI full=0;
-  for (ULI h=0; h<nirreps; h++){
+  long int full=0;
+  for (long int h=0; h<nirreps; h++){
       nfzc   += fzc[h];
       nfzv   += fzv[h];
       nso    += sorbs[h];
@@ -127,10 +127,10 @@ void CoupledCluster::Initialize(Options &options){
   memory = Process::environment.get_memory();
   if (options["MEMORY"].has_changed()){
      memory  = options.get_int("MEMORY");
-     memory *= (ULI)1024*1024;
+     memory *= (long int)1024*1024;
   }
   // minus some extra in case i've miscounted...
-  memory -= (ULI)200*1024*1024;
+  memory -= (long int)200*1024*1024;
 
   // initialize gpu helper class
   helper_ = boost::shared_ptr<GPUHelper>(new GPUHelper);
@@ -175,7 +175,7 @@ void CoupledCluster::Initialize(Options &options){
   fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
   fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);*/
 
-  ULI i;
+  long int i;
 
   // sort integrals and write them to disk
   times(&total_tmstime);
@@ -241,22 +241,22 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   struct tms total_tmstime;
   const long clk_tck = sysconf(_SC_CLK_TCK);
   time_t iter_start,iter_stop,time_start,time_stop;
-  double user_start,user_stop,sys_start,sys_stop,mp2;
+  double user_start,user_stop,sys_start,sys_stop;
 
   int iter,sg,sg2,diis_iter;
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI arraysize = o*o*v*v;
-  ULI ov2 = o*v*v;
-  ULI oo1o2 = o*(o+1)/2;
-  ULI vv1o2 = v*(v+1)/2;
-  double nrm,Eold,en,s1,start,end,siter;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int arraysize = o*o*v*v;
+  long int ov2 = o*v*v;
+  long int oo1o2 = o*(o+1)/2;
+  long int vv1o2 = v*(v+1)/2;
+  double nrm,Eold,s1,start,end,siter;
 
   iter=0;
   diis_iter=-3;
   nrm=1.0;
   Eold=1.0e9;
-  en=0.0;
+  eccsd=0.0;
 
   fprintf(outfile,"\n");
   fprintf(outfile,
@@ -298,9 +298,9 @@ PsiReturnType CoupledCluster::CCSDIterations(){
       }
 
       // update the amplitudes and check the energy
-      Eold = en;
+      Eold = eccsd;
       UpdateT1(iter);
-      en = UpdateT2(iter);
+      eccsd = UpdateT2(iter);
 
       // diis error vector and convergence check
       nrm = DIISErrorVector(diis_iter);
@@ -314,9 +314,9 @@ PsiReturnType CoupledCluster::CCSDIterations(){
 
       iter_stop = time(NULL);
       fprintf(outfile,"  %5i %5i %15.10f %15.10f %15.10f %8d\n",
-            iter,diis_iter,en,en-Eold,nrm,(int)iter_stop-(int)iter_start);
+            iter,diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
-      if (iter==1) mp2 = en;
+      if (iter==1) emp2 = eccsd;
   }
   times(&total_tmstime);
   time_stop = time(NULL);
@@ -331,8 +331,8 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   fprintf(outfile,"\n");
   fprintf(outfile,"  CCSD iterations converged!\n");
   fprintf(outfile,"\n");
-  fprintf(outfile,"  MP2 Correlation Energy:  %20.12lf\n",mp2);
-  fprintf(outfile,"  CCSD Correlation Energy: %20.12lf\n",en);
+  fprintf(outfile,"  MP2 Correlation Energy:  %20.12lf\n",emp2);
+  fprintf(outfile,"  CCSD Correlation Energy: %20.12lf\n",eccsd);
   fprintf(outfile,"\n");
   fprintf(outfile,"  Total time for CCSD iterations: %10.2lf s (user)\n",user_stop-user_start);
   fprintf(outfile,"                                  %10.2lf s (system)\n",sys_stop-sys_start);
@@ -344,7 +344,7 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   fflush(outfile);
 
   // save ccsd energy
-  energy = en;
+  energy = eccsd;
 
   return Success;
 }
@@ -364,9 +364,9 @@ void CoupledCluster::DefineTilingCPU(){
   long int o2 = o*o;
 
   // number of doubles in total memory
-  long int ndoubles = memory/8.;
+  long int ndoubles = memory/8L;
   // minus storage for other necessary buffers 
-  ndoubles -= 3*o*o*v*v+5*o*v+v*v+(o+v);
+  ndoubles -= 3L*o*o*v*v+5L*o*v+v*v+(o+v);
 
   fprintf(outfile,"\n");
   fprintf(outfile,"  Define tiling:\n");
@@ -376,74 +376,76 @@ void CoupledCluster::DefineTilingCPU(){
      throw PsiException("out of memory: no amount of tiling can fix this!",__FILE__,__LINE__);
   }
 
-  ntiles = -999;
+  ntiles = -999L;
+  tilesize = v*(v+1L)/2L;
+  ntiles = 1L;
 
   // check whether blocking of the vabcd diagram is necessary
-  if (ndoubles>v*(v+1)/2*v*(v+1)/2){
-     tilesize = v*(v+1)/2;
-     ntiles = 1;
+  if (ndoubles>v*(v+1L)/2L*v*(v+1L)/2L){
+     tilesize = v*(v+1L)/2L;
+     ntiles = 1L;
   }
   else{
-     for (i=2; i<=v*(v+1)/2; i++){
-         if (ndoubles>(double)tilesize*v*(v+1)/2/i+1){
-            tilesize = v*(v+1)/2/i;
-            if (i*tilesize < v*(v+1)/2) tilesize++;
+     for (i=2L; i<=v*(v+1L)/2L; i++){
+         if (ndoubles>tilesize*v*(v+1L)/2L/i+1L){
+            tilesize = v*(v+1L)/2L/i;
+            if (i*tilesize < v*(v+1L)/2L) tilesize++;
             ntiles = i;
             break;
          }
      }
-     if (ntiles==-999){
+     if (ntiles==-999L){
         throw PsiException("out of memory: (ab,cd)",__FILE__,__LINE__);
      }
   }
-  lasttile = v*(v+1)/2 - (ntiles-1)*tilesize;
+  lasttile = v*(v+1L)/2L - (ntiles-1L)*tilesize;
 
-  fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3i blocks.\n",ntiles); 
+  fprintf(outfile,"        v(ab,cd) diagrams will be evaluated in %3li blocks.\n",ntiles); 
   fflush(outfile);
 
   // ov^3 type 1:
   if (v>ndoubles){
      throw PsiException("out of memory: (ab,ci)",__FILE__,__LINE__);
   }
-  nov2tiles=1;
-  ov2tilesize=ov2/1;
+  nov2tiles=1L;
+  ov2tilesize=ov2/1L;
   if (nov2tiles*ov2tilesize<ov2) ov2tilesize++;
   while(v*ov2tilesize>ndoubles){
      nov2tiles++;
      ov2tilesize = ov2/nov2tiles;
      if (nov2tiles*ov2tilesize<ov2) ov2tilesize++;
   }
-  lastov2tile = ov2 - (nov2tiles-1)*ov2tilesize;
+  lastov2tile = ov2 - (nov2tiles-1L)*ov2tilesize;
 
-  fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3i blocks over ov2.\n",nov2tiles); 
+  fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3li blocks over ov2.\n",nov2tiles); 
   fflush(outfile);
 
   // ov^3 type 2:
   if (v*v>ndoubles){
      throw PsiException("out of memory: (ab,ci)",__FILE__,__LINE__);
   }
-  novtiles=1;
-  ovtilesize=ov/1;
+  novtiles=1L;
+  ovtilesize=ov/1L;
   if (novtiles*ovtilesize<ov) ovtilesize++;
   while(v*v*ovtilesize>ndoubles){
      novtiles++;
      ovtilesize = ov/novtiles;
      if (novtiles*ovtilesize<ov) ovtilesize++;
   }
-  lastovtile = ov - (novtiles-1)*ovtilesize;
-  fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3i blocks over ov.\n",novtiles); 
+  lastovtile = ov - (novtiles-1L)*ovtilesize;
+  fprintf(outfile,"        v(ab,ci) diagrams will be evaluated in %3li blocks over ov.\n",novtiles); 
   fflush(outfile);
 
   // tiling of I2iabj diagram:  does nothing for the serial version...
-  niabjtiles=1;
+  niabjtiles=1L;
   iabjtilesize = ov/niabjtiles;
   if (niabjtiles*iabjtilesize<ov) iabjtilesize++;
-  lastiabjtile = ov - (niabjtiles-1)*iabjtilesize;
+  lastiabjtile = ov - (niabjtiles-1L)*iabjtilesize;
 
-  niajbtiles=1;
+  niajbtiles=1L;
   iajbtilesize = ov/niajbtiles;
   if (niajbtiles*iajbtilesize<ov) iajbtilesize++;
-  lastiajbtile = ov - (niajbtiles-1)*iajbtilesize;
+  lastiajbtile = ov - (niajbtiles-1L)*iajbtilesize;
 }
 
 /*===================================================================
@@ -453,9 +455,9 @@ void CoupledCluster::DefineTilingCPU(){
 ===================================================================*/
 void CoupledCluster::AllocateMemory(Options&options){
 
-  ULI i,o=ndoccact;
-  ULI v=nvirt;
-  ULI dim;
+  long int i,o=ndoccact;
+  long int v=nvirt;
+  long int dim;
 
   // define tiling for v^4 and ov^3 diagrams according to how much memory is available
   DefineTilingCPU();
@@ -501,9 +503,9 @@ void CoupledCluster::AllocateMemory(Options&options){
 }
 
 void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI i,a,m,e,id,one=1;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int i,a,m,e,id,one=1;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_AKJC2,"E2akjc2",(char*)&tempv[0],o*o*v*v*sizeof(double));
@@ -527,9 +529,9 @@ void CoupledCluster::CPU_t1_vmeai(CCTaskParams params){
 }
 
 void CoupledCluster::CPU_t1_vmeni(CCTaskParams params){
-  ULI m,e,n,a,id;
-  ULI o=ndoccact;
-  ULI v=nvirt;
+  long int m,e,n,a,id;
+  long int o=ndoccact;
+  long int v=nvirt;
   for (a=0,id=0; a<v; a++){
   for (m=0; m<o; m++){
   for (n=0; n<o; n++){
@@ -546,9 +548,9 @@ void CoupledCluster::CPU_t1_vmeni(CCTaskParams params){
 }
 
 void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
-  ULI m,e,i,f,a,id;
-  ULI o=ndoccact;
-  ULI v=nvirt;
+  long int m,e,i,f,a,id;
+  long int o=ndoccact;
+  long int v=nvirt;
   for (f=0,id=0; f<v; f++){
   for (m=0; m<o; m++){
   for (e=0; e<v; e++){
@@ -556,8 +558,8 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
       tempt[id++] = 2.*tb[e*v*o*o+f*o*o+m*o+i]-tb[e*v*o*o+f*o*o+i*o+m];
   }}}}
 
-  ULI tilesize,lasttile,ntiles=1;
-  ULI ov2 = o*v*v;
+  long int tilesize,lasttile,ntiles=1;
+  long int ov2 = o*v*v;
   // tile v in chunks of o
   tilesize=v;
   for (i=1; i<=v; i++){
@@ -586,9 +588,9 @@ void CoupledCluster::CPU_t1_vmaef(CCTaskParams params){
 }
 
 void CoupledCluster::CPU_I1ab(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI b,m,n,e,a,id=0;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int b,m,n,e,a,id=0;
   // build I1(a,b)
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
@@ -611,7 +613,7 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
 
   // test swapping indices on t1: this will make the out-of-core 
   // integral sort at the beginning MUCH easier
-  ULI i,j,l,k,c,d;
+  long int i,j,l,k,c,d;
   for (i=0; i<o; i++){
       F_DCOPY(v,t1+i,o,integrals+i*v,1);
   }
@@ -659,16 +661,16 @@ void CoupledCluster::CPU_I1ab(CCTaskParams params){
 
 // CPU_I2p_abci required ov^3 storage.  by refactorizing, we reduce storage to o^3v, but increase cost by 2o^2v^3
 void CoupledCluster::CPU_I2p_abci_refactored(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI a,b,c,i,j,id=0;
-  ULI ov2 = o*v*v;
-  ULI o2v = o*o*v;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int a,b,c,i,j,id=0;
+  long int ov2 = o*v*v;
+  long int o2v = o*o*v;
 
   FILE*fp;
 
   // tilesize * v <= o^2v^2
-  ULI tilesize,lasttile,ntiles=1;
+  long int tilesize,lasttile,ntiles=1;
   tilesize=ov2;
   for (i=1; i<=ov2; i++){
       if (o*o*v*v>=(double)tilesize*v/i){
@@ -746,14 +748,14 @@ void CoupledCluster::CPU_I2p_abci_refactored(CCTaskParams params){
   psio.reset();
 }
 void CoupledCluster::CPU_I2p_abci_refactored_term1(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI a,b,c,i,j,id=0;
-  ULI ov2 = o*v*v;
-  ULI o2v = o*o*v;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int a,b,c,i,j,id=0;
+  long int ov2 = o*v*v;
+  long int o2v = o*o*v;
 
   // tilesize * v <= o^2v^2
-  ULI tilesize,lasttile,ntiles=1;
+  long int tilesize,lasttile,ntiles=1;
   tilesize=ov2;
   for (i=1; i<=ov2; i++){
       if (o*o*v*v>=(double)tilesize*v/i){
@@ -795,11 +797,11 @@ void CoupledCluster::CPU_I2p_abci_refactored_term1(CCTaskParams params){
 
 }
 void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI a,b,c,i,j,id=0;
-  ULI ov2 = o*v*v;
-  ULI o2v = o*o*v;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int a,b,c,i,j,id=0;
+  long int ov2 = o*v*v;
+  long int o2v = o*o*v;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
 
@@ -825,11 +827,11 @@ void CoupledCluster::CPU_I2p_abci_refactored_term2(CCTaskParams params){
   psio.reset();
 }
 void CoupledCluster::CPU_I2p_abci_refactored_term3(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI a,b,c,i,j,id=0;
-  ULI ov2 = o*v*v;
-  ULI o2v = o*o*v;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int a,b,c,i,j,id=0;
+  long int ov2 = o*v*v;
+  long int o2v = o*o*v;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
 
@@ -864,11 +866,11 @@ void CoupledCluster::CPU_I2p_abci_refactored_term3(CCTaskParams params){
 
 void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
 
-  ULI o = ndoccact;
-  ULI v = nvirt;
-  ULI m,j,e,f,i,a,b;//,one=1;
-  ULI ov2 = o*v*v;
-  ULI id=0;
+  long int o = ndoccact;
+  long int v = nvirt;
+  long int m,j,e,f,i,a,b;//,one=1;
+  long int ov2 = o*v*v;
+  long int id=0;
 
   // build I1(i,a). n^4
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -954,13 +956,13 @@ void CoupledCluster::CPU_I1pij_I1ia_lessmem(CCTaskParams params){
    update amplitudes
 
 ================================================================*/
-void CoupledCluster::UpdateT1(ULI iter){
+void CoupledCluster::UpdateT1(long int iter){
 
-  ULI v = nvirt;
-  ULI o = ndoccact;
-  ULI rs = nmo;
-  ULI i,j,a,b;
-  ULI id=0;
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
+  long int id=0;
   double tnew,dia;
   if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
@@ -975,14 +977,14 @@ void CoupledCluster::UpdateT1(ULI iter){
      }
   }
 }
-double CoupledCluster::UpdateT2(ULI iter){
+double CoupledCluster::UpdateT2(long int iter){
 
-  ULI v = nvirt;
-  ULI o = ndoccact;
-  ULI rs = nmo;
-  ULI i,j,a,b;
+  long int v = nvirt;
+  long int o = ndoccact;
+  long int rs = nmo;
+  long int i,j,a,b;
   double ta,tnew,dijab,da,dab,dabi;
-  ULI iajb,jaib,ijab=0;
+  long int iajb,jaib,ijab=0;
   double energy = 0.0;
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
@@ -1052,8 +1054,8 @@ double CoupledCluster::UpdateT2(ULI iter){
    diis functions
 
 ================================================================*/
-void CoupledCluster::DIIS(double*c,ULI nvec,ULI n){
-  ULI i,j,k;
+void CoupledCluster::DIIS(double*c,long int nvec,long int n){
+  long int i,j,k;
   doublereal sum,dum;
   integer*ipiv,nvar;
   nvar = nvec+1;
@@ -1102,9 +1104,9 @@ void CoupledCluster::DIIS(double*c,ULI nvec,ULI n){
   free(ipiv);
   psio.reset();
 }
-void CoupledCluster::DIISOldVector(ULI iter,int diis_iter){
-  ULI j,o = ndoccact;
-  ULI arraysize,v = nvirt;
+void CoupledCluster::DIISOldVector(long int iter,int diis_iter){
+  long int j,o = ndoccact;
+  long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
 
   char*oldvector=(char*)malloc(1000*sizeof(char));
@@ -1127,8 +1129,8 @@ void CoupledCluster::DIISOldVector(ULI iter,int diis_iter){
 }
 double CoupledCluster::DIISErrorVector(int diis_iter){
   double nrm;
-  ULI i,j,o = ndoccact;
-  ULI arraysize,v = nvirt;
+  long int i,j,o = ndoccact;
+  long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
 
   char*oldvector = (char*)malloc(1000*sizeof(char));
@@ -1168,8 +1170,8 @@ double CoupledCluster::DIISErrorVector(int diis_iter){
   return nrm;
 }
 void CoupledCluster::DIISNewAmplitudes(){
-  ULI i,j,o = ndoccact;
-  ULI arraysize,v = nvirt;
+  long int i,j,o = ndoccact;
+  long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
 
   char*oldvector;
@@ -1198,7 +1200,7 @@ void CoupledCluster::DIISNewAmplitudes(){
  *  Build and use I2ijkl
  */
 void CoupledCluster::I2ijkl(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1256,7 +1258,7 @@ void CoupledCluster::I2ijkl(CCTaskParams params){
  *  All ranks contribute to the residual.
  */
 void CoupledCluster::I2piajk_tiled(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1272,7 +1274,7 @@ void CoupledCluster::I2piajk_tiled(CCTaskParams params){
       }
   }
 
-  addr = psio_get_address(PSIO_ZERO,(ULI)params.ntile*ovtilesize*v*v*sizeof(double));
+  addr = psio_get_address(PSIO_ZERO,(long int)params.ntile*ovtilesize*v*v*sizeof(double));
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
   // build part of the intermediate
@@ -1314,7 +1316,7 @@ void CoupledCluster::I2piajk_tiled(CCTaskParams params){
  *  Build and use I2'iajk
  */
 void CoupledCluster::I2piajk(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1364,7 +1366,7 @@ void CoupledCluster::I2piajk(CCTaskParams params){
  *  Use Vabcd1
  */
 void CoupledCluster::Vabcd1(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1425,7 +1427,7 @@ void CoupledCluster::Vabcd1(CCTaskParams params){
  *  Use Vabcd1 ... tiled with each tile on a different proc
  */
 void CoupledCluster::Vabcd1_tiled(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1454,7 +1456,7 @@ void CoupledCluster::Vabcd1_tiled(CCTaskParams params){
       }
   }
   psio->open(PSIF_ABCD1,PSIO_OPEN_OLD);
-  addr = psio_get_address(PSIO_ZERO,(ULI)params.ntile*tilesize*v*(v+1)/2*sizeof(double));
+  addr = psio_get_address(PSIO_ZERO,(long int)params.ntile*tilesize*v*(v+1)/2*sizeof(double));
 
   memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
 
@@ -1488,7 +1490,7 @@ void CoupledCluster::Vabcd1_tiled(CCTaskParams params){
  *  Use Vabcd2
  */
 void CoupledCluster::Vabcd2(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   int sg,sg2;
   o = ndoccact;
   v = nvirt;
@@ -1549,7 +1551,7 @@ void CoupledCluster::Vabcd2(CCTaskParams params){
  *  Use Vabcd2 ... tiled with each tile on a different proc
  */
 void CoupledCluster::Vabcd2_tiled(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   int sg,sg2;
   o = ndoccact;
   v = nvirt;
@@ -1576,7 +1578,7 @@ void CoupledCluster::Vabcd2_tiled(CCTaskParams params){
       }
   }
   psio->open(PSIF_ABCD2,PSIO_OPEN_OLD);
-  addr = psio_get_address(PSIO_ZERO,(ULI)params.ntile*tilesize*v*(v+1)/2*sizeof(double));
+  addr = psio_get_address(PSIO_ZERO,(long int)params.ntile*tilesize*v*(v+1)/2*sizeof(double));
 
   memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
 
@@ -1613,8 +1615,8 @@ void CoupledCluster::Vabcd2_tiled(CCTaskParams params){
  *  Distribute ranks to build and use I2iabj
  */
 void CoupledCluster::Distribute_I2iabj(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
+  long int o = ndoccact;
+  long int v = nvirt;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
@@ -1623,14 +1625,14 @@ void CoupledCluster::Distribute_I2iabj(CCTaskParams params){
   psio->close(PSIF_TEMP,1);
 
   // build intermediate
-  for (ULI i=0; i<niabjtiles; i++){
+  for (long int i=0; i<niabjtiles; i++){
       I2iabj_BuildIntermediate1(CCSubParams1[i]);
   }
-  for (ULI i=0; i<niabjtiles; i++){
+  for (long int i=0; i<niabjtiles; i++){
       I2iabj_BuildIntermediate2(CCSubParams1[i+niabjtiles]);
   }
   // use intermediate
-  for (ULI i=0; i<niabjtiles; i++){
+  for (long int i=0; i<niabjtiles; i++){
       I2iabj_UseIntermediate(CCSubParams1[i+2*niabjtiles]);
   }
   psio.reset();
@@ -1639,7 +1641,7 @@ void CoupledCluster::Distribute_I2iabj(CCTaskParams params){
  *  Build I2iabj in pieces on different processors
  */
 void CoupledCluster::I2iabj_BuildIntermediate1(CCTaskParams params){
-  ULI id,i,j,a,b,o,v,mytile;
+  long int id,i,j,a,b,o,v,mytile;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1693,7 +1695,7 @@ void CoupledCluster::I2iabj_BuildIntermediate1(CCTaskParams params){
   psio.reset();
 }
 void CoupledCluster::I2iabj_BuildIntermediate2(CCTaskParams params){
-  ULI id,i,j,a,b,o,v,mytile;
+  long int id,i,j,a,b,o,v,mytile;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1761,7 +1763,7 @@ void CoupledCluster::I2iabj_BuildIntermediate2(CCTaskParams params){
   psio.reset();
 }
 void CoupledCluster::I2iabj_BuildIntermediate(CCTaskParams params){
-  ULI id,i,j,a,b,o,v,mytile;
+  long int id,i,j,a,b,o,v,mytile;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1850,7 +1852,7 @@ void CoupledCluster::I2iabj_BuildIntermediate(CCTaskParams params){
  *  Use I2iabj in pieces on different processors
  */
 void CoupledCluster::I2iabj_UseIntermediate(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -1867,9 +1869,9 @@ void CoupledCluster::I2iabj_UseIntermediate(CCTaskParams params){
       }
   }
 
-  ULI mytile = params.ntile;
+  long int mytile = params.ntile;
   psio->open(PSIF_TEMP,PSIO_OPEN_OLD);
-  addr = PSIO_ZERO;//psio_get_address(PSIO_ZERO,(ULI)mytile*iabjtilesize*o*v*sizeof(double));
+  addr = PSIO_ZERO;//psio_get_address(PSIO_ZERO,(long int)mytile*iabjtilesize*o*v*sizeof(double));
   memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
   psio->read_entry(PSIF_TEMP,"temporary",(char*)&integrals[0],o*v*o*v*sizeof(double));
   psio->close(PSIF_TEMP,1);
@@ -1903,7 +1905,7 @@ void CoupledCluster::I2iabj_UseIntermediate(CCTaskParams params){
  *  Build and use I2iabj
  */
 void CoupledCluster::I2iabj(CCTaskParams params){
-  ULI id,i,j,a,b,o,v,mytile;
+  long int id,i,j,a,b,o,v,mytile;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -2050,8 +2052,8 @@ void CoupledCluster::I2iabj(CCTaskParams params){
  *  Distribute ranks to build and use I2iajb
  */
 void CoupledCluster::Distribute_I2iajb(CCTaskParams params){
-  ULI o = ndoccact;
-  ULI v = nvirt;
+  long int o = ndoccact;
+  long int v = nvirt;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
   psio->open(PSIF_TEMP,PSIO_OPEN_NEW);
@@ -2060,14 +2062,14 @@ void CoupledCluster::Distribute_I2iajb(CCTaskParams params){
   psio->close(PSIF_TEMP,1);
 
   // build intermediate
-  for (ULI i=0; i<niajbtiles; i++){
+  for (long int i=0; i<niajbtiles; i++){
       I2iajb_BuildIntermediate(CCSubParams2[i]);
   }
   // use intermediate
-  for (ULI i=0; i<niajbtiles; i++){
+  for (long int i=0; i<niajbtiles; i++){
       I2iajb_UseIntermediate1(CCSubParams2[i+niajbtiles]);
   }
-  for (ULI i=0; i<niajbtiles; i++){
+  for (long int i=0; i<niajbtiles; i++){
       I2iajb_UseIntermediate2(CCSubParams2[i+2*niajbtiles]);
   }
 }
@@ -2075,7 +2077,7 @@ void CoupledCluster::Distribute_I2iajb(CCTaskParams params){
  *  Build I2iajb in parallel
  */
 void CoupledCluster::I2iajb_BuildIntermediate(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -2096,7 +2098,7 @@ void CoupledCluster::I2iajb_BuildIntermediate(CCTaskParams params){
   }
 
 
-  ULI mytile = params.ntile;
+  long int mytile = params.ntile;
   if (mytile==0){
      psio->open(PSIF_AKJC2,PSIO_OPEN_OLD);
      psio->read_entry(PSIF_AKJC2,"E2akjc2",(char*)&tempt[0],o*o*v*v*sizeof(double));
@@ -2172,7 +2174,7 @@ void CoupledCluster::I2iajb_BuildIntermediate(CCTaskParams params){
  *  Use I2iajb first time in parallel
  */
 void CoupledCluster::I2iajb_UseIntermediate1(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -2192,7 +2194,7 @@ void CoupledCluster::I2iajb_UseIntermediate1(CCTaskParams params){
   psio->read_entry(PSIF_TEMP,"temporary",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_TEMP,1);
 
-  ULI mytile = params.ntile;
+  long int mytile = params.ntile;
   memset((void*)tempv,'\0',o*o*v*v*sizeof(double));
   if (mytile<niajbtiles-1){
      helper_->GPUTiledDGEMM('n','n',o*v,iajbtilesize,o*v,-1.0,integrals,o*v,tempt+mytile*iajbtilesize*o*v,o*v,0.0,tempv+mytile*iajbtilesize*o*v,o*v);
@@ -2220,7 +2222,7 @@ void CoupledCluster::I2iajb_UseIntermediate1(CCTaskParams params){
  *  Use I2iajb second time in parallel
  */
 void CoupledCluster::I2iajb_UseIntermediate2(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -2240,7 +2242,7 @@ void CoupledCluster::I2iajb_UseIntermediate2(CCTaskParams params){
   psio->read_entry(PSIF_TEMP,"temporary",(char*)&integrals[0],o*o*v*v*sizeof(double));
   psio->close(PSIF_TEMP,1);
 
-  ULI mytile = params.ntile;
+  long int mytile = params.ntile;
   memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
   if (mytile<niajbtiles-1){
      helper_->GPUTiledDGEMM('n','n',o*v,iajbtilesize,o*v,-1.0,integrals,o*v,tempv+mytile*iajbtilesize*o*v,o*v,0.0,tempt+mytile*iajbtilesize*o*v,o*v);
@@ -2268,7 +2270,7 @@ void CoupledCluster::I2iajb_UseIntermediate2(CCTaskParams params){
  *  Build and use I2iajb
  */
 void CoupledCluster::I2iajb(CCTaskParams params){
-  ULI id,i,j,a,b,o,v;
+  long int id,i,j,a,b,o,v;
   o = ndoccact;
   v = nvirt;
   boost::shared_ptr<PSIO> psio(new PSIO());
@@ -2406,11 +2408,11 @@ void CoupledCluster::I2iajb(CCTaskParams params){
 void CoupledCluster::DefineTasks(){
   CCTasklist = new CCTask[1000];
   CCParams   = new CCTaskParams[1000];
-  ULI o = ndoccact;
-  ULI v = nvirt;
+  long int o = ndoccact;
+  long int v = nvirt;
 
   // these will be used for the parallel version
-  ULI niabjranks,niajbranks;
+  long int niabjranks,niajbranks;
   niabjranks=niajbranks=1;
 
   ncctasks=0;

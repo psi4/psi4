@@ -35,7 +35,13 @@ class GPUHelper{
 
     // tiled dgemm for gpu
     void GPUTiledDGEMM(char transa,char transb,long int m, long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc);
+    void GPUTiledDGEMM_NoThread(char transa,char transb,long int m, long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread);
     void GPU_DGEMM(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc);
+
+    void GPU_DGEMM_2DTile_nn(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread);
+    void GPU_DGEMM_2DTile_nt(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread);
+    void GPU_DGEMM_2DTile_tn(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread);
+    void GPU_DGEMM_2DTile_tt(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread);
 
     // threaded tiled dgemm for gpu
     void GPU_DGEMM_2DTile_nn_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc);
@@ -51,24 +57,25 @@ class GPUHelper{
       * the default value is num_gpus * (gpumemory-extraroom), which
       * can be quite large.
       */
-    ULI max_mapped_memory;
+    long int max_mapped_memory;
     // available gpu memory
-    ULI gpumemory;
+    long int gpumemory;
     // wasted gpu memory
-    ULI extraroom;
+    long int extraroom;
     // how large must a gemm be to go on the gpu?
-    ULI gputhresh;
+    long int gputhresh;
     // pointers to gpu and mapped cpu memory
     double**gpuarray,**tmp;
 
     // tiling
-    void Tiling(double mem1,double mem1,long int m,long int n,long int k);
+    void Tiling(long int mem1,long int mem1,long int m,long int n,long int k);
+    void TilingNoThread(long int mem1,long int mem1,long int m,long int n,long int k);
     long int ntilesN,ntilesM,ntilesK;
     long int tilesizeK,tilesizeN,tilesizeM;
     long int lasttileK,lasttileN,lasttileM;
     long int *tilesizesM,*tilesizesN,*tilesizesK;
 
-    int ndoccact,nvirt,nmo,num_gpus;
+    long int ndoccact,nvirt,nmo,num_gpus;
 
 };
 };
