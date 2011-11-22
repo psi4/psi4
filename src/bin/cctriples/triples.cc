@@ -237,8 +237,11 @@ PsiReturnType cctriples(Options &options)
   /* Dump triples energy to CC_INFO */
   psio_write_entry(CC_INFO, "(T) Energy", (char *) &(ET), sizeof(double));
 
-  Process::environment.globals["(T) ENERGY"] = ET; // LAB TODO  now duplicate so probably drop
+  Process::environment.globals["(T) ENERGY"] = ET; 
+  Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
+  Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ET+ moinfo.ecc;
   Process::environment.globals["CURRENT ENERGY"] = ET+ moinfo.ecc+moinfo.eref;
+  Process::environment.globals["CORRELATION ENERGY"] = ET+ moinfo.ecc;
 
   dpd_close(0);
 
