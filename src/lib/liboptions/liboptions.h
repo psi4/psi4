@@ -55,6 +55,7 @@ public:
 
     bool has_changed() const;
     void changed();
+    void dechanged();
 
     void to_upper(std::string& str);
 
@@ -219,6 +220,7 @@ public:
     bool has_changed() const;
 
     void changed();
+    void dechanged();
 
     void add_choices(std::string str);
 

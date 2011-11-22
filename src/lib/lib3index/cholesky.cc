@@ -98,7 +98,7 @@ void Cholesky::choleskify()
     }
 
     // Copy into a more permanant Matrix object
-    L_ = boost::shared_ptr<Matrix>(new Matrix("Partial Cholesky", Q_, n));
+    L_ = SharedMatrix(new Matrix("Partial Cholesky", Q_, n));
     double** Lp = L_->pointer();
 
     for (int Q = 0; Q < Q_; Q++) {
@@ -107,7 +107,7 @@ void Cholesky::choleskify()
     }
 }
 
-CholeskyMatrix::CholeskyMatrix(boost::shared_ptr<Matrix> A, double delta, unsigned long int memory) :
+CholeskyMatrix::CholeskyMatrix(SharedMatrix A, double delta, unsigned long int memory) :
     A_(A), Cholesky(delta, memory)
 {
     if (A_->nirrep() != 1)
@@ -208,7 +208,7 @@ void CholeskyERI::compute_row(int row, double* target)
     }
 }
 
-CholeskyMP2::CholeskyMP2(boost::shared_ptr<Matrix> Qia,
+CholeskyMP2::CholeskyMP2(SharedMatrix Qia,
     boost::shared_ptr<Vector> eps_aocc,
     boost::shared_ptr<Vector> eps_avir,
     bool symmetric,
@@ -310,7 +310,7 @@ void CholeskyDelta::compute_row(int row, double* target)
 }
 
 CholeskyLocal::CholeskyLocal(
-    boost::shared_ptr<Matrix> C,
+    SharedMatrix C,
     double delta, unsigned long int memory) :
     C_(C), Cholesky(delta, memory)
 {

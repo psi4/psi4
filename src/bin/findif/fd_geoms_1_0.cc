@@ -8,7 +8,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
+std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
   // Print what we are doing
   fprintf(outfile,"\tUsing finite-differences of energies to determine gradients.\n");
@@ -53,16 +53,16 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
   ref_geom->set_name("Reference geometry");
 
   // to be returned and converted into "matrix_vector" list in python
-  std::vector< boost::shared_ptr<Matrix> > disp_geoms;
+  std::vector< SharedMatrix > disp_geoms;
 
   if (pts == 3) {
     for (int i=0; i<Nsalc; ++i) {
       // - displacement
-      boost::shared_ptr<Matrix> geom_m(ref_geom->clone());
+      SharedMatrix geom_m(ref_geom->clone());
       geom_m->set_name("Displacement - SALC #" + to_string(i+1));
 
       // + displacement
-      boost::shared_ptr<Matrix> geom_p(ref_geom->clone());
+      SharedMatrix geom_p(ref_geom->clone());
       geom_p->set_name("Displacement + SALC #" + to_string(i+1));
 
       int nc = cdsalc[i].ncomponent();
@@ -83,16 +83,16 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options) {
   } // pts 3
   else if (pts == 5) {
     for (int i=0; i<Nsalc; ++i) {
-      boost::shared_ptr<Matrix> geom_m2(ref_geom->clone());
+      SharedMatrix geom_m2(ref_geom->clone());
       geom_m2->set_name("Displacement - SALC #" + to_string(i+1) + " * 2");
 
-      boost::shared_ptr<Matrix> geom_m1(ref_geom->clone());
+      SharedMatrix geom_m1(ref_geom->clone());
       geom_m1->set_name("Displacement - SALC #" + to_string(i+1));
 
-      boost::shared_ptr<Matrix> geom_p1(ref_geom->clone());
+      SharedMatrix geom_p1(ref_geom->clone());
       geom_p1->set_name("Displacement + SALC #" + to_string(i+1));
 
-      boost::shared_ptr<Matrix> geom_p2(ref_geom->clone());
+      SharedMatrix geom_p2(ref_geom->clone());
       geom_p2->set_name("Displacement + SALC #" + to_string(i+1) + " * 2");
 
       int nc = cdsalc[i].ncomponent();

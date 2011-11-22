@@ -1,13 +1,14 @@
 /*! \file
     \ingroup DETCI
-    \brief Enter brief description of file here 
+    \brief Enter brief description of file here
 */
 #include <cstdio>
 #include <cstdlib>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libchkpt/chkpt.h>
+#include <libmints/wavefunction.h>
 #include <libqt/qt.h>
+#include <libpsio/psio.h>
 #include "structs.h"
 #define EXTERN
 #include "globals.h"
@@ -16,8 +17,8 @@ namespace psi { namespace detci {
 
 /*
 ** GET_MO_INFO
-** 
-** Reads PSIF_CHKPT & input.dat and gets all sorts of useful information about 
+**
+** Reads PSIF_CHKPT & input.dat and gets all sorts of useful information about
 ** the molecular orbitals (such as their reordering array, the docc
 ** array, frozen orbitals, etc.)
 **
@@ -37,7 +38,7 @@ void get_mo_info(Options &options)
    int parsed_ras1=0, parsed_ras2=0, do_ras4;
    int *rstr_docc, *rstr_uocc;
 
-   CalcInfo.maxKlist = 0.0; 
+   CalcInfo.maxKlist = 0.0;
 
    chkpt_init(PSIO_OPEN_OLD);
    CalcInfo.nirreps = chkpt_rd_nirreps();
@@ -52,8 +53,8 @@ void get_mo_info(Options &options)
    CalcInfo.enuc = chkpt_rd_enuc();
    CalcInfo.escf = chkpt_rd_escf();
    CalcInfo.efzc = chkpt_rd_efzc();
-   eig_unsrt = chkpt_rd_evals(); 
-   chkpt_close(); 
+   eig_unsrt = chkpt_rd_evals();
+   chkpt_close();
 
    if (CalcInfo.iopen && Parameters.opentype == PARM_OPENTYPE_NONE) {
       fprintf(outfile, "Warning: iopen=1,opentype=none. Making iopen=0\n");
@@ -69,8 +70,13 @@ void get_mo_info(Options &options)
       Parameters.ref_sym = 0;
       }
 
-   CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
-   CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
+   //CalcInfo.frozen_docc = init_int_array(CalcInfo.nirreps);
+   //CalcInfo.frozen_uocc = init_int_array(CalcInfo.nirreps);
+   CalcInfo.frozen_docc =
+     Process::environment.reference_wavefunction()->frzcpi();
+   CalcInfo.frozen_uocc =
+     Process::environment.reference_wavefunction()->frzvpi();
+
    rstr_docc = init_int_array(CalcInfo.nirreps);
    rstr_uocc = init_int_array(CalcInfo.nirreps);
    CalcInfo.explicit_core = init_int_array(CalcInfo.nirreps);
@@ -87,12 +93,12 @@ void get_mo_info(Options &options)
      fprintf(outfile, "Error in ras_set().  Aborting.\n");
      exit(1);
    }
- 
+
    if (1) { /* for now, always treat restricted as frozen */
      for (i=0; i<CalcInfo.nirreps; i++) {
        CalcInfo.frozen_docc[i] += rstr_docc[i];
        CalcInfo.frozen_uocc[i] += rstr_uocc[i];
-     } 
+     }
    }
    else { /* for future use */
      for (i=0; i<CalcInfo.nirreps; i++) {
@@ -112,10 +118,10 @@ void get_mo_info(Options &options)
   for (i=0; i<CalcInfo.nirreps; i++) {
      if (CalcInfo.max_orbs_per_irrep < CalcInfo.orbs_per_irr[i])
        CalcInfo.max_orbs_per_irrep = CalcInfo.orbs_per_irr[i];
-     if (CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] - 
+     if (CalcInfo.max_pop_per_irrep < (CalcInfo.orbs_per_irr[i] -
                                    CalcInfo.frozen_uocc[i]))
        CalcInfo.max_pop_per_irrep = CalcInfo.orbs_per_irr[i] -
-                                    CalcInfo.frozen_uocc[i];      
+                                    CalcInfo.frozen_uocc[i];
      }
 
 
@@ -174,11 +180,11 @@ void get_mo_info(Options &options)
       }
    else if (Parameters.opentype == PARM_OPENTYPE_SINGLET) {
       for (i=0; i<CalcInfo.nirreps; i++) { /* closed-shell part */
-         CalcInfo.spab += CalcInfo.socc[i];      
+         CalcInfo.spab += CalcInfo.socc[i];
          CalcInfo.num_alp += CalcInfo.docc[i];
          CalcInfo.num_bet += CalcInfo.docc[i];
          }
-      if (CalcInfo.spab % 2) { 
+      if (CalcInfo.spab % 2) {
          fprintf(outfile,"For opentype=singlet must have even number ");
          fprintf(outfile,"of socc electrons!\n");
          exit(1);
@@ -191,14 +197,14 @@ void get_mo_info(Options &options)
          while (k < j) {
             if (tmp < CalcInfo.spab) {
                CalcInfo.num_alp++;
-               tmp++; 
+               tmp++;
                k++;
                }
-            else { 
+            else {
                CalcInfo.num_bet++;
                tmp++;
                k++;
-               } 
+               }
             }
          }
       }
@@ -219,15 +225,15 @@ void get_mo_info(Options &options)
    CalcInfo.num_fzc_orbs = 0;
    CalcInfo.num_cor_orbs = 0;
    for (i=0; i<CalcInfo.nirreps; i++) {
-      CalcInfo.num_fzv_orbs += CalcInfo.frozen_uocc[i];  
+      CalcInfo.num_fzv_orbs += CalcInfo.frozen_uocc[i];
       CalcInfo.num_vir_orbs += CalcInfo.explicit_vir[i];
-      CalcInfo.num_fzc_orbs += CalcInfo.frozen_docc[i];  
+      CalcInfo.num_fzc_orbs += CalcInfo.frozen_docc[i];
       CalcInfo.num_cor_orbs += CalcInfo.explicit_core[i];
    }
 
    /* calculate number of orbitals active in CI */
    /* maybe this changes later for cor orbs, depends on where we go w/ it */
-   CalcInfo.num_ci_orbs = CalcInfo.nmo - CalcInfo.num_fzc_orbs - 
+   CalcInfo.num_ci_orbs = CalcInfo.nmo - CalcInfo.num_fzc_orbs -
      CalcInfo.num_fzv_orbs;
 
    if ((CalcInfo.num_ci_orbs * (CalcInfo.num_ci_orbs + 1)) / 2 > IOFF_MAX) {

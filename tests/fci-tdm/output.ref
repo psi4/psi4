@@ -1,0 +1,655 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+                         Additional Contributions by
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! He2+ FCI/cc-pVDZ Transition Dipole Moment
+
+refnuc   =   0.705569665333  #TEST
+refscf   =  -4.816603104817  #TEST
+refci1   =  -4.883262086636  #TEST
+refcorr1 =  refci1 - refscf  #TEST
+refci2   =  -4.879491772279  #TEST
+refcorr2 =  refci2 - refscf  #TEST
+refDipHF =   0.00000000      #TEST
+
+refDipCI1=   0.000000000000  #TEST
+refDipCI2=   0.000000000000  #TEST
+refTDM   =   7.180360421465  #TEST
+
+molecule he2p {
+1 2
+He 
+He 1 3.0
+symmetry c2v
+}
+
+set {
+wfn detci
+reference rohf
+fci true
+basis cc-pVDZ 
+docc [1,0,0,0]
+socc [1,0,0,0]
+dipmom true
+fci true
+ex_lvl 3
+num_roots 2
+}
+
+thisenergy = energy('detci')
+
+compare_values(refnuc, he2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
+compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
+compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI root 2 correlation energy")  #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
+compare_values(refTDM, get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z"), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
+
+clean()
+--------------------------------------------------------------------------
+
+*** tstart() called on ds9
+*** at Mon Nov 14 18:58:11 2011
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -1.500000000000
+          HE          0.000000000000     0.000000000000     1.500000000000
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    0.705569665333333
+
+  Charge       = 1
+  Multiplicity = 2
+  Electrons    = 3
+  Nalpha       = 2
+  Nbeta        = 1
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 6
+    Number of basis function: 10
+    Number of Cartesian functions: 10
+    Spherical Harmonics?: true
+    Max angular momentum: 1
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.6188736127E-01.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial ROHF energy:    -2.42858131784690
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1         6       6       2       1       1       1
+     A2         0       0       0       0       0       0
+     B1         2       2       0       0       0       0
+     B2         2       2       0       0       0       0
+   -------------------------------------------------------
+    Total      10      10       2       1       1       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:               6
+      Number of SO shells:               6
+      Number of primitives:             10
+      Number of atomic orbitals:        10
+      Number of basis functions:        10
+
+      Number of irreps:                  4
+      Number of functions per irrep: [   6    0    2    2 ]
+
+      Computing integrals...done
+
+      Computed 468 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @ROHF iter   1:    -4.73655519018400   -2.30797e+00   0.00000e+00  
+   @ROHF iter   2:    -4.81605989698498   -7.95047e-02   7.10513e-02 DIIS
+   @ROHF iter   3:    -4.81660306077958   -5.43164e-04   6.23282e-03 DIIS
+   @ROHF iter   4:    -4.81660310476610   -4.39865e-08   5.42794e-05 DIIS
+   @ROHF iter   5:    -4.81660310481688   -5.07887e-11   1.38567e-06 DIIS
+   @ROHF iter   6:    -4.81660310481694   -5.86198e-14   3.00246e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1    -1.282772  
+
+	Singly Occupied:                                                      
+
+	   2A1    -1.188366  
+
+	Virtual:                                                              
+
+	   3A1     0.934424     4A1     0.980223     5A1     2.032476  
+	   6A1     2.033776     1B1     2.034335     1B2     2.034335  
+	   2B1     2.034980     2B2     2.034980  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     1,    0,    0,    0 ]
+	SOCC [     1,    0,    0,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:    -4.81660310481694
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ds9 at Mon Nov 14 18:58:11 2011
+Module time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.05 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds9
+*** at Mon Nov 14 18:58:11 2011
+
+
+	**************************************************
+	* TRANSQT:  Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	*                   Sept  1995                   *
+	**************************************************
+
+	Input Parameters:
+	-----------------
+	Wavefunction           =  DETCI
+	Reference orbitals     =  ROHF
+	Backtrans              =  No
+	Print MOs              =  No
+	Freeze Core            =  Yes
+	Delete Restricted Docc =  Yes
+	Do All TEI             =  No
+	Memory (Mbytes)        =  256.0
+	Max Buckets            =  499
+	First Tmp File         =  150
+	Presort File           =  41
+	Source TEI File        =  33
+	Opdm In File           =  73
+	Opdm Out File          =  76
+	Lag In File            =  75
+	Keep Presort           =  No
+	J File                 =  91
+	Keep J                 =  No
+	M File                 =  72
+	Bare OEI file          =  35
+	Frozen Core OEI file   =  35
+	Sorted TEI file        =  72
+	Delete TEI source file =  Yes
+	Add TPDM Ref Part      =  No
+	Do Bare OEI tranform   =  No
+	Do FZC  OEI tranform   =  Yes
+	Tolerance              =  1.0e-14
+	Print Level            =  1
+	Print TE Ints          =  No
+	Print OE Ints          =  No
+	Print Sorted TE Ints   =  No
+	Print Sorted OE Ints   =  No
+	Reorder MOs            =  No
+	Check C Orthonormality =  No
+	QRHF orbitals          =  No
+	IVO orbitals           =  No
+	Pitzer                 =  No
+
+	Chkpt File Parameters:
+	------------------
+	Number of irreps = 4
+	Number of SOs    = 10
+	Number of MOs    = 10
+
+	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	-----	------	------	------	------	------
+	 A1	   6	   6	    0	    1	    1	    4	    0
+	 A2	   0	   0	    0	    0	    0	    0	    0
+	 B1	   2	   2	    0	    0	    0	    2	    0
+	 B2	   2	   2	    0	    0	    0	    2	    0
+
+	Nuclear Repulsion Energy    =         0.7055696653
+	Total SCF Energy            =        -4.8166031048
+
+	Reading one-electron integrals...done.
+
+	Pre-sorting two-electron ints...
+
+
+	Frozen core energy =    0.000000000000000
+	Transforming two-electron ints...
+
+	Sorting half-transformed integrals...
+	Finished half-transform...
+	Working on second half...
+
+	Transformation finished.
+	Two-electron integrals written to file72.
+
+	Transforming one-electron integrals...
+	Frozen-core operator written to file 35.
+
+*** tstop() called on ds9 at Mon Nov 14 18:58:11 2011
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on ds9
+*** at Mon Nov 14 18:58:11 2011
+
+
+*******************************************************
+                       D E T C I  
+
+                   C. David Sherrill
+                   Matt L. Leininger
+                     18 June 1999
+*******************************************************
+
+
+
+
+PARAMETERS: 
+   EX LVL        =        3      H0 BLOCKSIZE =      400
+   VAL EX LVL    =        0      H0 GUESS SIZE=      400
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   NPRINT        =       20
+   MAXITER       =       12      FREEZE CORE  =      yes
+   NUM ROOTS     =        2      ICORE        =        1
+   PRINT         =        1      FCI          =      yes
+   CONV          =        4      MIXED        =      yes
+   E CONV        =        6      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   REPL OTF      =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
+   S             =   0.5000      Ms0          =       no
+   MAXNVECT      =       26
+   RESTART       =       no
+   GUESS VECTOR  =  H0BLOCK      OPENTYPE     = HIGHSPIN
+   REF SYM       =     auto
+   COLLAPSE SIZE =        1      HD AVE       = EVANGELISTI
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+   ZAPTN         =       no      WIGNER       =       no
+   PERT Z        =   1.0000      ROOT         =        0
+   NTHREADS      =        1
+   EXPORT VECTOR =       no      NUM EXPORT   =        0
+   FILTER_GUESS  =       no      SF_RESTRICT  =       no
+   OPDM          =      yes      TRANS DENSITY=      yes
+
+   FILES         =  50 51 52 53
+
+   EX_ALLOW      =  1  1  1 
+   STATE AVERAGE =  1(1.00) 
+   STATE AVERAGE =  1(1.00) 
+
+ORBITALS:
+   NMO          =       10      NUM ALP      =        2
+   ORBS IN CI   =       10      NUM ALP EXPL =        2
+   FROZEN CORE  =        0      NUM BET      =        1
+   RESTR CORE   =        0      NUM BET EXPL =        1
+   IOPEN        =      yes
+   RAS1 LVL     =        1      A RAS3 MAX   =        2
+   RAS1 MIN     =        0      B RAS3 MAX   =        1
+   A RAS1 LVL   =        1      RAS4 LVL     =       10
+   A RAS1 MIN   =        0      A RAS4 MAX   =        0
+   A RAS1 MAX   =        2      B RAS4 MAX   =        0
+   B RAS1 LVL   =        1      RAS4 MAX     =        0
+   B RAS1 MIN   =        0      A RAS34 MAX  =        2
+   B RAS1 MAX   =        1      B RAS34 MAX  =        1
+   RAS3 LVL     =        2      RAS34 MAX    =        3
+   RAS3 MAX     =        3
+
+   DOCC         =  1  0  0  0 
+   SOCC         =  1  0  0  0 
+   FROZEN DOCC  =  0  0  0  0 
+   FROZEN UOCC  =  0  0  0  0 
+   RAS 1        =  2  0  0  0 
+   RAS 2        =  0  0  0  0 
+   RAS 3        =  4  0  2  2 
+   RAS 4        =  0  0  0  0 
+*******************************************************
+
+
+There are 45 alpha strings
+There are 10 beta strings
+CI space contains    3 blocks
+
+CI space requires 150 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):             -4.8166031048
+Nuclear repulsion energy:      0.7055696653
+One-electron energy:          -4.6313421680
+Two-electron energy:           0.6247797438
+Frozen core energy:            0.0000000000
+Total electronic energy:      -4.0065624242
+Total SCF energy:             -3.3009927589
+
+*** Calculated Energy Differs from SCF Energy in CHKPT ! ***
+
+ CI vector/subblock length = 150
+
+*** H0 Block Eigenvalue =  -4.86563709
+
+Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
+Energy convergence = 1e-06
+RMS CI vector convergence = 0.0001
+
+Using 2 initial trial vectors
+Iter  0  Root  1 =  -4.865637088   Delta_E -5.571E+00   Delta_C  3.148E-01  
+Iter  0  Root  2 =  -4.861786794   Delta_E -5.567E+00   Delta_C  3.154E-01  
+
+Iter  1  Root  1 =  -4.883234489   Delta_E -1.760E-02   Delta_C  1.232E-02  
+Iter  1  Root  2 =  -4.879464390   Delta_E -1.768E-02   Delta_C  1.235E-02  
+
+Iter  2  Root  1 =  -4.883260099   Delta_E -2.561E-05   Delta_C  2.327E-03  
+Iter  2  Root  2 =  -4.879490739   Delta_E -2.635E-05   Delta_C  1.671E-03  
+
+Iter  3  Root  1 =  -4.883262057   Delta_E -1.958E-06   Delta_C  3.708E-04  
+Iter  3  Root  2 =  -4.879491754   Delta_E -1.015E-06   Delta_C  2.648E-04  
+
+Iter  4  Root  1 =  -4.883262087   Delta_E -2.971E-08   Delta_C  7.771E-05 c
+Iter  4  Root  2 =  -4.879491772   Delta_E -1.875E-08   Delta_C  6.617E-05 c
+
+
+* ROOT 1 CI total energy =  -4.8832620866355  (0.0000 eV,      0.00 1/cm)
+
+
+The 20 most important determinants
+
+    1    0.987672  (    0,    0)  1A1X  2A1A  
+    2   -0.085910  (    1,    1)  1A1A  2A1B  3A1A  
+    3    0.082269  (    4,    1)  2A1X  4A1A  
+    4   -0.043659  (    0,    2)  1A1A  2A1A  3A1B  
+    5   -0.042251  (    2,    0)  1A1B  2A1A  3A1A  
+    6    0.034793  (    2,    2)  2A1A  3A1X  
+    7   -0.031955  (    3,    2)  1A1A  3A1B  4A1A  
+    8   -0.025137  (    1,    3)  1A1A  3A1A  4A1B  
+    9    0.024623  (    4,    3)  2A1A  4A1X  
+*  10    0.016183  (    7,    4)  2A1A  5A1X  
+*  11    0.016116  (   10,    4)  1A1A  5A1B  6A1A  
+*  12    0.016056  (   22,    6)  2A1A  1B1X  
+*  13    0.016056  (   34,    8)  2A1A  1B2X  
+*  14   -0.015996  (   27,    6)  1A1A  1B1B  2B1A  
+*  15   -0.015996  (   39,    8)  1A1A  1B2B  2B2A  
+*  16    0.015851  (   28,    7)  2A1A  2B1X  
+*  17    0.015851  (   40,    9)  2A1A  2B2X  
+*  18   -0.015791  (   21,    7)  1A1A  1B1A  2B1B  
+*  19   -0.015791  (   33,    9)  1A1A  1B2A  2B2B  
+*  20    0.015763  (   11,    5)  2A1A  6A1X  
+
+
+
+
+* ROOT 2 CI total energy =  -4.8794917722786  (0.1026 eV,    827.49 1/cm)
+
+
+The 20 most important determinants
+
+    1    0.985273  (    0,    1)  1A1A  2A1X  
+    2   -0.085322  (    1,    0)  1A1X  3A1A  
+    3    0.081675  (    4,    0)  1A1B  2A1A  4A1A  
+    4   -0.080721  (    0,    3)  1A1A  2A1A  4A1B  
+    5   -0.040038  (    2,    1)  2A1X  3A1A  
+    6    0.035837  (    2,    3)  2A1A  3A1A  4A1B  
+    7   -0.031562  (    3,    3)  1A1A  4A1X  
+    8   -0.029283  (    1,    2)  1A1A  3A1X  
+    9    0.028594  (    4,    2)  2A1A  3A1B  4A1A  
+*  10   -0.016230  (    7,    5)  2A1A  5A1A  6A1B  
+*  11   -0.016162  (   10,    5)  1A1A  6A1X  
+*  12    0.016110  (   22,    7)  2A1A  1B1A  2B1B  
+*  13    0.016110  (   34,    9)  2A1A  1B2A  2B2B  
+*  14   -0.016049  (   27,    7)  1A1A  2B1X  
+*  15   -0.016049  (   39,    9)  1A1A  2B2X  
+*  16    0.015905  (   28,    6)  2A1A  1B1B  2B1A  
+*  17    0.015905  (   40,    8)  2A1A  1B2B  2B2A  
+*  18   -0.015844  (   21,    6)  1A1A  1B1X  
+*  19   -0.015844  (   33,    8)  1A1A  1B2X  
+*  20   -0.015815  (   11,    4)  2A1A  5A1B  6A1A  
+
+
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 1, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+          HE          0.000000000000     0.000000000000    -1.500000000000
+          HE          0.000000000000     0.000000000000     1.500000000000
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+
+Wrote MO-basis TDM 2 to disk
+
+Wrote MO-basis Alpha TDM 2 to disk
+
+Wrote MO-basis Beta TDM 2 to disk
+
+  ==> Properties CI TDM Root 1 -> Root 2 <==
+  Transition Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     2.8250     Total:     2.8250
+
+  Transition Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     7.1804     Total:     7.1804
+
+  ==> Properties CI OPDM Root 1 <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -0.0000     Total:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1    HE     1.00000  0.50000  0.50000  0.50000
+       2    HE     1.00000  0.50000  0.50000  0.50000
+
+   Total alpha =  2.00000, Total beta =  1.00000, Total charge =  1.00000
+
+  Natural Orbital Occupations:
+
+  Alpha Occupations:
+  HONO-1 :    1 A1    0.990
+  HONO-0 :    2 A1    0.989
+  LUNO+0 :    3 A1    0.009
+  LUNO+1 :    4 A1    0.008
+  LUNO+2 :    5 A1    0.001
+  LUNO+3 :    6 A1    0.001
+
+  Beta Occupations:
+  HONO-0 :    1 A1    0.979
+  LUNO+0 :    2 A1    0.015
+  LUNO+1 :    3 A1    0.002
+  LUNO+2 :    4 A1    0.001
+  LUNO+3 :    1 B2    0.001
+
+  Total Occupations:
+  HONO-0 :    1 A1    1.965
+  LUNO+0 :    2 A1    1.004
+  LUNO+1 :    3 A1    0.015
+  LUNO+2 :    4 A1    0.010
+  LUNO+3 :    5 A1    0.001
+
+  ==> Properties CI OPDM Root 2 <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1    HE     1.00000  0.50000  0.50000  0.50000
+       2    HE     1.00000  0.50000  0.50000  0.50000
+
+   Total alpha =  2.00000, Total beta =  1.00000, Total charge =  1.00000
+
+  Natural Orbital Occupations:
+
+  Alpha Occupations:
+  HONO-1 :    1 A1    0.990
+  HONO-0 :    2 A1    0.989
+  LUNO+0 :    3 A1    0.009
+  LUNO+1 :    4 A1    0.009
+  LUNO+2 :    5 A1    0.001
+  LUNO+3 :    6 A1    0.001
+
+  Beta Occupations:
+  HONO-0 :    1 A1    0.979
+  LUNO+0 :    2 A1    0.016
+  LUNO+1 :    3 A1    0.002
+  LUNO+2 :    4 A1    0.001
+  LUNO+3 :    1 B2    0.001
+
+  Total Occupations:
+  HONO-0 :    1 A1    1.965
+  LUNO+0 :    2 A1    1.004
+  LUNO+1 :    3 A1    0.014
+  LUNO+2 :    4 A1    0.011
+  LUNO+3 :    5 A1    0.001
+
+
+        Total Time (s)     %Time 		%Relative
+ -----------------------------------------------------
+ Read      0.001153
+ Write     0.000551
+ Sigma1    0.000173
+ Sigma2    0.001139
+ Sigma3    0.002333
+ S1 Thread 0.000000
+ S2 Thread 0.000000
+ S3 Thread 0.000000
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+
+*** tstop() called on ds9 at Mon Nov 14 18:58:11 2011
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

@@ -71,9 +71,9 @@ protected:
     /// RKS Potential (the heart of the algorithm)
     boost::shared_ptr<RKSPotential> potential_;
     /// Alpha/Beta spin Kohn-Sham Potential (identical)
-    boost::shared_ptr<Matrix> V_;
+    SharedMatrix V_;
     /// Omega K
-    boost::shared_ptr<Matrix> wK_;
+    SharedMatrix wK_;
     /// Compute E_xc and the V matrix
     virtual void form_V();
     virtual void form_G();
@@ -93,13 +93,13 @@ protected:
     /// UKS Potential (the heart of the algorithm)
     boost::shared_ptr<UKSPotential> potential_;
     /// Alpha spin Kohn-Sham Potential
-    boost::shared_ptr<Matrix> Va_;
+    SharedMatrix Va_;
     /// Beta spin Kohn-Sham Potential
-    boost::shared_ptr<Matrix> Vb_;
+    SharedMatrix Vb_;
     /// Omega Ka
-    boost::shared_ptr<Matrix> wKa_;
+    SharedMatrix wKa_;
     /// Omega Kb
-    boost::shared_ptr<Matrix> wKb_;
+    SharedMatrix wKb_;
     /// Compute E_xc and the V matrices
     virtual void form_V();
     virtual void form_G();

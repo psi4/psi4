@@ -73,7 +73,6 @@ void HF::common_init()
     scf_type_ = options_.get_str("SCF_TYPE");
 
     H_.reset(factory_->create_matrix("One-electron Hamiltonion"));
-    S_.reset(factory_->create_matrix("S"));
     X_.reset(factory_->create_matrix("X"));
 
     nmo_ = 0;
@@ -141,7 +140,7 @@ void HF::common_init()
     if (input_socc_ || input_docc_) {
         for (int h = 0; h < nirrep_; h++) {
             nalphapi_[h] = doccpi_[h] + soccpi_[h];
-            nbetapi_[h]  = doccpi_[h]; 
+            nbetapi_[h]  = doccpi_[h];
         }
     }
 
@@ -275,8 +274,10 @@ void HF::integrals()
             throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
         pseudospectral_ = boost::shared_ptr<PseudospectralHF>(new PseudospectralHF(basisset_, psio_, options_));
+        density_fitted_ = true;
     }else if (scf_type_ == "DF"){
         df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
+        density_fitted_ = true;
     }else if (scf_type_ == "DIRECT"){
         if (print_ && Communicator::world->me() == 0)
             fprintf(outfile, "  Building Direct Integral Objects...\n\n");
@@ -311,7 +312,6 @@ void HF::finalize()
 
     dump_to_checkpoint();
 
-    S_.reset();
     //Sphalf_.reset();
     X_.reset();
     H_.reset();
@@ -357,7 +357,7 @@ void HF::find_occupation()
         for (int i=0; i<nbeta_; ++i)
             nbetapi_[pairs_b[i].second]++;
     }
-    
+
     int old_socc[8];
     int old_docc[8];
     for(int h = 0; h < nirrep_; ++h){
@@ -400,7 +400,7 @@ void HF::print_header()
         fprintf(outfile, "\n");
         fprintf(outfile, "         ---------------------------------------------------------\n");
         fprintf(outfile, "                                   SCF\n");
-        fprintf(outfile, "            by Justin Turney, Rob Parrish, and Andy Simmonnett\n");
+        fprintf(outfile, "            by Justin Turney, Rob Parrish, and Andy Simmonett\n");
         fprintf(outfile, "                             %4s Reference\n", options_.get_str("REFERENCE").c_str());
         fprintf(outfile, "                      %3d Threads, %6ld MiB Core\n", nthread, memory_ / 1000000L);
         fprintf(outfile, "         ---------------------------------------------------------\n");
@@ -457,8 +457,8 @@ void HF::print_preiterations()
 
 void HF::form_H()
 {
-    T_ = boost::shared_ptr<Matrix>(factory_->create_matrix("Kinetic Integrals"));
-    V_ = boost::shared_ptr<Matrix>(factory_->create_matrix("Potential Integrals"));
+    T_ = SharedMatrix(factory_->create_matrix("Kinetic Integrals"));
+    V_ = SharedMatrix(factory_->create_matrix("Potential Integrals"));
 
     // Integral factory
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
@@ -522,7 +522,7 @@ void HF::form_H()
         if (print_) {
             external->print();
         }
-        boost::shared_ptr<Matrix> Vprime = external->computePotentialMatrix(basisset_);
+        SharedMatrix Vprime = external->computePotentialMatrix(basisset_);
         if (print_ > 3)
             Vprime->print();
         V_->add(Vprime);
@@ -539,9 +539,7 @@ void HF::form_Shalf()
 {
     // ==> SYMMETRIC ORTHOGONALIZATION <== //
 
-    boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-    boost::shared_ptr<OneBodySOInt>   so_overlap(integral->so_overlap());
-    so_overlap->compute(S_);
+    // S_ is computed by wavefunction
 
     SharedMatrix eigvec= factory_->create_shared_matrix("L");
     SharedMatrix eigtemp= factory_->create_shared_matrix("Temp");
@@ -652,34 +650,60 @@ void HF::form_Shalf()
 
 void HF::compute_fcpi()
 {
-    int nfzc = molecule_->nfrozen_core();
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-        frzcpi_[h] = 0;
-    }
-    sort(pairs.begin(),pairs.end());
+    // FROZEN_DOCC takes precedence, FREEZE_CORE directive has second priority
+    if (options_["FROZEN_DOCC"].has_changed()) {
+        if (options_["FROZEN_DOCC"].size() != epsilon_a_->nirrep()) {
+            throw PSIEXCEPTION("The FROZEN_DOCC array has the wrong dimensions");
+        } 
+        for (int h = 0; h < epsilon_a_->nirrep(); h++) {
+            frzcpi_[h] = options_["FROZEN_DOCC"][h].to_integer();
+        }
+    } else {
+        
+        int nfzc = 0;
+        if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
+            nfzc = options_.get_int("NUM_FROZEN_DOCC"); 
+        } else {
+            nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
+        }
+        // Print out orbital energies.
+        std::vector<std::pair<double, int> > pairs;
+        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+                pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+            frzcpi_[h] = 0;
+        }
+        sort(pairs.begin(),pairs.end());
 
-    for (int i=0; i<nfzc; ++i)
-        frzcpi_[pairs[i].second]++;
+        for (int i=0; i<nfzc; ++i)
+            frzcpi_[pairs[i].second]++;
+    }
 }
 
 void HF::compute_fvpi()
 {
-    int nfzv = options_.get_int("FREEZE_VIRT");
-    // Print out orbital energies.
-    std::vector<std::pair<double, int> > pairs;
-    for (int h=0; h<epsilon_a_->nirrep(); ++h) {
-        for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
-            pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
-        frzvpi_[h] = 0;
-    }
-    sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
+    // FROZEN_UOCC takes precedence, FREEZE_UOCC directive has second priority
+    if (options_["FROZEN_UOCC"].has_changed()) {
+        if (options_["FROZEN_UOCC"].size() != epsilon_a_->nirrep()) {
+            throw PSIEXCEPTION("The FROZEN_UOCC array has the wrong dimensions");
+        } 
+        for (int h = 0; h < epsilon_a_->nirrep(); h++) {
+            frzvpi_[h] = options_["FROZEN_UOCC"][h].to_integer();
+        }
+    } else {
+        int nfzv = options_.get_int("NUM_FROZEN_UOCC");
+        // Print out orbital energies.
+        std::vector<std::pair<double, int> > pairs;
+        for (int h=0; h<epsilon_a_->nirrep(); ++h) {
+            for (int i=0; i<epsilon_a_->dimpi()[h]; ++i)
+                pairs.push_back(make_pair(epsilon_a_->get(h, i), h));
+            frzvpi_[h] = 0;
+        }
+        sort(pairs.begin(),pairs.end(), greater<std::pair<double, int> >());
 
-    for (int i=0; i<nfzv; ++i)
-        frzvpi_[pairs[i].second]++;
+        for (int i=0; i<nfzv; ++i)
+            frzvpi_[pairs[i].second]++;
+    }
 }
 
 void HF::print_orbitals(const char* header, std::vector<std::pair<double, std::pair<const char*, int> > > orbs)
@@ -906,7 +930,7 @@ void HF::save_orbitals()
     psio_->open(PSIF_SCF_DB_MOS,PSIO_OPEN_NEW);
 
     if (print_ && (Communicator::world->me() == 0))
-        fprintf(outfile,"\n  Saving occupied orbitals to File %ld.\n", PSIF_SCF_DB_MOS);
+        fprintf(outfile,"\n  Saving occupied orbitals to File %d.\n", PSIF_SCF_DB_MOS);
 
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB SCF ENERGY",(char *) &(E_),sizeof(double));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB NIRREP",(char *) &(nirrep_),sizeof(int));
@@ -920,14 +944,14 @@ void HF::save_orbitals()
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME LENGTH",(char *)(&basislength),sizeof(int));
     psio_->write_entry(PSIF_SCF_DB_MOS,"DB BASIS NAME",basisname,basislength*sizeof(char));
 
-    boost::shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
+    SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, nsopi_, nalphapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ctemp_a->set(h,m,i,Ca_->get(h,m,i));
     Ctemp_a->save(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
 
-    boost::shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
+    SharedMatrix Ctemp_b(new Matrix("DB BETA MOS", nirrep_, nsopi_, nbetapi_));
     for (int h = 0; h < nirrep_; h++)
         for (int m = 0; m<nsopi_[h]; m++)
             for (int i = 0; i<nbetapi_[h]; i++)
@@ -984,9 +1008,9 @@ void HF::load_orbitals()
         soccpi_[h] = nalphapi_[h] - nbetapi_[h];
     }
 
-    boost::shared_ptr<Matrix> Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
+    SharedMatrix Ctemp_a(new Matrix("DB ALPHA MOS", nirrep_, old_nsopi, nalphapi_));
     Ctemp_a->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    boost::shared_ptr<Matrix> Ca;
+    SharedMatrix Ca;
     if (basisname != options_.get_str("BASIS")) {
         Ca = dualBasisProjection(Ctemp_a, nalphapi_, dual_basis, basisset_);
     } else {
@@ -997,9 +1021,9 @@ void HF::load_orbitals()
             for (int i = 0; i<nalphapi_[h]; i++)
                 Ca_->set(h,m,i,Ca->get(h,m,i));
 
-    boost::shared_ptr<Matrix> Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
+    SharedMatrix Ctemp_b(new Matrix("DB BETA MOS", nirrep_, old_nsopi, nbetapi_));
     Ctemp_b->load(psio_, PSIF_SCF_DB_MOS, Matrix::SubBlocks);
-    boost::shared_ptr<Matrix> Cb;
+    SharedMatrix Cb;
     if (basisname != options_.get_str("BASIS")) {
         Cb = dualBasisProjection(Ctemp_b, nbetapi_, dual_basis, basisset_);
     } else {
@@ -1012,6 +1036,38 @@ void HF::load_orbitals()
 
     psio_->close(PSIF_SCF_DB_MOS,1);
     delete[] basisnamec;
+}
+
+
+void HF::check_phases()
+{
+    for (int h=0; h<nirrep_; ++h) {
+        for (int p = 0; p < Ca_->colspi(h); ++p) {
+            for (int mu = 0; mu < Ca_->rowspi(h); ++mu) {
+                if (fabs(Ca_->get(h, mu, p)) > 1.0E-3) {
+                    if (Ca_->get(h, mu, p) < 1.0E-3) {
+                        Ca_->scale_column(h, p, -1.0);
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
+    if (Ca_ != Cb_) {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int p = 0; p < Cb_->colspi(h); ++p) {
+                for (int mu = 0; mu < Cb_->rowspi(h); ++mu) {
+                    if (fabs(Cb_->get(h, mu, p)) > 1.0E-3) {
+                        if (Cb_->get(h, mu, p) < 1.0E-3) {
+                            Cb_->scale_column(h, p, -1.0);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 void HF::dump_to_checkpoint()
@@ -1037,9 +1093,13 @@ void HF::dump_to_checkpoint()
     chkpt_->wt_openpi(soccpi_);
     chkpt_->wt_phase_check(0);
     chkpt_->wt_sopi(nsopi_);
-    // Figure out frozen core orbitals
-    int nfzc = molecule_->nfrozen_core();
-    int nfzv = options_.get_int("FREEZE_VIRT");
+    // Figure out total number of frozen docc/uocc orbitals
+    int nfzc = 0;
+    int nfzv = 0;
+    for (int h = 0; h < nirrep_; h++) {
+        nfzc += frzcpi_[h];
+        nfzv += frzvpi_[h];
+    }
     chkpt_->wt_nfzc(nfzc);
     chkpt_->wt_nfzv(nfzv);
     // These were computed by HF::finalize()
@@ -1205,6 +1265,8 @@ double HF::compute_energy()
     if (Communicator::world->me() == 0)
         fprintf(outfile, "\n  ==> Post-Iterations <==\n\n");
 
+    check_phases();
+
     if (converged) {
         // Need to recompute the Fock matrices, as they are modified during the SCF interation
         // and might need to be dumped to checkpoint later
@@ -1226,6 +1288,7 @@ double HF::compute_energy()
         // Properties
         if (print_) {
             boost::shared_ptr<OEProp> oe(new OEProp());
+            oe->set_title("SCF");
             oe->add("DIPOLE");
 
             if (print_ >= 2) {
@@ -1293,7 +1356,7 @@ void HF::print_occupation()
     }
 }
 
-void HF::diagonalize_F(const boost::shared_ptr<Matrix>& Fm, boost::shared_ptr<Matrix>& Cm, boost::shared_ptr<Vector>& epsm)
+void HF::diagonalize_F(const SharedMatrix& Fm, SharedMatrix& Cm, boost::shared_ptr<Vector>& epsm)
 {
     //Form F' = X'FX for canonical orthogonalization
     diag_temp_->gemm(true, false, 1.0, X_, Fm, 0.0);
@@ -1316,7 +1379,7 @@ void HF::reset_SAD_occupation()
         soccpi_[h]   = 0;
     }
 }
-boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Cso, int* noccpi)
+SharedMatrix HF::form_Fia(SharedMatrix Fso, SharedMatrix Cso, int* noccpi)
 {
     int* nsopi = Cso->rowspi();
     int* nmopi = Cso->colspi();
@@ -1325,10 +1388,10 @@ boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::sha
     for (int h = 0; h < nirrep_; h++)
         nvirpi[h] = nmopi[h] - noccpi[h];
 
-    boost::shared_ptr<Matrix> Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
+    SharedMatrix Fia(new Matrix("Fia (Some Basis)", nirrep_, noccpi, nvirpi));
 
     // Hack to get orbital e for this Fock
-    boost::shared_ptr<Matrix> C2(new Matrix("C2", nirrep_, nsopi, nmopi));
+    SharedMatrix C2(new Matrix("C2", nirrep_, nsopi, nmopi));
     boost::shared_ptr<Vector> E2(new Vector("E2", nirrep_, nmopi));
     diagonalize_F(Fso, C2, E2);
 
@@ -1365,22 +1428,22 @@ boost::shared_ptr<Matrix> HF::form_Fia(boost::shared_ptr<Matrix> Fso, boost::sha
 
     return Fia;
 }
-boost::shared_ptr<Matrix> HF::form_FDSmSDF(boost::shared_ptr<Matrix> Fso, boost::shared_ptr<Matrix> Dso)
+SharedMatrix HF::form_FDSmSDF(SharedMatrix Fso, SharedMatrix Dso)
 {
-    boost::shared_ptr<Matrix> FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
-    boost::shared_ptr<Matrix> DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
+    SharedMatrix FDSmSDF(new Matrix("FDS-SDF", nirrep_, nsopi_, nsopi_));
+    SharedMatrix DS(new Matrix("DS", nirrep_, nsopi_, nsopi_));
 
     DS->gemm(false,false,1.0,Dso,S_,0.0);
     FDSmSDF->gemm(false,false,1.0,Fso,DS,0.0);
 
-    boost::shared_ptr<Matrix> SDF(FDSmSDF->transpose());
+    SharedMatrix SDF(FDSmSDF->transpose());
     FDSmSDF->subtract(SDF);
 
     DS.reset();
     SDF.reset();
 
-    boost::shared_ptr<Matrix> XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
-    boost::shared_ptr<Matrix> XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));
+    SharedMatrix XP(new Matrix("X'(FDS - SDF)", nirrep_, nmopi_, nsopi_));
+    SharedMatrix XPX(new Matrix("X'(FDS - SDF)X", nirrep_, nmopi_, nmopi_));
     XP->gemm(true,false,1.0,X_,FDSmSDF,0.0);
     XPX->gemm(false,false,1.0,XP,X_,0.0);
 

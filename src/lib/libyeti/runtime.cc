@@ -592,7 +592,7 @@ YetiRuntime::finalize()
     if (parallel_type_ == MPI)
     {
 #include <psiconfig.h>
-#if HAVE_MPI
+#if HAVE_MPQC
         mpi_messenger_->wait_barrier();
         mpi_messenger_->stop();
         sc::MatrixKits::defaultkit = 0;

@@ -2,6 +2,12 @@
 #include <cstring>
 #include <pthread.h>
 
+#include <psi4-dec.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#endif
+
 using namespace psi;
 using namespace boost;
 
@@ -40,6 +46,10 @@ MadCommunicator::MadCommunicator(const int &argc, char **argv) :
     // Add one to the total number of threads for the master thread
     nthread_++;
 
+#ifdef _OPENMP
+    // We need to disable OpenMP threads since MADNESS has its own.
+    omp_set_num_threads(1);
+#endif
 }
 
 MadCommunicator::MadCommunicator(const MadCommunicator &copy) :

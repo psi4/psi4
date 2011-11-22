@@ -3,6 +3,7 @@
 
 #include <stddef.h>
 
+#include "typedefs.h"
 #include "dimension.h"
 #include <libparallel/parallel.h>
 
@@ -57,6 +58,9 @@ protected:
     /// Primary basis set for SO integrals
     boost::shared_ptr<SOBasisSet> sobasisset_;
 
+    /// AO2SO conversion matrix (AO in rows, SO in cols)
+    SharedMatrix AO2SO_;
+
     /// Molecule that this wavefunction is run on
     boost::shared_ptr<Molecule> molecule_;
 
@@ -80,6 +84,9 @@ protected:
 
     /// Debug flag
     unsigned int debug_;
+
+    /// Whether this wavefunction was obtained using density fitting
+    bool density_fitted_;
 
     /// Energy convergence threshold
     double energy_threshold_;
@@ -118,23 +125,26 @@ protected:
     /// Number of irreps
     int nirrep_;
 
+    /// Overlap matrix
+    SharedMatrix S_;
+
     /// Alpha MO coefficients
-    boost::shared_ptr<Matrix> Ca_;
+    SharedMatrix Ca_;
     /// Beta MO coefficients
-    boost::shared_ptr<Matrix> Cb_;
+    SharedMatrix Cb_;
 
     /// Alpha density matrix
-    boost::shared_ptr<Matrix> Da_;
+    SharedMatrix Da_;
     /// Beta density matrix
-    boost::shared_ptr<Matrix> Db_;
+    SharedMatrix Db_;
 
     /// Lagrangian matrix
-    boost::shared_ptr<Matrix> Lagrangian_;
+    SharedMatrix Lagrangian_;
 
     /// Alpha Fock matrix
-    boost::shared_ptr<Matrix> Fa_;
+    SharedMatrix Fa_;
     /// Beta Fock matrix
-    boost::shared_ptr<Matrix> Fb_;
+    SharedMatrix Fb_;
 
     /// Alpha orbital eneriges
     boost::shared_ptr<Vector> epsilon_a_;
@@ -146,7 +156,16 @@ protected:
     std::vector<void*> postcallbacks_;
 
     /// If a gradient is available it will be here:
-    boost::shared_ptr<Matrix> gradient_;
+    SharedMatrix gradient_;
+
+    /// The TPDM contribution to the gradient
+    boost::shared_ptr<Matrix> tpdm_gradient_contribution_;
+
+    /// Helpers for C/D/epsilon transformers
+    SharedMatrix C_subset_helper(SharedMatrix C, const Dimension& noccpi, SharedVector epsilon, const std::string& basis, const std::string& subset);
+    SharedMatrix D_subset_helper(SharedMatrix D, SharedMatrix C, const std::string& basis);
+    SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
+    std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
 
 private:
     // Wavefunction() {}
@@ -156,6 +175,16 @@ public:
     /// Set the PSIO object.
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio);
     Wavefunction(Options & options, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt);
+    /**
+    * Copy the contents of another Wavefunction into this one.
+    * Useful at the beginning of correlated wavefunction computations.
+    * -Does not set options or callbacks
+    * -reference_wavefunction_ is set to other
+    * -Matrices and Vectors (Ca,Da,Fa,epsilon_a, etc) are copied by reference,
+    *  so if you change these, you must reallocate to avoid compromising the
+    *  reference wavefunction's data.
+    **/
+    void copy(boost::shared_ptr<Wavefunction> other);
 
     virtual ~Wavefunction();
 
@@ -183,8 +212,11 @@ public:
     boost::shared_ptr<MatrixFactory> matrix_factory() const;
     /// Returns the reference wavefunction
     boost::shared_ptr<Wavefunction> reference_wavefunction() const;
-    /// Returns the reference wavefunction
+    /// Sets the reference wavefunction
     void set_reference_wavefunction(const boost::shared_ptr<Wavefunction> wfn);
+
+    /// Returns whether this wavefunction was obtained using density fitting or not
+    bool density_fitted() const { return density_fitted_; }
 
     static void initialize_singletons();
 
@@ -204,6 +236,10 @@ public:
     const Dimension& frzcpi() const { return frzcpi_; }
     /// Returns the frozen virtual orbitals per irrep array. You DO NOT own this array.
     const Dimension& frzvpi() const { return frzvpi_; }
+    /// Return the number of alpha electrons
+    int nalpha() const { return nalpha_; }
+    /// Return the number of beta electrons
+    int nbeta() const { return nbeta_; }
     /// Returns the number of SOs
     int nso() const { return nso_; }
     /// Returns the number of MOs
@@ -213,26 +249,89 @@ public:
     /// Returns the reference energy
     double reference_energy () const { return energy_; }
 
+    /// Returns the overlap matrix
+    SharedMatrix S() const { return S_; }
+
     /// Returns the alpha electrons MO coefficients
-    boost::shared_ptr<Matrix> Ca() const;
+    SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
-    boost::shared_ptr<Matrix> Cb() const;
+    SharedMatrix Cb() const;
     /// Returns the alpha Fock matrix
-    boost::shared_ptr<Matrix> Fa() const;
+    SharedMatrix Fa() const;
     /// Returns the beta Fock matrix
-    boost::shared_ptr<Matrix> Fb() const;
+    SharedMatrix Fb() const;
     /// Returns the alpha orbital energies
     boost::shared_ptr<Vector> epsilon_a() const;
     /// Returns the beta orbital energies
     boost::shared_ptr<Vector> epsilon_b() const;
+    /// Returns the SO basis Lagrangian
+    boost::shared_ptr<Matrix> Lagrangian() const;
+    /// The two particle density matrix contribution to the gradient
+    virtual boost::shared_ptr<Matrix> tpdm_gradient_contribution() const;
+
+    SharedMatrix aotoso() const { return AO2SO_; }
 
     /// Returns the alpha OPDM for the wavefunction
-    const boost::shared_ptr<Matrix> Da() const;
+    const SharedMatrix Da() const;
     /// Returns the beta OPDM for the wavefunction
-    boost::shared_ptr<Matrix> Db() const;
+    SharedMatrix Db() const;
+
+    /**
+    * Return a subset of the Ca matrix in a desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    * @return the matrix in Pitzer order in the desired basis
+    **/
+    SharedMatrix Ca_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+    * Return a subset of the Cb matrix in a desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    * @return the matrix in Pitzer order in the desired basis
+    **/
+    SharedMatrix Cb_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+    * Return the Da matrix in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO
+    * @return the matrix in the desired basis
+    **/
+    SharedMatrix Da_subset(const std::string& basis = "SO");
+
+    /**
+    * Return the Db matrix in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO
+    * @return the matrix in the desired basis
+    **/
+    SharedMatrix Db_subset(const std::string& basis = "SO");
+
+    /**
+    * Return the alpha orbital eigenvalues in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO (SO and MO return the same thing)
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    */
+    SharedVector epsilon_a_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
+
+    /**
+    * Return the beta orbital eigenvalues in the desired basis
+    * @param basis the symmetry basis to use
+    *  AO, SO, MO (SO and MO return the same thing)
+    * @param subset the subset of orbitals to return
+    *  ALL, ACTIVE, FROZEN, OCC, VIR, FROZEN_OCC, ACTIVE_OCC, ACTIVE_VIR, FROZEN_VIR
+    */
+    SharedVector epsilon_b_subset(const std::string& basis = "SO", const std::string& subset = "ALL");
 
     /// Returns the Lagrangian in SO basis for the wavefunction
-    boost::shared_ptr<Matrix> X() const;
+    SharedMatrix X() const;
 
     /// Adds a pre iteration Python callback function
     void add_preiteration_callback(PyObject*);
@@ -245,9 +344,9 @@ public:
     void call_postiteration_callbacks();
 
     /// Returns the gradient
-    boost::shared_ptr<Matrix> gradient() const;
+    SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
-    void set_gradient(boost::shared_ptr<Matrix>& grad);
+    void set_gradient(SharedMatrix& grad);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

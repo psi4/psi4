@@ -21,7 +21,7 @@
 namespace psi { namespace detci {
 
 #define INDEX(i,j) ((i>j) ? (ioff[(i)]+(j)) : (ioff[(j)]+(i)))
-#define INDEX2(i,j,n) ((i)*(n) + (j))
+#define TPDMINDEX2(i,j,n) ((i)*(n) + (j))
 
 
 void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
@@ -434,8 +434,8 @@ void tpdm(struct stringwr **alplist, struct stringwr **betlist,
 	     ij = i * CalcInfo.num_ci_orbs + j;
 	     kl = k * CalcInfo.num_ci_orbs + l;
 	     const long int ijkl_tri = INDEX(ij,kl);
-         const long int ijkl = INDEX2(ij,kl,ntri);
-         const long int klij = INDEX2(kl,ij,ntri);
+         const long int ijkl = TPDMINDEX2(ij,kl,ntri);
+         const long int klij = TPDMINDEX2(kl,ij,ntri);
 	     
          const double value_aa = twopdm_aa[ijkl_tri];
          const double value_bb = twopdm_bb[ijkl_tri];
@@ -642,7 +642,7 @@ void tpdm_block(struct stringwr **alplist, struct stringwr **betlist,
 	  Ib_sgn = (double) *Jbsgn++;
 	  C2 = CI[Ia_idx][Ib_idx];
 	  // alpha-beta matrix is stored without packing bra and ket together
-	  ijkl = INDEX2(oij, okl, nbf2);
+	  ijkl = TPDMINDEX2(oij, okl, nbf2);
 	  tval = Ib_sgn * Ia_sgn * C1 * C2;
 	  // in orbital (i.e. non-spi-orbital) code had to scale the diagonal by 2
 	  // because d(ij,kl) += d_ab(ij,kl) + d_ab(kl,ij), hence

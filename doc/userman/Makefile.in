@@ -8,13 +8,13 @@ include ../MakeVars
 TEX = userman.tex
 
 SUBTEX = \
-additional-docs.tex appendix.tex cc.tex detcas.tex detci.tex input.tex \
+additional-docs.tex cc.tex detcas.tex detci.tex input.tex \
 introduction.tex methods.tex modules.tex mp2.tex oeprop.tex opt.tex \
 psi-driver.tex scf.tex tutorial.tex bibliography.bib keywords.tex \
-psithon.tex basissets.tex
+psithon.tex basissets.tex pywrappers.tex
 
 OTFTEX = \
-tests_descriptions.tex keywords.tex expert_keywords.tex psi4bases.tex
+tests_descriptions.tex keywords.tex expert_keywords.tex psi4bases.tex variables_list.tex
 
 DVI = $(TEX:%.tex=%.dvi)
 PS = $(DVI:%.dvi=%.ps)

@@ -31,7 +31,6 @@ TwoBodyAOInt::TwoBodyAOInt(const IntegralFactory* intsfactory, int deriv) :
 
 TwoBodyAOInt::~TwoBodyAOInt()
 {
-
 }
 
 boost::shared_ptr<BasisSet> TwoBodyAOInt::basis()

@@ -41,7 +41,7 @@ void KSPotential::buildAO2USO()
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary_,primary_,primary_,primary_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(primary_, integral));
     if (pet->nirrep() != 1)
-        AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
+        AO2USO_ = SharedMatrix(pet->aotoso());
 }
 double KSPotential::quadrature_value(const std::string& key)
 {
@@ -74,7 +74,7 @@ void RKSPotential::buildProperties()
     properties_ = boost::shared_ptr<RKSFunctions>(new RKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->getLocalAnsatz());
 }
-void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Matrix> C_USO, boost::shared_ptr<Dimension> noccpi)
+void RKSPotential::buildPotential(SharedMatrix D_USO, SharedMatrix C_USO, boost::shared_ptr<Dimension> noccpi)
 {
     // Build D_AO_, C_AO_, allocate V_AO_ if need be
     timer_on("USO2AO");
@@ -92,12 +92,12 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
     int max_points = grid_->max_points();
 
     // Local/global V matrices
-    boost::shared_ptr<Matrix> V_local(new Matrix("V Temp", max_functions, max_functions));
+    SharedMatrix V_local(new Matrix("V Temp", max_functions, max_functions));
     double** V2p = V_local->pointer();
     double** Vp = V_AO_->pointer();
 
     // Scratch
-    boost::shared_ptr<Matrix> T_local = properties_->scratch();
+    SharedMatrix T_local = properties_->scratch();
     double** Tp = T_local->pointer();
 
     // Traverse the blocks of points
@@ -256,7 +256,7 @@ void RKSPotential::buildPotential(boost::shared_ptr<Matrix> D_USO, boost::shared
     AO2USO();
     timer_off("AO2USO");
 }
-void RKSPotential::USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Matrix> C_USO, boost::shared_ptr<Dimension> noccpi)
+void RKSPotential::USO2AO(SharedMatrix D_USO, SharedMatrix C_USO, boost::shared_ptr<Dimension> noccpi)
 {
     int ansatz = functional_->getLocalAnsatz();
     int nirrep = D_USO->nirrep();
@@ -264,7 +264,7 @@ void RKSPotential::USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Mat
    
     // Allocate AO V matrix, if needed 
     if (V_AO_.get() == NULL) {
-        V_AO_ = boost::shared_ptr<Matrix>(new Matrix("V (AO)", nao, nao)); 
+        V_AO_ = SharedMatrix(new Matrix("V (AO)", nao, nao)); 
     }
     V_AO_->zero();  
  
@@ -273,7 +273,7 @@ void RKSPotential::USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Mat
         D_AO_ = D_USO;
     } else {
         if (D_AO_.get() == NULL) {
-            D_AO_ = boost::shared_ptr<Matrix>(new Matrix("D(AO)", nao, nao));
+            D_AO_ = SharedMatrix(new Matrix("D(AO)", nao, nao));
         }
 
         D_AO_->zero();
@@ -284,7 +284,7 @@ void RKSPotential::USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Mat
             double** D_USOp = D_USO->pointer(h);
             double** Up = AO2USO_->pointer(h);
         
-            boost::shared_ptr<Matrix> T(new Matrix("Temp", nao,nso));
+            SharedMatrix T(new Matrix("Temp", nao,nso));
             double** Tp = T->pointer();
 
             C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,D_USOp[0],nso,0.0,Tp[0],nso);
@@ -295,7 +295,7 @@ void RKSPotential::USO2AO(boost::shared_ptr<Matrix> D_USO, boost::shared_ptr<Mat
     // Move C_USO -> C_AO_ if meta ansatz 
     if (ansatz >= 2) {
         int nocc = noccpi->sum();
-        C_AO_ = boost::shared_ptr<Matrix>(new Matrix("Cocc (AO)", nao, nocc));
+        C_AO_ = SharedMatrix(new Matrix("Cocc (AO)", nao, nocc));
         double** C_AOp = C_AO_->pointer();
 
         if (nirrep == 1) {
@@ -337,7 +337,7 @@ void RKSPotential::AO2USO()
     
     // Allocate USO V matrix, if needed
     if (V_USO_.get() == NULL) {
-        V_USO_ = boost::shared_ptr<Matrix>(new Matrix("V (USO)", nirrep, dimpi, dimpi)); 
+        V_USO_ = SharedMatrix(new Matrix("V (USO)", nirrep, dimpi, dimpi)); 
     }
 
     // Move V_AO_->V_USO_
@@ -348,7 +348,7 @@ void RKSPotential::AO2USO()
         double** V_USOp = V_USO_->pointer(h);
         double** Up = AO2USO_->pointer(h);
         
-        boost::shared_ptr<Matrix> T(new Matrix("Temp", nao,nso));
+        SharedMatrix T(new Matrix("Temp", nao,nso));
         double** Tp = T->pointer();
 
         C_DGEMM('N','N',nao,nso,nao,1.0,V_AOp[0],nao,Up[0],nso,0.0,Tp[0],nso); 
@@ -382,8 +382,8 @@ void UKSPotential::buildProperties()
     properties_ = boost::shared_ptr<UKSFunctions>(new UKSFunctions(primary_,max_points,max_functions));
     properties_->set_ansatz(functional_->getLocalAnsatz());
 }
-void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Matrix> Ca_USO, boost::shared_ptr<Dimension> napi,
-                                  boost::shared_ptr<Matrix> Db_USO, boost::shared_ptr<Matrix> Cb_USO, boost::shared_ptr<Dimension> nbpi)
+void UKSPotential::buildPotential(SharedMatrix Da_USO, SharedMatrix Ca_USO, boost::shared_ptr<Dimension> napi,
+                                  SharedMatrix Db_USO, SharedMatrix Cb_USO, boost::shared_ptr<Dimension> nbpi)
 {
     // Build D_AO_, C_AO_, allocate V_AO_ if need be
     timer_on("USO2AO");
@@ -401,17 +401,17 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
     int max_points = grid_->max_points();
 
     // Local/global V matrices
-    boost::shared_ptr<Matrix> Va_local(new Matrix("Va Temp", max_functions, max_functions));
+    SharedMatrix Va_local(new Matrix("Va Temp", max_functions, max_functions));
     double** Va2p = Va_local->pointer();
     double** Vap = Va_AO_->pointer();
-    boost::shared_ptr<Matrix> Vb_local(new Matrix("Vb Temp", max_functions, max_functions));
+    SharedMatrix Vb_local(new Matrix("Vb Temp", max_functions, max_functions));
     double** Vb2p = Vb_local->pointer();
     double** Vbp = Vb_AO_->pointer();
 
     // Scratch
-    boost::shared_ptr<Matrix> Ta_local = properties_->scratchA();
+    SharedMatrix Ta_local = properties_->scratchA();
     double** Tap = Ta_local->pointer();
-    boost::shared_ptr<Matrix> Tb_local = properties_->scratchB();
+    SharedMatrix Tb_local = properties_->scratchB();
     double** Tbp = Tb_local->pointer();
 
     // Traverse the blocks of points
@@ -620,8 +620,8 @@ void UKSPotential::buildPotential(boost::shared_ptr<Matrix> Da_USO, boost::share
     AO2USO();
     timer_off("AO2USO");
 }
-void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Matrix> Ca_USO, boost::shared_ptr<Dimension> napi,
-                          boost::shared_ptr<Matrix> Db_USO, boost::shared_ptr<Matrix> Cb_USO, boost::shared_ptr<Dimension> nbpi)
+void UKSPotential::USO2AO(SharedMatrix Da_USO, SharedMatrix Ca_USO, boost::shared_ptr<Dimension> napi,
+                          SharedMatrix Db_USO, SharedMatrix Cb_USO, boost::shared_ptr<Dimension> nbpi)
 {
     int ansatz = functional_->getLocalAnsatz();
     int nirrep = Da_USO->nirrep();
@@ -629,8 +629,8 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
    
     // Allocate AO V matrix, if needed 
     if (Va_AO_.get() == NULL) {
-        Va_AO_ = boost::shared_ptr<Matrix>(new Matrix("Va (AO)", nao, nao)); 
-        Vb_AO_ = boost::shared_ptr<Matrix>(new Matrix("Vb (AO)", nao, nao)); 
+        Va_AO_ = SharedMatrix(new Matrix("Va (AO)", nao, nao)); 
+        Vb_AO_ = SharedMatrix(new Matrix("Vb (AO)", nao, nao)); 
     }
     Va_AO_->zero();  
     Vb_AO_->zero();  
@@ -641,8 +641,8 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
         Db_AO_ = Db_USO;
     } else {
         if (Da_AO_.get() == NULL) {
-            Da_AO_ = boost::shared_ptr<Matrix>(new Matrix("Da (AO)", nao, nao));
-            Db_AO_ = boost::shared_ptr<Matrix>(new Matrix("Db (AO)", nao, nao));
+            Da_AO_ = SharedMatrix(new Matrix("Da (AO)", nao, nao));
+            Db_AO_ = SharedMatrix(new Matrix("Db (AO)", nao, nao));
         }
 
         Da_AO_->zero();
@@ -653,7 +653,7 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
             double** Da_USOp = Da_USO->pointer(h);
             double** Up = AO2USO_->pointer(h);
         
-            boost::shared_ptr<Matrix> T(new Matrix("Temp", nao,nso));
+            SharedMatrix T(new Matrix("Temp", nao,nso));
             double** Tp = T->pointer();
 
             C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,Da_USOp[0],nso,0.0,Tp[0],nso);
@@ -668,7 +668,7 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
             double** Db_USOp = Db_USO->pointer(h);
             double** Up = AO2USO_->pointer(h);
         
-            boost::shared_ptr<Matrix> T(new Matrix("Temp", nao,nso));
+            SharedMatrix T(new Matrix("Temp", nao,nso));
             double** Tp = T->pointer();
 
             C_DGEMM('N','N',nao,nso,nso,1.0,Up[0],nso,Db_USOp[0],nso,0.0,Tp[0],nso);
@@ -680,8 +680,8 @@ void UKSPotential::USO2AO(boost::shared_ptr<Matrix> Da_USO, boost::shared_ptr<Ma
     if (ansatz >= 2) {
         int nalpha = napi->sum();
         int nbeta  = nbpi->sum();
-        Ca_AO_ = boost::shared_ptr<Matrix>(new Matrix("Caocc (AO)", nao, nalpha));
-        Cb_AO_ = boost::shared_ptr<Matrix>(new Matrix("Cbocc (AO)", nao, nbeta));
+        Ca_AO_ = SharedMatrix(new Matrix("Caocc (AO)", nao, nalpha));
+        Cb_AO_ = SharedMatrix(new Matrix("Cbocc (AO)", nao, nbeta));
         double** Ca_AOp = Ca_AO_->pointer();
         double** Cb_AOp = Cb_AO_->pointer();
 
@@ -743,8 +743,8 @@ void UKSPotential::AO2USO()
     
     // Allocate USO V matrix, if needed
     if (Va_USO_.get() == NULL) {
-        Va_USO_ = boost::shared_ptr<Matrix>(new Matrix("Va (USO)", nirrep, dimpi, dimpi)); 
-        Vb_USO_ = boost::shared_ptr<Matrix>(new Matrix("Vb (USO)", nirrep, dimpi, dimpi)); 
+        Va_USO_ = SharedMatrix(new Matrix("Va (USO)", nirrep, dimpi, dimpi)); 
+        Vb_USO_ = SharedMatrix(new Matrix("Vb (USO)", nirrep, dimpi, dimpi)); 
     }
 
     // Move V_AO_->V_USO_
@@ -755,7 +755,7 @@ void UKSPotential::AO2USO()
         double** Va_USOp = Va_USO_->pointer(h);
         double** Up = AO2USO_->pointer(h);
         
-        boost::shared_ptr<Matrix> T(new Matrix("Temp", nao,nso));
+        SharedMatrix T(new Matrix("Temp", nao,nso));
         double** Tp = T->pointer();
 
         C_DGEMM('N','N',nao,nso,nao,1.0,Va_AOp[0],nao,Up[0],nso,0.0,Tp[0],nso); 
@@ -771,7 +771,7 @@ void UKSPotential::AO2USO()
         double** Vb_USOp = Vb_USO_->pointer(h);
         double** Up = AO2USO_->pointer(h);
         
-        boost::shared_ptr<Matrix> T(new Matrix("Temp", nao,nso));
+        SharedMatrix T(new Matrix("Temp", nao,nso));
         double** Tp = T->pointer();
 
         C_DGEMM('N','N',nao,nso,nao,1.0,Vb_AOp[0],nao,Up[0],nso,0.0,Tp[0],nso); 

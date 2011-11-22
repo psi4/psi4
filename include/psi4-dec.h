@@ -1,13 +1,15 @@
 #ifndef psi_include_psi4_dec_h
 #define psi_include_psi4_dec_h
 
+#include <boost/shared_ptr.hpp>
+
 #include <string>
 #include <list>
 #include <map>
 #include <liboptions/liboptions.h>
 #include <exception.h>
-#include <libmints/molecule.h>
-#include <libmints/wavefunction.h>
+//#include <libmints/molecule.h>
+//#include <libmints/wavefunction.h>
 
 namespace boost {
 template <class T>

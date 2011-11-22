@@ -1,0 +1,22 @@
+molecule {
+O
+H 1 R
+H 1 R 2 A
+
+R = .9
+A = 104.5
+}
+
+plugin_load("./@plugin@.so")
+
+set {
+  basis sto-3g
+}
+
+set @plugin@ {
+  print 1
+}
+
+energy('scf')
+
+plugin("./@plugin@.so")

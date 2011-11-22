@@ -1,10 +1,34 @@
 \section{Basis Sets}
 
-Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), all-electron [no effective core potentials (ECP)], of segmented contraction (not general contraction), and of Gaussian94 format (for ease of export from EMSL). Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported, but their mixtures within one basis set (\textit{e.g.}, 6D/7F) are not, neither their mixtures within a calculation (\textit{e.g.}, cartesian for the orbital basis and spherical for the fitting basis). For built-in basis sets, the correct spherical/cartesian puream is set internally for the orbital basis, but this can be overridden with the puream keyword. 
+Basis sets in \PSIfour are Gaussian functions (not Slater-type functions or plane waves), 
+all-electron [no effective core potentials (ECPs)], of segmented contraction (not general contraction), 
+and of Gaussian94 format (for ease of export from \htmladdnormallink{EMSL}{https://bse.pnl.gov/bse/portal}). 
+Both spherical harmonic (5D/7F) and Cartesian (6D/10F) Gaussian functions are supported, 
+but their mixtures are not, neither within a basis set (\textit{e.g.}, 6D/7F) nor within a calculation
+(\textit{e.g.}, cartesian for the orbital basis and spherical for the fitting basis).
+For built-in basis sets, the correct spherical/cartesian value is set internally from the orbital basis.
 
 
 \subsection{Built-in Basis Sets}
-In the tables below, columns indicate degrees of augmentation by diffuse functions and DTQ56 indicate the X$\;=\zeta$ levels available. For availability by element, consult Appendix \ref{basisElement}.
+Tables \ref{table:basisPopleOrbital} (Pople), \ref{table:basisDunningOrbital}--\ref{table:basisDunningDK} (Dunning), 
+and \ref{table:basisOther} (other) summarize the orbital basis sets available in \PSIfour. 
+These tables are arranged so that columns indicate degree of augmentation by diffuse functions 
+(generally necessary for anions, excited states, and noncovalent interactions)
+and DTQ56 indicate the X$\;=\zeta$ levels available.
+Several intermediate levels of diffuse space between the customary non-augmented and augmented versions have been
+supplied for each basis set, including heavy-augmented and Truhlar's\cite{Papajak:2011:10} calendar truncations 
+described in Table \ref{table:basisMonths}.
+Fitting bases JKFIT (Table \ref{table:basisDunningJKFIT}), RI (Table \ref{table:basisDunningMP2FIT}), and
+DUAL (Table \ref{table:basisDunningDUAL}) are available for methods incorporating density-fitting or
+dual-basis approximations.
+Citations for basis sets can be found in their definition files at psi4/lib/basis in the source.
+For basis set availability by element and the default value for keyword \texttt{PUREAM}, consult Appendix \ref{basisElement}.
+
+%Methods where density-fitting or dual-basis approximations are employed use the appropriate stub-JKFIT
+%(Table \ref{table:basisDunningJKFIT}), stub-RI (Table \ref{table:basisDunningMP2FIT}), or
+%stub-DUAL (Table \ref{table:basisDunningDUAL}) fitting bases if they are defined for orbital basis stub.
+%For basis set availability by element and the default value for keyword \texttt{PUREAM}, consult Appendix \ref{basisElement}.
+
 
 \begin{table}[!htbp]
 \begin{footnotesize}
@@ -13,17 +37,16 @@ In the tables below, columns indicate degrees of augmentation by diffuse functio
 \begin{center}
 \begin{tabular}{llllll}
 \hline\hline
-%\multicolumn{2}{c}{\textbf{no diffuse}} & \multicolumn{2}{c}{\textbf{heavy-augmented}} & \multicolumn{2}{c}{\textbf{augmented}} \\
 \multicolumn{2}{c}{no diffuse} & \multicolumn{2}{c}{heavy-augmented} & \multicolumn{2}{c}{augmented} \\
 Basis Set & [Alias] & Basis Set & [Alias] & Basis Set & [Alias] \\
 \hline
 STO-3G          &            &                  &             &                   &              \\
 3-21G           &            &                  &             &                   &              \\
-%\hline
+
 6-31G           &            & 6-31+G           &             & 6-31++G           &              \\
 6-31G(d)        & [6-31G*]   & 6-31+G(d)        & [6-31+G*]   & 6-31++G(d)        & [6-31++G*]   \\
 6-31G(d,p)      & [6-31G**]  & 6-31+G(d,p)      & [6-31+G**]  & 6-31++G(d,p)      & [6-31++G**]  \\
-%\hline
+
 6-311G          &            & 6-311+G          &             & 6-311++G          &              \\
 6-311G(d)       & [6-311G*]  & 6-311+G(d)       & [6-311+G*]  & 6-311++G(d)       & [6-311++G*]  \\
 6-311G(d,p)     & [6-311G**] & 6-311+G(d,p)     & [6-311+G**] & 6-311++G(d,p)     & [6-311++G**] \\
@@ -48,66 +71,56 @@ STO-3G          &            &                  &             &                 
 
 \begin{table}[!htbp]
 \begin{footnotesize}
+\caption{Levels of truncation for diffuse functions in standard basis sets. \label{table:basisMonths}}
+\parsep 10pt
+\begin{center}
+\begin{tabular}{rllrrr}
+\hline\hline
+\multicolumn{1}{c}{Augmentation Level} &
+\multicolumn{2}{c}{Angular Momenta in the Diffuse Space$^a$} &
+\multicolumn{3}{c}{Valid Basis Sets} \\
+\cline{2-3}\cline{4-6}
+&
+\multicolumn{1}{c}{Li--Kr Main Group} &
+\multicolumn{1}{c}{H \& He} &
+\multicolumn{1}{c}{D$\zeta$} &
+\multicolumn{1}{c}{T$\zeta$} &
+\multicolumn{1}{c}{Q$\zeta$} \\
+\hline
+aug-cc-pVXZ             & s, p, $\cdots\,$, $\ell_{max}-2$, $\ell_{max}-1$, $\ell_{max}$ & s, p, $\cdots\,$, $\ell_{max}-1$ &  aDZ &  aTZ &  aQZ \\
+$^b$heavy-aug-cc-pVXZ   & s, p, $\cdots\,$, $\ell_{max}-2$, $\ell_{max}-1$, $\ell_{max}$ &                                  & haDZ & haTZ & haQZ \\
+jun-cc-pVXZ             & s, p, $\cdots\,$, $\ell_{max}-2$, $\ell_{max}-1$               &                                  & jaDZ & jaTZ & jaQZ \\
+may-cc-pVXZ             & s, p, $\cdots\,$, $\ell_{max}-2$                               &                                  &      & maTZ & maQZ \\
+$\cdots$                & s, p                                                           &                                  &      &      & aaQZ \\
+cc-pVXZ                 &                                                                &                                  &   DZ &   TZ &   QZ \\
+\hline\hline
+\end{tabular}
+\end{center}
+$^a\quad$ \mbox{D$\zeta$} has $\ell_{max}=2$ or d. \mbox{T$\zeta$} has $\ell_{max}=3$ or f. \mbox{Q$\zeta$} has $\ell_{max}=4$ or g, \textit{etc}. \\
+$^b\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
 \caption{Summary of Dunning orbital basis sets available in \PSIfour.} \label{table:basisDunningOrbital}
 \parsep 10pt
 \begin{center}
 \begin{tabular}{llllllllll} 
 \hline\hline
-Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
 \hline
-cc-pVXZ              & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
-cc-pV(X+d)Z          & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
-cc-pCVXZ             & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
-cc-pCV(X+d)Z         & DTQ56 & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
-cc-pwCVXZ            & DTQ5  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
-cc-pwCV(X+d)Z        & DTQ5  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
+cc-pVXZ              & DTQ56 & --{}--{}--{}--6 & --{}--{}--56 & --{}--Q56 & --TQ56 & DTQ56 & DTQ56 & DTQ56 & DTQ56 \\
+cc-pV(X+d)Z          & DTQ56 & --{}--{}--{}--6 & --{}--{}--56 & --{}--Q56 & --TQ56 & DTQ56 & DTQ56 & DTQ56 & DTQ56 \\
+cc-pCVXZ             & DTQ56 & --{}--{}--{}--6 & --{}--{}--56 & --{}--Q56 & --TQ56 & DTQ56 & DTQ56 & DTQ56 & DTQ56 \\
+cc-pCV(X+d)Z         & DTQ56 & --{}--{}--{}--6 & --{}--{}--56 & --{}--Q56 & --TQ56 & DTQ56 & DTQ56 & DTQ56 & DTQ56 \\
+cc-pwCVXZ            & DTQ5  &                 & --{}--{}--5  & --{}--Q5  & --TQ5  & DTQ5  & DTQ5  & DTQ5  & DTQ5  \\
+cc-pwCV(X+d)Z        & DTQ5  &                 & --{}--{}--5  & --{}--Q5  & --TQ5  & DTQ5  & DTQ5  & DTQ5  & DTQ5  \\
 \hline\hline
 \end{tabular}
 \end{center}
-\end{footnotesize}
-\end{table}
-
-
-\begin{table}[!htbp]
-\begin{footnotesize}
-\caption{Summary of Dunning JK-fitting basis sets available in \PSIfour.} \label{table:basisDunningJKFIT}
-\parsep 10pt
-\begin{center}
-\begin{tabular}{llllllllll} 
-\hline\hline
-Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
-\hline
-cc-pVXZ-JKFIT\cite{basisnote2}   &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &  & DTQ5  \\
-cc-pV(X+d)Z-JKFIT                &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &  & DTQ5  \\
-cc-pCVXZ-JKFIT\cite{basisnote2}  &  &  &  &  &  &  &  &  &  \\
-cc-pCV(X+d)Z-JKFIT               &  &  &  &  &  &  &  &  &  \\
-cc-pwCVXZ-JKFIT\cite{basisnote2} &  &  &  &  &  &  &  &  &  \\
-cc-pwCV(X+d)Z-JKFIT              &  &  &  &  &  &  &  &  &  \\
-\hline\hline
-\end{tabular}
-\end{center}
-\end{footnotesize}
-\end{table}
-
-
-\begin{table}[!htbp]
-\begin{footnotesize}
-\caption{Summary of Dunning MP2-fitting basis sets available in \PSIfour.} \label{table:basisDunningMP2FIT}
-\parsep 10pt
-\begin{center}
-\begin{tabular}{llllllllll} 
-\hline\hline
-Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
-\hline
-cc-pVXZ-RI           &  & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
-cc-pV(X+d)Z-RI       &  & DTQ56 & DTQ56 & DTQ56 & --TQ56 & --{}--Q56 & --{}--{}--56 & --{}--{}--{}--6 & DTQ56 \\
-cc-pCVXZ-RI          &  &  &  &  &  &  &  &  &  \\
-cc-pCV(X+d)Z-RI      &  &  &  &  &  &  &  &  &  \\
-cc-pwCVXZ-RI         &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
-cc-pwCV(X+d)Z-RI     &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}--5  &                 & DTQ5  \\
-\hline\hline
-\end{tabular}
-\end{center}
+$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -119,17 +132,67 @@ cc-pwCV(X+d)Z-RI     &  & DTQ5  & DTQ5  & DTQ5  & --TQ5  & --{}--Q5  & --{}--{}-
 \begin{center}
 \begin{tabular}{llllllllll}
 \hline\hline
-Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
 \hline
-cc-pVXZ-DK           &  & DTQ5  & DTQ5  &  &  &  &  &  & DTQ5  \\
-cc-pV(X+d)Z-DK       &  &       &       &  &  &  &  &  &       \\
-cc-pCVXZ-DK          &  & DTQ5  & DTQ5  &  &  &  &  &  & DTQ5  \\
-cc-pCV(X+d)Z-DK      &  &       &       &  &  &  &  &  &       \\
-cc-pwCVXZ-DK         &  & --TQ5 & --TQ5 &  &  &  &  &  & --TQ5 \\
-cc-pwCV(X+d)Z-DK     &  &       &       &  &  &  &  &  &       \\
+cc-pVXZ-DK           & DTQ5  &  &  &  &  &  & DTQ5  & DTQ5  &  \\
+cc-pV(X+d)Z-DK       \\
+cc-pCVXZ-DK          & DTQ5  &  &  &  &  &  & DTQ5  & DTQ5  &  \\
+cc-pCV(X+d)Z-DK      \\
+cc-pwCVXZ-DK         & --TQ5 &  &  &  &  &  & --TQ5 & --TQ5 &  \\
+cc-pwCV(X+d)Z-DK     \\
 \hline\hline
 \end{tabular}
 \end{center}
+$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning JK-fitting basis sets available in \PSIfour.} \label{table:basisDunningJKFIT}
+\parsep 10pt
+\begin{center}
+\begin{tabular}{llllllllll} 
+\hline\hline
+Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
+\hline
+cc-pVXZ-JKFIT$^b$    & DTQ5 &  & --{}--{}--5 & --{}--Q5 & --TQ5 &  DTQ5  & DTQ5  & DTQ5  &  \\
+cc-pV(X+d)Z-JKFIT    & DTQ5 &  & --{}--{}--5 & --{}--Q5 & --TQ5 &  DTQ5  & DTQ5  & DTQ5  &  \\
+cc-pCVXZ-JKFIT$^b$   \\
+cc-pCV(X+d)Z-JKFIT   \\
+cc-pwCVXZ-JKFIT$^b$  \\
+cc-pwCV(X+d)Z-JKFIT  \\
+\hline\hline
+\end{tabular}
+\end{center}
+$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical. \\
+$^b\quad$ The JKFIT basis sets are designed in the cc-stub(X+d)Z framework that includes an additional set of
+$d$-fuctions for second-row $p$-block elements. Identical basis sets with the cc-stubXZ-JKFIT label are provided
+for convenience.
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of Dunning MP2-fitting basis sets available in \PSIfour.} \label{table:basisDunningMP2FIT}
+\parsep 10pt
+\begin{center}
+\begin{tabular}{llllllllll} 
+\hline\hline
+Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
+\hline
+cc-pVXZ-RI           & DTQ56 & --{}--{}--{}--6 & --{}--{}--56 & --{}--Q56 & --TQ56 & DTQ56 & DTQ56 & DTQ56 &  \\
+cc-pV(X+d)Z-RI       & DTQ56 & --{}--{}--{}--6 & --{}--{}--56 & --{}--Q56 & --TQ56 & DTQ56 & DTQ56 & DTQ56 &  \\
+cc-pCVXZ-RI          \\
+cc-pCV(X+d)Z-RI      \\
+cc-pwCVXZ-RI         & DTQ5  &                 & --{}--{}--5  & --{}--Q5  & --TQ5  & DTQ5  & DTQ5  & DTQ5  &  \\
+cc-pwCV(X+d)Z-RI     & DTQ5  &                 & --{}--{}--5  & --{}--Q5  & --TQ5  & DTQ5  & DTQ5  & DTQ5  &  \\
+\hline\hline
+\end{tabular}
+\end{center}
+$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
 \end{footnotesize}
 \end{table}
 
@@ -141,21 +204,116 @@ cc-pwCV(X+d)Z-DK     &  &       &       &  &  &  &  &  &       \\
 \begin{center}
 \begin{tabular}{llllllllll}
 \hline\hline
-Basis Set            & d-aug & aug & heavy-aug\cite{basisnote1} & jun & may & apr & mar & feb & no diffuse \\ 
+Basis Set            & no diffuse & feb & mar & apr & may & jun & heavy-aug$^a$ & aug & d-aug \\
 \hline
-cc-pVXZ-DUAL         &  & DTQ & --TQ &  &  &  &  &  & --TQ \\
-cc-pV(X+d)Z-DUAL     &  &     &      &  &  &  &  &  &      \\
-cc-pCVXZ-DUAL        &  &     &      &  &  &  &  &  &      \\
-cc-pCV(X+d)Z-DUAL    &  &     &      &  &  &  &  &  &      \\
-cc-pwCVXZ-DUAL       &  &     &      &  &  &  &  &  &      \\
-cc-pwCV(X+d)Z-DUAL   &  &     &      &  &  &  &  &  &      \\
+cc-pVXZ-DUAL         & --TQ &  &  &  &  &  & --TQ & DTQ &  \\
+cc-pV(X+d)Z-DUAL     \\
+cc-pCVXZ-DUAL        \\
+cc-pCV(X+d)Z-DUAL    \\
+cc-pwCVXZ-DUAL       \\
+cc-pwCV(X+d)Z-DUAL   \\
+\hline\hline
+\end{tabular}
+\end{center}
+$^a\quad$ The heavy-aug-cc-stub and jul-cc-stub basis sets are identical.
+\end{footnotesize}
+\end{table}
+
+
+\begin{table}[!htbp]
+\begin{footnotesize}
+\caption{Summary of other orbital basis sets available in \PSIfour.} \label{table:basisOther}
+\parsep 10pt
+\begin{center}
+\begin{tabular}{lll}
+\hline\hline
+\multicolumn{2}{c}{Karlsruhe} & \multicolumn{1}{c}{Other} \\
+no diffuse & augmented & \\
+\hline
+def2-SV(P)   &             & DZP   \\
+def2-SVP     & def2-SVPD   & TZ2P  \\
+def2-TZVP    & def2-TZVPD  & TZ2PF \\
+def2-TZVPP   & def2-TZVPPD &       \\
+def2-QZVP    & def2-QZVPD  &       \\
+def2-QZVPP   & def2-QZVPPD &       \\
 \hline\hline
 \end{tabular}
 \end{center}
 \end{footnotesize}
 \end{table}
 
-%\subsection{User-specified Basis Sets}
+
+\subsection{User-Specified Basis Sets}
+
+There are three routes by which a basis set in G94 format can be introduced to \PSIfour's notice.
+
+\begin{itemize}
+
+\item Install new basis set file into \PSIfour basis library.
+
+Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
+As the first line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
+whether the basis set will run in (5D/7F) or (6D/10F).
+Name the file with the name of the basis set and a \texttt{.gbs} extension, after applying the following transformations.
+\begin{itemize}
+\item[] All letters lowercase
+\item[] Replace all * with s
+\item[] Replace all + with p
+\item[] Replace all ( ) , with \_ (underscore)
+\end{itemize}
+For example, basis 6-31++G** is stored in \texttt{6-31ppgss.gbs}, and cc-pV(D+d)Z is stored in \texttt{cc-pv\_dpd\_z.gbs}.
+Only one basis set may be specified per file.
+Copy the new basis set file into \texttt{\$PSIDATADIR/basis}.
+
+\item Use new basis set file in arbitrary location.
+
+Copy the basis set definitions for all elements into a blank file. Exclamation points denote comments.
+As the first line of the file, add the basis set name in brackets.
+As the second line of the file, add the word \texttt{spherical} or \texttt{cartesian} to indicate
+whether the basis set will run in (5D/7F) or (6D/10F). 
+The combination of [ basis name ], \texttt{PUREAM} value, and element basis set specifications 
+forms a section, like the one shown below.
+Multiple basis sets can be specified in the same file by adding additional sections to the file.
+Specify the location of the new basis set file in a \PSIfour input file with the command 
+\texttt{basis file path/to/basis.file}, where the path can be either relative or absolute.
+\begin{Snippet}
+[ sto-3g ]
+cartesian
+****
+H     0 
+S   3   1.00
+      3.42525091             0.15432897       
+      0.62391373             0.53532814       
+      0.16885540             0.44463454       
+****
+O     0 
+S   3   1.00
+    130.7093200              0.15432897       
+     23.8088610              0.53532814       
+      6.4436083              0.44463454       
+SP   3   1.00
+      5.0331513             -0.09996723             0.15591627       
+      1.1695961              0.39951283             0.60768372       
+      0.3803890              0.70011547             0.39195739       
+****
+\end{Snippet}
+
+\item Include new basis set in input file.
+
+Construct for a basis set a section like the one above that includes [ basis name ], \texttt{PUREAM}
+value, and element basis set specifications. Hash signs denote comments.
+Copy the section into a \PSIfour input file and surround it with the command \texttt{basis \{\}}, 
+as shown below.
+Multiple basis sets can be specified by adding additional sections within the surrounding brackets.
+\begin{Snippet}
+basis {
+# basis set section like in snippet above goes here
+# additional basis set sections follow
+}
+\end{Snippet}
+\end{itemize}
+
+
 %\subsection{Calling Built-in Basis Sets}
 %\subsection{Calling Custom Basis Sets}
 

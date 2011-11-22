@@ -15,8 +15,8 @@ namespace scf {
 
 class UHF : public HF {
 protected:
-    boost::shared_ptr<Matrix> Dt_, Dtold_;
-    boost::shared_ptr<Matrix> Ga_, Gb_, J_, Ka_, Kb_;
+    SharedMatrix Dt_, Dtold_;
+    SharedMatrix Ga_, Gb_, J_, Ka_, Kb_;
 
     void form_initialF();
     void form_C();

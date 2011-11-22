@@ -1,0 +1,32 @@
+#! 6-31G** H2O Test CISD Energy Point
+
+refnuc   =   8.8046872910  #TEST
+refscf   = -76.0172965718  #TEST
+refci    = -76.21984746    #TEST
+refcorr  = refci - refscf  #TEST
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set globals {
+  wfn detci
+  basis 6-31G**
+}
+
+set detci {
+  hd_ave hd_kave
+  icore 2
+}
+
+thisenergy = energy('detci')
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
+clean()
+

@@ -83,9 +83,9 @@ protected:
   boost::shared_ptr<Vector> evals_; // HF eigenvalues (all)
   boost::shared_ptr<Vector> evals_aocc_; // HF active occupied eigenvalues
   boost::shared_ptr<Vector> evals_avir_; // HF active virtual eigenvalues
-  boost::shared_ptr<Matrix> C_; // HF eigenvectors (all)
-  boost::shared_ptr<Matrix> C_aocc_; // HF eigenvectors (active occupieds)
-  boost::shared_ptr<Matrix> C_avir_; // HF eigenvectors (active virtuals)
+  SharedMatrix C_; // HF eigenvectors (all)
+  SharedMatrix C_aocc_; // HF eigenvectors (active occupieds)
+  SharedMatrix C_avir_; // HF eigenvectors (active virtuals)
 
   // Pointers to the new libmints objects so's Ed doesn't get bitchy
   double *evalsp_;

@@ -30,10 +30,9 @@ OverlapInt::OverlapInt(std::vector<SphericalTransform>& st, boost::shared_ptr<Ba
         maxnao2 *= 3;
     }
     else if (deriv == 2) {
-        // TODO: Refactor 2nd derivs for less memory
-        set_chunks(9*natom_);
-        maxnao1 *= 9 * natom_;
-        maxnao2 *= 9 * natom_;
+        set_chunks(6);
+        maxnao1 *= 6;
+        maxnao2 *= 1;
     }
 
     buffer_ = new double[maxnao1 * maxnao2];
@@ -235,13 +234,9 @@ void OverlapInt::compute_pair_deriv1(const boost::shared_ptr<GaussianShell>& s1,
             }
         }
     }
-//    fprintf(outfile, "buffer_\n");
-//    for (int i=0; i<6*size; ++i) {
-//        fprintf(outfile, "%d: %lf\n", i, buffer_[i]);
-//    }
 }
 
-void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost::shared_ptr<GaussianShell> s2)
+void OverlapInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s1, const boost::shared_ptr<GaussianShell>& s2)
 {
     int ao12;
     int am1 = s1->am();
@@ -257,8 +252,6 @@ void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost:
     B[2] = s2->center()[2];
 
     size_t size = s1->ncartesian() * s2->ncartesian();
-    int center_i = s1->ncenter()*9*size;
-    int center_j = s2->ncenter()*9*size;
 
     // compute intermediates
     double AB2 = 0.0;
@@ -266,7 +259,7 @@ void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost:
     AB2 += (A[1] - B[1]) * (A[1] - B[1]);
     AB2 += (A[2] - B[2]) * (A[2] - B[2]);
 
-    memset(buffer_, 0, 9 * natom_ * s1->ncartesian() * s2->ncartesian() * sizeof(double));
+    memset(buffer_, 0, 6 * s1->ncartesian() * s2->ncartesian() * sizeof(double));
 
     double **x = overlap_recur_.x();
     double **y = overlap_recur_.y();
@@ -297,7 +290,7 @@ void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost:
             double over_pf = exp(-a1*a2*AB2*oog) * sqrt(M_PI*oog) * M_PI * oog * c1 * c2;
 
             // Do recursion
-            overlap_recur_.compute(PA, PB, gamma, am1+1, am2+1);
+            overlap_recur_.compute(PA, PB, gamma, am1+2, am2+2);
 
             ao12 = 0;
             for(int ii = 0; ii <= am1; ii++) {
@@ -312,31 +305,50 @@ void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost:
                             int m2 = kk - ll;
                             int n2 = ll;
 
-                            // x on center i
-                            buffer_[center_i+(0*size)+ao12] += 2.0*a1*over_pf*x[l1+1][l2]*y[m1][m2]*z[n1][n2];
-                            if (l1)
-                                buffer_[center_i+(0*size)+ao12] -= l1*over_pf*x[l1-1][l2]*y[m1][m2]*z[n1][n2];
-                            // y on center i
-                            buffer_[center_i+(1*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1+1][m2]*z[n1][n2];
-                            if (m1)
-                                buffer_[center_i+(1*size)+ao12] -= m1*over_pf*x[l1][l2]*y[m1-1][m2]*z[n1][n2];
-                            // z on center i
-                            buffer_[center_i+(2*size)+ao12] += 2.0*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+1][n2];
-                            if (n1)
-                                buffer_[center_i+(2*size)+ao12] -= n1*over_pf*x[l1][l2]*y[m1][m2]*z[n1-1][n2];
+                            // S_{\mu\nu}^{a_x a_x}
+                            buffer_[(0*size)+ao12] += (4.0*a1*a1*x[l1+2][l2]*y[m1][m2]*z[n1][n2] -
+                                                      2.0*a1*(2*l1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
+                            if (l1 > 1)
+                                buffer_[(0*size)+ao12] += over_pf*l1*(l1-1)*x[l1-2][l2]*y[m1][m1]*z[n1][n2];
 
-                            // x on center j
-                            buffer_[center_j+(0*size)+ao12] += 2.0*a2*over_pf*x[l1][l2+1]*y[m1][m2]*z[n1][n2];
-                            if (l2)
-                                buffer_[center_j+(0*size)+ao12] -= l2*over_pf*x[l1][l2-1]*y[m1][m2]*z[n1][n2];
-                            // y on center j
-                            buffer_[center_j+(1*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2+1]*z[n1][n2];
-                            if (m2)
-                                buffer_[center_j+(1*size)+ao12] -= m2*over_pf*x[l1][l2]*y[m1][m2-1]*z[n1][n2];
-                            // z on center j
-                            buffer_[center_j+(2*size)+ao12] += 2.0*a2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2+1];
-                            if (n2)
-                                buffer_[center_j+(2*size)+ao12] -= n2*over_pf*x[l1][l2]*y[m1][m2]*z[n1][n2-1];
+                            // S_{\mu\nu}^{a_x a_y}
+                            buffer_[(1*size)+ao12] += over_pf*4.0*a1*a1*x[l1+1][l2]*y[m1+1][m2]*z[n1][n2];
+                            if (l1)
+                                buffer_[(1*size)+ao12] -= over_pf*2.0*l1*a1*x[l1-1][l2]*y[m1+1][m2]*z[n1][n2];
+                            if (m1)
+                                buffer_[(1*size)+ao12] -= over_pf*2.0*m1*a1*x[l1+1][l2]*y[m1-1][m2]*z[n1][n2];
+                            if (l1 && m1)
+                                buffer_[(1*size)+ao12] += over_pf*l1*m1*x[l1-1][l2]*y[m1-1][m2]*z[n1][n2];
+
+                            // S_{\mu\nu}^{a_x a_z}
+                            buffer_[(2*size)+ao12] += over_pf*4.0*a1*a1*x[l1+1][l2]*y[m1][m2]*z[n1+1][n2];
+                            if (l1)
+                                buffer_[(2*size)+ao12] -= over_pf*2.0*l1*a1*x[l1-1][l2]*y[m1][m2]*z[n1+1][n2];
+                            if (n1)
+                                buffer_[(2*size)+ao12] -= over_pf*2.0*n1*a1*x[l1+1][l2]*y[m1][m2]*z[n1-1][n2];
+                            if (l1 && n1)
+                                buffer_[(2*size)+ao12] += over_pf*l1*n1*x[l1-1][l2]*y[m1][m2]*z[n1-1][n2];
+
+                            // S_{\mu\nu}^{a_y a_y}
+                            buffer_[(3*size)+ao12] += (4.0*a1*a1*over_pf*x[l1][l2]*y[m1+2][m2]*z[n1][n2] -
+                                                      2.0*a1*(2*m1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
+                            if (m1 > 1)
+                                buffer_[(3*size)+ao12] += over_pf*m1*(m1-1)*x[l1][l2]*y[m1-2][m1]*z[n1][n2];
+
+                            // S_{\mu\nu}^{a_y a_z}
+                            buffer_[(4*size)+ao12] += over_pf*4.0*a1*a1*x[l1][l2]*y[m1+1][m2]*z[n1+1][n2];
+                            if (m1)
+                                buffer_[(4*size)+ao12] -= over_pf*2.0*m1*a1*x[l1][l2]*y[m1-1][m2]*z[n1+1][n2];
+                            if (n1)
+                                buffer_[(4*size)+ao12] -= over_pf*2.0*n1*a1*x[l1][l2]*y[m1+1][m2]*z[n1-1][n2];
+                            if (m1 && n1)
+                                buffer_[(4*size)+ao12] += over_pf*m1*n1*x[l1][l2]*y[m1-1][m2]*z[n1-1][n2];
+
+                            // S_{\mu\nu}^{a_z a_z}
+                            buffer_[(5*size)+ao12] += (4.0*a1*a1*over_pf*x[l1][l2]*y[m1][m2]*z[n1+2][n2] -
+                                                      2.0*a1*(2*n1+1)*x[l1][l2]*y[m1][m2]*z[n1][n2]) * over_pf;
+                            if (n1 > 1)
+                                buffer_[(5*size)+ao12] += over_pf*n1*(n1-1)*x[l1][l2]*y[m1][m1]*z[n1-2][n2];
 
                             ao12++;
                         }
@@ -346,9 +358,3 @@ void OverlapInt::compute_pair_deriv2(boost::shared_ptr<GaussianShell> s1, boost:
         }
     }
 }
-
-void OverlapInt::compute_shell_deriv2(int sh1, int sh2)
-{
-    compute_pair_deriv2(bs1_->shell(sh1), bs2_->shell(sh2));
-}
-

@@ -19,7 +19,7 @@ namespace psi {
 
 DFTensor::DFTensor(boost::shared_ptr<BasisSet> primary,
                    boost::shared_ptr<BasisSet> auxiliary,
-                   boost::shared_ptr<Matrix> C,
+                   SharedMatrix C,
                    int nocc,
                    int nvir,
                    int naocc,
@@ -48,9 +48,9 @@ void DFTensor::common_init()
     nso_ = C_->rowspi()[0];
     nmo_ = C_->colspi()[0];
 
-    Caocc_ = boost::shared_ptr<Matrix>(new Matrix("C active occupied", nso_, naocc_));
-    Cavir_ = boost::shared_ptr<Matrix>(new Matrix("C active virtual", nso_, navir_));
-    
+    Caocc_ = SharedMatrix(new Matrix("C active occupied", nso_, naocc_));
+    Cavir_ = SharedMatrix(new Matrix("C active virtual", nso_, navir_));
+
     double** Cp = C_->pointer();
     double** Cop  = Caocc_->pointer();
     double** Cvp  = Cavir_->pointer();
@@ -86,20 +86,20 @@ void DFTensor::build_metric()
 {
     boost::shared_ptr<FittingMetric> met(new FittingMetric(auxiliary_));
     met->form_eig_inverse();
-    metric_ = met->get_metric(); 
+    metric_ = met->get_metric();
 
     if (debug_) {
         metric_->print();
     }
 }
-boost::shared_ptr<Matrix> DFTensor::Qso()
+SharedMatrix DFTensor::Qso()
 {
-    boost::shared_ptr<Matrix> B(new Matrix("Bso", naux_, nso_ * nso_));
-    boost::shared_ptr<Matrix> A(new Matrix("Aso", naux_, nso_ * nso_));
+    SharedMatrix B(new Matrix("Bso", naux_, nso_ * nso_));
+    SharedMatrix A(new Matrix("Aso", naux_, nso_ * nso_));
     double** Ap = A->pointer();
     double** Bp = B->pointer();
     double** Jp = metric_->pointer();
-    
+
     boost::shared_ptr<BasisSet> zero = BasisSet::zero_ao_basis_set();
 
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,zero,primary_,primary_));
@@ -124,8 +124,8 @@ boost::shared_ptr<Matrix> DFTensor::Qso()
                             Bp[p + pstart][(m + mstart) * nso_ + (n + nstart)] = buffer[index];
                         }
                     }
-                } 
-            }    
+                }
+            }
         }
     }
 
@@ -140,26 +140,26 @@ boost::shared_ptr<Matrix> DFTensor::Qso()
 
     return A;
 }
-boost::shared_ptr<Matrix> DFTensor::Qoo()
+SharedMatrix DFTensor::Qoo()
 {
-    boost::shared_ptr<Matrix> Amn = Qso();
-    boost::shared_ptr<Matrix> Ami(new Matrix("Ami", naux_, naocc_ * (ULI) nso_));
-    
+    SharedMatrix Amn = Qso();
+    SharedMatrix Ami(new Matrix("Ami", naux_, naocc_ * (ULI) nso_));
+
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cop = Caocc_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_, 
+    C_DGEMM('N','N', naux_ * (ULI) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_,
         0.0, Amip[0], naocc_);
 
     Amn.reset();
 
-    boost::shared_ptr<Matrix> Aia(new Matrix("Aij", naux_, naocc_ * (ULI) naocc_));
+    SharedMatrix Aia(new Matrix("Aij", naux_, naocc_ * (ULI) naocc_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
         C_DGEMM('T','N',naocc_,naocc_,nso_,1.0,Amip[Q],naocc_,Cop[0],naocc_, 0.0, Aiap[Q], naocc_);
-    }    
+    }
 
     if (debug_) {
         Caocc_->print();
@@ -169,27 +169,28 @@ boost::shared_ptr<Matrix> DFTensor::Qoo()
 
     return Aia;
 }
-boost::shared_ptr<Matrix> DFTensor::Qov()
+SharedMatrix DFTensor::Qov()
 {
-    boost::shared_ptr<Matrix> Amn = Qso();
-    boost::shared_ptr<Matrix> Ami(new Matrix("Qmi", naux_, naocc_ * (ULI) nso_));
-    
+    SharedMatrix Amn = Qso();
+    SharedMatrix Ami(new Matrix("Qmi", naux_, naocc_ * (ULI) nso_));
+
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cop = Caocc_->pointer();
     double** Cvp = Cavir_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_, 
+    C_DGEMM('N','N', naux_ * (ULI) nso_, naocc_, nso_, 1.0, Amnp[0], nso_, Cop[0], naocc_,
         0.0, Amip[0], naocc_);
 
     Amn.reset();
 
-    boost::shared_ptr<Matrix> Aia(new Matrix("Qia", naux_, naocc_ * (ULI) navir_));
+    fprintf(outfile, "DFTensor::Qov: naux %d, naocc %d, navir %d\n", naux_, naocc_, navir_);
+    SharedMatrix Aia(new Matrix("Qia", naux_, naocc_ * (ULI) navir_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
         C_DGEMM('T','N',naocc_,navir_,nso_,1.0,Amip[Q],naocc_,Cvp[0],navir_, 0.0, Aiap[Q], navir_);
-    }    
+    }
 
     if (debug_) {
         Caocc_->print();
@@ -200,26 +201,26 @@ boost::shared_ptr<Matrix> DFTensor::Qov()
 
     return Aia;
 }
-boost::shared_ptr<Matrix> DFTensor::Qvv()
+SharedMatrix DFTensor::Qvv()
 {
-    boost::shared_ptr<Matrix> Amn = Qso();
-    boost::shared_ptr<Matrix> Ami(new Matrix("Qmi", naux_, navir_ * (ULI) nso_));
-    
+    SharedMatrix Amn = Qso();
+    SharedMatrix Ami(new Matrix("Qmi", naux_, navir_ * (ULI) nso_));
+
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cvp = Cavir_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, navir_, nso_, 1.0, Amnp[0], nso_, Cvp[0], navir_, 
+    C_DGEMM('N','N', naux_ * (ULI) nso_, navir_, nso_, 1.0, Amnp[0], nso_, Cvp[0], navir_,
         0.0, Amip[0], navir_);
 
     Amn.reset();
 
-    boost::shared_ptr<Matrix> Aia(new Matrix("Qab", naux_, navir_ * (ULI) navir_));
+    SharedMatrix Aia(new Matrix("Qab", naux_, navir_ * (ULI) navir_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
         C_DGEMM('T','N',navir_,navir_,nso_,1.0,Amip[Q],navir_,Cvp[0],navir_, 0.0, Aiap[Q], navir_);
-    }    
+    }
 
     if (debug_) {
         Cavir_->print();
@@ -229,26 +230,26 @@ boost::shared_ptr<Matrix> DFTensor::Qvv()
 
     return Aia;
 }
-boost::shared_ptr<Matrix> DFTensor::Qmo()
+SharedMatrix DFTensor::Qmo()
 {
-    boost::shared_ptr<Matrix> Amn = Qso();
-    boost::shared_ptr<Matrix> Ami(new Matrix("Qmi", naux_, nmo_ * (ULI) nso_));
-    
+    SharedMatrix Amn = Qso();
+    SharedMatrix Ami(new Matrix("Qmi", naux_, nmo_ * (ULI) nso_));
+
     double** Amnp = Amn->pointer();
     double** Amip = Ami->pointer();
     double** Cvp = C_->pointer();
 
-    C_DGEMM('N','N', naux_ * (ULI) nso_, nmo_, nso_, 1.0, Amnp[0], nso_, Cvp[0], nmo_, 
+    C_DGEMM('N','N', naux_ * (ULI) nso_, nmo_, nso_, 1.0, Amnp[0], nso_, Cvp[0], nmo_,
         0.0, Amip[0], nmo_);
 
     Amn.reset();
 
-    boost::shared_ptr<Matrix> Aia(new Matrix("Qmo", naux_, nmo_ * (ULI) nmo_));
+    SharedMatrix Aia(new Matrix("Qmo", naux_, nmo_ * (ULI) nmo_));
     double** Aiap = Aia->pointer();
 
     for (int Q = 0; Q < naux_; Q++) {
         C_DGEMM('T','N',nmo_,nmo_,nso_,1.0,Amip[Q],nmo_,Cvp[0],nmo_, 0.0, Aiap[Q], nmo_);
-    }    
+    }
 
     if (debug_) {
         C_->print();
@@ -258,23 +259,23 @@ boost::shared_ptr<Matrix> DFTensor::Qmo()
 
     return Aia;
 }
-boost::shared_ptr<Matrix> DFTensor::Imo()
+SharedMatrix DFTensor::Imo()
 {
     boost::shared_ptr<MintsHelper> mints(new MintsHelper());
-    return mints->mo_eri(C_,C_);   
+    return mints->mo_eri(C_,C_);
 }
-boost::shared_ptr<Matrix> DFTensor::Idfmo()
+SharedMatrix DFTensor::Idfmo()
 {
-    boost::shared_ptr<Matrix> Amo = Qmo();
+    SharedMatrix Amo = Qmo();
     double** Amop = Amo->pointer();
 
-    boost::shared_ptr<Matrix> Imo(new Matrix("DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
+    SharedMatrix Imo(new Matrix("DF MO ERI Tensor", nmo_ * nmo_, nmo_ * nmo_));
     double** Imop = Imo->pointer();
 
-    C_DGEMM('T','N',nmo_ * nmo_, nmo_ * nmo_, naux_, 1.0, Amop[0], nmo_ * nmo_, 
-        Amop[0], nmo_ * nmo_, 0.0, Imop[0], nmo_ * nmo_); 
+    C_DGEMM('T','N',nmo_ * nmo_, nmo_ * nmo_, naux_, 1.0, Amop[0], nmo_ * nmo_,
+        Amop[0], nmo_ * nmo_, 0.0, Imop[0], nmo_ * nmo_);
 
-    return Imo; 
+    return Imo;
 }
 
 }

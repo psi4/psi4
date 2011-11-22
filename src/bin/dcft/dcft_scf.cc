@@ -289,8 +289,8 @@ namespace psi{ namespace dcft{
   void
   DCFTSolver::scf_guess()
   {
-      SharedMatrix T = boost::shared_ptr<Matrix>(new Matrix("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_));
-      SharedMatrix V = boost::shared_ptr<Matrix>(new Matrix("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_));
+      SharedMatrix T = SharedMatrix(new Matrix("SO basis kinetic energy integrals", nirrep_, nsopi_, nsopi_));
+      SharedMatrix V = SharedMatrix(new Matrix("SO basis potential energy integrals", nirrep_, nsopi_, nsopi_));
       double *ints = init_array(ntriso_);
 
       IWL::read_one(psio_.get(), PSIF_OEI, PSIF_SO_T, ints, ntriso_, 0, 0, outfile);

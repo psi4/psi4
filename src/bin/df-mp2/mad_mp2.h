@@ -128,9 +128,9 @@ protected:
     int offset_avir_[8];   
  
     /// AO2USO transform matrix
-    boost::shared_ptr<Matrix> AO2USO_; 
+    SharedMatrix AO2USO_; 
     /// AO2USO transform matrix (auxiliary)
-    boost::shared_ptr<Matrix> AO2USO_aux_; 
+    SharedMatrix AO2USO_aux_; 
     /// SOs per irrep in the auxiliary basis
     int nauxpi_[8];
    
@@ -142,9 +142,9 @@ protected:
     int max_nauxpi_;
  
     /// C1 copy of active occupied orbitals
-    boost::shared_ptr<Matrix> Caocc_;
+    SharedMatrix Caocc_;
     /// C1 copy of active virtual orbitals
-    boost::shared_ptr<Matrix> Cavir_;
+    SharedMatrix Cavir_;
    
     /// C1 copy of active occupied evals
     boost::shared_ptr<Vector> eps_aocc_;
@@ -159,9 +159,9 @@ protected:
     // => Key Tensors <= //
 
     /// J^-1/2
-    boost::shared_ptr<Matrix> Jm12_;
+    SharedMatrix Jm12_;
     /// (A|ia) 
-    boost::shared_ptr<Matrix> Aia_; 
+    SharedMatrix Aia_; 
     /// \tau_ia^Q
     boost::shared_ptr<Denominator> denom_;   
  

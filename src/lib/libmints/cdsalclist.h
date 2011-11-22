@@ -142,7 +142,7 @@ public:
      */
     size_t ncd() const { return salcs_.size(); }
 
-    std::vector<boost::shared_ptr<Matrix> > create_matrices(const std::string& basename);
+    std::vector<SharedMatrix > create_matrices(const std::string& basename);
     std::string name_of_component(int component);
 
     char needed_irreps() const { return needed_irreps_; }
@@ -154,7 +154,7 @@ public:
 
     const CdSalcWRTAtom& atom_salc(int i) const { return atom_salcs_[i]; }
 
-    boost::shared_ptr<Matrix> matrix();
+    SharedMatrix matrix();
 
     void print() const;
 };

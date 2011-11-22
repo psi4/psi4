@@ -55,11 +55,11 @@ void LMP2::projection()
 
 void LMP2::init_global_mat()
 {
-    Rt_full_ = boost::shared_ptr<Matrix>(nso_nso_->create_matrix("Full Virtual Space Projector"));
+    Rt_full_ = SharedMatrix(nso_nso_->create_matrix("Full Virtual Space Projector"));
     for (int i=0; i < ij_pairs_per_proc_; i++) {
-        S_virt_.push_back( boost::shared_ptr<Matrix> (new Matrix()) );
-        F_virt_.push_back( boost::shared_ptr<Matrix> (new Matrix()) );
-        W_.push_back( boost::shared_ptr<Matrix> (new Matrix()) );
+        S_virt_.push_back( SharedMatrix (new Matrix()) );
+        F_virt_.push_back( SharedMatrix (new Matrix()) );
+        W_.push_back( SharedMatrix (new Matrix()) );
         evals_.push_back( boost::shared_ptr<Vector> (new Vector()) );
     }
 
@@ -184,7 +184,7 @@ int LMP2::build_projection_matrix(const int &ij)
     }
 
     evals_[ij_loc]->init(nirreps_, &pair_domain_nr_len_[ij], "Evals[" + ij_val.str() + "]");
-    SharedMatrix F_bar = boost::shared_ptr<Matrix> (F_virt_[ij_loc]->clone());
+    SharedMatrix F_bar = SharedMatrix (F_virt_[ij_loc]->clone());
 
     F_bar->transform(Xt);
     F_bar->diagonalize(evec_fbar, evals_[ij_loc]); //, static_cast<Matrix::DiagonalizeOrder>(1));

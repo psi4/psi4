@@ -3915,8 +3915,13 @@ void CIvect::civect_psio_debug(void)
 {
   int i, unit;
 
+  /* psio_tocprint not available right now in PSI4; re-enable it if you
+     need this functionality.
+  */
+  /*
   for (i=0; i<nunits; i++)
     psio_tocprint(units[i], outfile);
+  */
   fprintf(outfile, "Number of vectors = %d\n", read_num_vecs());
   fprintf(outfile, "New first buffer = %d\n", read_new_first_buf());
   fprintf(outfile, "Internal new first buffer = %d\n", new_first_buf);

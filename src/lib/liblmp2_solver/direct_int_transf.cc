@@ -233,7 +233,7 @@ int LMP2::first_half_integral_transformation(const int &M, const int &N,
     std::stringstream occ_val;
     for (int i=0; i < ndocc_; i++) {
         occ_val << i;
-        eri_1.push_back( boost::shared_ptr<Matrix>(
+        eri_1.push_back( SharedMatrix(
                             new Matrix(nirreps_, &mn_size, &nso_)) );
     }
 

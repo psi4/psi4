@@ -346,7 +346,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
                 catch (BasisSetNotFound& e) {
                     // This is thrown when load_file fails
                     if (Communicator::world->me() == 0)
-                        fprintf(outfile, "  Unable to find %s for %s in %s will try next level.\n",
+                        fprintf(outfile, "  Unable to find %s for %s in %s.\n",
                                 basis.first.c_str(), symbol.c_str(), user_file.c_str());
                     not_found = true;
                 }
@@ -389,7 +389,7 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
         }
     }
 
-    // This step is very important. Without it the basis set is almost useless.
+    // This step is very important. Without it the basis set is useless.
     basisset->refresh();
 
     return basisset;

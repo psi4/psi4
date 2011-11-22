@@ -179,10 +179,10 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wave,
     if(init) initialize();
 }
 
-IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
-                                     boost::shared_ptr<Matrix> i,
-                                     boost::shared_ptr<Matrix> a,
-                                     boost::shared_ptr<Matrix> v,
+IntegralTransform::IntegralTransform(SharedMatrix c,
+                                     SharedMatrix i,
+                                     SharedMatrix a,
+                                     SharedMatrix v,
                                      SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
@@ -227,6 +227,8 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
     _frzvpi(0),
     _cacheFiles(0),
     _cacheList(0),
+    _aCorrToPitzer(0),
+    _bCorrToPitzer(0),
     _Ca(NULL),
     _Cb(NULL),
     _keepIwlSoInts(false),
@@ -255,13 +257,24 @@ IntegralTransform::IntegralTransform(boost::shared_ptr<Matrix> c,
     _frzvpi  = v->colspi();
 
     // Need to smash together the C's only for them to be ripped apart elsewhere.
-    std::vector<boost::shared_ptr<Matrix> > Cs;
+    std::vector<SharedMatrix > Cs;
     Cs.push_back(c); Cs.push_back(i); Cs.push_back(a); Cs.push_back(v);
     _mCa = Matrix::horzcat(Cs);
 
     common_moinfo_initialize();
 
     if(init) initialize();
+}
+
+/**
+ * Sets up the correlated to pitzer reordering arrays, used in backtransformations.
+ * This can be called repeatedly, because it returns if the arrays are already set up.
+ * The arrays are not automatically set up
+ */
+void
+IntegralTransform::setup_backtrans_reordering()
+{
+
 }
 
 /**
@@ -307,6 +320,54 @@ IntegralTransform::initialize()
     // Return DPD control to the user
     dpd_set_default(currentActiveDPD);
 
+
+    // Set up the correlated to Pitzer arrays.  These have to include the occupied core terms, because
+    // the reference contributions are already folded into the TPDM.
+    _aCorrToPitzer = new int[_nmo];
+    if(_transformationType != Restricted){
+        _bCorrToPitzer = new int[_nmo];
+    }else{
+        _bCorrToPitzer = _aCorrToPitzer;
+    }
+    size_t aCorrCount = 0;
+    size_t bCorrCount = 0;
+    size_t pitzerOffset = 0;
+
+    // Frozen DOCC
+    for(int h = 0; h < _nirreps; ++h){
+        for(int n = 0; n < _frzcpi[h]; ++n){
+            _aCorrToPitzer[aCorrCount++] = pitzerOffset + n;
+            if(_transformationType != Restricted)
+                _bCorrToPitzer[bCorrCount++] = pitzerOffset + n;
+        }
+        pitzerOffset += _mopi[h];
+    }
+    // Active OCC
+    pitzerOffset = 0;
+    for(int h = 0; h < _nirreps; ++h){
+        for(int n = _frzcpi[h]; n < _clsdpi[h] + _openpi[h]; ++n){
+            _aCorrToPitzer[aCorrCount++] = pitzerOffset + n;
+        }
+        if(_transformationType != Restricted)
+            for(int n = _frzcpi[h]; n < _clsdpi[h]; ++n){
+                _bCorrToPitzer[bCorrCount++] = pitzerOffset + n;
+            }
+        pitzerOffset += _mopi[h];
+    }
+    // Active VIR
+    pitzerOffset = 0;
+    for(int h = 0; h < _nirreps; ++h){
+        for(int n = _clsdpi[h] + _openpi[h]; n < _mopi[h] - _frzvpi[h]; ++n){
+            _aCorrToPitzer[aCorrCount++] = pitzerOffset + n;
+        }
+        if(_transformationType != Restricted)
+            for(int n = _clsdpi[h]; n < _mopi[h] - _frzvpi[h]; ++n){
+                _bCorrToPitzer[bCorrCount++] = pitzerOffset + n;
+            }
+        pitzerOffset += _mopi[h];
+    }
+
+
     _initialized = true;
 }
 
@@ -341,6 +402,6 @@ IntegralTransform::~IntegralTransform()
 void IntegralTransform::check_initialized()
 {
     if (_initialized == false)
-        throw PSIEXCEPTION("IntegralTransform::check_initialized: This instances is not initialized.");
+        throw PSIEXCEPTION("IntegralTransform::check_initialized: This instance is not initialized.");
 }
 

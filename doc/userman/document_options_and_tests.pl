@@ -12,6 +12,10 @@ use File::Path qw(remove_tree);
 # Then, we look at the test cases, using the specially formatted comments to add a listing
 # of samples in the users' manual; the tests are copied (sans validation stuff) to the appropriate
 # location in the samples folder.
+#
+# Then, for each module detected in read_options.cc, we collect the process environment
+# variables set in src/bin/module and src/lib/libmodule_solver and place them in a TeX file,
+# which is inlined into the manual.
 
 #
 # First, read the options for each module
@@ -56,7 +60,9 @@ while(<DRIVER>){
 }
 close DRIVER;
 
+my @temp = ();
 print_hash(\%Keywords, "keywords.tex", "Keywords Recognized by Each Module", "keywords");
+my @PSIMODULES = @temp;
 print_hash(\%Expert, "expert_keywords.tex", "Expert Keywords Recognized by Each Module, for Advanced Users", "expertkeywords");
 
 
@@ -70,7 +76,8 @@ sub print_hash
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
  print OUT "\\section{$title}\\label{$label}\n";
  print OUT "{\n \\footnotesize\n";
- foreach my $Module (sort {$a gt $b} keys %hash){
+ foreach my $Module (sort {$a cmp $b} keys %hash){
+     push(@temp, $Module);
      printf OUT "\n\\subsection{%s}\n",$Module;
      foreach my $Keyword (sort {$a gt $b} keys %{$hash{$Module}}){
          printf OUT '\\begin{tabular*}{\\textwidth}[tb]{p{0.3\\textwidth}p{0.7\\textwidth}}';
@@ -197,7 +204,7 @@ sub determine_keyword_type_and_default
 
 
 #
-# Now we raid the test cases looking for tags
+# Secondly we raid the test cases looking for tags
 #
 
 my $SamplesFolder = $DriverPath . "../../samples";
@@ -261,4 +268,54 @@ close TEXSUMMARY;
 close SUMMARY;
 closedir TESTS;
 
+
+#
+# Thirdly, scan the source for Process::Environment variables
+#
+
+my $SrcFolder = $DriverPath . "../../src";
+$TexSummary = "variables_list.tex";
+open(TEXOUT,">$TexSummary") or die "I can't write to $TexSummary\n";
+print TEXOUT "\\section{Environment Variables Set by Each Module}\\label{variableslist}\n";
+print TEXOUT "{\n \\footnotesize\n";
+
+# Grab psi modules and ordering from options parsing above
+foreach my $Module (@PSIMODULES) {
+    # Set path for each module of bin/module and lib/libmodule_solver
+    #     Assign stray variables as for OEPROP below
+    my @RelevantDirs = ($SrcFolder . "/bin/" . lc($Module), $SrcFolder . "/lib/lib" . lc($Module) . "_solver");
+    if ($Module eq "OEPROP") { push(@RelevantDirs, $SrcFolder . "/lib/libmints"); }
+    my @EnvVariables = ();
+    printf TEXOUT "\n\\subsection{%s}\n",$Module;
+    # Search each line in each file in each module-relevant directory for environment variables
+    foreach my $Dir (@RelevantDirs) {
+        if (opendir(SRC, $Dir)) {
+            while (my $file = readdir(SRC)) {
+                if (open(CODE, "<$Dir/$file")) {
+                    my @text = <CODE>;
+                    foreach my $line (@text) {
+                        if ($line =~ /\QProcess::environment.globals\E/) {
+                            my @ltemp = split( /"/, $line);
+                            if ($ltemp[0] =~ /\QProcess::environment.globals\E/) {
+                                push(@EnvVariables, $ltemp[1]);
+                            }
+                        }
+                    }
+                    close(CODE);
+                }
+            }
+            closedir SRC;
+        }
+    }
+    # Remove duplicate env variables, sort into alphabetical order, and print to tex file
+    my %hash = map { $_, 1 } @EnvVariables;
+    @EnvVariables = sort(keys %hash);
+    foreach my $vari (@EnvVariables) { 
+        printf TEXOUT '\\begin{tabular*}{\\textwidth}[tb]{p{1.0\\textwidth}}';
+        printf TEXOUT "\n\t %s \\\\ \n", $vari;
+        print TEXOUT "\\end{tabular*}\n";
+    }
+}
+print TEXOUT "}\n";
+close TEXOUT;
 

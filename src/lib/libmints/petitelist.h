@@ -1,7 +1,7 @@
 #ifndef _psi_src_lib_libmints_petitelist_h_
 #define _psi_src_lib_libmints_petitelist_h_
 
-#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 
 #include <map>
 #include <cstdio>
@@ -181,7 +181,7 @@ public:
     /// The integral factory used to create this petite list
     const IntegralFactory* integral() { return integral_; }
     /// Create a clone of this petite list
-    boost::shared_ptr<PetiteList> clone() { return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_)); }
+    boost::shared_ptr<PetiteList> clone();
 
     /// Number of irreps
     int nirrep() const { return nirrep_; }
@@ -317,7 +317,7 @@ public:
         A function in the AO basis is obtained by \f$ X F_so \f$, where
         \f$ F_so \f$ is the function in the SO basis.
         */
-    boost::shared_ptr<Matrix> aotoso();
+    SharedMatrix aotoso();
 
     /** @return the SO->AO coefficient matrix (the inverse of AO->SO; for Abelian point groups it
         is a transpose of AO->SO matrix). The columns correspond to AOs (see AO_basisdim() )
@@ -331,7 +331,7 @@ public:
         A function in the SO basis is obtained by \f$ X F_ao \f$, where
         \f$ F_ao \f$ is the function in the AO basis.
         */
-    boost::shared_ptr<Matrix> sotoao();
+    SharedMatrix sotoao();
 };
 
 }
