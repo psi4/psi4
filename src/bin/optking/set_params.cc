@@ -175,10 +175,11 @@ void set_params(void)
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
 
 // consecutive number of backsteps allowed before giving up
-  if (options["CONSECUTIVE_BACKSTEPS"].has_changed())
-    Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
-  else if (Opt_params.step_type == OPT_PARAMS::SD)
-    Opt_params.consecutive_backsteps_allowed = 100;
+  Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
+
+  // if steepest-descent, then make much larger default
+  if (Opt_params.step_type == OPT_PARAMS::SD && !(options["CONSECUTIVE_BACKSTEPS"].has_changed()))
+    Opt_params.consecutive_backsteps_allowed = 10;
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
