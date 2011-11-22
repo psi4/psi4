@@ -53,6 +53,7 @@ fd_1_0(Options &options, const boost::python::list& E)
 
   // Print out energies and gradients
   double energy_ref = extract<double>(E[Ndisp-1]);
+  fprintf(outfile, "\n\t *** FINDIF (fd_1_0) ***\n");
   fprintf(outfile, "\tFinite difference computation of gradient using %d-point formula\n", pts);
   fprintf(outfile, "\tCheck for precision!\n");
   fprintf(outfile, "\tEnergy without displacment: %15.10lf\n", energy_ref);

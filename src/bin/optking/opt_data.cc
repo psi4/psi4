@@ -525,7 +525,6 @@ bool OPT_DATA::previous_step_report(void) const {
 
   // Minimum search
   if (Opt_params.opt_type == OPT_PARAMS::MIN) {
-    //if (Energy_ratio < 0.0 && consecutive_backsteps < 2) {
     if (Energy_ratio < 0.0 && consecutive_backsteps < Opt_params.consecutive_backsteps_allowed) {
       throw(BAD_STEP_EXCEPT("Energy has increased in a minimization.\n"));
     }
@@ -562,7 +561,7 @@ void OPT_DATA::increase_trust_radius(void) const {
 void OPT_DATA::decrease_trust_radius(void) const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
-  if (Opt_params.intrafragment_step_limit > 0.005) {
+  if (Opt_params.intrafragment_step_limit > 0.0005) {
     Opt_params.intrafragment_step_limit /= 4;
     fprintf(outfile,"\tEnergy ratio indicates iffy step: Trust radius decreased to %5.2e.\n\n",
           Opt_params.intrafragment_step_limit);
