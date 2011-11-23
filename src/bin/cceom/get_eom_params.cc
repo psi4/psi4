@@ -17,7 +17,7 @@
 
 namespace psi { namespace cceom {
 
-void get_eom_params()
+void get_eom_params(Options &options)
 {
   int errcod, i, j, sym, iconv,exist, state_irrep, c_irrep;
 
@@ -37,6 +37,7 @@ void get_eom_params()
   }
   else { fprintf(outfile,"Must have states_per_irrep vector in input.\n"); exit(PSI_RETURN_FAILURE); } 
   chkpt_close();
+
 
   eom_params.cs_per_irrep = (int *) malloc(moinfo.nirreps * sizeof(int));
   eom_params.number_of_states = 0;

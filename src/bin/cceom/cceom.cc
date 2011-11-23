@@ -8,10 +8,13 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#include <string>
 #include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <psi4-dec.h>
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
@@ -24,8 +27,8 @@ void get_moinfo(void);
 void cleanup(void);
 void exit_io(void);
 void diag(void);
-void get_params(void);
-void get_eom_params(void);
+void get_params(Options &);
+void get_eom_params(Options &);
 void form_dpd_dp(void);
 int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -38,9 +41,9 @@ void local_done(void);
 
 }} // namespace psi::cceom
 
-using namespace psi::cceom;
+using namespace psi;
 
-int main(int argc, char *argv[])
+PsiReturnType cceom(Options &options)
 {
   int i, h, done=0, *cachefiles, **cachelist;
   init_io(argc, argv);
@@ -90,8 +93,6 @@ int main(int argc, char *argv[])
   exit_io();
   exit(0);
 }
-
-extern "C" {const char *gprgid() { const char *prgid = "CCEOM"; return(prgid); }}
 
 namespace psi { namespace cceom {
 

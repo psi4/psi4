@@ -1250,6 +1250,48 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
   }
+  if(name == "CCEOM"|| options.read_globals()) {
+    /*- -*/
+    options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
+    /*- -*/
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+    /*- -*/
+    options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
+    /*- -*/
+    options.add_bool("AO_BASIS",false);
+    /*- -*/
+    options.add_bool("FULL_MATRIX",false);
+    /*- -*/
+    options.add_int("CACHELEV",2);
+    /*- -*/
+    options.add_str("CACHETYPE", "LRU", "LOW LRU");
+    /*- -*/
+    options.add_int("NTHREADS", 1);
+    /*- -*/
+    options.add_str("ABCD", "NEW", "NEW OLD");
+    /*- -*/
+    options.add_bool("T3_WS_INCORE", false);
+    /*- -*/
+    options.add_bool("LOCAL", false);
+    /*- -*/
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
+    options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
+    /*- -*/
+    options.add_str("LOCAL_WEAKP", "NONE", "NONE MP2 NEGLECT");
+    /*- -*/
+    options.add_str("LOCAL_PRECONDITIONER", "HBAR", "HBAR FOCK");
+    /*- -*/
+    options.add_int("LOCAL_GHOST", -1);
+    /*- -*/
+    options.add_bool("LOCAL_DO_SINGLES", true);
+    /*- -*/
+    options.add_bool("LOCAL_FILTER_SINGLES", true);
+    /*- -*/
+    options.add_bool("NEWTRIPS", true);
+    /*- -*/
+    options.add("STATES_PER_IRREP", new ArrayType());
+  }
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- -*/
     options.add_str("WFN", "SCF");
