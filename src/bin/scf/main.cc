@@ -77,6 +77,7 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     // Set some environment variables
     Process::environment.globals["SCF TOTAL ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
+    Process::environment.globals["REFERENCE ENERGY"] = energy;
 
     // Shut down psi.
 

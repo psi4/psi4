@@ -162,22 +162,20 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
 
   // TODO: should put an exception here if not enough memory.
   fprintf(outfile,"        (T) correction requires %9.2lf mb memory.\n",
-           8.*(2.*o*o*v*v+1.*o*o*o*v+(6.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
+           8.*(2.*o*o*v*v+1.*o*o*o*v+(5.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
   fprintf(outfile,"\n");
 
   E2abci = (double**)malloc(nthreads*sizeof(double*));
   // some v^3 intermediates
-  double **Z  = (double**)malloc(v*v*v*sizeof(double*));
-  double **Z2 = (double**)malloc(v*v*v*sizeof(double*));
-  double **X  = (double**)malloc(v*v*v*sizeof(double*));
-  double **Y  = (double**)malloc(v*v*v*sizeof(double*));
-  double **Z3 = (double**)malloc(v*v*v*sizeof(double*));
+  double **Z  = (double**)malloc(nthreads*sizeof(double*));
+  double **Z2 = (double**)malloc(nthreads*sizeof(double*));
+  double **Y  = (double**)malloc(nthreads*sizeof(double*));
+  double **Z3 = (double**)malloc(nthreads*sizeof(double*));
 
   for (int i=0; i<nthreads; i++){
       E2abci[i] = (double*)malloc(v*v*v*sizeof(double));
       Z[i]      = (double*)malloc(v*v*v*sizeof(double));
       Z2[i]     = (double*)malloc(v*v*v*sizeof(double));
-      X[i]      = (double*)malloc(v*v*v*sizeof(double));
       Y[i]      = (double*)malloc(v*v*v*sizeof(double));
       Z3[i]     = (double*)malloc(v*v*v*sizeof(double));
   }
@@ -187,7 +185,6 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
   psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&E2ijak[0],o*o*o*v*sizeof(double));
   psio->close(PSIF_IJAK,1);
-
 
   double *tempt = (double*)malloc(o*o*v*v*sizeof(double));
   for (int a=0; a<v*v; a++){
@@ -201,7 +198,9 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   psio->close(PSIF_KLCD,1);
 
   double *etrip = (double*)malloc(nthreads*sizeof(double));
+  double *renorm = (double*)malloc(nthreads*sizeof(double));
   for (int i=0; i<nthreads; i++) etrip[i] = 0.0;
+  for (int i=0; i<nthreads; i++) renorm[i] = 0.0;
   fprintf(outfile,"        Computing (T) correction... \n");
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
@@ -301,9 +300,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                           long int bca = b*v*v+c*v+a;
                           long int cab = c*v*v+a*v+b;
                           long int cba = c*v*v+b*v+a;
-                          X[thread][abc]  = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
-                                          + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
-                                          + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
+
                           Y[thread][abc]  = Z2[thread][abc] + Z2[thread][bca] + Z2[thread][cab];
 
                           Z3[thread][abc] = Z2[thread][acb] + Z2[thread][bac] + Z2[thread][cba];
@@ -322,13 +319,57 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                           long int acb = a*v*v+c*v+b;
                           long int bac = b*v*v+a*v+c;
                           long int cba = c*v*v+b*v+a;
-                          double dum     = (Y[thread][abc] - 2.0*Z3[thread][abc])
+                          double dum      = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
+                                          + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
+                                          + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
+
+                          dum            = (Y[thread][abc] - 2.0*Z3[thread][abc])
                                          * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
                                          + (Z3[thread][abc] - 2.0*Y[thread][abc])
                                          * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
-                                         + 3.0*X[thread][abc];
+                                         + 3.0*dum;
                           double denom = dijkab-F[c+o];
                           etrip[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
+                      }
+                  }
+              }
+              // for denominator for R-CCSD(T)
+              for (int a=0; a<v; a++){
+                  for (int b=0; b<v; b++){
+                      for (int c=0; c<v; c++){
+                          long int abc = a*v*v+b*v+c;
+
+                          Z[thread][abc] = t1[a*o+i]*t1[b*o+j]*t1[c*o+k]
+                                         + t1[a*o+i]*tempt[j*o*v*v+k*v*v+b*v+c]
+                                         + t1[b*o+j]*tempt[i*o*v*v+k*v*v+a*v+c]
+                                         + t1[c*o+k]*tempt[i*o*v*v+j*v*v+a*v+b];
+                      }
+                  }
+              }
+              for (int a=0; a<v; a++){
+                  double dijka = dijk-F[a+o];
+                  for (int b=0; b<=a; b++){
+                      double dijkab = dijka-F[b+o];
+                      for (int c=0; c<=b; c++){
+                          long int abc = a*v*v+b*v+c;
+                          long int bca = b*v*v+c*v+a;
+                          long int cab = c*v*v+a*v+b;
+                          long int acb = a*v*v+c*v+b;
+                          long int bac = b*v*v+a*v+c;
+                          long int cba = c*v*v+b*v+a;
+
+                          double dum      = Z[thread][abc]*Z2[thread][abc] + Z[thread][acb]*Z2[thread][acb]
+                                          + Z[thread][bac]*Z2[thread][bac] + Z[thread][bca]*Z2[thread][bca]
+                                          + Z[thread][cab]*Z2[thread][cab] + Z[thread][cba]*Z2[thread][cba];
+
+                          dum            = (Y[thread][abc] - 2.0*Z3[thread][abc])
+                                         * (Z[thread][abc] + Z[thread][bca] + Z[thread][cab])
+                                         + (Z3[thread][abc] - 2.0*Y[thread][abc])
+                                         * (Z[thread][acb] + Z[thread][bac] + Z[thread][cba])
+                                         + 3.0*dum;
+
+                          double denom = dijkab-F[c+o];
+                          renorm[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
                       }
                   }
               }
@@ -337,34 +378,51 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
       }
   }
 
+
   double et = 0.0;
   for (int i=0; i<nthreads; i++) et += etrip[i];
 
+  // for denominator for R-CCSD(T)
+  double dt = 1.0+2.0*F_DDOT(o*v,t1,1,t1,1);
+  for (long int i=0; i<o; i++){
+      for (long int j=0; j<o; j++){
+          for (long int a=0; a<v; a++){
+              for (long int b=0; b<v; b++){
+                  dt += (2.0*tempt[i*o*v*v+j*v*v+a*v+b]-tempt[j*o*v*v+i*v*v+a*v+b])
+                      * (tempt[i*o*v*v+j*v*v+a*v+b]+t1[a*o+i]*t1[b*o+j]);
+              }
+          }
+      }
+  }
+  for (int i=0; i<nthreads; i++) dt += renorm[i];
+
   psio->close(PSIF_ABCI,1);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        (T) energy                 %20.12lf\n",et);
+  fprintf(outfile,"        (T) energy                   %20.12lf\n",et);
+  fprintf(outfile,"        R-CCSD(T) denominator        %20.12lf\n",dt);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        MP2 correlation energy     %20.12lf\n",ccsd->emp2);
-  fprintf(outfile,"        CCSD correlation energy    %20.12lf\n",ccsd->eccsd);
-  fprintf(outfile,"        CCSD(T) correlation energy %20.12lf\n",ccsd->eccsd+et);
+  fprintf(outfile,"        MP2 correlation energy       %20.12lf\n",ccsd->emp2);
+  fprintf(outfile,"        CCSD correlation energy      %20.12lf\n",ccsd->eccsd);
+  fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf\n",ccsd->eccsd+et);
+  fprintf(outfile,"        R-CCSD(T) correlation energy %20.12lf\n",ccsd->eccsd+et/dt);
   fflush(outfile);
 
   // free memory:
   free(E2ijak);
   for (int i=0; i<nthreads; i++){  
       free(E2abci[i]);
-      free(X[i]);
       free(Y[i]);
       free(Z[i]);
       free(Z2[i]);
       free(Z3[i]);
   }
-  free(X);
   free(Y);
   free(Z);
   free(Z2);
   free(Z3);
   free(E2abci);
+  free(etrip);
+  free(renorm);
             
   return Success;
 }
