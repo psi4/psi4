@@ -24,10 +24,7 @@ EXTERN void check_sum(char *term_lbl, int index, int irrep);
 #define MAX(I,J) ((I>J) ? I : J)
 #define MIN(I,J) ((I<J) ? I : J)
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
+EXTERN FILE *outfile;
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 EXTERN struct Eom_params eom_params;
