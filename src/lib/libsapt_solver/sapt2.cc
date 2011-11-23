@@ -202,6 +202,7 @@ void SAPT2::print_results()
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt2_;
+  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 void SAPT2::df_integrals()

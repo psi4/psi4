@@ -206,6 +206,8 @@ void opdm(struct stringwr **alplist, struct stringwr **betlist,
     // I fix it, CDS 11/5/11
     Process::environment.globals["CI CORRELATION ENERGY"] = overlap - 
       CalcInfo.escf;
+    Process::environment.globals["CORRELATION ENERGY"] = overlap - 
+      CalcInfo.escf;
     chkpt_close();
   
   }
