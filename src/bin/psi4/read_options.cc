@@ -946,7 +946,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DELETE_AO", true);
     /*- -*/
     options.add_bool("DELETE_TPDM", true);
-
     /*- -*/
     options.add_bool("PRINT_TE_INTEGRALS", false);
     /*- -*/
@@ -1088,7 +1087,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether to compute all relaxed excited states -*/
     options.add_bool("PROP_ALL",false);
     /*- The symmetry of states -*/
-    options.add_int("PROP_SYM", 0);
+    options.add_int("PROP_SYM", 1);
     /*- -*/
     options.add_int("PROP_ROOT", 0);
   }
@@ -1258,8 +1257,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
     /*- -*/
-    options.add_bool("AO_BASIS",false);
-    /*- -*/
     options.add_bool("FULL_MATRIX",false);
     /*- -*/
     options.add_int("CACHELEV",2);
@@ -1291,6 +1288,48 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("NEWTRIPS", true);
     /*- -*/
     options.add("STATES_PER_IRREP", new ArrayType());
+    /*- -*/
+    options.add_int("MAXITER", 80);
+    /*- -*/
+    options.add_int("PROP_SYM", 1);
+    /*- -*/
+    options.add_int("PROP_ROOT", 0);
+    /*- -*/
+    options.add_bool("CC3_FOLLOW_ROOT", false);
+    /*- -*/
+    options.add_bool("RHF_TRIPLETS", false);
+    /*- -*/
+    options.add_int("EXCITATION_RANGE", 2);
+    /*- -*/
+    options.add_bool("PRINT_SINGLES", false);
+    /*- -*/
+    options.add_int("VECTORS_PER_ROOT_SS", 5);
+    /*- -*/
+    options.add_int("VECTORS_PER_ROOT", 12);
+    /*- -*/
+    options.add_int("VECTORS_CC3", 10);
+    /*- -*/
+    options.add_bool("COLLAPSE_WITH_LAST", true);
+    /*- -*/
+    options.add_double("COMPLEX_TOL", 1E-12);
+    /*- -*/
+    options.add_double("RESIDUAL_TOL", 1E-6);
+    /*- -*/
+    options.add_double("RESIDUAL_TOL_SS", 1E-6);
+    /*- -*/
+    options.add_double("EVAL_TOL", 1E-8);
+    /*- -*/
+    options.add_double("EVAL_TOL_SS", 1E-6);
+    /*- -*/
+    options.add_int("AMPS_TO_PRINT", 5);
+    /*- -*/
+    options.add_double("SCHMIDT_ADD_RESIDUAL_TOL", 1E-3);
+    /*- -*/
+    options.add_bool("SKIP_DIAGSS", false);
+    /*- -*/
+    options.add_bool("RESTART_EOM_CC3", false);
+    /*- -*/
+    options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- -*/

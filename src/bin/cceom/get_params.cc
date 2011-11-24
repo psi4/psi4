@@ -7,8 +7,8 @@
 #include <string>
 #include <cmath>
 #include <liboptions/liboptions.h>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
+#include <libpsio/psio.h>
 #include <psi4-dec.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -58,11 +58,10 @@ void get_params(Options &options)
   }
   else params.eom_ref = 2; /* run in UHF mode - ignore EOM_REFERENCE */
 
-  params.aobasis = options["AO_BASIS"].to_integer();
   params.full_matrix = options["FULL_MATRIX"].to_integer();
   params.cachelev = options.get_int("CACHELEV");
 
-  cachetype = options.get_str("CACHETYPE");
+  std::string cachetype = options.get_str("CACHETYPE");
   if(cachetype == "LOW") params.cachetype = 1;
   else if(cachetype == "LRU") params.cachetype = 0;
   if(params.ref == 2) /* No LRU cacheing yet for UHF references */
@@ -94,7 +93,6 @@ void get_params(Options &options)
   fprintf(outfile, "\tReference EOM wfn=    %4s\n", 
              (params.eom_ref == 0) ? "RHF" : ((params.eom_ref == 1) ? "ROHF" : "UHF"));
   fprintf(outfile, "\tMemory (Mbytes) =  %5.1f\n",params.memory/1e6);
-  fprintf(outfile, "\tAO Basis        =     %s\n", params.aobasis.c_str());
   fprintf(outfile, "\tABCD            =     %s\n", params.abcd.c_str());
   fprintf(outfile, "\tCache Level     =    %1d\n", params.cachelev);
   fprintf(outfile, "\tCache Type      =    %4s\n", params.cachetype ? "LOW" : "LRU");
@@ -103,9 +101,9 @@ void get_params(Options &options)
   fprintf(outfile, "\tLocal CC        =     %s\n", params.local ? "Yes" : "No");
   if(params.local) {
     fprintf(outfile, "\tLocal Cutoff    = %3.1e\n", local.cutoff);
-    fprintf(outfile, "\tLocal Method    =    %s\n", local.method);
-    fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp);
-    fprintf(outfile, "\tLocal precon.   =    %s\n", local.precon);
+    fprintf(outfile, "\tLocal Method    =    %s\n", local.method.c_str());
+    fprintf(outfile, "\tWeak pairs      =    %s\n", local.weakp.c_str());
+    fprintf(outfile, "\tLocal precon.   =    %s\n", local.precon.c_str());
     fprintf(outfile, "\tGhost atom      =    %d\n", local.ghost);
     fprintf(outfile, "\tLocal guess     =    %s\n", 
 	    local.do_singles ? "HBAR_SS" : "UNIT VECTORS" );
