@@ -17,8 +17,8 @@ def process_word_quotes(matchobj):
         else:
             print "Invalid Python variable: %s" % matchobj.group(3)
             sys.exit(1)
-    elif(re.search(r'[A-Za-z]', matchobj.group(3))):
-        # This contains letters/symbols, so we need to wrap it in quotes
+    elif(re.match(r'[A-Za-z][\w]*', matchobj.group(3))):
+        # This must be a string if it starts with a letter
         return "\"%s\"" % matchobj.group(1)
     else:
         # This must be a number, don't wrap it in quotes

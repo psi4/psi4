@@ -1882,11 +1882,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force -*/
+      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
-      /*- QCHEM optimization criteria: maximum energy change -*/
+      /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);
-      /*- QCHEM optimization criteria: maximum displacement -*/
+      /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DISP", 1.2e-3);
       /*- Whether to test B matrix -*/
       options.add_bool("TEST_B", false);
