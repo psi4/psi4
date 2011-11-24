@@ -1,0 +1,47 @@
+#! Intercalls among python wrappers- database, cbs, optimize, energy, etc.
+#! Though each call below functions individually, running them all in sequence or
+#! mixing up the sequence is aspirational at present.
+#! Also aspirational is using the intended types of gradients.
+
+
+molecule h2 {
+    H
+    H 1 1.00
+}
+
+set globals {
+    BASIS 3-21G
+    REFERENCE RHF
+    SCF_TYPE PK
+    PRINT 1
+    CONVERGENCE 11
+    JOBTYPE SP
+    GUESS CORE
+}
+
+# optimize(cbs(energy()))
+optimize('mp2',func=cbs,corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g')
+
+# database(energy())
+db('mp2','RGC10',cast_up='sto-3g',subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy'])
+
+# database(cbs(energy()))
+db('mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total energy','current energy'],corl_basis='cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd(t)',delta_basis='3-21g')
+
+# cbs(energy())  use first compare_values for h2 geom above, second for h2 geom after optimization in [1]
+cbs(corl_wfn='mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
+
+# opt(energy())
+# TODO switch to mp2 once gradients thoroughly working again
+optimize('mp2',dertype='none')
+optimize('scf')
+h2.reset_point_group('c1')
+h2.fix_orientation(1)
+h2.update_geometry()
+optimize('mp2')
+
+# database(opt(energy()))
+db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
+
+clean()
+
