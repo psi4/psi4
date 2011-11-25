@@ -5,7 +5,7 @@ include ../MakeVars
 
 LDLIBS += $(LAPACK) $(BLAS) -lpthread
 
-PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+PSITARGET = $(top_objdir)/lib/libPSI_cceom.a
 
 CXXSRC = \
 FDD.cc        c_clean.cc         get_eom_params.cc     rzero.cc \
@@ -18,7 +18,7 @@ WmaijDS.cc    cceom.cc           local_guess.cc        sigmaSD.cc \
 WmbejDD.cc    check_sum.cc       norm.cc               sigmaSS.cc \
 WmnefDD.cc    dgeev_eom.cc       norm_HC1.cc           sigma_full.cc \
 WmnieSD.cc    diag.cc            precondition.cc       sort_C.cc \
-WmnijDD.cc    diagSS.cc          read_guess.cc         sort_amps.cc \
+WmnijDD.cc    diagSS.cc          sort_amps.cc \
 WnmjeDS.cc    follow_root.cc     restart.cc            write_Rs.cc \
 amp_write.cc  form_diagonal.cc   restart_with_root.cc 
 

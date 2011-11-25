@@ -6,7 +6,6 @@ include ../MakeVars
 LDLIBS += $(LAPACK) $(BLAS) -lpthread
 
 PSITARGET = $(top_objdir)/lib/libPSI_ccenergy.a
-#PSILIBS = -lPSI_dpd -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
 
 CXXSRC = \
 AO_contribute.cc  WmbejT2.cc      cc2_faeT2.cc  denom.cc       local.cc\

@@ -79,7 +79,7 @@ void MOLECULE::read_geom_grad(void) {
   boost::shared_ptr<Molecule> mol = Process::environment.reference_wavefunction()->molecule();
   Matrix geometry = mol->geometry();
 
-  energy = Process::environment.reference_wavefunction()->reference_energy();
+  energy = Process::environment.globals["CURRENT ENERGY"];
 
   int atom =0;
   for (int f=0; f<nfrag; ++f) {

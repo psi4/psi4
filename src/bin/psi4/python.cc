@@ -48,26 +48,27 @@ namespace opt {
 }
 
 namespace psi {
-    namespace mints     { PsiReturnType mints(Options &);    }
-    namespace deriv     { PsiReturnType deriv(Options &);    }
-    namespace scf       { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
-    namespace dfmp2     { PsiReturnType dfmp2(Options &);    }
-    namespace dfcc      { PsiReturnType dfcc(Options &);     }
-    namespace sapt      { PsiReturnType sapt(Options &);     }
-    namespace dcft      { PsiReturnType dcft(Options &);     }
-    namespace mcscf     { PsiReturnType mcscf(Options &);    }
-    namespace psimrcc   { PsiReturnType psimrcc(Options &);  }
-    namespace transqt   { PsiReturnType transqt(Options &);  }
-    namespace transqt2  { PsiReturnType transqt2(Options &); }
-    namespace ccsort    { PsiReturnType ccsort(Options&);    }
-    namespace lmp2      { PsiReturnType lmp2(Options&);      }
-    namespace cctriples { PsiReturnType cctriples(Options&); }
-    namespace cchbar    { PsiReturnType cchbar(Options&);    }
-    namespace cclambda  { PsiReturnType cclambda(Options&);  }
-    namespace ccdensity { PsiReturnType ccdensity(Options&); }
+    namespace mints      { PsiReturnType mints(Options &);    }
+    namespace deriv      { PsiReturnType deriv(Options &);    }
+    namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
+    namespace dfcc       { PsiReturnType dfcc(Options &);     }
+    namespace sapt       { PsiReturnType sapt(Options &);     }
+    namespace dcft       { PsiReturnType dcft(Options &);     }
+    namespace mcscf      { PsiReturnType mcscf(Options &);    }
+    namespace psimrcc    { PsiReturnType psimrcc(Options &);  }
+    namespace transqt    { PsiReturnType transqt(Options &);  }
+    namespace transqt2   { PsiReturnType transqt2(Options &); }
+    namespace ccsort     { PsiReturnType ccsort(Options&);    }
+    namespace lmp2       { PsiReturnType lmp2(Options&);      }
+    namespace cctriples  { PsiReturnType cctriples(Options&); }
+    namespace cchbar     { PsiReturnType cchbar(Options&);    }
+    namespace cclambda   { PsiReturnType cclambda(Options&);  }
+    namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
-    namespace detci     { PsiReturnType detci(Options&);     }
-    namespace findif    {
+    namespace cceom      { PsiReturnType cceom(Options&); }
+    namespace detci      { PsiReturnType detci(Options&);     }
+    namespace findif     {
       std::vector< SharedMatrix > fd_geoms_1_0(Options &);
       std::vector< SharedMatrix > fd_geoms_2_0(Options &);
       std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
@@ -350,6 +351,13 @@ double py_psi_ccresponse()
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
     ccresponse::ccresponse(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_cceom()
+{
+    py_psi_prepare_options_for_module("CCEOM");
+    cceom::cceom(Process::environment.options);
     return 0.0;
 }
 
@@ -929,6 +937,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);
     def("ccresponse", py_psi_ccresponse);
+    def("cceom", py_psi_cceom);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes

@@ -956,6 +956,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cchbar/Makefile
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
+          src/bin/cceom/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
@@ -982,6 +983,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/scf3/Makefile
           tests/scf4/Makefile
           tests/scf5/Makefile
+          tests/dfscf-bz2/Makefile
+          tests/scf-bz2/Makefile
           tests/opt1/Makefile
           tests/opt1-fd/Makefile
           tests/opt2/Makefile
@@ -1003,19 +1006,25 @@ AC_CONFIG_FILES([include/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
           tests/cisd-h2o-clpse/Makefile
+          tests/cisd-opt-fd/Makefile
           tests/cisd-sp/Makefile
           tests/cisd-sp-2/Makefile
           tests/fci-h2o/Makefile
           tests/fci-h2o-2/Makefile
+          tests/fci-h2o-fzcv/Makefile
           tests/fci-dipole/Makefile
           tests/fci-tdm/Makefile
+          tests/fci-tdm-2/Makefile
+          tests/rasci-h2o/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
+          tests/cc4a/Makefile
           tests/cc5a/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/cc9/Makefile
+          tests/cc12/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc28/Makefile

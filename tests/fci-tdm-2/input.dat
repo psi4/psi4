@@ -1,0 +1,51 @@
+#! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
+
+refnuc   =   4.919538563221   #TEST
+refscf   = -25.943614320921   #TEST
+refci1   = -26.0272269234496  #TEST
+refcorr1 =  refci1 - refscf   #TEST
+refci2   = -25.8061525481186  #TEST
+refcorr2 =  refci2 - refscf   #TEST
+refDipHF =  -2.038258349512   #TEST
+
+refDipCI1=   -2.110788533423  #TEST
+refDipCI2=    9.416367429315  #TEST
+refTDM   =    1.604595654372  #TEST
+
+molecule bh_h2p {
+1 2
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
+}
+
+set {
+  wfn detci
+  reference rohf
+  fci true
+  basis cc-pVDZ 
+  docc [3,0,0,0]
+  socc [1,0,0,0]
+  freeze_core true
+  dipmom true
+  num_roots 2
+}
+
+set scf d_converge 10
+set detci e_converge 8
+
+thisenergy = energy('detci')
+
+compare_values(refnuc, bh_h2p.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy")       #TEST 
+compare_values(refscf, get_variable("SCF TOTAL ENERGY"),     8, "SCF energy") #TEST
+compare_values(refci1, thisenergy,                      7, "CI ROOT 1 ENERGY") #TEST
+compare_values(refci2,   get_variable("CI ROOT 2 TOTAL ENERGY"),       7, "CI ROOT 2 ENERGY") #TEST
+compare_values(refcorr1, get_variable("CI ROOT 1 CORRELATION ENERGY"), 7, "CI root 1 correlation energy")  #TEST
+compare_values(refcorr2, get_variable("CI ROOT 2 CORRELATION ENERGY"), 7, "CI root 2 correlation energy")  #TEST
+compare_values(refDipHF, get_variable("SCF DIPOLE Z"), 5, "SCF Z Component of dipole")      #TEST
+compare_values(refDipCI1, get_variable("CI ROOT 1 DIPOLE Z"), 5, "CI ROOT 1 Z Component of dipole")        #TEST
+compare_values(refDipCI2, get_variable("CI ROOT 2 DIPOLE Z"), 5, "CI ROOT 2 Z Component of dipole")        #TEST
+compare_values(abs(refTDM), abs(get_variable("CI ROOT 1 -> ROOT 2 DIPOLE Z")), 5, "CI ROOT 1 -> ROOT 2 Z Component of dipole")        #TEST
+
+clean()
