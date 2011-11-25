@@ -57,6 +57,9 @@ void set_params(void)
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");
+    Opt_params.intrafragment_step_limit_min = options.get_double("INTRAFRAGMENT_STEP_LIMIT_MIN");
+    Opt_params.intrafragment_step_limit_max = options.get_double("INTRAFRAGMENT_STEP_LIMIT_MAX");
+
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
 // Which RFO root to follow; internally 0 (externally 1) indicates minimum; {integer}
