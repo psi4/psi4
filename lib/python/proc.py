@@ -266,8 +266,24 @@ def run_ccsd_response(name, **kwargs):
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+def run_eom_ccsd(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    run_ccsd("ccsd", **kwargs);
+
+    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+
+    PsiMod.cchbar()
+    PsiMod.cceom()
 
 def run_detci(name, **kwargs):
 
@@ -286,7 +302,7 @@ def run_detci(name, **kwargs):
     # This would be useful of the user had to do something special with SCF to get
     # it to converge.
     run_scf("scf", **kwargs);
-    PsiMod.transqt()
+    PsiMod.transqt2()
     return PsiMod.detci()
 
 def run_dfmp2(name, **kwargs):

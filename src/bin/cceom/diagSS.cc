@@ -4,9 +4,10 @@
 */
 #include <cstdlib>
 #include <cstdio>
-#include <cstring>
+#include <string>
 #include <cmath>
 #include <libciomr/libciomr.h>
+#include <libpsio/psio.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
@@ -301,7 +302,7 @@ void diagSS(int C_irr) {
       }
     }
 
-    if(!strcmp(params.wfn,"EOM_CC2")) {
+    if(params.wfn == "EOM_CC2") {
       for (i=0;i<L;++i)
         cc2_sigmaSS(i,C_irr);
     }
