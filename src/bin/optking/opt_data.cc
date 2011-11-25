@@ -547,9 +547,11 @@ void OPT_DATA::increase_trust_radius(void) const {
   // don't let step_limit get larger than 1.0 au
   std::string module = "OPTKING";
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
-  if (Opt_params.intrafragment_step_limit < 1.0) {
-    Opt_params.intrafragment_step_limit *= 2;
-    fprintf(outfile,"\tEnergy ratio indicates good step: Trust radius increased to %5.2e.\n\n",
+  double max = Opt_params.intrafragment_step_limit_max;
+  if (Opt_params.intrafragment_step_limit != max) {
+    double new_val = Opt_params.intrafragment_step_limit * 2;
+    Opt_params.intrafragment_step_limit = ((new_val > max) ? max : new_val);
+    fprintf(outfile,"\tEnergy ratio indicates good step: Trust radius increased to %6.3e.\n\n",
         Opt_params.intrafragment_step_limit);
 #if defined(OPTKING_PACKAGE_PSI)
     psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
@@ -561,10 +563,12 @@ void OPT_DATA::increase_trust_radius(void) const {
 void OPT_DATA::decrease_trust_radius(void) const {
   std::string module = "OPTKING";
   std::string key = "INTRAFRAGMENT_STEP_LIMIT";
-  if (Opt_params.intrafragment_step_limit > 0.0005) {
-    Opt_params.intrafragment_step_limit /= 4;
-    fprintf(outfile,"\tEnergy ratio indicates iffy step: Trust radius decreased to %5.2e.\n\n",
-          Opt_params.intrafragment_step_limit);
+  double min = Opt_params.intrafragment_step_limit_min;
+  if (Opt_params.intrafragment_step_limit != min) {
+    double new_val = Opt_params.intrafragment_step_limit / 4;
+    Opt_params.intrafragment_step_limit = ((new_val < min) ? min : new_val);
+    fprintf(outfile,"\tEnergy ratio indicates iffy step: Trust radius decreased to %6.3e.\n\n",
+            Opt_params.intrafragment_step_limit);
 #if defined(OPTKING_PACKAGE_PSI)
     psi::Process::environment.options.set_double(module, key, Opt_params.intrafragment_step_limit);
 #endif
