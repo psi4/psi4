@@ -23,6 +23,8 @@ procedures = {
             'mp2c'          : run_mp2c,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
+            'eom-ccsd'      : run_eom_ccsd,
+            'eom_ccsd'      : run_eom_ccsd,
             'detci'         : run_detci
         },
         'gradient' : {

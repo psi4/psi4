@@ -45,8 +45,11 @@ inline void GPUHelper::Check_CUDA_Error(FILE*fp,const char *message){
 ===================================================================*/
 void GPUHelper::CudaInit(Options&options){
 
+  max_mapped_memory=0;
   num_gpus=gpumemory=extraroom=0;
-  cudaGetDeviceCount(&num_gpus);
+  int n;
+  cudaGetDeviceCount(&n);
+  num_gpus = n;
   if (num_gpus>0){
      cublasInit();
      struct cudaDeviceProp cudaProp;
@@ -81,10 +84,10 @@ void GPUHelper::CudaInit(Options&options){
      // default memory for mapped cpu memory is the sum of all gpu memory
      max_mapped_memory = num_gpus * (gpumemory-extraroom);
      if (options["MAX_MAPPED_MEMORY"].has_changed()){
-        ULI temp_mem = options.get_int("MAX_MAPPED_MEMORY");
-        temp_mem *= 1024*1024;
+        long int temp_mem = options.get_int("MAX_MAPPED_MEMORY");
+        temp_mem *= 1024L*1024L;
         if (temp_mem<max_mapped_memory)
-           max_mapped_memory = options.get_int("MAX_MAPPED_MEMORY");
+           max_mapped_memory = temp_mem;
      }
 
      fprintf(outfile,"\n");
@@ -93,8 +96,8 @@ void GPUHelper::CudaInit(Options&options){
      tmp = (double**)malloc(num_gpus*sizeof(double*));
      gpuarray = (double**)malloc(num_gpus*sizeof(double*));
      #pragma omp parallel for schedule (static) num_threads(num_gpus)
-     for (int i=0; i<num_gpus; i++){
-         int thread = 0;
+     for (long int i=0; i<num_gpus; i++){
+         long int thread = 0;
          #ifdef _OPENMP
            thread = omp_get_thread_num();
          #endif
@@ -135,7 +138,7 @@ void GPUHelper::GPUTiledDGEMM(char transa,char transb,long int m, long int n,lon
      F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
      return;
   }
-  /* if (thread>=num_gpus){
+  /*if (thread>=num_gpus){
      F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
   }*/
   if (transa=='n'){
@@ -159,12 +162,42 @@ void GPUHelper::GPUTiledDGEMM(char transa,char transb,long int m, long int n,lon
      }
   }
 }
+void GPUHelper::GPUTiledDGEMM_NoThread(char transa,char transb,long int m, long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread){
+  if (num_gpus<1){
+     F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+     return;
+  }
+  if (thread>=num_gpus){
+     F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+     return;
+  }
+  if (transa=='n'){
+     if (transb=='n'){
+        GPU_DGEMM_2DTile_nn(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,thread);
+        //F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+     }
+     else{
+        GPU_DGEMM_2DTile_nt(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,thread);
+        //F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+     }
+  }
+  else{
+     if (transb=='n'){
+        GPU_DGEMM_2DTile_tn(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,thread);
+        //F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+     }
+     else{
+        GPU_DGEMM_2DTile_tt(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc,thread);
+        //F_DGEMM(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
+     }
+  }
+}
 /**
  * dgemm using a 2-dimensional tile - threaded versions for multiple gpus
  */
 void GPUHelper::GPU_DGEMM_2DTile_nn_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc){
 
-  Tiling((gpumemory-extraroom)/8.,max_mapped_memory/num_gpus/8.,m,n,k);
+  Tiling((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
 
   // initialize result
   if (beta==0.0) 
@@ -174,7 +207,7 @@ void GPUHelper::GPU_DGEMM_2DTile_nn_threaded(char transa,char transb,long int m,
 
   #pragma omp parallel for schedule (dynamic) num_threads(num_gpus)
   for (long int mn=0; mn<ntilesM*ntilesN; mn++){
-      int thread = 0;
+      long int thread = 0;
       #ifdef _OPENMP
         thread = omp_get_thread_num();
       #endif
@@ -208,9 +241,50 @@ void GPUHelper::GPU_DGEMM_2DTile_nn_threaded(char transa,char transb,long int m,
   free(tilesizesN);
   free(tilesizesK);
 }
+void GPUHelper::GPU_DGEMM_2DTile_nn(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread){
+
+  TilingNoThread((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
+
+  // initialize result
+  if (beta==0.0) 
+     memset((void*)C,'\0',n*ldc*sizeof(double));
+  else           
+     for (long int i=0; i<n*ldc; i++) C[i] *= beta;
+
+  for (long int mn=0; mn<ntilesM*ntilesN; mn++){
+
+      // pointers to gpu memory
+      double*gpuA = gpuarray[thread];
+      double*gpuB = gpuarray[thread]+tilesizeM*tilesizeK;
+      double*gpuC = gpuarray[thread]+tilesizeM*tilesizeK+tilesizeN*tilesizeK;
+
+      long int tn = mn%ntilesN;
+      long int tm = (mn-tn)/ntilesN;
+
+      for (long int tk=0; tk<ntilesK; tk++){
+
+          for (long int i=0; i<tilesizesK[tk]; i++){
+              F_DCOPY(tilesizesM[tm],A+(i+tk*tilesizeK)*lda+tm*tilesizeM,1,tmp[thread]+i*tilesizesM[tm],1);
+          }
+          cudaMemcpy(gpuA,tmp[thread],tilesizesM[tm]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          for (long int i=0; i<tilesizesN[tn]; i++){
+              F_DCOPY(tilesizesK[tk],B+(i+tn*tilesizeN)*ldb+tk*tilesizeK,1,tmp[thread]+i*tilesizesK[tk],1);
+          }
+          cudaMemcpy(gpuB,tmp[thread],tilesizesN[tn]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          cublasDgemm(transa,transb,tilesizesM[tm],tilesizesN[tn],tilesizesK[tk],alpha,gpuA,tilesizesM[tm],gpuB,tilesizesK[tk],0.0,gpuC,tilesizesM[tm]);
+          cudaMemcpy(tmp[thread],gpuC,tilesizesN[tn]*tilesizesM[tm]*sizeof(double),cudaMemcpyDeviceToHost);
+          for (long int j=0; j<tilesizesN[tn]; j++){
+              F_DAXPY(tilesizesM[tm],1.0,tmp[thread]+j*tilesizesM[tm],1,C+(j+tn*tilesizeN)*ldc+tm*tilesizeM,1);
+          }
+      }
+  }
+  free(tilesizesM);
+  free(tilesizesN);
+  free(tilesizesK);
+}
 void GPUHelper::GPU_DGEMM_2DTile_nt_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc){
 
-  Tiling((gpumemory-extraroom)/8.,max_mapped_memory/num_gpus/8.,m,n,k);
+  Tiling((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
 
   // initialize result
   if (beta==0.0) 
@@ -220,7 +294,7 @@ void GPUHelper::GPU_DGEMM_2DTile_nt_threaded(char transa,char transb,long int m,
 
   #pragma omp parallel for schedule (dynamic) num_threads(num_gpus)
   for (long int mn=0; mn<ntilesM*ntilesN; mn++){
-      int thread = 0;
+      long int thread = 0;
       #ifdef _OPENMP
         thread = omp_get_thread_num();
       #endif
@@ -253,9 +327,49 @@ void GPUHelper::GPU_DGEMM_2DTile_nt_threaded(char transa,char transb,long int m,
   free(tilesizesN);
   free(tilesizesK);
 }
+void GPUHelper::GPU_DGEMM_2DTile_nt(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread){
+
+  TilingNoThread((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
+
+  // initialize result
+  if (beta==0.0) 
+     memset((void*)C,'\0',n*ldc*sizeof(double));
+  else           
+     for (long int i=0; i<n*ldc; i++) C[i] *= beta;
+
+  for (long int mn=0; mn<ntilesM*ntilesN; mn++){
+
+      // pointers to gpu memory
+      double*gpuA = gpuarray[thread];
+      double*gpuB = gpuarray[thread]+tilesizeM*tilesizeK;
+      double*gpuC = gpuarray[thread]+tilesizeM*tilesizeK+tilesizeN*tilesizeK;
+
+      long int tn = mn%ntilesN;
+      long int tm = (mn-tn)/ntilesN;
+
+      for (long int tk=0; tk<ntilesK; tk++){
+          for (long int i=0; i<tilesizesK[tk]; i++){
+              F_DCOPY(tilesizesM[tm],A+(i+tk*tilesizeK)*lda+tm*tilesizeM,1,tmp[thread]+i*tilesizesM[tm],1);
+          }
+          cudaMemcpy(gpuA,tmp[thread],tilesizesM[tm]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          for (long int i=0; i<tilesizesK[tk]; i++){
+              F_DCOPY(tilesizesN[tn],B+(i+tk*tilesizeK)*ldb+tn*tilesizeN,1,tmp[thread]+i*tilesizesN[tn],1);
+          }
+          cudaMemcpy(gpuB,tmp[thread],tilesizesN[tn]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          cublasDgemm(transa,transb,tilesizesM[tm],tilesizesN[tn],tilesizesK[tk],alpha,gpuA,tilesizesM[tm],gpuB,tilesizesN[tn],0.0,gpuC,tilesizesM[tm]);
+          cudaMemcpy(tmp[thread],gpuC,tilesizesN[tn]*tilesizesM[tm]*sizeof(double),cudaMemcpyDeviceToHost);
+          for (long int j=0; j<tilesizesN[tn]; j++){
+              F_DAXPY(tilesizesM[tm],1.0,tmp[thread]+j*tilesizesM[tm],1,C+(j+tn*tilesizeN)*ldc+tm*tilesizeM,1);
+          }
+      }
+  }
+  free(tilesizesM);
+  free(tilesizesN);
+  free(tilesizesK);
+}
 void GPUHelper::GPU_DGEMM_2DTile_tn_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc){
 
-  Tiling((gpumemory-extraroom)/8.,max_mapped_memory/num_gpus/8.,m,n,k);
+  Tiling((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
 
   // initialize result
   if (beta==0.0) 
@@ -265,7 +379,7 @@ void GPUHelper::GPU_DGEMM_2DTile_tn_threaded(char transa,char transb,long int m,
 
   #pragma omp parallel for schedule (dynamic) num_threads(num_gpus)
   for (long int mn=0; mn<ntilesM*ntilesN; mn++){
-      int thread = 0;
+      long int thread = 0;
       #ifdef _OPENMP
         thread = omp_get_thread_num();
       #endif
@@ -298,9 +412,49 @@ void GPUHelper::GPU_DGEMM_2DTile_tn_threaded(char transa,char transb,long int m,
   free(tilesizesN);
   free(tilesizesK);
 }
+void GPUHelper::GPU_DGEMM_2DTile_tn(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread){
+
+  TilingNoThread((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
+
+  // initialize result
+  if (beta==0.0) 
+     memset((void*)C,'\0',n*ldc*sizeof(double));
+  else           
+     for (long int i=0; i<n*ldc; i++) C[i] *= beta;
+
+  for (long int mn=0; mn<ntilesM*ntilesN; mn++){
+
+      // pointers to gpu memory
+      double*gpuA = gpuarray[thread];
+      double*gpuB = gpuarray[thread]+tilesizeM*tilesizeK;
+      double*gpuC = gpuarray[thread]+tilesizeM*tilesizeK+tilesizeN*tilesizeK;
+
+      long int tn = mn%ntilesN;
+      long int tm = (mn-tn)/ntilesN;
+
+      for (long int tk=0; tk<ntilesK; tk++){
+          for (long int i=0; i<tilesizesM[tm]; i++){
+              F_DCOPY(tilesizesK[tk],A+(i+tm*tilesizeM)*lda+tk*tilesizeK,1,tmp[thread]+i*tilesizesK[tk],1);
+          }
+          cudaMemcpy(gpuA,tmp[thread],tilesizesM[tm]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          for (long int i=0; i<tilesizesN[tn]; i++){
+              F_DCOPY(tilesizesK[tk],B+(i+tn*tilesizeN)*ldb+tk*tilesizeK,1,tmp[thread]+i*tilesizesK[tk],1);
+          }
+          cudaMemcpy(gpuB,tmp[thread],tilesizesN[tn]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          cublasDgemm(transa,transb,tilesizesM[tm],tilesizesN[tn],tilesizesK[tk],alpha,gpuA,tilesizesK[tk],gpuB,tilesizesK[tk],0.0,gpuC,tilesizesM[tm]);
+          cudaMemcpy(tmp[thread],gpuC,tilesizesN[tn]*tilesizesM[tm]*sizeof(double),cudaMemcpyDeviceToHost);
+          for (long int j=0; j<tilesizesN[tn]; j++){
+              F_DAXPY(tilesizesM[tm],1.0,tmp[thread]+j*tilesizesM[tm],1,C+(j+tn*tilesizeN)*ldc+tm*tilesizeM,1);
+          }
+      }
+  }
+  free(tilesizesM);
+  free(tilesizesN);
+  free(tilesizesK);
+}
 void GPUHelper::GPU_DGEMM_2DTile_tt_threaded(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc){
 
-  Tiling((gpumemory-extraroom)/8.,max_mapped_memory/num_gpus/8.,m,n,k);
+  Tiling((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
 
   // initialize result
   if (beta==0.0) 
@@ -310,7 +464,7 @@ void GPUHelper::GPU_DGEMM_2DTile_tt_threaded(char transa,char transb,long int m,
 
   #pragma omp parallel for schedule (dynamic) num_threads(num_gpus)
   for (long int mn=0; mn<ntilesM*ntilesN; mn++){
-      int thread = 0;
+      long int thread = 0;
       #ifdef _OPENMP
         thread = omp_get_thread_num();
       #endif
@@ -343,37 +497,77 @@ void GPUHelper::GPU_DGEMM_2DTile_tt_threaded(char transa,char transb,long int m,
   free(tilesizesN);
   free(tilesizesK);
 }
+void GPUHelper::GPU_DGEMM_2DTile_tt(char transa,char transb,long int m,long int n,long int k,double alpha,double*A,long int lda,double*B,long int ldb,double beta,double*C,long int ldc,int thread){
 
-void GPUHelper::Tiling(double mem1,double mem2,long int m,long int n,long int k){
+  TilingNoThread((gpumemory-extraroom)/8L,max_mapped_memory/num_gpus/8L,m,n,k);
+
+  // initialize result
+  if (beta==0.0) 
+     memset((void*)C,'\0',n*ldc*sizeof(double));
+  else           
+     for (long int i=0; i<n*ldc; i++) C[i] *= beta;
+
+  for (long int mn=0; mn<ntilesM*ntilesN; mn++){
+
+      // pointers to gpu memory
+      double*gpuA = gpuarray[thread];
+      double*gpuB = gpuarray[thread]+tilesizeM*tilesizeK;
+      double*gpuC = gpuarray[thread]+tilesizeM*tilesizeK+tilesizeN*tilesizeK;
+
+      long int tn = mn%ntilesN;
+      long int tm = (mn-tn)/ntilesN;
+
+      for (long int tk=0; tk<ntilesK; tk++){
+          for (long int i=0; i<tilesizesM[tm]; i++){
+              F_DCOPY(tilesizesK[tk],A+(i+tm*tilesizeM)*lda+tk*tilesizeK,1,tmp[thread]+i*tilesizesK[tk],1);
+          }
+          cudaMemcpy(gpuA,tmp[thread],tilesizesM[tm]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          for (long int i=0; i<tilesizesK[tk]; i++){
+              F_DCOPY(tilesizesN[tn],B+(i+tk*tilesizeK)*ldb+tn*tilesizeN,1,tmp[thread]+i*tilesizesN[tn],1);
+          }
+          cudaMemcpy(gpuB,tmp[thread],tilesizesN[tn]*tilesizesK[tk]*sizeof(double),cudaMemcpyHostToDevice);
+          cublasDgemm(transa,transb,tilesizesM[tm],tilesizesN[tn],tilesizesK[tk],alpha,gpuA,tilesizesK[tk],gpuB,tilesizesN[tn],0.0,gpuC,tilesizesM[tm]);
+          cudaMemcpy(tmp[thread],gpuC,tilesizesN[tn]*tilesizesM[tm]*sizeof(double),cudaMemcpyDeviceToHost);
+          for (long int j=0; j<tilesizesN[tn]; j++){
+              F_DAXPY(tilesizesM[tm],1.0,tmp[thread]+j*tilesizesM[tm],1,C+(j+tn*tilesizeN)*ldc+tm*tilesizeM,1);
+          }
+      }
+  }
+  free(tilesizesM);
+  free(tilesizesN);
+  free(tilesizesK);
+}
+
+void GPUHelper::TilingNoThread(long int mem1,long int mem2,long int m,long int n,long int k){
 
   // first tile according to how much space is on gpu
   tilesizeN = n;
   tilesizeM = m;
   tilesizeK = k;
-  ntilesM=ntilesN=ntilesK=1;
+  ntilesM=ntilesN=ntilesK=1L;
   while(tilesizeN*tilesizeM+tilesizeK*(tilesizeN+tilesizeM)>mem1){
      if (tilesizeN>tilesizeM){
         if (tilesizeN>tilesizeK){
            ntilesN++;
            tilesizeN = n/ntilesN;
-           if (n/ntilesN<(double)n/ntilesN) tilesizeN++;
+           if (n/ntilesN<n/ntilesN) tilesizeN++;
         }
         else{
            ntilesK++;
            tilesizeK = k/ntilesK;
-           if (k/ntilesK<(double)k/ntilesK) tilesizeK++;
+           if (k/ntilesK<k/ntilesK) tilesizeK++;
         }
      }
      else{
         if (tilesizeM>tilesizeK){
            ntilesM++;
            tilesizeM = m/ntilesM;
-           if (m/ntilesM<(double)m/ntilesM) tilesizeM++;
+           if (m/ntilesM<m/ntilesM) tilesizeM++;
         }
         else{
            ntilesK++;
            tilesizeK = k/ntilesK;
-           if (k/ntilesK<(double)k/ntilesK) tilesizeK++;
+           if (k/ntilesK<k/ntilesK) tilesizeK++;
         }
      }
   }
@@ -383,36 +577,126 @@ void GPUHelper::Tiling(double mem1,double mem2,long int m,long int n,long int k)
      if (tilesizeN>tilesizeM){
         ntilesN++;
         tilesizeN = n/ntilesN;
-        if (n/ntilesN<(double)n/ntilesN) tilesizeN++;
+        if (n/ntilesN<n/ntilesN) tilesizeN++;
      }
      else{
         ntilesM++;
         tilesizeM = m/ntilesM;
-        if (m/ntilesM<(double)m/ntilesM) tilesizeM++;
+        if (m/ntilesM<m/ntilesM) tilesizeM++;
      }
   }
+
   while(tilesizeN*tilesizeK>mem2){
      if (tilesizeN>tilesizeK){
         ntilesN++;
         tilesizeN = n/ntilesN;
-        if (n/ntilesN<(double)n/ntilesN) tilesizeN++;
+        if (n/ntilesN<n/ntilesN) tilesizeN++;
      }
      else{
         ntilesK++;
         tilesizeK = k/ntilesK;
-        if (k/ntilesK<(double)k/ntilesK) tilesizeK++;
+        if (k/ntilesK<k/ntilesK) tilesizeK++;
      }
   }
   while(tilesizeK*tilesizeM>mem2){
      if (tilesizeK>tilesizeM){
         ntilesK++;
         tilesizeK = k/ntilesK;
-        if (k/ntilesK<(double)k/ntilesK) tilesizeK++;
+        if (k/ntilesK<k/ntilesK) tilesizeK++;
      }
      else{
         ntilesM++;
         tilesizeM = m/ntilesM;
-        if (m/ntilesM<(double)m/ntilesM) tilesizeM++;
+        if (m/ntilesM<m/ntilesM) tilesizeM++;
+     }
+  }
+
+  lasttileN = n - (ntilesN-1L)*tilesizeN;
+  lasttileM = m - (ntilesM-1L)*tilesizeM;
+  lasttileK = k - (ntilesK-1L)*tilesizeK;
+
+  tilesizesM = (long int*)malloc(ntilesM*sizeof(long int));
+  tilesizesN = (long int*)malloc(ntilesN*sizeof(long int));
+  tilesizesK = (long int*)malloc(ntilesK*sizeof(long int));
+  for (long int i=0; i<ntilesM-1L; i++) tilesizesM[i] = tilesizeM;
+  for (long int i=0; i<ntilesN-1L; i++) tilesizesN[i] = tilesizeN;
+  for (long int i=0; i<ntilesK-1L; i++) tilesizesK[i] = tilesizeK;
+  tilesizesM[ntilesM-1L] = lasttileM;
+  tilesizesN[ntilesN-1L] = lasttileN;
+  tilesizesK[ntilesK-1L] = lasttileK;
+
+
+}
+void GPUHelper::Tiling(long int mem1,long int mem2,long int m,long int n,long int k){
+
+  // first tile according to how much space is on gpu
+  tilesizeN = n;
+  tilesizeM = m;
+  tilesizeK = k;
+  ntilesM=ntilesN=ntilesK=1L;
+  while(tilesizeN*tilesizeM+tilesizeK*(tilesizeN+tilesizeM)>mem1){
+     if (tilesizeN>tilesizeM){
+        if (tilesizeN>tilesizeK){
+           ntilesN++;
+           tilesizeN = n/ntilesN;
+           if (n/ntilesN<n/ntilesN) tilesizeN++;
+        }
+        else{
+           ntilesK++;
+           tilesizeK = k/ntilesK;
+           if (k/ntilesK<k/ntilesK) tilesizeK++;
+        }
+     }
+     else{
+        if (tilesizeM>tilesizeK){
+           ntilesM++;
+           tilesizeM = m/ntilesM;
+           if (m/ntilesM<m/ntilesM) tilesizeM++;
+        }
+        else{
+           ntilesK++;
+           tilesizeK = k/ntilesK;
+           if (k/ntilesK<k/ntilesK) tilesizeK++;
+        }
+     }
+  }
+
+  // ensure each block of A, B, and C will fit in the temporary CPU buffer
+  while(tilesizeN*tilesizeM>mem2){
+     if (tilesizeN>tilesizeM){
+        ntilesN++;
+        tilesizeN = n/ntilesN;
+        if (n/ntilesN<n/ntilesN) tilesizeN++;
+     }
+     else{
+        ntilesM++;
+        tilesizeM = m/ntilesM;
+        if (m/ntilesM<m/ntilesM) tilesizeM++;
+     }
+  }
+
+  while(tilesizeN*tilesizeK>mem2){
+     if (tilesizeN>tilesizeK){
+        ntilesN++;
+        tilesizeN = n/ntilesN;
+        if (n/ntilesN<n/ntilesN) tilesizeN++;
+     }
+     else{
+        ntilesK++;
+        tilesizeK = k/ntilesK;
+        if (k/ntilesK<k/ntilesK) tilesizeK++;
+     }
+  }
+  while(tilesizeK*tilesizeM>mem2){
+     if (tilesizeK>tilesizeM){
+        ntilesK++;
+        tilesizeK = k/ntilesK;
+        if (k/ntilesK<k/ntilesK) tilesizeK++;
+     }
+     else{
+        ntilesM++;
+        tilesizeM = m/ntilesM;
+        if (m/ntilesM<m/ntilesM) tilesizeM++;
      }
   }
 
@@ -423,28 +707,29 @@ void GPUHelper::Tiling(double mem1,double mem2,long int m,long int n,long int k)
      if (tilesizeN>tilesizeM){
         ntilesN++;
         tilesizeN = n/ntilesN;
-        if (n/ntilesN<(double)n/ntilesN) tilesizeN++;
+        if (n/ntilesN<n/ntilesN) tilesizeN++;
      }
      else{
         ntilesM++;
         tilesizeM = m/ntilesM;
-        if (m/ntilesM<(double)m/ntilesM) tilesizeM++;
+        if (m/ntilesM<m/ntilesM) tilesizeM++;
      }
   }
 
-  lasttileN = n - (ntilesN-1)*tilesizeN;
-  lasttileM = m - (ntilesM-1)*tilesizeM;
-  lasttileK = k - (ntilesK-1)*tilesizeK;
+  lasttileN = n - (ntilesN-1L)*tilesizeN;
+  lasttileM = m - (ntilesM-1L)*tilesizeM;
+  lasttileK = k - (ntilesK-1L)*tilesizeK;
 
   tilesizesM = (long int*)malloc(ntilesM*sizeof(long int));
   tilesizesN = (long int*)malloc(ntilesN*sizeof(long int));
   tilesizesK = (long int*)malloc(ntilesK*sizeof(long int));
-  for (long int i=0; i<ntilesM-1; i++) tilesizesM[i] = tilesizeM;
-  for (long int i=0; i<ntilesN-1; i++) tilesizesN[i] = tilesizeN;
-  for (long int i=0; i<ntilesK-1; i++) tilesizesK[i] = tilesizeK;
-  tilesizesM[ntilesM-1] = lasttileM;
-  tilesizesN[ntilesN-1] = lasttileN;
-  tilesizesK[ntilesK-1] = lasttileK;
+  for (long int i=0; i<ntilesM-1L; i++) tilesizesM[i] = tilesizeM;
+  for (long int i=0; i<ntilesN-1L; i++) tilesizesN[i] = tilesizeN;
+  for (long int i=0; i<ntilesK-1L; i++) tilesizesK[i] = tilesizeK;
+  tilesizesM[ntilesM-1L] = lasttileM;
+  tilesizesN[ntilesN-1L] = lasttileN;
+  tilesizesK[ntilesK-1L] = lasttileK;
+
 
 }
 
