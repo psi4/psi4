@@ -81,4 +81,5 @@ V43 = energy('scf')
 set dft_functional wB97X 
 V44 = energy('scf')
 
+clean()
 

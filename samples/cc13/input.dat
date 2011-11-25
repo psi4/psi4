@@ -14,14 +14,14 @@ set globals {
   wfn ccsd
   reference uhf
   dertype first
-  basis 6-31G**
+  basis cc-pVDZ
 
   convergence 10
   e_converge 10
   d_converge 10
 }
 
-energy('ccsd')
+optimize('ccsd')
 
 
 clean()

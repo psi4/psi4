@@ -1,0 +1,27 @@
+#! 6-31G** H2O+ Test CISD Energy Point
+
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set globals {
+  wfn detci
+  charge 1
+  multp 2
+  reference rohf
+  basis 6-31G**
+  freeze_core true
+}
+
+set detci {
+  icore 2
+}
+
+thisenergy = energy('detci')
+
+
+clean()
+

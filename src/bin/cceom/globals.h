@@ -5,7 +5,11 @@
 #include <ccfiles.h>
 #include <libdpd/dpd.h>
 
-namespace psi { namespace cceom {
+namespace psi { 
+
+extern FILE *outfile;
+
+namespace cceom {
 
 /* Global variables */
 #ifdef EXTERN
@@ -24,10 +28,6 @@ EXTERN void check_sum(char *term_lbl, int index, int irrep);
 #define MAX(I,J) ((I>J) ? I : J)
 #define MIN(I,J) ((I<J) ? I : J)
 
-extern "C" {
-EXTERN FILE *infile, *outfile;
-EXTERN char *psi_file_prefix;
-}
 EXTERN struct MOInfo moinfo;
 EXTERN struct Params params;
 EXTERN struct Eom_params eom_params;
