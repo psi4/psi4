@@ -3,25 +3,43 @@
 
 namespace psi {
 
-OrbitalSpace::OrbitalSpace(const std::string& name,
-                           const SharedMatrix& full_C,   // Should this be 4 C's instead?
-                           const boost::shared_ptr<Vector>& evals,
-                           const boost::shared_ptr<BasisSet>& basis,
-                           const boost::shared_ptr<IntegralFactory>& ints)
-    : nirrep_(full_C->nirrep()), name_(name), C_(full_C),
-      evals_(evals), basis_(basis), ints_(ints), dim_(full_C->colspi())
+OrbitalSpace::OrbitalSpace(const std::string& id,
+                           const std::string &name,   // Should this be 4 C's instead?
+                           const SharedMatrix &full_C,
+                           const boost::shared_ptr<Vector> &evals,
+                           const boost::shared_ptr<BasisSet> &basis,
+                           const boost::shared_ptr<IntegralFactory> &ints)
+    : id_(id),
+      name_(name),
+      C_(full_C),
+      evals_(evals),
+      basis_(basis),
+      ints_(ints),
+      dim_(full_C->colspi())
 {
 }
 
-OrbitalSpace::OrbitalSpace(const std::string &name, const boost::shared_ptr<Wavefunction> &wave)
-    : nirrep_(wave->nirrep()), name_(name), C_(wave->Ca()), evals_(wave->epsilon_a()),
-      basis_(wave->basisset()), ints_(wave->integral()), dim_(wave->Ca()->colspi())
+OrbitalSpace::OrbitalSpace(const std::string &id,
+                           const std::string &name,
+                           const boost::shared_ptr<Wavefunction> &wave)
+    : id_(id),
+      name_(name),
+      C_(wave->Ca()),
+      evals_(wave->epsilon_a()),
+      basis_(wave->basisset()),
+      ints_(wave->integral()),
+      dim_(wave->Ca()->colspi())
 {
 }
 
 int OrbitalSpace::nirrep() const
 {
-    return nirrep_;
+    return C_->nirrep();
+}
+
+const std::string& OrbitalSpace::id() const
+{
+    return id_;
 }
 
 const std::string& OrbitalSpace::name() const
@@ -94,7 +112,8 @@ OrbitalSpace OrbitalSpace::transform(const OrbitalSpace& A, const boost::shared_
 
     boost::shared_ptr<IntegralFactory> i(new IntegralFactory(B, B, B, B));
 
-    return OrbitalSpace("Ca transformed into Cb",
+    return OrbitalSpace("p",
+                        "Ca transformed into Cb",
                         Cb,
                         A.evals(),
                         B,

@@ -2,28 +2,16 @@
 #define _psi_src_lib_libmints_moindexspace_h_
 
 #include <string>
-
-namespace boost {
-template<class T>
-class shared_ptr;
-}
+#include "typedefs.h"
 
 namespace psi {
 
-class Matrix;
-class IntegralFactory;
-class Vector;
-class Dimension;
-class BasisSet;
-
 class OrbitalSpace
 {
-    /// Number of irreps.
-    int nirrep_;
-
+    /// Unique identifier
+    std::string id_;
     /// Name of the orbital space.
     std::string name_;
-
     /// AO->MO transformation matrix (ao x mo)
     SharedMatrix C_;
 
@@ -38,18 +26,22 @@ class OrbitalSpace
     /// MO Dimensionality
     Dimension dim_; // dim_.n() better equal nirrep_
 
+
     OrbitalSpace();
 public:
-    OrbitalSpace(const std::string& name,
-                 const SharedMatrix& full_C,   // Should this be 4 C's instead?
+    OrbitalSpace(const std::string& id,
+                 const std::string& name,
+                 const SharedMatrix& full_C,
                  const boost::shared_ptr<Vector>& evals,
                  const boost::shared_ptr<BasisSet>& basis,
                  const boost::shared_ptr<IntegralFactory>& ints);
 
-    OrbitalSpace(const std::string& name,
+    OrbitalSpace(const std::string& id,
+                 const std::string& name,
                  const boost::shared_ptr<Wavefunction>& wave);
 
     int nirrep() const;
+    const std::string& id() const;
     const std::string& name() const;
 
     /// C - transformation matrix (AO x MO)
