@@ -7,6 +7,7 @@ Installation Instructions for PSI4
   III. Detailed Installation Instructions
   IV. Recommendations for BLAS and LAPACK libraries
   V. Miscellaneous architecture-specific notes
+  VI. Common Problems with PSI Compilation
 
 ----------------------------------
 
@@ -54,25 +55,36 @@ I. Compilation Prerequisites:
 
 II. Brief Summary of Configruation, Compilation, and Installation
 
-First, in the top-level psi4 directory, run autoconf:
+This section outlines the main steps of configuring, compiling, and
+installing PSI.  More detail is given below in Section III.
+
+A. Autoconf
+
+1. In the top-level psi4 directory, run autoconf:
 
    * autoconf
 
-An additional early step is necessary if you want to compile a
-distributed-parallel version of the code (shared-memory parallelization is
-already enabled in the standard compilation). Distributed-parallel versions of
-PSI4 require madness. If you select mpicxx as the compiler, the
-distributed-parallel version (including madness) will compile. For
-distributed-parallel compilation, you must run the following command in the
-madness directory, otherwise the PSI4 configure script will fail (autoreconf
-is provided by package autoconf, but it calls another program provided by
-libtool, so that package must also be installed): 
+2. Distributed-parallel compilation.
+
+Not recommended at this time except by developers.  Shared-memory
+parallelization is already enabled by default in the standard
+compilation.
+
+Distributed-parallel versions of PSI4 require madness. If you select
+mpicxx as the compiler, the distributed-parallel version (including
+madness) will compile. For distributed-parallel compilation, you must
+run the following command in the madness directory, otherwise the PSI4
+configure script will fail (autoreconf is provided by package autoconf,
+but it calls another program provided by libtool, so that package must
+also be installed):
 
    * cd madness
    * autoreconf
    * cd ..
 
-Next, make an object directory in which you can compile the code
+B. Configuration and Compilation
+
+Make an object directory in which you can compile the code
 
    * mkdir obj
 
@@ -86,6 +98,7 @@ Either
    * make tests
    * make install [if tests pass]
    * make doc [optional]
+   * [do user configuration, see below]
 
 or, in the top-level psi4 directory,
 
@@ -98,16 +111,57 @@ or, in the top-level psi4 directory,
    * make tests
    * make install [if tests pass]
    * make doc [optional]
+   * [do user configuration, see below]
 
-About configuration: PSI usually needs a few configure options, especially if
-you're installing it in your own directory (instead of /usr/local/psi, for
-example). It is often helpful to put the configure options in a small
-executable file, so you can re-do the configuration later very easily. Let us
-assume that we will be putting the configure options in a file, do-configure,
-in the top-level psi4 directory (so if we delete the compilation object
-directory, we'll still have it around). In the following examples, we have
-sometimes split the configure options over multiple lines. However, they
-should all be on the same line in the do-configure script. 
+That's it!  The details about configuration are given below.  If something
+goes wrong, check section VI about common compilation problems.
+
+
+III. Detailed Installation Instructions
+
+This section provides a more detailed explanation of the procedure for
+compiling and installing the PSI4 package.
+
+Step 1: Configuration
+
+A. General Information about Configuration
+
+First, we recommend that you choose for the top-level $PSI4 source
+directory something other than /usr/local/psi; your $HOME directory or
+/usr/local/src/psi4 are convenient choices.  Next, in the top-level $PSI4
+source directory you've chosen, first run autoconf to generate the configure
+script from configure.ac.  It is best to keep the source code separate
+from the compilation area, so you must first choose a subdirectory for
+compilation of the codes.  A simple option is $PSI4/objdir, which should
+work for most environments.  However, if you need executables for several
+architectures, you should choose more meaningful subdirectory names.
+
+   * The compilation directory will be referred to as $objdir for the
+   remainder of these instructions.
+
+In $objdir, run the configure script found in the PSI4 top-level source
+directory.  This script will scan your system to locate certain libraries,
+header files, etc. needed for complete compilation.  The script accepts a
+number of options, all of which are listed above.  The most important of
+these is the --prefix option, which selects the installation directory for
+the executables, the libraries, header files, basis set data, and other
+administrative files.  The default --prefix is /usr/local/psi.
+
+   * The configure script's --prefix directory will be referred to as
+   $prefix for the remainder of these instructions.
+
+Besides --prefix, PSI often needs a few additional options for the
+configure script.  To make it reasy to recompile later (especially if
+you're a developer), it can be convenient (but not necessary) to to put
+the configure options in a small executable file, so you can re-do the
+configuration later very easily. Let us assume that we will be putting
+the configure options in a file named do-configure, in the top-level
+psi4 directory (we'll keep it up there instead of down in the compilation
+directory $objdir, so that if we delete the compilation directory later,
+we'll still have the do-configure file). In the following examples,
+we have sometimes split the configure options over multiple lines
+for readability. However, they should all be on the same line in the
+do-configure script.
 
 Note: The configure options below are for the most common architectures and
 compilers. The developers would appreciate it if you would share any special
@@ -115,7 +169,7 @@ configuration options that might be needed for less commonly encountered
 situations. 
 
 For g++, if you have BLAS and LAPACK in standard locations (like /usr/lib64),
-to configure is very easy. Pick one of the following scenarios, and place the
+configuration is very easy. Pick one of the following scenarios, and place the
 text given in the psi4/do-configure file (all on one long line). Replace the
 text after prefix with whatever directory you want to use for your
 installation directory.
@@ -124,7 +178,7 @@ installation directory.
    ../configure --prefix=/usr/local/psi4
 
 * g++, for debugging
-   ../configure --prefix=/usr/local/psi4 --without-opt --with-debug=yes
+   ../configure --prefix=/usr/local/psi4 --without-opt --with-debug
 
 * Intel compiler with MKL math library
 
@@ -145,12 +199,12 @@ Fortran compiler it will set itself up correctly, so this is only necessary if
 you want a Fortran compiler for other purposes. You can configure Psi by
 adding something like
 
-   ../configure --without-opt --with-debug --with-plugins
+   ../configure --with-plugins
 
 to the do-configure script. If you want to use the new LLVM compilers that
 ship with XCode 4 (they compile quicker than GCC), use
 
-   ../configure --without-opt --with-debug --with-plugins --with-cxx=llvm-g++
+   ../configure --with-plugins --with-cxx=llvm-g++
 
 If you still happen to encouter an error like:
 
@@ -160,6 +214,8 @@ configure: error: could not determine fortran symbol names
 adding the following tag to your configure may help:
 
    --with-f77symbol=lcu
+
+B. List of Specific Configuration Options
 
 You may need to make use of one or more of the following options to
 the configure script:
@@ -273,44 +329,12 @@ the configure script:
 
       ./configure PYTHON=/usr/bin/python2.6
 
-
-III. Detailed Installation Instructions
-
-This section provides a more detailed explanation of the procedure for
-compiling and installing the PSI4 package.
-
-III.A. Step 1: Configuration
-
-First, we recommend that you choose for the top-level $PSI4 source
-directory something other than /usr/local/psi; your $HOME directory or
-/usr/local/src/psi4 are convenient choices.  Next, in the top-level $PSI4
-source directory you've chosen, first run autoconf to generate the configure
-script from configure.ac.  It is best to keep the source code separate
-from the compilation area, so you must first choose a subdirectory for
-compilation of the codes.  A simple option is $PSI4/objdir, which should
-work for most environments.  However, if you need executables for several
-architectures, you should choose more meaningful subdirectory names.
-
-   * The compilation directory will be referred to as $objdir for the
-   remainder of these instructions.
-
-In $objdir, run the configure script found in the PSI4 top-level source
-directory.  This script will scan your system to locate certain libraries,
-header files, etc. needed for complete compilation.  The script accepts a
-number of options, all of which are listed above.  The most important of
-these is the --prefix option, which selects the installation directory for
-the executables, the libraries, header files, basis set data, and other
-administrative files.  The default --prefix is /usr/local/psi.
-
-   * The configure script's --prefix directory will be referred to as
-   $prefix for the remainder of these instructions.
-
-III.B. Step 2: Compilation
+Step 2: Compilation
 
 Running "make" (which must be GNU's 'make' utility) in $objdir will compile
 the PSI4 libraries and executable modules.
 
-III.C. Step 3: Testing
+Step 3: Testing
 
 To execute automatically the ever-growing number of test cases after
 compilation, simply execute "make tests" in the $objdir directory.
@@ -321,25 +345,25 @@ to run the entire testing suit without interruption, execute "make tests
 TESTFLAGS='-u -q'". Note that you must do a "make testsclean" in $objdir
 to run the test suite again.
 
-III.D. Step 4: Installation
+Step 4: Installation
 
 Once testing is complete, installation into $prefix is accomplished by
 running "make install" in $objdir.   Executable modules are installed in
-$prefix/bin, libraries in $prefix/lib, and basis set data and other control
-strctures $prefix/share.
+$prefix/bin, include files in $prefix/include, libraries in $prefix/lib, and 
+documentation, basis set data, and various control strctures $prefix/share.
 
-III.E. Step 5: Building Documentation
+Step 5: Building Documentation
 
 If your system has the appropriate utilities, you may build the
 package documentation from the top-level $objdir by running "make doc".
 The resulting files will appear in the $prefix/doc area.
 
-III.F. Step 6: Cleaning
+Step 6: Cleaning
 
 All object files and libraries can be removed to save disk space by running
 "make clean" in $objdir.
 
-III.G. Step 7: User Configuration
+Step 7: User Configuration
 
 After the PSI4 package has been successfullly installed, the user will need
 to add the installation directory into his/her path.  If the package has
@@ -369,6 +393,13 @@ other users.  If the local /tmp volume is large enough, it might be used.
 However, a dedicated scratch volume (using RAID0 striping for speed) is
 recommended.
 
+For developers: during compilation and testing, PSI4 finds its basis sets,
+grids, etc., in psi4/lib.  After installation, PSI4 will look in 
+$prefix/share/psi.  If you want to specify a non-standard location for this
+information, you can do this by setting the environmental variable
+$PSI4DATADIR to the directory containg the basis, grids, etc.,
+subdirectories.
+
 IV. Recommendations for BLAS and LAPACK libraries
 
 Much of the speed and efficiency of the PSI4 programs depends on the
@@ -389,17 +420,17 @@ BLAS and LAPACK recommendations when building PSI4:
   ln -s /usr/lib/libblas.so.3.1.0 /usr/lib/libblas.so.  You
   may need to do similarly for lapack.
 
-  (2) Perhaps the best choices for BLAS are Kazushige Goto's hand-optimized
-  BLAS (http://www.tacc.utexas.edu/resources/software/) and ATLAS
-  (http://math-atlas.sourceforge.net/).  These work well on nearly every
-  achitecture to which the PSI4 developers have access, though we have
-  identified at least one case in which the Goto libraries yielded faulty
-  DGEMM calls.  On Mac OS X systems, however, the vecLib package that comes
-  with Xcode works well.  Note also that we have encountered problems with the
-  version 10 of Intel's MKL, particularly for very large coupled cluster
-  calculations. Addendum: Intel's 11.1 MKL appears to be a major overhaul,
-  and is been particularly effective at providing efficient multithreaded
-  parallelism to many modules in PSI4/  
+  (2) Perhaps the best and simplest choice, if you have it available,
+  is Intel's MKL library, which includes BLAS and LAPACK (note: use
+  version 11 or later, we had difficulty with version 10 for very
+  large coupled-cluster computations).  MKL is efficient and works
+  well in threaded mode.  Other alternatives include Kazushige Goto's
+  hand-optimized BLAS (http://www.tacc.utexas.edu/resources/software/)
+  and ATLAS (http://math-atlas.sourceforge.net/).  These work well on
+  nearly every achitecture to which the PSI4 developers have access,
+  though we have identified at least one case in which the Goto libraries
+  yielded faulty DGEMM calls.  On Mac OS X systems, the vecLib package
+  that comes with Xcode works well.
 
   (3) PSI4 does not require a Fortran compiler, unless the resident BLAS
   and LAPACK libraries require Fortran-based system libraries.  If you see
@@ -565,4 +596,8 @@ icpc to compile PSI4 (or anything else...). Your best bet in general is to not
 upgrade Linux too fast, and always keep the very latest Intel compilers
 around. However, if you see an incompatibility, some of the points below might
 help. 
+
+* Missing symbols like "do_fio" or "e_wsfe"
+
+See section IV(3) above.
 

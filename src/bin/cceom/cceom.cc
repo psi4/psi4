@@ -7,11 +7,12 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
-#include <libipv1/ip_lib.h>
+#include <string>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
+#include <psifiles.h>
+#include <psi4-dec.h>
 #include "Params.h"
 #include "MOInfo.h"
 #include "Local.h"
@@ -19,13 +20,13 @@
 
 namespace psi { namespace cceom {
 
-void init_io(int argc, char *argv[]);
+void init_io(void);
 void get_moinfo(void);
 void cleanup(void);
 void exit_io(void);
 void diag(void);
-void get_params(void);
-void get_eom_params(void);
+void get_params(Options &);
+void get_eom_params(Options &);
 void form_dpd_dp(void);
 int **cacheprep_uhf(int level, int *cachefiles);
 int **cacheprep_rhf(int level, int *cachefiles);
@@ -38,20 +39,20 @@ void local_done(void);
 
 }} // namespace psi::cceom
 
-using namespace psi::cceom;
+namespace psi { namespace cceom {
 
-int main(int argc, char *argv[])
+PsiReturnType cceom(Options &options)
 {
   int i, h, done=0, *cachefiles, **cachelist;
-  init_io(argc, argv);
+  init_io();
   fprintf(outfile,"\n\t**********************************************************\n");
   fprintf(outfile,"\t*  CCEOM: An Equation of Motion Coupled Cluster Program  *\n");
   fprintf(outfile,"\t**********************************************************\n");
 
   get_moinfo();
   fflush(outfile);
-  get_params();
-  get_eom_params();
+  get_params(options);
+  get_eom_params(options);
 #ifdef TIME_CCEOM
   timer_on("CCEOM");
 #endif
@@ -91,71 +92,19 @@ int main(int argc, char *argv[])
   exit(0);
 }
 
-extern "C" {const char *gprgid() { const char *prgid = "CCEOM"; return(prgid); }}
-
-namespace psi { namespace cceom {
-
-void init_io(int argc, char *argv[])
+void init_io(void)
 {
-  int i, num_unparsed;
-  char *progid, *argv_unparsed[100];
-
-  eom_params.dot_with_L = 0;
-  eom_params.guess = NULL;
-  for (i=1, num_unparsed=0; i<argc; ++i) {
-    if (!strcmp(argv[i],"--dot_with_L"))
-      eom_params.dot_with_L = 1;
-    else if(!strcmp(argv[i], "--reuse"))
-      eom_params.guess = strdup("DISK");
-    else
-      argv_unparsed[num_unparsed++] = argv[i];
-  }
-
-  progid = (char *) malloc(strlen(gprgid())+2);
-  sprintf(progid, ":%s",gprgid());
-
-  psi_start(&infile,&outfile,&psi_file_prefix,num_unparsed, argv_unparsed, 0);
-  ip_cwk_add(":INPUT");
-  ip_cwk_add(progid);
-  free(progid);
-  tstart(outfile);
-  psio_init(); psio_ipv1_config();
-
-  for(i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
-  /*
-  for(i=CC_MIN; i <= CC_MISC; i++) psio_open(i,1);
-  for(i=CC_TMP; i <= EOM_D; i++) psio_open(i,0);
-  for(i=EOM_Cme; i <= CC_MAX; i++) psio_open(i,0);
-  */
-
-  /* it will read it anyway if its there ?
-  if(eom_params.guess != NULL) {
-    if(!strcmp(eom_params.guess,"DISK"))
-      psio_open(EOM_CME,1);
-  }
-  else
-    psio_open(EOM_CME,0);
-    */
-
-  if (eom_params.dot_with_L) {
-    psio_read_entry(CC_INFO,"EOM L0",(char *) &eom_params.L0, sizeof(double));
-    psio_read_entry(CC_INFO,"EOM L Irrep",(char *) &eom_params.L_irr, sizeof(int));
-  }
+  tstart();
+  for(int i = CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
 }
 
 void exit_io(void)
 {
   int i;
-  /* for(i=CC_MIN; i <= CC_MISC; i++) psio_close(i,1);
-  for(i=CC_TMP; i <= CC_MAX; i++) psio_close(i,1);
-  */
   for(i=CC_MIN; i <= CC_DIIS_AMP; i++) psio_close(i,1);
   for(i=CC_TMP; i <= CC_TMP11; i++) psio_close(i,0);
   for(i=CC_TMP11+1; i <= CC_MAX; i++) psio_close(i,1);
-
-  psio_done();
-  tstop(outfile);
-  psi_stop(infile,outfile,psi_file_prefix);
+  tstop();
 }
 
 void form_dpd_dp(void) {

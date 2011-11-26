@@ -469,7 +469,7 @@ void JK::compute()
     compute_JK();
     if (C1()) AO2USO();
 
-    if (debug_) {
+    if (debug_ > 3) {
         fprintf(outfile, "   > JK <\n\n");
         for (int N = 0; N < C_left_.size(); N++) {
             C_left_ao_[N]->print(outfile);

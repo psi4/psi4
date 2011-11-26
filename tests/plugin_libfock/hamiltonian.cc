@@ -304,7 +304,7 @@ void CISRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     delete[] Tp;
 
-    if (debug_ > 2) {
+    if (debug_ > 3) {
         for (int N = 0; N < x.size(); N++) {
             x[N]->print();
             b[N]->print();
@@ -325,7 +325,7 @@ std::vector<SharedMatrix > CISRHamiltonian::unpack(const boost::shared_ptr<Vecto
             
             if (!nocc || !nvir) continue;
 
-            ::memcpy((void*)(t->pointer(h)[0]), (void*)(&eig->pointer(h)[offset]), sizeof(double) * nocc * nvir);    
+            ::memcpy((void*)(t->pointer(h)[0]), (void*)(&eig->pointer(symm)[offset]), sizeof(double) * nocc * nvir);    
         
             offset += nocc * nvir;
         }    
@@ -553,7 +553,7 @@ void TDHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     delete[] Tp;
 
-    if (debug_ > 2) {
+    if (debug_ > 3) {
         for (int N = 0; N < x.size(); N++) {
             x[N]->print();
             b[N]->print();
@@ -613,6 +613,36 @@ boost::shared_ptr<Vector> CPHFRHamiltonian::diagonal()
 
     delete[] nov;
     return diag;
+}
+std::vector<SharedVector> CPHFRHamiltonian::pack(const std::vector<SharedMatrix>& x)
+{
+    int nirrep = eps_aocc_->nirrep();
+    int* nov = new int[nirrep];
+    ::memset((void*)nov,'\0',nirrep*sizeof(int));
+    for (int symm = 0; symm < nirrep; ++symm) {
+        for (int h = 0; h < nirrep; ++h) {
+            nov[symm] += eps_aocc_->dimpi()[h] * eps_avir_->dimpi()[symm^h];
+        }
+    }
+
+    std::vector<SharedVector> X;
+    for (int i = 0; i < x.size(); i++) {
+        boost::shared_ptr<Vector> v(new Vector("X", nirrep, nov));
+        int symm = x[i]->symmetry();
+        int offset = 0;
+        for (int h = 0; h < nirrep; h++) {
+            int nocc = eps_aocc_->dimpi()[h];
+            int nvir = eps_avir_->dimpi()[h^symm];
+
+            if (!nocc || !nvir) continue;
+
+            ::memcpy((void*) &v->pointer(symm)[offset], (void*) x[i]->pointer(h)[0], sizeof(double)*nocc*nvir);
+
+            offset += nocc * nvir;
+        } 
+        X.push_back(v);
+    }
+    return X;
 }
 void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
                                      std::vector<boost::shared_ptr<Vector> >& b)
@@ -711,35 +741,37 @@ void CPHFRHamiltonian::product(const std::vector<boost::shared_ptr<Vector> >& x,
 
     delete[] Tp;
 
-    if (debug_ > 2) {
+    if (debug_ > 3) {
         for (int N = 0; N < x.size(); N++) {
             x[N]->print();
             b[N]->print();
         }
     }
 }
-//std::vector<SharedMatrix > CPHFRHamiltonian::unpack(const boost::shared_ptr<Vector>& eig)
-//{
-//    int nirrep = eig->nirrep();
-//    std::vector<SharedMatrix > t1;
-//    for (int symm = 0; symm < nirrep; ++symm) {
-//        SharedMatrix t(new Matrix("T",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm)); 
-//        long int offset = 0L;
-//        for (int h = 0; h < nirrep; ++h) {
-//            int nocc = Caocc_->colspi()[h];
-//            int nvir = Cavir_->colspi()[h^symm];
-//            
-//            if (!nocc || !nvir) continue;
-//
-//            ::memcpy((void*)(t->pointer(h)[0]), (void*)(&eig->pointer(h)[offset]), sizeof(double) * nocc * nvir);    
-//        
-//            offset += nocc * nvir;
-//        }    
-//
-//        t1.push_back(t);
-//    }
-//
-//    return t1;
-//}
+std::vector<SharedMatrix > CPHFRHamiltonian::unpack(const std::vector<boost::shared_ptr<Vector> >& x)
+{
+    std::vector<SharedMatrix > t1;
+    int nirrep = x[0]->nirrep();
+    for (int i = 0; i < x.size(); i++) {
+        for (int symm = 0; symm < nirrep; ++symm) {
+            SharedMatrix t(new Matrix("X",Caocc_->nirrep(), Caocc_->colspi(), Cavir_->colspi(), symm)); 
+            long int offset = 0L;
+            for (int h = 0; h < nirrep; ++h) {
+                int nocc = Caocc_->colspi()[h];
+                int nvir = Cavir_->colspi()[h^symm];
+                
+                if (!nocc || !nvir) continue;
+
+                ::memcpy((void*)(t->pointer(h)[0]), (void*)(&x[i]->pointer(symm)[offset]), sizeof(double) * nocc * nvir);    
+            
+                offset += nocc * nvir;
+            }    
+
+            t1.push_back(t);
+        }
+    }
+
+    return t1;
+}
  
 }

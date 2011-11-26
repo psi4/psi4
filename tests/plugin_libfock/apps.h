@@ -56,10 +56,13 @@ class RCIS : public RBase {
 
 protected:
 
+    std::vector<boost::tuple<double, int, int, int> > states_;
     std::vector<SharedMatrix > singlets_;  
     std::vector<SharedMatrix > triplets_;  
     std::vector<double> E_singlets_;  
     std::vector<double> E_triplets_;  
+
+    void sort_states();    
 
     virtual void print_header();
     virtual void print_wavefunctions();
@@ -120,6 +123,14 @@ protected:
 
     virtual void print_header();
 
+    void add_named_tasks();
+    void analyze_named_tasks();
+
+    void add_polarizability();
+    void analyze_polarizability();
+
+    std::set<std::string> tasks_;
+
 public:
     RCPHF();
     virtual ~RCPHF();
@@ -132,6 +143,9 @@ public:
     /// Resultant solution vectors, available after compute_energy is called
     std::vector<SharedMatrix>& x() { return x_; }
 
+    /// Add a named task
+    void add_task(const std::string& task);
+        
 };
 
 }

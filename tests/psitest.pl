@@ -40,7 +40,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 @PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
 @PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2",
 "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "ccsd", "ccsd(t)", 
-"detci");
+"detci", "eom_ccsd", "eom-ccsd");
 @PSITEST_GRADIENTS = ("scf", "ccsd", "mp2");
 @PSITEST_RESPONSE = ("ccsd");
 
@@ -111,6 +111,7 @@ sub do_tests
           if ($wfn eq "CC3" || $wfn eq "cc3")      { $fail |= compare_cc3_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC2" || $wfn eq "eom_cc2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CCSD" || $wfn eq "eom_ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
+          if ($wfn eq "EOM-CCSD" || $wfn eq "eom-ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC3" || $wfn eq "eom_cc3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
           if ($wfn eq "DCFT")     { $fail |= compare_dcft_energy(); last SWITCH2; }
           if ($wfn eq "BCCD")     { $fail |= compare_bccd_energy(); last SWITCH2; }

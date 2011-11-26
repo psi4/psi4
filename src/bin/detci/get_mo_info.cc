@@ -94,10 +94,18 @@ void get_mo_info(Options &options)
      exit(1);
    }
 
+  /* Check if there are any restricted orbitals.  If there are, then
+     for now, I need to filter the integrals, because restricted
+     orbitals are presently treated as frozen -CDS, 11/22/2011
+  */
+
+   Parameters.filter_ints = 0;
+
    if (1) { /* for now, always treat restricted as frozen */
      for (i=0; i<CalcInfo.nirreps; i++) {
        CalcInfo.frozen_docc[i] += rstr_docc[i];
        CalcInfo.frozen_uocc[i] += rstr_uocc[i];
+       if (rstr_docc[i] > 0 || rstr_uocc[i] > 0) Parameters.filter_ints = 1;
      }
    }
    else { /* for future use */
@@ -108,6 +116,11 @@ void get_mo_info(Options &options)
    }
 
    free(rstr_docc);  free(rstr_uocc);
+
+   if (Parameters.dertype != "NONE" || Parameters.wfn == "DETCAS" ||
+       Parameters.wfn == "CASSCF"   || Parameters.wfn == "RASSCF") {
+     Parameters.filter_ints = 1;
+   }
 
 
    /* Compute maximum number of orbitals per irrep including
