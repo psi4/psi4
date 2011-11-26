@@ -1025,6 +1025,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc8a/Makefile
           tests/cc9/Makefile
           tests/cc12/Makefile
+          tests/cc13/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc28/Makefile
