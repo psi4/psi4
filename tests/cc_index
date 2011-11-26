@@ -6,6 +6,9 @@ cc2: RHF-CCSD/6-31G** H2O geometry optimization via finite differences
 
 cc4: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>)
 
+cc4a: RHF-CCSD(T)/cc-pVQZ BH single-point energy (fzc, MO-basis <ab|cd>),
+  using frozen_docc option instead of freeze_core option
+
 cc5: RHF-CCSD(T)/aug-cc-pVTZ planar (C2v) C4NH4 single-point energy
   (fzc, MO-basis <ab|cd>)  Note: one file exceeds 17 GB in this case.
 
@@ -14,6 +17,10 @@ cc8: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 
 cc8a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 <ab|cd>)
+
+cc9: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
+
+cc12: RHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in H2O.
 
 cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
 

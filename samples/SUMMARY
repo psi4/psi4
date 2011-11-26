@@ -25,6 +25,27 @@ cc8:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state 
 cc8a:         ROHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Cartesian input.
 
 
+cc9:          UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
+
+
+cisd-h2o+-0:  6-31G** H2O+ Test CISD Energy Point
+
+
+cisd-h2o+-1:  6-31G** H2O+ Test CISD Energy Point
+
+
+cisd-h2o+-2:  6-31G** H2O+ Test CISD Energy Point
+
+
+cisd-h2o-clpse:  6-31G** H2O Test CISD Energy Point with subspace collapse
+
+
+cisd-sp:      6-31G** H2O Test CISD Energy Point
+
+
+cisd-sp-2:    6-31G** H2O Test CISD Energy Point
+
+
 dcft1:        DCFT calculation for the He dimer, with the K06 functional. This performs a simultaneous update of the orbitals and cumulant, using DIIS extrapolation. Four-virtual integrals are handled in the MO Basis.
 
 
@@ -44,6 +65,18 @@ dfmp2_1:      Density fitted MP2 cc-PVDZ/cc-pVDZ-RI computation of formic acid d
 
 
 dfmp2_2:      Density fitted MP2 energy of H2, using density fitted reference and automatic looping over cc-pVDZ and cc-pVTZ basis sets. Results are tabulated using the built in table functions by using the default options and by specifiying the format.
+
+
+fci-dipole:   6-31G H2O Test FCI Energy Point
+
+
+fci-h2o:      6-31G H2O Test FCI Energy Point
+
+
+fci-h2o-2:    6-31G H2O Test FCI Energy Point
+
+
+fci-tdm:      He2+ FCI/cc-pVDZ Transition Dipole Moment
 
 
 matrix1:      An example of using BLAS and LAPACK calls directly from the Psi input file, demonstrating matrix multiplication, eigendecomposition, Cholesky decomposition and LU decomposition. These operations are performed on vectors and matrices provided from the Psi library.
@@ -100,6 +133,12 @@ props1:       RHF STO-3G dipole moment computation, performed by applying a fini
 props2:       DF-SCF cc-pVDZ of benzene-hydronium ion, scanning the dissociation coordinate with Python's built-in loop mechanism. The geometry is specified by a Z-matrix with dummy atoms, fixed parameters, updated parameters, and separate charge/multiplicity specifiers for each monomer. One-electron properties computed for dimer and one monomer.
 
 
+pywrap_all:   Intercalls among python wrappers- database, cbs, optimize, energy, etc. Though each call below functions individually, running them all in sequence or mixing up the sequence is aspirational at present. Also aspirational is using the intended types of gradients.
+
+
+pywrap_cbs1:  Various basis set extrapolation tests
+
+
 pywrap_db1:   Database calculation, so no molecule section in input file. Portions of the full databases, restricted by subset keyword, are computed by sapt0 and dfmp2 methods.
 
 
@@ -110,6 +149,9 @@ sad1:         Test of the superposition of atomic densities (SAD) guess, using a
 
 
 sapt1:        SAPT0 cc-pVDZ computation of the ethane-ethyne binding energy, using the cc-pVDZ-JKFIT RI basis for SCF and cc-pVDZ-RI for SAPT.  Monomer geometries are specified using Cartesian coordinates.
+
+
+scf-bz2:      Benzene Dimer Out-of-Core HF/cc-pVDZ
 
 
 scf1:         RHF cc-pVQZ energy for the BH molecule, with Cartesian input.

@@ -92,4 +92,5 @@ mom_vir [6]
 
 E = energy('scf')
 
+clean()
 

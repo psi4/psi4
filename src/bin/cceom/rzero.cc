@@ -4,7 +4,8 @@
 */
 #include <cstdio>
 #include <cmath>
-#include <cstring>
+#include <string>
+#include <libpsio/psio.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -56,7 +57,7 @@ void rzero(int C_irr, int *converged) {
     if (!converged[i]) continue; /* this root did not converged */
     ++R_index;
 
-    if(!strcmp(params.wfn,"EOM_CC2")) {
+    if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(CC_INFO, E_lbl) == NULL) {
         fprintf(outfile,"No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
@@ -64,7 +65,7 @@ void rzero(int C_irr, int *converged) {
       }
       psio_read_entry(CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CCSD")) {
+    else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(CC_INFO, E_lbl) == NULL) {
         fprintf(outfile,"No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
@@ -72,7 +73,7 @@ void rzero(int C_irr, int *converged) {
       }
       psio_read_entry(CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CC3")) {
+    else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(CC_INFO, E_lbl) == NULL) {
         fprintf(outfile,"No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
@@ -192,17 +193,17 @@ dpd_buf4_copy(&fRIjAb, EOM_CMnEf, "CMnEf 0");
     dpd_buf4_close(&fRijab);
     dpd_buf4_close(&fRIjAb);
 
-    if(!strcmp(params.wfn,"EOM_CC2")) {
+    if(params.wfn == "EOM_CC2") {
       fprintf(outfile,"EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC2 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CCSD")) {
+    else if(params.wfn == "EOM_CCSD") {
       fprintf(outfile,"EOM CCSD R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CCSD R0 for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CC3")) {
+    else if(params.wfn == "EOM_CC3") {
       fprintf(outfile,"EOM CC3 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC3 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, lbl, (char *) &rzero, sizeof(double));
@@ -277,7 +278,7 @@ void rzero_rhf(int C_irr, int *converged) {
     if (!converged[i]) continue; /* this root did not converge */
     ++R_index;
 
-    if(!strcmp(params.wfn,"EOM_CC2")) {
+    if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(CC_INFO, E_lbl) == NULL) { 
         fprintf(outfile,"No EOM CC2 Energy found in CC_INFO.  Not normalizing R.\n");
@@ -285,7 +286,7 @@ void rzero_rhf(int C_irr, int *converged) {
       }
       psio_read_entry(CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CCSD")) {
+    else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(CC_INFO, E_lbl) == NULL) { 
         fprintf(outfile,"No EOM CCSD Energy found in CC_INFO.  Not normalizing R.\n");
@@ -293,7 +294,7 @@ void rzero_rhf(int C_irr, int *converged) {
       }
       psio_read_entry(CC_INFO, E_lbl, (char *) &(energy), sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CC3")) {
+    else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
       if(psio_tocscan(CC_INFO, E_lbl) == NULL) { 
         fprintf(outfile,"No EOM CC3 Energy found in CC_INFO.  Not normalizing R.\n");
@@ -383,17 +384,17 @@ dpd_buf4_copy(&RIjAb, EOM_CMnEf, "CMnEf 0");
     dpd_buf4_close(&RIjAb);
     dpd_buf4_close(&RIjbA);
 
-    if(!strcmp(params.wfn,"EOM_CC2")) {
+    if(params.wfn == "EOM_CC2") {
       fprintf(outfile,"EOM CC2 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC2 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CCSD")) {
+    else if(params.wfn == "EOM_CCSD") {
       fprintf(outfile,"EOM CCSD R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CCSD R0 for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, lbl, (char *) &rzero, sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CC3")) {
+    else if(params.wfn == "EOM_CC3") {
       fprintf(outfile,"EOM CC3 R0 for root %d = %15.11lf\n", R_index, rzero);
       sprintf(lbl, "EOM CC3 R0 for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, lbl, (char *) &rzero, sizeof(double));

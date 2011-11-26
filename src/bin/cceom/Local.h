@@ -3,6 +3,11 @@
     \brief Enter brief description of file here 
 */
 
+#ifndef _psi_src_bin_cceom_local_h
+#define _psi_src_bin_cceom_local_h
+
+#include <string>
+
 namespace psi { namespace cceom {
 
 struct Local {
@@ -24,11 +29,13 @@ struct Local {
   double *eps_occ;
   double **eps_vir;
   double cutoff;
-  char *method;
-  char *weakp;
-  char *precon;
+  std::string method;
+  std::string weakp;
+  std::string precon;
   int filter_singles;
   double weak_pair_energy;
 };
 
 }} // namespace psi::cceom
+
+#endif // _psi_src_bin_cceom_local_h
