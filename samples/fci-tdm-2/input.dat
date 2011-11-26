@@ -1,0 +1,31 @@
+#! BH-H2+ FCI/cc-pVDZ Transition Dipole Moment
+
+
+
+molecule bh_h2p {
+1 2
+B     0.10369114     0.00000000     0.00000000
+H    -1.13269886     0.00000000     0.00000000
+H     3.00000000     0.37149000     0.00000000
+H     3.00000000    -0.37149000     0.00000000
+}
+
+set {
+  wfn detci
+  reference rohf
+  fci true
+  basis cc-pVDZ 
+  docc [3,0,0,0]
+  socc [1,0,0,0]
+  freeze_core true
+  dipmom true
+  num_roots 2
+}
+
+set scf d_converge 10
+set detci e_converge 8
+
+thisenergy = energy('detci')
+
+
+clean()

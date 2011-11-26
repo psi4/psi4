@@ -407,7 +407,7 @@ void py_psi_print_out(std::string s)
  * @return whether key describes a convergence threshold or not
  */
 bool specifies_convergence(std::string const & key){
-    return (key.find("CONVER") != key.npos);
+    return (key.find("CONV") != key.npos);
 }
 
 bool check_for_basis(std::string const & name, std::string const & type)
@@ -452,7 +452,7 @@ bool py_psi_set_option_int(std::string const & module, std::string const & key, 
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options.use(nonconst_key);
 
-    if( data.type() == "double" && specifies_convergence(key)){
+    if(data.type() == "double" && specifies_convergence(nonconst_key)){
         double val = pow(10.0, -value);
         Process::environment.options.set_double(module, nonconst_key, val);
     }else if (data.type() == "boolean") {
@@ -510,7 +510,7 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options.use(nonconst_key);
 
-    if( data.type() == "double" && specifies_convergence(key)){
+    if( data.type() == "double" && specifies_convergence(nonconst_key)){
         double val = pow(10.0, -value);
         Process::environment.options.set_global_double(nonconst_key, val);
     }else if (data.type() == "boolean") {
