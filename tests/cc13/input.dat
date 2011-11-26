@@ -11,11 +11,10 @@ molecule ch2 {
 }
 
 set globals {
-  wfn ccsd
   reference uhf
   dertype first
   basis cc-pVDZ
-
+  guess gwh
   convergence 10
   e_converge 10
   d_converge 10
