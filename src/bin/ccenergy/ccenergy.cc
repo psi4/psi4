@@ -587,29 +587,10 @@ namespace psi { namespace ccenergy {
 
 void init_io()
 {
-//  int i, num_unparsed;
-//  char *argv_unparsed[100];
-
-
   params.just_energy = 0;
   params.just_residuals = 0;
-//  for (i=1, num_unparsed=0; i<argc; ++i) {
-//    if (!strcmp(argv[i],"--just_energy")) {
-//      /* just read T's on disk and compute energy */
-//      params.just_energy = 1;
-//    }
-//    else if (!strcmp(argv[i],"--just_residuals")) {
-//      params.just_residuals = 1;
-//      /* just read T's on disk and compute residual matrix elements */
-//    }
-//    else {
-//      argv_unparsed[num_unparsed++] = argv[i];
-//    }
-//  }
-
   tstart();
-
-  for(int i=CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
+  for(int i =CC_MIN; i <= CC_MAX; i++) psio_open(i,1);
 }
 
 void title(void)
