@@ -956,6 +956,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cchbar/Makefile
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
+          src/bin/cceom/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
@@ -1023,6 +1024,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/cc9/Makefile
+          tests/cc12/Makefile
+          tests/cc13/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc28/Makefile

@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <cmath>
+#include <libciomr/libciomr.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
