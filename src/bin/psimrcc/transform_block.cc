@@ -29,7 +29,7 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -63,7 +63,7 @@ int CCTransform::allocate_tei_mo_block(int first_irrep)
     exit(EXIT_FAILURE);
   }
 
-  size_t available_transform_memory = static_cast<size_t>(static_cast<double>(_memory_manager_->get_FreeMemory())*fraction_of_memory_for_presorting);
+  size_t available_transform_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_presorting);
 
 
   int last_irrep = first_irrep;

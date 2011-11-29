@@ -15,7 +15,7 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -38,12 +38,12 @@ void CCSort::build_integrals_out_of_core()
   int mat_irrep = 0;
   int cycle     = 0;
 
-  size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(_memory_manager_->get_FreeMemory())*fraction_of_memory_for_sorting);
+  size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_sorting);
 
 
   fprintf(outfile,"\n\n  Sorting integrals:");
   fprintf(outfile,"\n    Memory available                       = %14lu bytes",
-                  (unsigned long)_memory_manager_->get_FreeMemory());
+                  (unsigned long)memory_manager->get_FreeMemory());
   fprintf(outfile,"\n    Memory available for sorting           = %14lu bytes (%.1f%%)",
                   (unsigned long)ccintegrals_memory,fraction_of_memory_for_sorting*100.0);
   fflush(outfile);
@@ -75,7 +75,7 @@ void CCSort::setup_out_of_core_list(MatMapIt& mat_it,int& mat_irrep,MatMapIt& ma
 {
   fprintf(outfile,"\n    Setting up the matrix list:");
   fflush(outfile);
-  size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(_memory_manager_->get_FreeMemory())*fraction_of_memory_for_sorting);
+  size_t ccintegrals_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_sorting);
 
   int blocks_added = 0;
   bool out_of_memory = false;
