@@ -87,7 +87,6 @@ protected:
   intvec      actv;
   bool        guess_occupation;
   bool        silent;
-  bool        use_liboptions;
 
   double      nuclear_energy;
 

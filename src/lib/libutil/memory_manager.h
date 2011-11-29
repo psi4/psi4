@@ -1,5 +1,5 @@
-#ifndef _psi_src_bin_psimrcc_memory_manager_h_
-#define _psi_src_bin_psimrcc_memory_manager_h_
+#ifndef _psi_src_bin_psimrccmemory_managerh_
+#define _psi_src_bin_psimrccmemory_managerh_
 
 #include <map>
 #include <vector>
@@ -36,7 +36,7 @@ typedef struct {
 class MemoryManager
 {
 public:
-  MemoryManager();
+  MemoryManager(size_t maxcor = 256000000);
   ~MemoryManager();
 
   void MemCheck(FILE *output);
@@ -197,8 +197,6 @@ void MemoryManager::release_three(T***& matrix, const char *fileName, size_t lin
   matrix = NULL;
 }
 
-extern MemoryManager* memory_manager;
-
 #define allocate1(type, variable, size) \
   memory_manager->allocate(#type, variable, size, #variable, __FILE__, __LINE__);
 #define release1(variable) \
@@ -216,4 +214,4 @@ extern MemoryManager* memory_manager;
 
 } /* End Namespaces */
 
-#endif // _psi_src_bin_psimrcc_memory_manager_h_
+#endif // _psi_src_bin_psimrccmemory_managerh_
