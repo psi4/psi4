@@ -39,6 +39,7 @@ void get_mo_info(Options &options)
    int *rstr_docc, *rstr_uocc;
 
    CalcInfo.maxKlist = 0.0;
+   CalcInfo.sigma_initialized = 0;
 
    chkpt_init(PSIO_OPEN_OLD);
    CalcInfo.nirreps = chkpt_rd_nirreps();
