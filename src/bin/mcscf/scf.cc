@@ -15,6 +15,8 @@ using namespace boost;
 namespace psi{
 namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 SCF::SCF(Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt)
 : Wavefunction(options_, psio, chkpt)
 {

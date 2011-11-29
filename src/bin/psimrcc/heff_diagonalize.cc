@@ -13,6 +13,8 @@
 namespace psi{
     extern FILE *outfile;
     namespace psimrcc{
+    extern MemoryManager* memory_manager;
+
 
 void sort_eigensystem(int ndets,double*& real,double*& imaginary,double**& left,double**& right);
 
