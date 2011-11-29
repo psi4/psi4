@@ -17,6 +17,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
+    extern MemoryManager* memory_manager;
+
 
 using namespace std;
 
