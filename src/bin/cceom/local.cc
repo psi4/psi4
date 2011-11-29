@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <string>
+#include <string.h>
 #include <cmath>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
