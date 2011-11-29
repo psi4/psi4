@@ -29,7 +29,7 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -477,7 +477,7 @@ void CCTransform::allocate_tei_mo()
       if(indexing->get_pairpi(h)>0){
         size_t block_size = INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1;
         matrix_size += block_size;
-        if(sizeof(double) * block_size < _memory_manager_->get_FreeMemory()){
+        if(sizeof(double) * block_size < memory_manager->get_FreeMemory()){
           allocate1(double,tei_mo[h],block_size);
           for(size_t i=0;i<block_size;i++)
             tei_mo[h][i]=0.0;
@@ -486,7 +486,7 @@ void CCTransform::allocate_tei_mo()
           required_size += sizeof(double) * block_size;
           tei_mo[h] = NULL;
         }
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,_memory_manager_->get_FreeMemory());
+        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %lu bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,memory_manager->get_FreeMemory());
       }
     }
     if(failed){
@@ -512,7 +512,7 @@ void CCTransform::allocate_tei_so()
       if(indexing->get_pairpi(h)>0){
         int block_size = INDEX(indexing->get_pairpi(h)-1,indexing->get_pairpi(h)-1)+1;
         matrix_size += block_size;
-        if(sizeof(double) * block_size < _memory_manager_->get_FreeMemory()){
+        if(sizeof(double) * block_size < memory_manager->get_FreeMemory()){
           allocate1(double,tei_so[h],block_size);
           for(int i=0;i<block_size;i++)
             tei_so[h][i]=0.0;
@@ -521,7 +521,7 @@ void CCTransform::allocate_tei_so()
           required_size += sizeof(double) * block_size;
           tei_so[h] = NULL;
         }
-        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,_memory_manager_->get_FreeMemory());
+        fprintf(outfile,"\n\tCCTransform: allocated the %s block of size %d bytes (free memory = %14lu bytes)",moinfo->get_irr_labs(h),block_size,memory_manager->get_FreeMemory());
       }
     }
     if(failed){

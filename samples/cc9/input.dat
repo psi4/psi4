@@ -1,0 +1,28 @@
+#! UHF-CCSD(T) cc-pVDZ frozen-core energy for the $^2\Sigma^+$ state of the CN radical, with Z-matrix input.
+
+molecule CN {
+  0 2
+  C
+  N 1 R
+
+  R = 1.175
+}
+
+set {
+  reference   uhf
+  wfn         ccsd_t
+  basis       cc-pVDZ
+  docc        [4, 0, 1, 1]
+  socc        [1, 0, 0, 0]
+  freeze_core true
+  ao_basis disk
+  delete_tei false
+
+  convergence 10
+  e_converge 10
+  d_converge 10
+}
+
+energy('ccsd(t)')
+
+clean()

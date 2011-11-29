@@ -74,7 +74,6 @@ sub print_hash
  my $title    = $_[2];
  my $label    = $_[3];
  open(OUT,">$filename") or die "\nI can't write to $filename\n";
- print OUT "\\section{$title}\\label{$label}\n";
  print OUT "{\n \\footnotesize\n";
  foreach my $Module (sort {$a cmp $b} keys %hash){
      push(@temp, $Module);
