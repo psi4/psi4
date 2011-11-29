@@ -16,7 +16,7 @@ namespace psi{
     extern FILE *outfile;
     namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -95,7 +95,7 @@ void CCBLAS::allocate_buffer()
     buffer.push_back(NULL);
   // Compute the temporary buffer space size, 101% of the actual strip size
   buffer_size = static_cast<size_t>(1.01 * CCMatrix::fraction_of_memory_for_buffer *
-                                    static_cast<double>(_memory_manager_->get_FreeMemory()) /
+                                    static_cast<double>(memory_manager->get_FreeMemory()) /
                                     static_cast<double>(sizeof(double)));
   // The value used here , 0.05 is also used in
 
@@ -283,7 +283,7 @@ int CCBLAS::compute_storage_strategy()
   fprintf(outfile,"\n\n  Computing storage strategy:");
 
   // N.B. Here I am using bytes as the basic unit
-  size_t available_memory     = _memory_manager_->get_FreeMemory();
+  size_t available_memory     = memory_manager->get_FreeMemory();
   double fraction_for_in_core = 0.97; // Fraction of the total available memory that may be used
   size_t storage_memory       = static_cast<size_t>(static_cast<double>(available_memory) * fraction_for_in_core);
   size_t fully_in_core_memory = 0;
@@ -292,7 +292,7 @@ int CCBLAS::compute_storage_strategy()
   size_t others_memory        = 0;
 
   fprintf(outfile,"\n    Input memory                           = %14lu bytes",
-                  (unsigned long)_memory_manager_->get_MaximumAllowedMemory());
+                  (unsigned long)memory_manager->get_MaximumAllowedMemory());
   fprintf(outfile,"\n    Free memory                            = %14lu bytes",
                   (unsigned long)available_memory);
   fprintf(outfile,"\n    Free memory available for matrices     = %14lu bytes (%3.0f%%)",
