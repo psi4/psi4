@@ -28,7 +28,7 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -43,9 +43,9 @@ void CCTransform::presort_integrals()
 {
   fprintf(outfile,"\n\n  Presorting two-electron integrals from IWL buffer");
   fprintf(outfile,"\n    Memory available                       = %14lu bytes",
-                  (unsigned long)_memory_manager_->get_FreeMemory());
+                  (unsigned long)memory_manager->get_FreeMemory());
 
-  size_t presort_memory = static_cast<size_t>(static_cast<double>(_memory_manager_->get_FreeMemory())*fraction_of_memory_for_presorting);
+  size_t presort_memory = static_cast<size_t>(static_cast<double>(memory_manager->get_FreeMemory())*fraction_of_memory_for_presorting);
   fprintf(outfile,"\n    Memory available for presorting        = %14lu bytes (%.1f%%)",
                   (unsigned long)presort_memory,fraction_of_memory_for_presorting*100.0);
 
@@ -62,7 +62,7 @@ void CCTransform::presort_integrals()
   fprintf(outfile,"\n    Memory required for in-core presort    = %14lu bytes",
                   (unsigned long)memory_required);
 
-  if(memory_required < static_cast<size_t>(3) * _memory_manager_->get_FreeMemory()){
+  if(memory_required < static_cast<size_t>(3) * memory_manager->get_FreeMemory()){
     fprintf(outfile,"\n    Presorting is not required");
   }
 

@@ -36,6 +36,7 @@ void mrccsd(Options & options)
     mrcc.compute_first_order_amps();
   }
 
+  options.print();
   // Initialize the appropriate updater
   Updater* updater;
 //  if(options_get_str("CORR_ANSATZ")=="SR")

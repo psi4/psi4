@@ -266,16 +266,6 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     if(init) initialize();
 }
 
-/**
- * Sets up the correlated to pitzer reordering arrays, used in backtransformations.
- * This can be called repeatedly, because it returns if the arrays are already set up.
- * The arrays are not automatically set up
- */
-void
-IntegralTransform::setup_backtrans_reordering()
-{
-
-}
 
 /**
  * Sets up the DPD buffers and performs semicanonicalization, if necessary.

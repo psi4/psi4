@@ -7,9 +7,10 @@
  */
 
 #include <cstdio>
-#include <cstring>
+#include <string>
 #include <cmath>
 #include <libchkpt/chkpt.h>
+#include <libpsio/psio.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -55,15 +56,15 @@ void write_Rs(int C_irr, double *evals, int *converged) {
       etot = evals[i] - expectation_val;
     }
 
-    if(!strcmp(params.wfn,"EOM_CC2")) {
+    if(params.wfn == "EOM_CC2") {
       sprintf(E_lbl, "EOM CC2 Energy for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, E_lbl, (char *) &etot, sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CCSD")) {
+    else if(params.wfn == "EOM_CCSD") {
       sprintf(E_lbl, "EOM CCSD Energy for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, E_lbl, (char *) &etot, sizeof(double));
     }
-    else if(!strcmp(params.wfn,"EOM_CC3")) {
+    else if(params.wfn == "EOM_CC3") {
       sprintf(E_lbl, "EOM CC3 Energy for root %d %d", C_irr, R_index);
       psio_write_entry(CC_INFO, E_lbl, (char *) &etot, sizeof(double));
     }

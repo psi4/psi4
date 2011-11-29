@@ -946,7 +946,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DELETE_AO", true);
     /*- -*/
     options.add_bool("DELETE_TPDM", true);
-
     /*- -*/
     options.add_bool("PRINT_TE_INTEGRALS", false);
     /*- -*/
@@ -1088,7 +1087,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether to compute all relaxed excited states -*/
     options.add_bool("PROP_ALL",false);
     /*- The symmetry of states -*/
-    options.add_int("PROP_SYM", 0);
+    options.add_int("PROP_SYM", 1);
     /*- -*/
     options.add_int("PROP_ROOT", 0);
   }
@@ -1249,6 +1248,88 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("WABEI_LOWDISK", false);
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
+  }
+  if(name == "CCEOM"|| options.read_globals()) {
+    /*- -*/
+    options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
+    /*- -*/
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+    /*- -*/
+    options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
+    /*- -*/
+    options.add_bool("FULL_MATRIX",false);
+    /*- -*/
+    options.add_int("CACHELEV",2);
+    /*- -*/
+    options.add_str("CACHETYPE", "LRU", "LOW LRU");
+    /*- -*/
+    options.add_int("NTHREADS", 1);
+    /*- -*/
+    options.add_str("ABCD", "NEW", "NEW OLD");
+    /*- -*/
+    options.add_bool("T3_WS_INCORE", false);
+    /*- -*/
+    options.add_bool("LOCAL", false);
+    /*- -*/
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
+    options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
+    /*- -*/
+    options.add_str("LOCAL_WEAKP", "NONE", "NONE MP2 NEGLECT");
+    /*- -*/
+    options.add_str("LOCAL_PRECONDITIONER", "HBAR", "HBAR FOCK");
+    /*- -*/
+    options.add_int("LOCAL_GHOST", -1);
+    /*- -*/
+    options.add_bool("LOCAL_DO_SINGLES", true);
+    /*- -*/
+    options.add_bool("LOCAL_FILTER_SINGLES", true);
+    /*- -*/
+    options.add_bool("NEWTRIPS", true);
+    /*- -*/
+    options.add("STATES_PER_IRREP", new ArrayType());
+    /*- -*/
+    options.add_int("MAXITER", 80);
+    /*- -*/
+    options.add_int("PROP_SYM", 1);
+    /*- -*/
+    options.add_int("PROP_ROOT", 0);
+    /*- -*/
+    options.add_bool("CC3_FOLLOW_ROOT", false);
+    /*- -*/
+    options.add_bool("RHF_TRIPLETS", false);
+    /*- -*/
+    options.add_int("EXCITATION_RANGE", 2);
+    /*- -*/
+    options.add_bool("PRINT_SINGLES", false);
+    /*- -*/
+    options.add_int("VECTORS_PER_ROOT_SS", 5);
+    /*- -*/
+    options.add_int("VECTORS_PER_ROOT", 12);
+    /*- -*/
+    options.add_int("VECTORS_CC3", 10);
+    /*- -*/
+    options.add_bool("COLLAPSE_WITH_LAST", true);
+    /*- -*/
+    options.add_double("COMPLEX_TOL", 1E-12);
+    /*- -*/
+    options.add_double("RESIDUAL_TOL", 1E-6);
+    /*- -*/
+    options.add_double("RESIDUAL_TOL_SS", 1E-6);
+    /*- -*/
+    options.add_double("EVAL_TOL", 1E-8);
+    /*- -*/
+    options.add_double("EVAL_TOL_SS", 1E-6);
+    /*- -*/
+    options.add_int("AMPS_TO_PRINT", 5);
+    /*- -*/
+    options.add_double("SCHMIDT_ADD_RESIDUAL_TOL", 1E-3);
+    /*- -*/
+    options.add_bool("SKIP_DIAGSS", false);
+    /*- -*/
+    options.add_bool("RESTART_EOM_CC3", false);
+    /*- -*/
+    options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- -*/
@@ -1830,8 +1911,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTIVE", new ArrayType());
     /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
     options.add("CORR_FVIR", new ArrayType());
-//    /*- The number of -*/
-//    options.add("ACTIVE_DOCC", new ArrayType());
+    options.add_int("SMALL_CUTOFF", 0);
+    options.add_bool("NOSINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
@@ -1882,11 +1963,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force -*/
+      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
-      /*- QCHEM optimization criteria: maximum energy change -*/
+      /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);
-      /*- QCHEM optimization criteria: maximum displacement -*/
+      /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DISP", 1.2e-3);
       /*- Whether to test B matrix -*/
       options.add_bool("TEST_B", false);
