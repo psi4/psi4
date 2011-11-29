@@ -11,6 +11,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 void SCF::diis(int cycle)
 {
   // Transform Feff from MO to orthogonal AO
