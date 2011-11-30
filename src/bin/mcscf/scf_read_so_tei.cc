@@ -19,6 +19,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 void SCF::read_so_tei()
 {
   generate_pairs();

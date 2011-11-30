@@ -13,6 +13,7 @@ extern FILE* outfile;
 
 namespace psi{ namespace psimrcc{
     extern MOInfo *moinfo;
+    extern MemoryManager* memory_manager;
 
 MatrixBase::MatrixBase(size_t nrows_, size_t ncols_) : nrows(nrows_),ncols(ncols_),matrix(0)
 {

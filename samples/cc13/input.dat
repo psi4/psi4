@@ -21,7 +21,7 @@ set globals {
   d_converge 10
 }
 
-optimize('ccsd')
+gradient('ccsd')
 
 
 clean()

@@ -1,4 +1,4 @@
-#! Benzene Dimer Out-of-Core HF/cc-pVDZ
+#! Benzene Dimer DF-HF/cc-pVDZ
 
 
 molecule bz2 {
@@ -42,13 +42,12 @@ molecule bz2 {
 
 }
 
-memory 500 mb
-
 set globals {
   basis cc-pVDZ
+  ri_basis_scf cc-pVDZ-jkfit
+  ri_basis_mp2 cc-pVDZ-RI
+  scf_type df
   guess sad
-  scf_type out_of_core
-  print 2
 }
 
 thisenergy = energy('scf')

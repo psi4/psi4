@@ -13,6 +13,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 MatrixBase::MatrixBase(size_t rows, size_t cols) : rows_(rows),cols_(cols),elements_(rows*cols),matrix_(NULL)
 {
   allocate2(double,matrix_,rows_,cols_);
