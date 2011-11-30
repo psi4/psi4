@@ -13,6 +13,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 double SCF::energy(int cycle,double old_energy)
 {
   double electronic_energy = 0.0;

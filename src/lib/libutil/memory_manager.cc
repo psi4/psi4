@@ -19,11 +19,10 @@ double bytes_to_MiB(size_t n)
   return(static_cast<double>(n) / static_cast<double>(1048576));
 }
 
-MemoryManager::MemoryManager(){
-  long int maxcor     = 1000000;
+MemoryManager::MemoryManager(size_t maxcor){
   CurrentAllocated    = 0;
   MaximumAllocated    = 0;
-  MaximumAllowed      = static_cast<size_t>(maxcor);
+  MaximumAllowed      = maxcor;
 }
 
 MemoryManager::~MemoryManager()

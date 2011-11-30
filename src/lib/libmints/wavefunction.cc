@@ -385,7 +385,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
 
     return C2;
 }
-SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset)
+psi::SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset)
 {
     std::vector<std::vector<int> > positions = subset_occupation(noccpi, subset);
 
@@ -500,11 +500,11 @@ SharedMatrix Wavefunction::Db_subset(const std::string& basis)
 {
     return D_subset_helper(Db_, Cb_, basis);
 }
-SharedVector Wavefunction::epsilon_a_subset(const std::string& basis, const std::string& subset)
+psi::SharedVector Wavefunction::epsilon_a_subset(const std::string& basis, const std::string& subset)
 {
     return epsilon_subset_helper(epsilon_a_, nalphapi_, basis, subset);
 }
-SharedVector Wavefunction::epsilon_b_subset(const std::string& basis, const std::string& subset)
+psi::SharedVector Wavefunction::epsilon_b_subset(const std::string& basis, const std::string& subset)
 {
     return epsilon_subset_helper(epsilon_b_, nbetapi_, basis, subset);
 }

@@ -196,7 +196,6 @@ class IntegralTransform{
         void process_spaces();
         void presort_mo_tpdm_restricted();
         void presort_mo_tpdm_unrestricted();
-        void setup_backtrans_reordering();
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
                        int *order, bool backtransform = false, double scale = 0.0);

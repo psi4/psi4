@@ -54,3 +54,5 @@ set globals {
 thisenergy = energy('scf')
 
 
+clean()
+

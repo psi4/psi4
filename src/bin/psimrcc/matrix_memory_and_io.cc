@@ -22,7 +22,7 @@ namespace psi{
     extern FILE *outfile;
     namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -74,7 +74,7 @@ void CCMatrix::allocate_block(int h)
 {
   if(block_sizepi[h]>0){
     if(!is_block_allocated(h)){
-      if(memorypi2[h] < _memory_manager_->get_FreeMemory()){
+      if(memorypi2[h] < memory_manager->get_FreeMemory()){
         allocate2(double,matrix[h],left_pairpi[h],right_pairpi[h]);
         DEBUGGING(2,
           fprintf(outfile,"\n  %s[%s] <- allocated",label.c_str(),moinfo->get_irr_labs(h));
@@ -164,7 +164,7 @@ void CCMatrix::write_block_to_disk(int h)
 //       fprintf(outfile,"\n    CCMatrix::write_block_to_disk(): writing %s irrep %d to disk",label.c_str(),h);
 //       fprintf(outfile,"\n    This is a %d x %d block",left_pairpi[h],right_pairpi[h]);
       // for two electron integrals store strips of the symmetry block on disk
-      size_t max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer * static_cast<double>(_memory_manager_->get_FreeMemory()));
+      size_t max_strip_size = static_cast<size_t>(fraction_of_memory_for_buffer * static_cast<double>(memory_manager->get_FreeMemory()));
 
       int    strip          = 0;
       size_t last_row       = 0;

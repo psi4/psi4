@@ -11,6 +11,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 void SCF::generate_pairs()
 {
   npairs = 0;
