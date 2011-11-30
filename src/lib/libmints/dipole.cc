@@ -37,7 +37,7 @@ DipoleInt::~DipoleInt()
     delete[] buffer_;
 }
 
-SharedVector DipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+psi::SharedVector DipoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
 {
     boost::shared_ptr<Vector> sret(new Vector(3));
     double *ret = sret->pointer();
