@@ -24,7 +24,6 @@ namespace opt {
 double step_N_factor(double **G, double *g, int Nintco);
 // return the lowest eigenvector of the matrix (here, the Hessian)
 double *lowest_evector(double **H, int Nintco);
-
 // compute change in energy according to quadratic approximation
 inline double DE_nr_energy(double step, double grad, double hess)
 {
@@ -34,6 +33,11 @@ inline double DE_nr_energy(double step, double grad, double hess)
 void IRC_DATA::point_converged(opt::MOLECULE &mol)
 {
   fprintf(outfile,"\tPoint is converged. Setting sphere_step to 0, and calling irc_step().\n\n");
+if(steps.size() > 1)
+{
+  double f_dot = array_dot(steps[steps.size()-1]->g_f_q(), steps[steps.size()-2]->g_f_q(), mol.g_nintco());
+  fprintf(outfile,"\nforce vector - current dotted with previous: %f\n", f_dot);
+}
   sphere_step = 0;
   mol.irc_step();
 }
@@ -57,6 +61,14 @@ for a first step toward new point on path.\n");
   double *dq  = p_Opt_data->g_dq_pointer();    //internal coordinate change
   double *f_q = p_Opt_data->g_forces_pointer();//internal coordinate gradient
 
+  if (p_irc_data->sphere_step == 1)
+  {
+    double f_q_dot = array_dot(f_q, p_irc_data->g_f_q(), g_nintco());
+    fprintf(outfile,"\ninternal force vector dot - current with previous: %20.15f\n", f_q_dot);
+    if(f_q_dot < 0)
+      cout << "\nHouston, we've found a minimum!\n";
+  }
+
   int Nintco = g_nintco();
   int Natom = g_natom();
   int Ncart = 3 * Natom;
@@ -67,11 +79,18 @@ for a first step toward new point on path.\n");
   double **rootG_reg = matrix_return_copy(G, Nintco, Nintco); //G^1/2
   matrix_root(rootG_reg, Nintco, 0);
 
+  if (Opt_params.print_lvl > 2) {
+    fprintf(outfile, "\nrootG matrix:\n");
+    print_matrix(outfile, rootG_reg, Nintco, Nintco);
+  }
+
   double **rootG_inv = matrix_return_copy(G, Nintco, Nintco); //G^-1/2
   matrix_root(rootG_inv, Nintco, 1);
 
-  //fprintf(outfile, "G matrix:\n");
-  //print_matrix(outfile, G, Nintco, Nintco);
+  if (Opt_params.print_lvl > 2) {
+    fprintf(outfile, "G matrix:\n");
+    print_matrix(outfile, G, Nintco, Nintco);
+  }
 
   // Compute mass-weighted Hessian matrix:
   double **H  = p_Opt_data->g_H_pointer();     //internal coordinate Hessian

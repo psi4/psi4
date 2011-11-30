@@ -1911,16 +1911,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTIVE", new ArrayType());
     /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
     options.add("CORR_FVIR", new ArrayType());
-//    /*- The number of -*/
-//    options.add("ACTIVE_DOCC", new ArrayType());
+    options.add_int("SMALL_CUTOFF", 0);
+    options.add_bool("NOSINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Whether to do a Newton-Raphson step, or an RFO step; allowed values = {NR, RFO} -*/
-      options.add_str("STEP_TYPE", "RFO", "RFO NR");
-      /*- Maximum step size in bohr or radian along an internal coordinate {double} -*/
+      options.add_str("STEP_TYPE", "RFO", "RFO NR SD");
+      /*- Initial maximum step size in bohr or radian along an internal coordinate {double} -*/
       options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
+      /*- Lower bound for dynamic trust radius in au {double} -*/
+      options.add_double("INTRAFRAGMENT_STEP_LIMIT_MIN", 0.001);
+      /*- Upper bound for dynamic trust radius in au {double} -*/
+      options.add_double("INTRAFRAGMENT_STEP_LIMIT_MAX", 1.0);
       /*- Whether to 'follow' the initial RFO vector after the first step {true, false} -*/
       options.add_bool("RFO_FOLLOW_ROOT", false);
       /*- Which RFO root to follow; 0 indicates lowest (to a minimum); {integer} -*/
@@ -1979,6 +1983,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- Define IRC mapping direction {FORWARD, BACKWARD} -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
+      /*- Set number of consecutive backward steps allowed in optimization -*/
+      options.add_int("CONSECUTIVE_BACKSTEPS", 1);
   }
   if(name == "FINDIF"|| options.read_globals()) {
       /*- Number of points for finite-differences (3 or 5) -*/

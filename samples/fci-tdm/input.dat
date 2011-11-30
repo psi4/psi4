@@ -17,8 +17,6 @@ basis cc-pVDZ
 docc [1,0,0,0]
 socc [1,0,0,0]
 dipmom true
-fci true
-ex_lvl 3
 num_roots 2
 }
 
