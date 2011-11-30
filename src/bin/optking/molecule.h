@@ -310,6 +310,7 @@ class MOLECULE {
   void rfo_step(void);
   void prfo_step(void);
   void backstep(void);
+  void sd_step(void);
 
   void apply_intrafragment_step_limit(double * & dq);
   void check_intrafragment_zero_angles(double const * const dq);
