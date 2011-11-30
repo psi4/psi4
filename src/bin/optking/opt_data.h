@@ -139,6 +139,11 @@ class OPT_DATA {
     double *g_forces_pointer(int i) const {
       return steps.at(i)->g_forces_pointer();
     }
+    double *g_last_forces_pointer(void) const {
+      if (steps.size() > 1)
+        return steps.at(steps.size()-2)->g_forces_pointer();
+      else return NULL;
+    }
     double *g_geom_const_pointer(int i) const {
       return steps.at(i)->g_geom_const_pointer();
     }
@@ -148,14 +153,24 @@ class OPT_DATA {
     double g_dq_norm(int i) const {
       return steps.at(i)->g_dq_norm();
     }
+    double g_last_dq_norm(void) const {
+      if (steps.size() > 1)
+        return steps[steps.size()-2]->g_dq_norm();
+      else return 0.0;
+    }
     double g_dq_gradient(int i) const {
       return steps.at(i)->g_dq_gradient();
+    }
+    double g_last_dq_gradient(void) const {
+      if (steps.size() > 1)
+        return steps[steps.size()-2]->g_dq_gradient();
+      else return 0.0;
     }
     double g_dq_hessian(int i) const {
       return steps.at(i)->g_dq_hessian();
     }
 
-    bool previous_step_report(void) const;
+    bool previous_step_report() const;
 
     // check convergence of current step
     bool conv_check(opt::MOLECULE &) const;
@@ -188,6 +203,8 @@ class OPT_DATA {
     void reset_iteration_to_size(void) {
       iteration = steps.size() + 1;
     }
+    void increase_trust_radius(void) const;
+    void decrease_trust_radius(void) const;
 };
 
 }
