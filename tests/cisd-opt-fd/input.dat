@@ -1,8 +1,8 @@
 #! H2O CISD/6-31G** Optimize Geometry by Energies
 
-refnuc   =   9.1938886876  #TEST
+refnuc   =   9.1938886868  #TEST
 refscf   = -76.0231440654  #TEST
-refci    = -76.2231165692153    #TEST
+refci    = -76.2231165692  #TEST
 refcorr  = refci - refscf  #TEST
 
 molecule h2o {

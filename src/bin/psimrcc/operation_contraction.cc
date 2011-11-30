@@ -428,7 +428,7 @@ void CCOperation::setup_contractions()
       if(B_on_disk && !C_on_disk){
         int total_blocks = B_Matrix->get_blocks_per_irrep(h);
         // Determine how many blocks can be held in core
-        double free_memory = _memory_manager_->get_free_memory();
+        double free_memory = memory_manager->get_free_memory();
         first_block = last_block;
         last_block  = first_block;
         for(int i=first_block;i<total_blocks;i++){
@@ -470,7 +470,7 @@ void CCOperation::setup_contractions()
       if(!B_on_disk && C_on_disk){
         int total_blocks = C_Matrix->get_blocks_per_irrep(h);
         // Determine how many blocks can be held in core
-        double free_memory = _memory_manager_->get_free_memory();
+        double free_memory = memory_manager->get_free_memory();
         first_block = last_block;
         last_block  = first_block;
         for(int i=first_block;i<total_blocks;i++){

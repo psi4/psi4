@@ -14,7 +14,7 @@ namespace psi{
     extern FILE *outfile;
     namespace psimrcc{
     extern MOInfo *moinfo;
-    extern MemoryManager *_memory_manager_;
+    extern MemoryManager *memory_manager;
 
 using namespace std;
 
@@ -249,7 +249,7 @@ void CCBLAS::load_irrep(CCMatrix* Matrix,int h)
 
 void CCBLAS::make_space(size_t memory_required)
 {
-  if(memory_required < _memory_manager_->get_FreeMemory())
+  if(memory_required < memory_manager->get_FreeMemory())
     return;
   else{
     fprintf(outfile,"\nCCBLAS::make_space() not implemented yet!!!");
