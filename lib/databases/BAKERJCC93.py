@@ -2,15 +2,16 @@ import re
 import input
 
 # <<< BAKERJCC93 Database Module >>>
-# Geometries from Baker J. Comput. Chem. 14 1085 (1993), with further corrections.
-# Reference interaction energies from.
+# Geometries from Baker J. Comput. Chem. 14 1085 (1993), as reported
+# in Bakken and Helgaker, J. Chem. Phys. 117, 9160 (2002), with a few
+# further corrections.
 dbse = 'BAKERJCC93'
 isOS = 'true'
 
 # <<< Database Members >>>
 HRXN = ['1_3_5_trifluorobenzene', '1_3_5_trisilacyclohexane', '1_3_difluorobenzene', '1_5_difluoronaphthalene', '2_hydroxybicyclopentane', 'ACANIL01', 'acetone', 'acetylene', 'ACHTAR10', 'allene', 'ammonia', 'benzaldehyde', 'benzene', 'benzidine', 'caffeine', 'difuropyrazine', 'dimethylpentane', 'disilyl_ether', 'ethane', 'ethanol', 'furan', 'histidine', 'hydroxysulphane', 'menthone', 'mesityl_oxide', 'methylamine', 'naphthalene', 'neopentane', 'pterin', 'water', ]
-HRXN_SM = ['pterin']
-HRXN_LG = ['allene','1_3_5_trifluorobenzene','ethanol','furan','benzaldehyde']
+HRXN_SM = ['1_3_5_trisilacyclohexane','2_hydroxybicyclopentane','acetone','acetylene','allene','ammonia','benzene','disilyl_ether','ethane','ethanol','furan','hydroxysulphane','methylamine','neopentane','water',]
+HRXN_LG = ['1_3_difluorobenzene','1_3_5_trifluorobenzene','1_5_difluoronaphthalene','ACANIL01','ACHTAR10','benzaldehyde','benzidine','caffeine','difuropyrazine','dimethylpentane','histidine','menthone','mesityl_oxide','naphthalene','pterin']
 
 # <<< Chemical Systems Involved >>>
 RXNM = {}     # reaction matrix of reagent contributions per reaction
@@ -203,7 +204,7 @@ TAGL['%s-%s-reagent'    % (dbse, 'water'                 )] = ''
 
 # <<< Molecule Specifications >>>
 BAKERJCC93_1_3_5_trifluorobenzene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 F        4.45124771     2.56992907     0.00000000
 F       -4.45124771     2.56992907     0.00000000
@@ -222,7 +223,7 @@ units bohr
 """)
 
 BAKERJCC93_1_3_5_trisilacyclohexane = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 Si       2.87562701     1.66024403     0.50009833
 Si      -2.87562701     1.66024403     0.50009833
@@ -247,7 +248,7 @@ units bohr
 """)
 
 BAKERJCC93_1_3_difluorobenzene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 F        4.45098629     2.53075455     0.00000000
 F       -4.45098629     2.53075455     0.00000000
@@ -266,7 +267,7 @@ units bohr
 """)
 
 BAKERJCC93_1_5_difluoronaphthalene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 F        5.77442810     0.00000000     0.00000000
 F       -5.77442810     0.00000000     0.00000000
@@ -291,7 +292,7 @@ units bohr
 """)
 
 BAKERJCC93_2_hydroxybicyclopentane = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        0.00000000     0.00000000     3.97630549
 C        0.61275612     1.71787828    -0.25674160
@@ -312,8 +313,8 @@ units bohr
 """)
 
 BAKERJCC93_ACANIL01 = input.process_input("""
-molecule dimer {
-0 2
+molecule {
+0 1
 O        6.74334167     0.00000000     0.00000000
 N        2.75125398    -0.91996681     0.00000000
 C       -3.75958919    -3.62046813     0.00000000
@@ -338,7 +339,7 @@ units bohr
 """)
 
 BAKERJCC93_acetone = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        0.00000000     3.46695757     0.00000000
 C        0.00000000     1.14032594     0.00000000
@@ -355,7 +356,7 @@ units bohr
 """)
 
 BAKERJCC93_acetylene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C        0.00000000     0.00000000     1.13383600
 C        0.00000000     0.00000000    -1.13383600
@@ -366,7 +367,7 @@ units bohr
 """)
 
 BAKERJCC93_ACHTAR10 = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        0.00000000     0.00000000     3.93735249
 O        1.79875939     0.00000000    -0.09531034
@@ -389,7 +390,7 @@ units bohr
 """)
 
 BAKERJCC93_allene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C        0.00000000     0.00000000     0.00000000
 C        0.00000000     2.49419295     0.00000000
@@ -403,7 +404,7 @@ units bohr
 """)
 
 BAKERJCC93_ammonia = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 N        0.00000000     0.00000000     0.47690250
 H        1.55848945     0.89979432    -0.15896750
@@ -414,7 +415,7 @@ units bohr
 """)
 
 BAKERJCC93_benzaldehyde = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        6.11695944     0.00000000     0.00000000
 C       -0.42811838    -2.25953622     0.00000000
@@ -435,7 +436,7 @@ units bohr
 """)
 
 BAKERJCC93_benzene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C        0.00000000     2.63452745     0.00000000
 C        0.00000000    -2.63452745     0.00000000
@@ -454,7 +455,7 @@ units bohr
 """)
 
 BAKERJCC93_benzidine = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 N        0.00000000     0.00000000     9.17973038
 N        0.00000000     0.00000000    -9.17973038
@@ -487,7 +488,7 @@ units bohr
 """)
 
 BAKERJCC93_caffeine = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O       -1.35796495    -4.55968346     0.00000000
 O        6.00359465     0.00000000     0.00000000
@@ -519,7 +520,7 @@ set { guess gwh }
 """)
 
 BAKERJCC93_difuropyrazine = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        5.24048162     0.00000000     0.00000000
 O       -5.24048162     0.00000000     0.00000000
@@ -542,7 +543,7 @@ units bohr
 """)
 
 BAKERJCC93_dimethylpentane = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C       -1.90302142     1.79989214    -3.12819161
 C        0.68098191     1.17008149    -1.92744962
@@ -572,7 +573,7 @@ units bohr
 """)
 
 BAKERJCC93_disilyl_ether = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 Si       0.00000000    -0.06571048     3.03636189
 Si       0.00000000    -0.06571048    -3.03636189
@@ -588,7 +589,7 @@ units bohr
 """)
 
 BAKERJCC93_ethane = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C        0.00000000     0.00000000     1.45478763
 C        0.00000000     0.00000000    -1.45478763
@@ -603,7 +604,7 @@ units bohr
 """)
 
 BAKERJCC93_ethanol = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        2.94951269     0.00000000     0.00000000
 C        0.42864361     0.89070972     0.00000000
@@ -619,7 +620,7 @@ units bohr
 """)
 
 BAKERJCC93_furan = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        0.00000000    -2.71155703     0.00000000
 C        1.30409645     1.35600277     0.00000000
@@ -635,7 +636,7 @@ units bohr
 """)
 
 BAKERJCC93_histidine = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        3.93683911     0.00000000     5.02858545
 O        0.00000000     0.00000000     6.75548572
@@ -662,7 +663,7 @@ units bohr
 """)
 
 BAKERJCC93_hydroxysulphane = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 S        0.00000000     0.00000000     1.64344454
 O        1.55643788     0.00000000    -0.78417924
@@ -673,7 +674,7 @@ units bohr
 """)
 
 BAKERJCC93_menthone = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        0.00000000     0.00000000     4.83502957
 C       -5.06597212    -1.27592091     0.49885049
@@ -709,7 +710,7 @@ units bohr
 """)
 
 BAKERJCC93_mesityl_oxide = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        4.30492455     0.00000000     0.00000000
 C        0.05024721    -3.82629843     0.00000000
@@ -734,7 +735,7 @@ set { guess gwh }
 """)
 
 BAKERJCC93_methylamine = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 N        1.59169309     0.00000000     0.00000000
 C       -1.10781247    -0.03073718     0.00000000
@@ -748,7 +749,7 @@ units bohr
 """)
 
 BAKERJCC93_naphthalene = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C        1.31500993     4.56625993     0.00000000
 C       -1.31500993     4.56625993     0.00000000
@@ -773,7 +774,7 @@ units bohr
 """)
 
 BAKERJCC93_neopentane = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 C        0.00000000     0.00000000     0.00000000
 C        1.68781269    -1.68781269     1.68781269
@@ -797,7 +798,7 @@ units bohr
 """)
 
 BAKERJCC93_pterin = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        5.40068710     0.00000000     0.00000000
 N        1.67450469    -4.01224809     0.00000000
@@ -822,7 +823,7 @@ set { guess gwh }
 """)
 
 BAKERJCC93_water = input.process_input("""
-molecule dimer {
+molecule {
 0 1
 O        0.00000000    -0.69801390     0.00000000
 H        1.48150016     0.34900695     0.00000000

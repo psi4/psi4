@@ -232,6 +232,8 @@ mol1->print_connectivity(outfile);
       mol1->rfo_step(); 
     else if (Opt_params.step_type == OPT_PARAMS::P_RFO)
       mol1->prfo_step();
+    else if (Opt_params.step_type == OPT_PARAMS::SD)
+      mol1->sd_step();
   }
 
   bool converged = p_Opt_data->conv_check(*mol1);
@@ -331,6 +333,8 @@ cout << "Converged point!\nSize of opt_data is: " << p_Opt_data->nsteps() << "\n
 
     fprintf(outfile,"\tA bad-step exception has been caught.\n");
     fprintf(outfile,"\t%s", exc.g_message());
+
+    p_Opt_data->decrease_trust_radius();
 
     mol1->backstep();
 
