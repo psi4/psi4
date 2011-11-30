@@ -1911,8 +1911,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTIVE", new ArrayType());
     /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
     options.add("CORR_FVIR", new ArrayType());
-//    /*- The number of -*/
-//    options.add("ACTIVE_DOCC", new ArrayType());
+    options.add_int("SMALL_CUTOFF", 0);
+    options.add_bool("NOSINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
