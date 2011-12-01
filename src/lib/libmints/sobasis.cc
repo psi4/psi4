@@ -456,7 +456,7 @@ Dimension SOBasisSet::dimension() const
     return petite->SO_basisdim();
 }
 
-const boost::shared_ptr<PetiteList> SOBasisSet::petitelist() const
+const boost::shared_ptr<PetiteList> SOBasisSet::petite_list() const
 {
     return petite_;
 }

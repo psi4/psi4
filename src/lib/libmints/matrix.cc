@@ -1903,28 +1903,27 @@ void Matrix::apply_symmetry(const SharedMatrix& a, const SharedMatrix& transform
     }
 }
 
-void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer)
+void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& SO2AO)
 {
     // Check dimensions of the two matrices and symmetry
-    if(a->nirrep() !=  transformer->nirrep())
-        {
-            throw PSIEXCEPTION("Matrix::remove_symmetry: matrices must have same symmetry.\n");
-        }
-    if(nirrep() != 1)
-        {
-            throw PSIEXCEPTION("Matrix::remove_symmetry: result matrix must not have symmetry. \n");
-        }
-    if (ncol() != transformer->coldim(0)
-            || a->nrow() != transformer->nrow()) {
+    if(a->nirrep() != SO2AO->nirrep()) {
+        throw PSIEXCEPTION("Matrix::remove_symmetry: matrices must have same symmetry.\n");
+    }
+    if(nirrep() != 1) {
+        throw PSIEXCEPTION("Matrix::remove_symmetry: result matrix must not have symmetry. \n");
+    }
+    if (ncol() != SO2AO->coldim(0) ||
+        a->nrow() != SO2AO->nrow()) {
         a->print();
-        transformer->print();
+        SO2AO->print();
         throw PSIEXCEPTION("Matrix::remove_symmetry: Sizes are not compatible.\n");
     }
 
+    // Ensure we're working with a clea
     zero();
 
     // Create temporary matrix of proper size.
-    Matrix temp(transformer->nirrep(), transformer->rowspi(), transformer->colspi());
+    Matrix temp(SO2AO->nirrep(), SO2AO->rowspi(), SO2AO->colspi());
 
     char ta = 'n';
     char tb = 'n';
@@ -1933,7 +1932,7 @@ void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& transfor
     // Solve F = T^ M T
 
     // temp = M T
-    for(int h=0; h<transformer->nirrep(); ++h) {
+    for(int h=0; h<SO2AO->nirrep(); ++h) {
         m = temp.rowdim(h);
         n = temp.coldim(h);
         k = a->coldim(h);
@@ -1943,14 +1942,14 @@ void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& transfor
 
         if (m && n && k) {
             C_DGEMM(ta, tb, m, n, k, 1.0, &(a->matrix_[h][0][0]),
-                    nca, &(transformer->matrix_[h][0][0]), ncb,
+                    nca, &(SO2AO->matrix_[h][0][0]), ncb,
                     1.0, &(temp.matrix_[h][0][0]), ncc);
         }
     }
 
     // F = T^ temp
     ta = 't';
-    for (int h=0; h<transformer->nirrep(); ++h) {
+    for (int h=0; h<SO2AO->nirrep(); ++h) {
         m = nrow();
         n = ncol();
         k = temp.rowdim(h);
@@ -1959,7 +1958,7 @@ void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& transfor
         ncc = n; //k
 
         if (m && n && k) {
-            C_DGEMM(ta, tb, m, n, k, 1.0, &(transformer->matrix_[h][0][0]),
+            C_DGEMM(ta, tb, m, n, k, 1.0, &(SO2AO->matrix_[h][0][0]),
                     nca, &(temp.matrix_[h][0][0]), ncb, 1.0, &(matrix_[0][0][0]),
                     ncc);
         }

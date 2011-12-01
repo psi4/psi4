@@ -636,7 +636,7 @@ public:
      *  \param a SimpleMatrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
      */
-    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
+    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& SO2AO);
     /** Performs a the transformation L^ F R. Result goes to this.
      *
      * \param L left transformation matrix (will be transposed)

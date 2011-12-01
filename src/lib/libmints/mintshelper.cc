@@ -94,6 +94,12 @@ MintsHelper::~MintsHelper()
 {
 }
 
+boost::shared_ptr<PetiteList> MintsHelper::petite_list() const
+{
+    boost::shared_ptr<PetiteList> pt(new PetiteList(basisset_, integral_));
+    return pt;
+}
+
 boost::shared_ptr<BasisSet> MintsHelper::basisset() const
 {
     return basisset_;
