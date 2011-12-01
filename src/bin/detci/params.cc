@@ -136,8 +136,8 @@ void get_parameters(Options &options)
       Parameters.wfn == "CASSCF" ||
       Parameters.wfn == "RASSCF")
   {
-     Parameters.convergence = 7;
-     Parameters.energy_convergence = 8;
+     Parameters.convergence = 1e-7;
+     Parameters.energy_convergence = 1e-8;
      Parameters.opdm = 1;
      Parameters.opdm_write = 1;
      Parameters.tpdm = 1;
@@ -147,13 +147,13 @@ void get_parameters(Options &options)
 
   else {
     if (Parameters.cc) {
-      Parameters.convergence = 5;
-      Parameters.energy_convergence = 7;
+      Parameters.convergence = 1e-5;
+      Parameters.energy_convergence = 1e-7;
       Parameters.maxiter = 20;
     }
     else {
-      Parameters.convergence = 4;
-      Parameters.energy_convergence = 6;
+      Parameters.convergence = 1e-4;
+      Parameters.energy_convergence = 1e-6;
       Parameters.maxiter = 12;
     }
     Parameters.opdm = 0;
@@ -172,10 +172,10 @@ void get_parameters(Options &options)
     Parameters.maxiter = options.get_int("MAXITER");
   }
   if (options["CONVERGENCE"].has_changed()) {
-    Parameters.convergence = options.get_int("CONVERGENCE");
+    Parameters.convergence = options.get_double("CONVERGENCE");
   }
   if (options["E_CONVERGE"].has_changed()) {
-    Parameters.energy_convergence = options.get_int("E_CONVERGE");
+    Parameters.energy_convergence = options.get_double("E_CONVERGE");
   }
 
   Parameters.multp = Process::environment.molecule()->multiplicity();
@@ -849,10 +849,10 @@ void print_parameters(void)
          "   CONV          =   %8.2g    MIXED        =   %6s\n",
          Parameters.special_conv, Parameters.mixed ? "yes" : "no");
    else
-      fprintf(outfile, "   CONV          =   %6d      MIXED        =   %6s\n",
+      fprintf(outfile, "   CONV          =   %6.2e      MIXED        =   %6s\n",
          Parameters.convergence, Parameters.mixed ? "yes" : "no");
 
-   fprintf(outfile, "   E CONV        =   %6d      MIXED4       =   %6s\n",
+   fprintf(outfile, "   E CONV        =   %6.2e      MIXED4       =   %6s\n",
       Parameters.energy_convergence, Parameters.mixed4 ? "yes" : "no");
    fprintf(outfile, "   OEI FILE      =   %6d      R4S          =   %6s\n",
       Parameters.oei_file, Parameters.r4s ? "yes" : "no");

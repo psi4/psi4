@@ -121,8 +121,8 @@ double dRPA::df_compute_energy()
     iter++;
 
     if (iter > options_.get_int("MAXITER")) done = 1;
-    if (fabs(e_old-e_new) < pow(10.0,-(double) options_.get_int("E_CONVERGE"))
-      && rms < pow(10.0,-(double) options_.get_int("T_CONVERGE"))) done = 1;
+    if (fabs(e_old-e_new) < options_.get_double("E_CONVERGE")
+      && rms < options_.get_double("T_CONVERGE")) done = 1;
 
     e_old = e_new;
   }
@@ -566,9 +566,9 @@ double dRPA::cd_compute_energy()
         iter++;
     
         if (iter > options_.get_int("MAXITER")) done = 1;
-        if (fabs(e_old-e_new) < pow(10.0,-(double) options_.get_int("E_CONVERGE")))
+        if (fabs(e_old-e_new) < options_.get_double("E_CONVERGE"))
           done = 1;
-        if (rms < pow(10.0,-(double) options_.get_int("T_CONVERGE"))) done = 1;
+        if (rms < options_.get_double("T_CONVERGE")) done = 1;
     
         e_old = e_new;
     }
