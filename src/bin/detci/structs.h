@@ -336,9 +336,9 @@ struct params {
    int istop;        /* stop after setting up CI space */
    int print_lvl;    /* print verbosity level */ 
    int print_ciblks; /* print a summary of the CI blocks? */
-   int convergence;  /* convergence, 10^-n, on RMS of the CI update vector */
+   double convergence;  /* convergence on RMS of the CI update vector */
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
-   int energy_convergence;  /* convergence, 10^-n, on CI energy */
+   double energy_convergence;  /* convergence on CI energy */
    int oei_file;     /* file number for one-electron integrals */
    int tei_file;     /* file number for two-electron integrals */
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */
