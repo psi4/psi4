@@ -196,8 +196,8 @@ public:
 
     // => Utility Routines <= //
 
-    void set_print(int print) { print_; }
-    void set_debug(int debug) { debug_; }
+    void set_print(int print) { print_ = print; }
+    void set_debug(int debug) { debug_ = debug; }
 
 };
 

@@ -7,6 +7,9 @@ template <class T>
 class shared_ptr;
 }
 
+// Dimension is lightweight
+#include "dimension.h"
+
 // Forward declare psi
 namespace psi {
 
