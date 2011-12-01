@@ -406,8 +406,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
    nroots = Parameters.num_roots;
 
-   conv_rms = pow(10.0, -(Parameters.convergence));
-   conv_e = pow(10.0, -(Parameters.energy_convergence));
+   conv_rms = Parameters.   convergence;
+   conv_e = Parameters.energy_convergence;
 
    if (Parameters.have_special_conv) {
      tval = sqrt(conv_rms) * 10.0;
