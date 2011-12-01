@@ -1,60 +1,78 @@
 #include "mints.h"
-#include "moindexspace.h"
+#include "orbitalspace.h"
 
 namespace psi {
 
-MOIndexSpace::MOIndexSpace(const std::string& name,
-                           const SharedMatrix& full_C,   // Should this be 4 C's instead?
-                           const boost::shared_ptr<Vector>& evals,
-                           const boost::shared_ptr<BasisSet>& basis,
-                           const boost::shared_ptr<IntegralFactory>& ints)
-    : nirrep_(full_C->nirrep()), name_(name), C_(full_C),
-      evals_(evals), basis_(basis), ints_(ints), dim_(full_C->colspi())
+OrbitalSpace::OrbitalSpace(const std::string& id,
+                           const std::string &name,   // Should this be 4 C's instead?
+                           const SharedMatrix &full_C,
+                           const boost::shared_ptr<Vector> &evals,
+                           const boost::shared_ptr<BasisSet> &basis,
+                           const boost::shared_ptr<IntegralFactory> &ints)
+    : id_(id),
+      name_(name),
+      C_(full_C),
+      evals_(evals),
+      basis_(basis),
+      ints_(ints),
+      dim_(full_C->colspi())
 {
 }
 
-MOIndexSpace::MOIndexSpace(const std::string &name, const boost::shared_ptr<Wavefunction> &wave)
-    : nirrep_(wave->nirrep()), name_(name), C_(wave->Ca()), evals_(wave->epsilon_a()),
-      basis_(wave->basisset()), ints_(wave->integral()), dim_(wave->Ca()->colspi())
+OrbitalSpace::OrbitalSpace(const std::string &id,
+                           const std::string &name,
+                           const boost::shared_ptr<Wavefunction> &wave)
+    : id_(id),
+      name_(name),
+      C_(wave->Ca()),
+      evals_(wave->epsilon_a()),
+      basis_(wave->basisset()),
+      ints_(wave->integral()),
+      dim_(wave->Ca()->colspi())
 {
 }
 
-int MOIndexSpace::nirrep() const
+int OrbitalSpace::nirrep() const
 {
-    return nirrep_;
+    return C_->nirrep();
 }
 
-const std::string& MOIndexSpace::name() const
+const std::string& OrbitalSpace::id() const
+{
+    return id_;
+}
+
+const std::string& OrbitalSpace::name() const
 {
     return name_;
 }
 
-const SharedMatrix& MOIndexSpace::C() const
+const SharedMatrix& OrbitalSpace::C() const
 {
     return C_;
 }
 
-const boost::shared_ptr<Vector>& MOIndexSpace::evals() const
+const boost::shared_ptr<Vector>& OrbitalSpace::evals() const
 {
     return evals_;
 }
 
-const boost::shared_ptr<BasisSet>& MOIndexSpace::basis() const
+const boost::shared_ptr<BasisSet>& OrbitalSpace::basis() const
 {
     return basis_;
 }
 
-const boost::shared_ptr<IntegralFactory>& MOIndexSpace::integral() const
+const boost::shared_ptr<IntegralFactory>& OrbitalSpace::integral() const
 {
     return ints_;
 }
 
-const Dimension& MOIndexSpace::dim() const
+const Dimension& OrbitalSpace::dim() const
 {
     return dim_;
 }
 
-MOIndexSpace MOIndexSpace::transform(const MOIndexSpace& A, const boost::shared_ptr<BasisSet>& B)
+OrbitalSpace OrbitalSpace::transform(const OrbitalSpace& A, const boost::shared_ptr<BasisSet>& B)
 {
     SharedMatrix SBA = overlap(B, A.basis());
     SBA->set_name("Sba");
@@ -94,19 +112,20 @@ MOIndexSpace MOIndexSpace::transform(const MOIndexSpace& A, const boost::shared_
 
     boost::shared_ptr<IntegralFactory> i(new IntegralFactory(B, B, B, B));
 
-    return MOIndexSpace("Ca transformed into Cb",
+    return OrbitalSpace("p",
+                        "Ca transformed into Cb",
                         Cb,
                         A.evals(),
                         B,
                         i);
 }
 
-SharedMatrix MOIndexSpace::overlap(const MOIndexSpace &space1, const MOIndexSpace &space2)
+SharedMatrix OrbitalSpace::overlap(const OrbitalSpace &space1, const OrbitalSpace &space2)
 {
     IntegralFactory mix_ints(space1.basis(), space2.basis(), space1.basis(), space2.basis());
 
     SharedMatrix Smat(new Matrix("Overlap between space1 and space2",
-                                              space1.C()->rowspi(), space2.C()->colspi()));
+                                 space1.C()->rowspi(), space2.C()->colspi()));
 
     OneBodySOInt *S = mix_ints.so_overlap();
     S->compute(Smat);
@@ -115,15 +134,15 @@ SharedMatrix MOIndexSpace::overlap(const MOIndexSpace &space1, const MOIndexSpac
     return Smat;
 }
 
-SharedMatrix MOIndexSpace::overlap(const boost::shared_ptr<BasisSet>& basis1,
-                                                const boost::shared_ptr<BasisSet>& basis2)
+SharedMatrix OrbitalSpace::overlap(const boost::shared_ptr<BasisSet>& basis1,
+                                   const boost::shared_ptr<BasisSet>& basis2)
 {
     IntegralFactory mix_ints(basis1, basis2);
     SOBasisSet sobasis1(basis1, &mix_ints);
     SOBasisSet sobasis2(basis2, &mix_ints);
 
     SharedMatrix Smat(new Matrix("Overlap between space1 and space2",
-                                              sobasis1.dimension(), sobasis2.dimension()));
+                                 sobasis1.dimension(), sobasis2.dimension()));
 
     OneBodySOInt *S = mix_ints.so_overlap();
     S->compute(Smat);
