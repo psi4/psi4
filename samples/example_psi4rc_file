@@ -20,17 +20,22 @@ psioh.set_default_path('/scratch/parrish/')
 #  Sends scratch files to directory in an environment variable.
 #  Useful in a queued cluster system when running from a working directory
 #  but want big scratch files in an on-the-fly-named scratch directory $myscratch
-#job_scratch_pbs = os.environ.get('myscratch') + '/'
-#psioh.set_default_path(job_scratch_pbs)
+#job_scratch_pbs = os.environ.get('myscratch')
+#if job_scratch_pbs == None:
+#   psioh.set_default_path('./')
+#else:
+#   job_scratch_pbs += '/'
+#   psioh.set_default_path(job_scratch_pbs)
 
 
-
+# Specifications for particular files like the below work with any option
+# above, but cause trouble for multijob input files
 # Set the path for files of a specific type
 # This keeps the chkpt on the NFS, while the heavies go to scratch
-psioh.set_specific_path(32, './')
+#psioh.set_specific_path(32, './')
 
 # Set a specific file number to be retained where it lies
 # and not be removed by psiclean
-psioh.set_specific_retention(32, True)
+#psioh.set_specific_retention(32, True)
 
 
