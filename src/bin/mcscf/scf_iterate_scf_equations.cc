@@ -85,9 +85,10 @@ void SCF::iterate_scf_equations()
          delta_dens += dot(Dtc_old[I],Dtc_old[I]);
     }}
 
-    double rms_dens = fabs(log10(fabs(delta_dens)));
+    double rms_dens = sqrt(delta_dens/(nso*nso*nci));
+
     //Print SCF energy,energy difference and RMS density change
-     fprintf(outfile,"\n  @SCF %4d  %20.12f %20.12f %20.12f %20.12f",cycle,total_energy,total_energy-old_energy, delta_dens, rms_dens);
+     fprintf(outfile,"\n  @SCF %4d  %20.12f %20.12f %20.12f",cycle,total_energy,total_energy-old_energy, rms_dens);
   if(reference == tcscf){
     fprintf(outfile,"\n    ci      = [");
     for(int I = 0 ; I < nci; ++I)
@@ -101,10 +102,10 @@ void SCF::iterate_scf_equations()
   }
   fflush(outfile);
 
-    if( fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE") ){
+    if(fabs(delta_energy) < options_.get_double("E_CONVERGE") ){
       if(reference == tcscf){
-        if(2.0 * fabs(log10(norm_ci_grad)) > options_.get_int("CONVERGENCE") && 
-          rms_dens > options_.get_int("D_CONVERGENCE") )
+        if(2.0 * fabs(norm_ci_grad) < options_.get_double("D_CONVERGE") &&
+          rms_dens < options_.get_double("D_CONVERGE") )
           converged = true;
       }else{
         converged = true;

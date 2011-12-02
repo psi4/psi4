@@ -194,7 +194,7 @@ void SCF::cleanup()
       if(Ftc[i].is_allocated())   Ftc[i].subtract_reference();
       if(Ftc_t[i].is_allocated()) Ftc_t[i].subtract_reference();
       if(Dtc[i].is_allocated())   Dtc[i].subtract_reference();
-      if(Dtc_old[i].is_allocated())   Dtc[i].subtract_reference();
+      if(Dtc_old[i].is_allocated())   Dtc_old[i].subtract_reference();
       if(Dsum[i].is_allocated())  Dsum[i].subtract_reference();
   }
   for(int i = 0; i < maxdiis; ++i){
