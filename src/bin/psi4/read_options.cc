@@ -599,17 +599,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-<<<<<<< HEAD
-    /*- How many digits after the decimal to converge the energy to -*/
-    options.add_int("E_CONVERGE",10);
-    /*- How many digits after the decimal to converge the density to -*/
-    options.add_int("D_CONVERGE",7);
-=======
     /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE",1e-10);
     /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE",1e-8);
->>>>>>> 89ff2ea2b5169932a9e9564dbcf374fbea530639
     /*- Don't solve the CPHF equations -*/
     options.add_bool("NO_RESPONSE",false);
     /*- Use asynchronous I/O in the CPHF solver -*/
@@ -1443,13 +1436,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("E_CONVERGE", 1e-12);
     /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("D_CONVERGE", 1e-12);
-    /*- -*/
+    /*- Maximum number of iterations before computation quits. -*/
     options.add_int("MAXITER",100);
-    /*- -*/
+    /*- Number of previous iterations to consider within the DIIS method -*/
     options.add_int("NDIIS",7);
-    /*- -*/
+    /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
     options.add_int("ROOT",1);
-    /*- -*/
+    /*- Iteration at which to begin using the averaged Fock matrix-*/
     options.add_int("START_FAVG",5);
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
@@ -1461,31 +1454,29 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
     /*- -*/
     options.add_int("ROTATE_MO_Q",2);
-    /*- -*/
+    /*- Use the DIIS method to optimize the Ci coefficients-*/
     options.add_bool("CI_DIIS",false);
-    /*- -*/
+    /*- Use the DIIS method to optimize the SCF energy(MO coefficients only)-*/
     options.add_bool("USE_DIIS",true);
-    /*- -*/
+    /*- Read the MOs in from a previous computation if TRUE.-*/
     options.add_bool("READ_MOS",true);
-    /*- -*/
+    /*- If true, use the average Fock matrix during the SCF optimization-*/
     options.add_bool("USE_FAVG",false);
-    /*- -*/
+    /*- If true, the active orbitals should canonicalized such that the average Fock matrix is diagonal -*/
     options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
-    /*- -*/
+    /*- If true, the inactive(DOCC and Virtual) orbitals will be canonicalized such that the average Fock matrix is diagonal.-*/
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     /*- -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
-    /*- -*/
+    /*- Attempt to force a two configruation solution by starting with Ci coefficents of +/- sqrt(1/2)-*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
     /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
     options.add("ACTV", new ArrayType());
-
-
-    /*- -*/
+    /*- The type of SCF reference to be computed. -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
-    /*- -*/
+    /*- The symmetry of the SCF wavefunction.-*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
