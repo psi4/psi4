@@ -360,11 +360,9 @@ namespace psi{ namespace dcft{
       fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction (0.5 * H * TT)          = %20.15f\n", 0.5 * a_tautau_->vector_dot(moHa) + 0.5 * b_tautau_->vector_dot(moHb));
       fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction (0.5 * F * TT)          = %20.15f\n", 0.5 * a_tautau_->vector_dot(moFa_) + 0.5 * b_tautau_->vector_dot(moFb_));
 
-      so_h_->print();
-      Ca_->print();
-      a_tautau_->print();
-      moHa->print();
-      moFa_->print();
+      // Test //
+
+
 
   }
 
