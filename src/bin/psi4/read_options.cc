@@ -1424,10 +1424,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
     options.add_int("MULTP", 1);
-    /*- Convergence criteria for the MCSCF Energy and the Ci gradient-*/
-    options.add_int("CONVERGENCE",9);
-    /*- Convergence criteria for the RMS Density-*/
-    options.add_int("D_CONVERGENCE",8);
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
@@ -1446,17 +1442,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("START_FAVG",5);
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
-    /*- -*/
+    /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
     options.add_int("ROTATE_MO_ANGLE",0);
-    /*- -*/
-    options.add_int("ROTATE_MO_IRREP",1);  // IRREP is one-based
-    /*- -*/
-    options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
-    /*- -*/
+    /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
+    options.add_int("ROTATE_MO_IRREP",1);
+    /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/
+    options.add_int("ROTATE_MO_P",1);
+    /*- For orbital rotations after convergence, number of the second orbital (1-based) to rotate. !expert -*/
     options.add_int("ROTATE_MO_Q",2);
-    /*- Use the DIIS method to optimize the Ci coefficients-*/
+    /*- Use the DIIS method to optimize the CI coefficients-*/
     options.add_bool("CI_DIIS",false);
-    /*- Use the DIIS method to optimize the SCF energy(MO coefficients only)-*/
+    /*- Use the DIIS method to optimize the SCF energy (MO coefficients only)-*/
     options.add_bool("USE_DIIS",true);
     /*- Read the MOs in from a previous computation if TRUE.-*/
     options.add_bool("READ_MOS",true);
@@ -1468,7 +1464,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     /*- -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
-    /*- Attempt to force a two configruation solution by starting with Ci coefficents of +/- sqrt(1/2)-*/
+    /*- Attempt to force a two configruation solution by starting with CI coefficents of +/- sqrt(1/2)-*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
