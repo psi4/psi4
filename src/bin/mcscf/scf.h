@@ -73,8 +73,10 @@ private:
   SBlockMatrix C_t;         // transformed C matrix
   SBlockMatrix C_T;         // MO coefficients matrix transposed
   SBlockMatrix Dc;          // The density matrix (closed)
+  SBlockMatrix Dc_old;          // The density matrix (closed)
   SBlockMatrix Do;          // The density matrix (open)
   SBlockMatrix Dtc[maxci];  // The density matrix (tcscf)
+  SBlockMatrix Dtc_old[maxci];  // The density matrix (tcscf)
   SBlockMatrix Dsum[maxci]; // The density matrix (closed + tcscf)
   SBlockMatrix Fc;          // The Fock matrix (closed)
   SBlockMatrix Fc_t;        // The transformed Fock matrix (closed)
