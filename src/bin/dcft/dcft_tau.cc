@@ -166,7 +166,6 @@ DCFTSolver::compute_tau_squared()
 {
 
     dpdfile2 T_OO, T_oo, T_VV, T_vv;
-//    dpdfile2 TT_OO, TT_oo, TT_VV, TT_vv;
 
     dpd_file2_init(&T_OO, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau <O|O>");
@@ -177,155 +176,117 @@ DCFTSolver::compute_tau_squared()
     dpd_file2_init(&T_vv, PSIF_DCFT_DPD, 0,
                   _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau <v|v>");
 
-//    dpd_file2_init(&TT_OO, PSIF_DCFT_DPD, 0,
-//                  _ints->DPD_ID('O'), _ints->DPD_ID('O'), "Tau^2 <O|O>");
-//    dpd_file2_init(&TT_oo, PSIF_DCFT_DPD, 0,
-//                  _ints->DPD_ID('o'), _ints->DPD_ID('o'), "Tau^2 <o|o>");
-//    dpd_file2_init(&TT_VV, PSIF_DCFT_DPD, 0,
-//                  _ints->DPD_ID('V'), _ints->DPD_ID('V'), "Tau^2 <V|V>");
-//    dpd_file2_init(&TT_vv, PSIF_DCFT_DPD, 0,
-//                  _ints->DPD_ID('v'), _ints->DPD_ID('v'), "Tau^2 <v|v>");
-
     dpd_file2_mat_init(&T_OO);
     dpd_file2_mat_init(&T_oo);
     dpd_file2_mat_init(&T_VV);
     dpd_file2_mat_init(&T_vv);
-//    dpd_file2_mat_init(&TT_OO);
-//    dpd_file2_mat_init(&TT_oo);
-//    dpd_file2_mat_init(&TT_VV);
-//    dpd_file2_mat_init(&TT_vv);
     dpd_file2_mat_rd(&T_OO);
     dpd_file2_mat_rd(&T_oo);
     dpd_file2_mat_rd(&T_VV);
     dpd_file2_mat_rd(&T_vv);
 
-    // Compute the Tau^2 correction to Tau in the MO basis
+    // Copy Tau in MO basis from the DPD library
+    SharedMatrix a_tau_mo (new Matrix ("Alpha Tau in the MO basis", nirrep_, nsopi_, nsopi_));
+    SharedMatrix b_tau_mo (new Matrix ("Beta Tau in the MO basis", nirrep_, nsopi_, nsopi_));
 
     for(int h = 0; h < nirrep_; ++h){
         if(nsopi_[h] == 0) continue;
 
         // Alpha occupied
-        for(int i = 0 ; i < naoccpi_[h]; ++i){
-            for(int j = 0 ; j < naoccpi_[h]; ++j){
-                a_tautau_->set(h, i, j, (-1.0) * T_OO.matrix[h][i][j] * T_OO.matrix[h][i][j]);
-            }
-        }
-        // Beta occupied
-        for(int i = 0 ; i < nboccpi_[h]; ++i){
-            for(int j = 0 ; j < nboccpi_[h]; ++j){
-                b_tautau_->set(h, i, j, (-1.0) * T_oo.matrix[h][i][j] * T_oo.matrix[h][i][j]);
-            }
-        }
-        // Alpha virtual
-        for(int i = 0 ; i < navirpi_[h]; ++i){
-            for(int j = 0 ; j < navirpi_[h]; ++j){
-                a_tautau_->set(h, naoccpi_[h] + i, naoccpi_[h] + j, T_VV.matrix[h][i][j] * T_VV.matrix[h][i][j]);
-            }
-        }
-        // Beta virtual
-        for(int i = 0 ; i < nbvirpi_[h]; ++i){
-            for(int j = 0 ; j < nbvirpi_[h]; ++j){
-                b_tautau_->set(h, nboccpi_[h] + i, nboccpi_[h] + j, T_vv.matrix[h][i][j] * T_vv.matrix[h][i][j]);
+        for(int p = 0 ; p < naoccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_OO.matrix[h][p][q];
+                a_tau_mo->set(h, p, q, value);
+                if (p != q) a_tau_mo->set(h, q, p, value);
             }
         }
 
-//        // Alpha occupied
-//        for(int i = 0 ; i < naoccpi_[h]; ++i){
-//            for(int j = 0 ; j < naoccpi_[h]; ++j){
-//                TT_OO.matrix[h][i][j] = (-1.0) * T_OO.matrix[h][i][j] * T_OO.matrix[h][i][j];
-//            }
-//        }
-//        // Beta occupied
-//        for(int i = 0 ; i < nboccpi_[h]; ++i){
-//            for(int j = 0 ; j < nboccpi_[h]; ++j){
-//                TT_oo.matrix[h][i][j] = (-1.0) * T_oo.matrix[h][i][j] * T_oo.matrix[h][i][j];
-//            }
-//        }
-//        // Alpha virtual
-//        for(int i = 0 ; i < navirpi_[h]; ++i){
-//            for(int j = 0 ; j < navirpi_[h]; ++j){
-//                TT_VV.matrix[h][i][j] = T_VV.matrix[h][i][j] * T_VV.matrix[h][i][j];
-//            }
-//        }
-//        // Beta virtual
-//        for(int i = 0 ; i < nbvirpi_[h]; ++i){
-//            for(int j = 0 ; j < nbvirpi_[h]; ++j){
-//                TT_vv.matrix[h][i][j] = T_vv.matrix[h][i][j] * T_vv.matrix[h][i][j];
-//            }
-//        }
+        // Beta occupied
+        for(int p = 0 ; p < nboccpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_oo.matrix[h][p][q];
+                b_tau_mo->set(h, p, q, value);
+                if (p != q) b_tau_mo->set(h, q, p, value);
+            }
+        }
+
+        // Alpha virtual
+        for(int p = 0 ; p < navirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_VV.matrix[h][p][q];
+                a_tau_mo->set(h, p + naoccpi_[h], q + naoccpi_[h], value);
+                if (p != q) a_tau_mo->set(h, q + naoccpi_[h], p + naoccpi_[h], value);
+            }
+        }
+
+        // Beta virtual
+        for(int p = 0 ; p < nbvirpi_[h]; ++p){
+            for(int q = 0 ; q <= p; ++q){
+                double value = T_vv.matrix[h][p][q];
+                b_tau_mo->set(h, p + nboccpi_[h], q + nboccpi_[h], value);
+                if (p != q) b_tau_mo->set(h, q + nboccpi_[h], p + nboccpi_[h], value);
+            }
+        }
     }
 
-//    a_tautau_->zero();
-//    b_tautau_->zero();
-
-//    for(int h = 0; h < nirrep_; ++h){
-//        if(nsopi_[h] == 0) continue;
-
-//        double **temp = block_matrix(nsopi_[h], nsopi_[h]);
-//        double **paOccC = aocc_c_->pointer(h);
-//        double **pbOccC = bocc_c_->pointer(h);
-//        double **paVirC = avir_c_->pointer(h);
-//        double **pbVirC = bvir_c_->pointer(h);
-//        double **pa_tautau_ = a_tautau_->pointer(h);
-//        double **pb_tautau_ = b_tautau_->pointer(h);
-
-//        /*
-//         * Backtransform the Tau^2 correction to the AO basis
-//         * tau^2Trans = C moTau^2 Ct
-//         */
-
-//        // Alpha occupied
-//        if(naoccpi_[h] && nsopi_[h]){
-//            C_DGEMM('n', 'n', nsopi_[h], naoccpi_[h], naoccpi_[h], 1.0, paOccC[0], naoccpi_[h],
-//                    TT_OO.matrix[h][0], naoccpi_[h], 0.0, temp[0], nsopi_[h]);
-//            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], naoccpi_[h], 1.0, temp[0], nsopi_[h],
-//                    paOccC[0], naoccpi_[h], 1.0, pa_tautau_[0], nsopi_[h]);
-//        }
-//        // Beta occupied
-//        if(nboccpi_[h] && nsopi_[h]){
-//            C_DGEMM('n', 'n', nsopi_[h], nboccpi_[h], nboccpi_[h], 1.0, pbOccC[0], nboccpi_[h],
-//                    TT_oo.matrix[h][0], nboccpi_[h], 0.0, temp[0], nsopi_[h]);
-//            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], nboccpi_[h], 1.0, temp[0], nsopi_[h],
-//                    pbOccC[0], nboccpi_[h], 1.0, pb_tautau_[0], nsopi_[h]);
-//        }
-//        // Alpha virtual
-//        if(navirpi_[h] && nsopi_[h]){
-//            C_DGEMM('n', 'n', nsopi_[h], navirpi_[h], navirpi_[h], 1.0, paVirC[0], navirpi_[h],
-//                    TT_VV.matrix[h][0], navirpi_[h], 0.0, temp[0], nsopi_[h]);
-//            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], navirpi_[h], 1.0, temp[0], nsopi_[h],
-//                    paVirC[0], navirpi_[h], 1.0, pa_tautau_[0], nsopi_[h]);
-//        }
-//        // Beta virtual
-//        if(nbvirpi_[h] && nsopi_[h]){
-//            C_DGEMM('n', 'n', nsopi_[h], nbvirpi_[h], nbvirpi_[h], 1.0, pbVirC[0], nbvirpi_[h],
-//                    TT_vv.matrix[h][0], nbvirpi_[h], 0.0, temp[0], nsopi_[h]);
-//            C_DGEMM('n', 't', nsopi_[h], nsopi_[h], nbvirpi_[h], 1.0, temp[0], nsopi_[h],
-//                    pbVirC[0], nbvirpi_[h], 1.0, pb_tautau_[0], nsopi_[h]);
-//        }
-
-//        free_block(temp);
-//    }
-
-//    dpd_file2_mat_wrt(&TT_OO);
-//    dpd_file2_mat_wrt(&TT_oo);
-//    dpd_file2_mat_wrt(&TT_VV);
-//    dpd_file2_mat_wrt(&TT_vv);
+    a_tau_mo->print();
+    b_tau_mo->print();
 
     dpd_file2_print(&T_OO, outfile);
     dpd_file2_print(&T_VV, outfile);
-
-//    dpd_file2_print(&TT_OO, outfile);
-//    dpd_file2_print(&TT_VV, outfile);
 
     dpd_file2_close(&T_OO);
     dpd_file2_close(&T_oo);
     dpd_file2_close(&T_VV);
     dpd_file2_close(&T_vv);
 
-//    dpd_file2_close(&TT_OO);
-//    dpd_file2_close(&TT_oo);
-//    dpd_file2_close(&TT_VV);
-//    dpd_file2_close(&TT_vv);
+    // Compute the Tau^2 correction to Tau in the MO basis
+
+    SharedMatrix a_tau_evecs (new Matrix ("Alpha Tau Eigenvectors", nirrep_, nsopi_, nsopi_));
+    SharedMatrix b_tau_evecs (new Matrix ("Beta Tau Eigenvectors", nirrep_, nsopi_, nsopi_));
+    SharedVector a_tau_evals (new Vector ("Alpha Tau Eigenvalues", nirrep_, nsopi_));
+    SharedVector b_tau_evals (new Vector ("Beta Tau Eigenvalues", nirrep_, nsopi_));
+
+    // Diagonalize Tau
+    a_tau_mo->diagonalize(a_tau_evecs, a_tau_evals);
+    b_tau_mo->diagonalize(b_tau_evecs, b_tau_evals);
+
+    // Form Tau*Tau in the natural orbital basis
+    for(int h = 0; h < nirrep_; ++h){
+        if(nsopi_[h] == 0) continue;
+
+        // Alpha occupied
+        for(int i = 0 ; i < naoccpi_[h]; ++i){
+            double value = a_tau_evals->get(h, i);
+            a_tautau_->set(h, i, i, (-1.0) * value * value);
+        }
+
+        // Beta occupied
+        for(int i = 0 ; i < nboccpi_[h]; ++i){
+            double value = b_tau_evals->get(h, i);
+            b_tautau_->set(h, i, i, (-1.0) * value * value);
+        }
+
+        // Alpha virtual
+        for(int a = 0 ; a < navirpi_[h]; ++a){
+            double value = a_tau_evals->get(h, a + naoccpi_[h]);
+            a_tautau_->set(h, naoccpi_[h] + a, naoccpi_[h] + a, value * value);
+        }
+
+        // Beta virtual
+        for(int a = 0 ; a < nbvirpi_[h]; ++a){
+            double value = b_tau_evals->get(h, a + nboccpi_[h]);
+            b_tautau_->set(h, nboccpi_[h] + a, nboccpi_[h] + a, value * value);
+        }
+    }
+
+    // Back-transform Tau*Tau to the MO basis
+    a_tautau_->back_transform(a_tau_evecs);
+    b_tautau_->back_transform(b_tau_evecs);
+
+    a_tautau_->print();
+    b_tautau_->print();
+
 }
 
 /**
