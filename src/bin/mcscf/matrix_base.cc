@@ -132,4 +132,14 @@ MatrixBase& MatrixBase::operator+=(const MatrixBase& rhs)
   return(*this);
 }
 
+MatrixBase& MatrixBase::operator-=(const MatrixBase& rhs)
+{
+  if(elements_>0){
+    for(size_t i = 0; i < rows_; ++i)
+      for(size_t j = 0; j < cols_; ++j)
+        matrix_[i][j] -= rhs.matrix_[i][j];
+  }
+  return(*this);
+}
+
 }}
