@@ -8,8 +8,8 @@ SAPT0::SAPT0(Options& options, boost::shared_ptr<PSIO> psio,
   print_header();
 
   maxiter_ = options_.get_int("MAXITER");
-  e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
-  d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
+  e_conv_ = options_.get_double("E_CONVERGE");
+  d_conv_ = options_.get_double("D_CONVERGE");
   no_response_ = options_.get_bool("NO_RESPONSE");
   aio_cphf_ = options_.get_bool("AIO_CPHF");
   aio_dfints_ = options_.get_bool("AIO_DFINTS");

@@ -86,8 +86,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     less than 10**(-n).  The default is 4 for energies and 7 for gradients. -*/
     options.add_int("CONVERGENCE", 4);
 
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 6);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-6);
 
     /*- Wavefunction type -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
@@ -599,10 +599,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
+<<<<<<< HEAD
     /*- How many digits after the decimal to converge the energy to -*/
     options.add_int("E_CONVERGE",10);
     /*- How many digits after the decimal to converge the density to -*/
     options.add_int("D_CONVERGE",7);
+=======
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE",1e-10);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE",1e-8);
+>>>>>>> 89ff2ea2b5169932a9e9564dbcf374fbea530639
     /*- Don't solve the CPHF equations -*/
     options.add_bool("NO_RESPONSE",false);
     /*- Use asynchronous I/O in the CPHF solver -*/
@@ -803,10 +810,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 8);
+    /*- The energy convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- The density convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-8);
     /*- Minimum absolute TEI value for seive -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
     /*- Minimum absolute S matrix value for DF-SCF exchange -*/
@@ -820,9 +827,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_PRINT", 0);
     /*- SAD Occupation Matrix Method -*/
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
-    /*- SAD Guess Convergence in E -*/
+    /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- SAD Guess Convergence in D -*/
+    /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
     /*- SAD Guess Maxiter -*/
     options.add_int("SAD_MAXITER", 50);
@@ -1432,10 +1439,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 12);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 12);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-12);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-12);
     /*- -*/
     options.add_int("MAXITER",100);
     /*- -*/
@@ -1675,10 +1682,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Parallel algoritmh? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 8);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
@@ -1687,10 +1694,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("BASIS","NONE");
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Convergence of CC energy -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- Convergence of cluster amplitudes (RMS change) -*/
-    options.add_int("T_CONVERGE", 8);
+    /*- Convergence of CC energy.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- Convergence of cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("T_CONVERGE", 1e-8);
     /*- Turn on DIIS -*/
     options.add_bool("DIIS",true);
     /*- Minimum DIIS vectors -*/
@@ -1969,7 +1976,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- QCHEM optimization criteria: maximum force.g -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
       /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);
