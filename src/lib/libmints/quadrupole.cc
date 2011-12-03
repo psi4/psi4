@@ -28,7 +28,7 @@ QuadrupoleInt::~QuadrupoleInt()
     delete[] buffer_;
 }
 
-SharedVector QuadrupoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+psi::SharedVector QuadrupoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
 {
     boost::shared_ptr<Vector> sret(new Vector(6));
     double *ret = sret->pointer();

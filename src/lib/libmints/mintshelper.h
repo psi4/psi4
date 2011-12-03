@@ -97,6 +97,8 @@ public:
         return OperatorSymmetry(order, molecule_, integral_, factory_);
     }
 
+    /// Returns petite list that is capable of transforming AO basis functions (nbf) to SO's.
+    boost::shared_ptr<PetiteList> petite_list() const;
     /// Basis set being used.
     boost::shared_ptr<BasisSet> basisset() const;
     /// SO basis set being used.

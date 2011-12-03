@@ -7,6 +7,9 @@ castup1:      Test of SAD/Cast-up (mainly not dying due to file weirdness)
 cc1:          RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
 
+cc13:         cc-pVDZ UCCSD optimization of triplet methtylene, with Z-matrix input
+
+
 cc2:          6-31G** H2O Test CCSD energy, with Z-Matrix input
 
 
@@ -158,6 +161,9 @@ pywrap_db1:   Database calculation, so no molecule section in input file. Portio
 
 
 pywrap_db2:   Database calculation with psi4-generated input. Should not be used as a model input file but as a canary to avoid breaking database/input parser dependencies.
+
+
+rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
 
 
 rasci-h2o:    RASCI/6-31G** H2O Energy Point
