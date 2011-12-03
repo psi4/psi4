@@ -301,7 +301,11 @@ def run_detci(name, **kwargs):
     # Could we somehow do a check to see if SCF was run?
     # This would be useful of the user had to do something special with SCF to get
     # it to converge.
-    run_scf("scf", **kwargs);
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+        run_scf("scf", **kwargs)
+
     PsiMod.transqt2()
     return PsiMod.detci()
 
