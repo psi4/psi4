@@ -112,7 +112,7 @@ read_options(std::string name, Options &options){
         /*- Solver maximum iterations
          -*/
         options.add_int("SOLVER_MAXITER",100);
-        /*- Solver convergence threshold (max 2-norm) 
+        /*- Solver convergence threshold (max 2-norm).  See the note at the beginning of Section \ref{keywords}.
          -*/
         options.add_double("SOLVER_CONVERGENCE",1.0E-6);
         /*- DL Solver number of roots 

@@ -181,8 +181,8 @@ to produce new molecular orbitals, from which a new density is computed. This
 procedure is continued until either convergence is reached or a preset maximum
 number of iterations is exceeded. Convergence is determined by both change in
 energy and root-mean-square change in density matrix values, which must be below
-the user-specified $10^{\mathtt{-E\_CONVERGE}}$ and
-$10^{-\mathtt{D\_CONVERGE}}$, respectively. The maximum number of iterations is
+the user-specified $\mathtt{E\_CONVERGE}$ and
+$\mathtt{D\_CONVERGE}$, respectively. The maximum number of iterations is
 specified by the \texttt{MAXITER} option. It should be noted that SCF is a
 chaotic process, and, as such, often requires careful selection of initial
 orbitals and damping during iterations to ensure convergence. This is
@@ -284,7 +284,7 @@ PSEUDOSPECTRAL, POISSON, L\_DF, CD, 1C\_CD \\
          & & \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.7\textwidth}}
-         D\_CONVERGE & -Log10 of the density convergence criterion \\
+         D\_CONVERGE & The density convergence criterion \\
 \end{tabular*}
 \begin{tabular*}{\textwidth}[tb]{p{0.3\textwidth}p{0.35\textwidth}p{0.35\textwidth}}
            & {\bf Type:} integer &  {\bf Default:} 8\\

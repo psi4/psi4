@@ -32,6 +32,7 @@ public:
   // Overloaded operators
   BlockMatrix& operator=(BlockMatrix& rhs);
   BlockMatrix& operator+=(const BlockMatrix& rhs);
+  BlockMatrix& operator-=(const BlockMatrix& rhs);
   friend double dot(BlockMatrix* A,BlockMatrix* B);
 
   void        print();
