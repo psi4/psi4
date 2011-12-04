@@ -1,16 +1,18 @@
 import PsiMod
 import re
 import os
+import input
 import math
 import warnings
+import pickle
 from driver import *
 from molecule import *
 from text import *
+from collections import defaultdict
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **kwargs):
-    function2call = funcarg
-    return function2call(**kwargs)
+    return funcarg(**kwargs)
 
 ###################
 ##  Start of cp  ##
@@ -197,17 +199,8 @@ def database(name, db_name, **kwargs):
         * subset = [1,2,5] | ['1','2','5'] | ['BzMe-3.5', 'MeMe-5.0'] | etc.
             Specify a list of database members to run. Consult the database python files for available 
             molecular systems.
-
-    Examples:
-    ---------
-    A database job requires, at a minimum, the basis set to be set in its input file. The following
-    are valid example calls for the database() wrapper.
-        database('scf','S22')
     """
 
-    import input
-    import pickle
-    from collections import defaultdict
     #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
@@ -762,7 +755,45 @@ db = database
 ##  Start of Complete Basis Set  ##
 ###################################
 
-def complete_basis_set(**kwargs):
+def complete_basis_set(name, **kwargs):
+    """Wrapper to define an energy method with basis set extrapolations and delta corrections.
+
+    A CBS energy method is defined in four sequential stages (scf, corl, delta, delta2) covering 
+    treatment of the reference total energy, the correlation energy, a delta correction to the 
+    correlation energy, and a second delta correction. Each is activated by its stage_wfn keyword 
+    and is only allowed if all preceding stages are active.
+
+    Required Arguments:
+    -------------------
+    * name (or unlabeled first argument) indicates the computational method for the correlation energy, unless
+        only reference step to be performed, in which case should be 'scf'. May be overruled if wfn keywords given.
+
+    Optional Arguments:  --> 'default_option' <-- 
+    ------------------
+    Energy Methods:  Indicates the energy method employed for each stage
+    * corl_wfn          = 'mp2' | 'ccsd(t)' | etc.
+    * delta_wfn         = 'ccsd' | 'ccsd(t)' | etc.
+    * delta_wfn_lesser  = --> 'mp2' <-- | 'ccsd' | etc.
+    * delta2_wfn        = 'ccsd' | 'ccsd(t)' | etc.
+    * delta2_wfn_lesser = --> 'mp2' <-- | 'ccsd(t)' | etc.
+
+    Basis Sets:  Indicates the single or sequence of basis sets employed for each stage.
+    * scf_basis    = --> corl_basis <-- | 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+    * corl_basis   = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+    * delta_basis  = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+    * delta2_basis = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+
+    Schemes:  Indicates the formula for performing basis set extrapolation (or using the single best
+        basis with highest_1) for each stage.
+    * scf_scheme    = --> highest_1 <-- | scf_xtpl_helgaker_3
+    * corl_scheme   = --> highest_1 <-- | corl_xtpl_helgaker_2
+    * delta_scheme  = --> highest_1 <-- | corl_xtpl_helgaker_2
+    * delta2_scheme = --> highest_1 <-- | corl_xtpl_helgaker_2
+    """
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name.lower()
 
     # Establish function to call (only energy makes sense for cbs)
     if not('cbs_func' in kwargs):
