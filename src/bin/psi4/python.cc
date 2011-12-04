@@ -313,17 +313,11 @@ double py_psi_cctriples()
 double py_psi_detci()
 {
     py_psi_prepare_options_for_module("DETCI");
-
-    // DETCI: Uncomment
     if (detci::detci(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
-    fprintf(outfile,"\n\nWorld's slowest quantum method goes here.\n\n");
-    fflush(outfile);
-
-    return 0.0;
 }
 
 double py_psi_cchbar()
