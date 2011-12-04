@@ -1347,6 +1347,8 @@ def complete_basis_set(**kwargs):
     if not b_user_wfn:
         PsiMod.revoke_global_option_changed('WFN')
 
+    PsiMod.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    PsiMod.set_variable('CBS CORRELATION ENERGY', finalenergy-GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CBS TOTAL ENERGY', finalenergy)
     PsiMod.set_variable('CURRENT ENERGY', finalenergy)
     return finalenergy
