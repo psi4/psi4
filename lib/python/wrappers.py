@@ -41,13 +41,14 @@ def cp(name, **kwargs):
     if (kwargs.has_key('check_bsse')):
         check_bsse = kwargs['check_bsse']
 
-    molecule = PsiMod.get_active_molecule() 
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
- 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-    
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
     ri_ints_io = PsiMod.get_option('RI_INTS_IO')
     PsiMod.set_global_option('RI_INTS_IO','SAVE')
     activate(molecule) 
@@ -255,8 +256,6 @@ def database(name, db_name, **kwargs):
     user_memory = PsiMod.get_memory()
 
     user_molecule = PsiMod.get_active_molecule()
-    if not user_molecule:
-        raise ValueNotSet("No molecule found.")
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -461,8 +460,6 @@ def database(name, db_name, **kwargs):
         # extra definition of molecule so that logic in building commands string has something to act on
         exec GEOS[rgt]
         molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("No molecule found.")
 
         # build string of title banner
         banners = ''
@@ -838,12 +835,13 @@ def complete_basis_set(name, **kwargs):
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_option('WFN')
 
-    molecule = PsiMod.get_active_molecule() 
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
- 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # Establish method for correlation energy
     if (kwargs.has_key('name')):

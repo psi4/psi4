@@ -39,12 +39,14 @@ procedures = {
         }}
 
 def energy(name, **kwargs):
+
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
-    if (kwargs.has_key('bases')):
-        pass
-    if (kwargs.has_key('functional')):
-        pass
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     try:
         lowername = name.lower()
@@ -92,10 +94,13 @@ def gradient(name, **kwargs):
     if not func:
         raise Exception('Function \'%s\' does not exist to be called by wrapper optimize.' % (func.__name__))
 
-    # Start handling the other options we support
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
-        # Make sure the molecule the user provided is the active one
         activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # dertype currently holds the type of calculation we need to run
 
@@ -114,12 +119,6 @@ def gradient(name, **kwargs):
         # If not, perform finite difference of energies
         info = "Performing finite difference calculations"
         print info
-
-        # Obtain the active molecule and update it.
-        molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("no molecule found")
-        molecule.update_geometry()
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_1_0()
@@ -159,8 +158,14 @@ def gradient(name, **kwargs):
 
 def hessian(name, **kwargs):
     lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     dertype = 2
     if (kwargs.has_key('dertype')):
@@ -182,12 +187,6 @@ def hessian(name, **kwargs):
         # Ok, we're doing frequencies by gradients
         info = "Performing finite difference by gradient calculations"
         print info
-
-        # Obtain the active molecule and update it
-        molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("no molecule found")
-        molecule.update_geometry()
 
         func = procedures['gradient'][lowername]
 
@@ -220,12 +219,6 @@ def hessian(name, **kwargs):
         # If not, perform finite difference of energies
         info = "Performing finite difference calculations"
         print info
-
-        # Obtain the active molecule and update it.
-        molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("no molecule found")
-        molecule.update_geometry()
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0()
@@ -262,6 +255,15 @@ def hessian(name, **kwargs):
 
 def response(name, **kwargs):
     lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
+    if (kwargs.has_key('molecule')):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
     try:
         return procedures['response'][lowername](lowername, **kwargs)
     except KeyError:

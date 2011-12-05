@@ -41,7 +41,7 @@ db('mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total e
 compare_values(ref_DB_CBS_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 7, "[3] Wrapper database calling complete_basis_set calling energy")  #TEST
 
 # cbs(energy())  use first compare_values for h2 geom above, second for h2 geom after optimization in [1]
-cbs(corl_wfn='mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
+cbs('mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
 #compare_values(ref_CBS_E, get_variable('CBS TOTAL ENERGY'), 7, "[4] Wrapper complete_basis_set calling energy")  #TEST
 compare_values(ref_CBS_E_postopt, get_variable('CBS TOTAL ENERGY'), 7, "[4] Wrapper complete_basis_set calling energy")  #TEST
 
