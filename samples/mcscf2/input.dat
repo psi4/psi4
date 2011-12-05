@@ -11,11 +11,13 @@ set basis cc-pVDZ
 
 set mcscf {
     reference   twocon
-    convergence 12
-    ndiis       3
+    e_converge  11
+    ci_diis     on
+    d_converge  11
+    ndiis       4
     docc        [10, 1]
     socc        [ 0, 2]
-    maxiter 100
+    maxiter     120
 }
 
 thisenergy = run_mcscf()
