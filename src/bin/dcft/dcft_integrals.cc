@@ -251,7 +251,6 @@ DCFTSolver::build_denominators()
 
     //Alpha Virtual
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('V'), ID('V'), "F <V|V>");
-
     dpd_file2_mat_init(&F);
     offset = 0;
     for(int h = 0; h < nirrep_; ++h){
@@ -283,6 +282,7 @@ DCFTSolver::build_denominators()
 
     //Off-diagonal elements of the Fock matrix
     //Beta Occupied
+
     dpd_file2_init(&F, PSIF_LIBTRANS_DPD, 0, ID('o'), ID('o'), "F <o|o>");
     dpd_file2_mat_init(&F);
     offset = 0;
