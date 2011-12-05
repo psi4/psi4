@@ -66,7 +66,7 @@ namespace psi {
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
-    namespace cceom      { PsiReturnType cceom(Options&); }
+    namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
     namespace findif     {
       std::vector< SharedMatrix > fd_geoms_1_0(Options &);
