@@ -12,6 +12,7 @@ ref_OPT_E_1 = -1.122959828171  #TEST
 ref_DB_OPT_E_BASIC = 37075.200420269888  #TEST
 ref_DB_OPT_E_S22 = 4.636003565957  #TEST
 ref_OPT_CBS_E_0 = -1.174446301062  #TEST
+ref_CDS_CBS_E_0 = -1.17526597  #TEST
 
 molecule h2 {
     H
@@ -60,6 +61,10 @@ compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[7] Wrapper opti
 # database(opt(energy()))
 db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
 compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 4, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
+
+# alias(cbs(energy()))
+sherrillgroup_gold_standard()
+compare_values(ref_CDS_CBS_E_0, get_variable("CBS TOTAL ENERGY"), 6, '[9] Aliased wrapper calling cbs')  #TEST
 
 clean()
 

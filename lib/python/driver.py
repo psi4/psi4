@@ -142,7 +142,7 @@ def gradient(name, **kwargs):
 
             # Wrap any positional arguments into kwargs (for intercalls among wrappers)
             if not('name' in kwargs) and name:
-                kwargs['name'] = name.lower()
+                kwargs['name'] = lowername
 
             # Perform the energy calculation
             #E = func(lowername, **kwargs)
