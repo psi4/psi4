@@ -24,7 +24,6 @@ procedures = {
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'eom-ccsd'      : run_eom_ccsd,
-            'eom_ccsd'      : run_eom_ccsd,
             'detci'         : run_detci
         },
         'gradient' : {
@@ -39,6 +38,7 @@ procedures = {
         }}
 
 def energy(name, **kwargs):
+    lowername = name.lower()
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
@@ -49,12 +49,13 @@ def energy(name, **kwargs):
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     try:
-        lowername = name.lower()
         return procedures['energy'][lowername](lowername,**kwargs)
     except KeyError:
-        raise SystemExit('Energy Method %s Not Defined' %(name))
+        raise ValidationError('Energy method %s not available.' % (lowername))
 
 def gradient(name, **kwargs):
+    lowername = name.lower()
+
     # Set some defaults
     func = energy
     lowername = name.lower()
@@ -78,7 +79,7 @@ def gradient(name, **kwargs):
         elif (option == 'FIRST'):
             dertype = 1
         else:
-            raise SystemExit("Value of DERTYPE option is not NONE or FIRST.")
+            raise ValidationError("Value of DERTYPE option is not NONE or FIRST.")
 
     # 3. user passes dertype into this function
     if (kwargs.has_key('dertype')):
@@ -92,7 +93,7 @@ def gradient(name, **kwargs):
         dertype = 0
         func = kwargs['opt_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper optimize.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper optimize.' % (func.__name__))
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
@@ -106,7 +107,7 @@ def gradient(name, **kwargs):
 
     # First, check the values of dertype
     if (dertype < 0 and dertype > 1):
-        raise SystemExit("The internal dertype is either less than 0 or greater than 1")
+        raise ValidationError("The internal dertype is either less than 0 or greater than 1.")
 
     # Does an analytic procedure exist for the requested method?
     if (dertype == 1):
@@ -267,7 +268,7 @@ def response(name, **kwargs):
     try:
         return procedures['response'][lowername](lowername, **kwargs)
     except KeyError:
-        raise SystemExit('Response Method %s Not Defined' %(lowername))
+        raise ValidationError('Response method %s not available.' %(lowername))
 
 def optimize(name, **kwargs):
     for n in range(PsiMod.get_option("GEOM_MAXITER")):
