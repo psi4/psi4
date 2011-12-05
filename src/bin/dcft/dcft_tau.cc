@@ -229,12 +229,6 @@ DCFTSolver::compute_tau_squared()
         }
     }
 
-    a_tau_mo->print();
-    b_tau_mo->print();
-
-    dpd_file2_print(&T_OO, outfile);
-    dpd_file2_print(&T_VV, outfile);
-
     dpd_file2_close(&T_OO);
     dpd_file2_close(&T_oo);
     dpd_file2_close(&T_VV);
@@ -283,9 +277,6 @@ DCFTSolver::compute_tau_squared()
     // Back-transform Tau*Tau to the MO basis
     a_tautau_->back_transform(a_tau_evecs);
     b_tautau_->back_transform(b_tau_evecs);
-
-    a_tautau_->print();
-    b_tautau_->print();
 
 }
 
