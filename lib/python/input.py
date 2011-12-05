@@ -396,7 +396,7 @@ def process_input(raw_input):
         fh.close()
 
     blank_mol = 'geometry("""\n'
-    blank_mol += 'X\n'
+    blank_mol += '0 1\nH\nH 1 0.74\n'
     blank_mol += '""","blank_molecule_psi4_yo")\n'
 
     temp = imports + psirc + blank_mol + temp

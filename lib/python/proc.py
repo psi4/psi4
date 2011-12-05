@@ -7,25 +7,12 @@ from molecule import *
 from text import *
 
 def run_dcft(name, **kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-      molecule = kwargs.pop('molecule')
-
-    if not molecule:
-      raise ValueNotSet("no molecule found")
 
     PsiMod.scf()
     return PsiMod.dcft()
 
 def run_scf(name, **kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
     return scf_helper(name, **kwargs)
 
 def run_scf_gradient(name, **kwargs):
@@ -34,12 +21,6 @@ def run_scf_gradient(name, **kwargs):
     PsiMod.deriv()
 
 def run_mcscf(**kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-      molecule = kwargs.pop('molecule')
-
-    if not molecule:
-      raise ValueNotSet("no molecule found")
 
     return PsiMod.mcscf()
 
@@ -53,9 +34,9 @@ def scf_helper(name, **kwargs):
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
 
+    # why is the cast_up keyword doubled
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
-
 
     precallback = None
     if (kwargs.has_key('precallback')):
@@ -135,16 +116,6 @@ def scf_helper(name, **kwargs):
 
 def run_mp2(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-    
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-   
     PsiMod.set_global_option('WFN', 'MP2')
 
     # Bypass routine scf if user did something special to get it to converge
@@ -175,16 +146,6 @@ def run_mp2_gradient(name, **kwargs):
     PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_ccsd(name, **kwargs):
-
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
@@ -217,16 +178,6 @@ def run_ccsd_gradient(name, **kwargs):
 
 def run_ccsd_t(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
     PsiMod.set_global_option('WFN', 'CCSD_T')
 
     # The new CCEnergyWavefunction object that is used to wrap ccenergy
@@ -234,16 +185,6 @@ def run_ccsd_t(name, **kwargs):
     return run_ccsd(name, **kwargs)
 
 def run_ccsd_response(name, **kwargs):
-
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
 
     run_ccsd("ccsd", **kwargs)
     PsiMod.set_global_option('WFN', 'CCSD')
@@ -259,16 +200,6 @@ def run_ccsd_response(name, **kwargs):
 
 def run_eom_ccsd(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
     PsiMod.set_global_option('WFN', 'EOM_CCSD')
 
     run_ccsd("ccsd", **kwargs)
@@ -283,16 +214,6 @@ def run_eom_ccsd(name, **kwargs):
     return returnvalue
 
 def run_detci(name, **kwargs):
-
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
 
     PsiMod.set_global_option('WFN', 'DETCI')
 
@@ -375,12 +296,6 @@ def run_dfcc(name, **kwargs):
 def run_mp2c(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
     molecule.update_geometry()
     monomerA = molecule.extract_subsets(1,2)
     monomerA.set_name("monomerA")
@@ -454,11 +369,6 @@ def run_mp2c(name, **kwargs):
 def run_sapt(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
 
     sapt_basis = "dimer"
     if (kwargs.has_key('sapt_basis')):
@@ -537,12 +447,6 @@ def run_sapt(name, **kwargs):
 def run_sapt_ct(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
     molecule.update_geometry()
     monomerA = molecule.extract_subsets(1,2)
     monomerA.set_name("monomerA")
