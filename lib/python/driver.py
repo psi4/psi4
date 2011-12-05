@@ -47,6 +47,8 @@ def energy(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
+    # Line below needed when passing in molecule as a keyword argument
+    #    but causes mints2 test case to fail
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     try:
