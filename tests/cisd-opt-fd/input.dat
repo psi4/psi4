@@ -1,0 +1,29 @@
+#! H2O CISD/6-31G** Optimize Geometry by Energies
+
+refnuc   =   9.1938886868  #TEST
+refscf   = -76.0231440654  #TEST
+refci    = -76.2231165692  #TEST
+refcorr  = refci - refscf  #TEST
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set globals {
+  wfn detci
+  basis 6-31G**
+  conv_max_force 0.000001
+  conv_max_disp  0.0001
+}
+
+thisenergy = optimize('detci', dertype = 0)
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
+clean()
+

@@ -48,26 +48,27 @@ namespace opt {
 }
 
 namespace psi {
-    namespace mints     { PsiReturnType mints(Options &);    }
-    namespace deriv     { PsiReturnType deriv(Options &);    }
-    namespace scf       { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
-    namespace dfmp2     { PsiReturnType dfmp2(Options &);    }
-    namespace dfcc      { PsiReturnType dfcc(Options &);     }
-    namespace sapt      { PsiReturnType sapt(Options &);     }
-    namespace dcft      { PsiReturnType dcft(Options &);     }
-    namespace mcscf     { PsiReturnType mcscf(Options &);    }
-    namespace psimrcc   { PsiReturnType psimrcc(Options &);  }
-    namespace transqt   { PsiReturnType transqt(Options &);  }
-    namespace transqt2  { PsiReturnType transqt2(Options &); }
-    namespace ccsort    { PsiReturnType ccsort(Options&);    }
-    namespace lmp2      { PsiReturnType lmp2(Options&);      }
-    namespace cctriples { PsiReturnType cctriples(Options&); }
-    namespace cchbar    { PsiReturnType cchbar(Options&);    }
-    namespace cclambda  { PsiReturnType cclambda(Options&);  }
-    namespace ccdensity { PsiReturnType ccdensity(Options&); }
+    namespace mints      { PsiReturnType mints(Options &);    }
+    namespace deriv      { PsiReturnType deriv(Options &);    }
+    namespace scf        { PsiReturnType scf(Options &, PyObject* pre, PyObject* post);   }
+    namespace dfmp2      { PsiReturnType dfmp2(Options &);    }
+    namespace dfcc       { PsiReturnType dfcc(Options &);     }
+    namespace sapt       { PsiReturnType sapt(Options &);     }
+    namespace dcft       { PsiReturnType dcft(Options &);     }
+    namespace mcscf      { PsiReturnType mcscf(Options &);    }
+    namespace psimrcc    { PsiReturnType psimrcc(Options &);  }
+    namespace transqt    { PsiReturnType transqt(Options &);  }
+    namespace transqt2   { PsiReturnType transqt2(Options &); }
+    namespace ccsort     { PsiReturnType ccsort(Options&);    }
+    namespace lmp2       { PsiReturnType lmp2(Options&);      }
+    namespace cctriples  { PsiReturnType cctriples(Options&); }
+    namespace cchbar     { PsiReturnType cchbar(Options&);    }
+    namespace cclambda   { PsiReturnType cclambda(Options&);  }
+    namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
-    namespace detci     { PsiReturnType detci(Options&);     }
-    namespace findif    {
+    namespace cceom      { PsiReturnType cceom(Options&);     }
+    namespace detci      { PsiReturnType detci(Options&);     }
+    namespace findif     {
       std::vector< SharedMatrix > fd_geoms_1_0(Options &);
       std::vector< SharedMatrix > fd_geoms_2_0(Options &);
       std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
@@ -312,17 +313,11 @@ double py_psi_cctriples()
 double py_psi_detci()
 {
     py_psi_prepare_options_for_module("DETCI");
-
-    // DETCI: Uncomment
     if (detci::detci(Process::environment.options) == Success) {
         return Process::environment.globals["CURRENT ENERGY"];
     }
     else
         return 0.0;
-    fprintf(outfile,"\n\nWorld's slowest quantum method goes here.\n\n");
-    fflush(outfile);
-
-    return 0.0;
 }
 
 double py_psi_cchbar()
@@ -350,6 +345,13 @@ double py_psi_ccresponse()
 {
     py_psi_prepare_options_for_module("CCRESPONSE");
     ccresponse::ccresponse(Process::environment.options);
+    return 0.0;
+}
+
+double py_psi_cceom()
+{
+    py_psi_prepare_options_for_module("CCEOM");
+    cceom::cceom(Process::environment.options);
     return 0.0;
 }
 
@@ -395,6 +397,13 @@ void py_psi_print_out(std::string s)
     fprintf(outfile,"%s",s.c_str());
 }
 
+/**
+ * @return whether key describes a convergence threshold or not
+ */
+bool specifies_convergence(std::string const & key){
+    return (key.find("CONV") != key.npos);
+}
+
 bool check_for_basis(std::string const & name, std::string const & type)
 {
     if (type.find("BASIS") != type.npos) {
@@ -437,7 +446,10 @@ bool py_psi_set_option_int(std::string const & module, std::string const & key, 
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options.use(nonconst_key);
 
-    if (data.type() == "boolean") {
+    if(data.type() == "double" && specifies_convergence(nonconst_key)){
+        double val = pow(10.0, -value);
+        Process::environment.options.set_double(module, nonconst_key, val);
+    }else if (data.type() == "boolean") {
         Process::environment.options.set_bool(module, nonconst_key, value ? true : false);
     }else{
         Process::environment.options.set_int(module, nonconst_key, value);
@@ -492,7 +504,10 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
     string nonconst_key = boost::to_upper_copy(key);
     Data& data = Process::environment.options.use(nonconst_key);
 
-    if (data.type() == "boolean") {
+    if( data.type() == "double" && specifies_convergence(nonconst_key)){
+        double val = pow(10.0, -value);
+        Process::environment.options.set_global_double(nonconst_key, val);
+    }else if (data.type() == "boolean") {
         Process::environment.options.set_global_bool(nonconst_key, value ? true : false);
     }else{
         Process::environment.options.set_global_int(nonconst_key, value);
@@ -916,6 +931,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("cclambda", py_psi_cclambda);
     def("ccdensity", py_psi_ccdensity);
     def("ccresponse", py_psi_ccresponse);
+    def("cceom", py_psi_cceom);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes

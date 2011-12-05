@@ -11,8 +11,8 @@ SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
   psio_->open(PSIF_SAPT_AMPS,PSIO_OPEN_NEW);
 
   maxiter_ = options_.get_int("MAXITER");
-  e_conv_ = pow(10.0,-options_.get_int("E_CONVERGE"));
-  d_conv_ = pow(10.0,-options_.get_int("D_CONVERGE"));
+  e_conv_ = options_.get_double("E_CONVERGE");
+  d_conv_ = options_.get_double("D_CONVERGE");
 
   nat_orbs_ = options.get_bool("NAT_ORBS");
   nat_orbs_t2_ = options.get_bool("NAT_ORBS_T2");
@@ -202,6 +202,7 @@ void SAPT2::print_results()
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt2_;
+  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 void SAPT2::df_integrals()

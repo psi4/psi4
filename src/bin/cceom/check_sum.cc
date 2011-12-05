@@ -5,6 +5,7 @@
 #include <cstdio>
 #include <cmath>
 #include <cstring>
+#include <libpsio/psio.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
@@ -20,7 +21,7 @@ extern double norm_C_full(double C0, dpdfile2 *CME, dpdfile2 *Cme,
 extern double norm_C_rhf(dpdfile2 *CME, dpdbuf4 *CMnEf, dpdbuf4 *CMnfE);
 extern double norm_C_rhf_full(double C0, dpdfile2 *CME, dpdbuf4 *CMnEf, dpdbuf4 *CMnfE);
 
-void check_sum(char *term_lbl, int index, int irrep) {
+void check_sum(const char *term_lbl, int index, int irrep) {
   int save_params_ref;
   dpdfile2 Sia, SIA;
   dpdbuf4 SIJAB, Sijab, SIjAb, SIjbA;

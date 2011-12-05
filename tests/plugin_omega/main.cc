@@ -45,9 +45,9 @@ read_options(std::string name, Options &options)
         /*- Multiplier to use to backet omega (>1)
             -*/
         options.add_double("OMEGA_BRACKET_ALPHA", 2.0);
-        /*- Convergence threshold for omega, 10^-thresh
+        /*- Convergence threshold for omega, 10^-thresh.  See the note at the beginning of Section \ref{keywords}.
             -*/
-        options.add_int("OMEGA_CONVERGE", 3);
+        options.add_double("OMEGA_CONVERGE", 1e-3);
         /*- Interpolate Fock matrices at omega steps?
             -*/
         options.add_bool("OMEGA_GUESS_INTERPOLATE", true);

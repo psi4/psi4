@@ -100,10 +100,11 @@ Either
    * make doc [optional]
    * [do user configuration, see below]
 
-or, in the top-level psi4 directory,
+or, if you want to save your configuration options for a future compilation,
+then in the top-level psi4 directory,
 
-   * vi do-configure
-   * [edit with your configuration options, e.g., as below]
+   * [create a file like "do-configure" with your configuration options,
+      e.g., as below]
    * chmod u+x do-configure
    * cd obj
    * ../do-configure

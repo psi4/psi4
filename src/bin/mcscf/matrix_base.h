@@ -32,6 +32,7 @@ public:
   void    scale(double factor);
   void    transpose();
   MatrixBase& operator+=(const MatrixBase& rhs);
+  MatrixBase& operator-=(const MatrixBase& rhs);
   friend double dot(MatrixBase* A, MatrixBase* B);
 private:
   // Matrix size

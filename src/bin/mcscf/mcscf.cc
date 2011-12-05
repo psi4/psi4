@@ -30,10 +30,11 @@
 using namespace boost;
 
 namespace psi{
-MemoryManager* memory_manager = 0;
 MOInfoSCF*     moinfo_scf = 0;
 
 namespace mcscf{
+
+MemoryManager* memory_manager = 0;
 
 using namespace std;
 
@@ -50,7 +51,7 @@ PsiReturnType mcscf(Options& options)
 //  psiopp_ipv1_config(psio);
   boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
-  memory_manager  = new psi::MemoryManager();
+  memory_manager = new MemoryManager(Process::environment.get_memory());
 
   psio->open(PSIF_MCSCF,PSIO_OPEN_NEW);
   init_psi(options);
@@ -70,6 +71,7 @@ PsiReturnType mcscf(Options& options)
       moinfo_scf      = new psi::MOInfoSCF(options);
       wfn->compute_energy();
       Process::environment.globals["CURRENT ENERGY"] = wfn->reference_energy();
+      Process::environment.globals["CURRENT REFERENCE ENERGY"] = wfn->reference_energy();
       Process::environment.globals["SCF TOTAL ENERGY"] = wfn->reference_energy();
   }else if(options.get_str("REFERENCE") == "MCSCF"){
       fprintf(outfile,"\n\nREFERENCE = MCSCF not implemented yet");

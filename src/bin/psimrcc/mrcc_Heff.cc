@@ -5,6 +5,7 @@
 #include "blas.h"
 #include "debugging.h"
 #include <libutil/libutil.h>
+#include <psi4-dec.h>
 
 #include <boost/shared_ptr.hpp>
 #include <libchkpt/chkpt.hpp>
@@ -57,7 +58,8 @@ bool CCMRCC::build_diagonalize_Heff(int cycle, double time)
   print_mrccsd_energy(cycle);
   if(converged){
     print_eigensystem(moinfo->get_nrefs(),Heff,right_eigenvector);
-    _default_chkpt_lib_->wt_etot(current_energy);
+    Process::environment.globals["CURRENT ENERGY"]    = current_energy;
+    Process::environment.globals["MRCC TOTAL ENERGY"] = current_energy;
   }
   return(converged);
 }

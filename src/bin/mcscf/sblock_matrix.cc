@@ -72,6 +72,13 @@ SBlockMatrix& SBlockMatrix::operator+= (SBlockMatrix& src)
   return *this;
 }
 
+SBlockMatrix& SBlockMatrix::operator-= (SBlockMatrix& src)
+{
+  check("operator-=");  src.check("operator-=");
+  *(block_matrix_) -= *(src.block_matrix_);
+  return *this;
+}
+
 SBlockMatrix& SBlockMatrix::operator= (SBlockMatrix& src)
 {
   check("operator=");  src.check("operator=");

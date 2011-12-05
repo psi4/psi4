@@ -310,6 +310,7 @@ struct calcinfo {
    int **ras_orbs[4];    /* ras_orbs[ras][irr][cnt] gives an orbital number */
    int max_orbs_per_irrep; /* maximum orbials per irrep fzv not included */
    int max_pop_per_irrep;/* maximum populated orbitals per irrep fzv included */
+   int sigma_initialized; /* has sigma_init been called yet? */
    };
 
 
@@ -335,9 +336,9 @@ struct params {
    int istop;        /* stop after setting up CI space */
    int print_lvl;    /* print verbosity level */ 
    int print_ciblks; /* print a summary of the CI blocks? */
-   int convergence;  /* convergence, 10^-n, on RMS of the CI update vector */
+   double convergence;  /* convergence on RMS of the CI update vector */
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
-   int energy_convergence;  /* convergence, 10^-n, on CI energy */
+   double energy_convergence;  /* convergence on CI energy */
    int oei_file;     /* file number for one-electron integrals */
    int tei_file;     /* file number for two-electron integrals */
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */

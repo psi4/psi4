@@ -44,8 +44,7 @@ namespace boost {
 template<class T> class shared_ptr;
 }
 
-typedef unsigned long int ULI;
-ULI Position(ULI i,ULI j);
+long int Position(long int i,long int j);
 
 // gpu ccsd class
 namespace psi{
@@ -55,7 +54,7 @@ namespace psi{
   /**
     * get the address of an element somewhere in a file.
    */
-  psio_address psio_get_address(psio_address start, ULI shift);
+  psio_address psio_get_address(psio_address start, long int shift);
 
 
 class CoupledCluster{
@@ -70,7 +69,7 @@ class CoupledCluster{
       * memory or for distribution among many processors 
      */
     void DefineTasks();
-    ULI ncctasks;
+    long int ncctasks;
     /**
       * CCSD Tasks parameters.  for terms that are tiled, the
       * let the task know which tile it should be working on.
@@ -147,12 +146,12 @@ class CoupledCluster{
     /**
       * Update t1
       */
-    void UpdateT1(ULI iter);
+    void UpdateT1(long int iter);
 
     /**
       * Update t2 - returns the energy for that iteration
       */
-    double UpdateT2(ULI iter);
+    double UpdateT2(long int iter);
 
     /**
       * some N^6 CC diagrams.  most of these can be
@@ -172,7 +171,7 @@ class CoupledCluster{
       * intermediate costs you 2o^3v^3.  using it costs
       * o^3v^3.  can be tiled accross multiple nodes.
       */
-    ULI niabjtasks,niabjtiles,iabjtilesize,lastiabjtile;
+    long int niabjtasks,niabjtiles,iabjtilesize,lastiabjtile;
     void Distribute_I2iabj(CCTaskParams params);
     void I2iabj_BuildIntermediate(CCTaskParams params);
     void I2iabj_BuildIntermediate1(CCTaskParams params);
@@ -184,7 +183,7 @@ class CoupledCluster{
       * intermediate costs you o^3v^3.  using it costs
       * 2o^3v^3.  can be tiled accross multiple nodes.
       */
-    ULI niajbtasks,niajbtiles,iajbtilesize,lastiajbtile;
+    long int niajbtasks,niajbtiles,iajbtilesize,lastiajbtile;
     void Distribute_I2iajb(CCTaskParams params);
     void I2iajb_BuildIntermediate(CCTaskParams params);
     void I2iajb_UseIntermediate1(CCTaskParams params);
@@ -199,21 +198,21 @@ class CoupledCluster{
     /**
       * DIIS stuff
       */
-    void DIIS(double*c,ULI nvec,ULI n);
-    void DIISOldVector(ULI iter,int diis_iter);
+    void DIIS(double*c,long int nvec,long int n);
+    void DIISOldVector(long int iter,int diis_iter);
     double DIISErrorVector(int diis_iter);
     void DIISNewAmplitudes();
-    ULI maxdiis;
+    long int maxdiis;
     double*diisvec;
 
     /**
       * basic parameters
       */
-    ULI ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,memory;
+    long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,memory;
     int maxiter,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs;
     double conv,*oei,*tei,*Fock,*eps;
     boost::shared_ptr<Vector> eps_test;
-    double escf,enuc,efzc;
+    double escf,enuc,efzc,emp2,eccsd;
 
     /**
       * integral arrays.  i don't actually use any of these anymore, but
@@ -235,9 +234,9 @@ class CoupledCluster{
       * as well.
       */
     void DefineTilingCPU();
-    ULI ovtilesize,lastovtile,lastov2tile,ov2tilesize;
-    ULI tilesize,lasttile;
-    int ntiles,novtiles,nov2tiles;
+    long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
+    long int tilesize,lasttile;
+    long int ntiles,novtiles,nov2tiles;
 
     /**
      * helper class definied in gpuhelper.h

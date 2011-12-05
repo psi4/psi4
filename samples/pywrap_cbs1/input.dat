@@ -1,0 +1,51 @@
+#! Various basis set extrapolation tests
+
+molecule {
+Li
+
+}
+
+set globals {
+    reference rohf
+}
+
+e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
+#e_cbs = basis_set_extrapolation("aug-cc-pV[X]Z")
+
+clean()
+
+
+# Here's another example
+molecule {
+H
+H 1 R
+
+R = 1
+}
+
+set globals {
+    reference rhf
+    guess core
+}
+
+#e_cbs = cbs(scf_basis='cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,corl_wfn='ccsd',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2)
+#e_cbs = bse("cc-pV[X]Z")
+e_cbs = cbs(corl_wfn='mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
+
+clean()
+
+
+# One final example
+molecule {
+He
+}
+
+set globals {
+    reference rhf
+}
+
+e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,corl_wfn='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
+#e_cbs = basis_set_extrapolate("aug-cc-pV[X]Z", largest_correlated=3)
+
+clean()
+

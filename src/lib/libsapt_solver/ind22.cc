@@ -164,7 +164,7 @@ double SAPT2::ind220_1(int intfile, const char *AAlabel, const char *ARlabel,
   psio_->read_entry(ampfile,tlabel,(char *) tARAR[0],
     sizeof(double)*aoccA*nvirA*aoccA*nvirA);
 
-  C_DGEMM('N','N',aoccA,nvirA*aoccA*nvirA,aoccA,-1.0,&(wBAA[foccA_][foccA_]),
+  C_DGEMM('N','N',aoccA,nvirA*aoccA*nvirA,aoccA,-1.0,&(wBAA[foccA][foccA]),
     noccA,tARAR[0],nvirA*aoccA*nvirA,1.0,xARAR[0],nvirA*aoccA*nvirA);
 
   C_DGEMM('N','T',aoccA*nvirA*aoccA,nvirA,nvirA,1.0,tARAR[0],nvirA,wBRR[0],
@@ -213,7 +213,7 @@ double SAPT2::ind220_2(int ampfile, const char *tlabel, double **iAR,
   C_DGEMM('N','T',aoccA,nvirA,nvirA,1.0,iAR[0],nvirA,wBRR[0],nvirA,
     0.0,zAR[0],nvirA);
 
-  C_DGEMM('N','N',aoccA,nvirA,aoccA,-1.0,&(wBAA[foccA_][foccA_]),noccA,
+  C_DGEMM('N','N',aoccA,nvirA,aoccA,-1.0,&(wBAA[foccA][foccA]),noccA,
     iAR[0],nvirA,1.0,zAR[0],nvirA);
 
   double energy = 4.0*C_DDOT((long int) aoccA*nvirA,tAR[0],1,zAR[0],1);
@@ -245,10 +245,10 @@ double SAPT2::ind220_3(int ampfile, const char *AAlabel, const char *RRlabel,
   double **xAA = block_matrix(aoccA,aoccA);
   double **xRR = block_matrix(nvirA,nvirA);
 
-  C_DGEMM('N','T',aoccA,aoccA,nvirA,1.0,iAR[0],nvirA,wBAR[foccA_],nvirA,
-    0.0,xAA[0],aoccA);
-  C_DGEMM('T','N',nvirA,nvirA,aoccA,1.0,iAR[0],nvirA,wBAR[foccA_],nvirA,
-    0.0,xRR[0],nvirA);
+  C_DGEMM('N','T',aoccA,aoccA,nvirA,1.0,iAR[0],nvirA,wBAR[foccA],nvirA,
+    0.0,xAA[0],aoccA); 
+  C_DGEMM('T','N',nvirA,nvirA,aoccA,1.0,iAR[0],nvirA,wBAR[foccA],nvirA,
+    0.0,xRR[0],nvirA); 
 
   double energy = 0.0;
 

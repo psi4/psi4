@@ -12,6 +12,7 @@ ref_OPT_E_1 = -1.122959828171  #TEST
 ref_DB_OPT_E_BASIC = 37075.200420269888  #TEST
 ref_DB_OPT_E_S22 = 4.636003565957  #TEST
 ref_OPT_CBS_E_0 = -1.174446301062  #TEST
+ref_CDS_CBS_E_0 = -1.17526597  #TEST
 
 molecule h2 {
     H
@@ -41,7 +42,7 @@ db('mp2','RGC10',func=cbs,subset=['HeHe-0.85','HeHe-1.0'],tabulate=['mp2 total e
 compare_values(ref_DB_CBS_E, get_variable('RGC10 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 7, "[3] Wrapper database calling complete_basis_set calling energy")  #TEST
 
 # cbs(energy())  use first compare_values for h2 geom above, second for h2 geom after optimization in [1]
-cbs(corl_wfn='mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
+cbs('mp2',corl_basis='cc-pv[dt]z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='3-21g',delta2_wfn='ccsd(t)',delta2_wfn_lesser='ccsd',delta2_basis='3-21g')
 #compare_values(ref_CBS_E, get_variable('CBS TOTAL ENERGY'), 7, "[4] Wrapper complete_basis_set calling energy")  #TEST
 compare_values(ref_CBS_E_postopt, get_variable('CBS TOTAL ENERGY'), 7, "[4] Wrapper complete_basis_set calling energy")  #TEST
 
@@ -59,7 +60,11 @@ compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[7] Wrapper opti
 
 # database(opt(energy()))
 db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
-compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 5, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
+compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 4, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
+
+# alias(cbs(energy()))
+sherrillgroup_gold_standard()
+compare_values(ref_CDS_CBS_E_0, get_variable("CBS TOTAL ENERGY"), 6, '[9] Aliased wrapper calling cbs')  #TEST
 
 clean()
 
