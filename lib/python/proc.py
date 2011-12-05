@@ -1,6 +1,7 @@
 import PsiMod
 import shutil
 import os
+import re
 import input
 from driver import *
 from molecule import *
@@ -215,7 +216,27 @@ def run_eom_ccsd(name, **kwargs):
 
 def run_detci(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'DETCI')
+    if (name.lower() == 'zapt'):
+        PsiMod.set_global_option('WFN', 'ZAPTN')
+        level = kwargs['level']
+        maxnvect = (level+1)/2 + (level+1)%2
+        if ((level+1)%2):
+           PsiMod.set_global_option('SAVE_MPN2', 2)
+        else:
+           PsiMod.set_global_option('SAVE_MPN2', 1)
+        PsiMod.set_global_option('MAXNVECT', maxnvect)
+    elif (name.lower() == 'mp'):
+	PsiMod.set_global_option('WFN', 'DETCI')
+        PsiMod.set_global_option('MPN', 1)
+        level = kwargs['level']
+        maxnvect = (level+1)/2 + (level+1)%2
+        if ((level+1)%2):
+           PsiMod.set_global_option('SAVE_MPN2', 2)
+        else:
+           PsiMod.set_global_option('SAVE_MPN2', 1)
+        PsiMod.set_global_option('MAXNVECT', maxnvect)
+    else:
+	PsiMod.set_global_option('WFN', 'DETCI')
 
     # Bypass routine scf if user did something special to get it to converge
     if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
@@ -226,6 +247,12 @@ def run_detci(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('MPN', 'FALSE')
+    PsiMod.revoke_global_option_changed('MPN')
+    PsiMod.set_global_option('MAXNVECT', 12)
+    PsiMod.revoke_global_option_changed('MAXNVECT')
+    PsiMod.set_global_option('SAVE_MPN2', 0)
+    PsiMod.revoke_global_option_changed('SAVE_MPN2')
 
     return returnvalue
 
