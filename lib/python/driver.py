@@ -1,4 +1,5 @@
 import PsiMod
+import input
 from proc import *
 from text import *
 
@@ -55,14 +56,11 @@ def energy(name, **kwargs):
 
 def gradient(name, **kwargs):
     lowername = name.lower()
-
-    # Set some defaults
-    func = energy
-    lowername = name.lower()
+    dertype = 1
 
     # Order of precedence:
     #    1. Default for wavefunction
-    #    2. Value obtained from liboptions, if user changed it
+    #    2. Value obtained from kwargs, if user changed it
     #    3. If user provides a custom 'func' use that
 
     # 1. set the default to that of the provided name
@@ -70,30 +68,38 @@ def gradient(name, **kwargs):
         dertype = 1
     elif (procedures['energy'].has_key(lowername)):
         dertype = 0
+        func = energy
 
-    # 2. Check if the user set the global option
-    if (PsiMod.has_option_changed('DERTYPE') and dertype != -1):
-        option = PsiMod.get_option('DERTYPE')
-        if (option == 'NONE'):
+    # 2. Check if the user passes dertype into this function
+    if (kwargs.has_key('dertype')):
+        opt_dertype = kwargs['dertype']
+
+        if input.der0th.match(str(opt_dertype)):
             dertype = 0
-        elif (option == 'FIRST'):
+            func = energy
+        elif input.der1st.match(str(opt_dertype)):
             dertype = 1
         else:
-            raise ValidationError("Value of DERTYPE option is not NONE or FIRST.")
+            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
 
-    # 3. user passes dertype into this function
-    if (kwargs.has_key('dertype')):
-        dertype = kwargs['dertype']
-
-    # 4. if the user provides a custom function THAT takes precendence
+    # 3. if the user provides a custom function THAT takes precendence
     if (kwargs.has_key('opt_func')) or (kwargs.has_key('func')):
         if (kwargs.has_key('func')):
             kwargs['opt_func'] = kwargs['func']
             del kwargs['func']
         dertype = 0
         func = kwargs['opt_func']
-    if not func:
-        raise ValidationError('Function \'%s\' does not exist to be called by wrapper optimize.' % (func.__name__))
+
+    # Summary validation
+    if (dertype == 1) and (procedures['gradient'].has_key(lowername)):
+        pass
+    elif (dertype == 0) and (func is energy) and (procedures['energy'].has_key(lowername)):
+        pass
+    elif (dertype == 0) and not(func is energy):
+        pass
+    else:
+        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.' 
+            % (lowername, dertype))
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
@@ -103,13 +109,7 @@ def gradient(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    # dertype currently holds the type of calculation we need to run
-
-    # First, check the values of dertype
-    if (dertype < 0 and dertype > 1):
-        raise ValidationError("The internal dertype is either less than 0 or greater than 1.")
-
-    # Does an analytic procedure exist for the requested method?
+    # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
