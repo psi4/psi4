@@ -223,6 +223,12 @@ BlockMatrix& BlockMatrix::operator+=(const BlockMatrix& rhs)
     *matrix_base_[h] += *rhs.matrix_base_[h];
   return(*this);
 }
+BlockMatrix& BlockMatrix::operator-=(const BlockMatrix& rhs)
+{
+  for(int h=0; h < nirreps_; ++h)
+    *matrix_base_[h] -= *rhs.matrix_base_[h];
+  return(*this);
+}
 
 }}
 

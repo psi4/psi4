@@ -94,6 +94,7 @@ void SCF::startup()
   C_t         .allocate("C_t",nirreps,sopi,sopi);
   C_T         .allocate("C_T",nirreps,sopi,sopi);
   Dc          .allocate("Dc",nirreps,sopi,sopi);
+  Dc_old          .allocate("Dc_old",nirreps,sopi,sopi);
   Feff_t      .allocate("Feff_t",nirreps,sopi,sopi);
   Feff_t_old  .allocate("Feff_t",nirreps,sopi,sopi);
   Feff_oAO    .allocate("Feff_oAO",nirreps,sopi,sopi);
@@ -143,6 +144,7 @@ void SCF::startup()
     allocate2(double,H_tcscf,nci,nci);
     for(int I = 0; I < nci; ++I){
       Dtc[I]    .allocate("Dtc[" + to_string(I) + "]",nirreps,sopi,sopi);
+      Dtc_old[I]    .allocate("Dtc_old[" + to_string(I) + "]",nirreps,sopi,sopi);
       Dsum[I]   .allocate("Dsum[" + to_string(I) + "]",nirreps,sopi,sopi);
       Ftc[I]    .allocate("Ftc[" + to_string(I) + "]",nirreps,sopi,sopi);
       Ftc_t[I]  .allocate("Ftc_t[" + to_string(I) + "]",nirreps,sopi,sopi);
@@ -169,6 +171,7 @@ void SCF::cleanup()
   if(C_t.is_allocated())        C_t.subtract_reference();
   if(C_T.is_allocated())        C_T.subtract_reference();
   if(Dc.is_allocated())         Dc.subtract_reference();
+  if(Dc_old.is_allocated())     Dc_old.subtract_reference();
   if(Do.is_allocated())         Do.subtract_reference();
   if(Fc.is_allocated())         Fc.subtract_reference();
   if(Fc_t.is_allocated())       Fc_t.subtract_reference();
@@ -191,6 +194,7 @@ void SCF::cleanup()
       if(Ftc[i].is_allocated())   Ftc[i].subtract_reference();
       if(Ftc_t[i].is_allocated()) Ftc_t[i].subtract_reference();
       if(Dtc[i].is_allocated())   Dtc[i].subtract_reference();
+      if(Dtc_old[i].is_allocated())   Dtc_old[i].subtract_reference();
       if(Dsum[i].is_allocated())  Dsum[i].subtract_reference();
   }
   for(int i = 0; i < maxdiis; ++i){
