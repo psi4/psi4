@@ -33,9 +33,9 @@ def cp(name, **kwargs):
             kwargs['cp_func'] = energy
     func = kwargs['cp_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
     if (func is db):
-        raise Exception('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
+        raise ValidationError('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
 
     check_bsse = False
     if (kwargs.has_key('check_bsse')):
@@ -220,9 +220,9 @@ def database(name, db_name, **kwargs):
             kwargs['db_func'] = energy
     func = kwargs['db_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper database.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper database.' % (func.__name__))
     if (func is cp):
-        raise Exception('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
+        raise ValidationError('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
 
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
@@ -233,7 +233,7 @@ def database(name, db_name, **kwargs):
         PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
         PsiMod.print_out('\nSearch path that was tried:\n')
         PsiMod.print_out(", ".join(map(str, sys.path)))
-        raise Exception("Python module loading problem for database " + str(db_name))
+        raise ValidationError("Python module loading problem for database " + str(db_name))
     else:
         dbse = database.dbse
         HRXN = database.HRXN
@@ -264,7 +264,7 @@ def database(name, db_name, **kwargs):
         try:
             database.ACTV_SA
         except AttributeError:
-            raise Exception('Database %s not suitable for non-supramolecular calculation.' % (db_name))
+            raise ValidationError('Database %s not suitable for non-supramolecular calculation.' % (db_name))
         else:
             symmetry_override = 1
             ACTV = database.ACTV_SA
@@ -291,7 +291,7 @@ def database(name, db_name, **kwargs):
     elif input.yes.match(str(db_symm)):
         pass
     else:
-        raise Exception('Symmetry mode \'%s\' not valid.' % (db_symm))
+        raise ValidationError('Symmetry mode \'%s\' not valid.' % (db_symm))
 
     #   Option mode of operation- whether db run in one job or files farmed out
     db_mode = 'continuous'
@@ -306,9 +306,9 @@ def database(name, db_name, **kwargs):
         if(kwargs.has_key('linkage')):
             db_linkage = kwargs['linkage']
         else:
-            raise Exception('Database execution mode \'reap\' requires a linkage option.')
+            raise ValidationError('Database execution mode \'reap\' requires a linkage option.')
     else:
-        raise Exception('Database execution mode \'%s\' not valid.' % (db_mode))
+        raise ValidationError('Database execution mode \'%s\' not valid.' % (db_mode))
 
     #   Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
     db_cp = 'no'
@@ -319,13 +319,13 @@ def database(name, db_name, **kwargs):
         try:
             database.ACTV_CP
         except AttributeError:
-            raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
+            raise ValidationError('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
         else:
             ACTV = database.ACTV_CP
     elif input.no.match(str(db_cp)):
         pass
     else:
-        raise Exception('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
+        raise ValidationError('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
 
     #   Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
     db_zpe = 'no'
@@ -333,11 +333,11 @@ def database(name, db_name, **kwargs):
         db_zpe = kwargs['zpe']
 
     if input.yes.match(str(db_zpe)):
-        raise Exception('Zero-point-correction mode \'yes\' not yet implemented.')
+        raise ValidationError('Zero-point-correction mode \'yes\' not yet implemented.')
     elif input.no.match(str(db_zpe)):
         pass
     else:
-        raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
+        raise ValidationError('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
 
     #   Option benchmark- whether error statistics computed wrt alternate reference energies
     db_benchmark = 'default'
@@ -350,7 +350,7 @@ def database(name, db_name, **kwargs):
             try:
                 getattr(database, 'BIND_' + db_benchmark)
             except AttributeError:
-                raise Exception('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
+                raise ValidationError('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
             else:
                 BIND = getattr(database, 'BIND_' + db_benchmark)
 
@@ -369,28 +369,28 @@ def database(name, db_name, **kwargs):
             try:
                 database.HRXN_SM
             except AttributeError:
-                raise Exception('Special subset \'small\' not available for database %s.' % (db_name))
+                raise ValidationError('Special subset \'small\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_SM
         elif re.match(r'^large$', db_subset, re.IGNORECASE):
             try:
                 database.HRXN_LG
             except AttributeError:
-                raise Exception('Special subset \'large\' not available for database %s.' % (db_name))
+                raise ValidationError('Special subset \'large\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_LG
         elif re.match(r'^equilibrium$', db_subset, re.IGNORECASE):
             try:
                 database.HRXN_EQ
             except AttributeError:
-                raise Exception('Special subset \'equilibrium\' not available for database %s.' % (db_name))
+                raise ValidationError('Special subset \'equilibrium\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_EQ
         else:
             try:
                 getattr(database, db_subset)
             except AttributeError:
-                raise Exception('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+                raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
             else:
                 HRXN = getattr(database, db_subset)
     else:
@@ -399,7 +399,7 @@ def database(name, db_name, **kwargs):
             if rxn in HRXN:
                 temp.append(rxn)
             else:
-                raise Exception('Subset element \'%s\' not a member of database %s.' % (str(rxn), db_name))
+                raise ValidationError('Subset element \'%s\' not a member of database %s.' % (str(rxn), db_name))
         HRXN = temp
 
     temp = []
@@ -489,7 +489,7 @@ def database(name, db_name, **kwargs):
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                     commands += """PsiMod.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
                 else:
-                    raise Exception('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
+                    raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
@@ -583,10 +583,10 @@ def database(name, db_name, **kwargs):
                     s = line.split()
                     if (len(s) != 0) and (s[0:3] == ['DATABASE', 'RESULT:', 'computation']):
                         if int(s[3]) != db_linkage:
-                           raise Exception('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' 
+                           raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' 
                                % (rgt, str(s[3]), str(db_linkage)))
                         if s[6] != rgt:
-                           raise Exception('Output file \'%s.out\' has nominal affiliation %s incompatible with reagent %s.' 
+                           raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with reagent %s.' 
                                % (rgt, s[6], rgt))
                         if (s[8:10] == ['electronic', 'energy']):
                             ERGT[rgt] = float(s[10])
@@ -801,9 +801,9 @@ def complete_basis_set(name, **kwargs):
             kwargs['cbs_func'] = energy
     func = kwargs['cbs_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper complete_basis_set.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper complete_basis_set.' % (func.__name__))
     if not(func is energy):
-        raise Exception('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
+        raise ValidationError('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
     VARH = {}
@@ -855,35 +855,35 @@ def complete_basis_set(name, **kwargs):
         cbs_corl_wfn = kwargs['corl_wfn'].lower()
     if do_corl:
         if not (cbs_corl_wfn in VARH.keys()):
-            raise Exception('Requested CORL method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_corl_wfn))
+            raise ValidationError('Requested CORL method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_corl_wfn))
 
     # Establish method for delta correction energy
     if (kwargs.has_key('delta_wfn')):
         do_delta = 1
         cbs_delta_wfn = kwargs['delta_wfn'].lower()
         if not (cbs_delta_wfn in VARH.keys()):
-            raise Exception('Requested DELTA method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn))
+            raise ValidationError('Requested DELTA method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn))
 
         if (kwargs.has_key('delta_wfn_lesser')):
             cbs_delta_wfn_lesser = kwargs['delta_wfn_lesser'].lower()
         else:
             cbs_delta_wfn_lesser = 'mp2'
         if not (cbs_delta_wfn_lesser in VARH.keys()):
-            raise Exception('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
+            raise ValidationError('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
 
     # Establish method for second delta correction energy
     if (kwargs.has_key('delta2_wfn')):
         do_delta2 = 1
         cbs_delta2_wfn = kwargs['delta2_wfn'].lower()
         if not (cbs_delta2_wfn in VARH.keys()):
-            raise Exception('Requested DELTA2 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn))
+            raise ValidationError('Requested DELTA2 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn))
 
         if (kwargs.has_key('delta2_wfn_lesser')):
             cbs_delta2_wfn_lesser = kwargs['delta2_wfn_lesser'].lower()
         else:
             cbs_delta2_wfn_lesser = 'mp2'
         if not (cbs_delta2_wfn_lesser in VARH.keys()):
-            raise Exception('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
+            raise ValidationError('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
 
     # Check that user isn't skipping steps in scf + corl + delta + delta2 sequence
     if do_scf and not do_corl and not do_delta and not do_delta2:
@@ -895,7 +895,7 @@ def complete_basis_set(name, **kwargs):
     elif do_scf and do_corl and do_delta and do_delta2:
         pass
     else:
-        raise Exception('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) not valid. These steps are cummulative.' %
+        raise ValidationError('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) not valid. These steps are cummulative.' %
             (do_scf, do_corl, do_delta, do_delta2))
 
     # Establish list of valid basis sets for correlation energy
@@ -903,7 +903,7 @@ def complete_basis_set(name, **kwargs):
         if(kwargs.has_key('corl_basis')):
             BSTC, ZETC = validate_bracketed_basis(kwargs['corl_basis'].lower())
         else:
-            raise Exception('CORL basis sets through keyword \'%s\' are required.' % ('corl_basis'))
+            raise ValidationError('CORL basis sets through keyword \'%s\' are required.' % ('corl_basis'))
 
     # Establish list of valid basis sets for scf energy
     if(kwargs.has_key('scf_basis')):
@@ -913,21 +913,21 @@ def complete_basis_set(name, **kwargs):
             BSTR = BSTC[:]
             ZETR = ZETC[:]
         else:
-            raise Exception('SCF basis sets through keyword \'%s\' are required. Or perhaps you forgot the \'%s\'.' % ('scf_basis', 'corl_wfn'))
+            raise ValidationError('SCF basis sets through keyword \'%s\' are required. Or perhaps you forgot the \'%s\'.' % ('scf_basis', 'corl_wfn'))
 
     # Establish list of valid basis sets for delta correction energy
     if do_delta:
         if(kwargs.has_key('delta_basis')):
             BSTD, ZETD = validate_bracketed_basis(kwargs['delta_basis'].lower())
         else:
-            raise Exception('DELTA basis sets through keyword \'%s\' are required.' % ('delta_basis'))
+            raise ValidationError('DELTA basis sets through keyword \'%s\' are required.' % ('delta_basis'))
 
     # Establish list of valid basis sets for second delta correction energy
     if do_delta2:
         if(kwargs.has_key('delta2_basis')):
             BSTD2, ZETD2 = validate_bracketed_basis(kwargs['delta2_basis'].lower())
         else:
-            raise Exception('DELTA2 basis sets through keyword \'%s\' are required.' % ('delta2_basis'))
+            raise ValidationError('DELTA2 basis sets through keyword \'%s\' are required.' % ('delta2_basis'))
 
     # Establish treatment for scf energy (validity check useless since python will catch it long before here)
     cbs_scf_scheme = highest_1
@@ -1157,17 +1157,17 @@ def validate_bracketed_basis(basisstring):
         basisname = basispattern.match(basisstring)
         for b in basisname.group(2):
             if b not in ZETA:
-                raise Exception('Basis set \'%s\' has invalid zeta level \'%s\'.' % (basisstring, b))
+                raise ValidationError('Basis set \'%s\' has invalid zeta level \'%s\'.' % (basisstring, b))
             if len(ZSET) != 0:
                 if (int(ZSET[len(ZSET)-1]) - ZETA.index(b)) != 1:
-                    raise Exception('Basis set \'%s\' has out-of-order zeta level \'%s\'.' % (basisstring, b))
+                    raise ValidationError('Basis set \'%s\' has out-of-order zeta level \'%s\'.' % (basisstring, b))
             BSET.append(basisname.group(1) + b + basisname.group(3))
             if b == 'd': b = '2'
             if b == 't': b = '3'
             if b == 'q': b = '4'
             ZSET.append(int(b))
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
-        raise Exception('Basis set surrounding series indicator [] in \'%s\' is invalid.'  % (basisstring))
+        raise ValidationError('Basis set surrounding series indicator [] in \'%s\' is invalid.'  % (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -1215,7 +1215,7 @@ def highest_1(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) == 0):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         if (wfnname == 'scf'):
@@ -1258,7 +1258,7 @@ def corl_xtpl_helgaker_2(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) != 2):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         NEED = {'HI' : dict(zip(f_fields, [wfnname, 'corl', BSET[1], ZSET[1], 0.0])),
@@ -1302,7 +1302,7 @@ def scf_xtpl_helgaker_3(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) != 3):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         NEED = {'HI' : dict(zip(f_fields, [wfnname, 'tot', BSET[2], ZSET[2], 0.0])),
@@ -1356,7 +1356,7 @@ def scf_xtpl_helgaker_2(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) != 2):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         NEED = {'HI' : dict(zip(f_fields, [wfnname, 'tot', BSET[1], ZSET[1], 0.0])),
@@ -1395,22 +1395,22 @@ def validate_scheme_args(functionname, **largs):
         if(largs.has_key('wfnname')):
             wfnname = largs['wfnname']
         else:
-            raise Exception('Call to \'%s\' has keyword \'wfnname\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'wfnname\' missing.' % (functionname))
 
         if re.match(r'scf_.*$', functionname) and (wfnname != 'scf'):
-            raise Exception('Call to \'%s\' is intended for scf portion of calculation.' % (functionname))
+            raise ValidationError('Call to \'%s\' is intended for scf portion of calculation.' % (functionname))
         if re.match(r'corl_.*$', functionname) and (wfnname == 'scf'):
-            raise Exception('Call to \'%s\' is not intended for scf portion of calculation.' % (functionname))
+            raise ValidationError('Call to \'%s\' is not intended for scf portion of calculation.' % (functionname))
 
         if(largs.has_key('basisname')):
             BSET = largs['basisname']
         else:
-            raise Exception('Call to \'%s\' has keyword \'basisname\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'basisname\' missing.' % (functionname))
 
         if(largs.has_key('basiszeta')):
             ZSET = largs['basiszeta']
         else:
-            raise Exception('Call to \'%s\' has keyword \'basiszeta\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'basiszeta\' missing.' % (functionname))
 
     # Mode where function reads the now-filled-in energies from that same form and performs the sp, xtpl, delta, etc.
     elif re.match(r'^evaluate$', largs['mode'].lower()):
@@ -1419,10 +1419,10 @@ def validate_scheme_args(functionname, **largs):
         if(largs.has_key('needname')):
             NEED = largs['needname']
         else:
-            raise Exception('Call to \'%s\' has keyword \'needname\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'needname\' missing.' % (functionname))
 
     else:
-        raise Exception('Call to \'%s\' has keyword \'mode\' missing or invalid.' % (functionname))
+        raise ValidationError('Call to \'%s\' has keyword \'mode\' missing or invalid.' % (functionname))
 
     return [mode, NEED, wfnname, BSET, ZSET]
 
