@@ -240,9 +240,10 @@ void SAPT2p3::print_results()
   if (third_order_) {
     Process::environment.globals["SAPT SAPT2+3 ENERGY"] = e_sapt2p3_;
     Process::environment.globals["SAPT ENERGY"] = e_sapt2p3_;
-  }
-  else
+  } else {
     Process::environment.globals["SAPT ENERGY"] = e_sapt2pp3_;
+  }
+  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 }}

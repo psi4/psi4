@@ -37,6 +37,7 @@ public:
   SBlockMatrix             (SBlockMatrix& src);
   SBlockMatrix& operator=  (SBlockMatrix& src);
   SBlockMatrix& operator+= (SBlockMatrix& src);
+  SBlockMatrix& operator-= (SBlockMatrix& src);
 
   // Allow access to the implementation object functions
   const BlockMatrix* operator-> () const {return block_matrix_;}

@@ -43,7 +43,7 @@ void OneBodySOInt::common_init()
     else
         b2_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(ob_->basis2(), integral_));
 
-    ob_->set_force_cartesian(b1_->petitelist()->include_pure_transform());
+    ob_->set_force_cartesian(b1_->petite_list()->include_pure_transform());
 }
 
 boost::shared_ptr<SOBasisSet> OneBodySOInt::basis() const
@@ -415,7 +415,7 @@ void TwoBodySOInt::common_init()
         b4_ = boost::shared_ptr<SOBasisSet>(new SOBasisSet(tb_[0]->basis4(), integral_));
 
     for (int i=0; i<nthread_; ++i)
-        tb_[i]->set_force_cartesian(b1_->petitelist()->include_pure_transform());
+        tb_[i]->set_force_cartesian(b1_->petite_list()->include_pure_transform());
 
     size_t aQRS = b1_->max_nfunction_in_shell() * b2_->basis()->max_function_per_shell() *
                   b3_->basis()->max_function_per_shell() * b4_->basis()->max_function_per_shell();
@@ -463,10 +463,10 @@ void TwoBodySOInt::common_init()
     }
 
     // We need the petite list.
-    petite1_ = b1_->petitelist();
-    petite2_ = b2_->petitelist();
-    petite3_ = b3_->petitelist();
-    petite4_ = b4_->petitelist();
+    petite1_ = b1_->petite_list();
+    petite2_ = b2_->petite_list();
+    petite3_ = b3_->petite_list();
+    petite4_ = b4_->petite_list();
 
     pg_ = tb_[0]->basis()->molecule()->point_group();
 

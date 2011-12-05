@@ -12,6 +12,8 @@ namespace psi{
     namespace psimrcc{
     extern MOInfo *moinfo;
 
+extern MemoryManager* memory_manager;
+
 using namespace std;
 
 void CCBLAS::zero(const char* cstr)

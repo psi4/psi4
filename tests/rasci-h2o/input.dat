@@ -1,0 +1,32 @@
+#! RASCI/6-31G** H2O Energy Point
+
+refnuc   =   8.8046872909987 #TEST
+refscf   = -76.017296571842  #TEST
+refci    = -76.0296830210809 #TEST
+refcorr  = refci - refscf    #TEST
+
+molecule h2o {
+    O
+    H 1 1.00
+    H 1 1.00 2 103.1
+}
+
+set globals {
+  wfn detci
+  basis 6-31G**
+  restricted_docc  [1, 0, 0, 0]
+  ras1             [2, 0, 1, 1]
+  ras3             [1, 0, 0, 1]
+  restricted_uocc  [8, 2, 3, 5]
+}
+
+thisenergy = energy('detci')
+
+# 7 digits on CI seems ok, but we may need to back it down to 6 later #TEST
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"),     8, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "CI energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+
+clean()
+

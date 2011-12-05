@@ -13,9 +13,9 @@ namespace psi{ namespace mcscf{
 
 void SCF::iterate_scf_equations()
 {
-  fprintf(outfile,"\n\n  ===========================================================================");
-  fprintf(outfile,"\n         Cycle          Energy               D(Energy)            DIIS");
-  fprintf(outfile,"\n  ===========================================================================");
+  fprintf(outfile,"\n\n  =========================================================================================");
+  fprintf(outfile,"\n         Cycle          Energy               D(Energy)            D(Density)            DIIS");
+  fprintf(outfile,"\n  ===========================================================================================");
 
 
   bool   converged  = false;
@@ -25,6 +25,13 @@ void SCF::iterate_scf_equations()
   while(!converged){
     C_T = C;
     C_T.transpose();
+    
+    //Save the odl matrix
+    Dc_old = Dc;
+    if(reference == tcscf){
+      for(int I = 0 ; I < nci; ++I)
+        Dtc_old[I] = Dtc[I];
+    }
 
     // Guess the occupation
     guess_occupation();
@@ -69,11 +76,36 @@ void SCF::iterate_scf_equations()
       T.multiply(false,false,C,C_t);
       C = T;
     }
+    // Compute the change of the density matrix 
+    Dc_old -= Dc;
+    double delta_dens = dot(Dc_old,Dc_old);
+    if(reference == tcscf){
+      for(int I = 0 ; I < nci; ++I){
+        Dtc_old[I] -= Dtc[I];
+         delta_dens += dot(Dtc_old[I],Dtc_old[I]);
+    }}
 
+    double rms_dens = sqrt(delta_dens/(nso*nso*nci));
 
-    if( fabs(log10(fabs(delta_energy))) > options_.get_int("CONVERGENCE") ){
+    //Print SCF energy,energy difference and RMS density change
+     fprintf(outfile,"\n  @SCF %4d  %20.12f %20.12f %20.12f",cycle,total_energy,total_energy-old_energy, rms_dens);
+  if(reference == tcscf){
+    fprintf(outfile,"\n    ci      = [");
+    for(int I = 0 ; I < nci; ++I)
+      fprintf(outfile,"%11.8f%s",ci[I], I != nci -1 ? "," : "");
+    fprintf(outfile,"]");
+
+    fprintf(outfile,"\n    ci_grad = [");
+    for(int I = 0 ; I < nci; ++I)
+      fprintf(outfile,"%11.8f%s",ci_grad[I], I != nci -1 ? "," : "");
+    fprintf(outfile,"]");
+  }
+  fflush(outfile);
+
+    if(fabs(delta_energy) < options_.get_double("E_CONVERGE") ){
       if(reference == tcscf){
-        if(2.0 * fabs(log10(norm_ci_grad)) > options_.get_int("CONVERGENCE") )
+        if(2.0 * fabs(norm_ci_grad) < options_.get_double("D_CONVERGE") &&
+          rms_dens < options_.get_double("D_CONVERGE") )
           converged = true;
       }else{
         converged = true;
@@ -90,7 +122,7 @@ void SCF::iterate_scf_equations()
     cycle++;
   }
 
-  fprintf(outfile,"\n  ===========================================================================");
+  fprintf(outfile,"\n  =========================================================================================");
 
   fprintf(outfile,"\n\n%6c* SCF total energy   = %20.12f\n",' ',new_energy);
 
@@ -104,12 +136,18 @@ void SCF::iterate_scf_equations()
 
   if(moinfo_scf->get_guess_occupation()){
     fprintf(outfile,"\n  Final occupation");
-    fprintf(outfile,"\n  docc = (");
-    for(int h = 0; h < nirreps; ++h)  fprintf(outfile," %d",docc[h]);
-    fprintf(outfile," )");
-    fprintf(outfile,"\n  actv = (");
-    for(int h = 0; h < nirreps; ++h)  fprintf(outfile," %d",actv[h]);
-    fprintf(outfile," )");
+    fprintf(outfile,"\n  docc = [");
+    for(int h = 0; h < nirreps; ++h){
+      fprintf(outfile," %d",docc[h]);
+      if(h==! nirreps)fprintf(outfile,", ");
+    }
+    fprintf(outfile," ]");
+    fprintf(outfile,"\n  actv = [");
+    for(int h = 0; h < nirreps; ++h){
+      fprintf(outfile," %d",actv[h]);
+      if(h==! nirreps)fprintf(outfile,", ");
+    }
+    fprintf(outfile," ]");
     int sym = 0;
     for(int h = 0; h < nirreps; ++h)
       for(int n = 0; n < actv[h]; ++n) sym ^= h;

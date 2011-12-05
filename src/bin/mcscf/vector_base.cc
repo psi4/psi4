@@ -12,6 +12,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 VectorBase::VectorBase(int elements) : elements_(elements),vector_(NULL)
 {
   allocate1(double,vector_,elements_);

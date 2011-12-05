@@ -86,8 +86,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     less than 10**(-n).  The default is 4 for energies and 7 for gradients. -*/
     options.add_int("CONVERGENCE", 4);
 
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 6);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-6);
 
     /*- Wavefunction type -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
@@ -237,18 +237,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("FCI_STRINGS",false);
 
     /*- This determines whether `mixed' RAS II/RAS III excitations are
-      allowed into the CI space.  This is useful for placing additional
-      constraints on a RAS CI. !expert -*/
+      allowed into the CI space.  If FALSE, then if there are any electrons
+      in RAS III, then the number of holes in RAS I cannot exceed the given
+      excitation level EX_LVL. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- This determines whether `mixed' excitations involving RAS IV are
-      allowed into the CI space.  This is useful for placing additional
-      constraints on a RAS CI. !expert -*/
+      allowed into the CI space.  Useful to specify a split-virtual
+      CISD[TQ] computation.  If FALSE, then if there are any electrons
+      in RAS IV, then the number of holes in RAS I cannot exceed the given
+      excitation level EX_LVL.  !expert -*/
     options.add_bool("MIXED4",true);
 
-    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in
-      RAS IV, then the holes in RAS I must equal the particles in RAS III
-      + RAS IV else the string is discarded !expert -*/
+    /*- Restrict strings with e- in RAS IV.  Useful to reduce the number of
+      strings required if MIXED4=true, as in a split-virutal CISD[TQ]
+      computation.  If more than one electron is in RAS IV, then the 
+      holes in RAS I cannot exceed the number of particles in 
+      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.  
+      !expert -*/
     options.add_bool("R4S",false);
 
     /*- Tells DETCI whether or not to do string replacements on the fly.  Can
@@ -599,10 +605,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-    /*- How many digits after the decimal to converge the energy to -*/
-    options.add_int("E_CONVERGE",10);
-    /*- How many digits after the decimal to converge the density to -*/
-    options.add_int("D_CONVERGE",8);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE",1e-10);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE",1e-8);
     /*- Don't solve the CPHF equations -*/
     options.add_bool("NO_RESPONSE",false);
     /*- Use asynchronous I/O in the CPHF solver -*/
@@ -803,10 +809,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 8);
+    /*- The energy convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- The density convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-8);
     /*- Minimum absolute TEI value for seive -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
     /*- Minimum absolute S matrix value for DF-SCF exchange -*/
@@ -820,9 +826,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_PRINT", 0);
     /*- SAD Occupation Matrix Method -*/
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
-    /*- SAD Guess Convergence in E -*/
+    /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- SAD Guess Convergence in D -*/
+    /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
     /*- SAD Guess Maxiter -*/
     options.add_int("SAD_MAXITER", 50);
@@ -946,7 +952,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("DELETE_AO", true);
     /*- -*/
     options.add_bool("DELETE_TPDM", true);
-
     /*- -*/
     options.add_bool("PRINT_TE_INTEGRALS", false);
     /*- -*/
@@ -1088,7 +1093,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Whether to compute all relaxed excited states -*/
     options.add_bool("PROP_ALL",false);
     /*- The symmetry of states -*/
-    options.add_int("PROP_SYM", 0);
+    options.add_int("PROP_SYM", 1);
     /*- -*/
     options.add_int("PROP_ROOT", 0);
   }
@@ -1250,6 +1255,88 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("EOM_REFERENCE","RHF");
   }
+  if(name == "CCEOM"|| options.read_globals()) {
+    /*- -*/
+    options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
+    /*- -*/
+    options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
+    /*- -*/
+    options.add_str("EOM_REFERENCE","RHF", "RHF ROHF UHF");
+    /*- -*/
+    options.add_bool("FULL_MATRIX",false);
+    /*- -*/
+    options.add_int("CACHELEV",2);
+    /*- -*/
+    options.add_str("CACHETYPE", "LRU", "LOW LRU");
+    /*- -*/
+    options.add_int("NTHREADS", 1);
+    /*- -*/
+    options.add_str("ABCD", "NEW", "NEW OLD");
+    /*- -*/
+    options.add_bool("T3_WS_INCORE", false);
+    /*- -*/
+    options.add_bool("LOCAL", false);
+    /*- -*/
+    options.add_double("LOCAL_CUTOFF", 0.02);
+    /*- -*/
+    options.add_str("LOCAL_METHOD", "WERNER", "WERNER AOBASIS");
+    /*- -*/
+    options.add_str("LOCAL_WEAKP", "NONE", "NONE MP2 NEGLECT");
+    /*- -*/
+    options.add_str("LOCAL_PRECONDITIONER", "HBAR", "HBAR FOCK");
+    /*- -*/
+    options.add_int("LOCAL_GHOST", -1);
+    /*- -*/
+    options.add_bool("LOCAL_DO_SINGLES", true);
+    /*- -*/
+    options.add_bool("LOCAL_FILTER_SINGLES", true);
+    /*- -*/
+    options.add_bool("NEWTRIPS", true);
+    /*- -*/
+    options.add("STATES_PER_IRREP", new ArrayType());
+    /*- -*/
+    options.add_int("MAXITER", 80);
+    /*- -*/
+    options.add_int("PROP_SYM", 1);
+    /*- -*/
+    options.add_int("PROP_ROOT", 0);
+    /*- -*/
+    options.add_bool("CC3_FOLLOW_ROOT", false);
+    /*- -*/
+    options.add_bool("RHF_TRIPLETS", false);
+    /*- -*/
+    options.add_int("EXCITATION_RANGE", 2);
+    /*- -*/
+    options.add_bool("PRINT_SINGLES", false);
+    /*- -*/
+    options.add_int("VECTORS_PER_ROOT_SS", 5);
+    /*- -*/
+    options.add_int("VECTORS_PER_ROOT", 12);
+    /*- -*/
+    options.add_int("VECTORS_CC3", 10);
+    /*- -*/
+    options.add_bool("COLLAPSE_WITH_LAST", true);
+    /*- -*/
+    options.add_double("COMPLEX_TOL", 1E-12);
+    /*- -*/
+    options.add_double("RESIDUAL_TOL", 1E-6);
+    /*- -*/
+    options.add_double("RESIDUAL_TOL_SS", 1E-6);
+    /*- -*/
+    options.add_double("EVAL_TOL", 1E-8);
+    /*- -*/
+    options.add_double("EVAL_TOL_SS", 1E-6);
+    /*- -*/
+    options.add_int("AMPS_TO_PRINT", 5);
+    /*- -*/
+    options.add_double("SCHMIDT_ADD_RESIDUAL_TOL", 1E-3);
+    /*- -*/
+    options.add_bool("SKIP_DIAGSS", false);
+    /*- -*/
+    options.add_bool("RESTART_EOM_CC3", false);
+    /*- -*/
+    options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
+  }
   if(name == "CCRESPONSE"|| options.read_globals()) {
     /*- -*/
     options.add_str("WFN", "SCF");
@@ -1343,59 +1430,55 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
     options.add_int("MULTP", 1);
-    /*- -*/
-    options.add_int("CONVERGENCE",9);
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 12);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 12);
-    /*- -*/
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-12);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-12);
+    /*- Maximum number of iterations before computation quits. -*/
     options.add_int("MAXITER",100);
-    /*- -*/
+    /*- Number of previous iterations to consider within the DIIS method -*/
     options.add_int("NDIIS",7);
-    /*- -*/
+    /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
     options.add_int("ROOT",1);
-    /*- -*/
+    /*- Iteration at which to begin using the averaged Fock matrix-*/
     options.add_int("START_FAVG",5);
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
-    /*- -*/
+    /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
     options.add_int("ROTATE_MO_ANGLE",0);
-    /*- -*/
-    options.add_int("ROTATE_MO_IRREP",1);  // IRREP is one-based
-    /*- -*/
-    options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
-    /*- -*/
+    /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
+    options.add_int("ROTATE_MO_IRREP",1);
+    /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/
+    options.add_int("ROTATE_MO_P",1);
+    /*- For orbital rotations after convergence, number of the second orbital (1-based) to rotate. !expert -*/
     options.add_int("ROTATE_MO_Q",2);
-    /*- -*/
+    /*- Use the DIIS method to optimize the CI coefficients-*/
     options.add_bool("CI_DIIS",false);
-    /*- -*/
+    /*- Use the DIIS method to optimize the SCF energy (MO coefficients only)-*/
     options.add_bool("USE_DIIS",true);
-    /*- -*/
+    /*- Read the MOs in from a previous computation if TRUE.-*/
     options.add_bool("READ_MOS",true);
-    /*- -*/
+    /*- If true, use the average Fock matrix during the SCF optimization-*/
     options.add_bool("USE_FAVG",false);
-    /*- -*/
+    /*- If true, the active orbitals should canonicalized such that the average Fock matrix is diagonal -*/
     options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
-    /*- -*/
+    /*- If true, the inactive(DOCC and Virtual) orbitals will be canonicalized such that the average Fock matrix is diagonal.-*/
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     /*- -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
-    /*- -*/
+    /*- Attempt to force a two configruation solution by starting with CI coefficents of +/- sqrt(1/2)-*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
     /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
     options.add("ACTV", new ArrayType());
-
-
-    /*- -*/
+    /*- The type of SCF reference to be computed. -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
-    /*- -*/
+    /*- The symmetry of the SCF wavefunction.-*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
@@ -1592,10 +1675,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Parallel algoritmh? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 8);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
@@ -1604,10 +1687,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("BASIS","NONE");
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Convergence of CC energy -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- Convergence of cluster amplitudes (RMS change) -*/
-    options.add_int("T_CONVERGE", 8);
+    /*- Convergence of CC energy.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- Convergence of cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("T_CONVERGE", 1e-8);
     /*- Turn on DIIS -*/
     options.add_bool("DIIS",true);
     /*- Minimum DIIS vectors -*/
@@ -1830,16 +1913,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("ACTIVE", new ArrayType());
     /*- The number of frozen virtual orbitals (same as FROZEN_UOCC) -*/
     options.add("CORR_FVIR", new ArrayType());
-//    /*- The number of -*/
-//    options.add("ACTIVE_DOCC", new ArrayType());
+    options.add_int("SMALL_CUTOFF", 0);
+    options.add_bool("NOSINGLES", false);
   }
   if(name == "OPTKING"|| options.read_globals()) {
       /*- Specifies minimum search, transition-state search, or IRC following; allowed values = {MIN, TS, IRC} -*/
       options.add_str("OPT_TYPE", "MIN", "MIN TS IRC");
       /*- Whether to do a Newton-Raphson step, or an RFO step; allowed values = {NR, RFO} -*/
-      options.add_str("STEP_TYPE", "RFO", "RFO NR");
-      /*- Maximum step size in bohr or radian along an internal coordinate {double} -*/
+      options.add_str("STEP_TYPE", "RFO", "RFO NR SD");
+      /*- Initial maximum step size in bohr or radian along an internal coordinate {double} -*/
       options.add_double("INTRAFRAGMENT_STEP_LIMIT", 0.4);
+      /*- Lower bound for dynamic trust radius in au {double} -*/
+      options.add_double("INTRAFRAGMENT_STEP_LIMIT_MIN", 0.001);
+      /*- Upper bound for dynamic trust radius in au {double} -*/
+      options.add_double("INTRAFRAGMENT_STEP_LIMIT_MAX", 1.0);
       /*- Whether to 'follow' the initial RFO vector after the first step {true, false} -*/
       options.add_bool("RFO_FOLLOW_ROOT", false);
       /*- Which RFO root to follow; 0 indicates lowest (to a minimum); {integer} -*/
@@ -1882,11 +1969,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force -*/
+      /*- QCHEM optimization criteria: maximum force.g -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
-      /*- QCHEM optimization criteria: maximum energy change -*/
+      /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);
-      /*- QCHEM optimization criteria: maximum displacement -*/
+      /*- QCHEM optimization criteria: maximum displacement. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DISP", 1.2e-3);
       /*- Whether to test B matrix -*/
       options.add_bool("TEST_B", false);
@@ -1898,6 +1985,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_double("IRC_STEP_SIZE", 0.2);
       /*- Define IRC mapping direction {FORWARD, BACKWARD} -*/
       options.add_str("IRC_DIRECTION", "FORWARD", "FORWARD BACKWARD");
+      /*- Set number of consecutive backward steps allowed in optimization -*/
+      options.add_int("CONSECUTIVE_BACKSTEPS", 1);
   }
   if(name == "FINDIF"|| options.read_globals()) {
       /*- Number of points for finite-differences (3 or 5) -*/

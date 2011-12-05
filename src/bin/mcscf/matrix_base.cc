@@ -13,6 +13,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 MatrixBase::MatrixBase(size_t rows, size_t cols) : rows_(rows),cols_(cols),elements_(rows*cols),matrix_(NULL)
 {
   allocate2(double,matrix_,rows_,cols_);
@@ -126,6 +128,16 @@ MatrixBase& MatrixBase::operator+=(const MatrixBase& rhs)
     for(size_t i = 0; i < rows_; ++i)
       for(size_t j = 0; j < cols_; ++j)
         matrix_[i][j] += rhs.matrix_[i][j];
+  }
+  return(*this);
+}
+
+MatrixBase& MatrixBase::operator-=(const MatrixBase& rhs)
+{
+  if(elements_>0){
+    for(size_t i = 0; i < rows_; ++i)
+      for(size_t j = 0; j < cols_; ++j)
+        matrix_[i][j] -= rhs.matrix_[i][j];
   }
   return(*this);
 }

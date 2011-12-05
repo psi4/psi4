@@ -315,9 +315,13 @@ double DFMP2::compute_energy()
     fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
     fflush(outfile);
 
+    // LAB TODO: drop DF- in labels to match DF-SCF behavior
     Process::environment.globals["CURRENT ENERGY"] = E_tot_;
-    Process::environment.globals["DF-MP2 ENERGY"] = E_tot_;
-    Process::environment.globals["SCS-DF-MP2 ENERGY"] = E_tot_scs_;
+    Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_;
+    Process::environment.globals["DF-MP2 TOTAL ENERGY"] = E_tot_;
+    Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = E_;
+    Process::environment.globals["SCS-DF-MP2 TOTAL ENERGY"] = E_tot_scs_;
+    Process::environment.globals["SCS-DF-MP2 CORRELATION ENERGY"] = E_scs_;
 
     return E_tot_;
 }

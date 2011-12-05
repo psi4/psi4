@@ -57,12 +57,10 @@ void OmegaKS::common_init()
     debug_ = options_.get_int("DEBUG");
 
     // Read in energy convergence threshold
-    int thresh = options_.get_int("E_CONVERGE");
-    energy_threshold_ = pow(10.0, (double)-thresh);
+    energy_threshold_ = options_.get_double("E_CONVERGE");
 
     // Read in density convergence threshold
-    thresh = options_.get_int("D_CONVERGE");
-    density_threshold_ = pow(10.0, (double)-thresh);
+    density_threshold_ = options_.get_double("D_CONVERGE");
 
     block_size_ = options_.get_int("DFT_MAX_POINTS");
     
@@ -901,7 +899,7 @@ bool OmegaIPKS::is_omega_converged()
         omega_trace_.push_back(make_tuple(new_omega, new_kIP, new_IP, "Brent's Method Step"));        
     }
 
-    double w_converge = pow(10.0, - (double) options_.get_int("OMEGA_CONVERGE"));
+    double w_converge = options_.get_double("OMEGA_CONVERGE");
     return (fabs(omega_l_ - omega_r_) < w_converge); 
 }    
 

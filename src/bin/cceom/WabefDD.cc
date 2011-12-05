@@ -4,7 +4,7 @@
 */
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libqt/qt.h>
@@ -50,7 +50,7 @@ void WabefDD(int i, int C_irr) {
     timer_on("WabefDD Z");
 #endif
 
-    if(!strcmp(params.abcd,"OLD")) {
+    if(params.abcd == "OLD") {
       dpd_buf4_init(&CMnEf, EOM_CMnEf, C_irr, 0, 5, 0, 5, 0, CMnEf_lbl);
       dpd_buf4_init(&Z, EOM_TMP, C_irr, 5, 0, 5, 0, 0, "WabefDD Z(Ab,Ij)");
       dpd_buf4_init(&B, CC_BINTS, H_IRR, 5, 5, 5, 5, 0, "B <ab|cd>");
@@ -66,7 +66,7 @@ void WabefDD(int i, int C_irr) {
       dpd_buf4_close(&Z);
       dpd_buf4_close(&SIjAb);
     }
-    else if(!strcmp(params.abcd,"NEW")) {
+    else if(params.abcd == "NEW") {
 
       sprintf(lbl_a, "CMnEf(-)(mn,ef) %d", i);
       sprintf(lbl_s, "CMnEf(+)(mn,ef) %d", i);

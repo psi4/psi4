@@ -9,15 +9,18 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
 #include <cmath>
 #include <libchkpt/chkpt.h>
+#include <libpsio/psio.h>
+#include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include "MOInfo.h"
 #include "Params.h"
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
+#include <psi4-dec.h>
 
 namespace psi { namespace cceom {
 #include <physconst.h>
@@ -119,7 +122,7 @@ void diag(void) {
 #ifdef TIME_CCEOM
 timer_on("HBAR_EXTRA");
 #endif
-  if (!strcmp(params.wfn,"EOM_CC2")) cc2_hbar_extra();  
+  if (params.wfn == "EOM_CC2") cc2_hbar_extra();  
   else hbar_extra(); /* sort hbar matrix elements for sigma equations */
 #ifdef TIME_CCEOM
 timer_off("HBAR_EXTRA");
@@ -129,10 +132,10 @@ timer_off("HBAR_EXTRA");
   hbar_norms();
 #endif
 
-  if(!strcmp(eom_params.guess,"INPUT"))
-    read_guess_init();
+//  if(eom_params.guess == "INPUT")
+//    read_guess_init();
 
-  if (!strcmp(params.wfn,"EOM_CC3"))
+  if (params.wfn == "EOM_CC3")
     cc3_stage = 0; /* do EOM_CCSD first */
 
   fprintf(outfile,"Symmetry of ground state: %s\n", moinfo.irr_labs[moinfo.sym]);
@@ -175,7 +178,7 @@ timer_on("INIT GUESS");
     if (eom_params.restart_eom_cc3) {
     }
     else if(params.local) {
-      if(!strcmp(eom_params.guess,"DISK")) { /* only do this if we don't already have guesses on disk */
+      if(eom_params.guess == "DISK") { /* only do this if we don't already have guesses on disk */
 	fprintf(outfile, "\n\tUsing C1 vectors on disk as initial guesses.\n");
       }
       else {
@@ -184,16 +187,16 @@ timer_on("INIT GUESS");
       }
     }
     else {
-      if(!strcmp(eom_params.guess,"SINGLES")) {
+      if(eom_params.guess == "SINGLES") {
 	/* Diagonalize Hbar-SS to obtain initial CME and Cme guess */
 	fprintf(outfile,"Obtaining initial guess from singles-singles block of Hbar...");
 	diagSS(C_irr);
         if (!eom_params.print_singles) fprintf(outfile,"Done.\n\n");
       }
-      else if(!strcmp(eom_params.guess,"INPUT")) {
-        read_guess(C_irr);
-      }
-      else if(!strcmp(eom_params.guess,"DISK") && params.ref == 0) {
+//      else if(eom_params.guess == "INPUT") {
+//        read_guess(C_irr);
+//      }
+      else if(eom_params.guess == "DISK" && params.ref == 0) {
         fprintf(outfile, "Using C1 vectors on disk as initial guesses.\n");
         /* normalize first guess */
         sprintf(lbl, "%s %d", "CME", 0);
@@ -310,7 +313,7 @@ timer_off("INIT GUESS");
 #endif
 #ifdef TIME_CCEOM
         timer_on("SIGMA ALL");
-        if (!strcmp(params.wfn,"EOM_CC2")) {
+        if (params.wfn == "EOM_CC2") {
           timer_on("sigmacc2"); cc2_sigma(i,C_irr); timer_off("sigmacc2");
         }
         else {
@@ -318,7 +321,7 @@ timer_off("INIT GUESS");
           timer_on("sigmaSD"); sigmaSD(i,C_irr); timer_off("sigmaSD");
           timer_on("sigmaDS"); sigmaDS(i,C_irr); timer_off("sigmaDS");
           timer_on("sigmaDD"); sigmaDD(i,C_irr); timer_off("sigmaDD");
-          if ( ((!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0)) || eom_params.restart_eom_cc3) {
+          if ( ((params.wfn == "EOM_CC3") && (cc3_stage>0)) || eom_params.restart_eom_cc3) {
             timer_on("cc3_HC1"); cc3_HC1(i,C_irr); timer_off("cc3_HC1");
             timer_on("cc3_HC1ET1"); cc3_HC1ET1(i,C_irr); timer_off("cc3_HC1ET1");
             timer_on("sigmaCC3"); sigmaCC3(i,C_irr,cc3_eval); timer_off("sigmaCC3");
@@ -326,14 +329,14 @@ timer_off("INIT GUESS");
         }
         timer_off("SIGMA ALL");
 #else 
-        if (!strcmp(params.wfn,"EOM_CC2")) cc2_sigma(i,C_irr);  
+        if (params.wfn == "EOM_CC2") cc2_sigma(i,C_irr);  
         else {
           sigmaSS(i,C_irr);
           sigmaSD(i,C_irr);
           sigmaDS(i,C_irr);
           sigmaDD(i,C_irr);
         }
-        if ( ((!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0)) || eom_params.restart_eom_cc3) {
+        if ( ((params.wfn == "EOM_CC3") && (cc3_stage>0)) || eom_params.restart_eom_cc3) {
           cc3_HC1(i,C_irr);
           cc3_HC1ET1(i,C_irr);
           sigmaCC3(i,C_irr,cc3_eval);
@@ -590,7 +593,7 @@ timer_off("INIT GUESS");
         }
 
         /* only one cc3 root can be sought */
-        if ( (!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0) )  {
+        if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) )  {
           if (eom_params.follow_root)
             k = follow_root(L, alpha, C_irr);
           else
@@ -804,7 +807,7 @@ timer_off("INIT GUESS");
         }
 
         /* only one cc3 root can be sought */
-        if ( (!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0) ) {
+        if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) ) {
           cc3_index = k;
           cc3_eval = lambda[k];
           /* fprintf(outfile,"Setting CC3 eigenvalue to %15.10lf\n",cc3_eval); */
@@ -821,13 +824,13 @@ timer_off("INIT GUESS");
 
       for (i=0;i<eom_params.cs_per_irrep[C_irr];++i) lambda_old[i] = lambda[i];
       free(lambda);
-      if ( (!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0) ) {
+      if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) ) {
           lambda_old[cc3_index] = cc3_eval; /* a hack to make Delta E work next iteration */
       }
 
       /* restart with new B vectors if there are too many */
       if (L >= vectors_per_root * eom_params.cs_per_irrep[C_irr]) {
-        if ( (!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0) ) {
+        if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) ) {
           restart(alpha, L, cc3_index+1, C_irr, 1, alpha_old, L_old, eom_params.collapse_with_last);
           L_old = L;
           L = cc3_index+1;
@@ -848,7 +851,7 @@ timer_off("INIT GUESS");
         }
         keep_going = 1;
         /* keep track of number of triples restarts */
-        if ( (!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage>0) ) {
+        if ( (params.wfn == "EOM_CC3") && (cc3_stage>0) ) {
           fprintf(outfile,"Change in CC3 energy from last iterated value %15.10lf\n",
               cc3_eval - cc3_last_converged_eval);
           cc3_last_converged_eval = cc3_eval;
@@ -873,7 +876,7 @@ timer_off("INIT GUESS");
       if ((keep_going == 0) && (iter < eom_params.max_iter)) {
 
         /* for CC3: done with EOM CCSD - now do EOM CC3 */
-        if ( (!strcmp(params.wfn,"EOM_CC3")) && (cc3_stage == 0) ) {
+        if ( (params.wfn == "EOM_CC3") && (cc3_stage == 0) ) {
           fprintf(outfile, "Completed EOM_CCSD\n");
           fprintf(outfile,"Collapsing to only %d vector(s).\n", eom_params.cs_per_irrep[C_irr]);
           if (!eom_params.restart_eom_cc3) {
@@ -894,7 +897,7 @@ timer_off("INIT GUESS");
           cc3_stage = 1;
           vectors_per_root = eom_params.vectors_cc3;
         }
-        else if( (!strcmp(params.wfn,"EOM_CC3")) && /* can't trust sigmas yet */
+        else if( (params.wfn == "EOM_CC3") && /* can't trust sigmas yet */
                ( (cc3_stage == 1) || fabs(cc3_eval-cc3_last_converged_eval)>eom_params.eval_tol)) {
           /* for CC3: restart one time if no cc3_restarts have yet been done */
           if (cc3_stage == 1) fprintf(outfile, "Forcing one restart with sigma recomputation.\n");
@@ -916,7 +919,7 @@ timer_off("INIT GUESS");
           L = cc3_index+1;
           cc3_stage = 2;
         }
-        else if (!strcmp(params.wfn,"EOM_CC3")) {
+        else if (params.wfn == "EOM_CC3") {
           /* for CC3: collapse to one final root and place in location 0 */
           fprintf(outfile,"Collapsing to only %d vector(s).\n", cc3_index+1);
           restart(alpha, L, cc3_index+1, C_irr, 0, alpha_old, L_old, 0);
@@ -945,7 +948,7 @@ timer_off("INIT GUESS");
       fprintf(outfile,"\nMaximum number of iterations exceeded, ");
       fprintf(outfile,"so not all roots converged!\n\n");
     }
-    else if ( (!strcmp(params.wfn,"EOM_CC3")) && (num_converged == 1) ) { }
+    else if ( (params.wfn == "EOM_CC3") && (num_converged == 1) ) { }
     else {
       fprintf(outfile,"\nAlgorithm failure: No vectors could be added, ");
       fprintf(outfile,"though not all roots converged!\n\n");
@@ -972,6 +975,10 @@ timer_off("INIT GUESS");
 		  /* save the state energy */
 		  eom_params.state_energies[num_converged_index] = totalE;
 					
+          std::stringstream s;
+          s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
+          Process::environment.globals[s.str()] = totalE;
+
           fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n",
               ++num_converged_index,
 		  lambda_old[i]* _hartree2ev, lambda_old[i]* _hartree2wavenumbers,

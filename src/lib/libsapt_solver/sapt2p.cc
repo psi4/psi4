@@ -168,6 +168,7 @@ void SAPT2p::print_results()
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
   Process::environment.globals["SAPT SAPT2+ ENERGY"] = e_sapt2p_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt2p_;
+  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 }}

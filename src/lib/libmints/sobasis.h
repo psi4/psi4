@@ -191,8 +191,12 @@ public:
     /// Return the AOTransform object for the given shell.
     const AOTransform &aotrans(int i) const { return aotrans_[i]; }
 
-    /// Return the PetiteList object used in creating this SOBasis.
-    const boost::shared_ptr<PetiteList> petitelist() const;
+    /** Return the PetiteList object used in creating this SOBasis.
+      * NOTE: There's a chance that this PetiteList is not the one
+      * you want. This petite list is specifically useful to the
+      * OneBodySOInt and TwoBodySOInt.
+      */
+    const boost::shared_ptr<PetiteList> petite_list() const;
 
     /// Returns the dimension for each irrep.
     Dimension dimension() const;

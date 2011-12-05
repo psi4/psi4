@@ -223,8 +223,10 @@ PsiReturnType detci(Options &options)
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
+     Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
      Process::environment.globals["CI CORRELATION ENERGY"] = 0.0;
+
      return Success;
    }
 
@@ -404,8 +406,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
    nroots = Parameters.num_roots;
 
-   conv_rms = pow(10.0, -(Parameters.convergence));
-   conv_e = pow(10.0, -(Parameters.energy_convergence));
+   conv_rms = Parameters.   convergence;
+   conv_e = Parameters.energy_convergence;
 
    if (Parameters.have_special_conv) {
      tval = sqrt(conv_rms) * 10.0;
@@ -1022,7 +1024,10 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    chkpt_init(PSIO_OPEN_OLD);
    tval = evals[Parameters.root]+efzc+nucrep;
    chkpt_wt_etot(tval);
+
    Process::environment.globals["CURRENT ENERGY"] = tval;
+   Process::environment.globals["CURRENT CORRELATION ENERGY"] = tval - CalcInfo.escf;
+   Process::environment.globals["CURRENT REFERENCE ENERGY"] = CalcInfo.escf;
    Process::environment.globals["CI TOTAL ENERGY"] = tval;
    // eref seems wrong for open shells so replace it with escf below
    // until I fix it ---CDS 11/5/11

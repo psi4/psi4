@@ -5,9 +5,9 @@
 
 #include <cstdio>
 #include <cstdlib>
-#include <cstring>
+#include <string>
+#include <string.h>
 #include <cmath>
-#include <libipv1/ip_lib.h>
 #include <libciomr/libciomr.h>
 #include <libpsio/psio.h>
 #include <libiwl/iwl.h>
@@ -59,7 +59,7 @@ void local_init(void)
   nso = local.nso;
 
   /* Build the occupied orbital energy list */
-  if(!strcmp(local.precon,"HBAR")) {
+  if(local.precon == "HBAR") {
 
     /* Occupied Part */
     local.eps_occ = init_array(nocc);

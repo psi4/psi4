@@ -92,4 +92,5 @@ info = PsiMod.DGETRF(0, n, n, A, n, piv)
 A.set_name('Hilbert Matrix LU Decomposition (T)')
 A.print_out()
 
+clean()
 

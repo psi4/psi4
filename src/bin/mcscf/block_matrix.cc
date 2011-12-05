@@ -9,6 +9,8 @@
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 BlockMatrix::BlockMatrix()
  : nirreps_(0) ,ref_(0), matrix_base_(0), rows_size_(0), cols_size_(0), rows_offset_(0), cols_offset_(0)
 {
@@ -219,6 +221,12 @@ BlockMatrix& BlockMatrix::operator+=(const BlockMatrix& rhs)
 {
   for(int h=0; h < nirreps_; ++h)
     *matrix_base_[h] += *rhs.matrix_base_[h];
+  return(*this);
+}
+BlockMatrix& BlockMatrix::operator-=(const BlockMatrix& rhs)
+{
+  for(int h=0; h < nirreps_; ++h)
+    *matrix_base_[h] -= *rhs.matrix_base_[h];
   return(*this);
 }
 

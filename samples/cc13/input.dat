@@ -1,27 +1,30 @@
-refnuc   = 6.0682984689667
-refscf   = -38.9173786948
-refccsd  = -0.115368877467405
-reftotal = -39.032747572263979
+#! cc-pVDZ UCCSD optimization of triplet methtylene, with Z-matrix input
+
 
 molecule ch2 {
   0 3
-  c
-  h 1 1.1
-  h 1 1.1 2 109
+  C
+  H 1 1.1
+  H 1 1.1 2 109.0
 }
 
 set globals {
-  wfn ccsd
   reference uhf
+  relax_opdm true
+  basis cc-pvdz
   dertype first
-  basis 6-31G**
-
-  convergence 10
+  # The next 3 options control the geometry optimization tolerances
+  conv_max_disp  1e-6
+  conv_max_force 1.0e-6
+  conv_max_de    7
   e_converge 10
   d_converge 10
 }
 
-energy('ccsd')
+optimize('CCSD')
 
 
 clean()
+
+
+
