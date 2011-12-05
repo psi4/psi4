@@ -1,3 +1,16 @@
+#! Single point energies of multiple excited states with EOM-CCSD
+
+scf_0     =   -76.021709716552  #TEST
+ccsd_0    =   -76.231133524444  #TEST
+eomccsd_1 =   -75.814603692260  #TEST
+eomccsd_2 =   -75.539103963086  #TEST
+eomccsd_3 =   -75.831943898862  #TEST
+eomccsd_4 =   -75.396306147194  #TEST
+eomccsd_5 =   -75.909915072934  #TEST
+eomccsd_6 =   -75.311455726994  #TEST
+eomccsd_7 =   -75.734249213528  #TEST
+eomccsd_8 =   -75.649833933279  #TEST
+
 molecule h2o {
   O
   H 1 0.9
@@ -11,4 +24,9 @@ set {
 }
 
 energy('eom-ccsd')
+compare_values(scf_0, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy")                 #TEST
+compare_values(ccsd_0, get_variable("CCSD TOTAL ENERGY"), 7, "CCSD energy")              #TEST
+compare_values(eomccsd_1, get_variable("CC ROOT 1 TOTAL ENERGY"), 7, "EOM-CCSD root 1")  #TEST
+compare_values(eomccsd_6, get_variable("CC ROOT 6 TOTAL ENERGY"), 7, "EOM-CCSD root 6")  #TEST
+
 clean()
