@@ -25,7 +25,9 @@ procedures = {
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'eom-ccsd'      : run_eom_ccsd,
-            'detci'         : run_detci
+            'detci'         : run_detci,
+            'mp'            : run_detci,
+            'zapt'          : run_detci
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -40,6 +42,19 @@ procedures = {
 
 def energy(name, **kwargs):
     lowername = name.lower()
+
+    if re.match("mp\d+$", lowername):
+        matchstr = re.match("mp", lowername)
+        level = int(lowername[matchstr.end():])
+        if (level != 2):
+            kwargs['level']=level
+            lowername='mp'
+
+    if re.match("zapt\d+$", lowername):
+        matchstr = re.match("zapt", lowername)
+        level = lowername[matchstr.end():]
+        kwargs['level']=int(level)
+        lowername='zapt'
 
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
