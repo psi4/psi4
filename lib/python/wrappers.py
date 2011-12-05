@@ -1076,8 +1076,8 @@ def complete_basis_set(name, **kwargs):
             MODELCHEM.append(lvl[1])
 
             for job in JOBS_EXT:
-                if (lvl[1]['f_wfn'] == job['f_wfn']) and (lvl[1]['f_portion'] == job['f_portion']) and \
-                   (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_zeta'] == job['f_zeta']):
+                if ((lvl[1]['f_wfn'] == job['f_wfn']) and (lvl[1]['f_portion'] == job['f_portion']) and
+                   (lvl[1]['f_basis'] == job['f_basis'])):
                     lvl[1]['f_energy'] = job['f_energy']
 
     for stage in GRAND_NEED:
@@ -1142,6 +1142,8 @@ def complete_basis_set(name, **kwargs):
     PsiMod.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CBS CORRELATION ENERGY', finalenergy-GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CBS TOTAL ENERGY', finalenergy)
+    PsiMod.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    PsiMod.set_variable('CURRENT CORRELATION ENERGY', finalenergy-GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CURRENT ENERGY', finalenergy)
     return finalenergy
 

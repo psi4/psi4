@@ -385,6 +385,7 @@ def process_input(raw_input):
     imports += 'from text import *\n'
     imports += 'from inpsight import *\n'
     imports += 'from wrappers import *\n'
+    imports += 'from aliases import *\n'
     imports += 'from psiexceptions import *\n'
     imports += 'from util import *\n'
     imports += 'import pickle\n'
