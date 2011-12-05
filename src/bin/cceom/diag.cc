@@ -20,6 +20,7 @@
 #include "Local.h"
 #define EXTERN
 #include "globals.h"
+#include <psi4-dec.h>
 
 namespace psi { namespace cceom {
 #include <physconst.h>
@@ -974,6 +975,10 @@ timer_off("INIT GUESS");
 		  /* save the state energy */
 		  eom_params.state_energies[num_converged_index] = totalE;
 					
+          std::stringstream s;
+          s << "CC ROOT " << (num_converged_index+1) << " TOTAL ENERGY";
+          Process::environment.globals[s.str()] = totalE;
+
           fprintf(outfile,"EOM State %d %10.3lf %10.1lf %14.10lf  %17.12lf\n",
               ++num_converged_index,
 		  lambda_old[i]* _hartree2ev, lambda_old[i]* _hartree2wavenumbers,

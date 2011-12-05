@@ -569,9 +569,9 @@ PsiReturnType ccenergy(Options &options)
 #endif
 
   Process::environment.globals["CURRENT ENERGY"] = moinfo.ecc+moinfo.eref;
-  Process::environment.globals["CORRELATION ENERGY"] = moinfo.ecc;
-  Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
-  Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
+  Process::environment.globals["CURRENT CORRELATION ENERGY"] = moinfo.ecc;
+  //Process::environment.globals["CC TOTAL ENERGY"] = moinfo.ecc+moinfo.eref;
+  //Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
 
   exit_io();
   if(params.brueckner && brueckner_done)

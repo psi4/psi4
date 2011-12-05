@@ -89,7 +89,7 @@ PsiReturnType cceom(Options &options)
   timer_off("CCEOM");
 #endif
   exit_io();
-  exit(0);
+  return Success;
 }
 
 void init_io(void)

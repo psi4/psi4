@@ -1218,6 +1218,7 @@ void MAD_MP2::print_energy()
     energy_ = energies_["Total Energy"];
 
     Process::environment.globals["CURRENT ENERGY"] = energy_;
+    Process::environment.globals["CURRENT CORRELATION ENERGY"] = energies_["Correlation Energy"];
     Process::environment.globals["DF-MP2 TOTAL ENERGY"] = energy_;
     Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];
     Process::environment.globals["E_MP2J"] = E_MP2J_;
