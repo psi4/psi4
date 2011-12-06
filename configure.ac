@@ -1017,6 +1017,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/rasci-c2-active/Makefile
           tests/rasci-h2o/Makefile
           tests/rasci-ne/Makefile
+          tests/zaptn-nh2/Makefile
+          tests/mpn-bh/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
