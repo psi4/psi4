@@ -275,15 +275,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     MPN=TRUE. -*/
     options.add_bool("MPN",false);
 
-    /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
-    options.add_bool("SAVE_MPN2",false);
+    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if 
+    available from WIGNER=true); if 2, save the MP(2n-2) energy (if
+    available from WIGNER=true). !expert -*/
+    options.add_int("SAVE_MPN2",0);
 
     /*- If TRUE, an orthonormal vector space is employed rather than
       storing the kth order wfn !expert -*/
     options.add_bool("MPN_SCHMIDT",false);
 
     /*- Use Wigner formulas in the Empn series? !expert -*/
-    options.add_bool("WIGNER",false);
+    options.add_bool("WIGNER",true);
 
     /*- z in H = H0 + z * H1 !expert -*/
     options.add_double("PERTURBATION_PARAMETER",1.0);

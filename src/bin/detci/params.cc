@@ -262,7 +262,7 @@ void get_parameters(Options &options)
     Parameters.nodfile = FALSE;
   }
 
-  Parameters.save_mpn2 = options["SAVE_MPN2"].to_integer();
+  Parameters.save_mpn2 = options.get_int("SAVE_MPN2");
   Parameters.perturbation_parameter =
     options.get_double("PERTURBATION_PARAMETER");
 
