@@ -138,8 +138,8 @@ protected:
 
 public:
     /// Nuclear contributions
-    SimpleVector nuclear_dipole_contribution_;
-    SimpleVector nuclear_quadrupole_contribution_;
+    Vector nuclear_dipole_contribution_;
+    Vector nuclear_quadrupole_contribution_;
     //
     /// Set the amount of information to print
     void set_print(const int n) {print_ = n;}
