@@ -95,7 +95,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
     for(int h = 0; h < _nirreps; ++h){
         size_t rowLength = (size_t) I.params->coltot[h^(I.my_irrep)];
         for(int row=0; row < I.params->rowtot[h]; ++row) {
-            if((coreLeft - rowLength) >= 0){
+            if((coreLeft - rowLength) >= 0){  // <-- This is aways true (unsigned - unsigned >= 0)
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets-1][h]++;
                 bucketSize[nBuckets-1][h] += rowLength;
@@ -238,7 +238,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     for(int h = 0; h < _nirreps; ++h){
         size_t rowLength = (size_t) I.params->coltot[h^(I.my_irrep)];
         for(int row=0; row < I.params->rowtot[h]; ++row) {
-            if((coreLeft - rowLength) >= 0){
+            if((coreLeft - rowLength) >= 0){  // <-- This is always true (unsigned - unsigned >= 0)
                 coreLeft -= rowLength;
                 bucketRowDim[nBuckets-1][h]++;
                 bucketSize[nBuckets-1][h] += rowLength;

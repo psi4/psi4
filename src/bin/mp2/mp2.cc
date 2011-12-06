@@ -109,6 +109,7 @@ mp2(Options & options)
   Process::environment.globals["MP2 TOTAL ENERGY"] = mo.Escf + mo.Emp2;
 
   Process::environment.globals["CURRENT ENERGY"] = mo.Escf + mo.Emp2;
+  Process::environment.globals["CURRENT CORRELATION ENERGY"] = mo.Emp2;
 
   chkpt_init(PSIO_OPEN_OLD);
   // Save MP2 contribution to Chkpt
