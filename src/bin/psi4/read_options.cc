@@ -648,8 +648,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
-      /*- The amount of memory available (in Mb) -*/
-      options.add_int("MEMORY", 2000);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- The maximum number of lambda iterations per macro-iteration -*/
