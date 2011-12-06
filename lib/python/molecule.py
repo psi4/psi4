@@ -13,9 +13,6 @@ import PsiMod
 #
 def extract_clusters(mol, ghost = True, cluster_size = 0):
    
-    if not mol:
-        raise ValueNotSet("no molecule found")
-    
     #How many levels of clusters are possible?
     nfrag = mol.nfragments()
     
@@ -103,9 +100,6 @@ def extract_cluster_indexing(mol,cluster_size = 0):
 
     import copy   
 
-    if not mol:
-        raise ValueNotSet("no molecule found")
-    
     #How many levels of clusters are possible?
     nfrag = mol.nfragments()
  

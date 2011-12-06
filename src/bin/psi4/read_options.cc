@@ -237,18 +237,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("FCI_STRINGS",false);
 
     /*- This determines whether `mixed' RAS II/RAS III excitations are
-      allowed into the CI space.  This is useful for placing additional
-      constraints on a RAS CI. !expert -*/
+      allowed into the CI space.  If FALSE, then if there are any electrons
+      in RAS III, then the number of holes in RAS I cannot exceed the given
+      excitation level EX_LVL. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- This determines whether `mixed' excitations involving RAS IV are
-      allowed into the CI space.  This is useful for placing additional
-      constraints on a RAS CI. !expert -*/
+      allowed into the CI space.  Useful to specify a split-virtual
+      CISD[TQ] computation.  If FALSE, then if there are any electrons
+      in RAS IV, then the number of holes in RAS I cannot exceed the given
+      excitation level EX_LVL.  !expert -*/
     options.add_bool("MIXED4",true);
 
-    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in
-      RAS IV, then the holes in RAS I must equal the particles in RAS III
-      + RAS IV else the string is discarded !expert -*/
+    /*- Restrict strings with e- in RAS IV.  Useful to reduce the number of
+      strings required if MIXED4=true, as in a split-virutal CISD[TQ]
+      computation.  If more than one electron is in RAS IV, then the 
+      holes in RAS I cannot exceed the number of particles in 
+      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.  
+      !expert -*/
     options.add_bool("R4S",false);
 
     /*- Tells DETCI whether or not to do string replacements on the fly.  Can
@@ -269,15 +275,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     MPN=TRUE. -*/
     options.add_bool("MPN",false);
 
-    /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
-    options.add_bool("SAVE_MPN2",false);
+    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if 
+    available from WIGNER=true); if 2, save the MP(2n-2) energy (if
+    available from WIGNER=true). !expert -*/
+    options.add_int("SAVE_MPN2",0);
 
     /*- If TRUE, an orthonormal vector space is employed rather than
       storing the kth order wfn !expert -*/
     options.add_bool("MPN_SCHMIDT",false);
 
     /*- Use Wigner formulas in the Empn series? !expert -*/
-    options.add_bool("WIGNER",false);
+    options.add_bool("WIGNER",true);
 
     /*- z in H = H0 + z * H1 !expert -*/
     options.add_double("PERTURBATION_PARAMETER",1.0);
@@ -642,8 +650,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
-      /*- The amount of memory available (in Mb) -*/
-      options.add_int("MEMORY", 2000);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- The maximum number of lambda iterations per macro-iteration -*/

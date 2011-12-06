@@ -4,6 +4,9 @@ import os;
 
 yes = re.compile(r'^(yes|true|on|1)', re.IGNORECASE)
 no = re.compile(r'^(no|false|off|0)', re.IGNORECASE)
+der0th = re.compile(r'^(0|none|energy)', re.IGNORECASE)
+der1st = re.compile(r'^(1|first|gradient)', re.IGNORECASE)
+der2nd = re.compile(r'^(2|second|hessian)', re.IGNORECASE)
 
 def bad_option_syntax(line):
     print 'Unsupported syntax:\n\n%s\n\n' % (line)
@@ -382,6 +385,7 @@ def process_input(raw_input):
     imports += 'from text import *\n'
     imports += 'from inpsight import *\n'
     imports += 'from wrappers import *\n'
+    imports += 'from aliases import *\n'
     imports += 'from psiexceptions import *\n'
     imports += 'from util import *\n'
     imports += 'import pickle\n'
@@ -396,7 +400,7 @@ def process_input(raw_input):
         fh.close()
 
     blank_mol = 'geometry("""\n'
-    blank_mol += 'X\n'
+    blank_mol += '0 1\nH\nH 1 0.74\n'
     blank_mol += '""","blank_molecule_psi4_yo")\n'
 
     temp = imports + psirc + blank_mol + temp

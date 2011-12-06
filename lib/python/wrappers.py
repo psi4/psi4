@@ -1,16 +1,18 @@
 import PsiMod
 import re
 import os
+import input
 import math
 import warnings
+import pickle
 from driver import *
 from molecule import *
 from text import *
+from collections import defaultdict
 
 # Function to make calls among wrappers(), energy(), optimize(), etc.
 def call_function_in_1st_argument(funcarg, **kwargs):
-    function2call = funcarg
-    return function2call(**kwargs)
+    return funcarg(**kwargs)
 
 ###################
 ##  Start of cp  ##
@@ -31,21 +33,22 @@ def cp(name, **kwargs):
             kwargs['cp_func'] = energy
     func = kwargs['cp_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper counterpoise_correct.' % (func.__name__))
     if (func is db):
-        raise Exception('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
+        raise ValidationError('Wrapper counterpoise_correct is unhappy to be calling function \'%s\'.' % (func.__name__))
 
     check_bsse = False
     if (kwargs.has_key('check_bsse')):
         check_bsse = kwargs['check_bsse']
 
-    molecule = PsiMod.get_active_molecule() 
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
- 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-    
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
     ri_ints_io = PsiMod.get_option('RI_INTS_IO')
     PsiMod.set_global_option('RI_INTS_IO','SAVE')
     activate(molecule) 
@@ -148,243 +151,6 @@ counterpoise_correction = cp
 
 
 
-######################################
-##  Start of basis_set_extrapolate  ##
-######################################
-
-def basis_set_extrapolate(basis_name, **kwargs):
-    """ Performs a basis set extrapolation substituting the tag [X] in 
-        the basis name for letters given in an array by the optional 'labels' keyword.  The indices in
-        labels must correspond to the number of zetas (or other extrapolation parameter).  The default is
-             ['','', 'D', 'T', 'Q', '5', '6', '7', '8', '9'].  Other optional keywords include:
-            * smallest: indicates the smallest number of zetas 
-                        (or other extrapolation parameter) to include in the calculation.  The default is 2.
-            * largest: indicates the largest number of zetas 
-                        (or other extrapolation parameter) to include in the extrapolation.  The default is 4.
-            * molecule: optionally specify a specific molecule to check.  If no molecule is specified,
-                        the last molecule from the input file will be used.
-            * wfn: The type of wavefunction to use for the extrapolation.  If this keyword is not
-                        specified, the wfn from the globals block is used.
-            * largest_correlated: Specify a different largest number of zetas for the correlated portion of
-                        the basis set extrapolation.
-    """
-    # TODO Implement more extrapolation schemes and put them in as an "extrapolation type" option   
-    
-
-    # Back up global options that may be changed
-    backup_basis = PsiMod.get_global_option("BASIS")
-    backup_wfn = PsiMod.get_global_option("WFN")
-
-    labels = ['','','D','T','Q','5','6','7','8','9']
-    if (kwargs.has_key('labels')):
-        labels = kwargs['labels']    
-
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
- 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-    
-    activate(molecule) 
-    molecule.update_geometry()
-
-    PsiMod.print_out("\n")
-    banner("Basis Set Extrapolation")
-    PsiMod.print_out("\n")
-    
-    smallest = 2
-    if(kwargs.has_key('smallest')):
-        smallest = kwargs['smallest'];
-
-    largest = 4
-    if(kwargs.has_key('largest')):
-        largest = kwargs['largest'];
-    
-    largest_correlated = largest
-    if(kwargs.has_key('largest_correlated')):
-        largest_correlated = kwargs['largest_correlated'];
-
-    is_hf = False
-    wavefunction = PsiMod.get_global_option("WFN");
-    if(kwargs.has_key('wfn')):
-        wavefunction = kwargs['wfn'];
-    if not wavefunction:
-        is_hf = True  # This is just a HF basis set extrapolation
-    if(wavefunction.lower() == "mp2"):
-        PsiMod.print_out("Warning: Plain mp2 energy not available.  Using dfmp2 instead.")
-        wavefunction = "dfmp2"
-
-    reference = PsiMod.get_global_option("REFERENCE");
-    
-    if(is_hf and kwargs.has_key('largest_correlated')):
-        PsiMod.print_out("Warning: largest_correlated was specified in basis set extrapolation, but no WFN was specified,\n\
-                and so a HF extrapolation was assumed.  \
-                Are you sure this is what you meant to do?\n")
-
-    if(largest < largest_correlated):
-        PsiMod.print_out("Warning: largest_correlated (=" + str(largest_correlated) + \
-                ") was set to be larger than largest (=" + str(largest) +") basis set parameter.  This doesn't really make sense.\n\
-                Are you sure this is what you meant to do?  largest will be set to largest_correlated\n")
-        largest = largest_correlated
-    
-
-    # Need at least 3 calculations to do HF extrapolation
-    if(largest - smallest < 2):
-        raise "Not enough basis sets to do SCF extrapolation"
-    # Need at least 2 calculations to do correlated extrapolation
-    if(largest_correlated - smallest < 1):
-        raise "Not enough basis sets to do correlated extrapolation"
-    
-
-    def basis_for(zetas):
-        return re.sub('\[X\]', labels[zetas], basis_name)
-
-    def get_energy(n_zetas, hf_only=is_hf):
-        basis = basis_for(n_zetas)
-        PsiMod.print_out("\n")
-        banner("Finding " + wavefunction + " energy with basis set " + basis)
-        PsiMod.print_out("\n")
-        PsiMod.set_local_option("SCF", "REFERENCE", reference)
-        #  Blow away the user's file32 if they like to keep such things.  They shouldn't need it for this type of thing anyway
-        #  TODO devise a more elegant solution (if necessary?) for the file32 keeping problem
-        path32 = PsiMod.IOManager.shared_object().get_file_path(32);
-        filename = path32 + "psi." + str(os.getpid()) + ".32"
-        if(os.path.isfile(filename)):
-            os.remove(filename)
-        if (hf_only):
-            PsiMod.set_local_option("SCF", "BASIS", basis)
-            PsiMod.clean()
-            PsiMod.scf()
-            ret_val = PsiMod.get_variable("CURRENT ENERGY") 
-            PsiMod.clean()
-            return ret_val
-        else:
-            PsiMod.clean()
-            PsiMod.set_global_option("BASIS", basis)
-            PsiMod.set_global_option("WFN", wavefunction)  # Can't set local option since we don't know which module will be run necessarily
-            energy(wavefunction.lower())
-            ret_val = PsiMod.get_variable("SCF TOTAL ENERGY")
-            cor_val = PsiMod.get_variable("CURRENT ENERGY") 
-            PsiMod.clean()
-            return ret_val, cor_val
-        
-
-    def print_energies(e_array, extrapolated_vals, e_corr_array = []):
-        #TODO print extrapolation coefficients
-        PsiMod.print_out("\n")
-        banner("Basis Set Extrapolation Results")
-        PsiMod.print_out("\n")
-        if(is_hf):
-            width = 22
-            PsiMod.print_out("-"*(width * 2 + 5) + "\n")
-            PsiMod.print_out((("|%"+ str(width) + "s |") % "Basis Set") + (("%" + str(width) + "s |\n") % (reference + " Reference Energy"))) 
-            PsiMod.print_out("-"*(width * 2 + 5) + "\n")
-            for i in range(largest+1 - smallest):
-                PsiMod.print_out((("|%"+ str(width) + "s |") % basis_for(smallest + i)) + (("%" + str(width)+"."+str(width-6)+"f |\n") % e_array[i]))
-            PsiMod.print_out("-"*(width * 2 + 5) + "\n")
-            PsiMod.print_out((("|%"+ str(width) + "s |") % "Extrapolated Value") + (("%" + str(width)+"."+str(width-6)+"f |\n") % extrapolated_vals[0]))
-            PsiMod.print_out("-"*(width * 2 + 5) + "\n")
-        else:
-            width = 25
-            str_form = "%" + str(width) + "s"
-            float_form = "%" + str(width) + "." + str(width-6) + "f"
-            PsiMod.print_out("-"*(width * 4 + 11) + "\n")
-            PsiMod.print_out((("|" + str_form + " |") % "Basis Set") + ((str_form + " | ") % (reference + " Reference Energy"))) 
-            PsiMod.print_out(((str_form + " | ") % (wavefunction + " Correlation Energy")) + ((str_form + " |\n") % ("Total Energy"))) 
-            PsiMod.print_out("-"*(width * 4 + 11) + "\n")
-            for i in range(largest+1 - smallest):
-                PsiMod.print_out((("|"+ str_form + " |") % basis_for(smallest + i)) + ((float_form + " | ") % e_array[i]))
-                if(smallest + i <= largest_correlated):
-                    PsiMod.print_out(((float_form + " | ") % e_corr_array[i]) + ((float_form + " |\n") % (e_array[i] + e_corr_array[i])))
-                else:
-                    PsiMod.print_out(((str_form + " | ") % "[Not Calculated]") + ((str_form + " |\n") % "[Not Calculated]"))
-            PsiMod.print_out("-"*(width * 4 + 11) + "\n")
-            PsiMod.print_out((("|"+ str_form + " |") % "Extrapolated Values") + ((float_form + " | ") % extrapolated_vals[0]))
-            PsiMod.print_out(((float_form + " | ") % extrapolated_vals[1]) + ((float_form + " |\n") % (extrapolated_vals[0] + extrapolated_vals[1])))
-            PsiMod.print_out("-"*(width * 4 + 11) + "\n")
-
-
-    e = []
-    ehf = []
-    
-    a = 0.0
-    ahf = 0.0
-
-    if(is_hf):  # Then all we need to do is the HF extrapolation
-        for i in range(smallest, largest + 1):
-            ehf.append(get_energy(i))
-        x = range(smallest, largest + 1)
-        # For now, just a 3-point extrapolation.
-        delta_e = (ehf[-2] - ehf[-3])/(ehf[-1] - ehf[-2])
-        if(delta_e < 0.0):
-            PsiMod.print_out("\nSCF extrapolation problem: (ehf[n-1] - ehf[n-2])/(ehf[n] - ehf[n-1]) is negative:\n\
-                    \tcannot take the log of a negative number.  Printing what I can...\n\n")
-            print_energies(ehf, [float("nan"), float("nan")], e)
-            raise Exception("SCF extrapolation problem: (ehf[n-1] - ehf[n-2])/(ehf[n] - ehf[n-1]) is negative; \
-                    \ncannot take the log of a negative number: " \
-                    + str(delta_e))  
-        c = math.log(delta_e)
-        b = (ehf[-1] - ehf[-2])/(math.exp(-c * x[-1]) - math.exp(-c * x[-2]))
-        a = ehf[-1] - (b * math.exp(-c * x[-1]))
-        print_energies(ehf, [a])
-        ahf = a
-    else:
-        for i in range(smallest, largest_correlated + 1):
-            tmp_hf, tmp = get_energy(i)
-            e.append(tmp - tmp_hf)
-            ehf.append(tmp_hf)
-        
-        for i in range(largest_correlated + 1, largest + 1):
-            tmp_hf = get_energy(i, True)
-            ehf.append(tmp_hf)
-        
-        # Three-point HF extrapolation
-        x = range(smallest, largest + 1)
-        delta_e = (ehf[-2] - ehf[-3])/(ehf[-1] - ehf[-2])
-        if(delta_e < 0.0):
-            PsiMod.print_out("\nSCF extrapolation problem: (ehf[n-1] - ehf[n-2])/(ehf[n] - ehf[n-1]) is negative:\n\
-                    \tcannot take the log of a negative number.  Printing what I can...\n\n")
-            print_energies(ehf, [float("nan"), float("nan")], e)
-            raise Exception("SCF extrapolation problem: (ehf[n-1] - ehf[n-2])/(ehf[n] - ehf[n-1]) is negative; \
-                    \ncannot take the log of a negative number: " \
-                    + str(delta_e))
-
-        
-        c = math.log(delta_e)
-        bhf = (ehf[-1] - ehf[-2])/(math.exp(-c * x[-1]) - math.exp(-c * x[-2]))
-        ahf = ehf[-1] - (bhf * math.exp(-c * x[-1]))
-
-        
-        # Two-point Correlated extrapolation
-        x = range(smallest, largest_correlated + 1)
-        b = (e[-1] - e[-2])/(x[-1]**(-3) - x[-2]**(-3))
-        a = e[-1] - (b * x[-1]**(-3))
-
-        print_energies(ehf, [ahf, a], e)
-        
-
-        
-    # Restore global options that may be changed
-    PsiMod.set_global_option("BASIS", backup_basis)
-    PsiMod.set_global_option("WFN", backup_wfn)
-    
-    # Return the correlated extrapolation value if we have it
-    if not is_hf:
-        return (a + ahf)
-    else:
-        return ahf
-
-##  Aliases  ##
-bse = basis_set_extrapolate
-basis_set_extrapolation = basis_set_extrapolate
-
-####################################
-##  End of basis_set_extrapolate  ##
-####################################
-
-
-
 #########################
 ##  Start of Database  ##
 #########################
@@ -434,17 +200,8 @@ def database(name, db_name, **kwargs):
         * subset = [1,2,5] | ['1','2','5'] | ['BzMe-3.5', 'MeMe-5.0'] | etc.
             Specify a list of database members to run. Consult the database python files for available 
             molecular systems.
-
-    Examples:
-    ---------
-    A database job requires, at a minimum, the basis set to be set in its input file. The following
-    are valid example calls for the database() wrapper.
-        database('scf','S22')
     """
 
-    import input
-    import pickle
-    from collections import defaultdict
     #hartree2kcalmol = 627.508924  # consistent with constants in physconst.h
     hartree2kcalmol = 627.509469  # consistent with perl SETS scripts 
 
@@ -463,9 +220,9 @@ def database(name, db_name, **kwargs):
             kwargs['db_func'] = energy
     func = kwargs['db_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper database.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper database.' % (func.__name__))
     if (func is cp):
-        raise Exception('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
+        raise ValidationError('Wrapper database is unhappy to be calling function \'%s\'. Use the cp keyword within database instead.' % (func.__name__))
 
     # Define path and load module for requested database
     sys.path.append('%sdatabases' % (PsiMod.Process.environment["PSIDATADIR"]))
@@ -476,7 +233,7 @@ def database(name, db_name, **kwargs):
         PsiMod.print_out('\nPython module for database %s failed to load\n\n' % (db_name))
         PsiMod.print_out('\nSearch path that was tried:\n')
         PsiMod.print_out(", ".join(map(str, sys.path)))
-        raise Exception("Python module loading problem for database " + str(db_name))
+        raise ValidationError("Python module loading problem for database " + str(db_name))
     else:
         dbse = database.dbse
         HRXN = database.HRXN
@@ -499,8 +256,6 @@ def database(name, db_name, **kwargs):
     user_memory = PsiMod.get_memory()
 
     user_molecule = PsiMod.get_active_molecule()
-    if not user_molecule:
-        raise ValueNotSet("No molecule found.")
 
     # Configuration based upon e_name & db_name options
     #   Force non-supramolecular if needed
@@ -509,7 +264,7 @@ def database(name, db_name, **kwargs):
         try:
             database.ACTV_SA
         except AttributeError:
-            raise Exception('Database %s not suitable for non-supramolecular calculation.' % (db_name))
+            raise ValidationError('Database %s not suitable for non-supramolecular calculation.' % (db_name))
         else:
             symmetry_override = 1
             ACTV = database.ACTV_SA
@@ -536,7 +291,7 @@ def database(name, db_name, **kwargs):
     elif input.yes.match(str(db_symm)):
         pass
     else:
-        raise Exception('Symmetry mode \'%s\' not valid.' % (db_symm))
+        raise ValidationError('Symmetry mode \'%s\' not valid.' % (db_symm))
 
     #   Option mode of operation- whether db run in one job or files farmed out
     db_mode = 'continuous'
@@ -551,9 +306,9 @@ def database(name, db_name, **kwargs):
         if(kwargs.has_key('linkage')):
             db_linkage = kwargs['linkage']
         else:
-            raise Exception('Database execution mode \'reap\' requires a linkage option.')
+            raise ValidationError('Database execution mode \'reap\' requires a linkage option.')
     else:
-        raise Exception('Database execution mode \'%s\' not valid.' % (db_mode))
+        raise ValidationError('Database execution mode \'%s\' not valid.' % (db_mode))
 
     #   Option counterpoise- whether for interaction energy databases run in bsse-corrected or not
     db_cp = 'no'
@@ -564,13 +319,13 @@ def database(name, db_name, **kwargs):
         try:
             database.ACTV_CP
         except AttributeError:
-            raise Exception('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
+            raise ValidationError('Counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
         else:
             ACTV = database.ACTV_CP
     elif input.no.match(str(db_cp)):
         pass
     else:
-        raise Exception('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
+        raise ValidationError('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
 
     #   Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
     db_zpe = 'no'
@@ -578,11 +333,11 @@ def database(name, db_name, **kwargs):
         db_zpe = kwargs['zpe']
 
     if input.yes.match(str(db_zpe)):
-        raise Exception('Zero-point-correction mode \'yes\' not yet implemented.')
+        raise ValidationError('Zero-point-correction mode \'yes\' not yet implemented.')
     elif input.no.match(str(db_zpe)):
         pass
     else:
-        raise Exception('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
+        raise ValidationError('Zero-point-correction \'mode\' %s not valid.' % (db_zpe))
 
     #   Option benchmark- whether error statistics computed wrt alternate reference energies
     db_benchmark = 'default'
@@ -595,7 +350,7 @@ def database(name, db_name, **kwargs):
             try:
                 getattr(database, 'BIND_' + db_benchmark)
             except AttributeError:
-                raise Exception('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
+                raise ValidationError('Special benchmark \'%s\' not available for database %s.' % (db_benchmark, db_name))
             else:
                 BIND = getattr(database, 'BIND_' + db_benchmark)
 
@@ -614,28 +369,28 @@ def database(name, db_name, **kwargs):
             try:
                 database.HRXN_SM
             except AttributeError:
-                raise Exception('Special subset \'small\' not available for database %s.' % (db_name))
+                raise ValidationError('Special subset \'small\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_SM
         elif re.match(r'^large$', db_subset, re.IGNORECASE):
             try:
                 database.HRXN_LG
             except AttributeError:
-                raise Exception('Special subset \'large\' not available for database %s.' % (db_name))
+                raise ValidationError('Special subset \'large\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_LG
         elif re.match(r'^equilibrium$', db_subset, re.IGNORECASE):
             try:
                 database.HRXN_EQ
             except AttributeError:
-                raise Exception('Special subset \'equilibrium\' not available for database %s.' % (db_name))
+                raise ValidationError('Special subset \'equilibrium\' not available for database %s.' % (db_name))
             else:
                 HRXN = database.HRXN_EQ
         else:
             try:
                 getattr(database, db_subset)
             except AttributeError:
-                raise Exception('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
+                raise ValidationError('Special subset \'%s\' not available for database %s.' % (db_subset, db_name))
             else:
                 HRXN = getattr(database, db_subset)
     else:
@@ -644,7 +399,7 @@ def database(name, db_name, **kwargs):
             if rxn in HRXN:
                 temp.append(rxn)
             else:
-                raise Exception('Subset element \'%s\' not a member of database %s.' % (str(rxn), db_name))
+                raise ValidationError('Subset element \'%s\' not a member of database %s.' % (str(rxn), db_name))
         HRXN = temp
 
     temp = []
@@ -705,8 +460,6 @@ def database(name, db_name, **kwargs):
         # extra definition of molecule so that logic in building commands string has something to act on
         exec GEOS[rgt]
         molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("No molecule found.")
 
         # build string of title banner
         banners = ''
@@ -736,7 +489,7 @@ def database(name, db_name, **kwargs):
                 elif isinstance(chgdoptval, int) or isinstance(chgdoptval, float):
                     commands += """PsiMod.set_global_option('%s', %s)\n""" % (chgdopt, chgdoptval)
                 else:
-                    raise Exception('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
+                    raise ValidationError('Option \'%s\' is not of a type (string, int, float, bool) that can be processed by database wrapper.' % (chgdopt))
 
         # build string of molecule and commands that are dependent on the database
         commands += '\n'
@@ -830,10 +583,10 @@ def database(name, db_name, **kwargs):
                     s = line.split()
                     if (len(s) != 0) and (s[0:3] == ['DATABASE', 'RESULT:', 'computation']):
                         if int(s[3]) != db_linkage:
-                           raise Exception('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' 
+                           raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.' 
                                % (rgt, str(s[3]), str(db_linkage)))
                         if s[6] != rgt:
-                           raise Exception('Output file \'%s.out\' has nominal affiliation %s incompatible with reagent %s.' 
+                           raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with reagent %s.' 
                                % (rgt, s[6], rgt))
                         if (s[8:10] == ['electronic', 'energy']):
                             ERGT[rgt] = float(s[10])
@@ -999,7 +752,45 @@ db = database
 ##  Start of Complete Basis Set  ##
 ###################################
 
-def complete_basis_set(**kwargs):
+def complete_basis_set(name, **kwargs):
+    """Wrapper to define an energy method with basis set extrapolations and delta corrections.
+
+    A CBS energy method is defined in four sequential stages (scf, corl, delta, delta2) covering 
+    treatment of the reference total energy, the correlation energy, a delta correction to the 
+    correlation energy, and a second delta correction. Each is activated by its stage_wfn keyword 
+    and is only allowed if all preceding stages are active.
+
+    Required Arguments:
+    -------------------
+    * name (or unlabeled first argument) indicates the computational method for the correlation energy, unless
+        only reference step to be performed, in which case should be 'scf'. May be overruled if wfn keywords given.
+
+    Optional Arguments:  --> 'default_option' <-- 
+    ------------------
+    Energy Methods:  Indicates the energy method employed for each stage
+    * corl_wfn          = 'mp2' | 'ccsd(t)' | etc.
+    * delta_wfn         = 'ccsd' | 'ccsd(t)' | etc.
+    * delta_wfn_lesser  = --> 'mp2' <-- | 'ccsd' | etc.
+    * delta2_wfn        = 'ccsd' | 'ccsd(t)' | etc.
+    * delta2_wfn_lesser = --> 'mp2' <-- | 'ccsd(t)' | etc.
+
+    Basis Sets:  Indicates the single or sequence of basis sets employed for each stage.
+    * scf_basis    = --> corl_basis <-- | 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+    * corl_basis   = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+    * delta_basis  = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+    * delta2_basis = 'cc-pV[TQ]Z' | 'jun-cc-pv[tq5]z' | '6-31G*' | etc.
+
+    Schemes:  Indicates the formula for performing basis set extrapolation (or using the single best
+        basis with highest_1) for each stage.
+    * scf_scheme    = --> highest_1 <-- | scf_xtpl_helgaker_3
+    * corl_scheme   = --> highest_1 <-- | corl_xtpl_helgaker_2
+    * delta_scheme  = --> highest_1 <-- | corl_xtpl_helgaker_2
+    * delta2_scheme = --> highest_1 <-- | corl_xtpl_helgaker_2
+    """
+
+    # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+    if not('name' in kwargs) and name:
+        kwargs['name'] = name.lower()
 
     # Establish function to call (only energy makes sense for cbs)
     if not('cbs_func' in kwargs):
@@ -1010,9 +801,9 @@ def complete_basis_set(**kwargs):
             kwargs['cbs_func'] = energy
     func = kwargs['cbs_func']
     if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper complete_basis_set.' % (func.__name__))
+        raise ValidationError('Function \'%s\' does not exist to be called by wrapper complete_basis_set.' % (func.__name__))
     if not(func is energy):
-        raise Exception('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
+        raise ValidationError('Wrapper complete_basis_set is unhappy to be calling function \'%s\' instead of \'energy\'.' % (func.__name__))
 
     # Define some quantum chemical knowledge, namely what methods are subsumed in others
     VARH = {}
@@ -1044,12 +835,13 @@ def complete_basis_set(**kwargs):
     b_user_wfn = PsiMod.has_global_option_changed('WFN')
     user_wfn = PsiMod.get_option('WFN')
 
-    molecule = PsiMod.get_active_molecule() 
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')    
- 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # Establish method for correlation energy
     if (kwargs.has_key('name')):
@@ -1063,35 +855,35 @@ def complete_basis_set(**kwargs):
         cbs_corl_wfn = kwargs['corl_wfn'].lower()
     if do_corl:
         if not (cbs_corl_wfn in VARH.keys()):
-            raise Exception('Requested CORL method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_corl_wfn))
+            raise ValidationError('Requested CORL method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_corl_wfn))
 
     # Establish method for delta correction energy
     if (kwargs.has_key('delta_wfn')):
         do_delta = 1
         cbs_delta_wfn = kwargs['delta_wfn'].lower()
         if not (cbs_delta_wfn in VARH.keys()):
-            raise Exception('Requested DELTA method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn))
+            raise ValidationError('Requested DELTA method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn))
 
         if (kwargs.has_key('delta_wfn_lesser')):
             cbs_delta_wfn_lesser = kwargs['delta_wfn_lesser'].lower()
         else:
             cbs_delta_wfn_lesser = 'mp2'
         if not (cbs_delta_wfn_lesser in VARH.keys()):
-            raise Exception('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
+            raise ValidationError('Requested DELTA method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta_wfn_lesser))
 
     # Establish method for second delta correction energy
     if (kwargs.has_key('delta2_wfn')):
         do_delta2 = 1
         cbs_delta2_wfn = kwargs['delta2_wfn'].lower()
         if not (cbs_delta2_wfn in VARH.keys()):
-            raise Exception('Requested DELTA2 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn))
+            raise ValidationError('Requested DELTA2 method \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn))
 
         if (kwargs.has_key('delta2_wfn_lesser')):
             cbs_delta2_wfn_lesser = kwargs['delta2_wfn_lesser'].lower()
         else:
             cbs_delta2_wfn_lesser = 'mp2'
         if not (cbs_delta2_wfn_lesser in VARH.keys()):
-            raise Exception('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
+            raise ValidationError('Requested DELTA2 method lesser \'%s\' is not recognized. Add it to VARH in wrapper.py to proceed.' % (cbs_delta2_wfn_lesser))
 
     # Check that user isn't skipping steps in scf + corl + delta + delta2 sequence
     if do_scf and not do_corl and not do_delta and not do_delta2:
@@ -1103,7 +895,7 @@ def complete_basis_set(**kwargs):
     elif do_scf and do_corl and do_delta and do_delta2:
         pass
     else:
-        raise Exception('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) not valid. These steps are cummulative.' %
+        raise ValidationError('Requested scf (%s) + corl (%s) + delta (%s) + delta2 (%s) not valid. These steps are cummulative.' %
             (do_scf, do_corl, do_delta, do_delta2))
 
     # Establish list of valid basis sets for correlation energy
@@ -1111,7 +903,7 @@ def complete_basis_set(**kwargs):
         if(kwargs.has_key('corl_basis')):
             BSTC, ZETC = validate_bracketed_basis(kwargs['corl_basis'].lower())
         else:
-            raise Exception('CORL basis sets through keyword \'%s\' are required.' % ('corl_basis'))
+            raise ValidationError('CORL basis sets through keyword \'%s\' are required.' % ('corl_basis'))
 
     # Establish list of valid basis sets for scf energy
     if(kwargs.has_key('scf_basis')):
@@ -1121,21 +913,21 @@ def complete_basis_set(**kwargs):
             BSTR = BSTC[:]
             ZETR = ZETC[:]
         else:
-            raise Exception('SCF basis sets through keyword \'%s\' are required. Or perhaps you forgot the \'%s\'.' % ('scf_basis', 'corl_wfn'))
+            raise ValidationError('SCF basis sets through keyword \'%s\' are required. Or perhaps you forgot the \'%s\'.' % ('scf_basis', 'corl_wfn'))
 
     # Establish list of valid basis sets for delta correction energy
     if do_delta:
         if(kwargs.has_key('delta_basis')):
             BSTD, ZETD = validate_bracketed_basis(kwargs['delta_basis'].lower())
         else:
-            raise Exception('DELTA basis sets through keyword \'%s\' are required.' % ('delta_basis'))
+            raise ValidationError('DELTA basis sets through keyword \'%s\' are required.' % ('delta_basis'))
 
     # Establish list of valid basis sets for second delta correction energy
     if do_delta2:
         if(kwargs.has_key('delta2_basis')):
             BSTD2, ZETD2 = validate_bracketed_basis(kwargs['delta2_basis'].lower())
         else:
-            raise Exception('DELTA2 basis sets through keyword \'%s\' are required.' % ('delta2_basis'))
+            raise ValidationError('DELTA2 basis sets through keyword \'%s\' are required.' % ('delta2_basis'))
 
     # Establish treatment for scf energy (validity check useless since python will catch it long before here)
     cbs_scf_scheme = highest_1
@@ -1284,8 +1076,8 @@ def complete_basis_set(**kwargs):
             MODELCHEM.append(lvl[1])
 
             for job in JOBS_EXT:
-                if (lvl[1]['f_wfn'] == job['f_wfn']) and (lvl[1]['f_portion'] == job['f_portion']) and \
-                   (lvl[1]['f_basis'] == job['f_basis']) and (lvl[1]['f_zeta'] == job['f_zeta']):
+                if ((lvl[1]['f_wfn'] == job['f_wfn']) and (lvl[1]['f_portion'] == job['f_portion']) and
+                   (lvl[1]['f_basis'] == job['f_basis'])):
                     lvl[1]['f_energy'] = job['f_energy']
 
     for stage in GRAND_NEED:
@@ -1347,7 +1139,11 @@ def complete_basis_set(**kwargs):
     if not b_user_wfn:
         PsiMod.revoke_global_option_changed('WFN')
 
+    PsiMod.set_variable('CBS REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    PsiMod.set_variable('CBS CORRELATION ENERGY', finalenergy-GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CBS TOTAL ENERGY', finalenergy)
+    PsiMod.set_variable('CURRENT REFERENCE ENERGY', GRAND_NEED[0]['d_energy'])
+    PsiMod.set_variable('CURRENT CORRELATION ENERGY', finalenergy-GRAND_NEED[0]['d_energy'])
     PsiMod.set_variable('CURRENT ENERGY', finalenergy)
     return finalenergy
 
@@ -1363,17 +1159,17 @@ def validate_bracketed_basis(basisstring):
         basisname = basispattern.match(basisstring)
         for b in basisname.group(2):
             if b not in ZETA:
-                raise Exception('Basis set \'%s\' has invalid zeta level \'%s\'.' % (basisstring, b))
+                raise ValidationError('Basis set \'%s\' has invalid zeta level \'%s\'.' % (basisstring, b))
             if len(ZSET) != 0:
                 if (int(ZSET[len(ZSET)-1]) - ZETA.index(b)) != 1:
-                    raise Exception('Basis set \'%s\' has out-of-order zeta level \'%s\'.' % (basisstring, b))
+                    raise ValidationError('Basis set \'%s\' has out-of-order zeta level \'%s\'.' % (basisstring, b))
             BSET.append(basisname.group(1) + b + basisname.group(3))
             if b == 'd': b = '2'
             if b == 't': b = '3'
             if b == 'q': b = '4'
             ZSET.append(int(b))
     elif re.match(r'.*\[.*\].*$', basisstring, flags=re.IGNORECASE):
-        raise Exception('Basis set surrounding series indicator [] in \'%s\' is invalid.'  % (basisstring))
+        raise ValidationError('Basis set surrounding series indicator [] in \'%s\' is invalid.'  % (basisstring))
     else:
         BSET.append(basisstring)
         ZSET.append(0)
@@ -1421,7 +1217,7 @@ def highest_1(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) == 0):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         if (wfnname == 'scf'):
@@ -1464,7 +1260,7 @@ def corl_xtpl_helgaker_2(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) != 2):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         NEED = {'HI' : dict(zip(f_fields, [wfnname, 'corl', BSET[1], ZSET[1], 0.0])),
@@ -1508,7 +1304,7 @@ def scf_xtpl_helgaker_3(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) != 3):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         NEED = {'HI' : dict(zip(f_fields, [wfnname, 'tot', BSET[2], ZSET[2], 0.0])),
@@ -1562,7 +1358,7 @@ def scf_xtpl_helgaker_2(**largs):
 
         # Impose restrictions on zeta sequence
         if (len(ZSET) != 2):
-            raise Exception('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
+            raise ValidationError('Call to \'%s\' not valid with \'%s\' basis sets.' % (functionname, len(ZSET)))
 
         # Return array that logs the requisite jobs
         NEED = {'HI' : dict(zip(f_fields, [wfnname, 'tot', BSET[1], ZSET[1], 0.0])),
@@ -1601,22 +1397,22 @@ def validate_scheme_args(functionname, **largs):
         if(largs.has_key('wfnname')):
             wfnname = largs['wfnname']
         else:
-            raise Exception('Call to \'%s\' has keyword \'wfnname\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'wfnname\' missing.' % (functionname))
 
         if re.match(r'scf_.*$', functionname) and (wfnname != 'scf'):
-            raise Exception('Call to \'%s\' is intended for scf portion of calculation.' % (functionname))
+            raise ValidationError('Call to \'%s\' is intended for scf portion of calculation.' % (functionname))
         if re.match(r'corl_.*$', functionname) and (wfnname == 'scf'):
-            raise Exception('Call to \'%s\' is not intended for scf portion of calculation.' % (functionname))
+            raise ValidationError('Call to \'%s\' is not intended for scf portion of calculation.' % (functionname))
 
         if(largs.has_key('basisname')):
             BSET = largs['basisname']
         else:
-            raise Exception('Call to \'%s\' has keyword \'basisname\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'basisname\' missing.' % (functionname))
 
         if(largs.has_key('basiszeta')):
             ZSET = largs['basiszeta']
         else:
-            raise Exception('Call to \'%s\' has keyword \'basiszeta\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'basiszeta\' missing.' % (functionname))
 
     # Mode where function reads the now-filled-in energies from that same form and performs the sp, xtpl, delta, etc.
     elif re.match(r'^evaluate$', largs['mode'].lower()):
@@ -1625,10 +1421,10 @@ def validate_scheme_args(functionname, **largs):
         if(largs.has_key('needname')):
             NEED = largs['needname']
         else:
-            raise Exception('Call to \'%s\' has keyword \'needname\' missing.' % (functionname))
+            raise ValidationError('Call to \'%s\' has keyword \'needname\' missing.' % (functionname))
 
     else:
-        raise Exception('Call to \'%s\' has keyword \'mode\' missing or invalid.' % (functionname))
+        raise ValidationError('Call to \'%s\' has keyword \'mode\' missing or invalid.' % (functionname))
 
     return [mode, NEED, wfnname, BSET, ZSET]
 

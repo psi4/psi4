@@ -1,0 +1,34 @@
+#! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
+
+# The following values are taken from PSI3 #TEST
+refnuc   =   7.6466919885 #TEST
+refscf   = -55.5301768259 #TEST
+refci    = -55.6332639725954 #TEST
+refcorr  = refci - refscf    #TEST
+
+molecule nh2 {
+    0 2
+    N
+    H 1 1.013
+    H 1 1.013 2 103.2
+}
+
+set globals {
+  reference rohf
+  basis 6-31G
+  frozen_docc [1, 0, 0, 0]
+  # Use the ^2B1 state as the reference for this computation
+  docc        [3, 0, 0, 1]
+  socc        [0, 0, 1, 0]
+}
+
+thisenergy = energy('zapt25')
+
+compare_values(refnuc, nh2.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
+# Seems to be hard to match PSI3 for ROHF energies to more than 7 digits #TEST
+compare_values(refscf, get_variable("SCF total energy"),     7, "SCF energy") #TEST
+compare_values(refci, thisenergy,                      7, "ZAPT(25) energy") #TEST
+compare_values(refcorr, get_variable("CURRENT CORRELATION ENERGY"), 7, "ZAPT(25) correlation energy") #TEST
+
+clean()
+

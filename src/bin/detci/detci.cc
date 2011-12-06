@@ -223,7 +223,7 @@ PsiReturnType detci(Options &options)
    if (Parameters.istop) {      /* Print size of space, other stuff, only   */
      close_io();
      Process::environment.globals["CURRENT ENERGY"] = 0.0;
-     Process::environment.globals["CORRELATION ENERGY"] = 0.0;
+     Process::environment.globals["CURRENT CORRELATION ENERGY"] = 0.0;
      Process::environment.globals["CI TOTAL ENERGY"] = 0.0;
      Process::environment.globals["CI CORRELATION ENERGY"] = 0.0;
 
@@ -1026,8 +1026,8 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    chkpt_wt_etot(tval);
 
    Process::environment.globals["CURRENT ENERGY"] = tval;
-   Process::environment.globals["CORRELATION ENERGY"] = tval - CalcInfo.escf;
-
+   Process::environment.globals["CURRENT CORRELATION ENERGY"] = tval - CalcInfo.escf;
+   Process::environment.globals["CURRENT REFERENCE ENERGY"] = CalcInfo.escf;
    Process::environment.globals["CI TOTAL ENERGY"] = tval;
    // eref seems wrong for open shells so replace it with escf below
    // until I fix it ---CDS 11/5/11

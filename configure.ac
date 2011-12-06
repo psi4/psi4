@@ -992,7 +992,6 @@ AC_CONFIG_FILES([include/Makefile
           tests/opt3/Makefile
           tests/opt4/Makefile
           tests/opt5/Makefile
-          tests/basis_extrap/Makefile
           tests/sad1/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
@@ -1017,6 +1016,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/fci-tdm-2/Makefile
           tests/rasci-c2-active/Makefile
           tests/rasci-h2o/Makefile
+          tests/rasci-ne/Makefile
+          tests/zaptn-nh2/Makefile
+          tests/mpn-bh/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
