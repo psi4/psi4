@@ -839,7 +839,7 @@ void OEProp::compute_dipole(bool transition)
         de[1] += ndip->get(0, 1);
         de[2] += ndip->get(0, 2);
     }
-    
+
     fprintf(outfile,"  %sDipole Moment: (a.u.)\n", (transition ? "Transition " : ""));
     fprintf(outfile,"     X: %10.4lf      Y: %10.4lf      Z: %10.4lf     Total: %10.4lf\n",
        de[0], de[1], de[2], de.norm());
@@ -892,7 +892,7 @@ void OEProp::compute_quadrupole(bool transition)
     soqOBI->compute(so_Qpole);
 
     // Each multipole integral needs to be dotted with the SO Density
-    SimpleVector qe(6);
+    Vector qe(6);
     qe[0] = Da->vector_dot(so_Qpole[0]) + Db->vector_dot(so_Qpole[0]);
     qe[1] = Da->vector_dot(so_Qpole[1]) + Db->vector_dot(so_Qpole[1]);
     qe[2] = Da->vector_dot(so_Qpole[2]) + Db->vector_dot(so_Qpole[2]);
@@ -910,7 +910,7 @@ void OEProp::compute_quadrupole(bool transition)
         qe[4] += nquad->get(0, 4);
         qe[5] += nquad->get(0, 5);
     }
-    
+
     // Print multipole components
     double dfac = _dipmom_au2debye * _bohr2angstroms;
     fprintf(outfile, "  %sQuadrupole Moment: (Debye Ang)\n", (transition ? "Transition " : ""));

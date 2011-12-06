@@ -2,7 +2,7 @@
 #define _psi_src_lib_libmints_potential_h_
 
 #include <vector>
-#include <boost/shared_ptr.hpp>
+#include "typedefs.h"
 
 namespace psi {
 
@@ -43,8 +43,6 @@ public:
     PotentialInt(std::vector<SphericalTransform>&, boost::shared_ptr<BasisSet>, boost::shared_ptr<BasisSet>, int deriv=0);
     virtual ~PotentialInt();
 
-    /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix > &result);
 

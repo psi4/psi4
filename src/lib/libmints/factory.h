@@ -96,28 +96,6 @@ public:
     Vector * create_vector();
 
     void create_vector(Vector& vec);
-
-    /// Returns a new SimpleMatrix object with default dimensions
-    SimpleMatrix * create_simple_matrix();
-    void create_simple_matrix(SimpleMatrix& mat);
-
-    /// Returns a new SimpleMatrix object named name with default dimensions
-    SimpleMatrix * create_simple_matrix(std::string name);
-    void create_simple_matrix(SimpleMatrix& mat, std::string name);
-
-    /// Returns a new SimpleMatrix object named name of size m x n
-    SimpleMatrix * create_simple_matrix(std::string name, int m, int n);
-    void create_simple_matrix(SimpleMatrix& mat, std::string name, int m, int n);
-
-    /// Returns a new SimpleMatrix object with size m x n
-    SimpleMatrix * create_simple_matrix(int m, int n);
-    void create_simple_matrix(SimpleMatrix& mat, int m, int n);
-
-    /// Returns a new SimpleVector object with default dimension
-    SimpleVector * create_simple_vector();
-
-    /// Returns a new SimpleVector object with size m
-    SimpleVector * create_simple_vector(int m);
 };
 
 }
