@@ -76,8 +76,8 @@ sub do_tests
   my $jobtype;
   ($wfn, $jobtype) = get_calctype_string($input);
 
-  printf "Wfn = $wfn\n";
-  printf "Jobtype = $jobtype\n";
+  #printf "\tWfn = $wfn\n";
+  #printf "\tJobtype = $jobtype\n";
 
   $ok = 0;
   foreach $item (@PSITEST_WFNS) {
@@ -175,7 +175,8 @@ sub pass_test
   $test_name = get_test_name();
   $target = "$test_name.$PSITEST_TARGET_SUFFIX";
   open(RE, ">>$target") || die "cannot open $target $!"; 
-  printf RE "%-70s...PASSED\n", $_[0];
+  $padded = $_[0] . '.' x (70 - length($_[0]));
+  printf RE "\t%sPASSED\n", $padded;
   close (RE);
 }
 
@@ -184,17 +185,18 @@ sub fail_test
   $test_name = get_test_name();
   $target = "$test_name.$PSITEST_TARGET_SUFFIX";
   open(RE, ">>$target") || die "cannot open $target $!"; 
-  printf RE "%-70s...FAILED\n", $_[0];
+  $padded = $_[0] . '.' x (70 - length($_[0]));
+  printf RE "\t%sFAILED\n", $padded;
   close (RE);
 }
 
 sub print_test_header
 {
-  $test_name = get_test_name();
-  $target = "$test_name.$PSITEST_TARGET_SUFFIX";
-  open(RE, ">>$target") || die "cannot open $target $!"; 
-  printf RE "$test_name:\n";
-  close (RE);
+  #$test_name = get_test_name();
+  #$target = "$test_name.$PSITEST_TARGET_SUFFIX";
+  #open(RE, ">>$target") || die "cannot open $target $!"; 
+  #printf RE "$test_name:\n";
+  #close (RE);
 }
 
 sub test_finished
@@ -206,7 +208,7 @@ sub test_finished
   $target = "$test_name.$PSITEST_TARGET_SUFFIX";
 
   system("cat $target");
-  system("cat $target >> $PSITEST_SUMMARY_FILE");
+  #system("cat $target >> $PSITEST_SUMMARY_FILE");
 
   if ($interrupted) {
     exit($fail);
