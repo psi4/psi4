@@ -11,6 +11,11 @@ typedef double doublereal;
 
 
 /**
+ * fortran-ordered dgemv
+ */
+void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,integer lda,
+            doublereal*X,integer incx,doublereal beta,doublereal*Y,integer incy);
+/**
  * fortran-ordered dgemm
  */
 void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
@@ -37,6 +42,17 @@ void F_DCOPY(integer n,doublereal*dx,integer incx,doublereal*dy,integer incy);
 void F_DAXPY(integer n,doublereal da,doublereal*dx,integer incx,doublereal*dy,
              integer incy);
 
+/**
+ * name manging for fortran-ordered dgemv
+ */
+extern "C" {
+    void F77NAME(dgemv)(char&trans,integer&m,integer&n,doublereal&alpha,doublereal*A,integer&lda,
+            doublereal*X,integer&incx,doublereal&beta,doublereal*Y,integer&incy);
+};
+inline void DGEMV(char&trans,integer&m,integer&n,doublereal&alpha,doublereal*A,integer&lda,
+            doublereal*X,integer&incx,doublereal&beta,doublereal*Y,integer&incy){
+    F77NAME(dgemv)(trans,m,n,alpha,A,lda,X,incx,beta,Y,incy);
+}
 /**
  * name manging for fortran-ordered dgemm
  */

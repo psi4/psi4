@@ -1,5 +1,12 @@
 #include"blas.h"
 /**
+ * fortran-ordered dgemv
+ */
+void F_DGEMV(char trans,integer m,integer n,doublereal alpha,doublereal*A,integer lda,
+            doublereal*X,integer incx,doublereal beta,doublereal*Y,integer incy){
+    DGEMV(trans,m,n,alpha,A,lda,X,incx,beta,Y,incy);
+}
+/**
  * fortran-ordered dgemm
  */
 void F_DGEMM(char transa,char transb, integer m, integer n, integer k,
