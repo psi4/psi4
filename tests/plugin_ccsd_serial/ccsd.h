@@ -105,6 +105,7 @@ class CoupledCluster{
     void cleanup();
 
     void WriteBanner();
+    void RandomIntegralFiles();
 
     /**
       * grab parameters, transform/sort integrals
@@ -209,7 +210,7 @@ class CoupledCluster{
       * basic parameters
       */
     long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,memory;
-    int maxiter,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs;
+    int maxiter,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs,nvirt_no;
     double conv,*oei,*tei,*Fock,*eps;
     boost::shared_ptr<Vector> eps_test;
     double escf,enuc,efzc,emp2,eccsd;
@@ -235,7 +236,7 @@ class CoupledCluster{
       */
     void DefineTilingCPU();
     long int ovtilesize,lastovtile,lastov2tile,ov2tilesize;
-    long int tilesize,lasttile;
+    long int tilesize,lasttile,maxelem;
     long int ntiles,novtiles,nov2tiles;
 
     /**

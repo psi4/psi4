@@ -44,7 +44,9 @@ namespace psi { namespace ccenergy {
 namespace psi{
   PsiReturnType tdc_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
+  //PsiReturnType mp2_opdm(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
 }
+
 
 
 
@@ -63,6 +65,16 @@ void RunCoupledCluster(Options &options){
   tstop();
 
   if (options.get_bool("COMPUTE_TRIPLES")){
+     // mp2 natural orbitals:
+     /*tstart();
+     status = psi::mp2_opdm(ccsd,options);
+     if (status == Failure){
+        throw PsiException( 
+           "Whoops, MP2 NO transformation died.",__FILE__,__LINE__);
+     }
+     tstop();*/
+
+     // free memory before triples
      free(ccsd->tempt);
      free(ccsd->tempv);
      free(ccsd->integrals);
@@ -70,7 +82,9 @@ void RunCoupledCluster(Options &options){
      free(ccsd->I1);
      free(ccsd->I1p);
      free(ccsd->diisvec);
+
      tstart();
+     // triples
      status = psi::triples(ccsd,options);
      if (status == Failure){
         throw PsiException( 

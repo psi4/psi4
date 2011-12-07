@@ -4,7 +4,6 @@
 #include<libdpd/dpd.h>
 #include<boost/shared_ptr.hpp>
 #include<liboptions/liboptions.h>
-#include <ccfiles.h>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
