@@ -15,11 +15,11 @@
 
 INIT_PLUGIN
 
-namespace psi{ namespace plugin_ccsd_serial_test{
+namespace psi{ namespace plugin_ccsd_serial{
 extern "C" int 
 read_options(std::string name, Options &options)
 {
-  if (name == "PLUGIN_CCSD_SERIAL_TEST"|| options.read_globals()) {
+  if (name == "PLUGIN_CCSD_SERIAL"|| options.read_globals()) {
       /*- The amount of information printed
              to the output file -*/
       options.add_int("PRINT", 1);
@@ -43,7 +43,7 @@ read_options(std::string name, Options &options)
 }
 
 extern "C" PsiReturnType
-plugin_ccsd_serial_test(Options &options)
+plugin_ccsd_serial(Options &options)
 {  
   RunCoupledCluster(options);
   return  Success;
