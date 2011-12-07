@@ -5,11 +5,9 @@ include ../MakeVars
 
 LDLIBS += $(BLAS) -lpthread
 
-PSILIBS = libPSI_qt.a libPSI_chkpt.a libPSI_iwl.a libPSI_psio.a libPSI_ciomr.a \
-libPSI_psio.a libPSI_ipv1.a
+PSITARGET=$(top_objdir)/lib/libPSI_detci.a
 
 CSRC = 
-
 
 CXXSRC = detci.cc params.cc olsengraph.cc civect.cc odometer.cc slaterd.cc \
 mitrush_iter.cc sem.cc sigma.cc opdm.cc tpdm.cc mpn.cc compute_cc.cc \
@@ -20,13 +18,6 @@ sem_test.cc slater.cc form_ov.cc s3_block_bz.cc s1v.cc s2v.cc s3v.cc \
 s1.cc s2.cc s3.cc ssq.cc tpool.cc time.cc import_vector.cc 
 
 BINOBJ = $(CSRC:%.c=%.o) $(CXXSRC:%.cc=%.o)
-
-# DEC/Compaq Alpha compilers apparently require this for threaded code
-ifneq (,$(findstring osf, $(target)))
-  COPT += -pthread
-  CXXOPT += -pthread
-  LDFLAGS += -pthread
-endif
 
 include ../MakeRules
 

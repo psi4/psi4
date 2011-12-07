@@ -1,6 +1,8 @@
 #ifndef libmints_view_h_
 #define libmints_view_h_
 
+#include "typedefs.h"
+
 ////////////////////////////////////////////
 // Forward declarations
 namespace boost {
@@ -32,7 +34,7 @@ class View
 {
 protected:
     /// Matrix we are viewing.
-    boost::shared_ptr<Matrix> matrix_;
+    SharedMatrix matrix_;
     /// Number of irreps
     int nirrep_;
     /// Starting offsets in matrix_;
@@ -68,7 +70,7 @@ public:
      *  @param rows How many rows per irrep
      *  @param cols How many cols per irrep
      */
-    View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols);
+    View(SharedMatrix matrix, int *rows, int *cols);
     /** Constructor, user provides a Matrix to view and desired row count
      *  @param matrix Matrix we want to view, View obtains nirrep from it
      *  @param rows How many rows per irrep
@@ -76,18 +78,18 @@ public:
      *  @param row_offsets Row offset per irrep
      *  @param col_offsets Column offset per irrep
      */
-    View(boost::shared_ptr<Matrix> matrix, int *rows, int *cols, int *row_offsets, int *col_offsets);
+    View(SharedMatrix matrix, int *rows, int *cols, int *row_offsets, int *col_offsets);
 
     /** Operator () overload. Creates a new Matrix that only contains the view.
      *  @return New Matrix containing the view.
      */
-    boost::shared_ptr<Matrix> operator()();
+    SharedMatrix operator()();
 
     /** Set the Matrix that we should be viewing.
      *  @param matrix Matrix to view.
      *  @return The old Matrix we were viewing.
      */
-    boost::shared_ptr<Matrix> view(boost::shared_ptr<Matrix> matrix);
+    SharedMatrix view(SharedMatrix matrix);
 };
 
 }

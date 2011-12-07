@@ -10,12 +10,12 @@ using namespace psi;
 
 namespace psi {
 
-Local::Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<Matrix> C_USO) :
+Local::Local(boost::shared_ptr<BasisSet> basisset, SharedMatrix C_USO) :
     basisset_(basisset), C_USO_(C_USO), print_(0), debug_(0)
 {
     common_init();
 }
-Local::Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> C_USO) :
+Local::Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<BasisSet> auxiliary, SharedMatrix C_USO) :
     basisset_(basisset), auxiliary_(auxiliary), C_USO_(C_USO), print_(0), debug_(0)
 {
     common_init();
@@ -36,8 +36,8 @@ void Local::common_init()
     L_AO_ = C_AO_;
 
     int nso = basisset_->nbf();
-    S_ = boost::shared_ptr<Matrix>(new Matrix("S",nso,nso));
-    X_ = boost::shared_ptr<Matrix>(new Matrix("S^+1/2",nso,nso));
+    S_ = SharedMatrix(new Matrix("S",nso,nso));
+    X_ = SharedMatrix(new Matrix("S^+1/2",nso,nso));
     boost::shared_ptr<OneBodyAOInt> Sint(integral->ao_overlap());
     Sint->compute(S_);
     X_->copy(S_);
@@ -134,7 +134,7 @@ double Local::pm_metric()
     int nmo = L_AO_->colspi()[0];
     int natom = basisset_->molecule()->natom();
 
-    boost::shared_ptr<Matrix> Q = mulliken_charges(L_AO_);
+    SharedMatrix Q = mulliken_charges(L_AO_);
 
     double metric = C_DDOT(nmo * (ULI) natom, Q->pointer()[0], 1, Q->pointer()[0], 1);    
 
@@ -151,14 +151,14 @@ double Local::boys_metric()
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     boost::shared_ptr<OneBodyAOInt> Dint(integral->ao_dipole());
    
-    std::vector<boost::shared_ptr<Matrix> > dipole;
-    dipole.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole X", nso, nso)));
-    dipole.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso)));
-    dipole.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso)));
+    std::vector<SharedMatrix > dipole;
+    dipole.push_back(SharedMatrix(new Matrix("Dipole X", nso, nso)));
+    dipole.push_back(SharedMatrix(new Matrix("Dipole Y", nso, nso)));
+    dipole.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso)));
 
     Dint->compute(dipole); 
 
-    boost::shared_ptr<Matrix> XC(new Matrix("XC", nso, nmo));
+    SharedMatrix XC(new Matrix("XC", nso, nmo));
 
     // X contribution
     C_DGEMM('N','N',nso,nmo,nso,1.0,dipole[0]->pointer()[0],nso,L_AO_->pointer()[0],nmo,0.0,XC->pointer()[0],nmo);
@@ -186,11 +186,11 @@ double Local::boys_metric()
 
     return metric;
 }
-boost::shared_ptr<Matrix> Local::C_USO()
+SharedMatrix Local::C_USO()
 {
     return C_USO_;
 }
-boost::shared_ptr<Matrix> Local::C_AO()
+SharedMatrix Local::C_AO()
 {
     if (!AO2USO_.get() || AO2USO_->nirrep() == 1)
         return C_USO_;
@@ -200,7 +200,7 @@ boost::shared_ptr<Matrix> Local::C_AO()
     for (int h = 0; h < AO2USO_->nirrep(); h++) 
         nmo += C_USO_->colspi()[h];
 
-    boost::shared_ptr<Matrix> C = boost::shared_ptr<Matrix>(new Matrix("C (C1 Symmetry)",nao,nmo));
+    SharedMatrix C = SharedMatrix(new Matrix("C (C1 Symmetry)",nao,nmo));
     double** Cp = C->pointer();
 
     int counter = 0;
@@ -217,11 +217,11 @@ boost::shared_ptr<Matrix> Local::C_AO()
     }
     return C;
 }
-boost::shared_ptr<Matrix> Local::L_AO()
+SharedMatrix Local::L_AO()
 {
     return L_AO_;
 }
-boost::shared_ptr<Matrix> Local::AO2USO()
+SharedMatrix Local::AO2USO()
 {
     return AO2USO_;
 }
@@ -244,13 +244,13 @@ void Local::localize_cholesky(double conv)
         fprintf(outfile, "  ==> Localization: Cholesky <==\n\n");
     }
 
-    L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_ = SharedMatrix(C_AO()->clone());
     L_AO_->set_name("L Cholesky (C1 Symmetry)");
 
     int nso = L_AO_->rowspi()[0];
     int nmo = L_AO_->colspi()[0];
 
-    boost::shared_ptr<Matrix> D(new Matrix("D",nso,nso));
+    SharedMatrix D(new Matrix("D",nso,nso));
     double** Lp = L_AO_->pointer();
     double** Dp = D->pointer();
     
@@ -259,7 +259,7 @@ void Local::localize_cholesky(double conv)
     if (debug_)
         D->print();
 
-    boost::shared_ptr<Matrix> L = D->partial_cholesky_factorize();
+    SharedMatrix L = D->partial_cholesky_factorize();
 
     if (debug_)
         L->print();
@@ -282,33 +282,33 @@ void Local::localize_cholesky(double conv)
 void Local::localize_pm(double conv) 
 {
     throw FeatureNotImplemented("psi::Local","localize_pm",__FILE__,__LINE__);
-    L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_ = SharedMatrix(C_AO()->clone());
     L_AO_->set_name("L Pipek-Mezey (C1 Symmetry)");
 
 }
 void Local::localize_boys(double conv) 
 {
     throw FeatureNotImplemented("psi::Local","localize_boys",__FILE__,__LINE__);
-    L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_ = SharedMatrix(C_AO()->clone());
     L_AO_->set_name("L Boys (C1 Symmetry)");
 
 }
 void Local::localize_er(double conv) 
 {
     throw FeatureNotImplemented("psi::Local","localize_er",__FILE__,__LINE__);
-    L_AO_ = boost::shared_ptr<Matrix>(C_AO()->clone());
+    L_AO_ = SharedMatrix(C_AO()->clone());
     L_AO_->set_name("L Edmiston-Ruedenberg (C1 Symmetry)");
 
 }
-boost::shared_ptr<Matrix> Local::lowdin_charges(boost::shared_ptr<Matrix> C)
+SharedMatrix Local::lowdin_charges(SharedMatrix C)
 {
     boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
     int nmo = C->colspi()[0];
     int nso = C->rowspi()[0];
     int natom = molecule->natom();
-    boost::shared_ptr<Matrix> Q(new Matrix("Q: Gross Lowdin charges (nmo x natom)", nmo, natom));
+    SharedMatrix Q(new Matrix("Q: Gross Lowdin charges (nmo x natom)", nmo, natom));
 
-    boost::shared_ptr<Matrix> XC(new Matrix("XC", nso, nmo));
+    SharedMatrix XC(new Matrix("XC", nso, nmo));
 
     double** Cp  = C->pointer();
     double** Xp  = X_->pointer();
@@ -326,15 +326,15 @@ boost::shared_ptr<Matrix> Local::lowdin_charges(boost::shared_ptr<Matrix> C)
 
     return Q;
 }
-boost::shared_ptr<Matrix> Local::mulliken_charges(boost::shared_ptr<Matrix> C)
+SharedMatrix Local::mulliken_charges(SharedMatrix C)
 {
     boost::shared_ptr<Molecule> molecule = basisset_->molecule(); 
     int nmo = C->colspi()[0];
     int nso = C->rowspi()[0];
     int natom = molecule->natom();
-    boost::shared_ptr<Matrix> Q(new Matrix("Q: Gross Mulliken charges (nmo x natom)", nmo, natom));
+    SharedMatrix Q(new Matrix("Q: Gross Mulliken charges (nmo x natom)", nmo, natom));
 
-    boost::shared_ptr<Matrix> XC(new Matrix("XC", nso, nmo));
+    SharedMatrix XC(new Matrix("XC", nso, nmo));
 
     double** Cp  = C->pointer();
     double** Sp  = S_->pointer();
@@ -371,7 +371,7 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
     double** Lp = L_AO_->pointer();
 
     // Premultiply SL
-    boost::shared_ptr<Matrix> SL(new Matrix("SL", nso, nmo));
+    SharedMatrix SL(new Matrix("SL", nso, nmo));
     double** SLp = SL->pointer();
     C_DGEMM('N','N',nso,nmo,nso,1.0,Sp[0],nso,Lp[0],nmo,0.0,SLp[0],nmo);
 
@@ -408,7 +408,7 @@ void Local::compute_boughton_pulay_domains(double Qcutoff)
             int nfun = funs_in_domain.size(); 
 
             // Temps
-            boost::shared_ptr<Matrix> Smn(new Matrix("Smn", nfun, nfun));
+            SharedMatrix Smn(new Matrix("Smn", nfun, nfun));
             boost::shared_ptr<Vector> A(new Vector("A", nfun));
             double** Smnp = Smn->pointer();
             double* Ap = A->pointer();

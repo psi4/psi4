@@ -23,7 +23,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &options) {
+std::vector< SharedMatrix > fd_geoms_freq_0(Options &options) {
 
   fprintf(outfile,"\tUsing finite-differences of energies to determine vibrational frequencies ");
   fprintf(outfile,"and normal modes.\n  ** Results are valid only at stationary points! **\n");
@@ -113,7 +113,7 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &options) {
   ref_geom->set_name("Reference geometry");
 
   // to be returned and converted into "matrix_vector" list in python
-  std::vector< boost::shared_ptr<Matrix> > disp_geoms;
+  std::vector< SharedMatrix > disp_geoms;
 
   for (int h=0; h<Nirrep; ++h) { // loop over irreps
 
@@ -122,44 +122,44 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &options) {
 
       if (h == 0) { // symmetric diagonal displacements (first in list)
         if (pts == 3) {
-          boost::shared_ptr<Matrix> geom1(ref_geom->clone());
+          SharedMatrix geom1(ref_geom->clone());
           displace_cart(geom1, salc_list, salc_i, -1, disp_size);
           disp_geoms.push_back(geom1);
 
-          boost::shared_ptr<Matrix> geom2(ref_geom->clone());
+          SharedMatrix geom2(ref_geom->clone());
           displace_cart(geom2, salc_list, salc_i, +1, disp_size);
           disp_geoms.push_back(geom2);
         }
         else if (pts == 5) {
-          boost::shared_ptr<Matrix> geom1(ref_geom->clone());
+          SharedMatrix geom1(ref_geom->clone());
           displace_cart(geom1, salc_list, salc_i, -2, disp_size);
           disp_geoms.push_back(geom1);
 
-          boost::shared_ptr<Matrix> geom2(ref_geom->clone());
+          SharedMatrix geom2(ref_geom->clone());
           displace_cart(geom2, salc_list, salc_i, -1, disp_size);
           disp_geoms.push_back(geom2);
 
-          boost::shared_ptr<Matrix> geom3(ref_geom->clone());
+          SharedMatrix geom3(ref_geom->clone());
           displace_cart(geom3, salc_list, salc_i, +1, disp_size);
           disp_geoms.push_back(geom3);
 
-          boost::shared_ptr<Matrix> geom4(ref_geom->clone());
+          SharedMatrix geom4(ref_geom->clone());
           displace_cart(geom4, salc_list, salc_i, +2, disp_size);
           disp_geoms.push_back(geom4);
         }
       }
       else { // h != 0; assymmetric diagonal displacements
         if (pts == 3) {
-          boost::shared_ptr<Matrix> geom1(ref_geom->clone());
+          SharedMatrix geom1(ref_geom->clone());
           displace_cart(geom1, salc_list, salc_i, -1, disp_size);
           disp_geoms.push_back(geom1);
         }
         else if (pts == 5) {
-          boost::shared_ptr<Matrix> geom1(ref_geom->clone());
+          SharedMatrix geom1(ref_geom->clone());
           displace_cart(geom1, salc_list, salc_i, -2, disp_size);
           disp_geoms.push_back(geom1);
 
-          boost::shared_ptr<Matrix> geom2(ref_geom->clone());
+          SharedMatrix geom2(ref_geom->clone());
           displace_cart(geom2, salc_list, salc_i, -1, disp_size);
           disp_geoms.push_back(geom2);
         }
@@ -174,44 +174,44 @@ std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &options) {
         int salc_j = salcs_pi[h][j];   // index in cdsalc of this salc
 
         if (pts == 3) {
-          boost::shared_ptr<Matrix> geom1(ref_geom->clone());
+          SharedMatrix geom1(ref_geom->clone());
           displace_cart(geom1, salc_list, salc_i, salc_j, +1, +1, disp_size);
           disp_geoms.push_back(geom1);
 
-          boost::shared_ptr<Matrix> geom2(ref_geom->clone());
+          SharedMatrix geom2(ref_geom->clone());
           displace_cart(geom2, salc_list, salc_i, salc_j, -1, -1, disp_size);
           disp_geoms.push_back(geom2);
         }
         else if (pts == 5) {
-          boost::shared_ptr<Matrix> geom1(ref_geom->clone());
+          SharedMatrix geom1(ref_geom->clone());
           displace_cart(geom1, salc_list, salc_i, salc_j, -1, -2, disp_size);
           disp_geoms.push_back(geom1);
 
-          boost::shared_ptr<Matrix> geom2(ref_geom->clone());
+          SharedMatrix geom2(ref_geom->clone());
           displace_cart(geom2, salc_list, salc_i, salc_j, -2, -1, disp_size);
           disp_geoms.push_back(geom2);
 
-          boost::shared_ptr<Matrix> geom3(ref_geom->clone());
+          SharedMatrix geom3(ref_geom->clone());
           displace_cart(geom3, salc_list, salc_i, salc_j, -1, -1, disp_size);
           disp_geoms.push_back(geom3);
 
-          boost::shared_ptr<Matrix> geom4(ref_geom->clone());
+          SharedMatrix geom4(ref_geom->clone());
           displace_cart(geom4, salc_list, salc_i, salc_j, +1, -1, disp_size);
           disp_geoms.push_back(geom4);
 
-          boost::shared_ptr<Matrix> geom5(ref_geom->clone());
+          SharedMatrix geom5(ref_geom->clone());
           displace_cart(geom5, salc_list, salc_i, salc_j, -1, +1, disp_size);
           disp_geoms.push_back(geom5);
 
-          boost::shared_ptr<Matrix> geom6(ref_geom->clone());
+          SharedMatrix geom6(ref_geom->clone());
           displace_cart(geom6, salc_list, salc_i, salc_j, +1, +1, disp_size);
           disp_geoms.push_back(geom6);
 
-          boost::shared_ptr<Matrix> geom7(ref_geom->clone());
+          SharedMatrix geom7(ref_geom->clone());
           displace_cart(geom7, salc_list, salc_i, salc_j, +2, +1, disp_size);
           disp_geoms.push_back(geom7);
 
-          boost::shared_ptr<Matrix> geom8(ref_geom->clone());
+          SharedMatrix geom8(ref_geom->clone());
           displace_cart(geom8, salc_list, salc_i, salc_j, +1, +2, disp_size);
           disp_geoms.push_back(geom8);
         } // pts == 5

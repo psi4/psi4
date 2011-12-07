@@ -76,10 +76,10 @@ private:
     int print_;
 
     // In-core O(N^5) transqt
-    boost::shared_ptr<Matrix> mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> Co, boost::shared_ptr<Matrix> Cv);
+    SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix Co, SharedMatrix Cv);
     // In-core O(N^5) transqt
-    boost::shared_ptr<Matrix> mo_eri_helper(boost::shared_ptr<Matrix> Iso, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
-                                                                           boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
+    SharedMatrix mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
+                                                                           SharedMatrix C3, SharedMatrix C4);
 
 public:
 
@@ -114,48 +114,50 @@ public:
     void integral_hessians();
 
     /// AO ERI Integrals (Full matrix, not recommended for large systems)
-    boost::shared_ptr<Matrix> ao_eri();
+    SharedMatrix ao_eri();
     /// Symmetric MO ERI Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
-    boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
+    SharedMatrix mo_eri(SharedMatrix Cocc, SharedMatrix Cvir);
     /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
-    boost::shared_ptr<Matrix> mo_eri(boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
-                                     boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
+    SharedMatrix mo_eri(SharedMatrix C1, SharedMatrix C2,
+                                     SharedMatrix C3, SharedMatrix C4);
     /// AO ERI Omega Integrals (Full matrix, not recommended for large systems)
-    boost::shared_ptr<Matrix> ao_erf_eri(double omega);
+    SharedMatrix ao_erf_eri(double omega);
     /// Symmetric MO ERI Omega Integrals, (ov|ov) type  (Full matrix, N^5, not recommended for large systems)
     /// Pass C_ C_ for (aa|aa) type, Cocc_, Cocc_ for (oo|oo) type, or Cvir_, Cvir_ for (vv|vv) type
-    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> Cocc, boost::shared_ptr<Matrix> Cvir);
+    SharedMatrix mo_erf_eri(double omega, SharedMatrix Cocc, SharedMatrix Cvir);
     /// Non Symmetric MO ERI Omega Integrals, (12|34) type  (Full matrix, N^5, not recommended for large systems)
-    boost::shared_ptr<Matrix> mo_erf_eri(double omega, boost::shared_ptr<Matrix> C1, boost::shared_ptr<Matrix> C2,
-                                                       boost::shared_ptr<Matrix> C3, boost::shared_ptr<Matrix> C4);
+    SharedMatrix mo_erf_eri(double omega, SharedMatrix C1, SharedMatrix C2,
+                                                       SharedMatrix C3, SharedMatrix C4);
 
     /// AO Overlap Integrals
-    boost::shared_ptr<Matrix> ao_overlap();
+    SharedMatrix ao_overlap();
     /// AO Kinetic Integrals
-    boost::shared_ptr<Matrix> ao_kinetic();
+    SharedMatrix ao_kinetic();
     /// AO Potential Integrals
-    boost::shared_ptr<Matrix> ao_potential();
+    SharedMatrix ao_potential();
+    /// Vector AO Dipole Integrals
+    std::vector<SharedMatrix> ao_dipole();
     /// Vector AO Angular Momentum Integrals
-    std::vector<boost::shared_ptr<Matrix> > ao_angular_momentum();
+    std::vector<SharedMatrix > ao_angular_momentum();
     /// Vector AO Nabla Integrals
-    std::vector<boost::shared_ptr<Matrix> > ao_nabla();
+    std::vector<SharedMatrix > ao_nabla();
     /// AO Overlap Integrals
-    boost::shared_ptr<Matrix> so_overlap();
+    SharedMatrix so_overlap();
     /// AO Kinetic Integrals
-    boost::shared_ptr<Matrix> so_kinetic();
+    SharedMatrix so_kinetic();
     /// AO Potential Integrals
-    boost::shared_ptr<Matrix> so_potential();
+    SharedMatrix so_potential();
     /// Vector SO Dipole Integrals
-    std::vector<boost::shared_ptr<Matrix> > so_dipole();
+    std::vector<SharedMatrix > so_dipole();
     /// Vector SO Nabla Integrals
-    std::vector<boost::shared_ptr<Matrix> > so_nabla();
+    std::vector<SharedMatrix > so_nabla();
     /// Vector SO Angular Momentum Integrals
-    std::vector<boost::shared_ptr<Matrix> > so_angular_momentum();
+    std::vector<SharedMatrix > so_angular_momentum();
     /// Vector SO Quadrupole Integrals
-    std::vector<boost::shared_ptr<Matrix> > so_quadrupole();
+    std::vector<SharedMatrix > so_quadrupole();
     /// Vector SO Traceless Quadrupole Integrals
-    std::vector<boost::shared_ptr<Matrix> > so_traceless_quadrupole();
+    std::vector<SharedMatrix > so_traceless_quadrupole();
 
     /// Returns a CdSalcList object
     boost::shared_ptr<CdSalcList> cdsalcs(int needed_irreps=0xF,

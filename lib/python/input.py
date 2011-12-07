@@ -10,24 +10,29 @@ def bad_option_syntax(line):
     sys.exit(1)
 
 def process_word_quotes(matchobj):
-    if(matchobj.group(2)):
+    dollar = matchobj.group(2)
+    val    = matchobj.group(3)
+    if(dollar):
         # This is a python variable, make sure that it starts with a letter
-        if(re.match(r'[A-Za-z][\w]*', matchobj.group(3))):
-            return matchobj.group(3)
+        if(re.match(r'^[A-Za-z][\w]*', val)):
+            return val
         else:
-            print "Invalid Python variable: %s" % matchobj.group(3)
+            print "Invalid Python variable: %s" % val
             sys.exit(1)
-    elif(re.search(r'[A-Za-z]', matchobj.group(3))):
-        # This contains letters/symbols, so we need to wrap it in quotes
-        return "\"%s\"" % matchobj.group(1)
-    else:
+    elif(re.match(r'^-?\d+\.?\d*(?:[Ee]-?\d+)?$', val)):
         # This must be a number, don't wrap it in quotes
-        return matchobj.group(1)
+        return val
+    elif(re.match(r'^\'.*\'$', val) or re.match(r'^\".*\"$', val)):
+        # This is already wrapped in quotes, do nothing
+        return val
+    else:
+        # This must be a string
+        return "\"%s\"" % val
 
 def quotify(string):
     # This wraps anything that looks like a string in quotes, and removes leading
     # dollar signs from python variables
-    wordre = re.compile(r'(([$]?)([-+,()*.\w]+))')
+    wordre = re.compile(r'(([$]?)([-+()*.\w\"\']+))')
     string = wordre.sub(process_word_quotes, string)
     return string
 
@@ -247,12 +252,6 @@ def process_extern_block(matchobj):
         elif charge_re.match(line):
             addType = "Charge"
             continue
-        elif dip_re.match(line):
-            addType = "Dipole"
-            continue
-        elif quad_re.match(line):
-            addType = "Quadrupole"
-            continue
         else:
             if addType == "None":
                 print "First Line of extern section must be a type of potential (charge, dipole, etc)\n"
@@ -264,21 +263,6 @@ def process_extern_block(matchobj):
                     bad_option_syntax(line)
                 extern += "%s%s.addCharge(%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
                      mobj.group(2), mobj.group(3), mobj.group(4))
-
-            if addType == "Dipole":
-                mobj = d_re.match(line)
-                if not mobj:
-                    bad_option_syntax(line)
-                extern += "%s%s.addDipole(%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
-                     mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6))
-
-            if addType == "Quadrupole":
-                mobj = q_re.match(line)
-                if not mobj:
-                    bad_option_syntax(line)
-                extern += "%s%s.addQuadrupole(%s,%s,%s,%s,%s,%s,%s,%s,%s)" % (spacing, name, mobj.group(1),\
-                     mobj.group(2), mobj.group(3), mobj.group(4), mobj.group(5),mobj.group(6), mobj.group(7),\
-                     mobj.group(8),mobj.group(9))
 
     return extern
 

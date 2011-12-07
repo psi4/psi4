@@ -275,9 +275,9 @@ CdSalcList::~CdSalcList()
 {
 }
 
-std::vector<boost::shared_ptr<Matrix> > CdSalcList::create_matrices(const std::string &basename)
+std::vector<SharedMatrix > CdSalcList::create_matrices(const std::string &basename)
 {
-    std::vector<boost::shared_ptr<Matrix> > matrices;
+    std::vector<SharedMatrix > matrices;
     std::string name;
 
     for (int i=0; i<salcs_.size(); ++i) {
@@ -311,7 +311,7 @@ std::string CdSalcList::name_of_component(int component)
     return name;
 }
 
-boost::shared_ptr<Matrix> CdSalcList::matrix()
+SharedMatrix CdSalcList::matrix()
 {
     SharedMatrix temp(new Matrix("Cartesian/SALC transformation", ncd(), 3*molecule_->natom()));
 

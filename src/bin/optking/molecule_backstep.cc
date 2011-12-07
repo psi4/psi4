@@ -87,6 +87,8 @@ void MOLECULE::backstep(void) {
     DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
   else if (Opt_params.step_type == OPT_PARAMS::RFO)
     DE_projected = DE_rfo_energy(dq_norm, dq_grad, dq_hess);
+  else if (Opt_params.step_type == OPT_PARAMS::SD)
+    DE_projected = DE_nr_energy(dq_norm, dq_grad, dq_hess);
 
   fprintf(outfile, "\tNewly projected energy change : %20.10lf\n", DE_projected);
 

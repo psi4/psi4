@@ -12,5 +12,7 @@ set {
   tile_size 181
 }
 
-
 plugin("plugin_test_matrix.so")
+
+clean()
+

@@ -17,13 +17,13 @@ RKSFunctions::~RKSFunctions()
 }
 void RKSFunctions::build_temps()
 {
-    temp_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,max_functions_));
-    D_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",max_functions_,max_functions_));
+    temp_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
+    D_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
 
     if (ansatz_ >= 2) {
         int nocc = Cocc_AO_->colspi()[0];
-        C_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",max_functions_,nocc));
-        meta_temp_ = boost::shared_ptr<Matrix>(new Matrix("Meta Temp", max_points_,nocc));
+        C_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,nocc));
+        meta_temp_ = SharedMatrix(new Matrix("Meta Temp", max_points_,nocc));
     }
 }
 void RKSFunctions::set_ansatz(int ansatz) 
@@ -60,7 +60,7 @@ void RKSFunctions::set_ansatz(int ansatz)
         property_values_["TAU_B"] = property_values_["TAU_A"]; 
     } 
 }
-void RKSFunctions::reset_pointers(boost::shared_ptr<Matrix> D_AO, boost::shared_ptr<Matrix> Cocc_AO) 
+void RKSFunctions::reset_pointers(SharedMatrix D_AO, SharedMatrix Cocc_AO) 
 {
     D_AO_ = D_AO;
     Cocc_AO_ = Cocc_AO_;
@@ -207,18 +207,18 @@ UKSFunctions::~UKSFunctions()
 }
 void UKSFunctions::build_temps()
 {
-    tempa_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,max_functions_));
-    Da_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",max_functions_,max_functions_));
-    tempb_ = boost::shared_ptr<Matrix>(new Matrix("Temp",max_points_,max_functions_));
-    Db_local_ = boost::shared_ptr<Matrix>(new Matrix("Dlocal",max_functions_,max_functions_));
+    tempa_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
+    Da_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
+    tempb_ = SharedMatrix(new Matrix("Temp",max_points_,max_functions_));
+    Db_local_ = SharedMatrix(new Matrix("Dlocal",max_functions_,max_functions_));
 
     if (ansatz_ >= 2) {
         int nocca = Caocc_AO_->colspi()[0];
         int noccb = Cbocc_AO_->colspi()[0];
         int nocc  = (nocca > noccb ? nocca : noccb);
-        Ca_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",max_functions_,nocca));
-        Cb_local_ = boost::shared_ptr<Matrix>(new Matrix("Clocal",max_functions_,noccb));
-        meta_temp_ = boost::shared_ptr<Matrix>(new Matrix("Meta Temp", max_points_,nocc));
+        Ca_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,nocca));
+        Cb_local_ = SharedMatrix(new Matrix("Clocal",max_functions_,noccb));
+        meta_temp_ = SharedMatrix(new Matrix("Meta Temp", max_points_,nocc));
     }
 }
 void UKSFunctions::set_ansatz(int ansatz) 
@@ -255,8 +255,8 @@ void UKSFunctions::set_ansatz(int ansatz)
         property_values_["TAU_B"] = boost::shared_ptr<Vector>(new Vector("TAU_A", max_points_));
     } 
 }
-void UKSFunctions::reset_pointers(boost::shared_ptr<Matrix> Da_AO, boost::shared_ptr<Matrix> Caocc_AO,
-                                  boost::shared_ptr<Matrix> Db_AO, boost::shared_ptr<Matrix> Cbocc_AO) 
+void UKSFunctions::reset_pointers(SharedMatrix Da_AO, SharedMatrix Caocc_AO,
+                                  SharedMatrix Db_AO, SharedMatrix Cbocc_AO) 
 {
     Da_AO_ = Da_AO;
     Caocc_AO_ = Caocc_AO_;
@@ -457,6 +457,13 @@ PointFunctions::~PointFunctions()
 }
 void PointFunctions::build_spherical()
 {
+    if (!primary_->has_puream()) {
+        puream_ = false;
+        return;
+    }
+
+    puream_ = true;
+
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(primary_,primary_,primary_,primary_));
 
     for (int L = 0; L <= primary_->max_am(); L++) {
@@ -482,38 +489,38 @@ void PointFunctions::set_derivative(int derivative)
     int max_cart = (max_am + 1) * (max_am + 2) / 2;
  
     if (deriv_ >= 0) {
-        basis_values_["PHI"] = boost::shared_ptr<Matrix> (new Matrix("PHI", max_points_, primary_->nbf()));
-        basis_temps_["PHI"] = boost::shared_ptr<Matrix> (new Matrix("PHI", max_points_, max_cart));
+        basis_values_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, primary_->nbf()));
+        basis_temps_["PHI"] = SharedMatrix (new Matrix("PHI", max_points_, max_cart));
     } 
 
     if (deriv_ >= 1) {
-        basis_values_["PHI_X"] = boost::shared_ptr<Matrix> (new Matrix("PHI_X", max_points_, primary_->nbf()));
-        basis_values_["PHI_Y"] = boost::shared_ptr<Matrix> (new Matrix("PHI_Y", max_points_, primary_->nbf()));
-        basis_values_["PHI_Z"] = boost::shared_ptr<Matrix> (new Matrix("PHI_Z", max_points_, primary_->nbf()));
-        basis_temps_["PHI_X"] = boost::shared_ptr<Matrix> (new Matrix("PHI_X", max_points_, max_cart));
-        basis_temps_["PHI_Y"] = boost::shared_ptr<Matrix> (new Matrix("PHI_Y", max_points_, max_cart));
-        basis_temps_["PHI_Z"] = boost::shared_ptr<Matrix> (new Matrix("PHI_Z", max_points_, max_cart));
+        basis_values_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, primary_->nbf()));
+        basis_values_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, primary_->nbf()));
+        basis_values_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, primary_->nbf()));
+        basis_temps_["PHI_X"] = SharedMatrix (new Matrix("PHI_X", max_points_, max_cart));
+        basis_temps_["PHI_Y"] = SharedMatrix (new Matrix("PHI_Y", max_points_, max_cart));
+        basis_temps_["PHI_Z"] = SharedMatrix (new Matrix("PHI_Z", max_points_, max_cart));
     }
 
     if (deriv_ >= 2) {
-        basis_values_["PHI_XX"] = boost::shared_ptr<Matrix> (new Matrix("PHI_XX", max_points_, primary_->nbf()));
-        basis_values_["PHI_XY"] = boost::shared_ptr<Matrix> (new Matrix("PHI_XY", max_points_, primary_->nbf()));
-        basis_values_["PHI_XZ"] = boost::shared_ptr<Matrix> (new Matrix("PHI_XZ", max_points_, primary_->nbf()));
-        basis_values_["PHI_YY"] = boost::shared_ptr<Matrix> (new Matrix("PHI_YY", max_points_, primary_->nbf()));
-        basis_values_["PHI_YZ"] = boost::shared_ptr<Matrix> (new Matrix("PHI_YZ", max_points_, primary_->nbf()));
-        basis_values_["PHI_ZZ"] = boost::shared_ptr<Matrix> (new Matrix("PHI_ZZ", max_points_, primary_->nbf()));
-        basis_temps_["PHI_XX"] = boost::shared_ptr<Matrix> (new Matrix("PHI_XX", max_points_, max_cart));
-        basis_temps_["PHI_XY"] = boost::shared_ptr<Matrix> (new Matrix("PHI_XY", max_points_, max_cart));
-        basis_temps_["PHI_XZ"] = boost::shared_ptr<Matrix> (new Matrix("PHI_XZ", max_points_, max_cart));
-        basis_temps_["PHI_YY"] = boost::shared_ptr<Matrix> (new Matrix("PHI_YY", max_points_, max_cart));
-        basis_temps_["PHI_YZ"] = boost::shared_ptr<Matrix> (new Matrix("PHI_YZ", max_points_, max_cart));
-        basis_temps_["PHI_ZZ"] = boost::shared_ptr<Matrix> (new Matrix("PHI_ZZ", max_points_, max_cart));
+        basis_values_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, primary_->nbf()));
+        basis_values_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, primary_->nbf()));
+        basis_values_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, primary_->nbf()));
+        basis_values_["PHI_YY"] = SharedMatrix (new Matrix("PHI_YY", max_points_, primary_->nbf()));
+        basis_values_["PHI_YZ"] = SharedMatrix (new Matrix("PHI_YZ", max_points_, primary_->nbf()));
+        basis_values_["PHI_ZZ"] = SharedMatrix (new Matrix("PHI_ZZ", max_points_, primary_->nbf()));
+        basis_temps_["PHI_XX"] = SharedMatrix (new Matrix("PHI_XX", max_points_, max_cart));
+        basis_temps_["PHI_XY"] = SharedMatrix (new Matrix("PHI_XY", max_points_, max_cart));
+        basis_temps_["PHI_XZ"] = SharedMatrix (new Matrix("PHI_XZ", max_points_, max_cart));
+        basis_temps_["PHI_YY"] = SharedMatrix (new Matrix("PHI_YY", max_points_, max_cart));
+        basis_temps_["PHI_YZ"] = SharedMatrix (new Matrix("PHI_YZ", max_points_, max_cart));
+        basis_temps_["PHI_ZZ"] = SharedMatrix (new Matrix("PHI_ZZ", max_points_, max_cart));
     }
 
     if (deriv_ >= 3) 
         throw PSIEXCEPTION("PointFunctions: Only up to Hessians are currently supported"); 
 }
-boost::shared_ptr<Matrix> PointFunctions::basis_value(const std::string& key)
+SharedMatrix PointFunctions::basis_value(const std::string& key)
 {
     return basis_values_[key];
 }
@@ -596,12 +603,18 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
             }    
 
             // Spherical transform
-            for (int index = 0; index < transform.size(); index++) {
-                int pureindex = boost::get<0>(transform[index]);
-                int cartindex = boost::get<1>(transform[index]);
-                double coef   = boost::get<2>(transform[index]);
-                
-                C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+            if (puream_) {
+                for (int index = 0; index < transform.size(); index++) {
+                    int pureindex = boost::get<0>(transform[index]);
+                    int cartindex = boost::get<1>(transform[index]);
+                    double coef   = boost::get<2>(transform[index]);
+                    
+                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+                }
+            } else {
+                for (int q = 0; q < nQ; q++) {
+                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
+                }
             }
 
             function_offset += nQ;
@@ -691,15 +704,24 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
             }    
 
             // Spherical transform
-            for (int index = 0; index < transform.size(); index++) {
-                int pureindex = boost::get<0>(transform[index]);
-                int cartindex = boost::get<1>(transform[index]);
-                double coef   = boost::get<2>(transform[index]);
-                
-                C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+            if (puream_) {
+                for (int index = 0; index < transform.size(); index++) {
+                    int pureindex = boost::get<0>(transform[index]);
+                    int cartindex = boost::get<1>(transform[index]);
+                    double coef   = boost::get<2>(transform[index]);
+                    
+                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+                }
+            } else {
+                for (int q = 0; q < nQ; q++) {
+                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxp[0][q],max_cart,&purexp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyp[0][q],max_cart,&pureyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartzp[0][q],max_cart,&purezp[0][q + function_offset],nso);
+                }
             }
 
             function_offset += nQ;
@@ -831,21 +853,36 @@ void PointFunctions::computePoints(boost::shared_ptr<BlockOPoints> block)
             }    
 
             // Spherical transform
-            for (int index = 0; index < transform.size(); index++) {
-                int pureindex = boost::get<0>(transform[index]);
-                int cartindex = boost::get<1>(transform[index]);
-                double coef   = boost::get<2>(transform[index]);
-                
-                C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxxp[0][cartindex],max_cart,&purexxp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxyp[0][cartindex],max_cart,&purexyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartxzp[0][cartindex],max_cart,&purexzp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyyp[0][cartindex],max_cart,&pureyyp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartyzp[0][cartindex],max_cart,&pureyzp[0][pureindex + function_offset],nso);
-                C_DAXPY(npoints,coef,&cartzzp[0][cartindex],max_cart,&purezzp[0][pureindex + function_offset],nso);
+            if (puream_) {
+                for (int index = 0; index < transform.size(); index++) {
+                    int pureindex = boost::get<0>(transform[index]);
+                    int cartindex = boost::get<1>(transform[index]);
+                    double coef   = boost::get<2>(transform[index]);
+                    
+                    C_DAXPY(npoints,coef,&cartp[0][cartindex],max_cart,&purep[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxp[0][cartindex],max_cart,&purexp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyp[0][cartindex],max_cart,&pureyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartzp[0][cartindex],max_cart,&purezp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxxp[0][cartindex],max_cart,&purexxp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxyp[0][cartindex],max_cart,&purexyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartxzp[0][cartindex],max_cart,&purexzp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyyp[0][cartindex],max_cart,&pureyyp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartyzp[0][cartindex],max_cart,&pureyzp[0][pureindex + function_offset],nso);
+                    C_DAXPY(npoints,coef,&cartzzp[0][cartindex],max_cart,&purezzp[0][pureindex + function_offset],nso);
+                }
+            } else {
+                for (int q = 0; q < nQ; q++) {
+                    C_DCOPY(npoints,&cartp[0][q],max_cart,&purep[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxp[0][q],max_cart,&purexp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyp[0][q],max_cart,&pureyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartzp[0][q],max_cart,&purezp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxxp[0][q],max_cart,&purexxp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxyp[0][q],max_cart,&purexyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartxzp[0][q],max_cart,&purexzp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyyp[0][q],max_cart,&pureyyp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartyzp[0][q],max_cart,&pureyzp[0][q + function_offset],nso);
+                    C_DCOPY(npoints,&cartzzp[0][q],max_cart,&purezzp[0][q + function_offset],nso);
+                }
             }
 
             function_offset += nQ;
@@ -861,7 +898,7 @@ void PointFunctions::print(FILE* out, int print) const
     fprintf(out, "   => PointFunctions: Derivative = %d, Max Points = %d <=\n\n", deriv_, max_points_);
 
     fprintf(out, "    Basis Values:\n");
-    for (std::map<std::string, boost::shared_ptr<Matrix> >::const_iterator it = basis_values_.begin();
+    for (std::map<std::string, SharedMatrix >::const_iterator it = basis_values_.begin();
         it != basis_values_.end(); it++) {
         fprintf(out, "    %s\n", (*it).first.c_str());
         if (print > 3) {

@@ -1,0 +1,23 @@
+#! RHF-CCSD(T) cc-pVQZ frozen-core energy of the BH molecule, with Cartesian input.
+#! This version tests the FROZEN_DOCC option explicitly
+
+
+molecule bh {
+    b      0.0000        0.0000        0.0000
+    h      0.0000        0.0000        1.0000
+}
+
+set {
+   docc [3, 0, 0, 0]
+   frozen_docc [1, 0, 0, 0]
+   basis cc-pvqz
+   convergence 10
+   e_converge 10
+   d_converge 10
+}
+
+energy('ccsd(t)')
+
+
+
+clean()

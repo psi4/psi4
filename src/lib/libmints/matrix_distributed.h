@@ -30,7 +30,7 @@ class Dimension;
 
 extern FILE *outfile;
 
-typedef boost::shared_ptr<Matrix> SharedMatrix;
+typedef SharedMatrix SharedMatrix;
 
 /*! \ingroup MINTS
  *  \class Distributed_Matrix
@@ -201,7 +201,7 @@ public:
     /// Copies the rhs distributed matrix
     Distributed_Matrix& operator =(const Distributed_Matrix &rhs);
     Distributed_Matrix& operator =(const Distributed_Matrix *rhs);
-    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat);
+    Distributed_Matrix& operator =(const SharedMatrix mat);
 
     /// Adds the rhs matrix to this distributed matrix
     madness::Void operator +=(const Distributed_Matrix &rhs);
@@ -218,7 +218,7 @@ public:
     /// Check to see if the distributed matrices are the same size and tiled the same
     bool operator ==(const Distributed_Matrix &rhs);
     bool operator ==(const Distributed_Matrix *rhs);
-    bool operator ==(const boost::shared_ptr<Matrix> mat) const;
+    bool operator ==(const SharedMatrix mat) const;
 
     /// Check to see if the distributed matrices are not the same size and tiled the same
     bool operator !=(const Distributed_Matrix &rhs);
@@ -301,7 +301,7 @@ public:
     /// Copies the rhs distributed matrix
     Distributed_Matrix& operator =(const Distributed_Matrix &rhs) {}
     Distributed_Matrix& operator =(const Distributed_Matrix *rhs) {}
-    Distributed_Matrix& operator =(const boost::shared_ptr<Matrix> mat) {}
+    Distributed_Matrix& operator =(const SharedMatrix mat) {}
 
     /// Adds the rhs matrix to this distributed matrix
     void operator +=(const Distributed_Matrix &rhs) {}
@@ -318,7 +318,7 @@ public:
     /// Check to see if the distributed matrices are the same size and tiled the same
     bool operator ==(const Distributed_Matrix &rhs) {}
     bool operator ==(const Distributed_Matrix *rhs) {}
-    bool operator ==(const boost::shared_ptr<Matrix> mat) const {}
+    bool operator ==(const SharedMatrix mat) const {}
 
     /// Check to see if the distributed matrices are not the same size and tiled the same
     bool operator !=(const Distributed_Matrix &rhs) {}

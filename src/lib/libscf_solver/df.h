@@ -74,26 +74,26 @@ class DFHF {
         // Inverse of fitting metric
         boost::shared_ptr<FittingMetric> Jinv_;
         // The three index tensor (or a chunk if on disk)
-        boost::shared_ptr<Matrix> Qmn_;
+        SharedMatrix Qmn_;
 
         // AO to USO transform matrix
-        boost::shared_ptr<Matrix> AO2USO_;
+        SharedMatrix AO2USO_;
 
         // SO Basis quantities
         // Shared pointer to alpha density matrix
-        boost::shared_ptr<Matrix> Da_;
+        SharedMatrix Da_;
         // Shared pointer to beta density matrix
-        boost::shared_ptr<Matrix> Db_;
+        SharedMatrix Db_;
         // Shared pointer to alpha occupation matrix
-        boost::shared_ptr<Matrix> Ca_;
+        SharedMatrix Ca_;
         // Shared pointer to beta occupation matrix
-        boost::shared_ptr<Matrix> Cb_;
+        SharedMatrix Cb_;
         // Shared pointer to total Coulomb matrix
-        boost::shared_ptr<Matrix> Ja_;
+        SharedMatrix Ja_;
         // Shared pointer to alpha Exchange matrix
-        boost::shared_ptr<Matrix> Ka_;
+        SharedMatrix Ka_;
         // Shared pointer to beta Exchange matrix
-        boost::shared_ptr<Matrix> Kb_;
+        SharedMatrix Kb_;
         // Number of alpha electrons
         const int* nalphapi_;
         // Number of beta electrons
@@ -101,19 +101,19 @@ class DFHF {
        
         // AO Basis quantities
         // Shared pointer to alpha density matrix
-        boost::shared_ptr<Matrix> Da_ao_;
+        SharedMatrix Da_ao_;
         // Shared pointer to beta density matrix
-        boost::shared_ptr<Matrix> Db_ao_;
+        SharedMatrix Db_ao_;
         // Shared pointer to alpha occupation matrix
-        boost::shared_ptr<Matrix> Ca_ao_;
+        SharedMatrix Ca_ao_;
         // Shared pointer to beta occupation matrix
-        boost::shared_ptr<Matrix> Cb_ao_;
+        SharedMatrix Cb_ao_;
         // Shared pointer to total Coulomb matrix
-        boost::shared_ptr<Matrix> Ja_ao_;
+        SharedMatrix Ja_ao_;
         // Shared pointer to alpha Exchange matrix
-        boost::shared_ptr<Matrix> Ka_ao_;
+        SharedMatrix Ka_ao_;
         // Shared pointer to beta Exchange matrix
-        boost::shared_ptr<Matrix> Kb_ao_;
+        SharedMatrix Kb_ao_;
         // Number of alpha electrons
         int nalpha_;
         // Number of beta electrons
@@ -170,13 +170,13 @@ class DFHF {
         // Setter methods, to be called from the JK functors
         void set_jk(bool jk) { is_jk_ = jk; }
         void set_restricted(bool y_n) { restricted_ = y_n; }
-        void set_J(boost::shared_ptr<Matrix> Ja) {Ja_ = Ja;}
-        void set_Ka(boost::shared_ptr<Matrix> Ka) {Ka_ = Ka;}
-        void set_Kb(boost::shared_ptr<Matrix> Kb) {Kb_ = Kb;}
-        void set_Da(boost::shared_ptr<Matrix> Da) {Da_ = Da;}
-        void set_Db(boost::shared_ptr<Matrix> Db) {Db_ = Db;}
-        void set_Ca(boost::shared_ptr<Matrix> Ca) {Ca_ = Ca;}
-        void set_Cb(boost::shared_ptr<Matrix> Cb) {Cb_ = Cb;}
+        void set_J(SharedMatrix Ja) {Ja_ = Ja;}
+        void set_Ka(SharedMatrix Ka) {Ka_ = Ka;}
+        void set_Kb(SharedMatrix Kb) {Kb_ = Kb;}
+        void set_Da(SharedMatrix Da) {Da_ = Da;}
+        void set_Db(SharedMatrix Db) {Db_ = Db;}
+        void set_Ca(SharedMatrix Ca) {Ca_ = Ca;}
+        void set_Cb(SharedMatrix Cb) {Cb_ = Cb;}
         void set_Na(const int* Na) {nalphapi_ = Na;}
         void set_Nb(const int* Nb) {nbetapi_ = Nb;}
 
@@ -203,9 +203,9 @@ class DFHFDiskIterator {
     unsigned int unit_;
 
     // Buffer A
-    boost::shared_ptr<Matrix> A_;
+    SharedMatrix A_;
     // Buffer B
-    boost::shared_ptr<Matrix> B_;    
+    SharedMatrix B_;    
 
     // Fast index size
     int ntri_;
@@ -233,7 +233,7 @@ class DFHFDiskIterator {
     // reset (not user called typically)
     void reset();
     // Post the read for a block
-    void read(boost::shared_ptr<Matrix> A, int start, int rows);
+    void read(SharedMatrix A, int start, int rows);
 
 public: 
     // Opens disk
@@ -303,13 +303,13 @@ protected:
     boost::shared_ptr<TwoBodyAOInt> Amnint_;
 
     /// The localized orbitals (C1 obviously)
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
     /// The C1 S^1/2 matrix (for Lowdin charges)
-    boost::shared_ptr<Matrix> Sp12_;
+    SharedMatrix Sp12_;
     /// The Lowdin charges (basis functions in rows, orbitals in cols)
-    boost::shared_ptr<Matrix> Itemp_;
+    SharedMatrix Itemp_;
     /// The Lowdin charges (Atoms in rows, orbitals in cols)
-    boost::shared_ptr<Matrix> I_;
+    SharedMatrix I_;
     /// The custom int array for selection of domains (0-no, 1-charge, 2-distance, 3-unification, 4-alpha delocalized, 5-leak delocalized) (atoms x orbitals)
     int** domains_;
     /// The custom old int array for selection of domains (0-no, 1-charge, 2-distance, 3-unification, 4-alpha delocalized, 5-leak delocalized) (atoms x orbitals)
@@ -320,7 +320,7 @@ protected:
     std::vector<bool> superdomains_changed_; 
 
     /// Vector of Cholesky decompositions of J (or pointers where superdomains exist)
-    std::vector<boost::shared_ptr<Matrix> > JCholesky_;
+    std::vector<SharedMatrix > JCholesky_;
 
     /// Vector of significant shell indices (fast) for each orbital (slow) 
     std::vector<std::vector<int> > primary_shells_;
@@ -346,11 +346,11 @@ protected:
     /// The common init routine
     void common_init();
     /// Computes the J matrix and associated Cholesky decomposition for orbital i
-    boost::shared_ptr<Matrix> computeJCholesky(int i);
+    SharedMatrix computeJCholesky(int i);
     /// Computes Amn for orbital i
-    boost::shared_ptr<Matrix> computeAmn(int i);
+    SharedMatrix computeAmn(int i);
     /// Computes the local K matrix for orbital i
-    boost::shared_ptr<Matrix> computeK(int i, boost::shared_ptr<Matrix> J, boost::shared_ptr<Matrix> Amn);
+    SharedMatrix computeK(int i, SharedMatrix J, SharedMatrix Amn);
     /// Find the primary/extended domains due to Lowdin charges
     void lowdinDomains();
     /// Identify completely delocalized domains 
@@ -372,7 +372,7 @@ public:
     ~DFHFLocalizer();
 
     /// The local C matrix
-    boost::shared_ptr<Matrix> C() const { return C_; }    
+    SharedMatrix C() const { return C_; }    
     /// The delocal orbital set
     std::set<int> local_set() const { return local_set_; }
     /// The local orbital set
@@ -397,9 +397,9 @@ public:
     * Localize based on C1 square SPSD matrix D 
     * @param D density matrix in C1 AO basis
     */
-    void choleskyLocalize(boost::shared_ptr<Matrix> D); 
+    void choleskyLocalize(SharedMatrix D); 
     /// Computes the local part of matrix K, as determind by indices
-    void computeKLocal(boost::shared_ptr<Matrix> Kglobal);
+    void computeKLocal(SharedMatrix Kglobal);
 
 };
 

@@ -8,6 +8,7 @@
 #include <libdpd/dpd.h>
 #include <libchkpt/chkpt.hpp>
 #include <libmints/dimension.h>
+#include <libmints/typedefs.h>
 #include <psifiles.h>
 #include "mospace.h"
 
@@ -110,10 +111,10 @@ class IntegralTransform{
                           FrozenOrbitals frozenOrbitals = OccAndVir,
                           bool initialize = true);
 
-        IntegralTransform(boost::shared_ptr<Matrix> c,
-                          boost::shared_ptr<Matrix> i,
-                          boost::shared_ptr<Matrix> a,
-                          boost::shared_ptr<Matrix> v,
+        IntegralTransform(SharedMatrix c,
+                          SharedMatrix i,
+                          SharedMatrix a,
+                          SharedMatrix v,
                           SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
@@ -135,6 +136,7 @@ class IntegralTransform{
                                        const boost::shared_ptr<MOSpace> s3, const boost::shared_ptr<MOSpace> s4);
         void backtransform_density();
         void backtransform_tpdm_restricted();
+        void backtransform_tpdm_unrestricted();
         void print_dpd_lookup();
 
         int DPD_ID(const char c);
@@ -180,6 +182,11 @@ class IntegralTransform{
         /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
         void set_psio(boost::shared_ptr<PSIO> psio) {_psio = psio;}
 
+        // Get the alpha correlated to Pitzer ordering array, used in backtransforms
+        const int *alpha_corr_to_pitzer() const { return _aCorrToPitzer; }
+        // Get the beta correlated to Pitzer ordering array, used in backtransforms
+        const int *beta_corr_to_pitzer() const { return _bCorrToPitzer; }
+
     protected:
         void check_initialized();
         void semicanonicalize();
@@ -188,15 +195,16 @@ class IntegralTransform{
         void process_eigenvectors();
         void process_spaces();
         void presort_mo_tpdm_restricted();
+        void presort_mo_tpdm_unrestricted();
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
-                       int *order, bool backtransform = false, bool accumulate = false);
+                       int *order, bool backtransform = false, double scale = 0.0);
         void build_fzc_and_fock(int p, int q, int r, int s, double value,
                           double *aFzcD, double *bFzcD, double *aFzcOp, double *bFzcOp,
                           double *aD, double *bD, double *aFock, double *bFock);
         void idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
                                  int **&bucketOffset, int &p, int &q, int &r,
-                                 int &s, double value, bool symmetrize = false);
+                                 int &s, double value, bool symmetrize = false, bool have_bra_ket_sym=true);
         void idx_error(const char *message, int p, int q, int r, int s,
                        int pq, int rs, int pq_sym, int rs_sym);
 
@@ -283,6 +291,10 @@ class IntegralTransform{
         int _print;
         // Just an array of zeros! Used in the null MOSpace "transforms"
         int *_zeros;
+        // The alpha correlated to Pitzer ordering arrays, used in backtransforms
+        int *_aCorrToPitzer;
+        // The beta correlated to Pitzer ordering arrays, used in backtransforms
+        int *_bCorrToPitzer;
         // The number of symmetrized orbitals per irrep
         Dimension _sopi;
         // The symmetry (irrep number) of each symmetrized atomic orbital
@@ -300,8 +312,8 @@ class IntegralTransform{
         // The cache files used by libDPD
         int *_cacheFiles, **_cacheList;
         // Matrix objects of Ca and Cb (these are copies of _Ca, _Cb below).
-        boost::shared_ptr<Matrix> _mCa;
-        boost::shared_ptr<Matrix> _mCb;
+        SharedMatrix _mCa;
+        SharedMatrix _mCb;
         // The alpha MO coefficients for each irrep
         double ***_Ca;
         // The alpha MO coefficients for each irrep
@@ -327,6 +339,70 @@ class IntegralTransform{
         // Has this object already pre-sorted?
         bool _tpdmAlreadyPresorted;
 };
+
+inline void
+IntegralTransform::idx_permute_presort(dpdfile4 *File, int &thisBucket, int **&bucketMap,
+                                       int **&bucketOffset, int &p, int &q, int &r,
+                                       int &s, double value, bool symmetrize, bool have_bra_ket_sym)
+{
+    dpdparams4 *Params = File->params;
+
+    if(symmetrize){
+        // Symmetrize the quantity (used in density matrix processing)
+        if(p!=q) value *= 0.5;
+        if(r!=s) value *= 0.5;
+    }
+
+    bool bra_ket_different = !(p==r && q==s);
+
+    /* Get the orbital symmetries */
+    int p_sym = Params->psym[p];
+    int q_sym = Params->qsym[q];
+    int r_sym = Params->rsym[r];
+    int s_sym = Params->ssym[s];
+    int pq_sym = p_sym^q_sym;
+    int rs_sym = r_sym^s_sym;
+
+    /* The allowed (Mulliken) permutations are very simple in this case */
+    if(bucketMap[p][q] == thisBucket) {
+        /* Get the row and column indices and assign the value */
+        int pq = Params->rowidx[p][q];
+        int rs = Params->colidx[r][s];
+        int offset = bucketOffset[thisBucket][pq_sym];
+        if((pq-offset >= Params->rowtot[pq_sym]) || (rs >= Params->coltot[rs_sym]))
+            idx_error("MP Params_make: pq, rs", p,q,r,s,pq,rs,pq_sym,rs_sym);
+        File->matrix[pq_sym][pq-offset][rs] += value;
+    }
+
+    /*
+     * We also add in the bra-ket transposed value, as a result of the matrix
+     * storage, but we need to make sure we don't duplicate "diagonal" values.
+     * We don't do this if the quantity does not have bra-ket symmetry, like
+     * in the Alpha-Beta TPDM.
+     */
+    if(bucketMap[r][s] == thisBucket && bra_ket_different && have_bra_ket_sym) {
+        int rs = Params->rowidx[r][s];
+        int pq = Params->colidx[p][q];
+        int offset = bucketOffset[thisBucket][rs_sym];
+        if((rs-offset >= Params->rowtot[rs_sym])||(pq >= Params->coltot[pq_sym]))
+            idx_error("MP Params_make: rs, pq", p,q,r,s,rs,pq,rs_sym,pq_sym);
+        File->matrix[rs_sym][rs-offset][pq] += value;
+    }
+}
+
+inline void
+IntegralTransform::idx_error(const char *message, int p, int q, int r, int s,
+                             int pq, int rs, int pq_sym, int rs_sym)
+{
+
+    fprintf(outfile, "\n\tDPD Parameter Error in %s\n", message);
+    fprintf(outfile,"\t-------------------------------------------------\n");
+    fprintf(outfile,"\t    p      q      r      s  [   pq]  [   rs] pq_symm rs_symm\n");
+    fprintf(outfile,"\t%5d  %5d  %5d  %5d  [%5d]  [%5d]   %1d   %1d\n", p,q,r,s,
+      pq,rs,pq_sym,rs_sym);
+    throw PsiException("DPD idx failure.", __FILE__, __LINE__);
+}
+
 
 } // End namespaces
 

@@ -23,6 +23,8 @@ procedures = {
             'mp2c'          : run_mp2c,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
+            'eom-ccsd'      : run_eom_ccsd,
+            'eom_ccsd'      : run_eom_ccsd,
             'detci'         : run_detci
         },
         'gradient' : {
@@ -54,6 +56,7 @@ def gradient(name, **kwargs):
     # Set some defaults
     func = energy
     lowername = name.lower()
+
     # Order of precedence:
     #    1. Default for wavefunction
     #    2. Value obtained from liboptions, if user changed it
@@ -80,9 +83,14 @@ def gradient(name, **kwargs):
         dertype = kwargs['dertype']
 
     # 4. if the user provides a custom function THAT takes precendence
-    if (kwargs.has_key('func')):
+    if (kwargs.has_key('opt_func')) or (kwargs.has_key('func')):
+        if (kwargs.has_key('func')):
+            kwargs['opt_func'] = kwargs['func']
+            del kwargs['func']
         dertype = 0
-        func = kwargs['func']
+        func = kwargs['opt_func']
+    if not func:
+        raise Exception('Function \'%s\' does not exist to be called by wrapper optimize.' % (func.__name__))
 
     # Start handling the other options we support
     if (kwargs.has_key('molecule')):
@@ -132,8 +140,13 @@ def gradient(name, **kwargs):
             # Load in displacement into the active molecule
             PsiMod.get_active_molecule().set_geometry(displacement)
 
+            # Wrap any positional arguments into kwargs (for intercalls among wrappers)
+            if not('name' in kwargs) and name:
+                kwargs['name'] = name.lower()
+
             # Perform the energy calculation
-            E = func(lowername, **kwargs)
+            #E = func(lowername, **kwargs)
+            E = func(**kwargs)
 
             # Save the energy
             energies.append(E)
@@ -220,7 +233,7 @@ def hessian(name, **kwargs):
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print " %d displacments needed." % ndisp
+        print " %d displacements needed." % ndisp
         energies = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
@@ -263,6 +276,7 @@ def optimize(name, **kwargs):
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print "Optimizer: Optimization complete!"
             PsiMod.opt_clean()
+            PsiMod.clean()
             return thisenergy
 
     PsiMod.print_out("\tOptimizer: Did not converge!")

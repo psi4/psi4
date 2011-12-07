@@ -181,8 +181,9 @@ void SAPT2p3::print_results()
     e_exch_ind22_*1000.0,e_exch_ind22_*627.5095);
   fprintf(outfile,"    delta HF,r (2)   %16.8lf mH %16.8lf kcal mol^-1\n",
     dHF2*1000.0,dHF2*627.5095);
-  fprintf(outfile,"    delta HF,r (3)   %16.8lf mH %16.8lf kcal mol^-1\n",
-    dHF3*1000.0,dHF3*627.5095);
+  if (third_order_)
+    fprintf(outfile,"    delta HF,r (3)   %16.8lf mH %16.8lf kcal mol^-1\n",
+      dHF3*1000.0,dHF3*627.5095);
   fprintf(outfile,"    Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp20_*1000.0,e_disp20_*627.5095);
   fprintf(outfile,"    Disp30           %16.8lf mH %16.8lf kcal mol^-1\n",
@@ -219,8 +220,12 @@ void SAPT2p3::print_results()
   double tot_exch = e_exch10_ + e_exch11_ + e_exch12_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF3 + e_ind22_ + e_exch_ind22_
     + e_ind30r_ + e_exch_ind30r_;
-  double tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_
-    + e_ind30r_ + e_exch_ind30r_;
+  double tot_ct = 0.0;
+  if (third_order_)
+    tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_
+      + e_ind30r_ + e_exch_ind30r_;
+  else 
+    tot_ct = e_ind20_ + e_exch_ind20_ + e_ind22_ + e_exch_ind22_;
   double tot_disp = e_disp20_ + e_exch_disp20_ + e_disp21_ + e_disp22sdq_
     + e_disp22t_ + e_disp30_ + e_exch_disp30_;
 
@@ -233,11 +238,12 @@ void SAPT2p3::print_results()
   Process::environment.globals["SAPT SAPT2 ENERGY"] = e_sapt2_;
   Process::environment.globals["SAPT SAPT2+(3) ENERGY"] = e_sapt2pp3_;
   if (third_order_) {
-    Process::environment.globals["SAPT SAPT2+(3) ENERGY"] = e_sapt2p3_;
+    Process::environment.globals["SAPT SAPT2+3 ENERGY"] = e_sapt2p3_;
     Process::environment.globals["SAPT ENERGY"] = e_sapt2p3_;
-  }
-  else
+  } else {
     Process::environment.globals["SAPT ENERGY"] = e_sapt2pp3_;
+  }
+  Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }
 
 }}

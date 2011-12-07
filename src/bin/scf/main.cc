@@ -75,8 +75,9 @@ PsiReturnType scf(Options & options, PyObject* pre, PyObject* post)
     Communicator::world->sync();
 
     // Set some environment variables
-    Process::environment.globals["SCF ENERGY"] = energy;
+    Process::environment.globals["SCF TOTAL ENERGY"] = energy;
     Process::environment.globals["CURRENT ENERGY"] = energy;
+    Process::environment.globals["REFERENCE ENERGY"] = energy;
 
     // Shut down psi.
 

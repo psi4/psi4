@@ -11,6 +11,8 @@ extern FILE* outfile;
 
 namespace psi{ namespace mcscf{
 
+extern MemoryManager* memory_manager;
+
 void SCF::construct_G(SBlockMatrix& density,
                       SBlockMatrix& G,
                       double* integrals,

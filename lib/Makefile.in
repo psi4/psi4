@@ -33,6 +33,8 @@ install:
 	$(INSTALL_DATA) $(srcdir)/databases/* $(DESTDIR)$(pkgdatadir)/databases
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/grids
 	$(INSTALL_DATA) $(srcdir)/grids/* $(DESTDIR)$(pkgdatadir)/grids
+	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/plugin
+	$(INSTALL_DATA) $(srcdir)/plugin/* $(DESTDIR)$(pkgdatadir)/plugin
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/python
 	$(INSTALL_DATA) $(srcdir)/python/* $(DESTDIR)$(pkgdatadir)/python
 	$(MKDIRS) $(DESTDIR)$(pkgdatadir)/quadratures

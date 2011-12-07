@@ -1,0 +1,14 @@
+molecule h2o {
+  O
+  H 1 0.9
+  H 1 0.9 2 104.0
+}
+
+set {
+  wfn eom_ccsd
+  basis cc-pVDZ
+  states_per_irrep [2, 2, 2, 2]
+}
+
+energy('eom-ccsd')
+clean()

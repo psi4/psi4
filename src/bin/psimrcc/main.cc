@@ -56,7 +56,7 @@ namespace psi{
     MOInfo              *moinfo;
     ModelSpace          *model_space;
     Debugging           *debugging;
-    MemoryManager       *_memory_manager_;
+    MemoryManager       *memory_manager;
 
 PsiReturnType
 psimrcc(Options &options)
@@ -78,6 +78,7 @@ psimrcc(Options &options)
 
   moinfo = new MOInfo(options);
 
+  memory_manager = new MemoryManager(Process::environment.get_memory());
   model_space = new ModelSpace(moinfo);
 
   moinfo->setup_model_space();  // The is a bug here DELETEME
@@ -96,18 +97,17 @@ psimrcc(Options &options)
   delete trans;
   delete blas;
 
-
   fprintf(outfile,"\n\n  PSIMRCC job completed.");
   fprintf(outfile,"\n  Wall Time = %20.6f s",global_timer->get());
   fprintf(outfile,"\n  GEMM Time = %20.6f s",moinfo->get_dgemm_timing());
   fflush(outfile);
 
-  _memory_manager_->MemCheck(outfile);
+  memory_manager->MemCheck(outfile);
 
   delete model_space;
   delete moinfo;
   delete debugging;
-  delete _memory_manager_;
+  delete memory_manager;
   delete global_timer;
 
   _default_psio_lib_->close(PSIF_PSIMRCC_INTEGRALS,1);
