@@ -31,6 +31,22 @@ molecule h2o {
     H 1 1.00 2 103.1
 }
 
+# Perform a detci calc using helper function
+set globals {
+  basis 6-31G**
+  hd_ave hd_kave
+}
+
+thisenergy = energy('cisd')
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[1] Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"), 9, "[1] SCF energy") #TEST
+compare_values(refci, thisenergy, 7, "[1] CISD energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "[1] CISD correlation energy") #TEST
+
+clean()
+
+# Perform same detci calc setting all options explicitly
 set globals {
   wfn detci
   basis 6-31G**
@@ -38,19 +54,22 @@ set globals {
 
 set detci {
   hd_ave hd_kave
+  ex_lvl 2
 }
 
 thisenergy = energy('detci')
 
-compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF energy"),     9, "SCF energy") #TEST
-compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[2] Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"), 9, "[2] SCF energy") #TEST
+compare_values(refci, thisenergy, 7, "[2] CISD energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "[2] CISD correlation energy") #TEST
+
+clean()
 
 --------------------------------------------------------------------------
 
-*** tstart() called on ds9
-*** at Tue Nov  1 17:51:34 2011
+*** tstart() called on lawn-143-215-104-56.lawn.gatech.edu
+*** at Tue Dec  6 16:18:12 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -59,7 +78,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -84,7 +103,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
   Running in c2v symmetry.
 
-  Nuclear repulsion =    8.804687290998672
+  Nuclear repulsion =    8.804687290998674
 
   Charge       = 0
   Multiplicity = 1
@@ -117,7 +136,7 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
   Using Symmetric Orthogonalization.
   SCF Guess: Core (One-Electron) Hamiltonian.
 
-  Initial RHF energy:   -58.75934033118257
+  Initial RHF energy:   -58.75934033118249
 
    -------------------------------------------------------
     Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
@@ -154,24 +173,24 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
                         Total Energy        Delta E     Density RMS
 
-   @RHF iter   1:   -68.35488443461821   -9.59554e+00   0.00000e+00  
+   @RHF iter   1:   -68.35488443461819   -9.59554e+00   0.00000e+00  
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     4,    0,    0,    1 ]
-   @RHF iter   2:   -71.39794024417724   -3.04306e+00   5.03598e-01 DIIS
+   @RHF iter   2:   -71.39794024417736   -3.04306e+00   5.03598e-01 DIIS
 	Occupation by irrep:
 	         A1    A2    B1    B2 
 	DOCC [     3,    0,    1,    1 ]
-   @RHF iter   3:   -75.77170401143009   -4.37376e+00   4.76874e-01 DIIS
-   @RHF iter   4:   -76.00006703142691   -2.28363e-01   1.67735e-02 DIIS
-   @RHF iter   5:   -76.01682092540251   -1.67539e-02   7.81375e-03 DIIS
-   @RHF iter   6:   -76.01724894131669   -4.28016e-04   1.27860e-03 DIIS
-   @RHF iter   7:   -76.01729489704316   -4.59557e-05   5.67962e-04 DIIS
-   @RHF iter   8:   -76.01729646695615   -1.56991e-06   9.33668e-05 DIIS
-   @RHF iter   9:   -76.01729656842251   -1.01466e-07   2.90504e-05 DIIS
-   @RHF iter  10:   -76.01729657097100   -2.54849e-09   4.41619e-06 DIIS
-   @RHF iter  11:   -76.01729657098959   -1.85878e-11   2.99617e-07 DIIS
-   @RHF iter  12:   -76.01729657099034   -7.53175e-13   5.49673e-08 DIIS
+   @RHF iter   3:   -75.77170401143003   -4.37376e+00   4.76874e-01 DIIS
+   @RHF iter   4:   -76.00006703142679   -2.28363e-01   1.67735e-02 DIIS
+   @RHF iter   5:   -76.01682092540250   -1.67539e-02   7.81375e-03 DIIS
+   @RHF iter   6:   -76.01724894131662   -4.28016e-04   1.27860e-03 DIIS
+   @RHF iter   7:   -76.01729489704296   -4.59557e-05   5.67962e-04 DIIS
+   @RHF iter   8:   -76.01729646695614   -1.56991e-06   9.33668e-05 DIIS
+   @RHF iter   9:   -76.01729656842247   -1.01466e-07   2.90504e-05 DIIS
+   @RHF iter  10:   -76.01729657097081   -2.54835e-09   4.41619e-06 DIIS
+   @RHF iter  11:   -76.01729657098960   -1.87867e-11   2.99654e-07 DIIS
+   @RHF iter  12:   -76.01729657099011   -5.11591e-13   5.49324e-08 DIIS
 
   ==> Post-Iterations <==
 
@@ -199,138 +218,102 @@ compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlatio
 
   Energy converged.
 
-  @RHF Final Energy:   -76.01729657099034
+  @RHF Final Energy:   -76.01729657099011
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0351
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1532
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.8819     Total:     0.8819
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     2.2415     Total:     2.2415
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on ds9 at Tue Nov  1 17:51:35 2011
+*** tstop() called on lawn-143-215-104-56.lawn.gatech.edu at Tue Dec  6 16:18:12 2011
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-Total time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-
-*** tstart() called on ds9
-*** at Tue Nov  1 17:51:35 2011
-
-
-	**************************************************
-	* TRANSQT:  Program to transform integrals from  *
-	*           the SO basis to the MO basis.        *
-	*                                                *
-	*            Daniel, David, & Justin             *
-	*                   Sept  1995                   *
-	**************************************************
-
-	Input Parameters:
-	-----------------
-	Wavefunction           =  DETCI
-	Reference orbitals     =  RHF
-	Backtrans              =  No
-	Print MOs              =  No
-	Freeze Core            =  No
-	Delete Restricted Docc =  Yes
-	Do All TEI             =  No
-	Memory (Mbytes)        =  256.0
-	Max Buckets            =  499
-	First Tmp File         =  150
-	Presort File           =  41
-	Source TEI File        =  33
-	Opdm In File           =  73
-	Opdm Out File          =  76
-	Lag In File            =  75
-	Keep Presort           =  No
-	J File                 =  91
-	Keep J                 =  No
-	M File                 =  72
-	Bare OEI file          =  35
-	Frozen Core OEI file   =  35
-	Sorted TEI file        =  72
-	Delete TEI source file =  Yes
-	Add TPDM Ref Part      =  No
-	Do Bare OEI tranform   =  No
-	Do FZC  OEI tranform   =  Yes
-	Tolerance              =  1.0e-14
-	Print Level            =  1
-	Print TE Ints          =  No
-	Print OE Ints          =  No
-	Print Sorted TE Ints   =  No
-	Print Sorted OE Ints   =  No
-	Reorder MOs            =  No
-	Check C Orthonormality =  No
-	QRHF orbitals          =  No
-	IVO orbitals           =  No
-	Pitzer                 =  No
-
-	Chkpt File Parameters:
-	------------------
-	Number of irreps = 4
-	Number of SOs    = 25
-	Number of MOs    = 25
-
-	Label	# SOs	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
-	-----	-----	-----	------	------	------	------	------
-	 A1	   12	   12	    0	    3	    0	    9	    0
-	 A2	   2	   2	    0	    0	    0	    2	    0
-	 B1	   4	   4	    0	    1	    0	    3	    0
-	 B2	   7	   7	    0	    1	    0	    6	    0
-
-	Nuclear Repulsion Energy    =         8.8046872910
-	Total SCF Energy            =       -76.0172965710
-
-	Reading one-electron integrals...done.
-
-	Pre-sorting two-electron ints...
-
-
-	Frozen core energy =    0.000000000000000
-	Transforming two-electron ints...
-
-	Sorting half-transformed integrals...
-	Finished half-transform...
-	Working on second half...
-
-	Transformation finished.
-	Two-electron integrals written to file72.
-
-	Transforming one-electron integrals...
-	Frozen-core operator written to file 35.
-
-*** tstop() called on ds9 at Tue Nov  1 17:51:35 2011
-Module time:
-	user time   =       0.03 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-*** tstart() called on ds9
-*** at Tue Nov  1 17:51:35 2011
+*** tstart() called on lawn-143-215-104-56.lawn.gatech.edu
+*** at Tue Dec  6 16:18:12 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	DETCI
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	100.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      8.80468729099867
+	SCF energy          (chkpt) =    -76.01729657099011
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on lawn-143-215-104-56.lawn.gatech.edu at Tue Dec  6 16:18:12 2011
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on lawn-143-215-104-56.lawn.gatech.edu
+*** at Tue Dec  6 16:18:12 2011
 
 
 *******************************************************
                        D E T C I  
 
                    C. David Sherrill
-                  Matt L. Leininger
+                   Matt L. Leininger
                      18 June 1999
 *******************************************************
 
@@ -345,8 +328,8 @@ PARAMETERS:
    MAXITER       =       12      FREEZE CORE  =      yes
    NUM ROOTS     =        1      ICORE        =        1
    PRINT         =        1      FCI          =       no
-   CONV          =        4      MIXED        =      yes
-   E CONV        =        6      MIXED4       =      yes
+   CONV          =   1.00e-04      MIXED        =      yes
+   E CONV        =   1.00e-06      MIXED4       =      yes
    OEI FILE      =       35      R4S          =       no
    REPL OTF      =       no
    TEI FILE      =       72      DIAG METHOD  =      SEM
@@ -435,7 +418,414 @@ Iter  5  Root  1 = -76.219847322   Delta_E -1.043E-06   Delta_C  5.125E-04
 Iter  6  Root  1 = -76.219847448   Delta_E -1.263E-07   Delta_C  1.835E-04  
 Iter  7  Root  1 = -76.219847460   Delta_E -1.146E-08   Delta_C  4.692E-05 c
 
-* ROOT 1 CI total energy = -76.2198474598175
+* ROOT 1 CI total energy = -76.2198474598176
+
+
+The 20 most important determinants
+
+    1   -0.973607  (  475,  475)  1A1X  2A1X  3A1X  1B1X  1B2X  
+    2    0.047867  (  503,  503)  1A1X  2A1X  3A1X  1B2X  2B1X  
+    3    0.038778  (  506,  506)  1A1X  2A1X  3A1X  1B1X  2B2X  
+    4    0.031727  (  482,  482)  1A1X  2A1X  1B1X  1B2X  6A1X  
+    5    0.027069  (  507,  507)  1A1X  2A1X  3A1X  1B1X  3B2X  
+    6    0.025589  (  482,  503)  1A1X  2A1X  3A1B  1B1A  1B2X  6A1A  2B1B  
+    7    0.025589  (  503,  482)  1A1X  2A1X  3A1A  1B1B  1B2X  6A1B  2B1A  
+    8   -0.022976  (  503,  508)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  4B2B  
+    9   -0.022976  (  508,  503)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  4B2A  
+   10   -0.022863  (  503,  506)  1A1X  2A1X  3A1X  1B1B  1B2A  2B1A  2B2B  
+   11   -0.022863  (  506,  503)  1A1X  2A1X  3A1X  1B1A  1B2B  2B1B  2B2A  
+   12    0.022766  ( 1011, 1011)  1A1X  2A1X  3A1X  1B1X  5A1X  
+*  13    0.022680  (  508,  508)  1A1X  2A1X  3A1X  1B1X  4B2X  
+   14    0.022587  (  476,  476)  1A1X  2A1X  1B1X  1B2X  4A1X  
+   15    0.021959  (  506,  508)  1A1X  2A1X  3A1X  1B1X  2B2A  4B2B  
+   16    0.021959  (  508,  506)  1A1X  2A1X  3A1X  1B1X  2B2B  4B2A  
+   17   -0.021324  (  476,  506)  1A1X  2A1X  3A1B  1B1X  1B2A  4A1A  2B2B  
+   18   -0.021324  (  506,  476)  1A1X  2A1X  3A1A  1B1X  1B2B  4A1B  2B2A  
+   19    0.020580  ( 1024, 1024)  1A1X  2A1X  1B1X  1B2X  3B2X  
+   20    0.018749  ( 1010, 1010)  1A1X  2A1X  3A1X  1B1X  4A1X  
+
+
+
+
+        Total Time (s)     %Time 		%Relative
+ -----------------------------------------------------
+ Read      0.003972
+ Write     0.001878
+ Sigma1    0.000604
+ Sigma2    0.169300
+ Sigma3    0.192673
+ S1 Thread 0.000000
+ S2 Thread 0.000000
+ S3 Thread 0.000000
+
+		 "A good bug is a dead bug" 
+
+			 - Starship Troopers
+
+		 "I didn't write FORTRAN.  That's the problem."
+
+			 - Edward Valeev
+
+
+*** tstop() called on lawn-143-215-104-56.lawn.gatech.edu at Tue Dec  6 16:18:13 2011
+Module time:
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.98 seconds =       0.02 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-143-215-104-56.lawn.gatech.edu
+*** at Tue Dec  6 16:18:13 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.069592187390
+           H          0.000000000000    -0.783151105291     0.552239257844
+           H          0.000000000000     0.783151105291     0.552239257844
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    8.804687290998672
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.3361251844E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.75934033118249
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 13617 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.35488443461819   -9.59554e+00   0.00000e+00  
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.39794024417735   -3.04306e+00   5.03598e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.77170401143006   -4.37376e+00   4.76874e-01 DIIS
+   @RHF iter   4:   -76.00006703142685   -2.28363e-01   1.67735e-02 DIIS
+   @RHF iter   5:   -76.01682092540257   -1.67539e-02   7.81375e-03 DIIS
+   @RHF iter   6:   -76.01724894131667   -4.28016e-04   1.27860e-03 DIIS
+   @RHF iter   7:   -76.01729489704303   -4.59557e-05   5.67962e-04 DIIS
+   @RHF iter   8:   -76.01729646695617   -1.56991e-06   9.33668e-05 DIIS
+   @RHF iter   9:   -76.01729656842252   -1.01466e-07   2.90504e-05 DIIS
+   @RHF iter  10:   -76.01729657097084   -2.54832e-09   4.41619e-06 DIIS
+   @RHF iter  11:   -76.01729657098960   -1.87583e-11   2.99633e-07 DIIS
+   @RHF iter  12:   -76.01729657099013   -5.25802e-13   5.49524e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.569000     2A1    -1.320609     1B2    -0.678724  
+	   3A1    -0.563930     1B1    -0.495004  
+
+	Virtual:                                                              
+
+	   4A1     0.202466     2B2     0.292719     3B2     0.981164  
+	   5A1     1.056318     6A1     1.129179     2B1     1.168639  
+	   4B2     1.294985     7A1     1.413596     1A2     1.802875  
+	   8A1     1.806916     3B1     1.918871     9A1     2.513249  
+	   5B2     2.537822     6B2     2.713577     2A2     2.921065  
+	   4B1     2.947486    10A1     3.291755    11A1     3.620730  
+	   7B2     3.874917    12A1     4.077740  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.01729657099013
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0351
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1532
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8819     Total:     0.8819
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.2415     Total:     2.2415
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-143-215-104-56.lawn.gatech.edu at Tue Dec  6 16:18:13 2011
+Module time:
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.14 seconds =       0.02 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-143-215-104-56.lawn.gatech.edu
+*** at Tue Dec  6 16:18:13 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	DETCI
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	100.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 25
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    0	    3	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      8.80468729099867
+	SCF energy          (chkpt) =    -76.01729657099013
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on lawn-143-215-104-56.lawn.gatech.edu at Tue Dec  6 16:18:13 2011
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.15 seconds =       0.02 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-143-215-104-56.lawn.gatech.edu
+*** at Tue Dec  6 16:18:13 2011
+
+
+*******************************************************
+                       D E T C I  
+
+                   C. David Sherrill
+                   Matt L. Leininger
+                     18 June 1999
+*******************************************************
+
+
+
+
+PARAMETERS: 
+   EX LVL        =        2      H0 BLOCKSIZE =      400
+   VAL EX LVL    =        0      H0 GUESS SIZE=      400
+   H0COUPLINGSIZE=        0      H0 COUPLING  =       no
+   NPRINT        =       20
+   MAXITER       =       12      FREEZE CORE  =      yes
+   NUM ROOTS     =        1      ICORE        =        1
+   PRINT         =        1      FCI          =       no
+   CONV          =   1.00e-04      MIXED        =      yes
+   E CONV        =   1.00e-06      MIXED4       =      yes
+   OEI FILE      =       35      R4S          =       no
+   REPL OTF      =       no
+   TEI FILE      =       72      DIAG METHOD  =      SEM
+   PRECONDITIONER= DAVIDSON      UPDATE       =   DAVIDSON
+   S             =   0.0000      Ms0          =      yes
+   MAXNVECT      =       13
+   RESTART       =       no
+   GUESS VECTOR  =  H0BLOCK      OPENTYPE     =     NONE
+   REF SYM       =     auto
+   COLLAPSE SIZE =        1      HD AVE       =     HD_KAVE
+   LSE           =       no      LSE ITER     =        0
+   HD OTF        =      yes      NO DFILE     =       no
+   MPN           =       no      MPN SCHMIDT  =       no
+   ZAPTN         =       no      WIGNER       =       no
+   PERT Z        =   1.0000      ROOT         =        0
+   NTHREADS      =        1
+   EXPORT VECTOR =       no      NUM EXPORT   =        0
+   FILTER_GUESS  =       no      SF_RESTRICT  =       no
+   OPDM          =       no      TRANS DENSITY=       no
+
+   FILES         =  50 51 52 53
+
+   EX_ALLOW      =  1  1 
+   STATE AVERAGE =  1(1.00) 
+   STATE AVERAGE =  1(1.00) 
+
+ORBITALS:
+   NMO          =       25      NUM ALP      =        5
+   ORBS IN CI   =       25      NUM ALP EXPL =        5
+   FROZEN CORE  =        0      NUM BET      =        5
+   RESTR CORE   =        0      NUM BET EXPL =        5
+   IOPEN        =       no
+   RAS1 LVL     =        4      A RAS3 MAX   =        2
+   RAS1 MIN     =        8      B RAS3 MAX   =        2
+   A RAS1 LVL   =        4      RAS4 LVL     =       25
+   A RAS1 MIN   =        3      A RAS4 MAX   =        0
+   A RAS1 MAX   =        5      B RAS4 MAX   =        0
+   B RAS1 LVL   =        4      RAS4 MAX     =        0
+   B RAS1 MIN   =        3      A RAS34 MAX  =        2
+   B RAS1 MAX   =        5      B RAS34 MAX  =        2
+   RAS3 LVL     =        5      RAS34 MAX    =        2
+   RAS3 MAX     =        2
+
+   DOCC         =  3  0  1  1 
+   SOCC         =  0  0  0  0 
+   FROZEN DOCC  =  0  0  0  0 
+   FROZEN UOCC  =  0  0  0  0 
+   RAS 1        =  3  0  1  1 
+   RAS 2        =  0  0  0  0 
+   RAS 3        =  9  2  3  6 
+   RAS 4        =  0  0  0  0 
+*******************************************************
+
+
+There are 2001 alpha strings
+There are 2001 beta strings
+CI space contains    9 blocks
+
+CI space requires 3831 determinants
+
+Check SCF Energy from 1- and 2-electron integrals
+
+SCF Energy (ref):            -76.0172965710
+Nuclear repulsion energy:      8.8046872910
+One-electron energy:        -122.3894327209
+Two-electron energy:          37.5674488589
+Frozen core energy:            0.0000000000
+Total electronic energy:     -84.8219838620
+Total SCF energy:            -76.0172965710
+
+*** H0 Block Eigenvalue = -76.12850889
+
+Find the roots by the Simultaneous Expansion Method (Block Davidson Method)
+Energy convergence = 1e-06
+RMS CI vector convergence = 0.0001
+
+Using 1 initial trial vectors
+Iter  0  Root  1 = -76.128508886   Delta_E -8.493E+01   Delta_C  7.276E-01  
+Iter  1  Root  1 = -76.218576896   Delta_E -9.007E-02   Delta_C  6.509E-02  
+Iter  2  Root  1 = -76.219737482   Delta_E -1.161E-03   Delta_C  1.521E-02  
+Iter  3  Root  1 = -76.219833947   Delta_E -9.647E-05   Delta_C  5.359E-03  
+Iter  4  Root  1 = -76.219846279   Delta_E -1.233E-05   Delta_C  1.677E-03  
+Iter  5  Root  1 = -76.219847322   Delta_E -1.043E-06   Delta_C  5.125E-04  
+Iter  6  Root  1 = -76.219847448   Delta_E -1.263E-07   Delta_C  1.835E-04  
+Iter  7  Root  1 = -76.219847460   Delta_E -1.146E-08   Delta_C  4.692E-05 c
+
+* ROOT 1 CI total energy = -76.2198474598172
 
 
 The 20 most important determinants
@@ -466,11 +856,11 @@ The 20 most important determinants
 
         Total Time (s)     %Time 		%Relative
  -----------------------------------------------------
- Read      0.003135
- Write     0.002575
- Sigma1    0.000543
- Sigma2    0.147197
- Sigma3    0.141920
+ Read      0.008101
+ Write     0.004008
+ Sigma1    0.001246
+ Sigma2    0.385389
+ Sigma3    0.383984
  S1 Thread 0.000000
  S2 Thread 0.000000
  S3 Thread 0.000000
@@ -484,14 +874,14 @@ The 20 most important determinants
 			 - Edward Valeev
 
 
-*** tstop() called on ds9 at Tue Nov  1 17:51:36 2011
+*** tstop() called on lawn-143-215-104-56.lawn.gatech.edu at Tue Dec  6 16:18:14 2011
 Module time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.83 seconds =       0.01 minutes
+	system time =       0.02 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.06 seconds =       0.00 minutes
+	user time   =       1.99 seconds =       0.03 minutes
+	system time =       0.08 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** PSI4 exiting successfully. Buy a developer a beer!
