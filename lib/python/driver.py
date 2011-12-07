@@ -119,18 +119,18 @@ def gradient(name, **kwargs):
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
-        print " %d displacments needed." % ndisp
+        print " %d displacements needed." % ndisp
         energies = []
-        for n, displacment in enumerate(displacements):
+        for n, displacement in enumerate(displacements):
             # Print information to output.dat
             PsiMod.print_out("\n")
             banner("Loading displacement %d of %d" % (n+1, ndisp))
 
             # Print information to the screen
-            print "    displacment %d" % (n+1)
+            print "    displacement %d" % (n+1)
 
             # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacment)
+            PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the energy calculation
             E = func(lowername, **kwargs)
@@ -222,16 +222,16 @@ def hessian(name, **kwargs):
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print " %d displacments needed." % ndisp
         energies = []
-        for n, displacment in enumerate(displacements):
+        for n, displacement in enumerate(displacements):
             # Print information to output.dat
             PsiMod.print_out("\n")
             banner("Loading displacement %d of %d" % (n+1, ndisp))
 
             # Print information to the screen
-            print "    displacment %d" % (n+1)
+            print "    displacement %d" % (n+1)
 
             # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacment)
+            PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the energy calculation
             E = func(lowername, **kwargs)

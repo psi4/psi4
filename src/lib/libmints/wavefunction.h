@@ -148,6 +148,9 @@ protected:
     /// If a gradient is available it will be here:
     boost::shared_ptr<Matrix> gradient_;
 
+    /// If frequencies are available, they will be here:
+    boost::shared_ptr<Vector> frequencies_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -248,6 +251,11 @@ public:
     boost::shared_ptr<Matrix> gradient() const;
     /// Set the gradient for the wavefunction
     void set_gradient(boost::shared_ptr<Matrix>& grad);
+
+    /// Returns the frequencies
+    boost::shared_ptr<Vector> frequencies() const;
+    /// Set the frequencies for the wavefunction
+    void set_frequencies(boost::shared_ptr<Vector>& freqs);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }
