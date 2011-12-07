@@ -11,6 +11,22 @@ molecule h2o {
     H 1 1.00 2 103.1
 }
 
+# Perform a detci calc using helper function
+set globals {
+  basis 6-31G**
+  hd_ave hd_kave
+}
+
+thisenergy = energy('cisd')
+
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[1] Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"), 9, "[1] SCF energy") #TEST
+compare_values(refci, thisenergy, 7, "[1] CISD energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "[1] CISD correlation energy") #TEST
+
+clean()
+
+# Perform same detci calc setting all options explicitly
 set globals {
   wfn detci
   basis 6-31G**
@@ -18,14 +34,15 @@ set globals {
 
 set detci {
   hd_ave hd_kave
+  ex_lvl 2
 }
 
 thisenergy = energy('detci')
 
-compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
-compare_values(refscf, get_variable("SCF total energy"),     9, "SCF energy") #TEST
-compare_values(refci, thisenergy,                      7, "CI energy") #TEST
-compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "CI correlation energy") #TEST
+compare_values(refnuc, h2o.nuclear_repulsion_energy(), 9, "[2] Nuclear repulsion energy") #TEST 
+compare_values(refscf, get_variable("SCF total energy"), 9, "[2] SCF energy") #TEST
+compare_values(refci, thisenergy, 7, "[2] CISD energy") #TEST
+compare_values(refcorr, get_variable("CI CORRELATION ENERGY"), 7, "[2] CISD correlation energy") #TEST
 
 clean()
 
