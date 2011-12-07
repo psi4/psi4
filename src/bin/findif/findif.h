@@ -10,10 +10,10 @@
 namespace psi { namespace findif {
 
 // functions to generate displacements
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &options);
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &options);
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &options);
-std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &options);
+std::vector< SharedMatrix > fd_geoms_1_0(Options &options);
+std::vector< SharedMatrix > fd_geoms_2_0(Options &options);
+std::vector< SharedMatrix > fd_geoms_freq_0(Options &options);
+std::vector< SharedMatrix > fd_geoms_freq_1(Options &options);
 
 // functions to carry out finite-differences
 PsiReturnType fd_1_0(Options &options, const boost::python::list& energies);
@@ -45,10 +45,10 @@ void print_vibrations(std::vector<VIBRATION *> modes);
 bool ascending(const VIBRATION *vib1, const VIBRATION *vib2);
 
 // for displacing along a salc
-void displace_cart(boost::shared_ptr<Matrix> geom, const CdSalcList & salclist,
+void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int disp_factor, double disp_size);
 
-void displace_cart(boost::shared_ptr<Matrix> geom, const CdSalcList & salclist,
+void displace_cart(SharedMatrix geom, const CdSalcList & salclist,
   int salc_i, int salc_j, int disp_factor_i, int disp_factor_j, double disp_size);
 
 template <class T>

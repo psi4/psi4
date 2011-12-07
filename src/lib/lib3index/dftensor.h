@@ -32,7 +32,7 @@ protected:
     double omega_;
 
     /// The fitting metric or symmetric inverse
-    boost::shared_ptr<Matrix> metric_;
+    SharedMatrix metric_;
     /// The indices (per irrep) of pivots
     boost::shared_ptr<IntVector> pivots_;
     /// The indices (per irrep) of reverse pivots
@@ -68,7 +68,7 @@ public:
     bool is_inverted() const {return is_inverted_; }
 
     /// The fitting metric or symmetric inverse
-    boost::shared_ptr<Matrix> get_metric() const {return metric_; }
+    SharedMatrix get_metric() const {return metric_; }
     /// The vector of pivots (for stability) (pivoted->global)
     boost::shared_ptr<IntVector> get_pivots() const {return pivots_; }
     /// The vector of back pivots (for stability) (global->pivoted)
@@ -114,14 +114,14 @@ protected:
     Options& options_;
 
     /// Symmetric inverse fitting metric
-    boost::shared_ptr<Matrix> metric_;
+    SharedMatrix metric_;
 
     /// Full C matrix (must provide orthonormal MO basis)
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
     /// Active occupied C Matrix (for convenience)
-    boost::shared_ptr<Matrix> Caocc_;
+    SharedMatrix Caocc_;
     /// Active virtual C Matrix (for convenience)
-    boost::shared_ptr<Matrix> Cavir_;
+    SharedMatrix Cavir_;
 
     /// Number of AO primary functions
     int nso_;
@@ -152,7 +152,7 @@ public:
 
     DFTensor(boost::shared_ptr<BasisSet> primary,
              boost::shared_ptr<BasisSet> auxiliary,
-             boost::shared_ptr<Matrix> C,
+             SharedMatrix C,
              int nocc,
              int nvir,
              int naocc,
@@ -160,14 +160,14 @@ public:
              Options& options);
     ~DFTensor();
 
-    boost::shared_ptr<Matrix> Qso();
-    boost::shared_ptr<Matrix> Qmo();
-    boost::shared_ptr<Matrix> Qoo();
-    boost::shared_ptr<Matrix> Qov();
-    boost::shared_ptr<Matrix> Qvv();
+    SharedMatrix Qso();
+    SharedMatrix Qmo();
+    SharedMatrix Qoo();
+    SharedMatrix Qov();
+    SharedMatrix Qvv();
 
-    boost::shared_ptr<Matrix> Imo();
-    boost::shared_ptr<Matrix> Idfmo();
+    SharedMatrix Imo();
+    SharedMatrix Idfmo();
 };
 
 }

@@ -34,10 +34,10 @@ integrals(Options &options, int argc, char *argv[])
     shared_ptr<OneBodyAOInt> tOBI(integral->kinetic());
     shared_ptr<OneBodyAOInt> vOBI(integral->potential());
     // Form the one-electron integral matrices from the matrix factory
-    shared_ptr<Matrix> sMat(factory->create_matrix("Overlap"));
-    shared_ptr<Matrix> tMat(factory->create_matrix("Kinetic"));
-    shared_ptr<Matrix> vMat(factory->create_matrix("Potential"));
-    shared_ptr<Matrix> hMat(factory->create_matrix("One Electron Ints"));
+    SharedMatrix sMat(factory->create_matrix("Overlap"));
+    SharedMatrix tMat(factory->create_matrix("Kinetic"));
+    SharedMatrix vMat(factory->create_matrix("Potential"));
+    SharedMatrix hMat(factory->create_matrix("One Electron Ints"));
     
     // Compute the one electron integrals, telling each object where to store the result
     sOBI->compute(sMat);

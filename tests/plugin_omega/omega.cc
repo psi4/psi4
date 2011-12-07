@@ -241,10 +241,10 @@ void OmegaKS::run_procedure()
     // Printing and finalization
     finalize();
 }
-boost::shared_ptr<Matrix> OmegaKS::build_S(boost::shared_ptr<BasisSet> primary)
+SharedMatrix OmegaKS::build_S(boost::shared_ptr<BasisSet> primary)
 {
     int nso = primary->nbf();
-    boost::shared_ptr<Matrix> S(new Matrix("S",nso,nso));
+    SharedMatrix S(new Matrix("S",nso,nso));
 
     boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary,primary,primary,primary));
     boost::shared_ptr<OneBodyAOInt> Sint(factory->ao_overlap());
@@ -253,17 +253,17 @@ boost::shared_ptr<Matrix> OmegaKS::build_S(boost::shared_ptr<BasisSet> primary)
 
     return S;
 }
-boost::shared_ptr<Matrix> OmegaKS::build_X(boost::shared_ptr<BasisSet> primary, double min_S)
+SharedMatrix OmegaKS::build_X(boost::shared_ptr<BasisSet> primary, double min_S)
 {
     int nso = primary->nbf();
-    boost::shared_ptr<Matrix> S(new Matrix("S",nso,nso));
+    SharedMatrix S(new Matrix("S",nso,nso));
 
     boost::shared_ptr<IntegralFactory> factory(new IntegralFactory(primary,primary,primary,primary));
     boost::shared_ptr<OneBodyAOInt> Sint(factory->ao_overlap());
 
     Sint->compute(S);
 
-    boost::shared_ptr<Matrix> U(new Matrix("U",nso,nso));
+    SharedMatrix U(new Matrix("U",nso,nso));
     boost::shared_ptr<Vector> s(new Vector("s",nso));
    
     S->diagonalize(U,s);
@@ -276,7 +276,7 @@ boost::shared_ptr<Matrix> OmegaKS::build_X(boost::shared_ptr<BasisSet> primary, 
     }
 
 
-    boost::shared_ptr<Matrix> X(new Matrix("X", nso,nmo));
+    SharedMatrix X(new Matrix("X", nso,nmo));
     double** Xp = X->pointer();
     double** Up = U->pointer();
 
@@ -289,13 +289,13 @@ boost::shared_ptr<Matrix> OmegaKS::build_X(boost::shared_ptr<BasisSet> primary, 
     }
     return X;
 }
-boost::shared_ptr<Matrix> OmegaKS::build_H(boost::shared_ptr<BasisSet> primary)
+SharedMatrix OmegaKS::build_H(boost::shared_ptr<BasisSet> primary)
 {
     int nso = primary->nbf();
     
-    boost::shared_ptr<Matrix> H(new Matrix("H", nso, nso));
-    boost::shared_ptr<Matrix> T(new Matrix("T", nso, nso));
-    boost::shared_ptr<Matrix> V(new Matrix("V", nso, nso));
+    SharedMatrix H(new Matrix("H", nso, nso));
+    SharedMatrix T(new Matrix("T", nso, nso));
+    SharedMatrix V(new Matrix("V", nso, nso));
 
     // Integral factory
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(primary, primary, primary, primary));
@@ -343,14 +343,14 @@ void OmegaIPKS::common_init()
     if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {
         int nso = basisset_->nbf();
 
-        Fa_l_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fa_l_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fb_l_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fb_l_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fa_r_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fa_r_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fb_r_N_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
-        Fb_r_M_ = boost::shared_ptr<Matrix>(new Matrix("F Interpolator", nso, nso));
+        Fa_l_N_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fa_l_M_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fb_l_N_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fb_l_M_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fa_r_N_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fa_r_M_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fb_r_N_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
+        Fb_r_M_ = SharedMatrix(new Matrix("F Interpolator", nso, nso));
 
     }
 
@@ -423,10 +423,10 @@ void OmegaIPKS::guess_omega()
         double* T = new double[nso];
 
         // Get dipole integrals
-        std::vector<boost::shared_ptr<Matrix> > dipole_ints;
-        dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole X", nso, nso))); 
-        dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Y", nso, nso))); 
-        dipole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Dipole Z", nso, nso))); 
+        std::vector<SharedMatrix > dipole_ints;
+        dipole_ints.push_back(SharedMatrix(new Matrix("Dipole X", nso, nso))); 
+        dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Y", nso, nso))); 
+        dipole_ints.push_back(SharedMatrix(new Matrix("Dipole Z", nso, nso))); 
         dipole->compute(dipole_ints);
 
         if (debug_ > 2) {
@@ -450,13 +450,13 @@ void OmegaIPKS::guess_omega()
 
         dipole_ints.clear();
         
-        std::vector<boost::shared_ptr<Matrix> > quadrupole_ints;
-        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole XX", nso, nso))); 
-        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole XY", nso, nso))); 
-        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole XZ", nso, nso))); 
-        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole YY", nso, nso))); 
-        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole YZ", nso, nso))); 
-        quadrupole_ints.push_back(boost::shared_ptr<Matrix>(new Matrix("Quadrupole ZZ", nso, nso))); 
+        std::vector<SharedMatrix > quadrupole_ints;
+        quadrupole_ints.push_back(SharedMatrix(new Matrix("Quadrupole XX", nso, nso))); 
+        quadrupole_ints.push_back(SharedMatrix(new Matrix("Quadrupole XY", nso, nso))); 
+        quadrupole_ints.push_back(SharedMatrix(new Matrix("Quadrupole XZ", nso, nso))); 
+        quadrupole_ints.push_back(SharedMatrix(new Matrix("Quadrupole YY", nso, nso))); 
+        quadrupole_ints.push_back(SharedMatrix(new Matrix("Quadrupole YZ", nso, nso))); 
+        quadrupole_ints.push_back(SharedMatrix(new Matrix("Quadrupole ZZ", nso, nso))); 
         quadrupole->compute(quadrupole_ints);
 
         if (debug_ > 2) {
@@ -584,8 +584,8 @@ void OmegaIPKS::populate()
         nb_M = nb_N;
     }
 
-    boost::shared_ptr<Matrix> Ca = reference_->Ca();
-    boost::shared_ptr<Matrix> Cb = reference_->Cb();
+    SharedMatrix Ca = reference_->Ca();
+    SharedMatrix Cb = reference_->Cb();
 
     wfns_["N"] = boost::shared_ptr<OmegaWavefunction>(new OmegaWavefunction(
         options_, psio_, basisset_, Ca, na_N, Cb, nb_N, S_, X_, H_, df_, ks_)); 
@@ -765,8 +765,8 @@ void OmegaIPKS::omega_step(int iteration)
     // Interpolate the guess
     if (options_.get_bool("OMEGA_GUESS_INTERPOLATE")) {
 
-        boost::shared_ptr<Matrix> Fa(new Matrix("Fa Interpolated", basisset_->nbf(), basisset_->nbf()));
-        boost::shared_ptr<Matrix> Fb(new Matrix("Fa Interpolated", basisset_->nbf(), basisset_->nbf()));
+        SharedMatrix Fa(new Matrix("Fa Interpolated", basisset_->nbf(), basisset_->nbf()));
+        SharedMatrix Fb(new Matrix("Fa Interpolated", basisset_->nbf(), basisset_->nbf()));
         double** Fap = Fa->pointer();
         double** Fbp = Fb->pointer();
         double** Fa_l_Np = Fa_l_N_->pointer();

@@ -15,7 +15,7 @@ protected:
     /// Maximum memory to use, in doubles
     unsigned long int memory_;
     /// Full L (Q x n), if choleskify() called()
-    boost::shared_ptr<Matrix> L_;
+    SharedMatrix L_;
     /// Number of columns required, if choleskify() called
     int Q_;
 
@@ -33,7 +33,7 @@ public:
     virtual void choleskify();
 
     /// Shared pointer to decomposition (Q x N), if choleskify() called
-    boost::shared_ptr<Matrix> L() const { return L_; }
+    SharedMatrix L() const { return L_; }
     /// Number of columns required to reach accuracy delta, if choleskify() called
     int Q() const { return Q_; }
     /// Dimension of the original square tensor, provided by the subclass
@@ -50,9 +50,9 @@ public:
 class CholeskyMatrix : public Cholesky {
 
 protected:
-    boost::shared_ptr<Matrix> A_;
+    SharedMatrix A_;
 public:
-    CholeskyMatrix(boost::shared_ptr<Matrix> A, double delta, unsigned long int memory);
+    CholeskyMatrix(SharedMatrix A, double delta, unsigned long int memory);
     ~CholeskyMatrix();
 
     virtual int N();
@@ -79,11 +79,11 @@ class CholeskyMP2 : public Cholesky {
 
 protected:
     bool symmetric_;
-    boost::shared_ptr<Matrix> Qia_;
+    SharedMatrix Qia_;
     boost::shared_ptr<Vector> eps_aocc_;
     boost::shared_ptr<Vector> eps_avir_;
 public:
-    CholeskyMP2(boost::shared_ptr<Matrix> Qia, boost::shared_ptr<Vector> eps_aocc,
+    CholeskyMP2(SharedMatrix Qia, boost::shared_ptr<Vector> eps_aocc,
         boost::shared_ptr<Vector> eps_avir, bool symmetric,
         double delta, unsigned long int memory);
     ~CholeskyMP2();
@@ -112,9 +112,9 @@ public:
 class CholeskyLocal : public Cholesky {
 
 protected:
-    boost::shared_ptr<Matrix> C_;
+    SharedMatrix C_;
 public:
-    CholeskyLocal(boost::shared_ptr<Matrix> C,
+    CholeskyLocal(SharedMatrix C,
         double delta, unsigned long int memory);
     ~CholeskyLocal();
 

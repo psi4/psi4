@@ -971,7 +971,7 @@ Distributed_Matrix Distributed_Matrix::transform(Distributed_Matrix &transformer
     else throw PSIEXCEPTION("The matrix being transformed must be square.\n");
 }
 
-Distributed_Matrix& Distributed_Matrix::operator =(const boost::shared_ptr<Matrix> mat)
+Distributed_Matrix& Distributed_Matrix::operator =(const SharedMatrix mat)
 {
     this->clear_matrix();
 
@@ -994,7 +994,7 @@ Distributed_Matrix& Distributed_Matrix::operator =(const boost::shared_ptr<Matri
     return *this;
 }
 
-bool Distributed_Matrix::operator ==(const boost::shared_ptr<Matrix> mat) const
+bool Distributed_Matrix::operator ==(const SharedMatrix mat) const
 {
     int nrow = mat->nrow();
     int ncol = mat->ncol();

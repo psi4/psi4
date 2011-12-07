@@ -13,6 +13,8 @@
 #include <limits>
 #include <ctype.h>
 
+#include <boost/tuple/tuple.hpp>
+#include <boost/tuple/tuple_comparison.hpp>
 #include <boost/algorithm/string.hpp>
 #include <boost/regex.hpp>
 #include <boost/xpressive/xpressive.hpp>
@@ -302,7 +304,7 @@ DFTGrid::~DFTGrid()
 }
 void DFTGrid::buildGridFromOptions()
 {
-    boost::shared_ptr<Matrix> rotation = standard_orientation(molecule_);
+    SharedMatrix rotation = standard_orientation(molecule_);
 
     std::vector<boost::shared_ptr<AtomicGrid> > atoms;
 
@@ -706,7 +708,7 @@ void PseudospectralGrid::buildGridFromFile()
 }
 void PseudospectralGrid::buildGridFromOptions()
 {
-    boost::shared_ptr<Matrix> rotation = standard_orientation(molecule_);
+    SharedMatrix rotation = standard_orientation(molecule_);
 
     std::vector<boost::shared_ptr<AtomicGrid> > atoms;
 
@@ -988,19 +990,302 @@ void MolecularGrid::remove_distant_points(double Rmax)
     }
     npoints_ = npoints2;
 }
-boost::shared_ptr<Matrix> MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol) 
+SharedMatrix MolecularGrid::standard_orientation(boost::shared_ptr<Molecule> mol) 
 {
-    boost::shared_ptr<Matrix> R(new Matrix("Standard Orientation", 3, 3));
-    R->identity(); // For now
-    double** Rp = R->pointer();
-
-    // TODO: Trent, all yours.  
-
+    SharedMatrix R(new Matrix("Standard Orientation", 3, 3));
     int natom = mol->natom();
 
+    // These rules are based on the industry-standard, and entirely
+    // inelegant rules of Gill, Johnson, and Pople, Chem Phys Lett
+    // 209(5), 1993, pp. 511    
 
-    int Z1 = mol->Z(0);
-    double x1  = mol->x(0); 
+    // Center of nuclear charge
+    double Z = 0.0;
+    SharedVector X(new Vector("Charge Center", 3));
+    double *Xp = X->pointer();
+
+    for (int A = 0; A < natom; A++) {
+        Xp[0] += mol->x(A) * mol->Z(A);
+        Xp[1] += mol->y(A) * mol->Z(A);
+        Xp[2] += mol->z(A) * mol->Z(A);
+        Z += mol->Z(A);
+    }
+
+    Xp[0] /= Z; 
+    Xp[1] /= Z; 
+    Xp[2] /= Z; 
+    
+    // Second moment of charge tensor
+    SharedMatrix I(new Matrix("Second Moment of Charge", 3, 3));
+    double** Ip = I->pointer();
+    
+    for (int A = 0; A < natom; A++) {
+        Ip[0][0] += (mol->x(A) - Xp[0]) * (mol->x(A) - Xp[0]) * mol->Z(A);
+        Ip[0][1] += (mol->x(A) - Xp[0]) * (mol->y(A) - Xp[1]) * mol->Z(A);
+        Ip[0][2] += (mol->x(A) - Xp[0]) * (mol->z(A) - Xp[2]) * mol->Z(A);
+        Ip[1][1] += (mol->y(A) - Xp[1]) * (mol->y(A) - Xp[1]) * mol->Z(A);
+        Ip[1][2] += (mol->y(A) - Xp[1]) * (mol->z(A) - Xp[2]) * mol->Z(A);
+        Ip[2][2] += (mol->z(A) - Xp[2]) * (mol->z(A) - Xp[2]) * mol->Z(A);
+    }
+    Ip[1][0] = Ip[0][1];
+    Ip[2][0] = Ip[0][2];
+    Ip[2][1] = Ip[1][2];
+
+    // Principal axes of charge tensor
+    SharedMatrix I2(I->clone());
+    SharedMatrix V(new Matrix("Principal Axes", 3, 3));
+    SharedVector D(new Vector("Principal Moments", 3));
+
+    I2->diagonalize(V,D);
+
+    fprintf(outfile, "  => MolecularGrid: Standard Orientation <= \n\n");
+    fprintf(outfile, "  Total Charge: %d\n\n", (int) Z); 
+    X->print();
+    I->print();
+    D->print();
+    V->print();
+
+    // What kinda bug are we dealing with here?
+    
+    // Jitter tolerance
+    double* Dp = D->pointer();
+    double** Vp = V->pointer();
+    double jitter = 1.0E-6;
+    if (Dp[0] < jitter && Dp[1] < jitter && Dp[2] < jitter) {
+        // Spherical top, single atom
+        fprintf(outfile, "    Spherical top, single atom\n\n");
+        R->identity();
+    } else if (Dp[0] < jitter && Dp[1] < jitter) {
+        // Symmetric top, linear
+        fprintf(outfile, "    Spherical top, linear\n\n");
+        R->copy(V);
+    } else if (fabs(Dp[0] - Dp[1]) < jitter && fabs(Dp[1] - Dp[2]) < jitter) {
+        // Spherical top, polyatomic
+        fprintf(outfile, "    Spherical top, polyatomic\n\n");
+        // Case 1 Icosohedral
+        // Case 2 Octohedral
+        // Case 3 Tetrahedral
+        // Hack TODO Temporary
+
+        // Find a significant atom
+        double v1[3];
+        int index = -1;
+        for (int A = 0; A < natom; A++) {
+            v1[0] = mol->x(A) - Xp[0];
+            v1[1] = mol->y(A) - Xp[1];
+            v1[2] = mol->z(A) - Xp[2];
+
+            double norm = sqrt(v1[0] * v1[0] + v1[1] * v1[1] + v1[2] * v1[2]);
+        
+            if (norm > jitter) {
+                v1[0] /= norm;
+                v1[1] /= norm;
+                v1[2] /= norm;
+                index = A;
+                break;
+            }
+        }
+        if (!index) throw PSIEXCEPTION("No relevant atom found in tetrahedral or higher symmetry");
+
+        // And another
+        double v2[3];
+        int index2 = -1;
+        for (int A = index+1; A < natom; A++) {
+            v2[0] = mol->x(A) - Xp[0];
+            v2[1] = mol->y(A) - Xp[1];
+            v2[2] = mol->z(A) - Xp[2];
+
+            double norm = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2]);
+        
+            if (norm > jitter) {
+                v2[0] /= norm;
+                v2[1] /= norm;
+                v2[2] /= norm;
+
+                // Check for collinearity
+                if (fabs(v1[0]*v2[0] + v1[1]*v2[1] + v1[2]*v2[2]) < 1.0-jitter) {
+                    index2 = A;
+                    break;
+                }
+            }
+        }
+        if (!index2) throw PSIEXCEPTION("No relevant atom found in tetrahedral or higher symmetry");
+        
+        // Householder to place significant atom 1 in Z or -Z (choice is arbitrary, but more stable)
+        double** Rp = R->pointer();
+
+        double alpha = (v1[2] > 0.0 ? -1.0 : 1.0);
+        double V[3];
+        V[0] = v1[0];
+        V[1] = v1[1];
+        V[2] = v1[2] + alpha;
+        double norm2 = V[0] * V[0] + V[1] * V[1] + V[2] * V[2]; 
+        
+        R->identity();    
+        Rp[0][0] -= 2.0/norm2 * V[0] * V[0];
+        Rp[0][1] -= 2.0/norm2 * V[0] * V[1];
+        Rp[0][2] -= 2.0/norm2 * V[0] * V[2];
+        Rp[1][0] -= 2.0/norm2 * V[1] * V[0];
+        Rp[1][1] -= 2.0/norm2 * V[1] * V[1];
+        Rp[1][2] -= 2.0/norm2 * V[1] * V[2];
+        Rp[2][0] -= 2.0/norm2 * V[2] * V[0];
+        Rp[2][1] -= 2.0/norm2 * V[2] * V[1];
+        Rp[2][2] -= 2.0/norm2 * V[2] * V[2];
+
+        // Givens rotation in X and Y to place atom 2 in X
+        double v3[3];
+        v3[0] = Rp[0][0] * v2[0] + Rp[0][1] * v2[1] + Rp[0][2] * v2[2];  
+        v3[1] = Rp[1][0] * v2[0] + Rp[1][1] * v2[1] + Rp[1][2] * v2[2];  
+        v3[2] = Rp[2][0] * v2[0] + Rp[2][1] * v2[1] + Rp[2][2] * v2[2];  
+
+        double norm = sqrt(v3[0] * v3[0] + v3[1] * v3[1]);
+        v3[0] /= norm;
+        v3[1] /= norm;
+        v3[2] /= norm;
+        
+        double c = v3[0]; 
+        double s = v3[1];
+
+        double xc, yc;
+        xc =  c * Rp[0][0] + s * Rp[1][0];
+        yc = -s * Rp[0][0] + c * Rp[1][0];
+        Rp[0][0] = xc;
+        Rp[1][0] = yc;
+
+        xc =  c * Rp[0][1] + s * Rp[1][1];
+        yc = -s * Rp[0][1] + c * Rp[1][1];
+        Rp[0][1] = xc;
+        Rp[1][1] = yc;
+
+        xc =  c * Rp[0][2] + s * Rp[1][2];
+        yc = -s * Rp[0][2] + c * Rp[1][2];
+        Rp[0][2] = xc;
+        Rp[1][2] = yc;
+
+    } else if (fabs(Dp[0] - Dp[1]) < jitter || fabs(Dp[1] - Dp[2]) < jitter) {
+        // Symmetric top, nonlinear
+        fprintf(outfile, "    Symmetric top, nonlinear\n\n");
+    
+        // Put the unique axis in z
+        if (fabs(Dp[1] - Dp[2]) < jitter) {
+            double temp = Dp[0];
+            Dp[0] = Dp[1];
+            Dp[1] = Dp[2];
+            Dp[2] = temp;
+
+            double tempp[3];
+            C_DCOPY(3, &Vp[0][0], 3, tempp, 1);
+            C_DCOPY(3, &Vp[0][1], 3, &Vp[0][0], 3);
+            C_DCOPY(3, &Vp[0][2], 3, &Vp[0][1], 3);
+            C_DCOPY(3, tempp, 1, &Vp[0][2], 3);
+        }
+    
+        // Develop projection onto Z and R for each atom
+        SharedVector Zproj(new Vector("Projection on Z", natom));
+        SharedVector Rproj(new Vector("Projection on R", natom));
+        double* Zp = Zproj->pointer();
+        double* Rp = Rproj->pointer();
+        
+        double v[3];
+        for (int A = 0; A < natom; A++) {
+            v[0] = mol->x(A) - Xp[0];
+            v[1] = mol->y(A) - Xp[1];
+            v[2] = mol->z(A) - Xp[2];
+
+            Zp[A] = v[0] * Vp[0][2] +     
+                    v[1] * Vp[1][2] +     
+                    v[2] * Vp[2][2];     
+
+            Rp[A] = sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2] - Zp[A] * Zp[A]);
+        }
+
+        //Zproj->print();
+        //Rproj->print();
+
+        // Eliminate non-significant digits (below jitter) in Z and R to prevent false sorting
+        for (int A = 0; A < natom; A++) {
+            if (Zp[A] > 0) { 
+                Zp[A] = jitter * round(Zp[A] / jitter);
+            } else {
+                Zp[A] = -jitter * round(-Zp[A] / jitter);
+            }
+            if (Rp[A] > 0) { 
+                Rp[A] = jitter * round(Rp[A] / jitter);
+            } else {
+                Rp[A] = -jitter * round(-Rp[A] / jitter);
+            }
+        }
+
+        // Develop tests 3a -> 3d
+        // tuple is fabs(Zp), -sgn(Zp), fabs(Rp), Z, index
+        std::vector<boost::tuple<double, int, double, int, int> > tests;
+        for (int A = 0; A < natom; A++) {
+            tests.push_back(boost::tuple<double,int,double,int,int>(fabs(Zp[A]), (int) (Zp[A] < 0) - (int) (Zp[A] > 0), Rp[A], mol->Z(A), A));
+        }
+    
+        std::sort(tests.begin(), tests.end());
+
+        // Set index of projection
+        int index = 0;
+        for (int A = 0; A < natom; A++) {
+            double Rp = boost::get<2>(tests[A]);
+            if (Rp > jitter) {
+                index = boost::get<4>(tests[A]);
+                break;
+            }
+        }
+
+        // Build V1 and V2
+        double v3[3];
+        v3[0] = Vp[0][2];
+        v3[1] = Vp[1][2];
+        v3[2] = Vp[2][2];
+
+        double v1[3];
+        v1[0] = mol->x(index) - Xp[0]; 
+        v1[1] = mol->y(index) - Xp[1]; 
+        v1[2] = mol->z(index) - Xp[2]; 
+
+        double zproj = v1[0] * v3[0] +     
+                       v1[1] * v3[1] +     
+                       v1[2] * v3[2];     
+
+        v1[0] -= zproj * v3[0];
+        v1[1] -= zproj * v3[1];
+        v1[2] -= zproj * v3[2];
+
+        double v1norm = sqrt(v1[0] * v1[0] + v1[1] * v1[1] + v1[2] * v1[2]);
+        v1[0] /= v1norm;
+        v1[1] /= v1norm;
+        v1[2] /= v1norm;
+
+        double v2[3];
+        v2[0] = (v1[1] * v3[2] - v1[2] * v3[1]); 
+        v2[1] = -(v1[0] * v3[2] - v1[2] * v3[0]); 
+        v2[2] = (v1[0] * v3[1] - v1[1] * v3[0]); 
+
+        double v2norm = sqrt(v2[0] * v2[0] + v2[1] * v2[1] + v2[2] * v2[2]);
+        v2[0] /= v2norm;
+        v2[1] /= v2norm;
+        v2[2] /= v2norm;
+
+        Vp[0][0] = v1[0];
+        Vp[1][0] = v1[1];
+        Vp[2][0] = v1[2];
+
+        Vp[0][1] = v2[0];
+        Vp[1][1] = v2[1];
+        Vp[2][1] = v2[2];
+
+        R->copy(V);
+
+    } else {
+        // Asymmetric top
+        fprintf(outfile, "    Asymmetric top\n\n");
+        R->copy(V);
+    }
+
+    R->print();
 
     return R;
 }
@@ -1124,7 +1409,7 @@ void MolecularGrid::getBSRadii()
         BSRadii_.push_back(1.881);     
     }
 }
-void MolecularGrid::applyStandardWeights(boost::shared_ptr<Matrix> chi_values)
+void MolecularGrid::applyStandardWeights(SharedMatrix chi_values)
 {
     double** chip = chi_values->pointer();
     int natom = molecule_->natom();
@@ -1199,7 +1484,7 @@ void MolecularGrid::applyNaiveWeights()
 
     int natom = molecule_->natom();
 
-    boost::shared_ptr<Matrix> chi(new Matrix("Chi values", natom, natom));
+    SharedMatrix chi(new Matrix("Chi values", natom, natom));
     double** chip = chi->pointer();
 
     MolecularGrid::getBSRadii();
@@ -1219,7 +1504,7 @@ void MolecularGrid::applyBeckeWeights()
 
     int natom = molecule_->natom();
 
-    boost::shared_ptr<Matrix> chi(new Matrix("Chi values", natom, natom));
+    SharedMatrix chi(new Matrix("Chi values", natom, natom));
     double** chip = chi->pointer();
 
     MolecularGrid::getBSRadii();
@@ -1239,7 +1524,7 @@ void MolecularGrid::applyTreutlerWeights()
 
     int natom = molecule_->natom();
 
-    boost::shared_ptr<Matrix> chi(new Matrix("Chi values", natom, natom));
+    SharedMatrix chi(new Matrix("Chi values", natom, natom));
     double** chip = chi->pointer();
 
     MolecularGrid::getBSRadii();
@@ -1312,7 +1597,7 @@ AtomicGrid::~AtomicGrid()
     }
 }
 void AtomicGrid::buildGrid(const Vector3& center,
-                      boost::shared_ptr<Matrix> rotation,
+                      SharedMatrix rotation,
                       boost::shared_ptr<RadialGrid> radial,
                       std::vector<boost::shared_ptr<SphericalGrid> > sphericals)  
 {

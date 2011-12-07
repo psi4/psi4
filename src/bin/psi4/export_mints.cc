@@ -43,8 +43,8 @@ void export_mints()
     // is going to contain boost::shared_ptr's we MUST set the no_proxy flag to true
     // (as it is) to tell Boost.Python to not create a proxy class to handle
     // the vector's data type.
-    class_<std::vector<boost::shared_ptr<Matrix> > >("matrix_vector").
-            def(vector_indexing_suite<std::vector<boost::shared_ptr<Matrix> >, true >());
+    class_<std::vector<SharedMatrix > >("matrix_vector").
+            def(vector_indexing_suite<std::vector<SharedMatrix >, true >());
 
     // Use typedefs to explicitly tell Boost.Python which function in the class
     // to use. In most cases, you should not be making Python specific versions
@@ -88,11 +88,11 @@ void export_mints()
             .value("Descending", Matrix::Descending)
             .export_values();
 
-    typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&, double);
-    typedef void   (Matrix::*matrix_diagonalize)(boost::shared_ptr<Matrix>&, boost::shared_ptr<Vector>&, Matrix::DiagonalizeOrder);
-    typedef void   (Matrix::*matrix_one)(const boost::shared_ptr<Matrix>&);
-    typedef double (Matrix::*double_matrix_one)(const boost::shared_ptr<Matrix>&);
-    typedef void   (Matrix::*matrix_two)(const boost::shared_ptr<Matrix>&, const boost::shared_ptr<Matrix>&);
+    typedef void   (Matrix::*matrix_multiply)(bool, bool, double, const SharedMatrix&, const SharedMatrix&, double);
+    typedef void   (Matrix::*matrix_diagonalize)(SharedMatrix&, boost::shared_ptr<Vector>&, Matrix::DiagonalizeOrder);
+    typedef void   (Matrix::*matrix_one)(const SharedMatrix&);
+    typedef double (Matrix::*double_matrix_one)(const SharedMatrix&);
+    typedef void   (Matrix::*matrix_two)(const SharedMatrix&, const SharedMatrix&);
     typedef void   (Matrix::*matrix_save)(const std::string&, bool, bool, bool);
     typedef void   (Matrix::*matrix_set4)(int, int, int, double);
     typedef void   (Matrix::*matrix_set3)(int, int, double);
@@ -100,7 +100,7 @@ void export_mints()
     typedef double (Matrix::*matrix_get2)(const int&, const int&) const;
     typedef void   (Matrix::*matrix_load)(const std::string&);
 
-    class_<Matrix, boost::shared_ptr<Matrix> >("Matrix").
+    class_<Matrix, SharedMatrix >("Matrix").
             def(init<int, int>()).
             def("set_name", &Matrix::set_name).
             def("name", &Matrix::name, return_value_policy<copy_const_reference>()).
@@ -149,8 +149,8 @@ void export_mints()
             def("save", matrix_save(&Matrix::save)).
             def("load", matrix_load(&Matrix::load));
 
-    typedef boost::shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix)();
-    typedef boost::shared_ptr<Matrix> (MatrixFactory::*create_shared_matrix_name)(const std::string&);
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
+    typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
 
     class_<MatrixFactory, boost::shared_ptr<MatrixFactory> >("MatrixFactory").
             def("shared_object", &get_matrix_factory).
@@ -163,6 +163,8 @@ void export_mints()
             def("matrix", &CdSalcList::matrix);
 
     class_<MintsHelper, boost::shared_ptr<MintsHelper> >("MintsHelper").
+            def("integrals", &MintsHelper::integrals).
+            def("one_electron_integrals", &MintsHelper::one_electron_integrals).
             def("basisset", &MintsHelper::basisset).
             def("sobasisset", &MintsHelper::sobasisset).
             def("factory", &MintsHelper::factory).
@@ -296,7 +298,6 @@ void export_mints()
             def("atom_at_position", &Molecule::atom_at_position1).
             def("print_out", &Molecule::print).
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
-            def("nuclear_dipole_contribution", &Molecule::nuclear_dipole_contribution).
             def("find_point_group", &Molecule::find_point_group).
             def("reset_point_group", &Molecule::reset_point_group).
             def("set_point_group", &Molecule::set_point_group).
@@ -342,13 +343,9 @@ void export_mints()
     class_<ExternalPotential, boost::shared_ptr<ExternalPotential>, boost::noncopyable>("ExternalPotential").
             def("setName", &ExternalPotential::setName).
             def("addCharge", &ExternalPotential::addCharge).
-            def("addDipole", &ExternalPotential::addDipole).
-            def("addQuadrupole", &ExternalPotential::addQuadrupole).
-            def("translate", &ExternalPotential::translate).
-            def("rotate", &ExternalPotential::rotate).
+            def("addBasis", &ExternalPotential::addBasis).
             def("clear", &ExternalPotential::clear).
             def("computePotentialMatrix", &ExternalPotential::computePotentialMatrix).
-            def("computePotentialPoint", &ExternalPotential::computePotentialPoint).
             def("print_out", &ExternalPotential::py_print);
 
     class_<Wavefunction, boost::shared_ptr<Wavefunction>, boost::noncopyable>("Wavefunction", no_init).

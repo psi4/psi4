@@ -24,21 +24,21 @@ protected:
     /// Auxiliary Basisset 
     boost::shared_ptr<BasisSet> auxiliary_;
     /// AO2USO transformer, computed from basisset
-    boost::shared_ptr<Matrix> AO2USO_;
+    SharedMatrix AO2USO_;
     /// Square root of the S matrix
-    boost::shared_ptr<Matrix> X_; 
+    SharedMatrix X_; 
     /// S matrix
-    boost::shared_ptr<Matrix> S_; 
+    SharedMatrix S_; 
 
     /// Reference to externally provided C in USO basis, active part only
-    boost::shared_ptr<Matrix> C_USO_;
+    SharedMatrix C_USO_;
     /// Current C in C1 basis
-    boost::shared_ptr<Matrix> C_AO_;
+    SharedMatrix C_AO_;
     /// Localized C in C1 basis
-    boost::shared_ptr<Matrix> L_AO_;
+    SharedMatrix L_AO_;
 
     /// gross Lowdin charges (nmo x natom)
-    boost::shared_ptr<Matrix> Q_;
+    SharedMatrix Q_;
     /// Orbital domains, computed/updated by compute_domains
     std::vector<boost::shared_ptr<OrbitalDomain> > domains_;
     /// Orbital domains, auxiliary, computed/updated by compute_domains
@@ -57,9 +57,9 @@ protected:
     void localize_er(double conv);
 
     /// Compute gross Lowdin charges for coef matrix C (nmo x natom)
-    boost::shared_ptr<Matrix> lowdin_charges(boost::shared_ptr<Matrix> C);
+    SharedMatrix lowdin_charges(SharedMatrix C);
     /// Compute gross Mulliken charges for coef matrix C (nmo x natom)
-    boost::shared_ptr<Matrix> mulliken_charges(boost::shared_ptr<Matrix> C);
+    SharedMatrix mulliken_charges(SharedMatrix C);
 
 public: 
     /*!
@@ -69,7 +69,7 @@ public:
     * holds a reference to C, to use Local iteratively, you externally modify C,
     * then call Local::localize() 
     */
-    Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<Matrix> C);
+    Local(boost::shared_ptr<BasisSet> basisset, SharedMatrix C);
     /*!
     * Constructor, builds a Local object with a reference to basisset and C
     * \param basisset: the AO primary basis object
@@ -78,7 +78,7 @@ public:
     * holds a reference to C, to use Local iteratively, you externally modify C,
     * then call Local::localize() 
     */
-    Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<BasisSet> auxiliary, boost::shared_ptr<Matrix> C);
+    Local(boost::shared_ptr<BasisSet> basisset, boost::shared_ptr<BasisSet> auxiliary, SharedMatrix C);
     virtual ~Local();    
 
     /// Set the print flag (default 0)
@@ -98,24 +98,24 @@ public:
 
     /*!
     * Reference to the USO C matrix 
-    * \return boost::shared_ptr<Matrix> 
+    * \return SharedMatrix 
     */
-    boost::shared_ptr<Matrix> C_USO();
+    SharedMatrix C_USO();
     /*!
     * Reference to the C1 C matrix 
-    * \return boost::shared_ptr<Matrix> 
+    * \return SharedMatrix 
     */
-    boost::shared_ptr<Matrix> C_AO();
+    SharedMatrix C_AO();
     /*!
     * Reference to the C1 localized orbitals matrix 
-    * \return boost::shared_ptr<Matrix> 
+    * \return SharedMatrix 
     */
-    boost::shared_ptr<Matrix> L_AO();
+    SharedMatrix L_AO();
     /*!
     * Reference to the AO2USO matrix 
-    * \return boost::shared_ptr<Matrix> 
+    * \return SharedMatrix 
     */
-    boost::shared_ptr<Matrix> AO2USO();
+    SharedMatrix AO2USO();
     /*!
     * The vector of orbital domains, as determined by compute_X_domains()
     * \return vector of boost::shared_ptr<OrbitalDomain>

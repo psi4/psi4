@@ -446,6 +446,11 @@ PetiteList::~PetiteList()
     nbf_in_ir_=0;
 }
 
+boost::shared_ptr<PetiteList> PetiteList::clone()
+{
+    return boost::shared_ptr<PetiteList>(new PetiteList(basis_, integral_));
+}
+
 int PetiteList::nfunction(int i) const
 {
     return (c1_) ? basis_->nbf() : nbf_in_ir_[i];
@@ -951,17 +956,17 @@ PetiteList::compute_aotoso_info()
     return SOs;
 }
 
-boost::shared_ptr<Matrix> PetiteList::sotoao()
+SharedMatrix PetiteList::sotoao()
 {
-    return boost::shared_ptr<Matrix>(aotoso()->transpose());
+    return SharedMatrix(aotoso()->transpose());
 }
 
-boost::shared_ptr<Matrix> PetiteList::aotoso()
+SharedMatrix PetiteList::aotoso()
 {
     Dimension aodim = AO_basisdim();
     Dimension sodim = SO_basisdim();
 
-    boost::shared_ptr<Matrix> aoso(new Matrix("AO->SO matrix", aodim, sodim));
+    SharedMatrix aoso(new Matrix("AO->SO matrix", aodim, sodim));
 
 //    if (c1_) {
 //        aoso->identity();

@@ -1,31 +1,38 @@
-refnuc   = 6.0682984689667
-refscf   = -38.9173786948
-refccsd  = -0.115368877467405
-reftotal = -39.032747572263979
+#! cc-pVDZ UCCSD optimization of triplet methtylene, with Z-matrix input
+
+refnuc   =   6.07006654183091   #TEST
+refscf   = -38.92658702693478   #TEST
+refccsd  =  -0.11533612150975   #TEST
+reftotal = -39.04192314844453   #TEST
 
 molecule ch2 {
   0 3
-  c
-  h 1 1.1
-  h 1 1.1 2 109
+  C
+  H 1 1.1
+  H 1 1.1 2 109.0
 }
 
 set globals {
-  wfn ccsd
   reference uhf
+  relax_opdm true
+  basis cc-pvdz
   dertype first
-  basis cc-pVDZ
-
-  convergence 10
+  # The next 3 options control the geometry optimization tolerances
+  conv_max_disp  1e-6
+  conv_max_force 1.0e-6
+  conv_max_de    7
   e_converge 10
   d_converge 10
 }
 
-optimize('ccsd')
+optimize('CCSD')
 
-compare_values(refnuc,   ch2.nuclear_repulsion_energy(),          9, "Nuclear repulsion energy")  #TEST
-compare_values(refscf,   get_variable("SCF energy"),              9, "SCF energy")                #TEST
-compare_values(refccsd,  get_variable("CCSD correlation energy"), 7, "CCSD contribution")         #TEST
-compare_values(reftotal, get_variable("Current energy"),          7, "Total energy")              #TEST
+compare_values(refnuc,   ch2.nuclear_repulsion_energy(),          5, "Nuclear repulsion energy")  #TEST
+compare_values(refscf,   get_variable("SCF total energy"),        6, "SCF energy")                #TEST
+compare_values(refccsd,  get_variable("CCSD correlation energy"), 6, "CCSD contribution")         #TEST
+compare_values(reftotal, get_variable("Current energy"),          6, "Total energy")              #TEST
 
 clean()
+
+
+

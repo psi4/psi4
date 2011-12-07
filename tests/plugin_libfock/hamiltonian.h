@@ -87,7 +87,7 @@ public:
     /**
     * Form the explicit hamiltonian for debugging purposes
     */
-    boost::shared_ptr<Matrix> explicit_hamiltonian();
+    SharedMatrix explicit_hamiltonian();
 
 };
 
@@ -121,7 +121,7 @@ public:
     /**
     * Form the explicit hamiltonian for debugging purposes
     */
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > explicit_hamiltonian();
+    std::pair<SharedMatrix, SharedMatrix > explicit_hamiltonian();
 };
 
 // => APPLIED CLASSES <= //
@@ -130,11 +130,11 @@ class MatrixRHamiltonian : public RHamiltonian {
 
 protected:
     
-    boost::shared_ptr<Matrix> M_;
+    SharedMatrix M_;
 
 public:
 
-    MatrixRHamiltonian(boost::shared_ptr<Matrix> M);
+    MatrixRHamiltonian(SharedMatrix M);
     virtual ~MatrixRHamiltonian();
 
     virtual void print_header() const;
@@ -148,11 +148,11 @@ class MatrixUHamiltonian : public UHamiltonian {
 
 protected:
 
-    std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > M_;
+    std::pair<SharedMatrix, SharedMatrix > M_;
 
 public:
 
-    MatrixUHamiltonian(std::pair<boost::shared_ptr<Matrix>, boost::shared_ptr<Matrix> > M);
+    MatrixUHamiltonian(std::pair<SharedMatrix, SharedMatrix > M);
     virtual ~MatrixUHamiltonian();
 
     virtual void print_header() const;
@@ -168,15 +168,15 @@ class CISRHamiltonian : public RHamiltonian {
 protected:
     
     bool singlet_;
-    boost::shared_ptr<Matrix> Caocc_;
-    boost::shared_ptr<Matrix> Cavir_;
+    SharedMatrix Caocc_;
+    SharedMatrix Cavir_;
     boost::shared_ptr<Vector> eps_aocc_;
     boost::shared_ptr<Vector> eps_avir_;
 
 public:
     CISRHamiltonian(boost::shared_ptr<JK> jk, 
-                    boost::shared_ptr<Matrix> Caocc, 
-                    boost::shared_ptr<Matrix> Cavir, 
+                    SharedMatrix Caocc, 
+                    SharedMatrix Cavir, 
                     boost::shared_ptr<Vector> eps_aocc,
                     boost::shared_ptr<Vector> eps_avir);
     virtual ~CISRHamiltonian();
@@ -186,26 +186,51 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
-    /// Unpack solver eigenvector to symmetry blocked t1
-    virtual std::vector<boost::shared_ptr<Matrix> > unpack(boost::shared_ptr<Vector> eigenvector);
+    virtual std::vector<SharedMatrix > unpack(const boost::shared_ptr<Vector>& x);
 
     void set_singlet(bool singlet) { singlet_ = singlet; }
 
+};
+
+class TDHFRHamiltonian : public RHamiltonian {
+
+protected:
+
+    bool singlet_;
+    SharedMatrix Caocc_;
+    SharedMatrix Cavir_;
+    boost::shared_ptr<Vector> eps_aocc_;
+    boost::shared_ptr<Vector> eps_avir_;
+
+public:
+    TDHFRHamiltonian(boost::shared_ptr<JK> jk, 
+                    SharedMatrix Caocc, 
+                    SharedMatrix Cavir, 
+                    boost::shared_ptr<Vector> eps_aocc,
+                    boost::shared_ptr<Vector> eps_avir);
+    virtual ~TDHFRHamiltonian();
+
+    virtual void print_header() const;
+    virtual boost::shared_ptr<Vector> diagonal();
+    virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
+                               std::vector<boost::shared_ptr<Vector> >& b);
+
+    void set_singlet(bool singlet) { singlet_ = singlet; }
 };
 
 class CPHFRHamiltonian : public RHamiltonian {
 
 protected:
     
-    boost::shared_ptr<Matrix> Caocc_;
-    boost::shared_ptr<Matrix> Cavir_;
+    SharedMatrix Caocc_;
+    SharedMatrix Cavir_;
     boost::shared_ptr<Vector> eps_aocc_;
     boost::shared_ptr<Vector> eps_avir_;
 
 public:
     CPHFRHamiltonian(boost::shared_ptr<JK> jk, 
-                     boost::shared_ptr<Matrix> Caocc, 
-                     boost::shared_ptr<Matrix> Cavir, 
+                     SharedMatrix Caocc, 
+                     SharedMatrix Cavir, 
                      boost::shared_ptr<Vector> eps_aocc,
                      boost::shared_ptr<Vector> eps_avir);
     virtual ~CPHFRHamiltonian();
@@ -215,8 +240,8 @@ public:
     virtual void product(const std::vector<boost::shared_ptr<Vector> >& x,
                                std::vector<boost::shared_ptr<Vector> >& b);
 
-    /// Unpack solver x to symmetry blocked t1
-    virtual std::vector<boost::shared_ptr<Matrix> > unpack(boost::shared_ptr<Vector> x);
+    virtual std::vector<SharedVector > pack(const std::vector<boost::shared_ptr<Matrix> >& b);
+    virtual std::vector<SharedMatrix > unpack(const std::vector<boost::shared_ptr<Vector> >& x);
 };
 
 }

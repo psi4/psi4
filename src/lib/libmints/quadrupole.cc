@@ -28,6 +28,24 @@ QuadrupoleInt::~QuadrupoleInt()
     delete[] buffer_;
 }
 
+SharedVector QuadrupoleInt::nuclear_contribution(boost::shared_ptr<Molecule> mol)
+{
+    boost::shared_ptr<Vector> sret(new Vector(6));
+    double *ret = sret->pointer();
+
+    for (int i=0; i<mol->natom(); ++i) {
+        Vector3 geom = mol->xyz(i);
+        ret[0] += mol->Z(i) * geom[0] * geom[0]; // xx
+        ret[1] += mol->Z(i) * geom[0] * geom[1]; // xy
+        ret[2] += mol->Z(i) * geom[0] * geom[2]; // xz
+        ret[3] += mol->Z(i) * geom[1] * geom[1]; // yy
+        ret[4] += mol->Z(i) * geom[1] * geom[2]; // yz
+        ret[5] += mol->Z(i) * geom[2] * geom[2]; // zz
+    }
+
+    return sret;
+}
+
 void QuadrupoleInt::compute_pair(const boost::shared_ptr<GaussianShell>& s1,
                                  const boost::shared_ptr<GaussianShell>& s2)
 {

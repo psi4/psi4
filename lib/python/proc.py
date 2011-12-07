@@ -1,6 +1,7 @@
 import PsiMod
 import shutil
 import os
+import input
 from driver import *
 from molecule import *
 from text import *
@@ -80,7 +81,7 @@ def scf_helper(name, **kwargs):
 
     if (cast):
 
-        if (cast == True):
+        if input.yes.match(str(cast)):
             custom = 'Default'
             guessbasis = '3-21G'
         else:
@@ -164,15 +165,20 @@ def run_mp2(name, **kwargs):
         dertype = PsiMod.get_option("DERTYPE")
     else:
         dertype = kwargs.get("DERTYPE", "NONE") 
-    PsiMod.set_local_option("TRANSQT2", "DERTYPE", dertype)
-    PsiMod.set_local_option("TRANSQT2", "WFN", "MP2")
+
+    PsiMod.set_global_option('DERTYPE', dertype)
+    PsiMod.set_global_option('WFN', 'MP2')
+
     PsiMod.transqt2()
-    PsiMod.set_local_option("CCSORT", "WFN", "MP2")
-    PsiMod.set_local_option("CCSORT", "DERTYPE", dertype)
     PsiMod.ccsort()
-    PsiMod.set_local_option("MP2", "WFN", "MP2")
-    PsiMod.set_local_option("MP2", "DERTYPE", dertype)
-    return PsiMod.mp2()
+    returnvalue = PsiMod.mp2()
+
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+
+    return returnvalue
 
 def run_mp2_gradient(name, **kwargs):
     run_mp2(name, DERTYPE="FIRST",**kwargs)
@@ -190,10 +196,8 @@ def run_ccsd(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
-    if not (name.upper() == 'CCSD(T)'):
-        PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD')
-        PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD')
-        PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD')
+    if not (name.lower() == 'ccsd(t)'):
+        PsiMod.set_global_option('WFN', 'CCSD')
 
     # For a CCSD energy, we need SCF to be run.
     # Could we somehow do a check to see if SCF was run?
@@ -203,14 +207,25 @@ def run_ccsd(name, **kwargs):
 
     PsiMod.transqt2()
     PsiMod.ccsort()
-    return PsiMod.ccenergy()
+    returnvalue = PsiMod.ccenergy()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+
+    return returnvalue
 
 def run_ccsd_gradient(name, **kwargs):
     run_ccsd(name, **kwargs)
+
+    PsiMod.set_global_option('WFN', 'CCSD')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccdensity()
     PsiMod.deriv()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
 
 def run_ccsd_t(name, **kwargs):
 
@@ -225,9 +240,7 @@ def run_ccsd_t(name, **kwargs):
     PsiMod.set_active_molecule(molecule)
 
     # Should probably do a check on the user's options to ensure wfn = ccsd_t
-    PsiMod.set_local_option('TRANSQT2', 'WFN', 'CCSD_T')
-    PsiMod.set_local_option('CCSORT', 'WFN', 'CCSD_T')
-    PsiMod.set_local_option('CCENERGY', 'WFN', 'CCSD_T')
+    PsiMod.set_global_option('WFN', 'CCSD_T')
 
     # The new CCEnergyWavefunction object that is used to wrap ccenergy
     # automatically handles cctriples.
@@ -246,9 +259,31 @@ def run_ccsd_response(name, **kwargs):
     PsiMod.set_active_molecule(molecule)
 
     run_ccsd("ccsd", **kwargs);
+
+    PsiMod.set_global_option('WFN', 'CCSD')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
+
+def run_eom_ccsd(name, **kwargs):
+
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+        molecule = kwargs.pop('molecule')
+
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+
+    molecule.update_geometry()
+    PsiMod.set_active_molecule(molecule)
+
+    run_ccsd("ccsd", **kwargs);
+
+    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+
+    PsiMod.cchbar()
+    PsiMod.cceom()
 
 def run_detci(name, **kwargs):
 
@@ -262,13 +297,13 @@ def run_detci(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_active_molecule(molecule)
 
-    # For a CCSD energy, we need SCF to be run.
+    # For a CI energy, we need SCF to be run.
     # Could we somehow do a check to see if SCF was run?
     # This would be useful of the user had to do something special with SCF to get
     # it to converge.
     run_scf("scf", **kwargs);
-    PsiMod.transqt()
-    PsiMod.detci()
+    PsiMod.transqt2()
+    return PsiMod.detci()
 
 def run_dfmp2(name, **kwargs):
 

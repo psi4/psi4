@@ -51,7 +51,7 @@ class PsiException : public std::runtime_error {
             }
             return *this;
         }
-        
+
         /**
         * Override of runtime_error's virtual what method
         * @return Description of exception
@@ -98,9 +98,28 @@ class SanityCheckError : public PsiException {
         ) throw();
 
         virtual ~SanityCheckError() throw();
-
 };
 
+/**
+* Exception for system errors. Those that report via errno
+*/
+class SystemError : public PsiException {
+
+    public:
+        /**
+        * Constructor
+        * @param eno The errno that will be printed by exception
+        * @param file The file that threw the exception (use __FILE__ macro)
+        * @param line The line number that threw the exception (use __LINE__ macro)
+        */
+        SystemError(
+            int eno,
+            const char* file,
+            int line
+        ) throw();
+
+        virtual ~SystemError() throw();
+};
 
 /**
 * Exception for features that are not implemented yet, but will be (maybe?)
@@ -252,12 +271,12 @@ class ConvergenceError : public MaxIterationsExceeded<T> {
             const char* file,
             int line) throw();
 
-        /** Accessor method 
+        /** Accessor method
         *  @return The accuracy you wish to achieve
         */
         double desired_accuracy() const throw();
 
-        /** Accessor method 
+        /** Accessor method
         *  @return The accuracy you actually got
         */
         double actual_accuracy() const throw();

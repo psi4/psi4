@@ -120,7 +120,7 @@ void MAD_MP2::common_init()
         free(frzcpi);
         free(frzvpi);
 
-        Ca_ = boost::shared_ptr<Matrix>(new Matrix("Ca", nirrep_, nsopi_, nmopi_));
+        Ca_ = SharedMatrix(new Matrix("Ca", nirrep_, nsopi_, nmopi_));
         epsilon_a_ = boost::shared_ptr<Vector>(new Vector("Evals a", nirrep_, nmopi_));
 
         double **tempmat = chkpt_->rd_scf();
@@ -150,14 +150,15 @@ void MAD_MP2::common_init()
         nmo_    = reference_->nmo();
         Eref_   = reference_->reference_energy();
 
-        ::memcpy(static_cast<void*>(doccpi_), static_cast<void*>(reference_->doccpi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(soccpi_), static_cast<void*>(reference_->soccpi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nsopi_), static_cast<void*>(reference_->nsopi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nmopi_), static_cast<void*>(reference_->nmopi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nalphapi_), static_cast<void*>(reference_->nalphapi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(nbetapi_), static_cast<void*>(reference_->nbetapi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(frzcpi_), static_cast<void*>(reference_->frzcpi()), 8 * sizeof(int));
-        ::memcpy(static_cast<void*>(frzvpi_), static_cast<void*>(reference_->frzvpi()), 8 * sizeof(int));
+        doccpi_   = reference_->doccpi();
+        soccpi_   = reference_->soccpi();
+        nsopi_    = reference_->nsopi();
+        nmopi_    = reference_->nmopi();
+        nalphapi_ = reference_->nalphapi();
+        nbetapi_  = reference_->nbetapi();
+        frzcpi_   = reference_->frzcpi();
+        frzvpi_   = reference_->frzvpi();
+
         // End copy constructor opportunity
         if (!reference_->restricted()) {
             throw PSIEXCEPTION("DFMP2 MADNESS is only closed-shell for now");
@@ -167,7 +168,7 @@ void MAD_MP2::common_init()
 
     boost::shared_ptr<IntegralFactory> integral(new IntegralFactory(basisset_,basisset_,basisset_,basisset_));
     boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, integral));
-    AO2USO_ = boost::shared_ptr<Matrix>(pet->aotoso());
+    AO2USO_ = SharedMatrix(pet->aotoso());
 
 
 
@@ -208,8 +209,8 @@ void MAD_MP2::common_init()
         }
     }
 
-    Caocc_ = boost::shared_ptr<Matrix>(new Matrix("Caocc", nso_, naocc_));
-    Cavir_ = boost::shared_ptr<Matrix>(new Matrix("Cavir", nso_, navir_));
+    Caocc_ = SharedMatrix(new Matrix("Caocc", nso_, naocc_));
+    Cavir_ = SharedMatrix(new Matrix("Cavir", nso_, navir_));
     eps_aocc_ = boost::shared_ptr<Vector>(new Vector("eps_aocc", naocc_));
     eps_avir_ = boost::shared_ptr<Vector>(new Vector("eps_avir", navir_));
     irrep_aocc_ = boost::shared_ptr<IntVector>(new IntVector("irrep_aocc", naocc_));
@@ -258,7 +259,7 @@ void MAD_MP2::common_init()
 
     boost::shared_ptr<IntegralFactory> integral2(new IntegralFactory(auxiliary_,auxiliary_,auxiliary_,auxiliary_));
     boost::shared_ptr<PetiteList> pet2(new PetiteList(auxiliary_, integral2));
-    AO2USO_aux_ = boost::shared_ptr<Matrix>(pet2->aotoso());
+    AO2USO_aux_ = SharedMatrix(pet2->aotoso());
 
     if (debug_ > 2) {
         AO2USO_aux_->print();
@@ -706,7 +707,7 @@ void MAD_MP2::J()
     boost::shared_ptr<TwoBodyAOInt> eri(fact->eri());
     const double* buffer = eri->buffer();
 
-    boost::shared_ptr<Matrix> J(new Matrix("J^-1/2", naux_, naux_));
+    SharedMatrix J(new Matrix("J^-1/2", naux_, naux_));
     double** Jp = J->pointer();
 
     timer_on("MP2 J AO");
@@ -749,7 +750,7 @@ void MAD_MP2::Aia()
 {
     // => AO Basis A: (A|ia) <= //
 
-    boost::shared_ptr<Matrix> Aia(new Matrix("(A|ia)", naux_, nia_local_));
+    SharedMatrix Aia(new Matrix("(A|ia)", naux_, nia_local_));
     double** Aiap = Aia->pointer();
 
     boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(auxiliary_,zero_,basisset_,basisset_));
@@ -762,19 +763,19 @@ void MAD_MP2::Aia()
 
     int max_pshell = auxiliary_->max_function_per_shell();
 
-    boost::shared_ptr<Matrix> Amn(new Matrix("(A|mn) Chunk", max_pshell, nso_ * (ULI) nso_));
+    SharedMatrix Amn(new Matrix("(A|mn) Chunk", max_pshell, nso_ * (ULI) nso_));
     double** Amnp = Amn->pointer();
-    boost::shared_ptr<Matrix> Ami(new Matrix("(A|mi) Chunk", max_pshell, nso_ * (ULI) naocc_local_));
+    SharedMatrix Ami(new Matrix("(A|mi) Chunk", max_pshell, nso_ * (ULI) naocc_local_));
     double** Amip = Ami->pointer();
 
-    boost::shared_ptr<Matrix> Ci(new Matrix("C_mi local", nso_, naocc_local_));
+    SharedMatrix Ci(new Matrix("C_mi local", nso_, naocc_local_));
     double** Cip = Ci->pointer();
     for (int ind = 0; ind < naocc_local_; ind++) {
         int i = aocc_local_[ind];
         C_DCOPY(nso_, &Caocc_->pointer(0)[0][i], naocc_, &Cip[0][ind], naocc_local_);
     }
 
-    boost::shared_ptr<Matrix> Ca(new Matrix("C_na local", nso_, navir_local_));
+    SharedMatrix Ca(new Matrix("C_na local", nso_, navir_local_));
     double** Cap = Ca->pointer();
     for (int ind = 0; ind < navir_local_; ind++) {
         int a = avir_local_[ind];
@@ -877,7 +878,7 @@ void MAD_MP2::Aia()
     // => J^-1/2 (A|ia) Fitting <= //
 
     int n2 = (naux_ < nia_local_ ? naux_: nia_local_);
-    boost::shared_ptr<Matrix> T(new Matrix("Temp", naux_, n2));
+    SharedMatrix T(new Matrix("Temp", naux_, n2));
     double** Tp = T->pointer();
     double** Jp = Jm12_->pointer();
 
@@ -1037,7 +1038,7 @@ madness::Future<SharedMatrix> MAD_MP2::build_I(SharedMatrix Qa, SharedMatrix Qb)
 {
     mutex_->lock();
 
-    boost::shared_ptr<Matrix> I(new Matrix("I", navir_, navir_));
+    SharedMatrix I(new Matrix("I", navir_, navir_));
 
     C_DGEMM('T','N',navir_,navir_,naux_, 1.0, Qa->pointer()[0], navir_,
             Qb->pointer()[0], navir_, 0.0, I->pointer()[0], navir_);
@@ -1054,11 +1055,11 @@ void MAD_MP2::I()
     E_MP2J_ = 0.0;
     E_MP2K_ = 0.0;
 
-    boost::shared_ptr<Matrix> I(new Matrix("I", navir_, navir_));
+    SharedMatrix I(new Matrix("I", navir_, navir_));
     double** Ip = I->pointer();
-    boost::shared_ptr<Matrix> Qa(new Matrix("Qa", naux_, navir_));
+    SharedMatrix Qa(new Matrix("Qa", naux_, navir_));
     double** Qap = Qa->pointer();
-    boost::shared_ptr<Matrix> Qb(new Matrix("Qb", naux_, navir_));
+    SharedMatrix Qb(new Matrix("Qb", naux_, navir_));
     double** Qbp = Qb->pointer();
 
     double** Qiap = Aia_->pointer();
@@ -1084,7 +1085,7 @@ void MAD_MP2::I()
             madness::Future<SharedMatrix> Qb_fut = task(rank_, &MAD_MP2::build_Qb, j);
 
 
-            boost::shared_ptr<Matrix> I_fut = task(rank_, &MAD_MP2::build_I, Qa_fut, Qb_fut);
+            SharedMatrix I_fut = task(rank_, &MAD_MP2::build_I, Qa_fut, Qb_fut);
 
             if (debug_ > 2) {
                 Qa->print();
@@ -1177,10 +1178,10 @@ void MAD_MP2::IJ()
             if (!nQ || !ni || !na) continue;
 
             double** Qiap = Aia_[std::pair<int,int>(hQ,hi)]->pointer();
-            boost::shared_ptr<Matrix> Qiaw(new Matrix("(Q|ia)^w)", nQ, ni * (ULI) na));
+            SharedMatrix Qiaw(new Matrix("(Q|ia)^w)", nQ, ni * (ULI) na));
             double** Qiawp = Qiaw->pointer();
 
-            boost::shared_ptr<Matrix> Z(new Matrix("Z^QQ", nQ, nQ));
+            SharedMatrix Z(new Matrix("Z^QQ", nQ, nQ));
             double** Zp = Z->pointer();
 
             for (int w = 0; w < nw; w++) {
@@ -1217,6 +1218,8 @@ void MAD_MP2::print_energy()
     energy_ = energies_["Total Energy"];
 
     Process::environment.globals["CURRENT ENERGY"] = energy_;
+    Process::environment.globals["DF-MP2 TOTAL ENERGY"] = energy_;
+    Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = energies_["Correlation Energy"];
     Process::environment.globals["E_MP2J"] = E_MP2J_;
     Process::environment.globals["E_MP2K"] = E_MP2K_;
 

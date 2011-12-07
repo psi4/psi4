@@ -3,21 +3,25 @@
     \brief Enter brief description of file here 
 */
 
+#ifndef _psi_src_bin_cceom_params_h
+#define _psi_src_bin_cceom_params_h
+
+#include <string>
+
 namespace psi { namespace cceom {
 
 /* Input parameters for ccenergy */
 struct Params {
   long int memory;
-  int aobasis;
   int cachelev;
   int cachetype;
   int ref;
   int eom_ref;
   int local;
-  char *wfn;
+  std::string wfn;
   int semicanonical;
   int full_matrix; /* include reference rows/cols in diagonalization */
-  char *abcd;
+  std::string abcd;
   int t3_Ws_incore;
   int nthreads;
   int newtrips;
@@ -43,7 +47,7 @@ struct Eom_params {
   int vectors_per_root_SS;
   int excitation_range;
   double residual_tol_SS;
-  char *guess;
+  std::string guess;
   int rhf_triplets;
   int mult;
   bool follow_root;
@@ -61,3 +65,5 @@ struct Eom_params {
 
 
 }} // namespace psi::cceom
+
+#endif // _psi_src_bin_cceom_params_h

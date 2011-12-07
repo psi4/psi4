@@ -18,6 +18,8 @@ target_link_libraries(psi4
     cchbar
     cclambda
     ccdensity
+    cceom
+    ccresponse
     transqt
     df-cc
     deriv

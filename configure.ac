@@ -34,6 +34,8 @@ fi
 
 PSI_TOP_SRCDIR=`cd $srcdir && pwd`
 AC_DEFINE_UNQUOTED([PSI_TOP_SRCDIR],["$PSI_TOP_SRCDIR"])
+PSI_TOP_OBJDIR=`pwd`
+AC_DEFINE_UNQUOTED([PSI_TOP_OBJDIR],["$PSI_TOP_OBJDIR"])
 
 AC_CONFIG_AUX_DIR(bin)
 AC_CONFIG_MACRO_DIR([m4])
@@ -573,8 +575,8 @@ if test "$HAVE_MPI" = "1"; then
       BUILD_MADNESS=1
       HAVE_MADNESS=1
       AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-      madlibs='$(top_srcdir)/madness/src/lib'
-      madinc='-I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
+      madlibs='$(top_objdir)/madness/src/lib'
+      madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
       ;;
     no)
       AC_DEFINE_UNQUOTED(HAVE_MADNESS,0)
@@ -590,8 +592,8 @@ if test "$HAVE_MPI" = "1"; then
   BUILD_MADNESS=1
   HAVE_MADNESS=1
   AC_DEFINE_UNQUOTED(HAVE_MADNESS,1)
-  madlibs='$(top_srcdir)/madness/src/lib'
-  madinc='-I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
+  madlibs='$(top_objdir)/madness/src/lib'
+  madinc='-I$(top_srcdir)/madness/src/lib -I$(top_srcdir)/madness/include -I$(top_objdir)/madness/include'
   ])
 fi
 AC_SUBST(BUILD_MADNESS)
@@ -663,7 +665,7 @@ AC_MSG_RESULT(c++ libs: $CXXLIBS)
 AC_SUBST(CXXLIBS)
 
 if test "$HAVE_MADNESS" = "1"; then
-  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib -I$(madlibs) $(madinc)'
+  PSICPPFLAGS='-I. -I$(top_objdir)/include -I$(top_srcdir)/include -I$(top_srcdir)/src/lib -I$(top_objdir)/src/lib $(madinc)'
   AC_SUBST(PSICPPFLAGS)
   AC_SUBST(madlibs)
   AC_SUBST(madinc)
@@ -940,6 +942,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
           src/bin/transqt/Makefile
+          src/bin/detci/Makefile
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
@@ -953,6 +956,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/cchbar/Makefile
           src/bin/cclambda/Makefile
           src/bin/ccdensity/Makefile
+          src/bin/cceom/Makefile
           src/bin/cis/Makefile
           src/bin/scf/Makefile
           src/bin/lmp2/Makefile
@@ -979,6 +983,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/scf3/Makefile
           tests/scf4/Makefile
           tests/scf5/Makefile
+          tests/dfscf-bz2/Makefile
+          tests/scf-bz2/Makefile
           tests/opt1/Makefile
           tests/opt1-fd/Makefile
           tests/opt2/Makefile
@@ -994,13 +1000,33 @@ AC_CONFIG_FILES([include/Makefile
           tests/dfmp2_2/Makefile
           tests/pywrap_db1/Makefile
           tests/pywrap_db2/Makefile
+          tests/pywrap_cbs1/Makefile
+          tests/pywrap_all/Makefile
+          tests/cisd-h2o+-0/Makefile
+          tests/cisd-h2o+-1/Makefile
+          tests/cisd-h2o+-2/Makefile
+          tests/cisd-h2o-clpse/Makefile
+          tests/cisd-opt-fd/Makefile
+          tests/cisd-sp/Makefile
+          tests/cisd-sp-2/Makefile
+          tests/fci-h2o/Makefile
+          tests/fci-h2o-2/Makefile
+          tests/fci-h2o-fzcv/Makefile
+          tests/fci-dipole/Makefile
+          tests/fci-tdm/Makefile
+          tests/fci-tdm-2/Makefile
+          tests/rasci-c2-active/Makefile
+          tests/rasci-h2o/Makefile
           tests/cc1/Makefile
           tests/cc2/Makefile
           tests/cc4/Makefile
+          tests/cc4a/Makefile
           tests/cc5a/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/cc9/Makefile
+          tests/cc12/Makefile
+          tests/cc13/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
           tests/cc28/Makefile

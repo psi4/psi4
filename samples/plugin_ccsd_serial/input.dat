@@ -1,0 +1,34 @@
+#
+molecule h2o {
+0 1
+O
+H 1 1.0 
+H 1 1.0 2 104.5
+symmetry c1
+}
+
+plugin_load('./plugin_ccsd_serial.so')
+
+memory 500 mb
+set {
+  max_mapped_memory 200
+  wfn ccsd_t
+  convergence 7
+  basis       cc-pvdz
+  scf_type pk
+  guess sad
+  reference rhf
+  freeze_core true
+  e_converge 12
+}
+
+#  e(ccsd)    = -0.214295324941422
+#  e(ccsd(t)) = -0.003243936319252
+
+psioh = PsiMod.IOManager.shared_object()
+psioh.set_default_path('/lustre/medusa/deprince/')
+scf_energy = scf()
+transqt()
+plugin('./plugin_ccsd_serial.so')
+
+clean()

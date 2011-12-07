@@ -20,19 +20,61 @@ read_options(std::string name, Options &options){
         /*- The amount of debug information printed
             to the output file -*/
         options.add_int("DEBUG", 0);
+        /*- What app to test?
+          -*/
+        options.add_str("MODULE", "RCIS", "RCIS RCPHF RTDHF");
         /*- Do singlet states? Default true
          -*/
         options.add_bool("DO_SINGLETS", true);
         /*- Do triplet states? Default true
          -*/
         options.add_bool("DO_TRIPLETS", true);
+        /*- Do explicit hamiltonian only? -*/
+        options.add_bool("EXPLICIT_HAMILTONIAN", false);
         /*- Minimum singles amplitude to print in 
             CIS analysis
          -*/
         options.add_double("CIS_AMPLITUDE_CUTOFF", 0.15);
         /*- Memory safety factor for allocating JK
         -*/
+        options.add_double("TDHF_MEM_SAFETY_FACTOR",0.75);
+        /*- Memory safety factor for allocating JK
+        -*/
         options.add_double("CIS_MEM_SAFETY_FACTOR",0.75);
+        /*- Memory safety factor for allocating JK
+        -*/
+        options.add_double("CPHF_MEM_SAFETY_FACTOR",0.75);
+        /*- Which states to save AO OPDMs for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_OPDM_STATES", new ArrayType());
+        /*- Which states to save AO transition OPDMs for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_TOPDM_STATES", new ArrayType());
+        /*- Which states to save AO difference OPDMs for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_DOPDM_STATES", new ArrayType());
+        /*- Which states to save AO Natural Orbitals for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_NO_STATES", new ArrayType());
+        /*- Which states to save AD Matrices for?
+         *   Positive - Singlets
+         *   Negative - Triplets
+         * -*/
+        options.add("CIS_AD_STATES", new ArrayType());
+        /*- Which tasks to run CPHF For
+         *  Valid choices:
+         *  -Polarizability
+         * -*/
+        options.add("CPHF_TASKS", new ArrayType());
+
     } 
     if(name == "JK" || options.read_globals()) {
         /*- The amount of information printed
@@ -50,6 +92,9 @@ read_options(std::string name, Options &options){
         /*- The maximum reciprocal condition allowed in the fitting metric 
          -*/
         options.add_double("FITTING_CONDITION", 1.0E-12);
+        /*- Fitting algorithm (0 for old, 1 for new)
+         -*/
+        options.add_int("FITTING_ALGORITHM", 0);
         /*- SCF Type 
          -*/
         options.add_str("SCF_TYPE", "DIRECT", "DIRECT DF GPUDF");
@@ -85,6 +130,9 @@ read_options(std::string name, Options &options){
         /*- DL Solver minimum corrector norm to add to subspace
          -*/
         options.add_double("SOLVER_NORM",1.0E-6);
+        /*- CG Solver Jacobi precondition?
+         -*/
+        options.add_bool("SOLVER_PRECONDITION",true);
     } 
 }
 
@@ -93,8 +141,19 @@ plugin_libfock(Options &options)
 {
     tstart();
 
-    boost::shared_ptr<RCIS> cis (new RCIS());
-    cis->compute_energy();
+    if (options.get_str("MODULE") == "RCIS") {
+        boost::shared_ptr<RCIS> cis (new RCIS());
+        cis->compute_energy();
+    } else if (options.get_str("MODULE") == "RTDHF") {
+        boost::shared_ptr<RTDHF> cis (new RTDHF());
+        cis->compute_energy();
+    } else if (options.get_str("MODULE") == "RCPHF") {
+        boost::shared_ptr<RCPHF> cphf(new RCPHF());
+        for (int i = 0; i < options["CPHF_TASKS"].size(); i++) {
+            cphf->add_task(options["CPHF_TASKS"][i].to_string());
+        }
+        cphf->compute_energy();
+    }
 
     tstop();
 

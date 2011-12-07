@@ -12,7 +12,8 @@ atom_data.cc  frag_H_guess.cc       linear_algebra.cc      molecule_read_intcos.
 bend.cc       geom_gradients_io.cc  mem.cc                 molecule_backstep.cc        optking.cc      tors.cc \
 frag.cc       interfrag.cc          molecule.cc            molecule_tests.cc        print.cc        v3d.cc \
 frag_disp.cc  interfrag_orient.cc   molecule_fragments.cc  opt_data.cc              set_params.cc   efp_frag.cc \
-molecule_nr_step.cc   molecule_rfo_step.cc   molecule_prfo_step.cc  molecule_irc_step.cc
+molecule_nr_step.cc   molecule_rfo_step.cc   molecule_prfo_step.cc  molecule_irc_step.cc \
+molecule_sd_step.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

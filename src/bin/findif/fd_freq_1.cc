@@ -58,9 +58,9 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
     Ndisp_all += Ndisp_pi[h];
 
   // *** Extract python gradients. Check number of gradients and displacements.
-  std::vector< boost::shared_ptr<Matrix> > gradients;
+  std::vector< SharedMatrix > gradients;
   for (int i=0; i<len(gradient_list); ++i)
-    gradients.push_back( (boost::shared_ptr<Matrix>) extract<boost::shared_ptr<Matrix> >(gradient_list[i]) );
+    gradients.push_back( (SharedMatrix) extract<SharedMatrix >(gradient_list[i]) );
 
   fprintf(outfile,
    "\n\tFinite difference computation of second-derivative of energy with respect to\n");

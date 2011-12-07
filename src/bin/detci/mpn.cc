@@ -21,6 +21,7 @@
 #include <libchkpt/chkpt.h>
 #include "structs.h"
 #include "ci_tol.h"
+#include <libpsio/psio.h>
 #define EXTERN
 #include "globals.h"
 #include "civect.h"
@@ -319,6 +320,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
    if (Parameters.save_mpn2 == 1 && Parameters.wigner) {
      chkpt_wt_etot(Empn2);
      Process::environment.globals["CURRENT ENERGY"] = Empn2;
+     Process::environment.globals["CORRELATION ENERGY"] = Empn2 - Process::environment.globals["REFERENCE ENERGY"];
 
      if(Parameters.zaptn) 
        fprintf(outfile, "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 1);
@@ -328,6 +330,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
    else if (Parameters.save_mpn2 == 2 && Parameters.wigner) {
      chkpt_wt_etot(Empn2a);
      Process::environment.globals["CURRENT ENERGY"] = Empn2a;
+     Process::environment.globals["CORRELATION ENERGY"] = Empn2a - Process::environment.globals["REFERENCE ENERGY"];
      if(Parameters.zaptn)
        fprintf(outfile, "\nZAPT%d energy saved\n", (Parameters.maxnvect * 2) - 2);
      else
@@ -336,6 +339,7 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
    else {
      chkpt_wt_etot(Empn);
      Process::environment.globals["CURRENT ENERGY"] = Empn;
+     Process::environment.globals["CORRELATION ENERGY"] = Empn - Process::environment.globals["REFERENCE ENERGY"];
      if(Parameters.zaptn)
        fprintf(outfile, "\nZAPT%d energy saved\n", Parameters.maxnvect);
      else

@@ -22,6 +22,7 @@ using namespace std;
 
 namespace psi {
 
+void create_new_plugin(std::string plugin_name, const std::string& template_name);
 void print_version(FILE *);
 void print_usage();
 
@@ -45,6 +46,8 @@ int psi_start(int argc, char *argv[])
     std::string ifname;
     std::string ofname;
     std::string fprefix;
+    std::string templatename;
+    std::string pluginname;
     #ifdef PSIDEBUG
         bool debug          = true;
     #else
@@ -70,6 +73,7 @@ int psi_start(int argc, char *argv[])
         { "prefix",  1, NULL, 'p' },
         { "input",   1, NULL, 'i' },
         { "messy",   0, NULL, 'm' },
+        { "new-plugin", 1, NULL, 1 },  // requires 1 argument
         { NULL,      0, NULL,  0  }
     };
 
@@ -78,6 +82,21 @@ int psi_start(int argc, char *argv[])
         next_option = getopt_long(argc, argv, short_options, long_options, NULL);
 
         switch (next_option) {
+        case 1: // --new-plugin
+            // Let's check the next arugument to see if the user specified a +templatename
+            pluginname = optarg;
+            if (optind < argc) {
+                // check to see if the next arguments starts with + and that the user gave more
+                if (argv[optind][0] == '+' && strlen(argv[optind]) > 1) {
+                    // yes, take it, skipping the +
+                    templatename = &(argv[optind][1]);
+                    optind++;
+                }
+            }
+            create_new_plugin(pluginname, templatename);
+            exit(EXIT_SUCCESS);
+            break;
+
         case 'a': // -a or --append
             append = true;
             break;
@@ -242,9 +261,14 @@ void print_usage(void)
     printf(" -o  --output filename    Redirect output elsewhere. Default: output.dat\n");
     printf(" -m  --messy              Leave temporary files after the run is completed.\n");
     printf(" -n  --nthread            Number of threads to use (overrides OMP_NUM_THREADS)\n");
+    printf("     --new-plugin name    Creates a new directory with files for writing a\n"
+           "                          new plugin. You can specify an additional argument\n"
+           "                          that specifies a template to use, for example:\n"
+           "                              --new-plugin name +mointegrals\n");
     printf(" -p  --prefix prefix      Prefix name for psi files. Default: psi\n");
     printf(" -v  --verbose            Print a lot of information.\n");
-    printf(" -d  --debug              Flush the outfile at every fprintf. Default: true iff --with-debug.\n");
+    printf(" -d  --debug              Flush the outfile at every fprintf.\n"
+           "                          Default: true iff --with-debug.\n");
     printf(" -V  --version            Print version information.\n");
     printf(" -w  --wipe               Clean out your scratch area.\n");
 

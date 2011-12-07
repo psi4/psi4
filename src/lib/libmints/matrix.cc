@@ -17,6 +17,9 @@
 #include "factory.h"
 #include "wavefunction.h"
 #include "dimension.h"
+#include "molecule.h"
+#include "pointgrp.h"
+#include "petitelist.h"
 
 #include <cmath>
 #include <cstdio>
@@ -81,7 +84,7 @@ Matrix::Matrix(const Matrix& c)
     copy_from(c.matrix_);
 }
 
-Matrix::Matrix(const boost::shared_ptr<Matrix>& c)
+Matrix::Matrix(const SharedMatrix& c)
     : rowspi_(c->rowspi_), colspi_(c->colspi_)
 {
     matrix_ = NULL;
@@ -294,11 +297,11 @@ void Matrix::init(const Dimension& l_rowspi, const Dimension& l_colspi, const st
     alloc();
 }
 
-boost::shared_ptr<Matrix> Matrix::create(const std::string& name,
+SharedMatrix Matrix::create(const std::string& name,
                                          const Dimension& rows,
                                          const Dimension& cols)
 {
-    return boost::shared_ptr<Matrix>(new Matrix(name, rows, cols));
+    return SharedMatrix(new Matrix(name, rows, cols));
 }
 
 Matrix* Matrix::clone() const
@@ -339,7 +342,7 @@ void Matrix::copy(const Matrix* cp)
     }
 }
 
-boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Matrix> >& mats)
+SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
 {
     int nirrep = mats[0]->nirrep();
     for (int a = 0; a < mats.size(); ++a) {
@@ -362,7 +365,7 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
         colspi += mats[a]->colspi();
     }
 
-    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));
+    SharedMatrix cat(new Matrix("",nirrep,mats[0]->rowspi(),colspi));
 
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->rowspi()[h] == 0 || colspi[h] == 0) continue;
@@ -386,7 +389,7 @@ boost::shared_ptr<Matrix> Matrix::horzcat(const std::vector<boost::shared_ptr<Ma
     return cat;
 }
 
-boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Matrix> >& mats)
+SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
 {
     int nirrep = mats[0]->nirrep();
     for (int a = 0; a < mats.size(); ++a) {
@@ -409,7 +412,7 @@ boost::shared_ptr<Matrix> Matrix::vertcat(const std::vector<boost::shared_ptr<Ma
         rowspi += mats[a]->rowspi();
     }
 
-    boost::shared_ptr<Matrix> cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));
+    SharedMatrix cat(new Matrix("",nirrep,rowspi,mats[0]->colspi()));
 
     for (int h = 0; h < nirrep; ++h) {
         if (mats[0]->colspi()[h] == 0 || rowspi[h] == 0) continue;
@@ -446,7 +449,7 @@ void Matrix::copy(const Matrix& cp)
     copy(&cp);
 }
 
-void Matrix::copy(const boost::shared_ptr<Matrix>& cp)
+void Matrix::copy(const SharedMatrix& cp)
 {
     copy(cp.get());
 }
@@ -610,14 +613,10 @@ void Matrix::set_diagonal(const boost::shared_ptr<Vector>& vec)
 
 double *Matrix::to_lower_triangle() const
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
-
     int sizer=0, sizec=0;
     for (int h=0; h<nirrep_; ++h) {
         sizer += rowspi_[h];
-        sizec += colspi_[h];
+        sizec += colspi_[h^symmetry_];
     }
     if (sizer != sizec)
         return NULL;
@@ -667,7 +666,7 @@ SimpleMatrix *Matrix::to_simple_matrix() const
 
 void Matrix::print_mat(const double *const *const a, int m, int n, FILE *out) const
 {
-    const int print_ncol = 5;
+    const int print_ncol = Process::environment.options.get_int("PRINT_MAT_NCOLUMN");
     int num_frames = int(n/print_ncol);
     int num_frames_rem = n%print_ncol; //adding one for changing 0->1 start
     int num_frame_counter = 0;
@@ -723,7 +722,7 @@ void Matrix::print(FILE *out, const char *extra) const
     }
 
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, "  Irrep: %d\n", h+1);
+        fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h]);
         if (rowspi_[h] == 0 || colspi_[h^symmetry_] == 0)
             fprintf(out, "\n\t(empty)\n");
         else
@@ -779,6 +778,34 @@ void Matrix::eivprint(const Vector& values, FILE *out)
 void Matrix::eivprint(const boost::shared_ptr<Vector>& values, FILE *out)
 {
     eivprint(values.get(), out);
+}
+
+void Matrix::symmetrize(boost::shared_ptr<Molecule> molecule)
+{
+    if (nirrep_ > 1 || rowspi_[0] != molecule->natom() || colspi_[0] != 3)
+        throw PSIEXCEPTION("Molecule::symmetrize: Matrix cannot be symmetrized.");
+
+    // Symmetrize the gradients to remove any noise:
+    CharacterTable ct = molecule->point_group()->char_table();
+
+    // Obtain atom mapping of atom * symm op to atom
+    int **atom_map = compute_atom_map(molecule);
+
+    Matrix temp = *this;
+
+    // Symmetrize the gradients to remove any noise
+    for (int atom=0; atom<molecule->natom(); ++atom) {
+        for (int g=0; g<ct.order(); ++g) {
+
+            int Gatom = atom_map[atom][g];
+
+            SymmetryOperation so = ct.symm_operation(g);
+
+            add(atom, 0, so(0, 0) * temp(Gatom, 0) / ct.order());
+            add(atom, 1, so(1, 1) * temp(Gatom, 1) / ct.order());
+            add(atom, 2, so(2, 2) * temp(Gatom, 2) / ct.order());
+        }
+    }
 }
 
 void Matrix::identity()
@@ -881,7 +908,7 @@ void Matrix::add(const Matrix& plus)
     add(&plus);
 }
 
-void Matrix::add(const boost::shared_ptr<Matrix>& plus)
+void Matrix::add(const SharedMatrix& plus)
 {
     add(plus.get());
 }
@@ -902,7 +929,7 @@ void Matrix::subtract(const Matrix* const plus)
     }
 }
 
-void Matrix::subtract(const boost::shared_ptr<Matrix>& sub)
+void Matrix::subtract(const SharedMatrix& sub)
 {
     subtract(sub.get());
 }
@@ -928,7 +955,7 @@ void Matrix::apply_denominator(const Matrix& plus)
     apply_denominator(&plus);
 }
 
-void Matrix::apply_denominator(const boost::shared_ptr<Matrix>& plus)
+void Matrix::apply_denominator(const SharedMatrix& plus)
 {
     apply_denominator(plus.get());
 }
@@ -938,8 +965,8 @@ void Matrix::accumulate_product(const Matrix* const a, const Matrix* const b)
     gemm(false, false, 1.0, a, b, 1.0);
 }
 
-void Matrix::accumulate_product(const boost::shared_ptr<Matrix>& a,
-                                const boost::shared_ptr<Matrix>& b)
+void Matrix::accumulate_product(const SharedMatrix& a,
+                                const SharedMatrix& b)
 {
     gemm(false, false, 1.0, a, b, 1.0);
 }
@@ -1009,7 +1036,7 @@ void Matrix::transform(const Matrix* const a, const Matrix* const transformer)
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
-void Matrix::transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer)
+void Matrix::transform(const SharedMatrix& a, const SharedMatrix& transformer)
 {
     transform(a.get(), transformer.get());
 }
@@ -1026,14 +1053,14 @@ void Matrix::transform(const Matrix* const transformer)
     gemm(true, false, 1.0, transformer, &temp, 0.0);
 }
 
-void Matrix::transform(const boost::shared_ptr<Matrix>& transformer)
+void Matrix::transform(const SharedMatrix& transformer)
 {
     transform(transformer.get());
 }
 
-void Matrix::transform(const boost::shared_ptr<Matrix>& L,
-                       const boost::shared_ptr<Matrix>& F,
-                       const boost::shared_ptr<Matrix>& R)
+void Matrix::transform(const SharedMatrix& L,
+                       const SharedMatrix& F,
+                       const SharedMatrix& R)
 {
 #ifdef PSIDEBUG
     // Check dimensions
@@ -1055,7 +1082,7 @@ void Matrix::back_transform(const Matrix* const a, const Matrix* const transform
     gemm(false, false, 1.0, transformer, &temp, 0.0);
 }
 
-void Matrix::back_transform(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer)
+void Matrix::back_transform(const SharedMatrix& a, const SharedMatrix& transformer)
 {
     back_transform(a.get(), transformer.get());
 }
@@ -1086,7 +1113,7 @@ void Matrix::back_transform(const Matrix* const transformer)
     }
 }
 
-void Matrix::back_transform(const boost::shared_ptr<Matrix>& transformer)
+void Matrix::back_transform(const SharedMatrix& transformer)
 {
     back_transform(transformer.get());
 }
@@ -1096,8 +1123,8 @@ void Matrix::gemm(const char& transa, const char& transb,
                   const std::vector<int>& n,
                   const std::vector<int>& k,
                   const double& alpha,
-                  const boost::shared_ptr<Matrix>& a, const std::vector<int>& lda,
-                  const boost::shared_ptr<Matrix>& b, const std::vector<int>& ldb,
+                  const SharedMatrix& a, const std::vector<int>& lda,
+                  const SharedMatrix& b, const std::vector<int>& ldb,
                   const double& beta,
                   const std::vector<int>& ldc,
                   const std::vector<unsigned long>& offset_a,
@@ -1132,8 +1159,8 @@ void Matrix::gemm(const char& transa, const char& transb,
                   const int& n,
                   const int& k,
                   const double& alpha,
-                  const boost::shared_ptr<Matrix>& a, const int& lda,
-                  const boost::shared_ptr<Matrix>& b, const int& ldb,
+                  const SharedMatrix& a, const int& lda,
+                  const SharedMatrix& b, const int& ldb,
                   const double& beta,
                   const int& ldc,
                   const unsigned long& offset_a,
@@ -1190,21 +1217,21 @@ void Matrix::gemm(bool transa, bool transb, double alpha, const Matrix* const a,
 }
 
 void Matrix::gemm(bool transa, bool transb, double alpha,
-                  const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& b,
+                  const SharedMatrix& a, const SharedMatrix& b,
                   double beta)
 {
     gemm(transa, transb, alpha, a.get(), b.get(), beta);
 }
 
 void Matrix::gemm(bool transa, bool transb, double alpha,
-                  const Matrix& a, const boost::shared_ptr<Matrix>& b,
+                  const Matrix& a, const SharedMatrix& b,
                   double beta)
 {
     gemm(transa, transb, alpha, &a, b.get(), beta);
 }
 
 void Matrix::gemm(bool transa, bool transb, double alpha,
-                  const boost::shared_ptr<Matrix>& a, const Matrix& b,
+                  const SharedMatrix& a, const Matrix& b,
                   double beta)
 {
     gemm(transa, transb, alpha, a.get(), &b, beta);
@@ -1365,7 +1392,7 @@ double Matrix::vector_dot(const Matrix* const rhs)
     return sum;
 }
 
-double Matrix::vector_dot(const boost::shared_ptr<Matrix>& rhs)
+double Matrix::vector_dot(const SharedMatrix& rhs)
 {
     return vector_dot(rhs.get());
 }
@@ -1383,17 +1410,17 @@ void Matrix::diagonalize(Matrix* eigvectors, Vector* eigvalues, DiagonalizeOrder
     }
 }
 
-void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
 {
     diagonalize(eigvectors.get(), eigvalues.get(), nMatz);
 }
 
-void Matrix::diagonalize(boost::shared_ptr<Matrix>& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(SharedMatrix& eigvectors, Vector& eigvalues, DiagonalizeOrder nMatz)
 {
     diagonalize(eigvectors.get(), &eigvalues, nMatz);
 }
 
-void Matrix::diagonalize(boost::shared_ptr<Matrix>& metric, boost::shared_ptr<Matrix>& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
+void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::shared_ptr<Vector>& eigvalues, DiagonalizeOrder nMatz)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::diagonalize: Matrix non-totally symmetric.");
@@ -1471,14 +1498,14 @@ void Matrix::cholesky_factorize()
     }
 }
 
-boost::shared_ptr<Matrix> Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative)
+SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_negative)
 {
     if (symmetry_) {
         throw PSIEXCEPTION("Matrix::partial_cholesky_factorize: Matrix is non-totally symmetric.");
     }
 
     // Temporary cholesky factor (full memory)
-    boost::shared_ptr<Matrix> K(new Matrix("L Temp", nirrep_, rowspi_, rowspi_));
+    SharedMatrix K(new Matrix("L Temp", nirrep_, rowspi_, rowspi_));
 
     // Significant Cholesky columns per irrep
     int *sigpi = new int[nirrep_];
@@ -1562,7 +1589,7 @@ boost::shared_ptr<Matrix> Matrix::partial_cholesky_factorize(double delta, bool 
     }
 
     // Copy out to properly sized array
-    boost::shared_ptr<Matrix> L(new Matrix("Partial Cholesky Factor", nirrep_, rowspi_, sigpi));
+    SharedMatrix L(new Matrix("Partial Cholesky Factor", nirrep_, rowspi_, sigpi));
     for (int h = 0; h < nirrep_; h++) {
         if (!rowspi_[h]) continue;
         double** Kp = K->pointer(h);
@@ -1819,7 +1846,7 @@ void Matrix::transform(const Matrix& a, const Matrix& transformer)
     gemm(true, false, 1.0, transformer, temp, 0.0);
 }
 
-void Matrix::apply_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer)
+void Matrix::apply_symmetry(const SharedMatrix& a, const SharedMatrix& transformer)
 {
     // Check dimensions of the two matrices and symmetry
     if(a->nirrep() > 1)
@@ -1876,7 +1903,7 @@ void Matrix::apply_symmetry(const boost::shared_ptr<Matrix>& a, const boost::sha
     }
 }
 
-void Matrix::remove_symmetry(const boost::shared_ptr<Matrix>& a, const boost::shared_ptr<Matrix>& transformer)
+void Matrix::remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer)
 {
     // Check dimensions of the two matrices and symmetry
     if(a->nirrep() !=  transformer->nirrep())
@@ -2148,9 +2175,6 @@ void Matrix::save(boost::shared_ptr<psi::PSIO>& psio,
 
 void Matrix::save(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 {
-    if (symmetry_ && st == LowerTriangle)
-        throw PSIEXCEPTION("Matrix::save: Unable to save triangle of non-totally symmetric matrix.");
-
     // Check to see if the file is open
     bool already_open = false;
     if (psio->open_check(fileno)) {
@@ -2403,7 +2427,7 @@ bool Matrix::equal(const Matrix& rhs)
     return equal(&rhs);
 }
 
-bool Matrix::equal(const boost::shared_ptr<Matrix>& rhs)
+bool Matrix::equal(const SharedMatrix& rhs)
 {
     return equal(rhs.get());
 }

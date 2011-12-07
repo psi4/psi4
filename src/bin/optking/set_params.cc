@@ -44,6 +44,7 @@ void set_params(void)
           Opt_params.step_type = OPT_PARAMS::P_RFO;
       }
       else if (s == "NR") Opt_params.step_type = OPT_PARAMS::NR;
+      else if (s == "SD") Opt_params.step_type = OPT_PARAMS::SD;
    }
    else { // set defaults for step type
      if (Opt_params.opt_type == OPT_PARAMS::MIN)
@@ -56,6 +57,9 @@ void set_params(void)
 // Maximum step size in bohr or radian along an internal coordinate {double}
 //  Opt_params.intrafragment_step_limit = 0.4;
     Opt_params.intrafragment_step_limit = options.get_double("INTRAFRAGMENT_STEP_LIMIT");
+    Opt_params.intrafragment_step_limit_min = options.get_double("INTRAFRAGMENT_STEP_LIMIT_MIN");
+    Opt_params.intrafragment_step_limit_max = options.get_double("INTRAFRAGMENT_STEP_LIMIT_MAX");
+
 // Whether to 'follow' the initial RFO vector after the first step {true, false}
     Opt_params.rfo_follow_root = options.get_bool("RFO_FOLLOW_ROOT");
 // Which RFO root to follow; internally 0 (externally 1) indicates minimum; {integer}
@@ -170,7 +174,15 @@ void set_params(void)
   Opt_params.efp_fragments = false;
   Opt_params.efp_fragments_only = false;
 
+//IRC stepsize
   Opt_params.IRC_step_size = options.get_double("IRC_STEP_SIZE");
+
+// consecutive number of backsteps allowed before giving up
+  Opt_params.consecutive_backsteps_allowed = options.get_int("CONSECUTIVE_BACKSTEPS");
+
+  // if steepest-descent, then make much larger default
+  if (Opt_params.step_type == OPT_PARAMS::SD && !(options["CONSECUTIVE_BACKSTEPS"].has_changed()))
+    Opt_params.consecutive_backsteps_allowed = 10;
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
@@ -281,6 +293,8 @@ void set_params(void)
   else {
     Opt_params.efp_fragments_only = false;
   }
+
+  Opt_params.consecutive_backsteps_allowed = 1;
 
 //TO DO: initialize IRC_step_size for Q-Chem
 

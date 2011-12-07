@@ -14,6 +14,8 @@
 #ifndef _psi_src_bin_detci_structs_h
 #define _psi_src_bin_detci_structs_h
 
+#include <string>
+
 namespace psi { namespace detci {
 
 /*** INCLUDES ***/
@@ -308,6 +310,7 @@ struct calcinfo {
    int **ras_orbs[4];    /* ras_orbs[ras][irr][cnt] gives an orbital number */
    int max_orbs_per_irrep; /* maximum orbials per irrep fzv not included */
    int max_pop_per_irrep;/* maximum populated orbitals per irrep fzv included */
+   int sigma_initialized; /* has sigma_init been called yet? */
    };
 
 

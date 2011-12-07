@@ -1,25 +1,24 @@
-molecule {
+molecule h2o {
 0 1
-O   0.000000000000  -0.143225816552   0.000000000000
-H   1.638036840407   1.136548822547  -0.000000000000
-H  -1.638036840407   1.136548822547  -0.000000000000
-units bohr
-#symmetry c1
+O    0.000000000000    0.000000000000   -0.075791843589
+H    0.866811828967    0.000000000000    0.601435779270
+H   -0.866811828967    0.000000000000    0.601435779270
+symmetry c1
 }
 
 plugin_load('./plugin_libfock.so')
 
 set {
-debug 1
 print 2
 scf_type direct
+solver_maxiter 4
 basis sto-3g 
-solver_n_root 4
-solver_n_guess 4
-solver_min_subspace 8
-solver_max_subspace 16
+solver_precondition false
+cphf_tasks [Polarizability]
 }
 
 energy('scf')
+set module rcphf
 plugin('./plugin_libfock.so')
 
+clean()

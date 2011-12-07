@@ -50,31 +50,31 @@ protected:
 
     boost::shared_ptr<Vector> epsilon_b_;
     boost::shared_ptr<Vector> epsilon_a_;
-    boost::shared_ptr<Matrix> Ca_;
-    boost::shared_ptr<Matrix> Cb_;
-    boost::shared_ptr<Matrix> Da_;
-    boost::shared_ptr<Matrix> Db_;
-    boost::shared_ptr<Matrix> Dt_;
-    boost::shared_ptr<Matrix> Dtold_;
-    boost::shared_ptr<Matrix> J_;
-    boost::shared_ptr<Matrix> Ka_;
-    boost::shared_ptr<Matrix> Kb_;
-    boost::shared_ptr<Matrix> wKa_;
-    boost::shared_ptr<Matrix> wKb_;
-    boost::shared_ptr<Matrix> Va_;
-    boost::shared_ptr<Matrix> Vb_;
-    boost::shared_ptr<Matrix> Ga_;
-    boost::shared_ptr<Matrix> Gb_;
-    boost::shared_ptr<Matrix> Fa_;
-    boost::shared_ptr<Matrix> Fb_;
+    SharedMatrix Ca_;
+    SharedMatrix Cb_;
+    SharedMatrix Da_;
+    SharedMatrix Db_;
+    SharedMatrix Dt_;
+    SharedMatrix Dtold_;
+    SharedMatrix J_;
+    SharedMatrix Ka_;
+    SharedMatrix Kb_;
+    SharedMatrix wKa_;
+    SharedMatrix wKb_;
+    SharedMatrix Va_;
+    SharedMatrix Vb_;
+    SharedMatrix Ga_;
+    SharedMatrix Gb_;
+    SharedMatrix Fa_;
+    SharedMatrix Fb_;
 
     // Common hooks
     boost::shared_ptr<OmegaDF> df_;
     boost::shared_ptr<UKSPotential> ks_;
 
-    boost::shared_ptr<Matrix> S_;
-    boost::shared_ptr<Matrix> X_;
-    boost::shared_ptr<Matrix> H_;
+    SharedMatrix S_;
+    SharedMatrix X_;
+    SharedMatrix H_;
 
     void common_init();
     void save_info();
@@ -86,16 +86,16 @@ protected:
     void form_C();
     void form_D();
 
-    boost::shared_ptr<Matrix> form_FDSmSDF(boost::shared_ptr<Matrix> F, boost::shared_ptr<Matrix> D);
+    SharedMatrix form_FDSmSDF(SharedMatrix F, SharedMatrix D);
 
 public:
     OmegaWavefunction(Options& options,
                       boost::shared_ptr<PSIO> psio,
                       boost::shared_ptr<BasisSet> primary,
-                      boost::shared_ptr<Matrix> Ca, int na,
-                      boost::shared_ptr<Matrix> Cb, int nb,
-                      boost::shared_ptr<Matrix> S,
-                      boost::shared_ptr<Matrix> X, boost::shared_ptr<Matrix> H,
+                      SharedMatrix Ca, int na,
+                      SharedMatrix Cb, int nb,
+                      SharedMatrix S,
+                      SharedMatrix X, SharedMatrix H,
                       boost::shared_ptr<OmegaDF> df, boost::shared_ptr<UKSPotential> ks);
     virtual ~OmegaWavefunction();
     
@@ -107,7 +107,7 @@ public:
     void clear();
 
     // Perform a guess using the given KS matrices
-    void guess(boost::shared_ptr<Matrix> Fa, boost::shared_ptr<Matrix> Fb);
+    void guess(SharedMatrix Fa, SharedMatrix Fb);
 
     // Print the orbital energies
     void print_orbitals();
@@ -123,10 +123,10 @@ public:
     int nmo() const { return nmo_; }
     int nalpha() const { return nalpha_; }
     int nbeta() const { return nbeta_; }
-    boost::shared_ptr<Matrix> Fa() const { return Fa_; } 
-    boost::shared_ptr<Matrix> Fb() const { return Fb_; } 
-    boost::shared_ptr<Matrix> Ca() const { return Ca_; } 
-    boost::shared_ptr<Matrix> Cb() const { return Cb_; } 
+    SharedMatrix Fa() const { return Fa_; } 
+    SharedMatrix Fb() const { return Fb_; } 
+    SharedMatrix Ca() const { return Ca_; } 
+    SharedMatrix Cb() const { return Cb_; } 
 };
 
 class OmegaKS {
@@ -151,9 +151,9 @@ protected:
     double initial_omega_;
 
     void common_init();
-    static boost::shared_ptr<Matrix> build_X(boost::shared_ptr<BasisSet> primary, double min_S);
-    static boost::shared_ptr<Matrix> build_H(boost::shared_ptr<BasisSet> primary);
-    static boost::shared_ptr<Matrix> build_S(boost::shared_ptr<BasisSet> primary);
+    static SharedMatrix build_X(boost::shared_ptr<BasisSet> primary, double min_S);
+    static SharedMatrix build_H(boost::shared_ptr<BasisSet> primary);
+    static SharedMatrix build_S(boost::shared_ptr<BasisSet> primary);
 
 public:
     OmegaKS(Options&, boost::shared_ptr<PSIO>);
@@ -185,9 +185,9 @@ protected:
     boost::shared_ptr<BasisSet> auxiliary_;
     
     // Common matrices
-    boost::shared_ptr<Matrix> H_;
-    boost::shared_ptr<Matrix> X_;
-    boost::shared_ptr<Matrix> S_;
+    SharedMatrix H_;
+    SharedMatrix X_;
+    SharedMatrix S_;
     
     // Common interelectronic bits
     boost::shared_ptr<OmegaDF> df_;
@@ -226,14 +226,14 @@ protected:
     double delta_r_;
 
     // Left and right F matrices
-    boost::shared_ptr<Matrix> Fa_l_N_; 
-    boost::shared_ptr<Matrix> Fa_l_M_; 
-    boost::shared_ptr<Matrix> Fb_l_N_; 
-    boost::shared_ptr<Matrix> Fb_l_M_; 
-    boost::shared_ptr<Matrix> Fa_r_N_; 
-    boost::shared_ptr<Matrix> Fa_r_M_; 
-    boost::shared_ptr<Matrix> Fb_r_N_; 
-    boost::shared_ptr<Matrix> Fb_r_M_; 
+    SharedMatrix Fa_l_N_; 
+    SharedMatrix Fa_l_M_; 
+    SharedMatrix Fb_l_N_; 
+    SharedMatrix Fb_l_M_; 
+    SharedMatrix Fa_r_N_; 
+    SharedMatrix Fa_r_M_; 
+    SharedMatrix Fb_r_N_; 
+    SharedMatrix Fb_r_M_; 
 
 public:
     OmegaIPKS(Options&, boost::shared_ptr<PSIO>);
@@ -269,11 +269,11 @@ protected:
     boost::shared_ptr<PSIO> psio_;   
  
     // (mn|A) J_AC ^ -1
-    boost::shared_ptr<Matrix> Cmn_;
+    SharedMatrix Cmn_;
     // (mn|A) 
-    boost::shared_ptr<Matrix> Amn_;
+    SharedMatrix Amn_;
     // (mn|erf(wr)/r|A) 
-    boost::shared_ptr<Matrix> Wmn_;
+    SharedMatrix Wmn_;
     
     void common_init();
     // Build the static integrals
@@ -290,9 +290,9 @@ public:
     // Set the omega value
     void set_omega(double omega);       
 
-    boost::shared_ptr<Matrix> J(boost::shared_ptr<Matrix> D); 
-    boost::shared_ptr<Matrix> K(boost::shared_ptr<Matrix> C, int nocc); 
-    boost::shared_ptr<Matrix> wK(boost::shared_ptr<Matrix> C, int nocc); 
+    SharedMatrix J(SharedMatrix D); 
+    SharedMatrix K(SharedMatrix C, int nocc); 
+    SharedMatrix wK(SharedMatrix C, int nocc); 
 };
 
 

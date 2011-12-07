@@ -166,7 +166,6 @@ void sigma_block(struct stringwr **alplist, struct stringwr **betlist,
 
 /* GLOBALS THIS MODULE */
 
-int sigma_initialized=0;
 double *F;
 int **Jij[2];
 int **Joij[2];
@@ -198,7 +197,7 @@ void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    int nsingles, max_dim=0;
    unsigned long int bufsz=0;
 
-   if (sigma_initialized) {
+   if (CalcInfo.sigma_initialized) {
       printf("(sigma_init): sigma_initialized already set to 1\n");
       return;
       }
@@ -329,7 +328,7 @@ void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
    }
    #endif
  
-   sigma_initialized = 1;
+   CalcInfo.sigma_initialized = 1;
 }
 
 
@@ -344,7 +343,7 @@ void sigma_init(CIvect& C, CIvect &S, struct stringwr **alplist,
 void sigma(struct stringwr **alplist, struct stringwr **betlist,
       CIvect& C, CIvect& S, double *oei, double *tei, int fci, int ivec)
 {
-   if (!sigma_initialized) sigma_init(C, S, alplist, betlist);
+   if (!CalcInfo.sigma_initialized) sigma_init(C, S, alplist, betlist);
 
    switch (C.icore) {
       case 0: 

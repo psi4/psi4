@@ -36,10 +36,10 @@ PsiMod.IO.set_default_namespace("dimer")
 PsiMod.set_memory(256000000)
 
 PsiMod.set_global_option('BASIS', '6-31+G*')
-PsiMod.set_global_option('CONVERGENCE', '11')
+PsiMod.set_global_option('CONVERGENCE', 11)
 PsiMod.set_global_option('GUESS', 'CORE')
 PsiMod.set_global_option('JOBTYPE', 'SP')
-PsiMod.set_global_option('PRINT', '1')
+PsiMod.set_global_option('PRINT', 1)
 PsiMod.set_global_option('REFERENCE', 'RHF')
 PsiMod.set_global_option('RI_BASIS_MP2', 'CC-PVDZ-RI')
 PsiMod.set_global_option('RI_BASIS_SAPT', 'CC-PVDZ-RI')
@@ -59,27 +59,31 @@ p1
 (lp2
 S'ch4'
 p3
-asS'db_name'
+asS'name'
 p4
-S'BASIC'
-p5
-sS'mode'
-p6
-S'sow'
-p7
-sS'name'
-p8
 S'scf'
+p5
+sS'db_name'
+p6
+S'BASIC'
+p7
+sS'mode'
+p8
+S'sow'
 p9
+sS'db_func'
+p10
+cdriver
+optimize
+p11
 s.""")
 
 kwargs = pickle.loads(pickle_kw)
 electronic_energy = optimize(**kwargs)
 
 PsiMod.print_variables()
-PsiMod.print_out('\nDATABASE RESULT: computation 61662 for reagent BASIC-ch4-reagent yields electronic energy %20.12f\n' % (electronic_energy))
+PsiMod.print_out('\nDATABASE RESULT: computation 8919 for reagent BASIC-ch4-reagent yields electronic energy %20.12f\n' % (electronic_energy))
 
 compare_values(refenergy, electronic_energy, 5, 'Optimized reference energy for sown BASIC reagent')  #TEST
 
 clean()
-

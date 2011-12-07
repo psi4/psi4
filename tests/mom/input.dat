@@ -101,4 +101,5 @@ mom_vir [6]
 E = energy('scf')
 compare_values(E56_triplet, E, 9, "B 1B1 -> A 4A1 SCF Energy") #TEST
 
+clean()
 

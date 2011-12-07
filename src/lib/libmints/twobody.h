@@ -43,6 +43,8 @@ protected:
     int deriv_;
     /// Whether to force integrals to be generated in the Cartesian (AO) basis;
     bool force_cartesian_;
+    //! The order of the derivative integral buffers, after permuting shells
+    int buffer_offsets_[4];
 
     void permute_target(double *s, double *t, int sh1, int sh2, int sh3, int sh4, bool p12, bool p34, bool p13p24);
     void permute_1234_to_1243(double *s, double *t, int nbf1, int nbf2, int nbf3, int nbf4);

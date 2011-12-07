@@ -11,6 +11,7 @@ namespace psi {
     class GaussianShell;
     class ObaraSaikaTwoCenterVIRecursion;
     class ObaraSaikaTwoCenterVIDerivRecursion;
+    class ObaraSaikaTwoCenterVIDeriv2Recursion;
     class OneBodyAOInt;
     class IntegralFactory;
     class SphericalTransform;
@@ -28,15 +29,14 @@ class PotentialInt : public OneBodyAOInt
     void compute_pair(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>&);
     /// Computes integrals between two shell objects.
     void compute_pair_deriv1(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
+    void compute_pair_deriv2(const boost::shared_ptr<GaussianShell>&, const boost::shared_ptr<GaussianShell>& );
 
 protected:
     /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIRecursion potential_recur_;
-    /// Recursion object that does the heavy lifting.
-    ObaraSaikaTwoCenterVIDerivRecursion potential_deriv_recur_;
+    ObaraSaikaTwoCenterVIRecursion* potential_recur_;
 
     /// Matrix of coordinates/charges of partial charges
-    boost::shared_ptr<Matrix> Zxyz_;
+    SharedMatrix Zxyz_;
 
 public:
     /// Constructor. Assumes nuclear centers/charges as the potential
@@ -46,13 +46,13 @@ public:
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result);
     /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > &result);
+    virtual void compute_deriv1(std::vector<SharedMatrix > &result);
 
     /// Set the field of charges
-    void set_charge_field(boost::shared_ptr<Matrix> Zxyz) { Zxyz_ = Zxyz; }
+    void set_charge_field(SharedMatrix Zxyz) { Zxyz_ = Zxyz; }
 
     /// Get the field of charges
-    boost::shared_ptr<Matrix> charge_field() const { return Zxyz_; }
+    SharedMatrix charge_field() const { return Zxyz_; }
 
     /// Does the method provide first derivatives?
     bool has_deriv1() { return true; }
@@ -72,7 +72,7 @@ public:
      * \param result Where the integral derivatives are going.
      * \param cdsalcs The Cartesian displacement SALCs that you are interested in.
      */
-    void compute_deriv1(std::vector<boost::shared_ptr<Matrix> > result,
+    void compute_deriv1(std::vector<SharedMatrix > result,
                         const CdSalcList& cdsalcs);
 };
 
