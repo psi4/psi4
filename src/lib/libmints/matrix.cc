@@ -505,22 +505,28 @@ void Matrix::set(double val)
 
 void Matrix::set(const double * const tri)
 {
-    if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::set called on a non-totally symmetric matrix.");
-    }
     int h, i, j, ii, jj;
-    int offset;
+    int row_offset;
 
-    offset = 0;
+    row_offset = 0;
     for (h=0; h<nirrep_; ++h) {
         for (i=0; i<rowspi_[h]; ++i) {
-            ii = i + offset;
-            for (j=0; j<=i; ++j) {
-                jj = j + offset;
-                matrix_[h][i][j] = matrix_[h][j][i] = tri[ii*(ii+1)/2 + jj];
+            ii = i + row_offset;
+
+            if (symmetry_ == 0) {
+                for (j=0; j<=i; ++j) {
+                    jj = j + row_offset;
+                    matrix_[h][i][j] = matrix_[h][j][i] = tri[ii*(ii+1)/2 + jj];
+                }
+            }
+            else {
+                for (j=0; j<colspi_[h^symmetry_]; ++j) {
+                    matrix_[h][i][j] = tri[ii*(ii+1)/2 + j];
+                    matrix_[h^symmetry_][j][i] = matrix_[h][i][j];
+                }
             }
         }
-        offset += rowspi_[h];
+        row_offset += rowspi_[h];
     }
 }
 
@@ -707,7 +713,7 @@ void Matrix::print(FILE *out, const char *extra) const
     }
 
     for (h=0; h<nirrep_; ++h) {
-        fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h]);
+        fprintf(out, "  Irrep: %d Size: %d x %d\n", h+1, rowspi_[h], colspi_[h^symmetry_]);
         if (rowspi_[h] == 0 || colspi_[h^symmetry_] == 0)
             fprintf(out, "\n\t(empty)\n");
         else
@@ -2245,9 +2251,6 @@ bool Matrix::load(psi::PSIO* const psio, unsigned int fileno, const string& toce
 
 void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 {
-    if (symmetry_ && st == LowerTriangle)
-        throw PSIEXCEPTION("Matrix::load: Unable to read lower triangle of non-totally symmetric matrix.");
-
     // The matrix must be sized correctly first
     // Check to see if the file is open
     bool already_open = false;
@@ -2290,6 +2293,10 @@ void Matrix::load(psi::PSIO* const psio, unsigned int fileno, SaveType st)
 
         if (sizer > 0)
             psio->read_entry(fileno, name_.c_str(), (char*)lower, sizeof(double)*ioff[sizer]);
+
+        fprintf(outfile, "Read in lower triangle:\n");
+        print_array(lower, nrow(), outfile);
+
         set(lower);
         delete[] lower;
     }

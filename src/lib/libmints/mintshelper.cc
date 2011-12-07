@@ -154,7 +154,6 @@ void MintsHelper::integrals()
     SharedMatrix potential_mat = so_potential();
     potential_mat->save(psio_, PSIF_OEI);
 
-    /*
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
     BOOST_FOREACH(SharedMatrix m, dipole_mats) {
@@ -166,7 +165,10 @@ void MintsHelper::integrals()
     BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
         m->save(psio_, PSIF_OEI);
     }
-    */
+
+    fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+                     "        stored in file %d.\n\n", PSIF_OEI);
+
     if (Process::environment.options.get_int("PRINT") > 3) {
         overlap_mat->print();
         kinetic_mat->print();
@@ -178,7 +180,7 @@ void MintsHelper::integrals()
     IWLWriter writer(ERIOUT);
 
     // Let the user know what we're doing.
-    fprintf(outfile, "      Computing integrals..."); fflush(outfile);
+    fprintf(outfile, "      Computing two-electron integrals..."); fflush(outfile);
 
     SOShellCombinationsIterator shellIter(sobasis_, sobasis_, sobasis_, sobasis_);
     for (shellIter.first(); shellIter.is_done() == false; shellIter.next()) {
@@ -192,8 +194,9 @@ void MintsHelper::integrals()
     ERIOUT.set_keep_flag(true);
     ERIOUT.close();
 
-    fprintf(outfile, "done\n\n");
-    fprintf(outfile, "      Computed %lu non-zero integrals.\n\n", writer.count());
+    fprintf(outfile, "done\n");
+    fprintf(outfile, "      Computed %lu non-zero two-electron integrals.\n"
+                     "        Stored in file %d.\n\n", writer.count(), PSIF_SO_TEI);
 }
 
 void MintsHelper::one_electron_integrals()
