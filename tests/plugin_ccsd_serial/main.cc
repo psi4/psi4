@@ -38,6 +38,10 @@ read_options(std::string name, Options &options)
       options.add_int("MAX_MAPPED_MEMORY", 1000);
       /*- do not compute triples by default */
       options.add_bool("COMPUTE_TRIPLES", false);
+      /*- cutoff for occupation of MP2 NO orbitals in (T)*/
+      options.add_double("VIRTUAL_CUTOFF", 0.00001);
+      /*- triples by default use the full virtual space*/
+      options.add_bool("TRIPLES_USE_NOS", false);
   }
   return true;
 }

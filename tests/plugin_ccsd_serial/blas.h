@@ -43,7 +43,7 @@ void F_DAXPY(integer n,doublereal da,doublereal*dx,integer incx,doublereal*dy,
              integer incy);
 
 /**
- * name manging for fortran-ordered dgemv
+ * name mangling for fortran-ordered dgemv
  */
 extern "C" {
     void F77NAME(dgemv)(char&trans,integer&m,integer&n,doublereal&alpha,doublereal*A,integer&lda,
@@ -54,7 +54,7 @@ inline void DGEMV(char&trans,integer&m,integer&n,doublereal&alpha,doublereal*A,i
     F77NAME(dgemv)(trans,m,n,alpha,A,lda,X,incx,beta,Y,incy);
 }
 /**
- * name manging for fortran-ordered dgemm
+ * name mangling for fortran-ordered dgemm
  */
 extern "C" {
     void F77NAME(dgemm)(char&transa,char&transb,integer&m,integer&n,integer&k,
@@ -68,7 +68,7 @@ inline void DGEMM(char&transa,char&transb,integer&m,integer&n,integer&k,
     F77NAME(dgemm)(transa,transb,m,n,k,alpha,A,lda,B,ldb,beta,C,ldc);
 };
 /**
- * name manging dcopy
+ * name mangling dcopy
  */
 extern "C" {
     void F77NAME(dcopy)(integer&n,doublereal*dx,integer&incx,doublereal*dy,
@@ -79,7 +79,7 @@ inline void DCOPY(integer&n,doublereal*dx,integer&incx,doublereal*dy,
     F77NAME(dcopy)(n,dx,incx,dy,incy);
 }
 /**
- * name manging daxpy
+ * name mangling daxpy
  */
 extern "C" {
    void F77NAME(daxpy)(integer&n,doublereal&da,doublereal*dx,integer&incx,
@@ -91,7 +91,7 @@ inline void DAXPY(integer&n,doublereal&da,doublereal*dx,integer&incx,
     F77NAME(daxpy)(n,da,dx,incx,dy,incy);
 };
 /**
- * name manging dnrm2
+ * name mangling dnrm2
  */
 extern"C"{
     double F77NAME(dnrm2)(integer&N,doublereal*X,integer&INCX);
@@ -100,7 +100,7 @@ inline double DNRM2(integer&N,doublereal*X,integer&INCX){
     return F77NAME(dnrm2)(N,X,INCX);
 };
 /**
- * name manging dgesv
+ * name mangling dgesv
  */
 extern"C" {
     void F77NAME(dgesv)(integer &N,integer &NRHS,doublereal*A,integer &LDA,integer*IPIV,doublereal*B,integer &LDB,integer &INFO);
@@ -109,13 +109,41 @@ inline void DGESV(integer &N,integer &NRHS,doublereal*A,integer &LDA,integer*IPI
     F77NAME(dgesv)(N,NRHS,A,LDA,IPIV,B,LDB,INFO);
 };
 /**
- * name manging ddot
+ * name mangling ddot
  */
 extern "C" {
     double F77NAME(ddot)(integer&n,doublereal*dx,integer&incx,doublereal*dy,integer&incy);
 };
 inline double DDOT(integer&n,doublereal*dx,integer&incx,doublereal*dy,integer&incy){
     return F77NAME(ddot)(n,dx,incx,dy,incy);
+}
+
+
+/**
+ * diagonalize a real symmetric matrix
+ */
+void Diagonalize(integer N,doublereal*A,doublereal*W);
+/**
+ * name mangling dsyev
+ */
+extern "C" {
+    void F77NAME(dsyev)(char&JOBZ,char&UPLO,integer&N,doublereal*A,integer&LDA,doublereal*W,doublereal*WORK,integer&LWORK,integer&INFO);
+};
+inline void DSYEV(char&JOBZ,char&UPLO,integer&N,doublereal*A,integer&LDA,doublereal*W,doublereal*WORK,integer&LWORK,integer&INFO){
+    F77NAME(dsyev)(JOBZ,UPLO,N,A,LDA,W,WORK,LWORK,INFO);
+}
+/**
+ * diagonalize a real symmetric packed matrix
+ */
+void Diagonalize2(integer N,doublereal*AP,doublereal*W,doublereal*Z);
+/**
+ * name mangling dspev
+ */
+extern "C" {
+    void F77NAME(dspev)(char&JOBZ,char&UPLO,integer&N,doublereal*AP,doublereal*W,doublereal*Z,integer&LDZ,doublereal*WORK,integer&INFO);
+};
+inline void DSPEV(char&JOBZ,char&UPLO,integer&N,doublereal*AP,doublereal*W,doublereal*Z,integer&LDZ,doublereal*WORK,integer&INFO){
+    F77NAME(dspev)(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
 }
 
 #endif

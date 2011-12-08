@@ -121,6 +121,8 @@ void CoupledCluster::Initialize(Options &options){
   ndoccact = ndocc - nfzc;
   nvirt  = nmo - ndoccact;
 
+  // for triples, we use nvirt_no in case we've truncated the virtual space:
+  nvirt_no = nvirt;
 
   // get paramters from input 
   conv    = pow(10.,-options.get_int("CONVERGENCE"));
@@ -163,7 +165,7 @@ void CoupledCluster::Initialize(Options &options){
   struct tms total_tmstime;
   const long clk_tck = sysconf(_SC_CLK_TCK);
 
-  /*fprintf(outfile,"  Begin integral transformation\n\n");fflush(outfile);
+  fprintf(outfile,"  Begin integral transformation\n\n");fflush(outfile);
   times(&total_tmstime);
   time_t time_start = time(NULL);
   double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
@@ -178,23 +180,23 @@ void CoupledCluster::Initialize(Options &options){
   fprintf(outfile,"\n");
   fprintf(outfile,"  Time for integral transformation: %6.2lf s (user)\n",user_stop-user_start);
   fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);*/
+  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
 
   long int i;
 
   // sort integrals and write them to disk
   times(&total_tmstime);
-  time_t time_start = time(NULL);
-  double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-  double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+  time_start = time(NULL);
+  user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+  sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
 
   OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
   //RandomIntegralFiles();
 
   times(&total_tmstime);
-  time_t time_stop = time(NULL);
-  double user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-  double sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
+  time_stop = time(NULL);
+  user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+  sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
   fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
   fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
   fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
@@ -425,7 +427,7 @@ void CoupledCluster::Transformation(){
 
   spaces.push_back(MOSpace::all);
   IntegralTransform ints(chkpt, spaces, IntegralTransform::Restricted,
-           IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccOnly, false);
+           IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
            //IntegralTransform::IWLAndDPD, IntegralTransform::QTOrder, IntegralTransform::OccOnly, false);
   //IWLOnly
 
