@@ -1,4 +1,6 @@
 #include"blas.h"
+#include<stdlib.h>
+#include<stdio.h>
 /**
  * fortran-ordered dgemv
  */
@@ -40,4 +42,26 @@ void F_DAXPY(integer n,doublereal da,doublereal*dx,integer incx,doublereal*dy,
              integer incy){
     DAXPY(n,da,dx,incx,dy,incy);
 }
+
+/**
+ *  Diagonalize a real symmetric matrix
+ */
+void Diagonalize(integer N,doublereal*A,doublereal*W){
+  char JOBZ = 'V';
+  char UPLO = 'U';
+  integer LDA = N;
+  integer LWORK = 3*N-1;
+  doublereal*WORK=(doublereal*)malloc(LWORK*sizeof(doublereal)); 
+  integer INFO=0;
+  DSYEV(JOBZ,UPLO,N,A,LDA,W,WORK,LWORK,INFO);
+}
+void Diagonalize2(integer N,doublereal*AP,doublereal*W,doublereal*Z){
+  char JOBZ = 'V';
+  char UPLO = 'U';
+  integer LDZ = N;
+  doublereal*WORK=(doublereal*)malloc(3*N*sizeof(doublereal)); 
+  integer INFO=0;
+  DSPEV(JOBZ,UPLO,N,AP,W,Z,LDZ,WORK,INFO);
+}
+
 

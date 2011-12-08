@@ -148,7 +148,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   fprintf(outfile,"\n");
 
   int o = ccsd->ndoccact;
-  int v = ccsd->nvirt;
+  int v = ccsd->nvirt_no;
 
   double *t1 = ccsd->t1;
   double *F  = ccsd->eps;

@@ -44,7 +44,7 @@ namespace psi { namespace ccenergy {
 namespace psi{
   PsiReturnType tdc_triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
   PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
-  //PsiReturnType mp2_opdm(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
+  PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options);
 }
 
 
@@ -65,23 +65,26 @@ void RunCoupledCluster(Options &options){
   tstop();
 
   if (options.get_bool("COMPUTE_TRIPLES")){
-     // mp2 natural orbitals:
-     /*tstart();
-     status = psi::mp2_opdm(ccsd,options);
-     if (status == Failure){
-        throw PsiException( 
-           "Whoops, MP2 NO transformation died.",__FILE__,__LINE__);
-     }
-     tstop();*/
-
-     // free memory before triples
-     free(ccsd->tempt);
-     free(ccsd->tempv);
+     // free memory before triples (save some for mp2 nos)
      free(ccsd->integrals);
      free(ccsd->w1);
      free(ccsd->I1);
      free(ccsd->I1p);
      free(ccsd->diisvec);
+
+     if (options.get_bool("TRIPLES_USE_NOS")){
+        // mp2 natural orbitals:
+        tstart();
+        status = psi::MP2NaturalOrbitals(ccsd,options);
+        if (status == Failure){
+           throw PsiException( 
+              "Whoops, MP2 NO transformation died.",__FILE__,__LINE__);
+        }
+        tstop();
+     }
+     // free remaining memory
+     free(ccsd->tempt);
+     free(ccsd->tempv);
 
      tstart();
      // triples
