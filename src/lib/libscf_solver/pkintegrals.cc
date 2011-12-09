@@ -15,16 +15,16 @@ namespace psi{ namespace scf{
 
 PKIntegrals::PKIntegrals(size_t memory, boost::shared_ptr<PSIO> psio, Options& options,
                          int nirreps, const int* sopi, const int *so2index, const int *so2symblk):
-        memory_(memory),
-        psio_(psio),
-        options_(options),
-        nirreps_(nirreps),
-        sopi_(sopi),
-        so2index_(so2index),
-        so2symblk_(so2symblk),
-        pk_initialized_(false),
-        p_k_(0),
-        p_j_(0)
+    pk_initialized_(false),
+    memory_(memory),
+    psio_(psio),
+    options_(options),
+    p_k_(0),
+    p_j_(0),
+    nirreps_(nirreps),
+    sopi_(sopi),
+    so2index_(so2index),
+    so2symblk_(so2symblk)
 {
     print_ = options_.get_int("PRINT");
 }
@@ -361,11 +361,11 @@ void PKIntegrals::setup_arrays(bool build_k)
             // PK and PJ are zeroed out just before filling, not here
             if(print_ > 2){
                 fprintf(outfile,
-                "  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
-                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                        "  Allocated %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
+                        (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
                 fprintf(outfile,
-                "  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
-                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+                        "  Allocated %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
+                        (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
             }
         }
     } else {

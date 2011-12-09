@@ -61,6 +61,11 @@ boost::shared_ptr<SOBasisSet> OneBodySOInt::basis2() const
     return b2_;
 }
 
+boost::shared_ptr<OneBodyAOInt> OneBodySOInt::ob() const
+{
+    return ob_;
+}
+
 void OneBodySOInt::compute(SharedMatrix result)
 {
     // Do not worry about zeroing out result

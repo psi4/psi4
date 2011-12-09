@@ -25,9 +25,6 @@ namespace psi {
 
 void MintsHelper::init_helper(boost::shared_ptr<Wavefunction> wavefunction)
 {
-//    if (Communicator::world->nproc() > 1)
-//        throw PSIEXCEPTION("MintsHelper: You can only use one process with this.");
-
     if (wavefunction) {
         psio_ = wavefunction->psio();
         molecule_ = wavefunction->molecule();
@@ -115,6 +112,16 @@ boost::shared_ptr<MatrixFactory> MintsHelper::factory() const
     return factory_;
 }
 
+boost::shared_ptr<IntegralFactory> MintsHelper::integral() const
+{
+    return integral_;
+}
+
+int MintsHelper::nbf() const
+{
+    return basisset_->nbf();
+}
+
 void MintsHelper::integrals()
 {
     fprintf(outfile, " MINTS: Wrapper to libmints.\n   by Justin Turney\n\n");
@@ -143,16 +150,13 @@ void MintsHelper::integrals()
     // Compute and dump one-electron SO integrals.
 
     // Overlap
-    SharedMatrix overlap_mat = so_overlap();
-    overlap_mat->save(psio_, PSIF_OEI);
+    so_overlap()->save(psio_, PSIF_OEI);
 
     // Kinetic
-    SharedMatrix kinetic_mat = so_kinetic();
-    kinetic_mat->save(psio_, PSIF_OEI);
+    so_kinetic()->save(psio_, PSIF_OEI);
 
     // Potential
-    SharedMatrix potential_mat = so_potential();
-    potential_mat->save(psio_, PSIF_OEI);
+    so_potential()->save(psio_, PSIF_OEI);
 
     // Dipoles
     std::vector<SharedMatrix> dipole_mats = so_dipole();
@@ -166,14 +170,10 @@ void MintsHelper::integrals()
         m->save(psio_, PSIF_OEI);
     }
 
+    so_alchemical_potential()->save(psio_, PSIF_OEI);
+
     fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
                      "        stored in file %d.\n\n", PSIF_OEI);
-
-    if (Process::environment.options.get_int("PRINT") > 3) {
-        overlap_mat->print();
-        kinetic_mat->print();
-        potential_mat->print();
-    }
 
     // Open the IWL buffer where we will store the integrals.
     IWL ERIOUT(psio_.get(), PSIF_SO_TEI, 0.0, 0, 0);
@@ -221,22 +221,31 @@ void MintsHelper::one_electron_integrals()
     // Compute and dump one-electron SO integrals.
 
     // Overlap
-    boost::shared_ptr<OneBodySOInt> overlap(integral_->so_overlap());
-    SharedMatrix       overlap_mat(factory_->create_matrix(PSIF_SO_S));
-    overlap->compute(overlap_mat);
-    overlap_mat->save(psio_, PSIF_OEI);
+    so_overlap()->save(psio_, PSIF_OEI);
 
     // Kinetic
-    boost::shared_ptr<OneBodySOInt> kinetic(integral_->so_kinetic());
-    SharedMatrix       kinetic_mat(factory_->create_matrix(PSIF_SO_T));
-    kinetic->compute(kinetic_mat);
-    kinetic_mat->save(psio_, PSIF_OEI);
+    so_kinetic()->save(psio_, PSIF_OEI);
 
     // Potential
-    boost::shared_ptr<OneBodySOInt> potential(integral_->so_potential());
-    SharedMatrix       potential_mat(factory_->create_matrix(PSIF_SO_V));
-    potential->compute(potential_mat);
-    potential_mat->save(psio_, PSIF_OEI);
+    so_potential()->save(psio_, PSIF_OEI);
+
+    // Dipoles
+    std::vector<SharedMatrix> dipole_mats = so_dipole();
+    BOOST_FOREACH(SharedMatrix m, dipole_mats) {
+        m->save(psio_, PSIF_OEI);
+    }
+
+    // Quadrupoles
+    std::vector<SharedMatrix> quadrupole_mats = so_quadrupole();
+    BOOST_FOREACH(SharedMatrix m, quadrupole_mats) {
+        m->save(psio_, PSIF_OEI);
+    }
+
+    so_alchemical_potential()->save(psio_, PSIF_OEI);
+
+    fprintf(outfile, "      Overlap, kinetic, potential, dipole, and quadrupole integrals\n"
+                     "        stored in file %d.\n\n", PSIF_OEI);
+
 }
 
 void MintsHelper::integral_gradients()
@@ -367,7 +376,7 @@ SharedMatrix MintsHelper::mo_eri(SharedMatrix Co, SharedMatrix Cv)
     return mo_ints;
 }
 SharedMatrix MintsHelper::mo_eri_helper(SharedMatrix Iso, SharedMatrix C1, SharedMatrix C2,
-                                                                                    SharedMatrix C3, SharedMatrix C4)
+                                        SharedMatrix C3, SharedMatrix C4)
 {
     int nso = basisset_->nbf();
     int n1 = C1->colspi()[0];
@@ -587,6 +596,25 @@ std::vector<SharedMatrix > MintsHelper::so_angular_momentum()
     return am;
 }
 
+SharedMatrix MintsHelper::so_alchemical_potential()
+{
+    SharedMatrix alchemical = factory_->create_shared_matrix("SO Alchemical Potential");
+    OneBodySOInt* v_int = integral_->so_potential();
+
+    // Alchemical potentials are potential integrals where Z is set to -1.
+    // This is done by changing the charge field that the potential integrals
+    // Since this a shared matrix from the potential object, any change we
+    // make to it is visible to the integral engine.
+    SharedMatrix charge_field = dynamic_cast<PotentialInt*>(v_int->ob().get())->charge_field();
+    // Modify the Z for each atom to -1
+    for (int i=0; i<charge_field->nrow(); ++i)
+        charge_field->set(i, 0, -1.0);
+    v_int->compute(alchemical);
+    delete v_int;
+
+    return alchemical;
+}
+
 std::vector<SharedMatrix > MintsHelper::ao_angular_momentum()
 {
     // Create a vector of matrices with the proper symmetry
@@ -630,6 +658,25 @@ std::vector<SharedMatrix > MintsHelper::ao_nabla()
     ints->compute(nabla);
 
     return nabla;
+}
+
+SharedMatrix MintsHelper::ao_alchemical_potential()
+{
+    SharedMatrix alchemical(new Matrix("AO Alchemical Potential", nbf(), nbf()));
+    OneBodyAOInt* v_int = integral_->ao_potential();
+
+    // Alchemical potentials are potential integrals where Z is set to -1.
+    // This is done by changing the charge field that the potential integrals
+    // Since this a shared matrix from the potential object, any change we
+    // make to it is visible to the integral engine.
+    SharedMatrix charge_field = dynamic_cast<PotentialInt*>(v_int)->charge_field();
+    // Modify the Z for each atom to -1
+    for (int i=0; i<charge_field->nrow(); ++i)
+        charge_field->set(i, 0, -1.0);
+    v_int->compute(alchemical);
+    delete v_int;
+
+    return alchemical;
 }
 
 boost::shared_ptr<CdSalcList> MintsHelper::cdsalcs(int needed_irreps,
