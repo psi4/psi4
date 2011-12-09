@@ -97,6 +97,9 @@ public:
         return OperatorSymmetry(order, molecule_, integral_, factory_);
     }
 
+    /// Returns the number of basis functions
+    int nbf() const;
+
     /// Returns petite list that is capable of transforming AO basis functions (nbf) to SO's.
     boost::shared_ptr<PetiteList> petite_list() const;
     /// Basis set being used.
@@ -105,6 +108,8 @@ public:
     boost::shared_ptr<SOBasisSet> sobasisset() const;
     /// Matrix factory being used
     boost::shared_ptr<MatrixFactory> factory() const;
+    /// Integral factory being used
+    boost::shared_ptr<IntegralFactory> integral() const;
 
     /// Molecular integrals (just like cints used to do)
     void integrals();
@@ -144,6 +149,10 @@ public:
     std::vector<SharedMatrix > ao_angular_momentum();
     /// Vector AO Nabla Integrals
     std::vector<SharedMatrix > ao_nabla();
+    /// AO Alchemical Potential
+    SharedMatrix ao_alchemical_potential();
+    /// SO Alchemical Potential
+    SharedMatrix so_alchemical_potential();
     /// AO Overlap Integrals
     SharedMatrix so_overlap();
     /// AO Kinetic Integrals

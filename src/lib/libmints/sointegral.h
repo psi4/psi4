@@ -66,6 +66,11 @@ public:
     boost::shared_ptr<SOBasisSet> basis2() const;
 
     /**
+      * Returns the underlying AO integral engine being used.
+      */
+    boost::shared_ptr<OneBodyAOInt> ob() const;
+
+    /**
      * Computes a one-electron integral matrix. Only works for symmetric operators
      * (multipole operators will not work).
      *

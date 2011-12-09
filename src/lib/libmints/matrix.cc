@@ -520,8 +520,13 @@ void Matrix::set(const double * const tri)
                 }
             }
             else {
+                int col_offset = 0;
+                for (int g=0; g<(h^symmetry_); ++g)
+                    col_offset += colspi_[g];
+
                 for (j=0; j<colspi_[h^symmetry_]; ++j) {
-                    matrix_[h][i][j] = tri[ii*(ii+1)/2 + j];
+                    jj = j + col_offset;
+                    matrix_[h][i][j] = tri[ii*(ii+1)/2 + jj];
                     matrix_[h^symmetry_][j][i] = matrix_[h][i][j];
                 }
             }
