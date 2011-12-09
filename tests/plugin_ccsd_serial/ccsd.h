@@ -200,9 +200,9 @@ class CoupledCluster{
       * DIIS stuff
       */
     void DIIS(double*c,long int nvec,long int n);
-    void DIISOldVector(long int iter,int diis_iter);
-    double DIISErrorVector(int diis_iter);
-    void DIISNewAmplitudes();
+    void DIISOldVector(long int iter,int diis_iter,int replace_diis_iter);
+    double DIISErrorVector(int diis_iter,int replace_diis_iter,int iter);
+    void DIISNewAmplitudes(int diis_iter);
     long int maxdiis;
     double*diisvec;
 

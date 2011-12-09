@@ -456,7 +456,7 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   time_t iter_start,iter_stop,time_start,time_stop;
   double user_start,user_stop,sys_start,sys_stop;
 
-  int iter,sg,sg2,diis_iter;
+  int iter,sg,sg2,diis_iter,replace_diis_iter;
   long int o = ndoccact;
   long int v = nvirt;
   long int arraysize = o*o*v*v;
@@ -466,7 +466,8 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   double nrm,Eold,s1,start,end,siter;
 
   iter=0;
-  diis_iter=-3;
+  diis_iter=0;
+  replace_diis_iter=1;
   nrm=1.0;
   Eold=1.0e9;
   eccsd=0.0;
@@ -497,14 +498,9 @@ PsiReturnType CoupledCluster::CCSDIterations(){
   sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
   while(iter<maxiter && nrm>conv){
       iter_start = time(NULL);
-      diis_iter++;
-      iter++;
-
-      // store old vector for diis
-      DIISOldVector(iter,diis_iter);
 
       // evaluate cc diagrams
-      if (iter>1){
+      if (iter>0){
          memset((void*)w1,'\0',o*v*sizeof(double));
          for (int i=0; i<ncctasks; i++) {
              double start = 0.0;
@@ -524,20 +520,28 @@ PsiReturnType CoupledCluster::CCSDIterations(){
       UpdateT1(iter);
       eccsd = UpdateT2(iter);
 
+      // add vector to list for diis
+      DIISOldVector(iter,diis_iter,replace_diis_iter);
+
       // diis error vector and convergence check
-      nrm = DIISErrorVector(diis_iter);
+      nrm = DIISErrorVector(diis_iter,replace_diis_iter,iter);
 
       // diis extrapolation
-      if (diis_iter==maxdiis && maxdiis>1){
-         DIIS(diisvec,maxdiis,arraysize+o*v);
-         DIISNewAmplitudes();
-         diis_iter=0;
+      if (diis_iter>2){
+         if (diis_iter<maxdiis) DIIS(diisvec,diis_iter,arraysize+o*v);
+         else                   DIIS(diisvec,maxdiis,arraysize+o*v);
+         DIISNewAmplitudes(diis_iter);
       }
 
+      if (diis_iter<=maxdiis) diis_iter++;
+      else if (replace_diis_iter<maxdiis) replace_diis_iter++;
+      else replace_diis_iter = 1;
+
       iter_stop = time(NULL);
-      fprintf(outfile,"  %5i %5i %15.10f %15.10f %15.10f %8d\n",
-            iter,diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
+      fprintf(outfile,"  %5i   %i %i %15.10f %15.10f %15.10f %8d\n",
+            iter,diis_iter-1,replace_diis_iter,eccsd,eccsd-Eold,nrm,(int)iter_stop-(int)iter_start);
       fflush(outfile);
+      iter++;
       if (iter==1) emp2 = eccsd;
   }
   times(&total_tmstime);
@@ -1228,16 +1232,21 @@ void CoupledCluster::UpdateT1(long int iter){
   double tnew,dia;
   if (iter<1){
      memset((void*)t1,'\0',o*v*sizeof(double));
+     memset((void*)w1,'\0',o*v*sizeof(double));
   }
   else{
      for (a=o; a<rs; a++){
          for (i=0; i<o; i++){
              dia = -eps[i]+eps[a];
              tnew = - (w1[(a-o)*o+i])/dia;
-             t1[(a-o)*o+i] = tnew;
+             w1[(a-o)*o+i] = tnew;
          }
      }
   }
+  // error vector for diis is in tempv:
+  F_DCOPY(o*v,w1,1,tempv+o*o*v*v,1);
+  F_DAXPY(o*v,-1.0,t1,1,tempv+o*o*v*v,1);
+  F_DCOPY(o*v,w1,1,t1,1);
 }
 double CoupledCluster::UpdateT2(long int iter){
 
@@ -1255,56 +1264,32 @@ double CoupledCluster::UpdateT2(long int iter){
   // we still have the residual in memory in tempv
   //psio->open(PSIF_R2,PSIO_OPEN_OLD);
   //psio->read_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  if (iter<1){
-     for (a=o; a<rs; a++){
-         da = eps[a];
-         for (b=o; b<rs; b++){
-             dab = da + eps[b];
-             for (i=0; i<o; i++){
-                 dabi = dab - eps[i];
-                 for (j=0; j<o; j++){
+  for (a=o; a<rs; a++){
+      da = eps[a];
+      for (b=o; b<rs; b++){
+          dab = da + eps[b];
+          for (i=0; i<o; i++){
+              dabi = dab - eps[i];
+              for (j=0; j<o; j++){
 
-                     iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                     jaib = iajb + (i-j)*v*(1-v*o);
+                  iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
+                  jaib = iajb + (i-j)*v*(1-v*o);
 
-                     dijab = dabi-eps[j];
+                  dijab = dabi-eps[j];
 
-                     tnew = - integrals[iajb]/dijab;
-                     tb[ijab] = tnew;
-                     energy += (2.*integrals[iajb]-integrals[jaib])*(tnew+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
-                     ijab++;
-                 }
-             }
-         }
-     }
+                  tnew = - (integrals[iajb] + tempv[ijab])/dijab;
+                  tempt[ijab] = tnew;
+                  energy += (2.*integrals[iajb]-integrals[jaib])*(tnew+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
+                  ijab++;
+              }
+          }
+      }
   }
-  else{
-     for (a=o; a<rs; a++){
-         da = eps[a];
-         for (b=o; b<rs; b++){
-             dab = da + eps[b];
-             for (i=0; i<o; i++){
-                 dabi = dab - eps[i];
-                 for (j=0; j<o; j++){
 
-                     iajb = i*v*v*o+(a-o)*v*o+j*v+(b-o);
-                     jaib = iajb + (i-j)*v*(1-v*o);
-
-                     dijab = dabi-eps[j];
-
-                     tnew = - (integrals[iajb] + tempv[ijab])/dijab;
-                     tb[ijab] = tnew;
-                     energy += (2.*integrals[iajb]-integrals[jaib])*(tnew+t1[(a-o)*o+i]*t1[(b-o)*o+j]);
-                     ijab++;
-                 }
-             }
-         }
-     }
-  }
-  // TODO: this one can be removed if we make sure the first task opens the file
-  //memset((void*)tempt,'\0',o*o*v*v*sizeof(double));
-  //psio->write_entry(PSIF_R2,"residual",(char*)&tempt[0],o*o*v*v*sizeof(double));
-  //psio->close(PSIF_R2,1);
+  // error vectors for diis are in tempv:
+  F_DCOPY(o*o*v*v,tempt,1,tempv,1);
+  F_DAXPY(o*o*v*v,-1.0,tb,1,tempv,1);
+  F_DCOPY(o*o*v*v,tempt,1,tb,1);
 
   psio.reset();
 
@@ -1325,7 +1310,7 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n){
   doublereal*B = (doublereal*)malloc(sizeof(doublereal)*nvar);
   memset((void*)A,'\0',nvar*nvar*sizeof(double));
   memset((void*)B,'\0',nvar*sizeof(double));
-  B[nvec] = 1.;
+  B[nvec] = -1.;
   ipiv = (integer*)malloc(nvar*sizeof(integer));
 
   char*evector=(char*)malloc(1000*sizeof(char));
@@ -1334,26 +1319,25 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n){
   psio->open(PSIF_EVEC,PSIO_OPEN_OLD);
 
   for (i=0; i<nvec; i++){
-      sprintf(evector,"evector%li",i);
+      sprintf(evector,"evector%li",i+1);
       psio->read_entry(PSIF_EVEC,evector,(char*)&tempt[0],n*sizeof(double));
       for (j=i+1; j<nvec; j++){
-          sprintf(evector,"evector%li",j);
+          sprintf(evector,"evector%li",j+1);
           psio->read_entry(PSIF_EVEC,evector,(char*)&tempv[0],n*sizeof(double));
           sum = F_DDOT(n,tempt,1,tempv,1);
-          A[j*nvar+i] += sum;
-          A[i*nvar+j] += sum;
+          A[j*nvar+i] = sum;
+          A[i*nvar+j] = sum;
       }
-      A[i*nvar+i] += F_DDOT(n,tempt,1,tempt,1);
+      A[i*nvar+i] = F_DDOT(n,tempt,1,tempt,1);
   }
   j = nvec;
   for (i=0; i<nvar; i++){
-      A[j*nvar+i] = -1.;
-      A[i*nvar+j] = 1.;
+      A[j*nvar+i] = -1.0;
+      A[i*nvar+j] = -1.0;
   }
   A[nvar*nvar-1] = 0.;
-  psio->close(PSIF_EVEC,0);
+  psio->close(PSIF_EVEC,1);
   free(evector);
-
 
   integer nrhs,lda,ldb,info;
   nrhs = 1;
@@ -1361,21 +1345,28 @@ void CoupledCluster::DIIS(double*c,long int nvec,long int n){
   info = 0;
   DGESV(nvar,nrhs,A,lda,ipiv,B,ldb,info);
   F_DCOPY(nvec,B,1,c,1);
+
   free(A);
   free(B);
   free(ipiv);
   psio.reset();
 }
-void CoupledCluster::DIISOldVector(long int iter,int diis_iter){
+void CoupledCluster::DIISOldVector(long int iter,int diis_iter,int replace_diis_iter){
   long int j,o = ndoccact;
   long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
 
   char*oldvector=(char*)malloc(1000*sizeof(char));
-  sprintf(oldvector,"oldvector%i",diis_iter-1);
+
+  if (diis_iter<=maxdiis && iter<=maxdiis){
+     sprintf(oldvector,"oldvector%i",diis_iter);
+  }
+  else{
+     sprintf(oldvector,"oldvector%i",replace_diis_iter);
+  }
 
   boost::shared_ptr<PSIO> psio(new PSIO());
-  if (diis_iter==1 || diis_iter==-2)
+  if (diis_iter==0)
      psio->open(PSIF_OVEC,PSIO_OPEN_NEW);
   else
      psio->open(PSIF_OVEC,PSIO_OPEN_OLD);
@@ -1389,50 +1380,39 @@ void CoupledCluster::DIISOldVector(long int iter,int diis_iter){
 
   free(oldvector);
 }
-double CoupledCluster::DIISErrorVector(int diis_iter){
+double CoupledCluster::DIISErrorVector(int diis_iter,int replace_diis_iter,int iter){
   double nrm;
   long int i,j,o = ndoccact;
   long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
 
-  char*oldvector = (char*)malloc(1000*sizeof(char));
   char*evector   = (char*)malloc(1000*sizeof(char));
-  sprintf(oldvector,"oldvector%i",diis_iter-1);
-  sprintf(evector,"evector%i",diis_iter-1);
+  if (diis_iter<=maxdiis && iter<=maxdiis){
+     sprintf(evector,"evector%i",diis_iter);
+  }
+  else{
+     sprintf(evector,"evector%i",replace_diis_iter);
+  }
 
   boost::shared_ptr<PSIO> psio(new PSIO());
-  if (diis_iter==1 || diis_iter==-2)
+  if (diis_iter==0)
      psio->open(PSIF_EVEC,PSIO_OPEN_NEW);
   else
      psio->open(PSIF_EVEC,PSIO_OPEN_OLD);
 
-  psio->open(PSIF_OVEC,PSIO_OPEN_OLD);
+  nrm = F_DNRM2(arraysize+o*v,tempv,1);
+  psio->write_entry(PSIF_EVEC,evector,(char*)&tempv[0],(arraysize+o*v)*sizeof(double));
 
-  psio_address addro,addre;
-  addro = PSIO_ZERO;
-  addre = PSIO_ZERO;
-  psio->read(PSIF_OVEC,oldvector,(char*)&tempt[0],arraysize*sizeof(double),addro,&addro);
-  F_DCOPY(arraysize,tempt,1,tempv,1);
-  F_DAXPY(arraysize,-1,tb,1,tempv,1);
-  nrm = F_DNRM2(arraysize,tempv,1);
-  psio->write(PSIF_EVEC,evector,(char*)&tempv[0],arraysize*sizeof(double),addre,&addre);
-  psio->read(PSIF_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addro,&addro);
-  F_DCOPY(o*v,tempt,1,tempv,1);
-  F_DAXPY(o*v,-1,t1,1,tempv,1);
-  nrm += F_DNRM2(o*v,tempv,1);
-  psio->write(PSIF_EVEC,evector,(char*)&tempv[0],o*v*sizeof(double),addre,&addre);
-  psio->close(PSIF_OVEC,1);
   psio->close(PSIF_EVEC,1);
   psio.reset();
 
-  free(oldvector);
   free(evector);
 
   // return convergence
   return nrm;
 }
-void CoupledCluster::DIISNewAmplitudes(){
-  long int i,j,o = ndoccact;
+void CoupledCluster::DIISNewAmplitudes(int diis_iter){
+  long int o = ndoccact;
   long int arraysize,v = nvirt;
   arraysize=o*o*v*v;
 
@@ -1445,15 +1425,19 @@ void CoupledCluster::DIISNewAmplitudes(){
   psio_address addr;
   memset((void*)tb,'\0',arraysize*sizeof(double));
   memset((void*)t1,'\0',o*v*sizeof(double));
-  for (j=0; j<maxdiis; j++){
+
+  int max = diis_iter;
+  if (max > maxdiis) max = maxdiis;
+
+  for (long int j=1; j<=max; j++){
       addr = PSIO_ZERO;
       sprintf(oldvector,"oldvector%li",j);
       psio->read(PSIF_OVEC,oldvector,(char*)&tempt[0],arraysize*sizeof(double),addr,&addr);
-      F_DAXPY(arraysize,diisvec[j],tempt,1,tb,1);
+      F_DAXPY(arraysize,diisvec[j-1],tempt,1,tb,1);
       psio->read(PSIF_OVEC,oldvector,(char*)&tempt[0],o*v*sizeof(double),addr,&addr);
-      F_DAXPY(o*v,diisvec[j],tempt,1,t1,1);
+      F_DAXPY(o*v,diisvec[j-1],tempt,1,t1,1);
   }
-  psio->close(PSIF_OVEC,0);
+  psio->close(PSIF_OVEC,1);
   free(oldvector);
   psio.reset();
 }
