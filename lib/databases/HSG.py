@@ -1,7 +1,10 @@
 import input
 
 # <<< HSG Database Module >>>
-# Geometries and interaction energies from Faver et al. JCTC 7 790 (2011).
+# Geometries from Faver et al. JCTC 7 790 (2011).
+# Reference interaction energies from from the following articles:
+#   HSG0: Faver et al. JCTC 7 790 (2011).
+#   HSGA: Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
 dbse = 'HSG'
 
 # <<< Database Memobers >>>
@@ -34,27 +37,54 @@ for rxn in HRXN:
 
 # <<< Reference Values >>>
 BIND = {}
-BIND['%s-%s' % (dbse,  1)] =   -0.519
-BIND['%s-%s' % (dbse,  2)] =   -2.181
-BIND['%s-%s' % (dbse,  3)] =   -2.451
-BIND['%s-%s' % (dbse,  4)] =  -16.445
-BIND['%s-%s' % (dbse,  5)] =  -18.984
-BIND['%s-%s' % (dbse,  6)] =   -6.009
-BIND['%s-%s' % (dbse,  7)] =   -3.301
-BIND['%s-%s' % (dbse,  8)] =   -0.554
-BIND['%s-%s' % (dbse,  9)] =   -5.038
-BIND['%s-%s' % (dbse, 10)] =   -7.532
-BIND['%s-%s' % (dbse, 11)] =   -6.279
-BIND['%s-%s' % (dbse, 12)] =    0.305
-BIND['%s-%s' % (dbse, 13)] =   -2.087
-BIND['%s-%s' % (dbse, 14)] =   -1.376
-BIND['%s-%s' % (dbse, 15)] =   -0.853
-BIND['%s-%s' % (dbse, 16)] =   -1.097
-BIND['%s-%s' % (dbse, 17)] =   -1.504
-BIND['%s-%s' % (dbse, 18)] =   -0.473
-BIND['%s-%s' % (dbse, 19)] =   -1.569
-BIND['%s-%s' % (dbse, 20)] =    0.391
-BIND['%s-%s' % (dbse, 21)] =   -9.486
+# Original publication
+BIND_HSG0 = {}
+BIND_HSG0['%s-%s' % (dbse,  1)] =   -0.519
+BIND_HSG0['%s-%s' % (dbse,  2)] =   -2.181
+BIND_HSG0['%s-%s' % (dbse,  3)] =   -2.451
+BIND_HSG0['%s-%s' % (dbse,  4)] =  -16.445
+BIND_HSG0['%s-%s' % (dbse,  5)] =  -18.984
+BIND_HSG0['%s-%s' % (dbse,  6)] =   -6.009
+BIND_HSG0['%s-%s' % (dbse,  7)] =   -3.301
+BIND_HSG0['%s-%s' % (dbse,  8)] =   -0.554
+BIND_HSG0['%s-%s' % (dbse,  9)] =   -5.038
+BIND_HSG0['%s-%s' % (dbse, 10)] =   -7.532
+BIND_HSG0['%s-%s' % (dbse, 11)] =   -6.279
+BIND_HSG0['%s-%s' % (dbse, 12)] =    0.305
+BIND_HSG0['%s-%s' % (dbse, 13)] =   -2.087
+BIND_HSG0['%s-%s' % (dbse, 14)] =   -1.376
+BIND_HSG0['%s-%s' % (dbse, 15)] =   -0.853
+BIND_HSG0['%s-%s' % (dbse, 16)] =   -1.097
+BIND_HSG0['%s-%s' % (dbse, 17)] =   -1.504
+BIND_HSG0['%s-%s' % (dbse, 18)] =   -0.473
+BIND_HSG0['%s-%s' % (dbse, 19)] =   -1.569
+BIND_HSG0['%s-%s' % (dbse, 20)] =    0.391
+BIND_HSG0['%s-%s' % (dbse, 21)] =   -9.486
+# Current revision
+BIND_HSGA = {}
+BIND_HSGA['%s-%s' % (dbse,  1)] =   -0.518
+BIND_HSGA['%s-%s' % (dbse,  2)] =   -2.283
+BIND_HSGA['%s-%s' % (dbse,  3)] =   -2.478
+BIND_HSGA['%s-%s' % (dbse,  4)] =  -16.526
+BIND_HSGA['%s-%s' % (dbse,  5)] =  -19.076
+BIND_HSGA['%s-%s' % (dbse,  6)] =   -5.998
+BIND_HSGA['%s-%s' % (dbse,  7)] =   -3.308
+BIND_HSGA['%s-%s' % (dbse,  8)] =   -0.581
+BIND_HSGA['%s-%s' % (dbse,  9)] =   -5.066
+BIND_HSGA['%s-%s' % (dbse, 10)] =   -7.509
+BIND_HSGA['%s-%s' % (dbse, 11)] =   -6.274
+BIND_HSGA['%s-%s' % (dbse, 12)] =    0.302
+BIND_HSGA['%s-%s' % (dbse, 13)] =   -2.103
+BIND_HSGA['%s-%s' % (dbse, 14)] =   -1.378
+BIND_HSGA['%s-%s' % (dbse, 15)] =   -0.856
+BIND_HSGA['%s-%s' % (dbse, 16)] =   -1.100
+BIND_HSGA['%s-%s' % (dbse, 17)] =   -1.534
+BIND_HSGA['%s-%s' % (dbse, 18)] =   -0.472
+BIND_HSGA['%s-%s' % (dbse, 19)] =   -1.598
+BIND_HSGA['%s-%s' % (dbse, 20)] =    0.378
+BIND_HSGA['%s-%s' % (dbse, 21)] =   -9.538
+# Set default
+BIND = BIND_HSGA
 
 # <<< Coment Lines >>>
 TAGL = {}
