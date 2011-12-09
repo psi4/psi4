@@ -267,9 +267,18 @@ void HF::integrals()
     if (scf_type_ == "PK" || scf_type_ == "OUT_OF_CORE"){
         boost::shared_ptr<MintsHelper> mints (new MintsHelper(options_, 0));
         mints->integrals();
-        if(scf_type_ == "PK") pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
-                                                                                     nsopi_, so2index_, so2symblk_));
-    }else if (scf_type_ == "PSEUDOSPECTRAL"){
+        try {
+            if(scf_type_ == "PK")
+                pk_integrals_ = boost::shared_ptr<PKIntegrals>(new PKIntegrals(memory_, psio_, options_, nirrep_,
+                                                                               nsopi_, so2index_, so2symblk_));
+        }
+        catch (PsiException & err) {
+            fprintf(outfile, "  Switching to out-of-core algorithm.\n");
+            scf_type_ = "OUT_OF_CORE";
+            pk_integrals_.reset();
+        }
+    }
+    else if (scf_type_ == "PSEUDOSPECTRAL"){
         if(nirrep_ > 1)
             throw PSIEXCEPTION("SCF TYPE " + scf_type_ + " cannot use symmetry yet. Add 'symmetry c1' to the molecule specification");
         df_ = boost::shared_ptr<DFHF>(new DFHF(basisset_, psio_, options_));
@@ -654,15 +663,15 @@ void HF::compute_fcpi()
     if (options_["FROZEN_DOCC"].has_changed()) {
         if (options_["FROZEN_DOCC"].size() != epsilon_a_->nirrep()) {
             throw PSIEXCEPTION("The FROZEN_DOCC array has the wrong dimensions");
-        } 
+        }
         for (int h = 0; h < epsilon_a_->nirrep(); h++) {
             frzcpi_[h] = options_["FROZEN_DOCC"][h].to_integer();
         }
     } else {
-        
+
         int nfzc = 0;
         if (options_.get_int("NUM_FROZEN_DOCC") != 0) {
-            nfzc = options_.get_int("NUM_FROZEN_DOCC"); 
+            nfzc = options_.get_int("NUM_FROZEN_DOCC");
         } else {
             nfzc = molecule_->nfrozen_core(options_.get_str("FREEZE_CORE"));
         }
@@ -686,7 +695,7 @@ void HF::compute_fvpi()
     if (options_["FROZEN_UOCC"].has_changed()) {
         if (options_["FROZEN_UOCC"].size() != epsilon_a_->nirrep()) {
             throw PSIEXCEPTION("The FROZEN_UOCC array has the wrong dimensions");
-        } 
+        }
         for (int h = 0; h < epsilon_a_->nirrep(); h++) {
             frzvpi_[h] = options_["FROZEN_UOCC"][h].to_integer();
         }

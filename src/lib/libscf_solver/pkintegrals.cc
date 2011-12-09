@@ -369,6 +369,7 @@ void PKIntegrals::setup_arrays(bool build_k)
             }
         }
     } else {
+        // Have the code automatically switch to out_of_core.
         throw PSIEXCEPTION("Not enough memory for PK matrix, try scf_type = out_of_core instead");
         // TODO just write an out of core code instead. Shouldn't be too hard.
     }
