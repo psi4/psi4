@@ -65,12 +65,14 @@ void RunCoupledCluster(Options &options){
   tstop();
 
   if (options.get_bool("COMPUTE_TRIPLES")){
-     // free memory before triples (save some for mp2 nos)
+     // free memory before triples 
      free(ccsd->integrals);
      free(ccsd->w1);
      free(ccsd->I1);
      free(ccsd->I1p);
      free(ccsd->diisvec);
+     free(ccsd->tempt);
+     free(ccsd->tempv);
 
      if (options.get_bool("TRIPLES_USE_NOS")){
         // mp2 natural orbitals:
@@ -82,9 +84,6 @@ void RunCoupledCluster(Options &options){
         }
         tstop();
      }
-     // free remaining memory
-     free(ccsd->tempt);
-     free(ccsd->tempv);
 
      tstart();
      // triples

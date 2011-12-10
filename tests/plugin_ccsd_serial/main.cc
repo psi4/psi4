@@ -33,7 +33,7 @@ read_options(std::string name, Options &options)
       /*- default memory available (mb) -*/
       options.add_int("MEMORY", 2000);
       /*- default number of DIIS iterations */
-      options.add_int("MAX_DIIS_VECS", 6);
+      options.add_int("MAX_DIIS_VECS", 8);
       /*- default number of DIIS iterations */
       options.add_int("MAX_MAPPED_MEMORY", 1000);
       /*- do not compute triples by default */
