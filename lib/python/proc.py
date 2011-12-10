@@ -3,7 +3,6 @@ import shutil
 import os
 import re
 import input
-from driver import *
 from molecule import *
 from text import *
 

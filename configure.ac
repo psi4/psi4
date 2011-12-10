@@ -1001,6 +1001,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/pywrap_db2/Makefile
           tests/pywrap_cbs1/Makefile
           tests/pywrap_all/Makefile
+          tests/pywrap_alias/Makefile
           tests/cisd-h2o+-0/Makefile
           tests/cisd-h2o+-1/Makefile
           tests/cisd-h2o+-2/Makefile
