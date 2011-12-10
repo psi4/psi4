@@ -1,0 +1,82 @@
+#! Ne atom RASCI/cc-pVQZ 
+#! Example of split-virtual CISD[TQ] from Sherrill and Schaefer,
+#! J. Phys. Chem. XXX
+#! This uses a "primary" virtual space 3s3p (RAS 2), a "secondary" virtual
+#! space 3d4s4p4d4f (RAS 3), and a "tertiary" virtual space consisting
+#! of the remaining virtuals.  First, an initial CISD computation is run
+#! to get the natural orbitals; this allows a meaningful partitioning of
+#! the virtual orbitals into groups of different importance.  Next, the
+#! RASCI is run.  The split-virtual CISD[TQ] takes all singles and doubles,
+#! and all triples and quadruples with no more than 2 electrons in the
+#! secondary virtual subspace (RAS 3).  If any electrons are present in
+#! the tertiary virtual subspace (RAS 4), then that excitation is only allowed
+#! if it is a single or double.
+#
+# First, get the natural orbitals
+
+molecule ne {
+  Ne
+}
+
+set globals {
+  wfn detci
+  basis cc-pVQZ
+  d_converge 10
+# docc            [2, 0, 0, 0, 0, 1, 1, 1]
+  frozen_docc     [1, 0, 0, 0, 0, 0, 0, 0]
+  ex_lvl 2
+}
+
+set detci {
+  wrtnos true
+}
+
+set transqt2 {
+  delete_tei false
+}
+
+psioh = PsiMod.IOManager.shared_object()
+psioh.set_specific_retention(32, True)
+psioh.set_specific_retention(33, True)
+psioh.set_specific_retention(35, True)
+
+thisenergy = energy('detci')
+
+
+clean()
+
+
+# Now, run the RASCI
+
+set globals {
+  wfn detci
+  d_converge 10
+  frozen_docc     [2, 0, 0, 0, 0, 1, 1, 1]
+  ras1            [1, 0, 0, 0, 0, 1, 1, 1]
+  ras2            [1, 0, 0, 0, 0, 1, 1, 1]
+  ras3            [5, 2, 2, 2, 1, 3, 3, 3]
+  ex_lvl 2
+  val_ex_lvl 2
+}
+
+set detci {
+  maxiter 25
+  wrtnos false
+
+  # This keyword is at the heart of the "split-virtual" CISD[TQ].
+  # If electrons are in RAS 4, do not allow the excitation to go beyond
+  # that specified by ex_lvl (here, only singles & doubles allowed if
+  # RAS 4 is populated)
+  mixed4 false
+  
+  # this will just reduce the number of strings generated in the
+  # computation; because of the mixed4=false specification above, not
+  # all of the strings normally allowed by the RAS will actually be needed
+  # in this computation
+  r4s true
+}
+
+thisenergy = energy('detci',bypass_scf='True')
+
+
+clean()

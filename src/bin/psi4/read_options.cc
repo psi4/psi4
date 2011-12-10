@@ -28,20 +28,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
 
-  /*- An array containing the number of doubly-occupied orbitals per irrep 
+  /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
 
-  /*- An array containing the number of singly-occupied orbitals per irrep 
+  /*- An array containing the number of singly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("SOCC", new ArrayType());
 
-  /*- An array containing the number of frozen doubly-occupied orbitals per 
-  irrep (these are not excited in a CI, nor can they be optimized in 
+  /*- An array containing the number of frozen doubly-occupied orbitals per
+  irrep (these are not excited in a CI, nor can they be optimized in
   MCSCF -*/
   options.add("FROZEN_DOCC", new ArrayType());
-  /*- An array containing the number of frozen unoccupied orbitals per 
-  irrep (these are not populated in a CI, nor can they be optimized in 
+  /*- An array containing the number of frozen unoccupied orbitals per
+  irrep (these are not populated in a CI, nor can they be optimized in
   MCSCF -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The scope of core orbitals to freeze in later correlated computations
@@ -55,7 +55,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("FREEZE_CORE","FALSE", \
     "FALSE TRUE SMALL LARGE");
 
-  /*- Whether to use pure angular momentum basis functions -*/
+  /*- Whether to use pure angular momentum basis functions.
+      If not explicitly set, the default comes from the basis set. -*/
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file -*/
   options.add_int("PRINT", 1);
@@ -102,7 +103,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_EX_LVL", 2);
 
     /*- In a RAS CI, this is the additional excitation level for allowing
-    electrons out of RAS I into RAS II.  The maximum number of holes in 
+    electrons out of RAS I into RAS II.  The maximum number of holes in
     RAS I is therefore EX_LVL + VAL_EX_LVL. -*/
     options.add_int("VAL_EX_LVL", 0);
 
@@ -127,17 +128,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
     options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per 
+    /*- An array giving the number of restricted doubly-occupied orbitals per
     irrep (not excited in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per 
+    /*- An array giving the number of restricted unoccupied orbitals per
     irrep (not occupied in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_UOCC", new ArrayType());
 
-    /*- An array giving the number of active orbitals (occupied plus 
+    /*- An array giving the number of active orbitals (occupied plus
     unoccupied) per irrep (shorthand to make MCSCF easier to specify than
     using RAS keywords) -*/
     options.add("ACTIVE", new ArrayType());
@@ -251,9 +252,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Restrict strings with e- in RAS IV.  Useful to reduce the number of
       strings required if MIXED4=true, as in a split-virutal CISD[TQ]
-      computation.  If more than one electron is in RAS IV, then the 
-      holes in RAS I cannot exceed the number of particles in 
-      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.  
+      computation.  If more than one electron is in RAS IV, then the
+      holes in RAS I cannot exceed the number of particles in
+      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.
       !expert -*/
     options.add_bool("R4S",false);
 
@@ -275,7 +276,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     MPN=TRUE. -*/
     options.add_bool("MPN",false);
 
-    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if 
+    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if
     available from WIGNER=true); if 2, save the MP(2n-2) energy (if
     available from WIGNER=true). !expert -*/
     options.add_int("SAVE_MPN2",0);
@@ -441,7 +442,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
-    does not compute states of different irreps within the same 
+    does not compute states of different irreps within the same
     computation; to do this, lower the symmetry of the computation.-*/
     options.add_bool("TRANSITION_DENSITY", false);
 
@@ -494,7 +495,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     number and beta string number for each), and also the
     desired phase between these two determinants for guesses
     which are to be kept.  FILTER_GUESS = TRUE turns on the filtering
-    routine.  Requires additional keywords FILTER_GUESS_DET1, 
+    routine.  Requires additional keywords FILTER_GUESS_DET1,
     FILTER_GUESS_DET2, and FILTER_GUESS_SIGN. !expert -*/
     options.add_bool("FILTER_GUESS", false);
 
@@ -503,12 +504,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FILTER_GUESS_SIGN", 1);
 
     /*- Array specifying the absolute alpha string number and beta string
-    number for the first determinant in the filter procedure. 
+    number for the first determinant in the filter procedure.
     (See FILTER_GUESS).  !expert -*/
     options.add("FILTER_GUESS_DET1", new ArrayType());
 
     /*- Array specifying the absolute alpha string number and beta string
-    number for the second determinant in the filter procedure. 
+    number for the second determinant in the filter procedure.
     (See FILTER_GUESS).  !expert -*/
     options.add("FILTER_GUESS_DET2", new ArrayType());
 
@@ -650,8 +651,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
-      /*- The amount of memory available (in Mb) -*/
-      options.add_int("MEMORY", 2000);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- The maximum number of lambda iterations per macro-iteration -*/
@@ -1002,12 +1001,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
     options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per 
+    /*- An array giving the number of restricted doubly-occupied orbitals per
     irrep (not excited in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per 
+    /*- An array giving the number of restricted unoccupied orbitals per
     irrep (not occupied in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_UOCC", new ArrayType());

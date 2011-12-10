@@ -4,7 +4,6 @@
 #include<libdpd/dpd.h>
 #include<boost/shared_ptr.hpp>
 #include<liboptions/liboptions.h>
-#include <ccfiles.h>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <ccfiles.h>
@@ -149,7 +148,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   fprintf(outfile,"\n");
 
   int o = ccsd->ndoccact;
-  int v = ccsd->nvirt;
+  int v = ccsd->nvirt_no;
 
   double *t1 = ccsd->t1;
   double *F  = ccsd->eps;

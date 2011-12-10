@@ -44,7 +44,6 @@ clean()
 banner('mp2.5')
 energy('mp2.5')
 compare_values(-5.576243225099, get_variable('MP2.5 TOTAL ENERGY'), 7, "MP2.5 sp")
-print_variables()
 clean()
 
 banner('cbs()')
@@ -71,7 +70,6 @@ set globals {
 banner('cisd')
 energy('cisd',molecule=He2)
 compare_values(-5.580709674676, get_variable('CISD TOTAL ENERGY'), 7, "CISD sp")
-print_variables()
 clean()
 
 #banner('opt(cbs())')
@@ -79,4 +77,8 @@ clean()
 #compare_values(-5.615567415914, get_variable('SCF TOTAL ENERGY'), 6, 'opt(cbs())')
 #clean()
 
+banner('opt(arbitraryorder())')
+optimize('mp3')
+compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 7, 'opt(mp3())')
+clean()
 

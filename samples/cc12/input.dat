@@ -1,3 +1,6 @@
+#! Single point energies of multiple excited states with EOM-CCSD
+
+
 molecule h2o {
   O
   H 1 0.9
@@ -11,4 +14,5 @@ set {
 }
 
 energy('eom-ccsd')
+
 clean()

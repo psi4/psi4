@@ -4,12 +4,10 @@
 #include <vector>
 #include "typedefs.h"
 #include "vector3.h"
-//#include <boost/shared_ptr.hpp>
 
 namespace psi {
 
 class Matrix;
-class SimpleMatrix;
 class IntegralFactory;
 class BasisSet;
 class GaussianShell;
@@ -79,20 +77,11 @@ public:
      * Computes all integrals and stores them in result
      * @param result Shared matrix object that will hold the results.
      */
-    void compute(boost::shared_ptr<SimpleMatrix>& result) __attribute__((deprecated));
-    /*! @} */
-
-    /*! @{
-     * Computes all integrals and stores them in result
-     * @param result Shared matrix object that will hold the results.
-     */
     void compute(SharedMatrix& result);
     /*! @} */
 
     /// Computes all integrals and stores them in result by default this method throws
     virtual void compute(std::vector<SharedMatrix > &result);
-    /// Computes all integrals and stores them in result by default this method throws
-    virtual void compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result) __attribute__((deprecated));
 
     /// Does the method provide first derivatives?
     virtual bool has_deriv1() { return false; }
@@ -105,10 +94,6 @@ public:
 
     /// Computes the first derivatives and stores them in result
     virtual void compute_deriv1(std::vector<SharedMatrix > &result);
-    /// Computes the first derivatives and stores them in result
-    virtual void compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result) __attribute__((deprecated));
-    /// Computes the second derivatives and stores them in result
-    virtual void compute_deriv2(std::vector<boost::shared_ptr<SimpleMatrix> > &result) __attribute__((deprecated));
 
     /// Computes the integrals between basis function in the given shell pair
     virtual void compute_shell_deriv1(int, int);

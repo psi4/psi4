@@ -105,7 +105,7 @@ void solidharmcontrib(int sign,
                       const uint64_t &bin,const uint64_t &den,
                       uint64_t norm2num,uint64_t norm2den,
                       int r2,int x,int y,int z,
-                      SimpleMatrix &coefmat, int pureindex)
+                      Matrix &coefmat, int pureindex)
 {
     if (r2>0) {
         solidharmcontrib(sign,bin,den,norm2num,norm2den,r2-1,x+2,y,z,
@@ -125,7 +125,7 @@ void solidharmcontrib(int sign,
 // l is the total angular momentum
 // m is the z component
 // r2 is the number of factors of r^2 that are included
-void solidharm(unsigned int l, int m, unsigned int r2, SimpleMatrix& coefmat)
+void solidharm(unsigned int l, int m, unsigned int r2, Matrix& coefmat)
 {
 //    printf("in solidharm(unsigned int l, int m, unsigned int r2, RefSCMatrix coefmat\n");
 //    printf("l = %d, m = %d, r2 = %d\n", l, m, r2);
@@ -174,7 +174,7 @@ void solidharm(unsigned int l, int m, unsigned int r2, SimpleMatrix& coefmat)
     }
 }
 
-void solidharmonic(int l, SimpleMatrix &coefmat)
+void solidharmonic(int l, Matrix &coefmat)
 {
     solidharm(l,0,0,coefmat);
     for (int m=1; m<=l; m++) {

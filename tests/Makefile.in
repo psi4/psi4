@@ -59,101 +59,67 @@ endif
 # the bare minimum
 quicktestdirs = 
 
-tests:
-	for dir in $(subdirs); \
+define runtests
+    for dir in $1; \
 	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+        (\
+        cd $${dir} &&\
+        echo "Testing $${dir}..." | tee -a ../../test-case-results &&\
+        $(MAKE) && cat $${dir}.test >> ../../test-case-results;\
+        );\
+        if [ $$? != 0 ]; then\
+         echo "\tFAILED" | tee -a ../test-case-results; exit 1;\
+        fi;\
 	done
+endef
+
+tests:
+	$(call runtests, $(subdirs))
 
 opttests:
-	for dir in $(opt_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(opt_subdirs))
 
 plugins:
-	for dir in $(plugin_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(plugin_subdirs))
 
 quicktests:
-	for dir in $(quicktestdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(quicktestdirs))
 
 cc_tests:
-	for dir in $(cc_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(cc_subdirs))
 
 ci_tests:
-	for dir in $(ci_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(ci_subdirs))
 
 mints_tests:
-	for dir in $(mints_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(mints_subdirs))
 
 mp2_tests:
-	for dir in $(mp2_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(mp2_subdirs))
 
 matrix_tests:
-	for dir in $(matrix_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(matrix_subdirs))
 
 mcscf_tests:
-	for dir in $(mcscf_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(mcscf_subdirs))
 
 scf_tests:
-	for dir in $(scf_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(scf_subdirs))
 
 df_tests:
-	for dir in $(df_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(df_subdirs))
 
 dcft_tests:
-	for dir in $(dcft_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(df_subdirs))
 
 psimrcc_tests:
-	for dir in $(psimrcc_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(psimrcc_subdirs))
 
 python_tests:
-	for dir in $(python_test_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(python_test_subdirs))
 
 psirb_tests:
-	for dir in $(rb_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(python_test_subdirs))
 
 clean:
 	for dir in $(subdirs); \
