@@ -91,7 +91,7 @@ protected:
     virtual void init();
 public:
     SphericalTransform(int l, int subl = -1);
-    virtual ~SphericalTransform() {};
+    virtual ~SphericalTransform() {}
 
     /// Returns the Cartesian basis function index of component i
     int cartindex(int i) const { return components_[i].cartindex(); }

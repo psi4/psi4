@@ -458,7 +458,7 @@ bool py_psi_set_option_int(std::string const & module, std::string const & key, 
 
 }
 
-bool py_psi_set_option_float(std::string const & module, std::string const & key, float value)
+bool py_psi_set_option_double(std::string const & module, std::string const & key, double value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_double(module, nonconst_key, value);
@@ -515,7 +515,7 @@ bool py_psi_set_global_option_int(std::string const & key, int value)
     return true;
 }
 
-bool py_psi_set_global_option_float(std::string const & key, float value)
+bool py_psi_set_global_option_double(std::string const & key, double value)
 {
     string nonconst_key = boost::to_upper_copy(key);
     Process::environment.options.set_global_double(nonconst_key, value);
@@ -851,13 +851,13 @@ BOOST_PYTHON_MODULE(PsiMod)
 
     // Set the different local option types
     def("set_local_option", py_psi_set_option_string);
-    def("set_local_option", py_psi_set_option_float);
+    def("set_local_option", py_psi_set_option_double);
     def("set_local_option", py_psi_set_option_int);
     def("set_local_option", py_psi_set_option_array, set_local_option_overloads());
 
     // Set the different global option types
     def("set_global_option", py_psi_set_global_option_string);
-    def("set_global_option", py_psi_set_global_option_float);
+    def("set_global_option", py_psi_set_global_option_double);
     def("set_global_option", py_psi_set_global_option_int);
     def("set_global_option", py_psi_set_global_option_array, set_global_option_overloads());
 

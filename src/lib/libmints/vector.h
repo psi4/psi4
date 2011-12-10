@@ -123,6 +123,8 @@ public:
 
     double& operator()(int i) { return vector_[0][i]; }
     const double& operator()(int i) const { return vector_[0][i]; }
+    double& operator[](int i) { return vector_[0][i]; }
+    const double& operator[](int i) const { return vector_[0][i]; }
 
     double pyget(const boost::python::tuple& key);
     void pyset(const boost::python::tuple& key, double value);
@@ -196,87 +198,6 @@ public:
     void sum();
 
     friend class Matrix;
-};
-
-/*! \ingroup MINTS */
-class SimpleVector
-{
-protected:
-    /// Vector data
-    double *vector_;
-    /// Dimension of the vector
-    int dim_;
-
-    /// Allocate memory
-    void alloc();
-    /// Free memory
-    void release();
-
-    /// Copy data to this
-    void copy_from(double *);
-
-public:
-    /// Default constructor, zeroes everything out
-    SimpleVector();
-    /// Copy constructor
-    SimpleVector(const SimpleVector& copy);
-    /// Constructor, creates the vector
-    SimpleVector(int dim);
-
-    /// Destructor, frees memory
-    ~SimpleVector();
-
-    /// Other vector initializer
-    void init(int dim);
-
-    /// Set vector_ to vec
-    void set(double *vec);
-    /// Returns a pointer to the vector's contents
-    double* pointer() {
-        return vector_;
-    }
-    /// Returns an element value
-    double get(int m) {
-        return vector_[m];
-    }
-    /// Sets an element value
-    void set(int m, double val) {
-        vector_[m] = val;
-    }
-    /// Returns a copy of vector_
-    double *to_block_vector();
-
-    /// Returns the dimension of the vector
-    int dim() const {
-        return dim_;
-    }
-
-    double& operator[](int i) { return vector_[i]; }
-
-    void operator=(const SimpleVector& x) {
-        for (int i=0; i<dim_; ++i)
-            vector_[i] = x.vector_[i];
-    }
-
-    SimpleVector& operator+=(const SimpleVector& b) {
-        for (int i=0; i<dim_; ++i)
-            vector_[i] += b.vector_[i];
-        return *this;
-    }
-
-    /// Computes the magnitude of the vector.
-    double magnitude() const;
-
-    /// Prints the vector
-    void print() const;
-
-    /// Copy rhs to this
-    void copy(const SimpleVector* rhs);
-
-    /// Scale the vector
-    void scale(double a);
-
-    friend class SimpleMatrix;
 };
 
 /*! \ingroup MINTS */
@@ -384,80 +305,8 @@ public:
 
 };
 
-/*! \ingroup MINTS */
-class SimpleIntVector
-{
-protected:
-    /// IntVector data
-    int *vector_;
-    /// Dimension of the vector
-    int dim_;
-
-    /// Allocate memory
-    void alloc();
-    /// Free memory
-    void release();
-
-    /// Copy data to this
-    void copy_from(int *);
-
-public:
-    /// Default constructor, zeroes everything out
-    SimpleIntVector();
-    /// Copy constructor
-    SimpleIntVector(const SimpleIntVector& copy);
-    /// Constructor, creates the vector
-    SimpleIntVector(int dim);
-
-    /// Destructor, frees memory
-    ~SimpleIntVector();
-
-    /// Other vector initializer
-    void init(int dim);
-
-    /// Set vector_ to vec
-    void set(int *vec);
-    /// Returns a pointer to the vector's contents
-    int* pointer() {
-        return vector_;
-    }
-    /// Returns an element value
-    int get(int m) {
-        return vector_[m];
-    }
-    /// Sets an element value
-    void set(int m, int val) {
-        vector_[m] = val;
-    }
-    /// Returns a copy of vector_
-    int *to_block_vector();
-
-    /// Returns the dimension of the vector
-    int dim() const {
-        return dim_;
-    }
-
-    int& operator[](int i) { return vector_[i]; }
-
-    void operator=(const SimpleIntVector& x) {
-        for (int i=0; i<dim_; ++i)
-            vector_[i] = x.vector_[i];
-    }
-
-    /// Python compatible printer
-    void print_out() { print(outfile); }
-
-    /// Prints the vector
-    void print(FILE *);
-    /// Copy rhs to this
-    void copy(const SimpleIntVector* rhs);
-
-};
-
 typedef boost::shared_ptr<Vector> SharedVector;
-typedef boost::shared_ptr<SimpleVector> SharedSimpleVector;
 typedef boost::shared_ptr<IntVector> SharedIntVector;
-typedef boost::shared_ptr<SimpleIntVector> SharedSimpleIntVector;
 
 }
 

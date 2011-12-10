@@ -14,30 +14,28 @@ def set_num_threads(nthread):
 def get_num_threads():
     return PsiMol.get_n_threads()
 
+def success(label):
+    print '\t{0:.<70}PASSED'.format(label)
+    sys.stdout.flush()
+
 # Test functions
 def compare_values(expected, computed, digits, label):
     if (abs(expected-computed) > 10**(-digits)):
         print "\t%s: computed value (%f) does not match (%f) to %d digits." % (label, computed, expected, digits)
         sys.exit(1)
-
-    print "\t%s: matched." % (label)
-    sys.stdout.flush()
+    success(label)
 
 def compare_integers(expected, computed, label):
     if (expected != computed):
         print "\t%s: computed value (%d) does not match (%d)." % (label, computed, expected)
         sys.exit(1)
-
-    print "\t%s: matched." % (label)
-    sys.stdout.flush()
+    success(label)
 
 def compare_strings(expected, computed, label):
     if(expected != computed):
         print "\t%s: computed value (%s) does not match (%s)." % (label, computed, expected)
         sys.exit(1)
-
-    print "\t%s: matched." % (label)
-    sys.stdout.flush()
+    success(label)
 
 def compare_matrices(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
@@ -70,9 +68,8 @@ def compare_matrices(expected, computed, digits, label):
             computed.print_out()
             expected.print_out()
             sys.exit(1)
+    success(label)
 
-    print "\t%s: matched." % (label)
-    sys.stdout.flush()
 
 def compare_vectors(expected, computed, digits, label):
     if (expected.nirrep() != computed.nirrep()):
@@ -97,6 +94,4 @@ def compare_vectors(expected, computed, digits, label):
             PsiMod.print_out("The reference vector\n")
             expected.print_out()
             sys.exit(1)
-
-    print "\t%s: matched." % (label)
-    sys.stdout.flush()
+    success(label)

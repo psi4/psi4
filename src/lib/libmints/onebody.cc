@@ -262,40 +262,6 @@ void OneBodyAOInt::compute(SharedMatrix& result)
     }
 }
 
-void OneBodyAOInt::compute(boost::shared_ptr<SimpleMatrix>& result)
-{
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-
-    int i_offset=0;
-    double *location;
-
-    // Leave as this full double for loop. We could be computing nonsymmetric integrals
-    for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
-
-            // Compute the shell (automatically transforms to pure am if needed)
-            compute_shell(i, j);
-
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int p=0; p<ni; ++p) {
-                for (int q=0; q<nj; ++q) {
-                    result->add(i_offset+p, j_offset+q, *location);
-                    location++;
-                }
-            }
-
-            j_offset += nj;
-        }
-        i_offset += ni;
-    }
-}
-
 void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
 {
     // Do not worry about zeroing out result
@@ -333,46 +299,6 @@ void OneBodyAOInt::compute(std::vector<SharedMatrix > &result)
                 for (int p=0; p<ni; ++p) {
                     for (int q=0; q<nj; ++q) {
                         result[r]->add(0, i_offset+p, j_offset+q, *location);
-                        location++;
-                    }
-                }
-            }
-            j_offset += nj;
-        }
-        i_offset += ni;
-    }
-}
-
-void OneBodyAOInt::compute(std::vector<boost::shared_ptr<SimpleMatrix> > &result)
-{
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int i_offset = 0;
-    double *location = 0;
-
-    // Check the length of result, must be chunk
-    // There not an easy way of checking the size now.
-    if (result.size() != nchunk_) {
-        fprintf(stderr, "result length = %ld, nchunk = %d\n", result.size(), nchunk_);
-        throw SanityCheckError("OneBodyInt::compute(result): result incorrect length.", __FILE__, __LINE__);
-    }
-
-    for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
-
-            // Compute the shell
-            compute_shell(i, j);
-
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int r=0; r<nchunk_; ++r) {
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-                        result[r]->add(i_offset+p, j_offset+q, *location);
                         location++;
                     }
                 }
@@ -438,86 +364,6 @@ void OneBodyAOInt::compute_deriv1(std::vector<SharedMatrix > &result)
             j_offset += nj;
         }
         i_offset += ni;
-    }
-}
-
-void OneBodyAOInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result)
-{
-    if (deriv_ < 1)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
-
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int i_offset = 0;
-    double *location = 0;
-
-    // Check the length of result, must be 3*natom_
-    if (result.size() != 3*natom_)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
-
-    for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() :bs1_->shell(i)->nfunction();
-        int center_i3 = 3*bs1_->shell(i)->ncenter();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
-            int center_j3 = 3*bs2_->shell(j)->ncenter();
-
-            if (center_i3 != center_j3) {
-                // Compute the shell
-                compute_shell_deriv1(i, j);
-
-                //            fprintf(outfile, "i %d j %d\n", i, j);
-
-                // Center i
-                location = buffer_;
-                for (int r=0; r<3; ++r) {
-                    for (int p=0; p<ni; ++p) {
-                        for (int q=0; q<nj; ++q) {
-                            //                        fprintf(outfile, "i %d: r %d p %d q %d value %lf\n", center_i3, r, p, q, *location);
-                            result[center_i3+r]->add(i_offset+p, j_offset+q, *location);
-                            location++;
-                        }
-                    }
-                }
-
-                for (int r=0; r<3; ++r) {
-                    for (int p=0; p<ni; ++p) {
-                        for (int q=0; q<nj; ++q) {
-                            result[center_j3+r]->add(i_offset+p, j_offset+q, *location);
-                            location++;
-                        }
-                    }
-                }
-            }
-            j_offset += nj;
-        }
-        i_offset += ni;
-    }
-}
-
-void OneBodyAOInt::compute_deriv2(std::vector<boost::shared_ptr<SimpleMatrix> > &result)
-{
-    if (deriv_ < 2)
-        throw SanityCheckError("OneBodyInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
-
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-
-    // Check the length of result, must be 9*natom_
-    if (result.size() != 9*natom_)
-        throw SanityCheckError("OneBodyInt::compute_derv2(result): result must be 9 * natom in length.", __FILE__, __LINE__);
-
-    for (int i=0; i<ns1; ++i) {
-        for (int j=0; j<ns2; ++i) {
-            // Compute the shell
-            compute_shell_deriv1(i, j);
-            // Transform the shell to SO basis
-//            for (int k=0; k<9*natom_; ++k)
-//                so_transform(result[k], i, j, k);
-        }
     }
 }
 

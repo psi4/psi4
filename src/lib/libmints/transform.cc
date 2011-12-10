@@ -9,7 +9,7 @@
 
 using namespace psi;
 
-extern void solidharmonic(int l, SimpleMatrix& coefmat);
+extern void solidharmonic(int l, Matrix& coefmat);
 
 // there ordering here is arbitrary and doesn't have to match the
 // basis set ordering
@@ -50,7 +50,7 @@ void SphericalTransform::init()
 {
 //    fprintf(outfile, "spher\n");
     int cartdim = INT_NCART(l_);
-    SimpleMatrix coefmat(cartdim, cartdim);
+    Matrix coefmat(cartdim, cartdim);
     coefmat.zero();
 
     // Compute the solid harmonic matrix elements
@@ -113,7 +113,7 @@ void ISphericalTransform::init()
 {
 //    fprintf(outfile, "ispher\n");
     int cartdim = ncart(l_);
-    SimpleMatrix coefmat(cartdim, cartdim);
+    Matrix coefmat(cartdim, cartdim);
     coefmat.zero();
 
     // Compute the solid harmonic matrix elements

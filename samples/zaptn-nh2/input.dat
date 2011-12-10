@@ -1,0 +1,24 @@
+#! ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
+
+
+molecule nh2 {
+    0 2
+    N
+    H 1 1.013
+    H 1 1.013 2 103.2
+}
+
+set globals {
+  reference rohf
+  basis 6-31G
+  frozen_docc [1, 0, 0, 0]
+  # Use the ^2B1 state as the reference for this computation
+  docc        [3, 0, 0, 1]
+  socc        [0, 0, 1, 0]
+}
+
+thisenergy = energy('zapt25')
+
+
+clean()
+
