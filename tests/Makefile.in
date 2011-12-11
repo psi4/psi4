@@ -29,7 +29,7 @@ mp2_subdirs = mp2_1
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 castup1 mom props2 dft1 dfscf-bz2
 
-python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all
+python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
 plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals plugin_testparse
 subdirs = \

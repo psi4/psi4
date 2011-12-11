@@ -228,12 +228,24 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
      Empn += tval;
      fprintf(outfile,"  %2d  %25.15f %25.15f", k+1, mpk_energy[k+1], Empn); 
  
+     std::string label = (Parameters.zaptn) ? "ZAPT" : "MP";
+
      Sigma.buf_unlock();
      if (Parameters.wigner) {
        Cvec.wigner_E2k_formula(Hd, Sigma, Cvec2, alplist, betlist, buffer1,
           buffer2, k, mp2k_energy, wfn_overlap, cvec_coeff, cvec_norm, kvec_offset);
        Empn2 += mp2k_energy[2*k];
        fprintf(outfile,"\t %2d %25.15f %25.15f\n",2*k,mp2k_energy[2*k],Empn2);
+
+       std::stringstream s;
+       s << label << (2*k) << " TOTAL ENERGY";
+       Process::environment.globals[s.str()] = Empn2;
+       s.str(std::string());
+       s << label << (2*k) << " CORRELATION ENERGY";
+       Process::environment.globals[s.str()] = Empn2 - CalcInfo.escf;
+       //s.str(std::string());
+       //s << label << (2*k) << " CORRECTION ENERGY";
+       //Process::environment.globals[s.str()] = mp2k_energy[2*k];
 
        /* 25 November 2003 - JMT
         * Moified to save MP(2n-2) energy */
@@ -242,9 +254,31 @@ void mpn_generator(CIvect &Hd, struct stringwr **alplist,
        Empn2 += mp2k_energy[2*k+1];
        fprintf(outfile,"\t\t\t\t\t\t\t\t"
                " %2d %25.15f %25.15f\n", 2*k+1, mp2k_energy[2*k+1], Empn2);
+
+       s.str(std::string());
+       s << label << (2*k+1) << " TOTAL ENERGY";
+       Process::environment.globals[s.str()] = Empn2;
+       s.str(std::string());
+       s << label << (2*k+1) << " CORRELATION ENERGY";
+       Process::environment.globals[s.str()] = Empn2 - CalcInfo.escf;
+       //s.str(std::string());
+       //s << label << (2*k+1) << " CORRECTION ENERGY";
+       //Process::environment.globals[s.str()] = mp2k_energy[2*k+1];
+        
        }
-     else
+     else {
        fprintf(outfile, "\n");
+
+       std::stringstream s;
+       s << label << (k+1) << " TOTAL ENERGY";
+       Process::environment.globals[s.str()] = Empn;
+       s.str(std::string());
+       s << label << (k+1) << " CORRELATION ENERGY";
+       Process::environment.globals[s.str()] = Empn - CalcInfo.escf;
+       //s.str(std::string());
+       //s << label << (k+1) << " CORRECTION ENERGY";
+       //Process::environment.globals[s.str()] = mpk_energy[k+1];
+     }
 
      fflush(outfile);
 

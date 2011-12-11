@@ -5,7 +5,7 @@ import input
 # Reference interaction energies from the following articles:
 #   S220: Jurecka et al. PCCP 8 1985 (2006).
 #   S22A: Takatani et al. JCP 132 144104 (2010).
-#   S22B: Marshall et al. JCP xxx xxxxxx (2011).  *** DEFAULT ***
+#   S22B: Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
 
 dbse = 'S22'
 

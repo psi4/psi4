@@ -25,15 +25,35 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   fprintf(outfile,"\n");
   fflush(outfile);
 
-  int o = ccsd->ndoccact;
-  int v = ccsd->nvirt;
+  long int o = ccsd->ndoccact;
+  long int v = ccsd->nvirt;
   double *F  = ccsd->eps;
 
   boost::shared_ptr<PSIO> psio(new PSIO());
 
-  // point to some memory we've already allocated
-  double*amps1 = ccsd->tempt;
-  double*amps2 = ccsd->tempv;
+  // allocate memory for a couple of buffers
+  long int memory = Process::environment.get_memory();
+  memory *= 1024L*1024L;
+  memory -= 8L*(o*o*v*v+o*v);
+  // how many tiles for the ov^2 transformation?
+  long int ntiles,tilesize,lasttile;
+  ntiles = 1L;
+  tilesize = o/ntiles;
+  if (ntiles*tilesize<o) tilesize++;
+  while(2*tilesize*v*v*v*8L>memory){
+     ntiles++;
+     tilesize = o/ntiles;
+     if (ntiles*tilesize<o) tilesize++;
+  }
+  lasttile = o - (ntiles-1L)*tilesize;
+  long int*tilesizes=(long int*)malloc(ntiles*sizeof(long int));
+  for (int i=0; i<ntiles-1; i++) tilesizes[i] = tilesize;
+  tilesizes[ntiles-1] = lasttile;
+  
+  long int dim = o*o*v*v;
+  if (tilesize*v*v*v>o*o*v*v) dim = tilesize*v*v*v;
+  double*amps1 = (double*)malloc(dim*sizeof(double));
+  double*amps2 = (double*)malloc(dim*sizeof(double));
 
   // build mp2 amplitudes for mp2 density
   psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
@@ -87,7 +107,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 
   fprintf(outfile,"        Cutoff for significant NO occupancy: %5.3le\n",cutoff);
   fprintf(outfile,"\n");
-  fprintf(outfile,"        Number of virtual orbitals in original space:  %5i\n",v);
+  fprintf(outfile,"        Number of virtual orbitals in original space:  %5li\n",v);
   fprintf(outfile,"        Number of virtual orbitals in truncated space: %5i\n",nvirt_no);
   fprintf(outfile,"\n");
 
@@ -104,8 +124,90 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   // construct full mo -> no transformation matrix
   F_DGEMM('n','n',v,nvirt_no,nvirt_no,1.0,temp,v,newFock,nvirt_no,0.0,Dab,v);
 
+  // transform (oo|ov) integrals
+  psio->open(PSIF_IJAK,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_IJAK,"E2ijak",(char*)&amps1[0],o*o*o*v*sizeof(double));
+  F_DGEMM('t','n',nvirt_no,o*o*o,v,1.0,Dab,v,amps1,v,0.0,amps2,nvirt_no);
+  psio->write_entry(PSIF_IJAK,"E2ijak",(char*)&amps2[0],o*o*o*nvirt_no*sizeof(double));
+  psio->close(PSIF_IJAK,1);
+
+  // transform (ov|ov) integrals: (ia|jb)
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&amps2[0],o*o*v*v*sizeof(double));
+  // transform b of (ia|jb)
+  F_DGEMM('t','n',nvirt_no,o*o*v,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+  // sort to (iajb) -> (ijba) so we can transform a
+  for (int i=0; i<o; i++){
+      for (int a=0; a<v; a++){
+          for (int j=0; j<o; j++){
+              for (int b=0; b<nvirt_no; b++){
+                  amps2[i*o*v*nvirt_no+j*v*nvirt_no+b*v+a] = 
+                  amps1[i*o*v*nvirt_no+a*o*nvirt_no+j*nvirt_no+b];
+              }
+          }
+      }
+  }
+  // transform b
+  F_DGEMM('t','n',nvirt_no,o*o*nvirt_no,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+  // resort back to (iajb)
+  for (int i=0; i<o; i++){
+      for (int a=0; a<nvirt_no; a++){
+          for (int j=0; j<o; j++){
+              for (int b=0; b<nvirt_no; b++){
+                  amps2[i*o*nvirt_no*nvirt_no+a*o*nvirt_no+j*nvirt_no+b] = 
+                  amps1[i*o*nvirt_no*nvirt_no+j*nvirt_no*nvirt_no+b*nvirt_no+a];
+              }
+          }
+      }
+  }
+  psio->write_entry(PSIF_KLCD,"E2klcd",(char*)&amps2[0],o*o*v*v*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+
+
+  // transform (ov|vv) integrals:
+  psio_address addrread,addrwrite;
+  psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
+  addrread  = PSIO_ZERO;
+  addrwrite = PSIO_ZERO;
+
+  for (int n=0; n<ntiles; n++){
+      psio->read(PSIF_ABCI,"E2abci",(char*)&amps2[0],tilesizes[n]*v*v*v*sizeof(double),addrread,&addrread);
+      // transform iabc -> iabC
+      F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*v,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+      // sort iabC -> aiCb
+      for (int i=0; i<tilesizes[n]; i++){
+          for (int a=0; a<v; a++){
+              for (int b=0; b<v; b++){
+                  for (int c=0; c<nvirt_no; c++){
+                      amps2[a*tilesizes[n]*nvirt_no*v+i*v*nvirt_no+c*v+b] = 
+                      amps1[i*v*v*nvirt_no+a*v*nvirt_no+b*nvirt_no+c];
+                  }
+              }
+          }
+      }
+      // transform aiCb -> aiCB
+      F_DGEMM('t','n',nvirt_no,tilesizes[n]*v*nvirt_no,v,1.0,Dab,v,amps2,v,0.0,amps1,nvirt_no);
+      // transform aiCB -> AiCB
+      F_DGEMM('n','n',tilesizes[n]*nvirt_no*nvirt_no,nvirt_no,v,1.0,amps1,tilesizes[n]*nvirt_no*nvirt_no,Dab,v,0.0,amps2,tilesizes[n]*nvirt_no*nvirt_no);
+      // sort AiCB -> iABC
+      for (int i=0; i<tilesizes[n]; i++){
+          for (int a=0; a<nvirt_no; a++){
+              for (int b=0; b<nvirt_no; b++){
+                  for (int c=0; c<nvirt_no; c++){
+                      amps1[i*nvirt_no*nvirt_no*nvirt_no+a*nvirt_no*nvirt_no+b*nvirt_no+c] =
+                      amps2[a*tilesizes[n]*nvirt_no*nvirt_no+i*nvirt_no*nvirt_no+c*nvirt_no+b];
+                  }
+              }
+          }
+      }
+      psio->write(PSIF_ABCI,"E2abci",(char*)&amps1[0],tilesizes[n]*nvirt_no*nvirt_no*nvirt_no*sizeof(double),addrwrite,&addrwrite);
+  }
+  psio->close(PSIF_ABCI,1);
+
   // transform (oo|ov), (ov|vv), and (ov|ov) integrals with libtrans
-  Transformation(ccsd,Dab);
+  //Transformation(ccsd,Dab);
+  // sort integrals required for triples
+  //OutOfCoreSortTriples(ccsd->nfzc,ccsd->nfzv,ccsd->nmotemp,ccsd->ndoccact,ccsd->nvirt_no);
 
   // new orbital energies in truncated space
   F_DCOPY(nvirt_no,neweps,1,ccsd->eps+o,1);
@@ -130,10 +232,11 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   // transform t2(b_mo,a_no,j,i) -> t2(b_no,a_mo,j,i)
   F_DGEMM('n','n',o*o*nvirt_no,nvirt_no,v,1.0,amps2,o*o*nvirt_no,Dab,v,0.0,ccsd->tb,o*o*nvirt_no);
 
-  // sort integrals required for triples
-  OutOfCoreSortTriples(ccsd->nfzc,ccsd->nfzv,ccsd->nmotemp,ccsd->ndoccact,ccsd->nvirt_no);
 
   // free memory
+  free(tilesizes);
+  free(amps1);
+  free(amps2);
   free(neweps);
   free(newFock);
   free(temp);
@@ -142,6 +245,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 
   return Success;
 }
+
 void Transformation(boost::shared_ptr<psi::CoupledCluster>ccsd,double*Ca_motono){
   shared_ptr<PSIO> psio(_default_psio_lib_);
   std::vector<shared_ptr<MOSpace> > spaces;
