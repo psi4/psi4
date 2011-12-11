@@ -26,8 +26,13 @@ procedures = {
             'ccsd(t)'       : run_ccsd_t,
             'eom-ccsd'      : run_eom_ccsd,
             'detci'         : run_detci,
-            'mp'            : run_detci,
-            'zapt'          : run_detci
+            'mp'            : run_detci,  # arbitrary order mp(n)
+            'zapt'          : run_detci,  # arbitrary order zapt(n)
+            'cisd'          : run_detci,
+            'cisdt'         : run_detci,
+            'cisdtq'        : run_detci,
+            'ci'            : run_detci,  # arbitrary order ci(n)
+            'fci'           : run_detci
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -43,19 +48,6 @@ procedures = {
 def energy(name, **kwargs):
     lowername = name.lower()
 
-    if re.match("mp\d+$", lowername):
-        matchstr = re.match("mp", lowername)
-        level = int(lowername[matchstr.end():])
-        if (level != 2):
-            kwargs['level']=level
-            lowername='mp'
-
-    if re.match("zapt\d+$", lowername):
-        matchstr = re.match("zapt", lowername)
-        level = lowername[matchstr.end():]
-        kwargs['level']=int(level)
-        lowername='zapt'
-
     # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
@@ -65,6 +57,11 @@ def energy(name, **kwargs):
     # Line below needed when passing in molecule as a keyword argument
     #    but causes mints2 test case to fail
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
 
     try:
         return procedures['energy'][lowername](lowername,**kwargs)
@@ -79,6 +76,11 @@ def gradient(name, **kwargs):
     #    1. Default for wavefunction
     #    2. Value obtained from kwargs, if user changed it
     #    3. If user provides a custom 'func' use that
+
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
 
     # 1. set the default to that of the provided name
     if (procedures['gradient'].has_key(lowername)):
@@ -304,4 +306,24 @@ def optimize(name, **kwargs):
 
 def frequencies(name, **kwargs):
     hessian(name, **kwargs)
+
+def parse_arbitrary_order(name):
+    namelower = name.lower()
+
+    if re.match(r'^[a-z]+\d+$', namelower):       
+        decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
+        namestump = decompose.group(1)
+        namelevel = int(decompose.group(2))
+
+        if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
+            # Let 'mp2' pass through as itself
+            if (namestump == 'mp') and (namelevel == 2):
+                return namelower, None
+            # Otherwise return method and order
+            else:
+                return namestump, namelevel
+        else:
+            return namelower, None
+    else:
+        return namelower, None
 

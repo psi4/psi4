@@ -1033,6 +1033,25 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
    // until I fix it ---CDS 11/5/11
    Process::environment.globals["CI CORRELATION ENERGY"] = tval - CalcInfo.escf;
 
+   if (Parameters.fci) {
+     Process::environment.globals["FCI TOTAL ENERGY"] = tval;
+     Process::environment.globals["FCI CORRELATION ENERGY"] = tval - CalcInfo.escf;
+   }
+   else {
+     if (Parameters.ex_lvl == 2) {
+       Process::environment.globals["CISD TOTAL ENERGY"] = tval;
+       Process::environment.globals["CISD CORRELATION ENERGY"] = tval - CalcInfo.escf;
+     }
+     else if (Parameters.ex_lvl == 3) {
+       Process::environment.globals["CISDT TOTAL ENERGY"] = tval;
+       Process::environment.globals["CISDT CORRELATION ENERGY"] = tval - CalcInfo.escf;
+     }
+     else if (Parameters.ex_lvl == 4) {
+       Process::environment.globals["CISDTQ TOTAL ENERGY"] = tval;
+       Process::environment.globals["CISDTQ CORRELATION ENERGY"] = tval - CalcInfo.escf;
+     }
+   }
+
    for (i=0; i<nroots; i++) {
      sprintf(e_label,"Root %2d energy",i);
      tval = evals[i]+efzc+nucrep;
@@ -1040,14 +1059,12 @@ void diag_h(struct stringwr **alplist, struct stringwr **betlist)
 
      std::stringstream s;
      s << "CI ROOT " << (i+1) << " TOTAL ENERGY";
-
      Process::environment.globals[s.str()] = tval;
-
-     std::stringstream s2;
-     s2 << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
+     s.str(std::string());
+     s << "CI ROOT " << (i+1) << " CORRELATION ENERGY";
      // eref seems wrong for open shells so replace it with escf below
      // until I fix it ---CDS 11/5/11
-     Process::environment.globals[s2.str()] = tval - CalcInfo.escf;
+     Process::environment.globals[s.str()] = tval - CalcInfo.escf;
    }
 
    if (Parameters.average_num > 1) {

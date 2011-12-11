@@ -174,6 +174,9 @@ def database(name, db_name, **kwargs):
         Indicates whether counterpoise correction is employed in computing interaction energies.
         Use this option and NOT the cp() wrapper for BSSE correction in the database() wrapper.
         Option valid only for databases consisting of bimolecular complexes.
+    * rlxd = 'on' | --> 'off' <--
+        Indicates whether correction for the deformation energy is employed in computing interaction energies.
+        Option valid only for databases consisting of bimolecular complexes with non-frozen monomers.
     * symm = --> 'on' <-- | 'off'
         Indicates whether the native symmetry of the database molecules is employed ('on') or whether
         it is forced to c1 symmetry ('off'). Some computational methods (e.g., SAPT) require no symmetry,
@@ -326,6 +329,33 @@ def database(name, db_name, **kwargs):
         pass
     else:
         raise ValidationError('Counterpoise correction mode \'%s\' not valid.' % (db_cp))
+
+    #   Option relaxed- whether for non-frozen-monomer interaction energy databases include deformation correction or not?
+    db_rlxd = 'no'
+    if(kwargs.has_key('rlxd')):
+        db_rlxd = kwargs['rlxd']
+
+    if input.yes.match(str(db_rlxd)):
+        if input.yes.match(str(db_cp)):
+            try:
+                database.ACTV_CPRLX
+                database.RXNM_CPRLX
+            except AttributeError:
+                raise ValidationError('Deformation and counterpoise correction mode \'yes\' invalid for database %s.' % (db_name))
+            else:
+                ACTV = database.ACTV_CPRLX
+                RXNM = database.RXNM_CPRLX
+        elif input.no.match(str(db_cp)):
+            try:
+                database.ACTV_RLX
+            except AttributeError:
+                raise ValidationError('Deformation correction mode \'yes\' invalid for database %s.' % (db_name))
+            else:
+                ACTV = database.ACTV_RLX
+    elif input.no.match(str(db_rlxd)):
+        pass
+    else:
+        raise ValidationError('Deformation correction mode \'%s\' not valid.' % (db_rlxd))
 
     #   Option zero-point-correction- whether for thermochem databases jobs are corrected by zpe
     db_zpe = 'no'
@@ -1286,7 +1316,7 @@ def corl_xtpl_helgaker_2(**largs):
         cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), eLO)
         cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), eHI)
         cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (energypiece)
-        cbsscheme += """   Beta Value:                      %16.8f\n""" % (beta)
+        cbsscheme += """   Beta (coefficient) Value:        %16.8f\n""" % (beta)
         PsiMod.print_out(cbsscheme)
 
         return energypiece
@@ -1324,10 +1354,10 @@ def scf_xtpl_helgaker_3(**largs):
         zLO = NEED['LO']['f_zeta']
 
         # Compute extrapolated energy
-        energypiece = (eHI * eLO - eMD * eMD) / (eHI + eLO - 2 * eMD)
-        etothenegativealpha = math.sqrt(eHI - energypiece) * math.sqrt(eLO - energypiece)
-        beta = (eHI - eMD) / (etothenegativealpha * (math.exp(zHI) - math.exp(zMD)))
-        alpha = -1 * math.log(etothenegativealpha)
+        ratio = (eHI - eMD) / (eMD - eLO)
+        alpha = -1 * math.log(ratio)
+        beta = (eHI - eMD) / (math.exp(-1 * alpha * zMD) * (ratio - 1))
+        energypiece = eHI - beta * math.exp(-1 * alpha * zHI)
 
         # Output string with extrapolation parameters
         cbsscheme  = ''
@@ -1336,12 +1366,9 @@ def scf_xtpl_helgaker_3(**largs):
         cbsscheme += """   MD-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zMD), eMD)
         cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), eHI)
         cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (energypiece)
-        #cbsscheme += """   Alpha Value:                     %16.8f\n""" % (alpha)
-        #cbsscheme += """   Beta Value:                      %16.8f\n""" % (beta)
+        cbsscheme += """   Alpha (exponent) Value:          %16.8f\n""" % (alpha)
+        cbsscheme += """   Beta (coefficient) Value:        %16.8f\n""" % (beta)
         PsiMod.print_out(cbsscheme)
-
-        # Return extrapolated energy
-        energypiece = (eHI * eLO - eMD * eMD) / (eHI + eLO - 2 * eMD)
 
         return energypiece
 
@@ -1371,13 +1398,25 @@ def scf_xtpl_helgaker_2(**largs):
         # Extract required energies and zeta integers from array
         eHI = NEED['HI']['f_energy']
         eLO = NEED['LO']['f_energy']
+        zHI = NEED['HI']['f_zeta']
+        zLO = NEED['LO']['f_zeta']
 
-        alpha = 1.63
-        if(largs.has_key('parameter')):
-            alpha = largs['parameter']
+        # LAB TODO add ability to pass alternate parameter values in
 
         # Return extrapolated energy
-        energypiece = (eHI - eLO * math.exp(-alpha)) / (1 - math.exp(-alpha))
+        alpha = 1.63
+        beta = (eHI - eLO) / (math.exp(-1 * alpha * zLO) * (math.exp(-1 * alpha) - 1))
+        energypiece = eHI - beta * math.exp(-1 * alpha * zHI)
+
+        # Output string with extrapolation parameters
+        cbsscheme  = ''
+        cbsscheme += """\n   ==> %s <==\n\n""" % (functionname)
+        cbsscheme += """   LO-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zLO), eLO)
+        cbsscheme += """   HI-zeta (%s) Correlation Energy:  %16.8f\n""" % (str(zHI), eHI)
+        cbsscheme += """   Extrapolated Correlation Energy: %16.8f\n""" % (energypiece)
+        cbsscheme += """   Alpha (exponent) Value:          %16.8f\n""" % (alpha)
+        cbsscheme += """   Beta (coefficient) Value:        %16.8f\n""" % (beta)
+        PsiMod.print_out(cbsscheme)
 
         return energypiece
 

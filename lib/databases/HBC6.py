@@ -2,8 +2,11 @@ import re
 import input
 
 # <<< HBC6 Database Module >>>
-# Geometries and Reference interaction energies from
-#   Thanthiriwatte et al. JCTC 7 88 (2011).
+# Geometries from Thanthiriwatte et al. JCTC 7 88 (2011).
+# Reference interaction energies from the following articles:
+#   HBC60:    Thanthiriwatte et al. JCTC 7 88 (2011).
+#   HBC6A:    Marshall et al. JCP 135 194102 (2011).  *** DEFAULT ***
+#   HBC6ARLX: Sherrill group, unpublished.
 dbse = 'HBC1'
 
 # <<< Database Members >>>
@@ -30,167 +33,462 @@ HRXN_LG = ['FaNNFaNN-3.6']
 HRXN_EQ = ['FaOOFaOO-3.6', 'FaONFaON-4.0', 'FaNNFaNN-4.1', 'FaOOFaON-3.8', 'FaONFaNN-4.0', 'FaOOFaNN-3.6']
 
 # <<< Chemical Systems Involved >>>
-RXNM = {}     # reaction matrix of reagent contributions per reaction
-ACTV = {}     # order of active reagents per reaction
-ACTV_CP = {}  # order of active reagents per counterpoise-corrected reaction
-ACTV_SA = {}  # order of active reagents for non-supramolecular calculations
+RXNM = {}        # reaction matrix of reagent contributions per reaction
+RXNM_CPRLX = {}  # reaction matrix of reagent contributions per reaction for counterpoise- and deformation-corrected
+ACTV = {}        # order of active reagents per reaction
+ACTV_CP = {}     # order of active reagents per counterpoise-corrected reaction
+ACTV_SA = {}     # order of active reagents for non-supramolecular calculations
+ACTV_RLX = {}    # order of active reagents for deformation-corrected reaction
+ACTV_CPRLX = {}  # order of active reagents for counterpoise- and deformation-corrected reaction
+monopattern = re.compile(r'^(....)(....)-(.+)$')
 for rxn in HRXN:
+   molname = monopattern.match(rxn)
 
    if (rxn in FaOOFaOO) or (rxn in FaONFaON) or (rxn in FaNNFaNN):
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
-                                        '%s-%s-monoA-unCP' % (dbse, rxn) : -2 }
+      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -2,
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -2 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+      RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -2,
+                                           '%s-%s-monoA-unCP' % (dbse, rxn) : +2,
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -2 }
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) ]
+      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-unCP' % (dbse, rxn) ]
+      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-monoA-CP'   % (dbse, rxn) ]
+
+      ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
+
+      ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-monoA-CP'   % (dbse, rxn),
+                                           '%s-%s-monoA-unCP' % (dbse, rxn),
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) ]
+
+      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-monoA-unCP' % (dbse, rxn) ]
 
    elif (rxn in FaOOFaON) or (rxn in FaONFaNN) or (rxn in FaOOFaNN):
-      RXNM[   '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
-                                        '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
-                                        '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
-                                        '%s-%s-monoB-unCP' % (dbse, rxn) : -1 }
+      RXNM[      '%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                           '%s-%s-monoA-unCP' % (dbse, rxn) : -1,
+                                           '%s-%s-monoB-unCP' % (dbse, rxn) : -1,
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -1,
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) : -1 }
 
-      ACTV_SA['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
+      RXNM_CPRLX['%s-%s' % (dbse, rxn)] = {'%s-%s-dimer'      % (dbse, rxn) : +1,
+                                           '%s-%s-monoA-CP'   % (dbse, rxn) : -1,
+                                           '%s-%s-monoB-CP'   % (dbse, rxn) : -1,
+                                           '%s-%s-monoA-unCP' % (dbse, rxn) : +1,
+                                           '%s-%s-monoB-unCP' % (dbse, rxn) : +1,
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)) : -1,
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) : -1 }
 
-      ACTV_CP['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-CP'   % (dbse, rxn),
-                                        '%s-%s-monoB-CP'   % (dbse, rxn) ]
+      ACTV_SA[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn) ]
 
-      ACTV[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
-                                        '%s-%s-monoA-unCP' % (dbse, rxn),
-                                        '%s-%s-monoB-unCP' % (dbse, rxn) ]
+      ACTV_CP[   '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-monoA-CP'   % (dbse, rxn),
+                                           '%s-%s-monoB-CP'   % (dbse, rxn) ]
+
+      ACTV_RLX[  '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
+
+      ACTV_CPRLX['%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-monoA-CP'   % (dbse, rxn),
+                                           '%s-%s-monoB-CP'   % (dbse, rxn),
+                                           '%s-%s-monoA-unCP' % (dbse, rxn),
+                                           '%s-%s-monoB-unCP' % (dbse, rxn),
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(1)),
+                                           '%s-%s-mono-RLX'   % (dbse, molname.group(2)) ]
+
+      ACTV[      '%s-%s' % (dbse, rxn)] = ['%s-%s-dimer'      % (dbse, rxn),
+                                           '%s-%s-monoA-unCP' % (dbse, rxn),
+                                           '%s-%s-monoB-unCP' % (dbse, rxn) ]
 
 # <<< Reference Values >>>
 BIND = {}
-BIND['%s-FaOOFaOO-3.4'  % (dbse)] = -19.834
-BIND['%s-FaOOFaOO-3.5'  % (dbse)] = -20.027
-BIND['%s-FaOOFaOO-3.6'  % (dbse)] = -20.060  # FaOOFaOO minimum
-BIND['%s-FaOOFaOO-3.7'  % (dbse)] = -19.776
-BIND['%s-FaOOFaOO-3.8'  % (dbse)] = -19.132
-BIND['%s-FaOOFaOO-3.9'  % (dbse)] = -18.161
-BIND['%s-FaOOFaOO-4.0'  % (dbse)] = -16.943
-BIND['%s-FaOOFaOO-4.1'  % (dbse)] = -15.574
-BIND['%s-FaOOFaOO-4.2'  % (dbse)] = -14.148
-BIND['%s-FaOOFaOO-4.3'  % (dbse)] = -12.736
-BIND['%s-FaOOFaOO-4.4'  % (dbse)] = -11.392
-BIND['%s-FaOOFaOO-4.6'  % (dbse)] =  -9.014
-BIND['%s-FaOOFaOO-4.8'  % (dbse)] =  -7.091
-BIND['%s-FaOOFaOO-5.0'  % (dbse)] =  -5.590
-BIND['%s-FaOOFaOO-5.4'  % (dbse)] =  -3.548
-BIND['%s-FaOOFaOO-5.8'  % (dbse)] =  -2.325
-BIND['%s-FaOOFaOO-6.4'  % (dbse)] =  -1.320
-BIND['%s-FaOOFaOO-7.0'  % (dbse)] =  -0.801
-BIND['%s-FaOOFaOO-8.0'  % (dbse)] =  -0.394
-BIND['%s-FaOOFaOO-10.0' % (dbse)] =  -0.132
+# Original publication
+BIND_HBC60 = {}
+BIND_HBC60['%s-FaOOFaOO-3.4'  % (dbse)] = -19.834
+BIND_HBC60['%s-FaOOFaOO-3.5'  % (dbse)] = -20.027
+BIND_HBC60['%s-FaOOFaOO-3.6'  % (dbse)] = -20.060  # FaOOFaOO minimum
+BIND_HBC60['%s-FaOOFaOO-3.7'  % (dbse)] = -19.776
+BIND_HBC60['%s-FaOOFaOO-3.8'  % (dbse)] = -19.132
+BIND_HBC60['%s-FaOOFaOO-3.9'  % (dbse)] = -18.161
+BIND_HBC60['%s-FaOOFaOO-4.0'  % (dbse)] = -16.943
+BIND_HBC60['%s-FaOOFaOO-4.1'  % (dbse)] = -15.574
+BIND_HBC60['%s-FaOOFaOO-4.2'  % (dbse)] = -14.148
+BIND_HBC60['%s-FaOOFaOO-4.3'  % (dbse)] = -12.736
+BIND_HBC60['%s-FaOOFaOO-4.4'  % (dbse)] = -11.392
+BIND_HBC60['%s-FaOOFaOO-4.6'  % (dbse)] =  -9.014
+BIND_HBC60['%s-FaOOFaOO-4.8'  % (dbse)] =  -7.091
+BIND_HBC60['%s-FaOOFaOO-5.0'  % (dbse)] =  -5.590
+BIND_HBC60['%s-FaOOFaOO-5.4'  % (dbse)] =  -3.548
+BIND_HBC60['%s-FaOOFaOO-5.8'  % (dbse)] =  -2.325
+BIND_HBC60['%s-FaOOFaOO-6.4'  % (dbse)] =  -1.320
+BIND_HBC60['%s-FaOOFaOO-7.0'  % (dbse)] =  -0.801
+BIND_HBC60['%s-FaOOFaOO-8.0'  % (dbse)] =  -0.394
+BIND_HBC60['%s-FaOOFaOO-10.0' % (dbse)] =  -0.132
 
-BIND['%s-FaONFaON-3.4'  % (dbse)] =  -6.726
-BIND['%s-FaONFaON-3.5'  % (dbse)] = -10.191
-BIND['%s-FaONFaON-3.6'  % (dbse)] = -12.781
-BIND['%s-FaONFaON-3.7'  % (dbse)] = -14.667
-BIND['%s-FaONFaON-3.8'  % (dbse)] = -15.919
-BIND['%s-FaONFaON-3.9'  % (dbse)] = -16.582
-BIND['%s-FaONFaON-4.0'  % (dbse)] = -16.714  # FaONFaON minimum
-BIND['%s-FaONFaON-4.1'  % (dbse)] = -16.391
-BIND['%s-FaONFaON-4.2'  % (dbse)] = -15.713
-BIND['%s-FaONFaON-4.3'  % (dbse)] = -14.790
-BIND['%s-FaONFaON-4.4'  % (dbse)] = -13.723
-BIND['%s-FaONFaON-4.6'  % (dbse)] = -11.480
-BIND['%s-FaONFaON-4.8'  % (dbse)] =  -9.401
-BIND['%s-FaONFaON-5.0'  % (dbse)] =  -7.642
-BIND['%s-FaONFaON-5.4'  % (dbse)] =  -5.108
-BIND['%s-FaONFaON-5.8'  % (dbse)] =  -3.537
-BIND['%s-FaONFaON-6.4'  % (dbse)] =  -2.187
-BIND['%s-FaONFaON-7.0'  % (dbse)] =  -1.448
-BIND['%s-FaONFaON-8.0'  % (dbse)] =  -0.816
-BIND['%s-FaONFaON-10.0' % (dbse)] =  -0.340
+BIND_HBC60['%s-FaONFaON-3.4'  % (dbse)] =  -6.726
+BIND_HBC60['%s-FaONFaON-3.5'  % (dbse)] = -10.191
+BIND_HBC60['%s-FaONFaON-3.6'  % (dbse)] = -12.781
+BIND_HBC60['%s-FaONFaON-3.7'  % (dbse)] = -14.667
+BIND_HBC60['%s-FaONFaON-3.8'  % (dbse)] = -15.919
+BIND_HBC60['%s-FaONFaON-3.9'  % (dbse)] = -16.582
+BIND_HBC60['%s-FaONFaON-4.0'  % (dbse)] = -16.714  # FaONFaON minimum
+BIND_HBC60['%s-FaONFaON-4.1'  % (dbse)] = -16.391
+BIND_HBC60['%s-FaONFaON-4.2'  % (dbse)] = -15.713
+BIND_HBC60['%s-FaONFaON-4.3'  % (dbse)] = -14.790
+BIND_HBC60['%s-FaONFaON-4.4'  % (dbse)] = -13.723
+BIND_HBC60['%s-FaONFaON-4.6'  % (dbse)] = -11.480
+BIND_HBC60['%s-FaONFaON-4.8'  % (dbse)] =  -9.401
+BIND_HBC60['%s-FaONFaON-5.0'  % (dbse)] =  -7.642
+BIND_HBC60['%s-FaONFaON-5.4'  % (dbse)] =  -5.108
+BIND_HBC60['%s-FaONFaON-5.8'  % (dbse)] =  -3.537
+BIND_HBC60['%s-FaONFaON-6.4'  % (dbse)] =  -2.187
+BIND_HBC60['%s-FaONFaON-7.0'  % (dbse)] =  -1.448
+BIND_HBC60['%s-FaONFaON-8.0'  % (dbse)] =  -0.816
+BIND_HBC60['%s-FaONFaON-10.0' % (dbse)] =  -0.340
 
-BIND['%s-FaNNFaNN-3.4'  % (dbse)] =  -8.987
-BIND['%s-FaNNFaNN-3.5'  % (dbse)] = -10.969
-BIND['%s-FaNNFaNN-3.6'  % (dbse)] = -12.693
-BIND['%s-FaNNFaNN-3.7'  % (dbse)] = -14.144
-BIND['%s-FaNNFaNN-3.8'  % (dbse)] = -15.287
-BIND['%s-FaNNFaNN-3.9'  % (dbse)] = -16.118
-BIND['%s-FaNNFaNN-4.0'  % (dbse)] = -16.587
-BIND['%s-FaNNFaNN-4.1'  % (dbse)] = -16.702  # FaNNFaNN minimum
-BIND['%s-FaNNFaNN-4.2'  % (dbse)] = -16.452
-BIND['%s-FaNNFaNN-4.3'  % (dbse)] = -15.901
-BIND['%s-FaNNFaNN-4.4'  % (dbse)] = -15.102
-BIND['%s-FaNNFaNN-4.6'  % (dbse)] = -13.047
-BIND['%s-FaNNFaNN-4.8'  % (dbse)] = -10.810
-BIND['%s-FaNNFaNN-5.0'  % (dbse)] =  -8.733
-BIND['%s-FaNNFaNN-5.4'  % (dbse)] =  -5.539
-BIND['%s-FaNNFaNN-5.8'  % (dbse)] =  -3.521
-BIND['%s-FaNNFaNN-6.4'  % (dbse)] =  -1.861
-BIND['%s-FaNNFaNN-7.0'  % (dbse)] =  -1.050
-BIND['%s-FaNNFaNN-8.0'  % (dbse)] =  -0.463
-BIND['%s-FaNNFaNN-10.0' % (dbse)] =  -0.123
+BIND_HBC60['%s-FaNNFaNN-3.4'  % (dbse)] =  -8.987
+BIND_HBC60['%s-FaNNFaNN-3.5'  % (dbse)] = -10.969
+BIND_HBC60['%s-FaNNFaNN-3.6'  % (dbse)] = -12.693
+BIND_HBC60['%s-FaNNFaNN-3.7'  % (dbse)] = -14.144
+BIND_HBC60['%s-FaNNFaNN-3.8'  % (dbse)] = -15.287
+BIND_HBC60['%s-FaNNFaNN-3.9'  % (dbse)] = -16.118
+BIND_HBC60['%s-FaNNFaNN-4.0'  % (dbse)] = -16.587
+BIND_HBC60['%s-FaNNFaNN-4.1'  % (dbse)] = -16.702  # FaNNFaNN minimum
+BIND_HBC60['%s-FaNNFaNN-4.2'  % (dbse)] = -16.452
+BIND_HBC60['%s-FaNNFaNN-4.3'  % (dbse)] = -15.901
+BIND_HBC60['%s-FaNNFaNN-4.4'  % (dbse)] = -15.102
+BIND_HBC60['%s-FaNNFaNN-4.6'  % (dbse)] = -13.047
+BIND_HBC60['%s-FaNNFaNN-4.8'  % (dbse)] = -10.810
+BIND_HBC60['%s-FaNNFaNN-5.0'  % (dbse)] =  -8.733
+BIND_HBC60['%s-FaNNFaNN-5.4'  % (dbse)] =  -5.539
+BIND_HBC60['%s-FaNNFaNN-5.8'  % (dbse)] =  -3.521
+BIND_HBC60['%s-FaNNFaNN-6.4'  % (dbse)] =  -1.861
+BIND_HBC60['%s-FaNNFaNN-7.0'  % (dbse)] =  -1.050
+BIND_HBC60['%s-FaNNFaNN-8.0'  % (dbse)] =  -0.463
+BIND_HBC60['%s-FaNNFaNN-10.0' % (dbse)] =  -0.123
 
-BIND['%s-FaOOFaON-3.4'  % (dbse)] = -14.356
-BIND['%s-FaOOFaON-3.5'  % (dbse)] = -16.486
-BIND['%s-FaOOFaON-3.6'  % (dbse)] = -17.833
-BIND['%s-FaOOFaON-3.7'  % (dbse)] = -18.543
-BIND['%s-FaOOFaON-3.8'  % (dbse)] = -18.692  # FaOOFaON minimum
-BIND['%s-FaOOFaON-3.9'  % (dbse)] = -18.347
-BIND['%s-FaOOFaON-4.0'  % (dbse)] = -17.592
-BIND['%s-FaOOFaON-4.1'  % (dbse)] = -16.537
-BIND['%s-FaOOFaON-4.2'  % (dbse)] = -15.300
-BIND['%s-FaOOFaON-4.3'  % (dbse)] = -13.989
-BIND['%s-FaOOFaON-4.4'  % (dbse)] = -12.684
-BIND['%s-FaOOFaON-4.6'  % (dbse)] = -10.274
-BIND['%s-FaOOFaON-4.8'  % (dbse)] =  -8.245
-BIND['%s-FaOOFaON-5.0'  % (dbse)] =  -6.613
-BIND['%s-FaOOFaON-5.4'  % (dbse)] =  -4.330
-BIND['%s-FaOOFaON-5.8'  % (dbse)] =  -2.935
-BIND['%s-FaOOFaON-6.4'  % (dbse)] =  -1.753
-BIND['%s-FaOOFaON-7.0'  % (dbse)] =  -1.121
-BIND['%s-FaOOFaON-8.0'  % (dbse)] =  -0.598
-BIND['%s-FaOOFaON-10.0' % (dbse)] =  -0.227
+BIND_HBC60['%s-FaOOFaON-3.4'  % (dbse)] = -14.356
+BIND_HBC60['%s-FaOOFaON-3.5'  % (dbse)] = -16.486
+BIND_HBC60['%s-FaOOFaON-3.6'  % (dbse)] = -17.833
+BIND_HBC60['%s-FaOOFaON-3.7'  % (dbse)] = -18.543
+BIND_HBC60['%s-FaOOFaON-3.8'  % (dbse)] = -18.692  # FaOOFaON minimum
+BIND_HBC60['%s-FaOOFaON-3.9'  % (dbse)] = -18.347
+BIND_HBC60['%s-FaOOFaON-4.0'  % (dbse)] = -17.592
+BIND_HBC60['%s-FaOOFaON-4.1'  % (dbse)] = -16.537
+BIND_HBC60['%s-FaOOFaON-4.2'  % (dbse)] = -15.300
+BIND_HBC60['%s-FaOOFaON-4.3'  % (dbse)] = -13.989
+BIND_HBC60['%s-FaOOFaON-4.4'  % (dbse)] = -12.684
+BIND_HBC60['%s-FaOOFaON-4.6'  % (dbse)] = -10.274
+BIND_HBC60['%s-FaOOFaON-4.8'  % (dbse)] =  -8.245
+BIND_HBC60['%s-FaOOFaON-5.0'  % (dbse)] =  -6.613
+BIND_HBC60['%s-FaOOFaON-5.4'  % (dbse)] =  -4.330
+BIND_HBC60['%s-FaOOFaON-5.8'  % (dbse)] =  -2.935
+BIND_HBC60['%s-FaOOFaON-6.4'  % (dbse)] =  -1.753
+BIND_HBC60['%s-FaOOFaON-7.0'  % (dbse)] =  -1.121
+BIND_HBC60['%s-FaOOFaON-8.0'  % (dbse)] =  -0.598
+BIND_HBC60['%s-FaOOFaON-10.0' % (dbse)] =  -0.227
 
-BIND['%s-FaONFaNN-3.4'  % (dbse)] =  -8.239
-BIND['%s-FaONFaNN-3.5'  % (dbse)] = -10.918
-BIND['%s-FaONFaNN-3.6'  % (dbse)] = -13.055
-BIND['%s-FaONFaNN-3.7'  % (dbse)] = -14.717
-BIND['%s-FaONFaNN-3.8'  % (dbse)] = -15.921
-BIND['%s-FaONFaNN-3.9'  % (dbse)] = -16.672
-BIND['%s-FaONFaNN-4.0'  % (dbse)] = -16.977  # FaONFaNN minimum
-BIND['%s-FaONFaNN-4.1'  % (dbse)] = -16.865
-BIND['%s-FaONFaNN-4.2'  % (dbse)] = -16.390
-BIND['%s-FaONFaNN-4.3'  % (dbse)] = -15.631
-BIND['%s-FaONFaNN-4.4'  % (dbse)] = -14.676
-BIND['%s-FaONFaNN-4.6'  % (dbse)] = -12.490
-BIND['%s-FaONFaNN-4.8'  % (dbse)] = -10.304
-BIND['%s-FaONFaNN-5.0'  % (dbse)] =  -8.362
-BIND['%s-FaONFaNN-5.4'  % (dbse)] =  -5.445
-BIND['%s-FaONFaNN-5.8'  % (dbse)] =  -3.617
-BIND['%s-FaONFaNN-6.4'  % (dbse)] =  -2.087
-BIND['%s-FaONFaNN-7.0'  % (dbse)] =  -1.295
-BIND['%s-FaONFaNN-8.0'  % (dbse)] =  -0.663
-BIND['%s-FaONFaNN-10.0' % (dbse)] =  -0.237
+BIND_HBC60['%s-FaONFaNN-3.4'  % (dbse)] =  -8.239
+BIND_HBC60['%s-FaONFaNN-3.5'  % (dbse)] = -10.918
+BIND_HBC60['%s-FaONFaNN-3.6'  % (dbse)] = -13.055
+BIND_HBC60['%s-FaONFaNN-3.7'  % (dbse)] = -14.717
+BIND_HBC60['%s-FaONFaNN-3.8'  % (dbse)] = -15.921
+BIND_HBC60['%s-FaONFaNN-3.9'  % (dbse)] = -16.672
+BIND_HBC60['%s-FaONFaNN-4.0'  % (dbse)] = -16.977  # FaONFaNN minimum
+BIND_HBC60['%s-FaONFaNN-4.1'  % (dbse)] = -16.865
+BIND_HBC60['%s-FaONFaNN-4.2'  % (dbse)] = -16.390
+BIND_HBC60['%s-FaONFaNN-4.3'  % (dbse)] = -15.631
+BIND_HBC60['%s-FaONFaNN-4.4'  % (dbse)] = -14.676
+BIND_HBC60['%s-FaONFaNN-4.6'  % (dbse)] = -12.490
+BIND_HBC60['%s-FaONFaNN-4.8'  % (dbse)] = -10.304
+BIND_HBC60['%s-FaONFaNN-5.0'  % (dbse)] =  -8.362
+BIND_HBC60['%s-FaONFaNN-5.4'  % (dbse)] =  -5.445
+BIND_HBC60['%s-FaONFaNN-5.8'  % (dbse)] =  -3.617
+BIND_HBC60['%s-FaONFaNN-6.4'  % (dbse)] =  -2.087
+BIND_HBC60['%s-FaONFaNN-7.0'  % (dbse)] =  -1.295
+BIND_HBC60['%s-FaONFaNN-8.0'  % (dbse)] =  -0.663
+BIND_HBC60['%s-FaONFaNN-10.0' % (dbse)] =  -0.237
 
-BIND['%s-FaOOFaNN-3.6'  % (dbse)] = -26.289  # FaNNFaNN minimum
-BIND['%s-FaOOFaNN-3.7'  % (dbse)] = -24.035
-BIND['%s-FaOOFaNN-3.8'  % (dbse)] = -23.017
-BIND['%s-FaOOFaNN-3.9'  % (dbse)] = -22.133
-BIND['%s-FaOOFaNN-4.0'  % (dbse)] = -21.122
-BIND['%s-FaOOFaNN-4.1'  % (dbse)] = -19.920
-BIND['%s-FaOOFaNN-4.2'  % (dbse)] = -18.544
-BIND['%s-FaOOFaNN-4.3'  % (dbse)] = -17.056
-BIND['%s-FaOOFaNN-4.4'  % (dbse)] = -15.526
-BIND['%s-FaOOFaNN-4.6'  % (dbse)] = -12.583
-BIND['%s-FaOOFaNN-4.8'  % (dbse)] = -10.031
-BIND['%s-FaOOFaNN-5.0'  % (dbse)] =  -7.960
-BIND['%s-FaOOFaNN-5.4'  % (dbse)] =  -5.069
-BIND['%s-FaOOFaNN-5.8'  % (dbse)] =  -3.336
-BIND['%s-FaOOFaNN-6.4'  % (dbse)] =  -1.906
-BIND['%s-FaOOFaNN-7.0'  % (dbse)] =  -1.170
-BIND['%s-FaOOFaNN-8.0'  % (dbse)] =  -0.587
-BIND['%s-FaOOFaNN-10.0' % (dbse)] =  -0.202
+BIND_HBC60['%s-FaOOFaNN-3.6'  % (dbse)] = -26.289  # FaNNFaNN minimum
+BIND_HBC60['%s-FaOOFaNN-3.7'  % (dbse)] = -24.035
+BIND_HBC60['%s-FaOOFaNN-3.8'  % (dbse)] = -23.017
+BIND_HBC60['%s-FaOOFaNN-3.9'  % (dbse)] = -22.133
+BIND_HBC60['%s-FaOOFaNN-4.0'  % (dbse)] = -21.122
+BIND_HBC60['%s-FaOOFaNN-4.1'  % (dbse)] = -19.920
+BIND_HBC60['%s-FaOOFaNN-4.2'  % (dbse)] = -18.544
+BIND_HBC60['%s-FaOOFaNN-4.3'  % (dbse)] = -17.056
+BIND_HBC60['%s-FaOOFaNN-4.4'  % (dbse)] = -15.526
+BIND_HBC60['%s-FaOOFaNN-4.6'  % (dbse)] = -12.583
+BIND_HBC60['%s-FaOOFaNN-4.8'  % (dbse)] = -10.031
+BIND_HBC60['%s-FaOOFaNN-5.0'  % (dbse)] =  -7.960
+BIND_HBC60['%s-FaOOFaNN-5.4'  % (dbse)] =  -5.069
+BIND_HBC60['%s-FaOOFaNN-5.8'  % (dbse)] =  -3.336
+BIND_HBC60['%s-FaOOFaNN-6.4'  % (dbse)] =  -1.906
+BIND_HBC60['%s-FaOOFaNN-7.0'  % (dbse)] =  -1.170
+BIND_HBC60['%s-FaOOFaNN-8.0'  % (dbse)] =  -0.587
+BIND_HBC60['%s-FaOOFaNN-10.0' % (dbse)] =  -0.202
+# Current revision
+BIND_HBC6A = {}
+BIND_HBC6A['%s-FaOOFaOO-3.4'  % (dbse)] = -19.627
+BIND_HBC6A['%s-FaOOFaOO-3.5'  % (dbse)] = -19.850
+BIND_HBC6A['%s-FaOOFaOO-3.6'  % (dbse)] = -19.910  # FaOOFaOO minimum
+BIND_HBC6A['%s-FaOOFaOO-3.7'  % (dbse)] = -19.650
+BIND_HBC6A['%s-FaOOFaOO-3.8'  % (dbse)] = -19.027
+BIND_HBC6A['%s-FaOOFaOO-3.9'  % (dbse)] = -18.075
+BIND_HBC6A['%s-FaOOFaOO-4.0'  % (dbse)] = -16.873
+BIND_HBC6A['%s-FaOOFaOO-4.1'  % (dbse)] = -15.517
+BIND_HBC6A['%s-FaOOFaOO-4.2'  % (dbse)] = -14.100
+BIND_HBC6A['%s-FaOOFaOO-4.3'  % (dbse)] = -12.697
+BIND_HBC6A['%s-FaOOFaOO-4.4'  % (dbse)] = -11.360
+BIND_HBC6A['%s-FaOOFaOO-4.6'  % (dbse)] =  -8.990
+BIND_HBC6A['%s-FaOOFaOO-4.8'  % (dbse)] =  -7.074
+BIND_HBC6A['%s-FaOOFaOO-5.0'  % (dbse)] =  -5.577
+BIND_HBC6A['%s-FaOOFaOO-5.4'  % (dbse)] =  -3.539
+BIND_HBC6A['%s-FaOOFaOO-5.8'  % (dbse)] =  -2.323
+BIND_HBC6A['%s-FaOOFaOO-6.4'  % (dbse)] =  -1.320
+BIND_HBC6A['%s-FaOOFaOO-7.0'  % (dbse)] =  -0.802
+BIND_HBC6A['%s-FaOOFaOO-8.0'  % (dbse)] =  -0.397
+BIND_HBC6A['%s-FaOOFaOO-10.0' % (dbse)] =  -0.135
+
+BIND_HBC6A['%s-FaONFaON-3.4'  % (dbse)] =  -6.556
+BIND_HBC6A['%s-FaONFaON-3.5'  % (dbse)] = -10.027
+BIND_HBC6A['%s-FaONFaON-3.6'  % (dbse)] = -12.628
+BIND_HBC6A['%s-FaONFaON-3.7'  % (dbse)] = -14.529
+BIND_HBC6A['%s-FaONFaON-3.8'  % (dbse)] = -15.796
+BIND_HBC6A['%s-FaONFaON-3.9'  % (dbse)] = -16.475
+BIND_HBC6A['%s-FaONFaON-4.0'  % (dbse)] = -16.622  # FaONFaON minimum
+BIND_HBC6A['%s-FaONFaON-4.1'  % (dbse)] = -16.313
+BIND_HBC6A['%s-FaONFaON-4.2'  % (dbse)] = -15.647
+BIND_HBC6A['%s-FaONFaON-4.3'  % (dbse)] = -14.735
+BIND_HBC6A['%s-FaONFaON-4.4'  % (dbse)] = -13.678
+BIND_HBC6A['%s-FaONFaON-4.6'  % (dbse)] = -11.448
+BIND_HBC6A['%s-FaONFaON-4.8'  % (dbse)] =  -9.379
+BIND_HBC6A['%s-FaONFaON-5.0'  % (dbse)] =  -7.626
+BIND_HBC6A['%s-FaONFaON-5.4'  % (dbse)] =  -5.097
+BIND_HBC6A['%s-FaONFaON-5.8'  % (dbse)] =  -3.528
+BIND_HBC6A['%s-FaONFaON-6.4'  % (dbse)] =  -2.181
+BIND_HBC6A['%s-FaONFaON-7.0'  % (dbse)] =  -1.443
+BIND_HBC6A['%s-FaONFaON-8.0'  % (dbse)] =  -0.813
+BIND_HBC6A['%s-FaONFaON-10.0' % (dbse)] =  -0.337
+
+BIND_HBC6A['%s-FaNNFaNN-3.4'  % (dbse)] =  -8.730
+BIND_HBC6A['%s-FaNNFaNN-3.5'  % (dbse)] = -10.725
+BIND_HBC6A['%s-FaNNFaNN-3.6'  % (dbse)] = -12.463
+BIND_HBC6A['%s-FaNNFaNN-3.7'  % (dbse)] = -13.932
+BIND_HBC6A['%s-FaNNFaNN-3.8'  % (dbse)] = -15.106
+BIND_HBC6A['%s-FaNNFaNN-3.9'  % (dbse)] = -15.950
+BIND_HBC6A['%s-FaNNFaNN-4.0'  % (dbse)] = -16.440
+BIND_HBC6A['%s-FaNNFaNN-4.1'  % (dbse)] = -16.575  # FaNNFaNN minimum
+BIND_HBC6A['%s-FaNNFaNN-4.2'  % (dbse)] = -16.344
+BIND_HBC6A['%s-FaNNFaNN-4.3'  % (dbse)] = -15.811
+BIND_HBC6A['%s-FaNNFaNN-4.4'  % (dbse)] = -15.028
+BIND_HBC6A['%s-FaNNFaNN-4.6'  % (dbse)] = -12.999
+BIND_HBC6A['%s-FaNNFaNN-4.8'  % (dbse)] = -10.780
+BIND_HBC6A['%s-FaNNFaNN-5.0'  % (dbse)] =  -8.715
+BIND_HBC6A['%s-FaNNFaNN-5.4'  % (dbse)] =  -5.532
+BIND_HBC6A['%s-FaNNFaNN-5.8'  % (dbse)] =  -3.517
+BIND_HBC6A['%s-FaNNFaNN-6.4'  % (dbse)] =  -1.861
+BIND_HBC6A['%s-FaNNFaNN-7.0'  % (dbse)] =  -1.051
+BIND_HBC6A['%s-FaNNFaNN-8.0'  % (dbse)] =  -0.466
+BIND_HBC6A['%s-FaNNFaNN-10.0' % (dbse)] =  -0.127
+
+BIND_HBC6A['%s-FaOOFaON-3.4'  % (dbse)] = -14.164
+BIND_HBC6A['%s-FaOOFaON-3.5'  % (dbse)] = -16.312
+BIND_HBC6A['%s-FaOOFaON-3.6'  % (dbse)] = -17.679
+BIND_HBC6A['%s-FaOOFaON-3.7'  % (dbse)] = -18.409
+BIND_HBC6A['%s-FaOOFaON-3.8'  % (dbse)] = -18.578  # FaOOFaON minimum
+BIND_HBC6A['%s-FaOOFaON-3.9'  % (dbse)] = -18.250
+BIND_HBC6A['%s-FaOOFaON-4.0'  % (dbse)] = -17.512
+BIND_HBC6A['%s-FaOOFaON-4.1'  % (dbse)] = -16.471
+BIND_HBC6A['%s-FaOOFaON-4.2'  % (dbse)] = -15.245
+BIND_HBC6A['%s-FaOOFaON-4.3'  % (dbse)] = -13.944
+BIND_HBC6A['%s-FaOOFaON-4.4'  % (dbse)] = -12.647
+BIND_HBC6A['%s-FaOOFaON-4.6'  % (dbse)] = -10.248
+BIND_HBC6A['%s-FaOOFaON-4.8'  % (dbse)] =  -8.227
+BIND_HBC6A['%s-FaOOFaON-5.0'  % (dbse)] =  -6.597
+BIND_HBC6A['%s-FaOOFaON-5.4'  % (dbse)] =  -4.321
+BIND_HBC6A['%s-FaOOFaON-5.8'  % (dbse)] =  -2.931
+BIND_HBC6A['%s-FaOOFaON-6.4'  % (dbse)] =  -1.751
+BIND_HBC6A['%s-FaOOFaON-7.0'  % (dbse)] =  -1.119
+BIND_HBC6A['%s-FaOOFaON-8.0'  % (dbse)] =  -0.597
+BIND_HBC6A['%s-FaOOFaON-10.0' % (dbse)] =  -0.228
+
+BIND_HBC6A['%s-FaONFaNN-3.4'  % (dbse)] =  -8.021
+BIND_HBC6A['%s-FaONFaNN-3.5'  % (dbse)] = -10.711
+BIND_HBC6A['%s-FaONFaNN-3.6'  % (dbse)] = -12.862
+BIND_HBC6A['%s-FaONFaNN-3.7'  % (dbse)] = -14.539
+BIND_HBC6A['%s-FaONFaNN-3.8'  % (dbse)] = -15.763
+BIND_HBC6A['%s-FaONFaNN-3.9'  % (dbse)] = -16.532
+BIND_HBC6A['%s-FaONFaNN-4.0'  % (dbse)] = -16.856  # FaONFaNN minimum
+BIND_HBC6A['%s-FaONFaNN-4.1'  % (dbse)] = -16.760
+BIND_HBC6A['%s-FaONFaNN-4.2'  % (dbse)] = -16.301
+BIND_HBC6A['%s-FaONFaNN-4.3'  % (dbse)] = -15.557
+BIND_HBC6A['%s-FaONFaNN-4.4'  % (dbse)] = -14.614
+BIND_HBC6A['%s-FaONFaNN-4.6'  % (dbse)] = -12.448
+BIND_HBC6A['%s-FaONFaNN-4.8'  % (dbse)] = -10.277
+BIND_HBC6A['%s-FaONFaNN-5.0'  % (dbse)] =  -8.341
+BIND_HBC6A['%s-FaONFaNN-5.4'  % (dbse)] =  -5.434
+BIND_HBC6A['%s-FaONFaNN-5.8'  % (dbse)] =  -3.609
+BIND_HBC6A['%s-FaONFaNN-6.4'  % (dbse)] =  -2.082
+BIND_HBC6A['%s-FaONFaNN-7.0'  % (dbse)] =  -1.292
+BIND_HBC6A['%s-FaONFaNN-8.0'  % (dbse)] =  -0.661
+BIND_HBC6A['%s-FaONFaNN-10.0' % (dbse)] =  -0.237
+
+BIND_HBC6A['%s-FaOOFaNN-3.6'  % (dbse)] = -26.064  # FaOOFaNN minimum
+BIND_HBC6A['%s-FaOOFaNN-3.7'  % (dbse)] = -23.841
+BIND_HBC6A['%s-FaOOFaNN-3.8'  % (dbse)] = -22.850
+BIND_HBC6A['%s-FaOOFaNN-3.9'  % (dbse)] = -21.990
+BIND_HBC6A['%s-FaOOFaNN-4.0'  % (dbse)] = -21.002
+BIND_HBC6A['%s-FaOOFaNN-4.1'  % (dbse)] = -19.819
+BIND_HBC6A['%s-FaOOFaNN-4.2'  % (dbse)] = -18.461
+BIND_HBC6A['%s-FaOOFaNN-4.3'  % (dbse)] = -16.988
+BIND_HBC6A['%s-FaOOFaNN-4.4'  % (dbse)] = -15.471
+BIND_HBC6A['%s-FaOOFaNN-4.6'  % (dbse)] = -12.546
+BIND_HBC6A['%s-FaOOFaNN-4.8'  % (dbse)] = -10.006
+BIND_HBC6A['%s-FaOOFaNN-5.0'  % (dbse)] =  -7.942
+BIND_HBC6A['%s-FaOOFaNN-5.4'  % (dbse)] =  -5.058
+BIND_HBC6A['%s-FaOOFaNN-5.8'  % (dbse)] =  -3.328
+BIND_HBC6A['%s-FaOOFaNN-6.4'  % (dbse)] =  -1.900
+BIND_HBC6A['%s-FaOOFaNN-7.0'  % (dbse)] =  -1.166
+BIND_HBC6A['%s-FaOOFaNN-8.0'  % (dbse)] =  -0.584
+BIND_HBC6A['%s-FaOOFaNN-10.0' % (dbse)] =  -0.200
+# Current revision level with deformation correction
+BIND_HBC6ARLX = {}
+BIND_HBC6ARLX['%s-FaOOFaOO-3.4'  % (dbse)] =  -7.072
+BIND_HBC6ARLX['%s-FaOOFaOO-3.5'  % (dbse)] = -11.415
+BIND_HBC6ARLX['%s-FaOOFaOO-3.6'  % (dbse)] = -14.186
+BIND_HBC6ARLX['%s-FaOOFaOO-3.7'  % (dbse)] = -15.667
+BIND_HBC6ARLX['%s-FaOOFaOO-3.8'  % (dbse)] = -16.146  # FaOOFaOO minimum
+BIND_HBC6ARLX['%s-FaOOFaOO-3.9'  % (dbse)] = -15.900
+BIND_HBC6ARLX['%s-FaOOFaOO-4.0'  % (dbse)] = -15.171
+BIND_HBC6ARLX['%s-FaOOFaOO-4.1'  % (dbse)] = -14.153
+BIND_HBC6ARLX['%s-FaOOFaOO-4.2'  % (dbse)] = -12.993
+BIND_HBC6ARLX['%s-FaOOFaOO-4.3'  % (dbse)] = -11.792
+BIND_HBC6ARLX['%s-FaOOFaOO-4.4'  % (dbse)] = -10.617
+BIND_HBC6ARLX['%s-FaOOFaOO-4.6'  % (dbse)] =  -8.486
+BIND_HBC6ARLX['%s-FaOOFaOO-4.8'  % (dbse)] =  -6.731
+BIND_HBC6ARLX['%s-FaOOFaOO-5.0'  % (dbse)] =  -5.341
+BIND_HBC6ARLX['%s-FaOOFaOO-5.4'  % (dbse)] =  -3.416
+BIND_HBC6ARLX['%s-FaOOFaOO-5.8'  % (dbse)] =  -2.251
+BIND_HBC6ARLX['%s-FaOOFaOO-6.4'  % (dbse)] =  -1.284
+BIND_HBC6ARLX['%s-FaOOFaOO-7.0'  % (dbse)] =  -0.784
+BIND_HBC6ARLX['%s-FaOOFaOO-8.0'  % (dbse)] =  -0.389
+BIND_HBC6ARLX['%s-FaOOFaOO-10.0' % (dbse)] =  -0.133
+
+BIND_HBC6ARLX['%s-FaONFaON-3.4'  % (dbse)] =   4.943
+BIND_HBC6ARLX['%s-FaONFaON-3.5'  % (dbse)] =  -1.431
+BIND_HBC6ARLX['%s-FaONFaON-3.6'  % (dbse)] =  -6.432
+BIND_HBC6ARLX['%s-FaONFaON-3.7'  % (dbse)] = -10.102
+BIND_HBC6ARLX['%s-FaONFaON-3.8'  % (dbse)] = -12.566
+BIND_HBC6ARLX['%s-FaONFaON-3.9'  % (dbse)] = -14.000
+BIND_HBC6ARLX['%s-FaONFaON-4.0'  % (dbse)] = -14.603  # FaONFaON minimum
+BIND_HBC6ARLX['%s-FaONFaON-4.1'  % (dbse)] = -14.579
+BIND_HBC6ARLX['%s-FaONFaON-4.2'  % (dbse)] = -14.112
+BIND_HBC6ARLX['%s-FaONFaON-4.3'  % (dbse)] = -13.361
+BIND_HBC6ARLX['%s-FaONFaON-4.4'  % (dbse)] = -12.451
+BIND_HBC6ARLX['%s-FaONFaON-4.6'  % (dbse)] = -10.489
+BIND_HBC6ARLX['%s-FaONFaON-4.8'  % (dbse)] =  -8.655
+BIND_HBC6ARLX['%s-FaONFaON-5.0'  % (dbse)] =  -7.101
+BIND_HBC6ARLX['%s-FaONFaON-5.4'  % (dbse)] =  -4.830
+BIND_HBC6ARLX['%s-FaONFaON-5.8'  % (dbse)] =  -3.380
+BIND_HBC6ARLX['%s-FaONFaON-6.4'  % (dbse)] =  -2.110
+BIND_HBC6ARLX['%s-FaONFaON-7.0'  % (dbse)] =  -1.403
+BIND_HBC6ARLX['%s-FaONFaON-8.0'  % (dbse)] =  -0.794
+BIND_HBC6ARLX['%s-FaONFaON-10.0' % (dbse)] =  -0.331
+
+BIND_HBC6ARLX['%s-FaNNFaNN-3.4'  % (dbse)] =  14.652
+BIND_HBC6ARLX['%s-FaNNFaNN-3.5'  % (dbse)] =   6.948
+BIND_HBC6ARLX['%s-FaNNFaNN-3.6'  % (dbse)] =   0.563
+BIND_HBC6ARLX['%s-FaNNFaNN-3.7'  % (dbse)] =  -4.544
+BIND_HBC6ARLX['%s-FaNNFaNN-3.8'  % (dbse)] =  -8.441
+BIND_HBC6ARLX['%s-FaNNFaNN-3.9'  % (dbse)] = -11.223
+BIND_HBC6ARLX['%s-FaNNFaNN-4.0'  % (dbse)] = -13.021
+BIND_HBC6ARLX['%s-FaNNFaNN-4.1'  % (dbse)] = -13.996
+BIND_HBC6ARLX['%s-FaNNFaNN-4.2'  % (dbse)] = -14.285  # FaNNFaNN minimum
+BIND_HBC6ARLX['%s-FaNNFaNN-4.3'  % (dbse)] = -14.074
+BIND_HBC6ARLX['%s-FaNNFaNN-4.4'  % (dbse)] = -13.501
+BIND_HBC6ARLX['%s-FaNNFaNN-4.6'  % (dbse)] = -11.755
+BIND_HBC6ARLX['%s-FaNNFaNN-4.8'  % (dbse)] =  -9.767
+BIND_HBC6ARLX['%s-FaNNFaNN-5.0'  % (dbse)] =  -7.915
+BIND_HBC6ARLX['%s-FaNNFaNN-5.4'  % (dbse)] =  -5.073
+BIND_HBC6ARLX['%s-FaNNFaNN-5.8'  % (dbse)] =  -3.259
+BIND_HBC6ARLX['%s-FaNNFaNN-6.4'  % (dbse)] =  -1.742
+BIND_HBC6ARLX['%s-FaNNFaNN-7.0'  % (dbse)] =  -0.990
+BIND_HBC6ARLX['%s-FaNNFaNN-8.0'  % (dbse)] =  -0.441
+BIND_HBC6ARLX['%s-FaNNFaNN-10.0' % (dbse)] =  -0.121
+
+BIND_HBC6ARLX['%s-FaOOFaON-3.4'  % (dbse)] =  -2.134
+BIND_HBC6ARLX['%s-FaOOFaON-3.5'  % (dbse)] =  -7.505
+BIND_HBC6ARLX['%s-FaOOFaON-3.6'  % (dbse)] = -11.323
+BIND_HBC6ARLX['%s-FaOOFaON-3.7'  % (dbse)] = -13.775
+BIND_HBC6ARLX['%s-FaOOFaON-3.8'  % (dbse)] = -15.093
+BIND_HBC6ARLX['%s-FaOOFaON-3.9'  % (dbse)] = -15.524  # FaOOFaON minimum
+BIND_HBC6ARLX['%s-FaOOFaON-4.0'  % (dbse)] = -15.308
+BIND_HBC6ARLX['%s-FaOOFaON-4.1'  % (dbse)] = -14.658
+BIND_HBC6ARLX['%s-FaOOFaON-4.2'  % (dbse)] = -13.747
+BIND_HBC6ARLX['%s-FaOOFaON-4.3'  % (dbse)] = -12.705
+BIND_HBC6ARLX['%s-FaOOFaON-4.4'  % (dbse)] = -11.620
+BIND_HBC6ARLX['%s-FaOOFaON-4.6'  % (dbse)] =  -9.536
+BIND_HBC6ARLX['%s-FaOOFaON-4.8'  % (dbse)] =  -7.730
+BIND_HBC6ARLX['%s-FaOOFaON-5.0'  % (dbse)] =  -6.252
+BIND_HBC6ARLX['%s-FaOOFaON-5.4'  % (dbse)] =  -4.148
+BIND_HBC6ARLX['%s-FaOOFaON-5.8'  % (dbse)] =  -2.834
+BIND_HBC6ARLX['%s-FaOOFaON-6.4'  % (dbse)] =  -1.704
+BIND_HBC6ARLX['%s-FaOOFaON-7.0'  % (dbse)] =  -1.094
+BIND_HBC6ARLX['%s-FaOOFaON-8.0'  % (dbse)] =  -0.587
+BIND_HBC6ARLX['%s-FaOOFaON-10.0' % (dbse)] =  -0.226
+
+BIND_HBC6ARLX['%s-FaONFaNN-3.4'  % (dbse)] =   9.365
+BIND_HBC6ARLX['%s-FaONFaNN-3.5'  % (dbse)] =   2.303
+BIND_HBC6ARLX['%s-FaONFaNN-3.6'  % (dbse)] =  -3.396
+BIND_HBC6ARLX['%s-FaONFaNN-3.7'  % (dbse)] =  -7.780
+BIND_HBC6ARLX['%s-FaONFaNN-3.8'  % (dbse)] = -10.944
+BIND_HBC6ARLX['%s-FaONFaNN-3.9'  % (dbse)] = -13.026
+BIND_HBC6ARLX['%s-FaONFaNN-4.0'  % (dbse)] = -14.191
+BIND_HBC6ARLX['%s-FaONFaNN-4.1'  % (dbse)] = -14.622  # FaONFaNN minimum
+BIND_HBC6ARLX['%s-FaONFaNN-4.2'  % (dbse)] = -14.499
+BIND_HBC6ARLX['%s-FaONFaNN-4.3'  % (dbse)] = -13.984
+BIND_HBC6ARLX['%s-FaONFaNN-4.4'  % (dbse)] = -13.216
+BIND_HBC6ARLX['%s-FaONFaNN-4.6'  % (dbse)] = -11.325
+BIND_HBC6ARLX['%s-FaONFaNN-4.8'  % (dbse)] =  -9.389
+BIND_HBC6ARLX['%s-FaONFaNN-5.0'  % (dbse)] =  -7.664
+BIND_HBC6ARLX['%s-FaONFaNN-5.4'  % (dbse)] =  -5.069
+BIND_HBC6ARLX['%s-FaONFaNN-5.8'  % (dbse)] =  -3.412
+BIND_HBC6ARLX['%s-FaONFaNN-6.4'  % (dbse)] =  -1.993
+BIND_HBC6ARLX['%s-FaONFaNN-7.0'  % (dbse)] =  -1.245
+BIND_HBC6ARLX['%s-FaONFaNN-8.0'  % (dbse)] =  -0.642
+BIND_HBC6ARLX['%s-FaONFaNN-10.0' % (dbse)] =  -0.232
+
+BIND_HBC6ARLX['%s-FaOOFaNN-3.6'  % (dbse)] = -12.415
+BIND_HBC6ARLX['%s-FaOOFaNN-3.7'  % (dbse)] = -15.329
+BIND_HBC6ARLX['%s-FaOOFaNN-3.8'  % (dbse)] = -17.085
+BIND_HBC6ARLX['%s-FaOOFaNN-3.9'  % (dbse)] = -17.872
+BIND_HBC6ARLX['%s-FaOOFaNN-4.0'  % (dbse)] = -17.895  # FaOOFaNN minimum
+BIND_HBC6ARLX['%s-FaOOFaNN-4.1'  % (dbse)] = -17.356
+BIND_HBC6ARLX['%s-FaOOFaNN-4.2'  % (dbse)] = -16.438
+BIND_HBC6ARLX['%s-FaOOFaNN-4.3'  % (dbse)] = -15.294
+BIND_HBC6ARLX['%s-FaOOFaNN-4.4'  % (dbse)] = -14.044
+BIND_HBC6ARLX['%s-FaOOFaNN-4.6'  % (dbse)] = -11.535
+BIND_HBC6ARLX['%s-FaOOFaNN-4.8'  % (dbse)] =  -9.301
+BIND_HBC6ARLX['%s-FaOOFaNN-5.0'  % (dbse)] =  -7.458
+BIND_HBC6ARLX['%s-FaOOFaNN-5.4'  % (dbse)] =  -4.830
+BIND_HBC6ARLX['%s-FaOOFaNN-5.8'  % (dbse)] =  -3.212
+BIND_HBC6ARLX['%s-FaOOFaNN-6.4'  % (dbse)] =  -1.850
+BIND_HBC6ARLX['%s-FaOOFaNN-7.0'  % (dbse)] =  -1.140
+BIND_HBC6ARLX['%s-FaOOFaNN-8.0'  % (dbse)] =  -0.575
+BIND_HBC6ARLX['%s-FaOOFaNN-10.0' % (dbse)] =  -0.197
+# Set default
+BIND = BIND_HBC6A
 
 # <<< Comment Lines >>>
 TAGL = {}
@@ -242,6 +540,10 @@ for item in FaOOFaNN:
    TAGL['%s-%s-monoB-CP'   % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
    TAGL['%s-%s-monoA-unCP' % (dbse, item)] = 'Formic Acid from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
    TAGL['%s-%s-monoB-unCP' % (dbse, item)] = 'Formamidine from Formic Acid-Formamidine Complex at %s A' % (molname.group(2))
+
+TAGL['%s-FaOO-mono-RLX'  % (dbse)]  = 'Formic Acid Relaxed Monomer'
+TAGL['%s-FaON-mono-RLX'  % (dbse)]  = 'Formamide Relaxed Monomer'
+TAGL['%s-FaNN-mono-RLX'  % (dbse)]  = 'Formamidine Relaxed Monomer'
 
 # <<< Molecule Specifications >>>
 monoA_unCP = 'monoA = dimer.extract_subsets(1)\nmonoA.set_name("monoA")\nPsiMod.set_active_molecule(monoA)\nPsiMod.IO.set_default_namespace("monoA")\n'
@@ -2727,6 +3029,45 @@ units angstrom
 }
 """)
 
+HBC1_FaOO_monomer_RLX = input.process_input("""
+molecule dimer {
+0 1
+C       -0.10067338      -0.41790840       0.00000000
+H       -0.02994601      -1.52175017       0.00000000
+O       -1.13575810       0.21734849       0.00000000
+O        1.14827203       0.12334561       0.00000000
+H        1.03004150       1.09065136       0.00000000
+units angstrom
+}
+""")
+
+HBC1_FaON_monomer_RLX = input.process_input("""
+molecule dimer {
+0 1
+C       -0.08832415      -0.41231959       0.00000000
+H       -0.04284111      -1.52506057       0.00000000
+O       -1.14609563       0.21052951       0.00000000
+N        1.15566522       0.16652753       0.00000000
+H        1.23188425       1.17751832       0.00000000
+H        1.99476943      -0.39808693       0.00000000
+units angstrom
+}
+""")
+
+HBC1_FaNN_monomer_RLX = input.process_input("""
+molecule dimer {
+0 1
+C       -0.08463791      -0.42651676       0.00000000
+H       -0.04431604      -1.53084724       0.00000000
+N       -1.17217255       0.27814579       0.00000000
+H       -1.98138857      -0.35160983       0.00000000
+N        1.15840794       0.16588754       0.00000000
+H        1.22157301       1.17651874       0.00000000
+H        2.00315093      -0.38515422       0.00000000
+units angstrom
+}
+""")
+
 #<<< Geometry Specification Strings >>>
 GEOS = {}
 for rxn in HRXN:
@@ -2737,4 +3078,8 @@ for rxn in HRXN:
    GEOS['%s-%s-monoB-CP'   % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_CP
    GEOS['%s-%s-monoA-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoA_unCP
    GEOS['%s-%s-monoB-unCP' % (dbse, rxn)] = eval('%s_%s_%s' % (dbse, molname.group(1), re.sub(r'\.', 'p', molname.group(2) ))) + monoB_unCP
+
+GEOS['%s-FaOO-mono-RLX' % (dbse)] = eval('%s_FaOO_monomer_RLX' % (dbse))
+GEOS['%s-FaON-mono-RLX' % (dbse)] = eval('%s_FaON_monomer_RLX' % (dbse))
+GEOS['%s-FaNN-mono-RLX' % (dbse)] = eval('%s_FaNN_monomer_RLX' % (dbse))
 

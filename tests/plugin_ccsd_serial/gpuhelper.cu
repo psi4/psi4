@@ -51,6 +51,7 @@ void GPUHelper::CudaInit(Options&options){
   cudaGetDeviceCount(&n);
   num_gpus = n;
   num_cpus=1;
+  //num_gpus=0;
   if (num_gpus>0){
      cublasInit();
      struct cudaDeviceProp cudaProp;

@@ -3,7 +3,6 @@ import shutil
 import os
 import re
 import input
-from driver import *
 from molecule import *
 from text import *
 
@@ -220,23 +219,41 @@ def run_detci(name, **kwargs):
         PsiMod.set_global_option('WFN', 'ZAPTN')
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
+        PsiMod.set_global_option('MAXNVECT', maxnvect)
         if ((level+1)%2):
            PsiMod.set_global_option('SAVE_MPN2', 2)
         else:
            PsiMod.set_global_option('SAVE_MPN2', 1)
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
     elif (name.lower() == 'mp'):
-	PsiMod.set_global_option('WFN', 'DETCI')
-        PsiMod.set_global_option('MPN', 1)
+        PsiMod.set_global_option('WFN', 'DETCI')
+        PsiMod.set_global_option('MPN', 'TRUE')
+
         level = kwargs['level']
         maxnvect = (level+1)/2 + (level+1)%2
+        PsiMod.set_global_option('MAXNVECT', maxnvect)
         if ((level+1)%2):
            PsiMod.set_global_option('SAVE_MPN2', 2)
         else:
            PsiMod.set_global_option('SAVE_MPN2', 1)
-        PsiMod.set_global_option('MAXNVECT', maxnvect)
-    else:
-	PsiMod.set_global_option('WFN', 'DETCI')
+    elif (name.lower() == 'fci'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('FCI', 'TRUE')
+    elif (name.lower() == 'cisd'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('EX_LVL', 2)
+    elif (name.lower() == 'cisdt'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('EX_LVL', 3)
+    elif (name.lower() == 'cisdtq'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('EX_LVL', 4)
+    elif (name.lower() == 'ci'):
+        PsiMod.set_global_option('WFN', 'DETCI')
+        level = kwargs['level']
+        PsiMod.set_global_option('EX_LVL', level)
+    # Call a plain energy('detci') and have full control over options
+    elif(name.lower() == 'detci'):
+        pass
 
     # Bypass routine scf if user did something special to get it to converge
     if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
@@ -245,14 +262,19 @@ def run_detci(name, **kwargs):
     PsiMod.transqt2()
     returnvalue = PsiMod.detci()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-    PsiMod.set_global_option('MPN', 'FALSE')
-    PsiMod.revoke_global_option_changed('MPN')
-    PsiMod.set_global_option('MAXNVECT', 12)
-    PsiMod.revoke_global_option_changed('MAXNVECT')
-    PsiMod.set_global_option('SAVE_MPN2', 0)
-    PsiMod.revoke_global_option_changed('SAVE_MPN2')
+    if (name.lower() != 'detci'):
+        PsiMod.set_global_option('WFN', 'SCF')
+        PsiMod.revoke_global_option_changed('WFN')
+        PsiMod.set_global_option('MPN', 'FALSE')
+        PsiMod.revoke_global_option_changed('MPN')
+        PsiMod.set_global_option('MAXNVECT', 12)
+        PsiMod.revoke_global_option_changed('MAXNVECT')
+        PsiMod.set_global_option('SAVE_MPN2', 0)
+        PsiMod.revoke_global_option_changed('SAVE_MPN2')
+        PsiMod.set_global_option('FCI', 'FALSE')
+        PsiMod.revoke_global_option_changed('FCI')
+        PsiMod.set_global_option('EX_LVL', 2)
+        PsiMod.revoke_global_option_changed('EX_LVL')
 
     return returnvalue
 
