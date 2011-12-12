@@ -7,8 +7,7 @@ LDLIBS += $(LAPACK) $(BLAS)
 
 PSITARGET = $(top_objdir)/lib/libPSI_dfmp2.a
 
-#CXXSRC = dfmp2.cc dfmp2_energy.cc wrapper.cc mad_mp2.cc
-CXXSRC = wrapper.cc mad_mp2.cc
+CXXSRC = dfmp2.cc dfmp2_energy.cc wrapper.cc mad_mp2.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

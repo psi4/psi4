@@ -123,6 +123,7 @@ void CoupledCluster::Initialize(Options &options){
 
   // for triples, we use nvirt_no in case we've truncated the virtual space:
   nvirt_no = nvirt;
+  scale_t = 1.0;
 
   // get paramters from input 
   conv    = pow(10.,-options.get_int("CONVERGENCE"));
