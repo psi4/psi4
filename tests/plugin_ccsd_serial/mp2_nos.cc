@@ -232,6 +232,31 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
   // transform t2(b_mo,a_no,j,i) -> t2(b_no,a_mo,j,i)
   F_DGEMM('n','n',o*o*nvirt_no,nvirt_no,v,1.0,amps2,o*o*nvirt_no,Dab,v,0.0,ccsd->tb,o*o*nvirt_no);
 
+  // compute scaling factor for (T) from MP2 energy in MO and NO spaces
+  psio->open(PSIF_KLCD,PSIO_OPEN_OLD);
+  psio->read_entry(PSIF_KLCD,"E2klcd",(char*)&amps2[0],o*o*nvirt_no*nvirt_no*sizeof(double));
+  psio->close(PSIF_KLCD,1);
+  double emp2=0.0;
+  for (int a=o; a<o+nvirt_no; a++){
+      double da = ccsd->eps[a];
+      for (int b=o; b<o+nvirt_no; b++){
+          double dab = da + ccsd->eps[b];
+          for (int i=0; i<o; i++){
+              double dabi = dab - ccsd->eps[i];
+              for (int j=0; j<o; j++){
+                  int iajb = i*nvirt_no*nvirt_no*o+(a-o)*nvirt_no*o+j*nvirt_no+(b-o);
+                  int jaib = j*nvirt_no*nvirt_no*o+(a-o)*nvirt_no*o+i*nvirt_no+(b-o);
+                  double dijab = dabi-ccsd->eps[j];
+                  double amp = - amps2[iajb]/dijab;
+                  emp2 += amp * (2.0*amps2[iajb]-amps2[jaib]);
+              }
+          }
+      }
+  }
+  ccsd->scale_t = ccsd->emp2/emp2;
+  fprintf(outfile,"        MP2 correlation energy in original space:  %20.12lf\n",ccsd->emp2);
+  fprintf(outfile,"        MP2 correlation energy in truncated space: %20.12lf\n",emp2);
+  fprintf(outfile,"\n");
 
   // free memory
   free(tilesizes);
