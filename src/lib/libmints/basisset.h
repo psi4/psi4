@@ -210,7 +210,7 @@ public:
      */
 
     /// Returns the name of this basis set
-    const std::string & name();
+    const std::string & name() const { return name_; }
     void set_name(const std::string str) {name_ = str;}
 
     void print_by_level(FILE* out = outfile, int print_level = 2) const;
