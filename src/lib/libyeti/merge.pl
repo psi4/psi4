@@ -221,3 +221,7 @@ print BLAS
 #endif
 ";
 close BLAS;
+
+open(PSI_H, ">psi.h") or die "I can't write psi.h";
+print PSI_H "#define HAVE_PSI 1\n#include \"yeti.h\"\n";
+close PSI_H;
