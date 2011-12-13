@@ -79,9 +79,6 @@ tests:
 opttests:
 	$(call runtests, $(opt_subdirs))
 
-plugins:
-	$(call runtests, $(plugin_subdirs))
-
 quicktests:
 	$(call runtests, $(quicktestdirs))
 
@@ -120,6 +117,12 @@ python_tests:
 
 psirb_tests:
 	$(call runtests, $(python_test_subdirs))
+
+plugins:
+	for dir in $(plugin_subdirs); \
+	do \
+	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+	done
 
 clean:
 	for dir in $(subdirs); \
