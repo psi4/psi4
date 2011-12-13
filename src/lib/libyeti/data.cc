@@ -22,6 +22,8 @@
 using namespace yeti;
 using namespace std;
 
+#define name(x) static_cast<TensorBlock*>(x)->get_block_name()
+
 DECLARE_PARENT_MALLOC(StorageBlock);
 DECLARE_SUB_MALLOC(StorageBlock,InCoreBlock);
 DECLARE_SUB_MALLOC(StorageBlock,LocalDiskBlock);
@@ -29,6 +31,7 @@ DECLARE_SUB_MALLOC(StorageBlock,CachedStorageBlock);
 
 StorageBlock::StorageBlock(size_t size)
     :
+    retrieved_(false),
     size_(size),
     data_(0)
 {
@@ -61,6 +64,11 @@ InCoreBlock::InCoreBlock(char* data, size_t size)
     : StorageBlock(size)
 {
     data_ = data;
+    retrieved_ = true;
+}
+
+InCoreBlock::~InCoreBlock()
+{
 }
 
 void
@@ -91,7 +99,7 @@ InCoreBlock::retrieve()
 void
 InCoreBlock::commit()
 {
-    raise(SanityCheckError, "in core block should never be committed");
+    yeti_throw(SanityCheckError, "in core block should never be committed");
 }
 
 void
@@ -104,7 +112,7 @@ InCoreBlock::clear()
         data_ = 0;
     }
 #else
-    raise(SanityCheckError, "in core block should never be cleared");
+    yeti_throw(SanityCheckError, "in core block should never be cleared");
 #endif
 }
 
@@ -112,16 +120,6 @@ bool
 InCoreBlock::is_retrieved() const
 {
     return true;
-}
-
-void
-InCoreBlock::obsolete(Cachable* item)
-{
-#if MALLOC_CACHE_BLOCK
-    clear(item);
-#else
-    raise(SanityCheckError, "in core block should never be obsolete");
-#endif
 }
 
 CachedStorageBlock::CachedStorageBlock(
@@ -132,12 +130,12 @@ CachedStorageBlock::CachedStorageBlock(
     StorageBlock(cache->blocksize()),
     cache_item_(cache_item),
     cache_(cache),
-    cache_entry_(0),
-    retrieved_(false)
+    cache_entry_(0)
 {
     data_ = 0;
+    retrieved_ = false;
     if (size_ > cache_->blocksize())
-        raise(SanityCheckError, "cache is not large enough to hold block");
+        yeti_throw(SanityCheckError, "cache is not large enough to hold block");
 }
 
 CachedStorageBlock::~CachedStorageBlock()
@@ -159,16 +157,21 @@ CachedStorageBlock::retrieve()
 
 #if YETI_SANITY_CHECK
     if (!cache_item_->is_locked() && !cache_item_->is_initialized())
-        raise(SanityCheckError, "cache item is not locked in retrieve");
+        yeti_throw(SanityCheckError, "cache item is not locked in retrieve");
 #endif
 
     if (data_) //we might be in cache...
     {
-        bool success = cache_->pull(cache_entry_);
-        if (success) //we successfully retrieved the cache block
+        DataCacheEntry* new_entry = cache_->pull(cache_entry_, cache_item_);
+        retrieved_ = true;
+        if (new_entry == cache_entry_)
         {
-            retrieved_ = true;
             return true;
+        }
+        else
+        {
+            cache_entry_ = new_entry;
+            return false;
         }
     }
 
@@ -177,10 +180,6 @@ CachedStorageBlock::retrieve()
     data_ = cache_entry_->data;
 
     retrieved_ = true;
-#if YETI_SANITY_CHECK
-    if (!cache_entry_->is_locked()) 
-        raise(SanityCheckError, "cache entry is not locked in retrieve");
-#endif
     return false;
 }
 
@@ -191,7 +190,24 @@ CachedStorageBlock::release()
         return;
 
     if (!cache_entry_->pulled)
-        raise(SanityCheckError, "cannot insert unpulled cache entry");
+    {
+#if DEBUG_CACHE_HISTORY
+        cache_->print_history();
+        TensorBlock* block = static_cast<TensorBlock*>(cache_item_);
+        cerr << stream_printf("Failure releasing %s\n", block->get_block_name().c_str());
+        for (uli i=0; i < NHISTORIES_CACHE; ++i)
+        {
+            if (i == cache_entry_->nentries_history_)
+                cout << "-------------------" << endl;
+            CacheHistory& h = cache_entry_->histories_[i];
+            TensorBlock* block = static_cast<TensorBlock*>(h.owner);
+            if (block)
+                cout << stream_printf("Entry pulled by thread %ld by block %s\n", h.thread_number, block->get_block_name().c_str());
+        }
+        cout.flush();
+#endif
+        yeti_throw(SanityCheckError, "Cannot insert unpulled cache entry");
+    }
 
     cache_->insert(cache_entry_);
     retrieved_ = false;
@@ -214,15 +230,26 @@ CachedStorageBlock::clear()
 {
 #if YETI_SANITY_CHECK
     if (!cache_item_->is_locked())
-        raise(SanityCheckError, "storage block is neither locked nor retrieved in clear");
-    if (cache_item_->is_retrieved())
-        raise(SanityCheckError, "cannot clear retrieved item");
-#endif
-    if (cache_entry_ && cache_entry_->trylock()) //I am responsible for clearing this
     {
-        cache_->free(cache_entry_);
-        cache_entry_->unlock();
+        TensorBlock* block = static_cast<TensorBlock*>(cache_item_);
+        block->controller_fail();
+        yeti_throw(SanityCheckError, "Storage block is neither locked nor retrieved in clear");
     }
+    if (cache_item_->is_retrieved())
+        yeti_throw(SanityCheckError, "Cannot clear retrieved item");
+#endif
+    if (retrieved_)
+    {
+        cerr << stream_printf("Cannot clear retrieved cache storage block on node %d\n", YetiRuntime::me());
+        TensorBlock* block = static_cast<TensorBlock*>(cache_item_);
+        block->controller_fail();
+        throw TENSOR_BLOCK_POLICY_EXCEPTION;
+    }
+    retrieved_ = false;
+
+    if (cache_entry_) //I am responsible for clearing this
+        cache_->free(cache_entry_, cache_item_);
+
     cache_entry_ = 0;
     data_ = 0;
 }
@@ -236,23 +263,13 @@ CachedStorageBlock::assign_location(char* ptr)
 void
 CachedStorageBlock::commit()
 {
-    raise(SanityCheckError, "generic cached block should never be committed");
+    yeti_throw(SanityCheckError, "generic cached block should never be committed");
 }
 
 Cachable*
 CachedStorageBlock::get_cache_item() const
 {
     return cache_item_;
-}
-
-void
-CachedStorageBlock::obsolete(Cachable* item)
-{
-#if YETI_SANITY_CHECK
-    if (!item->is_locked())
-        raise(SanityCheckError, "storage block is neither locked nor retrieved in obsolete");
-#endif
-    clear();
 }
 
 LocalDiskBlock::LocalDiskBlock(
@@ -375,7 +392,7 @@ DiskBuffer::allocate_region(size_t size)
 {
     size_t offset = size_;
     if (size == 0)
-        raise(SanityCheckError, "cannot allocate region of size 0");
+        yeti_throw(SanityCheckError, "cannot allocate region of size 0");
 
     ::lseek(fileno_, size - 1, SEEK_END);
     char dummy[] = { 0 };

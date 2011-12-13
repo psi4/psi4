@@ -12,6 +12,7 @@ template <
     class MetaDataBranchRetrievePolicy,
     class TensorDataControllerRetrievePolicy,
     class DataBranchRetrievePolicy,
+    class BranchFinalizePolicy,
     class BranchFlushPolicy,
     class BranchReleasePolicy,
     class MetaDataNodeRetrievePolicy,
@@ -33,6 +34,7 @@ class TensorControllerTemplate :
     public TensorDataControllerRetrievePolicy,
     public DataBranchRetrievePolicy,
     public BranchFlushPolicy,
+    public BranchFinalizePolicy,
     public BranchReleasePolicy,
     public MetaDataNodeRetrievePolicy,
     public DataNodeRetrievePolicy,
@@ -91,12 +93,12 @@ class TensorControllerTemplate :
                 ::flush(block);
         }
         
-        void preflush(
+        void finalize(
             TensorBlock* block
         )
         {
-            BranchFlushPolicy
-                ::preflush(block);
+            BranchFinalizePolicy
+                ::finalize(block);
         }
 
         void release(

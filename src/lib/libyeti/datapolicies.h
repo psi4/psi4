@@ -70,7 +70,7 @@ class DeleteAllDataClear {
         );
 };
 
-class ObsoleteAllDataClear {
+class ClearAllData {
     public:
         void clear(
             TensorBlock* block

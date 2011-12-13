@@ -37,6 +37,13 @@ MOBasisRangeBuilder::MOBasisRangeBuilder(
     ndocc_pi_(new uli[1]),
     nsocc_pi_(new uli[1]),
     nvir_pi_(new uli[1]),
+    nact_docc_(0),
+    ndocc_(0),
+    ncore_(0),
+    nsocc_(0),
+    nvir_(0),
+    ncabs_(0),
+    nri_(0),
     ncabs_pi_(new uli[1]),
         core_(0),
         act_docc_(0),
@@ -93,6 +100,13 @@ MOBasisRangeBuilder::MOBasisRangeBuilder(
     nsocc_pi_(new uli[nirrep]),
     nvir_pi_(new uli[nirrep]),
     ncabs_pi_(new uli[nirrep]),
+    nact_docc_(0),
+    ndocc_(0),
+    ncore_(0),
+    nsocc_(0),
+    nvir_(0),
+    ncabs_(0),
+    nri_(0),
         core_(0),
         act_docc_(0),
         docc_(0),
@@ -220,6 +234,7 @@ MOBasisRangeBuilder::build(
     composite_range = new IndexRange(tuple);
     //set as totally symmetric
     composite_range->set_irrep(0);
+
 }
 
 void
@@ -702,7 +717,7 @@ MORangeBuilder::get()
     SubindexTuplePtr tuple = range->get_subranges();
     if (!tuple) //no subranges
     {
-        raise(SanityCheckError, "mo range must have subranges!");
+        yeti_throw(SanityCheckError, "mo range must have subranges!");
     }
 
     for (usi d=0; d < nlayers_extra_; ++d)
@@ -718,9 +733,15 @@ MORangeBuilder::get()
         range = new IndexRange(subranges);
     }
 
-    IndexRangePtr thread_range = new IndexRange(0, range->get_subranges(), nidx_per_tile_thread_layer_);
+    uli nper = range->nelements() / nidx_per_tile_thread_layer_;
+    if (nper == 0)
+        nper = 1;
+    IndexRangePtr thread_range = new IndexRange(0, range->get_subranges(), nper);
 
-    IndexRangePtr node_range = new IndexRange(0, thread_range->get_subranges(), nidx_per_tile_node_layer_);
+    nper = thread_range->nelements() / nidx_per_tile_node_layer_;
+    if (nper == 0)
+        nper = 1;
+    IndexRangePtr node_range = new IndexRange(0, thread_range->get_subranges(), nper);
     node_range->set_irrep(irrep_);
 
     return node_range;

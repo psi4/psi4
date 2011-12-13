@@ -147,7 +147,7 @@ Permutation::validate()
     for (usi i=0; i < nindex_; ++i)
     {
         if (pmap_[i] >= nindex_)
-            raise(SanityCheckError, "element out of range in pmap");
+            yeti_throw(SanityCheckError, "element out of range in pmap");
 
         ++count[pmap_[i]];
     }
@@ -156,7 +156,7 @@ Permutation::validate()
     {
         if (count[i] != 1)
         {
-            raise(SanityCheckError, "permutation is not a 1-1 mapping");
+            yeti_throw(SanityCheckError, "permutation is not a 1-1 mapping");
         }
     }
 
@@ -1092,7 +1092,7 @@ PermutationGroup::sanity_check(
 {
     PermutationSet::sanity_check(grp);
     if (!grp->closed())
-        raise(SanityCheckError, "parameter group is not closed in method call");
+        yeti_throw(SanityCheckError, "parameter group is not closed in method call");
 
     sanity_check();
 }
@@ -1101,7 +1101,7 @@ void
 PermutationGroup::sanity_check() const
 {
     if (!closed_)
-        raise(SanityCheckError, "cannot call method on non-closed group");
+        yeti_throw(SanityCheckError, "cannot call method on non-closed group");
 }
 
 PermutationGroupPtr
@@ -1150,7 +1150,7 @@ PermutationGroup::get_identity() const
             return p;
     }
 
-    raise(SanityCheckError, "how does the permutation group not contain the identity?");
+    yeti_throw(SanityCheckError, "how does the permutation group not contain the identity?");
     return 0;
 }
 
@@ -1214,7 +1214,7 @@ PermutationGroup::quotient_set(const PermutationGroupPtr& pgrp) const
         this->print(cerr); cerr << endl;
         cerr << "Quotient group: " << endl;
         cerr << pgrp << endl;
-        raise(SanityCheckError, "parameter subgroup for quotient is not a subgroup");
+        yeti_throw(SanityCheckError, "parameter subgroup for quotient is not a subgroup");
     }
 
     make(qgrp, PermutationSet, nindex());

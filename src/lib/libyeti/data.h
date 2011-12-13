@@ -26,7 +26,6 @@ namespace yeti {
 
 
 class StorageBlock :
-    public smartptr::Countable,
     public Malloc<StorageBlock>
 {
 
@@ -35,6 +34,7 @@ class StorageBlock :
 
         size_t size_;
 
+        bool retrieved_;
 
     public:
 
@@ -58,8 +58,6 @@ class StorageBlock :
 
         virtual bool is_retrieved() const = 0;
 
-        virtual void obsolete(Cachable* item) = 0;
-
         void memset();
 
 };
@@ -75,11 +73,11 @@ class InCoreBlock :
     public:
         InCoreBlock(char* data, size_t size);
 
+        ~InCoreBlock();
+
         void commit();
 
         void clear();
-
-        void obsolete(Cachable* item);
 
         bool retrieve();
 
@@ -118,8 +116,6 @@ class CachedStorageBlock :
 
         Cachable* cache_item_;
 
-        bool retrieved_;
-
 
     public:
         CachedStorageBlock(
@@ -140,8 +136,6 @@ class CachedStorageBlock :
         void release();
 
         void clear();
-
-        void obsolete(Cachable* item);
 
         DataCacheEntry* get_entry() const;
 
