@@ -66,23 +66,13 @@ namespace psi {
     namespace cclambda   { PsiReturnType cclambda(Options&);  }
     namespace ccdensity  { PsiReturnType ccdensity(Options&); }
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
-<<<<<<< HEAD
-    // DETCI: uncomment
-    //namespace detci     { PsiReturnType detci(Options&);     }
+    namespace cceom      { PsiReturnType cceom(Options&); }
+    namespace detci      { PsiReturnType detci(Options&);     }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &);
-=======
-    namespace cceom      { PsiReturnType cceom(Options&); }
-    namespace detci      { PsiReturnType detci(Options&);     }
-    namespace findif     {
-      std::vector< SharedMatrix > fd_geoms_1_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_2_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_freq_1(Options &);
->>>>>>> da0378aa966d7f693a8531642768f1adc1bfe40a
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
@@ -170,19 +160,11 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
-<<<<<<< HEAD
 //std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
 //{
     //py_psi_prepare_options_for_module("FINDIF");
     //return findif::fd_geoms_2_0(Process::environment.options);
 //}
-=======
-std::vector< SharedMatrix > py_psi_fd_geoms_2_0()
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_2_0(Process::environment.options);
-}
->>>>>>> da0378aa966d7f693a8531642768f1adc1bfe40a
 
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_0()
 {
