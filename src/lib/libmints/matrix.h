@@ -566,6 +566,9 @@ public:
     /// Creates a new matrix which is the transpose of this
     Matrix *transpose();
 
+    /// In place transposition
+    void transpose_this();
+
     /// Adds a matrix to this
     void add(const Matrix* const);
     /// Adds a matrix to this
@@ -636,7 +639,7 @@ public:
      *  \param a SimpleMatrix to transform
      *  \param transformer The matrix returned by PetiteList::sotoao() that acts as the transformer
      */
-    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& transformer);
+    void remove_symmetry(const SharedMatrix& a, const SharedMatrix& SO2AO);
     /** Performs a the transformation L^ F R. Result goes to this.
      *
      * \param L left transformation matrix (will be transposed)
@@ -905,200 +908,6 @@ public:
     void set_by_python_list(const boost::python::list& data);
 
     friend class Vector;
-};
-
-/*! \ingroup MINTS
- *  \class SimpleMatrix
- *  \brief Simple matrix class. Not symmetry blocked.
- */
-class SimpleMatrix
-{
-protected:
-    /// Matrix data
-    double **matrix_;
-    /// Number of rows and columns
-    int rows_, cols_;
-    /// Nae of the matrix
-    std::string name_;
-
-    /// Allocates matrix_
-    void alloc();
-    /// Releases matrix_
-    void release();
-
-    /// Copies data from the passed matrix to this matrix_
-    void copy_from(double **);
-
-    /// allocate a block matrix -- analogous to libciomr's block_matrix
-    static double** matrix(int nrow, int ncol);
-    /// free a (block) matrix -- analogous to libciomr's free_block
-    static void free(double** Block);
-
-public:
-    /// Default constructor, zeros everything out
-    SimpleMatrix();
-    /// Constructor, zeros everything out, sets name_
-    SimpleMatrix(std::string name);
-    /// Explicit copy reference constructor
-    SimpleMatrix(const SimpleMatrix& copy);
-    /// Explicit copy pointer constructor
-    explicit SimpleMatrix(const SimpleMatrix* copy);
-    explicit SimpleMatrix(boost::shared_ptr<SimpleMatrix> copy);
-    /// Constructor, sets up the matrix
-    SimpleMatrix(int nrow, int ncol);
-    /// Constructor, sets name_, and sets up the matrix
-    SimpleMatrix(std::string name, int nrow, int ncol);
-    /// Converts Matrix reference to SimpleMatrix
-    SimpleMatrix(const Matrix& copy);
-    /// Converts Matrix pointer to SimpleMatrix
-    SimpleMatrix(const Matrix* copy);
-
-    /// Constructor using Dimension's
-    SimpleMatrix(std::string& name, const Dimension& nrow, const Dimension& ncol);
-
-    /// Destructor, frees memory
-    ~SimpleMatrix();
-
-    /// Initializes a matrix
-    void init(int rowspi, int colspi, std::string name = "");
-
-    /// Creates an exact copy of the matrix and returns it.
-    SimpleMatrix* clone() const;
-    /// Copies cp's data onto this
-    void copy(SimpleMatrix* cp);
-    void copy(boost::shared_ptr<SimpleMatrix> cp);
-
-    /// Set every element of this to val
-    void set(double val);
-    /// Copies lower triangle tri to matrix_
-    void set(const double *tri);
-    /// Set a single element of matrix_
-    void set(int m, int n, double val) { matrix_[m][n] = val; }
-    void set(SimpleVector *vec);
-    void set(boost::shared_ptr<SimpleVector> vec);
-    void set(double **mat);
-
-    double** pointer() const { return matrix_; }
-    const double** const_pointer() const { return const_cast<const double**>(matrix_); }
-
-    /// Sets the diagonal of matrix_ to vec
-    double get(int m, int n) { return matrix_[m][n]; }
-    /// Returns matrix_
-    double **to_block_matrix() const;
-    /// Sets the name of the matrix
-    void set_name(std::string name) { name_ = name; }
-    /// Returns the pointer to the matrix
-    double* ptr() { return &matrix_[0][0]; }
-
-    /// Python compatible printer
-    void print_out() { print(outfile); }
-
-    /// Prints the matrix with print_mat
-    void print(FILE *out = outfile);
-
-    /// Prints the matrix with atom and xyz styling.
-    void print_atom_vector(FILE *out = outfile);
-
-    /// Print the matrix with corresponding eigenvalues below each column
-    void eivprint(SimpleVector *values, FILE *out = outfile);
-    void eivprint(boost::shared_ptr<SimpleVector> values, FILE *out = outfile);
-    /// The number of rows
-    int nrow() const { return rows_; }
-    /// The number of columns
-    int ncol() const { return cols_; }
-    /// Set matrix to identity
-    void identity();
-    /// Zero out the matrix
-    void zero();
-    /// Zero out the diagonal
-    void zero_diagonal();
-
-    /// Returns the trace of this
-    double trace() const;
-    /*! Computes the inverse of a real symmetric positive definite
-     *  matrix A using the Cholesky factorization A = L*L**T
-     *  computed by cholesky_factorize().
-     */
-    void invert();
-    /// Create a new SimpleMatrix which is the transpose of this
-    SimpleMatrix *transpose();
-    /// Transpose of this
-    void transpose_this();
-
-    void copy_lower_to_upper();
-    void copy_upper_to_lower();
-
-    void lu_factorize();
-
-    /// Add a matrix to this
-    void add(const SimpleMatrix*);
-    void add(boost::shared_ptr<SimpleMatrix>);
-    /// Subtracts a matrix from this
-    void subtract(const SimpleMatrix*);
-    void subtract(boost::shared_ptr<SimpleMatrix>);
-    /// Multiples the two arguments and adds their result to this
-    void accumulate_product(const SimpleMatrix*, const SimpleMatrix*);
-    void accumulate_product(boost::shared_ptr<SimpleMatrix>, boost::shared_ptr<SimpleMatrix>);
-    /// Scales this matrix
-    void scale(double);
-    /// Returns the sum of the squares of this
-    double sum_of_squares();
-    /// Add val to an element of this
-    void add(int m, int n, double val) { matrix_[m][n] += val; }
-    /// Scale row m by a
-    void scale_row(int m, double a);
-    /// Scale column n by a
-    void scale_column(int n, double a);
-    /// Transform a by transformer save result to this
-    void transform(SimpleMatrix* a, SimpleMatrix* transformer);
-    void transform(boost::shared_ptr<SimpleMatrix> a, boost::shared_ptr<SimpleMatrix> transformer);
-    /// Transform this by transformer
-    void transform(SimpleMatrix* transformer);
-    void transform(boost::shared_ptr<SimpleMatrix> transformer);
-    /// Back transform a by transformer save result to this
-    void back_transform(SimpleMatrix* a, SimpleMatrix* transformer);
-    void back_transform(boost::shared_ptr<SimpleMatrix> a, boost::shared_ptr<SimpleMatrix> transformer);
-    /// Back transform this by transformer
-    void back_transform(SimpleMatrix* transformer);
-    void back_transform(boost::shared_ptr<SimpleMatrix> transformer);
-
-    /// Return the vector dot product of rhs by this
-    double vector_dot(SimpleMatrix* rhs);
-    double vector_dot(boost::shared_ptr<SimpleMatrix> rhs);
-
-    /// Element add mirror.
-    /// Performs (i, j) = (j, i) = (i, j) + (j, i)
-    void element_add_mirror();
-
-    /// General matrix multiply, saves result to this
-    void gemm(bool transa, bool transb, double alpha, const SimpleMatrix* a, const SimpleMatrix* b, double beta);
-    void gemm(bool transa, bool transb, double alpha, boost::shared_ptr<SimpleMatrix> a, boost::shared_ptr<SimpleMatrix> b, double beta);
-    /// Diagonalize this, eigvector and eigvalues must be created by caller.
-    void diagonalize(SimpleMatrix* eigvectors, SimpleVector* eigvalues, int sort=1);
-    void diagonalize(boost::shared_ptr<SimpleMatrix> eigvectors, boost::shared_ptr<SimpleVector> eigvalues, int sort=1);
-
-    /// Saves the block matrix to PSIO object with fileno and with the toc position of the name of the matrix
-    void save(psi::PSIO* psio, unsigned int fileno);
-    void save(psi::PSIO& psio, unsigned int fileno);
-    void save(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-    void load(boost::shared_ptr<psi::PSIO> psio, unsigned int fileno);
-
-    /// Saves the matrix in ASCII format to filename
-    void save(const char *filename, bool append=true, bool saveLowerTriangle = true);
-    /// Saves the matrix in ASCII format to filename
-    void save(std::string filename, bool append=true, bool saveLowerTriangle = true);
-
-    /// Retrieves the i'th row
-    double* operator[](int i) { return matrix_[i]; }
-    double& operator()(int i, int j) { return matrix_[i][j]; }
-    const double& operator()(int i, int j) const { return matrix_[i][j]; }
-
-    /// Swap rows i and j
-    void swap_rows(int i, int j);
-    /// Swap cols i and j
-    void swap_columns(int i, int j);
-
-    friend class Matrix;
 };
 
 }

@@ -147,7 +147,8 @@ void export_mints()
             def("__getitem__", &Matrix::pyget).
             def("__setitem__", &Matrix::pyset).
             def("save", matrix_save(&Matrix::save)).
-            def("load", matrix_load(&Matrix::load));
+            def("load", matrix_load(&Matrix::load)).
+            def("remove_symmetry", &Matrix::remove_symmetry);
 
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix)();
     typedef SharedMatrix (MatrixFactory::*create_shared_matrix_name)(const std::string&);
@@ -185,6 +186,7 @@ void export_mints()
             def("ao_eri", &MintsHelper::ao_eri).
             def("ao_erf_eri", &MintsHelper::ao_erf_eri).
             def("cdsalcs", &MintsHelper::cdsalcs).
+            def("petite_list", &MintsHelper::petite_list).
             def("play", &MintsHelper::play);
 
     class_<FittingMetric, boost::shared_ptr<FittingMetric> >("FittingMetric").
@@ -338,7 +340,7 @@ void export_mints()
             def("max_am", &BasisSet::max_am);
 
     class_<SOBasisSet, boost::shared_ptr<SOBasisSet>, boost::noncopyable>("SOBasisSet", no_init).
-            def("petite_list", &SOBasisSet::petitelist);
+            def("petite_list", &SOBasisSet::petite_list);
 
     class_<ExternalPotential, boost::shared_ptr<ExternalPotential>, boost::noncopyable>("ExternalPotential").
             def("setName", &ExternalPotential::setName).

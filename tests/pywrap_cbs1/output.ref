@@ -29,8 +29,7 @@ set globals {
     reference rohf
 }
 
-e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
-#e_cbs = basis_set_extrapolation("aug-cc-pV[X]Z")
+e_cbs = cbs('scf',scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3)
 
 compare_values(-7.4326961561955551, e_cbs, 7, "Li ROHF extrapolated energy") #TEST
 clean()
@@ -49,10 +48,7 @@ set globals {
     guess core
 }
 
-#e_cbs = cbs(scf_basis='cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,corl_wfn='ccsd',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2)
-#e_cbs = bse("cc-pV[X]Z")
-#compare_values(-1.1478973964182912493, e_cbs, 7, "H2 ccsd extrapolated energy") #TEST
-e_cbs = cbs(corl_wfn='mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
+e_cbs = cbs('mp2',corl_basis='cc-pV[TQ]Z',corl_scheme=corl_xtpl_helgaker_2,delta_wfn='ccsd',delta_basis='cc-pV[DT]Z',delta_scheme=corl_xtpl_helgaker_2)
 compare_values(-1.148287763304, e_cbs, 7, "H2 mp2 extrapolated energy with ccsd delta correction") #TEST
 
 clean()
@@ -67,8 +63,7 @@ set globals {
     reference rhf
 }
 
-e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,corl_wfn='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
-#e_cbs = basis_set_extrapolate("aug-cc-pV[X]Z", largest_correlated=3)
+e_cbs = cbs(scf_basis='aug-cc-pV[DTQ]Z',scf_scheme=scf_xtpl_helgaker_3,name='ccsd',corl_basis='aug-cc-pV[DT]Z',corl_scheme=corl_xtpl_helgaker_2)
 
 compare_values(-2.9033043421572055642, e_cbs, 7, "He ccsd extrapolated energy") #TEST
 clean()
@@ -95,7 +90,7 @@ clean()
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:43 2011
+*** at Fri Dec  9 16:35:29 2011
 
 	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
@@ -226,9 +221,9 @@ clean()
 	Virtual:                                                              
 
 	   1B3u    0.016664     1B2u    0.016664     1B1u    0.016664  
-	   3Ag     0.021854     2B1u    0.052423     2B3u    0.052423  
-	   2B2u    0.052423     1B3g    0.106912     1B1g    0.106912  
-	   1B2g    0.106912     4Ag     0.106912     5Ag     0.106912  
+	   3Ag     0.021854     2B3u    0.052423     2B1u    0.052423  
+	   2B2u    0.052423     1B3g    0.106912     1B2g    0.106912  
+	   1B1g    0.106912     4Ag     0.106912     5Ag     0.106912  
 	   3B3u    0.150923     3B1u    0.150923     3B2u    0.150923  
 	   6Ag     0.175654     7Ag     0.319987     2B3g    0.319987  
 	   8Ag     0.319987     2B1g    0.319987     2B2g    0.319987  
@@ -251,28 +246,29 @@ clean()
   @ROHF Final Energy:    -7.43268211764556
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:44 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:30 2011
 Module time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.55 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -281,7 +277,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:44 2011
+*** at Fri Dec  9 16:35:30 2011
 
 	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
@@ -454,29 +450,30 @@ Total time:
   @ROHF Final Energy:    -7.43269542919406
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:48 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:33 2011
 Module time:
-	user time   =       4.01 seconds =       0.07 minutes
+	user time   =       3.20 seconds =       0.05 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
+Total time:
+	user time   =       3.73 seconds =       0.06 minutes
 	system time =       0.06 seconds =       0.00 minutes
 	total time  =          4 seconds =       0.07 minutes
-Total time:
-	user time   =       4.56 seconds =       0.08 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: SCF / AUG-CC-PVDZ //
@@ -484,7 +481,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:48 2011
+*** at Fri Dec  9 16:35:33 2011
 
 	There are an odd number of electrons - assuming doublet.
 	Specify the multiplicity with the MULTP option in the
@@ -589,7 +586,7 @@ Total time:
 
                         Total Energy        Delta E     Density RMS
 
-   @ROHF iter   1:    -7.39309497421981   -2.39192e+00   2.12200e-314  
+   @ROHF iter   1:    -7.39309497421981   -2.39192e+00   -1.11022e-16  
    @ROHF iter   2:    -7.43178109946559   -3.86861e-02   1.91824e-01 DIIS
    @ROHF iter   3:    -7.43238810454354   -6.07005e-04   2.37687e-02 DIIS
    @ROHF iter   4:    -7.43242340914175   -3.53046e-05   5.11518e-03 DIIS
@@ -614,12 +611,12 @@ Total time:
 	Virtual:                                                              
 
 	   1B2u    0.012363     1B3u    0.012363     1B1u    0.012363  
-	   3Ag     0.025160     2B2u    0.049369     2B1u    0.049369  
+	   3Ag     0.025160     2B1u    0.049369     2B2u    0.049369  
 	   2B3u    0.049369     3B1u    0.185769     3B2u    0.185769  
 	   3B3u    0.185769     4Ag     0.195570     5Ag     0.195570  
-	   1B1g    0.195570     1B2g    0.195570     1B3g    0.195570  
+	   1B1g    0.195570     1B3g    0.195570     1B2g    0.195570  
 	   6Ag     0.210882     7Ag     0.553736     8Ag     0.553736  
-	   2B1g    0.553736     2B2g    0.553736     2B3g    0.553736  
+	   2B1g    0.553736     2B3g    0.553736     2B2g    0.553736  
 
 	Final Occupation by Irrep:
 	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
@@ -631,29 +628,30 @@ Total time:
   @ROHF Final Energy:    -7.43242507280143
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:49 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:33 2011
 Module time:
 	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       4.71 seconds =       0.08 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          6 seconds =       0.10 minutes
+	user time   =       3.89 seconds =       0.06 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          4 seconds =       0.07 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            CBS Results            //
@@ -666,6 +664,8 @@ Total time:
    MD-zeta (3) Correlation Energy:       -7.43268212
    HI-zeta (4) Correlation Energy:       -7.43269543
    Extrapolated Correlation Energy:      -7.43269616
+   Alpha (exponent) Value:                2.96061859
+   Beta (coefficient) Value:              0.10107961
 
    ==> Components <==
 
@@ -718,7 +718,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:49 2011
+*** at Fri Dec  9 16:35:33 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -873,32 +873,33 @@ Total time:
   @RHF Final Energy:    -1.10245975746591
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:52 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:35 2011
 Module time:
-	user time   =       3.13 seconds =       0.05 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          3 seconds =       0.05 minutes
+	user time   =       1.23 seconds =       0.02 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 Total time:
-	user time   =       7.84 seconds =       0.13 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          9 seconds =       0.15 minutes
+	user time   =       5.12 seconds =       0.09 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:52 2011
+*** at Fri Dec  9 16:35:35 2011
 
 
 	**************************************************
@@ -950,18 +951,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:53 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:35 2011
 Module time:
-	user time   =       0.19 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.06 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.03 seconds =       0.13 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       5.30 seconds =       0.09 minutes
+	system time =       0.15 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:53 2011
+*** at Fri Dec  9 16:35:35 2011
 
 
 			**************************
@@ -1049,18 +1050,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =     -1.10245975746591
 
-*** tstop() called on localhost at Thu Nov 10 16:12:53 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:35 2011
 Module time:
 	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.07 seconds =       0.13 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =         10 seconds =       0.17 minutes
+	user time   =       5.34 seconds =       0.09 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:53 2011
+*** at Fri Dec  9 16:35:35 2011
 
 			*************************
 			*                       *
@@ -1096,15 +1097,15 @@ Total time:
       * MP2 total energy                  =   -1.137053855604233
 
 
-*** tstop() called on localhost at Thu Nov 10 16:12:54 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:35 2011
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.10 seconds =       0.13 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       5.39 seconds =       0.09 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          6 seconds =       0.10 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //  CBS Computation: CCSD / CC-PVDZ  //
@@ -1112,7 +1113,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:54 2011
+*** at Fri Dec  9 16:35:35 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1238,7 +1239,7 @@ Total time:
 
 	   1B1u    0.143588     2Ag     0.539607     2B1u    0.794799  
 	   1B3u    1.287130     1B2u    1.287130     3Ag     1.679162  
-	   1B2g    1.871551     1B3g    1.871551     3B1u    2.735411  
+	   1B3g    1.871551     1B2g    1.871551     3B1u    2.735411  
 
 	Final Occupation by Irrep:
 	         Ag   B1g   B2g   B3g    Au   B1u   B2u   B3u 
@@ -1249,32 +1250,33 @@ Total time:
   @RHF Final Energy:    -1.10015377780815
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:54 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:36 2011
 Module time:
-	user time   =       0.07 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.17 seconds =       0.14 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       5.45 seconds =       0.09 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:54 2011
+*** at Fri Dec  9 16:35:36 2011
 
 
 	**************************************************
@@ -1326,18 +1328,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:54 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:36 2011
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.18 seconds =       0.14 minutes
-	system time =       0.26 seconds =       0.00 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       5.46 seconds =       0.09 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:54 2011
+*** at Fri Dec  9 16:35:36 2011
 
 
 			**************************
@@ -1426,18 +1428,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =     -1.10015377780816
 
-*** tstop() called on localhost at Thu Nov 10 16:12:54 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:36 2011
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.20 seconds =       0.14 minutes
-	system time =       0.30 seconds =       0.01 minutes
-	total time  =         11 seconds =       0.18 minutes
+	user time   =       5.48 seconds =       0.09 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:54 2011
+*** at Fri Dec  9 16:35:36 2011
 
 			**************************
 			*                        *
@@ -1520,15 +1522,15 @@ Total time:
       * CCSD total energy                     =   -1.140073484752196
 
 
-*** tstop() called on localhost at Thu Nov 10 16:12:55 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:36 2011
 Module time:
-	user time   =       0.15 seconds =       0.00 minutes
-	system time =       0.14 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.36 seconds =       0.14 minutes
-	system time =       0.44 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       5.63 seconds =       0.09 minutes
+	system time =       0.38 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //  CBS Computation: CCSD / CC-PVTZ  //
@@ -1536,7 +1538,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:55 2011
+*** at Fri Dec  9 16:35:36 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1662,12 +1664,12 @@ Total time:
 	Virtual:                                                              
 
 	   1B1u    0.124523     2Ag     0.328280     2B1u    0.546483  
-	   1B3u    0.671618     1B2u    0.671618     3Ag     1.007656  
+	   1B2u    0.671618     1B3u    0.671618     3Ag     1.007656  
 	   1B2g    1.062915     1B3g    1.062915     3B1u    1.475220  
 	   4Ag     2.520981     4B1u    2.596089     1B1g    3.206684  
-	   5Ag     3.206684     2B3u    3.226239     2B2u    3.226239  
+	   5Ag     3.206684     2B2u    3.226239     2B3u    3.226239  
 	   6Ag     3.457662     5B1u    3.822729     1Au     3.822729  
-	   3B3u    3.942729     3B2u    3.942729     2B2g    4.002999  
+	   3B2u    3.942729     3B3u    3.942729     2B2g    4.002999  
 	   2B3g    4.002999     6B1u    4.093025     3B2g    4.909973  
 	   3B3g    4.909973     7Ag     4.976647     7B1u    6.225426  
 
@@ -1680,32 +1682,33 @@ Total time:
   @RHF Final Energy:    -1.10206233685987
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:55 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:36 2011
 Module time:
-	user time   =       0.20 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.57 seconds =       0.14 minutes
-	system time =       0.45 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       5.80 seconds =       0.10 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:55 2011
+*** at Fri Dec  9 16:35:36 2011
 
 
 	**************************************************
@@ -1757,18 +1760,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on localhost at Thu Nov 10 16:12:55 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:36 2011
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.59 seconds =       0.14 minutes
-	system time =       0.46 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       5.82 seconds =       0.10 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          7 seconds =       0.12 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:55 2011
+*** at Fri Dec  9 16:35:36 2011
 
 
 			**************************
@@ -1857,18 +1860,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =     -1.10206233685987
 
-*** tstop() called on localhost at Thu Nov 10 16:12:55 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:37 2011
 Module time:
-	user time   =       0.03 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       8.62 seconds =       0.14 minutes
-	system time =       0.49 seconds =       0.01 minutes
-	total time  =         12 seconds =       0.20 minutes
+	user time   =       5.84 seconds =       0.10 minutes
+	system time =       0.43 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:12:55 2011
+*** at Fri Dec  9 16:35:37 2011
 
 			**************************
 			*                        *
@@ -1954,15 +1957,15 @@ Total time:
       * CCSD total energy                     =   -1.145758861130636
 
 
-*** tstop() called on localhost at Thu Nov 10 16:13:00 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:37 2011
 Module time:
-	user time   =       0.18 seconds =       0.00 minutes
-	system time =       0.16 seconds =       0.00 minutes
-	total time  =          5 seconds =       0.08 minutes
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.14 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       8.81 seconds =       0.15 minutes
-	system time =       0.65 seconds =       0.01 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       6.03 seconds =       0.10 minutes
+	system time =       0.57 seconds =       0.01 minutes
+	total time  =          8 seconds =       0.13 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            CBS Results            //
@@ -1978,21 +1981,21 @@ Total time:
    LO-zeta (3) Correlation Energy:       -0.03318974
    HI-zeta (4) Correlation Energy:       -0.03459410
    Extrapolated Correlation Energy:      -0.03561890
-   Beta Value:                            0.06558751
+   Beta (coefficient) Value:              0.06558751
 
    ==> corl_xtpl_helgaker_2 <==
 
    LO-zeta (2) Correlation Energy:       -0.03991971
    HI-zeta (3) Correlation Energy:       -0.04369652
    Extrapolated Correlation Energy:      -0.04528676
-   Beta Value:                            0.04293645
+   Beta (coefficient) Value:              0.04293645
 
    ==> corl_xtpl_helgaker_2 <==
 
    LO-zeta (2) Correlation Energy:       -0.02870592
    HI-zeta (3) Correlation Energy:       -0.03318974
    Extrapolated Correlation Energy:      -0.03507766
-   Beta Value:                            0.05097396
+   Beta (coefficient) Value:              0.05097396
 
    ==> Components <==
 
@@ -2053,7 +2056,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:00 2011
+*** at Fri Dec  9 16:35:37 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2179,18 +2182,18 @@ Total time:
 
 	   2Ag     0.098748     1B1u    0.347825     1B3u    0.347825  
 	   1B2u    0.347825     3Ag     0.685403     4Ag     1.148963  
-	   1B2g    1.148963     1B3g    1.148963     1B1g    1.148963  
+	   1B3g    1.148963     1B2g    1.148963     1B1g    1.148963  
 	   5Ag     1.148963     2B3u    1.476085     2B2u    1.476085  
 	   2B1u    1.476085     6Ag     2.955725     3B3u    3.003209  
-	   3B1u    3.003209     4B1u    3.003209     1Au     3.003209  
+	   3B1u    3.003209     1Au     3.003209     4B1u    3.003209  
 	   3B2u    3.003209     4B3u    3.003209     4B2u    3.003209  
-	   2B1g    4.577315     7Ag     4.577315     2B2g    4.577315  
-	   2B3g    4.577315     8Ag     4.577315     5B3u    5.130345  
+	   2B1g    4.577315     7Ag     4.577315     2B3g    4.577315  
+	   2B2g    4.577315     8Ag     4.577315     5B3u    5.130345  
 	   5B1u    5.130345     5B2u    5.130345     6B1u   12.535762  
-	   6B2u   12.535762     2Au    12.535762     6B3u   12.535762  
+	   6B2u   12.535762     6B3u   12.535762     2Au    12.535762  
 	   7B3u   12.535762     7B1u   12.535762     7B2u   12.535762  
-	   9Ag    13.621517    10Ag    16.643632     3B2g   16.643632  
-	   3B3g   16.643632     3B1g   16.643632    11Ag    16.643632  
+	   9Ag    13.621517    10Ag    16.643632     3B3g   16.643632  
+	   3B2g   16.643632     3B1g   16.643632    11Ag    16.643632  
 	   8B3u   18.091756     8B2u   18.091756     8B1u   18.091756  
 
 	Final Occupation by Irrep:
@@ -2202,29 +2205,30 @@ Total time:
   @RHF Final Energy:    -2.86152199563246
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:13:00 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
-	user time   =       0.47 seconds =       0.01 minutes
+	user time   =       0.46 seconds =       0.01 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       9.29 seconds =       0.15 minutes
-	system time =       0.66 seconds =       0.01 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       6.49 seconds =       0.11 minutes
+	system time =       0.58 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: CCSD / AUG-CC-PVDZ //
@@ -2232,7 +2236,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:00 2011
+*** at Fri Dec  9 16:35:38 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2368,32 +2372,33 @@ Total time:
   @RHF Final Energy:    -2.85570466771042
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:13:00 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
-	user time   =       0.06 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.36 seconds =       0.16 minutes
-	system time =       0.67 seconds =       0.01 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       6.56 seconds =       0.11 minutes
+	system time =       0.59 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:00 2011
+*** at Fri Dec  9 16:35:38 2011
 
 
 	**************************************************
@@ -2445,18 +2450,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on localhost at Thu Nov 10 16:13:00 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
-	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.00 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.37 seconds =       0.16 minutes
-	system time =       0.68 seconds =       0.01 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       6.56 seconds =       0.11 minutes
+	system time =       0.59 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:00 2011
+*** at Fri Dec  9 16:35:38 2011
 
 
 			**************************
@@ -2545,18 +2550,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =     -2.85570466771042
 
-*** tstop() called on localhost at Thu Nov 10 16:13:00 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.39 seconds =       0.16 minutes
-	system time =       0.70 seconds =       0.01 minutes
-	total time  =         17 seconds =       0.28 minutes
+	user time   =       6.58 seconds =       0.11 minutes
+	system time =       0.62 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:00 2011
+*** at Fri Dec  9 16:35:38 2011
 
 			**************************
 			*                        *
@@ -2638,15 +2643,15 @@ Total time:
       * CCSD total energy                     =   -2.889548484875190
 
 
-*** tstop() called on localhost at Thu Nov 10 16:13:01 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
 	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.12 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.54 seconds =       0.16 minutes
-	system time =       0.82 seconds =       0.01 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       6.73 seconds =       0.11 minutes
+	system time =       0.73 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   // CBS Computation: CCSD / AUG-CC-PVTZ //
@@ -2654,7 +2659,7 @@ Total time:
 
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:01 2011
+*** at Fri Dec  9 16:35:38 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2777,13 +2782,13 @@ Total time:
 
 	Virtual:                                                              
 
-	   2Ag     0.110537     1B1u    0.426770     1B2u    0.426770  
-	   1B3u    0.426770     3Ag     0.839113     4Ag     1.520107  
-	   5Ag     1.520107     1B2g    1.520107     1B1g    1.520107  
-	   1B3g    1.520107     2B1u    1.962092     2B2u    1.962092  
-	   2B3u    1.962092     6Ag     4.816488     7Ag     7.108351  
-	   2B2g    7.108351     2B1g    7.108351     2B3g    7.108351  
-	   8Ag     7.108351     3B2u    8.221145     3B3u    8.221145  
+	   2Ag     0.110537     1B1u    0.426770     1B3u    0.426770  
+	   1B2u    0.426770     3Ag     0.839113     4Ag     1.520107  
+	   1B2g    1.520107     1B3g    1.520107     1B1g    1.520107  
+	   5Ag     1.520107     2B1u    1.962092     2B3u    1.962092  
+	   2B2u    1.962092     6Ag     4.816488     7Ag     7.108351  
+	   2B2g    7.108351     2B3g    7.108351     2B1g    7.108351  
+	   8Ag     7.108351     3B3u    8.221145     3B2u    8.221145  
 	   3B1u    8.221145  
 
 	Final Occupation by Irrep:
@@ -2795,32 +2800,33 @@ Total time:
   @RHF Final Energy:    -2.86118342611556
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     0.0000     Total:     0.0000
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on localhost at Thu Nov 10 16:13:01 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.68 seconds =       0.16 minutes
-	system time =       0.83 seconds =       0.01 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       6.87 seconds =       0.11 minutes
+	system time =       0.74 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:01 2011
+*** at Fri Dec  9 16:35:38 2011
 
 
 	**************************************************
@@ -2872,18 +2878,18 @@ Total time:
 	Starting second half-transformation.
 	Two-electron integral transformation complete.
 
-*** tstop() called on localhost at Thu Nov 10 16:13:01 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:38 2011
 Module time:
 	user time   =       0.01 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.69 seconds =       0.16 minutes
-	system time =       0.83 seconds =       0.01 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       6.88 seconds =       0.11 minutes
+	system time =       0.75 seconds =       0.01 minutes
+	total time  =          9 seconds =       0.15 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:01 2011
+*** at Fri Dec  9 16:35:38 2011
 
 
 			**************************
@@ -2972,18 +2978,18 @@ Total time:
 	Frozen-core energy (transqt) =      0.00000000000000
 	Reference energy             =     -2.86118342611556
 
-*** tstop() called on localhost at Thu Nov 10 16:13:01 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:39 2011
 Module time:
 	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       9.71 seconds =       0.16 minutes
-	system time =       0.86 seconds =       0.01 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       6.91 seconds =       0.12 minutes
+	system time =       0.78 seconds =       0.01 minutes
+	total time  =         10 seconds =       0.17 minutes
 
 *** tstart() called on localhost
-*** at Thu Nov 10 16:13:01 2011
+*** at Fri Dec  9 16:35:39 2011
 
 			**************************
 			*                        *
@@ -3067,15 +3073,15 @@ Total time:
       * CCSD total energy                     =   -2.900597923201954
 
 
-*** tstop() called on localhost at Thu Nov 10 16:13:01 2011
+*** tstop() called on localhost at Fri Dec  9 16:35:39 2011
 Module time:
 	user time   =       0.17 seconds =       0.00 minutes
 	system time =       0.14 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       9.90 seconds =       0.17 minutes
-	system time =       1.00 seconds =       0.02 minutes
-	total time  =         18 seconds =       0.30 minutes
+	user time   =       7.10 seconds =       0.12 minutes
+	system time =       0.92 seconds =       0.02 minutes
+	total time  =         10 seconds =       0.17 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //            CBS Results            //
@@ -3088,13 +3094,15 @@ Total time:
    MD-zeta (3) Correlation Energy:       -2.86118343
    HI-zeta (4) Correlation Energy:       -2.86152200
    Extrapolated Correlation Energy:      -2.86154430
+   Alpha (exponent) Value:                2.78390435
+   Beta (coefficient) Value:              1.52916311
 
    ==> corl_xtpl_helgaker_2 <==
 
    LO-zeta (2) Correlation Energy:       -0.03384382
    HI-zeta (3) Correlation Energy:       -0.03941450
    Extrapolated Correlation Energy:      -0.04176005
-   Beta Value:                            0.06332983
+   Beta (coefficient) Value:              0.06332983
 
    ==> Components <==
 

@@ -310,7 +310,8 @@ namespace psi{ namespace dcft{
       moFa_->transform(Ca_);
       moFb_->copy(reference_wavefunction_->Fb());
       moFb_->transform(Cb_);
-      find_occupation(epsilon_a_);
+      // Find occupation. It shouldn't be called, at least in the current implementation
+      if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
       update_scf_density();
   }
 
@@ -342,29 +343,20 @@ namespace psi{ namespace dcft{
 
       SharedMatrix moHa(new Matrix("Core Hamiltonian in the MO basis (Alpha spin)", nirrep_, nmopi_, nmopi_));
       SharedMatrix moHb(new Matrix("Core Hamiltonian in the MO basis (Beta spin)", nirrep_, nmopi_, nmopi_));
+
+      // Transform H and F to the MO basis
+
       moHa->copy(so_h_);
       moHb->copy(so_h_);
       moHa->transform(Ca_);
       moHb->transform(Cb_);
 
-//      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(so_h_);
-//      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(so_h_);
-//      energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(Fa_);
-//      energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(Fb_);
+      // Compute the correction: 0.5 * (H + F) * T_T
 
       energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moHa);
       energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moHb);
       energy_tau_squared_ += 0.5 * a_tautau_->vector_dot(moFa_);
       energy_tau_squared_ += 0.5 * b_tautau_->vector_dot(moFb_);
-
-      fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction (0.5 * H * TT)          = %20.15f\n", 0.5 * a_tautau_->vector_dot(moHa) + 0.5 * b_tautau_->vector_dot(moHb));
-      fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction (0.5 * F * TT)          = %20.15f\n", 0.5 * a_tautau_->vector_dot(moFa_) + 0.5 * b_tautau_->vector_dot(moFb_));
-
-      so_h_->print();
-      Ca_->print();
-      a_tautau_->print();
-      moHa->print();
-      moFa_->print();
 
   }
 
@@ -1754,41 +1746,56 @@ namespace psi{ namespace dcft{
    *  * the aufbau principle
    *  */
   void
-  DCFTSolver::find_occupation(SharedVector & evals, bool forcePrint)
+  DCFTSolver::find_occupation(SharedVector & evals_a, SharedVector & evals_b, bool forcePrint)
   {
-      std::vector<std::pair<double, int> > pairs;
-      for (int h=0; h<evals->nirrep(); ++h) {
-          for (int i=0; i<evals->dimpi()[h]; ++i)
-              pairs.push_back(make_pair(evals->get(h, i), h));
-      }
-      sort(pairs.begin(),pairs.end());
+      std::vector<std::pair<double, int> > pairs_a;
+      std::vector<std::pair<double, int> > pairs_b;
 
-      if(options_["DOCC"].has_changed()){
-          for(int h = 0; h < nirrep_; ++h)
-              nboccpi_[h] = options_["DOCC"][h].to_integer();
-      }else{
-          memset(nboccpi_, 0, sizeof(int) * nirrep_);
-          for (int i=0; i < nbeta_; ++i)
-              nboccpi_[pairs[i].second]++;
+      // Sort alpha eigenvectors
+      for (int h=0; h<evals_a->nirrep(); ++h) {
+          for (int i=0; i<evals_a->dimpi()[h]; ++i)
+              pairs_a.push_back(make_pair(evals_a->get(h, i), h));
       }
-      if(options_["SOCC"].has_changed()){
-          for(int h = 0; h < nirrep_; ++h)
+      sort(pairs_a.begin(),pairs_a.end());
+
+      // Sort beta eigenvectors
+      for (int h=0; h<evals_b->nirrep(); ++h) {
+          for (int i=0; i<evals_b->dimpi()[h]; ++i)
+              pairs_b.push_back(make_pair(evals_b->get(h, i), h));
+      }
+      sort(pairs_b.begin(),pairs_b.end());
+
+      // Check if user specified occupation. If not - determine it.
+      if(options_["SOCC"].has_changed() && options_["DOCC"].has_changed()){
+          for(int h = 0; h < nirrep_; ++h) {
+              nboccpi_[h] = options_["DOCC"][h].to_integer();
               naoccpi_[h] = nboccpi_[h] + options_["SOCC"][h].to_integer();
-      }else{
-          for(int h = 0; h < nirrep_; ++h)
-              naoccpi_[h] = nboccpi_[h];
-          for (int i=nbeta_; i < nalpha_; ++i)
-              naoccpi_[pairs[i].second]++;
+              navirpi_[h] = nmopi_[h] - naoccpi_[h];
+              nbvirpi_[h] = nmopi_[h] - nboccpi_[h];
+          }
+      } else if (!options_["SOCC"].has_changed() && !options_["DOCC"].has_changed()) {
+          memset(naoccpi_, 0, sizeof(int) * nirrep_);
+          memset(nboccpi_, 0, sizeof(int) * nirrep_);
+          for (int i=0; i < nalpha_; ++i)
+              naoccpi_[pairs_a[i].second]++;
+          for (int i=0; i < nbeta_; ++i)
+              nboccpi_[pairs_b[i].second]++;
+          for(int h = 0; h < nirrep_; ++h) {
+              navirpi_[h] = nmopi_[h] - naoccpi_[h];
+              nbvirpi_[h] = nmopi_[h] - nboccpi_[h];
+          }
+      } else {
+          throw PsiException("User must specify both DOCC and SOCC, or none of them", __FILE__, __LINE__);
       }
 
       if(print_ > 1 || forcePrint){
           fprintf(outfile, "\t\t\t\tDOCC: [");
-          for (int h = 0; h < evals->nirrep(); ++h){
+          for (int h = 0; h < evals_a->nirrep(); ++h){
               fprintf(outfile, "%3d ", nboccpi_[h]);
           }
           fprintf(outfile, "]\n");
           fprintf(outfile, "\t\t\t\tSOCC: [");
-          for (int h = 0; h < evals->nirrep(); ++h){
+          for (int h = 0; h < evals_a->nirrep(); ++h){
               fprintf(outfile, "%3d ", naoccpi_[h] - nboccpi_[h]);
           }
           fprintf(outfile, "]\n");

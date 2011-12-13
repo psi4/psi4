@@ -121,11 +121,12 @@ void MoldenWriter::write(const std::string &filename)
     Vector& Ea = *wavefunction_->epsilon_a().get();
     Vector& Eb = *wavefunction_->epsilon_b().get();
 
+    boost::shared_ptr<PetiteList> pl(new PetiteList(wavefunction_->basisset(), wavefunction_->integral()));
     // get the "aotoso" transformation matrix, ao by so
-    SharedMatrix aotoso = sobasisset.petitelist()->aotoso();
+    SharedMatrix aotoso = pl->aotoso();
     // need dimensions
-    const Dimension aos = sobasisset.petitelist()->AO_basisdim();
-    const Dimension sos = sobasisset.petitelist()->SO_basisdim();
+    const Dimension aos = pl->AO_basisdim();
+    const Dimension sos = pl->SO_basisdim();
 
     SharedMatrix Ca_ao_mo(new Matrix("Ca AO x MO", aos, sos));
     SharedMatrix Cb_ao_mo(new Matrix("Cb AO x MO", aos, sos));
@@ -245,7 +246,8 @@ void NBOWriter::write(const std::string &filename)
         { 351, 352, 353, 354, 355, 356, 357 } //f
     };
 
-    SharedMatrix sotoao = wavefunction_->sobasisset ()->petitelist()->sotoao();
+    MintsHelper helper;
+    SharedMatrix sotoao = helper.petite_list()->sotoao();
 
     FILE *file47 = fopen(filename.c_str(), "a");
 
@@ -428,7 +430,6 @@ void NBOWriter::write(const std::string &filename)
     int nbf = basisset.nbf ();
 
     //Now we need the overlap matrix in the AO basis
-    MintsHelper helper;
     SharedMatrix overlap = helper.ao_overlap();
     //Print overlap matrix
     fprintf(file47, "\n$OVERLAP \n");

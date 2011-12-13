@@ -28,20 +28,20 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   /*- Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
   options.add_int("MULTP", 1);
 
-  /*- An array containing the number of doubly-occupied orbitals per irrep 
+  /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("DOCC", new ArrayType());
 
-  /*- An array containing the number of singly-occupied orbitals per irrep 
+  /*- An array containing the number of singly-occupied orbitals per irrep
   (in Cotton order) -*/
   options.add("SOCC", new ArrayType());
 
-  /*- An array containing the number of frozen doubly-occupied orbitals per 
-  irrep (these are not excited in a CI, nor can they be optimized in 
+  /*- An array containing the number of frozen doubly-occupied orbitals per
+  irrep (these are not excited in a CI, nor can they be optimized in
   MCSCF -*/
   options.add("FROZEN_DOCC", new ArrayType());
-  /*- An array containing the number of frozen unoccupied orbitals per 
-  irrep (these are not populated in a CI, nor can they be optimized in 
+  /*- An array containing the number of frozen unoccupied orbitals per
+  irrep (these are not populated in a CI, nor can they be optimized in
   MCSCF -*/
   options.add("FROZEN_UOCC", new ArrayType());
   /*- The scope of core orbitals to freeze in later correlated computations
@@ -55,7 +55,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_str("FREEZE_CORE","FALSE", \
     "FALSE TRUE SMALL LARGE");
 
-  /*- Whether to use pure angular momentum basis functions -*/
+  /*- Whether to use pure angular momentum basis functions.
+      If not explicitly set, the default comes from the basis set. -*/
   options.add_bool("PUREAM", true);
   /*- The amount of information to print to the output file -*/
   options.add_int("PRINT", 1);
@@ -86,8 +87,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     less than 10**(-n).  The default is 4 for energies and 7 for gradients. -*/
     options.add_int("CONVERGENCE", 4);
 
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 6);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-6);
 
     /*- Wavefunction type -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
@@ -102,7 +103,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CC_EX_LVL", 2);
 
     /*- In a RAS CI, this is the additional excitation level for allowing
-    electrons out of RAS I into RAS II.  The maximum number of holes in 
+    electrons out of RAS I into RAS II.  The maximum number of holes in
     RAS I is therefore EX_LVL + VAL_EX_LVL. -*/
     options.add_int("VAL_EX_LVL", 0);
 
@@ -127,17 +128,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
     options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per 
+    /*- An array giving the number of restricted doubly-occupied orbitals per
     irrep (not excited in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per 
+    /*- An array giving the number of restricted unoccupied orbitals per
     irrep (not occupied in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_UOCC", new ArrayType());
 
-    /*- An array giving the number of active orbitals (occupied plus 
+    /*- An array giving the number of active orbitals (occupied plus
     unoccupied) per irrep (shorthand to make MCSCF easier to specify than
     using RAS keywords) -*/
     options.add("ACTIVE", new ArrayType());
@@ -237,18 +238,24 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("FCI_STRINGS",false);
 
     /*- This determines whether `mixed' RAS II/RAS III excitations are
-      allowed into the CI space.  This is useful for placing additional
-      constraints on a RAS CI. !expert -*/
+      allowed into the CI space.  If FALSE, then if there are any electrons
+      in RAS III, then the number of holes in RAS I cannot exceed the given
+      excitation level EX_LVL. !expert -*/
     options.add_bool("MIXED",true);
 
     /*- This determines whether `mixed' excitations involving RAS IV are
-      allowed into the CI space.  This is useful for placing additional
-      constraints on a RAS CI. !expert -*/
+      allowed into the CI space.  Useful to specify a split-virtual
+      CISD[TQ] computation.  If FALSE, then if there are any electrons
+      in RAS IV, then the number of holes in RAS I cannot exceed the given
+      excitation level EX_LVL.  !expert -*/
     options.add_bool("MIXED4",true);
 
-    /*- Restrict strings with e- in RAS IV: i.e. if an electron is in
-      RAS IV, then the holes in RAS I must equal the particles in RAS III
-      + RAS IV else the string is discarded !expert -*/
+    /*- Restrict strings with e- in RAS IV.  Useful to reduce the number of
+      strings required if MIXED4=true, as in a split-virutal CISD[TQ]
+      computation.  If more than one electron is in RAS IV, then the
+      holes in RAS I cannot exceed the number of particles in
+      RAS III + RAS IV (i.e., EX_LVL), or else the string is discarded.
+      !expert -*/
     options.add_bool("R4S",false);
 
     /*- Tells DETCI whether or not to do string replacements on the fly.  Can
@@ -269,15 +276,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     MPN=TRUE. -*/
     options.add_bool("MPN",false);
 
-    /*- If TRUE, save MP(2n-1) energy; else, save MPn energy -*/
-    options.add_bool("SAVE_MPN2",false);
+    /*- If 0, save the MPn energy; if 1, save the MP(2n-1) energy (if
+    available from WIGNER=true); if 2, save the MP(2n-2) energy (if
+    available from WIGNER=true). !expert -*/
+    options.add_int("SAVE_MPN2",0);
 
     /*- If TRUE, an orthonormal vector space is employed rather than
       storing the kth order wfn !expert -*/
     options.add_bool("MPN_SCHMIDT",false);
 
     /*- Use Wigner formulas in the Empn series? !expert -*/
-    options.add_bool("WIGNER",false);
+    options.add_bool("WIGNER",true);
 
     /*- z in H = H0 + z * H1 !expert -*/
     options.add_double("PERTURBATION_PARAMETER",1.0);
@@ -433,7 +442,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- Compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
-    does not compute states of different irreps within the same 
+    does not compute states of different irreps within the same
     computation; to do this, lower the symmetry of the computation.-*/
     options.add_bool("TRANSITION_DENSITY", false);
 
@@ -486,7 +495,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     number and beta string number for each), and also the
     desired phase between these two determinants for guesses
     which are to be kept.  FILTER_GUESS = TRUE turns on the filtering
-    routine.  Requires additional keywords FILTER_GUESS_DET1, 
+    routine.  Requires additional keywords FILTER_GUESS_DET1,
     FILTER_GUESS_DET2, and FILTER_GUESS_SIGN. !expert -*/
     options.add_bool("FILTER_GUESS", false);
 
@@ -495,12 +504,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("FILTER_GUESS_SIGN", 1);
 
     /*- Array specifying the absolute alpha string number and beta string
-    number for the first determinant in the filter procedure. 
+    number for the first determinant in the filter procedure.
     (See FILTER_GUESS).  !expert -*/
     options.add("FILTER_GUESS_DET1", new ArrayType());
 
     /*- Array specifying the absolute alpha string number and beta string
-    number for the second determinant in the filter procedure. 
+    number for the second determinant in the filter procedure.
     (See FILTER_GUESS).  !expert -*/
     options.add("FILTER_GUESS_DET2", new ArrayType());
 
@@ -599,10 +608,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- The amount of information to print to the output file -*/
     options.add_int("PRINT",1);
-    /*- How many digits after the decimal to converge the energy to -*/
-    options.add_int("E_CONVERGE",10);
-    /*- How many digits after the decimal to converge the density to -*/
-    options.add_int("D_CONVERGE",8);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE",1e-10);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE",1e-8);
     /*- Don't solve the CPHF equations -*/
     options.add_bool("NO_RESPONSE",false);
     /*- Use asynchronous I/O in the CPHF solver -*/
@@ -642,8 +651,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 //      ip_cwk_add(":DCFT");
       /*- How to cache quantities within the DPD library -*/
       options.add_int("CACHELEV", 2);
-      /*- The amount of memory available (in Mb) -*/
-      options.add_int("MEMORY", 2000);
       /*- The shift applied to the denominator -*/
       options.add_double("REGULARIZER", 0.0);
       /*- The maximum number of lambda iterations per macro-iteration -*/
@@ -803,10 +810,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 8);
+    /*- The energy convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- The density convergence criterion. See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-8);
     /*- Minimum absolute TEI value for seive -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
     /*- Minimum absolute S matrix value for DF-SCF exchange -*/
@@ -820,9 +827,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("SAD_PRINT", 0);
     /*- SAD Occupation Matrix Method -*/
     options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
-    /*- SAD Guess Convergence in E -*/
+    /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
-    /*- SAD Guess Convergence in D -*/
+    /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_D_CONVERGE", 1E-5);
     /*- SAD Guess Maxiter -*/
     options.add_int("SAD_MAXITER", 50);
@@ -994,12 +1001,12 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- An array giving the number of orbitals per irrep for RAS4 !expert -*/
     options.add("RAS4", new ArrayType());
 
-    /*- An array giving the number of restricted doubly-occupied orbitals per 
+    /*- An array giving the number of restricted doubly-occupied orbitals per
     irrep (not excited in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_DOCC", new ArrayType());
 
-    /*- An array giving the number of restricted unoccupied orbitals per 
+    /*- An array giving the number of restricted unoccupied orbitals per
     irrep (not occupied in CI wavefunctions, but orbitals can be optimized
     in MCSCF) -*/
     options.add("RESTRICTED_UOCC", new ArrayType());
@@ -1424,59 +1431,55 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("CHARGE", 0);
     /*- (2$\times M_s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
     options.add_int("MULTP", 1);
-    /*- -*/
-    options.add_int("CONVERGENCE",9);
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/
     options.add_int("DEBUG", false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 12);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 12);
-    /*- -*/
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-12);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-12);
+    /*- Maximum number of iterations before computation quits. -*/
     options.add_int("MAXITER",100);
-    /*- -*/
+    /*- Number of previous iterations to consider within the DIIS method -*/
     options.add_int("NDIIS",7);
-    /*- -*/
+    /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
     options.add_int("ROOT",1);
-    /*- -*/
+    /*- Iteration at which to begin using the averaged Fock matrix-*/
     options.add_int("START_FAVG",5);
     /*- -*/
     options.add_int("TURN_ON_ACTV",0);
-    /*- -*/
+    /*- For orbital rotations after convergence, the angle (in degrees) by which to rotate. !expert -*/
     options.add_int("ROTATE_MO_ANGLE",0);
-    /*- -*/
-    options.add_int("ROTATE_MO_IRREP",1);  // IRREP is one-based
-    /*- -*/
-    options.add_int("ROTATE_MO_P",1);      // P and Q are one-based
-    /*- -*/
+    /*- For orbital rotations after convergence, irrep (1-based, Cotton order) of the orbitals to rotate. !expert -*/
+    options.add_int("ROTATE_MO_IRREP",1);
+    /*- For orbital rotations after convergence, number of the first orbital (1-based) to rotate. !expert -*/
+    options.add_int("ROTATE_MO_P",1);
+    /*- For orbital rotations after convergence, number of the second orbital (1-based) to rotate. !expert -*/
     options.add_int("ROTATE_MO_Q",2);
-    /*- -*/
+    /*- Use the DIIS method to optimize the CI coefficients-*/
     options.add_bool("CI_DIIS",false);
-    /*- -*/
+    /*- Use the DIIS method to optimize the SCF energy (MO coefficients only)-*/
     options.add_bool("USE_DIIS",true);
-    /*- -*/
+    /*- Read the MOs in from a previous computation if TRUE.-*/
     options.add_bool("READ_MOS",true);
-    /*- -*/
+    /*- If true, use the average Fock matrix during the SCF optimization-*/
     options.add_bool("USE_FAVG",false);
-    /*- -*/
+    /*- If true, the active orbitals should canonicalized such that the average Fock matrix is diagonal -*/
     options.add_bool("CANONICALIZE_ACTIVE_FAVG",false);
-    /*- -*/
+    /*- If true, the inactive(DOCC and Virtual) orbitals will be canonicalized such that the average Fock matrix is diagonal.-*/
     options.add_bool("CANONICALIZE_INACTIVE_FAVG",false);
     /*- -*/
     options.add_bool("INTERNAL_ROTATIONS",true);
-    /*- -*/
+    /*- Attempt to force a two configruation solution by starting with CI coefficents of +/- sqrt(1/2)-*/
     options.add_bool("FORCE_TWOCON",false);
     /*- The number of active orbitals, per irrep -*/
     options.add("ACTIVE", new ArrayType());
     /*- The number of active orbitals, per irrep (alternative name for ACTIVE) -*/
     options.add("ACTV", new ArrayType());
-
-
-    /*- -*/
+    /*- The type of SCF reference to be computed. -*/
     options.add_str("REFERENCE","RHF","RHF ROHF UHF TWOCON MCSCF GENERAL");
-    /*- -*/
+    /*- The symmetry of the SCF wavefunction.-*/
     options.add_str("WFN_SYM","1","A AG AU AP APP A1 A2 B BG BU B1 B2 B3 B1G B2G B3G B1U B2U B3U 0 1 2 3 4 5 6 7 8");
   }
   if(name == "CCENERGY"|| options.read_globals()) {
@@ -1673,10 +1676,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DEBUG",0);
     /*- Parallel algoritmh? -*/
     options.add_bool("PARALLEL_DFMP2",false);
-    /*- -Log10 of the energy convergence criterion -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- -Log10 of the density convergence criterion -*/
-    options.add_int("D_CONVERGE", 8);
+    /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- The density convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("D_CONVERGE", 1e-8);
   }
   if(name=="DFCC"|| options.read_globals()) {
     /*- Type of wavefunction -*/
@@ -1685,10 +1688,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("BASIS","NONE");
     /*- Schwarz cutoff -*/
     options.add_double("SCHWARZ_CUTOFF", 0.0);
-    /*- Convergence of CC energy -*/
-    options.add_int("E_CONVERGE", 8);
-    /*- Convergence of cluster amplitudes (RMS change) -*/
-    options.add_int("T_CONVERGE", 8);
+    /*- Convergence of CC energy.  See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("E_CONVERGE", 1e-8);
+    /*- Convergence of cluster amplitudes (RMS change). See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("T_CONVERGE", 1e-8);
     /*- Turn on DIIS -*/
     options.add_bool("DIIS",true);
     /*- Minimum DIIS vectors -*/
@@ -1967,7 +1970,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_bool("INTERFRAGMENT_DISTANCE_INVERSE", false);
       /*- For now, this is a general maximum distance for the definition of H-bonds -*/
       options.add_double("MAXIMUM_H_BOND_DISTANCE", 4.3);
-      /*- QCHEM optimization criteria: maximum force. See the note at the beginning of Section \ref{keywords}. -*/
+      /*- QCHEM optimization criteria: maximum force.g -*/
       options.add_double("CONV_MAX_FORCE", 3.0e-4);
       /*- QCHEM optimization criteria: maximum energy change. See the note at the beginning of Section \ref{keywords}. -*/
       options.add_double("CONV_MAX_DE", 1.0e-6);

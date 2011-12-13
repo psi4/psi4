@@ -130,7 +130,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
 
   fprintf(outfile, "\t----------------------------------------------------------\n");
-  printf("\tMAX Force %10.1e : Energy Change %10.1e : MAX Displacement %10.1e\n", max_force, DE, max_disp);
+  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {

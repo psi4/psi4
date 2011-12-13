@@ -315,9 +315,13 @@ double DFMP2::compute_energy()
     fprintf(outfile,"    SCS-DF-MP2 Total Energy:         %20.16f [H]\n",E_tot_scs_);
     fflush(outfile);
 
+    // LAB TODO: drop DF- in labels to match DF-SCF behavior
     Process::environment.globals["CURRENT ENERGY"] = E_tot_;
-    Process::environment.globals["DF-MP2 ENERGY"] = E_tot_;
-    Process::environment.globals["SCS-DF-MP2 ENERGY"] = E_tot_scs_;
+    Process::environment.globals["CURRENT CORRELATION ENERGY"] = E_;
+    Process::environment.globals["DF-MP2 TOTAL ENERGY"] = E_tot_;
+    Process::environment.globals["DF-MP2 CORRELATION ENERGY"] = E_;
+    Process::environment.globals["SCS-DF-MP2 TOTAL ENERGY"] = E_tot_scs_;
+    Process::environment.globals["SCS-DF-MP2 CORRELATION ENERGY"] = E_scs_;
 
     return E_tot_;
 }
@@ -447,7 +451,7 @@ double** DFMP2::form_W_overlap(boost::shared_ptr<BasisSet> bas)
 
   //Put the integrals in a good old double**
   double** SJ;
-  boost::shared_ptr<SimpleMatrix> S_J(new SimpleMatrix("J Overlap", naux, naux));
+  boost::shared_ptr<Matrix> S_J(new Matrix("J Overlap", naux, naux));
   //Compute those integrals
   S->compute(S_J);
   //S_J->print(outfile);

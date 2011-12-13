@@ -1,4 +1,5 @@
 import PsiMod
+import input
 from proc import *
 from text import *
 
@@ -24,8 +25,14 @@ procedures = {
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'eom-ccsd'      : run_eom_ccsd,
-            'eom_ccsd'      : run_eom_ccsd,
-            'detci'         : run_detci
+            'detci'         : run_detci,
+            'mp'            : run_detci,  # arbitrary order mp(n)
+            'zapt'          : run_detci,  # arbitrary order zapt(n)
+            'cisd'          : run_detci,
+            'cisdt'         : run_detci,
+            'cisdtq'        : run_detci,
+            'ci'            : run_detci,  # arbitrary order ci(n)
+            'fci'           : run_detci
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -39,71 +46,89 @@ procedures = {
         }}
 
 def energy(name, **kwargs):
+    lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
-    if (kwargs.has_key('bases')):
-        pass
-    if (kwargs.has_key('functional')):
-        pass
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    # Line below needed when passing in molecule as a keyword argument
+    #    but causes mints2 test case to fail
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
 
     try:
-        lowername = name.lower()
         return procedures['energy'][lowername](lowername,**kwargs)
     except KeyError:
-        raise SystemExit('Energy Method %s Not Defined' %(name))
+        raise ValidationError('Energy method %s not available.' % (lowername))
 
 def gradient(name, **kwargs):
-    # Set some defaults
-    func = energy
     lowername = name.lower()
+    dertype = 1
 
     # Order of precedence:
     #    1. Default for wavefunction
-    #    2. Value obtained from liboptions, if user changed it
+    #    2. Value obtained from kwargs, if user changed it
     #    3. If user provides a custom 'func' use that
+
+    # Allow specification of methods to arbitrary order
+    lowername, level = parse_arbitrary_order(lowername)
+    if level:
+        kwargs['level'] = level
 
     # 1. set the default to that of the provided name
     if (procedures['gradient'].has_key(lowername)):
         dertype = 1
     elif (procedures['energy'].has_key(lowername)):
         dertype = 0
+        func = energy
 
-    # 2. Check if the user set the global option
-    if (PsiMod.has_option_changed('DERTYPE') and dertype != -1):
-        option = PsiMod.get_option('DERTYPE')
-        if (option == 'NONE'):
+    # 2. Check if the user passes dertype into this function
+    if (kwargs.has_key('dertype')):
+        opt_dertype = kwargs['dertype']
+
+        if input.der0th.match(str(opt_dertype)):
             dertype = 0
-        elif (option == 'FIRST'):
+            func = energy
+        elif input.der1st.match(str(opt_dertype)):
             dertype = 1
         else:
-            raise SystemExit("Value of DERTYPE option is not NONE or FIRST.")
+            raise ValidationError('Requested derivative level \'dertype\' %s not valid for helper function optimize.' % (opt_dertype))
 
-    # 3. user passes dertype into this function
-    if (kwargs.has_key('dertype')):
-        dertype = kwargs['dertype']
-
-    # 4. if the user provides a custom function THAT takes precendence
+    # 3. if the user provides a custom function THAT takes precendence
     if (kwargs.has_key('opt_func')) or (kwargs.has_key('func')):
         if (kwargs.has_key('func')):
             kwargs['opt_func'] = kwargs['func']
             del kwargs['func']
         dertype = 0
         func = kwargs['opt_func']
-    if not func:
-        raise Exception('Function \'%s\' does not exist to be called by wrapper optimize.' % (func.__name__))
 
-    # Start handling the other options we support
+    # Summary validation
+    if (dertype == 1) and (procedures['gradient'].has_key(lowername)):
+        pass
+    elif (dertype == 0) and (func is energy) and (procedures['energy'].has_key(lowername)):
+        pass
+    elif (dertype == 0) and not(func is energy):
+        pass
+    else:
+        raise ValidationError('Requested method \'name\' %s and derivative level \'dertype\' %s are not available.' 
+            % (lowername, dertype))
+
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
-        # Make sure the molecule the user provided is the active one
         activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    # dertype currently holds the type of calculation we need to run
-
-    # First, check the values of dertype
-    if (dertype < 0 and dertype > 1):
-        raise SystemExit("The internal dertype is either less than 0 or greater than 1")
-
-    # Does an analytic procedure exist for the requested method?
+    # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
         # Nothing to it but to do it. Gradient information is saved
         # into the current reference wavefunction
@@ -114,12 +139,6 @@ def gradient(name, **kwargs):
         # If not, perform finite difference of energies
         info = "Performing finite difference calculations"
         print info
-
-        # Obtain the active molecule and update it.
-        molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("no molecule found")
-        molecule.update_geometry()
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_1_0()
@@ -142,7 +161,7 @@ def gradient(name, **kwargs):
 
             # Wrap any positional arguments into kwargs (for intercalls among wrappers)
             if not('name' in kwargs) and name:
-                kwargs['name'] = name.lower()
+                kwargs['name'] = lowername
 
             # Perform the energy calculation
             #E = func(lowername, **kwargs)
@@ -159,8 +178,14 @@ def gradient(name, **kwargs):
 
 def hessian(name, **kwargs):
     lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
     if (kwargs.has_key('molecule')):
         activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     dertype = 2
     if (kwargs.has_key('dertype')):
@@ -182,12 +207,6 @@ def hessian(name, **kwargs):
         # Ok, we're doing frequencies by gradients
         info = "Performing finite difference by gradient calculations"
         print info
-
-        # Obtain the active molecule and update it
-        molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("no molecule found")
-        molecule.update_geometry()
 
         func = procedures['gradient'][lowername]
 
@@ -222,12 +241,6 @@ def hessian(name, **kwargs):
         # If not, perform finite difference of energies
         info = "Performing finite difference calculations"
         print info
-
-        # Obtain the active molecule and update it.
-        molecule = PsiMod.get_active_molecule()
-        if not molecule:
-            raise ValueNotSet("no molecule found")
-        molecule.update_geometry()
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_freq_0()
@@ -264,10 +277,19 @@ def hessian(name, **kwargs):
 
 def response(name, **kwargs):
     lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
+    if (kwargs.has_key('molecule')):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
     try:
         return procedures['response'][lowername](lowername, **kwargs)
     except KeyError:
-        raise SystemExit('Response Method %s Not Defined' %(lowername))
+        raise ValidationError('Response method %s not available.' %(lowername))
 
 def optimize(name, **kwargs):
     for n in range(PsiMod.get_option("GEOM_MAXITER")):
@@ -286,4 +308,24 @@ def optimize(name, **kwargs):
 
 def frequencies(name, **kwargs):
     hessian(name, **kwargs)
+
+def parse_arbitrary_order(name):
+    namelower = name.lower()
+
+    if re.match(r'^[a-z]+\d+$', namelower):       
+        decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
+        namestump = decompose.group(1)
+        namelevel = int(decompose.group(2))
+
+        if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
+            # Let 'mp2' pass through as itself
+            if (namestump == 'mp') and (namelevel == 2):
+                return namelower, None
+            # Otherwise return method and order
+            else:
+                return namestump, namelevel
+        else:
+            return namelower, None
+    else:
+        return namelower, None
 

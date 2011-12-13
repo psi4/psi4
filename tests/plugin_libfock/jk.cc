@@ -778,10 +778,21 @@ void DFJK::initialize_temps()
     D_temp_ = boost::shared_ptr<Vector>(new Vector("Dtemp", sieve_->function_pairs().size()));
     d_temp_ = boost::shared_ptr<Vector>(new Vector("dtemp", max_rows_)); 
     
-    for (int thread = 0; thread < omp_nthread_; thread++) {
-        C_temp_.push_back(SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf())));
-        Q_temp_.push_back(SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf())));
-    } 
+
+    #ifdef _OPENMP
+        C_temp_.resize(omp_nthread_);
+        Q_temp_.resize(omp_nthread_);
+        #pragma omp parallel num_threads(omp_nthread_) 
+        {
+            C_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf()));
+            Q_temp_[omp_get_thread_num()] = SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf()));
+        } 
+    #else
+        for (int thread = 0; thread < omp_nthread_; thread++) {
+            C_temp_.push_back(SharedMatrix(new Matrix("Ctemp", max_nocc_, primary_->nbf())));
+            Q_temp_.push_back(SharedMatrix(new Matrix("Qtemp", max_rows_, primary_->nbf())));
+        } 
+    #endif
 
     E_left_ = SharedMatrix(new Matrix("E_left", primary_->nbf(), max_rows_ * max_nocc_));
     if (lr_symmetric_) 

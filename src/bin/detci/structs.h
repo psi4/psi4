@@ -336,9 +336,9 @@ struct params {
    int istop;        /* stop after setting up CI space */
    int print_lvl;    /* print verbosity level */ 
    int print_ciblks; /* print a summary of the CI blocks? */
-   int convergence;  /* convergence, 10^-n, on RMS of the CI update vector */
+   double convergence;  /* convergence on RMS of the CI update vector */
                      /* (i.e. the Davidson/Liu d vector) applied to ea root */
-   int energy_convergence;  /* convergence, 10^-n, on CI energy */
+   double energy_convergence;  /* convergence on CI energy */
    int oei_file;     /* file number for one-electron integrals */
    int tei_file;     /* file number for two-electron integrals */
    int ras;          /* do a RAS calculation?  Set true if "RAS1" keyword */
@@ -418,7 +418,8 @@ struct params {
                               2 = Olsen */
    int mpn;                /* 1(0) if computing mpn series is TRUE(FALSE) */
    int zaptn;              /* 1(0) if computing zaptn series is TRUE(FALSE) */
-   int save_mpn2;          /* 1 = save MP(2n-1) energy, 0 = save MPn energy */
+   int save_mpn2;          /* 0 = save MPn energy, 1 = save MP(2n-1) energy, 
+                              2 = save MP(2n-2) energy */
    int mpn_schmidt;        /* 1(0) if a orthonormal vector space is employed
                               rather than storing the kth order wfn */ 
    int wigner;             /* 1(0) if wigner formulas used in Empn series */

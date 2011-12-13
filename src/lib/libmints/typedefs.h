@@ -7,6 +7,9 @@ template <class T>
 class shared_ptr;
 }
 
+// Dimension is lightweight
+#include "dimension.h"
+
 // Forward declare psi
 namespace psi {
 
@@ -30,9 +33,10 @@ class Vector3;
 // objects from other libraries
 class Chkpt;
 class PSIO;
-}
 
 typedef boost::shared_ptr<psi::Matrix> SharedMatrix;
 typedef boost::shared_ptr<psi::Vector> SharedVector;
+}
+
 
 #endif // libmints_typedefs_h

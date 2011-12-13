@@ -1,0 +1,39 @@
+#! 6-31G* C2 Test RASCI Energy Point, testing two different ways of
+#! specifying the active space, either with the ACTIVE keyword, or
+#! with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
+
+
+molecule c2 {
+  C
+  C 1 1.25
+}
+
+set globals {
+  wfn detci
+  basis 6-31G*
+  d_converge 10
+  restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
+  active          [2, 0, 1, 1, 0, 2, 1, 1]
+}
+
+thisenergy = energy('detci')
+
+
+clean()
+
+
+# The following is an alternative way of specifying exactly the same CI
+set globals {
+  wfn detci
+  basis 6-31G*
+  restricted_docc [1, 0, 0, 0, 0, 1, 0, 0]
+  restricted_uocc [5, 1, 2, 2, 1, 5, 2, 2]
+  ras1            [1, 0, 0, 0, 0, 1, 1, 1]
+  ras2            [1, 0, 1, 1, 0, 1, 0, 0]
+  ex_lvl 2
+  val_ex_lvl 6
+}
+
+thisenergy = energy('detci')
+
+

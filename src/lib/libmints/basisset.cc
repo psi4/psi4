@@ -289,6 +289,9 @@ boost::shared_ptr<BasisSet> BasisSet::construct(const boost::shared_ptr<BasisSet
     // Update geometry in molecule, if there is a problem an exception is thrown.
     mol->update_geometry();
 
+    // Set the default name to just the type
+    basisset->set_name(type);
+
     // Assign the molecule to the basis set
     basisset->molecule_ = mol;
 

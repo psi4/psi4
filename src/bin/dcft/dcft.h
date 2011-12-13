@@ -45,7 +45,7 @@ protected:
     void write_orbitals_to_checkpoint();
     void check_n_representability();
     void print_orbital_energies();
-    void find_occupation(SharedVector &evals, bool forcePrint = false);
+    void find_occupation(SharedVector &evals_a, SharedVector &evals_b, bool forcePrint = false);
     void build_intermediates();
     void process_so_ints();
     void build_G();
