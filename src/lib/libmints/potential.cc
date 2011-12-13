@@ -485,47 +485,6 @@ void PotentialInt::compute_pair_deriv2(const boost::shared_ptr<GaussianShell>& s
     }
 }
 
-void PotentialInt::compute_deriv1(std::vector<boost::shared_ptr<SimpleMatrix> > &result)
-{
-    if (deriv_ < 1)
-        throw SanityCheckError("PotentialInt::compute_deriv1(result): integral object not created to handle derivatives.", __FILE__, __LINE__);
-
-    // Do not worry about zeroing out result
-    int ns1 = bs1_->nshell();
-    int ns2 = bs2_->nshell();
-    int result_size = result.size();
-    int i_offset = 0;
-    double *location = 0;
-
-    // Check the length of result, must be 3*natom_
-    if (result.size() != 3*natom_)
-        throw SanityCheckError("PotentialInt::compute_derv1(result): result must be 3 * natom in length.", __FILE__, __LINE__);
-
-    for (int i=0; i<ns1; ++i) {
-        int ni = force_cartesian_ ? bs1_->shell(i)->ncartesian() : bs1_->shell(i)->nfunction();
-        int j_offset=0;
-        for (int j=0; j<ns2; ++j) {
-            int nj = force_cartesian_ ? bs2_->shell(j)->ncartesian() : bs2_->shell(j)->nfunction();
-
-            // Compute the shell
-            compute_shell_deriv1(i, j);
-
-            // For each integral that we got put in its contribution
-            location = buffer_;
-            for (int r=0; r<result_size; ++r) {
-                for (int p=0; p<ni; ++p) {
-                    for (int q=0; q<nj; ++q) {
-                        result[r]->add(i_offset+p, j_offset+q, *location);
-                        location++;
-                    }
-                }
-            }
-            j_offset += nj;
-        }
-        i_offset += ni;
-    }
-}
-
 void PotentialInt::compute_deriv1(std::vector<SharedMatrix > &result)
 {
     if (deriv_ < 1)

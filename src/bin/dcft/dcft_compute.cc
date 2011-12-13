@@ -182,7 +182,8 @@ DCFTSolver::compute_energy()
                 Cb_->gemm(false, false, 1.0, s_half_inv_, tmp, 0.0);
                 // Make sure that the orbital phase is retained
                 correct_mo_phases(false);
-                if(!lock_occupation_) find_occupation(epsilon_a_);
+                // Find occupation. It shouldn't be called, at least in the current implementation
+                if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
                 // Update SCF density (Kappa) and check its RMS
                 densityConverged = update_scf_density() < scf_threshold_;
                 // Compute the DCFT energy
@@ -324,7 +325,8 @@ DCFTSolver::compute_energy()
             write_orbitals_to_checkpoint();
             // Transform two-electron integrals to the MO basis using new orbitals, build denominators
             transform_integrals();
-            if(!lock_occupation_) find_occupation(epsilon_a_);
+            // Find occupation. It shouldn't be called, at least in the current implementation
+            if(!lock_occupation_) find_occupation(epsilon_a_, epsilon_b_);
             // Update SCF density (Kappa) and check its RMS
             densityConverged = update_scf_density() < scf_threshold_;
             // If we've performed enough lambda updates since the last orbitals
@@ -342,20 +344,23 @@ DCFTSolver::compute_energy()
     fprintf(outfile, "\t*=================================================================================*\n");
 
     // Computes the Tau^2 correction to Tau and the DCFT energy if requested by the user
-    if(options_.get_bool("TAU_SQUARED")){
-        Fa_->copy(Fa_copy);
-        Fb_->copy(Fb_copy);
-        build_tau();
-        compute_tau_squared();
-        compute_energy_tau_squared();
-        new_total_energy_ += energy_tau_squared_;
-        fprintf(outfile, "\n\t*DCFT Energy Tau^2 correction          = %20.15f\n", energy_tau_squared_);
-    }
+    Fa_->copy(Fa_copy);
+    Fb_->copy(Fb_copy);
+    compute_tau_squared();
+    compute_energy_tau_squared();
 
     // Tau^2 should probably be added to SCF energy....
-    fprintf(outfile, "\n\t*DCFT SCF Energy                       = %20.15f\n", scf_energy_);
-    fprintf(outfile, "\t*DCFT Lambda Energy                    = %20.15f\n", lambda_energy_);
-    fprintf(outfile, "\t*DCFT Total Energy                     = %20.15f\n", new_total_energy_);
+    fprintf(outfile, "\n\t*DCFT SCF Energy                                 = %20.15f\n", scf_energy_);
+    fprintf(outfile, "\t*DCFT Lambda Energy                              = %20.15f\n", lambda_energy_);
+    fprintf(outfile, "\t*DCFT Total Energy                               = %20.15f\n", new_total_energy_);
+    if(options_.get_bool("TAU_SQUARED")) {
+        fprintf(outfile, "\t*Tau Squared Correction to DCFT Energy           = %20.15f\n", energy_tau_squared_);
+    }
+    fprintf(outfile, "\t*DCFT Total Energy with Tau Squared Correction   = %20.15f\n", new_total_energy_ + energy_tau_squared_);
+
+    if(options_.get_bool("TAU_SQUARED")){
+        new_total_energy_ += energy_tau_squared_;
+    }
 
     Process::environment.globals["CURRENT ENERGY"] = new_total_energy_;
     Process::environment.globals["DCFT ENERGY"] = new_total_energy_;

@@ -1,58 +1,26 @@
 import PsiMod
 import shutil
 import os
+import re
 import input
-from driver import *
 from molecule import *
 from text import *
 
 def run_dcft(name, **kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-      molecule = kwargs.pop('molecule')
-
-    if not molecule:
-      raise ValueNotSet("no molecule found")
 
     PsiMod.scf()
     return PsiMod.dcft()
 
 def run_scf(name, **kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
     return scf_helper(name, **kwargs)
 
 def run_scf_gradient(name, **kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-
-    scf_helper(name, **kwargs)
+    run_scf(name, **kwargs)
     PsiMod.deriv()
 
-
-# SCF helper chooses whether to cast up or just run SCF
-# with a standard guess. This preserves previous SCF options
-# set by other procedures (eg. SAPT output file types for SCF)
-
 def run_mcscf(**kwargs):
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-      molecule = kwargs.pop('molecule')
-
-    if not molecule:
-      raise ValueNotSet("no molecule found")
 
     return PsiMod.mcscf()
 
@@ -60,16 +28,15 @@ def run_mcscf(**kwargs):
 # with a standard guess. This preserves previous SCF options
 # set by other procedures (eg. SAPT output file types for SCF)
 
-
 def scf_helper(name, **kwargs):
 
     cast = False
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
 
+    # why is the cast_up keyword doubled
     if (kwargs.has_key('cast_up')):
         cast = kwargs.pop('cast_up')
-
 
     precallback = None
     if (kwargs.has_key('precallback')):
@@ -149,61 +116,43 @@ def scf_helper(name, **kwargs):
 
 def run_mp2(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-    
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
-    run_scf("scf", **kwargs);
-   
-    if PsiMod.has_option_changed("DERTYPE"):
-        dertype = PsiMod.get_option("DERTYPE")
-    else:
-        dertype = kwargs.get("DERTYPE", "NONE") 
-
-    PsiMod.set_global_option('DERTYPE', dertype)
     PsiMod.set_global_option('WFN', 'MP2')
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+        run_scf("scf", **kwargs)
 
     PsiMod.transqt2()
     PsiMod.ccsort()
     returnvalue = PsiMod.mp2()
 
-    PsiMod.set_global_option('DERTYPE', 'NONE')
-    PsiMod.revoke_global_option_changed('DERTYPE')
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
 
     return returnvalue
 
 def run_mp2_gradient(name, **kwargs):
-    run_mp2(name, DERTYPE="FIRST",**kwargs)
+
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
+
+    run_mp2(name, **kwargs)
+    PsiMod.set_global_option('WFN', 'MP2')
+
     PsiMod.deriv()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_ccsd(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
-    if not (name.lower() == 'ccsd(t)'):
+    if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
 
-    # For a CCSD energy, we need SCF to be run.
-    # Could we somehow do a check to see if SCF was run?
-    # This would be useful of the user had to do something special with SCF to get
-    # it to converge.
-    run_scf("scf", **kwargs);
+    # Bypass routine scf if user did something special to get it to converge
+    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+        run_scf("scf", **kwargs)
 
     PsiMod.transqt2()
     PsiMod.ccsort()
@@ -215,8 +164,8 @@ def run_ccsd(name, **kwargs):
     return returnvalue
 
 def run_ccsd_gradient(name, **kwargs):
-    run_ccsd(name, **kwargs)
 
+    run_ccsd(name, **kwargs)
     PsiMod.set_global_option('WFN', 'CCSD')
 
     PsiMod.cchbar()
@@ -229,17 +178,6 @@ def run_ccsd_gradient(name, **kwargs):
 
 def run_ccsd_t(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
-    # Should probably do a check on the user's options to ensure wfn = ccsd_t
     PsiMod.set_global_option('WFN', 'CCSD_T')
 
     # The new CCEnergyWavefunction object that is used to wrap ccenergy
@@ -248,62 +186,97 @@ def run_ccsd_t(name, **kwargs):
 
 def run_ccsd_response(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
-    run_ccsd("ccsd", **kwargs);
-
+    run_ccsd("ccsd", **kwargs)
     PsiMod.set_global_option('WFN', 'CCSD')
 
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+
+    # ccsd_response has return value?
+
 def run_eom_ccsd(name, **kwargs):
-
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
-
-    run_ccsd("ccsd", **kwargs);
 
     PsiMod.set_global_option('WFN', 'EOM_CCSD')
 
+    run_ccsd("ccsd", **kwargs)
+    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+
     PsiMod.cchbar()
-    PsiMod.cceom()
+    returnvalue = PsiMod.cceom()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+
+    return returnvalue
 
 def run_detci(name, **kwargs):
 
-    molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
+    if (name.lower() == 'zapt'):
+        PsiMod.set_global_option('WFN', 'ZAPTN')
+        level = kwargs['level']
+        maxnvect = (level+1)/2 + (level+1)%2
+        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        if ((level+1)%2):
+           PsiMod.set_global_option('SAVE_MPN2', 2)
+        else:
+           PsiMod.set_global_option('SAVE_MPN2', 1)
+    elif (name.lower() == 'mp'):
+        PsiMod.set_global_option('WFN', 'DETCI')
+        PsiMod.set_global_option('MPN', 'TRUE')
 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
+        level = kwargs['level']
+        maxnvect = (level+1)/2 + (level+1)%2
+        PsiMod.set_global_option('MAXNVECT', maxnvect)
+        if ((level+1)%2):
+           PsiMod.set_global_option('SAVE_MPN2', 2)
+        else:
+           PsiMod.set_global_option('SAVE_MPN2', 1)
+    elif (name.lower() == 'fci'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('FCI', 'TRUE')
+    elif (name.lower() == 'cisd'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('EX_LVL', 2)
+    elif (name.lower() == 'cisdt'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('EX_LVL', 3)
+    elif (name.lower() == 'cisdtq'):
+	    PsiMod.set_global_option('WFN', 'DETCI')
+	    PsiMod.set_global_option('EX_LVL', 4)
+    elif (name.lower() == 'ci'):
+        PsiMod.set_global_option('WFN', 'DETCI')
+        level = kwargs['level']
+        PsiMod.set_global_option('EX_LVL', level)
+    # Call a plain energy('detci') and have full control over options
+    elif(name.lower() == 'detci'):
+        pass
 
-    molecule.update_geometry()
-    PsiMod.set_active_molecule(molecule)
+    # Bypass routine scf if user did something special to get it to converge
+    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+        run_scf("scf", **kwargs)
 
-    # For a CI energy, we need SCF to be run.
-    # Could we somehow do a check to see if SCF was run?
-    # This would be useful of the user had to do something special with SCF to get
-    # it to converge.
-    run_scf("scf", **kwargs);
     PsiMod.transqt2()
-    return PsiMod.detci()
+    returnvalue = PsiMod.detci()
+
+    if (name.lower() != 'detci'):
+        PsiMod.set_global_option('WFN', 'SCF')
+        PsiMod.revoke_global_option_changed('WFN')
+        PsiMod.set_global_option('MPN', 'FALSE')
+        PsiMod.revoke_global_option_changed('MPN')
+        PsiMod.set_global_option('MAXNVECT', 12)
+        PsiMod.revoke_global_option_changed('MAXNVECT')
+        PsiMod.set_global_option('SAVE_MPN2', 0)
+        PsiMod.revoke_global_option_changed('SAVE_MPN2')
+        PsiMod.set_global_option('FCI', 'FALSE')
+        PsiMod.revoke_global_option_changed('FCI')
+        PsiMod.set_global_option('EX_LVL', 2)
+        PsiMod.revoke_global_option_changed('EX_LVL')
+
+    return returnvalue
 
 def run_dfmp2(name, **kwargs):
 
@@ -372,12 +345,6 @@ def run_dfcc(name, **kwargs):
 def run_mp2c(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
     molecule.update_geometry()
     monomerA = molecule.extract_subsets(1,2)
     monomerA.set_name("monomerA")
@@ -434,8 +401,8 @@ def run_mp2c(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
     PsiMod.set_local_option("SAPT","SAPT_LEVEL","MP2C")
     PsiMod.print_out("\n")
     banner("MP2C")
@@ -451,13 +418,8 @@ def run_mp2c(name, **kwargs):
 def run_sapt(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
 
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
-    sapt_basis = "dimer";
+    sapt_basis = "dimer"
     if (kwargs.has_key('sapt_basis')):
         sapt_basis = kwargs.pop('sapt_basis')
     sapt_basis = sapt_basis.lower()
@@ -515,8 +477,8 @@ def run_sapt(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
     if (name.lower() == 'sapt0'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2'):
@@ -534,12 +496,6 @@ def run_sapt(name, **kwargs):
 def run_sapt_ct(name, **kwargs):
 
     molecule = PsiMod.get_active_molecule()
-    if (kwargs.has_key('molecule')):
-        molecule = kwargs.pop('molecule')
-
-    if not molecule:
-        raise ValueNotSet("no molecule found")
-
     molecule.update_geometry()
     monomerA = molecule.extract_subsets(1,2)
     monomerA.set_name("monomerA")
@@ -602,8 +558,8 @@ def run_sapt_ct(name, **kwargs):
 
     activate(molecule)
     PsiMod.IO.set_default_namespace("dimer")
-    PsiMod.set_local_option("SAPT","E_CONVERGE",10)
-    PsiMod.set_local_option("SAPT","D_CONVERGE",10)
+    PsiMod.set_local_option("SAPT","E_CONVERGE",10e-10)
+    PsiMod.set_local_option("SAPT","D_CONVERGE",10e-10)
     if (name.lower() == 'sapt0-ct'):
         PsiMod.set_local_option("SAPT","SAPT_LEVEL","SAPT0")
     elif (name.lower() == 'sapt2-ct'):

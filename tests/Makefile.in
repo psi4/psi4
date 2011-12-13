@@ -9,7 +9,7 @@ cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc8 cc8a cc9 cc12 cc13 cc18 cc19 cc28 cc29 cc
 
 rb_subdirs = 
 
-ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o
+ci_subdirs = cisd-h2o+-0 cisd-h2o+-1 cisd-h2o+-2 cisd-h2o-clpse cisd-sp cisd-sp-2 fci-h2o fci-h2o-2 fci-h2o-fzcv fci-dipole fci-tdm fci-tdm-2 cisd-opt-fd rasci-c2-active rasci-h2o rasci-ne zaptn-nh2 mpn-bh
 
 dcft_subdirs = dcft1 dcft2 dcft3 dcft4 #dcft5
 
@@ -29,7 +29,7 @@ mp2_subdirs = mp2_1
 
 scf_subdirs = scf1 scf2 scf3 scf4 scf5 sad1 castup1 mom props2 dft1 dfscf-bz2
 
-python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all #basis_extrap
+python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
 plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals plugin_testparse
 subdirs = \
@@ -59,101 +59,67 @@ endif
 # the bare minimum
 quicktestdirs = 
 
-tests:
-	for dir in $(subdirs); \
+define runtests
+    for dir in $1; \
 	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
+        (\
+        cd $${dir} &&\
+        echo "Testing $${dir}..." | tee -a ../../test-case-results &&\
+        $(MAKE) && cat $${dir}.test >> ../../test-case-results;\
+        );\
+        if [ $$? != 0 ]; then\
+         echo "\tFAILED" | tee -a ../test-case-results; exit 1;\
+        fi;\
 	done
+endef
+
+tests:
+	$(call runtests, $(subdirs))
 
 opttests:
-	for dir in $(opt_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(opt_subdirs))
 
 plugins:
-	for dir in $(plugin_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(plugin_subdirs))
 
 quicktests:
-	for dir in $(quicktestdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(quicktestdirs))
 
 cc_tests:
-	for dir in $(cc_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(cc_subdirs))
 
 ci_tests:
-	for dir in $(ci_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(ci_subdirs))
 
 mints_tests:
-	for dir in $(mints_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(mints_subdirs))
 
 mp2_tests:
-	for dir in $(mp2_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(mp2_subdirs))
 
 matrix_tests:
-	for dir in $(matrix_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(matrix_subdirs))
 
 mcscf_tests:
-	for dir in $(mcscf_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(mcscf_subdirs))
 
 scf_tests:
-	for dir in $(scf_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(scf_subdirs))
 
 df_tests:
-	for dir in $(df_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(df_subdirs))
 
 dcft_tests:
-	for dir in $(dcft_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(df_subdirs))
 
 psimrcc_tests:
-	for dir in $(psimrcc_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(psimrcc_subdirs))
 
 python_tests:
-	for dir in $(python_test_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(python_test_subdirs))
 
 psirb_tests:
-	for dir in $(rb_subdirs); \
-	do \
-	 (cd $${dir} && echo ...Testing $${dir}... && $(MAKE)) || exit 1; \
-	done
+	$(call runtests, $(python_test_subdirs))
 
 clean:
 	for dir in $(subdirs); \

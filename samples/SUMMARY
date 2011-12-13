@@ -1,10 +1,13 @@
-basis_extrap:  Various basis set extrapolation tests
-
-
 castup1:      Test of SAD/Cast-up (mainly not dying due to file weirdness)
 
 
 cc1:          RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
+
+
+cc12:         Single point energies of multiple excited states with EOM-CCSD
+
+
+cc13:         cc-pVDZ UCCSD optimization of triplet methtylene, with Z-matrix input
 
 
 cc2:          6-31G** H2O Test CCSD energy, with Z-Matrix input
@@ -121,6 +124,9 @@ mints4:       A demonstration of mixed Cartesian/ZMatrix geometry specification,
 mp2_1:        All-electron MP2 6-31G** geometry optimization of water
 
 
+mpn-bh:       MP(n)/aug-cc-pVDZ BH Energy Point, with n=2-19.  Compare against  M. L. Leininger et al., J. Chem. Phys. 112, 9213 (2000)
+
+
 opt1:         SCF STO-3G geometry optimzation, with Z-matrix input
 
 
@@ -160,7 +166,13 @@ pywrap_db1:   Database calculation, so no molecule section in input file. Portio
 pywrap_db2:   Database calculation with psi4-generated input. Should not be used as a model input file but as a canary to avoid breaking database/input parser dependencies.
 
 
+rasci-c2-active:  6-31G* C2 Test RASCI Energy Point, testing two different ways of specifying the active space, either with the ACTIVE keyword, or with RAS1, RAS2, RESTRICTED_DOCC, and RESTRICTED_UOCC
+
+
 rasci-h2o:    RASCI/6-31G** H2O Energy Point
+
+
+rasci-ne:     Ne atom RASCI/cc-pVQZ  Example of split-virtual CISD[TQ] from Sherrill and Schaefer, J. Phys. Chem. XXX This uses a "primary" virtual space 3s3p (RAS 2), a "secondary" virtual space 3d4s4p4d4f (RAS 3), and a "tertiary" virtual space consisting of the remaining virtuals.  First, an initial CISD computation is run to get the natural orbitals; this allows a meaningful partitioning of the virtual orbitals into groups of different importance.  Next, the RASCI is run.  The split-virtual CISD[TQ] takes all singles and doubles, and all triples and quadruples with no more than 2 electrons in the secondary virtual subspace (RAS 3).  If any electrons are present in the tertiary virtual subspace (RAS 4), then that excitation is only allowed if it is a single or double.
 
 
 sad1:         Test of the superposition of atomic densities (SAD) guess, using a highly distorted water geometry with a cc-pVDZ basis set.  This is just a test of the code and the user need only specify guess=sad to the SCF module's (or global) options in order to use a SAD guess. The test is first performed in C2v symmetry, and then in C1.
@@ -188,5 +200,8 @@ scf4:         RHF cc-pVDZ energy for water, automatically scanning the symmetric
 
 
 scf5:         Test of all different algorithms and reference types for SCF, on singlet and triplet O2, using the cc-pVTZ basis set.
+
+
+zaptn-nh2:    ZAPT(n)/6-31G NH2 Energy Point, with n=2-25
 
 

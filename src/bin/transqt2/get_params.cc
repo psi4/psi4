@@ -71,15 +71,13 @@ void get_params(Options & options)
   /* If AO-basis chosen, keep the SO_TEI file */
   std::string aobasis;
   aobasis = options.get_str("AO_BASIS");
-  if(aobasis == "DISK") params.delete_tei = 0;
+  if (aobasis == "DISK" || options.get_bool("DELETE_TEI") == false) params.delete_tei = 0;
 
   // any MCSCF-type wavefunction needs multiple transforms so don't delete
   // the AO two-electron ints
   if ((params.wfn == "OOCCD") || (params.wfn == "DETCAS") ||
        (params.wfn == "CASSCF") || (params.wfn == "RASSCF"))
     params.delete_tei = 0;
-
-  params.delete_tei = options.get_bool("DELETE_TEI");
 
   if(params.print_lvl) {
     fprintf(outfile, "\n\tInput parameters:\n");

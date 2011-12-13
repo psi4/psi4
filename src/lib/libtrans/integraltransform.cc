@@ -282,6 +282,7 @@ IntegralTransform::initialize()
     _cacheFiles = init_int_array(PSIO_MAXUNIT);
     _cacheList  = init_int_matrix(numIndexArrays, numIndexArrays);
     int currentActiveDPD = psi::dpd_default;
+    _memory = Process::environment.get_memory();
     dpd_init(_myDPDNum, _nirreps, _memory, 0, _cacheFiles,
             _cacheList, NULL, numSpaces, _spaceArrays);
 

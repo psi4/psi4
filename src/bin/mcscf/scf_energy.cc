@@ -90,22 +90,6 @@ double SCF::energy(int cycle,double old_energy)
     release2(eigenvectors);
   }
 
-  fprintf(outfile,"\n  @SCF %4d  %20.12f  %20.12f",cycle,total_energy,total_energy-old_energy);
-
-  if(reference == tcscf){
-    fprintf(outfile,"\n    ci      = [");
-    for(int I = 0 ; I < nci; ++I)
-      fprintf(outfile,"%11.8f%s",ci[I], I != nci -1 ? "," : "");
-    fprintf(outfile,"]");
-
-    fprintf(outfile,"\n    ci_grad = [");
-    for(int I = 0 ; I < nci; ++I)
-      fprintf(outfile,"%11.8f%s",ci_grad[I], I != nci -1 ? "," : "");
-    fprintf(outfile,"]");
-  }
-
-  fflush(outfile);
-
   return(total_energy);
 }
 

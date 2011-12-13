@@ -42,7 +42,7 @@ plugin_aointegrals(Options &options)
     // The integral factory oversees the creation of integral objects
     shared_ptr<IntegralFactory> integral(new IntegralFactory
             (aoBasis, aoBasis, aoBasis, aoBasis));
-    
+
     // N.B. This should be called after the basis has been built, because the geometry has not been
     // fully initialized until this time.
     molecule->print();
@@ -59,10 +59,10 @@ plugin_aointegrals(Options &options)
     shared_ptr<OneBodyAOInt> tOBI(integral->ao_kinetic());
     shared_ptr<OneBodyAOInt> vOBI(integral->ao_potential());
     // Form the one-electron integral matrices from the matrix factory
-    shared_ptr<SimpleMatrix> sMat(factory->create_simple_matrix("Overlap"));
-    shared_ptr<SimpleMatrix> tMat(factory->create_simple_matrix("Kinetic"));
-    shared_ptr<SimpleMatrix> vMat(factory->create_simple_matrix("Potential"));
-    shared_ptr<SimpleMatrix> hMat(factory->create_simple_matrix("One Electron Ints"));
+    shared_ptr<Matrix> sMat(factory->create_matrix("Overlap"));
+    shared_ptr<Matrix> tMat(factory->create_matrix("Kinetic"));
+    shared_ptr<Matrix> vMat(factory->create_matrix("Potential"));
+    shared_ptr<Matrix> hMat(factory->create_matrix("One Electron Ints"));
     // Compute the one electron integrals, telling each object where to store the result
     sOBI->compute(sMat);
     tOBI->compute(tMat);
