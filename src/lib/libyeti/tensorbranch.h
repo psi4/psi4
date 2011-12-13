@@ -53,15 +53,15 @@ class TensorBranch :
 
         MemoryPool* mempool_;
 
+        uli malloc_number_;
+
         TensorDataController* first_controller_;
 
         TensorDataController* last_controller_;
 
-        void allocate_data_controller();
+        void allocate_data_controller(size_t blocksize);
 
         TensorIndexDescr* descr_;
-
-        uli ncontrollers_;
 
     public:
         TensorBranch(
@@ -98,13 +98,17 @@ class TensorBranch :
 
         uli get_parent_malloc_number() const;
 
+        void set_malloc_number(uli num);
+
+        uli get_malloc_number() const;
+
         void load_metadata(long offset);
 
         void allocate(DataNode* node);
 
         void set_element_type(TemplateInfo::type_t type);
 
-        uli ncontrollers() const;
+        uli ncontrollers_nonzero() const;
 
         size_t size_data_wasted();
 

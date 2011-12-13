@@ -23,7 +23,7 @@
 
 #define USE_SCREENING 0
 
-#define LOG_UNITIALIZED -200
+#define LOG_UNITIALIZED 200
 
 #define LOG_ZERO -100
 
@@ -35,13 +35,22 @@
 
 #define NINDEX 6
 
+#define MICROSECOND_LOCK_WAIT 2e7
+
+#define REALLY_BIG_INT 1073741824  // = 2^30.  Should be sufficient for most purposes and also avoid overflows
+
+#define TENSOR_BLOCK_COMMUNICATION_EXCEPTION 100
+#define TENSOR_BLOCK_ACCUMULATE_EXCEPTION 101
+#define TENSOR_WAIT_ERROR 102
+#define TENSOR_BLOCK_POLICY_EXCEPTION 103
+
 #undef heisenbug
 #define heisenbug std::cout << __FILE__ << " " << __LINE__ << " on node " << YetiRuntime::me() << std::endl
 
-#define heisenfxn(x) std::cout << stream_printf("%s  %s  %d on %p node %d thread %d\n", #x, \
-    __FILE__, __LINE__, this, YetiRuntime::me(), YetiRuntime::get_thread_number()); std::cout.flush()
+//#define heisenfxn(x) std::cout << stream_printf("%s  %s  %d on %p node %d thread %d\n", #x, \
+//    __FILE__, __LINE__, this, YetiRuntime::me(), YetiRuntime::get_thread_number()); std::cout.flush()
 
-//#define heisenfxn(x) 
+#define heisenfxn(x) 
 
 #define findbug(x) std::cout << __FILE__ << " " << x << std::endl
 
@@ -56,6 +65,37 @@
 #define NOT_THREADED 0
 
 #define DATA_DISTRIBUTION_DEPTH 1
+
+// Print flags
+#define PRINT_SCREENING_SKIPS 0
+
+#define PRINT_CXN_TYPE 0
+
+#define PRINT_CXN_DETAILS 0
+
+#define PRINT_TASK_QUEUE_STATS 0
+
+#define PRINT_PROC_NUM_ELEMENTS 0
+
+#define PRINT_CACHE_CONFIG_DATA 0
+
+#define COUNT_SCREENING_SKIPS 1
+
+#define TRACK_MALLOC_REQUEST 0
+
+#define THREAD_KILL_SIGNAL SIGUSR2
+
+#define MAIN_PROCESS_BACKTRACE_SIGNAL SIGTRAP
+
+/* Define if the deprecated attribute exists in C++.  */
+#define CXX_DEPRECATED 1
+
+#ifdef CXX_DEPRECATED
+#define DEPRECATED __attribute__((deprecated))
+#else
+#define DEPRECATED
+#endif
+
 
 
 namespace yeti {

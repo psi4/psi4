@@ -32,7 +32,7 @@ IndexRange::IndexRange(
     irrep_(0)
 {
     //if (tuple->size() == 0)
-    //    raise(SanityCheckError, "Cannot build TileIndex from tuple of size 0");
+    //    yeti_throw(SanityCheckError, "Cannot build TileIndex from tuple of size 0");
 }
 
 IndexRange::IndexRange(
@@ -260,7 +260,7 @@ IndexRange::acquire_subranges(const SubindexTuplePtr& subtuple)
 {
     if (!subranges_)
     {
-        raise(SanityCheckError, "no subranges in acquire_subranges");
+        yeti_throw(SanityCheckError, "no subranges in acquire_subranges");
     }
 
     uli start = 0;
@@ -374,84 +374,6 @@ IndexRange::equals(IndexRange* idx) const
     return true;
 }
 
-IndexRange*
-IndexRange::_squeeze_together_bottom_ranges(
-    uli nper,
-    uli* start_offsets
-)
-{
-    usi mydepth = depth();
-    if (mydepth > 1)
-    {
-        SubindexTuplePtr subtuple = new SubindexTuple(subranges_->size());
-        SubindexTuple::iterator it(subranges_->begin());
-        SubindexTuple::iterator stop(subranges_->end());
-        uli idx = 0;
-        uli start = start_offsets[mydepth];
-        for ( ; it != stop; ++it, ++idx)
-        {
-            IndexRange* subrange = *it;
-            IndexRange* new_subrange = subrange->_squeeze_together_bottom_ranges(nper, start_offsets);
-            subtuple->set(idx, new_subrange);
-            start_offsets[mydepth] += subrange->nelements();
-        }
-        return new IndexRange(start, subtuple);
-    }
-
-    uli size = subranges_->size();
-    uli nsubranges = 0;
-    uli idx = 0;
-    while (idx < size)
-    {
-        uli nelements = 0;
-        while (idx < size && nelements < nper)
-        {
-            nelements += subranges_->get(idx)->nelements();
-            ++idx;
-        }
-        ++nsubranges;
-    }
-
-    SubindexTuplePtr subtuple = new SubindexTuple(nsubranges);
-    uli data_start = start_offsets[0];
-    uli isub = 0;
-    idx = 0;
-    while (idx < size)
-    {
-        uli nelements = 0;
-        while (idx < size && nelements < nper)
-        {
-            nelements += subranges_->get(idx)->nelements();
-            ++idx;
-        }
-        IndexRange* subrange = new IndexRange(data_start, nelements);
-        subtuple->set(isub, subrange);
-        data_start += nelements;
-        ++isub;
-    }
-
-    start_offsets[0] = data_start;
-
-    uli metadata_start = start_offsets[1];
-    IndexRange* newrange = new IndexRange(metadata_start, subtuple);
-    metadata_start += subtuple->size();
-    start_offsets[1] = metadata_start;
-
-    return newrange;
-}
-
-IndexRange*
-IndexRange::squeeze_together_bottom_ranges(
-    uli nper
-)
-{
-    uli offsets[MAX_DEPTH];
-    for (usi i=0; i < MAX_DEPTH; ++i)
-        offsets[i] = 0;
-
-    return _squeeze_together_bottom_ranges(nper, offsets);
-}
-
 uli
 IndexRange::finish(usi depth) const
 {
@@ -459,7 +381,7 @@ IndexRange::finish(usi depth) const
     if (mydepth == depth)
         return start_ + nelements_;
     else if (mydepth < depth)
-        raise(SanityCheckError, "recursion depth exceeded in start");
+        yeti_throw(SanityCheckError, "recursion depth exceeded in start");
 
     //go to next level
     usi lastindex = nelements_ - 1;
@@ -495,7 +417,7 @@ IndexRange::get_composite_range(usi depth) const
 {
     usi mydepth = this->depth();
     if (depth > mydepth)
-        raise(SanityCheckError, "depth too high for composite range");
+        yeti_throw(SanityCheckError, "depth too high for composite range");
 
     if (depth == mydepth)
     {
@@ -563,7 +485,7 @@ IndexRange::get_subindex(uli i) const
     if (!subranges_)
     {
         //null! what are you doing?!?!?
-        raise(SanityCheckError, "index range has no sub ranges for subindex");
+        yeti_throw(SanityCheckError, "index range has no sub ranges for subindex");
     }
 
     if (relative_index >= subranges_->size())
@@ -600,7 +522,7 @@ IndexRange::get_subindices(
     }
     else
     {
-        raise(SanityCheckError, "cannot retrieve at depth");
+        yeti_throw(SanityCheckError, "cannot retrieve at depth");
     }
 }
 
@@ -632,10 +554,10 @@ IndexRange::get_subdepth_alignment(IndexRange* range)
     usi depth = range->depth();
 
     if (depth > mydepth)
-        raise(SanityCheckError, "range of higher depth cannot exist as subrange");
+        yeti_throw(SanityCheckError, "range of higher depth cannot exist as subrange");
 
     if (depth == 0 || mydepth == 0)
-        raise(SanityCheckError, "cannot align index ranges of zero depth");
+        yeti_throw(SanityCheckError, "cannot align index ranges of zero depth");
 
     IndexRange* next = range;
     while (next->depth() > 0)
@@ -647,7 +569,7 @@ IndexRange::get_subdepth_alignment(IndexRange* range)
         next = next->get_subranges()->get(0);
     }
 
-    raise(SanityCheckError, "index ranges have no subindex alignment depth");
+    yeti_throw(SanityCheckError, "index ranges have no subindex alignment depth");
     return 0;
 }
 
@@ -783,7 +705,7 @@ IndexRange::nsubranges(usi depth_level) const
 {
     usi mydepth = depth();
     if (depth_level > mydepth) //depth is too high
-        raise(SanityCheckError, "requested depth is too high");
+        yeti_throw(SanityCheckError, "requested depth is too high");
 
     if (depth_level == mydepth)
         return nelements_;
@@ -807,7 +729,7 @@ IndexRange::ntot(usi depth) const
     if (mydepth == depth)
         return nelements_;
     else if (mydepth < depth)
-        raise(SanityCheckError, "recursion depth exceeded in ntot");
+        yeti_throw(SanityCheckError, "recursion depth exceeded in ntot");
 
     if (subranges_)
     {
@@ -866,7 +788,7 @@ IndexRange::start(usi depth) const
     if (mydepth == depth)
         return start_;
     else if (mydepth < depth)
-        raise(SanityCheckError, "recursion depth exceeded in start");
+        yeti_throw(SanityCheckError, "recursion depth exceeded in start");
 
     //go to next level
     return subranges_->get(0)->start(depth);
@@ -1087,7 +1009,7 @@ IndexRange::subrange_index_location(IndexRange* range, uli* indices) const
 
     if (!check)
     {
-        raise(SanityCheckError, "index range is not a subrange");
+        yeti_throw(SanityCheckError, "index range is not a subrange");
     }
 }
 
@@ -1126,7 +1048,7 @@ IndexRange::validate()
         return;
 
     if (subranges_->size() == 0)
-        raise(SanityCheckError, "no subranges");
+        yeti_throw(SanityCheckError, "no subranges");
 
     if (nelements_ != subranges_->size())
         throw ValuesNotEqual<uli>("no. subranges", nelements_, subranges_->size(), __FILE__, __LINE__);
@@ -1164,6 +1086,7 @@ IndexDescr::IndexDescr(
     if (!range->is_contiguous())
     {
         cerr << "Cannot build index descr from non-contiguous index range" << endl;
+        range->print(cout); cout << endl;
         abort();
     }
 
@@ -1296,7 +1219,7 @@ IndexDescr::print(std::ostream &os) const
     os << descr_;
     for (usi i=1; i <= depth_; ++i)
     {
-        os << endl << "Depth = " << i << endl;
+        os << endl << "Depth=" << i << endl;
         os << range_list_->get(i);
     }
     os << endl << "data offset: " << this->data_offset_;
@@ -1455,7 +1378,7 @@ SubindexTuple::index(IndexRange *subidx) const
         if (subrange == subidx)
             return idx;
     }
-    raise(SanityCheckError, "no subindex matching parameter subindex");
+    yeti_throw(SanityCheckError, "no subindex matching parameter subindex");
     return 0;
 }
 
@@ -1465,6 +1388,15 @@ TensorIndexDescr::TensorIndexDescr(usi nindex)
     nindex_(nindex),
     has_symmetry_(true)
 {
+}
+
+TensorIndexDescr*
+TensorIndexDescr::copy() const
+{
+    TensorIndexDescr* cpy = new TensorIndexDescr(nindex_);
+    for (usi i=0; i < nindex_; ++i)
+        cpy->set(i, indices_.get(i));
+    return cpy;
 }
 
 usi
@@ -1575,16 +1507,30 @@ TensorIndexDescr::permute(Permutation* p)
     ::memcpy(indices_.begin(), tmp, nindex_ * sizeof(IndexDescr*));
 }
 
-size_t
+uli
 TensorIndexDescr::get_nelements_data(
     usi depth,
     const uli *indices
 ) const
 {
-    size_t ntot = 1;
+    uli ntot = 1;
     for (usi i=0; i < nindex_; ++i)
     {
         ntot *= get(i)->get_range(depth)->get_subindex(indices[i])->ntot();
+    }
+    return ntot;
+}
+
+uli
+TensorIndexDescr::get_nelements_metadata(
+    usi depth,
+    const uli *indices
+) const
+{
+    uli ntot = 1;
+    for (usi i=0; i < nindex_; ++i)
+    {
+        ntot *= get(i)->get_range(depth)->get_subindex(indices[i])->ntot(1); //metadata depth of 1
     }
     return ntot;
 }
@@ -1689,7 +1635,13 @@ TensorIndexDescr::get_nelements_data(uli* nelements) const
 void
 TensorIndexDescr::print(std::ostream &os) const
 {
-    os << "Tensor Index Descr" << endl;
+    os << "Tensor Index Descr " << endl;
+
+    uli ntot = 1;
+    for (uli i=0; i < nindex_; ++i)
+        ntot *= get(i)->get_top_range()->nelements();
+
+    os << "N=" << ntot << endl;
     for (usi i=0; i < nindex_; ++i)
     {
         os << "Index " << i << ": " << get(i)->descr() << endl;

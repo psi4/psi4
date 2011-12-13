@@ -40,7 +40,6 @@ MetaDataNode::MetaDataNode(
     depth_(depth),
     parent_branch_(parent),
     nindex_(parent->get_descr()->nindex()),
-    mempool_(parent->get_metadata_mempool()),
     nodes_(0)
 {
     ::memcpy(indices_, indexset, nindex_ * sizeof(uli));
@@ -259,16 +258,35 @@ MetaDataNode::_print_data_node(
 {
     os << Env::indent;
     uli n = node->nelements();
-    char* data = node->data();
-    os << stream_printf("node: %p data: %p", node, (void*) data);
-    const data_t* dataptr = reinterpret_cast<const data_t*>(data);
-    for (uli i=0; i < n; ++i, ++dataptr)
-    {
-        if (i % 6 == 0)
-            os << endl << Env::indent;
-        os << stream_printf(TypeInfo<data_t>::printf_str, *dataptr)
-            << " ";
-     }
+    // TODO: Better printing of higher order tensors
+    usi nidx = branch->get_descr()->nindex();
+    if(nidx == 2) {
+        usi nel_row = branch->get_descr()->get(0)->nelements_data();
+        usi nel_col = branch->get_descr()->get(1)->nelements_data();
+        char* data = node->data();
+        os << stream_printf("node: %p data: %p", node, (void*) data);
+        const data_t* dataptr = reinterpret_cast<const data_t*>(data);
+        for (uli i=0; i < n; ++i, ++dataptr)
+        {
+            if (i % nel_col == 0)
+                os << endl << Env::indent;
+            os << stream_printf(TypeInfo<data_t>::printf_str, *dataptr)
+                << " ";
+        }
+
+    }
+    else {
+        char* data = node->data();
+        os << stream_printf("node: %p data: %p", node, (void*) data);
+        const data_t* dataptr = reinterpret_cast<const data_t*>(data);
+        for (uli i=0; i < n; ++i, ++dataptr)
+        {
+            if (i % 7 == 0)
+                os << endl << Env::indent;
+            os << stream_printf(TypeInfo<data_t>::printf_str, *dataptr)
+                << " ";
+        }
+    }
 }
 
 template <typename data_t>
@@ -351,8 +369,8 @@ MetaDataNode::init_tile_map()
 {
     if (!nodes_)
     {
-        nodes_ = new (mempool_) NodeMap<TileNode>(
-                        mempool_,
+        nodes_ = new (mempool()) NodeMap<TileNode>(
+                        mempool(),
                         parent_branch_->get_descr(),
                         indices_,
                         depth_
@@ -417,14 +435,14 @@ MetaDataNode::internal_contraction(
 
                 if (depth_ == 1)
                 {
-                    DataNode* dnode = new (mempool_)
+                    DataNode* dnode = new (mempool())
                         DataNode(dst_indices, dst_mdnode->get_parent_branch());
                     dst_mdnode->get_parent_branch()->allocate(dnode);
                     dst_node = dnode;
                 }
                 else
                 {
-                    dst_node = new (mempool_)
+                    dst_node = new (mempool())
                         MetaDataNode(dst_indices, depth_ - 1,
                             dst_mdnode->get_parent_branch());
                 }
@@ -482,11 +500,11 @@ MetaDataNode::init_subnodes()
         nodes_->indices(idx, indexset);
         if      (depth_ == 1)
         {
-            node = new (mempool_) DataNode(indexset, parent_branch_);
+            node = new (mempool()) DataNode(indexset, parent_branch_);
         }
         else
         {
-            node = new (mempool_) MetaDataNode(indexset, next_depth, parent_branch_);
+            node = new (mempool()) MetaDataNode(indexset, next_depth, parent_branch_);
         }
         nodes_->set(idx, node);
     }
@@ -551,6 +569,7 @@ MetaDataNode::accumulate(
     Permutation* perm = 0;
     if (sort)
         perm = sort->get_permutation();
+
     for ( ; itsrc != stop; ++itsrc, ++itdst, ++idx)
     {
         TileNode* srcnode = *itsrc;
@@ -566,7 +585,7 @@ MetaDataNode::accumulate(
             DataNode* src_dnode = static_cast<DataNode*>(srcnode);
             if (!dst_dnode)
             {
-                dst_dnode = new (mempool_)
+                dst_dnode = new (mempool())
                     DataNode(indexset, parent_branch_);
                 parent_branch_->allocate(dst_dnode);
                 nodes_->set(idx, dst_dnode);
@@ -602,20 +621,14 @@ MetaDataNode::accumulate(
                                     ->get_parent_tensor()->get_name();
                 string dstname = parent_branch_->get_parent_block()
                                     ->get_parent_tensor()->get_name();
-                cerr << "misaligned data blocks in accumulate on tensor "
-                     << srcname
-                     << " from tensor "
-                     << dstname
-                     << endl;
-                cerr << indexstr(nindex_, indexset) 
-                     << " on tensor " << dstname
-                     << " has "
-                     << dst_dnode->nelements() << " elements" << endl;
-                cerr << indexstr(nindex_, src_indices) 
-                     << " on tensor " << srcname
-                     << " has "
-                     << src_dnode->nelements() << " elements" << endl;
-                abort();
+                cerr << stream_printf("Misaligned data blocks in accumulate on tensor %s from tensor %s\n"
+                                      "%s on dst tensor %s has %ld elements\n"
+                                      "%s on src tensor %s has %ld elemetns\n",
+                                      srcname.c_str(), dstname.c_str(), 
+                                      indexstr(nindex_, indexset), dstname.c_str(), dst_dnode->nelements(),
+                                      indexstr(nindex_, src_indices), srcname.c_str(), src_dnode->nelements());
+                cerr.flush();
+                throw TENSOR_BLOCK_ACCUMULATE_EXCEPTION;
             }
 
             if (sort)
@@ -668,7 +681,7 @@ MetaDataNode::accumulate(
             if (!dst_mdnode)
             {
                 nodes_->indices(idx, indexset);
-                dst_mdnode = new (mempool_)
+                dst_mdnode = new (mempool())
                     MetaDataNode(indexset, next_depth, parent_branch_);
                 nodes_->set(idx, dst_mdnode);
             }
@@ -677,6 +690,7 @@ MetaDataNode::accumulate(
             dstnode = dst_mdnode;
         }
     }
+
 }
 
 bool
@@ -777,6 +791,7 @@ MetaDataNode::equals(MetaDataNode* mdnode)
                     descr->nindex(),
                     indexset
                 ) << endl;
+
                 data_type_switch(
                     get_parent_branch()->element_type(),
                     this->_print_data_node,
@@ -973,7 +988,7 @@ MetaDataNode::accumulate_data(
         nodes_->indices(idx, indices);
         if (!node)
         {
-            node = new (mempool_) DataNode(indices, this->parent_branch_);
+            node = new (mempool()) DataNode(indices, this->parent_branch_);
             parent_branch_->allocate(node);
             nodes_->set(idx, node);
         }
@@ -1035,7 +1050,7 @@ MetaDataNode::accumulate_metadata(
         nodes_->indices(idx, indexset);
         if (!node)
         {
-            node = new (mempool_) MetaDataNode(indexset, next_depth, parent_branch_);
+            node = new (mempool()) MetaDataNode(indexset, next_depth, parent_branch_);
             nodes_->set(idx, node);
         }
         node->accumulate(matrix, config, descr);
@@ -1091,6 +1106,9 @@ MetaDataNode::element_op(ElementOp* op)
         if (depth_ == 1)
         {
             DataNode* dnode = static_cast<DataNode*>(node);
+            if (dnode->data() == 0) //nothing to do
+                continue;
+
             nodes_->indices(idx, indexset);
             descr->get_nelements(indexset, sizes);
             descr->get_index_starts(indexset, index_starts);
@@ -1109,6 +1127,12 @@ MetaDataNode::element_op(ElementOp* op)
             mdnode->element_op(op);
         }
     }
+}
+
+MemoryPool*
+MetaDataNode::mempool() const
+{
+    return parent_branch_->get_metadata_mempool();
 }
 
 void
@@ -1364,7 +1388,7 @@ MetaDataNode::fill(TensorElementComputer* filler)
         TileNode* node = *it;
         if (node)
         {
-            raise(SanityCheckError, "cannot refill tensor node!");
+            yeti_throw(SanityCheckError, "cannot refill tensor node!");
         }
 
         nodes_->indices(idx, indexset);
@@ -1376,7 +1400,7 @@ MetaDataNode::fill(TensorElementComputer* filler)
         if (depth_ == 1) //create data nodes
         {
 
-            DataNode* dnode = new (mempool_) DataNode(indexset, parent_branch_);
+            DataNode* dnode = new (mempool()) DataNode(indexset, parent_branch_);
 
             parent_branch_->allocate(dnode);
 
@@ -1392,7 +1416,7 @@ MetaDataNode::fill(TensorElementComputer* filler)
         }
         else
         {
-            MetaDataNode* mdnode = new (mempool_)
+            MetaDataNode* mdnode = new (mempool())
                 MetaDataNode(indexset, next_depth, parent_branch_);
             mdnode->fill(filler);
             node =  mdnode;
@@ -1511,10 +1535,9 @@ MetaDataNode::print_data(std::ostream& os)
     TensorController* controller = parent_branch_->get_tensor_controller();
     controller->retrieve(this);
 
+
     if (nodes_ == 0)
         return;
-
-    bool need_recompute = controller->need_recompute_data();
 
     uli idx = 0;
     uli indexset[NINDEX];
@@ -1524,15 +1547,13 @@ MetaDataNode::print_data(std::ostream& os)
     for ( ; it != stop; ++it, ++idx)
     {
         DataNode* node = static_cast<DataNode*>(*it);
-        //if (!node || node->get_max_log() < YetiRuntime::print_cutoff)
-        //    continue;
+        if (!node || node->data() == 0)
+            continue;
 
         nodes_->indices(idx, indexset);
 
-        if (need_recompute && node->data() == 0)
-            controller->retrieve(node, this, indexset);
-
-        os << ClassOutput<const uli*>::str(nindex_, indexset)
+        os << Env::indent << ClassOutput<const uli*>::str(nindex_, indexset)
+            << " sizes=" << indexstr(nindex_, nodes_->sizes())
             << stream_printf(" max=10^(%7.4f)", node->get_max_log())
             << endl;
 
@@ -1565,13 +1586,13 @@ MetaDataNode::print_metadata(std::ostream &os)
     for ( ; it != stop; ++it, ++idx)
     {
         MetaDataNode* node = static_cast<MetaDataNode*>(*it);
-        //if (!node || node->get_max_log() < YetiRuntime::print_cutoff)
-        //    continue;
+        if (!node || node->get_node_map() == 0)
+            continue;
 
         nodes_->indices(idx, indexset);
-        os << Env::indent << "MetaDataNode " << (void*) this << " "
+        os << Env::indent << (void*) this << " "
             << ClassOutput<const uli*>::str(nindex_, indexset)
-             << stream_printf(" max=10^(%7.4f)", node->get_max_log())
+            << stream_printf(" max=10^(%7.4f)", node->get_max_log())
             << endl;
 
         node->print(os);
@@ -1605,9 +1626,24 @@ MetaDataNode::accumulate_subnode(
     if (!pnode)
     {
         nodes_->indices(index, indexset);
-        pnode = new (mempool_) DataNode(indexset, parent_branch_);
+        pnode = new (mempool()) DataNode(indexset, parent_branch_);
         nodes_->set(index, pnode);
         parent_branch_->allocate(pnode);
+        if (nrows * ncols != pnode->nelements())
+        {
+            Env::outn() << stream_printf("Misaligned data node contraction on new block %s: nr=%ld nc=%ld n=%ld\n",
+                                         parent_branch_->get_parent_block()->get_block_name().c_str(),
+                                         nrows, ncols, pnode->nelements());
+            throw TENSOR_BLOCK_ACCUMULATE_EXCEPTION;
+        }
+    }
+
+    if (nrows * ncols != pnode->nelements())
+    {
+        Env::outn() << stream_printf("Misaligned data node contraction on old block %s: nr=%ld nc=%ld n=%ld\n",
+                                     parent_branch_->get_parent_block()->get_block_name().c_str(),
+                                     nrows, ncols, pnode->nelements());
+        throw TENSOR_BLOCK_ACCUMULATE_EXCEPTION;
     }
 
     cxn->get_engine()->contract(
@@ -1634,7 +1670,7 @@ MetaDataNode::accumulate_subnode(
     if (!pnode)
     {
         nodes_->indices(index, indexset);
-        pnode = new (mempool_) MetaDataNode(indexset, depth_ - 1, parent_branch_);
+        pnode = new (mempool()) MetaDataNode(indexset, depth_ - 1, parent_branch_);
         nodes_->set(index, pnode);
     }
     pnode->accumulate(
@@ -1675,6 +1711,7 @@ MetaDataNode::accumulate(
     cxn_config->configure_left_block(l_mdnode);
     cxn_config->configure_right_block(r_mdnode);
     //cxn->configure_product_block(this);
+
 
     uli nrows = cxn_config->ncxn_rows_left();
     uli nlink = cxn_config->ncxn_cols_left();
@@ -1724,7 +1761,7 @@ MetaDataNode::accumulate(
             indexstr(l_mdnode->nindex_, l_mdnode->indices_),
             indexstr(r_mdnode->nindex_, r_mdnode->indices_)
         );
-        raise(SanityCheckError, str);
+        yeti_throw(SanityCheckError, str);
     }
 #endif
 
@@ -1748,10 +1785,21 @@ MetaDataNode::accumulate(
                     continue;
 
 #if USE_SCREENING
-                double maxlog_l = lnode->get_max_log();
-                double maxlog_r = rnode->get_max_log();
-                if (maxlog_l + maxlog_r < YetiRuntime::matrix_multiply_cutoff)
-                   continue; //nothing to accumulate
+                l_mdnode->get_node_map()->indices(lidx, indices);
+                int nelements_l = ldescr->nelements(indices);
+                double maxlog_l = lnode->get_max_log() + log10(nelements_l);
+                r_mdnode->get_node_map()->indices(ridx, indices);
+                int nelements_r = rdescr->nelements(indices);
+                double maxlog_r = rnode->get_max_log() + log10(nelements_r);
+                if (maxlog_l + maxlog_r < YetiRuntime::matrix_multiply_cutoff) {
+#if COUNT_SCREENING_SKIPS
+                    YetiRuntime::increment_screening_skips(depth_);
+#endif
+#if PRINT_SCREENING_SKIPS
+                    Env::out0() << "Accumulation skipped!  Nelements_l: " << nelements_l << " Nelements_r: " << nelements_r << " maxlog sum: " << (maxlog_l + maxlog_r) << endl;
+#endif
+                    continue; //nothing to accumulate
+                }
 #endif
 
                 if (!nodes_)
@@ -1782,21 +1830,76 @@ MetaDataNode::accumulate(
                     uli ncols_data = cxn_config->ncols_right(nelements);
 
 
-                    accumulate_subnode(
-                        pidx, l_subnode, r_subnode,
-                        nrows_data, ncols_data, nlink_data,
-                        scale,
-                        cxn
-                    );
+                    try{
+                        accumulate_subnode(
+                            pidx, l_subnode, r_subnode,
+                            nrows_data, ncols_data, nlink_data,
+                            scale,
+                            cxn
+                        );
+                    } catch (int e) {
+                        stringstream sstr;
+                        sstr << "Left: " << (void*) l_mdnode->parent_branch_ << endl;
+                        l_mdnode->get_node_map()->indices(lidx, indices);
+                        sstr << indexstr(l_mdnode->nindex_, indices) << endl;
+                        ldescr->print(sstr); sstr << endl;
+                        l_mdnode->parent_branch_->get_parent_block()->print(sstr);
+                        sstr << endl;
+                        sstr << "Right:" << (void*) r_mdnode->parent_branch_ << endl;
+                        r_mdnode->get_node_map()->indices(ridx, indices);
+                        sstr << indexstr(r_mdnode->nindex_, indices) << endl;
+                        rdescr->print(sstr); sstr << endl;
+                        r_mdnode->parent_branch_->get_parent_block()->print(sstr);
+                        sstr << endl;
+                        sstr << "Product:" << endl;
+                        nodes_->indices(pidx, indices);
+                        sstr << indexstr(nindex_, indices) << endl;
+                        parent_branch_->get_descr()->print(sstr); sstr << endl;
+                        parent_branch_->get_parent_block()->print(sstr);
+                        sstr << endl;
+                        sstr << "Left node is malloc number " << l_mdnode->parent_branch_->get_malloc_number() << endl;
+                        sstr << "Left block is malloc number " << l_mdnode->parent_branch_->get_parent_block()->get_malloc_number() << endl;
+                        sleep(2);
+                        YetiRuntime::get_messenger()->lock();
+                        YetiRuntime::get_messenger()->send_data_header(
+                            (YetiRuntime::me() + 1) % 2,
+                            GenericDataHeader,
+                            Message::TensorBranch,
+                            Message::Print,
+                            l_mdnode->parent_branch_->get_malloc_number(),
+                            0,
+                            0,
+                            0
+                        );
+                        YetiRuntime::get_messenger()->send_data_header(
+                            (YetiRuntime::me() + 1) % 2,
+                            GenericDataHeader,
+                            Message::TensorBranch,
+                            Message::Print,
+                            l_mdnode->parent_branch_->get_parent_block()->get_malloc_number(),
+                            0,
+                            0,
+                            0
+                        );
+                        cout << sstr.str() << endl;
+                        l_mdnode->parent_branch_->get_parent_block()->controller_fail();
+                        sleep(3);
+                        throw e;
+                    }
+
+
                 }
                 else
                 {
+
+
 
                     MetaDataNode* l_subnode
                         = static_cast<MetaDataNode*>(lnode);
 
                     MetaDataNode* r_subnode
                         = static_cast<MetaDataNode*>(rnode);
+
 
                     accumulate_subnode(pidx, l_subnode, r_subnode, scale, cxn);
                 }
@@ -1806,6 +1909,7 @@ MetaDataNode::accumulate(
 
     //send the contraction back to the previous depth
     cxn_config->reset_contraction_depth(depth_ + 1);
+
 }
 
 template <typename data_t>

@@ -31,6 +31,14 @@ YetiRuntimeObject::_retrieve()
 }
 
 void
+YetiRuntimeObject::obsolete()
+{
+   if (!initialized_ || finalized_) //already obsolete
+        return;
+   _obsolete();
+}
+
+void
 YetiRuntimeObject::_obsolete()
 {
 }
@@ -41,9 +49,16 @@ YetiRuntimeObject::retrieve()
     if (!initialized_)
     {
         if (runtime_count_ != 0)
-            raise(SanityCheckError, "retrieved object was not initialized");
+            yeti_throw(SanityCheckError, "retrieved object was not initialized");
         YetiRuntimeObject::initialize();
     }
+
+    if (runtime_count_ > 0)
+    {
+        ++runtime_count_;
+        return runtime_count_;
+    }
+
 
     if (finalized_)
     {
@@ -101,18 +116,16 @@ YetiRuntimeObject::initialize()
 }
 
 
-void
-YetiRuntimeObject::finalize()
-{
-    initialized_ = false;
-    finalized_ = true;
-}
-
-
 bool
 YetiRuntimeObject::is_initialized() const
 {
     return initialized_;
+}
+
+bool
+YetiRuntimeObject::is_finalized() const
+{
+    return finalized_;
 }
 
 void
@@ -164,11 +177,11 @@ YetiThreadedRuntimeObject::~YetiThreadedRuntimeObject()
 #if YETI_SANITY_CHECK
     if (is_retrieved())
     {
-        raise(SanityCheckError, "cannot delete retrieved object");
+        yeti_throw(SanityCheckError, "cannot delete retrieved object");
     }
 #endif
     
-    lock_->unlock();
+    //lock_->unlock();
     delete lock_;
 }
 
@@ -191,7 +204,7 @@ YetiThreadedRuntimeObject::unlock()
 {
 #if YETI_SANITY_CHECK
     if (!locked_)
-        raise(SanityCheckError, "you unlocked a mutex that isn't locked");
+        yeti_throw(SanityCheckError, "You unlocked a mutex that isn't locked");
 #endif
     locked_ = false;
     lock_->unlock();
@@ -239,7 +252,7 @@ YetiThreadedRuntimeObject::obsolete()
         cerr << "cannot make retrieved object obsolete" << endl;
         abort();
     }
-    _obsolete();
+    YetiRuntimeObject::obsolete();
     unlock();
 }
 
