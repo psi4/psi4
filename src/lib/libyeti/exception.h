@@ -20,7 +20,7 @@ exception_crash(
 );
 
 //#define raise(exc, ...) throw exc(__VA_ARGS__, __FILE__, __LINE__)
-#define raise(exc, ...) exception_crash(#exc, __VA_ARGS__, __FILE__, __LINE__)
+#define yeti_throw(exc, ...) exception_crash(#exc, __VA_ARGS__, __FILE__, __LINE__)
 
 #ifdef redefine_size_t
 #define size_t custom_size_t

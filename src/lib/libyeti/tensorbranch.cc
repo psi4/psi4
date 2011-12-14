@@ -47,13 +47,11 @@ TensorBranch::TensorBranch(
     mempool_(parent->get_metadata_mempool()),
     parent_malloc_number_(parent->get_malloc_number()),
     last_branch_location_(0),
-    descr_(parent->get_descr()),
-    ncontrollers_(0)
+    descr_(parent->get_descr())
 {
     last_branch_location_ = this;
     mdnode_ = new (mempool_)
         MetaDataNode(indexset, depth, this);
-
 }
 
 TensorBranch::~TensorBranch()
@@ -61,24 +59,42 @@ TensorBranch::~TensorBranch()
     delete mdnode_;
 }
 
-uli
-TensorBranch::ncontrollers() const
+void
+TensorBranch::allocate_data_controller(size_t size)
 {
-    return ncontrollers_;
+    StorageBlock* block = parent_block_->allocate_data_storage_block(size);
+    allocate_data_controller(block);
+}
+
+uli
+TensorBranch::ncontrollers_nonzero() const
+{
+    TensorDataController* controller = first_controller_;
+    uli n = 0;
+    while(controller)
+    {
+        if (controller->get_data_size() > 0)
+            ++n;
+        controller = controller->next;
+    }
+    return n;
 }
 
 void
-TensorBranch::allocate_data_controller()
+TensorBranch::set_malloc_number(uli malloc_number)
 {
-    StorageBlock* block = parent_block_->allocate_data_storage_block();
-    allocate_data_controller(block);
+    malloc_number_ = malloc_number;
+}
+
+uli
+TensorBranch::get_malloc_number() const
+{
+    return malloc_number_;
 }
 
 void
 TensorBranch::allocate_data_controller(StorageBlock* block)
 {
-    ++ncontrollers_;
-
     TensorDataController* controller
         = new (mempool_)
         TensorDataController(
@@ -103,7 +119,7 @@ TensorBranch::allocate(DataNode* node)
 {
     size_t blocksize = node->nelements() * element_size();
     if (first_controller_ == 0)
-        allocate_data_controller();
+        allocate_data_controller(blocksize);
 
     bool enough_space = last_controller_->register_node(node, blocksize);
 
@@ -119,7 +135,7 @@ TensorBranch::allocate(DataNode* node)
 
     if (!enough_space) //allocate a new memory block
     {
-        allocate_data_controller();
+        allocate_data_controller(blocksize);
         enough_space = last_controller_->register_node(node, blocksize);
         if (!enough_space)
         {
@@ -129,9 +145,10 @@ TensorBranch::allocate(DataNode* node)
                 "A larger data block size is needed!",
                 blocksize, node->nelements(), element_size()
             );
-            raise(SanityCheckError, str);
+            yeti_throw(SanityCheckError, str);
         }
     }
+
 
     ::memset(node->data(), 0, blocksize);
 }
@@ -284,10 +301,8 @@ TensorBranch::sort_data_into(
     TensorBranch* new_branch
 )
 {
+
     mdnode_->sort_data_into(sort, this, new_branch);
-    if (get_parent_block()->get_block_permutation() !=
-        new_branch->get_parent_block()->get_block_permutation())
-        raise(SanityCheckError, "currently cannot sort mis-sorted parent block");
 }
 
 void

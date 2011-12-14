@@ -7,6 +7,7 @@ class YetiMPIMessenger;
 class YetiMessenger;
 class GetRequest;
 class SendRequest;
+class MessengerAccumulateTask;
 
 }
 

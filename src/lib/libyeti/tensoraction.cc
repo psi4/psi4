@@ -95,7 +95,7 @@ ContractionBlockRetrieveAction::ContractionBlockRetrieveAction(
 
     block_indexer_ = new Indexer(ptensor->get_block_descr());
 
-    for (uli i=0; i < YetiRuntime::nthread_compute(); ++i)
+    for (uli i=0; i < YetiRuntime::nthread(); ++i)
     {
         cxn_->get_configuration(i)->configure_left_block(yeticxn_->ltensor->get_tensor());
         cxn_->get_configuration(i)->configure_right_block(yeticxn_->rtensor->get_tensor());
@@ -113,7 +113,7 @@ ContractionBlockRetrieveAction::accumulate_to(TensorBlock* block)
 
     if (l_presort || r_presort)
     {
-        raise(SanityCheckError, "contraction block retrieve not valid with sorts");
+        yeti_throw(SanityCheckError, "contraction block retrieve not valid with sorts");
     }
     
     uli threadnum = YetiRuntime::get_thread_number();
@@ -124,7 +124,7 @@ ContractionBlockRetrieveAction::accumulate_to(TensorBlock* block)
 #if YETI_SANITY_CHECK
     uli check = cxn_config->ncxn_rows_right();
     if (check != nlink)
-        raise(SanityCheckError, "matrices not aligned for multiplication");
+        yeti_throw(SanityCheckError, "matrices not aligned for multiplication");
 #endif
     uli index = block_indexer_->index(block->get_indices());
     uli row = index / ncols;
@@ -146,7 +146,7 @@ ContractionBlockRetrieveAction::accumulate_to(TensorBlock* block)
 
         if (!block->is_permutationally_unique())
         {
-            raise(SanityCheckError, "contraction task accumulating to non-unique block");
+            yeti_throw(SanityCheckError, "contraction task accumulating to non-unique block");
         }
 
         lblock->retrieve_read();

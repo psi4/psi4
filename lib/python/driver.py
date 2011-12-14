@@ -211,7 +211,7 @@ def hessian(name, **kwargs):
         func = procedures['gradient'][lowername]
 
         # Obtain list of displacements
-        displacements = fd_geoms_freq_1()
+        displacements = PsiMod.fd_geoms_freq_1()
         ndisp = len(displacements)
 
         print " %d displacements needed." % ndisp
@@ -233,7 +233,9 @@ def hessian(name, **kwargs):
             # Save the gradient
             gradients.append(G)
 
-        # What I am supposed to do here?
+        PsiMod.fd_freq_1(gradients)
+
+        print " Computation complete."
 
     else: # Assume energy points
         # If not, perform finite difference of energies

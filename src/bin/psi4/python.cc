@@ -68,14 +68,14 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace findif     {
-      std::vector< SharedMatrix > fd_geoms_1_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_2_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_freq_1(Options &);
+    namespace findif    {
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
+      //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
-      PsiReturnType fd_2_0(Options &, const boost::python::list&);
+      //PsiReturnType fd_2_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_0(Options &, const boost::python::list&);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&);
     }
@@ -160,11 +160,11 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
-std::vector< SharedMatrix > py_psi_fd_geoms_2_0()
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_2_0(Process::environment.options);
-}
+//std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
+//{
+    //py_psi_prepare_options_for_module("FINDIF");
+    //return findif::fd_geoms_2_0(Process::environment.options);
+//}
 
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_0()
 {
@@ -184,11 +184,11 @@ PsiReturnType py_psi_fd_1_0(const boost::python::list& energies)
     return findif::fd_1_0(Process::environment.options, energies);
 }
 
-PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_2_0(Process::environment.options, energies);
-}
+//PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
+//{
+    //py_psi_prepare_options_for_module("FINDIF");
+    //return findif::fd_2_0(Process::environment.options, energies);
+//}
 
 PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies)
 {
@@ -911,11 +911,11 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
-    def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
+    //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
     def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1);
     def("fd_1_0", py_psi_fd_1_0);
-    def("fd_2_0", py_psi_fd_2_0);
+    //def("fd_2_0", py_psi_fd_2_0);
     def("fd_freq_0", py_psi_fd_freq_0);
     def("fd_freq_1", py_psi_fd_freq_1);
     def("sapt", py_psi_sapt);

@@ -13,6 +13,7 @@
 #include "dataimpl.h"
 #include "filler.h"
 #include "contraction.h"
+#include "env.h"
 
 #include "blas.h"
 extern "C" {
@@ -184,7 +185,16 @@ StringParser::get_permutation(const PermutationRuntimeParserPtr& perm)
                 return 0;
             }
         }
+    }
 
+    /** check for repeats */
+    for (usi i=0; i < nentries; ++i)
+    {
+        for (usi j=i+1; j < nentries; ++j)
+        {
+            if (indexmap[i] == indexmap[j])
+                return 0; //invalid permutation
+        }
     }
 
     Permutation* p = Permutation::get_permutation(perm->sign(), nindex, indexmap);
@@ -203,7 +213,7 @@ StringParser::get_nindex_front(const std::string &str)
         usi idxcheck = this->index(parser.substr(i));
         if (idxcheck != i)
         {
-            cerr << str << "does not specify front indices" << endl;
+            Env::err0() << str << "does not specify front indices" << endl;
             abort();
         }
     }
@@ -262,7 +272,7 @@ YetiTensor::add(
     Permutation* p = StringParser::get_permutation(perm);
     if (!p)
     {
-        cerr << "Invalid permutation parser " << perm->str() << " for tensor " << str() << endl;
+        Env::err0() << "Invalid permutation parser " << perm->str() << " for tensor " << str() << endl;
         abort();
     }
     tensor_->get_tensor_grp()->add(p);
@@ -369,7 +379,7 @@ YetiTensor::YetiTensor(
 
     if (nentries() != nindex)
     {
-        cerr << "Incorrect number of indices for tensor "
+        Env::err0() << "Incorrect number of indices for tensor "
              << tensor->get_name() << " with string " << str << endl;
         abort();
     }
@@ -388,10 +398,10 @@ YetiTensor::YetiTensor(
                 descr->get_parent_range()
             ))
             {
-                cerr << "Invalid index " << label << " at index " << i
+                Env::err0() << "Invalid index " << label << " at index " << i
                     << " passed to tensor " << tensor->get_name()
                      << endl;
-                cerr << "This is probably a type-o in the code.  Alternatively, you "
+                Env::err0() << "This is probably a type-o in the code.  Alternatively, you "
                         "may have sorted a subtensor and forgotten to sort it back."
                         << endl;
                 abort();
@@ -466,6 +476,16 @@ YetiTensor::print(std::ostream& os)
 }
 
 void
+YetiTensor::distribute(
+    const std::string& idxA,
+    const std::string& idxB
+)
+{
+    std::string str = idxA + "," + idxB;
+    distribute(str);
+}
+
+void
 YetiTensor::distribute(const std::string& str)
 {
     StringParser parser(str);
@@ -475,7 +495,14 @@ YetiTensor::distribute(const std::string& str)
     for (usi i=0; i < nindex_distr; ++i)
     {
         const std::string& substr = parser.substr(i);
-        distr_indices[i] = index(substr);
+        usi idx = index(substr);
+        if (idx >= nentries())
+        {
+            Env::err0() << "invalid distribution string " << str 
+                << " for tensor " << tensor_->get_name() << endl;
+            abort();
+        }
+        distr_indices[i] = idx;
     }
 
     tensor_->distribute(distr_indices, nindex_distr);
@@ -506,7 +533,7 @@ YetiTensor::accumulate(
     {
         if (ncxn_entries != 0) //make sure not a dot product
         {
-            cerr << "Contraction " << yeticxn->str()
+            Env::err0() << "Contraction " << yeticxn->str()
                  << " has " << yeticxn->nentries() << " target indices "
              << "but tensor " << str()
               << " has " << this->nentries() << endl;
@@ -536,7 +563,7 @@ YetiTensor::accumulate(
         IndexDescr* dotprod_descr = YetiRuntime::get_descr("dotproduct");
         if (mydescr != dotprod_descr)
         {
-            cerr << "No cxn entries, but contraction is not a dot product" << endl;
+            Env::err0() << "No cxn entries, but contraction is not a dot product" << endl;
             abort();
         }
     }
@@ -556,10 +583,10 @@ YetiTensor::accumulate(
             if (!yeticxn->left_presort ||
                 !yeticxn->left_presort->equals(yeticxn->right_presort))
             {
-                cerr << "self-contracting tensor " << yeticxn->rtensor->get_tensor()->get_name()
+                Env::err0() << "self-contracting tensor " << yeticxn->rtensor->get_tensor()->get_name()
                         << " but sorts are not equal" << endl;
-                yeticxn->left_presort->print(cerr); cerr << endl;
-                yeticxn->right_presort->print(cerr); cerr << endl;
+                yeticxn->left_presort->print(Env::err0()); Env::err0() << endl;
+                yeticxn->right_presort->print(Env::err0()); Env::err0() << endl;
                 abort();
             }
         }
@@ -601,7 +628,7 @@ YetiTensor::accumulate(
         //sort the left tensor
         if (yeticxn->left_presort) //can't build an automatic sort and have a custom sort
         {
-            cerr << "Automatically generated sort and custom sort for tensor "
+            Env::err0() << "Automatically generated sort and custom sort for tensor "
                   << yeticxn->ltensor->get_tensor()->get_name() << " with indices "
                   << yeticxn->ltensor->str()
                   << endl;
@@ -615,7 +642,7 @@ YetiTensor::accumulate(
         //sort the left tensor
         if (yeticxn->right_presort) //can't build an automatic sort and have a custom sort
         {
-            cerr << "Automatically generated sort and custom sort for tensor "
+            Env::err0() << "Automatically generated sort and custom sort for tensor "
                   << yeticxn->rtensor->get_tensor()->get_name() << " with indices "
                   << yeticxn->rtensor->str()
                   << endl;
@@ -666,13 +693,12 @@ YetiTensor::accumulate(
         const std::string& mylabel = substr(i);
         if (!mydescr->is_equivalent(cxndescr))
         {
-            cerr << "Invalid index " << label << " passed to contraction to form " << yeticxn->str()
+            Env::err0() << "Invalid index " << label << " passed to contraction to form " << yeticxn->str()
                 << endl;
             abort();
         }
     }
 
-    cxn->build();
     cxn->run();
 
     if (symmetrization_set->order() != 0)
@@ -688,7 +714,7 @@ YetiTensor::accumulate(
     }
     else if (yeticxn->post_scale != 1.0)
     {
-        cerr << "Non-unit post-contraction scale specified with & operator"
+        Env::err0() << "Non-unit post-contraction scale specified with & operator"
               << ", but no symmetrization set has been given!" << endl;
         abort();
     }
@@ -716,7 +742,6 @@ YetiTensor::accumulate(
         Permutation* rinv = rperm->inverse();
         yeticxn->rtensor->get_tensor()->sort(rinv);
     }
-
 }
 
 void
@@ -751,6 +776,14 @@ YetiTensor::zero()
     null_check();
 
     tensor_->zero();
+}
+
+void
+YetiTensor::reset()
+{
+    null_check();
+
+    tensor_->reset();
 }
 
 bool
@@ -801,7 +834,7 @@ YetiTensor::null_check() const
 {
     if (!tensor_)
     {
-        cerr << "Tensor has not been initialized" << endl;
+        Env::err0() << "Tensor has not been initialized" << endl;
         abort();
     }
 }
@@ -903,7 +936,7 @@ YetiTensor::sort(const std::string& str)
     parser.tokenize(", ");
     if (parser.nentries() != nentries())
     {
-        cerr << "Invalid string specified for sort.  Sort string has wrong number of indices." << endl;
+        Env::err0() << "Invalid string specified for sort.  Sort string has wrong number of indices." << endl;
         abort();
     }
 
@@ -914,7 +947,13 @@ YetiTensor::sort(const std::string& str)
     vector<string>::const_iterator stop(parser.end());
     for ( ; it != stop; ++it, ++idx)
     {
-        indexmap[idx] = StringParser::index(*it);
+        usi index = StringParser::index(*it);
+        if (index >= parser.nentries())
+        {
+            Env::err0() << "invalid sort string " << str << " for tensor " << tensor_->get_name() << endl;
+            abort();
+        }
+        indexmap[idx] = index;
     }
     short plus = 1;
     Permutation* p = Permutation::get_permutation(plus, parser.nentries(), indexmap);
@@ -1034,7 +1073,7 @@ YetiTensorPtr::operator+=(const PermutationRuntimeParserPtr& perm)
     Permutation* p = parser->get_permutation(perm);
     if (!p)
     {
-        cerr << "Invalid permutation parser " << perm->str() << " for tensor " << parser->str() << endl;
+        Env::err0() << "Invalid permutation parser " << perm->str() << " for tensor " << parser->str() << endl;
         abort();
     }
 
@@ -1101,7 +1140,7 @@ YetiTensorPtr::operator<<=(const YetiTensorPtr& yt)
 
     if (nidx <= ntarget_idx)
     {
-        cerr << "Invalid internal contraction" << endl;
+        Env::err0() << "Invalid internal contraction" << endl;
         abort();
     }
 
@@ -1112,7 +1151,7 @@ YetiTensorPtr::operator<<=(const YetiTensorPtr& yt)
         IndexDescr* src_descr = src->get_block_descr()->get(i);
         if (dst_descr != src_descr)
         {
-            cerr << "Invalid internal contraction" << endl;
+            Env::err0() << "Invalid internal contraction" << endl;
             abort();
         }
     }
@@ -1124,13 +1163,13 @@ YetiTensorPtr::operator<<=(const YetiTensorPtr& yt)
         IndexDescr* descr = src->get_block_descr()->get(i);
         if (descr != cxn_descr)
         {
-            cerr << "Invalid internal contraction" << endl;
+            Env::err0() << "Invalid internal contraction" << endl;
             abort();
         }
 
         if (cxn_idx_str != src.substr(i))
         {
-            cerr << "Invalid internal contraction" << endl;
+            Env::err0() << "Invalid internal contraction" << endl;
             abort();
         }
     }
@@ -1215,7 +1254,7 @@ YetiContractionPtr::operator=(const YetiTensorPtr& tensor)
 
     if (info != 0)
     {
-        raise(SanityCheckError, "DSPSVX argument error");
+        yeti_throw(SanityCheckError, "DSPSVX argument error");
     }
 
 #if 0
@@ -1235,8 +1274,8 @@ YetiContractionPtr::operator=(const YetiTensorPtr& tensor)
         double b = berr[i];
         if (fabs(f) > 1e-8 )//|| fabs(b) > 1e-8)
         {
-            cerr << stream_printf("FERR[%d] = %12.4e  BERR[%d] = %12.4e", i, f, b) << endl;
-            raise(SanityCheckError, "DSPSVX numerical stability error");
+            Env::err0() << stream_printf("FERR[%d] = %12.4e  BERR[%d] = %12.4e", i, f, b) << endl;
+            yeti_throw(SanityCheckError, "DSPSVX numerical stability error");
         }
     }
 
@@ -1395,7 +1434,7 @@ yeti::operator&(
     Permutation* newperm = strparser->get_permutation(perm);
     if (!newperm)
     {
-        cerr << "Invalid permutation parser " << perm->str() << " for string " << cxn->str() << endl;
+        Env::err0() << "Invalid permutation parser " << perm->str() << " for string " << cxn->str() << endl;
         abort();
     }
 
@@ -1463,7 +1502,7 @@ PermutationRuntimeParser::PermutationRuntimeParser(const std::string& str)
     else if (signstr == "-")
         sign_ = -1;
     else
-        raise(SanityCheckError, "Invalid string in permutation parser. Need a plus or minus sign.");
+        yeti_throw(SanityCheckError, "Invalid string in permutation parser. Need a plus or minus sign.");
 
     tokenize(",");
 }
@@ -1472,6 +1511,26 @@ short
 PermutationRuntimeParser::sign() const
 {
     return sign_;
+}
+
+TensorIndexDescr*
+yeti::Descr(const std::string& str)
+{
+    StringParser parser(str);
+    parser.tokenize(", ");
+    usi nidx = parser.nentries();
+    TensorIndexDescr* descr = new TensorIndexDescr(nidx);
+    for (usi i=0; i < nidx; ++i)
+    {
+        IndexDescr* idxdescr = YetiRuntime::get_descr(parser.substr(i));
+        if (!idxdescr)
+        {
+            Env::err0() << "Invalid index descr " << parser.substr(i) << " requested!" << endl;
+            abort();
+        }
+        descr->set(i, idxdescr);
+    }
+    return descr;
 }
 
 PermutationRuntimeParserPtr
@@ -1718,7 +1777,7 @@ YetiMatrix::YetiMatrix(
         IndexDescr* test_descr = tensor_descr->get(i);
         if (mydescr != test_descr)
         {
-            cerr << "Invalid matrix configuration in building yeti matrix" << endl;
+            Env::err0() << "Invalid matrix configuration in building yeti matrix" << endl;
             abort();
         }
     }
@@ -1729,7 +1788,7 @@ YetiMatrix::YetiMatrix(
         IndexDescr* test_descr = tensor_descr->get(i+nrows);
         if (mydescr != test_descr)
         {
-            cerr << "Invalid matrix configuration in building yeti matrix" << endl;
+            Env::err0() << "Invalid matrix configuration in building yeti matrix" << endl;
             abort();
         }
     }

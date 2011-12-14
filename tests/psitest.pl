@@ -175,7 +175,7 @@ sub pass_test
   $test_name = get_test_name();
   $target = "$test_name.$PSITEST_TARGET_SUFFIX";
   open(RE, ">>$target") || die "cannot open $target $!"; 
-  $padded = $_[0] . '.' x (70 - length($_[0]));
+  $padded = $_[0] . '.' x (66 - length($_[0]));
   printf RE "\t%sPASSED\n", $padded;
   close (RE);
 }
@@ -185,7 +185,7 @@ sub fail_test
   $test_name = get_test_name();
   $target = "$test_name.$PSITEST_TARGET_SUFFIX";
   open(RE, ">>$target") || die "cannot open $target $!"; 
-  $padded = $_[0] . '.' x (70 - length($_[0]));
+  $padded = $_[0] . '.' x (66 - length($_[0]));
   printf RE "\t%sFAILED\n", $padded;
   close (RE);
 }

@@ -18,6 +18,10 @@
 
 namespace yeti {
 
+enum ScreeningScheme {
+    NoScreening,
+    CauchySchwarzScreening
+};
 
 class TensorValueEstimater :
     public smartptr::Countable
@@ -32,6 +36,26 @@ class TensorValueEstimater :
         static UnitEstimater* get_unit_estimater();
 
 };
+
+
+class MultipleEstimaterMinimumEstimater :
+    public TensorValueEstimater
+{
+    private:
+
+        std::vector<TensorValueEstimaterPtr> estimators_;
+
+    public:
+
+        MultipleEstimaterMinimumEstimater();
+
+        ~MultipleEstimaterMinimumEstimater();
+
+        void add_estimator(TensorValueEstimaterPtr estimator);
+
+        virtual float max_log(const uli *indices) const;
+};
+
 
 class UnitEstimater :
     public TensorValueEstimater
@@ -73,7 +97,7 @@ class TensorElementComputer :
         void* buffer_;
 
     protected:
-        TensorIndexDescr* descr_;
+        TensorIndexDescrPtr descr_;
 
     public:
         TensorElementComputer();
@@ -100,8 +124,46 @@ class TensorElementComputer :
 
         void allocate_buffer(uli maxblocksize);
 
-        void set_index_descr(TensorIndexDescr* descr);
+        void copy_index_descr(TensorIndexDescr* descr);
 
+        void set_index_descr(const TensorIndexDescrPtr& descr);
+
+        virtual void sort(Permutation* p);
+
+};
+
+/**
+  Abstract superclass for all computer objects that involve two electron integrals.
+  Mostly allows for the standardization across backends of TensorElementEstimater
+  assignment.
+  */
+class TwoElectronEstimableComputer
+    : public TensorElementComputer
+{
+    protected:
+
+        std::vector<TensorValueEstimater*> estimators_;
+
+        TwoElectronEstimableComputer();
+
+        virtual void init_cauchy_schwarz();
+
+    public:
+
+        virtual TensorValueEstimater* get_estimater(usi depth) const;
+
+        virtual void set_screening_scheme(ScreeningScheme scheme);
+
+};
+
+class TEIShellComputeFunctor :
+    public smartptr::Countable
+{
+    public:
+
+        virtual const double* buffer() const = 0;
+
+        virtual void operator()(uli, uli, uli, uli) const = 0;
 };
 
 class MemsetElementComputer :
@@ -166,6 +228,8 @@ class ThreadedTensorElementComputer :
         usi mindepth() const;
 
         void set_mindepth(usi depth);
+
+        void sort(Permutation* p);
 
 };
 
@@ -259,7 +323,7 @@ class DiagonalMatrixElementComputer :
             return yeti::TemplateInfo::double_type;
         }
 
-        TensorValueEstimater* get_estimater(usi depth) const;
+        virtual TensorValueEstimater* get_estimater(usi depth) const;
 
         TensorElementComputer* copy() const;
 
@@ -351,7 +415,7 @@ class Diagonal_IJIJ_ElementComputer :
            return yeti::TemplateInfo::double_type;
        }
 
-       TensorValueEstimater* get_estimater(usi depth) const;
+       virtual TensorValueEstimater* get_estimater(usi depth) const;
 
        void compute(const uli* indices, double* data, uli n);
 
@@ -375,6 +439,8 @@ class UnitElementComputer :
 
        TensorElementComputer* copy() const;
 };
+
+
 
 
 } //end namespace yeti

@@ -4,6 +4,7 @@
 #include "class.h"
 #include "thread.h"
 #include "yetiobject.h"
+#include "messenger.hpp"
 
 #include "taskqueue.hpp"
 
@@ -13,26 +14,38 @@
 
 namespace yeti {
 
+#define NELEMENTS_TASK_QUEUE 50000
+struct TaskQueueList { uli data[NELEMENTS_TASK_QUEUE]; };
+
 /**
     @class Task
+
+    Abstract base class for tasks
 */
 class Task :
-    public smartptr::Countable,
-    public Malloc<Task>
+    public smartptr::Countable
 {
 
     public:
+        Task* next; 
+
+        typedef enum { ContractionType=1 } task_type_t;
+
+        Task();
+
         virtual ~Task();
 
         virtual void run(uli threadnum) = 0;
 
         virtual void print(std::ostream& os = std::cout) const = 0;
 
-        virtual void out_of_core_prefetch() = 0;
+        virtual void prefetch(uli threadnum) = 0;
 
-        virtual void in_core_prefetch(Task* prev_task) = 0;
-
-        virtual void finalize_task_subset() = 0;
+        /**
+            Append info to a data array for sending this
+            task to another node
+        */
+        virtual uli append_info(uli* data) const = 0;
 
 };
 
@@ -41,90 +54,10 @@ class TaskParent :
 {
     public:
         virtual void finalize() = 0;
-};
 
-/**
-    @class TaskOwner
-    Dummy type used in task workspace for defining an array of pointers.
-    This is only used for clarity in reading code.
-*/
-class TaskOwner {
-
-    protected:
-        uli task_owner_number_;
-
-    public:
-        TaskOwner();
-
-        uli get_task_owner_number() const;
+        virtual Task* get_next_task() = 0;
 
 };
-
-/**
-    @class TaskWorkspace
-    Set of arrays and values for defining a task queue. A task owner is
-    usually the alpha tensor (see Contraction::alpha_tensor_).
-*/
-class TaskWorkspace {
-
-    public:
-        TaskWorkspace();
-
-        ~TaskWorkspace();
-
-        void clear();
-
-        /**
-            The number of unique task owners
-        */
-        uli nowners;
-
-        /**
-            The total number of tasks
-        */
-        uli ntasks;
-
-        /**
-            Array giving the number of tasks for the ith task owner
-        */
-        uli* ntasks_per_owner;
-
-        /**
-            Array giving the task offset number for the first task belonging
-            to a given owner, assuming tasks have been sorted
-        */
-        uli* task_offsets;
-
-        /**
-            The list of task owners for each task
-        */
-        TaskOwner** task_owners;
-
-        /**
-            The complete list of tasks
-        */
-        Task** tasks;
-
-        /**
-            Workspace array for performing sort operations
-        */
-        uli* owner_numbers;
-
-        /**
-            Workspace array for performing sort operations
-        */
-        int* sorted_indices;
-
-        void* sorted;
-
-        /**
-            Whether the values here have been configured
-        */
-        bool configured;
-
-
-};
-
 
 /**
     @class TaskQueue
@@ -134,81 +67,35 @@ class TaskQueue :
 {
 
     private:
-        TaskWorkspace* workspace_;
+        friend class GlobalQueue;
 
-        std::list<TaskParentPtr> parents_;
+        Task* unexpected_head_;
 
-        /**
-            The entry number of the task in the current run
-        */
-        uli run_number_;
+        Task* unexpected_tail_;
+
+        TaskParent* parent_;
+
+        static double thread_times_[1000];
+
+        bool active_;
 
     public:
+
         TaskQueue();
 
         ~TaskQueue();
 
-        /**
-            Sort all tasks based on task owners to optimize
-            the task ordering
-        */
+        void print(std::ostream& os = std::cout) const;
+
         void configure();
 
-        /**
-            Configure and run all tasks. This spawns threads
-            if YetiRuntime has been configured for more than one thread.
-        */
-        void run();
-
-        /**
-            Clear all tasks in the queue.
-        */
         void clear();
 
-        /**
-            @return The complete task list
-        */
-        Task** get_tasks() const;
+        static void reset_thread_times();
 
-        TaskOwner** get_owners() const;
+        static void increment_thread_time(uli thr, double time);
 
-        /**
-            @return
-        */
-        const uli* ntasks_per_owner() const;
-
-        /**
-            @return
-        */
-        const uli* task_offsets() const;
-
-        /**
-            NOT THREAD SAFE! Pop a task off the queue.
-        */
-        Task* pop();
-
-        /**
-            Add a task corresponding to a given owner.
-        */
-        void add(TaskOwner* owner, Task* task);
-
-        void add(const TaskParentPtr& parent);
-
-        void print(std::ostream& os = std::cout);
-
-        uli get_ntasks_for_owner(uli owner) const;
-
-        Task** get_task_list_for_owner(uli owner) const;
-
-        /**
-            @return
-        */
-        uli nowners();
-
-        /**
-            @return
-        */
-        uli ntasks();
+        static double get_max_thread_time();
 
         /**
             Thread safe. Lock the queue and return the beginning of set of tasks
@@ -216,11 +103,17 @@ class TaskQueue :
             @param taskstart Reference return of tasklist beginning
             @param ntasks The number of tasks belonging to a task owner
         */
-        void get_next(
-            Task**& taskstart,
-            uli& ntasks
-        );
+        Task* get_next_task(uli threadnum);
 
+        Task* get_dynamic_load_balance_segment(uli& ntasks, uli& nentries, uli* data);
+    
+        /**
+            If in the processo of running tasks, append it to the queue.
+            If already finished, immediately run the task.
+        */
+        void add_unexpected_task(Task* task);
+
+        bool worker_threads_active() const;
 };
 
 
@@ -230,12 +123,34 @@ class TaskQueue :
     A task queue with static implementation for allowing task queues
     to be built that are persistent in memory
 */
+
+struct LoadBalanceQueue {
+   LoadBalanceQueue* next; 
+
+   TaskQueueList queue; 
+
+   uli nentries;
+};
+
 class GlobalQueue :
         public smartptr::Countable
 {
 
     private:
         static TaskQueue* queue_;
+
+        static bool* node_acks_;
+
+        static bool local_run_complete_;
+
+        static uli* remote_task_buffer_;
+
+
+        static LoadBalanceQueue* head_queue_;
+        
+        static LoadBalanceQueue* tail_queue_;
+
+        static ThreadLock* lock_;
 
     public:
         GlobalQueue();
@@ -248,17 +163,25 @@ class GlobalQueue :
 
         static void finalize();
 
-        static void clear();
+        static void add_dynamic_load_balance_queue(LoadBalanceQueue* queue);
 
-        static void add(TaskOwner* owner, Task* task);
+        static LoadBalanceQueue* get_dynamic_load_balance_queue();
 
-        static void add(const TaskParentPtr& parent);
+        static bool receive_dynamic_load_balance_queue();
+
+        static bool local_run_complete();
+
+        static bool is_node_complete(uli group_node_number);
+        
+        static void set_node_ack(uli global_node_number);
+
+        static void add(TaskParent* parent);
 
         static void print(std::ostream& os = std::cout);
 
-        static uli nowners();
+        static TaskQueue* get_task_queue();
 
-        static uli ntasks();
+        static Task* get_dynamic_load_balance_segment(uli& ntasks, uli& nentries, uli* data);
 
 };
 

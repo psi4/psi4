@@ -15,7 +15,7 @@ def get_num_threads():
     return PsiMol.get_n_threads()
 
 def success(label):
-    print '\t{0:.<70}PASSED'.format(label)
+    print '\t{0:.<66}PASSED'.format(label)
     sys.stdout.flush()
 
 # Test functions

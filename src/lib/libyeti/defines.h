@@ -17,6 +17,5 @@
 #define harikari(msg) std::cerr << msg << endl; abort()
 
 
-
 #endif	/* _DEFINES_H */
 
