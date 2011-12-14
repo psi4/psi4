@@ -16,8 +16,6 @@ static IndentTracker _env_indent_tracker;
 
 int Env::initialized_ = 0;
 int Env::me_= -1;
-bool Env::out0Allocated_ = false;
-bool Env::outnAllocated_ = false;
 ostream *Env::out0_;
 ostream *Env::outn_;
 IndentTracker& Env::indent = _env_indent_tracker;
@@ -56,16 +54,14 @@ Env::init(int me, const char *outFileName){
     if(initialized_) return;
     me_ = me;
     if(strcmp("", outFileName)){
-        out0_ = new ofstream(outFileName, ios_base::app | ios_base::out );
-        out0Allocated_ = true;
+        outn_ = new ofstream(outFileName, ios_base::app | ios_base::out );
     }else{
-        out0_ = &cout;
+        outn_ = &cout;
     }
     if(me){
-        outn_ = new ofstream("/dev/null");
-        outnAllocated_ = true;
+        out0_ = new ofstream("/dev/null");
     }else{
-        outn_ = out0_;
+        out0_ = outn_;
     }
     initialized_ = 1;
 }
@@ -80,23 +76,24 @@ Env::init(int me, ostream *stream){
     outn_ = stream;
     if(me){
         out0_ = new ofstream("/dev/null");
-        outnAllocated_ = true;
     }else{
         out0_ = outn_;
     }
     initialized_ = 1;
 }
 
-void
+IndentTracker
 IndentTracker::operator++()
 {
     ++n_;
+    return (*this);
 }
 
-void
+IndentTracker
 IndentTracker::operator--()
 {
     --n_;
+    return (*this);
 }
 
 /**
@@ -106,15 +103,6 @@ void
 Env::free()
 {
     if(initialized_){
-        // We have to make sure that we allocated these before deleting
-        if(out0Allocated_){
-            delete out0_;
-            out0_ = 0;
-        }
-        if(outnAllocated_){
-            delete outn_;
-            outn_ = 0;
-        }
         initialized_ = false;
     }
 }

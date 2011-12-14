@@ -189,7 +189,9 @@ class TensorIndexDescr :
 
         void get_nelements_data(uli* nelements) const;
 
-        size_t get_nelements_data(usi depth, const uli* nelements) const;
+        uli get_nelements_data(usi depth, const uli* nelements) const;
+
+        uli get_nelements_metadata(usi depth, const uli* nelements) const;
 
         usi nindex() const;
 
@@ -215,6 +217,7 @@ class TensorIndexDescr :
 
         bool has_symmetry() const;
 
+        TensorIndexDescr* copy() const;
 };
 
 /**
@@ -276,8 +279,6 @@ class IndexRange :
         void increment_offset(usi depth, uli offset);
 
         bool _subrange_index_location(IndexRange* range, uli* indices) const;
-
-        IndexRange* _squeeze_together_bottom_ranges(uli nper, uli* start_offsets);
 
     public:
 
@@ -408,8 +409,6 @@ class IndexRange :
         bool contains(uli index, usi depth) const;
 
         bool contains(uli index) const;
-
-        IndexRange* squeeze_together_bottom_ranges(uli nper);
 
         /**
             @return The depth the given subrange exists at

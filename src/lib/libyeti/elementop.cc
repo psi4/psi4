@@ -400,7 +400,7 @@ ZeroOp::release(TensorBlock* block) const
 bool
 ZeroOp::do_update_after() const
 {
-    return false;
+    return true;
 }
 
 void
@@ -503,11 +503,11 @@ UpperTriangleGetOp::configure(Tensor* tensor)
     utri_ = new double[ntri];
     if (tensor->get_block_descr()->nindex() != 2)
     {
-        raise(SanityCheckError, "can only get upper triangle of two-index tensor");
+        yeti_throw(SanityCheckError, "can only get upper triangle of two-index tensor");
     }
     if (tensor->get_block_descr()->get(0) != tensor->get_block_descr()->get(1))
     {
-        raise(SanityCheckError, "can only get upper triangle of symmetric matrices");
+        yeti_throw(SanityCheckError, "can only get upper triangle of symmetric matrices");
     }
     ::memset(utri_, 0, ntri * sizeof(double));
 }

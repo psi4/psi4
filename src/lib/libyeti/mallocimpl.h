@@ -116,6 +116,16 @@ class Malloc {
             }
         }
 
+        void* operator new(size_t size, FastMalloc& malloc)
+        {
+            return malloc.malloc_no_lock();
+        }
+
+        void operator delete(void* ptr, FastMalloc& malloc)
+        {
+            malloc.free(ptr); 
+        }
+
         void* operator new(size_t size, MallocOverride& o)
         {
             return ::malloc(size);
@@ -159,7 +169,6 @@ class Malloc {
     Class encapsulating a memory pool which hands out blocks of data
 */
 class MemoryPool :
-    public smartptr::Countable,
     public Malloc<MemoryPool>
 {
 

@@ -13,7 +13,7 @@
 #define size_t custom_size_t
 #endif
 
-#define USE_DEFAULT_THREAD_STACK 1
+#define USE_DEFAULT_THREAD_STACK 0
 
 namespace yeti {
 
@@ -43,7 +43,9 @@ class ThreadLock :
 
 };
 
-class NullThreadLock : public ThreadLock {
+class NullThreadLock : 
+    public ThreadLock 
+{
 
     public:
         void lock();
@@ -56,7 +58,9 @@ class NullThreadLock : public ThreadLock {
 
 };
 
-class pThreadLock : public ThreadLock {
+class pThreadLock : 
+    public ThreadLock
+{
 
     private:
         pthread_mutex_t mutex_;
@@ -72,9 +76,33 @@ class pThreadLock : public ThreadLock {
 
         void unlock();
 
+        void incref();
+
         bool trylock();
 
         pthread_mutex_t* mutex();
+
+        void print(std::ostream& os = std::cout) const;
+};
+
+class MultiThreadLock :
+    public ThreadLock
+{
+    private:
+        pThreadLock lock_;
+
+        uli lock_count_;
+
+        uli thread_owner_;
+
+    public:
+        MultiThreadLock();
+
+        void lock();
+
+        void unlock();
+
+        bool trylock();
 
         void print(std::ostream& os = std::cout) const;
 };
@@ -140,6 +168,8 @@ class ThreadGroup {
 
         virtual void clear();
 
+        virtual void thread_crash();
+
 };
 
 class pThreadGroup :
@@ -154,6 +184,8 @@ class pThreadGroup :
 
         size_t stack_size_;
 
+        bool running_;
+
     public:
         pThreadGroup(uli nthread);
 
@@ -166,6 +198,8 @@ class pThreadGroup :
         void wait();
 
         void clear();
+
+        void thread_crash();
 
         size_t get_stack_size();
 

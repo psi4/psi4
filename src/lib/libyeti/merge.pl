@@ -29,6 +29,7 @@ opendir(YETIDIR, "$YetiSrc") or die "I can't read $YetiSrc\n";
 foreach my $YetiFile (readdir YETIDIR){
     next unless $YetiFile =~ /\.(cc|hpp|h)$/;
     next if $YetiFile =~ /mpqc/; # Don't add the MPQC interface files!
+    next if $YetiFile =~ /mbie/; # The multipole based estimators are not ready yet!
     print "Copying $YetiSrc$YetiFile to $YetiFile...\n";
     copy($YetiSrc.$YetiFile, $YetiFile) or die "Failed!\n";
 }
@@ -67,7 +68,7 @@ foreach my $File (readdir DIR){
         $Contents .= $_;
     }
     # Put the correct psi MPI definitions in there
-    $Contents =~ s/\#if HAVE_MPI_H/\#include <psiconfig.h>\n\#if HAVE_MPI/g;
+    $Contents =~ s/\#if HAVE_MPI_H/\#if HAVE_MPI/g;
     # Strip the BLAS/LAPACK declarations
     $Contents =~ s/(extern.*\/\/EndExternC)/#include "blas.h"\n$1/smg;
     # Change all the YETI_DGEMM like calls to C_DGEMM.  This might need to change in the future
@@ -220,3 +221,7 @@ print BLAS
 #endif
 ";
 close BLAS;
+
+open(PSI_H, ">psi.h") or die "I can't write psi.h";
+print PSI_H "#define HAVE_PSI 1\n#include \"yeti.h\"\n";
+close PSI_H;

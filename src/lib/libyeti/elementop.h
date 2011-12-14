@@ -24,6 +24,12 @@ class ElementOp :
 
         virtual void configure(Tensor* tensor);
 
+        // The element_op methods are _basically_ the
+        // equivalent of pure virtual methods that
+        // throw an error at runtime instead of compile
+        // time, allowing subclasses to implement some but
+        // not all of the element_op varieties
+
         virtual void element_op(
             uli nblock,
             const uli* indices,
@@ -81,6 +87,17 @@ class DiaOp :
             const double* ea
         );
 
+        /**
+          Carries out the operation characteristic of the DiaOp class.
+          Specifically, it multiplies each element of the block from data by 1/(ei - ea)
+          (Note that this should never be called at the user level).
+
+          @param nblock The number of items in the being operated on. (Unused in current implementation).
+          @param index_starts Pointer to a two element array containing the starting indices for i and a, in that order.
+          @param sizes Pointer to a two element array containing the number of i and a elements in the block to be operated on.
+          @param data Pointer to the data block being operated on.
+
+          */
         void element_op(
             uli nblock,
             const uli* index_starts,
@@ -123,6 +140,18 @@ class DijabOp :
             double cb = -1.0
         );
 
+        /**
+          Carries out the operation characteristic of the DiaOp class.
+          Specifically, it multiplies each element of the block from data by
+          1/(ci*ei + cj*ej + ca*ea + cb*eb).
+          (Note that this should never be called at the user level).
+
+          @param nblock The number of items in the block being operated on. (Unused in current implementation).
+          @param index_starts Pointer to a four element array containing the starting indices for i, j, a, and b in that order.
+          @param sizes Pointer to a four element array containing the number of i, j, a, and b elements in the block to be operated on.
+          @param data Pointer to the data block being operated on.
+
+          */
         void element_op(
             uli nblock,
             const uli* index_starts,

@@ -37,8 +37,6 @@ class YetiRuntimeObject {
 
         virtual void _renew();
 
-        void finalize();
-
         void set_initialized(bool flag);
 
         void set_finalized(bool flag);
@@ -57,6 +55,8 @@ class YetiRuntimeObject {
 
         bool is_initialized() const;
 
+        bool is_finalized() const;
+
         /**
             Perform the retrieval operation if necessary
             and increment the reference count. The reference
@@ -70,6 +70,8 @@ class YetiRuntimeObject {
             Perform the release operation if necessary and increment the reference count
         */
         virtual void release();
+
+        virtual void obsolete();
 
         virtual void initialize();
 
