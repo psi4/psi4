@@ -42,6 +42,8 @@ read_options(std::string name, Options &options)
       options.add_double("VIRTUAL_CUTOFF", 0.00001);
       /*- triples by default use the full virtual space*/
       options.add_bool("TRIPLES_USE_NOS", false);
+      /*- number of threads for triples, not set by default -*/
+      options.add_int("TRIPLES_THREADS", 0);
   }
   return true;
 }

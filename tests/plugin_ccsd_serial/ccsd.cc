@@ -97,7 +97,7 @@ void CoupledCluster::Initialize(Options &options){
   boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
 
   if (ref.get() !=NULL){
-     escf    = Process::environment.globals["SCF ENERGY"];
+     escf    = Process::environment.globals["SCF TOTAL ENERGY"];
      nirreps = ref->nirrep();
      sorbs   = ref->nsopi();
      orbs    = ref->nmopi();

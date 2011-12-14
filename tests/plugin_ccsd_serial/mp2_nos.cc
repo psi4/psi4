@@ -254,8 +254,26 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
       }
   }
   ccsd->scale_t = ccsd->emp2/emp2;
-  fprintf(outfile,"        MP2 correlation energy in original space:  %20.12lf\n",ccsd->emp2);
-  fprintf(outfile,"        MP2 correlation energy in truncated space: %20.12lf\n",emp2);
+  fprintf(outfile,"        MP2 correlation energy in original space:   %20.12lf\n",ccsd->emp2);
+  fprintf(outfile,"        MP2 correlation energy in truncated space:  %20.12lf\n",emp2);
+  fprintf(outfile,"\n");
+  double eccsd=0.0;
+  ijab = 0;
+  for (int a=o; a<o+nvirt_no; a++){
+      for (int b=o; b<o+nvirt_no; b++){
+          for (int i=0; i<o; i++){
+              for (int j=0; j<o; j++){
+                  int iajb = i*nvirt_no*nvirt_no*o+(a-o)*nvirt_no*o+j*nvirt_no+(b-o);
+                  int jaib = j*nvirt_no*nvirt_no*o+(a-o)*nvirt_no*o+i*nvirt_no+(b-o);
+                  eccsd += (ccsd->tb[ijab++] + ccsd->t1[(a-o)*o+i]*ccsd->t1[(b-o)*o+j]) 
+                        * (2.0*amps2[iajb]-amps2[jaib]);
+              }
+          }
+      }
+  }
+  ccsd->scale_t = ccsd->eccsd/eccsd;
+  fprintf(outfile,"        CCSD correlation energy in original space:  %20.12lf\n",ccsd->eccsd);
+  fprintf(outfile,"        CCSD correlation energy in truncated space: %20.12lf\n",eccsd);
   fprintf(outfile,"\n");
 
   // free memory
