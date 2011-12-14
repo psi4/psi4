@@ -167,6 +167,9 @@ protected:
     SharedVector epsilon_subset_helper(SharedVector epsilon, const Dimension& noccpi, const std::string& basis, const std::string& subset);
     std::vector<std::vector<int> > subset_occupation(const Dimension& noccpi, const std::string& subset);
 
+    /// If frequencies are available, they will be here:
+    boost::shared_ptr<Vector> frequencies_;
+
 private:
     // Wavefunction() {}
     void common_init();
@@ -347,6 +350,11 @@ public:
     SharedMatrix gradient() const;
     /// Set the gradient for the wavefunction
     void set_gradient(SharedMatrix& grad);
+
+    /// Returns the frequencies
+    boost::shared_ptr<Vector> frequencies() const;
+    /// Set the frequencies for the wavefunction
+    void set_frequencies(boost::shared_ptr<Vector>& freqs);
 
     /// Set the wavefunction name (e.g. "RHF", "ROHF", "UHF", "CCEnergyWavefunction")
     void set_name(const std::string& name) { name_ = name; }

@@ -36,7 +36,6 @@
 
 namespace yeti {
 
-#define NMAX_TENSORS 1000
 class Tensor :
     public Malloc<Tensor>,
     public YetiRuntimeCountable
@@ -54,17 +53,18 @@ class Tensor :
         typedef enum {
             gamma_tensor = 0,
             beta_tensor = 1,
-            alpha_tensor = 2
+            alpha_tensor = 2,
+            override_priority = 3
         } tensor_priority_t;
 
     private:
-        static Tensor* tensors_[NMAX_TENSORS];
-
         uli sort_weight_;
 
         uli tensor_number_;
 
         std::string name_;
+
+        bool is_open_subtensor_;
 
         TensorBlockMap* tensor_blocks_;
 
@@ -84,9 +84,9 @@ class Tensor :
 
         TensorIndexDescrPtr block_descr_;
 
-        Indexer* distr_indexer_;
+        TensorIndexDescrPtr parent_descr_;
 
-        uli* full_index_to_distribution_index_;
+        MultiThreadLock cache_lock_;
 
         usi depth_;
         
@@ -94,9 +94,7 @@ class Tensor :
         
         uli index_start_[NINDEX];
 
-        usi* distribution_indices_;
-
-        usi nindex_distr_;
+        bool is_distributed_;
 
         tensor_storage_t storage_type_;
 
@@ -106,9 +104,19 @@ class Tensor :
 
         size_t data_block_size_;
 
+        size_t max_data_node_size_;
+
         size_t metadata_block_size_;
 
+        uli nelements_metadata_av_;
+
         uli malloc_number_;
+
+        uli nsubtensors_;
+
+        void increment_subtensor_count();
+
+        void decrement_subtensor_count();
 
         Contraction::tensor_position_t cxn_position_;
 
@@ -155,6 +163,15 @@ class Tensor :
 
         ~Tensor();
 
+        static void configure_cache(
+            TensorIndexDescr* descr,
+            uli& nblocks_metadata,
+            size_t& metadata_block_size,
+            uli& nblocks_data,
+            size_t& data_block_size,
+            size_t& max_data_node_size
+        );
+
         void accumulate(
             uli threadnum,
             Tensor* tensor,
@@ -162,11 +179,26 @@ class Tensor :
             const SortPtr& sort
         );
 
+        void accumulate_no_barrier(
+            Tensor* tensor,
+            double scale,
+            Permutation* p = 0
+        );
+
         void accumulate(
             Tensor* tensor,
             double scale,
             Permutation* p = 0
         );
+
+        /**
+            A subtensor which has a subblock which is
+            not permutationally unique but the unique parent
+            is not contained in the subtensor
+        */
+        bool is_open_subtensor() const;
+
+        uli get_subtensor_count() const;
 
         iterator begin() const;
 
@@ -211,9 +243,13 @@ class Tensor :
 
         void accumulate(Matrix* matrix, MatrixConfiguration* config);
 
+        void lowest_valid_indices(uli* indices);
+
         void assign(Tensor* tensor);
 
         void fill(const double* data);
+
+        void unpack();
 
         /**
             This cannot be declared const since retrieve/release
@@ -259,7 +295,13 @@ class Tensor :
 
         bool is_distributed() const;
 
+        bool is_in_core() const;
+
+        bool is_recomputed() const;
+
         bool is_replicated() const;
+
+        bool has_retrieved_block() const;
 
         TensorBlockMap* get_block_map() const;
 
@@ -275,6 +317,8 @@ class Tensor :
         ) const;
 
         TensorIndexDescr* get_block_descr() const;
+
+        TensorIndexDescr* get_parent_descr() const;
 
         usi get_depth() const;
 
@@ -309,7 +353,11 @@ class Tensor :
 
         ulli nelements_unique() const;
 
+        uli nelements_metadata_av() const;
+
         uli nblocks_retrieved() const;
+
+        void obsolete();
 
         bool nonzero() const;
 
@@ -318,6 +366,8 @@ class Tensor :
         double norm();
 
         void print(std::ostream& os = std::cout);
+
+        void print_blocks(std::ostream& os = std::cout);
 
         void scale(double scale);
 
@@ -365,13 +415,14 @@ class Tensor :
 
         size_t data_block_size() const;
 
+        size_t max_data_node_size() const;
+
         size_t metadata_block_size() const;
 
         Tensor* copy();
 
         Tensor* clone();
 
-        uli get_node_number(uli block_number) const;
 };
 
 

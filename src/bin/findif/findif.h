@@ -26,6 +26,7 @@ class VIBRATION {
   int irrep;       // irrep
   double km;    // force constant
   double *lx;   // normal mode in mass-weighted cartesians
+  double cm;    // harmonic frequency in wavenumbers
   
   public:
     friend PsiReturnType fd_freq_0(Options &options, const boost::python::list& energies);

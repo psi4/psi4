@@ -251,6 +251,11 @@ class YetiTensor :
 
         void distribute(const std::string& str);
 
+        void distribute(
+            const std::string& idxA,
+            const std::string& idxB
+        );
+
         void sort(const std::string& str);
 
         void sort(
@@ -267,6 +272,8 @@ class YetiTensor :
         );
 
         void zero();
+
+        void reset();
 
         bool is_null() const;
 
@@ -443,6 +450,11 @@ Permute(
     const std::string& idxB,
     const std::string& idxC,
     const std::string& idxD
+);
+
+TensorIndexDescr*
+Descr(
+    const std::string& str
 );
 
 PermutationRuntimeParserPtr

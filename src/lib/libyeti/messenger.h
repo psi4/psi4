@@ -3,22 +3,29 @@
 
 #include "class.h"
 #include "yetiobject.h"
+#include "taskqueue.h"
 #include "messenger.hpp"
 
 #include "pthread.h"
 
 #include "callback.h"
 
-#include <psiconfig.h>
 #if HAVE_MPI
 #include <mpi.h>
 #endif
 
 namespace yeti {
 
-#define NELEMENTS_DATA_HEADER 6
+
+#define NELEMENTS_SEND_DATA_HEADER 7
 struct SendDataHeader {
-    size_t data[NELEMENTS_DATA_HEADER];
+    size_t data[NELEMENTS_SEND_DATA_HEADER];
+};
+
+
+#define NELEMENTS_REQ_DATA_HEADER 3
+struct RequestDataHeader {
+    size_t data[NELEMENTS_REQ_DATA_HEADER];
 };
 
 class Message
@@ -26,32 +33,43 @@ class Message
 
     public:
         typedef enum {
-            Read=1,
-            Accumulate=2,
-            Write=3,
-            GlobalSum=4
+            ReadRequestedPrefetch=1,
+            AccumulateRequest=2,
+            ReadUnexpected=3,
+            AccumulateUnexpected=4,
+            GlobalSum=5,
+            RunTasks=6,
+            Redistribute=7,
+            Print=8,
+            ReadRequestedRetrieve=9,
+            CheckRecv=10,
+            Exit=11
         } message_action_t;
 
         typedef enum {
             TensorBranch=1,
             Double=2,
-            Integer=3
+            Integer=3,
+            TaskQueue=4,
+            ExitSignal=5
         } message_data_type_t;
-
-        typedef enum {
-            GlobalSumRange=2,
-            TagRangeDenominator=1000
-        } tag_range_t;
 
 };
 
 #define StopListen 42
-#define DataHeader 1000
-#define DataRequest 1001
+#define GenericDataHeader 1000
+#define RequestedDataHeader 1001
+#define DataRequest 1002 
 #define MessageBarrier 1005
 #define GlobalSumDouble 2002
 #define GlobalSumInteger 2003
 #define ReadInteger 3003
+#define TaskCompleteNotification 4000
+#define TaskCompleteAck 4001
+#define DynamicLoadBalanceQueue 4002
+
+#define GlobalSumRange 2
+#define TagRangeDenominator 1000
 
 struct SendRequest;
 class SendStatus;
@@ -67,10 +85,18 @@ class Sendable
 
         SendStatus* send_status_;
 
+    protected:
+        virtual SendStatus* _send_data(
+            YetiMessenger* messenger,
+            Message::message_data_type_t type,
+            Message::message_action_t remote_action,
+            uli proc_number
+        ) = 0;
+
     public:
         Sendable();
 
-        void set_waiting(bool flag);
+        ~Sendable();
 
         bool is_waiting() const;
 
@@ -103,6 +129,16 @@ class Sendable
         virtual void recv_data(
             YetiMessenger* messenger,
             Message::message_data_type_t type,
+            Message::message_action_t action,
+            uli proc_number,
+            size_t data_size,
+            uli initial_tag,
+            uli nmessages
+        ) = 0;
+
+        virtual void redistribute(
+            YetiMessenger* messenger,
+            Message::message_data_type_t type,
             uli proc_number,
             size_t data_size,
             uli initial_tag,
@@ -118,12 +154,24 @@ class Sendable
             uli nmessages
         ) = 0;
 
-        virtual SendStatus* send_data(
+        void send_data(
             YetiMessenger* messenger,
             Message::message_data_type_t type,
             Message::message_action_t remote_action,
             uli proc_number
-        ) = 0;
+        );
+
+        virtual void retrieve_read() = 0;
+
+        virtual void release_read() = 0;
+
+        virtual void retrieve_accumulate() = 0;
+
+        virtual void release_accumulate() = 0;
+
+        virtual void retrieve_write() = 0;
+
+        virtual void release_write() = 0;
 
         void test_callback();
 
@@ -138,65 +186,47 @@ class SendStatus {
 
         bool waiting_;
 
+
     public:
+        size_t msg_size;
+
+        uli proc_number;
+
+        uli tag;
+
         SendStatus();
 
         YetiMessenger* messenger;
 
-        void reset();
+        void clear_dependents();
 
+        void set_waiting(bool flag);
+
+        bool is_waiting() const;
+        
         void set_dependent(SendStatus* status);
+
+        virtual bool is_complete_no_lock() = 0;
 
         virtual bool is_complete() = 0;
 
         void wait();
 
+    
 };
 
-
-
-
-struct SendRequest {
-
-    bool free;
-
-    Message::message_data_type_t data_type;
-
-    Message::message_action_t action_type;
-
-    uli proc_number;
-
-    Sendable* obj;
-
-    Callback* callback;
-
-    char callback_malloc[sizeof(tmpl_Callback<Sendable>)];
-
-};
-
-
-
-
-
-#define NREQUESTS_MAX_MESSENGER 10000
 class YetiMessenger :
     public YetiRuntimeCountable
 {
 
     protected:
+        bool barrier_mode_;
+
         ThreadLock* queue_lock_;
 
         ThreadLock* tag_allocate_lock_;
 
-        SendRequest send_request_queue_[NREQUESTS_MAX_MESSENGER];
-
-        uli send_queue_put_number_;
-
-        uli send_queue_read_number_;
-
-        uli callback_put_number_;
-
-        uli callback_read_number_;
+        uli* current_tags_;
 
         bool keep_running_;
 
@@ -204,6 +234,12 @@ class YetiMessenger :
             uli object_number,
             Message::message_data_type_t type
         );
+
+        template <typename data_t>
+        SendStatus* tmpl_send(uli proc_number, uli tag, data_t* d, uli n);
+
+        template <typename data_t>
+        void tmpl_recv(uli proc_number, uli tag, data_t* d, uli n);
 
         template <typename data_t>
         void tmpl_send(uli proc_number, uli tag, data_t d);
@@ -225,22 +261,20 @@ class YetiMessenger :
 
         uli current_data_tag_;
 
-        void
-        _queue_send_request(
-            Message::message_data_type_t type,
-            Message::message_action_t action,
-            uli proc_number,
-            Sendable* obj
-        );
-
     private:
-        pthread_t send_thread_;
-
         pthread_t recv_thread_;
 
-        pthread_attr_t send_thread_attr_;
-
         pthread_attr_t recv_thread_attr_;
+
+        void add_incoming_msg(uli proc_number, uli tag);
+
+        void check_for_incoming_msg(uli tag);
+
+        void run_recv_cycle();
+
+        void recv_msg(uli proc_number, uli tag);
+
+        void build_incoming_msg_queue();
 
     public:
         YetiMessenger();
@@ -251,11 +285,19 @@ class YetiMessenger :
 
         virtual void stop();
 
-        void recv_data_header(uli proc_number);
+        void recv_data_header(uli proc_number, uli tag);
 
         void recv_data_request(uli proc_number);
 
         void recv_data_barrier(uli proc_number);
+
+        void recv_task_notification(uli proc_number);
+
+        void recv_task_acknowledgment(uli proc_number);
+
+        void send_task_notification(uli proc_number);
+
+        void send_task_acknowledgment(uli proc_number);
 
         void send_barrier(uli proc_number);
 
@@ -270,7 +312,7 @@ class YetiMessenger :
         /**
             Returns the first tag in a range of usable tags
         */
-        uli allocate_initial_tag(uli nmessages);
+        uli allocate_initial_tag(uli nmessages, uli nproc);
 
         void send(
             uli proc_number,
@@ -284,39 +326,16 @@ class YetiMessenger :
             int i
         );
 
-        void
-        queue_send_request(
-            Message::message_data_type_t type,
-            Message::message_action_t action,
+        SendStatus* send(
             uli proc_number,
-            Sendable* obj
+            uli tag,
+            int* iarr,
+            uli n
         );
 
-        template <class T, typename fxn_t>
-        void
-        queue_send_request(
-            Message::message_data_type_t type,
-            Message::message_action_t action,
-            uli proc_number,
-            T* obj,
-            fxn_t fxn
-        )
-        {
-            typedef void (T::*void_fxn_ptr)(void);
-            
-            queue_lock_->lock();
-            _queue_send_request(type, action, proc_number, obj);
-
-            SendRequest& req = send_request_queue_[send_queue_put_number_];
-            Callback* callback = new (req.callback_malloc) tmpl_Callback<T>(obj,fxn);
-            req.callback = callback;
-            ++send_queue_put_number_;
-            queue_lock_->unlock();
-        }
-
         SendStatus* send_data_header(
-            SendDataHeader* header,
             uli proc_number,
+            uli tag,
             Message::message_data_type_t msg_type,
             Message::message_action_t action,
             uli block_number,
@@ -325,11 +344,13 @@ class YetiMessenger :
             uli nmessages
         );
 
+        void send_exit_signal();
 
         void send_data_request(
             Message::message_data_type_t message_type,
-            uli proc,
-            uli object_number
+            uli proc_number,
+            uli object_number,
+            Message::message_action_t send_action
         );
 
         void send(
@@ -340,7 +361,7 @@ class YetiMessenger :
 
         void run_recv_thread();
 
-        void run_send_thread();
+        void thread_crash();
 
         void recv(
             uli proc_number,
@@ -354,6 +375,11 @@ class YetiMessenger :
             uli tag,
             void* buf,
             size_t size
+        );
+
+        bool listen_for_tag(
+            uli& proc_number,
+            uli tag
         );
 
         bool listen(
@@ -380,6 +406,11 @@ class YetiMessenger :
             uli& tag
         ) = 0;
 
+        virtual bool listen_for_tag_no_lock(
+            uli& proc_number,
+            uli tag
+        ) = 0;
+
         virtual void recv_global_sum(
             uli proc_number,
             uli tag,
@@ -394,7 +425,6 @@ class YetiMessenger :
 };
 
 
-#include <psiconfig.h>
 #if HAVE_MPI
 class YetiMPIMessenger;
 class YetiMPIStatus :
@@ -405,6 +435,8 @@ class YetiMPIStatus :
         MPI_Request req;
 
         bool is_complete();
+
+        bool is_complete_no_lock();
 };
 
 
@@ -417,10 +449,6 @@ class YetiMPIMessenger :
         uli nsignals_from_children_;
 
         uli nsignals_from_parent_;
-
-        YetiMPIStatus status_list_[NREQUESTS_MAX_MESSENGER];
-
-        uli current_status_number_;
 
     public:
         YetiMPIMessenger();
@@ -440,6 +468,8 @@ class YetiMPIMessenger :
         );
 
         bool listen_no_lock(uli& proc_number, uli& tag);
+        
+        bool listen_for_tag_no_lock(uli& proc_number, uli tag);
 
         void global_sum(double& element);
 
@@ -482,6 +512,8 @@ class YetiLocalMessenger :
 
         bool listen_no_lock(uli& proc_number, uli& tag);
 
+        bool listen_for_tag_no_lock(uli& proc_number, uli tag);
+
         void global_sum(double& element);
 
         void wait_barrier();
@@ -494,6 +526,7 @@ class YetiLocalMessenger :
             Message::message_data_type_t type
         );
 };
+
 
 
 }

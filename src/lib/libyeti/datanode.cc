@@ -46,6 +46,7 @@ DataNode::~DataNode()
 void
 DataNode::set_data_block(char* data_block_start)
 {
+    cout.flush();
     data_ = data_block_start + offset_;
 }
 

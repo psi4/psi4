@@ -211,7 +211,7 @@ class CoupledCluster{
       */
     long int ndoccact,ndocc,nvirt,nso,nmotemp,nmo,nirreps,memory;
     int maxiter,*docc,nfzc,nfzv,*fzc,*fzv,*orbs,*sorbs,nvirt_no;
-    double conv,*oei,*tei,*Fock,*eps;
+    double conv,*oei,*tei,*Fock,*eps,scale_t;
     boost::shared_ptr<Vector> eps_test;
     double escf,enuc,efzc,emp2,eccsd;
 

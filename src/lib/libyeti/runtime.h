@@ -16,6 +16,10 @@
 #define size_t custom_size_t
 #endif
 
+#if HAVE_MPI
+#include <mpi.h>
+#endif
+
 namespace yeti {
 
 class YetiOStream {
@@ -39,6 +43,8 @@ class YetiRuntime {
 
         static std::map<IndexRange*, std::map<IndexRange*, int> > valid_subranges_;
 
+        static std::map<IndexDescr*, std::map<usi, std::string> > descr_letters_;
+
         static std::map<std::string, AOBasisPtr> basis_sets_;
 
         static uli descr_id_count_;
@@ -49,13 +55,29 @@ class YetiRuntime {
 
         static usi max_depth_;
 
-        static uli nthread_compute_;
+        static bool dynamic_load_balance_;
 
-        static uli nthread_comm_;
+        static bool use_messenger_accumulate_thread_;
 
         static uli nthread_;
 
         static uli nproc_;
+
+        static usi nindex_min_distr_;
+
+        static bool use_auto_distr_;
+        
+        static uli num_nodes_task_group_;
+
+        static std::map<uli,uli> global_to_group_node_map_;
+
+        static std::map<uli,uli> group_to_global_node_map_;
+
+        static std::map<Tensor*, size_t> tensor_allocations_;
+
+        static std::map<DataCache*, size_t> cache_allocations_;
+
+        static uli cpu_mask_num_;
 
         static uli nblocks_to_allocate_;
 
@@ -74,6 +96,8 @@ class YetiRuntime {
         static ThreadLock* printlock_;
 
         static ThreadLock* malloc_lock_;
+
+        static ThreadLock* timer_lock_;
 
         static void init_sizes();
 
@@ -94,6 +118,14 @@ class YetiRuntime {
         static runtime_parallel_type_t parallel_type_;
 
         static YetiMPIMessenger* mpi_messenger_;
+
+#if HAVE_MPI
+        static MPI_Comm mpicomm_;
+#endif
+
+#if COUNT_SCREENING_SKIPS
+        static uli* screening_skips_;
+#endif
 
         static YetiMessenger* messenger_;
 
@@ -143,10 +175,18 @@ class YetiRuntime {
 
         static uli nproc();
 
+        static uli cpu_mask_num();
+
         static uli get_thread_number();
 
 #if USE_DEFAULT_THREAD_STACK
         static void set_thread_stack(uli threadnum, void* addr);
+#endif
+
+#if COUNT_SCREENING_SKIPS
+        static void increment_screening_skips(usi level) { screening_skips_[level]++; return; }
+
+        static uli screening_skips(uli level) { return screening_skips_[level]; }
 #endif
 
         static void register_index_range(
@@ -194,9 +234,20 @@ class YetiRuntime {
 
         );
 
-        static uli nthread_compute();
-        
-        static uli nthread_comm();
+        static std::string get_name(
+            TensorIndexDescr* descr
+        );
+
+        static const std::string& descr_letter(
+            TensorIndexDescr* descr,
+            usi index
+        );
+
+        static uli num_nodes_task_group();
+
+        static void start_timer(const char* str);
+
+        static void stop_timer(const char* str);
 
         static uli nthread();
 
@@ -260,7 +311,25 @@ class YetiRuntime {
             IndexRange* subrange
         );
 
+        static uli group_node_number(uli global_node_number);
+
+        static uli global_node_number(uli group_node_number);
+
+        static void register_allocation(Tensor* tensor, size_t size);
+
+        static void register_tensor(Tensor* tensor);
+
+        static void unregister_tensor(Tensor* tensor);
+
+        static void register_allocation(DataCache* cache, size_t size);
+
+        static void register_cache(DataCache* cache);
+
+        static void unregister_cache(DataCache* cache);
+
         static bool is_threaded_compute();
+
+        static bool use_dynamic_load_balancing();
 
         static void set_threaded_compute(bool flag);
 
@@ -269,6 +338,20 @@ class YetiRuntime {
         static void free(void* ptr, size_t size);
 
         static void print_memory_allocation();
+
+        static void set_nindex_min_distr(usi nindex);
+
+        static void stack_print();
+
+        static void exit();
+
+        static void exit_with_signal(int sig);
+
+        static void thread_exit(int sig);
+
+        static void main_process_backtrace(int sig);
+
+        static bool use_auto_distr();
 
         static bool print_cxn;
 
@@ -279,6 +362,11 @@ class YetiRuntime {
         static YetiMPIMessenger* get_mpi_messenger();
 
         static YetiMessenger* get_messenger();
+
+#if HAVE_MPI
+        static MPI_Comm& get_mpi_comm();
+#endif
+
 };
 
 IndexRange* index_range(const std::string& str);

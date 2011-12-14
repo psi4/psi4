@@ -15,7 +15,9 @@
 
 #include <libmints/mints.h>
 #include "dfmp2.h"
-//#include "mad_mp2.h"
+#if HAVE_MADNESS
+#include "mad_mp2.h"
+#endif
 
 #include <psi4-dec.h>
 

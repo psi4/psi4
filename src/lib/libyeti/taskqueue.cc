@@ -16,35 +16,53 @@
 using namespace yeti;
 using namespace std;
 
-DECLARE_PARENT_MALLOC(Task);
-DECLARE_SUB_MALLOC(Task,ContractionTask);
 
-#define wtf //if (Malloc<TensorBlock>::get_object(43)->is_locked()) raise(SanityCheckError,"")
+#define DYNAMIC_LOAD_BALANCE 0
+
+
+#define wtf //if (Malloc<TensorBlock>::get_object(43)->is_locked()) yeti_throw(SanityCheckError,"")
 
 TaskQueue* GlobalQueue::queue_ = 0;
+bool* GlobalQueue::node_acks_ = 0;
+bool GlobalQueue::local_run_complete_ = true;
+uli* GlobalQueue::remote_task_buffer_ = 0;
+LoadBalanceQueue* GlobalQueue::head_queue_ = 0;
+LoadBalanceQueue* GlobalQueue::tail_queue_ = 0;
+ThreadLock* GlobalQueue::lock_ = 0;
+double TaskQueue::thread_times_[1000];
+static uli run_count = 0;
+
+#define NQUEUES_LOAD_BALANCE 100
+static LoadBalanceQueue load_balance_queues[NQUEUES_LOAD_BALANCE];
+static uli load_balance_queue_num = 0;
 
 static GlobalQueue global_queue;
 
 #define MAX_NTASKS 4000000
 #define MAX_NOWNERS 1000000
 
-#define DYNAMIC_LOAD_BALANCE_THREADS 0
-#define RANDOMIZE_QUEUE 0
-#define SORT_QUEUE 1
+Task::Task()
+    : 
+    next(0)
+{
+}
 
 Task::~Task()
 {
 }
 
+
 TaskQueue::TaskQueue()
     :
-  workspace_(new TaskWorkspace)
+    parent_(0),
+    unexpected_head_(0),
+    unexpected_tail_(0),
+    active_(false)
 {
 }
 
 TaskQueue::~TaskQueue()
 {
-    delete workspace_;
 }
 
 // random generator function:
@@ -58,265 +76,102 @@ ptrdiff_t (*p_myrandom)(ptrdiff_t) = myrandom;
 void
 TaskQueue::configure()
 {
-    if (workspace_->configured)
-        return;
-
-    uli ntasks = workspace_->ntasks;
-    int* sorted_indices = workspace_->sorted_indices;
-    TaskOwner** task_owners = workspace_->task_owners;
-    uli* ntasks_per_owner = workspace_->ntasks_per_owner;
-    uli* task_offsets = workspace_->task_offsets;
-    Task** tasks = workspace_->tasks;
-    void* sorted = workspace_->sorted;
-
-
-    yeti::quicksort<uli>(
-        workspace_->owner_numbers,
-        sorted_indices,
-        ntasks
-    );
-
-
-    TaskOwner** sorted_owners = reinterpret_cast<TaskOwner**>(sorted);
-    for (uli i=0; i < ntasks; ++i)
-        sorted_owners[i] = task_owners[sorted_indices[i]];
-    for (uli i=0; i < ntasks; ++i)
-        task_owners[i] = sorted_owners[i];
-
-
-    Task** sorted_tasks = reinterpret_cast<Task**>(sorted);
-    for (uli i=0; i < ntasks; ++i)
-        sorted_tasks[i] = tasks[sorted_indices[i]];
-    for (uli i=0; i < ntasks; ++i)
-        tasks[i] = sorted_tasks[i];
-
-    int last = -1;
-    int owner = -1; //I actually mean to do this
-    for (uli i=0; i < ntasks; ++i)
-    {
-        uli next = task_owners[i]->get_task_owner_number();
-        if (next != last)
-        {
-            ++owner;
-            ntasks_per_owner[owner] = 1;
-            task_offsets[owner] = i;
-        }
-        else
-        {
-            ++ntasks_per_owner[owner];
-        }
-        last = next;
-    }
-    uli nowners = owner + 1; //off by one error
-
-    //do a sanity check
-    uli ntask_check = 0;
-    for (uli i=0; i < nowners; ++i)
-        ntask_check += ntasks_per_owner[i];
-
-    if (ntask_check != ntasks)
-        raise(SanityCheckError, "contraction misconfigured");
-
-    workspace_->nowners = nowners;
-    workspace_->configured = true;
-
-    //set the run number for the calculation
-    run_number_ = 0;
-
-}
-
-void
-TaskQueue::run()
-{
-    configure();
-
-    ThreadGroup* thrgrp = YetiRuntime::get_thread_grp();
-
-    for (uli i=0; i < YetiRuntime::nthread_compute(); ++i)
-    {
-        Thread* thr = new TaskThread(i, this);
-        thrgrp->add(thr);
-    }
-
-    thrgrp->run();
-    thrgrp->wait();
-    thrgrp->clear();
-
-    clear();
+    active_ = true;
 }
 
 void
 TaskQueue::clear()
 {
-    workspace_->clear();
-    workspace_->configured = false;
-
-    std::list<TaskParentPtr>::iterator it(parents_.begin());
-    std::list<TaskParentPtr>::iterator stop(parents_.end());
-    for ( ; it != stop; ++it)
-        (*it)->finalize();
-    parents_.clear();
-}
-
-const uli*
-TaskQueue::ntasks_per_owner() const
-{
-    return workspace_->ntasks_per_owner;
-}
-
-const uli*
-TaskQueue::task_offsets() const
-{
-    return workspace_->task_offsets;
-}
-
-Task**
-TaskQueue::get_tasks() const
-{
-    return workspace_->tasks;
-}
-
-TaskOwner**
-TaskQueue::get_owners() const
-{
-    return workspace_->task_owners;
-}
-
-uli
-TaskQueue::nowners()
-{
-    return workspace_->nowners;
-}
-
-uli
-TaskQueue::ntasks()
-{
-    return workspace_->ntasks;
-}
-
-void
-TaskQueue::add(TaskOwner* owner, Task* task)
-{
-    if (workspace_->ntasks >= MAX_NTASKS)
-    {
-        raise(SanityCheckError, "not enough tasks allocated for contraction");
-    }
-
-    if (workspace_->nowners >= MAX_NOWNERS)
-    {
-        raise(SanityCheckError, "not enough owner slots allocated for contraction");
-    }
-
-    workspace_->task_owners[workspace_->ntasks] = owner;
-    workspace_->owner_numbers[workspace_->ntasks] = owner->get_task_owner_number();
-    workspace_->tasks[workspace_->ntasks] = task;
-    workspace_->configured = false;
-    ++workspace_->ntasks;
-}
-
-void
-TaskQueue::add(const TaskParentPtr& parent)
-{
-    parents_.push_back(parent);
-}
-
-void
-TaskQueue::print(std::ostream& os)
-{
-    for (uli i=0; i < workspace_->ntasks; ++i)
-    {
-        workspace_->tasks[i]->print(os);
-        os << std::endl;
-    }
+#if YETI_SANITY_CHECK
+    if (unexpected_tail_ || unexpected_head_)
+        yeti_throw(SanityCheckError, "Unexpected tasks were not all run");
+#endif
 }
 
 Task*
-TaskQueue::pop()
+TaskQueue::get_next_task(uli threadnum) 
 {
-    if (run_number_ == workspace_->ntasks)
-        return 0;
+    lock();
+    if (unexpected_head_)
+    {
+        Task* task = unexpected_head_;
+        unexpected_head_ = 0;
+        unexpected_tail_ = 0;
+        unlock();
+        return task;
+    }
 
-    Task* task = workspace_->tasks[run_number_];
-    ++run_number_;
+    Task* task = parent_->get_next_task();
+    if (!task)
+        active_ = false;
+    unlock();
+
     return task;
 }
 
-void
-TaskQueue::get_next(
-    Task **&taskstart,
-    uli &ntasks
-)
+bool
+TaskQueue::worker_threads_active() const
 {
-    lock_->lock();
-    if (run_number_ == workspace_->nowners)
+    return active_;
+}
+
+void
+TaskQueue::add_unexpected_task(Task* task)
+{
+    lock();
+    if (active_)
     {
-        taskstart = 0;
-        ntasks = 0;
-        lock_->unlock();
-        return;
+        if (unexpected_tail_)
+        {
+            unexpected_tail_->next = task;
+            unexpected_tail_ = task;
+        }
+        else
+        {
+            unexpected_head_ = task;
+            unexpected_tail_ = task;
+        }
+        unlock();
     }
-
-    taskstart = workspace_->tasks + workspace_->task_offsets[run_number_];
-    ntasks = workspace_->ntasks_per_owner[run_number_];
-
-    ++run_number_;
-
-    lock_->unlock();
-}
-
-Task**
-TaskQueue::get_task_list_for_owner(uli owner) const
-{
-    return workspace_->tasks + workspace_->task_offsets[owner];
-}
-
-uli
-TaskQueue::get_ntasks_for_owner(uli owner) const
-{
-    return workspace_->ntasks_per_owner[owner];
-}
-
-TaskWorkspace::TaskWorkspace()
-    :
-    sorted_indices(0),
-    ntasks(0),
-    nowners(0),
-    sorted(0),
-    task_offsets(0),
-    tasks(0),
-    ntasks_per_owner(0),
-    configured(false)
-{
-    task_owners = new TaskOwner*[MAX_NTASKS];
-    sorted_indices = new int[MAX_NTASKS];
-    tasks = new Task*[MAX_NTASKS];
-    ntasks_per_owner = new uli[MAX_NOWNERS];
-    task_offsets = new uli[MAX_NOWNERS];
-    owner_numbers = new uli[MAX_NTASKS];
-    sorted = YetiRuntime::malloc(MAX_NTASKS * sizeof(void*));
-}
-
-TaskWorkspace::~TaskWorkspace()
-{
-    delete[] task_owners;
-    delete[] owner_numbers;
-    delete[] sorted_indices;
-    delete[] tasks;
-    delete[] task_offsets;
-    delete[] ntasks_per_owner;
-    YetiRuntime::free(sorted, MAX_NTASKS * sizeof(void*));
+    else //no more threads looking for tasks - I need to run it
+    {
+        unlock();
+        uli threadnum = YetiRuntime::get_thread_number();
+        task->run(threadnum);
+    }
 }
 
 void
-TaskWorkspace::clear()
+TaskQueue::print(std::ostream& os) const
 {
-    for (uli i=0; i < ntasks; ++i)
-        delete tasks[i];
+    os << "Task Queue" << endl;
+}
 
-    ::memset(task_owners, 0, sizeof(TaskOwner*) * ntasks);
-    ::memset(tasks, 0, sizeof(TaskOwner*) * ntasks);
-    ntasks = 0;
-    nowners = 0;
+void
+TaskQueue::reset_thread_times()
+{
+    for (uli i=0; i < YetiRuntime::nthread(); ++i)
+    {
+        thread_times_[i] = 0;
+    }
+}
+
+void
+TaskQueue::increment_thread_time(uli thr, double time)
+{
+    thread_times_[thr] += time;
+}
+
+double
+TaskQueue::get_max_thread_time()
+{
+    double time = thread_times_[0];
+    for (uli i=0; i < YetiRuntime::nthread(); ++i)
+    {
+        if (time < thread_times_[i])
+            time = thread_times_[i];
+    }
+    return time;
 }
 
 GlobalQueue::GlobalQueue()
@@ -326,17 +181,48 @@ GlobalQueue::GlobalQueue()
 void
 GlobalQueue::configure()
 {
+    local_run_complete_ = false;
     queue_->configure();
 }
 
+#define REMOTE_TASK_BUFFER_SIZE 100000
 void
 GlobalQueue::init()
 {
     if (queue_)
         delete queue_;
-
     queue_ = new TaskQueue;
     queue_->incref();
+
+    if (node_acks_)
+        delete node_acks_;
+    node_acks_ = new bool[YetiRuntime::num_nodes_task_group()];
+    ::memset(node_acks_, 0, YetiRuntime::num_nodes_task_group() * sizeof(bool));
+
+    if (remote_task_buffer_ == 0)
+        remote_task_buffer_ = new uli[REMOTE_TASK_BUFFER_SIZE];
+
+    if (lock_ == 0)
+        lock_= new pThreadLock;
+}
+
+bool
+GlobalQueue::is_node_complete(uli group_node_number)
+{
+    return node_acks_[group_node_number];
+}
+
+void
+GlobalQueue::set_node_ack(uli global_node_number)
+{
+    uli group_number = YetiRuntime::group_node_number(global_node_number);
+    node_acks_[group_number] = 1;
+}
+
+bool
+GlobalQueue::local_run_complete()
+{
+    return local_run_complete_;
 }
 
 void
@@ -344,48 +230,198 @@ GlobalQueue::finalize()
 {
     if (queue_)
         delete queue_;
+
+    if (node_acks_)
+        delete node_acks_;
+
+    if (remote_task_buffer_)
+        delete remote_task_buffer_;
+
+    if (lock_)
+        delete lock_;
 }
 
 void
 GlobalQueue::run()
 {
-    queue_->run();
-}
 
-void
-GlobalQueue::clear()
-{
+
+#if PRINT_TASK_TIMINGS
+    cout << stream_printf("Running %ld tasks on node %ld\n",
+                    queue_->ntasks(), YetiRuntime::me());
+    cout.flush();
+#endif
+
+    ThreadGroup* thrgrp = YetiRuntime::get_thread_grp();
+
+    for (uli i=0; i < YetiRuntime::nthread(); ++i)
+    {
+        Thread* thr = new TaskThread(i, queue_);
+        thrgrp->add(thr);
+    }
+
+    double start = timer::Timer::getTime();
+
+    TaskQueue::reset_thread_times();
+
+    thrgrp->run();
+    thrgrp->wait();
     queue_->clear();
+
+    double max = TaskQueue::get_max_thread_time();
+    cout << stream_printf("Total computation on node %ld is %8.4f\n", 
+                    YetiRuntime::me(), max);
+
+    /** At this point, no remote nodes should steal tasks from me */
+    local_run_complete_ = true;
+    
+    double stop = timer::Timer::getTime();
+    cout << stream_printf("Node task run %ld took %8.4f seconds \n",
+                YetiRuntime::me(), stop - start);
+    start = stop;
+
+
+    if (YetiRuntime::use_dynamic_load_balancing())
+    {
+        for (uli plocal=0; plocal < YetiRuntime::num_nodes_task_group(); ++plocal)
+        {
+            uli pglobal = YetiRuntime::global_node_number(plocal);
+            YetiRuntime::get_messenger()->send_task_notification(pglobal);
+            while (!GlobalQueue::is_node_complete(plocal))
+            {
+                if (receive_dynamic_load_balance_queue())
+                {
+                    queue_->configure();
+                    thrgrp->run();
+                    thrgrp->wait();
+                    queue_->clear();
+                    YetiRuntime::get_messenger()->send_task_notification(pglobal);
+                }
+            }
+        }
+
+    }
+    thrgrp->clear();
+
+#if PRINT_TASK_TIMINGS
+    cout << stream_printf("Node %ld run took %8.4f seconds idle %8.4f seconds and ran %ld tasks\n",    
+                        YetiRuntime::me(), task_time, idle_time, queue_->task_run_count());
+    cout.flush();
+#endif
+
+
+    /** this memset is safe since barrier follows */
+    ::memset(node_acks_, 0, YetiRuntime::num_nodes_task_group() * sizeof(bool));
+
+    queue_->parent_->finalize();
+    queue_->parent_ = 0;
+
+    stop = timer::Timer::getTime();
+    cout << stream_printf("Node finalize task queue %ld took %8.4f seconds \n",
+                YetiRuntime::me(), stop - start);
+    start = stop;
 }
 
-uli
-GlobalQueue::nowners()
+TaskQueue*
+GlobalQueue::get_task_queue()
 {
-    return queue_->nowners();
-}
-
-uli
-GlobalQueue::ntasks()
-{
-    return queue_->ntasks();
+    return queue_;
 }
 
 void
-GlobalQueue::add(TaskOwner* owner, Task* task)
+GlobalQueue::add(TaskParent* parent)
 {
-    queue_->add(owner, task);
-}
+    if (queue_->parent_)
+        yeti_throw(SanityCheckError, "Already have task parent");
 
-void
-GlobalQueue::add(const TaskParentPtr& parent)
-{
-    queue_->add(parent);
+    queue_->parent_ = parent;
 }
 
 void
 GlobalQueue::print(std::ostream& os)
 {
     queue_->print(os);
+}
+
+
+Task*
+GlobalQueue::get_dynamic_load_balance_segment(uli& ntasks, uli& nentries, uli* data)
+{
+    if (local_run_complete_)
+    {
+        return 0;
+    }
+    return queue_->get_dynamic_load_balance_segment(ntasks, nentries, data);
+}
+
+#define NTASKS_MIN_LOAD_BALANCE 50
+#define MIN_REMAINING_PERCENT_LOAD_BALANCE 10
+#define LOAD_BALANCE_TASK_PERCENT 25
+
+Task*
+TaskQueue::get_dynamic_load_balance_segment(uli& ntasks, uli& nentries, uli* data)
+{
+    yeti_throw(SanityCheckError, "No dynamic load balancing yet");
+    return 0;
+}
+
+LoadBalanceQueue*
+GlobalQueue::get_dynamic_load_balance_queue()
+{
+    if (load_balance_queue_num == NQUEUES_LOAD_BALANCE)
+        load_balance_queue_num = 0;
+
+    LoadBalanceQueue* queue = &load_balance_queues[load_balance_queue_num];
+    return queue;
+}
+
+void
+GlobalQueue::add_dynamic_load_balance_queue(
+    LoadBalanceQueue* queue
+)
+{
+    lock_->lock();
+    queue->next = 0;
+    if (head_queue_ == 0)
+    {
+        head_queue_ = queue;
+        tail_queue_ = queue;
+    }
+    else
+    {
+        tail_queue_->next = queue;
+        tail_queue_ = queue;
+    }
+
+    ++load_balance_queue_num;
+    lock_->unlock();
+}
+
+bool
+GlobalQueue::receive_dynamic_load_balance_queue()
+{
+    if (head_queue_ == 0)
+    {
+        return false;
+    }
+
+    lock_->lock();
+    uli entry = 0;
+    const uli* dataptr = head_queue_->queue.data;
+    uli nentries = head_queue_->nentries;
+    head_queue_ = head_queue_->next;
+    if (head_queue_ == 0)
+        tail_queue_ = 0;
+    lock_->unlock();
+    
+
+    YetiRuntime::start_timer("receive load balance");
+    while(entry < nentries)
+    {
+        yeti_throw(SanityCheckError, "Dynamic load balancing not yet allowed");
+    }
+    YetiRuntime::stop_timer("receive load balance");
+    return true;
 }
 
 TaskThread::TaskThread(
@@ -401,80 +437,32 @@ TaskThread::TaskThread(
 void
 TaskThread::run()
 {
-#if DYNAMIC_LOAD_BALANCE_THREADS
-    Task** tasklist = 0;
-    uli ntasks = 0;
-    queue_->get_next(tasklist, ntasks);
-    while (tasklist)
+    Task* current_task = queue_->get_next_task(threadnum_);
+    if (current_task)
+        current_task->prefetch(threadnum_);
+    Task* next = queue_->get_next_task(threadnum_);
+    while (current_task)
     {
-        for (uli i=0; i < ntasks; ++i)
+        Task* old = current_task;
+        if (current_task->next)
         {
-            tasklist[i]->run(threadnum_);
+            current_task->next->prefetch(threadnum_);
+            current_task->run(threadnum_);
+            current_task = current_task->next;
         }
-        queue_->get_next(tasklist, ntasks);
+        else if (next)
+        {
+            next->prefetch(threadnum_);
+            current_task->run(threadnum_);
+            current_task = next;
+            next = queue_->get_next_task(threadnum_);
+        }
+        else
+        {
+            current_task->run(threadnum_);
+            current_task = 0; //nothing to do!
+        }
+        delete old;
     }
-#else
-
-    Task** tasks = queue_->get_tasks();
-    TaskOwner** owners = queue_->get_owners();
-    uli ntasks_tot = queue_->ntasks();
-    uli nowners = queue_->nowners();
-    const uli* task_offsets = queue_->task_offsets();
-    const uli* ntasks_per_owner = queue_->ntasks_per_owner();
-    uli nthread = YetiRuntime::nthread_compute();
-    uli taskstop = nowners < nthread ? 0 : nowners - nthread;
-
-    if (nowners <= threadnum_ || ntasks_tot == 0) //no work for this thread to do
-        return;
-
-    /** Fetch the very first task */
-    Task** first_task_subset = tasks + task_offsets[threadnum_];
-    Task* first_initial_task = first_task_subset[0];
-    first_initial_task->out_of_core_prefetch();
-
-    uli taskidx = threadnum_;
-    for ( ; taskidx < taskstop; taskidx += nthread)
-    {
-        Task** current_task_subset = tasks + task_offsets[taskidx];
-        Task* current_initial_task = current_task_subset[0];
-
-        Task** next_task_subset = tasks + task_offsets[taskidx + nthread];
-        Task* next_initial_task = next_task_subset[0];
-        next_initial_task->out_of_core_prefetch();
-
-        run_task_subset(current_task_subset, ntasks_per_owner[taskidx], threadnum_);
-    }
-
-    Task** last_task_subset = tasks + task_offsets[taskidx];
-
-    run_task_subset(last_task_subset, ntasks_per_owner[taskidx], threadnum_);
-
-#endif
 }
 
-void
-TaskThread::run_task_subset(Task** tasks, uli ntasks, uli threadnum)
-{
-    Task* prev_task = 0;
-    for (uli taskidx=0; taskidx < ntasks; ++taskidx)
-    {
-        Task* current_task = tasks[taskidx];
-        current_task->in_core_prefetch(prev_task);
-        current_task->run(threadnum);
-        prev_task = current_task;
-    }
-    tasks[0]->finalize_task_subset();
-}
-
-
-TaskOwner::TaskOwner()
-    :
-    task_owner_number_(0)
-{
-}
-
-uli
-TaskOwner::get_task_owner_number() const
-{
-    return task_owner_number_;
-}

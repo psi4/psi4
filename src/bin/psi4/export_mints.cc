@@ -367,7 +367,8 @@ void export_mints()
             def("basisset", &Wavefunction::basisset).
             def("sobasisset", &Wavefunction::sobasisset).
             def("energy", &Wavefunction::reference_energy).
-            def("gradient", &Wavefunction::gradient);
+            def("gradient", &Wavefunction::gradient).
+            def("frequencies", &Wavefunction::frequencies);
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", no_init);

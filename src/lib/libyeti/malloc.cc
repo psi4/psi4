@@ -35,10 +35,30 @@ FastMalloc::FastMalloc(
     size_(0),
     n_(0),
     offset_(0),
-    name_(name)
+    name_(name),
+    static_mem_(false)
 {
-
     init(size, n);
+}
+
+FastMalloc::FastMalloc(
+    char* data,
+    char* mallocd,
+    uli size,
+    uli n,
+    const std::string& name
+)
+    :
+    data_(data),
+    size_(size),
+    n_(n),
+    offset_(0),
+    name_(name),
+    mallocd_(mallocd),
+    lock_(0),
+    static_mem_(true)
+{
+    memset(mallocd_, 0, n + 1);
 }
 
 FastMalloc::FastMalloc(
@@ -51,7 +71,8 @@ FastMalloc::FastMalloc(
     name_(name),
     refcount_(0),
     offset_(0),
-    lock_(0)
+    lock_(0),
+    static_mem_(false)
 {
 }
 
@@ -61,7 +82,7 @@ FastMalloc::init(uli size, uli n)
 {
     if (data_)
     {
-        cerr << "malloc for " << name_ << " has already been initialized" << endl;
+        cerr << "Malloc for " << name_ << " has already been initialized" << endl;
         abort();
     }
 
@@ -96,14 +117,14 @@ FastMalloc::~FastMalloc()
         }
     }
 
-    ::free(lock_);
+    if (lock_) ::free(lock_);
 
     if (nmalloc)
     {
-        cerr << stream_printf("There are still %ld unfreed entries on malloc for %s",
-                              nmalloc, this->name_.c_str()) << endl;
+        cerr << stream_printf("There are still %ld unfreed entries on malloc for %s on node %ld",
+                              nmalloc, this->name_.c_str(), YetiRuntime::me()) << endl;
     }
-    else //everything is clear for deletion
+    else if (!static_mem_) //everything is clear for deletion
     {
         YetiRuntime::free(data_, size_ * n_);
         YetiRuntime::free(mallocd_, n_ + 1);
@@ -158,8 +179,21 @@ FastMalloc::malloc()
     YetiRuntime::unlock_malloc();
     return ptr;
 #else
-    lock_->lock();
+    if (lock_) lock_->lock();
 
+
+    void* ptr = malloc_no_lock();
+
+    if (lock_) lock_->unlock();
+
+
+    return ptr;
+#endif
+}
+
+void*
+FastMalloc::malloc_no_lock()
+{
     //maybe an empty spot
     uli index = search(offset_, n_);
     if (index == n_) //try again
@@ -177,12 +211,7 @@ FastMalloc::malloc()
     offset_ = index + 1;
     mallocd_[index] = 1;
     char* ptr = data_ + index * size_;
-
-    lock_->unlock();
-
-
     return ptr;
-#endif
 }
 
 void
@@ -250,7 +279,7 @@ FastMalloc::get_malloc_number(void* obj)
     {
 	cerr << "get malloc number " << n << " is not valid for "
              << name_ << " since there are only " << n_ << " entries" << endl;
-        raise(SanityCheckError, "malloc number exceeds size");
+        yeti_throw(SanityCheckError, "malloc number exceeds size");
     }
     return n;
 #endif
@@ -260,6 +289,14 @@ void*
 FastMalloc::get_object(uli malloc_number)
 {
 #if MALLOC_FAST_MALLOC
+    std::map<uli,void*>::const_iterator it = malloc_objects_[size_].find(malloc_number);
+    if (it == malloc_objects_[size_].end())
+    {
+        cerr << "Object number " << malloc_number
+            << " is not valid for " << name_ 
+            << endl;
+        abort();
+    }
     return malloc_objects_[size_][malloc_number];
 #else
 #if YETI_SANITY_CHECK
@@ -267,7 +304,7 @@ FastMalloc::get_object(uli malloc_number)
     {
 	cerr << "get object " << malloc_number << " is not valid for "
              << name_ << " since there are only " << n_ << " entries" << endl;
-        raise(SanityCheckError, "malloc number exceeds size");
+        yeti_throw(SanityCheckError, "malloc number exceeds size");
     }
 #endif
     return data_ + malloc_number * size_;
@@ -312,12 +349,6 @@ MemoryPool::get(uli size)
             << total_size_ << endl;
         abort();
     }
-
-#if 0
-    dout << stream_printf("allocated %d bytes on pool of size %d with %d remaining",
-                          size, size_, remaining_
-                          ) << endl;
-#endif
 
     char* tmp = ptr_;
 
@@ -374,6 +405,7 @@ MemoryPool::memcpy(MemoryPool* pool)
     ::memcpy(data_, pool->data_, cpysize);
 
     remaining_ = total_size_ - cpysize;
+    ptr_ = data_ + cpysize;
 }
 
 void
