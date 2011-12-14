@@ -104,13 +104,13 @@ void RunCoupledCluster(Options &options){
      tstop();
 
      // ccsd(t) energy
-     Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ccsd->eccsd+ccsd->et;
+     Process::environment.globals["(T) CORRELATION ENERGY"] = ccsd->et;
+     Process::environment.globals["CCSD(T) CORRELATION ENERGY"] = ccsd->eccsd + ccsd->et;
      Process::environment.globals["CCSD(T) TOTAL ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
      Process::environment.globals["CURRENT ENERGY"] = ccsd->eccsd + ccsd->et + ccsd->escf;
   }
 
   ccsd.reset();
-
 }
 
 }
