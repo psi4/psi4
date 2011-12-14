@@ -405,6 +405,69 @@ public:
 // => APPLIED CLASSES <= //
 
 /**
+ * Class DiskJK
+ *
+ * JK implementation using disk-based PK 
+ * integral technology
+ */
+class DiskJK : public JK {
+    
+    /// Do we need to backtransform to C1 under the hood?
+    virtual bool C1() const { return false; }
+    /// Setup integrals, files, etc
+    virtual void preiterations(); 
+    /// Compute J/K for current C/D 
+    virtual void compute_JK();
+    /// Delete integrals, files, etc
+    virtual void postiterations(); 
+
+    /// Common initialization
+    void common_init();
+
+public:
+    // => Constructors < = //
+        
+    /**
+     * Non-Symmetric Constructor
+     * @param C_left reference to std::vector that will hold 
+     *        left-side C matrices
+     * @param C_right reference to std::vector that will hold 
+     *        right-side C matrices
+     * @param primary primary basis set for this system. 
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    DiskJK(std::vector<SharedMatrix >& C_left, 
+       std::vector<SharedMatrix >& C_right,
+       boost::shared_ptr<BasisSet> primary);
+    /**
+     * Symmetric Constructor
+     * @param C_symm reference to std::vector that will hold 
+     *        left- and right-side C matrices
+     * @param primary primary basis set for this system. 
+     *        AO2USO transforms will be built with the molecule
+     *        contained in this basis object, so the incoming
+     *        C matrices must have the same spatial symmetry
+     *        structure as this molecule
+     */
+    DiskJK(std::vector<SharedMatrix >& C_symm,
+       boost::shared_ptr<BasisSet> primary);
+    /// Destructor
+    virtual ~DiskJK();
+
+    // => Accessors <= //
+
+    /**
+    * Print header information regarding JK
+    * type on output file
+    */
+    virtual void print_header() const;
+};
+
+
+/**
  * Class DirectJK
  *
  * JK implementation using sieved, threaded 

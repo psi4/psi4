@@ -102,6 +102,30 @@ boost::shared_ptr<JK> JK::build_JK(Options& options, bool lr_symmetric)
 
         return boost::shared_ptr<JK>(jk);
 
+    } else if (options.get_str("SCF_TYPE") == "DISK") {
+
+        DiskJK* jk;
+
+        if (!lr_symmetric) {
+            std::vector<SharedMatrix > C_left;
+            std::vector<SharedMatrix > C_right;
+            jk = new DiskJK(C_left, C_right, primary);
+        } else {
+            std::vector<SharedMatrix > C_left;
+            jk = new DiskJK(C_left, primary);
+        } 
+             
+        if (options["OMP_N_THREAD"].has_changed())
+            jk->set_omp_nthread(options.get_int("OMP_N_THREAD"));
+        if (options["SCHWARZ_CUTOFF"].has_changed())
+            jk->set_cutoff(options.get_double("SCHWARZ_CUTOFF"));
+        if (options["PRINT"].has_changed())
+            jk->set_print(options.get_int("PRINT"));
+        if (options["DEBUG"].has_changed())
+            jk->set_debug(options.get_int("DEBUG"));
+
+        return boost::shared_ptr<JK>(jk);
+
     } else if (options.get_str("SCF_TYPE") == "DIRECT") {
 
         DirectJK* jk;
@@ -489,6 +513,51 @@ void JK::compute()
 void JK::finalize()
 {
     postiterations();
+}
+
+DiskJK::DiskJK(std::vector<SharedMatrix >& C_left, 
+   std::vector<SharedMatrix >& C_right,
+   boost::shared_ptr<BasisSet> primary) : 
+   JK(C_left,C_right,primary)	
+{
+    common_init();
+}
+DiskJK::DiskJK(std::vector<SharedMatrix >& C_symm,
+   boost::shared_ptr<BasisSet> primary) :
+   JK(C_symm,primary)
+{
+    common_init();
+}
+DiskJK::~DiskJK()
+{
+}
+void DiskJK::common_init()
+{
+}
+void DiskJK::print_header() const
+{
+    if (print_) {
+    	fprintf(outfile, "  ==> DiskJK: Integral-Disk J/K Matrices <==\n");
+	fprintf(outfile, "        by Andy Simmonett, Justin Turney,\n");
+        fprintf(outfile, "                and Rob Parrish\n\n");
+
+        fprintf(outfile, "    J tasked:          %11s\n", (do_J_ ? "Yes" : "No"));
+        fprintf(outfile, "    K tasked:          %11s\n", (do_K_ ? "Yes" : "No"));
+        fprintf(outfile, "    wK tasked:         %11s\n", (do_wK_ ? "Yes" : "No"));
+        fprintf(outfile, "    Memory (MB):       %11ld\n", (memory_ *8L) / (1024L * 1024L));
+        //fprintf(outfile, "    OpenMP threads:    %11d\n", omp_nthread_);
+        //fprintf(outfile, "    Schwarz Cutoff:    %11.0E\n\n", cutoff_);
+    }
+}
+void DiskJK::preiterations()
+{
+}
+void DiskJK::compute_JK()
+{
+    exit(0);
+}
+void DiskJK::postiterations()
+{
 }
 
 DirectJK::DirectJK(std::vector<SharedMatrix >& C_left, 
