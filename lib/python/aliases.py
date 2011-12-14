@@ -71,8 +71,20 @@ def run_mp2_5(name, **kwargs):
 
     return e_mp25
 
+def run_plugin_ccsd_serial(name,**kwargs):
+    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
+    PsiMod.plugin_load("%s" % (plugfile))
+    PsiMod.set_global_option("MAX_MAPPED_MEMORY", 1000)
+    run_scf("scf",**kwargs)
+    PsiMod.transqt()
+    PsiMod.plugin("plugin_ccsd_serial.so")
+
+    return PsiMod.get_variable("CURRENT ENERGY")
+    
+
 
 # Integration with driver routines
 procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
+procedures['energy']['plugin_ccsd_serial'] = run_plugin_ccsd_serial
 
