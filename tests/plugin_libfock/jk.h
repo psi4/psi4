@@ -411,6 +411,11 @@ public:
  * integral technology
  */
 class DiskJK : public JK {
+
+    /// Absolute AO index to relative SO index
+    int* so2index_;
+    /// Absolute AO index to irrep
+    int* so2symblk_;
     
     /// Do we need to backtransform to C1 under the hood?
     virtual bool C1() const { return false; }
