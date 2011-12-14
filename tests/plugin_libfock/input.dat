@@ -11,14 +11,14 @@ plugin_load('./plugin_libfock.so')
 set {
 print 2
 scf_type direct
-solver_maxiter 4
-basis sto-3g 
-solver_precondition false
+basis cc-pvdz 
 cphf_tasks [Polarizability]
 }
 
 energy('scf')
 set module rcphf
+plugin('./plugin_libfock.so')
+set scf_type disk
 plugin('./plugin_libfock.so')
 
 clean()
