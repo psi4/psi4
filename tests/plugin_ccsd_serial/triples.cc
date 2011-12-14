@@ -158,9 +158,14 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   #ifdef _OPENMP
       nthreads = omp_get_max_threads();
   #endif
+  if (options["triples_threads"].has_changed())
+     nthreads = options.get_int("triples_threads");
+  fprintf(outfile,"        (T) correction will use %i threads\n",nthreads);
+  fprintf(outfile,"\n");
+  
 
   // TODO: should put an exception here if not enough memory.
-  fprintf(outfile,"        (T) correction requires %9.2lf mb memory.\n",
+  fprintf(outfile,"        (T) correction requires %9.2lf mb memory\n",
            8.*(2.*o*o*v*v+1.*o*o*o*v+(5.*nthreads)*v*v*v+1.*o*v)/1024./1024.);
   fprintf(outfile,"\n");
 
@@ -204,7 +209,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   psio->open(PSIF_ABCI,PSIO_OPEN_OLD);
 
 
-  #pragma omp parallel for schedule (dynamic)
+  #pragma omp parallel for schedule (dynamic) num_threads(nthreads)
   for (int i=0; i<o; i++){
       for (int j=0; j<=i; j++){
           for (int k=0; k<=j; k++){
