@@ -16,7 +16,7 @@ static const uli indexset_size = 6 * sizeof(unsigned long);
 
 static const uli nindexset = 5000000;
 
-/**
+/** @ingroup MemoryManagement
     @class FastMalloc
     Class that owns a particular memory pool, and allocates blocks quickly
     from an already malloc'd block.  All memory blocks are of uniform size
@@ -43,6 +43,8 @@ class FastMalloc {
 
         uli offset_;
 
+        bool static_mem_;
+
         uli
         search(
             uli start,
@@ -61,6 +63,18 @@ class FastMalloc {
             uli n,
             const std::string& name
         );
+
+        /**
+            No thread lock is created.  This must only ever be called from a single thread.
+        */
+        FastMalloc(
+            char* data,
+            char* mallocd,
+            uli size,
+            uli n,
+            const std::string& name
+        );
+
 
         /**
             Create the object but do not yet allocate the blocks
@@ -82,6 +96,8 @@ class FastMalloc {
             @return A pointer to a free block in the memory pool
         */
         void* malloc();
+
+        void* malloc_no_lock();
 
         void* get_object(uli malloc_number);
 

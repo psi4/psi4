@@ -11,18 +11,25 @@ using namespace std;
 #define size_t custom_size_t
 #endif
 
-
-
 DECLARE_PARENT_MALLOC(ThreadLock);
 DECLARE_SUB_MALLOC(ThreadLock,NullThreadLock);
 DECLARE_SUB_MALLOC(ThreadLock,pThreadLock);
+DECLARE_SUB_MALLOC(ThreadLock,MultiThreadLock);
 
 list<ThreadWorkspaceAllocator*>* ThreadEnvironment::allocators_ = 0;
 
+/** Program termination variables */
+static sigset_t pthread_sigset;
 
 void*
 pthread_run(void* thrptr)
 {
+    int s = pthread_sigmask(SIG_BLOCK, &pthread_sigset, NULL);
+    if (s != 0)
+    {
+        cerr << "Unable to set signal mask on thread" << endl;
+    }
+
     Thread* thr = static_cast<Thread*>(thrptr);
 #if USE_DEFAULT_THREAD_STACK
     int x; void* ptr = &x;
@@ -132,7 +139,7 @@ pThreadLock::unlock()
     int signal = pthread_mutex_unlock(&mutex_);
     if (signal != 0)
     {
-        raise(SanityCheckError, "unlocking mutex that I don't own");
+        yeti_throw(SanityCheckError, "Unlocking mutex that I don't own");
     }
 }
 
@@ -173,11 +180,26 @@ ThreadGroup::clear()
     nthread_ = 0;
 }
 
+void
+ThreadGroup::thread_crash()
+{
+}
+
 pThreadGroup::pThreadGroup(uli nthread)
     : ThreadGroup(nthread),
     pthreads_(new pthread_t[nthread]),
-    attrs_(new pthread_attr_t[nthread])
+    attrs_(new pthread_attr_t[nthread]),
+    running_(false)
 {
+    /* Block SIGINT; other threads created by main() will inherit
+    a copy of the signal mask. */
+    sigemptyset(&pthread_sigset);
+    sigaddset(&pthread_sigset, SIGQUIT);
+    sigaddset(&pthread_sigset, SIGTERM);
+    sigaddset(&pthread_sigset, SIGINT);
+    sigaddset(&pthread_sigset, SIGKILL);
+    sigaddset(&pthread_sigset, MAIN_PROCESS_BACKTRACE_SIGNAL);
+
     ::memset(threads_, 0, nthread * sizeof(void*));
     ::memset(pthreads_, 0, nthread * sizeof(void*));
     for (uli i=1; i < nthread; ++i)
@@ -185,15 +207,21 @@ pThreadGroup::pThreadGroup(uli nthread)
         int status = pthread_attr_init(&attrs_[i]);
         if (status != 0)
         {
-            cerr << "unable to init thread attributes " << status << endl;
+            cerr << "Unable to init thread attributes " << status << endl;
             abort();
         }
 
-        //cpu_set_t cpuset;
-        //CPU_ZERO(&cpuset);
-        //CPU_SET(i, &cpuset);
+#if USE_THREAD_AFFINITY
+        uli offset = YetiRuntime::cpu_mask_num();
+        cpu_set_t cpuset;
+        CPU_ZERO(&cpuset);
+        CPU_SET(i + offset, &cpuset);
 
-        //pthread_attr_setaffinity_np(&attrs_[i], sizeof(cpu_set_t), &cpuset);
+        pthread_attr_setaffinity_np(&attrs_[i], sizeof(cpu_set_t), &cpuset);
+        //cout << stream_printf("Setting thread affinity of thread %ld on node %ld to %d\n", i, YetiRuntime::me(), offset + i);
+        //cout.flush();
+
+#endif
 
 
 #if USE_DEFAULT_THREAD_STACK
@@ -203,7 +231,7 @@ pThreadGroup::pThreadGroup(uli nthread)
         status = pthread_attr_setstack(&attrs_[i], stack_start, stack_size);
         if (status != 0)
         {
-            cerr << "unable to set stack address " << stack_start 
+            cerr << "Unable to set stack address " << stack_start 
                 << " stack size " << stack_size
                 << " on thread " << i << " with error "
                 << status << endl;
@@ -211,6 +239,16 @@ pThreadGroup::pThreadGroup(uli nthread)
         }
 #endif
     }
+
+#if USE_THREAD_AFFINITY
+    cpu_set_t cpuset;
+    uli offset = YetiRuntime::cpu_mask_num();
+    CPU_ZERO(&cpuset);
+    CPU_SET(offset, &cpuset);
+    sched_setaffinity(0,sizeof(cpu_set_t), &cpuset);
+    cout << stream_printf("Setting thread affinity of main process on node %ld to %d\n", YetiRuntime::me(), offset);
+    cout.flush();
+#endif
 }
 
 pThreadGroup::~pThreadGroup()
@@ -234,7 +272,7 @@ pThreadGroup::add(Thread* thr)
 {
     if (nthread_ >= nthread_max_)
     {
-        raise(SanityCheckError, "too many threads added to thread group");
+        yeti_throw(SanityCheckError, "too many threads added to thread group");
     }
 
     threads_[nthread_] = thr;
@@ -257,6 +295,8 @@ pThreadGroup::run()
         //void* retval;
         //status = pthread_join(pthreads_[t], &retval);
     }
+    running_ = true;
+
     threads_[0]->run();
 }
 
@@ -280,7 +320,25 @@ pThreadGroup::wait()
             abort();
         }
     }
+    running_ = false;
     YetiRuntime::set_threaded_compute(false);
+}
+
+void
+pThreadGroup::thread_crash()
+{
+    if (!running_)
+        return;
+
+    for (uli t=1; t < nthread_; ++t)
+    {
+        int status = pthread_kill(pthreads_[t], THREAD_KILL_SIGNAL);
+        if (status == EINVAL)
+        {
+            cerr << "Signal " << THREAD_KILL_SIGNAL << " is not a valid pThread kill signal" << endl;
+        }
+    }
+    usleep(100);
 }
 
 
@@ -341,4 +399,62 @@ Thread::~Thread()
 {
 }
 
+MultiThreadLock::MultiThreadLock()
+    : 
+    thread_owner_(0),
+    lock_count_(0)
+{
+}
+
+void
+MultiThreadLock::lock()
+{
+    uli threadnum = YetiRuntime::get_thread_number();
+    if (lock_count_ > 0 && thread_owner_ == threadnum)
+    {
+        ++lock_count_;
+    }
+    else
+    {
+        lock_.lock();
+        thread_owner_ = threadnum; //import to set things in this order
+        lock_count_ = 1;
+    }
+}
+
+bool
+MultiThreadLock::trylock()
+{
+    uli threadnum = YetiRuntime::get_thread_number();
+    if (lock_count_ > 0 && thread_owner_ == threadnum)
+    {
+        ++lock_count_;
+        return true;
+    }
+    else
+    {
+        bool test = lock_.trylock();
+        return test;
+    }
+}
+
+void
+MultiThreadLock::unlock()
+{
+    if (lock_count_ > 1)
+    {
+        --lock_count_;
+    }
+    else
+    {
+        lock_count_ = 0;
+        lock_.unlock();
+    }
+}
+
+void
+MultiThreadLock::print(std::ostream &os) const
+{
+    os << "MultiThreadLock" << endl;
+}
 

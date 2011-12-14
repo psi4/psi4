@@ -24,6 +24,7 @@ class Molecule;
 class ObaraSaikaTwoCenterRecursion;
 class ObaraSaikaTwoCenterVIDeriv2Recursion;
 class OneBodyAOInt;
+class TwoBodyAOInt;
 class PointGroup;
 class SimpleVector;
 class SphericalTransform;

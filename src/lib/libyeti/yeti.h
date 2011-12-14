@@ -32,9 +32,7 @@
 
 #include <libsmartptr/timer.h>
 
-#if HAVE_MPQC
-#include <libyeti/mpqc.h>
-#endif
+#include <libyeti/interface.h>
 
 #endif
 
