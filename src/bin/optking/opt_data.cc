@@ -65,8 +65,10 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double max_disp = array_abs_max(dq, Nintco);
 
   double DE;
-  if (g_iteration() > 1) DE = g_energy() - g_last_energy();
-  else DE = g_energy();
+  if (g_iteration() > 1)
+    DE = g_energy() - g_last_energy();
+  else
+    DE = g_energy();
 
   double *f =  g_forces_pointer();
 
@@ -117,11 +119,12 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
   fprintf(outfile, "\t----------------------------------------------------------\n");
 
-  if ( fabs(Opt_params.conv_max_force) < 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
+  // why are these if's here asks RAK?
+  if ( fabs(Opt_params.conv_max_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
   else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", max_force, Opt_params.conv_max_force,
        ((max_force < Opt_params.conv_max_force) ? "yes" : "no"));
 
-  if ( fabs(Opt_params.conv_max_DE) < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
+  if ( fabs(Opt_params.conv_max_DE)   < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
   else fprintf(outfile, "\tEnergy Change    %10.1e %14.1e %11s\n", DE, Opt_params.conv_max_DE,
        ((fabs(DE) < Opt_params.conv_max_DE) ? "yes" : "no"));
 
