@@ -338,7 +338,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                   }
               }
               // for denominator for R-CCSD(T)
-              for (int a=0; a<v; a++){
+              /*for (int a=0; a<v; a++){
                   for (int b=0; b<v; b++){
                       for (int c=0; c<v; c++){
                           long int abc = a*v*v+b*v+c;
@@ -376,7 +376,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
                           renorm[thread] += dum/denom*( 2-((i==j)+(j==k)+(i==k)) );
                       }
                   }
-              }
+              }*/
 
           }
       }
@@ -387,7 +387,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
   for (int i=0; i<nthreads; i++) et += etrip[i];
 
   // for denominator for R-CCSD(T)
-  double dt = 1.0+2.0*F_DDOT(o*v,t1,1,t1,1);
+  /*double dt = 1.0+2.0*F_DDOT(o*v,t1,1,t1,1);
   for (long int i=0; i<o; i++){
       for (long int j=0; j<o; j++){
           for (long int a=0; a<v; a++){
@@ -398,7 +398,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
           }
       }
   }
-  for (int i=0; i<nthreads; i++) dt += renorm[i];
+  for (int i=0; i<nthreads; i++) dt += renorm[i];*/
 
   psio->close(PSIF_ABCI,1);
   fprintf(outfile,"\n");
@@ -408,7 +408,7 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      fprintf(outfile,"                                                 unscaled               scaled\n");
      fprintf(outfile,"        (T) energy                   %20.12lf %20.12lf\n",et,et*ccsd->scale_t);
   }
-  fprintf(outfile,"        R-CCSD(T) denominator        %20.12lf\n",dt);
+  //fprintf(outfile,"        R-CCSD(T) denominator        %20.12lf\n",dt);
   fprintf(outfile,"\n");
   fprintf(outfile,"        MP2 correlation energy       %20.12lf\n",ccsd->emp2);
   fprintf(outfile,"        CCSD correlation energy      %20.12lf\n",ccsd->eccsd);
@@ -418,8 +418,9 @@ PsiReturnType triples(boost::shared_ptr<psi::CoupledCluster>ccsd,Options&options
      fprintf(outfile,"                                                 unscaled               scaled\n");
      fprintf(outfile,"        CCSD(T) correlation energy   %20.12lf %20.12lf\n",ccsd->eccsd+et,ccsd->eccsd+et*ccsd->scale_t);
   }
-  fprintf(outfile,"        R-CCSD(T) correlation energy %20.12lf\n",ccsd->eccsd+et/dt);
+  //fprintf(outfile,"        R-CCSD(T) correlation energy %20.12lf\n",ccsd->eccsd+et/dt);
   fflush(outfile);
+  ccsd->et = et;
 
   // free memory:
   free(E2ijak);
