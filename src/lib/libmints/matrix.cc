@@ -2102,8 +2102,8 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
-    static const char *str_block_format = "%3d %3d %3d %20.15f\n";
-    static const char *str_full_format  = "%3d %3d %20.15f\n";
+    static const char *str_block_format = "%3d %3d %3d %16.12f\n";
+    static const char *str_full_format  = "%3d %3d %16.12f\n";
 
     // We can only save lower triangle if symmetry_ if 0
     if (symmetry_ && saveLowerTriangle)
@@ -2135,7 +2135,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             int count=0;
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<=i; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         count++;
                     }
                 }
@@ -2143,7 +2143,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             fprintf(out, "%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<=i; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         fprintf(out, str_full_format, i, j, fullblock[i][j]);
                     }
                 }
@@ -2153,7 +2153,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             int count=0;
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<sizec; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         count++;
                     }
                 }
@@ -2161,7 +2161,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             fprintf(out, "%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<sizec; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         fprintf(out, str_full_format, i, j, fullblock[i][j]);
                     }
                 }
@@ -2175,7 +2175,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             count++;
                         }
                     }
@@ -2185,7 +2185,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
@@ -2197,7 +2197,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h^symmetry_]; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             count++;
                         }
                     }
@@ -2207,7 +2207,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h^symmetry_]; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
