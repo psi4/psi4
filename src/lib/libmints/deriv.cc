@@ -394,6 +394,8 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
     x_contr_    = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
     gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
+
+    cdsalcs_.print();
 }
 
 SharedMatrix Deriv::compute()
