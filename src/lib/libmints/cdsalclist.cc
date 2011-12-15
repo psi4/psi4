@@ -12,16 +12,34 @@
 
 using namespace boost;
 
+namespace {
+
+static char direction(int xyz)
+{
+    switch (xyz) {
+    case 0:
+        return 'x';
+    case 1:
+        return 'y';
+    case 2:
+        return 'z';
+    default:
+        return '?';
+    }
+}
+
+}
+
 namespace psi {
 
 void CdSalc::print() const
 {
     fprintf(outfile, "\tirrep = %d, ncomponent = %ld\n", irrep_, ncomponent());
     for (int i=0; i<ncomponent(); ++i) {
-        fprintf(outfile, "\t\t%d: atom %d, direction %d, coef %lf\n",
+        fprintf(outfile, "\t\t%d: atom %d, direction %c, coef %lf\n",
                 i,
                 components_[i].atom,
-                components_[i].xyz,
+                direction(components_[i].xyz),
                 components_[i].coef);
     }
 }
@@ -126,7 +144,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
         }
     }
 
-    constraints.print();
+//    constraints.print();
 
     // Remove NULL constraint (if present) and normalize the rest of them
     for (int i=0; i<6; ++i) {
@@ -137,7 +155,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
             constraints.scale_row(0, i, 0.0);
     }
 
-    constraints.print();
+//    constraints.print();
 
     Matrix constraints_ortho("Orthogonalized COM & Rotational constraints", 6, 3*natom);
     // Ensure rotations and translations are exactly orthogonal
@@ -145,7 +163,7 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     for (int i=0; i<6; ++i)
         count += constraints_ortho.schmidt_add(0, i, constraints[0][i]);
 
-    constraints_ortho.print();
+//    constraints_ortho.print();
 
     double *salc = new double[ncd_];
 
@@ -233,11 +251,12 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
     }
 
     // Raw - non-projected cartesian displacements
-    salcs.print(outfile, "Raw, Nonprojected Cartesian Displacements");
+//    salcs.print(outfile, "Raw, Nonprojected Cartesian Displacements");
 
     // Project out any constraints
     salcs.project_out(constraints_ortho);
     salcs.set_name("Resulting SALCs after projections");
+//    salcs.print();
 
     // Walk through the new salcs and populate our sparse vectors.
     for (int h=0; h<nirrep_; ++h) {
@@ -245,10 +264,10 @@ CdSalcList::CdSalcList(boost::shared_ptr<Molecule> mol,
             bool added = false;
             CdSalc new_salc(h);
             for (int cd=0; cd < ncd_; ++cd) {
-                if (fabs(salcs(i, cd)) > 1.0e-10) {
+                if (fabs(salcs(h, i, cd)) > 1.0e-10) {
                     added = true;
-                    new_salc.add(salcs(i, cd), cd/3, cd % 3);
-                    atom_salcs_[cd/3].add(cd % 3, salcs(i, cd), h, salcs_.size());
+                    new_salc.add(salcs(h, i, cd), cd/3, cd % 3);
+                    atom_salcs_[cd/3].add(cd % 3, salcs(h, i, cd), h, salcs_.size());
                 }
             }
             if (added)
