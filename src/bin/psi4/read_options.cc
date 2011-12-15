@@ -646,6 +646,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("OMEGA_POINTS",8);
     /*- Omega (atomic wavenumbers) to center Casimir-Polder on -*/
     options.add_double("OMEGA_CENTER", 0.4);
+    /*- The scale factor used for opposite-spin pairs in SCS computations -*/
+    options.add_double("SCALE_OS", 6.0/5.0);
+    /*- The scale factor used for same-spin pairs in SCS computations-*/
+    options.add_double("SCALE_SS", 1.0/3.0);
   }
   if(name == "DCFT"|| options.read_globals()) {
 //      ip_cwk_add(":DCFT");
