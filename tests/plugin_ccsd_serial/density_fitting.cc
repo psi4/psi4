@@ -262,9 +262,6 @@ void DensityFittedIntegrals(){
   fprintf(outfile,"done.\n");fflush(outfile);
   fprintf(outfile,"\n");fflush(outfile);
 
-return;
-
-
   free(tempq);
   free(temp1);
   free(temp2);
