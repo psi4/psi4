@@ -15,15 +15,16 @@
 
 #include<sys/times.h>
 
+#include"density_fitting.h"
 #include"globals.h"
 #include"gpuhelper.h"
 #include"blas.h"
 #include"ccsd.h"
 #include"sort.h"
 
-//#ifdef _OPENMP
+#ifdef _OPENMP
     #include<omp.h>
-//#endif
+#endif
 
 using namespace psi;
 using namespace boost;
@@ -201,22 +202,40 @@ void CoupledCluster::Initialize(Options &options){
 
   long int i;
 
-  // sort integrals and write them to disk
-  times(&total_tmstime);
-  time_t time_start = time(NULL);
-  double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-  double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+  double time_start,user_start,sys_start,time_stop,user_stop,sys_stop;
 
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
-  //RandomIntegralFiles();
+  // sort integrals and write them to disk (or generate df integrals)
+  if (!options.get_bool("DF_INTEGRALS")){
+     times(&total_tmstime);
+     time_start = time(NULL);
+     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+     OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+     //RandomIntegralFiles();
 
-  times(&total_tmstime);
-  time_t time_stop = time(NULL);
-  double user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-  double sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-  fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
-  fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+     times(&total_tmstime);
+     time_stop = time(NULL);
+     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
+     fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
+     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
+     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+  }
+  else{
+     time_start = time(NULL);
+     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+
+     DensityFittedIntegrals();
+
+     times(&total_tmstime);
+     time_stop = time(NULL);
+     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
+     fprintf(outfile,"  Time for density fitting:         %6.2lf s (user)\n",user_stop-user_start);
+     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
+     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+  }
 
   // orbital energies
   eps_test = ref->epsilon_a();
