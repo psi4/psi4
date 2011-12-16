@@ -53,7 +53,7 @@ void DensityFittedIntegrals(){
   double* temp2 = (double*)malloc(dim*sizeof(double));
   double* tempq = (double*)malloc(nQ*v*v*sizeof(double));
 
-  psio_address addr,addr2;
+  psio_address addr,addr2,addr3;
   boost::shared_ptr<PSIO> psio(new PSIO());
 
   fprintf(outfile,"\n");
@@ -134,12 +134,14 @@ void DensityFittedIntegrals(){
   psio->close(PSIF_AKJC2,1);
   fprintf(outfile,"done.\n");fflush(outfile);
 
-  // (ov|vv) 3 and 5
+  // (ov|vv) 2, 3, and 5
   fprintf(outfile,"     (ov|vv) block.......");fflush(outfile);
+  psio->open(PSIF_ABCI2,PSIO_OPEN_NEW);
   psio->open(PSIF_ABCI3,PSIO_OPEN_NEW);
   psio->open(PSIF_ABCI5,PSIO_OPEN_NEW);
   addr = PSIO_ZERO;
   addr2 = PSIO_ZERO;
+  addr3 = PSIO_ZERO;
   for (int a=0; a<v; a++){
       for (int q=0; q<nQ; q++){
           for (int b=0; b<v; b++){
@@ -156,7 +158,11 @@ void DensityFittedIntegrals(){
           }
       }
       psio->write(PSIF_ABCI5,"E2abci5",(char*)&temp2[0],o*v*v*sizeof(double),addr2,&addr2);
+
+      F_DAXPY(o*v*v,-2.0,temp1,1,temp2,1);
+      psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp2[0],o*v*v*sizeof(double),addr3,&addr3);
   }
+  psio->close(PSIF_ABCI2,1);
   psio->close(PSIF_ABCI3,1);
   psio->close(PSIF_ABCI5,1);
 
@@ -184,42 +190,7 @@ void DensityFittedIntegrals(){
   }
   psio->close(PSIF_ABCI,1);
   psio->close(PSIF_ABCI4,1);
-
-  //
-  //  Sort ABCI2 integrals (actually, just ABCI5-2*ABCI3)
-  //
-
-  long int nbins,binsize,lastbin;
-  for (long int i=1; i<=o*v*v*v; i++){
-      if (dim>=(double)o*v*v*v/i){
-         binsize = o*v*v*v/i;
-         if (i*binsize < o*v*v*v) binsize++;
-         nbins = i;
-         break;
-      }
-  }
-  lastbin = o*v*v*v - (nbins-1)*binsize;
-  psio->open(PSIF_ABCI3,PSIO_OPEN_OLD);
-  psio->open(PSIF_ABCI5,PSIO_OPEN_OLD);
-  psio->open(PSIF_ABCI2,PSIO_OPEN_NEW);
-  psio_address abci2_addr = PSIO_ZERO;
-  psio_address abci3_addr = PSIO_ZERO;
-  psio_address abci5_addr = PSIO_ZERO;
-  for (long int i=0; i<nbins-1; i++){
-      psio->read(PSIF_ABCI3,"E2abci3",(char*)&temp1[0],binsize*sizeof(double),abci3_addr,&abci3_addr);
-      psio->read(PSIF_ABCI5,"E2abci5",(char*)&temp2[0],binsize*sizeof(double),abci5_addr,&abci5_addr);
-      F_DAXPY(binsize,-2.0,temp1,1,temp2,1);
-      psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp2[0],binsize*sizeof(double),abci2_addr,&abci2_addr);
-  }
-  psio->read(PSIF_ABCI3,"E2abci3",(char*)&temp1[0],lastbin*sizeof(double),abci3_addr,&abci3_addr);
-  psio->read(PSIF_ABCI5,"E2abci5",(char*)&temp2[0],lastbin*sizeof(double),abci5_addr,&abci5_addr);
-  F_DAXPY(lastbin,-2.0,temp1,1,temp2,1);
-  psio->write(PSIF_ABCI2,"E2abci2",(char*)&temp2[0],lastbin*sizeof(double),abci2_addr,&abci2_addr);
-  psio->close(PSIF_ABCI2,1);
-  psio->close(PSIF_ABCI3,1);
-  psio->close(PSIF_ABCI5,1);
   fprintf(outfile,"done.\n");fflush(outfile);
-
 
   //(vv|vv)
   fprintf(outfile,"     (vv|vv) block.......");fflush(outfile);

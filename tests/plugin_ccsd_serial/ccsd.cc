@@ -222,6 +222,7 @@ void CoupledCluster::Initialize(Options &options){
      fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
   }
   else{
+     times(&total_tmstime);
      time_start = time(NULL);
      user_start = ((double) total_tmstime.tms_utime)/clk_tck;
      sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
