@@ -51,21 +51,23 @@ fd_1_0(Options &options, const boost::python::list& E)
                 - extract<double>(E[4*i+3])) / (12.0 * Dx);
   }
 
+  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+  fprintf(outfile,"  Computing gradient from energies (fd_1_0).\n");
+
   // Print out energies and gradients
   double energy_ref = extract<double>(E[Ndisp-1]);
-  fprintf(outfile, "\n\t *** FINDIF (fd_1_0) ***\n");
-  fprintf(outfile, "\tFinite difference computation of gradient using %d-point formula\n", pts);
-  fprintf(outfile, "\tCheck for precision!\n");
-  fprintf(outfile, "\tEnergy without displacment: %15.10lf\n", energy_ref);
-  fprintf(outfile, "\tGradients are in mass-weighted, symmetry-adapted cartesians (in au).\n");
+  fprintf(outfile, "\tUsing %d-point formula.\n", pts);
+  fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
+  fprintf(outfile, "\tCheck energies below for precision!\n");
+  fprintf(outfile, "\tForces are for mass-weighted, symmetry-adapted cartesians (in au).\n");
 
   int cnt;
   if (pts == 3) {
     cnt = -2;
-    fprintf(outfile," Coord      Energy(-)        Energy(+)        Force\n");
+    fprintf(outfile,"\n\t Coord      Energy(-)        Energy(+)        Force\n");
     for (int i=0; i<Nsalc; ++i) {
       cnt += 2;
-      fprintf(outfile,"%5d %17.10lf%17.10lf%17.10lf\n",
+      fprintf(outfile,"\t%5d %17.10lf%17.10lf%17.10lf\n",
               i,
               (double)extract<double>(E[cnt]),
               (double)extract<double>(E[cnt+1]),
@@ -76,10 +78,10 @@ fd_1_0(Options &options, const boost::python::list& E)
   else if (pts == 5) {
     cnt = -4;
     fprintf(outfile,
-      " Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
+      "\n\t Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force\n");
     for (int i=0; i<Nsalc; ++i) {
       cnt += 4;
-      fprintf(outfile,"%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
+      fprintf(outfile,"\t%5d %17.10lf %17.10lf %17.10lf %17.10lf %17.10lf\n",
               i,
               (double)extract<double>(E[cnt]),
               (double)extract<double>(E[cnt+1]),
@@ -95,14 +97,12 @@ fd_1_0(Options &options, const boost::python::list& E)
 
   for (int i=0; i<Nsalc; ++i) {
     int nc = cdsalc[i].ncomponent();
-
     for (int c=0; c<nc; ++c) {
       int a          = cdsalc[i].component(c).atom;
       int xyz        = cdsalc[i].component(c).xyz;
       double coef    = cdsalc[i].component(c).coef;
       B[i][3*a+xyz] = coef;
     }
-
   }
 
   // compute gradient in mass-weighted (non-SALC) cartesians
@@ -127,9 +127,13 @@ fd_1_0(Options &options, const boost::python::list& E)
 
   GradientWriter grad(mol, gradient_matrix);
   grad.write("psi.file11.dat");
+  fprintf(outfile,"\tGradient written to file11.\n");
 
   SharedMatrix sgradient(gradient_matrix.clone());
   Process::environment.reference_wavefunction()->set_gradient(sgradient);
+  fprintf(outfile,"\tGradent saved to wavefunction.\n");
+
+  fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   free(g_cart);
 

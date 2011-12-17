@@ -102,7 +102,7 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
       fprintf(outfile," %10.5lf", gamma.character(i));
     fprintf(outfile,"\n");
 
-    if (h!= 0) { // find the operation for asymmetric irreps that convers + to -
+    if (h!= 0) { // find the operation for asymmetric irreps that converts + to -
       for (op_disp=0; op_disp<order; ++op_disp)
         if (gamma.character(op_disp) == -1)
           break;
