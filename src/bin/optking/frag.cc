@@ -249,6 +249,35 @@ int FRAG::add_hbonds(void) {
   return nadded;
 }
 
+// Add auxiliary bonds; distance is < 2.5 times sum of covalent radii
+int FRAG::add_auxiliary_bonds(void) {
+  int nadded = 0;
+
+  int *Zint = new int [natom];
+  for (int i=0; i<natom; ++i)
+    Zint[i] = (int) Z[i];
+
+  for (int a=0; a<natom; ++a) {
+    for (int b=a+1; b<natom; ++b) {
+      if (connectivity[a][b]) continue; // already joined by regular bond
+
+      double R = v3d_dist(geom[a], geom[b]);
+      double Rcov = (cov_radii[Zint[a]] + cov_radii[Zint[b]])/_bohr2angstroms;
+
+      if (R < 2.5 * Rcov) {
+        STRE *one_stre = new STRE(a,b);
+        if (!present(one_stre)) {
+          intcos.push_back(one_stre);
+          ++nadded;
+        }
+        else delete one_stre;
+      }
+    }
+  }
+  delete [] Zint;
+  return nadded;
+}
+
 // angles for all bonds present; return number added
 int FRAG::add_bend_by_connectivity(void) {
   int nadded = 0;

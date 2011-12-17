@@ -1945,11 +1945,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       /*- Whether to only generate the internal coordinates and then stop {true, false} -*/
       options.add_bool("GENERATE_INTCOS_ONLY", false);
       /*- What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER} -*/
-      options.add_str("INTRAFRAGMENT_H", "FISCHER", "FISCHER SCHLEGEL");
+      options.add_str("INTRAFRAGMENT_H", "FISCHER", "FISCHER SCHLEGEL LINDH SIMPLE");
       /*- Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE} -*/
       options.add_str("INTERFRAGMENT_H", "DEFAULT", "DEFAULT FISCHER_LIKE");
       /*- Whether to freeze all fragments rigid -*/
       options.add_bool("FREEZE_INTRAFRAGMENT", false);
+      /*- Whether to add bond coordinates for non-bonded by nearby atoms. -*/
+      options.add_bool("ADD_AUXILIARY_BONDS", false);
       /*- By default, optking prints and saves the last (previous) geometry at the end of an
           optimization, i.e., the one at which a gradient was computed.  If this keyword is
           set to true, then the structure obtained from the last projected step is printed out and saved instead. -*/
