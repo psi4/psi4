@@ -89,7 +89,7 @@ void CGRSolver::print_header() const
 {
     if (print_) {
     	fprintf(outfile, "  ==> CGRSolver (by Rob Parrish) <==\n\n");
-        fprintf(outfile, "   Number of roots    = %9d\n", b_.size());
+        fprintf(outfile, "   Number of roots    = %9zu\n", b_.size());
         fprintf(outfile, "   Preconditioning    = %9s\n", (precondition_ ? "Yes" : "No"));
         fprintf(outfile, "   Convergence cutoff = %9.0E\n", criteria_);
         fprintf(outfile, "   Maximum iterations = %9d\n\n", maxiter_); 
@@ -162,7 +162,7 @@ void CGRSolver::solve()
         update_r();
         check_convergence();
         if (print_) {
-            fprintf(outfile, "  %4d %11.3E %11d %11d\n", iteration_, convergence_, nconverged_, b_.size() - nconverged_);
+            fprintf(outfile, "  %4d %11.3E %11d %11zu\n", iteration_, convergence_, nconverged_, b_.size() - nconverged_);
             fflush(outfile);
         }
         update_z();

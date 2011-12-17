@@ -1,6 +1,7 @@
 #include"psi4-dec.h"
 #include <libplugin/plugin.h>
 #include<boost/shared_ptr.hpp>
+#include<lib3index/dftensor.h>
 #include<liboptions/liboptions.h>
 #include<libtrans/integraltransform.h>
 #include<libtrans/mospace.h>
@@ -14,15 +15,16 @@
 
 #include<sys/times.h>
 
+#include"density_fitting.h"
 #include"globals.h"
 #include"gpuhelper.h"
 #include"blas.h"
 #include"ccsd.h"
 #include"sort.h"
 
-//#ifdef _OPENMP
+#ifdef _OPENMP
     #include<omp.h>
-//#endif
+#endif
 
 using namespace psi;
 using namespace boost;
@@ -82,6 +84,21 @@ void CoupledCluster::WriteBanner(){
   fprintf(outfile, "        *******************************************************\n");
   fprintf(outfile,"\n\n");
   fflush(outfile);
+
+
+  /*boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
+  int nocc = ref->doccpi()[0];
+  int nvir = ref->nmopi()[0]-ref->doccpi()[0];
+  int aocc = nocc-ref->frzcpi()[0];
+  int avir = nvir-ref->frzvpi()[0];
+
+  boost::shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+  boost::shared_ptr<BasisSet> auxiliary = BasisSet::construct(parser, ref->molecule(), "RI_BASIS_CC");
+
+  boost::shared_ptr<DFTensor> DF (new DFTensor(ref->basisset(),auxiliary,ref->Ca(),nocc,nvir,aocc,avir,Process::environment.options));
+  SharedMatrix Qoo = DF->Qoo();
+  SharedMatrix Qov = DF->Qov();
+  SharedMatrix Qvv = DF->Qvv();*/
 }
 
 /*================================================================
@@ -97,7 +114,7 @@ void CoupledCluster::Initialize(Options &options){
   boost::shared_ptr<psi::Wavefunction> ref = Process::environment.reference_wavefunction();
 
   if (ref.get() !=NULL){
-     escf    = Process::environment.globals["SCF ENERGY"];
+     escf    = Process::environment.globals["SCF TOTAL ENERGY"];
      nirreps = ref->nirrep();
      sorbs   = ref->nsopi();
      orbs    = ref->nmopi();
@@ -185,22 +202,41 @@ void CoupledCluster::Initialize(Options &options){
 
   long int i;
 
-  // sort integrals and write them to disk
-  times(&total_tmstime);
-  time_t time_start = time(NULL);
-  double user_start = ((double) total_tmstime.tms_utime)/clk_tck;
-  double sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+  double time_start,user_start,sys_start,time_stop,user_stop,sys_stop;
 
-  OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
-  //RandomIntegralFiles();
+  // sort integrals and write them to disk (or generate df integrals)
+  if (!options.get_bool("DF_INTEGRALS")){
+     times(&total_tmstime);
+     time_start = time(NULL);
+     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+     OutOfCoreSort(nfzc,nfzv,nmotemp,ndoccact,nvirt);
+     //RandomIntegralFiles();
 
-  times(&total_tmstime);
-  time_t time_stop = time(NULL);
-  double user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
-  double sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
-  fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
-  fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
-  fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+     times(&total_tmstime);
+     time_stop = time(NULL);
+     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
+     fprintf(outfile,"  Time for integral sort:           %6.2lf s (user)\n",user_stop-user_start);
+     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
+     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+  }
+  else{
+     times(&total_tmstime);
+     time_start = time(NULL);
+     user_start = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_start  = ((double) total_tmstime.tms_stime)/clk_tck;
+
+     DensityFittedIntegrals();
+
+     times(&total_tmstime);
+     time_stop = time(NULL);
+     user_stop = ((double) total_tmstime.tms_utime)/clk_tck;
+     sys_stop  = ((double) total_tmstime.tms_stime)/clk_tck;
+     fprintf(outfile,"  Time for density fitting:         %6.2lf s (user)\n",user_stop-user_start);
+     fprintf(outfile,"                                    %6.2lf s (system)\n",sys_stop-sys_start);
+     fprintf(outfile,"                                    %6d s (total)\n",(int)time_stop-(int)time_start);
+  }
 
   // orbital energies
   eps_test = ref->epsilon_a();
@@ -222,7 +258,7 @@ void CoupledCluster::RandomIntegralFiles(){
 
   psio_address addr = PSIO_ZERO;
   long int count=0;
-  psio->open(PSIF_IJKL,PSIO_OPEN_NEW);
+  /*psio->open(PSIF_IJKL,PSIO_OPEN_NEW);
   for (long int i=0; i<o*o*o*o; i++){
       count++;
       //temp[count++] = .01*((double)rand()/RAND_MAX-1.0);
@@ -235,7 +271,7 @@ void CoupledCluster::RandomIntegralFiles(){
      psio->write(PSIF_IJKL,"E2ijkl",(char*)&temp[0],count*sizeof(double),addr,&addr);
      count=0;
   }
-  psio->close(PSIF_IJKL,1);
+  psio->close(PSIF_IJKL,1);*/
   psio->open(PSIF_IJAK,PSIO_OPEN_NEW);
   count=0;
   addr = PSIO_ZERO;
@@ -252,7 +288,7 @@ void CoupledCluster::RandomIntegralFiles(){
      count=0;
   }
   psio->close(PSIF_IJAK,1);
-  psio->open(PSIF_IJAK2,PSIO_OPEN_NEW);
+  /*psio->open(PSIF_IJAK2,PSIO_OPEN_NEW);
   count=0;
   addr = PSIO_ZERO;
   for (long int i=0; i<o*o*o*v; i++){
@@ -267,7 +303,7 @@ void CoupledCluster::RandomIntegralFiles(){
      psio->write(PSIF_IJAK2,"E2ijak2",(char*)&temp[0],count*sizeof(double),addr,&addr);
      count=0;
   }
-  psio->close(PSIF_IJAK2,1);
+  psio->close(PSIF_IJAK2,1);*/
   psio->open(PSIF_KLCD,PSIO_OPEN_NEW);
   count=0;
   addr = PSIO_ZERO;
@@ -284,7 +320,7 @@ void CoupledCluster::RandomIntegralFiles(){
      count=0;
   }
   psio->close(PSIF_KLCD,1);
-  psio->open(PSIF_AKJC2,PSIO_OPEN_NEW);
+  /*psio->open(PSIF_AKJC2,PSIO_OPEN_NEW);
   count=0;
   addr = PSIO_ZERO;
   for (long int i=0; i<o*o*v*v; i++){
@@ -299,7 +335,7 @@ void CoupledCluster::RandomIntegralFiles(){
      psio->write(PSIF_AKJC2,"E2akjc2",(char*)&temp[0],count*sizeof(double),addr,&addr);
      count=0;
   }
-  psio->close(PSIF_AKJC2,1);
+  psio->close(PSIF_AKJC2,1);*/
   psio->open(PSIF_ABCI,PSIO_OPEN_NEW);
   count=0;
   addr = PSIO_ZERO;
@@ -316,6 +352,10 @@ void CoupledCluster::RandomIntegralFiles(){
      count=0;
   }
   psio->close(PSIF_ABCI,1);
+return;
+
+
+
   psio->open(PSIF_ABCI2,PSIO_OPEN_NEW);
   count=0;
   addr = PSIO_ZERO;

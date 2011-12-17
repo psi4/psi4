@@ -211,10 +211,14 @@ void SAPT0::exch_disp20_n5()
   free_block(Q_AS);
 
   e_disp20_ = e_disp20;
+  e_disp20_os_ = 0.5 * e_disp20_;
+  e_disp20_ss_ = 0.5 * e_disp20_;
   e_exch_disp20_ = -2.0*(v_1+q_12);
 
   if (print_) {
     fprintf(outfile,"    Disp20              = %18.12lf H\n",e_disp20_);
+    fprintf(outfile,"    Disp20 (SS)         = %18.12lf H\n",e_disp20_ss_);
+    fprintf(outfile,"    Disp20 (OS)         = %18.12lf H\n",e_disp20_os_);
     fflush(outfile);
   }
 
@@ -243,7 +247,7 @@ void SAPT0::exch_disp20_n4()
   if (debug_) test_theta();
 
   h_2 = h2();
-	h_4 = h4();
+  h_4 = h4();
   q_2 = q2();
   q_6 = q6();
   q_13 = q13();
@@ -529,9 +533,13 @@ void SAPT0::exch_disp20_n4()
 
   e_exch_disp20_ += 2.0*(h_1+h_2+h_3+h_4+q_1+q_2+q_3+q_4+q_5+q_6+q_7+q_8+
     q_10+q_11+q_13+q_14);
+  e_exch_disp20_os_ = 1.0*(h_2+h_4+q_2+q_4+q_6+q_8+q_13+q_14);
+  e_exch_disp20_ss_ = e_exch_disp20_ - e_exch_disp20_os_;
 
   if (print_) {
     fprintf(outfile,"    Exch-Disp20         = %18.12lf H\n",e_exch_disp20_);
+    fprintf(outfile,"    Exch-Disp20 (SS)    = %18.12lf H\n",e_exch_disp20_ss_);
+    fprintf(outfile,"    Exch-Disp20 (OS)    = %18.12lf H\n",e_exch_disp20_os_);
     fflush(outfile);
   }
 }

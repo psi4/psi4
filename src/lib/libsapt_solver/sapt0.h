@@ -116,7 +116,14 @@ protected:
   double e_exch_ind20_;
   double e_disp20_;
   double e_exch_disp20_;
+
+  double e_disp20_ss_;
+  double e_disp20_os_;
+  double e_exch_disp20_ss_;
+  double e_exch_disp20_os_;
+
   double e_sapt0_;
+  double e_sapt0_scs_;
 
   double **wBAR_;
   double **wABS_;

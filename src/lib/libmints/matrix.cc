@@ -353,7 +353,7 @@ SharedMatrix Matrix::horzcat(const std::vector<SharedMatrix >& mats)
 
     for (int a = 1; a < mats.size(); ++a) {
         for (int h = 0; h < nirrep; ++h) {
-            if (mats[h]->rowspi()[h] != mats[0]->rowspi()[h]) {
+            if (mats[a]->rowspi()[h] != mats[0]->rowspi()[h]) {
                 throw PSIEXCEPTION("Horzcat: Matrices must all have same row dimension");
             }
         }
@@ -400,7 +400,7 @@ SharedMatrix Matrix::vertcat(const std::vector<SharedMatrix >& mats)
 
     for (int a = 1; a < mats.size(); ++a) {
         for (int h = 0; h < nirrep; ++h) {
-            if (mats[h]->colspi()[h] != mats[0]->colspi()[h]) {
+            if (mats[a]->colspi()[h] != mats[0]->colspi()[h]) {
                 throw PSIEXCEPTION("Vertcat: Matrices must all have same col dimension");
             }
         }
@@ -872,14 +872,31 @@ Matrix* Matrix::transpose()
 {
     Matrix *temp = new Matrix(name_, nirrep_, colspi_, rowspi_, symmetry_);
 
-    int h, i, j;
-    for (h=0; h<nirrep_; ++h) {
-        for (i=0; i<rowspi_[h]; ++i) {
-            for (j=0; j<colspi_[h^symmetry_]; ++j) {
-                temp->matrix_[h][j][i] = matrix_[h][i][j];
+    if (symmetry_) {
+        
+        for (int rowsym=0; rowsym<nirrep_; ++rowsym) {
+            int colsym = rowsym ^ symmetry_;
+            if (rowsym < colsym) continue;
+            int rows = rowspi_[rowsym]; 
+            int cols = colspi_[colsym]; 
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    temp->matrix_[colsym][col][row] = matrix_[rowsym][row][col];
+                    temp->matrix_[rowsym][row][col] = matrix_[colsym][col][row];
+                }
+            }
+        }
+    } else {
+        int h, i, j;
+        for (h=0; h<nirrep_; ++h) {
+            for (i=0; i<rowspi_[h]; ++i) {
+                for (j=0; j<colspi_[h]; ++j) {
+                    temp->matrix_[h][j][i] = matrix_[h][i][j];
+                }
             }
         }
     }
+
     return temp;
 }
 
@@ -887,13 +904,29 @@ void Matrix::transpose_this()
 {
     double temp;
 
-    int h, i, j;
-    for (h=0; h<nirrep_; ++h) {
-        for (i=0; i<rowspi_[h]; ++i) {
-            for (j=0; j<i; ++j) {
-                temp = matrix_[h][i][j];
-                matrix_[h][i][j] = matrix_[h][j][i];
-                matrix_[h][j][i] = temp;
+    if (symmetry_) {
+        for (int rowsym=0; rowsym<nirrep_; ++rowsym) {
+            int colsym = rowsym ^ symmetry_;
+            if (rowsym < colsym) continue;
+            int rows = rowspi_[rowsym]; 
+            int cols = colspi_[colsym]; 
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    temp = matrix_[colsym][col][row];
+                    matrix_[colsym][col][row] = matrix_[rowsym][row][col];
+                    matrix_[rowsym][row][col] = temp; 
+                }
+            }
+        }
+    } else {
+        int h, i, j;
+        for (h=0; h<nirrep_; ++h) {
+            for (i=0; i<rowspi_[h]; ++i) {
+                for (j=0; j<i; ++j) {
+                    temp = matrix_[h][i][j];
+                    matrix_[h][i][j] = matrix_[h][j][i];
+                    matrix_[h][j][i] = temp;
+                }
             }
         }
     }
@@ -1810,13 +1843,23 @@ void Matrix::zero_upper()
 void Matrix::copy_lower_to_upper()
 {
     if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::copy_lower_to_upper: Matrix is non-totally symmetric.");
-    }
-
-    for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<rowspi_[h]; ++m) {
-            for (int n=0; n<m; ++n) {
-                matrix_[h][n][m] = matrix_[h][m][n];
+        for (int rowsym=0; rowsym<nirrep_; ++rowsym) {
+            int colsym = rowsym ^ symmetry_;
+            if (rowsym < colsym) continue;
+            int rows = rowspi_[rowsym]; 
+            int cols = colspi_[colsym]; 
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    matrix_[colsym][col][row] = matrix_[rowsym][row][col];
+                }
+            }
+        }
+    } else {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int m=0; m<rowspi_[h]; ++m) {
+                for (int n=0; n<m; ++n) {
+                    matrix_[h][n][m] = matrix_[h][m][n];
+                }
             }
         }
     }
@@ -1825,13 +1868,23 @@ void Matrix::copy_lower_to_upper()
 void Matrix::copy_upper_to_lower()
 {
     if (symmetry_) {
-        throw PSIEXCEPTION("Matrix::copy_upper_to_lower: Matrix is non-totally symmetric.");
-    }
-
-    for (int h=0; h<nirrep_; ++h) {
-        for (int m=0; m<rowspi_[h]; ++m) {
-            for (int n=0; n<m; ++n) {
-                matrix_[h][m][n] = matrix_[h][n][m];
+        for (int rowsym=0; rowsym<nirrep_; ++rowsym) {
+            int colsym = rowsym ^ symmetry_;
+            if (rowsym > colsym) continue;
+            int rows = rowspi_[rowsym]; 
+            int cols = colspi_[colsym]; 
+            for (int row = 0; row < rows; row++) {
+                for (int col = 0; col < cols; col++) {
+                    matrix_[rowsym][row][col] = matrix_[colsym][col][row];
+                }
+            }
+        }
+    } else {
+        for (int h=0; h<nirrep_; ++h) {
+            for (int m=0; m<rowspi_[h]; ++m) {
+                for (int n=0; n<m; ++n) {
+                    matrix_[h][m][n] = matrix_[h][n][m];
+                }
             }
         }
     }
@@ -2049,8 +2102,8 @@ void Matrix::write_to_dpdfile2(dpdfile2 *outFile)
 
 void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, bool saveSubBlocks)
 {
-    static const char *str_block_format = "%3d %3d %3d %20.15f\n";
-    static const char *str_full_format  = "%3d %3d %20.15f\n";
+    static const char *str_block_format = "%3d %3d %3d %16.12f\n";
+    static const char *str_full_format  = "%3d %3d %16.12f\n";
 
     // We can only save lower triangle if symmetry_ if 0
     if (symmetry_ && saveLowerTriangle)
@@ -2082,7 +2135,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             int count=0;
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<=i; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         count++;
                     }
                 }
@@ -2090,7 +2143,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             fprintf(out, "%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<=i; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         fprintf(out, str_full_format, i, j, fullblock[i][j]);
                     }
                 }
@@ -2100,7 +2153,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             int count=0;
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<sizec; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         count++;
                     }
                 }
@@ -2108,7 +2161,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             fprintf(out, "%5d\n", count);
             for (int i=0; i<sizer; ++i) {
                 for (int j=0; j<sizec; ++j) {
-                    if (fabs(fullblock[i][j]) > 1.0e-14) {
+                    if (fabs(fullblock[i][j]) > 1.0e-12) {
                         fprintf(out, str_full_format, i, j, fullblock[i][j]);
                     }
                 }
@@ -2122,7 +2175,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             count++;
                         }
                     }
@@ -2132,7 +2185,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<=i; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
@@ -2144,7 +2197,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h^symmetry_]; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             count++;
                         }
                     }
@@ -2154,7 +2207,7 @@ void Matrix::save(const string& filename, bool append, bool saveLowerTriangle, b
             for (int h=0; h<nirrep_; ++h) {
                 for (int i=0; i<rowspi_[h]; ++i) {
                     for (int j=0; j<colspi_[h^symmetry_]; ++j) {
-                        if (fabs(matrix_[h][i][j]) > 1.0e-14) {
+                        if (fabs(matrix_[h][i][j]) > 1.0e-12) {
                             fprintf(out, str_block_format, h, i, j, matrix_[h][i][j]);
                         }
                     }
