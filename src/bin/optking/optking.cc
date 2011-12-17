@@ -125,12 +125,14 @@ mol1->print_connectivity(outfile);
 
     if (Opt_params.fragment_mode == OPT_PARAMS::SINGLE) {
       mol1->add_intrafragment_simples_by_connectivity();
+      if (Opt_params.add_auxiliary_bonds) mol1->add_intrafragment_auxiliary_bonds();
     }
 
     // newly constructed fragments need connectivity generated
     if (Opt_params.fragment_mode == OPT_PARAMS::MULTI) {
       mol1->update_connectivity_by_distances();
       mol1->add_intrafragment_simples_by_connectivity();
+      if (Opt_params.add_auxiliary_bonds) mol1->add_intrafragment_auxiliary_bonds();
       mol1->add_interfragment();
     }
 

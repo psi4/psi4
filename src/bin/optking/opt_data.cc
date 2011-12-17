@@ -250,6 +250,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       dq[i] = q[i] - q_old[i];
       dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
     }
+
     gq = array_dot(dq, dg, Nintco);
     qq = array_dot(dq, dq, Nintco);
 
@@ -268,9 +269,25 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       continue;
     }
 
+    if (Opt_params.H_update == OPT_PARAMS::BFGS) {
+// Trying formula in Helgaker JCP 2002.
+      for (i=0; i<Nintco; ++i)
+        for (j=0; j<Nintco; ++j)
+          H_new[i][j] = H[i][j] + dg[i] * dg[j] / gq ;
+
+      double *Hdq = init_array(Nintco);
+      opt_matrix_mult(H, 0, &dq, 1, &Hdq, 1, Nintco, Nintco, 1, 0);
+
+      double qHq = array_dot(dq, Hdq, Nintco);
+
+      for (i=0; i<Nintco; ++i)
+        for (j=0; j<Nintco; ++j)
+          H_new[i][j] -=  Hdq[i] * Hdq[j] / qHq ;
+
+      free_array(Hdq);
     // Schlegel 1987 Ab Initio Methods in Quantum Chemistry 
     // To make formulas work for Hessian, i.e., the 2nd derivatives switch dx and dg
-    if (Opt_params.H_update == OPT_PARAMS::BFGS) {
+/*
       double **temp_mat, **X;
       // Let a = dg^T.dq and X = (I - dg*dq^T) / a
       // Then H = X * H_old * X^T + dg*dg^T/a .
@@ -289,6 +306,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
       free_matrix(temp_mat);
       free_matrix(X);
+*/
     }
     else if (Opt_params.H_update == OPT_PARAMS::MS) {
       // Equations taken from Bofill article below

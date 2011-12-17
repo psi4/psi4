@@ -88,10 +88,12 @@ void set_params(void)
 //  Opt_params.generate_intcos_only;
     Opt_params.generate_intcos_only = options.get_bool("GENERATE_INTCOS_ONLY");
 
-// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER}
+// What model Hessian to use to guess intrafragment force constants {SCHLEGEL, FISCHER, LINDH}
     s = options.get_str("INTRAFRAGMENT_H");
     if (s == "FISCHER")       Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
     else if (s == "SCHLEGEL") Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
+    else if (s == "LINDH") Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+    else if (s == "SIMPLE") Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // Whether to use the default of FISCHER_LIKE force constants for the initial guess {DEFAULT, FISCHER_LIKE}
     s = options.get_str("INTERFRAGMENT_H");
@@ -101,6 +103,9 @@ void set_params(void)
 // Whether to freeze all fragments rigid
 //  Opt_params.freeze_intrafragment = false;
     Opt_params.freeze_intrafragment = options.get_bool("FREEZE_INTRAFRAGMENT");
+
+// Add auxiliary bonds for non-bonded (but nearby) atoms.
+    Opt_params.add_auxiliary_bonds = options.get_bool("ADD_AUXILIARY_BONDS");
 
 // By default, optking prints and saves the last (previous) geometry at the end of an
 // optimization, i.e., the one at which a gradient was computed.  If this keyword is
@@ -219,10 +224,12 @@ void set_params(void)
 // only generate intcos
   Opt_params.generate_intcos_only = rem_read(REM_GEOM_OPT2_GENERATE_INTCOS_ONLY);
 
-// model 0=FISCHER ; 1 = SCHLEGEL (default 0)
+// model 0=FISCHER ; 1 = SCHLEGEL (default 0) ; 2 = Lindh  ; 3 = simple
   i = rem_read(REM_GEOM_OPT2_INTRAFRAGMENT_H);
   if (i == 0)      Opt_params.intrafragment_H = OPT_PARAMS::FISCHER;
   else if (i == 1) Opt_params.intrafragment_H = OPT_PARAMS::SCHLEGEL;
+  else if (i == 2) Opt_params.intrafragment_H = OPT_PARAMS::LINDH;
+  else if (i == 3) Opt_params.intrafragment_H = OPT_PARAMS::SIMPLE;
 
 // interfragment 0=DEFAULT ; 1=FISCHER_LIKE
   i = rem_read(REM_GEOM_OPT2_INTERFRAGMENT_H);
@@ -394,6 +401,10 @@ void print_params(void) {
   fprintf(outfile, "intrafragment_H        = %18s\n", "Fischer");
   else if (Opt_params.intrafragment_H == OPT_PARAMS::SCHLEGEL)
   fprintf(outfile, "intrafragment_H        = %18s\n", "Schlegel");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH)
+  fprintf(outfile, "intrafragment_H        = %18s\n", "Lindh");
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE)
+  fprintf(outfile, "intrafragment_H        = %18s\n", "Simple");
 
   if (Opt_params.interfragment_H == OPT_PARAMS::DEFAULT)
   fprintf(outfile, "interfragment_H        = %18s\n", "Default");
@@ -420,10 +431,10 @@ void print_params(void) {
 
   fprintf(outfile, "intrafragment_step_limit=%18.2e\n", Opt_params.intrafragment_step_limit);
 
-  if (Opt_params.H_update_limit == OPT_PARAMS::DEFAULT)
-  fprintf(outfile, "H_update_limit         = %18s\n", "true");
-  else if (Opt_params.H_update_limit == OPT_PARAMS::FISCHER_LIKE)
-  fprintf(outfile, "H_update_limit         = %18s\n", "false");
+  if (Opt_params.H_update_limit)
+    fprintf(outfile, "H_update_limit         = %18s\n", "true");
+  else
+    fprintf(outfile, "H_update_limit         = %18s\n", "false");
 
   fprintf(outfile, "H_update_limit_scale   = %18.2e\n", Opt_params.H_update_limit_scale);
   fprintf(outfile, "H_update_limit_max     = %18.2e\n", Opt_params.H_update_limit_max);
