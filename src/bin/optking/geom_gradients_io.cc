@@ -44,7 +44,7 @@ int read_natoms(void) {
   int natom=0;
 
 #if defined(OPTKING_PACKAGE_PSI)
-  natom = psi::Process::environment.reference_wavefunction()->molecule()->natom();
+  natom = psi::Process::environment.molecule()->natom();
 
 #elif defined(OPTKING_PACKAGE_QCHEM)
 
@@ -73,13 +73,20 @@ void MOLECULE::read_geom_grad(void) {
 #if defined(OPTKING_PACKAGE_PSI)
 
   using namespace psi;
-  SharedMatrix pgradient = Process::environment.reference_wavefunction()->gradient();
+    
+  SharedMatrix pgradient;
+  if (psi::Process::environment.reference_wavefunction()) {
+    pgradient = psi::Process::environment.reference_wavefunction()->gradient();
+  } else {
+    pgradient = psi::Process::environment.gradient();
+  }    
+
   Matrix& gradient = *pgradient.get();
 
-  boost::shared_ptr<Molecule> mol = Process::environment.reference_wavefunction()->molecule();
+  boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   Matrix geometry = mol->geometry();
 
-  energy = Process::environment.globals["CURRENT ENERGY"];
+  energy = psi::Process::environment.globals["CURRENT ENERGY"];
 
   int atom =0;
   for (int f=0; f<nfrag; ++f) {

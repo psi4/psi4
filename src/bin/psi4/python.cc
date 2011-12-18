@@ -698,10 +698,23 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+void py_psi_set_gradient(SharedMatrix grad)
+{
+    if (Process::environment.reference_wavefunction()) {
+        Process::environment.reference_wavefunction()->set_gradient(grad);
+    } else {
+        Process::environment.set_gradient(grad);
+    }
+}
+
 SharedMatrix py_psi_get_gradient()
 {
-    boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
-    return wf->gradient();
+    if (Process::environment.reference_wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
+        return wf->gradient();
+    } else {
+        return Process::environment.gradient();
+    }
 }
 
 void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
@@ -838,6 +851,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
+    def("set_gradient", py_psi_set_gradient);
     def("set_memory", py_psi_set_memory);
     def("get_memory", py_psi_get_memory);
     def("set_nthread", &py_psi_set_n_threads);
