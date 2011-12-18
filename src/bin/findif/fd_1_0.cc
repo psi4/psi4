@@ -129,7 +129,11 @@ fd_1_0(Options &options, const boost::python::list& E)
   grad.write("psi.file11.dat");
 
   SharedMatrix sgradient(gradient_matrix.clone());
-  Process::environment.reference_wavefunction()->set_gradient(sgradient);
+  if (Process::environment.reference_wavefunction()) {
+    Process::environment.reference_wavefunction()->set_gradient(sgradient);
+  } else {
+    Process::environment.set_gradient(sgradient);
+  }
 
   free(g_cart);
 
