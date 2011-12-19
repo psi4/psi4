@@ -172,10 +172,10 @@ def gradient(name, **kwargs):
 
         # S/R: Write instructions for sow/reap procedure to output file and reap input file
         if re.match('sow', opt_mode.lower()):
-            instructionsO  =   """\n    The gradient sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO  =   """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
             instructionsO +=     """    to this output file (which contains no quantum chemical calculations), this job\n"""
             instructionsO +=     """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
-            instructionsO +=     """    and a single input file (OPT-master.in) with a optimize(mode='reap') command.\n"""
+            instructionsO +=     """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
             instructionsO +=     """    These files may look very peculiar since they contain processed and pickled python\n"""
             instructionsO +=     """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
             instructionsO +=     """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
@@ -189,7 +189,7 @@ def gradient(name, **kwargs):
                 pre = 'OPT-' + str(opt_iter) + '-' + str(rgt+1)
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
             instructionsM +=  """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
-            instructionsM +=     """#         OPT-master.in into that directory and run it. The job will be trivial in\n"""
+            instructionsM +=     """#         OPT-master.in into that directory and run it. The job will be minimal in\n"""
             instructionsM +=     """#         length and give summary results for the gradient step in its output file.\n#\n"""
             if opt_iter == 1:
                 instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
@@ -197,7 +197,8 @@ def gradient(name, **kwargs):
                 instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
             instructionsM +=     """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
             instructionsM +=     """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
-            instructionsM +=     """#    overwritten and so maintains a history of the job.\n\n"""
+            instructionsM +=     """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
+            instructionsM +=     """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
 
             fmaster = open('OPT-master.in', 'w')
             fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
