@@ -196,6 +196,14 @@ class MOLECULE {
     return n;
   }
 
+  int add_intrafragment_auxiliary_bonds(void) {
+    int n=0;
+    for (int i=0; i<fragments.size(); ++i)
+      n += fragments[i]->add_auxiliary_bonds();
+printf("adding %d auxiliary bonds\n", n);
+    return n;
+  }
+
   // compute intco values from frag member geometries
   double * intco_values(void) const {
     GeomType x = g_geom_2D();

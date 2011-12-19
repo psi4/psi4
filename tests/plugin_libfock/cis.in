@@ -1,0 +1,21 @@
+molecule {
+He
+He 1 1.0
+#symmetry c1
+}
+
+plugin_load('./plugin_libfock.so')
+
+set {
+print 2
+do_triplets false
+debug 4
+scf_type direct
+basis 3-21G 
+}
+
+set module rcis
+energy('scf')
+plugin('./plugin_libfock.so')
+set scf_type pk
+plugin('./plugin_libfock.so')

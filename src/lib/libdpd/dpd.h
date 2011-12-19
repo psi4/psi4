@@ -66,7 +66,7 @@ typedef struct {
   double ****matrix;
 } dpdshift4;
 
-typedef struct {
+typedef struct _dpdbuf4 {
   int dpdnum;                         /* dpd structure reference */
   int anti;         /* Is this buffer antisymmetric? */
   dpdparams4 *params;

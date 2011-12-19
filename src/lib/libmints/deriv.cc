@@ -394,6 +394,8 @@ Deriv::Deriv(const boost::shared_ptr<Wavefunction>& wave,
     x_contr_    = factory_->create_shared_matrix("Lagrangian contribution to gradient", natom_, 3);
     tpdm_contr_ = factory_->create_shared_matrix("Two-electron contribution to gradient", natom_, 3);
     gradient_   = factory_->create_shared_matrix("Total gradient", natom_, 3);
+
+    cdsalcs_.print();
 }
 
 SharedMatrix Deriv::compute()
@@ -470,7 +472,7 @@ SharedMatrix Deriv::compute()
         }
         for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
             TPDMcont[cd] = TPDMcont_vector->get(cd);
-            fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+//            fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
         }
         fflush(outfile);
     } else {
@@ -499,14 +501,14 @@ SharedMatrix Deriv::compute()
                 double temp = Da_ref->vector_dot(h_deriv[cd]);
                 temp += Db_ref->vector_dot(h_deriv[cd]);
                 D_ref_cont[cd] = temp;
-                fprintf(outfile, "    SALC #%d Reference One-electron contribution: %+lf\n", cd, temp);
+//                fprintf(outfile, "    SALC #%d Reference One-electron contribution: %+lf\n", cd, temp);
             }
             fprintf(outfile, "\n");
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 double temp = -X_ref->vector_dot(s_deriv[cd]);
                 X_ref_cont[cd] = temp;
-                fprintf(outfile, "    SALC #%d Reference Lagrangian contribution:   %+lf\n", cd, temp);
+//                fprintf(outfile, "    SALC #%d Reference Lagrangian contribution:   %+lf\n", cd, temp);
             }
             fprintf(outfile, "\n");
 
@@ -538,7 +540,7 @@ SharedMatrix Deriv::compute()
                                               wfn_->restricted() ? IntegralTransform::Restricted : IntegralTransform::Unrestricted, // Transformation type
                                               IntegralTransform::DPDOnly,    // Output buffer
                                               IntegralTransform::QTOrder,    // MO ordering
-                                              IntegralTransform::None));      // Frozen orbitals?
+                                              IntegralTransform::None));     // Frozen orbitals?
             dpd_set_default(ints_transform->get_dpd_id());
             ints_transform->backtransform_density();
 
@@ -570,7 +572,7 @@ SharedMatrix Deriv::compute()
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
                 TPDMcont[cd] = TPDMcont_vector->get(cd);
-                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
+//                fprintf(outfile, "    SALC #%d TPDM contribution:         %+lf\n", cd, TPDMcont[cd]);
             }
             fflush(outfile);
         }
@@ -584,20 +586,16 @@ SharedMatrix Deriv::compute()
         temp += Da->vector_dot(h_deriv[cd]);
         temp += Db->vector_dot(h_deriv[cd]);
         Dcont[cd] = temp;
-        fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
+//        fprintf(outfile, "    SALC #%d One-electron contribution: %+lf\n", cd, temp);
     }
     fprintf(outfile, "\n");
 
     for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
         double temp = X->vector_dot(s_deriv[cd]);
         Xcont[cd] = -temp;
-        fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
+//        fprintf(outfile, "    SALC #%d Lagrangian contribution:   %+lf\n", cd, temp);
     }
     fprintf(outfile, "\n");
-
-
-
-
 
     // Transform the SALCs back to cartesian space
     SharedMatrix st = cdsalcs_.matrix();
@@ -663,7 +661,6 @@ SharedMatrix Deriv::compute()
             for (int xyz=0; xyz<3; ++xyz)
                 x_ref_contr_->set(a, xyz, cart[3*a+xyz]);
     }
-
 
     // Obtain nuclear repulsion contribution from the wavefunction
     SharedMatrix enuc(new Matrix(molecule_->nuclear_repulsion_energy_deriv1()));

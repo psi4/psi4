@@ -69,6 +69,8 @@ class BasisSet
     //! Does the loaded basis set contain pure angular momentum functions?
     bool puream_;
 
+    //! The name of this basis set (e.g. "BASIS", "RI BASIS")
+    std::string name_;
     //! Number of shells per center
     std::vector<int> center_to_nshell_;
     //! For a given center, what is its first shell.
@@ -206,6 +208,11 @@ public:
                             > 2: Full details
                             Defaults to 2
      */
+
+    /// Returns the name of this basis set
+    const std::string & name() const { return name_; }
+    void set_name(const std::string str) {name_ = str;}
+
     void print_by_level(FILE* out = outfile, int print_level = 2) const;
     /** Prints a short string summarizing the basis set
      *  @param out The file stream to use for printing. Defaults to outfile.

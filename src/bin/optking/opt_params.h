@@ -33,8 +33,7 @@ struct OPT_PARAMS {
   enum STEP_TYPE {NR, RFO, P_RFO, SD} step_type;
 
   // Hessian guess
-
-  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL} intrafragment_H;
+  enum INTRAFRAGMENT_HESSIAN {FISCHER, SCHLEGEL, LINDH, SIMPLE} intrafragment_H;
   enum INTERFRAGMENT_HESSIAN {DEFAULT, FISCHER_LIKE}  interfragment_H;
 
   enum H_UPDATE {NONE, BFGS, MS, POWELL, BOFILL} H_update;
@@ -43,6 +42,7 @@ struct OPT_PARAMS {
   enum IRC_DIRECTION {FORWARD, BACKWARD} IRC_direction;
 
   bool freeze_intrafragment; // freeze all fragments
+  bool add_auxiliary_bonds;
 
   // related to step taken
   double intrafragment_step_limit;
