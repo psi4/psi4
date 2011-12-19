@@ -18,7 +18,7 @@ set {
 
 optimized_energy = optimize('mp2')
 
-compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 6, "Nuclear repulsion energy")    #TEST
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 4, "Nuclear repulsion energy")    #TEST
 compare_values(refenergy, optimized_energy, 6, "Reference energy")                          #TEST
 
 clean()
