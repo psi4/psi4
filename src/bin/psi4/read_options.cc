@@ -724,6 +724,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("DFT_MAX_POINTS",5000);
     /*- The number of grid points per evaluation block -*/
     options.add_int("DFT_MIN_POINTS",0);
+    /*- The boxing scheme for DFT -*/
+    options.add_str("DFT_BOXING_SCHEME","NAIVE","NAIVE OCTREE");
     /*- The DFT basis cutoff -*/
     options.add_double("DFT_BASIS_CUTOFF", 0.0);
     /*- The DFT combined functional name (for now) -*/

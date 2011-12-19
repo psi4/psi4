@@ -1,5 +1,6 @@
 #include <libmints/mints.h>
 #include "cubature.h"
+#include "gridblocker.h"
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 
@@ -927,16 +928,37 @@ void MolecularGrid::sieve()
 }
 void MolecularGrid::block(int max_points, int min_points)
 {
-    // Naive
-    blocks_.clear();
-    for (int Q = 0; Q < npoints_; Q += max_points) {
-        int n = (Q + max_points >= npoints_ ? npoints_ - Q : max_points);
-        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_))); 
+    // Hack
+    Options& options_ = Process::environment.options;
+
+    // Reassign
+    boost::shared_ptr<GridBlocker> blocker;
+    if (options_.get_str("DFT_BOXING_SCHEME") == "NAIVE") {
+        blocker = boost::shared_ptr<GridBlocker>(new NaiveGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points,extents_));
+    } else if (options_.get_str("DFT_BOXING_SCHEME") == "OCTREE") {
+        blocker = boost::shared_ptr<GridBlocker>(new OctreeGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points, extents_));
     }
-    max_points_ = max_points;
-    max_functions_ = primary_->nbf();
-    
-    // TODO
+
+    blocker->block();
+
+    delete[] x_;
+    delete[] y_;
+    delete[] z_;
+    delete[] w_;
+
+    x_ = blocker->x();
+    y_ = blocker->y();
+    z_ = blocker->z();
+    w_ = blocker->w();
+
+    npoints_ = blocker->npoints();
+    max_points_ = blocker->max_points();
+    max_functions_ = blocker->max_functions();
+
+    const std::vector<boost::shared_ptr<BlockOPoints> >& block = blocker->blocks();
+    for (int i = 0; i < block.size(); i++) {
+        blocks_.push_back(block[i]);
+    }
 }
 void MolecularGrid::remove_zero_points()
 {
@@ -7270,6 +7292,78 @@ int SphericalGrid::lebedevReccurence(int type, int start, double a, double b, do
     }
     return end;
 }
+
+GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
+        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
+    npoints_ref_(npoints_ref), x_ref_(x_ref), y_ref_(y_ref), z_ref_(z_ref), w_ref_(w_ref), 
+    tol_max_points_(max_points), tol_min_points_(min_points), extents_(extents)
+{
+}
+GridBlocker::~GridBlocker()
+{
+}
+NaiveGridBlocker::NaiveGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
+        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
+    GridBlocker(npoints_ref,x_ref,y_ref,z_ref,w_ref,max_points,min_points,extents)
+{
+}
+NaiveGridBlocker::~NaiveGridBlocker()
+{
+}
+void NaiveGridBlocker::block()
+{
+    npoints_ = npoints_ref_;
+    max_points_ = tol_max_points_;
+    max_functions_ = extents_->basis()->nbf();
+
+    x_ = new double[npoints_]; 
+    y_ = new double[npoints_]; 
+    z_ = new double[npoints_]; 
+    w_ = new double[npoints_]; 
+
+    ::memcpy((void*)x_,(void*)x_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)y_,(void*)y_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)z_,(void*)z_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)w_,(void*)w_ref_, sizeof(double)*npoints_);
+
+    blocks_.clear();
+    for (int Q = 0; Q < npoints_; Q += max_points_) {
+        int n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
+        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_))); 
+    }
+}
+OctreeGridBlocker::OctreeGridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
+        double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
+    GridBlocker(npoints_ref,x_ref,y_ref,z_ref,w_ref,max_points,min_points,extents)
+{
+}
+OctreeGridBlocker::~OctreeGridBlocker()
+{
+}
+void OctreeGridBlocker::block()
+{
+    npoints_ = npoints_ref_;
+    max_points_ = tol_max_points_;
+    max_functions_ = extents_->basis()->nbf();
+
+    x_ = new double[npoints_]; 
+    y_ = new double[npoints_]; 
+    z_ = new double[npoints_]; 
+    w_ = new double[npoints_]; 
+
+    ::memcpy((void*)x_,(void*)x_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)y_,(void*)y_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)z_,(void*)z_ref_, sizeof(double)*npoints_);
+    ::memcpy((void*)w_,(void*)w_ref_, sizeof(double)*npoints_);
+
+    blocks_.clear();
+    for (int Q = 0; Q < npoints_; Q += max_points_) {
+        int n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
+        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_))); 
+    }
+}
+    
+
     
 
 }
