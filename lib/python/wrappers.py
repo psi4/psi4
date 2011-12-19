@@ -297,9 +297,16 @@ def database(name, db_name, **kwargs):
         raise ValidationError('Symmetry mode \'%s\' not valid.' % (db_symm))
 
     #   Option mode of operation- whether db run in one job or files farmed out
-    db_mode = 'continuous'
-    if(kwargs.has_key('mode')):
-        db_mode = kwargs['mode']
+    #db_mode = 'continuous'
+    #if(kwargs.has_key('mode')):
+    #    db_mode = kwargs['mode']
+    if not('db_mode' in kwargs):
+        if ('mode' in kwargs):
+            kwargs['db_mode'] = kwargs['mode']
+            del kwargs['mode']
+        else:
+            kwargs['db_mode'] = 'continuous'
+    db_mode = kwargs['db_mode']
 
     if re.match(r'^continuous$', db_mode.lower()):
         pass
@@ -475,8 +482,8 @@ def database(name, db_name, **kwargs):
 
         fmaster = open('%s-master.in' % (dbse), 'w')
         fmaster.write('# This is a psi4 input file auto-generated from the database() wrapper.\n\n')
-        fmaster.write("database('%s', '%s', mode='reap', cp='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s, tabulate=%s)\n\n" %
-            (name, db_name, db_cp, db_zpe, db_benchmark, os.getpid(), HRXN, db_tabulate))
+        fmaster.write("database('%s', '%s', mode='reap', cp='%s', rlxd='%s', zpe='%s', benchmark='%s', linkage=%d, subset=%s, tabulate=%s)\n\n" %
+            (name, db_name, db_cp, db_rlxd, db_zpe, db_benchmark, os.getpid(), HRXN, db_tabulate))
         fmaster.close()
 
     #   Loop through chemical systems
