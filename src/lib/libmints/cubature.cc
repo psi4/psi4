@@ -939,6 +939,9 @@ void MolecularGrid::block(int max_points, int min_points)
         blocker = boost::shared_ptr<GridBlocker>(new OctreeGridBlocker(npoints_,x_,y_,z_,w_,max_points,min_points, extents_));
     }
 
+    blocker->set_print(options_.get_int("PRINT"));
+    blocker->set_debug(options_.get_int("DEBUG"));
+
     blocker->block();
 
     delete[] x_;
@@ -7296,7 +7299,7 @@ int SphericalGrid::lebedevReccurence(int type, int start, double a, double b, do
 GridBlocker::GridBlocker(const int npoints_ref, double const* x_ref, double const* y_ref, double const* z_ref,
         double const* w_ref, const int max_points, const int min_points, boost::shared_ptr<BasisExtents> extents) :
     npoints_ref_(npoints_ref), x_ref_(x_ref), y_ref_(y_ref), z_ref_(z_ref), w_ref_(w_ref), 
-    tol_max_points_(max_points), tol_min_points_(min_points), extents_(extents)
+    tol_max_points_(max_points), tol_min_points_(min_points), extents_(extents), print_(1), debug_(0)
 {
 }
 GridBlocker::~GridBlocker()
@@ -7346,20 +7349,185 @@ void OctreeGridBlocker::block()
     max_points_ = tol_max_points_;
     max_functions_ = extents_->basis()->nbf();
 
+    double const* x = x_ref_;
+    double const* y = y_ref_;
+    double const* z = z_ref_;
+    double const* w = w_ref_;
+
+    std::vector<std::vector<int> > active_tree(1);
+    std::vector<std::vector<int> > completed_tree(0);
+    std::vector<std::vector<int> > new_leaves(0);
+
+    for (int Q = 0; Q < npoints_; Q++) {
+        active_tree[0].push_back(Q);
+    }
+
+    // K-PR Tree blocking    
+    while (true) {
+            
+        // X
+        new_leaves.clear();
+        double const* X = x;
+        for (int A = 0; A < active_tree.size(); A++) {
+            
+            // Block to subdivide
+            std::vector<int> block = active_tree[A];
+            
+            // Determine xcenter of mass
+            double xc = 0.0; 
+            for (int Q = 0; Q < block.size(); Q++) {
+                xc += X[block[Q]];
+            } 
+            xc /= block.size();    
+
+            std::vector<int> left;
+            std::vector<int> right;
+            for (int Q = 0; Q < block.size(); Q++) {
+                if (X[block[Q]] < xc) {
+                    left.push_back(block[Q]);
+                } else {
+                    right.push_back(block[Q]);
+                }
+            }
+
+            if (left.size() > tol_max_points_) {
+                new_leaves.push_back(left);        
+            } else {
+                completed_tree.push_back(left);
+            }
+
+            if (right.size() > tol_max_points_) {
+                new_leaves.push_back(right);        
+            } else {
+                completed_tree.push_back(right);
+            }
+        }
+        active_tree = new_leaves;
+        if (!active_tree.size()) break;
+            
+        // Y
+        new_leaves.clear();
+        X = y;
+        for (int A = 0; A < active_tree.size(); A++) {
+            
+            // Block to subdivide
+            std::vector<int> block = active_tree[A];
+            
+            // Determine xcenter of mass
+            double xc = 0.0; 
+            for (int Q = 0; Q < block.size(); Q++) {
+                xc += X[block[Q]];
+            } 
+            xc /= block.size();    
+
+            std::vector<int> left;
+            std::vector<int> right;
+            for (int Q = 0; Q < block.size(); Q++) {
+                if (X[block[Q]] < xc) {
+                    left.push_back(block[Q]);
+                } else {
+                    right.push_back(block[Q]);
+                }
+            }
+
+            if (left.size() > tol_max_points_) {
+                new_leaves.push_back(left);        
+            } else {
+                completed_tree.push_back(left);
+            }
+
+            if (right.size() > tol_max_points_) {
+                new_leaves.push_back(right);        
+            } else {
+                completed_tree.push_back(right);
+            }
+        }
+        active_tree = new_leaves;
+        if (!active_tree.size()) break;
+            
+        // Z
+        new_leaves.clear();
+        X = z;
+        for (int A = 0; A < active_tree.size(); A++) {
+            
+            // Block to subdivide
+            std::vector<int> block = active_tree[A];
+            
+            // Determine xcenter of mass
+            double xc = 0.0; 
+            for (int Q = 0; Q < block.size(); Q++) {
+                xc += X[block[Q]];
+            } 
+            xc /= block.size();    
+
+            std::vector<int> left;
+            std::vector<int> right;
+            for (int Q = 0; Q < block.size(); Q++) {
+                if (X[block[Q]] < xc) {
+                    left.push_back(block[Q]);
+                } else {
+                    right.push_back(block[Q]);
+                }
+            }
+
+            if (left.size() > tol_max_points_) {
+                new_leaves.push_back(left);        
+            } else {
+                completed_tree.push_back(left);
+            }
+
+            if (right.size() > tol_max_points_) {
+                new_leaves.push_back(right);        
+            } else {
+                completed_tree.push_back(right);
+            }
+        }
+        active_tree = new_leaves;
+        if (!active_tree.size()) break;
+
+    }
+
+    // Move stuff over
     x_ = new double[npoints_]; 
     y_ = new double[npoints_]; 
     z_ = new double[npoints_]; 
     w_ = new double[npoints_]; 
 
-    ::memcpy((void*)x_,(void*)x_ref_, sizeof(double)*npoints_);
-    ::memcpy((void*)y_,(void*)y_ref_, sizeof(double)*npoints_);
-    ::memcpy((void*)z_,(void*)z_ref_, sizeof(double)*npoints_);
-    ::memcpy((void*)w_,(void*)w_ref_, sizeof(double)*npoints_);
+    int index = 0;
+    for (int A = 0; A < completed_tree.size(); A++) {
+        std::vector<int> block = completed_tree[A];
+        for (int Q = 0; Q < block.size(); Q++) {
+            int delta = block[Q];
+            x_[index] = x[delta];
+            y_[index] = y[delta];
+            z_[index] = z[delta];
+            w_[index] = w[delta];
+            index++;
+        } 
+    }
 
-    blocks_.clear();
-    for (int Q = 0; Q < npoints_; Q += max_points_) {
-        int n = (Q + max_points_ >= npoints_ ? npoints_ - Q : max_points_);
-        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(n,&x_[Q],&y_[Q],&z_[Q],&w_[Q], extents_))); 
+    index = 0;
+    max_points_ = 0;
+    for (int A = 0; A < completed_tree.size(); A++) {
+        std::vector<int> block = completed_tree[A];
+        if (!block.size()) continue;
+        blocks_.push_back(boost::shared_ptr<BlockOPoints>(new BlockOPoints(block.size(),&x_[index],&y_[index],&z_[index],&w_[index],extents_)));
+        if (max_points_ < block.size()) {
+            max_points_ = block.size();
+        }
+        index += block.size();
+    }
+
+    max_functions_ = 0;
+    for (int A = 0; A < blocks_.size(); A++) {
+        if (max_functions_ < blocks_[A]->functions_local_to_global().size())
+            max_functions_ = blocks_[A]->functions_local_to_global().size();
+    } 
+
+    if (debug_) {
+        for (int A = 0; A < blocks_.size(); A++) {
+            blocks_[A]->print(stdout,debug_);
+        }
     }
 }
     
