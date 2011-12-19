@@ -23,6 +23,9 @@ class BlockOPoints;
 class GridBlocker {
 
 protected:
+    
+    int debug_;
+    int print_;
 
     // Reference to previous grid layout
     const int npoints_ref_;
@@ -61,6 +64,9 @@ public:
     double* z() const { return z_; }
     double* w() const { return w_; }
     const std::vector<boost::shared_ptr<BlockOPoints> >& blocks() const { return blocks_; }
+
+    void set_print(int print) { print_ = print; }
+    void set_debug(int debug) { debug_ = debug; }
 
 };
 
