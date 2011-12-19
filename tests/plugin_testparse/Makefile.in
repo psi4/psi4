@@ -35,7 +35,7 @@ endif
 
 #include $(psi_top_objdir)/src/bin/MakeRules
 $(PSITARGET): $(BINOBJ)
-	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS)
+	$(CXX) $(LDFLAGS) -o $@ $^ $(CXXDBG) $(PSILIBS) && touch $(shell basename `pwd`).test
 
 # Erase all compiled intermediate files
 clean:

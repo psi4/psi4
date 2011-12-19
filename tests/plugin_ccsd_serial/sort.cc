@@ -1,6 +1,7 @@
 #include <libplugin/plugin.h>
 #include"psi4-dec.h"
 #include<boost/shared_ptr.hpp>
+#include<lib3index/dftensor.h>
 #include<liboptions/liboptions.h>
 #include<libtrans/integraltransform.h>
 #include<libtrans/mospace.h>
@@ -165,7 +166,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
       s = (ULI) lblptr[idx++];
 
       //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
-      // NOTE: these lines aren't necessary with transqt2()
+      // NOTE: these lines aren't necessary with transqt()
       if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
       p -= fstact;
       q -= fstact;
@@ -311,7 +312,7 @@ void Sort(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int nvirt)
 
           //if (p > lstact || q > lstact || r > lstact || s > lstact) continue;
 
-          // NOTE: these lines aren't necessary with transqt2()
+          // NOTE: these lines aren't necessary with transqt()
           if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
           p -= fstact;
           q -= fstact;
@@ -763,7 +764,7 @@ void SortTriples(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int
 
       // this is only necessary if we've truncted the virtual space for (T)
       if (p >= lstact || q >= lstact || r >= lstact || s >= lstact) continue;
-      // NOTE: these lines aren't necessary with transqt2()
+      // NOTE: these lines aren't necessary with transqt()
       if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
       p -= fstact;
       q -= fstact;
@@ -841,7 +842,7 @@ void SortTriples(struct iwlbuf *Buf,int nfzc,int nfzv,int norbs,int ndoccact,int
           // this is only necessary if we've truncted the virtual space for (T)
           if (p >= lstact || q >= lstact || r >= lstact || s >= lstact) continue;
 
-          // NOTE: these lines aren't necessary with transqt2()
+          // NOTE: these lines aren't necessary with transqt()
           if (p < fstact || q < fstact || r < fstact || s < fstact) continue;
           p -= fstact;
           q -= fstact;

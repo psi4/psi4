@@ -1,5 +1,4 @@
 #include "class.h"
-#include "yeti.h"
 
 using namespace yeti;
 using namespace std;

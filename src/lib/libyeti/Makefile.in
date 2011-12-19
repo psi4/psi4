@@ -9,6 +9,10 @@ include ../MakeVars
 PSITARGET = $(top_objdir)/lib/libPSI_yeti.a
 
 CXXDEF += -DFC_SYMBOL=$(FC_SYMBOL) -DHAVE_PSI=1
+HAVE_MADNESS=@HAVE_MPI@
+ifeq ($(HAVE_MADNESS),1)
+   CXXDEF += -DHAVE_MPI
+endif
 
 CXXINC += $(PYTHON_INCLUDE)
 

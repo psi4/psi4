@@ -19,10 +19,10 @@ class IndentTracker {
     public:
         IndentTracker();
 
-        void
+        IndentTracker
         operator++();
 
-        void
+        IndentTracker
         operator--();
 
         void
@@ -48,10 +48,6 @@ class Env {
    static std::ostream *out0_;
    /// The stream object for output from all nodes
    static std::ostream *outn_;
-   /// Whether the out0 stream was allocated, or assigned
-   static bool out0Allocated_;
-   /// Whether the outn stream was allocated, or assigned
-   static bool outnAllocated_;
 
  public:
    static IndentTracker& indent;

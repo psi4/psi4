@@ -84,6 +84,8 @@ class Indexer {
 
         const uli* offsets() const {return offsets_;}
 
+        uli size() const { return size_; }
+
         uli index(const uli* indices) const
         {
             uli idx = 0;
@@ -172,12 +174,24 @@ class IndexableMap :
         T* get(const uli* indices) const
         {
             uli idx = index(indices);
+#if YETI_SANITY_CHECK
+            if (idx >= size_)
+            {
+                std::cerr << "Invalid index " << idx << " passed to map of size " << size_ << std::endl;
+            }
+#endif
             return items_[idx];
         }
 
-        T* get(uli index) const
+        T* get(uli idx) const
         {
-            return items_[index];
+#if YETI_SANITY_CHECK
+            if (idx >= size_)
+            {
+                std::cerr << "Invalid index " << idx << " passed to map of size " << size_ << std::endl;
+            }
+#endif
+            return items_[idx];
         }
 
         iterator begin() const {return items_;}
@@ -202,7 +216,6 @@ class IndexableMap :
             items_[index] = node;
         }
 
-        uli size() const { return size_; }
 
         void sort(const SortPtr& sort)
         {

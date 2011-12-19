@@ -65,8 +65,10 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   double max_disp = array_abs_max(dq, Nintco);
 
   double DE;
-  if (g_iteration() > 1) DE = g_energy() - g_last_energy();
-  else DE = g_energy();
+  if (g_iteration() > 1)
+    DE = g_energy() - g_last_energy();
+  else
+    DE = g_energy();
 
   double *f =  g_forces_pointer();
 
@@ -117,11 +119,12 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
   fprintf(outfile, "\t                    Actual        Tolerance     Converged?\n");
   fprintf(outfile, "\t----------------------------------------------------------\n");
 
-  if ( fabs(Opt_params.conv_max_force) < 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
+  // why are these if's here asks RAK?
+  if ( fabs(Opt_params.conv_max_force)< 1.0e-15 ) fprintf(outfile, "\tMAX Force        %10.1e\n", max_force);
   else fprintf(outfile, "\tMAX Force        %10.1e %14.1e %11s\n", max_force, Opt_params.conv_max_force,
        ((max_force < Opt_params.conv_max_force) ? "yes" : "no"));
 
-  if ( fabs(Opt_params.conv_max_DE) < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
+  if ( fabs(Opt_params.conv_max_DE)   < 1.0e-15 ) fprintf(outfile, "\tEnergy Change    %10.1e\n", fabs(DE));
   else fprintf(outfile, "\tEnergy Change    %10.1e %14.1e %11s\n", DE, Opt_params.conv_max_DE,
        ((fabs(DE) < Opt_params.conv_max_DE) ? "yes" : "no"));
 
@@ -130,7 +133,7 @@ bool OPT_DATA::conv_check(opt::MOLECULE &mol) const {
        ((max_disp < Opt_params.conv_max_disp) ? "yes" : "no"));
 
   fprintf(outfile, "\t----------------------------------------------------------\n");
-  printf("\tMAX Force %10.1e : Energy Change %10.1e : MAX Displacement %10.1e\n", max_force, DE, max_disp);
+  printf("\tMAX Force %8.1e : Energy Change %8.1e : MAX Displacement %8.1e\n", max_force, DE, max_disp);
 
   // return all forces to canonical place
   if (Opt_params.opt_type == OPT_PARAMS::IRC) {
@@ -247,6 +250,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       dq[i] = q[i] - q_old[i];
       dg[i] = (-1.0) * (f[i] - f_old[i]); // gradients -- not forces!
     }
+
     gq = array_dot(dq, dg, Nintco);
     qq = array_dot(dq, dq, Nintco);
 
@@ -265,9 +269,25 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
       continue;
     }
 
+    if (Opt_params.H_update == OPT_PARAMS::BFGS) {
+// Trying formula in Helgaker JCP 2002.
+      for (i=0; i<Nintco; ++i)
+        for (j=0; j<Nintco; ++j)
+          H_new[i][j] = H[i][j] + dg[i] * dg[j] / gq ;
+
+      double *Hdq = init_array(Nintco);
+      opt_matrix_mult(H, 0, &dq, 1, &Hdq, 1, Nintco, Nintco, 1, 0);
+
+      double qHq = array_dot(dq, Hdq, Nintco);
+
+      for (i=0; i<Nintco; ++i)
+        for (j=0; j<Nintco; ++j)
+          H_new[i][j] -=  Hdq[i] * Hdq[j] / qHq ;
+
+      free_array(Hdq);
     // Schlegel 1987 Ab Initio Methods in Quantum Chemistry 
     // To make formulas work for Hessian, i.e., the 2nd derivatives switch dx and dg
-    if (Opt_params.H_update == OPT_PARAMS::BFGS) {
+/*
       double **temp_mat, **X;
       // Let a = dg^T.dq and X = (I - dg*dq^T) / a
       // Then H = X * H_old * X^T + dg*dg^T/a .
@@ -286,6 +306,7 @@ void OPT_DATA::H_update(opt::MOLECULE & mol) {
 
       free_matrix(temp_mat);
       free_matrix(X);
+*/
     }
     else if (Opt_params.H_update == OPT_PARAMS::MS) {
       // Equations taken from Bofill article below

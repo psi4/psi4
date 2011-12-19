@@ -95,13 +95,13 @@ class MetaDataNode :
 
         TensorBranch* parent_branch_;
 
-        MemoryPool* mempool_;
-
         usi depth_;
 
         uli indices_[NINDEX];
 
         usi nindex_;
+
+        MemoryPool* mempool() const;
 
         void
         accumulate_subnode(
@@ -337,6 +337,8 @@ class MetaDataNode :
         NodeMap<TileNode>* get_node_map() const;
 
         TensorBranch* get_parent_branch() const;
+
+        const uli* get_indices() const { return indices_; }
 
         void get_nelements(uli* nelements) const;
 

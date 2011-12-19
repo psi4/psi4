@@ -451,7 +451,7 @@ double** DFMP2::form_W_overlap(boost::shared_ptr<BasisSet> bas)
 
   //Put the integrals in a good old double**
   double** SJ;
-  boost::shared_ptr<SimpleMatrix> S_J(new SimpleMatrix("J Overlap", naux, naux));
+  boost::shared_ptr<Matrix> S_J(new Matrix("J Overlap", naux, naux));
   //Compute those integrals
   S->compute(S_J);
   //S_J->print(outfile);

@@ -262,4 +262,5 @@ DiisExtrapolation::extrapolate(
         }
 
     }
+    return true; //sucess
 }

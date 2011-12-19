@@ -119,51 +119,73 @@ void SAPT0::print_header()
 void SAPT0::print_results()
 {
   e_sapt0_ = eHF_ + e_disp20_ + e_exch_disp20_;
+  double SOS = options_.get_double("SCALE_OS");
+  double SSS = options_.get_double("SCALE_SS");
+  e_sapt0_scs_ = eHF_ + SOS*(e_disp20_os_ + e_exch_disp20_os_) 
+    + SSS*(e_disp20_ss_ + e_exch_disp20_ss_);
   double dHF = eHF_ - (e_elst10_ + e_exch10_ + e_ind20_ + e_exch_ind20_);
 
   fprintf(outfile,"\n    SAPT Results  \n");
   fprintf(outfile,"  ------------------------------------------------------------------\n");
-  fprintf(outfile,"    E_HF          %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    E_HF             %16.8lf mH %16.8lf kcal mol^-1\n",
     eHF_*1000.0,eHF_*627.5095);
-  fprintf(outfile,"    Elst10,r      %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Elst10,r         %16.8lf mH %16.8lf kcal mol^-1\n",
     e_elst10_*1000.0,e_elst10_*627.5095);
-  fprintf(outfile,"    Exch10        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch10           %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_*1000.0,e_exch10_*627.5095);
-  fprintf(outfile,"    Exch10(S^2)   %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch10(S^2)      %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch10_s2_*1000.0,e_exch10_s2_*627.5095);
   if (no_response_) {
-    fprintf(outfile,"    Ind20         %16.8lf mH %16.8lf kcal mol^-1\n",
+    fprintf(outfile,"    Ind20            %16.8lf mH %16.8lf kcal mol^-1\n",
       e_ind20_*1000.0,e_ind20_*627.5095);
-    fprintf(outfile,"    Exch-Ind20    %16.8lf mH %16.8lf kcal mol^-1\n",
+    fprintf(outfile,"    Exch-Ind20       %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
-    fprintf(outfile,"    delta HF      %16.8lf mH %16.8lf kcal mol^-1\n",
+    fprintf(outfile,"    delta HF         %16.8lf mH %16.8lf kcal mol^-1\n",
       dHF*1000.0,dHF*627.5095);
   } else {
-    fprintf(outfile,"    Ind20,r       %16.8lf mH %16.8lf kcal mol^-1\n",
+    fprintf(outfile,"    Ind20,r          %16.8lf mH %16.8lf kcal mol^-1\n",
       e_ind20_*1000.0,e_ind20_*627.5095);
-    fprintf(outfile,"    Exch-Ind20,r  %16.8lf mH %16.8lf kcal mol^-1\n",
+    fprintf(outfile,"    Exch-Ind20,r     %16.8lf mH %16.8lf kcal mol^-1\n",
       e_exch_ind20_*1000.0,e_exch_ind20_*627.5095);
-    fprintf(outfile,"    delta HF,r    %16.8lf mH %16.8lf kcal mol^-1\n",
+    fprintf(outfile,"    delta HF,r       %16.8lf mH %16.8lf kcal mol^-1\n",
       dHF*1000.0,dHF*627.5095);
   }
-  fprintf(outfile,"    Disp20        %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Disp20           %16.8lf mH %16.8lf kcal mol^-1\n",
     e_disp20_*1000.0,e_disp20_*627.5095);
-  fprintf(outfile,"    Exch-Disp20   %16.8lf mH %16.8lf kcal mol^-1\n\n",
+  fprintf(outfile,"    Disp20 (SS)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_disp20_ss_*1000.0,e_disp20_ss_*627.5095);
+  fprintf(outfile,"    Disp20 (OS)      %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_disp20_os_*1000.0,e_disp20_os_*627.5095);
+  fprintf(outfile,"    Exch-Disp20      %16.8lf mH %16.8lf kcal mol^-1\n",
     e_exch_disp20_*1000.0,e_exch_disp20_*627.5095);
-  fprintf(outfile,"    Total SAPT0   %16.8lf mH %16.8lf kcal mol^-1\n",
+  fprintf(outfile,"    Exch-Disp20 (SS) %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_exch_disp20_ss_*1000.0,e_exch_disp20_ss_*627.5095);
+  fprintf(outfile,"    Exch-Disp20 (OS) %16.8lf mH %16.8lf kcal mol^-1\n\n",
+    e_exch_disp20_os_*1000.0,e_exch_disp20_os_*627.5095);
+
+  fprintf(outfile,"    Same-Spin Scale      %11.3E\n", SSS);
+  fprintf(outfile,"    Opposite-Spin Scale  %11.3E\n\n", SOS);
+
+
+  fprintf(outfile,"    Total SAPT0      %16.8lf mH %16.8lf kcal mol^-1\n",
     e_sapt0_*1000.0,e_sapt0_*627.5095);
+  fprintf(outfile,"    Total SCS-SAPT0  %16.8lf mH %16.8lf kcal mol^-1\n",
+    e_sapt0_scs_*1000.0,e_sapt0_scs_*627.5095);
 
   double tot_elst = e_elst10_;
   double tot_exch = e_exch10_;
   double tot_ind = e_ind20_ + e_exch_ind20_ + dHF;
   double tot_disp = e_disp20_ + e_exch_disp20_;
+  double tot_scs_disp = e_sapt0_scs_ - eHF_;
 
   Process::environment.globals["SAPT ELST ENERGY"] = tot_elst;
   Process::environment.globals["SAPT EXCH ENERGY"] = tot_exch;
   Process::environment.globals["SAPT IND ENERGY"] = tot_ind;
   Process::environment.globals["SAPT CT ENERGY"] = e_ind20_ + e_exch_ind20_;
   Process::environment.globals["SAPT DISP ENERGY"] = tot_disp;
+  Process::environment.globals["SAPT SCS-DISP ENERGY"] = tot_scs_disp;
   Process::environment.globals["SAPT SAPT0 ENERGY"] = e_sapt0_;
+  Process::environment.globals["SAPT SCS-SAPT0 ENERGY"] = e_sapt0_scs_;
   Process::environment.globals["SAPT ENERGY"] = e_sapt0_;
   Process::environment.globals["CURRENT ENERGY"] = Process::environment.globals["SAPT ENERGY"];
 }

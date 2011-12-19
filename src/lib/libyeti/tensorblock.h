@@ -26,6 +26,7 @@
 #include "gigmatrix.h"
 
 #include <list>
+#include <csignal>
 
 #ifdef redefine_size_t
 #define size_t custom_size_t
@@ -33,6 +34,11 @@
 
 
 #define DATA_BLOCK_SIZE_IN_CORE_CUTOFF 50000
+
+#define NODE_NUMBER_UNINITIALIZED   999999999
+#define MALLOC_NUMBER_UNINITIALIZED 999999999
+
+#define TRACK_TENSOR_BLOCK_HISTORY 1
 
 namespace yeti {
 
@@ -47,15 +53,40 @@ struct DataStorageNode :
 
 };
 
+class TensorBlockAccumulateTask :
+    public Task
+{
+    public:
+        TensorBlock* tmp_block;
+
+        TensorBlock* parent_block;
+
+        void run(uli threadnum);
+        
+        void print(std::ostream& os) const;
+
+        void prefetch(uli threadnum);
+
+        void finalize_task_subset(uli threadnum);
+
+        uli append_info(uli* data) const;
+
+        void* operator new(size_t size);
+
+        void operator delete(void* ptr);
+};
+
 class DataStorageBlockAllocator :
     public Cachable
 {
     protected:
-        uli nstorage_blocks_;
+        DataStorageNode* head_node_;
+        
+#if TRACK_TENSOR_BLOCK_HISTORY
+        std::list<const char*> history_;
 
-        DataStorageNode* first_node_;
-
-        DataStorageNode* last_node_;
+        void print_history() const;
+#endif
 
     public:
         DataStorageBlockAllocator();
@@ -64,7 +95,7 @@ class DataStorageBlockAllocator :
 
         ~DataStorageBlockAllocator();
 
-        DataStorageNode* first_data_node() const;
+        DataStorageNode* head_data_node() const;
 
         CachedStorageBlock* allocate_cache_block(DataCache* cache);
 
@@ -81,6 +112,12 @@ class DataStorageBlockAllocator :
         uli get_num_data_storage_blocks() const;
 
         void clear_storage();
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+        void add_event(const char* str);
+
+        void add_event(TensorBlock* block);
+#endif
         
         virtual void flush_from_cache();
 };
@@ -96,8 +133,6 @@ class TensorController :
         virtual void retrieve(TensorBlock* block) = 0;
 
         virtual void clear(TensorBlock* block) = 0;
-
-        virtual void preflush(TensorBlock* block) = 0;
 
         virtual void flush(TensorBlock* block) = 0;
         
@@ -123,6 +158,8 @@ class TensorController :
 
         virtual void sync(TensorBlock* block) = 0;
 
+        virtual void finalize(TensorBlock* block) = 0;
+
         virtual void out_of_core_prefetch(TensorBlock* block) = 0;
 
         virtual void in_core_prefetch(TensorBlock* current, TensorBlock* prev) = 0;
@@ -133,10 +170,19 @@ class TensorController :
 class TensorBlock :
     public DataStorageBlockAllocator,
     public Malloc<TensorBlock>,
-    public TaskOwner,
     public Sendable
 {
+    protected:
+        SendStatus* _send_data(
+            YetiMessenger* messenger,
+            Message::message_data_type_t type,
+            Message::message_action_t remote_action,
+            uli nmessages
+        );
+
     private:
+        friend class ResortInCorePrefetch;
+
         static TensorController* in_core_controller_;
 
         static TensorController* in_core_sorted_write_controller_;
@@ -185,15 +231,23 @@ class TensorBlock :
 
         static bool statics_done_;
 
+        bool remote_wait_;
+
         bool tmp_block_;
 
-        uli block_number_;
+        bool is_prefetched_;
+
+        uli prefetch_count_;
+
+        TensorBlock* unique_block_;
 
         uli node_number_;
 
         uli malloc_number_;
 
         bool is_synced_;
+
+        const char* controller_fail(TensorController* controller) const;
 
         void init_mempool();
 
@@ -204,6 +258,8 @@ class TensorBlock :
         void init_recomputed();
 
         void init_remote();
+
+        void init_local();
 
         void init_action();
 
@@ -232,6 +288,8 @@ class TensorBlock :
         void set_synced();
 
         void set_unsynced();
+
+        bool need_parent_retrieve() const;
 
         void
         receive_branch(
@@ -264,8 +322,6 @@ class TensorBlock :
         */
         Permutation* block_perm_;
 
-        TensorIndexDescr* descr_;
-
         TensorRetrieveActionPtr action_;
 
         Tensor::tensor_storage_t storage_type_;
@@ -274,25 +330,17 @@ class TensorBlock :
 
         uli indices_[NINDEX];
 
-        size_t total_nelements_data_;
-
-        size_t data_block_size_;
-
-        size_t metadata_block_size_;
-
-        usi nindex_;
-
-        usi depth_;
-
         usi degeneracy_;
 
         bool is_subblock_;
 
         bool up_to_date_;
 
-        StorageBlockPtr metadata_block_;
+        bool task_owner_;
 
-        MemoryPoolPtr metadata_mempool_;
+        StorageBlock* metadata_block_;
+
+        MemoryPool* metadata_mempool_;
 
         TensorController* controller_;
 
@@ -301,8 +349,6 @@ class TensorBlock :
         TensorController* read_controller_;
 
         TensorController* write_controller_;
-
-        DiskBufferPtr disk_buffer_;
 
         /**
             This is a mode for mixed read/write operations
@@ -313,6 +359,8 @@ class TensorBlock :
         TensorController* verbatim_controller_;
 
         bool permutationally_unique_;
+
+        bool fast_read_;
 
         /********************************************
         This information is loaded when fetching data
@@ -346,6 +394,12 @@ class TensorBlock :
 
         void set_verbatim_mode();
 
+        void enter_recv(Message::message_action_t action);
+
+        void exit_recv(Message::message_action_t action);
+
+        TensorBlock(TensorBlock* block);
+
     public:
         TensorBlock(
             const uli* indexset,
@@ -353,15 +407,9 @@ class TensorBlock :
             Tensor::tensor_storage_t type
         );
 
-        TensorBlock(
-            TensorBlock* parent,
-            Permutation* p
-        );
-
         /** Used for temporary accumulation */
         TensorBlock(Tensor* parent);
 
-        TensorBlock(TensorBlock* parent);
 
         ~TensorBlock();
 
@@ -372,10 +420,12 @@ class TensorBlock :
         );
 
         StorageBlock*
-        allocate_data_storage_block();
+        allocate_data_storage_block(size_t size);
 
         StorageBlock*
         allocate_metadata_storage_block();
+
+        void controller_fail() const;
 
         void recompute_permutation();
 
@@ -397,6 +447,7 @@ class TensorBlock :
             TensorIndexDescr* descr
         );
 
+
         void assign(TensorBlock* block);
 
         /**
@@ -405,9 +456,15 @@ class TensorBlock :
 
         void init();
 
+        void reinit();
+
+        void uninit();
+
         static void init_statics();
 
         static void delete_statics();
+
+        void set_as_unique();
 
         void set_element_size(size_t size);
 
@@ -419,13 +476,21 @@ class TensorBlock :
 
         void element_op(ElementOp* op);
 
-        void configure(const DiskBufferPtr& disk_buffer);
-
         void configure(const TensorRetrieveActionPtr& action);
 
         void configure(Tensor::tensor_storage_t type);
 
         TensorRetrieveAction* get_retrieve_action() const;
+
+        usi nindex() const;
+
+        usi depth() const;
+
+        size_t data_block_size() const;
+
+        size_t metadata_block_size() const;
+
+        TensorIndexDescr* descr() const;
 
         void finalize();
 
@@ -439,6 +504,10 @@ class TensorBlock :
 
         void retrieve_verbatim();
 
+        void retrieve_verbatim_no_lock();
+
+        bool is_nonnull() const;
+
         void release_accumulate();
 
         void release_read();
@@ -446,6 +515,16 @@ class TensorBlock :
         void release_write();
 
         void release_verbatim();
+
+        void wait_on_remote() const;
+
+        void set_remote_wait(bool flag);
+
+        bool is_task_owner() const;
+
+        void set_task_owner(bool flag);
+
+        bool is_flushable() const;
 
         /**
             Passed in by pointer since the pointer gets
@@ -469,7 +548,7 @@ class TensorBlock :
 
         usi get_depth() const;
 
-        DiskBuffer* get_disk_buffer() const;
+        uli get_nelements_data() const;
 
         Tensor* get_parent_tensor() const;
 
@@ -505,6 +584,12 @@ class TensorBlock :
 
         void init_branch();
 
+        bool has_fast_read() const;
+
+        bool is_prefetched() const;
+
+        void set_prefetched(bool flag);
+
         bool is_up_to_date() const;
 
         bool in_destructor() const;
@@ -516,6 +601,14 @@ class TensorBlock :
         bool is_parent_in_current_tensor() const;
 
         bool is_remote_block() const;
+
+        bool is_local_block() const;
+
+        bool is_recomputed_block() const;
+
+        bool has_controller() const;
+
+        bool has_remote_controller() const;
 
         bool is_cached() const;
 
@@ -532,7 +625,6 @@ class TensorBlock :
         void set_subblock(bool flag);
         
         void set_degeneracy(usi degeneracy);
-
 
         void data_sort(Sort* sort);
 
@@ -554,6 +646,8 @@ class TensorBlock :
 
         void prefetch_write();
 
+        void complete_read();
+
         void prefetch_read(TensorBlock* prev_block);
 
         void prefetch_accumulate(TensorBlock* prev_block);
@@ -569,17 +663,29 @@ class TensorBlock :
         *****/
         void flush_from_cache();
 
-        void preflush();
-
-        void release_callback();
-
         void print(std::ostream& os = std::cout);
 
         uli get_node_number() const;
 
+        uli get_node_owner() const;
+
         void set_node_number(uli node);
+        
+        void wtf_retrieve();
+
+        void wtf_release();
 
         void recv_data(
+            YetiMessenger* messenger,
+            Message::message_data_type_t type,
+            Message::message_action_t action,
+            uli proc_number,
+            size_t metadata_size,
+            uli initial_tag,
+            uli nmessages
+        );
+
+        void redistribute(
             YetiMessenger* messenger,
             Message::message_data_type_t type,
             uli proc_number,
@@ -587,6 +693,9 @@ class TensorBlock :
             uli initial_tag,
             uli nmessages
         );
+
+
+        bool is_waiting_on_redistribute() const;
 
         void accumulate_data(
             YetiMessenger* messenger,
@@ -597,12 +706,7 @@ class TensorBlock :
             uli nmessages
         );
 
-        SendStatus* send_data(
-            YetiMessenger* messenger,
-            Message::message_data_type_t type,
-            Message::message_action_t remote_action,
-            uli nmessages
-        );
+        
 
 
 };

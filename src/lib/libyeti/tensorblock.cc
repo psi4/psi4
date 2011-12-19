@@ -27,6 +27,11 @@
 using namespace yeti;
 using namespace std;
 
+#define DEBUG_TENSOR_BLOCK_RETRIEVE 0
+#define PRINT_MALLOC_NUMBERS 0
+
+#define block_fail(x,y) { controller_fail(); yeti_throw(x,y); }
+
 #ifdef redefine_size_t
 #define size_t custom_size_t
 #endif
@@ -61,6 +66,20 @@ bool TensorBlock::statics_done_ = false;
 DECLARE_MALLOC(TensorBlock);
 DECLARE_MALLOC(DataStorageNode);
 
+
+#define NBLOCKS_TMP_ACCUMULATE 1000
+static char tmp_malloc_data[NBLOCKS_TMP_ACCUMULATE * sizeof(TensorBlock)];
+static char tmp_malloc_mallocd[NBLOCKS_TMP_ACCUMULATE];
+static FastMalloc tensor_block_tmp_malloc(
+                    tmp_malloc_data, 
+                    tmp_malloc_mallocd, 
+                    sizeof(TensorBlock), 
+                    NBLOCKS_TMP_ACCUMULATE, 
+                    "tensor block tmp"
+                  );
+static TensorBlockAccumulateTask accumulate_tasks[NBLOCKS_TMP_ACCUMULATE];
+static uli accumulate_task_num = 0;
+
 typedef TensorControllerTemplate<
         ValidBranchController,
         DoNothingBranchRenew,
@@ -68,6 +87,7 @@ typedef TensorControllerTemplate<
         DoNothingBranchRetrieve,
         DoNothingDataControllerRetrieve,
         DoNothingDataControllerInit,
+        DoNothingFinalize,
         DoNothingBranchFlush,
         DoNothingBranchRelease,
         DoNothingMetaDataRetrieve,
@@ -76,171 +96,140 @@ typedef TensorControllerTemplate<
         AbortOnObsolete,
         DoNothingSync,
         DeleteAllDataClear,
-        DoNothingOutOfCorePrefetch,
+        UnlockAfterPrefetch,
         DoNothingInCorePrefetch
     > InCoreController;
 
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    SortedBranchRetrieve,
-                    ReallocateDataControllers,
-                    SortDataControllers,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > InCoreSortedReadController;
+        ValidBranchController,
+        CacheBranchRenew,
+        ResetMempool,
+        SortedBranchRetrieve,
+        ReallocateDataControllers,
+        SortDataControllers,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        InitializePrefetch,
+        DoNothingInCorePrefetch
+    > InCoreSortedReadController;
 
 typedef TensorControllerTemplate<
-                        ValidBranchController,
-                        DoNothingBranchRenew,
-                        ResetMempool,
-                        NewBranchRetrieve,
-                        DoNothingDataControllerRetrieve,
-                        DoNothingDataControllerInit,
-                        SortedAccumulateBranchFlush,
-                        CacheBranchRelease,
-                        DoNothingMetaDataRetrieve,
-                        DoNothingDataRetrieve,
-                        DeleteAllDataStorageFlush,
-                        ClearMetaDataOnObsolete,
-                        FlushOnSync,
-                        ObsoleteAllDataClear,
-                        DoNothingOutOfCorePrefetch,
-                        DoNothingInCorePrefetch
-                   > InCoreSortedAccumulateController;
+        //ValidBranchController,
+        AbortAccumulateBranchValidation,
+        CacheBranchRenew,
+        ResetMempool,
+        NewBranchRetrieve,
+        DoNothingDataControllerRetrieve,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        SortedAccumulateBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        FlushOnSync,
+        ClearAllData,
+        InitializePrefetch,
+        DoNothingInCorePrefetch
+   > InCoreSortedAccumulateController;
 
 typedef TensorControllerTemplate<
-                    AbortReadBranchValidation,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    DoNothingBranchFlush,
-                    DoNothingBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DoNothingDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > AbortReadController;
+        AbortReadBranchValidation,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        DoNothingBranchRetrieve,
+        DoNothingDataControllerRetrieve,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        DoNothingBranchFlush,
+        DoNothingBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DoNothingDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > AbortReadController;
 
 typedef TensorControllerTemplate<
-                    AbortWriteBranchValidation,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    DoNothingBranchFlush,
-                    DoNothingBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DoNothingDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > AbortWriteController;
+        AbortWriteBranchValidation,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        DoNothingBranchRetrieve,
+        DoNothingDataControllerRetrieve,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        DoNothingBranchFlush,
+        DoNothingBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DoNothingDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > AbortWriteController;
 
 typedef TensorControllerTemplate<
-                    AbortAccumulateBranchValidation,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    DoNothingBranchFlush,
-                    DoNothingBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DoNothingDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > AbortAccumulateController;
+        AbortAccumulateBranchValidation,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        DoNothingBranchRetrieve,
+        DoNothingDataControllerRetrieve,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        DoNothingBranchFlush,
+        DoNothingBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DoNothingDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > AbortAccumulateController;
 
 typedef TensorControllerTemplate<
-                    AbortVerbatimBranchValidation,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    DoNothingBranchFlush,
-                    DoNothingBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DoNothingDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > AbortVerbatimController;
-
-typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    ActionBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > ActionReadController;
-
-
-typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    SortedBranchRetrieve,
-                    ReallocateDataControllers,
-                    SortDataControllers,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > ActionSortedReadController;
+        AbortVerbatimBranchValidation,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        DoNothingBranchRetrieve,
+        DoNothingDataControllerRetrieve,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        DoNothingBranchFlush,
+        DoNothingBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DoNothingDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > AbortVerbatimController;
 
 typedef TensorControllerTemplate<
         ValidBranchController,
-        DoNothingBranchRenew,
-        DoNothingMempool, //this is taken care of in the prefetch
-        RemoteBlockBranchRetrieve,
-        DoNothingDataControllerRetrieve,
+        CacheBranchRenew,
+        ResetMempool,
+        ActionBranchRetrieve,
+        ReuseStorageBlocks,
         DoNothingDataControllerInit,
+        DoNothingFinalize,
         ClearBranchFlush,
         CacheBranchRelease,
         DoNothingMetaDataRetrieve,
@@ -248,189 +237,234 @@ typedef TensorControllerTemplate<
         DeleteAllDataStorageFlush,
         AbortOnObsolete,
         DoNothingSync,
+        ClearAllData,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > ActionReadController;
+
+
+typedef TensorControllerTemplate<
+        ValidBranchController,
+        CacheBranchRenew,
+        ResetMempool,
+        SortedBranchRetrieve,
+        ReallocateDataControllers,
+        SortDataControllers,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        DoNothingSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > ActionSortedReadController;
+
+typedef TensorControllerTemplate<
+        ValidBranchController,
+        CacheBranchRenew,
+        DoNothingMempool, //this is taken care of in the prefetch
+        RemoteBlockBranchRetrieve,
+        DoNothingDataControllerRetrieve,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        DoNothingSync,
         DeleteAllDataClear,
         RemoteBlockPrefetch,
         DoNothingInCorePrefetch
     > RemoteReadController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    RemoteAccumulateRenew,
-                    //ZeroBranchRenew,
-                    //FlushOldBranchRenew,
-                    //DoNothingBranchRenew,
-                    ResetMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    //RemoteAccumulateFlush,
-                    //DoNothingBranchFlush,
-                    ClearBranchFlush,
-                    RemoteAccumulateBranchRelease,
-                    //CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    //FlushOnSync,
-                    RemoteAccumulateSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > TmpRemoteAccumulateController;
+        ValidBranchController,
+        CacheBranchRenew,
+        ResetMempool,
+        DoNothingBranchRetrieve,
+        ReuseStorageBlocks,
+        DoNothingDataControllerInit,
+        RemoteAccumulateFinalize,
+        ClearBranchFlush,
+        FinalizeOnRelease,
+        //CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        FlushOnSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > RemoteAccumulateController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    RemoteAccumulateFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    RemoteAccumulateSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > RemoteAccumulateController;
+        ValidBranchController,
+        DoNothingBranchRenew,
+        ResetMempool,
+        DoNothingBranchRetrieve,
+        ReuseStorageBlocks,
+        DoNothingDataControllerInit,
+        RemoteAccumulateFinalize,
+        ClearBranchFlush,
+        DoNothingBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        AbortOnSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > TmpRemoteAccumulateController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    ZeroBranchRenew,
-                    ResetMempool,
-                    DoNothingBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    ClearBranchFlush,
-                    ThreadAccumulateBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    AbortOnSync,
-                    DeleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > TmpThreadAccumulateController;
+        ValidBranchController,
+        DoNothingBranchRenew,
+        ResetMempool,
+        DoNothingBranchRetrieve,
+        ReuseStorageBlocks,
+        DoNothingDataControllerInit,
+        ThreadAccumulateFinalize,
+        ClearBranchFlush,
+        DoNothingBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        AbortOnSync,
+        DeleteAllDataClear,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > TmpThreadAccumulateController;
+
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    SortedBranchRetrieve,
-                    ReallocateDataControllers,
-                    SortDataControllers,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    ParentBlockReadPrefetch,
-                    DoNothingInCorePrefetch
-                > RemoteSortedReadController;
+        ValidBranchController,
+        CacheBranchRenew,
+        ResetMempool,
+        SortedBranchRetrieve,
+        ReallocateDataControllers,
+        SortDataControllers,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        InitializePrefetch,
+        DoNothingInCorePrefetch
+    > RemoteSortedReadController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    ConfigureElementComputerBranchRetrieve,
-                    DoNothingDataControllerRetrieve,
-                    DoNothingDataControllerInit,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    RecomputeMetaDataRetrieve,
-                    RecomputeDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    ResortInCorePrefetch
-                > RecomputeReadController;
+        ValidBranchController,
+        ConfigureElementComputerRenew,
+        ResetMempool,
+        ConfigureElementComputerRetrieve,
+        ReuseStorageBlocks,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        RecomputeMetaDataRetrieve,
+        RecomputeDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        InitializePrefetch,
+        ResortInCorePrefetch
+    > RecomputeReadController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    RealignMemoryPoolBranchRetrieve,
-                    ReuseDataControllers,
-                    DoNothingDataControllerInit,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    ClearAllDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > DiskReadController;
+        ValidBranchController,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        RealignMemoryPoolBranchRetrieve,
+        ReuseDataControllers,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        ClearAllDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > DiskReadController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    RealignMemoryPoolBranchRetrieve,
-                    ReuseDataControllers,
-                    DoNothingDataControllerInit,
-                    CommitBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    CommitAllDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > DiskWriteController;
-                
+        ValidBranchController,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        RealignMemoryPoolBranchRetrieve,
+        ReuseDataControllers,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        CommitBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        CommitAllDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > DiskWriteController;
+    
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    DoNothingMempool,
-                    RealignMemoryPoolBranchRetrieve,
-                    ReuseDataControllers,
-                    DoNothingDataControllerInit,
-                    CommitBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    CommitAllDataStorageFlush,
-                    AbortOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > DiskAccumulateController;
+        ValidBranchController,
+        DoNothingBranchRenew,
+        DoNothingMempool,
+        RealignMemoryPoolBranchRetrieve,
+        ReuseDataControllers,
+        DoNothingDataControllerInit,
+        DoNothingFinalize,
+        CommitBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        CommitAllDataStorageFlush,
+        AbortOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > DiskAccumulateController;
 
 typedef TensorControllerTemplate<
-                    ValidBranchController,
-                    DoNothingBranchRenew,
-                    ResetMempool,
-                    SortedBranchRetrieve,
-                    ReallocateDataControllers,
-                    SortDataControllers,
-                    ClearBranchFlush,
-                    CacheBranchRelease,
-                    DoNothingMetaDataRetrieve,
-                    DoNothingDataRetrieve,
-                    DeleteAllDataStorageFlush,
-                    ClearMetaDataOnObsolete,
-                    DoNothingSync,
-                    ObsoleteAllDataClear,
-                    DoNothingOutOfCorePrefetch,
-                    DoNothingInCorePrefetch
-                > DiskSortedReadController;
+        ValidBranchController,
+        DoNothingBranchRenew,
+        ResetMempool,
+        SortedBranchRetrieve,
+        ReallocateDataControllers,
+        SortDataControllers,
+        DoNothingFinalize,
+        ClearBranchFlush,
+        CacheBranchRelease,
+        DoNothingMetaDataRetrieve,
+        DoNothingDataRetrieve,
+        DeleteAllDataStorageFlush,
+        SetFinalizedOnObsolete,
+        DoNothingSync,
+        ClearAllData,
+        UnlockAfterPrefetch,
+        DoNothingInCorePrefetch
+    > DiskSortedReadController;
 
     
 
@@ -439,18 +473,14 @@ DECLARE_SUB_MALLOC(TensorController,AbortReadController);
 
 DataStorageBlockAllocator::DataStorageBlockAllocator()
     :
-  nstorage_blocks_(0),
-  first_node_(0),
-  last_node_(0)
+  head_node_(0)
 {
 }
 
 DataStorageBlockAllocator::DataStorageBlockAllocator(YetiRuntimeObject::thread_safety_flag_t flag)
     :
   Cachable(flag),
-  nstorage_blocks_(0),
-  first_node_(0),
-  last_node_(0)
+  head_node_(0)
 {
 }
 
@@ -462,33 +492,41 @@ DataStorageBlockAllocator::~DataStorageBlockAllocator()
 uli
 DataStorageBlockAllocator::get_num_data_storage_blocks() const
 {
-    return nstorage_blocks_;
+    uli n = 0;
+    DataStorageNode* node = head_node_;
+    while(node)
+    {
+        ++n;
+        node = node->next;
+    }
+    return n;
 }
 
 DataStorageNode*
-DataStorageBlockAllocator::first_data_node() const
+DataStorageBlockAllocator::head_data_node() const
 {
-    return first_node_;
+    return head_node_;
 }
 
 void
 DataStorageBlockAllocator::store(StorageBlock* block)
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("store block");
+#endif
     DataStorageNode* node = new DataStorageNode;
     node->block = block;
     node->next = 0;
 
-    if (first_node_ == 0)
+    if (head_node_ == 0)
     {
-        first_node_ = node;
-        last_node_ = node;
+        head_node_ = node;
     }
     else
     {
-        last_node_->next = node;
-        last_node_ = node;
+        node->next = head_node_;
+        head_node_ = node;
     }
-    ++nstorage_blocks_;
 }
 
 void
@@ -500,6 +538,9 @@ DataStorageBlockAllocator::flush_from_cache()
 CachedStorageBlock*
 DataStorageBlockAllocator::allocate_cache_block(DataCache* cache)
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("allocate cache block");
+#endif
     CachedStorageBlock* block = new CachedStorageBlock(this, cache);
     block->retrieve();
 
@@ -509,9 +550,12 @@ DataStorageBlockAllocator::allocate_cache_block(DataCache* cache)
 void
 DataStorageBlockAllocator::clear_storage()
 {
-    DataStorageNode* node = first_node_;
+    DataStorageNode* node = head_node_;
     while (node)
     {
+#if TRACK_TENSOR_BLOCK_HISTORY
+        add_event("delete block");
+#endif
         StorageBlock* block = node->block;
         delete block;
         DataStorageNode* next = node->next;
@@ -521,9 +565,7 @@ DataStorageBlockAllocator::clear_storage()
         node = next;
         delete prev;
     }
-    nstorage_blocks_ = 0;
-    first_node_ = 0;
-    last_node_ = 0;
+    head_node_ = 0;
 }
 
 InCoreBlock*
@@ -556,6 +598,7 @@ TensorBlock::TensorBlock(
     Tensor::tensor_storage_t store_type
 ) :
     controller_(0),
+    unique_block_(0),
     read_controller_(0),
     write_controller_(0),
     accumulate_controller_(0),
@@ -563,42 +606,45 @@ TensorBlock::TensorBlock(
     resort_perm_(0),
     fetch_perm_(0),
     branch_(0),
-    block_number_(parent->get_index(indexset)),
-    depth_(parent->get_block_descr()->depth() - 1),
-    nindex_(parent->get_block_descr()->nindex()),
     metadata_mempool_(0),
-    data_block_size_(parent->data_block_size()),
-    metadata_block_size_(parent->metadata_block_size()),
-    total_nelements_data_(0),
+    prefetch_count_(0),
     parent_tensor_(parent),
-    descr_(parent->get_block_descr()),
     degeneracy_(1),
     is_synced_(true), //no data yet, so true
     permutationally_unique_(false), //begin with false
     is_subblock_(false),
     block_perm_(0),
     action_(0),
-    node_number_(YetiRuntime::me()),
+    node_number_(NODE_NUMBER_UNINITIALIZED),
     malloc_number_(0),
     up_to_date_(true),
-    disk_buffer_(0),
     storage_type_(Tensor::in_core),
+    task_owner_(false),
     metadata_block_(0),
-    tmp_block_(false)
+    tmp_block_(false),
+    fast_read_(false),
+    remote_wait_(false)
 {
     malloc_number_ = Malloc<TensorBlock>::get_malloc_number(this);
 
-    ::memcpy(indices_, indexset, descr_->nindex() * sizeof(uli));
+    ::memcpy(indices_, indexset, descr()->nindex() * sizeof(uli));
 
     if (parent_tensor_->is_distributed())
-        node_number_ = parent_tensor_->get_node_number(block_number_);
+    {
+        block_fail(SanityCheckError, "cannot distribute tensor before creating all tensor blocks");
+    }
 
     recompute_permutation();
 
     block_perm_ = parent_tensor_->get_tensor_grp()->get_identity();
 
-    total_nelements_data_ = descr_->get_nelements_data(depth_ + 1, indices_);
     set_element_size(sizeof(double));
+
+#if PRINT_MALLOC_NUMBERS
+    cout << stream_printf("On node %d, malloc number %ld is %s\n", 
+                          YetiRuntime::me(), malloc_number_,
+                          get_block_name().c_str());
+#endif
 }
 
 TensorBlock::TensorBlock(
@@ -606,21 +652,16 @@ TensorBlock::TensorBlock(
 ) :
     controller_(0),
     read_controller_(0),
+    unique_block_(0),
     write_controller_(0),
     accumulate_controller_(0),
     verbatim_controller_(0),
     resort_perm_(0),
     fetch_perm_(0),
     branch_(0),
-    block_number_(0),
-    depth_(parent->get_block_descr()->depth() - 1),
-    nindex_(parent->get_block_descr()->nindex()),
     metadata_mempool_(0),
-    data_block_size_(parent->data_block_size()),
-    metadata_block_size_(parent->metadata_block_size()),
-    total_nelements_data_(5e5), //set to a ridiculous size
+    prefetch_count_(0),
     parent_tensor_(parent),
-    descr_(parent->get_block_descr()),
     degeneracy_(1),
     is_synced_(true), //no data yet, so true
     permutationally_unique_(true),
@@ -630,13 +671,15 @@ TensorBlock::TensorBlock(
     node_number_(YetiRuntime::me()),
     malloc_number_(0),
     up_to_date_(true),
-    disk_buffer_(0),
     storage_type_(Tensor::in_core),
     metadata_block_(0),
-    tmp_block_(true)
+    task_owner_(false),
+    tmp_block_(true),
+    fast_read_(false),
+    remote_wait_(false)
 {
-    malloc_number_ = Malloc<TensorBlock>::get_malloc_number(this);
-    for (uli i=0; i < descr_->nindex(); ++i)
+    malloc_number_ = MALLOC_NUMBER_UNINITIALIZED;
+    for (uli i=0; i < descr()->nindex(); ++i)
         indices_[i] = 0;
 
     set_element_size(sizeof(double));
@@ -651,20 +694,15 @@ TensorBlock::TensorBlock(
     DataStorageBlockAllocator(YetiRuntimeObject::thread_safe),
     controller_(0),
     read_controller_(0),
+    unique_block_(0),
     write_controller_(0),
     accumulate_controller_(0),
     verbatim_controller_(0),
     resort_perm_(parent->get_resort_permutation()),
     fetch_perm_(parent->get_fetch_permutation()),
     branch_(0),
-    block_number_(0),
-    depth_(parent->get_descr()->depth() - 1),
-    nindex_(parent->get_descr()->nindex()),
     metadata_mempool_(0),
     parent_tensor_(parent->get_parent_tensor()),
-    data_block_size_(parent->data_block_size_),
-    metadata_block_size_(parent->metadata_block_size_),
-    descr_(parent->get_descr()),
     degeneracy_(parent->get_degeneracy()),
     is_synced_(true), //no data yet, so true
     permutationally_unique_(true),
@@ -672,13 +710,16 @@ TensorBlock::TensorBlock(
     block_perm_(parent->get_block_permutation()),
     node_number_(YetiRuntime::me()),
     malloc_number_(0),
+    prefetch_count_(0),
     up_to_date_(true),
     storage_type_(Tensor::in_core),
-    tmp_block_(true)
+    task_owner_(false),
+    tmp_block_(true),
+    fast_read_(false),
+    remote_wait_(false)
 {
     malloc_number_ = parent->get_malloc_number();
-    ::memcpy(indices_, parent->get_indices(), descr_->nindex() * sizeof(uli));
-    task_owner_number_ = parent->get_task_owner_number();
+    ::memcpy(indices_, parent->get_indices(), descr()->nindex() * sizeof(uli));
 
     //this is only ever used for temporary accumulation
     init_in_core_no_sort();
@@ -690,7 +731,7 @@ TensorBlock::~TensorBlock()
 {
 #if YETI_SANITY_CHECK
     if (!is_locked())
-        raise(SanityCheckError, "cannot delete an unlocked tensor block");
+        block_fail(SanityCheckError, "Cannot delete an unlocked tensor block");
 #endif
     /** The block might never have been initialized */
     if (read_controller_)
@@ -701,24 +742,130 @@ TensorBlock::~TensorBlock()
         {
             //always lock an object before flushing it
             //once the tensor is deleted, it goes out of cache
+#if TRACK_TENSOR_BLOCK_HISTORY
+            add_event("destructor flush");
+#endif
             flush_from_cache();
+            if (has_send_status())
+                block_fail(SanityCheckError, "Cannot delete tensor block that has pending send");
         }
 
-        //DeleteAllDataClear clear;
-        //clear.clear(this, metadata_block_, storage_blocks_, nstorage_blocks_);
+        wait_on_send();
+
         read_controller_->clear(this);
 
         clear_storage();
     }
 
+    if (metadata_mempool_)
+        delete metadata_mempool_;
+    if (metadata_block_)
+        delete metadata_block_;
+
+}
+
+usi
+TensorBlock::nindex() const
+{
+    return descr()->nindex();
+}
+
+usi
+TensorBlock::depth() const
+{
+    return descr()->depth() - 1;
+}
+
+size_t
+TensorBlock::metadata_block_size() const
+{
+    return parent_tensor_->metadata_block_size();
+}
+
+size_t
+TensorBlock::data_block_size() const
+{
+    return parent_tensor_->data_block_size();
+}
+
+TensorIndexDescr*
+TensorBlock::descr() const
+{
+    return parent_tensor_->get_block_descr();
+}
+
+void
+TensorBlock::set_as_unique()
+{
+    permutationally_unique_ = true;
+    fetch_perm_ = parent_tensor_->get_tensor_grp()->get_identity();
+    resort_perm_ = fetch_perm_;
 }
 
 void
 TensorBlock::recompute_permutation()
 {
+    //erase any memory of permutational uniqueness
+    //otherwise recompute tensor permutation just returns without doing
+    //any work
+    permutationally_unique_ = false;
+
     recompute_tensor_permutation();
     permutationally_unique_ = fetch_perm_->is_identity();
-    task_owner_number_ = parent_tensor_->get_unique_id(indices_, fetch_perm_);
+}
+
+void
+TensorBlock::reinit()
+{
+    uninit();
+    init();
+}
+
+void
+TensorBlock::uninit()
+{
+    if (!controller_) //already uninitialized
+        return;
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("uninit");
+#endif
+
+#if YETI_SANITY_CHECK
+    if (!is_locked())
+        block_fail(SanityCheckError, "Block must be locked before initializing");
+
+    if (!metadata_block_)
+        block_fail(SanityCheckError, "Block is already uninitialized");
+#endif
+
+    if (is_cached())
+        flush_from_cache();
+
+    read_controller_->clear(this);
+    clear_storage();
+
+    if (metadata_block_)
+    {
+        delete metadata_block_;
+        metadata_block_ = 0;
+    }
+    if (metadata_mempool_)
+    {
+        delete metadata_mempool_;
+        metadata_mempool_ = 0;
+    }
+
+
+    controller_ = 0;
+    read_controller_ = 0;
+    write_controller_ = 0;
+    verbatim_controller_ = 0;
+    accumulate_controller_ = 0;
+    fast_read_ = false;
+    set_initialized(false);
+    set_prefetched(false);
+    set_finalized(true);
 }
 
 void
@@ -727,42 +874,47 @@ TensorBlock::init()
     if (controller_) /** already initialized */
         return;
 
-#if YETI_SANITY_CHECK
-    if (!is_locked())
-        raise(SanityCheckError, "block must be locked before initializing");
-
-    if (metadata_block_)
-        raise(SanityCheckError, "block is already initialized");
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("init");
 #endif
 
+#if YETI_SANITY_CHECK
+    if (!is_locked())
+        block_fail(SanityCheckError, "Block must be locked before initializing");
 
-    nstorage_blocks_ = 0;
+    if (metadata_block_)
+        block_fail(SanityCheckError, "Block is already initialized");
+#endif
 
-    if (is_remote_block())
+    if (is_remote_block() && storage_type_ != Tensor::recomputed)
     {
         init_remote();
     }
     else
     {
-
-        switch(storage_type_)
-        {
-            case Tensor::in_core:
-                init_in_core();
-                break;
-            case Tensor::on_disk:
-                init_on_disk();
-                break;
-            case Tensor::recomputed:
-                init_recomputed();
-                break;
-            case Tensor::action:
-                init_action();
-                break; //other initialization stuff happens elsewhere
-        }
+        init_local();
     }
-
     controller_ = read_controller_;
+}
+
+void
+TensorBlock::init_local()
+{
+    switch(storage_type_)
+    {
+        case Tensor::in_core:
+            init_in_core();
+            break;
+        case Tensor::on_disk:
+            init_on_disk();
+            break;
+        case Tensor::recomputed:
+            init_recomputed();
+            break;
+        case Tensor::action:
+            init_action();
+            break; //other initialization stuff happens elsewhere
+    }
 }
 
 void
@@ -798,7 +950,6 @@ TensorBlock::init_statics()
     disk_sorted_read_controller_ = new DiskSortedReadController;
 
     tmp_thread_accumulate_controller_ = new TmpThreadAccumulateController;
-
     tmp_remote_accumulate_controller_ = new TmpRemoteAccumulateController;
 
     statics_done_ = true;
@@ -837,7 +988,6 @@ TensorBlock::delete_statics()
     delete disk_sorted_read_controller_;
 
     delete tmp_thread_accumulate_controller_;
-
     delete tmp_remote_accumulate_controller_;
 
     statics_done_ = false;
@@ -854,19 +1004,35 @@ TensorBlock::accumulate(
     Sort* sort
 )
 {
+#if 0
+    for (uli i=0; i < descr()->nindex(); ++i)
+    {
+        if (src->get_indices()[i] != indices_[i])
+        {
+            cerr << "Accumulate error" << endl;
+            cerr << src->get_block_name().c_str() << endl;
+            cerr << get_block_name().c_str() << endl;
+            abort();
+        }
+    }
+#endif
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("accumulate block");
+#endif
+
     up_to_date_ = false;
 
     branch_->set_element_type(src->get_branch()->element_type());
     if (src == this) //self-accumulation
     {
         if (!sort)
-            raise(SanityCheckError, "you should never self-accumulate unless sorting!");
+            block_fail(SanityCheckError, "you should never self-accumulate unless sorting!");
 
         CachedStorageBlock* block
             = new CachedStorageBlock(this, parent_tensor_->get_metadata_cache());
         block->retrieve();
         MemoryPool* mempool = new MemoryPool(block->size(), block->data());
-        mempool->memcpy(metadata_mempool_.get());
+        mempool->memcpy(metadata_mempool_);
         TensorBranch* sorted_branch = reinterpret_cast<TensorBranch*>(mempool->data());
         sorted_branch->set_metadata_mempool(mempool);
         branch_->sort_metadata_into(sort, sorted_branch);
@@ -912,7 +1078,7 @@ TensorBlock::accumulate(
         );
 
         uli nblocks = allocator.get_num_data_storage_blocks();
-        DataStorageNode* node = allocator.first_data_node();
+        DataStorageNode* node = allocator.head_data_node();
         while (node)
         {
             CachedStorageBlock* block = static_cast<CachedStorageBlock*>(node->block);
@@ -943,7 +1109,8 @@ TensorBlock::accumulate(
             sort
         );
     }
-
+    
+    set_unsynced();
 }
 
 void
@@ -956,10 +1123,15 @@ TensorBlock::accumulate(
 #if YETI_SANITY_CHECK
     if (   lblock->get_degeneracy() == 0
         || rblock->get_degeneracy() == 0)
-        raise(SanityCheckError, "block has zero degeneracy");
+        block_fail(SanityCheckError, "block has zero degeneracy");
 #endif
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("accumulate cxn");
+#endif
+
     branch_->set_element_type(lblock->get_branch()->element_type());
     controller_->retrieve(branch_->get_node());
+
     branch_->get_node()->accumulate(
         lblock->get_branch()->get_node(),
         rblock->get_branch()->get_node(),
@@ -967,15 +1139,31 @@ TensorBlock::accumulate(
         cxn
     );
 
+
     /** This is no longer compatible with its source destination */
     set_unsynced();
 }
 
 
 StorageBlock*
-TensorBlock::allocate_data_storage_block()
+TensorBlock::allocate_data_storage_block(size_t size)
 {
-    return allocate_storage_block(data_block_size_, TensorBlock::data_block);
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("allocate data storage block");
+#endif
+#if DEBUG_TENSOR_BLOCK_RETRIEVE 
+    if (tmp_block_)
+    {
+        cout << stream_printf("Allocating data block of size %ld on %s\n",
+                    size,
+                    get_block_name().c_str());
+        cout.flush();
+    }
+#endif
+    if (parent_tensor_->nelements_metadata_av() < 20)//just assign the entire block a data segment
+        return allocate_storage_block(size, TensorBlock::data_block);
+    else //tile many blocks to minimize number of malloc calls and storage blocks
+        return allocate_storage_block(parent_tensor_->data_block_size(), TensorBlock::data_block);
 }
 
 StorageBlock*
@@ -984,6 +1172,9 @@ TensorBlock::allocate_storage_block(
     TensorBlock::storage_block_type_t blocktype
 )
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("allocate storage block");
+#endif
     Tensor::tensor_storage_t storage_type
         = parent_tensor_->get_storage_type();
 
@@ -1003,18 +1194,26 @@ TensorBlock::allocate_storage_block(
     {
         if (cache->blocksize() < size)
         {
-            cerr << "cache blocks are not large enough!"
-                 << endl
-                 << " cache block size is " << cache->blocksize()
-                 << " but requested block size is " << size
-                 << endl;
+            cerr << stream_printf("Cache blocks are not large enough!\n"
+                                "Cache block size is %ld but requested size is %ld\n",
+                                cache->blocksize(), size);
+            controller_fail();
             abort();
         }
-        block = allocate_cache_block(cache);
+        try{
+            block = allocate_cache_block(cache);
+        } catch (int e) {
+            cerr << stream_printf("Error allocating new cache block on %s.  %d blocks allocated so far.\n",
+                                    get_block_name().c_str(), get_num_data_storage_blocks()
+                                );
+            cerr.flush();
+            throw e;
+        }
     }
     else if (storage_type == Tensor::in_core)
     {
         block = this->allocate_core_block(size);
+        YetiRuntime::register_allocation(parent_tensor_, size);
     }
     else if (storage_type == Tensor::on_disk)
     {
@@ -1027,11 +1226,7 @@ TensorBlock::allocate_storage_block(
                  << " but requested block size is " << size
                  << endl;
         }
-        block = this->allocate_disk_block(
-                    disk_buffer_.get(),
-                    this,
-                    cache
-                   );
+        yeti_throw(SanityCheckError, "No disk usage yet");
     }
     else
     {
@@ -1081,6 +1276,20 @@ TensorBlock::element_op(ElementOp* op)
 }
 
 bool
+TensorBlock::has_controller() const
+{
+    return controller_;
+}
+
+bool
+TensorBlock::has_remote_controller() const
+{
+    bool check1 = read_controller_ == remote_read_controller_;
+    bool check2 = read_controller_ == remote_sorted_read_controller_;
+    return check1 && check2;
+}
+
+bool
 TensorBlock::equals(const void** data)
 {
     bool equals = branch_->get_node()->equals(data);   
@@ -1108,25 +1317,13 @@ TensorBlock::free_metadata(char* data, size_t size)
 StorageBlock*
 TensorBlock::allocate_metadata_storage_block()
 {
-    return allocate_storage_block(metadata_block_size_, TensorBlock::metadata_block);
+    return allocate_storage_block(parent_tensor_->metadata_block_size(), TensorBlock::metadata_block);
 
 }
 
 void
 TensorBlock::set_element_size(size_t size)
 {
-    size_t max_datasize = total_nelements_data_ * size;
-#if 0
-    if (max_datasize < data_block_size_)
-    {
-        data_block_size_ = max_datasize;
-    }
-#endif
-    if (permutationally_unique_ && parent_tensor_->get_storage_type() == Tensor::in_core)
-    {
-        if (max_datasize < data_block_size_)
-            data_block_size_ = max_datasize;
-    }
 }
 
 void
@@ -1136,7 +1333,7 @@ TensorBlock::fill(TensorElementComputer* filler)
         return;
 
     TemplateInfo::type_t element_type
-        = filler->element_type(indices_, depth_);
+        = filler->element_type(indices_, depth());
 
     branch_->set_element_type(element_type);
     branch_->get_node()->fill(filler);
@@ -1158,9 +1355,15 @@ TensorBlock::get_branch() const
 }
 
 uli
+TensorBlock::get_nelements_data() const
+{
+    return descr()->get_nelements_data(depth() + 1, get_indices());
+}
+
+uli
 TensorBlock::get_block_number() const
 {
-    return block_number_;
+    return parent_tensor_->get_index(indices_);
 }
 
 usi
@@ -1172,7 +1375,7 @@ TensorBlock::get_degeneracy() const
 usi
 TensorBlock::get_depth() const
 {
-    return depth_;
+    return depth();
 }
 
 const uli*
@@ -1184,13 +1387,15 @@ TensorBlock::get_indices() const
 std::string
 TensorBlock::get_index_string() const
 {
-    return ClassOutput<const uli*>::str(nindex_, indices_);
+    return ClassOutput<const uli*>::str(nindex(), indices_);
 }
 
 std::string
 TensorBlock::get_block_name() const
 {
     std::string name = get_index_string();
+    if (tmp_block_)
+        name += " tmp block ";
     name += " on tensor ";
     std::string tensor_name = parent_tensor_->get_name();
     name += tensor_name;
@@ -1206,7 +1411,7 @@ TensorBlock::get_first_data_node() const
 MemoryPool*
 TensorBlock::get_metadata_mempool() const
 {
-    return metadata_mempool_.get();
+    return metadata_mempool_;
 }
 
 void
@@ -1224,13 +1429,6 @@ TensorBlock::configure(Tensor::tensor_storage_t storage_type)
 }
 
 void
-TensorBlock::configure(const DiskBufferPtr& disk_buffer)
-{
-    configure(Tensor::on_disk);
-    disk_buffer_ = disk_buffer;
-}
-
-void
 TensorBlock::configure(const TensorRetrieveActionPtr& action)
 {
     configure(Tensor::action);
@@ -1240,14 +1438,17 @@ TensorBlock::configure(const TensorRetrieveActionPtr& action)
 void
 TensorBlock::clear_metadata()
 {
-
-    metadata_block_ = 0;
+    if (metadata_block_)
+    {
+        delete metadata_block_;
+        metadata_block_ = 0;
+    }
 }
 
 StorageBlock*
 TensorBlock::get_metadata_storage_block() const
 {
-    return metadata_block_.get();
+    return metadata_block_;
 }
 
 Tensor*
@@ -1274,15 +1475,12 @@ TensorBlock::get_fetch_permutation() const
     return fetch_perm_;
 }
 
-DiskBuffer*
-TensorBlock::get_disk_buffer() const
-{
-    return disk_buffer_.get();
-}
-
 TensorBlock*
 TensorBlock::get_symmetry_unique_block() const
 {
+    if (unique_block_)
+        return unique_block_;
+
     TensorBlock* block = parent_tensor_->get_block(indices_, fetch_perm_);
 #if YETI_SANITY_CHECK
     if (permutationally_unique_ && block && block != this)
@@ -1381,13 +1579,14 @@ TensorBlock::init_branch()
         Create the tensor branch in the memory pool
         owned by the tensor block
     */
-    branch_ = new (metadata_mempool_.get())
+    branch_ = new (metadata_mempool_)
         TensorBranch(
             indices_,
-            depth_,
+            depth(),
             this
         );
-    branch_->set_descr(descr_);
+    branch_->set_descr(descr());
+    branch_->set_malloc_number(malloc_number_);
 }
 
 void
@@ -1403,8 +1602,8 @@ TensorBlock::init_in_core()
 void
 TensorBlock::init_tmp_accumulate()
 {
-    char* metadata_data = YetiRuntime::malloc(metadata_block_size_);
-    metadata_block_ = new InCoreBlock(metadata_data, metadata_block_size_);
+    char* metadata_data = YetiRuntime::malloc(metadata_block_size());
+    metadata_block_ = new InCoreBlock(metadata_data, metadata_block_size());
 
     init_mempool();
 
@@ -1421,13 +1620,15 @@ TensorBlock::init_tmp_accumulate()
     controller_ = accumulate_controller_;
 
     set_initialized(true);
+
+    finalized_ = true;
 }
 
 void
 TensorBlock::init_in_core_no_sort()
 {
-    char* metadata_data = YetiRuntime::malloc(metadata_block_size_);
-    metadata_block_ = new InCoreBlock(metadata_data, metadata_block_size_);
+    char* metadata_data = YetiRuntime::malloc(metadata_block_size());
+    metadata_block_ = new InCoreBlock(metadata_data, metadata_block_size());
     init_mempool();
     init_branch();
 
@@ -1440,6 +1641,12 @@ TensorBlock::init_in_core_no_sort()
     verbatim_controller_ = in_core_controller_;
 
     set_initialized(true);
+
+    //set as retrieved
+    fast_read_ = true;
+
+    set_prefetched(true);
+    set_finalized(false);
 }
 
 void
@@ -1513,11 +1720,8 @@ TensorBlock::init_on_disk()
 void
 TensorBlock::init_on_disk_no_sort()
 {
-    metadata_block_ = new LocalDiskBlock(
-                        this,
-                        parent_tensor_->get_metadata_cache(),
-                        disk_buffer_.get()
-                      );
+    yeti_throw(SanityCheckError, "no disk usage currently allowed");
+
     metadata_block_->retrieve();
 
     init_mempool();
@@ -1553,11 +1757,23 @@ TensorBlock::init_on_disk_resort()
 void
 TensorBlock::configure_tmp_block(TensorBlock* block)
 {
-    wait_on_send(); //very important...
+    try{
+        wait_on_send(); //very important...
+    } catch (int e) {
+        cerr << stream_printf("Wait on send failure for %s being reconfigured to %s on thread %d node %d\n",
+                        get_block_name().c_str(), block->get_block_name().c_str(),
+                        YetiRuntime::get_thread_number(), YetiRuntime::me());
+        throw e;
+    }
+    for (uli i=0; i < nindex(); ++i)
+        indices_[i] = block->indices_[i];
+
+    malloc_number_ = block->malloc_number_;
+    node_number_ = block->node_number_;
+    branch_->set_malloc_number(malloc_number_);
+
     if (block->is_remote_block())
     {
-        node_number_ = block->node_number_;
-        malloc_number_ = block->malloc_number_;
         accumulate_controller_ = tmp_remote_accumulate_controller_;
     }
     else
@@ -1565,10 +1781,7 @@ TensorBlock::configure_tmp_block(TensorBlock* block)
         accumulate_controller_ = tmp_thread_accumulate_controller_;
     }
 
-    for (uli i=0; i < nindex_; ++i)
-        indices_[i] = block->indices_[i];
-
-    block_number_ = block->block_number_;
+    controller_ = accumulate_controller_;
 }
 
 bool
@@ -1581,6 +1794,64 @@ bool
 TensorBlock::is_subblock() const
 {
     return is_subblock_;
+}
+
+bool
+TensorBlock::is_flushable() const
+{
+    if (!metadata_block_->is_retrieved())
+        return true;
+
+    DataStorageNode* node = head_data_node();
+    while(node)
+    {
+        StorageBlock* block = node->block;
+        if (!block->is_retrieved())
+            return true;
+        node = node->next;
+    }
+    
+    return false;
+}
+
+bool
+TensorBlock::is_nonnull() const
+{
+    wait_on_remote(); //something else might be off working on initialize - which means this is technically nonnull
+    return is_initialized();
+}
+
+void
+TensorBlock::wait_on_remote() const
+{
+    while (remote_wait_)
+        usleep(1);
+}
+
+void
+TensorBlock::set_remote_wait(bool flag)
+{
+#if YETI_SANITY_CHECK
+    if (!is_locked())
+    {
+        controller_fail();
+        block_fail(SanityCheckError, "Block is not locked in set remote wait");
+    }
+#endif
+    remote_wait_ = flag;
+}
+
+void
+TensorBlock::set_task_owner(bool flag)
+{
+    task_owner_ = flag;
+}
+
+
+bool
+TensorBlock::is_task_owner() const
+{
+    return task_owner_;
 }
 
 void
@@ -1631,7 +1902,7 @@ TensorBlock::init_remote_resort()
 
     write_controller_ = abort_write_controller_;
 
-    accumulate_controller_ = in_core_sorted_accumulate_controller_;
+    accumulate_controller_ = abort_accumulate_controller_;
 
     verbatim_controller_ = abort_verbatim_controller_;
 }
@@ -1686,9 +1957,21 @@ TensorBlock::is_permutationally_unique() const
 }
 
 bool
+TensorBlock::is_recomputed_block() const
+{
+    return storage_type_ == Tensor::recomputed;
+}
+
+bool
+TensorBlock::is_local_block() const
+{
+    return YetiRuntime::me() == node_number_;
+}
+
+bool
 TensorBlock::is_remote_block() const
 {
-    bool remote_block = YetiRuntime::me() != node_number_;
+    bool remote_block = YetiRuntime::me() != get_node_owner();
     return remote_block;
 }
 
@@ -1714,11 +1997,22 @@ void
 TensorBlock::_obsolete()
 {
     if (!is_locked())
-        raise(SanityCheckError, "cannot obsolete unlocked tensor block");
+        block_fail(SanityCheckError, "Cannot obsolete unlocked tensor block");
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("obsolete");
+#endif
+
+    wait_on_remote();
 
     //it's possible this is not symmetry unique and was never used
     if (controller_)
     {
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+        cout << stream_printf("Obsoleting %s on thread %ld node %ld\n", 
+            get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+        cout.flush();
+#endif
         controller_->obsolete(this);
     }
 }
@@ -1726,6 +2020,11 @@ TensorBlock::_obsolete()
 void
 TensorBlock::print(std::ostream& os)
 {
+    if (branch_ == 0)
+        return;
+    if (branch_->get_node() == 0)
+        return;
+
     NormElementOp* op = new NormElementOp;
     element_op(op);
     double norm = op->norm();
@@ -1733,8 +2032,14 @@ TensorBlock::print(std::ostream& os)
 
     set_synced();
 
-    os    << "Degeneracy: " << degeneracy_ << " NBlocks: " << nstorage_blocks_ << endl
-        << stream_printf("max log: %8.4f    norm: %8.4e", maxlog, norm)
+    os << indexstr(descr()->nindex(), indices_);
+    os << stream_printf(" Unique=%d    Malloc Numbers=(%d,%d)", 
+                    permutationally_unique_, malloc_number_, branch_->get_malloc_number()) << endl;
+    os   << "Branch: " << branch_ 
+        << " Degeneracy: " << degeneracy_ 
+        << stream_printf("norm: %8.4e  mempool: %p  size: %ld  remain: %ld", 
+                         norm, metadata_mempool_,
+                         metadata_mempool_->total_size(), metadata_mempool_->remaining())
         << endl;
 
     branch_->get_node()->print(os);
@@ -1766,27 +2071,108 @@ TensorBlock::is_cache_coherent() const
     return coherent;
 }
 
+
 void
-TensorBlock::retrieve_read()
+TensorBlock::complete_read()
 {
+    if (fast_read_)
+        return;
+
+    wait_on_remote(); //something else might be off working on initialize
     lock();
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("complete read");
+#endif
+
     set_read_mode();
+    if (fast_read_) //this might have been set by initialization
+    {
+        unlock();
+        return;
+    }
+
+#if YETI_SANITY_CHECK
+    if (prefetch_count_ == 0 || !is_prefetched())
+    {
+        controller_fail();
+        yeti_throw(SanityCheckError, "Tensor block is not prefetched. There is no read to complete");
+    }
+#endif
+    --prefetch_count_; //decrement the prefetch count
+
+    if (need_parent_retrieve())
+        get_symmetry_unique_block()->complete_read();
+
     YetiRuntimeObject::retrieve();
     if (storage_type_ != Tensor::recomputed)
         unlock();
 }
 
+bool
+TensorBlock::need_parent_retrieve() const
+{
+    return !permutationally_unique_ && storage_type_ != Tensor::recomputed;
+}
+
+void
+TensorBlock::retrieve_read()
+{
+    if (fast_read_)
+        return;
+
+    //the wait on remote must happen outside the lock
+    //thus we cannot lock or the usability restore
+    //will deadlock
+    wait_on_remote(); //something else might be off working on initialize
+    lock();
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("retrieve read");
+#endif
+    set_read_mode();
+    if (fast_read_) //this might have been set by initialization
+    {
+        unlock();
+        return;
+    }
+
+    if (need_parent_retrieve())
+        get_symmetry_unique_block()->retrieve_read();
+
+    YetiRuntimeObject::retrieve();
+    if (storage_type_ != Tensor::recomputed)
+        unlock();
+
+    if (need_parent_retrieve())
+        get_symmetry_unique_block()->release_read();
+}
+
 void
 TensorBlock::release_read()
 {
+    if (fast_read_)
+        return;
+
+
     if (storage_type_ == Tensor::recomputed)
     {
+        #if TRACK_TENSOR_BLOCK_HISTORY
+            add_event("release read");
+        #endif
         YetiRuntimeObject::release();
         unlock();
     }
     else
     {
         lock();
+
+        if (!permutationally_unique_)
+            get_symmetry_unique_block()->release_read();
+
+        #if TRACK_TENSOR_BLOCK_HISTORY
+            add_event("release read");
+        #endif
         YetiRuntimeObject::release();
         unlock();
     }
@@ -1796,6 +2182,10 @@ TensorBlock::release_read()
 void
 TensorBlock::retrieve_accumulate_no_lock()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("retrieve accumulate");
+#endif
+
     set_accumulate_mode();
     YetiRuntimeObject::retrieve();
 }
@@ -1803,6 +2193,7 @@ TensorBlock::retrieve_accumulate_no_lock()
 void
 TensorBlock::retrieve_accumulate()
 {
+    wait_on_remote(); //something else might be off working on initialize
     lock();
     retrieve_accumulate_no_lock();
 }
@@ -1810,21 +2201,56 @@ TensorBlock::retrieve_accumulate()
 void
 TensorBlock::release_accumulate()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("release accumulate");
+#endif
     YetiRuntimeObject::release();
     unlock();
 }
 
 void
-TensorBlock::retrieve_verbatim()
+TensorBlock::wtf_retrieve()
 {
-    lock();
+    //wait_on_usable();
+    //lock();
+    //set_verbatim_mode();
+    //YetiRuntimeObject::retrieve();
+    //wait_on_send();
+    //_retrieve();
+}
+
+void
+TensorBlock::wtf_release()
+{
+    //_release();
+    //YetiRuntimeObject::release();
+    //unlock();
+}
+
+void
+TensorBlock::retrieve_verbatim_no_lock()
+{
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("retrieve verbatim");
+#endif
     set_verbatim_mode();
     YetiRuntimeObject::retrieve();
 }
 
 void
+TensorBlock::retrieve_verbatim()
+{
+    wait_on_remote(); //something else might be off working on initialize
+    lock();
+    retrieve_verbatim_no_lock();
+}
+
+void
 TensorBlock::release_verbatim()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("release verbatim");
+#endif
     YetiRuntimeObject::release();
     unlock();
 }
@@ -1832,7 +2258,11 @@ TensorBlock::release_verbatim()
 void
 TensorBlock::retrieve_write()
 {
+    wait_on_remote(); //something else might be off working on initialize
     lock();
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("retrieve write");
+#endif
     set_write_mode();
     YetiRuntimeObject::retrieve();
 }
@@ -1840,6 +2270,9 @@ TensorBlock::retrieve_write()
 void
 TensorBlock::release_write()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("release write");
+#endif
     YetiRuntimeObject::release();
     unlock();
 }
@@ -1847,103 +2280,362 @@ TensorBlock::release_write()
 void
 TensorBlock::finalize()
 {
-    YetiRuntimeObject::finalize();
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("finalize");
+#endif
+    if (finalized_)
+    {
+        set_prefetched(false);
+        return;
+    }
+    
+#if YETI_SANITY_CHECK
+    if (!is_locked())
+        block_fail(SanityCheckError, "cannot finalize unlocked object");
+#endif
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Finalizing %s on thread %ld node %ld\n", 
+        get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
+    controller_->finalize(this);
+    YetiRuntimeObject::set_finalized(true);
+    set_prefetched(false);
 }
 
 void
 TensorBlock::_initialize()
 {
     if (!controller_)
-        raise(SanityCheckError, "tensor block not yet initialized");
+        block_fail(SanityCheckError, "tensor block not yet initialized");
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("initialize");
+#endif
+
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Initialize %s on thread %ld node %ld\n", 
+        get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
 
 #if YETI_SANITY_CHECK
     //cache block should not already be retrieved
     if (metadata_block_->is_cached() && metadata_block_->is_retrieved())
-        raise(SanityCheckError, "metadata block is retrieved already in initialize");
+        block_fail(SanityCheckError, "metadata block is retrieved already in initialize");
 #endif
 
-    controller_->validate(this);
-    bool in_core = metadata_block_->retrieve();
-
-    branch_ = reinterpret_cast<TensorBranch*>(metadata_block_->data());
-    metadata_mempool_->set(metadata_block_->data());
-    branch_->set_metadata_mempool(metadata_mempool_.get());
-    branch_->set_descr(descr_);
-    branch_->set_parent(this);
-
-    DataStorageNode* node = first_data_node(); 
-    while(node)
+#if TRACK_TENSOR_BLOCK_HISTORY
+    if (!permutationally_unique_)
     {
-        StorageBlock* block = node->block;
-        block->retrieve();
-        node = node->next;
+        get_symmetry_unique_block()->add_event(this);
+        get_symmetry_unique_block()->add_event("non-unique child block initialize");
     }
+#endif
+
+	try{
+		controller_->validate(this);
+		bool in_core = metadata_block_->retrieve();
+#if TRACK_TENSOR_BLOCK_HISTORY
+        add_event("metadata retrieve");
+#endif
+
+		branch_ = reinterpret_cast<TensorBranch*>(metadata_block_->data());
+		metadata_mempool_->set(metadata_block_->data());
+		branch_->set_metadata_mempool(metadata_mempool_);
+		branch_->set_descr(descr());
+		branch_->set_parent(this);
+
+		DataStorageNode* node = head_data_node(); 
+		while(node)
+		{
+			StorageBlock* block = node->block;
+			block->retrieve();
+			node = node->next;
+#if TRACK_TENSOR_BLOCK_HISTORY
+            add_event("data retrieve");
+#endif
+		}
+	} catch (int e) {
+		if (e == TENSOR_BLOCK_POLICY_EXCEPTION)
+			controller_fail();
+		throw e;
+	}
 }
 
 void
 TensorBlock::_renew()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("renew");
+    if (!permutationally_unique_)
+    {
+        get_symmetry_unique_block()->add_event(this);
+        get_symmetry_unique_block()->add_event("non-unique child block renew");
+    }
+#endif
+
     wait_on_send();
-    reset_send_status();
+#if YETI_SANITY_CHECK
+    if (metadata_block_->is_retrieved())
+    {
+        
+        DataStorageNode* node = head_data_node();
+        while (node)
+        {
+            if (!node->block->is_retrieved())
+            {
+                cerr << stream_printf("Tensor block %s retrieve failure\n", get_block_name().c_str());
+                block_fail(SanityCheckError, "Data block is not retrieved at but metadata block is retrieved");
+            }
+            node = node->next;
+        }
+    }
+#endif
+
+  try{
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Renew %s on thread %ld node %ld\n", 
+        get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
+
 
     controller_->renew(this);
     set_synced();
+
+#if YETI_SANITY_CHECK
+    if (!metadata_block_->is_retrieved())
+    {
+        controller_fail();
+        block_fail(SanityCheckError, "Metadata block is not retrieved at end of renew");
+    }
+
+    DataStorageNode* node = head_data_node();
+    while (node)
+    {
+        if (!node->block->is_retrieved())
+            block_fail(SanityCheckError, "Data block is not retrieved at end of renew");
+        node = node->next;
+    }
+#endif
+  } catch (int e) {
+    if (e == TENSOR_BLOCK_POLICY_EXCEPTION)
+        controller_fail();
+    throw e;
+  }
 }
 
 void
 TensorBlock::_retrieve()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("retrieve");
+    if (!permutationally_unique_)
+    {
+        get_symmetry_unique_block()->add_event(this);
+        get_symmetry_unique_block()->add_event("non-unique child block retrieve");
+    }
+#endif
+
     wait_on_send();
 
-    //reset the send status after the retrieve
-    controller_->retrieve(this);
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Retrieve %s on thread %ld node %ld\n", 
+        get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
 
-    reset_send_status();
+
+#if YETI_SANITY_CHECK
+    if (metadata_block_->is_retrieved())
+    {
+        
+        DataStorageNode* node = head_data_node();
+        while (node)
+        {
+            if (!node->block->is_retrieved())
+            {
+                cerr << stream_printf("Tensor block %s retrieve failure\n", get_block_name().c_str());
+                block_fail(SanityCheckError, "Data block is not retrieved at but metadata block is retrieved");
+            }
+            node = node->next;
+        }
+    }
+#endif
+
+  try{
+    bool in_core = metadata_block_->retrieve();
+#if TRACK_TENSOR_BLOCK_HISTORY
+        add_event("metadata retrieve");
+#endif
+    if (!in_core)
+        block_fail(SanityCheckError, "metadata block is not in core despite having entered _retrieve");
+
+    if (!permutationally_unique_ && controller_ == read_controller_)
+    {
+        TensorBlock* block = get_symmetry_unique_block();
+        block->retrieve_read(); //ensure retrieved throughout entire retrieve
+        //reset the send status after the retrieve
+        controller_->retrieve(this);
+        block->release_read();
+#if TRACK_TENSOR_BLOCK_HISTORY
+        block->add_event("parent block retrieve");
+#endif
+    }
+    else
+    {
+        //reset the send status after the retrieve
+        controller_->retrieve(this);
+    }
 
     //after retrieving, we are synced with the parent storage location
     set_synced();
+    //we are also prefetched
+    set_prefetched(true);
+
+#if YETI_SANITY_CHECK
+    if (!metadata_block_->is_retrieved())
+    {
+        block_fail(SanityCheckError, "Metadata block is not retrieved at end of retrieve");
+    }
+
+    DataStorageNode* node = head_data_node();
+    while (node)
+    {
+        if (!node->block->is_retrieved())
+        {
+            cerr << stream_printf("Tensor block %s retrieve failure\n", get_block_name().c_str());
+            block_fail(SanityCheckError, "Data block is not retrieved at end of retrieve");
+        }
+        node = node->next;
+    }
+#endif
+  } catch (int e)
+  {
+    if (e == TENSOR_BLOCK_POLICY_EXCEPTION)
+        controller_fail();
+    throw e;
+  }
+
 }
+
+const char*
+TensorBlock::controller_fail(TensorController* controller) const
+{
+#define _controller_fail(x) if (controller == x) return #x;
+    _controller_fail(in_core_controller_);
+    _controller_fail(in_core_sorted_write_controller_);
+    _controller_fail(in_core_sorted_read_controller_);
+    _controller_fail(in_core_sorted_verbatim_controller_);
+    _controller_fail(in_core_sorted_accumulate_controller_);
+    _controller_fail(disk_read_controller_);
+    _controller_fail(disk_write_controller_);
+    _controller_fail(disk_accumulate_controller_);
+    _controller_fail(disk_sorted_read_controller_);
+    _controller_fail(remote_read_controller_);
+    _controller_fail(remote_write_controller_);
+    _controller_fail(remote_verbatim_controller_);
+    _controller_fail(remote_accumulate_controller_);
+    _controller_fail(remote_sorted_read_controller_);
+    _controller_fail(action_read_controller_);
+    _controller_fail(action_sorted_read_controller_);
+    _controller_fail(abort_read_controller_);
+    _controller_fail(abort_write_controller_);
+    _controller_fail(abort_accumulate_controller_);
+    _controller_fail(abort_verbatim_controller_);
+    _controller_fail(recompute_read_controller_);
+    _controller_fail(tmp_thread_accumulate_controller_);
+    _controller_fail(tmp_remote_accumulate_controller_);
+    return "";
+}
+
+void
+TensorBlock::controller_fail() const
+{
+#if TRACK_TENSOR_BLOCK_HISTORY
+    print_history();
+#endif
+    YetiRuntime::stack_print();
+
+    if (tmp_block_)
+        cout << stream_printf("Controller fail on tmp block %s on thread %d on node %d\n", 
+                    get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    else
+        cout << stream_printf("Controller fail on block %s on thread %d on node %d\n", 
+                    get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    
+    cerr << stream_printf("Read: %s\nWrite: %s\nVerbatim: %s\nAccumulate: %s\n",
+                            controller_fail(read_controller_),
+                            controller_fail(write_controller_),
+                            controller_fail(verbatim_controller_),
+                            controller_fail(accumulate_controller_)
+                          );
+
+}
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+void
+DataStorageBlockAllocator::print_history() const
+{
+
+    std::list<const char*>::const_iterator it = history_.begin();
+    std::list<const char*>::const_iterator stop = history_.end();
+    cerr << "History:\n";
+    for ( ; it != stop; ++it)
+    {
+        const char* msg = *it;
+        cerr << stream_printf("Event on node %d: %s\n", YetiRuntime::me(), msg);
+    }
+    cerr << endl;
+}
+
+void
+DataStorageBlockAllocator::add_event(const char* event)
+{
+    char* str = new char[100];
+    sprintf(str, "%s on thread %ld on node %ld", event, 
+        YetiRuntime::get_thread_number(),
+        YetiRuntime::me());
+    history_.push_back(str);
+}
+
+void
+DataStorageBlockAllocator::add_event(TensorBlock* block)
+{
+    char* str = new char[200];
+    sprintf(str, "%s", block->get_block_name().c_str());
+    history_.push_back(str);
+}
+#endif
 
 void
 TensorBlock::_release()
 {
+    if (prefetch_count_) //there are more blocks waiting
+        return; //don't release
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("release");
+    if (!permutationally_unique_)
+    {
+        get_symmetry_unique_block()->add_event(this);
+        get_symmetry_unique_block()->add_event("non-unique child block release");
+    }
+#endif
+
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Release %s on thread %ld node %ld\n", 
+        get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
+
     controller_->release(this);
+
 }
 /*************
 End private interface definition
 *************/
-
-void
-TensorBlock::release_callback()
-{
-    bool locked = trylock();
-    if (!locked) //another thread came along to renew this
-        return; //just leave everything alone
-
-    metadata_block_->release();
-    DataStorageNode* node = first_data_node();
-    while(node)
-    {
-        StorageBlock* data_block = node->block;
-        data_block->release();
-        node = node->next;
-    }
-
-    reset_send_status();
-    finalize();
-
-    unlock();
-}
-
-void
-TensorBlock::preflush()
-{
-#if YETI_SANITY_CHECK
-    if (!is_locked())
-        raise(SanityCheckError, "cannot flush unlocked tensor block");
-#endif
-    controller_->preflush(this);
-}
 
 /**********
 Begin Cachable interface definition
@@ -1952,51 +2644,81 @@ void
 TensorBlock::flush_from_cache()
 {
     if (!controller_) //this was never actually used for anything
+    {
+        set_initialized(false);
+        set_prefetched(false);
         return;
+    }
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("flush from cache");
+#endif
+
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Flushing %s on node %ld thread %ld\n", get_block_name().c_str(), YetiRuntime::me(), YetiRuntime::get_thread_number());
+    cout.flush();
+#endif
 
 #if YETI_SANITY_CHECK
     if (metadata_block_->is_retrieved())
-        raise(SanityCheckError, "cannot flush retrieved block");
+    {
+        cerr << stream_printf("Block %s was not properly release before calling flush\n",
+                        get_block_name().c_str());
+        controller_fail();
+        block_fail(SanityCheckError, "Cannot flush retrieved block");
+    }
 #endif
 
-    wait_on_send();
+    wait_on_send(); 
+    if (!finalized_)
+    {
+        finalize(); //might generate a new send
+        wait_on_send();
+    }
 
 #if YETI_SANITY_CHECK
     if (!is_locked())
-        raise(SanityCheckError, "cannot flush unlocked tensor block");
+        block_fail(SanityCheckError, "Cannot flush unlocked tensor block");
 #endif
 
-    controller_->flush(this);
-    controller_->flush_data(this);
+    try{
+        controller_->flush(this);
+    } catch (int e) {
+        cerr << stream_printf("Error in metadata flush of block %s", get_block_name().c_str());
+        throw e;
+    }
+    try{
+        controller_->flush_data(this);
+    } catch (int e) {
+        cerr << stream_printf("Error in data flush of block %s", get_block_name().c_str());
+        throw e;
+    }
 
-    reset_send_status();
 
 #if YETI_SANITY_CHECK
-    CachedStorageBlock* block = dynamic_cast<CachedStorageBlock*>(metadata_block_.get());
+    CachedStorageBlock* block = dynamic_cast<CachedStorageBlock*>(metadata_block_);
     if (block)
     {
         if (block->get_entry())
         {
-            raise(SanityCheckError, "cache block not cleared in flush");
+            block_fail(SanityCheckError, "Cache block not cleared in flush");
         }
         if (block->data())
         {
-            raise(SanityCheckError, "block not cleared in flush");
+            block_fail(SanityCheckError, "Block not cleared in flush");
         }
     }
 #endif
 
-    finalize();
+    set_initialized(false);
+    set_prefetched(false);
+
 }
 
-/********
-End Cachable interface definition
-*********/
 
 void
 TensorBlock::recompute_tensor_permutation()
 {
-
     if (permutationally_unique_)
     {
         resort_perm_ = parent_tensor_->get_tensor_grp()->get_identity();
@@ -2043,6 +2765,12 @@ TensorBlock::get_node_number() const
     return node_number_;
 }
 
+uli
+TensorBlock::get_node_owner() const
+{
+    return node_number_ == NODE_NUMBER_UNINITIALIZED ? YetiRuntime::me() : node_number_;
+}
+
 void
 TensorBlock::set_degeneracy(usi degeneracy)
 {
@@ -2058,6 +2786,13 @@ TensorBlock::set_accumulate_mode()
     //already in accumulate mode
     if (controller_ == accumulate_controller_)
         return true;
+
+    set_prefetched(false);
+
+#if YETI_SANITY_CHECK
+    if (is_retrieved())
+        block_fail(SanityCheckError, "cannot set accumulate mode while tensor block is retrieved");
+#endif
     
     if (!is_synced())
     {
@@ -2071,7 +2806,7 @@ TensorBlock::set_accumulate_mode()
         cerr << "Cannot switch to accumulate mode.  Tensor block "
              << get_index_string() << " in tensor " << parent_tensor_->get_name()
              << " has not been synced" << endl;
-        return false;
+        abort();
     }
     controller_ = accumulate_controller_;
     return true;
@@ -2080,7 +2815,6 @@ TensorBlock::set_accumulate_mode()
 void
 TensorBlock::set_verbatim_mode()
 {    
-
     if (!controller_)
         init();
 
@@ -2088,12 +2822,13 @@ TensorBlock::set_verbatim_mode()
     if (controller_ == verbatim_controller_)
         return;
 
+    set_prefetched(false);
     if (!is_synced())
     {
         cerr << "Cannot switch to verbatim mode.  Tensor block has"
              << " not been synced from previous operation" << endl;
         cerr << ClassOutput<const uli*>
-                ::str(descr_->nindex(), indices_) << endl;
+                ::str(descr()->nindex(), indices_) << endl;
         abort();
     }
 
@@ -2103,16 +2838,16 @@ TensorBlock::set_verbatim_mode()
 void
 TensorBlock::set_read_mode()
 {
-
     if (!controller_)
     {
-        if (!controller_) //another thread may have come in and done this
-            init();
+        init();
     }
 
     //already in correct mode
     if (controller_ == read_controller_)
         return;
+
+    set_prefetched(false);
     
     if (!is_synced())
     {
@@ -2127,7 +2862,6 @@ TensorBlock::set_read_mode()
 void
 TensorBlock::set_write_mode()
 {
-
     if (!controller_)
         init();
 
@@ -2135,12 +2869,14 @@ TensorBlock::set_write_mode()
     if (controller_ == write_controller_)
         return;
     
+    set_prefetched(false);
+
     if (!is_synced())
     {
         cerr << "Cannot switch to write mode.  Tensor block has"
              << " not been synced from previous operation" << endl;
         cerr << ClassOutput<const uli*>
-                ::str(descr_->nindex(), indices_) << endl;
+                ::str(descr()->nindex(), indices_) << endl;
         abort();
     }
     controller_ = write_controller_;
@@ -2151,7 +2887,7 @@ TensorBlock::metadata_sort(Sort* sort)
 {
     uli* tmp = reinterpret_cast<uli*>(sort->metadata_buffer(0));
     sort->get_permutation()->permute<uli>(indices_, tmp);
-    ::memcpy(indices_, tmp, nindex_ * sizeof(uli));
+    ::memcpy(indices_, tmp, nindex() * sizeof(uli));
 
     sort_tensor_permutation(sort->get_permutation());
 }
@@ -2173,9 +2909,16 @@ TensorBlock::data_sort(Sort* sort)
 void
 TensorBlock::sync()
 {
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("sync");
+#endif
     if (is_synced())
         return;
 
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Syncing %s\n", get_block_name().c_str());
+    cout.flush();
+#endif
     controller_->sync(this);
     set_synced();
 }
@@ -2185,7 +2928,7 @@ TensorBlock::update()
 {
     reset_degeneracy();
 
-    if (is_permutationally_unique())
+    if (is_permutationally_unique() && is_local_block())
     {
         branch_->get_node()->update();
     }
@@ -2200,29 +2943,148 @@ TensorBlock::reset_degeneracy()
 }
 
 void
+TensorBlock::set_prefetched(bool flag)
+{
+    is_prefetched_ = flag;
+}
+
+bool
+TensorBlock::is_prefetched() const
+{
+    return is_prefetched_;
+}
+
+bool
+TensorBlock::has_fast_read() const
+{
+    return fast_read_;
+}
+
+void
 TensorBlock::prefetch_read()
 {
+    if (fast_read_)
+        return;
+
     lock();
-    set_read_mode();
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("prefetch read");
+    if (!permutationally_unique_)
+    {
+        get_symmetry_unique_block()->add_event(this);
+        get_symmetry_unique_block()->add_event("non-unique child block prefetch");
+    }
+#endif
+    set_read_mode(); //always set the mode first as this may change prefetch state
+    if (fast_read_)
+    {
+        unlock();
+        return;
+    }
+
+    if (need_parent_retrieve())
+        get_symmetry_unique_block()->prefetch_read();
+
+    ++prefetch_count_;
+    if (is_prefetched())
+    {
+#if TRACK_TENSOR_BLOCK_HISTORY
+        add_event("skip prefetch");
+#endif
+        if (prefetch_count_ == 1 && !metadata_block_->is_retrieved())
+        //there are no pending prefetchs - make sure all blocks are retrieved
+        {
+            metadata_block_->retrieve();
+            #if TRACK_TENSOR_BLOCK_HISTORY
+            add_event("metadata retrieve");
+            #endif
+            DataStorageNode* node = head_data_node(); 
+            while(node)
+            {
+                StorageBlock* block = node->block;
+                block->retrieve();
+                node = node->next;
+                #if TRACK_TENSOR_BLOCK_HISTORY
+                add_event("data retrieve");
+                #endif
+            }
+        }
+        unlock();
+        return;
+    }
+
+#if YETI_SANITY_CHECK
+    if (!finalized_)
+    {
+        cerr << stream_printf("Invalid unfinalized prefetch state %s on thread %ld node %ld\n", 
+            get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+        cerr.flush();
+        controller_fail();
+        block_fail(SanityCheckError, "Invalid prefetch");
+    }
+    if (is_retrieved())
+    {
+        cerr << stream_printf("Invalid retrieved prefetch state %s on thread %ld node %ld\n", 
+            get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+        cerr.flush();
+        controller_fail();
+        block_fail(SanityCheckError, "Invalid prefetch");
+    }
+#endif
+
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Prefetch read %s on thread %ld node %ld\n", 
+            get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
+
+    //do NOT unlock - it us up to the controller to unlock
     controller_->out_of_core_prefetch(this);
-    unlock();
 }
 
 void
 TensorBlock::prefetch_accumulate()
 {
-    lock();
-    set_accumulate_mode();
-    controller_->out_of_core_prefetch(this);
-    unlock();
+    return; //right now... no prefetch accumulates
 }
 
 void
 TensorBlock::prefetch_read(TensorBlock* prev_block)
 {
     lock();
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("prefetch in core read");
+#endif
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Prefetch in core read %s on thread %ld node %ld\n", 
+            get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
     set_read_mode();
+    
+    /** Here it us up to the controller to ensure metadata and data are retrieved */
     controller_->in_core_prefetch(this, prev_block);
+
+#if YETI_SANITY_CHECK
+    CachedStorageBlock* meta_block = dynamic_cast<CachedStorageBlock*>(metadata_block_);
+    if (meta_block)
+    {
+        bool meta_retrieved = meta_block->is_retrieved();
+        DataStorageNode* node = head_data_node();
+        while (node)
+        {
+            CachedStorageBlock* block = dynamic_cast<CachedStorageBlock*>(node->block);
+            bool block_retrieved = block->is_retrieved();
+            if (block_retrieved != meta_retrieved)
+            {
+                cerr << stream_printf("Tensor block %s in core prefetch failure\n", get_block_name().c_str());
+                block_fail(SanityCheckError, "Metadata and data retrieve statuses differ");
+            }
+            node = node->next;
+        }
+    }
+#endif
+
     unlock();
 }
 
@@ -2230,14 +3092,23 @@ void
 TensorBlock::prefetch_accumulate(TensorBlock* prev_block)
 {
     lock();
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("prefetch in core accumulate");
+#endif
+
+#if DEBUG_TENSOR_BLOCK_RETRIEVE
+    cout << stream_printf("Prefetch in core accumulate %s on thread %ld node %ld\n", 
+            get_block_name().c_str(), YetiRuntime::get_thread_number(), YetiRuntime::me());
+    cout.flush();
+#endif
     set_accumulate_mode();
+    YetiRuntimeObject::initialize();
     controller_->in_core_prefetch(this, prev_block);
     unlock();
 }
 
-
 void
-TensorBlock::recv_data(
+TensorBlock::redistribute(
     YetiMessenger* messenger,
     Message::message_data_type_t type,
     uli proc_number,
@@ -2246,8 +3117,76 @@ TensorBlock::recv_data(
     uli nmessages
 )
 {
+#if DEBUG_TENSOR_BLOCK_RETRIEVE 
+    cout << stream_printf("Receiving redistribute data block %s on %ld\n",
+                          get_block_name().c_str(), YetiRuntime::me());
+    cout.flush();
+#endif
+    lock();
+    uninit();
+    set_node_number(YetiRuntime::me());
+    init_local();
+    controller_ = read_controller_;
+    //treat this as a retrieve - this means the block is locked and waiting when the message arrives
+    recv_data(
+        messenger, 
+        type, 
+        Message::ReadRequestedRetrieve,
+        proc_number, 
+        metadata_size, 
+        initial_tag, 
+        nmessages
+    );
+    unlock();
+}
+
+bool
+TensorBlock::is_waiting_on_redistribute() const
+{
+    if (!controller_)
+        return true;
+
+    bool remote_controller = read_controller_ == remote_read_controller_ || read_controller_ == remote_sorted_read_controller_;
+
+    return remote_controller;
+}
+
+void
+TensorBlock::enter_recv(Message::message_action_t action)
+{
+    if (action == Message::GlobalSum)
+        lock();
+}
+
+void
+TensorBlock::exit_recv(Message::message_action_t action)
+{
+    set_remote_wait(false);
+    if (action != Message::ReadRequestedRetrieve)
+        unlock();
+}
+
+
+void
+TensorBlock::recv_data(
+    YetiMessenger* messenger,
+    Message::message_data_type_t type,
+    Message::message_action_t action,
+    uli proc_number,
+    size_t metadata_size,
+    uli initial_tag,
+    uli nmessages
+)
+{
+    enter_recv(action);
+
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("recv data");
+#endif
 
 #if YETI_SANITY_CHECK
+    if (!is_locked())
+        block_fail(SanityCheckError, "Block is not locked in recv_data");
     /** not really sure of the best way to fix this
     it can happen that a block sends itself to a remote node
     and before it has had a chance to mark itself as released
@@ -2260,16 +3199,51 @@ TensorBlock::recv_data(
         usleep(1);
         ++ncheck;
 
-        if (ncheck > 1e7)
-            raise(SanityCheckError, "block is retrieved and cannot receive data after 10 seconds");
+        if (ncheck > MICROSECOND_LOCK_WAIT)
+            block_fail(SanityCheckError, "block is retrieved and cannot receive data after 1 second");
     }
+    if (type != Message::TensorBranch)
+        block_fail(SanityCheckError, "Tensor block can only receive branch data type");
 #endif
 
-    if (type != Message::TensorBranch)
-        raise(SanityCheckError, "tensor block can only receive branch data type");
+        
+    if (initial_tag == 0)
+    {
+#if TRACK_TENSOR_BLOCK_HISTORY
+        add_event("skip receive branch");
+#endif
+#if YETI_SANITY_CHECK
+        if (nmessages != 0)
+            block_fail(SanityCheckError, "initial tag is zero but nmessages > 1");
+#endif
+        if (is_initialized())
+        {
+            //zero the branch 
+            ZeroBranchRenew zeroer;
+            zeroer.renew(this);
+        }
+        else; //do nothing - leave as a zero branch
+        
+        exit_recv(action);
+        return;
+    }
 
+    if (!is_initialized())
+    {
+        init(); 
+        //set up read mode
+        controller_ = read_controller_;
+        YetiRuntimeObject::initialize();
+    }
 
-    receive_branch(messenger, proc_number, metadata_size, initial_tag, nmessages);
+    try{
+        receive_branch(messenger, proc_number, metadata_size, initial_tag, nmessages);
+    } catch (int e) {
+        cerr << "error in TensorBlock::recv_data\n";
+        throw e;
+    }
+
+    exit_recv(action);
 }
 
 void
@@ -2282,28 +3256,60 @@ TensorBlock::accumulate_data(
     uli nmessages
 )
 {
-    heisenfxn(TensorBlock::accumulate_data);
-    if (type != Message::TensorBranch)
-        raise(SanityCheckError, "tensor block can only receive branch data type");
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("accumulate remote data");
+#endif
+    if (initial_tag == 0)
+    {
+#if YETI_SANITY_CHECK
+        if (nmessages != 0)
+            block_fail(SanityCheckError, "initial tag is zero but nmessages > 0");
+#endif
+        return; //nothing got sent
+    }
 
-    MallocOverride m;
+    if (type != Message::TensorBranch)
+        block_fail(SanityCheckError, "tensor block can only receive branch data type");
 
     //allocate a temporary block
-    TensorBlock tmp_block(this);
+    TensorBlock* tmp_block = new (tensor_block_tmp_malloc) TensorBlock(this);
+    tmp_block->retrieve_read();
+    try{
+        tmp_block->receive_branch(messenger, proc_number, metadata_size, initial_tag, nmessages);
+    }
+    catch(int e) {
+        cerr << "error in TensorBlock::accumulate_data\n";
+        throw e;
+    }
 
-    tmp_block.retrieve_read();
-    tmp_block.receive_branch(messenger, proc_number, metadata_size, initial_tag, nmessages);
+    if (!GlobalQueue::get_task_queue()->worker_threads_active())
+    {
+        Sort* sort = 0;
+        retrieve_accumulate();
+        try{
+            accumulate(tmp_block, 1.0, 0);
+        } catch (int e) {
+            cerr << stream_printf("Accumulate tmp block exception in TensorBlock::accumulate_data"
+                                  " on node %ld on thread %ld for malloc number %ld\n",
+                                  YetiRuntime::me(), YetiRuntime::get_thread_number(),
+                                  malloc_number_);
+            cerr.flush();
+            throw e;
+        }
+        release_accumulate();
+        tmp_block->release_read();
+        tmp_block->lock();
+        tmp_block->TensorBlock::~TensorBlock();
+        tensor_block_tmp_malloc.free(tmp_block);
+    }
+    else
+    {
+        TensorBlockAccumulateTask* task = new TensorBlockAccumulateTask;
 
-    Sort* sort = 0;
-    retrieve_accumulate();
-    accumulate(&tmp_block, 1.0, 0);
-    release_accumulate();
-
-    tmp_block.release_read();
-    tmp_block.lock();
-    //currently allocated in core
-    //tmp_block.flush_from_cache();
-    heisenfxn(TensorBlock::accumulate_data);
+        task->tmp_block = tmp_block;
+        task->parent_block = this;
+        GlobalQueue::get_task_queue()->add_unexpected_task(task);
+    }
 }
 
 void
@@ -2315,21 +3321,35 @@ TensorBlock::receive_branch(
     uli nmessages
 )
 {        
-    heisenfxn(TensorBlock::receive_branch);
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("receive remote branch");
+#endif
+    YetiRuntime::start_timer("receive_branch");
 #if YETI_SANITY_CHECK
     if (!is_initialized())
-        raise(SanityCheckError, "block is not initialized");
+    {
+        cerr << stream_printf("Block number %d is not initialized in receive branch\n", malloc_number_);
+        controller_fail();
+        throw TENSOR_BLOCK_COMMUNICATION_EXCEPTION;
+    }
 #endif
     if (metadata_size > metadata_block_->size())
     {
-        Env::errn() << "Metadata block is not allocated large enough for recv" << endl;
+        std::string msg = stream_printf("Metadata block %s has size %ld and is not"
+                                        "large enough to receive %ld bytes",
+                                        get_block_name().c_str(),
+                                        metadata_block_->size(),
+                                        metadata_size);
+        cerr << msg << endl;
         abort();
     }
 
     messenger->lock();
 
-    heisenfxn(TensorBlock::receive_branch);
     uli tag = initial_tag;
+#if TRACK_TENSOR_BLOCK_HISTORY
+    add_event("recv tensor branch");
+#endif
     messenger->recv_no_lock(
         proc_number,
         tag, 
@@ -2338,23 +3358,21 @@ TensorBlock::receive_branch(
     );
     //parent block gets overwritten
 
-    heisenfxn(TensorBlock::receive_branch);
     TensorBranch* obsolete_branch = branch_->get_last_branch_location();
     if (branch_ != obsolete_branch)
         branch_->realign_memory_pool(obsolete_branch, branch_);
 
     branch_->set_parent(this);
-    branch_->set_descr(descr_);
-    branch_->set_metadata_mempool(metadata_mempool_.get());
+    branch_->set_descr(descr());
+    branch_->set_metadata_mempool(metadata_mempool_);
     metadata_mempool_->set_data_size(metadata_size);
 
     TensorDataController* controller = branch_->first_data_controller();
-    DataStorageNode* dnode = first_node_;
-    heisenfxn(TensorBlock::receive_branch);
+    DataStorageNode* dnode = head_node_;
     while(controller)
     {
-        ++tag;
         size_t data_size = controller->get_data_size();
+
         StorageBlock* data_block = 0;
         if (dnode)
         {
@@ -2363,54 +3381,218 @@ TensorBlock::receive_branch(
         }
         else
         {
-            data_block = allocate_data_storage_block();
+#if YETI_SANITY_CHECK
+            if (data_size > parent_tensor_->get_data_cache()->blocksize())
+            {
+                cerr << stream_printf("Remote receive got invalid block size %ld "
+                                     "for block %s.  Max block size is %ld.\n"
+                                     "Trying to receive initial tag %ld for %ld messages.\n"
+                                     "Metadata recv size is %ld. Actual metadata "
+                                     "size is %ld\n",
+                                    data_size, 
+                                    get_block_name().c_str(),
+                                    parent_tensor_->get_data_cache()->blocksize(),
+                                    initial_tag, nmessages,
+                                    metadata_size,
+                                    parent_tensor_->get_metadata_cache()->blocksize()
+                                );
+                controller_fail();
+                abort();
+            }
+#endif
+            try {
+                data_block = allocate_data_storage_block(data_size);
+            } catch (int e) {
+                cerr << "Error allocating cache block in receive branch\n";
+                cerr.flush();
+                throw e;
+            }
         }
 
-        messenger->recv_no_lock(
-            proc_number,
-            tag,
-            data_block->data(),
-            data_size
-        );
         controller->set_data(data_block->data());
+
+        if (data_size > 0) //there is a message to receive
+        {
+            ++tag;
+#if TRACK_TENSOR_BLOCK_HISTORY
+            add_event("recv data block");
+#endif
+            messenger->recv_no_lock(
+                proc_number,
+                tag,
+                data_block->data(),
+                data_size
+            );
+        }
         controller = controller->next;
-        heisenfxn(TensorBlock::receive_branch);
     }
     messenger->unlock();
 
+    /** if the number of data blocks exceeds the number of controllers */
+    while(dnode)
+    {
+        StorageBlock* data_block = dnode->block;
+        branch_->allocate_data_controller(data_block);
+        dnode = dnode->next;
+    }
+    
+
 
 #if YETI_SANITY_CHECK
-    uli ncheck = branch_->ncontrollers() + 1;
+    uli ncheck = branch_->ncontrollers_nonzero() + 1;
     if (ncheck != nmessages)
-        raise(SanityCheckError, "wrong number of messages sent to tensor block");
+    {
+        std::string str = stream_printf("Wrong number of messages (%ld sent, should be %ld) on"
+                                 " tensor block %s",
+                                 ncheck,
+                                 nmessages,
+                                 get_block_name().c_str());
+        block_fail(SanityCheckError, str);
+    }
+
+    if (branch_->get_malloc_number() != malloc_number_)
+    {
+            cerr << stream_printf("Received the wrong tensor branch on node %d thread %d, you twat.  Asked for %d and got %d\n"
+                                  "My malloc number is %ld and the branch malloc number is %ld\n",
+                                  YetiRuntime::me(), YetiRuntime::get_thread_number(),
+                                  malloc_number_, branch_->get_malloc_number(),
+                                  malloc_number_, branch_->get_malloc_number());
+            cerr.flush();
+            YetiRuntime::stack_print();
+            YetiRuntime::get_messenger()->lock();
+            YetiRuntime::get_messenger()->send_data_header(
+                proc_number,
+                GenericDataHeader,
+                Message::TensorBranch,
+                Message::Print,
+                malloc_number_,
+                0,
+                0,
+                0
+            );
+            if (branch_->get_malloc_number() != MALLOC_NUMBER_UNINITIALIZED)
+            {
+                YetiRuntime::get_messenger()->send_data_header(
+                    proc_number,
+                    GenericDataHeader,
+                    Message::TensorBranch,
+                    Message::Print,
+                    branch_->get_malloc_number(),
+                    0,
+                    0,
+                    0
+                );
+            }
+            sleep(3);
+            abort();
+    }
+
+#if 0
+    const uli* mdindices = branch_->get_node()->get_indices();
+    usi nindex = descr()->nindex();
+    for (uli i=0; i < nindex; ++i)
+    {
+        if (indices_[i] != mdindices[i])
+        {
+            std::string str1 = indexstr(nindex, indices_);
+            std::string str2 = indexstr(nindex, mdindices);
+            cerr << stream_printf("Received the wrong tensor branch on node %d thread %d, you twat.  Asked for %s and got %s\n"
+                                  "My malloc number is %ld and the branch malloc number is %ld\n",
+                                  YetiRuntime::me(), YetiRuntime::get_thread_number(),
+                                  str1.c_str(), str2.c_str(),
+                                  malloc_number_, branch_->get_malloc_number());
+            cerr.flush();
+            YetiRuntime::stack_print();
+            YetiRuntime::get_messenger()->lock();
+            YetiRuntime::get_messenger()->send_data_header(
+                proc_number,
+                GenericDataHeader,
+                Message::TensorBranch,
+                Message::Print,
+                malloc_number_,
+                0,
+                0,
+                0
+            );
+            sleep(3);
+            abort();
+        }
+    }
 #endif
 
+#endif
 
-    set_waiting(false);
-
-    heisenfxn(TensorBlock::receive_branch);
+    YetiRuntime::stop_timer("receive_branch");
 }
 
 
 SendStatus*
-TensorBlock::send_data(
+TensorBlock::_send_data(
     YetiMessenger* messenger,
     Message::message_data_type_t type,
     Message::message_action_t action,
     uli proc_number
 )
 {
-    heisenfxn(TensorBlock::send_data);
+    uli header_tag = GenericDataHeader;
+    if (action == Message::ReadRequestedRetrieve || action == Message::ReadRequestedPrefetch)
+        header_tag = RequestedDataHeader;
+
+    YetiRuntime::start_timer("send data");
     if (type != Message::TensorBranch)
     {
         Env::errn() << "Tensor block cannot send data of type " << type << endl;
         abort();
     }
 
+    if (!metadata_block_) //this was never even initialized ... nothing to send
+    {
+        if (action == Message::AccumulateUnexpected) //nothing to do
+        {
+            //the node is not expecting anything... send nothing
+            return 0;
+        }
+        else if (action == Message::GlobalSum)
+        {
+            //the node expects something... so explicitly send it the zero
+            messenger->lock();
+            uli initial_tag = 0;
+            uli nmessages = 0;
+            uli block_number = get_malloc_number();
+            size_t data_size = 0;
+            SendStatus* status = messenger->send_data_header( //do not track status on global sums
+                proc_number,
+                header_tag,
+                Message::TensorBranch,
+                action,
+                block_number,
+                data_size,
+                initial_tag,
+                nmessages
+            );
+            messenger->unlock();
+            return status;
+        }
+    }
+
 #if YETI_SANITY_CHECK
+    if (in_read_mode() && fast_read_) 
+    {
+        //no need to wait on send status
+    }
+    else if (has_send_status())
+    {
+        cerr << stream_printf("Block %s already has send status in send_data\n",
+                              get_block_name().c_str());
+        cerr.flush();
+        throw TENSOR_BLOCK_COMMUNICATION_EXCEPTION;
+    }
+
     if (!Sendable::is_waiting() && !is_locked() && !metadata_block_->is_retrieved())
     {
-        cerr << "block " << get_block_name() << " is not retrieved in send " << endl;
+        cerr << stream_printf("Block %s is not retrieved in send\n",
+                                get_block_name().c_str());
+        cerr.flush();
         abort();
     }
 #endif
@@ -2420,19 +3602,29 @@ TensorBlock::send_data(
     size_t data_size = current_branch->get_metadata_mempool()->data_size();
 
     uli block_number = get_malloc_number();
-    uli nmessages = current_branch->ncontrollers() + 1;
-    uli initial_tag = messenger->allocate_initial_tag(nmessages);
-
-    cout << stream_printf("allocate on node %d initial tag %d for %d messages",
-			YetiRuntime::me(), initial_tag, nmessages) << endl;
+    uli nmessages = current_branch->ncontrollers_nonzero() + 1; //+1 for the metadata
+    uli initial_tag = 0;
+    if (nmessages == 1) //nothing to send... this has no data
+    {
+        nmessages = 0;
+        if (action == Message::AccumulateUnexpected) //nothing to do
+        {
+            return 0;
+        }
+        //even if the branch is zero you still need to send the data header
+        //for a global sum because the remote node will expect some
+        //signal for the global sum on that block
+    }
+    else
+    {
+        initial_tag = messenger->allocate_initial_tag(nmessages, proc_number);
+    }
 
     messenger->lock();
 
-    heisenfxn(TensorBlock::send_data);
-    SendDataHeader header;
     SendStatus* next_status = messenger->send_data_header(
-        &header,
         proc_number,
+        header_tag,
         Message::TensorBranch,
         action,
         block_number,
@@ -2441,34 +3633,51 @@ TensorBlock::send_data(
         nmessages
     );
 
-    heisenfxn(TensorBlock::send_data);
+    if (initial_tag == 0) //no data to send
+    {
+        messenger->unlock();
+        return next_status; //nothing to send
+    }
+
     uli tag = initial_tag;
-    SendStatus* prev_status = next_status;
     next_status = messenger->send_no_lock(
         proc_number,
         tag,
         storage_block->data(),
         data_size
     );
-    next_status->set_dependent(prev_status);
 
     TensorDataController* controller = current_branch->first_data_controller();
     while (controller)
     {
-        heisenfxn(TensorBlock::send_data);
+        size_t data_size = controller->get_data_size();
+        if (data_size == 0) //nothing to send
+        {
+            controller = controller->next;
+            continue;
+        }
+
+#if YETI_SANITY_CHECK
+        if (data_size > parent_tensor_->get_data_cache()->blocksize())
+        {
+            cerr << stream_printf("Send got invalid block size %ld "
+                                 "for block %s.  Max block size is %ld.\n",
+                                data_size, 
+                                get_block_name().c_str(),
+                                parent_tensor_->get_data_cache()->blocksize());
+            controller_fail();
+            abort();
+        }
+#endif
 
         ++tag;
-
         char* data = controller->get_data();
-        size_t data_size = controller->get_data_size();
-
         next_status = messenger->send_no_lock(
             proc_number,
             tag,
             data,
             data_size
         );
-        next_status->set_dependent(prev_status);
         controller = controller->next;
     }
     messenger->unlock();
@@ -2476,10 +3685,17 @@ TensorBlock::send_data(
 #if YETI_SANITY_CHECK
     uli ncheck = tag - initial_tag + 1;
     if (ncheck != nmessages)
-        raise(SanityCheckError, "wrong number of messages sent to tensor block");
+    {
+        std::string str = stream_printf("Wrong number of messages (%ld sent, should be %ld) on"
+                                 " tensor block %s",
+                                 ncheck,
+                                 nmessages,
+                                 get_block_name().c_str());
+        block_fail(SanityCheckError, str);
+    }
 #endif
-    
-    heisenfxn(TensorBlock::send_data);
+    YetiRuntime::stop_timer("send data");
+
     return next_status;
 }
 
@@ -2607,3 +3823,55 @@ TensorDataController::set_data(char *data)
 TensorController::TensorController()
 {
 }
+
+void
+TensorBlockAccumulateTask::run(uli threadnum)
+{
+    Sort* no_sort = 0;
+    parent_block->retrieve_accumulate();
+    parent_block->accumulate(tmp_block, 1.0, no_sort);
+    parent_block->release_accumulate();
+    tmp_block->release_read();
+    tmp_block->lock();
+    tmp_block->TensorBlock::~TensorBlock();
+    tensor_block_tmp_malloc.free(tmp_block);
+}
+
+void
+TensorBlockAccumulateTask::prefetch(uli threadnum)
+{
+}
+
+void
+TensorBlockAccumulateTask::finalize_task_subset(uli threadnum)
+{
+}
+
+uli
+TensorBlockAccumulateTask::append_info(uli* data) const
+{
+    yeti_throw(SanityCheckError, "Tensor block accumulate task cannot append info for dynamic load balance");
+    return 0;
+}
+
+void*
+TensorBlockAccumulateTask::operator new(size_t size)
+{
+    TensorBlockAccumulateTask* task = &accumulate_tasks[accumulate_task_num];
+    ++accumulate_task_num;
+    if (accumulate_task_num == NBLOCKS_TMP_ACCUMULATE)
+        accumulate_task_num = 0;
+    return task;
+}
+
+void
+TensorBlockAccumulateTask::operator delete(void* ptr)
+{
+}
+
+void
+TensorBlockAccumulateTask::print(std::ostream& os) const
+{
+    os << "TensorBlockAccumulateTask";
+}
+

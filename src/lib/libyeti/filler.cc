@@ -21,15 +21,22 @@ UnitEstimaterPtr TensorValueEstimater::unit_ = new UnitEstimater;
 ThreadedTensorElementComputer::ThreadedTensorElementComputer(const TensorElementComputerPtr& comp)
     :
     mindepth_(0),
-    fillers_(YetiRuntime::nthread_compute(), 0) //create empty vector
+    fillers_(YetiRuntime::nthread(), 0) //create empty vector
 {
     fillers_[0] = comp;
-    for (uli i=1; i < YetiRuntime::nthread_compute(); ++i)
+    for (uli i=1; i < YetiRuntime::nthread(); ++i)
         fillers_[i] = comp->copy();
 }
 
 ThreadedTensorElementComputer::~ThreadedTensorElementComputer()
 {
+}
+
+void
+ThreadedTensorElementComputer::sort(Permutation* p)
+{
+    for (uli i=0; i < YetiRuntime::nthread(); ++i)
+        fillers_[i]->sort(p);
 }
 
 TensorElementComputer*
@@ -61,6 +68,12 @@ TensorElementComputer::~TensorElementComputer()
         ::free(buffer_);
 }
 
+void
+TensorElementComputer::sort(Permutation* p)
+{
+    yeti_throw(SanityCheckError, "tile filler not configured to sort");
+}
+
 TensorValueEstimater*
 TensorElementComputer::get_estimater(usi depth) const
 {
@@ -68,7 +81,13 @@ TensorElementComputer::get_estimater(usi depth) const
 }
 
 void
-TensorElementComputer::set_index_descr(TensorIndexDescr* descr)
+TensorElementComputer::copy_index_descr(TensorIndexDescr* descr)
+{
+    descr_ = descr->copy();
+}
+
+void
+TensorElementComputer::set_index_descr(const TensorIndexDescrPtr& descr)
 {
     descr_ = descr;
 }
@@ -76,25 +95,25 @@ TensorElementComputer::set_index_descr(TensorIndexDescr* descr)
 void
 TensorElementComputer::compute(const uli* indices, double *data, uli n)
 {
-    raise(SanityCheckError, "tile filler not configured to compute type double");
+    yeti_throw(SanityCheckError, "tile filler not configured to compute type double");
 }
 
 void
 TensorElementComputer::compute(const uli* indices, quad* data, uli n)
 {
-    raise(SanityCheckError, "tile filler not configured to compute type quad");
+    yeti_throw(SanityCheckError, "tile filler not configured to compute type quad");
 }
 
 void
 TensorElementComputer::compute(const uli* indices, int *data, uli n)
 {
-    raise(SanityCheckError, "tile filler not configured to compute type int");
+    yeti_throw(SanityCheckError, "tile filler not configured to compute type int");
 }
 
 void
 TensorElementComputer::compute(const uli* indices, float *data, uli n)
 {
-    raise(SanityCheckError, "tile filler not configured to compute type float");
+    yeti_throw(SanityCheckError, "tile filler not configured to compute type float");
 }
 
 void
@@ -310,6 +329,11 @@ TensorSymmetryFilter::is_zero(const uli* indices) const
     return irrep != 0;
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//  Diagonal_IJIJ_ValueEstimater
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 Diagonal_IJIJ_ValueEstimater::Diagonal_IJIJ_ValueEstimater(
     double iiii,
     double ijij,
@@ -508,3 +532,95 @@ DoubleArrayElementComputer::compute(const uli* indices, double* data, uli n)
         (*data) = (*dataptr_);
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//  TwoElectronEstimableComputer
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+TensorValueEstimater*
+TwoElectronEstimableComputer::get_estimater(
+    usi depth
+) const
+{
+    if(estimators_.size() != 0)
+        return estimators_[depth-1];
+    else
+        return 0;
+}
+
+
+TwoElectronEstimableComputer::TwoElectronEstimableComputer(
+) : estimators_(0)
+{
+
+}
+
+void
+TwoElectronEstimableComputer::set_screening_scheme(
+    ScreeningScheme scheme
+)
+{
+    switch(scheme) {
+    case CauchySchwarzScreening:
+        init_cauchy_schwarz();
+        break;
+    case NoScreening:
+    default:
+        break;
+    }
+}
+
+void
+TwoElectronEstimableComputer::init_cauchy_schwarz()
+{
+    stringstream sstr;
+    sstr << "TwoElectronEstimableComputer subclass named ";
+    sstr << typeid(this).name();
+    sstr << " has not implemented Cauchy-Schwarz screening.";
+    yeti_throw(FeatureNotImplemented, sstr.str());
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+//  MultipleEstimaterMinimumEstimater
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+MultipleEstimaterMinimumEstimater::MultipleEstimaterMinimumEstimater()
+    : estimators_(0)
+{
+
+}
+
+
+MultipleEstimaterMinimumEstimater::~MultipleEstimaterMinimumEstimater()
+{
+
+}
+
+void
+MultipleEstimaterMinimumEstimater::add_estimator(
+    TensorValueEstimaterPtr estimator
+)
+{
+    estimators_.push_back(estimator);
+}
+
+
+float
+MultipleEstimaterMinimumEstimater::max_log(
+    const uli *indices
+) const
+{
+    float ret_val = LOG_NONZERO;
+    for(int i = 0; i < estimators_.size(); ++i) {
+        float est_log = estimators_[i]->max_log(indices);
+        if(est_log < ret_val) {
+            ret_val = est_log;
+        }
+    }
+
+    return ret_val;
+
+
+}

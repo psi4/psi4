@@ -20,6 +20,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
+  int print_lvl = 3;
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
@@ -158,9 +159,11 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
       } // j, salc_j
     } // i, salc_i
 
-    //fprintf(outfile, "\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
-    //fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
-    //mat_print(H_irr, salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+    if (print_lvl >= 3) {
+      fprintf(outfile, "\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
+      fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
+      mat_print(H_irr, salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+    }
 
     // diagonalize force constant matrix
     int dim = salcs_pi[h].size(); 
@@ -186,8 +189,10 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
     C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B_irr[0], 3*Natom, evects[0],
       dim, 0, normal_irr[0], dim);
 
-  //fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
-  //eivout(normal_irr, evals, 3*Natom, dim, outfile);
+    if (print_lvl >= 3) {
+      fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      eivout(normal_irr, evals, 3*Natom, dim, outfile);
+    }
 
     for (int i=0; i<salcs_pi[h].size(); ++i) {
       // copy eigenvector into row
@@ -204,6 +209,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
     free_block(normal_irr);
   }
 
+  // this print function also save frequencies in wavefunction
   print_vibrations(modes);
 
   for (int i=0; i<modes.size(); ++i)

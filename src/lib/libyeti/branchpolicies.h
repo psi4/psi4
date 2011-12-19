@@ -27,6 +27,22 @@ class FlushOldBranchRenew {
         );
 };
 
+class CacheBranchRenew {
+    public:
+        void renew(
+            TensorBlock* block
+        );
+};
+
+class ConfigureElementComputerRenew :
+    CacheBranchRenew
+{
+    public:
+        void renew(
+            TensorBlock* block
+        );
+};
+
 class ZeroBranchRenew {
     public:
         void renew(
@@ -89,9 +105,16 @@ class SortedBranchRetrieve
             TensorBlock* unique_block,
             Permutation* perm
         );
+
+        static void sort(
+            TensorBlock* block,
+            TensorBlock* unique_block,
+            Permutation* perm
+        );
 };
 
-class ConfigureElementComputerBranchRetrieve {
+
+class ConfigureElementComputerRetrieve {
     public:
         void retrieve(
             TensorBlock* block
@@ -99,7 +122,7 @@ class ConfigureElementComputerBranchRetrieve {
 };
 
 class ConfigureElementComputerAndSortBranchRetrieve :
-    ConfigureElementComputerBranchRetrieve,
+    ConfigureElementComputerRetrieve,
     SortedBranchRetrieve
 {
     public:
@@ -185,23 +208,24 @@ class CacheBranchRelease {
         );
 };
 
-class RemoteAccumulateBranchRelease {
+class FinalizeOnRelease :
+    public CacheBranchRelease
+{
     public:
         void release(
             TensorBlock* block
         );
 };
 
-class DoNothingPreflush {
+class DoNothingFinalize {
     public:
-        void preflush(
+        void finalize(
             TensorBlock* block
         );
 };
 
 
-class DoNothingBranchFlush :
-    public DoNothingPreflush
+class DoNothingBranchFlush 
 {
     public:
         void flush(
@@ -209,8 +233,7 @@ class DoNothingBranchFlush :
         );
 };
 
-class ClearBranchFlush :
-    public DoNothingPreflush
+class ClearBranchFlush 
 {
     public:
         void flush(
@@ -218,21 +241,23 @@ class ClearBranchFlush :
         );
 };
 
-class RemoteAccumulateFlush :
-    public ClearBranchFlush
+class RemoteAccumulateFinalize 
 {
     public:
-        void flush(
-            TensorBlock* block
-        );
-
-        void preflush(
+        void finalize(
             TensorBlock* block
         );
 };
 
-class CommitBranchFlush :
-    public DoNothingPreflush
+class ThreadAccumulateFinalize 
+{
+    public:
+        void finalize(
+            TensorBlock* block
+        );
+};
+
+class CommitBranchFlush 
 {
     public:
         void flush(
@@ -240,11 +265,17 @@ class CommitBranchFlush :
         );
 };
 
-class SortedAccumulateBranchFlush :
-    public DoNothingPreflush
+class SortedAccumulateBranchFlush 
 {
     public:
         void flush(
+            TensorBlock* block
+        );
+};
+
+class ReuseStorageBlocks {
+    public:
+        void retrieve(
             TensorBlock* block
         );
 };
@@ -291,6 +322,12 @@ class MemsetDataControllers {
 class SortDataControllers
 {
     public:
+        static void sort(
+            TensorBlock* block,
+            TensorBlock* unique_block,
+            Permutation* perm
+        );
+
         static void retrieve(
             TensorBlock* block,
             TensorBlock* unique_block,
@@ -316,7 +353,7 @@ class AbortOnObsolete {
         );
 };
 
-class ClearMetaDataOnObsolete {
+class SetFinalizedOnObsolete {
     public:
         void obsolete(
             TensorBlock* block
@@ -344,13 +381,6 @@ class FlushOnSync {
         );
 };
 
-class RemoteAccumulateSync {
-    public:
-        void sync(
-            TensorBlock* block
-        );
-};
-
 class NoUpdate {
     public:
         void update(
@@ -365,13 +395,12 @@ class UpdateMaxLog {
         );
 };
 
-class DoNothingOutOfCorePrefetch {
+class ParentBlockReadPrefetch {
     public:
         void prefetch(TensorBlock* block);
-
 };
 
-class ParentBlockReadPrefetch {
+class InitializePrefetch {
     public:
         void prefetch(TensorBlock* block);
 };
@@ -380,6 +409,11 @@ class RemoteBlockPrefetch {
     public:
         void prefetch(TensorBlock* block);
 
+};
+
+class UnlockAfterPrefetch {
+    public:
+        void prefetch(TensorBlock* block);
 };
 
 class DoNothingInCorePrefetch {

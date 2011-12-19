@@ -68,7 +68,9 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
    "\tsymmetry-adapted cartesian coordinates using %d-point formula of gradients.\n", pts);
 
   fprintf(outfile, "\t%d gradients passed in.\n", (int) gradients.size());
-  if (gradients.size() != Ndisp_all) { // last gradient is the reference, non-displaced one
+  // we are passing in the reference geometry at the moment; though we are not using
+  // its gradient.  Could be removed later.
+  if (gradients.size() != Ndisp_all+1) { // last gradient is the reference, non-displaced one
     fprintf(outfile,"gradients.size() is %d\n", (int) gradients.size());
     fprintf(outfile,"Ndisp_all is %d\n", Ndisp_all);
     throw PsiException("FINDIF: Incorrect number of gradients passed in!",__FILE__,__LINE__);  }

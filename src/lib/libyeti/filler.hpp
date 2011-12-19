@@ -15,6 +15,10 @@ typedef boost::intrusive_ptr<ThreadedTensorElementComputer> ThreadedTensorElemen
 typedef boost::intrusive_ptr<TensorElementComputer> TensorElementComputerPtr;
 typedef boost::intrusive_ptr<TensorElementFilter> TensorElementFilterPtr;
 
+class TwoElectronEstimableComputer;
+class TEIShellComputeFunctor;
+typedef boost::intrusive_ptr<TEIShellComputeFunctor> TEIShellComputeFunctorPtr;
+
 }
 
 #endif
