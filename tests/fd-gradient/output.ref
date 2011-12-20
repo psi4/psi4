@@ -27,6 +27,7 @@ molecule h2o {
 }
 
 set globals { basis sto-3g }
+set findif { print 2 }
 
 # In C1, test gradients by 3-point formula ; default is disp_size = .005
 gradient('scf')
@@ -74,7 +75,7 @@ clean()
 --------------------------------------------------------------------------
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -83,7 +84,7 @@ clean()
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -168,9 +169,12 @@ clean()
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -208,35 +212,84 @@ clean()
   @RHF Final Energy:   -74.96466254315349
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3624
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:38 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.05 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
  DERIV: Derivative code.
    by Justin Turney
+
+  Cartesian Displacement SALCs
+  By SALC:
+  Number of SALCs: 9, nirreps: 1
+  Project out translations: False
+  Project out rotations: False
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 0, direction z, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 1, direction z, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction x, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction y, coef 1.000000
+	irrep = 0, ncomponent = 1
+		0: atom 2, direction z, coef 1.000000
+
+  By Atomic Center:
+  Number of atomic centers: 3
+   Atomic Center 0:
+	x component, size = 1
+		0: salc 0, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 1, irrep 0, coef 1.000000
+	z component, size = 1
+		0: salc 2, irrep 0, coef 1.000000
+   Atomic Center 1:
+	x component, size = 1
+		0: salc 3, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 4, irrep 0, coef 1.000000
+	z component, size = 1
+		0: salc 5, irrep 0, coef 1.000000
+   Atomic Center 2:
+	x component, size = 1
+		0: salc 6, irrep 0, coef 1.000000
+	y component, size = 1
+		0: salc 7, irrep 0, coef 1.000000
+	z component, size = 1
+		0: salc 8, irrep 0, coef 1.000000
 
     Molecular point group: c1
 
@@ -248,35 +301,8 @@ Total time:
            H          0.000000000000    -1.494186636402     1.027446024469
            H          0.000000000000     1.494186636402     1.027446024469
 
-    SALC #0 One-electron contribution: -0.000000
-    SALC #1 One-electron contribution: +0.000000
-    SALC #2 One-electron contribution: -5.962875
-    SALC #3 One-electron contribution: +0.000000
-    SALC #4 One-electron contribution: -3.908821
-    SALC #5 One-electron contribution: +2.981438
-    SALC #6 One-electron contribution: +0.000000
-    SALC #7 One-electron contribution: +3.908821
-    SALC #8 One-electron contribution: +2.981438
 
-    SALC #0 Lagrandian contribution:   +0.000000
-    SALC #1 Lagrandian contribution:   -0.000000
-    SALC #2 Lagrandian contribution:   +0.303452
-    SALC #3 Lagrandian contribution:   -0.000000
-    SALC #4 Lagrandian contribution:   +0.158668
-    SALC #5 Lagrandian contribution:   -0.151726
-    SALC #6 Lagrandian contribution:   +0.000000
-    SALC #7 Lagrandian contribution:   -0.158668
-    SALC #8 Lagrandian contribution:   -0.151726
 
-    SALC #0 TPDM contribution:         +0.000000
-    SALC #1 TPDM contribution:         -0.000000
-    SALC #2 TPDM contribution:         +2.918158
-    SALC #3 TPDM contribution:         -0.000000
-    SALC #4 TPDM contribution:         +1.847470
-    SALC #5 TPDM contribution:         -1.459079
-    SALC #6 TPDM contribution:         -0.000000
-    SALC #7 TPDM contribution:         -1.847470
-    SALC #8 TPDM contribution:         -1.459079
 
   -Nuclear Repulsion Energy 1st Derivatives:
      Atom            X                  Y                   Z
@@ -318,41 +344,46 @@ Total time:
        3        0.000000000000     0.019379916863    -0.000874119975
 
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:38 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
 	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.08 seconds =       0.00 minutes
+	user time   =       0.06 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
-	Using finite-differences of energies to determine gradients.
+
+-------------------------------------------------------------
+
+  Using finite-differences of energies to determine gradients (fd_geoms_1_0).
 	Generating geometries for use with 3-point formula.
 	Displacement size will be 5.00e-03.
 	Number of atoms is 3.
-	Number of SALC's is 3.
-	irrep = 0, ncomponent = 5
-		0: atom 0, direction 1, coef 0.270243
-		1: atom 1, direction 1, coef -0.538299
-		2: atom 1, direction 2, coef 0.416796
-		3: atom 2, direction 1, coef -0.538299
-		4: atom 2, direction 2, coef -0.416796
-	irrep = 0, ncomponent = 3
-		0: atom 0, direction 2, coef 0.334537
-		1: atom 1, direction 2, coef -0.666365
-		2: atom 2, direction 2, coef -0.666365
-	irrep = 0, ncomponent = 2
-		0: atom 1, direction 1, coef 0.707107
-		1: atom 2, direction 1, coef -0.707107
+	Number of symmetric SALC's is 3.
 	Number of displacements (including reference) is 7.
+	irrep = 0, ncomponent = 5
+		0: atom 0, direction y, coef 0.270243
+		1: atom 1, direction y, coef -0.538299
+		2: atom 1, direction z, coef 0.416796
+		3: atom 2, direction y, coef -0.538299
+		4: atom 2, direction z, coef -0.416796
+	irrep = 0, ncomponent = 3
+		0: atom 0, direction z, coef 0.334537
+		1: atom 1, direction z, coef -0.666365
+		2: atom 2, direction z, coef -0.666365
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+
+-------------------------------------------------------------
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 1 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -361,7 +392,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -446,9 +477,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 206 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -487,27 +521,28 @@ Total time:
   @RHF Final Energy:   -74.96465389403173
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8073      Y:    -0.6219      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2887      Y:     0.2192      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.5187      Y:    -0.4027      Z:    -0.0000     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -1.3183      Y:    -1.0235      Z:    -0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:38 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.12 seconds =       0.00 minutes
+	user time   =       0.08 seconds =       0.00 minutes
 	system time =       0.02 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -516,7 +551,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -525,7 +560,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -610,9 +645,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 206 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -651,27 +689,28 @@ Total time:
   @RHF Final Energy:   -74.96465389403180
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8042      Y:    -0.6259      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2845      Y:     0.2246      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.5197      Y:    -0.4013      Z:    -0.0000     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -1.3210      Y:    -1.0200      Z:    -0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:38 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.16 seconds =       0.00 minutes
+	user time   =       0.10 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -680,7 +719,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -689,7 +728,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -774,9 +813,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -814,28 +856,29 @@ Total time:
   @RHF Final Energy:   -74.96466500877632
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.0224
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3660
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:38 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.20 seconds =       0.00 minutes
-	system time =       0.03 seconds =       0.00 minutes
+	user time   =       0.13 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -843,7 +886,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -852,7 +895,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -937,9 +980,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -977,27 +1023,28 @@ Total time:
   @RHF Final Energy:   -74.96465193838507
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0158
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3589
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:38 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.24 seconds =       0.00 minutes
+	user time   =       0.15 seconds =       0.00 minutes
 	system time =       0.04 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 
@@ -1006,7 +1053,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:38 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1015,7 +1062,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -1100,9 +1147,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -1140,36 +1190,37 @@ Total time:
   @RHF Final Energy:   -74.96452046394975
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.3635
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.29 seconds =       0.00 minutes
+	user time   =       0.18 seconds =       0.00 minutes
 	system time =       0.05 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1178,7 +1229,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -1263,9 +1314,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -1303,36 +1357,37 @@ Total time:
   @RHF Final Energy:   -74.96479344389269
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3614
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.33 seconds =       0.01 minutes
+	user time   =       0.20 seconds =       0.00 minutes
 	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 7    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1341,7 +1396,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -1426,9 +1481,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -1466,64 +1524,79 @@ Total time:
   @RHF Final Energy:   -74.96466254315349
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3624
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.37 seconds =       0.01 minutes
-	system time =       0.06 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
-	Finite difference computation of gradient using 3-point formula
-	Check for precision!
-	Energy without displacment:  -74.9646625432
-	Gradients are in mass-weighted, symmetry-adapted cartesians (in au).
- Coord      Energy(-)        Energy(+)        Force
-    0    -74.9646538940   -74.9646538940    -0.0000000000
-    1    -74.9646650088   -74.9646519384     0.0013070391
-    2    -74.9645204639   -74.9647934439    -0.0272979943
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
-	Using finite-differences of energies to determine gradients.
+-------------------------------------------------------------
+
+  Computing gradient from energies (fd_1_0).
+	Using 3-point formula.
+	Energy without displacement:  -74.9646625432
+	Check energies below for precision!
+	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
+
+	 Coord      Energy(-)        Energy(+)        Force
+	    0    -74.9646538940   -74.9646538940    -0.0000000000
+	    1    -74.9646650088   -74.9646519384     0.0013070391
+	    2    -74.9645204639   -74.9647934439    -0.0272979943
+
+	Gradient written to file11.
+	Gradent saved to wavefunction.
+
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+
+  Using finite-differences of energies to determine gradients (fd_geoms_1_0).
 	Generating geometries for use with 5-point formula.
 	Displacement size will be 5.00e-03.
 	Number of atoms is 3.
-	Number of SALC's is 3.
-	irrep = 0, ncomponent = 5
-		0: atom 0, direction 1, coef 0.270243
-		1: atom 1, direction 1, coef -0.538299
-		2: atom 1, direction 2, coef 0.416796
-		3: atom 2, direction 1, coef -0.538299
-		4: atom 2, direction 2, coef -0.416796
-	irrep = 0, ncomponent = 3
-		0: atom 0, direction 2, coef 0.334537
-		1: atom 1, direction 2, coef -0.666365
-		2: atom 2, direction 2, coef -0.666365
-	irrep = 0, ncomponent = 2
-		0: atom 1, direction 1, coef 0.707107
-		1: atom 2, direction 1, coef -0.707107
+	Number of symmetric SALC's is 3.
 	Number of displacements (including reference) is 13.
+	irrep = 0, ncomponent = 5
+		0: atom 0, direction y, coef 0.270243
+		1: atom 1, direction y, coef -0.538299
+		2: atom 1, direction z, coef 0.416796
+		3: atom 2, direction y, coef -0.538299
+		4: atom 2, direction z, coef -0.416796
+	irrep = 0, ncomponent = 3
+		0: atom 0, direction z, coef 0.334537
+		1: atom 1, direction z, coef -0.666365
+		2: atom 2, direction z, coef -0.666365
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+
+-------------------------------------------------------------
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 1 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1532,7 +1605,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -1617,9 +1690,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 206 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -1658,36 +1734,37 @@ Total time:
   @RHF Final Energy:   -74.96462794578200
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8089      Y:    -0.6199      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2908      Y:     0.2165      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.5181      Y:    -0.4034      Z:    -0.0000     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -1.3169      Y:    -1.0253      Z:    -0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.41 seconds =       0.01 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.25 seconds =       0.00 minutes
+	system time =       0.08 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1696,7 +1773,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -1781,9 +1858,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 206 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -1822,36 +1902,37 @@ Total time:
   @RHF Final Energy:   -74.96465389403173
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8073      Y:    -0.6219      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2887      Y:     0.2192      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.5187      Y:    -0.4027      Z:    -0.0000     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -1.3183      Y:    -1.0235      Z:    -0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.45 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -1860,7 +1941,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -1945,9 +2026,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 206 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -1986,36 +2070,37 @@ Total time:
   @RHF Final Energy:   -74.96465389403180
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8042      Y:    -0.6259      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2845      Y:     0.2246      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.5197      Y:    -0.4013      Z:    -0.0000     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -1.3210      Y:    -1.0200      Z:    -0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.49 seconds =       0.01 minutes
-	system time =       0.08 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.30 seconds =       0.01 minutes
+	system time =       0.09 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2024,7 +2109,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -2109,9 +2194,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 206 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 206 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -2150,36 +2238,37 @@ Total time:
   @RHF Final Energy:   -74.96462794578201
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:    -0.8027      Y:    -0.6279      Z:     0.0000
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.2824      Y:     0.2273      Z:    -0.0000
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.5203      Y:    -0.4006      Z:    -0.0000     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -1.3224      Y:    -1.0183      Z:    -0.0000     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.53 seconds =       0.01 minutes
-	system time =       0.09 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.32 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2188,7 +2277,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -2273,9 +2362,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -2313,36 +2405,37 @@ Total time:
   @RHF Final Energy:   -74.96465934653115
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0257
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3695
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:08 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.58 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.11 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 13   //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:08 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2351,7 +2444,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -2436,9 +2529,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -2476,28 +2572,29 @@ Total time:
   @RHF Final Energy:   -74.96466500877632
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.0224
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3660
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.62 seconds =       0.01 minutes
-	system time =       0.10 seconds =       0.00 minutes
+	user time   =       0.37 seconds =       0.01 minutes
+	system time =       0.12 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2505,7 +2602,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2514,7 +2611,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -2599,9 +2696,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -2639,28 +2739,29 @@ Total time:
   @RHF Final Energy:   -74.96465193838507
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0158
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3589
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
+	user time   =       0.40 seconds =       0.01 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2668,7 +2769,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2677,7 +2778,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -2762,9 +2863,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -2802,28 +2906,29 @@ Total time:
   @RHF Final Energy:   -74.96463318370562
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0125
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.3554
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     0.6571     Total:     0.6571
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:    -0.0000      Z:     1.6702     Total:     1.6702
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.70 seconds =       0.01 minutes
-	system time =       0.12 seconds =       0.00 minutes
+	user time   =       0.42 seconds =       0.01 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2831,7 +2936,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -2840,7 +2945,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -2925,9 +3030,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -2965,28 +3073,29 @@ Total time:
   @RHF Final Energy:   -74.96436728830993
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3646
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.6545     Total:     0.6545
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:     1.6635     Total:     1.6635
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.74 seconds =       0.01 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.14 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -2994,7 +3103,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3003,7 +3112,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -3088,9 +3197,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -3128,28 +3240,29 @@ Total time:
   @RHF Final Energy:   -74.96452046394975
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:    -0.3635
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     0.6556     Total:     0.6556
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:    -0.0000      Z:     1.6663     Total:     1.6663
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.78 seconds =       0.01 minutes
-	system time =       0.13 seconds =       0.00 minutes
+	user time   =       0.47 seconds =       0.01 minutes
+	system time =       0.15 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3157,7 +3270,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3166,7 +3279,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -3251,9 +3364,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -3291,28 +3407,29 @@ Total time:
   @RHF Final Energy:   -74.96479344389269
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3614
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.82 seconds =       0.01 minutes
-	system time =       0.14 seconds =       0.00 minutes
+	user time   =       0.49 seconds =       0.01 minutes
+	system time =       0.16 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3320,7 +3437,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3329,7 +3446,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -3414,9 +3531,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -3454,28 +3574,29 @@ Total time:
   @RHF Final Energy:   -74.96491308381167
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:    -0.0000      Z:    -0.3603
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:    -0.0000      Z:     0.6588     Total:     0.6588
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:    -0.0000      Z:     1.6745     Total:     1.6745
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.86 seconds =       0.01 minutes
-	system time =       0.15 seconds =       0.00 minutes
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.17 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3483,7 +3604,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3492,7 +3613,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -3577,9 +3698,12 @@ Total time:
       Number of irreps:                  1
       Number of functions per irrep: [   7 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 228 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 228 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -3617,58 +3741,73 @@ Total time:
   @RHF Final Energy:   -74.96466254315349
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:    -0.0000      Y:     0.0000      Z:    -0.3624
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:    -0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:    -0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.90 seconds =       0.02 minutes
-	system time =       0.15 seconds =       0.00 minutes
+	user time   =       0.54 seconds =       0.01 minutes
+	system time =       0.18 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
-	Finite difference computation of gradient using 5-point formula
-	Check for precision!
-	Energy without displacment:  -74.9646625432
-	Gradients are in mass-weighted, symmetry-adapted cartesians (in au).
- Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force
-    0    -74.9646279458    -74.9646538940    -74.9646538940    -74.9646279458     -0.0000000000
-    1    -74.9646593465    -74.9646650088    -74.9646519384    -74.9646331837      0.0013066717
-    2    -74.9643672883    -74.9645204639    -74.9647934439    -74.9649130838     -0.0273007340
 
-	Using finite-differences of energies to determine gradients.
+-------------------------------------------------------------
+
+  Computing gradient from energies (fd_1_0).
+	Using 5-point formula.
+	Energy without displacement:  -74.9646625432
+	Check energies below for precision!
+	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
+
+	 Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force
+	    0    -74.9646279458    -74.9646538940    -74.9646538940    -74.9646279458     -0.0000000000
+	    1    -74.9646593465    -74.9646650088    -74.9646519384    -74.9646331837      0.0013066717
+	    2    -74.9643672883    -74.9645204639    -74.9647934439    -74.9649130838     -0.0273007340
+
+	Gradient written to file11.
+	Gradent saved to wavefunction.
+
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+
+  Using finite-differences of energies to determine gradients (fd_geoms_1_0).
 	Generating geometries for use with 3-point formula.
 	Displacement size will be 5.00e-03.
 	Number of atoms is 3.
-	Number of SALC's is 2.
-	irrep = 0, ncomponent = 3
-		0: atom 0, direction 2, coef 0.334537
-		1: atom 1, direction 2, coef -0.666365
-		2: atom 2, direction 2, coef -0.666365
-	irrep = 0, ncomponent = 2
-		0: atom 1, direction 1, coef 0.707107
-		1: atom 2, direction 1, coef -0.707107
+	Number of symmetric SALC's is 2.
 	Number of displacements (including reference) is 5.
+	irrep = 0, ncomponent = 3
+		0: atom 0, direction z, coef 0.334537
+		1: atom 1, direction z, coef -0.666365
+		2: atom 2, direction z, coef -0.666365
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+
+-------------------------------------------------------------
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 1 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3677,7 +3816,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -3764,9 +3903,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -3804,28 +3946,29 @@ Total time:
   @RHF Final Energy:   -74.96466500877632
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.0224
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3660
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.94 seconds =       0.02 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.18 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3833,7 +3976,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -3842,7 +3985,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -3929,9 +4072,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -3969,28 +4115,29 @@ Total time:
   @RHF Final Energy:   -74.96465193838502
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0158
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3589
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.05 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.99 seconds =       0.02 minutes
-	system time =       0.17 seconds =       0.00 minutes
+	user time   =       0.59 seconds =       0.01 minutes
+	system time =       0.19 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -3998,7 +4145,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4007,7 +4154,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -4094,9 +4241,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -4134,28 +4284,29 @@ Total time:
   @RHF Final Energy:   -74.96452046394973
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3635
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6556     Total:     0.6556
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6663     Total:     1.6663
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:39 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.03 seconds =       0.02 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	user time   =       0.62 seconds =       0.01 minutes
+	system time =       0.20 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
@@ -4163,7 +4314,7 @@ Total time:
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:39 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4172,7 +4323,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -4259,9 +4410,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -4299,36 +4453,37 @@ Total time:
   @RHF Final Energy:   -74.96479344389275
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3614
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.07 seconds =       0.02 minutes
-	system time =       0.18 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.64 seconds =       0.01 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 5    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4337,7 +4492,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -4424,9 +4579,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -4464,57 +4622,72 @@ Total time:
   @RHF Final Energy:   -74.96466254315332
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3624
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.11 seconds =       0.02 minutes
-	system time =       0.19 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	Finite difference computation of gradient using 3-point formula
-	Check for precision!
-	Energy without displacment:  -74.9646625432
-	Gradients are in mass-weighted, symmetry-adapted cartesians (in au).
- Coord      Energy(-)        Energy(+)        Force
-    0    -74.9646650088   -74.9646519384     0.0013070391
-    1    -74.9645204639   -74.9647934439    -0.0272979943
+	user time   =       0.67 seconds =       0.01 minutes
+	system time =       0.22 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
-	Using finite-differences of energies to determine gradients.
+-------------------------------------------------------------
+
+  Computing gradient from energies (fd_1_0).
+	Using 3-point formula.
+	Energy without displacement:  -74.9646625432
+	Check energies below for precision!
+	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
+
+	 Coord      Energy(-)        Energy(+)        Force
+	    0    -74.9646650088   -74.9646519384     0.0013070391
+	    1    -74.9645204639   -74.9647934439    -0.0272979943
+
+	Gradient written to file11.
+	Gradent saved to wavefunction.
+
+-------------------------------------------------------------
+
+-------------------------------------------------------------
+
+  Using finite-differences of energies to determine gradients (fd_geoms_1_0).
 	Generating geometries for use with 5-point formula.
 	Displacement size will be 5.00e-03.
 	Number of atoms is 3.
-	Number of SALC's is 2.
-	irrep = 0, ncomponent = 3
-		0: atom 0, direction 2, coef 0.334537
-		1: atom 1, direction 2, coef -0.666365
-		2: atom 2, direction 2, coef -0.666365
-	irrep = 0, ncomponent = 2
-		0: atom 1, direction 1, coef 0.707107
-		1: atom 2, direction 1, coef -0.707107
+	Number of symmetric SALC's is 2.
 	Number of displacements (including reference) is 9.
+	irrep = 0, ncomponent = 3
+		0: atom 0, direction z, coef 0.334537
+		1: atom 1, direction z, coef -0.666365
+		2: atom 2, direction z, coef -0.666365
+	irrep = 0, ncomponent = 2
+		0: atom 1, direction y, coef 0.707107
+		1: atom 2, direction y, coef -0.707107
+
+-------------------------------------------------------------
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 1 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4523,7 +4696,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -4610,9 +4783,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -4650,36 +4826,37 @@ Total time:
   @RHF Final Energy:   -74.96465934653112
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0257
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3695
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6561     Total:     0.6561
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6677     Total:     1.6677
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.15 seconds =       0.02 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.69 seconds =       0.01 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 2 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4688,7 +4865,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -4775,9 +4952,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -4815,36 +4995,37 @@ Total time:
   @RHF Final Energy:   -74.96466500877632
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:    -0.0000      Z:     1.0224
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3660
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:    -0.0000      Z:     0.6564     Total:     0.6564
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:    -0.0000      Z:     1.6684     Total:     1.6684
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.19 seconds =       0.02 minutes
-	system time =       0.20 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.72 seconds =       0.01 minutes
+	system time =       0.23 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 3 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -4853,7 +5034,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -4940,9 +5121,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -4980,36 +5164,37 @@ Total time:
   @RHF Final Energy:   -74.96465193838502
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0158
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3589
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6569     Total:     0.6569
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6696     Total:     1.6696
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.23 seconds =       0.02 minutes
-	system time =       0.21 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.74 seconds =       0.01 minutes
+	system time =       0.24 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 4 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5018,7 +5203,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -5105,9 +5290,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -5145,36 +5333,37 @@ Total time:
   @RHF Final Energy:   -74.96463318370553
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0125
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3554
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6571     Total:     0.6571
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6702     Total:     1.6702
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.27 seconds =       0.02 minutes
-	system time =       0.22 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.77 seconds =       0.01 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 5 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5183,7 +5372,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -5270,9 +5459,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -5310,36 +5502,37 @@ Total time:
   @RHF Final Energy:   -74.96436728830993
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3646
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6545     Total:     0.6545
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6635     Total:     1.6635
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.31 seconds =       0.02 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.79 seconds =       0.01 minutes
+	system time =       0.26 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 6 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5348,7 +5541,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -5435,9 +5628,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -5475,36 +5671,37 @@ Total time:
   @RHF Final Energy:   -74.96452046394973
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3635
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6556     Total:     0.6556
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6663     Total:     1.6663
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.35 seconds =       0.02 minutes
-	system time =       0.23 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.82 seconds =       0.01 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 7 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5513,7 +5710,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -5600,9 +5797,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -5640,36 +5840,37 @@ Total time:
   @RHF Final Energy:   -74.96479344389275
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3614
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6577     Total:     0.6577
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6717     Total:     1.6717
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.01 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.39 seconds =       0.02 minutes
-	system time =       0.24 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.84 seconds =       0.01 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 8 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5678,7 +5879,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -5765,9 +5966,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -5805,36 +6009,37 @@ Total time:
   @RHF Final Energy:   -74.96491308381161
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3603
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6588     Total:     0.6588
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6745     Total:     1.6745
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
+	user time   =       0.02 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.43 seconds =       0.02 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       0.86 seconds =       0.01 minutes
+	system time =       0.28 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
   //>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>//
   //    Loading displacement 9 of 9    //
   //<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<//
 
 *** tstart() called on mac10147
-*** at Tue Nov  1 13:56:40 2011
+*** at Sat Dec 17 16:20:09 2011
 
 	There are an even number of electrons - assuming singlet.
 	Specify the multiplicity with the MULTP option in the
@@ -5843,7 +6048,7 @@ Total time:
 
          ---------------------------------------------------------
                                    SCF
-            by Justin Turney, Rob Parrish, and Andy Simmonnett
+            by Justin Turney, Rob Parrish, and Andy Simmonett
                               RHF Reference
                         1 Threads,    256 MiB Core
          ---------------------------------------------------------
@@ -5930,9 +6135,12 @@ Total time:
       Number of irreps:                  4
       Number of functions per irrep: [   4    0    1    2 ]
 
-      Computing integrals...done
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
 
-      Computed 138 non-zero integrals.
+      Computing two-electron integrals...done
+      Computed 138 non-zero two-electron integrals.
+        Stored in file 33.
 
   ==> Iterations <==
 
@@ -5970,36 +6178,46 @@ Total time:
   @RHF Final Energy:   -74.96466254315332
 
   ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0191
 
- OEPROP: One-electron properties/analyses.
-  by Rob Parrish and Justin Turney.
-  built on LIBMINTS.
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.3624
 
- Dipole Moment: (a.u.)
+  Dipole Moment: (a.u.)
      X:     0.0000      Y:     0.0000      Z:     0.6566     Total:     0.6566
 
- Dipole Moment: (Debye)
+  Dipole Moment: (Debye)
      X:     0.0000      Y:     0.0000      Z:     1.6690     Total:     1.6690
 
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on mac10147 at Tue Nov  1 13:56:40 2011
+*** tstop() called on mac10147 at Sat Dec 17 16:20:09 2011
 Module time:
-	user time   =       0.04 seconds =       0.00 minutes
-	system time =       0.00 seconds =       0.00 minutes
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.47 seconds =       0.02 minutes
-	system time =       0.25 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
-	Finite difference computation of gradient using 5-point formula
-	Check for precision!
-	Energy without displacment:  -74.9646625432
-	Gradients are in mass-weighted, symmetry-adapted cartesians (in au).
- Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force
-    0    -74.9646593465    -74.9646650088    -74.9646519384    -74.9646331837      0.0013066717
-    1    -74.9643672883    -74.9645204639    -74.9647934439    -74.9649130838     -0.0273007340
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
+-------------------------------------------------------------
+
+  Computing gradient from energies (fd_1_0).
+	Using 5-point formula.
+	Energy without displacement:  -74.9646625432
+	Check energies below for precision!
+	Forces are for mass-weighted, symmetry-adapted cartesians (in au).
+
+	 Coord      Energy(-2)        Energy(-1)        Energy(+1)        Energy(+2)            Force
+	    0    -74.9646593465    -74.9646650088    -74.9646519384    -74.9646331837      0.0013066717
+	    1    -74.9643672883    -74.9645204639    -74.9647934439    -74.9649130838     -0.0273007340
+
+	Gradient written to file11.
+	Gradent saved to wavefunction.
+
+-------------------------------------------------------------
 
 *** PSI4 exiting successfully. Buy a developer a beer!
