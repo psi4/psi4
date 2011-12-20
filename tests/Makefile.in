@@ -23,7 +23,7 @@ mints_subdirs = mints1 mints2 mints3 mints4
 
 matrix_subdirs = matrix1
 
-opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5
+opt_subdirs = opt1 opt1-fd opt2 opt2-fd opt3 opt4 opt5 fd-gradient fd-freq-energy
 
 mp2_subdirs = mp2_1
 

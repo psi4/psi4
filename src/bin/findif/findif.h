@@ -12,13 +12,13 @@ namespace psi { namespace findif {
 // functions to generate displacements
 std::vector< SharedMatrix > fd_geoms_1_0(Options &options);
 std::vector< SharedMatrix > fd_geoms_2_0(Options &options);
-std::vector< SharedMatrix > fd_geoms_freq_0(Options &options);
+std::vector< SharedMatrix > fd_geoms_freq_0(Options &options, int irrep=-1);
 std::vector< SharedMatrix > fd_geoms_freq_1(Options &options);
 
 // functions to carry out finite-differences
 PsiReturnType fd_1_0(Options &options, const boost::python::list& energies);
 PsiReturnType fd_2_0(Options &options, const boost::python::list& energies);
-PsiReturnType fd_freq_0(Options &options, const boost::python::list& energies);
+PsiReturnType fd_freq_0(Options &options, const boost::python::list& energies, int irrep=-1);
 PsiReturnType fd_freq_1(Options &options, const boost::python::list& E_list);
 
 // class to accumulate and print vibrations

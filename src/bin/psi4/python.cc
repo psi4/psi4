@@ -71,12 +71,12 @@ namespace psi {
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
-      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
       //PsiReturnType fd_2_0(Options &, const boost::python::list&);
-      PsiReturnType fd_freq_0(Options &, const boost::python::list&);
+      PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&);
     }
 
@@ -166,10 +166,10 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
     //return findif::fd_geoms_2_0(Process::environment.options);
 //}
 
-std::vector< SharedMatrix > py_psi_fd_geoms_freq_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_freq_0(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_0(Process::environment.options);
+    return findif::fd_geoms_freq_0(Process::environment.options, irrep);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_1()
@@ -190,10 +190,10 @@ PsiReturnType py_psi_fd_1_0(const boost::python::list& energies)
     //return findif::fd_2_0(Process::environment.options, energies);
 //}
 
-PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies)
+PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_0(Process::environment.options, energies);
+    return findif::fd_freq_0(Process::environment.options, energies, irrep);
 }
 
 PsiReturnType py_psi_fd_freq_1(const boost::python::list& energies)

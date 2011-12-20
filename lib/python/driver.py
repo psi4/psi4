@@ -301,105 +301,6 @@ def gradient(name, **kwargs):
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
-def hessian(name, **kwargs):
-    lowername = name.lower()
-
-    # Make sure the molecule the user provided is the active one
-    if (kwargs.has_key('molecule')):
-        activate(kwargs['molecule'])
-        del kwargs['molecule']
-    molecule = PsiMod.get_active_molecule()
-    molecule.update_geometry()
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
-
-    dertype = 2
-    if (kwargs.has_key('dertype')):
-        dertype = kwargs['dertype']
-
-    # By default, set func to the energy function
-    func = energy
-    func_existed = False
-    if (kwargs.has_key('func')):
-        func = kwargs['func']
-        func_existed = True
-
-    # Does an analytic procedure exist for the requested method?
-    if (procedures['hessian'].has_key(lowername) and dertype == 2 and func_existed == False):
-        # We have the desired method. Do it.
-        procedures['hessian'][lowername](lowername, **kwargs)
-        return PsiMod.reference_wavefunction().energy()
-    elif (procedures['gradient'].has_key(lowername) and dertype == 1 and func_existed == False):
-        # Ok, we're doing frequencies by gradients
-        info = "Performing finite difference by gradient calculations"
-        print info
-
-        func = procedures['gradient'][lowername]
-
-        # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_freq_1()
-        ndisp = len(displacements)
-
-        print " %d displacements needed." % ndisp
-        gradients = []
-        for n, displacement in enumerate(displacements):
-            # Print information to output.dat
-            PsiMod.print_out("\n")
-            banner("Loading displacement %d of %d" % (n+1, ndisp))
-
-            # Print information to the screen
-            print "    displacement %d" % (n+1)
-
-            # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacement)
-
-            # Perform the gradient calculation
-            G = func(lowername, **kwargs)
-
-            # Save the gradient
-            gradients.append(G)
-
-        PsiMod.fd_freq_1(gradients)
-
-        print " Computation complete."
-
-    else: # Assume energy points
-        # If not, perform finite difference of energies
-        info = "Performing finite difference calculations"
-        print info
-
-        # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_freq_0()
-
-        ndisp = len(displacements)
-
-        # This version is pretty dependent on the reference geometry being last (as it is now)
-        print " %d displacements needed." % ndisp
-        energies = []
-        for n, displacement in enumerate(displacements):
-            # Print information to output.dat
-            PsiMod.print_out("\n")
-            banner("Loading displacement %d of %d" % (n+1, ndisp))
-
-            # Print information to the screen
-            print "    displacement %d" % (n+1)
-
-            # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacement)
-
-            # Perform the energy calculation
-            E = func(lowername, **kwargs)
-
-            # Save the energy
-            energies.append(E)
-
-        # Obtain the gradient. This function stores the gradient into the reference wavefunction.
-        PsiMod.fd_freq_0(energies)
-
-        print " Computation complete."
-
-        # The last item in the list is the reference energy, return it
-        return energies[-1]
-
 def response(name, **kwargs):
     lowername = name.lower()
 
@@ -466,9 +367,6 @@ def optimize(name, **kwargs):
     PsiMod.print_out("\tOptimizer: Did not converge!")
     return 0.0
 
-def frequencies(name, **kwargs):
-    hessian(name, **kwargs)
-
 def parse_arbitrary_order(name):
     namelower = name.lower()
 
@@ -488,4 +386,115 @@ def parse_arbitrary_order(name):
             return namelower, None
     else:
         return namelower, None
+
+def frequencies(name, **kwargs):
+    lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
+    if (kwargs.has_key('molecule')):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
+    dertype = 2
+    if (kwargs.has_key('dertype')):
+        dertype = kwargs['dertype']
+
+    if (kwargs.has_key('irrep')):
+        irrep = kwargs['irrep'] - 1 # externally, A1 irrep is 1; internally 0
+    else:
+      irrep = -1; # -1 implies do all irreps 
+
+    # By default, set func to the energy function
+    func = energy
+    func_existed = False
+    if (kwargs.has_key('func')):
+        func = kwargs['func']
+        func_existed = True
+
+    # Does an analytic procedure exist for the requested method?
+    if (procedures['hessian'].has_key(lowername) and dertype == 2 and func_existed == False):
+        # We have the desired method. Do it.
+        procedures['hessian'][lowername](lowername, **kwargs)
+        return PsiMod.reference_wavefunction().energy()
+    elif (procedures['gradient'].has_key(lowername) and dertype == 1 and func_existed == False):
+        # Ok, we're doing frequencies by gradients
+        info = "Performing finite difference by gradient calculations"
+        print info
+
+        func = procedures['gradient'][lowername]
+
+        # Obtain list of displacements
+        displacements = PsiMod.fd_geoms_freq_1()
+        ndisp = len(displacements)
+
+        print " %d displacements needed." % ndisp
+        gradients = []
+        for n, displacement in enumerate(displacements):
+            # Print information to output.dat
+            PsiMod.print_out("\n")
+            banner("Loading displacement %d of %d" % (n+1, ndisp))
+
+            # Print information to the screen
+            print "    displacement %d" % (n+1)
+
+            # Load in displacement into the active molecule
+            PsiMod.get_active_molecule().set_geometry(displacement)
+
+            # Perform the gradient calculation
+            G = func(lowername, **kwargs)
+
+            # Save the gradient
+            gradients.append(G)
+
+        PsiMod.fd_freq_1(gradients)
+
+        print " Computation complete."
+
+    else: # Assume energy points
+        # If not, perform finite difference of energies
+        info = "Performing finite difference calculations"
+        print info
+
+        # Obtain list of displacements
+        displacements = PsiMod.fd_geoms_freq_0(irrep)
+
+        ndisp = len(displacements)
+
+        # This version is pretty dependent on the reference geometry being last (as it is now)
+        print " %d displacements needed." % ndisp
+        energies = []
+        for n, displacement in enumerate(displacements):
+            # Print information to output.dat
+            PsiMod.print_out("\n")
+            banner("Loading displacement %d of %d" % (n+1, ndisp))
+
+            # Print information to the screen
+            print "    displacement %d" % (n+1)
+
+            # Load in displacement into the active molecule
+            PsiMod.get_active_molecule().set_geometry(displacement)
+
+            # Perform the energy calculation
+            E = func(lowername, **kwargs)
+
+            # Save the energy
+            energies.append(E)
+
+            # clean may be necessary when changing irreps of displacements
+            PsiMod.clean()
+
+        # Obtain the gradient. This function stores the gradient into the reference wavefunction.
+        PsiMod.fd_freq_0(energies, irrep)
+
+        print " Computation complete."
+
+        # The last item in the list is the reference energy, return it
+        return energies[-1]
+
+# hessian to be changed later to compute force constants
+def hessian(name, **kwargs):
+    frequencies(name, **kwargs)
 
