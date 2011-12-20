@@ -2,6 +2,7 @@ import PsiMod
 import input
 from proc import *
 from text import *
+from procutil import *
 
 #Procedure lookup tables
 procedures = {
@@ -128,6 +129,23 @@ def gradient(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
+    # S/R: Mode of operation- whether finite difference opt run in one job or files farmed out
+    opt_mode = 'continuous'
+    if (kwargs.has_key('mode')) and (dertype == 0):
+        opt_mode = kwargs['mode']
+
+    if re.match(r'^continuous$', opt_mode.lower()):
+        pass
+    elif re.match(r'^sow$', opt_mode.lower()):
+        pass
+    elif re.match(r'^reap$', opt_mode.lower()):
+        if(kwargs.has_key('linkage')):
+            opt_linkage = kwargs['linkage']
+        else:
+            raise ValidationError('Optimize execution mode \'reap\' requires a linkage option.')
+    else:
+        raise ValidationError('Optimize execution mode \'%s\' not valid.' % (opt_mode))
+
     # Does dertype indicate an analytic procedure both exists and is wanted?
     if (dertype == 1):
         # Nothing to it but to do it. Gradient information is saved
@@ -142,35 +160,142 @@ def gradient(name, **kwargs):
 
         # Obtain list of displacements
         displacements = PsiMod.fd_geoms_1_0()
-
         ndisp = len(displacements)
 
         # This version is pretty dependent on the reference geometry being last (as it is now)
         print " %d displacements needed." % ndisp
         energies = []
+
+        opt_iter = 1
+        if (kwargs.has_key('opt_iter')):
+            opt_iter = kwargs['opt_iter'] + 1
+
+        # S/R: Write instructions for sow/reap procedure to output file and reap input file
+        if re.match('sow', opt_mode.lower()):
+            instructionsO  =   """\n    The optimization sow/reap procedure has been selected through mode='sow'. In addition\n"""
+            instructionsO +=     """    to this output file (which contains no quantum chemical calculations), this job\n"""
+            instructionsO +=     """    has produced a number of input files (OPT-%s-*.in) for individual components\n""" % (str(opt_iter))
+            instructionsO +=     """    and a single input file (OPT-master.in) with an optimize(mode='reap') command.\n"""
+            instructionsO +=     """    These files may look very peculiar since they contain processed and pickled python\n"""
+            instructionsO +=     """    rather than normal input. Follow the instructions in OPT-master.in to continue.\n\n"""
+            instructionsO +=     """    Alternatively, a single-job execution of the gradient may be accessed through\n"""
+            instructionsO +=     """    the optimization wrapper option mode='continuous'.\n\n"""
+            PsiMod.print_out(instructionsO)
+
+            instructionsM  =   """\n#    Follow the instructions below to carry out this optimization cycle.\n#\n"""
+            instructionsM +=     """#    (1)  Run all of the OPT-%s-*.in input files on any variety of computer architecture.\n""" % (str(opt_iter))
+            instructionsM +=     """#       The output file names must be as given below.\n#\n"""
+            for rgt in range(ndisp):
+                pre = 'OPT-' + str(opt_iter) + '-' + str(rgt+1)
+                instructionsM += """#             psi4 -i %-27s -o %-27s\n""" % (pre + '.in', pre + '.out')
+            instructionsM +=  """#\n#    (2)  Gather all the resulting output files in a directory. Place input file\n"""
+            instructionsM +=     """#         OPT-master.in into that directory and run it. The job will be minimal in\n"""
+            instructionsM +=     """#         length and give summary results for the gradient step in its output file.\n#\n"""
+            if opt_iter == 1:
+                instructionsM += """#             psi4 -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
+            else:
+                instructionsM += """#             psi4 -a -i %-27s -o %-27s\n#\n""" % ('OPT-master.in', 'OPT-master.out')
+            instructionsM +=     """#    After each optimization iteration, the OPT-master.in file is overwritten so return here\n"""
+            instructionsM +=     """#    for new instructions. With the use of the psi4 -a flag, OPT-master.out is not\n"""
+            instructionsM +=     """#    overwritten and so maintains a history of the job. To use the (binary) optimizer\n"""
+            instructionsM +=     """#    data file to accelerate convergence, the OPT-master jobs must run on the same computer.\n\n"""
+
+            fmaster = open('OPT-master.in', 'w')
+            fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
+            fmaster.write(format_molecule_for_input(molecule))
+            fmaster.write(format_options_for_input())
+            format_kwargs_for_input(fmaster, 2, **kwargs)
+            fmaster.write("""%s('%s', **kwargs)\n\n""" % (optimize.__name__, lowername))
+            fmaster.write(instructionsM)
+            fmaster.close()
+
         for n, displacement in enumerate(displacements):
-            # Print information to output.dat
-            PsiMod.print_out("\n")
-            banner("Loading displacement %d of %d" % (n+1, ndisp))
+            rfile = 'OPT-%s-%s' % (opt_iter, n+1)
 
-            # Print information to the screen
-            print "    displacement %d" % (n+1)
+            # Build string of title banner
+            banners = ''
+            banners += """PsiMod.print_out('\\n')\n"""
+            banners += """banner(' Gradient %d Computation: Displacement %d')\n""" % (opt_iter, n+1)
+            banners += """PsiMod.print_out('\\n')\n\n"""
 
-            # Load in displacement into the active molecule
-            PsiMod.get_active_molecule().set_geometry(displacement)
+            if re.match('continuous', opt_mode.lower()):
+                # Print information to output.dat
+                PsiMod.print_out("\n")
+                banner("Loading displacement %d of %d" % (n+1, ndisp))
+    
+                # Print information to the screen
+                print "    displacement %d" % (n+1)
+    
+                # Load in displacement into the active molecule
+                PsiMod.get_active_molecule().set_geometry(displacement)
+    
+                ## Wrap any positional arguments into kwargs (for intercalls among wrappers)
+                #if not('name' in kwargs) and name:
+                #    kwargs['name'] = lowername
+    
+                # Perform the energy calculation
+                E = func(lowername, **kwargs)
+                #E = func(**kwargs)
+    
+                # Save the energy
+                energies.append(E)
+    
+            # S/R: Write each displaced geometry to an input file
+            elif re.match('sow', opt_mode.lower()):
+                PsiMod.get_active_molecule().set_geometry(displacement)
 
-            # Wrap any positional arguments into kwargs (for intercalls among wrappers)
-            if not('name' in kwargs) and name:
-                kwargs['name'] = lowername
+                # S/R: Prepare molecule, options, and kwargs
+                freagent = open('%s.in' % (rfile), 'w')
+                freagent.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
+                freagent.write(format_molecule_for_input(molecule))
+                freagent.write(format_options_for_input())
+                format_kwargs_for_input(freagent, **kwargs)
 
-            # Perform the energy calculation
-            #E = func(lowername, **kwargs)
-            E = func(**kwargs)
+                # S/R: Prepare function call and energy save
+                freagent.write("""electronic_energy = %s('%s', **kwargs)\n\n""" % (func.__name__, lowername))
+                freagent.write("""PsiMod.print_out('\\nGRADIENT RESULT: computation %d for item %d """ % (os.getpid(), n+1))
+                freagent.write("""yields electronic energy %20.12f\\n' % (electronic_energy))\n\n""")
+                freagent.close()
 
-            # Save the energy
-            energies.append(E)
+            # S/R: Read energy from each displaced geometry output file and save in energies array
+            elif re.match('reap', opt_mode.lower()):
+                E = 0.0
+                exec banners
 
-        # Obtain the gradient. This function stores the gradient into the reference wavefunction.
+                try:
+                    freagent = open('%s.out' % (rfile), 'r')
+                except IOError:
+                    ValidationError('Aborting upon output file \'%s.out\' not found.\n' % (rfile))
+                    return 0.0
+                else:
+                    while 1:
+                        line = freagent.readline()
+                        if not line:
+                            if E == 0.0:
+                               ValidationError('Aborting upon output file \'%s.out\' has no %s RESULT line.\n' % (rfile, 'GRADIENT'))
+                            break
+                        s = line.split()
+                        if (len(s) != 0) and (s[0:3] == ['GRADIENT', 'RESULT:', 'computation']):
+                            if int(s[3]) != opt_linkage:
+                               raise ValidationError('Output file \'%s.out\' has linkage %s incompatible with master.in linkage %s.'
+                                   % (rfile, str(s[3]), str(opt_linkage)))
+                            if s[6] != str(n+1):
+                               raise ValidationError('Output file \'%s.out\' has nominal affiliation %s incompatible with item %s.'
+                                   % (rfile, s[6], str(n+1)))
+                            if (s[8:10] == ['electronic', 'energy']):
+                                E = float(s[10])
+                                PsiMod.print_out('%s RESULT: electronic energy = %20.12f\n' % ('GRADIENT', E))
+                    freagent.close()
+                energies.append(E)
+
+        # S/R: Quit sow after writing files 
+        if re.match('sow', opt_mode.lower()):
+            return 0.0
+
+        if re.match('reap', opt_mode.lower()):
+            PsiMod.set_variable('CURRENT ENERGY', energies[-1])
+        
+        # Obtain the gradient
         PsiMod.fd_1_0(energies)
 
         # The last item in the list is the reference energy, return it
@@ -292,16 +417,51 @@ def response(name, **kwargs):
         raise ValidationError('Response method %s not available.' %(lowername))
 
 def optimize(name, **kwargs):
-    for n in range(PsiMod.get_option("GEOM_MAXITER")):
+    n = 0
+    if (kwargs.has_key('opt_iter')):
+        n = kwargs['opt_iter']
+
+    while n < PsiMod.get_option('GEOM_MAXITER'):
+        kwargs['opt_iter'] = n
+
         # Compute the gradient
         thisenergy = gradient(name, **kwargs)
+
+        # S/R: Quit after getting new displacements or if forming gradient fails
+        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'sow'):
+            return 0.0
+        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap') and (thisenergy == 0.0):
+            return 0.0
+
+        # S/R: Move opt data file from last pass into namespace for this pass
+        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap') and (n != 0):
+            PsiMod.IOManager.shared_object().set_specific_retention(1, True)
+            PsiMod.IOManager.shared_object().set_specific_path(1, './')
+            if kwargs.has_key('opt_datafile'):
+                restartfile = kwargs.pop('opt_datafile')
+                if(PsiMod.me() == 0):
+                    shutil.copy(restartfile, get_psifile(1))
 
         # Take step
         if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
             print "Optimizer: Optimization complete!"
             PsiMod.opt_clean()
             PsiMod.clean()
+
+            # S/R: Clean up opt input file
+            if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap'):
+                fmaster = open('OPT-master.in', 'w')
+                fmaster.write('# This is a psi4 input file auto-generated from the gradient() wrapper.\n\n')
+                fmaster.write('# Optimization complete!\n\n')
+                fmaster.close()
             return thisenergy
+
+        # S/R: Preserve opt data file for next pass and switch modes to get new displacements
+        if (kwargs.has_key('mode')) and (kwargs['mode'].lower() == 'reap'):
+            kwargs['opt_datafile'] = get_psifile(1)
+            kwargs['mode'] = 'sow'
+
+        n += 1
 
     PsiMod.print_out("\tOptimizer: Did not converge!")
     return 0.0

@@ -1238,6 +1238,7 @@ void Molecule::print() const
             fprintf(outfile, "  No atoms in this molecule.\n");
     }
 }
+
 void Molecule::save_xyz(const std::string& filename) const
 {
 
@@ -1254,6 +1255,28 @@ void Molecule::save_xyz(const std::string& filename) const
         }
 
         fclose(fh);
+    }
+}
+
+std::string Molecule::save_string_xyz() const
+{
+
+    double factor = (units_ == Angstrom ? 1.0 : _bohr2angstroms);
+    char buffer[120];
+    std::stringstream ss;
+
+    if (Communicator::world->me() == 0) {
+
+        sprintf(buffer,"%d %d\n", molecular_charge(), multiplicity());
+        ss << buffer;
+
+        for (int i = 0; i < natom(); i++) {
+            Vector3 geom = atoms_[i]->compute();
+            sprintf(buffer, "%2s %17.12f %17.12f %17.12f\n", (Z(i) ? symbol(i).c_str() : "Gh"), factor*geom[0], factor*geom[1], factor*geom[2]);
+            ss << buffer;
+        }
+
+        return ss.str();
     }
 }
 
