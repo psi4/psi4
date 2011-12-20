@@ -23,38 +23,55 @@ void print_vibrations(std::vector<VIBRATION *> modes) {
   char **irrep_lbls = mol->irrep_labels();
   int Natom = mol->natom();
 
-  // sort modes by evals
-  sort(modes.begin(), modes.end(), ascending);
-
-  /* convert evals from H/(kg bohr^2) to J/(kg m^2) = 1/s^2 */
+  // compute harmonic frequencies, +/- in wavenumbers
+  /* Convert evals from H/(kg bohr^2) to J/(kg m^2) = 1/s^2 */
   /* v = 1/(2 pi c) sqrt( eval ) */
-  fprintf(outfile, "\n\t  Irrep      Harmonic Frequency   \n");
-  fprintf(outfile,   "\t                  (cm-1)          \n");
-  fprintf(outfile,   "\t-----------------------------------------------\n");
   const double k_convert = _hartree2J/(_bohr2m * _bohr2m * _amu2kg);
   const double cm_convert = 1.0/(2.0 * _pi * _c * 100.0);
 
-  for(int i=modes.size()-1; i>=0; --i) { // print descending order
+  for (int i=0; i<modes.size(); ++i) {
     if(modes[i]->km < 0.0)
-      fprintf(outfile, "\t  %5s   %15.4fi  \n", irrep_lbls[modes[i]->irrep],
-        cm_convert * sqrt(-k_convert * modes[i]->km));
+      modes[i]->cm = -1*cm_convert * sqrt(-k_convert * modes[i]->km);
     else
-      fprintf(outfile, "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep],
-        cm_convert * sqrt( k_convert * modes[i]->km));
+      modes[i]->cm =    cm_convert * sqrt( k_convert * modes[i]->km);
   }
+
+  // Sort modes by increasing eigenvalues.
+  sort(modes.begin(), modes.end(), ascending);
+
+  // Print out frequencies and irreps to output file.
+  fprintf(outfile, "\n\t  Irrep      Harmonic Frequency   \n");
+  fprintf(outfile,   "\t                  (cm-1)          \n");
+  fprintf(outfile,   "\t-----------------------------------------------\n");
+
+  for(int i=0; i<modes.size(); ++i) {
+    if(modes[i]->cm < 0.0)
+      fprintf(outfile, "\t  %5s   %15.4fi \n", irrep_lbls[modes[i]->irrep], -modes[i]->cm);
+    else
+      fprintf(outfile, "\t  %5s   %15.4f  \n", irrep_lbls[modes[i]->irrep], modes[i]->cm);
+  }
+
   fprintf(outfile,   "\t-----------------------------------------------\n");
   fflush(outfile);
+
+  // Return list of frequencies to wavefunction object.
+  boost::shared_ptr<Vector> freq_vector(new Vector(modes.size()));
+  for (int i=0; i<modes.size(); ++i)
+    freq_vector->set(i, modes[i]->cm);
+
+  //freq_vector->print_out();
+  Process::environment.reference_wavefunction()->set_frequencies(freq_vector);
 
   double sum = 0.0;
   for (int a=0; a<Natom; ++a)
      sum += mol->mass(a);
 
   // print out normal modes in format that WebMO likes
-  fprintf(outfile, "\n\tNormal Modes (mass-weighted)\n");
-  fprintf(outfile,"\tMolecular mass is %10.5f amu.\n", sum);
-  fprintf(outfile,"\tFrequencies in cm^-1; force constants in au.\n");
+  fprintf(outfile, "\n\tNormal Modes (mass-weighted).\n");
+  fprintf(outfile, "\tMolecular mass is %10.5f amu.\n", sum);
+  fprintf(outfile, "\tFrequencies in cm^-1; force constants in au.\n");
 
-  for(int i=modes.size()-1; i>=0; --i) { // print descending order
+  for(int i=0; i<modes.size(); ++i) { // print descending order
     if (fabs(cm_convert * sqrt(k_convert * fabs(modes[i]->km))) < 5.0) continue;
     fprintf(outfile,"\n");
     if (modes[i]->km < 0.0)

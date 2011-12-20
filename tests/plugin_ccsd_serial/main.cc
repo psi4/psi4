@@ -42,6 +42,11 @@ read_options(std::string name, Options &options)
       options.add_double("VIRTUAL_CUTOFF", 0.00001);
       /*- triples by default use the full virtual space*/
       options.add_bool("TRIPLES_USE_NOS", false);
+      /*- number of threads for triples, not set by default -*/
+      options.add_int("TRIPLES_THREADS", 0);
+      /*- generate density-fitted integrals so we can skip
+          transqt2() and OutOfCoreSort(). default false */
+      options.add_bool("DF_INTEGRALS",false);
   }
   return true;
 }

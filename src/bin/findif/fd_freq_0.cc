@@ -16,10 +16,11 @@ namespace psi { namespace findif {
 int iE0(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
  int irrep, int ii, int jj, int disp_i, int disp_j);
 
-PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
+PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list, int freq_irrep_only)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
+  int print_lvl = 3;
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
@@ -35,6 +36,13 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
     salcs_pi.push_back( std::vector<int>() );
   for (int i=0; i<Nsalc_all; ++i)
     salcs_pi[salc_list[i].irrep()].push_back(i);
+
+  // Now remove irreps that are not requested
+  if (freq_irrep_only != -1) {
+    for (int h=0; h<Nirrep; ++h)
+      if (h != freq_irrep_only)
+        salcs_pi[h].clear();
+  }
 
   // count displacements
   std::vector<int> Ndisp_pi (Nirrep);
@@ -66,18 +74,22 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
   for (int i=0; i<len(E_list); ++i)
     E.push_back( (double)extract<double>(E_list[i]) );
 
-  fprintf(outfile, "\n\tFinite difference computation of second-derivative of energy with respect\n");
-  fprintf(outfile, "\tto symmetry-adapted cartesian coordinates using %d-point formula.\n", pts);
+  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
 
-  fprintf(outfile, "\t%d energies passed in, including non-displaced energy.\n", (int) E.size());
+  fprintf(outfile, "  Computing second-derivative from energies using projected, \n");
+  fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_0).\n");
+
+  fprintf(outfile, "\t%d energies passed in, including the reference energy.\n", (int) E.size());
   if (E.size() != Ndisp_all+1) { // last energy is the reference non-displaced energy
     throw PsiException("FINDIF: Incorrect number of energies passed in!",__FILE__,__LINE__);  }
 
   double energy_ref = E[Ndisp_all];
-  fprintf(outfile, "\tCheck for precision!\n");
-    fprintf(outfile,"\t%-5d : %20.10lf (energy without displacement)\n", 0, energy_ref);
+  fprintf(outfile, "\tUsing %d-point formula.\n", pts);
+  fprintf(outfile, "\tEnergy without displacement: %15.10lf\n", energy_ref);
+  fprintf(outfile, "\tCheck energies below for precision!\n");
   for (int i=0; i<Ndisp_all+1; ++i)
-    fprintf(outfile,"\t%-5d : %20.10lf\n", i+1, E[i]);
+    fprintf(outfile,"\t%5d : %20.10lf\n", i+1, E[i]);
+  fprintf(outfile,"\n");
 
   char **irrep_lbls = mol->irrep_labels();
 
@@ -158,9 +170,11 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
       } // j, salc_j
     } // i, salc_i
 
-    //fprintf(outfile, "\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
-    //fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
-    //mat_print(H_irr, salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+    if (print_lvl >= 3) {
+      fprintf(outfile, "\n\tForce Constants for irrep %s in mass-weighted, ", irrep_lbls[h]);
+      fprintf(outfile, "symmetry-adapted cartesian coordinates.\n");
+      mat_print(H_irr, salcs_pi[h].size(), salcs_pi[h].size(), outfile);
+    }
 
     // diagonalize force constant matrix
     int dim = salcs_pi[h].size(); 
@@ -186,8 +200,10 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
     C_DGEMM('t', 'n', 3*Natom, dim, dim, 1.0, B_irr[0], 3*Natom, evects[0],
       dim, 0, normal_irr[0], dim);
 
-  //fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
-  //eivout(normal_irr, evals, 3*Natom, dim, outfile);
+    if (print_lvl >= 3) {
+      fprintf(outfile,"\n\tNormal coordinates (mass-weighted) for irrep %s:\n", irrep_lbls[h]);
+      eivout(normal_irr, evals, 3*Natom, dim, outfile);
+    }
 
     for (int i=0; i<salcs_pi[h].size(); ++i) {
       // copy eigenvector into row
@@ -204,11 +220,14 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list)
     free_block(normal_irr);
   }
 
+  // This print function also saves frequencies in wavefunction.
   print_vibrations(modes);
 
   for (int i=0; i<modes.size(); ++i)
     delete modes[i];
   modes.clear();
+
+  fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return Success;
 }

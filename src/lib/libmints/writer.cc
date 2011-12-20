@@ -21,7 +21,7 @@ void GradientWriter::write(const std::string &filename)
     if (file11 == NULL)
         throw PSIEXCEPTION("GradientWriter::write: Unable to open file11.dat");
 
-    fprintf(file11, "%-59.59s %-10.10s%-8.8s\n",
+    fprintf(file11, "%-59.59s %-10.10s%-9.9s\n",
             molecule_->name().c_str(),
             "(wfn)",
             "(dertype)");

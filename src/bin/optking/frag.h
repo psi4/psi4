@@ -80,6 +80,8 @@ class FRAG {
     return n;
   }
 
+  int add_auxiliary_bonds(void);
+
   // add connectivity between two atoms; atom numbers are for fragment
   void connect(int i, int j) {
     connectivity[i][j] = connectivity[j][i] = true;
@@ -162,6 +164,7 @@ class FRAG {
   void print_geom(FILE *fp_geom); // write cartesian geometry out for next step
 
   double ** H_guess(void);
+  double Lindh_rho(int A, int B); // function to help with Lindh guess hessian
   bool **g_connectivity(void) const;
   const bool * const * g_connectivity_pointer(void) const;
 

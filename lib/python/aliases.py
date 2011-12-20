@@ -71,8 +71,46 @@ def run_mp2_5(name, **kwargs):
 
     return e_mp25
 
+def run_plugin_ccsd_serial(name, **kwargs):
+    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
+    PsiMod.plugin_load("%s" % (plugfile))
+    PsiMod.set_global_option("MAX_MAPPED_MEMORY", 1000)
+    run_scf("scf",**kwargs)
+    PsiMod.transqt()
+    PsiMod.plugin("plugin_ccsd_serial.so")
+
+    return PsiMod.get_variable("CURRENT ENERGY")
+    
+# A direct translation of a plugin input file into a function call. Function calls are the only
+#     way to call plugins in sow/reap mode for db(), opt(), etc. This isn't best practices
+#     (see run_plugin_serial_ccsd) but is an example of what to do for a more complicated
+#     procedure where different options are set for different qc steps.
+def run_plugin_omega(name, **kwargs):
+
+    plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_omega/plugin_omega.so"
+    PsiMod.plugin_load("%s" % (plugfile))
+
+    PsiMod.set_global_option('BASIS', 'AUG-CC-PVDZ')
+    PsiMod.set_global_option('RI_BASIS_SCF', 'AUG-CC-PVDZ-RI')
+    PsiMod.set_global_option('REFERENCE', 'UHF')
+    PsiMod.set_global_option('SCF_TYPE', 'DF')
+    energy('scf', **kwargs)
+
+    PsiMod.set_global_option('dft_functional', 'wB97')
+    PsiMod.set_global_option('dft_order_spherical', 25) 
+    PsiMod.set_global_option('dft_n_radial', 35) 
+    PsiMod.set_global_option('omega_procedure', 'ip')
+    PsiMod.set_global_option('maxiter', 50)
+    PsiMod.set_global_option('d_converge', 5)
+    PsiMod.set_global_option('e_converge', 7)
+    PsiMod.plugin("plugin_omega.so")
+    
+    return PsiMod.get_variable('SCF TOTAL ENERGY')
+
 
 # Integration with driver routines
 procedures['energy']['mp2.5'] = run_mp2_5
 procedures['energy']['sherrillgroup_gold_standard'] = sherrillgroup_gold_standard
+procedures['energy']['plugin_ccsd_serial'] = run_plugin_ccsd_serial
+procedures['energy']['plugin_omega'] = run_plugin_omega
 

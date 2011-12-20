@@ -34,6 +34,7 @@ void KSPotential::buildGrid()
 {
     timer_on("Grid");
     grid_ = boost::shared_ptr<DFTGrid>(new DFTGrid(molecule_,primary_,options_));
+    grid_->print(outfile,options_.get_int("PRINT"));
     timer_off("Grid");
 }
 void KSPotential::buildAO2USO()

@@ -68,15 +68,15 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
-    namespace findif     {
-      std::vector< SharedMatrix > fd_geoms_1_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_2_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_freq_0(Options &);
-      std::vector< SharedMatrix > fd_geoms_freq_1(Options &);
+    namespace findif    {
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
+      //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_0(Options &, int irrep=-1);
+      std::vector< boost::shared_ptr<Matrix> > fd_geoms_freq_1(Options &);
 
       PsiReturnType fd_1_0(Options &, const boost::python::list&);
-      PsiReturnType fd_2_0(Options &, const boost::python::list&);
-      PsiReturnType fd_freq_0(Options &, const boost::python::list&);
+      //PsiReturnType fd_2_0(Options &, const boost::python::list&);
+      PsiReturnType fd_freq_0(Options &, const boost::python::list&, int irrep=-1);
       PsiReturnType fd_freq_1(Options &, const boost::python::list&);
     }
 
@@ -160,16 +160,16 @@ std::vector< SharedMatrix > py_psi_fd_geoms_1_0()
     return findif::fd_geoms_1_0(Process::environment.options);
 }
 
-std::vector< SharedMatrix > py_psi_fd_geoms_2_0()
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_2_0(Process::environment.options);
-}
+//std::vector< boost::shared_ptr<Matrix> > py_psi_fd_geoms_2_0()
+//{
+    //py_psi_prepare_options_for_module("FINDIF");
+    //return findif::fd_geoms_2_0(Process::environment.options);
+//}
 
-std::vector< SharedMatrix > py_psi_fd_geoms_freq_0()
+std::vector< SharedMatrix > py_psi_fd_geoms_freq_0(int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_geoms_freq_0(Process::environment.options);
+    return findif::fd_geoms_freq_0(Process::environment.options, irrep);
 }
 
 std::vector< SharedMatrix > py_psi_fd_geoms_freq_1()
@@ -184,16 +184,16 @@ PsiReturnType py_psi_fd_1_0(const boost::python::list& energies)
     return findif::fd_1_0(Process::environment.options, energies);
 }
 
-PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
-{
-    py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_2_0(Process::environment.options, energies);
-}
+//PsiReturnType py_psi_fd_2_0(const boost::python::list& energies)
+//{
+    //py_psi_prepare_options_for_module("FINDIF");
+    //return findif::fd_2_0(Process::environment.options, energies);
+//}
 
-PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies)
+PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_0(Process::environment.options, energies);
+    return findif::fd_freq_0(Process::environment.options, energies, irrep);
 }
 
 PsiReturnType py_psi_fd_freq_1(const boost::python::list& energies)
@@ -698,10 +698,23 @@ boost::shared_ptr<Molecule> py_psi_get_active_molecule()
     return Process::environment.molecule();
 }
 
+void py_psi_set_gradient(SharedMatrix grad)
+{
+    if (Process::environment.reference_wavefunction()) {
+        Process::environment.reference_wavefunction()->set_gradient(grad);
+    } else {
+        Process::environment.set_gradient(grad);
+    }
+}
+
 SharedMatrix py_psi_get_gradient()
 {
-    boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
-    return wf->gradient();
+    if (Process::environment.reference_wavefunction()) {
+        boost::shared_ptr<Wavefunction> wf = Process::environment.reference_wavefunction();
+        return wf->gradient();
+    } else {
+        return Process::environment.gradient();
+    }
 }
 
 void py_psi_set_active_potential(boost::shared_ptr<ExternalPotential> potential)
@@ -838,6 +851,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("get_active_potential", &py_psi_get_active_potential);
     def("reference_wavefunction", py_psi_reference_wavefunction);
     def("get_gradient", py_psi_get_gradient);
+    def("set_gradient", py_psi_set_gradient);
     def("set_memory", py_psi_set_memory);
     def("get_memory", py_psi_get_memory);
     def("set_nthread", &py_psi_set_n_threads);
@@ -911,11 +925,11 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("mp2", py_psi_mp2);
     def("mcscf", py_psi_mcscf);
     def("fd_geoms_1_0", py_psi_fd_geoms_1_0);
-    def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
+    //def("fd_geoms_2_0", py_psi_fd_geoms_2_0);
     def("fd_geoms_freq_0", py_psi_fd_geoms_freq_0);
     def("fd_geoms_freq_1", py_psi_fd_geoms_freq_1);
     def("fd_1_0", py_psi_fd_1_0);
-    def("fd_2_0", py_psi_fd_2_0);
+    //def("fd_2_0", py_psi_fd_2_0);
     def("fd_freq_0", py_psi_fd_freq_0);
     def("fd_freq_1", py_psi_fd_freq_1);
     def("sapt", py_psi_sapt);

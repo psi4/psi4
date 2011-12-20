@@ -34,8 +34,51 @@ int period(double ZA) {
   else                return 5;
 }
 
+double r_ref_table(int perA, int perB) {
+  if (perA == 1) {
+    if (perB == 1) return 1.35;
+    else if (perB == 2) return 2.10;
+    else return 2.53;
+  }
+  else if (perA == 2) {
+    if (perB == 1) return 2.10;
+    else if (perB == 2) return 2.87;
+    else return 3.40;
+  }
+  else {
+    if (perB == 1) return 2.53;
+    else return 3.40;
+  }
+}
+
+double alpha_table(int perA, int perB) {
+  if (perA == 1) {
+    if (perB == 1) return 1000;
+    else return 0.3949;
+  }
+  else {
+    if (perB == 1)
+      return 0.3949;
+    else
+      return 0.2800;
+  }
+}
+
+// used for Lindh model
+double FRAG::Lindh_rho(int A, int B) {
+  int perA = period(Z[A]);
+  int perB = period(Z[B]);
+
+  double alpha = alpha_table(perA, perB);
+            
+  double r = v3d_dist(geom[A], geom[B]);
+  double r_ref = r_ref_table(perA, perB);
+
+  return (exp(alpha * (r_ref*r_ref - r*r)));
+}
+
 double ** FRAG::H_guess(void) {
-  int i, j, atomA, atomB, atomC, cnt = 0, perA, perB;
+  int i, j, atomA, atomB, atomC, atomD, cnt = 0, perA, perB;
   double rAB, rBC, rABcov, rBCcov, rBDcov;
   double A, B, C, D, L, E, val;
   double *f;
@@ -155,6 +198,65 @@ double ** FRAG::H_guess(void) {
       } // end switch intcos
     } // end loop intcos
   } // end Fischer
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::LINDH) {
+    for (i=0; i<intcos.size(); ++i) { 
+      double tval;
+    
+      switch (intcos[i]->g_type()) {
+      
+        case (stre_type) :
+          //if (intcos[i]->is_hbond()) f[cnt++] = 0.03;
+          //else {
+            atomA = intcos[i]->g_atom(0);
+            atomB = intcos[i]->g_atom(1);
+            
+            f[cnt++] = 0.45 * Lindh_rho(atomA, atomB);
+          //}
+        break;
+        
+        case (bend_type) :
+          atomA = intcos[i]->g_atom(0);
+          atomB = intcos[i]->g_atom(1);
+          atomC = intcos[i]->g_atom(2);
+          tval  = Lindh_rho(atomA,atomB) * Lindh_rho(atomB,atomC);
+          tval += Lindh_rho(atomB,atomA) * Lindh_rho(atomA,atomC);
+          tval += Lindh_rho(atomA,atomC) * Lindh_rho(atomC,atomB);
+          
+          f[cnt++] = 0.15 * tval;
+        break;
+
+        case (tors_type) :
+          atomA = intcos[i]->g_atom(0);
+          atomB = intcos[i]->g_atom(1);
+          atomC = intcos[i]->g_atom(2);
+          atomD = intcos[i]->g_atom(3);
+          tval  = Lindh_rho(atomA,atomB) * Lindh_rho(atomB,atomC) * Lindh_rho(atomC,atomD);
+          //tval += Lindh_rho(atomA,atomB) * Lindh_rho(atomB,atomC) * Lindh_rho(atomC,atomD);
+          
+          f[cnt++] = 0.005 * tval;
+        break;
+
+      } // end switch intcos
+    } // end loop intcos
+  }
+  else if (Opt_params.intrafragment_H == OPT_PARAMS::SIMPLE) {
+    for (i=0; i<intcos.size(); ++i) {
+      switch (intcos[i]->g_type()) {
+        case (stre_type) :
+          f[cnt++] = 0.5;
+        break;
+
+        case (bend_type) :
+          f[cnt++] = 0.2;
+        break;
+
+        case (tors_type) :
+          f[cnt++] = 0.1;
+        break;
+      }
+    }
+  }
+
 
   double **H = init_matrix(intcos.size(), intcos.size());
   for (i=0; i<intcos.size(); ++i)
