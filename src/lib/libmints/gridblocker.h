@@ -26,6 +26,7 @@ protected:
     
     int debug_;
     int print_;
+    int bench_;
 
     // Reference to previous grid layout
     const int npoints_ref_;
@@ -67,6 +68,7 @@ public:
 
     void set_print(int print) { print_ = print; }
     void set_debug(int debug) { debug_ = debug; }
+    void set_bench(int bench) { bench_ = bench; }
 
 };
 

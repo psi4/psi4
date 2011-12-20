@@ -118,7 +118,9 @@ void RKS::form_V()
 }
 void RKS::form_G()
 {
+    timer_on("Form V");
     form_V();
+    timer_off("Form V");
     if (functional_->isRangeCorrected()) {
         Omega_K_Functor k_builder(functional_->getOmega(), wK_, D_, Ca_, nalphapi_);
         process_omega_tei(k_builder);
