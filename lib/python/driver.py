@@ -176,7 +176,58 @@ def gradient(name, **kwargs):
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
-def hessian(name, **kwargs):
+def response(name, **kwargs):
+    lowername = name.lower()
+
+    # Make sure the molecule the user provided is the active one
+    if (kwargs.has_key('molecule')):
+        activate(kwargs['molecule'])
+        del kwargs['molecule']
+    molecule = PsiMod.get_active_molecule()
+    molecule.update_geometry()
+    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
+
+    try:
+        return procedures['response'][lowername](lowername, **kwargs)
+    except KeyError:
+        raise ValidationError('Response method %s not available.' %(lowername))
+
+def optimize(name, **kwargs):
+    for n in range(PsiMod.get_option("GEOM_MAXITER")):
+        # Compute the gradient
+        thisenergy = gradient(name, **kwargs)
+
+        # Take step
+        if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
+            print "Optimizer: Optimization complete!"
+            PsiMod.opt_clean()
+            PsiMod.clean()
+            return thisenergy
+
+    PsiMod.print_out("\tOptimizer: Did not converge!")
+    return 0.0
+
+def parse_arbitrary_order(name):
+    namelower = name.lower()
+
+    if re.match(r'^[a-z]+\d+$', namelower):       
+        decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
+        namestump = decompose.group(1)
+        namelevel = int(decompose.group(2))
+
+        if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
+            # Let 'mp2' pass through as itself
+            if (namestump == 'mp') and (namelevel == 2):
+                return namelower, None
+            # Otherwise return method and order
+            else:
+                return namestump, namelevel
+        else:
+            return namelower, None
+    else:
+        return namelower, None
+
+def frequencies(name, **kwargs):
     lowername = name.lower()
 
     # Make sure the molecule the user provided is the active one
@@ -190,6 +241,11 @@ def hessian(name, **kwargs):
     dertype = 2
     if (kwargs.has_key('dertype')):
         dertype = kwargs['dertype']
+
+    if (kwargs.has_key('irrep')):
+        irrep = kwargs['irrep'] - 1 # externally, A1 irrep is 1; internally 0
+    else:
+      irrep = -1; # -1 implies do all irreps 
 
     # By default, set func to the energy function
     func = energy
@@ -243,7 +299,7 @@ def hessian(name, **kwargs):
         print info
 
         # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_freq_0()
+        displacements = PsiMod.fd_geoms_freq_0(irrep)
 
         ndisp = len(displacements)
 
@@ -267,15 +323,21 @@ def hessian(name, **kwargs):
             # Save the energy
             energies.append(E)
 
+            # clean may be necessary when changing irreps of displacements
+            PsiMod.clean()
+
         # Obtain the gradient. This function stores the gradient into the reference wavefunction.
-        PsiMod.fd_freq_0(energies)
+        PsiMod.fd_freq_0(energies, irrep)
 
         print " Computation complete."
 
         # The last item in the list is the reference energy, return it
         return energies[-1]
 
-def response(name, **kwargs):
+
+# to be changed to that it's behavior is different from frequencies()
+# this one will get force constants
+def hessian(name, **kwargs):
     lowername = name.lower()
 
     # Make sure the molecule the user provided is the active one
@@ -286,46 +348,49 @@ def response(name, **kwargs):
     molecule.update_geometry()
     PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
-    try:
-        return procedures['response'][lowername](lowername, **kwargs)
-    except KeyError:
-        raise ValidationError('Response method %s not available.' %(lowername))
+    dertype = 2
+    if (kwargs.has_key('dertype')):
+        dertype = kwargs['dertype']
 
-def optimize(name, **kwargs):
-    for n in range(PsiMod.get_option("GEOM_MAXITER")):
-        # Compute the gradient
-        thisenergy = gradient(name, **kwargs)
+    # By default, set func to the energy function
+    func = energy
+    func_existed = False
+    if (kwargs.has_key('func')):
+        func = kwargs['func']
+        func_existed = True
 
-        # Take step
-        if PsiMod.optking() == PsiMod.PsiReturnType.EndLoop:
-            print "Optimizer: Optimization complete!"
-            PsiMod.opt_clean()
-            PsiMod.clean()
-            return thisenergy
+    # Do we have analytic 2nd derivatives?
+    if (procedures['hessian'].has_key(lowername) and dertype == 2 and func_existed == False):
+        procedures['hessian'][lowername](lowername, **kwargs)
+        return PsiMod.reference_wavefunction().energy()
+    else: # Do finite differences of energies.
+        info = "Performing finite difference calculations"
+        print info
 
-    PsiMod.print_out("\tOptimizer: Did not converge!")
-    return 0.0
+        displacements = PsiMod.fd_geoms_2_0()
 
-def frequencies(name, **kwargs):
-    hessian(name, **kwargs)
+        ndisp = len(displacements)
 
-def parse_arbitrary_order(name):
-    namelower = name.lower()
+        print " %d displacements needed." % ndisp
+        energies = []
 
-    if re.match(r'^[a-z]+\d+$', namelower):       
-        decompose = re.compile(r'^([a-z]+)(\d+)$').match(namelower)
-        namestump = decompose.group(1)
-        namelevel = int(decompose.group(2))
+        # Reference geometry and energy are last in list.
+        for n, displacement in enumerate(displacements):
+            PsiMod.print_out("\n")
+            banner("Loading displacement %d of %d" % (n+1, ndisp))
 
-        if (namestump == 'mp') or (namestump == 'zapt') or (namestump == 'ci'):
-            # Let 'mp2' pass through as itself
-            if (namestump == 'mp') and (namelevel == 2):
-                return namelower, None
-            # Otherwise return method and order
-            else:
-                return namestump, namelevel
-        else:
-            return namelower, None
-    else:
-        return namelower, None
+            print "    displacement %d" % (n+1)
+
+            PsiMod.get_active_molecule().set_geometry(displacement)
+
+            E = func(lowername, **kwargs)
+            energies.append(E)
+
+        # Compute the hessian
+        PsiMod.fd_2_0(energies)
+
+        print " Computation complete."
+
+        # The last item in the list is the reference energy, return it
+        return energies[-1]
 
