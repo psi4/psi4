@@ -10,6 +10,7 @@
 #include <exception.h>
 //#include <libmints/molecule.h>
 //#include <libmints/wavefunction.h>
+#include <libmints/typedefs.h>
 
 namespace boost {
 template <class T>
@@ -52,6 +53,7 @@ public:
         int nthread_;
 
         boost::shared_ptr<Molecule> molecule_;
+        SharedMatrix gradient_; 
         boost::shared_ptr<ExternalPotential> potential_;
         boost::shared_ptr<Wavefunction> reference_wavefunction_;
     public:
@@ -75,6 +77,11 @@ public:
         void set_reference_wavefunction(const boost::shared_ptr<Wavefunction>& reference_wavefunction);
         /// Get reference wavefunction
         boost::shared_ptr<Wavefunction> reference_wavefunction() const;
+
+        /// Set gradient manually
+        void set_gradient(const SharedMatrix gradient) { gradient_ = gradient; }
+        /// Get gradient manually
+        SharedMatrix gradient() const { return gradient_; }
 
         /// Map containing current energies
         std::map<std::string, double> globals;
