@@ -60,7 +60,7 @@ compare_values(ref_OPT_E_0, get_variable('CURRENT ENERGY'), 7, "[7] Wrapper opti
 
 # database(opt(energy()))
 db('mp2','S22',db_func=optimize,subset=[1],tabulate=['mp2 total energy','current energy'])
-compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 4, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
+compare_values(ref_DB_OPT_E_S22, get_variable('S22 DATABASE ROOT-MEAN-SQUARE DEVIATION'), 3, "[8] Wrapper database S22 calling optimize (analytic G) calling energy")  #TEST
 
 # alias(cbs(energy()))
 sherrillgroup_gold_standard()

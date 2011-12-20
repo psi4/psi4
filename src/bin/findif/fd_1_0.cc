@@ -130,9 +130,12 @@ fd_1_0(Options &options, const boost::python::list& E)
   fprintf(outfile,"\tGradient written to file11.\n");
 
   SharedMatrix sgradient(gradient_matrix.clone());
-  Process::environment.reference_wavefunction()->set_gradient(sgradient);
+  if (Process::environment.reference_wavefunction()) {
+    Process::environment.reference_wavefunction()->set_gradient(sgradient);
+  } else {
+    Process::environment.set_gradient(sgradient);
+  }
   fprintf(outfile,"\tGradent saved to wavefunction.\n");
-
   fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   free(g_cart);
