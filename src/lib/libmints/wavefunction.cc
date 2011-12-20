@@ -562,6 +562,16 @@ void Wavefunction::set_gradient(SharedMatrix& grad)
     gradient_ = grad;
 }
 
+boost::shared_ptr<Vector> Wavefunction::frequencies() const
+{
+    return frequencies_;
+}
+
+void Wavefunction::set_frequencies(boost::shared_ptr<Vector>& freqs)
+{
+    frequencies_ = freqs;
+}
+
 void Wavefunction::save() const
 {
 }

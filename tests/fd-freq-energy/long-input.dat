@@ -1,0 +1,113 @@
+#! SCF STO-3G finite-difference tests
+
+molecule h2o {
+  symmetry c1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals {
+  basis sto-3g
+  print_lvl 3
+}
+
+# Test frequencies by energies
+set findif { points 3 }
+
+#hessian('scf')
+h2o.update_geometry()
+
+displacements = PsiMod.fd_geoms_freq_0()
+
+ndisp = len(displacements)
+
+print " %d displacments needed." % ndisp
+energies = []
+
+for n, displacement in enumerate(displacements):
+  banner("Loading displacement %d of %d" % (n+1, ndisp))
+  print "    displacement %d" % (n+1)
+
+  PsiMod.get_active_molecule().set_geometry(displacement)
+
+  E = energy('scf')
+  energies.append(E)
+
+PsiMod.fd_freq_0(energies)
+
+fd_freqs = PsiMod.reference_wavefunction().frequencies()
+
+# analytic second derivatives from PSI3 (for now)
+anal_freqs = PsiMod.Vector(3)
+anal_freqs.set(0, 0, 2170.04)
+anal_freqs.set(0, 1, 4140.00)
+anal_freqs.set(0, 2, 4391.06)
+#
+# psi3 3-point formula: #A1 force constants
+#  0.3546775  -0.2277549
+# -0.2277549   0.4721543
+#
+#B2 force constant
+#  0.7296851
+
+compare_vectors(anal_freqs, fd_freqs, 1,
+ "Analytic (PSI3) vs. Finite-difference (3-pt.) frequencies from energies to 0.1 cm^-1 (C1)")
+
+# Test gradient by 5-point formula
+molecule h2o {
+  symmetry c1
+  O
+  H 1 0.9894093
+  H 1 0.9894093 2 100.02688
+}
+
+set globals {
+  basis sto-3g
+  print_lvl 3
+}
+
+# Test frequencies by energies
+set findif { points 5 }
+
+#hessian('scf')
+h2o.update_geometry()
+
+displacements = PsiMod.fd_geoms_freq_0()
+
+ndisp = len(displacements)
+
+print " %d displacments needed." % ndisp
+energies = []
+
+for n, displacement in enumerate(displacements):
+  banner("Loading displacement %d of %d" % (n+1, ndisp))
+  print "    displacement %d" % (n+1)
+
+  PsiMod.get_active_molecule().set_geometry(displacement)
+
+  E = energy('scf')
+  energies.append(E)
+
+PsiMod.fd_freq_0(energies)
+
+fd_freqs = PsiMod.reference_wavefunction().frequencies()
+
+# analytic second derivatives from PSI3 (for now)
+anal_freqs = PsiMod.Vector(3)
+anal_freqs.set(0, 0, 2170.04)
+anal_freqs.set(0, 1, 4140.00)
+anal_freqs.set(0, 2, 4391.06)
+#
+# psi3 3-point formula: #A1 force constants
+#  0.3546775  -0.2277549
+# -0.2277549   0.4721543
+#
+#B2 force constant
+#  0.7296851
+
+compare_vectors(anal_freqs, fd_freqs, 2,
+ "Analytic (PSI3) vs. Finite-difference (5-pt.) frequencies from energies to 0.01 cm^-1 (C1)")
+
+clean()
+

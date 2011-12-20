@@ -308,6 +308,9 @@ public:
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
 
+    /// Save an XYZ string
+    std::string save_string_xyz() const;
+
     /// Save information to checkpoint file.
     void save_to_chkpt(boost::shared_ptr<Chkpt> chkpt, std::string prefix = "");
 

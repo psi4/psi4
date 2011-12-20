@@ -271,6 +271,7 @@ void export_mints()
             def("nfragments", &Molecule::nfragments).
             def("print_out", &Molecule::print).
             def("save_xyz", &Molecule::save_xyz).
+            def("save_string_xyz", &Molecule::save_string_xyz).
             def("update_geometry", &Molecule::update_geometry).
             def("Z", &Molecule::Z, return_value_policy<copy_const_reference>()).
             def("x", &Molecule::x).
@@ -299,6 +300,7 @@ void export_mints()
             def("set_ghost_fragment", &Molecule::set_ghost_fragment).
             def("atom_at_position", &Molecule::atom_at_position1).
             def("print_out", &Molecule::print).
+            def("print_out_in_bohr", &Molecule::print_in_bohr).
             def("nuclear_repulsion_energy", &Molecule::nuclear_repulsion_energy).
             def("find_point_group", &Molecule::find_point_group).
             def("reset_point_group", &Molecule::reset_point_group).
@@ -367,7 +369,8 @@ void export_mints()
             def("basisset", &Wavefunction::basisset).
             def("sobasisset", &Wavefunction::sobasisset).
             def("energy", &Wavefunction::reference_energy).
-            def("gradient", &Wavefunction::gradient);
+            def("gradient", &Wavefunction::gradient).
+            def("frequencies", &Wavefunction::frequencies);
 
     class_<scf::HF, boost::shared_ptr<scf::HF>, bases<Wavefunction>, boost::noncopyable>("HF", no_init);
     class_<scf::RHF, boost::shared_ptr<scf::RHF>, bases<scf::HF, Wavefunction> >("RHF", no_init);

@@ -8,6 +8,7 @@
 #include <libparallel/parallel.h>
 #include "dimension.h"
 #include "typedefs.h"
+#include <exception.h>
 
 namespace boost {
 template<class T> class shared_ptr;
@@ -591,12 +592,14 @@ public:
     double rms();
     /// Add val to an element of this
     void add(int h, int m, int n, double val) {
+        #ifdef PSIDEBUG
         if (m > rowspi_[h] || n > colspi_[h^symmetry_]) {
             fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, h, m, n);
             fflush(outfile);
-            return;
+            throw PSIEXCEPTION("What are you doing, Rob?");
         }
+        #endif
         matrix_[h][m][n] += val;
     }
     /// Add val to an element of this
