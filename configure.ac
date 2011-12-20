@@ -993,6 +993,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/opt4/Makefile
           tests/opt5/Makefile
           tests/sad1/Makefile
+          tests/fd-gradient/Makefile
+          tests/fd-freq-energy/Makefile
           tests/castup1/Makefile
           tests/sapt1/Makefile
           tests/dfmp2_1/Makefile
