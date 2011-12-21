@@ -623,6 +623,9 @@ using namespace yeti;
 
 namespace psi{
 
+    /// The type of notation used in two electron integrals
+    enum IntegralNotation {Physicist, Chemist};
+
     struct _dpdbuf4;
     typedef _dpdbuf4 dpdbuf4;
 
@@ -656,8 +659,6 @@ namespace psi{
         /// The AO basis object, describing shell groupings for index 4
         AOBasisPtr aobs4_;
       public:
-        /// The type of notation used in the integral storage
-        enum TransformType {Physicist, Chemist};
         /**
          * Makes a new two-electron integral computer.
          * @param eri a TwoBodyAOInt object to compute the desired integrals

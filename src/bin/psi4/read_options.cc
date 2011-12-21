@@ -62,6 +62,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("PRINT", 1);
   /*- The amount of information to print to the output file -*/
   options.add_int("DEBUG", 0);
+  /*- Some codes (DFT) can dump benchmarking data to separate output files -*/
+  options.add_int("BENCH", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type -*/

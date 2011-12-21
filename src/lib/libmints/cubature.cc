@@ -90,7 +90,7 @@ void BasisExtents::computeExtents()
         for (int K = 0; K < nprim; K++) {
             if (alpha_max > alpha[K]) {
                 alpha_max = alpha[K];
-                norm_max = norm[K];
+                norm_max = fabs(norm[K]);
             }    
         } 
 
@@ -100,7 +100,7 @@ void BasisExtents::computeExtents()
        
         // Take a crude guess based on most-diffuse exponent
         // Removing nonlinearity with R0 = 10.0 a.u.
-        double Rr = sqrt(-alpha_max * log(pow(10.0,-l) * delta_ / fabs(norm_max)));
+        double Rr = 2.0;
         double Or = 0.0;
         do {
             // Compute Or
@@ -264,7 +264,7 @@ void BlockOPoints::print(FILE* out, int print)
     fprintf(out, "   => BlockOPoints: %d Points <=\n\n", npoints_);
     
     fprintf(out, "    Center = <%11.3E,%11.3E,%11.3E>, R = %11.3E\n\n",
-        x_[0],x_[1],x_[2],R_);
+        xc_[0],xc_[1],xc_[2],R_);
 
     fprintf(out, "    %-6lu Significant Shells.\n", shells_local_to_global_.size()); 
     fprintf(out, "    %-6lu Significant Functions.\n\n", functions_local_to_global_.size());
@@ -941,6 +941,7 @@ void MolecularGrid::block(int max_points, int min_points)
 
     blocker->set_print(options_.get_int("PRINT"));
     blocker->set_debug(options_.get_int("DEBUG"));
+    blocker->set_bench(options_.get_int("BENCH"));
 
     blocker->block();
 
@@ -7363,6 +7364,12 @@ void OctreeGridBlocker::block()
     }
 
     // K-PR Tree blocking    
+    FILE* fh_ktree;
+    if (bench_) {
+        fh_ktree = fopen("ktree.dat","w"); 
+        //fprintf(fh_ktree,"#  %4s %5s %15s %15s %15s\n", "Dept","ID","X","Y","Z");
+    }
+    int tree_level = 0;
     while (true) {
             
         // X
@@ -7380,6 +7387,17 @@ void OctreeGridBlocker::block()
             } 
             xc /= block.size();    
 
+            double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
+            for (int Q = 0; Q < block.size(); Q++) {
+                XC[0] += x[block[Q]];
+                XC[1] += y[block[Q]];
+                XC[2] += z[block[Q]];
+            }
+            XC[0] /= block.size();
+            XC[1] /= block.size();
+            XC[2] /= block.size();
+            if (bench_) fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
+
             std::vector<int> left;
             std::vector<int> right;
             for (int Q = 0; Q < block.size(); Q++) {
@@ -7403,6 +7421,7 @@ void OctreeGridBlocker::block()
             }
         }
         active_tree = new_leaves;
+        tree_level++;
         if (!active_tree.size()) break;
             
         // Y
@@ -7420,6 +7439,17 @@ void OctreeGridBlocker::block()
             } 
             xc /= block.size();    
 
+            double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
+            for (int Q = 0; Q < block.size(); Q++) {
+                XC[0] += x[block[Q]];
+                XC[1] += y[block[Q]];
+                XC[2] += z[block[Q]];
+            }
+            XC[0] /= block.size();
+            XC[1] /= block.size();
+            XC[2] /= block.size();
+            if (bench_) fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
+
             std::vector<int> left;
             std::vector<int> right;
             for (int Q = 0; Q < block.size(); Q++) {
@@ -7443,6 +7473,7 @@ void OctreeGridBlocker::block()
             }
         }
         active_tree = new_leaves;
+        tree_level++;
         if (!active_tree.size()) break;
             
         // Z
@@ -7460,6 +7491,17 @@ void OctreeGridBlocker::block()
             } 
             xc /= block.size();    
 
+            double XC[3]; ::memset((void*) XC, '\0', 3*sizeof(double));
+            for (int Q = 0; Q < block.size(); Q++) {
+                XC[0] += x[block[Q]];
+                XC[1] += y[block[Q]];
+                XC[2] += z[block[Q]];
+            }
+            XC[0] /= block.size();
+            XC[1] /= block.size();
+            XC[2] /= block.size();
+            if (bench_) fprintf(fh_ktree,"   %4d %5d %15.6E %15.6E %15.6E\n", tree_level,A, XC[0],XC[1],XC[2]);
+
             std::vector<int> left;
             std::vector<int> right;
             for (int Q = 0; Q < block.size(); Q++) {
@@ -7483,10 +7525,13 @@ void OctreeGridBlocker::block()
             }
         }
         active_tree = new_leaves;
+        tree_level++;
         if (!active_tree.size()) break;
 
     }
-
+    if (bench_) fclose(fh_ktree);
+    
+    
     // Move stuff over
     x_ = new double[npoints_]; 
     y_ = new double[npoints_]; 
@@ -7494,6 +7539,12 @@ void OctreeGridBlocker::block()
     w_ = new double[npoints_]; 
 
     int index = 0;
+    int unique_block = 0;
+    FILE* fh_blocks;
+    if (bench_) {
+        fh_blocks = fopen("finished_blocks.dat","w");
+        //fprintf(fh_blocks, "#  %4s %15s %15s %15s %15s\n", "ID", "X", "Y", "Z", "W"); 
+    }
     for (int A = 0; A < completed_tree.size(); A++) {
         std::vector<int> block = completed_tree[A];
         for (int Q = 0; Q < block.size(); Q++) {
@@ -7502,9 +7553,12 @@ void OctreeGridBlocker::block()
             y_[index] = y[delta];
             z_[index] = z[delta];
             w_[index] = w[delta];
+            if (bench_) fprintf(fh_blocks, "   %4d %15.6E %15.6E %15.6E %15.6E\n", unique_block, x_[index], y_[index], z_[index], w_[index]); 
             index++;
         } 
+        if (block.size()) unique_block++;
     }
+    if (bench_) fclose(fh_blocks);
 
     index = 0;
     max_points_ = 0;
@@ -7524,14 +7578,36 @@ void OctreeGridBlocker::block()
             max_functions_ = blocks_[A]->functions_local_to_global().size();
     } 
 
-    if (debug_) {
-        for (int A = 0; A < blocks_.size(); A++) {
-            blocks_[A]->print(stdout,debug_);
+    if (bench_) {
+        FILE* fh_extents = fopen("extents.dat","w");
+        //fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
+        boost::shared_ptr<BasisSet> basis = extents_->basis();
+        boost::shared_ptr<Vector> Rc = extents_->shell_extents();         
+        for (int Q = 0; Q < basis->nshell(); Q++) {
+            Vector3 v = basis->shell(Q)->center();
+            fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
         }
+        fclose(fh_extents);
+    }
+
+    if (bench_ > 2) {
+        double delta2 = extents_->delta();
+        for (int i = 2; i < 20; i++) { 
+            std::stringstream ss;
+            ss << "extents" << i << ".dat";
+            FILE* fh_extents = fopen(ss.str().c_str(),"w");
+            //fprintf(fh_extents,"    %4s %15s %15s %15s %15s\n","ID","X","Y","Z","R");
+            extents_->set_delta(pow(10.0,-i));
+            boost::shared_ptr<BasisSet> basis = extents_->basis();
+            boost::shared_ptr<Vector> Rc = extents_->shell_extents();         
+            for (int Q = 0; Q < basis->nshell(); Q++) {
+                Vector3 v = basis->shell(Q)->center();
+                fprintf(fh_extents,"    %4d %15.6E %15.6E %15.6E %15.6E\n", Q,v[0],v[1],v[2],Rc->get(0,Q));
+            }
+            fclose(fh_extents);
+        }
+        extents_->set_delta(delta2);
     }
 }
-    
-
-    
 
 }
