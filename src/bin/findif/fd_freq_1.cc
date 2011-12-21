@@ -17,7 +17,7 @@ namespace psi { namespace findif {
 int iE1(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
  int irrep, int ii, int jj, int disp_i, int disp_j);
 
-PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_list)
+PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_list, int irrep)
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");

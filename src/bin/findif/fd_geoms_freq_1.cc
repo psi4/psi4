@@ -8,7 +8,7 @@
 
 namespace psi { namespace findif {
 
-std::vector< SharedMatrix > fd_geoms_freq_1(Options &options) {
+std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep) {
 
   fprintf(outfile,"\tUsing finite-differences of gradients to determine vibrational frequencies");
   fprintf(outfile,"\t and normal modes.\n  ** Results are valid only at stationary points! **\n");

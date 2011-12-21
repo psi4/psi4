@@ -427,7 +427,7 @@ def frequencies(name, **kwargs):
         func = procedures['gradient'][lowername]
 
         # Obtain list of displacements
-        displacements = PsiMod.fd_geoms_freq_1()
+        displacements = PsiMod.fd_geoms_freq_1(irrep)
         ndisp = len(displacements)
 
         print " %d displacements needed." % ndisp
@@ -449,7 +449,10 @@ def frequencies(name, **kwargs):
             # Save the gradient
             gradients.append(G)
 
-        PsiMod.fd_freq_1(gradients)
+            # clean may be necessary when changing irreps of displacements
+            PsiMod.clean()
+
+        PsiMod.fd_freq_1(gradients, irrep)
 
         print " Computation complete."
 
