@@ -410,7 +410,7 @@ SharedMatrix Deriv::compute()
 
     // A certain optimization can be used if we know we only need totally symmetric
     // derivatives.
-    so_eri.set_only_totally_symmetric(false);
+    so_eri.set_only_totally_symmetric(true);
 
     // Compute one-electron derivatives.
     vector<SharedMatrix> s_deriv = cdsalcs_.create_matrices("S'");
