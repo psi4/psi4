@@ -764,6 +764,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The maximum number of iterations -*/
     options.add_int("MAXITER", 100);
 
+    /*- The amount (percentage) of damping to apply to the early density updates.
+        0 will result in a full update, 100 will completely stall the update.  A
+        value around 20 (which corresponds to 20\% of the previous iteration's
+        density being mixed into the current density)
+        could help to solve problems with oscillatory convergence -*/
+    options.add_double("DAMPING_PERCENTAGE", 100.0);
+    /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
+        It is recommended to leave damping on until convergence, which is the default.
+        See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
+
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
     /*- How big is the perturbation? -*/

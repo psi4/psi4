@@ -246,6 +246,19 @@ void RHF::form_D()
     }
 }
 
+void RHF::damp_update()
+{
+    for(int h = 0; h < nirrep_; ++h){
+        for(int row = 0; row < D_->rowspi(h); ++row){
+            for(int col = 0; col < D_->colspi(h); ++col){
+                double Dold = damping_percentage_ * Dold_->get(h, row, col);
+                double Dnew = (1.0 - damping_percentage_) * D_->get(h, row, col);
+                D_->set(h, row, col, Dold+Dnew);
+            }
+        }
+    }
+}
+
 double RHF::compute_initial_E()
 {
     double Etotal = nuclearrep_ + D_->vector_dot(H_);
