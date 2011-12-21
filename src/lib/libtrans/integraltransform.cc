@@ -5,6 +5,7 @@
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
+#include <libchkpt/chkpt.hpp>
 #include <libmints/matrix.h>
 #include <libmints/molecule.h>
 #include <libmints/wavefunction.h>
@@ -362,6 +363,17 @@ IntegralTransform::initialize()
     _initialized = true;
 }
 
+boost::shared_ptr<PSIO>
+IntegralTransform::get_psio() const
+{
+    return _psio;
+}
+
+void
+IntegralTransform::set_psio(boost::shared_ptr<PSIO> psio)
+{
+    _psio = psio;
+}
 
 IntegralTransform::~IntegralTransform()
 {
