@@ -57,12 +57,11 @@ void MOLECULE::prfo_step(void) {
 
   // For now, use vector stored in rfo_root to choose which modes to maximize
   // in future will change to store more than one of these
- if ( !Opt_params.rfo_follow_root || p_Opt_data->g_iteration() == 1) {
-    rfo_root = 0;
-    // in future change to allow user to specify
-    fprintf(outfile,"\tMaximizing along lowest eigenvalue of Hessian.\n");
+  if (p_Opt_data->g_iteration() == 1 || !Opt_params.rfo_follow_root) {
+    rfo_root = Opt_params.rfo_root;
+    fprintf(outfile,"\tMaximizing along %d lowest eigenvalue of Hessian.\n", rfo_root+1);
   }
-  else { // do root following
+  else { // do dynamic root-following
     double * rfo_old_evect = p_Opt_data->g_rfo_eigenvector_pointer();
     double max_overlap = 0;
     for (int i=0; i<Nintco; ++i) {
