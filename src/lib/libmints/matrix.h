@@ -604,12 +604,14 @@ public:
     }
     /// Add val to an element of this
     void add(int m, int n, double val) {
+        #ifdef PSIDEBUG
         if (m > rowspi_[0] || n > colspi_[0^symmetry_]) {
             fprintf(outfile, "out of bounds: symmetry_ = %d, h = %d, m = %d, n = %d\n",
                     symmetry_, 0, m, n);
             fflush(outfile);
             return;
         }
+        #endif
         matrix_[0][m][n] += val;
     }
 
