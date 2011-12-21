@@ -1,24 +1,27 @@
 #ifndef _PSI_SRC_LIB_LIBTRANS_INTEGRALTRANSFORM_H_
 #define _PSI_SRC_LIB_LIBTRANS_INTEGRALTRANSFORM_H_
 
-#include <psi4-dec.h>
 #include <map>
 #include <vector>
 #include <string>
 #include <libdpd/dpd.h>
-#include <libchkpt/chkpt.hpp>
 #include <libmints/dimension.h>
 #include <libmints/typedefs.h>
-#include <psifiles.h>
 #include "mospace.h"
 
 #ifndef INDEX
     #define INDEX(i,j) (((i)>(j)) ? (((i)*((i)+1)/2)+(j)) : (((j)*((j)+1)/2)+(i)))
 #endif
 
+namespace boost {
+    template <class T>
+    class shared_ptr;
+}
+
 namespace psi{
 
 class Matrix;
+class Chkpt;
 class Dimension;
 
 typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
@@ -178,9 +181,9 @@ class IntegralTransform{
         int get_dpd_id() const {return _myDPDNum;}
 
         /// Get the psio object being used by this object
-        boost::shared_ptr<PSIO> get_psio() const {return _psio;}
+        boost::shared_ptr<PSIO> get_psio() const;
         /// Set the psio object to be used.  You must delay initialization in the ctor for this to work.
-        void set_psio(boost::shared_ptr<PSIO> psio) {_psio = psio;}
+        void set_psio(boost::shared_ptr<PSIO> psio);
 
         // Get the alpha correlated to Pitzer ordering array, used in backtransforms
         const int *alpha_corr_to_pitzer() const { return _aCorrToPitzer; }
@@ -196,6 +199,7 @@ class IntegralTransform{
         void process_spaces();
         void presort_mo_tpdm_restricted();
         void presort_mo_tpdm_unrestricted();
+        void sort_so_tpdm(const dpdbuf4 *B);
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
                        int *order, bool backtransform = false, double scale = 0.0);
