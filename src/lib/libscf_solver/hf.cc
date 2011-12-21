@@ -232,6 +232,17 @@ void HF::common_init()
     if(options_["PRINT"].has_changed())
         print_ = options_.get_int("PRINT");
 
+    if(options_["DAMPING_PERCENTAGE"].has_changed()){
+        // The user has asked for damping to be turned on
+        damping_enabled_ = true;
+        damping_percentage_ = options_.get_double("DAMPING_PERCENTAGE") / 100.0;
+        if(damping_percentage_ < 0.0 || damping_percentage_ > 1.0)
+            throw PSIEXCEPTION("DAMPING_PERCENTAGE must be between 0 and 100.");
+        damping_convergence_ = options_.get_double("DAMPING_CONVERGENCE");
+    }else{
+        damping_enabled_ = false;
+    }
+
     // Handle common diis info
     diis_enabled_ = true;
     min_diis_vectors_ = 4;
@@ -258,6 +269,13 @@ void HF::common_init()
 
     print_header();
 }
+
+void HF::damp_update()
+{
+    throw PSIEXCEPTION("Sorry, damping has not been implemented for this "
+                       "type of SCF wavefunction yet.");
+}
+
 void HF::integrals()
 {
     if (print_ && Communicator::world->me() == 0)
@@ -1223,6 +1241,7 @@ double HF::compute_energy()
         timer_on("DIIS");
         if (diis_enabled_ && iteration_ > 0 && iteration_ >= diis_start_ )
             save_fock();
+
         if (diis_enabled_ == true && iteration_ >= diis_start_ + min_diis_vectors_ - 1) {
             diis_performed_ = diis();
         } else {
@@ -1236,11 +1255,22 @@ double HF::compute_energy()
             Fb_->print(outfile);
         }
 
-        std::string status;
-        if (!MOM_performed_ && !diis_performed_) status = " ";
-        else if (!MOM_performed_ && diis_performed_) status = "DIIS";
-        else if (MOM_performed_ && !diis_performed_) status = "MOM";
-        else if (MOM_performed_ && diis_performed_) status = "DIIS/MOM";
+        // If we're too well converged, or damping wasn't enabled, do DIIS
+        damping_performed_ = (damping_enabled_ && iteration_ > 1 && Drms_ > damping_convergence_);
+
+        std::string status = "";
+        if(diis_performed_){
+            if(status != "") status += "/";
+            status += "DIIS";
+        }
+        if(MOM_performed_){
+            if(status != "") status += "/";
+            status += "MOM";
+        }
+        if(damping_performed_){
+            if(status != "") status += "/";
+            status += "DAMP";
+        }
 
         if (Communicator::world->me() == 0) {
             fprintf(outfile, "   @%s iter %3d: %20.14f   %12.5e   %-11.5e %s\n",
@@ -1254,6 +1284,9 @@ double HF::compute_energy()
         timer_on("Form D");
         form_D();
         timer_off("Form D");
+
+        // After we've built the new D, damp the update if
+        if(damping_performed_) damp_update();
 
         if (print_ > 3){
             Ca_->print(outfile);
