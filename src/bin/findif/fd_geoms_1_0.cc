@@ -10,8 +10,9 @@ namespace psi { namespace findif {
 
 std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
-  // Print what we are doing
-  fprintf(outfile,"\tUsing finite-differences of energies to determine gradients.\n");
+  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+
+  fprintf(outfile,"  Using finite-differences of energies to determine gradients (fd_geoms_1_0).\n");
 
   int pts = options.get_int("POINTS");
   fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n",pts);
@@ -32,10 +33,7 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
   CdSalcList cdsalc(mol, fact, 0x1, true, true);
 
   int Nsalc = cdsalc.ncd();
-  fprintf(outfile,"\tNumber of SALC's is %d.\n", Nsalc);
-
-  for (int i=0; i<cdsalc.ncd(); ++i)
-    cdsalc[i].print();
+  fprintf(outfile,"\tNumber of symmetric SALC's is %d.\n", Nsalc);
 
   // Determine number of geometries (1 + # of displacements)
   int Ndisp = 1;
@@ -45,6 +43,10 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
     Ndisp += 4 * Nsalc;
 
   fprintf(outfile, "\tNumber of displacements (including reference) is %d.\n", Ndisp);
+
+  if (options.get_int("PRINT") > 1)
+    for (int i=0; i<cdsalc.ncd(); ++i)
+      cdsalc[i].print();
 
   // Get reference geometry
   Matrix ref_geom_temp = mol->geometry();
@@ -117,6 +119,8 @@ std::vector< SharedMatrix > fd_geoms_1_0(Options &options) {
 
   // put reference geometry list in list
   disp_geoms.push_back(ref_geom);
+
+  fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return disp_geoms;
 }
