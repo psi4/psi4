@@ -1,90 +1,176 @@
-# -*- coding: utf-8 -*-
-
-#    OriginDB
-#    Copyright (C) 2009  Jason Power <power.jg@gmail.com>
+# PubChem.py
 #
-#    This program is free software; you can redistribute it and/or modify
-#    it under the terms of the GNU General Public License as published by
-#    the Free Software Foundation; either version 2 of the License, or
-#    (at your option) any later version.
+# Queries the PubChem database using a compound name (i.e. 1,3,5-hexatriene)
+# to obtain a molecule string that can be passed to Molecule.
 #
-#    This program is distributed in the hope that it will be useful,
-#    but WITHOUT ANY WARRANTY; without even the implied warranty of
-#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-#    GNU General Public License for more details.
+# Example:
 #
-#    You should have received a copy of the GNU General Public License along
-#    with this program; if not, write to the Free Software Foundation, Inc.,
-#    51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+# results = getPubChemObj("1,3,5-hexatriene")
+#
+# Results is an array of results from PubChem matches to your query.
+#   for entry in results:
+#      entry["CID"]         => PubChem compound identifer
+#      entry["IUPAC"]       => IUPAC name for the resulting compound
+#      entry["PubChemObj"]  => instance of PubChemObj for this compound
+#
+#      entry["PubChemObj"].getMoleculeString()   => returns a string compatible
+#                                                   with PSI4's Molecule creation
+#
 
 import urllib
-import pybel
+import re
 
 class PubChemObj:
 
-        def __init__(self, cid=0):
+    def __init__(self, cid=0):
+        self.url = 'http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi'
+        self.cid = cid
+        self.dataSDF = ''
 
-                self.url = 'http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi'
-                self.cid = cid
-                self.dataXML = ''
-                self.dataSDF = ''
+    def getSDF(self):
+        if (len(self.dataSDF) == 0):
+            print "Querying PubChem for compound %d" % (self.cid)
+            # When completed uncomment the following:
+            location = urllib.urlretrieve(self.url+'?cid='+str(self.cid)+'&disopt=SaveSDF')[0]
+            dataFile = open(location, 'r')
+            self.dataSDF = dataFile.read()
+            # and remove the following
+            #self.dataSDF = sdf
+
+        return self.dataSDF
+
+    def getXYZFile(self):
+        sdfText = self.getSDF()
+
+        # Find
+        # NA NB                        CONSTANT
+        # 14 13  0     0  0  0  0  0  0999 V2000
+        m = re.search(r'^\s*(\d+)\s+(?:\d+\s+){8}V2000$', sdfText, re.MULTILINE)
+        natom = 0
+        if (m):
+            natom = int(m.group(1))
+
+        if (natom == 0):
+            print "Unable to find the number of atoms."
+            return None
+
+        lines = re.split('\n', sdfText)
+
+        #  3.7320   -0.2500    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+        NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+        atom_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*(\w+)(?:\s+\d+){12}')
+
+        molecule_string = "%d\n\n" % (natom)
+
+        atom_count = 0
+        for line in lines:
+            if (not line or line.isspace()):
+                continue
+
+            atom_match = atom_re.match(line)
+            if atom_match:
+                x = float(atom_match.group(1))
+                y = float(atom_match.group(2))
+                z = float(atom_match.group(3))
+                sym = atom_match.group(4)
+
+                atom_count = atom_count + 1
+
+                molecule_string += "%s %10.6f %10.6f %10.6f\n" % (sym, x, y, z)
+
+                if (atom_count == natom):
+                    break
+
+        return molecule_string
 
 
-        def getXML(self):
+    def getMoleculeString(self):
+        sdfText = self.getSDF()
 
-                location = urllib.urlretrieve(self.url+'?cid='+str(self.cid)+'&disopt=SaveXML')[0]
+        # Find
+        # NA NB                        CONSTANT
+        # 14 13  0     0  0  0  0  0  0999 V2000
+        m = re.search(r'^\s*(\d+)\s+(?:\d+\s+){8}V2000$', sdfText, re.MULTILINE)
+        natom = 0
+        if (m):
+            natom = int(m.group(1))
 
-                dataFile = open(location, 'r')
-                self.dataXML = dataFile.read()
+        if (natom == 0):
+            print "Unable to find the number of atoms."
+            return None
 
-        def writeXML(self, filename):
+        lines = re.split('\n', sdfText)
 
-                if not self.dataXML:
-                        self.getXML()
-                if not self.dataXML:
-                        return
+        #  3.7320   -0.2500    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
+        NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
+        atom_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*(\w+)(?:\s+\d+){12}')
 
-                f = open(filename, 'w')
-                f.write(self.dataXML)
+        molecule_string = ""
 
+        atom_count = 0
+        for line in lines:
+            if (not line or line.isspace()):
+                continue
 
-        def getSDF(self):
+            atom_match = atom_re.match(line)
+            if atom_match:
+                x = float(atom_match.group(1))
+                y = float(atom_match.group(2))
+                z = float(atom_match.group(3))
+                sym = atom_match.group(4)
 
-                location = urllib.urlretrieve(self.url+'?cid='+str(self.cid)+'&disopt=SaveSDF')[0]
+                atom_count = atom_count + 1
 
-                dataFile = open(location, 'r')
-                self.dataSDF = dataFile.read()
+                molecule_string += "%s %10.6f %10.6f %10.6f\n" % (sym, x, y, z)
 
-                return self.dataSDF
+                if (atom_count == natom):
+                    break
 
-        def getMol(self):
+        return molecule_string
 
-                return pybel.readstring('sdf', self.dataSDF)
+def getPubChemResults(name):
+    url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % (name)
 
+    # When PubChemObj is finished uncomment the following 3 lines
+    print "Searching PubChem database for %s" % (name)
+    loc = urllib.urlretrieve(url)[0]
+    dataFile = open(loc, 'r')
+    data = dataFile.read()
+    # and remove the following:
+    #data = searchresults
 
-def searchPubChem(name):
-        url = "http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text" % (name)
+    ans = []
+    l = data.find("<pre>")
+    l = data.find("\n", l)
+    for i in range(1, 21):
+        l = data.find("%s. " % (i), l)
+        if l == -1:
+            break
+        l = data.find("MF: ", l) + 4
+        mf = data[l:data.find("\n", l)]
+        l = data.find("IUPAC: ", l) + 7
+        iupac = data[l:data.find("\n", l)]
+        l = data.find("CID: ", l) + 5
+        #if l == 4:
+        #    break
+        cid = int(data[l:data.find("\n", l)])
+        l = data.find("\t", l)+1
 
-        loc = urllib.urlretrieve(url)[0]
-        dataFile = open(loc, 'r')
-        data = dataFile.read()
+        pubobj = PubChemObj(cid)
+        ans.append({"MF": mf, "IUPAC": iupac, "CID": cid, "PubChemObj": pubobj})
 
-        ans = {}
+    print "Found %d results" % (len(ans))
+    return ans
 
-        l = data.find("<pre>")
-        l = data.find("\n", l)
-        for i in range(1, 21):
-                l = data.find("%s:" % (i), l)
-                l = data.find("CID: ", l) + 5
-                if l == 4:
-                        break
-                cid = int(data[l:data.find("\n", l)])
-                l = data.find("\t", l)+1
-                name = data[l:data.find(";", l)]
-                if name.find("\n") != -1:
-                        name = data[l:data.find("\n", l)]
+if __name__ == "__main__":
+    obj1 = getPubChemResults("1,3,5-hexatriene")
+    obj2 = getPubChemResults("benzene")
 
-                ans[cid] = name
+    print "Results for 1,3,5-hexatriene"
+    for mol in obj1:
+        print mol["PubChemObj"].getMoleculeString()
 
-        return ans
-
+    print "Results for benzene"
+    for mol in obj2:
+        print "IUPAC name: %s\nCompound: %d" % (mol["IUPAC"], mol["CID"])
+        print mol["PubChemObj"].getMoleculeString()
