@@ -22,9 +22,12 @@ import re
 
 class PubChemObj:
 
-    def __init__(self, cid=0):
+    def __init__(self, cid, mf, iupac):
         self.url = 'http://pubchem.ncbi.nlm.nih.gov/summary/summary.cgi'
         self.cid = cid
+        self.mf = mf
+        self.iupac = iupac
+        self.natom = 0
         self.dataSDF = ''
 
     def getSDF(self):
@@ -39,63 +42,18 @@ class PubChemObj:
 
         return self.dataSDF
 
-    def getXYZFile(self):
+    def getCartesian(self):
         sdfText = self.getSDF()
 
         # Find
         # NA NB                        CONSTANT
         # 14 13  0     0  0  0  0  0  0999 V2000
         m = re.search(r'^\s*(\d+)\s+(?:\d+\s+){8}V2000$', sdfText, re.MULTILINE)
-        natom = 0
+        self.natom = 0
         if (m):
-            natom = int(m.group(1))
+            self.natom = int(m.group(1))
 
-        if (natom == 0):
-            print "Unable to find the number of atoms."
-            return None
-
-        lines = re.split('\n', sdfText)
-
-        #  3.7320   -0.2500    0.0000 C   0  0  0  0  0  0  0  0  0  0  0  0
-        NUMBER = "((?:[-+]?\\d*\\.\\d+(?:[DdEe][-+]?\\d+)?)|(?:[-+]?\\d+\\.\\d*(?:[DdEe][-+]?\\d+)?))"
-        atom_re = re.compile(r'^\s*' + NUMBER + r'\s+' + NUMBER + r'\s+' + NUMBER + r'\s*(\w+)(?:\s+\d+){12}')
-
-        molecule_string = "%d\n\n" % (natom)
-
-        atom_count = 0
-        for line in lines:
-            if (not line or line.isspace()):
-                continue
-
-            atom_match = atom_re.match(line)
-            if atom_match:
-                x = float(atom_match.group(1))
-                y = float(atom_match.group(2))
-                z = float(atom_match.group(3))
-                sym = atom_match.group(4)
-
-                atom_count = atom_count + 1
-
-                molecule_string += "%s %10.6f %10.6f %10.6f\n" % (sym, x, y, z)
-
-                if (atom_count == natom):
-                    break
-
-        return molecule_string
-
-
-    def getMoleculeString(self):
-        sdfText = self.getSDF()
-
-        # Find
-        # NA NB                        CONSTANT
-        # 14 13  0     0  0  0  0  0  0999 V2000
-        m = re.search(r'^\s*(\d+)\s+(?:\d+\s+){8}V2000$', sdfText, re.MULTILINE)
-        natom = 0
-        if (m):
-            natom = int(m.group(1))
-
-        if (natom == 0):
+        if (self.natom == 0):
             print "Unable to find the number of atoms."
             return None
 
@@ -123,10 +81,19 @@ class PubChemObj:
 
                 molecule_string += "%s %10.6f %10.6f %10.6f\n" % (sym, x, y, z)
 
-                if (atom_count == natom):
+                if (atom_count == self.natom):
                     break
 
         return molecule_string
+
+    def getXYZFile(self):
+        temp = self.getCartesian()
+
+        molstr = "%d\n%s\n%s" % (self.natom, self.iupac, temp)
+        return molstr
+
+    def getMoleculeString(self):
+        return self.getCartesian()
 
 def getPubChemResults(name):
     url = 'http://www.ncbi.nlm.nih.gov/sites/entrez?db=pccompound&term=%s&format=text' % (name)
@@ -156,8 +123,8 @@ def getPubChemResults(name):
         cid = int(data[l:data.find("\n", l)])
         l = data.find("\t", l)+1
 
-        pubobj = PubChemObj(cid)
-        ans.append({"MF": mf, "IUPAC": iupac, "CID": cid, "PubChemObj": pubobj})
+        pubobj = PubChemObj(cid, mf, iupac)
+        ans.append(pubobj)
 
     print "Found %d results" % (len(ans))
     return ans
