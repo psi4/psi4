@@ -51,10 +51,12 @@ void get_params(Options &options)
     if(read_eom_ref == "RHF") params.eom_ref = 0;
     else if(read_eom_ref == "ROHF") params.eom_ref = 1;
     else if(read_eom_ref == "UHF") params.eom_ref = 2;
+    else params.eom_ref = 0;
   }
   else if (params.ref == 1) { /* for ROHF refs, allow CCEOM to do ROHF & UHF modes */
     if(read_eom_ref == "ROHF") params.eom_ref = 1;
     else if(read_eom_ref == "UHF") params.eom_ref = 2;
+    else params.eom_ref = 1;
   }
   else params.eom_ref = 2; /* run in UHF mode - ignore EOM_REFERENCE */
 
