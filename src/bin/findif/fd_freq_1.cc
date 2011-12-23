@@ -17,18 +17,17 @@ namespace psi { namespace findif {
 int iE1(std::vector<int> & Ndisp_pi, std::vector< std::vector<int> > & salcs_pi, int pts,
  int irrep, int ii, int jj, int disp_i, int disp_j);
 
-PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_list, int irrep)
-{
+PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_list, int freq_irrep_only) {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
-  // symmetric modes with rotations and translations projected out
   CdSalcList salc_list(mol, fact);
   int Nirrep = salc_list.nirrep();
   int Nsalc_all = salc_list.ncd();
+  double tval;
 
   // *** Build vectors that list indices of salcs for each irrep
   std::vector< std::vector<int> > salcs_pi;
@@ -37,8 +36,12 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
   for (int i=0; i<Nsalc_all; ++i)
     salcs_pi[salc_list[i].irrep()].push_back(i);
 
-  for (int i=0; i<Nsalc_all; ++i)
-    salc_list[i].print();
+  // Now remove irreps that are not requested
+  if (freq_irrep_only != -1) {
+    for (int h=0; h<Nirrep; ++h)
+      if (h != freq_irrep_only)
+        salcs_pi[h].clear();
+  }
 
   // Count displacements.
   std::vector<int> Ndisp_pi (Nirrep);
@@ -62,13 +65,15 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
   for (int i=0; i<len(gradient_list); ++i)
     gradients.push_back( (SharedMatrix) extract<SharedMatrix >(gradient_list[i]) );
 
-  fprintf(outfile,
-   "\n\tFinite difference computation of second-derivative of energy with respect to\n");
-  fprintf(outfile,
-   "\tsymmetry-adapted cartesian coordinates using %d-point formula of gradients.\n", pts);
+return Success;
 
-  fprintf(outfile, "\t%d gradients passed in.\n", (int) gradients.size());
-  // we are passing in the reference geometry at the moment; though we are not using
+  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+
+  fprintf(outfile, "  Computing second-derivative from gradients using projected, \n");
+  fprintf(outfile, "  symmetry-adapted, cartesian coordinates (fd_freq_1).\n");
+
+  fprintf(outfile, "\t%d gradients passed in, including the reference geometry.\n", (int) gradients.size());
+  // We are passing in the reference geometry at the moment; though we are not using
   // its gradient.  Could be removed later.
   if (gradients.size() != Ndisp_all+1) { // last gradient is the reference, non-displaced one
     fprintf(outfile,"gradients.size() is %d\n", (int) gradients.size());
@@ -92,32 +97,67 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
   int op_disp;                   // that takes + displacement to - displacement
   int coord_index = Ndisp_pi[0]; // overall index in gradient list
   int disp_start = 0;
+  int disp_cnt; // count through original gradients
 
-  for (int h=1; h<Nirrep; ++h) {
-    if (!Ndisp_pi[h]) continue;
+  // Copy symmetric gradients into 'gradients_all'
+  std::vector< SharedMatrix > gradients_all;
+  for (int i=0; i<Ndisp_pi[0]; ++i) {
+    SharedMatrix newone(gradients_all[i]->clone());
+    gradients_all.push_back(newone);
+  }
+/*
+
+  SharedMatrix zero_grad(new Matrix(Natom, 3));
+
+  for (int h=1; h<Nirrep; ++h) { // loop over asymmetric irreps
+    if (Ndisp_pi[h] == 0) continue;
 
     IrreducibleRepresentation gamma = ct.gamma(h);
 
+    fprintf(outfile,"Characters for irrep %d\n", h);
     for (int i=0; i<order; ++i)
       fprintf(outfile," %10.5lf", gamma.character(i));
     fprintf(outfile,"\n");
 
-    if (h!= 0) { // find the operation for asymmetric irreps that converts + to -
-      for (op_disp=0; op_disp<order; ++op_disp)
-        if (gamma.character(op_disp) == -1)
-          break;
-      fprintf(outfile,"\tOperation %d takes plus displacements of irrep %s to minus ones.\n",
-        op_disp+1, gamma.symbol());
+    for (op_disp=0; op_disp<order; ++op_disp) //Find operation that takes + to - displacement.
+      if (gamma.character(op_disp) == -1)
+        break;
+    fprintf(outfile,"\tOperation %d takes plus displacements of irrep %s to minus ones.\n",
+      op_disp+1, gamma.symbol());
+
+    SymmetryOperation so = ct.symm_operation(op_disp); // get 3x3 matrix representation of operation
+
+fprintf(outfile,"So\n");
+for (int xyz=0; xyz<3; ++xyz)
+  fprintf(outfile,"\t %10.5lf %10.5lf %10.5lf\n", so[xyz][0], so[xyz][1], so[xyz][2]);
+
+    SharedMatrix grad2;
+
+    // Loop over coordinates of that irrep.
+    for (int coord=0; coord<salcs_pi[h].size(); ++coord) {
+      ++disp_cnt; //step through gradient list
+
+      SharedMatrix grad2(zero_grad->clone());
+
+      for (int atom=0; atom<Natom; ++atom) {
+
+        int atom2 = atom_map[atom][op_disp]; // how this atom transforms under this op.
+
+        tval = 0.0;
+        for (int xyz=0; xyz<3; ++xyz) {
+          for (int xyz2=0; xyz2<3; ++xyz2)
+            tval += so(xyz, xyz2) * gradients[disp_cnt]->get(atom,xyz2);
+          grad2->set(atom2, xyz, tval);
+        }
+
+        gradients_all.push_back( grad2 );
+      }
+      if (pts == 5) { // There are 2 displacements.  Do the second one too.
+        ;
+      }
     }
-/*
- for (int coord=0; coord<salcs_pi[h].size(); ++coord) {
- for (int atom=0; atom<Natom; ++atom) {
- int atom2 = atom_map[atom][op_disp];  //symmetry operation takes atom -> atom2
- SymmetryOperation so = ct.symm_operation(op_disp);
- //disp_grad_all[cnt_all][3*atom2+xyz] = disp_grad[cnt][3*atom+xyz] * cartrep[op_disp][3 *xyz+xyz];
- }} */
 
-
+*/
 /*
     // Compute forces in internal coordinates.
     // g_q = - (BuBt)^-1 B u f_x.
@@ -193,10 +233,14 @@ PsiReturnType fd_freq_1(Options &options, const boost::python::list& gradient_li
     free_block(normal_irr);
 
     free_block(g_q);
+
+    //disp_start += Ndisp_pi[h];
+  }
 */
 
-    disp_start += Ndisp_pi[h];
-  }
+  if (options.get_int("PRINT") > 2)
+    for (int i=0; i<gradients.size(); ++i)
+      gradients_all[i]->print();
 
   delete_atom_map(atom_map, mol);
 
