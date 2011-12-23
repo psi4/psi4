@@ -36,6 +36,14 @@ SAPT2::SAPT2(Options& options, boost::shared_ptr<PSIO> psio,
 
   wBAR_ = NULL;
   wABS_ = NULL;
+  wBAA_ = NULL;
+  wBRR_ = NULL;
+  wABB_ = NULL;
+  wASS_ = NULL;
+  no_evalsA_ = NULL;
+  no_evalsB_ = NULL;
+  no_CA_ = NULL;
+  no_CB_ = NULL;
 }
 
 SAPT2::~SAPT2()
@@ -43,16 +51,16 @@ SAPT2::~SAPT2()
   if (wBAR_ != NULL) free_block(wBAR_);
   if (wABS_ != NULL) free_block(wABS_);
 
-  free_block(wBAA_);
-  free_block(wBRR_);
-  free_block(wABB_);
-  free_block(wASS_);
+  if (wBAA_ != NULL) free_block(wBAA_);
+  if (wBRR_ != NULL) free_block(wBRR_);
+  if (wABB_ != NULL) free_block(wABB_);
+  if (wASS_ != NULL) free_block(wASS_);
 
   if (nat_orbs_) {
-    free(no_evalsA_);
-    free(no_evalsB_);
-    free_block(no_CA_);
-    free_block(no_CB_);
+    if (no_evalsA_ != NULL) free(no_evalsA_);
+    if (no_evalsB_ != NULL) free(no_evalsB_);
+    if (no_CA_ != NULL) free_block(no_CA_);
+    if (no_CB_ != NULL) free_block(no_CB_);
   }
 
   free(ioff_); 
@@ -143,6 +151,26 @@ void SAPT2::print_header()
   fprintf(outfile,"    NVIR A     = %9d\n",nvirA_);
   fprintf(outfile,"    NVIR B     = %9d\n",nvirB_);
   fprintf(outfile,"\n");
+
+  long int mem = (long int) memory_;
+  mem /= 8L;
+  long int occ = noccA_;
+  if (noccB_ > noccA_)
+    occ = noccB_;
+  long int vir = nvirA_;
+  if (nvirB_ > nvirA_)
+    vir = nvirB_;
+  long int ovov = occ*occ*vir*vir;
+  long int vvnri = vir*vir*ndf_;
+  double memory = 8.0*(vvnri + ovov*3L)/1000000.0;
+  if (print_) {
+    fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
+    fflush(outfile);
+  }
+  if (options_.get_bool("SAPT_MEM_CHECK"))
+    if (mem < vvnri + ovov*3L) 
+      throw PsiException("Not enough memory", __FILE__,__LINE__);
+
   fflush(outfile);
 }
 
