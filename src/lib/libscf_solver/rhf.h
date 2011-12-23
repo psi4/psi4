@@ -40,6 +40,7 @@ protected:
 
     void form_C();
     void form_D();
+    virtual void damp_update();
     double compute_initial_E();
     virtual double compute_E();
 

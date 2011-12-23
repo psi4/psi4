@@ -402,6 +402,14 @@ SharedMatrix Deriv::compute()
 {
     molecule_->print_in_bohr();
 
+    if (natom_ == 1) {
+        // This is an atom...there is no gradient.
+        fprintf(outfile, "    A single atom has no gradient.\n");
+        // Save the gradient to the wavefunction so that optking can optimize with it
+        wfn_->set_gradient(gradient_);
+        return gradient_;
+    }
+
     // Initialize an ERI object requesting derivatives.
     std::vector<boost::shared_ptr<TwoBodyAOInt> > ao_eri;
     for (int i=0; i<Communicator::world->nthread(); ++i)

@@ -250,6 +250,8 @@ PKIntegrals::compute_J()
         }
     }
 
+    delete [] Da_vector;
+    delete [] Db_vector;
     delete [] J_vector;
 }
 
@@ -312,6 +314,8 @@ PKIntegrals::compute_J_and_K()
         }
     }
 
+    delete [] Da_vector;
+    delete [] Db_vector;
     delete [] J_vector;
     delete [] Ka_vector;
     if(!restricted_)

@@ -26,6 +26,8 @@ cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
 
 cc19: RHF-CCSD-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
 
+cc22: ROHF-EOM-CCSD/DZ on the lowest two states of each irrep in 3B1 CH2.
+
 cc28: RHF-CCSD-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
 (589 355 nm)
 
