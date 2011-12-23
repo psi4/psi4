@@ -113,6 +113,14 @@ OptReturnType optking(void) {
 
     // read geometry and gradient into fragment
     mol1->read_geom_grad();
+
+    // Quit nicely if there is only one atom present
+    if (mol1->g_natom() == 1) {
+      fprintf(outfile,"\tThere is only one atom present, so your optimization is complete!\n");
+      close_output_dat();
+      return OptReturnEndloop;
+    }
+
     mol1->set_masses();
 
     // use covalent radii to define bonds
