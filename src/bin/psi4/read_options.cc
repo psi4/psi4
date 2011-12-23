@@ -636,6 +636,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
+    /*- SAPT2 and higher will die if it thinks there isn't enough memory -*/
+    options.add_bool("SAPT_MEM_CHECK",true);
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
     /*- SAPT DF Basis for Elst10 and Exch10 -*/
