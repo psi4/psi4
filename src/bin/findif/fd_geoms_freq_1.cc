@@ -8,10 +8,12 @@
 
 namespace psi { namespace findif {
 
-std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep) {
+std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int freq_irrep_only) {
 
-  fprintf(outfile,"\tUsing finite-differences of gradients to determine vibrational frequencies");
-  fprintf(outfile,"\t and normal modes.\n  ** Results are valid only at stationary points! **\n");
+  fprintf(outfile,"\n-------------------------------------------------------------\n\n");
+
+  fprintf(outfile,"  Using finite-differences of gradients to determine vibrational frequencies and \n");
+  fprintf(outfile,"  normal modes.  Resulting frequencies are only valid at stationary points.\n");
 
   int pts = options.get_int("POINTS");
   fprintf(outfile,"\tGenerating geometries for use with %d-point formula.\n", pts);
@@ -34,11 +36,7 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep) {
   fprintf(outfile,"\tNumber of irreps is %d.\n", Nirrep);
 
   int Nsalc_all = salc_list.ncd();
-  fprintf(outfile,"\tTotal Number of SALCS is %d.\n", Nsalc_all);
-
-  if (options.get_int("PRINT") > 2)
-    for (int i=0; i<Nsalc_all; ++i)
-      salc_list[i].print();
+  fprintf(outfile,"\tNumber of SALCS is %d.\n", Nsalc_all);
 
   // build vectors that list indices of salcs for each irrep
   std::vector< std::vector<int> > salcs_pi; // salcs per irrep
@@ -63,6 +61,16 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep) {
   // Determine number of displacements
   std::vector<int> Ndisp_pi (Nirrep);
 
+  // Now remove irreps that are not requested
+  if (freq_irrep_only >= Nirrep || freq_irrep_only < -1)
+    throw PsiException("FINDIF: Irrep value not in valid range.",__FILE__,__LINE__);
+
+  if (freq_irrep_only != -1) {
+    for (int h=0; h<Nirrep; ++h)
+      if (h != freq_irrep_only)
+        salcs_pi[h].clear();
+  }
+
   // displacements for symmetric coordinates
   if (pts == 3)
     Ndisp_pi[0] = 2 * salcs_pi[0].size();
@@ -81,10 +89,14 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep) {
   for (int h=0; h<Nirrep; ++h)
     Ndisp_all += Ndisp_pi[h];
 
-  fprintf(outfile,"\tTotal number of displacements is %d.\n", Ndisp_all);
+  fprintf(outfile,"\tNumber of displacements (including reference) is %d.\n", Ndisp_all);
   fprintf(outfile,"\tNumber of displacements per irrep:\n");
   for (int h=0; h<Nirrep; ++h)
-    fprintf(outfile,"\t\t Irrep %d: %d\n", h+1, Ndisp_pi[h]);
+    fprintf(outfile,"\t  Irrep %d: %d\n", h+1, Ndisp_pi[h]);
+
+  if (options.get_int("PRINT") > 1)
+    for (int i=0; i<salc_list.ncd(); ++i)
+      salc_list[i].print();
 
   // Get reference geometry
   Matrix ref_geom_temp = mol->geometry();
@@ -153,6 +165,8 @@ std::vector< SharedMatrix > fd_geoms_freq_1(Options &options, int irrep) {
   if (options.get_int("PRINT") > 2)
     for (int i=0; i<disp_geoms.size(); ++i)
       disp_geoms[i]->print();
+
+  fprintf(outfile,"\n-------------------------------------------------------------\n");
 
   return disp_geoms;
 }
