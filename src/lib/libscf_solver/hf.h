@@ -136,6 +136,14 @@ protected:
     /// Are we even using DIIS?
     int diis_enabled_;
 
+    /// The amount (%) of the previous orbitals to mix in during SCF damping
+    double damping_percentage_;
+    /// The energy convergence at which SCF damping is disabled
+    double damping_convergence_;
+    /// Whether to use SCF damping
+    bool damping_enabled_;
+    /// Whether damping was actually performed this iteration
+    bool damping_performed_;
 public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;
@@ -238,6 +246,9 @@ protected:
 
     /** Computes the density matrix (D_) */
     virtual void form_D() =0;
+
+    /** Applies damping to the density update */
+    virtual void damp_update();
 
     /** Compute the MO coefficients (C_) */
     virtual void form_C() =0;

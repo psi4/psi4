@@ -62,6 +62,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("PRINT", 1);
   /*- The amount of information to print to the output file -*/
   options.add_int("DEBUG", 0);
+  /*- Some codes (DFT) can dump benchmarking data to separate output files -*/
+  options.add_int("BENCH", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type -*/
@@ -634,6 +636,8 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCHWARZ_CUTOFF",1.0E-12);
     /*- Memory safety -*/
     options.add_double("SAPT_MEM_SAFETY",0.9);
+    /*- SAPT2 and higher will die if it thinks there isn't enough memory -*/
+    options.add_bool("SAPT_MEM_CHECK",true);
     /*- SAPT DF Basis -*/
     options.add_str("RI_BASIS_SAPT", "");
     /*- SAPT DF Basis for Elst10 and Exch10 -*/
@@ -761,6 +765,17 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF CUHF RKS UKS");
     /*- The maximum number of iterations -*/
     options.add_int("MAXITER", 100);
+
+    /*- The amount (percentage) of damping to apply to the early density updates.
+        0 will result in a full update, 100 will completely stall the update.  A
+        value around 20 (which corresponds to 20\% of the previous iteration's
+        density being mixed into the current density)
+        could help to solve problems with oscillatory convergence -*/
+    options.add_double("DAMPING_PERCENTAGE", 100.0);
+    /*- The density convergence threshold after which damping is no longer performed, if it is enabled.
+        It is recommended to leave damping on until convergence, which is the default.
+        See the note at the beginning of Section \ref{keywords}. -*/
+    options.add_double("DAMPING_CONVERGENCE", 1.0E-18);
 
     /*- Whether to perturb the Hamiltonian or not -*/
     options.add_bool("PERTURB_H", false);
