@@ -98,6 +98,26 @@ void SAPT2p::print_header()
   fprintf(outfile,"    NVIR A     = %9d\n",nvirA_);
   fprintf(outfile,"    NVIR B     = %9d\n",nvirB_);
   fprintf(outfile,"\n");
+
+  long int mem = (long int) memory_;
+  mem /= 8L;
+  long int occ = noccA_;
+  if (noccB_ > noccA_)
+    occ = noccB_;
+  long int vir = nvirA_;
+  if (nvirB_ > nvirA_)
+    vir = nvirB_;
+  long int ovov = occ*occ*vir*vir;
+  long int vvnri = vir*vir*ndf_;
+  double memory = 8.0*(vvnri + ovov*3L)/1000000.0;
+  if (print_) {
+    fprintf(outfile,"    Estimated memory usage: %.1lf MB\n\n",memory);
+    fflush(outfile);
+  }
+  if (options_.get_bool("SAPT_MEM_CHECK"))
+    if (mem < vvnri + ovov*3L) 
+      throw PsiException("Not enough memory", __FILE__,__LINE__);
+
   fflush(outfile);
 }
 
