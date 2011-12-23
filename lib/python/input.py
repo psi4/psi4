@@ -273,10 +273,10 @@ def process_extern_block(matchobj):
 def check_parentheses_and_brackets(input_string, exit_on_error):
     # This returns 1 if the string's all matched up, 0 otherwise
     import collections
-    
+
     # create left to right parenthesis mappings
     lrmap = {"(":")", "[":"]", "{":"}"}
-    
+
     # derive sets of left and right parentheses
     lparens = set(lrmap.iterkeys())
     rparens = set(lrmap.itervalues())
@@ -307,7 +307,7 @@ def check_parentheses_and_brackets(input_string, exit_on_error):
         if exit_on_error:
             print "Input error: Unmatched %s" % parenstack.pop()
             sys.exit(1)
-        
+
     return all_matched
 
 def process_input(raw_input):
@@ -388,6 +388,7 @@ def process_input(raw_input):
     imports += 'from aliases import *\n'
     imports += 'from psiexceptions import *\n'
     imports += 'from util import *\n'
+    imports += 'from pubchem import *\n'
     imports += 'import pickle\n'
 
     # psirc (a baby PSithon script that might live in ~/.psirc

@@ -570,11 +570,9 @@ void SAPT2::t2OVOV(int ampfile, const char *tlabel, const char *no_tlabel,
 
 void SAPT2::OVOpVp_to_OVpOpV(double *tARAR, int nocc, int nvir)
 {
-  double *X = init_array((long int) nocc*nvir*nocc*nvir);
-
   for(int a=0; a<nocc; a++) {
     for(int r=0; r<nvir; r++) {
-      for(int a1=0; a1<nocc; a1++) {
+      for(int a1=0; a1<a; a1++) {
         for(int r1=0; r1<nvir; r1++) {
           long int ar = a*nvir + r;
           long int a1r1 = a1*nvir + r1;
@@ -582,55 +580,42 @@ void SAPT2::OVOpVp_to_OVpOpV(double *tARAR, int nocc, int nvir)
           long int ar1 = a*nvir + r1;
           long int ara1r1 = ar*nocc*nvir + a1r1;
           long int a1rar1 = a1r*nocc*nvir + ar1;
-          X[a1rar1] = tARAR[ara1r1];
+          double tval = tARAR[ara1r1];
+          tARAR[ara1r1] = tARAR[a1rar1];
+          tARAR[a1rar1] = tval;
   }}}}
-
-  C_DCOPY((long int) nocc*nvir*nocc*nvir,X,1,tARAR,1);
-
-  free(X);
 }
 
 void SAPT2::ijkl_to_ikjl(double *tARAR, int ilength, int jlength, int klength,
   int llength)
 {
-  double *X = init_array((long int) ilength*jlength*klength*llength);
+  double *X = init_array(jlength*klength);
 
   for(int i=0; i<ilength; i++) {
-    for(int j=0; j<jlength; j++) {
-      for(int k=0; k<klength; k++) {
-        for(int l=0; l<llength; l++) {
-          long int ij = i*jlength + j;
-          long int kl = k*llength + l;
+    for(int l=0; l<llength; l++) {
+      long int ijkl = i*jlength*klength*llength + l;
+      C_DCOPY(jlength*klength,&(tARAR[ijkl]),llength,X,1);
+      for(int j=0; j<jlength; j++) {
+        for(int k=0; k<klength; k++) {
           long int ik = i*klength + k;
           long int jl = j*llength + l;
-          long int ijkl = ij*klength*llength + kl;
+          long int jk = j*klength + k;
           long int ikjl = ik*jlength*llength + jl;
-          X[ikjl] = tARAR[ijkl];
-  }}}}
-
-  C_DCOPY((long int) ilength*jlength*klength*llength,X,1,tARAR,1);
+          tARAR[ikjl] = X[jk];
+      }}
+  }}
 
   free(X);
 }
 
 void SAPT2::symmetrize(double *tARAR, int nocc, int nvir)
 {
-  double *X = init_array((long int) nocc*nvir*nocc*nvir);
-
-  for(int a=0; a<nocc; a++) {
-    for(int r=0; r<nvir; r++) {
-      for(int a1=0; a1<nocc; a1++) {
-        for(int r1=0; r1<nvir; r1++) {
-          long int ar = a*nvir + r;
-          long int a1r1 = a1*nvir + r1;
-          long int ara1r1 = ar*nocc*nvir + a1r1;
-          long int a1r1ar = a1r1*nocc*nvir + ar;
-          X[ara1r1] = tARAR[ara1r1] + tARAR[a1r1ar];
-  }}}}
-
-  C_DCOPY((long int) nocc*nvir*nocc*nvir,X,1,tARAR,1);
-
-  free(X);
+  for(int ar=0; ar<nocc*nvir; ar++) {
+    for (int a1r1=0; a1r1<=ar; a1r1++) {
+      long int ara1r1 = ar*nocc*nvir + a1r1;
+      long int a1r1ar = a1r1*nocc*nvir + ar;
+      tARAR[ara1r1] = tARAR[a1r1ar] = tARAR[ara1r1] + tARAR[a1r1ar];
+  }}
 }
 
 void SAPT2p::amplitudes()
