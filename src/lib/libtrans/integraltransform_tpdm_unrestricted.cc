@@ -1,8 +1,8 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.hpp>
+#include <libmints/matrix.h>
 #include <libqt/qt.h>
 #include <math.h>
 #include <ctype.h>
@@ -23,8 +23,8 @@ IntegralTransform::backtransform_tpdm_unrestricted()
     // This can be safely called - it returns immediately if the MO TPDM is already sorted
     presort_mo_tpdm_unrestricted();
     // Grab the transformation coefficients
-    double ***ca = _aMOCoefficients[MOSPACE_ALL];
-    double ***cb = _bMOCoefficients[MOSPACE_ALL];
+    SharedMatrix ca = _aMOCoefficients[MOSPACE_ALL];
+    SharedMatrix cb = _bMOCoefficients[MOSPACE_ALL];
 
     dpdbuf4 J1, J2, K;
 
@@ -100,17 +100,19 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J1.col_offset[h][Gr];
+                    double **pca = ca->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J1.matrix[h][pq][rs],
-                                nlinks, ca[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pca[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( A A | A n ) -> ( A A | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pca = ca->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, ca[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pca[0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
@@ -126,17 +128,19 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J2.col_offset[h][Gr];
+                    double **pcb = cb->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J2.matrix[h][pq][rs],
-                                nlinks, cb[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pcb[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( A A | a n ) -> ( A A | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pcb = cb->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, cb[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pcb[0], nrows,
                                 TMP[0], _nso, 1.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
@@ -197,17 +201,19 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J1.col_offset[h][Gr];
+                    double **pcb = cb->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J1.matrix[h][pq][rs],
-                                nlinks, cb[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pcb[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( a a | a n ) -> ( a a | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pcb = cb->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, cb[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pcb[0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
@@ -295,17 +301,19 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J1.col_offset[h][Gr];
+                    double **pca = ca->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J1.matrix[h][pq][rs],
-                                nlinks, ca[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pca[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( n n | n A ) -> ( n n | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pca = ca->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, ca[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pca[0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
@@ -322,17 +330,19 @@ IntegralTransform::backtransform_tpdm_unrestricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J2.col_offset[h][Gr];
+                    double **pcb = cb->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J2.matrix[h][pq][rs],
-                                nlinks, cb[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pcb[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( n n | n a ) -> ( n n | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pcb = cb->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, cb[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pcb[0], nrows,
                                 TMP[0], _nso, 1.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */

@@ -21,8 +21,8 @@ namespace boost {
 namespace psi{
 
 class Matrix;
-class Chkpt;
 class Dimension;
+class Wavefunction;
 
 typedef std::vector<boost::shared_ptr< MOSpace> > SpaceVec;
 
@@ -84,7 +84,7 @@ class IntegralTransform{
         /**
          * Set up a transformation involving four MO spaces
          *
-         * @param chkpt              The checkpoint object to use for reading orbital info
+         * @param wfn                A (shared pointer to a) wavefunction object with the orbital info
          * @param spaces             A vector containing smart pointers to the unique space(s) involved
          *                           in any transformations that this object will perform
          * @param transformationType The type of transformation, described by the
@@ -98,15 +98,7 @@ class IntegralTransform{
          * @param initialize         Whether to initialize during construction or not.  Useful if some
          *                           options need to be tweaked before initialization.
          */
-        IntegralTransform(boost::shared_ptr<Chkpt> chkpt,
-                          SpaceVec spaces,
-                          TransformationType transformationType = Restricted,
-                          OutputType outputType = DPDOnly,
-                          MOOrdering moOrdering = QTOrder,
-                          FrozenOrbitals frozenOrbitals = OccAndVir,
-                          bool initialize = true);
-
-        IntegralTransform(boost::shared_ptr<Wavefunction> wave,
+        IntegralTransform(boost::shared_ptr<Wavefunction> wfn,
                           SpaceVec spaces,
                           TransformationType transformationType = Restricted,
                           OutputType outputType = DPDOnly,
@@ -199,7 +191,7 @@ class IntegralTransform{
         void process_spaces();
         void presort_mo_tpdm_restricted();
         void presort_mo_tpdm_unrestricted();
-        void sort_so_tpdm(const dpdbuf4 *B);
+        void sort_so_tpdm(const dpdbuf4 *B, size_t first_row, size_t num_rows);
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
                        int *order, bool backtransform = false, double scale = 0.0);
@@ -213,12 +205,12 @@ class IntegralTransform{
                        int pq, int rs, int pq_sym, int rs_sym);
 
         // Has this instance been initialized yet?
-        bool _initialized;
+        bool initialized_;
 
+        // The wavefunction object, containing the orbital infomation
+        boost::shared_ptr<Wavefunction> wfn_;
         // Pointer to the PSIO object to use for file I/O
         boost::shared_ptr<PSIO>  _psio;
-        // Pointer to the checkpoint object to use
-        boost::shared_ptr<Chkpt> _chkpt;
         // The type of transformation
         TransformationType _transformationType;
         // The unique MO spaces provided to this object's constructor
@@ -238,9 +230,9 @@ class IntegralTransform{
         // The beta orbitals per irrep for each space
         std::map<char, int* > _bOrbsPI;
         // The alpha MO coefficients for all unique spaces needed
-        std::map<char, double*** > _aMOCoefficients;
+        std::map<char, SharedMatrix> _aMOCoefficients;
         // The beta MO coefficients for all unique spaces needed
-        std::map<char, double*** > _bMOCoefficients;
+        std::map<char, SharedMatrix> _bMOCoefficients;
         // The alpha orbital indexing arrays
         std::map<char, int* > _aIndices;
         // The beta orbital indexing arrays
@@ -315,13 +307,10 @@ class IntegralTransform{
         Dimension _frzvpi;
         // The cache files used by libDPD
         int *_cacheFiles, **_cacheList;
-        // Matrix objects of Ca and Cb (these are copies of _Ca, _Cb below).
-        SharedMatrix _mCa;
-        SharedMatrix _mCb;
         // The alpha MO coefficients for each irrep
-        double ***_Ca;
+        boost::shared_ptr<Matrix> _Ca;
         // The alpha MO coefficients for each irrep
-        double ***_Cb;
+        boost::shared_ptr<Matrix> _Cb;
         // Whether to keep the IWL SO integral file after processing
         bool _keepIwlSoInts;
         // Whether to keep the IWL MO two particle density matrix

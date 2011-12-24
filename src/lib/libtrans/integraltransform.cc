@@ -5,7 +5,6 @@
 #include <libpsio/psio.hpp>
 #include <psi4-dec.h>
 #include <libciomr/libciomr.h>
-#include <libchkpt/chkpt.hpp>
 #include <libmints/matrix.h>
 #include <libmints/molecule.h>
 #include <libmints/wavefunction.h>
@@ -15,16 +14,16 @@
 using namespace boost;
 using namespace psi;
 
-IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
+IntegralTransform::IntegralTransform(shared_ptr<Wavefunction> wfn,
                                      SpaceVec spaces,
                                      TransformationType transformationType,
                                      OutputType outputType,
                                      MOOrdering moOrdering,
                                      FrozenOrbitals frozenOrbitals,
                                      bool init):
-            _initialized(false),
+            initialized_(false),
             _psio(_default_psio_lib_),
-            _chkpt(chkpt),
+            wfn_(wfn),
             _transformationType(transformationType),
             _uniqueSpaces(spaces),
             _moOrdering(moOrdering),
@@ -34,9 +33,6 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
             _dpdIntFile(PSIF_LIBTRANS_DPD),
             _aHtIntFile(PSIF_LIBTRANS_A_HT),
             _bHtIntFile(PSIF_LIBTRANS_B_HT),
-            _nirreps(0),
-            _nmo(0),
-            _nso(0),
             _nTriSo(0),
             _nTriMo(0),
             _nfzc(0),
@@ -44,24 +40,17 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
             _spaces(0),
             _labels(0),
             _tolerance(1.0E-16),
-            _memory(250 * 1024 * 1024),
             _moIntFileAA(0),
             _moIntFileAB(0),
             _moIntFileBB(0),
             _myDPDNum(1),
             _print(1),
             _zeros(0),
-            _sopi(0),
             _sosym(0),
-            _mopi(0),
-            _clsdpi(0),
-            _openpi(0),
-            _frzcpi(0),
-            _frzvpi(0),
             _cacheFiles(0),
             _cacheList(0),
-            _Ca(NULL),
-            _Cb(NULL),
+            _Ca(wfn->Ca()),
+            _Cb(wfn->Cb()),
             _keepIwlSoInts(false),
             _keepIwlMoTpdm(true),
             _keepDpdSoInts(false),
@@ -79,106 +68,22 @@ IntegralTransform::IntegralTransform(shared_ptr<Chkpt> chkpt,
     _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
     _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
 
-    boost::shared_ptr<Wavefunction> wave = Process::environment.reference_wavefunction();
-
     _labels  = Process::environment.molecule()->irrep_labels();
-    _nirreps = wave->nirrep();
-    _nmo     = wave->nmo();
-    _nso     = wave->nso();
-    _sopi    = wave->nsopi();
-    _mopi    = wave->nmopi();
-    _clsdpi  = wave->doccpi();
-    _openpi  = wave->soccpi();
-    _frzcpi  = wave->frzcpi();
-    _frzvpi  = wave->frzvpi();
-
-    _mCa     = wave->Ca();
-    _mCb     = wave->Cb();
+    _nirreps = wfn->nirrep();
+    _nmo     = wfn->nmo();
+    _nso     = wfn->nso();
+    _sopi    = wfn->nsopi();
+    _mopi    = wfn->nmopi();
+    _clsdpi  = wfn->doccpi();
+    _openpi  = wfn->soccpi();
+    _frzcpi  = wfn->frzcpi();
+    _frzvpi  = wfn->frzvpi();
 
     common_moinfo_initialize();
 
     if(init) initialize();
 }
 
-IntegralTransform::IntegralTransform(boost::shared_ptr<Wavefunction> wave,
-                                     SpaceVec spaces,
-                                     TransformationType transformationType,
-                                     OutputType outputType,
-                                     MOOrdering moOrdering,
-                                     FrozenOrbitals frozenOrbitals,
-                                     bool init) :
-    _initialized(false),
-    _psio(_default_psio_lib_),
-    _chkpt(_default_chkpt_lib_),
-    _transformationType(transformationType),
-    _uniqueSpaces(spaces),
-    _moOrdering(moOrdering),
-    _outputType(outputType),
-    _frozenOrbitals(frozenOrbitals),
-    _alreadyPresorted(false),
-    _dpdIntFile(PSIF_LIBTRANS_DPD),
-    _aHtIntFile(PSIF_LIBTRANS_A_HT),
-    _bHtIntFile(PSIF_LIBTRANS_B_HT),
-    _nirreps(0),
-    _nmo(0),
-    _nso(0),
-    _nTriSo(0),
-    _nTriMo(0),
-    _nfzc(0),
-    _nfzv(0),
-    _spaces(0),
-    _labels(0),
-    _tolerance(1.0E-16),
-    _memory(250 * 1024 * 1024),
-    _moIntFileAA(0),
-    _moIntFileAB(0),
-    _moIntFileBB(0),
-    _myDPDNum(1),
-    _print(1),
-    _zeros(0),
-    _sopi(0),
-    _sosym(0),
-    _mopi(0),
-    _clsdpi(0),
-    _openpi(0),
-    _frzcpi(0),
-    _frzvpi(0),
-    _cacheFiles(0),
-    _cacheList(0),
-    _Ca(NULL),
-    _Cb(NULL),
-    _keepIwlSoInts(false),
-    _keepIwlMoTpdm(true),
-    _keepDpdSoInts(false),
-    _keepDpdMoTpdm(true),
-    _keepHtInts(true),
-    _keepHtTpdm(true),
-    _tpdmAlreadyPresorted(false)
-{
-    _printTei = _print > 5;
-    _useIWL        = _outputType == IWLAndDPD || _outputType == IWLOnly;
-    _useDPD        = _outputType == IWLAndDPD || _outputType == DPDOnly;
-    _iwlAAIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
-    _iwlABIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AB_TEI;
-    _iwlBBIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_BB_TEI;
-
-    _nirreps = wave->nirrep();
-    _nmo     = wave->nmo();
-    _nso     = wave->nso();
-    _sopi    = wave->nsopi();
-    _mopi    = wave->nmopi();
-    _clsdpi  = wave->doccpi();
-    _openpi  = wave->soccpi();
-    _frzcpi  = wave->frzcpi();
-    _frzvpi  = wave->frzvpi();
-
-    _mCa     = wave->Ca();
-    _mCb     = wave->Cb();
-
-    common_moinfo_initialize();
-
-    if(init) initialize();
-}
 
 IntegralTransform::IntegralTransform(SharedMatrix c,
                                      SharedMatrix i,
@@ -190,9 +95,8 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
                                      MOOrdering moOrdering,
                                      FrozenOrbitals frozenOrbitals,
                                      bool init):
-    _initialized(false),
+    initialized_(false),
     _psio(_default_psio_lib_),
-    _chkpt(_default_chkpt_lib_),
     _transformationType(transformationType),
     _uniqueSpaces(spaces),
     _moOrdering(moOrdering),
@@ -230,8 +134,6 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     _cacheList(0),
     _aCorrToPitzer(0),
     _bCorrToPitzer(0),
-    _Ca(NULL),
-    _Cb(NULL),
     _keepIwlSoInts(false),
     _keepIwlMoTpdm(true),
     _keepDpdSoInts(false),
@@ -240,7 +142,10 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     _keepHtTpdm(true),
     _tpdmAlreadyPresorted(false)
 {
-    _printTei = _print > 5;
+//    wfn_           = NULL;
+//    _Ca            = NULL;
+//    _Cb            = NULL;
+    _printTei      = _print > 5;
     _useIWL        = _outputType == IWLAndDPD || _outputType == IWLOnly;
     _useDPD        = _outputType == IWLAndDPD || _outputType == DPDOnly;
     _iwlAAIntFile  = _transformationType == Restricted ? PSIF_MO_TEI : PSIF_MO_AA_TEI;
@@ -260,7 +165,7 @@ IntegralTransform::IntegralTransform(SharedMatrix c,
     // Need to smash together the C's only for them to be ripped apart elsewhere.
     std::vector<SharedMatrix > Cs;
     Cs.push_back(c); Cs.push_back(i); Cs.push_back(a); Cs.push_back(v);
-    _mCa = Matrix::horzcat(Cs);
+    _Ca = Matrix::horzcat(Cs);
 
     common_moinfo_initialize();
 
@@ -277,7 +182,7 @@ IntegralTransform::initialize()
     process_spaces();
 
     // Set up the DPD library
-    // TODO implement cacheing of files
+    // TODO implement caching of files
     int numSpaces = _spacesUsed.size();
     int numIndexArrays = numSpaces * (numSpaces - 1) + 5 * numSpaces;
     _cacheFiles = init_int_array(PSIO_MAXUNIT);
@@ -289,23 +194,8 @@ IntegralTransform::initialize()
 
     // We have to redefine the MO coefficients for a UHF-like treatment
     if(_transformationType == SemiCanonical){
-        SharedMatrix matCa = _mCa;
-
-        _Ca = new double**[_nirreps];
-        _Cb = _Ca;
-        for(int h = 0; h < _nirreps; ++h){
-            if(_mopi[h] && _sopi[h]){
-                _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
-                ::memcpy(_Ca[h][0], matCa->pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
-            }
-        }
-        // This will also build the UHF Fock matrix, which we need
-        generate_oei();
-        semicanonicalize();
-        // This second call does everything that generate_oei() does, but also
-        // sorts the two electron integrals for the transformation, which saves
-        // us a pass through the SO integral file.
-        presort_so_tei();
+        wfn_->semicanonicalize();
+        _Cb = wfn_->Cb();
     }
     process_eigenvectors();
 
@@ -360,7 +250,7 @@ IntegralTransform::initialize()
     }
 
 
-    _initialized = true;
+    initialized_ = true;
 }
 
 boost::shared_ptr<PSIO>
@@ -377,24 +267,7 @@ IntegralTransform::set_psio(boost::shared_ptr<PSIO> psio)
 
 IntegralTransform::~IntegralTransform()
 {
-    //TODO clean up everything (use valgrind)
-    for(int h = 0; h < _nirreps; ++h) {
-        if(_sopi[h] && _mopi[h]) {
-            free_block(_Ca[h]);
-        }
-    }
-    delete [] _Ca;
-    // Restricted transformations never allocated the beta matrices
-    if(_transformationType != Restricted){
-        for(int h = 0 ; h < _nirreps; ++h) {
-            if(_sopi[h] && _mopi[h]) {
-                free_block(_Cb[h]);
-            }
-        }
-        delete [] _Cb;
-    }
-
-    if (_initialized) {
+    if (initialized_) {
         dpd_close(_myDPDNum);
         free_int_matrix(_cacheList);
         free(_cacheFiles);
@@ -404,7 +277,7 @@ IntegralTransform::~IntegralTransform()
 
 void IntegralTransform::check_initialized()
 {
-    if (_initialized == false)
+    if (initialized_ == false)
         throw PSIEXCEPTION("IntegralTransform::check_initialized: This instance is not initialized.");
 }
 
