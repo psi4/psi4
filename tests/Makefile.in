@@ -107,7 +107,7 @@ df_tests:
 	$(call runtests, $(df_subdirs))
 
 dcft_tests:
-	$(call runtests, $(df_subdirs))
+	$(call runtests, $(dcft_subdirs))
 
 psimrcc_tests:
 	$(call runtests, $(psimrcc_subdirs))
