@@ -255,7 +255,11 @@ public:
     /// Returns the overlap matrix
     SharedMatrix S() const { return S_; }
 
-    /// Semicanonicalizes ROHF orbitals, breaking the alpha-beta degeneracy
+    /** Semicanonicalizes ROHF orbitals, breaking the alpha-beta degeneracy
+     * On entrance, there's only one set of orbitals and orbital energies.  On
+     * exit, the alpha and beta Fock matrices correspond to those in the semicanonical
+     * basis, and there are distinct alpha and beta C and epsilons, also in the
+     * semicanonical basis. */
     void semicanonicalize();
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;

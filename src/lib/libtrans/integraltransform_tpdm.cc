@@ -1,9 +1,9 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <libmints/matrix.h>
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -68,7 +68,8 @@ IntegralTransform::backtransform_density()
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]),true);
+            double **pC = _Ca->pointer(h);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]),true);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -96,7 +97,8 @@ IntegralTransform::backtransform_density()
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            double **pC = _Ca->pointer(h);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -129,7 +131,8 @@ IntegralTransform::backtransform_density()
         }
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            double **pC = _Ca->pointer(h);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -148,7 +151,8 @@ IntegralTransform::backtransform_density()
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Cb[h], moOffset, &(order[soOffset]), true, 1.0);
+            double **pC = _Cb->pointer(h);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true, 1.0);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -175,7 +179,8 @@ IntegralTransform::backtransform_density()
             print_array(tempMo, _nmo, outfile);
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Ca[h], moOffset, &(order[soOffset]), true);
+            double **pC = _Cb->pointer(h);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -194,7 +199,8 @@ IntegralTransform::backtransform_density()
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
             // Note the final argument here, which tells the code to accumulate the beta contribution into the alpha
-            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, _Cb[h], moOffset, &(order[soOffset]), true, 1.0);
+            double **pC = _Cb->pointer(h);
+            trans_one(_mopi[h], _sopi[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true, 1.0);
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }

@@ -1,7 +1,9 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
+#include <libmints/wavefunction.h>
+#include <libmints/matrix.h>
+#include <libmints/vector.h>
 #include <libiwl/iwl.hpp>
 #include "mospace.h"
 #include "psifiles.h"
@@ -17,25 +19,23 @@ using namespace psi;
 void
 IntegralTransform::semicanonicalize()
 {
+#if 0
     check_initialized();
 
-    // C will hold the ROHF eigenvector, which is currently in _Ca
-    double ***C = new double**[_nirreps];
+    SharedMatrix ROHFOrbs(_Ca->clone());
 
     double *work  = init_array(3 * _nmo);
     double *evals = init_array(_nmo);
     double *temp  = init_array(_nTriMo);
-    // TODO This needs to be removed eventually, but for now we need this to dump MOs to chkpt
-    _chkpt->wt_nmo(_nmo);
-    _chkpt->wt_nso(_nso);
 
     // The alpha MOs - the Fock matrix is on disk from the so TEI sort routine
     if(_print > 3) fprintf(outfile, "The alpha Fock matrix before semicanonicalization\n");
     IWL::read_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, temp, _nTriMo, 0, _print > 3, outfile);
     for(int h = 0, moOffset = 0; h < _nirreps; ++h){
+        double **C = ROHFOrbs->pointer(h);
+        double **pCa = _Ca->pointer(h);
+        double **pCb = _Cb->pointer(h);
         if(_mopi[h] == 0) continue;
-        C[h] = block_matrix(_sopi[h], _mopi[h]);
-        ::memcpy(C[h][0], _Ca[h][0], _sopi[h]*_mopi[h]*sizeof(double));
         // The Alpha occ-occ block
         int nOccOrbs = _clsdpi[h] + _openpi[h];
         if(nOccOrbs){
@@ -54,8 +54,8 @@ IntegralTransform::semicanonicalize()
                 throw PsiException("Semicanonicalization error", __FILE__, __LINE__);
             }
             // Now rotate the orbitals using the eigenvectors of F
-            C_DGEMM('n', 't', _sopi[h], nOccOrbs, nOccOrbs, 1.0, C[h][0],
-                    _mopi[h], F[0], nOccOrbs, 0.0, _Ca[h][0], _mopi[h]);
+            C_DGEMM('n', 't', _sopi[h], nOccOrbs, nOccOrbs, 1.0, C[0],
+                    _mopi[h], F[0], nOccOrbs, 0.0, pCa[0], _mopi[h]);
             // Update the Fock Matrix
             for(int i = 0; i < nOccOrbs; ++i){
                 for(int j = 0; j <= i; ++j){
@@ -84,8 +84,8 @@ IntegralTransform::semicanonicalize()
                 throw PsiException("Semicanonicalization error", __FILE__, __LINE__);
             }
             // Now rotate the orbitals using the eigenvectors of F
-            C_DGEMM('n', 't', _sopi[h], nVirOrbs, nVirOrbs, 1.0, &(C[h][0][nOccOrbs]),
-                    _mopi[h], F[0], nVirOrbs, 0.0, &(_Ca[h][0][nOccOrbs]), _mopi[h]);
+            C_DGEMM('n', 't', _sopi[h], nVirOrbs, nVirOrbs, 1.0, &(C[0][nOccOrbs]),
+                    _mopi[h], F[0], nVirOrbs, 0.0, &(pCa[0][nOccOrbs]), _mopi[h]);
             // Update the Fock Matrix
             for(int i = 0; i < nVirOrbs; ++i){
                 for(int j = 0; j <= i; ++j){
@@ -96,22 +96,18 @@ IntegralTransform::semicanonicalize()
             free_block(F);
         }
 
-        if(_print > 3){
-            fprintf(outfile, "Semicanonical alpha orbitals for irrep %d\n", h);
-            eivout(_Ca[h], &(evals[moOffset]), _sopi[h], _mopi[h], outfile);
-        }
+        // Assign the new orbital energies
+        for(int p = 0; p < _mopi[h]; ++p)
+            wfn_->epsilon_a()->set(h, p, evals[moOffset + p]);
+
         moOffset += _mopi[h];
     }
-    // Write the Fock matrix, in the alpha semicanonical basis, to disk
+
     if(_print > 3){
         fprintf(outfile, "The alpha Fock matrix in the semicanonical basis\n");
         print_array(temp, _nmo, outfile);
-    }
-    // Dump the new eigenvalues to the checkpoint file.
-    _chkpt->wt_alpha_evals(evals);
 
-    // Cb was never allocated in the moinfo routine, time to fix that
-    _Cb = new double**[_nirreps];
+    }
 
     for(int n = 0; n < _nTriMo; ++n) temp[n] = 0.0;
     // The beta MOs - the Fock matrix is on disk from the so TEI sort routine
@@ -198,38 +194,9 @@ IntegralTransform::semicanonicalize()
     }
 //    IWL::write_one(_psio, PSIF_OEI, PSIF_SC_B_FOCK, _nTriMo, temp);
 
-    delete [] C;
     free(work);
     free(evals);
     free(temp);
+#endif
 
-    /* The final stage is to copy the eigenvectors into a large array, and dump them
-     * to the checkpoint file.  The is because the irrep-by-irrep scf_write function
-     * requires the alpha and beta eigenvectors to exist in the checkpoint file already
-     * which, of course, they don't for ROHF references.
-     */
-    double **fullC = block_matrix(_nso, _nmo);
-    // The alpha eigenvectors
-    for(int h = 0, soOffset = 0, moOffset = 0; h < _nirreps; ++h){
-        for(int mu = 0; mu < _sopi[h]; ++mu){
-            for(int p = 0; p < _mopi[h]; ++p){
-                fullC[mu + soOffset][p + moOffset] = _Ca[h][mu][p];
-            }
-        }
-        soOffset += _sopi[h];
-        moOffset += _mopi[h];
-    }
-    _chkpt->wt_alpha_scf(fullC);
-    // The beta eigenvectors
-    for(int h = 0, soOffset = 0, moOffset = 0; h < _nirreps; ++h){
-        for(int mu = 0; mu < _sopi[h]; ++mu){
-            for(int p = 0; p < _mopi[h]; ++p){
-                fullC[mu + soOffset][p + moOffset] = _Cb[h][mu][p];
-            }
-        }
-        soOffset += _sopi[h];
-        moOffset += _mopi[h];
-    }
-    _chkpt->wt_beta_scf(fullC);
-    free_block(fullC);
 }

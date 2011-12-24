@@ -2,6 +2,7 @@
 #include <libdpd/dpd.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.hpp>
+#include <libmints/molecule.h>
 #include <psifiles.h>
 #include <libtrans/integraltransform.h>
 #include "defines.h"
@@ -330,7 +331,7 @@ DCFTSolver::print_opdm()
 
     int *aIrrepCount = init_int_array(nirrep_);
     int *bIrrepCount = init_int_array(nirrep_);
-    char **irrepLabels = chkpt_->rd_irr_labs();
+    char **irrepLabels = molecule_->irrep_labels();
 
     fprintf(outfile, "\n\tOrbital occupations:\n\t\tAlpha occupied orbitals\n\t\t");
     for (int i = 0, count = 0; i < nalpha_; ++i, ++count) {

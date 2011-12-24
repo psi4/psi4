@@ -1,9 +1,9 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
+#include <libmints/matrix.h>
 #include <math.h>
 #include <ctype.h>
 #include <stdio.h>
@@ -24,7 +24,7 @@ IntegralTransform::backtransform_tpdm_restricted()
     presort_mo_tpdm_restricted();
 
     // Grab the transformation coefficients
-    double ***c = _aMOCoefficients[MOSPACE_ALL];
+    SharedMatrix c = _aMOCoefficients[MOSPACE_ALL];
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
@@ -94,17 +94,19 @@ IntegralTransform::backtransform_tpdm_restricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J.col_offset[h][Gr];
+                    double **pc = c->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
-                                nlinks, c[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pc[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( a a | a n ) -> ( a a | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pc = c->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, c[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pc[0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
@@ -181,17 +183,19 @@ IntegralTransform::backtransform_tpdm_restricted()
                     int ncols = _mopi[Gs];
                     int nlinks = _mopi[Gs];
                     int rs = J.col_offset[h][Gr];
+                    double **pc = c->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 't', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
-                                nlinks, c[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pc[0], ncols, 0.0, TMP[0], _nso);
 
                     // Transform ( n n | n a ) -> ( n n | n n )
                     nrows = _sopi[Gr];
                     ncols = _sopi[Gs];
                     nlinks = _mopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    pc = c->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, c[Gr][0], nrows,
+                        C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, pc[0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                 } /* Gr */
             } /* pq */
