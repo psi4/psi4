@@ -184,7 +184,6 @@ class IntegralTransform{
 
     protected:
         void check_initialized();
-        void semicanonicalize();
         void common_moinfo_initialize();
 
         void process_eigenvectors();
