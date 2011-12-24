@@ -9,40 +9,35 @@ plugin_load("./plugin_mp2.so")
 
 set {
   basis cc-pVDZ
-  scf_type pk
-  guess core
   reference rhf
+  d_converge 10
+  e_converge 10
 }
 
 eRHFDimer = scf()
 plugin("plugin_mp2.so")
 eMP2Dimer = get_variable("MP2 ENERGY")
+energy('mp2')
 clean()
 
 molecule n {
-  0 4
-  N
+   0 4
+   N
 }
 
-set {  
-   basis     cc-pVDZ
-   reference uhf
-   guess     core
-}
-eUHFMonomer = scf()
+set reference uhf
+
+eUHFMonomer = energy('scf')
 plugin("plugin_mp2.so")
 eUMP2Monomer = get_variable("MP2 ENERGY")
 clean()
 
-set {
-   read_mos  false
-   reference rohf
-}
-eROHFMonomer = mcscf()
+set reference rohf 
+
+eROHFMonomer = energy('scf')
 plugin("plugin_mp2.so")
 eROMP2Monomer = get_variable("MP2 ENERGY")
 clean()
-
 
 print "E RHF   = %16.10f\n" % eRHFDimer
 print "E RMP2  = %16.10f\n" % eMP2Dimer
