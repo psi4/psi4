@@ -3,6 +3,7 @@
 #include <libciomr/libciomr.h>
 #include <libmints/molecule.h>
 #include <libmints/matrix.h>
+#include <libmints/view.h>
 #include <libmints/wavefunction.h>
 #include <libqt/qt.h>
 #include <sstream>
@@ -310,161 +311,72 @@ IntegralTransform::process_eigenvectors()
 {
     std::vector<shared_ptr<MOSpace> >::const_iterator space;
 
-    // Read the orbitals from the reference wavefunction, in matrix form
-    SharedMatrix matCa = _mCa;
-    SharedMatrix matCb = _mCb;
-    if(_transformationType == Restricted){
-        // Set up for a restricted transformation
-        if(_Ca == NULL){
-            _Ca = new double**[_nirreps];
-            for(int h = 0; h < _nirreps; ++h) _Ca[h] = NULL;
-        }
-        for(int h = 0; h < _nirreps; ++h){
-            if(_sopi[h] && _mopi[h]){
-                if(_Ca[h] == NULL) _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
-                ::memcpy(_Ca[h][0], matCa->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
-            }
-        }
-        _Cb = _Ca;
-    }else if(_transformationType == Unrestricted){
-        // Set up for an unrestricted transformation
-        // The semicanonical evecs are already in _Ca and _Cb if needed.
-        if(_Ca == NULL){
-            _Ca = new double**[_nirreps];
-            for(int h = 0; h < _nirreps; ++h) _Ca[h] = NULL;
-        }
-        if(_Cb == NULL){
-            _Cb = new double**[_nirreps];
-            for(int h = 0; h < _nirreps; ++h) _Cb[h] = NULL;
-        }
-        for(int h = 0; h < _nirreps; ++h){
-            if(_sopi[h] && _mopi[h]){
-                if(_Ca[h] == NULL) _Ca[h] = block_matrix(_sopi[h], _mopi[h]);
-                ::memcpy(_Ca[h][0], matCa->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
-                if(_Cb[h] == NULL) _Cb[h] = block_matrix(_sopi[h], _mopi[h]);
-                ::memcpy(_Cb[h][0], matCb->const_pointer(h)[0], _sopi[h]*_mopi[h]*sizeof(double));
-            }
-        }
+    if(_print > 4){
+        _Ca->print();
+        _Cb->print();
     }
 
-    if(_print > 4){
-        for(int h = 0; h < _nirreps; ++h){
-            fprintf(outfile, "All alpha MO Coefficients for irrep %d\n",h);
-            print_mat(_Ca[h], _sopi[h], _mopi[h], outfile);
-            fprintf(outfile, "All beta MO Coefficients for irrep %d\n",h);
-            print_mat(_Cb[h], _sopi[h], _mopi[h], outfile);
-        }
-    }
+    // N.B. The frozen orbitals have been zeroed, if appropriate
+    Dimension focc = _frzcpi;
+    Dimension aocc = _clsdpi + _openpi - _frzcpi;
+    Dimension bocc = _clsdpi - _frzcpi;
+    Dimension avir = _mopi - _clsdpi - _openpi - _frzvpi;
+    Dimension bvir = _mopi - _clsdpi - _frzvpi;
+    Dimension aall = _mopi - _frzcpi - _frzvpi;
+    Dimension ball = _mopi - _frzcpi - _frzvpi;
+    Dimension zero = Dimension(_nirreps);
 
     for(space = _uniqueSpaces.begin(); space != _uniqueSpaces.end(); ++space){
         shared_ptr<MOSpace> moSpace = *space;
-        double ***Ca = new double**[_nirreps];
-        double ***Cb = Ca;
-        if(_transformationType != Restricted)
-            Cb      = new double**[_nirreps];
+        SharedMatrix Ca;
+        SharedMatrix Cb = Ca;
         if(moSpace->label() == MOSPACE_OCC){
-            int *aOrbsPI = _aOrbsPI[MOSPACE_OCC];
-            int *bOrbsPI = _bOrbsPI[MOSPACE_OCC];
             // This is the occupied space
-            for(int h = 0; h < _nirreps; ++h){
-                Ca[h] = block_matrix(_sopi[h], aOrbsPI[h]);
-                // Copy over the occupied eigenvectors for the occupied orbitals in this irrep
-                if(_sopi[h] * aOrbsPI[h])
-                    for(int mu = 0; mu < _sopi[h]; ++mu){
-                        for(int i = 0; i < aOrbsPI[h]; ++i){
-                            Ca[h][mu][i] = _Ca[h][mu][i + _frzcpi[h]];
-                        }
-                    }
-                if(_transformationType != Restricted){
-                    Cb[h] = block_matrix(_sopi[h], bOrbsPI[h]);
-                    // Copy over the occupied eigenvectors for the occupied orbitals in this irrep
-                    if(_sopi[h] * bOrbsPI[h])
-                        for(int mu = 0; mu < _sopi[h]; ++mu){
-                            for(int i = 0; i < bOrbsPI[h]; ++i){
-                                Cb[h][mu][i] = _Cb[h][mu][i + _frzcpi[h]];
-                            }
-                        }
-                }
+            View Vaocc(_Ca, _sopi, aocc, zero, focc);
+            Ca = Vaocc();
+            Ca->set_name("Alpha occupied orbitals");
+            if(_transformationType != Restricted){
+                View Vbocc(_Cb, _sopi, bocc, zero, focc);
+                Cb = Vbocc();
+                Cb->set_name("Beta occupied orbitals");
             }
         }else if(moSpace->label() == MOSPACE_ALL){
-            // This is the full MO space
-            int *aOrbsPI = _aOrbsPI[MOSPACE_ALL];
-            int *bOrbsPI = _bOrbsPI[MOSPACE_ALL];
-            for(int h = 0; h < _nirreps; ++h){
-                Ca[h] = block_matrix(_sopi[h], aOrbsPI[h]);
-                // Copy over the eigenvectors for the active orbitals in this irrep
-                if(_sopi[h] * aOrbsPI[h])
-                    for(int mu = 0; mu < _sopi[h]; ++mu){
-                        for(int i = 0; i < aOrbsPI[h]; ++i){
-                            Ca[h][mu][i] = _Ca[h][mu][i + _frzcpi[h]];
-                        }
-                    }
-                if(_transformationType != Restricted){
-                    Cb[h] = block_matrix(_sopi[h], bOrbsPI[h]);
-                    // Copy over the eigenvectors for the active orbitals in this irrep
-                    if(_sopi[h] * bOrbsPI[h])
-                        for(int mu = 0; mu < _sopi[h]; ++mu){
-                            for(int i = 0; i < bOrbsPI[h]; ++i){
-                                Cb[h][mu][i] = _Cb[h][mu][i + _frzcpi[h]];
-                            }
-                        }
-                }
+            // This is the full space, sans frozen orbitals
+            View Vaall(_Ca, _sopi, aall, zero, focc);
+            Ca = Vaall();
+            Ca->set_name("All alpha orbitals");
+            if(_transformationType != Restricted){
+                View Vball(_Cb, _sopi, ball, zero, focc);
+                Cb = Vball();
+                Cb->set_name("All beta orbitals");
             }
         }else if(moSpace->label() == MOSPACE_VIR){
             // This is the virtual space
-            int *aOrbsPI = _aOrbsPI[MOSPACE_VIR];
-            int *bOrbsPI = _bOrbsPI[MOSPACE_VIR];
-            for(int h = 0; h < _nirreps; ++h){
-                if(_transformationType == Restricted){
-                    Ca[h] = block_matrix(_sopi[h], aOrbsPI[h]);
-                    // Copy over the eigenvectors for the active orbitals in this irrep
-                    if(_sopi[h] * aOrbsPI[h])
-                        for(int mu = 0; mu < _sopi[h]; ++mu){
-                            for(int i = 0; i < aOrbsPI[h]; ++i){
-                                Ca[h][mu][i] = _Ca[h][mu][i + _clsdpi[h]];
-                            }
-                        }
-                }else{
-                    if(_sopi[h] * aOrbsPI[h]){
-                        Ca[h] = block_matrix(_sopi[h], aOrbsPI[h]);
-                        // Copy over the eigenvectors for the active orbitals in this irrep
-                        if(_sopi[h] * aOrbsPI[h])
-                            for(int mu = 0; mu < _sopi[h]; ++mu){
-                                for(int i = 0; i < aOrbsPI[h]; ++i){
-                                    Ca[h][mu][i] = _Ca[h][mu][i +  _clsdpi[h] + _openpi[h]];
-                                }
-                            }
-                    }
-                    if(_sopi[h] * bOrbsPI[h]){
-                        Cb[h] = block_matrix(_sopi[h], bOrbsPI[h]);
-                        // Copy over the eigenvectors for the active orbitals in this irrep
-                        if(_sopi[h] * bOrbsPI[h])
-                            for(int mu = 0; mu < _sopi[h]; ++mu){
-                                for(int i = 0; i < bOrbsPI[h]; ++i){
-                                    Cb[h][mu][i] = _Cb[h][mu][i + _clsdpi[h]];
-                                }
-                            }
-                    }
-                }
+            if(_transformationType == Restricted){
+                View Vavir(_Ca, _sopi, avir, zero, _clsdpi);
+                Ca = Vavir();
+                Ca->set_name("Alpha virtual orbitals");
+            }else{
+                View Vavir(_Ca, _sopi, avir, zero, _clsdpi + _openpi);
+                Ca = Vavir();
+                Ca->set_name("Alpha virtual orbitals");
+                View Vbvir(_Cb, _sopi, bvir, zero, _clsdpi);
+                Cb = Vbvir();
+                Cb->set_name("Beta virtual orbitals");
             }
-        }else if(moSpace->label() == MOSPACE_VIR){
+        }else if(moSpace->label() == MOSPACE_NIL){
             // Do nothing!
+        }else{
+            //TODO This is a custom space work on this!
         }
-        // TODO process custom MO spaces!
 
         _aMOCoefficients[moSpace->label()] = Ca;
         _bMOCoefficients[moSpace->label()] = Cb;
 
         if(_print > 5){
             fprintf(outfile, "Orbitals for space %c:-\n",moSpace->label());
-            for(int h = 0; h < _nirreps; ++h){
-                fprintf(outfile, "\nAlpha orbitals for irrep %d\n", h);
-                print_mat(Ca[h], _sopi[h], _aOrbsPI[moSpace->label()][h], outfile);
-            }
-            for(int h = 0; h < _nirreps; ++h){
-                fprintf(outfile, "\nBeta orbitals for irrep %d\n", h);
-                print_mat(Cb[h], _sopi[h], _bOrbsPI[moSpace->label()][h], outfile);
-            }
+            Ca->print();
+            Cb->print();
             fprintf(outfile, "\n\n");
         }
     }// End loop over spaces

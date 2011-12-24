@@ -1,7 +1,7 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
+#include <libmints/matrix.h>
 #include <libiwl/iwl.hpp>
 #include <libqt/qt.h>
 #include <math.h>
@@ -27,20 +27,15 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
     char *label = new char[100];
 
     // Grab the transformation coefficients
-    double ***c1a = _aMOCoefficients[s1->label()];
-    double ***c1b = _bMOCoefficients[s1->label()];
-    double ***c2a = _aMOCoefficients[s2->label()];
-    double ***c2b = _bMOCoefficients[s2->label()];
+    SharedMatrix c1a = _aMOCoefficients[s1->label()];
+    SharedMatrix c1b = _bMOCoefficients[s1->label()];
+    SharedMatrix c2a = _aMOCoefficients[s2->label()];
+    SharedMatrix c2b = _bMOCoefficients[s2->label()];
     // And the number of orbitals per irrep
     int *aOrbsPI1 = _aOrbsPI[s1->label()];
     int *bOrbsPI1 = _bOrbsPI[s1->label()];
     int *aOrbsPI2 = _aOrbsPI[s2->label()];
     int *bOrbsPI2 = _bOrbsPI[s2->label()];
-    // The reindexing arrays
-    int *aIndex1 = _aIndices[s1->label()];
-    int *bIndex1 = _bIndices[s1->label()];
-    int *aIndex2 = _aIndices[s2->label()];
-    int *bIndex2 = _bIndices[s2->label()];
 
     // Grab control of DPD for now, but store the active number to restore it later
     int currentActiveDPD = psi::dpd_default;
@@ -120,9 +115,10 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                     int ncols = aOrbsPI2[Gs];
                     int nlinks = _sopi[Gs];
                     int rs = J.col_offset[h][Gr];
+                    double **pc2a = c2a->pointer(Gs);
                     if(nrows && ncols && nlinks)
                         C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
-                                nlinks, c2a[Gs][0], ncols, 0.0, TMP[0], _nso);
+                                nlinks, pc2a[0], ncols, 0.0, TMP[0], _nso);
                     //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
 
                     // Transform ( n n | n S2 ) -> ( n n | S1 S2 )
@@ -130,8 +126,9 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                     ncols = aOrbsPI2[Gs];
                     nlinks = _sopi[Gr];
                     rs = K.col_offset[h][Gr];
+                    double **pc1a = c1a->pointer(Gr);
                     if(nrows && ncols && nlinks)
-                        C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, c1a[Gr][0], nrows,
+                        C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc1a[0], nrows,
                                 TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                     //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
                 } /* Gr */
@@ -230,9 +227,10 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                         int ncols = bOrbsPI2[Gs];
                         int nlinks = _sopi[Gs];
                         int rs = J.col_offset[h][Gr];
+                        double **pc2b = c2b->pointer(Gs);
                         if(nrows && ncols && nlinks)
                             C_DGEMM('n', 'n', nrows, ncols, nlinks, 1.0, &J.matrix[h][pq][rs],
-                            nlinks, c2b[Gs][0], ncols, 0.0, TMP[0], _nso);
+                            nlinks, pc2b[0], ncols, 0.0, TMP[0], _nso);
                         //TODO else if s2->label() == MOSPACE_NIL, copy buffer...
 
                         // Transform ( n n | n s2 ) -> ( n n | s1 s2 )
@@ -240,8 +238,9 @@ IntegralTransform::transform_tei_first_half(const shared_ptr<MOSpace> s1, const 
                         ncols = bOrbsPI2[Gs];
                         nlinks = _sopi[Gr];
                         rs = K.col_offset[h][Gr];
+                        double **pc1b = c1b->pointer(Gr);
                         if(nrows && ncols && nlinks)
-                            C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, c1b[Gr][0], nrows,
+                            C_DGEMM('t', 'n', nrows, ncols, nlinks, 1.0, pc1b[0], nrows,
                                     TMP[0], _nso, 0.0, &K.matrix[h][pq][rs], ncols);
                         //TODO else if s1->label() == MOSPACE_NIL, copy buffer...
                     } /* Gr */

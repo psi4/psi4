@@ -4,6 +4,7 @@
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.hpp>
+#include <libmints/matrix.h>
 #include "psifiles.h"
 #include "mospace.h"
 #define EXTERN
@@ -47,18 +48,20 @@ IntegralTransform::presort_so_tei()
 
     // Form the Density matrices
     for(int h = 0, soOffset = 0; h < _nirreps; ++h){
+        double **pCa = _Ca->pointer(h);
+        double **pCb = _Cb->pointer(h);
         for(int p = 0; p < _sopi[h]; ++p){
             for(int q = 0; q <= p; ++q){
                 int pq = INDEX((p + soOffset), (q + soOffset));
                 for(int i = 0; i < _frzcpi[h]; ++i)
-                    aFzcD[pq] += _Ca[h][p][i] * _Ca[h][q][i];
+                    aFzcD[pq] += pCa[p][i] * pCa[q][i];
                 for(int i = 0; i < _clsdpi[h] + _openpi[h]; ++i)
-                    aD[pq] += _Ca[h][p][i] * _Ca[h][q][i];
+                    aD[pq] += pCa[p][i] * pCa[q][i];
                 if(_transformationType != Restricted){
                     for(int i = 0; i < _frzcpi[h]; ++i)
-                        bFzcD[pq] += _Cb[h][p][i] * _Cb[h][q][i];
+                        bFzcD[pq] += pCb[p][i] * pCb[q][i];
                     for(int i = 0; i < _clsdpi[h]; ++i)
-                        bD[pq] += _Cb[h][p][i] * _Cb[h][q][i];
+                        bD[pq] += pCb[p][i] * pCb[q][i];
                 }
             }
         }
@@ -232,7 +235,8 @@ IntegralTransform::presort_so_tei()
         fprintf(outfile, "\tTransforming the one-electron integrals and constructing Fock matrices\n");
     if(_transformationType == Restricted){
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aoH, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            double **pCa = _Ca->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -243,7 +247,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_OEI, _nTriMo, moInts);
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            double **pCa = _Ca->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, pCa, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -254,7 +259,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_FZC, _nTriMo, moInts);
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            double **pCa = _Ca->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aFock, moInts, pCa, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -266,7 +272,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_FOCK, _nTriMo, aFock);
     }else{
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aoH, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            double **pCa = _Ca->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aoH, moInts, pCa, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -277,7 +284,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_OEI, _nTriMo, moInts);
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aoH, moInts, _Cb[h], soOffset, &(order[moOffset]));
+            double **pCb = _Cb->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aoH, moInts, pCb, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -288,7 +296,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_OEI, _nTriMo, moInts);
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            double **pCa = _Ca->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aFzcOp, moInts, pCa, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -299,7 +308,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FZC, _nTriMo, moInts);
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], bFzcOp, moInts, _Cb[h], soOffset, &(order[moOffset]));
+            double **pCb = _Cb->pointer(h);
+            trans_one(_sopi[h], _mopi[h], bFzcOp, moInts, pCb, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -309,7 +319,8 @@ IntegralTransform::presort_so_tei()
         }
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_B_FZC, _nTriMo, moInts);
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], aFock, moInts, _Ca[h], soOffset, &(order[moOffset]));
+            double **pCa = _Ca->pointer(h);
+            trans_one(_sopi[h], _mopi[h], aFock, moInts, pCa, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
@@ -320,7 +331,8 @@ IntegralTransform::presort_so_tei()
         IWL::write_one(_psio.get(), PSIF_OEI, PSIF_MO_A_FOCK, _nTriMo, moInts);
 
         for(int h = 0, moOffset = 0, soOffset = 0; h < _nirreps; ++h){
-            trans_one(_sopi[h], _mopi[h], bFock, moInts, _Cb[h], soOffset, &(order[moOffset]));
+            double **pCb = _Cb->pointer(h);
+            trans_one(_sopi[h], _mopi[h], bFock, moInts, pCb, soOffset, &(order[moOffset]));
             soOffset += _sopi[h];
             moOffset += _mopi[h];
         }
