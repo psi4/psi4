@@ -255,13 +255,15 @@ public:
     /// Returns the overlap matrix
     SharedMatrix S() const { return S_; }
 
+    /// Semicanonicalizes ROHF orbitals, breaking the alpha-beta degeneracy
+    void semicanonicalize();
     /// Returns the alpha electrons MO coefficients
     SharedMatrix Ca() const;
     /// Returns the beta electrons MO coefficients
     SharedMatrix Cb() const;
-    /// Returns the alpha Fock matrix
+    /// Returns the (SO basis) alpha Fock matrix
     SharedMatrix Fa() const;
-    /// Returns the beta Fock matrix
+    /// Returns the (SO basis) beta Fock matrix
     SharedMatrix Fb() const;
     /// Returns the alpha orbital energies
     boost::shared_ptr<Vector> epsilon_a() const;
