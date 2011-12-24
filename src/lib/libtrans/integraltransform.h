@@ -143,34 +143,34 @@ class IntegralTransform{
         /*===== The set/get accessor functions =====*/
 
         /// Set the level of printing used during transformations (0 -> 6)
-        void set_print(int n) {_print = n;}
+        void set_print(int n) {print_ = n;}
         /// The level of printing used during transformations
-        int get_print() const {return _print;}
+        int get_print() const {return print_;}
 
         /// Set the library to keep or delete the half-transformed integrals in DPD form after processing
-        void set_keep_ht_ints(bool val) {_keepHtInts = val;}
+        void set_keep_ht_ints(bool val) {keepHtInts_ = val;}
         /// Whether the library will keep or delete the half-transformed integrals in DPD form after processing
-        bool get_keep_ht_ints() const {return _keepHtInts;}
+        bool get_keep_ht_ints() const {return keepHtInts_;}
 
         /// Set the library to keep or delete the SO integrals in DPD form after processing
-        void set_keep_dpd_so_ints(bool val) {_keepDpdSoInts = val;}
+        void set_keep_dpd_so_ints(bool val) {keepDpdSoInts_ = val;}
         /// Whether the library will keep or delete the SO integrals in DPD form after processing
-        bool get_keep_dpd_so_ints() const {return _keepDpdSoInts;}
+        bool get_keep_dpd_so_ints() const {return keepDpdSoInts_;}
 
         /// Set the library to keep or delete the SO integrals in IWL form after processing
-        void set_keep_iwl_so_ints(bool val) {_keepIwlSoInts = val;}
+        void set_keep_iwl_so_ints(bool val) {keepIwlSoInts_ = val;}
         /// Whether the library will keep or delete the SO integrals in IWL form after processing
-        bool get_keep_iwl_so_ints() const {return _keepIwlSoInts;}
+        bool get_keep_iwl_so_ints() const {return keepIwlSoInts_;}
 
         /// Set the memory (in MB) available to the library
-        void set_memory(size_t memory) {_memory = memory;}
+        void set_memory(size_t memory) {memory_ = memory;}
         /// The amount of memory (in MB) available to the library
-        size_t get_memory() const {return _memory;}
+        size_t get_memory() const {return memory_;}
 
         /// Set the number of the DPD instance to be used in the transformation
-        void set_dpd_id(int n) {_myDPDNum = n;}
+        void set_dpd_id(int n) {myDPDNum_ = n;}
         /// The number of the DPD instance used in the transformation
-        int get_dpd_id() const {return _myDPDNum;}
+        int get_dpd_id() const {return myDPDNum_;}
 
         /// Get the psio object being used by this object
         boost::shared_ptr<PSIO> get_psio() const;
@@ -178,9 +178,9 @@ class IntegralTransform{
         void set_psio(boost::shared_ptr<PSIO> psio);
 
         // Get the alpha correlated to Pitzer ordering array, used in backtransforms
-        const int *alpha_corr_to_pitzer() const { return _aCorrToPitzer; }
+        const int *alpha_corr_to_pitzer() const { return aCorrToPitzer_; }
         // Get the beta correlated to Pitzer ordering array, used in backtransforms
-        const int *beta_corr_to_pitzer() const { return _bCorrToPitzer; }
+        const int *beta_corr_to_pitzer() const { return bCorrToPitzer_; }
 
     protected:
         void check_initialized();
@@ -210,127 +210,127 @@ class IntegralTransform{
         // The wavefunction object, containing the orbital infomation
         boost::shared_ptr<Wavefunction> wfn_;
         // Pointer to the PSIO object to use for file I/O
-        boost::shared_ptr<PSIO>  _psio;
+        boost::shared_ptr<PSIO>  psio_;
         // The type of transformation
-        TransformationType _transformationType;
+        TransformationType transformationType_;
         // The unique MO spaces provided to this object's constructor
-        SpaceVec _uniqueSpaces;
+        SpaceVec uniqueSpaces_;
         // The ordering of the resulting integrals
-        MOOrdering _moOrdering;
+        MOOrdering moOrdering_;
         // The format of the outputted integrals
-        OutputType _outputType;
+        OutputType outputType_;
         // How to handle frozen orbitals
-        FrozenOrbitals _frozenOrbitals;
+        FrozenOrbitals frozenOrbitals_;
         // The unique orbital spaces involved in this transformation
-        std::vector <char> _spacesUsed;
+        std::vector <char> spacesUsed_;
         // A list of the arrays to pass into libDPD
-        std::vector<int*> _spaceArrays;
+        std::vector<int*> spaceArray_;
         // The alpha orbitals per irrep for each space
-        std::map<char, int* > _aOrbsPI;
+        std::map<char, int* > aOrbsPI_;
         // The beta orbitals per irrep for each space
-        std::map<char, int* > _bOrbsPI;
+        std::map<char, int* > bOrbsPI_;
         // The alpha MO coefficients for all unique spaces needed
-        std::map<char, SharedMatrix> _aMOCoefficients;
+        std::map<char, SharedMatrix> aMOCoefficients_;
         // The beta MO coefficients for all unique spaces needed
-        std::map<char, SharedMatrix> _bMOCoefficients;
+        std::map<char, SharedMatrix> bMOCoefficients_;
         // The alpha orbital indexing arrays
-        std::map<char, int* > _aIndices;
+        std::map<char, int* > aIndices_;
         // The beta orbital indexing arrays
-        std::map<char, int* > _bIndices;
+        std::map<char, int* > bIndices_;
         // The lookup table for DPD indexing
-        std::map<std::string, int> _dpdLookup;
+        std::map<std::string, int> dpdLookup_;
         // Whether the SO integrals have already been presorted
-        bool _alreadyPresorted;
+        bool alreadyPresorted_;
         // The file to which DPD formatted integrals are written
-        int _dpdIntFile;
+        int dpdIntFile_;
         // The file containing alpha half-transformed integrals in DPD format
-        int _aHtIntFile;
+        int aHtIntFile_;
         // The file containing beta half-transformed integrals in DPD format
-        int _bHtIntFile;
+        int bHtIntFile_;
         // The file containing alpha-alpha IWL formatted integrals
-        int _iwlAAIntFile;
+        int iwlAAIntFile_;
         // The file containing alpha-beta IWL formatted integrals
-        int _iwlABIntFile;
+        int iwlABIntFile_;
         // The file containing beta-beta IWL formatted integrals
-        int _iwlBBIntFile;
+        int iwlBBIntFile_;
         // The number of irreps
-        int _nirreps;
+        int nirreps_;
         // The number of molecular orbitals
-        int _nmo;
+        int nmo_;
         // The number of symmetrized atomic orbitals
-        int _nso;
+        int nso_;
         // The number of pairs of symmetrized atomic orbitals
-        int _nTriSo;
+        int nTriSo_;
         // The number of pairs of molecular orbitals
-        int _nTriMo;
+        int nTriMo_;
         // The number of frozen doubly occupied orbitals
-        int _nfzc;
+        int nfzc_;
         // The number of frozen virtual orbitals
-        int _nfzv;
+        int nfzv_;
         // A string describing the spaces in which the integrals are to be transformed
-        char *_spaces;
+        char *spaces_;
         // An array containing labels for each irrep
-        char **_labels;
+        char **labels_;
         // The definition of zero
-        double _tolerance;
+        double tolerance_;
         // The amount of memory, in MB
-        size_t _memory;
+        size_t memory_;
         // The PSI file number for the alpha-alpha integrals
-        int _moIntFileAA;
+        int moIntFileAA_;
         // The PSI file number for the alpha-beta integrals
-        int _moIntFileAB;
+        int moIntFileAB_;
         // The PSI file number for the beta-beta integrals
-        int _moIntFileBB;
+        int moIntFileBB_;
         // The DPD id to use internally
-        int _myDPDNum;
+        int myDPDNum_;
         // The amount of information to print
-        int _print;
+        int print_;
         // Just an array of zeros! Used in the null MOSpace "transforms"
-        int *_zeros;
+        int *zeros_;
         // The alpha correlated to Pitzer ordering arrays, used in backtransforms
-        int *_aCorrToPitzer;
+        int *aCorrToPitzer_;
         // The beta correlated to Pitzer ordering arrays, used in backtransforms
-        int *_bCorrToPitzer;
+        int *bCorrToPitzer_;
         // The number of symmetrized orbitals per irrep
-        Dimension _sopi;
+        Dimension sopi_;
         // The symmetry (irrep number) of each symmetrized atomic orbital
-        int *_sosym;
+        int *sosym_;
         // The number of molecular orbitals per irrep
-        Dimension _mopi;
+        Dimension mopi_;
         // The number of doubly-occupied orbitals per irrep
-        Dimension _clsdpi;
+        Dimension clsdpi_;
         // The number of singly-occupied orbitals per irrep
-        Dimension _openpi;
+        Dimension openpi_;
         // The number of frozen doubly occupied orbitals per irrep
-        Dimension _frzcpi;
+        Dimension frzcpi_;
         // The number of frozen virtual orbitals per irrep
-        Dimension _frzvpi;
+        Dimension frzvpi_;
         // The cache files used by libDPD
-        int *_cacheFiles, **_cacheList;
+        int *cacheFiles_, **cacheList_;
         // The alpha MO coefficients for each irrep
-        boost::shared_ptr<Matrix> _Ca;
+        boost::shared_ptr<Matrix> Ca_;
         // The alpha MO coefficients for each irrep
-        boost::shared_ptr<Matrix> _Cb;
+        boost::shared_ptr<Matrix> Cb_;
         // Whether to keep the IWL SO integral file after processing
-        bool _keepIwlSoInts;
+        bool keepIwlSoInts_;
         // Whether to keep the IWL MO two particle density matrix
-        bool _keepIwlMoTpdm;
+        bool keepIwlMoTpdm_;
         // Whether to keep the DPD SO integral file after processing
-        bool _keepDpdSoInts;
+        bool keepDpdSoInts_;
         // Whether to keep the DPD MO to particle density matrix after processing
-        bool _keepDpdMoTpdm;
+        bool keepDpdMoTpdm_;
         // Whether to keep the half-transformed two electron integrals
-        bool _keepHtInts;
+        bool keepHtInts_;
         // Whether to keep the half-transformed TPDM
-        bool _keepHtTpdm;
+        bool keepHtTpdm_;
         // Whether to print the two-electron integrals or not
-        bool _printTei;
+        bool printTei_;
         // Whether to output the results to an IWL buffer
-        bool _useIWL;
+        bool useIWL_;
         // Whether to output the results to a DPD buffer
-        bool _useDPD;
+        bool useDPD_;
         // Has this object already pre-sorted?
-        bool _tpdmAlreadyPresorted;
+        bool tpdmAlreadyPresorted_;
 };
 
 inline void
