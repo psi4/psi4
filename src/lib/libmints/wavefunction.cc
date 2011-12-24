@@ -11,6 +11,7 @@
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
 #include <libparallel/parallel.h>
+#include <libmints/view.h>
 
 #include "mints.h"
 
@@ -201,6 +202,145 @@ void Wavefunction::initialize_singletons()
         fac[i] = i*fac[i-1];
 
     done = true;
+}
+
+void Wavefunction::semicanonicalize()
+{
+    // Quick sanity checks
+    if(Fa_ == 0 || Fb_ == 0)
+        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but Fock matrices are not initialized.");
+    if(Ca_ == 0 || Cb_ == 0)
+        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbitals are not initialized.");
+    if(Ca_ != Cb_)
+        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbitals are not the same.");
+    if(Fa_ == Fb_)
+        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but Fock matrices are the same.");
+    if(epsilon_a_ != epsilon_b_)
+        throw PSIEXCEPTION("Wavefunction: Semicanonicalize called, but orbital energies are not the same.");
+    // Now, make space for the new orbitals
+    Cb_ = SharedMatrix(Ca_->clone());
+    epsilon_b_ = SharedVector(epsilon_b_->clone());
+    Ca_->set_name("Alpha semicanonical orbitals");
+    Cb_->set_name("Beta semicanonical orbitals");
+    epsilon_a_->set_name("Alpha semicanonical orbital energies");
+    epsilon_b_->set_name("Beta semicanonical orbital energies");
+
+    SharedMatrix Crohf = SharedMatrix(Ca_->clone());
+    SharedMatrix evecs;
+    SharedVector evals;
+
+    // Transform the Fock matrix to the MO basis
+    SharedMatrix moFa(Fa_->clone());
+    SharedMatrix moFb(Fb_->clone());
+    moFa->transform(Ca_);
+    moFb->transform(Ca_);
+
+    // Pick out occ-occ, and vir-vir subsets of the Fock matrices
+    Dimension aoccpi = doccpi_ + soccpi_;
+    Dimension boccpi = doccpi_;
+    Dimension avirpi = nmopi_ - aoccpi;
+    Dimension bvirpi = nmopi_ - boccpi;
+    View aOO(moFa, aoccpi, aoccpi);
+    View aVV(moFa, avirpi, avirpi, aoccpi, aoccpi);
+    View bOO(moFb, boccpi, boccpi);
+    View bVV(moFb, bvirpi, bvirpi, boccpi, boccpi);
+    SharedMatrix aFOO = aOO();
+    SharedMatrix aFVV = aVV();
+    SharedMatrix bFOO = bOO();
+    SharedMatrix bFVV = bVV();
+
+    // Canonicalize the Alpha occ-occ block
+    evecs = SharedMatrix(new Matrix(nirrep_, aoccpi, aoccpi));
+    evals = SharedVector(new Vector(nirrep_, aoccpi));
+    aFOO->diagonalize(evecs, evals);
+    for(int h = 0; h < nirrep_; ++h){
+        double **pC  = Crohf->pointer(h);
+        double **pCa = Ca_->pointer(h);
+        double **pR  = evecs->pointer(h);
+        if(aoccpi[h]){
+            C_DGEMM('n', 'n', nsopi_[h], aoccpi[h], aoccpi[h], 1.0, pC[0],
+                    nmopi_[h], pR[0], aoccpi[h], 0.0, pCa[0], nmopi_[h]);
+            for(int p = 0; p < aoccpi[h]; ++p){
+                double epsilon = evals->get(h, p);
+                epsilon_a_->set(h, p, epsilon);
+                for(int q = 0; q < aoccpi[h]; ++q){
+                    moFa->set(h, p, q, p==q ? epsilon : 0.0);
+                }
+            }
+        }
+    }
+    // Canonicalize the Alpha vir-vir block
+    evecs = SharedMatrix(new Matrix(nirrep_, avirpi, avirpi));
+    evals = SharedVector(new Vector(nirrep_, avirpi));
+    aFVV->diagonalize(evecs, evals);
+    for(int h = 0; h < nirrep_; ++h){
+        double **pC  = Crohf->pointer(h);
+        double **pCa = Ca_->pointer(h);
+        double **pR  = evecs->pointer(h);
+        if(avirpi[h]){
+            C_DGEMM('n', 'n', nsopi_[h], avirpi[h], avirpi[h], 1.0, &(pC[0][aoccpi[h]]),
+                    nmopi_[h], pR[0], avirpi[h], 0.0, &(pCa[0][aoccpi[h]]), nmopi_[h]);
+            for(int p = 0; p < avirpi[h]; ++p){
+                double epsilon = evals->get(h, p);
+                epsilon_a_->set(h, p+aoccpi[h], epsilon);
+                for(int q = 0; q < avirpi[h]; ++q){
+                    moFa->set(h, p+aoccpi[h], q+aoccpi[h], p==q ? epsilon : 0.0);
+                }
+            }
+        }
+    }
+    // Canonicalize the Beta occ-occ block
+    evecs = SharedMatrix(new Matrix(nirrep_, boccpi, boccpi));
+    evals = SharedVector(new Vector(nirrep_, boccpi));
+    bFOO->diagonalize(evecs, evals);
+    for(int h = 0; h < nirrep_; ++h){
+        double **pC  = Crohf->pointer(h);
+        double **pCb = Cb_->pointer(h);
+        double **pR  = evecs->pointer(h);
+        if(boccpi[h]){
+            C_DGEMM('n', 'n', nsopi_[h], boccpi[h], boccpi[h], 1.0, pC[0],
+                    nmopi_[h], pR[0], boccpi[h], 0.0, pCb[0], nmopi_[h]);
+            for(int p = 0; p < boccpi[h]; ++p){
+                double epsilon = evals->get(h, p);
+                epsilon_b_->set(h, p, epsilon);
+                for(int q = 0; q < boccpi[h]; ++q){
+                    moFb->set(h, p, q, p==q ? epsilon : 0.0);
+                }
+            }
+        }
+    }
+    // Canonicalize the Beta vir-vir block
+    evecs = SharedMatrix(new Matrix(nirrep_, bvirpi, bvirpi));
+    evals = SharedVector(new Vector(nirrep_, bvirpi));
+    bFVV->diagonalize(evecs, evals);
+    for(int h = 0; h < nirrep_; ++h){
+        double **pC  = Crohf->pointer(h);
+        double **pCb = Cb_->pointer(h);
+        double **pR  = evecs->pointer(h);
+        if(bvirpi[h]){
+            C_DGEMM('n', 'n', nsopi_[h], bvirpi[h], bvirpi[h], 1.0, &(pC[0][boccpi[h]]),
+                    nmopi_[h], pR[0], bvirpi[h], 0.0, &(pCb[0][boccpi[h]]), nmopi_[h]);
+            for(int p = 0; p < bvirpi[h]; ++p){
+                double epsilon = evals->get(h, p);
+                epsilon_b_->set(h, p+boccpi[h], epsilon);
+                for(int q = 0; q < bvirpi[h]; ++q){
+                    moFb->set(h, p+boccpi[h], q+boccpi[h], p==q ? epsilon : 0.0);
+                }
+            }
+        }
+    }
+
+    /*
+     * Now, we need to backtransform the Fock matrices to the SO basis
+     * Ct S C = 1, so  Cinv = Ct S
+     */
+    SharedMatrix Cinv = SharedMatrix(new Matrix(nirrep_, nmopi_, nsopi_));
+    // Alpha
+    Cinv->gemm(true, false, 1.0, Ca_, S_, 0.0);
+    Fa_->transform(moFa, Cinv);
+    // Beta
+    Cinv->gemm(true, false, 1.0, Cb_, S_, 0.0);
+    Fb_->transform(moFb, Cinv);
 }
 
 boost::shared_ptr<Molecule> Wavefunction::molecule() const
