@@ -466,8 +466,9 @@ void CoupledCluster::Transformation(){
   std::vector<boost::shared_ptr<MOSpace> > spaces;
   boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
+  boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
   spaces.push_back(MOSpace::all);
-  IntegralTransform ints(chkpt, spaces, IntegralTransform::Restricted,
+  IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted,
            IntegralTransform::IWLOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
            //IntegralTransform::IWLAndDPD, IntegralTransform::QTOrder, IntegralTransform::OccOnly, false);
   //IWLOnly
