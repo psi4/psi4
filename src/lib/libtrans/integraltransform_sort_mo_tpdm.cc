@@ -1,9 +1,9 @@
 #include "integraltransform.h"
-#include <libchkpt/chkpt.hpp>
 #include <libpsio/psio.hpp>
 #include <libciomr/libciomr.h>
 #include <libqt/qt.h>
 #include <libiwl/iwl.hpp>
+#include "integraltransform_functors.h"
 #include "psifiles.h"
 #include "mospace.h"
 #define EXTERN
@@ -19,39 +19,6 @@ void
 IntegralTransform::presort_mo_tpdm_restricted()
 {
     check_initialized();
-
-    int nDocc = 0;
-    for(int h = 0; h < nirreps_; ++h) nDocc += clsdpi_[h];
-
-//    // The IWL TPDM comes in QT-ordered, but we're effectively using Pitzer order in the DPD structures
-//    int *qtToPitzer = new int[_nmo];
-//    int qtCount = 0;
-//    // The frozen core orbitals
-//    int pitzerOffset = 0;
-//    for(int h = 0; h < _nirreps; ++h){
-//        for(int pitzer = 0; pitzer < _frzcpi[h]; ++pitzer){
-//            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
-//        }
-//        pitzerOffset += _mopi[h];
-//    }
-//    // The doubly occupied orbitals
-//    pitzerOffset = 0;
-//    for(int h = 0; h < _nirreps; ++h){
-//        pitzerOffset += _frzcpi[h];
-//        for(int pitzer = 0; pitzer < _clsdpi[h] - _frzcpi[h]; ++pitzer){
-//            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
-//        }
-//        pitzerOffset += _mopi[h] - _frzcpi[h];
-//    }
-//    // The active virtuals
-//    pitzerOffset = 0;
-//    for(int h = 0; h < _nirreps; ++h){
-//        pitzerOffset += _clsdpi[h];
-//        for(int pitzer = 0; pitzer < _mopi[h] - _clsdpi[h] - _frzvpi[h]; ++pitzer){
-//            qtToPitzer[qtCount++] = pitzer + pitzerOffset;
-//        }
-//        pitzerOffset += _mopi[h] - _clsdpi[h];
-//    }
 
     if(tpdmAlreadyPresorted_){
         if(print_>5)
@@ -136,7 +103,9 @@ IntegralTransform::presort_mo_tpdm_restricted()
         for(int h=0; h < nirreps_; h++) {
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
+
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_TPDM, tolerance_, 1, 0);
+        DPDFillerFunctor dpdFiller(&I,n,bucketMap,bucketOffset, true, true);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -152,8 +121,7 @@ IntegralTransform::presort_mo_tpdm_restricted()
                 int r = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-//                fprintf(outfile, "%d %d %d %d -> %d %d %d %d %lf\n",p,q,r,s,qtToPitzer[p],qtToPitzer[q],qtToPitzer[r],qtToPitzer[s],value);
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true);
+                dpdFiller(p,q,r,s,value);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
@@ -171,7 +139,6 @@ IntegralTransform::presort_mo_tpdm_restricted()
     psio_->open(PSIF_MO_TPDM, PSIO_OPEN_OLD);
     psio_->close(PSIF_MO_TPDM, keepIwlMoTpdm_);
 
-//    delete [] qtToPitzer;
     free_int_matrix(bucketMap);
 
     for(int n=0; n < nBuckets; ++n) {
@@ -281,6 +248,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_AA_TPDM, tolerance_, 1, 0);
+        DPDFillerFunctor aaDpdFiller(&I,n,bucketMap,bucketOffset, true, true);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -296,7 +264,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
                 int r = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = aCorrToPitzer_[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true, true);
+                aaDpdFiller(p,q,r,s,value);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
@@ -327,6 +295,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_AB_TPDM, tolerance_, 1, 0);
+        DPDFillerFunctor abDpdFiller(&I,n,bucketMap,bucketOffset, true, false);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -342,7 +311,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
                 int r = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true, false);
+                abDpdFiller(p,q,r,s,value);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
@@ -373,6 +342,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
         IWL *iwl = new IWL(psio_.get(), PSIF_MO_BB_TPDM, tolerance_, 1, 0);
+        DPDFillerFunctor bbDpdFiller(&I,n,bucketMap,bucketOffset, true, true);
 
         Label *lblptr = iwl->labels();
         Value *valptr = iwl->values();
@@ -388,7 +358,7 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
                 int r = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 int s = bCorrToPitzer_[(int) lblptr[labelIndex++]];
                 double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value, true, true);
+                bbDpdFiller(p,q,r,s,value);
             } /* end loop through current buffer */
         } while(!lastbuf); /* end loop over reading buffers */
         iwl->set_keep_flag(1);
@@ -405,7 +375,6 @@ IntegralTransform::presort_mo_tpdm_unrestricted()
     /* Get rid of the input integral file */
     psio_->open(PSIF_MO_BB_TPDM, PSIO_OPEN_OLD);
     psio_->close(PSIF_MO_BB_TPDM, keepIwlMoTpdm_);
-
 
     free_int_matrix(bucketMap);
 

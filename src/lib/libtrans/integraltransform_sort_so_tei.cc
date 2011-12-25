@@ -6,6 +6,7 @@
 #include <libiwl/iwl.hpp>
 #include <libmints/matrix.h>
 #include "psifiles.h"
+#include "integraltransform_functors.h"
 #include "mospace.h"
 #define EXTERN
 #include <libdpd/dpd.gbl>
@@ -165,44 +166,64 @@ IntegralTransform::presort_so_tei()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
-        IWL *iwl = new IWL(psio_.get(), soIntFile, tolerance_, 1, 1);
+//        IWL *iwl = new IWL(psio_.get(), soIntFile, tolerance_, 1, 1);
 
-        Label *lblptr = iwl->labels();
-        Value *valptr = iwl->values();
-        int lastbuf   = iwl->last_buffer();
+//        Label *lblptr = iwl->labels();
+//        Value *valptr = iwl->values();
+//        int lastbuf   = iwl->last_buffer();
 
-        for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
-            int labelIndex = 4*index;
-            int p = abs((int) lblptr[labelIndex++]);
-            int q = (int) lblptr[labelIndex++];
-            int r = (int) lblptr[labelIndex++];
-            int s = (int) lblptr[labelIndex++];
-            double value = (double) valptr[index];
-            idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-            if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
-                build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-                                   aFzcOp, bFzcOp, aD, bD, aFock, bFock);
-        } /* end loop through current buffer */
+//        for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
+//            int labelIndex = 4*index;
+//            int p = abs((int) lblptr[labelIndex++]);
+//            int q = (int) lblptr[labelIndex++];
+//            int r = (int) lblptr[labelIndex++];
+//            int s = (int) lblptr[labelIndex++];
+//            double value = (double) valptr[index];
+//            idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
+//            if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
+//                build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
+//                                   aFzcOp, bFzcOp, aD, bD, aFock, bFock);
+//        } /* end loop through current buffer */
 
-        /* Now run through the rest of the buffers in the file */
-        while(!lastbuf){
-            iwl->fetch();
-            lastbuf = iwl->last_buffer();
-            for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
-                int labelIndex = 4*index;
-                int p = abs((int) lblptr[labelIndex++]);
-                int q = (int) lblptr[labelIndex++];
-                int r = (int) lblptr[labelIndex++];
-                int s = (int) lblptr[labelIndex++];
-                double value = (double) valptr[index];
-                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-                if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
-                    build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-                                       aFzcOp, bFzcOp, aD, bD, aFock, bFock);
-            } /* end loop through current buffer */
-        } /* end loop over reading buffers */
-        iwl->set_keep_flag(1);
+//        /* Now run through the rest of the buffers in the file */
+//        while(!lastbuf){
+//            iwl->fetch();
+//            lastbuf = iwl->last_buffer();
+//            for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
+//                int labelIndex = 4*index;
+//                int p = abs((int) lblptr[labelIndex++]);
+//                int q = (int) lblptr[labelIndex++];
+//                int r = (int) lblptr[labelIndex++];
+//                int s = (int) lblptr[labelIndex++];
+//                double value = (double) valptr[index];
+//                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
+//                if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
+//                    build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
+//                                       aFzcOp, bFzcOp, aD, bD, aFock, bFock);
+//            } /* end loop through current buffer */
+//        } /* end loop over reading buffers */
+//        iwl->set_keep_flag(1);
+
+        DPDFillerFunctor dpdfiller(&I,n,bucketMap,bucketOffset, false, true);
+        NullFunctor null;
+        IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, tolerance_, 1, 1);
+        // In the functors below, we only want to build the Fock matrix on the first pass
+        if(transformationType_ == Restricted){
+            FrozenCoreAndFockUnrestrictedFunctor fock(aD, bD, aFzcD, bFzcD,
+                                                      aFock, bFock, aFzcOp, bFzcOp);
+            if(n)
+                iwl_integrals(iwl, dpdfiller, fock);
+            else
+                iwl_integrals(iwl, dpdfiller, null);
+        }else{
+            FrozenCoreAndFockRestrictedFunctor fock(aD, aFzcD,aFock,aFzcOp);
+            if(n)
+                iwl_integrals(iwl, dpdfiller, fock);
+            else
+                iwl_integrals(iwl, dpdfiller, null);
+        }
         delete iwl;
+
 
         for(int h=0; h < nirreps_; ++h) {
             if(bucketSize[n][h])
@@ -364,385 +385,4 @@ IntegralTransform::presort_so_tei()
     psio_->close(PSIF_SO_PRESORT, 1);
 }
 
-/**
- * Builds the frozen core operator and Fock matrix using the integral currently
- * in memory. N.B. all matrices are passed in lower triangular array form.
- *
- * @param p - the first index in the integral
- * @param q - the second index in the integral
- * @param r - the third index in the integral
- * @param s - the fourth index in the integral
- * @param value - the integral (pq|rs)
- * @param aFzcD - the alpha frozen core density
- * @param bFzcD - the beta frozen core density
- * @param aFzcOp - the alpha frozen core operator
- * @param bFzcOp - the beta frozen core operator
- * @param aD - the alpha density
- * @param bD - the beta density
- * @param aFock - the alpha Fock matrix
- * @param bFock - the beta Fock matrix
- */
-void
-IntegralTransform::build_fzc_and_fock(int p, int q, int r, int s, double value,
-                  double *aFzcD, double *bFzcD, double *aFzcOp, double *bFzcOp,
-                  double *aD, double *bD, double *aFock, double *bFock)
-{
-    int al[8], bl[8], cl[8], dl[8];
-    int dum, found;
-
-    if(transformationType_ == Restricted) {
-        int a = al[0] = p;
-        int b = bl[0] = q;
-        int c = cl[0] = r;
-        int d = dl[0] = s;
-        int ab = INDEX(a,b);
-        int cd = INDEX(c,d);
-        int bc = INDEX(b,c);
-        int ad = INDEX(a,d);
-        aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-        aFock[cd]  += 2.0 * aD[ab] * value;
-        if(b >= c){
-            aFzcOp[bc] -= aFzcD[ad] * value;
-            aFock[bc]  -= aD[ad] * value;
-        }
-
-        a = al[1] = q;
-        b = bl[1] = p;
-        c = cl[1] = r;
-        d = dl[1] = s;
-        if(!(a==al[0] && b==bl[0] && c==cl[0] && d==dl[0])) {
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-
-        a = al[2] = p;
-        b = bl[2] = q;
-        c = cl[2] = s;
-        d = dl[2] = r;
-        for(dum=0,found=0; dum < 2 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-
-        a = al[3] = q;
-        b = bl[3] = p;
-        c = cl[3] = s;
-        d = dl[3] = r;
-        for(dum=0,found=0; dum < 3 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-
-        a = al[4] = r;
-        b = bl[4] = s;
-        c = cl[4] = p;
-        d = dl[4] = q;
-        for(dum=0,found=0; dum < 4 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-
-        a = al[5] = r;
-        b = bl[5] = s;
-        c = cl[5] = q;
-        d = dl[5] = p;
-        for(dum=0,found=0; dum < 5 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found) {
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-
-        a = al[6] = s;
-        b = bl[6] = r;
-        c = cl[6] = p;
-        d = dl[6] = q;
-        for(dum=0, found=0; dum < 6 && !found; ++dum)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-
-        a = al[7] = s;
-        b = bl[7] = r;
-        c = cl[7] = q;
-        d = dl[7] = p;
-        for(dum=0,found=0; dum < 7 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += 2.0 * aFzcD[ab] * value;
-                aFock[cd]  += 2.0 * aD[ab] * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-            }
-        }
-    }else {
-        /* Unrestricted */
-        int a = al[0] = p;
-        int b = bl[0] = q;
-        int c = cl[0] = r;
-        int d = dl[0] = s;
-        int ab = INDEX(a,b);
-        int cd = INDEX(c,d);
-        int bc = INDEX(b,c);
-        int ad = INDEX(a,d);
-        aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-        bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-        aFock[cd]  += (aD[ab] + bD[ab]) * value;
-        bFock[cd]  += (aD[ab] + bD[ab]) * value;
-        if(b >= c) {
-            aFzcOp[bc] -= aFzcD[ad] * value;
-            aFock[bc]  -= aD[ad] * value;
-            bFzcOp[bc] -= bFzcD[ad] * value;
-            bFock[bc]  -= bD[ad] * value;
-        }
-
-        a = al[1] = q;
-        b = bl[1] = p;
-        c = cl[1] = r;
-        d = dl[1] = s;
-        if(!(a==al[0] && b==bl[0] && c==cl[0] && d==dl[0])){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd] += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd] += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-
-        a = al[2] = p;
-        b = bl[2] = q;
-        c = cl[2] = s;
-        d = dl[2] = r;
-        for(dum=0,found=0; dum < 2 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd] += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd] += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-
-        a = al[3] = q;
-        b = bl[3] = p;
-        c = cl[3] = s;
-        d = dl[3] = r;
-        for(dum=0,found=0; dum < 3 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd]  += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd]  += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-
-        a = al[4] = r;
-        b = bl[4] = s;
-        c = cl[4] = p;
-        d = dl[4] = q;
-        for(dum=0,found=0; dum < 4 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd]  += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd]  += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-
-        a = al[5] = r;
-        b = bl[5] = s;
-        c = cl[5] = q;
-        d = dl[5] = p;
-        for(dum=0,found=0; dum < 5 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd]  += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd]  += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-
-        a = al[6] = s;
-        b = bl[6] = r;
-        c = cl[6] = p;
-        d = dl[6] = q;
-        for(dum=0,found=0; dum < 6 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found) {
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd]  += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd]  += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-
-        a = al[7] = s;
-        b = bl[7] = r;
-        c = cl[7] = q;
-        d = dl[7] = p;
-        for(dum=0,found=0; dum < 7 && !found; dum++)
-            if(a==al[dum] && b==bl[dum] && c==cl[dum] && d==dl[dum]) found=1;
-        if(!found){
-            ab = INDEX(a,b);
-            cd = INDEX(c,d);
-            bc = INDEX(b,c);
-            ad = INDEX(a,d);
-            if(c >= d){
-                aFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                aFock[cd]  += (aD[ab] + bD[ab]) * value;
-                bFzcOp[cd] += (aFzcD[ab] + bFzcD[ab]) * value;
-                bFock[cd]  += (aD[ab] + bD[ab]) * value;
-            }
-            if(b >= c){
-                aFzcOp[bc] -= aFzcD[ad] * value;
-                aFock[bc]  -= aD[ad] * value;
-                bFzcOp[bc] -= bFzcD[ad] * value;
-                bFock[bc]  -= bD[ad] * value;
-            }
-        }
-    }
-}
 
