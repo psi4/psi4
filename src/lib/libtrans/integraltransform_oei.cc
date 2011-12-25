@@ -161,6 +161,7 @@ IntegralTransform::trans_one(int m, int n, double *input, double *output,
 void
 IntegralTransform::generate_oei()
 {
+#if 0
     // Set aside some memory for the frozen core density and frozen core operator
     double *aFzcD  = init_array(nTriSo_);
     double *aFzcOp = init_array(nTriSo_);
@@ -384,4 +385,5 @@ IntegralTransform::generate_oei()
     }
 
     dpd_set_default(currentActiveDPD);
+#endif
 }

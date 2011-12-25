@@ -179,7 +179,7 @@ IntegralTransform::backtransform_density()
             print_array(tempMo, nmo_, outfile);
         }
         for(int h = 0, moOffset = 0, soOffset = 0; h < nirreps_; ++h){
-            double **pC = Cb_->pointer(h);
+            double **pC = Ca_->pointer(h);
             trans_one(mopi_[h], sopi_[h], tempMo, tempSo, pC, moOffset, &(order[soOffset]), true);
             soOffset += sopi_[h];
             moOffset += mopi_[h];

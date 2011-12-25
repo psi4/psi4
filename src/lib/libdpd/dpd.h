@@ -48,7 +48,7 @@ typedef struct {
   int **start13;    /* returns the starting row of irrep matrix h for orbital index p */
 } dpdparams4;
 
-typedef struct {
+typedef struct _dpdfile4 {
   int dpdnum;                         /* dpd structure reference */
   char label[PSIO_KEYLEN];
   int filenum;

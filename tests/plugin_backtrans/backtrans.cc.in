@@ -30,7 +30,7 @@ read_options(std::string name, Options &options)
 }
 
 extern "C" PsiReturnType
-backtrans_test(Options &options)
+plugin_backtrans(Options &options)
 {
     dpdbuf4 I, G;
     int print = options.get_int("PRINT");
