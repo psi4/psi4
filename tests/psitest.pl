@@ -40,9 +40,9 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 @PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
 @PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2",
 "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "ccsd", "ccsd(t)", 
-"detci", "eom_ccsd", "eom-ccsd");
-@PSITEST_GRADIENTS = ("scf", "ccsd", "mp2");
-@PSITEST_RESPONSE = ("ccsd");
+"detci", "eom_ccsd", "eom-ccsd", "bccd", "bccd_t");
+@PSITEST_GRADIENTS = ("scf", "ccsd", "mp2", "eom_ccsd", "eom-ccsd");
+@PSITEST_RESPONSE = ("ccsd", "cc2");
 
 $PSITEST_ETOL = 10**-7;           # Default test criterion for energies
 $PSITEST_ENUCTOL = 10**-13;       # Check nuclear repulsion energy tighter than other energies

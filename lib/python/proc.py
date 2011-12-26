@@ -163,6 +163,24 @@ def run_ccsd(name, **kwargs):
 
     return returnvalue
 
+def run_cc3(name, **kwargs):
+
+    if (name.lower() == 'cc3'):
+        PsiMod.set_global_option('WFN', 'CC3')
+
+    # Bypass routine scf if user did something special to get it to converge
+    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+        run_scf("scf", **kwargs)
+
+    PsiMod.transqt2()
+    PsiMod.ccsort()
+    returnvalue = PsiMod.ccenergy()
+
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
+
+    return returnvalue
+
 def run_ccsd_gradient(name, **kwargs):
 
     run_ccsd(name, **kwargs)
