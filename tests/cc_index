@@ -45,6 +45,8 @@ et al., JCP 104, 8007 (1996).
 
 cc33: UHF-CC3/cc-pVDZ energy of H2O+.
 
+cc35: ROHF-CC3/cc-pVDZ energy of H2O+.
+
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
 
