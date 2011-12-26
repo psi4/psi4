@@ -181,6 +181,8 @@ IntegralTransform::initialize()
 {
     process_spaces();
 
+    tpdm_buffer_ = 0;
+
     // Set up the DPD library
     // TODO implement caching of files
     int numSpaces = spacesUsed_.size();
@@ -273,6 +275,8 @@ IntegralTransform::~IntegralTransform()
         free(cacheFiles_);
         free(zeros_);
     }
+    if(tpdm_buffer_)
+        delete [] tpdm_buffer_;
 }
 
 void IntegralTransform::check_initialized()
