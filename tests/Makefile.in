@@ -5,7 +5,7 @@
 #  This is probably not the final solution:
 maddness_subdirs = dfmp2_1 dfmp2_2
 
-cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc8 cc8a cc9 cc12 cc13 cc17 cc18 cc19 cc22 cc28 cc29 cc30 cc31 cc32 cc33 cc52 #cc13 cc5 these should be restored when fixed
+cc_subdirs = cc1 cc2 cc4 cc4a cc5a cc8 cc8a cc9 cc12 cc13 cc17 cc18 cc19 cc22 cc28 cc29 cc30 cc31 cc32 cc33 cc35 cc52 #cc13 cc5 these should be restored when fixed
 
 rb_subdirs = 
 
