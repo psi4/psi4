@@ -40,6 +40,11 @@ length, omega = (633 355 nm)
 cc31: RHF-CCSD-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
 both (length and velocity), omega = (633 355 nm)
 
+cc32: RHF-CC3/cc-pVDZ energy of H2O to match value from Table III of Olsen
+et al., JCP 104, 8007 (1996).
+
+cc33: UHF-CC3/cc-pVDZ energy of H2O+.
+
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
 
