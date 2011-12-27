@@ -202,9 +202,37 @@ def run_ccsd_t(name, **kwargs):
     # automatically handles cctriples.
     return run_ccsd(name, **kwargs)
 
+def run_bccd(name, **kwargs):
+
+    if (name.lower() == 'bccd'):
+        PsiMod.set_global_option('WFN', 'BCCD')
+
+    # Bypass routine scf if user did something special to get it to
+    # converge
+    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+        run_scf("scf", **kwargs)
+
+    PsiMod.set_global_option('DELETE_TEI', 'false')
+
+    while True:
+      PsiMod.transqt2()
+      PsiMod.ccsort()
+      returnvalue = PsiMod.ccenergy()
+      PsiMod.print_out("Brueckner convergence check: %d\n" % PsiMod.get_variable("BRUECKNER CONVERGED"))
+      if (PsiMod.get_variable("BRUECKNER CONVERGED") == True):
+        break
+
+    return returnvalue
+
+def run_bccd_t(name, **kwargs):
+
+    PsiMod.set_global_option('WFN', 'BCCD_T')
+    run_bccd(name, **kwargs)
+
+    return PsiMod.cctriples()
+
 def run_ccsd_response(name, **kwargs):
 
-    run_ccsd("ccsd", **kwargs)
     PsiMod.set_global_option('WFN', 'CCSD')
 
     PsiMod.cchbar()
