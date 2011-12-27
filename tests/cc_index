@@ -22,6 +22,12 @@ cc9: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
 
 cc12: RHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in H2O.
 
+cc15: RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+
+cc16: UHF-B-CCD(T)/cc-pVDZ 2B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+
+cc17: UHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in 3B1 CH2.
+
 cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
 
 cc19: RHF-CCSD-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.

@@ -26,6 +26,8 @@ procedures = {
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'cc3'           : run_cc3,
+            'bccd'          : run_bccd,
+            'bccd(t)'       : run_bccd_t,
             'eom-ccsd'      : run_eom_ccsd,
             'detci'         : run_detci,
             'mp'            : run_detci,  # arbitrary order mp(n)
