@@ -113,16 +113,12 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
         size_t index = 0;
         char *toc = new char[40];
         sprintf(toc, "SO_TPDM_FOR_SHELL_%d_%d_%d_%d", ish, jsh, ksh, lsh);
-        fprintf(outfile, "Computed size %ld as %ld\n", shell_count, tpdm_buffer_sizes_[shell_count]);
-        fflush(outfile);
         size_t buffer_size = tpdm_buffer_sizes_[shell_count];
         ++shell_count;
-        if(psio_->tocscan(PSIF_AO_TPDM, toc)){
+        if(psio_->tocscan(PSIF_AO_TPDM, toc))
             psio_->read_entry(PSIF_AO_TPDM, toc, (char*)tpdm_buffer_, buffer_size*sizeof(double));
-        }else{
-            fprintf(outfile, "allocing instead of reading\n");
+        else
             ::memset((void*)tpdm_buffer_, '\0', buffer_size*sizeof(double));
-        }
 
         // The starting orbital for each irrep can be grabbed from DPD
         int *sym_offsets = D->params->poff;
