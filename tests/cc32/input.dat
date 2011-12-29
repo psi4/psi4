@@ -1,0 +1,21 @@
+# H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+molecule h2o {
+ units bohr
+ O 0.0  0.00000000 -0.00900000
+ H 0.0 -1.51526300 -1.05889800
+ H 0.0  1.51526300 -1.05889800
+}
+
+set {
+ wfn cc3
+ basis cc-pVDZ
+}
+
+energy("cc3")
+
+escf = -76.024038511513183  #TEST
+ecc3 = -76.241273893572554  #TEST
+compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
+compare_values(ecc3, get_variable("CC3 TOTAL ENERGY"), 7, "CC3 energy") #TEST
+
+clean()

@@ -1085,7 +1085,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
     /*- The wavefunction type -*/
-    options.add_str("WFN", "");
+    options.add_str("WFN", "SCF");
     /*- The number of threads to use on multi-core machines -*/
     options.add_int("NTHREADS",1);
     /*- The reference wavefunction type -*/

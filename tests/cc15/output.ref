@@ -1,0 +1,1767 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+                         Additional Contributions by
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+
+molecule h2o {
+    o
+    h 1 0.97
+    h 1 0.97 2 103.0
+}
+
+set {
+   wfn bccd_t
+   basis 6-31G**
+   freeze_core true
+}
+
+energy("bccd(t)")
+
+escf = -76.021997876298414 #TEST
+ebccd = -76.228456597086762 #TEST
+ebccd_t = -76.231452929871523 #TEST
+compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
+compare_values(ebccd, get_variable("CCSD TOTAL ENERGY"), 7, "B-CCD energy") #TEST
+compare_values(ebccd_t, get_variable("CCSD(T) TOTAL ENERGY"), 7, "B-CCD(T) energy") #TEST
+
+clean()
+--------------------------------------------------------------------------
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:37 2011
+
+	There are an even number of electrons - assuming singlet.
+	Specify the multiplicity with the MULTP option in the
+	input if this is incorrect
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000    -0.067578587269
+           H          0.000000000000    -0.759129912147     0.536260610269
+           H          0.000000000000     0.759129912147     0.536260610269
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.077238846803626
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: 6-31G** <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 25
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: false
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 2.2308643074E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.67612875350986
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        12      12       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      25      25       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             25
+      Number of atomic orbitals:        25
+      Number of basis functions:        25
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  12    2    4    7 ]
+
+      Overlap, kinetic, potential, dipole, and quadrupole integrals
+        stored in file 35.
+
+      Computing two-electron integrals...done
+      Computed 13617 non-zero two-electron integrals.
+        Stored in file 33.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.29457522228250   -9.61845e+00   0.00000e+00 
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    0,    1 ]
+   @RHF iter   2:   -71.40214895706015   -3.10757e+00   5.21557e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.76849948867111   -4.36635e+00   4.95640e-01 DIIS
+   @RHF iter   4:   -76.00465640217134   -2.36157e-01   1.70838e-02 DIIS
+   @RHF iter   5:   -76.02157593708428   -1.69195e-02   7.74804e-03 DIIS
+   @RHF iter   6:   -76.02195845070852   -3.82514e-04   1.22994e-03 DIIS
+   @RHF iter   7:   -76.02199663419839   -3.81835e-05   5.22673e-04 DIIS
+   @RHF iter   8:   -76.02199780247328   -1.16827e-06   8.31744e-05 DIIS
+   @RHF iter   9:   -76.02199787415826   -7.16850e-08   2.41323e-05 DIIS
+   @RHF iter  10:   -76.02199787586636   -1.70810e-09   3.82411e-06 DIIS
+   @RHF iter  11:   -76.02199787587350   -7.13385e-12   1.86348e-07 DIIS
+   @RHF iter  12:   -76.02199787587375   -2.55795e-13   3.72484e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.563756     2A1    -1.335128     1B2    -0.693868  
+	   3A1    -0.569546     1B1    -0.496894  
+
+	Virtual:                                                              
+
+	   4A1     0.209148     2B2     0.301191     3B2     0.992987  
+	   5A1     1.080901     6A1     1.131133     2B1     1.168613  
+	   4B2     1.294487     7A1     1.418369     1A2     1.805555  
+	   8A1     1.805556     3B1     1.919426     9A1     2.554725  
+	   5B2     2.571406     6B2     2.778746     2A2     2.955797  
+	   4B1     2.985114    10A1     3.349725    11A1     3.681198  
+	   7B2     3.913090    12A1     4.093637  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02199787587375
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     1.0051
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.1315
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.8736     Total:     0.8736
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:     2.2205     Total:     2.2205
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:38 2011
+Module time:
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.15 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:38 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.282926143713688
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:38 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:38 2011
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.028 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.007 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.022 (MB)
+	Total:                                     0.009 (MW) /      0.068 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Total:                                     0.002 (MW) /      0.014 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.44174977815008
+	Two-electron (AA) energy     =      6.84750155992607
+	Two-electron (BB) energy     =      6.84750155992607
+	Two-electron (AB) energy     =     10.77793763926029
+	Two-electron energy          =     17.62543919918636
+	Frozen-core energy (transqt) =    -61.28292614371369
+	Reference energy             =    -76.02199787587378
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:38 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.19 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:38 2011
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.021997875873780
+
+	Input parameters:
+	-----------------
+	Wave function   =   BCCD_T
+	Reference wfn   =     RHF
+	Brueckner conv. =     1.0e-05
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.197644394863269    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.202143296437034    2.740e-02    0.005039    0.008933    0.008933
+     2        -0.206071517402482    9.799e-03    0.005789    0.010403    0.010403
+     3        -0.206590659488420    2.784e-03    0.006384    0.011997    0.011997
+     4        -0.206595694724472    6.510e-04    0.006448    0.012319    0.012319
+     5        -0.206609965277473    2.065e-04    0.006492    0.012517    0.012517
+     6        -0.206606026519743    6.471e-05    0.006508    0.012588    0.012588
+     7        -0.206605498631884    1.560e-05    0.006512    0.012607    0.012607
+     8        -0.206605469118333    2.911e-06    0.006512    0.012610    0.012610
+     9        -0.206605394277547    6.983e-07    0.006512    0.012610    0.012610
+    10        -0.206605413922410    1.484e-07    0.006512    0.012610    0.012610
+    11        -0.206605412541831    2.901e-08    0.006512    0.012610    0.012610
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          1   0         0.0109876373
+	          2  11        -0.0066311255
+	          3  14        -0.0063228335
+	          3  18         0.0053909625
+	          3  16         0.0049042302
+	          0   2         0.0042702433
+	          1   5         0.0040627290
+	          0   0        -0.0025360433
+	          0   7         0.0023966487
+	          1   1         0.0022623082
+
+	Largest TIjAb Amplitudes:
+	  2   2  11  11        -0.0519230105
+	  3   3  14  14        -0.0394264708
+	  1   1   2   2        -0.0299245315
+	  3   3  15  15        -0.0287611319
+	  1   2   2  11         0.0252619140
+	  2   1  11   2         0.0252619140
+	  2   3  11  16        -0.0248488620
+	  3   2  16  11        -0.0248488620
+	  3   3  16  16        -0.0246375918
+	  2   3  11  14        -0.0244629910
+
+	SCF energy       (chkpt)              =  -76.021997875873751
+	Reference energy (file100)            =  -76.021997875873780
+
+	Opposite-spin MP2 correlation energy  =   -0.148071798946403
+	Same-spin MP2 correlation energy      =   -0.049572595916867
+	MP2 correlation energy                =   -0.197644394863269
+      * MP2 total energy                      =  -76.219642270737054
+
+	Opposite-spin CCSD correlation energy =   -0.162686588600853
+	Same-spin CCSD correlation energy     =   -0.043918823867352
+	CCSD correlation energy               =   -0.206605412541831
+      * CCSD total energy                     =  -76.228603288415613
+
+	Rotating orbitals.  Maximum T1 =  0.010987637280
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:39 2011
+Module time:
+	user time   =       0.31 seconds =       0.01 minutes
+	system time =       0.29 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.52 seconds =       0.01 minutes
+	system time =       0.36 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+Brueckner convergence check: 0
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:39 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.282926143713730
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:39 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.54 seconds =       0.01 minutes
+	system time =       0.37 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:39 2011
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.028 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.007 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.022 (MB)
+	Total:                                     0.009 (MW) /      0.068 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Total:                                     0.002 (MW) /      0.014 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.37683511855388
+	Two-electron (AA) energy     =      6.82356643804687
+	Two-electron (BB) energy     =      6.82356643804687
+	Two-electron (AB) energy     =     10.73799825847977
+	Two-electron energy          =     17.56156469652664
+	Frozen-core energy (transqt) =    -61.28292614371373
+	Reference energy             =    -76.02095771893735
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:40 2011
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.57 seconds =       0.01 minutes
+	system time =       0.41 seconds =       0.01 minutes
+	total time  =          3 seconds =       0.05 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:40 2011
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.020957718937353
+
+	Input parameters:
+	-----------------
+	Wave function   =   BCCD_T
+	Reference wfn   =     RHF
+	Brueckner conv. =     1.0e-05
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     Yes
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	Using old T1 amplitudes.
+	Using old T2 amplitudes.
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.206619913626567    2.901e-08    0.006512    0.012610    0.012610
+     1        -0.208158705900090    1.791e-02    0.001416    0.002628    0.002628
+     2        -0.207540964346457    3.231e-03    0.000796    0.001620    0.001620
+     3        -0.207503261036314    1.389e-03    0.000697    0.001343    0.001343
+     4        -0.207489378627171    4.047e-04    0.000705    0.001319    0.001319
+     5        -0.207487864214759    1.398e-04    0.000717    0.001300    0.001300
+     6        -0.207489054473558    2.668e-05    0.000719    0.001293    0.001293
+     7        -0.207489519116314    5.614e-06    0.000719    0.001290    0.001290
+     8        -0.207489597129008    1.033e-06    0.000719    0.001290    0.001290
+     9        -0.207489619319163    2.069e-07    0.000719    0.001289    0.001289
+    10        -0.207489621303450    4.396e-08    0.000719    0.001289    0.001289
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          3  14         0.0010671375
+	          2  11         0.0008203112
+	          1   0        -0.0007805575
+	          3  16         0.0006194978
+	          1   1        -0.0005972843
+	          0   0         0.0005007892
+	          1   2        -0.0004670403
+	          3  15         0.0003648848
+	          0   2        -0.0003286297
+	          0   3        -0.0002743890
+
+	Largest TIjAb Amplitudes:
+	  2   2  11  11        -0.0518604740
+	  3   3  14  14        -0.0396128030
+	  3   3  15  15        -0.0286102239
+	  1   1   2   2        -0.0283453965
+	  2   3  11  16        -0.0247639981
+	  3   2  16  11        -0.0247639981
+	  3   3  16  16        -0.0245348854
+	  2   3  11  14        -0.0244863022
+	  3   2  14  11        -0.0244863022
+	  1   2   2  11         0.0243032518
+
+	SCF energy       (chkpt)              =  -76.021997875873751
+	Reference energy (file100)            =  -76.020957718937353
+
+	Opposite-spin MP2 correlation energy  =   -0.149551675956208
+	Same-spin MP2 correlation energy      =   -0.049953420901537
+	MP2 correlation energy                =   -0.200478059270546
+      * MP2 total energy                      =  -76.221435778207905
+
+	Opposite-spin CCSD correlation energy =   -0.163426968761263
+	Same-spin CCSD correlation energy     =   -0.044001389714668
+	CCSD correlation energy               =   -0.207489621303450
+      * CCSD total energy                     =  -76.228447340240805
+
+	Rotating orbitals.  Maximum T1 =  0.001067137515
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:41 2011
+Module time:
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.27 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.87 seconds =       0.01 minutes
+	system time =       0.68 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+Brueckner convergence check: 0
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:41 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.282926143713674
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:41 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.89 seconds =       0.01 minutes
+	system time =       0.69 seconds =       0.01 minutes
+	total time  =          4 seconds =       0.07 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:41 2011
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.028 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.007 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.022 (MB)
+	Total:                                     0.009 (MW) /      0.068 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Total:                                     0.002 (MW) /      0.014 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.39374731636440
+	Two-electron (AA) energy     =      6.83025702916887
+	Two-electron (BB) energy     =      6.83025702916887
+	Two-electron (AB) energy     =     10.74811623037981
+	Two-electron energy          =     17.57837325954868
+	Frozen-core energy (transqt) =    -61.28292614371367
+	Reference energy             =    -76.02106135372577
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:42 2011
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.92 seconds =       0.02 minutes
+	system time =       0.72 seconds =       0.01 minutes
+	total time  =          5 seconds =       0.08 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:42 2011
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.021061353725770
+
+	Input parameters:
+	-----------------
+	Wave function   =   BCCD_T
+	Reference wfn   =     RHF
+	Brueckner conv. =     1.0e-05
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     Yes
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	Using old T1 amplitudes.
+	Using old T2 amplitudes.
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.207387291887346    4.396e-08    0.000719    0.001289    0.001289
+     1        -0.207363623383878    2.974e-03    0.000240    0.000407    0.000407
+     2        -0.207394098937518    4.230e-04    0.000149    0.000232    0.000232
+     3        -0.207395135636023    1.227e-04    0.000164    0.000266    0.000266
+     4        -0.207397527333281    2.751e-05    0.000166    0.000275    0.000275
+     5        -0.207397339620374    9.153e-06    0.000167    0.000277    0.000277
+     6        -0.207397324874090    2.583e-06    0.000167    0.000277    0.000277
+     7        -0.207397328315398    7.991e-07    0.000167    0.000277    0.000277
+     8        -0.207397324915289    1.421e-07    0.000167    0.000277    0.000277
+     9        -0.207397325793846    2.812e-08    0.000167    0.000277    0.000277
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2  11        -0.0002242089
+	          3  14        -0.0002139720
+	          3  16        -0.0001535122
+	          1   0         0.0001487747
+	          1   1         0.0001455430
+	          1   2         0.0001355522
+	          0   0        -0.0001095351
+	          3  15        -0.0000784652
+	          0   3         0.0000757666
+	          0   2         0.0000756056
+
+	Largest TIjAb Amplitudes:
+	  2   2  11  11        -0.0518687458
+	  3   3  14  14        -0.0395680569
+	  1   1   2   2        -0.0287466226
+	  3   3  15  15        -0.0286312434
+	  2   3  11  16        -0.0247759632
+	  3   2  16  11        -0.0247759632
+	  3   3  16  16        -0.0245606637
+	  1   2   2  11         0.0245488359
+	  2   1  11   2         0.0245488359
+	  2   3  11  14        -0.0244702921
+
+	SCF energy       (chkpt)              =  -76.021997875873751
+	Reference energy (file100)            =  -76.021061353725770
+
+	Opposite-spin MP2 correlation energy  =   -0.149499797545078
+	Same-spin MP2 correlation energy      =   -0.049951728612490
+	MP2 correlation energy                =   -0.200271569851765
+      * MP2 total energy                      =  -76.221332923577535
+
+	Opposite-spin CCSD correlation energy =   -0.163402263029037
+	Same-spin CCSD correlation energy     =   -0.044003138845686
+	CCSD correlation energy               =   -0.207397325793846
+      * CCSD total energy                     =  -76.228458679519619
+
+	Rotating orbitals.  Maximum T1 =  0.000224208860
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:43 2011
+Module time:
+	user time   =       0.27 seconds =       0.00 minutes
+	system time =       0.25 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.20 seconds =       0.02 minutes
+	system time =       0.97 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
+Brueckner convergence check: 0
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:43 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.282926143713702
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:43 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.22 seconds =       0.02 minutes
+	system time =       0.98 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:43 2011
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.028 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.007 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.022 (MB)
+	Total:                                     0.009 (MW) /      0.068 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Total:                                     0.002 (MW) /      0.014 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.38964090485551
+	Two-electron (AA) energy     =      6.82863059834322
+	Two-electron (BB) energy     =      6.82863059834322
+	Two-electron (AB) energy     =     10.74565354816083
+	Two-electron energy          =     17.57428414650405
+	Frozen-core energy (transqt) =    -61.28292614371370
+	Reference energy             =    -76.02104405526154
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:43 2011
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.25 seconds =       0.02 minutes
+	system time =       1.02 seconds =       0.02 minutes
+	total time  =          6 seconds =       0.10 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:43 2011
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.021044055261541
+
+	Input parameters:
+	-----------------
+	Wave function   =   BCCD_T
+	Reference wfn   =     RHF
+	Brueckner conv. =     1.0e-05
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     Yes
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	Using old T1 amplitudes.
+	Using old T2 amplitudes.
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.207412875058014    2.812e-08    0.000167    0.000277    0.000277
+     1        -0.207418853404885    7.046e-04    0.000059    0.000097    0.000097
+     2        -0.207412608474843    9.867e-05    0.000036    0.000057    0.000057
+     3        -0.207412529550394    2.461e-05    0.000039    0.000064    0.000064
+     4        -0.207412045708870    5.130e-06    0.000040    0.000065    0.000065
+     5        -0.207412085605009    1.594e-06    0.000040    0.000066    0.000066
+     6        -0.207412087416090    4.284e-07    0.000040    0.000066    0.000066
+     7        -0.207412086379549    1.480e-07    0.000040    0.000066    0.000066
+     8        -0.207412086972902    3.049e-08    0.000040    0.000066    0.000066
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2  11         0.0000542362
+	          3  14         0.0000502004
+	          3  16         0.0000374275
+	          1   1        -0.0000349956
+	          1   0        -0.0000340879
+	          1   2        -0.0000332309
+	          0   0         0.0000262070
+	          0   3        -0.0000184361
+	          0   2        -0.0000181246
+	          3  15         0.0000177248
+
+	Largest TIjAb Amplitudes:
+	  2   2  11  11        -0.0518669769
+	  3   3  14  14        -0.0395788690
+	  1   1   2   2        -0.0286552420
+	  3   3  15  15        -0.0286265542
+	  2   3  11  16        -0.0247728323
+	  3   2  16  11        -0.0247728323
+	  3   3  16  16        -0.0245540007
+	  1   2   2  11         0.0244931706
+	  2   1  11   2         0.0244931706
+	  2   3  11  14        -0.0244744371
+
+	SCF energy       (chkpt)              =  -76.021997875873751
+	Reference energy (file100)            =  -76.021044055261541
+
+	Opposite-spin MP2 correlation energy  =   -0.149508907153701
+	Same-spin MP2 correlation energy      =   -0.049951603334313
+	MP2 correlation energy                =   -0.200308609327845
+      * MP2 total energy                      =  -76.221352664589389
+
+	Opposite-spin CCSD correlation energy =   -0.163406999263792
+	Same-spin CCSD correlation energy     =   -0.044002967227506
+	CCSD correlation energy               =   -0.207412086972902
+      * CCSD total energy                     =  -76.228456142234450
+
+	Rotating orbitals.  Maximum T1 =  0.000054236191
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:45 2011
+Module time:
+	user time   =       0.23 seconds =       0.00 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
+Total time:
+	user time   =       1.49 seconds =       0.02 minutes
+	system time =       1.23 seconds =       0.02 minutes
+	total time  =          8 seconds =       0.13 minutes
+Brueckner convergence check: 0
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:45 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.282926143713723
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:45 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.51 seconds =       0.03 minutes
+	system time =       1.24 seconds =       0.02 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:45 2011
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.028 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.007 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.022 (MB)
+	Total:                                     0.009 (MW) /      0.068 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Total:                                     0.002 (MW) /      0.014 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.39062761281815
+	Two-electron (AA) energy     =      6.82902132563471
+	Two-electron (BB) energy     =      6.82902132563471
+	Two-electron (AB) energy     =     10.74624535407414
+	Two-electron energy          =     17.57526667970885
+	Frozen-core energy (transqt) =    -61.28292614371372
+	Reference energy             =    -76.02104823001940
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:45 2011
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.54 seconds =       0.03 minutes
+	system time =       1.28 seconds =       0.02 minutes
+	total time  =          8 seconds =       0.13 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:45 2011
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.021048230019403
+
+	Input parameters:
+	-----------------
+	Wave function   =   BCCD_T
+	Reference wfn   =     RHF
+	Brueckner conv. =     1.0e-05
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     Yes
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	Using old T1 amplitudes.
+	Using old T2 amplitudes.
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.207408036526107    3.049e-08    0.000040    0.000066    0.000066
+     1        -0.207406947800079    1.681e-04    0.000014    0.000023    0.000023
+     2        -0.207408392125281    2.342e-05    0.000009    0.000014    0.000014
+     3        -0.207408407076746    5.697e-06    0.000009    0.000015    0.000015
+     4        -0.207408519988535    1.174e-06    0.000009    0.000016    0.000016
+     5        -0.207408510771666    3.548e-07    0.000010    0.000016    0.000016
+     6        -0.207408510305687    9.232e-08    0.000010    0.000016    0.000016
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2  11        -0.0000130200
+	          3  14        -0.0000119616
+	          3  16        -0.0000089878
+	          1   1         0.0000083505
+	          1   2         0.0000080068
+	          1   0         0.0000079846
+	          0   0        -0.0000063180
+	          0   3         0.0000044287
+	          0   2         0.0000043339
+	          3  15        -0.0000041499
+
+	Largest TIjAb Amplitudes:
+	  2   2  11  11        -0.0518673961
+	  3   3  14  14        -0.0395762657
+	  1   1   2   2        -0.0286767664
+	  3   3  15  15        -0.0286276571
+	  2   3  11  16        -0.0247735962
+	  3   2  16  11        -0.0247735962
+	  3   3  16  16        -0.0245556256
+	  1   2   2  11         0.0245062924
+	  2   1  11   2         0.0245062924
+	  2   3  11  14        -0.0244734309
+
+	SCF energy       (chkpt)              =  -76.021997875873751
+	Reference energy (file100)            =  -76.021048230019403
+
+	Opposite-spin MP2 correlation energy  =   -0.149506867385667
+	Same-spin MP2 correlation energy      =   -0.049951658641056
+	MP2 correlation energy                =   -0.200299715965847
+      * MP2 total energy                      =  -76.221347945985244
+
+	Opposite-spin CCSD correlation energy =   -0.163405969334114
+	Same-spin CCSD correlation energy     =   -0.044003028466324
+	CCSD correlation energy               =   -0.207408510305687
+      * CCSD total energy                     =  -76.228456740325086
+
+	Rotating orbitals.  Maximum T1 =  0.000013020006
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:46 2011
+Module time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.19 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.74 seconds =       0.03 minutes
+	system time =       1.47 seconds =       0.02 minutes
+	total time  =          9 seconds =       0.15 minutes
+Brueckner convergence check: 0
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:46 2011
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	256.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 25
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -61.282926143713702
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:46 2011
+Module time:
+	user time   =       0.02 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.76 seconds =       0.03 minutes
+	system time =       1.48 seconds =       0.02 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:46 2011
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	BCCD_T
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 25
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   12	    1	    2	    0	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.07723884680362
+	SCF energy          (chkpt) =    -76.02199787587375
+
+	Size of irrep 0 of <ab|cd> integrals:      0.017 (MW) /      0.135 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.043 (MW) /      0.341 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.028 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.007 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.022 (MB)
+	Total:                                     0.009 (MW) /      0.068 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.002 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.000 (MW) /      0.004 (MB)
+	Total:                                     0.002 (MW) /      0.014 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	One-electron energy          =    -41.39039135936029
+	Two-electron (AA) energy     =      6.82892777192539
+	Two-electron (BB) energy     =      6.82892777192539
+	Two-electron (AB) energy     =     10.74610363310722
+	Two-electron energy          =     17.57503140503261
+	Frozen-core energy (transqt) =    -61.28292614371370
+	Reference energy             =    -76.02104725123776
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:46 2011
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       1.80 seconds =       0.03 minutes
+	system time =       1.53 seconds =       0.03 minutes
+	total time  =          9 seconds =       0.15 minutes
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:46 2011
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.021047251237761
+
+	Input parameters:
+	-----------------
+	Wave function   =   BCCD_T
+	Reference wfn   =     RHF
+	Brueckner conv. =     1.0e-05
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     Yes
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	Using old T1 amplitudes.
+	Using old T2 amplitudes.
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.207409451525107    9.232e-08    0.000010    0.000016    0.000016
+     1        -0.207409717169628    4.014e-05    0.000003    0.000006    0.000006
+     2        -0.207409373870081    5.585e-06    0.000002    0.000003    0.000003
+     3        -0.207409370597208    1.342e-06    0.000002    0.000004    0.000004
+     4        -0.207409343978386    2.728e-07    0.000002    0.000004    0.000004
+     5        -0.207409347439292    7.962e-08    0.000002    0.000004    0.000004
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2  11         0.0000031297
+	          3  14         0.0000028421
+	          3  16         0.0000021521
+	          1   1        -0.0000020031
+	          1   2        -0.0000019276
+	          1   0        -0.0000017800
+	          0   0         0.0000015278
+	          0   3        -0.0000010650
+	          0   2        -0.0000010376
+	          3  15         0.0000009831
+
+	Largest TIjAb Amplitudes:
+	  2   2  11  11        -0.0518672944
+	  3   3  14  14        -0.0395768947
+	  1   1   2   2        -0.0286716504
+	  3   3  15  15        -0.0286273928
+	  2   3  11  16        -0.0247734112
+	  3   2  16  11        -0.0247734112
+	  3   3  16  16        -0.0245552330
+	  1   2   2  11         0.0245031756
+	  2   1  11   2         0.0245031756
+	  2   3  11  14        -0.0244736725
+
+	SCF energy       (chkpt)              =  -76.021997875873751
+	Reference energy (file100)            =  -76.021047251237761
+
+	Opposite-spin MP2 correlation energy  =   -0.149507349109661
+	Same-spin MP2 correlation energy      =   -0.049951644583137
+	MP2 correlation energy                =   -0.200301810869295
+      * MP2 total energy                      =  -76.221349062107052
+
+	Opposite-spin CCSD correlation energy =   -0.163406217069758
+	Same-spin CCSD correlation energy     =   -0.044003014287104
+	CCSD correlation energy               =   -0.207409347439292
+      * CCSD total energy                     =  -76.228456598677056
+
+	Brueckner orbitals converged.  Maximum T1 =  0.000003129696
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:47 2011
+Module time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.20 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.98 seconds =       0.03 minutes
+	system time =       1.73 seconds =       0.03 minutes
+	total time  =         10 seconds =       0.17 minutes
+Brueckner convergence check: 1
+
+*** tstart() called on ganymede-2.local
+*** at Tue Dec 27 15:43:47 2011
+
+			**************************
+			*                        *
+			*        CCTRIPLES       *
+			*                        *
+			**************************
+
+
+	Wave function   =    BCCD_T
+	Reference wfn   =      RHF
+
+	Nuclear Rep. energy (chkpt)   =    9.077238846803624
+	SCF energy          (chkpt)   =  -76.021997875873751
+	Reference energy    (file100) =  -76.021047251237761
+	CCSD energy         (file100) =   -0.207409347439292
+	Total CCSD energy   (file100) =  -76.228456598677056
+
+	Number of ijk index combinations: 20
+
+	(T) energy                    =   -0.002996332889595
+      * CCSD(T) total energy          =  -76.231452931566650
+
+
+*** tstop() called on ganymede-2.local at Tue Dec 27 15:43:47 2011
+Module time:
+	user time   =       0.07 seconds =       0.00 minutes
+	system time =       0.07 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       2.05 seconds =       0.03 minutes
+	system time =       1.80 seconds =       0.03 minutes
+	total time  =         10 seconds =       0.17 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!
