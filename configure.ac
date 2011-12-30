@@ -260,6 +260,7 @@ AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_PROGS([QHELPGENERATOR],[qhelpgenerator])
+AC_CHECK_PROGS([DSYMUTIL],[dsymutil])
 AC_CHECK_PROGS(AR,ar,ar)
 AC_ARG_WITH(ar,
 [  --with-ar               Names the archive creator.],
