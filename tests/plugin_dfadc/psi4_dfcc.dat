@@ -16,7 +16,8 @@ set {
     ri_basis_adc aug-cc-pvdz
     guess core
    
-    num_roots 5
+    num_roots 2
+#    do_pr true
     convergence 11
     e_converge 11
     d_converge 11

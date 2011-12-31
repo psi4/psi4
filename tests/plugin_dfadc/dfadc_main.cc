@@ -31,7 +31,7 @@ read_options(std::string name, Options &options){
         /*- Indicates whether three-virtual integral is processed by semi-direct algorithm -*/
         options.add_int("CUTOFF", 2);
         /*- Partial renormalization scheme for the ground state wavefunction -*/
-        options.add_bool("PR", false);
+        options.add_bool("DO_PR", false);
         /*- The DF basis -*/
         options.add_str("RI_BASIS_ADC", "");
     }
