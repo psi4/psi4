@@ -75,6 +75,8 @@ DFADC::init()
     for(int I = 0;I < 3;I++)
         dipole_ints_[I]->transform(occCa_, ao_dipole_ints[I], virCa_);
     
+    unsigned long int free_space = memory_ - 3 * naocc_ * naocc_ * navir_ * (ULI)navir_;
+    if(free_space < 0) throw PSIEXCEPTION("Memory is insufficient.\n");
 } 
 
 void

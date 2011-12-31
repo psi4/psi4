@@ -9,6 +9,22 @@ namespace psi{ namespace plugin_dfadc {
 
 DFADC::DFADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
 {   
+    //
+    // Original references for the ADC(2) theory:
+    //
+    // * J. Schirmer, PRA 26 (1982) 2395.
+    // * A. B. Trofimov, G. Stelter and J. Schirmer, JCP 117 (2002) 6402.
+    //
+    // and so on.
+    //
+    // Remarks from the other groups:
+    //
+    // * C. Haettig, in NIC Series, edited by J. Grotendorst, S. Bleugel, and D. Marx 
+    //   (John von Neumann Institute for Computing, Julich, Switzerland, 2006), Vol. 31, p. 245.
+    // * C. Haettig and K. Hald, PCCP 4 (2002) 2111.
+    // * C. Haettig, Adv. Quantum Chem. 50 (2005) 37.
+    // * D. Kats, D. Usvyat and M. Schuetz, PRA 83 (2011) 062503.
+    //
     init();
     
     conv_      = options_.get_int("NEWTON_CONV");
