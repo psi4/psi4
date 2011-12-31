@@ -13,7 +13,8 @@ namespace psi{ namespace plugin_dfadc {
     
 double 
 DFADC::compute_energy()
-{       
+{   
+    double *rho;
     double **J_mhalf, **Qpia, **Qpij, **Qpab, **Qpai, **Qiap;
     int nQ = ribasis_->nbf();
     
@@ -51,11 +52,11 @@ DFADC::compute_energy()
         double f = 0.0;
         double *mu = init_array(3);
         for(int X = 0;X < 3;X++) {
-            mu[X] = C_DDOT(naocc_*(ULI)navir_,Bcis_[I], 1, dipole_ints_[X]->pointer()[0], 1);
+            C_DGEMM('N', 'T', 1, 1, naocc_*navir_, 1.0, Bcis_[I], naocc_*navir_, dipole_ints_[X]->pointer()[0], naocc_*navir_, 0.0, &(mu[X]), 1);
             f += 4.0 / 3.0 * mu[X] * mu[X] * Ecis_[I];
         }
-        fprintf(outfile, "\tOscillator strength : %10.7f\n", f);
-        fprintf(outfile, "\t[X: %10.7f, Y: %10.7f, Z: %10.7f]\n\n", mu[0]*mu[0], mu[1]*mu[1], mu[2]*mu[2]);
+        fprintf(outfile, "\tZeroth order oscillator strength : %10.7f\n", f);
+        fprintf(outfile, "\t[X^2: %10.7f, Y^2: %10.7f, Z^2: %10.7f]\n\n", mu[0]*mu[0], mu[1]*mu[1], mu[2]*mu[2]);
         free(mu);
         fflush(outfile);
     }
@@ -86,10 +87,12 @@ DFADC::compute_energy()
     free(V);
     free_block(Qiap);
     
+    bool do_PR = options_.get_bool("DO_PR");
     double E_DFMP2 = E_MP2J + E_MP2K;
     fprintf(outfile, "\n\tDF-MP2  J energy   = %14.10f\n", E_MP2J);
     fprintf(outfile, "\tDF-MP2  K energy   = %14.10f\n", E_MP2K);
-    fprintf(outfile, "->\tDF-MP2 energy      = %14.10f\n", E_DFMP2);
+    if(!do_PR) fprintf(outfile, "->");
+    fprintf(outfile, "\tDF-MP2 energy      = %14.10f\n", E_DFMP2);
     fflush(outfile);
 
     // Form X_{ij} and the symmetrized A_{ij} tensors
@@ -111,13 +114,48 @@ DFADC::compute_energy()
                     Kiajb_[i*navir_+a][j*navir_+b] -= Viajb[i*navir_+b][j*navir_+a];
                     Kiajb_[i*navir_+a][j*navir_+b] /= - vire_[a] - vire_[b] + occe_[i] + occe_[j];
                 }
-                            
+
+    if(do_PR) {
+        //
+        // Compute the partially-renormalized MP2 energy and the amplitude
+        // 
+        // References:
+        // * C. E. Dykstra and E. R. Davidson, IJQC 78 (2000) 226.
+        // * Y. Mochizuki and K. Tanaka, CPL 443 (2007) 389.
+        // * M. Saitow and Y. Mochizuki, CPL accepted - in press (2011/12/30). 
+        //
+        double **Kiajb = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
+        C_DCOPY(naocc_*navir_*naocc_*(ULI)navir_, Viajb[0], 1, Kiajb[0], 1);
+        #pragma omp parallel for num_threads(nthread)
+        for(int i = 0;i < naocc_;i++)
+            for(int a = 0;a < navir_;a++)
+                for(int j = 0;j < naocc_;j++)
+                    for(int b = 0;b < navir_;b++)
+                        Kiajb[i*navir_+a][j*navir_+b] /= (occe_[i]+occe_[j]-vire_[a]-vire_[b]);
+        
+        // Form diagonal elements of the second order density matrix in occupied/occupied space
+        rho = init_array(naocc_);
+        for(int i = 0;i < naocc_;i++) 
+            C_DGEMM('N', 'T', 1, 1, navir_*naocc_*navir_, 1.0, Kiajb[i*navir_], navir_*naocc_*navir_, Kiajb_[i*navir_], navir_*naocc_*navir_, 0.0, &rho[i], 1);
+        free_block(Kiajb);
+        
+        #pragma omp parallel for num_threads(nthread)
+        for(int i = 0;i < naocc_;i++)
+            for(int a = 0;a < navir_;a++)
+                for(int j = 0;j < naocc_;j++)
+                    for(int b = 0;b < navir_;b++)
+                        Kiajb_[i*navir_+a][j*navir_+b] /= 1 + 0.5 * (rho[i]+rho[j]);
+        
+        double E_PRMP2;
+        C_DGEMM('N', 'T', 1, 1, naocc_*navir_*naocc_*navir_, 1.0, Viajb[0], naocc_*navir_*naocc_*navir_, Kiajb_[0], naocc_*navir_*naocc_*navir_, 0.0, &(E_PRMP2), 1);
+        fprintf(outfile, "->\tDF-PRMP2 energy    = %14.10f\n", E_PRMP2);
+    }
+    free_block(Viajb);
+
     // X_{ij} <-- \sum_{kab} D_{iajb} (2V_{iakb}-V_{ikab}) V_{jakb}
     double **Xij = block_matrix((ULI)naocc_, (ULI)naocc_);
     C_DGEMM('N', 'T', naocc_, naocc_, navir_*naocc_*navir_, 1.0, Kiajb_[0], navir_*naocc_*navir_, Viajb[0], navir_*naocc_*navir_, 0.0, Xij[0], naocc_);
-    
-    free_block(Viajb);
- 
+     
     // Symetrize Xij to form Aij
     Aij_ = block_matrix((ULI)naocc_, (ULI)naocc_);
     #pragma omp parallel for num_threads(nthread)
@@ -147,6 +185,16 @@ DFADC::compute_energy()
                     Kaibj[a*naocc_+i][b*naocc_+j] /= - vire_[a] - vire_[b] + occe_[i] + occe_[j];
                 }
     
+    if(do_PR){
+        #pragma omp parallel for num_threads(nthread)
+        for(int a = 0;a < navir_;a++)
+            for(int i = 0;i < naocc_;i++)
+                for(int b = 0;b < navir_;b++)
+                    for(int j = 0;j < naocc_;j++)
+                        Kaibj[a*naocc_+i][b*naocc_+j] /= 1 + 0.5 * (rho[i]+rho[j]);
+        free(rho);
+    }
+    
     // X_{ab} <-- \sum_{ijc} D_{aicj} (2V_{aicj}-V_{acij}) V_{bicj}
     double **Xab = block_matrix((ULI)navir_, (ULI)navir_);
     C_DGEMM('N', 'T', navir_, navir_, naocc_*navir_*naocc_, 1.0, Kaibj[0], naocc_*navir_*naocc_, Vaibj[0], naocc_*navir_*naocc_, 0.0, Xab[0], navir_);
@@ -167,7 +215,16 @@ DFADC::compute_energy()
     bool is_first;
     double denom, *Ohms, **Xs;
     
-    fprintf(outfile, "\n\t==> DF-ADC(2) Computation <==\n\n");
+    //
+    // I employed the two-step procedure, in which the second order response matrix expanded in terms of
+    // the singles and doubles manifolds (just akin to the CC2-LR theory) is renormalized into only the singles manifold.
+    // As a consequuense, such the effective response matrix possesses eivenvalue-dependence, so that has to be solved in 
+    // iterative manner. The reason why I choose this is, in this procedure relatively large doubles blocks of the sigma and residual vectors
+    // have not be calculated explicitly. Since I don't want to write *ANY* intermediates into disk, this procedure is indispensable.
+    // Anyway, the optimization of the energy is accelarated according to the Newton-Raphson method. 
+    //
+    if(do_PR) fprintf(outfile, "\n\t==> DF-PRADC(2) Computation <==\n\n"); 
+    else fprintf(outfile, "\n\t==> DF-ADC(2) Computation <==\n\n");
     omega_ = Ecis_[0];
     for(int nroot = 0;nroot < num_roots_;nroot++){
         omega_ = Ecis_[nroot];
@@ -194,7 +251,7 @@ DFADC::compute_energy()
                     if(occ == HOMO) fprintf(outfile, " from HOMO");
                     if(vir == LUMO) fprintf(outfile, " 2 LUMO");
                     fprintf(outfile, "\n");
-                }
+                } // End loop over dim
             fprintf(outfile, "\n");
             fprintf(outfile, "\tConverged in %3d iterations.\n", iter);
             fprintf(outfile, "\tSquared norm of the singles component   : %10.7f\n", 1/denom);
@@ -206,14 +263,14 @@ DFADC::compute_energy()
             double f = 0.0;
             double *mu = init_array(3);
             for(int X = 0;X < 3;X++) {
-                mu[X] = C_DDOT(naocc_*(ULI)navir_,Xs[nroot], 1, dipole_ints_[X]->pointer()[0], 1);
+                C_DGEMM('N', 'T', 1, 1, naocc_*navir_, 1.0, Xs[nroot], naocc_*navir_, dipole_ints_[X]->pointer()[0], naocc_*navir_, 0.0, &(mu[X]), 1);
                 f += 4.0 / 3.0 * mu[X] * mu[X] * omega_ * denom;
             }
-            fprintf(outfile, "\tZeroth order oscillator strength        : %10.7f\n", f);
-            fprintf(outfile, "\t\t[X: %10.7f, Y: %10.7f, Z: %10.7f]\n\n", mu[0]*mu[0], mu[1]*mu[1], mu[2]*mu[2]);
+            fprintf(outfile, "\tZeroth order scillator strength         : %10.7f\n", f);
+            fprintf(outfile, "\t  [X^2: %10.7f, Y^2: %10.7f, Z^2: %10.7f]\n\n", mu[0]*mu[0], mu[1]*mu[1], mu[2]*mu[2]);
             free(mu);
             fflush(outfile);
-        } // End loop over dim
+        } 
     } // End loop over nroot
     
     release_mem();

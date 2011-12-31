@@ -13,7 +13,7 @@ namespace psi{ namespace plugin_dfadc {
 //
 // At first, I considered to use lib3index instead of these. But I didn't like to write
 // any intermediate tensors into disk, so that I coded the functions below to generate
-// fitting metrix and DF tensors on-the-fly fashion. Sorry, Dr. Parrish and Dr. Hohenstein.
+// fitting metric and DF tensors in on-the-fly fashion. Sorry, Dr. Parrish and Dr. Hohenstein.
 // All two were developed by referebce to Dr. Justin's code.
 //
 // I wonder formInvSqrtJ works faster if all the OpenMP macros are removed in many cases.
