@@ -18,18 +18,21 @@ plugin_load("./plugin_dfadc.so")
 set {
     reference rhf
     wavefunction mp2
-    basis 6-31G*
+    basis aug-cc-pVDZ
     memory 2000.0 
-    ri_basis_cc  6-31G*
-    ri_basis_adc 6-31G*
-    scf_type direct
+    ri_basis_cc  aug-cc-pVDZ
+    ri_basis_adc aug-cc-pVDZ
+#    scf_type direct
     guess GWH
-   
-    num_roots 3
-    convergence 11
-    e_converge 11
-    d_converge 9
+    num_roots 2
+
+#    do_residual false
+#    convergence 11
+#    e_converge 11
+#    d_converge 9
 }
+
+memory 2000 Mb
 
 run_dfcc(glycine)
 plugin("plugin_dfadc.so")
