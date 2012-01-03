@@ -122,6 +122,8 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
+    /// Old previous symmetry frame (so one can fix to it, if desired)
+    Matrix *old_symmetry_frame_;
 
 public:
     Molecule();
@@ -501,8 +503,8 @@ public:
 
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
-    /// Set whether or not orientation is fixed
-    void set_orientation_fixed(bool _fix = true) { fix_orientation_ = _fix; }
+    /// Fix or unfix orientation.
+    void set_orientation_fixed(bool _fix = true);
 
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;

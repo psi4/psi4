@@ -34,12 +34,31 @@ DFADC::DFADC(): Wavefunction(Process::environment.options, _default_psio_lib_)
     num_roots_ = options_.get_int("NUM_ROOTS");
     cutoff_    = options_.get_int("CUTOFF");
     
+    if(options_["DIM_RITZ"].size() == 2) {
+      int *dim_ritz = options_.get_int_array("DIM_RITZ");
+      init_ritz_ = dim_ritz[0];
+      max_ritz_  = dim_ritz[1];
+    }
+    else if(options_["DIM_RITZ"].size() == 0) {
+      init_ritz_ = 1;
+      max_ritz_  = 10;
+    }
+    else {
+      fprintf(outfile, "Length of DIM_RITZ vector must be 2!\n");
+      throw PsiException("dfadc comparison error DIM_RITZ vector", __FILE__, __LINE__);
+    }
+    
     fprintf(outfile, "\t==> Input Parameters <==\n\n");
-    fprintf(outfile, "\tNEWTON_CONV = %3d, NORM_TOL = %3d\n", conv_, norm_tol_);
-    fprintf(outfile, "\tPOLE_MAX    = %3d, SEM_MAX  = %3d\n", pole_max_, sem_max_);
-    fprintf(outfile, "\tNUM_ROOTS   = %3d, CUTOFF   = %3d\n\n", num_roots_, cutoff_);
+    fprintf(outfile, "\tNEWTON_CONV = %3d, NORM_TOL  = %3d\n", conv_, norm_tol_);
+    fprintf(outfile, "\tPOLE_MAX    = %3d, SEM_MAX   = %3d\n", pole_max_, sem_max_);
+    fprintf(outfile, "\tNUM_ROOTS   = %3d, CUTOFF    = %3d\n\n", num_roots_, cutoff_);
     fprintf(outfile, "\t*NXS        = %3d\n", naocc_*navir_);
-
+    fprintf(outfile, "\tINIT_RITZ   = %3d, MAX_RITZ  = %3d\n", init_ritz_*num_roots_, max_ritz_*num_roots_);
+    
+    bool do_residual = options_.get_bool("DO_RESIDUAL");
+    if(!do_residual) {
+      fprintf(outfile, "\n\t#WARNING: Convergence of residual vector is not sought in the ADC(2) level.\n\n");
+    }
 }
 
 DFADC::~DFADC()

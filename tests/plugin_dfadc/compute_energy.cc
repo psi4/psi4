@@ -15,7 +15,7 @@ double
 DFADC::compute_energy()
 {   
     double *rho;
-    double **J_mhalf, **Qpia, **Qpij, **Qpab, **Qpai, **Qiap;
+    double **J_mhalf, **Qpai, **Qiap, **Qijp, **Qabp;
     int nQ = ribasis_->nbf();
     
     int nthread = 1;
@@ -25,13 +25,37 @@ DFADC::compute_energy()
     
     fprintf(outfile, "\n\t==> DF-CIS/ADC(1) Level <==\n\n");
     
+    // Form diagonal elements of the CIS Hamiltonian
     diag_ = init_array(naocc_*navir_);
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp collapse(2) parallel for schedule(dynamic) num_threads(nthread)
     for(int i = 0;i < naocc_;i++)
         for(int a = 0;a < navir_;a++)
             diag_[i*navir_+a] = vire_[a] - occe_[i];
 
-    diagonalize(Ecis_, Bcis_, num_roots_, false, false);
+    formInvSqrtJ(J_mhalf);
+    formDFtensor(occCa_, virCa_, J_mhalf, Icol, Qiap); 
+    formDFtensor(occCa_, occCa_, J_mhalf, Icol, Qijp); 
+    formDFtensor(virCa_, virCa_, J_mhalf, Icol, Qabp);
+
+    for(int i = 0;i < naocc_;i++) {
+      for(int a = 0;a < navir_;a++) {
+        C_DGEMM('N', 'T', 1, 1, nQ,  2.0, Qiap[i*navir_+a], nQ, Qiap[i*navir_+a], nQ, 1.0, &diag_[i*navir_+a], 1);
+        C_DGEMM('N', 'T', 1, 1, nQ, -1.0, Qijp[i*naocc_+i], nQ, Qabp[a*navir_+a], nQ, 1.0, &diag_[i*navir_+a], 1);
+      }
+    }
+    free_block(Qiap);
+    free_block(Qijp);
+    free_block(Qabp);
+    
+    formDFtensor(occCa_, virCa_, J_mhalf, Irow, Qpia_); 
+    formDFtensor(occCa_, occCa_, J_mhalf, Irow, Qpij_); 
+    formDFtensor(virCa_, virCa_, J_mhalf, Irow, Qpab_);
+
+    diagonalize(Ecis_, Bcis_, init_ritz_*num_roots_, false, false);
+    
+    free_block(Qpia_);
+    free_block(Qpij_);
+    free_block(Qpab_);
     
     int HOMO = naocc_;
     int LUMO = naocc_+1;
@@ -67,13 +91,12 @@ DFADC::compute_energy()
     double E_MP2K = 0;
     double iajb, ibja;
     
-    formInvSqrtJ(J_mhalf);            
     formDFtensor(occCa_, virCa_, J_mhalf, Icol, Qiap);
     double *V = (double *)malloc(navir_*navir_*sizeof(double));
     for(int i = 0;i < naocc_;i++){
         for(int j = 0;j < naocc_;j++){
             C_DGEMM('N', 'T', navir_, navir_, nQ, 1.0, Qiap[i*navir_], nQ, Qiap[j*navir_], nQ, 0.0, V, navir_);
-            #pragma omp parallel for reduction(+:E_MP2J,E_MP2K)
+            #pragma omp collapse(2) parallel for schedule(dynamic) reduction(+:E_MP2J,E_MP2K)
             for(int a = 0;a < navir_;a++){
                 for(int b = 0;b < navir_;b++){
                     iajb = V[a*navir_+b];
@@ -96,17 +119,17 @@ DFADC::compute_energy()
     fflush(outfile);
 
     // Form X_{ij} and the symmetrized A_{ij} tensors
-    formDFtensor(occCa_, virCa_, J_mhalf, Irow, Qpia);
+    formDFtensor(occCa_, virCa_, J_mhalf, Irow, Qpia_);
     double **Viajb = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
     
-    C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, nQ, 1.0, Qpia[0], naocc_*navir_, Qpia[0], naocc_*navir_, 0.0, Viajb[0], naocc_*navir_);
+    C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, nQ, 1.0, Qpia_[0], naocc_*navir_, Qpia_[0], naocc_*navir_, 0.0, Viajb[0], naocc_*navir_);
     
-    free_block(Qpia);
+    free_block(Qpia_);
         
     Kiajb_ = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
     C_DCOPY(naocc_*navir_*naocc_*(ULI)navir_, Viajb[0], 1, Kiajb_[0], 1);
     C_DSCAL(naocc_*navir_*naocc_*(ULI)navir_,  2.0, Kiajb_[0], 1);
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp coppalse(4) parallel for schedule(dynamic) num_threads(nthread)
     for(int i = 0;i < naocc_;i++)
         for(int a = 0;a < navir_;a++)
             for(int j = 0;j < naocc_;j++)
@@ -124,31 +147,39 @@ DFADC::compute_energy()
         // * Y. Mochizuki and K. Tanaka, CPL 443 (2007) 389.
         // * M. Saitow and Y. Mochizuki, CPL accepted - in press (2011/12/30). 
         //
+        double MP2norm = 1, PR2norm = 1;
         double **Kiajb = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
         C_DCOPY(naocc_*navir_*naocc_*(ULI)navir_, Viajb[0], 1, Kiajb[0], 1);
-        #pragma omp parallel for num_threads(nthread)
+        #pragma omp collapse(4) parallel for schedule(dynamic) num_threads(nthread)
         for(int i = 0;i < naocc_;i++)
             for(int a = 0;a < navir_;a++)
                 for(int j = 0;j < naocc_;j++)
                     for(int b = 0;b < navir_;b++)
                         Kiajb[i*navir_+a][j*navir_+b] /= (occe_[i]+occe_[j]-vire_[a]-vire_[b]);
+
+        C_DGEMM('N', 'T', 1, 1, naocc_*navir_*naocc_*navir_, 1.0, Kiajb_[0], naocc_*navir_*naocc_*navir_, Kiajb[0], naocc_*navir_*naocc_*navir_, 1.0, &(MP2norm), 1);
         
         // Form diagonal elements of the second order density matrix in occupied/occupied space
         rho = init_array(naocc_);
         for(int i = 0;i < naocc_;i++) 
             C_DGEMM('N', 'T', 1, 1, navir_*naocc_*navir_, 1.0, Kiajb[i*navir_], navir_*naocc_*navir_, Kiajb_[i*navir_], navir_*naocc_*navir_, 0.0, &rho[i], 1);
-        free_block(Kiajb);
         
-        #pragma omp parallel for num_threads(nthread)
+        #pragma omp collapse(4) parallel for schedule(dynamic) num_threads(nthread)
         for(int i = 0;i < naocc_;i++)
             for(int a = 0;a < navir_;a++)
                 for(int j = 0;j < naocc_;j++)
                     for(int b = 0;b < navir_;b++)
                         Kiajb_[i*navir_+a][j*navir_+b] /= 1 + 0.5 * (rho[i]+rho[j]);
         
+        C_DGEMM('N', 'T', 1, 1, naocc_*navir_*naocc_*navir_, 1.0, Kiajb_[0], naocc_*navir_*naocc_*navir_, Kiajb[0], naocc_*navir_*naocc_*navir_, 1.0, &(PR2norm), 1);
+        
+        free_block(Kiajb);
+        
         double E_PRMP2;
         C_DGEMM('N', 'T', 1, 1, naocc_*navir_*naocc_*navir_, 1.0, Viajb[0], naocc_*navir_*naocc_*navir_, Kiajb_[0], naocc_*navir_*naocc_*navir_, 0.0, &(E_PRMP2), 1);
         fprintf(outfile, "->\tDF-PRMP2 energy    = %14.10f\n", E_PRMP2);
+        fprintf(outfile, "\t[Squared norm of the DF-MP1 wave function   : %14.10f]\n", MP2norm);
+        fprintf(outfile, "\t[Squared norm of the DF-PRMP1 wave function : %14.10f]\n", PR2norm);
     }
     free_block(Viajb);
 
@@ -158,7 +189,7 @@ DFADC::compute_energy()
      
     // Symetrize Xij to form Aij
     Aij_ = block_matrix((ULI)naocc_, (ULI)naocc_);
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp collapse(2) parallel for schedule(dynamic) num_threads(nthread)
     for(int i = 0;i < naocc_;i++)
         for(int j = 0;j < naocc_;j++)
             Aij_[i][j] = 0.5 * (Xij[i][j] + Xij[j][i]);
@@ -176,7 +207,7 @@ DFADC::compute_energy()
     double **Kaibj = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
     C_DCOPY(naocc_*navir_*naocc_*(ULI)navir_, Vaibj[0], 1, Kaibj[0], 1);
     C_DSCAL(naocc_*navir_*naocc_*(ULI)navir_,  2.0, Kaibj[0], 1);
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp collapse(4) parallel for schedule(dynamic) num_threads(nthread)
     for(int a = 0;a < navir_;a++)
         for(int i = 0;i < naocc_;i++)
             for(int b = 0;b < navir_;b++)
@@ -186,7 +217,7 @@ DFADC::compute_energy()
                 }
     
     if(do_PR){
-        #pragma omp parallel for num_threads(nthread)
+        #pragma omp collapse(4) parallel for schedule(4) num_threads(nthread)
         for(int a = 0;a < navir_;a++)
             for(int i = 0;i < naocc_;i++)
                 for(int b = 0;b < navir_;b++)
@@ -204,17 +235,22 @@ DFADC::compute_energy()
     
     // Symmetrize X_{ab} to form A_{ab} tensor
     Aab_ = block_matrix((ULI)navir_, (ULI)navir_);
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp collapse(2) parallel for schedule(dynamic) num_threads(nthread)
     for(int a = 0;a < navir_;a++)
         for(int b = 0;b < navir_;b++)
             Aab_[a][b] = 0.5 * (Xab[a][b]+Xab[b][a]);
 
     free_block(Xab);
-    
+
     int iter;
     bool is_first;
     double denom, *Ohms, **Xs;
     
+    formDFtensor(occCa_, virCa_, J_mhalf, Irow, Qpia_); 
+    formDFtensor(occCa_, occCa_, J_mhalf, Irow, Qpij_); 
+    formDFtensor(virCa_, virCa_, J_mhalf, Irow, Qpab_);
+    free_block(J_mhalf);
+
     //
     // I employed the two-step procedure, in which the second order response matrix expanded in terms of
     // the singles and doubles manifolds (just akin to the CC2-LR theory) is renormalized into only the singles manifold.
@@ -273,6 +309,10 @@ DFADC::compute_energy()
         } 
     } // End loop over nroot
     
+    free_block(Qpia_);
+    free_block(Qpij_);
+    free_block(Qpab_);
+
     release_mem();
     
     return E_DFMP2;
