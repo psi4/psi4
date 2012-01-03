@@ -155,7 +155,8 @@ Molecule::Molecule():
     nunique_(0),
     nequiv_(0),
     equiv_(0),
-    atom_to_unique_(0)
+    atom_to_unique_(0),
+    old_symmetry_frame_(0)
 {
 }
 
@@ -163,6 +164,8 @@ Molecule::~Molecule()
 {
     clear();
     release_symmetry_information();
+    if (old_symmetry_frame_)
+      delete old_symmetry_frame_;
 }
 
 Molecule& Molecule::operator=(const Molecule& other)
@@ -1002,6 +1005,9 @@ void Molecule::update_geometry()
             }
         }
         rotate_full(R);
+    }
+    else if (old_symmetry_frame_) {
+        rotate_full(*old_symmetry_frame_);
     }
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
@@ -1912,8 +1918,15 @@ void Molecule::symmetrize()
 
             SymmetryOperation so = ct.symm_operation(g);
 
+            // Full so must be used if molecule is not in standard orientation
             temp.add(0, atom, 0, so(0, 0) * x(Gatom) / ct.order());
+            temp.add(0, atom, 0, so(0, 1) * y(Gatom) / ct.order());
+            temp.add(0, atom, 0, so(0, 2) * z(Gatom) / ct.order());
+            temp.add(0, atom, 1, so(1, 0) * x(Gatom) / ct.order());
             temp.add(0, atom, 1, so(1, 1) * y(Gatom) / ct.order());
+            temp.add(0, atom, 1, so(1, 2) * z(Gatom) / ct.order());
+            temp.add(0, atom, 2, so(2, 0) * x(Gatom) / ct.order());
+            temp.add(0, atom, 2, so(2, 1) * y(Gatom) / ct.order());
             temp.add(0, atom, 2, so(2, 2) * z(Gatom) / ct.order());
         }
     }
@@ -2263,3 +2276,42 @@ std::string Molecule::schoenflies_symbol() const
 {
     return point_group()->symbol();
 }
+
+void Molecule::set_orientation_fixed(bool _fix) {
+  if (_fix) {
+    fix_orientation_ = true; // tells update_geometry() not to change orientation
+
+    // Compute original cartesian coordinates - code coped from update_geometry()
+    atoms_.clear();
+    EntryVectorIter iter;
+    for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
+        (*iter)->invalidate();
+
+    for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+            full_atoms_[atom]->compute();
+            full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+            if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+        }
+    }
+
+    SymmetryOperation frame = find_highest_point_group()->symm_frame();
+
+    if (old_symmetry_frame_)
+      delete old_symmetry_frame_;
+
+    old_symmetry_frame_ = new Matrix(3,3);
+
+    for(int i = 0; i < 3; ++i)
+      for(int j = 0; j < 3; ++j)
+        old_symmetry_frame_->set(i, j, frame(i,j));
+  }
+  else { // release orientation to be free
+    if (old_symmetry_frame_) {
+      delete old_symmetry_frame_;
+      old_symmetry_frame_ = 0;
+    }
+    fix_orientation_ = false;
+  }
+}
+
