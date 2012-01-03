@@ -238,10 +238,10 @@ public:
     template<typename TwoBodySOIntFunctor>
     void compute_integrals_deriv1(TwoBodySOIntFunctor &functor);
 
-#if HAVE_MADNESS
     template<typename TwoBodySOIntFunctor>
-    int compute_pq_pair_deriv1(const int &p, const int &q, const TwoBodySOIntFunctor &body) {
+    int compute_pq_pair_deriv1(const int &p, const int &q, size_t pair_number, TwoBodySOIntFunctor &body) {
 
+        body.load_tpdm(pair_number);
         boost::shared_ptr<SO_RS_Iterator> shellIter(
                     new SO_RS_Iterator(p, q,
                                        b1_, b2_, b3_, b4_));
@@ -250,7 +250,6 @@ public:
 
         return 0;
     }
-#endif
 };
 
 template<typename TwoBodySOIntFunctor>
@@ -1004,8 +1003,8 @@ void TwoBodySOInt::compute_shell_deriv1(int uish, int ujsh, int uksh, int ulsh, 
             }
         }
     }
-
     provide_IJKL_deriv1(uish, ujsh, uksh, ulsh, body);
+
 } // function
 
 template<typename TwoBodySOIntFunctor>
@@ -1158,6 +1157,8 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                                  llirrep, llrel,
                                  deriv_[thread][i][lsooff]);
                     }
+                    body.next_tpdm_element();
+
 #ifdef MINTS_TIMER
                     timer_off("TwoBodySOInt::provide_IJKL functor");
 #endif
@@ -1217,9 +1218,10 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
         boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
 
         for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
+            size_t pair_number = 0;
             if (me_ == v%nproc_) {
                 task(me_, &TwoBodySOInt::compute_pq_pair_deriv1<TwoBodySOIntFunctor>,
-                     PQIter->p(), PQIter->q(), functor);
+                     PQIter->p(), PQIter->q(), pair_number, functor);
             }
             v++;
         }
@@ -1233,9 +1235,17 @@ void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
 #endif
     }
     else if (comm_ == "LOCAL") {
-        boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
-                                                                 SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
-        this->compute_quartets_deriv1(shellIter, functor);
+        boost::shared_ptr<SO_PQ_Iterator> PQIter(new SO_PQ_Iterator(b1_));
+        size_t pair_number = 0;
+        for (PQIter->first(); PQIter->is_done() == false; PQIter->next()) {
+            compute_pq_pair_deriv1<TwoBodySOIntFunctor>(
+                        PQIter->p(), PQIter->q(), pair_number, functor);
+            pair_number++;
+        }
+
+//        boost::shared_ptr<SOShellCombinationsIterator> shellIter(new
+//                                                                 SOShellCombinationsIterator(b1_, b2_, b3_, b4_));
+//        this->compute_quartets_deriv1(shellIter, functor);
     }
     else {
         throw PSIEXCEPTION("Your COMMUNICATOR is not known. "
