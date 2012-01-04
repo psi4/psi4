@@ -28,6 +28,7 @@ PSILIBS = \
 
 ifeq ($(MAKE_MADNESS),1)
   PSILIBS += $(madlibs)/world/libMADworld.a
+  PSILIBS += $(madlibs)/tensor/libMADtensor.a
 endif
 
 # The psilibs need a little extra handling for plugins on linux
