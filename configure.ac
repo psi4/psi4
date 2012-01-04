@@ -917,6 +917,7 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
+          src/lib/libdist_matrix/Makefile
           src/lib/libscf_solver/Makefile
           src/lib/liblmp2_solver/Makefile
           src/lib/libtrans/Makefile

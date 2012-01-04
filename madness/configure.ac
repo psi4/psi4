@@ -151,7 +151,7 @@ ACX_POSIX_MEMALIGN
 ACX_WITH_EIGEN3
 
 # Checks for Fortran linking conventions and BLAS+LAPACK at the same time
-ACX_FORTRAN_SYMBOLS
+#ACX_FORTRAN_SYMBOLS
 
 # Compiler quirks
 ACX_UNQUALIFIED_STATIC_DECL
