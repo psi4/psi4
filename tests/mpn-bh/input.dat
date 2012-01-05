@@ -38,6 +38,8 @@ molecule bh {
     H 1 1.25347
 }
 
+set basis aug-cc-pVDZ
+
 thisenergy = energy('mp19')
 
 compare_values(refnuc, bh.nuclear_repulsion_energy(), 9, "Nuclear repulsion energy") #TEST 
