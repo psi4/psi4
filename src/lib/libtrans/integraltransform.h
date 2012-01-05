@@ -194,7 +194,7 @@ class IntegralTransform{
         void presort_mo_tpdm_restricted();
         void presort_mo_tpdm_unrestricted();
         void setup_tpdm_buffer(const dpdbuf4 *D);
-        void sort_so_tpdm(const dpdbuf4 *B, int irrep, size_t first_row, size_t num_rows);
+        void sort_so_tpdm(const dpdbuf4 *B, int irrep, size_t first_row, size_t num_rows, bool first_run);
 
         void trans_one(int m, int n, double *input, double *output, double **C, int soOffset,
                        int *order, bool backtransform = false, double scale = 0.0);

@@ -96,7 +96,7 @@ void IntegralTransform::setup_tpdm_buffer(const dpdbuf4 *D)
 }
 
 
-void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_row, size_t num_rows)
+void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_row, size_t num_rows, bool first_run)
 {
     // The buffer needs to be set up if the pointer is still null
     if(tpdm_buffer_ == 0) setup_tpdm_buffer(D);
@@ -112,10 +112,10 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
         char *toc = new char[40];
         sprintf(toc, "SO_TPDM_FOR_PAIR_%zd", pq_pair_count);
         size_t buffer_size = tpdm_buffer_sizes_[pq_pair_count];
-        if(psio_->tocscan(PSIF_AO_TPDM, toc))
-            psio_->read_entry(PSIF_AO_TPDM, toc, (char*)tpdm_buffer_, buffer_size*sizeof(double));
-        else
+        if(first_run)
             ::memset((void*)tpdm_buffer_, '\0', buffer_size*sizeof(double));
+        else
+            psio_->read_entry(PSIF_AO_TPDM, toc, (char*)tpdm_buffer_, buffer_size*sizeof(double));
         ++pq_pair_count;
         size_t index = 0;
 
@@ -233,11 +233,11 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
                             unsigned int klcol = D->params->colidx[kkabs][llabs];
                             // We know that ijkl is totally symmetric, so klsym
                             // must be the same as ijsym
-                            if((ijsym == irrep) && (ijrow >= first_row) && (ijrow <= last_row)){
-                                tpdm_buffer_[index] += 0.5 * D->matrix[ijsym][ijrow][klcol];
+                            if((ijsym == irrep) && (ijrow >= first_row) && (ijrow < last_row)){
+                                tpdm_buffer_[index] += 0.5 * D->matrix[ijsym][ijrow - first_row][klcol];
                             }
-                            if((ijsym == irrep) && (klrow >= first_row) && (klrow <= last_row)){
-                                tpdm_buffer_[index] += 0.5 * D->matrix[ijsym][klrow][ijcol];
+                            if((ijsym == irrep) && (klrow >= first_row) && (klrow < last_row)){
+                                tpdm_buffer_[index] += 0.5 * D->matrix[ijsym][klrow - first_row][ijcol];
                             }
                             ++index;
                         }
