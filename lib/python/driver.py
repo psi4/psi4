@@ -23,6 +23,7 @@ procedures = {
             'sapt2+-ct'     : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
+            'cc2'           : run_ccsd,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'cc3'           : run_cc3,

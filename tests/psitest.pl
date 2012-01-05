@@ -38,9 +38,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 # definitions that default tester knows about
 # should match lib/python/driver.py
 @PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
-@PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2",
-"mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "ccsd", "ccsd(t)", 
-"detci", "eom_ccsd", "eom-ccsd", "bccd", "bccd_t");
+@PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2", "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "cc2", "ccsd", "ccsd(t)", "detci", "eom_ccsd", "eom-ccsd", "bccd", "bccd_t");
 @PSITEST_GRADIENTS = ("scf", "ccsd", "mp2", "eom_ccsd", "eom-ccsd");
 @PSITEST_RESPONSE = ("ccsd", "cc2");
 
