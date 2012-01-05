@@ -196,10 +196,10 @@ PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
     return findif::fd_freq_0(Process::environment.options, energies, irrep);
 }
 
-PsiReturnType py_psi_fd_freq_1(const boost::python::list& energies, int irrep)
+PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_1(Process::environment.options, energies, irrep);
+    return findif::fd_freq_1(Process::environment.options, grads, irrep);
 }
 
 double py_psi_scf()

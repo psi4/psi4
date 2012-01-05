@@ -430,7 +430,12 @@ def frequencies(name, **kwargs):
         displacements = PsiMod.fd_geoms_freq_1(irrep)
         ndisp = len(displacements)
 
+        #print displacements to output.dat
+        #for n, displacement in enumerate(displacements):
+        #  displacement.print_out();
+
         print " %d displacements needed." % ndisp
+
         gradients = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
@@ -441,12 +446,17 @@ def frequencies(name, **kwargs):
             print "    displacement %d" % (n+1)
 
             # Load in displacement into the active molecule
+            if (n == 0) :
+              PsiMod.get_active_molecule().fix_orientation(1)
+              PsiMod.get_active_molecule().fix_com(1)
+
             PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the gradient calculation
-            G = func(lowername, **kwargs)
+            func(lowername, **kwargs)
 
             # Save the gradient
+            G = PsiMod.get_gradient()
             gradients.append(G)
 
             # clean may be necessary when changing irreps of displacements
