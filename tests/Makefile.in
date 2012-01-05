@@ -19,8 +19,7 @@ df_subdirs = sapt1
 
 psimrcc_subdirs = 
 
-#mints_subdirs = mints1 mints2 mints3 mints4
-mints_subdirs = mints1 mints3 mints4
+mints_subdirs = mints1 mints2 mints3 mints4
 
 matrix_subdirs = matrix1
 
