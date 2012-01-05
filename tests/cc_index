@@ -20,7 +20,12 @@ cc8a: ROHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, MO-basis
 
 cc9: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
 
+cc11: ROHF-CCSD/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
+
 cc12: RHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in H2O.
+
+cc13: UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
+  (all electron, MO-basis <ab|cd>)
 
 cc15: RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
 
