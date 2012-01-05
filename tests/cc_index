@@ -56,6 +56,8 @@ et al., JCP 104, 8007 (1996).
 
 cc33: UHF-CC3/cc-pVDZ energy of H2O+.
 
+cc34: RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
+
 cc35: ROHF-CC3/cc-pVDZ energy of H2O+.
 
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
