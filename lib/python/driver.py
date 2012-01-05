@@ -30,6 +30,7 @@ procedures = {
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
             'eom-ccsd'      : run_eom_ccsd,
+            'eom_ccsd'      : run_eom_ccsd,
             'detci'         : run_detci,
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
