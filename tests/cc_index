@@ -22,6 +22,12 @@ cc9: UHF-CCSD(T)/cc-pVDZ 2Sigma+ CN single-point energy (fzc, AO-basis <ab|cd>)
 
 cc12: RHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in H2O.
 
+cc15: RHF-B-CCD(T)/6-31G** H2O single-point energy (fzc, MO-basis <ab|cd>)
+
+cc16: UHF-B-CCD(T)/cc-pVDZ 2B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+
+cc17: UHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in 3B1 CH2.
+
 cc18: RHF-CCSD-LR/cc-pVDZ static polarizabilities of HOF molecule.
 
 cc19: RHF-CCSD-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
@@ -39,6 +45,13 @@ length, omega = (633 355 nm)
 
 cc31: RHF-CCSD-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
 both (length and velocity), omega = (633 355 nm)
+
+cc32: RHF-CC3/cc-pVDZ energy of H2O to match value from Table III of Olsen
+et al., JCP 104, 8007 (1996).
+
+cc33: UHF-CC3/cc-pVDZ energy of H2O+.
+
+cc35: ROHF-CC3/cc-pVDZ energy of H2O+.
 
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.

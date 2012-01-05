@@ -36,7 +36,7 @@ IntegralTransform::transform_tei(const shared_ptr<MOSpace> s1, const shared_ptr<
      * I haven't done this yet because I don't anticipate much demand for IWL output.  If
      * somebody need this, they can contact me for help to implement it if needed.
      * Andy Simmonett, 11/09*/
-    if(_useIWL && !(s1==s2 && s1==s3 && s1==s4))
+    if(useIWL_ && !(s1==s2 && s1==s3 && s1==s4))
         throw FeatureNotImplemented("libtrans", "mixed spaces with IWL output", __FILE__, __LINE__);
 
     transform_tei_first_half(s1, s2);

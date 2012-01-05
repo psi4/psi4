@@ -30,7 +30,7 @@ read_options(std::string name, Options &options)
 }
 
 extern "C" PsiReturnType
-backtrans_test(Options &options)
+plugin_backtrans(Options &options)
 {
     dpdbuf4 I, G;
     int print = options.get_int("PRINT");
@@ -43,8 +43,9 @@ backtrans_test(Options &options)
   
     std::string reference = options.get_str("REFERENCE");
 
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
     spaces.push_back(MOSpace::all);
-    IntegralTransform ints(chkpt,
+    IntegralTransform ints(wfn,
                            spaces,
                            reference == "RHF" ? IntegralTransform::Restricted : IntegralTransform::Unrestricted,
                            IntegralTransform::DPDOnly,
@@ -65,14 +66,14 @@ backtrans_test(Options &options)
     psio->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
 
 
+    int nso       = wfn->nso();
+    int nmo       = wfn->nmo();
+    int nIrreps   = wfn->nirrep();
+    int *orbspi   = wfn->nmopi();
+    int *frzcpi   = wfn->frzcpi();
+    int *frzvpi   = wfn->frzvpi();
+    int *clsdpi   = wfn->doccpi();
     char **labels = Process::environment.molecule()->irrep_labels();
-    int nso       = Process::environment.reference_wavefunction()->nso();
-    int nmo       = Process::environment.reference_wavefunction()->nmo();
-    int nIrreps   = Process::environment.reference_wavefunction()->nirrep();
-    int *orbspi   = Process::environment.reference_wavefunction()->nmopi();
-    int *frzcpi   = Process::environment.reference_wavefunction()->frzcpi();
-    int *frzvpi   = Process::environment.reference_wavefunction()->frzvpi();
-    int *clsdpi   = Process::environment.reference_wavefunction()->doccpi();
     double eNuc   = Process::environment.molecule()->nuclear_repulsion_energy();
     double eOne   = 0.0;
     double eTwo   = 0.0;

@@ -3,7 +3,6 @@
 #include <libparallel/parallel.h>
 #include <liboptions/liboptions.h>
 #include <libpsio/psio.hpp>
-#include <libchkpt/chkpt.hpp>
 #include <libtrans/integraltransform.h>
 #include <libmints/wavefunction.h>
 
@@ -37,9 +36,9 @@ plugin_mointegrals(Options &options)
     int print = options.get_int("PRINT");
 
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
-    boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
     if(!Process::environment.reference_wavefunction())
         throw PSIEXCEPTION("SCF has not been run yet!");
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
 
     // Quickly check that there are no open shell orbitals here...
     int nirrep  = Process::environment.reference_wavefunction()->nirrep();
@@ -52,7 +51,7 @@ plugin_mointegrals(Options &options)
     // LibTrans object, check out the plugin_mp2 example in the test suite.
     std::vector<boost::shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::all);
-    IntegralTransform ints(chkpt, spaces, IntegralTransform::Restricted);
+    IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted);
     ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());

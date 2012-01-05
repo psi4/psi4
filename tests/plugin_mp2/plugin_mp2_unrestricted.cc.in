@@ -20,7 +20,8 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    IntegralTransform ints(chkpt, spaces,
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    IntegralTransform ints(wfn, spaces,
                                 ROHF ? IntegralTransform::SemiCanonical : IntegralTransform::Unrestricted);
     ints.transform_tei(MOSpace::occ, MOSpace::vir, MOSpace::occ, MOSpace::vir);
 
@@ -30,7 +31,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
     // Use the IntegralTransform object's DPD instance, for convenience
     dpd_set_default(ints.get_dpd_id());
     double aaE2 = 0.0, abE2 = 0.0 , bbE2 = 0.0, aE2 = 0.0, bE2 = 0.0, e2 = 0.0;
-    
+   
     if(ROHF){
         // The eigenvalues in the semicanonical basis are the diagonal Fock matrix elements
         // While we're at it, read the updated eigenvalues
@@ -72,6 +73,7 @@ double plugin_mp2_unrestricted(Options &options, shared_ptr<Chkpt> chkpt)
             offset += mopi[h];
         }
         free(F);
+
         fprintf(outfile, "\n");
         fprintf(outfile, "\n\t\t--------------------------------------------\n");
         fprintf(outfile, "\t\tThe singles contributions\n");

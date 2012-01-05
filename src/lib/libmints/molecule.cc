@@ -1020,12 +1020,7 @@ min.print_out();
     }
     else if (old_symmetry_frame_) {
         rotate_full(*old_symmetry_frame_);
-        printf("rotating with old frame\n");
     }
-
-fprintf(outfile,"Geometry after reorientation.\n");
-Matrix mout = full_geometry();
-mout.print_out();
 
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
@@ -1938,6 +1933,7 @@ void Molecule::symmetrize()
 
             SymmetryOperation so = ct.symm_operation(g);
 
+            // Full so must be used if molecule is not in standard orientation
             temp.add(0, atom, 0, so(0, 0) * x(Gatom) / ct.order());
             temp.add(0, atom, 0, so(0, 1) * y(Gatom) / ct.order());
             temp.add(0, atom, 0, so(0, 2) * z(Gatom) / ct.order());
@@ -2325,9 +2321,6 @@ void Molecule::set_orientation_fixed(bool _fix) {
     for(int i = 0; i < 3; ++i)
       for(int j = 0; j < 3; ++j)
         old_symmetry_frame_->set(i, j, frame(i,j));
-
-fprintf(outfile,"Saving old frame.\n");
-old_symmetry_frame_->print_out();
   }
   else { // release orientation to be free
     if (old_symmetry_frame_) {
