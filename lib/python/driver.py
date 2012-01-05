@@ -23,6 +23,7 @@ procedures = {
             'sapt2+-ct'     : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
+            'cc2'           : run_ccsd,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'cc3'           : run_cc3,
@@ -59,9 +60,6 @@ def energy(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    # Line below needed when passing in molecule as a keyword argument
-    #    but causes mints2 test case to fail
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
