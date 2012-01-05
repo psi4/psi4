@@ -48,6 +48,7 @@ procedures = {
         'hessian' : {
         },
         'response' : {
+            'cc2'  : run_ccsd_response,
             'ccsd' : run_ccsd_response
         }}
 
