@@ -60,6 +60,8 @@ cc34: RHF-CCSD/cc-pVDZ energy of H2O partitioned into pair energy contributions.
 
 cc35: ROHF-CC3/cc-pVDZ energy of H2O+.
 
+cc36: RHF-CC2/cc-pVDZ energy of H2O.
+
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
 
