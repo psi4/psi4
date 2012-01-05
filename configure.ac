@@ -970,6 +970,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/df-cc/Makefile
           src/bin/findif/Makefile
           src/bin/omp2/Makefile
+          src/bin/adc/Makefile
 
           tests/Makefile
           tests/MakeVars
