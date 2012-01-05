@@ -29,5 +29,6 @@ cchbar()
 cclambda()
 ccdensity()
 
-
 plugin("./plugin_backtrans.so")
+
+deriv()

@@ -49,7 +49,7 @@ IntegralTransform::DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace
     }else{
         label += "]";
     }
-    if(_print>5)
+    if(print_>5)
         fprintf(outfile, "s1: %c s2: %c %s, label = %s, id = %d\n",
                  s1->label(), s2->label(), pack ? "packed" : "unpacked", label.c_str(), DPD_ID(label));
     return DPD_ID(label);
@@ -64,8 +64,8 @@ IntegralTransform::DPD_ID(const shared_ptr<MOSpace> s1, const shared_ptr<MOSpace
 int
 IntegralTransform::DPD_ID(const char c)
 {
-    for(int i = 0; i < _spacesUsed.size(); ++i){
-        if(_spacesUsed[i] == c) return(i);
+    for(int i = 0; i < spacesUsed_.size(); ++i){
+        if(spacesUsed_[i] == c) return(i);
     }
     std::string str("MOSpace ");
     str += c;
@@ -94,13 +94,13 @@ IntegralTransform::DPD_ID(const char c)
 int
 IntegralTransform::DPD_ID(const std::string &str)
 {
-    if(_dpdLookup.count(str)==0){
+    if(dpdLookup_.count(str)==0){
         std::string s = "Pair ";
         s+= str;
         s+= " has not been created.  Check the spaces passed into the IntegralTransform constructor";
         throw SanityCheckError(s, __FILE__, __LINE__);
     }
-    return _dpdLookup[str];
+    return dpdLookup_[str];
 }
 
 

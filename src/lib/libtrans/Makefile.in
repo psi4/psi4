@@ -12,7 +12,6 @@ integraltransform_dpd_id.cc \
 integraltransform_moinfo.cc \
 integraltransform_oei.cc \
 integraltransform_sort_so_tei.cc \
-integraltransform_semicanonicalize.cc \
 integraltransform_tei.cc \
 integraltransform_tei_1st_half.cc \
 integraltransform_tei_2nd_half.cc \

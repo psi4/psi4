@@ -1,0 +1,28 @@
+#! UHF-B-CCD(T)/cc-pVDZ 3B1 CH2 single-point energy (fzc, MO-basis <ab|cd>)
+
+molecule ch2 {
+    0 3
+    c
+    h 1 r
+    h 1 r 2 a
+    r = 1.1
+    a = 109.0
+}
+
+set {
+   wfn bccd_t
+   reference = uhf
+   basis cc-pVDZ
+   freeze_core true
+}
+
+energy("bccd(t)")
+
+escf = -38.917378694797030 #TEST
+ebccd = -39.030833895315020 #TEST
+ebccd_t = -39.032691827829460 #TEST
+compare_values(escf, get_variable("SCF TOTAL ENERGY"), 7, "SCF energy") #TEST
+compare_values(ebccd, get_variable("CCSD TOTAL ENERGY"), 7, "B-CCD energy") #TEST
+compare_values(ebccd_t, get_variable("CCSD(T) TOTAL ENERGY"), 7, "B-CCD(T) energy") #TEST
+
+clean()

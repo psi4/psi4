@@ -16,7 +16,8 @@ double plugin_mp2_restricted(Options &options, shared_ptr<Chkpt> chkpt)
     std::vector<shared_ptr<MOSpace> > spaces;
     spaces.push_back(MOSpace::occ);
     spaces.push_back(MOSpace::vir);
-    IntegralTransform ints(chkpt, spaces, IntegralTransform::Restricted,
+    boost::shared_ptr<Wavefunction> wfn = Process::environment.reference_wavefunction();
+    IntegralTransform ints(wfn, spaces, IntegralTransform::Restricted,
                IntegralTransform::DPDOnly, IntegralTransform::QTOrder, IntegralTransform::OccAndVir, false);
     ints.set_dpd_id(0);
     ints.set_keep_iwl_so_ints(true);

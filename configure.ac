@@ -1032,6 +1032,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc9/Makefile
           tests/cc12/Makefile
           tests/cc13/Makefile
+          tests/cc15/Makefile
+          tests/cc16/Makefile
           tests/cc17/Makefile
           tests/cc18/Makefile
           tests/cc19/Makefile
@@ -1040,6 +1042,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc29/Makefile
           tests/cc30/Makefile
           tests/cc31/Makefile
+          tests/cc32/Makefile
+          tests/cc33/Makefile
+          tests/cc35/Makefile
           tests/cc52/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile

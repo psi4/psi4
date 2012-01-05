@@ -149,7 +149,7 @@ double CCEnergyWavefunction::compute_energy()
         energy_ = Process::environment.globals["CURRENT ENERGY"];
     }
 
-    if (options_.get_str("WFN") == "CCSD_T") {
+    if ((options_.get_str("WFN") == "CCSD_T")) {
         // Make sure ccenergy returned Success
         if (ccsd_return != Success)
             throw PSIEXCEPTION("CCEnergyWavefunction: CCSD did not converge, will not proceed to (T) correction.");
@@ -553,7 +553,8 @@ PsiReturnType ccenergy(Options &options)
     local_done();
   }
 
-  if(params.brueckner) brueckner_done = rotate();
+  if(params.brueckner)
+    Process::environment.globals["BRUECKNER CONVERGED"] = rotate();
 
   if( params.aobasis != "NONE" ) dpd_close(1);
   dpd_close(0);
@@ -574,10 +575,10 @@ PsiReturnType ccenergy(Options &options)
   //Process::environment.globals["CC CORRELATION ENERGY"] = moinfo.ecc;
 
   exit_io();
-  if(params.brueckner && brueckner_done)
-      throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
-  else
-      return Success;
+//  if(params.brueckner && brueckner_done)
+ //     throw FeatureNotImplemented("CCENERGY", "Brueckner end loop", __FILE__, __LINE__);
+  //else
+  return Success;
 }
 
 }} //namespace psi::ccenergy
