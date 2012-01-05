@@ -36,7 +36,8 @@ procedures = {
             'cisdt'         : run_detci,
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
-            'fci'           : run_detci
+            'fci'           : run_detci,
+            'adc'           : run_adc
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
