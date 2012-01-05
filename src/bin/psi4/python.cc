@@ -68,6 +68,7 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+    namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -124,6 +125,12 @@ int py_psi_deriv()
 {
     py_psi_prepare_options_for_module("DERIV");
     return deriv::deriv(Process::environment.options);
+}
+
+int py_psi_omp2()
+{
+    py_psi_prepare_options_for_module("OMP2");
+    return omp2wave::omp2wave(Process::environment.options);
 }
 
 double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
@@ -962,6 +969,7 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccdensity", py_psi_ccdensity);
     def("ccresponse", py_psi_ccresponse);
     def("cceom", py_psi_cceom);
+    def("omp2", py_psi_omp2);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes
