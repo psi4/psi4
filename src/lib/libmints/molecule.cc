@@ -184,6 +184,15 @@ Molecule& Molecule::operator=(const Molecule& other)
     if (other.old_symmetry_frame_)
         old_symmetry_frame_ = other.old_symmetry_frame_->clone();
 
+    if (old_com_vector_) {
+        delete old_com_vector_;
+        old_com_vector_ = 0;
+    }
+    if (other.old_com_vector_) {
+        old_com_vector_ = new Vector3;
+        *old_com_vector_ = *other.old_com_vector_;
+    }
+
     name_                    = other.name_;
     all_variables_           = other.all_variables_;
     fragments_               = other.fragments_;
@@ -222,7 +231,7 @@ Molecule& Molecule::operator=(const Molecule& other)
 }
 
 Molecule::Molecule(const Molecule& other)
-    : old_symmetry_frame_(0)
+    : old_symmetry_frame_(0), old_com_vector_(0)
 {
     *this = other;
 }
