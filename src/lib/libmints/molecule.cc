@@ -177,6 +177,13 @@ Molecule& Molecule::operator=(const Molecule& other)
     if (this == &other)
         return *this;
 
+    if (old_symmetry_frame_) {
+        delete old_symmetry_frame_;
+        old_symmetry_frame_ = 0;
+    }
+    if (other.old_symmetry_frame_)
+        old_symmetry_frame_ = other.old_symmetry_frame_->clone();
+
     name_                    = other.name_;
     all_variables_           = other.all_variables_;
     fragments_               = other.fragments_;
@@ -215,6 +222,7 @@ Molecule& Molecule::operator=(const Molecule& other)
 }
 
 Molecule::Molecule(const Molecule& other)
+    : old_symmetry_frame_(0)
 {
     *this = other;
 }

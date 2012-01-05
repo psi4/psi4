@@ -1,0 +1,97 @@
+#include "psi4-dec.h"
+#include <liboptions/liboptions.h>
+#include <libmints/mints.h>
+#include <libpsio/psio.h>
+#include <libtrans/integraltransform.h>
+#include <libtrans/mospace.h>
+#include "ccfiles.h"
+#include <libqt/qt.h>
+#define EXTERN
+#include "globals.h"
+#include "libdpd/dpd.gbl"
+
+namespace psi{ namespace adc{
+    
+//
+//  V     : The converged eigenvector in the S manifold.
+//  D     : This gives contribution such that \frac{\partial A(\omega)}{\partial \omega}V(\omega).
+//  XOVOV : A 2h-2p intermediate.
+//  YOVOV : A 2h-2p intermediate.
+//  ZOVOV : A 2h-2p intermediate.
+//  BOVOV : A 2h-2p intermediate.
+//
+    
+double rhf_differenciate_omega(int irrep, int root)
+{
+    char lbl[32];
+    double dot;
+    dpdfile2 S, D;
+    dpdbuf4 A, V, K, X, Y, Z;
+//printf("madeok\n");
+    sprintf(lbl, "V^(%d)_[%d]12", root, irrep);
+    dpd_file2_init(&S, PSIF_CIS, irrep, ID('O'), ID('V'), lbl);
+//dpd_file2_print(&S, outfile);fflush(outfile);
+    sprintf(lbl, "D^(%d)_[%d]12", root, irrep);
+    dpd_file2_init(&D, PSIF_CIS, irrep, ID('O'), ID('V'), lbl);
+    
+    // Evaluation of the 2h-2p diagranms which are termed the orbital relaxation terms in the CIS(D) sense.
+    dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
+    sprintf(lbl, "XOVOV_[%d]1234", irrep);
+    dpd_buf4_init(&X, PSIF_CIS, irrep, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, lbl);
+    // XOVOV_{jaib} <-- \sum_{c} V_{ic} (ja|cb)
+    dpd_contract244(&S, &V, &X, 1, 2, 1, 1, 0);
+    sprintf(lbl, "ZOVOV_[%d]1234", irrep);
+    dpd_buf4_copy(&X, PSIF_CIS, lbl);
+    dpd_buf4_close(&V);
+    dpd_buf4_close(&X);
+    sprintf(lbl, "YOVOV_[%d]1234", irrep);
+    dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>=O]+"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
+    dpd_buf4_init(&Y, PSIF_CIS, irrep, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, lbl);
+    // YOVOV_{iajb} <-- \sum_{k} (jk|ia) V_{kb}
+    dpd_contract424(&V, &S, &Y, 1, 0, 0, 1, 0);
+    dpd_buf4_close(&V);
+    
+    sprintf(lbl, "ZOVOV_[%d]1234", irrep);
+    dpd_buf4_init(&Z, PSIF_CIS, irrep, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, lbl);
+    // Z_{iajb} <-- X_{jaib} - Y_{iajb}
+    dpd_buf4_axpy(&Y, &Z, -1.0);
+    dpd_buf4_close(&Y);
+
+    // B_{iajb} <-- (2Z_{iajb}-Z_{ibja}+2Z_{jbia}-Z_{jaib}) / (\omega+e_i-e_a+e_j-e_b)^2
+    sprintf(lbl, "BOVOV_[%d]1234", irrep);
+    dpd_buf4_scmcopy(&Z, PSIF_CIS, lbl, 2.0);
+    dpd_buf4_sort_axpy(&Z, PSIF_CIS, psrq, ID("[O,V]"), ID("[O,V]"), lbl, -1.0);
+    dpd_buf4_sort_axpy(&Z, PSIF_CIS, rqps, ID("[O,V]"), ID("[O,V]"), lbl, -1.0);
+    dpd_buf4_sort_axpy(&Z, PSIF_CIS, rspq, ID("[O,V]"), ID("[O,V]"), lbl,  2.0);
+    dpd_buf4_close(&Z);
+    
+    dpd_buf4_init(&Z, PSIF_CIS, irrep, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, lbl);
+    sprintf(lbl, "D_[%d]1234", irrep);
+    dpd_buf4_init(&A, PSIF_CIS, irrep, ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), ID("[O,V]"), 0, lbl);
+    dpd_buf4_dirprd(&A, &Z);
+    dpd_buf4_dirprd(&A, &Z);
+    dpd_buf4_close(&A);
+    
+    dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,V]"), ID("[V,V]"), ID("[O,V]"), ID("[V>=V]+"), 0, "MO Ints (OV|VV)");
+    // D_{ia} <-- - \sum_{jbc} B_{jcib} (jc|ab)
+    dpd_contract442(&Z, &V, &D, 2, 2, -1, 0);
+    dpd_buf4_close(&V);
+    dpd_buf4_init(&V, PSIF_LIBTRANS_DPD, 0, ID("[O,O]"), ID("[O,V]"), ID("[O>=O]+"), ID("[O,V]"), 0, "MO Ints (OO|OV)");
+    // D_{ia} <-- \sum_{jkb} (ji|kb) B_{jakb}
+    dpd_contract442(&V, &Z, &D, 1, 1,  1, 0);
+    dpd_buf4_close(&V);
+    dpd_buf4_close(&Z);
+
+    // \frac{\partial \omega^{eigen}}{\partial omega} = V^t\frac{\partial A(\omega)}{\partial \omega}V
+    dot = dpd_file2_dot(&S, &D);
+    
+    dpd_file2_close(&S);
+    dpd_file2_close(&D);
+    
+    psio->close(PSIF_CIS, 1);
+    psio->close(PSIF_LIBTRANS_DPD, 1);
+    
+    return dot;
+}
+
+}} // End Namespaces

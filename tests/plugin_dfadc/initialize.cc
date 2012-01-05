@@ -75,7 +75,8 @@ DFADC::init()
     for(int I = 0;I < 3;I++)
         dipole_ints_[I]->transform(occCa_, ao_dipole_ints[I], virCa_);
     
-    unsigned long int free_space = memory_ - 3 * naocc_ * naocc_ * navir_ * (ULI)navir_;
+    // Three X_{iajb} tensors and Q^I_{ij}, Q^I_{ia}, Q^I_{ab} tensors have to be stored in core memory, at a maximum
+    unsigned long int free_space = memory_ - (3*naocc_*naocc_*navir_*navir_ - ribasis_->nbf()*(naocc_*naocc_+naocc_*navir_+navir_*navir_))*(ULI)sizeof(double);
     if(free_space < 0) throw PSIEXCEPTION("Memory is insufficient.\n");
 } 
 
