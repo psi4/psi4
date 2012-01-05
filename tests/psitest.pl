@@ -130,7 +130,8 @@ sub do_tests
       }
 
      if ($jobtype eq "response") {
-       if ($wfn eq "CCSD" || $wfn eq "ccsd") {
+       if ($wfn eq "CCSD" || $wfn eq "ccsd" || 
+           $wfn eq "CC2" || $wfn eq "cc2") {
           $fail |= compare_cclambda_overlap($wfn);
           $fail |= compare_cc_response($wfn);
        }

@@ -1,0 +1,21 @@
+#! RHF-CC2-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
+
+molecule hof {
+  0 1
+  O
+  H 1 0.97
+  F 1 0.97 2 103.0
+}
+
+set {
+  wfn cc2
+  basis "cc-pVDZ"
+  mu_irreps [0, 0, 1]
+  dertype response
+  omega [0.05, 0.1]
+  omega_units au
+}
+
+response('cc2')
+clean()
+

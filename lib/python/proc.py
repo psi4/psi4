@@ -235,9 +235,15 @@ def run_bccd_t(name, **kwargs):
 
 def run_ccsd_response(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'CCSD')
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
+    if (name.lower() == 'ccsd'):
+      PsiMod.set_global_option('WFN', 'CCSD')
+      run_ccsd("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'CCSD')
+    elif (name.lower() == 'cc2'):
+      PsiMod.set_global_option('WFN', 'CC2')
+      run_ccsd("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'CC2')
+
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
