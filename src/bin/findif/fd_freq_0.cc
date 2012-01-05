@@ -20,7 +20,7 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list, int
 {
   int pts = options.get_int("POINTS");
   double disp_size = options.get_double("DISP_SIZE");
-  int print_lvl = 3;
+  int print_lvl = options.get_int("PRINT");
 
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
