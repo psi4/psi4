@@ -1,3 +1,8 @@
+#! Test case for some of the PSI4 out-of-core codes.  The code is given only
+#! 2.0 MB of memory, which is insufficient to hold either the A1 or B2
+#! blocks of an ovvv quantity in-core, but is sufficient to hold at least
+#! two copies of an oovv quantity in-core.
+
 molecule h2o {
   0 1
   H
