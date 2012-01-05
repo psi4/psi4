@@ -5,12 +5,13 @@ include ../MakeVars
 
 PSITARGET = $(top_objdir)/lib/libPSI_adc.a
 
+LDLIBS += $(LAPACK) $(BLAS)
+#PSILIBS = -lPSI_qt -lPSI_chkpt -lPSI_iwl -lPSI_psio -lPSI_ciomr -lPSI_ipv1
+
 CXXSRC = \
-adc.cc cache.cc get_moinfo.cc get_params.cc primary_space.cc\
-diag_adc.cc diagonalize.cc make_diag.cc mp2.cc amp_write.cc\
-orbital_relaxation.cc denom.cc init_ints.cc accelerate.cc\
-differential_correlation.cc ccamps.cc ocss.cc sort_pert.cc\
-transpert.cc
+adc_main.cc        adc.cc         amps_write.cc  compute_energy.cc \
+construct_sigma.cc denominator.cc diagonalize.cc \
+init_tensors.cc    initialize.cc  prepare_tensors.cc
 
 BINOBJ = $(CXXSRC:%.cc=%.o)
 

@@ -1,0 +1,25 @@
+
+molecule h2o {
+%symmetry c1
+o
+h 1 0.958
+h 1 0.958 2 104.4776 
+}
+
+set {
+  basis cc-pvdz
+  reference uhf
+  charge 0
+  multp 1
+  e_converge 10
+  d_converge 8
+  e_convergence 10
+  docc [3, 0, 1, 1]
+  socc [0, 0, 0, 0] 
+}
+
+scf() 
+omp2()
+
+clean()
+

@@ -234,13 +234,14 @@ def run_bccd_t(name, **kwargs):
 def run_ccsd_response(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'CCSD')
-
+    run_ccsd("ccsd", **kwargs)
+    PsiMod.set_global_option('WFN', 'CCSD')
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+#    PsiMod.set_global_option('WFN', 'SCF')
+#    PsiMod.revoke_global_option_changed('WFN')
 
     # ccsd_response has return value?
 

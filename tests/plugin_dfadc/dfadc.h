@@ -75,6 +75,10 @@ protected:
     int num_roots_;
     // Cut off criterion for amplitudes
     int cutoff_;
+    // Initial dimension of the Ritz space
+    int init_ritz_;
+    // Maximum dimension of the Ritz space
+    int max_ritz_;
     // Current energy for the pole searching process
     double omega_;
     // Pseudo-perturbative energy
@@ -95,6 +99,12 @@ protected:
     double **Aab_;    
     // MP1 amplitude
     double **Kiajb_;
+    // Q^I_{ij} tensor
+    double **Qpij_;
+    // Q^I_{ia} tensor
+    double **Qpia_;
+    // Q^I_{ab} tensor
+    double **Qpab_;
     // Information about pole structure
 //    struct pole *poles_;
     // SO2occpiedMO transformation coefficient
