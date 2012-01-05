@@ -74,9 +74,8 @@ def run_mp2_5(name, **kwargs):
 def run_plugin_ccsd_serial(name, **kwargs):
     plugfile = PsiMod.Process.environment["PSIDATADIR"] + "/../tests/plugin_ccsd_serial/plugin_ccsd_serial.so"
     PsiMod.plugin_load("%s" % (plugfile))
-    PsiMod.set_global_option("MAX_MAPPED_MEMORY", 1000)
     run_scf("scf",**kwargs)
-    PsiMod.transqt()
+    PsiMod.transqt2()
     PsiMod.plugin("plugin_ccsd_serial.so")
 
     return PsiMod.get_variable("CURRENT ENERGY")
