@@ -260,6 +260,18 @@ def run_eom_ccsd(name, **kwargs):
 
     return returnvalue
 
+def run_adc(name, **kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+      molecule = kwargs.pop('molecule')
+  
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+  
+    PsiMod.scf()
+
+    return PsiMod.adc()
+
 def run_detci(name, **kwargs):
 
     if (name.lower() == 'zapt'):
