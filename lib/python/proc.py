@@ -149,6 +149,8 @@ def run_ccsd(name, **kwargs):
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
+    elif (name.lower() == 'cc2'):
+        PsiMod.set_global_option('WFN', 'CC2')
 
     # Bypass routine scf if user did something special to get it to converge
     if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
