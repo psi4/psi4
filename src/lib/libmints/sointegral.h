@@ -1075,6 +1075,9 @@ void TwoBodySOInt::provide_IJKL_deriv1(int ish, int jsh, int ksh, int lsh, TwoBo
                     int labs = lirrepoff_[lsym] + lrel;
                     int lsooff = ksooff*nso4 + ltr;
 
+                    // Only totally symmetric pertubations are considered here!
+                    if(isym^jsym^ksym^lsym) continue;
+
                     int iiabs = iabs;
                     int jjabs = jabs;
                     int kkabs = kabs;
@@ -1211,6 +1214,10 @@ void TwoBodySOInt::compute_integrals(TwoBodySOIntFunctor &functor)
 template<typename TwoBodySOIntFunctor>
 void TwoBodySOInt::compute_integrals_deriv1(TwoBodySOIntFunctor &functor)
 {
+    if(!only_totally_symmetric_)
+        throw PSIEXCEPTION("The way the TPDM is stored an iterated enables only totally symmetric"
+                           " perturbations to be considered right now!");
+
     if (comm_ == "MADNESS") {
 #ifdef HAVE_MADNESS
 

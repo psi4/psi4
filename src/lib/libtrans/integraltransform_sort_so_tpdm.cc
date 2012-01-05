@@ -156,7 +156,6 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
                             if(isym^jsym^ksym^lsym) continue; // Not totally symmetric
                             int lrel = sobasis->function_within_irrep(lfunc);
                             int labs = sym_offsets[lsym] + lrel;
-//TODO check sym_offsets agains irrep_off from before..
                             int iiabs = iabs;
                             int jjabs = jabs;
                             int kkabs = kabs;
@@ -234,15 +233,12 @@ void IntegralTransform::sort_so_tpdm(const dpdbuf4 *D, int irrep, size_t first_r
                             unsigned int klcol = D->params->colidx[kkabs][llabs];
                             // We know that ijkl is totally symmetric, so klsym
                             // must be the same as ijsym
-                            fprintf(outfile, "Irrep %d (%d %d %d %d) (%3zd) = %16.10f ...",
-                                    irrep, iiabs, jjabs, kkabs, llabs, index, tpdm_buffer_[index]);
                             if((ijsym == irrep) && (ijrow >= first_row) && (ijrow <= last_row)){
                                 tpdm_buffer_[index] += 0.5 * D->matrix[ijsym][ijrow][klcol];
                             }
                             if((ijsym == irrep) && (klrow >= first_row) && (klrow <= last_row)){
                                 tpdm_buffer_[index] += 0.5 * D->matrix[ijsym][klrow][ijcol];
                             }
-                            fprintf(outfile, "%16.10f\n",tpdm_buffer_[index]);
                             ++index;
                         }
                     }

@@ -26,10 +26,13 @@ size_t counter;
 
 class CorrelatedFunctor
 {
-    dpdbuf4 *G_;
+    /// The buffer to hold the TPDM
     double *tpdm_buffer_;
+    /// Pointer to the current TPDM element
     double *tpdm_ptr_;
+    /// How large the buffer is, for each shell pair
     size_t *buffer_sizes_;
+    /// The PSIO object to use for disk I/O
     boost::shared_ptr<PSIO> psio_;
 public:
     int nthread;
@@ -38,8 +41,7 @@ public:
     CorrelatedFunctor() {
         throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
-    CorrelatedFunctor(SharedVector results, dpdbuf4 *G)
-        : G_(G), psio_(_default_psio_lib_)
+    CorrelatedFunctor(SharedVector results) : psio_(_default_psio_lib_)
     {
         nthread = Communicator::world->nthread();
         result.push_back(results);
@@ -91,19 +93,12 @@ public:
         int thread = Communicator::world->thread_id(pthread_self());
 
         double prefactor = 8.0;
-
-        if (pirrep ^ qirrep ^ rirrep ^ sirrep)
-            return;
-
-        int h = pirrep ^ qirrep;
-
         if (pabs == qabs)
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
         if (pabs == rabs && qabs == sabs)
             prefactor *= 0.5;
-
         result[thread]->add(salc, prefactor * (*tpdm_ptr_) * value);
     }
 };
@@ -595,21 +590,9 @@ SharedMatrix Deriv::compute()
             X->scale(0.5);
 
             _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
-            dpdbuf4 G;
-            dpd_buf4_init(&G, PSIF_AO_TPDM, 0,
-                          ints_transform->DPD_ID("[n,n]"), ints_transform->DPD_ID("[n,n]"),
-                          ints_transform->DPD_ID("[n>=n]+"), ints_transform->DPD_ID("[n>=n]+"),
-                          0, "SO Basis TPDM (nn|nn)");
-            for (int h=0; h<wfn_->nirrep(); ++h) {
-                dpd_buf4_mat_irrep_init(&G, h);
-                dpd_buf4_mat_irrep_rd(&G, h);
-            }
-            CorrelatedFunctor functor(TPDMcont_vector, &G);
+            CorrelatedFunctor functor(TPDMcont_vector);
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
-            for (int h=0; h<wfn_->nirrep(); ++h)
-                dpd_buf4_mat_irrep_close(&G, h);
-            dpd_buf4_close(&G);
             _default_psio_lib_->close(PSIF_AO_TPDM, 1);
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {
