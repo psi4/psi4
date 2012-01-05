@@ -200,7 +200,8 @@ IntegralTransform::backtransform_tpdm_restricted()
                 } /* Gr */
             } /* pq */
             sort_so_tpdm(&K, h, n*rowsPerBucket, thisBucketRows);
-            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
+            // Not needed!
+//            dpd_buf4_mat_irrep_wrt_block(&K, h, n*rowsPerBucket, thisBucketRows);
         }
         dpd_buf4_mat_irrep_close_block(&J, h, rowsPerBucket);
         dpd_buf4_mat_irrep_close_block(&K, h, rowsPerBucket);
