@@ -1,0 +1,462 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+                         Additional Contributions by
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+#! cc36: RHF-CC2/cc-pVDZ energy of H2O.
+
+# H2O Re geom from Olsen et al., JCP 104, 8007 (1996)
+molecule h2o {
+  0 1
+  O 0.0  0.00000000 -0.00900000
+  H 0.0 -1.51526300 -1.05889800
+  H 0.0  1.51526300 -1.05889800
+  units bohr
+}
+
+set {
+  wfn cc2
+  basis "cc-pVDZ"
+}
+
+energy('cc2')
+clean()
+
+--------------------------------------------------------------------------
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 14:01:28 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                              RHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Bohr), charge = 0, multiplicity = 1:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           O          0.000000000000     0.000000000000     0.117499201619
+           H          0.000000000000    -1.515263000000    -0.932398798381
+           H          0.000000000000     1.515263000000    -0.932398798381
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 2 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =    9.009354229662666
+
+  Charge       = 0
+  Multiplicity = 1
+  Electrons    = 10
+  Nalpha       = 5
+  Nbeta        = 5
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  Basis Set
+    Number of shells: 12
+    Number of basis function: 24
+    Number of Cartesian functions: 25
+    Spherical Harmonics?: true
+    Max angular momentum: 2
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 3.6636430474E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial RHF energy:   -58.62669502110019
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        11      11       3       3       3       0
+     A2         2       2       0       0       0       0
+     B1         4       4       1       1       1       0
+     B2         7       7       1       1       1       0
+   -------------------------------------------------------
+    Total      24      24       5       5       5       0
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   3
+      Number of AO shells:              12
+      Number of SO shells:               9
+      Number of primitives:             32
+      Number of atomic orbitals:        25
+      Number of basis functions:        24
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  11    2    4    7 ]
+
+      Computing integrals...done
+
+      Computed 11412 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+   @RHF iter   1:   -68.91181035042204   -1.02851e+01   0.00000e+00  
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    0,    2 ]
+   @RHF iter   2:   -70.02365422289380   -1.11184e+00   5.32225e-01 DIIS
+	Occupation by irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+   @RHF iter   3:   -75.75026159159354   -5.72661e+00   4.98868e-01 DIIS
+   @RHF iter   4:   -76.00022160335732   -2.49960e-01   1.72192e-02 DIIS
+   @RHF iter   5:   -76.02375048566643   -2.35289e-02   7.99871e-03 DIIS
+   @RHF iter   6:   -76.02399416551877   -2.43680e-04   1.25149e-03 DIIS
+   @RHF iter   7:   -76.02403664935800   -4.24838e-05   4.64104e-04 DIIS
+   @RHF iter   8:   -76.02403841448688   -1.76513e-06   1.09284e-04 DIIS
+   @RHF iter   9:   -76.02403851009633   -9.56095e-08   1.88339e-05 DIIS
+   @RHF iter  10:   -76.02403851143171   -1.33538e-09   3.31413e-06 DIIS
+   @RHF iter  11:   -76.02403851151129   -7.95808e-11   6.09934e-07 DIIS
+   @RHF iter  12:   -76.02403851151320   -1.90425e-12   6.84942e-08 DIIS
+   @RHF iter  13:   -76.02403851151318    1.42109e-14   1.35251e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -20.549977     2A1    -1.322974     1B2    -0.700162  
+	   3A1    -0.550962     1B1    -0.489509  
+
+	Virtual:                                                              
+
+	   4A1     0.183200     2B2     0.252970     3B2     0.798319  
+	   5A1     0.809777     6A1     1.162582     2B1     1.201770  
+	   4B2     1.247938     1A2     1.453909     7A1     1.498062  
+	   3B1     1.702166     5B2     1.882574     8A1     1.885220  
+	   6B2     2.429776     9A1     2.436671     4B1     3.238117  
+	   2A2     3.343815    10A1     3.442925    11A1     3.904617  
+	   7B2     4.089524  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     3,    0,    1,    1 ]
+
+  Energy converged.
+
+  @RHF Final Energy:   -76.02403851151318
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.9248
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:     0.1472
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.7776     Total:     0.7776
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -1.9765     Total:     1.9765
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 14:01:28 2012
+Module time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.17 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 14:01:28 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CC2
+	Backtransform   =	No
+	Print Level     =	1
+	Print TEIs      =	No
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Delete TEI File =	Yes
+	Memory (Mbytes) =	100.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 24
+	Number of MOs        = 24
+	Number of active MOs = 24
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   11	    0	    3	    0	    8	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.00935422966267
+	SCF energy          (chkpt) =    -76.02403851151318
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =    0.000000000000000
+	Starting first half-transformation.
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	Two-electron integral transformation complete.
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 14:01:28 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.18 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 14:01:28 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CC2
+	Reference wfn   =	RHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	NONE
+	Make (ab|cd)    =	True
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 24
+	Number of active MOs = 24
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   11	    0	    3	    0	    8	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   4	    0	    1	    0	    3	    0
+	 B2	   7	    0	    1	    0	    6	    0
+
+	Nuclear Rep. energy (chkpt) =      9.00935422966267
+	SCF energy          (chkpt) =    -76.02403851151318
+
+	Size of irrep 0 of <ab|cd> integrals:      0.013 (MW) /      0.102 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.005 (MW) /      0.037 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.005 (MW) /      0.041 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.012 (MW) /      0.093 (MB)
+	Total:                                     0.034 (MW) /      0.274 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.004 (MW) /      0.030 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.008 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.001 (MW) /      0.011 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.024 (MB)
+	Total:                                     0.009 (MW) /      0.073 (MB)
+
+	Size of irrep 0 of tijab amplitudes:       0.001 (MW) /      0.010 (MB)
+	Size of irrep 1 of tijab amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tijab amplitudes:       0.000 (MW) /      0.003 (MB)
+	Size of irrep 3 of tijab amplitudes:       0.001 (MW) /      0.005 (MB)
+	Total:                                     0.002 (MW) /      0.020 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: B(+) <ab|cd> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =   -122.83961835978145
+	Two-electron (AA) energy     =     14.42439696849172
+	Two-electron (BB) energy     =     14.42439696849172
+	Two-electron (AB) energy     =     23.38182865011391
+	Two-electron energy          =     37.80622561860562
+	Frozen-core energy (transqt) =      0.00000000000000
+	Reference energy             =    -76.02403851151317
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 14:01:28 2012
+Module time:
+	user time   =       0.03 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.21 seconds =       0.00 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 14:01:28 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =    9.009354229662666
+	SCF energy          (chkpt)   =  -76.024038511513183
+	Reference energy    (file100) =  -76.024038511513169
+
+	Input parameters:
+	-----------------
+	Wave function   =      CC2
+	Reference wfn   =     RHF
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     NONE
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     1
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.204690005353670    0.000e+00    0.000000    0.000000    0.000000
+     1        -0.204682498797775    1.296e-02    0.004097    0.008642    0.008642
+     2        -0.205493344484357    3.455e-03    0.004956    0.010294    0.010294
+     3        -0.205580695457773    1.234e-03    0.005350    0.011148    0.011148
+     4        -0.205565233257152    4.154e-04    0.005428    0.011556    0.011556
+     5        -0.205566618442558    1.359e-04    0.005463    0.011732    0.011732
+     6        -0.205567276273557    1.878e-05    0.005463    0.011739    0.011739
+     7        -0.205567277259400    3.378e-06    0.005463    0.011740    0.011740
+     8        -0.205567278578685    6.837e-07    0.005463    0.011740    0.011740
+     9        -0.205567280135722    1.343e-07    0.005463    0.011740    0.011740
+    10        -0.205567280631766    2.703e-08    0.005463    0.011740    0.011740
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          2   0         0.0089629788
+	          4  17         0.0074420163
+	          4  13        -0.0059592662
+	          2   5         0.0050496339
+	          4  15         0.0047108598
+	          1   2        -0.0041382128
+	          3  10        -0.0035794542
+	          3  11         0.0032944679
+	          1   0        -0.0032147059
+	          2   3        -0.0028168813
+
+	Largest TIjAb Amplitudes:
+	  3   3  10  10        -0.0473652111
+	  2   2   2   2        -0.0350775972
+	  2   3   2  10        -0.0306163633
+	  3   2  10   2        -0.0306163633
+	  4   4  14  14        -0.0302856571
+	  4   4  13  13        -0.0276354774
+	  4   4   1   1        -0.0258309011
+	  3   4  10  13        -0.0236598399
+	  4   3  13  10        -0.0236598399
+	  3   4  10  15        -0.0225643753
+
+	SCF energy       (chkpt)              =  -76.024038511513183
+	Reference energy (file100)            =  -76.024038511513169
+
+	Opposite-spin MP2 correlation energy  =   -0.153102750423152
+	Same-spin MP2 correlation energy      =   -0.051587254930518
+	MP2 correlation energy                =   -0.204690005353670
+      * MP2 total energy                      =  -76.228728516866838
+	CC2 correlation energy     =   -0.205567280631766
+      * CC2 total energy           =  -76.229605792144937
+
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 14:01:29 2012
+Module time:
+	user time   =       0.22 seconds =       0.00 minutes
+	system time =       0.17 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.45 seconds =       0.01 minutes
+	system time =       0.21 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!
