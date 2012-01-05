@@ -3,19 +3,18 @@ molecule h2o {
     O
     H 1 0.9584
     H 1 0.9584 2 104.45
-    symmetry c1
+    #symmetry c1
 }
 
-plugin_load("./plugin_dfadc.so")
+plugin_load("./plugin_adc.so")
 
 set {
     reference rhf
     wavefunction ccd
     basis aug-cc-pvdz
     ri_basis_cc  aug-cc-pvdz
-    ri_basis_adc aug-cc-pvdz
     guess core
-    scf_type direct
+    #scf_type direct
     memory 2000.0
     num_roots 5
 #    freeze_core true
@@ -26,7 +25,8 @@ set {
 #    d_converge 11
 }
 
-run_dfcc(h2o)
-plugin("plugin_dfadc.so")
+scf()
+#run_dfcc(h2o)
+plugin("plugin_adc.so")
 
 clean()

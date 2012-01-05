@@ -156,6 +156,7 @@ Molecule::Molecule():
     nequiv_(0),
     equiv_(0),
     atom_to_unique_(0),
+    old_com_vector_(0),
     old_symmetry_frame_(0)
 {
 }
@@ -164,6 +165,8 @@ Molecule::~Molecule()
 {
     clear();
     release_symmetry_information();
+    if (old_com_vector_)
+      delete old_com_vector_;
     if (old_symmetry_frame_)
       delete old_symmetry_frame_;
 }
@@ -173,6 +176,13 @@ Molecule& Molecule::operator=(const Molecule& other)
     // Self assignment is bad
     if (this == &other)
         return *this;
+
+    if (old_symmetry_frame_) {
+        delete old_symmetry_frame_;
+        old_symmetry_frame_ = 0;
+    }
+    if (other.old_symmetry_frame_)
+        old_symmetry_frame_ = other.old_symmetry_frame_->clone();
 
     name_                    = other.name_;
     all_variables_           = other.all_variables_;
@@ -212,6 +222,7 @@ Molecule& Molecule::operator=(const Molecule& other)
 }
 
 Molecule::Molecule(const Molecule& other)
+    : old_symmetry_frame_(0)
 {
     *this = other;
 }
@@ -963,6 +974,7 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
 
 void Molecule::update_geometry()
 {
+fprintf(outfile,"update_geometry() is called.\n");
     if (fragments_.size() == 0)
         throw PSIEXCEPTION("Molecule::update_geometry: There are no fragments in this molecule.");
 
@@ -987,8 +999,16 @@ void Molecule::update_geometry()
         }
     }
 
+fprintf(outfile,"Geometry bf reorientation.\n");
+Matrix min = full_geometry();
+min.print_out();
+
     if (move_to_com_)
         move_to_com();
+    else if (old_com_vector_) { // check if older com has been set
+        translate(*old_com_vector_);
+        printf("translating with old frame\n");
+    }
 
     // If the no_reorient command was given, don't reorient
     if (fix_orientation_ == false) {
@@ -1013,8 +1033,11 @@ void Molecule::update_geometry()
     // Recompute point group of the molecule, so the symmetry info is updated to the new frame
     set_point_group(find_point_group());
 
-    // Symmetrize the molecule to remove any noise.
-    symmetrize();
+    // Disabling symmetrize for now if orientation is fixed, as it is not correct.  We may want
+    // to fix this in the future, but in some cases of finite-differences the set geometry is not
+    // totally symmetric anyway.
+    //if (!fix_orientation_)
+      symmetrize(); // Symmetrize the molecule to remove any noise.
 }
 
 void Molecule::activate_all_fragments()
@@ -1935,6 +1958,7 @@ void Molecule::symmetrize()
     delete_atom_map(atom_map, this);
     // Set the geometry to ensure z-matrix variables get updated
     set_geometry(temp);
+
 }
 
 void Molecule::release_symmetry_information()
@@ -2312,6 +2336,36 @@ void Molecule::set_orientation_fixed(bool _fix) {
       old_symmetry_frame_ = 0;
     }
     fix_orientation_ = false;
+  }
+}
+
+void Molecule::set_com_fixed(bool _fix) {
+
+  if (_fix) {
+    move_to_com_ = false; // tells update_geometry() not to shift
+
+    // Compute original cartesian coordinates - code coped from update_geometry()
+    atoms_.clear();
+    EntryVectorIter iter;
+    for (iter = full_atoms_.begin(); iter != full_atoms_.end(); ++iter)
+        (*iter)->invalidate();
+
+    for(int fragment = 0; fragment < fragments_.size(); ++fragment){
+        for(int atom = fragments_[fragment].first; atom < fragments_[fragment].second; ++atom){
+            full_atoms_[atom]->compute();
+            full_atoms_[atom]->set_ghosted(fragment_types_[fragment] == Ghost);
+            if(full_atoms_[atom]->symbol() != "X") atoms_.push_back(full_atoms_[atom]);
+        }
+    }
+
+    Vector3 v = center_of_mass();
+    old_com_vector_ = new Vector3(v);
+  }
+  else { // release com to be shifted
+    if (old_com_vector_)
+      delete old_com_vector_;
+    old_com_vector_ = 0;
+    move_to_com_ = true;
   }
 }
 

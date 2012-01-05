@@ -25,7 +25,6 @@ PsiReturnType fd_freq_0(Options &options, const boost::python::list& E_list, int
   const boost::shared_ptr<Molecule> mol = psi::Process::environment.molecule();
   int Natom = mol->natom();
   boost::shared_ptr<MatrixFactory> fact;
-  // symmetric modes with rotations and translations projected out
   CdSalcList salc_list(mol, fact);
   int Nirrep = salc_list.nirrep();
   int Nsalc_all = salc_list.ncd();

@@ -124,6 +124,8 @@ protected:
     std::string symmetry_from_input_;
     /// Old previous symmetry frame (so one can fix to it, if desired)
     Matrix *old_symmetry_frame_;
+    /// Old com displacement vector (so one can fix to it, if desired)
+    Vector3 *old_com_vector_;
 
 public:
     Molecule();
@@ -503,9 +505,10 @@ public:
 
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
-    /// Fix or unfix orientation.
+    /// Fix the orientation at its current frame
     void set_orientation_fixed(bool _fix = true);
-
+    /// Fix the center of mass at its current frame
+    void set_com_fixed(bool _fix = true);
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
 

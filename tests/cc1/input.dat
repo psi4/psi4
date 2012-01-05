@@ -1,10 +1,5 @@
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
-refnuc   =  9.166137300098260  #TEST
-refscf   = -76.02293995043653  #TEST
-refccsd  = -0.208238532935749  #TEST
-reftotal = -76.2311784833722   #TEST
-
 molecule h2o {
     O
     H 1 0.97
@@ -25,6 +20,11 @@ set {
 }
 
 thisenergy = optimize('ccsd')
+
+refnuc   =  9.166137300098260  #TEST
+refscf   = -76.02293995043653  #TEST
+refccsd  = -0.208238532935749  #TEST
+reftotal = -76.2311784833722   #TEST
 
 compare_values(refnuc,   h2o.nuclear_repulsion_energy(),          3, "Nuclear repulsion energy") #TEST
 compare_values(refscf,   get_variable("SCF total energy"),        5, "SCF energy")               #TEST
