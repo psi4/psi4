@@ -440,7 +440,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     (the one-particle density matrices are written for all roots).
     Useful for a state-specific CASSCF or CI optimization on an
     excited state. -*/
-    options.add_int("ROOT", 1);
+    options.add_int("FOLLOW_ROOT", 1);
 
     /*- Compute the transition density?  Note: only transition densities
     between roots of the same symmetry will be evaluated.  DETCI
@@ -1169,7 +1169,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_str("WFN","NONE");
     /*- -*/
-    options.add_int("ROOT",1);
+    options.add_int("FOLLOW_ROOT",1);
   }
   if(name == "STABLE"|| options.read_globals()) {
     /*- -*/
@@ -1206,84 +1206,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("STATES_PER_IRREP", new ArrayType());
     /*- Partial renormalization scheme for the ground state wavefunction -*/
     options.add_bool("PR", false);
-  }
-  if(name == "OEPROP"|| options.read_globals()) {
-    /*- -*/
-    options.add_int("NUM_ROOTS",1);
-    /*- -*/
-    options.add_int("ROOT",1);
-    /*- -*/
-    options.add_int("GRID",0);
-    /*- -*/
-    options.add_str("MO_TO_PLOT","");
-    /*- -*/
-    options.add_int("GRID_ORIGIN",0);
-    /*- -*/
-    options.add_int("GRID_UNIT_X",0);
-    /*- -*/
-    options.add("GRID_XY0", new ArrayType());
-    /*- -*/
-    options.add("GRID_XY1", new ArrayType());
-    /*- -*/
-    options.add("GRID_XYZ0", new ArrayType());
-    /*- -*/
-    options.add("GRID_XYZ1", new ArrayType());
-    /*- -*/
-    options.add_int("NIX",0);
-    /*- -*/
-    options.add_int("NIY",0);
-    /*- -*/
-    options.add_int("NIZ",0);
-    /*- -*/
-    options.add_str("GRID_FORMAT","");
-    /*- -*/
-    options.add_double("GRID_ZMIN",0.0);
-    /*- -*/
-    options.add_double("GRID_ZMAX",3.0);
-    /*- -*/
-    options.add_int("EDGRAD_LOGSCALE",5);
-    /*- -*/
-    options.add_str("WFN","");
-    /*- -*/
-    options.add_bool("TRANSITION_DENSITY", false);
-    /*- -*/
-    options.add_str("REFERENCE", "RHF");
-    /*- -*/
-    options.add_bool("READ_OPDM", true);
-    /*- -*/
-    options.add_int("OPDM_FILE", 0);
-    /*- -*/
-    options.add_str("OPDM_BASIS", "MO", "AO MO");
-    /*- -*/
-    options.add_str("OPDM_FORMAT", "SQUARE");
-    /*- -*/
-    options.add_bool("WRTNOS", false);
-    /*- -*/
-    options.add_bool("ASYMM_OPDM", false);
-    /*- -*/
-    options.add_bool("SPIN_PROP", false);
-    /*- -*/
-    options.add_bool("PRINT_NOS", false);
-    /*- -*/
-    options.add_int("CORREL_CORR", 0);
-    /*- -*/
-    options.add_double("ZVEC_FILE", 0);
-    /*- -*/
-    options.add_int("DELETE_ZVEC", 0);
-    /*- -*/
-    options.add_int("MPMAX", 1);
-    /*- -*/
-    options.add("MP_REF_XYZ", new ArrayType());
-    /*- -*/
-    options.add_int("MP_REF", 0);
-    /*- -*/
-    options.add("LM_REF_XYZ", new ArrayType());
-    /*- -*/
-    options.add_bool("NUC_ESP", true);
-    /*- -*/
-    options.add_double("FINE_STRUCTURE_ALPHA", 1.0);
-    /*- -*/
-    options.add_bool("QED_DARWIN", false);
   }
   if(name == "CCHBAR"|| options.read_globals()) {
     /*- -*/
@@ -1489,7 +1411,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- Number of previous iterations to consider within the DIIS method -*/
     options.add_int("NDIIS",7);
     /*- Which solution of the SCF equations to find, where 1 is the SCF ground state-*/
-    options.add_int("ROOT",1);
+    options.add_int("FOLLOW_ROOT",1);
     /*- Iteration at which to begin using the averaged Fock matrix-*/
     options.add_int("START_FAVG",5);
     /*- -*/
@@ -1882,7 +1804,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The number of electrons -*/
     options.add_int("NEL",0);
     /*- Which root of the effective hamiltonian is the target state? -*/
-    options.add_int("ROOT",1);
+    options.add_int("FOLLOW_ROOT",1);
     /*- The number of digits after the decimal to converge the energy to -*/
     options.add_int("CONVERGENCE",9);
     /*- The maximum number of iterations allowed to determine the amplitudes -*/

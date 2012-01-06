@@ -113,16 +113,6 @@ AC_ARG_WITH(max-am-deriv2,[  --with-max-am-deriv2    maximum AM in ERI second de
 ])
 AC_SUBST(LIBDERIV_NEW_AM2)
 
-# Options for libr12
-LIBR12_NEW_AM=6
-LIBR12_OPT_AM=6
-AC_ARG_WITH(max-am-r12,[  --with-max-am-r12       maximum AM in R12 integrals],[
-  LIBR12_NEW_AM=$((2*($withval)))
-  LIBR12_OPT_AM=$((2*($withval)))
-])
-AC_SUBST(LIBR12_NEW_AM)
-AC_SUBST(LIBR12_OPT_AM)
-
 PSI_INTEGRALS_STANDARD=1
 AC_ARG_WITH(integrals-standard,[  --with-integrals-standard     specifies the standard for the basis normalization, etc.
                                 The allowed values are cca and psi (default).],[
@@ -911,9 +901,6 @@ AC_CONFIG_FILES([include/Makefile
           src/lib/libint/Makefile
           src/lib/libint/MakeVars
           src/lib/libint/libint_config.h
-          src/lib/libr12/Makefile
-          src/lib/libr12/MakeVars
-          src/lib/libr12/libr12_config.h
           src/lib/liboptions/Makefile
           src/lib/libmoinfo/Makefile
           src/lib/libmints/Makefile
