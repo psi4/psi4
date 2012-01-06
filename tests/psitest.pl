@@ -38,7 +38,7 @@ $PSITEST_SUMMARY_FILE = "../../test-case-results";
 # definitions that default tester knows about
 # should match lib/python/driver.py
 @PSITEST_JOBTYPES = ("energy", "optimize", "gradient", "hessian", "response");
-@PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2", "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "cc2", "ccsd", "ccsd(t)", "detci", "eom_ccsd", "eom-ccsd", "eom_cc2", "eom-cc2", "bccd", "bccd_t");
+@PSITEST_WFNS = ("scf", "mcscf", "dcft", "dfmp2", "dfcc", "mp2", "mp2-drpa", "sapt0", "sapt2", "sapt2+", "sapt2+3", "mp2c", "cc2", "ccsd", "ccsd(t)", "detci", "eom_ccsd", "eom-ccsd", "eom_cc2", "eom-cc2", "eom_cc3", "eom-cc3", "bccd", "bccd_t");
 @PSITEST_GRADIENTS = ("scf", "ccsd", "mp2", "eom_ccsd", "eom-ccsd");
 @PSITEST_RESPONSE = ("ccsd", "cc2");
 
@@ -108,9 +108,11 @@ sub do_tests
               $wfn eq "ccsd(t)")   { $fail |= compare_ccsd_t_energy(); last SWITCH2; }
           if ($wfn eq "CC3" || $wfn eq "cc3")      { $fail |= compare_cc3_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC2" || $wfn eq "eom_cc2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
+          if ($wfn eq "EOM-CC2" || $wfn eq "eom-cc2")  { $fail |= compare_eomcc2_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CCSD" || $wfn eq "eom_ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
           if ($wfn eq "EOM-CCSD" || $wfn eq "eom-ccsd") { $fail |= compare_eomccsd_energy(); last SWITCH2; }
           if ($wfn eq "EOM_CC3" || $wfn eq "eom_cc3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
+          if ($wfn eq "EOM-CC3" || $wfn eq "eom-cc3")  { $fail |= compare_eomcc3_energy(); last SWITCH2; }
           if ($wfn eq "DCFT")     { $fail |= compare_dcft_energy(); last SWITCH2; }
           if ($wfn eq "BCCD")     { $fail |= compare_bccd_energy(); last SWITCH2; }
           if ($wfn eq "BCCD_T")   { $fail |= compare_bccd_t_energy(); last SWITCH2; }

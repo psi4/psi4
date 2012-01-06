@@ -1115,7 +1115,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The symmetry of states -*/
     options.add_int("PROP_SYM", 1);
     /*- -*/
-    options.add_int("PROP_ROOT", 0);
+    options.add_int("PROP_ROOT", 1);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- -*/
