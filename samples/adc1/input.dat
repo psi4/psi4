@@ -1,0 +1,17 @@
+
+molecule h2o {
+    O
+    H 1 0.9584
+    H 1 0.9584 2 104.45
+}
+
+set globals {
+    reference rhf
+    basis aug-cc-pvdz
+    guess core
+    states_per_irrep [1,1,2,1]
+}
+
+energy('adc')
+
+clean()

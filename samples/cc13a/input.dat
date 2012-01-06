@@ -1,5 +1,4 @@
-#! UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
-
+#! UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
 molecule ch2 {
   0 3
@@ -20,7 +19,8 @@ set globals {
   d_converge 10
 }
 
-optimize('CCSD')
+optimize('CCSD(T)')
+
 
 
 clean()
