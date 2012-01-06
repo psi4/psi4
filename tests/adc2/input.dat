@@ -10,13 +10,13 @@ molecule h2ox2 {
  symmetry c1
 }
 
-set {
+set globals {
     reference rhf
     basis aug-cc-pvdz
     guess core
     states_per_irrep [2]
 }
 
-run_adc(h2ox2)
+energy('adc')
 
 clean()
