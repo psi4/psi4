@@ -2,8 +2,14 @@
 
 \subsection{Overview} 
 
-This manual explains how to use the \PSIfour\ suite of {\em ab initio}
-quantum chemical programs.  In this section, we provide an overview of
+\PSIfour\ provides a wide variety of quantum chemical methods using
+state-of-the-art numerical methods and algorithms.  Several parts of
+the code feature shared-memory parallelization to run efficiently on
+multi-core machines.  An advanced parser written in Python allows the user
+input to have a very simple style for routine computations, but it can also
+automate very complex tasks with ease. 
+
+In this section, we provide an overview of
 some of the features of \PSIfour\ along with the prerequisite steps for
 running calculations.  Section \ref{tutorial} provides a brief tutorial to
 help new users get started.  Section \ref{input} offers further details
@@ -11,17 +17,12 @@ into the structure of \PSIfour\ input files and a discussion of some of
 the most important options.  Later sections deal with the different types
 of computations which can be done using \PSIfour\ (e.g., Hartree-Fock,
 MP2, coupled-cluster) and general procedures such as geometry optimization
-and vibrational frequency analysis.  The appendix will eventually include a
-description of the input keywords and command-line options for each module,
-as well as numerous examples of \PSIfour\ input and basis set files.
+and vibrational frequency analysis.  The appendix includes a complete
+description of all possible input keywords for each module,
+as well as tables of available basis sets and a listing of the sample input
+files available under {\tt psi4/samples}.
 For the latest \PSIfour\ documentation, check \htmladdnormallink{{\tt
 www.psicode.org}} {http://www.psicode.org/}.
-
-The \PSIfour\ package was developed to perform high-accuracy quantum
-mechanical computations on challenging chemical species and to provide an
-infrastructure for the development of new theoretical techniques.  Hence,
-it has a very flexible input scheme which allows non-standard computations,
-and it is easily adapted to enable new capabilities.
 
 The following citation should be used in any publication utilizing the
 \PSIfour\ program package:
@@ -39,45 +40,45 @@ The latest version of the \PSIfour\ program package may be obtained at
 source code is available as a gzipped tar archive (named, for example, {\tt
 psi4.X.tar.gz}), and binaries may be available for certain architectures.
 For detailed installation and testing instructions, please refer to the
-the \PSIfour\ Installation Manual, available as part of the package or
-at the \PSIfour\ website above.
+installation instructions at the \PSIfour\ website above, or the file {\tt
+psi4/INSTALL} distributed with the package.
 
-\subsection{{\color{red} Supported Architectures}}
-{\color{red} This section needs to be updated.}
+\subsubsection{Scratch File Configuration}
+One very important part of user configuration at the end of the
+installation process is to tell \PSIfour\ where to write its temporary
+(``scratch'') files.  Electronic structure packages like \PSIfour\ can
+create rather large temporary disk files.  It is very important to 
+ensure that PSI4 is writing its temporary files to a disk drive
+phsyically attached to the computer running the computation.  If it
+is not, it will significantly slow down the program and the network.
+By default, PSI4 will write temporary files to \file{/tmp}, but this
+directory is often not large enough for typical computations.  Therefore,
+you need to (a) make sure there is a sufficiently large directory on a
+locally-attached disk drive (100GB--1TB or more, depending on the size of
+the molecules to be studied), and (b) tell \PSIfour\ the path to this
+directory.  The \PSIfour\ installation instructions explain how to set up a
+resource file, {\tt .psi4rc}, for each user providing this information.
 
-The majority of \PSIfour\ was developed on x86/GNU Linux workstations.
-The complete list of
-tested architectures to which \PSIfour\ has
-been ported is shown in Table \ref{table:ports}.
-\begin{table}[h]
-\caption{Platforms on which \PSIfour\ has been installed successfully.}
-\label{table:ports}
-\begin{center}
-\begin{tabular}{ll} \hline\hline
-Architecture              &  Notes \\ \hline
-Compaq Alpha Tru64 UNIX   & 64-bit mode \\
-IBM AIX 4.3.3, 5.x on PowerPC & 64-bit mode \\
-Linux on Intel/AMD x86 and x86-64  & 32 and 64-bit\\
-Apple OS X (Darwin) on PowerPC and Intel & \\
-SGI IRIX64 ($>$6.5.15)    & 64-bit \\ \hline\hline
-\end{tabular}
-\end{center}
-\end{table}
-If you don't find your system in the Table, there's a good chance
-that you will be able to install \PSIfour\ on your system
-if you have the prerequisite tools and math and utility libraries described 
-in the installation manual.
 
-\subsection{{\color{red} Capabilities}}
-{\color{red} This section needs to be updated with the new theory capabilities}
+\subsection{Supported Architectures}
+The majority of \PSIfour\ was developed on Mac and Linux machines.  In
+principle, it should work on any Unix system; however, we have not tested
+extensively on sytems other than Mac and Linux.  There is not a Windows
+version of \PSIfour.
 
-\PSIfour\ can perform {\em ab initio} computations employing
-basis sets of up to 32768 contracted Gaussian-type functions of
-virtually arbitrary orbital quantum number.
-\PSIfour\ can recognize and exploit the largest Abelian subgroup of the
-point group describing the full symmetry of the molecule.
-Table \ref{table:methods} displays the range of theoretical
-methods available in \PSIfour .
+\PSIfour\ has been successfully compiled using Intel, GCC, and Clang.
+For the Intel compilers, use version 11 or
+12.1 (have have had trouble with version 12.0).  
+
+
+\subsection{Capabilities}
+
+\PSIfour\ can perform {\em ab initio} computations employing basis
+sets of contrated Gaussian-type functions of virtually arbitrary
+orbital quantum number.  Many parts of \PSIfour\ can recognize and
+exploit the largest Abelian subgroup of the molecular point group.
+Table \ref{table:methods} displays the range of theoretical methods
+available in \PSIfour.
 
 \begin{table}
 \caption{Summary of theoretical methods available in \PSIfour.} \label{table:methods}
@@ -85,19 +86,24 @@ methods available in \PSIfour .
 \begin{center}
 \begin{tabular}{lccc} \hline\hline
 Method                & Energy & Gradient & Hessian \\ \hline
-RHF SCF               & Y & Y & Y \\
-ROHF SCF              & Y & Y & N \\
-UHF SCF               & Y & N & N \\
-HF DBOC               & Y & N & N \\
+RHF/ROHF/UHF SCF     & Y & N & N \\
+RHF/ROHF/UHF DF-SCF   & Y & N & N \\
+%HF DBOC               & Y & N & N \\
+%TCSCF                 & Y & Y & N \\
+%CASSCF                & Y & Y & N \\
+%RASSCF                & Y & Y & N \\
 CIS/RPA/TDHF          & Y & N & N \\
-TCSCF                 & Y & Y & N \\
-CASSCF                & Y & Y & N \\
-RASSCF                & Y & Y & N \\
-RAS-CI                & Y & N & N \\
-RAS-CI DBOC           & Y & N & N \\
+UHF DCFT              & Y & N & N \\
+RHF SAPT              & Y & N & N \\
 RHF MP2               & Y & Y & N \\
 UHF/ROHF MP2          & Y & N & N \\
-RHF MP2-R12           & Y & N & N \\
+RHF DF-MP2            & Y & N & N \\
+%RHF MP2-R12           & Y & N & N \\
+RHF/ROHF CI(n)        & Y & Y & N \\
+RHF/ROHF RAS-CI       & Y & Y & N \\
+RHF/ROHF MP(n)        & Y & N & N \\
+RHF/ROHF ZAPT(n)      & Y & N & N \\
+%RAS-CI DBOC           & Y & N & N \\
 RHF/UHF/ROHF CCSD     & Y & Y & N \\
 RHF/UHF/ROHF CCSD(T)  & Y & Y$^*$ & N \\
 RHF/UHF/ROHF EOM-CCSD & Y & Y & N \\

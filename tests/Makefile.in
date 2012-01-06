@@ -1,6 +1,9 @@
 
 .PHONY: tests quicktests cc_tests psirb_tests clean quicktestsclean
 
+# Tutorial test cases
+tutorial_subdirs = tu1-h2o-energy tu2-ch2-energy
+
 # Tests that depend on madness:
 #  This is probably not the final solution:
 maddness_subdirs = dfmp2_1 dfmp2_2
@@ -34,6 +37,7 @@ python_test_subdirs = pywrap_db1 pywrap_db2 pywrap_cbs1 pywrap_all pywrap_alias
 
 plugin_subdirs = plugin_aointegrals plugin_sointegrals plugin_backtrans plugin_mp2 plugin_mointegrals plugin_testparse
 subdirs = \
+$(tutorial_subdirs) \
 $(mints_subdirs) \
 $(matrix_subdirs) \
 $(scf_subdirs) \

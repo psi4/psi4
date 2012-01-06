@@ -2963,31 +2963,31 @@ sub get_calctype_string
   my $linenumber = 0;
   foreach $line (@datafile) {
     $linenumber++;
-    if ($line =~ m/energy\(\'/) {
+    if ($line =~ m/energy\s*\(\'/) {
       $jobtype = "energy";
       @data = split(/\'/, $line);
       $wfn = $data[1];
     }
-    elsif ($line =~ m/scf\(/) {
+    elsif ($line =~ m/scf\s*\(/) {
       $jobtype = "energy";
       $wfn = "scf";
     }
-    elsif ($line =~ m/optimize\(/) {
+    elsif ($line =~ m/optimize\s*\(/) {
       $jobtype = "optimize";
       @data = split(/\'/, $line);
       $wfn = $data[1];
     }
-    elsif ($line =~ m/gradient\(/) {
+    elsif ($line =~ m/gradient\s*\(/) {
       $jobtype = "gradient";
       @data = split(/\'/, $line);
       $wfn = $data[1];
     }
-    elsif ($line =~ m/hessian\(/) {
+    elsif ($line =~ m/hessian\s*\(/) {
       $jobtype = "hessian";
       @data = split(/\'/, $line);
       $wfn = $data[1];
     }
-    elsif ($line =~ m/response\(/) {
+    elsif ($line =~ m/response\s*\(/) {
       $jobtype = "response";
       @data = split(/\'/, $line);
       $wfn = $data[1];
