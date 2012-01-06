@@ -12,7 +12,6 @@ set {
     dertype first
     docc [3, 0, 1, 1]
     basis 6-31G**
-    relax_opdm true     # Currently needed until ccdensity is fixed.
 
     convergence 11
     e_converge 11

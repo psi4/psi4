@@ -1,9 +1,4 @@
-#! UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
-
-refnuc   =   6.07006654183091   #TEST
-refscf   = -38.92658702693478   #TEST
-refccsd  =  -0.11533612150975   #TEST
-reftotal = -39.04192314844453   #TEST
+#! UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
 molecule ch2 {
   0 3
@@ -24,11 +19,16 @@ set globals {
   d_converge 10
 }
 
-optimize('CCSD')
+optimize('CCSD(T)')
+
+refnuc     =   6.06482004489131   #TEST
+refscf     = -38.92655208442658   #TEST
+refccsd_t  =  -0.11716018769631   #TEST
+reftotal   = -39.04371227103925   #TEST
 
 compare_values(refnuc,   ch2.nuclear_repulsion_energy(),          5, "Nuclear repulsion energy")  #TEST
 compare_values(refscf,   get_variable("SCF total energy"),        6, "SCF energy")                #TEST
-compare_values(refccsd,  get_variable("CCSD correlation energy"), 6, "CCSD contribution")         #TEST
+compare_values(refccsd_t,  get_variable("CCSD(T) correlation energy"), 6, "CCSD(T) contribution")         #TEST
 compare_values(reftotal, get_variable("Current energy"),          6, "Total energy")              #TEST
 
 clean()

@@ -39,7 +39,7 @@ cc12: RHF-EOM-CCSD/cc-pVDZ on the lowest two states of each irrep in H2O.
 cc13: UHF-CCSD/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
   (all electron, MO-basis <ab|cd>)
 
-cc13a:
+cc13a: UHF-CCSD(T)/cc-pVDZ 3B1 CH2 geometry optimization via analytic gradients
 
 cc14:
 
