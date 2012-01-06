@@ -25,7 +25,7 @@
 #include <libmints/mints.h>
 
 #include "hf.h"
-#include "rhf.h"
+#include "sad.h"
 
 using namespace boost;
 using namespace std;
@@ -33,9 +33,241 @@ using namespace psi;
 
 namespace psi { namespace scf {
 
-void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
+SADGuess::SADGuess(boost::shared_ptr<BasisSet> basis, int nalpha, int nbeta, Options& options) :
+    basis_(basis), nalpha_(nalpha), nbeta_(nbeta), options_(options)
 {
-    int sad_print_ = options_.get_int("SAD_PRINT");
+    common_init();
+}
+SADGuess::~SADGuess()
+{
+}
+void SADGuess::common_init()
+{
+    molecule_ = basis_->molecule();
+    
+    boost::shared_ptr<IntegralFactory> ints(new IntegralFactory(basis_));
+    boost::shared_ptr<PetiteList> petite(new PetiteList(basis_,ints)); 
+    AO2SO_ =  petite->aotoso();
+
+    print_ = options_.get_int("SAD_PRINT");
+    debug_ = options_.get_int("DEBUG");
+}
+void SADGuess::compute_guess()
+{
+    form_D();
+    form_C();
+}
+void SADGuess::form_D()
+{
+    // Build Neutral D in AO basis (block diagonal)
+    SharedMatrix DAO = form_D_AO();
+    
+    // Transform Neutral D from AO to SO basis
+    Da_ = SharedMatrix(new Matrix("Da SAD",AO2SO_->colspi(),AO2SO_->colspi()));
+
+    double* temp = new double[AO2SO_->rowspi()[0] * (ULI) AO2SO_->max_ncol()];
+    for (int h = 0; h < Da_->nirrep(); h++) {
+        int nao = AO2SO_->rowspi()[h];
+        int nso = AO2SO_->colspi()[h];
+        if (!nao || !nso) continue;
+
+        double** DAOp = DAO->pointer();
+        double** DSOp = Da_->pointer(h);
+        double** Up = AO2SO_->pointer(h);
+
+        C_DGEMM('N','N',nao,nso,nao,1.0,DAOp[0],nao,Up[0],nso,0.0,temp,nso);
+        C_DGEMM('T','N',nso,nso,nao,1.0,Up[0],nso,temp,nso,0.0,DSOp[0],nso);
+    }
+    delete[] temp;
+
+    // Scale Da to true electron count
+    double npair = 0.0;
+    for (int A = 0; A < molecule_->natom(); A++) {
+        npair += 0.5 * molecule_->Z(A);
+    }
+    Da_->scale(((double) nalpha_) / npair);
+
+    // Build/Scale Db if needed
+    if (nalpha_ == nbeta_) {
+        Db_ = Da_;
+    } else {
+        Db_ = SharedMatrix(Da_->clone());
+        Db_->set_name("Db SAD");
+        Db_->scale(((double) nbeta_) / ((double) nalpha_));
+    }
+
+    if (debug_) {
+        Da_->print();
+        Db_->print();
+    }
+}
+void SADGuess::form_C()
+{
+    Ca_ = Da_->partial_cholesky_factorize(options_.get_double("SAD_CHOL_CUTOFF"));
+    Ca_->set_name("Ca SAD");
+    if (nalpha_ == nbeta_) {
+        
+        Cb_ = Ca_;
+    } else {
+        Cb_ = SharedMatrix(Ca_->clone()); 
+        Cb_->set_name("Cb SAD");
+        Cb_->scale(sqrt(((double)nbeta_)/((double)nalpha_)));
+    }
+
+    if (debug_) {
+        Ca_->print();
+        Cb_->print();
+    }
+}
+SharedMatrix SADGuess::form_D_AO()
+{
+    std::vector<boost::shared_ptr<BasisSet> > atomic_bases;
+
+    if (print_ > 6) {
+        fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
+        molecule_->print();
+    }
+
+    //Build the atomic basis sets for libmints use in UHF
+    for (int A = 0; A<molecule_->natom(); A++) {
+        atomic_bases.push_back(basis_->atomic_basis_set(A));
+        if (print_>6) {
+            fprintf(outfile,"  SAD: Atomic Basis Set %d\n", A);
+            atomic_bases[A]->molecule()->print();
+            fprintf(outfile,"\n");
+            atomic_bases[A]->print(outfile);
+            fprintf(outfile,"\n");
+        }
+    }
+
+    //Spin occupations per atom, to be determined by Hund's Rules
+    //or user input
+    int* nalpha = init_int_array(molecule_->natom());
+    int* nbeta = init_int_array(molecule_->natom());
+    int* nelec = init_int_array(molecule_->natom());
+    int* nhigh = init_int_array(molecule_->natom());
+    int tot_elec = 0;
+
+    //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
+    const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0};
+    const int MAX_Z = 36;
+
+    if (print_>1)
+        fprintf(outfile,"  Determining Atomic Occupations\n");
+    for (int A = 0; A<molecule_->natom(); A++) {
+        int Z = molecule_->Z(A);
+        if (Z>MAX_Z) {
+            throw std::domain_error(" Only Atoms up to 36 (Kr) are currently supported with SAD Guess");
+        }
+        nhigh[A] = reference_S[Z];
+        nelec[A] = Z;
+        tot_elec+= nelec[A];
+        nbeta[A] = (nelec[A]-nhigh[A])/2;
+        nalpha[A] = nelec[A]-nbeta[A];
+        if (print_>1)
+            fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
+    }
+    fflush(outfile);
+
+    // Determine redundant atoms
+    int* unique_indices = init_int_array(molecule_->natom()); // All atoms to representative unique atom
+    int* atomic_indices = init_int_array(molecule_->natom()); // unique atom to first representative atom
+    int* offset_indices = init_int_array(molecule_->natom()); // unique atom index to rank
+    int nunique = 0;
+    for (int l = 0; l < molecule_->natom(); l++) {
+        unique_indices[l] = l;
+        atomic_indices[l] = l;
+    }
+    for (int l = 0; l < molecule_->natom() - 1; l++) {
+        for (int m = l + 1; m < molecule_->natom(); m++) {
+            if (unique_indices[m] != m)
+                continue; //Already assigned
+            if (molecule_->Z(l) != molecule_->Z(m))
+                continue;
+            if (nalpha[l] != nalpha[m])
+                continue;
+            if (nbeta[l] != nbeta[m])
+                continue;
+            if (nhigh[l] != nhigh[m])
+                continue;
+            if (nelec[l] != nelec[m])
+                continue;
+            if (atomic_bases[l]->nbf() != atomic_bases[m]->nbf())
+                continue;
+            if (atomic_bases[l]->nshell() != atomic_bases[m]->nshell())
+                continue;
+            if (atomic_bases[l]->nprimitive() != atomic_bases[m]->nprimitive())
+                continue;
+            if (atomic_bases[l]->max_am() != atomic_bases[m]->max_am())
+                continue;
+            if (atomic_bases[l]->max_nprimitive() != atomic_bases[m]->max_nprimitive())
+                continue;
+            if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
+                continue;
+
+            // Semi-Rigorous match obtained
+            unique_indices[m] = l;
+        }
+    }
+    for (int l = 0; l < molecule_->natom(); l++) {
+        if (unique_indices[l] == l) {
+            atomic_indices[nunique] = l;
+            offset_indices[l] = nunique;
+            nunique++;
+        }
+    }
+
+    //Atomic D matrices within the atom specific AO basis
+    double*** atomic_D = (double***)malloc(nunique*sizeof(double**));
+    for (int A = 0; A<nunique; A++) {
+        atomic_D[A] = block_matrix(atomic_bases[atomic_indices[A]]->nbf(),atomic_bases[atomic_indices[A]]->nbf());
+    }
+
+    if (print_ > 1)
+        fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
+    for (int A = 0; A<nunique; A++) {
+        int index = atomic_indices[A];
+        if (print_ > 1)
+            fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
+        getUHFAtomicDensity(atomic_bases[index],nelec[index],nhigh[index],atomic_D[A]);
+    }
+    if (print_)
+        fprintf(outfile,"\n");
+
+    fflush(outfile);
+    
+    //Add atomic_D into D (scale by 1/2, we like effective pairs)
+    SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", basis_->nbf(), basis_->nbf()));
+    for (int A = 0, offset = 0; A < molecule_->natom(); A++) {
+        int norbs = atomic_bases[A]->nbf();
+        int back_index = unique_indices[A];
+        for (int m = 0; m<norbs; m++)
+            for (int n = 0; n<norbs; n++)
+                DAO->set(0,m+offset,n+offset,0.5*atomic_D[offset_indices[back_index]][m][n]);
+        offset+=norbs;
+    }
+
+    for (int A = 0; A<nunique; A++)
+        free_block(atomic_D[A]);
+    free(atomic_D);
+
+    free(nelec);
+    free(nhigh);
+    free(nalpha);
+    free(nbeta);
+
+    free(atomic_indices);
+    free(unique_indices);
+    free(offset_indices);
+
+    if (debug_) {
+        DAO->print();
+    }
+
+    return DAO;
+}
+void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
+{
     boost::shared_ptr<Molecule> mol = bas->molecule();
 
     int nbeta = (nelec-nhigh)/2;
@@ -43,7 +275,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     int natom = mol->natom();
     int norbs = bas->nbf();
 
-    if (sad_print_>1) {
+    if (print_>1) {
         fprintf(outfile,"\n");
         bas->print(outfile);
         fprintf(outfile,"  Occupation: nalpha = %d, nbeta = %d, norbs = %d\n",nalpha,nbeta,norbs);
@@ -82,7 +314,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     S_ints->compute(S_UHF);
     double** S = S_UHF->to_block_matrix();
 
-    if (sad_print_>6) {
+    if (print_>6) {
         fprintf(outfile,"  S:\n");
         print_mat(S,norbs,norbs,outfile);
     }
@@ -124,7 +356,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     free_block(S);
     free_block(S_copy);
 
-    if (sad_print_>6) {
+    if (print_>6) {
         fprintf(outfile,"  S^-1/2:\n");
         print_mat(Shalf,norbs,norbs,outfile);
     }
@@ -144,7 +376,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     delete T_ints;
     delete V_ints;
 
-    if (sad_print_>6) {
+    if (print_>6) {
         fprintf(outfile,"  H:\n");
         print_mat(H,norbs,norbs,outfile);
     }
@@ -156,7 +388,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     //Compute intial D
     C_DCOPY(norbs*norbs,Da[0],1,D[0],1);
     C_DAXPY(norbs*norbs,1.0,Db[0],1,D[0],1);
-    if (sad_print_>6) {
+    if (print_>6) {
         fprintf(outfile,"  Ca:\n");
         print_mat(Ca,norbs,norbs,outfile);
 
@@ -190,7 +422,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     int iteration = 0;
 
     bool converged = false;
-    if (sad_print_>1) {
+    if (print_>1) {
         fprintf(outfile, "\n  Initial Atomic UHF Energy:    %14.10f\n\n",E);
         fprintf(outfile, "                                         Total Energy            Delta E              Density RMS\n\n");
         fflush(outfile);
@@ -236,14 +468,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
              Gb[omu][onu] += D[ola][osi]*buffer[index];
              //Gb[ola][osi] += D[omu][onu]*buffer[index];
              Gb[omu][osi] -= Db[onu][ola]*buffer[index];
-        }
-        }
-        }
-        }
-        }
-        }
-        }
-        }
+        } } } } } } } }
 
         //Form Fa and Fb
         C_DCOPY(norbs*norbs,H[0],1,Fa[0],1);
@@ -281,7 +506,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
 
         double deltaE = fabs(E-E_old);
 
-        if (sad_print_>6) {
+        if (print_>6) {
             fprintf(outfile,"  Fa:\n");
             print_mat(Fa,norbs,norbs,outfile);
 
@@ -309,7 +534,7 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
             fprintf(outfile,"  D:\n");
             print_mat(D,norbs,norbs,outfile);
         }
-        if (sad_print_>1)
+        if (print_>1)
             fprintf(outfile, "  @Atomic UHF iteration %3d energy: %20.14f    %20.14f %20.14f\n", iteration, E, E-E_old, Drms);
         if (iteration > 1 && deltaE < E_tol && Drms < D_tol)
             converged = true;
@@ -339,9 +564,8 @@ void HF::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhi
     free_block(H);
     free_block(Shalf);
 }
-void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D)
+void SADGuess::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D)
 {
-    int sad_print_ = options_.get_int("SAD_PRINT");
     //Forms C in the AO basis for SAD Guesses
     double **Temp = block_matrix(norbs,norbs);
     double **Fp = block_matrix(norbs,norbs);
@@ -366,318 +590,35 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
     free_block(Cp);
     free_block(Fp);
 }
+
 void HF::compute_SAD_guess()
 {
-    if (!restricted()) {
-        throw PSIEXCEPTION("SCF::compute_SAD_guess: SAD Guess only supported for restricted references at this time.");
-    }
+    boost::shared_ptr<SADGuess> guess(new SADGuess(basisset_,nalpha_,nbeta_,options_));
+    guess->compute_guess();
 
-    int sad_print_ = options_.get_int("SAD_PRINT");
+    Da_->copy(guess->Da());
+    Db_->copy(guess->Db());
 
-    boost::shared_ptr<Molecule> mol = basisset_->molecule();
-    std::vector<boost::shared_ptr<BasisSet> > atomic_bases;
-
-    if (print_ > 6) {
-        fprintf(outfile,"\n  Constructing atomic basis sets\n  Molecule:\n");
-        mol->print();
-    }
-
-    //Build the atomic basis sets for libmints use in UHF
-    for (int A = 0; A<mol->natom(); A++) {
-        atomic_bases.push_back(basisset_->atomic_basis_set(A));
-        if (sad_print_>6) {
-            fprintf(outfile,"  SAD: Atomic Basis Set %d\n", A);
-            atomic_bases[A]->molecule()->print();
-            fprintf(outfile,"\n");
-            atomic_bases[A]->print(outfile);
-            fprintf(outfile,"\n");
-        }
-    }
-
-    //Spin occupations per atom, to be determined by Hund's Rules
-    //or user input
-    int* nalpha = init_int_array(mol->natom());
-    int* nbeta = init_int_array(mol->natom());
-    int* nelec = init_int_array(mol->natom());
-    int* nhigh = init_int_array(mol->natom());
-    int tot_elec = 0;
-
-    //Ground state high spin occupency array, atoms 0 to 36 (see Giffith's Quantum Mechanics, pp. 217)
-    const int reference_S[] = {0,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,2,1,0,1,0,1,2,3,6,5,4,3,2,1,0,1,2,3,2,1,0};
-    const int MAX_Z = 36;
-
-    //At the moment, we'll assume no ions, and Hund filling
-    //Improvemnts to SAD can be made simply by changing the setup of nalpha and nbeta
-    if (sad_print_>1)
-        fprintf(outfile,"\n  SAD: Determining atomic occupations:\n");
-    for (int A = 0; A<mol->natom(); A++) {
-        int Z = mol->Z(A);
-        if (Z>MAX_Z) {
-            throw std::domain_error(" Only Atoms up to 36 (Kr) are currently supported with SAD Guess");
-        }
-        nhigh[A] = reference_S[Z];
-        nelec[A] = Z;
-        tot_elec+= nelec[A];
-        nbeta[A] = (nelec[A]-nhigh[A])/2;
-        nalpha[A] = nelec[A]-nbeta[A];
-        if (sad_print_>1)
-            fprintf(outfile,"  Atom %d, Z = %d, nelec = %d, nhigh = %d, nalpha = %d, nbeta = %d\n",A,Z,nelec[A],nhigh[A],nalpha[A],nbeta[A]);
-    }
-    fflush(outfile);
-
-    // Determine redundant atoms
-    int* unique_indices = init_int_array(mol->natom()); // All atoms to representative unique atom
-    int* atomic_indices = init_int_array(mol->natom()); // unique atom to first representative atom
-    int* offset_indices = init_int_array(mol->natom()); // unique atom index to rank
-    int nunique = 0;
-    for (int l = 0; l < mol->natom(); l++) {
-        unique_indices[l] = l;
-        atomic_indices[l] = l;
-    }
-    for (int l = 0; l < mol->natom() - 1; l++) {
-        for (int m = l + 1; m < mol->natom(); m++) {
-            if (unique_indices[m] != m)
-                continue; //Already assigned
-            if (mol->Z(l) != mol->Z(m))
-                continue;
-            if (nalpha[l] != nalpha[m])
-                continue;
-            if (nbeta[l] != nbeta[m])
-                continue;
-            if (nhigh[l] != nhigh[m])
-                continue;
-            if (nelec[l] != nelec[m])
-                continue;
-            if (atomic_bases[l]->nbf() != atomic_bases[m]->nbf())
-                continue;
-            if (atomic_bases[l]->nshell() != atomic_bases[m]->nshell())
-                continue;
-            if (atomic_bases[l]->nprimitive() != atomic_bases[m]->nprimitive())
-                continue;
-            if (atomic_bases[l]->max_am() != atomic_bases[m]->max_am())
-                continue;
-            if (atomic_bases[l]->max_nprimitive() != atomic_bases[m]->max_nprimitive())
-                continue;
-            if (atomic_bases[l]->has_puream() !=  atomic_bases[m]->has_puream())
-                continue;
-
-            // Semi-Rigorous match obtained
-            unique_indices[m] = l;
-        }
-    }
-    for (int l = 0; l < mol->natom(); l++) {
-        if (unique_indices[l] == l) {
-            atomic_indices[nunique] = l;
-            offset_indices[l] = nunique;
-            nunique++;
-        }
-    }
-
-    //printf(" Nunique = %d \n", nunique);
-    //printf(" Unique Indices   Atomic Indices \n");
-    //for (int l = 0; l < mol->natom(); l++) {
-    //    printf(" %14d   %14d \n", unique_indices[l], atomic_indices[l]);
-    //}
-
-    timer_on("Atomic UHF");
-
-    //Atomic D matrices within the atom specific AO basis
-    double*** atomic_D = (double***)malloc(nunique*sizeof(double**));
-    for (int A = 0; A<nunique; A++) {
-        atomic_D[A] = block_matrix(atomic_bases[atomic_indices[A]]->nbf(),atomic_bases[atomic_indices[A]]->nbf());
-    }
-
-    if (sad_print_)
-        fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
-    for (int A = 0; A<nunique; A++) {
-        int index = atomic_indices[A];
-        if (sad_print_)
-            fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
-        getUHFAtomicDensity(atomic_bases[index],nelec[index],nhigh[index],atomic_D[A]);
-    }
-    if (sad_print_)
-        fprintf(outfile,"\n");
-
-    timer_off("Atomic UHF");
-
-    fflush(outfile);
-
-    timer_on("AO2USO SAD");
-    //Add atomic_D into D (scale by 1/2, we like pairs in RHF)
-    SharedMatrix DAO = SharedMatrix(new Matrix("D_SAD (AO)", nso_, nso_));
-    for (int A = 0, offset = 0; A < mol->natom(); A++) {
-        int norbs = atomic_bases[A]->nbf();
-        int back_index = unique_indices[A];
-        for (int m = 0; m<norbs; m++)
-            for (int n = 0; n<norbs; n++)
-                DAO->set(0,m+offset,n+offset,0.5*atomic_D[offset_indices[back_index]][m][n]);
-        offset+=norbs;
-    }
-    if (sad_print_>4)
-        DAO->print(outfile);
-
-    for (int A = 0; A<nunique; A++)
-        free_block(atomic_D[A]);
-    free(atomic_D);
-
-    free(nelec);
-    free(nhigh);
-    free(nalpha);
-    free(nbeta);
-
-    free(atomic_indices);
-    free(unique_indices);
-    free(offset_indices);
-
-    // Do a similarity transform to get D_USO(SAD)
-    if (Da_->nirrep() == 0) {
-        Da_->copy(DAO);
-    } else {
-
-        boost::shared_ptr<IntegralFactory> fact(new IntegralFactory(basisset_, basisset_, basisset_, basisset_));
-        boost::shared_ptr<PetiteList> pet(new PetiteList(basisset_, fact));
-        SharedMatrix AO2USO(pet->aotoso());
-        Dimension dim = pet->SO_basisdim();
-        int nao = nso_;
-
-        for (int h = 0; h < Da_->nirrep(); h++) {
-            int nuso = dim[h];
-
-            if (nuso == 0 || nao == 0) continue;
-
-            double** DAOp = DAO->pointer(0);
-            double** D = Da_->pointer(h);
-            double** U = AO2USO->pointer(h);
-
-            double** Temp = block_matrix(nuso, nao);
-
-            C_DGEMM('T','N',nuso, nao, nao, 1.0, U[0], nuso, DAOp[0], nao, 0.0, Temp[0], nao);
-            C_DGEMM('N','N',nuso, nuso, nao, 1.0, Temp[0], nao, U[0], nuso, 0.0, D[0], nuso);
-
-            free_block(Temp);
-
-        }
-    }
-    DAO.reset();
-
-    timer_off("AO2USO SAD");
-
-    timer_on("SAD Cholesky");
-    if (sad_print_) {
-        fprintf(outfile,"\n  Approximating occupied orbitals via Partial Cholesky Decomposition.\n");
-        fprintf(outfile,"  NOTE: The zero-th SCF iteration will not be variational.\n");
-    }
-    int* dim = Da_->colspi();
-    SharedMatrix D2(factory_->create_matrix("D2"));
-    D2->copy(Da_);
-    Ca_->zero();
     for (int h = 0; h < Da_->nirrep(); h++) {
-        int norbs = dim[h];
-        //fprintf(outfile,"  Irrep %2d: nsopi = %d\n", h, norbs);
-	//fflush(outfile);
-        sad_nocc_[h] = 0;
 
-        if (norbs == 0) continue;
+        int nso = guess->Ca()->rowspi()[h];
+        int nmo = guess->Ca()->colspi()[h];
+        if (nmo > X_->colspi()[h])
+            nmo = X_->colspi()[h];
 
-        double** D = D2->pointer(h);
-        double* Temp = init_array(norbs);
-        int* P = init_int_array(norbs);
-        for (int i = 0; i<norbs; i++)
-            P[i] = i;
+        sad_nocc_[h] = nmo; 
 
-        if (sad_print_ > 5) {
-            fprintf(outfile,"  D:\n");
-            print_mat(D,norbs,norbs,outfile);
-        }
-        //Pivot
-        double max;
-        int Temp_p;
-        int pivot;
-        for (int i = 0; i<norbs-1; i++) {
-            max = 0.0;
-            //Where's the pivot diagonal?
-            for (int j = i; j<norbs; j++)
-                if (max <= fabs(D[j][j])) {
-                    max = fabs(D[j][j]);
-                    pivot = j;
-                }
+        if (!nso || !nmo) continue;
 
-            //Rows
-            C_DCOPY(norbs,&D[pivot][0],1,Temp,1);
-            C_DCOPY(norbs,&D[i][0],1,&D[pivot][0],1);
-            C_DCOPY(norbs,Temp,1,&D[i][0],1);
-
-            //Columns
-            C_DCOPY(norbs,&D[0][pivot],norbs,Temp,1);
-            C_DCOPY(norbs,&D[0][i],norbs,&D[0][pivot],norbs);
-            C_DCOPY(norbs,Temp,1,&D[0][i],norbs);
-
-            Temp_p = P[i];
-            P[i] = P[pivot];
-            P[pivot] = Temp_p;
-        }
-
-        if (sad_print_ > 5) {
-            fprintf(outfile,"  D (pivoted):\n");
-            print_mat(D,norbs,norbs,outfile);
-            for (int i = 0; i<norbs; i++)
-                fprintf(outfile,"  Pivot %d is %d.\n",i,P[i]);
-        }
-
-        //Cholesky Decomposition
-        int rank = C_DPOTRF('U',norbs,D[0],norbs);
-        if (rank < 0) {
-            fprintf(outfile,"  Cholesky Decomposition Failed");
-            fflush(outfile);
-            exit(PSI_RETURN_FAILURE);
-        }
-        else if (rank == 0) {
-            //Full Cholesky completed, use the whole thing
-            rank = norbs;
-            sad_nocc_[h] = norbs;
-        } else {
-            // Only a partial Cholesky completed (rank was deficient)
-            sad_nocc_[h] = rank - 1; //FORTRAN
-        }
-        for (int i = 0; i<norbs-1; i++)
-            for (int j = i+1; j<norbs; j++)
-                D[i][j] = 0.0;
-
-        if (sad_print_ > 5) {
-            fprintf(outfile,"  C Guess (Cholesky Unpivoted) , rank is %d:\n", rank);
-            print_mat(D,norbs,sad_nocc_[h],outfile);
-            fflush(outfile);
-	}
-
-        if (sad_print_>1)
-            fprintf(outfile,"  Irrep %2d: %5d of %5d possible partial occupation vectors selected for C.\n",h, sad_nocc_[h],norbs);
-    	fflush(outfile);
-	
-	if (sad_nocc_[h] > 0) {
-
-            //Unpivot
-            double** C = block_matrix(norbs,sad_nocc_[h]);
-            for (int m = 0; m < norbs; m++) {
-                C_DCOPY(sad_nocc_[h],&D[m][0],1,&C[P[m]][0],1);
-            }
+        double** Cap = Ca_->pointer(h);
+        double** Cbp = Cb_->pointer(h);
+        double** Ca2p = guess->Ca()->pointer(h);
+        double** Cb2p = guess->Cb()->pointer(h);
     
-    
-            //Set C
-            for (int m = 0; m<norbs; m++)
-                for (int i = 0; i<sad_nocc_[h]; i++)
-                    Ca_->set(h,m,i,C[m][i]);
-    
-            if (sad_print_ > 5) {
-                fprintf(outfile,"\n  C Guess (Cholesky):\n");
-                print_mat(C,norbs,sad_nocc_[h],outfile);
-            }
-            //C_->print(outfile);
-            free_block(C);
-    
-	}
-
-        free(P);
-        free(Temp);
+        for (int i = 0; i < nso; i++) {
+            ::memcpy((void*) Cap[i], (void*) Ca2p[i], nmo*sizeof(double));
+            ::memcpy((void*) Cbp[i], (void*) Cb2p[i], nmo*sizeof(double));
+        }
     }
 
     int temp_nocc;
@@ -693,7 +634,6 @@ void HF::compute_SAD_guess()
     fflush(outfile);
 
     E_ = 0.0; // This is the -1th iteration
-    timer_off("SAD Cholesky");
 }
 SharedMatrix HF::dualBasisProjection(SharedMatrix C_A, int* noccpi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis) 
 {

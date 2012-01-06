@@ -1620,7 +1620,6 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
 
         // Diagonal (or later Schur complement diagonal)
         double* Dp = new double[n];
-        ::memset(static_cast<void*>(Dp), '\0', nirrep_*sizeof(double));
         for (int i = 0; i < n; i++)
             Dp[i] = Ap[i][i];
 
@@ -1686,8 +1685,12 @@ SharedMatrix Matrix::partial_cholesky_factorize(double delta, bool throw_if_nega
 
     // Copy out to properly sized array
     SharedMatrix L(new Matrix("Partial Cholesky Factor", nirrep_, rowspi_, sigpi));
+
+    //K->print();
+    //L->print();
+
     for (int h = 0; h < nirrep_; h++) {
-        if (!rowspi_[h]) continue;
+        if (!rowspi_[h] || !sigpi[h]) continue;
         double** Kp = K->pointer(h);
         double** Lp = L->pointer(h);
 
