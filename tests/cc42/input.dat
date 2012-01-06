@@ -17,10 +17,8 @@ molecule smo {
 }
 
 set {
-  wfn cc2
   basis "STO-3G"
   freeze_core true
-  dertype response
   property rotation
   gauge length
   omega [589, 355]
