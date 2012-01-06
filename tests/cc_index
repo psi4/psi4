@@ -124,9 +124,11 @@ cc49: UHF-CC3-LR 3-2A1 excitation energy of CH radical.  This corresponds to
 the ^2Sigma+ state in full C-infinity-v symmetry and should compare to results
 published in JCP 122, 054110 (2005).
 
-cc50:
+cc50: ROHF-CC3-LR 3-2A1 excitation energy of CH radical.  This corresponds to
+the ^2Sigma+ state in full C-infinity-v symmetry and should compare to results
+published in JCP 122, 054110 (2005).
 
-cc51:
+cc51: RHF-CC3-LR 1-B1 excitation energy of H2O.
 
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
