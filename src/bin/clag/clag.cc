@@ -387,12 +387,12 @@ double **rdopdm(int nbf, int print_lvl, int opdm_file)
   opdm = block_matrix(nbf, nbf); 
 
   /* if the user hasn't specified a root, just get "the" onepdm */
-  if (!options["ROOT"].has_changed()) {
+  if (!options["FOLLOW_ROOT"].has_changed()) {
     psio_read_entry(opdm_file, "MO-basis OPDM", (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
   }
   else {
-    root = options.get_int("ROOT");
+    root = options.get_int("FOLLOW_ROOT");
     sprintf(opdm_key, "MO-basis OPDM Root %d", root);
     psio_read_entry(opdm_file, opdm_key, (char *) opdm[0], 
                     nbf*nbf*sizeof(double));
