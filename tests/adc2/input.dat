@@ -1,0 +1,22 @@
+
+# Two water molecules that are distant from 1000 angstroms from each other
+molecule h2ox2 {
+   o                               0.000000    0.000000    0.118621
+   h                               0.000000    0.756713   -0.474484
+   h                               0.000000   -0.756713   -0.474484
+   o                               1000.000000    0.000000    0.118621
+   h                               1000.000000    0.756713   -0.474484
+   h                               1000.000000   -0.756713   -0.474484
+ symmetry c1
+}
+
+set {
+    reference rhf
+    basis aug-cc-pvdz
+    guess core
+    states_per_irrep [2]
+}
+
+run_adc(h2ox2)
+
+clean()
