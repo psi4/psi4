@@ -1,6 +1,5 @@
 #! RHF-CCSD 6-31G** all-electron optimization of the H2O molecule
 
-
 molecule h2o {
     O
     H 1 0.97
@@ -21,6 +20,7 @@ set {
 }
 
 thisenergy = optimize('ccsd')
+
 
 
 clean()
