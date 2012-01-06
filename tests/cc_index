@@ -84,6 +84,8 @@ cc44: RHF-EOM-CCSD/aug-cc-pVTZ lowest A1 and B2 excited states of H2O with
 only 2.0 MB of memory to test out-of-core algorithms for various ovvv
 quantities.
 
+cc45: RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
+
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
 
