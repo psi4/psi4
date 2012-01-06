@@ -8,9 +8,7 @@ molecule hof {
 }
 
 set {
-  wfn cc2
   basis "cc-pVDZ"
-  dertype response
   omega [0.05, 0.1]
   omega_units au
 }

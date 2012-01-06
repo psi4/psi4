@@ -8,9 +8,7 @@ molecule hof {
 }
 
 set {
-  wfn cc2
   basis "cc-pVDZ"
-  dertype response
 }
 
 response('cc2')

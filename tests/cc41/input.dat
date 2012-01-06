@@ -10,10 +10,8 @@ molecule h2o2 {
 }
 
 set {
-  wfn cc2
   basis "cc-pVDZ"
   freeze_core true
-  dertype response
   property rotation
   gauge both
   omega [589, 355]
