@@ -84,6 +84,8 @@ protected:
 
     /// Debug flag
     unsigned int debug_;
+    /// Print flag
+    unsigned int print_;
 
     /// Whether this wavefunction was obtained using density fitting
     bool density_fitted_;
@@ -367,6 +369,13 @@ public:
 
     /// Returns the wavefunction name
     const std::string& name() const { return name_; }
+
+
+    // Set the print flag level
+    void set_print(unsigned int print) { print_ = print; }
+
+    // Set the debug flag level
+    void set_debug(unsigned int debug) { debug_ = debug; }
 
     /// Save the wavefunction to checkpoint
     virtual void save() const;

@@ -148,9 +148,6 @@ public:
     /// Nuclear contributions
     Vector nuclear_dipole_contribution_;
     Vector nuclear_quadrupole_contribution_;
-    //
-    /// Set the amount of information to print
-    void set_print(const int n) {print_ = n;}
 
     /// The number of iterations needed to reach convergence
     int iterations_needed() {return iterations_needed_;}
@@ -204,9 +201,6 @@ protected:
 
     /// Do any needed integral setup
     virtual void integrals();
-
-    /// The amout of information to print
-    int print_;
 
     /// The number of electrons
     int nelectron_;
