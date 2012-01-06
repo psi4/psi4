@@ -68,6 +68,8 @@ namespace psi {
     namespace ccresponse { PsiReturnType ccresponse(Options&); }
     namespace cceom      { PsiReturnType cceom(Options&);     }
     namespace detci      { PsiReturnType detci(Options&);     }
+    namespace omp2wave   { PsiReturnType omp2wave(Options&);     }
+    namespace adc        { PsiReturnType adc(Options&);       }
     namespace findif    {
       std::vector< boost::shared_ptr<Matrix> > fd_geoms_1_0(Options &);
       //std::vector< boost::shared_ptr<Matrix> > fd_geoms_2_0(Options &);
@@ -122,6 +124,12 @@ int py_psi_deriv()
 {
     py_psi_prepare_options_for_module("DERIV");
     return deriv::deriv(Process::environment.options);
+}
+
+int py_psi_omp2()
+{
+    py_psi_prepare_options_for_module("OMP2");
+    return omp2wave::omp2wave(Process::environment.options);
 }
 
 double py_psi_scf_callbacks(PyObject* precallback, PyObject* postcallback)
@@ -196,10 +204,10 @@ PsiReturnType py_psi_fd_freq_0(const boost::python::list& energies, int irrep)
     return findif::fd_freq_0(Process::environment.options, energies, irrep);
 }
 
-PsiReturnType py_psi_fd_freq_1(const boost::python::list& energies, int irrep)
+PsiReturnType py_psi_fd_freq_1(const boost::python::list& grads, int irrep)
 {
     py_psi_prepare_options_for_module("FINDIF");
-    return findif::fd_freq_1(Process::environment.options, energies, irrep);
+    return findif::fd_freq_1(Process::environment.options, grads, irrep);
 }
 
 double py_psi_scf()
@@ -360,6 +368,13 @@ double py_psi_psimrcc()
     py_psi_prepare_options_for_module("PSIMRCC");
     psimrcc::psimrcc(Process::environment.options);
     return 0.0;
+}
+
+double py_psi_adc()
+{
+  py_psi_prepare_options_for_module("ADC");
+  adc::adc(Process::environment.options);
+  return 0.0;
 }
 
 char const* py_psi_version()
@@ -946,6 +961,8 @@ BOOST_PYTHON_MODULE(PsiMod)
     def("ccdensity", py_psi_ccdensity);
     def("ccresponse", py_psi_ccresponse);
     def("cceom", py_psi_cceom);
+    def("omp2", py_psi_omp2);
+    def("adc", py_psi_adc);
     def("opt_clean", py_psi_opt_clean);
 
     // Define library classes

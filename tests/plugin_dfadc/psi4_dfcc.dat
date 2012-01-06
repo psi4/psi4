@@ -10,19 +10,22 @@ plugin_load("./plugin_dfadc.so")
 
 set {
     reference rhf
-    wavefunction mp2
+    wavefunction ccd
     basis aug-cc-pvdz
     ri_basis_cc  aug-cc-pvdz
     ri_basis_adc aug-cc-pvdz
     guess core
-   
+    scf_type direct
+    memory 2000.0
     num_roots 5
-    convergence 11
-    e_converge 11
-    d_converge 11
+#    freeze_core true
+#    do_pr true
+#    do_residual false
+#    convergence 11
+#    e_converge 11
+#    d_converge 11
 }
 
-scf()
 run_dfcc(h2o)
 plugin("plugin_dfadc.so")
 

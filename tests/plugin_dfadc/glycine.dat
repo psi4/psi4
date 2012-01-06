@@ -1,0 +1,40 @@
+
+molecule glycine {
+ C             -0.5654899447  -0.0653434880   0.0000000000
+ C              0.7815230185  -0.7853568282   0.0000000000
+ N              2.0058650331  -0.0017836876   0.0000000000
+ O             -1.6371003045  -0.6296251717   0.0000000000
+ O             -0.4531364194   1.2890730673   0.0000000000
+ H             -1.3591661125   1.6406905889   0.0000000000
+ H              0.7707737301  -1.4500814356   0.8760652423
+ H              0.7707737301  -1.4500814356  -0.8760652423
+ H              2.0524919628   0.6048316080  -0.8148700850
+ H              2.0524919628   0.6048316080   0.8148700850
+    symmetry c1
+}
+
+plugin_load("./plugin_dfadc.so")
+
+set {
+    reference rhf
+    wavefunction mp2
+    basis aug-cc-pVDZ
+    memory 2000.0 
+    ri_basis_cc  aug-cc-pVDZ
+    ri_basis_adc aug-cc-pVDZ
+#    scf_type direct
+    guess GWH
+    num_roots 2
+
+#    do_residual false
+#    convergence 11
+#    e_converge 11
+#    d_converge 9
+}
+
+memory 2000 Mb
+
+run_dfcc(glycine)
+plugin("plugin_dfadc.so")
+
+clean()

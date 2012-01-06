@@ -1,0 +1,883 @@
+    -----------------------------------------------------------------------
+          PSI4: An Open-Source Ab Initio Electronic Structure Package
+                              PSI 4.0.0-alpha Driver
+
+    J. M. Turney, A. C. Simmonett, R. M. Parrish, E. G. Hohenstein,
+    F. Evangelista, J. T. Fermann, B. J. Mintz, L. A. Burns, J. J. Wilke,
+    M. L. Abrams, N. J. Russ, M. L. Leininger, C. L. Janssen, E. T. Seidl,
+    W. D. Allen, H. F. Schaefer, R. A. King, E. F. Valeev, C. D. Sherrill,
+    and T. D. Crawford, WIREs Comput. Mol. Sci., (2011)
+                         Additional Contributions by
+    -----------------------------------------------------------------------
+
+
+    Using LocalCommunicator (Number of processes = 1)
+
+    Memory level set to 256.000 MB
+
+  ==> Input File <==
+
+--------------------------------------------------------------------------
+molecule cn {
+  0 2
+  C
+  N 1 R
+  R = 1.175
+}
+
+set {
+  wfn ccsd
+  reference rohf
+  freeze_core true
+  ao_basis disk
+  delete_tei false
+  print 2
+  basis = "cc-pVDZ"
+}
+
+energy("ccsd")
+
+clean()
+
+--------------------------------------------------------------------------
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 11:45:27 2012
+
+
+         ---------------------------------------------------------
+                                   SCF
+            by Justin Turney, Rob Parrish, and Andy Simmonett
+                             ROHF Reference
+                        1 Threads,    256 MiB Core
+         ---------------------------------------------------------
+
+  ==> Geometry <==
+
+    Molecular point group: c2v
+
+    Geometry (in Angstrom), charge = 0, multiplicity = 2:
+
+       Center              X                  Y                   Z       
+    ------------   -----------------  -----------------  -----------------
+           C          0.000000000000     0.000000000000    -0.632756417668
+           N          0.000000000000     0.000000000000     0.542243582332
+
+    Number of unique atoms: 2
+
+    Atoms equivalency:
+       unique atom 0: 0 
+       unique atom 1: 1 
+
+  Running in c2v symmetry.
+
+  Nuclear repulsion =   18.915271879148936
+
+  Charge       = 0
+  Multiplicity = 2
+  Electrons    = 13
+  Nalpha       = 7
+  Nbeta        = 6
+
+  ==> Algorithm <==
+
+  SCF Algorithm Type is PK.
+  DIIS enabled.
+  MOM disabled.
+  Guess Type is CORE.
+  Energy threshold   = 1.00e-08
+  Density threshold  = 1.00e-08
+  Integral threshold = 0.00e+00
+
+  ==> Primary Basis: CC-PVDZ <==
+
+  -AO BASIS SET INFORMATION:
+    Total number of shells = 12
+    Number of primitives   = 44
+    Number of AO           = 30
+    Number of SO           = 28
+    Maximum AM             = 2
+    Spherical Harmonics    = TRUE
+
+  -Contraction Scheme:
+    Atom   Type   All Primitives // Shells:
+   ------ ------ --------------------------
+       1     C     17s 4p 1d // 3s 2p 1d 
+       2     N     17s 4p 1d // 3s 2p 1d 
+
+  ==> Pre-Iterations <==
+
+  Minimum eigenvalue in the overlap matrix is 1.0795198352E-02.
+  Using Symmetric Orthogonalization.
+  SCF Guess: Core (One-Electron) Hamiltonian.
+
+  Initial ROHF energy:   -72.85578334502782
+
+   -------------------------------------------------------
+    Irrep   Nso     Nmo     Nalpha   Nbeta   Ndocc  Nsocc
+   -------------------------------------------------------
+     A1        14      14       5       4       4       1
+     A2         2       2       0       0       0       0
+     B1         6       6       1       1       1       0
+     B2         6       6       1       1       1       0
+   -------------------------------------------------------
+    Total      28      28       7       6       6       1
+   -------------------------------------------------------
+
+  ==> Integral Setup <==
+
+ MINTS: Wrapper to libmints.
+   by Justin Turney
+
+   Calculation information:
+      Number of atoms:                   2
+      Number of AO shells:              12
+      Number of SO shells:              12
+      Number of primitives:             44
+      Number of atomic orbitals:        30
+      Number of basis functions:        28
+
+      Number of irreps:                  4
+      Number of functions per irrep: [  14    2    6    6 ]
+
+      Computing integrals...done
+
+      Computed 19125 non-zero integrals.
+
+  ==> Iterations <==
+
+                        Total Energy        Delta E     Density RMS
+
+  Forming PK and K matrices.
+   @ROHF iter   1:   -83.19841353204828   -1.03426e+01   2.27039e-314  
+   @ROHF iter   2:   -84.13066806127183   -9.32255e-01   6.88627e-01 DIIS
+   @ROHF iter   3:   -91.43784781961804   -7.30718e+00   6.13978e-01 DIIS
+   @ROHF iter   4:   -91.96811668209116   -5.30269e-01   5.92065e-02 DIIS
+   @ROHF iter   5:   -92.16397431052178   -1.95858e-01   2.22209e-02 DIIS
+   @ROHF iter   6:   -92.19393973672987   -2.99654e-02   1.45283e-02 DIIS
+   @ROHF iter   7:   -92.19518729833695   -1.24756e-03   2.31421e-03 DIIS
+   @ROHF iter   8:   -92.19551337062278   -3.26072e-04   1.53652e-03 DIIS
+   @ROHF iter   9:   -92.19555267440080   -3.93038e-05   6.85207e-04 DIIS
+   @ROHF iter  10:   -92.19555655602396   -3.88162e-06   3.05450e-04 DIIS
+   @ROHF iter  11:   -92.19555661996455   -6.39406e-08   3.94671e-05 DIIS
+   @ROHF iter  12:   -92.19555662137442   -1.40987e-09   8.42822e-06 DIIS
+   @ROHF iter  13:   -92.19555662138461   -1.01892e-11   3.50113e-07 DIIS
+   @ROHF iter  14:   -92.19555662138471   -9.94760e-14   6.85465e-08 DIIS
+
+  ==> Post-Iterations <==
+
+	Orbital Energies (a.u.)
+	-----------------------
+
+	Doubly Occupied:                                                      
+
+	   1A1   -15.636443     2A1   -11.359535     3A1    -1.246019  
+	   4A1    -0.626091     1B2    -0.507352     1B1    -0.507352  
+
+	Singly Occupied:                                                      
+
+	   5A1    -0.337390  
+
+	Virtual:                                                              
+
+	   2B2     0.177180     2B1     0.177180     6A1     0.384745  
+	   3B2     0.655939     3B1     0.655939     7A1     0.699522  
+	   8A1     0.869525     4B2     1.036480     4B1     1.036480  
+	   9A1     1.044979    10A1     1.314443     1A2     1.314443  
+	   5B1     1.503400     5B2     1.503400    11A1     1.564388  
+	  12A1     2.160944     2A2     2.160944    13A1     2.254479  
+	   6B2     2.677031     6B1     2.677031    14A1     3.095851  
+
+	Final Occupation by Irrep:
+	         A1    A2    B1    B2 
+	DOCC [     4,    0,    1,    1 ]
+	SOCC [     1,    0,    0,    0 ]
+
+  Energy converged.
+
+  @ROHF Final Energy:   -92.19555662138471
+
+  ==> Properties <==
+  Nuclear Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.0016
+
+  Electronic Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.8531
+
+  Dipole Moment: (a.u.)
+     X:     0.0000      Y:     0.0000      Z:    -0.8546     Total:     0.8546
+
+  Dipole Moment: (Debye)
+     X:     0.0000      Y:     0.0000      Z:    -2.1723     Total:     2.1723
+
+  Quadrupole Moment: (Debye Ang)
+    XX:   -11.0299     YY:   -11.0299     ZZ:   -10.1016
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Traceless Quadrupole Moment: (Debye Ang)
+    XX:    -0.3094     YY:    -0.3094     ZZ:     0.6189
+    XY:     0.0000     XZ:     0.0000     YZ:     0.0000
+
+  Mulliken Charges: (a.u.)
+   Center  Symbol    Alpha    Beta     Spin     Total
+       1     C     3.39827  2.47928  0.91899  0.12245
+       2     N     3.60173  3.52072  0.08101 -0.12245
+
+   Total alpha =  7.00000, Total beta =  6.00000, Total charge =  0.00000
+
+
+  Saving occupied orbitals to File 180.
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:28 2012
+Module time:
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       0.28 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 11:45:28 2012
+
+
+	**************************************************
+	* TRANSQT2: Program to transform integrals from  *
+	*           the SO basis to the MO basis.        *
+	*                                                *
+	*            Daniel, David, & Justin             *
+	**************************************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Backtransform   =	No
+	Print Level     =	2
+	Print TEIs      =	No
+	Reference wfn   =	ROHF
+	Derivative      =	None
+	Delete TEI File =	No
+	Memory (Mbytes) =	100.0
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of SOs        = 28
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# SOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   14	    2	    2	    1	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   6	    0	    1	    0	    5	    0
+	 B2	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91527187914894
+	SCF energy          (chkpt) =    -92.19555662138471
+
+	Presorting SO-basis two-electron integrals.
+	Sorting File: SO Ints (pq,rs) nbuckets = 1
+	Frozen-core energy =  -86.999804315047598
+	Starting first half-transformation.
+	h = 0; memfree         = 12499508
+	h = 0; rows_per_bucket = 150
+	h = 0; rows_left       = 0
+	h = 0; nbuckets        = 1
+	h = 1; memfree         = 12499752
+	h = 1; rows_per_bucket = 64
+	h = 1; rows_left       = 0
+	h = 1; nbuckets        = 1
+	h = 2; memfree         = 12499640
+	h = 2; rows_per_bucket = 96
+	h = 2; rows_left       = 0
+	h = 2; nbuckets        = 1
+	h = 3; memfree         = 12499640
+	h = 3; rows_per_bucket = 96
+	h = 3; rows_left       = 0
+	h = 3; nbuckets        = 1
+	Sorting half-transformed integrals.
+	Starting second half-transformation.
+	h = 0; memfree         = 12499508
+	h = 0; rows_per_bucket = 123
+	h = 0; rows_left       = 0
+	h = 0; nbuckets        = 1
+	h = 1; memfree         = 12499752
+	h = 1; rows_per_bucket = 60
+	h = 1; rows_left       = 0
+	h = 1; nbuckets        = 1
+	h = 2; memfree         = 12499640
+	h = 2; rows_per_bucket = 84
+	h = 2; rows_left       = 0
+	h = 2; nbuckets        = 1
+	h = 3; memfree         = 12499640
+	h = 3; rows_per_bucket = 84
+	h = 3; rows_left       = 0
+	h = 3; nbuckets        = 1
+	Two-electron integral transformation complete.
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:28 2012
+Module time:
+	user time   =       0.01 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.29 seconds =       0.00 minutes
+	system time =       0.02 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 11:45:28 2012
+
+
+			**************************
+			*                        *
+			*         CCSORT         *
+			*                        *
+			**************************
+
+
+	Input parameters:
+	-----------------
+	Wave function   =	CCSD
+	Reference wfn   =	ROHF
+	Derivative      =	None
+	Memory (Mbytes) =	256.0
+	AO Basis        =	DISK
+	Make (ab|cd)    =	False
+	Make unpacked (ab|cd) =	False
+	Cache Level     =	2
+	Cache Type      =	LRU
+	Local CC        =     No
+
+
+	Chkpt Parameters:
+	--------------------
+	Number of irreps     = 4
+	Number of MOs        = 28
+	Number of active MOs = 26
+
+	Label	# MOs	# FZDC	# DOCC	# SOCC	# VIRT	# FZVR
+	-----	-----	------	------	------	------	------
+	 A1	   14	    2	    2	    1	    9	    0
+	 A2	   2	    0	    0	    0	    2	    0
+	 B1	   6	    0	    1	    0	    5	    0
+	 B2	   6	    0	    1	    0	    5	    0
+
+	Nuclear Rep. energy (chkpt) =     18.91527187914894
+	SCF energy          (chkpt) =    -92.19555662138471
+
+	Size of irrep 0 of <ab|cd> integrals:      0.024 (MW) /      0.190 (MB)
+	Size of irrep 1 of <ab|cd> integrals:      0.008 (MW) /      0.065 (MB)
+	Size of irrep 2 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Size of irrep 3 of <ab|cd> integrals:      0.014 (MW) /      0.115 (MB)
+	Total:                                     0.061 (MW) /      0.485 (MB)
+
+	Size of irrep 0 of <ia|bc> integrals:      0.006 (MW) /      0.049 (MB)
+	Size of irrep 1 of <ia|bc> integrals:      0.001 (MW) /      0.012 (MB)
+	Size of irrep 2 of <ia|bc> integrals:      0.003 (MW) /      0.026 (MB)
+	Size of irrep 3 of <ia|bc> integrals:      0.003 (MW) /      0.026 (MB)
+	Total:                                     0.014 (MW) /      0.113 (MB)
+
+	Size of irrep 0 of tIjAb amplitudes:       0.002 (MW) /      0.014 (MB)
+	Size of irrep 1 of tIjAb amplitudes:       0.000 (MW) /      0.001 (MB)
+	Size of irrep 2 of tIjAb amplitudes:       0.001 (MW) /      0.006 (MB)
+	Size of irrep 3 of tIjAb amplitudes:       0.001 (MW) /      0.006 (MB)
+	Total:                                     0.003 (MW) /      0.027 (MB)
+
+
+	Sorting File: A <ij|kl> nbuckets = 1
+	Sorting File: C <ia|jb> nbuckets = 1
+	Sorting File: D <ij|ab> nbuckets = 1
+	Sorting File: E <ai|jk> nbuckets = 1
+	Sorting File: F <ia|bc> nbuckets = 1
+	Sorting File: F <ai|bc> nbuckets = 1
+	One-electron energy          =    -41.78838313615003
+	Two-electron (AA) energy     =      8.70889244999800
+	Two-electron (BB) energy     =      5.63987028268135
+	Two-electron (AB) energy     =     10.50297758432427
+	Two-electron energy          =     17.67735895066394
+	Frozen-core energy (transqt) =    -86.99980431504760
+	Reference energy             =    -92.19555662138475
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:28 2012
+Module time:
+	user time   =       0.04 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
+Total time:
+	user time   =       0.33 seconds =       0.01 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
+
+*** tstart() called on lawn-143-215-105-45.lawn.gatech.edu
+*** at Thu Jan  5 11:45:28 2012
+
+			**************************
+			*                        *
+			*        CCENERGY        *
+			*                        *
+			**************************
+
+	Nuclear Rep. energy (chkpt)   =   18.915271879148936
+	SCF energy          (chkpt)   =  -92.195556621384711
+	Reference energy    (file100) =  -92.195556621384753
+
+	Input parameters:
+	-----------------
+	Wave function   =     CCSD
+	Reference wfn   =    ROHF
+	Memory (Mbytes) =     256.0
+	Maxiter         =     50
+	Convergence     =     1.0e-07
+	Restart         =     No
+	DIIS            =     Yes
+	AO Basis        =     DISK
+	ABCD            =     NEW
+	Cache Level     =     2
+	Cache Type      =     LOW
+	Print Level     =     2
+	Num. of threads =     1
+	# Amps to Print =     10
+	Print MP2 Amps? =     No
+	Analyze T2 Amps =     No
+	Print Pair Ener =     No
+	Local CC        =     No
+	SCS-MP2         =     False
+	SCSN-MP2        =     False
+	SCS-CCSD        =     False
+
+	            Solving CC Amplitude Equations
+	            ------------------------------
+  Iter             Energy              RMS        T1Diag      D1Diag    New D1Diag
+  ----     ---------------------    ---------   ----------  ----------  ----------
+     0        -0.269179825127880    0.000e+00    0.000149    0.000285    0.000285
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     1        -0.260049723467528    1.126e-01    0.021322    0.036268    0.051291
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     2        -0.273471753467785    4.425e-02    0.022424    0.039311    0.055595
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     3        -0.278680912914734    3.740e-02    0.031307    0.059226    0.083759
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     4        -0.280246861903193    2.028e-02    0.039560    0.077598    0.109741
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     5        -0.281100386315310    1.327e-02    0.047113    0.094888    0.134192
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     6        -0.281191468294024    6.489e-03    0.051599    0.104860    0.148294
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     7        -0.281353604519328    2.263e-03    0.053025    0.107955    0.152672
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     8        -0.281350068796499    9.333e-04    0.053545    0.109088    0.154274
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+     9        -0.281340513872230    3.892e-04    0.053573    0.109147    0.154358
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    10        -0.281347713071299    2.020e-04    0.053607    0.109226    0.154468
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    11        -0.281348360648757    1.081e-04    0.053656    0.109331    0.154618
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    12        -0.281347811518403    5.799e-05    0.053635    0.109285    0.154552
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    13        -0.281346910072253    1.696e-05    0.053640    0.109298    0.154571
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    14        -0.281345909168812    4.184e-06    0.053641    0.109298    0.154571
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    15        -0.281346118524764    1.689e-06    0.053642    0.109301    0.154574
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    16        -0.281346175102696    6.292e-07    0.053642    0.109301    0.154575
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    17        -0.281346195511227    1.348e-07    0.053642    0.109301    0.154575
+     F intermediates...complete
+     T1 amplitudes  ...complete
+     Wmbej          ...complete
+     Z              ...complete
+     Wmnij          ...complete
+     <ij||ab> -> T2 ...complete
+     F -> T2        ...complete
+     Wmnij -> T2    ...complete
+     *** Processed 19125 SO integrals for <AB||CD> --> T2
+     *** Processed 19125 SO integrals for <ab||cd> --> T2
+     *** Processed 19125 SO integrals for <Ab|Cd> --> T2
+     <ab||cd> -> T2 ...complete
+     Z -> T2        ...complete
+     <ia||bc> -> T2 ...complete
+     <ij||ka> -> T2 ...complete
+     Wmbej -> T2    ...complete
+     <ia||jb> -> T2 ...complete
+     T2 amplitudes  ...complete
+    18        -0.281346192151945    4.566e-08    0.053642    0.109301    0.154575
+
+	Iterations converged.
+
+
+	Largest TIA Amplitudes:
+	          3  12         0.0347929276
+	          4  17         0.0347929276
+	          3  13         0.0251643343
+	          4  18         0.0251643343
+	          3  15         0.0246223231
+	          4  20         0.0246223231
+	          2   3         0.0133499021
+	          1   1         0.0124981058
+	          1   3        -0.0116022691
+	          2   1        -0.0112154675
+
+	Largest Tia Amplitudes:
+	          1   9         0.2183700337
+	          3  12        -0.0351079177
+	          4  17        -0.0351079177
+	          1   3         0.0266414484
+	          1   1        -0.0203028285
+	          3  14        -0.0182528873
+	          4  19        -0.0182528873
+	          1   0        -0.0121681722
+	          3  15         0.0115238313
+	          4  20         0.0115238313
+
+	Largest TIJAB Amplitudes:
+	  4   3  17  12        -0.0342900535
+	  3   2  12   3         0.0185542831
+	  4   2  17   3         0.0185542831
+	  4   3  18  13        -0.0175746742
+	  3   2  13   1        -0.0173835454
+	  4   2  18   1        -0.0173835454
+	  4   3  10   4        -0.0165174366
+	  3   1  12   3        -0.0139506528
+	  4   1  17   3        -0.0139506528
+	  4   3  17  14        -0.0117309883
+
+	Largest Tijab Amplitudes:
+	  3   1  12   9        -0.0387366170
+	  4   1  17   9        -0.0387366170
+	  4   3  17  12        -0.0370606039
+	  3   1  12   3        -0.0147519763
+	  4   1  17   3        -0.0147519763
+	  4   3  10   4        -0.0146978818
+	  4   3  18  13        -0.0146429245
+	  3   1  14   9        -0.0132843110
+	  4   1  19   9        -0.0132843110
+	  4   3  19  14        -0.0129372535
+
+	Largest TIjAb Amplitudes:
+	  3   3  12  12        -0.1035151080
+	  4   4  17  17        -0.1035151080
+	  3   1  12   9        -0.0807437800
+	  4   1  17   9        -0.0807437800
+	  3   4  12  17        -0.0612217225
+	  4   3  17  12        -0.0612217225
+	  2   3  12   9        -0.0526891989
+	  2   4  17   9        -0.0526891989
+	  1   1  12  12        -0.0410871607
+	  1   1  17  17        -0.0410871607
+
+	SCF energy       (chkpt)              =  -92.195556621384711
+	Reference energy (file100)            =  -92.195556621384753
+
+	Opposite-spin CCSD correlation energy =    0.000000000000000
+	Same-spin CCSD correlation energy     =    0.000000000000000
+	CCSD correlation energy               =   -0.281346192151945
+      * CCSD total energy                     =  -92.476902813536697
+
+
+*** tstop() called on lawn-143-215-105-45.lawn.gatech.edu at Thu Jan  5 11:45:29 2012
+Module time:
+	user time   =       0.96 seconds =       0.02 minutes
+	system time =       0.39 seconds =       0.01 minutes
+	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.30 seconds =       0.02 minutes
+	system time =       0.44 seconds =       0.01 minutes
+	total time  =          2 seconds =       0.03 minutes
+
+*** PSI4 exiting successfully. Buy a developer a beer!

@@ -491,7 +491,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
 
     if (basis == "AO") {
 
-        SharedMatrix C3(new Matrix("C " + basis + " " + subset, nso_, nmopi.n()));
+        SharedMatrix C3(new Matrix("C " + basis + " " + subset, nso_, nmopi.sum()));
         boost::swap(C2,C3);
 
         std::vector<boost::tuple<double, int, int> > order;
@@ -501,8 +501,8 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
             }
         } 
 
-        std::sort(order.begin(), order.end(), std::greater<boost::tuple<double,int,int> >());
-        
+        std::sort(order.begin(), order.end(), std::less<boost::tuple<double,int,int> >());
+
         for (int index = 0; index < order.size(); index++) {
             int i = boost::get<1>(order[index]);
             int h = boost::get<2>(order[index]);
@@ -512,7 +512,7 @@ SharedMatrix Wavefunction::C_subset_helper(SharedMatrix C, const Dimension& nocc
 
             if (!nso) continue;
 
-            C_DGEMV('N',nao,nso,1.0,AO2SO_->pointer(h)[0],nso,&C3->pointer(h)[0][i],nmopi[h],0.0,&C2->pointer()[0][index],nmopi.n());
+            C_DGEMV('N',nao,nso,1.0,AO2SO_->pointer(h)[0],nso,&C3->pointer(h)[0][i],nmopi[h],0.0,&C2->pointer()[0][index],nmopi.sum());
         }
 
     } else if (basis == "SO" || basis == "MO") {
@@ -536,7 +536,7 @@ SharedVector Wavefunction::epsilon_subset_helper(SharedVector epsilon, const Dim
 
     if (basis == "AO") {
 
-        C2 = SharedVector(new Vector("Epsilon " + basis + " " + subset, nmopi.n()));
+        C2 = SharedVector(new Vector("Epsilon " + basis + " " + subset, nmopi.sum()));
 
         std::vector<boost::tuple<double, int, int> > order;
         for (int h = 0; h < nirrep_; h++) {

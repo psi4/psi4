@@ -149,6 +149,8 @@ def run_ccsd(name, **kwargs):
 
     if (name.lower() == 'ccsd'):
         PsiMod.set_global_option('WFN', 'CCSD')
+    elif (name.lower() == 'cc2'):
+        PsiMod.set_global_option('WFN', 'CC2')
 
     # Bypass routine scf if user did something special to get it to converge
     if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
@@ -233,23 +235,34 @@ def run_bccd_t(name, **kwargs):
 
 def run_ccsd_response(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'CCSD')
+    if (name.lower() == 'ccsd'):
+      PsiMod.set_global_option('WFN', 'CCSD')
+      run_ccsd("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'CCSD')
+    elif (name.lower() == 'cc2'):
+      PsiMod.set_global_option('WFN', 'CC2')
+      run_ccsd("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'CC2')
 
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+#    PsiMod.set_global_option('WFN', 'SCF')
+#    PsiMod.revoke_global_option_changed('WFN')
 
     # ccsd_response has return value?
 
 def run_eom_ccsd(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
-
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    if (name.lower() == "eom_ccsd" or name.lower() == "eom-ccsd"):
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      run_ccsd("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == "eom_cc2" or name.lower() == "eom-cc2"):
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+      run_ccsd("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
 
     PsiMod.cchbar()
     returnvalue = PsiMod.cceom()
@@ -258,6 +271,18 @@ def run_eom_ccsd(name, **kwargs):
     PsiMod.revoke_global_option_changed('WFN')
 
     return returnvalue
+
+def run_adc(name, **kwargs):
+    molecule = PsiMod.get_active_molecule()
+    if (kwargs.has_key('molecule')):
+      molecule = kwargs.pop('molecule')
+  
+    if not molecule:
+        raise ValueNotSet("no molecule found")
+  
+    PsiMod.scf()
+
+    return PsiMod.adc()
 
 def run_detci(name, **kwargs):
 

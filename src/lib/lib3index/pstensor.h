@@ -18,7 +18,6 @@ class IntVector;
 class Vector3;
 class PseudospectralInt;
 class PseudospectralGrid;
-class GridBlock;
 
 class DealiasBasisSet {
 
