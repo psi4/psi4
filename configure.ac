@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-alpha])
+define([psi_version],[4.0.0-beta1])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -976,6 +976,8 @@ AC_CONFIG_FILES([include/Makefile
           tests/MakeVars
           tests/MakeRules
           tests/runtest.pl
+          tests/tu1-h2o-energy/Makefile
+          tests/tu2-ch2-energy/Makefile
           tests/dcft1/Makefile
           tests/dcft2/Makefile
           tests/dcft3/Makefile
@@ -1052,6 +1054,14 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc35/Makefile
           tests/cc36/Makefile
           tests/cc37/Makefile
+          tests/cc38/Makefile
+          tests/cc39/Makefile
+          tests/cc40/Makefile
+          tests/cc41/Makefile
+          tests/cc42/Makefile
+          tests/cc43/Makefile
+          tests/cc44/Makefile
+          tests/cc45/Makefile
           tests/cc52/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile

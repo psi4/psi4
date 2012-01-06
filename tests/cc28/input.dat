@@ -12,7 +12,6 @@ set {
   freeze_core true
   omega [589, 355]
   omega_units nm
-  mu_irreps [1, 1, 0]
   gauge length
   basis cc-pVDZ
 }

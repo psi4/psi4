@@ -13,6 +13,7 @@
 
 #include <libtrans/integraltransform.h>
 #include <libdpd/dpd.h>
+#include <boost/shared_ptr.hpp>
 
 #include "mints.h"
 #include "deriv.h"
@@ -25,7 +26,14 @@ size_t counter;
 
 class CorrelatedFunctor
 {
-    dpdbuf4 *G_;
+    /// The buffer to hold the TPDM
+    double *tpdm_buffer_;
+    /// Pointer to the current TPDM element
+    double *tpdm_ptr_;
+    /// How large the buffer is, for each shell pair
+    size_t *buffer_sizes_;
+    /// The PSIO object to use for disk I/O
+    boost::shared_ptr<PSIO> psio_;
 public:
     int nthread;
     std::vector<SharedVector> result;
@@ -33,13 +41,21 @@ public:
     CorrelatedFunctor() {
         throw PSIEXCEPTION("CorrelatedRestrictedFunctor(): Default constructor called. This shouldn't happen.");
     }
-    CorrelatedFunctor(SharedVector results, dpdbuf4 *G)
-        : G_(G)
+    CorrelatedFunctor(SharedVector results) : psio_(_default_psio_lib_)
     {
         nthread = Communicator::world->nthread();
         result.push_back(results);
         for (int i=1; i<nthread; ++i)
             result.push_back(SharedVector(result[0]->clone()));
+        size_t num_pairs = 0;
+        psio_->read_entry(PSIF_AO_TPDM, "Num. Pairs", (char*)&num_pairs, sizeof(size_t));
+        buffer_sizes_ = new size_t[num_pairs];
+        psio_->read_entry(PSIF_AO_TPDM, "TPDM Buffer Sizes", (char*)buffer_sizes_, num_pairs*sizeof(size_t));
+        size_t max_size = 0;
+        for(int i = 0; i < num_pairs; ++i)
+            max_size = max_size > buffer_sizes_[i] ? max_size : buffer_sizes_[i];
+        tpdm_buffer_ = new double[max_size];
+        tpdm_ptr_ = tpdm_buffer_;
     }
 
     void finalize() {
@@ -49,6 +65,22 @@ public:
         }
         // Do MPI global summation
         result[0]->sum();
+        delete [] tpdm_buffer_;
+        delete [] buffer_sizes_;
+    }
+
+    void load_tpdm(size_t id){
+        // TODO, make this work with threads (each thread needs its own buffer)
+        char *toc = new char[40];
+        sprintf(toc, "SO_TPDM_FOR_PAIR_%zd", id);
+        size_t buffer_size = buffer_sizes_[id];
+        psio_->read_entry(PSIF_AO_TPDM, toc, (char*)tpdm_buffer_, buffer_size*sizeof(double));
+        delete [] toc;
+        tpdm_ptr_ = tpdm_buffer_;
+    }
+
+    void next_tpdm_element(){
+        ++tpdm_ptr_;
     }
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
@@ -60,26 +92,14 @@ public:
     {
         int thread = Communicator::world->thread_id(pthread_self());
 
-        double prefactor = 4.0;
-
-        if (pirrep ^ qirrep ^ rirrep ^ sirrep)
-            return;
-
-        int h = pirrep ^ qirrep;
-
+        double prefactor = 8.0;
         if (pabs == qabs)
             prefactor *= 0.5;
         if (rabs == sabs)
             prefactor *= 0.5;
-//        if (pabs == rabs && qabs == sabs)
-//            prefactor *= 0.5;
-
-        int PQ = G_->params->colidx[pabs][qabs];   // pabs, qabs?
-        int RS = G_->params->rowidx[rabs][sabs];   // pabs, qabs?
-
-        result[thread]->add(salc, prefactor * G_->matrix[h][PQ][RS] * value);
-        if(PQ != RS)
-            result[thread]->add(salc, prefactor * G_->matrix[h][RS][PQ] * value);
+        if (pabs == rabs && qabs == sabs)
+            prefactor *= 0.5;
+        result[thread]->add(salc, prefactor * (*tpdm_ptr_) * value);
     }
 };
 
@@ -126,6 +146,9 @@ public:
         // Do MPI global summation
         result[0]->sum();
     }
+
+    void load_tpdm(size_t id) {}
+    void next_tpdm_element(){}
 
     void operator()(int salc, int pabs, int qabs, int rabs, int sabs,
                     int pirrep, int pso,
@@ -198,6 +221,9 @@ public:
 
     ~ScfAndDfCorrelationRestrictedFunctor() {
     }
+
+    void load_tpdm(size_t id) {}
+    void next_tpdm_element(){}
 
     void finalize() {
         // Make sure the SCF code is done
@@ -323,6 +349,9 @@ public:
     }
     ~ScfUnrestrictedFunctor() {
     }
+
+    void load_tpdm(size_t id) {}
+    void next_tpdm_element(){}
 
     void finalize() {
         // Do summation over threads
@@ -561,21 +590,9 @@ SharedMatrix Deriv::compute()
             X->scale(0.5);
 
             _default_psio_lib_->open(PSIF_AO_TPDM, PSIO_OPEN_OLD);
-            dpdbuf4 G;
-            dpd_buf4_init(&G, PSIF_AO_TPDM, 0,
-                          ints_transform->DPD_ID("[n,n]"), ints_transform->DPD_ID("[n,n]"),
-                          ints_transform->DPD_ID("[n>=n]+"), ints_transform->DPD_ID("[n>=n]+"),
-                          0, "SO Basis TPDM (nn|nn)");
-            for (int h=0; h<wfn_->nirrep(); ++h) {
-                dpd_buf4_mat_irrep_init(&G, h);
-                dpd_buf4_mat_irrep_rd(&G, h);
-            }
-            CorrelatedFunctor functor(TPDMcont_vector, &G);
+            CorrelatedFunctor functor(TPDMcont_vector);
             so_eri.compute_integrals_deriv1(functor);
             functor.finalize();
-            for (int h=0; h<wfn_->nirrep(); ++h)
-                dpd_buf4_mat_irrep_close(&G, h);
-            dpd_buf4_close(&G);
             _default_psio_lib_->close(PSIF_AO_TPDM, 1);
 
             for (int cd=0; cd < cdsalcs_.ncd(); ++cd) {

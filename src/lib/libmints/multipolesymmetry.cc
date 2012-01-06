@@ -7,10 +7,23 @@ using namespace std;
 namespace psi{
 
 OperatorSymmetry::OperatorSymmetry(int order,
-                                   const boost::shared_ptr<Molecule>& mol,
-                                   const boost::shared_ptr<IntegralFactory>& ints,
-                                   const boost::shared_ptr<MatrixFactory>& mats)
+                                   boost::shared_ptr<Molecule> mol,
+                                   boost::shared_ptr<IntegralFactory> ints)
+    : order_(order), molecule_(mol), integral_(ints)
+{
+    common_init();
+}
+
+OperatorSymmetry::OperatorSymmetry(int order,
+                                   boost::shared_ptr<Molecule> mol,
+                                   boost::shared_ptr<IntegralFactory> ints,
+                                   boost::shared_ptr<MatrixFactory> mats)
     : order_(order), molecule_(mol), integral_(ints), matrix_(mats)
+{
+    common_init();
+}
+
+void OperatorSymmetry::common_init()
 {
     // Nabla operator has same symmetry as dipole
     if (order_ == P)
@@ -29,7 +42,7 @@ OperatorSymmetry::OperatorSymmetry(int order,
         for (int irrep=0; irrep<nirrep; ++irrep) {
             IrreducibleRepresentation gamma = ct.gamma(irrep);
 
-            memset(t, 0, sizeof(double)*ncart);
+            ::memset(t, 0, sizeof(double)*ncart);
 
             // Apply the projection
             for (int G=0; G<nirrep; ++G) {
@@ -58,7 +71,7 @@ OperatorSymmetry::OperatorSymmetry(int order,
         // Angular momentum operator is a rotation operator
         // so symmetry of Lz is Lx ^ Ly which can
         // come from quadrupole
-        OperatorSymmetry quad(2, mol, ints, mats);
+        OperatorSymmetry quad(2, molecule_, integral_, matrix_);
 
         // Make sure order is 1 for the other routines in this class.
         order_ = 1;
@@ -113,12 +126,14 @@ string OperatorSymmetry::name_of_component(int i)
 vector<SharedMatrix > OperatorSymmetry::create_matrices(const std::string &basename)
 {
     vector<SharedMatrix > matrices;
-    string name;
-
-    for (int i=0; i<INT_NCART(order_); ++i) {
-        name = basename + " " + name_of_component(i);
-
-        matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[i]));
+    if (matrix_) {
+        string name;
+    
+        for (int i=0; i<INT_NCART(order_); ++i) {
+            name = basename + " " + name_of_component(i);
+    
+            matrices.push_back(matrix_->create_shared_matrix(name, component_symmetry_[i]));
+        }
     }
 
     return matrices;

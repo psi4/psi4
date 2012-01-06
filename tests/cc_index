@@ -62,6 +62,30 @@ cc35: ROHF-CC3/cc-pVDZ energy of H2O+.
 
 cc36: RHF-CC2/cc-pVDZ energy of H2O.
 
+cc37: UHF-CC2/cc-pVDZ energy of H2O+.
+
+cc38: RHF-CC2-LR/cc-pVDZ static polarizabilities of HOF molecule.
+
+cc39: RHF-CC2-LR/cc-pVDZ dynamic polarizabilities of HOF molecule.
+
+cc40: RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
+(589 355 nm)
+
+cc41: RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = both, omega =
+(589 355 nm)
+
+cc42: RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
+length, omega = (589 355 nm)
+
+cc43: RHF-CC2-LR/STO-3G optical rotation of (S)-methyloxirane.  gauge =
+both, omega = (589 355 nm)
+
+cc44: RHF-EOM-CCSD/aug-cc-pVTZ lowest A1 and B2 excited states of H2O with
+only 2.0 MB of memory to test out-of-core algorithms for various ovvv
+quantities.
+
+cc45: RHF-EOM-CC2/cc-pVDZ lowest two states of each symmetry of H2O.
+
 cc52: RHF-CCSD-LR/cc-pVDZ ROA (dipole polarizability, optical activity (LG),
 and dipole-quadrupole tensors) at 589 nm.
 
