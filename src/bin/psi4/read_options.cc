@@ -62,9 +62,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("BENCH", 0);
   /*- Default number of geometry optimization steps -*/
   options.add_int("GEOM_MAXITER", 20);
-  /*- Wavefunction type -*/
+  /*- Wavefunction type !expert -*/
   options.add_str("WFN", "SCF");
-  /*- Derivative level -*/
+  /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat -*/
   options.add_int("PRINT_MAT_NCOLUMN", 5);
@@ -88,7 +88,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The energy convergence criterion.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("E_CONVERGE", 1e-6);
 
-    /*- Wavefunction type -*/
+    /*- Wavefunction type !expert -*/
     options.add_str("WFN", "DETCI", "DETCI CI ZAPTN DETCAS CASSCF RASSCF");
 
     /*- Do a full CI (FCI)? If TRUE, overrides the value of EX_LVL -*/
@@ -848,13 +848,13 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SAD_CHOL_CUTOFF", 1E-7);
   }
   if (name == "MP2"|| options.read_globals()) {
-    /*- The wavefunction type -*/
+    /*- The wavefunction type !expert -*/
     options.add_str("WFN", "MP2", "MP2");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-    /*- The type of job being performed -*/
+    /*- The type of job being performed !expert -*/
     options.add_str("JOBTYPE", "SP");
-    /*- The order of energy derivatives required -*/
+    /*- The order of energy derivatives required !expert -*/
     options.add_str("DERTYPE", "NONE");
     /*- Whether to compute the one particle density matrix, for properties -*/
     options.add_bool("COMPUTE_OPDM", false);
@@ -874,7 +874,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("SCALE_SS", 1.0/3.0);
   }
   if(name == "TRANSQT2"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "");
     /*- -*/
     options.add_str("REFERENCE","RHF");
@@ -896,7 +896,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
     /*- -*/
     options.add_str("MODE", "TO_MO", "TO_MO TO_AO");
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "CCSD");
     /*- -*/
     options.add_bool("PSIMRCC", false);
@@ -1022,7 +1022,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CUSP"|| options.read_globals()){
   }
   if(name == "CCSORT"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "");
     /*- -*/
     options.add_str("REFERENCE", "RHF");
@@ -1070,7 +1070,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("OMEGA_UNITS", "AU", "AU HZ EV NM");
   }
   if(name == "CCTRIPLES"|| options.read_globals()) {
-    /*- The wavefunction type -*/
+    /*- The wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- The number of threads to use on multi-core machines -*/
     options.add_int("NTHREADS",1);
@@ -1078,7 +1078,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("REFERENCE","RHF");
   }
   if(name == "CCDENSITY"|| options.read_globals()) {
-    /*- The wavefunction type -*/
+    /*- The wavefunction type !expert -*/
     options.add_str("WFN", "SCF");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE","RHF");
@@ -1106,7 +1106,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("PROP_ROOT", 1);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN","SCF");
     /*- -*/
     options.add_int("CONVERGENCE",7);
@@ -1124,7 +1124,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("ABCD","NEW");
     /*- -*/
     options.add_int("NUM_AMPS",10);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("JOBTYPE","");
     /*- -*/
     options.add_bool("LOCAL",false);
@@ -1154,7 +1154,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CLAG"|| options.read_globals()) {
     /*- -*/
     options.add_bool("WRITE_CAS_FILES",0);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN","NONE");
     /*- -*/
     options.add_int("FOLLOW_ROOT",1);
@@ -1200,7 +1200,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("TAMPLITUDE",false);
     /*- -*/
     options.add_int("CACHELEV",2);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "SCF");
     /*- -*/
     options.add_bool("WABEI_LOWDISK", false);
@@ -1208,7 +1208,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_REFERENCE","RHF");
   }
   if(name == "CCEOM"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "EOM_CCSD", "EOM_CCSD EOM_CC2 EOM_CC3");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
@@ -1294,7 +1294,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("EOM_GUESS", "SINGLES", "SINGLES DISK INPUT");
   }
   if(name == "CCRESPONSE"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "SCF");
     /*- -*/
     options.add_int("CACHELEV",2);
@@ -1342,7 +1342,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add("MU_IRREPS",new ArrayType());
   }
   if(name == "MVO"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
    options.add_str("WFN","CCSD");
     /*- -*/
    options.add_int("FZC_FILE", PSIF_OEI);
@@ -1436,7 +1436,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   if(name == "CCENERGY"|| options.read_globals()) {
     /*- -*/
     options.add_bool("NEWTRIPS", 1);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "NONE", "CCSD CCSD_T EOM_CCSD LEOM_CCSD BCCD BCCD_T CC2 CC3 EOM_CC2 EOM_CC3 CCSD_MVD");
     /*- -*/
     options.add_str("REFERENCE", "RHF");
@@ -1509,7 +1509,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_double("CC_SCALE_SS",1.13);
   }
   if(name == "CIS"|| options.read_globals()) {
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "CIS", "SCF CCSD CCSD_T EOM_CCSD CIS");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF ROHF UHF");
@@ -1549,7 +1549,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     else
     /*- -*/
       options.add_bool("RI_LMP2", false);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("WFN", "LMP2");
     /*- -*/
     options.add_str("REFERENCE", "RHF", "RHF");
