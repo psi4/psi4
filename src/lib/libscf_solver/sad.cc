@@ -65,7 +65,6 @@ void SADGuess::form_D()
     // Transform Neutral D from AO to SO basis
     Da_ = SharedMatrix(new Matrix("Da SAD",AO2SO_->colspi(),AO2SO_->colspi()));
 
-    
     double* temp = new double[AO2SO_->rowspi()[0] * (ULI) AO2SO_->max_ncol()];
     for (int h = 0; h < Da_->nirrep(); h++) {
         int nao = AO2SO_->rowspi()[h];
@@ -77,7 +76,7 @@ void SADGuess::form_D()
         double** Up = AO2SO_->pointer(h);
 
         C_DGEMM('N','N',nao,nso,nao,1.0,DAOp[0],nao,Up[0],nso,0.0,temp,nso);
-        C_DGEMM('T','N',nso,nso,nso,1.0,Up[0],nso,temp,nso,0.0,DSOp[0],nso);
+        C_DGEMM('T','N',nso,nso,nao,1.0,Up[0],nso,temp,nso,0.0,DSOp[0],nso);
     }
     delete[] temp;
 
@@ -224,11 +223,11 @@ SharedMatrix SADGuess::form_D_AO()
         atomic_D[A] = block_matrix(atomic_bases[atomic_indices[A]]->nbf(),atomic_bases[atomic_indices[A]]->nbf());
     }
 
-    if (print_)
+    if (print_ > 1)
         fprintf(outfile,"\n  Performing Atomic UHF Computations:\n");
     for (int A = 0; A<nunique; A++) {
         int index = atomic_indices[A];
-        if (print_)
+        if (print_ > 1)
             fprintf(outfile,"\n  UHF Computation for Unique Atom %d which is Atom %d:",A, index);
         getUHFAtomicDensity(atomic_bases[index],nelec[index],nhigh[index],atomic_D[A]);
     }
@@ -269,7 +268,7 @@ SharedMatrix SADGuess::form_D_AO()
 }
 void SADGuess::getUHFAtomicDensity(boost::shared_ptr<BasisSet> bas, int nelec, int nhigh, double** D)
 {
-    boost::shared_ptr<Molecule> mol = basis_->molecule();
+    boost::shared_ptr<Molecule> mol = bas->molecule();
 
     int nbeta = (nelec-nhigh)/2;
     int nalpha = nelec-nbeta;
