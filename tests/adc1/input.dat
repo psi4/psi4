@@ -5,13 +5,13 @@ molecule h2o {
     H 1 0.9584 2 104.45
 }
 
-set {
+set globals {
     reference rhf
     basis aug-cc-pvdz
     guess core
     states_per_irrep [1,1,2,1]
 }
 
-run_adc(h2o)
+energy('adc')
 
 clean()
