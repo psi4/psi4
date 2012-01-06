@@ -925,7 +925,6 @@ AC_CONFIG_FILES([include/Makefile
 
           src/bin/psi4/Makefile
           src/bin/response/Makefile
-          src/bin/cusp/Makefile
           src/bin/dcft/Makefile
           src/bin/mcscf/Makefile
           src/bin/transqt2/Makefile
@@ -934,10 +933,7 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/mp2/Makefile
           src/bin/clag/Makefile
           src/bin/stable/Makefile
-          src/bin/cphf/Makefile
           src/bin/ccsort/Makefile
-          src/bin/mvo/Makefile
-          src/bin/geom/Makefile
           src/bin/ccenergy/Makefile
           src/bin/cctriples/Makefile
           src/bin/ccresponse/Makefile
@@ -1025,6 +1021,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc11/Makefile
           tests/cc12/Makefile
           tests/cc13/Makefile
+          tests/cc13a/Makefile
           tests/cc15/Makefile
           tests/cc16/Makefile
           tests/cc17/Makefile
