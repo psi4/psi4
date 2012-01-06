@@ -1346,7 +1346,11 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("CC3_FOLLOW_ROOT", false);
     /*- -*/
     options.add_bool("RHF_TRIPLETS", false);
-    /*- -*/
+    /*- The depth into the occupied and valence spaces from which one-electron 
+    excitations are seeded into the Davidson guess to the CIS (the default of 2 
+    includes all single excitations between HOMO-1, HOMO, LUMO, and LUMO+1). This 
+    CIS is in turn the Davidson guess to the EOM-CC. Expand to capture more exotic 
+    excited states in the EOM-CC calculation !expert -*/
     options.add_int("EXCITATION_RANGE", 2);
     /*- -*/
     options.add_bool("PRINT_SINGLES", false);
