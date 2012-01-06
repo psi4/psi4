@@ -525,7 +525,7 @@ void get_parameters(Options &options)
 
   if (Parameters.dipmom == 1) Parameters.opdm = 1;
 
-  Parameters.root = options.get_int("ROOT");
+  Parameters.root = options.get_int("FOLLOW_ROOT");
   Parameters.root -= 1;
   if (Parameters.root < 0) Parameters.root = 0;
 
@@ -700,7 +700,7 @@ void get_parameters(Options &options)
 
     if (Parameters.average_num > 1) Parameters.opdm_ave = 1;
 
-    if ((!options["ROOT"].has_changed()) && (Parameters.average_num==1)) {
+    if ((!options["FOLLOW_ROOT"].has_changed()) && (Parameters.average_num==1)) {
       Parameters.root = Parameters.average_states[0];
     }
   }
@@ -997,13 +997,13 @@ void print_parameters(void)
            Parameters.mpn ? "yes":"no", Parameters.mpn_schmidt ? "yes":"no");
    fprintf(outfile, "   ZAPTN         =   %6s      WIGNER       =   %6s\n",
            Parameters.zaptn ? "yes":"no", Parameters.wigner ? "yes":"no");
-   fprintf(outfile, "   PERT Z        =   %1.4f      ROOT         =   %6d\n",
+   fprintf(outfile, "   PERT Z        =   %1.4f      FOLLOW ROOT  =   %6d\n",
            Parameters.perturbation_parameter, Parameters.root);
    fprintf(outfile, "   NTHREADS      =   %6d\n",
            Parameters.nthreads);
    fprintf(outfile, "   EXPORT VECTOR =   %6s      NUM EXPORT   =   %6d\n",
            Parameters.export_ci_vector ? "yes":"no", Parameters.num_export);
-   fprintf(outfile, "   FILTER_GUESS  =   %6s      SF_RESTRICT  =   %6s\n",
+   fprintf(outfile, "   FILTER GUESS  =   %6s      SF RESTRICT  =   %6s\n",
            Parameters.filter_guess ?  "yes":"no",
            Parameters.sf_restrict ? "yes":"no");
    if (Parameters.cc && Parameters.diis) {
@@ -1019,7 +1019,7 @@ void print_parameters(void)
       Parameters.first_hd_tmp_unit, Parameters.first_c_tmp_unit,
       Parameters.first_s_tmp_unit, Parameters.first_d_tmp_unit);
 
-   fprintf(outfile, "\n   EX_ALLOW      = ");
+   fprintf(outfile, "\n   EX ALLOW      = ");
    for (i=0;i<Parameters.ex_lvl;i++) {
      fprintf(outfile, "%2d ", Parameters.ex_allow[i]);
    }
