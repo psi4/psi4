@@ -78,7 +78,8 @@ void get_params( Options& options)
   if(params.transition)
     params.relax_opdm = 0;
 
-  params.relax_opdm = options.get_bool("RELAX_OPDM");
+  if(options["RELAX_OPDM"].has_changed())
+    params.relax_opdm = options.get_bool("RELAX_OPDM");
   if ( (params.onepdm) && (params.relax_opdm) ) { /* can't do relaxation without twopdm */
     fprintf(outfile,"\tTurning orbital relaxation off since only onepdm is requested.\n");
     params.relax_opdm = 0;

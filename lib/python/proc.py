@@ -178,16 +178,20 @@ def run_ccenergy(name, **kwargs):
 
 def run_cc_gradient(name, **kwargs):
 
-    run_ccenergy(name, **kwargs)
-    PsiMod.set_global_option('WFN', 'CCSD')
+   run_ccenergy(name, **kwargs)
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
 
-    PsiMod.cchbar()
-    PsiMod.cclambda()
-    PsiMod.ccdensity()
-    PsiMod.deriv()
+   PsiMod.cchbar()
+   PsiMod.cclambda()
+   PsiMod.ccdensity()
+   PsiMod.deriv()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
 
 def run_bccd(name, **kwargs):
 

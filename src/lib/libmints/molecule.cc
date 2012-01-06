@@ -146,8 +146,6 @@ Molecule::Molecule():
     name_("default"),
     fix_orientation_(false),
     move_to_com_(true),
-    charge_specified_(false),
-    multiplicity_specified_(false),
     molecular_charge_(0),
     multiplicity_(1),
     units_(Angstrom),
@@ -207,8 +205,6 @@ Molecule& Molecule::operator=(const Molecule& other)
     all_variables_           = other.all_variables_;
     fragment_types_          = other.fragment_types_;
     geometry_variables_      = other.geometry_variables_;
-    charge_specified_        = other.charge_specified_;
-    multiplicity_specified_  = other.multiplicity_specified_;
 
     // These are symmetry related variables, and are filled in by the following funtions
     pg_             = boost::shared_ptr<PointGroup>();
@@ -592,10 +588,8 @@ void Molecule::init_with_chkpt(boost::shared_ptr<Chkpt> chkpt)
 {
     int natoms = 0;
     double *zvals, **geom;
-    molecular_charge_       = Process::environment.options.get_int("CHARGE");
-    charge_specified_       = Process::environment.options["CHARGE"].has_changed();
-    multiplicity_           = Process::environment.options.get_int("MULTP");
-    multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
+    molecular_charge_       = 0;
+    multiplicity_           = 1;
 
     natoms = chkpt->rd_natom();
     zvals = chkpt->rd_zvals();
@@ -721,11 +715,7 @@ void Molecule::init_with_xyz(const std::string& xyzfilename)
  */
 int Molecule::molecular_charge() const
 {
-    if(Process::environment.options["CHARGE"].has_changed()){
-        return Process::environment.options.get_int("CHARGE");
-    }else{
-        return molecular_charge_;
-    }
+    return molecular_charge_;
 }
 
 /**
@@ -735,11 +725,7 @@ int Molecule::molecular_charge() const
  */
 int Molecule::multiplicity() const
 {
-    if(Process::environment.options["MULTP"].has_changed()){
-        return Process::environment.options.get_int("MULTP");
-    }else{
-        return multiplicity_;
-    }
+    return multiplicity_;
 }
 
 boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::string &text)
@@ -763,10 +749,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
         throw PSIEXCEPTION("Unit " + units + " is not recognized");
     }
 
-    mol->molecular_charge_ = Process::environment.options.get_int("CHARGE");
-    mol->charge_specified_ = Process::environment.options["CHARGE"].has_changed();
-    mol->multiplicity_ = Process::environment.options.get_int("MULTP");
-    mol->multiplicity_specified_ = Process::environment.options["MULTP"].has_changed();
+    mol->molecular_charge_ = 0;
+    mol->multiplicity_ = 1;
 
     /*
      * Time to look for lines that look like they describe charge and multiplicity,
@@ -820,10 +804,8 @@ boost::shared_ptr<Molecule> Molecule::create_molecule_from_string(const std::str
             if(lineNumber && !regex_match(lines[lineNumber-1], reMatches, fragmentMarker_)) {
                 // As long as this does not follow a "--", it's a global charge/multiplicity
                 // specifier, so we process it, then nuke it
-                mol->molecular_charge_       = tempCharge;
-                mol->charge_specified_       = true;
+                mol->molecular_charge_      = tempCharge;
                 mol->multiplicity_          = tempMultiplicity;
-                mol->multiplicity_specified_ = true;
                 lines.erase(lines.begin() + lineNumber);
             }
         }
