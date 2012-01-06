@@ -13,8 +13,6 @@ set {
   wfn cc2
   basis "cc-pVDZ"
   freeze_core true
-
-  mu_irreps [1, 1, 0]
   dertype response
   property rotation
   gauge both

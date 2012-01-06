@@ -20,8 +20,6 @@ set {
   wfn cc2
   basis "STO-3G"
   freeze_core true
-
-  mu_irreps [0, 0, 0]
   dertype response
   property rotation
   gauge both

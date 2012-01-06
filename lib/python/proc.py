@@ -255,10 +255,14 @@ def run_ccsd_response(name, **kwargs):
 
 def run_eom_ccsd(name, **kwargs):
 
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
-
-    run_ccsd("ccsd", **kwargs)
-    PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    if (name.lower() == "eom_ccsd" or name.lower() == "eom-ccsd"):
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+      run_ccsd("ccsd", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CCSD')
+    elif (name.lower() == "eom_cc2" or name.lower() == "eom-cc2"):
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
+      run_ccsd("cc2", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC2')
 
     PsiMod.cchbar()
     returnvalue = PsiMod.cceom()
