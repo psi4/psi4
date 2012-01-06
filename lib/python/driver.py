@@ -23,16 +23,15 @@ procedures = {
             'sapt2+-ct'     : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
-            'cc2'           : run_ccsd,
-            'ccsd'          : run_ccsd,
-            'ccsd(t)'       : run_ccsd_t,
-            'cc3'           : run_cc3,
+            'ccenergy'      : run_ccenergy,  # full control over ccenergy
+            'ccsd'          : run_ccenergy,
+            'ccsd(t)'       : run_ccenergy,
+            'cc2'           : run_ccenergy,
+            'cc3'           : run_ccenergy,
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
-            'eom-ccsd'      : run_eom_ccsd,
-            'eom_ccsd'      : run_eom_ccsd,
-            'eom-cc2'       : run_eom_ccsd,
-            'eom_cc2'       : run_eom_ccsd,
+            'eom-ccsd'      : run_eom_cc,
+            'eom-cc2'       : run_eom_cc,
             'detci'         : run_detci,
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
@@ -45,14 +44,14 @@ procedures = {
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
-            'ccsd'          : run_ccsd_gradient,
+            'ccsd'          : run_cc_gradient,
             'mp2'           : run_mp2_gradient
         },
         'hessian' : {
         },
         'response' : {
-            'cc2'  : run_ccsd_response,
-            'ccsd' : run_ccsd_response
+            'cc2'  : run_cc_response,
+            'ccsd' : run_cc_response
         }}
 
 def energy(name, **kwargs):
