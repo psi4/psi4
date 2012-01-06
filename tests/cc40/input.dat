@@ -1,0 +1,26 @@
+#! RHF-CC2-LR/cc-pVDZ optical rotation of H2O2.  gauge = length, omega =
+#! (589 355 nm)
+
+molecule h2o2 {
+  0 1
+  O
+  O 1 1.39
+  H 1 0.94 2 102.3
+  H 2 0.94 1 102.3 3 -50.0
+}
+
+set {
+  wfn cc2
+  basis "cc-pVDZ"
+  freeze_core true
+
+  dertype response
+  property rotation
+  gauge length
+  omega [589, 355]
+  omega_units nm
+}
+
+response('cc2')
+clean()
+

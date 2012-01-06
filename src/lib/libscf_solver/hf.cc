@@ -1338,6 +1338,12 @@ double HF::compute_energy()
                 oe->add("MULLIKEN_CHARGES");
             }
 
+            if (print_ >= 3) {
+                oe->add("LOWDIN_CHARGES");
+                oe->add("MAYER_INDICES");
+                oe->add("WIBERG_LOWDIN_INDICES");
+            }
+
             if (Communicator::world->me() == 0)
                 fprintf(outfile, "\n  ==> Properties <==\n");
             oe->compute();
