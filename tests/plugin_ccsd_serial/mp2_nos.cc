@@ -33,7 +33,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 
   // allocate memory for a couple of buffers
   long int memory = Process::environment.get_memory();
-  memory *= 1024L*1024L;
+  //memory *= 1024L*1024L;
   memory -= 8L*(o*o*v*v+o*v);
   // how many tiles for the ov^2 transformation?
   long int ntiles,tilesize,lasttile;
@@ -290,7 +290,7 @@ PsiReturnType MP2NaturalOrbitals(boost::shared_ptr<psi::CoupledCluster>ccsd,Opti
 }
 
 void Transformation(boost::shared_ptr<psi::CoupledCluster>ccsd,double*Ca_motono){
-  shared_ptr<PSIO> psio(_default_psio_lib_);
+  /*shared_ptr<PSIO> psio(_default_psio_lib_);
   std::vector<shared_ptr<MOSpace> > spaces;
   shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
@@ -330,7 +330,7 @@ void Transformation(boost::shared_ptr<psi::CoupledCluster>ccsd,double*Ca_motono)
   ints.set_keep_dpd_so_ints(1);
   ints.set_keep_iwl_so_ints(1);
   ints.initialize();
-  ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
+  ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);*/
 }
 
 } // end of namespace
