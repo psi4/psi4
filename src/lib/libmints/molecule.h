@@ -309,6 +309,11 @@ public:
     /// Print the molecule in Bohr
     void print_in_bohr() const;
 
+    ///Print the geometrical parameters of the molecule
+    void print_distances() const;
+    void print_bond_angles() const;
+    void print_dihedrals() const;
+
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
 

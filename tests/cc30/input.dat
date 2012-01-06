@@ -19,7 +19,6 @@ set {
   freeze_core true
   omega [633, 355]
   omega_units nm
-  mu_irreps [0, 0, 0]
   gauge length
   basis STO-3G
 }
