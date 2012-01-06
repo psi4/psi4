@@ -20,7 +20,6 @@ using namespace std;
 
 namespace psi { namespace ccresponse {
 
-void transpert(const char *pert);
 void sort_pert(const char *pert, double **pertints, int irrep);
 
 /* preppert(): Prepare DPD structures for all currently known one-electron 
