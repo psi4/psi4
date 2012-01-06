@@ -1507,6 +1507,57 @@ void Matrix::diagonalize(SharedMatrix& metric, SharedMatrix& eigvectors, boost::
     delete[] work;
 }
 
+void Matrix::svd(SharedMatrix& U, SharedVector& S, SharedMatrix& V)
+{
+    if (symmetry_) {
+        throw PSIEXCEPTION("Matrix::svd: Matrix non-totally symmetric.");
+    }
+
+    // Working copy. This routine takes hella memory
+    Matrix A(*this);
+
+    for (int h = 0; h < nirrep_; h++) {
+        if (!rowspi_[h] && !colspi_[h])
+            continue;
+
+        int m = rowspi_[h];
+        int n = colspi_[h];
+
+        double** Ap = A.pointer(h);
+        double*  Sp = S->pointer(h);
+        double** Up = U->pointer(h);
+        double** Vp = V->pointer(h);
+                
+        int* iwork = new int[8L * (m < n ? m : n)];
+
+        // Workspace Query
+        double lwork;
+        int info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,&lwork,-1,iwork);
+
+        double* work = new double[(int)lwork];
+
+        // SVD
+        info = C_DGESDD('A',n,m,Ap[0],n,Sp,Vp[0],n,Up[0],m,work,(int)lwork,iwork);
+
+        delete[] work;
+        delete[] iwork;
+
+        if (info != 0) {
+            if (info < 0) {
+                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: argument %d has invalid parameter.\n", -info);
+                fflush(outfile);
+                abort();
+            }
+            if (info > 0) {
+                fprintf(outfile, "Matrix::svd with metric: C_DGESDD: error value: %d\n", info);
+                fflush(outfile);
+                abort();
+            }
+        }
+    } 
+    V->transpose_this();
+}
+
 void Matrix::swap_rows(int h, int i, int j)
 {
     C_DSWAP(colspi_[h], &(matrix_[h][i][0]), 1, &(matrix_[h][j][0]), 1);

@@ -1187,6 +1187,28 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_double("SCALE",0.5);
   }
+  if(name == "ADC" || options.read_globals()) {
+    /*- The amount of information printed to the output file -*/
+    options.add_int("PRINT", 1);
+    /*- How to cache quantities within the DPD library -*/
+    options.add_int("CACHELEV", 2);
+    /*- The amount of memory available (in Mb) -*/
+    options.add_int("MEMORY", 1000);
+    /*- The Reference -*/
+    options.add_str("REFERENCE", "");
+    /*- The convergence criterion for pole searching step -*/
+    options.add_int("NEWTON_CONV", 7);
+    /*- The maximum numbers of the pole searching iteration  -*/
+    options.add_int("POLE_MAX", 20);
+    /*- Maximu iteration number in simultaneous expansion method -*/
+    options.add_int("SEM_MAX", 30);
+    /*- The cutoff norm of residual vector in SEM step -*/
+    options.add_int("NORM_TOL", 6);
+    /*- The poles per irrep vector -*/
+    options.add("STATES_PER_IRREP", new ArrayType());
+    /*- Partial renormalization scheme for the ground state wavefunction -*/
+    options.add_bool("PR", false);
+  }
   if(name == "OEPROP"|| options.read_globals()) {
     /*- -*/
     options.add_int("NUM_ROOTS",1);
@@ -2017,6 +2039,41 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_int("POINTS", 3); // Can we error check integers?
       /*- Displacement size in au for finite-differences. -*/
       options.add_double("DISP_SIZE", 0.005);
+  }
+  if (name == "OMP2"|| options.read_globals()) {
+    //options.add_int("memory", 256);
+    //options.add_str("reference", "UHF", "UHF");
+    
+    options.add_int("e_convergence",8);
+    options.add_int("a_convergence",5);
+    options.add_int("g_convergence",5);
+    options.add_int("mg_convergence",4);
+    options.add_int("cc_maxiter",50);
+    options.add_int("mo_maxiter",50);
+    options.add_int("print",0);
+    options.add_int("cachelev",2);
+    options.add_int("num_vecs",4);
+    options.add_int("cutoff",14);
+    
+    options.add_double("mo_step_max",0.5);
+    options.add_double("lshift_parameter",0.02);
+    options.add_double("os_scale",1.2);
+    options.add_double("ss_scale",0.3333333333333333);
+    options.add_double("sos_scale",1.3); // It is used for MP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
+    options.add_double("sos_scale2",1.2); // It is used for OMP2 (for SOS-MP2 recommended value is 1.3, but for SOS-OO-MP2 (O2) it is 1.2)
+    
+    options.add_bool("level_shift",true);
+    //options.add_str("lineq","CDGESV","CDGESV FLIN POPLE");
+    options.add_str("orth_type","MGS","GS MGS");
+    //options.add_str("stability","FALSE","TRUE FALSE");
+    options.add_bool("natorb",false);
+    options.add_str("opt_method","DIIS","SD DIIS");    
+    options.add_str("hess_type","NONE","NONE");    
+    options.add_bool("omp2_orb_energy",false);  
+    options.add_bool("do_scs",false); 
+    options.add_bool("do_sos",false); 
+    options.add_bool("write_mo",false);   
+    options.add_bool("read_mo",false);
   }
   return true;
 }

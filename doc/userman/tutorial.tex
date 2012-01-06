@@ -1,19 +1,5 @@
 \section{A \PSIfour\ Tutorial} \label{tutorial}
 
-\subsection{Before Getting Started: A Warning about Scratch Files}
-Generally, electronic structure programs like \PSIfour\ make
-significant use of disk drives.  Therefore, it is very important
-to ensure that PSI4 is writing its temporary files to a disk drive
-phsyically attached to the computer running the computation.  If it
-is not, it will significantly slow down the program and the network.
-By default, PSI4 will write temporary files to \file{/tmp}, but you
-will want to set up a default scratch path (as described in sections
-\ref{scratchfiles} and \ref{psirc}) because the \file{/tmp} directory
-is usually not large enough except for small test cases.  In any 
-event, you want to be very careful that you are not writing scratch
-files to an NFS-mounted directory that is physically attached to a 
-fileserver elsewhere on the network.
-
 \subsection{Basic Input File Structure} 
 
 PSI4 reads input from a text file, which can be prepared in any standard
@@ -25,50 +11,100 @@ The syntax is:
 
 {\tt psi4 input-name output-name}
 
-\subsubsection{IPV1-Style Input}
-PSI4 is a modular single executable, with each module performing specific tasks
-and computations.  Which modules are run for a particular computation
-depends on the type of computation and the particular keywords specified
-in the input file.  All keywords in PSI4 use the structure {\tt keyword =
-value}, where values may be strings, booleans, integers, or real numbers.
-If the value is a string which contains a special character (such as a
-space or a dash) you must enclose the string in double quotation marks.
-You can give keywords in the input file for specific modules; however,
-in the first few examples, we will place all our keywords in one section
-of our input file called {\tt psi}.  Generally, every module you run
-during your computation will read the keywords in {\tt psi}, so you
-can place all your keywords in this section if you choose to do so.
-
 \subsection{Running a basic SCF calculation}
 In our first example, we will consider a Hartree-Fock SCF computation
 for the water molecule using a cc-pVDZ basis set.  We will specify the
 geometry of our water molecule using a standard z-matrix.
 
+\begin{Snippet}
+
+# Any line starting with the # character is a comment line
+# Here's a sample HF/cc-pVDZ H2O computation
+
+molecule h2o {
+  O 
+  H 1 0.96
+  H 1 0.96 2 104.5
+}
+
+set basis cc-pVDZ
+energy('scf')
+\end{Snippet}
+
+For your convenience, this sample input can be found in {\tt
+psi4/samples/tu1-h2o-energy/input.dat}.  You can run it if you wish.
+Once \PSIfour\ is in your path (see the User Configuration section of the
+installation manual), you can run this computation by typing
 \begin{verbatim}
-psi:(
- label = "cc-pVDZ SCF H2O"
- jobtype = sp
- wfn = scf
- reference = rhf
- basis = "cc-pVDZ"
- zmat = (
-   o
-   h 1 0.957
-   h 1 0.957 2 104.5
-  )
- )
-
+psi4 input.dat output.dat
 \end{verbatim}
+If everything goes well, the computation should complete and should report
+a final restricted Hartree-Fock energy in a section like this:
+\begin{verbatim}
+  Energy converged.
 
-In each computation, you can specify the type of wavefunction (keyword
-{\tt wfn}), the reference wavefunction for post-Hartree-Fock computations
-(keyword {\tt reference}), and the type of computation you want to
-perform (keyword {\tt jobtype}).  In the example above, we used a
-restricted Hartree-Fock (RHF) reference in an SCF computation of a
-single-point energy.  To change the level of electron correlation, one
-would specify a different wavefunction type using the keyword {\tt wfn}.
-In the example above, to perform an MP2 computation, simply set {\tt
-wfn = mp2}.
+  @RHF Final Energy:   -76.02665366589162
+\end{verbatim}
+By default, the energy should be converged to about 1.0E-8, so agreement
+is only expected for about the first 8 digits after the decimal.  If the
+computation does not complete, there is probably a problem with the
+compilation or installation of the program (see the installation manual).
+
+This very simple input is sufficient to run the requested information.
+Notice that we didn't tell the program some otherwise useful information
+like the charge on the molecule (0, it's neutral), the spin multiplicity
+(0 for a closed-shell molecule with all electrons paired), or the reference
+wavefunction to use (restricted Hartree-Fock, or RHF, is usually
+appropriate for a closed-shell molecule).  The program correctly guessed
+all of these options for us.  We can change the default behavior through
+additional keywords.  
+
+Let's consider what we would do for an open-shell molecule, where
+not all electrons are paired.  For example, let's run a computation
+on methylene (CH$_2$), whose ground electronic state has two unpaired
+electrons (triplet electronic state, or a spin multiplicity $2S+1 = 3$).
+In this case, the default spin multiplicity (0) is not correct, so we
+need to tell the program the true value (3).  Like many programs, \PSIfour\
+can get the charge and multiplicity as the first two integers in the
+Z-matrix.  Note the line with ``0 3'' at the beginning of the molecule
+specification below.  In this example we will also specify the bond length
+and bond angle as variables ({\tt R} and {\tt A}), whose values are given
+after a blank line at the end of the Z-matrix specification.
+
+\begin{Snippet}
+# Here's a sample UHF/6-31G** CH2 computation
+
+molecule ch2 {
+  0 3
+  C
+  H 1 R
+  H 1 R 2 A
+
+  R = 1.075
+  A = 133.93
+}
+
+set basis 6-31G**
+set reference uhf
+
+energy ('scf')
+\end{Snippet}
+
+This sample input can be found in {\tt psi4/samples/tu2-ch2-energy}, and as
+before it can be run through the command {\tt psi4 input.dat output.dat}
+(actually, because {\tt psi4} by default looks for an input file named {\tt
+input.dat} and writes by default to a file called {\tt output.dat}, in this
+case one could also just type {\tt psi4}).  If it works, it should print
+the final energy as
+\begin{verbatim}
+  @UHF Final Energy:   -38.92534160932308
+\end{verbatim}
+Notice we added a new keyword, {\tt set reference uhf}, to the input.  For
+open-shell molecules, we have a choice of unrestricted orbitals
+(unrestricted Hartree-Fock, or UHF), or restricted orbitals (restricted
+open-shell Hartree-Fock, or ROHF).  Usually, UHF is a little easier to
+converge (although it may be more susceptible to spin contamination than
+ROHF).
 
 \subsection{Geometry Optimization and Vibrational Frequency Analysis}
 The above example was a simple single-point energy computation.

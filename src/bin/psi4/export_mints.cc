@@ -262,6 +262,7 @@ void export_mints()
             def("set_name", &Molecule::set_name).
             def("name", &Molecule::name).
             def("fix_orientation", &Molecule::set_orientation_fixed).
+            def("fix_com", &Molecule::set_com_fixed).
             def("init_with_checkpoint", &Molecule::init_with_chkpt).
             def("save_to_checkpoint", &Molecule::save_to_chkpt).
             def("init_with_io", &Molecule::init_with_psio).

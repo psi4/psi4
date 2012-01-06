@@ -4,7 +4,7 @@
 #
 #
 
-define([psi_version],[4.0.0-alpha])
+define([psi_version],[4.0.0-beta1])
 define([psi_buildid],[alpha])
 define([psi_bugreport],[psicode@users.sourceforge.net])
 AC_PREREQ(2.57)
@@ -260,6 +260,7 @@ AC_PROG_CXXCPP
 AC_PROG_INSTALL
 AC_PROG_LN_S
 AC_CHECK_PROGS([QHELPGENERATOR],[qhelpgenerator])
+AC_CHECK_PROGS([DSYMUTIL],[dsymutil])
 AC_CHECK_PROGS(AR,ar,ar)
 AC_ARG_WITH(ar,
 [  --with-ar               Names the archive creator.],
@@ -968,11 +969,15 @@ AC_CONFIG_FILES([include/Makefile
           src/bin/optking/Makefile
           src/bin/df-cc/Makefile
           src/bin/findif/Makefile
+          src/bin/omp2/Makefile
+          src/bin/adc/Makefile
 
           tests/Makefile
           tests/MakeVars
           tests/MakeRules
           tests/runtest.pl
+          tests/tu1-h2o-energy/Makefile
+          tests/tu2-ch2-energy/Makefile
           tests/dcft1/Makefile
           tests/dcft2/Makefile
           tests/dcft3/Makefile
@@ -1030,6 +1035,7 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc8/Makefile
           tests/cc8a/Makefile
           tests/cc9/Makefile
+          tests/cc11/Makefile
           tests/cc12/Makefile
           tests/cc13/Makefile
           tests/cc15/Makefile
@@ -1044,7 +1050,18 @@ AC_CONFIG_FILES([include/Makefile
           tests/cc31/Makefile
           tests/cc32/Makefile
           tests/cc33/Makefile
+          tests/cc34/Makefile
           tests/cc35/Makefile
+          tests/cc36/Makefile
+          tests/cc37/Makefile
+          tests/cc38/Makefile
+          tests/cc39/Makefile
+          tests/cc40/Makefile
+          tests/cc41/Makefile
+          tests/cc42/Makefile
+          tests/cc43/Makefile
+          tests/cc44/Makefile
+          tests/cc45/Makefile
           tests/cc52/Makefile
           tests/mcscf1/Makefile
           tests/mcscf2/Makefile

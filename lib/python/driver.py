@@ -23,12 +23,16 @@ procedures = {
             'sapt2+-ct'     : run_sapt_ct,
             'sapt2+3-ct'    : run_sapt_ct,
             'mp2c'          : run_mp2c,
+            'cc2'           : run_ccsd,
             'ccsd'          : run_ccsd,
             'ccsd(t)'       : run_ccsd_t,
             'cc3'           : run_cc3,
             'bccd'          : run_bccd,
             'bccd(t)'       : run_bccd_t,
             'eom-ccsd'      : run_eom_ccsd,
+            'eom_ccsd'      : run_eom_ccsd,
+            'eom-cc2'       : run_eom_ccsd,
+            'eom_cc2'       : run_eom_ccsd,
             'detci'         : run_detci,
             'mp'            : run_detci,  # arbitrary order mp(n)
             'zapt'          : run_detci,  # arbitrary order zapt(n)
@@ -36,7 +40,8 @@ procedures = {
             'cisdt'         : run_detci,
             'cisdtq'        : run_detci,
             'ci'            : run_detci,  # arbitrary order ci(n)
-            'fci'           : run_detci
+            'fci'           : run_detci,
+            'adc'           : run_adc
         },
         'gradient' : {
             'scf'           : run_scf_gradient,
@@ -46,6 +51,7 @@ procedures = {
         'hessian' : {
         },
         'response' : {
+            'cc2'  : run_ccsd_response,
             'ccsd' : run_ccsd_response
         }}
 
@@ -58,9 +64,6 @@ def energy(name, **kwargs):
         del kwargs['molecule']
     molecule = PsiMod.get_active_molecule()
     molecule.update_geometry()
-    # Line below needed when passing in molecule as a keyword argument
-    #    but causes mints2 test case to fail
-    PsiMod.set_global_option("BASIS", PsiMod.get_global_option("BASIS"))
 
     # Allow specification of methods to arbitrary order
     lowername, level = parse_arbitrary_order(lowername)
@@ -433,7 +436,12 @@ def frequencies(name, **kwargs):
         displacements = PsiMod.fd_geoms_freq_1(irrep)
         ndisp = len(displacements)
 
+        #print displacements to output.dat
+        #for n, displacement in enumerate(displacements):
+        #  displacement.print_out();
+
         print " %d displacements needed." % ndisp
+
         gradients = []
         for n, displacement in enumerate(displacements):
             # Print information to output.dat
@@ -444,12 +452,17 @@ def frequencies(name, **kwargs):
             print "    displacement %d" % (n+1)
 
             # Load in displacement into the active molecule
+            if (n == 0) :
+              PsiMod.get_active_molecule().fix_orientation(1)
+              PsiMod.get_active_molecule().fix_com(1)
+
             PsiMod.get_active_molecule().set_geometry(displacement)
 
             # Perform the gradient calculation
-            G = func(lowername, **kwargs)
+            func(lowername, **kwargs)
 
             # Save the gradient
+            G = PsiMod.get_gradient()
             gradients.append(G)
 
             # clean may be necessary when changing irreps of displacements

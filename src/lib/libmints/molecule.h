@@ -122,6 +122,10 @@ protected:
     std::vector<FragmentType> fragment_types_;
     /// Symmetry string from geometry specification
     std::string symmetry_from_input_;
+    /// Old previous symmetry frame (so one can fix to it, if desired)
+    Matrix *old_symmetry_frame_;
+    /// Old com displacement vector (so one can fix to it, if desired)
+    Vector3 *old_com_vector_;
 
 public:
     Molecule();
@@ -304,6 +308,11 @@ public:
 
     /// Print the molecule in Bohr
     void print_in_bohr() const;
+
+    ///Print the geometrical parameters of the molecule
+    void print_distances() const;
+    void print_bond_angles() const;
+    void print_dihedrals() const;
 
     /// Save an XYZ file
     void save_xyz(const std::string & filename) const;
@@ -501,9 +510,10 @@ public:
 
     /// Get whether or not orientation is fixed
     bool orientation_fixed() const { return fix_orientation_; }
-    /// Set whether or not orientation is fixed
-    void set_orientation_fixed(bool _fix = true) { fix_orientation_ = _fix; }
-
+    /// Fix the orientation at its current frame
+    void set_orientation_fixed(bool _fix = true);
+    /// Fix the center of mass at its current frame
+    void set_com_fixed(bool _fix = true);
     /// Returns the Schoenflies symbol
     std::string schoenflies_symbol() const;
 

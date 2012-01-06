@@ -34,13 +34,14 @@ DFADC::diagonalize(double *&eps, double **&V, int nroot, bool first, bool CISgue
     #endif
 
     // Setting up each parameters
-    int maxdim    = 10 * nroot;
     int iter      = 0;
     int converged = 0;
-    int length    = nroot;
+    int length    = init_ritz_ * nroot;
+    int maxdim    = max_ritz_  * nroot; 
     
+    bool do_residual  = options_.get_bool("do_residual");
     bool *residual_ok = (bool*)malloc(nroot*sizeof(bool));
-    for(int i = 0;i < nroot;i++) residual_ok[i] = false;
+    for(int i = 0;i < nroot;i++) residual_ok[i] = !do_residual && CISguess;
     bool *conv        = (bool*)malloc(nroot*sizeof(bool));
     for(int i = 0;i < nroot;i++) conv[i] = false;
     double *residual_norm = init_array(nroot*sizeof(double));
@@ -61,6 +62,7 @@ DFADC::diagonalize(double *&eps, double **&V, int nroot, bool first, bool CISgue
         #pragma omp parallel for num_threads(nthread)
         for(int I = 0;I < length;I++)
             C_DCOPY(naocc_*(ULI)navir_, Bcis_[I], 1, B[I], 1);
+        C_DCOPY((ULI)nroot, Ecis_, 1, lambda_o, 1);
     }
     else {
         C_DCOPY(navir_*naocc_, diag_, 1, Adiag    , 1);
@@ -89,9 +91,10 @@ DFADC::diagonalize(double *&eps, double **&V, int nroot, bool first, bool CISgue
         sigma_tensor(B, length, S, CISguess);
         
         // Preparing Davidson mini-Hamiltonian
+        double sum;
         for(int I = 0;I < length;I++){
             for(int J = 0;J <= I;J++){
-                double sum = C_DDOT(navir_*(ULI)naocc_, B[I], 1, S[J], 1);
+                C_DGEMM('N', 'T', 1, 1, naocc_*navir_, 1.0, B[I], naocc_*navir_, S[J], naocc_*navir_, 0.0, &sum, 1);
                 if(I != J) G[I][J] = G[J][I] = sum;
                 else       G[I][J] = sum;
             }
@@ -106,12 +109,15 @@ DFADC::diagonalize(double *&eps, double **&V, int nroot, bool first, bool CISgue
                 C_DAXPY(navir_*(ULI)naocc_, -Alpha[I][k]*lambda[k], B[I], 1, F[k], 1);
                 C_DAXPY(navir_*(ULI)naocc_,  Alpha[I][k]          , S[I], 1, F[k], 1);
             }
+            #pragma omp parallel for schedule(dynamic) num_threads(nthread)
             for(int ia = 0;ia < navir_*naocc_;ia++) {
                 double denom = lambda[k] - diag_[ia];
                 if(fabs(denom) > pow(10, -norm_tol_))F[k][ia] /= denom;
                 else F[k][ia] = 0.0;
             }
-            residual_norm[k] = C_DNRM2(navir_*(ULI)naocc_, F[k], 1);
+            //residual_norm[k] = C_DNRM2(navir_*(ULI)naocc_, F[k], 1);
+            C_DGEMM('N', 'T', 1, 1, naocc_*navir_, 1.0, F[k], naocc_*navir_, F[k], naocc_*navir_, 0.0, &residual_norm[k], 1);
+            residual_norm[k] = sqrt(residual_norm[k]);
 
             if(residual_norm[k] > pow(10, -norm_tol_)){
                 double reciprocal = 1 / residual_norm[k];
@@ -124,17 +130,18 @@ DFADC::diagonalize(double *&eps, double **&V, int nroot, bool first, bool CISgue
         }
         
         // Adding {F} to {B}, to expand the Ritz space
+        double coeff, norm;
         for(int k = 0;k < nroot;k++){
             double *Bp = init_array(navir_*(ULI)naocc_);
             C_DCOPY(navir_*(ULI)naocc_, F[k], 1, Bp, 1);
             for(int I = 0;I < length;I++){
-                double coeff2 = 0;
-                for(int ia = 0;ia < navir_*naocc_;ia++)
-                    coeff2 += F[k][ia] * B[I][ia];
-                double coeff = C_DDOT(navir_*(ULI)naocc_, F[k], 1, B[I], 1);
+                //double coeff = C_DDOT(navir_*(ULI)naocc_, F[k], 1, B[I], 1);
+                C_DGEMM('N', 'T', 1, 1, naocc_*navir_, 1.0, F[k], naocc_*navir_, B[I], naocc_*navir_, 0.0, &coeff, 1);
                 C_DAXPY(navir_*(ULI)naocc_, -coeff, B[I], 1, Bp, 1);
             }
-            double norm = C_DNRM2(navir_*(ULI)naocc_, Bp, 1);
+            //double norm = C_DNRM2(navir_*(ULI)naocc_, Bp, 1);
+            C_DGEMM('N', 'T', 1, 1, naocc_*navir_, 1.0, Bp, naocc_*navir_, Bp, naocc_*navir_, 0.0, &norm, 1);
+            norm = sqrt(norm);
             if(norm > pow(10, -norm_tol_)){
                 double reciprocal = 1 / norm;
                 C_DSCAL(navir_*(ULI)naocc_, reciprocal, Bp, 1);
@@ -215,31 +222,24 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
     double **temp3 = block_matrix((ULI)navir_, (ULI)navir_);
         
     // \sigma^R_{ia} <-- \sum_{ia} (e_a-e_i) b^R_{ia}
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp collapse(3) parallel for schedule(dynamic) num_threads(nthread)
     for(int R = 0;R < dim;R++)
-        for(int ia = 0;ia < naocc_*navir_;ia++) 
-            S[R][ia] = B[R][ia] * diag_[ia];
-    
-    double **J_mhalf;
-    double **Qpia, **Qpij, **Qpab;
+        for(int i = 0;i < naocc_;i++)
+            for(int a = 0;a < navir_;a++)
+                S[R][i*navir_+a] = B[R][i*navir_+a] * (-occe_[i]+vire_[a]);
         
-    formInvSqrtJ(J_mhalf);
-    formDFtensor(occCa_, virCa_, J_mhalf, Irow, Qpia); 
-    formDFtensor(occCa_, occCa_, J_mhalf, Irow, Qpij); 
-    formDFtensor(virCa_, virCa_, J_mhalf, Irow, Qpab);
-    
     for(int R = 0;R < dim;R++){
         
-        // \sigma^R_{ia} <-- \sum_{jb} H^{CIS}_{ia,jb} b_{jb}
+        // \sigma^R_{ia} <-- \sum_{jb} H^{CIS}_{ia,jb} b^R_{jb}
         for(int I = 0;I < ribasis_->nbf();I++){
             
             // J-term, \sigma^R_{ia} <-- 2 Q^I_{ia} \sum_{jb} Q^I_{jb} b^R_{jb}
-            C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, Qpia[I], 1, B[R], 1, 0.0, &(temp1), 1);
-            C_DAXPY(navir_*(ULI)naocc_, 2.0*temp1, Qpia[I], 1, S[R], 1);
+            C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, Qpia_[I], 1, B[R], 1, 0.0, &(temp1), 1);
+            C_DAXPY(navir_*(ULI)naocc_, 2.0*temp1, Qpia_[I], 1, S[R], 1);
         
-            // K-term, \sigma^R_{ia} <-- - sum_{jb} Q^I_{ij} b^R_{jb} Q^I_{ab}
-            C_DGEMM('N', 'T', naocc_, navir_, navir_, -1.0, B[R],    navir_, Qpab[I],  navir_, 0.0, temp2[0], navir_);
-            C_DGEMM('N', 'N', naocc_, navir_, naocc_,  1.0, Qpij[I], naocc_, temp2[0], navir_, 1.0, S[R],     navir_);
+            // K-term, \sigma^R_{ia} <-- - \sum_{jb} Q^I_{ij} b^R_{jb} Q^I_{ab}
+            C_DGEMM('N', 'T', naocc_, navir_, navir_, -1.0, B[R],    navir_, Qpab_[I],  navir_, 0.0, temp2[0], navir_);
+            C_DGEMM('N', 'N', naocc_, navir_, naocc_,  1.0, Qpij_[I], naocc_, temp2[0], navir_, 1.0, S[R],     navir_);
                         
         } // End loop over I
         
@@ -254,12 +254,12 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
             for(int I = 0;I < ribasis_->nbf();I++){
                 
                 // J-term, D_{ia} <-- 2.0 Q^I_{ia} \sum_{jb} Q^I_{jb} b^S_{jb} 
-                C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, Qpia[I], 1, B[R], 1, 0.0, &(temp1), 1);
-                C_DAXPY(navir_*(ULI)naocc_, temp1, Qpia[I], 1, Dia[0], 1);
+                C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, Qpia_[I], 1, B[R], 1, 0.0, &(temp1), 1);
+                C_DAXPY(navir_*(ULI)naocc_, temp1, Qpia_[I], 1, Dia[0], 1);
                 
                 // K-term, D_{ia} <-- - \sum_{jb} Q^I_{ib} b^R_{jb} Q^I_{ja}
-                C_DGEMM('T', 'N', navir_, navir_, naocc_,  1.0, B[R], navir_, Qpia[I], navir_, 0.0, temp3[0], navir_);
-                C_DGEMM('N', 'N', naocc_, navir_, navir_, -0.5, Qpia[I], navir_, temp3[0], navir_, 1.0, Dia[0], navir_);
+                C_DGEMM('T', 'N', navir_, navir_, naocc_,  1.0, B[R], navir_, Qpia_[I], navir_, 0.0, temp3[0], navir_);
+                C_DGEMM('N', 'N', naocc_, navir_, navir_, -0.5, Qpia_[I], navir_, temp3[0], navir_, 1.0, Dia[0], navir_);
                 
             } // End loop over I
             
@@ -273,12 +273,12 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
             for(int I = 0;I < ribasis_->nbf();I++){
                 
                 // J-term, \sigma^S_{ia} <-- 2.0 Q^I_{ia} \sum_{jb} Q^I_{jb} E_{jb}
-                C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, Qpia[I], 1, Eia[0], 1, 0.0, &(temp1), 1);
-                C_DAXPY(navir_*(ULI)naocc_, temp1, Qpia[I], 1, S[R], 1);
+                C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, Qpia_[I], 1, Eia[0], 1, 0.0, &(temp1), 1);
+                C_DAXPY(navir_*(ULI)naocc_, temp1, Qpia_[I], 1, S[R], 1);
                 
                 // K-term, \sigma^S_{ia} <-- \sum_{jb} Q^I_{ib} E_{jb} Q^I_{ja}
-                C_DGEMM('T', 'N', navir_, navir_, naocc_,  1.0, Eia[0], navir_, Qpia[I], navir_, 0.0, temp3[0], navir_);
-                C_DGEMM('N', 'N', naocc_, navir_, navir_, -0.5, Qpia[I], navir_, temp3[0], navir_, 1.0, S[R], navir_);
+                C_DGEMM('T', 'N', navir_, navir_, naocc_,  1.0, Eia[0], navir_, Qpia_[I], navir_, 0.0, temp3[0], navir_);
+                C_DGEMM('N', 'N', naocc_, navir_, navir_, -0.5, Qpia_[I], navir_, temp3[0], navir_, 1.0, S[R], navir_);
                 
             } // End loop over I
             
@@ -291,20 +291,19 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
             // Z_{iajb} <-- \sum_{I} B^I_{ja} \sum_{c} b^S_{ic} B^I_{cb} 
             double **Ziajb = block_matrix(naocc_*(ULI)navir_,   naocc_*(ULI)navir_);
             for(int I = 0;I < ribasis_->nbf();I++)
-                C_DGEMM('N', 'N', naocc_, navir_, navir_, 1.0, B[R], navir_, Qpab[I], navir_, 1.0, temp4[I], navir_);
+                C_DGEMM('N', 'N', naocc_, navir_, navir_, 1.0, B[R], navir_, Qpab_[I], navir_, 1.0, temp4[I], navir_);
             
-            C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), 1.0, Qpia[0], naocc_*navir_, temp4[0], naocc_*navir_, 0.0, Ziajb[0], naocc_*navir_);
+            C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), 1.0, Qpia_[0], naocc_*navir_, temp4[0], naocc_*navir_, 0.0, Ziajb[0], naocc_*navir_);
             
             free_block(temp4);
 
             temp4 = block_matrix((ULI)ribasis_->nbf(), naocc_*(ULI)navir_);
             
             // Z_{iajb} <-- - \sum_{I} B^I_{ia} \sum_{k} B^I_{jk} b^S_{kb}
-            //#pragma omp parallel for num_threads(nthread)
             for(int I = 0;I < ribasis_->nbf();I++)
-                C_DGEMM('N', 'N', naocc_, navir_, naocc_, 1.0, Qpij[I], naocc_, B[R], navir_, 1.0, temp4[I], navir_);
+                C_DGEMM('N', 'N', naocc_, navir_, naocc_, 1.0, Qpij_[I], naocc_, B[R], navir_, 1.0, temp4[I], navir_);
             
-            C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), -1.0, Qpia[0], naocc_*navir_, temp4[0], naocc_*navir_, 1.0, Ziajb[0], naocc_*navir_);
+            C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), -1.0, Qpia_[0], naocc_*navir_, temp4[0], naocc_*navir_, 1.0, Ziajb[0], naocc_*navir_);
             
             free_block(temp4);
             
@@ -312,7 +311,7 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
             //            / (\omega + e_i + e_j - e_a - e_b)
             // One of the most nastiest steps!!
             double **Wiajb = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
-            #pragma omp parallel for num_threads(nthread)
+            #pragma omp collapse(4) parallel for schedule(dynamic) num_threads(nthread)
             for(int i = 0;i < naocc_;i++)
                 for(int a = 0;a < navir_;a++)
                     for(int j = 0;j < naocc_;j++)
@@ -327,9 +326,9 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
             // \sigma^R_{ia} <-- - \sum_{Ij} B^I_{ji} \sum_{kb} W_{jakb} B^I_{kb}
             for(int I = 0;I < ribasis_->nbf();I++) {
                 
-                C_DGEMM('N', 'N', naocc_*navir_, 1, naocc_*navir_, 1.0, Wiajb[0], naocc_*navir_, Qpia[I], 1, 0.0, temp2[0], 1);
-                C_DGEMM('N', 'T', naocc_, navir_, navir_,  1.0, temp2[0], navir_, Qpab[I], navir_, 1.0, S[R], navir_);
-                C_DGEMM('T', 'N', naocc_, navir_, naocc_, -1.0, Qpij[I], naocc_, temp2[0], navir_, 1.0, S[R], navir_);
+                C_DGEMM('N', 'N', naocc_*navir_, 1, naocc_*navir_, 1.0, Wiajb[0], naocc_*navir_, Qpia_[I], 1, 0.0, temp2[0], 1);
+                C_DGEMM('N', 'T', naocc_, navir_, navir_,  1.0, temp2[0], navir_, Qpab_[I], navir_, 1.0, S[R], navir_);
+                C_DGEMM('T', 'N', naocc_, navir_, naocc_, -1.0, Qpij_[I], naocc_, temp2[0], navir_, 1.0, S[R], navir_);
                 
             } // End loop over I
 
@@ -340,10 +339,6 @@ DFADC::sigma_tensor(double **B, int dim, double **&S, bool do_ADC)
     
     free_block(temp2);
     free_block(temp3);
-    free_block(J_mhalf);
-    free_block(Qpia);
-    free_block(Qpij);
-    free_block(Qpab);
 }
 
 double
@@ -354,17 +349,9 @@ DFADC::accelerate(double *V)
     nthread = omp_get_max_threads();
     #endif
         
-    double round_omega;
+    double partial_omega;
     double **temp1 = block_matrix((ULI)ribasis_->nbf(), naocc_*(ULI)navir_);
     double **temp2 = block_matrix((ULI)naocc_, (ULI)navir_);
-
-    double **J_mhalf;
-    double **Qpia, **Qpij, **Qpab;
-        
-    formInvSqrtJ(J_mhalf);
-    formDFtensor(occCa_, virCa_, J_mhalf, Irow, Qpia); 
-    formDFtensor(occCa_, occCa_, J_mhalf, Irow, Qpij); 
-    formDFtensor(virCa_, virCa_, J_mhalf, Irow, Qpab);
                     
     // Calculate V(\omega)^{\dagger}\partial A(\omega)/\partial\omega V^{\dagger}
     // where, A stands for the correlated response matrix
@@ -372,9 +359,9 @@ DFADC::accelerate(double *V)
     // dZ_{iajb} <-- \sum_{I} B^I_{ja} \sum_{c} V_{ic} B^I_{cb} 
     double **Ziajb = block_matrix(naocc_*(ULI)navir_,   naocc_*(ULI)navir_);
     for(int I = 0;I < ribasis_->nbf();I++)
-        C_DGEMM('N', 'N', naocc_, navir_, navir_, 1.0, V, navir_, Qpab[I], navir_, 1.0, temp1[I], navir_);
+        C_DGEMM('N', 'N', naocc_, navir_, navir_, 1.0, V, navir_, Qpab_[I], navir_, 1.0, temp1[I], navir_);
                 
-    C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), 1.0, Qpia[0], naocc_*navir_, temp1[0], naocc_*navir_, 0.0, Ziajb[0], naocc_*navir_);
+    C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), 1.0, Qpia_[0], naocc_*navir_, temp1[0], naocc_*navir_, 0.0, Ziajb[0], naocc_*navir_);
                 
     free_block(temp1);
                 
@@ -382,9 +369,9 @@ DFADC::accelerate(double *V)
                 
     // dZ_{iajb} <-- - \sum_{I} B^I_{ia} \sum_{k} B^I_{jk} V_{kb}
     for(int I = 0;I < ribasis_->nbf();I++)
-        C_DGEMM('N', 'N', naocc_, navir_, naocc_, 1.0, Qpij[I], naocc_, V, navir_, 1.0, temp1[I], navir_);
+        C_DGEMM('N', 'N', naocc_, navir_, naocc_, 1.0, Qpij_[I], naocc_, V, navir_, 1.0, temp1[I], navir_);
                 
-    C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), -1.0, Qpia[0], naocc_*navir_, temp1[0], naocc_*navir_, 1.0, Ziajb[0], naocc_*navir_);
+    C_DGEMM('T', 'N', naocc_*navir_, naocc_*navir_, ribasis_->nbf(), -1.0, Qpia_[0], naocc_*navir_, temp1[0], naocc_*navir_, 1.0, Ziajb[0], naocc_*navir_);
                 
     free_block(temp1);
                 
@@ -392,7 +379,7 @@ DFADC::accelerate(double *V)
     //            / (\omega + e_i + e_j - e_a - e_b)^2
     // One of the most nastiest steps!!
     double **Wiajb = block_matrix(naocc_*(ULI)navir_, naocc_*(ULI)navir_);
-    #pragma omp parallel for num_threads(nthread)
+    #pragma omp collapse(4) parallel for schedule(dynamic) num_threads(nthread)
     for(int i = 0;i < naocc_;i++)
         for(int a = 0;a < navir_;a++)
             for(int j = 0;j < naocc_;j++)
@@ -410,23 +397,19 @@ DFADC::accelerate(double *V)
     // dV_{ia} <-- - \sum_{Ij} B^I_{ji} \sum_{kb} W_{jakb} B^I_{kb}
     for(int I = 0;I < ribasis_->nbf();I++) {
                     
-        C_DGEMM('N', 'N', naocc_*navir_, 1, naocc_*navir_, 1.0, Wiajb[0], naocc_*navir_, Qpia[I], 1, 0.0, temp2[0], 1);
-        C_DGEMM('N', 'T', naocc_, navir_, navir_, -1.0, temp2[0], navir_, Qpab[I], navir_, 1.0, dV[0], navir_);
-        C_DGEMM('T', 'N', naocc_, navir_, naocc_,  1.0, Qpij[I], naocc_, temp2[0], navir_, 1.0, dV[0], navir_);
+        C_DGEMM('N', 'N', naocc_*navir_, 1, naocc_*navir_, 1.0, Wiajb[0], naocc_*navir_, Qpia_[I], 1, 0.0, temp2[0], 1);
+        C_DGEMM('N', 'T', naocc_, navir_, navir_, -1.0, temp2[0], navir_, Qpab_[I], navir_, 1.0, dV[0], navir_);
+        C_DGEMM('T', 'N', naocc_, navir_, naocc_,  1.0, Qpij_[I], naocc_, temp2[0], navir_, 1.0, dV[0], navir_);
                     
     } // End loop over I
 
     // V(\omega)^{\dagger}\partial A(\omega)/\partial\omega V^{\dagger} = V^{\dagger} dV^{\dagger}
-    C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, V, 1, dV[0], 1, 0.0, &(round_omega), 1);
+    C_DGEMM('T', 'N', 1, 1, naocc_*navir_, 1.0, V, 1, dV[0], 1, 0.0, &(partial_omega), 1);
     
     free_block(Wiajb);
     free_block(temp2);
-    free_block(J_mhalf);
-    free_block(Qpia);
-    free_block(Qpij);
-    free_block(Qpab);
     
-    return round_omega;
+    return partial_omega;
 }
 
 }} // End Namespaces
