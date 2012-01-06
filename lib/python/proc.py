@@ -145,47 +145,40 @@ def run_mp2_gradient(name, **kwargs):
     PsiMod.set_global_option('DERTYPE', 'NONE')
     PsiMod.revoke_global_option_changed('DERTYPE')
 
-def run_ccsd(name, **kwargs):
+def run_ccenergy(name, **kwargs):
 
-    if (name.lower() == 'ccsd'):
-        PsiMod.set_global_option('WFN', 'CCSD')
-    elif (name.lower() == 'cc2'):
-        PsiMod.set_global_option('WFN', 'CC2')
+   if (name.lower() == 'ccsd'):
+       PsiMod.set_global_option('WFN', 'CCSD')
+   elif (name.lower() == 'ccsd(t)'):
+       PsiMod.set_global_option('WFN', 'CCSD_T')
+   elif (name.lower() == 'cc2'):
+       PsiMod.set_global_option('WFN', 'CC2')
+   elif (name.lower() == 'cc3'):
+       PsiMod.set_global_option('WFN', 'CC3')
+   elif (name.lower() == 'eom-ccsd'):
+       PsiMod.set_global_option('WFN', 'EOM_CCSD')
+   # Call a plain energy('ccenergy') and have full control over options,
+   # incl. wfn
+   elif(name.lower() == 'ccenergy'):
+       pass
 
-    # Bypass routine scf if user did something special to get it to converge
-    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf("scf", **kwargs)
+   # Bypass routine scf if user did something special to get it to converge
+   if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
+       run_scf("scf", **kwargs)
 
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
+   PsiMod.transqt2()
+   PsiMod.ccsort()
+   returnvalue = PsiMod.ccenergy()
 
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
+   if (name.lower() != 'ccenergy'):
+       PsiMod.set_global_option('WFN', 'SCF')
+       PsiMod.revoke_global_option_changed('WFN')
 
-    return returnvalue
+   return returnvalue
 
-def run_cc3(name, **kwargs):
+def run_cc_gradient(name, **kwargs):
 
-    if (name.lower() == 'cc3'):
-        PsiMod.set_global_option('WFN', 'CC3')
-
-    # Bypass routine scf if user did something special to get it to converge
-    if not (kwargs.has_key('bypass_scf') and input.yes.match(str(kwargs['bypass_scf']))):
-        run_scf("scf", **kwargs)
-
-    PsiMod.transqt2()
-    PsiMod.ccsort()
-    returnvalue = PsiMod.ccenergy()
-
-    PsiMod.set_global_option('WFN', 'SCF')
-    PsiMod.revoke_global_option_changed('WFN')
-
-    return returnvalue
-
-def run_ccsd_gradient(name, **kwargs):
-
-    run_ccsd(name, **kwargs)
+    run_ccenergy(name, **kwargs)
     PsiMod.set_global_option('WFN', 'CCSD')
 
     PsiMod.cchbar()
@@ -195,14 +188,6 @@ def run_ccsd_gradient(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
-
-def run_ccsd_t(name, **kwargs):
-
-    PsiMod.set_global_option('WFN', 'CCSD_T')
-
-    # The new CCEnergyWavefunction object that is used to wrap ccenergy
-    # automatically handles cctriples.
-    return run_ccsd(name, **kwargs)
 
 def run_bccd(name, **kwargs):
 
@@ -233,35 +218,33 @@ def run_bccd_t(name, **kwargs):
 
     return PsiMod.cctriples()
 
-def run_ccsd_response(name, **kwargs):
+def run_cc_response(name, **kwargs):
 
     if (name.lower() == 'ccsd'):
       PsiMod.set_global_option('WFN', 'CCSD')
-      run_ccsd("ccsd", **kwargs)
+      run_ccenergy("ccsd", **kwargs)
       PsiMod.set_global_option('WFN', 'CCSD')
     elif (name.lower() == 'cc2'):
       PsiMod.set_global_option('WFN', 'CC2')
-      run_ccsd("cc2", **kwargs)
+      run_ccenergy("cc2", **kwargs)
       PsiMod.set_global_option('WFN', 'CC2')
 
     PsiMod.cchbar()
     PsiMod.cclambda()
     PsiMod.ccresponse()
 
-#    PsiMod.set_global_option('WFN', 'SCF')
-#    PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('WFN', 'SCF')
+    PsiMod.revoke_global_option_changed('WFN')
 
-    # ccsd_response has return value?
+def run_eom_cc(name, **kwargs):
 
-def run_eom_ccsd(name, **kwargs):
-
-    if (name.lower() == "eom_ccsd" or name.lower() == "eom-ccsd"):
+    if (name.lower() == "eom-ccsd"):
       PsiMod.set_global_option('WFN', 'EOM_CCSD')
-      run_ccsd("ccsd", **kwargs)
+      run_ccenergy("ccsd", **kwargs)
       PsiMod.set_global_option('WFN', 'EOM_CCSD')
-    elif (name.lower() == "eom_cc2" or name.lower() == "eom-cc2"):
+    elif (name.lower() == "eom-cc2"):
       PsiMod.set_global_option('WFN', 'EOM_CC2')
-      run_ccsd("cc2", **kwargs)
+      run_ccenergy("cc2", **kwargs)
       PsiMod.set_global_option('WFN', 'EOM_CC2')
 
     PsiMod.cchbar()
