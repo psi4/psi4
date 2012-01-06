@@ -6,8 +6,6 @@ molecule h2o2 {
 }
 
 set {
-  wfn ccsd
-  dertype response
   property rotation
   freeze_core true
   omega [589, 355]

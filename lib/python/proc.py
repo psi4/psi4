@@ -220,6 +220,8 @@ def run_bccd_t(name, **kwargs):
 
 def run_cc_response(name, **kwargs):
 
+    PsiMod.set_global_option('DERTYPE', 'RESPONSE')
+
     if (name.lower() == 'ccsd'):
       PsiMod.set_global_option('WFN', 'CCSD')
       run_ccenergy("ccsd", **kwargs)
@@ -246,6 +248,10 @@ def run_eom_cc(name, **kwargs):
       PsiMod.set_global_option('WFN', 'EOM_CC2')
       run_ccenergy("cc2", **kwargs)
       PsiMod.set_global_option('WFN', 'EOM_CC2')
+    elif (name.lower() == "eom-cc3"):
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
+      run_ccenergy("cc3", **kwargs)
+      PsiMod.set_global_option('WFN', 'EOM_CC3')
 
     PsiMod.cchbar()
     returnvalue = PsiMod.cceom()
