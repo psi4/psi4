@@ -61,8 +61,6 @@ protected:
   int natomsA_;
   int natomsB_;
 
-  int print_;
-  int debug_;
   bool elst_basis_;
 
   long int mem_;

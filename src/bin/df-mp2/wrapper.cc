@@ -12,37 +12,33 @@
 #include <libchkpt/chkpt.hpp>
 #include <libiwl/iwl.h>
 #include <libqt/qt.h>
-
 #include <libmints/mints.h>
-#include "dfmp2.h"
-#if HAVE_MADNESS
-#include "mad_mp2.h"
-#endif
-
 #include <psi4-dec.h>
+
+#include "mp2.h"
 
 using namespace boost;
 
 namespace psi { namespace dfmp2 {
-
-std::string to_string(const int val);   // In matrix.cpp
 
 PsiReturnType dfmp2(Options & options)
 {
     tstart();
 
     boost::shared_ptr<PSIO> psio(new PSIO);
-
-
-#if HAVE_MADNESS
-    mad_mp2::MAD_MP2 madmp2(options, psio);
-    madmp2.compute_energy();
-#else
     boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
-    DFMP2 df(options, psio, chkpt);
-    df.compute_energy();
-#endif
-    // Shut down psi.
+
+    boost::shared_ptr<DFMP2> dfmp2;
+    if (options.get_str("REFERENCE") == "RHF" || options.get_str("REFERENCE") == "RKS") {
+        dfmp2 = boost::shared_ptr<DFMP2>(new RDFMP2(options,psio,chkpt)); 
+    } else if (options.get_str("REFERENCE") == "UHF" || options.get_str("REFERENCE") == "UKS") {
+        dfmp2 = boost::shared_ptr<DFMP2>(new UDFMP2(options,psio,chkpt)); 
+    } else if (options.get_str("REFERENCE") == "ROHF") {
+        throw PSIEXCEPTION("DFMP2: ROHF-MBPT(2) not yet implemented");
+    } else {
+        throw PSIEXCEPTION("DFMP2: Unrecognized reference");
+    }
+    dfmp2->compute_energy();
 
     tstop();
 
