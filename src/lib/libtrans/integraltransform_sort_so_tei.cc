@@ -166,44 +166,6 @@ IntegralTransform::presort_so_tei()
             I.matrix[h] = block_matrix(bucketRowDim[n][h], I.params->coltot[h]);
         }
 
-//        IWL *iwl = new IWL(psio_.get(), soIntFile, tolerance_, 1, 1);
-
-//        Label *lblptr = iwl->labels();
-//        Value *valptr = iwl->values();
-//        int lastbuf   = iwl->last_buffer();
-
-//        for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
-//            int labelIndex = 4*index;
-//            int p = abs((int) lblptr[labelIndex++]);
-//            int q = (int) lblptr[labelIndex++];
-//            int r = (int) lblptr[labelIndex++];
-//            int s = (int) lblptr[labelIndex++];
-//            double value = (double) valptr[index];
-//            idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-//            if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
-//                build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-//                                   aFzcOp, bFzcOp, aD, bD, aFock, bFock);
-//        } /* end loop through current buffer */
-
-//        /* Now run through the rest of the buffers in the file */
-//        while(!lastbuf){
-//            iwl->fetch();
-//            lastbuf = iwl->last_buffer();
-//            for(int index = iwl->index(); index < iwl->buffer_count(); ++index){
-//                int labelIndex = 4*index;
-//                int p = abs((int) lblptr[labelIndex++]);
-//                int q = (int) lblptr[labelIndex++];
-//                int r = (int) lblptr[labelIndex++];
-//                int s = (int) lblptr[labelIndex++];
-//                double value = (double) valptr[index];
-//                idx_permute_presort(&I,n,bucketMap,bucketOffset,p,q,r,s,value);
-//                if(!n) /* build frozen-core operator and Fock matrix only on first pass*/
-//                    build_fzc_and_fock(p, q, r, s, value, aFzcD, bFzcD,
-//                                       aFzcOp, bFzcOp, aD, bD, aFock, bFock);
-//            } /* end loop through current buffer */
-//        } /* end loop over reading buffers */
-//        iwl->set_keep_flag(1);
-
         DPDFillerFunctor dpdfiller(&I,n,bucketMap,bucketOffset, false, true);
         NullFunctor null;
         IWL *iwl = new IWL(psio_.get(), PSIF_SO_TEI, tolerance_, 1, 1);

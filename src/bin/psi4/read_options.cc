@@ -846,8 +846,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
     /*- The amount of SAD information to print to the output -*/
     options.add_int("SAD_PRINT", 0);
-    /*- SAD Occupation Matrix Method -*/
-    options.add_str("SAD_C", "CHOLESKY", "CHOLESKY ID");
     /*- SAD Guess Convergence in E.  See the note at the beginning of Section \ref{keywords}. -*/
     options.add_double("SAD_E_CONVERGE", 1E-5);
     /*- SAD Guess Convergence in D.  See the note at the beginning of Section \ref{keywords}. -*/

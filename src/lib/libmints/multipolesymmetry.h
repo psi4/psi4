@@ -21,9 +21,9 @@ class OperatorSymmetry
     int order_;
 
     // Variables we need from the user
-    const boost::shared_ptr<Molecule>& molecule_;
-    const boost::shared_ptr<IntegralFactory>& integral_;
-    const boost::shared_ptr<MatrixFactory>& matrix_;
+    boost::shared_ptr<Molecule> molecule_;
+    boost::shared_ptr<IntegralFactory> integral_;
+    boost::shared_ptr<MatrixFactory> matrix_;
 
     /**
      * The symmetry of each component of the multipole.
@@ -39,6 +39,8 @@ class OperatorSymmetry
      * (x=0, y=2, z=0) => "y2"
      */
     std::string form_suffix(int x, int y, int z);
+
+    void common_init();
 
 public:
     enum Operator {
@@ -64,9 +66,12 @@ public:
      *             proper size and symmetry.
      */
     OperatorSymmetry(int order,
-                     const boost::shared_ptr<Molecule>& mol,
-                     const boost::shared_ptr<IntegralFactory>& ints,
-                     const boost::shared_ptr<MatrixFactory>& mats);
+                     boost::shared_ptr<Molecule> mol,
+                     boost::shared_ptr<IntegralFactory> ints,
+                     boost::shared_ptr<MatrixFactory> mats);
+    OperatorSymmetry(int order,
+                     boost::shared_ptr<Molecule> mol,
+                     boost::shared_ptr<IntegralFactory> ints);
     virtual ~OperatorSymmetry();
 
     std::string name_of_component(int i);

@@ -224,9 +224,9 @@ void UHF::form_D()
         double** Db = Db_->pointer(h);
 
         if (na == 0)
-            memset(static_cast<void*>(Da[0]), '\0', sizeof(double)*nso*nso);
+            ::memset(static_cast<void*>(Da[0]), '\0', sizeof(double)*nso*nso);
         if (nb == 0)
-            memset(static_cast<void*>(Db[0]), '\0', sizeof(double)*nso*nso);
+            ::memset(static_cast<void*>(Db[0]), '\0', sizeof(double)*nso*nso);
 
         C_DGEMM('N','T',nso,nso,na,1.0,Ca[0],nmo,Ca[0],nmo,0.0,Da[0],nso);
         C_DGEMM('N','T',nso,nso,nb,1.0,Cb[0],nmo,Cb[0],nmo,0.0,Db[0],nso);
@@ -246,6 +246,8 @@ void UHF::form_D()
 // TODO: Once Dt_ is refactored to D_ the only difference between this and RHF::compute_initial_E is a factor of 0.5
 double UHF::compute_initial_E()
 {
+    Dt_->copy(Da_);
+    Dt_->add(Db_);
     return nuclearrep_ + 0.5 * (Dt_->vector_dot(H_));
 }
 

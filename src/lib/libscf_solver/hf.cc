@@ -902,6 +902,7 @@ void HF::guess()
 
         //Superposition of Atomic Density (RHF only at present)
         compute_SAD_guess();
+        E_ = compute_initial_E();
 
     } else if (guess_type == "GWH") {
         //Generalized Wolfsberg Helmholtz (Sounds cool, easy to code)
@@ -1336,6 +1337,12 @@ double HF::compute_energy()
             if (print_ >= 2) {
                 oe->add("QUADRUPOLE");
                 oe->add("MULLIKEN_CHARGES");
+            }
+
+            if (print_ >= 3) {
+                oe->add("LOWDIN_CHARGES");
+                oe->add("MAYER_INDICES");
+                oe->add("WIBERG_LOWDIN_INDICES");
             }
 
             if (Communicator::world->me() == 0)
