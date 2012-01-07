@@ -58,15 +58,23 @@ void SCF::startup()
 
   if(options_.get_str("REFERENCE")=="RHF"){
     reference = rhf;
+    same_orbs_ = true;
+    same_dens_ = true;
   }
   else if(options_.get_str("REFERENCE")=="ROHF"){
     reference = rohf;
+    same_orbs_ = true;
+    same_dens_ = false;
   }
   else if(options_.get_str("REFERENCE")=="UHF"){
     reference = uhf;
+    same_orbs_ = false;
+    same_dens_ = false;
   }
   else if(options_.get_str("REFERENCE")=="TWOCON"){
     reference = tcscf;
+    same_orbs_ = true;
+    same_dens_ = false;
     if(moinfo_scf->get_guess_occupation()){
       printf("\n  ERROR:  MCSCF cannot guess the active orbital occupation\n");
       fprintf(outfile,"\n\n  MCSCF cannot guess the active orbital occupation\n");
