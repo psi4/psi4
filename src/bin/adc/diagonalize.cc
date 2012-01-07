@@ -209,8 +209,6 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     timer_off("SEM");
     
     fclose(iter_adc);
-
-    fclose(iter_adc);
     free(residual_ok);
     free(residual_norm);
     free(conv);
