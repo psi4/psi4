@@ -1,0 +1,11 @@
+# Frequencies for H2O HF/cc-pVDZ at optimized geometry
+
+molecule h2o {
+  O 
+  H 1 0.9463
+  H 1 0.9463 2 104.575
+}
+
+set basis cc-pVDZ
+frequencies('scf')
+
