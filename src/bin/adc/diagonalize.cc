@@ -36,7 +36,7 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     
     residual_ok   = init_int_array(rpi_[irrep]);
     residual_norm = init_array(rpi_[irrep]);
-    conv          = init_int_array(rpi_[nirrep_]);
+    conv          = init_int_array(rpi_[irrep]);
     
     G        = block_matrix(maxdim, maxdim);
     Alpha    = block_matrix(maxdim, maxdim);
@@ -208,8 +208,6 @@ ADC::rhf_diagonalize(int irrep, int num_root, bool first, double omega_in, doubl
     }
     timer_off("SEM");
     
-    fclose(iter_adc);
-
     fclose(iter_adc);
     free(residual_ok);
     free(residual_norm);

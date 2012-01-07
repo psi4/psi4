@@ -1,0 +1,30 @@
+#! RHF STO-3G Benzene optimization using PubChem to obtain geometry
+
+# Query PubChem using benzene.
+#   This will match 20 compounds in the PubChem database
+#   results is an array containing the 20 compounds
+# Note: This requires an Internet connection
+results = getPubChemResults("benzene")
+
+# I know the first compound is benzene, so let's just use that
+molstr = results[0].getMoleculeString()
+benzene = geometry(molstr, "benzene")
+
+set globals = {
+    basis      sto-3g
+    e_converge 10
+}
+
+thisenergy = energy('scf')
+
+clean()
+
+# Let's query PubChem fro 1,3,5-hexatriene
+results = getPubChemResults("1,3,5-hexatriene")
+molstr = results[0].getMoleculeString()
+hexatriene = geometry(molstr, "1,3,5-hexatriene")
+
+thisenergy = energy('scf')
+
+clean()
+
