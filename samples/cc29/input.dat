@@ -11,13 +11,10 @@ noreorient
 }
 
 set {
-  wfn ccsd
-  dertype response
   property rotation
   freeze_core true
   omega [589, 355]
   omega_units nm
-  mu_irreps [1, 1, 0]
   gauge both
   basis cc-pVDZ
   convergence 10

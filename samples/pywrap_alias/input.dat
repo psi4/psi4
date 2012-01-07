@@ -1,0 +1,83 @@
+molecule He2 {
+0 1
+He
+He 1 1.0
+}
+
+set globals {
+    basis 6-31g
+}
+
+
+banner('gold standard')
+energy('sherrillgroup_gold_standard')
+compare_values(-5.66406119, get_variable('CBS TOTAL ENERGY'), 7, "Au std")
+clean()
+
+#banner('scf')
+#energy('SCF')
+#compare_values(-5.551087929000, get_variable('SCF TOTAL ENERGY'), 7, "SCF sp")
+#clean()
+
+banner('mp2')
+energy('mp2')
+compare_values(-5.573453229993, get_variable('MP2 TOTAL ENERGY'), 7, "MP2 sp")
+compare_values(-0.026794209037, get_variable('SCS-MP2 OPPOSITE-SPIN CORRELATION ENERGY'), 7, "  MP2 route check") 
+# this second check will fail if a request for an mp2 calc gets routed to detci, rather than the mp2 module
+clean()
+
+banner('mp11')
+energy('mp11')
+compare_values(-5.580830858501, get_variable('MP11 TOTAL ENERGY'), 7, "MP11 sp")
+clean()
+
+banner('zapt4')
+energy('zapt4')
+compare_values(-5.580407221960, get_variable('ZAPT4 TOTAL ENERGY'), 7, "ZAPT4 sp")
+clean()
+
+banner('fci')
+energy('fci')
+compare_values(-5.580830850570, get_variable('FCI TOTAL ENERGY'), 7, "FCI sp")
+clean()
+
+banner('mp2.5')
+energy('mp2.5')
+compare_values(-5.576243225099, get_variable('MP2.5 TOTAL ENERGY'), 7, "MP2.5 sp")
+clean()
+
+banner('cbs()')
+cbs('scf',scf_basis='cc-pvdz')
+compare_values(-5.55609846, get_variable('CBS TOTAL ENERGY'), 7, "cbs()")
+clean()
+
+set globals {
+    basis sto-3g
+    ri_basis_scf cc-pVDZ-JKFIT
+    scf_type df
+}
+
+# Try something other than scf
+banner('db()')
+database('scf','S22',subset=[2,8],benchmark='S22A')
+clean()
+
+set globals {
+    basis 6-31g
+    scf_type pk
+}
+banner('cisd')
+energy('cisd',molecule=He2)
+compare_values(-5.580709674676, get_variable('CISD TOTAL ENERGY'), 7, "CISD sp")
+clean()
+
+#banner('opt(cbs())')
+#optimize('scf',opt_func=cbs,scf_basis='sto-3g',scf_scheme=highest_1)
+#compare_values(-5.615567415914, get_variable('SCF TOTAL ENERGY'), 6, 'opt(cbs())')
+#clean()
+
+banner('opt(arbitraryorder())')
+optimize('mp3')
+compare_values(-5.738452948227, get_variable('MP3 TOTAL ENERGY'), 7, 'opt(mp3())')
+clean()
+

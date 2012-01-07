@@ -57,7 +57,8 @@ protected:
     /// The basisset for this wavefunction
     boost::shared_ptr<BasisSet> basisset_;
     /// Is this wavefunction object spin-restricted? (Actually closed-shell, but this is wavefunction's convention)
-    bool restricted_; // This allows pointers to be duplicated/computation skipped
+    bool same_orbs_; // This allows pointers to be duplicated/computation skipped
+    bool same_dens_; // This allows pointers to be duplicated/computation skipped
     /// The integral factory for this wavefunction's basisset
     boost::shared_ptr<IntegralFactory> integral_;
     /// The matrix factory for this wavefunction's basisset (SO)
