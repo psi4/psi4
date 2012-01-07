@@ -171,12 +171,6 @@ protected:
     /// Perform casting of basis set if desired.
     SharedMatrix dualBasisProjection(SharedMatrix Cold, int* napi, boost::shared_ptr<BasisSet> old_basis, boost::shared_ptr<BasisSet> new_basis);
 
-    /// UHF Atomic Density Matrix for SAD
-    /// returns atomic_basis->nbf() x atomic_basis_->nbf() double array of approximate atomic density (summed over spin)
-    void getUHFAtomicDensity(boost::shared_ptr<BasisSet> atomic_basis, int n_electrons, int multiplicity, double** D);
-    // Computes the C and D matrix in place for SAD Atomic UHF
-    void atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F, double** C, double** D);
-
     /// Common initializer
     void common_init();
 

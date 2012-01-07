@@ -14,8 +14,6 @@ noreorient
 }
 
 set {
-    wfn ccsd
-    dertype response
     basis cc-pVDZ
 }
 

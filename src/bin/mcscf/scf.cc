@@ -83,7 +83,7 @@ void SCF::startup()
     }
   }
 
-  root = options_.get_int("ROOT") - 1;
+  root = options_.get_int("FOLLOW_ROOT") - 1;
 
   // OUT OF CORE ALGORITHM
   out_of_core  = false;
