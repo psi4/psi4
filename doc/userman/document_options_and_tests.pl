@@ -44,6 +44,8 @@ while(<DRIVER>){
     if(/\/\*-/ and $CurrentModule){
         ($CommentString, $Expert) = determine_comment($_);
         $CommentString =~ s/_/\\_/g;
+        # process @@ as math mode subscript in tex
+        $CommentString =~ s/@@/_/g;
         ($Keyword, $Type, $Default, $Possibilities) = determine_keyword_type_and_default();
         if($Expert){
             $Expert{$CurrentModule}{$Keyword}{"Type"}    = $Type;
