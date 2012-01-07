@@ -20,7 +20,7 @@ def run_scf_gradient(name, **kwargs):
     run_scf(name, **kwargs)
     PsiMod.deriv()
 
-def run_mcscf(**kwargs):
+def run_mcscf(name, **kwargs):
 
     return PsiMod.mcscf()
 
@@ -180,6 +180,7 @@ def run_cc_gradient(name, **kwargs):
 
     run_ccenergy(name, **kwargs)
     PsiMod.set_global_option('WFN', 'CCSD')
+    PsiMod.set_global_option('DERTYPE', 'FIRST')
 
     PsiMod.cchbar()
     PsiMod.cclambda()
@@ -188,6 +189,8 @@ def run_cc_gradient(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_bccd(name, **kwargs):
 
@@ -237,6 +240,8 @@ def run_cc_response(name, **kwargs):
 
     PsiMod.set_global_option('WFN', 'SCF')
     PsiMod.revoke_global_option_changed('WFN')
+    PsiMod.set_global_option('DERTYPE', 'NONE')
+    PsiMod.revoke_global_option_changed('DERTYPE')
 
 def run_eom_cc(name, **kwargs):
 

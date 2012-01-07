@@ -877,9 +877,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The criterion used to retain/release cached data -*/
     options.add_str("CACHETYPE", "LRU", "LRU LOW");
     /*- Whether to perform a spin component scaled MP2 computation -*/
-    options.add_bool("SCS","false");
+    options.add_bool("SCS", false);
     /*- Whether to perform a spin component scaled (N) MP2 computation -*/
-    options.add_bool("SCS_N", "false");
+    options.add_bool("SCS_N", false);
     /*- The scale factor used for opposite-spin pairs in SCS computations -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- The scale factor used for same-spin pairs in SCS computations-*/
@@ -1592,9 +1592,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- -*/
     options.add_int("MEMORY", 2000);
     /*- -*/
-    options.add_bool("SCS","false");
+    options.add_bool("SCS", false);
     /*- -*/
-    options.add_bool("SCS_N", "false");
+    options.add_bool("SCS_N", false);
     /*- -*/
     options.add_double("SCALE_OS", 6.0/5.0);
     /*- -*/
