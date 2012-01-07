@@ -28,6 +28,8 @@ class DFMP2 : public Wavefunction {
 protected:
 
 public:
+    virtual bool same_a_b_orbs() const { return reference_wavefunction_->same_a_b_orbs(); }
+    virtual bool same_a_b_dens() const { return reference_wavefunction_->same_a_b_dens(); }
 protected:
 
     int nproc_;

@@ -14,7 +14,6 @@ molecule ch2 {
 
 set globals {
   reference uhf
-  relax_opdm true
   basis cc-pvdz
   dertype first
   # The next 3 options control the geometry optimization tolerances

@@ -1,4 +1,5 @@
 #include"psi4-dec.h"
+#include<psifiles.h>
 #include <libplugin/plugin.h>
 #include<boost/shared_ptr.hpp>
 #include<lib3index/dftensor.h>
@@ -462,7 +463,7 @@ return;
 ===================================================================*/
 void CoupledCluster::Transformation(){
   // transform integrals:
-  boost::shared_ptr<PSIO> psio(_default_psio_lib_);
+  /*boost::shared_ptr<PSIO> psio(_default_psio_lib_);
   std::vector<boost::shared_ptr<MOSpace> > spaces;
   boost::shared_ptr<Chkpt> chkpt(new Chkpt(psio, PSIO_OPEN_OLD));
 
@@ -482,7 +483,7 @@ void CoupledCluster::Transformation(){
   ints.initialize();
   ints.transform_tei(MOSpace::all, MOSpace::all, MOSpace::all, MOSpace::all);
 
-  psio.reset();
+  psio.reset();*/
 }
 
 /*===================================================================
