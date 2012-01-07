@@ -368,7 +368,7 @@ void HF::atomicUHFHelperFormCandD(int nelec, int norbs,double** Shalf, double**F
 }
 void HF::compute_SAD_guess()
 {
-    if (!restricted()) {
+    if (!same_a_b_dens()) {
         throw PSIEXCEPTION("SCF::compute_SAD_guess: SAD Guess only supported for restricted references at this time.");
     }
 
