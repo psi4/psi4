@@ -22,6 +22,9 @@
 --------------------------------------------------------------------------
 # Optimize H2O HF/cc-pVDZ
 
+nucenergy = 9.300472711622458 #TEST
+refenergy = -76.0270534721367 #TEST
+
 molecule h2o {
   O 
   H 1 0.96
@@ -30,6 +33,11 @@ molecule h2o {
 
 set basis cc-pVDZ
 optimize('scf')
+
+compare_values(nucenergy, h2o.nuclear_repulsion_energy(), 4, "Nuclear repulsion energy")    #TEST
+compare_values(refenergy, get_variable("CURRENT ENERGY"), 4, "Reference energy") #TEST
+
+clean()
 
 --------------------------------------------------------------------------
 update_geometry() is called.
@@ -46,7 +54,7 @@ Geometry bf reorientation.
 
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:20 2012
+*** at Sat Jan  7 15:38:16 2012
 
 update_geometry() is called.
 Geometry bf reorientation.
@@ -253,18 +261,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:20 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
 Module time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       0.17 seconds =       0.00 minutes
-	system time =       0.07 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.16 seconds =       0.00 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:20 2012
+*** at Sat Jan  7 15:38:17 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -356,15 +364,15 @@ Total time:
        3        0.000000000000     0.012443110276     0.008810742573
 
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:20 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
 Module time:
-	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.52 seconds =       0.01 minutes
-	system time =       0.11 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.50 seconds =       0.01 minutes
+	system time =       0.04 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  
@@ -466,7 +474,7 @@ Geometry bf reorientation.
 
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:20 2012
+*** at Sat Jan  7 15:38:17 2012
 
 update_geometry() is called.
 Geometry bf reorientation.
@@ -673,18 +681,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:21 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
 Module time:
-	user time   =       0.14 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	user time   =       0.12 seconds =       0.00 minutes
+	system time =       0.05 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       0.66 seconds =       0.01 minutes
-	system time =       0.16 seconds =       0.00 minutes
+	user time   =       0.63 seconds =       0.01 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:21 2012
+*** at Sat Jan  7 15:38:17 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -776,14 +784,14 @@ Total time:
        3        0.000000000000    -0.008245556497    -0.004952212456
 
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:21 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:17 2012
 Module time:
-	user time   =       0.32 seconds =       0.01 minutes
-	system time =       0.02 seconds =       0.00 minutes
+	user time   =       0.35 seconds =       0.01 minutes
+	system time =       0.00 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
 	user time   =       0.98 seconds =       0.02 minutes
-	system time =       0.18 seconds =       0.00 minutes
+	system time =       0.10 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
 
 			----------------------------------
@@ -882,7 +890,7 @@ Geometry bf reorientation.
 
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:21 2012
+*** at Sat Jan  7 15:38:17 2012
 
 update_geometry() is called.
 Geometry bf reorientation.
@@ -1089,18 +1097,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:21 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:18 2012
 Module time:
 	user time   =       0.14 seconds =       0.00 minutes
 	system time =       0.03 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
-Total time:
-	user time   =       1.12 seconds =       0.02 minutes
-	system time =       0.23 seconds =       0.00 minutes
 	total time  =          1 seconds =       0.02 minutes
+Total time:
+	user time   =       1.14 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
+	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:21 2012
+*** at Sat Jan  7 15:38:18 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -1192,14 +1200,14 @@ Total time:
        3        0.000000000000     0.000264179273     0.000389405929
 
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:22 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:18 2012
 Module time:
 	user time   =       0.35 seconds =       0.01 minutes
-	system time =       0.01 seconds =       0.00 minutes
-	total time  =          1 seconds =       0.02 minutes
+	system time =       0.00 seconds =       0.00 minutes
+	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.47 seconds =       0.02 minutes
-	system time =       0.24 seconds =       0.00 minutes
+	user time   =       1.49 seconds =       0.02 minutes
+	system time =       0.13 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 			----------------------------------
@@ -1300,7 +1308,7 @@ Geometry bf reorientation.
 
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:22 2012
+*** at Sat Jan  7 15:38:18 2012
 
 update_geometry() is called.
 Geometry bf reorientation.
@@ -1507,18 +1515,18 @@ Geometry bf reorientation.
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:22 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:18 2012
 Module time:
-	user time   =       0.13 seconds =       0.00 minutes
-	system time =       0.04 seconds =       0.00 minutes
+	user time   =       0.14 seconds =       0.00 minutes
+	system time =       0.03 seconds =       0.00 minutes
 	total time  =          0 seconds =       0.00 minutes
 Total time:
-	user time   =       1.61 seconds =       0.03 minutes
-	system time =       0.29 seconds =       0.00 minutes
+	user time   =       1.64 seconds =       0.03 minutes
+	system time =       0.17 seconds =       0.00 minutes
 	total time  =          2 seconds =       0.03 minutes
 
 *** tstart() called on sherrill-laptop
-*** at Fri Jan  6 12:28:22 2012
+*** at Sat Jan  7 15:38:18 2012
 
  DERIV: Derivative code.
    by Justin Turney
@@ -1610,15 +1618,15 @@ Total time:
        3        0.000000000000    -0.000016757659     0.000068721528
 
 
-*** tstop() called on sherrill-laptop at Fri Jan  6 12:28:22 2012
+*** tstop() called on sherrill-laptop at Sat Jan  7 15:38:19 2012
 Module time:
-	user time   =       0.36 seconds =       0.01 minutes
-	system time =       0.00 seconds =       0.00 minutes
-	total time  =          0 seconds =       0.00 minutes
+	user time   =       0.34 seconds =       0.01 minutes
+	system time =       0.01 seconds =       0.00 minutes
+	total time  =          1 seconds =       0.02 minutes
 Total time:
-	user time   =       1.97 seconds =       0.03 minutes
-	system time =       0.29 seconds =       0.00 minutes
-	total time  =          2 seconds =       0.03 minutes
+	user time   =       1.98 seconds =       0.03 minutes
+	system time =       0.18 seconds =       0.00 minutes
+	total time  =          3 seconds =       0.05 minutes
 
 			----------------------------------
 			 OPTKING: for geometry optimizations  

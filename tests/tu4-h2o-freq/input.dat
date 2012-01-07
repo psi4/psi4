@@ -9,3 +9,14 @@ molecule h2o {
 set basis cc-pVDZ
 frequencies('scf')
 
+ref_freqs = PsiMod.Vector(3) #TEST
+ref_freqs.set(0, 0, 1776.17) #TEST
+ref_freqs.set(0, 1, 4113.80) #TEST
+ref_freqs.set(0, 2, 4211.79) #TEST
+
+fd_freqs = PsiMod.reference_wavefunction().frequencies() #TEST
+
+compare_vectors(ref_freqs, fd_freqs, 1, "Reference vs computed frequencies to 0.1 cm^-1") #TEST
+
+clean()
+

@@ -978,6 +978,9 @@ AC_CONFIG_FILES([include/Makefile
           tests/runtest.pl
           tests/tu1-h2o-energy/Makefile
           tests/tu2-ch2-energy/Makefile
+          tests/tu3-h2o-opt/Makefile
+          tests/tu4-h2o-freq/Makefile
+          tests/tu5-sapt/Makefile
           tests/dcft1/Makefile
           tests/dcft2/Makefile
           tests/dcft3/Makefile
