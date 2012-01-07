@@ -22,7 +22,7 @@ void get_eom_params(Options &options)
   // Number of excited states per irrep
   chkpt_init(PSIO_OPEN_OLD);
   if (chkpt_rd_override_occ()) eom_params.states_per_irrep = chkpt_rd_statespi();
-  else if (options.exists("STATES_PER_IRREP")) {
+  else if (options["STATES_PER_IRREP"].has_changed()) {
     if(options["STATES_PER_IRREP"].size() != moinfo.nirreps) 
       throw PsiException("STATES_PER_IRREP is wrong size. Should be number of irreps.", __FILE__, __LINE__);
     eom_params.states_per_irrep = new int[moinfo.nirreps];
@@ -45,7 +45,7 @@ void get_eom_params(Options &options)
   eom_params.max_iter = options.get_int("MAXITER");
 
   // Use prop_sym and prop_root only to determine what energy to write to chkpt
-  if (options.exists("PROP_SYM")) {
+  if (options["PROP_SYM"].has_changed()) {
     eom_params.prop_sym = options.get_int("PROP_SYM");
     eom_params.prop_sym = (eom_params.prop_sym - 1)^moinfo.sym;
   }
@@ -53,7 +53,7 @@ void get_eom_params(Options &options)
     for (int i = 0;i < moinfo.nirreps; ++i)
       if (eom_params.states_per_irrep[i]) eom_params.prop_sym = i^moinfo.sym;
   }
-  if (options.exists("PROP_ROOT")) {
+  if (options["PROP_ROOT"].has_changed()) {
     eom_params.prop_root = options.get_int("PROP_ROOT");
     if (eom_params.prop_root > eom_params.states_per_irrep[eom_params.prop_sym^moinfo.sym])
       throw PsiException("Value of prop_root is too large.", __FILE__, __LINE__);
@@ -65,7 +65,7 @@ void get_eom_params(Options &options)
   if (params.wfn == "EOM_CC3" && eom_params.prop_root != 0) eom_params.follow_root = true;
   // allow user to explicitly turn off root-following which may help in bizarre cases
   // in this case prop_root is used to determine which residuals are used
-  if (options.exists("CC3_FOLLOW_ROOT")) eom_params.follow_root = options.get_bool("CC3_FOLLOW_ROOT");
+  if (options["CC3_FOLLOW_ROOT"].has_changed()) eom_params.follow_root = options.get_bool("CC3_FOLLOW_ROOT");
 
   /* so far, all R's are always kept so this is not used */
   eom_params.save_all = 0;

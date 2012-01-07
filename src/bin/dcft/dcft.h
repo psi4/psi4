@@ -29,6 +29,9 @@ public:
     ~DCFTSolver();
 
     double compute_energy();
+    virtual bool same_a_b_orbs() const { return false; }
+    virtual bool same_a_b_dens() const { return false; }
+
 protected:
     IntegralTransform *_ints;
 

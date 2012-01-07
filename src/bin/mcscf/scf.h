@@ -23,8 +23,12 @@ public:
   explicit SCF(Options& options_, boost::shared_ptr<PSIO> psio, boost::shared_ptr<Chkpt> chkpt_);
   ~SCF();
   double compute_energy();
+  virtual bool same_a_b_orbs() const { return same_orbs_; }
+  virtual bool same_a_b_dens() const { return same_dens_; }
 
 private:
+  bool same_orbs_;
+  bool same_dens_;
   ReferenceType reference;
   static const int maxci   = 8;
   static const int maxdiis = 10;

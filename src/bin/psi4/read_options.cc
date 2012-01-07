@@ -23,10 +23,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
 
   /*- Units used in geometry specification -*/
   options.add_str("UNITS", "ANGSTROMS", "BOHR AU A.U. ANGSTROMS ANG ANGSTROM");
-  /*- The molecular charge -*/
-  options.add_int("CHARGE", 0);
-  /*- Spin multiplicity, (2S+1), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-  options.add_int("MULTP", 1);
 
   /*- An array containing the number of doubly-occupied orbitals per irrep
   (in Cotton order) -*/
@@ -68,7 +64,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
   options.add_int("GEOM_MAXITER", 20);
   /*- Wavefunction type !expert -*/
   options.add_str("WFN", "SCF");
-  /*- Derivative level -*/
+  /*- Derivative level !expert -*/
   options.add_str("DERTYPE", "NONE", "NONE FIRST SECOND RESPONSE");
   /*- Number of columns to print in calls to Matrix::print_mat -*/
   options.add_int("PRINT_MAT_NCOLUMN", 5);
@@ -477,10 +473,10 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_bool("SIGMA_OVERLAP", false);
 
     /*- The value of the spin quantum number S is given by this option.
-    The default is determined by the value of MULTP.  This is used for two
-    things: (1) determining the phase of the redundant half of the CI vector
-    when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making sure
-    the guess vector has the desired value of $<S^2>$ (if CALC_SSQ is TRUE
+    The default is determined by the value of the multiplicity.  This is used 
+    for two things: (1) determining the phase of the redundant half of the CI 
+    vector when the Ms=0 component is used (i.e., Ms0 = TRUE), and (2) making 
+    sure the guess vector has the desired value of $<S^2>$ (if CALC_SSQ is TRUE
     and ICORE=1). -*/
     options.add_double("S", 0.0);
 
@@ -696,10 +692,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
       options.add_str("ALGORITHM", "SIMULTANEOUS", "TWOSTEP SIMULTANEOUS");
       /*- Do force the occupation to be that of the SCF starting point? -*/
       options.add_bool("LOCK_OCCUPATION", true);
-      /*- The molecular charge -*/
-      options.add_int("CHARGE", 0);
-      /*- (2$\times M@@s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-      options.add_int("MULTP", 0);
   }
   if (name == "MINTS"|| options.read_globals()) {
       /*- primary basis set -*/
@@ -826,10 +818,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_int("MAX_DIIS_VECTORS", 10);
     /*- Do use DIIS extrapolation to accelerate convergence? -*/
     options.add_bool("DIIS", true);
-    /*- The molecular charge -*/
-    options.add_int("CHARGE", 0);
-    /*- (2$\times M@@s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-    options.add_int("MULTP", 0);
     /*- Do print the molecular orbitals? -*/
     options.add_bool("PRINT_MOS", false);
     /*- The amount of debugging information to print -*/
@@ -867,9 +855,9 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("WFN", "MP2", "MP2");
     /*- The reference wavefunction type -*/
     options.add_str("REFERENCE", "RHF", "RHF UHF ROHF");
-    /*- The type of job being performed -*/
+    /*- The type of job being performed !expert -*/
     options.add_str("JOBTYPE", "SP");
-    /*- The order of energy derivatives required -*/
+    /*- The order of energy derivatives required !expert -*/
     options.add_str("DERTYPE", "NONE");
     /*- Do compute the one particle density matrix, for properties? -*/
     options.add_bool("COMPUTE_OPDM", false);
@@ -1118,7 +1106,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     /*- The symmetry of states -*/
     options.add_int("PROP_SYM", 1);
     /*- -*/
-    options.add_int("PROP_ROOT", 0);
+    options.add_int("PROP_ROOT", 1);
   }
   if(name == "CCLAMBDA"|| options.read_globals()) {
     /*- Wavefunction type !expert -*/
@@ -1139,7 +1127,7 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("ABCD","NEW");
     /*- -*/
     options.add_int("NUM_AMPS",10);
-    /*- -*/
+    /*- !expert -*/
     options.add_str("JOBTYPE","");
     /*- Do ? -*/
     options.add_bool("LOCAL",false);
@@ -1397,10 +1385,6 @@ int read_options(const std::string &name, Options & options, bool suppress_print
     options.add_str("PROPERTY","POLARIZABILITY");
   }
   if(name == "MCSCF"|| options.read_globals()) {
-    /*- The molecular charge -*/
-    options.add_int("CHARGE", 0);
-    /*- (2$\times M@@s+1$), e.g. 1 for a singlet state, 2 for a doublet, 3 for a triplet, etc. -*/
-    options.add_int("MULTP", 1);
     /*- Level shift to aid convergence -*/
     options.add_int("LEVELSHIFT",0);
     /*- The amount of debugging information to print -*/

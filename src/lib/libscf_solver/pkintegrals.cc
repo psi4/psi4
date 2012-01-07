@@ -360,7 +360,7 @@ void PKIntegrals::setup_arrays(bool build_k)
         if (p_j_ == NULL || p_k_ == NULL) {
             if(p_j_) delete [] p_j_;
             if(p_k_) delete [] p_k_;
-            throw PSIEXCEPTION("Not enough memory for PK matrix, try scf_type = out_of_core instead");
+            throw PSIEXCEPTION("Unable to allocate memory for PK matrix, try scf_type = out_of_core instead");
         } else {
             // PK and PJ are zeroed out just before filling, not here
             if(print_ > 2){
@@ -373,6 +373,10 @@ void PKIntegrals::setup_arrays(bool build_k)
             }
         }
     } else {
+        fprintf(outfile, "  Need %lu elements (%lu pairs) for PJ. (%5f MiB)\n",
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
+        fprintf(outfile, "  Need %lu elements (%lu pairs) for PK. (%5f MiB)\n\n",
+                (unsigned long)pk_size_, (unsigned long)pk_pairs_, pk_size_ * 8.0 / 1048576.0);
         // Have the code automatically switch to out_of_core.
         throw PSIEXCEPTION("Not enough memory for PK matrix, try scf_type = out_of_core instead");
         // TODO just write an out of core code instead. Shouldn't be too hard.
